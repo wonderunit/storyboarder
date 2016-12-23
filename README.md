@@ -47,31 +47,24 @@ Need a straight line? Hold shift while you're drawing and you got straight lines
 
 ## We got mad simple key commands:
 
-*  COMMAND+1 = light pencil
-*  COMMAND+2 = pencil
-*  COMMAND+3 = pen
-*  COMMAND+4 = brush
-
-*  COMMAND+DELETE = clear
-
-*  COMMAND+Z = undo
-*  COMMAND+Y = redo
-
-*  COMMAND+6 = color 1
-*  COMMAND+7 = color 2
-*  COMMAND+8 = color 3
-*  COMMAND+9 = color 4
-*  COMMAND+0 = color 5
-
-*  [ = smaller brush  
-*  ] = bigger brush
-
-*  HOLD SHIFT WHILE DRAWING = straight lines
-
-*  HOLD COMMAND = move contents
-*  COMMAND+OPTION = scale contents
-
-*  HOLD OPTION = color pick
+* COMMAND+1 = light pencil
+* COMMAND+2 = pencil
+* COMMAND+3 = pen
+* COMMAND+4 = brush  
+* COMMAND+DELETE = clear
+* COMMAND+Z = undo
+* COMMAND+Y = redo  
+* COMMAND+6 = color 1
+* COMMAND+7 = color 2
+* COMMAND+8 = color 3
+* COMMAND+9 = color 4
+* COMMAND+0 = color 5  
+* [ = smaller brush
+* ] = bigger brush  
+* HOLD SHIFT WHILE DRAWING = straight lines  
+* HOLD COMMAND = move contents
+* COMMAND+OPTION = scale contents  
+* HOLD OPTION = color pick  
 
 ## FAQ
 
