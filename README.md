@@ -34,7 +34,7 @@ You can undo and redo.
 
 Made a big mistake? You can clear the whole thing.
 
-If its off center or too big or too small, you can shift your drawing around or scale it.
+If it's off center or too big or too small, you can shift your drawing around or scale it.
 
 Need a straight line? Hold shift while you're drawing and you got straight lines.
 
@@ -74,6 +74,6 @@ No problem, needy bruh. You can click a button to edit in photoshop, and when yo
 **"CHARLES, STORYBOARDER IS REVOLUTIONARY. PERHAPS BIGGER THAN JESUS AND WRESTLING. - Saul Bass"**  
 Fuck you, Saul Bass. Absolutely bigger than Jesus and wrestling. Also, your work output has really dropped off in recent years.
 
-**"HOW COME WHEN I'M DRAWING, I HEAR THE EMPERIAL MARCH?"**  
+**"HOW COME WHEN I'M DRAWING, I HEAR THE IMPERIAL MARCH?"**  
 You're probably boarding on the Simpsons. You might want to escape North Korea through China. If not shot crossing the river, you will probably be sold into slavery by the Chinese. Work for 5 years, buy your freedom and make your way to Seoul. This should fix your issue. You're welcome.
 
