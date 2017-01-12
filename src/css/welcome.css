@@ -1,0 +1,238 @@
+@font-face {
+  font-family: 'blenderpro';
+  src: url('../fonts/blenderpro/blenderpro-thin-webfont.woff') format('woff');
+  /* Pretty Modern Browsers */
+  font-weight: 400; }
+
+@font-face {
+  font-family: 'proximanova';
+  src: url('../fonts/proximanova/ProximaNova-Reg-webfont.woff') format('woff');
+  /* Pretty Modern Browsers */
+  font-weight: 400; }
+
+@font-face {
+  font-family: 'proximanova';
+  src: url('../fonts/proximanova/ProximaNova-Light-webfont.woff') format('woff');
+  /* Pretty Modern Browsers */
+  font-weight: 300; }
+
+@font-face {
+  font-family: 'proximanova';
+  src: url('../fonts/proximanova/ProximaNova-Bold-webfont.woff') format('woff');
+  /* Pretty Modern Browsers */
+  font-weight: 700; }
+
+@font-face {
+  font-family: 'proximanova';
+  src: url('../fonts/proximanova/proximanova-black-webfont.woff') format('woff');
+  /* Pretty Modern Browsers */
+  font-weight: 900; }
+
+@font-face {
+  font-family: 'courierprime';
+  src: url('../fonts/courierprime/courier-prime.ttf');
+  /* Pretty Modern Browsers */
+  font-weight: 200; }
+
+@font-face {
+  font-family: 'courierprimesans';
+  src: url('../fonts/courierprime/courier-prime-sans.ttf');
+  /* Pretty Modern Browsers */
+  font-weight: 200; }
+
+body { 
+  display: flex;
+  flex-direction: row;
+  margin: 0;
+  padding: 0;
+  color: white;
+  background: black;
+  background-size: cover;
+  font-family: 'proximanova';
+  font-weight: 300;
+  overflow: hidden;
+}
+
+body {
+  background: rgb(229,229,229);
+  user-select: none;
+  -webkit-user-select: none;
+  cursor:default;
+}
+
+#drag-handle {
+  position: absolute;
+  width: 100vw;
+  z-index: 600;
+  height: 200px;
+  -webkit-app-region: drag;
+  pointer-events: none;
+}
+
+iframe {
+  height: 100vh;
+}
+
+#close-button {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  padding: 20px;
+  opacity: 0.5;
+}
+
+#close-button:hover {
+  opacity: 0.8;
+}
+
+.title {
+  margin:  40px 0 0 40px;
+  display: flex;
+  flex-direction: row;
+  color: #3A3A3A;
+}
+
+.logo img {
+  width: 130px;
+}
+
+.title .text {
+  padding-left: 25px;
+  display: flex;
+  flex-direction: column;
+  align-items: left;
+  top: 30px;
+  position: relative;
+}
+
+.title .text div {
+  font-size: 15px;
+  margin: 0;
+  opacity: 0.5;
+}
+
+.title .text h1 {
+  font-size: 48px;
+  margin: -6px 0;
+  font-weight: 900;
+}
+
+.button {
+  background: rgb(200,200,200);
+  padding: 20px 20px;
+  position: relative;
+  margin: 20px;
+  bottom: 0;
+  border-radius: 10px;
+  font-weight: 400;
+  font-size: 18px;
+  transition: 300ms background;
+  box-sizing: border-box;
+  -webkit-app-region: initial;
+}
+
+.button.blue {
+  background: #5c88ec;
+}
+
+.button.blue:hover {
+  background: #59C4EA;
+}
+
+.button.grey:hover {
+  background: rgb(210,210,210);
+}
+
+
+.button.left {
+  float: left;
+}
+
+.button.right {
+  float: right;
+  margin-left: 0px;
+}
+
+.recent {
+  position: relative;
+  display: block;
+  font-size: 15px;
+  opacity: 0.5;
+  color: #3A3A3A;
+  margin: 15px 40px 5px 40px;
+}
+
+#recent {
+  height: 275px;
+  overflow: scroll;
+}
+
+.recent-item {
+  background: rgba(100,100,100,0.05);
+  display: flex;
+  flex-direction: row;
+  width: 600px;
+  padding: 10px 0;
+  color: rgba(0,0,0,0.4);
+  font-size: 13px;
+}
+
+.recent-item:nth-child(even) {
+  background: rgba(100,100,100,0.0);
+}
+
+.recent-item:hover {
+  background: #5c88ec;
+  color: rgba(255,255,255,0.6);
+
+}
+
+.recent-item:hover h2 {
+  color: rgba(255,255,255,1);
+
+}
+
+.recent-item img {
+  width: 40px;
+  height: 40px;
+  padding-left: 40px;
+  padding-right: 15px;
+  position: relative;
+  top: 3px;
+
+}
+
+h2 {
+  color: rgba(0,0,0,0.8);
+  margin: 0;
+  font-weight: 600;
+  font-size: 23px;
+
+}
+
+#welcome {
+  color: black;
+  margin: 0 40px;
+  font-size: 21px;
+  font-weight: 100;
+  opacity: 0.8;
+}
+
+#new-window {
+  color: #3A3A3A;
+  padding: 30px;
+}
+
+.flex-column {
+  display: flex;
+  flex-direction: row;
+}
+
+.column {
+  flex: 1;
+}
+
+#new-window .button {
+  width: 100%;
+  margin: 0;
+}

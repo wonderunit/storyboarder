@@ -1,0 +1,425 @@
+@font-face {
+  font-family: 'blenderpro';
+  src: url('../fonts/blenderpro/blenderpro-thin-webfont.woff') format('woff');
+  /* Pretty Modern Browsers */
+  font-weight: 400; }
+
+@font-face {
+  font-family: 'proximanova';
+  src: url('../fonts/proximanova/ProximaNova-Reg-webfont.woff') format('woff');
+  /* Pretty Modern Browsers */
+  font-weight: 400; }
+
+@font-face {
+  font-family: 'proximanova';
+  src: url('../fonts/proximanova/ProximaNova-Light-webfont.woff') format('woff');
+  /* Pretty Modern Browsers */
+  font-weight: 300; }
+
+@font-face {
+  font-family: 'proximanova';
+  src: url('../fonts/proximanova/ProximaNova-Bold-webfont.woff') format('woff');
+  /* Pretty Modern Browsers */
+  font-weight: 700; }
+
+@font-face {
+  font-family: 'courierprime';
+  src: url('../fonts/courierprime/courier-prime.ttf');
+  /* Pretty Modern Browsers */
+  font-weight: 200; }
+
+@font-face {
+  font-family: 'courierprimesans';
+  src: url('../fonts/courierprime/courier-prime-sans.ttf');
+  /* Pretty Modern Browsers */
+  font-weight: 200; }
+
+html {
+  height: 100%;
+}
+
+body { 
+  display: flex;
+  min-height: 100vh;
+  min-width: 100vw;
+  flex-direction: row;
+  margin: 0;
+  padding: 0;
+  color: white;
+  background: black;
+  background-size: cover;
+  font-family: 'proximanova';
+  font-weight: 300;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor:default;
+  -webkit-app-region: drag;
+}
+
+p, h1 { 
+  margin: 0;
+}
+
+#outline {
+  height: 100vh;
+  background: rgba(0,0,0,1);
+  min-width: 200px;
+  width: 200px;
+  overflow-y: scroll;
+    -webkit-app-region: no-drag;
+
+}
+
+#outline div {
+  display: block;
+  background: grey;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  border-bottom: 1px solid rgba(0,0,0,0.1);
+  padding: 5px;
+}
+
+#outline .node {  
+  opacity: 0.7;
+}
+#outline .node:hover {  
+  opacity: 1;
+}
+
+#outline-spacer {
+  background: black !important;
+  border: 0 !important;
+  height: 25px;
+}
+
+#outline-gradient {
+  position: fixed;
+  top: 0px;
+  width: 200px;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.6) 0%,rgba(0,0,0,0) 100%) !important;
+  border: 0 !important;
+  height: 70px;
+  z-index: 999;
+  padding: 0 !important;
+  pointer-events: none;
+   -webkit-app-region: drag;
+}
+
+
+#outline .title {
+  background: black;
+  font-size: 22px;
+  font-weight: 700;
+  border: 0;
+}
+
+#outline .title .title-text {
+  display: block;
+}
+
+#outline .title .author {
+  font-size: 12px;
+  opacity: 0.4;
+  font-weight: 300;
+  display: block;
+
+}
+
+#outline .section {
+  background: black;
+  font-size: 14px;
+  font-weight: 700;
+  border: 0;
+  color: rgba(255,255,255,0.6);
+}
+
+#outline .scene {
+  padding-top: 9px;
+  padding-bottom: 9px;
+}
+
+#outline .scene .slugline {
+  font-size: 10px;
+  display: block;
+  color: rgba(255,255,255,1);
+  opacity: 0.6
+}
+
+#content {
+  background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.3) 64%, rgba(0,0,0,0.6) 100%);
+  padding: 50px;
+  flex: 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  text-shadow: rgb(0,0,0) 0 1px 0;
+}
+
+#content .script-content {
+  font-family: 'courierprime','Courier New';
+  font-weight: 300;
+  font-size: 23px;
+  line-height: 35px;
+  min-height: 250px;
+  margin-bottom: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: top;
+}
+
+@media only screen and (min-width:1200px){
+
+
+  #content .script-content {
+    align-items: center;
+  }
+
+
+  #content .script-content .content-line {
+    width: 900px;
+  } 
+
+  #content .script-content .slugline {
+    width: 900px;
+  } 
+
+
+
+}
+
+
+
+#content .script-content .slugline {
+  opacity: 0.8;
+  font-size: 18px;
+  margin-bottom: 20px;
+} 
+
+#content .script-content .credit {
+  opacity: 0.8;
+  font-size: 18px;
+  margin-bottom: 20px;
+  line-height: 10px;
+}
+
+
+#controls {
+  background-color: rgba(255,255,255,0.2);
+  border-radius: 7px;
+  height: 180px;
+  display: flex;
+  flex-direction: column;
+  -webkit-app-region: no-drag;
+}
+
+#controls #scene-timeline {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  align-content: center;
+  justify-content: center;
+
+}
+
+
+#controls #scene-timeline #scene-timeline-content {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+  padding-top: 50px;
+
+}
+
+#controls #scene-timeline #scene-timeline-content div {
+  background: rgba(255,255,255,0.2);
+  display: block;
+  font-size: 1px;
+  height: 7px;
+  border-radius: 5px;
+  position: relative;
+  box-shadow: 0 1px 0 rgba(0,0,0,0.3);
+}
+
+#controls #scene-timeline #scene-timeline-content div.action {
+  background: rgba(255,255,255,0.4);
+}
+
+#controls #scene-timeline #scene-timeline-content div.character {
+  background: rgba(255,255,255,0.6);
+}
+
+#controls #scene-timeline #scene-timeline-content div.primary {
+  background: rgba(100,255,255,0.6);
+}
+#controls #scene-timeline #scene-timeline-content div.secondary {
+  background: rgba(255,100,255,0.6);
+}
+#controls #scene-timeline #scene-timeline-content div.thirdary {
+  background: rgba(255,255,100,0.6);
+}
+#controls #scene-timeline #scene-timeline-content div.fourthary {
+  background: rgba(100,255,100,0.6);
+}
+
+#controls #scene-timeline #scene-timeline-content div.parenthetical {
+  background: rgba(255,255,255,0.3);
+}
+
+
+
+#controls #scene-timeline #scene-timeline-content span {
+  font-size: 10px;
+  display: block;
+  position: absolute;
+  top: -12px;
+  left: 4px;
+  opacity: 0.5;
+  width: calc(100% - 8px);
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+#controls #scene-timeline #scene-timeline-content .character span {
+  width: 100px;
+  opacity: 0.7;
+}
+
+#controls #movie-timeline {
+  height: 10px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  align-content: center;
+  justify-content: center;
+
+}
+
+#controls #movie-timeline #movie-timeline-content {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+
+}
+
+#controls #movie-timeline #movie-timeline-content div {
+  background: rgba(255,255,255,0.2);
+  display: block;
+  font-size: 1px;
+  height: 100%;
+  box-shadow: 0 1px 0 rgba(0,0,0,0.3);
+}
+
+#controls #movie-timeline #movie-timeline-content div:nth-child(even) {
+    background: rgba(255,255,255,0.4);
+}
+
+#controls #movie-timeline #movie-timeline-content div:nth-child(2) {
+    border-radius: 5px 0 0 5px;
+}
+
+#controls #movie-timeline #movie-timeline-content div:last-child {
+    border-radius: 0 5px 5px 0;
+}
+
+#controls div.marker-holder {
+  position: absolute;
+  background-color: red !important;
+  width: 0px;
+  height: 0px !important;
+}
+
+#controls #movie-timeline .marker {
+  position: absolute;
+  background-color: rgba(255,255,255,0.7) !important;
+  width: 5px;
+  height: 20px !important;
+  top: -5px;
+  left: 0px;
+  z-index: 999;
+  border-radius: 5px !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.7);
+  transition: left 0.3s;
+
+}
+
+#controls #scene-timeline .marker {
+  position: absolute;
+  background-color: rgba(255,255,255,0.7) !important;
+  width: 5px;
+  height: 70px !important;
+  top: -5px;
+  left: 0px;
+  z-index: 999;
+  border-radius: 5px !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.7);
+  transition: left 0.3s;
+}
+
+
+
+#controls .left-block, #controls .right-block {
+  width: 40px;
+  padding: 0 10px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  align-content: center;
+  justify-content: center;
+  opacity: 0.5;
+}
+
+#controls #playback {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  align-content: center;
+  justify-content: center;
+  padding: 5px 10px;
+  height: 50px;
+}
+
+#controls #playback #left-stats {
+  font-size: 10px;
+  width: 200px;
+  opacity: 0.5;
+  left: 15px;
+  position: relative;
+}
+
+#controls #playback #right-stats {
+  font-size: 10px;
+  width: 200px;
+  opacity: 0.5;
+  text-align: right;
+  right: 15px;
+  position: relative;
+}
+
+#controls #playback #icons {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  align-content: center;
+  justify-content: center;
+
+}
+
+#controls #playback svg {
+  fill: rgba(255,255,255,0.5);
+  width: 25px;
+  height: 40px;
+  margin: 0 10px;
+  filter: drop-shadow( 0 1px 1px rgba(0,0,0,0.4) );
+}
+
+#controls #playback svg:hover {
+  fill: rgba(255,255,255,0.8);
+}
+
+#content img {
+  width: 100%;
+  margin-bottom: 100px;
+}
+

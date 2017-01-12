@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="./css/sketchpane.css">
+  </head>
+  <body>
+
+  <div id="drawing-toolbar">
+    
+
+    <div class="button" title="Pencil [P]" id="light-pencil">Light</div>
+    <div class="button" title="Pencil [P]" id="pencil">Pencil</div>
+    <div class="button" id="pen">Pen</div>
+    <div class="button" id="brush">Brush</div>
+    <div class="button" id="eraser">Eraser</div>
+    
+    <div class="spacer"></div>
+
+    <div class="button" id="fill-white">Fill white</div>
+    <div class="button" id="fill-black">Fill black</div>
+     
+    <div class="spacer"></div>
+
+    <div class="button" id="move-contents">Move contents</div>
+    <div class="button" id="scale-contents">Scale contents</div>
+
+    <div class="spacer"></div>
+    
+    <div class="button" id="undo">Undo</div>
+    <div class="button" id="redo">Redo</div>
+
+    <div class="spacer"></div>
+
+    <div class="button" id="color-blue">Blue</div>
+    <div class="button" id="color-black">Black</div>
+    <div class="button" id="color-grey">Grey</div>
+    <div class="button" id="color-white">White</div>
+
+
+    <div class="spacer"></div>
+
+    <div class="button" id="color-blue">Brush Small</div>
+    <div class="button" id="color-black">Brush Medium</div>
+    <div class="button" id="color-grey">Brush Large</div>
+
+  </div>
+
+  <div style="width:80vw;height:80vh;position: relative;display: block;">
+    <canvas id="board-canvas" width="1422" height="800" style="background: white; width:100%; height: auto;  position: absolute; top: 0; left: 0;">
+    </canvas>
+    <canvas id="drawing-canvas" width="1422" height="800" style="width:100%; height: auto; position: absolute; top: 520; left: 0;">
+    </canvas>
+  </div>
+  </body>
+  <script type="text/javascript" src="../node_modules/jquery/dist/jquery.min.js"></script>
+
+  <script>
+    window.nodeRequire = require;
+    delete window.require;
+    delete window.exports;
+    delete window.module;
+  </script>
+  
+  <script>
+    nodeRequire('./js/sketchwindow.js')
+  </script>
+
+
+  
+</html>

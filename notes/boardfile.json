@@ -1,0 +1,27 @@
+{
+  "aspectRatio": 2.333,
+  "fps": 24,
+  "stats": {
+    "totalTime": 34.12,
+    "boardCount": 12,
+    "shotCount": 5,
+    "avgLineMileage": 34.13,
+    "lastEdited": 341238719,
+    "outstandingNotes": 5
+  },
+  "boards": [
+    {
+      "uid": "'12341vsdvsdf'",
+      "url": "'board1.png'",
+      "newShot": true,
+      "timing": 2.000,
+      "dialogue": "'RYAN: Hi How are you?'",
+      "action": "''",
+      "fx": "''",
+      "lineMileage": 34,
+      "lastEdited": 1231234234,
+      "notes": "'Fix this thing asap'",
+
+    }
+  ]
+}

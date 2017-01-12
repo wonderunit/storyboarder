@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Outline Display</title>
+    <link rel="stylesheet" href="./css/main.css">
+  </head>
+  <body>
+  <div id="outline"></div>
+  
+  <div id="content">
+    <!-- <img src="image.jpg"> -->
+
+    <div class="script-content">
+      <div class="slugline"></div>
+      <div class="content-line"></div>
+    </div>
+
+    <div id="controls">
+
+      <div id="scene-timeline">
+        <div class="left-block"></div>
+        <div id="scene-timeline-content">
+
+        </div>
+        <div class="right-block"></div>
+      </div>
+
+      <div id="movie-timeline">
+        <div class="left-block"></div>
+        <div id="movie-timeline-content">
+        </div>
+        <div class="right-block"></div>
+      </div>
+
+      <div id="playback">
+        <div id="left-stats">
+        </div>
+        <div id="icons">
+          <svg aria-hidden="true">
+            <use xlink:href="./img/button-speaker.svg#Layer_9"></use>
+          </svg>
+          <svg aria-hidden="true">
+            <use xlink:href="./img/button-prevscene.svg#Layer_6"></use>
+          </svg>
+          <svg aria-hidden="true">
+            <use xlink:href="./img/button-prev.svg#Layer_2"></use>
+          </svg>
+          <svg aria-hidden="true">
+            <use xlink:href="./img/button-play.svg#Layer_1"></use>
+          </svg>
+          <svg aria-hidden="true">
+            <use xlink:href="./img/button-next.svg#Layer_3"></use>
+          </svg>
+          <svg aria-hidden="true">
+            <use xlink:href="./img/button-nextscene.svg#Layer_5"></use>
+          </svg>
+          <svg aria-hidden="true">
+            <use xlink:href="./img/button-loop.svg#Layer_7"></use>
+          </svg>
+        </div>
+        <div id="right-stats">
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  </body>
+
+  <script>
+    window.nodeRequire = require;
+    delete window.require;
+    delete window.exports;
+    delete window.module;
+  </script>
+  
+  <script type="text/javascript" src="../node_modules/jquery/dist/jquery.min.js"></script>
+  <script type="text/javascript" src="./js/app.js"></script>
+  <script>
+    nodeRequire('./js/outlineWindow.js')
+  </script>
+</html>

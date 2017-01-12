@@ -1,0 +1,154 @@
+TODO
+    
+  Make sure boards are being saved in the right place
+  New board should go after current frame, and advanced to it
+  Style thumb drawer currectly size correctly
+  Show empty thumb as white
+  Update thumbs as drawing
+  Style selected thumb
+  Click to select right thumb
+  scroll to correct thumb
+  click drag scrolling
+  Delete board working
+  Duplicate Board
+  Onion skin
+  Start drawing outside of the canvas
+  Show in finder button
+  When going to a scene reset the current board
+  Fix drag area
+  
+  -=-=-=-=-=-=-=-=-=-=-
+
+  reset back to initial count if timeout for a while
+  put a throttle on rollover sfx
+  harder rollover to match sfx
+  add down state
+  load fountain file
+  get metadata
+  load ui of mainwindow
+    hide scenes and script at first
+    drag bar
+    sketch pane
+      placement
+      zooming
+    thumbnail drawer
+    scenes
+    script
+    toolbar
+
+  load fountain file
+    watch for changes?
+  check for scene ids
+  if none, create and save
+  go through each scene and check for boards
+  if exist mark it
+  get all scenes
+  display scenes
+  load last scene
+  load script
+  display script
+  load storyboarder file
+
+
+  if board doesnt exist, create one
+  load first image in sketchpane
+  load all boards into board drawer
+
+  load ui for:
+    toolbar
+      hook up buttons
+      color system
+      brush size system
+        hold option to pick color
+    sidebar
+    drawer
+    timeline
+    playback
+
+  storyboard methods for:
+    adding board
+    deleting board
+    duplicating board
+    cut
+    copy
+    rearrange
+    importing boards
+
+  sketchpane
+    start drawing in margins
+    zooming and panning with drawing working
+
+  playback
+    read dialogue with robot voice?
+
+  guides
+    drawing for each guide:
+      grid
+      mid point
+      thirds
+      1 point
+      2 pont
+      3 point
+
+  hold shift to follow guidelines
+
+  onion skin
+
+  help menu
+
+  tooltips
+
+  button to show board in finder
+  button to open board in photoshop
+
+  present/pitch mode
+
+  print storyboard worksheet
+    dailogue box with all settings
+      rows x columns
+      paper size
+      aspect ratio
+      script in margins?
+    printing on mac is easy
+    printing on windows ()
+  import worksheet
+    window for crop error
+    window for qr error
+
+  save recent files properly in the prefs
+  make sure welcome metadata is added/displayed correctly
+
+  fix pen interactions on ui
+
+  -=-=-=-
+
+
+
+  notes / track changes
+
+  note pen
+
+  note text area
+
+  save notes, board, and reference board
+
+
+  image copy and paste
+
+  exports:
+    export scene script based on boards and info
+    export board contact sheet pdf
+    export edl
+    export xml
+    export ordered list to boards in txt
+    export gif
+    export a video
+    export images in order and a html player?
+
+  estimation on how many boards left
+
+  use board as a guide
+
+  canvas, save margin overruns?
+  fix pen input smoothing
+  remove pen delay    

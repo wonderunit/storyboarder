@@ -1,0 +1,514 @@
+/* TODO:
+
+
+
+*/
+
+const {app, ipcMain, BrowserWindow, globalShortcut, dialog, powerSaveBlocker} = electron = require('electron')
+const PDFParser = require("pdf2json");
+const fs = require('fs')
+
+const prefModule = require('./prefs')
+
+const fountain = require('./vendor/fountain')
+const fountainDataParser = require('./fountain-data-parser')
+const fountainSceneIdUtil = require('./fountain-scene-id-util')
+
+let welcomeWindow
+let newWindow
+
+let mainWindow
+let sketchWindow
+let welcomeInprogress
+
+let statWatcher 
+
+let powerSaveId = 0
+
+let previousScript
+
+let prefs = prefModule.getPrefs()
+
+let currentFile
+let currentPath
+
+app.on('ready', ()=> {
+  // open the welcome window when the app loads up first
+  openWelcomeWindow()
+})
+
+app.on('activate', ()=> {
+  if (!mainWindow && !welcomeWindow) openWelcomeWindow()
+})
+
+let openNewWindow = () => {
+  if (!newWindow) {
+    newWindow = new BrowserWindow({width: 600, height: 580, show: false, parent: welcomeWindow, resizable: false, frame: false, modal: true})
+    newWindow.loadURL(`file://${__dirname}/../new.html`)
+    newWindow.once('ready-to-show', () => {
+      newWindow.show()
+    })
+  }
+  newWindow.show()
+}
+
+let openWelcomeWindow = ()=> {
+  // RESET PREFS - SHOULD BE COMMENTED OUT
+  // console.log(prefs)
+  // prefs = {scriptFile: `./outl3ine.txt`}
+  // prefModule.savePrefs(prefs)
+  welcomeWindow = new BrowserWindow({width: 900, height: 600, show: false, resizable: false, frame: false})
+  welcomeWindow.loadURL(`file://${__dirname}/../welcome.html`)
+
+  newWindow = new BrowserWindow({width: 600, height: 580, show: false, parent: welcomeWindow, resizable: false, frame: false, modal: true})
+  newWindow.loadURL(`file://${__dirname}/../new.html`)
+
+  let recentDocumentsCopy
+  if (prefs.recentDocuments) {
+    let count = 0
+    recentDocumentsCopy = prefs.recentDocuments
+    for (var recentDocument of prefs.recentDocuments) {
+      try {
+        fs.accessSync(recentDocument.filename, fs.F_OK);
+      } catch (e) {
+        // It isn't accessible
+        console.log('error file no longer exists.')
+        recentDocumentsCopy.splice(count, 1)
+      }
+      count++
+    }
+    prefs.recentDocuments = recentDocumentsCopy
+  }
+  global.sharedObj = {'prefs': prefs}
+  
+  welcomeWindow.once('ready-to-show', () => {
+    setTimeout(()=>{welcomeWindow.show()}, 300)
+  })
+
+  welcomeWindow.once('close', () => {
+    welcomeWindow = null
+    if (!welcomeInprogress) {
+      app.quit()
+    } else {
+      welcomeInprogress = false
+    }
+  })
+}
+
+
+let openFile = (file) => {
+  let arr = file.split('/')
+  let filename = arr[arr.length-1]
+  let filenameParts =filename.toLowerCase().split('.')
+  let type = filenameParts[filenameParts.length-1]
+  if (type == 'storyboarder') {
+    /// LOAD STORYBOARDER FILE
+    addToRecentDocs(file, {
+      boards: 2,
+      time: 3000,
+    })
+    loadStoryboarderWindow(file)
+  } else if (type == 'fountain') {
+    /// LOAD FOUNTAIN FILE
+    fs.readFile(file, 'utf-8', (err,data)=>{
+      sceneIdScript = fountainSceneIdUtil.insertSceneIds(data)
+      if (sceneIdScript[1]) {
+        dialog.showMessageBox({
+          type: 'info',
+          message: 'We added scene IDs to your fountain script.',
+          detail: "Scene IDs are what we use to make sure we put the storyboards in the right place. If you have your script open in an editor, you should reload it. Also, you can change your script around as much as you want, but please don't change the scene IDs.",
+          buttons: ['OK']
+        })
+        fs.writeFileSync(file, sceneIdScript[0])
+        data = sceneIdScript[0]
+      }
+
+      // check for storyboards directory
+      let storyboardsPath = file.split('/')
+      storyboardsPath.pop()
+      storyboardsPath = storyboardsPath.join('/') + '/storyboards'          
+      if (!fs.existsSync(storyboardsPath)){
+        fs.mkdirSync(storyboardsPath)
+      }
+
+      currentFile = file
+      currentPath = storyboardsPath
+
+      // check for storyboard.settings file
+      let boardSettings
+      if (!fs.existsSync(storyboardsPath + '/storyboard.settings')){
+        // pop dialogue ask for aspect ratio
+        dialog.showMessageBox({
+          type: 'question',
+          buttons: ['Ultrawide: 2.39:1','Doublewide: 2.00:1','Wide: 1.85:1','HD: 16:9','Vertical HD: 9:16','Square: 1:1','Old: 4:3'],
+          defaultId: 3,
+          title: 'Which aspect ratio?',
+          message: 'Which aspect ratio would you like to use?',
+          detail: 'The aspect ratio defines the size of your boards. 2.35 is the widest, like what you would watch in a movie. 16x9 is what you would watch on a modern TV. 4x3 is what your grandpops watched back when screens flickered and programming was wholesome.',
+        }, (response)=>{
+          boardSettings = {lastScene: 0}
+          let aspects = [2.39, 2, 1.85, 1.7777777777777777, 0.5625, 1, 1.3333333333333333]
+          boardSettings.aspectRatio = aspects[response]
+          fs.writeFileSync(storyboardsPath + '/storyboard.settings', JSON.stringify(boardSettings))
+
+          //[scriptData, locations, characters, metadata]
+          let processedData = processFountainData(data, true, false)
+          addToRecentDocs(currentFile, processedData[3])
+          loadStoryboarderWindow(null, processedData[0], processedData[1], processedData[2], boardSettings, currentPath)
+
+        })
+      } else {
+        boardSettings = JSON.parse(fs.readFileSync(storyboardsPath + '/storyboard.settings'))
+        if (!boardSettings.lastScene) { boardSettings.lastScene = 0 }
+
+        //[scriptData, locations, characters, metadata]
+        let processedData = processFountainData(data, true, false)
+        addToRecentDocs(currentFile, processedData[3])
+        loadStoryboarderWindow(null, processedData[0], processedData[1], processedData[2], boardSettings, currentPath)
+
+
+      }
+
+    })
+  }
+}
+
+let openDialogue = () => {
+  dialog.showOpenDialog({title:"Open Script", filters:[
+      {name: 'Screenplay', extensions: ['fountain']},
+      {name: 'Storyboarder', extensions: ['storyboarder']}
+    ]}, (filenames)=>{
+      if (filenames) {
+        openFile(filenames[0])
+      }
+  })
+}
+
+// function loadFile(create, update) {
+//   if (update == true) {
+//     previousScript = global.sharedObj['scriptData']
+//   }
+
+//   let filenameParts = prefs.scriptFile.toLowerCase().split('.')
+//   let type = filenameParts[filenameParts.length-1]
+//   if (type == 'pdf') {
+//     let pdfParser = new PDFParser();
+    
+//     pdfParser.on("pdfParser_dataError", errData => console.error(errData.parserError) );
+
+//     pdfParser.on('pdfParser_dataReady', pdfData => {
+//       let pages = pdfData['formImage']['Pages']
+//       let scriptText = ''
+//       let currentX = 0
+//       for (var page of pages) {
+//         let texts = page['Texts']
+//         let currentY = -1
+//         let textCount = 0
+//         for (var text of texts) {
+//           if (textCount == 0) {
+//             if ((text['x'] !== currentX)) {
+//               scriptText += "\n\n"
+//             }
+//             scriptText += decodeURIComponent(text['R'][0]['T'])
+//             currentX = text['x']
+//           } else {
+//             if ((text['y'] - currentY) > 1) {
+//               // new line
+//               scriptText += "\n\n"
+//             } else if (text['y'] == currentY) {
+//             } else if (text['y'] < currentY) { 
+//               break
+//             } else {
+//               if ((text['x'] !== currentX) && (text['x'] > 10.17)) {
+//                 scriptText += "\n"
+//               }
+//             }
+//             scriptText += decodeURIComponent(text['R'][0]['T'])
+//             currentX = text['x']
+//           }
+//           currentY = text['y']
+//           textCount++
+//         }
+//       }
+//       processFountainData(scriptText, create, update)
+//       pdfParser.destroy()
+//     })
+
+//     pdfParser.loadPDF(prefs.scriptFile);
+
+//   } else if (type == 'fountain') {
+//     fs.readFile(prefs.scriptFile, 'utf-8', (err,data)=>{
+//       if (err) {
+//         console.log("ERROR: Can't open file.")
+//         openFile()
+//         return
+//       }
+//       processFountainData(data, create, update)
+//     })
+//   }
+// }
+
+let processFountainData = (data, create, update) => {
+  let scriptData = fountain.parse(data, true)
+  let locations = fountainDataParser.getLocations(scriptData.tokens)
+  let characters = fountainDataParser.getCharacters(scriptData.tokens)
+  scriptData = fountainDataParser.parse(scriptData.tokens)
+
+  let metadata = {type: 'script', sceneBoardsCount: 0, sceneCount: 0, totalMovieTime: 0}
+
+  let boardsDirectoryFolders = fs.readdirSync(currentPath).filter(function(file) {
+    return fs.statSync(currentPath + '/' + file).isDirectory();
+  });
+
+  for (var node of scriptData) {
+    switch (node.type) {
+      case 'title':
+        metadata.title = node.text.replace(/<(?:.|\n)*?>/gm, '')
+        break
+      case 'scene':
+        metadata.sceneCount++
+        let id = node.scene_id.split('-')
+        if (id.length>1) {
+          id = id[1]
+        } else {
+          id = id[0]
+        }
+        for (var directory in boardsDirectoryFolders) {
+          if (directory.includes(id)) {
+            metadata.sceneBoardsCount++
+            // load board file and get stats and shit
+            break
+          }
+        }
+        break 
+    }
+  }
+
+  switch (scriptData[scriptData.length-1].type) {
+    case 'section':
+      metadata.totalMovieTime = scriptData[scriptData.length-1].time + scriptData[scriptData.length-1].duration
+      break
+    case 'scene':
+      let lastNode = scriptData[scriptData.length-1]['script'][scriptData[scriptData.length-1]['script'].length-1]
+      metadata.totalMovieTime = lastNode.time + lastNode.duration
+      break
+  }    
+
+  if (create) {
+    fs.watchFile(currentFile, {persistent: false}, (e) => {
+      console.log("TODO SHOULD LOAD FILE")
+      //loadFile(false, true)
+    })
+  }
+
+  if (update) {
+    //let diffScene = getSceneDifference(previousScript, global.sharedObj['scriptData'])
+    mainWindow.webContents.send('updateScript', 1)//, diffScene)
+  }
+
+  return [scriptData, locations, characters, metadata]
+}
+
+let getSceneDifference = (scriptA, scriptB) => {
+  let i = 0
+  for (var node of scriptB) {
+    if(!scriptA[i]) {
+      return i
+    }
+    if (JSON.stringify(node) !== JSON.stringify(scriptA[i])) {
+      return i
+    }    
+    i++
+  }
+  return false
+}
+
+
+////////////////////////////////////////////////////////////
+// new functions
+////////////////////////////////////////////////////////////
+
+let createNew = () => {
+  dialog.showSaveDialog({
+    title:"New storyboard",
+    buttonLabel: "Create", 
+  }, 
+  (filename)=>{
+    if (filename) {
+      console.log(filename)
+      let arr = filename.split('/')
+      let boardName = arr[arr.length-1]
+      if (!fs.existsSync(filename)){
+        fs.mkdirSync(filename)
+        dialog.showMessageBox({
+          type: 'question',
+          buttons: ['Ultrawide: 2.39:1','Doublewide: 2.00:1','Wide: 1.85:1','HD: 16:9','Vertical HD: 9:16','Square: 1:1','Old: 4:3'],
+          defaultId: 3,
+          title: 'Which aspect ratio?',
+          message: 'Which aspect ratio would you like to use?',
+          detail: 'The aspect ratio defines the size of your boards. 2.35 is the widest, like what you would watch in a movie. 16x9 is what you would watch on a modern TV. 4x3 is what your grandpops watched back when screens flickered and programming was wholesome.',
+        }, (response)=>{
+          let newBoardObject = {
+            aspectRatio: 2.333,
+            fps: 24,
+            defaultBoardTiming: 2000,
+            boards: []
+          }
+          let aspects = [2.39, 2, 1.85, 1.7777777777777777, 0.5625, 1, 1.3333333333333333]
+          newBoardObject.aspectRatio = aspects[response]
+          fs.writeFileSync(filename + '/' + boardName + '.storyboarder', JSON.stringify(newBoardObject))
+          fs.mkdirSync(filename + '/images')
+          loadStoryboarderWindow(filename + '/' + boardName + '.storyboarder')
+        })
+      } else {
+        console.log("error: already exists")
+      }
+    }
+  })
+}
+
+let loadStoryboarderWindow = (filename, scriptData, locations, characters, boardSettings, currentPath) => {
+  if (welcomeWindow) {
+    welcomeWindow.hide()
+  }
+  if (newWindow) {
+    newWindow.hide()
+  }
+  mainWindow = new BrowserWindow({acceptFirstMouse: true, backgroundColor: '#333333', width: 1300, height: 1000, minWidth: 1024, minHeight: 600, show: false, resizable: true, titleBarStyle: 'hidden-inset', webPreferences: {experimentalFeatures: true, devTools: true} })
+  mainWindow.loadURL(`file://${__dirname}/../main-window.html`)
+
+  mainWindow.once('ready-to-show', () => {
+    mainWindow.webContents.send('load', [filename, scriptData, locations, characters, boardSettings, currentPath])
+  })
+
+  mainWindow.once('close', () => {
+    if (welcomeWindow) {
+      welcomeWindow.webContents.send('updateRecentDocuments')
+      welcomeWindow.show()      
+    }
+  })
+}
+
+let addToRecentDocs = (filename, metadata) => {
+  if (!prefs.recentDocuments) {
+    prefs.recentDocuments = []
+  }
+
+  let currPos = 0
+
+  for (var document of prefs.recentDocuments) {
+    if (document.filename == filename) {
+      prefs.recentDocuments.splice(currPos, 1)
+      break
+    }
+    currPos++
+  }
+
+  let recentDocument = metadata
+
+  if (!recentDocument.title) {
+    let title = filename.split('/')
+    title = title[title.length-1]
+    title = title.split('.')
+    title.splice(-1,1)
+    title = title.join('.')
+    recentDocument.title = title
+  }
+
+  recentDocument.filename = filename
+  recentDocument.time = Date.now()
+  prefs.recentDocuments.unshift(recentDocument)
+  // save
+  prefModule.savePrefs(prefs)
+  global.sharedObj.prefs = prefs
+}
+
+////////////////////////////////////////////////////////////
+// ipc passthrough
+////////////////////////////////////////////////////////////
+
+//////////////////
+// Main Window 
+//////////////////
+
+ipcMain.on('newBoard', (e, arg)=> {
+  mainWindow.webContents.send('newBoard')
+})
+
+ipcMain.on('goPreviousBoard', (e, arg)=> {
+  mainWindow.webContents.send('goPreviousBoard')
+})
+
+ipcMain.on('goNextBoard', (e, arg)=> {
+  mainWindow.webContents.send('goNextBoard')
+})
+
+
+//////////////////
+// Welcome Window 
+//////////////////
+
+
+ipcMain.on('openFile', (e, arg)=> {
+  openFile(arg)
+})
+
+ipcMain.on('openDialogue', (e, arg)=> {
+  openDialogue()
+})
+
+ipcMain.on('createNew', (e, arg)=> {
+  createNew()
+})
+
+ipcMain.on('openNewWindow', (e, arg)=> {
+  openNewWindow()
+})
+
+ipcMain.on('preventSleep', ()=> {
+  powerSaveId = powerSaveBlocker.start('prevent-display-sleep')
+})
+
+ipcMain.on('resumeSleep', ()=> {
+  powerSaveBlocker.stop(powerSaveId)
+})
+
+/// menu pass through
+
+ipcMain.on('togglePlayback', (event, arg)=> {
+  mainWindow.webContents.send('togglePlayback')
+})
+
+ipcMain.on('goBeginning', (event, arg)=> {
+  mainWindow.webContents.send('goBeginning')
+})
+
+ipcMain.on('goPreviousScene', (event, arg)=> {
+  mainWindow.webContents.send('goPreviousScene')
+})
+
+ipcMain.on('goPrevious', (event, arg)=> {
+  mainWindow.webContents.send('goPrevious')
+})
+
+ipcMain.on('goNext', (event, arg)=> {
+  mainWindow.webContents.send('goNext')
+})
+
+ipcMain.on('goNextScene', (event, arg)=> {
+  mainWindow.webContents.send('goNextScene')
+})
+
+ipcMain.on('toggleSpeaking', (event, arg)=> {
+  mainWindow.webContents.send('toggleSpeaking')
+})
+
+ipcMain.on('playsfx', (event, arg)=> {
+  if (welcomeWindow) {
+    welcomeWindow.webContents.send('playsfx', arg)
+  }
+})
+
+ipcMain.on('test', (event, arg)=> {
+  console.log('test', arg)
+})

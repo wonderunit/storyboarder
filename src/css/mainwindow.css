@@ -1,0 +1,330 @@
+body { 
+  margin: 0;
+  padding: 0;
+  color: black;
+  font-family: 'proximanova';
+  font-weight: 300;
+  background: #333333;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor:default;
+  display: flex;
+  flex-direction: row;
+  min-height: 100vh;
+}
+
+#drag-handle {
+  position: absolute;
+  width: 100vw;
+  z-index: 600;
+  height: 200px;
+  -webkit-app-region: drag;
+  pointer-events: none;
+}
+
+#scenes {
+  min-width: 200px;
+  max-width: 200px;
+  display: none;
+  overflow: scroll;
+  height: 100vh;
+  box-shadow: 0px 0px 2px rgba(0,0,0,0.3);
+  z-index: 999;
+  background: #333;
+
+}
+
+#scenes div.node:nth-child(2) {
+  padding-top: 45px;
+}
+
+
+#scenes .node {
+  color: rgba(255,255,255,0.6);
+  font-size: 13px;
+  padding: 15px;
+  border-top: 1px solid rgba(255,255,255,0.05);
+  border-bottom: 1px solid rgba(0,0,0,.05);
+  border-right: 1px solid rgba(0,0,0,.1);
+
+}
+
+#scenes .node * {
+     pointer-events: none;
+}
+
+#scenes .scene:hover {
+
+}
+
+
+
+#scenes .node .number {
+  color: rgba(255,255,255,0.4);
+  font-size: 10px;
+}
+
+#scenes .node .slugline {
+  font-size: 10px;
+  font-weight: 700;
+}
+
+
+
+#scenes .section {
+  font-size: 10px;
+  background: #333;
+  font-weight: 700;
+}
+
+#script {
+  background: #444;
+  width: 200px;
+  display: none;
+  overflow: scroll;
+  height: 100vh;
+  border-right: 1px solid rgba(0,0,0,0.1);
+
+}
+
+#script .item {
+  color: rgba(255,255,255,0.6);
+  font-size: 13px;
+  padding: 15px;
+  border-top: 1px solid rgba(255,255,255,0.05);
+  border-bottom: 1px solid rgba(0,0,0,.05);
+}
+
+#script .item.slugline {
+  font-size: 10px;
+  font-weight: 700;
+}
+
+#script .item.transition {
+  font-size: 10px;
+  font-weight: 700;
+}
+
+#script .item.slugline .number {
+  font-size: 10px;
+  font-weight: 100;
+}
+
+#script .item.slugline .synopsis {
+  font-size: 13px;
+  font-weight: 100;
+  margin-top: 10px;
+}
+
+#script .item.slugline .duration {
+  margin-top: 10px;
+}
+
+#script .item .dialogue {
+  font-weight: 500;
+  color: rgba(255,255,255,0.9);
+  text-shadow: 0px 1px 0 rgba(0,0,0,0.3);
+}
+
+#script .item:hover {
+  background: #555;
+}
+
+
+#storyboarder-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+#toolbar {
+  -webkit-app-region: drag;
+  padding: 10px;
+
+}
+
+#toolbar .group {
+  background-color: #444;
+  float: left;
+  border-radius: 8px;
+  margin-left: 10px;
+  padding: 6px;
+  box-shadow: inset 0 -4px 0px rgba(0,0,0,0.2), inset 0 1px 1px rgba(255,255,255,0.2), 0 2px 2px rgba(0,0,0,0.3);
+}
+
+
+
+#toolbar .button {
+  /*background-color: #444;*/
+  float: left;
+  border-radius: 5px;
+  margin-left: 2px;
+  padding: 15px;
+}
+
+#toolbar .icon {
+  width: 35px;
+  height: 35px;
+  --color1: #888;
+  --color2: #555;
+  filter: drop-shadow( 0px 1px 0px rgba(0,0,0,0.3) );
+}
+
+
+#sketch-body {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+}
+
+#thumbnail-container {
+  position: relative;
+  height: 100px;
+  width: 100%;
+  overflow: scroll;
+  scroll-behavior: smooth;
+  webkit-overflow-scrolling: touch;
+/*
+    scroll-behavior: smooth; // Added in from answer from Felix
+    overflow: scroll;*/
+
+}
+
+
+#thumbnail-drawer {
+
+
+  overflow: hidden;
+  white-space: nowrap;
+/*  width: 100vw;
+*/  padding: 10px;
+  box-sizing: border-box;
+  position: absolute;
+}
+
+#thumbnail-drawer img {
+  max-width: 120px;
+  max-height: 120px;
+  background: white;
+  border-radius: 4px;
+  margin-right: 10px;
+  box-shadow: 0 2px 1px rgba(0,0,0,0.4);
+}
+
+#timeline {
+  background: red;
+}
+
+#playback {
+  background: blue;
+}
+
+
+#sketch-pane {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+
+}
+
+#board-metadata {
+  width: 200px;
+  display: flex;
+  align-items: center;
+  padding-right: 15px;
+  color: rgba(255,255,255,0.5);
+  font-size: 14px;
+}
+
+#board-metadata .hardrule {
+  border-top: 1px dotted rgba(255,255,255,0.1);
+  margin: 20px 0px;
+}
+
+#board-metadata textarea {
+  width: 100%;
+  height: 80px;
+  box-sizing: border-box;
+  border: 0;
+  border-radius: 3px;
+  background: #444;
+  color: #999;
+  font-size: 14px;
+  font-weight: 100;
+  padding: 10px;
+  resize: none;
+}
+
+#board-metadata input[type=text] {
+  box-sizing: border-box;
+  width: 60px;
+  border: 0;
+  border-radius: 3px;
+  background: #444;
+  color: #999;
+  font-size: 14px;
+  font-weight: 100;
+  padding: 10px;
+  resize: none;
+}
+
+#board-metadata .number {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+#board-metadata .row {
+  margin-bottom: 10px;
+}
+
+#board-metadata textarea:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(255,255,255,0.3);
+}
+
+#canvas-container {
+  background: white;
+  position: absolute;
+  border-radius: 4px;
+    box-shadow: 0 2px 1px rgba(0,0,0,0.4);
+
+}
+
+canvas {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+#canvas-caption {
+  background-color: rgba(0,0,0,0.6);
+  border-radius: 5px;
+  padding: .5vw 1vw;
+  position: absolute;
+  font-size: 2vw;
+  font-weight: 500;
+  color: white;
+  text-transform: uppercase;
+  display: none;
+}
+
+/*  
+
+http://slides.com/sarasoueidan/building-better-interfaces-with-svg#/2
+https://icomoon.io/app/#/select
+*/
+
+
+.smallicon {
+  width: 25px;
+  height: 25px;
+  --color1: #888;
+  --color2: #444;
+  vertical-align: middle;
+  top: -2px;
+  position: relative;
+  filter: drop-shadow( 0px 1px 0px rgba(0,0,0,0.3) );
+  margin-right: 4px;
+}
+

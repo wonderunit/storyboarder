@@ -1,0 +1,65 @@
+Release Plan
+
+  Start committing to github
+
+  Focus issues there
+
+  Get something working for early beta
+
+  ON STORY:
+    
+
+  Working Mac Version
+    What does that include?
+      promo materials for sidebar
+      --
+      load script / create boardfile
+      design
+      sketch pane
+      --
+      worksheet printing / importing workflow
+      --
+      pitch mode
+      --
+      sound
+      --
+      export to xml 
+      export pdfs
+
+  Sign with mac developer key
+
+  Tutorial video on how to use
+
+  Example board
+    3 little pigs?
+
+  Polish tooltips and  help
+
+  Testimonials
+
+  Make sure forum is up at working
+
+  Create website
+    storyboard
+
+    Require email address
+
+    Email link to download
+
+  Change storyboardfountain.com to redirect to product website
+
+  Send out mass mail
+    to personal list
+    to storyboard list
+
+  Press strategy
+
+  Windows application
+
+  Send out mass mail
+    to personal list
+    to storyboard list
+
+  Announce Contest
+    post tutorial videos to youtube
+    most views gets $100
