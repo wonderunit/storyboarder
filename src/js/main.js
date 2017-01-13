@@ -374,7 +374,7 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
   if (newWindow) {
     newWindow.hide()
   }
-  mainWindow = new BrowserWindow({acceptFirstMouse: true, backgroundColor: '#333333', width: 1300, height: 1000, minWidth: 1024, minHeight: 600, show: false, resizable: true, titleBarStyle: 'hidden-inset', webPreferences: {experimentalFeatures: true, devTools: true} })
+  mainWindow = new BrowserWindow({acceptFirstMouse: true, backgroundColor: '#333333', width: 1300, height: 1000, minWidth: 1024, minHeight: 600, show: false, resizable: true, titleBarStyle: 'hidden', webPreferences: {experimentalFeatures: true, devTools: true} })
   mainWindow.loadURL(`file://${__dirname}/../main-window.html`)
 
   mainWindow.once('ready-to-show', () => {
@@ -432,7 +432,15 @@ let addToRecentDocs = (filename, metadata) => {
 //////////////////
 
 ipcMain.on('newBoard', (e, arg)=> {
-  mainWindow.webContents.send('newBoard')
+  mainWindow.webContents.send('newBoard', arg)
+})
+
+ipcMain.on('deleteBoard', (e, arg)=> {
+  mainWindow.webContents.send('deleteBoard')
+})
+
+ipcMain.on('duplicateBoard', (e, arg)=> {
+  mainWindow.webContents.send('duplicateBoard')
 })
 
 ipcMain.on('goPreviousBoard', (e, arg)=> {
@@ -441,6 +449,36 @@ ipcMain.on('goPreviousBoard', (e, arg)=> {
 
 ipcMain.on('goNextBoard', (e, arg)=> {
   mainWindow.webContents.send('goNextBoard')
+})
+
+ipcMain.on('previousScene', (e, arg)=> {
+  mainWindow.webContents.send('previousScene')
+})
+
+ipcMain.on('nextScene', (e, arg)=> {
+  mainWindow.webContents.send('nextScene')
+})
+
+/// TOOLS
+
+ipcMain.on('undo', (e, arg)=> {
+  mainWindow.webContents.send('undo')
+})
+
+ipcMain.on('redo', (e, arg)=> {
+  mainWindow.webContents.send('redo')
+})
+
+ipcMain.on('setTool', (e, arg)=> {
+  mainWindow.webContents.send('setTool', arg)
+})
+
+ipcMain.on('clear', (e, arg)=> {
+  mainWindow.webContents.send('clear')
+})
+
+ipcMain.on('brushSize', (e, arg)=> {
+  mainWindow.webContents.send('brushSize', arg)
 })
 
 

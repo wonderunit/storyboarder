@@ -71,6 +71,23 @@ const template = [
     label: 'Edit',
     submenu: [
       {
+        label: 'Undo',
+        accelerator: 'CmdOrCtrl+Z',
+        click () {
+          ipcRenderer.send('undo')
+        }
+      },
+      {
+        label: 'Redo',
+        accelerator: 'Shift+CmdOrCtrl+Z',
+        click () {
+          ipcRenderer.send('redo')
+        }
+      },
+      {
+        type: 'separator'
+      },
+      {
         role: 'copy'
       },
       {
@@ -96,6 +113,20 @@ const template = [
         }
       },
       {
+        accelerator: 'CmdOrCtrl+Left',
+        label: 'Previous Scene',
+        click ( item, focusedWindow, event) {
+          ipcRenderer.send('previousScene')
+        }
+      },
+      {
+        accelerator: 'CmdOrCtrl+Right',
+        label: 'Next Scene',
+        click ( item, focusedWindow, event) {
+          ipcRenderer.send('nextScene')
+        }
+      },
+      {
         type: 'separator'
       },
       {
@@ -115,14 +146,28 @@ const template = [
         accelerator: 'N',
         label: 'New Board',
         click ( item, focusedWindow, event) {
-          ipcRenderer.send('newBoard')
+          ipcRenderer.send('newBoard', 1)
         }
       },
       {
+        accelerator: 'Shift+N',
+        label: 'New Board Before',
+        click ( item, focusedWindow, event) {
+          ipcRenderer.send('newBoard', -1)
+        }
+      },
+      {
+        accelerator: 'CmdOrCtrl+Backspace',
         label: 'Delete Board',
         click ( item, focusedWindow, event) {
-          // ipcRenderer.send('toggleSpeaking')
-          console.log('delete board!!!')
+          ipcRenderer.send('deleteBoard')
+        }
+      },
+      {
+        accelerator: 'D',
+        label: 'Duplicate Board',
+        click ( item, focusedWindow, event) {
+          ipcRenderer.send('duplicateBoard')
         }
       },
     ]
@@ -131,11 +176,67 @@ const template = [
     label: 'Tools',
     submenu: [
       {
-        role: 'copy'
+        accelerator: '1',
+        label: 'Light Pencil',
+        click ( item, focusedWindow, event) {
+          ipcRenderer.send('setTool', 'lightPencil')
+        }
       },
       {
-        role: 'paste'
-      }
+        accelerator: '2',
+        label: 'Pencil',
+        click ( item, focusedWindow, event) {
+          ipcRenderer.send('setTool', 'pencil')
+        }
+      },
+      {
+        accelerator: '3',
+        label: 'Pen',
+        click ( item, focusedWindow, event) {
+          ipcRenderer.send('setTool', 'pen')
+        }
+      },
+      {
+        accelerator: '4',
+        label: 'Brush',
+        click ( item, focusedWindow, event) {
+          ipcRenderer.send('setTool', 'brush')
+        }
+      },
+      {
+        accelerator: '5',
+        label: 'Eraser',
+        click ( item, focusedWindow, event) {
+          ipcRenderer.send('setTool', 'eraser')
+        }
+      },
+      {
+        type: 'separator'
+      },
+      {
+        accelerator: 'Backspace',
+        label: 'Clear Canvas',
+        click ( item, focusedWindow, event) {
+          ipcRenderer.send('clear')
+        }
+      },
+      {
+        type: 'separator'
+      },
+      {
+        accelerator: '[',
+        label: 'Smaller Brush',
+        click ( item, focusedWindow, event) {
+          ipcRenderer.send('brushSize', -1)
+        }
+      },
+      {
+        accelerator: ']',
+        label: 'Larger Brush',
+        click ( item, focusedWindow, event) {
+          ipcRenderer.send('brushSize', 1)
+        }
+      },
     ]
   },
   {
@@ -242,7 +343,7 @@ if (process.platform === 'darwin') {
   //   }
   // )
   // Window menu.
-  template[5].submenu = [
+  template[7].submenu = [
     {
       label: 'Close',
       accelerator: 'CmdOrCtrl+W',

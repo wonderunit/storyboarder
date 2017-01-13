@@ -135,7 +135,7 @@ let stampLayer = ()=> {
 }
 
 let pointerDown = (e)=> {
-  console.log(e)
+  //console.log(e)
   if (scaleMode || (e.metaKey && e.altKey)) {
     isMoving = true
     if (e.metaKey && !e.altKey) {
@@ -148,12 +148,14 @@ let pointerDown = (e)=> {
     window.requestAnimationFrame(drawMoveLoop)
   } else {
     if (e.shiftKey) isStraightline = true
-
     window.requestAnimationFrame(drawBrushLoop)
   }
 
-  scaleFactor = (e.target.height/e.target.clientHeight)
-  penOffset = [e.clientX-e.layerX, e.clientY-e.layerY]
+  let rect = document.getElementById('canvas-container').getBoundingClientRect()
+  let canvasDiv = document.getElementById('board-canvas')
+
+  scaleFactor = (canvasDiv.height/rect.height)
+  penOffset = [rect.left, rect.top]
   previousPenAttributes = getPointerData(e)
   previousLoc = [previousPenAttributes.point]
   penDown = true
@@ -161,7 +163,6 @@ let pointerDown = (e)=> {
   // check if current color is darker than current spot
   // if so, draw under
   // if not, draw over
-
 
   addToUndoStack()
 }
@@ -426,7 +427,7 @@ let getPointerData = (e)=> {
   return penAttributes
 }
 
-document.getElementById('drawing-canvas').addEventListener('pointerdown', pointerDown, false)
+document.getElementById('sketch-pane').addEventListener('pointerdown', pointerDown, false)
 window.addEventListener('pointermove', pointerMove, { passive: true });
 window.addEventListener('pointerup', pointerUp, false);
 
@@ -480,6 +481,15 @@ let setBrush = (size, opacity)=> {
   brushProperties = {size: window.devicePixelRatio*size, opacity: opacity}
 }
 
+let setBrushSize = (direction)=> {
+  if (direction > 0) {
+    brushProperties.size = brushProperties.size * 1.2
+  } else {
+    brushProperties.size = brushProperties.size * 0.8
+  }
+}
+
+
 let setColor = (color)=> {
   brushColor = color
 }
@@ -515,8 +525,10 @@ let scaleContents = ()=> {
 }
 
 
+
 module.exports.init = init
 module.exports.setBrush = setBrush
+module.exports.setBrushSize = setBrushSize
 module.exports.setColor = setColor
 module.exports.setEraser = setEraser
 module.exports.clear = clear

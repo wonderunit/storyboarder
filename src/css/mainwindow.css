@@ -17,7 +17,7 @@ body {
   position: absolute;
   width: 100vw;
   z-index: 600;
-  height: 200px;
+  height: 70px;
   -webkit-app-region: drag;
   pointer-events: none;
 }
@@ -160,6 +160,13 @@ body {
   border-radius: 5px;
   margin-left: 2px;
   padding: 15px;
+  margin-bottom: 4px;
+  margin-top: 2px;
+}
+
+#toolbar .button:hover {
+  background-color: rgba(50,50,50,.3);
+
 }
 
 #toolbar .icon {
@@ -183,32 +190,74 @@ body {
   width: 100%;
   overflow: scroll;
   scroll-behavior: smooth;
-  webkit-overflow-scrolling: touch;
-/*
-    scroll-behavior: smooth; // Added in from answer from Felix
-    overflow: scroll;*/
-
 }
 
 
 #thumbnail-drawer {
-
-
   overflow: hidden;
   white-space: nowrap;
-/*  width: 100vw;
-*/  padding: 10px;
   box-sizing: border-box;
   position: absolute;
+  top: 10px;
+  bottom: 0;
+}
+
+#thumbnail-drawer .thumbnail {
+  display: inline-block;
+  background: #444;
+  padding: 5px;
+  border-radius: 6px;
+  margin-left: 5px;
+  font-size: 10px;
+  color: #888;
+  font-weight: 100;
+  box-shadow: 0 1px 1px rgba(0,0,0,0.2);
 }
 
 #thumbnail-drawer img {
-  max-width: 120px;
-  max-height: 120px;
   background: white;
-  border-radius: 4px;
-  margin-right: 10px;
-  box-shadow: 0 2px 1px rgba(0,0,0,0.4);
+  border-radius: 3px;
+/*  box-shadow: 0 2px 1px rgba(0,0,0,0.4);
+*/}
+
+#thumbnail-drawer .thumbnail .info {
+  display: flex;
+  flex-direction: row;
+}
+
+#thumbnail-drawer .thumbnail .number {
+  font-weight: 700;
+  color: #888;
+}
+
+#thumbnail-drawer .thumbnail .caption {
+  flex: 1;
+  margin-left: 2px;
+  margin-right: 2px;
+  font-weight: 100;
+  color: #888;
+  white-space:nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  text-align: center;
+  min-width:0;
+}
+
+
+
+#thumbnail-drawer .thumbnail .duration {
+}
+
+
+
+#thumbnail-drawer .thumbnail .container .top {
+  flex: 1;
+  height: calc(100% - 36px);
+  background: red;
+}
+
+#thumbnail-drawer .thumbnail .container .bottom {
+  background: green;
 }
 
 #timeline {

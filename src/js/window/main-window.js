@@ -67,9 +67,6 @@ ipcRenderer.on('load', (event, args)=>{
     //renderScenes()
     currentScene = boardSettings.lastScene
     loadScene(currentScene)
-    boardPath = boardFilename.split('/')
-    boardPath.pop()
-    boardPath = boardPath.join('/')
 
     console.log(boardFilename)
     console.log(boardPath)
@@ -114,7 +111,7 @@ ipcRenderer.on('load', (event, args)=>{
 let loadBoardUI = ()=> {
   if (boardData.boards.length == 0) {
     // create a new board
-    newBoard()
+    newBoard(0)
   }
 
   let aspectRatio = boardData.aspectRatio
@@ -164,7 +161,9 @@ let loadBoardUI = ()=> {
 
 
 let newBoard = (position)=> {
-  if (!position) position = currentBoard
+  saveImageFile()
+
+  if (typeof position == "undefined") position = currentBoard + 1
 
   // create array entry
   let uid = util.uidGen(5)
@@ -176,7 +175,7 @@ let newBoard = (position)=> {
       "lastEdited": Date.now(),
     }
   // insert
-  boardData.boards.push(board)
+  boardData.boards.splice(position, 0, board)
   // indicate dirty for save sweep
   markBoardFileDirty()
   updateThumbnailDrawer()
@@ -220,8 +219,39 @@ let saveImageFile = ()=> {
   }
 }
 
-
 sketchPane.on('markDirty', markImageFileDirty)
+
+let deleteBoard = ()=> {
+  if (boardData.boards.length > 1) {
+    //should i ask to confirm deleting a board?
+    boardData.boards.splice(currentBoard, 1)
+    gotoBoard(currentBoard-1)
+    markBoardFileDirty()
+    updateThumbnailDrawer()
+  }
+}
+
+let duplicateBoard = ()=> {
+  // copy current board canvas
+  let imageData = document.querySelector('#board-canvas').getContext("2d").getImageData(0,0, document.querySelector('#board-canvas').width, document.querySelector('#board-canvas').height)
+  // get current board clone it
+  let board = JSON.parse(JSON.stringify(boardData.boards[currentBoard]))
+  // set uid
+  let uid = util.uidGen(5)
+  board.uid = uid
+  board.url = 'board-' + (currentBoard+1) + '-' + uid + '.png'
+  board.newShot = false
+  board.lastEdited = Date.now()
+  // insert
+  boardData.boards.splice(currentBoard+1, 0, board)
+  markBoardFileDirty()
+  // go to board
+  gotoBoard(currentBoard+1)
+  // draw contents to board
+  document.querySelector('#board-canvas').getContext("2d").putImageData(imageData, 0, 0)
+  markImageFileDirty()
+  updateThumbnailDrawer()
+}
 
 ///////////////////////////////////////////////////////////////
 // UI Rendering
@@ -229,18 +259,35 @@ sketchPane.on('markDirty', markImageFileDirty)
 
 let goNextBoard = (direction)=> {
   saveImageFile()
-
   if (direction) {
     currentBoard += direction
   } else {
     currentBoard++ 
   }
+  gotoBoard(currentBoard)
+}
 
+let gotoBoard = (boardNumber)=> {
+  console.log(boardNumber)
+  currentBoard = boardNumber
   currentBoard = Math.max(currentBoard, 0)
   currentBoard = Math.min(currentBoard, boardData.boards.length-1)
-
-  console.log(currentBoard)
   updateSketchPaneBoard()
+}
+
+let nextScene = ()=> {
+  currentScene++
+  loadScene(currentScene)
+  renderScript()
+  loadBoardUI()
+}
+
+let previousScene = ()=> {
+  currentScene--
+  currentScene = Math.max(0, currentScene)
+  loadScene(currentScene)
+  renderScript()
+  loadBoardUI()
 }
 
 let updateSketchPaneBoard = () => {
@@ -263,33 +310,33 @@ let updateSketchPaneBoard = () => {
 }
 
 let updateThumbnailDrawer = ()=> {
-  console.log("update thumbnails")
-    
-  document.querySelector('#thumbnail-drawer')
   let html = []
-
   for (var board of boardData.boards) {
-    console.log(board)
-
-
+    //console.log(board)
     let imageFilename = boardPath + '/images/' + board.url
     if (!fs.existsSync(imageFilename)){
       // bank image
-      html.push(board.url)
+      
+      html.push('<img src="//:0" height="40" width="' + (40 * boardData.aspectRatio) + '">')
+
     } else {
-      html.push('<img src="' + imageFilename + '">')
+      html.push('<div class="thumbnail" style="width: ' + ((60 * boardData.aspectRatio)) + 'px;">')
+      // html.push('<div class="container">')
 
+      html.push('<div class="top">')
+      //html.push('<div>sup</div>')
+      html.push('<img src="' + imageFilename + '" height="60" width="' + (60 * boardData.aspectRatio) + '">')
+      html.push('</div>')
 
- 
+      html.push('<div class="info">')
+      html.push('<div class="number">2.B</div><div class="caption">This is a captions and other stuff you know?</div><div class="duration">:03</div>')
+      html.push('</div>')
+
+      html.push('</div>')
+
     }
-
-
-
-    
   }
-
   document.querySelector('#thumbnail-drawer').innerHTML = html.join('')
-
 }
 
 let dragMode = false
@@ -329,12 +376,14 @@ let renderScenes = ()=> {
 
   let sceneNodes = document.querySelectorAll('#scenes .scene')
   for (var node of sceneNodes) {
-    node.addEventListener('pointerup', (e)=>{
+    node.addEventListener('pointerdown', (e)=>{
       //console.log(e.target.dataset.node)
-      currentScene = Number(e.target.dataset.node)
-      loadScene(currentScene)
-      renderScript()
-      loadBoardUI()
+      if (currentScene !== Number(e.target.dataset.node)) {
+        currentScene = Number(e.target.dataset.node)
+        loadScene(currentScene)
+        renderScript()
+        loadBoardUI()      
+      }
     }, true, true)
   }
 
@@ -439,6 +488,8 @@ let loadScene = (sceneNumber) => {
   saveImageFile()
   saveBoardFile()
 
+  currentBoard = 0
+
   // does the boardfile/directory exist?
   let boardsDirectoryFolders = fs.readdirSync(currentPath).filter(function(file) {
     return fs.statSync(currentPath + '/' + file).isDirectory()
@@ -514,6 +565,11 @@ let loadScene = (sceneNumber) => {
       }
     }
   }
+
+  boardPath = boardFilename.split('/')
+  boardPath.pop()
+  boardPath = boardPath.join('/')
+
 }
 
 let sizeCanvas= () => {
@@ -575,7 +631,6 @@ window.onkeydown = (e)=> {
       goNextBoard()
       break
   }
-  console.log(e)
 }
 
 
@@ -616,7 +671,15 @@ window.onkeydown = (e)=> {
   // })
 
 ipcRenderer.on('newBoard', (event, args)=>{
-  newBoard()
+  if (args > 0) {
+    // insert after
+    newBoard()
+    gotoBoard(currentBoard+1)
+  } else {
+    // inset before
+    newBoard(currentBoard)
+    gotoBoard(currentBoard)
+  }
 })
 
 ipcRenderer.on('goPreviousBoard', (event, args)=>{
@@ -625,5 +688,107 @@ ipcRenderer.on('goPreviousBoard', (event, args)=>{
 
 ipcRenderer.on('goNextBoard', (event, args)=>{
   goNextBoard()
+})
+
+ipcRenderer.on('previousScene', (event, args)=>{
+  console.log("sup")
+  previousScene()
+})
+
+ipcRenderer.on('nextScene', (event, args)=>{
+  nextScene()
+})
+
+// tools
+
+ipcRenderer.on('undo', (e, arg)=> {
+  sketchPane.undo()
+})
+
+ipcRenderer.on('redo', (e, arg)=> {
+  sketchPane.redo()
+})
+
+ipcRenderer.on('setTool', (e, arg)=> {
+  console.log('setTool', arg)
+  switch(arg) {
+    case 'lightPencil':
+      sketchPane.setBrush(1, 0)
+      sketchPane.setColor([200,200,255])
+      break
+    case 'pencil':
+      sketchPane.setBrush(1, 20)
+      sketchPane.setColor([50,50,50])
+      break
+    case 'pen':
+      sketchPane.setBrush(4, 40)
+      sketchPane.setColor([0,0,0])
+      break
+    case 'brush':
+      sketchPane.setBrush(16, 0)
+      sketchPane.setColor([100,100,100])
+      break
+    case 'eraser':
+      sketchPane.setEraser()
+      break
+  }
+})
+
+ipcRenderer.on('clear', (e, arg)=> {
+  sketchPane.clear()
+})
+
+ipcRenderer.on('brushSize', (e, arg)=> {
+  sketchPane.setBrushSize(arg)
+})
+
+// ipc.on('changeBrush', (event, arg)=> {
+//   console.log("chagerwfsd")
+//   switch(arg) {
+//     case 'light':
+//       sketchPane.setBrush(1, 0)
+//       sketchPane.setColor([200,200,255])
+//       beep()
+//       break
+//     case 'pencil':
+//       sketchPane.setBrush(1, 20)
+//       sketchPane.setColor([50,50,50])
+//       beep()
+//       break
+//     case 'pen':
+//       sketchPane.setBrush(4, 40)
+//       sketchPane.setColor([0,0,0])
+//       beep()
+//       break
+//     case 'brush':
+//       sketchPane.setBrush(16, 0)
+//       sketchPane.setColor([100,100,100])
+//       beep()
+//       break
+//   }
+// })
+
+// ipc.on('clear', (event, arg)=> {
+//   sketchPane.clear()
+//   beep()
+// })
+
+// ipc.on('undo', (event, arg)=> {
+//   sketchPane.undo()
+//   beep()
+// })
+
+// ipc.on('redo', (event, arg)=> {
+//   sketchPane.redo()
+//   beep()
+// })
+
+
+ipcRenderer.on('deleteBoard', (event, args)=>{
+  deleteBoard()
+})
+
+ipcRenderer.on('duplicateBoard', (event, args)=>{
+  duplicateBoard()
 })
 
