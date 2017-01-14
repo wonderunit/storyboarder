@@ -459,6 +459,14 @@ ipcMain.on('nextScene', (e, arg)=> {
   mainWindow.webContents.send('nextScene')
 })
 
+ipcMain.on('copy', (e, arg)=> {
+  mainWindow.webContents.send('copy')
+})
+
+ipcMain.on('paste', (e, arg)=> {
+  mainWindow.webContents.send('paste')
+})
+
 /// TOOLS
 
 ipcMain.on('undo', (e, arg)=> {

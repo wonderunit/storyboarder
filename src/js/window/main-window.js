@@ -1,4 +1,4 @@
-const {ipcRenderer, shell, remote} = require('electron')
+const {ipcRenderer, shell, remote, nativeImage, clipboard} = require('electron')
 //const electronLocalshortcut = require('electron-localshortcut');
 const fs = require('fs')
 const moment = require('moment')
@@ -7,9 +7,7 @@ const util = require('../wonderunit-utils.js')
 const sfx = require('../wonderunit-sound.js')
 const Color = require('color-js')
 
-
 const sketchPane = require('../sketchpane.js')
-
 
 let boardFilename
 let boardPath
@@ -151,7 +149,7 @@ let loadBoardUI = ()=> {
 
   remote.getCurrentWindow().show()
   remote.getCurrentWebContents().openDevTools()
-
+  gotoBoard(currentBoard)
 }
 
 ///////////////////////////////////////////////////////////////
@@ -216,6 +214,11 @@ let saveImageFile = ()=> {
     fs.writeFile(imageFilename, imageData, 'base64', function(err) {})
     console.log('saved IMAGE file!', imageFilename)
     imageFileDirty = false
+
+    setImmediate((currentBoard, boardPath, board)=>{
+      //console.log(currentBoard, boardPath, board)
+      document.querySelector("[data-thumbnail='" + currentBoard + "']").querySelector('img').src = boardPath + '/images/' + board.url + '?' + Date.now()
+    },currentBoard, boardPath, board)
   }
 }
 
@@ -225,13 +228,15 @@ let deleteBoard = ()=> {
   if (boardData.boards.length > 1) {
     //should i ask to confirm deleting a board?
     boardData.boards.splice(currentBoard, 1)
-    gotoBoard(currentBoard-1)
+    currentBoard--
     markBoardFileDirty()
     updateThumbnailDrawer()
+    gotoBoard(currentBoard)
   }
 }
 
 let duplicateBoard = ()=> {
+  saveImageFile()
   // copy current board canvas
   let imageData = document.querySelector('#board-canvas').getContext("2d").getImageData(0,0, document.querySelector('#board-canvas').width, document.querySelector('#board-canvas').height)
   // get current board clone it
@@ -250,7 +255,9 @@ let duplicateBoard = ()=> {
   // draw contents to board
   document.querySelector('#board-canvas').getContext("2d").putImageData(imageData, 0, 0)
   markImageFileDirty()
+  saveImageFile()
   updateThumbnailDrawer()
+  gotoBoard(currentBoard)
 }
 
 ///////////////////////////////////////////////////////////////
@@ -268,11 +275,47 @@ let goNextBoard = (direction)=> {
 }
 
 let gotoBoard = (boardNumber)=> {
-  console.log(boardNumber)
   currentBoard = boardNumber
   currentBoard = Math.max(currentBoard, 0)
   currentBoard = Math.min(currentBoard, boardData.boards.length-1)
   updateSketchPaneBoard()
+  for (var item of document.querySelectorAll('.thumbnail')) {
+    item.classList.remove('active')
+  }
+
+  if (document.querySelector("[data-thumbnail='" + currentBoard + "']")) {
+    document.querySelector("[data-thumbnail='" + currentBoard + "']").classList.add('active')
+
+    let thumbDiv = document.querySelector("[data-thumbnail='" + currentBoard + "']")
+    let containerDiv = document.querySelector('#thumbnail-container')
+
+    if ((thumbDiv.offsetLeft+thumbDiv.offsetWidth+200) > (containerDiv.scrollLeft + containerDiv.offsetWidth)) {
+      console.log("offscreen!!")
+      containerDiv.scrollLeft = thumbDiv.offsetLeft - 300
+    }
+
+    if ((thumbDiv.offsetLeft-200) < (containerDiv.scrollLeft)) {
+      console.log("offscreen!!")
+      containerDiv.scrollLeft = thumbDiv.offsetLeft - containerDiv.offsetWidth + 300
+    }
+
+
+    // console.log()
+    // console.log(.scrollLeft)
+    // console.log(document.querySelector('#thumbnail-container').offsetWidth)
+
+
+    //document.querySelector('#thumbnail-container').scrollLeft = (document.querySelector("[data-thumbnail='" + currentBoard + "']").offsetLeft)-200
+  } else {
+    setImmediate((currentBoard)=>{
+      document.querySelector("[data-thumbnail='" + currentBoard + "']").classList.add('active')
+    },currentBoard)
+
+  }
+
+
+
+
 }
 
 let nextScene = ()=> {
@@ -280,6 +323,7 @@ let nextScene = ()=> {
   loadScene(currentScene)
   renderScript()
   loadBoardUI()
+  gotoBoard(currentBoard)
 }
 
 let previousScene = ()=> {
@@ -288,6 +332,7 @@ let previousScene = ()=> {
   loadScene(currentScene)
   renderScript()
   loadBoardUI()
+  gotoBoard(currentBoard)
 }
 
 let updateSketchPaneBoard = () => {
@@ -311,32 +356,41 @@ let updateSketchPaneBoard = () => {
 
 let updateThumbnailDrawer = ()=> {
   let html = []
+  let i = 0
   for (var board of boardData.boards) {
-    //console.log(board)
+    html.push('<div data-thumbnail="' + i + '" class="thumbnail" style="width: ' + ((60 * boardData.aspectRatio)) + 'px;">')
     let imageFilename = boardPath + '/images/' + board.url
     if (!fs.existsSync(imageFilename)){
       // bank image
-      
-      html.push('<img src="//:0" height="40" width="' + (40 * boardData.aspectRatio) + '">')
-
+      html.push('<img src="//:0" height="60" width="' + (60 * boardData.aspectRatio) + '">')
     } else {
-      html.push('<div class="thumbnail" style="width: ' + ((60 * boardData.aspectRatio)) + 'px;">')
-      // html.push('<div class="container">')
-
       html.push('<div class="top">')
-      //html.push('<div>sup</div>')
       html.push('<img src="' + imageFilename + '" height="60" width="' + (60 * boardData.aspectRatio) + '">')
       html.push('</div>')
-
-      html.push('<div class="info">')
-      html.push('<div class="number">2.B</div><div class="caption">This is a captions and other stuff you know?</div><div class="duration">:03</div>')
-      html.push('</div>')
-
-      html.push('</div>')
-
     }
+    html.push('<div class="info">')
+    html.push('<div class="number">2.B</div><div class="caption">This is a captions and other stuff you know?</div><div class="duration">:03</div>')
+    html.push('</div>')
+    html.push('</div>')
+    i++
   }
   document.querySelector('#thumbnail-drawer').innerHTML = html.join('')
+
+
+  let thumbnails = document.querySelectorAll('.thumbnail')
+  for (var thumb of thumbnails) {
+    thumb.addEventListener('pointerdown', (e)=>{
+      console.log("DOWN")
+      if (currentBoard !== Number(e.target.dataset.thumbnail)) {
+        currentBoard = Number(e.target.dataset.thumbnail)
+        gotoBoard(currentBoard)
+      }
+    }, true, true)
+  }
+
+
+
+  //gotoBoard(currentBoard)
 }
 
 let dragMode = false
@@ -397,12 +451,23 @@ let renderScenes = ()=> {
     console.log(e)
   })
 
+  document.querySelector('#thumbnail-container').addEventListener('pointerdown', (e)=>{
+    dragTarget = document.querySelector('#thumbnail-container')
+    dragTarget.style.overflow = 'hidden'
+    dragTarget.style.scrollBehavior = 'unset'
+
+    dragMode = true
+    dragPoint = [e.pageX, e.pageY]
+    scrollPoint = [dragTarget.scrollLeft, dragTarget.scrollTop]
+    console.log(e)
+  })
 
 
 
   window.addEventListener('pointermove', (e)=>{
     if (dragMode) {
       dragTarget.scrollLeft = scrollPoint[0] + (dragPoint[0] - e.pageX)
+      console.log(scrollPoint[0], dragPoint[0], e.pageX)
       dragTarget.scrollTop = scrollPoint[1] + (dragPoint[1] - e.pageY)
     }
   })
@@ -411,6 +476,7 @@ let renderScenes = ()=> {
     if (dragMode) {
       dragMode = false
       dragTarget.style.overflow = 'scroll'
+      dragTarget.style.scrollBehavior = 'smooth'
     }
   })
 
@@ -570,6 +636,7 @@ let loadScene = (sceneNumber) => {
   boardPath.pop()
   boardPath = boardPath.join('/')
 
+
 }
 
 let sizeCanvas= () => {
@@ -626,9 +693,11 @@ window.onkeydown = (e)=> {
   switch (e.code) {
     case 'ArrowLeft':
       goNextBoard(-1)
+      e.preventDefault()
       break
     case 'ArrowRight':
       goNextBoard()
+      e.preventDefault()
       break
   }
 }
@@ -707,6 +776,96 @@ ipcRenderer.on('undo', (e, arg)=> {
 
 ipcRenderer.on('redo', (e, arg)=> {
   sketchPane.redo()
+})
+
+ipcRenderer.on('copy', (e, arg)=> {
+  console.log("copy")
+  let board = JSON.parse(JSON.stringify(boardData.boards[currentBoard]))
+  let canvasDiv = document.querySelector('#board-canvas')
+
+  board.imageDataURL = canvasDiv.toDataURL()
+
+  console.log(JSON.stringify(board))
+  console.log()
+  clipboard.clear()
+  // clipboard.writeImage(nativeImage.createFromDataURL(canvasDiv.toDataURL()))
+  // clipboard.writeText(JSON.stringify(board))
+  clipboard.write({
+    image: nativeImage.createFromDataURL(canvasDiv.toDataURL()),
+    text: JSON.stringify(board), 
+  })
+})
+
+ipcRenderer.on('paste', (e, arg)=> {
+  console.log("paste")
+  // check whats in the clipboard
+  let clipboardContents = clipboard.readText()
+  let clipboardImage = clipboard.readImage()
+
+  let imageContents
+  let board
+
+  if (clipboardContents !== "") {
+    try {
+      board = JSON.parse(clipboardContents)
+      imageContents = board.imageDataURL
+      delete board.imageDataURL
+      //console.log(json)
+    }
+    catch (e) {
+      console.log(e)
+    }
+  }
+
+  if (!board && (clipboardImage !== "")) {
+    imageContents = clipboardImage.toDataURL()
+  }
+
+
+
+  if (imageContents) {
+    saveImageFile()
+    // copy current board canvas
+    let uid = util.uidGen(5)
+
+    if (board) {
+      board.uid = uid
+      board.url = 'board-' + (currentBoard+1) + '-' + uid + '.png'
+      board.newShot = false
+      board.lastEdited = Date.now()
+    } else {
+      board = {
+        "uid": uid,
+        "url": 'board-' + (currentBoard+1) + '-' + uid + '.png' ,
+        "newShot": false,
+        "lastEdited": Date.now(),
+      }
+    }
+
+    boardData.boards.splice(currentBoard+1, 0, board)
+    markBoardFileDirty()
+    // go to board
+    gotoBoard(currentBoard+1)
+    // draw contents to board
+
+    var image = new Image()
+    image.src = imageContents
+
+    document.querySelector('#board-canvas').getContext("2d").drawImage(image, 0, 0)
+    markImageFileDirty()
+    saveImageFile()
+    updateThumbnailDrawer()
+    gotoBoard(currentBoard)
+
+  }
+
+
+
+  // is there a boarddata with imageDataURL?
+  // if so, insert new board and paste in board data
+  // if only image type, create new board and paste in the nativeimage
+
+
 })
 
 ipcRenderer.on('setTool', (e, arg)=> {

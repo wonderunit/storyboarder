@@ -88,11 +88,22 @@ const template = [
         type: 'separator'
       },
       {
-        role: 'copy'
+        label: 'Copy',
+        accelerator: 'CmdOrCtrl+C',
+        click () {
+          ipcRenderer.send('copy')
+        }
       },
       {
-        role: 'paste'
-      }
+        label: 'Paste',
+        accelerator: 'CmdOrCtrl+V',
+        click () {
+          ipcRenderer.send('paste')
+        }
+      },
+      // {
+      //   role: 'paste'
+      // }
     ]
   },
   {

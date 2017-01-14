@@ -202,6 +202,11 @@ body {
   bottom: 0;
 }
 
+#thumbnail-container .thumbnail * {
+     pointer-events: none;
+}
+
+
 #thumbnail-drawer .thumbnail {
   display: inline-block;
   background: #444;
@@ -212,13 +217,22 @@ body {
   color: #888;
   font-weight: 100;
   box-shadow: 0 1px 1px rgba(0,0,0,0.2);
+  transition: all 0s ease-in-out;
 }
+
+#thumbnail-drawer .thumbnail.active {
+  background: #ffc000;
+  background: #aaa;
+  color: #000;
+  transition: all 0s ease-out;
+}
+
+
 
 #thumbnail-drawer img {
   background: white;
   border-radius: 3px;
-/*  box-shadow: 0 2px 1px rgba(0,0,0,0.4);
-*/}
+}
 
 #thumbnail-drawer .thumbnail .info {
   display: flex;
@@ -227,7 +241,10 @@ body {
 
 #thumbnail-drawer .thumbnail .number {
   font-weight: 700;
-  color: #888;
+}
+
+#thumbnail-drawer .thumbnail .duration {
+  opacity: 0.8;
 }
 
 #thumbnail-drawer .thumbnail .caption {
@@ -235,30 +252,14 @@ body {
   margin-left: 2px;
   margin-right: 2px;
   font-weight: 100;
-  color: #888;
   white-space:nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
   text-align: center;
   min-width:0;
+  opacity: 0.8;
 }
 
-
-
-#thumbnail-drawer .thumbnail .duration {
-}
-
-
-
-#thumbnail-drawer .thumbnail .container .top {
-  flex: 1;
-  height: calc(100% - 36px);
-  background: red;
-}
-
-#thumbnail-drawer .thumbnail .container .bottom {
-  background: green;
-}
 
 #timeline {
   background: red;
