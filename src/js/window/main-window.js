@@ -26,6 +26,8 @@ let boardFileDirtyTimer
 let imageFileDirty = false
 let imageFileDirtyTimer
 
+let textInputMode = false
+let textInputAllowAdvance = false
 
 menu.setMenu()
 
@@ -147,7 +149,88 @@ let loadBoardUI = ()=> {
 
   // sizeCanvas()
 
-  remote.getCurrentWindow().show()
+
+  for (var item of document.querySelectorAll('#board-metadata input, textarea')) {
+    item.addEventListener('focus', (e)=> {
+      textInputMode = true
+      textInputAllowAdvance = false
+      switch (e.target.name) {
+        case 'duration':
+        case 'frames':
+          textInputAllowAdvance = true;
+          break
+      }
+    })
+
+    item.addEventListener('blur', (e)=> {
+      textInputMode = false
+      textInputAllowAdvance = false
+    })
+
+    item.addEventListener('change', (e)=> {
+      switch (e.target.name) {
+        case 'newShot':
+          boardData.boards[currentBoard].newShot = e.target.checked
+          markBoardFileDirty()
+          textInputMode = false
+          break
+      }
+      updateThumbnailDrawer()
+    })
+
+    item.addEventListener('input', (e)=> {
+      switch (e.target.name) {
+        case 'duration':
+          boardData.boards[currentBoard].duration = Number(e.target.value)
+          document.querySelector('input[name="frames"]').value = Math.round(Number(e.target.value)/1000*24)
+          break
+        case 'frames':
+          boardData.boards[currentBoard].duration = Math.round(Number(e.target.value)/24*1000)
+          document.querySelector('input[name="duration"]').value =  Math.round(Number(e.target.value)/24*1000)
+          break
+        case 'dialogue':
+          boardData.boards[currentBoard].dialogue = (e.target.value)
+          break
+        case 'action':
+          boardData.boards[currentBoard].action = (e.target.value)
+          break
+        case 'notes':
+          boardData.boards[currentBoard].notes = (e.target.value)
+          break
+      }
+      markBoardFileDirty()
+    })
+  }
+
+  document.querySelector('#thumbnail-container').addEventListener('pointerdown', (e)=>{
+    dragTarget = document.querySelector('#thumbnail-container')
+    dragTarget.style.overflow = 'hidden'
+    dragTarget.style.scrollBehavior = 'unset'
+    dragMode = true
+    dragPoint = [e.pageX, e.pageY]
+    scrollPoint = [dragTarget.scrollLeft, dragTarget.scrollTop]
+    console.log(e)
+  })
+
+  window.addEventListener('pointermove', (e)=>{
+    if (dragMode) {
+      dragTarget.scrollLeft = scrollPoint[0] + (dragPoint[0] - e.pageX)
+      console.log(scrollPoint[0], dragPoint[0], e.pageX)
+      dragTarget.scrollTop = scrollPoint[1] + (dragPoint[1] - e.pageY)
+    }
+  })
+
+  window.addEventListener('pointerup', (e)=>{
+    if (dragMode) {
+      dragMode = false
+      dragTarget.style.overflow = 'scroll'
+      dragTarget.style.scrollBehavior = 'smooth'
+    }
+  })
+
+
+
+  setTimeout(()=>{remote.getCurrentWindow().show()}, 200)
   remote.getCurrentWebContents().openDevTools()
   gotoBoard(currentBoard)
 }
@@ -215,10 +298,13 @@ let saveImageFile = ()=> {
     console.log('saved IMAGE file!', imageFilename)
     imageFileDirty = false
 
-    setImmediate((currentBoard, boardPath, board)=>{
-      //console.log(currentBoard, boardPath, board)
+    // setImmediate((currentBoard, boardPath, board)=>{
+    //   document.querySelector("[data-thumbnail='" + currentBoard + "']").querySelector('img').src = boardPath + '/images/' + board.url + '?' + Date.now()
+    // },currentBoard, boardPath, board)
+    
+    setTimeout((currentBoard, boardPath, board)=>{
       document.querySelector("[data-thumbnail='" + currentBoard + "']").querySelector('img').src = boardPath + '/images/' + board.url + '?' + Date.now()
-    },currentBoard, boardPath, board)
+    },100,currentBoard, boardPath, board)
   }
 }
 
@@ -313,10 +399,88 @@ let gotoBoard = (boardNumber)=> {
 
   }
 
+  renderMetaData()
+
+  let percentage
+  if (boardData.boards[boardData.boards.length-1].duration) {
+    percentage = (boardData.boards[currentBoard].time)/(boardData.boards[boardData.boards.length-1].time+boardData.boards[boardData.boards.length-1].duration)
+  } else {
+    percentage = (boardData.boards[currentBoard].time)/(boardData.boards[boardData.boards.length-1].time+2000)
+  }
+  
+  console.log(percentage)
+  let width = document.querySelector('#timeline #movie-timeline-content').offsetWidth
+  console.log(width)
+  document.querySelector('#timeline .marker').style.left = (width*percentage) + 'px'
+
+  document.querySelector('#timeline .left-block').innerHTML = util.msToTime(boardData.boards[currentBoard].time)
+  
+  let totalTime
+  if (boardData.boards[boardData.boards.length-1].duration) {
+    totalTime = (boardData.boards[boardData.boards.length-1].time+boardData.boards[boardData.boards.length-1].duration)
+  } else {
+    totalTime = (boardData.boards[boardData.boards.length-1].time+2000)
+  }
+  document.querySelector('#timeline .right-block').innerHTML = util.msToTime(totalTime)
+ 
+
+
+}
+
+let renderMetaData = ()=> {
+  console.log(boardData.boards[currentBoard])
+
+  console.log(boardData.boards[currentBoard].shot)
+
+  document.querySelector('#board-metadata #shot').innerHTML = 'Shot: ' + boardData.boards[currentBoard].shot
+  document.querySelector('#board-metadata #board-numbers').innerHTML = 'Board: ' + boardData.boards[currentBoard].number + ' of ' + boardData.boards.length
+
+
+
+  for (var item of document.querySelectorAll('#board-metadata input, textarea')) {
+    item.value = ''
+    item.checked = false
+  }
+
+  if (boardData.boards[currentBoard].newShot) {
+    document.querySelector('input[name="newShot"]').checked = true
+
+    if (!boardData.boards[currentBoard].dialogue) {
+      document.querySelector('#canvas-caption').style.display = 'none'
+
+
+
+    }
+  }
+
+  if (boardData.boards[currentBoard].duration) {
+    document.querySelector('input[name="duration"]').value = boardData.boards[currentBoard].duration
+    document.querySelector('input[name="frames"]').value = Math.round(boardData.boards[currentBoard].duration/1000*24)
+  }
+
+  if (boardData.boards[currentBoard].dialogue) {
+    document.querySelector('textarea[name="dialogue"]').value = boardData.boards[currentBoard].dialogue
+    document.querySelector('#canvas-caption').innerHTML = boardData.boards[currentBoard].dialogue
+    document.querySelector('#canvas-caption').style.display = 'block'
+    document.querySelector('#suggested-dialogue-duration').innerHTML = util.durationOfWords(boardData.boards[currentBoard].dialogue, 300)+300 + "ms"
+  } else {
+    document.querySelector('#suggested-dialogue-duration').innerHTML = ''
+  }
+
+  if (boardData.boards[currentBoard].action) {
+    document.querySelector('textarea[name="action"]').value = boardData.boards[currentBoard].action
+  }
+
+  if (boardData.boards[currentBoard].notes) {
+    document.querySelector('textarea[name="notes"]').value = boardData.boards[currentBoard].notes
+  }
 
 
 
 }
+
+
+
 
 let nextScene = ()=> {
   currentScene++
@@ -355,10 +519,77 @@ let updateSketchPaneBoard = () => {
 }
 
 let updateThumbnailDrawer = ()=> {
+
+  let hasShots = false
+  for (var board of boardData.boards) {
+    if (board.newShot) { 
+      hasShots = true
+      break
+    }
+  }
+
+  console.log("HAS SHOTS!!!!")
+  let currentShot = 0
+  let subShot = 0
+  let boardNumber = 1
+  let currentTime = 0
+
+  for (var board of boardData.boards) {
+    if (hasShots) {
+      if (board.newShot || (currentShot==0)) {
+        currentShot++
+        subShot = 0
+      } else {
+        subShot++
+      }
+
+      substr = String.fromCharCode(97 + (subShot%26)).toUpperCase()
+      if ((Math.ceil(subShot/25)-1) > 0) {
+        substr+= (Math.ceil(subShot/25))
+      }
+
+      board.shot = currentShot + substr
+      board.number = boardNumber
+
+    } else {
+      board.number = boardNumber
+      board.shot = (boardNumber) + "A"
+    }
+    boardNumber++
+
+    board.time = currentTime
+
+    if (board.duration) {
+      currentTime += board.duration
+    } else {
+      currentTime += 2000
+    }
+  }
+
+
+
   let html = []
   let i = 0
   for (var board of boardData.boards) {
-    html.push('<div data-thumbnail="' + i + '" class="thumbnail" style="width: ' + ((60 * boardData.aspectRatio)) + 'px;">')
+    html.push('<div data-thumbnail="' + i + '" class="thumbnail')
+    if (hasShots) {
+      if (board.newShot || (i==0)) {
+        html.push(' startShot')
+      }
+
+      if (i < boardData.boards.length-1) {
+        if (boardData.boards[i+1].newShot) {
+          html.push(' endShot')
+        }
+      } else {
+        html.push(' endShot')
+      }
+
+    } else {
+      html.push(' startShot')
+      html.push(' endShot')
+    }
+    html.push('" style="width: ' + ((60 * boardData.aspectRatio)) + 'px;">')
     let imageFilename = boardPath + '/images/' + board.url
     if (!fs.existsSync(imageFilename)){
       // bank image
@@ -369,7 +600,18 @@ let updateThumbnailDrawer = ()=> {
       html.push('</div>')
     }
     html.push('<div class="info">')
-    html.push('<div class="number">2.B</div><div class="caption">This is a captions and other stuff you know?</div><div class="duration">:03</div>')
+    html.push('<div class="number">' + board.shot + '</div>')
+    html.push('<div class="caption">')
+    if (board.dialogue) {
+      html.push(board.dialogue)
+    }
+    html.push('</div><div class="duration">')
+    if (board.duration) {
+      html.push(util.msToTime(board.duration))
+    } else {
+      html.push(util.msToTime(2000))
+    }
+    html.push('</div>')
     html.push('</div>')
     html.push('</div>')
     i++
@@ -382,16 +624,34 @@ let updateThumbnailDrawer = ()=> {
     thumb.addEventListener('pointerdown', (e)=>{
       console.log("DOWN")
       if (currentBoard !== Number(e.target.dataset.thumbnail)) {
+        saveImageFile()
         currentBoard = Number(e.target.dataset.thumbnail)
         gotoBoard(currentBoard)
       }
     }, true, true)
   }
 
-
+  renderTimeline()
 
   //gotoBoard(currentBoard)
 }
+
+
+let renderTimeline = () => {
+  let html = []
+  html.push('<div class="marker-holder"><div class="marker"></div></div>')
+  for (var board of boardData.boards ) {
+    if (board.duration) {
+      html.push('<div style="flex: ' + board.duration + ';"></div>')
+    } else {
+      html.push('<div style="flex: 2000;"></div>')
+    }
+  }
+  document.querySelector('#timeline #movie-timeline-content').innerHTML = html.join('')
+}
+
+
+
 
 let dragMode = false
 let dragPoint
@@ -406,10 +666,12 @@ let renderScenes = ()=> {
   for (var node of scriptData ) {
     switch (node.type) {
       case 'section':
-        html.push('<div class="section node" data-node="' + i + '">' + node.text + '</div>')
+        html.push('<div class="section node">' + node.text + '</div>')
         break
       case 'scene':
-        if (node.slugline) {
+        if (currentScene == (Number(node.scene_number)-1)) {
+          html.push('<div class="scene node active" data-node="' + (Number(node.scene_number)-1) + '" style="background:' + getSceneColor(node.slugline) + '">')
+        } else {
           html.push('<div class="scene node" data-node="' + (Number(node.scene_number)-1) + '" style="background:' + getSceneColor(node.slugline) + '">')
         }
         html.push('<div class="number">SCENE ' + node.scene_number + ' - ' + util.msToTime(node.duration) + '</div>')
@@ -441,53 +703,25 @@ let renderScenes = ()=> {
     }, true, true)
   }
 
-
   document.querySelector('#scenes').addEventListener('pointerdown', (e)=>{
     dragTarget = document.querySelector('#scenes')
     dragTarget.style.overflow = 'hidden'
+    dragTarget.style.scrollBehavior = 'unset'
     dragMode = true
     dragPoint = [e.pageX, e.pageY]
     scrollPoint = [dragTarget.scrollLeft, dragTarget.scrollTop]
     console.log(e)
   })
 
-  document.querySelector('#thumbnail-container').addEventListener('pointerdown', (e)=>{
-    dragTarget = document.querySelector('#thumbnail-container')
+  document.querySelector('#script').addEventListener('pointerdown', (e)=>{
+    dragTarget = document.querySelector('#script')
     dragTarget.style.overflow = 'hidden'
     dragTarget.style.scrollBehavior = 'unset'
-
     dragMode = true
     dragPoint = [e.pageX, e.pageY]
     scrollPoint = [dragTarget.scrollLeft, dragTarget.scrollTop]
     console.log(e)
   })
-
-
-
-  window.addEventListener('pointermove', (e)=>{
-    if (dragMode) {
-      dragTarget.scrollLeft = scrollPoint[0] + (dragPoint[0] - e.pageX)
-      console.log(scrollPoint[0], dragPoint[0], e.pageX)
-      dragTarget.scrollTop = scrollPoint[1] + (dragPoint[1] - e.pageY)
-    }
-  })
-
-  window.addEventListener('pointerup', (e)=>{
-    if (dragMode) {
-      dragMode = false
-      dragTarget.style.overflow = 'scroll'
-      dragTarget.style.scrollBehavior = 'smooth'
-    }
-  })
-
-
-
-
-
-  // $("#outline .node").unbind('click').click((e)=>{
-  //   stopPlaying()
-  //   gotoFrame(e.currentTarget.dataset.node)
-  // })
 }
 
 let renderScript = ()=> {
@@ -627,6 +861,20 @@ let loadScene = (sceneNumber) => {
 
         //check if boards scene exists in 
 
+        for (var item of document.querySelectorAll('#scenes .scene')) {
+          item.classList.remove('active')
+        }
+
+      console.log((Number(node.scene_number)-1))
+
+
+        if (document.querySelector("[data-node='" + (Number(node.scene_number)-1) + "']")) {
+          document.querySelector("[data-node='" + (Number(node.scene_number)-1) + "']").classList.add('active')
+        }
+
+
+
+
         break
       }
     }
@@ -635,6 +883,9 @@ let loadScene = (sceneNumber) => {
   boardPath = boardFilename.split('/')
   boardPath.pop()
   boardPath = boardPath.join('/')
+
+  dragTarget = document.querySelector('#thumbnail-container')
+  dragTarget.style.scrollBehavior = 'unset'
 
 
 }
@@ -683,6 +934,11 @@ let scalePanImage = () => {
 
 sizeCanvas()
 
+window.onmousedown = (e) => {
+  console.log("mouse down")
+  stopPlaying()
+}
+
 
 window.onresize = (e) => {
   console.log(document.querySelector('#sketch-pane').offsetWidth)
@@ -690,17 +946,180 @@ window.onresize = (e) => {
 }
 
 window.onkeydown = (e)=> {
-  switch (e.code) {
-    case 'ArrowLeft':
-      goNextBoard(-1)
-      e.preventDefault()
-      break
-    case 'ArrowRight':
-      goNextBoard()
-      e.preventDefault()
-      break
+  console.log(e)
+
+
+  if (!textInputMode || textInputAllowAdvance) {
+    switch (e.code) {
+      case 'Space':
+        togglePlayback()
+        e.preventDefault()
+        break
+      case 'ArrowLeft':
+        goNextBoard(-1)
+        e.preventDefault()
+        break
+      case 'ArrowRight':
+        goNextBoard()
+        e.preventDefault()
+        break
+    }
   }
 }
+
+///////////////////////////////////////////////////////////////
+// Playback
+///////////////////////////////////////////////////////////////
+
+let playbackMode = false
+let frameTimer
+let speakingMode = true
+let utter = new SpeechSynthesisUtterance()
+
+let stopPlaying = () => {
+  clearTimeout(frameTimer)
+  playbackMode = false
+  utter.onend = null
+  ipcRenderer.send('resumeSleep')
+  speechSynthesis.cancel()
+}
+
+let togglePlayback = ()=> {
+  playbackMode = !playbackMode
+  if (playbackMode) {
+    ipcRenderer.send('preventSleep')
+    playAdvance(true)
+  } else {
+    stopPlaying()
+  }
+}
+
+let playAdvance = function(first) {
+  //clearTimeout(playheadTimer)
+  clearTimeout(frameTimer)
+  if (!first) {
+    goNextBoard(1)
+  }
+
+  if (playbackMode && boardData.boards[currentBoard].dialogue) {
+    speechSynthesis.cancel()
+    utter.pitch = 0.65
+    utter.rate = 1.1
+
+    var string = boardData.boards[currentBoard].dialogue.split(':')
+    string = string[string.length-1]
+
+    utter.text = string
+    speechSynthesis.speak(utter)
+  }
+
+
+
+  var frameDuration
+  if (boardData.boards[currentBoard].duration) {
+    frameDuration = boardData.boards[currentBoard].duration
+  } else {
+    frameDuration = 2000
+  }
+  frameTimer = setTimeout(playAdvance, frameDuration)
+}
+
+// let playSpeechAdvance = function(first) {
+//   //clearTimeout(frameTimer)
+//   clearTimeout(updateTimer)
+    
+//   if (playbackMode) {
+//     if (!first) {
+//       advanceFrame(1)
+//     } else {
+//       advanceFrame(0)
+//     }
+
+//     utter.pitch = 0.65;
+//     utter.rate = 1.1;
+
+//     switch (scriptData[currentNode].type) {
+//       case 'title':
+//         let string = []
+//         string.push(scriptData[currentNode].text.toLowerCase().replace(/<\/?[^>]+(>|$)/g, "") + '. ')
+//         if (scriptData[currentNode].credit) {
+//           string.push(scriptData[currentNode].credit + ' ')
+//         }
+//         if (scriptData[currentNode].author) {
+//           string.push(scriptData[currentNode].author + ' ')
+//         }
+//         if (scriptData[currentNode].authors) {
+//           string.push(scriptData[currentNode].authors + ' ')
+//         }
+          
+//         utter.text = string.join('')
+//         delayTime = 2000
+//         break
+//       case 'section':
+//         utter.text = scriptData[currentNode].text.toLowerCase()
+//         delayTime = 2000
+//         break
+//       case 'scene':
+//         if (currentSceneNode > -1) {
+//           switch (scriptData[currentNode]['script'][currentSceneNode].type) {
+//             case 'scene_padding':
+//               utter.text = ''
+//               playSpeechAdvance()
+//               break
+//             case 'scene_heading':
+//               utter.text = scriptData[currentNode]['script'][currentSceneNode].text.toLowerCase().replace("mr.", "mister").replace("int. ", "interior, ").replace("ext. ", "exterior, ")
+//               currentSpeaker = ''
+//               delayTime = 1000
+//               break
+//             case 'action':
+//               utter.text = scriptData[currentNode]['script'][currentSceneNode].text.replace(/<\/?[^>]+(>|$)/g, "")
+//               currentSpeaker = ''
+//               delayTime = 500
+//               break
+//             case 'parenthetical':
+//             case 'dialogue':
+//               let string = []
+
+//               if (scriptData[currentNode].type == 'dialogue') {
+//                 delayTime = 1000
+//               } else {
+//                 delayTime = 500
+//               }
+//               if (currentSpeaker !== scriptData[currentNode]['script'][currentSceneNode].character) {
+//                 str = scriptData[currentNode]['script'][currentSceneNode].character.toLowerCase().replace("mr.", "mister").replace("(o.s.)", ", offscreen, ").replace("(v.o.)", ", voiceover, ").replace("(cont'd)", ", continued, ").replace("(cont’d)", ", continued, ") + ', '
+//                 string.push(str)
+//                 currentSpeaker = scriptData[currentNode]['script'][currentSceneNode].character
+//               }
+//               string.push(scriptData[currentNode]['script'][currentSceneNode].text.replace(/<\/?[^>]+(>|$)/g, ""))
+//               utter.text = string.join('')
+//               break
+//             case 'transition':
+//               utter.text = scriptData[currentNode]['script'][currentSceneNode].text.replace(/<\/?[^>]+(>|$)/g, "")
+//               break
+//             case 'section':
+//               utter.text = ''
+//               playSpeechAdvance()
+//               break
+//           }
+//         }
+//         break
+//     }
+
+//     utter.onend = function(event) { 
+//       //console.log(((new Date().getTime())-startSpeakingTime)/utter.text.length)
+//       speechSynthesis.cancel()
+//       if (playbackMode) {
+//         setTimeout(playSpeechAdvance, delayTime) 
+//       }
+//     }
+    
+//     speechSynthesis.speak(utter);
+//     startSpeakingTime = new Date().getTime()
+//   }
+// }
+
+
+
 
 
   // globalShortcut.register('CommandOrControl+1', () => {
@@ -740,23 +1159,38 @@ window.onkeydown = (e)=> {
   // })
 
 ipcRenderer.on('newBoard', (event, args)=>{
-  if (args > 0) {
-    // insert after
-    newBoard()
-    gotoBoard(currentBoard+1)
-  } else {
-    // inset before
-    newBoard(currentBoard)
-    gotoBoard(currentBoard)
+  if (!textInputMode) {
+    if (args > 0) {
+      // insert after
+      newBoard()
+      gotoBoard(currentBoard+1)
+    } else {
+      // inset before
+      newBoard(currentBoard)
+      gotoBoard(currentBoard)
+    }
   }
 })
 
+ipcRenderer.on('togglePlayback', (event, args)=>{
+  if (!textInputMode) {
+    togglePlayback()
+  }
+})
+
+
+
+
 ipcRenderer.on('goPreviousBoard', (event, args)=>{
-  goNextBoard(-1)
+  if (!textInputMode) {
+    goNextBoard(-1)
+  }
 })
 
 ipcRenderer.on('goNextBoard', (event, args)=>{
-  goNextBoard()
+  if (!textInputMode) {
+    goNextBoard()
+  }
 })
 
 ipcRenderer.on('previousScene', (event, args)=>{
@@ -771,95 +1205,103 @@ ipcRenderer.on('nextScene', (event, args)=>{
 // tools
 
 ipcRenderer.on('undo', (e, arg)=> {
-  sketchPane.undo()
+  if (!textInputMode) {
+    sketchPane.undo()
+  }
 })
 
 ipcRenderer.on('redo', (e, arg)=> {
-  sketchPane.redo()
+  if (!textInputMode) {
+    sketchPane.redo()
+  }
 })
 
 ipcRenderer.on('copy', (e, arg)=> {
-  console.log("copy")
-  let board = JSON.parse(JSON.stringify(boardData.boards[currentBoard]))
-  let canvasDiv = document.querySelector('#board-canvas')
+  if (!textInputMode) {
+    console.log("copy")
+    let board = JSON.parse(JSON.stringify(boardData.boards[currentBoard]))
+    let canvasDiv = document.querySelector('#board-canvas')
 
-  board.imageDataURL = canvasDiv.toDataURL()
+    board.imageDataURL = canvasDiv.toDataURL()
 
-  console.log(JSON.stringify(board))
-  console.log()
-  clipboard.clear()
-  // clipboard.writeImage(nativeImage.createFromDataURL(canvasDiv.toDataURL()))
-  // clipboard.writeText(JSON.stringify(board))
-  clipboard.write({
-    image: nativeImage.createFromDataURL(canvasDiv.toDataURL()),
-    text: JSON.stringify(board), 
-  })
+    console.log(JSON.stringify(board))
+    console.log()
+    clipboard.clear()
+    // clipboard.writeImage(nativeImage.createFromDataURL(canvasDiv.toDataURL()))
+    // clipboard.writeText(JSON.stringify(board))
+    clipboard.write({
+      image: nativeImage.createFromDataURL(canvasDiv.toDataURL()),
+      text: JSON.stringify(board), 
+    })
+  }
 })
 
 ipcRenderer.on('paste', (e, arg)=> {
-  console.log("paste")
-  // check whats in the clipboard
-  let clipboardContents = clipboard.readText()
-  let clipboardImage = clipboard.readImage()
+  if (!textInputMode) {
 
-  let imageContents
-  let board
+    console.log("paste")
+    // check whats in the clipboard
+    let clipboardContents = clipboard.readText()
+    let clipboardImage = clipboard.readImage()
 
-  if (clipboardContents !== "") {
-    try {
-      board = JSON.parse(clipboardContents)
-      imageContents = board.imageDataURL
-      delete board.imageDataURL
-      //console.log(json)
-    }
-    catch (e) {
-      console.log(e)
-    }
-  }
+    let imageContents
+    let board
 
-  if (!board && (clipboardImage !== "")) {
-    imageContents = clipboardImage.toDataURL()
-  }
-
-
-
-  if (imageContents) {
-    saveImageFile()
-    // copy current board canvas
-    let uid = util.uidGen(5)
-
-    if (board) {
-      board.uid = uid
-      board.url = 'board-' + (currentBoard+1) + '-' + uid + '.png'
-      board.newShot = false
-      board.lastEdited = Date.now()
-    } else {
-      board = {
-        "uid": uid,
-        "url": 'board-' + (currentBoard+1) + '-' + uid + '.png' ,
-        "newShot": false,
-        "lastEdited": Date.now(),
+    if (clipboardContents !== "") {
+      try {
+        board = JSON.parse(clipboardContents)
+        imageContents = board.imageDataURL
+        delete board.imageDataURL
+        //console.log(json)
+      }
+      catch (e) {
+        console.log(e)
       }
     }
 
-    boardData.boards.splice(currentBoard+1, 0, board)
-    markBoardFileDirty()
-    // go to board
-    gotoBoard(currentBoard+1)
-    // draw contents to board
+    if (!board && (clipboardImage !== "")) {
+      imageContents = clipboardImage.toDataURL()
+    }
 
-    var image = new Image()
-    image.src = imageContents
 
-    document.querySelector('#board-canvas').getContext("2d").drawImage(image, 0, 0)
-    markImageFileDirty()
-    saveImageFile()
-    updateThumbnailDrawer()
-    gotoBoard(currentBoard)
+
+    if (imageContents) {
+      saveImageFile()
+      // copy current board canvas
+      let uid = util.uidGen(5)
+
+      if (board) {
+        board.uid = uid
+        board.url = 'board-' + (currentBoard+1) + '-' + uid + '.png'
+        board.newShot = false
+        board.lastEdited = Date.now()
+      } else {
+        board = {
+          "uid": uid,
+          "url": 'board-' + (currentBoard+1) + '-' + uid + '.png' ,
+          "newShot": false,
+          "lastEdited": Date.now(),
+        }
+      }
+
+      boardData.boards.splice(currentBoard+1, 0, board)
+      markBoardFileDirty()
+      // go to board
+      gotoBoard(currentBoard+1)
+      // draw contents to board
+
+      var image = new Image()
+      image.src = imageContents
+
+      document.querySelector('#board-canvas').getContext("2d").drawImage(image, 0, 0)
+      markImageFileDirty()
+      saveImageFile()
+      updateThumbnailDrawer()
+      gotoBoard(currentBoard)
+
+    }
 
   }
-
-
 
   // is there a boarddata with imageDataURL?
   // if so, insert new board and paste in board data
@@ -869,36 +1311,42 @@ ipcRenderer.on('paste', (e, arg)=> {
 })
 
 ipcRenderer.on('setTool', (e, arg)=> {
-  console.log('setTool', arg)
-  switch(arg) {
-    case 'lightPencil':
-      sketchPane.setBrush(1, 0)
-      sketchPane.setColor([200,200,255])
-      break
-    case 'pencil':
-      sketchPane.setBrush(1, 20)
-      sketchPane.setColor([50,50,50])
-      break
-    case 'pen':
-      sketchPane.setBrush(4, 40)
-      sketchPane.setColor([0,0,0])
-      break
-    case 'brush':
-      sketchPane.setBrush(16, 0)
-      sketchPane.setColor([100,100,100])
-      break
-    case 'eraser':
-      sketchPane.setEraser()
-      break
+  if (!textInputMode) {
+    console.log('setTool', arg)
+    switch(arg) {
+      case 'lightPencil':
+        sketchPane.setBrush(1, 0)
+        sketchPane.setColor([200,200,255])
+        break
+      case 'pencil':
+        sketchPane.setBrush(1, 20)
+        sketchPane.setColor([50,50,50])
+        break
+      case 'pen':
+        sketchPane.setBrush(4, 40)
+        sketchPane.setColor([0,0,0])
+        break
+      case 'brush':
+        sketchPane.setBrush(16, 0)
+        sketchPane.setColor([100,100,100])
+        break
+      case 'eraser':
+        sketchPane.setEraser()
+        break
+    }
   }
 })
 
 ipcRenderer.on('clear', (e, arg)=> {
-  sketchPane.clear()
+  if (!textInputMode) {
+    sketchPane.clear()
+  }
 })
 
 ipcRenderer.on('brushSize', (e, arg)=> {
-  sketchPane.setBrushSize(arg)
+  if (!textInputMode) {
+    sketchPane.setBrushSize(arg)
+  }
 })
 
 // ipc.on('changeBrush', (event, arg)=> {
@@ -944,10 +1392,14 @@ ipcRenderer.on('brushSize', (e, arg)=> {
 
 
 ipcRenderer.on('deleteBoard', (event, args)=>{
-  deleteBoard()
+  if (!textInputMode) {
+    deleteBoard()
+  }
 })
 
 ipcRenderer.on('duplicateBoard', (event, args)=>{
-  duplicateBoard()
+  if (!textInputMode) {
+    duplicateBoard()
+  }
 })
 

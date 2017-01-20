@@ -119,30 +119,32 @@
           <div id="canvas-container" style="width: 0px; height: 0px;">
             <canvas id="board-canvas" width="1600" height="900"></canvas>
             <canvas id="drawing-canvas" width="1600" height="900"></canvas>
+            <div id="canvas-caption"></div>
           </div>
 
-          <div id="canvas-caption">Hey! What's going on there?</div>
+          
         </div>
         <div id="board-metadata">
           <div>
-            <div class="number"><svg class="smallicon"><use xlink:href="./img/symbol-defs.svg#icon-board"></use></svg> Board: 2B</div>
-            <div class="row"><input type="checkbox" name="animal" value="Cat" /> New Shot?</div>
+            <div class="number"><svg class="smallicon"><use xlink:href="./img/symbol-defs.svg#icon-board"></use></svg><span id="shot"></span></div>
+            <div class="row" id="board-numbers">12 of 76</div>
+            <div class="row"><input type="checkbox" name="newShot" value="false" /> New Shot?</div>
             <div class="hardrule"></div>
             <div class="row">
               <div><svg class="smallicon"><use xlink:href="./img/symbol-defs.svg#icon-duration"></use></svg>Duration</div>
-              <input type="text">ms <input type="text">frames
+              <input type="text" name="duration">ms <input type="text" name="frames">frames
             </div>
             <div class="row">
-              <div><svg class="smallicon"><use xlink:href="./img/symbol-defs.svg#icon-dialogue"></use></svg>Dialogue</div>
-              <textarea name="textarea"></textarea>
+              <div><svg class="smallicon"><use xlink:href="./img/symbol-defs.svg#icon-dialogue"></use></svg>Dialogue <span id="suggested-dialogue-duration"></span></div>
+              <textarea name="dialogue"></textarea>
             </div>
             <div class="row">
               <div><svg class="smallicon"><use xlink:href="./img/symbol-defs.svg#icon-action"></use></svg>Action</div>
-              <textarea name="textarea"></textarea>
+              <textarea name="action"></textarea>
             </div>
             <div class="row">
               <div><svg class="smallicon"><use xlink:href="./img/symbol-defs.svg#icon-notes"></use></svg>Notes</div>
-              <textarea name="textarea"></textarea>
+              <textarea name="notes"></textarea>
             </div>
             <div class="hardrule"></div>
             <div class="row">
@@ -155,8 +157,51 @@
         </div>
       </div>
       <div id="thumbnail-container"><div id="thumbnail-drawer">thumbnail-drawer</div></div>
-      <div id="timeline">timeline</div>
-      <div id="playback">playback</div>
+
+      <div id="timeline">
+        <div class="left-block">0:00</div>
+        <div id="movie-timeline-content">
+        </div>
+        <div class="right-block">3:13</div>
+      </div>
+
+      <div id="playback">
+        <div id="left-stats">
+          SCENE #, 51 BOARDS, 12 SHOTS<br/>
+          45 AVG. LINE MILEAGE
+        </div>
+        <div id="icons">
+          <svg aria-hidden="true">
+            <use xlink:href="./img/button-speaker.svg#Layer_9"></use>
+          </svg>
+          <svg aria-hidden="true">
+            <use xlink:href="./img/button-prevscene.svg#Layer_6"></use>
+          </svg>
+          <svg aria-hidden="true">
+            <use xlink:href="./img/button-prev.svg#Layer_2"></use>
+          </svg>
+          <svg aria-hidden="true">
+            <use xlink:href="./img/button-play.svg#Layer_1"></use>
+          </svg>
+          <svg aria-hidden="true">
+            <use xlink:href="./img/button-next.svg#Layer_3"></use>
+          </svg>
+          <svg aria-hidden="true">
+            <use xlink:href="./img/button-nextscene.svg#Layer_5"></use>
+          </svg>
+          <svg aria-hidden="true">
+            <use xlink:href="./img/button-loop.svg#Layer_7"></use>
+          </svg>
+        </div>
+        <div id="right-stats">
+          TOTAL SCENES, TOTAL BOARDS<br/>
+          AVG BOARDS PER SCENE, TOTAL TIME
+        </div>
+      </div>
+
+
+
+
     </div>
   <script>
     require('./js/window/main-window.js')

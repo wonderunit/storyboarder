@@ -110,6 +110,16 @@ const template = [
     label: 'Navigation',
     submenu: [
       {
+        accelerator: 'Space',
+        label: 'Play',
+        click ( item, focusedWindow, event) {
+          ipcRenderer.send('togglePlayback')
+        }
+      },
+      {
+        type: 'separator'
+      },
+      {
         // accelerator: 'Left',
         label: 'Previous Board',
         click ( item, focusedWindow, event) {

@@ -374,7 +374,7 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
   if (newWindow) {
     newWindow.hide()
   }
-  mainWindow = new BrowserWindow({acceptFirstMouse: true, backgroundColor: '#333333', width: 1300, height: 1000, minWidth: 1024, minHeight: 600, show: false, resizable: true, titleBarStyle: 'hidden', webPreferences: {experimentalFeatures: true, devTools: true} })
+  mainWindow = new BrowserWindow({acceptFirstMouse: true, backgroundColor: '#333333', width: 2480, height: 1350, minWidth: 1500, minHeight: 1080, show: false, resizable: true, titleBarStyle: 'hidden-inset', webPreferences: {experimentalFeatures: true, devTools: true} })
   mainWindow.loadURL(`file://${__dirname}/../main-window.html`)
 
   mainWindow.once('ready-to-show', () => {
@@ -441,6 +441,10 @@ ipcMain.on('deleteBoard', (e, arg)=> {
 
 ipcMain.on('duplicateBoard', (e, arg)=> {
   mainWindow.webContents.send('duplicateBoard')
+})
+
+ipcMain.on('togglePlayback', (e, arg)=> {
+  mainWindow.webContents.send('togglePlayback')
 })
 
 ipcMain.on('goPreviousBoard', (e, arg)=> {
@@ -520,10 +524,6 @@ ipcMain.on('resumeSleep', ()=> {
 })
 
 /// menu pass through
-
-ipcMain.on('togglePlayback', (event, arg)=> {
-  mainWindow.webContents.send('togglePlayback')
-})
 
 ipcMain.on('goBeginning', (event, arg)=> {
   mainWindow.webContents.send('goBeginning')
