@@ -204,7 +204,7 @@ let loadBoardUI = ()=> {
   }
 
   document.querySelector('#thumbnail-container').addEventListener('pointerdown', (e)=>{
-    if (pointerType == 'pen') {
+    if (e.pointerType == 'pen' || e.pointerType == 'mouse') {
       dragTarget = document.querySelector('#thumbnail-container')
       dragTarget.style.overflow = 'hidden'
       dragTarget.style.scrollBehavior = 'unset'
@@ -707,7 +707,7 @@ let renderScenes = ()=> {
   }
 
   document.querySelector('#scenes').addEventListener('pointerdown', (e)=>{
-    if (e.pointerType == 'pen') {
+    if (e.pointerType == 'pen' || e.pointerType == 'mouse') {
       dragTarget = document.querySelector('#scenes')
       dragTarget.style.overflow = 'hidden'
       dragTarget.style.scrollBehavior = 'unset'
@@ -719,13 +719,15 @@ let renderScenes = ()=> {
   })
 
   document.querySelector('#script').addEventListener('pointerdown', (e)=>{
-    dragTarget = document.querySelector('#script')
-    dragTarget.style.overflow = 'hidden'
-    dragTarget.style.scrollBehavior = 'unset'
-    dragMode = true
-    dragPoint = [e.pageX, e.pageY]
-    scrollPoint = [dragTarget.scrollLeft, dragTarget.scrollTop]
-    console.log(e)
+    if (e.pointerType == 'pen' || e.pointerType == 'mouse') {
+      dragTarget = document.querySelector('#script')
+      dragTarget.style.overflow = 'hidden'
+      dragTarget.style.scrollBehavior = 'unset'
+      dragMode = true
+      dragPoint = [e.pageX, e.pageY]
+      scrollPoint = [dragTarget.scrollLeft, dragTarget.scrollTop]
+      console.log(e)
+    }
   })
 }
 

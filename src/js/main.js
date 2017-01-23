@@ -378,7 +378,7 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
   if (newWindow) {
     newWindow.hide()
   }
-  mainWindow = new BrowserWindow({acceptFirstMouse: true, backgroundColor: '#333333', width: 2480, height: 1350, minWidth: 1500, minHeight: 1080, show: false, resizable: true, titleBarStyle: 'hidden-inset', webPreferences: {webgl: false, experimentalFeatures: true, experimentalCanvasFeatures: true, devTools: true} })
+  mainWindow = new BrowserWindow({acceptFirstMouse: true, backgroundColor: '#333333', width: 2480, height: 1350, minWidth: 1500, minHeight: 1080+29, show: false, resizable: true, titleBarStyle: 'hidden-inset', webPreferences: {webgl: false, experimentalFeatures: true, experimentalCanvasFeatures: true, devTools: true} })
   mainWindow.loadURL(`file://${__dirname}/../main-window.html`)
 
   mainWindow.once('ready-to-show', () => {
