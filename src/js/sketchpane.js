@@ -102,6 +102,7 @@ for (var i=0;i<brushCount;i++) {
 let pointerMove = (e)=> {
   if (penDown) {
     let penAttributes = getPointerData(e)
+    console.log(e)
     pointerBuffer.push(penAttributes)
   }
 }
@@ -187,14 +188,14 @@ let drawScaleLoop = (timestamp)=> {
       cursorLoc = [Math.floor(b[0]-a[0]), Math.floor(b[1]-a[1])]
       scale = 1+ cursorLoc[1] * 0.01
       translationPoint = [pointerBuffer[0].point[0], pointerBuffer[0].point[1]]
-    } 
+    }
     if (penDown) window.requestAnimationFrame(drawScaleLoop)
     drawContexts[1].clearRect(0, 0, boardSize[0], boardSize[1])
     drawContexts[1].save()
     drawContexts[1].translate(translationPoint[0], translationPoint[1])
     drawContexts[1].scale(scale, scale)
     drawContexts[1].translate(-translationPoint[0], -translationPoint[1])
-    drawContexts[1].drawImage(boardContext.canvas, 0,0) 
+    drawContexts[1].drawImage(boardContext.canvas, 0,0)
     drawContexts[1].restore()
   }
 }
@@ -210,10 +211,10 @@ let drawMoveLoop = (timestamp)=> {
     let a = (pointerBuffer[0].point)
     let b = (pointerBuffer[pointerBuffer.length-1].point)
     cursorLoc = [Math.floor(b[0]-a[0]), Math.floor(b[1]-a[1])]
-  } 
+  }
   if (penDown) window.requestAnimationFrame(drawMoveLoop)
   drawContexts[1].clearRect(0, 0, boardSize[0], boardSize[1])
-  drawContexts[1].drawImage(boardContext.canvas, cursorLoc[0],cursorLoc[1]) 
+  drawContexts[1].drawImage(boardContext.canvas, cursorLoc[0],cursorLoc[1])
 }
 
 
@@ -251,15 +252,15 @@ let drawBrush = ()=> {
           straightDirection = 2
           straightAnchor = a[0]
         }
-        
+
       }
-    } 
+    }
 
 
 
   }
 
-  
+
   if (isStraightline) {
     if (straightDirection) {
       for (let penAttributes of pointerBuffer) {
@@ -314,15 +315,16 @@ let imageData
 let targetImageData
 
 let renderDrawingLayer = (color)=> {
-  console.log("called renderDrawingLayer")
+  //console.log("called renderDrawingLayer")
   imageData = drawContexts[0].getImageData(0,0,boardSize[0],boardSize[1])
+  //imageData = drawContexts[0].getImageData(0,0,100,100)
   targetImageData = drawContexts[1].createImageData(boardSize[0],boardSize[1])
   //let targetImageData = imageData
   pix = targetImageData.data;
   for (var i = 0; i < pix.length; i += 4) {
     pix[i  ] = color[0]
-    pix[i+1] = color[1] 
-    pix[i+2] = color[2] 
+    pix[i+1] = color[1]
+    pix[i+2] = color[2]
     if (imageData.data[i] == 0){
       pix[i+3] = 0
     } else {
@@ -384,7 +386,7 @@ let drawLine = (context, point1, point2, penattributes1, penattributes2)=> {
   }
 }
 
-let drawRotatedImage = (image, x, y, angle, w, h, eraser)=> { 
+let drawRotatedImage = (image, x, y, angle, w, h, eraser)=> {
   if (eraser) {
     var layer = boardContext
   } else {

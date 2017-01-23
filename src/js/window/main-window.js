@@ -1,6 +1,7 @@
 const {ipcRenderer, shell, remote, nativeImage, clipboard} = require('electron')
 //const electronLocalshortcut = require('electron-localshortcut');
 const fs = require('fs')
+const path = require('path')
 const moment = require('moment')
 const menu = require('../menu.js')
 const util = require('../wonderunit-utils.js')
@@ -90,10 +91,10 @@ ipcRenderer.on('load', (event, args)=>{
   } else {
     // if not, its just a simple single boarder file
     boardFilename = args[0]
-    boardPath = boardFilename.split('/')
+    boardPath = boardFilename.split(path.sep)
     boardPath.pop()
-    boardPath = boardPath.join('/')
-    console.log(boardPath)
+    boardPath = boardPath.join(path.sep)
+    console.log(' BOARD PATH: ', boardPath)
 
 
 
@@ -104,7 +105,7 @@ ipcRenderer.on('load', (event, args)=>{
 
   loadBoardUI()
 
-  
+
 
 })
 
@@ -203,13 +204,15 @@ let loadBoardUI = ()=> {
   }
 
   document.querySelector('#thumbnail-container').addEventListener('pointerdown', (e)=>{
-    dragTarget = document.querySelector('#thumbnail-container')
-    dragTarget.style.overflow = 'hidden'
-    dragTarget.style.scrollBehavior = 'unset'
-    dragMode = true
-    dragPoint = [e.pageX, e.pageY]
-    scrollPoint = [dragTarget.scrollLeft, dragTarget.scrollTop]
-    console.log(e)
+    if (pointerType == 'pen') {
+      dragTarget = document.querySelector('#thumbnail-container')
+      dragTarget.style.overflow = 'hidden'
+      dragTarget.style.scrollBehavior = 'unset'
+      dragMode = true
+      dragPoint = [e.pageX, e.pageY]
+      scrollPoint = [dragTarget.scrollLeft, dragTarget.scrollTop]
+      console.log(e)
+    }
   })
 
   window.addEventListener('pointermove', (e)=>{
@@ -293,7 +296,7 @@ let saveImageFile = ()=> {
     let imageData = document.querySelector('#board-canvas').toDataURL('image/png')
     imageData = imageData.replace(/^data:image\/\w+;base64,/, '');
     let board = boardData.boards[currentBoard]
-    let imageFilename = boardPath + '/images/' + board.url
+    let imageFilename = path.join(boardPath, 'images', board.url)
     fs.writeFile(imageFilename, imageData, 'base64', function(err) {})
     console.log('saved IMAGE file!', imageFilename)
     imageFileDirty = false
@@ -301,9 +304,9 @@ let saveImageFile = ()=> {
     // setImmediate((currentBoard, boardPath, board)=>{
     //   document.querySelector("[data-thumbnail='" + currentBoard + "']").querySelector('img').src = boardPath + '/images/' + board.url + '?' + Date.now()
     // },currentBoard, boardPath, board)
-    
+
     setTimeout((currentBoard, boardPath, board)=>{
-      document.querySelector("[data-thumbnail='" + currentBoard + "']").querySelector('img').src = boardPath + '/images/' + board.url + '?' + Date.now()
+      document.querySelector("[data-thumbnail='" + currentBoard + "']").querySelector('img').src = path.join(boardPath, 'images', board.url + '?' + Date.now())
     },100,currentBoard, boardPath, board)
   }
 }
@@ -355,7 +358,7 @@ let goNextBoard = (direction)=> {
   if (direction) {
     currentBoard += direction
   } else {
-    currentBoard++ 
+    currentBoard++
   }
   gotoBoard(currentBoard)
 }
@@ -407,14 +410,14 @@ let gotoBoard = (boardNumber)=> {
   } else {
     percentage = (boardData.boards[currentBoard].time)/(boardData.boards[boardData.boards.length-1].time+2000)
   }
-  
+
   console.log(percentage)
   let width = document.querySelector('#timeline #movie-timeline-content').offsetWidth
   console.log(width)
   document.querySelector('#timeline .marker').style.left = (width*percentage) + 'px'
 
   document.querySelector('#timeline .left-block').innerHTML = util.msToTime(boardData.boards[currentBoard].time)
-  
+
   let totalTime
   if (boardData.boards[boardData.boards.length-1].duration) {
     totalTime = (boardData.boards[boardData.boards.length-1].time+boardData.boards[boardData.boards.length-1].duration)
@@ -422,7 +425,7 @@ let gotoBoard = (boardNumber)=> {
     totalTime = (boardData.boards[boardData.boards.length-1].time+2000)
   }
   document.querySelector('#timeline .right-block').innerHTML = util.msToTime(totalTime)
- 
+
 
 
 }
@@ -503,7 +506,7 @@ let updateSketchPaneBoard = () => {
   // get current board
   let board = boardData.boards[currentBoard]
   // try to load url
-  let imageFilename = boardPath + '/images/' + board.url
+  let imageFilename = path.join(boardPath, 'images', board.url)
   let context = document.querySelector('#board-canvas').getContext('2d')
   console.log('loading image')
   if (!fs.existsSync(imageFilename)){
@@ -522,7 +525,7 @@ let updateThumbnailDrawer = ()=> {
 
   let hasShots = false
   for (var board of boardData.boards) {
-    if (board.newShot) { 
+    if (board.newShot) {
       hasShots = true
       break
     }
@@ -590,7 +593,7 @@ let updateThumbnailDrawer = ()=> {
       html.push(' endShot')
     }
     html.push('" style="width: ' + ((60 * boardData.aspectRatio)) + 'px;">')
-    let imageFilename = boardPath + '/images/' + board.url
+    let imageFilename = path.join(boardPath, 'images', board.url)
     if (!fs.existsSync(imageFilename)){
       // bank image
       html.push('<img src="//:0" height="60" width="' + (60 * boardData.aspectRatio) + '">')
@@ -698,19 +701,21 @@ let renderScenes = ()=> {
         currentScene = Number(e.target.dataset.node)
         loadScene(currentScene)
         renderScript()
-        loadBoardUI()      
+        loadBoardUI()
       }
     }, true, true)
   }
 
   document.querySelector('#scenes').addEventListener('pointerdown', (e)=>{
-    dragTarget = document.querySelector('#scenes')
-    dragTarget.style.overflow = 'hidden'
-    dragTarget.style.scrollBehavior = 'unset'
-    dragMode = true
-    dragPoint = [e.pageX, e.pageY]
-    scrollPoint = [dragTarget.scrollLeft, dragTarget.scrollTop]
-    console.log(e)
+    if (e.pointerType == 'pen') {
+      dragTarget = document.querySelector('#scenes')
+      dragTarget.style.overflow = 'hidden'
+      dragTarget.style.scrollBehavior = 'unset'
+      dragMode = true
+      dragPoint = [e.pageX, e.pageY]
+      scrollPoint = [dragTarget.scrollLeft, dragTarget.scrollTop]
+      console.log(e)
+    }
   })
 
   document.querySelector('#script').addEventListener('pointerdown', (e)=>{
@@ -732,12 +737,12 @@ let renderScript = ()=> {
     if (node.type == 'scene') {
       if (sceneCount == currentScene) {
         html.push('<div class="item slugline"><div class="number">SCENE ' + node.scene_number + ' - ' +  util.msToTime(node.duration) + '</div>')
-        
+
         html.push('<div>' + node.slugline + '</div>')
         if (node.synopsis) {
           html.push('<div class="synopsis">' + node.synopsis + '</div>')
         }
-        
+
         html.push('</div>')
         for (var item of node.script) {
           switch (item.type) {
@@ -792,7 +797,7 @@ let loadScene = (sceneNumber) => {
 
   // does the boardfile/directory exist?
   let boardsDirectoryFolders = fs.readdirSync(currentPath).filter(function(file) {
-    return fs.statSync(currentPath + '/' + file).isDirectory()
+    return fs.statSync(path.join(currentPath, file)).isDirectory()
   })
 
   for (var node of scriptData) {
@@ -836,7 +841,7 @@ let loadScene = (sceneNumber) => {
 
           console.log(directoryName)
           // make directory
-          fs.mkdirSync(currentPath + '/' + directoryName)
+          fs.mkdirSync(path.join(currentPath, directoryName))
           // make storyboarder file
 
           let newBoardObject = {
@@ -845,21 +850,21 @@ let loadScene = (sceneNumber) => {
             defaultBoardTiming: 2000,
             boards: []
           }
-          boardFilename = currentPath + '/' + directoryName + '/' + directoryName + '.storyboarder'
+          boardFilename = path.join(currentPath, directoryName, directoryName + '.storyboarder')
           boardData = newBoardObject
           fs.writeFileSync(boardFilename, JSON.stringify(newBoardObject))
           // make storyboards directory
-          fs.mkdirSync(currentPath + '/' + directoryName + '/images')
-          
+          fs.mkdirSync(path.join(currentPath, directoryName, 'images'))
+
         } else {
           // load storyboarder file
           console.log('load storyboarder!')
           console.log(foundDirectoryName)
-          boardFilename = currentPath + '/' + foundDirectoryName + '/' + foundDirectoryName + '.storyboarder'
+          boardFilename = path.join(currentPath, foundDirectoryName, foundDirectoryName + '.storyboarder')
           boardData = JSON.parse(fs.readFileSync(boardFilename))
         }
 
-        //check if boards scene exists in 
+        //check if boards scene exists in
 
         for (var item of document.querySelectorAll('#scenes .scene')) {
           item.classList.remove('active')
@@ -880,9 +885,10 @@ let loadScene = (sceneNumber) => {
     }
   }
 
-  boardPath = boardFilename.split('/')
+  boardPath = boardFilename.split(path.sep)
   boardPath.pop()
-  boardPath = boardPath.join('/')
+  boardPath = boardPath.join(path.sep)
+  console.log('BOARD PATH:', boardPath)
 
   dragTarget = document.querySelector('#thumbnail-container')
   dragTarget.style.scrollBehavior = 'unset'
@@ -928,7 +934,7 @@ let scalePanImage = () => {
   console.log(scaleFactor)
 
   let scale = scaleFactor * 1.2
-  canvasDiv.style.height 
+  canvasDiv.style.height
 }
 
 
@@ -1027,7 +1033,7 @@ let playAdvance = function(first) {
 // let playSpeechAdvance = function(first) {
 //   //clearTimeout(frameTimer)
 //   clearTimeout(updateTimer)
-    
+
 //   if (playbackMode) {
 //     if (!first) {
 //       advanceFrame(1)
@@ -1051,7 +1057,7 @@ let playAdvance = function(first) {
 //         if (scriptData[currentNode].authors) {
 //           string.push(scriptData[currentNode].authors + ' ')
 //         }
-          
+
 //         utter.text = string.join('')
 //         delayTime = 2000
 //         break
@@ -1105,14 +1111,14 @@ let playAdvance = function(first) {
 //         break
 //     }
 
-//     utter.onend = function(event) { 
+//     utter.onend = function(event) {
 //       //console.log(((new Date().getTime())-startSpeakingTime)/utter.text.length)
 //       speechSynthesis.cancel()
 //       if (playbackMode) {
-//         setTimeout(playSpeechAdvance, delayTime) 
+//         setTimeout(playSpeechAdvance, delayTime)
 //       }
 //     }
-    
+
 //     speechSynthesis.speak(utter);
 //     startSpeakingTime = new Date().getTime()
 //   }
@@ -1231,7 +1237,7 @@ ipcRenderer.on('copy', (e, arg)=> {
     // clipboard.writeText(JSON.stringify(board))
     clipboard.write({
       image: nativeImage.createFromDataURL(canvasDiv.toDataURL()),
-      text: JSON.stringify(board), 
+      text: JSON.stringify(board),
     })
   }
 })
@@ -1402,4 +1408,3 @@ ipcRenderer.on('duplicateBoard', (event, args)=>{
     duplicateBoard()
   }
 })
-

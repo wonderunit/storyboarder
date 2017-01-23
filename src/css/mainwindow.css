@@ -1,4 +1,4 @@
-body { 
+body {
   margin: 0;
   padding: 0;
   color: black;
@@ -33,6 +33,12 @@ body {
   background: #333;
 
 }
+
+
+#scenes::-webkit-scrollbar {
+    display: none;
+}
+
 
 #scenes div.node:nth-child(2) {
   padding-top: 45px;
@@ -97,6 +103,12 @@ body {
   border-right: 1px solid rgba(0,0,0,0.1);
 
 }
+
+
+#script::-webkit-scrollbar {
+    display: none;
+}
+
 
 #script .item {
   color: rgba(255,255,255,0.6);
@@ -203,8 +215,8 @@ body {
   scroll-behavior: smooth;
 }
 
-#thumbnail-container::-webkit-scrollbar { 
-    display: none; 
+#thumbnail-container::-webkit-scrollbar {
+    display: none;
 }
 
 #thumbnail-drawer {
@@ -383,7 +395,7 @@ canvas {
   display: none;
 }
 
-/*  
+/*
 
 http://slides.com/sarasoueidan/building-better-interfaces-with-svg#/2
 https://icomoon.io/app/#/select
@@ -525,8 +537,3 @@ div.marker-holder {
 #playback svg:hover {
   fill: rgba(255,255,255,0.8);
 }
-
-
-
-
-

@@ -1,4 +1,5 @@
 const {ipcRenderer, shell, remote} = require('electron')
+const path = require('path')
 const moment = require('moment')
 const menu = require('../menu.js')
 const util = require('../wonderunit-utils.js')
@@ -10,10 +11,10 @@ let updateRecentDocuments = () => {
   let count = 0
   let html = []
   let recentDocuments = remote.getGlobal('sharedObj').prefs['recentDocuments']
-  if (recentDocuments) {
+  if (recentDocuments && recentDocuments.length>0) {
     for (var recentDocument of recentDocuments) {
       html.push(`<div class="recent-item" data-filename="${recentDocument.filename}"><img src="./img/fileicon.png"><div class="text">`)
-      let filename = recentDocument.filename.split('/')
+      let filename = recentDocument.filename.split(path.sep)
       filename = filename[filename.length-1]
       html.push(`<h2>${recentDocument.title}</h2>`)
       html.push(`${moment(recentDocument.time).fromNow().toUpperCase()} // ${util.msToTime(recentDocument.totalMovieTime)} / ${recentDocument.totalPageCount} PAGES / ${String(recentDocument.totalWordCount).replace(/\B(?=(\d{3})+(?!\d))/g, ",")} WORDS`)
@@ -41,7 +42,8 @@ let updateRecentDocuments = () => {
 
 updateRecentDocuments()
 
-document.querySelector('#close-button').onclick = (e) => {
+document.querySelector('#close-button').onclick = () => {
+  console.log('close')
   let window = remote.getCurrentWindow()
   window.close()
 }
@@ -54,7 +56,7 @@ document.querySelector('iframe').onload = ()=>{
     }
     element.addEventListener("mouseover", sfx.rollover)
     element.addEventListener("mousedown", sfx.down)
-  })  
+  })
 }
 
 document.querySelector('#getting-started').onclick = ()=> {

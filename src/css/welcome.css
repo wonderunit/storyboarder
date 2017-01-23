@@ -40,7 +40,7 @@
   /* Pretty Modern Browsers */
   font-weight: 200; }
 
-body { 
+body {
   display: flex;
   flex-direction: row;
   margin: 0;
@@ -63,7 +63,7 @@ body {
 #drag-handle {
   position: absolute;
   width: 100vw;
-  z-index: 600;
+  z-index: 0;
   height: 200px;
   -webkit-app-region: drag;
   pointer-events: none;
@@ -79,6 +79,8 @@ iframe {
   left: 0px;
   padding: 20px;
   opacity: 0.5;
+  -webkit-app-region: no-drag;
+
 }
 
 #close-button:hover {
@@ -164,7 +166,7 @@ iframe {
 
 #recent {
   height: 275px;
-  overflow: scroll;
+  /*overflow: scroll;*/
 }
 
 .recent-item {

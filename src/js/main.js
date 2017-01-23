@@ -5,8 +5,13 @@
 */
 
 const {app, ipcMain, BrowserWindow, globalShortcut, dialog, powerSaveBlocker} = electron = require('electron')
+
+
+//app.commandLine.appendSwitch('--disable-gpu')
+
 const PDFParser = require("pdf2json");
 const fs = require('fs')
+const path = require('path')
 
 const prefModule = require('./prefs')
 
@@ -21,7 +26,7 @@ let mainWindow
 let sketchWindow
 let welcomeInprogress
 
-let statWatcher 
+let statWatcher
 
 let powerSaveId = 0
 
@@ -80,7 +85,7 @@ let openWelcomeWindow = ()=> {
     prefs.recentDocuments = recentDocumentsCopy
   }
   global.sharedObj = {'prefs': prefs}
-  
+
   welcomeWindow.once('ready-to-show', () => {
     setTimeout(()=>{welcomeWindow.show()}, 300)
   })
@@ -97,7 +102,7 @@ let openWelcomeWindow = ()=> {
 
 
 let openFile = (file) => {
-  let arr = file.split('/')
+  let arr = file.split(path.sep)
   let filename = arr[arr.length-1]
   let filenameParts =filename.toLowerCase().split('.')
   let type = filenameParts[filenameParts.length-1]
@@ -124,9 +129,9 @@ let openFile = (file) => {
       }
 
       // check for storyboards directory
-      let storyboardsPath = file.split('/')
+      let storyboardsPath = file.split(path.sep)
       storyboardsPath.pop()
-      storyboardsPath = storyboardsPath.join('/') + '/storyboards'          
+      storyboardsPath = path.join(storyboardsPath.join(path.sep), 'storyboards')
       if (!fs.existsSync(storyboardsPath)){
         fs.mkdirSync(storyboardsPath)
       }
@@ -136,7 +141,7 @@ let openFile = (file) => {
 
       // check for storyboard.settings file
       let boardSettings
-      if (!fs.existsSync(storyboardsPath + '/storyboard.settings')){
+      if (!fs.existsSync(path.join(storyboardsPath, 'storyboard.settings'))){
         // pop dialogue ask for aspect ratio
         dialog.showMessageBox({
           type: 'question',
@@ -149,7 +154,7 @@ let openFile = (file) => {
           boardSettings = {lastScene: 0}
           let aspects = [2.39, 2, 1.85, 1.7777777777777777, 0.5625, 1, 1.3333333333333333]
           boardSettings.aspectRatio = aspects[response]
-          fs.writeFileSync(storyboardsPath + '/storyboard.settings', JSON.stringify(boardSettings))
+          fs.writeFileSync(path.join(storyboardsPath, 'storyboard.settings'), JSON.stringify(boardSettings))
 
           //[scriptData, locations, characters, metadata]
           let processedData = processFountainData(data, true, false)
@@ -158,7 +163,7 @@ let openFile = (file) => {
 
         })
       } else {
-        boardSettings = JSON.parse(fs.readFileSync(storyboardsPath + '/storyboard.settings'))
+        boardSettings = JSON.parse(fs.readFileSync(path.join(storyboardsPath, 'storyboard.settings')))
         if (!boardSettings.lastScene) { boardSettings.lastScene = 0 }
 
         //[scriptData, locations, characters, metadata]
@@ -175,8 +180,7 @@ let openFile = (file) => {
 
 let openDialogue = () => {
   dialog.showOpenDialog({title:"Open Script", filters:[
-      {name: 'Screenplay', extensions: ['fountain']},
-      {name: 'Storyboarder', extensions: ['storyboarder']}
+      {name: 'Screenplay or Storyboarder', extensions: ['fountain', 'storyboarder']},
     ]}, (filenames)=>{
       if (filenames) {
         openFile(filenames[0])
@@ -193,7 +197,7 @@ let openDialogue = () => {
 //   let type = filenameParts[filenameParts.length-1]
 //   if (type == 'pdf') {
 //     let pdfParser = new PDFParser();
-    
+
 //     pdfParser.on("pdfParser_dataError", errData => console.error(errData.parserError) );
 
 //     pdfParser.on('pdfParser_dataReady', pdfData => {
@@ -216,7 +220,7 @@ let openDialogue = () => {
 //               // new line
 //               scriptText += "\n\n"
 //             } else if (text['y'] == currentY) {
-//             } else if (text['y'] < currentY) { 
+//             } else if (text['y'] < currentY) {
 //               break
 //             } else {
 //               if ((text['x'] !== currentX) && (text['x'] > 10.17)) {
@@ -257,7 +261,7 @@ let processFountainData = (data, create, update) => {
   let metadata = {type: 'script', sceneBoardsCount: 0, sceneCount: 0, totalMovieTime: 0}
 
   let boardsDirectoryFolders = fs.readdirSync(currentPath).filter(function(file) {
-    return fs.statSync(currentPath + '/' + file).isDirectory();
+    return fs.statSync(path.join(currentPath, file)).isDirectory();
   });
 
   for (var node of scriptData) {
@@ -280,7 +284,7 @@ let processFountainData = (data, create, update) => {
             break
           }
         }
-        break 
+        break
     }
   }
 
@@ -292,7 +296,7 @@ let processFountainData = (data, create, update) => {
       let lastNode = scriptData[scriptData.length-1]['script'][scriptData[scriptData.length-1]['script'].length-1]
       metadata.totalMovieTime = lastNode.time + lastNode.duration
       break
-  }    
+  }
 
   if (create) {
     fs.watchFile(currentFile, {persistent: false}, (e) => {
@@ -317,7 +321,7 @@ let getSceneDifference = (scriptA, scriptB) => {
     }
     if (JSON.stringify(node) !== JSON.stringify(scriptA[i])) {
       return i
-    }    
+    }
     i++
   }
   return false
@@ -331,12 +335,12 @@ let getSceneDifference = (scriptA, scriptB) => {
 let createNew = () => {
   dialog.showSaveDialog({
     title:"New storyboard",
-    buttonLabel: "Create", 
-  }, 
+    buttonLabel: "Create",
+  },
   (filename)=>{
     if (filename) {
       console.log(filename)
-      let arr = filename.split('/')
+      let arr = filename.split(path.sep)
       let boardName = arr[arr.length-1]
       if (!fs.existsSync(filename)){
         fs.mkdirSync(filename)
@@ -356,9 +360,9 @@ let createNew = () => {
           }
           let aspects = [2.39, 2, 1.85, 1.7777777777777777, 0.5625, 1, 1.3333333333333333]
           newBoardObject.aspectRatio = aspects[response]
-          fs.writeFileSync(filename + '/' + boardName + '.storyboarder', JSON.stringify(newBoardObject))
-          fs.mkdirSync(filename + '/images')
-          loadStoryboarderWindow(filename + '/' + boardName + '.storyboarder')
+          fs.writeFileSync(path.join(filename, boardName + '.storyboarder'), JSON.stringify(newBoardObject))
+          fs.mkdirSync(path.join(filename, 'images'))
+          loadStoryboarderWindow(path.join(filename, boardName + '.storyboarder'))
         })
       } else {
         console.log("error: already exists")
@@ -374,7 +378,7 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
   if (newWindow) {
     newWindow.hide()
   }
-  mainWindow = new BrowserWindow({acceptFirstMouse: true, backgroundColor: '#333333', width: 2480, height: 1350, minWidth: 1500, minHeight: 1080, show: false, resizable: true, titleBarStyle: 'hidden-inset', webPreferences: {experimentalFeatures: true, devTools: true} })
+  mainWindow = new BrowserWindow({acceptFirstMouse: true, backgroundColor: '#333333', width: 2480, height: 1350, minWidth: 1500, minHeight: 1080, show: false, resizable: true, titleBarStyle: 'hidden-inset', webPreferences: {webgl: false, experimentalFeatures: true, experimentalCanvasFeatures: true, devTools: true} })
   mainWindow.loadURL(`file://${__dirname}/../main-window.html`)
 
   mainWindow.once('ready-to-show', () => {
@@ -384,7 +388,7 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
   mainWindow.once('close', () => {
     if (welcomeWindow) {
       welcomeWindow.webContents.send('updateRecentDocuments')
-      welcomeWindow.show()      
+      welcomeWindow.show()
     }
   })
 }
@@ -407,7 +411,7 @@ let addToRecentDocs = (filename, metadata) => {
   let recentDocument = metadata
 
   if (!recentDocument.title) {
-    let title = filename.split('/')
+    let title = filename.split(path.sep)
     title = title[title.length-1]
     title = title.split('.')
     title.splice(-1,1)
@@ -428,7 +432,7 @@ let addToRecentDocs = (filename, metadata) => {
 ////////////////////////////////////////////////////////////
 
 //////////////////
-// Main Window 
+// Main Window
 //////////////////
 
 ipcMain.on('newBoard', (e, arg)=> {
@@ -495,7 +499,7 @@ ipcMain.on('brushSize', (e, arg)=> {
 
 
 //////////////////
-// Welcome Window 
+// Welcome Window
 //////////////////
 
 
