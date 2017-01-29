@@ -460,13 +460,13 @@ let getPointerData = (e)=> {
       tilt = 0.5
     }
     pressure = e.pressure
-    eraser = e.buttons == 2
+    eraser = e.buttons == 2 || eraserMode
     pointerType = 1
   } else {
     angle = 0
     tilt = 0.1
     pressure = 0.5
-    eraser = e.buttons == 2
+    eraser = e.buttons == 2 || eraserMode
     pointerType = 0
   }
   var penAttributes = {point: currentPoint, angle: angle, tilt: tilt, pressure: pressure, eraser: eraser, pointerType: pointerType}
@@ -533,10 +533,15 @@ let changeBrushSize = (direction)=> {
 }
 
 let setCursorSize = ()=> {
+  var cursorLoc = cursorDiv.getBoundingClientRect()
   var boardScale = boardContext.canvas.getBoundingClientRect().width / boardContext.canvas.width
   var cursorSize = ((brushSize*3*(boardScale*2))+3)
+  let sketchPaneDiv = document.querySelector('#sketch-pane')
+  //cursorDiv.style.left = (e.clientX-(cursorDiv.getBoundingClientRect().width/2)) + 'px'
   cursorDiv.style.width = cursorSize + 'px'
   cursorDiv.style.height = cursorSize + 'px'
+  cursorDiv.style.left = cursorLoc.left + (cursorLoc.width/2) - (cursorSize/2) - sketchPaneDiv.getBoundingClientRect().left + 'px'
+  cursorDiv.style.top = cursorLoc.top + (cursorLoc.height/2) - (cursorSize/2) - sketchPaneDiv.getBoundingClientRect().top + 'px'
 }
 
 let setBrushSize = (size)=> {
@@ -554,6 +559,7 @@ let setLayerOpacity = (opacity)=> {
 }
 
 let setBrush = (size, color, opacity, layerOpacity, layer)=> {
+  eraserMode = false
   setBrushSize(size)
   setBrushColor(color)
   setBrushOpacity(opacity)

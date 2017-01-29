@@ -1238,26 +1238,23 @@ ipcRenderer.on('setTool', (e, arg)=> {
     console.log('setTool', arg)
     switch(arg) {
       case 'lightPencil':
-        sketchPane.setBrush(1, 0)
-        sketchPane.setColor([200,200,255])
+        sketchPane.setBrush(2,[200,220,255],30,50,'main')
         break
       case 'pencil':
-        sketchPane.setBrush(1, 20)
-        sketchPane.setColor([50,50,50])
+        sketchPane.setBrush(2,[50,50,50],5,70,'main')
         break
       case 'pen':
-        sketchPane.setBrush(4, 40)
-        sketchPane.setColor([0,0,0])
+        sketchPane.setBrush(3,[0,0,0],60,80,'main')
         break
       case 'brush':
-        sketchPane.setBrush(16, 0)
-        sketchPane.setColor([100,100,100])
+        sketchPane.setBrush(20,[0,0,100],2,20,'main')
         break
       case 'eraser':
         sketchPane.setEraser()
         break
     }
   }
+  // sketchPane.setBrush(4,[255,0,0],100,100,'notes')
 })
 
 ipcRenderer.on('clear', (e, arg)=> {
@@ -1268,51 +1265,9 @@ ipcRenderer.on('clear', (e, arg)=> {
 
 ipcRenderer.on('brushSize', (e, arg)=> {
   if (!textInputMode) {
-    sketchPane.setBrushSize(arg)
+    sketchPane.changeBrushSize(arg)
   }
 })
-
-// ipc.on('changeBrush', (event, arg)=> {
-//   console.log("chagerwfsd")
-//   switch(arg) {
-//     case 'light':
-//       sketchPane.setBrush(1, 0)
-//       sketchPane.setColor([200,200,255])
-//       beep()
-//       break
-//     case 'pencil':
-//       sketchPane.setBrush(1, 20)
-//       sketchPane.setColor([50,50,50])
-//       beep()
-//       break
-//     case 'pen':
-//       sketchPane.setBrush(4, 40)
-//       sketchPane.setColor([0,0,0])
-//       beep()
-//       break
-//     case 'brush':
-//       sketchPane.setBrush(16, 0)
-//       sketchPane.setColor([100,100,100])
-//       beep()
-//       break
-//   }
-// })
-
-// ipc.on('clear', (event, arg)=> {
-//   sketchPane.clear()
-//   beep()
-// })
-
-// ipc.on('undo', (event, arg)=> {
-//   sketchPane.undo()
-//   beep()
-// })
-
-// ipc.on('redo', (event, arg)=> {
-//   sketchPane.redo()
-//   beep()
-// })
-
 
 ipcRenderer.on('deleteBoard', (event, args)=>{
   if (!textInputMode) {
