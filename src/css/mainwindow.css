@@ -261,7 +261,7 @@ body {
 
 #thumbnail-drawer .thumbnail.active {
   background: #ffc000;
-  background: #aaa;
+  background: #777780;
   color: #000;
   transition: all 0s ease-out;
 }
@@ -322,14 +322,14 @@ body {
 }
 
 #canvas-container {
-  transform: scale(0.3,0.3) translate(0,0);
+  transform: scale(0.0,0.0) translate(0,0);
   transform-origin: 0 0;
   position: relative;
   left: 0;
   top: 0;
   overflow: hidden;
   background: white;
-  border-radius: 15px;
+  border-radius: 13px;
   box-shadow: 0 2px 15px rgba(0,0,0,0.3);
 }
 
@@ -482,7 +482,7 @@ https://icomoon.io/app/#/select
 }
 
 #timeline #movie-timeline-content div {
-  background: rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.1);
   display: block;
   font-size: 1px;
   height: 100%;
@@ -490,7 +490,7 @@ https://icomoon.io/app/#/select
 }
 
 #timeline #movie-timeline-content div:nth-child(even) {
-    background: rgba(255,255,255,0.3);
+    background: rgba(255,255,255,0.2);
 }
 
 #timeline #movie-timeline-content div:nth-child(2) {
@@ -510,14 +510,14 @@ div.marker-holder {
 
 #timeline .marker {
   position: absolute;
-  background-color: rgba(255,255,255,0.7) !important;
-  width: 5px;
+  background-color: #777780 !important;
+  width: 8px;
   height: 20px !important;
   top: -5px;
   left: 0px;
   z-index: 999;
-  border-radius: 5px !important;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.7);
+  border-radius: 3px !important;
+  box-shadow: 0 1px 1px rgba(0,0,0,0.4) !important;
   transition: left 0.3s;
 }
 

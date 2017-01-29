@@ -82,6 +82,7 @@ let loadBoardUI = ()=> {
     size = [900, (900/aspectRatio)]
   }
   sketchPane.init(document.getElementById('sketch-pane'), ['reference', 'main', 'notes'], size)
+  sketchPane.setBrush(1.5,[30,30,30],5,70,'main')
   sketchPane.on('lineMileage', (value)=>{console.log(value)})
   sketchPane.on('addToUndoStack', (id,imageBitmap)=>{
     //console.log(imageBitmap)
@@ -947,140 +948,6 @@ let playAdvance = function(first) {
   frameTimer = setTimeout(playAdvance, frameDuration)
 }
 
-// let playSpeechAdvance = function(first) {
-//   //clearTimeout(frameTimer)
-//   clearTimeout(updateTimer)
-
-//   if (playbackMode) {
-//     if (!first) {
-//       advanceFrame(1)
-//     } else {
-//       advanceFrame(0)
-//     }
-
-//     utter.pitch = 0.65;
-//     utter.rate = 1.1;
-
-//     switch (scriptData[currentNode].type) {
-//       case 'title':
-//         let string = []
-//         string.push(scriptData[currentNode].text.toLowerCase().replace(/<\/?[^>]+(>|$)/g, "") + '. ')
-//         if (scriptData[currentNode].credit) {
-//           string.push(scriptData[currentNode].credit + ' ')
-//         }
-//         if (scriptData[currentNode].author) {
-//           string.push(scriptData[currentNode].author + ' ')
-//         }
-//         if (scriptData[currentNode].authors) {
-//           string.push(scriptData[currentNode].authors + ' ')
-//         }
-
-//         utter.text = string.join('')
-//         delayTime = 2000
-//         break
-//       case 'section':
-//         utter.text = scriptData[currentNode].text.toLowerCase()
-//         delayTime = 2000
-//         break
-//       case 'scene':
-//         if (currentSceneNode > -1) {
-//           switch (scriptData[currentNode]['script'][currentSceneNode].type) {
-//             case 'scene_padding':
-//               utter.text = ''
-//               playSpeechAdvance()
-//               break
-//             case 'scene_heading':
-//               utter.text = scriptData[currentNode]['script'][currentSceneNode].text.toLowerCase().replace("mr.", "mister").replace("int. ", "interior, ").replace("ext. ", "exterior, ")
-//               currentSpeaker = ''
-//               delayTime = 1000
-//               break
-//             case 'action':
-//               utter.text = scriptData[currentNode]['script'][currentSceneNode].text.replace(/<\/?[^>]+(>|$)/g, "")
-//               currentSpeaker = ''
-//               delayTime = 500
-//               break
-//             case 'parenthetical':
-//             case 'dialogue':
-//               let string = []
-
-//               if (scriptData[currentNode].type == 'dialogue') {
-//                 delayTime = 1000
-//               } else {
-//                 delayTime = 500
-//               }
-//               if (currentSpeaker !== scriptData[currentNode]['script'][currentSceneNode].character) {
-//                 str = scriptData[currentNode]['script'][currentSceneNode].character.toLowerCase().replace("mr.", "mister").replace("(o.s.)", ", offscreen, ").replace("(v.o.)", ", voiceover, ").replace("(cont'd)", ", continued, ").replace("(cont’d)", ", continued, ") + ', '
-//                 string.push(str)
-//                 currentSpeaker = scriptData[currentNode]['script'][currentSceneNode].character
-//               }
-//               string.push(scriptData[currentNode]['script'][currentSceneNode].text.replace(/<\/?[^>]+(>|$)/g, ""))
-//               utter.text = string.join('')
-//               break
-//             case 'transition':
-//               utter.text = scriptData[currentNode]['script'][currentSceneNode].text.replace(/<\/?[^>]+(>|$)/g, "")
-//               break
-//             case 'section':
-//               utter.text = ''
-//               playSpeechAdvance()
-//               break
-//           }
-//         }
-//         break
-//     }
-
-//     utter.onend = function(event) {
-//       //console.log(((new Date().getTime())-startSpeakingTime)/utter.text.length)
-//       speechSynthesis.cancel()
-//       if (playbackMode) {
-//         setTimeout(playSpeechAdvance, delayTime)
-//       }
-//     }
-
-//     speechSynthesis.speak(utter);
-//     startSpeakingTime = new Date().getTime()
-//   }
-// }
-
-
-
-
-
-  // globalShortcut.register('CommandOrControl+1', () => {
-  //   sketchWindow.webContents.send('changeBrush', 'light')
-  // })
-
-  // globalShortcut.register('CommandOrControl+2', () => {
-  //   sketchWindow.webContents.send('changeBrush', 'pencil')
-  // })
-
-  // globalShortcut.register('CommandOrControl+3', () => {
-  //   sketchWindow.webContents.send('changeBrush', 'pen')
-  // })
-
-  // globalShortcut.register('CommandOrControl+4', () => {
-  //   sketchWindow.webContents.send('changeBrush', 'brush')
-  // })
-
-  // globalShortcut.register('CommandOrControl+Backspace', () => {
-  //   sketchWindow.webContents.send('clear')
-  // })
-
-  // globalShortcut.register('CommandOrControl+Z', () => {
-  //   sketchWindow.webContents.send('undo')
-  // })
-
-  // globalShortcut.register('CommandOrControl+Y', () => {
-  //   sketchWindow.webContents.send('redo')
-  // })
-
-  // globalShortcut.register('[', () => {
-  //   sketchWindow.webContents.send('smallerBrush')
-  // })
-
-  // globalShortcut.register(']', () => {
-  //   sketchWindow.webContents.send('largerBrush')
-  // })
-
 ipcRenderer.on('newBoard', (event, args)=>{
   if (!textInputMode) {
     if (args > 0) {
@@ -1130,12 +997,14 @@ ipcRenderer.on('nextScene', (event, args)=>{
 ipcRenderer.on('undo', (e, arg)=> {
   if (!textInputMode) {
     undoStack.undo()
+    markImageFileDirty()
   }
 })
 
 ipcRenderer.on('redo', (e, arg)=> {
   if (!textInputMode) {
     undoStack.redo()
+    markImageFileDirty()
   }
 })
 
@@ -1238,16 +1107,16 @@ ipcRenderer.on('setTool', (e, arg)=> {
     console.log('setTool', arg)
     switch(arg) {
       case 'lightPencil':
-        sketchPane.setBrush(2,[200,220,255],30,50,'main')
+        sketchPane.setBrush(2,[200,220,255],5,50,'main')
         break
       case 'pencil':
-        sketchPane.setBrush(2,[50,50,50],5,70,'main')
+        sketchPane.setBrush(1.5,[30,30,30],5,70,'main')
         break
       case 'pen':
         sketchPane.setBrush(3,[0,0,0],60,80,'main')
         break
       case 'brush':
-        sketchPane.setBrush(20,[0,0,100],2,20,'main')
+        sketchPane.setBrush(20,[0,0,100],2,10,'main')
         break
       case 'eraser':
         sketchPane.setEraser()
@@ -1268,6 +1137,13 @@ ipcRenderer.on('brushSize', (e, arg)=> {
     sketchPane.changeBrushSize(arg)
   }
 })
+
+ipcRenderer.on('flipBoard', (e, arg)=> {
+  if (!textInputMode) {
+    sketchPane.flipBoard()
+  }
+})
+
 
 ipcRenderer.on('deleteBoard', (event, args)=>{
   if (!textInputMode) {

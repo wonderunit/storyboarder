@@ -258,6 +258,16 @@ const template = [
           ipcRenderer.send('brushSize', 1)
         }
       },
+      {
+        type: 'separator'
+      },
+      {
+        accelerator: 'CmdOrCtrl+F',
+        label: 'Flip Horizontal',
+        click ( item, focusedWindow, event) {
+          ipcRenderer.send('flipBoard')
+        }
+      },
     ]
   },
   {

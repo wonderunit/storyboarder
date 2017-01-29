@@ -1,13 +1,8 @@
 /* TODO:
 
-
-
 */
 
 const {app, ipcMain, BrowserWindow, globalShortcut, dialog, powerSaveBlocker} = electron = require('electron')
-
-
-//app.commandLine.appendSwitch('--disable-gpu')
 
 const PDFParser = require("pdf2json");
 const fs = require('fs')
@@ -313,7 +308,7 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
   if (newWindow) {
     newWindow.hide()
   }
-  mainWindow = new BrowserWindow({acceptFirstMouse: true, backgroundColor: '#333333', width: 2480, height: 1350, minWidth: 1500, minHeight: 1080+29, show: false, resizable: true, titleBarStyle: 'hidden-inset', webPreferences: {webgl: false, experimentalFeatures: true, experimentalCanvasFeatures: true, devTools: true} })
+  mainWindow = new BrowserWindow({acceptFirstMouse: true, backgroundColor: '#333333', width: 2480, height: 1350, minWidth: 1500, minHeight: 1080+29, show: false, resizable: true, titleBarStyle: 'hidden-inset', webPreferences: {webgl: true, experimentalFeatures: true, experimentalCanvasFeatures: true, devTools: true} })
   mainWindow.loadURL(`file://${__dirname}/../main-window.html`)
   
   // setTimeout(()=>{
@@ -437,6 +432,9 @@ ipcMain.on('brushSize', (e, arg)=> {
   mainWindow.webContents.send('brushSize', arg)
 })
 
+ipcMain.on('flipBoard', (e, arg)=> {
+  mainWindow.webContents.send('flipBoard', arg)
+})
 
 //////////////////
 // Welcome Window
