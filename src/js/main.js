@@ -100,7 +100,6 @@ let openWelcomeWindow = ()=> {
   })
 }
 
-
 let openFile = (file) => {
   let arr = file.split(path.sep)
   let filename = arr[arr.length-1]
@@ -187,70 +186,6 @@ let openDialogue = () => {
       }
   })
 }
-
-// function loadFile(create, update) {
-//   if (update == true) {
-//     previousScript = global.sharedObj['scriptData']
-//   }
-
-//   let filenameParts = prefs.scriptFile.toLowerCase().split('.')
-//   let type = filenameParts[filenameParts.length-1]
-//   if (type == 'pdf') {
-//     let pdfParser = new PDFParser();
-
-//     pdfParser.on("pdfParser_dataError", errData => console.error(errData.parserError) );
-
-//     pdfParser.on('pdfParser_dataReady', pdfData => {
-//       let pages = pdfData['formImage']['Pages']
-//       let scriptText = ''
-//       let currentX = 0
-//       for (var page of pages) {
-//         let texts = page['Texts']
-//         let currentY = -1
-//         let textCount = 0
-//         for (var text of texts) {
-//           if (textCount == 0) {
-//             if ((text['x'] !== currentX)) {
-//               scriptText += "\n\n"
-//             }
-//             scriptText += decodeURIComponent(text['R'][0]['T'])
-//             currentX = text['x']
-//           } else {
-//             if ((text['y'] - currentY) > 1) {
-//               // new line
-//               scriptText += "\n\n"
-//             } else if (text['y'] == currentY) {
-//             } else if (text['y'] < currentY) {
-//               break
-//             } else {
-//               if ((text['x'] !== currentX) && (text['x'] > 10.17)) {
-//                 scriptText += "\n"
-//               }
-//             }
-//             scriptText += decodeURIComponent(text['R'][0]['T'])
-//             currentX = text['x']
-//           }
-//           currentY = text['y']
-//           textCount++
-//         }
-//       }
-//       processFountainData(scriptText, create, update)
-//       pdfParser.destroy()
-//     })
-
-//     pdfParser.loadPDF(prefs.scriptFile);
-
-//   } else if (type == 'fountain') {
-//     fs.readFile(prefs.scriptFile, 'utf-8', (err,data)=>{
-//       if (err) {
-//         console.log("ERROR: Can't open file.")
-//         openFile()
-//         return
-//       }
-//       processFountainData(data, create, update)
-//     })
-//   }
-// }
 
 let processFountainData = (data, create, update) => {
   let scriptData = fountain.parse(data, true)
@@ -380,6 +315,11 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
   }
   mainWindow = new BrowserWindow({acceptFirstMouse: true, backgroundColor: '#333333', width: 2480, height: 1350, minWidth: 1500, minHeight: 1080+29, show: false, resizable: true, titleBarStyle: 'hidden-inset', webPreferences: {webgl: false, experimentalFeatures: true, experimentalCanvasFeatures: true, devTools: true} })
   mainWindow.loadURL(`file://${__dirname}/../main-window.html`)
+  
+  // setTimeout(()=>{
+  //   mainWindow.webContents.send('load', [filename, scriptData, locations, characters, boardSettings, currentPath])
+
+  // }, 1000)
 
   mainWindow.once('ready-to-show', () => {
     mainWindow.webContents.send('load', [filename, scriptData, locations, characters, boardSettings, currentPath])

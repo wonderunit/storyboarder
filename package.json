@@ -6,7 +6,8 @@
   "main": "src/js/main.js",
   "scripts": {
     "start": "electron .",
-    "buildosx": "electron-packager . --out=dist --overwrite --platform=darwin --arch=x64 --icon=src/img/outliner-display-icon.icns"
+    "buildosx": "electron-packager . --out=dist --overwrite --platform=darwin --arch=x64 --icon=src/img/outliner-display-icon.icns",
+    "buildwindows": "electron-packager . --out=dist --overwrite --platform=win32 --arch=ia32"
   },
   "repository": {
     "type": "git",
@@ -23,6 +24,7 @@
     "electron-prebuilt": "^1.4.5"
   },
   "dependencies": {
+    "cardinal-spline-js": "^2.3.6",
     "color-js": "^1.0.3",
     "electron-localshortcut": "^1.0.0",
     "jquery": "^3.1.0",

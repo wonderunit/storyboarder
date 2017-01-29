@@ -9,6 +9,7 @@ const sfx = require('../wonderunit-sound.js')
 const Color = require('color-js')
 
 const sketchPane = require('../sketchpane.js')
+const undoStack = require('../undo-stack.js')
 
 let boardFilename
 let boardPath
@@ -37,26 +38,6 @@ menu.setMenu()
 ///////////////////////////////////////////////////////////////
 
 ipcRenderer.on('load', (event, args)=>{
-
-  /*
-    if (scriptData) {
-      load ui:
-        scenes
-        script's currentScene
-    }
-    open file
-    check all board images actually exist
-    calc stats for the boards
-    load ui:
-      sketch pane
-      thumbs
-      timeline
-  }
-  */
-
-  //    mainWindow.webContents.send('load', [filename, scriptData, locations, characters, boardSettings, currentPath])
-
-
   if (args[1]) {
     // there is scriptData - the window opening is a script type
     scriptData = args[1]
@@ -68,19 +49,6 @@ ipcRenderer.on('load', (event, args)=>{
     //renderScenes()
     currentScene = boardSettings.lastScene
     loadScene(currentScene)
-
-    console.log(boardFilename)
-    console.log(boardPath)
-    console.log(boardData)
-
-
-    /*
-      get last scene
-      render scenes
-      render script for current scene
-      if current scene boardfile / directory doesnt exist, create it
-      load boardfile
-    */
 
     assignColors()
     document.querySelector('#scenes').style.display = 'block'
@@ -96,60 +64,29 @@ ipcRenderer.on('load', (event, args)=>{
     boardPath = boardPath.join(path.sep)
     console.log(' BOARD PATH: ', boardPath)
 
-
-
     boardData = JSON.parse(fs.readFileSync(boardFilename))
   }
 
-
-
   loadBoardUI()
-
-
-
+  updateBoardUI()
 })
 
 let loadBoardUI = ()=> {
-  if (boardData.boards.length == 0) {
-    // create a new board
-    newBoard(0)
-  }
-
   let aspectRatio = boardData.aspectRatio
   console.log(aspectRatio)
   //let aspectRatio = 1.77777
+  var size = []
   if (aspectRatio >= 1) {
-    document.querySelector('#board-canvas').height = 900
-    document.querySelector('#board-canvas').width = (900*aspectRatio)
-    document.querySelector('#drawing-canvas').height = 900
-    document.querySelector('#drawing-canvas').width = (900*aspectRatio)
+    size = [(900*aspectRatio), 900]
   } else {
-    document.querySelector('#board-canvas').width = 900
-    document.querySelector('#board-canvas').height = (900/aspectRatio)
-    document.querySelector('#drawing-canvas').width = 900
-    document.querySelector('#drawing-canvas').height = (900/aspectRatio)
+    size = [900, (900/aspectRatio)]
   }
-  sketchPane.init()
-  sizeCanvas()
-  // update sketchpane
-  updateSketchPaneBoard()
-  // update thumbail drawer
-  updateThumbnailDrawer()
-  // update timeline
-  // update metadata
-  setTimeout(sizeCanvas,100)
-
-  console.log(boardFilename)
-  console.log(currentPath)
-
-  // //console.log(boardData.aspectRatio)
-
-
-  // drawTestImage()
-
-
-  // sizeCanvas()
-
+  sketchPane.init(document.getElementById('sketch-pane'), ['reference', 'main', 'notes'], size)
+  sketchPane.on('lineMileage', (value)=>{console.log(value)})
+  sketchPane.on('addToUndoStack', (id,imageBitmap)=>{
+    //console.log(imageBitmap)
+    undoStack.addImageData(null, null, id, imageBitmap)
+  })
 
   for (var item of document.querySelectorAll('#board-metadata input, textarea')) {
     item.addEventListener('focus', (e)=> {
@@ -231,18 +168,28 @@ let loadBoardUI = ()=> {
     }
   })
 
-
-
   setTimeout(()=>{remote.getCurrentWindow().show()}, 200)
   remote.getCurrentWebContents().openDevTools()
+}
+
+let updateBoardUI = ()=> {
+  if (boardData.boards.length == 0) {
+    // create a new board
+    newBoard(0)
+  }
+  // update sketchpane
+  updateSketchPaneBoard()
+  // update thumbail drawer
+  updateThumbnailDrawer()
+  // update timeline
+  // update metadata
   gotoBoard(currentBoard)
+
 }
 
 ///////////////////////////////////////////////////////////////
 // Board Operations
 ///////////////////////////////////////////////////////////////
-
-
 
 let newBoard = (position)=> {
   saveImageFile()
@@ -293,7 +240,7 @@ let markImageFileDirty = ()=> {
 let saveImageFile = ()=> {
   if (imageFileDirty) {
     clearTimeout(imageFileDirtyTimer)
-    let imageData = document.querySelector('#board-canvas').toDataURL('image/png')
+    let imageData = document.querySelector('#main-canvas').toDataURL('image/png')
     imageData = imageData.replace(/^data:image\/\w+;base64,/, '');
     let board = boardData.boards[currentBoard]
     let imageFilename = path.join(boardPath, 'images', board.url)
@@ -327,7 +274,7 @@ let deleteBoard = ()=> {
 let duplicateBoard = ()=> {
   saveImageFile()
   // copy current board canvas
-  let imageData = document.querySelector('#board-canvas').getContext("2d").getImageData(0,0, document.querySelector('#board-canvas').width, document.querySelector('#board-canvas').height)
+  let imageData = document.querySelector('#main-canvas').getContext("2d").getImageData(0,0, document.querySelector('#main-canvas').width, document.querySelector('#main-canvas').height)
   // get current board clone it
   let board = JSON.parse(JSON.stringify(boardData.boards[currentBoard]))
   // set uid
@@ -342,7 +289,7 @@ let duplicateBoard = ()=> {
   // go to board
   gotoBoard(currentBoard+1)
   // draw contents to board
-  document.querySelector('#board-canvas').getContext("2d").putImageData(imageData, 0, 0)
+  document.querySelector('#main-canvas').getContext("2d").putImageData(imageData, 0, 0)
   markImageFileDirty()
   saveImageFile()
   updateThumbnailDrawer()
@@ -489,8 +436,8 @@ let nextScene = ()=> {
   currentScene++
   loadScene(currentScene)
   renderScript()
-  loadBoardUI()
-  gotoBoard(currentBoard)
+  updateBoardUI()
+  //gotoBoard(currentBoard)
 }
 
 let previousScene = ()=> {
@@ -498,8 +445,8 @@ let previousScene = ()=> {
   currentScene = Math.max(0, currentScene)
   loadScene(currentScene)
   renderScript()
-  loadBoardUI()
-  gotoBoard(currentBoard)
+  updateBoardUI()
+  //gotoBoard(currentBoard)
 }
 
 let updateSketchPaneBoard = () => {
@@ -507,7 +454,9 @@ let updateSketchPaneBoard = () => {
   let board = boardData.boards[currentBoard]
   // try to load url
   let imageFilename = path.join(boardPath, 'images', board.url)
-  let context = document.querySelector('#board-canvas').getContext('2d')
+  let context = document.querySelector('#main-canvas').getContext('2d')
+  context.globalAlpha = 1
+
   console.log('loading image')
   if (!fs.existsSync(imageFilename)){
     context.clearRect(0, 0, context.canvas.width, context.canvas.height)
@@ -701,7 +650,7 @@ let renderScenes = ()=> {
         currentScene = Number(e.target.dataset.node)
         loadScene(currentScene)
         renderScript()
-        loadBoardUI()
+        updateBoardUI()
       }
     }, true, true)
   }
@@ -862,6 +811,12 @@ let loadScene = (sceneNumber) => {
           // load storyboarder file
           console.log('load storyboarder!')
           console.log(foundDirectoryName)
+
+          if (!fs.existsSync(path.join(currentPath, foundDirectoryName, 'images'))) {
+            fs.mkdirSync(path.join(currentPath, foundDirectoryName, 'images'))
+          }
+
+
           boardFilename = path.join(currentPath, foundDirectoryName, foundDirectoryName + '.storyboarder')
           boardData = JSON.parse(fs.readFileSync(boardFilename))
         }
@@ -898,38 +853,6 @@ let loadScene = (sceneNumber) => {
 
 }
 
-let sizeCanvas= () => {
-  // get canvas aspect ratio
-  // get area width and height
-  // get padding area
-  // compare aspect ratios to see where to limit
-  // figure out zoom factor
-  // center
-  // offset
-  let margin = 100
-
-  let canvasDiv = document.querySelector('#board-canvas')
-  let canvasContainerDiv = document.querySelector('#canvas-container')
-  let sketchPaneDiv = document.querySelector('#sketch-pane')
-
-  let canvasAspect = canvasDiv.width/canvasDiv.height
-  let sketchPaneAspect = (sketchPaneDiv.offsetWidth-(margin*2))/(sketchPaneDiv.offsetHeight-(margin*2))
-
-  if (canvasAspect >= sketchPaneAspect) {
-    canvasContainerDiv.style.width = (sketchPaneDiv.offsetWidth-(margin*2)) + 'px'
-    canvasContainerDiv.style.height = ((sketchPaneDiv.offsetWidth-(margin*2)) / canvasAspect) + 'px'
-  } else {
-    canvasContainerDiv.style.height = (sketchPaneDiv.offsetHeight-(margin*2)) + 'px'
-    canvasContainerDiv.style.width = ((sketchPaneDiv.offsetHeight-(margin*2)) * canvasAspect) + 'px'
-  }
-
-  let scaleFactor = canvasContainerDiv.offsetWidth/canvasDiv.width
-
-  // center
-  canvasContainerDiv.style.left = Math.floor((sketchPaneDiv.offsetWidth - canvasContainerDiv.offsetWidth)/2) + 'px'
-  canvasContainerDiv.style.top = Math.floor((sketchPaneDiv.offsetHeight - canvasContainerDiv.offsetHeight)/2) + 'px'
-
-}
 
 let scalePanImage = () => {
   let scaleFactor = canvasDiv.offsetWidth/canvasDiv.width
@@ -940,23 +863,15 @@ let scalePanImage = () => {
 }
 
 
-sizeCanvas()
-
 window.onmousedown = (e) => {
-  console.log("mouse down")
   stopPlaying()
 }
 
 
 window.onresize = (e) => {
-  console.log(document.querySelector('#sketch-pane').offsetWidth)
-  sizeCanvas()
 }
 
 window.onkeydown = (e)=> {
-  console.log(e)
-
-
   if (!textInputMode || textInputAllowAdvance) {
     switch (e.code) {
       case 'Space':
@@ -1214,13 +1129,13 @@ ipcRenderer.on('nextScene', (event, args)=>{
 
 ipcRenderer.on('undo', (e, arg)=> {
   if (!textInputMode) {
-    sketchPane.undo()
+    undoStack.undo()
   }
 })
 
 ipcRenderer.on('redo', (e, arg)=> {
   if (!textInputMode) {
-    sketchPane.redo()
+    undoStack.redo()
   }
 })
 
@@ -1228,7 +1143,7 @@ ipcRenderer.on('copy', (e, arg)=> {
   if (!textInputMode) {
     console.log("copy")
     let board = JSON.parse(JSON.stringify(boardData.boards[currentBoard]))
-    let canvasDiv = document.querySelector('#board-canvas')
+    let canvasDiv = document.querySelector('#main-canvas')
 
     board.imageDataURL = canvasDiv.toDataURL()
 
@@ -1301,7 +1216,7 @@ ipcRenderer.on('paste', (e, arg)=> {
       var image = new Image()
       image.src = imageContents
 
-      document.querySelector('#board-canvas').getContext("2d").drawImage(image, 0, 0)
+      document.querySelector('#main-canvas').getContext("2d").drawImage(image, 0, 0)
       markImageFileDirty()
       saveImageFile()
       updateThumbnailDrawer()

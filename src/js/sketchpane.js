@@ -1,249 +1,279 @@
 /*
+    TODO:
+      figure out scaling based on location
+      simplify line
+       
+// light-pencil
+sketchpane.setBrush(4,[200,220,255],30,50,'reference')
 
-TODO:
-  undo
-  clear
-  pan / scale = command
-  straight line with = shift
-  pencil = b
-  brush = b
+//pencil
+sketchpane.setBrush(2,[50,50,50],5,70,'main')
 
-  bracket size brush
+// brush
+sketchpane.setBrush(20,[0,0,100],2,20,'main')
 
-  color selection
+// ink
+sketchpane.setBrush(3,[0,0,0],60,80,'main')
 
-  color picker = option
+//notes 
+sketchpane.setBrush(4,[255,0,0],100,100,'notes')
 
-  cursor size
-
-  copy / paste
 
 */
-
 const EventEmitter = require('events').EventEmitter
 module.exports = new EventEmitter()
-
-require('./vendor/jsBezier.js')
-
-
-
-
+const getCurvePoints = require("cardinal-spline-js").getCurvePoints
 const TO_RADIANS = Math.PI/180
 const TO_DEGREES = 1 / TO_RADIANS
-const MAXUNDOS = 100
 
-let boardContext = document.getElementById('board-canvas').getContext('2d')
-let drawContexts = []
+let prevTimestamp = 0
 
-let boardSize = [boardContext.canvas.width, boardContext.canvas.height]
+let parentDiv
 
-let requestAnimationFrameID
-let scaleFactor
-let penOffset = []
-let previousLoc = []
+let boardContext
+let drawContext
+let boardSize = []
+
+let penDown
+let pointArray = []
+let lastProcessedPoint = 0
+
+const brushCount = 256
+let brushImages = []
+
+const paneMargin = 100
+
+let viewportScale = 1.0
+let viewportCenter = [0.5,0.5]
+
+let lastPlotPoint = []
+let previousPenAttributes
+
+let brushColor = [200,220,255]
+let brushSize = 4
+let brushOpacity = 30
+let layerOpacity = 50
+
+let lineDistance = 0
+
+let cursorDiv
+
+let eraserMode = false
 let moveMode = false
 let scaleMode = false
 let isMoving = false
 let isStraightline = false
 let straightDirection = false
 let straightAnchor = false
-let penDown = false
-let mousePressure = 0.5
-let pointerBuffer = []
-let brushProperties = {size: window.devicePixelRatio*2, opacity: 20}
-let eraserMode = false
 
-//brushProperties = {size: window.devicePixelRatio*2, opacity: 50}
-//brushProperties = {size: window.devicePixelRatio*12, opacity: 0}
-
-brushColor = [0,0,0]
-
-let brushImgs = []
-let brushCount = 256
-
-let undoStack = []
-
-let undoPosition = 0
-
-
-
-let drawCanvas = document.createElement('canvas')
-drawCanvas.width = boardContext.canvas.width
-drawCanvas.height = boardContext.canvas.height
-drawContexts.push(drawCanvas.getContext('2d'))
-drawContexts.push(document.getElementById('drawing-canvas').getContext('2d'))
-
-let init = ()=> {
-  boardContext = document.getElementById('board-canvas').getContext('2d')
-  boardSize = [boardContext.canvas.width, boardContext.canvas.height]
-  drawCanvas.width = boardContext.canvas.width
-  drawCanvas.height = boardContext.canvas.height
-}
-
-
-
-for (var i=0;i<brushCount;i++) {
-  let brushCanvas = document.createElement('canvas')
-  brushCanvas.width = brushCanvas.height = 30
-  let brushContext = brushCanvas.getContext('2d')
-  let grd = brushContext.createRadialGradient(
-    brushCanvas.width / 2, brushCanvas.height / 2,
-    brushCanvas.width / 4,
-    brushCanvas.width / 2, brushCanvas.height / 2,
-    brushCanvas.width / 2)
-  let greyval = 255-Math.floor((i/brushCount)*255)
-  grd.addColorStop(0,"rgba(" + greyval + "," + greyval + "," + greyval + ",1)")
-  grd.addColorStop(1,"rgba(" + greyval + "," + greyval + "," + greyval + ",0)")
-  brushContext.fillStyle = grd
-  brushContext.fillRect(0, 0, brushCanvas.width, brushCanvas.height)
-  brushImgs.push(brushContext.canvas)
-}
-
-let pointerMove = (e)=> {
-  if (penDown) {
-    let penAttributes = getPointerData(e)
-    console.log(e)
-    pointerBuffer.push(penAttributes)
+let setBrushColor = (color)=> {
+  brushColor = color
+  for (var i=0;i<brushCount;i++) {
+    let brushCanvas = document.createElement('canvas')
+    brushCanvas.width = brushCanvas.height = 30
+    let brushContext = brushCanvas.getContext('2d')
+    let grd = brushContext.createRadialGradient(
+      brushCanvas.width / 2, brushCanvas.height / 2,
+      brushCanvas.width / 4,
+      brushCanvas.width / 2, brushCanvas.height / 2,
+      brushCanvas.width / 2)
+    let rVal = 255-Math.floor((i/brushCount)*(255-color[0]))
+    let gVal = 255-Math.floor((i/brushCount)*(255-color[1]))
+    let bVal = 255-Math.floor((i/brushCount)*(255-color[2]))
+    //gVal = bVal =  0
+    grd.addColorStop(0,"rgba(" + rVal + "," + gVal + "," + bVal + ",1)")
+    grd.addColorStop(1,"rgba(" + rVal + "," + gVal + "," + bVal + ",0)")
+    brushContext.fillStyle = grd
+    brushContext.fillRect(0, 0, brushCanvas.width, brushCanvas.height)
+    brushImages[i] = brushContext.canvas
   }
 }
 
-let pointerUp = (e)=> {
-  //window.cancelAnimationFrame(requestAnimationFrameID)
-  if (penDown) {
-    penDown = false
-    isStraightline = false
-    straightDirection = false
-    straightAnchor = false
-    if (moveMode || isMoving) {
-      isMoving = false
-      boardContext.clearRect(0, 0, boardSize[0], boardSize[1])
+let init = (parentDiv, layerNameArray, size)=> {
+  console.log("INIT!!!")
+  if (!boardContext) {
+
+    boardSize = size
+    parentDiv = parentDiv
+    var container = document.createElement("div")
+    container.id = 'canvas-container'
+    container.style.width = size[0] + 'px'
+    container.style.height = size[1] + 'px'
+
+
+    for (var i = 0; i < layerNameArray.length; i++) {
+      //console.log("creating layer: " + layerNameArray[i])
+      var layer = document.createElement('canvas')
+      layer.id = layerNameArray[i] + '-canvas'
+      layer.width = size[0]
+      layer.height = size[1]
+      layer.style.zIndex = 100 + (i*2)
+      container.appendChild(layer)
     }
-    stampLayer()
-    module.exports.emit('markDirty');
-    pointerBuffer = []
+    // add draw layer
+    var layer = document.createElement('canvas')
+    layer.id = 'draw-canvas'
+    layer.width = size[0]
+    layer.height = size[1]
+    container.appendChild(layer)
+
+    // TODO: add onion skin container
+    // TODO: add guides container
+    parentDiv.appendChild(container)
+
+    cursorDiv = document.createElement('div')
+    cursorDiv.id = 'cursor'
+    cursorDiv.style.zIndex = 200
+    cursorDiv.style.width = '100px'
+    cursorDiv.style.height = '100px'
+    parentDiv.appendChild(cursorDiv)
+
+    boardContext = document.getElementById('main-canvas').getContext('2d')
+    drawContext = document.getElementById('draw-canvas').getContext('2d')
+    sizeCanvas()
+    setBrush(brushSize, brushColor, brushOpacity, layerOpacity, 'main')
+
+    parentDiv.addEventListener('pointerdown', pointerDown, false)
+    // parentDiv.addEventListener("mousewheel", mouseWheel, false);
+    window.addEventListener('pointermove', pointerMove, { passive: true })
+    window.addEventListener('pointerup', pointerUp, false)
+    window.addEventListener('resize', sizeCanvas, false)
+    window.addEventListener('keyup', keyUp, false)
+    window.addEventListener("keydown", keyDown, false)
+  }
+
+}
+
+let keyUp = (e)=> {
+  if (e.key == 'Shift') {
+    lastPlotPoint = []
   }
 }
 
-let stampLayer = ()=> {
-  boardContext.globalAlpha = 1
-  //boardContext.globalCompositeOperation = 'destination-over'
-  boardContext.globalCompositeOperation = 'source-over'
-  //boardContext.globalCompositeOperation = 'overlay'
-  boardContext.drawImage(drawContexts[1].canvas, 0, 0)
-
-  drawContexts[0].clearRect(0, 0, drawContexts[1].canvas.width, drawContexts[1].canvas.height)
-  drawContexts[1].clearRect(0, 0, drawContexts[1].canvas.width, drawContexts[1].canvas.height)
+let keyDown = (e)=> {
+  if (e.key == 'Shift') {
+    lastPlotPoint = []
+  }
 }
 
-let pointerDown = (e)=> {
-  //console.log(e)
-  if (scaleMode || (e.metaKey && e.altKey)) {
-    isMoving = true
-    if (e.metaKey && !e.altKey) {
+let mouseWheel = (e)=> {
+  // TODO figure out math to center on scale point
+  var scale = viewportScale
+  if (e.deltaY > 0) {
+    scale = scale * 0.9
+  } else {
+    scale = scale * 1.1
+  }
+
+  if (scale <= 1) {
+    viewportCenter = [0.5,0.5]
+  } else {
+    var canvasRect = document.querySelector('#canvas-container').getBoundingClientRect()
+    var canvasDiv = document.querySelector('#main-canvas')
+    var currentPoint = [(e.clientX-canvasRect.left)*(canvasDiv.width/canvasRect.width)/canvasDiv.width, (e.clientY-canvasRect.top)*(canvasDiv.height/canvasRect.height)/canvasDiv.height]
+    console.log(currentPoint)
+    viewportCenter = [(currentPoint[0]+0.5)/2, (currentPoint[1]+0.5)/2]
+  }
+
+  scale = Math.min(Math.max(scale, 0.5), 2.5)
+  setScale(scale)
+}
+
+let pointerDown = (e) => {
+  console.log("down")
+  if (e.shiftKey) {
+
+  } else {
+    lastPlotPoint = getPointerData(e).point
+  }
+
+  if (e.altKey && !e.metaKey && !e.ctrlKey) {
+    // pick image color
+    lineDistance = 0
+    var cursorLoc = getPointerData(e).point
+    var destContext = document.createElement('canvas').getContext('2d')
+    destContext.canvas.width = 1
+    destContext.canvas.height = 1
+    destContext.drawImage(boardContext.canvas, -cursorLoc[0], -cursorLoc[1])
+    pixelVal = destContext.getImageData(0,0, 1, 1).data
+    module.exports.emit('pickColor', pixelVal)
+  } else {
+    pointArray = [getPointerData(e)]
+    previousPenAttributes = getPointerData(e)
+    lastProcessedPoint = 0
+    lineDistance = 0
+    penDown = true
+    if (scaleMode || ((e.metaKey || e.ctrlKey) && e.altKey)) {
+      isMoving = true
+      if ((e.metaKey || e.ctrlKey) && !e.altKey) {
+        window.requestAnimationFrame(drawMoveLoop)
+      } else {
+        window.requestAnimationFrame(drawScaleLoop)
+      }
+    } else if (moveMode || (e.metaKey || e.ctrlKey)) {
+      isMoving = true
       window.requestAnimationFrame(drawMoveLoop)
     } else {
-      window.requestAnimationFrame(drawScaleLoop)
+      if (e.shiftKey) isStraightline = true
+      window.requestAnimationFrame(drawBrushLoop)
     }
-  } else if (moveMode || e.metaKey) {
-    isMoving = true
-    window.requestAnimationFrame(drawMoveLoop)
-  } else {
-    if (e.shiftKey) isStraightline = true
-    window.requestAnimationFrame(drawBrushLoop)
+    addToUndoStack()
   }
-
-  let rect = document.getElementById('canvas-container').getBoundingClientRect()
-  let canvasDiv = document.getElementById('board-canvas')
-
-  scaleFactor = (canvasDiv.height/rect.height)
-  penOffset = [rect.left, rect.top]
-  previousPenAttributes = getPointerData(e)
-  previousLoc = [previousPenAttributes.point]
-  penDown = true
-
-  // check if current color is darker than current spot
-  // if so, draw under
-  // if not, draw over
-
-  addToUndoStack()
 }
 
+let drawBrushLoop = (timestamp)=> {
+  if (penDown) window.requestAnimationFrame(drawBrushLoop)
+  //console.log(prevTimestamp-timestamp)
+  prevTimestamp = timestamp
+  drawBrush()
+}
 
-
-
-
-let animationFrameTimeStamp = 0
+let drawMoveLoop = (timestamp)=> {
+  if (isMoving) {
+    let cursorLoc = [-99999,-99999]
+    if (pointArray[pointArray.length-1]){
+      let a = (pointArray[0].point)
+      let b = (pointArray[pointArray.length-1].point)
+      cursorLoc = [Math.floor(b[0]-a[0]), Math.floor(b[1]-a[1])]
+    }
+    if (penDown) window.requestAnimationFrame(drawMoveLoop)
+    drawContext.clearRect(0, 0, boardSize[0], boardSize[1])
+    drawContext.drawImage(boardContext.canvas, cursorLoc[0],cursorLoc[1])
+  }
+}
 
 let drawScaleLoop = (timestamp)=> {
   if (isMoving) {
-    console.log("draw scale loop")
-    //console.log(penOffset)
     let cursorLoc = [-99999,-99999]
     let scale = 1
     let translationPoint = [-999999,999999]
-
-    if (pointerBuffer[pointerBuffer.length-1]){
-      let a = (pointerBuffer[0].point)
-      let b = (pointerBuffer[pointerBuffer.length-1].point)
+    if (pointArray[pointArray.length-1]){
+      let a = (pointArray[0].point)
+      let b = (pointArray[pointArray.length-1].point)
       cursorLoc = [Math.floor(b[0]-a[0]), Math.floor(b[1]-a[1])]
       scale = 1+ cursorLoc[1] * 0.01
-      translationPoint = [pointerBuffer[0].point[0], pointerBuffer[0].point[1]]
+      translationPoint = [pointArray[0].point[0], pointArray[0].point[1]]
     }
     if (penDown) window.requestAnimationFrame(drawScaleLoop)
-    drawContexts[1].clearRect(0, 0, boardSize[0], boardSize[1])
-    drawContexts[1].save()
-    drawContexts[1].translate(translationPoint[0], translationPoint[1])
-    drawContexts[1].scale(scale, scale)
-    drawContexts[1].translate(-translationPoint[0], -translationPoint[1])
-    drawContexts[1].drawImage(boardContext.canvas, 0,0)
-    drawContexts[1].restore()
+    drawContext.clearRect(0, 0, boardSize[0], boardSize[1])
+    drawContext.save()
+    drawContext.translate(translationPoint[0], translationPoint[1])
+    drawContext.scale(scale, scale)
+    drawContext.translate(-translationPoint[0], -translationPoint[1])
+    drawContext.drawImage(boardContext.canvas, 0,0)
+    drawContext.restore()
   }
 }
 
-
-
-
-let drawMoveLoop = (timestamp)=> {
-  console.log("draw move loop")
-  //console.log(penOffset)
-  let cursorLoc = [-99999,-99999]
-  if (pointerBuffer[pointerBuffer.length-1]){
-    let a = (pointerBuffer[0].point)
-    let b = (pointerBuffer[pointerBuffer.length-1].point)
-    cursorLoc = [Math.floor(b[0]-a[0]), Math.floor(b[1]-a[1])]
-  }
-  if (penDown) window.requestAnimationFrame(drawMoveLoop)
-  drawContexts[1].clearRect(0, 0, boardSize[0], boardSize[1])
-  drawContexts[1].drawImage(boardContext.canvas, cursorLoc[0],cursorLoc[1])
-}
-
-
-
-let drawBrushLoop = (timestamp)=> {
-  //window.cancelAnimationFrame(requestAnimationFrameID)
-  if (penDown) window.requestAnimationFrame(drawBrushLoop)
-  if ((timestamp - animationFrameTimeStamp) > 2 ) {
-    console.log(timestamp - animationFrameTimeStamp)
-    animationFrameTimeStamp = timestamp
-    drawBrush()
-  }
-}
-
-
-
-let drawBrush = ()=> {
-  console.log("called draw brush")
-
+let drawBrush = (lastBit)=> {
+  
   if (isStraightline && (straightDirection == false)) {
-    console.log("STRAIGHT LINE!")
-
-    if (pointerBuffer[pointerBuffer.length-1]){
-      let a = (pointerBuffer[0].point)
-      let b = (pointerBuffer[pointerBuffer.length-1].point)
+    // TODO: Could be optimized, also check for nearest angle
+    if (pointArray[pointArray.length-1]){
+      let a = (pointArray[0].point)
+      let b = (pointArray[pointArray.length-1].point)
       let dist = Math.floor(Math.sqrt(Math.pow(a[0]-b[0],2)+Math.pow(a[1]-b[1],2)))
-
-      if (dist > 10) {
-        console.log(dist)
+      if (dist > 20) {
         cursorLoc = [Math.floor(b[0]-a[0]), Math.floor(b[1]-a[1])]
         if (Math.abs(cursorLoc[0]) > Math.abs(cursorLoc[1])) {
           straightDirection = 1
@@ -252,112 +282,76 @@ let drawBrush = ()=> {
           straightDirection = 2
           straightAnchor = a[0]
         }
-
       }
     }
-
-
-
   }
-
 
   if (isStraightline) {
     if (straightDirection) {
-      for (let penAttributes of pointerBuffer) {
+      for (let penAttributes of pointArray) {
         let currentPoint = penAttributes.point
-
         if (straightDirection == 1) {
           currentPoint[1] = straightAnchor
         } else {
           currentPoint[0] = straightAnchor
         }
-
-        drawLine(drawContexts[0], previousLoc[previousLoc.length-1], currentPoint, previousPenAttributes, penAttributes)
-        previousLoc.push(currentPoint)
+        drawLine(drawContext, lastPlotPoint, currentPoint, previousPenAttributes, penAttributes)
+        lastPlotPoint = currentPoint
         previousPenAttributes = penAttributes
       }
-      pointerBuffer = []
-
-
-    }
-
-
-  } else {
-    for (let penAttributes of pointerBuffer) {
-      let currentPoint = penAttributes.point
-      let dist = Math.floor(Math.sqrt(Math.pow(previousLoc[previousLoc.length-1][0]-currentPoint[0],2)+Math.pow(previousLoc[previousLoc.length-1][1]-currentPoint[1],2)))
-      if (dist > 0 && ((currentPoint[0] !== previousLoc[previousLoc.length-1][0]) || penAttributes.pointerType == 0 )) {
-        if (previousLoc.length > 1 && dist > 3) {
-          let curve = []
-          curve.push({x: previousLoc[previousLoc.length-1][0], y: previousLoc[previousLoc.length-1][1]})
-          let midX = previousLoc[previousLoc.length-1][0] + ((previousLoc[previousLoc.length-1][0] - previousLoc[previousLoc.length-2][0]) * 0.2) + ((currentPoint[0] - previousLoc[previousLoc.length-1][0]) * 0.2)
-          let midY = previousLoc[previousLoc.length-1][1] + ((previousLoc[previousLoc.length-1][1] - previousLoc[previousLoc.length-2][1]) * 0.2) + ((currentPoint[1] - previousLoc[previousLoc.length-1][1]) * 0.2)
-          curve.push({x: midX, y: midY})
-          curve.push({x: currentPoint[0], y: currentPoint[1]})
-          drawCurve(curve, Math.max(Math.floor(dist/8), 2), penAttributes, previousPenAttributes)
-        } else {
-          drawLine(drawContexts[0], previousLoc[previousLoc.length-1], currentPoint, previousPenAttributes, penAttributes)
-        }
-        previousLoc.push(currentPoint)
-        previousPenAttributes = penAttributes
-      }
-    }
-    pointerBuffer = []
-  }
-
-
-  renderDrawingLayer(brushColor)
-}
-
-// THIS IS FOR OPTIMIZATION
-let pix
-let imageData
-let targetImageData
-
-let renderDrawingLayer = (color)=> {
-  //console.log("called renderDrawingLayer")
-  imageData = drawContexts[0].getImageData(0,0,boardSize[0],boardSize[1])
-  //imageData = drawContexts[0].getImageData(0,0,100,100)
-  targetImageData = drawContexts[1].createImageData(boardSize[0],boardSize[1])
-  //let targetImageData = imageData
-  pix = targetImageData.data;
-  for (var i = 0; i < pix.length; i += 4) {
-    pix[i  ] = color[0]
-    pix[i+1] = color[1]
-    pix[i+2] = color[2]
-    if (imageData.data[i] == 0){
-      pix[i+3] = 0
+      pointArray = []
     } else {
-      pix[i+3] = (255-imageData.data[i]) * (imageData.data[i+3]/256) // alpha channel
+      // draw some straight lines
+      let penAttributes = pointArray[0]
+      penAttributes.pressure = 0.7
+      previousPenAttributes.pressure = 0.7
+      drawLine(drawContext, lastPlotPoint, penAttributes.point, previousPenAttributes, penAttributes)
+      var pointDistance = distance(lastPlotPoint,penAttributes.point)
+      if (!isNaN(pointDistance)) lineDistance += pointDistance
+      lastPlotPoint = pointArray[0].point
+      previousPenAttributes = penAttributes
     }
+  } else {
+    // draw regular
   }
-  drawContexts[1].putImageData(targetImageData, 0,0)
-  pix = null
-}
 
-let drawCurve = (curve, subDivs, penattributes1, penattributes2)=> {
-  let angleDelta     = (penattributes2.angle - penattributes1.angle)
-  let tiltDelta      = (penattributes2.tilt  - penattributes1.tilt)
-  let pressureDelta  = (penattributes2.pressure  - penattributes1.pressure)
-  let eraser         = penattributes2.eraser
-  let tpenAttributes2
-  let prevp
-  for (var i=0;i<=subDivs;i++) {
-    let point = jsBezier.pointOnCurve(curve, (i/subDivs))
-    let angle = penattributes1.angle + ((angleDelta/subDivs)*i)
-    angle = penattributes1.angle
-    let tilt = penattributes1.tilt + ((tiltDelta/subDivs)*i)
-    let pressure = penattributes1.pressure + ((pressureDelta/subDivs)*i)
-    let tpenAttributes1 = {angle: angle, tilt: tilt, pressure: pressure, eraser: eraser}
-    if (i>0) {
-      drawLine(drawContexts[0], [point.x, point.y], [prevp.x, prevp.y], tpenAttributes1, tpenAttributes2)
+  if (pointArray.length > 0 && ((pointArray.length-2-lastProcessedPoint) > 2 || lastBit)) {
+    drawContext.globalCompositeOperation = 'darken'
+    var points = []
+    for (var i = Math.max(lastProcessedPoint-2,0); i < pointArray.length; i++) {
+      points.push(pointArray[i].point[0])
+      points.push(pointArray[i].point[1])
     }
-    prevp = point
-    tpenAttributes2 = tpenAttributes1
+    var segments = 8
+    var out = getCurvePoints(points, 0.3, segments, false)
+    var endUnit
+    if (lastBit) {
+      endUnit = out.length
+    } else {
+      endUnit = out.length-(segments*2*2)
+    }
+    // TODO 
+    // simplify line by only taking points that are greater than the distance sqrt(2)
+    // also embed the point information (pressure, etc)
+    for (var z = (segments*2); z < endUnit; z+=2) {
+      var pointDistance = distance(lastPlotPoint,[out[z],out[z+1]])
+      if (pointDistance > 1.412 || lastBit) {
+        lineDistance += pointDistance
+        var index = Math.min(lastProcessedPoint+Math.ceil((z-8)/segments/2), pointArray.length-1)
+        var penAttributes = pointArray[index]
+        //drawContext.lineTo(out[z],out[z+1]);
+        //drawContext.drawImage(brushImages[Math.floor(pressure*255)], out[z],out[z+1], 4, 4)
+        drawLine(drawContext, lastPlotPoint, [out[z],out[z+1]], previousPenAttributes, penAttributes)
+        lastPlotPoint = [out[z],out[z+1]]
+        previousPenAttributes = penAttributes
+      }
+    }
+    lastProcessedPoint = i-2
   }
 }
 
 let drawLine = (context, point1, point2, penattributes1, penattributes2)=> {
+  drawContext.globalCompositeOperation = 'darken'
   let dist = Math.max(Math.floor((Math.sqrt(Math.pow(point2[0]-point1[0],2)+Math.pow(point2[1]-point1[1],2)))/1.00),1)
   for (var i=0;i<=dist;i++) {
     var angle     = penattributes1.angle + ((penattributes2.angle - penattributes1.angle)*(i/dist))
@@ -370,27 +364,26 @@ let drawLine = (context, point1, point2, penattributes1, penattributes2)=> {
     var blend = 0
     if (eraser) {
       boardContext.globalCompositeOperation = 'destination-out'
-      var size = (36 * window.devicePixelRatio * pressure)
+      var size = (36 * pressure)
       boardContext.globalAlpha = 1
       blend = 1
     } else {
-      drawContexts[0].globalCompositeOperation = 'darken'
-      var size = 1 + 2 * brushProperties.size * Math.pow(pressure, 1.2)
-      blend = ((1-tilt)*pressure) +(brushProperties.opacity/100)
-      drawContexts[0].globalAlpha = 1
+      var size = 1 + 2 * brushSize * Math.pow(pressure, 1.2)
+      blend = ((1-tilt)*pressure) + (brushOpacity/100)
     }
     var b = Math.min(Math.floor(blend*255),240)
     if (b) {
-      drawRotatedImage(brushImgs[b], x, y, angle, size+(size*tilt*2), size, eraser)
+      drawRotatedImage(brushImages[b], x, y, angle, size+(size*tilt*2), size, eraser)
     }
   }
 }
 
 let drawRotatedImage = (image, x, y, angle, w, h, eraser)=> {
+  var layer = drawContext
   if (eraser) {
     var layer = boardContext
   } else {
-    var layer = drawContexts[0]
+    var layer = drawContext
   }
   layer.save()
   layer.translate(x, y)
@@ -399,101 +392,175 @@ let drawRotatedImage = (image, x, y, angle, w, h, eraser)=> {
   layer.restore()
 }
 
+let distance = (point1, point2) => {
+  return Math.hypot(point2[0]-point1[0], point2[1]-point1[1])
+}
+
+let pointerMove = (e) => {
+  let sketchPaneDiv = document.querySelector('#sketch-pane')
+  cursorDiv.style.left = (e.clientX-(cursorDiv.getBoundingClientRect().width/2)-sketchPaneDiv.getBoundingClientRect().left) + 'px'
+  cursorDiv.style.top = (e.clientY-(cursorDiv.getBoundingClientRect().height/2)-sketchPaneDiv.getBoundingClientRect().top) + 'px'
+  if (penDown) {
+    pointArray.push(getPointerData(e))
+  }
+}
+
+let pointerUp = (e) => {
+  if (straightDirection && (e.shiftKey == true)) {
+    lastPlotPoint = []
+  }
+  isStraightline = false
+  straightDirection = false
+  straightAnchor = false
+  if (penDown) {
+    if (moveMode || isMoving) {
+      isMoving = false
+      boardContext.clearRect(0, 0, boardSize[0], boardSize[1])
+      stampLayer(true)
+    } else {
+      if (e.altKey && !e.metaKey && !e.ctrlKey) {
+      } else {
+        //pointArray.push(getPointerData(e))
+        //drawBrush(true)
+        stampLayer()
+      }
+    }
+    module.exports.emit('markDirty')
+    module.exports.emit('lineMileage', Math.round(lineDistance))
+  }
+  penDown = false
+}
+
+let stampLayer = (moving)=> {
+  if (moving) {
+    boardContext.globalAlpha = 1
+    boardContext.globalCompositeOperation = 'copy'
+  } else {
+    boardContext.globalAlpha = layerOpacity/100
+    boardContext.globalCompositeOperation = 'multiply'
+  }
+  boardContext.drawImage(drawContext.canvas, 0, 0)
+  drawContext.globalAlpha = 1
+  drawContext.clearRect(0, 0, boardSize[0], boardSize[1])
+}
 
 let getPointerData = (e)=> {
-  let tabX = e.clientX
-  let tabY = e.clientY
-  let currentPoint = [(tabX - penOffset[0])*scaleFactor, (tabY - penOffset[1])*scaleFactor]
-  let angle
-  let tilt
-  let pressure
-  let eraser
-  let pointerType
+  var canvasRect = document.querySelector('#canvas-container').getBoundingClientRect()
+  var canvasDiv = document.querySelector('#main-canvas')
+  var currentPoint = [(e.clientX-canvasRect.left)*(canvasDiv.width/canvasRect.width), (e.clientY-canvasRect.top)*(canvasDiv.height/canvasRect.height)]
+  var angle
+  var tilt
+  var pressure
+  var eraser
+  var pointerType
   if (e.pointerType == 'pen') {
-    angle = Math.atan2(e.tiltY, e.tiltX) * TO_DEGREES
-    tilt = Math.max(Math.abs(e.tiltY),Math.abs(e.tiltX))
+    angle = 0
+    tilt = 0
     if (tilt == 0) {
       tilt = 0.5
     }
     pressure = e.pressure
-    eraser = e.buttons == 2 || eraserMode
+    eraser = e.buttons == 2
     pointerType = 1
   } else {
     angle = 0
     tilt = 0.1
-    pressure = mousePressure
-    eraser = e.buttons == 2 || eraserMode
+    pressure = 0.5
+    eraser = e.buttons == 2
     pointerType = 0
   }
-  let penAttributes = {point: currentPoint, angle: angle, tilt: tilt, pressure: pressure, eraser: eraser, pointerType: pointerType}
+  var penAttributes = {point: currentPoint, angle: angle, tilt: tilt, pressure: pressure, eraser: eraser, pointerType: pointerType}
   return penAttributes
 }
 
-document.getElementById('sketch-pane').addEventListener('pointerdown', pointerDown, false)
-window.addEventListener('pointermove', pointerMove, { passive: true });
-window.addEventListener('pointerup', pointerUp, false);
+let sizeCanvas= () => {
+  // todo: figure out real pan values
+  // thought: pan over to keep viewport centerpoint
+  let canvasDiv = document.querySelector('#main-canvas')
+  let canvasContainerDiv = document.querySelector('#canvas-container')
+  let sketchPaneDiv = document.querySelector('#sketch-pane')
 
-// undo stuff
+  let canvasAspect = canvasDiv.width/canvasDiv.height
+  let sketchPaneAspect = (sketchPaneDiv.offsetWidth-(paneMargin*2))/(sketchPaneDiv.offsetHeight-(paneMargin*2))
 
-let addToUndoStack = ()=> {
-  if (undoPosition != 0) {
-    var len = undoStack.length
-    undoStack = undoStack.slice(0, len-undoPosition)
-    undoPosition = 0
-  }
-  if (undoStack.length >= MAXUNDOS) {
-    undoStack = undoStack.slice(1, undoStack.length)
-  }
-  undoStack.push([boardContext.getImageData(0,0,boardSize[0],boardSize[1]), 1])
-  //contexts[layer].putImageData(undoStack[undoStack.length-1][0], 0,0);
-}
+  let realScale
 
-let undo = ()=> {
-  if (undoPosition == 0) {
-    addToUndoStack()
-    undoPosition++
-  }
-  if (undoStack.length-undoPosition > 0) {
-    undoPosition++
-    var undoState = undoStack[undoStack.length-undoPosition]
-    boardContext.putImageData(undoState[0], 0,0);
+  if (canvasAspect >= sketchPaneAspect) {
+    let width = (sketchPaneDiv.offsetWidth-(paneMargin*2))*viewportScale
+    realScale = width / canvasDiv.width
   } else {
+    let height = (sketchPaneDiv.offsetHeight-(paneMargin*2))*viewportScale
+    realScale = height / canvasDiv.height
   }
 
-  //console.log(undoStack)
-};
+  let left = (((sketchPaneDiv.offsetWidth) - (canvasDiv.width*realScale))/2)+((0.5-viewportCenter[0])*(canvasDiv.width*realScale))
+  let top = (((sketchPaneDiv.offsetHeight) - (canvasDiv.height*realScale))/2)+((0.5-viewportCenter[1])*(canvasDiv.height*realScale)) 
+  canvasContainerDiv.style.transform = `translate(${left}px,${top}px) scale(${realScale},${realScale}) `
+  setCursorSize()
+}
 
-let redo = ()=> {
-  if (undoStack.length-undoPosition < undoStack.length-1) {
-    undoPosition--
-    var undoState = undoStack[undoStack.length-undoPosition]
-    boardContext.putImageData(undoState[0], 0,0)
+let setScale = (scale)=> {
+  viewportScale = scale
+  if (scale <= 1) {
+    viewportCenter = [0.5,0.5]
+  }
+  sizeCanvas()
+  setCursorSize()
+}
+
+let flipBoard = (vertical)=> {
+  addToUndoStack()
+  boardContext.globalAlpha = 1
+  boardContext.globalCompositeOperation = 'copy'
+  if (vertical) {
+    boardContext.translate(0,boardContext.canvas.height)
+    boardContext.scale(1, -1)
   } else {
+    boardContext.translate(boardContext.canvas.width,0)
+    boardContext.scale(-1, 1)
   }
+  boardContext.drawImage(boardContext.canvas,0,0)
+  boardContext.setTransform(1, 0, 0, 1, 0, 0)
+  module.exports.emit('markDirty')
 }
 
-
-
-
-
-let setBrush = (size, opacity)=> {
-  moveMode = false
-  scaleMode = false
-  eraserMode = false
-  brushProperties = {size: window.devicePixelRatio*size, opacity: opacity}
-}
-
-let setBrushSize = (direction)=> {
+let changeBrushSize = (direction)=> {
   if (direction > 0) {
-    brushProperties.size = brushProperties.size * 1.2
+    setBrushSize(brushSize * 1.2)
   } else {
-    brushProperties.size = brushProperties.size * 0.8
+    setBrushSize(brushSize * 0.8)
   }
 }
 
+let setCursorSize = ()=> {
+  var boardScale = boardContext.canvas.getBoundingClientRect().width / boardContext.canvas.width
+  var cursorSize = ((brushSize*3*(boardScale*2))+3)
+  cursorDiv.style.width = cursorSize + 'px'
+  cursorDiv.style.height = cursorSize + 'px'
+}
 
-let setColor = (color)=> {
-  brushColor = color
+let setBrushSize = (size)=> {
+  brushSize = size
+  setCursorSize()
+}
+
+let setBrushOpacity = (opacity)=> {
+  brushOpacity = opacity
+}
+
+let setLayerOpacity = (opacity)=> {
+  layerOpacity = opacity
+  drawContext.canvas.style.opacity = (layerOpacity/100)
+}
+
+let setBrush = (size, color, opacity, layerOpacity, layer)=> {
+  setBrushSize(size)
+  setBrushColor(color)
+  setBrushOpacity(opacity)
+  setLayerOpacity(layerOpacity)
+  boardContext = document.getElementById(layer+'-canvas').getContext('2d')
+  drawContext.canvas.style.zIndex = Number(document.querySelector('#' + layer + '-canvas').style.zIndex)+1
+  drawContext.canvas.style.mixBlendMode = 'multiply'
 }
 
 let setEraser = ()=> {
@@ -504,16 +571,18 @@ let setEraser = ()=> {
 
 let clear = ()=> {
   addToUndoStack()
-  boardContext.clearRect(0, 0, drawContexts[1].canvas.width, drawContexts[1].canvas.height)
+  boardContext.clearRect(0, 0, boardContext.canvas.width, boardContext.canvas.height)
+  module.exports.emit('markDirty')
 }
 
 let fillBlack = ()=> {
   addToUndoStack()
   boardContext.globalCompositeOperation = 'destination-over'
   boardContext.beginPath()
-  boardContext.rect(0, 0, drawContexts[1].canvas.width, drawContexts[1].canvas.height)
+  boardContext.rect(0, 0, boardContext.canvas.width, boardContext.canvas.height)
   boardContext.fillStyle = "black"
   boardContext.fill()
+  module.exports.emit('markDirty')
 }
 
 let moveContents = ()=> {
@@ -526,16 +595,32 @@ let scaleContents = ()=> {
   moveMode = false
 }
 
+let addToUndoStack = ()=> {
+  // createImageBitmap(boardContext.canvas).then((val)=> {
+  //   module.exports.emit('addToUndoStack', boardContext.canvas.id, val)
+  // })
+  var destContext = document.createElement('canvas').getContext('2d')
+  destContext.canvas.width = boardSize[0]
+  destContext.canvas.height = boardSize[1]
+  destContext.drawImage(boardContext.canvas, 0,0)
+ 
+  module.exports.emit('addToUndoStack', boardContext.canvas.id, destContext.canvas)
 
+
+
+}
 
 module.exports.init = init
+module.exports.setScale = setScale
+module.exports.flipBoard = flipBoard
 module.exports.setBrush = setBrush
+module.exports.setBrushColor = setBrushColor
 module.exports.setBrushSize = setBrushSize
-module.exports.setColor = setColor
+module.exports.changeBrushSize = changeBrushSize
+module.exports.setBrushOpacity = setBrushOpacity
+module.exports.setLayerOpacity = setLayerOpacity
 module.exports.setEraser = setEraser
 module.exports.clear = clear
 module.exports.fillBlack = fillBlack
 module.exports.moveContents = moveContents
 module.exports.scaleContents = scaleContents
-module.exports.undo = undo
-module.exports.redo = redo
