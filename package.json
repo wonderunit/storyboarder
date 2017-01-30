@@ -7,7 +7,8 @@
   "scripts": {
     "start": "electron .",
     "buildosx": "electron-packager . --out=dist --overwrite --platform=darwin --arch=x64 --icon=src/img/outliner-display-icon.icns",
-    "buildwindows": "electron-packager . --out=dist --overwrite --platform=win32 --arch=ia32"
+    "buildwindows": "electron-packager . --out=dist --overwrite --platform=win32 --arch=ia32",
+    "buildall": "electron-packager . --out=dist --overwrite --all"
   },
   "repository": {
     "type": "git",
