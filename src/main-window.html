@@ -121,7 +121,9 @@
           <div>
             <div class="number"><svg class="smallicon"><use xlink:href="./img/symbol-defs.svg#icon-board"></use></svg><span id="shot"></span></div>
             <div class="row" id="board-numbers">12 of 76</div>
-            <div class="row"><input type="checkbox" name="newShot" value="false" /> New Shot?</div>
+            <div class="row">
+              <input type="checkbox" name="newShot" id="newShot" /><label for="newShot"><span></span>New Shot?</label>
+            </div>
             <div class="hardrule"></div>
             <div class="row">
               <div><svg class="smallicon"><use xlink:href="./img/symbol-defs.svg#icon-duration"></use></svg>Duration</div>
@@ -141,10 +143,11 @@
             </div>
             <div class="hardrule"></div>
             <div class="row">
-              <svg class="smallicon"><use xlink:href="./img/symbol-defs.svg#icon-linemileage"></use></svg>46 Line Mileage
+              <svg class="smallicon"><use xlink:href="./img/symbol-defs.svg#icon-linemileage"></use></svg><span id="line-miles"></span>
             </div>
             <div class="row">
-              <svg class="smallicon"><use xlink:href="./img/symbol-defs.svg#icon-showfile"></use></svg>Show in Finder // <svg class="smallicon"><use xlink:href="./img/symbol-defs.svg#icon-photoshop"></use></svg>Open in Photoshop
+              <div class="flatbutton" id="show-in-finder-button"><svg class="smallicon"><use xlink:href="./img/symbol-defs.svg#icon-showfile"></use></svg>Show in Finder</div>
+              <div class="flatbutton" id="open-in-photoshop-button"><svg class="smallicon"><use xlink:href="./img/symbol-defs.svg#icon-photoshop"></use></svg>Open in Photoshop</div>
             </div>
           </div>
         </div>

@@ -1,4 +1,5 @@
 const {ipcRenderer, shell, remote, nativeImage, clipboard} = require('electron')
+const child_process = require('child_process')
 //const electronLocalshortcut = require('electron-localshortcut');
 const fs = require('fs')
 const path = require('path')
@@ -30,6 +31,8 @@ let imageFileDirtyTimer
 
 let textInputMode = false
 let textInputAllowAdvance = false
+
+let toggleMode = 0
 
 menu.setMenu()
 
@@ -71,6 +74,18 @@ ipcRenderer.on('load', (event, args)=>{
   updateBoardUI()
 })
 
+
+let addToLineMileage = (value)=> {
+  let board = boardData.boards[currentBoard]
+  if (board.lineMileage) {
+    board.lineMileage += value
+  } else {
+    board.lineMileage = value
+  }
+  markBoardFileDirty()
+  renderMetaData()
+}
+
 let loadBoardUI = ()=> {
   let aspectRatio = boardData.aspectRatio
   console.log(aspectRatio)
@@ -83,7 +98,9 @@ let loadBoardUI = ()=> {
   }
   sketchPane.init(document.getElementById('sketch-pane'), ['reference', 'main', 'notes'], size)
   sketchPane.setBrush(1.5,[30,30,30],5,70,'main')
-  sketchPane.on('lineMileage', (value)=>{console.log(value)})
+  sketchPane.on('lineMileage', (value)=>{
+    addToLineMileage(value)
+  })
   sketchPane.on('addToUndoStack', (id,imageBitmap)=>{
     //console.log(imageBitmap)
     undoStack.addImageData(null, null, id, imageBitmap)
@@ -153,6 +170,21 @@ let loadBoardUI = ()=> {
     }
   })
 
+  document.querySelector('#show-in-finder-button').addEventListener('pointerdown', (e)=>{
+    let board = boardData.boards[currentBoard]
+    let imageFilename = path.join(boardPath, 'images', board.url)
+    shell.showItemInFolder(imageFilename)
+  })
+
+  document.querySelector('#open-in-photoshop-button').addEventListener('pointerdown', (e)=>{
+    let board = boardData.boards[currentBoard]
+    let imageFilename = path.join(boardPath, 'images', board.url)
+    shell.openItem(imageFilename)
+  })
+
+
+
+
   window.addEventListener('pointermove', (e)=>{
     if (dragMode) {
       dragTarget.scrollLeft = scrollPoint[0] + (dragPoint[0] - e.pageX)
@@ -170,10 +202,12 @@ let loadBoardUI = ()=> {
   })
 
   setTimeout(()=>{remote.getCurrentWindow().show()}, 200)
-  remote.getCurrentWebContents().openDevTools()
+  //remote.getCurrentWebContents().openDevTools()
 }
 
 let updateBoardUI = ()=> {
+  document.querySelector('#canvas-caption').style.display = 'none'
+
   if (boardData.boards.length == 0) {
     // create a new board
     newBoard(0)
@@ -261,11 +295,14 @@ let saveImageFile = ()=> {
 
 sketchPane.on('markDirty', markImageFileDirty)
 
-let deleteBoard = ()=> {
+let deleteBoard = (args)=> {
   if (boardData.boards.length > 1) {
     //should i ask to confirm deleting a board?
     boardData.boards.splice(currentBoard, 1)
-    currentBoard--
+    if (args) {
+    } else {
+      currentBoard--
+    }
     markBoardFileDirty()
     updateThumbnailDrawer()
     gotoBoard(currentBoard)
@@ -379,36 +416,22 @@ let gotoBoard = (boardNumber)=> {
 }
 
 let renderMetaData = ()=> {
-  console.log(boardData.boards[currentBoard])
-
-  console.log(boardData.boards[currentBoard].shot)
-
   document.querySelector('#board-metadata #shot').innerHTML = 'Shot: ' + boardData.boards[currentBoard].shot
   document.querySelector('#board-metadata #board-numbers').innerHTML = 'Board: ' + boardData.boards[currentBoard].number + ' of ' + boardData.boards.length
-
-
-
   for (var item of document.querySelectorAll('#board-metadata input, textarea')) {
     item.value = ''
     item.checked = false
   }
-
   if (boardData.boards[currentBoard].newShot) {
     document.querySelector('input[name="newShot"]').checked = true
-
     if (!boardData.boards[currentBoard].dialogue) {
       document.querySelector('#canvas-caption').style.display = 'none'
-
-
-
     }
   }
-
   if (boardData.boards[currentBoard].duration) {
     document.querySelector('input[name="duration"]').value = boardData.boards[currentBoard].duration
     document.querySelector('input[name="frames"]').value = Math.round(boardData.boards[currentBoard].duration/1000*24)
   }
-
   if (boardData.boards[currentBoard].dialogue) {
     document.querySelector('textarea[name="dialogue"]').value = boardData.boards[currentBoard].dialogue
     document.querySelector('#canvas-caption').innerHTML = boardData.boards[currentBoard].dialogue
@@ -417,14 +440,18 @@ let renderMetaData = ()=> {
   } else {
     document.querySelector('#suggested-dialogue-duration').innerHTML = ''
   }
-
   if (boardData.boards[currentBoard].action) {
     document.querySelector('textarea[name="action"]').value = boardData.boards[currentBoard].action
   }
-
   if (boardData.boards[currentBoard].notes) {
     document.querySelector('textarea[name="notes"]').value = boardData.boards[currentBoard].notes
   }
+  if (boardData.boards[currentBoard].lineMileage){
+    document.querySelector('#line-miles').innerHTML = (boardData.boards[currentBoard].lineMileage/5280).toFixed(1) + ' line miles'
+  } else {
+    document.querySelector('#line-miles').innerHTML = '0 line miles'
+  }
+
 
 
 
@@ -434,19 +461,31 @@ let renderMetaData = ()=> {
 
 
 let nextScene = ()=> {
-  currentScene++
-  loadScene(currentScene)
-  renderScript()
-  updateBoardUI()
-  //gotoBoard(currentBoard)
+  if (currentBoard < (boardData.boards.length -1) && currentBoard !== 0) {
+    currentBoard = (boardData.boards.length -1)
+    gotoBoard(currentBoard)
+  } else {
+    saveBoardFile()
+    currentScene++
+    loadScene(currentScene)
+    renderScript()
+    updateBoardUI()
+  }
 }
 
 let previousScene = ()=> {
-  currentScene--
-  currentScene = Math.max(0, currentScene)
-  loadScene(currentScene)
-  renderScript()
-  updateBoardUI()
+  if (currentBoard > 0) {
+    currentBoard = 0
+    gotoBoard(currentBoard)
+  } else {
+    saveBoardFile()
+    currentScene--
+    currentScene = Math.max(0, currentScene)
+    loadScene(currentScene)
+    renderScript()
+    updateBoardUI()
+  }
+
   //gotoBoard(currentBoard)
 }
 
@@ -593,18 +632,26 @@ let updateThumbnailDrawer = ()=> {
 let renderTimeline = () => {
   let html = []
   html.push('<div class="marker-holder"><div class="marker"></div></div>')
+  var i = 0
   for (var board of boardData.boards ) {
     if (board.duration) {
-      html.push('<div style="flex: ' + board.duration + ';"></div>')
+      html.push(`<div style="flex:${board.duration};" data-node="${i}" class="t-scene"></div>`)
     } else {
-      html.push('<div style="flex: 2000;"></div>')
+      html.push(`<div style="flex: 2000;" data-node="${i}" class="t-scene"></div>`)
     }
+    i++
   }
   document.querySelector('#timeline #movie-timeline-content').innerHTML = html.join('')
+
+  let boardNodes = document.querySelectorAll('#timeline #movie-timeline-content .t-scene')
+  console.log(boardNodes)
+  for (var board of boardNodes) {
+    board.addEventListener('pointerdown', (e)=>{
+      currentBoard = Number(e.target.dataset.node)
+      gotoBoard(currentBoard)
+    }, true, true)
+  }
 }
-
-
-
 
 let dragMode = false
 let dragPoint
@@ -874,17 +921,56 @@ window.onresize = (e) => {
 
 window.onkeydown = (e)=> {
   if (!textInputMode || textInputAllowAdvance) {
+
+    console.log(e)
+
     switch (e.code) {
+      case 'KeyC':
+        if (e.metaKey || e.ctrlKey) {
+          copyBoard()
+          e.preventDefault()
+        }
+        break
+      case 'KeyV':
+        if (e.metaKey || e.ctrlKey) {
+          pasteBoard()
+          e.preventDefault()
+        }
+        break
+      case 'KeyZ':
+       if (e.metaKey || e.ctrlKey) {
+          if (e.shiftKey) {
+            undoStack.redo()
+            markImageFileDirty()
+          } else {
+            undoStack.undo()
+            markImageFileDirty()
+          }
+          e.preventDefault()
+        }
+        break
+      case 'Tab':
+        toggleViewMode()
+        e.preventDefault()
+        break;
       case 'Space':
         togglePlayback()
         e.preventDefault()
         break
       case 'ArrowLeft':
-        goNextBoard(-1)
+        if (e.metaKey || e.ctrlKey) {
+          previousScene()
+        } else {
+          goNextBoard(-1)
+        }
         e.preventDefault()
         break
       case 'ArrowRight':
-        goNextBoard()
+        if (e.metaKey || e.ctrlKey) {
+          nextScene()
+        } else {
+          goNextBoard()
+        }
         e.preventDefault()
         break
     }
@@ -948,6 +1034,100 @@ let playAdvance = function(first) {
   frameTimer = setTimeout(playAdvance, frameDuration)
 }
 
+
+//// VIEW
+
+let toggleViewMode = ()=> {
+  if (scriptData) {
+    toggleMode = ((toggleMode+1)%6)
+    switch (toggleMode) {
+      case 0:
+        document.querySelector('#scenes').style.display = 'block'
+        document.querySelector('#script').style.display = 'block'
+        document.querySelector('#board-metadata').style.display = 'flex'
+        document.querySelector('#toolbar').style.display = 'block'
+        document.querySelector('#thumbnail-container').style.display = 'block'
+        document.querySelector('#timeline').style.display = 'flex'
+        document.querySelector('#playback').style.display = 'flex'
+        break
+      case 1:
+        document.querySelector('#scenes').style.display = 'none'
+        document.querySelector('#script').style.display = 'block'
+        document.querySelector('#board-metadata').style.display = 'flex'
+        document.querySelector('#toolbar').style.display = 'block'
+        break
+      case 2:
+        document.querySelector('#scenes').style.display = 'none'
+        document.querySelector('#script').style.display = 'none'
+        document.querySelector('#board-metadata').style.display = 'flex'
+        document.querySelector('#toolbar').style.display = 'block'
+        break
+      case 3:
+        document.querySelector('#scenes').style.display = 'none'
+        document.querySelector('#script').style.display = 'none'
+        document.querySelector('#board-metadata').style.display = 'none'
+        document.querySelector('#toolbar').style.display = 'block'
+        break
+      case 4:
+        document.querySelector('#scenes').style.display = 'none'
+        document.querySelector('#script').style.display = 'none'
+        document.querySelector('#board-metadata').style.display = 'none'
+        document.querySelector('#toolbar').style.display = 'none'
+        document.querySelector('#thumbnail-container').style.display = 'block'
+        document.querySelector('#timeline').style.display = 'flex'
+        document.querySelector('#playback').style.display = 'flex'
+        break
+      case 5:
+        document.querySelector('#scenes').style.display = 'none'
+        document.querySelector('#script').style.display = 'none'
+        document.querySelector('#board-metadata').style.display = 'none'
+        document.querySelector('#toolbar').style.display = 'none'
+        document.querySelector('#thumbnail-container').style.display = 'none'
+        document.querySelector('#timeline').style.display = 'none'
+        document.querySelector('#playback').style.display = 'none'
+        break
+    }
+  } else {
+    toggleMode = ((toggleMode+1)%4)
+    switch (toggleMode) {
+      case 0:
+        document.querySelector('#scenes').style.display = 'none'
+        document.querySelector('#script').style.display = 'none'
+        document.querySelector('#board-metadata').style.display = 'flex'
+        document.querySelector('#toolbar').style.display = 'block'
+        document.querySelector('#thumbnail-container').style.display = 'block'
+        document.querySelector('#timeline').style.display = 'flex'
+        document.querySelector('#playback').style.display = 'flex'
+        break
+      case 1:
+        document.querySelector('#scenes').style.display = 'none'
+        document.querySelector('#script').style.display = 'none'
+        document.querySelector('#board-metadata').style.display = 'none'
+        document.querySelector('#toolbar').style.display = 'block'
+        break
+      case 2:
+        document.querySelector('#scenes').style.display = 'none'
+        document.querySelector('#script').style.display = 'none'
+        document.querySelector('#board-metadata').style.display = 'none'
+        document.querySelector('#toolbar').style.display = 'none'
+        document.querySelector('#thumbnail-container').style.display = 'block'
+        document.querySelector('#timeline').style.display = 'flex'
+        document.querySelector('#playback').style.display = 'flex'
+        break
+      case 3:
+        document.querySelector('#scenes').style.display = 'none'
+        document.querySelector('#script').style.display = 'none'
+        document.querySelector('#board-metadata').style.display = 'none'
+        document.querySelector('#toolbar').style.display = 'none'
+        document.querySelector('#thumbnail-container').style.display = 'none'
+        document.querySelector('#timeline').style.display = 'none'
+        document.querySelector('#playback').style.display = 'none'
+        break
+    }
+  }
+  sketchPane.sizeCanvas()
+}
+
 ipcRenderer.on('newBoard', (event, args)=>{
   if (!textInputMode) {
     if (args > 0) {
@@ -968,9 +1148,6 @@ ipcRenderer.on('togglePlayback', (event, args)=>{
   }
 })
 
-
-
-
 ipcRenderer.on('goPreviousBoard', (event, args)=>{
   if (!textInputMode) {
     goNextBoard(-1)
@@ -984,7 +1161,6 @@ ipcRenderer.on('goNextBoard', (event, args)=>{
 })
 
 ipcRenderer.on('previousScene', (event, args)=>{
-  console.log("sup")
   previousScene()
 })
 
@@ -1008,27 +1184,20 @@ ipcRenderer.on('redo', (e, arg)=> {
   }
 })
 
-ipcRenderer.on('copy', (e, arg)=> {
+let copyBoard = ()=> {
   if (!textInputMode) {
-    console.log("copy")
     let board = JSON.parse(JSON.stringify(boardData.boards[currentBoard]))
     let canvasDiv = document.querySelector('#main-canvas')
-
     board.imageDataURL = canvasDiv.toDataURL()
-
-    console.log(JSON.stringify(board))
-    console.log()
     clipboard.clear()
-    // clipboard.writeImage(nativeImage.createFromDataURL(canvasDiv.toDataURL()))
-    // clipboard.writeText(JSON.stringify(board))
     clipboard.write({
       image: nativeImage.createFromDataURL(canvasDiv.toDataURL()),
       text: JSON.stringify(board),
     })
   }
-})
+}
 
-ipcRenderer.on('paste', (e, arg)=> {
+let pasteBoard = ()=> {
   if (!textInputMode) {
 
     console.log("paste")
@@ -1094,13 +1263,7 @@ ipcRenderer.on('paste', (e, arg)=> {
     }
 
   }
-
-  // is there a boarddata with imageDataURL?
-  // if so, insert new board and paste in board data
-  // if only image type, create new board and paste in the nativeimage
-
-
-})
+}
 
 ipcRenderer.on('setTool', (e, arg)=> {
   if (!textInputMode) {
@@ -1144,15 +1307,20 @@ ipcRenderer.on('flipBoard', (e, arg)=> {
   }
 })
 
-
 ipcRenderer.on('deleteBoard', (event, args)=>{
   if (!textInputMode) {
-    deleteBoard()
+    deleteBoard(args)
   }
 })
 
 ipcRenderer.on('duplicateBoard', (event, args)=>{
   if (!textInputMode) {
     duplicateBoard()
+  }
+})
+
+ipcRenderer.on('toggleViewMode', (event, args)=>{
+  if (!textInputMode) {
+    toggleViewMode()
   }
 })

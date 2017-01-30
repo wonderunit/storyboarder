@@ -73,16 +73,12 @@ const template = [
       {
         label: 'Undo',
         accelerator: 'CmdOrCtrl+Z',
-        click () {
-          ipcRenderer.send('undo')
-        }
+        role: 'undo'
       },
       {
         label: 'Redo',
         accelerator: 'Shift+CmdOrCtrl+Z',
-        click () {
-          ipcRenderer.send('redo')
-        }
+        role: 'redo'
       },
       {
         type: 'separator'
@@ -90,20 +86,18 @@ const template = [
       {
         label: 'Copy',
         accelerator: 'CmdOrCtrl+C',
-        click () {
-          ipcRenderer.send('copy')
-        }
+        role: 'copy'
       },
       {
         label: 'Paste',
         accelerator: 'CmdOrCtrl+V',
-        click () {
-          ipcRenderer.send('paste')
-        }
+        role: 'paste'
       },
-      // {
-      //   role: 'paste'
-      // }
+      {
+        label: 'Select All',
+        accelerator: 'CmdOrCtrl+A',
+        role: 'selectall'
+      }
     ]
   },
   {
@@ -182,6 +176,13 @@ const template = [
         label: 'Delete Board',
         click ( item, focusedWindow, event) {
           ipcRenderer.send('deleteBoard')
+        }
+      },
+      {
+        accelerator: 'CmdOrCtrl+Delete',
+        label: 'Delete Board - Go Forward',
+        click ( item, focusedWindow, event) {
+          ipcRenderer.send('deleteBoard', 1)
         }
       },
       {
@@ -274,6 +275,16 @@ const template = [
     label: 'View',
     submenu: [
       {
+        label: 'Toggle View Mode',
+        accelerator: 'Tab',
+        click ( item, focusedWindow, event) {
+          ipcRenderer.send('toggleViewMode')
+        }
+      },
+      {
+        type: 'separator'
+      },
+      {
         label: 'Reload',
         accelerator: 'CmdOrCtrl+R',
         click (item, focusedWindow) {
@@ -291,7 +302,7 @@ const template = [
         type: 'separator'
       },
       {
-        accelerator: 'CmdOrCtrl+F',
+        accelerator: 'F11',
         role: 'togglefullscreen'
       }
     ]

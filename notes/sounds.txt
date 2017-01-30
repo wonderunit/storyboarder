@@ -1,0 +1,13 @@
+sounds:
+  
+  new board
+  dup
+  paste
+  undo / redo
+  tool picking
+  clicking on images
+  clicking on scenes
+
+  pen down and move
+
+  fade volume on continued use, fade back up to max

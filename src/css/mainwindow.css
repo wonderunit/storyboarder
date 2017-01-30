@@ -52,24 +52,24 @@ body {
   border-bottom: 1px solid rgba(0,0,0,.05);
   border-right: 1px solid rgba(0,0,0,.1);
   filter: saturate(90%) brightness(60%);
-  transition: 0.2s all ease-out;
+  text-rendering: geometricPrecision;
+
 }
 
+
 #scenes .scene:hover {
-  filter: saturate(100%) brightness(100%);
+  filter: saturate(100%) brightness(70%);
   border-top: 1px solid rgba(255,255,255,0.1);
   border-bottom: 1px solid rgba(0,0,0,.2);
-  transition: 0s all ease-in-out;
-
 }
 
 #scenes .active {
-  filter: saturate(100%) brightness(100%);
+  filter: saturate(100%) brightness(100%) !important;
   border-top: 1px solid rgba(255,255,255,0.1);
   border-bottom: 1px solid rgba(0,0,0,.2);
-  transition: 0s all ease-in-out;
-
 }
+
+
 
 #scenes .node * {
   pointer-events: none;
@@ -261,7 +261,7 @@ body {
 
 #thumbnail-drawer .thumbnail.active {
   background: #ffc000;
-  background: #777780;
+  background: #777;
   color: #000;
   transition: all 0s ease-out;
 }
@@ -270,6 +270,7 @@ body {
   background: white;
   border-radius: 3px;
   position: relative;
+  box-shadow: none;
 }
 
 #thumbnail-drawer img:after {  
@@ -357,10 +358,24 @@ body {
   width: 200px;
   display: flex;
   align-items: center;
-  padding-right: 15px;
-  color: rgba(255,255,255,0.5);
+/*  padding-right: 15px;
+*/  color: rgba(255,255,255,0.5);
   font-size: 14px;
+  padding-left: 15px;
 }
+
+
+#board-metadata .flatbutton {
+  background: #3a3a3a;
+  padding: 3px;
+  border-radius: 4px;
+  margin-bottom: 5px;
+}
+
+#board-metadata .flatbutton:hover {
+  background: #444;
+}
+
 
 #board-metadata .hardrule {
   border-top: 1px dotted rgba(255,255,255,0.1);
@@ -394,6 +409,44 @@ body {
   resize: none;
 }
 
+#board-metadata input[type=checkbox] {
+  display: none;
+}
+
+/*label {
+  left: 50px;
+  position: relative;
+
+}*/
+
+input[type="checkbox"] + label span {
+    display:inline-block;
+    width:22px;
+    height:22px;
+    margin:-2px 10px 0 0;
+    vertical-align:middle;
+    background: #444;
+    border-radius: 3px;
+    cursor:pointer;
+}
+input[type="checkbox"]:checked + label span {
+  
+  background: #444;
+}
+
+input[type=checkbox]:checked + label:before {
+  content:'✖';
+  padding-left: 5px;
+  padding-top: 3px;
+  text-shadow: 0px 1px 1px rgba(0, 0, 0, .2);
+  font-size: 15px;
+  text-align: center;
+  line-height: 13px;
+  position: absolute;
+}
+
+
+
 #board-metadata .number {
   font-size: 20px;
   font-weight: 700;
@@ -404,7 +457,7 @@ body {
   margin-bottom: 10px;
 }
 
-#board-metadata textarea:focus {
+#board-metadata textarea:focus, #board-metadata input:focus {
   outline: none;
   box-shadow: 0 0 0 2px rgba(255,255,255,0.3);
 }
@@ -418,13 +471,16 @@ body {
   font-weight: 500;
   color: white;
   text-transform: uppercase;
-  bottom: 20px;
   left: 50%;
   transform: translate(-50%,0);
   margin: 0;
   width: fit-content;
   max-width: 55vw;
   display: none;
+  text-rendering: optimizeLegibility;
+  z-index: 200;
+  text-shadow: 0 1px 0px rgba(0,0,0,.6);
+  font-weight: 100;
 }
 
 /*
@@ -510,7 +566,7 @@ div.marker-holder {
 
 #timeline .marker {
   position: absolute;
-  background-color: #777780 !important;
+  background-color: #777 !important;
   width: 8px;
   height: 20px !important;
   top: -5px;

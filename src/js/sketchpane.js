@@ -116,6 +116,10 @@ let init = (parentDiv, layerNameArray, size)=> {
     layer.width = size[0]
     layer.height = size[1]
     container.appendChild(layer)
+    // add caption div
+    var caption = document.createElement('div')
+    caption.id = 'canvas-caption'
+    parentDiv.appendChild(caption)
 
     // TODO: add onion skin container
     // TODO: add guides container
@@ -180,7 +184,6 @@ let mouseWheel = (e)=> {
 }
 
 let pointerDown = (e) => {
-  console.log("down")
   if (e.shiftKey) {
 
   } else {
@@ -477,6 +480,7 @@ let sizeCanvas= () => {
   // todo: figure out real pan values
   // thought: pan over to keep viewport centerpoint
   let canvasDiv = document.querySelector('#main-canvas')
+  let captionDiv = document.querySelector('#canvas-caption')
   let canvasContainerDiv = document.querySelector('#canvas-container')
   let sketchPaneDiv = document.querySelector('#sketch-pane')
 
@@ -495,7 +499,10 @@ let sizeCanvas= () => {
 
   let left = (((sketchPaneDiv.offsetWidth) - (canvasDiv.width*realScale))/2)+((0.5-viewportCenter[0])*(canvasDiv.width*realScale))
   let top = (((sketchPaneDiv.offsetHeight) - (canvasDiv.height*realScale))/2)+((0.5-viewportCenter[1])*(canvasDiv.height*realScale)) 
-  canvasContainerDiv.style.transform = `translate(${left}px,${top}px) scale(${realScale},${realScale}) `
+  canvasContainerDiv.style.transform = `translate(${left}px,${top}px) scale(${realScale},${realScale})`
+
+  captionDiv.style.bottom = top + 20 + 'px'
+
   setCursorSize()
 }
 
@@ -617,6 +624,7 @@ let addToUndoStack = ()=> {
 }
 
 module.exports.init = init
+module.exports.sizeCanvas = sizeCanvas
 module.exports.setScale = setScale
 module.exports.flipBoard = flipBoard
 module.exports.setBrush = setBrush

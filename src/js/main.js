@@ -375,7 +375,7 @@ ipcMain.on('newBoard', (e, arg)=> {
 })
 
 ipcMain.on('deleteBoard', (e, arg)=> {
-  mainWindow.webContents.send('deleteBoard')
+  mainWindow.webContents.send('deleteBoard', arg)
 })
 
 ipcMain.on('duplicateBoard', (e, arg)=> {
@@ -434,6 +434,12 @@ ipcMain.on('brushSize', (e, arg)=> {
 
 ipcMain.on('flipBoard', (e, arg)=> {
   mainWindow.webContents.send('flipBoard', arg)
+})
+
+/// VIEW
+
+ipcMain.on('toggleViewMode', (e, arg)=> {
+  mainWindow.webContents.send('toggleViewMode', arg)
 })
 
 //////////////////
