@@ -164,7 +164,6 @@ function parseTokens(tokens) {
 
   // add wordcount per scene, add duration per scene
 
-
   for (var token of tokens) {
     switch (token.type) {
       case 'boneyard_begin':
@@ -196,6 +195,15 @@ function parseTokens(tokens) {
         if (sceneAtom['script'].length > 0) {
           sceneAtom['duration'] = (currentTime - startSceneTime)
           sceneAtom['word_count'] = sceneWordCount
+          if (!sceneAtom['scene_number']) {
+            sceneAtom['scene_number'] = currentScene
+          }
+          if (!sceneAtom['scene_id']) {
+            sceneAtom['scene_id'] = "G" + currentScene
+          }
+          if (!sceneAtom['slugline']) {
+            sceneAtom['slugline'] = "BLACK"
+          }
           script.push(sceneAtom)
         }
 
@@ -318,6 +326,10 @@ function parseTokens(tokens) {
   if (sceneAtom['script'].length > 0) {
     sceneAtom['duration'] = (currentTime - startSceneTime)
     sceneAtom['word_count'] = sceneWordCount
+    // console.log(sceneAtom)
+    // if (!sceneAtom['scene_number']) {
+    //   console.log(sceneAtom)
+    // }
     script.push(sceneAtom)
   }
 

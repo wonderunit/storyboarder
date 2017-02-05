@@ -468,7 +468,7 @@ let getPointerData = (e)=> {
   } else {
     angle = 0
     tilt = 0.1
-    pressure = 0.5
+    pressure = 1.5
     eraser = e.buttons == 2 || eraserMode
     pointerType = 0
   }

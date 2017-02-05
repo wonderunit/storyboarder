@@ -644,7 +644,6 @@ let renderTimeline = () => {
   document.querySelector('#timeline #movie-timeline-content').innerHTML = html.join('')
 
   let boardNodes = document.querySelectorAll('#timeline #movie-timeline-content .t-scene')
-  console.log(boardNodes)
   for (var board of boardNodes) {
     board.addEventListener('pointerdown', (e)=>{
       currentBoard = Number(e.target.dataset.node)
@@ -669,20 +668,22 @@ let renderScenes = ()=> {
         html.push('<div class="section node">' + node.text + '</div>')
         break
       case 'scene':
-        if (currentScene == (Number(node.scene_number)-1)) {
-          html.push('<div class="scene node active" data-node="' + (Number(node.scene_number)-1) + '" style="background:' + getSceneColor(node.slugline) + '">')
-        } else {
-          html.push('<div class="scene node" data-node="' + (Number(node.scene_number)-1) + '" style="background:' + getSceneColor(node.slugline) + '">')
+        if (node.scene_number !== 0) {
+          if (currentScene == (Number(node.scene_number)-1)) {
+            html.push('<div class="scene node active" data-node="' + (Number(node.scene_number)-1) + '" style="background:' + getSceneColor(node.slugline) + '">')
+          } else {
+            html.push('<div class="scene node" data-node="' + (Number(node.scene_number)-1) + '" style="background:' + getSceneColor(node.slugline) + '">')
+          }
+          html.push('<div class="number">SCENE ' + node.scene_number + ' - ' + util.msToTime(node.duration) + '</div>')
+          if (node.slugline) {
+            html.push('<div class="slugline">' + node.slugline + '</div>')
+          }
+          if (node.synopsis) {
+            html.push('<div class="synopsis">' + node.synopsis + '</div>')
+          }
+          // time, duration, page, word_count
+          html.push('</div>')
         }
-        html.push('<div class="number">SCENE ' + node.scene_number + ' - ' + util.msToTime(node.duration) + '</div>')
-        if (node.slugline) {
-          html.push('<div class="slugline">' + node.slugline + '</div>')
-        }
-        if (node.synopsis) {
-          html.push('<div class="synopsis">' + node.synopsis + '</div>')
-        }
-        // time, duration, page, word_count
-        html.push('</div>')
         break
     }
     i++
@@ -734,7 +735,7 @@ let renderScript = ()=> {
   let html = []
   for (var node of scriptData ) {
     if (node.type == 'scene') {
-      if (sceneCount == currentScene) {
+      if (node.scene_number == (currentScene+1)) {
         html.push('<div class="item slugline"><div class="number">SCENE ' + node.scene_number + ' - ' +  util.msToTime(node.duration) + '</div>')
 
         html.push('<div>' + node.slugline + '</div>')
@@ -774,7 +775,7 @@ let assignColors = function () {
 }
 
 let getSceneColor = function (sceneString) {
-  if (sceneString) {
+  if (sceneString && (sceneString !== 'BLACK')) {
     let location = sceneString.split(' - ')
     if (location.length > 1) {
       location.pop()
@@ -799,20 +800,29 @@ let loadScene = (sceneNumber) => {
     return fs.statSync(path.join(currentPath, file)).isDirectory()
   })
 
+  let sceneCount = 0
+
   for (var node of scriptData) {
     if (node.type == 'scene') {
       if (sceneNumber == (Number(node.scene_number)-1)) {
         // load script
+        sceneCount++
         let directoryFound = false
         let foundDirectoryName
 
         console.log(node)
 
-        let id = node.scene_id.split('-')
-        if (id.length>1) {
-          id = id[1]
+        let id
+
+        if (node.scene_id) {
+          id = node.scene_id.split('-')
+          if (id.length>1) {
+            id = id[1]
+          } else {
+            id = id[0]
+          }
         } else {
-          id = id[0]
+          id = 'G' + sceneCount
         }
 
         for (var directory of boardsDirectoryFolders) {

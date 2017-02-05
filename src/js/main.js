@@ -121,7 +121,6 @@ let openFile = (file) => {
         fs.writeFileSync(file, sceneIdScript[0])
         data = sceneIdScript[0]
       }
-
       // check for storyboards directory
       let storyboardsPath = file.split(path.sep)
       storyboardsPath.pop()
@@ -129,10 +128,8 @@ let openFile = (file) => {
       if (!fs.existsSync(storyboardsPath)){
         fs.mkdirSync(storyboardsPath)
       }
-
       currentFile = file
       currentPath = storyboardsPath
-
       // check for storyboard.settings file
       let boardSettings
       if (!fs.existsSync(path.join(storyboardsPath, 'storyboard.settings'))){
@@ -149,23 +146,18 @@ let openFile = (file) => {
           let aspects = [2.39, 2, 1.85, 1.7777777777777777, 0.5625, 1, 1.3333333333333333]
           boardSettings.aspectRatio = aspects[response]
           fs.writeFileSync(path.join(storyboardsPath, 'storyboard.settings'), JSON.stringify(boardSettings))
-
           //[scriptData, locations, characters, metadata]
           let processedData = processFountainData(data, true, false)
           addToRecentDocs(currentFile, processedData[3])
           loadStoryboarderWindow(null, processedData[0], processedData[1], processedData[2], boardSettings, currentPath)
-
         })
       } else {
         boardSettings = JSON.parse(fs.readFileSync(path.join(storyboardsPath, 'storyboard.settings')))
         if (!boardSettings.lastScene) { boardSettings.lastScene = 0 }
-
         //[scriptData, locations, characters, metadata]
         let processedData = processFountainData(data, true, false)
         addToRecentDocs(currentFile, processedData[3])
         loadStoryboarderWindow(null, processedData[0], processedData[1], processedData[2], boardSettings, currentPath)
-
-
       }
 
     })
@@ -187,7 +179,6 @@ let processFountainData = (data, create, update) => {
   let locations = fountainDataParser.getLocations(scriptData.tokens)
   let characters = fountainDataParser.getCharacters(scriptData.tokens)
   scriptData = fountainDataParser.parse(scriptData.tokens)
-
   let metadata = {type: 'script', sceneBoardsCount: 0, sceneCount: 0, totalMovieTime: 0}
 
   let boardsDirectoryFolders = fs.readdirSync(currentPath).filter(function(file) {
@@ -201,11 +192,16 @@ let processFountainData = (data, create, update) => {
         break
       case 'scene':
         metadata.sceneCount++
-        let id = node.scene_id.split('-')
-        if (id.length>1) {
-          id = id[1]
+        let id 
+        if (node.scene_id) {
+          id = node.scene_id.split('-')
+          if (id.length>1) {
+            id = id[1]
+          } else {
+            id = id[0]
+          }
         } else {
-          id = id[0]
+          id = 'G' + metadata.sceneCount
         }
         for (var directory in boardsDirectoryFolders) {
           if (directory.includes(id)) {
@@ -310,6 +306,8 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
   }
   mainWindow = new BrowserWindow({acceptFirstMouse: true, backgroundColor: '#333333', width: 2480, height: 1350, minWidth: 1500, minHeight: 1080+29, show: false, resizable: true, titleBarStyle: 'hidden-inset', webPreferences: {webgl: true, experimentalFeatures: true, experimentalCanvasFeatures: true, devTools: true} })
   mainWindow.loadURL(`file://${__dirname}/../main-window.html`)
+
+  // mainWindow.show()
   
   // setTimeout(()=>{
   //   mainWindow.webContents.send('load', [filename, scriptData, locations, characters, boardSettings, currentPath])

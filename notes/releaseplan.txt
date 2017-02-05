@@ -1,3 +1,20 @@
+NEED CALENDAR
+
+
+finish website to wonder unit
+pay for mailchimp
+make sure mailchimp integration is in place with automation
+get to beta feature list
+import big list
+send segmented warm up emails -> need a call to action
+work out a good package system
+send email to all the testers on list
+get feedback and fix bugs, work on new features
+upload site to storyboardfountain.com
+send email out to everyone
+press
+
+
 Release Plan
 
   Start committing to github
