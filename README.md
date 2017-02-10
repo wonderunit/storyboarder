@@ -4,12 +4,18 @@ Go from idea in your head to storyboard as fast as possible.
 
 [![IMAGE ALT TEXT HERE](http://img.youtube.com/vi/07BantTVjLQ/0.jpg)](http://www.youtube.com/watch?v=07BantTVjLQ)
 
-[Click here to download](https://github.com/setpixel/storyboarder/releases/latest)
-
 Storyboarder makes it easy to visualize a story as fast you can draw stick figures. Quickly draw to test if a story idea works. Create and show animatics to others. Express your story idea without making a movie.
 
 Whether you are a story artist, writer, director, in advertising, or just a person with an idea, you can use this to quickly make storyboards.
 
+## Downloads
+
+[Click here for the latest prerelease alpha](https://github.com/setpixel/storyboarder/releases/latest)
+(darwin for mac, win32 for windows, and linux)
+
+Working towards a beta. [PLEASE PLEASE PLEASE submit issues with bugs, ideas, suggestions, or any feedback! Thanks!](https://github.com/setpixel/storyboarder/issues)
+
+## It's easy...
 
 1. Start a blank storyboard or open a Fountain screenplay.
 2. Start drawing boards using a mouse or wacom open. Or print out
@@ -18,6 +24,24 @@ Whether you are a story artist, writer, director, in advertising, or just a pers
 Don't get slowed down by too many buttons or options. You're here to board stories, not make the next Moner Lisa.
 
 Works with Pens on any tablet or Cintiq or even a Microsoft Surface. Also works with a mouse.
+
+## Features:
+
+* Simple, Smooth Drawing
+* Super Simple Interface
+* Printed Worksheets
+* Works with Wacom
+* Easy Organization
+* Draw Straight Lines
+* Works with Fountain
+* Open in Photoshop
+* Measure Line Mileage
+* Guides to Help Drawing
+* Reference Layer
+* Onion Skin
+* Track changes
+* Collaborate on Github
+* Export to various Formats
 
 ## We have 4 brush types which are all you need to draw fast:
 
