@@ -190,6 +190,11 @@ let loadBoardUI = ()=> {
 
 
   window.addEventListener('pointermove', (e)=>{
+    if (isEditMode && dragMode) {
+      dragTarget.scrollLeft = scrollPoint[0] - (dragPoint[0] - e.pageX)
+      return
+    }
+
     if (dragMode) {
       dragTarget.scrollLeft = scrollPoint[0] + (dragPoint[0] - e.pageX)
       console.log(scrollPoint[0], dragPoint[0], e.pageX)
