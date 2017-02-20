@@ -9,7 +9,7 @@ const template = [
         label: 'Open...',
         accelerator: 'CmdOrCtrl+O',
         click ( item, focusedWindow, event) {
-          ipcRenderer.send('openFile')
+          ipcRenderer.send('openDialogue')
         }
       },
       {
