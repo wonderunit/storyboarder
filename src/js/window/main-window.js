@@ -34,6 +34,8 @@ let textInputAllowAdvance = false
 
 let toggleMode = 0
 
+let selections = new Set()
+
 menu.setMenu()
 
 ///////////////////////////////////////////////////////////////
@@ -581,6 +583,9 @@ let updateThumbnailDrawer = ()=> {
       html.push(' startShot')
       html.push(' endShot')
     }
+    if (selections.has(i)) {
+      html.push(' selected')
+    }
     html.push('" style="width: ' + ((60 * boardData.aspectRatio)) + 'px;">')
     let imageFilename = path.join(boardPath, 'images', board.url)
     if (!fs.existsSync(imageFilename)){
@@ -614,10 +619,19 @@ let updateThumbnailDrawer = ()=> {
   let thumbnails = document.querySelectorAll('.thumbnail')
   for (var thumb of thumbnails) {
     thumb.addEventListener('pointerdown', (e)=>{
-      console.log("DOWN")
-      if (currentBoard !== Number(e.target.dataset.thumbnail)) {
+      let index = Number(e.target.dataset.thumbnail)
+      if (e.shiftKey) {
+        console.log('adding', e.target.dataset.thumbnail, 'to selection')
+
+        // add the index
+        selections.add(index)
+        console.log('selections', selections)
+        // TODO add indexes in between
+        updateThumbnailDrawer()
+
+      } else if (currentBoard !== index) {
         saveImageFile()
-        currentBoard = Number(e.target.dataset.thumbnail)
+        currentBoard = index
         gotoBoard(currentBoard)
       }
     }, true, true)
@@ -627,7 +641,6 @@ let updateThumbnailDrawer = ()=> {
 
   //gotoBoard(currentBoard)
 }
-
 
 let renderTimeline = () => {
   let html = []
@@ -986,6 +999,13 @@ window.onkeydown = (e)=> {
     }
   }
 }
+
+document.addEventListener('keyup', event => {
+  if (event.key == 'Shift') {
+    selections.clear()
+    updateThumbnailDrawer()
+  }
+})
 
 ///////////////////////////////////////////////////////////////
 // Playback
