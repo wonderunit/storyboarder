@@ -630,8 +630,13 @@ let updateThumbnailDrawer = ()=> {
         updateThumbnailDrawer()
       } else if (currentBoard !== index) {
         // go to board by index
+        
+        // reset selections
+        selections.clear()
+
         saveImageFile()
         currentBoard = index
+        updateThumbnailDrawer()
         gotoBoard(currentBoard)
       }
     }, true, true)
@@ -986,6 +991,8 @@ window.onkeydown = (e)=> {
         } else {
           goNextBoard(-1)
         }
+        selections.clear()
+        updateThumbnailDrawer()
         e.preventDefault()
         break
       case 'ArrowRight':
@@ -994,18 +1001,13 @@ window.onkeydown = (e)=> {
         } else {
           goNextBoard()
         }
+        selections.clear()
+        updateThumbnailDrawer()
         e.preventDefault()
         break
     }
   }
 }
-
-document.addEventListener('keyup', event => {
-  if (event.key == 'Shift') {
-    selections.clear()
-    updateThumbnailDrawer()
-  }
-})
 
 ///////////////////////////////////////////////////////////////
 // Playback
