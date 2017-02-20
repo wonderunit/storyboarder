@@ -621,20 +621,15 @@ let updateThumbnailDrawer = ()=> {
     thumb.addEventListener('pointerdown', (e)=>{
       let index = Number(e.target.dataset.thumbnail)
       if (e.shiftKey) {
-        console.log('adding', e.target.dataset.thumbnail, 'to selection', selections)
-
-        // add the index
+        // add to selections
         selections.add(index)
         let min = Math.min(...selections)
         let max = Math.max(...selections)
-        console.log('selecting', min, 'to', max)
-
         selections = new Set(util.range(min, max))
-        console.log('selections', selections)
 
         updateThumbnailDrawer()
-
       } else if (currentBoard !== index) {
+        // go to board by index
         saveImageFile()
         currentBoard = index
         gotoBoard(currentBoard)
@@ -1008,7 +1003,6 @@ window.onkeydown = (e)=> {
 document.addEventListener('keyup', event => {
   if (event.key == 'Shift') {
     selections.clear()
-    console.log('cleared selections', selections)
     updateThumbnailDrawer()
   }
 })
