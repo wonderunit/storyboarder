@@ -28,6 +28,8 @@ let boardFileDirty = false
 let boardFileDirtyTimer
 let imageFileDirty = false
 let imageFileDirtyTimer
+let isEditMode = false
+let editModeTimer
 
 let textInputMode = false
 let textInputAllowAdvance = false
@@ -201,6 +203,9 @@ let loadBoardUI = ()=> {
       dragTarget.style.overflow = 'scroll'
       dragTarget.style.scrollBehavior = 'smooth'
     }
+
+    clearTimeout(editModeTimer)
+    disableEditMode()
   })
 
   setTimeout(()=>{remote.getCurrentWindow().show()}, 200)
@@ -583,8 +588,14 @@ let updateThumbnailDrawer = ()=> {
       html.push(' startShot')
       html.push(' endShot')
     }
+    if (currentBoard == i) {
+      html.push(' active')
+    }
     if (selections.has(i)) {
       html.push(' selected')
+      if (isEditMode) {
+        html.push(' editing')
+      }
     }
     html.push('" style="width: ' + ((60 * boardData.aspectRatio)) + 'px;">')
     let imageFilename = path.join(boardPath, 'images', board.url)
@@ -620,8 +631,11 @@ let updateThumbnailDrawer = ()=> {
   for (var thumb of thumbnails) {
     thumb.addEventListener('pointerdown', (e)=>{
       console.log("DOWN")
+      editModeTimer = setTimeout(enableEditMode, 1000)
       let index = Number(e.target.dataset.thumbnail)
-      if (e.shiftKey) {
+      if (selections.has(index)) {
+        // ignore
+      } else if (e.shiftKey) {
         // add to selections
         let min = Math.min(...selections, index)
         let max = Math.max(...selections, index)
@@ -1294,6 +1308,20 @@ let pasteBoard = ()=> {
 
     }
 
+  }
+}
+
+let enableEditMode = () => {
+  if (!isEditMode) {
+    isEditMode = true
+    updateThumbnailDrawer()
+  }
+}
+
+let disableEditMode = () => {
+  if (isEditMode) {
+    isEditMode = false
+    updateThumbnailDrawer()
   }
 }
 

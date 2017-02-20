@@ -269,6 +269,9 @@ body {
 #thumbnail-drawer .thumbnail.selected {
   box-shadow: 0 2px 0 red;
 }
+#thumbnail-drawer .thumbnail.selected.editing {
+  box-shadow: 0 2px 0 orange;
+}
 
 #thumbnail-drawer img {
   background: white;
