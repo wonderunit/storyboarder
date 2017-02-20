@@ -39,8 +39,18 @@ let durationOfWords = (text, durationPerWord) => {
   return wordCount(text)*durationPerWord
 }
 
+let range = (begin, end, step = 1) => {
+  let a = [begin], b = begin
+  while (b < end) {
+    b += step
+    a.push(b)
+  }
+  return a
+}
+
 module.exports = {
   msToTime: msToTime,
   uidGen: uidGen,
   durationOfWords: durationOfWords,
+  range: range,
 }

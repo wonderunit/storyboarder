@@ -629,10 +629,8 @@ let updateThumbnailDrawer = ()=> {
         let max = Math.max(...selections)
         console.log('selecting', min, 'to', max)
 
-        let selectionSize = (max - min) + 1
-        let selectionRange = [...Array(selectionSize).keys()].map(i => i + min)
-        console.log('selectionRange', selectionRange)
-        selections = new Set(selectionRange)
+        selections = new Set(util.range(min, max))
+        console.log('selections', selections)
 
         updateThumbnailDrawer()
 
