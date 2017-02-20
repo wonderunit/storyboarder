@@ -619,6 +619,7 @@ let updateThumbnailDrawer = ()=> {
   let thumbnails = document.querySelectorAll('.thumbnail')
   for (var thumb of thumbnails) {
     thumb.addEventListener('pointerdown', (e)=>{
+      console.log("DOWN")
       let index = Number(e.target.dataset.thumbnail)
       if (e.shiftKey) {
         // add to selections
