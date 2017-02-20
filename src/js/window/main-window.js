@@ -623,9 +623,8 @@ let updateThumbnailDrawer = ()=> {
       let index = Number(e.target.dataset.thumbnail)
       if (e.shiftKey) {
         // add to selections
-        selections.add(index)
-        let min = Math.min(...selections)
-        let max = Math.max(...selections)
+        let min = Math.min(...selections, index)
+        let max = Math.max(...selections, index)
         selections = new Set(util.range(min, max))
 
         updateThumbnailDrawer()
