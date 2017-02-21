@@ -196,16 +196,20 @@ let loadBoardUI = ()=> {
 
   window.addEventListener('pointermove', (e)=>{
     if (isEditMode && dragMode) {
-      // for reference -
-      // let newScrollLeft = scrollPoint[0] - (dragPoint[0] - e.pageX)
+      // TODO timer instead of pointermove event, so scrolling is continuous
 
+      let containerW = dragTarget.getBoundingClientRect().width
 
-      // mouse cursor position across window width
-      let scale = e.clientX / document.body.clientWidth
-      // total width of drawer
-      let drawerW = dragTarget.children[0].getBoundingClientRect().width
-      // mouse position scaled across width of drawer
-      let newScrollLeft = drawerW * scale
+      let mouseX = e.clientX
+      let midpointX = containerW / 2
+
+      // distance ratio -1...0...1
+      let strength = (mouseX - midpointX) / midpointX
+
+      // NOTE I don't bother clamping min/max because scrollLeft handles that for us
+      let newScrollLeft = dragTarget.scrollLeft + (strength * 15)
+
+      // TODO clamp mouseX max at window width? (to handle Developer Console)
 
       dragTarget.scrollLeft = newScrollLeft
 
