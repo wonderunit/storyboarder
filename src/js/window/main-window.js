@@ -204,12 +204,28 @@ let loadBoardUI = ()=> {
       let midpointX = containerW / 2
 
       // distance ratio -1...0...1
-      let strength = (mouseX - midpointX) / midpointX
+      let distance = (mouseX - midpointX) / midpointX
+      
+      // default is the dead zone at 0
+      let strength = 0
+      // -1..-0.5
+      if (distance < -0.5)
+      {
+        strength = -util.norm(distance, -0.5, -1)
+      } 
+      // 0.5..1
+      else if (distance > 0.5)
+      {
+        strength = util.norm(distance, 0.5, 1)
+      }
+
+      strength = util.clamp(strength, -1, 1)
+
+      // max speed is half of the average board width per pointermove
+      let speedlimit = Math.floor(60 * boardData.aspectRatio * 0.5)
 
       // NOTE I don't bother clamping min/max because scrollLeft handles that for us
-      let newScrollLeft = dragTarget.scrollLeft + (strength * 15)
-
-      // TODO clamp mouseX max at window width? (to handle Developer Console)
+      let newScrollLeft = dragTarget.scrollLeft + (strength * speedlimit)
 
       dragTarget.scrollLeft = newScrollLeft
 
