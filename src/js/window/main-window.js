@@ -1378,11 +1378,10 @@ let disableEditMode = () => {
   }
 }
 
-let updateThumbnailCursor = (event) => {
-  let x = event.clientX, y = event.clientY
+let thumbnailFromPoint = (x, y) => {
   let el = document.elementFromPoint(x, y)
 
-  if (!el || !el.classList.contains('thumbnail')) return
+  if (!el || !el.classList.contains('thumbnail')) return null
 
   // if part of a multi-selection, base from right-most element
   if (selections.has(Number(el.dataset.thumbnail))) {
@@ -1391,6 +1390,15 @@ let updateThumbnailCursor = (event) => {
     let rightMostEl = document.querySelector('#thumbnail-drawer div[data-thumbnail="' + rightMost + '"]')
     el = rightMostEl
   }
+
+  return el
+}
+
+let updateThumbnailCursor = (event) => {
+  let x = event.clientX, y = event.clientY
+
+  let el = thumbnailFromPoint(x, y)
+  if (!el) return
 
   // HACK two levels deep of offset scrollLeft
   let scrollOffsetX = el.offsetParent.scrollLeft +
