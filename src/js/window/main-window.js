@@ -366,16 +366,47 @@ let saveImageFile = ()=> {
 
 sketchPane.on('markDirty', markImageFileDirty)
 
-let deleteBoard = (args)=> {
+let deleteSingleBoard = (index) => {
   if (boardData.boards.length > 1) {
-    //should i ask to confirm deleting a board?
-    boardData.boards.splice(currentBoard, 1)
-    if (args) {
-    } else {
-      currentBoard--
-    }
+    boardData.boards.splice(index, 1)
     markBoardFileDirty()
     updateThumbnailDrawer()
+  }
+}
+
+let deleteBoards = (args)=> {
+  let msg
+  if (selections.size) {
+    msg = `Deleting ${selections.size} boards.`
+  } else {
+    msg = "Deleting 1 board."
+  }
+  msg += " Are you sure?"
+
+  if (confirm(msg)) {
+    if (selections.size) {
+      // delete all selected boards
+      [...selections].sort().reverse().forEach(n => {
+        deleteSingleBoard(n)
+      })
+      // clear and re-render selections
+      selections.clear()
+      updateThumbnailDrawer()
+      
+      // TODO if currentBoard was just deleted
+      //      should respect `args` (forward or stay)
+    } else {
+      // delete a single board
+      deleteSingleBoard(currentBoard)
+
+      // if not requested to move forward
+      // we take action to move intentionally backward
+      if (!args) {
+        currentBoard--
+      }
+    }
+
+    // always refresh
     gotoBoard(currentBoard)
   }
 }
@@ -1508,9 +1539,9 @@ ipcRenderer.on('flipBoard', (e, arg)=> {
   }
 })
 
-ipcRenderer.on('deleteBoard', (event, args)=>{
+ipcRenderer.on('deleteBoards', (event, args)=>{
   if (!textInputMode) {
-    deleteBoard(args)
+    deleteBoards(args)
   }
 })
 

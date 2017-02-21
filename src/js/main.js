@@ -372,8 +372,8 @@ ipcMain.on('newBoard', (e, arg)=> {
   mainWindow.webContents.send('newBoard', arg)
 })
 
-ipcMain.on('deleteBoard', (e, arg)=> {
-  mainWindow.webContents.send('deleteBoard', arg)
+ipcMain.on('deleteBoards', (e, arg)=> {
+  mainWindow.webContents.send('deleteBoards', arg)
 })
 
 ipcMain.on('duplicateBoard', (e, arg)=> {
