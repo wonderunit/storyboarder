@@ -38,6 +38,11 @@ let toggleMode = 0
 
 let selections = new Set()
 
+let thumbnailCursor = {
+  visible: false,
+  x: 0
+}
+
 menu.setMenu()
 
 ///////////////////////////////////////////////////////////////
@@ -191,7 +196,21 @@ let loadBoardUI = ()=> {
 
   window.addEventListener('pointermove', (e)=>{
     if (isEditMode && dragMode) {
-      dragTarget.scrollLeft = scrollPoint[0] - (dragPoint[0] - e.pageX)
+      // for reference -
+      // let newScrollLeft = scrollPoint[0] - (dragPoint[0] - e.pageX)
+
+
+      // mouse cursor position across window width
+      let scale = e.clientX / document.body.clientWidth
+      // total width of drawer
+      let drawerW = dragTarget.children[0].getBoundingClientRect().width
+      // mouse position scaled across width of drawer
+      let newScrollLeft = drawerW * scale
+
+      dragTarget.scrollLeft = newScrollLeft
+
+      updateThumbnailCursor(e)
+      renderThumbnailCursor()
       return
     }
 
@@ -637,7 +656,11 @@ let updateThumbnailDrawer = ()=> {
   for (var thumb of thumbnails) {
     thumb.addEventListener('pointerdown', (e)=>{
       console.log("DOWN")
+
+      // always track cursor position
+      updateThumbnailCursor(e)
       editModeTimer = setTimeout(enableEditMode, 1000)
+
       let index = Number(e.target.dataset.thumbnail)
       if (selections.has(index)) {
         // ignore
@@ -1318,8 +1341,10 @@ let pasteBoard = ()=> {
 }
 
 let enableEditMode = () => {
-  if (!isEditMode) {
+  if (!isEditMode && selections.size) {
     isEditMode = true
+    thumbnailCursor.visible = true
+    renderThumbnailCursor()
     updateThumbnailDrawer()
   }
 }
@@ -1327,7 +1352,44 @@ let enableEditMode = () => {
 let disableEditMode = () => {
   if (isEditMode) {
     isEditMode = false
+    thumbnailCursor.visible = false
+    renderThumbnailCursor()
     updateThumbnailDrawer()
+  }
+}
+
+let updateThumbnailCursor = (event) => {
+  let x = event.clientX, y = event.clientY
+  let el = document.elementFromPoint(x, y)
+
+  // TODO should we ensure el is a .thumbnail ?
+
+  // HACK two levels deep of offset scrollLeft
+  let scrollOffsetX = el.offsetParent.scrollLeft +
+                      el.offsetParent.offsetParent.scrollLeft
+
+  let elementOffsetX = el.getBoundingClientRect().right
+
+  // is this an end shot?
+  if (el.classList.contains('endShot')) {
+    elementOffsetX += 5
+  }
+
+  let arrowOffsetX = -8
+  
+  thumbnailCursor.x = scrollOffsetX +
+                      elementOffsetX +
+                      arrowOffsetX
+}
+
+let renderThumbnailCursor = () => {
+  let el = document.querySelector('#thumbnail-cursor')
+  if (thumbnailCursor.visible) {
+    el.style.display = ''
+    el.style.left = thumbnailCursor.x + 'px'
+  } else {
+    el.style.display = 'none'
+    el.style.left = '0px'
   }
 }
 
