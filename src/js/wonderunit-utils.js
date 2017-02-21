@@ -49,8 +49,8 @@ let range = (begin, end, step = 1) => {
 }
 
 module.exports = {
-  msToTime: msToTime,
-  uidGen: uidGen,
-  durationOfWords: durationOfWords,
-  range: range,
+  msToTime,
+  uidGen,
+  durationOfWords,
+  range
 }
