@@ -389,12 +389,18 @@ let deleteBoards = (args)=> {
       [...selections].sort().reverse().forEach(n => {
         deleteSingleBoard(n)
       })
+
+      if (selections.has(currentBoard)) {
+        // if not requested to move forward
+        // we take action to move intentionally backward
+        if (!args) {
+          currentBoard--
+        }
+      }
+
       // clear and re-render selections
       selections.clear()
       updateThumbnailDrawer()
-      
-      // TODO if currentBoard was just deleted
-      //      should respect `args` (forward or stay)
     } else {
       // delete a single board
       deleteSingleBoard(currentBoard)
