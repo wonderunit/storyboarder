@@ -249,7 +249,27 @@ let loadBoardUI = ()=> {
     }
 
     clearTimeout(editModeTimer)
-    disableEditMode()
+    if (isEditMode) {
+      let x = e.clientX, y = e.clientY
+
+      let el = thumbnailFromPoint(x, y)
+
+      let point
+      if (isBeforeFirstThumbnail(x, y)) {
+        point = -1
+      } else if (el) {
+        point = el.dataset.thumbnail
+      }
+
+      // NOTE for far left, offscreen, point will be -1
+      //      for far right, offscreen, point will be null
+
+      if (point) {
+        console.log('user requests move operation:', selections, 'to insert before', point)
+      }
+
+      disableEditMode()
+    }
   })
 
   setTimeout(()=>{remote.getCurrentWindow().show()}, 200)
