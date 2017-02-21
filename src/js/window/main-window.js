@@ -1384,6 +1384,14 @@ let updateThumbnailCursor = (event) => {
 
   if (!el || !el.classList.contains('thumbnail')) return
 
+  // if part of a multi-selection, base from right-most element
+  if (selections.has(Number(el.dataset.thumbnail))) {
+    // base from the right-most thumbnail in the selection
+    let rightMost = Math.max(...selections)
+    let rightMostEl = document.querySelector('#thumbnail-drawer div[data-thumbnail="' + rightMost + '"]')
+    el = rightMostEl
+  }
+
   // HACK two levels deep of offset scrollLeft
   let scrollOffsetX = el.offsetParent.scrollLeft +
                       el.offsetParent.offsetParent.scrollLeft
