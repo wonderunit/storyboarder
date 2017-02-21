@@ -48,9 +48,12 @@ let range = (begin, end, step = 1) => {
   return a
 }
 
+let norm = (val, min, max) => (val - min) / (max - min)
+
 module.exports = {
   msToTime,
   uidGen,
   durationOfWords,
-  range
+  range,
+  norm,
 }
