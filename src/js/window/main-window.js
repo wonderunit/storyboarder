@@ -1362,7 +1362,7 @@ let updateThumbnailCursor = (event) => {
   let x = event.clientX, y = event.clientY
   let el = document.elementFromPoint(x, y)
 
-  // TODO should we ensure el is a .thumbnail ?
+  if (!el || !el.classList.contains('thumbnail')) return
 
   // HACK two levels deep of offset scrollLeft
   let scrollOffsetX = el.offsetParent.scrollLeft +
