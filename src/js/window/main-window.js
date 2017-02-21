@@ -602,14 +602,15 @@ let updateThumbnailDrawer = ()=> {
         html.push(' editing')
       }
     }
-    html.push('" style="width: ' + ((60 * boardData.aspectRatio)) + 'px;">')
+    let thumbnailWidth = Math.floor(60 * boardData.aspectRatio)
+    html.push('" style="width: ' + thumbnailWidth + 'px;">')
     let imageFilename = path.join(boardPath, 'images', board.url)
     if (!fs.existsSync(imageFilename)){
       // bank image
-      html.push('<img src="//:0" height="60" width="' + (60 * boardData.aspectRatio) + '">')
+      html.push('<img src="//:0" height="60" width="' + thumbnailWidth + '">')
     } else {
       html.push('<div class="top">')
-      html.push('<img src="' + imageFilename + '" height="60" width="' + (60 * boardData.aspectRatio) + '">')
+      html.push('<img src="' + imageFilename + '" height="60" width="' + thumbnailWidth + '">')
       html.push('</div>')
     }
     html.push('<div class="info">')
