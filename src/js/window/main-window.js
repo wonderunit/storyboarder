@@ -1394,8 +1394,25 @@ let thumbnailFromPoint = (x, y) => {
   return el
 }
 
+let isBeforeFirstThumbnail = (x, y) => {
+  // HACK are we near the far left edge, before any thumbnails?
+  if (x <= Math.floor(20 * boardData.aspectRatio)) {
+    // have we scrolled all the way to the left already?
+    let containerScrollLeft = document.getElementById('thumbnail-container').scrollLeft
+    if (containerScrollLeft == 0) {
+      return true
+    }
+  }
+  return false
+}
+
 let updateThumbnailCursor = (event) => {
   let x = event.clientX, y = event.clientY
+
+  if (isBeforeFirstThumbnail(x, y)) {
+    thumbnailCursor.x = 0
+    return
+  }
 
   let el = thumbnailFromPoint(x, y)
   if (!el) return
