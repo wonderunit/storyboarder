@@ -30,6 +30,7 @@ let imageFileDirty = false
 let imageFileDirtyTimer
 let isEditMode = false
 let editModeTimer
+let enableEditModeDelay = 750 // msecs
 
 let textInputMode = false
 let textInputAllowAdvance = false
@@ -736,7 +737,7 @@ let updateThumbnailDrawer = ()=> {
 
       // always track cursor position
       updateThumbnailCursor(e)
-      editModeTimer = setTimeout(enableEditMode, 1000)
+      editModeTimer = setTimeout(enableEditMode, enableEditModeDelay)
 
       let index = Number(e.target.dataset.thumbnail)
       if (selections.has(index)) {
