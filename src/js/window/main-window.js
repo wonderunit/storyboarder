@@ -1081,7 +1081,7 @@ window.onkeydown = (e)=> {
         break
       case 'KeyV':
         if (e.metaKey || e.ctrlKey) {
-          pasteBoard()
+          pasteBoards()
           e.preventDefault()
         }
         break
@@ -1336,10 +1336,36 @@ ipcRenderer.on('redo', (e, arg)=> {
   }
 })
 
+let loadPNGImageFileAsDataURI = (filepath) => {
+  if (!fs.existsSync(filepath)) return null
+
+  // via https://gist.github.com/mklabs/1260228/71d62802f82e5ac0bd97fcbd54b1214f501f7e77
+  let data = fs.readFileSync(filepath).toString('base64')
+  return `data:image/png;base64,${data}`
+}
+
 let copyBoards = ()=> {
   // copy multiple boards
   if (selections.size) {
-    let boards = [...selections].sort().map(n => boardData.boards[n])
+    if (selections.has(currentBoard)) {
+      saveImageFile()
+    }
+
+    // grab data for each board
+    let boards = [...selections].sort().map(n => util.shallowCopy(boardData.boards[n]))
+    
+    // inject image data for each board
+    boards = boards.map(board => {
+      let filepath = path.join(boardPath, 'images', board.url)
+      let data = loadPNGImageFileAsDataURI(filepath)
+      if (data) {
+        board.imageDataURL = data
+      } else {
+        console.warn("could not load image data for that board")
+      }
+      return board
+    })
+
     let payload = {
       text: JSON.stringify({ boards: boards })
     }
@@ -1353,80 +1379,97 @@ let copyBoards = ()=> {
     let board = JSON.parse(JSON.stringify(boardData.boards[currentBoard]))
     let canvasDiv = document.querySelector('#main-canvas')
     board.imageDataURL = canvasDiv.toDataURL()
-    clipboard.clear()
-    clipboard.write({
+    payload = {
       image: nativeImage.createFromDataURL(canvasDiv.toDataURL()),
-      text: JSON.stringify(board),
-    })
+      text: JSON.stringify(board)
+    }
+    clipboard.clear()
+    clipboard.write(payload)
   }
 }
 
-let pasteBoard = ()=> {
-  if (!textInputMode) {
+let pasteBoards = () => {
+  if (textInputMode) return
 
-    console.log("paste")
-    // check whats in the clipboard
-    let clipboardContents = clipboard.readText()
-    let clipboardImage = clipboard.readImage()
+  console.log("paste")
 
-    let imageContents
-    let board
+  let newBoards
 
-    if (clipboardContents !== "") {
-      try {
-        board = JSON.parse(clipboardContents)
-        imageContents = board.imageDataURL
-        delete board.imageDataURL
-        //console.log(json)
+  // check whats in the clipboard
+  let clipboardText = clipboard.readText()
+  let clipboardJson
+
+  let clipboardImage = clipboard.readImage()
+  let newBoard
+
+  if (clipboardText !== "") {
+    clipboardJson = JSON.parse(clipboardText)
+
+    if (clipboardJson.hasOwnProperty('boards')) {
+      // multiple boards
+      newBoards = clipboardJson.boards
+    } else {
+      // single board
+      newBoard = JSON.parse(JSON.stringify(clipboardJson))
+      if (!newBoard.hasOwnProperty('imageDataURL')) {
+        console.warn('no image available from clipboard JSON data')
+        return
       }
-      catch (e) {
-        console.log(e)
-      }
+      newBoards = [newBoard]
     }
+  }
 
-    if (!board && (clipboardImage !== "")) {
-      imageContents = clipboardImage.toDataURL()
+  // for a clipboard with image only, no board data, create a new board data object
+  if (!newBoards.length && !newBoard && (clipboardImage !== "")) {
+    newBoard = {
+      newShot: false,
+      lastEdited: Date.now(),
+      imageDataURL: clipboardImage.toDataURL()
     }
+    newBoards = [newBoard]
+  }
 
+  // save the image we're currently on
+  saveImageFile()
 
+  newBoards.forEach(newBoard => {
+    if (newBoard && newBoard.imageDataURL) {
+      let newBoardPos = currentBoard + 1
 
-    if (imageContents) {
-      saveImageFile()
-      // copy current board canvas
+      // assign a new uid to the board, regardless of source
       let uid = util.uidGen(5)
+      newBoard.uid = uid
+      newBoard.url = 'board-' + newBoardPos + '-' + uid + '.png'
 
-      if (board) {
-        board.uid = uid
-        board.url = 'board-' + (currentBoard+1) + '-' + uid + '.png'
-        board.newShot = false
-        board.lastEdited = Date.now()
-      } else {
-        board = {
-          "uid": uid,
-          "url": 'board-' + (currentBoard+1) + '-' + uid + '.png' ,
-          "newShot": false,
-          "lastEdited": Date.now(),
-        }
-      }
+      // set some basic data for the new board
+      newBoard.newShot = false
+      newBoard.lastEdited = Date.now()
 
-      boardData.boards.splice(currentBoard+1, 0, board)
+      // extract the image data from JSON
+      let newImageSrc = newBoard.imageDataURL
+      delete newBoard.imageDataURL
+
+      // insert the new board data
+      boardData.boards.splice(newBoardPos, 0, newBoard)
       markBoardFileDirty()
-      // go to board
-      gotoBoard(currentBoard+1)
-      // draw contents to board
 
+      // go to new board
+      gotoBoard(newBoardPos)
+
+      // draw pasted contents to board
       var image = new Image()
-      image.src = imageContents
-
+      image.src = newImageSrc
+    
+      // render
       document.querySelector('#main-canvas').getContext("2d").drawImage(image, 0, 0)
       markImageFileDirty()
       saveImageFile()
       updateThumbnailDrawer()
+      
+      // refresh
       gotoBoard(currentBoard)
-
     }
-
-  }
+  })
 }
 
 let enableEditMode = () => {

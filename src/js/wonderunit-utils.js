@@ -52,11 +52,15 @@ let norm = (val, min, max) => (val - min) / (max - min)
 
 let clamp = (val, min, max) => val < min? min : (val > max? max : val)
 
+// NOTE will convert Date to string, will fail to copy RegExp, etc
+let shallowCopy = (object) => JSON.parse(JSON.stringify(object))
+
 module.exports = {
   msToTime,
   uidGen,
   durationOfWords,
   range,
   norm,
-  clamp
+  clamp,
+  shallowCopy
 }
