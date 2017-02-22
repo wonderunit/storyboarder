@@ -1075,7 +1075,7 @@ window.onkeydown = (e)=> {
     switch (e.code) {
       case 'KeyC':
         if (e.metaKey || e.ctrlKey) {
-          copyBoard()
+          copyBoards()
           e.preventDefault()
         }
         break
@@ -1336,7 +1336,19 @@ ipcRenderer.on('redo', (e, arg)=> {
   }
 })
 
-let copyBoard = ()=> {
+let copyBoards = ()=> {
+  // copy multiple boards
+  if (selections.size) {
+    let boards = [...selections].sort().map(n => boardData.boards[n])
+    let payload = {
+      text: JSON.stringify({ boards: boards })
+    }
+    clipboard.clear()
+    clipboard.write(payload)
+    return
+  }
+
+  // copy a single board
   if (!textInputMode) {
     let board = JSON.parse(JSON.stringify(boardData.boards[currentBoard]))
     let canvasDiv = document.querySelector('#main-canvas')
