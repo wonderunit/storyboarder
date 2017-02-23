@@ -173,16 +173,16 @@ const template = [
       },
       {
         accelerator: 'CmdOrCtrl+Backspace',
-        label: 'Delete Board',
+        label: 'Delete Board(s)',
         click ( item, focusedWindow, event) {
-          ipcRenderer.send('deleteBoard')
+          ipcRenderer.send('deleteBoards')
         }
       },
       {
         accelerator: 'CmdOrCtrl+Delete',
-        label: 'Delete Board - Go Forward',
+        label: 'Delete Board(s) - Go Forward',
         click ( item, focusedWindow, event) {
-          ipcRenderer.send('deleteBoard', 1)
+          ipcRenderer.send('deleteBoards', 1)
         }
       },
       {

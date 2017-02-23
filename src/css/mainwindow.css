@@ -228,6 +228,19 @@ body {
   bottom: 0;
 }
 
+#thumbnail-cursor {
+  position: absolute;
+  top: 0;
+  left: 0;
+  margin-top: 7px;
+
+  width: 0; 
+  height: 0; 
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 8px solid red;
+}
+
 #thumbnail-container .thumbnail * {
      pointer-events: none;
 }
@@ -264,6 +277,13 @@ body {
   background: #777;
   color: #000;
   transition: all 0s ease-out;
+}
+
+#thumbnail-drawer .thumbnail.selected {
+  box-shadow: 0 2px 0 red;
+}
+#thumbnail-drawer .thumbnail.selected.editing {
+  box-shadow: 0 2px 0 orange;
 }
 
 #thumbnail-drawer img {

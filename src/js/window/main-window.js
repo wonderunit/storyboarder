@@ -28,11 +28,21 @@ let boardFileDirty = false
 let boardFileDirtyTimer
 let imageFileDirty = false
 let imageFileDirtyTimer
+let isEditMode = false
+let editModeTimer
+let enableEditModeDelay = 750 // msecs
 
 let textInputMode = false
 let textInputAllowAdvance = false
 
 let toggleMode = 0
+
+let selections = new Set()
+
+let thumbnailCursor = {
+  visible: false,
+  x: 0
+}
 
 menu.setMenu()
 
@@ -186,6 +196,45 @@ let loadBoardUI = ()=> {
 
 
   window.addEventListener('pointermove', (e)=>{
+    if (isEditMode && dragMode) {
+      // TODO timer instead of pointermove event, so scrolling is continuous
+
+      let containerW = dragTarget.getBoundingClientRect().width
+
+      let mouseX = e.clientX
+      let midpointX = containerW / 2
+
+      // distance ratio -1...0...1
+      let distance = (mouseX - midpointX) / midpointX
+      
+      // default is the dead zone at 0
+      let strength = 0
+      // -1..-0.5
+      if (distance < -0.5)
+      {
+        strength = -util.norm(distance, -0.5, -1)
+      } 
+      // 0.5..1
+      else if (distance > 0.5)
+      {
+        strength = util.norm(distance, 0.5, 1)
+      }
+
+      strength = util.clamp(strength, -1, 1)
+
+      // max speed is half of the average board width per pointermove
+      let speedlimit = Math.floor(60 * boardData.aspectRatio * 0.5)
+
+      // NOTE I don't bother clamping min/max because scrollLeft handles that for us
+      let newScrollLeft = dragTarget.scrollLeft + (strength * speedlimit)
+
+      dragTarget.scrollLeft = newScrollLeft
+
+      updateThumbnailCursor(e)
+      renderThumbnailCursor()
+      return
+    }
+
     if (dragMode) {
       dragTarget.scrollLeft = scrollPoint[0] + (dragPoint[0] - e.pageX)
       console.log(scrollPoint[0], dragPoint[0], e.pageX)
@@ -198,6 +247,35 @@ let loadBoardUI = ()=> {
       dragMode = false
       dragTarget.style.overflow = 'scroll'
       dragTarget.style.scrollBehavior = 'smooth'
+    }
+
+    clearTimeout(editModeTimer)
+
+    console.log('pointerup', isEditMode)
+    if (isEditMode) {
+      let x = e.clientX, y = e.clientY
+
+      let el = thumbnailFromPoint(x, y)
+
+      let index
+      if (isBeforeFirstThumbnail(x, y)) {
+        index = 0
+      } else if (el) {
+        index = Number(el.dataset.thumbnail) + 1
+      } else {
+        //
+        // TODO if over gap, find nearest thumbnail
+        console.warn("couldn't find nearest thumbnail")
+      }
+
+      if (!util.isUndefined(index)) {
+        console.log('user requests move operation:', selections, 'to insert after', index)
+        moveSelectedBoards(index)
+      } else {
+        console.log('could not find point for move operation')
+      }
+
+      disableEditMode()
     }
   })
 
@@ -295,16 +373,53 @@ let saveImageFile = ()=> {
 
 sketchPane.on('markDirty', markImageFileDirty)
 
-let deleteBoard = (args)=> {
+let deleteSingleBoard = (index) => {
   if (boardData.boards.length > 1) {
-    //should i ask to confirm deleting a board?
-    boardData.boards.splice(currentBoard, 1)
-    if (args) {
-    } else {
-      currentBoard--
-    }
+    boardData.boards.splice(index, 1)
     markBoardFileDirty()
     updateThumbnailDrawer()
+  }
+}
+
+let deleteBoards = (args)=> {
+  let msg
+  if (selections.size) {
+    msg = `Deleting ${selections.size} boards.`
+  } else {
+    msg = "Deleting 1 board."
+  }
+  msg += " Are you sure?"
+
+  if (confirm(msg)) {
+    if (selections.size) {
+      // delete all selected boards
+      [...selections].sort().reverse().forEach(n => {
+        deleteSingleBoard(n)
+      })
+
+      if (selections.has(currentBoard)) {
+        // if not requested to move forward
+        // we take action to move intentionally backward
+        if (!args) {
+          currentBoard--
+        }
+      }
+
+      // clear and re-render selections
+      selections.clear()
+      updateThumbnailDrawer()
+    } else {
+      // delete a single board
+      deleteSingleBoard(currentBoard)
+
+      // if not requested to move forward
+      // we take action to move intentionally backward
+      if (!args) {
+        currentBoard--
+      }
+    }
+
+    // always refresh
     gotoBoard(currentBoard)
   }
 }
@@ -581,14 +696,24 @@ let updateThumbnailDrawer = ()=> {
       html.push(' startShot')
       html.push(' endShot')
     }
-    html.push('" style="width: ' + ((60 * boardData.aspectRatio)) + 'px;">')
+    if (currentBoard == i) {
+      html.push(' active')
+    }
+    if (selections.has(i)) {
+      html.push(' selected')
+      if (isEditMode) {
+        html.push(' editing')
+      }
+    }
+    let thumbnailWidth = Math.floor(60 * boardData.aspectRatio)
+    html.push('" style="width: ' + thumbnailWidth + 'px;">')
     let imageFilename = path.join(boardPath, 'images', board.url)
     if (!fs.existsSync(imageFilename)){
       // bank image
-      html.push('<img src="//:0" height="60" width="' + (60 * boardData.aspectRatio) + '">')
+      html.push('<img src="//:0" height="60" width="' + thumbnailWidth + '">')
     } else {
       html.push('<div class="top">')
-      html.push('<img src="' + imageFilename + '" height="60" width="' + (60 * boardData.aspectRatio) + '">')
+      html.push('<img src="' + imageFilename + '" height="60" width="' + thumbnailWidth + '">')
       html.push('</div>')
     }
     html.push('<div class="info">')
@@ -615,9 +740,30 @@ let updateThumbnailDrawer = ()=> {
   for (var thumb of thumbnails) {
     thumb.addEventListener('pointerdown', (e)=>{
       console.log("DOWN")
-      if (currentBoard !== Number(e.target.dataset.thumbnail)) {
+
+      // always track cursor position
+      updateThumbnailCursor(e)
+      editModeTimer = setTimeout(enableEditMode, enableEditModeDelay)
+
+      let index = Number(e.target.dataset.thumbnail)
+      if (selections.has(index)) {
+        // ignore
+      } else if (e.shiftKey) {
+        // add to selections
+        let min = Math.min(...selections, index)
+        let max = Math.max(...selections, index)
+        selections = new Set(util.range(min, max))
+
+        updateThumbnailDrawer()
+      } else if (currentBoard !== index) {
+        // go to board by index
+        
+        // reset selections
+        selections.clear()
+
         saveImageFile()
-        currentBoard = Number(e.target.dataset.thumbnail)
+        currentBoard = index
+        updateThumbnailDrawer()
         gotoBoard(currentBoard)
       }
     }, true, true)
@@ -627,7 +773,6 @@ let updateThumbnailDrawer = ()=> {
 
   //gotoBoard(currentBoard)
 }
-
 
 let renderTimeline = () => {
   let html = []
@@ -937,13 +1082,13 @@ window.onkeydown = (e)=> {
     switch (e.code) {
       case 'KeyC':
         if (e.metaKey || e.ctrlKey) {
-          copyBoard()
+          copyBoards()
           e.preventDefault()
         }
         break
       case 'KeyV':
         if (e.metaKey || e.ctrlKey) {
-          pasteBoard()
+          pasteBoards()
           e.preventDefault()
         }
         break
@@ -973,6 +1118,8 @@ window.onkeydown = (e)=> {
         } else {
           goNextBoard(-1)
         }
+        selections.clear()
+        updateThumbnailDrawer()
         e.preventDefault()
         break
       case 'ArrowRight':
@@ -981,6 +1128,8 @@ window.onkeydown = (e)=> {
         } else {
           goNextBoard()
         }
+        selections.clear()
+        updateThumbnailDrawer()
         e.preventDefault()
         break
     }
@@ -1194,84 +1343,253 @@ ipcRenderer.on('redo', (e, arg)=> {
   }
 })
 
-let copyBoard = ()=> {
+let loadPNGImageFileAsDataURI = (filepath) => {
+  if (!fs.existsSync(filepath)) return null
+
+  // via https://gist.github.com/mklabs/1260228/71d62802f82e5ac0bd97fcbd54b1214f501f7e77
+  let data = fs.readFileSync(filepath).toString('base64')
+  return `data:image/png;base64,${data}`
+}
+
+let copyBoards = ()=> {
+  // copy multiple boards
+  if (selections.size) {
+    if (selections.has(currentBoard)) {
+      saveImageFile()
+    }
+
+    // grab data for each board
+    let boards = [...selections].sort().map(n => util.shallowCopy(boardData.boards[n]))
+    
+    // inject image data for each board
+    boards = boards.map(board => {
+      let filepath = path.join(boardPath, 'images', board.url)
+      let data = loadPNGImageFileAsDataURI(filepath)
+      if (data) {
+        board.imageDataURL = data
+      } else {
+        console.warn("could not load image data for that board")
+      }
+      return board
+    })
+
+    let payload = {
+      text: JSON.stringify({ boards: boards })
+    }
+    clipboard.clear()
+    clipboard.write(payload)
+    return
+  }
+
+  // copy a single board
   if (!textInputMode) {
     let board = JSON.parse(JSON.stringify(boardData.boards[currentBoard]))
     let canvasDiv = document.querySelector('#main-canvas')
     board.imageDataURL = canvasDiv.toDataURL()
-    clipboard.clear()
-    clipboard.write({
+    payload = {
       image: nativeImage.createFromDataURL(canvasDiv.toDataURL()),
-      text: JSON.stringify(board),
-    })
+      text: JSON.stringify(board)
+    }
+    clipboard.clear()
+    clipboard.write(payload)
   }
 }
 
-let pasteBoard = ()=> {
-  if (!textInputMode) {
+let pasteBoards = () => {
+  if (textInputMode) return
 
-    console.log("paste")
-    // check whats in the clipboard
-    let clipboardContents = clipboard.readText()
-    let clipboardImage = clipboard.readImage()
+  console.log("paste")
 
-    let imageContents
-    let board
+  let newBoards
 
-    if (clipboardContents !== "") {
-      try {
-        board = JSON.parse(clipboardContents)
-        imageContents = board.imageDataURL
-        delete board.imageDataURL
-        //console.log(json)
+  // check whats in the clipboard
+  let clipboardText = clipboard.readText()
+  let clipboardJson
+
+  let clipboardImage = clipboard.readImage()
+  let newBoard
+
+  if (clipboardText !== "") {
+    clipboardJson = JSON.parse(clipboardText)
+
+    if (clipboardJson.hasOwnProperty('boards')) {
+      // multiple boards
+      newBoards = clipboardJson.boards
+    } else {
+      // single board
+      newBoard = JSON.parse(JSON.stringify(clipboardJson))
+      if (!newBoard.hasOwnProperty('imageDataURL')) {
+        console.warn('no image available from clipboard JSON data')
+        return
       }
-      catch (e) {
-        console.log(e)
-      }
+      newBoards = [newBoard]
     }
+  }
 
-    if (!board && (clipboardImage !== "")) {
-      imageContents = clipboardImage.toDataURL()
+  // for a clipboard with image only, no board data, create a new board data object
+  if (!newBoards.length && !newBoard && (clipboardImage !== "")) {
+    newBoard = {
+      newShot: false,
+      lastEdited: Date.now(),
+      imageDataURL: clipboardImage.toDataURL()
     }
+    newBoards = [newBoard]
+  }
 
+  // save the image we're currently on
+  saveImageFile()
 
+  newBoards.forEach(newBoard => {
+    if (newBoard && newBoard.imageDataURL) {
+      let newBoardPos = currentBoard + 1
 
-    if (imageContents) {
-      saveImageFile()
-      // copy current board canvas
+      // assign a new uid to the board, regardless of source
       let uid = util.uidGen(5)
+      newBoard.uid = uid
+      newBoard.url = 'board-' + newBoardPos + '-' + uid + '.png'
 
-      if (board) {
-        board.uid = uid
-        board.url = 'board-' + (currentBoard+1) + '-' + uid + '.png'
-        board.newShot = false
-        board.lastEdited = Date.now()
-      } else {
-        board = {
-          "uid": uid,
-          "url": 'board-' + (currentBoard+1) + '-' + uid + '.png' ,
-          "newShot": false,
-          "lastEdited": Date.now(),
-        }
-      }
+      // set some basic data for the new board
+      newBoard.newShot = false
+      newBoard.lastEdited = Date.now()
 
-      boardData.boards.splice(currentBoard+1, 0, board)
+      // extract the image data from JSON
+      let newImageSrc = newBoard.imageDataURL
+      delete newBoard.imageDataURL
+
+      // insert the new board data
+      boardData.boards.splice(newBoardPos, 0, newBoard)
       markBoardFileDirty()
-      // go to board
-      gotoBoard(currentBoard+1)
-      // draw contents to board
 
+      // go to new board
+      gotoBoard(newBoardPos)
+
+      // draw pasted contents to board
       var image = new Image()
-      image.src = imageContents
-
+      image.src = newImageSrc
+    
+      // render
       document.querySelector('#main-canvas').getContext("2d").drawImage(image, 0, 0)
       markImageFileDirty()
       saveImageFile()
       updateThumbnailDrawer()
+      
+      // refresh
       gotoBoard(currentBoard)
-
     }
+  })
+}
 
+let moveSelectedBoards = (position) => {
+  console.log('moveSelectedBoards(' + position + ')')
+
+  let numRemoved = selections.size
+  let firstSelection = [...selections].sort()[0]
+
+  let movedBoards = boardData.boards.splice(firstSelection, numRemoved)
+
+  // if moving forward in the list
+  // account for position change due to removed elements
+  if (position > firstSelection) {
+    position = position - numRemoved
+  }
+  
+  console.log('move starting at board', firstSelection, 
+              ', moving', numRemoved, 
+              'boards to index', position)
+
+  boardData.boards.splice(position, 0, ...movedBoards)
+
+  // reset selection
+  selections.clear()
+
+  // re-render
+  updateThumbnailDrawer()
+  gotoBoard(currentBoard)
+}
+
+let enableEditMode = () => {
+  if (!isEditMode && selections.size) {
+    isEditMode = true
+    thumbnailCursor.visible = true
+    renderThumbnailCursor()
+    updateThumbnailDrawer()
+  }
+}
+
+let disableEditMode = () => {
+  if (isEditMode) {
+    isEditMode = false
+    thumbnailCursor.visible = false
+    renderThumbnailCursor()
+    updateThumbnailDrawer()
+  }
+}
+
+let thumbnailFromPoint = (x, y) => {
+  let el = document.elementFromPoint(x, y)
+
+  if (!el || !el.classList.contains('thumbnail')) return null
+
+  // if part of a multi-selection, base from right-most element
+  if (selections.has(Number(el.dataset.thumbnail))) {
+    // base from the right-most thumbnail in the selection
+    let rightMost = Math.max(...selections)
+    let rightMostEl = document.querySelector('#thumbnail-drawer div[data-thumbnail="' + rightMost + '"]')
+    el = rightMostEl
+  }
+
+  return el
+}
+
+let isBeforeFirstThumbnail = (x, y) => {
+  // HACK are we near the far left edge, before any thumbnails?
+  if (x <= Math.floor(20 * boardData.aspectRatio)) {
+    // have we scrolled all the way to the left already?
+    let containerScrollLeft = document.getElementById('thumbnail-container').scrollLeft
+    if (containerScrollLeft == 0) {
+      return true
+    }
+  }
+  return false
+}
+
+let updateThumbnailCursor = (event) => {
+  let x = event.clientX, y = event.clientY
+
+  if (isBeforeFirstThumbnail(x, y)) {
+    thumbnailCursor.x = 0
+    return
+  }
+
+  let el = thumbnailFromPoint(x, y)
+  if (!el) return
+
+  // HACK two levels deep of offset scrollLeft
+  let scrollOffsetX = el.offsetParent.scrollLeft +
+                      el.offsetParent.offsetParent.scrollLeft
+
+  let elementOffsetX = el.getBoundingClientRect().right
+
+  // is this an end shot?
+  if (el.classList.contains('endShot')) {
+    elementOffsetX += 5
+  }
+
+  let arrowOffsetX = -8
+  
+  thumbnailCursor.x = scrollOffsetX +
+                      elementOffsetX +
+                      arrowOffsetX
+}
+
+let renderThumbnailCursor = () => {
+  let el = document.querySelector('#thumbnail-cursor')
+  if (thumbnailCursor.visible) {
+    el.style.display = ''
+    el.style.left = thumbnailCursor.x + 'px'
+  } else {
+    el.style.display = 'none'
+    el.style.left = '0px'
   }
 }
 
@@ -1317,9 +1635,9 @@ ipcRenderer.on('flipBoard', (e, arg)=> {
   }
 })
 
-ipcRenderer.on('deleteBoard', (event, args)=>{
+ipcRenderer.on('deleteBoards', (event, args)=>{
   if (!textInputMode) {
-    deleteBoard(args)
+    deleteBoards(args)
   }
 })
 

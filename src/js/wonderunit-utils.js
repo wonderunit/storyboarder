@@ -39,8 +39,32 @@ let durationOfWords = (text, durationPerWord) => {
   return wordCount(text)*durationPerWord
 }
 
+let range = (begin, end, step = 1) => {
+  let a = [begin], b = begin
+  while (b < end) {
+    b += step
+    a.push(b)
+  }
+  return a
+}
+
+let norm = (val, min, max) => (val - min) / (max - min)
+
+let clamp = (val, min, max) => val < min? min : (val > max? max : val)
+
+// NOTE will convert Date to string, will fail to copy RegExp, etc
+let shallowCopy = (object) => JSON.parse(JSON.stringify(object))
+
+// via https://github.com/skellock/ramdasauce/blob/master/lib/isUndefined.js
+let isUndefined = (x) => typeof x === 'undefined'
+
 module.exports = {
-  msToTime: msToTime,
-  uidGen: uidGen,
-  durationOfWords: durationOfWords,
+  msToTime,
+  uidGen,
+  durationOfWords,
+  range,
+  norm,
+  clamp,
+  shallowCopy,
+  isUndefined
 }
