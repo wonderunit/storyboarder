@@ -44,6 +44,8 @@ let thumbnailCursor = {
   x: 0
 }
 
+let lastPointer = { x: null, y: null }
+
 menu.setMenu()
 
 ///////////////////////////////////////////////////////////////
@@ -192,47 +194,11 @@ let loadBoardUI = ()=> {
     shell.openItem(imageFilename)
   })
 
-
-
-
   window.addEventListener('pointermove', (e)=>{
+    lastPointer = { x: e.clientX, y: e.clientY }
+
     if (isEditMode && dragMode) {
-      // TODO timer instead of pointermove event, so scrolling is continuous
-
-
-      let containerRect = dragTarget.getBoundingClientRect()
-
-      let mouseX = e.clientX - containerRect.left
-      let midpointX = containerRect.width / 2
-      
-      // distance ratio -1...0...1
-      let distance = (mouseX - midpointX) / midpointX
-
-      // default is the dead zone at 0
-      let strength = 0
-      // -1..-0.5
-      if (distance < -0.5)
-      {
-        strength = -util.norm(distance, -0.5, -1)
-      } 
-      // 0.5..1
-      else if (distance > 0.5)
-      {
-        strength = util.norm(distance, 0.5, 1)
-      }
-
-      strength = util.clamp(strength, -1, 1)
-
-      // max speed is half of the average board width per pointermove
-      let speedlimit = Math.floor(60 * boardData.aspectRatio * 0.5)
-
-      // NOTE I don't bother clamping min/max because scrollLeft handles that for us
-      let newScrollLeft = dragTarget.scrollLeft + (strength * speedlimit)
-
-      dragTarget.scrollLeft = newScrollLeft
-
-      updateThumbnailCursor(e)
-      renderThumbnailCursor()
+      // will be called in updateDrag() instead
       return
     }
 
@@ -743,7 +709,7 @@ let updateThumbnailDrawer = ()=> {
       console.log("DOWN")
 
       // always track cursor position
-      updateThumbnailCursor(e)
+      updateThumbnailCursor(e.clientX, e.clientY)
       editModeTimer = setTimeout(enableEditMode, enableEditModeDelay)
 
       let index = Number(e.target.dataset.thumbnail)
@@ -937,6 +903,60 @@ let getSceneColor = function (sceneString) {
   }
   return ('black')
 }
+
+let setDragTarget = (x) => {
+  let containerRect = dragTarget.getBoundingClientRect()
+
+  let mouseX = x - containerRect.left
+  let midpointX = containerRect.width / 2
+  
+  // distance ratio -1...0...1
+  let distance = (mouseX - midpointX) / midpointX
+
+  // default is the dead zone at 0
+  let strength = 0
+  // -1..-0.5
+  if (distance < -0.5)
+  {
+    strength = -util.norm(distance, -0.5, -1)
+  } 
+  // 0.5..1
+  else if (distance > 0.5)
+  {
+    strength = util.norm(distance, 0.5, 1)
+  }
+
+  strength = util.clamp(strength, -1, 1)
+
+  // max speed is half of the average board width per pointermove
+  let speedlimit = Math.floor(60 * boardData.aspectRatio * 0.5)
+
+  // NOTE I don't bother clamping min/max because scrollLeft handles that for us
+  let newScrollLeft = dragTarget.scrollLeft + (strength * speedlimit)
+
+  dragTarget.scrollLeft = newScrollLeft
+}
+
+let updateDrag = () => {
+  if (util.isUndefined(lastPointer.x) || util.isUndefined(lastPointer.y)) {
+    return
+  }
+
+  
+  if (isEditMode && dragMode) {
+    setDragTarget(lastPointer.x)
+    updateThumbnailCursor(lastPointer.x, lastPointer.y)
+    renderThumbnailCursor()
+  }
+}
+
+let tickTimer
+let tick = () => {
+  updateDrag()
+
+  tickTimer = setTimeout(tick, 16) // ~60 ticks per second
+}
+tick()
 
 ///////////////////////////////////////////////////////////////
 
@@ -1567,9 +1587,7 @@ let isBeforeFirstThumbnail = (x, y) => {
   return false
 }
 
-let updateThumbnailCursor = (event) => {
-  let x = event.clientX, y = event.clientY
-
+let updateThumbnailCursor = (x, y) => {
   if (isBeforeFirstThumbnail(x, y)) {
     thumbnailCursor.x = 0
     return
