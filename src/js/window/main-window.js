@@ -31,6 +31,8 @@ let imageFileDirtyTimer
 let isEditMode = false
 let editModeTimer
 let enableEditModeDelay = 750 // msecs
+let periodicDragUpdateTimer
+let periodicDragUpdatePeriod = 30 // msecs
 
 let textInputMode = false
 let textInputAllowAdvance = false
@@ -178,6 +180,7 @@ let loadBoardUI = ()=> {
       dragMode = true
       dragPoint = [e.pageX, e.pageY]
       scrollPoint = [dragTarget.scrollLeft, dragTarget.scrollTop]
+      periodicDragUpdate()
       console.log(e)
     }
   })
@@ -198,7 +201,7 @@ let loadBoardUI = ()=> {
     lastPointer = { x: e.clientX, y: e.clientY }
 
     if (isEditMode && dragMode) {
-      // will be called in updateDrag() instead
+      // defer to periodicDragUpdate()
       return
     }
 
@@ -211,6 +214,7 @@ let loadBoardUI = ()=> {
 
   window.addEventListener('pointerup', (e)=>{
     if (dragMode) {
+      clearTimeout(periodicDragUpdateTimer)
       dragMode = false
       dragTarget.style.overflow = 'scroll'
       dragTarget.style.scrollBehavior = 'smooth'
@@ -950,13 +954,10 @@ let updateDrag = () => {
   }
 }
 
-let tickTimer
-let tick = () => {
+let periodicDragUpdate = () => {
   updateDrag()
-
-  tickTimer = setTimeout(tick, 16) // ~60 ticks per second
+  periodicDragUpdateTimer = setTimeout(periodicDragUpdate, periodicDragUpdatePeriod)
 }
-tick()
 
 ///////////////////////////////////////////////////////////////
 
