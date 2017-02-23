@@ -1550,8 +1550,6 @@ let isBeforeFirstThumbnail = (x, y) => {
 
   let gapWidth = Math.floor(20 * boardData.aspectRatio)
 
-  console.log(x, sidebarOffsetX, x + sidebarOffsetX)
-
   if (x + sidebarOffsetX <= gapWidth) {
     // have we scrolled all the way to the left already?
     let containerScrollLeft = thumbnailContainer.scrollLeft
