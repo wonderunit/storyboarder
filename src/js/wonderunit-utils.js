@@ -55,6 +55,9 @@ let clamp = (val, min, max) => val < min? min : (val > max? max : val)
 // NOTE will convert Date to string, will fail to copy RegExp, etc
 let shallowCopy = (object) => JSON.parse(JSON.stringify(object))
 
+// via https://github.com/skellock/ramdasauce/blob/master/lib/isUndefined.js
+let isUndefined = (x) => typeof x === 'undefined'
+
 module.exports = {
   msToTime,
   uidGen,
@@ -62,5 +65,6 @@ module.exports = {
   range,
   norm,
   clamp,
-  shallowCopy
+  shallowCopy,
+  isUndefined
 }

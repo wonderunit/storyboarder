@@ -250,23 +250,29 @@ let loadBoardUI = ()=> {
     }
 
     clearTimeout(editModeTimer)
+
+    console.log('pointerup', isEditMode)
     if (isEditMode) {
       let x = e.clientX, y = e.clientY
 
       let el = thumbnailFromPoint(x, y)
 
-      let point
+      let index
       if (isBeforeFirstThumbnail(x, y)) {
-        point = -1
+        index = 0
       } else if (el) {
-        point = el.dataset.thumbnail
+        index = Number(el.dataset.thumbnail) + 1
+      } else {
+        //
+        // TODO if over gap, find nearest thumbnail
+        console.warn("couldn't find nearest thumbnail")
       }
 
-      // NOTE for far left, offscreen, point will be -1
-      //      for far right, offscreen, point will be null
-
-      if (point) {
-        console.log('user requests move operation:', selections, 'to insert before', point)
+      if (!util.isUndefined(index)) {
+        console.log('user requests move operation:', selections, 'to insert after', index)
+        moveSelectedBoards(index)
+      } else {
+        console.log('could not find point for move operation')
       }
 
       disableEditMode()
@@ -1471,6 +1477,34 @@ let pasteBoards = () => {
       gotoBoard(currentBoard)
     }
   })
+}
+
+let moveSelectedBoards = (position) => {
+  console.log('moveSelectedBoards(' + position + ')')
+
+  let numRemoved = selections.size
+  let firstSelection = [...selections].sort()[0]
+
+  let movedBoards = boardData.boards.splice(firstSelection, numRemoved)
+
+  // if moving forward in the list
+  // account for position change due to removed elements
+  if (position > firstSelection) {
+    position = position - numRemoved
+  }
+  
+  console.log('move starting at board', firstSelection, 
+              ', moving', numRemoved, 
+              'boards to index', position)
+
+  boardData.boards.splice(position, 0, ...movedBoards)
+
+  // reset selection
+  selections.clear()
+
+  // re-render
+  updateThumbnailDrawer()
+  gotoBoard(currentBoard)
 }
 
 let enableEditMode = () => {
