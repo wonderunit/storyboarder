@@ -1543,9 +1543,18 @@ let thumbnailFromPoint = (x, y) => {
 
 let isBeforeFirstThumbnail = (x, y) => {
   // HACK are we near the far left edge, before any thumbnails?
-  if (x <= Math.floor(20 * boardData.aspectRatio)) {
+
+  // HACK account for left sidebar by measuring thumbnail-container
+  let thumbnailContainer = document.getElementById('thumbnail-container')
+  let sidebarOffsetX = -thumbnailContainer.getBoundingClientRect().left
+
+  let gapWidth = Math.floor(20 * boardData.aspectRatio)
+
+  console.log(x, sidebarOffsetX, x + sidebarOffsetX)
+
+  if (x + sidebarOffsetX <= gapWidth) {
     // have we scrolled all the way to the left already?
-    let containerScrollLeft = document.getElementById('thumbnail-container').scrollLeft
+    let containerScrollLeft = thumbnailContainer.scrollLeft
     if (containerScrollLeft == 0) {
       return true
     }
@@ -1564,12 +1573,15 @@ let updateThumbnailCursor = (event) => {
   let el = thumbnailFromPoint(x, y)
   if (!el) return
 
+  // HACK account for left sidebar by measuring thumbnail-container
+  let sidebarOffsetX = -el.offsetParent.offsetParent.getBoundingClientRect().left
+
   // HACK two levels deep of offset scrollLeft
   let scrollOffsetX = el.offsetParent.scrollLeft +
                       el.offsetParent.offsetParent.scrollLeft
 
   let elementOffsetX = el.getBoundingClientRect().right
-
+  
   // is this an end shot?
   if (el.classList.contains('endShot')) {
     elementOffsetX += 5
@@ -1577,7 +1589,8 @@ let updateThumbnailCursor = (event) => {
 
   let arrowOffsetX = -8
   
-  thumbnailCursor.x = scrollOffsetX +
+  thumbnailCursor.x = sidebarOffsetX +
+                      scrollOffsetX +
                       elementOffsetX +
                       arrowOffsetX
 }
