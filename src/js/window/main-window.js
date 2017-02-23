@@ -199,14 +199,15 @@ let loadBoardUI = ()=> {
     if (isEditMode && dragMode) {
       // TODO timer instead of pointermove event, so scrolling is continuous
 
-      let containerW = dragTarget.getBoundingClientRect().width
 
-      let mouseX = e.clientX
-      let midpointX = containerW / 2
+      let containerRect = dragTarget.getBoundingClientRect()
 
+      let mouseX = e.clientX - containerRect.left
+      let midpointX = containerRect.width / 2
+      
       // distance ratio -1...0...1
       let distance = (mouseX - midpointX) / midpointX
-      
+
       // default is the dead zone at 0
       let strength = 0
       // -1..-0.5
