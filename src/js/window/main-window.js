@@ -749,6 +749,12 @@ let updateThumbnailDrawer = ()=> {
       if (selections.has(index)) {
         // ignore
       } else if (e.shiftKey) {
+
+        if (selections.size == 0 && !util.isUndefined(currentBoard)) {
+          // use currentBoard as starting point
+          selections.add(currentBoard)
+        }
+
         // add to selections
         let min = Math.min(...selections, index)
         let max = Math.max(...selections, index)
