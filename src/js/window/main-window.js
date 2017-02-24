@@ -601,8 +601,19 @@ let updateSketchPaneBoard = () => {
   }
 }
 
-let renderThumbnailDrawer = ()=> {
+let renderThumbnailDrawerSelections = () => {
+  let thumbnails = document.querySelectorAll('.thumbnail')
 
+  for (let thumb of thumbnails) {
+    let i = Number(thumb.dataset.thumbnail)
+
+    thumb.classList.toggle('active', currentBoard == i)
+    thumb.classList.toggle('selected', selections.has(i))
+    thumb.classList.toggle('editing', isEditMode)
+  }
+}
+
+let renderThumbnailDrawer = ()=> {
   let hasShots = false
   for (var board of boardData.boards) {
     if (board.newShot) {
@@ -672,15 +683,6 @@ let renderThumbnailDrawer = ()=> {
       html.push(' startShot')
       html.push(' endShot')
     }
-    if (currentBoard == i) {
-      html.push(' active')
-    }
-    if (selections.has(i)) {
-      html.push(' selected')
-      if (isEditMode) {
-        html.push(' editing')
-      }
-    }
     let thumbnailWidth = Math.floor(60 * boardData.aspectRatio)
     html.push('" style="width: ' + thumbnailWidth + 'px;">')
     let imageFilename = path.join(boardPath, 'images', board.url)
@@ -711,6 +713,7 @@ let renderThumbnailDrawer = ()=> {
   }
   document.querySelector('#thumbnail-drawer').innerHTML = html.join('')
 
+  renderThumbnailDrawerSelections()
 
   let thumbnails = document.querySelectorAll('.thumbnail')
   for (var thumb of thumbnails) {
