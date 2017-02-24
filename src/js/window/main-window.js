@@ -441,7 +441,7 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false)=> {
   
   if (!shouldPreserveSelections) selections.clear()
   selections = new Set([...selections.add(currentBoard)].sort())
-  renderThumbnailDrawer()
+  renderThumbnailDrawerSelections()
   
   updateSketchPaneBoard()
   for (var item of document.querySelectorAll('.thumbnail')) {
@@ -739,7 +739,7 @@ let renderThumbnailDrawer = ()=> {
         let max = Math.max(...selections, index)
         selections = new Set(util.range(min, max))
 
-        renderThumbnailDrawer()
+        renderThumbnailDrawerSelections()
       } else if (currentBoard !== index) {
         // go to board by index
         
@@ -748,7 +748,7 @@ let renderThumbnailDrawer = ()=> {
 
         saveImageFile()
         currentBoard = index
-        renderThumbnailDrawer()
+        renderThumbnailDrawerSelections()
         gotoBoard(currentBoard)
       }
     }, true, true)
@@ -1563,7 +1563,7 @@ let enableEditMode = () => {
     isEditMode = true
     thumbnailCursor.visible = true
     renderThumbnailCursor()
-    renderThumbnailDrawer()
+    renderThumbnailDrawerSelections()
   }
 }
 
@@ -1572,7 +1572,7 @@ let disableEditMode = () => {
     isEditMode = false
     thumbnailCursor.visible = false
     renderThumbnailCursor()
-    renderThumbnailDrawer()
+    renderThumbnailDrawerSelections()
   }
 }
 
