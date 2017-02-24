@@ -1390,8 +1390,10 @@ let loadPNGImageFileAsDataURI = (filepath) => {
 }
 
 let copyBoards = ()=> {
-  // copy multiple boards
-  if (selections.size) {
+  if (textInputMode) return // ignore copy command in text input mode
+
+  // copy more than one boards
+  if (selections.size > 1) {
     if (selections.has(currentBoard)) {
       saveImageFile()
     }
@@ -1418,19 +1420,21 @@ let copyBoards = ()=> {
     clipboard.write(payload)
     return
   }
-
-  // copy a single board
-  if (!textInputMode) {
-    let board = JSON.parse(JSON.stringify(boardData.boards[currentBoard]))
-    let canvasDiv = document.querySelector('#main-canvas')
-    board.imageDataURL = canvasDiv.toDataURL()
-    payload = {
-      image: nativeImage.createFromDataURL(canvasDiv.toDataURL()),
-      text: JSON.stringify(board)
-    }
-    clipboard.clear()
-    clipboard.write(payload)
+  
+  // copy a single board (the current board)
+  // if you have only one board in your selection, we copy the current board
+  //
+  // assumes that UI only allows a single selection when it is also the current board
+  //
+  let board = JSON.parse(JSON.stringify(boardData.boards[currentBoard]))
+  let canvasDiv = document.querySelector('#main-canvas')
+  board.imageDataURL = canvasDiv.toDataURL()
+  payload = {
+    image: nativeImage.createFromDataURL(canvasDiv.toDataURL()),
+    text: JSON.stringify(board)
   }
+  clipboard.clear()
+  clipboard.write(payload)
 }
 
 let pasteBoards = () => {
