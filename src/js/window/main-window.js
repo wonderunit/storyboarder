@@ -43,7 +43,8 @@ let selections = new Set()
 
 let thumbnailCursor = {
   visible: false,
-  x: 0
+  x: 0,
+  el: null
 }
 
 let lastPointer = { x: null, y: null }
@@ -223,17 +224,19 @@ let loadBoardUI = ()=> {
     if (isEditMode) {
       let x = e.clientX, y = e.clientY
 
-      let el = thumbnailFromPoint(x, y)
+      // 1) try to find nearest thumbnail, otherwise,
+      // HACK 2) try to find last known thumbnail position
+      let el = thumbnailFromPoint(x, y) || thumbnailCursor.el
+
+      if (!el) {
+        console.warn("couldn't find nearest thumbnail")
+      }
 
       let index
       if (isBeforeFirstThumbnail(x, y)) {
         index = 0
       } else if (el) {
         index = Number(el.dataset.thumbnail) + 1
-      } else {
-        //
-        // TODO if over gap, find nearest thumbnail
-        console.warn("couldn't find nearest thumbnail")
       }
 
       if (!util.isUndefined(index)) {
@@ -1605,11 +1608,16 @@ let isBeforeFirstThumbnail = (x, y) => {
 let updateThumbnailCursor = (x, y) => {
   if (isBeforeFirstThumbnail(x, y)) {
     thumbnailCursor.x = 0
+    thumbnailCursor.el = null
     return
   }
 
   let el = thumbnailFromPoint(x, y)
+  if (el) thumbnailCursor.el = el // only update if found
   if (!el) return
+  
+  // store a reference to the nearest thumbnail
+  thumbnailCursor.el = el
 
   // HACK account for left sidebar by measuring thumbnail-container
   let sidebarOffsetX = -el.offsetParent.offsetParent.getBoundingClientRect().left
