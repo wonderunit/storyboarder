@@ -424,22 +424,23 @@ let duplicateBoard = ()=> {
 // UI Rendering
 ///////////////////////////////////////////////////////////////
 
-let goNextBoard = (direction)=> {
+let goNextBoard = (direction, shouldPreserveSelections = false)=> {
   saveImageFile()
   if (direction) {
     currentBoard += direction
   } else {
     currentBoard++
   }
-  gotoBoard(currentBoard)
+  gotoBoard(currentBoard, shouldPreserveSelections)
 }
 
-let gotoBoard = (boardNumber)=> {
+let gotoBoard = (boardNumber, shouldPreserveSelections = false)=> {
   currentBoard = boardNumber
   currentBoard = Math.max(currentBoard, 0)
   currentBoard = Math.min(currentBoard, boardData.boards.length-1)
   
-  selections = new Set([currentBoard])
+  if (!shouldPreserveSelections) selections.clear()
+  selections = new Set([...selections.add(currentBoard)].sort())
   updateThumbnailDrawer()
   
   updateSketchPaneBoard()
@@ -1148,7 +1149,8 @@ window.onkeydown = (e)=> {
         if (e.metaKey || e.ctrlKey) {
           previousScene()
         } else {
-          goNextBoard(-1)
+          let shouldPreserveSelections = e.shiftKey
+          goNextBoard(-1, shouldPreserveSelections)
         }
         e.preventDefault()
         break
@@ -1156,7 +1158,8 @@ window.onkeydown = (e)=> {
         if (e.metaKey || e.ctrlKey) {
           nextScene()
         } else {
-          goNextBoard()
+          let shouldPreserveSelections = e.shiftKey
+          goNextBoard(1, shouldPreserveSelections)
         }
         e.preventDefault()
         break
