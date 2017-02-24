@@ -214,10 +214,7 @@ let loadBoardUI = ()=> {
 
   window.addEventListener('pointerup', (e)=>{
     if (dragMode) {
-      clearTimeout(periodicDragUpdateTimer)
-      dragMode = false
-      dragTarget.style.overflow = 'scroll'
-      dragTarget.style.scrollBehavior = 'smooth'
+      disableDragMode()
     }
 
     clearTimeout(editModeTimer)
@@ -1160,8 +1157,21 @@ window.onkeydown = (e)=> {
         updateThumbnailDrawer()
         e.preventDefault()
         break
+      case 'Escape':
+        if (dragMode && isEditMode && selections.size) {
+          disableEditMode()
+          disableDragMode()
+        }
+        break
     }
   }
+}
+
+let disableDragMode = () => {
+  clearTimeout(periodicDragUpdateTimer)
+  dragMode = false
+  dragTarget.style.overflow = 'scroll'
+  dragTarget.style.scrollBehavior = 'smooth'
 }
 
 ///////////////////////////////////////////////////////////////
