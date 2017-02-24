@@ -33,6 +33,7 @@ let editModeTimer
 let enableEditModeDelay = 750 // msecs
 let periodicDragUpdateTimer
 let periodicDragUpdatePeriod = 30 // msecs
+let mouseDragStartX
 
 let textInputMode = false
 let textInputAllowAdvance = false
@@ -181,6 +182,7 @@ let loadBoardUI = ()=> {
       dragMode = true
       dragPoint = [e.pageX, e.pageY]
       scrollPoint = [dragTarget.scrollLeft, dragTarget.scrollTop]
+      mouseDragStartX = e.clientX
       periodicDragUpdate()
       console.log(e)
     }
@@ -201,6 +203,13 @@ let loadBoardUI = ()=> {
   window.addEventListener('pointermove', (e)=>{
     lastPointer = { x: e.clientX, y: e.clientY }
 
+    // if you move enough,
+    // we switch into dragging mode
+    // and clear any possible editModeTimer
+    if (Math.abs(mouseDragStartX - e.clientX) > 15 * boardData.aspectRatio) {
+      clearTimeout(editModeTimer)
+    }
+
     if (isEditMode && dragMode) {
       // defer to periodicDragUpdate()
       return
@@ -218,6 +227,7 @@ let loadBoardUI = ()=> {
       disableDragMode()
     }
 
+    mouseDragStartX = null
     clearTimeout(editModeTimer)
 
     console.log('pointerup', isEditMode)
