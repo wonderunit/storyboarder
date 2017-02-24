@@ -146,7 +146,7 @@ let loadBoardUI = ()=> {
           textInputMode = false
           break
       }
-      updateThumbnailDrawer()
+      renderThumbnailDrawer()
     })
 
     item.addEventListener('input', (e)=> {
@@ -264,7 +264,7 @@ let updateBoardUI = ()=> {
   // update sketchpane
   updateSketchPaneBoard()
   // update thumbail drawer
-  updateThumbnailDrawer()
+  renderThumbnailDrawer()
   // update timeline
   // update metadata
   gotoBoard(currentBoard)
@@ -293,7 +293,7 @@ let newBoard = (position)=> {
   boardData.boards.splice(position, 0, board)
   // indicate dirty for save sweep
   markBoardFileDirty()
-  updateThumbnailDrawer()
+  renderThumbnailDrawer()
 }
 
 let markBoardFileDirty = ()=> {
@@ -348,7 +348,7 @@ let deleteSingleBoard = (index) => {
   if (boardData.boards.length > 1) {
     boardData.boards.splice(index, 1)
     markBoardFileDirty()
-    updateThumbnailDrawer()
+    renderThumbnailDrawer()
   }
 }
 
@@ -378,7 +378,7 @@ let deleteBoards = (args)=> {
 
       // clear and re-render selections
       selections.clear()
-      updateThumbnailDrawer()
+      renderThumbnailDrawer()
     } else {
       // delete a single board
       deleteSingleBoard(currentBoard)
@@ -416,7 +416,7 @@ let duplicateBoard = ()=> {
   document.querySelector('#main-canvas').getContext("2d").putImageData(imageData, 0, 0)
   markImageFileDirty()
   saveImageFile()
-  updateThumbnailDrawer()
+  renderThumbnailDrawer()
   gotoBoard(currentBoard)
 }
 
@@ -441,7 +441,7 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false)=> {
   
   if (!shouldPreserveSelections) selections.clear()
   selections = new Set([...selections.add(currentBoard)].sort())
-  updateThumbnailDrawer()
+  renderThumbnailDrawer()
   
   updateSketchPaneBoard()
   for (var item of document.querySelectorAll('.thumbnail')) {
@@ -601,7 +601,7 @@ let updateSketchPaneBoard = () => {
   }
 }
 
-let updateThumbnailDrawer = ()=> {
+let renderThumbnailDrawer = ()=> {
 
   let hasShots = false
   for (var board of boardData.boards) {
@@ -736,7 +736,7 @@ let updateThumbnailDrawer = ()=> {
         let max = Math.max(...selections, index)
         selections = new Set(util.range(min, max))
 
-        updateThumbnailDrawer()
+        renderThumbnailDrawer()
       } else if (currentBoard !== index) {
         // go to board by index
         
@@ -745,7 +745,7 @@ let updateThumbnailDrawer = ()=> {
 
         saveImageFile()
         currentBoard = index
-        updateThumbnailDrawer()
+        renderThumbnailDrawer()
         gotoBoard(currentBoard)
       }
     }, true, true)
@@ -1519,7 +1519,7 @@ let pasteBoards = () => {
       document.querySelector('#main-canvas').getContext("2d").drawImage(image, 0, 0)
       markImageFileDirty()
       saveImageFile()
-      updateThumbnailDrawer()
+      renderThumbnailDrawer()
       
       // refresh
       gotoBoard(currentBoard)
@@ -1551,7 +1551,7 @@ let moveSelectedBoards = (position) => {
   selections.clear()
 
   // re-render
-  updateThumbnailDrawer()
+  renderThumbnailDrawer()
   gotoBoard(currentBoard)
 }
 
@@ -1560,7 +1560,7 @@ let enableEditMode = () => {
     isEditMode = true
     thumbnailCursor.visible = true
     renderThumbnailCursor()
-    updateThumbnailDrawer()
+    renderThumbnailDrawer()
   }
 }
 
@@ -1569,7 +1569,7 @@ let disableEditMode = () => {
     isEditMode = false
     thumbnailCursor.visible = false
     renderThumbnailCursor()
-    updateThumbnailDrawer()
+    renderThumbnailDrawer()
   }
 }
 
