@@ -438,6 +438,10 @@ let gotoBoard = (boardNumber)=> {
   currentBoard = boardNumber
   currentBoard = Math.max(currentBoard, 0)
   currentBoard = Math.min(currentBoard, boardData.boards.length-1)
+  
+  selections = new Set([currentBoard])
+  updateThumbnailDrawer()
+  
   updateSketchPaneBoard()
   for (var item of document.querySelectorAll('.thumbnail')) {
     item.classList.remove('active')
@@ -1146,8 +1150,6 @@ window.onkeydown = (e)=> {
         } else {
           goNextBoard(-1)
         }
-        selections.clear()
-        updateThumbnailDrawer()
         e.preventDefault()
         break
       case 'ArrowRight':
@@ -1156,8 +1158,6 @@ window.onkeydown = (e)=> {
         } else {
           goNextBoard()
         }
-        selections.clear()
-        updateThumbnailDrawer()
         e.preventDefault()
         break
       case 'Escape':
