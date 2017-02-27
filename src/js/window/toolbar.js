@@ -1,7 +1,9 @@
+const EventEmitter = require('events').EventEmitter
 const sketchPane = require('../sketchpane.js')
 
-class Toolbar {
+class Toolbar extends EventEmitter {
   constructor (el) {
+    super()
     this.state = {}
     this.el = el
     this.setState({
@@ -30,6 +32,11 @@ class Toolbar {
     let selection = event.target.id.replace(/^toolbar-/, '')
 
     switch (selection) {
+      case 'add':
+        this.emit('add')
+        break
+      
+      // brushes
       case 'light-pencil':
         this.setState({ brush: 'light-pencil' })
         break
@@ -44,6 +51,9 @@ class Toolbar {
         break
       case 'eraser':
         this.setState({ brush: 'eraser' })
+        break
+      default:
+        console.log('toolbar selection', selection)
         break
     }
   }

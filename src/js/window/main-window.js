@@ -265,6 +265,10 @@ let loadBoardUI = ()=> {
   })
 
   toolbar = new Toolbar(document.getElementById("toolbar"))
+  toolbar.on('add', () => {
+    newBoard()
+    gotoBoard(currentBoard+1)
+  })
   toolbar.setState({ brush: 'pencil' })
 
   setTimeout(()=>{remote.getCurrentWindow().show()}, 200)
