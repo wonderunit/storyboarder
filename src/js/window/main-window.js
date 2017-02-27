@@ -52,7 +52,7 @@ let thumbnailCursor = {
 
 let lastPointer = { x: null, y: null }
 
-let toolbar = new Toolbar(document.getElementById("toolbar"))
+let toolbar
 
 menu.setMenu()
 
@@ -117,8 +117,6 @@ let loadBoardUI = ()=> {
     size = [900, (900/aspectRatio)]
   }
   sketchPane.init(document.getElementById('sketch-pane'), ['reference', 'main', 'notes'], size)
-
-  toolbar.setState({ brush: 'pencil' })
 
   sketchPane.on('lineMileage', (value)=>{
     addToLineMileage(value)
@@ -265,6 +263,9 @@ let loadBoardUI = ()=> {
       disableEditMode()
     }
   })
+
+  toolbar = new Toolbar(document.getElementById("toolbar"))
+  toolbar.setState({ brush: 'pencil' })
 
   setTimeout(()=>{remote.getCurrentWindow().show()}, 200)
   //remote.getCurrentWebContents().openDevTools()
@@ -1675,6 +1676,8 @@ let renderThumbnailCursor = () => {
 }
 
 ipcRenderer.on('setTool', (e, arg)=> {
+  if (!toolbar) return
+
   if (!textInputMode) {
     console.log('setTool', arg)
     switch(arg) {
