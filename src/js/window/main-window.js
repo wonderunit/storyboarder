@@ -117,7 +117,9 @@ let loadBoardUI = ()=> {
     size = [900, (900/aspectRatio)]
   }
   sketchPane.init(document.getElementById('sketch-pane'), ['reference', 'main', 'notes'], size)
-  sketchPane.setBrush(1.5,[30,30,30],5,70,'main')
+
+  toolbar.setState({ brush: 'pencil' })
+
   sketchPane.on('lineMileage', (value)=>{
     addToLineMileage(value)
   })
@@ -1677,19 +1679,19 @@ ipcRenderer.on('setTool', (e, arg)=> {
     console.log('setTool', arg)
     switch(arg) {
       case 'lightPencil':
-        sketchPane.setBrush(2,[200,220,255],5,50,'main')
+        toolbar.setState({ brush: 'light-pencil' })
         break
       case 'pencil':
-        sketchPane.setBrush(1.5,[30,30,30],5,70,'main')
+        toolbar.setState({ brush: 'pencil' })
         break
       case 'pen':
-        sketchPane.setBrush(3,[0,0,0],60,80,'main')
+        toolbar.setState({ brush: 'pen' })
         break
       case 'brush':
-        sketchPane.setBrush(20,[0,0,100],2,10,'main')
+        toolbar.setState({ brush: 'brush' })
         break
       case 'eraser':
-        sketchPane.setEraser()
+        toolbar.setState({ brush: 'eraser' })
         break
     }
   }

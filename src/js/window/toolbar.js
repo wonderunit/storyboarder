@@ -1,3 +1,5 @@
+const sketchPane = require('../sketchpane.js')
+
 class Toolbar {
   constructor (el) {
     this.state = {}
@@ -11,6 +13,7 @@ class Toolbar {
 
   setState (newState) {
     this.state = Object.assign(this.state, newState)
+    this.update()
     this.render()
   }
 
@@ -44,7 +47,27 @@ class Toolbar {
         break
     }
   }
-  
+
+  update () {
+    switch (this.state.brush) {
+      case 'light-pencil':
+        sketchPane.setBrush(2,[200,220,255],5,50,'main')
+        break
+      case 'pencil':
+        sketchPane.setBrush(1.5,[30,30,30],5,70,'main')
+        break
+      case 'pen':
+        sketchPane.setBrush(3,[0,0,0],60,80,'main')
+        break
+      case 'brush':
+        sketchPane.setBrush(20,[0,0,100],2,10,'main')
+        break
+      case 'eraser':
+        sketchPane.setEraser()
+        break
+    }
+  }
+
   render () {
     let brushesEls = this.el.querySelectorAll('.button[data-group=brushes]')
     for (let brushEl of brushesEls) {
