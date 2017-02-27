@@ -53,7 +53,6 @@ let thumbnailCursor = {
 let lastPointer = { x: null, y: null }
 
 let toolbar = new Toolbar(document.getElementById("toolbar"))
-toolbar.attachedCallback()
 
 menu.setMenu()
 

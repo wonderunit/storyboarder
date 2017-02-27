@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <link rel="stylesheet" href="./css/fonts.css">
     <link rel="stylesheet" href="./css/mainwindow.css">
+    <link rel="stylesheet" href="./css/toolbar.css">
   </head>
   <body>
     <div id="drag-handle"></div>
@@ -29,19 +30,19 @@
           </div>
         </div>
         <div class="group">
-          <div id="toolbar-light-pencil" class="button">
+          <div id="toolbar-light-pencil" data-group="brushes" class="button">
             <svg class="icon"><use xlink:href="./img/symbol-defs.svg#icon-lightpencil"></use></svg>
           </div>
-          <div id="toolbar-pencil" class="button">
+          <div id="toolbar-pencil" data-group="brushes" class="button">
             <svg class="icon"><use xlink:href="./img/symbol-defs.svg#icon-pencil"></use></svg>
           </div>
-          <div id="toolbar-pen" class="button">
+          <div id="toolbar-pen" data-group="brushes" class="button">
             <svg class="icon"><use xlink:href="./img/symbol-defs.svg#icon-pen"></use></svg>
           </div>
-          <div id="toolbar-brush" class="button">
+          <div id="toolbar-brush" data-group="brushes" class="button">
             <svg class="icon"><use xlink:href="./img/symbol-defs.svg#icon-brush"></use></svg>
           </div>
-          <div id="toolbar-eraser" class="button">
+          <div id="toolbar-eraser" data-group="brushes" class="button">
             <svg class="icon"><use xlink:href="./img/symbol-defs.svg#icon-eraser"></use></svg>
           </div>
         </div>
