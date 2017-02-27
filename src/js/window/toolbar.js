@@ -27,13 +27,25 @@ class Toolbar extends EventEmitter {
 
   // TODO cleanup, remove listeners
   // detachedCallback () {}
-  
+
   onButtonSelect (event) {
     let selection = event.target.id.replace(/^toolbar-/, '')
 
     switch (selection) {
       case 'add':
         this.emit('add')
+        break
+      case 'delete':
+        this.emit('delete')
+        break
+      case 'duplicate':
+        this.emit('duplicate')
+        break
+      case 'import':
+        this.emit('import')
+        break
+      case 'print':
+        this.emit('print')
         break
       
       // brushes

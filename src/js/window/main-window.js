@@ -269,6 +269,18 @@ let loadBoardUI = ()=> {
     newBoard()
     gotoBoard(currentBoard+1)
   })
+  toolbar.on('delete', () => {
+    deleteBoards()
+  })
+  toolbar.on('duplicate', () => {
+    duplicateBoard()
+  })
+  toolbar.on('import', () => {
+    alert('Import. This feature is not ready yet :(')
+  })
+  toolbar.on('print', () => {
+    alert('Print. This feature is not ready yet :(')
+  })
   toolbar.setState({ brush: 'pencil' })
 
   setTimeout(()=>{remote.getCurrentWindow().show()}, 200)
