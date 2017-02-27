@@ -12,6 +12,8 @@ const Color = require('color-js')
 const sketchPane = require('../sketchpane.js')
 const undoStack = require('../undo-stack.js')
 
+const Toolbar = require('./toolbar.js')
+
 let boardFilename
 let boardPath
 let boardData
@@ -49,6 +51,9 @@ let thumbnailCursor = {
 }
 
 let lastPointer = { x: null, y: null }
+
+let toolbar = new Toolbar(document.getElementById("toolbar"))
+toolbar.attachedCallback()
 
 menu.setMenu()
 
