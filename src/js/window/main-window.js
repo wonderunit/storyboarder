@@ -12,6 +12,8 @@ const Color = require('color-js')
 const sketchPane = require('../sketchpane.js')
 const undoStack = require('../undo-stack.js')
 
+const Toolbar = require('./toolbar.js')
+
 let boardFilename
 let boardPath
 let boardData
@@ -49,6 +51,8 @@ let thumbnailCursor = {
 }
 
 let lastPointer = { x: null, y: null }
+
+let toolbar
 
 menu.setMenu()
 
@@ -113,7 +117,7 @@ let loadBoardUI = ()=> {
     size = [900, (900/aspectRatio)]
   }
   sketchPane.init(document.getElementById('sketch-pane'), ['reference', 'main', 'notes'], size)
-  sketchPane.setBrush(1.5,[30,30,30],5,70,'main')
+
   sketchPane.on('lineMileage', (value)=>{
     addToLineMileage(value)
   })
@@ -259,6 +263,120 @@ let loadBoardUI = ()=> {
       disableEditMode()
     }
   })
+
+  toolbar = new Toolbar(document.getElementById("toolbar"))
+  toolbar.on('add', () => {
+    newBoard()
+    gotoBoard(currentBoard+1)
+  })
+  toolbar.on('delete', () => {
+    deleteBoards()
+  })
+  toolbar.on('duplicate', () => {
+    duplicateBoard()
+  })
+  toolbar.on('import', () => {
+    alert('Import. This feature is not ready yet :(')
+  })
+  toolbar.on('print', () => {
+    alert('Print. This feature is not ready yet :(')
+  })
+  
+  toolbar.on('light-pencil', () => {
+    sketchPane.setBrush(2,[200,220,255],5,50,'main')
+  })
+  toolbar.on('pencil', () => {
+    sketchPane.setBrush(1.5,[30,30,30],5,70,'main')
+  })
+  toolbar.on('pen', () => {
+    sketchPane.setBrush(3,[0,0,0],60,80,'main')
+  })
+  toolbar.on('brush', () => {
+    sketchPane.setBrush(20,[0,0,100],2,10,'main')
+  })
+  toolbar.on('eraser', () => {
+    sketchPane.setEraser()
+  })
+
+  toolbar.on('trash', () => {
+    sketchPane.clear()
+  })
+  toolbar.on('fill', () => {
+    sketchPane.fillBlack()
+  })
+
+
+  toolbar.on('move', () => {
+    sketchPane.moveContents()
+  })
+  toolbar.on('scale', () => {
+    sketchPane.scaleContents()
+  })
+  toolbar.on('cancelTransform', () => {
+    sketchPane.cancelTransform()
+  })
+  sketchPane.on('moveMode', enabled => {
+    if (enabled) {
+      toolbar.setState({ transformMode: 'move' })
+    }
+  })
+  sketchPane.on('scaleMode', enabled => {
+    if (enabled) {
+      toolbar.setState({ transformMode: 'scale' })
+    }
+  })
+  sketchPane.on('cancelTransform', () => {
+    toolbar.setState({ transformMode: null })
+  })
+
+
+  toolbar.on('undo', () => {
+    undoStack.undo()
+    markImageFileDirty()
+  })
+  toolbar.on('redo', () => {
+    undoStack.redo()
+    markImageFileDirty()
+  })
+
+
+  toolbar.on('current-color', () => {
+    alert('Change Current Color. This feature is not ready yet :(')
+  })
+  toolbar.on('palette-colorA', () => {
+    alert('Palette Color A. This feature is not ready yet :(')
+  })
+  toolbar.on('palette-colorB', () => {
+    alert('Palette Color B. This feature is not ready yet :(')
+  })
+  toolbar.on('palette-colorC', () => {
+    alert('Palette Color C. This feature is not ready yet :(')
+  })
+
+  toolbar.on('brush-size', () => {
+    alert('Brush Size. This feature is not ready yet :(')
+  })
+  
+  toolbar.on('grid', () => {
+    alert('Grid. This feature is not ready yet :(')
+  })
+  toolbar.on('center', () => {
+    alert('Center. This feature is not ready yet :(')
+  })
+  toolbar.on('thirds', () => {
+    alert('Thirds. This feature is not ready yet :(')
+  })
+  toolbar.on('perspective', () => {
+    alert('Perspective. This feature is not ready yet :(')
+  })
+  toolbar.on('onion', () => {
+    alert('Onion. This feature is not ready yet :(')
+  })
+  toolbar.on('caption', () => {
+    alert('Caption. This feature is not ready yet :(')
+  })
+
+  toolbar.setState({ brush: 'pencil' })
 
   setTimeout(()=>{remote.getCurrentWindow().show()}, 200)
   //remote.getCurrentWebContents().openDevTools()
@@ -1669,23 +1787,25 @@ let renderThumbnailCursor = () => {
 }
 
 ipcRenderer.on('setTool', (e, arg)=> {
+  if (!toolbar) return
+
   if (!textInputMode) {
     console.log('setTool', arg)
     switch(arg) {
       case 'lightPencil':
-        sketchPane.setBrush(2,[200,220,255],5,50,'main')
+        toolbar.setState({ brush: 'light-pencil' })
         break
       case 'pencil':
-        sketchPane.setBrush(1.5,[30,30,30],5,70,'main')
+        toolbar.setState({ brush: 'pencil' })
         break
       case 'pen':
-        sketchPane.setBrush(3,[0,0,0],60,80,'main')
+        toolbar.setState({ brush: 'pen' })
         break
       case 'brush':
-        sketchPane.setBrush(20,[0,0,100],2,10,'main')
+        toolbar.setState({ brush: 'brush' })
         break
       case 'eraser':
-        sketchPane.setEraser()
+        toolbar.setState({ brush: 'eraser' })
         break
     }
   }
