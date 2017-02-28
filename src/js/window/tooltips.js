@@ -1,10 +1,11 @@
 const Tooltip = require('tether-tooltip')
+Tooltip.autoinit = false
 
-const content = (title, description, keyCommand) => `
+const content = (title, description, keys) => `
 <div class="title">${title}</div>
 <div class="description">${description}</div>
 <div class="key-command">
-  ${keyCommand}
+  ${keys}
 </div>
 `
 
@@ -13,29 +14,18 @@ const acceleratorAsHtml = (accel) => {
   `<kbd class="action-key-anim">${accel}</kbd>`
 }
 
-const tooltips = [
-  [
-    '#toolbar-add',
-    'New Board',
-    'Description',
-    'n',
-    'bottom left'
-  ],
-  [
-    '#toolbar-add',
-    'New Board',
-    'Description',
-    'n',
-    'bottom left'
-  ]
-]
-
 const init = () => {
-  for (let tooltip of tooltips) {
+  const tooltipElements = document.querySelectorAll('[data-tooltip]')
+  for (let el of tooltipElements) {
+    let title = el.dataset.tooltipTitle
+    let description = el.dataset.tooltipDescription
+    let keys = el.dataset.tooltipKeys
+    let position = el.dataset.tooltipPosition
+    console.log(title, description, keys, position)
     return new Tooltip({
-      target: document.querySelector(`#toolbar ${tooltip[0]}`),
-      content: content(...tooltip.slice(1, 4)),
-      position: tooltip[4]
+      target: el,
+      content: content(title, description, keys),
+      position
     })
   }
 }
