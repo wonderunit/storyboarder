@@ -13,6 +13,7 @@ const sketchPane = require('../sketchpane.js')
 const undoStack = require('../undo-stack.js')
 
 const Toolbar = require('./toolbar.js')
+const tooltips = require('./tooltips.js')
 
 let boardFilename
 let boardPath
@@ -377,6 +378,8 @@ let loadBoardUI = ()=> {
   })
 
   toolbar.setState({ brush: 'pencil' })
+  
+  tooltips.init()
 
   setTimeout(()=>{remote.getCurrentWindow().show()}, 200)
   //remote.getCurrentWebContents().openDevTools()
