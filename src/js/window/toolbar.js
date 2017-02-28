@@ -64,6 +64,13 @@ class Toolbar extends EventEmitter {
       case 'eraser':
         this.setState({ brush: 'eraser' })
         break
+      case 'undo':
+        this.emit('undo')
+        break
+      case 'redo':
+        this.emit('redo')
+        break
+
       default:
         console.log('toolbar selection', selection)
         break

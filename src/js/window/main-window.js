@@ -281,6 +281,15 @@ let loadBoardUI = ()=> {
   toolbar.on('print', () => {
     alert('Print. This feature is not ready yet :(')
   })
+
+  toolbar.on('undo', () => {
+    undoStack.undo()
+    markImageFileDirty()
+  })
+  toolbar.on('redo', () => {
+    undoStack.redo()
+    markImageFileDirty()
+  })
   toolbar.setState({ brush: 'pencil' })
 
   setTimeout(()=>{remote.getCurrentWindow().show()}, 200)
