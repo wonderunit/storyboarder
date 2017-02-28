@@ -299,10 +299,10 @@ let loadBoardUI = ()=> {
   })
 
   toolbar.on('trash', () => {
-    alert('Trash. This feature is not ready yet :(')
+    sketchPane.clear()
   })
   toolbar.on('fill', () => {
-    alert('Fill. This feature is not ready yet :(')
+    sketchPane.fillBlack()
   })
   toolbar.on('move', () => {
     alert('Move. This feature is not ready yet :(')
