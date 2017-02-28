@@ -1,0 +1,150 @@
+#context-menu {
+  position: relative;
+  background: rgba(20,20,20,1);
+  color: white;
+  padding: 10px;
+  border-radius: 8px;
+  max-width: 300px;
+  
+  transform-origin: 50% 100%;
+
+    animation-delay: 1s;
+    opacity: 0;
+  animation-duration: 0.25s;
+  animation-timing-function: ease-out;
+  animation-iteration-count: 1;
+  animation-fill-mode: forwards;
+  float: left;
+  margin-right: 20px;
+  z-index: 999;
+}
+
+
+
+
+
+#context-menu.top-nub:after {
+  bottom: 100%;
+  left: 50%;
+  border: solid transparent;
+  content: " ";
+  height: 0;
+  width: 0;
+  position: absolute;
+  pointer-events: none;
+  border-bottom-color: rgba(20,20,20,1);
+  border-width: 10px;
+  margin-left: -10px;
+}
+
+#context-menu.bottom-nub:after {
+  top: 100%;
+  left: 50%;
+  border: solid transparent;
+  content: " ";
+  height: 0;
+  width: 0;
+  position: absolute;
+  pointer-events: none;
+  border-top-color: rgba(20,20,20,1);
+  border-width: 10px;
+  margin-left: -10px;
+  z-index: 2000;
+}
+
+#context-menu.left-nub:after {
+  right: 100%;
+  top: 50%;
+  border: solid transparent;
+  content: " ";
+  height: 0;
+  width: 0;
+  position: absolute;
+  pointer-events: none;
+  border-right-color: rgba(20,20,20,1);
+  border-width: 10px;
+  margin-top: -10px;
+}
+
+#context-menu.right-nub:after {
+  left: 100%;
+  top: 50%;
+  border: solid transparent;
+  content: " ";
+  height: 0;
+  width: 0;
+  position: absolute;
+  pointer-events: none;
+  border-left-color: rgba(0,0,0,0.5);
+  border-width: 10px;
+  margin-top: -10px;
+  z-index: 2000;
+}
+
+
+
+
+
+#context-menu .item {
+  color: rgba(255,255,255,0.5);
+  padding: 5px 10px;
+  border-radius: 3px;
+}
+
+#context-menu .hr {
+  border-top: 1px solid rgba(255,255,255,0.1);
+  margin: 10px 0;
+}
+
+
+#context-menu .item:hover {
+  background-color: rgba(255,255,255,0.2);
+}
+
+
+#context-menu .title {
+  font-weight: 500;
+  font-size: 20px;
+  opacity: 0.8;
+}
+
+#context-menu .description {
+  font-weight: 100;
+  font-size: 16px;
+  opacity: 0.5;
+}
+
+#context-menu .key-command {
+  float: right;
+  margin-right: -6px;
+  margin-left: 10px;
+  color: rgba(255,255,255,0.5);
+}
+
+.appear-anim {
+  animation-name: appear;
+}
+
+
+
+@keyframes appear {
+  0% {
+    transform: scale(0.7,0.7);
+    opacity: 0;
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.1,1.1);
+  }
+  85% {
+    opacity: 1;
+    transform: scale(0.9,0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1,1);
+  }
+}
+
+
+

@@ -1,0 +1,152 @@
+#context-menu kbd {
+  display: inline-block;
+  position: relative;
+  padding: 2px 4px;
+  font-family: 'proximanova';
+  font-weight: 700;
+  font-size: 10px;
+  text-align: center;
+  text-decoration: none;
+  border-radius: 4px;
+  cursor: default;
+  user-select: none;
+  margin-right: 3px;
+  margin-left: 3px;
+  animation-delay: 2s;
+  animation-duration: 1.5s;
+  animation-timing-function: ease-in;
+  animation-iteration-count: infinite;
+  text-transform: capitalize;
+  min-width: 10px;
+  top: -3px;
+}
+
+
+kbd, .key {
+  display: inline-block;
+  position: relative;
+  padding: 10px 15px;
+  font-family: 'proximanova';
+  font-weight: 700;
+  text-align: center;
+  text-decoration: none;
+  border-radius: 4px;
+  cursor: default;
+  user-select: none;
+  margin-right: 10px;
+  margin-left: 10px;
+  animation-delay: 2s;
+  animation-duration: 1.5s;
+  animation-timing-function: ease-in;
+  animation-iteration-count: infinite;
+  text-transform: capitalize;
+  min-width: 15px;
+}
+
+.modifier {
+  min-width: 45px;
+}
+
+#context-menu .modifier {
+  min-width: 30px;
+}
+
+.action-key-anim {
+  animation-name: click;
+}
+
+.modifier-key-anim {
+  animation-name: modifier;
+}
+
+.modifier-key-anim:nth-of-type(2) {
+  animation-name: modifier2;
+}
+
+
+kbd {
+  background: rgb(150, 150, 150);
+  color: rgb(30, 30, 30);
+  box-shadow: 0 4px 0px rgb(100, 100, 100),0 4px 0px 3px rgb(0, 0, 0), 0 4px 0px 7px rgba(200, 200, 200, 0.1);
+}
+
+
+#context-menu kbd {
+  background: rgb(150, 150, 150);
+  color: rgb(30, 30, 30);
+  box-shadow: 0 2px 0px rgb(100, 100, 100),0 2px 0px 2px rgb(0, 0, 0);
+}
+
+
+@keyframes click {
+  0% {
+    top: 0px;
+    box-shadow: 0 4px 0px rgb(100, 100, 100),0 4px 0px 3px rgb(0, 0, 0), 0 4px 0px 7px rgba(200, 200, 200, 0.1);
+  }
+  80% {
+    top: 0px;
+    background: rgb(150, 150, 150);
+    box-shadow: 0 4px 0px rgb(100, 100, 100),0 4px 0px 3px rgb(0, 0, 0), 0 4px 0px 7px rgba(200, 200, 200, 0.1);
+  }
+  82% {
+    top: 5px;
+    background: rgb(170, 170, 170);
+    box-shadow: 0 0px 0px rgb(100, 100, 100),0 -2px 0px 3px rgb(0, 0, 0), 0 -1px 0px 8px rgba(200, 200, 200, 0.3);
+  }
+  90% {
+    top: 5px;
+    box-shadow: 0 0px 0px rgb(100, 100, 100),0 -2px 0px 3px rgb(0, 0, 0), 0 -1px 0px 8px rgba(200, 200, 200, 0.1);
+  }
+  91% {
+    top: 0px;
+    box-shadow: 0 4px 0px rgb(100, 100, 100),0 4px 0px 3px rgb(0, 0, 0), 0 4px 0px 7px rgba(200, 200, 200, 0.1);
+  }
+  100% {
+    top: 0px;
+    box-shadow: 0 4px 0px rgb(100, 100, 100),0 4px 0px 3px rgb(0, 0, 0), 0 4px 0px 7px rgba(200, 200, 200, 0.1);
+  }
+}
+
+@keyframes modifier {
+  0% {
+    top: 0px;
+    box-shadow: 0 4px 0px rgb(100, 100, 100),0 4px 0px 3px rgb(0, 0, 0), 0 4px 0px 7px rgba(200, 200, 200, 0.1);
+  }
+  50% {
+    top: 0px;
+    background: rgb(150, 150, 150);
+    box-shadow: 0 4px 0px rgb(100, 100, 100),0 4px 0px 3px rgb(0, 0, 0), 0 4px 0px 7px rgba(200, 200, 200, 0.1);
+  }
+  52% {
+    top: 5px;
+    background: rgb(170, 170, 170);
+    box-shadow: 0 0px 0px rgb(100, 100, 100),0 -2px 0px 3px rgb(0, 0, 0), 0 -1px 0px 8px rgba(200, 200, 200, 0.3);
+  }
+  100% {
+    top: 5px;
+    box-shadow: 0 0px 0px rgb(100, 100, 100),0 -2px 0px 3px rgb(0, 0, 0), 0 -1px 0px 8px rgba(200, 200, 200, 0.1);
+  }
+}
+
+
+@keyframes modifier2 {
+  0% {
+    top: 0px;
+    box-shadow: 0 4px 0px rgb(100, 100, 100),0 4px 0px 3px rgb(0, 0, 0), 0 4px 0px 7px rgba(200, 200, 200, 0.1);
+  }
+  60% {
+    top: 0px;
+    background: rgb(150, 150, 150);
+    box-shadow: 0 4px 0px rgb(100, 100, 100),0 4px 0px 3px rgb(0, 0, 0), 0 4px 0px 7px rgba(200, 200, 200, 0.1);
+  }
+  62% {
+    top: 5px;
+    background: rgb(170, 170, 170);
+    box-shadow: 0 0px 0px rgb(100, 100, 100),0 -2px 0px 3px rgb(0, 0, 0), 0 -1px 0px 8px rgba(200, 200, 200, 0.3);
+  }
+  100% {
+    top: 5px;
+    box-shadow: 0 0px 0px rgb(100, 100, 100),0 -2px 0px 3px rgb(0, 0, 0), 0 -1px 0px 8px rgba(200, 200, 200, 0.1);
+  }
+}
+
