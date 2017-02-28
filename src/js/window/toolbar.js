@@ -89,11 +89,40 @@ class Toolbar extends EventEmitter {
         this.emit('redo')
         break
 
-      case 'move':
-        this.emit('move')
+      case 'current-color':
+        this.emit('current-color')
         break
-      case 'scale':
-        this.emit('scale')
+      case 'palette-colorA':
+        this.emit('palette-colorA')
+        break
+      case 'palette-colorB':
+        this.emit('palette-colorB')
+        break
+      case 'palette-colorC':
+        this.emit('palette-colorC')
+        break
+
+      case 'brush-size':
+        this.emit('brush-size')
+        break
+
+      case 'grid':
+        this.emit('grid')
+        break
+      case 'center':
+        this.emit('center')
+        break
+      case 'thirds':
+        this.emit('thirds')
+        break
+      case 'perspective':
+        this.emit('perspective')
+        break
+      case 'onion':
+        this.emit('onion')
+        break
+      case 'caption':
+        this.emit('caption')
         break
 
       default:

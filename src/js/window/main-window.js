@@ -319,6 +319,44 @@ let loadBoardUI = ()=> {
     undoStack.redo()
     markImageFileDirty()
   })
+
+
+  toolbar.on('current-color', () => {
+    alert('Change Current Color. This feature is not ready yet :(')
+  })
+  toolbar.on('palette-colorA', () => {
+    alert('Palette Color A. This feature is not ready yet :(')
+  })
+  toolbar.on('palette-colorB', () => {
+    alert('Palette Color B. This feature is not ready yet :(')
+  })
+  toolbar.on('palette-colorC', () => {
+    alert('Palette Color C. This feature is not ready yet :(')
+  })
+
+  toolbar.on('brush-size', () => {
+    alert('Brush Size. This feature is not ready yet :(')
+  })
+  
+  toolbar.on('grid', () => {
+    alert('Grid. This feature is not ready yet :(')
+  })
+  toolbar.on('center', () => {
+    alert('Center. This feature is not ready yet :(')
+  })
+  toolbar.on('thirds', () => {
+    alert('Thirds. This feature is not ready yet :(')
+  })
+  toolbar.on('perspective', () => {
+    alert('Perspective. This feature is not ready yet :(')
+  })
+  toolbar.on('onion', () => {
+    alert('Onion. This feature is not ready yet :(')
+  })
+  toolbar.on('caption', () => {
+    alert('Caption. This feature is not ready yet :(')
+  })
+
   toolbar.setState({ brush: 'pencil' })
 
   setTimeout(()=>{remote.getCurrentWindow().show()}, 200)
