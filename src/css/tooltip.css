@@ -18,6 +18,8 @@
     position: relative;
     font-family: inherit;
 
+    transform-origin: 50% 0%;
+
     background: rgba(0,0,0,0.8);
     color: white;
 
@@ -35,10 +37,6 @@
     animation-fill-mode: forwards;
 
     float: left;
-
-    /*margin-right: 20px;*/
-    /*z-index: 1001;*/
-
     }
     .tooltip-element.tooltip-theme-arrows .tooltip-content:before {
       content: "";
