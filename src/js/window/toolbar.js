@@ -1,5 +1,4 @@
 const EventEmitter = require('events').EventEmitter
-const util = require('../wonderunit-utils.js')
 
 class Toolbar extends EventEmitter {
   constructor (el) {
@@ -15,9 +14,7 @@ class Toolbar extends EventEmitter {
   }
 
   setState (newState) {
-    let oldState = util.shallowCopy(this.state)
     this.state = Object.assign(this.state, newState)
-    this.update(oldState)
     this.render()
   }
 
@@ -53,19 +50,34 @@ class Toolbar extends EventEmitter {
       
       // brushes
       case 'light-pencil':
-        this.setState({ brush: 'light-pencil' })
+        if (this.state.brush !== 'light-pencil') {
+          this.setState({ brush: 'light-pencil' })
+          this.emit('light-pencil')
+        }
         break
       case 'pencil':
-        this.setState({ brush: 'pencil' })
+        if (this.state.brush !== 'pencil') {
+          this.setState({ brush: 'pencil' })
+          this.emit('pencil')
+        }
         break
       case 'pen':
-        this.setState({ brush: 'pen' })
+        if (this.state.brush !== 'pen') {
+          this.setState({ brush: 'pen' })
+          this.emit('pen')
+        }
         break
       case 'brush':
-        this.setState({ brush: 'brush' })
+        if (this.state.brush !== 'brush') {
+          this.setState({ brush: 'brush' })
+          this.emit('brush')
+        }
         break
       case 'eraser':
-        this.setState({ brush: 'eraser' })
+        if (this.state.brush !== 'eraser') {
+          this.setState({ brush: 'eraser' })
+          this.emit('eraser')
+        }
         break
 
       case 'trash':
@@ -133,28 +145,6 @@ class Toolbar extends EventEmitter {
       default:
         console.log('toolbar selection', selection)
         break
-    }
-  }
-
-  update (oldState) {
-    if (oldState.brush !== this.state.brush) {
-      switch (this.state.brush) {
-        case 'light-pencil':
-          this.emit('light-pencil')
-          break
-        case 'pencil':
-          this.emit('pencil')
-          break
-        case 'pen':
-          this.emit('pen')
-          break
-        case 'brush':
-          this.emit('brush')
-          break
-        case 'eraser':
-          this.emit('eraser')
-          break
-      }
     }
   }
 
