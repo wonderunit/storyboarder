@@ -47,8 +47,7 @@ const init = () => {
     let description = el.dataset.tooltipDescription
     let keys = el.dataset.tooltipKeys
     let position = el.dataset.tooltipPosition
-    console.log(title, description, keys, position)
-    return new Tooltip({
+    new Tooltip({
       target: el,
       content: content(title, description, keys),
       position
