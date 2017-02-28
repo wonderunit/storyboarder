@@ -1,5 +1,5 @@
 const EventEmitter = require('events').EventEmitter
-const sketchPane = require('../sketchpane.js')
+const util = require('../wonderunit-utils.js')
 
 class Toolbar extends EventEmitter {
   constructor (el) {
@@ -14,8 +14,9 @@ class Toolbar extends EventEmitter {
   }
 
   setState (newState) {
+    let oldState = util.shallowCopy(this.state)
     this.state = Object.assign(this.state, newState)
-    this.update()
+    this.update(oldState)
     this.render()
   }
 
@@ -32,6 +33,7 @@ class Toolbar extends EventEmitter {
     let selection = event.target.id.replace(/^toolbar-/, '')
 
     switch (selection) {
+      // board operations
       case 'add':
         this.emit('add')
         break
@@ -64,11 +66,34 @@ class Toolbar extends EventEmitter {
       case 'eraser':
         this.setState({ brush: 'eraser' })
         break
+
+      // other operations
+      case 'trash':
+        this.emit('trash')
+        break
+      case 'fill':
+        this.emit('fill')
+        break
+      case 'move':
+        this.emit('move')
+        break
+      case 'scale':
+        this.emit('scale')
+        break
+
+      // undo/redo
       case 'undo':
         this.emit('undo')
         break
       case 'redo':
         this.emit('redo')
+        break
+
+      case 'move':
+        this.emit('move')
+        break
+      case 'scale':
+        this.emit('scale')
         break
 
       default:
@@ -77,23 +102,25 @@ class Toolbar extends EventEmitter {
     }
   }
 
-  update () {
-    switch (this.state.brush) {
-      case 'light-pencil':
-        sketchPane.setBrush(2,[200,220,255],5,50,'main')
-        break
-      case 'pencil':
-        sketchPane.setBrush(1.5,[30,30,30],5,70,'main')
-        break
-      case 'pen':
-        sketchPane.setBrush(3,[0,0,0],60,80,'main')
-        break
-      case 'brush':
-        sketchPane.setBrush(20,[0,0,100],2,10,'main')
-        break
-      case 'eraser':
-        sketchPane.setEraser()
-        break
+  update (oldState) {
+    if (oldState.brush !== this.state.brush) {
+      switch (this.state.brush) {
+        case 'light-pencil':
+          this.emit('light-pencil')
+          break
+        case 'pencil':
+          this.emit('pencil')
+          break
+        case 'pen':
+          this.emit('pen')
+          break
+        case 'brush':
+          this.emit('brush')
+          break
+        case 'eraser':
+          this.emit('eraser')
+          break
+      }
     }
   }
 

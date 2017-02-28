@@ -281,6 +281,35 @@ let loadBoardUI = ()=> {
   toolbar.on('print', () => {
     alert('Print. This feature is not ready yet :(')
   })
+  
+  toolbar.on('light-pencil', () => {
+    sketchPane.setBrush(2,[200,220,255],5,50,'main')
+  })
+  toolbar.on('pencil', () => {
+    sketchPane.setBrush(1.5,[30,30,30],5,70,'main')
+  })
+  toolbar.on('pen', () => {
+    sketchPane.setBrush(3,[0,0,0],60,80,'main')
+  })
+  toolbar.on('brush', () => {
+    sketchPane.setBrush(20,[0,0,100],2,10,'main')
+  })
+  toolbar.on('eraser', () => {
+    sketchPane.setEraser()
+  })
+
+  toolbar.on('trash', () => {
+    alert('Trash. This feature is not ready yet :(')
+  })
+  toolbar.on('fill', () => {
+    alert('Fill. This feature is not ready yet :(')
+  })
+  toolbar.on('move', () => {
+    alert('Move. This feature is not ready yet :(')
+  })
+  toolbar.on('scale', () => {
+    alert('Scale. This feature is not ready yet :(')
+  })
 
   toolbar.on('undo', () => {
     undoStack.undo()
