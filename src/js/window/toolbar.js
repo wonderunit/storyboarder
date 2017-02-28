@@ -7,7 +7,8 @@ class Toolbar extends EventEmitter {
     this.state = {}
     this.el = el
     this.setState({
-      brush: 'light-pencil'
+      brush: 'light-pencil',
+      transformMode: null
     })
     this.onButtonSelect = this.onButtonSelect.bind(this)
     this.attachedCallback(this.el)
@@ -67,18 +68,22 @@ class Toolbar extends EventEmitter {
         this.setState({ brush: 'eraser' })
         break
 
-      // other operations
       case 'trash':
         this.emit('trash')
         break
       case 'fill':
         this.emit('fill')
         break
+
       case 'move':
-        this.emit('move')
+        this.state.transformMode == 'move'
+          ? this.emit('cancelTransform')
+          : this.emit('move')
         break
       case 'scale':
-        this.emit('scale')
+        this.state.transformMode == 'scale'
+          ? this.emit('cancelTransform')
+          : this.emit('scale')
         break
 
       // undo/redo
@@ -161,6 +166,23 @@ class Toolbar extends EventEmitter {
       } else {
         brushEl.classList.remove('active')
       }
+    }
+
+    let btnMove = this.el.querySelector('#toolbar-move')
+    let btnScale = this.el.querySelector('#toolbar-scale')
+    switch (this.state.transformMode) {
+      case 'move':
+        btnMove.classList.add('active')
+        btnScale.classList.remove('active')
+        break
+      case 'scale':
+        btnScale.classList.add('active')
+        btnMove.classList.remove('active')
+        break
+      default:
+        btnScale.classList.remove('active')
+        btnMove.classList.remove('active')
+        break
     }
   }
 }

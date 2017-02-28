@@ -304,12 +304,31 @@ let loadBoardUI = ()=> {
   toolbar.on('fill', () => {
     sketchPane.fillBlack()
   })
+
+
   toolbar.on('move', () => {
-    alert('Move. This feature is not ready yet :(')
+    sketchPane.moveContents()
   })
   toolbar.on('scale', () => {
-    alert('Scale. This feature is not ready yet :(')
+    sketchPane.scaleContents()
   })
+  toolbar.on('cancelTransform', () => {
+    sketchPane.cancelTransform()
+  })
+  sketchPane.on('moveMode', enabled => {
+    if (enabled) {
+      toolbar.setState({ transformMode: 'move' })
+    }
+  })
+  sketchPane.on('scaleMode', enabled => {
+    if (enabled) {
+      toolbar.setState({ transformMode: 'scale' })
+    }
+  })
+  sketchPane.on('cancelTransform', () => {
+    toolbar.setState({ transformMode: null })
+  })
+
 
   toolbar.on('undo', () => {
     undoStack.undo()

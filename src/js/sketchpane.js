@@ -580,6 +580,7 @@ let setEraser = ()=> {
   eraserMode = true
   moveMode = false
   scaleMode = false
+  module.exports.emit('cancelTransform')
 }
 
 let clear = ()=> {
@@ -601,12 +602,23 @@ let fillBlack = ()=> {
 let moveContents = ()=> {
   moveMode = true
   scaleMode = false
+  module.exports.emit('scaleMode', scaleMode)
+  module.exports.emit('moveMode', moveMode)
 }
 
 let scaleContents = ()=> {
   scaleMode = true
   moveMode = false
+  module.exports.emit('moveMode', moveMode)
+  module.exports.emit('scaleMode', scaleMode)
 }
+
+const cancelTransform = () => {
+  moveMode = false
+  scaleMode = false
+  module.exports.emit('cancelTransform')
+}
+
 
 let addToUndoStack = ()=> {
   // createImageBitmap(boardContext.canvas).then((val)=> {
@@ -638,3 +650,4 @@ module.exports.clear = clear
 module.exports.fillBlack = fillBlack
 module.exports.moveContents = moveContents
 module.exports.scaleContents = scaleContents
+module.exports.cancelTransform = cancelTransform
