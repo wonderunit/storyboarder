@@ -879,7 +879,7 @@ let renderThumbnailDrawer = ()=> {
   let thumbnails = document.querySelectorAll('.thumbnail')
   for (var thumb of thumbnails) {
     thumb.addEventListener('pointerenter', (e) => {
-      if (e.target.dataset.thumbnail == currentBoard) {
+      if (selections.size <= 1 && e.target.dataset.thumbnail == currentBoard) {
         contextMenu.attachTo(e.target)
       }
     })
@@ -889,13 +889,13 @@ let renderThumbnailDrawer = ()=> {
       }
     })
     thumb.addEventListener('pointermove', (e) => {
-      if (e.target.dataset.thumbnail == currentBoard) {
+      if (selections.size <= 1 && e.target.dataset.thumbnail == currentBoard) {
         contextMenu.attachTo(e.target)
       }
     })
     thumb.addEventListener('pointerdown', (e)=>{
       console.log("DOWN")
-      contextMenu.attachTo(e.target)
+      if (selections.size <= 1) contextMenu.attachTo(e.target)
 
       // always track cursor position
       updateThumbnailCursor(e.clientX, e.clientY)
