@@ -866,14 +866,21 @@ let renderThumbnailDrawer = ()=> {
     contextMenu.on('duplicate', () => {
       duplicateBoard()
     })
-
-    // add some generic listeners to help in debugging
-    let eventNames = ["copy", "paste", "import", "reorder-left", "reorder-right"]
-    for (let eventName of eventNames) {
-      contextMenu.on(eventName, () => {
-        console.log('ContextMenu says:', eventName)
-      })
-    }
+    contextMenu.on('copy', () => {
+      copyBoards()
+    })
+    contextMenu.on('paste', () => {
+      pasteBoards()
+    })
+    contextMenu.on('import', () => {
+      alert('Import. Coming Soon!')
+    })
+    contextMenu.on('reorder-left', () => {
+      alert('Re-order Left. Coming Soon!')
+    })
+    contextMenu.on('reorder-right', () => {
+      alert('Re-order Right. Coming Soon!')
+    })
   }
 
   let thumbnails = document.querySelectorAll('.thumbnail')
