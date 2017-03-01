@@ -1,3 +1,10 @@
+.context-menu-container {
+  position: absolute;
+  z-index: 999;
+  
+  pointer-events: none; 
+}
+
 #context-menu {
   position: relative;
   background: rgba(20,20,20,1);
@@ -8,15 +15,12 @@
   
   transform-origin: 50% 100%;
 
-    animation-delay: 1s;
     opacity: 0;
   animation-duration: 0.25s;
   animation-timing-function: ease-out;
   animation-iteration-count: 1;
   animation-fill-mode: forwards;
   float: left;
-  margin-right: 20px;
-  z-index: 999;
 }
 
 
@@ -123,6 +127,7 @@
 
 .appear-anim {
   animation-name: appear;
+  pointer-events: auto;
 }
 
 

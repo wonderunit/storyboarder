@@ -14,6 +14,7 @@ const undoStack = require('../undo-stack.js')
 
 const Toolbar = require('./toolbar.js')
 const tooltips = require('./tooltips.js')
+const ContextMenu = require('./context-menu.js')
 
 let boardFilename
 let boardPath
@@ -54,6 +55,7 @@ let thumbnailCursor = {
 let lastPointer = { x: null, y: null }
 
 let toolbar
+let contextMenu
 
 menu.setMenu()
 
@@ -846,10 +848,61 @@ let renderThumbnailDrawer = ()=> {
 
   renderThumbnailDrawerSelections()
 
+  if (!contextMenu) {
+    contextMenu = new ContextMenu()
+    // internal
+    contextMenu.on('pointerleave', () => {
+      contextMenu.remove()
+    })
+
+    // external
+    contextMenu.on('add', () => {
+      newBoard()
+      gotoBoard(currentBoard+1)
+    })
+    contextMenu.on('delete', () => {
+      deleteBoards()
+    })
+    contextMenu.on('duplicate', () => {
+      duplicateBoard()
+    })
+    contextMenu.on('copy', () => {
+      copyBoards()
+    })
+    contextMenu.on('paste', () => {
+      pasteBoards()
+    })
+    contextMenu.on('import', () => {
+      alert('Import. Coming Soon!')
+    })
+    contextMenu.on('reorder-left', () => {
+      alert('Re-order Left. Coming Soon!')
+    })
+    contextMenu.on('reorder-right', () => {
+      alert('Re-order Right. Coming Soon!')
+    })
+  }
+
   let thumbnails = document.querySelectorAll('.thumbnail')
   for (var thumb of thumbnails) {
+    thumb.addEventListener('pointerenter', (e) => {
+      if (!isEditMode && selections.size <= 1 && e.target.dataset.thumbnail == currentBoard) {
+        contextMenu.attachTo(e.target)
+      }
+    })
+    thumb.addEventListener('pointerleave', (e) => {
+      if (!contextMenu.hasChild(e.relatedTarget)) {
+        contextMenu.remove()
+      }
+    })
+    thumb.addEventListener('pointermove', (e) => {
+      if (!isEditMode && selections.size <= 1 && e.target.dataset.thumbnail == currentBoard) {
+        contextMenu.attachTo(e.target)
+      }
+    })
     thumb.addEventListener('pointerdown', (e)=>{
       console.log("DOWN")
+      if (!isEditMode && selections.size <= 1) contextMenu.attachTo(e.target)
 
       // always track cursor position
       updateThumbnailCursor(e.clientX, e.clientY)
@@ -1305,6 +1358,8 @@ window.onkeydown = (e)=> {
         break
     }
   }
+
+  contextMenu && contextMenu.remove()
 }
 
 let disableDragMode = () => {
@@ -1695,6 +1750,7 @@ let enableEditMode = () => {
     thumbnailCursor.visible = true
     renderThumbnailCursor()
     renderThumbnailDrawerSelections()
+    contextMenu.remove()
   }
 }
 
