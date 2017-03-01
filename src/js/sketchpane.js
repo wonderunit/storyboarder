@@ -225,7 +225,8 @@ let pointerDown = (e) => {
 }
 
 let drawBrushLoop = (timestamp)=> {
-  if (penDown) window.requestAnimationFrame(drawBrushLoop)
+  if (!penDown) return;
+  window.requestAnimationFrame(drawBrushLoop)
   //console.log(prevTimestamp-timestamp)
   prevTimestamp = timestamp
   drawBrush()
