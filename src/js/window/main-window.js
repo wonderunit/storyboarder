@@ -850,6 +850,9 @@ let renderThumbnailDrawer = ()=> {
 
   if (!contextMenu) {
     contextMenu = new ContextMenu()
+    contextMenu.on('pointerleave', () => {
+      contextMenu.remove()
+    })
 
     // add some generic listeners to help in debugging
     let eventNames = ["add", "duplicate", "copy", "paste", "import", "delete", "reorder-left", "reorder-right"]
@@ -862,12 +865,17 @@ let renderThumbnailDrawer = ()=> {
 
   let thumbnails = document.querySelectorAll('.thumbnail')
   for (var thumb of thumbnails) {
+    thumb.addEventListener('pointerenter', (e) => {
+      contextMenu.attachTo(e.target)
+    })
+    thumb.addEventListener('pointerleave', (e) => {
+      if (!contextMenu.hasChild(e.relatedTarget)) {
+        contextMenu.remove()
+      }
+    })
     thumb.addEventListener('pointerdown', (e)=>{
       console.log("DOWN")
-
-      if (contextMenu) {
-        contextMenu.attachTo(e.target)
-      }
+      contextMenu.remove()
 
       // always track cursor position
       updateThumbnailCursor(e.clientX, e.clientY)
@@ -1323,6 +1331,8 @@ window.onkeydown = (e)=> {
         break
     }
   }
+
+  contextMenu && contextMenu.remove()
 }
 
 let disableDragMode = () => {

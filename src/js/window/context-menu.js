@@ -2,6 +2,16 @@ const EventEmitter = require('events').EventEmitter
 const Tether = require('tether')
 
 class ContextMenu extends EventEmitter {
+  constructor () {
+    super()
+    this.timer = null
+    this.delay = 1000
+    
+    this.el = null
+    this.innerEl = null
+    this.create()
+  }
+
   template () {
     return `<div class="context-menu-container">
       <div id="context-menu" class="bottom-nub">
@@ -22,34 +32,59 @@ class ContextMenu extends EventEmitter {
   create () {
     let t = document.createElement('template')
     t.innerHTML = this.template()
+
     this.el = t.content.firstChild
     document.getElementById('storyboarder-main').appendChild(this.el)
+
     this.el.addEventListener('pointerdown', this.onPointerDown.bind(this))
+    this.el.addEventListener('pointerleave', this.onPointerLeave.bind(this))
+    
+    this.innerEl = this.el.querySelector('#context-menu')
   }
   
   onPointerDown (event) {
     this.emit(event.target.dataset.action)
   }
+  
+  onPointerLeave (event) {
+    this.emit('pointerleave')
+  }
+
+  onTimeout () {
+    this.fadeIn()
+  }
+  
+  fadeIn () {
+    this.innerEl.classList.add('appear-anim')
+  }
+
+  fadeOut () {
+    this.innerEl.classList.remove('appear-anim')
+  }
+  
+  hasChild (child) {
+    return this.el.contains(child)
+  }
 
   attachTo (target) {
+    clearTimeout(this.timer)
+
     if (this.tethered) this.remove()
-    if (!this.el) this.create()
 
     this.tethered = new Tether({
       element: this.el,
       target: target,
       attachment: 'bottom center',
-      targetAttachment: 'top center',
-      offset: '15px 0'
+      targetAttachment: 'top center'
     })
 
-    // re-play animation
-    this.el.querySelector('#context-menu').classList.add('appear-anim')
+    this.timer = setTimeout(this.onTimeout.bind(this), this.delay)
   }
   
   remove () {
-    this.el && this.el.querySelector('#context-menu').classList.remove('appear-anim')
-    this.tethered.destroy()
+    clearTimeout(this.timer)
+    this.fadeOut()
+    this.tethered && this.tethered.destroy()
   }
 }
 

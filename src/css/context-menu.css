@@ -1,5 +1,8 @@
 .context-menu-container {
+  position: absolute;
   z-index: 999;
+  
+  pointer-events: none; 
 }
 
 #context-menu {
@@ -12,7 +15,6 @@
   
   transform-origin: 50% 100%;
 
-    animation-delay: 1s;
     opacity: 0;
   animation-duration: 0.25s;
   animation-timing-function: ease-out;
@@ -125,6 +127,7 @@
 
 .appear-anim {
   animation-name: appear;
+  pointer-events: auto;
 }
 
 
