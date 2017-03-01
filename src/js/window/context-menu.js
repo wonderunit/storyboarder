@@ -6,7 +6,9 @@ class ContextMenu extends EventEmitter {
     super()
     this.timer = null
     this.delay = 1000
-    
+
+    this.target = null
+
     this.el = null
     this.innerEl = null
     this.create()
