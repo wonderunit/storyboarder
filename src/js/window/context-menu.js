@@ -68,21 +68,25 @@ class ContextMenu extends EventEmitter {
   }
 
   attachTo (target) {
-    clearTimeout(this.timer)
+    if (this.target !== target) {
+      clearTimeout(this.timer)
 
-    if (this.tethered) this.remove()
+      if (this.tethered) this.remove()
 
-    this.tethered = new Tether({
-      element: this.el,
-      target: target,
-      attachment: 'bottom center',
-      targetAttachment: 'top center'
-    })
+      this.target = target
+      this.tethered = new Tether({
+        element: this.el,
+        target: this.target,
+        attachment: 'bottom center',
+        targetAttachment: 'top center'
+      })
 
-    this.timer = setTimeout(this.onTimeout.bind(this), this.delay)
+      this.timer = setTimeout(this.onTimeout.bind(this), this.delay)
+    }
   }
   
   remove () {
+    this.target = null
     clearTimeout(this.timer)
     this.fadeOut()
     this.tethered && this.tethered.destroy()
