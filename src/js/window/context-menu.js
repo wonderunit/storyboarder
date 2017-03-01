@@ -44,6 +44,7 @@ class ContextMenu extends EventEmitter {
   
   onPointerDown (event) {
     this.emit(event.target.dataset.action)
+    this.remove()
   }
   
   onPointerLeave (event) {
