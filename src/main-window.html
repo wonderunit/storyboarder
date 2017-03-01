@@ -18,18 +18,30 @@
           <div id="toolbar-add" class="button" data-tooltip
             data-tooltip-title="New Board"
             data-tooltip-description="New Board"
-            data-tooltip-keys="n"
+            data-tooltip-keys="N"
             data-tooltip-position="bottom left"
           >
             <svg class="icon"><use xlink:href="./img/symbol-defs.svg#icon-add"></use></svg>
           </div>
-          <div id="toolbar-delete" class="button">
+          <div id="toolbar-delete" class="button" data-tooltip
+            data-tooltip-title="Delete Board"
+            data-tooltip-description=""
+            data-tooltip-keys="CmdOrCtrl+Backspace"
+            data-tooltip-position="bottom center">
             <svg class="icon"><use xlink:href="./img/symbol-defs.svg#icon-delete"></use></svg>
           </div>
-          <div id="toolbar-duplicate" class="button">
+          <div id="toolbar-duplicate" class="button" data-tooltip
+            data-tooltip-title="Duplicate Board"
+            data-tooltip-description=""
+            data-tooltip-keys="D"
+            data-tooltip-position="bottom center">
             <svg class="icon"><use xlink:href="./img/symbol-defs.svg#icon-duplicate"></use></svg>
           </div>
-          <div id="toolbar-import" class="button">
+          <div id="toolbar-import" class="button" data-tooltip
+            data-tooltip-title="Import"
+            data-tooltip-description=""
+            data-tooltip-keys="CmdOrCtrl+I"
+            data-tooltip-position="bottom center">
             <svg class="icon"><use xlink:href="./img/symbol-defs.svg#icon-import"></use></svg>
           </div>
           <div id="toolbar-print" class="button" data-tooltip
@@ -42,80 +54,168 @@
           </div>
         </div>
         <div class="group">
-          <div id="toolbar-light-pencil" data-group="brushes" class="button">
+          <div id="toolbar-light-pencil" data-group="brushes" class="button" data-tooltip
+            data-tooltip-title="Light Pencil"
+            data-tooltip-description=""
+            data-tooltip-keys="1"
+            data-tooltip-position="bottom center">
             <svg class="icon"><use xlink:href="./img/symbol-defs.svg#icon-lightpencil"></use></svg>
           </div>
-          <div id="toolbar-pencil" data-group="brushes" class="button">
+          <div id="toolbar-pencil" data-group="brushes" class="button" data-tooltip
+            data-tooltip-title="Pencil"
+            data-tooltip-description=""
+            data-tooltip-keys="2"
+            data-tooltip-position="bottom center">
             <svg class="icon"><use xlink:href="./img/symbol-defs.svg#icon-pencil"></use></svg>
           </div>
-          <div id="toolbar-pen" data-group="brushes" class="button">
+          <div id="toolbar-pen" data-group="brushes" class="button" data-tooltip
+            data-tooltip-title="Pen"
+            data-tooltip-description=""
+            data-tooltip-keys="3"
+            data-tooltip-position="bottom center">
             <svg class="icon"><use xlink:href="./img/symbol-defs.svg#icon-pen"></use></svg>
           </div>
-          <div id="toolbar-brush" data-group="brushes" class="button">
+          <div id="toolbar-brush" data-group="brushes" class="button" data-tooltip
+            data-tooltip-title="Brush"
+            data-tooltip-description=""
+            data-tooltip-keys="4"
+            data-tooltip-position="bottom center">
             <svg class="icon"><use xlink:href="./img/symbol-defs.svg#icon-brush"></use></svg>
           </div>
-          <div id="toolbar-eraser" data-group="brushes" class="button">
+          <div id="toolbar-eraser" data-group="brushes" class="button" data-tooltip
+            data-tooltip-title="Eraser"
+            data-tooltip-description=""
+            data-tooltip-keys="5"
+            data-tooltip-position="bottom center">
             <svg class="icon"><use xlink:href="./img/symbol-defs.svg#icon-eraser"></use></svg>
           </div>
         </div>
         <div class="group">
-          <div id="toolbar-trash" class="button">
+          <div id="toolbar-trash" class="button" data-tooltip
+            data-tooltip-title="Clear Canvas"
+            data-tooltip-description=""
+            data-tooltip-keys="Backspace"
+            data-tooltip-position="bottom center">
             <svg class="icon"><use xlink:href="./img/symbol-defs.svg#icon-trash"></use></svg>
           </div>
-          <div id="toolbar-fill" class="button">
+          <div id="toolbar-fill" class="button" data-tooltip
+            data-tooltip-title="Fill"
+            data-tooltip-description=""
+            data-tooltip-keys=""
+            data-tooltip-position="bottom center">
             <svg class="icon"><use xlink:href="./img/symbol-defs.svg#icon-fill"></use></svg>
           </div>
-          <div id="toolbar-move" class="button">
+          <div id="toolbar-move" class="button" data-tooltip
+            data-tooltip-title="Move Mode"
+            data-tooltip-description=""
+            data-tooltip-keys=""
+            data-tooltip-position="bottom center">
             <svg class="icon"><use xlink:href="./img/symbol-defs.svg#icon-move"></use></svg>
           </div>
-          <div id="toolbar-scale" class="button">
+          <div id="toolbar-scale" class="button" data-tooltip
+            data-tooltip-title="Scale Mode"
+            data-tooltip-description=""
+            data-tooltip-keys=""
+            data-tooltip-position="bottom center">
             <svg class="icon"><use xlink:href="./img/symbol-defs.svg#icon-scale"></use></svg>
           </div>
         </div>
         <div class="group">
-          <div id="toolbar-undo" class="button">
+          <div id="toolbar-undo" class="button" data-tooltip
+            data-tooltip-title="Undo"
+            data-tooltip-description=""
+            data-tooltip-keys="CmdOrCtrl+Z"
+            data-tooltip-position="bottom center">
             <svg class="icon"><use xlink:href="./img/symbol-defs.svg#icon-undo"></use></svg>
           </div>
-          <div id="toolbar-redo" class="button">
+          <div id="toolbar-redo" class="button" data-tooltip
+            data-tooltip-title="Redo"
+            data-tooltip-description=""
+            data-tooltip-keys="Shift+CmdOrCtrl+Z"
+            data-tooltip-position="bottom center">
             <svg class="icon"><use xlink:href="./img/symbol-defs.svg#icon-redo"></use></svg>
           </div>
         </div>
         <div class="group">
-          <div id="toolbar-current-color" class="button">
+          <div id="toolbar-current-color" class="button" data-tooltip
+            data-tooltip-title="Current Color"
+            data-tooltip-description=""
+            data-tooltip-keys=""
+            data-tooltip-position="bottom center">
             <svg class="icon"><use xlink:href="./img/symbol-defs.svg#icon-color"></use></svg>
           </div>
-          <div id="toolbar-palette-colorA" class="button">
+          <div id="toolbar-palette-colorA" class="button" data-tooltip
+            data-tooltip-title="Color 1"
+            data-tooltip-description=""
+            data-tooltip-keys=""
+            data-tooltip-position="bottom center">
             <svg class="icon"><use xlink:href="./img/symbol-defs.svg#icon-color"></use></svg>
           </div>
-          <div id="toolbar-palette-colorB" class="button">
+          <div id="toolbar-palette-colorB" class="button" data-tooltip
+            data-tooltip-title="Color 2"
+            data-tooltip-description=""
+            data-tooltip-keys=""
+            data-tooltip-position="bottom center">
             <svg class="icon"><use xlink:href="./img/symbol-defs.svg#icon-color"></use></svg>
           </div>
-          <div id="toolbar-palette-colorC" class="button">
+          <div id="toolbar-palette-colorC" class="button" data-tooltip
+            data-tooltip-title="Color 3"
+            data-tooltip-description=""
+            data-tooltip-keys=""
+            data-tooltip-position="bottom center">
             <svg class="icon"><use xlink:href="./img/symbol-defs.svg#icon-color"></use></svg>
           </div>
         </div>
         <div class="group">
-          <div id="toolbar-brush-size" class="button">
+          <div id="toolbar-brush-size" class="button" data-tooltip
+            data-tooltip-title="Brush Size"
+            data-tooltip-description=""
+            data-tooltip-keys=""
+            data-tooltip-position="bottom center">
             <svg class="icon"><use xlink:href="./img/symbol-defs.svg#icon-brushsize"></use></svg>
           </div>
         </div>
         <div class="group">
-          <div id="toolbar-grid" class="button">
+          <div id="toolbar-grid" class="button" data-tooltip
+            data-tooltip-title="Grid"
+            data-tooltip-description=""
+            data-tooltip-keys=""
+            data-tooltip-position="bottom center">
             <svg class="icon"><use xlink:href="./img/symbol-defs.svg#icon-grid"></use></svg>
           </div>
-          <div id="toolbar-center" class="button">
+          <div id="toolbar-center" class="button" data-tooltip
+            data-tooltip-title="Center"
+            data-tooltip-description=""
+            data-tooltip-keys=""
+            data-tooltip-position="bottom center">
             <svg class="icon"><use xlink:href="./img/symbol-defs.svg#icon-center"></use></svg>
           </div>
-          <div id="toolbar-thirds" class="button">
+          <div id="toolbar-thirds" class="button" data-tooltip
+            data-tooltip-title="Thirds"
+            data-tooltip-description=""
+            data-tooltip-keys=""
+            data-tooltip-position="bottom center">
             <svg class="icon"><use xlink:href="./img/symbol-defs.svg#icon-thirds"></use></svg>
           </div>
-          <div id="toolbar-perspective" class="button">
+          <div id="toolbar-perspective" class="button" data-tooltip
+            data-tooltip-title="Perspective Grid"
+            data-tooltip-description=""
+            data-tooltip-keys=""
+            data-tooltip-position="bottom center">
             <svg class="icon"><use xlink:href="./img/symbol-defs.svg#icon-perspective"></use></svg>
           </div>
-          <div id="toolbar-onion" class="button">
+          <div id="toolbar-onion" class="button" data-tooltip
+            data-tooltip-title="Onion Skin"
+            data-tooltip-description=""
+            data-tooltip-keys=""
+            data-tooltip-position="bottom center">
             <svg class="icon"><use xlink:href="./img/symbol-defs.svg#icon-onion"></use></svg>
           </div>
-          <div id="toolbar-caption" class="button">
+          <div id="toolbar-caption" class="button" data-tooltip
+            data-tooltip-title="Captions"
+            data-tooltip-description=""
+            data-tooltip-keys=""
+            data-tooltip-position="bottom center">
             <svg class="icon"><use xlink:href="./img/symbol-defs.svg#icon-caption"></use></svg>
           </div>
         </div>

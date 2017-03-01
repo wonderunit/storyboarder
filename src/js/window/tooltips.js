@@ -32,13 +32,12 @@ const acceleratorAsHtml = (accelerator) =>
     })
     .join('+')
 
-const content = (title, description, keys) => `
-<div class="title">${title}</div>
-<div class="description">${description}</div>
-<div class="key-command">
-  ${acceleratorAsHtml(keys)}
-</div>
-`
+const content = (title, description, keys) =>
+  `<div class="title">${title}</div>` +
+   `<div class="description">${description}</div>` +
+   (keys 
+     ? `<div class="key-command">${acceleratorAsHtml(keys)}</div>`
+     : '')
 
 const init = () => {
   const tooltipElements = document.querySelectorAll('[data-tooltip]')
