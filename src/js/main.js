@@ -326,6 +326,7 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
   //
   //
 
+
   mainWindow.once('close', () => {
     if (welcomeWindow) {
       welcomeWindow.webContents.send('updateRecentDocuments')
