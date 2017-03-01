@@ -879,7 +879,7 @@ let renderThumbnailDrawer = ()=> {
   let thumbnails = document.querySelectorAll('.thumbnail')
   for (var thumb of thumbnails) {
     thumb.addEventListener('pointerenter', (e) => {
-      if (selections.size <= 1 && e.target.dataset.thumbnail == currentBoard) {
+      if (!isEditMode && selections.size <= 1 && e.target.dataset.thumbnail == currentBoard) {
         contextMenu.attachTo(e.target)
       }
     })
@@ -889,13 +889,13 @@ let renderThumbnailDrawer = ()=> {
       }
     })
     thumb.addEventListener('pointermove', (e) => {
-      if (selections.size <= 1 && e.target.dataset.thumbnail == currentBoard) {
+      if (!isEditMode && selections.size <= 1 && e.target.dataset.thumbnail == currentBoard) {
         contextMenu.attachTo(e.target)
       }
     })
     thumb.addEventListener('pointerdown', (e)=>{
       console.log("DOWN")
-      if (selections.size <= 1) contextMenu.attachTo(e.target)
+      if (!isEditMode && selections.size <= 1) contextMenu.attachTo(e.target)
 
       // always track cursor position
       updateThumbnailCursor(e.clientX, e.clientY)
@@ -1743,6 +1743,7 @@ let enableEditMode = () => {
     thumbnailCursor.visible = true
     renderThumbnailCursor()
     renderThumbnailDrawerSelections()
+    contextMenu.remove()
   }
 }
 
