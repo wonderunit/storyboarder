@@ -164,6 +164,7 @@ body {
   flex: 1;
   display: flex;
   flex-direction: row;
+  height: 100px;
 }
 
 #thumbnail-container {
@@ -604,3 +605,28 @@ div.marker-holder {
 #playback svg:hover {
   fill: rgba(255,255,255,0.8);
 }
+
+
+@media only screen and (max-width: 1500px) {
+
+  #scenes {
+    min-width: 100px;
+    max-width: 100px;
+  }
+
+  #script {
+    min-width: 100px;
+    max-width: 100px;
+  }
+
+  #board-metadata {
+    width: 150px;
+  }
+
+  #toolbar .button {
+    padding: 5px;
+  }
+}
+
+
+

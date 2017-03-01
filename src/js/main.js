@@ -4,7 +4,7 @@
 
 const {app, ipcMain, BrowserWindow, globalShortcut, dialog, powerSaveBlocker} = electron = require('electron')
 
-const PDFParser = require("pdf2json");
+const PDFParser = require("pdf2json")
 const fs = require('fs')
 const path = require('path')
 
@@ -43,7 +43,7 @@ app.on('activate', ()=> {
 
 let openNewWindow = () => {
   if (!newWindow) {
-    newWindow = new BrowserWindow({width: 600, height: 580, show: false, parent: welcomeWindow, resizable: false, frame: false, modal: true})
+    newWindow = new BrowserWindow({width: 600, height: 580, show: false, center: true, parent: welcomeWindow, resizable: false, frame: false, modal: true})
     newWindow.loadURL(`file://${__dirname}/../new.html`)
     newWindow.once('ready-to-show', () => {
       newWindow.show()
@@ -57,7 +57,7 @@ let openWelcomeWindow = ()=> {
   // console.log(prefs)
   // prefs = {scriptFile: `./outl3ine.txt`}
   // prefModule.savePrefs(prefs)
-  welcomeWindow = new BrowserWindow({width: 900, height: 600, show: false, resizable: false, frame: false})
+  welcomeWindow = new BrowserWindow({width: 900, height: 600, center: true, show: false, resizable: false, frame: false})
   welcomeWindow.loadURL(`file://${__dirname}/../welcome.html`)
 
   newWindow = new BrowserWindow({width: 600, height: 580, show: false, parent: welcomeWindow, resizable: false, frame: false, modal: true})
@@ -304,10 +304,9 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
   if (newWindow) {
     newWindow.hide()
   }
-  mainWindow = new BrowserWindow({acceptFirstMouse: true, backgroundColor: '#333333', width: 2480, height: 1350, minWidth: 1500, minHeight: 1080+29, show: false, resizable: true, titleBarStyle: 'hidden-inset', webPreferences: {webgl: true, experimentalFeatures: true, experimentalCanvasFeatures: true, devTools: true} })
+  mainWindow = new BrowserWindow({acceptFirstMouse: true, backgroundColor: '#333333', width: 2480, height: 1350, minWidth: 1024, minHeight: 640, show: false, resizable: true, titleBarStyle: 'hidden-inset', webPreferences: {webgl: true, experimentalFeatures: true, experimentalCanvasFeatures: true, devTools: true} })
   mainWindow.loadURL(`file://${__dirname}/../main-window.html`)
 
-<<<<<<< Updated upstream
   //
   //
   // set to `true` to attempt debugging
@@ -326,19 +325,6 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
   //
   //
   //
-
-=======
-  mainWindow.show()
-  
-  setTimeout(()=>{
-    mainWindow.webContents.send('load', [filename, scriptData, locations, characters, boardSettings, currentPath])
-
-  }, 1000)
-
-  // mainWindow.once('ready-to-show', () => {
-  //   mainWindow.webContents.send('load', [filename, scriptData, locations, characters, boardSettings, currentPath])
-  // })
->>>>>>> Stashed changes
 
   mainWindow.once('close', () => {
     if (welcomeWindow) {

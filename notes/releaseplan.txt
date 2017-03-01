@@ -1,5 +1,8 @@
 NEED CALENDAR
 
+storyboarder page designed
+  click to pop open mailchimp email
+  video tags and autoplay after rollover
 
 finish website to wonder unit
 pay for mailchimp
