@@ -866,16 +866,23 @@ let renderThumbnailDrawer = ()=> {
   let thumbnails = document.querySelectorAll('.thumbnail')
   for (var thumb of thumbnails) {
     thumb.addEventListener('pointerenter', (e) => {
-      contextMenu.attachTo(e.target)
+      if (e.target.dataset.thumbnail == currentBoard) {
+        contextMenu.attachTo(e.target)
+      }
     })
     thumb.addEventListener('pointerleave', (e) => {
       if (!contextMenu.hasChild(e.relatedTarget)) {
         contextMenu.remove()
       }
     })
+    thumb.addEventListener('pointermove', (e) => {
+      if (e.target.dataset.thumbnail == currentBoard) {
+        contextMenu.attachTo(e.target)
+      }
+    })
     thumb.addEventListener('pointerdown', (e)=>{
       console.log("DOWN")
-      contextMenu.remove()
+      contextMenu.attachTo(e.target)
 
       // always track cursor position
       updateThumbnailCursor(e.clientX, e.clientY)
