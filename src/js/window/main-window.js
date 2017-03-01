@@ -850,6 +850,14 @@ let renderThumbnailDrawer = ()=> {
 
   if (!contextMenu) {
     contextMenu = new ContextMenu()
+
+    // add some generic listeners to help in debugging
+    let eventNames = ["add", "duplicate", "copy", "paste", "import", "delete", "reorder-left", "reorder-right"]
+    for (let eventName of eventNames) {
+      contextMenu.on(eventName, () => {
+        console.log('ContextMenu says:', eventName)
+      })
+    }
   }
 
   let thumbnails = document.querySelectorAll('.thumbnail')
