@@ -37,6 +37,7 @@ let boardSize = []
 let penDown
 let pointArray = []
 let lastProcessedPoint = 0
+let shouldStamp = false
 
 const brushCount = 256
 let brushImages = []
@@ -225,7 +226,7 @@ let pointerDown = (e) => {
 }
 
 let drawBrushLoop = (timestamp)=> {
-  if (penDown) window.requestAnimationFrame(drawBrushLoop)
+  if (!shouldStamp) window.requestAnimationFrame(drawBrushLoop)
   //console.log(prevTimestamp-timestamp)
   prevTimestamp = timestamp
   drawBrush()
@@ -351,6 +352,11 @@ let drawBrush = (lastBit)=> {
     }
     lastProcessedPoint = i-2
   }
+
+  if (shouldStamp) {
+    shouldStamp = false
+    stampLayer()
+  }
 }
 
 let drawLine = (context, point1, point2, penattributes1, penattributes2)=> {
@@ -425,7 +431,8 @@ let pointerUp = (e) => {
       } else {
         //pointArray.push(getPointerData(e))
         //drawBrush(true)
-        stampLayer()
+        // stampLayer()
+        shouldStamp = true
       }
     }
     module.exports.emit('markDirty')
