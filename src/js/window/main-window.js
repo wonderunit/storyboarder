@@ -850,12 +850,25 @@ let renderThumbnailDrawer = ()=> {
 
   if (!contextMenu) {
     contextMenu = new ContextMenu()
+    // internal
     contextMenu.on('pointerleave', () => {
       contextMenu.remove()
     })
 
+    // external
+    contextMenu.on('add', () => {
+      newBoard()
+      gotoBoard(currentBoard+1)
+    })
+    contextMenu.on('delete', () => {
+      deleteBoards()
+    })
+    contextMenu.on('duplicate', () => {
+      duplicateBoard()
+    })
+
     // add some generic listeners to help in debugging
-    let eventNames = ["add", "duplicate", "copy", "paste", "import", "delete", "reorder-left", "reorder-right"]
+    let eventNames = ["copy", "paste", "import", "reorder-left", "reorder-right"]
     for (let eventName of eventNames) {
       contextMenu.on(eventName, () => {
         console.log('ContextMenu says:', eventName)
