@@ -1,3 +1,7 @@
+.context-menu-container {
+  z-index: 999;
+}
+
 #context-menu {
   position: relative;
   background: rgba(20,20,20,1);
@@ -15,8 +19,6 @@
   animation-iteration-count: 1;
   animation-fill-mode: forwards;
   float: left;
-  margin-right: 20px;
-  z-index: 999;
 }
 
 

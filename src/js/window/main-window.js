@@ -14,6 +14,7 @@ const undoStack = require('../undo-stack.js')
 
 const Toolbar = require('./toolbar.js')
 const tooltips = require('./tooltips.js')
+const ContextMenu = require('./context-menu.js')
 
 let boardFilename
 let boardPath
@@ -54,6 +55,7 @@ let thumbnailCursor = {
 let lastPointer = { x: null, y: null }
 
 let toolbar
+let contextMenu
 
 menu.setMenu()
 
@@ -846,10 +848,18 @@ let renderThumbnailDrawer = ()=> {
 
   renderThumbnailDrawerSelections()
 
+  if (!contextMenu) {
+    contextMenu = new ContextMenu()
+  }
+
   let thumbnails = document.querySelectorAll('.thumbnail')
   for (var thumb of thumbnails) {
     thumb.addEventListener('pointerdown', (e)=>{
       console.log("DOWN")
+
+      if (contextMenu) {
+        contextMenu.attachTo(e.target)
+      }
 
       // always track cursor position
       updateThumbnailCursor(e.clientX, e.clientY)
