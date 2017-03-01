@@ -307,6 +307,7 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
   mainWindow = new BrowserWindow({acceptFirstMouse: true, backgroundColor: '#333333', width: 2480, height: 1350, minWidth: 1500, minHeight: 1080+29, show: false, resizable: true, titleBarStyle: 'hidden-inset', webPreferences: {webgl: true, experimentalFeatures: true, experimentalCanvasFeatures: true, devTools: true} })
   mainWindow.loadURL(`file://${__dirname}/../main-window.html`)
 
+<<<<<<< Updated upstream
   //
   //
   // set to `true` to attempt debugging
@@ -325,6 +326,19 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
   //
   //
   //
+
+=======
+  mainWindow.show()
+  
+  setTimeout(()=>{
+    mainWindow.webContents.send('load', [filename, scriptData, locations, characters, boardSettings, currentPath])
+
+  }, 1000)
+
+  // mainWindow.once('ready-to-show', () => {
+  //   mainWindow.webContents.send('load', [filename, scriptData, locations, characters, boardSettings, currentPath])
+  // })
+>>>>>>> Stashed changes
 
   mainWindow.once('close', () => {
     if (welcomeWindow) {
