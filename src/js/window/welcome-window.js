@@ -2,7 +2,7 @@ const {ipcRenderer, shell, remote} = require('electron')
 const path = require('path')
 const moment = require('moment')
 const menu = require('../menu.js')
-const util = require('../wonderunit-utils.js')
+const util = require('../utils/index.js')
 const sfx = require('../wonderunit-sound.js')
 
 menu.setWelcomeMenu()
