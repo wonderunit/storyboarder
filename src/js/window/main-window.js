@@ -259,6 +259,8 @@ let loadBoardUI = ()=> {
       if (!util.isUndefined(index)) {
         console.log('user requests move operation:', selections, 'to insert after', index)
         moveSelectedBoards(index)
+        renderThumbnailDrawer()
+        gotoBoard(currentBoard, false)
       } else {
         console.log('could not find point for move operation')
       }
@@ -1740,12 +1742,7 @@ let moveSelectedBoards = (position) => {
 
   boardData.boards.splice(position, 0, ...movedBoards)
 
-  // reset selection
-  selections.clear()
-
-  // re-render
-  renderThumbnailDrawer()
-  gotoBoard(currentBoard)
+  markBoardFileDirty()
 }
 
 let reorderBoardsLeft = () => {
