@@ -1,3 +1,5 @@
+const util = require('./utils/index.js')
+
 var regex = {
   scene_heading: /^((?:\*{0,3}_?)?(?:(?:int|ext|est|i\/e)[. ]).+)|^(?:\.(?!\.+))(.+)/i,
   scene_number: /( *#(.+)# *)/,
@@ -25,7 +27,7 @@ var insertSceneIds = function (script) {
           meta = meta[2];
           text = text.replace(regex.scene_number, '');
         } else {
-          src[i] = src[i] + ' #' + sceneCount + '-' + uidGen(5) + '#'
+          src[i] = src[i] + ' #' + sceneCount + '-' + util.uidGen(5) + '#'
           addedIds = true
         }
       }
@@ -34,10 +36,6 @@ var insertSceneIds = function (script) {
   }
   return [src.join("\n"), addedIds];
 };
-
-let uidGen = (chars)=> {
-  return ("00000" + (Math.random()*Math.pow(36,chars) << 0).toString(36)).slice(-chars).toUpperCase()
-}
 
 let fountainSceneIdUtil = {
   insertSceneIds: insertSceneIds,
