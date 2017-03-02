@@ -1,3 +1,5 @@
+let { acceleratorAsHtml } = require('./accelerator.js')
+
 let msToTime = (s)=> {
   if(!s) s = 0
   s = Math.max(0, s)
@@ -61,5 +63,6 @@ module.exports = {
   norm,
   clamp,
   shallowCopy,
-  isUndefined
+  isUndefined,
+  acceleratorAsHtml
 }

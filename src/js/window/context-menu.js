@@ -1,5 +1,6 @@
 const EventEmitter = require('events').EventEmitter
 const Tether = require('tether')
+let { acceleratorAsHtml } = require('../utils/accelerator.js')
 
 class ContextMenu extends EventEmitter {
   constructor () {
@@ -17,16 +18,16 @@ class ContextMenu extends EventEmitter {
   template () {
     return `<div class="context-menu-container">
       <div id="context-menu" class="bottom-nub">
-        <div class="item" data-action="add">Add New <div class="key-command"><kbd>n</kbd></div></div>
-        <div class="item" data-action="duplicate">Duplicate <div class="key-command"><kbd>d</kbd></div></div>
-        <div class="item" data-action="copy">Copy <div class="key-command"><kbd class="modifier">&#x2318;</kbd>+<kbd>c</kbd></div></div>
-        <div class="item" data-action="paste">Paste <div class="key-command"><kbd class="modifier">&#x2318;</kbd>+<kbd>v</kbd></div></div>
-        <div class="item" data-action="import">Import <div class="key-command"><kbd class="modifier">&#x2318;</kbd>+<kbd>i</kbd></div></div>
+        <div class="item" data-action="add">Add New <div class="key-command">${acceleratorAsHtml('n', { animated: false }) }</div></div>
+        <div class="item" data-action="duplicate">Duplicate <div class="key-command">${acceleratorAsHtml('d', { animated: false })}</div></div>
+        <div class="item" data-action="copy">Copy <div class="key-command">${acceleratorAsHtml('CmdOrCtrl+C', { animated: false })}</div></div>
+        <div class="item" data-action="paste">Paste <div class="key-command">${acceleratorAsHtml('CmdOrCtrl+V', { animated: false })}</div></div>
+        <div class="item" data-action="import">Import <div class="key-command">${acceleratorAsHtml('CmdOrCtrl+I', { animated: false })}</div></div>
         <div class="hr"></div>
-        <div class="item" data-action="delete">Delete <div class="key-command"><kbd class="modifier">delete</kbd></div></div>
+        <div class="item" data-action="delete">Delete <div class="key-command">${acceleratorAsHtml('Delete', { animated: false })}</div></div>
         <div class="hr"></div>
-        <div class="item" data-action="reorder-left">Reorder Left <div class="key-command"><kbd class="modifier">option</kbd>+<kbd>◄</kbd></div></div>
-        <div class="item" data-action="reorder-right">Reorder Right <div class="key-command"><kbd class="modifier">option</kbd>+<kbd>►</kbd></div></div>
+        <div class="item" data-action="reorder-left">Reorder Left <div class="key-command">${acceleratorAsHtml('Alt+Left', { animated: false })}</div></div>
+        <div class="item" data-action="reorder-right">Reorder Right <div class="key-command">${acceleratorAsHtml('Alt+Right', { animated: false })}</div></div>
       </div>
     </div>`
   }
