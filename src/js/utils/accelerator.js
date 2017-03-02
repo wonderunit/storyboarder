@@ -13,20 +13,25 @@ const MODIFIER_MAP = {
   'Control': '\u2303',
   'Ctrl': '\u2303',
   'Shift': '\u21e7',
-  'Alt': '\u2325',
+  'Alt': IS_MAC ? 'Option' : 'Alt', // \u2325
   'Plus': '='
 }
 
+const KEY_MAP = {
+  'Left': '◄',
+  'Right': '►'
+}
+
 // see https://www.npmjs.com/package/electron-accelerator-formatter
-const acceleratorAsHtml = (accelerator) =>
+const acceleratorAsHtml = (accelerator, options = { animated: true }) =>
   accelerator
     .split('+')
     .map(function(k) {
       let m = MODIFIER_MAP[k]
       if (m) {
-        return `<kbd class="modifier modifier-key-anim">${m}</kbd>`
+        return `<kbd class="modifier${ options.animated ? ' modifier-key-anim' : ''}">${m}</kbd>`
       } else {
-        return `<kbd class="action-key-anim">${k}</kbd>`
+        return `<kbd ${ options.animated ? 'class="action-key-anim"' : ''}>${KEY_MAP[k] || k}</kbd>`
       }
     })
     .join('+')
