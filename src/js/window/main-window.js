@@ -876,10 +876,10 @@ let renderThumbnailDrawer = ()=> {
       alert('Import. Coming Soon!')
     })
     contextMenu.on('reorder-left', () => {
-      alert('Re-order Left. Coming Soon!')
+      reorderBoardsLeft()
     })
     contextMenu.on('reorder-right', () => {
-      alert('Re-order Right. Coming Soon!')
+      reorderBoardsRight()
     })
   }
 
@@ -1335,6 +1335,8 @@ window.onkeydown = (e)=> {
       case 'ArrowLeft':
         if (e.metaKey || e.ctrlKey) {
           previousScene()
+        } else if (e.altKey) {
+          reorderBoardsLeft()
         } else {
           let shouldPreserveSelections = e.shiftKey
           goNextBoard(-1, shouldPreserveSelections)
@@ -1344,6 +1346,8 @@ window.onkeydown = (e)=> {
       case 'ArrowRight':
         if (e.metaKey || e.ctrlKey) {
           nextScene()
+        } else if (e.altKey) {
+          reorderBoardsRight()
         } else {
           let shouldPreserveSelections = e.shiftKey
           goNextBoard(1, shouldPreserveSelections)
@@ -1744,6 +1748,50 @@ let moveSelectedBoards = (position) => {
   gotoBoard(currentBoard)
 }
 
+let reorderBoardsLeft = () => {
+  let list = boardData.boards
+  
+  if (selections.size > 1) {
+    // TODO operate on multi-selection
+    alert("Can't operate on multi-selection yet, sorry!")
+  } else {
+    let x = currentBoard
+
+    let y = util.clamp(x - 1, 0, list.length)
+
+    boardData.boards = util.swap(boardData.boards, x, y)
+    currentBoard = y
+
+    selections.clear()
+    selections.add(currentBoard)
+
+    renderThumbnailDrawer()
+    gotoBoard(currentBoard)
+  }
+}
+
+let reorderBoardsRight = () => {
+  let list = boardData.boards
+
+  if (selections.size > 1) {
+    // TODO operate on multi-selection
+    alert("Can't operate on multi-selection yet, sorry!")
+  } else {
+    let x = currentBoard
+
+    let y = util.clamp(x + 1, 0, list.length)
+    
+    boardData.boards = util.swap(boardData.boards, x, y)
+    currentBoard = y
+
+    selections.clear()
+    selections.add(currentBoard)
+
+    renderThumbnailDrawer()
+    gotoBoard(currentBoard)
+  }
+}
+
 let enableEditMode = () => {
   if (!isEditMode && selections.size) {
     isEditMode = true
@@ -1898,6 +1946,18 @@ ipcRenderer.on('deleteBoards', (event, args)=>{
 ipcRenderer.on('duplicateBoard', (event, args)=>{
   if (!textInputMode) {
     duplicateBoard()
+  }
+})
+
+ipcRenderer.on('reorderBoardsLeft', (event, args)=>{
+  if (!textInputMode) {
+    reorderBoardsLeft()
+  }
+})
+
+ipcRenderer.on('reorderBoardsRight', (event, args)=>{
+  if (!textInputMode) {
+    reorderBoardsRight()
   }
 })
 

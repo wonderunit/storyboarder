@@ -389,6 +389,14 @@ ipcMain.on('duplicateBoard', (e, arg)=> {
   mainWindow.webContents.send('duplicateBoard')
 })
 
+ipcMain.on('reorderBoardsLeft', (e, arg)=> {
+  mainWindow.webContents.send('reorderBoardsLeft')
+})
+
+ipcMain.on('reorderBoardsRight', (e, arg)=> {
+  mainWindow.webContents.send('reorderBoardsRight')
+})
+
 ipcMain.on('togglePlayback', (e, arg)=> {
   mainWindow.webContents.send('togglePlayback')
 })

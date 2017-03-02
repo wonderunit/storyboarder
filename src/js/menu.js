@@ -192,6 +192,20 @@ const template = [
           ipcRenderer.send('duplicateBoard')
         }
       },
+      {
+        accelerator: 'Alt+Left',
+        label: 'Reorder Left',
+        click ( item, focusedWindow, event) {
+          ipcRenderer.send('reorderBoardsLeft')
+        }
+      },
+      {
+        accelerator: 'Alt+Right',
+        label: 'Reorder Right',
+        click ( item, focusedWindow, event) {
+          ipcRenderer.send('reorderBoardsRight')
+        }
+      },
     ]
   },
   {
