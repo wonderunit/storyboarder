@@ -1,8 +1,3 @@
-/* 
-WONDER UNIT UTILS
-  simple utlities used in Wonder Unit apps.
-*/
-
 let msToTime = (s)=> {
   if(!s) s = 0
   s = Math.max(0, s)
