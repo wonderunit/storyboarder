@@ -1746,47 +1746,39 @@ let moveSelectedBoards = (position) => {
 }
 
 let reorderBoardsLeft = () => {
-  let list = boardData.boards
-  
-  if (selections.size > 1) {
-    // TODO operate on multi-selection
-    alert("Can't operate on multi-selection yet, sorry!")
-  } else {
-    let x = currentBoard
+  let selectionsAsArray = [...selections].sort()
+  let leftMost = selectionsAsArray[0]
 
-    let y = util.clamp(x - 1, 0, list.length)
+  let position = util.clamp(leftMost - 1, 0, boardData.boards)
 
-    boardData.boards = util.swap(boardData.boards, x, y)
-    currentBoard = y
+  moveSelectedBoards(position)
 
-    selections.clear()
-    selections.add(currentBoard)
-
-    renderThumbnailDrawer()
-    gotoBoard(currentBoard)
+  // if we didn't hit the boundary
+  if (leftMost > position) {
+    currentBoard = currentBoard - 1
+    selections = new Set(selectionsAsArray.map(n => n - 1))
   }
+
+  renderThumbnailDrawer()
+  gotoBoard(currentBoard, true)
 }
 
 let reorderBoardsRight = () => {
-  let list = boardData.boards
+  let selectionsAsArray = [...selections].sort()
+  let rightMost = selectionsAsArray.slice(-1)[0] + 1
+  // swap the index AFTER the index AFTER rightMost (+2)
+  let position = util.clamp(rightMost + 1, 0, boardData.boards)
+      
+  moveSelectedBoards(position)
 
-  if (selections.size > 1) {
-    // TODO operate on multi-selection
-    alert("Can't operate on multi-selection yet, sorry!")
-  } else {
-    let x = currentBoard
-
-    let y = util.clamp(x + 1, 0, list.length)
-    
-    boardData.boards = util.swap(boardData.boards, x, y)
-    currentBoard = y
-
-    selections.clear()
-    selections.add(currentBoard)
-
-    renderThumbnailDrawer()
-    gotoBoard(currentBoard)
+  // if we didn't hit the boundary
+  if (rightMost < boardData.boards.length) {
+    currentBoard = currentBoard + 1
+    selections = new Set(selectionsAsArray.map(n => n + 1))
   }
+
+  renderThumbnailDrawer()
+  gotoBoard(currentBoard, true)
 }
 
 let enableEditMode = () => {
