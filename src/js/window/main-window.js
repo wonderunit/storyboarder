@@ -260,7 +260,7 @@ let loadBoardUI = ()=> {
         console.log('user requests move operation:', selections, 'to insert after', index)
         moveSelectedBoards(index)
         renderThumbnailDrawer()
-        gotoBoard(currentBoard, false)
+        gotoBoard(currentBoard, true)
       } else {
         console.log('could not find point for move operation')
       }
@@ -1742,6 +1742,17 @@ let moveSelectedBoards = (position) => {
 
   boardData.boards.splice(position, 0, ...movedBoards)
 
+  // how far from the start of the selection was the current board?
+  let offset = currentBoard - firstSelection
+
+  // what are the new bounds of our selection?
+  let b = Math.min(position + movedBoards.length - 1, boardData.boards.length - 1)
+  let a = b - (selections.size - 1)
+  // update selection
+  selections = new Set(util.range(a, b))
+  // update currentBoard
+  currentBoard = a + offset
+
   markBoardFileDirty()
 }
 
@@ -1752,12 +1763,6 @@ let reorderBoardsLeft = () => {
   let position = util.clamp(leftMost - 1, 0, boardData.boards)
 
   moveSelectedBoards(position)
-
-  // if we didn't hit the boundary
-  if (leftMost > position) {
-    currentBoard = currentBoard - 1
-    selections = new Set(selectionsAsArray.map(n => n - 1))
-  }
 
   renderThumbnailDrawer()
   gotoBoard(currentBoard, true)
@@ -1770,12 +1775,6 @@ let reorderBoardsRight = () => {
   let position = util.clamp(rightMost + 1, 0, boardData.boards)
       
   moveSelectedBoards(position)
-
-  // if we didn't hit the boundary
-  if (rightMost < boardData.boards.length) {
-    currentBoard = currentBoard + 1
-    selections = new Set(selectionsAsArray.map(n => n + 1))
-  }
 
   renderThumbnailDrawer()
   gotoBoard(currentBoard, true)
