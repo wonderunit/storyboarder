@@ -386,8 +386,20 @@ let loadBoardUI = ()=> {
   tooltips.init()
   
   transport = new Transport()
+  transport.on('prevScene', () => {
+    previousScene()
+  })
+  transport.on('prevBoard', () => {
+    goNextBoard(-1)
+  })
   transport.on('play', () => {
     togglePlayback()
+  })
+  transport.on('nextBoard', () => {
+    goNextBoard(+1)
+  })
+  transport.on('nextScene', () => {
+    nextScene()
   })
 
   setTimeout(()=>{remote.getCurrentWindow().show()}, 200)
