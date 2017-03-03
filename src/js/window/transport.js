@@ -30,11 +30,12 @@ class Transport extends EventEmitter {
   
   render () {
     let playButton = this.el.querySelector('.transport-control[data-action="play"]')
+    let svgUse = playButton.querySelector('svg use')
 
     if (this.state.playbackMode) {
-      playButton.style.border = '1px solid red'
+      svgUse.setAttribute('xlink:href', svgUse.getAttribute('xlink:href').split('#')[0] + '#icon-pause')
     } else {
-      playButton.style.border = 'none'
+      svgUse.setAttribute('xlink:href', svgUse.getAttribute('xlink:href').split('#')[0] + '#icon-play')
     }
   }
 }

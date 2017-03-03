@@ -1,0 +1,13 @@
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <defs>
+    <symbol id="icon-pause" viewBox="0 0 20.16 20.481">
+      <title>pause</title>
+      <rect x="12.84" y="1.941" width="4.778" height="16.598"/>
+      <rect x="2.542" y="1.941" width="4.778" height="16.598"/>
+    </symbol>
+    <symbol id="icon-play" viewBox="0 0 20.16 20.481">
+      <title>play</title>
+      <polygon points="1.212 20.481 18.948 10.24 1.212 0 1.212 20.481"/>
+    </symbol>
+  </defs>
+</svg>
