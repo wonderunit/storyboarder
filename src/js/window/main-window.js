@@ -388,13 +388,13 @@ let loadBoardUI = ()=> {
   tooltips.init()
   
   transport = new Transport()
-  transport.on('prevScene', () => {
+  transport.on('previousScene', () => {
     previousScene()
   })
   transport.on('prevBoard', () => {
     goNextBoard(-1)
   })
-  transport.on('play', () => {
+  transport.on('togglePlayback', () => {
     togglePlayback()
   })
   transport.on('nextBoard', () => {

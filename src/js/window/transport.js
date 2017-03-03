@@ -29,7 +29,7 @@ class Transport extends EventEmitter {
   }
   
   render () {
-    let playButton = this.el.querySelector('.transport-control[data-action="play"]')
+    let playButton = this.el.querySelector('.transport-control[data-action="togglePlayback"]')
     let svgUse = playButton.querySelector('svg use')
 
     if (this.state.playbackMode) {
