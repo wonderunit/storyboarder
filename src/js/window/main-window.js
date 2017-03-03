@@ -379,8 +379,12 @@ let loadBoardUI = ()=> {
   toolbar.on('onion', () => {
     alert('Onion. This feature is not ready yet :(')
   })
-  toolbar.on('caption', () => {
-    alert('Caption. This feature is not ready yet :(')
+  toolbar.on('captions', () => {
+    // HACK!!!
+    let el = document.querySelector('#canvas-caption')
+    el.style.visibility = el.style.visibility == 'hidden'
+      ? 'visible'
+      : 'hidden'
   })
 
   toolbar.setState({ brush: 'pencil' })

@@ -7,7 +7,8 @@ class Toolbar extends EventEmitter {
     this.el = el
     this.setState({
       brush: 'light-pencil',
-      transformMode: null
+      transformMode: null,
+      captions: true
     })
     this.onButtonSelect = this.onButtonSelect.bind(this)
     this.attachedCallback(this.el)
@@ -138,8 +139,9 @@ class Toolbar extends EventEmitter {
       case 'onion':
         this.emit('onion')
         break
-      case 'caption':
-        this.emit('caption')
+      case 'captions':
+        this.setState({ captions: !this.state.captions })
+        this.emit('captions')
         break
 
       default:
@@ -173,6 +175,13 @@ class Toolbar extends EventEmitter {
         btnScale.classList.remove('active')
         btnMove.classList.remove('active')
         break
+    }
+    
+    let btnCaptions = this.el.querySelector('#toolbar-captions')
+    if (this.state.captions) {
+      btnCaptions.classList.add('active')
+    } else {
+      btnCaptions.classList.remove('active')
     }
   }
 }
