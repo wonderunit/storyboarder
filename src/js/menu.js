@@ -104,7 +104,6 @@ const template = [
     label: 'Navigation',
     submenu: [
       {
-        accelerator: 'Space',
         label: 'Play',
         click ( item, focusedWindow, event) {
           ipcRenderer.send('togglePlayback')

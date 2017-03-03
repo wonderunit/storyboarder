@@ -1335,10 +1335,6 @@ window.onkeydown = (e)=> {
         toggleViewMode()
         e.preventDefault()
         break;
-      case 'Space':
-        togglePlayback()
-        e.preventDefault()
-        break
       case 'ArrowLeft':
         if (e.metaKey || e.ctrlKey) {
           previousScene()
