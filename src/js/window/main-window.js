@@ -259,6 +259,8 @@ let loadBoardUI = ()=> {
       if (!util.isUndefined(index)) {
         console.log('user requests move operation:', selections, 'to insert after', index)
         moveSelectedBoards(index)
+        renderThumbnailDrawer()
+        gotoBoard(currentBoard, false)
       } else {
         console.log('could not find point for move operation')
       }
@@ -876,10 +878,10 @@ let renderThumbnailDrawer = ()=> {
       alert('Import. Coming Soon!')
     })
     contextMenu.on('reorder-left', () => {
-      alert('Re-order Left. Coming Soon!')
+      reorderBoardsLeft()
     })
     contextMenu.on('reorder-right', () => {
-      alert('Re-order Right. Coming Soon!')
+      reorderBoardsRight()
     })
   }
 
@@ -1335,6 +1337,8 @@ window.onkeydown = (e)=> {
       case 'ArrowLeft':
         if (e.metaKey || e.ctrlKey) {
           previousScene()
+        } else if (e.altKey) {
+          reorderBoardsLeft()
         } else {
           let shouldPreserveSelections = e.shiftKey
           goNextBoard(-1, shouldPreserveSelections)
@@ -1344,6 +1348,8 @@ window.onkeydown = (e)=> {
       case 'ArrowRight':
         if (e.metaKey || e.ctrlKey) {
           nextScene()
+        } else if (e.altKey) {
+          reorderBoardsRight()
         } else {
           let shouldPreserveSelections = e.shiftKey
           goNextBoard(1, shouldPreserveSelections)
@@ -1736,12 +1742,43 @@ let moveSelectedBoards = (position) => {
 
   boardData.boards.splice(position, 0, ...movedBoards)
 
-  // reset selection
-  selections.clear()
+  markBoardFileDirty()
+}
 
-  // re-render
+let reorderBoardsLeft = () => {
+  let selectionsAsArray = [...selections].sort()
+  let leftMost = selectionsAsArray[0]
+
+  let position = util.clamp(leftMost - 1, 0, boardData.boards)
+
+  moveSelectedBoards(position)
+
+  // if we didn't hit the boundary
+  if (leftMost > position) {
+    currentBoard = currentBoard - 1
+    selections = new Set(selectionsAsArray.map(n => n - 1))
+  }
+
   renderThumbnailDrawer()
-  gotoBoard(currentBoard)
+  gotoBoard(currentBoard, true)
+}
+
+let reorderBoardsRight = () => {
+  let selectionsAsArray = [...selections].sort()
+  let rightMost = selectionsAsArray.slice(-1)[0] + 1
+  // swap the index AFTER the index AFTER rightMost (+2)
+  let position = util.clamp(rightMost + 1, 0, boardData.boards)
+      
+  moveSelectedBoards(position)
+
+  // if we didn't hit the boundary
+  if (rightMost < boardData.boards.length) {
+    currentBoard = currentBoard + 1
+    selections = new Set(selectionsAsArray.map(n => n + 1))
+  }
+
+  renderThumbnailDrawer()
+  gotoBoard(currentBoard, true)
 }
 
 let enableEditMode = () => {
@@ -1898,6 +1935,18 @@ ipcRenderer.on('deleteBoards', (event, args)=>{
 ipcRenderer.on('duplicateBoard', (event, args)=>{
   if (!textInputMode) {
     duplicateBoard()
+  }
+})
+
+ipcRenderer.on('reorderBoardsLeft', (event, args)=>{
+  if (!textInputMode) {
+    reorderBoardsLeft()
+  }
+})
+
+ipcRenderer.on('reorderBoardsRight', (event, args)=>{
+  if (!textInputMode) {
+    reorderBoardsRight()
   }
 })
 
