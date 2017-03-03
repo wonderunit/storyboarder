@@ -15,6 +15,7 @@ const undoStack = require('../undo-stack.js')
 const Toolbar = require('./toolbar.js')
 const tooltips = require('./tooltips.js')
 const ContextMenu = require('./context-menu.js')
+const Transport = require('./transport.js')
 
 let boardFilename
 let boardPath
@@ -56,6 +57,7 @@ let lastPointer = { x: null, y: null }
 
 let toolbar
 let contextMenu
+let transport
 
 menu.setMenu()
 
@@ -382,6 +384,11 @@ let loadBoardUI = ()=> {
   toolbar.setState({ brush: 'pencil' })
   
   tooltips.init()
+  
+  transport = new Transport()
+  transport.on('play', () => {
+    togglePlayback()
+  })
 
   setTimeout(()=>{remote.getCurrentWindow().show()}, 200)
   //remote.getCurrentWebContents().openDevTools()
@@ -1384,6 +1391,7 @@ let stopPlaying = () => {
   utter.onend = null
   ipcRenderer.send('resumeSleep')
   speechSynthesis.cancel()
+  transport.setState({ playbackMode })
 }
 
 let togglePlayback = ()=> {
@@ -1394,6 +1402,7 @@ let togglePlayback = ()=> {
   } else {
     stopPlaying()
   }
+  transport.setState({ playbackMode })
 }
 
 let playAdvance = function(first) {
