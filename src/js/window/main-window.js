@@ -1914,9 +1914,12 @@ const setupRandomizedNotifications = () => {
     if (response.ok) {
       response.json().then(json => {
         runRandomizedNotifications(util.shuffle(json.messages))
+      }).catch(e => {
+        console.warn('Could not parse messages')
+        runRandomizedNotifications(defaultMessages)
       })
     } else {
-      console.warn('Could not parse messages')
+      console.warn('Could not read messages')
       runRandomizedNotifications(defaultMessages)
     }
   }).catch(e => {
