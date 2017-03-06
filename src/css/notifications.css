@@ -1,0 +1,38 @@
+.notifications, .notifications * {
+  box-sizing: border-box;
+}
+.notifications {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+.notification {
+  width: 300px;
+  height: auto;
+  transition: height 0.75s ease-in-out;
+  overflow: hidden;
+}
+.notification-content {
+  color: #666;
+  margin-right: 10px;
+  margin-bottom: 10px;
+  padding: 10px;
+  font-family: Verdana;
+  font-size: 14px;
+  line-height: 1.5;
+  background: #eee;
+  border-radius: 8px;
+  opacity: 0.85;
+}
+.notification-content_title {
+  color: #000;
+  text-transform: uppercase;
+  font-size: 95%;
+  letter-spacing: 0.05em;
+}
+.notification-fadeout {
+  transition: opacity 0.5s ease-in;
+  opacity: 0;
+}

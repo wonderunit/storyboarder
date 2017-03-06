@@ -16,6 +16,7 @@ const Toolbar = require('./toolbar.js')
 const tooltips = require('./tooltips.js')
 const ContextMenu = require('./context-menu.js')
 const Transport = require('./transport.js')
+const notifications = require('./notifications.js')
 
 let boardFilename
 let boardPath
@@ -408,6 +409,7 @@ let loadBoardUI = ()=> {
     nextScene()
   })
 
+  notifications.init(document.getElementById('notifications'))
   setTimeout(()=>{remote.getCurrentWindow().show()}, 200)
   //remote.getCurrentWebContents().openDevTools()
 }
