@@ -6,12 +6,11 @@
   bottom: 0;
   right: 0;
   z-index: 10001;
-  pointer-events: none;
 }
 .notification {
   width: 300px;
   height: auto;
-  transition: height 0.75s ease-in-out;
+  transition: height 0.75s ease-in-out, opacity 0.5s ease-in;
   overflow: hidden;
 }
 .notification-content {
@@ -25,14 +24,11 @@
   background: #eee;
   border-radius: 8px;
   opacity: 0.85;
+  pointer-events: none;
 }
 .notification-content_title {
   color: #000;
   text-transform: uppercase;
   font-size: 95%;
   letter-spacing: 0.05em;
-}
-.notification-fadeout {
-  transition: opacity 0.5s ease-in;
-  opacity: 0;
 }

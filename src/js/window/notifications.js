@@ -6,10 +6,14 @@ let container
 
 const removeNotification = (index) => {
   let notification = notifications.find(n => n.index == index)
-  let el = notification.el
-  el.classList.add('notification-fadeout')
-  setTimeout(() => el.parentNode.removeChild(el), 1000)
-  
+  if (notification) {
+    let el = notification.el
+    el.style.opacity = 0
+    clearTimeout(notification.index)
+    if (el.parentNode) {
+      setTimeout(() => el.parentNode.removeChild(el), 1000)
+    }
+  }
 }
 
 const addNotification = (data) => {
@@ -19,6 +23,7 @@ const addNotification = (data) => {
 
   el = document.createElement('div')
   el.classList.add('notification')
+  el.dataset.index = index
 
   content = document.createElement('div')
   content.classList.add('notification-content')
@@ -67,8 +72,13 @@ const formatMessageData = (data) => {
   return data
 }
 
+const onPointerDown = event =>
+  removeNotification(event.target.dataset.index)
+
 const init = (el) => {
   container = el
+  
+  container.addEventListener('pointerdown', onPointerDown)
 }
 
 let notify = (data) =>
