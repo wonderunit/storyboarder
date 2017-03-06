@@ -64,14 +64,15 @@ let swap = (arr, x, y) => {
   return a
 }
 
-let shuffle = (array) => {
-  for (var i = array.length - 1; i > 0; i--) {
+let shuffle = (arr) => {
+  let a = arr.slice(0) // make a copy
+  for (var i = a.length - 1; i > 0; i--) {
     var j = Math.floor(Math.random() * (i + 1))
-    var temp = array[i]
-    array[i] = array[j]
-    array[j] = temp
+    var temp = a[i]
+    a[i] = a[j]
+    a[j] = temp
   }
-  return array
+  return a
 }
 
 module.exports = {
