@@ -13,19 +13,10 @@
 */
 
 const Tone = require('tone')
+const { shuffle } = require('./utils/index.js')
 
 Tone.Transport.latencyHint = 'playback'
 Tone.Transport.start("+0.1")
-
-let shuffle = (array)=> {
-  for (var i = array.length - 1; i > 0; i--) {
-    var j = Math.floor(Math.random() * (i + 1))
-    var temp = array[i]
-    array[i] = array[j]
-    array[j] = temp
-  }
-  return array
-}
 
 let chords = [
   ['a4', 'b4', 'c5', 'e5'],
@@ -210,4 +201,5 @@ module.exports = {
   positive: positive,
   negative: negative,
   error: error,
+  shuffle
 }

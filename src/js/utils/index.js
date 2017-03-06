@@ -64,6 +64,17 @@ let swap = (arr, x, y) => {
   return a
 }
 
+let shuffle = (arr) => {
+  let a = arr.slice(0) // make a copy
+  for (var i = a.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1))
+    var temp = a[i]
+    a[i] = a[j]
+    a[j] = temp
+  }
+  return a
+}
+
 module.exports = {
   msToTime,
   uidGen,
@@ -74,5 +85,6 @@ module.exports = {
   shallowCopy,
   isUndefined,
   swap,
-  acceleratorAsHtml
+  acceleratorAsHtml,
+  shuffle
 }

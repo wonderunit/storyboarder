@@ -16,6 +16,8 @@ const Toolbar = require('./toolbar.js')
 const tooltips = require('./tooltips.js')
 const ContextMenu = require('./context-menu.js')
 const Transport = require('./transport.js')
+const notifications = require('./notifications.js')
+const NotificationData = require('../../data/messages.json')
 
 let boardFilename
 let boardPath
@@ -407,6 +409,9 @@ let loadBoardUI = ()=> {
   transport.on('nextScene', () => {
     nextScene()
   })
+
+  notifications.init(document.getElementById('notifications'))
+  setupRandomizedNotifications()
 
   setTimeout(()=>{remote.getCurrentWindow().show()}, 200)
   //remote.getCurrentWebContents().openDevTools()
@@ -1900,6 +1905,36 @@ let renderThumbnailCursor = () => {
     el.style.display = 'none'
     el.style.left = '0px'
   }
+}
+
+const setupRandomizedNotifications = () => {  
+  let defaultMessages = util.shuffle(NotificationData.messages)
+
+  fetch('https://wonderunit.com/software/storyboarder/messages.json').then(response => {
+    if (response.ok) {
+      response.json().then(json => {
+        runRandomizedNotifications(util.shuffle(json.messages))
+      }).catch(e => {
+        console.warn('Could not parse messages')
+        runRandomizedNotifications(defaultMessages)
+      })
+    } else {
+      console.warn('Could not read messages')
+      runRandomizedNotifications(defaultMessages)
+    }
+  }).catch(e => {
+    console.warn('Could not load messages')
+    console.warn(e)
+    runRandomizedNotifications(defaultMessages)
+  })
+}
+const runRandomizedNotifications = (messages) => {
+  let count = 0, duration = 60 * 60 * 1000, timeout
+  const tick = () => {
+    notifications.notify(messages[count++ % messages.length])
+    timeout = setTimeout(tick, duration)
+  }
+  tick()
 }
 
 ipcRenderer.on('setTool', (e, arg)=> {
