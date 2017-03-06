@@ -1915,7 +1915,7 @@ const setupRandomizedNotifications = () => {
 
   const tick = () => {
     notifications.notify(messages[count++ % messages.length])
-    timeout = setTimeout(tick, 5000)
+    timeout = setTimeout(tick, 60 * 60 * 1000)
   }
   tick()
 }
