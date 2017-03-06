@@ -1907,15 +1907,29 @@ let renderThumbnailCursor = () => {
   }
 }
 
-const setupRandomizedNotifications = () => {
-  const messages = util.shuffle(NotificationData.messages)
+const setupRandomizedNotifications = () => {  
+  let defaultMessages = util.shuffle(NotificationData.messages)
 
-  let count = 0
-  let timeout
-
+  fetch('https://wonderunit.com/software/storyboarder/messages.json').then(response => {
+    if (response.ok) {
+      response.json().then(json => {
+        runRandomizedNotifications(util.shuffle(json.messages))
+      })
+    } else {
+      console.warn('Could not parse messages')
+      runRandomizedNotifications(defaultMessages)
+    }
+  }).catch(e => {
+    console.warn('Could not load messages')
+    console.warn(e)
+    runRandomizedNotifications(defaultMessages)
+  })
+}
+const runRandomizedNotifications = (messages) => {
+  let count = 0, duration = 60 * 60 * 1000, timeout
   const tick = () => {
     notifications.notify(messages[count++ % messages.length])
-    timeout = setTimeout(tick, 60 * 60 * 1000)
+    timeout = setTimeout(tick, duration)
   }
   tick()
 }
