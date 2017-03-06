@@ -49,7 +49,7 @@ const addNotification = (data) => {
     el.style.height = height + 'px'
   }, 1)
 
-  let timer = setTimeout(removeNotification, 7500, index)
+  let timer = setTimeout(removeNotification, 30 * 1000, index)
 
   let result = {
     index,
