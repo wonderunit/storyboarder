@@ -17,6 +17,7 @@ const tooltips = require('./tooltips.js')
 const ContextMenu = require('./context-menu.js')
 const Transport = require('./transport.js')
 const notifications = require('./notifications.js')
+const NotificationData = require('../../data/messages.json')
 
 let boardFilename
 let boardPath
@@ -410,6 +411,8 @@ let loadBoardUI = ()=> {
   })
 
   notifications.init(document.getElementById('notifications'))
+  setupRandomizedNotifications()
+
   setTimeout(()=>{remote.getCurrentWindow().show()}, 200)
   //remote.getCurrentWebContents().openDevTools()
 }
@@ -1902,6 +1905,19 @@ let renderThumbnailCursor = () => {
     el.style.display = 'none'
     el.style.left = '0px'
   }
+}
+
+const setupRandomizedNotifications = () => {
+  const messages = util.shuffle(NotificationData.messages)
+
+  let count = 0
+  let timeout
+
+  const tick = () => {
+    notifications.notify(messages[count++ % messages.length])
+    timeout = setTimeout(tick, 5000)
+  }
+  tick()
 }
 
 ipcRenderer.on('setTool', (e, arg)=> {
