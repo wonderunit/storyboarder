@@ -26,9 +26,7 @@
   opacity: 0.85;
   pointer-events: none;
 }
-.notification-content_title {
-  color: #000;
-  text-transform: uppercase;
-  font-size: 95%;
-  letter-spacing: 0.05em;
+.notification-content_author {
+  text-align: right;
+  font-style: italic;
 }

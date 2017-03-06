@@ -27,25 +27,19 @@ const addNotification = (data) => {
 
   content = document.createElement('div')
   content.classList.add('notification-content')
-  let title
-  switch (data.type) {
-    case 'quote':
-      title = 'A Famous Quote'
-      break
-    default:
-      title = 'Notification'
-      break
-  }
-  content.innerHTML = `
-  <div>
-    <div class="notification-content_title">
-      ${title}
-    </div>
-    <div>
-      ${data.message}
-    </div>
-  </div>
+  content.innerHTML = 
   `
+    <div>
+      <div>
+        ${data.message}
+      </div>
+    ` +
+    (data.author ? `<div class="notification-content_author">
+                      ${data.author}
+                    </div>`
+                 : '') +
+    `</div>`
+
   el.appendChild(content)
 
   container.appendChild(el)
