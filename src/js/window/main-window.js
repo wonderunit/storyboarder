@@ -15,6 +15,7 @@ const undoStack = require('../undo-stack.js')
 const Toolbar = require('./toolbar.js')
 const tooltips = require('./tooltips.js')
 const ContextMenu = require('./context-menu.js')
+const ColorPicker = require('./color-picker.js')
 
 let boardFilename
 let boardPath
@@ -56,6 +57,7 @@ let lastPointer = { x: null, y: null }
 
 let toolbar
 let contextMenu
+let colorPicker
 
 menu.setMenu()
 
@@ -382,6 +384,10 @@ let loadBoardUI = ()=> {
   toolbar.setState({ brush: 'pencil' })
   
   tooltips.init()
+
+  colorPicker = new ColorPicker()
+  colorPicker.setState({ color: '#ff0000' })
+  colorPicker.attachTo(document.getElementById('toolbar-current-color'))
 
   setTimeout(()=>{remote.getCurrentWindow().show()}, 200)
   //remote.getCurrentWebContents().openDevTools()

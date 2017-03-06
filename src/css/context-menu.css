@@ -1,3 +1,9 @@
+.popup-container {
+  position: absolute;
+}
+
+/**/
+
 .context-menu-container {
   position: absolute;
   z-index: 999;
@@ -22,10 +28,6 @@
   animation-fill-mode: forwards;
   float: left;
 }
-
-
-
-
 
 #context-menu.top-nub:after {
   bottom: 100%;
@@ -130,7 +132,19 @@
   pointer-events: auto;
 }
 
+.color-picker-container #context-menu {
+  max-width: 1000px;
+}
 
+.color-picker-container .color-row {
+  height: 40px;
+}
+
+.color-swatch {
+  display: inline-block;
+  width: 40px;
+  height: 40px;
+}
 
 @keyframes appear {
   0% {
