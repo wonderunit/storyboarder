@@ -14,19 +14,19 @@
   overflow: hidden;
 }
 .notification-content {
-  color: #666;
+  color: rgba(255,255,255,0.7);
   margin-right: 10px;
   margin-bottom: 10px;
-  padding: 10px;
-  font-family: Verdana;
-  font-size: 14px;
+  padding: 10px 15px;
+  font-size: 16px;
   line-height: 1.5;
-  background: #eee;
+  background: rgba(0,0,0,0.8);
   border-radius: 8px;
-  opacity: 0.85;
   pointer-events: none;
 }
 .notification-content_author {
+  padding-top: 10px;
   text-align: right;
-  font-style: italic;
+  font-size: 12px;
+  color: rgba(255,255,255,0.3);
 }
