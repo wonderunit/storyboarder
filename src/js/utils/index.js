@@ -75,6 +75,8 @@ let shuffle = (arr) => {
   return a
 }
 
+let compareNumbers = (a, b) => a - b
+
 module.exports = {
   msToTime,
   uidGen,
@@ -86,5 +88,6 @@ module.exports = {
   isUndefined,
   swap,
   acceleratorAsHtml,
-  shuffle
+  shuffle,
+  compareNumbers
 }
