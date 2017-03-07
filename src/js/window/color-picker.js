@@ -1,3 +1,4 @@
+const {ipcRenderer} = require('electron')
 const EventEmitter = require('events').EventEmitter
 const Tether = require('tether')
 const Color = require('color-js')
@@ -31,10 +32,10 @@ class ColorPicker extends EventEmitter {
       ['Grey', '#9E9E9E'],
     ]
 
-
     this.el = null
     this.innerEl = null
     this.create()
+    ipcRenderer.send('textInputMode', true)
   }
 
   setState (newState) {
@@ -43,61 +44,46 @@ class ColorPicker extends EventEmitter {
   }
 
   generateColors () {
- 
     let colorRows = []
-    
     let colorRow 
-
     colorRow = []
     for (var i = 0; i < this.primaryColors.length; i++) {
       colorRow.push(['Faint ' + this.primaryColors[i][0],Color(this.primaryColors[i][1]).blend(Color("#fff"),.50).toCSS()])
     }
     colorRows.push(colorRow)
-
     colorRow = []
     for (var i = 0; i < this.primaryColors.length; i++) {
       colorRow.push(['Light ' + this.primaryColors[i][0],Color(this.primaryColors[i][1]).blend(Color("#fff"),.20).toCSS()])
     }
     colorRows.push(colorRow)
-
     colorRow = []
     for (var i = 0; i < this.primaryColors.length; i++) {
       colorRow.push([this.primaryColors[i][0],this.primaryColors[i][1]])
     }
     colorRows.push(colorRow)
-
     colorRow = []
     for (var i = 0; i < this.primaryColors.length; i++) {
       colorRow.push(['Shaded ' + this.primaryColors[i][0],Color(this.primaryColors[i][1]).shiftHue(-5).blend(Color("#000"),.20).toCSS()])
     }
     colorRows.push(colorRow)
-
     colorRow = []
     for (var i = 0; i < this.primaryColors.length; i++) {
       colorRow.push(['Dark ' + this.primaryColors[i][0],Color(this.primaryColors[i][1]).shiftHue(-10).blend(Color("#000"),.40).toCSS()])
     }
     colorRows.push(colorRow)
-
     colorRow = []
     for (var i = 0; i < this.primaryColors.length; i++) {
       colorRow.push(['Shadow ' + this.primaryColors[i][0],Color(this.primaryColors[i][1]).shiftHue(-20).blend(Color("#000"),.65).toCSS()])
     }
     colorRows.push(colorRow)
-
     colorRow = []
     for (var i = 0; i < this.primaryColors.length - 3; i++) {
       colorRow.push(['Pitch ' + this.primaryColors[i][0],Color(this.primaryColors[i][1]).shiftHue(-20).blend(Color("#000"),.80).toCSS()])
     }
     colorRow.push(['Pitch Ass Black',Color("#000").toCSS()])
-
     colorRows.push(colorRow)
-
     return colorRows
-
-
   }
-
-
 
   // TODO use a class instead of id for styling, refactor context menu
   template () {
@@ -121,7 +107,7 @@ class ColorPicker extends EventEmitter {
       <div id="context-menu" class="color-picker top-nub">
         
         ${html.join('')}
-        <div class="color-name">Pick a color</div>
+        <div class="color-name"><span class="name">Pick a color</span><input class="color-css" type="text" value=""></div>
       </div>
     </div>`
   }
@@ -147,12 +133,24 @@ class ColorPicker extends EventEmitter {
           document.querySelector(".color-swatch.active").classList.remove("active")
         }
         e.target.className += " active"
-        document.querySelector(".color-name").innerHTML = `${e.target.dataset.colorName} <span class="color-css">${e.target.dataset.color}</span>`
+        //document.querySelector(".color-name").innerHTML = `${e.target.dataset.colorName} <span class="color-css">${e.target.dataset.color}</span>`
+        document.querySelector(".color-name .name").innerHTML = e.target.dataset.colorName
+        document.querySelector(".color-name .color-css").value = e.target.dataset.color
+        
         this.emit(e.target.dataset.color)
       })
     })
 
+    document.querySelector(".color-name .color-css").addEventListener('focus', (e)=> {
+      e.target.select()
+    })
 
+    document.querySelector(".color-name .color-css").addEventListener('input', (e)=> {
+      if (e.target.value.length == 7 && Color(e.target.value).red !== undefined) {
+        this.setState ({ color: Color(e.target.value).toCSS() })
+        this.emit(Color(e.target.value).toCSS())
+      }
+    })
   }
   
   onPointerDown (event) {
@@ -160,7 +158,8 @@ class ColorPicker extends EventEmitter {
   }
   
   onPointerLeave (event) {
-    console.log('onPointerLeave')
+    //console.log('onPointerLeave')
+    this.remove()
   }
   
   fadeIn () {
@@ -191,12 +190,53 @@ class ColorPicker extends EventEmitter {
   }
   
   remove () {
+    ipcRenderer.send('textInputMode', false)
     this.target = null
     this.fadeOut()
     this.tethered && this.tethered.destroy()
   }
 
+  colorDistance (color1, color2) {
+    var i,
+        d = 0
+
+    for (i = 0; i < color1.length; i++) {
+      d += (color1[i] - color2[i])*(color1[i] - color2[i])
+    }
+    return Math.sqrt(d)
+  }
+
   render () {
+    let closestColorName = ''
+    let closestColor = ''
+    let closestColorDistance = 999999
+
+    // loop through all the generated colors, find the closest
+    for (var i = 0; i < this.colorRows.length; i++) {
+      for (var i2 = 0; i2 < this.colorRows[i].length; i2++) {
+        var color1 = Color(this.state.color).toRGB()
+        color1 = [color1.red, color1.green, color1.blue]
+        var color2 = Color(this.colorRows[i][i2][1]).toRGB()
+        color2 = [color2.red, color2.green, color2.blue]
+        var distance = this.colorDistance(color1,color2)
+        if (closestColorDistance > distance) {
+          closestColorName = this.colorRows[i][i2][0]
+          closestColor = this.colorRows[i][i2][1]
+          closestColorDistance = distance
+        }
+      }
+    }
+
+    console.log(closestColorName)
+    // set active
+    if (document.querySelector(".color-swatch.active")){
+      document.querySelector(".color-swatch.active").classList.remove("active")
+    }
+    document.querySelector(`.color-swatch[data-color-name="${closestColorName}"]`).className += " active"
+    // update the name
+    document.querySelector(".color-name .name").innerHTML = closestColorName
+    document.querySelector(".color-name .color-css").value = this.state.color
+
     console.log('ColorPicker#render', this.state)
   }
 }

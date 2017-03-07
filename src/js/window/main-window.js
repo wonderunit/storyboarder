@@ -1912,3 +1912,8 @@ ipcRenderer.on('toggleViewMode', (event, args)=>{
     toggleViewMode()
   }
 })
+
+ipcRenderer.on('textInputMode', (event, args)=>{
+  textInputMode = args
+  textInputAllowAdvance = false
+})
