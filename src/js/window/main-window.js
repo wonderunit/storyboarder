@@ -642,31 +642,32 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false)=> {
   }
 
   renderMetaData()
+  renderMarkerPosition()
+}
+
+let renderMarkerPosition = () => {
+  let curr = boardData.boards[currentBoard]
+  let last = boardData.boards[boardData.boards.length - 1]
 
   let percentage
-  if (boardData.boards[boardData.boards.length-1].duration) {
-    percentage = (boardData.boards[currentBoard].time)/(boardData.boards[boardData.boards.length-1].time+boardData.boards[boardData.boards.length-1].duration)
+  if (last.duration) {
+    percentage = (curr.time)/(last.time+last.duration)
   } else {
-    percentage = (boardData.boards[currentBoard].time)/(boardData.boards[boardData.boards.length-1].time+2000)
+    percentage = (curr.time)/(last.time+2000)
   }
 
-  console.log(percentage)
   let width = document.querySelector('#timeline #movie-timeline-content').offsetWidth
-  console.log(width)
   document.querySelector('#timeline .marker').style.left = (width*percentage) + 'px'
 
-  document.querySelector('#timeline .left-block').innerHTML = util.msToTime(boardData.boards[currentBoard].time)
+  document.querySelector('#timeline .left-block').innerHTML = util.msToTime(curr.time)
 
   let totalTime
-  if (boardData.boards[boardData.boards.length-1].duration) {
-    totalTime = (boardData.boards[boardData.boards.length-1].time+boardData.boards[boardData.boards.length-1].duration)
+  if (last.duration) {
+    totalTime = (last.time+last.duration)
   } else {
-    totalTime = (boardData.boards[boardData.boards.length-1].time+2000)
+    totalTime = (last.time+2000)
   }
   document.querySelector('#timeline .right-block').innerHTML = util.msToTime(totalTime)
-
-
-
 }
 
 let renderMetaData = ()=> {
@@ -876,6 +877,8 @@ let renderThumbnailDrawer = ()=> {
   }
   document.querySelector('#thumbnail-drawer').innerHTML = html.join('')
 
+  renderThumbnailButtons()
+
   renderThumbnailDrawerSelections()
 
   if (!contextMenu) {
@@ -968,12 +971,42 @@ let renderThumbnailDrawer = ()=> {
     }, true, true)
   }
 
+  renderThumbnailButtons()
   renderTimeline()
 
   //gotoBoard(currentBoard)
 }
 
+let renderThumbnailButtons = () => {
+  if (!document.getElementById('thumbnail-add-btn')) {
+    let drawerEl = document.getElementById('thumbnail-drawer')
+
+    let el = document.createElement('div')
+    el.dataset.tooltip = true
+    el.dataset.tooltipTitle = 'New Board'
+    el.dataset.tooltipDescription = 'New Board'
+    el.dataset.tooltipKeys = 'N'
+    el.dataset.tooltipPosition = 'top center'
+    el.id = 'thumbnail-add-btn'
+    el.style.width = Math.floor(60 * boardData.aspectRatio) + 'px'
+    el.innerHTML = `
+      <div class="icon">✚</div>
+    `
+    drawerEl.appendChild(el)
+    
+    el.addEventListener('pointerdown', event => {
+      newBoard(boardData.boards.length)
+    })
+    
+    tooltips.setupTooltipForElement(el)
+  }
+}
+
 let renderTimeline = () => {
+  // HACK store original position of marker
+  let getMarkerEl = () => document.querySelector('#timeline .marker')
+  let markerLeft = getMarkerEl() ? getMarkerEl().style.left : '0px'
+
   let html = []
   html.push('<div class="marker-holder"><div class="marker"></div></div>')
   var i = 0
@@ -994,6 +1027,9 @@ let renderTimeline = () => {
       gotoBoard(currentBoard)
     }, true, true)
   }
+
+  // HACK restore original position of marker
+  if (getMarkerEl()) getMarkerEl().style.left = markerLeft
 }
 
 let dragMode = false
