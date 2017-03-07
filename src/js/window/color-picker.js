@@ -16,11 +16,11 @@ class ColorPicker extends EventEmitter {
       ['Deep Purple', '#673AB7'],
       ['Indigo', '#3F51B5'],
       ['Blue', '#2196F3'],
-      ['Light Blue', '#03A9F4'],
+      ['Cornflower Blue', '#03A9F4'],
       ['Cyan', '#00BCD4'],
       ['Teal', '#009688'],
-      ['Green', '#4CAF50'],
-      ['Light Green', '#8BC34A'],
+      ['Deep Green', '#4CAF50'],
+      ['Green', '#8BC34A'],
       ['Lime', '#CDDC39'],
       ['Yellow', '#FFEB3B'],
       ['Amber', '#FFC107'],
@@ -42,43 +42,86 @@ class ColorPicker extends EventEmitter {
     this.render()
   }
 
+  generateColors () {
+ 
+    let colorRows = []
+    
+    let colorRow 
+
+    colorRow = []
+    for (var i = 0; i < this.primaryColors.length; i++) {
+      colorRow.push(['Faint ' + this.primaryColors[i][0],Color(this.primaryColors[i][1]).blend(Color("#fff"),.50).toCSS()])
+    }
+    colorRows.push(colorRow)
+
+    colorRow = []
+    for (var i = 0; i < this.primaryColors.length; i++) {
+      colorRow.push(['Light ' + this.primaryColors[i][0],Color(this.primaryColors[i][1]).blend(Color("#fff"),.20).toCSS()])
+    }
+    colorRows.push(colorRow)
+
+    colorRow = []
+    for (var i = 0; i < this.primaryColors.length; i++) {
+      colorRow.push([this.primaryColors[i][0],this.primaryColors[i][1]])
+    }
+    colorRows.push(colorRow)
+
+    colorRow = []
+    for (var i = 0; i < this.primaryColors.length; i++) {
+      colorRow.push(['Shaded ' + this.primaryColors[i][0],Color(this.primaryColors[i][1]).shiftHue(-5).blend(Color("#000"),.20).toCSS()])
+    }
+    colorRows.push(colorRow)
+
+    colorRow = []
+    for (var i = 0; i < this.primaryColors.length; i++) {
+      colorRow.push(['Dark ' + this.primaryColors[i][0],Color(this.primaryColors[i][1]).shiftHue(-10).blend(Color("#000"),.40).toCSS()])
+    }
+    colorRows.push(colorRow)
+
+    colorRow = []
+    for (var i = 0; i < this.primaryColors.length; i++) {
+      colorRow.push(['Shadow ' + this.primaryColors[i][0],Color(this.primaryColors[i][1]).shiftHue(-20).blend(Color("#000"),.65).toCSS()])
+    }
+    colorRows.push(colorRow)
+
+    colorRow = []
+    for (var i = 0; i < this.primaryColors.length - 3; i++) {
+      colorRow.push(['Pitch ' + this.primaryColors[i][0],Color(this.primaryColors[i][1]).shiftHue(-20).blend(Color("#000"),.80).toCSS()])
+    }
+    colorRow.push(['Pitch Ass Black',Color("#000").toCSS()])
+
+    colorRows.push(colorRow)
+
+    return colorRows
+
+
+  }
+
+
 
   // TODO use a class instead of id for styling, refactor context menu
   template () {
+    this.colorRows = this.generateColors()
+
     let html = []
 
-    html.push(`<div class="color-row">`)
-    for (var i = 0; i < this.primaryColors.length; i++) {
-      html.push(`<div class="color-swatch" style="background-color: ${Color(this.primaryColors[i][1]).blend(Color("#fff"),.50).toCSS()};"></div>`)
+    for (var i = 0; i < this.colorRows.length; i++) {
+      html.push(`<div class="color-row">`)
+      for (var i2 = 0; i2 < this.colorRows[i].length; i2++) {
+        let classArr = ["color-swatch"]
+        if (i == (this.colorRows.length-1) && i2 == (this.colorRows[i].length-1) ) {
+          classArr.push("last-color")
+        }
+        html.push(`<div class="${classArr.join(' ')}" data-color-name="${this.colorRows[i][i2][0]}" data-color="${this.colorRows[i][i2][1]}" style="background-color: ${this.colorRows[i][i2][1]};"></div>`)
+      }
+      html.push(`</div>`)
     }
-    html.push(`</div><div class="color-row">`)
-    for (var i = 0; i < this.primaryColors.length; i++) {
-      html.push(`<div class="color-swatch" style="background-color: ${Color(this.primaryColors[i][1]).blend(Color("#fff"),.20).toCSS()};"></div>`)
-    }
-    html.push(`</div><div class="color-row">`)
-    for (var i = 0; i < this.primaryColors.length; i++) {
-      html.push(`<div class="color-swatch" style="background-color: ${this.primaryColors[i][1]};"></div>`)
-    }
-    html.push(`</div><div class="color-row">`)
-    for (var i = 0; i < this.primaryColors.length; i++) {
-      html.push(`<div class="color-swatch" style="background-color: ${Color(this.primaryColors[i][1]).shiftHue(-5).blend(Color("#000"),.20).toCSS()};"></div>`)
-    }
-    html.push(`</div><div class="color-row">`)
-    for (var i = 0; i < this.primaryColors.length; i++) {
-      html.push(`<div class="color-swatch" style="background-color: ${Color(this.primaryColors[i][1]).shiftHue(-10).blend(Color("#000"),.40).toCSS()};"></div>`)
-    }
-    html.push(`</div><div class="color-row">`)
-    for (var i = 0; i < this.primaryColors.length; i++) {
-      html.push(`<div class="color-swatch" style="background-color: ${Color(this.primaryColors[i][1]).shiftHue(-20).blend(Color("#000"),.70).toCSS()};"></div>`)
-    }
-    html.push(`</div>`)
-    
 
     return `<div class="color-picker-container popup-container">
       <div id="context-menu" class="color-picker top-nub">
         
         ${html.join('')}
-        Dark Pink
+        <div class="color-name">Pick a color</div>
       </div>
     </div>`
   }
@@ -94,6 +137,22 @@ class ColorPicker extends EventEmitter {
     this.el.addEventListener('pointerleave', this.onPointerLeave.bind(this))
     
     this.innerEl = this.el.querySelector('.color-picker')
+
+    var swatches = document.querySelectorAll(".color-swatch")
+
+    swatches.forEach((e)=>{
+      e.addEventListener('pointerdown', (e)=>{
+        console.log('click!', e.target.dataset)
+        if (document.querySelector(".color-swatch.active")){
+          document.querySelector(".color-swatch.active").classList.remove("active")
+        }
+        e.target.className += " active"
+        document.querySelector(".color-name").innerHTML = `${e.target.dataset.colorName} <span class="color-css">${e.target.dataset.color}</span>`
+        this.emit(e.target.dataset.color)
+      })
+    })
+
+
   }
   
   onPointerDown (event) {
