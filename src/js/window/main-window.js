@@ -527,7 +527,7 @@ let deleteBoards = (args)=> {
   if (confirm(msg)) {
     if (selections.size) {
       // delete all selected boards
-      [...selections].sort().reverse().forEach(n => {
+      [...selections].sort(util.compareNumbers).reverse().forEach(n => {
         deleteSingleBoard(n)
       })
 
@@ -603,7 +603,7 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false)=> {
   currentBoard = Math.min(currentBoard, boardData.boards.length-1)
   
   if (!shouldPreserveSelections) selections.clear()
-  selections = new Set([...selections.add(currentBoard)].sort())
+  selections = new Set([...selections.add(currentBoard)].sort(util.compareNumbers))
   renderThumbnailDrawerSelections()
   
   updateSketchPaneBoard()
@@ -1626,7 +1626,7 @@ let copyBoards = ()=> {
     }
 
     // grab data for each board
-    let boards = [...selections].sort().map(n => util.shallowCopy(boardData.boards[n]))
+    let boards = [...selections].sort(util.compareNumbers).map(n => util.shallowCopy(boardData.boards[n]))
     
     // inject image data for each board
     boards = boards.map(board => {
@@ -1752,7 +1752,7 @@ let moveSelectedBoards = (position) => {
   console.log('moveSelectedBoards(' + position + ')')
 
   let numRemoved = selections.size
-  let firstSelection = [...selections].sort()[0]
+  let firstSelection = [...selections].sort(util.compareNumbers)[0]
 
   let movedBoards = boardData.boards.splice(firstSelection, numRemoved)
 
@@ -1783,27 +1783,25 @@ let moveSelectedBoards = (position) => {
 }
 
 let reorderBoardsLeft = () => {
-  let selectionsAsArray = [...selections].sort()
+  let selectionsAsArray = [...selections].sort(util.compareNumbers)
   let leftMost = selectionsAsArray[0]
-
-  let position = util.clamp(leftMost - 1, 0, boardData.boards)
-
-  moveSelectedBoards(position)
-
-  renderThumbnailDrawer()
-  gotoBoard(currentBoard, true)
+  let position = leftMost - 1
+  if (position >= 0) {
+    moveSelectedBoards(position)
+    renderThumbnailDrawer()
+    gotoBoard(currentBoard, true)
+  }
 }
 
 let reorderBoardsRight = () => {
-  let selectionsAsArray = [...selections].sort()
+  let selectionsAsArray = [...selections].sort(util.compareNumbers)
   let rightMost = selectionsAsArray.slice(-1)[0] + 1
-  // swap the index AFTER the index AFTER rightMost (+2)
-  let position = util.clamp(rightMost + 1, 0, boardData.boards)
-      
-  moveSelectedBoards(position)
-
-  renderThumbnailDrawer()
-  gotoBoard(currentBoard, true)
+  let position = rightMost + 1
+  if (position <= boardData.boards.length) {
+    moveSelectedBoards(position)
+    renderThumbnailDrawer()
+    gotoBoard(currentBoard, true)
+  }
 }
 
 let enableEditMode = () => {
