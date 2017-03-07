@@ -642,31 +642,32 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false)=> {
   }
 
   renderMetaData()
+  renderMarkerPosition()
+}
+
+let renderMarkerPosition = () => {
+  let curr = boardData.boards[currentBoard]
+  let last = boardData.boards[boardData.boards.length - 1]
 
   let percentage
-  if (boardData.boards[boardData.boards.length-1].duration) {
-    percentage = (boardData.boards[currentBoard].time)/(boardData.boards[boardData.boards.length-1].time+boardData.boards[boardData.boards.length-1].duration)
+  if (last.duration) {
+    percentage = (curr.time)/(last.time+last.duration)
   } else {
-    percentage = (boardData.boards[currentBoard].time)/(boardData.boards[boardData.boards.length-1].time+2000)
+    percentage = (curr.time)/(last.time+2000)
   }
 
-  console.log(percentage)
   let width = document.querySelector('#timeline #movie-timeline-content').offsetWidth
-  console.log(width)
   document.querySelector('#timeline .marker').style.left = (width*percentage) + 'px'
 
-  document.querySelector('#timeline .left-block').innerHTML = util.msToTime(boardData.boards[currentBoard].time)
+  document.querySelector('#timeline .left-block').innerHTML = util.msToTime(curr.time)
 
   let totalTime
-  if (boardData.boards[boardData.boards.length-1].duration) {
-    totalTime = (boardData.boards[boardData.boards.length-1].time+boardData.boards[boardData.boards.length-1].duration)
+  if (last.duration) {
+    totalTime = (last.time+last.duration)
   } else {
-    totalTime = (boardData.boards[boardData.boards.length-1].time+2000)
+    totalTime = (last.time+2000)
   }
   document.querySelector('#timeline .right-block').innerHTML = util.msToTime(totalTime)
-
-
-
 }
 
 let renderMetaData = ()=> {
