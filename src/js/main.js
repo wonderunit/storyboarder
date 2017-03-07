@@ -521,3 +521,7 @@ ipcMain.on('playsfx', (event, arg)=> {
 ipcMain.on('test', (event, arg)=> {
   console.log('test', arg)
 })
+
+ipcMain.on('textInputMode', (event, arg)=> {
+  mainWindow.webContents.send('textInputMode', arg)
+})

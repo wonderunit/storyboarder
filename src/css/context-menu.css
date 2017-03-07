@@ -1,3 +1,9 @@
+.popup-container {
+  position: absolute;
+}
+
+/**/
+
 .context-menu-container {
   position: absolute;
   z-index: 999;
@@ -22,10 +28,6 @@
   animation-fill-mode: forwards;
   float: left;
 }
-
-
-
-
 
 #context-menu.top-nub:after {
   bottom: 100%;
@@ -85,10 +87,6 @@
   z-index: 2000;
 }
 
-
-
-
-
 #context-menu .item {
   color: rgba(255,255,255,0.5);
   padding: 5px 10px;
@@ -130,6 +128,63 @@
   pointer-events: auto;
 }
 
+
+.color-picker-container { 
+  z-index: 999;
+}
+
+.color-picker-container #context-menu {
+  max-width: 1000px;
+}
+
+
+.color-picker-container .color-row {
+  height: 40px;
+}
+
+.color-swatch {
+  display: inline-block;
+  width: 40px;
+  height: 40px;
+}
+
+.last-color {
+  width: 120px;
+}
+
+.color-swatch.active {
+  border: 4px solid rgba(255,255,255,0.5);
+  box-sizing: border-box;
+  box-shadow: 0 0 15px rgba(0,0,0,0.4);
+  z-index: 2000;
+  position: relative;
+}
+
+.color-picker-container .color-name {
+  font-size: 14px;
+  color: rgba(255,255,255,0.7);
+  padding-top: 10px;
+}
+
+.color-picker-container .color-name .color-css {
+  color: rgba(255,255,255,0.3);
+  margin-left: 10px;
+  box-sizing: border-box;
+  width: 80px;
+  border: 0;
+  border-radius: 3px;
+  background: rgba(0,0,0,0);
+  font-size: 14px;
+  font-weight: 100;
+  padding: 5px;
+  resize: none;
+  text-transform: uppercase;
+}
+
+.color-picker-container .color-name .color-css:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(255,255,255,0.3);
+}
 
 
 @keyframes appear {

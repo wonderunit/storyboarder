@@ -15,6 +15,7 @@ const undoStack = require('../undo-stack.js')
 const Toolbar = require('./toolbar.js')
 const tooltips = require('./tooltips.js')
 const ContextMenu = require('./context-menu.js')
+const ColorPicker = require('./color-picker.js')
 const Transport = require('./transport.js')
 const notifications = require('./notifications.js')
 const NotificationData = require('../../data/messages.json')
@@ -59,6 +60,7 @@ let lastPointer = { x: null, y: null }
 
 let toolbar
 let contextMenu
+let colorPicker
 let transport
 
 menu.setMenu()
@@ -412,6 +414,10 @@ let loadBoardUI = ()=> {
 
   notifications.init(document.getElementById('notifications'))
   setupRandomizedNotifications()
+
+  colorPicker = new ColorPicker()
+  colorPicker.setState({ color: '#ff0000' })
+  colorPicker.attachTo(document.getElementById('toolbar-current-color'))
 
   setTimeout(()=>{remote.getCurrentWindow().show()}, 200)
   //remote.getCurrentWebContents().openDevTools()
@@ -2043,4 +2049,9 @@ ipcRenderer.on('toggleViewMode', (event, args)=>{
   if (!textInputMode) {
     toggleViewMode()
   }
+})
+
+ipcRenderer.on('textInputMode', (event, args)=>{
+  textInputMode = args
+  textInputAllowAdvance = false
 })
