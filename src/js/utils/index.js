@@ -55,6 +55,28 @@ let shallowCopy = (object) => JSON.parse(JSON.stringify(object))
 // via https://github.com/skellock/ramdasauce/blob/master/lib/isUndefined.js
 let isUndefined = (x) => typeof x === 'undefined'
 
+// return a copy of an array with elements swapped
+let swap = (arr, x, y) => {
+  let a = arr.slice(0)
+  let b = a[x]
+  a[x] = a[y]
+  a[y] = b
+  return a
+}
+
+let shuffle = (arr) => {
+  let a = arr.slice(0) // make a copy
+  for (var i = a.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1))
+    var temp = a[i]
+    a[i] = a[j]
+    a[j] = temp
+  }
+  return a
+}
+
+let compareNumbers = (a, b) => a - b
+
 module.exports = {
   msToTime,
   uidGen,
@@ -64,5 +86,8 @@ module.exports = {
   clamp,
   shallowCopy,
   isUndefined,
-  acceleratorAsHtml
+  swap,
+  acceleratorAsHtml,
+  shuffle,
+  compareNumbers
 }

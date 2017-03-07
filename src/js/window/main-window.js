@@ -16,6 +16,9 @@ const Toolbar = require('./toolbar.js')
 const tooltips = require('./tooltips.js')
 const ContextMenu = require('./context-menu.js')
 const ColorPicker = require('./color-picker.js')
+const Transport = require('./transport.js')
+const notifications = require('./notifications.js')
+const NotificationData = require('../../data/messages.json')
 
 let boardFilename
 let boardPath
@@ -58,6 +61,7 @@ let lastPointer = { x: null, y: null }
 let toolbar
 let contextMenu
 let colorPicker
+let transport
 
 menu.setMenu()
 
@@ -261,6 +265,8 @@ let loadBoardUI = ()=> {
       if (!util.isUndefined(index)) {
         console.log('user requests move operation:', selections, 'to insert after', index)
         moveSelectedBoards(index)
+        renderThumbnailDrawer()
+        gotoBoard(currentBoard, true)
       } else {
         console.log('could not find point for move operation')
       }
@@ -377,13 +383,37 @@ let loadBoardUI = ()=> {
   toolbar.on('onion', () => {
     alert('Onion. This feature is not ready yet :(')
   })
-  toolbar.on('caption', () => {
-    alert('Caption. This feature is not ready yet :(')
+  toolbar.on('captions', () => {
+    // HACK!!!
+    let el = document.querySelector('#canvas-caption')
+    el.style.visibility = el.style.visibility == 'hidden'
+      ? 'visible'
+      : 'hidden'
   })
 
   toolbar.setState({ brush: 'pencil' })
   
   tooltips.init()
+  
+  transport = new Transport()
+  transport.on('previousScene', () => {
+    previousScene()
+  })
+  transport.on('prevBoard', () => {
+    goNextBoard(-1)
+  })
+  transport.on('togglePlayback', () => {
+    togglePlayback()
+  })
+  transport.on('nextBoard', () => {
+    goNextBoard(+1)
+  })
+  transport.on('nextScene', () => {
+    nextScene()
+  })
+
+  notifications.init(document.getElementById('notifications'))
+  setupRandomizedNotifications()
 
   colorPicker = new ColorPicker()
   colorPicker.setState({ color: '#ff0000' })
@@ -503,7 +533,7 @@ let deleteBoards = (args)=> {
   if (confirm(msg)) {
     if (selections.size) {
       // delete all selected boards
-      [...selections].sort().reverse().forEach(n => {
+      [...selections].sort(util.compareNumbers).reverse().forEach(n => {
         deleteSingleBoard(n)
       })
 
@@ -579,7 +609,7 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false)=> {
   currentBoard = Math.min(currentBoard, boardData.boards.length-1)
   
   if (!shouldPreserveSelections) selections.clear()
-  selections = new Set([...selections.add(currentBoard)].sort())
+  selections = new Set([...selections.add(currentBoard)].sort(util.compareNumbers))
   renderThumbnailDrawerSelections()
   
   updateSketchPaneBoard()
@@ -618,31 +648,32 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false)=> {
   }
 
   renderMetaData()
+  renderMarkerPosition()
+}
+
+let renderMarkerPosition = () => {
+  let curr = boardData.boards[currentBoard]
+  let last = boardData.boards[boardData.boards.length - 1]
 
   let percentage
-  if (boardData.boards[boardData.boards.length-1].duration) {
-    percentage = (boardData.boards[currentBoard].time)/(boardData.boards[boardData.boards.length-1].time+boardData.boards[boardData.boards.length-1].duration)
+  if (last.duration) {
+    percentage = (curr.time)/(last.time+last.duration)
   } else {
-    percentage = (boardData.boards[currentBoard].time)/(boardData.boards[boardData.boards.length-1].time+2000)
+    percentage = (curr.time)/(last.time+2000)
   }
 
-  console.log(percentage)
   let width = document.querySelector('#timeline #movie-timeline-content').offsetWidth
-  console.log(width)
   document.querySelector('#timeline .marker').style.left = (width*percentage) + 'px'
 
-  document.querySelector('#timeline .left-block').innerHTML = util.msToTime(boardData.boards[currentBoard].time)
+  document.querySelector('#timeline .left-block').innerHTML = util.msToTime(curr.time)
 
   let totalTime
-  if (boardData.boards[boardData.boards.length-1].duration) {
-    totalTime = (boardData.boards[boardData.boards.length-1].time+boardData.boards[boardData.boards.length-1].duration)
+  if (last.duration) {
+    totalTime = (last.time+last.duration)
   } else {
-    totalTime = (boardData.boards[boardData.boards.length-1].time+2000)
+    totalTime = (last.time+2000)
   }
   document.querySelector('#timeline .right-block').innerHTML = util.msToTime(totalTime)
-
-
-
 }
 
 let renderMetaData = ()=> {
@@ -852,6 +883,8 @@ let renderThumbnailDrawer = ()=> {
   }
   document.querySelector('#thumbnail-drawer').innerHTML = html.join('')
 
+  renderThumbnailButtons()
+
   renderThumbnailDrawerSelections()
 
   if (!contextMenu) {
@@ -882,10 +915,10 @@ let renderThumbnailDrawer = ()=> {
       alert('Import. Coming Soon!')
     })
     contextMenu.on('reorder-left', () => {
-      alert('Re-order Left. Coming Soon!')
+      reorderBoardsLeft()
     })
     contextMenu.on('reorder-right', () => {
-      alert('Re-order Right. Coming Soon!')
+      reorderBoardsRight()
     })
   }
 
@@ -944,12 +977,42 @@ let renderThumbnailDrawer = ()=> {
     }, true, true)
   }
 
+  renderThumbnailButtons()
   renderTimeline()
 
   //gotoBoard(currentBoard)
 }
 
+let renderThumbnailButtons = () => {
+  if (!document.getElementById('thumbnail-add-btn')) {
+    let drawerEl = document.getElementById('thumbnail-drawer')
+
+    let el = document.createElement('div')
+    el.dataset.tooltip = true
+    el.dataset.tooltipTitle = 'New Board'
+    el.dataset.tooltipDescription = 'New Board'
+    el.dataset.tooltipKeys = 'N'
+    el.dataset.tooltipPosition = 'top center'
+    el.id = 'thumbnail-add-btn'
+    el.style.width = Math.floor(60 * boardData.aspectRatio) + 'px'
+    el.innerHTML = `
+      <div class="icon">✚</div>
+    `
+    drawerEl.appendChild(el)
+    
+    el.addEventListener('pointerdown', event => {
+      newBoard(boardData.boards.length)
+    })
+    
+    tooltips.setupTooltipForElement(el)
+  }
+}
+
 let renderTimeline = () => {
+  // HACK store original position of marker
+  let getMarkerEl = () => document.querySelector('#timeline .marker')
+  let markerLeft = getMarkerEl() ? getMarkerEl().style.left : '0px'
+
   let html = []
   html.push('<div class="marker-holder"><div class="marker"></div></div>')
   var i = 0
@@ -970,6 +1033,9 @@ let renderTimeline = () => {
       gotoBoard(currentBoard)
     }, true, true)
   }
+
+  // HACK restore original position of marker
+  if (getMarkerEl()) getMarkerEl().style.left = markerLeft
 }
 
 let dragMode = false
@@ -1334,13 +1400,11 @@ window.onkeydown = (e)=> {
         toggleViewMode()
         e.preventDefault()
         break;
-      case 'Space':
-        togglePlayback()
-        e.preventDefault()
-        break
       case 'ArrowLeft':
         if (e.metaKey || e.ctrlKey) {
           previousScene()
+        } else if (e.altKey) {
+          reorderBoardsLeft()
         } else {
           let shouldPreserveSelections = e.shiftKey
           goNextBoard(-1, shouldPreserveSelections)
@@ -1350,6 +1414,8 @@ window.onkeydown = (e)=> {
       case 'ArrowRight':
         if (e.metaKey || e.ctrlKey) {
           nextScene()
+        } else if (e.altKey) {
+          reorderBoardsRight()
         } else {
           let shouldPreserveSelections = e.shiftKey
           goNextBoard(1, shouldPreserveSelections)
@@ -1390,6 +1456,7 @@ let stopPlaying = () => {
   utter.onend = null
   ipcRenderer.send('resumeSleep')
   speechSynthesis.cancel()
+  transport.setState({ playbackMode })
 }
 
 let togglePlayback = ()=> {
@@ -1400,6 +1467,7 @@ let togglePlayback = ()=> {
   } else {
     stopPlaying()
   }
+  transport.setState({ playbackMode })
 }
 
 let playAdvance = function(first) {
@@ -1600,7 +1668,7 @@ let copyBoards = ()=> {
     }
 
     // grab data for each board
-    let boards = [...selections].sort().map(n => util.shallowCopy(boardData.boards[n]))
+    let boards = [...selections].sort(util.compareNumbers).map(n => util.shallowCopy(boardData.boards[n]))
     
     // inject image data for each board
     boards = boards.map(board => {
@@ -1726,7 +1794,7 @@ let moveSelectedBoards = (position) => {
   console.log('moveSelectedBoards(' + position + ')')
 
   let numRemoved = selections.size
-  let firstSelection = [...selections].sort()[0]
+  let firstSelection = [...selections].sort(util.compareNumbers)[0]
 
   let movedBoards = boardData.boards.splice(firstSelection, numRemoved)
 
@@ -1742,12 +1810,40 @@ let moveSelectedBoards = (position) => {
 
   boardData.boards.splice(position, 0, ...movedBoards)
 
-  // reset selection
-  selections.clear()
+  // how far from the start of the selection was the current board?
+  let offset = currentBoard - firstSelection
 
-  // re-render
-  renderThumbnailDrawer()
-  gotoBoard(currentBoard)
+  // what are the new bounds of our selection?
+  let b = Math.min(position + movedBoards.length - 1, boardData.boards.length - 1)
+  let a = b - (selections.size - 1)
+  // update selection
+  selections = new Set(util.range(a, b))
+  // update currentBoard
+  currentBoard = a + offset
+
+  markBoardFileDirty()
+}
+
+let reorderBoardsLeft = () => {
+  let selectionsAsArray = [...selections].sort(util.compareNumbers)
+  let leftMost = selectionsAsArray[0]
+  let position = leftMost - 1
+  if (position >= 0) {
+    moveSelectedBoards(position)
+    renderThumbnailDrawer()
+    gotoBoard(currentBoard, true)
+  }
+}
+
+let reorderBoardsRight = () => {
+  let selectionsAsArray = [...selections].sort(util.compareNumbers)
+  let rightMost = selectionsAsArray.slice(-1)[0] + 1
+  let position = rightMost + 1
+  if (position <= boardData.boards.length) {
+    moveSelectedBoards(position)
+    renderThumbnailDrawer()
+    gotoBoard(currentBoard, true)
+  }
 }
 
 let enableEditMode = () => {
@@ -1851,6 +1947,36 @@ let renderThumbnailCursor = () => {
   }
 }
 
+const setupRandomizedNotifications = () => {  
+  let defaultMessages = util.shuffle(NotificationData.messages)
+
+  fetch('https://wonderunit.com/software/storyboarder/messages.json').then(response => {
+    if (response.ok) {
+      response.json().then(json => {
+        runRandomizedNotifications(util.shuffle(json.messages))
+      }).catch(e => {
+        console.warn('Could not parse messages')
+        runRandomizedNotifications(defaultMessages)
+      })
+    } else {
+      console.warn('Could not read messages')
+      runRandomizedNotifications(defaultMessages)
+    }
+  }).catch(e => {
+    console.warn('Could not load messages')
+    console.warn(e)
+    runRandomizedNotifications(defaultMessages)
+  })
+}
+const runRandomizedNotifications = (messages) => {
+  let count = 0, duration = 60 * 60 * 1000, timeout
+  const tick = () => {
+    notifications.notify(messages[count++ % messages.length])
+    timeout = setTimeout(tick, duration)
+  }
+  tick()
+}
+
 ipcRenderer.on('setTool', (e, arg)=> {
   if (!toolbar) return
 
@@ -1904,6 +2030,18 @@ ipcRenderer.on('deleteBoards', (event, args)=>{
 ipcRenderer.on('duplicateBoard', (event, args)=>{
   if (!textInputMode) {
     duplicateBoard()
+  }
+})
+
+ipcRenderer.on('reorderBoardsLeft', (event, args)=>{
+  if (!textInputMode) {
+    reorderBoardsLeft()
+  }
+})
+
+ipcRenderer.on('reorderBoardsRight', (event, args)=>{
+  if (!textInputMode) {
+    reorderBoardsRight()
   }
 })
 

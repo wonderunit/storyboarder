@@ -104,7 +104,6 @@ const template = [
     label: 'Navigation',
     submenu: [
       {
-        accelerator: 'Space',
         label: 'Play',
         click ( item, focusedWindow, event) {
           ipcRenderer.send('togglePlayback')
@@ -190,6 +189,20 @@ const template = [
         label: 'Duplicate Board',
         click ( item, focusedWindow, event) {
           ipcRenderer.send('duplicateBoard')
+        }
+      },
+      {
+        accelerator: 'Alt+Left',
+        label: 'Reorder Left',
+        click ( item, focusedWindow, event) {
+          ipcRenderer.send('reorderBoardsLeft')
+        }
+      },
+      {
+        accelerator: 'Alt+Right',
+        label: 'Reorder Right',
+        click ( item, focusedWindow, event) {
+          ipcRenderer.send('reorderBoardsRight')
         }
       },
     ]

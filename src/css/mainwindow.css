@@ -180,12 +180,10 @@ body {
 }
 
 #thumbnail-drawer {
-  overflow: hidden;
-  white-space: nowrap;
   box-sizing: border-box;
   position: absolute;
   top: 10px;
-  bottom: 0;
+  display: flex;
 }
 
 #thumbnail-cursor {
@@ -210,7 +208,7 @@ body {
 }
 
 #thumbnail-drawer .thumbnail {
-  display: inline-block;
+  flex: 1;
   background: #444;
   padding: 5px;
   margin-right: 0px;
@@ -292,6 +290,34 @@ body {
   opacity: 0.8;
 }
 
+#thumbnail-add-btn {
+  flex: 1;
+  display: flex;
+  padding: 5px;
+  font-size: 10px;
+  color: #888;
+  font-weight: 100;
+
+  height: auto;
+  margin-right: 10px;
+
+  align-items: center;
+  justify-content: center;
+}
+#thumbnail-add-btn .icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 40px;
+  line-height: 40px;
+  text-align: center;
+  
+  margin-top: -10px;
+  color: #888;
+  font-size: 20px;
+  border: 2px solid #555;
+  background-color: #444;
+  text-shadow: 0 1px 1px rgba(0,0,0,0.2);
+}
 
 #sketch-pane {
   flex: 1;
