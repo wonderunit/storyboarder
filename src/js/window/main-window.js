@@ -1002,6 +1002,10 @@ let renderThumbnailButtons = () => {
 }
 
 let renderTimeline = () => {
+  // HACK store original position of marker
+  let markerEl = document.querySelector('#timeline .marker')
+  let markerLeft = markerEl ? markerEl.style.left : '0px'
+
   let html = []
   html.push('<div class="marker-holder"><div class="marker"></div></div>')
   var i = 0
@@ -1022,6 +1026,9 @@ let renderTimeline = () => {
       gotoBoard(currentBoard)
     }, true, true)
   }
+
+  // HACK restore original position of marker
+  document.querySelector('#timeline .marker').style.left = markerLeft
 }
 
 let dragMode = false
