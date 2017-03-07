@@ -876,6 +876,8 @@ let renderThumbnailDrawer = ()=> {
   }
   document.querySelector('#thumbnail-drawer').innerHTML = html.join('')
 
+  renderThumbnailButtons()
+
   renderThumbnailDrawerSelections()
 
   if (!contextMenu) {
@@ -968,9 +970,31 @@ let renderThumbnailDrawer = ()=> {
     }, true, true)
   }
 
+  renderThumbnailButtons()
   renderTimeline()
 
   //gotoBoard(currentBoard)
+}
+
+let renderThumbnailButtons = () => {
+  if (!document.getElementById('thumbnail-add-btn')) {
+    let drawerEl = document.getElementById('thumbnail-drawer')
+
+    let el = document.createElement('div')
+    el.dataset.tooltip = true
+    el.dataset.tooltipTitle = 'New Board'
+    el.dataset.tooltipDescription = 'New Board'
+    el.dataset.tooltipKeys = 'N'
+    el.dataset.tooltipPosition = 'top center'
+    el.id = 'thumbnail-add-btn'
+    el.style.width = Math.floor(60 * boardData.aspectRatio) + 'px'
+    el.innerHTML = `
+      <div class="icon">✚</div>
+    `
+    drawerEl.appendChild(el)
+    
+    tooltips.setupTooltipForElement(el)
+  }
 }
 
 let renderTimeline = () => {
