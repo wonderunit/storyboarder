@@ -993,6 +993,10 @@ let renderThumbnailButtons = () => {
     `
     drawerEl.appendChild(el)
     
+    el.addEventListener('pointerdown', event => {
+      newBoard(boardData.boards.length)
+    })
+    
     tooltips.setupTooltipForElement(el)
   }
 }
