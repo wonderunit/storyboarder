@@ -136,6 +136,7 @@
 
 .color-picker-container #context-menu {
   max-width: 1000px;
+  transform-origin: 50% 0;
 }
 
 
