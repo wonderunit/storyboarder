@@ -27,8 +27,6 @@
     position: relative;
     font-family: inherit;
 
-    transform-origin: 50% 0%;
-
     background: rgba(0,0,0,0.8);
     color: white;
 
@@ -56,6 +54,12 @@
       border-color: transparent;
       border-width: 10px;
       border-style: solid;
+  }
+  .tooltip-element.tooltip-element-attached-bottom .tooltip-content {
+    transform-origin: 50% 100%;
+  }
+  .tooltip-element.tooltip-element-attached-top .tooltip-content {
+    transform-origin: 50% 0%;
   }
   .tooltip-element.tooltip-element-attached-bottom.tooltip-element-attached-center .tooltip-content {
     margin-bottom: 10px;
