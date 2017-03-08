@@ -352,7 +352,9 @@ let loadBoardUI = ()=> {
 
 
   toolbar.on('current-color', () => {
-    alert('Change Current Color. This feature is not ready yet :(')
+    let color = '#ff0000'
+    colorPicker.setState({ color })
+    colorPicker.attachTo(document.getElementById('toolbar-current-color'))
   })
   toolbar.on('palette-colorA', () => {
     alert('Palette Color A. This feature is not ready yet :(')
@@ -416,8 +418,6 @@ let loadBoardUI = ()=> {
   setupRandomizedNotifications()
 
   colorPicker = new ColorPicker()
-  colorPicker.setState({ color: '#ff0000' })
-  colorPicker.attachTo(document.getElementById('toolbar-current-color'))
 
   setTimeout(()=>{remote.getCurrentWindow().show()}, 200)
   //remote.getCurrentWebContents().openDevTools()
