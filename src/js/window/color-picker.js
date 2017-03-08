@@ -35,7 +35,6 @@ class ColorPicker extends EventEmitter {
     this.el = null
     this.innerEl = null
     this.create()
-    ipcRenderer.send('textInputMode', true)
   }
 
   setState (newState) {
@@ -186,6 +185,7 @@ class ColorPicker extends EventEmitter {
         targetAttachment: 'bottom center'
       })
     }
+    ipcRenderer.send('textInputMode', true)
     this.fadeIn()
   }
   
