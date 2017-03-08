@@ -352,7 +352,7 @@ let loadBoardUI = ()=> {
 
 
   toolbar.on('current-color', () => {
-    let color = '#ff0000'
+    let color = '#373737'
     colorPicker.setState({ color })
     colorPicker.attachTo(document.getElementById('toolbar-current-color'))
   })
