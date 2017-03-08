@@ -1,14 +1,14 @@
 {
   "name": "storyboarder",
   "productName": "Storyboarder",
-  "version": "0.0.1",
+  "version": "0.2.0-beta.1",
   "description": "The fastest way to storyboard.",
   "main": "src/js/main.js",
   "scripts": {
     "start": "electron .",
-    "buildosx": "electron-packager . --out=dist --overwrite --platform=darwin --arch=x64 --icon=src/img/outliner-display-icon.icns",
-    "buildwindows": "electron-packager . --out=dist --overwrite --platform=win32 --arch=ia32",
-    "buildall": "electron-packager . --out=dist --overwrite --all"
+    "dist:mac": "build -m",
+    "dist:win": "build -w",
+    "dist": "build -mw"
   },
   "repository": {
     "type": "git",
@@ -21,7 +21,15 @@
   ],
   "author": "Charles Forman",
   "license": "ISC",
+  "build": {
+    "asar": true,
+    "appId": "com.wonderunit.storyboarder",
+    "files": [
+      "**/*"
+    ]
+  },
   "devDependencies": {
+    "electron-builder": "15.1.1",
     "electron-prebuilt": "^1.4.5"
   },
   "dependencies": {
