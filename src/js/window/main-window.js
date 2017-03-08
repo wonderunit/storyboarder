@@ -1002,6 +1002,7 @@ let renderThumbnailButtons = () => {
     
     el.addEventListener('pointerdown', event => {
       newBoard(boardData.boards.length)
+      gotoBoard(boardData.boards.length)
     })
     
     tooltips.setupTooltipForElement(el)
