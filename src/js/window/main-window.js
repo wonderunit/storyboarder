@@ -350,22 +350,6 @@ let loadBoardUI = ()=> {
     markImageFileDirty()
   })
 
-
-  toolbar.on('current-color', () => {
-    let color = '#373737'
-    colorPicker.setState({ color })
-    colorPicker.attachTo(document.getElementById('toolbar-current-color'))
-  })
-  toolbar.on('palette-colorA', () => {
-    alert('Palette Color A. This feature is not ready yet :(')
-  })
-  toolbar.on('palette-colorB', () => {
-    alert('Palette Color B. This feature is not ready yet :(')
-  })
-  toolbar.on('palette-colorC', () => {
-    alert('Palette Color C. This feature is not ready yet :(')
-  })
-
   toolbar.on('brush-size', () => {
     alert('Brush Size. This feature is not ready yet :(')
   })
@@ -418,6 +402,23 @@ let loadBoardUI = ()=> {
   setupRandomizedNotifications()
 
   colorPicker = new ColorPicker()
+  colorPicker.on('color', event => {
+    console.log('colorPicker says:', event.color)
+  })
+  toolbar.on('current-color', () => {
+    let color = '#373737'
+    colorPicker.setState({ color })
+    colorPicker.attachTo(document.getElementById('toolbar-current-color'))
+  })
+  toolbar.on('palette-colorA', () => {
+    alert('Palette Color A. This feature is not ready yet :(')
+  })
+  toolbar.on('palette-colorB', () => {
+    alert('Palette Color B. This feature is not ready yet :(')
+  })
+  toolbar.on('palette-colorC', () => {
+    alert('Palette Color C. This feature is not ready yet :(')
+  })
 
   setTimeout(()=>{remote.getCurrentWindow().show()}, 200)
   //remote.getCurrentWebContents().openDevTools()

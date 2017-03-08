@@ -136,7 +136,7 @@ class ColorPicker extends EventEmitter {
         document.querySelector(".color-name .name").innerHTML = e.target.dataset.colorName
         document.querySelector(".color-name .color-css").value = e.target.dataset.color
         
-        this.emit(e.target.dataset.color)
+        this.emit('color', e.target.dataset.color)
       })
     })
 
@@ -147,7 +147,7 @@ class ColorPicker extends EventEmitter {
     document.querySelector(".color-name .color-css").addEventListener('input', (e)=> {
       if (e.target.value.length == 7 && Color(e.target.value).red !== undefined) {
         this.setState ({ color: Color(e.target.value).toCSS() })
-        this.emit(Color(e.target.value).toCSS())
+        this.emit('color', Color(e.target.value).toCSS())
       }
     })
   }
