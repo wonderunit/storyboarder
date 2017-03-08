@@ -1994,18 +1994,23 @@ ipcRenderer.on('setTool', (e, arg)=> {
     switch(arg) {
       case 'lightPencil':
         toolbar.setState({ brush: 'light-pencil' })
+        toolbar.emit('light-pencil')
         break
       case 'pencil':
         toolbar.setState({ brush: 'pencil' })
+        toolbar.emit('pencil')
         break
       case 'pen':
         toolbar.setState({ brush: 'pen' })
+        toolbar.emit('pen')
         break
       case 'brush':
         toolbar.setState({ brush: 'brush' })
+        toolbar.emit('brush')
         break
       case 'eraser':
         toolbar.setState({ brush: 'eraser' })
+        toolbar.emit('eraser')
         break
     }
   }
