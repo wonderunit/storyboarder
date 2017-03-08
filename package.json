@@ -22,10 +22,14 @@
   "author": "Charles Forman",
   "license": "ISC",
   "build": {
-    "asar": true,
+    "asar": false,
     "appId": "com.wonderunit.storyboarder",
     "files": [
-      "**/*"
+      "**/*",
+      "!*.md",
+      "!DEVELOPERS.md",
+      "!README.md",
+      "!notes/"
     ]
   },
   "devDependencies": {
