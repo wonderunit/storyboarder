@@ -128,15 +128,8 @@ class ColorPicker extends EventEmitter {
     swatches.forEach((e)=>{
       e.addEventListener('pointerdown', (e)=>{
         console.log('click!', e.target.dataset)
-        if (document.querySelector(".color-swatch.active")){
-          document.querySelector(".color-swatch.active").classList.remove("active")
-        }
-        e.target.className += " active"
-        //document.querySelector(".color-name").innerHTML = `${e.target.dataset.colorName} <span class="color-css">${e.target.dataset.color}</span>`
-        document.querySelector(".color-name .name").innerHTML = e.target.dataset.colorName
-        document.querySelector(".color-name .color-css").value = e.target.dataset.color
-        
-        this.emit('color', e.target.dataset.color)
+        // request a color change from sketchPane
+        this.emit('color', Color(e.target.dataset.color))
       })
     })
 
@@ -146,8 +139,9 @@ class ColorPicker extends EventEmitter {
 
     document.querySelector(".color-name .color-css").addEventListener('input', (e)=> {
       if (e.target.value.length == 7 && Color(e.target.value).red !== undefined) {
-        this.setState ({ color: Color(e.target.value).toCSS() })
-        this.emit('color', Color(e.target.value).toCSS())
+        let color = Color(e.target.value)
+        // request a color change from sketchPane
+        this.emit('color', color)
       }
     })
   }

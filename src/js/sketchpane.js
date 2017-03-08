@@ -87,6 +87,7 @@ let setBrushColor = (color)=> {
     brushContext.fillRect(0, 0, brushCanvas.width, brushCanvas.height)
     brushImages[i] = brushContext.canvas
   }
+  module.exports.emit('setBrushColor', color)
 }
 
 let init = (parentDiv, layerNameArray, size)=> {

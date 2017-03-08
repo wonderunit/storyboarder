@@ -8,7 +8,8 @@ class Toolbar extends EventEmitter {
     this.setState({
       brush: 'light-pencil',
       transformMode: null,
-      captions: true
+      captions: true,
+      currentBrushColor: null
     })
     this.onButtonSelect = this.onButtonSelect.bind(this)
     this.attachedCallback(this.el)
@@ -182,6 +183,10 @@ class Toolbar extends EventEmitter {
       btnCaptions.classList.add('active')
     } else {
       btnCaptions.classList.remove('active')
+    }
+    
+    if (this.state.currentBrushColor) {
+      this.el.querySelector('#toolbar-current-color').style.setProperty('--color3', this.state.currentBrushColor.toCSS())
     }
   }
 }

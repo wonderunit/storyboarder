@@ -125,8 +125,6 @@ let loadBoardUI = ()=> {
   } else {
     size = [900, (900/aspectRatio)]
   }
-  sketchPane.init(document.getElementById('sketch-pane'), ['reference', 'main', 'notes'], size)
-
   sketchPane.on('lineMileage', (value)=>{
     addToLineMileage(value)
   })
@@ -402,12 +400,19 @@ let loadBoardUI = ()=> {
   setupRandomizedNotifications()
 
   colorPicker = new ColorPicker()
-  colorPicker.on('color', event => {
-    console.log('colorPicker says:', event.color)
+  sketchPane.on('setBrushColor', colorAsScaledRGB => {
+    toolbar.setState({ currentBrushColor: Color(colorAsScaledRGB) })
+    colorPicker.setState({ color: Color(colorAsScaledRGB).toCSS() })
+  })
+  colorPicker.on('color', color => {
+    let colorAsScaledRGB = [
+      Math.floor(color.red * 255),
+      Math.floor(color.green * 255),
+      Math.floor(color.blue * 255)
+    ]
+    sketchPane.setBrushColor(colorAsScaledRGB)
   })
   toolbar.on('current-color', () => {
-    let color = '#373737'
-    colorPicker.setState({ color })
     colorPicker.attachTo(document.getElementById('toolbar-current-color'))
   })
   toolbar.on('palette-colorA', () => {
@@ -419,6 +424,8 @@ let loadBoardUI = ()=> {
   toolbar.on('palette-colorC', () => {
     alert('Palette Color C. This feature is not ready yet :(')
   })
+
+  sketchPane.init(document.getElementById('sketch-pane'), ['reference', 'main', 'notes'], size)
 
   setTimeout(()=>{remote.getCurrentWindow().show()}, 200)
   //remote.getCurrentWebContents().openDevTools()
