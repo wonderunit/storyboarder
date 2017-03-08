@@ -130,6 +130,7 @@
 
 
 .color-picker-container { 
+  pointer-events: none; /* no pointer events until animated visible */
   z-index: 999;
 }
 
