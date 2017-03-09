@@ -1694,7 +1694,7 @@ let copyBoards = ()=> {
     }
 
     // grab data for each board
-    let boards = [...selections].sort(util.compareNumbers).map(n => util.shallowCopy(boardData.boards[n]))
+    let boards = [...selections].sort(util.compareNumbers).map(n => util.stringifyClone(boardData.boards[n]))
     
     // inject image data for each board
     boards = boards.map(board => {

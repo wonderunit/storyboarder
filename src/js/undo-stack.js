@@ -37,7 +37,7 @@ let addImageData = (sceneId, imageId, layerId, imageBitmap)=> {
 }
 
 let addSceneData = (sceneId, sceneDataRef) => {
-  let sceneData = util.shallowCopy(sceneDataRef)
+  let sceneData = util.stringifyClone(sceneDataRef)
   if (undoPosition != 0) {
     var len = undoStack.length
     undoStack = undoStack.slice(0, len - undoPosition)
