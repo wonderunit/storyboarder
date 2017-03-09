@@ -582,6 +582,7 @@ let deleteBoards = (args)=> {
 }
 
 let duplicateBoard = ()=> {
+  storeUndoStateForScene()
   saveImageFile()
   // copy current board canvas
   let imageData = document.querySelector('#main-canvas').getContext("2d").getImageData(0,0, document.querySelector('#main-canvas').width, document.querySelector('#main-canvas').height)
@@ -1687,6 +1688,8 @@ let loadPNGImageFileAsDataURI = (filepath) => {
 let copyBoards = ()=> {
   if (textInputMode) return // ignore copy command in text input mode
 
+  storeUndoStateForScene()
+
   // copy more than one boards
   if (selections.size > 1) {
     if (selections.has(currentBoard)) {
@@ -1736,6 +1739,8 @@ let pasteBoards = () => {
   if (textInputMode) return
 
   console.log("paste")
+
+  storeUndoStateForScene()
 
   let newBoards
 
