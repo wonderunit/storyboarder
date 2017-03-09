@@ -16,15 +16,23 @@ let undoStack = []
 let undoPosition = 0
 const MAXUNDOS = 100
 
-let addImageData = (sceneId, imageId, layerId, imageBitmap)=> {
+const trim = () => {
+  // if we're not at the start of the undo stack...
   if (undoPosition != 0) {
+    // ... reset the stack to prepare for the next push
     var len = undoStack.length
-    undoStack = undoStack.slice(0, len-undoPosition)
+    undoStack = undoStack.slice(0, len - undoPosition)
     undoPosition = 0
   }
+  // if we have too many undo states in the stack ...
   if (undoStack.length >= MAXUNDOS) {
+    // ... trim them
     undoStack = undoStack.slice(1, undoStack.length)
   }
+}
+
+const addImageData = (sceneId, imageId, layerId, imageBitmap)=> {
+  trim()
   var stackItem = {
     type:'image', 
     sceneId: sceneId, 
@@ -36,16 +44,9 @@ let addImageData = (sceneId, imageId, layerId, imageBitmap)=> {
   return stackItem
 }
 
-let addSceneData = (sceneId, sceneDataRef) => {
+const addSceneData = (sceneId, sceneDataRef) => {
   let sceneData = util.stringifyClone(sceneDataRef)
-  if (undoPosition != 0) {
-    var len = undoStack.length
-    undoStack = undoStack.slice(0, len - undoPosition)
-    undoPosition = 0
-  }
-  if (undoStack.length >= MAXUNDOS) {
-    undoStack = undoStack.slice(1, undoStack.length)
-  }
+  trim()
   undoStack.push({
     type: 'scene', 
     sceneId,
@@ -53,10 +54,7 @@ let addSceneData = (sceneId, sceneDataRef) => {
   })
 }
 
-let applyUndoStateForScene = (undoOrRedo, state) =>
-  module.exports.emit(undoOrRedo, state)
-
-let undo = ()=> {
+const undo = ()=> {
   if (undoPosition == 0) {
     var undoState = undoStack[undoStack.length-1]
     if (undoState.type == 'image') {
@@ -88,7 +86,7 @@ let undo = ()=> {
   }
 }
 
-let redo = ()=> {
+const redo = ()=> {
   if ((undoStack.length-undoPosition) < (undoStack.length-1)) {
     undoPosition--
     var undoState = undoStack[undoStack.length-undoPosition]
@@ -108,6 +106,9 @@ let redo = ()=> {
   } else {
   }
 }
+
+const applyUndoStateForScene = (undoOrRedo, state) =>
+  module.exports.emit(undoOrRedo, state)
 
 module.exports.stack = undoStack
 module.exports.addImageData = addImageData
