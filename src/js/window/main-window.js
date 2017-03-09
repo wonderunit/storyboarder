@@ -426,6 +426,13 @@ let loadBoardUI = ()=> {
   })
 
   sketchPane.init(document.getElementById('sketch-pane'), ['reference', 'main', 'notes'], size)
+  
+  undoStack.on('undo', event => {
+    console.log('undoStack says', event)
+  })
+  undoStack.on('redo', event => {
+    console.log('undoStack says', event)
+  })
 
   setTimeout(()=>{remote.getCurrentWindow().show()}, 200)
   //remote.getCurrentWebContents().openDevTools()
@@ -539,6 +546,7 @@ let deleteBoards = (args)=> {
   msg += " Are you sure?"
 
   if (confirm(msg)) {
+    storeUndoStateForScene()
     if (selections.size) {
       // delete all selected boards
       [...selections].sort(util.compareNumbers).reverse().forEach(n => {
@@ -557,6 +565,7 @@ let deleteBoards = (args)=> {
       selections.clear()
       renderThumbnailDrawer()
     } else {
+      storeUndoStateForScene()
       // delete a single board
       deleteSingleBoard(currentBoard)
 
@@ -1808,6 +1817,8 @@ let pasteBoards = () => {
 }
 
 let moveSelectedBoards = (position) => {
+  storeUndoStateForScene()
+
   console.log('moveSelectedBoards(' + position + ')')
 
   let numRemoved = selections.size
@@ -1992,6 +2003,15 @@ const runRandomizedNotifications = (messages) => {
     timeout = setTimeout(tick, duration)
   }
   tick()
+}
+
+const storeUndoStateForScene = () => {
+  let scene = scriptData && scriptData.find(data => data.scene_number == currentScene + 1)
+  let sceneId = scene && scene.scene_id
+  undoStack.addSceneData(sceneId, boardData)
+}
+const applyUndoStateForScene = (state) => {
+  console.log('main-window applyUndoStateForScene', state)
 }
 
 ipcRenderer.on('setTool', (e, arg)=> {

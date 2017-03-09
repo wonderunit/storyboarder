@@ -7,6 +7,11 @@ TODO:
   add music feedback emmisions
 */
 
+const EventEmitter = require('events').EventEmitter
+module.exports = new EventEmitter()
+
+const util = require('./utils/index.js')
+
 let undoStack = []
 let undoPosition = 0
 const MAXUNDOS = 100
@@ -31,7 +36,8 @@ let addImageData = (sceneId, imageId, layerId, imageBitmap)=> {
   return stackItem
 }
 
-let addSceneData = (sceneId, sceneData) => {
+let addSceneData = (sceneId, sceneDataRef) => {
+  let sceneData = util.shallowCopy(sceneDataRef)
   if (undoPosition != 0) {
     var len = undoStack.length
     undoStack = undoStack.slice(0, len - undoPosition)
@@ -46,6 +52,9 @@ let addSceneData = (sceneId, sceneData) => {
     sceneData
   })
 }
+
+let applyUndoStateForScene = (undoOrRedo, state) =>
+  module.exports.emit(undoOrRedo, state)
 
 let undo = ()=> {
   if (undoPosition == 0) {
@@ -72,6 +81,7 @@ let undo = ()=> {
       layerContext.drawImage(undoState.imageBitmap, 0,0)
     } else {
       // scene type
+      applyUndoStateForScene('undo', undoState)
     }
   } else {
     
@@ -93,6 +103,7 @@ let redo = ()=> {
       layerContext.drawImage(undoState.imageBitmap, 0,0)
     } else {
       // scene type
+      applyUndoStateForScene('redo', undoState)
     }
   } else {
   }
