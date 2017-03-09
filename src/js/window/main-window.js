@@ -427,12 +427,8 @@ let loadBoardUI = ()=> {
 
   sketchPane.init(document.getElementById('sketch-pane'), ['reference', 'main', 'notes'], size)
   
-  undoStack.on('undo', event => {
-    console.log('undoStack says', event)
-  })
-  undoStack.on('redo', event => {
-    console.log('undoStack says', event)
-  })
+  undoStack.on('undo', state => applyUndoStateForScene(state))
+  undoStack.on('redo', state => applyUndoStateForScene(state))
 
   setTimeout(()=>{remote.getCurrentWindow().show()}, 200)
   //remote.getCurrentWebContents().openDevTools()
@@ -2010,13 +2006,35 @@ const runRandomizedNotifications = (messages) => {
   tick()
 }
 
+const getSceneNumberBySceneId = (sceneId) => {
+  if (!scriptData) return null
+  let orderedScenes = scriptData.filter(data => data.type == 'scene')
+  return orderedScenes.findIndex(scene => scene.scene_id == sceneId)
+}
+
+// returns the scene object (if available) or null
+const getSceneObjectByIndex = (index) =>
+  scriptData && scriptData.find(data => data.type == 'scene' && data.scene_number == index + 1)
+
 const storeUndoStateForScene = () => {
-  let scene = scriptData && scriptData.find(data => data.scene_number == currentScene + 1)
+  let scene = getSceneObjectByIndex(currentScene) 
+  // sceneId is allowed to be null (for a single storyboard with no script)
   let sceneId = scene && scene.scene_id
   undoStack.addSceneData(sceneId, boardData)
 }
 const applyUndoStateForScene = (state) => {
-  console.log('main-window applyUndoStateForScene', state)
+  if (state.type != 'scene') return // only `scene`s for now
+
+  let currSceneObj = getSceneObjectByIndex(currentScene)
+  if (currSceneObj && currSceneObj.scene_id != state.sceneId) {
+    // go to that scene
+    saveBoardFile()
+    currentScene = getSceneNumberBySceneId(state.sceneId)
+    loadScene(currentScene)
+    renderScript()
+  }
+  boardData = state.sceneData
+  updateBoardUI()
 }
 
 ipcRenderer.on('setTool', (e, arg)=> {
