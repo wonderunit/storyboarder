@@ -31,10 +31,10 @@ let addImageData = (sceneId, imageId, layerId, imageBitmap)=> {
   return stackItem
 }
 
-let addSceneData = (sceneId, sceneData)=> {
+let addSceneData = (sceneId, sceneData) => {
   if (undoPosition != 0) {
     var len = undoStack.length
-    undoStack = undoStack.slice(0, len-undoPosition)
+    undoStack = undoStack.slice(0, len - undoPosition)
     undoPosition = 0
   }
   if (undoStack.length >= MAXUNDOS) {
@@ -42,8 +42,8 @@ let addSceneData = (sceneId, sceneData)=> {
   }
   undoStack.push({
     type: 'scene', 
-    sceneId: sceneId, 
-    scneData: sceneData
+    sceneId,
+    sceneData
   })
 }
 
