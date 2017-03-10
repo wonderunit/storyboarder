@@ -149,7 +149,6 @@ let init = (parentDiv, layerNameArray, size)=> {
     window.addEventListener('keyup', keyUp, false)
     window.addEventListener("keydown", keyDown, false)
   }
-
 }
 
 let keyUp = (e)=> {
@@ -224,6 +223,12 @@ let pointerDown = (e) => {
       if (e.shiftKey) isStraightline = true
       window.requestAnimationFrame(drawBrushLoop)
     }
+    // FIXME
+    // this adds an "anchor" image to the undo stack
+    // which allows us to always have a known start point for furthest undo
+    // but causes duplicates
+    //
+    // addToUndoStack()
   }
 }
 
