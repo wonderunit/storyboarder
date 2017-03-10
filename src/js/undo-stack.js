@@ -22,7 +22,7 @@ class UndoList {
       present: null,
       future: []
     }
-    this.maxLength = 20
+    this.maxLength = 100
   }
   
   lengthWithoutFuture () {
