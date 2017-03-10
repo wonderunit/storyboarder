@@ -101,6 +101,8 @@ ipcRenderer.on('load', (event, args)=>{
 
   loadBoardUI()
   updateBoardUI()
+
+  storeUndoStateForScene()
 })
 
 
@@ -262,6 +264,7 @@ let loadBoardUI = ()=> {
 
       if (!util.isUndefined(index)) {
         console.log('user requests move operation:', selections, 'to insert after', index)
+        saveImageFile()
         moveSelectedBoards(index)
         renderThumbnailDrawer()
         gotoBoard(currentBoard, true)
@@ -427,8 +430,8 @@ let loadBoardUI = ()=> {
 
   sketchPane.init(document.getElementById('sketch-pane'), ['reference', 'main', 'notes'], size)
   
-  undoStack.on('undo', state => applyUndoStateForScene(state))
-  undoStack.on('redo', state => applyUndoStateForScene(state))
+  undoStack.on('undo', state => state.type == 'image' ? applyUndoStateForImage(state) : applyUndoStateForScene(state))
+  undoStack.on('redo', state => state.type == 'image' ? applyUndoStateForImage(state) : applyUndoStateForScene(state))
 
   setTimeout(()=>{remote.getCurrentWindow().show()}, 200)
   //remote.getCurrentWebContents().openDevTools()
@@ -542,7 +545,6 @@ let deleteBoards = (args)=> {
   msg += " Are you sure?"
 
   if (confirm(msg)) {
-    storeUndoStateForScene()
     if (selections.size) {
       // delete all selected boards
       [...selections].sort(util.compareNumbers).reverse().forEach(n => {
@@ -560,8 +562,8 @@ let deleteBoards = (args)=> {
       // clear and re-render selections
       selections.clear()
       renderThumbnailDrawer()
-    } else {
       storeUndoStateForScene()
+    } else {
       // delete a single board
       deleteSingleBoard(currentBoard)
 
@@ -574,11 +576,11 @@ let deleteBoards = (args)=> {
 
     // always refresh
     gotoBoard(currentBoard)
+    storeUndoStateForScene()
   }
 }
 
 let duplicateBoard = ()=> {
-  storeUndoStateForScene()
   saveImageFile()
   // copy current board canvas
   let imageData = document.querySelector('#main-canvas').getContext("2d").getImageData(0,0, document.querySelector('#main-canvas').width, document.querySelector('#main-canvas').height)
@@ -601,6 +603,7 @@ let duplicateBoard = ()=> {
   saveImageFile()
   renderThumbnailDrawer()
   gotoBoard(currentBoard)
+  storeUndoStateForScene()
 }
 
 ///////////////////////////////////////////////////////////////
@@ -1684,8 +1687,6 @@ let loadPNGImageFileAsDataURI = (filepath) => {
 let copyBoards = ()=> {
   if (textInputMode) return // ignore copy command in text input mode
 
-  storeUndoStateForScene()
-
   // copy more than one boards
   if (selections.size > 1) {
     if (selections.has(currentBoard)) {
@@ -1712,6 +1713,7 @@ let copyBoards = ()=> {
     }
     clipboard.clear()
     clipboard.write(payload)
+    storeUndoStateForScene()
     return
   }
   
@@ -1735,8 +1737,6 @@ let pasteBoards = () => {
   if (textInputMode) return
 
   console.log("paste")
-
-  storeUndoStateForScene()
 
   let newBoards
 
@@ -1815,11 +1815,10 @@ let pasteBoards = () => {
       gotoBoard(currentBoard)
     }
   })
+  storeUndoStateForScene()
 }
 
 let moveSelectedBoards = (position) => {
-  storeUndoStateForScene()
-
   console.log('moveSelectedBoards(' + position + ')')
 
   let numRemoved = selections.size
@@ -1851,6 +1850,7 @@ let moveSelectedBoards = (position) => {
   currentBoard = a + offset
 
   markBoardFileDirty()
+  storeUndoStateForScene()
 }
 
 let reorderBoardsLeft = () => {
@@ -1858,6 +1858,7 @@ let reorderBoardsLeft = () => {
   let leftMost = selectionsAsArray[0]
   let position = leftMost - 1
   if (position >= 0) {
+    saveImageFile()
     moveSelectedBoards(position)
     renderThumbnailDrawer()
     gotoBoard(currentBoard, true)
@@ -1869,6 +1870,7 @@ let reorderBoardsRight = () => {
   let rightMost = selectionsAsArray.slice(-1)[0] + 1
   let position = rightMost + 1
   if (position <= boardData.boards.length) {
+    saveImageFile()
     moveSelectedBoards(position)
     renderThumbnailDrawer()
     gotoBoard(currentBoard, true)
@@ -2035,6 +2037,29 @@ const applyUndoStateForScene = (state) => {
   }
   boardData = state.sceneData
   updateBoardUI()
+}
+const applyUndoStateForImage = (state) => {
+  // TODO if sceneid go to that scene
+  // let currSceneObj = getSceneObjectByIndex(currentScene)
+  // if (currSceneObj && currSceneObj.scene_id != state.sceneId) {
+  //   // go to that scene
+  //   saveBoardFile()
+  //   currentScene = getSceneNumberBySceneId(state.sceneId)
+  //   loadScene(currentScene)
+  //   renderScript()
+  // }
+
+  console.log('applyUndoStateForImage', state)
+
+  // TODO if imageid go to that image
+
+  // find layer context
+  var layerContext = document.getElementById(state.layerId).getContext('2d')
+
+  // draw imageBitmap into it
+  layerContext.globalAlpha = 1
+  layerContext.clearRect(0, 0, layerContext.canvas.width, layerContext.canvas.height)
+  layerContext.drawImage(state.imageBitmap, 0, 0)
 }
 
 ipcRenderer.on('setTool', (e, arg)=> {
