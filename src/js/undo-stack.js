@@ -24,7 +24,7 @@ class UndoList {
     }
     this.maxLength = 100
   }
-  
+
   lengthWithoutFuture () {
     return this.state.past.length + 1
   }
@@ -39,7 +39,7 @@ class UndoList {
         present,
         ...future
       ] : future
-    
+
     const newPresent = past[past.length - 1]
 
     // remove last element from past
@@ -81,7 +81,7 @@ class UndoList {
 
   insert (value) {
     let { past, present, future } = this.state
-    
+
     const historyOverflow = this.lengthWithoutFuture() >= this.maxLength
 
     const pastSliced = past.slice(historyOverflow ? 1 : 0)
@@ -96,10 +96,10 @@ class UndoList {
       present: value,
       future: []
     }
-    
+
     this.print()
   }
-  
+
   print () {
     const { past, present, future } = this.state
     if (!this.debugEl) {
@@ -128,10 +128,10 @@ class UndoList {
 
     let boardIndexes = arr =>
       arr.map(b => parseInt(b.url.replace('board-', ''), 10)).join(', ')
-    
+
     let stringOf = value =>
       util.isUndefined(value) ? '(none)' : value
-    
+
     let describe = state => {
       if (state.type == 'image') {
         return [state.type, `sceneId:${stringOf(state.sceneId)}`, `imageId:${stringOf(state.imageId)}`, `layerId:${stringOf(state.layerId)}`, `imageBitmap:${state.imageBitmap.id}`].join(' ')
