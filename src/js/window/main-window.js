@@ -133,6 +133,9 @@ let loadBoardUI = ()=> {
   sketchPane.on('addToUndoStack', (id,imageBitmap)=>{
     //console.log(imageBitmap)
     undoStack.addImageData(null, null, id, imageBitmap)
+  sketchPane.on('addToUndoStack', (layerId, imageBitmap) => {
+    storeUndoStateForImage(layerId, imageBitmap)
+  })
   })
 
   for (var item of document.querySelectorAll('#board-metadata input, textarea')) {
@@ -430,8 +433,15 @@ let loadBoardUI = ()=> {
 
   sketchPane.init(document.getElementById('sketch-pane'), ['reference', 'main', 'notes'], size)
   
-  undoStack.on('undo', state => state.type == 'image' ? applyUndoStateForImage(state) : applyUndoStateForScene(state))
-  undoStack.on('redo', state => state.type == 'image' ? applyUndoStateForImage(state) : applyUndoStateForScene(state))
+  let onUndoStackAction = (state) => {
+    if (state.type == 'image') {
+      applyUndoStateForImage(state)
+    } else if (state.type == 'scene') {
+      applyUndoStateForScene(state)
+    }
+  }
+  undoStack.on('undo', onUndoStackAction)
+  undoStack.on('redo', onUndoStackAction)
 
   setTimeout(()=>{remote.getCurrentWindow().show()}, 200)
   //remote.getCurrentWebContents().openDevTools()
@@ -620,52 +630,54 @@ let goNextBoard = (direction, shouldPreserveSelections = false)=> {
   gotoBoard(currentBoard, shouldPreserveSelections)
 }
 
-let gotoBoard = (boardNumber, shouldPreserveSelections = false)=> {
-  currentBoard = boardNumber
-  currentBoard = Math.max(currentBoard, 0)
-  currentBoard = Math.min(currentBoard, boardData.boards.length-1)
-  
-  if (!shouldPreserveSelections) selections.clear()
-  selections = new Set([...selections.add(currentBoard)].sort(util.compareNumbers))
-  renderThumbnailDrawerSelections()
-  
-  updateSketchPaneBoard()
-  for (var item of document.querySelectorAll('.thumbnail')) {
-    item.classList.remove('active')
-  }
-
-  if (document.querySelector("[data-thumbnail='" + currentBoard + "']")) {
-    document.querySelector("[data-thumbnail='" + currentBoard + "']").classList.add('active')
-
-    let thumbDiv = document.querySelector("[data-thumbnail='" + currentBoard + "']")
-    let containerDiv = document.querySelector('#thumbnail-container')
-
-    if ((thumbDiv.offsetLeft+thumbDiv.offsetWidth+200) > (containerDiv.scrollLeft + containerDiv.offsetWidth)) {
-      console.log("offscreen!!")
-      containerDiv.scrollLeft = thumbDiv.offsetLeft - 300
+let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
+  return new Promise((resolve, reject) => {
+    currentBoard = boardNumber
+    currentBoard = Math.max(currentBoard, 0)
+    currentBoard = Math.min(currentBoard, boardData.boards.length-1)
+    
+    if (!shouldPreserveSelections) selections.clear()
+    selections = new Set([...selections.add(currentBoard)].sort(util.compareNumbers))
+    renderThumbnailDrawerSelections()
+    
+    for (var item of document.querySelectorAll('.thumbnail')) {
+      item.classList.remove('active')
     }
 
-    if ((thumbDiv.offsetLeft-200) < (containerDiv.scrollLeft)) {
-      console.log("offscreen!!")
-      containerDiv.scrollLeft = thumbDiv.offsetLeft - containerDiv.offsetWidth + 300
-    }
-
-
-    // console.log()
-    // console.log(.scrollLeft)
-    // console.log(document.querySelector('#thumbnail-container').offsetWidth)
-
-
-    //document.querySelector('#thumbnail-container').scrollLeft = (document.querySelector("[data-thumbnail='" + currentBoard + "']").offsetLeft)-200
-  } else {
-    setImmediate((currentBoard)=>{
+    if (document.querySelector("[data-thumbnail='" + currentBoard + "']")) {
       document.querySelector("[data-thumbnail='" + currentBoard + "']").classList.add('active')
-    },currentBoard)
 
-  }
+      let thumbDiv = document.querySelector("[data-thumbnail='" + currentBoard + "']")
+      let containerDiv = document.querySelector('#thumbnail-container')
 
-  renderMetaData()
-  renderMarkerPosition()
+      if ((thumbDiv.offsetLeft+thumbDiv.offsetWidth+200) > (containerDiv.scrollLeft + containerDiv.offsetWidth)) {
+        console.log("offscreen!!")
+        containerDiv.scrollLeft = thumbDiv.offsetLeft - 300
+      }
+
+      if ((thumbDiv.offsetLeft-200) < (containerDiv.scrollLeft)) {
+        console.log("offscreen!!")
+        containerDiv.scrollLeft = thumbDiv.offsetLeft - containerDiv.offsetWidth + 300
+      }
+
+
+      // console.log()
+      // console.log(.scrollLeft)
+      // console.log(document.querySelector('#thumbnail-container').offsetWidth)
+
+
+      //document.querySelector('#thumbnail-container').scrollLeft = (document.querySelector("[data-thumbnail='" + currentBoard + "']").offsetLeft)-200
+    } else {
+      setImmediate((currentBoard)=>{
+        document.querySelector("[data-thumbnail='" + currentBoard + "']").classList.add('active')
+      },currentBoard)
+    }
+
+    renderMetaData()
+    renderMarkerPosition()
+    
+    updateSketchPaneBoard().then(() => resolve())
+  })
 }
 
 let renderMarkerPosition = () => {
@@ -768,24 +780,28 @@ let previousScene = ()=> {
 }
 
 let updateSketchPaneBoard = () => {
-  // get current board
-  let board = boardData.boards[currentBoard]
-  // try to load url
-  let imageFilename = path.join(boardPath, 'images', board.url)
-  let context = document.querySelector('#main-canvas').getContext('2d')
-  context.globalAlpha = 1
+  return new Promise((resolve, reject) => {
+    // get current board
+    let board = boardData.boards[currentBoard]
+    // try to load url
+    let imageFilename = path.join(boardPath, 'images', board.url)
+    let context = document.querySelector('#main-canvas').getContext('2d')
+    context.globalAlpha = 1
 
-  console.log('loading image')
-  if (!fs.existsSync(imageFilename)){
-    context.clearRect(0, 0, context.canvas.width, context.canvas.height)
-  } else {
-    let image = new Image()
-    image.onload = ()=> {
+    console.log('loading image')
+    if (!fs.existsSync(imageFilename)){
       context.clearRect(0, 0, context.canvas.width, context.canvas.height)
-      context.drawImage(image, 0, 0)
+      resolve()
+    } else {
+      let image = new Image()
+      image.onload = ()=> {
+        context.clearRect(0, 0, context.canvas.width, context.canvas.height)
+        context.drawImage(image, 0, 0)
+        resolve()
+      }
+      image.src = imageFilename + '?' + Math.random()
     }
-    image.src = imageFilename + '?' + Math.random()
-  }
+  })
 }
 
 let renderThumbnailDrawerSelections = () => {
@@ -2038,6 +2054,13 @@ const applyUndoStateForScene = (state) => {
   boardData = state.sceneData
   updateBoardUI()
 }
+
+const storeUndoStateForImage = (layerId, imageBitmap) => {
+  let scene = getSceneObjectByIndex(currentScene)
+  let sceneId = scene && scene.scene_id
+  undoStack.addImageData(sceneId, currentBoard, layerId, imageBitmap)
+}
+
 const applyUndoStateForImage = (state) => {
   // TODO if sceneid go to that scene
   // let currSceneObj = getSceneObjectByIndex(currentScene)
@@ -2049,17 +2072,24 @@ const applyUndoStateForImage = (state) => {
   //   renderScript()
   // }
 
-  console.log('applyUndoStateForImage', state)
+  // if required, go to the board first
+  let step = (currentBoard != state.imageId) ? gotoBoard : () => Promise.resolve()
 
-  // TODO if imageid go to that image
+  console.log('step', step)
 
-  // find layer context
-  var layerContext = document.getElementById(state.layerId).getContext('2d')
+  step(state.imageId).then(() => {
+    console.log('rendering to', currentBoard)
+    // find layer context
+    var layerContext = document.getElementById(state.layerId).getContext('2d')
 
-  // draw imageBitmap into it
-  layerContext.globalAlpha = 1
-  layerContext.clearRect(0, 0, layerContext.canvas.width, layerContext.canvas.height)
-  layerContext.drawImage(state.imageBitmap, 0, 0)
+    // draw imageBitmap into it
+    layerContext.globalAlpha = 1
+    layerContext.clearRect(0, 0, layerContext.canvas.width, layerContext.canvas.height)
+    layerContext.drawImage(state.imageBitmap, 0, 0)
+
+    // // save what we have
+    // saveImageFile()
+  })
 }
 
 ipcRenderer.on('setTool', (e, arg)=> {

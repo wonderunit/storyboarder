@@ -129,10 +129,13 @@ class UndoList {
     let boardIndexes = arr =>
       arr.map(b => parseInt(b.url.replace('board-', ''), 10)).join(', ')
     
+    let stringOf = value =>
+      util.isUndefined(value) ? '(none)' : value
+    
     let describe = state => {
       if (state.type == 'image') {
-        return [state.type].join(' ')
-      } else {
+        return [state.type, `sceneId:${stringOf(state.sceneId)}`, `imageId:${stringOf(state.imageId)}`, `layerId:${stringOf(state.layerId)}`].join(' ')
+      } else if (state.type == 'scene') {
         return [state.type, boardIndexes(state.sceneData.boards)].join(' ')
       }
     }
