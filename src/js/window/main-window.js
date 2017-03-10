@@ -129,12 +129,8 @@ let loadBoardUI = ()=> {
   sketchPane.on('lineMileage', (value)=>{
     addToLineMileage(value)
   })
-  sketchPane.on('addToUndoStack', (id,imageBitmap)=>{
-    //console.log(imageBitmap)
-    undoStack.addImageData(null, null, id, imageBitmap)
   sketchPane.on('addToUndoStack', (layerId, imageBitmap) => {
     storeUndoStateForImage(layerId, imageBitmap)
-  })
   })
 
   for (var item of document.querySelectorAll('#board-metadata input, textarea')) {
