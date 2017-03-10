@@ -99,10 +99,9 @@ ipcRenderer.on('load', (event, args)=>{
     boardData = JSON.parse(fs.readFileSync(boardFilename))
   }
 
+  storeUndoStateForScene()
   loadBoardUI()
   updateBoardUI()
-
-  storeUndoStateForScene()
 })
 
 
