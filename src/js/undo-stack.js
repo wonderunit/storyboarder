@@ -50,6 +50,8 @@ class UndoList {
       present: newPresent,
       future: newFuture
     }
+
+    this.print()
   }
   
   redo () {
@@ -73,6 +75,8 @@ class UndoList {
       present: newPresent,
       past: newPast
     }
+
+    this.print()
   }
 
   insert (value) {
@@ -91,6 +95,58 @@ class UndoList {
       past: newPast,
       present: value,
       future: []
+    }
+    
+    this.print()
+  }
+  
+  print () {
+    const { past, present, future } = this.state
+    if (!this.debugEl) {
+      this.debugEl = document.createElement('div')
+      this.debugEl.style = `
+        position: absolute;
+        top: 0;
+        right: 0;
+        padding: 10px;
+        font-family: monospace;
+        font-size: 11px;
+        width: 500px;
+        background-color: black;
+        color: white;
+        white-space: pre;
+        line-height: 15px;
+      `
+      document.body.appendChild(this.debugEl)
+    }
+
+    let clear = () =>
+      this.debugEl.innerHTML = ''
+
+    let trace = (...args) =>
+      this.debugEl.innerHTML += '<div>' + args.join(' ') + '</div>'
+
+    let boardIndexes = arr =>
+      arr.map(b => parseInt(b.url.replace('board-', ''), 10)).join(', ')
+    
+    let describe = state => {
+      if (state.type == 'image') {
+        return [state.type].join(' ')
+      } else {
+        return [state.type, boardIndexes(state.sceneData.boards)].join(' ')
+      }
+    }
+
+    clear()
+    let n = 0
+    for (let state of past) {
+      trace(' ', n++, describe(state))
+    }
+
+    trace('▸', n++, describe(this.state.present))
+
+    for (let state of future) {
+      trace(' ', n++, describe(state))
     }
   }
 }
