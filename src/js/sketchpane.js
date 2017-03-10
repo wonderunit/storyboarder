@@ -221,7 +221,6 @@ let pointerDown = (e) => {
       if (e.shiftKey) isStraightline = true
       window.requestAnimationFrame(drawBrushLoop)
     }
-    addToUndoStack()
   }
 }
 
@@ -431,6 +430,7 @@ let pointerUp = (e) => {
     }
     module.exports.emit('markDirty')
     module.exports.emit('lineMileage', Math.round(lineDistance))
+    addToUndoStack()
   }
   penDown = false
 }
@@ -517,7 +517,6 @@ let setScale = (scale)=> {
 }
 
 let flipBoard = (vertical)=> {
-  addToUndoStack()
   boardContext.globalAlpha = 1
   boardContext.globalCompositeOperation = 'copy'
   if (vertical) {
@@ -530,6 +529,7 @@ let flipBoard = (vertical)=> {
   boardContext.drawImage(boardContext.canvas,0,0)
   boardContext.setTransform(1, 0, 0, 1, 0, 0)
   module.exports.emit('markDirty')
+  addToUndoStack()
 }
 
 let changeBrushSize = (direction)=> {
@@ -585,19 +585,19 @@ let setEraser = ()=> {
 }
 
 let clear = ()=> {
-  addToUndoStack()
   boardContext.clearRect(0, 0, boardContext.canvas.width, boardContext.canvas.height)
   module.exports.emit('markDirty')
+  addToUndoStack()
 }
 
 let fillBlack = ()=> {
-  addToUndoStack()
   boardContext.globalCompositeOperation = 'destination-over'
   boardContext.beginPath()
   boardContext.rect(0, 0, boardContext.canvas.width, boardContext.canvas.height)
   boardContext.fillStyle = "black"
   boardContext.fill()
   module.exports.emit('markDirty')
+  addToUndoStack()
 }
 
 let moveContents = ()=> {
@@ -628,12 +628,9 @@ let addToUndoStack = ()=> {
   var destContext = document.createElement('canvas').getContext('2d')
   destContext.canvas.width = boardSize[0]
   destContext.canvas.height = boardSize[1]
-  destContext.drawImage(boardContext.canvas, 0,0)
+  destContext.drawImage(boardContext.canvas, 0, 0)
  
   module.exports.emit('addToUndoStack', boardContext.canvas.id, destContext.canvas)
-
-
-
 }
 
 module.exports.init = init
