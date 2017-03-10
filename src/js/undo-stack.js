@@ -134,7 +134,7 @@ class UndoList {
     
     let describe = state => {
       if (state.type == 'image') {
-        return [state.type, `sceneId:${stringOf(state.sceneId)}`, `imageId:${stringOf(state.imageId)}`, `layerId:${stringOf(state.layerId)}`].join(' ')
+        return [state.type, `sceneId:${stringOf(state.sceneId)}`, `imageId:${stringOf(state.imageId)}`, `layerId:${stringOf(state.layerId)}`, `imageBitmap:${state.imageBitmap.id}`].join(' ')
       } else if (state.type == 'scene') {
         return [state.type, boardIndexes(state.sceneData.boards)].join(' ')
       }
@@ -162,7 +162,7 @@ const addImageData = (sceneId, imageId, layerId, imageBitmap) => {
     sceneId: sceneId, 
     imageId: imageId,
     layerId: layerId, 
-    imageBitmap: imageBitmap
+    imageBitmap: imageBitmap // NOTE this is actually a reference to an HTMLCanvas object
   })
 }
 

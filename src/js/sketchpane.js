@@ -22,6 +22,9 @@ sketchpane.setBrush(4,[255,0,0],100,100,'notes')
 */
 const EventEmitter = require('events').EventEmitter
 module.exports = new EventEmitter()
+
+let util = require('./utils/index.js')
+
 const getCurvePoints = require("cardinal-spline-js").getCurvePoints
 const TO_RADIANS = Math.PI/180
 const TO_DEGREES = 1 / TO_RADIANS
@@ -620,17 +623,15 @@ const cancelTransform = () => {
   module.exports.emit('cancelTransform')
 }
 
-
-let addToUndoStack = ()=> {
-  // createImageBitmap(boardContext.canvas).then((val)=> {
-  //   module.exports.emit('addToUndoStack', boardContext.canvas.id, val)
-  // })
-  var destContext = document.createElement('canvas').getContext('2d')
-  destContext.canvas.width = boardSize[0]
-  destContext.canvas.height = boardSize[1]
-  destContext.drawImage(boardContext.canvas, 0, 0)
+let addToUndoStack = () => {
+  let el = document.createElement('canvas')
+  let ctx = el.getContext('2d')
+  el.id = util.uidGen(5)
+  ctx.canvas.width = boardSize[0]
+  ctx.canvas.height = boardSize[1]
+  ctx.drawImage(boardContext.canvas, 0, 0)
  
-  module.exports.emit('addToUndoStack', boardContext.canvas.id, destContext.canvas)
+  module.exports.emit('addToUndoStack', boardContext.canvas.id, ctx.canvas)
 }
 
 module.exports.init = init
