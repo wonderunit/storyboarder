@@ -46,7 +46,7 @@ let mouseDragStartX
 let textInputMode = false
 let textInputAllowAdvance = false
 
-let toggleMode = 0
+let viewMode = 0
 
 let selections = new Set()
 
@@ -1406,7 +1406,7 @@ window.onkeydown = (e)=> {
         }
         break
       case 'Tab':
-        toggleViewMode()
+        cycleViewMode()
         e.preventDefault()
         break;
       case 'Escape':
@@ -1520,10 +1520,10 @@ let playAdvance = function(first) {
 
 //// VIEW
 
-let toggleViewMode = ()=> {
+let cycleViewMode = ()=> {
   if (scriptData) {
-    toggleMode = ((toggleMode+1)%6)
-    switch (toggleMode) {
+    viewMode = ((viewMode+1)%6)
+    switch (viewMode) {
       case 0:
         document.querySelector('#scenes').style.display = 'block'
         document.querySelector('#script').style.display = 'block'
@@ -1571,8 +1571,8 @@ let toggleViewMode = ()=> {
         break
     }
   } else {
-    toggleMode = ((toggleMode+1)%4)
-    switch (toggleMode) {
+    viewMode = ((viewMode+1)%4)
+    switch (viewMode) {
       case 0:
         document.querySelector('#scenes').style.display = 'none'
         document.querySelector('#script').style.display = 'none'
@@ -2067,9 +2067,9 @@ ipcRenderer.on('reorderBoardsRight', (event, args)=>{
   }
 })
 
-ipcRenderer.on('toggleViewMode', (event, args)=>{
+ipcRenderer.on('cycleViewMode', (event, args)=>{
   if (!textInputMode) {
-    toggleViewMode()
+    cycleViewMode()
   }
 })
 

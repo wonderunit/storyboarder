@@ -453,8 +453,8 @@ ipcMain.on('flipBoard', (e, arg)=> {
 
 /// VIEW
 
-ipcMain.on('toggleViewMode', (e, arg)=> {
-  mainWindow.webContents.send('toggleViewMode', arg)
+ipcMain.on('cycleViewMode', (e, arg)=> {
+  mainWindow.webContents.send('cycleViewMode', arg)
 })
 
 //////////////////
