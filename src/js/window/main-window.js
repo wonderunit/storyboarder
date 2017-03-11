@@ -140,7 +140,7 @@ let loadBoardUI = ()=> {
       switch (e.target.name) {
         case 'duration':
         case 'frames':
-          textInputAllowAdvance = true;
+          textInputAllowAdvance = true
           break
       }
     })
@@ -1376,7 +1376,7 @@ window.onresize = (e) => {
 }
 
 window.onkeydown = (e)=> {
-  if (!textInputMode || textInputAllowAdvance) {
+  if (!textInputMode) {
 
     console.log(e)
 
@@ -1409,6 +1409,20 @@ window.onkeydown = (e)=> {
         toggleViewMode()
         e.preventDefault()
         break;
+      case 'Escape':
+        if (dragMode && isEditMode && selections.size) {
+          disableEditMode()
+          disableDragMode()
+        }
+        break
+    }
+
+  }
+  else if (!textInputMode || textInputAllowAdvance) {
+
+    console.log(e)
+
+    switch (e.code) {
       case 'ArrowLeft':
         if (e.metaKey || e.ctrlKey) {
           previousScene()
@@ -1430,12 +1444,6 @@ window.onkeydown = (e)=> {
           goNextBoard(1, shouldPreserveSelections)
         }
         e.preventDefault()
-        break
-      case 'Escape':
-        if (dragMode && isEditMode && selections.size) {
-          disableEditMode()
-          disableDragMode()
-        }
         break
     }
   }
