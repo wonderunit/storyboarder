@@ -1,5 +1,7 @@
 # Notes for Developers
 
+Tested with node v6.1.0.
+
 ## Developing
 
     $ npm install

@@ -288,10 +288,10 @@ const template = [
     label: 'View',
     submenu: [
       {
-        label: 'Toggle View Mode',
+        label: 'Cycle View Mode',
         accelerator: 'Tab',
         click ( item, focusedWindow, event) {
-          ipcRenderer.send('toggleViewMode')
+          ipcRenderer.send('cycleViewMode')
         }
       },
       {
