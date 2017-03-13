@@ -183,13 +183,29 @@ const addImageData = (isBefore, state) => {
   })
 }
 
-const addSceneData = (sceneId, sceneDataRef) => {
-  let sceneData = util.stringifyClone(sceneDataRef)
-  undoList.insert({
-    type: 'scene', 
+const sceneStateContextsEqual = (a, b) => {
+  return a && b &&
+  a.type == 'scene' && b.type == 'scene' &&
+  a.sceneId == b.sceneId
+}
+const addSceneData = (isBefore, state) => {
+  const sceneId = state.sceneId
+  const sceneDataRef = state.boardData
+
+  const newState = {
+    type: 'scene',
     sceneId,
-    sceneData
-  })
+    sceneData: util.stringifyClone(sceneDataRef)
+  }
+
+  // are we being asked to take a before snapshot?
+  if (isBefore) {
+    // ... but is the most recent state the same as the inserting state?
+    if (sceneStateContextsEqual(undoList.state.present, newState)) {
+      return
+    }
+  }
+  undoList.insert(newState)
 }
 
 const undo = () => {

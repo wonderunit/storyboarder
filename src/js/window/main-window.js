@@ -550,8 +550,10 @@ let deleteBoards = (args)=> {
 
   if (confirm(msg)) {
     if (selections.size) {
+      storeUndoStateForScene(true)
+
       // delete all selected boards
-      [...selections].sort(util.compareNumbers).reverse().forEach(n => {
+      ([...selections]).sort(util.compareNumbers).reverse().forEach(n => {
         deleteSingleBoard(n)
       })
 
@@ -568,6 +570,8 @@ let deleteBoards = (args)=> {
       renderThumbnailDrawer()
       storeUndoStateForScene()
     } else {
+      storeUndoStateForScene(true)
+
       // delete a single board
       deleteSingleBoard(currentBoard)
 
@@ -585,6 +589,7 @@ let deleteBoards = (args)=> {
 }
 
 let duplicateBoard = ()=> {
+  storeUndoStateForScene(true)
   saveImageFile()
   // copy current board canvas
   let imageData = document.querySelector('#main-canvas').getContext("2d").getImageData(0,0, document.querySelector('#main-canvas').width, document.querySelector('#main-canvas').height)
@@ -1697,6 +1702,8 @@ let loadPNGImageFileAsDataURI = (filepath) => {
 let copyBoards = ()=> {
   if (textInputMode) return // ignore copy command in text input mode
 
+    storeUndoStateForScene(true)
+
   // copy more than one boards
   if (selections.size > 1) {
     if (selections.has(currentBoard)) {
@@ -1747,6 +1754,7 @@ let pasteBoards = () => {
   if (textInputMode) return
 
   console.log("paste")
+  storeUndoStateForScene(true)
 
   let newBoards
 
@@ -1830,6 +1838,7 @@ let pasteBoards = () => {
 
 let moveSelectedBoards = (position) => {
   console.log('moveSelectedBoards(' + position + ')')
+  storeUndoStateForScene(true)
 
   let numRemoved = selections.size
   let firstSelection = [...selections].sort(util.compareNumbers)[0]
@@ -2028,11 +2037,11 @@ const getSceneNumberBySceneId = (sceneId) => {
 const getSceneObjectByIndex = (index) =>
   scriptData && scriptData.find(data => data.type == 'scene' && data.scene_number == index + 1)
 
-const storeUndoStateForScene = () => {
+const storeUndoStateForScene = (isBefore) => {
   let scene = getSceneObjectByIndex(currentScene) 
   // sceneId is allowed to be null (for a single storyboard with no script)
   let sceneId = scene && scene.scene_id
-  undoStack.addSceneData(sceneId, boardData)
+  undoStack.addSceneData(isBefore, { sceneId, boardData })
 }
 const applyUndoStateForScene = (state) => {
   if (state.type != 'scene') return // only `scene`s for now
