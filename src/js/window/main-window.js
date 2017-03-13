@@ -670,7 +670,7 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
     renderMetaData()
     renderMarkerPosition()
     
-    updateSketchPaneBoard().then(() => resolve())
+    updateSketchPaneBoard().then(() => resolve()).catch(e => console.error(e))
   })
 }
 
@@ -2078,7 +2078,7 @@ const applyUndoStateForImage = (state) => {
     layerContext.globalAlpha = 1
     layerContext.clearRect(0, 0, layerContext.canvas.width, layerContext.canvas.height)
     layerContext.drawImage(state.imageBitmap, 0, 0)
-  })
+  }).catch(e => console.error(e))
 }
 
 ipcRenderer.on('setTool', (e, arg)=> {
