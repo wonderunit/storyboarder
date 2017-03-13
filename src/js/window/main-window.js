@@ -2040,7 +2040,7 @@ const storeUndoStateForScene = (isBefore) => {
   let scene = getSceneObjectByIndex(currentScene) 
   // sceneId is allowed to be null (for a single storyboard with no script)
   let sceneId = scene && scene.scene_id
-  undoStack.addSceneData(isBefore, { sceneId, boardData })
+  undoStack.addSceneData(isBefore, { sceneId : sceneId, boardData: util.stringifyClone(boardData) })
 }
 const applyUndoStateForScene = (state) => {
   if (state.type != 'scene') return // only `scene`s for now
