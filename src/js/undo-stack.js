@@ -210,13 +210,13 @@ const addSceneData = (isBefore, state) => {
 
 const undo = () => {
   undoList.undo()
-  let state = undoList.state.present
+  let state = util.stringifyClone(undoList.state.present)
   module.exports.emit('undo', state)
 }
 
 const redo = () => {
   undoList.redo()
-  let state = undoList.state.present
+  let state = util.stringifyClone(undoList.state.present)
   module.exports.emit('redo', state)
 }
 
