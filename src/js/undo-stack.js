@@ -80,7 +80,7 @@ class UndoList {
   }
 
   insert (value) {
-    let { past, present, future } = this.state
+    const { past, present, future } = this.state
 
     const historyOverflow = this.lengthWithoutFuture() >= this.maxLength
 
@@ -169,7 +169,8 @@ const addImageData = (isBefore, state) => {
   // are we being asked to take a before snapshot?
   if (isBefore) {
     // ... but is the most recent state the same as the inserting state?
-    if (imageStateContextsEqual(undoList.state.present, state)) {
+    if (undoList.state.present && // always store before state if we have no known snapshot
+        imageStateContextsEqual(undoList.state.present, state)) {
       return
     }
   }
@@ -183,28 +184,27 @@ const addImageData = (isBefore, state) => {
   })
 }
 
-const sceneStateContextsEqual = (a, b) => {
-  return a && b &&
+const sceneStateContextsEqual = (a, b) =>
+  a && b &&
   a.type == 'scene' && b.type == 'scene' &&
   a.sceneId == b.sceneId
-}
-const addSceneData = (isBefore, state) => {
-  const sceneId = state.sceneId
-  const sceneDataRef = state.boardData
 
+const addSceneData = (isBefore, state) => {
   const newState = {
     type: 'scene',
-    sceneId,
-    sceneData: util.stringifyClone(sceneDataRef)
+    sceneId: state.sceneId,
+    sceneData: state.boardData
   }
 
   // are we being asked to take a before snapshot?
   if (isBefore) {
     // ... but is the most recent state the same as the inserting state?
-    if (sceneStateContextsEqual(undoList.state.present, newState)) {
+    if (undoList.state.present && // always store before state if we have no known snapshot
+        sceneStateContextsEqual(undoList.state.present, newState)) {
       return
     }
   }
+
   undoList.insert(newState)
 }
 
