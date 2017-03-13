@@ -34,7 +34,7 @@ class UndoList {
 
     if (past.length <= 0) return
 
-    const newFuture = present != null
+    const newFuture = present !== null
       ? [
         present,
         ...future
@@ -59,7 +59,7 @@ class UndoList {
 
     if (future.length <= 0) return
 
-    const newPast = present != null
+    const newPast = present !== null
       ? [
         ...past,
         present
