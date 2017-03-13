@@ -156,10 +156,25 @@ class UndoList {
 
 let undoList = new UndoList()
 
-const addImageData = (sceneId, imageId, layerId, imageBitmap) => {
+const imageStateContextsEqual = (a, b) =>
+  a.sceneId == b.sceneId &&
+  a.imageId == b.imageId &&
+  a.layerId == b.layerId
+
+const addImageData = (isBefore, state) => {
+  const { sceneId, imageId, layerId, imageBitmap } = state
+
+  // are we being asked to take a before snapshot?
+  if (isBefore) {
+    // ... but is the most recent state the same as the inserting state?
+    if (undoList.state.present && imageStateContextsEqual(undoList.state.present, state)) {
+      return
+    }    
+  }
+
   undoList.insert({
-    type:'image', 
-    sceneId: sceneId, 
+    type: 'image',
+    sceneId: sceneId,
     imageId: imageId,
     layerId: layerId, 
     imageBitmap: imageBitmap // NOTE this is actually a reference to an HTMLCanvas object

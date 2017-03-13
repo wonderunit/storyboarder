@@ -99,7 +99,6 @@ ipcRenderer.on('load', (event, args)=>{
     boardData = JSON.parse(fs.readFileSync(boardFilename))
   }
 
-  storeUndoStateForScene()
   loadBoardUI()
   updateBoardUI()
 })
@@ -129,8 +128,8 @@ let loadBoardUI = ()=> {
   sketchPane.on('lineMileage', (value)=>{
     addToLineMileage(value)
   })
-  sketchPane.on('addToUndoStack', (layerId, imageBitmap) => {
-    storeUndoStateForImage(layerId, imageBitmap)
+  sketchPane.on('addToUndoStack', (isBefore, layerId, imageBitmap) => {
+    storeUndoStateForImage(isBefore, layerId, imageBitmap)
   })
 
   for (var item of document.querySelectorAll('#board-metadata input, textarea')) {
@@ -2050,10 +2049,10 @@ const applyUndoStateForScene = (state) => {
   updateBoardUI()
 }
 
-const storeUndoStateForImage = (layerId, imageBitmap) => {
+const storeUndoStateForImage = (isBefore, layerId, imageBitmap) => {
   let scene = getSceneObjectByIndex(currentScene)
   let sceneId = scene && scene.scene_id
-  undoStack.addImageData(sceneId, currentBoard, layerId, imageBitmap)
+  undoStack.addImageData(isBefore, { sceneId, imageId: currentBoard, layerId, imageBitmap })
 }
 
 const applyUndoStateForImage = (state) => {

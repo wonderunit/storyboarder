@@ -24,6 +24,7 @@ const EventEmitter = require('events').EventEmitter
 module.exports = new EventEmitter()
 
 let util = require('./utils/index.js')
+let undoStack = require('./undo-stack.js')
 
 const getCurvePoints = require("cardinal-spline-js").getCurvePoints
 const TO_RADIANS = Math.PI/180
@@ -223,12 +224,6 @@ let pointerDown = (e) => {
       if (e.shiftKey) isStraightline = true
       window.requestAnimationFrame(drawBrushLoop)
     }
-    // FIXME
-    // this adds an "anchor" image to the undo stack
-    // which allows us to always have a known start point for furthest undo
-    // but causes duplicates
-    //
-    // addToUndoStack()
   }
 }
 
@@ -424,6 +419,7 @@ let pointerUp = (e) => {
   straightDirection = false
   straightAnchor = false
   if (penDown) {
+    addToUndoStack(true)
     if (moveMode || isMoving) {
       isMoving = false
       boardContext.clearRect(0, 0, boardSize[0], boardSize[1])
@@ -628,15 +624,15 @@ const cancelTransform = () => {
   module.exports.emit('cancelTransform')
 }
 
-let addToUndoStack = () => {
+let addToUndoStack = (isBefore = false) => {
   let el = document.createElement('canvas')
   let ctx = el.getContext('2d')
   el.id = util.uidGen(5)
   ctx.canvas.width = boardSize[0]
   ctx.canvas.height = boardSize[1]
   ctx.drawImage(boardContext.canvas, 0, 0)
- 
-  module.exports.emit('addToUndoStack', boardContext.canvas.id, ctx.canvas)
+
+  module.exports.emit('addToUndoStack', isBefore, boardContext.canvas.id, ctx.canvas)
 }
 
 module.exports.init = init
