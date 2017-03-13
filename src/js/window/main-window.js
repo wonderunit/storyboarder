@@ -2056,23 +2056,21 @@ const storeUndoStateForImage = (isBefore, layerId, imageBitmap) => {
 }
 
 const applyUndoStateForImage = (state) => {
-  // TODO if sceneid go to that scene
-  // let currSceneObj = getSceneObjectByIndex(currentScene)
-  // if (currSceneObj && currSceneObj.scene_id != state.sceneId) {
-  //   // go to that scene
-  //   saveBoardFile()
-  //   currentScene = getSceneNumberBySceneId(state.sceneId)
-  //   loadScene(currentScene)
-  //   renderScript()
-  // }
+  // if required, go to the scene first
+  let currSceneObj = getSceneObjectByIndex(currentScene)
+  if (currSceneObj && currSceneObj.scene_id != state.sceneId) {
+    saveImageFile()
+    // go to the requested scene
+    currentScene = getSceneNumberBySceneId(state.sceneId)
+    loadScene(currentScene)
+    renderScript()
+  }
 
   // if required, go to the board first
+    saveImageFile()
   let step = (currentBoard != state.imageId) ? gotoBoard : () => Promise.resolve()
 
-  console.log('step', step)
-
   step(state.imageId).then(() => {
-    console.log('rendering to', currentBoard)
     // find layer context
     var layerContext = document.getElementById(state.layerId).getContext('2d')
 
@@ -2080,9 +2078,6 @@ const applyUndoStateForImage = (state) => {
     layerContext.globalAlpha = 1
     layerContext.clearRect(0, 0, layerContext.canvas.width, layerContext.canvas.height)
     layerContext.drawImage(state.imageBitmap, 0, 0)
-
-    // // save what we have
-    // saveImageFile()
   })
 }
 
