@@ -553,7 +553,8 @@ let deleteBoards = (args)=> {
       storeUndoStateForScene(true)
 
       // delete all selected boards
-      ([...selections]).sort(util.compareNumbers).reverse().forEach(n => {
+      let arr = [...selections]
+      arr.sort(util.compareNumbers).reverse().forEach(n => {
         deleteSingleBoard(n)
       })
 
