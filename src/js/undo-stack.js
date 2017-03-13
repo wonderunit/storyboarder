@@ -157,6 +157,8 @@ class UndoList {
 let undoList = new UndoList()
 
 const imageStateContextsEqual = (a, b) =>
+  a && b &&
+  a.type == 'image' && b.type == 'image' &&
   a.sceneId == b.sceneId &&
   a.imageId == b.imageId &&
   a.layerId == b.layerId
@@ -167,9 +169,7 @@ const addImageData = (isBefore, state) => {
   // are we being asked to take a before snapshot?
   if (isBefore) {
     // ... but is the most recent state the same as the inserting state?
-    if (undoList.state.present && 
-        undoList.state.present.type == 'image' &&
-        imageStateContextsEqual(undoList.state.present, state)) {
+    if (imageStateContextsEqual(undoList.state.present, state)) {
       return
     }
   }
