@@ -521,6 +521,7 @@ let setScale = (scale)=> {
 }
 
 let flipBoard = (vertical)=> {
+  addToUndoStack(true)
   boardContext.globalAlpha = 1
   boardContext.globalCompositeOperation = 'copy'
   if (vertical) {
@@ -589,12 +590,14 @@ let setEraser = ()=> {
 }
 
 let clear = ()=> {
+  addToUndoStack(true)
   boardContext.clearRect(0, 0, boardContext.canvas.width, boardContext.canvas.height)
   module.exports.emit('markDirty')
   addToUndoStack()
 }
 
 let fillBlack = ()=> {
+  addToUndoStack(true)
   boardContext.globalCompositeOperation = 'destination-over'
   boardContext.beginPath()
   boardContext.rect(0, 0, boardContext.canvas.width, boardContext.canvas.height)
