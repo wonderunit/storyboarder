@@ -554,9 +554,8 @@ let deleteBoards = (args)=> {
 
       // delete all selected boards
       let arr = [...selections]
-      arr.sort(util.compareNumbers).reverse().forEach(n => {
-        deleteSingleBoard(n)
-      })
+      arr.sort(util.compareNumbers).reverse().forEach(n =>
+        deleteSingleBoard(n))
 
       if (selections.has(currentBoard)) {
         // if not requested to move forward
@@ -571,10 +570,10 @@ let deleteBoards = (args)=> {
       renderThumbnailDrawer()
       storeUndoStateForScene()
     } else {
-      storeUndoStateForScene(true)
-
       // delete a single board
+      storeUndoStateForScene(true)
       deleteSingleBoard(currentBoard)
+      storeUndoStateForScene()
 
       // if not requested to move forward
       // we take action to move intentionally backward
@@ -585,7 +584,6 @@ let deleteBoards = (args)=> {
 
     // always refresh
     gotoBoard(currentBoard)
-    storeUndoStateForScene()
   }
 }
 
