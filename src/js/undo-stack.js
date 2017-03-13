@@ -167,9 +167,11 @@ const addImageData = (isBefore, state) => {
   // are we being asked to take a before snapshot?
   if (isBefore) {
     // ... but is the most recent state the same as the inserting state?
-    if (undoList.state.present && imageStateContextsEqual(undoList.state.present, state)) {
+    if (undoList.state.present && 
+        undoList.state.present.type == 'image' &&
+        imageStateContextsEqual(undoList.state.present, state)) {
       return
-    }    
+    }
   }
 
   undoList.insert({
