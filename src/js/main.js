@@ -300,7 +300,7 @@ let createNew = () => {
 let loadStoryboarderWindow = (filename, scriptData, locations, characters, boardSettings, currentPath) => {
   // true = on window error, open dev tools and console.error
   // false = on window error, console.error only
-  const TRY_DEBUG_MODE = process.env['DEBUG'] === 'true'
+  const TRY_DEBUG_MODE = process.env.DEBUG === 'true'
 
   // http://stackoverflow.com/a/39305399
   const onErrorInWindow = (event, error, url, line) => {
