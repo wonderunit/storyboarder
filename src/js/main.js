@@ -33,8 +33,24 @@ let prefs = prefModule.getPrefs()
 let currentFile
 let currentPath
 
+global.sharedObj = { 'prefs': prefs }
+
 app.on('ready', ()=> {
+  // via https://github.com/electron/electron/issues/4690#issuecomment-217435222
+  const argv = process.defaultApp ? process.argv.slice(2) : process.argv
+
   // open the welcome window when the app loads up first
+  if (isDev && argv[0]) {
+    let filePath = path.resolve(argv[0])
+    if (fs.existsSync(filePath)) {
+      openFile(filePath)
+      return
+
+    } else {
+      console.error('Could not load', filePath)
+    }
+  }
+
   openWelcomeWindow()
 })
 
@@ -80,7 +96,6 @@ let openWelcomeWindow = ()=> {
     }
     prefs.recentDocuments = recentDocumentsCopy
   }
-  global.sharedObj = {'prefs': prefs}
 
   welcomeWindow.once('ready-to-show', () => {
     setTimeout(()=>{welcomeWindow.show()}, 300)
