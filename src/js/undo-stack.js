@@ -210,10 +210,19 @@ const addSceneData = (isBefore, state) => {
   undoList.insert(newState)
 }
 
+const cloneState = (originalState) => {
+  let newState = util.stringifyClone(originalState)
+  // re-insert the reference to imageBitmap, which is a DOM element (canvas)
+  if (originalState.imageBitmap) {
+    newState.imageBitmap = originalState.imageBitmap
+  }
+  return newState
+}
+
 const undo = () => {
   undoList.undo()
   if (undoList.state.present) {
-    let state = util.stringifyClone(undoList.state.present)
+    let state = cloneState(undoList.state.present)
     module.exports.emit('undo', state)
   }
 }
@@ -221,7 +230,7 @@ const undo = () => {
 const redo = () => {
   undoList.redo()
   if (undoList.state.present) {
-    let state = util.stringifyClone(undoList.state.present)
+    let state = cloneState(undoList.state.present)
     module.exports.emit('redo', state)
   }
 }
