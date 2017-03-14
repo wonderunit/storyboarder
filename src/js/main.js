@@ -298,37 +298,37 @@ let createNew = () => {
 }
 
 let loadStoryboarderWindow = (filename, scriptData, locations, characters, boardSettings, currentPath) => {
+  // true = on window error, open dev tools and console.error
+  // false = on window error, console.error only
+  const TRY_DEBUG_MODE = process.env['DEBUG'] === 'true'
+
+  // http://stackoverflow.com/a/39305399
+  const onErrorInWindow = (event, error, url, line) => {
+    if (TRY_DEBUG_MODE) {
+      mainWindow.show()
+      mainWindow.webContents.openDevTools()
+      console.error(error, url, line)
+    }
+  }
+
   if (welcomeWindow) {
     welcomeWindow.hide()
   }
   if (newWindow) {
     newWindow.hide()
   }
+
   mainWindow = new BrowserWindow({acceptFirstMouse: true, backgroundColor: '#333333', width: 2480, height: 1350, minWidth: 1024, minHeight: 640, show: false, resizable: true, titleBarStyle: 'hidden-inset', webPreferences: {webgl: true, experimentalFeatures: true, experimentalCanvasFeatures: true, devTools: true} })
+
+  ipcMain.on('errorInWindow', onErrorInWindow)
   mainWindow.loadURL(`file://${__dirname}/../main-window.html`)
-
-  //
-  //
-  // set to `true` to attempt debugging
-  const TRY_DEBUG_MODE = false
-  //
-  if (TRY_DEBUG_MODE) {
-    mainWindow.show()
-    setTimeout(()=>{
-      mainWindow.webContents.send('load', [filename, scriptData, locations, characters, boardSettings, currentPath])
-    }, 1000)
-  } else {
-    mainWindow.once('ready-to-show', () => {
-      mainWindow.webContents.send('load', [filename, scriptData, locations, characters, boardSettings, currentPath])
-    })
-  }
-  //
-  //
-  //
-
+  mainWindow.once('ready-to-show', () => {
+    mainWindow.webContents.send('load', [filename, scriptData, locations, characters, boardSettings, currentPath])
+  })
 
   mainWindow.once('close', () => {
     if (welcomeWindow) {
+      ipcMain.removeListener('errorInWindow', onErrorInWindow)
       welcomeWindow.webContents.send('updateRecentDocuments')
       welcomeWindow.show()
     }
