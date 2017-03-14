@@ -7,6 +7,7 @@ const {app, ipcMain, BrowserWindow, globalShortcut, dialog, powerSaveBlocker} = 
 const PDFParser = require("pdf2json")
 const fs = require('fs')
 const path = require('path')
+const isDev = require('electron-is-dev')
 
 const prefModule = require('./prefs')
 
@@ -298,10 +299,6 @@ let createNew = () => {
 }
 
 let loadStoryboarderWindow = (filename, scriptData, locations, characters, boardSettings, currentPath) => {
-  // true = on window error, open dev tools and console.error
-  // false = on window error, console.error only
-  const TRY_DEBUG_MODE = process.env.DEBUG === 'true'
-
   if (welcomeWindow) {
     welcomeWindow.hide()
   }
@@ -313,16 +310,14 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
 
   // http://stackoverflow.com/a/39305399
   const onErrorInWindow = (event, error, url, line) => {
-    if (TRY_DEBUG_MODE) {
-      if (mainWindow) {
-        mainWindow.show()
-        mainWindow.webContents.openDevTools()
-      }
-      console.error(error, url, line)
+    if (mainWindow) {
+      mainWindow.show()
+      mainWindow.webContents.openDevTools()
     }
+    console.error(error, url, line)
   }
 
-  ipcMain.on('errorInWindow', onErrorInWindow)
+  if (isDev) ipcMain.on('errorInWindow', onErrorInWindow)
   mainWindow.loadURL(`file://${__dirname}/../main-window.html`)
   mainWindow.once('ready-to-show', () => {
     mainWindow.webContents.send('load', [filename, scriptData, locations, characters, boardSettings, currentPath])
@@ -330,7 +325,7 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
 
   mainWindow.once('close', () => {
     if (welcomeWindow) {
-      ipcMain.removeListener('errorInWindow', onErrorInWindow)
+      if (isDev) ipcMain.removeListener('errorInWindow', onErrorInWindow)
       welcomeWindow.webContents.send('updateRecentDocuments')
       welcomeWindow.show()
     }
