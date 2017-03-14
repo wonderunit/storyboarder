@@ -23,6 +23,8 @@ class UndoList {
       future: []
     }
     this.maxLength = 100
+
+    this.debugMode = true
   }
 
   lengthWithoutFuture () {
@@ -51,7 +53,7 @@ class UndoList {
       future: newFuture
     }
 
-    this.print()
+    if (this.debugMode) this.print()
   }
   
   redo () {
@@ -76,7 +78,7 @@ class UndoList {
       past: newPast
     }
 
-    this.print()
+    if (this.debugMode) this.print()
   }
 
   insert (value) {
@@ -97,7 +99,7 @@ class UndoList {
       future: []
     }
 
-    this.print()
+    if (this.debugMode) this.print()
   }
 
   print () {
