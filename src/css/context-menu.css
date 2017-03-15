@@ -141,17 +141,32 @@
 
 
 .color-picker-container .color-row {
-  height: 40px;
+  height: 20px;
 }
 
 .color-swatch {
   display: inline-block;
-  width: 40px;
-  height: 40px;
+  width: 20px;
+  height: 20px;
 }
 
 .last-color {
-  width: 120px;
+  width: 60px;
+}
+
+@media only screen and (min-width: 1983px) {
+  .color-picker-container .color-row {
+    height: 40px;
+  }
+
+  .color-swatch {
+    width: 40px;
+    height: 40px;
+  }
+
+  .last-color {
+    width: 120px;
+  }
 }
 
 .color-swatch.active {
