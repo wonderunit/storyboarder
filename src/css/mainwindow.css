@@ -634,7 +634,6 @@ div.marker-holder {
 
 
 @media only screen and (max-width: 1500px) {
-
   #scenes {
     min-width: 100px;
     max-width: 100px;
@@ -647,10 +646,6 @@ div.marker-holder {
 
   #board-metadata {
     width: 150px;
-  }
-
-  #toolbar .button {
-    padding: 5px;
   }
 }
 
