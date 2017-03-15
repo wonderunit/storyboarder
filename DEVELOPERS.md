@@ -7,6 +7,12 @@ Tested with node v6.1.0.
     $ npm install
     $ npm start
 
+## Loading Storyboards via Command Line
+
+Storyboarder accepts an argument for the path to a filename to load when starting up:
+
+    $ npm start ../fixtures/example.storyboarder
+
 ## Building a Release
 
 If cross-compiling from Mac to Windows, install [Wine](see https://github.com/electron-userland/electron-builder/wiki/Multi-Platform-Build) first.

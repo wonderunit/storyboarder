@@ -7,6 +7,7 @@ const {app, ipcMain, BrowserWindow, globalShortcut, dialog, powerSaveBlocker} = 
 const PDFParser = require("pdf2json")
 const fs = require('fs')
 const path = require('path')
+const isDev = require('electron-is-dev')
 
 const prefModule = require('./prefs')
 
@@ -32,8 +33,24 @@ let prefs = prefModule.getPrefs()
 let currentFile
 let currentPath
 
+global.sharedObj = { 'prefs': prefs }
+
 app.on('ready', ()=> {
+  // via https://github.com/electron/electron/issues/4690#issuecomment-217435222
+  const argv = process.defaultApp ? process.argv.slice(2) : process.argv
+
   // open the welcome window when the app loads up first
+  if (isDev && argv[0]) {
+    let filePath = path.resolve(argv[0])
+    if (fs.existsSync(filePath)) {
+      openFile(filePath)
+      return
+
+    } else {
+      console.error('Could not load', filePath)
+    }
+  }
+
   openWelcomeWindow()
 })
 
@@ -79,7 +96,6 @@ let openWelcomeWindow = ()=> {
     }
     prefs.recentDocuments = recentDocumentsCopy
   }
-  global.sharedObj = {'prefs': prefs}
 
   welcomeWindow.once('ready-to-show', () => {
     setTimeout(()=>{welcomeWindow.show()}, 300)
@@ -304,31 +320,27 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
   if (newWindow) {
     newWindow.hide()
   }
+
   mainWindow = new BrowserWindow({acceptFirstMouse: true, backgroundColor: '#333333', width: 2480, height: 1350, minWidth: 1024, minHeight: 640, show: false, resizable: true, titleBarStyle: 'hidden-inset', webPreferences: {webgl: true, experimentalFeatures: true, experimentalCanvasFeatures: true, devTools: true} })
-  mainWindow.loadURL(`file://${__dirname}/../main-window.html`)
 
-  //
-  //
-  // set to `true` to attempt debugging
-  const TRY_DEBUG_MODE = false
-  //
-  if (TRY_DEBUG_MODE) {
-    mainWindow.show()
-    setTimeout(()=>{
-      mainWindow.webContents.send('load', [filename, scriptData, locations, characters, boardSettings, currentPath])
-    }, 1000)
-  } else {
-    mainWindow.once('ready-to-show', () => {
-      mainWindow.webContents.send('load', [filename, scriptData, locations, characters, boardSettings, currentPath])
-    })
+  // http://stackoverflow.com/a/39305399
+  const onErrorInWindow = (event, error, url, line) => {
+    if (mainWindow) {
+      mainWindow.show()
+      mainWindow.webContents.openDevTools()
+    }
+    console.error(error, url, line)
   }
-  //
-  //
-  //
 
+  if (isDev) ipcMain.on('errorInWindow', onErrorInWindow)
+  mainWindow.loadURL(`file://${__dirname}/../main-window.html`)
+  mainWindow.once('ready-to-show', () => {
+    mainWindow.webContents.send('load', [filename, scriptData, locations, characters, boardSettings, currentPath])
+  })
 
   mainWindow.once('close', () => {
     if (welcomeWindow) {
+      if (isDev) ipcMain.removeListener('errorInWindow', onErrorInWindow)
       welcomeWindow.webContents.send('updateRecentDocuments')
       welcomeWindow.show()
     }
