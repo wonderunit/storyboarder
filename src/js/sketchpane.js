@@ -22,6 +22,10 @@ sketchpane.setBrush(4,[255,0,0],100,100,'notes')
 */
 const EventEmitter = require('events').EventEmitter
 module.exports = new EventEmitter()
+
+let util = require('./utils/index.js')
+let undoStack = require('./undo-stack.js')
+
 const getCurvePoints = require("cardinal-spline-js").getCurvePoints
 const TO_RADIANS = Math.PI/180
 const TO_DEGREES = 1 / TO_RADIANS
@@ -146,7 +150,6 @@ let init = (parentDiv, layerNameArray, size)=> {
     window.addEventListener('keyup', keyUp, false)
     window.addEventListener("keydown", keyDown, false)
   }
-
 }
 
 let keyUp = (e)=> {
@@ -221,7 +224,6 @@ let pointerDown = (e) => {
       if (e.shiftKey) isStraightline = true
       window.requestAnimationFrame(drawBrushLoop)
     }
-    addToUndoStack()
   }
 }
 
@@ -417,6 +419,7 @@ let pointerUp = (e) => {
   straightDirection = false
   straightAnchor = false
   if (penDown) {
+    addToUndoStack(true)
     if (moveMode || isMoving) {
       isMoving = false
       boardContext.clearRect(0, 0, boardSize[0], boardSize[1])
@@ -431,6 +434,7 @@ let pointerUp = (e) => {
     }
     module.exports.emit('markDirty')
     module.exports.emit('lineMileage', Math.round(lineDistance))
+    addToUndoStack()
   }
   penDown = false
 }
@@ -517,7 +521,7 @@ let setScale = (scale)=> {
 }
 
 let flipBoard = (vertical)=> {
-  addToUndoStack()
+  addToUndoStack(true)
   boardContext.globalAlpha = 1
   boardContext.globalCompositeOperation = 'copy'
   if (vertical) {
@@ -530,6 +534,7 @@ let flipBoard = (vertical)=> {
   boardContext.drawImage(boardContext.canvas,0,0)
   boardContext.setTransform(1, 0, 0, 1, 0, 0)
   module.exports.emit('markDirty')
+  addToUndoStack()
 }
 
 let changeBrushSize = (direction)=> {
@@ -585,19 +590,21 @@ let setEraser = ()=> {
 }
 
 let clear = ()=> {
-  addToUndoStack()
+  addToUndoStack(true)
   boardContext.clearRect(0, 0, boardContext.canvas.width, boardContext.canvas.height)
   module.exports.emit('markDirty')
+  addToUndoStack()
 }
 
 let fillBlack = ()=> {
-  addToUndoStack()
+  addToUndoStack(true)
   boardContext.globalCompositeOperation = 'destination-over'
   boardContext.beginPath()
   boardContext.rect(0, 0, boardContext.canvas.width, boardContext.canvas.height)
   boardContext.fillStyle = "black"
   boardContext.fill()
   module.exports.emit('markDirty')
+  addToUndoStack()
 }
 
 let moveContents = ()=> {
@@ -620,20 +627,15 @@ const cancelTransform = () => {
   module.exports.emit('cancelTransform')
 }
 
+let addToUndoStack = (isBefore = false) => {
+  let el = document.createElement('canvas')
+  let ctx = el.getContext('2d')
+  el.id = util.uidGen(5)
+  ctx.canvas.width = boardSize[0]
+  ctx.canvas.height = boardSize[1]
+  ctx.drawImage(boardContext.canvas, 0, 0)
 
-let addToUndoStack = ()=> {
-  // createImageBitmap(boardContext.canvas).then((val)=> {
-  //   module.exports.emit('addToUndoStack', boardContext.canvas.id, val)
-  // })
-  var destContext = document.createElement('canvas').getContext('2d')
-  destContext.canvas.width = boardSize[0]
-  destContext.canvas.height = boardSize[1]
-  destContext.drawImage(boardContext.canvas, 0,0)
- 
-  module.exports.emit('addToUndoStack', boardContext.canvas.id, destContext.canvas)
-
-
-
+  module.exports.emit('addToUndoStack', isBefore, boardContext.canvas.id, ctx.canvas)
 }
 
 module.exports.init = init
