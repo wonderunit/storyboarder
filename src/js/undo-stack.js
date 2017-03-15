@@ -166,24 +166,24 @@ const imageStateContextsEqual = (a, b) =>
   a.layerId == b.layerId
 
 const addImageData = (isBefore, state) => {
-  const { sceneId, imageId, layerId, imageBitmap } = state
+  const newState = {
+    type: 'image',
+    sceneId: state.sceneId,
+    imageId: state.imageId,
+    layerId: state.layerId, 
+    imageBitmap: state.imageBitmap // NOTE this is actually a reference to an HTMLCanvas object
+  }
 
   // are we being asked to take a before snapshot?
   if (isBefore) {
     // ... but is the most recent state the same as the inserting state?
     if (undoList.state.present && // always store before state if we have no known snapshot
-        imageStateContextsEqual(undoList.state.present, state)) {
+        imageStateContextsEqual(undoList.state.present, newState)) {
       return
     }
   }
 
-  undoList.insert({
-    type: 'image',
-    sceneId: sceneId,
-    imageId: imageId,
-    layerId: layerId, 
-    imageBitmap: imageBitmap // NOTE this is actually a reference to an HTMLCanvas object
-  })
+  undoList.insert(newState)
 }
 
 const sceneStateContextsEqual = (a, b) =>
