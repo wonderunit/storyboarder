@@ -24,7 +24,7 @@ class UndoList {
     }
     this.maxLength = 100
 
-    this.debugMode = true
+    this.debugMode = false
   }
 
   lengthWithoutFuture () {
