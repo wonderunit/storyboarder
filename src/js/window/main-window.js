@@ -1702,8 +1702,6 @@ let loadPNGImageFileAsDataURI = (filepath) => {
 let copyBoards = ()=> {
   if (textInputMode) return // ignore copy command in text input mode
 
-    storeUndoStateForScene(true)
-
   // copy more than one boards
   if (selections.size > 1) {
     if (selections.has(currentBoard)) {
@@ -1730,7 +1728,6 @@ let copyBoards = ()=> {
     }
     clipboard.clear()
     clipboard.write(payload)
-    storeUndoStateForScene()
     return
   }
   
