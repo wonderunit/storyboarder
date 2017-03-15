@@ -2073,7 +2073,7 @@ const applyUndoStateForImage = (state) => {
   }
 
   // if required, go to the board first
-    saveImageFile()
+  saveImageFile()
   let step = (currentBoard != state.imageId) ? gotoBoard : () => Promise.resolve()
 
   step(state.imageId).then(() => {
