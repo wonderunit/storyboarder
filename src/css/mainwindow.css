@@ -361,13 +361,35 @@ body {
 
 
 #board-metadata {
-  width: 200px;
   display: flex;
-  align-items: center;
-/*  padding-right: 15px;
-*/  color: rgba(255,255,255,0.5);
+  position: relative;
+  width: 200px;
+  padding-right: 15px;
+}
+
+.board-metadata-container {
+  display: flex;
+  align-items: flex-start;
+  flex-direction: column;
+  color: rgba(255,255,255,0.5);
   font-size: 14px;
+  overflow: scroll;
+
+  padding-top: 10px;
+  padding-right: 0;
+  padding-bottom: 25px; /* make room for 50px shadow */
   padding-left: 15px;
+}
+
+#board-metadata:after {
+  content: " ";
+  display: block;
+  position: absolute;
+  width: 100%;
+  height: 50px;
+  bottom: 0;
+  background: linear-gradient(to bottom, rgba(51,51,51,0.0) 0%, rgba(51,51,51,1.0) 100%);
+  pointer-events: none;
 }
 
 
@@ -384,6 +406,7 @@ body {
 
 
 #board-metadata .hardrule {
+  width: 100%;
   border-top: 1px dotted rgba(255,255,255,0.1);
   margin: 20px 0px;
 }
@@ -403,6 +426,7 @@ body {
 }
 
 #board-metadata input[type=text] {
+  display: flex;
   box-sizing: border-box;
   width: 60px;
   border: 0;
@@ -646,6 +670,7 @@ div.marker-holder {
 
   #board-metadata {
     width: 150px;
+    padding-right: 15px;
   }
 }
 
