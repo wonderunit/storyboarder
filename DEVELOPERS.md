@@ -14,3 +14,5 @@ If cross-compiling from Mac to Windows, install [Wine](see https://github.com/el
     $ npm run build:mac # Mac only
     $ npm run build:win # Windows only
     $ npm run build     # Mac and Windows
+
+Remember to sync data files that have server representation (like `messages.json`).
