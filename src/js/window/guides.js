@@ -75,6 +75,26 @@ class Guides extends EventEmitter {
   }
   
   drawGrid (context, width, height) {
+    let squareSize = 50
+    let centerX = width / 2
+    let stepsX = width / squareSize
+    let stepsY = height / squareSize
+    let offsetX = (width / 2) % squareSize
+    let offsetY = (height / 2) % squareSize
+    context.beginPath()
+    context.strokeStyle = '#aaa'
+    for (let n = 0; n < stepsX; n++) {
+      let x = (n * squareSize) + offsetX
+      context.moveTo(...[x, 0].map(Math.floor))
+      context.lineTo(...[x, height].map(Math.floor))
+      context.stroke()
+    }
+    for (let n = 0; n < stepsX; n++) {
+      let y = (n * squareSize) + offsetY
+      context.moveTo(...[0, y].map(Math.floor))
+      context.lineTo(...[width, y].map(Math.floor))
+      context.stroke()
+    }
   }
   
   drawCenter (context, width, height) {
@@ -82,6 +102,8 @@ class Guides extends EventEmitter {
     let b0 = Math.floor(height / 2)
     let a1 = width
     let b1 = b0
+    context.beginPath()
+    context.strokeStyle = '#f00'
     context.moveTo(a0, b0)
     context.lineTo(a1, b1)
     context.stroke()
