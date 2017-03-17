@@ -51,7 +51,7 @@ class Guides extends EventEmitter {
     this.context = this.canvas.getContext('2d')
     this.el.appendChild(this.canvas)
   }
-  
+
   attachTo (target) {
     this.target = target
 
@@ -69,15 +69,26 @@ class Guides extends EventEmitter {
     let ctx = this.context
     ctx.clearRect(0, 0, this.state.width, this.state.height)
 
-    ctx.font = '24px sans-serif'
-    ctx.fillText(`
-      guides @ ${this.state.width} x ${this.state.height}
-      grid:${this.state.grid ? 'Y' : 'N'}
-      center:${this.state.center ? 'Y' : 'N'}
-      thirds:${this.state.thirds ? 'Y' : 'N'}
-      `,
-      10,
-      50)
+    this.drawGrid(this.context, this.state.width, this.state.height)
+    this.drawCenter(this.context, this.state.width, this.state.height)
+    this.drawThirds(this.context, this.state.width, this.state.height)
+  }
+  
+  drawGrid (context, width, height) {
+  }
+  
+  drawCenter (context, width, height) {
+    let a0 = 0
+    let b0 = Math.floor(height / 2)
+    let a1 = width
+    let b1 = b0
+    context.moveTo(a0, b0)
+    context.lineTo(a1, b1)
+    context.stroke()
+  }
+  
+  drawThirds (context, width, height) {
+    
   }
   
   onTargetResize () {
