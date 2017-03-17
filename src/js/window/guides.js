@@ -69,9 +69,9 @@ class Guides extends EventEmitter {
     let ctx = this.context
     ctx.clearRect(0, 0, this.state.width, this.state.height)
 
-    this.drawGrid(this.context, this.state.width, this.state.height)
-    this.drawCenter(this.context, this.state.width, this.state.height)
-    this.drawThirds(this.context, this.state.width, this.state.height)
+    if (this.state.grid)   this.drawGrid(this.context, this.state.width, this.state.height)
+    if (this.state.center) this.drawCenter(this.context, this.state.width, this.state.height)
+    if (this.state.thirds) this.drawThirds(this.context, this.state.width, this.state.height)
   }
   
   drawGrid (context, width, height) {
