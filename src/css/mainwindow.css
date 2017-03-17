@@ -364,7 +364,6 @@ body {
   display: flex;
   position: relative;
   width: 200px;
-  padding-right: 15px;
 }
 
 .board-metadata-container {
@@ -373,12 +372,13 @@ body {
   flex-direction: column;
   color: rgba(255,255,255,0.5);
   font-size: 14px;
-  overflow: scroll;
 
   padding-top: 10px;
-  padding-right: 0;
+  padding-right: 15px; /* spacing for scrollbar */
   padding-bottom: 25px; /* make room for 50px shadow */
   padding-left: 15px;
+
+  overflow-y: scroll;
 }
 
 #board-metadata:after {
