@@ -1442,7 +1442,8 @@ window.onkeydown = (e)=> {
     }
 
   }
-  else if (!textInputMode || textInputAllowAdvance) {
+
+  if (!textInputMode || textInputAllowAdvance) {
 
     console.log(e)
 
