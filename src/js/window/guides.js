@@ -110,7 +110,24 @@ class Guides extends EventEmitter {
   }
   
   drawThirds (context, width, height) {
+    context.beginPath()
+    context.strokeStyle = '#00f'
     
+    let w0 = width / 3
+    let h0 = height / 3
+
+    for (let n = 0; n < 3; n++) {
+      let x = n * w0
+      let y = n * h0
+
+      context.moveTo(...[x, 0].map(Math.floor))
+      context.lineTo(...[x, height].map(Math.floor))
+      context.stroke()
+
+      context.moveTo(...[0, y].map(Math.floor))
+      context.lineTo(...[width, y].map(Math.floor))
+      context.stroke()
+    }
   }
   
   onTargetResize () {
