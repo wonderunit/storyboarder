@@ -429,7 +429,11 @@ let loadBoardUI = ()=> {
   })
 
   sketchPane.init(document.getElementById('sketch-pane'), ['reference', 'main', 'notes'], size)
-  
+
+  guides = new Guides()
+  guides.create(document.getElementById('guides'))
+  guides.attachTo(document.getElementById('canvas-container'))
+
   let onUndoStackAction = (state) => {
     if (state.type == 'image') {
       applyUndoStateForImage(state)
@@ -440,10 +444,6 @@ let loadBoardUI = ()=> {
   }
   undoStack.on('undo', onUndoStackAction)
   undoStack.on('redo', onUndoStackAction)
-
-  guides = new Guides()
-  guides.create(document.getElementById('guides'))
-  guides.attachTo(document.getElementById('canvas-container'))
 
   setTimeout(()=>{remote.getCurrentWindow().show()}, 200)
   //remote.getCurrentWebContents().openDevTools()

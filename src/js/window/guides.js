@@ -1,14 +1,6 @@
 const EventEmitter = require('events').EventEmitter
-const Tether = require('tether')
 
 const util = require('../utils/index.js')
-
-// HACK
-Tether.modules.push({
-  position: function(_arg) {
-    if (this.options.onResize) this.options.onResize()
-  }
-})
 
 class Guides extends EventEmitter {
   constructor () {
@@ -25,9 +17,6 @@ class Guides extends EventEmitter {
     this.el = null
     this.canvas = null
     this.context = null
-
-    this.target = null
-    this.tethered = null
   }
 
   setState (newState) {
@@ -53,18 +42,15 @@ class Guides extends EventEmitter {
   }
 
   attachTo (target) {
-    this.target = target
-
-    this.tethered = new Tether({
-      element: this.el,
-      target: this.target,
-      attachment: 'top left',
-      targetAttachment: 'top left',
-
-      onResize: this.onTargetResize.bind(this)
-    })
+    // move from current DOM position to inside target
+    target.insertBefore(this.el, target.firstChild)
+    let state = {
+      width: parseFloat(target.style.width, 10),
+      height: parseFloat(target.style.height, 10)
+    }
+    this.setState(state)
   }
-  
+
   render () {
     let ctx = this.context
     ctx.clearRect(0, 0, this.state.width, this.state.height)
@@ -128,15 +114,6 @@ class Guides extends EventEmitter {
       context.lineTo(...[width, y].map(Math.floor))
       context.stroke()
     }
-  }
-  
-  onTargetResize () {
-    let bounds = this.target.getBoundingClientRect()
-
-    let width = bounds.right - bounds.left
-    let height = bounds.bottom - bounds.top
-    
-    this.setState({ width, height })
   }
 }
 
