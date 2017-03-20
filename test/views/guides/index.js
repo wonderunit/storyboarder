@@ -23,5 +23,5 @@ guides.setState({
   grid: true,
   center: true,
   thirds: true,
-  perspective: true,
+  diagonals: true,
 })

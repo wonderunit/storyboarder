@@ -11,7 +11,7 @@ class Guides extends EventEmitter {
       grid: false,
       center: false,
       thirds: false,
-      perspective: false,
+      diagonals: false,
     
       width: 0,
       height: 0
@@ -71,7 +71,7 @@ class Guides extends EventEmitter {
     if (this.state.grid)   this.drawGrid(this.context, this.state.width, this.state.height)
     if (this.state.center) this.drawCenter(this.context, this.state.width, this.state.height)
     if (this.state.thirds) this.drawThirds(this.context, this.state.width, this.state.height)
-    if (this.state.perspective) this.drawPerspective(this.context, this.state.width, this.state.height)
+    if (this.state.diagonals) this.drawDiagonals(this.context, this.state.width, this.state.height)
   }
 
   drawGrid (context, width, height) {
@@ -149,7 +149,7 @@ class Guides extends EventEmitter {
     }
   }
 
-  drawPerspective (context, width, height) {
+  drawDiagonals (context, width, height) {
     let midpointX = Math.floor(width / 2)
     let midpointY = Math.floor(height / 2)
     context.translate(this.translateShift, this.translateShift)

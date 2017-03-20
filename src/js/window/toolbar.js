@@ -13,7 +13,7 @@ class Toolbar extends EventEmitter {
       grid: false,
       center: false,
       thirds: false,
-      perspective: false
+      diagonals: false
     })
     this.onButtonSelect = this.onButtonSelect.bind(this)
     this.attachedCallback(this.el)
@@ -141,9 +141,9 @@ class Toolbar extends EventEmitter {
         this.setState({ thirds: !this.state.thirds })
         this.emit('thirds', this.state.thirds)
         break
-      case 'perspective':
-        this.setState({ perspective: !this.state.perspective })
-        this.emit('perspective', this.state.perspective)
+      case 'diagonals':
+        this.setState({ diagonals: !this.state.diagonals })
+        this.emit('diagonals', this.state.diagonals)
         break
       case 'onion':
         this.emit('onion')

@@ -364,8 +364,8 @@ let loadBoardUI = ()=> {
   toolbar.on('thirds', value => {
     guides.setState({ thirds: value })
   })
-  toolbar.on('perspective', value => {
-    guides.setState({ perspective: value })
+  toolbar.on('diagonals', value => {
+    guides.setState({ diagonals: value })
   })
   toolbar.on('onion', () => {
     alert('Onion. This feature is not ready yet :(')
