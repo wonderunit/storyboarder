@@ -355,17 +355,17 @@ let loadBoardUI = ()=> {
     alert('Brush Size. This feature is not ready yet :(')
   })
   
-  toolbar.on('grid', (value) => {
+  toolbar.on('grid', value => {
     guides.setState({ grid: value })
   })
-  toolbar.on('center', (value) => {
+  toolbar.on('center', value => {
     guides.setState({ center: value })
   })
-  toolbar.on('thirds', (value) => {
+  toolbar.on('thirds', value => {
     guides.setState({ thirds: value })
   })
-  toolbar.on('perspective', () => {
-    alert('Perspective. This feature is not ready yet :(')
+  toolbar.on('perspective', value => {
+    guides.setState({ perspective: value })
   })
   toolbar.on('onion', () => {
     alert('Onion. This feature is not ready yet :(')

@@ -9,6 +9,7 @@ class Guides extends EventEmitter {
       grid: false,
       center: false,
       thirds: false,
+      perspective: false,
     
       width: 0,
       height: 0
@@ -60,6 +61,7 @@ class Guides extends EventEmitter {
     if (this.state.grid)   this.drawGrid(this.context, this.state.width, this.state.height)
     if (this.state.center) this.drawCenter(this.context, this.state.width, this.state.height)
     if (this.state.thirds) this.drawThirds(this.context, this.state.width, this.state.height)
+    if (this.state.perspective) this.drawPerspective(this.context, this.state.width, this.state.height)
   }
 
   drawGrid (context, width, height) {
@@ -87,20 +89,20 @@ class Guides extends EventEmitter {
   }
 
   drawCenter (context, width, height) {
-    let x = Math.floor(width / 2)
-    let y = Math.floor(height / 2)
+    let midpointX = Math.floor(width / 2)
+    let midpointY = Math.floor(height / 2)
     context.beginPath()
     context.lineWidth = 1
     context.strokeStyle = '#000'
 
     // horizontal
-    context.moveTo(0, y)
-    context.lineTo(width, y)
+    context.moveTo(0, midpointY)
+    context.lineTo(width, midpointY)
     context.stroke()
 
     // vertical
-    context.moveTo(x, 0)
-    context.lineTo(x, height)
+    context.moveTo(midpointX, 0)
+    context.lineTo(midpointX, height)
     context.stroke()
   }
 
@@ -108,7 +110,7 @@ class Guides extends EventEmitter {
     context.beginPath()
     context.lineWidth = 1
     context.strokeStyle = '#000'
-    
+
     let w0 = width / 3
     let h0 = height / 3
 
@@ -124,6 +126,35 @@ class Guides extends EventEmitter {
       context.lineTo(...[width, y].map(Math.floor))
       context.stroke()
     }
+  }
+
+  drawPerspective (context, width, height) {
+    let midpointX = Math.floor(width / 2)
+    let midpointY = Math.floor(height / 2)
+    context.beginPath()
+    context.lineWidth = 1
+    context.strokeStyle = '#000'
+
+    // cross TL to BR
+    context.moveTo(0, 0)
+    context.lineTo(width, height)
+    context.stroke()
+    // cross BL to TR
+    context.moveTo(0, height)
+    context.lineTo(width, 0)
+    context.stroke()
+
+    // TL corner to B mid to TR corner
+    context.moveTo(0, 0)
+    context.lineTo(midpointX, height)
+    context.lineTo(width, 0)
+    context.stroke()
+
+    // BL corner to T mid to BR corner
+    context.moveTo(0, height)
+    context.lineTo(midpointX, 0)
+    context.lineTo(width, height)
+    context.stroke()
   }
 }
 
