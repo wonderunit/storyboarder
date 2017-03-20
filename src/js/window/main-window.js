@@ -19,6 +19,8 @@ const ColorPicker = require('./color-picker.js')
 const Transport = require('./transport.js')
 const notifications = require('./notifications.js')
 const NotificationData = require('../../data/messages.json')
+const Guides = require('./guides.js')
+
 
 let boardFilename
 let boardPath
@@ -62,6 +64,7 @@ let toolbar
 let contextMenu
 let colorPicker
 let transport
+let guides
 
 menu.setMenu()
 
@@ -352,17 +355,17 @@ let loadBoardUI = ()=> {
     alert('Brush Size. This feature is not ready yet :(')
   })
   
-  toolbar.on('grid', () => {
-    alert('Grid. This feature is not ready yet :(')
+  toolbar.on('grid', value => {
+    guides.setState({ grid: value })
   })
-  toolbar.on('center', () => {
-    alert('Center. This feature is not ready yet :(')
+  toolbar.on('center', value => {
+    guides.setState({ center: value })
   })
-  toolbar.on('thirds', () => {
-    alert('Thirds. This feature is not ready yet :(')
+  toolbar.on('thirds', value => {
+    guides.setState({ thirds: value })
   })
-  toolbar.on('perspective', () => {
-    alert('Perspective. This feature is not ready yet :(')
+  toolbar.on('perspective', value => {
+    guides.setState({ perspective: value })
   })
   toolbar.on('onion', () => {
     alert('Onion. This feature is not ready yet :(')
@@ -426,7 +429,11 @@ let loadBoardUI = ()=> {
   })
 
   sketchPane.init(document.getElementById('sketch-pane'), ['reference', 'main', 'notes'], size)
-  
+
+  guides = new Guides()
+  guides.create(document.getElementById('guides'))
+  guides.attachTo(document.getElementById('canvas-container'))
+
   let onUndoStackAction = (state) => {
     if (state.type == 'image') {
       applyUndoStateForImage(state)

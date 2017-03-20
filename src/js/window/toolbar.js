@@ -9,7 +9,11 @@ class Toolbar extends EventEmitter {
       brush: 'light-pencil',
       transformMode: null,
       captions: true,
-      currentBrushColor: null
+      currentBrushColor: null,
+      grid: false,
+      center: false,
+      thirds: false,
+      perspective: false
     })
     this.onButtonSelect = this.onButtonSelect.bind(this)
     this.attachedCallback(this.el)
@@ -126,16 +130,20 @@ class Toolbar extends EventEmitter {
         break
 
       case 'grid':
-        this.emit('grid')
+        this.setState({ grid: !this.state.grid })
+        this.emit('grid', this.state.grid)
         break
       case 'center':
-        this.emit('center')
+        this.setState({ center: !this.state.center })
+        this.emit('center', this.state.center)
         break
       case 'thirds':
-        this.emit('thirds')
+        this.setState({ thirds: !this.state.thirds })
+        this.emit('thirds', this.state.thirds)
         break
       case 'perspective':
-        this.emit('perspective')
+        this.setState({ perspective: !this.state.perspective })
+        this.emit('perspective', this.state.perspective)
         break
       case 'onion':
         this.emit('onion')
