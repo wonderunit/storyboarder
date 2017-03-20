@@ -52,8 +52,8 @@ class Guides extends EventEmitter {
     // move from current DOM position to inside target
     target.insertBefore(this.el, target.firstChild)
     let state = {
-      width: parseFloat(target.style.width, 10),
-      height: parseFloat(target.style.height, 10)
+      width: parseFloat(target.style.width),
+      height: parseFloat(target.style.height)
     }
     this.setState(state)
   }
