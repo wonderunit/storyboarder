@@ -99,7 +99,7 @@ class Guides extends EventEmitter {
       context.lineTo(...[x, height].map(Math.floor))
       context.stroke()
     }
-    for (let n = 0; n < stepsX; n++) {
+    for (let n = 0; n < stepsY; n++) {
       context.beginPath()
       let y = (n * squareSize) + offsetY
       context.moveTo(...[0, y].map(Math.floor))
