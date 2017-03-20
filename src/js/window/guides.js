@@ -19,6 +19,10 @@ class Guides extends EventEmitter {
 
     this.lineColorMuted  = rgba(170, 170, 170, 0.3)
     this.lineColorNormal = rgba(85, 85, 85, 0.3)
+    // for crisp lines
+    // see: http://www.mobtowers.com/html5-canvas-crisp-lines-every-time/
+    this.translateShift = 0.5
+
     this.lineColorStrong = rgba(0, 0, 0, 0.75)
 
     this.el = null
@@ -71,6 +75,7 @@ class Guides extends EventEmitter {
   }
 
   drawGrid (context, width, height) {
+    context.translate(this.translateShift, this.translateShift)
     let squareSize = 50
     let centerX = width / 2
     let stepsX = width / squareSize
@@ -93,11 +98,13 @@ class Guides extends EventEmitter {
       context.lineTo(...[width, y].map(Math.floor))
       context.stroke()
     }
+    context.translate(-this.translateShift, -this.translateShift)
   }
 
   drawCenter (context, width, height) {
     let midpointX = Math.floor(width / 2)
     let midpointY = Math.floor(height / 2)
+    context.translate(this.translateShift, this.translateShift)
     context.lineWidth = 1
     context.strokeStyle = this.lineColorStrong
 
@@ -112,9 +119,12 @@ class Guides extends EventEmitter {
     context.moveTo(midpointX, 0)
     context.lineTo(midpointX, height)
     context.stroke()
+    context.translate(-this.translateShift, -this.translateShift)
   }
 
   drawThirds (context, width, height) {
+    context.translate(this.translateShift, this.translateShift)
+
     context.lineWidth = 1
     context.strokeStyle = this.lineColorStrong
 
@@ -134,12 +144,15 @@ class Guides extends EventEmitter {
       context.moveTo(...[0, y].map(Math.floor))
       context.lineTo(...[width, y].map(Math.floor))
       context.stroke()
+
+      context.translate(-this.translateShift, -this.translateShift)
     }
   }
 
   drawPerspective (context, width, height) {
     let midpointX = Math.floor(width / 2)
     let midpointY = Math.floor(height / 2)
+    context.translate(this.translateShift, this.translateShift)
     context.lineWidth = 1
     context.strokeStyle = this.lineColorNormal
 
@@ -167,6 +180,8 @@ class Guides extends EventEmitter {
     context.lineTo(midpointX, 0)
     context.lineTo(width, height)
     context.stroke()
+
+    context.translate(-this.translateShift, -this.translateShift)
   }
 }
 
