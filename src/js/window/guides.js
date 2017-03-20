@@ -2,6 +2,8 @@ const EventEmitter = require('events').EventEmitter
 
 const util = require('../utils/index.js')
 
+const rgba = (r, g, b, a) => `rgba(${r}, ${g}, ${b}, ${parseFloat(a)})`
+
 class Guides extends EventEmitter {
   constructor () {
     super()
@@ -15,9 +17,9 @@ class Guides extends EventEmitter {
       height: 0
     }
 
-    this.lineColorMuted   = 'rgba(51, 51, 51, 0.2)'
-    this.lineColorNormal  = 'rgba(119, 119, 119, 0.2)'
-    this.lineColorStrong  = 'rgba(0, 0, 0, 0.2)'
+    this.lineColorMuted  = rgba(170, 170, 170, 0.3)
+    this.lineColorNormal = rgba(85, 85, 85, 0.3)
+    this.lineColorStrong = rgba(0, 0, 0, 0.75)
 
     this.el = null
     this.canvas = null
