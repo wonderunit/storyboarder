@@ -152,9 +152,8 @@ class Guides extends EventEmitter {
       context.moveTo(...[0, y].map(Math.floor))
       context.lineTo(...[width, y].map(Math.floor))
       context.stroke()
-
-      context.translate(-this.translateShift, -this.translateShift)
     }
+    context.translate(-this.translateShift, -this.translateShift)
   }
 
   drawDiagonals (context, width, height, color, lineWidth) {
