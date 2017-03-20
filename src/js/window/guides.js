@@ -121,7 +121,7 @@ class Guides extends EventEmitter {
     let w0 = width / 3
     let h0 = height / 3
 
-    for (let n = 0; n < 3; n++) {
+    for (let n = 1; n < 3; n++) {
       let x = n * w0
       let y = n * h0
 
