@@ -17,12 +17,12 @@ class Guides extends EventEmitter {
       height: 0
     }
 
-    this.lineColorMuted  = rgba(170, 170, 170, 0.3)
-    this.lineColorNormal = rgba(85, 85, 85, 0.3)
     // for crisp lines
     // see: http://www.mobtowers.com/html5-canvas-crisp-lines-every-time/
     this.translateShift = 0.5
 
+    this.lineColorMuted  = rgba(0, 0, 0, 0.1)
+    this.lineColorNormal = rgba(0, 0, 0, 0.3)
     this.lineColorStrong = rgba(0, 0, 0, 0.75)
 
     this.el = null
