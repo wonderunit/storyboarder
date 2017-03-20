@@ -22,8 +22,9 @@ class Guides extends EventEmitter {
     this.translateShift = 0.5
 
     this.lineColorMuted  = rgba(0, 0, 0, 0.1)
-    this.lineColorNormal = rgba(0, 0, 0, 0.3)
-    this.lineColorStrong = rgba(0, 0, 0, 0.75)
+    this.lineColorNormal = rgba(0, 0, 0, 0.2)
+    this.lineColorStrong = rgba(0, 0, 0, 0.4)
+    this.lineColorWhite = rgba(255, 255, 255, 0.1)
 
     this.el = null
     this.canvas = null
@@ -68,13 +69,20 @@ class Guides extends EventEmitter {
     let ctx = this.context
     ctx.clearRect(0, 0, this.state.width, this.state.height)
 
-    if (this.state.grid)   this.drawGrid(this.context, this.state.width, this.state.height)
-    if (this.state.center) this.drawCenter(this.context, this.state.width, this.state.height)
-    if (this.state.thirds) this.drawThirds(this.context, this.state.width, this.state.height)
-    if (this.state.diagonals) this.drawDiagonals(this.context, this.state.width, this.state.height)
+    // light
+    if (this.state.grid)   this.drawGrid(this.context, this.state.width, this.state.height, this.lineColorWhite, 3)
+    if (this.state.center) this.drawCenter(this.context, this.state.width, this.state.height, this.lineColorWhite, 3)
+    if (this.state.thirds) this.drawThirds(this.context, this.state.width, this.state.height, this.lineColorWhite, 3)
+    if (this.state.diagonals) this.drawDiagonals(this.context, this.state.width, this.state.height, this.lineColorWhite, 3)
+
+    // dark
+    if (this.state.grid)   this.drawGrid(this.context, this.state.width, this.state.height, this.lineColorMuted, 1)
+    if (this.state.center) this.drawCenter(this.context, this.state.width, this.state.height, this.lineColorStrong, 1)
+    if (this.state.thirds) this.drawThirds(this.context, this.state.width, this.state.height, this.lineColorStrong, 1)
+    if (this.state.diagonals) this.drawDiagonals(this.context, this.state.width, this.state.height, this.lineColorNormal, 1)
   }
 
-  drawGrid (context, width, height) {
+  drawGrid (context, width, height, color, lineWidth) {
     context.translate(this.translateShift, this.translateShift)
     let squareSize = 50
     let centerX = width / 2
@@ -82,8 +90,8 @@ class Guides extends EventEmitter {
     let stepsY = height / squareSize
     let offsetX = (width / 2) % squareSize
     let offsetY = (height / 2) % squareSize
-    context.lineWidth = 1
-    context.strokeStyle = this.lineColorMuted
+    context.lineWidth = lineWidth
+    context.strokeStyle = color
     for (let n = 0; n < stepsX; n++) {
       let x = (n * squareSize) + offsetX
       context.beginPath()
@@ -101,12 +109,12 @@ class Guides extends EventEmitter {
     context.translate(-this.translateShift, -this.translateShift)
   }
 
-  drawCenter (context, width, height) {
+  drawCenter (context, width, height, color, lineWidth) {
     let midpointX = Math.floor(width / 2)
     let midpointY = Math.floor(height / 2)
     context.translate(this.translateShift, this.translateShift)
-    context.lineWidth = 1
-    context.strokeStyle = this.lineColorStrong
+    context.lineWidth = lineWidth
+    context.strokeStyle = color
 
     // horizontal
     context.beginPath()
@@ -122,11 +130,11 @@ class Guides extends EventEmitter {
     context.translate(-this.translateShift, -this.translateShift)
   }
 
-  drawThirds (context, width, height) {
+  drawThirds (context, width, height, color, lineWidth) {
     context.translate(this.translateShift, this.translateShift)
 
-    context.lineWidth = 1
-    context.strokeStyle = this.lineColorStrong
+    context.lineWidth = lineWidth
+    context.strokeStyle = color
 
     let w0 = width / 3
     let h0 = height / 3
@@ -149,12 +157,12 @@ class Guides extends EventEmitter {
     }
   }
 
-  drawDiagonals (context, width, height) {
+  drawDiagonals (context, width, height, color, lineWidth) {
     let midpointX = Math.floor(width / 2)
     let midpointY = Math.floor(height / 2)
     context.translate(this.translateShift, this.translateShift)
-    context.lineWidth = 1
-    context.strokeStyle = this.lineColorNormal
+    context.lineWidth = lineWidth
+    context.strokeStyle = color
 
     // cross TL to BR
     context.beginPath()
