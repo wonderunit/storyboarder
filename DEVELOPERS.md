@@ -19,7 +19,7 @@ You can run a quick view test using [`budo`](https://github.com/mattdesl/budo) i
 
     $ cd test/views/guides
     $ budo index.js --live
-    $ open http://192.168.0.103:9966
+    $ open http://localhost:9966
 
 `budo` will "Live Reload" changes as you work, in either the main source or the test harness.
 
