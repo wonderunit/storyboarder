@@ -33,7 +33,7 @@ class Guides extends EventEmitter {
 
     this.render()
   }
-  
+
   create (el) {
     this.el = el
     this.canvas = document.createElement('canvas')
@@ -61,7 +61,7 @@ class Guides extends EventEmitter {
     if (this.state.center) this.drawCenter(this.context, this.state.width, this.state.height)
     if (this.state.thirds) this.drawThirds(this.context, this.state.width, this.state.height)
   }
-  
+
   drawGrid (context, width, height) {
     let squareSize = 50
     let centerX = width / 2
@@ -84,7 +84,7 @@ class Guides extends EventEmitter {
       context.stroke()
     }
   }
-  
+
   drawCenter (context, width, height) {
     let x = Math.floor(width / 2)
     let y = Math.floor(height / 2)
@@ -101,7 +101,7 @@ class Guides extends EventEmitter {
     context.lineTo(x, height)
     context.stroke()
   }
-  
+
   drawThirds (context, width, height) {
     context.beginPath()
     context.strokeStyle = '#000'
