@@ -192,7 +192,16 @@ class Toolbar extends EventEmitter {
     } else {
       btnCaptions.classList.remove('active')
     }
-    
+
+    let gridEl = this.el.querySelector('#toolbar-grid')
+    let centerEl = this.el.querySelector('#toolbar-center')
+    let thirdsEl = this.el.querySelector('#toolbar-thirds')
+    let diagonalsEl = this.el.querySelector('#toolbar-diagonals')
+    gridEl.classList.toggle('active', this.state.grid)
+    centerEl.classList.toggle('active', this.state.center)
+    thirdsEl.classList.toggle('active', this.state.thirds)
+    diagonalsEl.classList.toggle('active', this.state.diagonals)
+
     if (this.state.currentBrushColor) {
       this.el.querySelector('#toolbar-current-color').style.setProperty('--color3', this.state.currentBrushColor.toCSS())
     }
