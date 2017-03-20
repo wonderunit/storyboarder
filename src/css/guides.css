@@ -2,3 +2,7 @@
   position: absolute;
   border-radius: 15px;
 }
+
+#guides.guides canvas {
+  background: transparent;
+}

@@ -37,7 +37,9 @@ class Guides extends EventEmitter {
   create (el) {
     this.el = el
     this.canvas = document.createElement('canvas')
+    this.canvas.style.zIndex = 199 // after layers, before cursor
     this.context = this.canvas.getContext('2d')
+    this.context.globalAlpha = 1
     this.el.appendChild(this.canvas)
   }
 
