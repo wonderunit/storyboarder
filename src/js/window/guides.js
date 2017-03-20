@@ -86,7 +86,7 @@ class Guides extends EventEmitter {
   drawCenter (context, width, height) {
     let a0 = 0
     let b0 = Math.floor(height / 2)
-    let a1 = width
+    let a1 = Math.floor(width)
     let b1 = b0
     context.beginPath()
     context.strokeStyle = '#000'
