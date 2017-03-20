@@ -86,14 +86,19 @@ class Guides extends EventEmitter {
   }
   
   drawCenter (context, width, height) {
-    let a0 = 0
-    let b0 = Math.floor(height / 2)
-    let a1 = Math.floor(width)
-    let b1 = b0
+    let x = Math.floor(width / 2)
+    let y = Math.floor(height / 2)
     context.beginPath()
     context.strokeStyle = '#000'
-    context.moveTo(a0, b0)
-    context.lineTo(a1, b1)
+
+    // horizontal
+    context.moveTo(0, y)
+    context.lineTo(width, y)
+    context.stroke()
+
+    // vertical
+    context.moveTo(x, 0)
+    context.lineTo(x, height)
     context.stroke()
   }
   
