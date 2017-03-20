@@ -68,7 +68,7 @@ class Guides extends EventEmitter {
     let offsetX = (width / 2) % squareSize
     let offsetY = (height / 2) % squareSize
     context.beginPath()
-    context.strokeStyle = '#aaa'
+    context.strokeStyle = '#000'
     for (let n = 0; n < stepsX; n++) {
       let x = (n * squareSize) + offsetX
       context.moveTo(...[x, 0].map(Math.floor))
@@ -89,7 +89,7 @@ class Guides extends EventEmitter {
     let a1 = width
     let b1 = b0
     context.beginPath()
-    context.strokeStyle = '#f00'
+    context.strokeStyle = '#000'
     context.moveTo(a0, b0)
     context.lineTo(a1, b1)
     context.stroke()
@@ -97,7 +97,7 @@ class Guides extends EventEmitter {
   
   drawThirds (context, width, height) {
     context.beginPath()
-    context.strokeStyle = '#00f'
+    context.strokeStyle = '#000'
     
     let w0 = width / 3
     let h0 = height / 3
