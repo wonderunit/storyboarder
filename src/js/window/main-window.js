@@ -445,6 +445,24 @@ let loadBoardUI = ()=> {
   undoStack.on('undo', onUndoStackAction)
   undoStack.on('redo', onUndoStackAction)
 
+
+
+  // Devtools
+  ipcRenderer.on('devtools-focused', () => {
+    // devtools-focused
+    textInputMode = true
+  })
+  ipcRenderer.on('devtools-closed', () => {
+    // devtools-closed
+    textInputMode = false
+  })
+  window.addEventListener('focus', () => {
+    // devtools-blur
+    textInputMode = false
+  })
+
+
+
   setTimeout(()=>{remote.getCurrentWindow().show()}, 200)
   //remote.getCurrentWebContents().openDevTools()
 }

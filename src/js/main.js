@@ -338,6 +338,11 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
     mainWindow.webContents.send('load', [filename, scriptData, locations, characters, boardSettings, currentPath])
   })
 
+  if (isDev) {
+    mainWindow.webContents.on('devtools-focused', event => { mainWindow.webContents.send('devtools-focused') })
+    mainWindow.webContents.on('devtools-closed', event => { mainWindow.webContents.send('devtools-closed') })
+  }
+
   mainWindow.once('close', () => {
     if (welcomeWindow) {
       if (isDev) ipcMain.removeListener('errorInWindow', onErrorInWindow)
