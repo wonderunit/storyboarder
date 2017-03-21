@@ -344,8 +344,7 @@ const template = [
 
 
 
-
-if (process.platform === 'darwin') {
+const addDarwinFeatures = template => {
   const name = require('electron').remote.app.getName()
   template.unshift({
     label: name,
@@ -380,6 +379,9 @@ if (process.platform === 'darwin') {
       }
     ]
   })
+}
+if (process.platform === 'darwin') {
+  addDarwinFeatures(template)
   // // Edit menu.
   // template[1].submenu.push(
   //   {
@@ -495,6 +497,9 @@ const welcomeTemplate = [
     ]
   }
 ]
+if (process.platform === 'darwin') {
+  addDarwinFeatures(welcomeTemplate)
+}
 
 const menuInstance = Menu.buildFromTemplate(template)
 const welcomeMenuInstance = Menu.buildFromTemplate(welcomeTemplate)
