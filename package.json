@@ -41,7 +41,6 @@
     "color-js": "^1.0.3",
     "electron-is-dev": "0.1.2",
     "electron-localshortcut": "^1.0.0",
-    "jquery": "^3.1.0",
     "moment": "^2.14.1",
     "tether": "1.4.0",
     "tether-tooltip": "1.2.0",
