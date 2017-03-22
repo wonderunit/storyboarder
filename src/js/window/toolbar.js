@@ -86,6 +86,12 @@ class Toolbar extends EventEmitter {
           this.emit('brush')
         }
         break
+      case 'note-pen':
+        if (this.state.brush !== 'note-pen') {
+          this.setState({ brush: 'note-pen' })
+          this.emit('note-pen')
+        }
+        break
       case 'eraser':
         if (this.state.brush !== 'eraser') {
           this.setState({ brush: 'eraser' })

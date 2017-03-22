@@ -240,6 +240,13 @@ const template = [
       },
       {
         accelerator: '5',
+        label: 'Note Pen',
+        click ( item, focusedWindow, event) {
+          ipcRenderer.send('setTool', 'notePen')
+        }
+      },
+      {
+        accelerator: '6',
         label: 'Eraser',
         click ( item, focusedWindow, event) {
           ipcRenderer.send('setTool', 'eraser')

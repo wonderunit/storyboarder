@@ -36,10 +36,13 @@
   height: 35px;
 }
 #toolbar .group_tools .button {
-  width: 70px;
+  width: 75px;
   height: 130px;
   position: relative;
   overflow: hidden;
+}
+#toolbar .group_tools #toolbar-eraser .button {
+  width: 115px;
 }
 @media only screen and (max-width: 1500px) {
   #toolbar .group:not(.group_tools) .button {
@@ -75,7 +78,7 @@
 
 #toolbar .icon-toolbar-tool {
   position: absolute;
-  width: 70px;
+  width: 75px;
   height: 130px;
   top: -25px;
   background: transparent url(../img/toolbar-tools-dim.png) no-repeat 4px calc(-45px + 20px);
@@ -103,6 +106,13 @@
 #toolbar .icon-toolbar-tool_brush {
   background-position: -288px calc(-79px + 20px);
 }
-#toolbar .icon-toolbar-tool_eraser {
+#toolbar .icon-toolbar-tool_note-pen {
   background-position: -378px calc(-43px + 20px);
+}
+#toolbar .group_tools #toolbar-eraser {
+  width: 115px;
+}
+#toolbar .icon-toolbar-tool_eraser {
+  width: 115px;
+  background-position: calc(-478px + 10px) calc(-53px + 20px);
 }

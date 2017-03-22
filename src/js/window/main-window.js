@@ -306,6 +306,9 @@ let loadBoardUI = ()=> {
   toolbar.on('brush', () => {
     sketchPane.setBrush(20,[0,0,100],2,10,'main')
   })
+  toolbar.on('note-pen', () => {
+    console.log('selected note pen')
+  })
   toolbar.on('eraser', () => {
     sketchPane.setEraser()
   })
@@ -2134,6 +2137,10 @@ ipcRenderer.on('setTool', (e, arg)=> {
       case 'brush':
         toolbar.setState({ brush: 'brush' })
         toolbar.emit('brush')
+        break
+      case 'notePen':
+        toolbar.setState({ brush: 'note-pen' })
+        toolbar.emit('note-pen')
         break
       case 'eraser':
         toolbar.setState({ brush: 'eraser' })
