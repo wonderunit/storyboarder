@@ -2,6 +2,10 @@
   -webkit-app-region: drag;
   padding: 10px;
   display: flex;
+}
+
+#toolbar .column {
+  display: flex;
   flex-wrap: wrap;
 }
 
@@ -9,8 +13,8 @@
   display: flex;
   position: relative;
 }
-#toolbar .group:not(:first-child) {
-  margin-left: 10px;
+#toolbar .group:not(:last-child) {
+  margin-right: 10px;
 }
 #toolbar .group:not(:first-child):not(:last-child):after {
   content: ' ';
