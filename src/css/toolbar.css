@@ -54,13 +54,13 @@
 }
 
 #toolbar .group:not(.group_tools) .button.active,
-#toolbar .group:not(.group_tools) .button:hover.active {
+#toolbar .group:not(.group_tools) .button.active:hover {
   background-color: #222;
 }
 #toolbar .group_tools .button.active .icon-toolbar-tool,
-#toolbar .group_tools .button:hover.active .icon-toolbar-tool {
-  filter: brightness(160%) drop-shadow(0px 0px 5px rgba(0, 0, 0, 0.4))
-  top: -15px;
+#toolbar .group_tools .button.active:hover .icon-toolbar-tool {
+  filter: brightness(160%) drop-shadow(0px 0px 5px rgba(0, 0, 0, 0.4));
+  top: 0;
 }
 
 #toolbar .icon {
