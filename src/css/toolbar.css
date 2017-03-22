@@ -6,7 +6,6 @@
 }
 
 #toolbar .group {
-  border-radius: 8px;
   display: flex;
 }
 #toolbar .group:not(:last-child) {
@@ -14,6 +13,7 @@
 }
 
 #toolbar .group:not(.group_tools) {
+  border-radius: 8px;
   padding: 6px;
   height: 56px;
 }
@@ -31,13 +31,13 @@
 
   padding: 15px;
   margin-top: 2px;
+  
+  width: 35px;
+  height: 35px;
 }
 #toolbar .group_tools .button {
-  margin-left: 6px;
-  background-color: purple;
-
-  width: 60px;
-  height: 100px;
+  width: 70px;
+  height: 130px;
   position: relative;
   overflow: hidden;
 }
@@ -56,8 +56,13 @@
 }
 
 #toolbar .group:not(.group_tools) .button.active,
-#toolbar .button:hover.active {
+#toolbar .group:not(.group_tools) .button:hover.active {
   background-color: #222;
+}
+#toolbar .group_tools .button.active .icon-toolbar-tool,
+#toolbar .group_tools .button:hover.active .icon-toolbar-tool {
+  filter: brightness(160%);
+  top: -15px;
 }
 
 #toolbar .icon {
@@ -70,30 +75,34 @@
 
 #toolbar .icon-toolbar-tool {
   position: absolute;
-  width: 60px;
-  height: 100px;
-  top: -25%;
-  transition: top 0.3s ease-out;
-  background: transparent url(../img/toolbar-tools-dim.png) no-repeat -2px -60px;
+  width: 70px;
+  height: 130px;
+  top: -25px;
+  background: transparent url(../img/toolbar-tools-dim.png) no-repeat 4px calc(-45px + 20px);
   background-size: 586.333px 208px; /* 1759x624 at 1/3 */
+
+  padding-top: 15px;
+
+  filter: none;
+  transition: top 0.15s ease-out, -webkit-filter 0.15s linear; /* in */
 }
 #toolbar .icon-toolbar-tool:hover {
-  background-image: url(../img/toolbar-tools-bright.png);
-  top: 0;
-  transition: top 0.125s ease-in-out;
+  top: -15px; /* account for 15px shadow */
+  filter: brightness(130%);
+  transition: top 0.125s ease-in-out, -webkit-filter 0.1 linear; /* out */
 }
 #toolbar .icon-toolbar-tool_light-pencil {
-  background-color: red;
+  background-position: 4px calc(-45px + 20px);
 }
 #toolbar .icon-toolbar-tool_pencil {
-  background-color: orange;
+  background-position: -90px calc(-75px + 20px);
 }
 #toolbar .icon-toolbar-tool_pen {
-  background-color: yellow;
+  background-position: -190px calc(-79px + 20px);
 }
 #toolbar .icon-toolbar-tool_brush {
-  background-color: green;
+  background-position: -288px calc(-79px + 20px);
 }
 #toolbar .icon-toolbar-tool_eraser {
-  background-color: blue;
+  background-position: -378px calc(-43px + 20px);
 }

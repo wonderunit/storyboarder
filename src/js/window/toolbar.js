@@ -34,7 +34,14 @@ class Toolbar extends EventEmitter {
   // detachedCallback () {}
 
   onButtonSelect (event) {
-    let selection = event.target.id.replace(/^toolbar-/, '')
+    let target = event.target
+
+    // interpret brush tool icon div clicks
+    if (target.classList.contains('icon')) {
+      target = target.parentNode
+    }
+
+    let selection = target.id.replace(/^toolbar-/, '')
 
     switch (selection) {
       // board operations
