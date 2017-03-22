@@ -7,30 +7,55 @@
 
 #toolbar .group {
   border-radius: 8px;
-  padding: 6px;
   display: flex;
 }
 #toolbar .group:not(:last-child) {
   margin-left: 10px;
 }
 
-#toolbar .button {
+#toolbar .group:not(.group_tools) {
+  padding: 6px;
+  height: 56px;
+}
+#toolbar .group_tools {
+  margin-top: -10px;
+}
+
+#toolbar .button { /* */ }
+
+#toolbar .group:not(.group_tools) .button {
   border-radius: 5px;
+
   margin-left: 2px;
-  padding: 15px;
   margin-bottom: 4px;
+
+  padding: 15px;
   margin-top: 2px;
+}
+#toolbar .group_tools .button {
+  margin-left: 6px;
+  background-color: purple;
+
+  width: 60px;
+  height: 100px;
+  position: relative;
+  overflow: hidden;
+}
+@media only screen and (max-width: 1500px) {
+  #toolbar .group:not(.group_tools) .button {
+    padding: 5px;
+  }
 }
 
 #toolbar .button > svg {
   pointer-events: none;
 }
 
-#toolbar .button:hover {
+#toolbar .group:not(.group_tools) .button:hover {
   background-color: #444;
 }
 
-#toolbar .button.active,
+#toolbar .group:not(.group_tools) .button.active,
 #toolbar .button:hover.active {
   background-color: #222;
 }
@@ -43,8 +68,29 @@
   filter: drop-shadow( 0px 1px 0px rgba(0, 0, 0, 0.3) );
 }
 
-@media only screen and (max-width: 1500px) {
-  #toolbar .button {
-    padding: 5px;
-  }
+#toolbar .icon-toolbar-tool {
+  position: absolute;
+  width: 60px;
+  height: 100px;
+  top: -25%;
+  transition: top 0.3s ease-out;
+}
+#toolbar .icon-toolbar-tool:hover {
+  top: 0;
+  transition: top 0.125s ease-in-out;
+}
+#toolbar .icon-toolbar-tool_light-pencil {
+  background-color: red;
+}
+#toolbar .icon-toolbar-tool_pencil {
+  background-color: orange;
+}
+#toolbar .icon-toolbar-tool_pen {
+  background-color: yellow;
+}
+#toolbar .icon-toolbar-tool_brush {
+  background-color: green;
+}
+#toolbar .icon-toolbar-tool_eraser {
+  background-color: blue;
 }
