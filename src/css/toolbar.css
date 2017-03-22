@@ -7,9 +7,20 @@
 
 #toolbar .group {
   display: flex;
+  position: relative;
 }
-#toolbar .group:not(:last-child) {
+#toolbar .group:not(:first-child) {
   margin-left: 10px;
+}
+#toolbar .group:not(:first-child):not(:last-child):after {
+  content: ' ';
+  display: block;
+  position: absolute;
+  right: 0;
+  width: 1px;
+  height: 56px;
+  margin-right: -5px;
+  background-color: #444;
 }
 
 #toolbar .group:not(.group_tools) {
