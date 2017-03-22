@@ -74,8 +74,11 @@
   height: 100px;
   top: -25%;
   transition: top 0.3s ease-out;
+  background: transparent url(../img/toolbar-tools-dim.png) no-repeat -2px -60px;
+  background-size: 586.333px 208px; /* 1759x624 at 1/3 */
 }
 #toolbar .icon-toolbar-tool:hover {
+  background-image: url(../img/toolbar-tools-bright.png);
   top: 0;
   transition: top 0.125s ease-in-out;
 }
