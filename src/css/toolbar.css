@@ -68,7 +68,7 @@
 
 #toolbar .group_tools .button,
 #toolbar .group_tools .icon-toolbar-tool {
-  width: calc(115px - 30px);
+  width: 85px;
   height: 130px;
 }
 
@@ -101,20 +101,20 @@
   transition: bottom 0.125s ease-in-out, -webkit-filter 0.1 linear; /* out */
 }
 #toolbar .icon-toolbar-tool_light-pencil {
-  background-position: calc((-115px * 0) - (30px / 2)) -170px;
+  background-position: calc((-115px * 0) + 3px - 15px) -170px;
 }
 #toolbar .icon-toolbar-tool_pencil {
-  background-position: calc((-115px * 1) - (30px / 2)) -170px;
+  background-position: calc((-115px * 1) + 3px - 15px) -170px;
 }
 #toolbar .icon-toolbar-tool_pen {
-  background-position: calc((-115px * 2) - (30px / 2)) -170px;
+  background-position: calc((-115px * 2) + 3px - 15px) -170px;
 }
 #toolbar .icon-toolbar-tool_brush {
-  background-position: calc((-115px * 3) - (30px / 2)) -170px;
+  background-position: calc((-115px * 3) + 1px - 15px) -170px;
 }
 #toolbar .icon-toolbar-tool_note-pen {
-  background-position: calc((-115px * 4) - (30px / 2)) -170px;;
+  background-position: calc((-115px * 4) + 2px - 15px) -170px;;
 }
 #toolbar .icon-toolbar-tool_eraser {
-  background-position: calc(-115px * 5) -170px;;
+  background-position: calc((-115px * 5) + -1px) -170px;;
 }
