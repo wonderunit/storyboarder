@@ -68,7 +68,7 @@
 
 #toolbar .group_tools .button,
 #toolbar .group_tools .icon-toolbar-tool {
-  width: 85px;
+  width: 75px;
   height: 130px;
 }
 
@@ -89,6 +89,17 @@
   transition: bottom 0.15s ease-out, -webkit-filter 0.15s linear; /* in */
 }
 
+/* uncomment for a helpful spacing debugger */
+/*
+#toolbar .icon-toolbar-tool:after {
+  content: ' ';
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to right, rgba(0,0,255,0.1) 0%, rgba(255,0,0,0.1) 100%);
+}
+*/
+
 #toolbar .group_tools .button.active .icon-toolbar-tool,
 #toolbar .group_tools .button.active:hover .icon-toolbar-tool {
   bottom: 0;
@@ -101,19 +112,19 @@
   transition: bottom 0.125s ease-in-out, -webkit-filter 0.1 linear; /* out */
 }
 #toolbar .icon-toolbar-tool_light-pencil {
-  background-position: calc((-115px * 0) + 3px - 15px) -170px;
+  background-position: calc((-115px * 0) - 2px - 15px) -170px;
 }
 #toolbar .icon-toolbar-tool_pencil {
-  background-position: calc((-115px * 1) + 3px - 15px) -170px;
+  background-position: calc((-115px * 1) - 2px - 15px) -170px;
 }
 #toolbar .icon-toolbar-tool_pen {
-  background-position: calc((-115px * 2) + 3px - 15px) -170px;
+  background-position: calc((-115px * 2) - 2px - 15px) -170px;
 }
 #toolbar .icon-toolbar-tool_brush {
-  background-position: calc((-115px * 3) + 1px - 15px) -170px;
+  background-position: calc((-115px * 3) - 2px - 15px) -170px;
 }
 #toolbar .icon-toolbar-tool_note-pen {
-  background-position: calc((-115px * 4) + 2px - 15px) -170px;;
+  background-position: calc((-115px * 4) - 2px - 15px) -170px;;
 }
 #toolbar .icon-toolbar-tool_eraser {
   background-position: calc((-115px * 5) + -1px) -170px;;
