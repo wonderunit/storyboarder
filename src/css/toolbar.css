@@ -57,11 +57,6 @@
 #toolbar .group:not(.group_tools) .button.active:hover {
   background-color: #222;
 }
-#toolbar .group_tools .button.active .icon-toolbar-tool,
-#toolbar .group_tools .button.active:hover .icon-toolbar-tool {
-  filter: brightness(160%) drop-shadow(0px 0px 5px rgba(0, 0, 0, 0.4));
-  top: 0;
-}
 
 #toolbar .icon {
   width: 35px;
@@ -84,19 +79,26 @@
 
 #toolbar .icon-toolbar-tool {
   position: absolute;
-  top: -15px;
   background: transparent url(../img/toolbar-brush-tools.png) no-repeat 0 0;
   background-size: 690px 300px;
 
-  padding-top: 15px;
+  bottom: 15px;
+  padding-bottom: 5px; /* make room for the drop shadow */
 
   filter: brightness(100%) drop-shadow(0px 0px 5px rgba(0, 0, 0, 0.4));
-  transition: top 0.15s ease-out, -webkit-filter 0.15s linear; /* in */
+  transition: bottom 0.15s ease-out, -webkit-filter 0.15s linear; /* in */
 }
+
+#toolbar .group_tools .button.active .icon-toolbar-tool,
+#toolbar .group_tools .button.active:hover .icon-toolbar-tool {
+  bottom: 0;
+  filter: brightness(160%) drop-shadow(0px 0px 5px rgba(0, 0, 0, 0.4));
+}
+
 #toolbar .icon-toolbar-tool:hover {
-  top: 0;
+  bottom: 0;
   filter: brightness(130%) drop-shadow(0px 0px 5px rgba(0, 0, 0, 0.4));
-  transition: top 0.125s ease-in-out, -webkit-filter 0.1 linear; /* out */
+  transition: bottom 0.125s ease-in-out, -webkit-filter 0.1 linear; /* out */
 }
 #toolbar .icon-toolbar-tool_light-pencil {
   background-position: calc((-115px * 0) - (30px / 2)) -170px;
