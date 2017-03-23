@@ -28,24 +28,6 @@
   margin-right: -5px;
   background-color: #444;
 }
-/* hide row-ending spacers for multi-row cols at breakpoints */
-@media only screen and (min-width: 1096px) and (max-width: 1389px) {
-  #toolbar .group:not(.group_tools):nth-child(0n+3):after {
-    display: none;
-  }
-}
-@media only screen and (min-width: 980px) and (max-width: 1095px) {
-  #toolbar .group:not(.group_tools):nth-child(0n+2):after {
-    display: none;
-  }
-}
-@media only screen and (max-width: 979px) {
-  #toolbar .group:not(.group_tools):nth-child(0n+1):after,
-  #toolbar .group:not(.group_tools):nth-child(0n+3):after {
-    display: none;
-  }
-}
-
 
 #toolbar .group:not(.group_tools) {
   border-radius: 8px;
