@@ -392,8 +392,10 @@
     </div>
     <div id="notifications" class="notifications"></div>
   <script>
-    window.onerror = (error, url, line) => require('electron').ipcRenderer.send('errorInWindow', error, url, line)
-    require('./js/window/main-window.js')
+    if (typeof require !== 'undefined') {
+      window.onerror = (error, url, line) => require('electron').ipcRenderer.send('errorInWindow', error, url, line)
+      require('./js/window/main-window.js')
+    }
   </script>
   </body>
 </html>
