@@ -226,10 +226,10 @@ body.with-scenes-visible #toolbar .group_tools {
 
 #toolbar .toolbar-colors .icon.icon-toolbar-color_current {
   border-radius: 4px;
-  background-color: #484D53;
+  background-color: black;
 }
 #toolbar .toolbar-colors .icon.icon-toolbar-color_palette {
   border-radius: 4px;
-  background-color: #3D4E5F;
+  background-color: white;
   width: 32px;
 }

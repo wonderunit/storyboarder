@@ -405,30 +405,30 @@ let loadBoardUI = ()=> {
   notifications.init(document.getElementById('notifications'))
   setupRandomizedNotifications()
 
+  const colorAsScaledRGB = color => [
+    Math.floor(color.red * 255),
+    Math.floor(color.green * 255),
+    Math.floor(color.blue * 255)
+  ]
   colorPicker = new ColorPicker()
   sketchPane.on('setBrushColor', colorAsScaledRGB => {
     toolbar.setState({ currentBrushColor: Color(colorAsScaledRGB) })
     colorPicker.setState({ color: Color(colorAsScaledRGB).toCSS() })
   })
   colorPicker.on('color', color => {
-    let colorAsScaledRGB = [
-      Math.floor(color.red * 255),
-      Math.floor(color.green * 255),
-      Math.floor(color.blue * 255)
-    ]
-    sketchPane.setBrushColor(colorAsScaledRGB)
+    sketchPane.setBrushColor(colorAsScaledRGB(color))
   })
   toolbar.on('current-color', () => {
     colorPicker.attachTo(document.getElementById('toolbar-current-color'))
   })
-  toolbar.on('palette-colorA', () => {
-    alert('Palette Color A. This feature is not ready yet :(')
+  toolbar.on('palette-colorA', color => {
+    sketchPane.setBrushColor(colorAsScaledRGB(color))
   })
-  toolbar.on('palette-colorB', () => {
-    alert('Palette Color B. This feature is not ready yet :(')
+  toolbar.on('palette-colorB', color => {
+    sketchPane.setBrushColor(colorAsScaledRGB(color))
   })
-  toolbar.on('palette-colorC', () => {
-    alert('Palette Color C. This feature is not ready yet :(')
+  toolbar.on('palette-colorC', color => {
+    sketchPane.setBrushColor(colorAsScaledRGB(color))
   })
 
   sketchPane.init(document.getElementById('sketch-pane'), ['reference', 'main', 'notes'], size)
