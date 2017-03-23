@@ -1581,7 +1581,7 @@ let cycleViewMode = ()=> {
         document.querySelector('#scenes').style.display = 'block'
         document.querySelector('#script').style.display = 'block'
         document.querySelector('#board-metadata').style.display = 'flex'
-        document.querySelector('#toolbar').style.display = 'block'
+        document.querySelector('#toolbar').style.display = 'flex'
         document.querySelector('#thumbnail-container').style.display = 'block'
         document.querySelector('#timeline').style.display = 'flex'
         document.querySelector('#playback').style.display = 'flex'
@@ -1590,19 +1590,19 @@ let cycleViewMode = ()=> {
         document.querySelector('#scenes').style.display = 'none'
         document.querySelector('#script').style.display = 'block'
         document.querySelector('#board-metadata').style.display = 'flex'
-        document.querySelector('#toolbar').style.display = 'block'
+        document.querySelector('#toolbar').style.display = 'flex'
         break
       case 2:
         document.querySelector('#scenes').style.display = 'none'
         document.querySelector('#script').style.display = 'none'
         document.querySelector('#board-metadata').style.display = 'flex'
-        document.querySelector('#toolbar').style.display = 'block'
+        document.querySelector('#toolbar').style.display = 'flex'
         break
       case 3:
         document.querySelector('#scenes').style.display = 'none'
         document.querySelector('#script').style.display = 'none'
         document.querySelector('#board-metadata').style.display = 'none'
-        document.querySelector('#toolbar').style.display = 'block'
+        document.querySelector('#toolbar').style.display = 'flex'
         break
       case 4:
         document.querySelector('#scenes').style.display = 'none'
@@ -1630,7 +1630,7 @@ let cycleViewMode = ()=> {
         document.querySelector('#scenes').style.display = 'none'
         document.querySelector('#script').style.display = 'none'
         document.querySelector('#board-metadata').style.display = 'flex'
-        document.querySelector('#toolbar').style.display = 'block'
+        document.querySelector('#toolbar').style.display = 'flex'
         document.querySelector('#thumbnail-container').style.display = 'block'
         document.querySelector('#timeline').style.display = 'flex'
         document.querySelector('#playback').style.display = 'flex'
@@ -1639,7 +1639,7 @@ let cycleViewMode = ()=> {
         document.querySelector('#scenes').style.display = 'none'
         document.querySelector('#script').style.display = 'none'
         document.querySelector('#board-metadata').style.display = 'none'
-        document.querySelector('#toolbar').style.display = 'block'
+        document.querySelector('#toolbar').style.display = 'flex'
         break
       case 2:
         document.querySelector('#scenes').style.display = 'none'
