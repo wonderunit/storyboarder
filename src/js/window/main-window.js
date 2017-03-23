@@ -306,6 +306,9 @@ let loadBoardUI = ()=> {
   toolbar.on('brush', () => {
     sketchPane.setBrush(20,[0,0,100],2,10,'main')
   })
+  toolbar.on('note-pen', () => {
+    console.log('selected note pen')
+  })
   toolbar.on('eraser', () => {
     sketchPane.setEraser()
   })
@@ -313,8 +316,8 @@ let loadBoardUI = ()=> {
   toolbar.on('trash', () => {
     sketchPane.clear()
   })
-  toolbar.on('fill', () => {
-    sketchPane.fillBlack()
+  toolbar.on('fill', color => {
+    sketchPane.fill(color.toCSS())
   })
 
 
@@ -402,30 +405,30 @@ let loadBoardUI = ()=> {
   notifications.init(document.getElementById('notifications'))
   setupRandomizedNotifications()
 
+  const colorAsScaledRGB = color => [
+    Math.floor(color.red * 255),
+    Math.floor(color.green * 255),
+    Math.floor(color.blue * 255)
+  ]
   colorPicker = new ColorPicker()
   sketchPane.on('setBrushColor', colorAsScaledRGB => {
     toolbar.setState({ currentBrushColor: Color(colorAsScaledRGB) })
     colorPicker.setState({ color: Color(colorAsScaledRGB).toCSS() })
   })
   colorPicker.on('color', color => {
-    let colorAsScaledRGB = [
-      Math.floor(color.red * 255),
-      Math.floor(color.green * 255),
-      Math.floor(color.blue * 255)
-    ]
-    sketchPane.setBrushColor(colorAsScaledRGB)
+    sketchPane.setBrushColor(colorAsScaledRGB(color))
   })
   toolbar.on('current-color', () => {
     colorPicker.attachTo(document.getElementById('toolbar-current-color'))
   })
-  toolbar.on('palette-colorA', () => {
-    alert('Palette Color A. This feature is not ready yet :(')
+  toolbar.on('palette-colorA', color => {
+    sketchPane.setBrushColor(colorAsScaledRGB(color))
   })
-  toolbar.on('palette-colorB', () => {
-    alert('Palette Color B. This feature is not ready yet :(')
+  toolbar.on('palette-colorB', color => {
+    sketchPane.setBrushColor(colorAsScaledRGB(color))
   })
-  toolbar.on('palette-colorC', () => {
-    alert('Palette Color C. This feature is not ready yet :(')
+  toolbar.on('palette-colorC', color => {
+    sketchPane.setBrushColor(colorAsScaledRGB(color))
   })
 
   sketchPane.init(document.getElementById('sketch-pane'), ['reference', 'main', 'notes'], size)
@@ -469,6 +472,7 @@ let loadBoardUI = ()=> {
 
 let updateBoardUI = ()=> {
   document.querySelector('#canvas-caption').style.display = 'none'
+  renderViewMode()
 
   if (boardData.boards.length == 0) {
     // create a new board
@@ -481,7 +485,6 @@ let updateBoardUI = ()=> {
   // update timeline
   // update metadata
   gotoBoard(currentBoard)
-
 }
 
 ///////////////////////////////////////////////////////////////
@@ -1578,7 +1581,7 @@ let cycleViewMode = ()=> {
         document.querySelector('#scenes').style.display = 'block'
         document.querySelector('#script').style.display = 'block'
         document.querySelector('#board-metadata').style.display = 'flex'
-        document.querySelector('#toolbar').style.display = 'block'
+        document.querySelector('#toolbar').style.display = 'flex'
         document.querySelector('#thumbnail-container').style.display = 'block'
         document.querySelector('#timeline').style.display = 'flex'
         document.querySelector('#playback').style.display = 'flex'
@@ -1587,19 +1590,19 @@ let cycleViewMode = ()=> {
         document.querySelector('#scenes').style.display = 'none'
         document.querySelector('#script').style.display = 'block'
         document.querySelector('#board-metadata').style.display = 'flex'
-        document.querySelector('#toolbar').style.display = 'block'
+        document.querySelector('#toolbar').style.display = 'flex'
         break
       case 2:
         document.querySelector('#scenes').style.display = 'none'
         document.querySelector('#script').style.display = 'none'
         document.querySelector('#board-metadata').style.display = 'flex'
-        document.querySelector('#toolbar').style.display = 'block'
+        document.querySelector('#toolbar').style.display = 'flex'
         break
       case 3:
         document.querySelector('#scenes').style.display = 'none'
         document.querySelector('#script').style.display = 'none'
         document.querySelector('#board-metadata').style.display = 'none'
-        document.querySelector('#toolbar').style.display = 'block'
+        document.querySelector('#toolbar').style.display = 'flex'
         break
       case 4:
         document.querySelector('#scenes').style.display = 'none'
@@ -1627,7 +1630,7 @@ let cycleViewMode = ()=> {
         document.querySelector('#scenes').style.display = 'none'
         document.querySelector('#script').style.display = 'none'
         document.querySelector('#board-metadata').style.display = 'flex'
-        document.querySelector('#toolbar').style.display = 'block'
+        document.querySelector('#toolbar').style.display = 'flex'
         document.querySelector('#thumbnail-container').style.display = 'block'
         document.querySelector('#timeline').style.display = 'flex'
         document.querySelector('#playback').style.display = 'flex'
@@ -1636,7 +1639,7 @@ let cycleViewMode = ()=> {
         document.querySelector('#scenes').style.display = 'none'
         document.querySelector('#script').style.display = 'none'
         document.querySelector('#board-metadata').style.display = 'none'
-        document.querySelector('#toolbar').style.display = 'block'
+        document.querySelector('#toolbar').style.display = 'flex'
         break
       case 2:
         document.querySelector('#scenes').style.display = 'none'
@@ -1659,6 +1662,18 @@ let cycleViewMode = ()=> {
     }
   }
   sketchPane.sizeCanvas()
+  renderViewMode()
+}
+
+const renderViewMode = () => {
+  document.body.classList.toggle(
+    'with-script-visible',
+    document.querySelector('#script').style.display == 'block'
+  )
+  document.body.classList.toggle(
+    'with-scenes-visible',
+    document.querySelector('#scenes').style.display == 'block'
+  )
 }
 
 ipcRenderer.on('newBoard', (event, args)=>{
@@ -2134,6 +2149,10 @@ ipcRenderer.on('setTool', (e, arg)=> {
       case 'brush':
         toolbar.setState({ brush: 'brush' })
         toolbar.emit('brush')
+        break
+      case 'notePen':
+        toolbar.setState({ brush: 'note-pen' })
+        toolbar.emit('note-pen')
         break
       case 'eraser':
         toolbar.setState({ brush: 'eraser' })

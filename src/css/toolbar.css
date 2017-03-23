@@ -1,39 +1,85 @@
 #toolbar {
   -webkit-app-region: drag;
   padding: 10px;
+  display: flex;
+}
 
+#toolbar .column {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 #toolbar .group {
+  display: flex;
+  position: relative;
+}
+#toolbar .group:not(:last-child) {
+  margin-right: 10px;
+}
+/* spacer */
+#toolbar .group:not(.group_tools):not(:last-child):after {
+  content: ' ';
+  display: block;
+  position: absolute;
+  right: 0;
+  width: 1px;
+  height: 56px;
+  margin-right: -5px;
   background-color: #444;
-  float: left;
-  border-radius: 8px;
-  margin-left: 10px;
-  padding: 6px;
-  box-shadow: inset 0 -4px 0px rgba(0,0,0,0.2), inset 0 1px 1px rgba(255,255,255,0.2), 0 2px 2px rgba(0,0,0,0.3);
 }
 
-#toolbar .button {
-  /*background-color: #444;*/
-  float: left;
+#toolbar .group:not(.group_tools) {
+  border-radius: 8px;
+  padding: 6px;
+  height: 56px;
+}
+#toolbar .group_tools {
+  margin-top: -10px;
+  /* to avoid Mac top-left controls (close/minimize/zoom) */
+  padding-left: 50px;
+}
+body.with-script-visible #toolbar .group_tools,
+body.with-scenes-visible #toolbar .group_tools {
+  /* if script OR scenes visible, don't bother */
+  padding-left: 0;
+}
+
+#toolbar .button { /* */ }
+
+#toolbar .group:not(.group_tools) .button {
   border-radius: 5px;
+
   margin-left: 2px;
-  padding: 15px;
   margin-bottom: 4px;
+
+  padding: 15px;
   margin-top: 2px;
+  
+  width: 35px;
+  height: 35px;
+}
+#toolbar .group_tools .button {
+  position: relative;
+  overflow: hidden;
+}
+@media only screen and (max-width: 1709px) {
+  #toolbar .group:not(.group_tools) .button {
+    padding: 5px;
+  }
 }
 
 #toolbar .button > svg {
   pointer-events: none;
 }
 
-#toolbar .button:hover {
-  background-color: rgba(50,50,50,.3);
+#toolbar .group:not(.group_tools) .button:hover {
+  background-color: #444;
 }
 
-#toolbar .button.active,
-#toolbar .button:hover.active {
-  background-color: #555;
+#toolbar .group:not(.group_tools) .button.active,
+#toolbar .group:not(.group_tools) .button.active:hover {
+  background-color: #222;
 }
 
 #toolbar .icon {
@@ -41,11 +87,149 @@
   height: 35px;
   --color1: #888;
   --color2: #555;
-  filter: drop-shadow( 0px 1px 0px rgba(0,0,0,0.3) );
+  filter: drop-shadow( 0px 1px 0px rgba(0, 0, 0, 0.3) );
 }
 
-@media only screen and (max-width: 1500px) {
-  #toolbar .button {
-    padding: 5px;
-  }
+#toolbar .group_tools .button,
+#toolbar .group_tools .icon-toolbar-tool {
+  width: 85px;
+  height: 130px;
+}
+
+#toolbar #toolbar-eraser.button,
+#toolbar #toolbar-eraser .icon {
+  width: 115px;
+}
+
+#toolbar .icon-toolbar-tool {
+  position: absolute;
+  background: transparent url(../img/toolbar-brush-tools.png) no-repeat 0 0;
+  background-size: 690px 300px;
+
+  bottom: 15px;
+  padding-bottom: 5px; /* make room for the drop shadow */
+
+  filter: brightness(100%) drop-shadow(0px 0px 5px rgba(0, 0, 0, 0.4));
+  transition: bottom 0.15s ease-out, -webkit-filter 0.15s linear; /* in */
+}
+
+/* uncomment for a helpful spacing debugger */
+/*
+#toolbar .icon-toolbar-tool:after {
+  content: ' ';
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to right, rgba(0,0,255,0.1) 0%, rgba(255,0,0,0.1) 100%);
+}
+*/
+
+#toolbar .group_tools .button.active .icon-toolbar-tool,
+#toolbar .group_tools .button.active:hover .icon-toolbar-tool {
+  bottom: 0;
+  filter: brightness(160%) drop-shadow(0px 0px 5px rgba(0, 0, 0, 0.4));
+}
+
+#toolbar .icon-toolbar-tool:hover {
+  bottom: 0;
+  filter: brightness(130%) drop-shadow(0px 0px 5px rgba(0, 0, 0, 0.4));
+  transition: bottom 0.125s ease-in-out, -webkit-filter 0.1 linear; /* out */
+}
+#toolbar .icon-toolbar-tool_light-pencil {
+  background-position: calc((-115px * 0) + 3px - 15px) -170px;
+}
+#toolbar .icon-toolbar-tool_pencil {
+  background-position: calc((-115px * 1) + 3px - 15px) -170px;
+}
+#toolbar .icon-toolbar-tool_pen {
+  background-position: calc((-115px * 2) + 3px - 15px) -170px;
+}
+#toolbar .icon-toolbar-tool_brush {
+  background-position: calc((-115px * 3) + 1px - 15px) -170px;
+}
+#toolbar .icon-toolbar-tool_note-pen {
+  background-position: calc((-115px * 4) + 2px - 15px) -170px;;
+}
+#toolbar .icon-toolbar-tool_eraser {
+  background-position: calc((-115px * 5) + -1px) -170px;;
+}
+
+#toolbar .toolbar-colors {
+  display: flex;
+}
+
+#toolbar .toolbar-colors_column {
+  display: flex;
+  background-color: #292929;
+}
+#toolbar .toolbar-colors_column:first-child {
+  border-top-left-radius: 5px;
+  /*border-top-right-radius: 5px;*/
+  border-bottom-right-radius: 5px;
+  border-bottom-left-radius: 5px;
+  width: 44px;
+  height: 44px;
+  padding: 8px;
+}
+#toolbar .toolbar-colors_column:last-child {
+  /*border-top-left-radius: 5px;*/
+  border-top-right-radius: 5px;
+  border-bottom-right-radius: 5px;
+  /*border-bottom-left-radius: 5px;*/
+  padding: 8px 8px 8px 4px;
+  height: 32px;
+  position: relative;
+}
+/* draw concave side connection */
+#toolbar .toolbar-colors_column:last-child:before {
+  position: absolute;
+  content: " ";
+  display: block;
+  background-color: #292929;
+  width: 5px;
+  height: 5px;
+  bottom: -5px;
+  left: 0;
+}
+#toolbar .toolbar-colors_column:last-child:after {
+  position: absolute;
+  content: " ";
+  display: block;
+  background-color: #333;
+  border-top: 5px solid #333;
+  border-left: 5px solid #333;
+  border-top-left-radius: 5px;
+  width: 5px;
+  height: 5px;
+  bottom: -10px;
+  left: 0;
+}
+
+#toolbar .group .toolbar-colors .button {
+  padding: 0;
+  margin: 0;
+  
+  width: 100%;
+  height: 100%;
+}
+
+#toolbar .toolbar-colors .icon {
+  width: 100%;
+  height: 100%;
+  filter: none;
+
+}
+
+#toolbar .toolbar-colors .button:not(:last-child) {
+  margin-right: 10px;
+}
+
+#toolbar .toolbar-colors .icon.icon-toolbar-color_current {
+  border-radius: 4px;
+  background-color: black;
+}
+#toolbar .toolbar-colors .icon.icon-toolbar-color_palette {
+  border-radius: 4px;
+  background-color: white;
+  width: 32px;
 }

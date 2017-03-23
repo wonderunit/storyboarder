@@ -596,12 +596,12 @@ let clear = ()=> {
   addToUndoStack()
 }
 
-let fillBlack = ()=> {
+let fill = (color = 'black') => {
   addToUndoStack(true)
   boardContext.globalCompositeOperation = 'destination-over'
   boardContext.beginPath()
   boardContext.rect(0, 0, boardContext.canvas.width, boardContext.canvas.height)
-  boardContext.fillStyle = "black"
+  boardContext.fillStyle = color
   boardContext.fill()
   module.exports.emit('markDirty')
   addToUndoStack()
@@ -650,7 +650,7 @@ module.exports.setBrushOpacity = setBrushOpacity
 module.exports.setLayerOpacity = setLayerOpacity
 module.exports.setEraser = setEraser
 module.exports.clear = clear
-module.exports.fillBlack = fillBlack
+module.exports.fill = fill
 module.exports.moveContents = moveContents
 module.exports.scaleContents = scaleContents
 module.exports.cancelTransform = cancelTransform
