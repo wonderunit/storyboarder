@@ -1,10 +1,5 @@
-/* TODO:
-
-*/
-
 const {app, ipcMain, BrowserWindow, globalShortcut, dialog, powerSaveBlocker} = electron = require('electron')
 
-const PDFParser = require("pdf2json")
 const fs = require('fs')
 const path = require('path')
 const isDev = require('electron-is-dev')
