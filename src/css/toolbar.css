@@ -176,7 +176,7 @@ body.with-scenes-visible #toolbar .group_tools {
   border-top-right-radius: 5px;
   border-bottom-right-radius: 5px;
   /*border-bottom-left-radius: 5px;*/
-  padding: 8px 8px 8px 2px;
+  padding: 8px 8px 8px 4px;
   height: 32px;
   position: relative;
 }
