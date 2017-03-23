@@ -216,7 +216,7 @@ class Toolbar extends EventEmitter {
     diagonalsEl.classList.toggle('active', this.state.diagonals)
 
     if (this.state.currentBrushColor) {
-      this.el.querySelector('#toolbar-current-color').style.setProperty('--color3', this.state.currentBrushColor.toCSS())
+      this.el.querySelector('#toolbar-current-color .icon').style.backgroundColor = this.state.currentBrushColor.toCSS()
     }
   }
 }
