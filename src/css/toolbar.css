@@ -74,7 +74,7 @@
   position: relative;
   overflow: hidden;
 }
-@media only screen and (max-width: 1500px) {
+@media only screen and (max-width: 1709px) {
   #toolbar .group:not(.group_tools) .button {
     padding: 5px;
   }
