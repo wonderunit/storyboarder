@@ -316,8 +316,8 @@ let loadBoardUI = ()=> {
   toolbar.on('trash', () => {
     sketchPane.clear()
   })
-  toolbar.on('fill', () => {
-    sketchPane.fillBlack()
+  toolbar.on('fill', color => {
+    sketchPane.fill(color.toCSS())
   })
 
 

@@ -116,7 +116,7 @@ class Toolbar extends EventEmitter {
         this.emit('trash')
         break
       case 'fill':
-        this.emit('fill')
+        this.emit('fill', this.state.currentBrushColor)
         break
 
       case 'move':
@@ -234,6 +234,8 @@ class Toolbar extends EventEmitter {
 
     if (this.state.currentBrushColor) {
       this.el.querySelector('#toolbar-current-color .icon').style.backgroundColor = this.state.currentBrushColor.toCSS()
+
+      this.el.querySelector('#toolbar-fill').style.setProperty('--color3', this.state.currentBrushColor.toCSS())
     }
 
     const palette = this.getCurrentPalette()
