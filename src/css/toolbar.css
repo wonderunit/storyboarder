@@ -36,6 +36,13 @@
 }
 #toolbar .group_tools {
   margin-top: -10px;
+  /* to avoid Mac top-left controls (close/minimize/zoom) */
+  padding-left: 50px;
+}
+body.with-script-visible #toolbar .group_tools,
+body.with-scenes-visible #toolbar .group_tools {
+  /* if script OR scenes visible, don't bother */
+  padding-left: 0;
 }
 
 #toolbar .button { /* */ }

@@ -472,6 +472,7 @@ let loadBoardUI = ()=> {
 
 let updateBoardUI = ()=> {
   document.querySelector('#canvas-caption').style.display = 'none'
+  renderViewMode()
 
   if (boardData.boards.length == 0) {
     // create a new board
@@ -484,7 +485,6 @@ let updateBoardUI = ()=> {
   // update timeline
   // update metadata
   gotoBoard(currentBoard)
-
 }
 
 ///////////////////////////////////////////////////////////////
@@ -1662,6 +1662,18 @@ let cycleViewMode = ()=> {
     }
   }
   sketchPane.sizeCanvas()
+  renderViewMode()
+}
+
+const renderViewMode = () => {
+  document.body.classList.toggle(
+    'with-script-visible',
+    document.querySelector('#script').style.display == 'block'
+  )
+  document.body.classList.toggle(
+    'with-scenes-visible',
+    document.querySelector('#scenes').style.display == 'block'
+  )
 }
 
 ipcRenderer.on('newBoard', (event, args)=>{
