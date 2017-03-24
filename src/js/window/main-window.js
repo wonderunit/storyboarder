@@ -405,7 +405,11 @@ let loadBoardUI = ()=> {
   notifications.init(document.getElementById('notifications'))
   setupRandomizedNotifications()
 
-  const colorAsScaledRGB = color => [
+  //
+  //
+  // Current Color, Palette, and Color Picker connections
+  //
+  const colorToScaledRGB = color => [
     Math.floor(color.red * 255),
     Math.floor(color.green * 255),
     Math.floor(color.blue * 255)
@@ -415,20 +419,23 @@ let loadBoardUI = ()=> {
     toolbar.setState({ currentBrushColor: Color(colorAsScaledRGB) })
     colorPicker.setState({ color: Color(colorAsScaledRGB).toCSS() })
   })
-  colorPicker.on('color', color => {
-    sketchPane.setBrushColor(colorAsScaledRGB(color))
-  })
-  toolbar.on('current-color', () => {
+  const setCurrentColor = color => sketchPane.setBrushColor(colorToScaledRGB(color))
+  const setPaletteColor = (brush, index, color) => {
+    toolbar.setState(toolbar.transformPaletteState(brush, index, color))
+    colorPicker.setState({ color: color.toCSS() })
+  }
+  toolbar.on('current-color-picker', () => {
     colorPicker.attachTo(document.getElementById('toolbar-current-color'))
+    colorPicker.removeAllListeners('color') // HACK
+    colorPicker.addListener('color', setCurrentColor)
   })
-  toolbar.on('palette-colorA', color => {
-    sketchPane.setBrushColor(colorAsScaledRGB(color))
+  toolbar.on('palette-color-picker', (target, brush, index) => {
+    colorPicker.attachTo(target)
+    colorPicker.removeAllListeners('color') // HACK
+    colorPicker.addListener('color', setPaletteColor.bind(this, brush, index))
   })
-  toolbar.on('palette-colorB', color => {
-    sketchPane.setBrushColor(colorAsScaledRGB(color))
-  })
-  toolbar.on('palette-colorC', color => {
-    sketchPane.setBrushColor(colorAsScaledRGB(color))
+  toolbar.on('current-set-color', color => {
+    sketchPane.setBrushColor(colorToScaledRGB(color))
   })
 
   sketchPane.init(document.getElementById('sketch-pane'), ['reference', 'main', 'notes'], size)
