@@ -45,6 +45,7 @@
 }
 #toolbar .group_tools {
   margin-top: -10px;
+  margin-right: 45px;
 }
 
 #toolbar .button { /* */ }
@@ -227,7 +228,6 @@
   width: 100%;
   height: 100%;
   filter: none;
-
 }
 
 #toolbar .toolbar-colors .button:not(:last-child) {
