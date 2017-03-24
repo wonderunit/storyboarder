@@ -430,6 +430,15 @@ let loadBoardUI = ()=> {
   toolbar.on('palette-colorC', color => {
     sketchPane.setBrushColor(colorAsScaledRGB(color))
   })
+  toolbar.on('palette-colorA-color-picker', () => {
+    colorPicker.attachTo(document.getElementById('toolbar-palette-colorA'))
+  })
+  toolbar.on('palette-colorB-color-picker', () => {
+    colorPicker.attachTo(document.getElementById('toolbar-palette-colorB'))
+  })
+  toolbar.on('palette-colorC-color-picker', () => {
+    colorPicker.attachTo(document.getElementById('toolbar-palette-colorC'))
+  })
 
   sketchPane.init(document.getElementById('sketch-pane'), ['reference', 'main', 'notes'], size)
 
