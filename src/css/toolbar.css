@@ -17,17 +17,6 @@
 #toolbar .group:not(:last-child) {
   margin-right: 10px;
 }
-/* spacer */
-#toolbar .group:not(.group_tools):not(:last-child):after {
-  content: ' ';
-  display: block;
-  position: absolute;
-  right: 0;
-  width: 1px;
-  height: 56px;
-  margin-right: -5px;
-  background-color: #444;
-}
 
 #toolbar .group:not(.group_tools) {
   border-radius: 8px;
