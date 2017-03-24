@@ -307,8 +307,7 @@ let loadBoardUI = ()=> {
     sketchPane.setBrush(20,[0,0,100],2,10,'main')
   })
   toolbar.on('note-pen', () => {
-    sketchPane.setBrush(3,[0,0,0],60,80,'main')
-    sketchPane.setBrushColor([255, 0, 0])
+    sketchPane.setBrush(3, [255, 0, 0], 60, 80, 'main')
   })
   toolbar.on('eraser', () => {
     sketchPane.setEraser()
