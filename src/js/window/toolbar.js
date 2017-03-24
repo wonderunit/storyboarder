@@ -16,6 +16,7 @@ class Toolbar extends EventEmitter {
     this.state = {}
     this.el = el
     this.swatchTimer = null
+    this.swatchDelay = 2000
     this.setState({
       brush: 'pencil',
       transformMode: null,
@@ -193,7 +194,7 @@ class Toolbar extends EventEmitter {
     let selection = this.getEventTargetSelection(event.target)
 
     clearTimeout(this.swatchTimer)
-    this.swatchTimer = setTimeout(this.onSwatchColorPicker.bind(this, selection), 2000)
+    this.swatchTimer = setTimeout(this.onSwatchColorPicker.bind(this, selection), this.swatchDelay)
   }
   
   onSwatchColorPicker (selection) {
