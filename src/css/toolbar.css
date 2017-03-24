@@ -1,7 +1,27 @@
 #toolbar {
   -webkit-app-region: drag;
-  padding: 10px;
   display: flex;
+  justify-content: center;
+
+  padding-top: 10px;
+  padding-bottom: 10px;
+
+  /* to avoid Mac top-left controls (close/minimize/zoom) */
+  padding-left: 60px;
+  /* to balance out for centering */
+  padding-right: 60px;
+}
+.with-script-visible #toolbar,
+.with-scenes-visible #toolbar {
+  /* if script OR scenes visible, don't bother accomodating for Mac top-left controls*/
+  padding-left: 10px;
+  padding-right: 10px;
+}
+/* when no script/scenes, prefer tightly aligning right for multi-row cols at smaller screen widths */
+@media only screen and (max-width: 1749px) {
+  #toolbar {
+    padding-right: 10px;
+  }
 }
 
 #toolbar .column {
@@ -17,17 +37,6 @@
 #toolbar .group:not(:last-child) {
   margin-right: 10px;
 }
-/* spacer */
-#toolbar .group:not(.group_tools):not(:last-child):after {
-  content: ' ';
-  display: block;
-  position: absolute;
-  right: 0;
-  width: 1px;
-  height: 56px;
-  margin-right: -5px;
-  background-color: #444;
-}
 
 #toolbar .group:not(.group_tools) {
   border-radius: 8px;
@@ -36,13 +45,7 @@
 }
 #toolbar .group_tools {
   margin-top: -10px;
-  /* to avoid Mac top-left controls (close/minimize/zoom) */
-  padding-left: 50px;
-}
-body.with-script-visible #toolbar .group_tools,
-body.with-scenes-visible #toolbar .group_tools {
-  /* if script OR scenes visible, don't bother */
-  padding-left: 0;
+  margin-right: 45px;
 }
 
 #toolbar .button { /* */ }
@@ -156,6 +159,14 @@ body.with-scenes-visible #toolbar .group_tools {
 
 #toolbar .toolbar-colors {
   display: flex;
+  margin-top: 10px;
+  margin-left: 10px;
+  margin-right: 10px;
+}
+@media only screen and (max-width: 1709px) {
+  #toolbar .toolbar-colors {
+    margin-top: 0;
+  }
 }
 
 #toolbar .toolbar-colors_column {
@@ -217,7 +228,6 @@ body.with-scenes-visible #toolbar .group_tools {
   width: 100%;
   height: 100%;
   filter: none;
-
 }
 
 #toolbar .toolbar-colors .button:not(:last-child) {
