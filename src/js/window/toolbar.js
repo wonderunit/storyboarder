@@ -40,6 +40,22 @@ class Toolbar extends EventEmitter {
     this.state = Object.assign(this.state, newState)
     this.render()
   }
+  
+  transformPaletteState (brush, index, color) {
+
+    // NOTE ignores passed brush and uses current brush,
+    //      in case we changed since we invoked the color picker
+
+    // make a copy
+    let newPalette = [...this.state.palettesByBrush[this.state.brush]]
+    newPalette[index] = color
+
+    return {
+      palettesByBrush: Object.assign(this.state.palettesByBrush, {
+        [this.state.brush]: newPalette
+      })
+    }
+  }
 
   attachedCallback () {
     const immediateButtons = [...this.el.querySelectorAll('.button:not([id^="toolbar-palette-color"])')]
@@ -153,7 +169,7 @@ class Toolbar extends EventEmitter {
         break
 
       case 'current-color':
-        this.emit('current-color')
+        this.emit('current-color-picker')
         break
 
       case 'brush-size':
@@ -191,25 +207,28 @@ class Toolbar extends EventEmitter {
   }
 
   onSwatchDown (event) {
-    let selection = this.getEventTargetSelection(event.target)
-
     clearTimeout(this.swatchTimer)
-    this.swatchTimer = setTimeout(this.onSwatchColorPicker.bind(this, selection), this.swatchDelay)
+    this.swatchTimer = setTimeout(this.onSwatchColorPicker.bind(this, event.target), this.swatchDelay)
   }
   
-  onSwatchColorPicker (selection) {
+  onSwatchColorPicker (target) {
     clearTimeout(this.swatchTimer)
     this.swatchTimer = null
 
+    let selection = this.getEventTargetSelection(target)
+
+    let brush = this.state.brush
+    let index = ['palette-colorA', 'palette-colorB', 'palette-colorC'].indexOf(selection)
+
     switch(selection) {
       case 'palette-colorA':
-        this.emit('palette-colorA-color-picker', this.getCurrentPalette()[0])
+        this.emit('palette-color-picker', target, brush, index)
         break
       case 'palette-colorB':
-        this.emit('palette-colorB-color-picker', this.getCurrentPalette()[1])
+        this.emit('palette-color-picker', target, brush, index)
         break
       case 'palette-colorC':
-        this.emit('palette-colorC-color-picker', this.getCurrentPalette()[2])
+        this.emit('palette-color-picker', target, brush, index)
         break
     }
   }
@@ -220,13 +239,13 @@ class Toolbar extends EventEmitter {
       let selection = this.getEventTargetSelection(event.target)
       switch(selection) {
         case 'palette-colorA':
-          this.emit('palette-colorA', this.getCurrentPalette()[0])
+          this.emit('current-set-color', this.getCurrentPalette()[0])
           break
         case 'palette-colorB':
-          this.emit('palette-colorB', this.getCurrentPalette()[1])
+          this.emit('current-set-color', this.getCurrentPalette()[1])
           break
         case 'palette-colorC':
-          this.emit('palette-colorC', this.getCurrentPalette()[2])
+          this.emit('current-set-color', this.getCurrentPalette()[2])
           break
       }
     }
