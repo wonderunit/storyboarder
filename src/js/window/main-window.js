@@ -423,7 +423,6 @@ let loadBoardUI = ()=> {
   }
   toolbar.on('current-color-picker', () => {
     colorPicker.attachTo(document.getElementById('toolbar-current-color'))
-    // TODO replace listener
     colorPicker.removeAllListeners('color') // HACK
     colorPicker.addListener('color', setCurrentColor)
   })
