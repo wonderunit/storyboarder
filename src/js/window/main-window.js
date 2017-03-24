@@ -405,6 +405,10 @@ let loadBoardUI = ()=> {
   notifications.init(document.getElementById('notifications'))
   setupRandomizedNotifications()
 
+  //
+  //
+  // Current Color, Palette, and Color Picker connections
+  //
   const colorToScaledRGB = color => [
     Math.floor(color.red * 255),
     Math.floor(color.green * 255),
@@ -415,7 +419,6 @@ let loadBoardUI = ()=> {
     toolbar.setState({ currentBrushColor: Color(colorAsScaledRGB) })
     colorPicker.setState({ color: Color(colorAsScaledRGB).toCSS() })
   })
-
   const setCurrentColor = color => sketchPane.setBrushColor(colorToScaledRGB(color))
   const setPaletteColor = (brush, index, color) => {
     toolbar.setState(toolbar.transformPaletteState(brush, index, color))
@@ -431,7 +434,6 @@ let loadBoardUI = ()=> {
     colorPicker.removeAllListeners('color') // HACK
     colorPicker.addListener('color', setPaletteColor.bind(this, brush, index))
   })
-
   toolbar.on('current-set-color', color => {
     sketchPane.setBrushColor(colorToScaledRGB(color))
   })
