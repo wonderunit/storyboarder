@@ -1,8 +1,27 @@
 #toolbar {
   -webkit-app-region: drag;
-  padding: 10px;
   display: flex;
   justify-content: center;
+
+  padding-top: 10px;
+  padding-bottom: 10px;
+
+  /* to avoid Mac top-left controls (close/minimize/zoom) */
+  padding-left: 60px;
+  /* to balance out for centering */
+  padding-right: 60px;
+}
+.with-script-visible #toolbar,
+.with-scenes-visible #toolbar {
+  /* if script OR scenes visible, don't bother accomodating for Mac top-left controls*/
+  padding-left: 10px;
+  padding-right: 10px;
+}
+/* when no script/scenes, prefer tightly aligning right for multi-row cols at smaller screen widths */
+@media only screen and (max-width: 1749px) {
+  #toolbar {
+    padding-right: 10px;
+  }
 }
 
 #toolbar .column {
@@ -26,14 +45,6 @@
 }
 #toolbar .group_tools {
   margin-top: -10px;
-  /* to avoid Mac top-left controls (close/minimize/zoom) */
-  margin-left: 50px;
-  margin-right: 50px;
-}
-body.with-script-visible #toolbar .group_tools,
-body.with-scenes-visible #toolbar .group_tools {
-  /* if script OR scenes visible, don't bother */
-  margin-left: 0;
 }
 
 #toolbar .button { /* */ }
