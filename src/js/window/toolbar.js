@@ -169,6 +169,7 @@ class Toolbar extends EventEmitter {
         break
 
       case 'current-color':
+        if (this.state.brush == 'eraser') break
         this.emit('current-color-picker')
         break
 
@@ -207,6 +208,7 @@ class Toolbar extends EventEmitter {
   }
 
   onSwatchDown (event) {
+    if (this.state.brush == 'eraser') return
     clearTimeout(this.swatchTimer)
     this.swatchTimer = setTimeout(this.onSwatchColorPicker.bind(this, event.target), this.swatchDelay)
   }
@@ -234,6 +236,8 @@ class Toolbar extends EventEmitter {
   }
 
   onSwatchUp (event) {
+    if (this.state.brush == 'eraser') return
+
     if (this.swatchTimer) {
       // timer is still running so we never showed the Color Picker
       let selection = this.getEventTargetSelection(event.target)
