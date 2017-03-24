@@ -2,6 +2,7 @@
   -webkit-app-region: drag;
   padding: 10px;
   display: flex;
+  justify-content: center;
 }
 
 #toolbar .column {
@@ -26,12 +27,13 @@
 #toolbar .group_tools {
   margin-top: -10px;
   /* to avoid Mac top-left controls (close/minimize/zoom) */
-  padding-left: 50px;
+  margin-left: 50px;
+  margin-right: 50px;
 }
 body.with-script-visible #toolbar .group_tools,
 body.with-scenes-visible #toolbar .group_tools {
   /* if script OR scenes visible, don't bother */
-  padding-left: 0;
+  margin-left: 0;
 }
 
 #toolbar .button { /* */ }
@@ -145,6 +147,14 @@ body.with-scenes-visible #toolbar .group_tools {
 
 #toolbar .toolbar-colors {
   display: flex;
+  margin-top: 10px;
+  margin-left: 10px;
+  margin-right: 10px;
+}
+@media only screen and (max-width: 1709px) {
+  #toolbar .toolbar-colors {
+    margin-top: 0;
+  }
 }
 
 #toolbar .toolbar-colors_column {
