@@ -16,7 +16,7 @@ class Toolbar extends EventEmitter {
     this.state = {}
     this.el = el
     this.setState({
-      brush: 'light-pencil',
+      brush: 'pencil',
       transformMode: null,
       captions: true,
 
