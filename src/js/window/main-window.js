@@ -118,6 +118,12 @@ let addToLineMileage = (value)=> {
   renderMetaData()
 }
 
+const colorToScaledRGB = color => [
+  Math.floor(color.red * 255),
+  Math.floor(color.green * 255),
+  Math.floor(color.blue * 255)
+]
+
 let loadBoardUI = ()=> {
   let aspectRatio = boardData.aspectRatio
   console.log(aspectRatio)
@@ -294,20 +300,20 @@ let loadBoardUI = ()=> {
     alert('Print. This feature is not ready yet :(')
   })
   
-  toolbar.on('light-pencil', () => {
-    sketchPane.setBrush(2,[200,220,255],5,50,'main')
+  toolbar.on('light-pencil', color => {
+    sketchPane.setBrush(2,colorToScaledRGB(color),5,50,'main')
   })
-  toolbar.on('pencil', () => {
-    sketchPane.setBrush(1.5,[30,30,30],5,70,'main')
+  toolbar.on('pencil', color => {
+    sketchPane.setBrush(1.5,colorToScaledRGB(color),5,70,'main')
   })
-  toolbar.on('pen', () => {
-    sketchPane.setBrush(3,[0,0,0],60,80,'main')
+  toolbar.on('pen', color => {
+    sketchPane.setBrush(3,colorToScaledRGB(color),60,80,'main')
   })
-  toolbar.on('brush', () => {
-    sketchPane.setBrush(20,[0,0,100],2,10,'main')
+  toolbar.on('brush', color => {
+    sketchPane.setBrush(20,colorToScaledRGB(color),2,10,'main')
   })
-  toolbar.on('note-pen', () => {
-    sketchPane.setBrush(3, [255, 0, 0], 60, 80, 'main')
+  toolbar.on('note-pen', color => {
+    sketchPane.setBrush(3, colorToScaledRGB(color), 60, 80, 'main')
   })
   toolbar.on('eraser', () => {
     sketchPane.setEraser()
@@ -405,21 +411,21 @@ let loadBoardUI = ()=> {
   notifications.init(document.getElementById('notifications'))
   setupRandomizedNotifications()
 
+  sketchPane.init(document.getElementById('sketch-pane'), ['reference', 'main', 'notes'], size)
+
   //
   //
   // Current Color, Palette, and Color Picker connections
   //
-  const colorToScaledRGB = color => [
-    Math.floor(color.red * 255),
-    Math.floor(color.green * 255),
-    Math.floor(color.blue * 255)
-  ]
   colorPicker = new ColorPicker()
   sketchPane.on('setBrushColor', colorAsScaledRGB => {
     toolbar.setState({ currentBrushColor: Color(colorAsScaledRGB) })
     colorPicker.setState({ color: Color(colorAsScaledRGB).toCSS() })
   })
-  const setCurrentColor = color => sketchPane.setBrushColor(colorToScaledRGB(color))
+  const setCurrentColor = color => {
+    sketchPane.setBrushColor(colorToScaledRGB(color))
+    toolbar.setState(toolbar.transformCurrentColor(color))
+  }
   const setPaletteColor = (brush, index, color) => {
     toolbar.setState(toolbar.transformPaletteState(brush, index, color))
     colorPicker.setState({ color: color.toCSS() })
@@ -437,8 +443,6 @@ let loadBoardUI = ()=> {
   toolbar.on('current-set-color', color => {
     sketchPane.setBrushColor(colorToScaledRGB(color))
   })
-
-  sketchPane.init(document.getElementById('sketch-pane'), ['reference', 'main', 'notes'], size)
 
   guides = new Guides()
   guides.create(document.getElementById('guides'))

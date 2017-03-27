@@ -2,6 +2,14 @@ const EventEmitter = require('events').EventEmitter
 
 const Color = require('color-js')
 
+const defaultColors = {
+  'pencil':       Color('#222222'),
+  'light-pencil': Color('#ddddff'),
+  'pen':          Color('#000000'),
+  'brush':        Color('#000064'),
+  'note-pen':     Color('#ff0000')
+}
+
 const defaultPalettes = {
   'pencil':       [Color('#ff0000'), Color('#00ff00'), Color('#0000ff')],
   'light-pencil': [Color('#ff40ff'), Color('#00ff00'), Color('#0000ff')],
@@ -22,7 +30,8 @@ class Toolbar extends EventEmitter {
       transformMode: null,
       captions: true,
 
-      currentBrushColor: null,
+      currentBrushColor: defaultColors['pencil'],
+      colorsByBrush: defaultColors,
       palettesByBrush: defaultPalettes,
 
       grid: false,
@@ -40,7 +49,15 @@ class Toolbar extends EventEmitter {
     this.state = Object.assign(this.state, newState)
     this.render()
   }
-  
+
+  transformCurrentColor (color) {
+    return {
+      colorsByBrush: Object.assign(this.state.colorsByBrush, {
+        [this.state.brush]: color
+      })
+    }
+  }
+
   transformPaletteState (brush, index, color) {
 
     // NOTE ignores passed brush and uses current brush,
@@ -108,31 +125,31 @@ class Toolbar extends EventEmitter {
       case 'light-pencil':
         if (this.state.brush !== 'light-pencil') {
           this.setState({ brush: 'light-pencil' })
-          this.emit('light-pencil')
+          this.emit('light-pencil', this.state.colorsByBrush['light-pencil'])
         }
         break
       case 'pencil':
         if (this.state.brush !== 'pencil') {
           this.setState({ brush: 'pencil' })
-          this.emit('pencil')
+          this.emit('pencil', this.state.colorsByBrush['pencil'])
         }
         break
       case 'pen':
         if (this.state.brush !== 'pen') {
           this.setState({ brush: 'pen' })
-          this.emit('pen')
+          this.emit('pen', this.state.colorsByBrush['pen'])
         }
         break
       case 'brush':
         if (this.state.brush !== 'brush') {
           this.setState({ brush: 'brush' })
-          this.emit('brush')
+          this.emit('brush', this.state.colorsByBrush['brush'])
         }
         break
       case 'note-pen':
         if (this.state.brush !== 'note-pen') {
           this.setState({ brush: 'note-pen' })
-          this.emit('note-pen')
+          this.emit('note-pen', this.state.colorsByBrush['note-pen'])
         }
         break
       case 'eraser':
