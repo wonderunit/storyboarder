@@ -3,19 +3,19 @@ const EventEmitter = require('events').EventEmitter
 const Color = require('color-js')
 
 const defaultColors = {
-  'pencil':       Color('#222222'),
-  'light-pencil': Color('#ddddff'),
+  'pencil':       Color('#121212'),
+  'light-pencil': Color('#90CBF9'),
   'pen':          Color('#000000'),
-  'brush':        Color('#000064'),
-  'note-pen':     Color('#ff0000')
+  'brush':        Color('#9E9E9E'),
+  'note-pen':     Color('#F44336')
 }
 
 const defaultPalettes = {
-  'pencil':       [Color('#ff0000'), Color('#00ff00'), Color('#0000ff')],
-  'light-pencil': [Color('#ff40ff'), Color('#00ff00'), Color('#0000ff')],
-  'pen':          [Color('#ff7044'), Color('#00ff00'), Color('#0000ff')],
-  'brush':        [Color('#ffa099'), Color('#00ff00'), Color('#0000ff')],
-  'note-pen':     [Color('#ff0000'), Color('#ff69b4'), Color('#821b4e')]
+  'pencil':       [Color('#373737'), Color('#223131'), Color('#121212')],
+  'light-pencil': [Color('#CFCFCF'), Color('#9FA8DA'), Color('#90CBF9')],
+  'pen':          [Color('#373737'), Color('#223131'), Color('#000000')],
+  'brush':        [Color('#4DABF5'), Color('#607D8B'), Color('#9E9E9E')],
+  'note-pen':     [Color('#4CAF50'), Color('#FF9800'), Color('#F44336')]
 }
 
 class Toolbar extends EventEmitter {
