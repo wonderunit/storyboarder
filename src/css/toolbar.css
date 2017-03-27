@@ -179,9 +179,11 @@
   border-bottom-right-radius: 5px;
   border-bottom-left-radius: 5px;
   width: 44px;
-  height: 44px;
+  /*height: 44px;*/
+  height: auto;
   padding: 8px;
   flex-direction: column;
+  position: relative;
 }
 #toolbar .toolbar-colors_column:last-child {
   /*border-top-left-radius: 5px;*/
@@ -246,15 +248,29 @@
 }
 
 .toolbar-brush-size-controls {
-  position: relative;
+  position: absolute;
+  margin-top: 48px;
+  margin-left: -8px;
+  width: 60px;
+  display: flex;
+  justify-content: space-between;
+  cursor: pointer;
 }
-.toolbar-brush-size-controls_display {
-  margin-top: 8px;
+.toolbar-brush-size-controls_dec,
+.toolbar-brush-size-controls_val,
+.toolbar-brush-size-controls_inc {
+  position: relative;
   padding: 8px 0 0 0;
   font-size: 16px;
   line-height: 1;
-  width: 100%;
   height: 22px;
   color: #666;
   text-align: center;
+  width: auto;
+  pointer-events: none;
+}
+
+.toolbar-brush-size-controls_dec,
+.toolbar-brush-size-controls_inc {
+  width: 16px;
 }
