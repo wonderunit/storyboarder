@@ -149,7 +149,7 @@ class Toolbar extends EventEmitter {
     ]
 
     const opt = this.state.optionsByBrush[kind]
-    const color = colorToScaledRGB(this.state.colorsByBrush[kind].toRGB())
+    const color = kind !== 'eraser' ? colorToScaledRGB(this.state.colorsByBrush[kind].toRGB()) : null
 
     return [
       opt.size,
@@ -395,6 +395,10 @@ class Toolbar extends EventEmitter {
       paletteIcons[1].style.backgroundColor = palette[1].toCSS()
       paletteIcons[2].style.backgroundColor = palette[2].toCSS()
     }
+
+    const brushSizeEl = this.el.querySelector('.toolbar-brush-size-controls_display')
+    const brushSizeValue = this.getBrushOptions(this.state.brush)[0]
+    brushSizeEl.innerHTML = brushSizeValue.toString()
   }
 }
 
