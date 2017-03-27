@@ -299,21 +299,9 @@ let loadBoardUI = ()=> {
   toolbar.on('print', () => {
     alert('Print. This feature is not ready yet :(')
   })
-  
-  toolbar.on('light-pencil', color => {
-    sketchPane.setBrush(2,colorToScaledRGB(color),5,50,'main')
-  })
-  toolbar.on('pencil', color => {
-    sketchPane.setBrush(1.5,colorToScaledRGB(color),5,70,'main')
-  })
-  toolbar.on('pen', color => {
-    sketchPane.setBrush(3,colorToScaledRGB(color),60,80,'main')
-  })
-  toolbar.on('brush', color => {
-    sketchPane.setBrush(20,colorToScaledRGB(color),2,10,'main')
-  })
-  toolbar.on('note-pen', color => {
-    sketchPane.setBrush(3, colorToScaledRGB(color), 60, 80, 'main')
+
+  toolbar.on('brush', (kind, options) => {
+    sketchPane.setBrush(...options)
   })
   toolbar.on('eraser', () => {
     sketchPane.setEraser()
@@ -2147,26 +2135,27 @@ ipcRenderer.on('setTool', (e, arg)=> {
     switch(arg) {
       case 'lightPencil':
         toolbar.setState({ brush: 'light-pencil' })
-        toolbar.emit('light-pencil')
+        toolbar.emit('brush', 'light-pencil', toolbar.getBrushOptions(toolbar.state.brush))
         break
       case 'pencil':
         toolbar.setState({ brush: 'pencil' })
-        toolbar.emit('pencil')
+        toolbar.emit('brush', 'pencil', toolbar.getBrushOptions(toolbar.state.brush))
         break
       case 'pen':
         toolbar.setState({ brush: 'pen' })
-        toolbar.emit('pen')
+        toolbar.emit('brush', 'pen', toolbar.getBrushOptions(toolbar.state.brush))
         break
       case 'brush':
         toolbar.setState({ brush: 'brush' })
-        toolbar.emit('brush')
+        toolbar.emit('brush', 'brush', toolbar.getBrushOptions(toolbar.state.brush))
         break
       case 'notePen':
         toolbar.setState({ brush: 'note-pen' })
-        toolbar.emit('note-pen')
+        toolbar.emit('brush', 'note-pen', toolbar.getBrushOptions(toolbar.state.brush))
         break
       case 'eraser':
         toolbar.setState({ brush: 'eraser' })
+        // TODO set size
         toolbar.emit('eraser')
         break
     }

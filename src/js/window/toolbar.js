@@ -18,6 +18,42 @@ const defaultPalettes = {
   'note-pen':     [Color('#4CAF50'), Color('#FF9800'), Color('#F44336')]
 }
 
+const defaultOptions = {
+  'pencil': {
+    size: 1.5,
+    opacity: 5,
+    layerOpacity: 70,
+    layer: 'main'
+  },
+  'light-pencil': {
+    size: 2,
+    opacity: 5,
+    layerOpacity: 50,
+    layer: 'main'
+  },
+  'pen': {
+    size: 3,
+    opacity: 60,
+    layerOpacity: 80,
+    layer: 'main'
+  },
+  'brush': {
+    size: 20,
+    opacity: 2,
+    layerOpacity: 10,
+    layer: 'main'
+  },
+  'note-pen': {
+    size: 3,
+    opacity: 60,
+    layerOpacity: 80,
+    layer: 'main'
+  },
+  'eraser': {
+    size: 36
+  }
+}
+
 class Toolbar extends EventEmitter {
   constructor (el) {
     super()
@@ -33,6 +69,7 @@ class Toolbar extends EventEmitter {
       currentBrushColor: defaultColors['pencil'],
       colorsByBrush: defaultColors,
       palettesByBrush: defaultPalettes,
+      optionsByBrush: defaultOptions,
 
       grid: false,
       center: false,
@@ -43,6 +80,9 @@ class Toolbar extends EventEmitter {
     this.onSwatchUp = this.onSwatchUp.bind(this)
     this.onSwatchDown = this.onSwatchDown.bind(this)
     this.attachedCallback(this.el)
+
+    // HACK
+    this.emit('brush', this.state.brush, this.getBrushOptions(this.state.brush))
   }
 
   setState (newState) {
@@ -99,6 +139,26 @@ class Toolbar extends EventEmitter {
 
     return target.id.replace(/^toolbar-/, '')
   }
+  
+  getBrushOptions (kind) {
+    // DUPE
+    const colorToScaledRGB = color => [
+      Math.floor(color.red * 255),
+      Math.floor(color.green * 255),
+      Math.floor(color.blue * 255)
+    ]
+
+    const opt = this.state.optionsByBrush[kind]
+    const color = colorToScaledRGB(this.state.colorsByBrush[kind].toRGB())
+
+    return [
+      opt.size,
+      color,
+      opt.opacity,
+      opt.layerOpacity,
+      opt.layer
+    ]
+  }
 
   onButtonDown (event) {
     let selection = this.getEventTargetSelection(event.target)
@@ -125,36 +185,37 @@ class Toolbar extends EventEmitter {
       case 'light-pencil':
         if (this.state.brush !== 'light-pencil') {
           this.setState({ brush: 'light-pencil' })
-          this.emit('light-pencil', this.state.colorsByBrush['light-pencil'])
+          this.emit('brush', this.state.brush, this.getBrushOptions(this.state.brush))
         }
         break
       case 'pencil':
         if (this.state.brush !== 'pencil') {
           this.setState({ brush: 'pencil' })
-          this.emit('pencil', this.state.colorsByBrush['pencil'])
+          this.emit('brush', this.state.brush, this.getBrushOptions(this.state.brush))
         }
         break
       case 'pen':
         if (this.state.brush !== 'pen') {
           this.setState({ brush: 'pen' })
-          this.emit('pen', this.state.colorsByBrush['pen'])
+          this.emit('brush', this.state.brush, this.getBrushOptions(this.state.brush))
         }
         break
       case 'brush':
         if (this.state.brush !== 'brush') {
           this.setState({ brush: 'brush' })
-          this.emit('brush', this.state.colorsByBrush['brush'])
+          this.emit('brush', this.state.brush, this.getBrushOptions(this.state.brush))
         }
         break
       case 'note-pen':
         if (this.state.brush !== 'note-pen') {
           this.setState({ brush: 'note-pen' })
-          this.emit('note-pen', this.state.colorsByBrush['note-pen'])
+          this.emit('brush', this.state.brush, this.getBrushOptions(this.state.brush))
         }
         break
       case 'eraser':
         if (this.state.brush !== 'eraser') {
           this.setState({ brush: 'eraser' })
+          // TODO set eraser size
           this.emit('eraser')
         }
         break
