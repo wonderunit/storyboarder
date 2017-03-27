@@ -90,6 +90,22 @@ class Toolbar extends EventEmitter {
     this.render()
   }
 
+  transformBrushSize (brushSize) {
+    return {
+      brushOptions: Object.assign(
+        this.state.optionsByBrush,
+        {
+          [this.state.brush]: Object.assign(
+            this.state.optionsByBrush[this.state.brush],
+            {
+              size: brushSize
+            }
+          )
+        }
+      )
+    }
+  }
+
   transformCurrentColor (color) {
     return {
       colorsByBrush: Object.assign(this.state.colorsByBrush, {
@@ -251,10 +267,6 @@ class Toolbar extends EventEmitter {
         this.emit('current-color-picker')
         break
 
-      case 'brush-size':
-        this.emit('brush-size')
-        break
-
       case 'grid':
         this.setState({ grid: !this.state.grid })
         this.emit('grid', this.state.grid)
@@ -397,8 +409,8 @@ class Toolbar extends EventEmitter {
     }
 
     const brushSizeEl = this.el.querySelector('.toolbar-brush-size-controls_display')
-    const brushSizeValue = this.getBrushOptions(this.state.brush)[0]
-    brushSizeEl.innerHTML = brushSizeValue.toString()
+    const brushSizeValue = this.state.optionsByBrush[this.state.brush].size
+    brushSizeEl.innerHTML = (Math.round(brushSizeValue * 10) / 10).toString()
   }
 }
 

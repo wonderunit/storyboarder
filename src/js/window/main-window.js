@@ -347,10 +347,6 @@ let loadBoardUI = ()=> {
     undoStack.redo()
     markImageFileDirty()
   })
-
-  toolbar.on('brush-size', () => {
-    alert('Brush Size. This feature is not ready yet :(')
-  })
   
   toolbar.on('grid', value => {
     guides.setState({ grid: value })
@@ -409,6 +405,9 @@ let loadBoardUI = ()=> {
   sketchPane.on('setBrushColor', colorAsScaledRGB => {
     toolbar.setState({ currentBrushColor: Color(colorAsScaledRGB) })
     colorPicker.setState({ color: Color(colorAsScaledRGB).toCSS() })
+  })
+  sketchPane.on('setBrushSize', brushSize => {
+    toolbar.setState(toolbar.transformBrushSize(brushSize))
   })
   const setCurrentColor = color => {
     sketchPane.setBrushColor(colorToScaledRGB(color))
