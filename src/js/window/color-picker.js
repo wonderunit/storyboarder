@@ -176,7 +176,8 @@ class ColorPicker extends EventEmitter {
         element: this.el,
         target: this.target,
         attachment: 'top center',
-        targetAttachment: 'bottom center'
+        targetAttachment: 'bottom center',
+        offset: '-18px 0'
       })
     }
     ipcRenderer.send('textInputMode', true)
