@@ -285,7 +285,7 @@ class Toolbar extends EventEmitter {
 
       case 'current-color':
         if (this.state.brush == 'eraser') break
-        this.emit('current-color-picker')
+        this.emit('current-color-picker', this.state.currentBrushColor)
         break
 
       case 'grid':
@@ -332,16 +332,13 @@ class Toolbar extends EventEmitter {
 
     let brush = this.state.brush
     let index = ['palette-colorA', 'palette-colorB', 'palette-colorC'].indexOf(selection)
+    let color = this.getCurrentPalette()[index]
 
     switch(selection) {
       case 'palette-colorA':
-        this.emit('palette-color-picker', target, brush, index)
-        break
       case 'palette-colorB':
-        this.emit('palette-color-picker', target, brush, index)
-        break
       case 'palette-colorC':
-        this.emit('palette-color-picker', target, brush, index)
+        this.emit('palette-color-picker', color, target, brush, index)
         break
     }
   }

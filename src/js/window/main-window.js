@@ -408,6 +408,8 @@ let loadBoardUI = ()=> {
   colorPicker = new ColorPicker()
   sketchPane.on('setBrushColor', colorAsScaledRGB => {
     toolbar.setState({ currentBrushColor: Color(colorAsScaledRGB) })
+    // TODO could prevent reflecting current brush color
+    //      if color picker is open for a palette swatch ?
     colorPicker.setState({ color: Color(colorAsScaledRGB).toCSS() })
   })
   sketchPane.on('setBrushSize', brushSize => {
@@ -421,14 +423,22 @@ let loadBoardUI = ()=> {
     toolbar.setState(toolbar.transformPaletteState(brush, index, color))
     colorPicker.setState({ color: color.toCSS() })
   }
-  toolbar.on('current-color-picker', () => {
+  toolbar.on('current-color-picker', color => {
     colorPicker.attachTo(document.getElementById('toolbar-current-color'))
     colorPicker.removeAllListeners('color') // HACK
+
+    // initialize color picker active swatch
+    colorPicker.setState({ color: color.toCSS() })
+
     colorPicker.addListener('color', setCurrentColor)
   })
-  toolbar.on('palette-color-picker', (target, brush, index) => {
+  toolbar.on('palette-color-picker', (color, target, brush, index) => {
     colorPicker.attachTo(target)
     colorPicker.removeAllListeners('color') // HACK
+
+    // initialize color picker active swatch
+    colorPicker.setState({ color: color.toCSS() })
+
     colorPicker.addListener('color', setPaletteColor.bind(this, brush, index))
   })
   toolbar.on('current-set-color', color => {
