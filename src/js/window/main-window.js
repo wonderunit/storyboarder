@@ -1437,6 +1437,14 @@ window.onmousedown = (e) => {
 
 
 window.onresize = (e) => {
+  // measure the main area
+  const mainEl = document.getElementById('storyboarder-main')
+  const toolbarEl = document.getElementById('toolbar')
+  if (mainEl && toolbarEl) {
+    const rect = mainEl.getBoundingClientRect()
+    const isReducedWidth = rect.width < 1505
+    toolbarEl.classList.toggle('with-reduced-width', isReducedWidth)
+  }
 }
 
 window.onkeydown = (e)=> {

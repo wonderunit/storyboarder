@@ -23,6 +23,9 @@
     padding-right: 10px;
   }
 }
+#toolbar.with-reduced-width .column:last-child .group:not(:first-child) {
+  display: none;
+}
 
 #toolbar .column {
   display: flex;
