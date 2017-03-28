@@ -560,6 +560,7 @@ let setCursorSize = ()=> {
 let setBrushSize = (size)=> {
   brushSize = size
   setCursorSize()
+  module.exports.emit('setBrushSize', size)
 }
 
 let setBrushOpacity = (opacity)=> {

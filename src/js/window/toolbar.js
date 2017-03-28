@@ -18,6 +18,42 @@ const defaultPalettes = {
   'note-pen':     [Color('#4CAF50'), Color('#FF9800'), Color('#F44336')]
 }
 
+const defaultOptions = {
+  'pencil': {
+    size: 1.5,
+    opacity: 5,
+    layerOpacity: 70,
+    layer: 'main'
+  },
+  'light-pencil': {
+    size: 2,
+    opacity: 5,
+    layerOpacity: 50,
+    layer: 'main'
+  },
+  'pen': {
+    size: 3,
+    opacity: 60,
+    layerOpacity: 80,
+    layer: 'main'
+  },
+  'brush': {
+    size: 20,
+    opacity: 2,
+    layerOpacity: 10,
+    layer: 'main'
+  },
+  'note-pen': {
+    size: 3,
+    opacity: 60,
+    layerOpacity: 80,
+    layer: 'main'
+  },
+  'eraser': {
+    size: 36
+  }
+}
+
 class Toolbar extends EventEmitter {
   constructor (el) {
     super()
@@ -33,6 +69,7 @@ class Toolbar extends EventEmitter {
       currentBrushColor: defaultColors['pencil'],
       colorsByBrush: defaultColors,
       palettesByBrush: defaultPalettes,
+      optionsByBrush: defaultOptions,
 
       grid: false,
       center: false,
@@ -42,12 +79,49 @@ class Toolbar extends EventEmitter {
     this.onButtonDown = this.onButtonDown.bind(this)
     this.onSwatchUp = this.onSwatchUp.bind(this)
     this.onSwatchDown = this.onSwatchDown.bind(this)
+    this.onBrushSizePointerDown = this.onBrushSizePointerDown.bind(this)
     this.attachedCallback(this.el)
+
+    // HACK
+    this.emit('brush', this.state.brush, this.getBrushOptions(this.state))
   }
 
   setState (newState) {
     this.state = Object.assign(this.state, newState)
     this.render()
+  }
+
+  multiplyBrushSize (state, multiplier = 1.2) {
+    return Object.assign(
+      state,
+      {
+        optionsByBrush: Object.assign(
+          state.optionsByBrush,
+          Object.assign(
+            state.optionsByBrush[state.brush],
+            {
+              size: state.optionsByBrush[state.brush].size *= multiplier
+            }
+          )
+        )
+      }
+    )
+  }
+
+  transformBrushSize (brushSize) {
+    return {
+      brushOptions: Object.assign(
+        this.state.optionsByBrush,
+        {
+          [this.state.brush]: Object.assign(
+            this.state.optionsByBrush[this.state.brush],
+            {
+              size: brushSize
+            }
+          )
+        }
+      )
+    }
   }
 
   transformCurrentColor (color) {
@@ -86,6 +160,8 @@ class Toolbar extends EventEmitter {
       buttonEl.addEventListener('pointerup', this.onSwatchUp)
       buttonEl.addEventListener('pointerdown', this.onSwatchDown)
     }
+    
+    this.el.querySelector('#toolbar .toolbar-brush-size-controls').addEventListener('pointerdown', this.onBrushSizePointerDown)
   }
 
   // TODO cleanup, remove listeners
@@ -98,6 +174,26 @@ class Toolbar extends EventEmitter {
     }
 
     return target.id.replace(/^toolbar-/, '')
+  }
+  
+  getBrushOptions (state) {
+    // DUPE
+    const colorToScaledRGB = color => [
+      Math.floor(color.red * 255),
+      Math.floor(color.green * 255),
+      Math.floor(color.blue * 255)
+    ]
+
+    const opt = state.optionsByBrush[state.brush]
+    const color = state.brush !== 'eraser' ? colorToScaledRGB(state.colorsByBrush[state.brush].toRGB()) : null
+
+    return [
+      opt.size,
+      color,
+      opt.opacity,
+      opt.layerOpacity,
+      opt.layer
+    ]
   }
 
   onButtonDown (event) {
@@ -125,36 +221,38 @@ class Toolbar extends EventEmitter {
       case 'light-pencil':
         if (this.state.brush !== 'light-pencil') {
           this.setState({ brush: 'light-pencil' })
-          this.emit('light-pencil', this.state.colorsByBrush['light-pencil'])
+          this.emit('brush', this.state.brush, this.getBrushOptions(this.state))
         }
         break
       case 'pencil':
         if (this.state.brush !== 'pencil') {
           this.setState({ brush: 'pencil' })
-          this.emit('pencil', this.state.colorsByBrush['pencil'])
+          this.emit('brush', this.state.brush, this.getBrushOptions(this.state))
         }
         break
       case 'pen':
         if (this.state.brush !== 'pen') {
           this.setState({ brush: 'pen' })
-          this.emit('pen', this.state.colorsByBrush['pen'])
+          this.emit('brush', this.state.brush, this.getBrushOptions(this.state))
         }
         break
       case 'brush':
         if (this.state.brush !== 'brush') {
           this.setState({ brush: 'brush' })
-          this.emit('brush', this.state.colorsByBrush['brush'])
+          this.emit('brush', this.state.brush, this.getBrushOptions(this.state))
         }
         break
       case 'note-pen':
         if (this.state.brush !== 'note-pen') {
           this.setState({ brush: 'note-pen' })
-          this.emit('note-pen', this.state.colorsByBrush['note-pen'])
+          this.emit('brush', this.state.brush, this.getBrushOptions(this.state))
         }
         break
       case 'eraser':
         if (this.state.brush !== 'eraser') {
           this.setState({ brush: 'eraser' })
+          // just to set the size
+          this.emit('brush', this.state.brush, this.getBrushOptions(this.state))
           this.emit('eraser')
         }
         break
@@ -188,10 +286,6 @@ class Toolbar extends EventEmitter {
       case 'current-color':
         if (this.state.brush == 'eraser') break
         this.emit('current-color-picker')
-        break
-
-      case 'brush-size':
-        this.emit('brush-size')
         break
 
       case 'grid':
@@ -334,6 +428,16 @@ class Toolbar extends EventEmitter {
       paletteIcons[1].style.backgroundColor = palette[1].toCSS()
       paletteIcons[2].style.backgroundColor = palette[2].toCSS()
     }
+
+    const brushSizeEl = this.el.querySelector('.toolbar-brush-size-controls_val')
+    const brushSizeValue = this.state.optionsByBrush[this.state.brush].size
+    brushSizeEl.innerHTML = (Math.round(brushSizeValue * 10) / 10).toString()
+  }
+  
+  onBrushSizePointerDown (event) {
+    const pos = event.layerX / event.target.getBoundingClientRect().width
+    const multiplier = pos > 0.5 ? 1.2 : 0.8
+    this.emit('brush', this.state.brush, this.getBrushOptions(this.multiplyBrushSize(this.state, multiplier)))
   }
 }
 
