@@ -35,7 +35,7 @@ kbd, .key {
   user-select: none;
   margin-right: 10px;
   margin-left: 10px;
-  animation-delay: 2s;
+  animation-delay: 0.4s;
   animation-duration: 1.5s;
   animation-timing-function: ease-in;
   animation-iteration-count: infinite;
