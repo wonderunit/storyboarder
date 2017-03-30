@@ -1,3 +1,5 @@
+const Tone = require("tone")
+
 /*
     x
     y
@@ -15,6 +17,44 @@
     timestamp
 */
 const loop = require('raf-loop')
+
+const instrument = (() => {
+  const pathToSample = "./snd/drawing-loop.wav"
+
+  let env = new Tone.AmplitudeEnvelope({
+  	"attack": 0.05,
+  	"decay": 0.0,
+  	"sustain": 1.0,
+  	"release": 0.3
+  }).toMaster()
+
+  let sampler = new Tone.Player(pathToSample)
+    .set('loop', true)
+    .set('retrigger', true)
+    .set('volume', -20)
+    .stop()
+    .connect(env)
+  
+  const start = () => {
+    if (sampler.buffer.loaded) {
+      const offset = Math.random() * sampler.buffer.duration
+
+      // TODO ping-pong loop
+      sampler.reverse = false
+
+      sampler.start(0, offset)
+    }
+
+    env.triggerAttack()
+  }
+  
+  const stop = () => env.triggerRelease()
+
+  return {
+    start,
+    stop
+  }
+})()
 
 const distance = (x1, y1, x2, y2) =>
   Math.hypot(x2 - x1, y2 - y1)
@@ -44,10 +84,12 @@ const start = () => {
   engine.start()
   stack = []
   model = createModel()
+  instrument.start()
 }
 
 const stop = () => {
   engine.stop()
+  instrument.stop()
 }
 
 const trigger = event => stack.push(event)
