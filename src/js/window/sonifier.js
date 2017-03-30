@@ -21,9 +21,14 @@ const distance = (x1, y1, x2, y2) =>
 
 const createModel = () => ({
   speed: 0,
+  avgSpeed: 0,
+
+  accel: 0,
 
   totalDistance: 0,
-  totalTime: 0
+  totalTime: 0,
+  
+  damping: 0.9
 })
 
 let engine
@@ -49,22 +54,31 @@ const trigger = event => stack.push(event)
 
 let prev
 const step = dt => {
+  let frameSize = 1/60*1000 / dt
+
   // loop through events that happened since the last render
   while (stack.length) {
     let curr = stack.pop()
 
     if (prev) {
-      let distanceInPct = distance(
-        prev.x / prev.sW, prev.y / prev.sH,
-        curr.x / curr.sW, curr.y / curr.sH
+      // NOTE unscaled distance in pixels
+      let d = distance(
+        prev.x, prev.y,
+        curr.x, curr.y
       )
-      model.totalDistance += distanceInPct
+      model.totalDistance += d
+      model.speed = d
+
+      model.accel += model.speed
     }
 
     prev = curr
   }
 
-  model.speed = model.totalDistance / model.totalTime || 0
+  model.avgSpeed = model.totalDistance / model.totalTime || 0
+
+  model.accel *= frameSize * model.damping
+  if (model.accel < 0.1) model.accel = 0
 
   model.totalTime += dt
 }
