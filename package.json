@@ -65,6 +65,7 @@
     "socket.io": "^1.7.3",
     "tether": "1.4.0",
     "tether-tooltip": "1.2.0",
+    "tonal": "0.69.1",
     "tone": "^0.10.0"
   }
 }

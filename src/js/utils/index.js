@@ -83,6 +83,8 @@ let compareNumbers = (a, b) => a - b
 
 const pluralize = (number, string) => number > 1 ? string + 's' : string
 
+const sample = list => list[(Math.random() * list.length)|0]
+
 module.exports = {
   msToTime,
   uidGen,
@@ -96,5 +98,6 @@ module.exports = {
   acceleratorAsHtml,
   shuffle,
   compareNumbers,
-  pluralize
+  pluralize,
+  sample
 }
