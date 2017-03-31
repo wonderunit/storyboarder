@@ -2,37 +2,38 @@ const fs = require('fs')
 const path = require('path')
 const { app } = require('electron')
 
-module.exports = (() => {
-  let prefFile = path.join(app.getPath('userData'), 'pref.json')
+const prefFile = path.join(app.getPath('userData'), 'pref.json')
 
-  let prefs
+const defaultPrefs = {}
 
-  const load = () => {
+let prefs
+
+const load = () => {
+  try {
+    // load existing prefs
+    prefs = JSON.parse(fs.readFileSync(prefFile))
+  } catch (e) {
+    //console.log(e)
+    prefs = defaultPrefs
+
     try {
-      // load existing prefs
-      prefs = JSON.parse(fs.readFileSync(prefFile))
+      // create new prefs
+      fs.writeFileSync(prefFile, JSON.stringify(prefs, null, 2))
     } catch (e) {
       //console.log(e)
-      prefs = {}
-
-      try {
-        // create new prefs
-        fs.writeFileSync(prefFile, JSON.stringify(prefs, null, 2))
-      } catch (e) {
-        //console.log(e)
-      }
     }
   }
+}
 
-  const savePrefs = prefs =>
-    fs.writeFileSync(prefFile, JSON.stringify(prefs, null, 2))
+const savePrefs = prefs =>
+  fs.writeFileSync(prefFile, JSON.stringify(prefs, null, 2))
 
-  const getPrefs = () => prefs
+const getPrefs = () =>
+  prefs
 
-  load()
+load()
 
-  return {
-    savePrefs,
-    getPrefs
-  }
-})()
+module.exports = {
+  savePrefs,
+  getPrefs
+}
