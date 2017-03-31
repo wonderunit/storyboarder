@@ -211,7 +211,7 @@ const step = dt => {
         0.05)
     } else {
       instrument.gain.cancelScheduledValues()
-      instrument.gain.rampTo(0, 0.1)
+      instrument.gain.rampTo(0, 0.01)
     }
   }
 
