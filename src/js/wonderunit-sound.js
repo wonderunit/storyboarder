@@ -107,7 +107,7 @@ errorSynth.set({
 errorSynth.set('volume', -2).toMaster()
 
 // set up effects and chain them.
-var freeverb = new Tone.Freeverb(0.9, 1000)
+// var freeverb = new Tone.Freeverb(0.9, 1000) // unused
 var comp = new Tone.Compressor(-10, 5)
 var comp2 = new Tone.Compressor(-10, 5)
 var filter = new Tone.Filter(100, "lowpass", -48)
