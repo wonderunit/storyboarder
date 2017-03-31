@@ -30,7 +30,7 @@ const instrument = (() => {
 
   let eq = new Tone.EQ3()
     .set({
-      low: -96,
+      low: -4,
       lowFrequency: 2200
     })
 
@@ -87,68 +87,71 @@ const createModel = () => ({
 })
 
 let engine
-let stack
 let model
+let events
+let prev
+let curr
 
 const init = () => {
   engine = loop(step)
 
-  stack = []
+  events = []
   model = createModel()
 
   engine.start()
 }
 
 const start = () => {
-  stack = []
+  events = []
   model = createModel()
+  prev = null
+  curr = null
   instrument.start()
+  instrument.hpFreq.value = 200
+  instrument.gain.value = 0
 }
 
 const stop = () => {
   instrument.stop()
 }
 
-const trigger = event => curr = event
+const trigger = curr => {
+  let speed = prev ? distance(prev.x, prev.y, curr.x, curr.y) : 0
 
-let prev
-let curr
+  model.isMoving = speed > 0 ? true : false
+  model.accel += speed
+
+  instrument.hpFreq.rampTo(200 + (model.accel * 40), 0.01)
+
+  prev = curr
+}
+
 const step = dt => {
   let frameSize = 1/60*1000 / dt
 
-  const speed = prev ? distance(prev.x, prev.y, curr.x, curr.y) : 0
-  model.isMoving = speed > 0 ? true : false
 
-  model.accel += speed
-  model.accel *= frameSize * model.damping
-  if (model.accel < 0.0001) model.accel = 0
-
-  model.avgSpeed = model.totalDistance / model.totalTime || 0
 
   let wasAccel = model.isAccel
   model.isAccel = (model.accel > 0.1) ? true : false
   let changedAccel = model.isAccel != model.wasAccel
-
-  // TODO track if abs change of accel hits threshold, then ramp to new value
-  instrument.hpFreq.value = 200 + (model.accel * 40)
-  // instrument.hpFreq.cancelScheduledValues()
-  // instrument.hpFreq.rampTo(200 + (model.accel * 40), 0.01)
-
   if (changedAccel) {
     if (model.isAccel) {
       const v = util.clamp(model.accel / 10, 0.25, 1)
       instrument.gain.cancelScheduledValues()
       instrument.gain.rampTo(
         v,
-        0.01)
+        0.05)
     } else {
       instrument.gain.cancelScheduledValues()
-      instrument.gain.rampTo(0, 0.05)
+      instrument.gain.rampTo(0, 0.1)
     }
   }
 
+  model.accel *= frameSize * model.damping
+  if (model.accel < 0.0001) model.accel = 0
+
   model.totalTime += dt
-  prev = curr
+  model.avgSpeed = model.totalDistance / model.totalTime || 0
 }
 
 module.exports = {
