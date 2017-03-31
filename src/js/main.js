@@ -316,7 +316,26 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
     newWindow.hide()
   }
 
-  mainWindow = new BrowserWindow({acceptFirstMouse: true, backgroundColor: '#333333', width: 2480, height: 1350, minWidth: 1024, minHeight: 640, show: false, resizable: true, titleBarStyle: 'hidden-inset', webPreferences: {webgl: true, experimentalFeatures: true, experimentalCanvasFeatures: true, devTools: true} })
+  const { width, height } = electron.screen.getPrimaryDisplay().workAreaSize
+  mainWindow = new BrowserWindow({
+    acceptFirstMouse: true,
+    backgroundColor: '#333333',
+
+    width: Math.min(width, 2480),
+    height: Math.min(height, 1350),
+
+    minWidth: 1024,
+    minHeight: 640,
+    show: false,
+    resizable: true,
+    titleBarStyle: 'hidden-inset',
+    webPreferences: {
+      webgl: true,
+      experimentalFeatures: true,
+      experimentalCanvasFeatures: true,
+      devTools: true
+    } 
+  })
 
   // http://stackoverflow.com/a/39305399
   const onErrorInWindow = (event, error, url, line) => {
