@@ -22,7 +22,7 @@ const util = require('../utils/index')
 
     timestamp
 */
-const loop = require('raf-loop')
+const Loop = require('../utils/loop')
 
 const instrument = (() => {
   const pathToSample = "./snd/drawing-loop.wav"
@@ -165,7 +165,7 @@ let prev
 let curr
 
 const init = () => {
-  engine = loop(step)
+  engine = new Loop(step)
 
   events = []
   model = createModel()
