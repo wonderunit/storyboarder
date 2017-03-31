@@ -1,7 +1,10 @@
 const Tone = require('tone')
 const tonal = require('tonal')
 
+const throttle = require('lodash.throttle')
+
 const util = require('../utils/index')
+
 
 /*
     x
@@ -127,7 +130,7 @@ const instrument = (() => {
   return {
     start,
     stop,
-    note,
+    note: throttle(note, 16 * 3),
 
     hpFreq: eq.lowFrequency,
     gain: gain.gain
