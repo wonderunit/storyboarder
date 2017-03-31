@@ -28,20 +28,20 @@ const instrument = (() => {
   const pathToSample = "./snd/drawing-loop.wav"
   const chords = ["Amadd9", "GMadd9", "Bm7#5", "FMadd9", "Am7#5", "E7", "EMadd9", "G#m7#5", "EM", "Em#5"]
 
-  let synth = new Tone.PolySynth(10, Tone.Synth)
+  let synth = new Tone.PolySynth(8, Tone.Synth)
     .set({
       "oscillator" : {
         "type" : "square2"
       },
       "envelope" : {
-        "attack":0.001,
+        "attack":2,
         "decay":0.7,
-        "sustain":0,
+        "sustain":1,
         "release":0.1,
       },
     })
 
-    let bassSynth2 = new Tone.PolySynth(10, Tone.Synth)
+    let bassSynth2 = new Tone.PolySynth(3, Tone.Synth)
       .set({
         "oscillator" : {
           "type" : "sine"
@@ -86,8 +86,11 @@ const instrument = (() => {
   //   .set('Q', 2)
   var bassSynth2Vol = new Tone.Volume(-12)
 
-  synth.chain(synthComp, synthFilter, synthVol, Tone.Master)
-  bassSynth2.chain(bassSynth2Vol, Tone.Master)
+  var verb = new Tone.Freeverb(0.96, 1000)
+  verb.wet = 1
+
+  synth.chain(synthComp, synthFilter, synthVol, verb, Tone.Master)
+  bassSynth2.chain(bassSynth2Vol, verb, Tone.Master)
 
   let currentNote
   let currentChord
@@ -130,7 +133,7 @@ const instrument = (() => {
   return {
     start,
     stop,
-    note: throttle(note, 16 * 3),
+    note: throttle(note, 16 * 8),
 
     hpFreq: eq.lowFrequency,
     gain: gain.gain
@@ -149,6 +152,7 @@ const createModel = () => ({
   totalTime: 0,
 
   damping: 0.2,
+  hpFreqStart: 1000,
 
   isMoving: false,
   isAccel: false
@@ -175,7 +179,7 @@ const start = () => {
   prev = null
   curr = null
   instrument.start()
-  instrument.hpFreq.value = 200
+  instrument.hpFreq.value = model.hpFreqStart
   instrument.gain.value = 0
 }
 
@@ -189,7 +193,8 @@ const trigger = curr => {
   model.isMoving = speed > 0 ? true : false
   model.accel += speed
 
-  instrument.hpFreq.rampTo(200 + (model.accel * 40), 0.01)
+  // instrument.hpFreq.rampTo(200 + (model.accel * 40), 0.01)
+  instrument.hpFreq.value = model.hpFreqStart + (model.accel * 40)
 
   const velocity = util.clamp(model.accel / 10, 0.01, 1)
   instrument.note({ velocity })
@@ -208,13 +213,15 @@ const step = dt => {
   if (changedAccel) {
     if (model.isAccel) {
       const v = util.clamp(model.accel / 10, 0.25, 1)
-      instrument.gain.cancelScheduledValues()
-      instrument.gain.rampTo(
-        v,
-        0.05)
+      // instrument.gain.cancelScheduledValues()
+      // instrument.gain.rampTo(
+      //   v,
+      //   0.05)
+      instrument.gain.value = v
     } else {
-      instrument.gain.cancelScheduledValues()
-      instrument.gain.rampTo(0, 0.01)
+      instrument.gain.value = 0
+      // instrument.gain.cancelScheduledValues()
+      // instrument.gain.rampTo(0, 0.01)
     }
   }
 
