@@ -182,8 +182,8 @@
   border-bottom-right-radius: 5px;
   border-bottom-left-radius: 5px;
   width: 44px;
-  /*height: 44px;*/
-  height: auto;
+  height: 44px;
+  /*height: auto;*/
   padding: 8px;
   flex-direction: column;
   position: relative;
