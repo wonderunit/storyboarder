@@ -283,6 +283,30 @@ const template = [
         type: 'separator'
       },
       {
+        accelerator: '8',
+        label: 'Use Palette Color 1',
+        click ( item, focusedWindow, event) {
+          ipcRenderer.send('useColor', 1)
+        }
+      },
+      {
+        accelerator: '9',
+        label: 'Use Palette Color 2',
+        click ( item, focusedWindow, event) {
+          ipcRenderer.send('useColor', 2)
+        }
+      },
+      {
+        accelerator: '0',
+        label: 'Use Palette Color 3',
+        click ( item, focusedWindow, event) {
+          ipcRenderer.send('useColor', 3)
+        }
+      },
+      {
+        type: 'separator'
+      },
+      {
         accelerator: 'CmdOrCtrl+F',
         label: 'Flip Horizontal',
         click ( item, focusedWindow, event) {

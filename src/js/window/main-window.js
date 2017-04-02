@@ -2173,6 +2173,19 @@ ipcRenderer.on('setTool', (e, arg)=> {
   // sketchPane.setBrush(4,[255,0,0],100,100,'notes')
 })
 
+ipcRenderer.on('useColor', (e, arg)=> {
+  if (!toolbar) return
+
+  if (!textInputMode) {
+    console.log('useColor', arg)
+    if (toolbar.getCurrentPalette()) {
+      toolbar.emit('current-set-color', toolbar.getCurrentPalette()[arg-1])
+    }
+  }
+  // sketchPane.setBrush(4,[255,0,0],100,100,'notes')
+})
+
+
 ipcRenderer.on('clear', (e, arg)=> {
   if (!textInputMode) {
     sketchPane.clear()

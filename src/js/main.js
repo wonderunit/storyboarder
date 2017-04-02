@@ -470,6 +470,10 @@ ipcMain.on('setTool', (e, arg)=> {
   mainWindow.webContents.send('setTool', arg)
 })
 
+ipcMain.on('useColor', (e, arg)=> {
+  mainWindow.webContents.send('useColor', arg)
+})
+
 ipcMain.on('clear', (e, arg)=> {
   mainWindow.webContents.send('clear')
 })
