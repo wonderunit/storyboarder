@@ -57,6 +57,7 @@ kbd, .key {
 
 .modifier-key-anim {
   animation-name: modifier;
+  min-width: 65px;
 }
 
 .modifier-key-anim:nth-of-type(2) {
