@@ -24,13 +24,30 @@
   "build": {
     "asar": true,
     "appId": "com.wonderunit.storyboarder",
+    "compression": "maximum", 
     "files": [
       "**/*",
       "!*.md",
       "!DEVELOPERS.md",
       "!README.md",
       "!notes/"
-    ]
+    ],
+    "dmg": {
+      "background": "build/background.png",
+      "iconSize": 140,
+      "contents": [
+        {
+          "x": 120,
+          "y": 250
+        },
+        {
+          "x": 420,
+          "y": 250,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ]
+    }
   },
   "devDependencies": {
     "electron-builder": "15.1.1",
