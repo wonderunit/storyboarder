@@ -741,9 +741,9 @@ let renderMetaData = ()=> {
   }
   if (boardData.boards[currentBoard].newShot) {
     document.querySelector('input[name="newShot"]').checked = true
-    if (!boardData.boards[currentBoard].dialogue) {
-      document.querySelector('#canvas-caption').style.display = 'none'
-    }
+  }
+  if (!boardData.boards[currentBoard].dialogue) {
+    document.querySelector('#canvas-caption').style.display = 'none'
   }
   if (boardData.boards[currentBoard].duration) {
     document.querySelector('input[name="duration"]').value = boardData.boards[currentBoard].duration
