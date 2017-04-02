@@ -275,5 +275,8 @@
 
 .toolbar-brush-size-controls_dec,
 .toolbar-brush-size-controls_inc {
+  line-height: 16px;
+  font-size: 12px;
   width: 16px;
+  color: #444;
 }

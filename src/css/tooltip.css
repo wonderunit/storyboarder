@@ -61,6 +61,13 @@
   .tooltip-element.tooltip-element-attached-top .tooltip-content {
     transform-origin: 50% 0%;
   }
+  .tooltip-element.tooltip-element-attached-right .tooltip-content {
+    transform-origin: 100% 50%;
+  }
+  .tooltip-element.tooltip-element-attached-left .tooltip-content {
+    transform-origin: 0% 50%;
+  }
+
   .tooltip-element.tooltip-element-attached-bottom.tooltip-element-attached-center .tooltip-content {
     margin-bottom: 10px;
   }
