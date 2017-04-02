@@ -196,8 +196,28 @@ body {
   height: 0; 
   border-left: 8px solid transparent;
   border-right: 8px solid transparent;
-  border-top: 8px solid red;
+  border-top: 10px solid #999;
+  transition: left .1s ease-in;
+  animation-delay: 0s;
+  animation-duration: 0.5s;
+  animation-timing-function: ease-in;
+  animation-iteration-count: infinite;
+  animation-name: bounce;
 }
+
+@keyframes bounce {
+  0% {
+    top: 5px;
+  }
+  50% {
+    top: -7px;
+  }
+  100% {
+    top: 5px;
+  }
+}
+
+
 
 #thumbnail-container .thumbnail * {
      pointer-events: none;
@@ -238,10 +258,22 @@ body {
 }
 
 #thumbnail-drawer .thumbnail.selected {
-  box-shadow: 0 2px 0 red;
+  background: #ffc000;
+  background: #777;
+  color: #000;
+  top: 0px;
+  position: relative;
+  transition: all 0s ease-out;
+  box-shadow: none;
+  z-index: 999;
 }
 #thumbnail-drawer .thumbnail.selected.editing {
-  box-shadow: 0 2px 0 orange;
+  background: #999;
+  top: -10px;
+  position: relative;
+  color: #000;
+  transition: all .05s ease-in;
+  box-shadow: 0px 10px 0px rgba(0,0,0,0.1);
 }
 
 #thumbnail-drawer img {
