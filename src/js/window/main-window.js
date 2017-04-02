@@ -581,41 +581,15 @@ let deleteSingleBoard = (index) => {
 }
 
 let deleteBoards = (args)=> {
-  let msg
   if (selections.size) {
-    msg = `Deleting ${selections.size} boards.`
-  } else {
-    msg = "Deleting 1 board."
-  }
-  msg += " Are you sure?"
+    storeUndoStateForScene(true)
 
-  if (confirm(msg)) {
-    if (selections.size) {
-      storeUndoStateForScene(true)
+    // delete all selected boards
+    let arr = [...selections]
+    arr.sort(util.compareNumbers).reverse().forEach(n =>
+      deleteSingleBoard(n))
 
-      // delete all selected boards
-      let arr = [...selections]
-      arr.sort(util.compareNumbers).reverse().forEach(n =>
-        deleteSingleBoard(n))
-
-      if (selections.has(currentBoard)) {
-        // if not requested to move forward
-        // we take action to move intentionally backward
-        if (!args) {
-          currentBoard--
-        }
-      }
-
-      // clear and re-render selections
-      selections.clear()
-      renderThumbnailDrawer()
-      storeUndoStateForScene()
-    } else {
-      // delete a single board
-      storeUndoStateForScene(true)
-      deleteSingleBoard(currentBoard)
-      storeUndoStateForScene()
-
+    if (selections.has(currentBoard)) {
       // if not requested to move forward
       // we take action to move intentionally backward
       if (!args) {
@@ -623,9 +597,23 @@ let deleteBoards = (args)=> {
       }
     }
 
-    // always refresh
-    gotoBoard(currentBoard)
+    // clear and re-render selections
+    selections.clear()
+    renderThumbnailDrawer()
+    storeUndoStateForScene()
+  } else {
+    // delete a single board
+    storeUndoStateForScene(true)
+    deleteSingleBoard(currentBoard)
+    storeUndoStateForScene()
+
+    // if not requested to move forward
+    // we take action to move intentionally backward
+    if (!args) {
+      currentBoard--
+    }
   }
+  gotoBoard(currentBoard)
 }
 
 let duplicateBoard = ()=> {
@@ -1062,11 +1050,11 @@ let renderThumbnailButtons = () => {
     let el = document.createElement('div')
     el.dataset.tooltip = true
     el.dataset.tooltipTitle = 'New Board'
-    el.dataset.tooltipDescription = 'New Board'
+    el.dataset.tooltipDescription = 'Create a new board and draw some new shit. Then press N again and draw some more shit.'
     el.dataset.tooltipKeys = 'N'
     el.dataset.tooltipPosition = 'top center'
     el.id = 'thumbnail-add-btn'
-    el.style.width = Math.floor(60 * boardData.aspectRatio) + 'px'
+    el.style.width = 60 + 'px'
     el.innerHTML = `
       <div class="icon">✚</div>
     `

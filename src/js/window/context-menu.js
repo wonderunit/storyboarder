@@ -25,7 +25,7 @@ class ContextMenu extends EventEmitter {
         <div class="item" data-action="paste">Paste <div class="key-command">${acceleratorAsHtml('CmdOrCtrl+V', { animated: false })}</div></div>
         <div class="item" data-action="import">Import <div class="key-command">${acceleratorAsHtml('CmdOrCtrl+I', { animated: false })}</div></div>
         <div class="hr"></div>
-        <div class="item" data-action="delete">Delete <div class="key-command">${acceleratorAsHtml('Delete', { animated: false })}</div></div>
+        <div class="item" data-action="delete">Delete <div class="key-command">${acceleratorAsHtml('CmdOrCtrl+Backspace', { animated: false })}</div></div>
         <div class="hr"></div>
         <div class="item" data-action="reorder-left">Reorder Left <div class="key-command">${acceleratorAsHtml('Alt+Left', { animated: false })}</div></div>
         <div class="item" data-action="reorder-right">Reorder Right <div class="key-command">${acceleratorAsHtml('Alt+Right', { animated: false })}</div></div>
