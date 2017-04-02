@@ -23,9 +23,15 @@ const KEY_MAP = {
 }
 
 // see https://www.npmjs.com/package/electron-accelerator-formatter
-const acceleratorAsHtml = (accelerator, options = { animated: true }) =>
-  accelerator
-    .split('+')
+const acceleratorAsHtml = (accelerator, options = { animated: true }) => {
+  let splitOn
+  if (accelerator.includes('|')) {
+    splitOn = "|"
+  } else {
+    splitOn = "+"
+  }
+  accelerator = accelerator
+    .split(splitOn)
     .map(function(k) {
       let m = MODIFIER_MAP[k]
       if (m) {
@@ -34,7 +40,14 @@ const acceleratorAsHtml = (accelerator, options = { animated: true }) =>
         return `<kbd ${ options.animated ? 'class="action-key-anim"' : ''}>${KEY_MAP[k] || k}</kbd>`
       }
     })
-    .join('+')
+
+  if (splitOn == "|") {
+    accelerator = accelerator.join('OR')
+  } else {
+    accelerator = accelerator.join("+")
+  }
+  return accelerator
+}
 
 module.exports = {
   acceleratorAsHtml
