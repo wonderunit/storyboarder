@@ -65,6 +65,9 @@ let colorPicker
 let transport
 let guides
 
+let storyboarderSketchPane
+let paintingCanvas
+
 menu.setMenu()
 
 ///////////////////////////////////////////////////////////////
@@ -133,13 +136,14 @@ let loadBoardUI = ()=> {
     size = [900, 900 / aspectRatio]
   }
 
-  this.storyboarderSketchPane = new StoryboarderSketchPane(
+  storyboarderSketchPane = new StoryboarderSketchPane(
     document.getElementById('storyboarder-sketch-pane'),
     size
   )
   window.addEventListener('resize', () => {
-    this.storyboarderSketchPane.resize()
+    storyboarderSketchPane.resize()
   })
+  paintingCanvas = storyboarderSketchPane.getLayerCanvasByName('painting')
 
   // TEMP create placeholders so we can compile
   let sketchPaneEl = document.querySelector('#storyboarder-sketch-pane')
@@ -327,14 +331,14 @@ let loadBoardUI = ()=> {
 
   toolbar.on('brush', (kind, options) => {
     console.log('toolbar says setBrushTool', kind, options)
-    this.storyboarderSketchPane.setBrushTool(kind)
+    storyboarderSketchPane.setBrushTool(kind)
   })
 
   toolbar.on('trash', () => {
-    this.storyboarderSketchPane.clearLayer()
+    storyboarderSketchPane.clearLayer()
   })
   toolbar.on('fill', color => {
-    this.storyboarderSketchPane.fillLayer(color.toCSS())
+    storyboarderSketchPane.fillLayer(color.toCSS())
   })
 
 
@@ -464,7 +468,7 @@ let loadBoardUI = ()=> {
     // sketchPane.setBrushColor(colorToScaledRGB(color))
   })
 
-  guides = new Guides(this.storyboarderSketchPane.getLayerCanvasByName('guides'))
+  guides = new Guides(storyboarderSketchPane.getLayerCanvasByName('guides'))
 
   let onUndoStackAction = (state) => {
     if (state.type == 'image') {
@@ -569,7 +573,7 @@ let markImageFileDirty = ()=> {
 let saveImageFile = ()=> {
   if (imageFileDirty) {
     clearTimeout(imageFileDirtyTimer)
-    let imageData = document.querySelector('#main-canvas').toDataURL('image/png')
+    let imageData = paintingCanvas.toDataURL('image/png')
     imageData = imageData.replace(/^data:image\/\w+;base64,/, '');
     let board = boardData.boards[currentBoard]
     let imageFilename = path.join(boardPath, 'images', board.url)
@@ -637,7 +641,7 @@ let duplicateBoard = ()=> {
   storeUndoStateForScene(true)
   saveImageFile()
   // copy current board canvas
-  let imageData = document.querySelector('#main-canvas').getContext("2d").getImageData(0,0, document.querySelector('#main-canvas').width, document.querySelector('#main-canvas').height)
+  let imageData = paintingCanvas.getContext("2d").getImageData(0,0, paintingCanvas.width, paintingCanvas.height)
   // get current board clone it
   let board = JSON.parse(JSON.stringify(boardData.boards[currentBoard]))
   // set uid
@@ -652,7 +656,7 @@ let duplicateBoard = ()=> {
   // go to board
   gotoBoard(currentBoard+1)
   // draw contents to board
-  document.querySelector('#main-canvas').getContext("2d").putImageData(imageData, 0, 0)
+  paintingCanvas.getContext("2d").putImageData(imageData, 0, 0)
   markImageFileDirty()
   saveImageFile()
   renderThumbnailDrawer()
@@ -829,7 +833,7 @@ let updateSketchPaneBoard = () => {
     let board = boardData.boards[currentBoard]
     // try to load url
     let imageFilename = path.join(boardPath, 'images', board.url)
-    let context = document.querySelector('#main-canvas').getContext('2d')
+    let context = paintingCanvas.getContext('2d')
     context.globalAlpha = 1
 
     console.log('loading image')
@@ -1803,7 +1807,7 @@ let copyBoards = ()=> {
   // assumes that UI only allows a single selection when it is also the current board
   //
   let board = JSON.parse(JSON.stringify(boardData.boards[currentBoard]))
-  let canvasDiv = document.querySelector('#main-canvas')
+  let canvasDiv = paintingCanvas
   board.imageDataURL = canvasDiv.toDataURL()
   payload = {
     image: nativeImage.createFromDataURL(canvasDiv.toDataURL()),
@@ -1887,7 +1891,7 @@ let pasteBoards = () => {
       image.src = newImageSrc
     
       // render
-      document.querySelector('#main-canvas').getContext("2d").drawImage(image, 0, 0)
+      paintingCanvas.getContext("2d").drawImage(image, 0, 0)
       markImageFileDirty()
       saveImageFile()
       renderThumbnailDrawer()

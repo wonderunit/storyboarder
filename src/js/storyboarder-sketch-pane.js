@@ -41,7 +41,7 @@ class StoryboarderSketchPane extends EventEmitter {
 
     this.sketchPane.addLayer(0) // reference
     this.sketchPane.fillLayer('#fff')
-    this.sketchPane.addLayer(1) // drawing
+    this.sketchPane.addLayer(1) // painting
     this.sketchPane.addLayer(2) // onion skin
     this.sketchPane.addLayer(3) // notes
     this.sketchPane.addLayer(4) // guides
@@ -270,7 +270,7 @@ class StoryboarderSketchPane extends EventEmitter {
   }
 
   getLayerCanvasByName (name) {
-    const names = ['reference', 'drawing', 'onion', 'notes', 'guides']
+    const names = ['reference', 'painting', 'onion', 'notes', 'guides']
     return this.sketchPane.getLayerCanvas(names.indexOf(name))
   }
 }
