@@ -38,6 +38,7 @@ class StoryboarderSketchPane extends EventEmitter {
     // sketchpane
     this.sketchPane = new SketchPane()
     this.sketchPane.setCanvasSize(...this.canvasSize)
+    this.sketchPane.on('onup', () => this.emit('markDirty'))
 
     this.sketchPane.addLayer(0) // reference
     this.sketchPane.fillLayer('#fff')
@@ -58,17 +59,14 @@ class StoryboarderSketchPane extends EventEmitter {
     this.el.appendChild(this.containerEl)
     this.containerEl.appendChild(this.sketchPaneDOMElement)
 
-    this.resize()
-
     // brush pointer
     this.brushPointerContainer = document.createElement('div')
     this.brushPointerContainer.className = 'brush-pointer'
     this.brushPointerContainer.style.position = 'absolute'
     this.brushPointerContainer.style.pointerEvents = 'none'
 
+    this.resize()
     this.setBrushTool(null)
-
-    this.sketchPane.on('onup', () => this.emit('markDirty'))
   }
 
   canvasPointerDown (e) {
@@ -192,6 +190,10 @@ class StoryboarderSketchPane extends EventEmitter {
       let canvas = this.sketchPane.getLayerCanvas(i)
       canvas.style.width = size[0] + 'px'
       canvas.style.height = size[1] + 'px'
+    }
+    
+    if (this.brush) {
+      this.updatePointer()
     }
   }
 
