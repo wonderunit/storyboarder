@@ -67,6 +67,8 @@ class StoryboarderSketchPane extends EventEmitter {
     this.brushPointerContainer.style.pointerEvents = 'none'
 
     this.setBrushTool(null)
+
+    this.sketchPane.on('onup', () => this.emit('markDirty'))
   }
 
   canvasPointerDown (e) {
@@ -200,10 +202,12 @@ class StoryboarderSketchPane extends EventEmitter {
 
   clearLayer () {
     this.sketchPane.clearLayer(this.sketchPane.getCurrentLayerIndex())
+    this.emit('markDirty')
   }
 
   fillLayer (fillColor) {
     this.sketchPane.fillLayer(fillColor, this.sketchPane.getCurrentLayerIndex())
+    this.emit('markDirty')
   }
 
   setBrushTool (kind) {

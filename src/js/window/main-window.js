@@ -136,15 +136,21 @@ let loadBoardUI = ()=> {
     size = [900, 900 / aspectRatio]
   }
 
+
+
+
   storyboarderSketchPane = new StoryboarderSketchPane(
     document.getElementById('storyboarder-sketch-pane'),
     size
   )
+  paintingCanvas = storyboarderSketchPane.getLayerCanvasByName('painting')
   window.addEventListener('resize', () => {
     storyboarderSketchPane.resize()
   })
-  paintingCanvas = storyboarderSketchPane.getLayerCanvasByName('painting')
-  // sketchPane.on('markDirty', markImageFileDirty)
+  storyboarderSketchPane.on('markDirty', markImageFileDirty)
+
+
+
 
   // TEMP create placeholders so we can compile
   let sketchPaneEl = document.querySelector('#storyboarder-sketch-pane')
@@ -412,8 +418,6 @@ let loadBoardUI = ()=> {
 
   notifications.init(document.getElementById('notifications'))
   setupRandomizedNotifications()
-
-  // sketchPane.init(document.getElementById('sketch-pane'), ['reference', 'main', 'notes'], size)
 
   //
   //
