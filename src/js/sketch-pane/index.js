@@ -94,8 +94,8 @@ class SketchPane extends EventEmitter {
     this.domElement.style.width = width + 'px'
     this.domElement.style.height = height + 'px'
     for (var i=0; i<this.layers.length; ++i) {
-      let canvas = getLayerCanvas(i)
-      let context = getLayerContext(i)
+      let canvas = this.getLayerCanvas(i)
+      let context = this.getLayerContext(i)
       let imageData = context.getImageData(0, 0, width, height)
       canvas.width = width
       canvas.height = height

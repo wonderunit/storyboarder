@@ -9,7 +9,7 @@ const util = require('../utils/index.js')
 const sfx = require('../wonderunit-sound.js')
 const Color = require('color-js')
 
-const sketchPane = require('../sketchpane.js')
+const StoryboarderSketchPane = require('../storyboarder-sketch-pane.js')
 const undoStack = require('../undo-stack.js')
 
 const Toolbar = require('./toolbar.js')
@@ -20,7 +20,6 @@ const Transport = require('./transport.js')
 const notifications = require('./notifications.js')
 const NotificationData = require('../../data/messages.json')
 const Guides = require('./guides.js')
-
 
 let boardFilename
 let boardPath
@@ -126,20 +125,45 @@ const colorToScaledRGB = color => [
 
 let loadBoardUI = ()=> {
   let aspectRatio = boardData.aspectRatio
-  console.log(aspectRatio)
-  //let aspectRatio = 1.77777
-  var size = []
+
   if (aspectRatio >= 1) {
-    size = [(900*aspectRatio), 900]
+    size = [900 * aspectRatio, 900]
   } else {
-    size = [900, (900/aspectRatio)]
+    size = [900, 900 / aspectRatio]
   }
-  sketchPane.on('lineMileage', (value)=>{
-    addToLineMileage(value)
+
+  this.storyboarderSketchPane = new StoryboarderSketchPane(
+    document.getElementById('storyboarder-sketch-pane'),
+    size
+  )
+  window.addEventListener('resize', () => {
+    this.storyboarderSketchPane.resize()
   })
-  sketchPane.on('addToUndoStack', (isBefore, layerId, imageBitmap) => {
-    storeUndoStateForImage(isBefore, layerId, imageBitmap)
-  })
+
+  // TEMP create placeholders so we can compile
+  let sketchPaneEl = document.querySelector('#storyboarder-sketch-pane')
+  let captionEl = document.createElement('div')
+  captionEl.id = 'canvas-caption'
+  sketchPaneEl.appendChild(captionEl)
+
+  let canvasContainerEl = document.createElement('div')
+  canvasContainerEl.id = 'canvas-container'
+  canvasContainerEl.style.display = 'none'
+  sketchPaneEl.appendChild(canvasContainerEl)
+
+  let mainCanvasEl = document.createElement('canvas')
+  mainCanvasEl.id = 'main-canvas'
+  mainCanvasEl.style.display = 'none'
+  canvasContainerEl.appendChild(mainCanvasEl)
+
+
+
+  // sketchPane.on('lineMileage', (value)=>{
+  //   addToLineMileage(value)
+  // })
+  // sketchPane.on('addToUndoStack', (isBefore, layerId, imageBitmap) => {
+  //   storeUndoStateForImage(isBefore, layerId, imageBitmap)
+  // })
 
   for (var item of document.querySelectorAll('#board-metadata input, textarea')) {
     item.addEventListener('focus', (e)=> {
@@ -301,46 +325,40 @@ let loadBoardUI = ()=> {
   })
 
   toolbar.on('brush', (kind, options) => {
-    if (kind == 'eraser') {
-      sketchPane.setBrushSize(options[0])
-    } else {
-      sketchPane.setBrush(...options)
-    }
-  })
-  toolbar.on('eraser', () => {
-    sketchPane.setEraser()
+    console.log('toolbar says setBrushTool', kind, options)
+    this.storyboarderSketchPane.setBrushTool(kind)
   })
 
   toolbar.on('trash', () => {
-    sketchPane.clear()
+    this.storyboarderSketchPane.clearLayer()
   })
   toolbar.on('fill', color => {
-    sketchPane.fill(color.toCSS())
+    this.storyboarderSketchPane.fillLayer(color.toCSS())
   })
 
 
   toolbar.on('move', () => {
-    sketchPane.moveContents()
+    // sketchPane.moveContents()
   })
   toolbar.on('scale', () => {
-    sketchPane.scaleContents()
+    // sketchPane.scaleContents()
   })
   toolbar.on('cancelTransform', () => {
-    sketchPane.cancelTransform()
+    // sketchPane.cancelTransform()
   })
-  sketchPane.on('moveMode', enabled => {
-    if (enabled) {
-      toolbar.setState({ transformMode: 'move' })
-    }
-  })
-  sketchPane.on('scaleMode', enabled => {
-    if (enabled) {
-      toolbar.setState({ transformMode: 'scale' })
-    }
-  })
-  sketchPane.on('cancelTransform', () => {
-    toolbar.setState({ transformMode: null })
-  })
+  // sketchPane.on('moveMode', enabled => {
+  //   if (enabled) {
+  //     toolbar.setState({ transformMode: 'move' })
+  //   }
+  // })
+  // sketchPane.on('scaleMode', enabled => {
+  //   if (enabled) {
+  //     toolbar.setState({ transformMode: 'scale' })
+  //   }
+  // })
+  // sketchPane.on('cancelTransform', () => {
+  //   toolbar.setState({ transformMode: null })
+  // })
 
 
   toolbar.on('undo', () => {
@@ -399,24 +417,24 @@ let loadBoardUI = ()=> {
   notifications.init(document.getElementById('notifications'))
   setupRandomizedNotifications()
 
-  sketchPane.init(document.getElementById('sketch-pane'), ['reference', 'main', 'notes'], size)
+  // sketchPane.init(document.getElementById('sketch-pane'), ['reference', 'main', 'notes'], size)
 
   //
   //
   // Current Color, Palette, and Color Picker connections
   //
   colorPicker = new ColorPicker()
-  sketchPane.on('setBrushColor', colorAsScaledRGB => {
-    toolbar.setState({ currentBrushColor: Color(colorAsScaledRGB) })
-    // TODO could prevent reflecting current brush color
-    //      if color picker is open for a palette swatch ?
-    colorPicker.setState({ color: Color(colorAsScaledRGB).toCSS() })
-  })
-  sketchPane.on('setBrushSize', brushSize => {
-    toolbar.setState(toolbar.transformBrushSize(brushSize))
-  })
+  // sketchPane.on('setBrushColor', colorAsScaledRGB => {
+  //   toolbar.setState({ currentBrushColor: Color(colorAsScaledRGB) })
+  //   // TODO could prevent reflecting current brush color
+  //   //      if color picker is open for a palette swatch ?
+  //   colorPicker.setState({ color: Color(colorAsScaledRGB).toCSS() })
+  // })
+  // sketchPane.on('setBrushSize', brushSize => {
+  //   toolbar.setState(toolbar.transformBrushSize(brushSize))
+  // })
   const setCurrentColor = color => {
-    sketchPane.setBrushColor(colorToScaledRGB(color))
+    // sketchPane.setBrushColor(colorToScaledRGB(color))
     toolbar.setState(toolbar.transformCurrentColor(color))
   }
   const setPaletteColor = (brush, index, color) => {
@@ -442,12 +460,10 @@ let loadBoardUI = ()=> {
     colorPicker.addListener('color', setPaletteColor.bind(this, brush, index))
   })
   toolbar.on('current-set-color', color => {
-    sketchPane.setBrushColor(colorToScaledRGB(color))
+    // sketchPane.setBrushColor(colorToScaledRGB(color))
   })
 
-  guides = new Guides()
-  guides.create(document.getElementById('guides'))
-  guides.attachTo(document.getElementById('canvas-container'))
+  guides = new Guides(this.storyboarderSketchPane.getLayerCanvasByName('guides'))
 
   let onUndoStackAction = (state) => {
     if (state.type == 'image') {
@@ -570,7 +586,7 @@ let saveImageFile = ()=> {
   }
 }
 
-sketchPane.on('markDirty', markImageFileDirty)
+// sketchPane.on('markDirty', markImageFileDirty)
 
 let deleteSingleBoard = (index) => {
   if (boardData.boards.length > 1) {
@@ -1669,7 +1685,7 @@ let cycleViewMode = ()=> {
         break
     }
   }
-  sketchPane.sizeCanvas()
+  // sketchPane.sizeCanvas()
   renderViewMode()
 }
 
@@ -2166,7 +2182,6 @@ ipcRenderer.on('setTool', (e, arg)=> {
         toolbar.setState({ brush: 'eraser' })
         // just to set the size
         toolbar.emit('brush', 'eraser', toolbar.getBrushOptions(toolbar.state))
-        toolbar.emit('eraser')
         break
     }
   }
@@ -2188,19 +2203,19 @@ ipcRenderer.on('useColor', (e, arg)=> {
 
 ipcRenderer.on('clear', (e, arg)=> {
   if (!textInputMode) {
-    sketchPane.clear()
+    // sketchPane.clear()
   }
 })
 
 ipcRenderer.on('brushSize', (e, arg)=> {
   if (!textInputMode) {
-    sketchPane.changeBrushSize(arg)
+    // sketchPane.changeBrushSize(arg)
   }
 })
 
 ipcRenderer.on('flipBoard', (e, arg)=> {
   if (!textInputMode) {
-    sketchPane.flipBoard()
+    // sketchPane.flipBoard()
   }
 })
 

@@ -253,7 +253,6 @@ class Toolbar extends EventEmitter {
           this.setState({ brush: 'eraser' })
           // just to set the size
           this.emit('brush', this.state.brush, this.getBrushOptions(this.state))
-          this.emit('eraser')
         }
         break
 

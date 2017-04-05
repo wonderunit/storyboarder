@@ -5,70 +5,52 @@ const util = require('../utils/index.js')
 const rgba = (r, g, b, a) => `rgba(${r}, ${g}, ${b}, ${parseFloat(a)})`
 
 class Guides extends EventEmitter {
-  constructor () {
+  constructor (el) {
     super()
+
     this.state = {
       grid: false,
       center: false,
       thirds: false,
-      diagonals: false,
-    
-      width: 0,
-      height: 0
+      diagonals: false
     }
 
     // for crisp lines
     // see: http://www.mobtowers.com/html5-canvas-crisp-lines-every-time/
     this.translateShift = 0.5
 
-    this.el = null
     this.canvas = null
     this.context = null
     this.offscreenCanvas = null
     this.offscreenContext = null
+    
+    this.attachTo(el)
+    this.render()
   }
 
   setState (newState) {
-    if (!util.isUndefined(newState.width) &&
-        newState.width != this.state.width) {
-      this.canvas.width = newState.width
-      this.offscreenCanvas.width = newState.width
-    }
-    if (!util.isUndefined(newState.height) &&
-        newState.height != this.state.height) {
-      this.canvas.height = newState.height
-      this.offscreenCanvas.height = newState.height
-    }
-
     this.state = Object.assign(this.state, newState)
 
     this.render()
   }
 
-  create (el) {
-    this.el = el
-    this.canvas = document.createElement('canvas')
-    this.canvas.style.zIndex = 199 // after layers, before cursor
+  attachTo (canvas) {
+    this.canvas = canvas
     this.context = this.canvas.getContext('2d')
-    this.el.appendChild(this.canvas)
 
     this.offscreenCanvas = document.createElement('canvas')
     this.offscreenContext = this.offscreenCanvas.getContext('2d')
-  }
 
-  attachTo (target) {
-    // move from current DOM position to inside target
-    target.insertBefore(this.el, target.firstChild)
-    let state = {
-      width: parseFloat(target.style.width),
-      height: parseFloat(target.style.height)
-    }
-    this.setState(state)
+    this.offscreenCanvas.width = this.canvas.width
+    this.offscreenCanvas.height = this.canvas.height
+    
+    this.width = this.canvas.width
+    this.height = this.canvas.height
   }
 
   render () {
     let ctx = this.context
-    ctx.clearRect(0, 0, this.state.width, this.state.height)
+    ctx.clearRect(0, 0, this.width, this.height)
 
     const lineColorMuted  = [0, 0, 0, 0.1]
     const lineColorNormal = [0, 0, 0, 0.2]
@@ -79,13 +61,13 @@ class Guides extends EventEmitter {
     //
     // light
     //
-    this.offscreenContext.clearRect(0, 0, this.state.width, this.state.height)
-    if (this.state.grid)   this.drawGrid(this.offscreenContext, this.state.width, this.state.height, rgba(...lineColorWhite.slice(0, 3), 1.0), 3)
-    if (this.state.center) this.drawCenter(this.offscreenContext, this.state.width, this.state.height, rgba(...lineColorWhite.slice(0, 3), 1.0), 3)
-    if (this.state.thirds) this.drawThirds(this.offscreenContext, this.state.width, this.state.height, rgba(...lineColorWhite.slice(0, 3), 1.0), 3)
-    if (this.state.diagonals) this.drawDiagonals(this.offscreenContext, this.state.width, this.state.height, rgba(...lineColorWhite.slice(0, 3), 1.0), 3)
+    this.offscreenContext.clearRect(0, 0, this.width, this.height)
+    if (this.state.grid)   this.drawGrid(this.offscreenContext, this.width, this.height, rgba(...lineColorWhite.slice(0, 3), 1.0), 3)
+    if (this.state.center) this.drawCenter(this.offscreenContext, this.width, this.height, rgba(...lineColorWhite.slice(0, 3), 1.0), 3)
+    if (this.state.thirds) this.drawThirds(this.offscreenContext, this.width, this.height, rgba(...lineColorWhite.slice(0, 3), 1.0), 3)
+    if (this.state.diagonals) this.drawDiagonals(this.offscreenContext, this.width, this.height, rgba(...lineColorWhite.slice(0, 3), 1.0), 3)
     this.context.globalAlpha = lineColorWhite.slice(-1)[0]
-    this.context.drawImage(this.offscreenCanvas, 0, 0, this.state.width, this.state.height)
+    this.context.drawImage(this.offscreenCanvas, 0, 0, this.width, this.height)
     this.context.globalAlpha = 1.0
 
     //
@@ -93,28 +75,28 @@ class Guides extends EventEmitter {
     // dark
     //
     // grid
-    this.offscreenContext.clearRect(0, 0, this.state.width, this.state.height)
-    if (this.state.grid)   this.drawGrid(this.offscreenContext, this.state.width, this.state.height, rgba(...lineColorMuted.slice(0, 3), 1.0), 1)
+    this.offscreenContext.clearRect(0, 0, this.width, this.height)
+    if (this.state.grid)   this.drawGrid(this.offscreenContext, this.width, this.height, rgba(...lineColorMuted.slice(0, 3), 1.0), 1)
     this.context.globalAlpha = lineColorMuted.slice(-1)[0]
-    this.context.drawImage(this.offscreenCanvas, 0, 0, this.state.width, this.state.height)
+    this.context.drawImage(this.offscreenCanvas, 0, 0, this.width, this.height)
 
     // center
-    this.offscreenContext.clearRect(0, 0, this.state.width, this.state.height)
-    if (this.state.center) this.drawCenter(this.offscreenContext, this.state.width, this.state.height, rgba(...lineColorStrong.slice(0, 3), 1.0), 1)
+    this.offscreenContext.clearRect(0, 0, this.width, this.height)
+    if (this.state.center) this.drawCenter(this.offscreenContext, this.width, this.height, rgba(...lineColorStrong.slice(0, 3), 1.0), 1)
     this.context.globalAlpha = lineColorStrong.slice(-1)[0]
-    this.context.drawImage(this.offscreenCanvas, 0, 0, this.state.width, this.state.height)
+    this.context.drawImage(this.offscreenCanvas, 0, 0, this.width, this.height)
 
     // muted
-    this.offscreenContext.clearRect(0, 0, this.state.width, this.state.height)
-    if (this.state.thirds) this.drawThirds(this.offscreenContext, this.state.width, this.state.height, rgba(...lineColorStrong.slice(0, 3), 1.0), 1)
+    this.offscreenContext.clearRect(0, 0, this.width, this.height)
+    if (this.state.thirds) this.drawThirds(this.offscreenContext, this.width, this.height, rgba(...lineColorStrong.slice(0, 3), 1.0), 1)
     this.context.globalAlpha = lineColorStrong.slice(-1)[0]
-    this.context.drawImage(this.offscreenCanvas, 0, 0, this.state.width, this.state.height)
+    this.context.drawImage(this.offscreenCanvas, 0, 0, this.width, this.height)
 
     // diagonals
-    this.offscreenContext.clearRect(0, 0, this.state.width, this.state.height)
-    if (this.state.diagonals) this.drawDiagonals(this.offscreenContext, this.state.width, this.state.height, rgba(...lineColorNormal.slice(0, 3), 1.0), 1)
+    this.offscreenContext.clearRect(0, 0, this.width, this.height)
+    if (this.state.diagonals) this.drawDiagonals(this.offscreenContext, this.width, this.height, rgba(...lineColorNormal.slice(0, 3), 1.0), 1)
     this.context.globalAlpha = lineColorNormal.slice(-1)[0]
-    this.context.drawImage(this.offscreenCanvas, 0, 0, this.state.width, this.state.height)
+    this.context.drawImage(this.offscreenCanvas, 0, 0, this.width, this.height)
 
     this.context.globalAlpha = 1.0
   }

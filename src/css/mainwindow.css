@@ -160,12 +160,6 @@ body {
   flex-direction: column;
 }
 
-#sketch-body {
-  flex: 1;
-  display: flex;
-  flex-direction: row;
-  height: 100px;
-}
 
 #thumbnail-container {
   position: relative;
@@ -352,45 +346,6 @@ body {
 #thumbnail-add-btn .icon:hover {
   background-color: #555;
 }
-
-#sketch-pane {
-  flex: 1;
-  overflow: hidden;
-  position: relative;
-  cursor: none;
-  width: 100px;
-  height: 100%;
-}
-
-#canvas-container {
-  transform: scale(0.0,0.0) translate(0,0);
-  transform-origin: 0 0;
-  position: relative;
-  left: 0;
-  top: 0;
-  overflow: hidden;
-  background: white;
-  border-radius: 13px;
-  box-shadow: 0 2px 15px rgba(0,0,0,0.3);
-}
-
-#sketch-pane canvas, #sketch-pane  img {
-  position: absolute;
-  top: 0;
-  border-radius: 15px;
-}
-
-#cursor {
-  position: absolute;
-  border-radius: 500px;
-  border: 3px solid rgba(255,255,255,0.4);
-  box-shadow: 0 0 2px rgba(0,0,0,0.6);
-}
-
-#canvas-container canvas:first-child {
-  background: #fff;
-}
-
 
 
 
