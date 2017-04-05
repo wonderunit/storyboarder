@@ -144,22 +144,13 @@ let loadBoardUI = ()=> {
     storyboarderSketchPane.resize()
   })
   paintingCanvas = storyboarderSketchPane.getLayerCanvasByName('painting')
+  // sketchPane.on('markDirty', markImageFileDirty)
 
   // TEMP create placeholders so we can compile
   let sketchPaneEl = document.querySelector('#storyboarder-sketch-pane')
   let captionEl = document.createElement('div')
   captionEl.id = 'canvas-caption'
   sketchPaneEl.appendChild(captionEl)
-
-  let canvasContainerEl = document.createElement('div')
-  canvasContainerEl.id = 'canvas-container'
-  canvasContainerEl.style.display = 'none'
-  sketchPaneEl.appendChild(canvasContainerEl)
-
-  let mainCanvasEl = document.createElement('canvas')
-  mainCanvasEl.id = 'main-canvas'
-  mainCanvasEl.style.display = 'none'
-  canvasContainerEl.appendChild(mainCanvasEl)
 
 
 
@@ -590,8 +581,6 @@ let saveImageFile = ()=> {
     },100,currentBoard, boardPath, board)
   }
 }
-
-// sketchPane.on('markDirty', markImageFileDirty)
 
 let deleteSingleBoard = (index) => {
   if (boardData.boards.length > 1) {
