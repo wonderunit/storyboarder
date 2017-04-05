@@ -71,7 +71,7 @@ menu.setMenu()
 // Loading / Init Operations
 ///////////////////////////////////////////////////////////////
 
-ipcRenderer.on('load', (event, args)=>{
+const load = (event, args) => {
   if (args[1]) {
     // there is scriptData - the window opening is a script type
     scriptData = args[1]
@@ -103,7 +103,8 @@ ipcRenderer.on('load', (event, args)=>{
 
   loadBoardUI()
   updateBoardUI()
-})
+}
+ipcRenderer.on('load', load)
 
 
 let addToLineMileage = (value)=> {
