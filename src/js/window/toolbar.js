@@ -157,49 +157,51 @@ class Toolbar extends EventEmitter {
     )
   }
 
-  // TODO
-  transformCurrentColor (state, color) {
-    return {}
-    return Object.assign(
-      state,
-      {
-        brushes: Object.assign(
-          state.brushes,
-          Object.assign(
-            [state.brush],
+  changeCurrentColor (color) {
+    this.setState(
+      Object.assign(
+        this.state,
+        {
+          brushes: Object.assign(
+            this.state.brushes,
             {
-              color: color
+              [this.state.brush]: Object.assign(
+                this.state.brushes[this.state.brush],
+                {
+                  color: this.state.brushes[this.state.brush].color = color
+                }
+              )
             }
           )
-        )
-      }
+        }
+      )
     )
   }
 
-  // TODO
-  transformPaletteState (state, brush, index, color) {
-    return {}
+  changePaletteColor (brush, index, color) {
     // NOTE ignores passed brush and uses current brush,
     //      in case we changed since we invoked the color picker
-
-    // make a copy
-    let newPalette = state.brushes[state.brush].palette.concat()
-    // modify
-    newPalette[index] = color
-
-    return Object.assign(
-      state,
-      {
-        brushes: Object.assign(
-          state.brushes,
-          Object.assign(
-            state.brushes[state.brush],
+    
+    const palette = this.state.brushes[this.state.brush].palette.concat()
+    palette[index] = color
+    
+    this.setState(
+      Object.assign(
+        this.state,
+        {
+          brushes: Object.assign(
+            this.state.brushes,
             {
-              palette: newPalette
+              [this.state.brush]: Object.assign(
+                this.state.brushes[this.state.brush],
+                {
+                  palette
+                }
+              )
             }
           )
-        )
-      }
+        }
+      )
     )
   }
 

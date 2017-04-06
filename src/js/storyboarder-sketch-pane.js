@@ -227,6 +227,12 @@ class StoryboarderSketchPane extends EventEmitter {
     this.sketchPane.setTool(this.brush)
     this.updatePointer()
   }
+  
+  setBrushColor (color) {
+    this.brush.setColor(color.toCSS())
+    this.sketchPane.setTool(this.brush)
+    this.updatePointer()
+  }
 
   getLayerCanvasByName (name) {
     const names = ['reference', 'painting', 'onion', 'notes', 'guides']

@@ -121,12 +121,6 @@ let addToLineMileage = (value)=> {
   renderMetaData()
 }
 
-const colorToScaledRGB = color => [
-  Math.floor(color.red * 255),
-  Math.floor(color.green * 255),
-  Math.floor(color.blue * 255)
-]
-
 let loadBoardUI = ()=> {
   let aspectRatio = boardData.aspectRatio
 
@@ -428,21 +422,12 @@ let loadBoardUI = ()=> {
   // Current Color, Palette, and Color Picker connections
   //
   colorPicker = new ColorPicker()
-  // sketchPane.on('setBrushColor', colorAsScaledRGB => {
-  //   toolbar.setState({ currentBrushColor: Color(colorAsScaledRGB) })
-  //   // TODO could prevent reflecting current brush color
-  //   //      if color picker is open for a palette swatch ?
-  //   colorPicker.setState({ color: Color(colorAsScaledRGB).toCSS() })
-  // })
-  // sketchPane.on('setBrushSize', brushSize => {
-  //   toolbar.setState(toolbar.transformBrushSize(brushSize))
-  // })
   const setCurrentColor = color => {
-    // sketchPane.setBrushColor(colorToScaledRGB(color))
-    toolbar.setState(toolbar.transformCurrentColor(color))
+    storyboarderSketchPane.setBrushColor(color)
+    toolbar.changeCurrentColor(color)
   }
   const setPaletteColor = (brush, index, color) => {
-    toolbar.setState(toolbar.transformPaletteState(brush, index, color))
+    toolbar.changePaletteColor(brush, index, color)
     colorPicker.setState({ color: color.toCSS() })
   }
   toolbar.on('current-color-picker', color => {
@@ -464,7 +449,8 @@ let loadBoardUI = ()=> {
     colorPicker.addListener('color', setPaletteColor.bind(this, brush, index))
   })
   toolbar.on('current-set-color', color => {
-    // sketchPane.setBrushColor(colorToScaledRGB(color))
+    storyboarderSketchPane.setBrushColor(color)
+    toolbar.changeCurrentColor(color)
   })
 
   guides = new Guides(storyboarderSketchPane.getLayerCanvasByName('guides'))
