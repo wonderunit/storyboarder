@@ -470,6 +470,7 @@ class SketchPane extends EventEmitter {
   }
 
   _up(x, y, pressure) {
+    this.emit('onbeforeup')
     this.isDrawing = false
     this.isStabilizing = false
     let dirtyRect

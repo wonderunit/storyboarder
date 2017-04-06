@@ -141,7 +141,17 @@ let loadBoardUI = ()=> {
   window.addEventListener('resize', () => {
     storyboarderSketchPane.resize()
   })
-  storyboarderSketchPane.on('markDirty', markImageFileDirty)
+  storyboarderSketchPane.on('addToUndoStack', () => {
+    storeUndoStateForImage(true)
+  })
+  storyboarderSketchPane.on('markDirty', () => {
+    storeUndoStateForImage(false)
+    markImageFileDirty()
+  })
+  // TODO
+  // sketchPane.on('lineMileage', (value)=>{
+  //   addToLineMileage(value)
+  // })
 
 
 
@@ -153,13 +163,6 @@ let loadBoardUI = ()=> {
   sketchPaneEl.appendChild(captionEl)
 
 
-
-  // sketchPane.on('lineMileage', (value)=>{
-  //   addToLineMileage(value)
-  // })
-  // sketchPane.on('addToUndoStack', (isBefore, layerId, imageBitmap) => {
-  //   storeUndoStateForImage(isBefore, layerId, imageBitmap)
-  // })
 
   for (var item of document.querySelectorAll('#board-metadata input, textarea')) {
     item.addEventListener('focus', (e)=> {
@@ -2108,9 +2111,15 @@ const applyUndoStateForScene = (state) => {
   updateBoardUI()
 }
 
-const storeUndoStateForImage = (isBefore, layerId, imageBitmap) => {
+const storeUndoStateForImage = (isBefore) => {
   let scene = getSceneObjectByIndex(currentScene)
   let sceneId = scene && scene.scene_id
+
+  // backup to an offscreen canvas
+  // TODO memory management. dispose unused canvases.
+  let layerId = storyboarderSketchPane.sketchPane.getCurrentLayerIndex()
+  let imageBitmap = storyboarderSketchPane.getSnapshotAsCanvas(layerId)
+
   undoStack.addImageData(isBefore, { sceneId, imageId: currentBoard, layerId, imageBitmap })
 }
 
@@ -2130,8 +2139,7 @@ const applyUndoStateForImage = (state) => {
   let step = (currentBoard != state.imageId) ? gotoBoard : () => Promise.resolve()
 
   step(state.imageId).then(() => {
-    // find layer context
-    var layerContext = document.getElementById(state.layerId).getContext('2d')
+    let layerContext = storyboarderSketchPane.sketchPane.getLayerCanvas(state.layerId).getContext('2d')
 
     // draw imageBitmap into it
     layerContext.globalAlpha = 1

@@ -38,6 +38,7 @@ class StoryboarderSketchPane extends EventEmitter {
     // sketchpane
     this.sketchPane = new SketchPane()
     this.sketchPane.setCanvasSize(...this.canvasSize)
+    this.sketchPane.on('onbeforeup', () => this.emit('addToUndoStack'))
     this.sketchPane.on('onup', () => this.emit('markDirty'))
 
     this.sketchPane.addLayer(0) // reference
@@ -202,11 +203,13 @@ class StoryboarderSketchPane extends EventEmitter {
   //
 
   clearLayer () {
+    this.emit('addToUndoStack')
     this.sketchPane.clearLayer(this.sketchPane.getCurrentLayerIndex())
     this.emit('markDirty')
   }
 
   fillLayer (fillColor) {
+    this.emit('addToUndoStack')
     this.sketchPane.fillLayer(fillColor, this.sketchPane.getCurrentLayerIndex())
     this.emit('markDirty')
   }
@@ -237,6 +240,12 @@ class StoryboarderSketchPane extends EventEmitter {
   getLayerCanvasByName (name) {
     const names = ['reference', 'painting', 'onion', 'notes', 'guides']
     return this.sketchPane.getLayerCanvas(names.indexOf(name))
+  }
+  
+  getSnapshotAsCanvas (index) {
+    const el = this.sketchPane.createLayerThumbnail(index)
+    el.id = Math.floor(Math.random()*16777215).toString(16) // for debugging
+    return el
   }
 }
 
