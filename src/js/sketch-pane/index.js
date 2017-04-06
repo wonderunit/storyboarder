@@ -343,6 +343,19 @@ class SketchPane extends EventEmitter {
     context.putImageData(imageData, 0, 0)
   }
 
+  flipLayer (index) {
+    let canvas = this.getLayerCanvas(index)
+    let context = this.getLayerContext(index)
+    context.globalAlpha = 1
+    context.globalCompositeOperation = 'copy'
+
+    context.translate(context.canvas.width, 0)
+    context.scale(-1, 1)
+
+    context.drawImage(context.canvas, 0, 0)
+    context.setTransform(1, 0, 0, 1, 0, 0)
+  }
+
   getLayerOpacity (index) {
     index = (index == null) ? this.layerIndex : index
     let opacity = parseFloat(this.layers[index].style.getPropertyValue('opacity'))

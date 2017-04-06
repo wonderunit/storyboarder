@@ -2215,7 +2215,7 @@ ipcRenderer.on('brushSize', (e, direction) => {
 
 ipcRenderer.on('flipBoard', (e, arg)=> {
   if (!textInputMode) {
-    // sketchPane.flipBoard()
+    storyboarderSketchPane.flipLayers()
   }
 })
 

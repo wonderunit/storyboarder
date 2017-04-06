@@ -214,6 +214,14 @@ class StoryboarderSketchPane extends EventEmitter {
     this.emit('markDirty')
   }
 
+  flipLayers () {
+    this.emit('addToUndoStack')
+    // HACK operates on all layers
+    for (var i = 0; i < this.sketchPane.layers.length; ++i) {
+      this.sketchPane.flipLayer(i)
+    }
+    this.emit('markDirty')
+  }
   setBrushTool (kind, options) {
     (kind === 'eraser')
       ? this.sketchPane.setPaintingKnockout(true)
@@ -241,7 +249,7 @@ class StoryboarderSketchPane extends EventEmitter {
     const names = ['reference', 'painting', 'onion', 'notes', 'guides']
     return this.sketchPane.getLayerCanvas(names.indexOf(name))
   }
-  
+
   getSnapshotAsCanvas (index) {
     const el = this.sketchPane.createLayerThumbnail(index)
     el.id = Math.floor(Math.random()*16777215).toString(16) // for debugging
