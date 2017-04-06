@@ -1676,7 +1676,7 @@ let cycleViewMode = ()=> {
         break
     }
   }
-  // sketchPane.sizeCanvas()
+  storyboarderSketchPane.resize()
   renderViewMode()
 }
 
