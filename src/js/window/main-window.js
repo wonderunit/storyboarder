@@ -327,8 +327,7 @@ let loadBoardUI = ()=> {
   })
 
   toolbar.on('brush', (kind, options) => {
-    console.log('toolbar says setBrushTool', kind, options)
-    storyboarderSketchPane.setBrushTool(kind)
+    storyboarderSketchPane.setBrushTool(kind, options)
   })
 
   toolbar.on('trash', () => {
@@ -396,9 +395,14 @@ let loadBoardUI = ()=> {
   })
 
   toolbar.setState({ brush: 'pencil' })
-  
+
+
+
   tooltips.init()
-  
+
+
+
+
   transport = new Transport()
   transport.on('previousScene', () => {
     previousScene()
@@ -2205,9 +2209,13 @@ ipcRenderer.on('clear', (e, arg)=> {
   }
 })
 
-ipcRenderer.on('brushSize', (e, arg)=> {
+ipcRenderer.on('brushSize', (e, direction) => {
   if (!textInputMode) {
-    // sketchPane.changeBrushSize(arg)
+    if (direction > 0) {
+      toolbar.changeBrushSize(1)
+    } else {
+      toolbar.changeBrushSize(-1)
+    }
   }
 })
 

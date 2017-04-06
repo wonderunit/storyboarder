@@ -66,7 +66,6 @@ class StoryboarderSketchPane extends EventEmitter {
     this.brushPointerContainer.style.pointerEvents = 'none'
 
     this.resize()
-    this.setBrushTool(null)
   }
 
   canvasPointerDown (e) {
@@ -212,64 +211,18 @@ class StoryboarderSketchPane extends EventEmitter {
     this.emit('markDirty')
   }
 
-  setBrushTool (kind) {
-    if (kind === 'eraser') {
-      // TODO set size?
-      this.sketchPane.setPaintingKnockout(true)
-      this.updatePointer()
-      return
-    } else {
-      this.sketchPane.setPaintingKnockout(false)
-    }
+  setBrushTool (kind, options) {
+    (kind === 'eraser')
+      ? this.sketchPane.setPaintingKnockout(true)
+      : this.sketchPane.setPaintingKnockout(false)
 
     this.brush = new Brush()
-
-    switch (kind) {
-      case 'brush':
-        this.brush.setSize(100)
-        this.brush.setColor('#ccf')
-        this.brush.setSpacing(0.02)
-        this.brush.setFlow(0.7)
-        this.brush.setHardness(0)
-        this.sketchPane.setPaintingOpacity(0.2)
-        break
-
-      case 'note-pen':
-        this.brush.setSize(10)
-        this.brush.setColor('#f00')
-        this.brush.setSpacing(0.02)
-        this.brush.setFlow(0.9)
-        this.brush.setHardness(0.9)
-        this.sketchPane.setPaintingOpacity(0.8)
-        break
-
-      case 'light-pencil':
-        this.brush.setSize(20)
-        this.brush.setColor('#ccf')
-        this.brush.setSpacing(0.12)
-        this.brush.setFlow(0.4)
-        this.brush.setHardness(0.8)
-        this.sketchPane.setPaintingOpacity(0.3)
-        break
-
-      case 'pencil':
-        this.brush.setSize(7)
-        this.brush.setColor('#000')
-        this.brush.setSpacing(.25)
-        this.brush.setFlow(0.4)
-        this.brush.setHardness(0.5)
-        this.sketchPane.setPaintingOpacity(0.4)
-        break
-
-      // pen
-      default:
-        this.brush.setSize(20)
-        this.brush.setColor('#000')
-        this.brush.setSpacing(0.02)
-        this.brush.setFlow(1)
-        this.brush.setHardness(0.7)
-        this.sketchPane.setPaintingOpacity(0.9)
-    }
+    this.brush.setSize(options.size)
+    this.brush.setColor(options.color.toCSS())
+    this.brush.setSpacing(options.spacing)
+    this.brush.setFlow(options.flow)
+    this.brush.setHardness(options.hardness)
+    this.sketchPane.setPaintingOpacity(options.opacity)
 
     this.sketchPane.setTool(this.brush)
     this.updatePointer()
