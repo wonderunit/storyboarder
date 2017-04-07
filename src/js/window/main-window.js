@@ -428,6 +428,7 @@ let loadBoardUI = ()=> {
   const setCurrentColor = color => {
     storyboarderSketchPane.setBrushColor(color)
     toolbar.changeCurrentColor(color)
+    colorPicker.setState({ color: color.toCSS() })
   }
   const setPaletteColor = (brush, index, color) => {
     toolbar.changePaletteColor(brush, index, color)

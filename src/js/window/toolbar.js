@@ -114,22 +114,12 @@ class Toolbar extends EventEmitter {
     this.onBrushSizePointerDown = this.onBrushSizePointerDown.bind(this)
 
     this.attachedCallback(this.el)
-
-    // this.setState({ brush: BRUSH_PENCIL })
   }
 
   setState (newState) {
-    // TODO track actual change, not just presence of key
-    //      track only size change vs. entire brush change
-    let brushChanged
-    if (newState.brush ||
-        newState.brushes) {
-      brushChanged = true
-    }
-
     this.state = Object.assign(this.state, newState)
-
-    if (brushChanged) {
+    if (newState.brush) {
+      // the brush changed
       this.emit('brush', this.state.brush, this.getBrushOptions(this.state))
     }
 
@@ -137,72 +127,24 @@ class Toolbar extends EventEmitter {
   }
 
   changeBrushSize (direction) {
-    this.setState(
-      Object.assign(
-        this.state,
-        {
-          brushes: Object.assign(
-            this.state.brushes,
-            {
-              [this.state.brush]: Object.assign(
-                this.state.brushes[this.state.brush],
-                {
-                  size: this.state.brushes[this.state.brush].size += direction // TODO clamp
-                }
-              )
-            }
-          )
-        }
-      )
-    )
+    this.state.brushes[this.state.brush].size += direction // TODO clamp
+    // TODO only emit size change
+    this.emit('brush', this.state.brush, this.getBrushOptions(this.state))
+    this.render()
   }
 
   changeCurrentColor (color) {
-    this.setState(
-      Object.assign(
-        this.state,
-        {
-          brushes: Object.assign(
-            this.state.brushes,
-            {
-              [this.state.brush]: Object.assign(
-                this.state.brushes[this.state.brush],
-                {
-                  color: this.state.brushes[this.state.brush].color = color
-                }
-              )
-            }
-          )
-        }
-      )
-    )
+    this.state.brushes[this.state.brush].color = color
+    // TODO only emit color change
+    this.emit('brush', this.state.brush, this.getBrushOptions(this.state))
+    this.render()
   }
 
   changePaletteColor (brush, index, color) {
     // NOTE ignores passed brush and uses current brush,
     //      in case we changed since we invoked the color picker
-    
-    const palette = this.state.brushes[this.state.brush].palette.concat()
-    palette[index] = color
-    
-    this.setState(
-      Object.assign(
-        this.state,
-        {
-          brushes: Object.assign(
-            this.state.brushes,
-            {
-              [this.state.brush]: Object.assign(
-                this.state.brushes[this.state.brush],
-                {
-                  palette
-                }
-              )
-            }
-          )
-        }
-      )
-    )
+    this.state.brushes[this.state.brush].palette[index] = color
+    this.render()
   }
 
   attachedCallback () {
