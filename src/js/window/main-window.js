@@ -326,6 +326,12 @@ let loadBoardUI = ()=> {
   toolbar.on('brush', (kind, options) => {
     storyboarderSketchPane.setBrushTool(kind, options)
   })
+  toolbar.on('brush:size', size => {
+    storyboarderSketchPane.setBrushSize(size)
+  })
+  toolbar.on('brush:color', color => {
+    storyboarderSketchPane.setBrushColor(color)
+  })
 
   toolbar.on('trash', () => {
     storyboarderSketchPane.clearLayer()

@@ -127,16 +127,25 @@ class Toolbar extends EventEmitter {
   }
 
   changeBrushSize (direction) {
-    this.state.brushes[this.state.brush].size += direction // TODO clamp
-    // TODO only emit size change
-    this.emit('brush', this.state.brush, this.getBrushOptions(this.state))
+    let currSize = this.state.brushes[this.state.brush].size
+
+    if (currSize < 5) {
+      currSize += direction
+    } else {
+      currSize *= direction > 0 ? 1.2 : 0.8
+    }
+    if (currSize < 1) currSize = 1
+    if (currSize > 256) currSize = 256
+
+    this.state.brushes[this.state.brush].size = currSize
+
+    this.emit('brush:size', this.getBrushOptions().size)
     this.render()
   }
 
   changeCurrentColor (color) {
     this.state.brushes[this.state.brush].color = color
-    // TODO only emit color change
-    this.emit('brush', this.state.brush, this.getBrushOptions(this.state))
+    this.emit('brush:color', this.getBrushOptions().color)
     this.render()
   }
 
@@ -177,7 +186,17 @@ class Toolbar extends EventEmitter {
   }
   
   getBrushOptions () {
-    return this.state.brushes[this.state.brush]
+    let curr = this.state.brushes[this.state.brush]
+    return {
+      kind: curr.kind,
+      size: curr.size,
+      spacing: curr.spacing,
+      flow: curr.flow,
+      hardness: curr.hardness,
+      opacity: curr.opacity,
+      color: curr.color.clone(),
+      palette: curr.palette.map(color => color.clone())
+    }
   }
 
   onButtonDown (event) {
@@ -410,8 +429,8 @@ class Toolbar extends EventEmitter {
     }
 
     const brushSizeEl = this.el.querySelector('.toolbar-brush-size-controls_val')
-    const brushSizeValue = this.state.brushes[this.state.brush].size
-    brushSizeEl.innerHTML = (Math.round(brushSizeValue * 10) / 10).toString()
+    const brushSizeValue = this.getBrushOptions().size
+    brushSizeEl.innerHTML = Math.round(brushSizeValue)
   }
   
   onBrushSizePointerDown (event) {
