@@ -31,6 +31,8 @@ class StoryboarderSketchPane extends EventEmitter {
 
     this.el = el
     this.canvasSize = canvasSize
+    this.containerSize = null
+    this.scaleFactor = null
 
     this.containerEl = document.createElement('div')
     this.containerEl.classList.add('container')
@@ -114,13 +116,14 @@ class StoryboarderSketchPane extends EventEmitter {
     // TODO why are we creating a new pointer every time?
     let brushPointer = this.sketchPane.createBrushPointer(
       image, 
-      this.brush.getSize(), 
+      this.brush.getSize() * this.scaleFactor,
       this.brush.getAngle(),
       threshold,
       true)
     brushPointer.style.display = 'block'
     brushPointer.style.setProperty('margin-left', '-' + (brushPointer.width * 0.5) + 'px')
     brushPointer.style.setProperty('margin-top', '-' + (brushPointer.height * 0.5) + 'px')
+
     this.brushPointerContainer.innerHTML = ''
     this.brushPointerContainer.appendChild(brushPointer)
   }
@@ -155,6 +158,7 @@ class StoryboarderSketchPane extends EventEmitter {
     let elSize = [rect.width - padding, rect.height - padding]
 
     this.containerSize = this.fit(elSize, this.canvasSize).map(Math.floor)
+    this.scaleFactor = this.containerSize[1] / this.canvasSize[1] // based on height
   }
 
   // TODO should this container scaling be a SketchPane feature?
@@ -183,7 +187,7 @@ class StoryboarderSketchPane extends EventEmitter {
   resize () {
     this.updateContainerSize()
     this.renderContainerSize()
-    
+
     if (this.brush) {
       this.updatePointer()
     }
