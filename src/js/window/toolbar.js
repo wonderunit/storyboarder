@@ -24,9 +24,9 @@ const initialState = {
       flow: 0.4,
       hardness: 0.5,
       opacity: 0.4,
-      color: Color('#222222'),
+      color: Color('#121212'),
       palette: [
-        Color('#ff0000'), Color('#00ff00'), Color('#0000ff')
+        Color('#373737'), Color('#223131'), Color('#121212')
       ]
     },
     [BRUSH_LIGHT_PENCIL]: {
@@ -36,9 +36,9 @@ const initialState = {
       flow: 0.4,
       hardness: 0.8,
       opacity: 0.3,
-      color: Color('#ddddff'),
+      color: Color('#90CBF9'),
       palette: [
-        Color('#ff40ff'), Color('#00ff00'), Color('#0000ff')
+        Color('#CFCFCF'), Color('#9FA8DA'), Color('#90CBF9')
       ]
     },
     [BRUSH_PEN]: {
@@ -50,7 +50,7 @@ const initialState = {
       opacity: 0.9,
       color: Color('#000000'),
       palette: [
-        Color('#ff7044'), Color('#00ff00'), Color('#0000ff')
+        Color('#373737'), Color('#223131'), Color('#000000')
       ]
     },
     [BRUSH_BRUSH]: {
@@ -60,9 +60,9 @@ const initialState = {
       flow: 0.7,
       hardness: 0,
       opacity: 0.2,
-      color: Color('#000064'),
+      color: Color('#9E9E9E'),
       palette: [
-        Color('#ffa099'), Color('#00ff00'), Color('#0000ff')
+        Color('#4DABF5'), Color('#607D8B'), Color('#9E9E9E')
       ]
     },
     [BRUSH_NOTE_PEN]: {
@@ -73,9 +73,9 @@ const initialState = {
       flow: 0.9,
       hardness: 0.9,
       opacity: 0.8,
-      color: Color('#ff0000'),
+      color: Color('#F44336'),
       palette: [
-        Color('#ff0000'), Color('#ff69b4'), Color('#821b4e')
+        Color('#4CAF50'), Color('#FF9800'), Color('#F44336')
       ]
     },
     [BRUSH_ERASER]: {
