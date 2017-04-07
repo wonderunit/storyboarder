@@ -126,16 +126,23 @@ class Toolbar extends EventEmitter {
     this.render()
   }
 
-  changeBrushSize (direction) {
+  changeBrushSize (direction, fine = false) {
+    let min = 1
+    let max = 256
     let currSize = this.state.brushes[this.state.brush].size
 
-    if (currSize < 5) {
+    if (fine) {
       currSize += direction
     } else {
-      currSize *= direction > 0 ? 1.2 : 0.8
+      if (currSize < 5) {
+        currSize += direction
+      } else {
+        currSize *= direction > 0 ? 1.2 : 0.8
+      }
     }
-    if (currSize < 1) currSize = 1
-    if (currSize > 256) currSize = 256
+
+    if (currSize < min) currSize = min
+    if (currSize > max) currSize = max
 
     this.state.brushes[this.state.brush].size = currSize
 
@@ -436,7 +443,7 @@ class Toolbar extends EventEmitter {
   onBrushSizePointerDown (event) {
     const pos = event.layerX / event.target.getBoundingClientRect().width
     const direction = pos > 0.5 ? 1 : -1
-    this.changeBrushSize(direction)
+    this.changeBrushSize(direction, true)
   }
 }
 
