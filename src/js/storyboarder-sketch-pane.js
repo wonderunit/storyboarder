@@ -53,7 +53,7 @@ class StoryboarderSketchPane extends EventEmitter {
     this.sketchPane.setToolStabilizeWeight(0.2)
 
     this.sketchPaneDOMElement = this.sketchPane.getDOMElement()
-    this.sketchPaneDOMElement.addEventListener('pointerdown', this.canvasPointerDown)
+    this.el.addEventListener('pointerdown', this.canvasPointerDown)
     this.sketchPaneDOMElement.addEventListener('pointerover', this.canvasPointerOver)
     this.sketchPaneDOMElement.addEventListener('pointerout', this.canvasPointerOut)
 
