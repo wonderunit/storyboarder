@@ -148,37 +148,41 @@ class StoryboarderSketchPane extends EventEmitter {
       : [frameSize[0], imageSize[1] * frameSize[0] / imageSize[0]]
   }
 
-  resize () {
+  updateContainerSize () {
     let padding = 100
+
     let rect = this.el.getBoundingClientRect()
-    let size = this.fit([rect.width - padding, rect.height - padding], this.canvasSize)
-    size = size.map(Math.floor)
-    this.containerSize = size
+    let elSize = [rect.width - padding, rect.height - padding]
 
-    this.containerEl.style.width = size[0] + 'px'
-    this.containerEl.style.height = size[1] + 'px'
+    this.containerSize = this.fit(elSize, this.canvasSize).map(Math.floor)
+  }
 
-    // TODO should this container scaling be a SketchPane feature?
+  // TODO should this container scaling be a SketchPane feature?
+  renderContainerSize () {
+    this.containerEl.style.width = this.containerSize[0] + 'px'
+    this.containerEl.style.height = this.containerSize[1] + 'px'
 
     let sketchPaneDOMElement = this.sketchPane.getDOMElement()
-    sketchPaneDOMElement.style.width = size[0] + 'px'
-    sketchPaneDOMElement.style.height = size[1] + 'px'
+    sketchPaneDOMElement.style.width = this.containerSize[0] + 'px'
+    sketchPaneDOMElement.style.height = this.containerSize[1] + 'px'
 
-    // this.sketchPane.size.width = width = Math.floor(width)
-    // this.sketchPane.size.height = height = Math.floor(height)
+    this.sketchPane.paintingCanvas.style.width = this.containerSize[0] + 'px'
+    this.sketchPane.paintingCanvas.style.height = this.containerSize[1] + 'px'
 
-    this.sketchPane.paintingCanvas.style.width = size[0] + 'px'
-    this.sketchPane.paintingCanvas.style.height = size[1] + 'px'
-
-    this.sketchPane.dirtyRectDisplay.style.width = size[0] + 'px'
-    this.sketchPane.dirtyRectDisplay.style.height = size[1] + 'px'
+    this.sketchPane.dirtyRectDisplay.style.width = this.containerSize[0] + 'px'
+    this.sketchPane.dirtyRectDisplay.style.height = this.containerSize[1] + 'px'
 
     let layers = this.sketchPane.getLayers()
     for (let i = 0; i < layers.length; ++i) {
       let canvas = this.sketchPane.getLayerCanvas(i)
-      canvas.style.width = size[0] + 'px'
-      canvas.style.height = size[1] + 'px'
+      canvas.style.width = this.containerSize[0] + 'px'
+      canvas.style.height = this.containerSize[1] + 'px'
     }
+  }
+
+  resize () {
+    this.updateContainerSize()
+    this.renderContainerSize()
     
     if (this.brush) {
       this.updatePointer()
