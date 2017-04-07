@@ -2157,28 +2157,28 @@ ipcRenderer.on('setTool', (e, arg)=> {
     switch(arg) {
       case 'lightPencil':
         toolbar.setState({ brush: 'light-pencil' })
-        toolbar.emit('brush', 'light-pencil', toolbar.getBrushOptions(toolbar.state))
+        toolbar.emit('brush', 'light-pencil', toolbar.getBrushOptions())
         break
       case 'pencil':
         toolbar.setState({ brush: 'pencil' })
-        toolbar.emit('brush', 'pencil', toolbar.getBrushOptions(toolbar.state))
+        toolbar.emit('brush', 'pencil', toolbar.getBrushOptions())
         break
       case 'pen':
         toolbar.setState({ brush: 'pen' })
-        toolbar.emit('brush', 'pen', toolbar.getBrushOptions(toolbar.state))
+        toolbar.emit('brush', 'pen', toolbar.getBrushOptions())
         break
       case 'brush':
         toolbar.setState({ brush: 'brush' })
-        toolbar.emit('brush', 'brush', toolbar.getBrushOptions(toolbar.state))
+        toolbar.emit('brush', 'brush', toolbar.getBrushOptions())
         break
       case 'notePen':
         toolbar.setState({ brush: 'note-pen' })
-        toolbar.emit('brush', 'note-pen', toolbar.getBrushOptions(toolbar.state))
+        toolbar.emit('brush', 'note-pen', toolbar.getBrushOptions())
         break
       case 'eraser':
         toolbar.setState({ brush: 'eraser' })
         // just to set the size
-        toolbar.emit('brush', 'eraser', toolbar.getBrushOptions(toolbar.state))
+        toolbar.emit('brush', 'eraser', toolbar.getBrushOptions())
         break
     }
   }
