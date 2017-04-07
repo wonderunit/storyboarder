@@ -71,12 +71,6 @@ class StoryboarderSketchPane extends EventEmitter {
 
   canvasPointerDown (e) {
     let pointerPosition = this.getRelativePosition(e.clientX, e.clientY)
-    // if (pointerEventsNone)
-    //     canvasArea.style.setProperty('cursor', 'none');
-    if (e.shiftKey == true) {
-      this.sketchPane.setPaintingKnockout(true)
-    }
-    //
     this.sketchPane.down(pointerPosition.x, pointerPosition.y, e.pointerType === "pen" ? e.pressure : 1)
     document.addEventListener('pointermove', this.canvasPointerMove)
     document.addEventListener('pointerup', this.canvasPointerUp)
@@ -89,13 +83,7 @@ class StoryboarderSketchPane extends EventEmitter {
 
   canvasPointerUp (e) {
     let pointerPosition = this.getRelativePosition(e.clientX, e.clientY)
-    // if (pointerEventsNone)
-    //     canvasArea.style.setProperty('cursor', 'crosshair')
     this.sketchPane.up(pointerPosition.x, pointerPosition.y, e.pointerType === "pen" ? e.pressure : 1)
-    if (e.shiftKey == true) {
-      setTimeout(() => this.sketchPane.setPaintingKnockout(false), 30)
-    }
-    //     setTimeout(function() {croquis.setPaintingKnockout(selectEraserCheckbox.checked)}, 30);//timeout should be longer than 20 (knockoutTickInterval in Croquis)
     document.removeEventListener('pointermove', this.canvasPointerMove)
     document.removeEventListener('pointerup', this.canvasPointerUp)
   }
