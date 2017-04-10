@@ -261,6 +261,10 @@ class StoryboarderSketchPane extends EventEmitter {
     el.id = Math.floor(Math.random()*16777215).toString(16) // for debugging
     return el
   }
+  
+  getIsDrawing () {
+    return this.sketchPane.isDrawing
+  }
 }
 
 class LineMileageCounter {

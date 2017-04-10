@@ -2161,7 +2161,7 @@ const applyUndoStateForImage = (state) => {
 ipcRenderer.on('setTool', (e, arg)=> {
   if (!toolbar) return
 
-  if (!textInputMode) {
+  if (!textInputMode && !storyboarderSketchPane.getIsDrawing()) {
     console.log('setTool', arg)
     switch(arg) {
       case 'lightPencil':
