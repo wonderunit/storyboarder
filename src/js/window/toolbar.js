@@ -80,7 +80,7 @@ const initialState = {
     },
     [BRUSH_ERASER]: {
       kind: BRUSH_ERASER,
-      size: 4,
+      size: 30,
 
       spacing: 0.2,
       flow: 1.0,

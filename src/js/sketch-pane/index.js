@@ -474,9 +474,6 @@ class SketchPane extends EventEmitter {
   
   _move (x, y, pressure) {
     if (this.tool.move) {
-      if (this.paintingKnockout) {
-        pressure *= 20
-      }
       this.tool.move(x, y, pressure);
     }
     this.emit('onmove', {x: x, y: y, pressure: pressure})
