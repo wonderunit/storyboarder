@@ -1,18 +1,3 @@
-/*
-- Manages the SketchPane
-- Relays SketchPane events
-- Runs operations on SketchPane layer
-  - Duplicate
-  - Delete
-
-- Can load an image for a layer?
-
-- Manages: 
-  - Guides/Grid
-
-- Doesn't manage:
-  - Captions
-*/
 const EventEmitter = require('events').EventEmitter
 
 const SketchPane = require('./sketch-pane')
