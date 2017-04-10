@@ -21,7 +21,6 @@ const Brush = require('./sketch-pane/brush')
 class StoryboarderSketchPane extends EventEmitter {
   constructor (el, canvasSize) {
     super()
-
     this.canvasPointerUp = this.canvasPointerUp.bind(this)
     this.canvasPointerDown = this.canvasPointerDown.bind(this)
     this.canvasPointerMove = this.canvasPointerMove.bind(this)
@@ -33,6 +32,8 @@ class StoryboarderSketchPane extends EventEmitter {
     this.canvasSize = canvasSize
     this.containerSize = null
     this.scaleFactor = null
+
+    this.lineMileageCounter = new LineMileageCounter()
 
     this.containerEl = document.createElement('div')
     this.containerEl.classList.add('container')
@@ -73,6 +74,7 @@ class StoryboarderSketchPane extends EventEmitter {
 
   canvasPointerDown (e) {
     let pointerPosition = this.getRelativePosition(e.clientX, e.clientY)
+    this.lineMileageCounter.reset()
     this.sketchPane.down(pointerPosition.x, pointerPosition.y, e.pointerType === "pen" ? e.pressure : 1)
     document.addEventListener('pointermove', this.canvasPointerMove)
     document.addEventListener('pointerup', this.canvasPointerUp)
@@ -81,11 +83,13 @@ class StoryboarderSketchPane extends EventEmitter {
   canvasPointerMove (e) {
     let pointerPosition = this.getRelativePosition(e.clientX, e.clientY)
     this.sketchPane.move(pointerPosition.x, pointerPosition.y, e.pointerType === "pen" ? e.pressure : 1)
+    this.lineMileageCounter.add(pointerPosition)
   }
 
   canvasPointerUp (e) {
     let pointerPosition = this.getRelativePosition(e.clientX, e.clientY)
     this.sketchPane.up(pointerPosition.x, pointerPosition.y, e.pointerType === "pen" ? e.pressure : 1)
+    this.emit('lineMileage', this.lineMileageCounter.get())
     document.removeEventListener('pointermove', this.canvasPointerMove)
     document.removeEventListener('pointerup', this.canvasPointerUp)
   }
@@ -256,6 +260,37 @@ class StoryboarderSketchPane extends EventEmitter {
     const el = this.sketchPane.createLayerThumbnail(index)
     el.id = Math.floor(Math.random()*16777215).toString(16) // for debugging
     return el
+  }
+}
+
+class LineMileageCounter {
+  constructor () {
+    this.reset()
+  }
+
+  distance (p1, p2) {
+    return Math.hypot(p2.x - p1.x, p2.y - p1.y)
+  }
+
+  reset () {
+    this.value = 0
+    this.prev = null
+  }
+
+  add (curr) {
+    if (this.prev) {
+      this.value += this.diff(this.prev, curr)
+    }
+    this.prev = curr
+  }
+
+  get () {
+    return this.value
+  }
+
+  diff (prev, curr) {
+    let v = this.distance(prev, curr)
+    return isNaN(v) ? 0 : v
   }
 }
 

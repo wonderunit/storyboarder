@@ -110,7 +110,7 @@ const load = (event, args) => {
 ipcRenderer.on('load', load)
 
 
-let addToLineMileage = (value)=> {
+let addToLineMileage = value => {
   let board = boardData.boards[currentBoard]
   if (board.lineMileage) {
     board.lineMileage += value
@@ -148,10 +148,9 @@ let loadBoardUI = ()=> {
     storeUndoStateForImage(false)
     markImageFileDirty()
   })
-  // TODO
-  // sketchPane.on('lineMileage', (value)=>{
-  //   addToLineMileage(value)
-  // })
+  storyboarderSketchPane.on('lineMileage', value => {
+    addToLineMileage(value)
+  })
 
 
 
