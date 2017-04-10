@@ -386,7 +386,7 @@ let loadBoardUI = ()=> {
     guides.setState({ diagonals: value })
   })
   toolbar.on('onion', () => {
-    alert('Onion. This feature is not ready yet :(')
+    alert('Onion Skin. This feature is not ready yet :(')
   })
   toolbar.on('captions', () => {
     // HACK!!!
