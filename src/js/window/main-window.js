@@ -1697,6 +1697,10 @@ const renderViewMode = () => {
   )
 }
 
+const toggleCaptions = () => {
+  toolbar.toggleCaptions()
+}
+
 ipcRenderer.on('newBoard', (event, args)=>{
   if (!textInputMode) {
     if (args > 0) {
@@ -2249,6 +2253,12 @@ ipcRenderer.on('reorderBoardsRight', (event, args)=>{
 ipcRenderer.on('cycleViewMode', (event, args)=>{
   if (!textInputMode) {
     cycleViewMode()
+  }
+})
+
+ipcRenderer.on('toggleCaptions', (event, args)=>{
+  if (!textInputMode) {
+    toggleCaptions()
   }
 })
 

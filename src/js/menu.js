@@ -326,6 +326,13 @@ const template = [
         }
       },
       {
+        label: 'Toggle Captions',
+        accelerator: 'c',
+        click ( item, focusedWindow, event) {
+          ipcRenderer.send('toggleCaptions')
+        }
+      },
+      {
         type: 'separator'
       },
       {

@@ -493,6 +493,10 @@ ipcMain.on('cycleViewMode', (e, arg)=> {
   mainWindow.webContents.send('cycleViewMode', arg)
 })
 
+ipcMain.on('toggleCaptions', (e, arg)=> {
+  mainWindow.webContents.send('toggleCaptions', arg)
+})
+
 //////////////////
 // Welcome Window
 //////////////////

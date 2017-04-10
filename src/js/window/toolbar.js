@@ -317,8 +317,7 @@ class Toolbar extends EventEmitter {
         this.emit('onion')
         break
       case 'captions':
-        this.setState({ captions: !this.state.captions })
-        this.emit('captions')
+        this.toggleCaptions()
         break
 
       default:
@@ -444,6 +443,11 @@ class Toolbar extends EventEmitter {
     const pos = event.layerX / event.target.getBoundingClientRect().width
     const direction = pos > 0.5 ? 1 : -1
     this.changeBrushSize(direction, true)
+  }
+
+  toggleCaptions () {
+    this.setState({ captions: !this.state.captions })
+    this.emit('captions')
   }
 }
 
