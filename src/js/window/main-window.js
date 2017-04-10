@@ -9,7 +9,7 @@ const util = require('../utils/index.js')
 const sfx = require('../wonderunit-sound.js')
 const Color = require('color-js')
 
-const sketchPane = require('../sketchpane.js')
+const StoryboarderSketchPane = require('../storyboarder-sketch-pane.js')
 const undoStack = require('../undo-stack.js')
 
 const Toolbar = require('./toolbar.js')
@@ -20,7 +20,6 @@ const Transport = require('./transport.js')
 const notifications = require('./notifications.js')
 const NotificationData = require('../../data/messages.json')
 const Guides = require('./guides.js')
-
 
 let boardFilename
 let boardPath
@@ -66,13 +65,16 @@ let colorPicker
 let transport
 let guides
 
+let storyboarderSketchPane
+let paintingCanvas
+
 menu.setMenu()
 
 ///////////////////////////////////////////////////////////////
 // Loading / Init Operations
 ///////////////////////////////////////////////////////////////
 
-ipcRenderer.on('load', (event, args)=>{
+const load = (event, args) => {
   if (args[1]) {
     // there is scriptData - the window opening is a script type
     scriptData = args[1]
@@ -104,10 +106,11 @@ ipcRenderer.on('load', (event, args)=>{
 
   loadBoardUI()
   updateBoardUI()
-})
+}
+ipcRenderer.on('load', load)
 
 
-let addToLineMileage = (value)=> {
+let addToLineMileage = value => {
   let board = boardData.boards[currentBoard]
   if (board.lineMileage) {
     board.lineMileage += value
@@ -118,28 +121,47 @@ let addToLineMileage = (value)=> {
   renderMetaData()
 }
 
-const colorToScaledRGB = color => [
-  Math.floor(color.red * 255),
-  Math.floor(color.green * 255),
-  Math.floor(color.blue * 255)
-]
-
 let loadBoardUI = ()=> {
   let aspectRatio = boardData.aspectRatio
-  console.log(aspectRatio)
-  //let aspectRatio = 1.77777
-  var size = []
+
   if (aspectRatio >= 1) {
-    size = [(900*aspectRatio), 900]
+    size = [900 * aspectRatio, 900]
   } else {
-    size = [900, (900/aspectRatio)]
+    size = [900, 900 / aspectRatio]
   }
-  sketchPane.on('lineMileage', (value)=>{
+
+
+
+
+  storyboarderSketchPane = new StoryboarderSketchPane(
+    document.getElementById('storyboarder-sketch-pane'),
+    size
+  )
+  paintingCanvas = storyboarderSketchPane.getLayerCanvasByName('painting')
+  window.addEventListener('resize', () => {
+    storyboarderSketchPane.resize()
+  })
+  storyboarderSketchPane.on('addToUndoStack', () => {
+    storeUndoStateForImage(true)
+  })
+  storyboarderSketchPane.on('markDirty', () => {
+    storeUndoStateForImage(false)
+    markImageFileDirty()
+  })
+  storyboarderSketchPane.on('lineMileage', value => {
     addToLineMileage(value)
   })
-  sketchPane.on('addToUndoStack', (isBefore, layerId, imageBitmap) => {
-    storeUndoStateForImage(isBefore, layerId, imageBitmap)
-  })
+
+
+
+
+  // TEMP create placeholders so we can compile
+  let sketchPaneEl = document.querySelector('#storyboarder-sketch-pane')
+  let captionEl = document.createElement('div')
+  captionEl.id = 'canvas-caption'
+  sketchPaneEl.appendChild(captionEl)
+
+
 
   for (var item of document.querySelectorAll('#board-metadata input, textarea')) {
     item.addEventListener('focus', (e)=> {
@@ -301,46 +323,45 @@ let loadBoardUI = ()=> {
   })
 
   toolbar.on('brush', (kind, options) => {
-    if (kind == 'eraser') {
-      sketchPane.setBrushSize(options[0])
-    } else {
-      sketchPane.setBrush(...options)
-    }
+    storyboarderSketchPane.setBrushTool(kind, options)
   })
-  toolbar.on('eraser', () => {
-    sketchPane.setEraser()
+  toolbar.on('brush:size', size => {
+    storyboarderSketchPane.setBrushSize(size)
+  })
+  toolbar.on('brush:color', color => {
+    storyboarderSketchPane.setBrushColor(color)
   })
 
   toolbar.on('trash', () => {
-    sketchPane.clear()
+    storyboarderSketchPane.clearLayer()
   })
   toolbar.on('fill', color => {
-    sketchPane.fill(color.toCSS())
+    storyboarderSketchPane.fillLayer(color.toCSS())
   })
 
 
   toolbar.on('move', () => {
-    sketchPane.moveContents()
+    // sketchPane.moveContents()
   })
   toolbar.on('scale', () => {
-    sketchPane.scaleContents()
+    // sketchPane.scaleContents()
   })
   toolbar.on('cancelTransform', () => {
-    sketchPane.cancelTransform()
+    // sketchPane.cancelTransform()
   })
-  sketchPane.on('moveMode', enabled => {
-    if (enabled) {
-      toolbar.setState({ transformMode: 'move' })
-    }
-  })
-  sketchPane.on('scaleMode', enabled => {
-    if (enabled) {
-      toolbar.setState({ transformMode: 'scale' })
-    }
-  })
-  sketchPane.on('cancelTransform', () => {
-    toolbar.setState({ transformMode: null })
-  })
+  // sketchPane.on('moveMode', enabled => {
+  //   if (enabled) {
+  //     toolbar.setState({ transformMode: 'move' })
+  //   }
+  // })
+  // sketchPane.on('scaleMode', enabled => {
+  //   if (enabled) {
+  //     toolbar.setState({ transformMode: 'scale' })
+  //   }
+  // })
+  // sketchPane.on('cancelTransform', () => {
+  //   toolbar.setState({ transformMode: null })
+  // })
 
 
   toolbar.on('undo', () => {
@@ -365,7 +386,7 @@ let loadBoardUI = ()=> {
     guides.setState({ diagonals: value })
   })
   toolbar.on('onion', () => {
-    alert('Onion. This feature is not ready yet :(')
+    alert('Onion Skin. This feature is not ready yet :(')
   })
   toolbar.on('captions', () => {
     // HACK!!!
@@ -376,9 +397,14 @@ let loadBoardUI = ()=> {
   })
 
   toolbar.setState({ brush: 'pencil' })
-  
+
+
+
   tooltips.init()
-  
+
+
+
+
   transport = new Transport()
   transport.on('previousScene', () => {
     previousScene()
@@ -399,28 +425,18 @@ let loadBoardUI = ()=> {
   notifications.init(document.getElementById('notifications'))
   setupRandomizedNotifications()
 
-  sketchPane.init(document.getElementById('sketch-pane'), ['reference', 'main', 'notes'], size)
-
   //
   //
   // Current Color, Palette, and Color Picker connections
   //
   colorPicker = new ColorPicker()
-  sketchPane.on('setBrushColor', colorAsScaledRGB => {
-    toolbar.setState({ currentBrushColor: Color(colorAsScaledRGB) })
-    // TODO could prevent reflecting current brush color
-    //      if color picker is open for a palette swatch ?
-    colorPicker.setState({ color: Color(colorAsScaledRGB).toCSS() })
-  })
-  sketchPane.on('setBrushSize', brushSize => {
-    toolbar.setState(toolbar.transformBrushSize(brushSize))
-  })
   const setCurrentColor = color => {
-    sketchPane.setBrushColor(colorToScaledRGB(color))
-    toolbar.setState(toolbar.transformCurrentColor(color))
+    storyboarderSketchPane.setBrushColor(color)
+    toolbar.changeCurrentColor(color)
+    colorPicker.setState({ color: color.toCSS() })
   }
   const setPaletteColor = (brush, index, color) => {
-    toolbar.setState(toolbar.transformPaletteState(brush, index, color))
+    toolbar.changePaletteColor(brush, index, color)
     colorPicker.setState({ color: color.toCSS() })
   }
   toolbar.on('current-color-picker', color => {
@@ -442,12 +458,11 @@ let loadBoardUI = ()=> {
     colorPicker.addListener('color', setPaletteColor.bind(this, brush, index))
   })
   toolbar.on('current-set-color', color => {
-    sketchPane.setBrushColor(colorToScaledRGB(color))
+    storyboarderSketchPane.setBrushColor(color)
+    toolbar.changeCurrentColor(color)
   })
 
-  guides = new Guides()
-  guides.create(document.getElementById('guides'))
-  guides.attachTo(document.getElementById('canvas-container'))
+  guides = new Guides(storyboarderSketchPane.getLayerCanvasByName('guides'))
 
   let onUndoStackAction = (state) => {
     if (state.type == 'image') {
@@ -552,7 +567,7 @@ let markImageFileDirty = ()=> {
 let saveImageFile = ()=> {
   if (imageFileDirty) {
     clearTimeout(imageFileDirtyTimer)
-    let imageData = document.querySelector('#main-canvas').toDataURL('image/png')
+    let imageData = paintingCanvas.toDataURL('image/png')
     imageData = imageData.replace(/^data:image\/\w+;base64,/, '');
     let board = boardData.boards[currentBoard]
     let imageFilename = path.join(boardPath, 'images', board.url)
@@ -569,8 +584,6 @@ let saveImageFile = ()=> {
     },100,currentBoard, boardPath, board)
   }
 }
-
-sketchPane.on('markDirty', markImageFileDirty)
 
 let deleteSingleBoard = (index) => {
   if (boardData.boards.length > 1) {
@@ -620,7 +633,7 @@ let duplicateBoard = ()=> {
   storeUndoStateForScene(true)
   saveImageFile()
   // copy current board canvas
-  let imageData = document.querySelector('#main-canvas').getContext("2d").getImageData(0,0, document.querySelector('#main-canvas').width, document.querySelector('#main-canvas').height)
+  let imageData = paintingCanvas.getContext("2d").getImageData(0,0, paintingCanvas.width, paintingCanvas.height)
   // get current board clone it
   let board = JSON.parse(JSON.stringify(boardData.boards[currentBoard]))
   // set uid
@@ -635,7 +648,7 @@ let duplicateBoard = ()=> {
   // go to board
   gotoBoard(currentBoard+1)
   // draw contents to board
-  document.querySelector('#main-canvas').getContext("2d").putImageData(imageData, 0, 0)
+  paintingCanvas.getContext("2d").putImageData(imageData, 0, 0)
   markImageFileDirty()
   saveImageFile()
   renderThumbnailDrawer()
@@ -812,7 +825,7 @@ let updateSketchPaneBoard = () => {
     let board = boardData.boards[currentBoard]
     // try to load url
     let imageFilename = path.join(boardPath, 'images', board.url)
-    let context = document.querySelector('#main-canvas').getContext('2d')
+    let context = paintingCanvas.getContext('2d')
     context.globalAlpha = 1
 
     console.log('loading image')
@@ -1669,7 +1682,7 @@ let cycleViewMode = ()=> {
         break
     }
   }
-  sketchPane.sizeCanvas()
+  storyboarderSketchPane.resize()
   renderViewMode()
 }
 
@@ -1682,6 +1695,10 @@ const renderViewMode = () => {
     'with-scenes-visible',
     document.querySelector('#scenes').style.display == 'block'
   )
+}
+
+const toggleCaptions = () => {
+  toolbar.toggleCaptions()
 }
 
 ipcRenderer.on('newBoard', (event, args)=>{
@@ -1786,7 +1803,7 @@ let copyBoards = ()=> {
   // assumes that UI only allows a single selection when it is also the current board
   //
   let board = JSON.parse(JSON.stringify(boardData.boards[currentBoard]))
-  let canvasDiv = document.querySelector('#main-canvas')
+  let canvasDiv = paintingCanvas
   board.imageDataURL = canvasDiv.toDataURL()
   payload = {
     image: nativeImage.createFromDataURL(canvasDiv.toDataURL()),
@@ -1870,7 +1887,7 @@ let pasteBoards = () => {
       image.src = newImageSrc
     
       // render
-      document.querySelector('#main-canvas').getContext("2d").drawImage(image, 0, 0)
+      paintingCanvas.getContext("2d").drawImage(image, 0, 0)
       markImageFileDirty()
       saveImageFile()
       renderThumbnailDrawer()
@@ -2104,9 +2121,15 @@ const applyUndoStateForScene = (state) => {
   updateBoardUI()
 }
 
-const storeUndoStateForImage = (isBefore, layerId, imageBitmap) => {
+const storeUndoStateForImage = (isBefore) => {
   let scene = getSceneObjectByIndex(currentScene)
   let sceneId = scene && scene.scene_id
+
+  // backup to an offscreen canvas
+  // TODO memory management. dispose unused canvases.
+  let layerId = storyboarderSketchPane.sketchPane.getCurrentLayerIndex()
+  let imageBitmap = storyboarderSketchPane.getSnapshotAsCanvas(layerId)
+
   undoStack.addImageData(isBefore, { sceneId, imageId: currentBoard, layerId, imageBitmap })
 }
 
@@ -2126,8 +2149,7 @@ const applyUndoStateForImage = (state) => {
   let step = (currentBoard != state.imageId) ? gotoBoard : () => Promise.resolve()
 
   step(state.imageId).then(() => {
-    // find layer context
-    var layerContext = document.getElementById(state.layerId).getContext('2d')
+    let layerContext = storyboarderSketchPane.sketchPane.getLayerCanvas(state.layerId).getContext('2d')
 
     // draw imageBitmap into it
     layerContext.globalAlpha = 1
@@ -2139,68 +2161,68 @@ const applyUndoStateForImage = (state) => {
 ipcRenderer.on('setTool', (e, arg)=> {
   if (!toolbar) return
 
-  if (!textInputMode) {
+  if (!textInputMode && !storyboarderSketchPane.getIsDrawing()) {
     console.log('setTool', arg)
     switch(arg) {
       case 'lightPencil':
         toolbar.setState({ brush: 'light-pencil' })
-        toolbar.emit('brush', 'light-pencil', toolbar.getBrushOptions(toolbar.state))
+        toolbar.emit('brush', 'light-pencil', toolbar.getBrushOptions())
         break
       case 'pencil':
         toolbar.setState({ brush: 'pencil' })
-        toolbar.emit('brush', 'pencil', toolbar.getBrushOptions(toolbar.state))
+        toolbar.emit('brush', 'pencil', toolbar.getBrushOptions())
         break
       case 'pen':
         toolbar.setState({ brush: 'pen' })
-        toolbar.emit('brush', 'pen', toolbar.getBrushOptions(toolbar.state))
+        toolbar.emit('brush', 'pen', toolbar.getBrushOptions())
         break
       case 'brush':
         toolbar.setState({ brush: 'brush' })
-        toolbar.emit('brush', 'brush', toolbar.getBrushOptions(toolbar.state))
+        toolbar.emit('brush', 'brush', toolbar.getBrushOptions())
         break
       case 'notePen':
         toolbar.setState({ brush: 'note-pen' })
-        toolbar.emit('brush', 'note-pen', toolbar.getBrushOptions(toolbar.state))
+        toolbar.emit('brush', 'note-pen', toolbar.getBrushOptions())
         break
       case 'eraser':
         toolbar.setState({ brush: 'eraser' })
         // just to set the size
-        toolbar.emit('brush', 'eraser', toolbar.getBrushOptions(toolbar.state))
-        toolbar.emit('eraser')
+        toolbar.emit('brush', 'eraser', toolbar.getBrushOptions())
         break
     }
   }
-  // sketchPane.setBrush(4,[255,0,0],100,100,'notes')
 })
 
 ipcRenderer.on('useColor', (e, arg)=> {
   if (!toolbar) return
 
   if (!textInputMode) {
-    console.log('useColor', arg)
     if (toolbar.getCurrentPalette()) {
       toolbar.emit('current-set-color', toolbar.getCurrentPalette()[arg-1])
     }
   }
-  // sketchPane.setBrush(4,[255,0,0],100,100,'notes')
 })
 
 
 ipcRenderer.on('clear', (e, arg)=> {
   if (!textInputMode) {
-    sketchPane.clear()
+    storyboarderSketchPane.clearLayer()
   }
 })
 
-ipcRenderer.on('brushSize', (e, arg)=> {
+ipcRenderer.on('brushSize', (e, direction) => {
   if (!textInputMode) {
-    sketchPane.changeBrushSize(arg)
+    if (direction > 0) {
+      toolbar.changeBrushSize(1)
+    } else {
+      toolbar.changeBrushSize(-1)
+    }
   }
 })
 
 ipcRenderer.on('flipBoard', (e, arg)=> {
   if (!textInputMode) {
-    sketchPane.flipBoard()
+    storyboarderSketchPane.flipLayers()
   }
 })
 
@@ -2231,6 +2253,12 @@ ipcRenderer.on('reorderBoardsRight', (event, args)=>{
 ipcRenderer.on('cycleViewMode', (event, args)=>{
   if (!textInputMode) {
     cycleViewMode()
+  }
+})
+
+ipcRenderer.on('toggleCaptions', (event, args)=>{
+  if (!textInputMode) {
+    toggleCaptions()
   }
 })
 

@@ -1,156 +1,172 @@
 const EventEmitter = require('events').EventEmitter
-
 const Color = require('color-js')
 
-const defaultColors = {
-  'pencil':       Color('#121212'),
-  'light-pencil': Color('#90CBF9'),
-  'pen':          Color('#000000'),
-  'brush':        Color('#9E9E9E'),
-  'note-pen':     Color('#F44336')
-}
+const util = require('../utils/index.js')
 
-const defaultPalettes = {
-  'pencil':       [Color('#373737'), Color('#223131'), Color('#121212')],
-  'light-pencil': [Color('#CFCFCF'), Color('#9FA8DA'), Color('#90CBF9')],
-  'pen':          [Color('#373737'), Color('#223131'), Color('#000000')],
-  'brush':        [Color('#4DABF5'), Color('#607D8B'), Color('#9E9E9E')],
-  'note-pen':     [Color('#4CAF50'), Color('#FF9800'), Color('#F44336')]
-}
+const BRUSH_PENCIL = 'pencil'
+const BRUSH_LIGHT_PENCIL = 'light-pencil'
+const BRUSH_PEN = 'pen'
+const BRUSH_BRUSH = 'brush'
+const BRUSH_NOTE_PEN = 'note-pen'
+const BRUSH_ERASER = 'eraser'
 
-const defaultOptions = {
-  'pencil': {
-    size: 1.5,
-    opacity: 5,
-    layerOpacity: 70,
-    layer: 'main'
+const initialState = {
+  transformMode: null,
+  captions: true,
+
+  brush: null,
+
+  brushes: {
+    [BRUSH_PENCIL]: {
+      kind: BRUSH_PENCIL,
+      size: 7,
+      spacing: 0.25,
+      flow: 0.4,
+      hardness: 0.5,
+      opacity: 0.4,
+      color: Color('#121212'),
+      palette: [
+        Color('#373737'), Color('#223131'), Color('#121212')
+      ]
+    },
+    [BRUSH_LIGHT_PENCIL]: {
+      kind: BRUSH_LIGHT_PENCIL,
+      size: 20,
+      spacing: 0.12,
+      flow: 0.4,
+      hardness: 0.8,
+      opacity: 0.3,
+      color: Color('#90CBF9'),
+      palette: [
+        Color('#CFCFCF'), Color('#9FA8DA'), Color('#90CBF9')
+      ]
+    },
+    [BRUSH_PEN]: {
+      kind: BRUSH_PEN,
+      size: 20,
+      spacing: 0.02,
+      flow: 1,
+      hardness: 0.7,
+      opacity: 0.9,
+      color: Color('#000000'),
+      palette: [
+        Color('#373737'), Color('#223131'), Color('#000000')
+      ]
+    },
+    [BRUSH_BRUSH]: {
+      kind: BRUSH_BRUSH,
+      size: 100,
+      spacing: 0.2,
+      flow: 0.7,
+      hardness: 0,
+      opacity: 0.2,
+      color: Color('#9E9E9E'),
+      palette: [
+        Color('#4DABF5'), Color('#607D8B'), Color('#9E9E9E')
+      ]
+    },
+    [BRUSH_NOTE_PEN]: {
+      kind: BRUSH_NOTE_PEN,
+      size: 10,
+      color: '#f00',
+      spacing: 0.02,
+      flow: 0.9,
+      hardness: 0.9,
+      opacity: 0.8,
+      color: Color('#F44336'),
+      palette: [
+        Color('#4CAF50'), Color('#FF9800'), Color('#F44336')
+      ]
+    },
+    [BRUSH_ERASER]: {
+      kind: BRUSH_ERASER,
+      size: 30,
+
+      spacing: 0.2,
+      flow: 1.0,
+      hardness: 0,
+      opacity: 1.0,
+
+      color: Color('#ffffff'),
+      palette: [
+        Color('#ffffff'), Color('#ffffff'), Color('#ffffff')
+      ]
+    }
   },
-  'light-pencil': {
-    size: 2,
-    opacity: 5,
-    layerOpacity: 50,
-    layer: 'main'
-  },
-  'pen': {
-    size: 3,
-    opacity: 60,
-    layerOpacity: 80,
-    layer: 'main'
-  },
-  'brush': {
-    size: 20,
-    opacity: 2,
-    layerOpacity: 10,
-    layer: 'main'
-  },
-  'note-pen': {
-    size: 3,
-    opacity: 60,
-    layerOpacity: 80,
-    layer: 'main'
-  },
-  'eraser': {
-    size: 36
-  }
+
+  grid: false,
+  center: false,
+  thirds: false,
+  diagonals: false
 }
 
 class Toolbar extends EventEmitter {
   constructor (el) {
     super()
-    this.state = {}
+    this.state = initialState
     this.el = el
     this.swatchTimer = null
     this.swatchDelay = 2000
-    this.setState({
-      brush: 'pencil',
-      transformMode: null,
-      captions: true,
 
-      currentBrushColor: defaultColors['pencil'],
-      colorsByBrush: defaultColors,
-      palettesByBrush: defaultPalettes,
-      optionsByBrush: defaultOptions,
-
-      grid: false,
-      center: false,
-      thirds: false,
-      diagonals: false
-    })
     this.onButtonDown = this.onButtonDown.bind(this)
     this.onSwatchUp = this.onSwatchUp.bind(this)
     this.onSwatchDown = this.onSwatchDown.bind(this)
     this.onBrushSizePointerDown = this.onBrushSizePointerDown.bind(this)
-    this.attachedCallback(this.el)
 
-    // HACK
-    this.emit('brush', this.state.brush, this.getBrushOptions(this.state))
+    this.attachedCallback(this.el)
   }
 
   setState (newState) {
     this.state = Object.assign(this.state, newState)
+    if (newState.brush) {
+      // the brush changed
+      this.emit('brush', this.state.brush, this.getBrushOptions())
+    }
+
     this.render()
   }
 
-  multiplyBrushSize (state, multiplier = 1.2) {
-    return Object.assign(
-      state,
-      {
-        optionsByBrush: Object.assign(
-          state.optionsByBrush,
-          Object.assign(
-            state.optionsByBrush[state.brush],
-            {
-              size: state.optionsByBrush[state.brush].size *= multiplier
-            }
-          )
-        )
+  changeBrushSize (direction, fine = false) {
+    let min = 1
+    let max = 256
+    let currSize = this.state.brushes[this.state.brush].size
+
+    if (fine) {
+      currSize += direction
+    } else {
+      if (currSize < 5) {
+        currSize += direction
+      } else {
+        currSize *= direction > 0 ? 1.2 : 0.8
       }
-    )
-  }
-
-  transformBrushSize (brushSize) {
-    return {
-      brushOptions: Object.assign(
-        this.state.optionsByBrush,
-        {
-          [this.state.brush]: Object.assign(
-            this.state.optionsByBrush[this.state.brush],
-            {
-              size: brushSize
-            }
-          )
-        }
-      )
     }
+
+    if (currSize < min) currSize = min
+    if (currSize > max) currSize = max
+
+    this.state.brushes[this.state.brush].size = currSize
+
+    this.emit('brush:size', this.getBrushOptions().size)
+    this.render()
   }
 
-  transformCurrentColor (color) {
-    return {
-      colorsByBrush: Object.assign(this.state.colorsByBrush, {
-        [this.state.brush]: color
-      })
-    }
+  changeCurrentColor (color) {
+    this.state.brushes[this.state.brush].color = color
+    this.emit('brush:color', this.getBrushOptions().color)
+    this.render()
   }
 
-  transformPaletteState (brush, index, color) {
-
+  changePaletteColor (brush, index, color) {
     // NOTE ignores passed brush and uses current brush,
     //      in case we changed since we invoked the color picker
-
-    // make a copy
-    let newPalette = [...this.state.palettesByBrush[this.state.brush]]
-    newPalette[index] = color
-
-    return {
-      palettesByBrush: Object.assign(this.state.palettesByBrush, {
-        [this.state.brush]: newPalette
-      })
-    }
+    this.state.brushes[this.state.brush].palette[index] = color
+    this.render()
   }
 
   attachedCallback () {
     const immediateButtons = [...this.el.querySelectorAll('.button:not([id^="toolbar-palette-color"])')]
     const swatchButtons = [...this.el.querySelectorAll('.button[id^="toolbar-palette-color"]')]
+    const brushSizeControlsEl = this.el.querySelector('#toolbar .toolbar-brush-size-controls')
 
     for (let buttonEl of immediateButtons) {
       buttonEl.addEventListener('pointerdown', this.onButtonDown)
@@ -160,8 +176,8 @@ class Toolbar extends EventEmitter {
       buttonEl.addEventListener('pointerup', this.onSwatchUp)
       buttonEl.addEventListener('pointerdown', this.onSwatchDown)
     }
-    
-    this.el.querySelector('#toolbar .toolbar-brush-size-controls').addEventListener('pointerdown', this.onBrushSizePointerDown)
+
+    brushSizeControlsEl.addEventListener('pointerdown', this.onBrushSizePointerDown)
   }
 
   // TODO cleanup, remove listeners
@@ -176,24 +192,18 @@ class Toolbar extends EventEmitter {
     return target.id.replace(/^toolbar-/, '')
   }
   
-  getBrushOptions (state) {
-    // DUPE
-    const colorToScaledRGB = color => [
-      Math.floor(color.red * 255),
-      Math.floor(color.green * 255),
-      Math.floor(color.blue * 255)
-    ]
-
-    const opt = state.optionsByBrush[state.brush]
-    const color = state.brush !== 'eraser' ? colorToScaledRGB(state.colorsByBrush[state.brush].toRGB()) : null
-
-    return [
-      opt.size,
-      color,
-      opt.opacity,
-      opt.layerOpacity,
-      opt.layer
-    ]
+  getBrushOptions () {
+    let curr = this.state.brushes[this.state.brush]
+    return {
+      kind: curr.kind,
+      size: curr.size,
+      spacing: curr.spacing,
+      flow: curr.flow,
+      hardness: curr.hardness,
+      opacity: curr.opacity,
+      color: curr.color.clone(),
+      palette: curr.palette.map(color => color.clone())
+    }
   }
 
   onButtonDown (event) {
@@ -221,39 +231,38 @@ class Toolbar extends EventEmitter {
       case 'light-pencil':
         if (this.state.brush !== 'light-pencil') {
           this.setState({ brush: 'light-pencil' })
-          this.emit('brush', this.state.brush, this.getBrushOptions(this.state))
+          this.emit('brush', this.state.brush, this.getBrushOptions())
         }
         break
       case 'pencil':
         if (this.state.brush !== 'pencil') {
           this.setState({ brush: 'pencil' })
-          this.emit('brush', this.state.brush, this.getBrushOptions(this.state))
+          this.emit('brush', this.state.brush, this.getBrushOptions())
         }
         break
       case 'pen':
         if (this.state.brush !== 'pen') {
           this.setState({ brush: 'pen' })
-          this.emit('brush', this.state.brush, this.getBrushOptions(this.state))
+          this.emit('brush', this.state.brush, this.getBrushOptions())
         }
         break
       case 'brush':
         if (this.state.brush !== 'brush') {
           this.setState({ brush: 'brush' })
-          this.emit('brush', this.state.brush, this.getBrushOptions(this.state))
+          this.emit('brush', this.state.brush, this.getBrushOptions())
         }
         break
       case 'note-pen':
         if (this.state.brush !== 'note-pen') {
           this.setState({ brush: 'note-pen' })
-          this.emit('brush', this.state.brush, this.getBrushOptions(this.state))
+          this.emit('brush', this.state.brush, this.getBrushOptions())
         }
         break
       case 'eraser':
         if (this.state.brush !== 'eraser') {
           this.setState({ brush: 'eraser' })
           // just to set the size
-          this.emit('brush', this.state.brush, this.getBrushOptions(this.state))
-          this.emit('eraser')
+          this.emit('brush', this.state.brush, this.getBrushOptions())
         }
         break
 
@@ -261,7 +270,7 @@ class Toolbar extends EventEmitter {
         this.emit('trash')
         break
       case 'fill':
-        this.emit('fill', this.state.currentBrushColor)
+        this.emit('fill', this.state.brushes[this.state.brush].color)
         break
 
       case 'move':
@@ -285,7 +294,7 @@ class Toolbar extends EventEmitter {
 
       case 'current-color':
         if (this.state.brush == 'eraser') break
-        this.emit('current-color-picker', this.state.currentBrushColor)
+        this.emit('current-color-picker', this.state.brushes[this.state.brush].color)
         break
 
       case 'grid':
@@ -308,8 +317,7 @@ class Toolbar extends EventEmitter {
         this.emit('onion')
         break
       case 'captions':
-        this.setState({ captions: !this.state.captions })
-        this.emit('captions')
+        this.toggleCaptions()
         break
 
       default:
@@ -365,7 +373,7 @@ class Toolbar extends EventEmitter {
   }
 
   getCurrentPalette () {
-    return this.state.palettesByBrush[this.state.brush]
+    return this.state.brushes[this.state.brush].palette
   }
 
   render () {
@@ -411,10 +419,10 @@ class Toolbar extends EventEmitter {
     thirdsEl.classList.toggle('active', this.state.thirds)
     diagonalsEl.classList.toggle('active', this.state.diagonals)
 
-    if (this.state.currentBrushColor) {
-      this.el.querySelector('#toolbar-current-color .icon').style.backgroundColor = this.state.currentBrushColor.toCSS()
+    if (this.state.brushes[this.state.brush].color) {
+      this.el.querySelector('#toolbar-current-color .icon').style.backgroundColor = this.state.brushes[this.state.brush].color.toCSS()
 
-      this.el.querySelector('#toolbar-fill').style.setProperty('--color3', this.state.currentBrushColor.toCSS())
+      this.el.querySelector('#toolbar-fill').style.setProperty('--color3', this.state.brushes[this.state.brush].color.toCSS())
     }
 
     const palette = this.getCurrentPalette()
@@ -427,14 +435,19 @@ class Toolbar extends EventEmitter {
     }
 
     const brushSizeEl = this.el.querySelector('.toolbar-brush-size-controls_val')
-    const brushSizeValue = this.state.optionsByBrush[this.state.brush].size
-    brushSizeEl.innerHTML = (Math.round(brushSizeValue * 10) / 10).toString()
+    const brushSizeValue = this.getBrushOptions().size
+    brushSizeEl.innerHTML = Math.round(brushSizeValue)
   }
   
   onBrushSizePointerDown (event) {
     const pos = event.layerX / event.target.getBoundingClientRect().width
-    const multiplier = pos > 0.5 ? 1.2 : 0.8
-    this.emit('brush', this.state.brush, this.getBrushOptions(this.multiplyBrushSize(this.state, multiplier)))
+    const direction = pos > 0.5 ? 1 : -1
+    this.changeBrushSize(direction, true)
+  }
+
+  toggleCaptions () {
+    this.setState({ captions: !this.state.captions })
+    this.emit('captions')
   }
 }
 

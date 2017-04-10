@@ -1,27 +1,30 @@
 const Guides = require('../../../src/js/window/guides.js')
 
-const guidesEl = document.getElementById('guides')
-const containerEl = document.getElementById('canvas-container')
+const wrapperEl = document.querySelector('.wrapper')
 
-const guides = new Guides()
-guides.create(guidesEl)
-guides.attachTo(containerEl)
+const canvas = document.createElement('canvas')
 
-const update = () => {
-  const bounds = containerEl.parentNode.getBoundingClientRect()
-  containerEl.style.width = bounds.right + 'px'
-  containerEl.style.height = bounds.bottom + 'px'
-  guides.setState({
-    width: bounds.right,
-    height: bounds.bottom
-  })
+wrapperEl.appendChild(canvas)
+
+let guides
+
+const render = () => {
+  const wrapperRect = wrapperEl.getBoundingClientRect()
+  const { width, height } = wrapperRect
+  canvas.style.width = width + 'px'
+  canvas.style.height = height + 'px'
+  canvas.width = width * 2
+  canvas.height = height * 2
+
+  let state = guides ? guides.state : {
+    grid: true,
+    center: true,
+    thirds: true,
+    diagonals: true
+  }
+
+  guides = new Guides(canvas)
+  guides.setState(state)
 }
-window.onresize = update
-update()
-
-guides.setState({
-  grid: true,
-  center: true,
-  thirds: true,
-  diagonals: true,
-})
+window.addEventListener('resize', render)
+render()
