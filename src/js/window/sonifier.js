@@ -150,7 +150,7 @@ const step = dt => {
       } else {
         // use accel
         v = util.clamp(
-          Tone.prototype.equalPowerScale(ease.expoIn(model.accel / 50)),
+          Tone.prototype.equalPowerScale(model.accel / 100),
           0.0,
           1.0
         )
@@ -165,7 +165,7 @@ const step = dt => {
     } else {
           // instrument.ugens.gain.gain.value = 0
       instrument.ugens.gain.gain.cancelScheduledValues()
-      instrument.ugens.gain.gain.rampTo(0, 0.1)
+      instrument.ugens.gain.gain.rampTo(0, 0.05)
 
       // const v = util.clamp(model.accel / 100, 0.0, 1.0)
       // instrument.ugens.filterB.frequency.value = 1000 + (v * 4000)
