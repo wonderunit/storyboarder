@@ -26,8 +26,31 @@ class StoryboarderSketchPane extends EventEmitter {
     // sketchpane
     this.sketchPane = new SketchPane()
     this.sketchPane.setCanvasSize(...this.canvasSize)
-    this.sketchPane.on('onbeforeup', () => this.emit('addToUndoStack'))
+
+
+
+    // store snapshot on pointerdown?
+    // eraser : yes
+    // brushes: no
+    this.sketchPane.on('ondown', () => {
+      if (this.sketchPane.paintingKnockout) {
+        this.emit('addToUndoStack')
+      }
+    })
+    // store snapshot before pointer up?
+    // eraser : no
+    // brushes: yes
+    this.sketchPane.on('onbeforeup', () => {
+      if (!this.sketchPane.paintingKnockout) { 
+        this.emit('addToUndoStack')
+      }
+    })
+    // store snapshot on up?
+    // eraser : yes
+    // brushes: yes
     this.sketchPane.on('onup', () => this.emit('markDirty'))
+
+
 
     this.sketchPane.addLayer(0) // reference
     this.sketchPane.fillLayer('#fff')
