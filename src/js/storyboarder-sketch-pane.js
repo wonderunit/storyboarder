@@ -91,6 +91,7 @@ class StoryboarderSketchPane extends EventEmitter {
     this.sketchPane.down(pointerPosition.x, pointerPosition.y, e.pointerType === "pen" ? e.pressure : 1)
     document.addEventListener('pointermove', this.canvasPointerMove)
     document.addEventListener('pointerup', this.canvasPointerUp)
+    this.emit('pointerdown', pointerPosition.x, pointerPosition.y, e.pointerType === "pen" ? e.pressure : 1, e.pointerType)
   }
 
   canvasPointerMove (e) {

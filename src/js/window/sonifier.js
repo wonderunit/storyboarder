@@ -108,8 +108,9 @@ const init = () => {
   engine.start()
 }
 
-const start = () => {
+const start = (x, y, pressure, pointerType) => {
   model = createModel()
+  model.pointerType = pointerType
   prev = null
   curr = null
   instrument.start()
@@ -126,7 +127,6 @@ const trigger = curr => {
   model.accel += speed
 
   model.pressure = curr.pressure
-  model.pointerType = curr.pointerType
 
   instrument.note({ velocity: model.accel })
 

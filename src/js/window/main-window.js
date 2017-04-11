@@ -466,7 +466,7 @@ let loadBoardUI = ()=> {
 
 
 
-  storyboarderSketchPane.sketchPane.on('ondown', Sonifier.start)
+  storyboarderSketchPane.on('pointerdown', Sonifier.start)
   storyboarderSketchPane.sketchPane.on('onmove', Sonifier.trigger)
   storyboarderSketchPane.sketchPane.on('onup', Sonifier.stop)
   Sonifier.init()
