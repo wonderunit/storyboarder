@@ -1,3 +1,6 @@
+// TODO ping-pong loop sample
+// TODO minimum note duration
+
 const Tone = require('tone')
 const tonal = require('tonal')
 
@@ -5,138 +8,67 @@ const throttle = require('lodash.throttle')
 
 const util = require('../utils/index')
 
-
-/*
-    x
-    y
-
-    pressure
-    tilt
-    angle
-
-    eraser
-    pointerType
-
-    sW
-    sH
-
-    timestamp
-*/
 const Loop = require('../utils/loop')
 
 const instrument = (() => {
   const pathToSample = "./snd/drawing-loop.wav"
-  const chords = ["Amadd9", "GMadd9", "Bm7#5", "FMadd9", "Am7#5", "E7", "EMadd9", "G#m7#5", "EM", "Em#5"]
-
-  let synth = new Tone.PolySynth(8, Tone.Synth)
-    .set({
-      "oscillator" : {
-        "type" : "square2"
-      },
-      "envelope" : {
-        "attack":2,
-        "decay":0.7,
-        "sustain":1,
-        "release":0.1,
-      },
-    })
-
-    let bassSynth2 = new Tone.PolySynth(3, Tone.Synth)
-      .set({
-        "oscillator" : {
-          "type" : "sine"
-        },
-        "envelope" : {
-          "attack":3,
-          "decay":0.01,
-          "sustain":0.1,
-          "release":7,
-        },
-      })
-
   let sampler = new Tone.Player(pathToSample)
     .set('loop', true)
     .set('retrigger', true)
-    .set('volume', -30)
+    .set('volume', -36)
     .stop()
-
-  let eq = new Tone.EQ3()
-    .set({
-      low: -4,
-      lowFrequency: 2200
-    })
-
-  let env = new Tone.AmplitudeEnvelope({
-  	"attack": 0.025,
-  	"decay": 0.0,
-  	"sustain": 1.0,
-  	"release": 0.3
+  
+  let filterA = new Tone.Filter({
+    type: "bandpass",
+    frequency: 9000,
+    rolloff: -24,
+    Q: 1
   })
 
-  let gain = new Tone.Gain({ gain: 0 })
+  let filterB = new Tone.Filter({
+    type: "lowpass",
+    frequency: 8000,
+    rolloff: -12,
+    Q: 0
+  })
 
-  sampler.chain(eq, env, gain, Tone.Master)
+  let gain = new Tone.Gain({ gain: 1 })
 
-  const synthComp = new Tone.Compressor(-10, 5)
-  const synthFilter = new Tone.Filter(1250, "lowpass", -12)
-    .set('Q', 2)
-  var synthVol = new Tone.Volume(-12)
+  sampler.chain(filterA, filterB, gain, Tone.Master)
 
-  // var bassSynth2Filter = new Tone.Filter(1250, "lowpass", -48)
-  //   .set('Q', 2)
-  var bassSynth2Vol = new Tone.Volume(-12)
-
-  var verb = new Tone.Freeverb(0.96, 1000)
-  verb.wet = 1
-
-  synth.chain(synthComp, synthFilter, synthVol, verb, Tone.Master)
-  bassSynth2.chain(bassSynth2Vol, verb, Tone.Master)
-
-  let currentNote
-  let currentChord
   const start = () => {
-    currentNote = 0
-    currentChord = util.sample(chords)
-
     if (sampler.buffer.loaded) {
       const offset = Math.random() * sampler.buffer.duration
 
-      // TODO ping-pong loop
       sampler.reverse = false
 
       sampler.start(0, offset)
+    } else {
+      console.warn('sound has not loaded')
     }
 
-    env.triggerAttack()
+    gain.gain.cancelScheduledValues()
+    gain.gain.value = 0
   }
-  
-  const stop = () => env.triggerRelease()
-  
+
   const note = (opt = { velocity: 1 }) => {
     const { velocity } = opt
-    const chord = currentChord
-    const notes = tonal.chord(chord)
-
-    const note = util.sample(notes) + (Math.random() > 0.5 ? '3' : '4')
-    const onote = util.sample(notes) + (Math.random() > 0.5 ? '3' : '4')
-    const bnote = util.sample(notes) + (Math.random() > 0.5 ? '2' : '3')
-
-    synth.triggerAttackRelease(Tone.Frequency(note).transpose(+12), "32n", undefined, velocity * 0.05)
-    if (currentNote == 0) {
-      bassSynth2.triggerAttackRelease(Tone.Frequency(bnote).transpose(+12), "16n", undefined, 0.4)
-    }
-    synth.triggerAttackRelease(Tone.Frequency(onote).transpose(+24), "16n", undefined, velocity * 0.1)
-    
-    currentNote++
   }
 
+  const stop = () => {
+    gain.gain.cancelScheduledValues()
+    gain.gain.rampTo(0, 0.01)
+  }
+  
   return {
     start,
     stop,
-    note: throttle(note, 16 * 8),
-
-    hpFreq: eq.lowFrequency,
-    gain: gain.gain
+    note,
+    ugens: {
+      gain,
+      filterA,
+      filterB
+    }
   }
 })()
 
@@ -152,7 +84,6 @@ const createModel = () => ({
   totalTime: 0,
 
   damping: 0.2,
-  hpFreqStart: 1000,
 
   isMoving: false,
   isAccel: false
@@ -160,27 +91,22 @@ const createModel = () => ({
 
 let engine
 let model
-let events
 let prev
 let curr
 
 const init = () => {
   engine = new Loop(step)
 
-  events = []
   model = createModel()
 
   engine.start()
 }
 
 const start = () => {
-  events = []
   model = createModel()
   prev = null
   curr = null
   instrument.start()
-  instrument.hpFreq.value = model.hpFreqStart
-  instrument.gain.value = 0
 }
 
 const stop = () => {
@@ -189,21 +115,17 @@ const stop = () => {
 
 const trigger = curr => {
   let speed = prev ? distance(prev.x, prev.y, curr.x, curr.y) : 0
-
+  
   model.isMoving = speed > 0 ? true : false
   model.accel += speed
 
-  // instrument.hpFreq.rampTo(200 + (model.accel * 40), 0.01)
-  instrument.hpFreq.value = model.hpFreqStart + (model.accel * 40)
-
-  const velocity = util.clamp(model.accel / 10, 0.01, 1)
-  instrument.note({ velocity })
+  instrument.note({ velocity: model.accel })
 
   prev = curr
 }
 
 const step = dt => {
-  let frameSize = 1/60*1000 / dt
+  let frameSize = ((1 / 60) * 1000) / dt
 
 
 
@@ -212,16 +134,20 @@ const step = dt => {
   let changedAccel = model.isAccel != model.wasAccel
   if (changedAccel) {
     if (model.isAccel) {
-      const v = util.clamp(model.accel / 10, 0.25, 1)
-      // instrument.gain.cancelScheduledValues()
-      // instrument.gain.rampTo(
-      //   v,
-      //   0.05)
-      instrument.gain.value = v
+      const v = util.clamp(model.accel / 100, 0.0, 1.0)
+      instrument.ugens.gain.gain.cancelScheduledValues()
+      instrument.ugens.gain.gain.rampTo(
+        v,
+        0.05)
+          // instrument.ugens.gain.gain.value = v
+      // instrument.ugens.filterB.frequency.value = 1000 + (v * 4000)
     } else {
-      instrument.gain.value = 0
-      // instrument.gain.cancelScheduledValues()
-      // instrument.gain.rampTo(0, 0.01)
+          // instrument.ugens.gain.gain.value = 0
+      instrument.ugens.gain.gain.cancelScheduledValues()
+      instrument.ugens.gain.gain.rampTo(0, 0.1)
+
+      // const v = util.clamp(model.accel / 100, 0.0, 1.0)
+      // instrument.ugens.filterB.frequency.value = 1000 + (v * 4000)
     }
   }
 
