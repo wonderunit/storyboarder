@@ -37,7 +37,11 @@ const instrument = (() => {
 
   let gain = new Tone.Gain({ gain: 1 })
 
-  sampler.chain(filterA, filterB, gain, Tone.Master)
+  let amp = new Tone.Gain({ gain: 1 })
+  let lfo = new Tone.LFO(1.25, 0.6, 1)
+  lfo.connect(amp.gain).start()
+
+  sampler.chain(filterA, filterB, gain, amp, Tone.Master)
 
   const start = () => {
     if (sampler.buffer.loaded) {
