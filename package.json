@@ -57,6 +57,7 @@
   "dependencies": {
     "cardinal-spline-js": "^2.3.6",
     "color-js": "^1.0.4",
+    "eases": "1.0.8",
     "electron-is-dev": "0.1.2",
     "electron-localshortcut": "^1.0.0",
     "express": "^4.15.2",

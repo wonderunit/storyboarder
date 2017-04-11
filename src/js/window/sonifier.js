@@ -1,5 +1,6 @@
 // TODO ping-pong loop sample
 // TODO minimum note duration
+// TODO scale accel by canvas size?
 
 const Tone = require('tone')
 const tonal = require('tonal')
@@ -9,6 +10,8 @@ const throttle = require('lodash.throttle')
 const util = require('../utils/index')
 
 const Loop = require('../utils/loop')
+
+const ease = require('eases')
 
 const instrument = (() => {
   const pathToSample = "./snd/drawing-loop.wav"
@@ -80,6 +83,9 @@ const createModel = () => ({
 
   accel: 0,
 
+  pressure: 0,
+  pointerType: null,
+
   totalDistance: 0,
   totalTime: 0,
 
@@ -119,6 +125,9 @@ const trigger = curr => {
   model.isMoving = speed > 0 ? true : false
   model.accel += speed
 
+  model.pressure = curr.pressure
+  model.pointerType = curr.pointerType
+
   instrument.note({ velocity: model.accel })
 
   prev = curr
@@ -134,7 +143,19 @@ const step = dt => {
   let changedAccel = model.isAccel != model.wasAccel
   if (changedAccel) {
     if (model.isAccel) {
-      const v = util.clamp(model.accel / 100, 0.0, 1.0)
+      let v
+      if (model.pointerType === 'pen') {
+        // use pressure
+        v = Tone.prototype.equalPowerScale(ease.expoIn(model.pressure))
+      } else {
+        // use accel
+        v = util.clamp(
+          Tone.prototype.equalPowerScale(ease.expoIn(model.accel / 50)),
+          0.0,
+          1.0
+        )
+      }
+
       instrument.ugens.gain.gain.cancelScheduledValues()
       instrument.ugens.gain.gain.rampTo(
         v,
