@@ -503,7 +503,7 @@ let updateBoardUI = ()=> {
 
   if (boardData.boards.length == 0) {
     // create a new board
-    newBoard(0)
+    newBoard(0, false)
   }
   // update sketchpane
   updateSketchPaneBoard()
@@ -518,7 +518,10 @@ let updateBoardUI = ()=> {
 // Board Operations
 ///////////////////////////////////////////////////////////////
 
-let newBoard = (position)=> {
+let newBoard = (position, shouldAddToUndoStack = true) => {
+  if (shouldAddToUndoStack) {
+    storeUndoStateForScene(true)
+  }
   saveImageFile()
 
   if (typeof position == "undefined") position = currentBoard + 1
@@ -537,6 +540,7 @@ let newBoard = (position)=> {
   // indicate dirty for save sweep
   markBoardFileDirty()
   renderThumbnailDrawer()
+  storeUndoStateForScene()
 }
 
 let markBoardFileDirty = ()=> {
