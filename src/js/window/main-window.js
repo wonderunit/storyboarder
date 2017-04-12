@@ -323,6 +323,7 @@ let loadBoardUI = ()=> {
 
   toolbar.on('brush', (kind, options) => {
     storyboarderSketchPane.setBrushTool(kind, options)
+    Sonifier.playEffect('tool-' + kind)
   })
   toolbar.on('brush:size', size => {
     storyboarderSketchPane.setBrushSize(size)

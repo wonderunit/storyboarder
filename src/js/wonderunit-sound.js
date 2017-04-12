@@ -98,13 +98,39 @@ errorSynth.set({
     "type" : "sawtooth"
  },
  "envelope" : {
-    "attack":0.1,
-    "decay":0.01,
-    "sustain":0.1,
-    "release":0.5,
+    "attack": 0.1,
+    "decay": 0.01,
+    "sustain": 0.1,
+    "release": 0.5,
  },
 })
 errorSynth.set('volume', -2).toMaster()
+
+var bipSynth = new Tone.MonoSynth()
+  .set({
+    oscillator : {
+      type : 'square'
+    },
+    envelope : {
+      attack: 0.01,
+      decay: 0.1,
+      sustain: 1,
+      release: 0.5,
+    },
+    filter: {
+      Q: 1
+    },
+    filterEnvelope: {
+      attack: 0.3,
+      decay: 0.5,
+      sustain: 1,
+      release: 0.5,
+      baseFrequency: 800,
+      exponent: 4
+    }
+  })
+  .set('volume', -24)
+  .toMaster()
 
 // set up effects and chain them.
 // var freeverb = new Tone.Freeverb(0.9, 1000) // unused
@@ -195,11 +221,17 @@ let error = () => {
   advanceNote(1) 
 }
 
+let bip = (note) => {
+  bipSynth.triggerAttackRelease(Tone.Frequency(note).transpose(-12), "16n", undefined, 0.25)
+  advanceNote(1)
+}
+
 module.exports = {
   rollover: rollover,
   down: down,
   positive: positive,
   negative: negative,
   error: error,
-  shuffle
+  shuffle,
+  bip
 }

@@ -192,11 +192,32 @@ const step = dt => {
 }
 
 const playEffect = effect => {
-  if (effect === 'fill') {
-    sfx.rollover()
-    setTimeout(sfx.positive, 150)
-  } else {
-    samplers[effect].start()
+  switch (effect) {
+    case 'fill':
+      sfx.rollover()
+      setTimeout(sfx.positive, 150)
+      break
+    case 'tool-light-pencil':
+      sfx.bip('c4')
+      break
+    case 'tool-pencil':
+      sfx.bip('e4')
+      break
+    case 'tool-pen':
+      sfx.bip('b4')
+      break
+    case 'tool-brush':
+      sfx.bip('c5')
+      break
+    case 'tool-note-pen':
+      sfx.bip('e5')
+      break
+    case 'tool-eraser':
+      sfx.bip('b5')
+      break
+    default:
+      samplers[effect].start()
+      break
   }
 }
 
