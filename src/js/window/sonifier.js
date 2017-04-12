@@ -37,8 +37,8 @@ const instrument = (() => {
   let filterB = new Tone.Filter({
     type: "lowpass",
     frequency: 8000,
-    rolloff: -12,
-    Q: 0
+    rolloff: -48,
+    Q: 1
   })
 
   let gain = new Tone.Gain({ gain: 1 })
@@ -47,7 +47,10 @@ const instrument = (() => {
   let lfo = new Tone.LFO(1.25, 0.6, 1)
   lfo.connect(amp.gain).start()
 
-  sampler.chain(filterA, filterB, gain, amp, Tone.Master)
+  sampler.chain(filterA, gain, amp, Tone.Master)
+
+  let filterSend = gain.send('filterB', -10)
+  filterB.receive('filterB').toMaster()
 
   const start = () => {
     gain.gain.cancelScheduledValues()
@@ -154,11 +157,22 @@ const step = dt => {
   let frameSize = ((1 / 60) * 1000) / dt
 
   if (model.isActive) {
+    let a = util.clamp((model.accel / 100), 0.0, 1.0)
+
     let v = (model.pointerType === 'pen')
-      ? Tone.prototype.equalPowerScale(ease.expoIn(model.pressure))
-      : util.clamp((model.accel / 100), 0.0, 1.0)
+      ? Tone.prototype.equalPowerScale(ease.expoIn(model.pressure)) * a
+      : a
 
     instrument.ugens.gain.gain.value = v
+
+    // TODO smoothing on filterB frequency (stepped)
+    let f = 1000 + (model.accel * 20)
+    instrument.ugens.filterB.frequency.value = 
+      util.clamp(
+        f,
+        0,
+        22000
+      )
   }
 
   model.accel *= frameSize * model.damping
