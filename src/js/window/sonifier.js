@@ -13,6 +13,8 @@ const Loop = require('../utils/loop')
 
 const ease = require('eases')
 
+const sfx = require('../wonderunit-sound.js')
+
 const distance = (x1, y1, x2, y2) =>
   Math.hypot(x2 - x1, y2 - y1)
 
@@ -190,7 +192,12 @@ const step = dt => {
 }
 
 const playEffect = effect => {
-  samplers[effect].start()
+  if (effect === 'fill') {
+    sfx.rollover()
+    setTimeout(sfx.positive, 150)
+  } else {
+    samplers[effect].start()
+  }
 }
 
 module.exports = {
