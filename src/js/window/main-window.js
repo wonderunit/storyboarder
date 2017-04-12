@@ -334,6 +334,7 @@ let loadBoardUI = ()=> {
 
   toolbar.on('trash', () => {
     storyboarderSketchPane.clearLayer()
+    Sonifier.playEffect('trash')
   })
   toolbar.on('fill', color => {
     storyboarderSketchPane.fillLayer(color.toCSS())
@@ -2312,6 +2313,7 @@ ipcRenderer.on('useColor', (e, arg)=> {
 ipcRenderer.on('clear', (e, arg)=> {
   if (!textInputMode) {
     storyboarderSketchPane.clearLayer()
+    Sonifier.playEffect('trash')
   }
 })
 

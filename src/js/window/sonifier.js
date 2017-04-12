@@ -19,12 +19,11 @@ const distance = (x1, y1, x2, y2) =>
 const angle = (x0, y0, x1, y1) =>
   Math.atan2(y1 - y0, x1 - x0)
 
-const instrument = (() => {
-  const pathToSample = "./snd/drawing-loop.wav"
-  let sampler = new Tone.Player(pathToSample)
+const Instrument = () => {
+  let sampler = samplers.drawing
     .set('loop', true)
     .set('retrigger', true)
-    .set('volume', -36)
+    .set('volume', -12)
     .stop()
   
   let filterA = new Tone.Filter({
@@ -87,7 +86,7 @@ const instrument = (() => {
       filterB
     }
   }
-})()
+}
 
 const createModel = () => ({
   avgSpeed: 0,
@@ -114,9 +113,17 @@ let model
 let prev
 let curr
 
-const init = () => {
-  engine = new Loop(step)
+let samplers
+let instrument
 
+const init = () => {
+  samplers = {
+    'drawing': new Tone.Player('./snd/drawing-loop.wav'),
+    'trash': new Tone.Player('./snd/trash.wav').set('volume', -6).set({ retrigger: true }).toMaster()
+  }
+  instrument = Instrument()
+
+  engine = new Loop(step)
   model = createModel()
 
   engine.start()
@@ -182,9 +189,14 @@ const step = dt => {
   model.avgSpeed = model.totalDistance / model.totalTime || 0
 }
 
+const playEffect = effect => {
+  samplers[effect].start()
+}
+
 module.exports = {
   init,
   start,
   stop,
-  trigger
+  trigger,
+  playEffect
 }
