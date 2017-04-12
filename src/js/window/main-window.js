@@ -2293,8 +2293,6 @@ ipcRenderer.on('setTool', (e, arg)=> {
         break
       case 'eraser':
         toolbar.setState({ brush: 'eraser' })
-        // just to set the size
-        toolbar.emit('brush', 'eraser', toolbar.getBrushOptions())
         break
     }
   }
