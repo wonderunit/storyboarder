@@ -13,6 +13,12 @@ const Loop = require('../utils/loop')
 
 const ease = require('eases')
 
+const distance = (x1, y1, x2, y2) =>
+  Math.hypot(x2 - x1, y2 - y1)
+
+const angle = (x0, y0, x1, y1) =>
+  Math.atan2(y1 - y0, x1 - x0)
+
 const instrument = (() => {
   const pathToSample = "./snd/drawing-loop.wav"
   let sampler = new Tone.Player(pathToSample)
@@ -44,6 +50,9 @@ const instrument = (() => {
   sampler.chain(filterA, filterB, gain, amp, Tone.Master)
 
   const start = () => {
+    gain.gain.cancelScheduledValues()
+    gain.gain.value = 0
+
     if (sampler.buffer.loaded) {
       const offset = Math.random() * sampler.buffer.duration
 
@@ -53,9 +62,6 @@ const instrument = (() => {
     } else {
       console.warn('sound has not loaded')
     }
-
-    gain.gain.cancelScheduledValues()
-    gain.gain.value = 0
   }
 
   const note = (opt = { velocity: 1 }) => {
@@ -65,6 +71,7 @@ const instrument = (() => {
   const stop = () => {
     gain.gain.cancelScheduledValues()
     gain.gain.rampTo(0, 0.01)
+    sampler.stop()
   }
   
   return {
@@ -79,9 +86,6 @@ const instrument = (() => {
   }
 })()
 
-const distance = (x1, y1, x2, y2) =>
-  Math.hypot(x2 - x1, y2 - y1)
-
 const createModel = () => ({
   avgSpeed: 0,
 
@@ -90,12 +94,15 @@ const createModel = () => ({
   pressure: 0,
   pointerType: null,
 
+  prevAngle: 0,
+  currAngle: 0,
+
   totalDistance: 0,
   totalTime: 0,
 
   damping: 0.2,
 
-  isMoving: false,
+  isActive: true,
   isAccel: false
 })
 
@@ -117,20 +124,26 @@ const start = (x, y, pressure, pointerType) => {
   model.pointerType = pointerType
   prev = null
   curr = null
+  model.isActive = true
   instrument.start()
 }
 
 const stop = () => {
+  model.isActive = false
   instrument.stop()
 }
 
 const trigger = curr => {
-  let speed = prev ? distance(prev.x, prev.y, curr.x, curr.y) : 0
-  
-  model.isMoving = speed > 0 ? true : false
-  model.accel += speed
-
   model.pressure = curr.pressure
+
+  let speed = prev ? distance(prev.x, prev.y, curr.x, curr.y) : 0
+  model.accel += speed
+  model.totalDistance += speed
+
+  model.prevAngle = model.currAngle
+  model.currAngle = prev ? angle(prev.x, prev.y, curr.x, curr.y) : 0
+
+  let avgSpeedByFrame = model.avgSpeed * ((1 / 60) * 1000)
 
   instrument.note({ velocity: model.accel })
 
@@ -140,40 +153,12 @@ const trigger = curr => {
 const step = dt => {
   let frameSize = ((1 / 60) * 1000) / dt
 
+  if (model.isActive) {
+    let v = (model.pointerType === 'pen')
+      ? Tone.prototype.equalPowerScale(ease.expoIn(model.pressure))
+      : util.clamp((model.accel / 100), 0.0, 1.0)
 
-
-  let wasAccel = model.isAccel
-  model.isAccel = (model.accel > 0.1) ? true : false
-  let changedAccel = model.isAccel != model.wasAccel
-  if (changedAccel) {
-    if (model.isAccel) {
-      let v
-      if (model.pointerType === 'pen') {
-        // use pressure
-        v = Tone.prototype.equalPowerScale(ease.expoIn(model.pressure))
-      } else {
-        // use accel
-        v = util.clamp(
-          Tone.prototype.equalPowerScale(model.accel / 100),
-          0.0,
-          1.0
-        )
-      }
-
-      instrument.ugens.gain.gain.cancelScheduledValues()
-      instrument.ugens.gain.gain.rampTo(
-        v,
-        0.05)
-          // instrument.ugens.gain.gain.value = v
-      // instrument.ugens.filterB.frequency.value = 1000 + (v * 4000)
-    } else {
-          // instrument.ugens.gain.gain.value = 0
-      instrument.ugens.gain.gain.cancelScheduledValues()
-      instrument.ugens.gain.gain.rampTo(0, 0.05)
-
-      // const v = util.clamp(model.accel / 100, 0.0, 1.0)
-      // instrument.ugens.filterB.frequency.value = 1000 + (v * 4000)
-    }
+    instrument.ugens.gain.gain.value = v
   }
 
   model.accel *= frameSize * model.damping
