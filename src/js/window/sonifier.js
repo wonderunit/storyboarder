@@ -24,7 +24,7 @@ const angle = (x0, y0, x1, y1) =>
 const Instrument = () => {
   let sampler = samplers.drawing
     .set('loop', true)
-    .set('retrigger', true)
+    .set('retrigger', false)
     .set('volume', -12)
     .stop()
   
@@ -121,7 +121,7 @@ let instrument
 const init = () => {
   samplers = {
     'drawing': new Tone.Player('./snd/drawing-loop.wav'),
-    'trash': new Tone.Player('./snd/trash.wav').set('volume', -6).set({ retrigger: true }).toMaster()
+    'trash': new Tone.Player('./snd/trash.wav').set('volume', -6).set({ retrigger: false }).toMaster()
   }
   instrument = Instrument()
 
