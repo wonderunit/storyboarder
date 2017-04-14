@@ -231,38 +231,31 @@ class Toolbar extends EventEmitter {
       case 'light-pencil':
         if (this.state.brush !== 'light-pencil') {
           this.setState({ brush: 'light-pencil' })
-          this.emit('brush', this.state.brush, this.getBrushOptions())
         }
         break
       case 'pencil':
         if (this.state.brush !== 'pencil') {
           this.setState({ brush: 'pencil' })
-          this.emit('brush', this.state.brush, this.getBrushOptions())
         }
         break
       case 'pen':
         if (this.state.brush !== 'pen') {
           this.setState({ brush: 'pen' })
-          this.emit('brush', this.state.brush, this.getBrushOptions())
         }
         break
       case 'brush':
         if (this.state.brush !== 'brush') {
           this.setState({ brush: 'brush' })
-          this.emit('brush', this.state.brush, this.getBrushOptions())
         }
         break
       case 'note-pen':
         if (this.state.brush !== 'note-pen') {
           this.setState({ brush: 'note-pen' })
-          this.emit('brush', this.state.brush, this.getBrushOptions())
         }
         break
       case 'eraser':
         if (this.state.brush !== 'eraser') {
           this.setState({ brush: 'eraser' })
-          // just to set the size
-          this.emit('brush', this.state.brush, this.getBrushOptions())
         }
         break
 
