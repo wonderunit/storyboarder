@@ -110,6 +110,8 @@ const createModel = () => ({
   isAccel: false
 })
 
+let size
+
 let engine
 let model
 let prev
@@ -118,7 +120,13 @@ let curr
 let samplers
 let instrument
 
-const init = () => {
+const setSize = _size => {
+  size = _size
+}
+
+const init = _size => {
+  setSize(_size)
+
   samplers = {
     'drawing': new Tone.Player('./snd/drawing-loop.wav'),
     'trash': new Tone.Player('./snd/trash.wav').set('volume', -6).set({ retrigger: false }).toMaster()
@@ -223,6 +231,7 @@ const playEffect = effect => {
 
 module.exports = {
   init,
+  setSize,
   start,
   stop,
   trigger,
