@@ -29,7 +29,7 @@ module.exports = (opt = { samplePath: './snd/drawing-loop.wav' }) => {
 
   let filterB = new FilteredEffect({
     type: "lowpass",
-    frequency: 8000,
+    frequency: 900,
     rolloff: -48,
     Q: 1
   })
@@ -41,7 +41,7 @@ module.exports = (opt = { samplePath: './snd/drawing-loop.wav' }) => {
   // lfo.connect(amp.gain).start()
 
   sampler.chain(filterA, filterB, gain/*, amp*/, Tone.Master)
-  filterB.wet.value = 0.4
+  filterB.wet.value = 0.2
 
   const noteOn = () => {
     gain.gain.cancelScheduledValues()
@@ -72,9 +72,9 @@ module.exports = (opt = { samplePath: './snd/drawing-loop.wav' }) => {
   const setWarble = (warble, fast) => {
     let speed = fast ? 0.05 : 0.5
     if (warble) {
-      filterB.filter.frequency.rampTo(4000, 0.05)
+      filterB.filter.frequency.rampTo(3000, 0.05)
     } else {
-      filterB.filter.frequency.rampTo(8000, 0.05)
+      filterB.filter.frequency.rampTo(9000, 0.05)
     }
   }
 

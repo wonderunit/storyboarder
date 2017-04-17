@@ -37,6 +37,7 @@ const createModel = () => ({
   isAccel: false,
   
   accelGain: 0,
+  pressureGain: 0,
 
   pressure: 0,
   pointerType: null,
@@ -100,7 +101,7 @@ const trigger = (x, y, pressure, pointerType) => {
   //   model.isOnCanvas = isOnCanvas
   //   // update
   // }
-  model.isOnCanvas = inBounds(curr[0], curr[0], size)
+  model.isOnCanvas = inBounds(curr[0], curr[1], size)
 
   let speed = prev ? distance(prev, curr) : 0
   model.accel += speed
@@ -115,7 +116,7 @@ const trigger = (x, y, pressure, pointerType) => {
 
   // 1/4th screen width
   let a = util.clamp(
-    model.accel * (1 / size[0]) * 4,
+    model.accel * (1 / (size[0] / 4)),
     0,
     1
   )
@@ -127,8 +128,8 @@ const trigger = (x, y, pressure, pointerType) => {
 const step = dt => {
   let frameSize = ((1 / 60) * 1000) / dt
 
+  let amplitudeOfChange = distance(bufferA, bufferB)
   if (model.isActive) {
-    let amplitudeOfChange = distance(bufferA, bufferB)
     if (prev) {
       let angleA = Math.atan2(bufferA[1], bufferA[0])
       let angleB = Math.atan2(bufferB[1], bufferB[0])
@@ -164,6 +165,8 @@ const step = dt => {
     //   : a
     // 
     // instrument.ugens.gain.gain.value = v * (model.isAccel ? 1 : 0)
+
+    model.pressureGain += model.pressure
   }
 
   // dampen
@@ -174,12 +177,24 @@ const step = dt => {
   if (model.accel < 0.0001) model.accel = 0
   model.isAccel = model.accel != 0
 
+
   if (!model.isOnCanvas) {
     model.accelGain = 0
-  } else {
-    model.accelGain *= 0.2 * frameSize // dampen
+    model.pressureGain = 0
   }
-  instrument.setGain(model.accelGain)
+  if (model.pointerType === 'pen') {
+    // TODO
+    // instrument.setGain(util.clamp(model.pressureGain, 0, 1))
+  } else {
+    instrument.setGain(
+      Tone.prototype.equalPowerScale(
+        util.clamp(model.accelGain, 0, 1)
+      )
+    )
+  }
+  model.accelGain *= 0.2 * frameSize // dampen
+  model.pressureGain *= 0.2 * frameSize
+
 
   model.totalTime += dt
   model.avgSpeed = model.totalDistance / model.totalTime || 0
