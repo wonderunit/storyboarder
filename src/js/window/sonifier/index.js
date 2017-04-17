@@ -51,7 +51,6 @@ const init = dimensions => {
     samplePath: './snd/drawing-loop.wav'
   })
 
-  model = createModel()
   engine = new Loop(step)
   engine.start()
 }
@@ -65,9 +64,7 @@ const start = (x, y, pressure, pointerType) => {
   model.pointerType = pointerType
   prev = null
   curr = null
-  model.isOnCanvas = true
   model.isActive = true
-  instrument.start()
 
   bufferA = vec2.fromValues(0, 0)
   bufferB = vec2.fromValues(0, 0)
@@ -76,18 +73,9 @@ const start = (x, y, pressure, pointerType) => {
 const stop = () => {
   model.isActive = false
   model.isOnCanvas = false
-  instrument.stop()
 }
 
-// NOTE curently c<x,y> are always absolute to canvas w/h (e.g.; 900x900 * aspectRatio)
 const trigger = (x, y, pressure, pointerType) => {
-  // ignore out-of-bounds
-  if (x < 0 || y < 0 || x > size[0] || y > size[1]) {
-    model.isOnCanvas = false
-    return
-  }
-  model.isOnCanvas = true
-
   curr = [x, y]
   model.pressure = pressure
 
@@ -102,17 +90,12 @@ const trigger = (x, y, pressure, pointerType) => {
     vec2.add(bufferB, bufferB, diff)
   }
 
-  instrument.note({ velocity: model.accel })
 
   prev = curr
 }
 
 const step = dt => {
   let frameSize = ((1 / 60) * 1000) / dt
-
-  // dampen
-  vec2.scale(bufferA, bufferA, 0.07)
-  vec2.scale(bufferB, bufferB, 0.98)
 
   if (model.isActive) {
     let amplitudeOfChange = distance(bufferA, bufferB)
@@ -130,41 +113,6 @@ const step = dt => {
       }
     }
 
-    // let a = util.clamp((model.accel / 100), 0.0, 1.0)
-    let scaleFactor = 1 / size[0]
-    let a
-    // if there is a drastic change, let it cut in and out
-    if (amplitudeOfChange / size[0] > 0.1) {
-      a = Tone.prototype.equalPowerScale(
-          util.clamp(
-            amplitudeOfChange * scaleFactor / 2,
-            0,
-            1
-          )
-        )
-    // but for smooth movements, keep the amplitude steady
-    } else {
-      a = 0.5
-    }
-
-    let v = (model.pointerType === 'pen')
-      ? Tone.prototype.equalPowerScale(ease.expoIn(model.pressure)) * a
-      : a
-
-    instrument.ugens.gain.gain.value = v * (model.isAccel ? 1 : 0)
-
-    if (!model.isOnCanvas) {
-      instrument.ugens.gain.gain.value = 0
-    }
-
-    // TODO smoothing on filterB frequency (stepped)
-    // let f = 1000 + (model.accel * 20)
-    // instrument.ugens.filterB.frequency.value = 
-    //   util.clamp(
-    //     f,
-    //     0,
-    //     22000
-    //   )
   }
 
   model.accel *= frameSize * model.damping
@@ -177,14 +125,6 @@ const step = dt => {
 
 let dirChanges = 0
 const renderDirectionChange = (p, amplitudeOfChange) => {
-  let ramp = (amplitudeOfChange / size[0] > 0.25) ? 0.05 : 1
-
-  if (dirChanges % 2 == 0) {
-    instrument.ugens.filterB.frequency.rampTo(6000, ramp)
-  } else {
-    instrument.ugens.filterB.frequency.rampTo(8000, ramp)
-  }
-  dirChanges += 1
 
   // uncomment to draw changes
   //
