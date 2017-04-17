@@ -19,6 +19,7 @@ const notifications = require('./notifications.js')
 const NotificationData = require('../../data/messages.json')
 const Guides = require('./guides.js')
 const Sonifier = require('./sonifier/index.js')
+const sfx = require('../wonderunit-sound.js')
 
 let boardFilename
 let boardPath
@@ -323,7 +324,7 @@ let loadBoardUI = ()=> {
 
   toolbar.on('brush', (kind, options) => {
     storyboarderSketchPane.setBrushTool(kind, options)
-    Sonifier.playEffect('tool-' + kind)
+    sfx.playEffect('tool-' + kind)
   })
   toolbar.on('brush:size', size => {
     storyboarderSketchPane.setBrushSize(size)
@@ -334,11 +335,11 @@ let loadBoardUI = ()=> {
 
   toolbar.on('trash', () => {
     storyboarderSketchPane.clearLayer()
-    Sonifier.playEffect('trash')
+    sfx.playEffect('trash')
   })
   toolbar.on('fill', color => {
     storyboarderSketchPane.fillLayer(color.toCSS())
-    Sonifier.playEffect('fill')
+    sfx.playEffect('fill')
   })
 
 
@@ -467,6 +468,7 @@ let loadBoardUI = ()=> {
   guides = new Guides(storyboarderSketchPane.getLayerCanvasByName('guides'))
 
 
+  sfx.init()
 
   storyboarderSketchPane.on('pointerdown', Sonifier.start)
   storyboarderSketchPane.sketchPane.on('onmove', Sonifier.trigger)
@@ -2315,7 +2317,7 @@ ipcRenderer.on('useColor', (e, arg)=> {
 ipcRenderer.on('clear', (e, arg)=> {
   if (!textInputMode) {
     storyboarderSketchPane.clearLayer()
-    Sonifier.playEffect('trash')
+    sfx.playEffect('trash')
   }
 })
 

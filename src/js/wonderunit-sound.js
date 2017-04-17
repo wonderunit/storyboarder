@@ -226,12 +226,53 @@ let bip = (note) => {
   advanceNote(1)
 }
 
+let samplers
+const init = () => {
+  samplers = {
+    'trash': new Tone.Player('./snd/trash.wav')
+              .set('volume', -6)
+              .set({ retrigger: false })
+              .toMaster()
+  }
+}
+// route for sound effects by name/purpose
+const playEffect = effect => {
+  switch (effect) {
+    case 'fill':
+      rollover()
+      setTimeout(positive, 150)
+      break
+    case 'tool-light-pencil':
+      bip('c4')
+      break
+    case 'tool-pencil':
+      bip('e4')
+      break
+    case 'tool-pen':
+      bip('b4')
+      break
+    case 'tool-brush':
+      bip('c5')
+      break
+    case 'tool-note-pen':
+      bip('e5')
+      break
+    case 'tool-eraser':
+      bip('b5')
+      break
+    default:
+      samplers[effect].start()
+      break
+  }
+}
+
 module.exports = {
-  rollover: rollover,
-  down: down,
-  positive: positive,
-  negative: negative,
-  error: error,
-  shuffle,
-  bip
+  init,
+  rollover,
+  down,
+  positive,
+  negative,
+  error,
+  bip,
+  playEffect
 }

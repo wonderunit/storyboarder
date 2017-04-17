@@ -8,86 +8,26 @@ const throttle = require('lodash.throttle')
 const ease = require('eases')
 const vec2 = require('gl-vec2')
 
-const util = require('../../utils/index')
-const Loop = require('../../utils/loop')
-const sfx = require('../../wonderunit-sound.js')
+const util = require('../../utils/index.js')
+const Loop = require('../../utils/loop.js')
+
+const BrushInstrument = require('./brush-instrument')
 
 const degrees = 180 / Math.PI
 
 const distance = (x1, y1, x2, y2) =>
   Math.hypot(x2 - x1, y2 - y1)
 
-const Instrument = () => {
-  let sampler = samplers.drawing
-    .set('loop', true)
-    .set('retrigger', false)
-    .set('volume', -12)
-    .stop()
-  
-  let filterA = new Tone.Filter({
-    type: "bandpass",
-    frequency: 9000,
-    rolloff: -24,
-    Q: 1
-  })
+let size
+let engine
+let model
 
-  let filterB = new Tone.Filter({
-    type: "lowpass",
-    frequency: 8000,
-    rolloff: -48,
-    Q: 1
-  })
+let prev
+let curr
+let bufferA = vec2.create(),
+    bufferB = vec2.create()
 
-  let gain = new Tone.Gain({ gain: 1 })
-
-  let amp = new Tone.Gain({ gain: 1 })
-  let lfo = new Tone.LFO(4.25, 0.1, 0.5)
-  lfo.connect(amp.gain).start()
-
-  sampler.chain(filterA, gain, amp, Tone.Master)
-
-  let filterSend = gain.send('filterB', 0)
-  filterB.receive('filterB').toMaster()
-
-  const start = () => {
-    gain.gain.cancelScheduledValues()
-    gain.gain.value = 0
-    amp.gain.value = 0
-
-    if (sampler.buffer.loaded) {
-      const offset = Math.random() * sampler.buffer.duration
-
-      sampler.reverse = false
-
-      sampler.start(0, offset)
-      sampler.volume.value = -Infinity
-      sampler.volume.rampTo(-24, 0.15)
-    } else {
-      console.warn('sound has not loaded')
-    }
-  }
-
-  const note = (opt = { velocity: 1 }) => {
-    const { velocity } = opt
-  }
-
-  const stop = () => {
-    gain.gain.cancelScheduledValues()
-    gain.gain.rampTo(0, 0.01)
-    sampler.stop()
-  }
-  
-  return {
-    start,
-    stop,
-    note,
-    ugens: {
-      gain,
-      filterA,
-      filterB
-    }
-  }
-}
+let instrument
 
 const createModel = () => ({
   avgSpeed: 0,
@@ -106,37 +46,18 @@ const createModel = () => ({
   isAccel: false
 })
 
-let size
-
-let engine
-let model
-
-let prev
-let curr
-
-let bufferA = vec2.create(),
-    bufferB = vec2.create()
-
-let samplers
-let instrument
-
-const setSize = _size => {
-  size = _size
-}
-
 const init = _size => {
   setSize(_size)
 
-  samplers = {
-    'drawing': new Tone.Player('./snd/drawing-loop.wav'),
-    'trash': new Tone.Player('./snd/trash.wav').set('volume', -6).set({ retrigger: false }).toMaster()
-  }
-  instrument = Instrument()
+  instrument = BrushInstrument({ samplePath: './snd/drawing-loop.wav' })
 
-  engine = new Loop(step)
   model = createModel()
-
+  engine = new Loop(step)
   engine.start()
+}
+
+const setSize = _size => {
+  size = _size
 }
 
 const start = (x, y, pressure, pointerType) => {
@@ -262,41 +183,11 @@ const renderDirectionChange = (p, amplitudeOfChange) => {
 
 // TODO more use for distance calc
 
-const playEffect = effect => {
-  switch (effect) {
-    case 'fill':
-      sfx.rollover()
-      setTimeout(sfx.positive, 150)
-      break
-    case 'tool-light-pencil':
-      sfx.bip('c4')
-      break
-    case 'tool-pencil':
-      sfx.bip('e4')
-      break
-    case 'tool-pen':
-      sfx.bip('b4')
-      break
-    case 'tool-brush':
-      sfx.bip('c5')
-      break
-    case 'tool-note-pen':
-      sfx.bip('e5')
-      break
-    case 'tool-eraser':
-      sfx.bip('b5')
-      break
-    default:
-      samplers[effect].start()
-      break
-  }
-}
-
 module.exports = {
   init,
   setSize,
+
   start,
   stop,
-  trigger,
-  playEffect
+  trigger
 }
