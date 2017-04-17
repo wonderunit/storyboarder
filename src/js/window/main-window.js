@@ -18,7 +18,7 @@ const Transport = require('./transport.js')
 const notifications = require('./notifications.js')
 const NotificationData = require('../../data/messages.json')
 const Guides = require('./guides.js')
-const Sonifier = require('./sonifier.js')
+const Sonifier = require('./sonifier/index.js')
 
 let boardFilename
 let boardPath
