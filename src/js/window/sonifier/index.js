@@ -35,6 +35,8 @@ const createModel = () => ({
   accel: 0,
   damping: 0.2,
   isAccel: false,
+  
+  accelGain: 0,
 
   pressure: 0,
   pointerType: null,
@@ -44,7 +46,12 @@ const createModel = () => ({
   avgSpeed: 0
 })
 
+const inBounds = (x, y, _size) => {
+  return x >= 0 && y >= 0 && x <= _size[0] && y <= _size[1]
+}
+
 const init = dimensions => {
+  model = createModel()
   setSize(dimensions)
 
   instrument = BrushInstrument({
@@ -68,16 +75,32 @@ const start = (x, y, pressure, pointerType) => {
 
   bufferA = vec2.fromValues(0, 0)
   bufferB = vec2.fromValues(0, 0)
+  
+  instrument.noteOn()
+  trigger(x, y, pressure, pointerType)
+  renderDirectionChange(x, y, 0)
 }
 
 const stop = () => {
   model.isActive = false
   model.isOnCanvas = false
+  instrument.noteOff()
 }
 
+// NOTE curently c<x,y> are always absolute to canvas w/h (e.g.; 900 x 900 * aspectRatio)
 const trigger = (x, y, pressure, pointerType) => {
   curr = [x, y]
   model.pressure = pressure
+
+  // out-of-bounds check
+  // let isOnCanvas = inBounds(curr[0], curr[0], size)
+  // // has out-of-bounds changed?
+  // if (model.isOnCanvas != isOnCanvas) {
+  //   // register change
+  //   model.isOnCanvas = isOnCanvas
+  //   // update
+  // }
+  model.isOnCanvas = inBounds(curr[0], curr[0], size)
 
   let speed = prev ? distance(prev, curr) : 0
   model.accel += speed
@@ -90,6 +113,13 @@ const trigger = (x, y, pressure, pointerType) => {
     vec2.add(bufferB, bufferB, diff)
   }
 
+  // 1/4th screen width
+  let a = util.clamp(
+    model.accel * (1 / size[0]) * 4,
+    0,
+    1
+  )
+  model.accelGain += a
 
   prev = curr
 }
@@ -108,23 +138,63 @@ const step = dt => {
 
       if (Math.abs(diffInAngle * degrees) > 40) {
         renderDirectionChange(curr, amplitudeOfChange)
+        // reset the buffer
         bufferA = vec2.fromValues(0, 0)
         bufferB = vec2.fromValues(0, 0)
       }
     }
 
+    // let a
+    // // if there is a drastic change, let it cut in and out
+    // if (amplitudeOfChange / size[0] > 0.1) {
+    //   a = Tone.prototype.equalPowerScale(
+    //       util.clamp(
+    //         amplitudeOfChange * scaleFactor / 2,
+    //         0,
+    //         1
+    //       )
+    //     )
+    // // but for smooth movements, keep the amplitude steady
+    // } else {
+    //   a = 0.5
+    // }
+    // 
+    // let v = (model.pointerType === 'pen')
+    //   ? Tone.prototype.equalPowerScale(ease.expoIn(model.pressure)) * a
+    //   : a
+    // 
+    // instrument.ugens.gain.gain.value = v * (model.isAccel ? 1 : 0)
   }
+
+  // dampen
+  vec2.scale(bufferA, bufferA, 0.07)
+  vec2.scale(bufferB, bufferB, 0.98)
 
   model.accel *= frameSize * model.damping
   if (model.accel < 0.0001) model.accel = 0
   model.isAccel = model.accel != 0
 
+  if (!model.isOnCanvas) {
+    model.accelGain = 0
+  } else {
+    model.accelGain *= 0.2 * frameSize // dampen
+  }
+  instrument.setGain(model.accelGain)
+
   model.totalTime += dt
   model.avgSpeed = model.totalDistance / model.totalTime || 0
 }
 
-let dirChanges = 0
+let warble = false
 const renderDirectionChange = (p, amplitudeOfChange) => {
+  let isFast = (amplitudeOfChange / size[0] > 0.25) ? true : false
+
+  if (warble) {
+    instrument.setWarble(warble, isFast)
+  } else {
+    instrument.setWarble(warble, isFast)
+  }
+  warble = !warble
 
   // uncomment to draw changes
   //
