@@ -471,7 +471,7 @@ let loadBoardUI = ()=> {
   sfx.init()
 
   storyboarderSketchPane.on('pointerdown', Sonifier.start)
-  storyboarderSketchPane.sketchPane.on('onmove', Sonifier.trigger)
+  storyboarderSketchPane.on('pointermove', Sonifier.trigger)
   storyboarderSketchPane.sketchPane.on('onup', Sonifier.stop)
   Sonifier.init(storyboarderSketchPane.sketchPane.getCanvasSize())
   window.addEventListener('resize', () => {

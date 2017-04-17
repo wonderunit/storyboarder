@@ -98,6 +98,7 @@ class StoryboarderSketchPane extends EventEmitter {
     let pointerPosition = this.getRelativePosition(e.clientX, e.clientY)
     this.sketchPane.move(pointerPosition.x, pointerPosition.y, e.pointerType === "pen" ? e.pressure : 1)
     this.lineMileageCounter.add(pointerPosition)
+    this.emit('pointermove', pointerPosition.x, pointerPosition.y, e.pointerType === "pen" ? e.pressure : 1, e.pointerType)
   }
 
   canvasPointerUp (e) {

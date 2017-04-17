@@ -29,7 +29,8 @@ let bufferA = vec2.create(),
 let instrument
 
 const createModel = () => ({
-  isActive: true,
+  isActive: false,
+  isOnCanvas: false,
 
   accel: 0,
   damping: 0.2,
@@ -43,8 +44,8 @@ const createModel = () => ({
   avgSpeed: 0
 })
 
-const init = _size => {
-  setSize(_size)
+const init = dimensions => {
+  setSize(dimensions)
 
   instrument = BrushInstrument({
     samplePath: './snd/drawing-loop.wav'
@@ -55,8 +56,8 @@ const init = _size => {
   engine.start()
 }
 
-const setSize = _size => {
-  size = _size
+const setSize = dimensions => {
+  size = [dimensions.width, dimensions.height]
 }
 
 const start = (x, y, pressure, pointerType) => {
@@ -64,6 +65,7 @@ const start = (x, y, pressure, pointerType) => {
   model.pointerType = pointerType
   prev = null
   curr = null
+  model.isOnCanvas = true
   model.isActive = true
   instrument.start()
 
@@ -73,13 +75,21 @@ const start = (x, y, pressure, pointerType) => {
 
 const stop = () => {
   model.isActive = false
+  model.isOnCanvas = false
   instrument.stop()
 }
 
 // NOTE curently c<x,y> are always absolute to canvas w/h (e.g.; 900x900 * aspectRatio)
-const trigger = _curr => {
-  curr = [_curr.x, _curr.y]
-  model.pressure = curr.pressure
+const trigger = (x, y, pressure, pointerType) => {
+  // ignore out-of-bounds
+  if (x < 0 || y < 0 || x > size[0] || y > size[1]) {
+    model.isOnCanvas = false
+    return
+  }
+  model.isOnCanvas = true
+
+  curr = [x, y]
+  model.pressure = pressure
 
   let speed = prev ? distance(prev, curr) : 0
   model.accel += speed
@@ -121,10 +131,10 @@ const step = dt => {
     }
 
     // let a = util.clamp((model.accel / 100), 0.0, 1.0)
-    let scaleFactor = 1 / size.width
+    let scaleFactor = 1 / size[0]
     let a
     // if there is a drastic change, let it cut in and out
-    if (amplitudeOfChange / size.width > 0.1) {
+    if (amplitudeOfChange / size[0] > 0.1) {
       a = Tone.prototype.equalPowerScale(
           util.clamp(
             amplitudeOfChange * scaleFactor / 2,
@@ -142,6 +152,10 @@ const step = dt => {
       : a
 
     instrument.ugens.gain.gain.value = v * (model.isAccel ? 1 : 0)
+
+    if (!model.isOnCanvas) {
+      instrument.ugens.gain.gain.value = 0
+    }
 
     // TODO smoothing on filterB frequency (stepped)
     // let f = 1000 + (model.accel * 20)
@@ -163,7 +177,7 @@ const step = dt => {
 
 let dirChanges = 0
 const renderDirectionChange = (p, amplitudeOfChange) => {
-  let ramp = (amplitudeOfChange / size.width > 0.25) ? 0.05 : 1
+  let ramp = (amplitudeOfChange / size[0] > 0.25) ? 0.05 : 1
 
   if (dirChanges % 2 == 0) {
     instrument.ugens.filterB.frequency.rampTo(6000, ramp)
