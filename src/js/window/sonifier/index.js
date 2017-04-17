@@ -8,9 +8,9 @@ const throttle = require('lodash.throttle')
 const ease = require('eases')
 const vec2 = require('gl-vec2')
 
-const util = require('../utils/index')
-const Loop = require('../utils/loop')
-const sfx = require('../wonderunit-sound.js')
+const util = require('../../utils/index')
+const Loop = require('../../utils/loop')
+const sfx = require('../../wonderunit-sound.js')
 
 const degrees = 180 / Math.PI
 
