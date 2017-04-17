@@ -94,7 +94,7 @@ const trigger = (x, y, pressure, pointerType) => {
   model.pressure = pressure
 
   // out-of-bounds check
-  // let isOnCanvas = inBounds(curr[0], curr[0], size)
+  // let isOnCanvas = inBounds(curr[0], curr[1], size)
   // // has out-of-bounds changed?
   // if (model.isOnCanvas != isOnCanvas) {
   //   // register change
@@ -142,6 +142,11 @@ const step = dt => {
         // reset the buffer
         bufferA = vec2.fromValues(0, 0)
         bufferB = vec2.fromValues(0, 0)
+      }
+      // dampen volume when quick, steep scribble direction change happens
+      if (Math.abs(diffInAngle * degrees) > 100 && (amplitudeOfChange * size[0]) * 0.1) {
+        model.accelGain *= 0.1
+        model.pressureGain *= 0.1
       }
     }
 
