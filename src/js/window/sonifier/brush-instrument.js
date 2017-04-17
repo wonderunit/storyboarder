@@ -41,7 +41,7 @@ module.exports = (opt = { samplePath: './snd/drawing-loop.wav' }) => {
   // lfo.connect(amp.gain).start()
 
   sampler.chain(filterA, filterB, gain/*, amp*/, Tone.Master)
-  filterB.wet.value = 0.2
+  filterB.wet.value = 0.4
 
   const noteOn = () => {
     gain.gain.cancelScheduledValues()
