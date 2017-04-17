@@ -36,17 +36,12 @@ module.exports = (opt = { samplePath: './snd/drawing-loop.wav' }) => {
 
   let gain = new Tone.Gain({ gain: 1 })
 
-  // let amp = new Tone.Gain({ gain: 1 })
-  // let lfo = new Tone.LFO(4.25, 0.1, 0.5)
-  // lfo.connect(amp.gain).start()
-
-  sampler.chain(filterA, filterB, gain/*, amp*/, Tone.Master)
+  sampler.chain(filterA, filterB, gain, Tone.Master)
   filterB.wet.value = 0.4
 
   const noteOn = () => {
     gain.gain.cancelScheduledValues()
     gain.gain.value = 0
-    // amp.gain.value = 0
 
     if (sampler.buffer.loaded) {
       const offset = Math.random() * sampler.buffer.duration
