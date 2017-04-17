@@ -87,7 +87,8 @@ const trigger = _curr => {
   model.totalDistance += speed
 
   if (prev) {
-    let diff = [prev[0] - curr[0], prev[1] - curr[1]]
+    let diff = vec2.create()
+    vec2.subtract(diff, prev, curr)
     vec2.add(bufferA, bufferA, diff)
     vec2.add(bufferB, bufferB, diff)
   }
@@ -105,7 +106,7 @@ const step = dt => {
   vec2.scale(bufferB, bufferB, 0.98)
 
   if (model.isActive) {
-    let amplitudeOfChange = distance(bufferA[0], bufferA[1], bufferB[0], bufferB[1])
+    let amplitudeOfChange = distance(bufferA, bufferB)
     if (prev) {
       let angleA = Math.atan2(bufferA[1], bufferA[0])
       let angleB = Math.atan2(bufferB[1], bufferB[0])
