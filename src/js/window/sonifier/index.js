@@ -15,8 +15,8 @@ const BrushInstrument = require('./brush-instrument')
 
 const degrees = 180 / Math.PI
 
-const distance = (x1, y1, x2, y2) =>
-  Math.hypot(x2 - x1, y2 - y1)
+const distance = (a, b) =>
+  Math.hypot(b[0] - a[0], b[1] - a[1])
 
 let size
 let engine
@@ -30,26 +30,26 @@ let bufferA = vec2.create(),
 let instrument
 
 const createModel = () => ({
-  avgSpeed: 0,
+  isActive: true,
 
   accel: 0,
+  damping: 0.2,
+  isAccel: false,
 
   pressure: 0,
   pointerType: null,
 
   totalDistance: 0,
   totalTime: 0,
-
-  damping: 0.2,
-
-  isActive: true,
-  isAccel: false
+  avgSpeed: 0
 })
 
 const init = _size => {
   setSize(_size)
 
-  instrument = BrushInstrument({ samplePath: './snd/drawing-loop.wav' })
+  instrument = BrushInstrument({
+    samplePath: './snd/drawing-loop.wav'
+  })
 
   model = createModel()
   engine = new Loop(step)
@@ -77,17 +77,17 @@ const stop = () => {
   instrument.stop()
 }
 
-// c<x,y> are always absolute to canvas w/h (e.g.; 900x900 * aspectRatio)
-const trigger = c => {
-  curr = c
+// NOTE curently c<x,y> are always absolute to canvas w/h (e.g.; 900x900 * aspectRatio)
+const trigger = _curr => {
+  curr = [_curr.x, _curr.y]
   model.pressure = curr.pressure
 
-  let speed = prev ? distance(prev.x, prev.y, curr.x, curr.y) : 0
+  let speed = prev ? distance(prev, curr) : 0
   model.accel += speed
   model.totalDistance += speed
 
   if (prev) {
-    let diff = [prev.x - curr.x, prev.y - curr.y]
+    let diff = [prev[0] - curr[0], prev[1] - curr[1]]
     vec2.add(bufferA, bufferA, diff)
     vec2.add(bufferB, bufferB, diff)
   }
@@ -109,10 +109,12 @@ const step = dt => {
     if (prev) {
       let angleA = Math.atan2(bufferA[1], bufferA[0])
       let angleB = Math.atan2(bufferB[1], bufferB[0])
+
       // http://stackoverflow.com/questions/1878907/the-smallest-difference-between-2-angles
-      let changeInAngle = Math.atan2(Math.sin(angleA - angleB), Math.cos(angleA - angleB))
-      if (Math.abs(changeInAngle * degrees) > 40) {
-        renderDirectionChange([curr.x, curr.y], amplitudeOfChange)
+      let diffInAngle = Math.atan2(Math.sin(angleA - angleB), Math.cos(angleA - angleB))
+
+      if (Math.abs(diffInAngle * degrees) > 40) {
+        renderDirectionChange(curr, amplitudeOfChange)
         bufferA = vec2.fromValues(0, 0)
         bufferB = vec2.fromValues(0, 0)
       }
