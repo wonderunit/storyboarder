@@ -11,7 +11,7 @@ class Engine extends EventEmitter {
     super(fn)
     this.running = false
     this.last = now()
-    this._delay = 1/60 * 1000 * 3
+    this._delay = 1/60 * 1000
     this._timer = null
     this._tick = this.tick.bind(this)
 
