@@ -24,4 +24,5 @@
   background: white;
   border-radius: 13px;
   box-shadow: 0 2px 15px rgba(0, 0, 0, 0.3);
+  cursor: none;
 }
