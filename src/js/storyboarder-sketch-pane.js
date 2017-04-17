@@ -128,7 +128,7 @@ class StoryboarderSketchPane extends EventEmitter {
     // TODO why are we creating a new pointer every time?
     let brushPointer = this.sketchPane.createBrushPointer(
       image, 
-      this.brush.getSize() * this.scaleFactor,
+      Math.max(6, this.brush.getSize() * this.scaleFactor),
       this.brush.getAngle(),
       threshold,
       true)
