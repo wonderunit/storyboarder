@@ -4,7 +4,6 @@
 
 const Tone = require('tone')
 const tonal = require('tonal')
-const throttle = require('lodash.throttle')
 const ease = require('eases')
 const vec2 = require('gl-vec2')
 
