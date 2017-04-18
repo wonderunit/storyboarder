@@ -89,14 +89,6 @@ const trigger = (x, y, pressure, pointerType) => {
   curr = [x, y]
   model.pressure = pressure
 
-  // out-of-bounds check
-  // let isOnCanvas = inBounds(curr[0], curr[1], size)
-  // // has out-of-bounds changed?
-  // if (model.isOnCanvas != isOnCanvas) {
-  //   // register change
-  //   model.isOnCanvas = isOnCanvas
-  //   // update
-  // }
   model.isOnCanvas = inBounds(curr[0], curr[1], size)
 
   let speed = prev ? distance(prev, curr) : 0
