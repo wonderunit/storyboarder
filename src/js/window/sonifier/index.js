@@ -1,7 +1,3 @@
-// TODO ping-pong loop sample
-// TODO minimum note duration
-// TODO scale accel by canvas size?
-
 const Tone = require('tone')
 const tonal = require('tonal')
 const ease = require('eases')
