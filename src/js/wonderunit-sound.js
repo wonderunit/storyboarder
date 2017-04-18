@@ -226,13 +226,18 @@ let bip = (note) => {
   advanceNote(1)
 }
 
-let samplers
+const filePathsForSoundEffects = {
+  "trash": "./snd/trash.wav"
+}
+let multiPlayer
 const init = () => {
-  samplers = {
-    'trash': new Tone.Player('./snd/trash.wav')
-              .set('volume', -6)
-              .set({ retrigger: false })
-              .toMaster()
+  multiPlayer = new Tone.MultiPlayer(new Tone.Buffers(filePathsForSoundEffects))
+                .set('volume', -6)
+                .toMaster()
+  multiPlayer.stopIfPlaying = function (bufferName) {
+    if (this._activeSources[bufferName] && this._activeSources[bufferName].length) {
+      this.stop(bufferName)
+    }
   }
 }
 // route for sound effects by name/purpose
@@ -261,7 +266,8 @@ const playEffect = effect => {
       bip('b5')
       break
     default:
-      samplers[effect].start()
+      multiPlayer.stopIfPlaying(effect)
+      multiPlayer.start(effect)
       break
   }
 }
