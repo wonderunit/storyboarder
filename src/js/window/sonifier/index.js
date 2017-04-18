@@ -155,7 +155,7 @@ const step = dt => {
   }
   if (model.pointerType === 'pen') {
     let penGain = ease.expoIn(util.clamp(model.pressureGain, 0, 1))
-    let blend = (penGain * 0.5) + (model.accelGain * 0.5)
+    let blend = (penGain * 0.5) * (model.accelGain)
     instrument.setGain(
       Tone.prototype.equalPowerScale(
         util.clamp(blend, 0, 1)
