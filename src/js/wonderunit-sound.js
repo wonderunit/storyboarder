@@ -12,11 +12,15 @@
   new chord sequences
 */
 
+const { remote } = require('electron')
+
 const Tone = require('tone')
 const { shuffle } = require('./utils/index.js')
 
 Tone.Transport.latencyHint = 'playback'
 Tone.Transport.start("+0.1")
+
+let enableSoundEffects = remote.getGlobal('sharedObj').prefs['enableSoundEffects']
 
 let chords = [
   ['a4', 'b4', 'c5', 'e5'],
@@ -165,6 +169,8 @@ let advanceNote = (amount) => {
 }
 
 let rollover = () => {
+  if (!enableSoundEffects) return
+
   let note = chords[currentChord][currentNote % (chords[0].length)]
   let bassnote = chords[currentChord][0]
   let onote = chords2[currentChord][currentNote % (chords[0].length)]
@@ -177,6 +183,8 @@ let rollover = () => {
 }
 
 let down = () => {
+  if (!enableSoundEffects) return
+
   let bassnote = chords[currentChord][0]
   bassSynth.triggerAttackRelease(Tone.Frequency(bassnote).transpose(-12*3), 0.2, undefined, 0.4);
   synth.triggerAttackRelease(Tone.Frequency(bassnote).transpose(+12*2), "16n", undefined, 1);
@@ -184,6 +192,8 @@ let down = () => {
 }
 
 let negative = () => {
+  if (!enableSoundEffects) return
+
   let bassnote = chords[currentChord][0]
   bassSynth.triggerAttackRelease(Tone.Frequency(bassnote).transpose((-12*3)+5), 0.2, undefined, 0.3);
   synth.triggerAttackRelease(Tone.Frequency(bassnote).transpose((+12*2)+5), "16n", undefined, 0.9);
@@ -195,6 +205,8 @@ let negative = () => {
 }
 
 let positive = () => {
+  if (!enableSoundEffects) return
+
   let bassnote = chords[currentChord][0]
   bassSynth.triggerAttackRelease(Tone.Frequency(bassnote).transpose(-12*3), 0.2, undefined, 0.4);
   synth.triggerAttackRelease(Tone.Frequency(bassnote).transpose(+12*2), "16n", undefined, 1);
@@ -211,6 +223,8 @@ let positive = () => {
 }
 
 let error = () => {
+  if (!enableSoundEffects) return
+
   let bassnote = chords[currentChord][0]
     bassSynth.triggerAttackRelease(Tone.Frequency(bassnote).transpose((-12*2)), 0.1, undefined, 0.3);
     errorSynth.triggerAttackRelease(Tone.Frequency(bassnote).transpose((-12*2)), "64n", undefined, 0.3);
@@ -222,6 +236,8 @@ let error = () => {
 }
 
 let bip = (note) => {
+  if (!enableSoundEffects) return
+
   bipSynth.triggerAttackRelease(Tone.Frequency(note).transpose(-12), "16n", undefined, 0.25)
   advanceNote(1)
 }
@@ -231,6 +247,8 @@ const filePathsForSoundEffects = {
 }
 let multiPlayer
 const init = () => {
+  if (!enableSoundEffects) return
+
   multiPlayer = new Tone.MultiPlayer(new Tone.Buffers(filePathsForSoundEffects))
                 .set('volume', -6)
                 .toMaster()
@@ -242,6 +260,8 @@ const init = () => {
 }
 // route for sound effects by name/purpose
 const playEffect = effect => {
+  if (!enableSoundEffects) return
+
   switch (effect) {
     case 'fill':
       rollover()

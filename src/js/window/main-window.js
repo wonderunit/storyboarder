@@ -470,14 +470,15 @@ let loadBoardUI = ()=> {
 
   sfx.init()
 
-  storyboarderSketchPane.on('pointerdown', Sonifier.start)
-  storyboarderSketchPane.on('pointermove', Sonifier.trigger)
-  storyboarderSketchPane.sketchPane.on('onup', Sonifier.stop)
-  Sonifier.init(storyboarderSketchPane.sketchPane.getCanvasSize())
-  window.addEventListener('resize', () => {
-    Sonifier.setSize(storyboarderSketchPane.sketchPane.getCanvasSize())
-  })
-
+  if (remote.getGlobal('sharedObj').prefs['enableSoundEffects']) {
+    storyboarderSketchPane.on('pointerdown', Sonifier.start)
+    storyboarderSketchPane.on('pointermove', Sonifier.trigger)
+    storyboarderSketchPane.sketchPane.on('onup', Sonifier.stop)
+    Sonifier.init(storyboarderSketchPane.sketchPane.getCanvasSize())
+    window.addEventListener('resize', () => {
+      Sonifier.setSize(storyboarderSketchPane.sketchPane.getCanvasSize())
+    })
+  }
 
 
   let onUndoStackAction = (state) => {

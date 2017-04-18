@@ -2,9 +2,14 @@ const fs = require('fs')
 const path = require('path')
 const { app } = require('electron')
 
+const pkg = require('../../package.json')
+
 const prefFile = path.join(app.getPath('userData'), 'pref.json')
 
-const defaultPrefs = {}
+const defaultPrefs = {
+  version: pkg.version,
+  enableSoundEffects: true
+}
 
 let prefs
 
@@ -18,7 +23,7 @@ const load = () => {
 
     try {
       // create new prefs
-      fs.writeFileSync(prefFile, JSON.stringify(prefs, null, 2))
+      savePrefs()
     } catch (e) {
       //console.log(e)
     }
@@ -31,7 +36,19 @@ const savePrefs = prefs =>
 const getPrefs = () =>
   prefs
 
-load()
+const migrate = () => {
+  prefs = Object.assign(defaultPrefs, prefs)
+}
+
+const init = () => {
+  load()
+  if (prefs.version !== defaultPrefs.version) {
+    migrate()
+    savePrefs()
+  }
+}
+
+init()
 
 module.exports = {
   savePrefs,
