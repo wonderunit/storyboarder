@@ -137,28 +137,6 @@ const step = dt => {
         model.pressureGain *= 0.1
       }
     }
-
-    // let a
-    // // if there is a drastic change, let it cut in and out
-    // if (amplitudeOfChange / size[0] > 0.1) {
-    //   a = Tone.prototype.equalPowerScale(
-    //       util.clamp(
-    //         amplitudeOfChange * scaleFactor / 2,
-    //         0,
-    //         1
-    //       )
-    //     )
-    // // but for smooth movements, keep the amplitude steady
-    // } else {
-    //   a = 0.5
-    // }
-    // 
-    // let v = (model.pointerType === 'pen')
-    //   ? Tone.prototype.equalPowerScale(ease.expoIn(model.pressure)) * a
-    //   : a
-    // 
-    // instrument.ugens.gain.gain.value = v * (model.isAccel ? 1 : 0)
-
     model.pressureGain += model.pressure
   }
 
