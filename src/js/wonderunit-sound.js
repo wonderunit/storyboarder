@@ -136,6 +136,17 @@ var bipSynth = new Tone.MonoSynth()
   .set('volume', -24)
   .toMaster()
 
+let metalSynth = new Tone.MetalSynth()
+    .set({
+      'frequency': 110,
+      'envelope': {
+        'decay': 0.125,
+        'release': 0.05
+      },
+      'volume': -28
+    })
+    .toMaster()
+
 // set up effects and chain them.
 // var freeverb = new Tone.Freeverb(0.9, 1000) // unused
 var comp = new Tone.Compressor(-10, 5)
@@ -284,6 +295,14 @@ const playEffect = effect => {
       break
     case 'tool-eraser':
       bip('b5')
+      break
+    case 'on':
+      metalSynth.set({ 'frequency': 220 })
+      metalSynth.triggerAttackRelease()
+      break
+    case 'off':
+      metalSynth.set({ 'frequency': 110 })
+      metalSynth.triggerAttackRelease()
       break
     default:
       multiPlayer.stopIfPlaying(effect)
