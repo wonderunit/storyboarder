@@ -2,6 +2,7 @@ const EventEmitter = require('events').EventEmitter
 const Color = require('color-js')
 
 const util = require('../utils/index.js')
+const sfx = require('../wonderunit-sound.js')
 
 const BRUSH_PENCIL = 'pencil'
 const BRUSH_LIGHT_PENCIL = 'light-pencil'
@@ -109,6 +110,7 @@ class Toolbar extends EventEmitter {
     this.swatchDelay = 2000
 
     this.onButtonDown = this.onButtonDown.bind(this)
+    this.onButtonOver = this.onButtonOver.bind(this)
     this.onSwatchUp = this.onSwatchUp.bind(this)
     this.onSwatchDown = this.onSwatchDown.bind(this)
     this.onBrushSizePointerDown = this.onBrushSizePointerDown.bind(this)
@@ -167,6 +169,11 @@ class Toolbar extends EventEmitter {
     const immediateButtons = [...this.el.querySelectorAll('.button:not([id^="toolbar-palette-color"])')]
     const swatchButtons = [...this.el.querySelectorAll('.button[id^="toolbar-palette-color"]')]
     const brushSizeControlsEl = this.el.querySelector('#toolbar .toolbar-brush-size-controls')
+    const allControls = [].concat(
+      immediateButtons,
+      swatchButtons,
+      [brushSizeControlsEl]
+    )
 
     for (let buttonEl of immediateButtons) {
       buttonEl.addEventListener('pointerdown', this.onButtonDown)
@@ -178,6 +185,11 @@ class Toolbar extends EventEmitter {
     }
 
     brushSizeControlsEl.addEventListener('pointerdown', this.onBrushSizePointerDown)
+
+
+    for (let el of allControls) {
+      el.addEventListener('pointerenter', this.onButtonOver)
+    }
   }
 
   // TODO cleanup, remove listeners
@@ -431,16 +443,38 @@ class Toolbar extends EventEmitter {
     const brushSizeValue = this.getBrushOptions().size
     brushSizeEl.innerHTML = Math.round(brushSizeValue)
   }
+
+  // left or right?
+  getDirectionOnTarget (event) {
+    const pos = event.layerX / event.target.getBoundingClientRect().width
+    return pos > 0.5 ? 1 : -1
+  }
   
   onBrushSizePointerDown (event) {
-    const pos = event.layerX / event.target.getBoundingClientRect().width
-    const direction = pos > 0.5 ? 1 : -1
+    let direction = this.getDirectionOnTarget(event)
     this.changeBrushSize(direction, true)
   }
 
   toggleCaptions () {
     this.setState({ captions: !this.state.captions })
     this.emit('captions')
+  }
+  
+  onButtonOver (event) {
+    sfx.rollover()
+    //
+    // for targetting individual inc/dec
+    //
+    // if (event.target.classList.contains('toolbar-brush-size-controls')) {
+    //   let direction = this.getDirectionOnTarget(event)
+    //   if (direction == -1) {
+    //     // left
+    //     // console.log('dec')
+    //   } else {
+    //     // right
+    //     // console.log('inc')
+    //   }
+    // }
   }
 }
 
