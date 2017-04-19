@@ -24,7 +24,7 @@
   "build": {
     "asar": true,
     "appId": "com.wonderunit.storyboarder",
-    "compression": "maximum", 
+    "compression": "maximum",
     "files": [
       "**/*",
       "!*.md",
@@ -50,8 +50,8 @@
     }
   },
   "devDependencies": {
-    "electron-builder": "17.0.2",
-    "electron": "1.6.5"
+    "electron": "1.6.7",
+    "electron-builder": "17.0.2"
   },
   "dependencies": {
     "cardinal-spline-js": "^2.3.6",
