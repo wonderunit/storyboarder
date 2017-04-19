@@ -53,6 +53,10 @@
 
 #toolbar .button { /* */ }
 
+#toolbar .button {
+  -webkit-app-region: no-drag
+}
+
 #toolbar .group:not(.group_tools) .button {
   border-radius: 5px;
 
