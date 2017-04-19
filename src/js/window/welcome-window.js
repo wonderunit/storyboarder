@@ -19,7 +19,10 @@ let updateRecentDocuments = () => {
       let filename = recentDocument.filename.split(path.sep)
       filename = filename[filename.length-1]
       html.push(`<h2>${recentDocument.title}</h2>`)
-      html.push(`${moment(recentDocument.time).fromNow().toUpperCase()} // ${util.msToTime(recentDocument.totalMovieTime)} / ${recentDocument.totalPageCount} PAGES / ${String(recentDocument.totalWordCount).replace(/\B(?=(\d{3})+(?!\d))/g, ",")} WORDS`)
+
+      let lastUpdated = moment(recentDocument.time).fromNow().toUpperCase()
+      html.push(lastUpdated) // `// ${util.msToTime(recentDocument.totalMovieTime)} / ${recentDocument.totalPageCount} PAGES / ${String(recentDocument.totalWordCount).replace(/\B(?=(\d{3})+(?!\d))/g, ",")} WORDS`)
+
       html.push('</div></div>')
       count++
     }
