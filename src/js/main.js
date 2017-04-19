@@ -300,7 +300,12 @@ let createNew = () => {
           newBoardObject.aspectRatio = aspects[response]
           fs.writeFileSync(path.join(filename, boardName + '.storyboarder'), JSON.stringify(newBoardObject))
           fs.mkdirSync(path.join(filename, 'images'))
-          loadStoryboarderWindow(path.join(filename, boardName + '.storyboarder'))
+
+          let filePath = path.join(filename, boardName + '.storyboarder')
+
+          addToRecentDocs(filePath, newBoardObject)
+
+          loadStoryboarderWindow(filePath)
         })
       } else {
         console.log("error: already exists")
