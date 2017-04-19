@@ -5,6 +5,8 @@ const menu = require('../menu.js')
 const util = require('../utils/index.js')
 const sfx = require('../wonderunit-sound.js')
 
+const pkg = require('../../../package.json')
+
 menu.setWelcomeMenu()
 
 let updateRecentDocuments = () => {
@@ -77,6 +79,8 @@ document.querySelector('#new-storyboard').addEventListener("mouseover", sfx.roll
 document.querySelector('#getting-started').addEventListener("mousedown", sfx.error)
 document.querySelector('#open-storyboard').addEventListener("mousedown", sfx.down)
 document.querySelector('#new-storyboard').addEventListener("mousedown", sfx.positive)
+
+document.querySelector("span[data-js='version-number']").innerHTML = ` v${pkg.version}`
 
 ipcRenderer.on('playsfx', (event, args)=>{
   console.log("sup")
