@@ -3,7 +3,6 @@ const child_process = require('child_process')
 //const electronLocalshortcut = require('electron-localshortcut');
 const fs = require('fs')
 const path = require('path')
-const moment = require('moment')
 const menu = require('../menu.js')
 const util = require('../utils/index.js')
 const sfx = require('../wonderunit-sound.js')
