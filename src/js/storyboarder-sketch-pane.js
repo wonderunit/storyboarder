@@ -68,16 +68,21 @@ class StoryboarderSketchPane extends EventEmitter {
     this.sketchPaneDOMElement.addEventListener('pointerover', this.canvasPointerOver)
     this.sketchPaneDOMElement.addEventListener('pointerout', this.canvasPointerOut)
 
-    this.el.appendChild(this.containerEl)
-    this.containerEl.appendChild(this.sketchPaneDOMElement)
-
     // brush pointer
     this.brushPointerContainer = document.createElement('div')
     this.brushPointerContainer.className = 'brush-pointer'
     this.brushPointerContainer.style.position = 'absolute'
     this.brushPointerContainer.style.pointerEvents = 'none'
 
-    this.resize()
+    // measure
+    this.updateContainerSize()
+
+    // add sketchpane
+    this.el.appendChild(this.containerEl)
+    this.containerEl.appendChild(this.sketchPaneDOMElement)
+    
+    // adjust sizes
+    this.renderContainerSize()
   }
 
   canvasPointerDown (e) {
