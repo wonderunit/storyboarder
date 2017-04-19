@@ -139,6 +139,7 @@ let loadBoardUI = ()=> {
   )
   paintingCanvas = storyboarderSketchPane.getLayerCanvasByName('painting')
   window.addEventListener('resize', () => {
+    resize()
     storyboarderSketchPane.resize()
   })
   storyboarderSketchPane.on('addToUndoStack', () => {
@@ -491,7 +492,7 @@ let loadBoardUI = ()=> {
     textInputMode = false
   })
 
-
+  resize()
 
   setTimeout(()=>{remote.getCurrentWindow().show()}, 200)
   //remote.getCurrentWebContents().openDevTools()
@@ -1440,8 +1441,7 @@ window.onmousedown = (e) => {
   stopPlaying()
 }
 
-
-window.onresize = (e) => {
+const resize = () => {
   // measure the main area
   const mainEl = document.getElementById('storyboarder-main')
   const toolbarEl = document.getElementById('toolbar')
