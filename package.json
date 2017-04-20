@@ -24,7 +24,7 @@
   "build": {
     "asar": true,
     "appId": "com.wonderunit.storyboarder",
-    "compression": "maximum", 
+    "compression": "maximum",
     "files": [
       "**/*",
       "!*.md",
@@ -58,7 +58,9 @@
     "color-js": "^1.0.3",
     "electron-is-dev": "0.1.2",
     "electron-localshortcut": "^1.0.0",
+    "express": "^4.15.2",
     "moment": "^2.14.1",
+    "socket.io": "^1.7.3",
     "tether": "1.4.0",
     "tether-tooltip": "1.2.0",
     "tone": "^0.8.0"

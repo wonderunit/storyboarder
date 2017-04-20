@@ -1817,6 +1817,40 @@ let copyBoards = ()=> {
   clipboard.write(payload)
 }
 
+let importImage = (imageDataURL) => {
+  // TODO: undo
+  var image = new Image()
+  image.src = imageDataURL
+
+  let targetWidth
+  let targetHeight
+  let offsetX
+  let offsetY
+
+  console.log(boardData.aspectRatio)
+  console.log((image.height/image.width))
+  if (boardData.aspectRatio > (image.height/image.width)) {
+    targetHeight = 900
+    targetWidth = 900 * (image.width/image.height)
+
+    offsetX = Math.round(((900 * boardData.aspectRatio) - targetWidth)/2)
+    offsetY = 0
+  } else {
+    targetWidth = 900 * boardData.aspectRatio
+    targetHeight = targetWidth * (image.width/image.height)
+
+    offsetY = Math.round(900 - targetHeight)
+    offsetX = 0
+  }
+
+
+  // render
+  paintingCanvas.getContext("2d").drawImage(image, offsetX, offsetY, targetWidth, targetHeight)
+  markImageFileDirty()
+  saveImageFile()
+}
+
+
 let pasteBoards = () => {
   if (textInputMode) return
 
@@ -1850,7 +1884,7 @@ let pasteBoards = () => {
   }
 
   // for a clipboard with image only, no board data, create a new board data object
-  if (!newBoards.length && !newBoard && (clipboardImage !== "")) {
+  if (!newBoards && !newBoard && (clipboardImage !== "")) {
     newBoard = {
       newShot: false,
       lastEdited: Date.now(),
@@ -2264,4 +2298,8 @@ ipcRenderer.on('toggleCaptions', (event, args)=>{
 ipcRenderer.on('textInputMode', (event, args)=>{
   textInputMode = args
   textInputAllowAdvance = false
+})
+
+ipcRenderer.on('importImage', (event, args)=> {
+  importImage(args)
 })
