@@ -30,7 +30,8 @@
       "!*.md",
       "!DEVELOPERS.md",
       "!README.md",
-      "!notes/"
+      "!notes",
+      "!test"
     ],
     "dmg": {
       "background": "build/background.png",
