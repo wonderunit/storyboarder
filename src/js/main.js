@@ -33,6 +33,7 @@ let sketchWindow
 let keyCommandWindow
 
 let welcomeInprogress
+let stsWindow
 
 let statWatcher
 
@@ -69,6 +70,7 @@ app.on('open-file', (event, path) => {
 
 app.on('ready', () => {
   analytics.init(prefs.enableAnalytics)
+  // open the welcome window when the app loads up first
   openWelcomeWindow()
   // via https://github.com/electron/electron/issues/4690#issuecomment-217435222
   const argv = process.defaultApp ? process.argv.slice(2) : process.argv
@@ -94,7 +96,7 @@ app.on('ready', () => {
 
   setInterval(()=>{ analytics.ping() }, 60*1000)
 
-  //open the welcome window when the app loads up first
+  openStsWindow()
 })
 
 let openKeyCommandWindow = ()=> {
@@ -107,6 +109,7 @@ let openKeyCommandWindow = ()=> {
 
 app.on('activate', ()=> {
   if (!mainWindow && !welcomeWindow) openWelcomeWindow()
+  
 })
 
 let openNewWindow = () => {
@@ -119,6 +122,19 @@ let openNewWindow = () => {
   }
   newWindow.show()
 }
+
+let openStsWindow = () => {
+  console.log("sts")
+  if (!stsWindow) {
+    stsWindow = new BrowserWindow({width: 600, height: 580, show: false, center: true, resizable: false, frame: false, modal: false})
+    stsWindow.loadURL(`file://${__dirname}/../sts-window.html`)
+    stsWindow.once('ready-to-show', () => {
+      stsWindow.show()
+    })
+  }
+  stsWindow.show()
+}
+
 
 let openWelcomeWindow = ()=> {
   welcomeWindow = new BrowserWindow({width: 900, height: 600, center: true, show: false, resizable: false, frame: false})

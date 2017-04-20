@@ -48,6 +48,8 @@ const CanvasRecorder = require('../utils/canvas-recorder.js')
 let isRecording = false
 let canvasRecorder
 
+const ShotTemplateSystem = require('../shot-template-system')
+
 let boardFilename
 let boardPath
 let boardData
@@ -119,6 +121,8 @@ const framesToMsecs = value => Math.round(value / 24 * 1000)
 
 //  analytics.event('Application', 'open', filename)
 
+
+let shotTemplateSystem
 
 menu.setMenu()
 
@@ -907,6 +911,9 @@ let loadBoardUI = ()=> {
       renderMetaData()
     }
   })
+
+  shotTemplateSystem = new ShotTemplateSystem()
+  window.shotTemplateSystem = shotTemplateSystem
 
   // for debugging:
   //
