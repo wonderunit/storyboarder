@@ -3,7 +3,9 @@
   "short_name": "Storyboarder",
   "start_url": "/",
   "display": "fullscreen",
-  "background_color": "#00f",
+  "background_color": "#ffffff",
+  "theme_color": "white",
+  "orientation": "landscape",
   "description": "The best way to visualize your story.",
   "icons": [{
     "src": "/static/img/touch/homescreen48.png",

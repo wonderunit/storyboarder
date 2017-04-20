@@ -1,8 +1,26 @@
-var socket = io.connect('/');
+/* 
 
-socket.on('news', function (data) {
+TODO:
+
+On reconnect ask for current image
+listen for image
+send stroke data
+ui design
+blocking if there is no connection
+
+*/
+
+var socket = io.connect('/', {reconnectionDelay: 200, reconnectionDelayMax: 500});
+
+socket.on('connect_error', function (data) {
+  console.log("connect error - are you sure Storyboarder is running on your computer?")
   console.log(data);
-  socket.emit('my other event', { my: 'data' });
+
+});
+
+socket.on('reconnect', function (data) {
+  console.log("reconnected!!!")
+  console.log(data);
 });
 
 document.body.onpointermove = (e) => {
@@ -37,7 +55,6 @@ function readFile(file) {
   reader.readAsDataURL(file);
 }
 
-
 function processFile(dataURL, fileType) {
   var maxWidth = 800;
   var maxHeight = 800;
@@ -53,7 +70,6 @@ function processFile(dataURL, fileType) {
     alert('There was an error processing your file!');
   };
 }
-
 
 function sendFile(fileData) {
   socket.emit('image', { fileData: fileData });
