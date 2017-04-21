@@ -482,7 +482,7 @@ textarea:focus, input:focus {
 }
 
 #canvas-caption {
-  background-color: rgba(0,0,0,0.6);
+  background-color: rgba(0, 0, 0, 0.6);
   border-radius: 5px;
   padding: .3vw .6vw;
   position: absolute;
@@ -500,6 +500,7 @@ textarea:focus, input:focus {
   z-index: 200;
   text-shadow: 0 1px 0px rgba(0,0,0,.6);
   font-weight: 100;
+  bottom: 70px;
 }
 
 /*

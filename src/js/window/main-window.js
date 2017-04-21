@@ -154,9 +154,8 @@ let loadBoardUI = ()=> {
 
 
 
-
-  // TEMP create placeholders so we can compile
   let sketchPaneEl = document.querySelector('#storyboarder-sketch-pane')
+
   let captionEl = document.createElement('div')
   captionEl.id = 'canvas-caption'
   sketchPaneEl.appendChild(captionEl)
