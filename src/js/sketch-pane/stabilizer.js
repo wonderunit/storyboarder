@@ -1,8 +1,5 @@
-const EventEmitter = require('events').EventEmitter
-
-class Stabilizer extends EventEmitter {
+class Stabilizer {
   constructor (downFunction, moveFunction, upFunction, level, weight, x, y, pressure, interval) {
-    super()
     this.downFunction = downFunction
     this.moveFunction = moveFunction
     this.upFunction = upFunction

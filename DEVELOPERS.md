@@ -27,8 +27,8 @@ You can run a quick view test using [`budo`](https://github.com/mattdesl/budo) i
 
 If cross-compiling from Mac to Windows, install [Wine](see https://github.com/electron-userland/electron-builder/wiki/Multi-Platform-Build) first.
 
-    $ npm run build:mac # Mac only
-    $ npm run build:win # Windows only
-    $ npm run build     # Mac and Windows
+    $ npm run dist:mac # Mac only
+    $ npm run dist:win # Windows only
+    $ npm run dist     # Mac and Windows
 
 Remember to sync data files that have server representation (like `messages.json`).

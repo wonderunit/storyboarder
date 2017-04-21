@@ -30,7 +30,8 @@
       "!*.md",
       "!DEVELOPERS.md",
       "!README.md",
-      "!notes/"
+      "!notes",
+      "!test"
     ],
     "dmg": {
       "background": "build/background.png",
@@ -50,19 +51,19 @@
     }
   },
   "devDependencies": {
-    "electron-builder": "15.1.1",
-    "electron-prebuilt": "^1.4.5"
+    "electron": "1.6.7",
+    "electron-builder": "17.0.2"
   },
   "dependencies": {
     "cardinal-spline-js": "^2.3.6",
-    "color-js": "^1.0.3",
+    "color-js": "^1.0.4",
     "electron-is-dev": "0.1.2",
     "electron-localshortcut": "^1.0.0",
     "express": "^4.15.2",
-    "moment": "^2.14.1",
+    "moment": "^2.18.1",
     "socket.io": "^1.7.3",
     "tether": "1.4.0",
     "tether-tooltip": "1.2.0",
-    "tone": "^0.8.0"
+    "tone": "^0.10.0"
   }
 }

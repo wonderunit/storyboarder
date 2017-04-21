@@ -5,6 +5,8 @@ const menu = require('../menu.js')
 const util = require('../utils/index.js')
 const sfx = require('../wonderunit-sound.js')
 
+const pkg = require('../../../package.json')
+
 menu.setWelcomeMenu()
 
 let updateRecentDocuments = () => {
@@ -17,7 +19,10 @@ let updateRecentDocuments = () => {
       let filename = recentDocument.filename.split(path.sep)
       filename = filename[filename.length-1]
       html.push(`<h2>${recentDocument.title}</h2>`)
-      html.push(`${moment(recentDocument.time).fromNow().toUpperCase()} // ${util.msToTime(recentDocument.totalMovieTime)} / ${recentDocument.totalPageCount} PAGES / ${String(recentDocument.totalWordCount).replace(/\B(?=(\d{3})+(?!\d))/g, ",")} WORDS`)
+
+      let lastUpdated = moment(recentDocument.time).fromNow().toUpperCase()
+      html.push(lastUpdated) // `// ${util.msToTime(recentDocument.totalMovieTime)} / ${recentDocument.totalPageCount} PAGES / ${String(recentDocument.totalWordCount).replace(/\B(?=(\d{3})+(?!\d))/g, ",")} WORDS`)
+
       html.push('</div></div>')
       count++
     }
@@ -77,6 +82,8 @@ document.querySelector('#new-storyboard').addEventListener("mouseover", sfx.roll
 document.querySelector('#getting-started').addEventListener("mousedown", sfx.error)
 document.querySelector('#open-storyboard').addEventListener("mousedown", sfx.down)
 document.querySelector('#new-storyboard').addEventListener("mousedown", sfx.positive)
+
+document.querySelector("span[data-js='version-number']").innerHTML = ` v${pkg.version}`
 
 ipcRenderer.on('playsfx', (event, args)=>{
   console.log("sup")

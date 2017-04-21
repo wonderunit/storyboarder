@@ -3,7 +3,6 @@ const child_process = require('child_process')
 //const electronLocalshortcut = require('electron-localshortcut');
 const fs = require('fs')
 const path = require('path')
-const moment = require('moment')
 const menu = require('../menu.js')
 const util = require('../utils/index.js')
 const sfx = require('../wonderunit-sound.js')
@@ -139,6 +138,7 @@ let loadBoardUI = ()=> {
   )
   paintingCanvas = storyboarderSketchPane.getLayerCanvasByName('painting')
   window.addEventListener('resize', () => {
+    resize()
     storyboarderSketchPane.resize()
   })
   storyboarderSketchPane.on('addToUndoStack', () => {
@@ -491,7 +491,7 @@ let loadBoardUI = ()=> {
     textInputMode = false
   })
 
-
+  resize()
 
   setTimeout(()=>{remote.getCurrentWindow().show()}, 200)
   //remote.getCurrentWebContents().openDevTools()
@@ -1440,8 +1440,7 @@ window.onmousedown = (e) => {
   stopPlaying()
 }
 
-
-window.onresize = (e) => {
+const resize = () => {
   // measure the main area
   const mainEl = document.getElementById('storyboarder-main')
   const toolbarEl = document.getElementById('toolbar')

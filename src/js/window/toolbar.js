@@ -84,7 +84,7 @@ const initialState = {
 
       spacing: 0.2,
       flow: 1.0,
-      hardness: 0,
+      hardness: 0.9,
       opacity: 1.0,
 
       color: Color('#ffffff'),

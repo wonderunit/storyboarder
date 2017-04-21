@@ -103,10 +103,10 @@ let openWelcomeWindow = ()=> {
     recentDocumentsCopy = prefs.recentDocuments
     for (var recentDocument of prefs.recentDocuments) {
       try {
-        fs.accessSync(recentDocument.filename, fs.F_OK);
+        fs.accessSync(recentDocument.filename, fs.R_OK)
       } catch (e) {
         // It isn't accessible
-        console.log('error file no longer exists.')
+        // console.warn('Recent file no longer exists: ', recentDocument.filename)
         recentDocumentsCopy.splice(count, 1)
       }
       count++
@@ -321,7 +321,12 @@ let createNew = () => {
           newBoardObject.aspectRatio = aspects[response]
           fs.writeFileSync(path.join(filename, boardName + '.storyboarder'), JSON.stringify(newBoardObject))
           fs.mkdirSync(path.join(filename, 'images'))
-          loadStoryboarderWindow(path.join(filename, boardName + '.storyboarder'))
+
+          let filePath = path.join(filename, boardName + '.storyboarder')
+
+          addToRecentDocs(filePath, newBoardObject)
+
+          loadStoryboarderWindow(filePath)
         })
       } else {
         console.log("error: already exists")

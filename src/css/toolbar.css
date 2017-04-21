@@ -111,18 +111,6 @@
   width: 115px;
 }
 
-#toolbar .icon-toolbar-tool {
-  position: absolute;
-  background: transparent url(../img/toolbar-brush-tools.png) no-repeat 0 0;
-  background-size: 690px 300px;
-
-  bottom: 15px;
-  padding-bottom: 5px; /* make room for the drop shadow */
-
-  filter: brightness(100%) drop-shadow(0px 0px 5px rgba(0, 0, 0, 0.4));
-  transition: bottom 0.15s ease-out, -webkit-filter 0.15s linear; /* in */
-}
-
 /* uncomment for a helpful spacing debugger */
 /*
 #toolbar .icon-toolbar-tool:after {
@@ -134,35 +122,50 @@
 }
 */
 
-#toolbar .group_tools .button.active .icon-toolbar-tool,
-#toolbar .group_tools .button.active:hover .icon-toolbar-tool {
-  bottom: 0;
-  filter: brightness(160%) drop-shadow(0px 0px 5px rgba(0, 0, 0, 0.4));
+
+#toolbar .button .icon-toolbar-tool {
+  position: absolute;
+  background: transparent url(../img/toolbar-brush-tools.png) 0 0 / 690px 300px no-repeat;
+  padding-bottom: 5px; /* make room for the drop shadow */
+
+  bottom: 15px;
+  filter: brightness(100%) drop-shadow(0px 0px 5px rgba(0, 0, 0, 0.4));
+  transition: bottom 0.15s ease-out, filter 0.15s linear;
 }
 
-#toolbar .icon-toolbar-tool:hover {
-  bottom: 0;
+#toolbar .button .icon-toolbar-tool:hover {
+  bottom: 0px;
   filter: brightness(130%) drop-shadow(0px 0px 5px rgba(0, 0, 0, 0.4));
-  transition: bottom 0.125s ease-in-out, -webkit-filter 0.1 linear; /* out */
+  /*transition: bottom 0.125s ease-in-out, filter 0.1 linear;*/
 }
-#toolbar .icon-toolbar-tool_light-pencil {
+
+#toolbar .button.active       .icon-toolbar-tool,
+#toolbar .button.active:hover .icon-toolbar-tool {
+  bottom: 0px;
+  filter: brightness(160%) drop-shadow(0px 0px 5px rgba(0, 0, 0, 0.4));
+  /*transition: bottom 0.125s ease-in-out, filter 0.1 linear;*/
+}
+
+#toolbar .button .icon-toolbar-tool_light-pencil {
   background-position: calc((-115px * 0) + 3px - 15px) -170px;
 }
-#toolbar .icon-toolbar-tool_pencil {
+#toolbar .button .icon-toolbar-tool_pencil {
   background-position: calc((-115px * 1) + 3px - 15px) -170px;
 }
-#toolbar .icon-toolbar-tool_pen {
+#toolbar .button .icon-toolbar-tool_pen {
   background-position: calc((-115px * 2) + 3px - 15px) -170px;
 }
-#toolbar .icon-toolbar-tool_brush {
+#toolbar .button .icon-toolbar-tool_brush {
   background-position: calc((-115px * 3) + 1px - 15px) -170px;
 }
-#toolbar .icon-toolbar-tool_note-pen {
+#toolbar .button .icon-toolbar-tool_note-pen {
   background-position: calc((-115px * 4) + 2px - 15px) -170px;;
 }
-#toolbar .icon-toolbar-tool_eraser {
+#toolbar .button .icon-toolbar-tool_eraser {
   background-position: calc((-115px * 5) + -1px) -170px;;
 }
+
+
 
 #toolbar .toolbar-colors {
   display: flex;
