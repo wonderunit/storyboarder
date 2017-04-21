@@ -381,7 +381,13 @@ const template = [
 ]
 
 
-
+// TODO for windows:
+// {
+//   label: 'Preferences',
+//   accelerator: 'CmdOrCtrl+,',
+//   click: () => windows.main.dispatch('preferences')
+// }
+//
 const addDarwinFeatures = template => {
   const name = require('electron').remote.app.getName()
   template.unshift({
@@ -394,6 +400,15 @@ const addDarwinFeatures = template => {
         type: 'separator'
       },
       {
+        label: 'Preferences',
+        accelerator: 'Cmd+,',
+        click: () => ipcRenderer.send('preferences')
+      },
+      {
+        type: 'separator'
+      },
+      {
+        label: 'Services',
         role: 'services',
         submenu: []
       },

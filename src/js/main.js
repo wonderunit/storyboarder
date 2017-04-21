@@ -12,6 +12,8 @@ const fountainSceneIdUtil = require('./fountain-scene-id-util')
 
 const appServer = new(require('./express-app/app'))
 
+const preferencesUI = require('./windows/preferences')()
+
 //https://github.com/luiseduardobrito/sample-chat-electron
 
 let welcomeWindow
@@ -590,4 +592,8 @@ ipcMain.on('test', (event, arg)=> {
 
 ipcMain.on('textInputMode', (event, arg)=> {
   mainWindow.webContents.send('textInputMode', arg)
+})
+
+ipcMain.on('preferences', (event, arg) => {
+  preferencesUI.show()
 })
