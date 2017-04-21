@@ -10,6 +10,10 @@ const fountain = require('./vendor/fountain')
 const fountainDataParser = require('./fountain-data-parser')
 const fountainSceneIdUtil = require('./fountain-scene-id-util')
 
+const appServer = new(require('./express-app/app'))
+
+//https://github.com/luiseduardobrito/sample-chat-electron
+
 let welcomeWindow
 let newWindow
 
@@ -30,7 +34,24 @@ let currentPath
 
 global.sharedObj = { 'prefs': prefs }
 
+appServer.on('pointerEvent', (e)=> {
+  console.log('pointerEvent')
+})
+
+appServer.on('image', (e)=> {
+  console.log('image')
+  mainWindow.webContents.send('newBoard', 1)
+  mainWindow.webContents.send('importImage', e.fileData)
+})
+
+
+
+
 app.on('ready', ()=> {
+ 
+
+
+
   // via https://github.com/electron/electron/issues/4690#issuecomment-217435222
   const argv = process.defaultApp ? process.argv.slice(2) : process.argv
 
