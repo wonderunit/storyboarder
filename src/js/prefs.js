@@ -24,15 +24,15 @@ const load = () => {
 
     try {
       // create new prefs
-      savePrefs()
+      savePrefs(prefs)
     } catch (e) {
       //console.log(e)
     }
   }
 }
 
-const savePrefs = prefs =>
-  fs.writeFileSync(prefFile, JSON.stringify(prefs, null, 2))
+const savePrefs = _prefs =>
+  fs.writeFileSync(prefFile, JSON.stringify(_prefs, null, 2))
 
 const getPrefs = () =>
   prefs
@@ -45,7 +45,7 @@ const init = () => {
   load()
   if (prefs.version !== defaultPrefs.version) {
     migrate()
-    savePrefs()
+    savePrefs(prefs)
   }
 }
 
