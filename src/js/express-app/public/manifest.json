@@ -2,9 +2,9 @@
   "name": "Storyboarder",
   "short_name": "Storyboarder",
   "start_url": "/",
-  "display": "fullscreen",
   "background_color": "#ffffff",
   "theme_color": "white",
+  "display": "fullscreen",
   "orientation": "landscape",
   "description": "The best way to visualize your story.",
   "icons": [{

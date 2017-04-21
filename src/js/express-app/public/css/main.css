@@ -75,9 +75,9 @@ textarea {
    ========================================================================== */
 
 
-
-
-
+*:fullscreen, *:-webkit-full-screen, *:-moz-full-screen {
+    background-color: rgba(255,255,255,0);
+}
 
 
 

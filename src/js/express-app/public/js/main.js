@@ -30,6 +30,14 @@ document.body.onpointermove = (e) => {
 
 let inputField = document.querySelector("#file")
 
+document.addEventListener("click", function(e) {
+  window.document.body.webkitRequestFullscreen()
+  window.screen.orientation.lock("landscape")
+}, false);
+
+
+
+
 inputField.addEventListener('change', function (e) {
   let file = e.target.files[0]
   if (file) {
