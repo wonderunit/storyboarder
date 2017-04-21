@@ -22,6 +22,7 @@ class SketchPane extends EventEmitter {
     // todo change name
     this.paintingCanvas.className = 'sketchpane-painting-canvas'
     this.paintingCanvas.style.position = 'absolute'
+    this.paintingCanvas.style['mix-blend-mode'] = 'multiply'
     this.dirtyRectDisplay = document.createElement('canvas')
     this.dirtyRectDisplayContext = this.dirtyRectDisplay.getContext('2d')
     this.dirtyRectDisplay.className = 'sketchpane-dirty-rect-display'
@@ -141,7 +142,7 @@ class SketchPane extends EventEmitter {
   drawDirtyRect (x, y, w, h) {
     let context = this.dirtyRectDisplayContext
     context.fillStyle = '#f00'
-    context.globalCompositeOperation = 'source-over'
+    // context.globalCompositeOperation = 'source-over'
     context.globalCompositeOperation = 'multiply'
     context.fillRect(x, y, w, h)
     if ((w > 2) && (h > 2)) {
