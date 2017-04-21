@@ -8,7 +8,8 @@ const prefFile = path.join(app.getPath('userData'), 'pref.json')
 
 const defaultPrefs = {
   version: pkg.version,
-  enableSoundEffects: true
+  enableSoundEffects: true,
+  enableTooltips: true
 }
 
 let prefs
