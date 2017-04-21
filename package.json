@@ -19,7 +19,7 @@
     "storyboard",
     "storyboarder"
   ],
-  "author": "Charles Forman",
+  "author": "Wonder Unit Inc.",
   "license": "ISC",
   "build": {
     "asar": true,
