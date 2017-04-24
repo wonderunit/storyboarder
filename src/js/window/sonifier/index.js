@@ -7,6 +7,7 @@ const util = require('../../utils/index.js')
 const Loop = require('../../utils/loop.js')
 
 const BrushInstrument = require('./brush-instrument')
+const MelodicInstrument = require('./melodic-instrument')
 
 const degrees = 180 / Math.PI
 
@@ -23,6 +24,7 @@ let bufferA = vec2.create(),
     bufferB = vec2.create()
 
 let instrument
+let melodies
 
 const createModel = () => ({
   isActive: false,
@@ -54,6 +56,7 @@ const init = dimensions => {
   instrument = BrushInstrument({
     samplePath: './snd/drawing-loop.wav'
   })
+  melodies = MelodicInstrument()
 
   engine = new Loop(step)
   engine.start()
@@ -74,6 +77,7 @@ const start = (x, y, pressure, pointerType) => {
   bufferB = vec2.fromValues(0, 0)
   
   instrument.noteOn()
+  melodies.start()
   trigger(x, y, pressure, pointerType)
   renderDirectionChange(x, y, 0)
 }
@@ -82,6 +86,7 @@ const stop = () => {
   model.isActive = false
   model.isOnCanvas = false
   instrument.noteOff()
+  melodies.stop()
 }
 
 // NOTE curently c<x,y> are always absolute to canvas w/h (e.g.; 900 x 900 * aspectRatio)
@@ -109,6 +114,17 @@ const trigger = (x, y, pressure, pointerType) => {
     1
   )
   model.accelGain += a
+
+  // TODO DRY
+  if (model.pointerType === 'pen') {
+    let penGain = ease.sineIn(util.clamp(model.pressureGain, 0, 1))
+    let blend = (penGain * 0.5) * (model.accelGain)
+    let velocity = Tone.prototype.equalPowerScale(util.clamp(blend, 0, 1))
+    melodies.trigger({ velocity })
+  } else {
+    let velocity = Tone.prototype.equalPowerScale(util.clamp(model.accelGain, 0, 1))
+    melodies.trigger({ velocity })
+  }
 
   prev = curr
 }
@@ -156,17 +172,13 @@ const step = dt => {
   if (model.pointerType === 'pen') {
     let penGain = ease.sineIn(util.clamp(model.pressureGain, 0, 1))
     let blend = (penGain * 0.5) * (model.accelGain)
-    instrument.setGain(
-      Tone.prototype.equalPowerScale(
-        util.clamp(blend, 0, 1)
-      )
-    )
+    let v = Tone.prototype.equalPowerScale(util.clamp(blend, 0, 1))
+    instrument.setGain(v)
+    melodies.setGain(v)
   } else {
-    instrument.setGain(
-      Tone.prototype.equalPowerScale(
-        util.clamp(model.accelGain, 0, 1)
-      )
-    )
+    let v = Tone.prototype.equalPowerScale(util.clamp(model.accelGain, 0, 1))
+    instrument.setGain(v)
+    melodies.setGain(v)
   }
   model.accelGain *= 0.2 * frameSize // dampen
   model.pressureGain *= 0.2 * frameSize
