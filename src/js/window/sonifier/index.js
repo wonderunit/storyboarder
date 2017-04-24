@@ -115,14 +115,11 @@ const trigger = (x, y, pressure, pointerType) => {
   )
   model.accelGain += a
 
-  // TODO DRY
   if (model.pointerType === 'pen') {
-    let penGain = ease.sineIn(util.clamp(model.pressureGain, 0, 1))
-    let blend = (penGain * 0.5) * (model.accelGain)
-    let velocity = Tone.prototype.equalPowerScale(util.clamp(blend, 0, 1))
+    let velocity = ease.sineOut(util.clamp(model.pressureGain, 0, 1))
     melodies.trigger({ velocity })
   } else {
-    let velocity = Tone.prototype.equalPowerScale(util.clamp(model.accelGain, 0, 1))
+    let velocity = util.clamp(model.accelGain, 0, 1)
     melodies.trigger({ velocity })
   }
 
