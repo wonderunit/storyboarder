@@ -53,9 +53,15 @@ module.exports = () => {
   let currentNote
   let currentChord
 
+  let lastChangeAt = null
+  let shouldTrigger = false
+
   const start = () => {
     currentNote = 0
     currentChord = util.sample(chords)
+    
+    lastChangeAt = Date.now()
+    shouldTrigger = true
   }
 
   const stop = () => {
@@ -65,24 +71,49 @@ module.exports = () => {
   const trigger = (opt = { velocity: 1 }) => {
     const { velocity } = opt
 
-  	const chord = currentChord
+    // been at least 150 msecs since last change
+    if (!shouldTrigger &&
+        lastChangeAt && 
+        Date.now() - lastChangeAt > 1000) 
+    {
+      lastChangeAt = Date.now()
+      shouldTrigger = true
+      // reset
+      currentNote = 0
+    }
+
+    if (!shouldTrigger) return
+
+    const chord = currentChord
     const notes = tonal.chord(chord)
 
     const note = util.sample(notes) + (Math.random() > 0.5 ? '3' : '4')
     const onote = util.sample(notes) + (Math.random() > 0.5 ? '3' : '4')
     const bnote = util.sample(notes) + (Math.random() > 0.5 ? '2' : '3')
 
-    synth.triggerAttackRelease(Tone.Frequency(note).transpose(+12), "32n", undefined, velocity * 0.05)
+    synth.triggerAttackRelease(
+      Tone.Frequency(note).transpose(+12),
+      "32n",
+      undefined,
+      velocity)
 
+    synth.triggerAttackRelease(Tone.Frequency(note).transpose(+12), "32n", undefined, velocity * 0.5)
+    
     if (currentNote == 0) {
       bassSynth2.triggerAttackRelease(Tone.Frequency(bnote).transpose(+12), "16n", undefined, 0.4)
     }
-
-    synth.triggerAttackRelease(Tone.Frequency(onote).transpose(+24), "16n", undefined, velocity * 0.1)
+    
+    synth.triggerAttackRelease(Tone.Frequency(onote).transpose(+24), "16n", undefined, velocity * 0.5)
 
     currentNote++
+    shouldTrigger = false
   }
 
+  const triggerChange = () => {
+    console.log('triggerChange')
+    lastChangeAt = Date.now()
+    shouldTrigger = true
+  }
 
   const setGain = value => {
     // TODO
@@ -91,7 +122,8 @@ module.exports = () => {
   return {
     start,
     stop,
-  	trigger: throttle(trigger, 16 * 8),
+    trigger, //: throttle(trigger, 16 * 8),
+    triggerChange,
     setGain
   }
 }

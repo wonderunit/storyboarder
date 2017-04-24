@@ -199,6 +199,8 @@ const renderDirectionChange = (p, amplitudeOfChange) => {
   }
   warble = !warble
 
+  melodies.triggerChange()
+
   // uncomment to draw changes
   //
   // let canvas = document.querySelector('.sketchpane-painting-canvas')
