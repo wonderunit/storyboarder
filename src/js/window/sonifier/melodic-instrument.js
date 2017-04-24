@@ -91,26 +91,26 @@ module.exports = () => {
     const onote = util.sample(notes) + (Math.random() > 0.5 ? '3' : '4')
     const bnote = util.sample(notes) + (Math.random() > 0.5 ? '2' : '3')
 
-    synth.triggerAttackRelease(
-      Tone.Frequency(note).transpose(+12),
-      "32n",
-      undefined,
-      velocity)
-
-    synth.triggerAttackRelease(Tone.Frequency(note).transpose(+12), "32n", undefined, velocity * 0.5)
-    
     if (currentNote == 0) {
       bassSynth2.triggerAttackRelease(Tone.Frequency(bnote).transpose(+12), "16n", undefined, 0.4)
     }
-    
-    synth.triggerAttackRelease(Tone.Frequency(onote).transpose(+24), "16n", undefined, velocity * 0.5)
+    if (velocity > 0.25) {
+      synth.triggerAttackRelease(
+        Tone.Frequency(note).transpose(+12),
+        "32n",
+        undefined,
+        velocity)
+
+      synth.triggerAttackRelease(Tone.Frequency(note).transpose(+12), "32n", undefined, velocity * 0.5)
+
+      synth.triggerAttackRelease(Tone.Frequency(onote).transpose(+24), "16n", undefined, velocity * 0.5)
+    }
 
     currentNote++
     shouldTrigger = false
   }
 
   const triggerChange = () => {
-    console.log('triggerChange')
     lastChangeAt = Date.now()
     shouldTrigger = true
   }
