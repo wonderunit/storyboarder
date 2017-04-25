@@ -147,6 +147,7 @@ class StoryboarderSketchPane extends EventEmitter {
 
   getRelativePosition (absoluteX, absoluteY) {
     // TODO memoize for performance?
+    //      would have to store rect, and update on resize, AND scroll ...
     let rect = this.sketchPaneDOMElement.getBoundingClientRect()
     let rectOnCanvas = { x: absoluteX - rect.left, y: absoluteY - rect.top }
 
