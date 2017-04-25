@@ -31,9 +31,4 @@ for (let el of [enableSoundEffectsEl, enableTooltipsEl, enableAffirmativeMessage
   el.addEventListener('change', onChange.bind(this, el.name))
 }
 
-document.querySelector('[data=js-close-button]').addEventListener('click', event => {
-  save()
-  remote.getCurrentWindow().close()
-})
-
 render()
