@@ -35,6 +35,28 @@
   padding-left: 48px;
 }
 
+.preferences-button {
+  background: rgb(200, 200, 200);
+  padding: 20px;
+  margin: 0;
+  border-radius: 10px;
+  font-weight: 400;
+  font-size: 18px;
+  box-sizing: border-box;
+  display: inline-block;
+}
+
+.preferences-hint {
+  margin-top: 24px;
+  opacity: 0.5;
+  font-size: 87.5%
+}
+
+.preferences-footer {
+  position: absolute;
+  bottom: 48px;
+}
+
 input[type=checkbox] {
   display: none;
 }
