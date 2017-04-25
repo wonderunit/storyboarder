@@ -33,21 +33,17 @@ module.exports = () => {
       },
     })
 
-  const synthComp = new Tone.Compressor(-10, 5)
-
   const synthFilter = new Tone.Filter(1250, "lowpass", -12)
     .set('Q', 2)
 
   var synthVol = new Tone.Volume(-12)
 
-  // var bassSynth2Filter = new Tone.Filter(1250, "lowpass", -48)
-  //   .set('Q', 2)
   var bassSynth2Vol = new Tone.Volume(-12)
 
   var verb = new Tone.Freeverb(0.96, 1000)
   verb.wet = 1
 
-  synth.chain(synthComp, synthFilter, synthVol, verb, Tone.Master)
+  synth.chain(synthFilter, synthVol, verb, Tone.Master)
   bassSynth2.chain(bassSynth2Vol, verb, Tone.Master)
 
   let currentNote
