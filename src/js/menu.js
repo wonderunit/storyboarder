@@ -380,14 +380,6 @@ const template = [
   }
 ]
 
-
-// TODO for windows:
-// {
-//   label: 'Preferences',
-//   accelerator: 'CmdOrCtrl+,',
-//   click: () => windows.main.dispatch('preferences')
-// }
-//
 const addDarwinFeatures = template => {
   const name = require('electron').remote.app.getName()
   template.unshift({
@@ -552,6 +544,22 @@ const welcomeTemplate = [
 ]
 if (process.platform === 'darwin') {
   addDarwinFeatures(welcomeTemplate)
+}
+
+// add Edit > Preferences on Windows
+if (process.platform == 'win32') {
+  template[1].submenu.push(
+    {
+      type: 'separator'
+    }
+  )
+  template[1].submenu.push(
+    {
+      label: 'Preferences',
+      accelerator: 'CmdOrCtrl+,',
+      click: () => ipcRenderer.send('preferences')
+    }
+  )
 }
 
 const menuInstance = Menu.buildFromTemplate(template)
