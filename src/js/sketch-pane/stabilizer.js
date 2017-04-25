@@ -57,8 +57,8 @@ class Stabilizer {
       dx = prev.x - curr.x
       dy = prev.y - curr.y
       dp = prev.pressure - curr.pressure
-      delta += Math.abs(dx)
-      delta += Math.abs(dy)
+      delta = delta + Math.abs(dx)
+      delta = delta + Math.abs(dy)
       curr.x = this.dlerp(curr.x, dx, this.follow)
       curr.y = this.dlerp(curr.y, dy, this.follow)
       curr.pressure = this.dlerp(curr.pressure, dp, this.follow)
