@@ -380,53 +380,66 @@ const template = [
   }
 ]
 
-const addDarwinFeatures = template => {
+const addDarwinFeatures = (template, includePreferences = false) => {
   const name = require('electron').remote.app.getName()
-  template.unshift({
-    label: name,
-    submenu: [
-      {
-        role: 'about'
-      },
+
+  let submenu = [
+    {
+      role: 'about'
+    }
+  ]
+
+  if (includePreferences) {
+    submenu.push(
       {
         type: 'separator'
-      },
+      }
+    )
+    submenu.push(
       {
         label: 'Preferences',
         accelerator: 'Cmd+,',
         click: () => ipcRenderer.send('preferences')
-      },
-      {
-        type: 'separator'
-      },
-      {
-        label: 'Services',
-        role: 'services',
-        submenu: []
-      },
-      {
-        type: 'separator'
-      },
-      {
-        role: 'hide'
-      },
-      {
-        role: 'hideothers'
-      },
-      {
-        role: 'unhide'
-      },
-      {
-        type: 'separator'
-      },
-      {
-        role: 'quit'
       }
-    ]
+    )
+  }
+
+  submenu.push(
+    {
+      type: 'separator'
+    },
+    {
+      label: 'Services',
+      role: 'services',
+      submenu: []
+    },
+    {
+      type: 'separator'
+    },
+    {
+      role: 'hide'
+    },
+    {
+      role: 'hideothers'
+    },
+    {
+      role: 'unhide'
+    },
+    {
+      type: 'separator'
+    },
+    {
+      role: 'quit'
+    }
+  )
+
+  template.unshift({
+    label: name,
+    submenu
   })
 }
 if (process.platform === 'darwin') {
-  addDarwinFeatures(template)
+  addDarwinFeatures(template, true)
   // // Edit menu.
   // template[1].submenu.push(
   //   {
@@ -543,7 +556,7 @@ const welcomeTemplate = [
   }
 ]
 if (process.platform === 'darwin') {
-  addDarwinFeatures(welcomeTemplate)
+  addDarwinFeatures(welcomeTemplate, false)
 }
 
 // add Edit > Preferences on Windows
