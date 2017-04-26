@@ -615,6 +615,16 @@ div.marker-holder {
   left: 5px;
   position: relative;
 }
+#playback #left-stats.stats__large,
+#playback #right-stats.stats__large {
+  width: 250px;
+}
+#playback .stats__large .stats-primary {
+  font-size: 24px;
+}
+#playback .stats__large .stats-secondary {
+  display: none;
+}
 
 #playback #right-stats {
   font-size: 10px;

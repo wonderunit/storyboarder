@@ -786,26 +786,75 @@ let renderMetaData = ()=> {
   }
 
 
-  let stats = []
+  renderStats()
+}
+
+const renderStats = () => {
+  //
+  //
+  // left stats
+  //
+  let primaryStats = []
+  let secondaryStats = []
+
   if (!util.isUndefined(scriptData)) {
-    stats.push( `SCENE ${currentScene + 1} SHOT ${boardData.boards[currentBoard].shot}` )
+    primaryStats.push( `SCENE ${currentScene + 1} SHOT ${boardData.boards[currentBoard].shot}` )
   } else {
-    stats.push( `SHOT ${boardData.boards[currentBoard].shot}` )
+    primaryStats.push( `SHOT ${boardData.boards[currentBoard].shot}` )
   }
 
+  let stats = []
   let totalNewShots = boardData.boards.reduce((a, b) => a + (b.newShot ? 1 : 0), 0) || 1
-  stats.push( 
+  secondaryStats.push( 
     `${boardData.boards.length} ${util.pluralize(boardData.boards.length, 'board').toUpperCase()}, ` +
     `${totalNewShots} ${util.pluralize(totalNewShots, 'shot').toUpperCase()}`
   )
   
   let totalLineMileage = boardData.boards.reduce((a, b) => a + (b.lineMileage || 0), 0)
   let avgLineMileage = totalLineMileage / boardData.boards.length
-  stats.push( (avgLineMileage/5280).toFixed(1) + ' AVG. LINE MILEAGE' )
+  secondaryStats.push( (avgLineMileage/5280).toFixed(1) + ' AVG. LINE MILEAGE' )
 
-  document.getElementById('left-stats').innerHTML = stats.join('<br />')
+  document.querySelector('#left-stats .stats-primary').innerHTML = primaryStats.join('<br />')
+  document.querySelector('#left-stats .stats-secondary').innerHTML = secondaryStats.join('<br />')
+
+
+
+  //
+  //
+  // right stats
+  //
+  // if (scriptData) {
+  //   let numScenes = scriptData.filter(data => data.type == 'scene').length
+  
+  //   let numBoards = 'N' // TODO sum total number of boards in the script
+  
+  //   document.querySelector('#right-stats .stats-primary').innerHTML = `${numScenes} SCENES ${numBoards} BOARDS`
+  // } else {
+  //   let numBoards = boardData.boards.length
+  //   document.querySelector('#right-stats .stats-primary').innerHTML = `${numBoards} BOARDS`
+  // }
+  // document.querySelector('#right-stats .stats-secondary').innerHTML = `AVG BOARDS PER SCENE, TOTAL TIME`
+
+
+  document.querySelector('#right-stats').style.visibility = 'hidden' // HACK hide right stats for now, until we have real data
+
+  if (
+    (scriptData && viewMode == 5) ||
+    (!scriptData && viewMode == 3)
+  ) {
+    document.getElementById('left-stats').classList.add('stats__large')
+    document.getElementById('right-stats').classList.add('stats__large')
+
+    document.querySelector('#right-stats').style.display = 'none' // HACK hide right stats for now, until we have real data
+    document.querySelector('#left-stats').style.textAlign = 'center' // HACK
+  } else {
+    document.getElementById('left-stats').classList.remove('stats__large')
+    document.getElementById('right-stats').classList.remove('stats__large')
+
+    document.querySelector('#right-stats').style.display = 'flex' // HACK hide right stats for now, until we have real data
+    document.querySelector('#left-stats').style.textAlign = 'left' // HACK
+  }
 }
-
 
 
 
@@ -1623,7 +1672,7 @@ let cycleViewMode = ()=> {
         document.querySelector('#toolbar').style.display = 'flex'
         document.querySelector('#thumbnail-container').style.display = 'block'
         document.querySelector('#timeline').style.display = 'flex'
-        document.querySelector('#playback').style.display = 'flex'
+        document.querySelector('#playback #icons').style.display = 'flex'
         break
       case 1:
         document.querySelector('#scenes').style.display = 'none'
@@ -1650,7 +1699,6 @@ let cycleViewMode = ()=> {
         document.querySelector('#toolbar').style.display = 'none'
         document.querySelector('#thumbnail-container').style.display = 'block'
         document.querySelector('#timeline').style.display = 'flex'
-        document.querySelector('#playback').style.display = 'flex'
         break
       case 5:
         document.querySelector('#scenes').style.display = 'none'
@@ -1659,7 +1707,7 @@ let cycleViewMode = ()=> {
         document.querySelector('#toolbar').style.display = 'none'
         document.querySelector('#thumbnail-container').style.display = 'none'
         document.querySelector('#timeline').style.display = 'none'
-        document.querySelector('#playback').style.display = 'none'
+        document.querySelector('#playback #icons').style.display = 'none'
         break
     }
   } else {
@@ -1672,7 +1720,7 @@ let cycleViewMode = ()=> {
         document.querySelector('#toolbar').style.display = 'flex'
         document.querySelector('#thumbnail-container').style.display = 'block'
         document.querySelector('#timeline').style.display = 'flex'
-        document.querySelector('#playback').style.display = 'flex'
+        document.querySelector('#playback #icons').style.display = 'flex'
         break
       case 1:
         document.querySelector('#scenes').style.display = 'none'
@@ -1687,7 +1735,6 @@ let cycleViewMode = ()=> {
         document.querySelector('#toolbar').style.display = 'none'
         document.querySelector('#thumbnail-container').style.display = 'block'
         document.querySelector('#timeline').style.display = 'flex'
-        document.querySelector('#playback').style.display = 'flex'
         break
       case 3:
         document.querySelector('#scenes').style.display = 'none'
@@ -1696,12 +1743,13 @@ let cycleViewMode = ()=> {
         document.querySelector('#toolbar').style.display = 'none'
         document.querySelector('#thumbnail-container').style.display = 'none'
         document.querySelector('#timeline').style.display = 'none'
-        document.querySelector('#playback').style.display = 'none'
+        document.querySelector('#playback #icons').style.display = 'none'
         break
     }
   }
   storyboarderSketchPane.resize()
   renderViewMode()
+  renderStats()
 }
 
 const renderViewMode = () => {
