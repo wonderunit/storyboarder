@@ -81,6 +81,8 @@ let shuffle = (arr) => {
 
 let compareNumbers = (a, b) => a - b
 
+const pluralize = (number, string) => number > 1 ? string + 's' : string
+
 module.exports = {
   msToTime,
   uidGen,
@@ -93,5 +95,6 @@ module.exports = {
   swap,
   acceleratorAsHtml,
   shuffle,
-  compareNumbers
+  compareNumbers,
+  pluralize
 }

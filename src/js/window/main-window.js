@@ -786,13 +786,24 @@ let renderMetaData = ()=> {
   }
 
 
-  let stats
+  let stats = []
   if (!util.isUndefined(scriptData)) {
-    stats = `SCENE ${currentScene + 1} SHOT ${boardData.boards[currentBoard].shot}`
+    stats.push( `SCENE ${currentScene + 1} SHOT ${boardData.boards[currentBoard].shot}` )
   } else {
-    stats = `SHOT ${boardData.boards[currentBoard].shot}`
+    stats.push( `SHOT ${boardData.boards[currentBoard].shot}` )
   }
-  document.getElementById('left-stats').innerHTML = stats
+
+  let totalNewShots = boardData.boards.reduce((a, b) => a + (b.newShot ? 1 : 0), 0) || 1
+  stats.push( 
+    `${boardData.boards.length} ${util.pluralize(boardData.boards.length, 'board').toUpperCase()}, ` +
+    `${totalNewShots} ${util.pluralize(totalNewShots, 'shot').toUpperCase()}`
+  )
+  
+  let totalLineMileage = boardData.boards.reduce((a, b) => a + (b.lineMileage || 0), 0)
+  let avgLineMileage = totalLineMileage / boardData.boards.length
+  stats.push( (avgLineMileage/5280).toFixed(1) + ' AVG. LINE MILEAGE' )
+
+  document.getElementById('left-stats').innerHTML = stats.join('<br />')
 }
 
 
