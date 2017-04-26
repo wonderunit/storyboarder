@@ -264,7 +264,6 @@
   width: 60px;
   display: flex;
   justify-content: space-between;
-  cursor: pointer;
 }
 .toolbar-brush-size-controls_dec,
 .toolbar-brush-size-controls_val,
@@ -277,7 +276,6 @@
   color: #666;
   text-align: center;
   width: auto;
-  pointer-events: none;
 }
 
 .toolbar-brush-size-controls_dec,
@@ -286,4 +284,5 @@
   font-size: 12px;
   width: 16px;
   color: #444;
+  cursor: pointer;
 }

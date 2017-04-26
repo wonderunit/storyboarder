@@ -168,12 +168,16 @@ class Toolbar extends EventEmitter {
   attachedCallback () {
     const immediateButtons = [...this.el.querySelectorAll('.button:not([id^="toolbar-palette-color"])')]
     const swatchButtons = [...this.el.querySelectorAll('.button[id^="toolbar-palette-color"]')]
-    const brushSizeControlsEl = this.el.querySelector('#toolbar .toolbar-brush-size-controls')
-    const allControls = [].concat(
+    const brushSizeButtons = [...this.el.querySelectorAll('.toolbar-brush-size-controls_inc, .toolbar-brush-size-controls_dec')]
+    const overableControls = [].concat(
       immediateButtons,
       swatchButtons,
-      [brushSizeControlsEl]
+      brushSizeButtons
     )
+
+    for (let brushSizeButtonEl of brushSizeButtons) {
+      brushSizeButtonEl.addEventListener('pointerdown', this.onBrushSizePointerDown)
+    }
 
     for (let buttonEl of immediateButtons) {
       buttonEl.addEventListener('pointerdown', this.onButtonDown)
@@ -184,10 +188,7 @@ class Toolbar extends EventEmitter {
       buttonEl.addEventListener('pointerdown', this.onSwatchDown)
     }
 
-    brushSizeControlsEl.addEventListener('pointerdown', this.onBrushSizePointerDown)
-
-
-    for (let el of allControls) {
+    for (let el of overableControls) {
       el.addEventListener('pointerenter', this.onButtonOver)
     }
   }
@@ -443,15 +444,9 @@ class Toolbar extends EventEmitter {
     const brushSizeValue = this.getBrushOptions().size
     brushSizeEl.innerHTML = Math.round(brushSizeValue)
   }
-
-  // left or right?
-  getDirectionOnTarget (event) {
-    const pos = event.layerX / event.target.getBoundingClientRect().width
-    return pos > 0.5 ? 1 : -1
-  }
   
   onBrushSizePointerDown (event) {
-    let direction = this.getDirectionOnTarget(event)
+    let direction = parseInt(event.target.dataset.direction)
     this.changeBrushSize(direction, true)
   }
 
@@ -461,20 +456,8 @@ class Toolbar extends EventEmitter {
   }
   
   onButtonOver (event) {
+    console.log('onButtonOver', event)
     sfx.rollover()
-    //
-    // for targetting individual inc/dec
-    //
-    // if (event.target.classList.contains('toolbar-brush-size-controls')) {
-    //   let direction = this.getDirectionOnTarget(event)
-    //   if (direction == -1) {
-    //     // left
-    //     // console.log('dec')
-    //   } else {
-    //     // right
-    //     // console.log('inc')
-    //   }
-    // }
   }
 }
 
