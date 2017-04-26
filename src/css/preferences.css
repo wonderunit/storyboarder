@@ -38,25 +38,6 @@
   margin: 24px 0;
 }
 
-.preferences-hint {
-  margin-top: 24px;
-  opacity: 0.5;
-  font-size: 87.5%
-}
-
-.preferences-footer {
-  position: absolute;
-  bottom: 48px;
-}
-
-sup {
-  font-size: 125%;
-  line-height: 0;
-  position: relative;
-  vertical-align: baseline;
-  top: 0;
-}
-
 input[type=checkbox] {
   display: none;
 }

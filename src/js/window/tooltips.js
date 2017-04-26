@@ -41,6 +41,12 @@ const setupTooltipForElement = (el) => {
     content: content(title, description, keys),
     position
   })
+  // HACK! force close immediately unless we allow tooltips in preferences
+  tooltip.drop.on('open', () => {
+    if (!getEnableTooltips()) {
+      tooltip.close()
+    }
+  })
   tooltips.push(tooltip)
   housekeeping()
   return tooltip
