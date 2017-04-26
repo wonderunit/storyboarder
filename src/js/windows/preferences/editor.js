@@ -15,7 +15,7 @@ const onChange = (name, event) => {
 }
 
 const render = () => {
-  for (let el of [enableSoundEffectsEl, enableTooltipsEl, enableAffirmativeMessagesEl]) {
+  for (let el of [enableSoundEffectsEl, enableTooltipsEl, enableAspirationalMessagesEl]) {
     el.checked = prefs[el.name]
   }
 }
@@ -24,10 +24,10 @@ let prefs = util.stringifyClone(remote.getGlobal('sharedObj').prefs)
 
 let enableSoundEffectsEl = document.getElementById('enableSoundEffects')
 let enableTooltipsEl = document.getElementById('enableTooltips')
-let enableAffirmativeMessagesEl = document.getElementById('enableAffirmativeMessages')
+let enableAspirationalMessagesEl = document.getElementById('enableAspirationalMessages')
 
 // bind
-for (let el of [enableSoundEffectsEl, enableTooltipsEl, enableAffirmativeMessagesEl]) {
+for (let el of [enableSoundEffectsEl, enableTooltipsEl, enableAspirationalMessagesEl]) {
   el.addEventListener('change', onChange.bind(this, el.name))
 }
 
