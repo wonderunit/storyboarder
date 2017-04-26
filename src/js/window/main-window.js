@@ -400,7 +400,9 @@ let loadBoardUI = ()=> {
       : 'hidden'
   })
 
+  sfx.setMute(true)
   toolbar.setState({ brush: 'pencil' })
+  sfx.setMute(false)
 
 
 

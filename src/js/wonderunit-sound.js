@@ -42,6 +42,9 @@ let currentChord = 0
 let chordCount = 0
 let currentNote = 0
 
+let isMuted = false
+const setMute = value => isMuted = value
+
 // set up sound sources.
 
 var synth = new Tone.PolySynth(10, Tone.Synth)
@@ -272,6 +275,7 @@ const init = () => {
 // route for sound effects by name/purpose
 const playEffect = effect => {
   if (!enableSoundEffects) return
+  if (isMuted) return
 
   switch (effect) {
     case 'fill':
@@ -319,5 +323,7 @@ module.exports = {
   negative,
   error,
   bip,
-  playEffect
+  playEffect,
+  
+  setMute
 }
