@@ -27,12 +27,11 @@
 }
 
 .preferences-fieldset {
-  margin: 24px 0;
+  padding: 12px 0;
 }
 
 .preferences-input {
   margin: 24px 0;
-  padding-left: 48px;
 }
 
 .preferences-hint {
