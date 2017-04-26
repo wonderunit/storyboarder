@@ -4,7 +4,8 @@ module.exports = () => {
   let win
 
   const show = () => {
-    // TODO prevent multiple
+    if (win) return
+
     win = new BrowserWindow({
       width: 600,
       height: 580,
@@ -15,6 +16,9 @@ module.exports = () => {
       webPreferences: {
         devTools: true
       }
+    })
+    win.on('closed', () => {
+      win = null
     })
     win.loadURL(`file://${__dirname}/../../../preferences.html`)
     win.once('ready-to-show', () => {
