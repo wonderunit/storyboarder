@@ -20,7 +20,7 @@ const { shuffle } = require('./utils/index.js')
 Tone.Transport.latencyHint = 'playback'
 Tone.Transport.start("+0.1")
 
-let enableSoundEffects = remote.getGlobal('sharedObj').prefs['enableSoundEffects']
+const getEnableUISoundEffects = () => remote.getGlobal('sharedObj').prefs['enableUISoundEffects']
 
 let chords = [
   ['a4', 'b4', 'c5', 'e5'],
@@ -183,7 +183,7 @@ let advanceNote = (amount) => {
 }
 
 let rollover = () => {
-  if (!enableSoundEffects) return
+  if (!getEnableUISoundEffects()) return
 
   let note = chords[currentChord][currentNote % (chords[0].length)]
   let bassnote = chords[currentChord][0]
@@ -197,7 +197,7 @@ let rollover = () => {
 }
 
 let down = () => {
-  if (!enableSoundEffects) return
+  if (!getEnableUISoundEffects()) return
 
   let bassnote = chords[currentChord][0]
   bassSynth.triggerAttackRelease(Tone.Frequency(bassnote).transpose(-12*3), 0.2, undefined, 0.4);
@@ -206,7 +206,7 @@ let down = () => {
 }
 
 let negative = () => {
-  if (!enableSoundEffects) return
+  if (!getEnableUISoundEffects()) return
 
   let bassnote = chords[currentChord][0]
   bassSynth.triggerAttackRelease(Tone.Frequency(bassnote).transpose((-12*3)+5), 0.2, undefined, 0.3);
@@ -219,7 +219,7 @@ let negative = () => {
 }
 
 let positive = () => {
-  if (!enableSoundEffects) return
+  if (!getEnableUISoundEffects()) return
 
   let bassnote = chords[currentChord][0]
   bassSynth.triggerAttackRelease(Tone.Frequency(bassnote).transpose(-12*3), 0.2, undefined, 0.4);
@@ -237,7 +237,7 @@ let positive = () => {
 }
 
 let error = () => {
-  if (!enableSoundEffects) return
+  if (!getEnableUISoundEffects()) return
 
   let bassnote = chords[currentChord][0]
     bassSynth.triggerAttackRelease(Tone.Frequency(bassnote).transpose((-12*2)), 0.1, undefined, 0.3);
@@ -250,7 +250,7 @@ let error = () => {
 }
 
 let bip = (note) => {
-  if (!enableSoundEffects) return
+  if (!getEnableUISoundEffects()) return
 
   bipSynth.triggerAttackRelease(Tone.Frequency(note).transpose(-12), "16n", undefined, 0.25)
   advanceNote(1)
@@ -261,7 +261,7 @@ const filePathsForSoundEffects = {
 }
 let multiPlayer
 const init = () => {
-  if (!enableSoundEffects) return
+  if (!getEnableUISoundEffects()) return
 
   multiPlayer = new Tone.MultiPlayer(new Tone.Buffers(filePathsForSoundEffects))
                 .set('volume', -6)
@@ -274,7 +274,7 @@ const init = () => {
 }
 // route for sound effects by name/purpose
 const playEffect = effect => {
-  if (!enableSoundEffects) return
+  if (!getEnableUISoundEffects()) return
   if (isMuted) return
 
   switch (effect) {

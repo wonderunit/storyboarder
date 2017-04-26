@@ -2,6 +2,8 @@ const { remote } = require('electron')
 
 let { acceleratorAsHtml } = require('../utils/index.js')
 
+const getEnableTooltips = () => remote.getGlobal('sharedObj').prefs['enableTooltips']
+
 const Tooltip = require('tether-tooltip')
 Tooltip.autoinit = false
 
@@ -45,7 +47,7 @@ const setupTooltipForElement = (el) => {
 }
 
 const init = () => {
-  if (!remote.getGlobal('sharedObj').prefs['enableTooltips']) return false
+  if (!getEnableTooltips()) return false
 
   const tooltipElements = document.querySelectorAll('[data-tooltip]')
   for (let el of tooltipElements) {

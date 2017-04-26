@@ -5,10 +5,11 @@ const { app } = require('electron')
 const pkg = require('../../package.json')
 
 const prefFile = path.join(app.getPath('userData'), 'pref.json')
-
 const defaultPrefs = {
   version: pkg.version,
-  enableSoundEffects: true,
+  enableDrawingSoundEffects: true,
+  enableDrawingMelodySoundEffects: true,
+  enableUISoundEffects: true,
   enableTooltips: true,
   enableAspirationalMessages: true
 }

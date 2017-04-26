@@ -27,7 +27,11 @@
 }
 
 .preferences-fieldset {
-  padding: 12px 0;
+  padding: 0 0 12px 0;
+}
+.preferences-subhead {
+  font-size: 24px;
+  margin: 12px 0 9px;
 }
 
 .preferences-input {
@@ -43,6 +47,14 @@
 .preferences-footer {
   position: absolute;
   bottom: 48px;
+}
+
+sup {
+  font-size: 125%;
+  line-height: 0;
+  position: relative;
+  vertical-align: baseline;
+  top: 0;
 }
 
 input[type=checkbox] {

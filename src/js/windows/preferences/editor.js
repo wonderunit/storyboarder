@@ -15,19 +15,17 @@ const onChange = (name, event) => {
 }
 
 const render = () => {
-  for (let el of [enableSoundEffectsEl, enableTooltipsEl, enableAspirationalMessagesEl]) {
+  for (let el of inputs) {
     el.checked = prefs[el.name]
   }
 }
 
 let prefs = util.stringifyClone(remote.getGlobal('sharedObj').prefs)
 
-let enableSoundEffectsEl = document.getElementById('enableSoundEffects')
-let enableTooltipsEl = document.getElementById('enableTooltips')
-let enableAspirationalMessagesEl = document.getElementById('enableAspirationalMessages')
+let inputs = document.querySelectorAll('input[type="checkbox"]')
 
 // bind
-for (let el of [enableSoundEffectsEl, enableTooltipsEl, enableAspirationalMessagesEl]) {
+for (let el of inputs) {
   el.addEventListener('change', onChange.bind(this, el.name))
 }
 

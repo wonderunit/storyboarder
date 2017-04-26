@@ -473,16 +473,13 @@ let loadBoardUI = ()=> {
 
   sfx.init()
 
-  if (remote.getGlobal('sharedObj').prefs['enableSoundEffects']) {
-    storyboarderSketchPane.on('pointerdown', Sonifier.start)
-    storyboarderSketchPane.on('pointermove', Sonifier.trigger)
-    storyboarderSketchPane.sketchPane.on('onup', Sonifier.stop)
-    Sonifier.init(storyboarderSketchPane.sketchPane.getCanvasSize())
-    window.addEventListener('resize', () => {
-      Sonifier.setSize(storyboarderSketchPane.sketchPane.getCanvasSize())
-    })
-  }
-
+  storyboarderSketchPane.on('pointerdown', Sonifier.start)
+  storyboarderSketchPane.on('pointermove', Sonifier.trigger)
+  storyboarderSketchPane.sketchPane.on('onup', Sonifier.stop)
+  Sonifier.init(storyboarderSketchPane.sketchPane.getCanvasSize())
+  window.addEventListener('resize', () => {
+    Sonifier.setSize(storyboarderSketchPane.sketchPane.getCanvasSize())
+  })
 
   let onUndoStackAction = (state) => {
     if (state.type == 'image') {

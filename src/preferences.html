@@ -9,20 +9,44 @@
   <body class="preferences-window">
     <div class="preferences-form">
       <h1 class="preferences-title">Preferences</h1>
+
       <div class="preferences-fieldset">
+        <h2 class="preferences-subhead">Sounds</h2>
+        <div class="preferences-input">
+          <input
+            type="checkbox"
+            name="enableDrawingSoundEffects"
+            id="enableDrawingSoundEffects" />
+
+          <label for="enableDrawingSoundEffects">
+            <span></span>Drawing Sound Effects
+          </label>
+        </div>
 
         <div class="preferences-input">
           <input
             type="checkbox"
-            name="enableSoundEffects"
-            id="enableSoundEffects" />
+            name="enableDrawingMelodySoundEffects"
+            id="enableDrawingMelodySoundEffects" />
 
-          <label for="enableSoundEffects">
-            <span></span>Play Sound Effects
+          <label for="enableDrawingMelodySoundEffects">
+            <span></span>Drawing Melodies
           </label>
         </div>
 
+        <div class="preferences-input">
+          <input
+            type="checkbox"
+            name="enableUISoundEffects"
+            id="enableUISoundEffects" />
 
+          <label for="enableUISoundEffects">
+            <span></span>User Interface Sound Effects
+          </label>
+        </div>
+      </div>
+
+      <div class="preferences-fieldset">
         <div class="preferences-input">
           <input
             type="checkbox"
@@ -30,7 +54,7 @@
             id="enableTooltips" />
 
           <label for="enableTooltips">
-            <span></span>Show Tooltips
+            <span></span>Show Tooltips<sup>*</sup>
           </label>
         </div>
 
@@ -47,7 +71,7 @@
 
         <footer class="preferences-footer">
           <div class="preferences-hint">
-            Please restart Storyboarder to apply changes.
+            <sup>*</sup> Please restart Storyboarder to apply changes.
           </div>
         </footer>
 
