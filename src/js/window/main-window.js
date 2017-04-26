@@ -786,8 +786,13 @@ let renderMetaData = ()=> {
   }
 
 
-
-
+  let stats
+  if (!util.isUndefined(scriptData)) {
+    stats = `SCENE ${currentScene + 1} SHOT ${boardData.boards[currentBoard].shot}`
+  } else {
+    stats = `SHOT ${boardData.boards[currentBoard].shot}`
+  }
+  document.getElementById('left-stats').innerHTML = stats
 }
 
 
