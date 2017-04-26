@@ -171,11 +171,9 @@ const step = dt => {
     let blend = (penGain * 0.5) * (model.accelGain)
     let v = Tone.prototype.equalPowerScale(util.clamp(blend, 0, 1))
     instrument.setGain(v)
-    melodies.setGain(v)
   } else {
     let v = Tone.prototype.equalPowerScale(util.clamp(model.accelGain, 0, 1))
     instrument.setGain(v)
-    melodies.setGain(v)
   }
   model.accelGain *= 0.2 * frameSize // dampen
   model.pressureGain *= 0.2 * frameSize

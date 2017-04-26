@@ -111,15 +111,10 @@ module.exports = () => {
     shouldTrigger = true
   }
 
-  const setGain = value => {
-    // TODO
-  }
-
   return {
     start,
     stop,
     trigger, //: throttle(trigger, 16 * 8),
-    triggerChange,
-    setGain
+    triggerChange
   }
 }
