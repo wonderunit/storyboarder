@@ -1,3 +1,5 @@
+// timer-based equivalent of https://github.com/mattdesl/raf-loop
+
 const EventEmitter = require('events').EventEmitter
 
 // via: right-now
