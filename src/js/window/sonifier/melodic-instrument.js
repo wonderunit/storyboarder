@@ -8,14 +8,11 @@ const chords = ["Amadd9", "GMadd9", "Bm7#5", "FMadd9", "Am7#5", "E7", "EMadd9", 
 
 let getNotes = () => tonal.chord(util.sample(chords))
 
-const Arpeggiator = onNext => {
+const Arpeggiator = (_list = []) => {
   let curr = 0
-  let list = []
+  let list = _list
   const next = () => {
     let index = ++curr % list.length
-    // if (index == 0) {
-    //   list = onNext()
-    // }
     return list[index]
   }
   const reset = () => {
@@ -27,8 +24,6 @@ const Arpeggiator = onNext => {
   const getIndex = () => {
     return curr
   }
-
-  list = onNext()
   return {
     reset,
     next,
@@ -39,9 +34,17 @@ const Arpeggiator = onNext => {
 }
 
 module.exports = () => {
+  let arpA = Arpeggiator()
+  let arpB = Arpeggiator()
+  let arpC = Arpeggiator()
 
-  let arp = Arpeggiator(getNotes)
-  arp.reset()
+  let notes = getNotes()
+  arpA.setList(util.shuffle(notes))
+  arpA.reset()
+  arpB.setList(util.shuffle(notes))
+  arpB.reset()
+  arpC.setList(util.shuffle(notes))
+  arpC.reset()
 
   let synth = new Tone.PolySynth(8, Tone.Synth)
     .set({
@@ -89,8 +92,13 @@ module.exports = () => {
     lastChangeAt = Date.now()
     shouldTrigger = true
 
-    arp.setList(getNotes())
-    arp.reset()
+    let notes = getNotes()
+    arpA.setList(util.shuffle(notes))
+    arpA.reset()
+    arpB.setList(util.shuffle(notes))
+    arpB.reset()
+    arpC.setList(util.shuffle(notes))
+    arpC.reset()
   }
 
   const stop = () => {
@@ -108,16 +116,18 @@ module.exports = () => {
       lastChangeAt = Date.now()
       shouldTrigger = true
       //
-      arp.reset()
+      arpA.reset()
+      arpB.reset()
+      arpC.reset()
     }
 
     if (!shouldTrigger) return
 
-    let startingIndex = arp.getIndex()
+    let startingIndex = arpA.getIndex()
 
-    const note  = arp.next() + (Math.random() > 0.5 ? '3' : '4')
-    const onote = arp.next() + (Math.random() > 0.5 ? '3' : '4')
-    const bnote = arp.next() + (Math.random() > 0.5 ? '2' : '3')
+    const note  = arpA.next() + (Math.random() > 0.5 ? '3' : '4')
+    const onote = arpB.next() + (Math.random() > 0.5 ? '3' : '4')
+    const bnote = arpC.next() + (Math.random() > 0.5 ? '2' : '3')
 
     if (startingIndex == 0) {
       bassSynth2.triggerAttackRelease(Tone.Frequency(bnote).transpose(+12), "16n", undefined, 0.4)
