@@ -309,8 +309,10 @@ const playEffect = effect => {
       metalSynth.triggerAttackRelease()
       break
     default:
-      multiPlayer.stopIfPlaying(effect)
-      multiPlayer.start(effect)
+      if (multiPlayer) {
+        multiPlayer.stopIfPlaying(effect)
+        multiPlayer.start(effect)
+      }
       break
   }
 }
