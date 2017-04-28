@@ -106,7 +106,7 @@ module.exports = () => {
 
     if (firstNote) {
       bassSynth2.triggerAttackRelease(
-        Tone.Frequency(seq.next()),
+        Tone.Frequency(seq.next()).transpose(Math.random() > 0.5 ? -12 : -24),
         "8n",
         undefined,
         1
