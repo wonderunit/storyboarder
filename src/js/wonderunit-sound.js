@@ -12,11 +12,15 @@
   new chord sequences
 */
 
+const { remote } = require('electron')
+
 const Tone = require('tone')
 const { shuffle } = require('./utils/index.js')
 
 Tone.Transport.latencyHint = 'playback'
 Tone.Transport.start("+0.1")
+
+const getEnableUISoundEffects = () => remote.getGlobal('sharedObj').prefs['enableUISoundEffects']
 
 let chords = [
   ['a4', 'b4', 'c5', 'e5'],
@@ -37,6 +41,9 @@ for (var i = 0; i < chords2.length; i++) {
 let currentChord = 0
 let chordCount = 0
 let currentNote = 0
+
+let isMuted = false
+const setMute = value => isMuted = value
 
 // set up sound sources.
 
@@ -98,16 +105,53 @@ errorSynth.set({
     "type" : "sawtooth"
  },
  "envelope" : {
-    "attack":0.1,
-    "decay":0.01,
-    "sustain":0.1,
-    "release":0.5,
+    "attack": 0.1,
+    "decay": 0.01,
+    "sustain": 0.1,
+    "release": 0.5,
  },
 })
 errorSynth.set('volume', -2).toMaster()
 
+var bipSynth = new Tone.MonoSynth()
+  .set({
+    oscillator : {
+      type : 'square'
+    },
+    envelope : {
+      attack: 0.01,
+      decay: 0.1,
+      sustain: 1,
+      release: 0.5,
+    },
+    filter: {
+      Q: 1
+    },
+    filterEnvelope: {
+      attack: 0.3,
+      decay: 0.5,
+      sustain: 1,
+      release: 0.5,
+      baseFrequency: 800,
+      exponent: 4
+    }
+  })
+  .set('volume', -24)
+  .toMaster()
+
+let metalSynth = new Tone.MetalSynth()
+    .set({
+      'frequency': 110,
+      'envelope': {
+        'decay': 0.125,
+        'release': 0.05
+      },
+      'volume': -28
+    })
+    .toMaster()
+
 // set up effects and chain them.
-var freeverb = new Tone.Freeverb(0.9, 1000)
+// var freeverb = new Tone.Freeverb(0.9, 1000) // unused
 var comp = new Tone.Compressor(-10, 5)
 var comp2 = new Tone.Compressor(-10, 5)
 var filter = new Tone.Filter(100, "lowpass", -48)
@@ -139,6 +183,8 @@ let advanceNote = (amount) => {
 }
 
 let rollover = () => {
+  if (!getEnableUISoundEffects()) return
+
   let note = chords[currentChord][currentNote % (chords[0].length)]
   let bassnote = chords[currentChord][0]
   let onote = chords2[currentChord][currentNote % (chords[0].length)]
@@ -151,6 +197,8 @@ let rollover = () => {
 }
 
 let down = () => {
+  if (!getEnableUISoundEffects()) return
+
   let bassnote = chords[currentChord][0]
   bassSynth.triggerAttackRelease(Tone.Frequency(bassnote).transpose(-12*3), 0.2, undefined, 0.4);
   synth.triggerAttackRelease(Tone.Frequency(bassnote).transpose(+12*2), "16n", undefined, 1);
@@ -158,6 +206,8 @@ let down = () => {
 }
 
 let negative = () => {
+  if (!getEnableUISoundEffects()) return
+
   let bassnote = chords[currentChord][0]
   bassSynth.triggerAttackRelease(Tone.Frequency(bassnote).transpose((-12*3)+5), 0.2, undefined, 0.3);
   synth.triggerAttackRelease(Tone.Frequency(bassnote).transpose((+12*2)+5), "16n", undefined, 0.9);
@@ -169,6 +219,8 @@ let negative = () => {
 }
 
 let positive = () => {
+  if (!getEnableUISoundEffects()) return
+
   let bassnote = chords[currentChord][0]
   bassSynth.triggerAttackRelease(Tone.Frequency(bassnote).transpose(-12*3), 0.2, undefined, 0.4);
   synth.triggerAttackRelease(Tone.Frequency(bassnote).transpose(+12*2), "16n", undefined, 1);
@@ -185,6 +237,8 @@ let positive = () => {
 }
 
 let error = () => {
+  if (!getEnableUISoundEffects()) return
+
   let bassnote = chords[currentChord][0]
     bassSynth.triggerAttackRelease(Tone.Frequency(bassnote).transpose((-12*2)), 0.1, undefined, 0.3);
     errorSynth.triggerAttackRelease(Tone.Frequency(bassnote).transpose((-12*2)), "64n", undefined, 0.3);
@@ -195,11 +249,83 @@ let error = () => {
   advanceNote(1) 
 }
 
+let bip = (note) => {
+  if (!getEnableUISoundEffects()) return
+
+  bipSynth.triggerAttackRelease(Tone.Frequency(note).transpose(-12), "16n", undefined, 0.25)
+  advanceNote(1)
+}
+
+const filePathsForSoundEffects = {
+  "trash": "./snd/trash.wav"
+}
+let multiPlayer
+const init = () => {
+  if (!getEnableUISoundEffects()) return
+
+  multiPlayer = new Tone.MultiPlayer(new Tone.Buffers(filePathsForSoundEffects))
+                .set('volume', -6)
+                .toMaster()
+  multiPlayer.stopIfPlaying = function (bufferName) {
+    if (this._activeSources[bufferName] && this._activeSources[bufferName].length) {
+      this.stop(bufferName)
+    }
+  }
+}
+// route for sound effects by name/purpose
+const playEffect = effect => {
+  if (!getEnableUISoundEffects()) return
+  if (isMuted) return
+
+  switch (effect) {
+    case 'fill':
+      rollover()
+      setTimeout(positive, 150)
+      break
+    case 'tool-light-pencil':
+      bip('c4')
+      break
+    case 'tool-pencil':
+      bip('e4')
+      break
+    case 'tool-pen':
+      bip('b4')
+      break
+    case 'tool-brush':
+      bip('c5')
+      break
+    case 'tool-note-pen':
+      bip('e5')
+      break
+    case 'tool-eraser':
+      bip('b5')
+      break
+    case 'on':
+      metalSynth.set({ 'frequency': 220 })
+      metalSynth.triggerAttackRelease()
+      break
+    case 'off':
+      metalSynth.set({ 'frequency': 110 })
+      metalSynth.triggerAttackRelease()
+      break
+    default:
+      if (multiPlayer) {
+        multiPlayer.stopIfPlaying(effect)
+        multiPlayer.start(effect)
+      }
+      break
+  }
+}
+
 module.exports = {
-  rollover: rollover,
-  down: down,
-  positive: positive,
-  negative: negative,
-  error: error,
-  shuffle
+  init,
+  rollover,
+  down,
+  positive,
+  negative,
+  error,
+  bip,
+  playEffect,
+  
+  setMute
 }

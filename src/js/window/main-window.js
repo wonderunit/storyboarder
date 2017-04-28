@@ -5,7 +5,6 @@ const fs = require('fs')
 const path = require('path')
 const menu = require('../menu.js')
 const util = require('../utils/index.js')
-const sfx = require('../wonderunit-sound.js')
 const Color = require('color-js')
 
 const StoryboarderSketchPane = require('../storyboarder-sketch-pane.js')
@@ -19,6 +18,8 @@ const Transport = require('./transport.js')
 const notifications = require('./notifications.js')
 const NotificationData = require('../../data/messages.json')
 const Guides = require('./guides.js')
+const Sonifier = require('./sonifier/index.js')
+const sfx = require('../wonderunit-sound.js')
 
 let boardFilename
 let boardPath
@@ -183,6 +184,7 @@ let loadBoardUI = ()=> {
       switch (e.target.name) {
         case 'newShot':
           boardData.boards[currentBoard].newShot = e.target.checked
+          sfx.playEffect(e.target.checked ? 'on' : 'off')
           markBoardFileDirty()
           textInputMode = false
           break
@@ -323,6 +325,7 @@ let loadBoardUI = ()=> {
 
   toolbar.on('brush', (kind, options) => {
     storyboarderSketchPane.setBrushTool(kind, options)
+    sfx.playEffect('tool-' + kind)
   })
   toolbar.on('brush:size', size => {
     storyboarderSketchPane.setBrushSize(size)
@@ -333,9 +336,11 @@ let loadBoardUI = ()=> {
 
   toolbar.on('trash', () => {
     storyboarderSketchPane.clearLayer()
+    sfx.playEffect('trash')
   })
   toolbar.on('fill', color => {
     storyboarderSketchPane.fillLayer(color.toCSS())
+    sfx.playEffect('fill')
   })
 
 
@@ -395,7 +400,9 @@ let loadBoardUI = ()=> {
       : 'hidden'
   })
 
+  sfx.setMute(true)
   toolbar.setState({ brush: 'pencil' })
+  sfx.setMute(false)
 
 
 
@@ -462,6 +469,17 @@ let loadBoardUI = ()=> {
   })
 
   guides = new Guides(storyboarderSketchPane.getLayerCanvasByName('guides'))
+
+
+  sfx.init()
+
+  storyboarderSketchPane.on('pointerdown', Sonifier.start)
+  storyboarderSketchPane.on('pointermove', Sonifier.trigger)
+  storyboarderSketchPane.sketchPane.on('onup', Sonifier.stop)
+  Sonifier.init(storyboarderSketchPane.sketchPane.getCanvasSize())
+  window.addEventListener('resize', () => {
+    Sonifier.setSize(storyboarderSketchPane.sketchPane.getCanvasSize())
+  })
 
   let onUndoStackAction = (state) => {
     if (state.type == 'image') {
@@ -1614,7 +1632,7 @@ let stopPlaying = () => {
   utter.onend = null
   ipcRenderer.send('resumeSleep')
   speechSynthesis.cancel()
-  transport.setState({ playbackMode })
+  if (transport) transport.setState({ playbackMode })
 }
 
 let togglePlayback = ()=> {
@@ -2184,7 +2202,10 @@ const setupRandomizedNotifications = () => {
 const runRandomizedNotifications = (messages) => {
   let count = 0, duration = 60 * 60 * 1000, timeout
   const tick = () => {
-    notifications.notify(messages[count++ % messages.length])
+    // only fire notification if enabled in preferences
+    if (remote.getGlobal('sharedObj').prefs['enableAspirationalMessages']) {
+      notifications.notify(messages[count++ % messages.length])
+    }
     timeout = setTimeout(tick, duration)
   }
   tick()
@@ -2281,8 +2302,6 @@ ipcRenderer.on('setTool', (e, arg)=> {
         break
       case 'eraser':
         toolbar.setState({ brush: 'eraser' })
-        // just to set the size
-        toolbar.emit('brush', 'eraser', toolbar.getBrushOptions())
         break
     }
   }
@@ -2302,6 +2321,7 @@ ipcRenderer.on('useColor', (e, arg)=> {
 ipcRenderer.on('clear', (e, arg)=> {
   if (!textInputMode) {
     storyboarderSketchPane.clearLayer()
+    sfx.playEffect('trash')
   }
 })
 

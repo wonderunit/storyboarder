@@ -1,0 +1,66 @@
+.preferences-window {
+  margin: 0;
+  padding: 0;
+
+  background-color: #E5E5E5;
+  color: #3A3A3A;
+
+  font-family: 'proximanova';
+  font-weight: 300;
+
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: default;
+  display: flex;
+  flex-direction: row;
+  min-height: 100vh;
+}
+
+.preferences-form {
+  padding: 60px;
+}
+
+.preferences-title {
+  font-size: 48px;
+  margin: 0 0 48px 0;
+  font-weight: 900;
+}
+
+.preferences-fieldset {
+  padding: 0 0 12px 0;
+}
+.preferences-subhead {
+  font-size: 24px;
+  margin: 12px 0 9px;
+}
+
+.preferences-input {
+  margin: 24px 0;
+}
+
+input[type=checkbox] {
+  display: none;
+}
+
+input[type="checkbox"] + label span {
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  margin: -2px 10px 0 0;
+  vertical-align: middle;
+  background: #3A3A3A;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+input[type=checkbox]:checked + label:before {
+  content:'✖';
+  padding-left: 5px;
+  padding-top: 3px;
+  text-shadow: 0px 1px 1px rgba(0, 0, 0, .2);
+  font-size: 15px;
+  text-align: center;
+  line-height: 1;
+  position: absolute;
+  color: white;
+}

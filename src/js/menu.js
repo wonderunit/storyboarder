@@ -380,46 +380,66 @@ const template = [
   }
 ]
 
-
-
-const addDarwinFeatures = template => {
+const addDarwinFeatures = (template, includePreferences = false) => {
   const name = require('electron').remote.app.getName()
+
+  let submenu = [
+    {
+      role: 'about'
+    }
+  ]
+
+  if (includePreferences) {
+    submenu.push(
+      {
+        type: 'separator'
+      }
+    )
+    submenu.push(
+      {
+        label: 'Preferences',
+        accelerator: 'Cmd+,',
+        click: () => ipcRenderer.send('preferences')
+      }
+    )
+  }
+
+  submenu.push(
+    {
+      type: 'separator'
+    },
+    {
+      label: 'Services',
+      role: 'services',
+      submenu: []
+    },
+    {
+      type: 'separator'
+    },
+    {
+      role: 'hide'
+    },
+    {
+      role: 'hideothers'
+    },
+    {
+      role: 'unhide'
+    },
+    {
+      type: 'separator'
+    },
+    {
+      role: 'quit'
+    }
+  )
+
   template.unshift({
     label: name,
-    submenu: [
-      {
-        role: 'about'
-      },
-      {
-        type: 'separator'
-      },
-      {
-        role: 'services',
-        submenu: []
-      },
-      {
-        type: 'separator'
-      },
-      {
-        role: 'hide'
-      },
-      {
-        role: 'hideothers'
-      },
-      {
-        role: 'unhide'
-      },
-      {
-        type: 'separator'
-      },
-      {
-        role: 'quit'
-      }
-    ]
+    submenu
   })
 }
 if (process.platform === 'darwin') {
-  addDarwinFeatures(template)
+  addDarwinFeatures(template, true)
   // // Edit menu.
   // template[1].submenu.push(
   //   {
@@ -536,7 +556,23 @@ const welcomeTemplate = [
   }
 ]
 if (process.platform === 'darwin') {
-  addDarwinFeatures(welcomeTemplate)
+  addDarwinFeatures(welcomeTemplate, false)
+}
+
+// add Edit > Preferences on Windows
+if (process.platform == 'win32') {
+  template[1].submenu.push(
+    {
+      type: 'separator'
+    }
+  )
+  template[1].submenu.push(
+    {
+      label: 'Preferences',
+      accelerator: 'CmdOrCtrl+,',
+      click: () => ipcRenderer.send('preferences')
+    }
+  )
 }
 
 const menuInstance = Menu.buildFromTemplate(template)
