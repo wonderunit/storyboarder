@@ -4,13 +4,7 @@ const throttle = require('lodash.throttle')
 
 const util = require('../../utils')
 
-// const chords = ["Amadd9", "GMadd9", "Bm7#5", "FMadd9", "Am7", "Am7#5", "E7", "EMadd9", "G#m7#5", "EM", "Em#5"]
 let scale = tonal.scale('D mixolydian pentatonic')
-let getNotes = () => {
-  let type = util.sample(['11', 'Maj7', 'M69', 'Madd9'])
-  let chord = tonal.chord.get(type, tonic)
-  return chord
-}
 
 const Arpeggiator = (_list = []) => {
   let curr = 0
@@ -28,27 +22,24 @@ const Arpeggiator = (_list = []) => {
   const getIndex = () => {
     return curr
   }
+  const getRecent = () => list[curr % list.length]
   return {
     reset,
     next,
 
     setList,
-    getIndex
+    getIndex,
+    getRecent
   }
 }
 
 module.exports = () => {
   let arpA = Arpeggiator()
-  let arpB = Arpeggiator()
-  let arpC = Arpeggiator()
 
-  let notes = getNotes()
+  // TODO markov chain instead of shuffle
+  //      include octaves in markov instead of random assignment
   arpA.setList(util.shuffle(scale))
   arpA.reset()
-  arpB.setList(util.shuffle(notes))
-  arpB.reset()
-  arpC.setList(util.shuffle(notes))
-  arpC.reset()
 
   let synth = new Tone.PolySynth(8, Tone.Synth)
     .set({
@@ -79,9 +70,9 @@ module.exports = () => {
   const synthFilter = new Tone.Filter(1250, "lowpass", -12)
     .set('Q', 0)
 
-  var synthVol = new Tone.Volume(-12)
+  var synthVol = new Tone.Volume(-6)
 
-  var bassSynth2Vol = new Tone.Volume(-12)
+  var bassSynth2Vol = new Tone.Volume(-6)
 
   var verb = new Tone.Freeverb(0.96, 1000)
               .set('wet', 0.25)
@@ -91,18 +82,14 @@ module.exports = () => {
 
   let lastChangeAt = null
   let shouldTrigger = false
+  let firstNote = false
+  let chordType
 
   const start = () => {
     lastChangeAt = Date.now()
     shouldTrigger = true
 
-    let notes = getNotes()
-    arpA.setList(util.shuffle(scale))
-    arpA.reset()
-    arpB.setList(util.shuffle(notes))
-    arpB.reset()
-    arpC.setList(util.shuffle(notes))
-    arpC.reset()
+    firstNote = true
   }
 
   const stop = () => {
@@ -115,35 +102,36 @@ module.exports = () => {
     // been at least n msecs since last change
     if (!shouldTrigger &&
         lastChangeAt && 
-        Date.now() - lastChangeAt > 750)
+        Date.now() - lastChangeAt > 250)
     {
       lastChangeAt = Date.now()
       shouldTrigger = true
-      //
-      // arpA.reset()
-      arpB.reset()
-      arpC.reset()
+      firstNote = true
     }
 
     if (!shouldTrigger) return
 
-    let startingIndex = arpB.getIndex()
-
-    const bnote = arpA.next() + (Math.random() > 0.5 ? '3' : '4')
-
-    const note  = arpB.next() + (Math.random() > 0.5 ? '4' : '5')
-    const onote = arpC.next() + (Math.random() > 0.5 ? '4' : '5')
-
-    if (startingIndex == 0) {
-      bassSynth2.triggerAttackRelease(Tone.Frequency(bnote), "4n", undefined, 1)
+    if (firstNote) {
+      // get a new bass note
+      let bnote = arpA.next() + (Math.random() > 0.5 ? '3' : '4')
+      bassSynth2.triggerAttackRelease(Tone.Frequency(bnote), "8n", undefined, 1)
+      firstNote = false
     }
     if (velocity > 0.25) {
+      let tonic = arpA.getRecent() + (Math.random() > 0.5 ? '3' : '4')
+      let chord = tonal.chord.get(chordType, tonic)
+      // ignore the root
+      chord.shift()
+
+      let note = util.sample(chord)
+      let onote = util.sample(chord)
+
       synth.triggerAttackRelease(
         Tone.Frequency(note),
         "32n",
         undefined,
         velocity)
-
+      
       synth.triggerAttackRelease(
         Tone.Frequency(onote),
         "16n",
@@ -159,8 +147,8 @@ module.exports = () => {
     lastChangeAt = Date.now()
     shouldTrigger = true
 
-    // arp.setList(getNotes())
-    // arp.reset()
+    // new chord built from the most recent bass note
+    chordType = util.sample(['M', '11', 'Maj7', 'M69', 'Madd9'])
   }
 
   return {
