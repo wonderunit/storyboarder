@@ -3,11 +3,26 @@ const tonal = require('tonal')
 
 const util = require('../../utils')
 
-const progression = ["Amadd9", "GMadd9", "Bm7#5", "FMadd9", "Am7",
-  "Am7#5", "E7", "EMadd9", "G#m7#5", "EM", "Em#5"]
+let progression = [
+  ['a4', 'b4', 'c5', 'e5'],
+  ['g4', 'a4', 'b4', 'd5'],
+  ['f4', 'g4', 'a4', 'c5'],
+  ['b4', 'd5', 'e5', 'g#5'],
+  ['c5', 'f5', 'g5', 'a5'],
+  ['b4', 'e5', 'f#5', 'g#5'],
+  ['c5', 'f5', 'g5', 'a5'],
+  ['e5', 'g#5', 'b5', 'e6'],
+].reduce((a, b) => {
+  a.push(b)
+  // repetition
+  a.push(util.shuffle(b)) // TODO musical variation
+  return a
+}, [])
+// flatten
+progression = [].concat(...progression)
 
-const Sequence = (_list = []) => {
-  let curr = 0
+const Sequence = (_list = [], offset = 0) => {
+  let curr = offset
   let list = _list
   const next = () => {
     let index = ++curr % list.length
@@ -21,7 +36,7 @@ const Sequence = (_list = []) => {
 }
 
 module.exports = () => {
-  let seq = Sequence(progression)
+  let seq = Sequence(progression, 0) // , Math.floor(Math.random() * progression.length)
 
   let synth = new Tone.PolySynth(8, Tone.Synth)
     .set({
@@ -91,18 +106,8 @@ module.exports = () => {
     if (!shouldTrigger) return
 
     if (firstNote) {
-      // get a new bass note
-      seq.next()
-    }
-    
-    let chord = seq.recent()
-    let root = tonal.chord(chord)[0]
-    let intervals = tonal.chord.intervals(chord)
-    let notes = intervals.map(n => tonal.transpose(n, root + '3'))
-
-    if (firstNote) {
       bassSynth2.triggerAttackRelease(
-        Tone.Frequency(notes[0]),
+        Tone.Frequency(seq.next()),
         "8n",
         undefined,
         1
@@ -110,18 +115,14 @@ module.exports = () => {
       firstNote = false
     }
     if (velocity > 0.25) {
-      notes.shift() // remove root
-      let note1 = util.sample(notes)
-      let note2 = util.sample(notes)
-      
       synth.triggerAttackRelease(
-        Tone.Frequency(note1).transpose(Math.random() > 0.5 ? +12 : 0),
+        Tone.Frequency(seq.next()).transpose(Math.random() > 0.5 ? +12 : 0),
         "32n",
         undefined,
         velocity)
       
       synth.triggerAttackRelease(
-        Tone.Frequency(note2).transpose(velocity > 0.4 ? +12 : 0),
+        Tone.Frequency(seq.next()).transpose(velocity > 0.4 ? +12 : 0),
         "16n",
         undefined,
         velocity * 0.5
