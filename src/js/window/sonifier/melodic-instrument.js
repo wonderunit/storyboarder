@@ -4,7 +4,7 @@ const throttle = require('lodash.throttle')
 
 const util = require('../../utils')
 
-let scale = tonal.scale('C mixolydian pentatonic')
+let scale = tonal.scale('G mixolydian pentatonic')
 
 const Arpeggiator = (_list = []) => {
   let curr = 0
@@ -134,7 +134,7 @@ module.exports = () => {
         velocity)
 
       synth.triggerAttackRelease(
-        Tone.Frequency(onote),
+        Tone.Frequency(onote).transpose(velocity > 0.4 ? +12 : 0),
         "16n",
         undefined,
         velocity * 0.5
@@ -149,7 +149,7 @@ module.exports = () => {
     shouldTrigger = true
 
     // new chord built from the most recent bass note
-    chordType = util.sample(['M', '11', 'Maj7', 'M69', 'Madd9'])
+    chordType = 'M' // util.sample(['M', '11', 'Maj7', 'M69', 'Madd9'])
   }
 
   return {
