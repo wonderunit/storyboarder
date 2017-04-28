@@ -100,7 +100,6 @@ module.exports = () => {
     {
       lastChangeAt = Date.now()
       shouldTrigger = true
-      firstNote = true
     }
 
     if (!shouldTrigger) return
