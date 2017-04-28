@@ -4,7 +4,7 @@ const throttle = require('lodash.throttle')
 
 const util = require('../../utils')
 
-let scale = tonal.scale('D mixolydian pentatonic')
+let scale = tonal.scale('C mixolydian pentatonic')
 
 const Arpeggiator = (_list = []) => {
   let curr = 0
@@ -35,11 +35,6 @@ const Arpeggiator = (_list = []) => {
 
 module.exports = () => {
   let arpA = Arpeggiator()
-
-  // TODO markov chain instead of shuffle
-  //      include octaves in markov instead of random assignment
-  arpA.setList(util.shuffle(scale))
-  arpA.reset()
 
   let synth = new Tone.PolySynth(8, Tone.Synth)
     .set({
@@ -90,6 +85,11 @@ module.exports = () => {
     shouldTrigger = true
 
     firstNote = true
+
+    // TODO markov chain instead of shuffle
+    //      include octaves in markov instead of random assignment
+    arpA.setList(util.shuffle(scale))
+    arpA.reset()
   }
 
   const stop = () => {
@@ -120,10 +120,11 @@ module.exports = () => {
     if (velocity > 0.25) {
       let tonic = arpA.getRecent() + (Math.random() > 0.5 ? '3' : '4')
       let chord = tonal.chord.get(chordType, tonic)
-      // ignore the root
+
+      // remove root
       chord.shift()
 
-      let note = util.sample(chord)
+      let note = chord[0]
       let onote = util.sample(chord)
 
       synth.triggerAttackRelease(
@@ -131,7 +132,7 @@ module.exports = () => {
         "32n",
         undefined,
         velocity)
-      
+
       synth.triggerAttackRelease(
         Tone.Frequency(onote),
         "16n",
