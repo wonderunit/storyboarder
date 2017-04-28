@@ -1,6 +1,5 @@
 const Tone = require('tone')
 const tonal = require('tonal')
-const throttle = require('lodash.throttle')
 
 const util = require('../../utils')
 
@@ -155,7 +154,7 @@ module.exports = () => {
   return {
     start,
     stop,
-    trigger, //: throttle(trigger, 16 * 8),
+    trigger,
     triggerChange
   }
 }
