@@ -4,7 +4,11 @@ const throttle = require('lodash.throttle')
 
 const util = require('../../utils')
 
-const chords = ["Amadd9", "GMadd9", "Bm7#5", "FMadd9", "Am7#5", "E7", "EMadd9", "G#m7#5", "EM", "Em#5"]
+const chords = ["Amadd9", "GMadd9", "Bm7#5", "FMadd9", "Am7", "Am7#5", "E7", "EMadd9", "G#m7#5", "EM", "Em#5"]
+
+// sequential:
+//    let currChord = 0
+//    let getNotes = () => tonal.chord(chords[++currChord % chords.length])
 
 let getNotes = () => tonal.chord(util.sample(chords))
 
@@ -39,7 +43,7 @@ module.exports = () => {
   let arpC = Arpeggiator()
 
   let notes = getNotes()
-  arpA.setList(util.shuffle(notes))
+  arpA.setList(notes)
   arpA.reset()
   arpB.setList(util.shuffle(notes))
   arpB.reset()
@@ -93,7 +97,7 @@ module.exports = () => {
     shouldTrigger = true
 
     let notes = getNotes()
-    arpA.setList(util.shuffle(notes))
+    arpA.setList(notes)
     arpA.reset()
     arpB.setList(util.shuffle(notes))
     arpB.reset()
