@@ -6,10 +6,12 @@ const util = require('../../utils')
 
 const chords = ["Amadd9", "GMadd9", "Bm7#5", "FMadd9", "Am7", "Am7#5", "E7", "EMadd9", "G#m7#5", "EM", "Em#5"]
 
+//
 // sequential:
 //    let currChord = 0
 //    let getNotes = () => tonal.chord(chords[++currChord % chords.length])
-
+//
+// new chord each time:
 let getNotes = () => tonal.chord(util.sample(chords))
 
 const Arpeggiator = (_list = []) => {
@@ -84,7 +86,7 @@ module.exports = () => {
   var bassSynth2Vol = new Tone.Volume(-18)
 
   var verb = new Tone.Freeverb(0.96, 1000)
-  verb.wet = 1
+              .set('wet', 0.25)
 
   synth.chain(synthFilter, synthVol, verb, Tone.Master)
   bassSynth2.chain(bassSynth2Vol, verb, Tone.Master)
@@ -115,7 +117,7 @@ module.exports = () => {
     // been at least n msecs since last change
     if (!shouldTrigger &&
         lastChangeAt && 
-        Date.now() - lastChangeAt > 1000)
+        Date.now() - lastChangeAt > 750)
     {
       lastChangeAt = Date.now()
       shouldTrigger = true
@@ -129,23 +131,27 @@ module.exports = () => {
 
     let startingIndex = arpA.getIndex()
 
-    const note  = arpA.next() + (Math.random() > 0.5 ? '3' : '4')
-    const onote = arpB.next() + (Math.random() > 0.5 ? '3' : '4')
-    const bnote = arpC.next() + (Math.random() > 0.5 ? '2' : '3')
+    const bnote = arpA.next() + (Math.random() > 0.5 ? '3' : '4')
+
+    const note  = arpB.next() + (Math.random() > 0.5 ? '4' : '5')
+    const onote = arpC.next() + (Math.random() > 0.5 ? '4' : '5')
 
     if (startingIndex == 0) {
-      bassSynth2.triggerAttackRelease(Tone.Frequency(bnote).transpose(+12), "16n", undefined, 0.4)
+      bassSynth2.triggerAttackRelease(Tone.Frequency(bnote), "16n", undefined, 0.4)
     }
     if (velocity > 0.25) {
       synth.triggerAttackRelease(
-        Tone.Frequency(note).transpose(+12),
+        Tone.Frequency(note),
         "32n",
         undefined,
         velocity)
 
-      synth.triggerAttackRelease(Tone.Frequency(note).transpose(+12), "32n", undefined, velocity * 0.5)
-
-      synth.triggerAttackRelease(Tone.Frequency(onote).transpose(+24), "16n", undefined, velocity * 0.5)
+      synth.triggerAttackRelease(
+        Tone.Frequency(onote),
+        "16n",
+        undefined,
+        velocity * 0.5
+      )
     }
 
     shouldTrigger = false
