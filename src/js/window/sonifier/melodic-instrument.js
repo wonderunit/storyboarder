@@ -4,15 +4,13 @@ const throttle = require('lodash.throttle')
 
 const util = require('../../utils')
 
-const chords = ["Amadd9", "GMadd9", "Bm7#5", "FMadd9", "Am7", "Am7#5", "E7", "EMadd9", "G#m7#5", "EM", "Em#5"]
-
-//
-// sequential:
-//    let currChord = 0
-//    let getNotes = () => tonal.chord(chords[++currChord % chords.length])
-//
-// new chord each time:
-let getNotes = () => tonal.chord(util.sample(chords))
+// const chords = ["Amadd9", "GMadd9", "Bm7#5", "FMadd9", "Am7", "Am7#5", "E7", "EMadd9", "G#m7#5", "EM", "Em#5"]
+let scale = tonal.scale('D mixolydian pentatonic')
+let getNotes = () => {
+  let type = util.sample(['11', 'Maj7', 'M69', 'Madd9'])
+  let chord = tonal.chord.get(type, tonic)
+  return chord
+}
 
 const Arpeggiator = (_list = []) => {
   let curr = 0
@@ -45,7 +43,7 @@ module.exports = () => {
   let arpC = Arpeggiator()
 
   let notes = getNotes()
-  arpA.setList(notes)
+  arpA.setList(util.shuffle(scale))
   arpA.reset()
   arpB.setList(util.shuffle(notes))
   arpB.reset()
@@ -83,7 +81,7 @@ module.exports = () => {
 
   var synthVol = new Tone.Volume(-12)
 
-  var bassSynth2Vol = new Tone.Volume(-18)
+  var bassSynth2Vol = new Tone.Volume(-12)
 
   var verb = new Tone.Freeverb(0.96, 1000)
               .set('wet', 0.25)
@@ -99,7 +97,7 @@ module.exports = () => {
     shouldTrigger = true
 
     let notes = getNotes()
-    arpA.setList(notes)
+    arpA.setList(util.shuffle(scale))
     arpA.reset()
     arpB.setList(util.shuffle(notes))
     arpB.reset()
@@ -122,14 +120,14 @@ module.exports = () => {
       lastChangeAt = Date.now()
       shouldTrigger = true
       //
-      arpA.reset()
+      // arpA.reset()
       arpB.reset()
       arpC.reset()
     }
 
     if (!shouldTrigger) return
 
-    let startingIndex = arpA.getIndex()
+    let startingIndex = arpB.getIndex()
 
     const bnote = arpA.next() + (Math.random() > 0.5 ? '3' : '4')
 
@@ -137,7 +135,7 @@ module.exports = () => {
     const onote = arpC.next() + (Math.random() > 0.5 ? '4' : '5')
 
     if (startingIndex == 0) {
-      bassSynth2.triggerAttackRelease(Tone.Frequency(bnote), "16n", undefined, 0.4)
+      bassSynth2.triggerAttackRelease(Tone.Frequency(bnote), "4n", undefined, 1)
     }
     if (velocity > 0.25) {
       synth.triggerAttackRelease(
