@@ -1,33 +1,19 @@
-const THREE = require('../vendor/three.min.js')
+const shotTemplateSystem = new(require('../shot-template-system/'))({width: 2500, height: 900})
 
-console.log(THREE)
+window.shotTemplateSystem = shotTemplateSystem
 
-function addToScene(obj) {
-  scene.add(obj)
-}
+document.querySelector("#button").addEventListener("click", (event)=>{
+  var shot = shotTemplateSystem.requestShot()
 
-  var scene = new THREE.Scene();
-
-  var ambient = new THREE.AmbientLight( 0x222222 );
-  addToScene(ambient)
-
-  var directionalLight = new THREE.DirectionalLight( 0xffffff );
-  directionalLight.position.set( 0, 8, 1 );
-  addToScene(directionalLight)
+  var div = document.createElement('img')
+  div.src = shot.image
+  div.style.width = "900px";
+  div.style.border = "1px solid black";
+  document.querySelector("#shots").insertBefore(div, document.querySelector("img"))
 
 
-var cameraNear = 0.05
-var cameraAspecRatio = 1.85
 
-  var camera
 
-  camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, cameraNear );
-  camera.position.z = 2.5;
-  camera.layers.enable(1)
+})
 
-  var container = document.getElementById('inspector')
-
-  renderer = new THREE.WebGLRenderer( { antialias: true, alpha: true, preserveDrawingBuffer: true });
-  renderer.setPixelRatio( window.devicePixelRatio );
-  renderer.setSize( window.innerWidth, window.innerHeight );
-  container.appendChild( renderer.domElement );
+//document.getElementById('three').src = renderer.domElement.toDataURL()
