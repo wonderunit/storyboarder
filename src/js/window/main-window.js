@@ -585,24 +585,67 @@ let markImageFileDirty = ()=> {
   }, 5000)
 }
 
-let saveImageFile = ()=> {
+let saveImageFile = () => {
   if (imageFileDirty) {
     clearTimeout(imageFileDirtyTimer)
-    let imageData = paintingCanvas.toDataURL('image/png')
-    imageData = imageData.replace(/^data:image\/\w+;base64,/, '');
+
+    // console.log('saving layer images to', path.join(boardPath, 'images'))
+
     let board = boardData.boards[currentBoard]
-    let imageFilename = path.join(boardPath, 'images', board.url)
-    fs.writeFile(imageFilename, imageData, 'base64', function(err) {})
-    console.log('saved IMAGE file!', imageFilename)
-    imageFileDirty = false
 
-    // setImmediate((currentBoard, boardPath, board)=>{
-    //   document.querySelector("[data-thumbnail='" + currentBoard + "']").querySelector('img').src = boardPath + '/images/' + board.url + '?' + Date.now()
-    // },currentBoard, boardPath, board)
+    let layersData = [
+      ['painting', board.url],
+      ['reference', board.url.replace('.png', '.reference.png')],
+      ['notes', board.url.replace('.png', '.notes.png')]
+    ]
 
-    setTimeout((currentBoard, boardPath, board)=>{
-      document.querySelector("[data-thumbnail='" + currentBoard + "']").querySelector('img').src = path.join(boardPath, 'images', board.url + '?' + Date.now())
-    },100,currentBoard, boardPath, board)
+    let savers = []
+    for (let [canvasName, filename] of layersData) {
+      let canvas = storyboarderSketchPane.getLayerCanvasByName(canvasName)
+      let imageFilePath = path.join(boardPath, 'images', filename)
+
+      let imageData = canvas
+        .toDataURL('image/png')
+        .replace(/^data:image\/\w+;base64,/, '')
+
+      savers.push(new Promise((resolve, reject) => {
+        try {
+          fs.writeFile(
+            imageFilePath,
+            imageData,
+            'base64',
+            err => {
+              if (err) {
+                // console.error(err)
+                reject(err)
+                return
+              }
+
+              // console.log('\tsaved', canvasName, 'to', filename)
+              resolve()
+            }
+          )
+        } catch (err) {
+          reject(err)
+        }
+      }))
+    }
+
+    Promise.all(savers)
+      .then(() => {
+        // console.log('all layers saved')
+
+        // update the thumbnail
+        let imageFilePath = path.join(boardPath, 'images', board.url)
+        setTimeout(imageFilePath => {
+          document.querySelector(`[data-thumbnail="${currentBoard}"] img`).src = imageFilePath + '?' + Date.now()
+        }, 100, imageFilePath)
+
+        imageFileDirty = false
+      })
+      .catch(err => {
+        console.error(err)
+      })
   }
 }
 
@@ -912,14 +955,14 @@ let updateSketchPaneBoard = () => {
 
     console.log('loading layers')
 
-    let layerData = [
+    let layersData = [
       ['painting', board.url],
       ['reference', board.url.replace('.png', '.reference.png')],
       ['notes', board.url.replace('.png', '.notes.png')]
     ]
 
     let loaders = []
-    for (let [canvasName, filename] of layerData) {
+    for (let [canvasName, filename] of layersData) {
       loaders.push(new Promise((resolve, reject) => {
         let imageFilePath = path.join(boardPath, 'images', filename)
         
