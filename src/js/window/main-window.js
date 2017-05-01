@@ -1283,24 +1283,25 @@ let renderScript = ()=> {
     if (node.type == 'scene') {
       if (node.scene_number == (currentScene+1)) {
         let notes = node.slugline + '\n' + node.synopsis
-        html.push('<div class="item slugline" data-notes="' + notes + '"><div class="number">SCENE ' + node.scene_number + ' - ' +  util.msToTime(node.duration) + '</div>')
+        html.push('<div class="item slugline" data-notes="' + notes + '" data-duration="' + node.duration + '"><div class="number" style="pointer-events: none">SCENE ' + node.scene_number + ' - ' +  util.msToTime(node.duration) + '</div>')
 
-        html.push('<div>' + node.slugline + '</div>')
+        html.push('<div style="pointer-events: none">' + node.slugline + '</div>')
         if (node.synopsis) {
-          html.push('<div class="synopsis">' + node.synopsis + '</div>')
+          html.push('<div class="synopsis" style="pointer-events: none">' + node.synopsis + '</div>')
         }
 
         html.push('</div>')
         for (var item of node.script) {
+          let durationAsDataAttr = item.duration ? ` data-duration="${item.duration}"` : ''
           switch (item.type) {
             case 'action':
-              html.push('<div class="item" data-notes="' + item.text + '">' + item.text + '</div>')
+              html.push('<div class="item" data-notes="' + item.text + '"' + durationAsDataAttr + '>' + item.text + '</div>')
               break
             case 'dialogue':
-              html.push('<div class="item" data-dialogue="' + item.text + '">' + item.character + '<div class="dialogue" style="pointer-events:none">' + item.text + '</div></div>')
+              html.push('<div class="item" data-dialogue="' + item.text + '"' + durationAsDataAttr + '>' + item.character + '<div class="dialogue" style="pointer-events: none">' + item.text + '</div></div>')
               break
             case 'transition':
-              html.push('<div class="item transition" data-notes="' + item.text + '">' + item.text + '</div>')
+              html.push('<div class="item transition" data-notes="' + item.text + '"' + durationAsDataAttr + '>' + item.text + '</div>')
               break
           }
         }
@@ -1314,22 +1315,26 @@ let renderScript = ()=> {
   let scriptNodes = document.querySelectorAll('#script .item')
   for (let node of scriptNodes) {
     node.addEventListener('dblclick', event => {
-      let dialogue, action, notes
+      let duration, dialogue, action, notes
       let shouldConfirm = false
 
-      if (event.target.dataset.action) {
-        action = event.target.dataset.action
+      if (event.target.dataset.duration) {
+        duration = event.target.dataset.duration
       }
       if (event.target.dataset.dialogue) {
         dialogue = event.target.dataset.dialogue
+      }
+      if (event.target.dataset.action) {
+        action = event.target.dataset.action
       }
       if (event.target.dataset.notes) {
         notes = event.target.dataset.notes
       }
 
-      if (dialogue || action || notes) {
+      if (duration || dialogue || action || notes) {
         let board = boardData.boards[currentBoard]
 
+        if (duration && board.duration) shouldConfirm = true
         if (dialogue && board.dialogue) shouldConfirm = true
         if (action && board.action) shouldConfirm = true
         if (notes && board.notes) shouldConfirm = true
@@ -1343,6 +1348,7 @@ let renderScript = ()=> {
           canWrite = true
         }
 
+        if (canWrite && duration) board.duration = duration
         if (canWrite && dialogue) board.dialogue = dialogue
         if (canWrite && action) board.action = action
         if (canWrite && notes) board.notes = notes
