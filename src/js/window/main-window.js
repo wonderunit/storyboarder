@@ -1342,7 +1342,7 @@ let renderScript = ()=> {
         let canWrite
         if (shouldConfirm) {
           canWrite = confirm(
-            'Your board’s metadata will be overwritten for this field. Are you sure?'
+            'This board’s metadata will be overwritten. Are you sure?'
           )
         } else {
           canWrite = true
