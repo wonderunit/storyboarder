@@ -589,7 +589,7 @@ let saveImageFile = () => {
   if (imageFileDirty) {
     clearTimeout(imageFileDirtyTimer)
 
-    // console.log('saving layer images to', path.join(boardPath, 'images'))
+    console.log('saving layer images to', path.join(boardPath, 'images'))
 
     let board = boardData.boards[currentBoard]
 
@@ -616,12 +616,12 @@ let saveImageFile = () => {
             'base64',
             err => {
               if (err) {
-                // console.error(err)
+                console.error(err)
                 reject(err)
                 return
               }
 
-              // console.log('\tsaved', canvasName, 'to', filename)
+              console.log('\tsaved', canvasName, 'to', filename)
               resolve()
             }
           )
@@ -633,7 +633,7 @@ let saveImageFile = () => {
 
     Promise.all(savers)
       .then(() => {
-        // console.log('all layers saved')
+        console.log('all layers saved')
 
         // update the thumbnail
         let imageFilePath = path.join(boardPath, 'images', board.url)
@@ -948,6 +948,7 @@ let previousScene = ()=> {
   //gotoBoard(currentBoard)
 }
 
+// load layer images
 let updateSketchPaneBoard = () => {
   return new Promise((resolve, reject) => {
     // get current board
