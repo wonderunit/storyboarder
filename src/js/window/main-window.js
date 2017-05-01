@@ -909,24 +909,41 @@ let updateSketchPaneBoard = () => {
   return new Promise((resolve, reject) => {
     // get current board
     let board = boardData.boards[currentBoard]
-    // try to load url
-    let imageFilename = path.join(boardPath, 'images', board.url)
-    let context = paintingCanvas.getContext('2d')
-    context.globalAlpha = 1
 
-    console.log('loading image')
-    if (!fs.existsSync(imageFilename)){
-      context.clearRect(0, 0, context.canvas.width, context.canvas.height)
-      resolve()
-    } else {
-      let image = new Image()
-      image.onload = ()=> {
+    console.log('loading layers')
+
+    let layerData = [
+      ['painting', board.url],
+      ['reference', board.url.replace('.png', '.reference.png')],
+      ['notes', board.url.replace('.png', '.notes.png')]
+    ]
+
+    let loaders = []
+    for (let [canvasName, filename] of layerData) {
+      loaders.push(new Promise((resolve, reject) => {
+        let imageFilePath = path.join(boardPath, 'images', filename)
+        
+        console.log('loading layer', canvasName, 'from', imageFilePath)
+
+        let context = storyboarderSketchPane.getLayerCanvasByName(canvasName).getContext('2d')
+        context.globalAlpha = 1
+
         context.clearRect(0, 0, context.canvas.width, context.canvas.height)
-        context.drawImage(image, 0, 0)
-        resolve()
-      }
-      image.src = imageFilename + '?' + Math.random()
+
+        if (!fs.existsSync(imageFilePath)) {
+          resolve()
+        } else {
+          let image = new Image()
+          image.onload = () => {
+            context.drawImage(image, 0, 0)
+            resolve()
+          }
+          image.src = imageFilePath + '?' + Math.random()
+        }
+      }))
     }
+
+    Promise.all(loaders).then(resolve)
   })
 }
 
