@@ -182,6 +182,7 @@ class StoryboarderSketchPane extends EventEmitter {
   }
 
   // TODO should this container scaling be a SketchPane feature?
+  // TODO why don't we use SketchPane#setCanvasSize?
   renderContainerSize () {
     this.containerEl.style.width = this.containerSize[0] + 'px'
     this.containerEl.style.height = this.containerSize[1] + 'px'
