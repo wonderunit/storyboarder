@@ -598,8 +598,8 @@ let saveImageFile = () => {
 
   let layersData = [
     ['main', board.url],
-    ['reference', board.url.replace('.png', '.reference.png')],
-    ['notes', board.url.replace('.png', '.notes.png')]
+    ['reference', board.url.replace('.png', '-reference.png')],
+    ['notes', board.url.replace('.png', '-notes.png')]
   ]
 
   let savers = []
@@ -965,8 +965,8 @@ let updateSketchPaneBoard = () => {
 
     let layersData = [
       ['main', board.url],
-      ['reference', board.url.replace('.png', '.reference.png')],
-      ['notes', board.url.replace('.png', '.notes.png')]
+      ['reference', board.url.replace('.png', '-reference.png')],
+      ['notes', board.url.replace('.png', '-notes.png')]
     ]
 
     let loaders = []
