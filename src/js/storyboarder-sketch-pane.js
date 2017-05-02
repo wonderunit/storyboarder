@@ -254,6 +254,20 @@ class StoryboarderSketchPane extends EventEmitter {
     this.brush.setFlow(options.flow)
     this.brush.setHardness(options.hardness)
 
+    let layerName
+    switch (kind) {
+      case 'light-pencil':
+        layerName = 'reference'
+        break
+      case 'note-pen':
+        layerName = 'notes'
+        break
+      default:
+        layerName = 'main'
+        break
+    }
+    this.sketchPane.selectLayer(this.layerIndexByName.indexOf(layerName))
+
     this.sketchPane.setPaintingOpacity(options.opacity)
     this.sketchPane.setTool(this.brush)
 
