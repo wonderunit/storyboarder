@@ -299,6 +299,10 @@ class StoryboarderSketchPane extends EventEmitter {
   getIsDrawing () {
     return this.sketchPane.isDrawing
   }
+
+  getCurrentLayerName () {
+    return this.layerIndexByName[this.sketchPane.getCurrentLayerIndex()]
+  }
 }
 
 class LineMileageCounter {

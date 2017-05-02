@@ -35,8 +35,14 @@ let currentScene = 0
 
 let boardFileDirty = false
 let boardFileDirtyTimer
-let imageFileDirty = false
+
+let layerStatus = {
+  main:       { dirty: false },
+  reference:  { dirty: false },
+  notes:      { dirty: false }
+}
 let imageFileDirtyTimer
+
 let isEditMode = false
 let editModeTimer
 let enableEditModeDelay = 750 // msecs
@@ -578,30 +584,30 @@ let saveBoardFile = ()=> {
   }
 }
 
-let markImageFileDirty = ()=> {
-  imageFileDirty = true
+let markImageFileDirty = () => {
+  let layerName = storyboarderSketchPane.getCurrentLayerName()
+  layerStatus[layerName].dirty = true
   clearTimeout(imageFileDirtyTimer)
-  imageFileDirtyTimer = setTimeout(()=>{
+  imageFileDirtyTimer = setTimeout(() => {
     saveImageFile()
   }, 5000)
 }
 
 let saveImageFile = () => {
-  if (imageFileDirty) {
-    clearTimeout(imageFileDirtyTimer)
+  let board = boardData.boards[currentBoard]
 
-    console.log('saving layer images to', path.join(boardPath, 'images'))
+  let layersData = [
+    ['main', board.url],
+    ['reference', board.url.replace('.png', '.reference.png')],
+    ['notes', board.url.replace('.png', '.notes.png')]
+  ]
 
-    let board = boardData.boards[currentBoard]
+  let savers = []
 
-    let layersData = [
-      ['main', board.url],
-      ['reference', board.url.replace('.png', '.reference.png')],
-      ['notes', board.url.replace('.png', '.notes.png')]
-    ]
+  for (let [canvasName, filename] of layersData) {
+    if (layerStatus[canvasName].dirty) {
+      clearTimeout(imageFileDirtyTimer)
 
-    let savers = []
-    for (let [canvasName, filename] of layersData) {
       let canvas = storyboarderSketchPane.getLayerCanvasByName(canvasName)
       let imageFilePath = path.join(boardPath, 'images', filename)
 
@@ -622,6 +628,7 @@ let saveImageFile = () => {
                 return
               }
 
+              layerStatus[canvasName].dirty = false
               console.log('\tsaved', canvasName, 'to', filename)
               resolve()
             }
@@ -630,24 +637,23 @@ let saveImageFile = () => {
           reject(err)
         }
       }))
+
     }
-
-    Promise.all(savers)
-      .then(() => {
-        console.log('all layers saved')
-
-        // update the thumbnail
-        let imageFilePath = path.join(boardPath, 'images', board.url)
-        setTimeout(imageFilePath => {
-          document.querySelector(`[data-thumbnail="${currentBoard}"] img`).src = imageFilePath + '?' + Date.now()
-        }, 100, imageFilePath)
-
-        imageFileDirty = false
-      })
-      .catch(err => {
-        console.error(err)
-      })
   }
+
+  Promise.all(savers)
+    .then(() => {
+      console.log(`saved ${savers.length} modified layers`)
+
+      // update the thumbnail
+      let imageFilePath = path.join(boardPath, 'images', board.url)
+      setTimeout(imageFilePath => {
+        document.querySelector(`[data-thumbnail="${currentBoard}"] img`).src = imageFilePath + '?' + Date.now()
+      }, 100, imageFilePath)
+    })
+    .catch(err => {
+      console.error(err)
+    })
 }
 
 let deleteSingleBoard = (index) => {
