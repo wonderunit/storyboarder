@@ -976,11 +976,19 @@ let updateSketchPaneBoard = () => {
 
     console.log('loading layers')
 
+    // always load the main board
     let layersData = [
-      ['main', board.url],
-      ['reference', board.url.replace('.png', '-reference.png')],
-      ['notes', board.url.replace('.png', '-notes.png')]
+      ['main', board.url]
     ]
+    // load other layers when available
+    if (board.layers) {
+      if (board.layers.reference && board.layers.reference.url) {
+        layersData.push(['reference', board.layers.reference.url])
+      }
+      if (board.layers.notes && board.layers.notes.url) {
+        layersData.push(['notes', board.layers.notes.url])
+      }
+    }
 
     let loaders = []
     for (let [layerName, filename] of layersData) {
