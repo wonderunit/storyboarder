@@ -66,7 +66,7 @@ let transport
 let guides
 
 let storyboarderSketchPane
-let drawingCanvas
+let mainCanvas
 
 menu.setMenu()
 
@@ -137,7 +137,7 @@ let loadBoardUI = ()=> {
     document.getElementById('storyboarder-sketch-pane'),
     size
   )
-  drawingCanvas = storyboarderSketchPane.getLayerCanvasByName('drawing')
+  mainCanvas = storyboarderSketchPane.getLayerCanvasByName('main')
   window.addEventListener('resize', () => {
     resize()
     storyboarderSketchPane.resize()
@@ -595,7 +595,7 @@ let saveImageFile = () => {
     let board = boardData.boards[currentBoard]
 
     let layersData = [
-      ['drawing', board.url],
+      ['main', board.url],
       ['reference', board.url.replace('.png', '.reference.png')],
       ['notes', board.url.replace('.png', '.notes.png')]
     ]
@@ -698,7 +698,7 @@ let duplicateBoard = ()=> {
   storeUndoStateForScene(true)
   saveImageFile()
   // copy current board canvas
-  let imageData = drawingCanvas.getContext("2d").getImageData(0,0, drawingCanvas.width, drawingCanvas.height)
+  let imageData = mainCanvas.getContext("2d").getImageData(0,0, mainCanvas.width, mainCanvas.height)
   // get current board clone it
   let board = JSON.parse(JSON.stringify(boardData.boards[currentBoard]))
   // set uid
@@ -713,7 +713,7 @@ let duplicateBoard = ()=> {
   // go to board
   gotoBoard(currentBoard+1)
   // draw contents to board
-  drawingCanvas.getContext("2d").putImageData(imageData, 0, 0)
+  mainCanvas.getContext("2d").putImageData(imageData, 0, 0)
   markImageFileDirty()
   saveImageFile()
   renderThumbnailDrawer()
@@ -958,7 +958,7 @@ let updateSketchPaneBoard = () => {
     console.log('loading layers')
 
     let layersData = [
-      ['drawing', board.url],
+      ['main', board.url],
       ['reference', board.url.replace('.png', '.reference.png')],
       ['notes', board.url.replace('.png', '.notes.png')]
     ]
@@ -1997,7 +1997,7 @@ let copyBoards = ()=> {
   // assumes that UI only allows a single selection when it is also the current board
   //
   let board = JSON.parse(JSON.stringify(boardData.boards[currentBoard]))
-  let canvasDiv = drawingCanvas
+  let canvasDiv = mainCanvas
   board.imageDataURL = canvasDiv.toDataURL()
   payload = {
     image: nativeImage.createFromDataURL(canvasDiv.toDataURL()),
@@ -2035,7 +2035,7 @@ let importImage = (imageDataURL) => {
 
 
   // render
-  drawingCanvas.getContext("2d").drawImage(image, offsetX, offsetY, targetWidth, targetHeight)
+  mainCanvas.getContext("2d").drawImage(image, offsetX, offsetY, targetWidth, targetHeight)
   markImageFileDirty()
   saveImageFile()
 }
@@ -2115,7 +2115,7 @@ let pasteBoards = () => {
       image.src = newImageSrc
     
       // render
-      drawingCanvas.getContext("2d").drawImage(image, 0, 0)
+      mainCanvas.getContext("2d").drawImage(image, 0, 0)
       markImageFileDirty()
       saveImageFile()
       renderThumbnailDrawer()

@@ -6,6 +6,9 @@ const Brush = require('./sketch-pane/brush')
 class StoryboarderSketchPane extends EventEmitter {
   constructor (el, canvasSize) {
     super()
+
+    this.layerIndexByName = ['reference', 'main', 'onion', 'notes', 'guides']
+
     this.canvasPointerUp = this.canvasPointerUp.bind(this)
     this.canvasPointerDown = this.canvasPointerDown.bind(this)
     this.canvasPointerMove = this.canvasPointerMove.bind(this)
@@ -54,7 +57,7 @@ class StoryboarderSketchPane extends EventEmitter {
 
     this.sketchPane.addLayer(0) // reference
     this.sketchPane.fillLayer('#fff')
-    this.sketchPane.addLayer(1) // drawing
+    this.sketchPane.addLayer(1) // main
     this.sketchPane.addLayer(2) // onion skin
     this.sketchPane.addLayer(3) // notes
     this.sketchPane.addLayer(4) // guides
@@ -250,9 +253,10 @@ class StoryboarderSketchPane extends EventEmitter {
     this.brush.setSpacing(options.spacing)
     this.brush.setFlow(options.flow)
     this.brush.setHardness(options.hardness)
-    this.sketchPane.setPaintingOpacity(options.opacity)
 
+    this.sketchPane.setPaintingOpacity(options.opacity)
     this.sketchPane.setTool(this.brush)
+
     this.updatePointer()
   }
 
@@ -269,8 +273,7 @@ class StoryboarderSketchPane extends EventEmitter {
   }
 
   getLayerCanvasByName (name) {
-    const names = ['reference', 'drawing', 'onion', 'notes', 'guides']
-    return this.sketchPane.getLayerCanvas(names.indexOf(name))
+    return this.sketchPane.getLayerCanvas(this.layerIndexByName.indexOf(name))
   }
 
   getSnapshotAsCanvas (index) {
