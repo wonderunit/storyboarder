@@ -604,11 +604,11 @@ let saveImageFile = () => {
 
   let savers = []
 
-  for (let [canvasName, filename] of layersData) {
-    if (layerStatus[canvasName].dirty) {
+  for (let [layerName, filename] of layersData) {
+    if (layerStatus[layerName].dirty) {
       clearTimeout(imageFileDirtyTimer)
 
-      let canvas = storyboarderSketchPane.getLayerCanvasByName(canvasName)
+      let canvas = storyboarderSketchPane.getLayerCanvasByName(layerName)
       let imageFilePath = path.join(boardPath, 'images', filename)
 
       let imageData = canvas
@@ -628,8 +628,21 @@ let saveImageFile = () => {
                 return
               }
 
-              layerStatus[canvasName].dirty = false
-              console.log('\tsaved', canvasName, 'to', filename)
+              // add to boardData if it doesn't already exist
+              if (layerName !== 'main') {
+                board.layers = board.layers || {}
+
+                if (!board.layers[layerName]) {
+                  board.layers[layerName] = { url: filename }
+                  console.log('added', layerName, 'to board .layers data')
+
+                  // immediately save board file
+                  saveBoardFile()
+                }
+              }
+
+              layerStatus[layerName].dirty = false
+              console.log('\tsaved', layerName, 'to', filename)
               resolve()
             }
           )
@@ -970,13 +983,13 @@ let updateSketchPaneBoard = () => {
     ]
 
     let loaders = []
-    for (let [canvasName, filename] of layersData) {
+    for (let [layerName, filename] of layersData) {
       loaders.push(new Promise((resolve, reject) => {
         let imageFilePath = path.join(boardPath, 'images', filename)
         
-        console.log('loading layer', canvasName, 'from', imageFilePath)
+        console.log('loading layer', layerName, 'from', imageFilePath)
 
-        let context = storyboarderSketchPane.getLayerCanvasByName(canvasName).getContext('2d')
+        let context = storyboarderSketchPane.getLayerCanvasByName(layerName).getContext('2d')
         context.globalAlpha = 1
 
         context.clearRect(0, 0, context.canvas.width, context.canvas.height)
