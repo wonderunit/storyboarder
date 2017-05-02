@@ -578,7 +578,7 @@ let markBoardFileDirty = ()=> {
 let saveBoardFile = ()=> {
   if (boardFileDirty) {
     clearTimeout(boardFileDirtyTimer)
-    fs.writeFileSync(boardFilename, JSON.stringify(boardData))
+    fs.writeFileSync(boardFilename, JSON.stringify(boardData, null, 2))
     console.log('saved board file!', boardFilename)
     boardFileDirty = false
   }
