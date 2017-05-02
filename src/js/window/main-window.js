@@ -555,7 +555,8 @@ let newBoard = (position, shouldAddToUndoStack = true) => {
   // insert
   boardData.boards.splice(position, 0, board)
   // indicate dirty for save sweep
-  markBoardFileDirty()
+  markImageFileDirty() // to save new layers
+  markBoardFileDirty() // to save new board data
   renderThumbnailDrawer()
   storeUndoStateForScene()
 }
