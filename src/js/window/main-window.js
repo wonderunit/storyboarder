@@ -593,6 +593,15 @@ let markImageFileDirty = () => {
   }, 5000)
 }
 
+//
+// saveImageFile
+//
+//  - saves DIRTY layers (including main)
+//  - saves CURRENT board
+//
+// this function saves only the CURRENT board
+// call it before changing boards to ensure the current work is saved
+//
 let saveImageFile = () => {
   let board = boardData.boards[currentBoard]
 
