@@ -21,6 +21,8 @@ const Guides = require('./guides.js')
 const Sonifier = require('./sonifier/index.js')
 const sfx = require('../wonderunit-sound.js')
 
+const pkg = require('../../../package.json')
+
 let boardFilename
 let boardPath
 let boardData
@@ -578,6 +580,7 @@ let markBoardFileDirty = ()=> {
 let saveBoardFile = ()=> {
   if (boardFileDirty) {
     clearTimeout(boardFileDirtyTimer)
+    boardData.version = pkg.version
     fs.writeFileSync(boardFilename, JSON.stringify(boardData, null, 2))
     console.log('saved board file!', boardFilename)
     boardFileDirty = false
@@ -1597,6 +1600,7 @@ let loadScene = (sceneNumber) => {
           // make storyboarder file
 
           let newBoardObject = {
+            version: pkg.version,
             aspectRatio: boardSettings.aspectRatio,
             fps: 24,
             defaultBoardTiming: 2000,
