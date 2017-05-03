@@ -545,9 +545,9 @@ let updateBoardUI = ()=> {
 
 let newBoard = (position, shouldAddToUndoStack = true) => {
   if (shouldAddToUndoStack) {
+    saveImageFile() // force-save any current work
     storeUndoStateForScene(true)
   }
-  saveImageFile()
 
   if (typeof position == "undefined") position = currentBoard + 1
 
@@ -555,13 +555,15 @@ let newBoard = (position, shouldAddToUndoStack = true) => {
   let uid = util.uidGen(5)
 
   let board = {
-      "uid": uid,
-      "url": 'board-' + (position+1) + '-' + uid + '.png' ,
-      "newShot": false,
-      "lastEdited": Date.now(),
-    }
+    uid: uid,
+    url: `board-${position + 1}-${uid}.png`,
+    newShot: false,
+    lastEdited: Date.now()
+  }
+
   // insert
   boardData.boards.splice(position, 0, board)
+
   // indicate dirty for save sweep
   markImageFileDirty() // to save new layers
   markBoardFileDirty() // to save new board data
