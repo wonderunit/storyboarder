@@ -1595,7 +1595,7 @@ let loadScene = (sceneNumber) => {
           }
           boardFilename = path.join(currentPath, directoryName, directoryName + '.storyboarder')
           boardData = newBoardObject
-          fs.writeFileSync(boardFilename, JSON.stringify(newBoardObject))
+          fs.writeFileSync(boardFilename, JSON.stringify(newBoardObject, null, 2))
           // make storyboards directory
           fs.mkdirSync(path.join(currentPath, directoryName, 'images'))
 
