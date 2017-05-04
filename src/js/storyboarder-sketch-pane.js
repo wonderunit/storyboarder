@@ -48,10 +48,14 @@ class StoryboarderSketchPane extends EventEmitter {
         this.emit('addToUndoStack')
       }
     })
-    // store snapshot on up?
-    // eraser : yes
-    // brushes: yes
-    this.sketchPane.on('onup', () => this.emit('markDirty'))
+    this.sketchPane.on('onup', (...args) => {
+      this.emit('onup', ...args)
+
+      // store snapshot on up?
+      // eraser : yes
+      // brushes: yes
+      this.emit('markDirty')
+    })
 
 
 
@@ -242,7 +246,7 @@ class StoryboarderSketchPane extends EventEmitter {
     }
     this.emit('markDirty')
   }
-  setBrushTool (kind, options) {
+  setBrushTool (kind, options, quick = false) {
     (kind === 'eraser')
       ? this.sketchPane.setPaintingKnockout(true)
       : this.sketchPane.setPaintingKnockout(false)
@@ -254,19 +258,21 @@ class StoryboarderSketchPane extends EventEmitter {
     this.brush.setFlow(options.flow)
     this.brush.setHardness(options.hardness)
 
-    let layerName
-    switch (kind) {
-      case 'light-pencil':
-        layerName = 'reference'
-        break
-      case 'note-pen':
-        layerName = 'notes'
-        break
-      default:
-        layerName = 'main'
-        break
+    if (!quick) {
+      let layerName
+      switch (kind) {
+        case 'light-pencil':
+          layerName = 'reference'
+          break
+        case 'note-pen':
+          layerName = 'notes'
+          break
+        default:
+          layerName = 'main'
+          break
+      }
+      this.sketchPane.selectLayer(this.layerIndexByName.indexOf(layerName))
     }
-    this.sketchPane.selectLayer(this.layerIndexByName.indexOf(layerName))
 
     this.sketchPane.setPaintingOpacity(options.opacity)
     this.sketchPane.setTool(this.brush)
