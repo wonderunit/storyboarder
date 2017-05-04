@@ -98,7 +98,7 @@ class StoryboarderSketchPane extends EventEmitter {
   }
 
   canvasPointerDown (e) {
-    if (this.sketchPane.getPaintingKnockout()) {
+    if (!this.isQuick && this.sketchPane.getPaintingKnockout()) {
       this.startMultiLayerOperation()
     }
 
