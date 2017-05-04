@@ -280,7 +280,7 @@ let loadBoardUI = ()=> {
     mouseDragStartX = null
     clearTimeout(editModeTimer)
 
-    console.log('pointerup', isEditMode)
+    // console.log('pointerup', isEditMode)
     if (isEditMode) {
       let x = e.clientX, y = e.clientY
 
@@ -1717,7 +1717,7 @@ const resize = () => {
 window.onkeydown = (e)=> {
   if (!textInputMode) {
 
-    console.log(e)
+    // console.log(e)
 
     switch (e.code) {
       case 'KeyC':
@@ -1760,7 +1760,7 @@ window.onkeydown = (e)=> {
 
   if (!textInputMode || textInputAllowAdvance) {
 
-    console.log(e)
+    // console.log(e)
 
     switch (e.code) {
       case 'ArrowLeft':
