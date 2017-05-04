@@ -401,7 +401,7 @@ class SketchPane extends EventEmitter {
   }
 
   getPaintingKnockout () {
-    this.paintingKnockout
+    return this.paintingKnockout
   }
 
   setPaintingKnockout (knockout) {
@@ -480,7 +480,7 @@ class SketchPane extends EventEmitter {
     this.emit('onmove', {x: x, y: y, pressure: pressure})
   }
 
-  _up(x, y, pressure) {
+  _up (x, y, pressure) {
     this.emit('onbeforeup')
     this.isDrawing = false
     this.isStabilizing = false
