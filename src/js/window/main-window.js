@@ -41,7 +41,9 @@ let boardFileDirtyTimer
 let layerStatus = {
   main:       { dirty: false },
   reference:  { dirty: false },
-  notes:      { dirty: false }
+  notes:      { dirty: false },
+  
+  composite:  { dirty: false } // TODO do we need this?
 }
 let imageFileDirtyTimer
 
@@ -156,6 +158,10 @@ let loadBoardUI = ()=> {
   storyboarderSketchPane.on('markDirty', () => {
     storeUndoStateForImage(false)
     markImageFileDirty()
+  })
+  storyboarderSketchPane.on('markDirtyByName', (...layerNames) => {
+    storeUndoStateForImage(false)
+    layerNames.forEach(markImageFileDirty)
   })
   storyboarderSketchPane.on('lineMileage', value => {
     addToLineMileage(value)
@@ -618,8 +624,8 @@ let saveBoardFile = ()=> {
   }
 }
 
-let markImageFileDirty = () => {
-  let layerName = storyboarderSketchPane.getCurrentLayerName()
+let markImageFileDirty = (layerName = null) => {
+  if (!layerName) layerName = storyboarderSketchPane.getCurrentLayerName()
   layerStatus[layerName].dirty = true
   clearTimeout(imageFileDirtyTimer)
   imageFileDirtyTimer = setTimeout(() => {

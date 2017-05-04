@@ -7,7 +7,7 @@ class StoryboarderSketchPane extends EventEmitter {
   constructor (el, canvasSize) {
     super()
 
-    this.layerIndexByName = ['reference', 'main', 'onion', 'notes', 'guides']
+    this.layerIndexByName = ['reference', 'main', 'onion', 'notes', 'guides', 'composite']
 
     this.canvasPointerUp = this.canvasPointerUp.bind(this)
     this.canvasPointerDown = this.canvasPointerDown.bind(this)
@@ -15,6 +15,7 @@ class StoryboarderSketchPane extends EventEmitter {
     this.canvasPointerOver = this.canvasPointerOver.bind(this)
     this.canvasPointerOut = this.canvasPointerOut.bind(this)
     this.canvasCursorMove = this.canvasCursorMove.bind(this)
+    this.stopMultiLayerOperation = this.stopMultiLayerOperation.bind(this)
 
     this.el = el
     this.canvasSize = canvasSize
@@ -22,6 +23,9 @@ class StoryboarderSketchPane extends EventEmitter {
     this.scaleFactor = null
 
     this.lineMileageCounter = new LineMileageCounter()
+    
+    this.isQuick = false
+    this.isMultiLayerOperation = false
 
     this.containerEl = document.createElement('div')
     this.containerEl.classList.add('container')
@@ -65,6 +69,7 @@ class StoryboarderSketchPane extends EventEmitter {
     this.sketchPane.addLayer(2) // onion skin
     this.sketchPane.addLayer(3) // notes
     this.sketchPane.addLayer(4) // guides
+    this.sketchPane.addLayer(5) // composite
     this.sketchPane.selectLayer(1)
 
     this.sketchPane.setToolStabilizeLevel(10)
@@ -93,6 +98,10 @@ class StoryboarderSketchPane extends EventEmitter {
   }
 
   canvasPointerDown (e) {
+    if (this.sketchPane.getPaintingKnockout()) {
+      this.startMultiLayerOperation()
+    }
+
     let pointerPosition = this.getRelativePosition(e.clientX, e.clientY)
     this.lineMileageCounter.reset()
     this.sketchPane.down(pointerPosition.x, pointerPosition.y, e.pointerType === "pen" ? e.pressure : 1)
@@ -247,9 +256,13 @@ class StoryboarderSketchPane extends EventEmitter {
     this.emit('markDirty')
   }
   setBrushTool (kind, options, quick = false) {
-    (kind === 'eraser')
-      ? this.sketchPane.setPaintingKnockout(true)
-      : this.sketchPane.setPaintingKnockout(false)
+    this.isQuick = quick
+
+    if (kind === 'eraser') {
+      this.sketchPane.setPaintingKnockout(true)
+    } else {
+      this.sketchPane.setPaintingKnockout(false)
+    }
 
     this.brush = new Brush()
     this.brush.setSize(options.size)
@@ -272,6 +285,13 @@ class StoryboarderSketchPane extends EventEmitter {
           break
       }
       this.sketchPane.selectLayer(this.layerIndexByName.indexOf(layerName))
+
+      // fat eraser
+      if (kind === 'eraser') {
+        this.startMultiLayerOperation() // TODO just continue instead of start?
+      } else {
+        this.stopMultiLayerOperation() // HACK force stop in case we didn't get onbeforeup
+      }
     }
 
     this.sketchPane.setPaintingOpacity(options.opacity)
@@ -290,6 +310,72 @@ class StoryboarderSketchPane extends EventEmitter {
     this.brush.setColor(color.toCSS())
     this.sketchPane.setTool(this.brush)
     this.updatePointer()
+  }
+  
+  startMultiLayerOperation () {
+    if (this.isMultiLayerOperation) return
+
+    this.isMultiLayerOperation = true
+
+    let compositeIndex = this.layerIndexByName.indexOf('composite')
+    this.sketchPane.clearLayer(compositeIndex)
+
+    let compositeContext = this.sketchPane.getLayerContext(compositeIndex)
+
+    // draw composite from layers
+    let visibleLayers = ['reference', 'main', 'notes']
+    for (let name of visibleLayers) {
+      let index = this.layerIndexByName.indexOf(name)
+
+      let canvas = this.sketchPane.getLayerCanvas(index)
+      let context = this.sketchPane.getLayerContext(index)
+
+      compositeContext.drawImage(canvas, 0, 0)
+
+      this.sketchPane.setLayerVisible(false, index)
+    }
+
+    // select that layer
+    this.sketchPane.selectLayer(compositeIndex)
+    this.sketchPane.setLayerVisible(true, compositeIndex)
+
+    // listen to beforeup
+    this.sketchPane.on('onbeforeup', this.stopMultiLayerOperation)
+  }
+
+  stopMultiLayerOperation () {
+    if (!this.isMultiLayerOperation) return
+
+    let compositeIndex = this.layerIndexByName.indexOf('composite')
+
+    // apply
+    let visibleLayers = ['reference', 'main', 'notes']
+    for (let name of visibleLayers) {
+      let index = this.layerIndexByName.indexOf(name)
+
+      //
+      // apply result of erase bitmap to layer
+      //
+      // TODO could this be moved to a sketchPane routine?
+      //      maybe modify drawPaintingCanvas to take source/dest arguments?
+      let context = this.sketchPane.getLayerContext(index)
+      let w = this.sketchPane.size.width
+      let h = this.sketchPane.size.height
+      context.save()
+
+      context.globalAlpha = 1
+      context.globalCompositeOperation = 'destination-out'
+      context.drawImage(this.sketchPane.paintingCanvas, 0, 0, w, h)
+      context.restore()
+
+      this.sketchPane.setLayerVisible(true, index)
+      this.emit('markDirtyByName', ...visibleLayers)
+    }
+
+    // reset
+    this.sketchPane.setLayerVisible(false, compositeIndex)
+    this.isMultiLayerOperation = false
+    this.sketchPane.removeListener('onbeforeup', this.stopMultiLayerOperation)
   }
 
   getLayerCanvasByName (name) {
