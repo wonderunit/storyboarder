@@ -645,8 +645,7 @@ let saveImageFile = () => {
     ['notes', board.url.replace('.png', '-notes.png')]
   ]
 
-  let savers = []
-
+  let numSaved = 0
   for (let [layerName, filename] of layersData) {
     if (layerStatus[layerName].dirty) {
       clearTimeout(imageFileDirtyTimer)
@@ -658,58 +657,42 @@ let saveImageFile = () => {
         .toDataURL('image/png')
         .replace(/^data:image\/\w+;base64,/, '')
 
-      savers.push(new Promise((resolve, reject) => {
-        try {
-          fs.writeFile(
-            imageFilePath,
-            imageData,
-            'base64',
-            err => {
-              if (err) {
-                console.error(err)
-                reject(err)
-                return
-              }
+      try {
+        fs.writeFileSync(imageFilePath, imageData, 'base64')
 
-              // add to boardData if it doesn't already exist
-              if (layerName !== 'main') {
-                board.layers = board.layers || {}
+        // add to boardData if it doesn't already exist
+        if (layerName !== 'main') {
+          board.layers = board.layers || {}
 
-                if (!board.layers[layerName]) {
-                  board.layers[layerName] = { url: filename }
-                  console.log('added', layerName, 'to board .layers data')
+          if (!board.layers[layerName]) {
+            board.layers[layerName] = { url: filename }
+            console.log('added', layerName, 'to board .layers data')
 
-                  // immediately save board file
-                  saveBoardFile()
-                }
-              }
-
-              layerStatus[layerName].dirty = false
-              console.log('\tsaved', layerName, 'to', filename)
-              resolve()
-            }
-          )
-        } catch (err) {
-          reject(err)
+            // immediately save board file
+            saveBoardFile()
+          }
         }
-      }))
 
+        layerStatus[layerName].dirty = false
+        numSaved++
+        console.log('\tsaved', layerName, 'to', filename)
+      } catch (err) {
+        console.warn(err)
+      }
     }
   }
 
-  Promise.all(savers)
-    .then(() => {
-      console.log(`saved ${savers.length} modified layers`)
+  console.log(`saved ${numSaved} modified layers`)
 
-      // update the thumbnail
-      let imageFilePath = path.join(boardPath, 'images', board.url)
-      setTimeout(imageFilePath => {
-        document.querySelector(`[data-thumbnail="${currentBoard}"] img`).src = imageFilePath + '?' + Date.now()
-      }, 100, imageFilePath)
-    })
-    .catch(err => {
-      console.error(err)
-    })
+  // update the thumbnail
+  let imageFilePath = path.join(boardPath, 'images', board.url)
+  setTimeout(
+    imageFilePath => {
+      document.querySelector(`[data-thumbnail="${currentBoard}"] img`).src = imageFilePath + '?' + Date.now()
+    },
+    100,
+    imageFilePath
+  )
 }
 
 let deleteSingleBoard = (index) => {
