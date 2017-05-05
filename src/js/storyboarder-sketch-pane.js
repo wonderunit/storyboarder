@@ -24,7 +24,7 @@ class StoryboarderSketchPane extends EventEmitter {
 
     this.lineMileageCounter = new LineMileageCounter()
     
-    this.isQuick = false
+    this.isTemporaryOperation = false
     this.isMultiLayerOperation = false
 
     this.containerEl = document.createElement('div')
@@ -98,7 +98,7 @@ class StoryboarderSketchPane extends EventEmitter {
   }
 
   canvasPointerDown (e) {
-    if (!this.isQuick && this.sketchPane.getPaintingKnockout()) {
+    if (!this.isTemporaryOperation && this.sketchPane.getPaintingKnockout()) {
       this.startMultiLayerOperation()
     }
 
@@ -255,8 +255,8 @@ class StoryboarderSketchPane extends EventEmitter {
     }
     this.emit('markDirty')
   }
-  setBrushTool (kind, options, quick = false) {
-    this.isQuick = quick
+  setBrushTool (kind, options, temporaryOperation = false) {
+    this.isTemporaryOperation = temporaryOperation
 
     if (kind === 'eraser') {
       this.sketchPane.setPaintingKnockout(true)
@@ -271,7 +271,7 @@ class StoryboarderSketchPane extends EventEmitter {
     this.brush.setFlow(options.flow)
     this.brush.setHardness(options.hardness)
 
-    if (!quick) {
+    if (!temporaryOperation) {
       let layerName
       switch (kind) {
         case 'light-pencil':
@@ -288,9 +288,9 @@ class StoryboarderSketchPane extends EventEmitter {
 
       // fat eraser
       if (kind === 'eraser') {
-        this.startMultiLayerOperation() // TODO just continue instead of start?
+        this.startMultiLayerOperation()
       } else {
-        this.stopMultiLayerOperation() // HACK force stop in case we didn't get onbeforeup
+        this.stopMultiLayerOperation() // force stop, in case we didn't get `onbeforeup` event
       }
     }
 
