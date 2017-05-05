@@ -2413,16 +2413,26 @@ const applyUndoStateForScene = (state) => {
   updateBoardUI()
 }
 
+// TODO memory management. dispose unused canvases
 const storeUndoStateForImage = (isBefore) => {
   let scene = getSceneObjectByIndex(currentScene)
   let sceneId = scene && scene.scene_id
 
   // backup to an offscreen canvas
-  // TODO memory management. dispose unused canvases.
-  let layerId = storyboarderSketchPane.sketchPane.getCurrentLayerIndex()
-  let imageBitmap = storyboarderSketchPane.getSnapshotAsCanvas(layerId)
+  let index = storyboarderSketchPane.sketchPane.getCurrentLayerIndex()
+  let source = storyboarderSketchPane.getSnapshotAsCanvas(index)
 
-  undoStack.addImageData(isBefore, { sceneId, imageId: currentBoard, layerId, imageBitmap })
+  undoStack.addImageData(isBefore, {
+    type: 'image',
+    sceneId,
+    boardIndex: currentBoard,
+    layers: [
+      {
+        index,
+        source
+      }
+    ]
+  })
 }
 
 const applyUndoStateForImage = (state) => {
@@ -2438,15 +2448,22 @@ const applyUndoStateForImage = (state) => {
 
   // if required, go to the board first
   saveImageFile()
-  let step = (currentBoard != state.imageId) ? gotoBoard : () => Promise.resolve()
+  let step = currentBoard != state.boardIndex
+    ? gotoBoard
+    : () => Promise.resolve()
 
-  step(state.imageId).then(() => {
-    let layerContext = storyboarderSketchPane.sketchPane.getLayerCanvas(state.layerId).getContext('2d')
+  step(state.boardIndex).then(() => {
+    for (let layerData of state.layers) {
+      // get the context of the undo-able layer
+      let context = storyboarderSketchPane.sketchPane.getLayerCanvas(layerData.index).getContext('2d')
 
-    // draw imageBitmap into it
-    layerContext.globalAlpha = 1
-    layerContext.clearRect(0, 0, layerContext.canvas.width, layerContext.canvas.height)
-    layerContext.drawImage(state.imageBitmap, 0, 0)
+      // draw saved canvas onto layer
+      context.save()
+      context.globalAlpha = 1
+      context.clearRect(0, 0, context.canvas.width, context.canvas.height)
+      context.drawImage(layerData.source, 0, 0)
+      context.restore()
+    }
   }).catch(e => console.error(e))
 }
 
