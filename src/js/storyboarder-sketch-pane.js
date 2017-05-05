@@ -317,13 +317,13 @@ class StoryboarderSketchPane extends EventEmitter {
 
     this.isMultiLayerOperation = true
 
+    let visibleLayers = ['reference', 'main', 'notes']
     let compositeIndex = this.layerIndexByName.indexOf('composite')
-    this.sketchPane.clearLayer(compositeIndex)
-
     let compositeContext = this.sketchPane.getLayerContext(compositeIndex)
 
+    this.sketchPane.clearLayer(compositeIndex)
+
     // draw composite from layers
-    let visibleLayers = ['reference', 'main', 'notes']
     for (let name of visibleLayers) {
       let index = this.layerIndexByName.indexOf(name)
 
@@ -346,31 +346,26 @@ class StoryboarderSketchPane extends EventEmitter {
   stopMultiLayerOperation () {
     if (!this.isMultiLayerOperation) return
 
+    let visibleLayers = ['reference', 'main', 'notes']
     let compositeIndex = this.layerIndexByName.indexOf('composite')
 
-    // apply
-    let visibleLayers = ['reference', 'main', 'notes']
     for (let name of visibleLayers) {
       let index = this.layerIndexByName.indexOf(name)
 
-      //
       // apply result of erase bitmap to layer
-      //
-      // TODO could this be moved to a sketchPane routine?
-      //      maybe modify drawPaintingCanvas to take source/dest arguments?
+      // code from SketchPane#drawPaintingCanvas
       let context = this.sketchPane.getLayerContext(index)
       let w = this.sketchPane.size.width
       let h = this.sketchPane.size.height
       context.save()
-
       context.globalAlpha = 1
       context.globalCompositeOperation = 'destination-out'
       context.drawImage(this.sketchPane.paintingCanvas, 0, 0, w, h)
       context.restore()
 
       this.sketchPane.setLayerVisible(true, index)
-      this.emit('markDirtyByName', ...visibleLayers)
     }
+    this.emit('markDirtyByName', ...visibleLayers)
 
     // reset
     this.sketchPane.setLayerVisible(false, compositeIndex)

@@ -160,8 +160,9 @@ let loadBoardUI = ()=> {
     markImageFileDirty()
   })
   storyboarderSketchPane.on('markDirtyByName', (...layerNames) => {
-    storeUndoStateForImage(false)
     layerNames.forEach(markImageFileDirty)
+    // TODO store a combined undo state
+    // storeUndoStateForImage(false)
   })
   storyboarderSketchPane.on('lineMileage', value => {
     addToLineMileage(value)
