@@ -2414,24 +2414,26 @@ const applyUndoStateForScene = (state) => {
 }
 
 // TODO memory management. dispose unused canvases
-const storeUndoStateForImage = (isBefore) => {
+const storeUndoStateForImage = (isBefore, layerIndices = null) => {
   let scene = getSceneObjectByIndex(currentScene)
   let sceneId = scene && scene.scene_id
 
-  // backup to an offscreen canvas
-  let index = storyboarderSketchPane.sketchPane.getCurrentLayerIndex()
-  let source = storyboarderSketchPane.getSnapshotAsCanvas(index)
+  if (!layerIndices) layerIndices = [storyboarderSketchPane.layerIndexByName.indexOf('main')]
+
+  let layers = layerIndices.map(index => {
+    // backup to an offscreen canvas
+    let source = storyboarderSketchPane.getSnapshotAsCanvas(index)
+    return {
+      index,
+      source
+    }
+  })
 
   undoStack.addImageData(isBefore, {
     type: 'image',
     sceneId,
     boardIndex: currentBoard,
-    layers: [
-      {
-        index,
-        source
-      }
-    ]
+    layers
   })
 }
 
