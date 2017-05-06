@@ -126,7 +126,7 @@ let openNewWindow = () => {
 let openStsWindow = () => {
   console.log("sts")
   if (!stsWindow) {
-    stsWindow = new BrowserWindow({width: 500, height: 300, show: false})
+    stsWindow = new BrowserWindow({width: 1500, height: 1300, show: false})
     stsWindow.loadURL(`file://${__dirname}/../sts-window.html`)
   }
   stsWindow.show()

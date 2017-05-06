@@ -17,8 +17,26 @@ let shotProperties = {
     VCU: {
       weight: 10
     },
+    CU: {
+      weight: 10
+    },
+    MCU: {
+      weight: 10
+    },
+    Bust: {
+      weight: 10
+    },
     MS: {
-      weight: 80
+      weight: 10
+    },
+    MLS: {
+      weight: 10
+    },
+    LS: {
+      weight: 10
+    },
+    ELS: {
+      weight: 10
     }
   },
   content: {
@@ -28,7 +46,7 @@ let shotProperties = {
     twoShot: {
       weight: 10
     },
-    threeshot: {
+    threeShot: {
       weight: 10
     },
     OTS: {
@@ -38,7 +56,10 @@ let shotProperties = {
       weight: 10
     }
   },
-  composition: {
+  horizontalComposition: {
+    auto: {
+      weight: 9999
+    },
     firstThird: {
       weight: 1
     }, 
@@ -54,7 +75,10 @@ let shotProperties = {
       weight: 1
     },
     center: {
-      weight: 0.3
+      weight: 1
+    },
+    deadCenter: {
+      weight: 1
     },
     right: {
       weight: 1
