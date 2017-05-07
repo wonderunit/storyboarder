@@ -3,8 +3,9 @@ const shotTemplateSystem = new(require('../shot-template-system/'))({width: 2500
 window.shotTemplateSystem = shotTemplateSystem
 
 let numOfShots = 1
+let imageSize = 500
 
-let shotParams
+let shotParams = {}
 
 // shotParams = {
 //     content: "OTS",
@@ -32,32 +33,45 @@ let shotParams
 // shotParams = {
 //     content: "oneShot",
 //     horizontalComposition:"auto",
-//     shotType: "LS"
+//     verticalAngle: "eye",
+//     horizontalAngle: "left",
+//     shotType: "LS",
+
 // }
 
 // shotParams = {
 //     content: "oneShot",
+//     horizontalComposition:"auto",
+//     verticalAngle: "eye",
+//     horizontalAngle:"left"
 // }
 
- shotParams = {}
+shotParams = {
+    content: "oneShot",
+}
+
+document.querySelector("#input1").onkeydown = function(event) {
+  if (event.keyCode == 13) {
+    generateAction()
+  }
+}
 
 document.querySelector("#button").addEventListener("click", (event)=>{
-  
-  for (var i = 0; i < numOfShots; i++) {
-  var shot = shotTemplateSystem.requestShot(shotParams)
-//{content: "oneShot"}
-    var div = document.createElement('img')
-  div.src = shot.image
-  div.style.width = "500px";
-  div.style.border = "1px solid black";
-  document.querySelector("#shots").insertBefore(div, document.querySelector("img"))
-  }
-
+  generateAction()
 
 })
 
 
+let generateAction = () => {
+  var shotParams = shotTemplateSystem.parseParamsText(document.querySelector("#input1").value)
 
+  console.log(shotParams)
 
+  for (var i = 0; i < numOfShots; i++) {
+    var shot = shotTemplateSystem.requestShot(shotParams)
+    var div = document.createElement('img')
+    div.src = shot.image
+    document.querySelector("#shots").insertBefore(div, document.querySelector("img"))
+  }
 
-//document.getElementById('three').src = renderer.domElement.toDataURL()
+}

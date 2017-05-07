@@ -1,61 +1,56 @@
 /*
 
-  set up scene 
-    with aspect ratio
-    load models and textures
+NOTE: theres an incorrect assumption with the angle and the cropping
 
-  setup each parameter:
-
-    fov
-
-    shot type
-    content
-    composition
-    horizontalAngle
-    verticalAngle
-    headDirection
-    roomSize
-
-load rigged body
-ability to focus on bones
-
-
+EXAMPLES FOR PARSER:
+  medium single backlit
+  wide single
+  ultrawide long single
+  long single
+  medium ots left low
+  close up two shot dead center birds eye
+  extreme long shot single dead center low looking up frontlit in large room squatting
+  ultra wide long shot left dynamic birdseye
+  extreme close single right low looking down running night small room
+  small room indian style light
 
 STS TODO
 
-  get room drawing working
-  separate ground plane
-    renderer.clear();
-    renderer.render( scene, camera );
-    renderer.clearDepth();
-    renderer.render( scene2, camera );
-  implement a pose system and poses
-  character rotation setting
-  lighting setting
-  draw boxes instead of models setting // https://github.com/spite/THREE.MeshLine
-  grid guides 
-  blobs
-  people or boxes at distances
-  vertical composition
-  head lookat
-  content type:
-    small
-    medium
-    large 
-    extralarge box
+  hook up in params:
+    pose
+    background color
+    camera dynamic
+    head direction
+    lighting direction
+    rotation
+    background objects
+      group
+      boxes
+    grid guides
+    boxes instead of models
+    vertical composition
+    content type:
+      small
+      medium
+      large 
+      extralarge box
+    ability to set gender
+  room size
+    
+  add decals and cool shit in the background
+
   ots should have more specific angles
-  fourshot type?
-  ability to set gender
-  make sure aspect ratio set dynamically
+  fourshot type
+
   return specific settings
   clean up code
 
-  -==-=-=-
-
-  fix line weights
-  fix textures
-  remove grid decals (add later)
-  make grid transparent or multiply
+  overlay that says what kind of shot it is: 
+    50mm lens
+    3.2 meters
+    4 feet off the ground
+    angled down 15º
+    left 32º
 
   -=-=-=-
 
@@ -65,83 +60,27 @@ STS TODO
 
 -=-=-=-=
 
-OLD:
+  fix textures
+    remove grid decals (add later)
 
-content
-  delete models in the group
-  add the appropriate characters and randomly position and rotate
+  NEED ASSETS:
 
-setting content
-  delete models from group
-  add reference objects
-  boxes
-  plants
-  trees
+    MALE WITH POSES
+    FEMALE WITH POSES
 
-
-headDirection
-  modify head bone
-
-fov
-  pick random camera angle based on the param
-
-shot type
-  based on the shot type
-  figure out which bones should be in the shot
-  based on the fov and the content box, figure out the distance from the subject
-
-horizontalAngle
-  rotate the camera position around the content point
-
-verticalAngle
-  rotate the camera position around the vertical content point
-
-composition
-  rotate the camera position to the left or right by (fov /2)-(fov/3)
-    30/2=15 - 30/3=10 = 5 degrees
-
-roomSize
-  toggle on the right room size
-    make sure there are reference room objects
-      window
-      door
-      light
-
-
--=-=-=-=-=-
-
-lighting
-
-rotation of character
-
-poses
-  lower body
-  upper body
-
-volume grid visible
-
--=-=-=-=-=-
-
-outline effect
-
--=-=-=-=-=-
-
-NEED:
-
-chair
-doorframe
-window
-plants
-  small
-  tall
-tree
-box
-car
-table
-
-
+    chair
+    doorframe
+    window
+    plants
+      small
+      tall
+    tree
+    car
+    table
 
 */
+
+const EventEmitter = require('events').EventEmitter
 
 window.THREE = require('../vendor/three.min.js')
 const JDLoader = require('../vendor/JDLoader.min.js')
@@ -149,40 +88,61 @@ const {MeshLine, MeshLineMaterial} = require('../vendor/THREE.Meshline.js')
 const OutlineEffect = require('../vendor/effects/OutlineEffect.js')
 const BufferSubdivisionModifier = require('../vendor/modifiers/BufferSubdivisionModifier.js')
 
-const METERS_PER_FEET = 0.3048
+const shotProperties = require('../shot-template-system/shot-properties.js')
 
+const METERS_PER_FEET = 0.3048
+const outlineWidth = 0.015
+const cameraLensAngles = {
+  0:180.0,
+  2:161.1,
+  12:90.0,
+  14:81.2,
+  16:73.9,
+  20:61.9,
+  24:53.1,
+  35:37.8,
+  50:27.0,
+  70:19.5,
+  85:16.1,
+  105:13.0,
+  200:6.87,
+  300:4.58,
+  400:3.44,
+  500:2.75,
+  600:2.29,
+  700:1.96,
+  800:1.72,
+  1200:1.15,
+}
 
 let backgroundScene
 let contentScene
 
-let meshes = [], mixers = [], hemisphereLight, camera, renderer, controls
 let effect
-let clock = new THREE.Clock
+let camera
+let renderer
+
+let directionalLight
 
 let manager 
 let textures 
 let dummyModels
-
 let dummyGroup
 
 let mixer
 
-let outlineWidth = 0.015
+let dimensions = [0,0]
 
 let setup = (config) => {
+
+  dimensions = [config.width, config.height]
 
   backgroundScene = new THREE.Scene()
   backgroundScene.background = new THREE.Color( 0xFFFFFF )
   backgroundScene.add(new THREE.AmbientLight(0x161616, 1))
 
-
-
-
-
-
   // create scene
   contentScene = new THREE.Scene()
-  //                           
   contentScene.add(new THREE.AmbientLight(0x161616, 1))
 
   // create renderer
@@ -192,100 +152,66 @@ let setup = (config) => {
   renderer.autoClear = false
 
   effect = new THREE.OutlineEffect(renderer)
-  effect.setSize(2500,900)
-  effect.setViewport(0,0,2500,900)
-
+  effect.setSize(config.width, config.height)
+  effect.setViewport(0,0,config.width, config.height)
 
   manager = new THREE.LoadingManager()
 
   loadTextures()
-
   loadDummyModels()
 
-  // dummyGroup = THREE.Group()
-  // addToScene(dummyGroup)
-
   createGroundPlane()
+
+  camera = new THREE.PerspectiveCamera(30, config.width / config.height, .01, 1000)
+  camera.position.y = 1.3
+  camera.position.z = 2
+  camera.aspect = config.width / config.height
+  camera.updateProjectionMatrix()
+  contentScene.add(camera)
+  backgroundScene.add(camera)
+
+  directionalLight = new THREE.DirectionalLight(0xFFFFFF, 1)
+  directionalLight.position.set(-.5, 1, 1);
+  contentScene.add(directionalLight)
+
+
   createReferenceCube()
-  createLineCube()
-
-  // var loader = new THREE.JDLoader()
-  // loader.load("data/STDummy_Male_TestPoses8.JD", (data) => {
-  //   var multiMaterial = new THREE.MultiMaterial(data.materials)
-  //   for (var i = 0; i < data.geometries.length; ++i) {
-  //     var mesh = new THREE.SkinnedMesh(data.geometries[i], multiMaterial)
-  //     meshes.push(mesh)
-  //     mesh.scale.set(0.001,0.001,0.001)
-  //     scene.add(mesh)
-  //     if (mesh.geometry.animations) {
-  //       var mixer = new THREE.AnimationMixer(mesh)
-  //       mixers.push(mixer)
-  //       var action = mixer.clipAction(mesh.geometry.animations[3])
-  //       action.clampWhenFinished = true
-  //       action.setLoop(THREE.LoopOnce)
-  //       action.reset().play()
-  //       mixers[0].update(5)
-  //     }
-  //   }
-
-    // camera = new THREE.PerspectiveCamera(30, 2500 / 900, 1, 10 * data.boundingSphere.radius)
-    // camera.position.y = 1500
-    // camera.position.x = 1500
-    // camera.position.z = data.boundingSphere.center.z + 5 * data.boundingSphere.radius
-    // camera.lookAt(data.boundingSphere.center) 
-    // scene.add(camera)
-    // camera.add(new THREE.DirectionalLight(0xFFFFFF, 1))
-  // })
-
+  //createLineCube()
   backgroundScene.add(buildSquareRoom(60, 60, 20, 1))
-
-
-
-    camera = new THREE.PerspectiveCamera(30, 2500 / 900, .01, 1000)
-    camera.position.y = 1.3
-    camera.position.z = 2
-
-    camera.aspect = 2500/900
-    camera.updateProjectionMatrix()
-
-    contentScene.add(camera)
-    contentScene.add(new THREE.DirectionalLight(0xFFFFFF, 1))
-    backgroundScene.add(camera)
-
-
-
 }
 
 let loadTextures = () => {
-  let imageLoader = new THREE.ImageLoader (manager)
+  let imageLoader = new THREE.ImageLoader(manager)
 
-  textures = {personMale: new THREE.Texture(), personFemale: new THREE.Texture(), ground: new THREE.Texture(), wall: new THREE.Texture()}
+  textures = {}
 
+  textures.personMale = new THREE.Texture()
   imageLoader.load('data/STDumy_Male_tex.png', ( image ) => {
-    textures.personMale.image = image;
-    textures.personMale.needsUpdate = true;
+    textures.personMale.image = image
+    textures.personMale.needsUpdate = true
   })
 
+  textures.personFemale = new THREE.Texture()
   imageLoader.load('data/dummy_female_tex.jpg', ( image ) => {
-    textures.personFemale.image = image;
-    textures.personFemale.needsUpdate = true;
+    textures.personFemale.image = image
+    textures.personFemale.needsUpdate = true
   })
 
+  textures.ground = new THREE.Texture()
   imageLoader.load('data/grid.png', ( image ) => {
-    textures.ground.image = image;
-    textures.ground.needsUpdate = true;
+    textures.ground.image = image
+    textures.ground.needsUpdate = true
   })
 
+  textures.wall = new THREE.Texture()
   imageLoader.load('data/wall_grid2.png', ( image ) => {
-    textures.wall.image = image;
-    textures.wall.wrapS = textures.wall.wrapT = THREE.RepeatWrapping;
-    textures.wall.offset.set( 0, 0 );
-    textures.wall.repeat.set( 4.5, 4.5 );
-
-    textures.wall.needsUpdate = true;
+    textures.wall.image = image
+    textures.wall.wrapS = textures.wall.wrapT = THREE.RepeatWrapping
+    textures.wall.offset.set( 0, 0 )
+    textures.wall.repeat.set( 4.5, 4.5 )
+    textures.wall.needsUpdate = true
   })
 }
-
 
 let createGroundPlane = () => {
   var geometry = new THREE.PlaneGeometry( 135 / 3, 135 / 3, 32 )
@@ -293,11 +219,9 @@ let createGroundPlane = () => {
   material.transparent = true
   material.blending = THREE.MultiplyBlending
   material.opacity = 1
-  //material.depthFunc = THREE.NotEqualDepth
   var plane = new THREE.Mesh( geometry, material )
   plane.renderOrder = 1.0
   plane.rotation.x = -Math.PI / 2
-  //addToScene(plane)
   backgroundScene.add(plane)
 }
 
@@ -322,104 +246,105 @@ let createReferenceCube = () => {
   addToScene(cube)
 }
 
-let createLineCube = () => {
-var geometry = new THREE.Geometry();
+let createLineCube = (subdivisions) => {
+  let lineCube = new THREE.Group()
 
-// bottom
-geometry.vertices.push( new THREE.Vector3( 0, 0, 0 ) );
-geometry.vertices.push( new THREE.Vector3( 1, 0, 0 ) );
-geometry.vertices.push( new THREE.Vector3( 1, 0, 1 ) );
-geometry.vertices.push( new THREE.Vector3( 0, 0, 1 ) );
-geometry.vertices.push( new THREE.Vector3( 0, 0, 0 ) );
+  let material = new MeshLineMaterial({
+    useMap: false,
+    color: new THREE.Color(0x0),
+    opacity: 0.6,
+    resolution: THREE.Vector2(100,dimensions[1]),
+    lineWidth: 0.015,
+    sizeAttenuation: false,
+    near: 0.1,
+    far: 1000,
+    transparent: true,
+    side: THREE.DoubleSide,
+  })
 
-geometry.vertices.push( new THREE.Vector3( 0, 0.5, 0 ) );
-geometry.vertices.push( new THREE.Vector3( 1, 0.5, 0 ) );
-geometry.vertices.push( new THREE.Vector3( 1, 0.5, 1 ) );
-geometry.vertices.push( new THREE.Vector3( 0, 0.5, 1 ) );
-geometry.vertices.push( new THREE.Vector3( 0, 0.5, 0 ) );
+  let material2 = new MeshLineMaterial({
+    useMap: false,
+    color: new THREE.Color(0x0),
+    opacity: 0.4,
+    resolution: THREE.Vector2(100,dimensions[1]),
+    lineWidth: 0.01,
+    sizeAttenuation: false,
+    near: 0.1,
+    far: 1000,
+    transparent: true,
+    side: THREE.DoubleSide,
+  })
 
+  let squareDef = [[0,0,0],[1,0,0],[1,0,1],[0,0,1],[0,0,0],[0,1,0],[1,1,0],[1,1,1],[0,1,1],[0,1,0]]
+  let mesh = createLineMesh(squareDef, material)
+  lineCube.add(mesh)
 
-// top
-geometry.vertices.push( new THREE.Vector3( 0, 1, 0 ) );
-geometry.vertices.push( new THREE.Vector3( 1, 1, 0 ) );
-geometry.vertices.push( new THREE.Vector3( 1, 1, 1 ) );
-geometry.vertices.push( new THREE.Vector3( 0, 1, 1 ) );
-geometry.vertices.push( new THREE.Vector3( 0, 1, 0 ) );
+  mesh = createLineMesh([[0,0,1],[0,1,1]], material)
+  lineCube.add(mesh)
 
+  mesh = createLineMesh([[1,0,1],[1,1,1]], material)
+  lineCube.add(mesh)
 
-// back
-geometry.vertices.push( new THREE.Vector3( 0, 0, 0 ) );
-geometry.vertices.push( new THREE.Vector3( 0, 1, 0 ) );
-geometry.vertices.push( new THREE.Vector3( 1, 1, 0 ) );
-geometry.vertices.push( new THREE.Vector3( 1, 0, 0 ) );
-geometry.vertices.push( new THREE.Vector3( 0, 0, 0 ) );
+  mesh = createLineMesh([[1,0,0],[1,1,0]], material)
+  lineCube.add(mesh)
 
-geometry.vertices.push( new THREE.Vector3( 0, 0, 0.5 ) );
-geometry.vertices.push( new THREE.Vector3( 0, 1, 0.5 ) );
-geometry.vertices.push( new THREE.Vector3( 1, 1, 0.5 ) );
-geometry.vertices.push( new THREE.Vector3( 1, 0, 0.5 ) );
-geometry.vertices.push( new THREE.Vector3( 0, 0, 0.5 ) );
+  for (var i = 0; i < subdivisions; i++) {
 
+    let val = (1+i)/(subdivisions+1)
 
+    squareDef = [[0,val,0],[1,val,0],[1,val,1],[0,val,1],[0,val,0]]
+    mesh = createLineMesh(squareDef, material2)
+    lineCube.add(mesh)
 
-// front
-geometry.vertices.push( new THREE.Vector3( 0, 0, 1 ) );
-geometry.vertices.push( new THREE.Vector3( 0, 1, 1 ) );
-geometry.vertices.push( new THREE.Vector3( 1, 1, 1 ) );
-geometry.vertices.push( new THREE.Vector3( 1, 0, 1 ) );
-geometry.vertices.push( new THREE.Vector3( 0, 0, 1 ) );
+    mesh = createLineMesh([[val,0,1],[val,1,1]], material2)
+    lineCube.add(mesh)
 
-// left
-geometry.vertices.push( new THREE.Vector3( 0, 0, 0 ) );
-geometry.vertices.push( new THREE.Vector3( 0, 0, 1 ) );
-geometry.vertices.push( new THREE.Vector3( 0, 1, 1 ) );
-geometry.vertices.push( new THREE.Vector3( 0, 1, 0 ) );
-geometry.vertices.push( new THREE.Vector3( 0, 0, 0 ) );
+    mesh = createLineMesh([[0,0,val],[0,1,val]], material2)
+    lineCube.add(mesh)
 
-// right
-geometry.vertices.push( new THREE.Vector3( 0.5, 0, 0 ) );
-geometry.vertices.push( new THREE.Vector3( 0.5, 0, 1 ) );
-geometry.vertices.push( new THREE.Vector3( 0.5, 1, 1 ) );
-geometry.vertices.push( new THREE.Vector3( 0.5, 1, 0 ) );
-geometry.vertices.push( new THREE.Vector3( 0.5, 0, 0 ) );
+    mesh = createLineMesh([[val,0,0],[val,1,0]], material2)
+    lineCube.add(mesh)
 
+    mesh = createLineMesh([[1,0,val],[1,1,val]], material2)
+    lineCube.add(mesh)
 
+    mesh = createLineMesh([[val,0,val],[val,1,val]], material2)
+    lineCube.add(mesh)
 
-// right
-geometry.vertices.push( new THREE.Vector3( 1, 0, 0 ) );
-geometry.vertices.push( new THREE.Vector3( 1, 0, 1 ) );
-geometry.vertices.push( new THREE.Vector3( 1, 1, 1 ) );
-geometry.vertices.push( new THREE.Vector3( 1, 1, 0 ) );
-geometry.vertices.push( new THREE.Vector3( 1, 0, 0 ) );
+    // X
+    mesh = createLineMesh([[0,0,val],[1,0,val]], material2)
+    lineCube.add(mesh)
+    mesh = createLineMesh([[val,0,0],[val,0,1]], material2)
+    lineCube.add(mesh)
 
-geometry.translate(-.5, 0, -.5)
+    mesh = createLineMesh([[0,val,val],[1,val,val]], material2)
+    lineCube.add(mesh)
+    mesh = createLineMesh([[val,val,0],[val,val,1]], material2)
+    lineCube.add(mesh)
 
+    mesh = createLineMesh([[0,1,val],[1,1,val]], material2)
+    lineCube.add(mesh)
+    mesh = createLineMesh([[val,1,0],[val,1,1]], material2)
+    lineCube.add(mesh)
+  }
 
-//var geometry = new THREE.CubeGeometry( 1, 1, 1, 5, 5,5 )
-console.log(MeshLine)
-var line = new MeshLine()
-line.setGeometry( geometry );
-line.setGeometry( geometry, function( p ) { return 1; } )
-
-var material = new MeshLineMaterial({
-color: new THREE.Color(0x00),
-opacity: 0.6,
-resolution: THREE.Vector2(2500,900),
-lineWidth: 0.02,
-sizeAttenuation: true,
-near: 0.1,
-far: 1000,
-transparent: true,
-side: THREE.DoubleSide,
-});
+  return lineCube
+}
 
 
-
-
-var mesh = new THREE.Mesh( line.geometry, material ); // this syntax could definitely be improved!
-mesh.position.set(0,0,0)
-mesh.scale.set(0.4,1.6,0.4)
-addToScene( mesh );  
+let createLineMesh = (pointsArray, material) => {
+  let geometry = new THREE.Geometry()
+  for (var i = 0; i < pointsArray.length; i++) {
+    var n = 2
+    while (n--) {
+      geometry.vertices.push( new THREE.Vector3( pointsArray[i][0], pointsArray[i][1], pointsArray[i][2] ) )
+    }
+  }
+  geometry.translate(-.5, 0, -.5)
+  let line = new MeshLine()
+  line.setGeometry( geometry, function( p ) { return 1 } )
+  let mesh = new THREE.Mesh( line.geometry, material )
+  return mesh
 }
 
 let loadDummyModels = () => {
@@ -500,40 +425,11 @@ function addToScene(obj) {
   contentScene.add(obj)
 }
 
-
-// init();
-// animate();
-
-// setInterval(animate, 200)
-// function init()
-// {
-
-// }
-
 let render = () => {
-  var delta = clock.getDelta()
-
-
- // mixer.update(1)
- 
-  if (camera) {
-    //renderer.render(scene, camera)
-    
-    effect.clear()
-    effect.render(backgroundScene, camera)
-    renderer.clearDepth()
-    effect.render(contentScene, camera)
-
-
-   
-    // renderer.render( scene, camera );
-    // renderer.clearDepth();
-    // renderer.render( scene2, camera );
-
-
-
-
-  } 
+  effect.clear()
+  effect.render(backgroundScene, camera)
+  renderer.clearDepth()
+  effect.render(contentScene, camera)
 }
 
 let buildSquareRoom = (w, l, h, layer) => {
@@ -614,6 +510,14 @@ let buildSquareRoom = (w, l, h, layer) => {
 
   var room = new THREE.Group()
   room.add(mesh)
+
+  let cube = createLineCube(0)
+  cube.scale.set(w,h,l)
+  room.add(cube)
+
+
+
+
   return room
 }
 
@@ -689,6 +593,13 @@ let BoundingUVGenerator = {
 
 
 let setupContent = (param) => {
+
+  backgroundScene.background = new THREE.Color( 0xFFFFFF )
+
+
+
+
+
   contentScene.remove(dummyGroup)
   dummyGroup = new THREE.Group()
 
@@ -704,7 +615,7 @@ let setupContent = (param) => {
 
      // console.log(newPerson)
     var mixer1 = new THREE.AnimationMixer( newPerson )
-     var action = mixer1.clipAction('run', newPerson)
+     var action = mixer1.clipAction('walk', newPerson)
     action.clampWhenFinished = true
     action.setLoop(THREE.LoopOnce)
     action.play()
@@ -751,7 +662,7 @@ let setupContent = (param) => {
         dummyGroup.add(newPerson)
       }
       break
-    case "OTS":
+    case "ots":
       var newPerson = dummyModels.female.clone()
       dummyGroup.add(newPerson)
       var newPerson2 = dummyModels.female.clone()
@@ -761,6 +672,12 @@ let setupContent = (param) => {
       dummyGroup.add(newPerson2)
       break
   }
+  camera.updateProjectionMatrix()
+
+  let cube = createLineCube(1)
+  cube.scale.set(1,1.8,1)
+  dummyGroup.add(cube)
+
 
   contentScene.add(dummyGroup)
 }
@@ -768,28 +685,6 @@ let setupContent = (param) => {
 
 let setupFov = (param) => {
   // https://en.wikipedia.org/wiki/Angle_of_view
-  let cameraLensAngles = {
-    0:180.0,
-    2:161.1,
-    12:90.0,
-    14:81.2,
-    16:73.9,
-    20:61.9,
-    24:53.1,
-    35:37.8,
-    50:27.0,
-    70:19.5,
-    85:16.1,
-    105:13.0,
-    200:6.87,
-    300:4.58,
-    400:3.44,
-    500:2.75,
-    600:2.29,
-    700:1.96,
-    800:1.72,
-    1200:1.15,
-  }
 
   let fov
   let lenses
@@ -874,36 +769,36 @@ let setupShotType = (params) => {
   let cameraVerticalCenter = false
 
   switch (params.shotType) {
-    case 'ECU':
+    case 'ecu':
       requiredBones = ["Head", "HeadNub"]
       distMult = 0.4
       break
-    case 'VCU':
+    case 'vcu':
       requiredBones = ["Head", "HeadNub"]
       distMult = 0.8
       break
-    case 'CU':
+    case 'cu':
       requiredBones = ["Head", "HeadNub", "Neck"]
       break
-    case 'MCU':
+    case 'mcu':
       requiredBones = ["Head", "HeadNub", "Neck", "UpperArm",  "Spine2"]
       break
-    case 'Bust':
+    case 'bust':
       requiredBones = ["Head", "HeadNub", "Neck", "UpperArm",  "Spine2", "Spine1"]
       break
-    case 'MS':
+    case 'ms':
       requiredBones = ["Head", "HeadNub", "Neck", "UpperArm",  "Spine2", "Spine1", "Spine"]
       break
-    case 'MLS':
+    case 'mls':
       requiredBones = ["Head", "HeadNub", "Neck", "UpperArm",  "Spine2", "Spine1", "Spine", "Thigh", "Calf"]
       break
-    case 'LS':
+    case 'ls':
       requiredBones = ["Head", "HeadNub", "Neck", "UpperArm",  "Spine2", "Spine1", "Spine", "Thigh", "Calf", "Toe0Nub"]
       distAdd = Math.round(Math.random()*5)
       cameraVerticalCenter = true
       vertAdjust = false
       break
-    case 'ELS':
+    case 'els':
       requiredBones = ["Head", "HeadNub", "Neck", "UpperArm",  "Spine2", "Spine1", "Spine", "Thigh", "Calf", "Toe0Nub"]
       distAdd = 5+Math.round(Math.random()*30)
       cameraVerticalCenter = true
@@ -1018,13 +913,25 @@ let setupShotType = (params) => {
   let hFOV = 2 * Math.atan( Math.tan( camera.fov * Math.PI / 180 / 2 ) * (2500/900) )
   console.log(hFOV)
   
+
+//  camera.updateMatrixWorld()
+  //camera.geometry.applyMatrix(camera.matrixWorld)
+
   console.log(params.horizontalComposition)
   switch (params.horizontalComposition) {
     case 'auto':
 
       switch (params.horizontalAngle) {
         case 'left':
-          camera.rotateY(-hFOV/5)
+          //camera.rotateY(-hFOV/5)
+          //console.log(camera)
+
+          var q = new THREE.Quaternion(); // create once and reuse
+          q.setFromAxisAngle( new THREE.Vector3(0,1,0), -hFOV/5 ); // axis must be normalized, angle in radians
+          camera.quaternion.premultiply( q );
+
+
+          //camera.rotateOnAxis(camera.rotation,-hFOV/5);
           break
         case 'center':
           let randomCase = (Math.floor(Math.random()*3))
@@ -1061,59 +968,100 @@ let setupShotType = (params) => {
   //   console.log(bones[i].name)
   // }
 }
-// function onWindowResize()
-// {
-//     if (camera)
-//     {
-//       camera.aspect = window.innerWidth / window.innerHeight;
-//       camera.updateProjectionMatrix();
-//     }
-//     renderer.setSize(window.innerWidth, window.innerHeight);
-// }
+
+let parseShotText = (text) => {
+  let alternateValues = {
+    ecu: ['extra close', 'extreme close', 'xcu'],
+    vcu: ['very close'],
+    cu: ['close', 'close-up', 'closeup'],
+    mcu: ['medium close', 'medium close-up', 'medium closeup'],
+    ms: ['medium', 'medium shot', 'waist', 'mid', 'med'],
+    mls: ['medium long', 'three quarters', 'threequarters'],
+    ls: ['long', 'full', 'wide shot', 'long shot', 'ws'],
+    els: ['extreme long', 'exteme full', 'extreme wide shot', 'ews'],
+    oneShot: ['one shot', 'single', '1s'],
+    twoShot: ['double', '2s'],
+    threeShot: ['triple', '3s'],
+    ots: ['over the shoulder', 'over shoulder', 'ab tu', 'third person'],
+    groupShot: ['group', 'gs'],
+    left: ['left angle'],
+    right: ['right angle'],
+    center: ['centered'],
+    birdsEye: ['birdseye', 'be', 'aerial', 'top'],
+    high: ['high angle', 'ha'],
+    eye: ['eye level', 'el'],
+    low: ['low angle', 'la'],
+    wormsEye: ['wormseye', 'we', 'floor'],
+    ultraWide: ['extreme wide lens', 'ultra wide lens'],
+    wide: ['wide lens', 'wide angle'],
+    medium: ['medium lens'],
+    long: ['long lens', 'telephoto'],
+    headFront: ['looking forward', 'looking front', 'looking straight', 'facing forward', 'facing front', 'facing straight', 'head front', 'head straight', 'head forward'],
+    headUp: ['looking up', 'facing up', 'head up'],
+    headDown: ['looking down', 'facing down', 'head down'],
+    headLeft: ['looking left', 'facing left', 'head left'],
+    headRight: ['looking right', 'facing right', 'head right'],
+  }
+
+  let parsedShotParams = {}
+  text = text.toLowerCase()
+
+  while (text.length > 0) {
+    let parameter = ['','', '']
+    for (var prop in shotProperties) {
+      for (var value in shotProperties[prop]) {
+        let possibilities = []
+        possibilities.push(value)
+        possibilities.push(value.replace(/([A-Z])/g, function($1){return " "+$1.toLowerCase()}))
+        possibilities = possibilities.concat(alternateValues[value])
+        for (var i = 0; i < possibilities.length; i++) {
+          if (text.indexOf(possibilities[i]) == 0) {
+            if (parameter[1].length < possibilities[i].length) {
+              parameter[0] = prop
+              parameter[1] = possibilities[i]
+              parameter[2] = value
+            }
+          }
+        }
+      }
+    }
+    if (parameter[0] !== '') {
+      parsedShotParams[parameter[0]] = parameter[2]
+      text = text.substring(parameter[1].length).trim()
+    } else {
+      if (text.indexOf(' ') == -1) {
+        text = ''
+      } else {
+        text = text.substring(text.indexOf(' ')).trim()
+      }
+    }
+  }
+
+  // find if there are any alternate terms
 
 
 
 
+  return parsedShotParams
+}
 
-
-const EventEmitter = require('events').EventEmitter
-
-
-const shotProperties = require('../shot-template-system/shot-properties.js')
-
-
-
-
-
-// var width   = 64
-// var height  = 64
-// var (width, height, { preserveDrawingBuffer: true })
-
-// //Clear screen to red
-// gl.clearColor(1, 0, 0, 1)
-// gl.clear(gl.COLOR_BUFFER_BIT)
-
+////////////////////////////////////////////////////
+// ShotTemplateSystem
+////////////////////////////////////////////////////
 
 class ShotTemplateSystem extends EventEmitter {
   constructor (config) {
     super()
 
- 
     this.ready = false
     this.definedShotParams = {}
     this.shotParams = {}
 
     setup(config)
-
-    // create scene
-    // loader models and textures
-    // after it's done, set ready
-
-    // options = aspect ratio / width / height 
   }
 
-  setSize(width, height) {
-
+  parseParamsText (string) {
+    return parseShotText(string)
   }
 
   setDefinedShotParams (shotParams) {
@@ -1135,27 +1083,12 @@ class ShotTemplateSystem extends EventEmitter {
     setupFov(this.shotParams.fov)
     setupShotType(this.shotParams)
 
-    // clearScene()
-    // createScene()
-
-    // render()
     render()
-    
     return {image: renderer.domElement.toDataURL(), shotParams: this.shotParams}
   }
-
-
-  renderShot () {
-     
-    render()
-    
-    return {image: renderer.domElement.toDataURL(), shotParams: this.shotParams}
-  }
-
 
   createShotParams() {
     this.shotParams = {}
-    // find unset params
     for (let property in shotProperties) {
       if (this.definedShotParams[property]) {
         this.shotParams[property] = this.definedShotParams[property]
@@ -1163,8 +1096,6 @@ class ShotTemplateSystem extends EventEmitter {
         this.shotParams[property] = this.chooseRandomValue(shotProperties[property])
       }
     }
-    // for the rest, randomize each
-
   }
 
   rand (min, max) {
@@ -1173,21 +1104,14 @@ class ShotTemplateSystem extends EventEmitter {
 
   chooseRandomValue (values) {
     let totalWeight = 0
-
     for (let value in values) {
-      //console.log(value)
       totalWeight += values[value].weight
     }
-
     let randomNum = this.rand(0, totalWeight)
     let weightSum = 0
-
-    //return totalWeight
     for (let value in values) {
-      //console.log(value)
       weightSum += values[value].weight
       weightSum = +weightSum.toFixed(2)
-
       if (randomNum <= weightSum) {
         return value
       }

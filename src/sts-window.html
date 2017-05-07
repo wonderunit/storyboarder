@@ -6,14 +6,49 @@
     <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
     <style>
       body {
-        background-color: #fff;
+        background-color: #333;
         margin: 0px;
         overflow: hidden;
       }
+
+      #input1 {
+        font-size: 38px;
+        width: calc(100vw - calc(18px*2));
+        margin: 18px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 5px;
+        border: none;
+        padding: 9px;
+        box-sizing: border-box;
+        color: white;
+      }
+
+      img {
+        width: 8.2vw;
+        margin-right: 3px;
+        border-top: 1vh solid black;
+        border-bottom: 1vh solid black;
+      }
+
+
+      img:nth-of-type(1){
+        width: 100vw;
+        border-top: 5vh solid black;
+        border-bottom: 5vh solid black;
+      }
+
+      #button {
+        display: none;
+      }
+
+      *:focus {
+    outline: none;
+}
     </style>
   </head>
 
   <body>
+    <input id="input1" type="text" placeholder="Enter shot type: for example, medium shot">
     <button id="button">Generate</button>
     <div id="shots"></div>
 <!--     < script src="../build/three.js"></script>

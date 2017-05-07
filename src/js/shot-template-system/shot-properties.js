@@ -1,41 +1,37 @@
 /*
 
-lower body pose
-arm pose
 head pose
-
-fill with reference objects
 
 
 */
 
 let shotProperties = {
   shotType: {
-    ECU: {
+    ecu: {
       weight: 10
     },
-    VCU: {
+    vcu: {
       weight: 10
     },
-    CU: {
+    cu: {
       weight: 10
     },
-    MCU: {
+    mcu: {
       weight: 10
     },
-    Bust: {
+    bust: {
       weight: 10
     },
-    MS: {
+    ms: {
       weight: 10
     },
-    MLS: {
+    mls: {
       weight: 10
     },
-    LS: {
+    ls: {
       weight: 10
     },
-    ELS: {
+    els: {
       weight: 10
     }
   },
@@ -49,7 +45,7 @@ let shotProperties = {
     threeShot: {
       weight: 10
     },
-    OTS: {
+    ots: {
       weight: 30
     },
     groupShot: {
@@ -116,33 +112,33 @@ let shotProperties = {
     }
   },
   headDirection: {
-    front: {
+    headFront: {
       weight: 10
     },
-    up: {
+    headUp: {
       weight: 3
     },
-    down: {
+    headDown: {
       weight: 1
     },
-    left: {
+    headLeft: {
       weight: 3
     },
-    right: {
+    headRight: {
       weight: 3
     }
   },
   roomSize: {
-    small: {
+    smallRoom: {
       weight: 3
     },
-    medium: {
+    mediumRoom: {
       weight: 5
     },
-    large: {
+    largeRoom: {
       weight: 2
     },
-    extraLarge: {
+    extraLargeRoom: {
       weight: 0.5
     },
     outside: {
