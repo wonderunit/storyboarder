@@ -597,7 +597,8 @@ let newBoard = (position, shouldAddToUndoStack = true) => {
   boardData.boards.splice(position, 0, board)
 
   // indicate dirty for save sweep
-  markImageFileDirty() // to save new layers
+  let visibleLayers = [0, 1, 3] // HACK hardcoded!
+  markImageFileDirty(visibleLayers) // to save new layers
   markBoardFileDirty() // to save new board data
   renderThumbnailDrawer()
   storeUndoStateForScene()
@@ -1026,6 +1027,9 @@ let updateSketchPaneBoard = () => {
       }
     }
 
+    // clear all visible layers
+    storyboarderSketchPane.clearLayer([0, 1, 3]) // HACK hardcoded
+
     let loaders = []
     for (let [layerName, filename] of layersData) {
       loaders.push(new Promise((resolve, reject) => {
@@ -1035,8 +1039,6 @@ let updateSketchPaneBoard = () => {
 
         let context = storyboarderSketchPane.getLayerCanvasByName(layerName).getContext('2d')
         context.globalAlpha = 1
-
-        context.clearRect(0, 0, context.canvas.width, context.canvas.height)
 
         if (!fs.existsSync(imageFilePath)) {
           resolve()
