@@ -8,6 +8,7 @@ class StoryboarderSketchPane extends EventEmitter {
     super()
 
     this.layerIndexByName = ['reference', 'main', 'onion', 'notes', 'guides', 'composite']
+    this.visibleLayers = ['reference', 'main', 'notes']
 
     this.canvasPointerUp = this.canvasPointerUp.bind(this)
     this.canvasPointerDown = this.canvasPointerDown.bind(this)
@@ -41,14 +42,18 @@ class StoryboarderSketchPane extends EventEmitter {
     // brushes: no
     this.sketchPane.on('ondown', () => {
       if (this.sketchPane.paintingKnockout) {
-        this.emit('addToUndoStack')
+        if (this.isMultiLayerOperation) {
+          this.emit('addToUndoStack', this.visibleLayers.map(n => this.layerIndexByName.indexOf(n)))
+        } else {
+          this.emit('addToUndoStack')
+        }
       }
     })
     // store snapshot before pointer up?
     // eraser : no
     // brushes: yes
     this.sketchPane.on('onbeforeup', () => {
-      if (!this.sketchPane.paintingKnockout) { 
+      if (!this.sketchPane.paintingKnockout) {
         this.emit('addToUndoStack')
       }
     })
@@ -58,7 +63,10 @@ class StoryboarderSketchPane extends EventEmitter {
       // store snapshot on up?
       // eraser : yes
       // brushes: yes
-      this.emit('markDirty')
+      // composite: no (handled by stopMultiLayerOperation)
+      if (!this.isMultiLayerOperation) {
+        this.emit('markDirty')
+      }
     })
 
 
@@ -317,14 +325,13 @@ class StoryboarderSketchPane extends EventEmitter {
 
     this.isMultiLayerOperation = true
 
-    let visibleLayers = ['reference', 'main', 'notes']
     let compositeIndex = this.layerIndexByName.indexOf('composite')
     let compositeContext = this.sketchPane.getLayerContext(compositeIndex)
 
     this.sketchPane.clearLayer(compositeIndex)
 
     // draw composite from layers
-    for (let name of visibleLayers) {
+    for (let name of this.visibleLayers) {
       let index = this.layerIndexByName.indexOf(name)
 
       let canvas = this.sketchPane.getLayerCanvas(index)
@@ -346,10 +353,9 @@ class StoryboarderSketchPane extends EventEmitter {
   stopMultiLayerOperation () {
     if (!this.isMultiLayerOperation) return
 
-    let visibleLayers = ['reference', 'main', 'notes']
     let compositeIndex = this.layerIndexByName.indexOf('composite')
 
-    for (let name of visibleLayers) {
+    for (let name of this.visibleLayers) {
       let index = this.layerIndexByName.indexOf(name)
 
       // apply result of erase bitmap to layer
@@ -365,10 +371,13 @@ class StoryboarderSketchPane extends EventEmitter {
 
       this.sketchPane.setLayerVisible(true, index)
     }
-    this.emit('markDirtyByName', ...visibleLayers)
 
     // reset
     this.sketchPane.setLayerVisible(false, compositeIndex)
+
+    // trigger a save to any layer possibly changed by the operation
+    this.emit('markDirty', this.visibleLayers.map(n => this.layerIndexByName.indexOf(n)))
+
     this.isMultiLayerOperation = false
     this.sketchPane.removeListener('onbeforeup', this.stopMultiLayerOperation)
   }

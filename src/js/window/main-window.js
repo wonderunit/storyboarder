@@ -38,6 +38,7 @@ let currentScene = 0
 let boardFileDirty = false
 let boardFileDirtyTimer
 
+// TODO switch to layer indexes
 let layerStatus = {
   main:       { dirty: false },
   reference:  { dirty: false },
@@ -152,17 +153,12 @@ let loadBoardUI = ()=> {
     resize()
     storyboarderSketchPane.resize()
   })
-  storyboarderSketchPane.on('addToUndoStack', () => {
-    storeUndoStateForImage(true)
+  storyboarderSketchPane.on('addToUndoStack', layerIndices => {
+    storeUndoStateForImage(true, layerIndices)
   })
-  storyboarderSketchPane.on('markDirty', () => {
-    storeUndoStateForImage(false)
-    markImageFileDirty()
-  })
-  storyboarderSketchPane.on('markDirtyByName', (...layerNames) => {
-    layerNames.forEach(markImageFileDirty)
-    // TODO store a combined undo state
-    // storeUndoStateForImage(false)
+  storyboarderSketchPane.on('markDirty', layerIndices => {
+    storeUndoStateForImage(false, layerIndices)
+    markImageFileDirty(layerIndices)
   })
   storyboarderSketchPane.on('lineMileage', value => {
     addToLineMileage(value)
@@ -625,9 +621,16 @@ let saveBoardFile = ()=> {
   }
 }
 
-let markImageFileDirty = (layerName = null) => {
-  if (!layerName) layerName = storyboarderSketchPane.getCurrentLayerName()
-  layerStatus[layerName].dirty = true
+let markImageFileDirty = (layerIndices = null) => {
+  if (!layerIndices) layerIndices = [storyboarderSketchPane.sketchPane.getCurrentLayerIndex()]
+
+  // HACK because layerStatus uses names, we need to convert
+  const layerIndexByName = ['reference', 'main', 'onion', 'notes', 'guides', 'composite']
+  for (let index of layerIndices) {
+    let layerName = layerIndexByName[index]
+    layerStatus[layerName].dirty = true
+  }
+
   clearTimeout(imageFileDirtyTimer)
   imageFileDirtyTimer = setTimeout(() => {
     saveImageFile()
