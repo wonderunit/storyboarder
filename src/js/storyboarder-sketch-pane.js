@@ -248,9 +248,25 @@ class StoryboarderSketchPane extends EventEmitter {
   //
 
   clearLayer () {
-    this.emit('addToUndoStack')
-    this.sketchPane.clearLayer(this.sketchPane.getCurrentLayerIndex())
-    this.emit('markDirty')
+    /*
+    TODO rename to clearLayers
+    
+    currently clears ALL layers
+    TODO modifier key for per-layer clear
+      if current brush is eraser:
+        clear all layers (ignore modifier key)
+      else if modifier key is down:
+        clear current layer
+      else:
+        clear all layers
+    */
+    //
+    let layerIndices = this.visibleLayers.map(n => this.layerIndexByName.indexOf(n))
+    this.emit('addToUndoStack', layerIndices)
+    for (let index of layerIndices) {
+      this.sketchPane.clearLayer(index)
+    }
+    this.emit('markDirty', layerIndices)
   }
 
   fillLayer (fillColor) {
