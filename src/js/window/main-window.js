@@ -38,10 +38,13 @@ let currentScene = 0
 let boardFileDirty = false
 let boardFileDirtyTimer
 
+// TODO switch to layer indexes
 let layerStatus = {
   main:       { dirty: false },
   reference:  { dirty: false },
-  notes:      { dirty: false }
+  notes:      { dirty: false },
+  
+  composite:  { dirty: false } // TODO do we need this?
 }
 let imageFileDirtyTimer
 
@@ -150,12 +153,12 @@ let loadBoardUI = ()=> {
     resize()
     storyboarderSketchPane.resize()
   })
-  storyboarderSketchPane.on('addToUndoStack', () => {
-    storeUndoStateForImage(true)
+  storyboarderSketchPane.on('addToUndoStack', layerIndices => {
+    storeUndoStateForImage(true, layerIndices)
   })
-  storyboarderSketchPane.on('markDirty', () => {
-    storeUndoStateForImage(false)
-    markImageFileDirty()
+  storyboarderSketchPane.on('markDirty', layerIndices => {
+    storeUndoStateForImage(false, layerIndices)
+    markImageFileDirty(layerIndices)
   })
   storyboarderSketchPane.on('lineMileage', value => {
     addToLineMileage(value)
@@ -618,9 +621,16 @@ let saveBoardFile = ()=> {
   }
 }
 
-let markImageFileDirty = () => {
-  let layerName = storyboarderSketchPane.getCurrentLayerName()
-  layerStatus[layerName].dirty = true
+let markImageFileDirty = (layerIndices = null) => {
+  if (!layerIndices) layerIndices = [storyboarderSketchPane.sketchPane.getCurrentLayerIndex()]
+
+  // HACK because layerStatus uses names, we need to convert
+  const layerIndexByName = ['reference', 'main', 'onion', 'notes', 'guides', 'composite']
+  for (let index of layerIndices) {
+    let layerName = layerIndexByName[index]
+    layerStatus[layerName].dirty = true
+  }
+
   clearTimeout(imageFileDirtyTimer)
   imageFileDirtyTimer = setTimeout(() => {
     saveImageFile()
@@ -2406,16 +2416,28 @@ const applyUndoStateForScene = (state) => {
   updateBoardUI()
 }
 
-const storeUndoStateForImage = (isBefore) => {
+// TODO memory management. dispose unused canvases
+const storeUndoStateForImage = (isBefore, layerIndices = null) => {
   let scene = getSceneObjectByIndex(currentScene)
   let sceneId = scene && scene.scene_id
 
-  // backup to an offscreen canvas
-  // TODO memory management. dispose unused canvases.
-  let layerId = storyboarderSketchPane.sketchPane.getCurrentLayerIndex()
-  let imageBitmap = storyboarderSketchPane.getSnapshotAsCanvas(layerId)
+  if (!layerIndices) layerIndices = [storyboarderSketchPane.sketchPane.getCurrentLayerIndex()]
 
-  undoStack.addImageData(isBefore, { sceneId, imageId: currentBoard, layerId, imageBitmap })
+  let layers = layerIndices.map(index => {
+    // backup to an offscreen canvas
+    let source = storyboarderSketchPane.getSnapshotAsCanvas(index)
+    return {
+      index,
+      source
+    }
+  })
+
+  undoStack.addImageData(isBefore, {
+    type: 'image',
+    sceneId,
+    boardIndex: currentBoard,
+    layers
+  })
 }
 
 const applyUndoStateForImage = (state) => {
@@ -2431,15 +2453,22 @@ const applyUndoStateForImage = (state) => {
 
   // if required, go to the board first
   saveImageFile()
-  let step = (currentBoard != state.imageId) ? gotoBoard : () => Promise.resolve()
+  let step = currentBoard != state.boardIndex
+    ? gotoBoard
+    : () => Promise.resolve()
 
-  step(state.imageId).then(() => {
-    let layerContext = storyboarderSketchPane.sketchPane.getLayerCanvas(state.layerId).getContext('2d')
+  step(state.boardIndex).then(() => {
+    for (let layerData of state.layers) {
+      // get the context of the undo-able layer
+      let context = storyboarderSketchPane.sketchPane.getLayerCanvas(layerData.index).getContext('2d')
 
-    // draw imageBitmap into it
-    layerContext.globalAlpha = 1
-    layerContext.clearRect(0, 0, layerContext.canvas.width, layerContext.canvas.height)
-    layerContext.drawImage(state.imageBitmap, 0, 0)
+      // draw saved canvas onto layer
+      context.save()
+      context.globalAlpha = 1
+      context.clearRect(0, 0, context.canvas.width, context.canvas.height)
+      context.drawImage(layerData.source, 0, 0)
+      context.restore()
+    }
   }).catch(e => console.error(e))
 }
 
