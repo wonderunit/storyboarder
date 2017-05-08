@@ -167,7 +167,6 @@ let undoList = new UndoList()
 
 // determine if image state A is equal to state B
 const imageStateContextsEqual = (a, b) => {
-  console.log('imageStateContextsEqual', a, b)
   if (
     a && b &&                                               // are both states present?
 
@@ -211,8 +210,6 @@ const imageStateContextsEqual = (a, b) => {
 //              }
 //
 const addImageData = (isBefore, newState) => {
-  console.log('addImageData', isBefore, !!undoList.state.present)
-
   // is this a snapshot of the state BEFORE the operation?
   if (isBefore) {
     // prevent duplicates in undo history
