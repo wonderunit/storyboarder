@@ -2421,7 +2421,7 @@ const storeUndoStateForImage = (isBefore, layerIndices = null) => {
   let scene = getSceneObjectByIndex(currentScene)
   let sceneId = scene && scene.scene_id
 
-  if (!layerIndices) layerIndices = [storyboarderSketchPane.layerIndexByName.indexOf('main')]
+  if (!layerIndices) layerIndices = [storyboarderSketchPane.sketchPane.getCurrentLayerIndex()]
 
   let layers = layerIndices.map(index => {
     // backup to an offscreen canvas
