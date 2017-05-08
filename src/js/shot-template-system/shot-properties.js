@@ -113,36 +113,85 @@ let shotProperties = {
   },
   headDirection: {
     headFront: {
-      weight: 10
+      weight: 30
     },
     headUp: {
-      weight: 3
+      weight: 1
     },
     headDown: {
       weight: 1
     },
     headLeft: {
-      weight: 3
+      weight: 2
     },
     headRight: {
-      weight: 3
+      weight: 2
     }
+  },
+  background: {
+    light: {
+      weight: 20
+    },
+    dim: {
+      weight: 4
+    },
+    dark: {
+      weight: 1
+    },
+    night: {
+      weight: 1
+    },
+    fire: {
+      weight: 0
+    }
+  },
+  lightDirection: {
+    abovelit: {
+      weight: 1
+    },
+    frontlit: {
+      weight: 1
+    },
+    frontleftlit: {
+      weight: 1
+    },
+    frontrightlit: {
+      weight: 1
+    },
+    backlit: {
+      weight: 1
+    },
+    backleftlit: {
+      weight: 1
+    },
+    backrightlit: {
+      weight: 1
+    },    
+    underlit: {
+      weight: 1
+    },
+    silhouette: {
+      weight: 1
+    },
   },
   roomSize: {
     smallRoom: {
-      weight: 3
+      weight: 1
     },
     mediumRoom: {
-      weight: 5
+      weight: 1
     },
     largeRoom: {
-      weight: 2
+      weight: 1
     },
     extraLargeRoom: {
-      weight: 0.5
+      weight: 1
+    },
+    auditorium: {
+      weight: 1
     },
     outside: {
-      weight: 5
+      weight: 1
     }
   }
 }

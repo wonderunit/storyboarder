@@ -16,18 +16,19 @@ EXAMPLES FOR PARSER:
 
 STS TODO
 
+  add decals and cool shit in the background
+
+
   hook up in params:
-    pose
-    background color
-    camera dynamic
     head direction
-    lighting direction
+    camera dynamic
     rotation
     background objects
       group
       boxes
     grid guides
     boxes instead of models
+      boxes should have inner t thats thicker
     vertical composition
     content type:
       small
@@ -35,10 +36,7 @@ STS TODO
       large 
       extralarge box
     ability to set gender
-  room size
     
-  add decals and cool shit in the background
-
   ots should have more specific angles
   fourshot type
 
@@ -77,7 +75,7 @@ STS TODO
     tree
     car
     table
-
+// 1s dead center backlit ls eye
 */
 
 const EventEmitter = require('events').EventEmitter
@@ -128,13 +126,13 @@ let manager
 let textures 
 let dummyModels
 let dummyGroup
+let roomGroup 
 
 let mixer
 
 let dimensions = [0,0]
 
 let setup = (config) => {
-
   dimensions = [config.width, config.height]
 
   backgroundScene = new THREE.Scene()
@@ -167,17 +165,13 @@ let setup = (config) => {
   camera.position.z = 2
   camera.aspect = config.width / config.height
   camera.updateProjectionMatrix()
+  
   contentScene.add(camera)
   backgroundScene.add(camera)
 
   directionalLight = new THREE.DirectionalLight(0xFFFFFF, 1)
-  directionalLight.position.set(-.5, 1, 1);
+  directionalLight.position.set(0, 1, 3);
   contentScene.add(directionalLight)
-
-
-  createReferenceCube()
-  //createLineCube()
-  backgroundScene.add(buildSquareRoom(60, 60, 20, 1))
 }
 
 let loadTextures = () => {
@@ -186,30 +180,42 @@ let loadTextures = () => {
   textures = {}
 
   textures.personMale = new THREE.Texture()
-  imageLoader.load('data/STDumy_Male_tex.png', ( image ) => {
+  imageLoader.load('data/sts/stdummy_male_texture.png', ( image ) => {
     textures.personMale.image = image
     textures.personMale.needsUpdate = true
   })
 
   textures.personFemale = new THREE.Texture()
-  imageLoader.load('data/dummy_female_tex.jpg', ( image ) => {
+  imageLoader.load('data/sts/stdummy_female_texture.jpg', ( image ) => {
     textures.personFemale.image = image
     textures.personFemale.needsUpdate = true
   })
 
   textures.ground = new THREE.Texture()
-  imageLoader.load('data/grid.png', ( image ) => {
+  imageLoader.load('data/sts/grid_floor.png', ( image ) => {
     textures.ground.image = image
     textures.ground.needsUpdate = true
   })
 
   textures.wall = new THREE.Texture()
-  imageLoader.load('data/wall_grid2.png', ( image ) => {
+  imageLoader.load('data/sts/grid_wall.png', ( image ) => {
     textures.wall.image = image
     textures.wall.wrapS = textures.wall.wrapT = THREE.RepeatWrapping
     textures.wall.offset.set( 0, 0 )
     textures.wall.repeat.set( 4.5, 4.5 )
     textures.wall.needsUpdate = true
+  })
+ 
+  textures.trigrid = new THREE.Texture()
+  imageLoader.load('data/sts/grid_tri.png', ( image ) => {
+    textures.trigrid.image = image
+    textures.trigrid.needsUpdate = true
+  })
+
+  textures.gradientMap = new THREE.Texture()
+  imageLoader.load('data/sts/gradient_map.png', ( image ) => {
+    textures.gradientMap.image = image
+    textures.gradientMap.needsUpdate = true
   })
 }
 
@@ -226,20 +232,27 @@ let createGroundPlane = () => {
 }
 
 let createReferenceCube = () => {
-  var geometry2 = new THREE.BoxGeometry( 1, 1, 1, 5, 5, 5 );
-
-  var modifier = new THREE.BufferSubdivisionModifier( 2 );
-  var smooth = modifier.modify( geometry2 );
-  var material2 = new THREE.MeshBasicMaterial( {color: 0x999999} );
-  material2.outlineParameters = {
-    thickness: outlineWidth,                     // this paremeter won't work for MultiMaterial
-    color: new THREE.Color( 0x0 ),  // this paremeter won't work for MultiMaterial
-    alpha: 0.6,                          // this paremeter won't work for MultiMaterial
+  var geometry = new THREE.BoxGeometry( 1, 1, 1, 5, 5, 5 )
+  var modifier = new THREE.BufferSubdivisionModifier( 2 )
+  var smooth = modifier.modify( geometry )
+  let material = new THREE.MeshToonMaterial({
+    map: textures.trigrid,
+    color: 0xffffff,
+    emissive: 0x0,
+    specular: 0x0,
+    shininess: 0,
+    gradientMap: textures.gradientMap,
+    shading: THREE.SmoothShading,
+  })
+  material.outlineParameters = {
+    thickness: outlineWidth,
+    color: new THREE.Color( 0x0 ),
+    alpha: 0.6,
     visible: true,
-    keepAlive: true  // this paremeter won't work for Material in materials of MultiMaterial
-  };
-  var cube = new THREE.Mesh( smooth, material2 );
-  //cube.rotation.x = -Math.PI / 2;
+    keepAlive: true
+  }
+
+  var cube = new THREE.Mesh( smooth, material )
   cube.position.y = 0+(1/2);
   cube.position.x = 2;
   cube.position.z = -5;
@@ -331,7 +344,6 @@ let createLineCube = (subdivisions) => {
   return lineCube
 }
 
-
 let createLineMesh = (pointsArray, material) => {
   let geometry = new THREE.Geometry()
   for (var i = 0; i < pointsArray.length; i++) {
@@ -352,70 +364,66 @@ let loadDummyModels = () => {
   
   dummyModels = {}
 
-  loader.load("data/STDummy_Female03.JD", (data) => {
-    var material = new THREE.MeshToonMaterial( {
-          map: textures.personFemale,
-          color: 0xffffff,
-          specular: 0x0,
-          // reflectivity: beta,
-          // shininess: specularShininess,
-          shading: THREE.SmoothShading,
-          //envMap: alphaIndex % 2 === 0 ? null : reflectionCube
-        } )
+  loader.load("data/sts/stdummy_female.jd", (data) => {
+    let material = new THREE.MeshToonMaterial({
+      map: textures.personFemale,
+      color: 0xffffff,
+      emissive: 0x0,
+      specular: 0x0,
+      skinning: true,
+      shininess: 0,
+      shading: THREE.SmoothShading,
+    })
     material.outlineParameters = {
-      thickness: outlineWidth,                     // this paremeter won't work for MultiMaterial
-      color: new THREE.Color( 0x0 ),  // this paremeter won't work for MultiMaterial
-      alpha: 0.6,                          // this paremeter won't work for MultiMaterial
+      thickness: outlineWidth,
+      color: new THREE.Color( 0x0 ),
+      alpha: 0.6,
       visible: true,
-      keepAlive: true  // this paremeter won't work for Material in materials of MultiMaterial
+      keepAlive: true
     }
-
     for (var i = 0; i < data.geometries.length; ++i) {
       var mesh = new THREE.SkinnedMesh(data.geometries[i], material)
       var bbox = new THREE.Box3().setFromObject(mesh);
       var height = bbox.max.y - bbox.min.y
       var targetHeight = 1.6256
       var scale = targetHeight / height
-      console.log("scale: " + scale)
       mesh.scale.set(scale, scale, scale)
+      mesh.updateMatrix()
+      mesh.renderOrder = 1.0
       dummyModels.female = mesh
     }
   })
 
-  loader.load("data/STDummy_Male_List-Poses_v02.JD", (data) => {
-    console.log(data)
-    var material = new THREE.MeshToonMaterial( {
-          map: textures.personMale,
-          color: 0xffffff,
-          emissive: 0x0,
-          specular: 0x0,
-          skinning: true,
-          // reflectivity: beta,
-          shininess: 0,
-          shading: THREE.SmoothShading,
-          //envMap: alphaIndex % 2 === 0 ? null : reflectionCube
-        } )
+  loader.load("data/sts/stdummy_male.jd", (data) => {
+    let material = new THREE.MeshToonMaterial({
+      map: textures.personMale,
+      color: 0xffffff,
+      emissive: 0x0,
+      specular: 0x0,
+      skinning: true,
+      shininess: 0,
+      gradientMap: textures.gradientMap,
+      shading: THREE.SmoothShading,
+    })
     material.outlineParameters = {
-      thickness: outlineWidth,                     // this paremeter won't work for MultiMaterial
-      color: new THREE.Color( 0x0 ),  // this paremeter won't work for MultiMaterial
-      alpha: 0.6,                          // this paremeter won't work for MultiMaterial
+      thickness: outlineWidth,
+      color: new THREE.Color( 0x0 ),
+      alpha: 0.6,
       visible: true,
-      keepAlive: true  // this paremeter won't work for Material in materials of MultiMaterial
+      keepAlive: true
     }
     for (var i = 0; i < data.geometries.length; ++i) {
       var mesh = new THREE.SkinnedMesh(data.geometries[i], material)
-
       var bbox = new THREE.Box3().setFromObject(mesh);
       var height = bbox.max.y - bbox.min.y
       var targetHeight = 1.8
       var scale = targetHeight / height
-      console.log("scale: " + scale)
       mesh.scale.set(scale, scale, scale)
       mesh.updateMatrix()
+      mesh.renderOrder = 1.0
       dummyModels.male = mesh
     }
   })
-
 
 }
 
@@ -592,70 +600,129 @@ let BoundingUVGenerator = {
 
 
 
-let setupContent = (param) => {
+let setupContent = (params) => {
 
-  backgroundScene.background = new THREE.Color( 0xFFFFFF )
+  // BACKGROUND
+  directionalLight.color = new THREE.Color( 0xFFFFFF )
+  directionalLight.intensity = 1
+  switch (params.background) {
+    case "light":
+      backgroundScene.background = new THREE.Color( 0xffffff )
+      break
+    case "dim":
+      backgroundScene.background = new THREE.Color( 0x666666 )
+      break
+    case "dark":
+      backgroundScene.background = new THREE.Color( 0x333333 )
+      break
+    case "night":
+      backgroundScene.background = new THREE.Color( 0x111111 )
+      break
+    case "fire":
+      backgroundScene.background = new THREE.Color( 0xffba00 )
+      directionalLight.color = new THREE.Color( 0xffc000 )
+      break
+  }
 
+  // LIGHTING DIRECTION
+  switch (params.lightDirection) {
+    case "abovelit":
+      directionalLight.position.set(0, 1, 1)
+      break
+    case "frontlit":
+      directionalLight.position.set(0, 1, 4)
+      break
+    case "frontleftlit":
+      directionalLight.position.set(-4, 1, 4)
+      break
+    case "frontrightlit":
+      directionalLight.position.set(4, 1, 4)
+      break
+    case "backlit":
+      directionalLight.position.set(0, 8, -6)
+      break
+    case "backleftlit":
+      directionalLight.position.set(-4, 8, -6)
+      break
+    case "backrightlit":
+      directionalLight.position.set(4, 8, -6)
+      break
+    case "underlit":
+      directionalLight.position.set(0, -2, 1)
+      break
+    case "silhouette":
+      directionalLight.position.set(0, -2, 1)
+      directionalLight.color = new THREE.Color( 0x0 )
+      directionalLight.intensity = 0
+      break
+  }
 
+  // ROOM SETUP
+  backgroundScene.remove(roomGroup)
+  roomGroup = new THREE.Group()
+  switch (params.roomSize) {
+    case "smallRoom":
+      roomGroup.add(buildSquareRoom(12, 10, 8, 1))
+      break
+    case "mediumRoom":
+      roomGroup.add(buildSquareRoom(20, 20, 8, 1))
+      break
+    case "largeRoom":
+      roomGroup.add(buildSquareRoom(40, 40, 20, 1))
+      break
+    case "extraLargeRoom":
+      roomGroup.add(buildSquareRoom(80, 80, 20, 1))
+      break
+    case "auditorium":
+      roomGroup.add(buildSquareRoom(250, 250, 40, 1))
+      break
+    case "outside":
+      break
+  }
+  backgroundScene.add(roomGroup)
 
+  // ADD STUFF TO ROOM!!!
+  // createReferenceCube()
 
-
+  // SET UP DUMMIES
   contentScene.remove(dummyGroup)
   dummyGroup = new THREE.Group()
 
 
-  switch (param) {
+  let mainCharacter = dummyModels.male.clone()
+
+  switch (params.content) {
     case "oneShot":
-      var newPerson = dummyModels.male.clone()
-      dummyGroup.add(newPerson)
-
-      for (var i = 0; i < newPerson.geometry.animations.length; i++) {
-        console.log(newPerson.geometry.animations[i].name)
-      }
-
-     // console.log(newPerson)
-    var mixer1 = new THREE.AnimationMixer( newPerson )
-     var action = mixer1.clipAction('walk', newPerson)
-    action.clampWhenFinished = true
-    action.setLoop(THREE.LoopOnce)
-    action.play()
-    console.log(action)
-    mixer1.update(2.1)
-
-    //console.log(newPerson.skeleton.bones[56].lookAt(new THREE.Vector3(10,0,10)))
-      //var euler = new THREE.Euler( 1, 0, 0, 'XYZ' );
-
-      //newPerson.skeleton.bones[56].rotation.set( -1, -.3, .1, 'XYZ' )
-
-
-      //newPerson.rotation.set(0,Math.PI,0)
-
-      console.log(newPerson.skeleton.bones[56].rotation)
+      dummyGroup.add(mainCharacter)
       break
     case "twoShot":
-      var newPerson = dummyModels.female.clone()
-      dummyGroup.add(newPerson)
-      newPerson.translateX(-.25)
-      var newPerson2 = dummyModels.female.clone()
-      newPerson2.translateX(.25)
+      dummyGroup.add(mainCharacter)
+      mainCharacter.rotation.set(0, Math.random()*.6,0)
+      mainCharacter.translateX(-.75)
+      var newPerson2 = mainCharacter.clone()
+      newPerson2.rotation.set(0, -Math.random()*.6,0)
+      newPerson2.translateX(.75)
       dummyGroup.add(newPerson2)
       break
     case "threeShot":
-      var newPerson3 = dummyModels.male.clone()
-      dummyGroup.add(newPerson3)
-      var newPerson = dummyModels.male.clone()
-      newPerson.rotation.set(0, Math.random()*1.6,0)
-      newPerson.position.set(-.45,0,Math.random()*.6)
-      dummyGroup.add(newPerson)
-      var newPerson2 = dummyModels.male.clone()
-      newPerson2.rotation.set(0, -Math.random()*1.6,0)
-      newPerson2.position.set(.45,0,Math.random()*.6)
+      mainCharacter.position.set(0,0,-Math.random()*.6)
+      dummyGroup.add(mainCharacter)
+
+      var newPerson2 = mainCharacter.clone()
+      newPerson2.rotation.set(0, Math.random()*1,0)
+      newPerson2.position.set(-(.45+Math.random()*.5),0,Math.random()*.6)
       dummyGroup.add(newPerson2)
+
+      var newPerson3 = mainCharacter.clone()
+      newPerson3.rotation.set(0, -Math.random()*1,0)
+      newPerson3.position.set((.45+Math.random()*.5),0,Math.random()*.6)
+      dummyGroup.add(newPerson3)
       break
     case "groupShot":
+      dummyGroup.add(mainCharacter)
       let numPeople = Math.round(Math.random()*30+6)
       for (var i = 0; i < numPeople; i++) {
-        var newPerson = dummyModels.female.clone()
+        var newPerson = mainCharacter.clone()
         newPerson.translateX(Math.random()*10-5)
         newPerson.translateZ(-Math.random()*10)
         newPerson.rotateY(Math.random()*1.5-(1.5/2))
@@ -663,20 +730,70 @@ let setupContent = (param) => {
       }
       break
     case "ots":
-      var newPerson = dummyModels.female.clone()
-      dummyGroup.add(newPerson)
-      var newPerson2 = dummyModels.female.clone()
-
+      mainCharacter.translateZ(-1)
+      dummyGroup.add(mainCharacter)
+      var newPerson2 = mainCharacter.clone()
       newPerson2.translateZ(1)
       newPerson2.rotateY(Math.PI)
       dummyGroup.add(newPerson2)
       break
   }
-  camera.updateProjectionMatrix()
 
-  let cube = createLineCube(1)
-  cube.scale.set(1,1.8,1)
-  dummyGroup.add(cube)
+  // POSE MAIN CHARACTER
+  var mixer1 = new THREE.AnimationMixer( mainCharacter )
+  var action
+  if (params.pose) {
+    console.log("sup")
+    action = mixer1.clipAction(params.pose, mainCharacter)
+  } else {
+    action = mixer1.clipAction('stand', mainCharacter)
+  }
+  action.clampWhenFinished = true
+  action.setLoop(THREE.LoopOnce)
+  action.play()
+  mixer1.update(10)
+
+  // HEAD DIRECTION
+  var direction = [0,-.3,Math.random()*.1 - .05]
+  switch (params.headDirection) {
+    case "headFront":
+      direction = [0,-.3,Math.random()*.3 - .15]
+      break
+    case "headUp":
+      direction = [0,-(.7+Math.random()*.3),Math.random()*.3 - .15]
+      break
+    case "headDown":
+      direction = [0,.2,Math.random()*.3 - .15]
+      break
+    case "headLeft":
+      direction = [-.8,-.3,- (Math.random()*.6-.3)]
+      break
+    case "headRight":
+      direction = [.8,-.3,Math.random()*.6-.3]
+      break
+  }
+  mainCharacter.skeleton.bones[55].rotation.set( direction[0], direction[1], direction[2], 'XYZ' )
+
+
+
+    // //console.log(newPerson.skeleton.bones[56].lookAt(new THREE.Vector3(10,0,10)))
+    //   //var euler = new THREE.Euler( 1, 0, 0, 'XYZ' );
+
+    //   newPerson.skeleton.bones[55].rotation.set( 1, -.3, -.1, 'XYZ' )
+
+
+    //   //newPerson.rotation.set(0,Math.PI,0)
+
+    //   console.log(newPerson.skeleton.bones[56].rotation)
+
+
+
+
+  //camera.updateProjectionMatrix()
+
+  // let cube = createLineCube(1)
+  // cube.scale.set(1,1.8,1)
+  // dummyGroup.add(cube)
 
 
   contentScene.add(dummyGroup)
@@ -1001,6 +1118,19 @@ let parseShotText = (text) => {
     headDown: ['looking down', 'facing down', 'head down'],
     headLeft: ['looking left', 'facing left', 'head left'],
     headRight: ['looking right', 'facing right', 'head right'],
+    abovelit: ['toplit', 'lit from above'],
+    underlit: ['bottomlit', 'lit from below'],
+    silhouette: ['siloette', 'silhoette', 'silo'],
+    auditorium: ['stadium', 'concert'],
+    run: ['jog'],
+    sit_in_chair: ['sitting'],
+    hunch_over: ['hunched', 'sad', 'sick'],
+    cross_arms: ['crossing'],
+    lean_back: ['leaning'],
+    hold_something: ['holding'],
+    turn_around: ['turning'],
+    sit_on_floor: ['sitting on floor'],
+    on_back: ['laying'],
   }
 
   let parsedShotParams = {}
@@ -1011,7 +1141,7 @@ let parseShotText = (text) => {
     for (var prop in shotProperties) {
       for (var value in shotProperties[prop]) {
         let possibilities = []
-        possibilities.push(value)
+        possibilities.push(value.toLowerCase())
         possibilities.push(value.replace(/([A-Z])/g, function($1){return " "+$1.toLowerCase()}))
         possibilities = possibilities.concat(alternateValues[value])
         for (var i = 0; i < possibilities.length; i++) {
@@ -1025,6 +1155,27 @@ let parseShotText = (text) => {
         }
       }
     }
+
+    for (var i2 = 0; i2 < dummyModels.male.geometry.animations.length; i2++) {
+      var value = dummyModels.male.geometry.animations[i2].name
+  //    console.log(value)
+      let possibilities = []
+      possibilities.push(value.split('_').join('').toLowerCase())
+      possibilities.push(value.split('_').join(' ').toLowerCase())
+      possibilities = possibilities.concat(alternateValues[value])
+//      console.log(possibilities)
+      for (var i = 0; i < possibilities.length; i++) {
+        if (text.indexOf(possibilities[i]) == 0) {
+          if (parameter[1].length < possibilities[i].length) {
+            parameter[0] = 'pose'
+            parameter[1] = possibilities[i]
+            parameter[2] = value
+          }
+        }
+      }
+    }
+
+
     if (parameter[0] !== '') {
       parsedShotParams[parameter[0]] = parameter[2]
       text = text.substring(parameter[1].length).trim()
@@ -1079,7 +1230,7 @@ class ShotTemplateSystem extends EventEmitter {
     }
     this.createShotParams()
     
-    setupContent(this.shotParams.content)
+    setupContent(this.shotParams)
     setupFov(this.shotParams.fov)
     setupShotType(this.shotParams)
 
@@ -1088,7 +1239,7 @@ class ShotTemplateSystem extends EventEmitter {
   }
 
   createShotParams() {
-    this.shotParams = {}
+    this.shotParams = this.definedShotParams
     for (let property in shotProperties) {
       if (this.definedShotParams[property]) {
         this.shotParams[property] = this.definedShotParams[property]

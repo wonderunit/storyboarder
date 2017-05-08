@@ -279,7 +279,7 @@ THREE.OutlineEffect = function ( renderer, parameters ) {
 		}
 
 		object.material = outlineMaterial;
-
+		object.renderOrder = 0.0
 		originalOnBeforeRenders[ object.uuid ] = object.onBeforeRender;
 		object.onBeforeRender = onBeforeRender;
 
