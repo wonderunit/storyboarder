@@ -63,8 +63,11 @@ class StoryboarderSketchPane extends EventEmitter {
       // store snapshot on up?
       // eraser : yes
       // brushes: yes
-      // composite: no (handled by stopMultiLayerOperation)
-      if (!this.isMultiLayerOperation) {
+      if (this.isMultiLayerOperation) {
+        // trigger a save to any layer possibly changed by the operation
+        this.emit('markDirty', this.visibleLayers.map(n => this.layerIndexByName.indexOf(n)))
+        this.isMultiLayerOperation = false
+      } else {
         this.emit('markDirty')
       }
     })
@@ -299,6 +302,7 @@ class StoryboarderSketchPane extends EventEmitter {
         this.startMultiLayerOperation()
       } else {
         this.stopMultiLayerOperation() // force stop, in case we didn't get `onbeforeup` event
+        this.isMultiLayerOperation = false // ensure we reset the var
       }
     }
 
@@ -375,10 +379,6 @@ class StoryboarderSketchPane extends EventEmitter {
     // reset
     this.sketchPane.setLayerVisible(false, compositeIndex)
 
-    // trigger a save to any layer possibly changed by the operation
-    this.emit('markDirty', this.visibleLayers.map(n => this.layerIndexByName.indexOf(n)))
-
-    this.isMultiLayerOperation = false
     this.sketchPane.removeListener('onbeforeup', this.stopMultiLayerOperation)
   }
 
