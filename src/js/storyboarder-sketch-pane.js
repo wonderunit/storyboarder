@@ -111,6 +111,7 @@ class StoryboarderSketchPane extends EventEmitter {
   canvasPointerDown (e) {
     if (!this.isTemporaryOperation && this.sketchPane.getPaintingKnockout()) {
       this.startMultiLayerOperation()
+      this.setCompositeLayerVisibility(true)
     }
 
     let pointerPosition = this.getRelativePosition(e.clientX, e.clientY)
@@ -299,6 +300,7 @@ class StoryboarderSketchPane extends EventEmitter {
 
       // fat eraser
       if (kind === 'eraser') {
+        this.setCompositeLayerVisibility(false)
         this.startMultiLayerOperation()
       } else {
         this.stopMultiLayerOperation() // force stop, in case we didn't get `onbeforeup` event
@@ -342,16 +344,25 @@ class StoryboarderSketchPane extends EventEmitter {
       let context = this.sketchPane.getLayerContext(index)
 
       compositeContext.drawImage(canvas, 0, 0)
-
-      this.sketchPane.setLayerVisible(false, index)
     }
 
     // select that layer
     this.sketchPane.selectLayer(compositeIndex)
-    this.sketchPane.setLayerVisible(true, compositeIndex)
 
     // listen to beforeup
     this.sketchPane.on('onbeforeup', this.stopMultiLayerOperation)
+  }
+
+  // TODO indices instead of names
+  setCompositeLayerVisibility (value) {
+    let compositeIndex = this.layerIndexByName.indexOf('composite')
+
+    // solo the composite layer
+    for (let name of this.visibleLayers) {
+      let index = this.layerIndexByName.indexOf(name)
+      this.sketchPane.setLayerVisible(!value, index)
+    }
+    this.sketchPane.setLayerVisible(value, compositeIndex)
   }
 
   stopMultiLayerOperation () {
@@ -372,12 +383,10 @@ class StoryboarderSketchPane extends EventEmitter {
       context.globalCompositeOperation = 'destination-out'
       context.drawImage(this.sketchPane.paintingCanvas, 0, 0, w, h)
       context.restore()
-
-      this.sketchPane.setLayerVisible(true, index)
     }
 
     // reset
-    this.sketchPane.setLayerVisible(false, compositeIndex)
+    this.setCompositeLayerVisibility(false)
 
     this.sketchPane.removeListener('onbeforeup', this.stopMultiLayerOperation)
   }
