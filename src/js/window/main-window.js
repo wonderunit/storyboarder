@@ -700,7 +700,11 @@ let saveImageFile = () => {
   updateThumbnail(imageFilePath)
 
   // load the thumbnail image file
-  document.querySelector(`[data-thumbnail="${currentBoard}"] img`).src = imageFilePath + '?' + Date.now()
+  let el = document.querySelector(`[data-thumbnail="${currentBoard}"] img`)
+  // does it exist in the thumbnail drawer already?
+  if (el) {
+    el.src = imageFilePath + '?' + Date.now()
+  }
 }
 
 const updateThumbnail = imageFilePath => {
@@ -2171,53 +2175,64 @@ let copyBoards = () => {
 
   snapshot = null
 }
+
+/**
+ * Paste
+ *
+ * Creates  a) from `text`, one or more new boards with layers inserted from clipboard JSON data
+ *          b) from `image`, one new board with clipboard image data inserted as reference layer
+ *
+ * TODO:
+ * - parse one or many boards for data
+ * - paste image data to reference layer
+ * - support layers
+ * - separate board data from layer data
+ * - handle errors for un-supported clipboard types, JSON errors
+ */
 let pasteBoards = () => {
   if (textInputMode) return
 
-  console.log("paste")
+  // save the current image to disk
+  saveImageFile()
+
+  // store the "before" state
   storeUndoStateForScene(true)
 
   let newBoards
 
-  // check whats in the clipboard
-  let clipboardText = clipboard.readText()
-  let clipboardJson
-
-  let clipboardImage = clipboard.readImage()
-  let newBoard
-
-  if (clipboardText !== "") {
-    clipboardJson = JSON.parse(clipboardText)
-
-    if (clipboardJson.hasOwnProperty('boards')) {
-      // multiple boards
-      newBoards = clipboardJson.boards
-    } else {
-      // single board
-      newBoard = JSON.parse(JSON.stringify(clipboardJson))
-      if (!newBoard.hasOwnProperty('imageDataURL')) {
-        console.warn('no image available from clipboard JSON data')
-        return
-      }
-      newBoards = [newBoard]
+  // do we have JSON data?
+  let text = clipboard.readText()
+  if (text !== "") {
+    try {
+      let data = JSON.parse(text)
+      newBoards = data.boards
+    } catch (err) {
+      console.err(err)
     }
   }
 
-  // for a clipboard with image only, no board data, create a new board data object
-  if (!newBoards && !newBoard && (clipboardImage !== "")) {
-    newBoard = {
-      newShot: false,
-      lastEdited: Date.now(),
-      imageDataURL: clipboardImage.toDataURL()
+  // ... otherwise ...
+  if (!newBoards) {
+    // ... do we have image data?
+    let image = clipboard.readImage()
+
+    if (image) {
+      newBoards = [
+        {
+          newShot: false,
+          imageDataURL: null,
+          layers: {
+            reference: {
+              imageDataURL: image.toDataURL()
+            }
+          }
+        }
+      ]
     }
-    newBoards = [newBoard]
   }
 
-  // save the image we're currently on
-  saveImageFile()
-
-  newBoards.forEach(newBoard => {
-    if (newBoard && newBoard.imageDataURL) {
+  if (newBoards) {
+    for (let newBoard of newBoards) {
       let newBoardPos = currentBoard + 1
 
       // assign a new uid to the board, regardless of source
@@ -2226,12 +2241,31 @@ let pasteBoards = () => {
       newBoard.url = 'board-' + newBoardPos + '-' + uid + '.png'
 
       // set some basic data for the new board
-      newBoard.newShot = false
+      newBoard.newShot = newBoard.newShot || false
       newBoard.lastEdited = Date.now()
 
-      // extract the image data from JSON
-      let newImageSrc = newBoard.imageDataURL
-      delete newBoard.imageDataURL
+      let mainImageSrc
+      if (newBoard.imageDataURL) {
+        // extract the image data from JSON
+        mainImageSrc = newBoard.imageDataURL
+        delete newBoard.imageDataURL
+      }
+
+      // HACK hardcoded
+      let referenceLayerImageSrc
+      let notesLayerImageSrc
+      if (newBoard.layers) {
+        if (newBoard.layers.reference) {
+          newBoard.layers.reference.url = newBoard.url.replace('.png', '-reference.png')
+          referenceLayerImageSrc = newBoard.layers.reference.imageDataURL
+          delete newBoard.layers.reference.imageDataURL
+        }
+        if (newBoard.layers.notes) {
+          newBoard.layers.notes.url = newBoard.url.replace('.png', '-notes.png')
+          notesLayerImageSrc = newBoard.layers.notes.imageDataURL
+          delete newBoard.layers.notes.imageDataURL
+        }
+      }
 
       // insert the new board data
       boardData.boards.splice(newBoardPos, 0, newBoard)
@@ -2240,20 +2274,52 @@ let pasteBoards = () => {
       // go to new board
       gotoBoard(newBoardPos)
 
-      // draw pasted contents to board
-      var image = new Image()
-      image.src = newImageSrc
-    
-      // render
-      mainCanvas.getContext("2d").drawImage(image, 0, 0)
+      let size = storyboarderSketchPane.sketchPane.getCanvasSize()
+      let w = size.width
+      let h = size.height
+
+      // code from SketchPane#drawPaintingCanvas
+      let drawImageToLayer = (layerName, image) => {
+        let context = storyboarderSketchPane.getLayerCanvasByName(layerName).getContext('2d')
+        context.save()
+        context.globalAlpha = 1
+        context.globalCompositeOperation = 'source-over'
+        context.drawImage(image, 0, 0, w, h)
+        context.restore()
+      }
+
+      let image
+
+      // main layer
+      image = new Image()
+      image.src = mainImageSrc
+      drawImageToLayer('main', image)
       markImageFileDirty()
+
+      // reference layer
+      if (referenceLayerImageSrc) {
+        image = new Image()
+        image.src = referenceLayerImageSrc
+        drawImageToLayer('reference', image)
+        markImageFileDirty([0]) // HACK hardcoded
+      }
+
+      // notes layer
+      if (notesLayerImageSrc) {
+        image = new Image()
+        image.src = notesLayerImageSrc
+        drawImageToLayer('notes', image)
+        markImageFileDirty([3])  // HACK hardcoded
+      }
+
       saveImageFile()
       renderThumbnailDrawer()
-      
+
       // refresh
       gotoBoard(currentBoard)
     }
-  })
+  }
+
   storeUndoStateForScene()
 }
 
