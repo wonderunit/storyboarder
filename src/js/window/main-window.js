@@ -1577,8 +1577,10 @@ let periodicDragUpdate = () => {
 
 
 let loadScene = (sceneNumber) => {
-  saveImageFile()
-  saveBoardFile()
+  if (boardData) {
+    saveImageFile()
+    saveBoardFile()
+  }
 
   currentBoard = 0
 
