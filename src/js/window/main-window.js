@@ -695,15 +695,30 @@ let saveImageFile = () => {
 
   console.log(`saved ${numSaved} modified layers`)
 
-  // update the thumbnail
-  let imageFilePath = path.join(boardPath, 'images', board.url)
-  setTimeout(
-    imageFilePath => {
-      document.querySelector(`[data-thumbnail="${currentBoard}"] img`).src = imageFilePath + '?' + Date.now()
-    },
-    100,
-    imageFilePath
-  )
+  // create/update the thumbnail image file
+  let imageFilePath = path.join(boardPath, 'images', board.url.replace('.png', '-thumbnail.png'))
+  updateThumbnail(imageFilePath)
+
+  // load the thumbnail image file
+  document.querySelector(`[data-thumbnail="${currentBoard}"] img`).src = imageFilePath + '?' + Date.now()
+}
+
+const updateThumbnail = imageFilePath => {
+  let width = Math.floor(60 * boardData.aspectRatio), height = 60
+  let canvas = storyboarderSketchPane.sketchPane.createFlattenThumbnail(width * 2, height * 2)
+
+  let imageData = canvas
+    .toDataURL('image/png')
+    .replace(/^data:image\/\w+;base64,/, '')
+
+  try {
+    fs.writeFileSync(imageFilePath, imageData, 'base64')
+    console.log('saved thumbnail', imageFilePath)
+  } catch (err) {
+    console.error(err)
+  }
+
+  thumbnail = null
 }
 
 let deleteSingleBoard = (index) => {
@@ -1141,9 +1156,9 @@ let renderThumbnailDrawer = ()=> {
     }
     let thumbnailWidth = Math.floor(60 * boardData.aspectRatio)
     html.push('" style="width: ' + thumbnailWidth + 'px;">')
-    let imageFilename = path.join(boardPath, 'images', board.url)
-    if (!fs.existsSync(imageFilename)){
-      // bank image
+    let imageFilename = path.join(boardPath, 'images', board.url.replace('.png', '-thumbnail.png'))
+    if (!fs.existsSync(imageFilename)) {
+      // blank image
       html.push('<img src="//:0" height="60" width="' + thumbnailWidth + '">')
     } else {
       html.push('<div class="top">')
