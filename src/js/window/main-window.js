@@ -2075,7 +2075,30 @@ let loadPNGImageFileAsDataURI = (filepath) => {
   return `data:image/png;base64,${data}`
 }
 
-let copyBoards = ()=> {
+/**
+ * Copy
+ *
+ * Copies to the clipboard as 'text' a JSON object representing the board data with base64 imageDataURL inserted, e.g.:
+ *
+ * {
+ *   ...
+ *   imageDataURL: ...,       // main
+ *   layers: {
+ *     reference: {           // reference
+ *       url: ...,
+ *       imageDataURL: ...
+ *     },
+ *     reference: {           // notes
+ *       url: ...,
+ *       imageDataURL: ...
+ *     }
+ *   }
+ * }
+ *
+ * For a single board, it will also add a flattened bitmap of all visible layers as an 'image' to the clipboard
+ *
+ */
+let copyBoards = () => {
   if (textInputMode) return // ignore copy command in text input mode
 
   // copy more than one boards
@@ -2086,21 +2109,37 @@ let copyBoards = ()=> {
 
     // grab data for each board
     let boards = [...selections].sort(util.compareNumbers).map(n => util.stringifyClone(boardData.boards[n]))
-    
+
     // inject image data for each board
     boards = boards.map(board => {
+
       let filepath = path.join(boardPath, 'images', board.url)
       let data = loadPNGImageFileAsDataURI(filepath)
       if (data) {
         board.imageDataURL = data
       } else {
-        console.warn("could not load image data for that board")
+        console.warn("could not load image for board", board.url)
       }
+
+      if (board.layers) {
+        for (let layerName of ['reference', 'notes']) { // HACK hardcoded
+          if (board.layers[layerName]) {
+            let filepath = path.join(boardPath, 'images', board.layers[layerName].url)
+            let data = loadPNGImageFileAsDataURI(filepath)
+            if (data) {
+              board.layers[layerName].imageDataURL = data
+            } else {
+              console.warn("could not load image for board", board.layers[layerName].url)
+            }
+          }
+        }
+      }
+
       return board
     })
 
     let payload = {
-      text: JSON.stringify({ boards: boards })
+      text: JSON.stringify({ boards }, null, 2)
     }
     clipboard.clear()
     clipboard.write(payload)
@@ -2112,26 +2151,26 @@ let copyBoards = ()=> {
   //
   // assumes that UI only allows a single selection when it is also the current board
   //
-  let board = JSON.parse(JSON.stringify(boardData.boards[currentBoard]))
-  let canvasDiv = mainCanvas
-  board.imageDataURL = canvasDiv.toDataURL()
-  payload = {
-    image: nativeImage.createFromDataURL(canvasDiv.toDataURL()),
-    text: JSON.stringify(board)
+  let board = util.stringifyClone(boardData.boards[currentBoard])
+  board.imageDataURL = storyboarderSketchPane.getLayerCanvasByName('main').toDataURL()
+  if (board.layers) {
+    for (let layerName of ['reference', 'notes']) { // HACK hardcoded
+      if (board.layers[layerName]) {
+        board.layers[layerName].imageDataURL = storyboarderSketchPane.getLayerCanvasByName(layerName).toDataURL()
+      }
+    }
+  }
+  let size = storyboarderSketchPane.sketchPane.getCanvasSize()
+  let snapshot = storyboarderSketchPane.sketchPane.createFlattenThumbnail(size.width, size.height)
+  let payload = {
+    image: nativeImage.createFromDataURL(snapshot.toDataURL()),
+    text: JSON.stringify({ boards: [board] }, null, 2)
   }
   clipboard.clear()
   clipboard.write(payload)
+
+  snapshot = null
 }
-
-
-
-  // render
-  mainCanvas.getContext("2d").drawImage(image, offsetX, offsetY, targetWidth, targetHeight)
-  markImageFileDirty()
-  saveImageFile()
-}
-
-
 let pasteBoards = () => {
   if (textInputMode) return
 
