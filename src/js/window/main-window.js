@@ -1078,15 +1078,19 @@ let updateSketchPaneBoard = () => {
         let context = storyboarderSketchPane.getLayerCanvasByName(layerName).getContext('2d')
         context.globalAlpha = 1
 
-        if (!fs.existsSync(imageFilePath)) {
-          resolve()
-        } else {
-          let image = new Image()
-          image.onload = () => {
-            context.drawImage(image, 0, 0)
+        try {
+          if (fs.existsSync(imageFilePath)) {
+            let image = new Image()
+            image.onload = () => {
+              context.drawImage(image, 0, 0)
+              resolve()
+            }
+            image.src = imageFilePath + '?' + Math.random()
+          } else {
             resolve()
           }
-          image.src = imageFilePath + '?' + Math.random()
+        } catch (err) {
+          resolve()
         }
       }))
     }
