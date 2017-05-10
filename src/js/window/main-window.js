@@ -20,6 +20,7 @@ const NotificationData = require('../../data/messages.json')
 const Guides = require('./guides.js')
 const Sonifier = require('./sonifier/index.js')
 const sfx = require('../wonderunit-sound.js')
+const keytracker = require('../utils/keytracker.js')
 
 const pkg = require('../../../package.json')
 
