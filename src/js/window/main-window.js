@@ -771,28 +771,60 @@ let deleteBoards = (args)=> {
   gotoBoard(currentBoard)
 }
 
-let duplicateBoard = ()=> {
+/**
+ * duplicateBoard
+ *
+ * Duplicates layers and board data, updating board data as required to reflect new uid
+ *
+ */
+let duplicateBoard = () => {
   storeUndoStateForScene(true)
   saveImageFile()
-  // copy current board canvas
-  let imageData = mainCanvas.getContext("2d").getImageData(0,0, mainCanvas.width, mainCanvas.height)
-  // get current board clone it
-  let board = JSON.parse(JSON.stringify(boardData.boards[currentBoard]))
+
+  let board = util.stringifyClone(boardData.boards[currentBoard])
+
+  let size = storyboarderSketchPane.sketchPane.getCanvasSize()
+  let imageDataByLayerIndex = []
+  // HACK hardcoded
+  for (let n of [0, 1, 3]) {
+    imageDataByLayerIndex[n] = storyboarderSketchPane.sketchPane.getLayerContext(n).getImageData(0, 0, size.width, size.height)
+  }
+
   // set uid
   let uid = util.uidGen(5)
   board.uid = uid
-  board.url = 'board-' + (currentBoard+1) + '-' + uid + '.png'
+  // update board url
+  board.url = 'board-' + (currentBoard + 1) + '-' + uid + '.png'
+  // update layer urls
+  if (board.layers) {
+    if (board.layers.reference) {
+      board.layers.reference.url = board.url.replace('.png', '-reference.png')
+    }
+    if (board.layers.notes) {
+      board.layers.notes.url = board.url.replace('.png', '-notes.png')
+    }
+  }
   board.newShot = false
   board.lastEdited = Date.now()
+
   // insert
-  boardData.boards.splice(currentBoard+1, 0, board)
+  boardData.boards.splice(currentBoard + 1, 0, board)
   markBoardFileDirty()
+
   // go to board
-  gotoBoard(currentBoard+1)
-  // draw contents to board
-  mainCanvas.getContext("2d").putImageData(imageData, 0, 0)
-  markImageFileDirty()
+  gotoBoard(currentBoard + 1)
+
+  // draw contents to board layers
+  // HACK hardcoded
+  for (let n of [0, 1, 3]) {
+    let context = storyboarderSketchPane.sketchPane.getLayerContext(n)
+    context.putImageData(imageDataByLayerIndex[n], 0, 0)
+  }
+
+  // HACK hardcoded
+  markImageFileDirty([0, 1, 3])
   saveImageFile()
+
   renderThumbnailDrawer()
   gotoBoard(currentBoard)
   storeUndoStateForScene()
