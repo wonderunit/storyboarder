@@ -257,7 +257,7 @@ const template = [
       },
       {
         accelerator: 'Backspace',
-        label: 'Clear Canvas',
+        label: 'Clear All Layers',
         click ( item, focusedWindow, event) {
           ipcRenderer.send('clear')
         }
