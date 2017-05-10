@@ -263,6 +263,13 @@ const template = [
         }
       },
       {
+        accelerator: 'Alt+Backspace',
+        label: 'Clear Layer',
+        click (item, focusedWindow, event) {
+          ipcRenderer.send('clear', true)
+        }
+      },
+      {
         type: 'separator'
       },
       {

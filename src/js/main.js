@@ -506,8 +506,8 @@ ipcMain.on('useColor', (e, arg)=> {
   mainWindow.webContents.send('useColor', arg)
 })
 
-ipcMain.on('clear', (e, arg)=> {
-  mainWindow.webContents.send('clear')
+ipcMain.on('clear', (e, arg) => {
+  mainWindow.webContents.send('clear', arg)
 })
 
 ipcMain.on('brushSize', (e, arg)=> {

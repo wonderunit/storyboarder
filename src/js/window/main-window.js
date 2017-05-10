@@ -376,8 +376,7 @@ let loadBoardUI = ()=> {
   })
 
   toolbar.on('trash', () => {
-    storyboarderSketchPane.clearLayers()
-    sfx.playEffect('trash')
+    clearLayers()
   })
   toolbar.on('fill', color => {
     storyboarderSketchPane.fillLayer(color.toCSS())
@@ -795,6 +794,23 @@ let duplicateBoard = ()=> {
   renderThumbnailDrawer()
   gotoBoard(currentBoard)
   storeUndoStateForScene()
+}
+
+/**
+ * clearLayers
+ *
+ * if we're not on the eraser tool,
+ *   and we're either pressing the meta key,
+ *     OR being told explicitly to erase the current layer,
+ *       we should erase ONLY the current layer
+ */
+const clearLayers = shouldEraseCurrentLayer => {
+  if (toolbar.state.brush !== 'eraser' && (keytracker('<alt>') || shouldEraseCurrentLayer)) {
+    storyboarderSketchPane.clearLayers([storyboarderSketchPane.sketchPane.getCurrentLayerIndex()])
+  } else {
+    storyboarderSketchPane.clearLayers()
+  }
+  sfx.playEffect('trash')
 }
 
 ///////////////////////////////////////////////////////////////
@@ -2644,10 +2660,9 @@ ipcRenderer.on('useColor', (e, arg)=> {
 })
 
 
-ipcRenderer.on('clear', (e, arg)=> {
+ipcRenderer.on('clear', (e, arg) => {
   if (!textInputMode) {
-    storyboarderSketchPane.clearLayers()
-    sfx.playEffect('trash')
+    clearLayers(arg)
   }
 })
 
