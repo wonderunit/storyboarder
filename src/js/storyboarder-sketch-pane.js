@@ -247,8 +247,14 @@ class StoryboarderSketchPane extends EventEmitter {
   // public
   //
 
-  clearLayers () {
-    let layerIndices = this.visibleLayers.map(n => this.layerIndexByName.indexOf(n))
+  /**
+   * clearLayers
+   *
+   * Clears all layers by default
+   *
+   */
+  clearLayers (layerIndices) {
+    if (!layerIndices) layerIndices = this.visibleLayers.map(n => this.layerIndexByName.indexOf(n))
     this.emit('addToUndoStack', layerIndices)
     for (let index of layerIndices) {
       this.sketchPane.clearLayer(index)
