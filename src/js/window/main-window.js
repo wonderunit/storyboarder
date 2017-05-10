@@ -375,7 +375,7 @@ let loadBoardUI = ()=> {
   })
 
   toolbar.on('trash', () => {
-    storyboarderSketchPane.clearLayer()
+    storyboarderSketchPane.clearLayers()
     sfx.playEffect('trash')
   })
   toolbar.on('fill', color => {
@@ -1047,7 +1047,7 @@ let updateSketchPaneBoard = () => {
     }
 
     // clear all visible layers
-    storyboarderSketchPane.clearLayer([0, 1, 3]) // HACK hardcoded
+    storyboarderSketchPane.clearLayers()
 
     let loaders = []
     for (let [layerName, filename] of layersData) {
@@ -2645,7 +2645,7 @@ ipcRenderer.on('useColor', (e, arg)=> {
 
 ipcRenderer.on('clear', (e, arg)=> {
   if (!textInputMode) {
-    storyboarderSketchPane.clearLayer()
+    storyboarderSketchPane.clearLayers()
     sfx.playEffect('trash')
   }
 })

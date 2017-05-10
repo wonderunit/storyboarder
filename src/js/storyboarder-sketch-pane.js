@@ -247,20 +247,7 @@ class StoryboarderSketchPane extends EventEmitter {
   // public
   //
 
-  clearLayer () {
-    /*
-    TODO rename to clearLayers
-    
-    currently clears ALL layers
-    TODO modifier key for per-layer clear
-      if current brush is eraser:
-        clear all layers (ignore modifier key)
-      else if modifier key is down:
-        clear current layer
-      else:
-        clear all layers
-    */
-    //
+  clearLayers () {
     let layerIndices = this.visibleLayers.map(n => this.layerIndexByName.indexOf(n))
     this.emit('addToUndoStack', layerIndices)
     for (let index of layerIndices) {
