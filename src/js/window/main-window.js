@@ -379,8 +379,10 @@ let loadBoardUI = ()=> {
     clearLayers()
   })
   toolbar.on('fill', color => {
-    storyboarderSketchPane.fillLayer(color.toCSS())
-    sfx.playEffect('fill')
+    if (toolbar.state.brush !== 'eraser') {
+      storyboarderSketchPane.fillLayer(color.toCSS())
+      sfx.playEffect('fill')
+    }
   })
 
 
