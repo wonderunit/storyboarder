@@ -1760,16 +1760,6 @@ let loadScene = (sceneNumber) => {
 
 }
 
-
-let scalePanImage = () => {
-  let scaleFactor = canvasDiv.offsetWidth/canvasDiv.width
-  console.log(scaleFactor)
-
-  let scale = scaleFactor * 1.2
-  canvasDiv.style.height
-}
-
-
 window.onmousedown = (e) => {
   stopPlaying()
 }
