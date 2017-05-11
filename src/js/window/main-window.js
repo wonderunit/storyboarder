@@ -78,7 +78,6 @@ let transport
 let guides
 
 let storyboarderSketchPane
-let mainCanvas
 
 menu.setMenu()
 
@@ -149,7 +148,6 @@ let loadBoardUI = ()=> {
     document.getElementById('storyboarder-sketch-pane'),
     size
   )
-  mainCanvas = storyboarderSketchPane.getLayerCanvasByName('main')
   window.addEventListener('resize', () => {
     resize()
     storyboarderSketchPane.resize()
@@ -2120,8 +2118,11 @@ let importImage = (imageDataURL) => {
 
 
   // render
-  mainCanvas.getContext("2d").drawImage(image, offsetX, offsetY, targetWidth, targetHeight)
-  markImageFileDirty()
+  storyboarderSketchPane
+    .getLayerCanvasByName('reference')
+    .getContext("2d")
+    .drawImage(image, offsetX, offsetY, targetWidth, targetHeight)
+  markImageFileDirty([0]) // HACK hardcoded
   saveImageFile()
 }
 
