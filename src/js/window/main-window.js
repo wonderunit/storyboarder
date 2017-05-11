@@ -2354,7 +2354,7 @@ let pasteBoards = () => {
       image = new Image()
       image.src = mainImageSrc
       drawImageToLayer('main', image)
-      markImageFileDirty()
+      markImageFileDirty([1]) // HACK hardcoded
 
       // reference layer
       if (referenceLayerImageSrc) {
