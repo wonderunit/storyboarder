@@ -2207,33 +2207,37 @@ let copyBoards = () => {
     }
     clipboard.clear()
     clipboard.write(payload)
-    return
-  }
-  
-  // copy a single board (the current board)
-  // if you have only one board in your selection, we copy the current board
-  //
-  // assumes that UI only allows a single selection when it is also the current board
-  //
-  let board = util.stringifyClone(boardData.boards[currentBoard])
-  board.imageDataURL = storyboarderSketchPane.getLayerCanvasByName('main').toDataURL()
-  if (board.layers) {
-    for (let layerName of ['reference', 'notes']) { // HACK hardcoded
-      if (board.layers[layerName]) {
-        board.layers[layerName].imageDataURL = storyboarderSketchPane.getLayerCanvasByName(layerName).toDataURL()
+
+  } else {
+    saveImageFile() // ensure we have all layers created in the data and saved to disk
+
+    // copy a single board (the current board)
+    // if you have only one board in your selection, we copy the current board
+    //
+    // assumes that UI only allows a single selection when it is also the current board
+    //
+    let board = util.stringifyClone(boardData.boards[currentBoard])
+
+    board.imageDataURL = storyboarderSketchPane.getLayerCanvasByName('main').toDataURL()
+    if (board.layers) {
+      for (let layerName of ['reference', 'notes']) { // HACK hardcoded
+        if (board.layers[layerName]) {
+          console.log('copyBoards: adding', layerName)
+          board.layers[layerName].imageDataURL = storyboarderSketchPane.getLayerCanvasByName(layerName).toDataURL()
+        }
       }
     }
-  }
-  let size = storyboarderSketchPane.sketchPane.getCanvasSize()
-  let snapshot = storyboarderSketchPane.sketchPane.createFlattenThumbnail(size.width, size.height)
-  let payload = {
-    image: nativeImage.createFromDataURL(snapshot.toDataURL()),
-    text: JSON.stringify({ boards: [board] }, null, 2)
-  }
-  clipboard.clear()
-  clipboard.write(payload)
+    let size = storyboarderSketchPane.sketchPane.getCanvasSize()
+    let snapshot = storyboarderSketchPane.sketchPane.createFlattenThumbnail(size.width, size.height)
+    let payload = {
+      image: nativeImage.createFromDataURL(snapshot.toDataURL()),
+      text: JSON.stringify({ boards: [board] }, null, 2)
+    }
+    clipboard.clear()
+    clipboard.write(payload)
 
-  snapshot = null
+    snapshot = null
+  }
 }
 
 /**
