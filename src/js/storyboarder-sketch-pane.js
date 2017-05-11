@@ -68,7 +68,7 @@ class StoryboarderSketchPane extends EventEmitter {
         this.emit('markDirty', this.visibleLayers.map(n => this.layerIndexByName.indexOf(n)))
         this.isMultiLayerOperation = false
       } else {
-        this.emit('markDirty')
+        this.emit('markDirty', [this.sketchPane.getCurrentLayerIndex()])
       }
     })
 
@@ -265,7 +265,7 @@ class StoryboarderSketchPane extends EventEmitter {
   fillLayer (fillColor) {
     this.emit('addToUndoStack')
     this.sketchPane.fillLayer(fillColor, this.sketchPane.getCurrentLayerIndex())
-    this.emit('markDirty')
+    this.emit('markDirty', [this.sketchPane.getCurrentLayerIndex()])
   }
 
   flipLayers () {
@@ -274,7 +274,7 @@ class StoryboarderSketchPane extends EventEmitter {
     for (var i = 0; i < this.sketchPane.layers.length; ++i) {
       this.sketchPane.flipLayer(i)
     }
-    this.emit('markDirty')
+    this.emit('markDirty', this.visibleLayers.map(n => this.layerIndexByName.indexOf(n)))
   }
   setBrushTool (kind, options, temporaryOperation = false) {
     this.isTemporaryOperation = temporaryOperation

@@ -620,8 +620,11 @@ let saveBoardFile = ()=> {
   }
 }
 
-let markImageFileDirty = (layerIndices = null) => {
-  if (!layerIndices) layerIndices = [storyboarderSketchPane.sketchPane.getCurrentLayerIndex()]
+let markImageFileDirty = layerIndices => {
+  if (!layerIndices) {
+    console.error('markImageFileDirty requires an argument') // TODO can remove this trace once we've tested
+    return
+  }
 
   // HACK because layerStatus uses names, we need to convert
   const layerIndexByName = ['reference', 'main', 'onion', 'notes', 'guides', 'composite']
