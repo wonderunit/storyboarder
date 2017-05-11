@@ -784,24 +784,28 @@ let duplicateBoard = () => {
   let board = util.stringifyClone(boardData.boards[currentBoard])
 
   let size = storyboarderSketchPane.sketchPane.getCanvasSize()
+  let getImageDataForLayerByIndex = index => storyboarderSketchPane.sketchPane.getLayerContext(index).getImageData(0, 0, size.width, size.height)
+
   let imageDataByLayerIndex = []
-  // HACK hardcoded
-  for (let n of [0, 1, 3]) {
-    imageDataByLayerIndex[n] = storyboarderSketchPane.sketchPane.getLayerContext(n).getImageData(0, 0, size.width, size.height)
-  }
 
   // set uid
   let uid = util.uidGen(5)
   board.uid = uid
   // update board url
   board.url = 'board-' + (currentBoard + 1) + '-' + uid + '.png'
+  // HACK hardcoded
+  imageDataByLayerIndex[1] = getImageDataForLayerByIndex(1)
   // update layer urls
   if (board.layers) {
     if (board.layers.reference) {
       board.layers.reference.url = board.url.replace('.png', '-reference.png')
+      // HACK hardcoded
+      imageDataByLayerIndex[0] = getImageDataForLayerByIndex(0)
     }
     if (board.layers.notes) {
       board.layers.notes.url = board.url.replace('.png', '-notes.png')
+      // HACK hardcoded
+      imageDataByLayerIndex[3] = getImageDataForLayerByIndex(3)
     }
   }
   board.newShot = false
@@ -814,15 +818,19 @@ let duplicateBoard = () => {
   // go to board
   gotoBoard(currentBoard + 1)
 
+  //
   // draw contents to board layers
+  //
   // HACK hardcoded
   for (let n of [0, 1, 3]) {
-    let context = storyboarderSketchPane.sketchPane.getLayerContext(n)
-    context.putImageData(imageDataByLayerIndex[n], 0, 0)
+    if (imageDataByLayerIndex[n]) {
+      let context = storyboarderSketchPane.sketchPane.getLayerContext(n)
+      context.putImageData(imageDataByLayerIndex[n], 0, 0)
+
+      markImageFileDirty([n])
+    }
   }
 
-  // HACK hardcoded
-  markImageFileDirty([0, 1, 3])
   saveImageFile()
 
   renderThumbnailDrawer()
