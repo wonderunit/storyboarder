@@ -412,11 +412,9 @@ let loadBoardUI = ()=> {
 
   toolbar.on('undo', () => {
     undoStack.undo()
-    markImageFileDirty()
   })
   toolbar.on('redo', () => {
     undoStack.redo()
-    markImageFileDirty()
   })
   
   toolbar.on('grid', value => {
@@ -1812,10 +1810,8 @@ window.onkeydown = (e)=> {
        if (e.metaKey || e.ctrlKey) {
           if (e.shiftKey) {
             undoStack.redo()
-            markImageFileDirty()
           } else {
             undoStack.undo()
-            markImageFileDirty()
           }
           e.preventDefault()
         }
@@ -2087,14 +2083,12 @@ ipcRenderer.on('nextScene', (event, args)=>{
 ipcRenderer.on('undo', (e, arg)=> {
   if (!textInputMode) {
     undoStack.undo()
-    markImageFileDirty()
   }
 })
 
 ipcRenderer.on('redo', (e, arg)=> {
   if (!textInputMode) {
     undoStack.redo()
-    markImageFileDirty()
   }
 })
 
@@ -2665,6 +2659,8 @@ const applyUndoStateForImage = (state) => {
       context.clearRect(0, 0, context.canvas.width, context.canvas.height)
       context.drawImage(layerData.source, 0, 0)
       context.restore()
+
+      markImageFileDirty([layerData.index])
     }
   }).catch(e => console.error(e))
 }
