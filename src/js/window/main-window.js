@@ -1105,8 +1105,11 @@ let updateSketchPaneBoard = () => {
       }
     }
 
-    // clear all visible layers
-    storyboarderSketchPane.clearLayers()
+    // clear all visible layers w/o dispatching any events
+    // HACK hardcoded
+    for (let index of [0, 1, 3]) {
+      storyboarderSketchPane.sketchPane.clearLayer(index)
+    }
 
     let loaders = []
     for (let [layerName, filename] of layersData) {
