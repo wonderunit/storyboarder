@@ -2336,7 +2336,8 @@ let pasteBoards = () => {
       markBoardFileDirty()
 
       // go to new board
-      gotoBoard(newBoardPos)
+      gotoBoard(newBoardPos)  // TODO: this will try to load images that don't yet exist.
+                              //       is there a more efficient way to handle this?
 
       let size = storyboarderSketchPane.sketchPane.getCanvasSize()
       let w = size.width
