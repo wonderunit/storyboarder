@@ -1216,13 +1216,17 @@ let renderThumbnailDrawer = ()=> {
     let thumbnailWidth = Math.floor(60 * boardData.aspectRatio)
     html.push('" style="width: ' + thumbnailWidth + 'px;">')
     let imageFilename = path.join(boardPath, 'images', board.url.replace('.png', '-thumbnail.png'))
-    if (!fs.existsSync(imageFilename)) {
-      // blank image
-      html.push('<img src="//:0" height="60" width="' + thumbnailWidth + '">')
-    } else {
-      html.push('<div class="top">')
-      html.push('<img src="' + imageFilename + '" height="60" width="' + thumbnailWidth + '">')
-      html.push('</div>')
+    try {
+      if (fs.existsSync(imageFilename)) {
+        html.push('<div class="top">')
+        html.push('<img src="' + imageFilename + '" height="60" width="' + thumbnailWidth + '">')
+        html.push('</div>')
+      } else {
+        // blank image
+        html.push('<img src="//:0" height="60" width="' + thumbnailWidth + '">')
+      }
+    } catch (err) {
+      console.error(err)
     }
     html.push('<div class="info">')
     html.push('<div class="number">' + board.shot + '</div>')
