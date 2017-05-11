@@ -592,15 +592,15 @@ let newBoard = (position, shouldAddToUndoStack = true) => {
     uid: uid,
     url: `board-${position + 1}-${uid}.png`,
     newShot: false,
-    lastEdited: Date.now()
+    lastEdited: Date.now(),
+    layers: {}
   }
 
   // insert
   boardData.boards.splice(position, 0, board)
 
   // indicate dirty for save sweep
-  let visibleLayers = [0, 1, 3] // HACK hardcoded!
-  markImageFileDirty(visibleLayers) // to save new layers
+  markImageFileDirty([1]) // mark save for 'main' layer only // HACK hardcoded
   markBoardFileDirty() // to save new board data
   renderThumbnailDrawer()
   storeUndoStateForScene()
