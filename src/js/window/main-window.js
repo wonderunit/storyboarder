@@ -622,7 +622,8 @@ let saveBoardFile = ()=> {
 
 let markImageFileDirty = layerIndices => {
   if (!layerIndices) {
-    console.error('markImageFileDirty requires an argument') // TODO can remove this trace once we've tested
+    // TODO can remove this trace once we've tested
+    console.warn('markImageFileDirty requires an argument')
     return
   }
 
@@ -1089,6 +1090,11 @@ let updateSketchPaneBoard = () => {
     let board = boardData.boards[currentBoard]
 
     console.log('loading layers')
+    if (!board) {
+      // TODO can remove this trace once we've tested
+      console.warn('tried to render board that does not exist in data')
+      resolve()
+    }
 
     // always load the main board
     let layersData = [
