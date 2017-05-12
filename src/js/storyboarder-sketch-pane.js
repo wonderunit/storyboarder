@@ -298,6 +298,10 @@ class StoryboarderSketchPane extends EventEmitter {
     this.emit('markDirty', this.visibleLayers.map(n => this.layerIndexByName.indexOf(n)))
   }
   setBrushTool (kind, options) {
+    if (this.getIsDrawingOrStabilizing()) {
+      return false
+    }
+
     if (kind === 'eraser') {
       this.sketchPane.setPaintingKnockout(true)
     } else {
@@ -445,8 +449,8 @@ class StoryboarderSketchPane extends EventEmitter {
     return el
   }
   
-  getIsDrawing () {
-    return this.sketchPane.isDrawing
+  getIsDrawingOrStabilizing () {
+    return this.sketchPane.isDrawing || this.sketchPane.isStabilizing
   }
 
   getCurrentLayerName () {
