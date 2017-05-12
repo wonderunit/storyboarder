@@ -3,8 +3,7 @@ const { remote } = require('electron')
 let { acceleratorAsHtml } = require('../utils/index.js')
 
 const sharedObj = remote.getGlobal('sharedObj')
-
-const getEnableTooltips = () =>sharedObj.prefs['enableTooltips']
+const getEnableTooltips = () => sharedObj.prefs['enableTooltips']
 
 const Tooltip = require('tether-tooltip')
 Tooltip.autoinit = false
