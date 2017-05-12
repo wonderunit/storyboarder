@@ -190,7 +190,7 @@ class Toolbar extends EventEmitter {
 
     for (let el of overableControls) {
       el.addEventListener('pointerenter', this.onButtonOver)
-    }
+    }    
   }
 
   // TODO cleanup, remove listeners
@@ -204,19 +204,22 @@ class Toolbar extends EventEmitter {
 
     return target.id.replace(/^toolbar-/, '')
   }
+
+  cloneOptions (opt) {
+    return {
+      kind: opt.kind,
+      size: opt.size,
+      spacing: opt.spacing,
+      flow: opt.flow,
+      hardness: opt.hardness,
+      opacity: opt.opacity,
+      color: opt.color.clone(),
+      palette: opt.palette.map(color => color.clone())
+    }
+  }
   
   getBrushOptions () {
-    let curr = this.state.brushes[this.state.brush]
-    return {
-      kind: curr.kind,
-      size: curr.size,
-      spacing: curr.spacing,
-      flow: curr.flow,
-      hardness: curr.hardness,
-      opacity: curr.opacity,
-      color: curr.color.clone(),
-      palette: curr.palette.map(color => color.clone())
-    }
+    return this.cloneOptions(this.state.brushes[this.state.brush])
   }
 
   onButtonDown (event) {

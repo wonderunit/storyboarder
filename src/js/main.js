@@ -14,6 +14,8 @@ const appServer = new(require('./express-app/app'))
 
 const preferencesUI = require('./windows/preferences')()
 
+const pkg = require('../../package.json')
+
 //https://github.com/luiseduardobrito/sample-chat-electron
 
 let welcomeWindow
@@ -314,6 +316,7 @@ let createNew = () => {
           detail: 'The aspect ratio defines the size of your boards. 2.35 is the widest, like what you would watch in a movie. 16x9 is what you would watch on a modern TV. 4x3 is what your grandpops watched back when screens flickered and programming was wholesome.',
         }, (response)=>{
           let newBoardObject = {
+            version: pkg.version,
             aspectRatio: 2.333,
             fps: 24,
             defaultBoardTiming: 2000,
@@ -503,8 +506,8 @@ ipcMain.on('useColor', (e, arg)=> {
   mainWindow.webContents.send('useColor', arg)
 })
 
-ipcMain.on('clear', (e, arg)=> {
-  mainWindow.webContents.send('clear')
+ipcMain.on('clear', (e, arg) => {
+  mainWindow.webContents.send('clear', arg)
 })
 
 ipcMain.on('brushSize', (e, arg)=> {
