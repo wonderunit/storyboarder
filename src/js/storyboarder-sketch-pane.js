@@ -3,6 +3,8 @@ const EventEmitter = require('events').EventEmitter
 const SketchPane = require('./sketch-pane')
 const Brush = require('./sketch-pane/brush')
 
+const keytracker = require('./utils/keytracker')
+
 class StoryboarderSketchPane extends EventEmitter {
   constructor (el, canvasSize) {
     super()
@@ -25,8 +27,10 @@ class StoryboarderSketchPane extends EventEmitter {
 
     this.lineMileageCounter = new LineMileageCounter()
     
-    this.isTemporaryOperation = false
     this.isMultiLayerOperation = false
+    this.isTemporaryOperation = false
+    this.currTool = null
+    this.prevTool = null
 
     this.containerEl = document.createElement('div')
     this.containerEl.classList.add('container')
@@ -58,6 +62,13 @@ class StoryboarderSketchPane extends EventEmitter {
       }
     })
     this.sketchPane.on('onup', (...args) => {
+      // quick erase : off
+      if (this.isTemporaryOperation) {
+        this.isTemporaryOperation = false
+        this.setBrushTool(this.prevTool.kind, this.cloneOptions(this.prevTool.options))
+        this.prevTool = null
+      }
+
       this.emit('onup', ...args)
 
       // store snapshot on up?
@@ -109,6 +120,13 @@ class StoryboarderSketchPane extends EventEmitter {
   }
 
   canvasPointerDown (e) {
+    // quick erase : on
+    if (keytracker('<alt>')) {
+      this.isTemporaryOperation = true
+      this.prevTool = { kind: this.currTool.kind, options: this.cloneOptions(this.currTool.options) }
+      this.setBrushTool('eraser', this.cloneOptions(this.currTool.options))
+    }
+
     if (!this.isTemporaryOperation && this.sketchPane.getPaintingKnockout()) {
       this.startMultiLayerOperation()
       this.setCompositeLayerVisibility(true)
@@ -276,9 +294,7 @@ class StoryboarderSketchPane extends EventEmitter {
     }
     this.emit('markDirty', this.visibleLayers.map(n => this.layerIndexByName.indexOf(n)))
   }
-  setBrushTool (kind, options, temporaryOperation = false) {
-    this.isTemporaryOperation = temporaryOperation
-
+  setBrushTool (kind, options) {
     if (kind === 'eraser') {
       this.sketchPane.setPaintingKnockout(true)
     } else {
@@ -292,7 +308,7 @@ class StoryboarderSketchPane extends EventEmitter {
     this.brush.setFlow(options.flow)
     this.brush.setHardness(options.hardness)
 
-    if (!temporaryOperation) {
+    if (!this.isTemporaryOperation) {
       let layerName
       switch (kind) {
         case 'light-pencil':
@@ -321,6 +337,8 @@ class StoryboarderSketchPane extends EventEmitter {
     this.sketchPane.setTool(this.brush)
 
     this.updatePointer()
+
+    this.currTool = { kind, options: this.cloneOptions(options) }
   }
 
   setBrushSize (size) {
@@ -398,6 +416,20 @@ class StoryboarderSketchPane extends EventEmitter {
     this.setCompositeLayerVisibility(false)
 
     this.sketchPane.removeListener('onbeforeup', this.stopMultiLayerOperation)
+  }
+
+  // HACK copied from toolbar
+  cloneOptions (opt) {
+    return {
+      kind: opt.kind,
+      size: opt.size,
+      spacing: opt.spacing,
+      flow: opt.flow,
+      hardness: opt.hardness,
+      opacity: opt.opacity,
+      color: opt.color.clone(),
+      palette: opt.palette.map(color => color.clone())
+    }
   }
 
   getLayerCanvasByName (name) {

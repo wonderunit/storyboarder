@@ -108,15 +108,12 @@ class Toolbar extends EventEmitter {
     this.el = el
     this.swatchTimer = null
     this.swatchDelay = 2000
-    this.lastBrush = null
 
     this.onButtonDown = this.onButtonDown.bind(this)
     this.onButtonOver = this.onButtonOver.bind(this)
     this.onSwatchUp = this.onSwatchUp.bind(this)
     this.onSwatchDown = this.onSwatchDown.bind(this)
     this.onBrushSizePointerDown = this.onBrushSizePointerDown.bind(this)
-    this.onKeyDown = this.onKeyDown.bind(this)
-    this.onKeyUp = this.onKeyUp.bind(this)
 
     this.attachedCallback(this.el)
   }
@@ -193,10 +190,7 @@ class Toolbar extends EventEmitter {
 
     for (let el of overableControls) {
       el.addEventListener('pointerenter', this.onButtonOver)
-    }
-    
-    document.addEventListener('keydown', this.onKeyDown)
-    document.addEventListener('keyup', this.onKeyUp)
+    }    
   }
 
   // TODO cleanup, remove listeners
@@ -467,20 +461,6 @@ class Toolbar extends EventEmitter {
   onButtonOver (event) {
     console.log('onButtonOver', event)
     sfx.rollover()
-  }
-
-  onKeyDown (event) {
-    if (event.altKey && this.state.brush.kind !== 'eraser') {
-      this.lastBrush = this.cloneOptions(this.state.brushes[this.state.brush])
-      let temporaryEraserBrushOptions = this.cloneOptions(this.state.brushes[BRUSH_ERASER])
-      this.emit('brush:quick:on', temporaryEraserBrushOptions)
-    }
-  }
-  onKeyUp (event) {
-    if (event.key == 'Alt' && this.lastBrush) {
-      this.emit('brush:quick:off', this.lastBrush)
-      // NOTE HACK! toolbar.lastBrush must be reset by listener
-    }
   }
 }
 

@@ -343,35 +343,7 @@ let loadBoardUI = ()=> {
   toolbar.on('brush:color', color => {
     storyboarderSketchPane.setBrushColor(color)
   })
-  toolbar.on('brush:quick:on', options => {
-    if (storyboarderSketchPane.getIsDrawing()) return
 
-    storyboarderSketchPane.setBrushTool(options.kind, options, true)
-    sfx.playEffect('tool-' + options.kind)
-
-    toolbar.on('brush:quick:off', options => {
-      if (!storyboarderSketchPane.getIsDrawing() && toolbar.lastBrush) {
-        storyboarderSketchPane.setBrushTool(options.kind, options, true)
-        sfx.playEffect('tool-' + options.kind)
-
-        // lastBrush MUST be reset by listener
-        toolbar.lastBrush = null
-      }
-    })
-  })
-  storyboarderSketchPane.on('onup', (...args) => {
-    toolbar.removeAllListeners('brush:quick:off')
-
-    if (toolbar.lastBrush) {
-      let options = toolbar.lastBrush
-
-      storyboarderSketchPane.setBrushTool(options.kind, options, true)
-      sfx.playEffect('tool-' + options.kind)
-
-      // lastBrush MUST be reset by listener
-      toolbar.lastBrush = null
-    }
-  })
 
   toolbar.on('trash', () => {
     clearLayers()
