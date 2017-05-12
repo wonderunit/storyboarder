@@ -17,10 +17,12 @@ const { remote } = require('electron')
 const Tone = require('tone')
 const { shuffle } = require('./utils/index.js')
 
+const sharedObj = remote.getGlobal('sharedObj')
+
 Tone.Transport.latencyHint = 'playback'
 Tone.Transport.start("+0.1")
 
-const getEnableUISoundEffects = () => remote.getGlobal('sharedObj').prefs['enableUISoundEffects']
+const getEnableUISoundEffects = () => sharedObj.prefs['enableUISoundEffects']
 
 let chords = [
   ['a4', 'b4', 'c5', 'e5'],

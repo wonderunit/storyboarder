@@ -7,6 +7,8 @@ const vec2 = require('gl-vec2')
 const util = require('../../utils/index.js')
 const Loop = require('../../utils/loop.js')
 
+const sharedObj = remote.getGlobal('sharedObj')
+
 const BrushInstrument = require('./brush-instrument')
 const MelodicInstrument = require('./melodic-instrument')
 
@@ -77,8 +79,8 @@ const start = (x, y, pressure, pointerType) => {
   bufferA = vec2.fromValues(0, 0)
   bufferB = vec2.fromValues(0, 0)
 
-  if (remote.getGlobal('sharedObj').prefs['enableDrawingSoundEffects']) instrument.noteOn()
-  if (remote.getGlobal('sharedObj').prefs['enableDrawingMelodySoundEffects']) melodies.start()
+  if (sharedObj.prefs['enableDrawingSoundEffects']) instrument.noteOn()
+  if (sharedObj.prefs['enableDrawingMelodySoundEffects']) melodies.start()
 
   trigger(x, y, pressure, pointerType)
   renderDirectionChange(x, y, 0)
@@ -88,8 +90,8 @@ const stop = () => {
   model.isActive = false
   model.isOnCanvas = false
 
-  if (remote.getGlobal('sharedObj').prefs['enableDrawingSoundEffects']) instrument.noteOff()
-  if (remote.getGlobal('sharedObj').prefs['enableDrawingMelodySoundEffects']) melodies.stop()
+  if (sharedObj.prefs['enableDrawingSoundEffects']) instrument.noteOff()
+  if (sharedObj.prefs['enableDrawingMelodySoundEffects']) melodies.stop()
 }
 
 // NOTE curently c<x,y> are always absolute to canvas w/h (e.g.; 900 x 900 * aspectRatio)
@@ -120,10 +122,10 @@ const trigger = (x, y, pressure, pointerType) => {
 
   if (model.pointerType === 'pen') {
     let velocity = ease.sineOut(util.clamp(model.pressureGain, 0, 1))
-    if (remote.getGlobal('sharedObj').prefs['enableDrawingMelodySoundEffects']) melodies.trigger({ velocity })
+    if (sharedObj.prefs['enableDrawingMelodySoundEffects']) melodies.trigger({ velocity })
   } else {
     let velocity = util.clamp(model.accelGain, 0, 1)
-    if (remote.getGlobal('sharedObj').prefs['enableDrawingMelodySoundEffects']) melodies.trigger({ velocity })
+    if (sharedObj.prefs['enableDrawingMelodySoundEffects']) melodies.trigger({ velocity })
   }
 
   prev = curr

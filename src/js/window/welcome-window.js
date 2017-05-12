@@ -7,12 +7,14 @@ const sfx = require('../wonderunit-sound.js')
 
 const pkg = require('../../../package.json')
 
+const sharedObj = remote.getGlobal('sharedObj')
+
 menu.setWelcomeMenu()
 
 let updateRecentDocuments = () => {
   let count = 0
   let html = []
-  let recentDocuments = remote.getGlobal('sharedObj').prefs['recentDocuments']
+  let recentDocuments = sharedObj.prefs['recentDocuments']
   if (recentDocuments && recentDocuments.length>0) {
     for (var recentDocument of recentDocuments) {
       html.push(`<div class="recent-item" data-filename="${recentDocument.filename}"><img src="./img/fileicon.png"><div class="text">`)

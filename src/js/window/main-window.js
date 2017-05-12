@@ -24,6 +24,8 @@ const keytracker = require('../utils/keytracker.js')
 
 const pkg = require('../../../package.json')
 
+const sharedObj = remote.getGlobal('sharedObj')
+
 let boardFilename
 let boardPath
 let boardData
@@ -2539,7 +2541,7 @@ const runRandomizedNotifications = (messages) => {
   let count = 0, duration = 60 * 60 * 1000, timeout
   const tick = () => {
     // only fire notification if enabled in preferences
-    if (remote.getGlobal('sharedObj').prefs['enableAspirationalMessages']) {
+    if (sharedObj.prefs['enableAspirationalMessages']) {
       notifications.notify(messages[count++ % messages.length])
     }
     timeout = setTimeout(tick, duration)
