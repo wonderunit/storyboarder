@@ -593,12 +593,6 @@ let saveBoardFile = ()=> {
 }
 
 let markImageFileDirty = layerIndices => {
-  if (!layerIndices) {
-    // TODO can remove this trace once we've tested
-    console.warn('markImageFileDirty requires an argument')
-    return
-  }
-
   // HACK because layerStatus uses names, we need to convert
   const layerIndexByName = ['reference', 'main', 'onion', 'notes', 'guides', 'composite']
   for (let index of layerIndices) {
@@ -1062,11 +1056,6 @@ let updateSketchPaneBoard = () => {
     let board = boardData.boards[currentBoard]
 
     console.log('loading layers')
-    if (!board) {
-      // TODO can remove this trace once we've tested
-      console.warn('tried to render board that does not exist in data')
-      resolve()
-    }
 
     // always load the main board
     let layersData = [
