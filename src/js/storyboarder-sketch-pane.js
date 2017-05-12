@@ -122,9 +122,12 @@ class StoryboarderSketchPane extends EventEmitter {
   canvasPointerDown (e) {
     // quick erase : on
     if (keytracker('<alt>')) {
-      this.isTemporaryOperation = true
-      this.prevTool = { kind: this.currTool.kind, options: this.cloneOptions(this.currTool.options) }
-      this.setBrushTool('eraser', this.cloneOptions(this.currTool.options))
+      // don't switch if we're already on an eraser
+      if (this.currTool.kind !== 'eraser') {
+        this.isTemporaryOperation = true
+        this.prevTool = { kind: this.currTool.kind, options: this.cloneOptions(this.currTool.options) }
+        this.setBrushTool('eraser', this.cloneOptions(this.currTool.options))
+      }
     }
 
     if (!this.isTemporaryOperation && this.sketchPane.getPaintingKnockout()) {
