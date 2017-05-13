@@ -2,6 +2,22 @@
 
 NOTE: theres an incorrect assumption with the angle and the cropping
 
+To think about:
+  Many shots are just closeup of hands doing things. I think its important to support this and as such, 
+  there should be hand poses for these specific shots
+
+  Need closup on feet or ability to set feet as the subject
+
+  When a shot content type is OTS, should specify a very specific angles
+    should limit the framing
+    if wide enough, should frame both, otherwise should just frame subject
+
+  Go through trailers and try to recreate every shot easily with a description. 
+    Try to see where the system fails to do what is expected
+    Try to identify missing parameters for the system
+
+
+
 EXAMPLES FOR PARSER:
   medium single backlit
   wide single
@@ -87,31 +103,11 @@ const OutlineEffect = require('../vendor/effects/OutlineEffect.js')
 const BufferSubdivisionModifier = require('../vendor/modifiers/BufferSubdivisionModifier.js')
 
 const shotProperties = require('../shot-template-system/shot-properties.js')
+const alternateValues = require('../shot-template-system/alternate-values.js')
+const cameraLensAngles = require('../shot-template-system/camera-lens-angles.js')
 
 const METERS_PER_FEET = 0.3048
 const outlineWidth = 0.015
-const cameraLensAngles = {
-  0:180.0,
-  2:161.1,
-  12:90.0,
-  14:81.2,
-  16:73.9,
-  20:61.9,
-  24:53.1,
-  35:37.8,
-  50:27.0,
-  70:19.5,
-  85:16.1,
-  105:13.0,
-  200:6.87,
-  300:4.58,
-  400:3.44,
-  500:2.75,
-  600:2.29,
-  700:1.96,
-  800:1.72,
-  1200:1.15,
-}
 
 let backgroundScene
 let contentScene
@@ -148,7 +144,8 @@ let setup = (config) => {
   renderer.setPixelRatio(1)
   renderer.setSize(config.width, config.height)
   renderer.autoClear = false
-
+renderer.physicallyBasedShading = true
+  // create effect system for renderer
   effect = new THREE.OutlineEffect(renderer)
   effect.setSize(config.width, config.height)
   effect.setViewport(0,0,config.width, config.height)
@@ -179,16 +176,22 @@ let loadTextures = () => {
 
   textures = {}
 
-  textures.personMale = new THREE.Texture()
+  textures.male = new THREE.Texture()
   imageLoader.load('data/sts/stdummy_male_texture.png', ( image ) => {
-    textures.personMale.image = image
-    textures.personMale.needsUpdate = true
+    textures.male.image = image
+    textures.male.needsUpdate = true
   })
 
-  textures.personFemale = new THREE.Texture()
-  imageLoader.load('data/sts/stdummy_female_texture.jpg', ( image ) => {
-    textures.personFemale.image = image
-    textures.personFemale.needsUpdate = true
+  textures.female = new THREE.Texture()
+  imageLoader.load('data/sts/stdummy_female_texture.png', ( image ) => {
+    textures.female.image = image
+    textures.female.needsUpdate = true
+  })
+
+  textures.boxmodel = new THREE.Texture()
+  imageLoader.load('data/sts/stdummy_boxmodel_texture.png', ( image ) => {
+    textures.boxmodel.image = image
+    textures.boxmodel.needsUpdate = true
   })
 
   textures.ground = new THREE.Texture()
@@ -217,7 +220,82 @@ let loadTextures = () => {
     textures.gradientMap.image = image
     textures.gradientMap.needsUpdate = true
   })
+
+  textures.decalGreatjob = new THREE.Texture()
+  imageLoader.load('data/sts/decal_logo.png', ( image ) => {
+    textures.decalGreatjob.image = image
+    textures.decalGreatjob.needsUpdate = true
+  })
 }
+
+let loadDummyModels = () => {
+  let loader = new THREE.JDLoader()
+  
+  dummyModels = {}
+
+  loader.load("data/sts/stdummy_female.jd", (data) => {
+    let material = new THREE.MeshToonMaterial({
+      map: textures.female,
+      color: 0xffffff,
+      emissive: 0x0,
+      specular: 0x0,
+      skinning: true,
+      shininess: 0,
+      shading: THREE.SmoothShading,
+    })
+    material.outlineParameters = {
+      thickness: outlineWidth,
+      color: new THREE.Color( 0x0 ),
+      alpha: 0.6,
+      visible: true,
+      keepAlive: true
+    }
+    for (var i = 0; i < data.geometries.length; ++i) {
+      var mesh = new THREE.SkinnedMesh(data.geometries[i], material)
+      var bbox = new THREE.Box3().setFromObject(mesh);
+      var height = bbox.max.y - bbox.min.y
+      var targetHeight = 1.6256
+      var scale = targetHeight / height
+      mesh.scale.set(scale, scale, scale)
+      mesh.updateMatrix()
+      mesh.renderOrder = 1.0
+      dummyModels.female = mesh
+    }
+  })
+
+  loader.load("data/sts/stdummy_boxmodel.jd", (data) => {
+    let material = new THREE.MeshToonMaterial({
+      map: textures.boxmodel,
+      color: 0xffffff,
+      emissive: 0x0,
+      specular: 0x0,
+      skinning: true,
+      shininess: 0,
+      gradientMap: textures.gradientMap,
+      shading: THREE.SmoothShading,
+    })
+    material.outlineParameters = {
+      thickness: .005, //outlineWidth,
+      color: new THREE.Color( 0x0 ),
+      alpha: 0.6,
+      visible: true,
+      keepAlive: true
+    }
+    for (var i = 0; i < data.geometries.length; ++i) {
+      var mesh = new THREE.SkinnedMesh(data.geometries[i], material)
+      var bbox = new THREE.Box3().setFromObject(mesh);
+      var height = bbox.max.y - bbox.min.y
+      var targetHeight = 1.8
+      var scale = targetHeight / height
+      mesh.scale.set(scale, scale, scale)
+      mesh.updateMatrix()
+      mesh.renderOrder = 1.0
+      dummyModels.male = mesh
+    }
+  })
+
+}
+
 
 let createGroundPlane = () => {
   var geometry = new THREE.PlaneGeometry( 135 / 3, 135 / 3, 32 )
@@ -226,7 +304,7 @@ let createGroundPlane = () => {
   material.blending = THREE.MultiplyBlending
   material.opacity = 1
   var plane = new THREE.Mesh( geometry, material )
-  plane.renderOrder = 1.0
+  plane.renderOrder = 0.7
   plane.rotation.x = -Math.PI / 2
   backgroundScene.add(plane)
 }
@@ -254,8 +332,8 @@ let createReferenceCube = () => {
 
   var cube = new THREE.Mesh( smooth, material )
   cube.position.y = 0+(1/2);
-  cube.position.x = 2;
-  cube.position.z = -5;
+  cube.position.x = 3.5;
+  cube.position.z = -1;
   addToScene(cube)
 }
 
@@ -358,76 +436,6 @@ let createLineMesh = (pointsArray, material) => {
   let mesh = new THREE.Mesh( line.geometry, material )
   return mesh
 }
-
-let loadDummyModels = () => {
-  let loader = new THREE.JDLoader()
-  
-  dummyModels = {}
-
-  loader.load("data/sts/stdummy_female.jd", (data) => {
-    let material = new THREE.MeshToonMaterial({
-      map: textures.personFemale,
-      color: 0xffffff,
-      emissive: 0x0,
-      specular: 0x0,
-      skinning: true,
-      shininess: 0,
-      shading: THREE.SmoothShading,
-    })
-    material.outlineParameters = {
-      thickness: outlineWidth,
-      color: new THREE.Color( 0x0 ),
-      alpha: 0.6,
-      visible: true,
-      keepAlive: true
-    }
-    for (var i = 0; i < data.geometries.length; ++i) {
-      var mesh = new THREE.SkinnedMesh(data.geometries[i], material)
-      var bbox = new THREE.Box3().setFromObject(mesh);
-      var height = bbox.max.y - bbox.min.y
-      var targetHeight = 1.6256
-      var scale = targetHeight / height
-      mesh.scale.set(scale, scale, scale)
-      mesh.updateMatrix()
-      mesh.renderOrder = 1.0
-      dummyModels.female = mesh
-    }
-  })
-
-  loader.load("data/sts/stdummy_male.jd", (data) => {
-    let material = new THREE.MeshToonMaterial({
-      map: textures.personMale,
-      color: 0xffffff,
-      emissive: 0x0,
-      specular: 0x0,
-      skinning: true,
-      shininess: 0,
-      gradientMap: textures.gradientMap,
-      shading: THREE.SmoothShading,
-    })
-    material.outlineParameters = {
-      thickness: outlineWidth,
-      color: new THREE.Color( 0x0 ),
-      alpha: 0.6,
-      visible: true,
-      keepAlive: true
-    }
-    for (var i = 0; i < data.geometries.length; ++i) {
-      var mesh = new THREE.SkinnedMesh(data.geometries[i], material)
-      var bbox = new THREE.Box3().setFromObject(mesh);
-      var height = bbox.max.y - bbox.min.y
-      var targetHeight = 1.8
-      var scale = targetHeight / height
-      mesh.scale.set(scale, scale, scale)
-      mesh.updateMatrix()
-      mesh.renderOrder = 1.0
-      dummyModels.male = mesh
-    }
-  })
-
-}
-
-
 
 function addToScene(obj) {
   contentScene.add(obj)
@@ -743,11 +751,11 @@ let setupContent = (params) => {
   var mixer1 = new THREE.AnimationMixer( mainCharacter )
   var action
   if (params.pose) {
-    console.log("sup")
     action = mixer1.clipAction(params.pose, mainCharacter)
   } else {
     action = mixer1.clipAction('stand', mainCharacter)
   }
+
   action.clampWhenFinished = true
   action.setLoop(THREE.LoopOnce)
   action.play()
@@ -772,8 +780,24 @@ let setupContent = (params) => {
       direction = [.8,-.3,Math.random()*.6-.3]
       break
   }
-  mainCharacter.skeleton.bones[55].rotation.set( direction[0], direction[1], direction[2], 'XYZ' )
 
+
+  let headBoneIndex
+
+  let bones = mainCharacter.skeleton.bones
+  for (var i = 0; i < bones.length; i++) {
+    let boneName = bones[i].name.split("_")
+    boneName = boneName[boneName.length-1]
+    if (boneName == "Head") {
+      headBoneIndex = i
+      break
+    }
+  }
+
+
+
+
+  mainCharacter.skeleton.bones[headBoneIndex].rotation.set( direction[0], direction[1], direction[2], 'XYZ' )
 
 
     // //console.log(newPerson.skeleton.bones[56].lookAt(new THREE.Vector3(10,0,10)))
@@ -1086,56 +1110,13 @@ let setupShotType = (params) => {
   // }
 }
 
-let parseShotText = (text) => {
-  let alternateValues = {
-    ecu: ['extra close', 'extreme close', 'xcu'],
-    vcu: ['very close'],
-    cu: ['close', 'close-up', 'closeup'],
-    mcu: ['medium close', 'medium close-up', 'medium closeup'],
-    ms: ['medium', 'medium shot', 'waist', 'mid', 'med'],
-    mls: ['medium long', 'three quarters', 'threequarters'],
-    ls: ['long', 'full', 'wide shot', 'long shot', 'ws'],
-    els: ['extreme long', 'exteme full', 'extreme wide shot', 'ews'],
-    oneShot: ['one shot', 'single', '1s'],
-    twoShot: ['double', '2s'],
-    threeShot: ['triple', '3s'],
-    ots: ['over the shoulder', 'over shoulder', 'ab tu', 'third person'],
-    groupShot: ['group', 'gs'],
-    left: ['left angle'],
-    right: ['right angle'],
-    center: ['centered'],
-    birdsEye: ['birdseye', 'be', 'aerial', 'top'],
-    high: ['high angle', 'ha'],
-    eye: ['eye level', 'el'],
-    low: ['low angle', 'la'],
-    wormsEye: ['wormseye', 'we', 'floor'],
-    ultraWide: ['extreme wide lens', 'ultra wide lens'],
-    wide: ['wide lens', 'wide angle'],
-    medium: ['medium lens'],
-    long: ['long lens', 'telephoto'],
-    headFront: ['looking forward', 'looking front', 'looking straight', 'facing forward', 'facing front', 'facing straight', 'head front', 'head straight', 'head forward'],
-    headUp: ['looking up', 'facing up', 'head up'],
-    headDown: ['looking down', 'facing down', 'head down'],
-    headLeft: ['looking left', 'facing left', 'head left'],
-    headRight: ['looking right', 'facing right', 'head right'],
-    abovelit: ['toplit', 'lit from above'],
-    underlit: ['bottomlit', 'lit from below'],
-    silhouette: ['siloette', 'silhoette', 'silo'],
-    auditorium: ['stadium', 'concert'],
-    run: ['jog'],
-    sit_in_chair: ['sitting'],
-    hunch_over: ['hunched', 'sad', 'sick'],
-    cross_arms: ['crossing'],
-    lean_back: ['leaning'],
-    hold_something: ['holding'],
-    turn_around: ['turning'],
-    sit_on_floor: ['sitting on floor'],
-    on_back: ['laying'],
-  }
 
+
+
+
+let parseShotText = (text) => {
   let parsedShotParams = {}
   text = text.toLowerCase()
-
   while (text.length > 0) {
     let parameter = ['','', '']
     for (var prop in shotProperties) {
@@ -1155,15 +1136,12 @@ let parseShotText = (text) => {
         }
       }
     }
-
     for (var i2 = 0; i2 < dummyModels.male.geometry.animations.length; i2++) {
       var value = dummyModels.male.geometry.animations[i2].name
-  //    console.log(value)
       let possibilities = []
       possibilities.push(value.split('_').join('').toLowerCase())
       possibilities.push(value.split('_').join(' ').toLowerCase())
       possibilities = possibilities.concat(alternateValues[value])
-//      console.log(possibilities)
       for (var i = 0; i < possibilities.length; i++) {
         if (text.indexOf(possibilities[i]) == 0) {
           if (parameter[1].length < possibilities[i].length) {
@@ -1174,8 +1152,6 @@ let parseShotText = (text) => {
         }
       }
     }
-
-
     if (parameter[0] !== '') {
       parsedShotParams[parameter[0]] = parameter[2]
       text = text.substring(parameter[1].length).trim()
@@ -1187,13 +1163,19 @@ let parseShotText = (text) => {
       }
     }
   }
-
-  // find if there are any alternate terms
-
-
-
-
   return parsedShotParams
+}
+
+let getTextString = (params) => {
+  string = []
+  Object.getOwnPropertyNames(params).forEach( (param) => {
+    if (alternateValues[params[param]]) {
+      string.push(alternateValues[params[param]][0]) 
+    } else {
+      string.push(params[param].replace(/([A-Z])/g, function($1){return " "+$1.toLowerCase()})) 
+    }
+  })
+  return string.join(', ')
 }
 
 ////////////////////////////////////////////////////
@@ -1236,6 +1218,84 @@ class ShotTemplateSystem extends EventEmitter {
 
     render()
     return {image: renderer.domElement.toDataURL(), shotParams: this.shotParams}
+  }
+
+  getParamSelects (shotParams) {
+    let baseParams = ['content', 'shotType', 'horizontalAngle', 'verticalAngle', 'roomSize']
+    let selectOptions = {}
+
+    // this is janky here.. shouldnt be setting selected
+    for (let param in shotProperties) {
+      for (let value in shotProperties[param]) {
+        shotProperties[param][value].selected = false
+      }
+    }
+
+    for (let param in shotParams) {
+      selectOptions[param] = shotProperties[param]
+      if (selectOptions[param][shotParams[param]]) {
+
+        selectOptions[param][shotParams[param]].selected = true
+      }
+    }
+
+    for (var i = 0; i < baseParams.length; i++) {
+      selectOptions[baseParams[i]] = shotProperties[baseParams[i]]
+    }
+
+    let html = []
+
+    Object.getOwnPropertyNames(selectOptions).forEach( (param) => {
+
+      // is a param selected?
+      let isSelected = false
+      for (let vals in selectOptions[param]) {
+        //console.log(selectOptions[param][vals])
+        if (selectOptions[param][vals].selected) {
+          isSelected = true
+          break
+        } 
+      }
+      if (isSelected) {
+        html.push('<select class="picked" id="' + param + '">')
+      } else {
+        html.push('<select id="' + param + '">')
+      }
+
+      let paramText = param.replace(/([A-Z])/g, function($1){return " "+$1.toLowerCase()})
+      paramText = paramText[0].toUpperCase() + paramText.substring(1)
+
+      html.push('<option selected value="">' + paramText + '</option>')
+      html.push('<option disabled>————</option>')
+      let paramObj = selectOptions[param]
+      Object.getOwnPropertyNames(selectOptions[param]).forEach( (param) => {
+        let paramText = param.replace(/([A-Z])/g, function($1){return " "+$1.toLowerCase()}).split('_').join(' ')
+        paramText = paramText[0].toUpperCase() + paramText.substring(1)
+
+        if (paramObj[param].selected) {
+          html.push('<option selected value="' + param + '">')
+        } else {
+          html.push('<option value="' + param + '">')
+        }
+
+        if (paramObj[param].caption) {
+          html.push(paramObj[param].caption)
+        } else {
+          html.push(paramText)
+        }
+        html.push('</option>')
+
+      })
+
+      html.push('</select>')
+
+    })
+    
+    return html.join('')
+  }
+
+  getTextString (params) {
+    return getTextString(params)
   }
 
   createShotParams() {

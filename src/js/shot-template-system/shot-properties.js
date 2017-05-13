@@ -1,6 +1,8 @@
 /*
 
-head pose
+  subject rotation
+  correct weighting
+  background object fill
 
 
 */
@@ -8,44 +10,56 @@ head pose
 let shotProperties = {
   shotType: {
     ecu: {
+      caption: "Extreme closeup",
       weight: 10
     },
     vcu: {
+      caption: "Very closeup",
       weight: 10
     },
     cu: {
+      caption: "Closeup",
       weight: 10
     },
     mcu: {
+      caption: "Medium closeup",
       weight: 10
     },
     bust: {
       weight: 10
     },
     ms: {
+      caption: "Medium shot",
       weight: 10
     },
     mls: {
+      caption: "Medium long shot",
       weight: 10
     },
     ls: {
+      caption: "Long shot",
       weight: 10
     },
     els: {
+      caption: "Extreme long shot",
       weight: 10
     }
   },
   content: {
     oneShot: {
+      caption: "Single",
       weight: 10
     },
     twoShot: {
+      caption: "Double",
       weight: 10
     },
     threeShot: {
+      caption: "Three shot",
       weight: 10
     },
     ots: {
+      caption: "Over the shoulder",
       weight: 30
     },
     groupShot: {
@@ -193,6 +207,65 @@ let shotProperties = {
     outside: {
       weight: 1
     }
+  },
+  pose: {
+    stand: {
+      weight: 1
+    },
+    walk: {
+      weight: 1
+    },
+    run: {
+      weight: 1
+    },
+    sit_in_chair: {
+      weight: 1
+    },
+    hunch_over: {
+      weight: 1
+    },
+    cross_arms: {
+      weight: 1
+    },
+    hands_in_pockets: {
+      weight: 1
+    },
+    cautious: {
+      weight: 1
+    },
+    lean_back: {
+      weight: 1
+    },
+    hold_something: {
+      weight: 1
+    },
+    wide_stance: {
+      weight: 1
+    },
+    kneeling: {
+      weight: 1
+    },
+    sit_on_floor: {
+      weight: 1
+    },
+    squatting: {
+      weight: 1
+    },
+    indian_style: {
+      weight: 1
+    },
+    on_back: {
+      weight: 1
+    },
+    slouch: {
+      weight: 1
+    },
+    on_back: {
+      weight: 1
+    },
+    despair: {
+      weight: 1
+    },
   }
 }
 

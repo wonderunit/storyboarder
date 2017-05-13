@@ -7,56 +7,108 @@
     <style>
       body {
         background-color: #333;
-        margin: 0px;
+        margin: 15px;
         overflow: hidden;
       }
 
       #input1 {
-        font-size: 38px;
-        width: calc(100vw - calc(18px*2));
-        margin: 18px;
+        font-size: 14px;
+        width: 100%;
+        margin: 0px;
+        margin-bottom: 4px;
         background: rgba(255,255,255,0.1);
-        border-radius: 5px;
+        border-radius: 4px;
         border: none;
         padding: 9px;
         box-sizing: border-box;
         color: white;
       }
 
+      #shots {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        grid-gap: 4px;
+
+      }
+
       img {
-        width: 8.2vw;
-        margin-right: 3px;
-        border-top: 1vh solid black;
-        border-bottom: 1vh solid black;
+        width: 100%;
+        
+        border: 0px solid #444;
+        box-sizing: border-box;
+        display: block;
+        
+
+      }
+
+      #shots div {
+        position: relative;
+        overflow: hidden;
+        border-radius: 3px;
       }
 
 
-      img:nth-of-type(1){
-        width: 100vw;
-        border-top: 5vh solid black;
-        border-bottom: 5vh solid black;
+      #shots div::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        box-shadow: inset 0 0 0 0 rgba(255,255,255,.5);
+        border-radius: 3px;
       }
+
+      #shots div:hover::after {
+        box-shadow: inset 0 0 0 6px rgba(100,100,100,.4);
+      }
+
+
+
+      #shots div:nth-of-type(1){
+        grid-column: span 3;
+      }
+
+
+
+
+
 
       #button {
         display: none;
       }
 
       *:focus {
-    outline: none;
-}
+        outline: none;
+      }
+
+      select {
+        border: none;
+        font-size: 10px;
+        max-width: 100px;
+        overflow: hidden;
+        background: #3a3a3a;
+        color: #555;
+        font-weight: 100;
+        padding: 3px 12px;
+        -webkit-appearance: none;
+        border-radius: 6px;
+        margin-right: 4px;
+        margin-bottom: 4px;
+      }
+
+      select.picked {
+        background: #444;
+        color: #888;
+      }
     </style>
   </head>
 
   <body>
     <input id="input1" type="text" placeholder="Enter shot type: for example, medium shot">
     <button id="button">Generate</button>
+    <div id="select"></div>
     <div id="shots"></div>
-<!--     < script src="../build/three.js"></script>
-    <script src="js/loaders/OBJLoader.js"></script>
-    <script src="js/effects/OutlineEffect.js"></script>
-    <script src="js/modifiers/BufferSubdivisionModifier.js"></script>
-    <script src="js/camera_model.js"></script>
-    <script src="js/scene.js"></script> -->
   </body>
   <script>
     require('./js/window/sts-window.js')

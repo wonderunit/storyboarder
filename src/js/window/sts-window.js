@@ -2,76 +2,58 @@ const shotTemplateSystem = new(require('../shot-template-system/'))({width: 2500
 
 window.shotTemplateSystem = shotTemplateSystem
 
-let numOfShots = 1
-let imageSize = 500
-
-let shotParams = {}
-
-// shotParams = {
-//     content: "OTS",
-//     horizontalComposition:"auto",
-//     shotType: "MS",
-//     horizontalAngle: "left",
-//     verticalAngle: "low",
-// }
-
-// shotParams = {
-//     content: "oneShot",
-//     horizontalComposition:"auto",
-//     shotType: "CU",
-//     verticalAngle: "birdsEye",
-//     horizontalAngle: "left"
-// }
-
-// shotParams = {
-//     content: "oneShot",
-//     horizontalComposition:"auto",
-//     shotType: "MS",
-//     verticalAngle: "low",
-// }
-
-// shotParams = {
-//     content: "oneShot",
-//     horizontalComposition:"auto",
-//     verticalAngle: "eye",
-//     horizontalAngle: "left",
-//     shotType: "LS",
-
-// }
-
-// shotParams = {
-//     content: "oneShot",
-//     horizontalComposition:"auto",
-//     verticalAngle: "eye",
-//     horizontalAngle:"left"
-// }
-
-shotParams = {
-    content: "oneShot",
-}
-
 document.querySelector("#input1").onkeydown = function(event) {
   if (event.keyCode == 13) {
-    generateAction()
+    var shotParams = shotTemplateSystem.parseParamsText(document.querySelector("#input1").value)
+    generateShot(shotParams)
+    document.querySelector("#select").innerHTML = ''
+    document.querySelector("#select").innerHTML = shotTemplateSystem.getParamSelects(shotParams)
+    attachListeners()
   }
 }
 
-document.querySelector("#button").addEventListener("click", (event)=>{
-  generateAction()
-
-})
-
-
-let generateAction = () => {
-  var shotParams = shotTemplateSystem.parseParamsText(document.querySelector("#input1").value)
-
-  console.log(shotParams)
-
-  for (var i = 0; i < numOfShots; i++) {
-    var shot = shotTemplateSystem.requestShot(shotParams)
-    var div = document.createElement('img')
-    div.src = shot.image
-    document.querySelector("#shots").insertBefore(div, document.querySelector("img"))
+let attachListeners = () => {
+  for (let element of document.querySelectorAll('#select select')) {
+    element.addEventListener("change", (event) => {
+      if (event.target.value !== "") {
+        element.className = "picked"
+      } else {
+        element.classList.remove("picked")
+      }
+      
+      let params = getAllSTSParamSelections()
+      document.querySelector("#input1").value = shotTemplateSystem.getTextString(params)
+      generateShot(params)
+    })
   }
-
 }
+
+let getAllSTSParamSelections = () => {
+  params = {}
+  for (let e of document.querySelectorAll('#select select')) {
+    if (e.options[e.selectedIndex].value) {
+      params[e.id] = e.options[e.selectedIndex].value
+    }
+  }
+  return params
+}
+
+let generateShot = (params) => {
+  var shot = shotTemplateSystem.requestShot(params)
+  var div = document.createElement('div')
+  var img = document.createElement('img')
+  img.src = shot.image
+  img.dataset.shotParams = JSON.stringify(shot.shotParams)
+  div.appendChild(img)
+  document.querySelector("#shots").insertBefore(div, document.querySelector("#shots div"))
+  div.addEventListener("click", (event) => {
+    let shotParams = JSON.parse(event.target.firstChild.dataset.shotParams)
+    document.querySelector("#select").innerHTML = ''
+    document.querySelector("#select").innerHTML = shotTemplateSystem.getParamSelects(shotParams)
+    document.querySelector("#input1").value = shotTemplateSystem.getTextString(shotParams)
+    attachListeners()
+  })
+}
+
+document.querySelector("#select").innerHTML = shotTemplateSystem.getParamSelects()
+attachListeners()
