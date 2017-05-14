@@ -30,5 +30,11 @@ If cross-compiling from Mac to Windows, install [Wine](see https://github.com/el
     $ npm run dist:mac # Mac only
     $ npm run dist:win # Windows only
     $ npm run dist     # Mac and Windows
+    $ npm run dist:linux     # Linux only
 
 Remember to sync data files that have server representation (like `messages.json`).
+
+## Linux Dependencies
+
+- icnsutils - provides `icns2png`
+- graphicsmagick
