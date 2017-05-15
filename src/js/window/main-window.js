@@ -2315,52 +2315,81 @@ let pasteBoards = () => {
       markBoardFileDirty()
 
       // go to new board
-      gotoBoard(newBoardPos)  // TODO: this will try to load images that don't yet exist.
-                              //       is there a more efficient way to handle this?
+      // NOTE TODO  this will try to load images that don't yet exist.
+      //            is there a more efficient way to handle this?
+      gotoBoard(newBoardPos).then(() => {
+        let size = storyboarderSketchPane.sketchPane.getCanvasSize()
+        let w = size.width
+        let h = size.height
 
-      let size = storyboarderSketchPane.sketchPane.getCanvasSize()
-      let w = size.width
-      let h = size.height
+        // code from SketchPane#drawPaintingCanvas
+        let drawImageToLayer = (layerName, image) => {
+          let context = storyboarderSketchPane.getLayerCanvasByName(layerName).getContext('2d')
+          context.save()
+          context.globalAlpha = 1
+          context.globalCompositeOperation = 'source-over'
+          context.drawImage(image, 0, 0, w, h)
+          context.restore()
+        }
 
-      // code from SketchPane#drawPaintingCanvas
-      let drawImageToLayer = (layerName, image) => {
-        let context = storyboarderSketchPane.getLayerCanvasByName(layerName).getContext('2d')
-        context.save()
-        context.globalAlpha = 1
-        context.globalCompositeOperation = 'source-over'
-        context.drawImage(image, 0, 0, w, h)
-        context.restore()
-      }
+        let loaders = []
 
-      let image
+        // TODO DRY
+        loaders.push(new Promise((resolve, reject) => {
+          // main layer
+          let image = new Image()
+          image.onload = () => {
+            drawImageToLayer('main', image)
+            markImageFileDirty([1]) // HACK hardcoded
+            resolve(1)
+          }
+          image.onerror = () => {
+            reject()
+          }
+          image.src = mainImageSrc
+        }))
 
-      // main layer
-      image = new Image()
-      image.src = mainImageSrc
-      drawImageToLayer('main', image)
-      markImageFileDirty([1]) // HACK hardcoded
+        // reference layer
+        if (referenceLayerImageSrc) {
+          loaders.push(new Promise((resolve, reject) => {
+            let image = new Image()
+            image.onload = () => {
+              drawImageToLayer('reference', image)
+              markImageFileDirty([0]) // HACK hardcoded
+              resolve(0)
+            }
+            image.onerror = () => {
+              reject()
+            }
+            image.src = referenceLayerImageSrc
+          }))
+        }
 
-      // reference layer
-      if (referenceLayerImageSrc) {
-        image = new Image()
-        image.src = referenceLayerImageSrc
-        drawImageToLayer('reference', image)
-        markImageFileDirty([0]) // HACK hardcoded
-      }
+        // notes layer
+        if (notesLayerImageSrc) {
+          loaders.push(new Promise((resolve, reject) => {
+            let image = new Image()
+            image.onload = () => {
+              drawImageToLayer('notes', image)
+              markImageFileDirty([3])  // HACK hardcoded
+              resolve(3)
+            }
+            image.onerror = () => {
+              reject()
+            }
+            image.src = notesLayerImageSrc
+          }))
+        }
 
-      // notes layer
-      if (notesLayerImageSrc) {
-        image = new Image()
-        image.src = notesLayerImageSrc
-        drawImageToLayer('notes', image)
-        markImageFileDirty([3])  // HACK hardcoded
-      }
+        Promise.all(loaders).then((...rest) => {
+          saveImageFile()
+          renderThumbnailDrawer()
+        }).catch(err => console.warn(err))
 
-      saveImageFile()
-      renderThumbnailDrawer()
+      }).catch(err => console.warn(err))
 
       // refresh
-      gotoBoard(currentBoard)
+      gotoBoard(currentBoard).catch(err => console.warn(err))
     }
   }
 
