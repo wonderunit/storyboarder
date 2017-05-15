@@ -576,21 +576,27 @@ let newBoard = (position, shouldAddToUndoStack = true) => {
   storeUndoStateForScene()
 }
 
-let markBoardFileDirty = ()=> {
+let markBoardFileDirty = () => {
   boardFileDirty = true
   clearTimeout(boardFileDirtyTimer)
-  boardFileDirtyTimer = setTimeout(()=>{
-    saveBoardFile()
-  }, 5000)
+  boardFileDirtyTimer = setTimeout(saveBoardFile, 5000)
 }
 
-let saveBoardFile = ()=> {
+let saveBoardFile = () => {
+  // are we still drawing?
+  if (storyboarderSketchPane.getIsDrawingOrStabilizing()) {
+    // wait, then retry
+    boardFileDirtyTimer = setTimeout(saveBoardFile, 5000)
+    return
+  }
+
+
   if (boardFileDirty) {
     clearTimeout(boardFileDirtyTimer)
     boardData.version = pkg.version
     fs.writeFileSync(boardFilename, JSON.stringify(boardData, null, 2))
-    console.log('saved board file!', boardFilename)
     boardFileDirty = false
+    console.log('saved board file:', boardFilename)
   }
 }
 
@@ -603,9 +609,7 @@ let markImageFileDirty = layerIndices => {
   }
 
   clearTimeout(imageFileDirtyTimer)
-  imageFileDirtyTimer = setTimeout(() => {
-    saveImageFile()
-  }, 5000)
+  imageFileDirtyTimer = setTimeout(saveImageFile, 5000)
 }
 
 //
@@ -618,6 +622,14 @@ let markImageFileDirty = layerIndices => {
 // call it before changing boards to ensure the current work is saved
 //
 let saveImageFile = () => {
+  // are we still drawing?
+  if (storyboarderSketchPane.getIsDrawingOrStabilizing()) {
+    // wait, then retry
+    imageFileDirtyTimer = setTimeout(saveImageFile, 5000)
+    return
+  }
+
+
   let board = boardData.boards[currentBoard]
 
   let layersData = [
