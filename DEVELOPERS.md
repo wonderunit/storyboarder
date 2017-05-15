@@ -25,11 +25,18 @@ You can run a quick view test using [`budo`](https://github.com/mattdesl/budo) i
 
 ## Building a Release
 
+    $ npm run dist:mac    # Mac only
+    $ npm run dist:win    # Windows only
+    $ npm run dist:linux  # Linux only
+    $ npm run dist        # All Platforms
+
 If cross-compiling from Mac to Windows, install [Wine](see https://github.com/electron-userland/electron-builder/wiki/Multi-Platform-Build) first.
 
-    $ npm run dist:mac # Mac only
-    $ npm run dist:win # Windows only
-    $ npm run dist     # Mac and Windows
+For Linux, you will need these dependencies:
+
+- icnsutils - provides `icns2png`
+- graphicsmagick
+
 ## Deploying
 
 Remember to sync data files that have server representation (like `messages.json`).

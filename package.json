@@ -8,7 +8,8 @@
     "start": "electron .",
     "dist:mac": "build -m",
     "dist:win": "build -w",
-    "dist": "build -mw"
+    "dist:linux": "build -l",
+    "dist": "build -mwl"
   },
   "repository": {
     "type": "git",
