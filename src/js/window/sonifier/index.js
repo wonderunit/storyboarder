@@ -1,6 +1,5 @@
 const { remote } = require('electron')
 const Tone = require('tone')
-const tonal = require('tonal')
 const ease = require('eases')
 const vec2 = require('gl-vec2')
 
