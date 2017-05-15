@@ -343,20 +343,22 @@ class StoryboarderSketchPane extends EventEmitter {
     this.sketchPane.setPaintingOpacity(options.opacity)
     this.sketchPane.setTool(this.brush)
 
-    this.updatePointer()
-
     this.currTool = { kind, options: this.cloneOptions(options) }
+
+    this.updatePointer()
   }
 
   setBrushSize (size) {
     this.brush.setSize(size)
     this.sketchPane.setTool(this.brush)
+    this.currTool = { kind: this.currTool.kind, options: this.cloneOptions(Object.assign(this.currTool.options, { size })) }
     this.updatePointer()
   }
 
   setBrushColor (color) {
     this.brush.setColor(color.toCSS())
     this.sketchPane.setTool(this.brush)
+    this.currTool = { kind: this.currTool.kind, options: this.cloneOptions(Object.assign(this.currTool.options, { color })) }
     this.updatePointer()
   }
   
