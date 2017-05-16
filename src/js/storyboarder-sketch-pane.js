@@ -199,10 +199,11 @@ class StoryboarderSketchPane extends EventEmitter {
     this.brushPointerContainer.appendChild(brushPointer)
   }
 
+  // given a clientX and clientY,
+  //   calculate the equivalent point on the sketchPane
+  //     considering position and scale of the sketchPane
   getRelativePosition (absoluteX, absoluteY) {
-    // TODO memoize for performance?
-    //      would have to store rect, and update on resize, AND scroll ...
-    let rect = this.sketchPaneDOMElement.getBoundingClientRect()
+    let rect = this.boundingClientRect
     let rectOnCanvas = { x: absoluteX - rect.left, y: absoluteY - rect.top }
 
     let scaleFactorX = this.canvasSize[0] / rect.width
@@ -255,6 +256,8 @@ class StoryboarderSketchPane extends EventEmitter {
       canvas.style.width = this.containerSize[0] + 'px'
       canvas.style.height = this.containerSize[1] + 'px'
     }
+
+    this.boundingClientRect = this.sketchPaneDOMElement.getBoundingClientRect()
   }
 
   resize () {
