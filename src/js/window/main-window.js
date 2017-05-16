@@ -1068,62 +1068,86 @@ let previousScene = ()=> {
   //gotoBoard(currentBoard)
 }
 
-// load layer images
 let updateSketchPaneBoard = () => {
   return new Promise((resolve, reject) => {
     // get current board
     let board = boardData.boards[currentBoard]
-
-    console.log('loading layers')
+    
 
     // always load the main board
     let layersData = [
-      ['main', board.url]
+      [1, board.url] // HACK hardcoded index
     ]
     // load other layers when available
     if (board.layers) {
       if (board.layers.reference && board.layers.reference.url) {
-        layersData.push(['reference', board.layers.reference.url])
+        layersData.push([0, board.layers.reference.url]) // HACK hardcoded index
       }
       if (board.layers.notes && board.layers.notes.url) {
-        layersData.push(['notes', board.layers.notes.url])
+        layersData.push([3, board.layers.notes.url]) // HACK hardcoded index
       }
     }
 
-    // clear all visible layers w/o dispatching any events
-    // HACK hardcoded
-    for (let index of [0, 1, 3]) {
-      storyboarderSketchPane.sketchPane.clearLayer(index)
-    }
 
     let loaders = []
-    for (let [layerName, filename] of layersData) {
+    for (let [index, filename] of layersData) {
       loaders.push(new Promise((resolve, reject) => {
         let imageFilePath = path.join(boardPath, 'images', filename)
-        
-        console.log('loading layer', layerName, 'from', imageFilePath)
-
-        let context = storyboarderSketchPane.getLayerCanvasByName(layerName).getContext('2d')
-        context.globalAlpha = 1
-
         try {
           if (fs.existsSync(imageFilePath)) {
             let image = new Image()
             image.onload = () => {
-              context.drawImage(image, 0, 0)
-              resolve()
+              // draw
+              resolve([index, image])
+            }
+            image.onerror = err => {
+              // clear
+              console.warn(err)
+              resolve([index, null])
             }
             image.src = imageFilePath + '?' + Math.random()
           } else {
-            resolve()
+            // clear
+            resolve([index, null])
           }
         } catch (err) {
-          resolve()
+          // clear
+          resolve([index, null])
         }
       }))
     }
 
-    Promise.all(loaders).then(resolve)
+
+    Promise.all(loaders).then(result => {
+      const visibleLayerIndexes = [0, 1, 3] // HACK hardcoded
+
+      // key map for easier lookup
+      let layersToDrawByIndex = []
+      for (let [index, image] of result) {
+        if (image) {
+          layersToDrawByIndex[index] = image
+        }
+      }
+
+      // loop through ALL visible layers
+      for (let index of visibleLayerIndexes) {
+        let image = layersToDrawByIndex[index]
+
+        let context = storyboarderSketchPane.sketchPane.getLayerCanvas(index).getContext('2d')
+        context.globalAlpha = 1
+
+        // do we have an image for this particular layer index?
+        if (image) {
+          console.log('rendering layer index:', index)
+          storyboarderSketchPane.sketchPane.clearLayer(index)
+          context.drawImage(image, 0, 0)
+        } else {
+          console.log('clearing layer index:', index)
+          storyboarderSketchPane.sketchPane.clearLayer(index)
+        }
+      }
+      resolve()
+    }).catch(err => console.warn(err))
   })
 }
 
