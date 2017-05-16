@@ -231,8 +231,9 @@ class Toolbar extends EventEmitter {
     }
   }
   
-  getBrushOptions () {
-    return this.cloneOptions(this.state.brushes[this.state.brush])
+  getBrushOptions (brushName) {
+    brushName = brushName || this.state.brush
+    return this.cloneOptions(this.state.brushes[brushName])
   }
 
   onButtonDown (event) {
