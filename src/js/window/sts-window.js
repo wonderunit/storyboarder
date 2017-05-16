@@ -57,3 +57,5 @@ let generateShot = (params) => {
 
 document.querySelector("#select").innerHTML = shotTemplateSystem.getParamSelects()
 attachListeners()
+
+//setTimeout(()=>{shotTemplateSystem.saveImagesToDisk(1000)}, 2000)

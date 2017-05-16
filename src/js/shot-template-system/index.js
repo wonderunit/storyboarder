@@ -244,7 +244,7 @@ let loadDummyModels = () => {
       shading: THREE.SmoothShading,
     })
     material.outlineParameters = {
-      thickness: outlineWidth,
+      thickness: .005,//outlineWidth,
       color: new THREE.Color( 0x0 ),
       alpha: 0.6,
       visible: true,
@@ -263,9 +263,9 @@ let loadDummyModels = () => {
     }
   })
 
-  loader.load("data/sts/stdummy_boxmodel.jd", (data) => {
+  loader.load("data/sts/stdummy_male.jd", (data) => {
     let material = new THREE.MeshToonMaterial({
-      map: textures.boxmodel,
+      map: textures.male,
       color: 0xffffff,
       emissive: 0x0,
       specular: 0x0,
@@ -291,6 +291,37 @@ let loadDummyModels = () => {
       mesh.updateMatrix()
       mesh.renderOrder = 1.0
       dummyModels.male = mesh
+    }
+  })
+
+  loader.load("data/sts/stdummy_boxmodel.jd", (data) => {
+    let material = new THREE.MeshToonMaterial({
+      //map: textures.boxmodel,
+      color: 0xffffff,
+      emissive: 0x0,
+      specular: 0x0,
+      skinning: true,
+      shininess: 0,
+      gradientMap: textures.gradientMap,
+      shading: THREE.SmoothShading,
+    })
+    material.outlineParameters = {
+      thickness: .025, //outlineWidth,
+      color: new THREE.Color( 0x0 ),
+      alpha: 0.6,
+      visible: true,
+      keepAlive: true
+    }
+    for (var i = 0; i < data.geometries.length; ++i) {
+      var mesh = new THREE.SkinnedMesh(data.geometries[i], material)
+      var bbox = new THREE.Box3().setFromObject(mesh);
+      var height = bbox.max.y - bbox.min.y
+      var targetHeight = 1.7
+      var scale = targetHeight / height
+      mesh.scale.set(scale, scale, scale)
+      mesh.updateMatrix()
+      mesh.renderOrder = 1.0
+      dummyModels.boxmodel = mesh
     }
   })
 
@@ -445,6 +476,22 @@ let render = () => {
   effect.clear()
   effect.render(backgroundScene, camera)
   renderer.clearDepth()
+
+  dummyGroup.children.forEach( (param) => {
+    console.log(param)
+    param.material.outlineParameters.thickness = 0.013
+    param.material.outlineParameters.alpha = 0.8
+    param.material.outlineParameters.color = new THREE.Color( 0x333333 )
+  })
+
+  effect.render(contentScene, camera)
+  renderer.clearDepth()
+  dummyGroup.children.forEach( (param) => {
+    console.log(param)
+    param.material.outlineParameters.thickness = 0.007
+    param.material.outlineParameters.alpha = 0.6
+    param.material.outlineParameters.color = new THREE.Color( 0x0 )
+  })
   effect.render(contentScene, camera)
 }
 
@@ -696,8 +743,19 @@ let setupContent = (params) => {
   contentScene.remove(dummyGroup)
   dummyGroup = new THREE.Group()
 
+  let mainCharacter
 
-  let mainCharacter = dummyModels.male.clone()
+  switch (params.model) {
+    case "male":
+      mainCharacter = dummyModels.male.clone()
+      break
+    case "female":
+      mainCharacter = dummyModels.female.clone()
+      break
+    case "boxmodel":
+      mainCharacter = dummyModels.boxmodel.clone()
+      break
+  }    
 
   switch (params.content) {
     case "oneShot":
@@ -1206,7 +1264,7 @@ class ShotTemplateSystem extends EventEmitter {
     }
   }
 
-  requestShot (shotParams) {
+  requestShot (shotParams, imgOpts) {
     if (shotParams) {
       this.setDefinedShotParams(shotParams)
     }
@@ -1217,7 +1275,25 @@ class ShotTemplateSystem extends EventEmitter {
     setupShotType(this.shotParams)
 
     render()
-    return {image: renderer.domElement.toDataURL(), shotParams: this.shotParams}
+    if (imgOpts) {
+      return {image: renderer.domElement.toDataURL(imgOpts), shotParams: this.shotParams}
+    } else {
+      return {image: renderer.domElement.toDataURL(), shotParams: this.shotParams}
+    }
+  }
+ 
+  saveImagesToDisk (count) {
+    let shot
+    for (var i = 0; i < count; i++) {
+      shot = this.requestShot({}, {format: 'image/jpeg', quality: 0.4})
+      shot.image = shot.image.replace(/^data:image\/(png|jpg|jpeg);base64,/, "")
+      //require("fs").writeFileSync("/Users/setpixel/Desktop/images/img" + i + ".jpg", shot.image, 'base64')
+
+      // require("fs").writeFileSync("~/Desktop/images/img" + i + ".jpg", shot.image, 'base64', function(err) {
+      //   console.log(err)
+      // })
+      console.log("writing to disk: " + i)
+    }
   }
 
   getParamSelects (shotParams) {

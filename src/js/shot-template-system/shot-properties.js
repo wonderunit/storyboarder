@@ -218,6 +218,9 @@ let shotProperties = {
     run: {
       weight: 1
     },
+    point: {
+      weight: 1
+    },
     sit_in_chair: {
       weight: 1
     },
@@ -237,6 +240,9 @@ let shotProperties = {
       weight: 1
     },
     hold_something: {
+      weight: 1
+    },
+    turn_around: {
       weight: 1
     },
     wide_stance: {
@@ -260,10 +266,21 @@ let shotProperties = {
     slouch: {
       weight: 1
     },
-    on_back: {
+    fall: {
       weight: 1
     },
     despair: {
+      weight: 1
+    },
+  },
+  model: {
+    female: {
+      weight: 1
+    },
+    male: {
+      weight: 1
+    },
+    boxmodel: {
       weight: 1
     },
   }
