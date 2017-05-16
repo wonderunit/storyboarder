@@ -412,6 +412,10 @@ let loadBoardUI = ()=> {
       : 'hidden'
   })
 
+  storyboarderSketchPane.toolbar = toolbar
+
+
+
   sfx.setMute(true)
   toolbar.setState({ brush: 'pencil' })
   sfx.setMute(false)

@@ -19,6 +19,8 @@ class StoryboarderSketchPane extends EventEmitter {
     this.canvasPointerOut = this.canvasPointerOut.bind(this)
     this.canvasCursorMove = this.canvasCursorMove.bind(this)
     this.stopMultiLayerOperation = this.stopMultiLayerOperation.bind(this)
+    this.onKeyDown = this.onKeyDown.bind(this)
+    this.onKeyUp = this.onKeyUp.bind(this)
 
     this.el = el
     this.canvasSize = canvasSize
@@ -28,9 +30,10 @@ class StoryboarderSketchPane extends EventEmitter {
     this.lineMileageCounter = new LineMileageCounter()
     
     this.isMultiLayerOperation = false
-    this.isTemporaryOperation = false
-    this.currTool = null
+
+    this.isQuickErasing = false
     this.prevTool = null
+    this.toolbar = null
 
     this.containerEl = document.createElement('div')
     this.containerEl.classList.add('container')
@@ -63,11 +66,7 @@ class StoryboarderSketchPane extends EventEmitter {
     })
     this.sketchPane.on('onup', (...args) => {
       // quick erase : off
-      if (this.isTemporaryOperation) {
-        this.isTemporaryOperation = false
-        this.setBrushTool(this.prevTool.kind, this.cloneOptions(this.prevTool.options))
-        this.prevTool = null
-      }
+      this.unsetQuickErase()
 
       this.emit('onup', ...args)
 
@@ -101,6 +100,8 @@ class StoryboarderSketchPane extends EventEmitter {
     this.el.addEventListener('pointerdown', this.canvasPointerDown)
     this.sketchPaneDOMElement.addEventListener('pointerover', this.canvasPointerOver)
     this.sketchPaneDOMElement.addEventListener('pointerout', this.canvasPointerOut)
+    window.addEventListener('keydown', this.onKeyDown)
+    window.addEventListener('keyup', this.onKeyUp)
 
     // brush pointer
     this.brushPointerContainer = document.createElement('div')
@@ -119,18 +120,21 @@ class StoryboarderSketchPane extends EventEmitter {
     this.renderContainerSize()
   }
 
+  onKeyDown (e) {
+    this.setQuickEraseIfRequested()
+  }
+
+  onKeyUp (e) {
+    if (!this.getIsDrawingOrStabilizing()) {
+      this.unsetQuickErase()
+    }
+  }
+
   canvasPointerDown (e) {
     // quick erase : on
-    if (keytracker('<alt>')) {
-      // don't switch if we're already on an eraser
-      if (this.currTool.kind !== 'eraser') {
-        this.isTemporaryOperation = true
-        this.prevTool = { kind: this.currTool.kind, options: this.cloneOptions(this.currTool.options) }
-        this.setBrushTool('eraser', this.cloneOptions(this.currTool.options))
-      }
-    }
+    this.setQuickEraseIfRequested()
 
-    if (!this.isTemporaryOperation && this.sketchPane.getPaintingKnockout()) {
+    if (!this.isQuickErasing && this.sketchPane.getPaintingKnockout()) {
       this.startMultiLayerOperation()
       this.setCompositeLayerVisibility(true)
     }
@@ -315,7 +319,7 @@ class StoryboarderSketchPane extends EventEmitter {
     this.brush.setFlow(options.flow)
     this.brush.setHardness(options.hardness)
 
-    if (!this.isTemporaryOperation) {
+    if (!this.isQuickErasing) {
       let layerName
       switch (kind) {
         case 'light-pencil':
@@ -343,25 +347,40 @@ class StoryboarderSketchPane extends EventEmitter {
     this.sketchPane.setPaintingOpacity(options.opacity)
     this.sketchPane.setTool(this.brush)
 
-    this.currTool = { kind, options: this.cloneOptions(options) }
-
     this.updatePointer()
   }
 
   setBrushSize (size) {
     this.brush.setSize(size)
     this.sketchPane.setTool(this.brush)
-    this.currTool = { kind: this.currTool.kind, options: this.cloneOptions(Object.assign(this.currTool.options, { size })) }
     this.updatePointer()
   }
 
   setBrushColor (color) {
     this.brush.setColor(color.toCSS())
     this.sketchPane.setTool(this.brush)
-    this.currTool = { kind: this.currTool.kind, options: this.cloneOptions(Object.assign(this.currTool.options, { color })) }
     this.updatePointer()
   }
-  
+
+  setQuickEraseIfRequested () {
+    if (keytracker('<alt>')) {
+      // don't switch if we're already on an eraser
+      if (this.toolbar.getBrushOptions().kind !== 'eraser') {
+        this.isQuickErasing = true
+        this.prevTool = this.toolbar.getBrushOptions()
+        this.setBrushTool('eraser', this.toolbar.getBrushOptions('eraser'))
+      }
+    }
+  }
+
+  unsetQuickErase () {
+    if (this.isQuickErasing) {
+      this.isQuickErasing = false
+      this.setBrushTool(this.prevTool.kind, this.prevTool)
+      this.prevTool = null
+    }
+  }
+
   startMultiLayerOperation () {
     if (this.isMultiLayerOperation) return
 
