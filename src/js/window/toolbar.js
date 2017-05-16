@@ -16,6 +16,7 @@ const initialState = {
   captions: true,
 
   brush: null,
+  isQuickErasing: false,
 
   brushes: {
     [BRUSH_PENCIL]: {
@@ -152,13 +153,25 @@ class Toolbar extends EventEmitter {
     this.render()
   }
 
+  getIsQuickErasing () {
+    return this.state.isQuickErasing
+  }
+
+  setIsQuickErasing (value) {
+    this.state.isQuickErasing = value
+  }
+
   changeCurrentColor (color) {
+    if (this.getIsQuickErasing()) return
+
     this.state.brushes[this.state.brush].color = color
     this.emit('brush:color', this.getBrushOptions().color)
     this.render()
   }
 
   changePaletteColor (brush, index, color) {
+    if (this.getIsQuickErasing()) return
+
     // NOTE ignores passed brush and uses current brush,
     //      in case we changed since we invoked the color picker
     this.state.brushes[this.state.brush].palette[index] = color

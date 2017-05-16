@@ -31,7 +31,6 @@ class StoryboarderSketchPane extends EventEmitter {
     
     this.isMultiLayerOperation = false
 
-    this.isQuickErasing = false
     this.prevTool = null
     this.toolbar = null
 
@@ -134,7 +133,7 @@ class StoryboarderSketchPane extends EventEmitter {
     // quick erase : on
     this.setQuickEraseIfRequested()
 
-    if (!this.isQuickErasing && this.sketchPane.getPaintingKnockout()) {
+    if (!this.toolbar.getIsQuickErasing() && this.sketchPane.getPaintingKnockout()) {
       this.startMultiLayerOperation()
       this.setCompositeLayerVisibility(true)
     }
@@ -319,7 +318,7 @@ class StoryboarderSketchPane extends EventEmitter {
     this.brush.setFlow(options.flow)
     this.brush.setHardness(options.hardness)
 
-    if (!this.isQuickErasing) {
+    if (!this.toolbar.getIsQuickErasing()) {
       let layerName
       switch (kind) {
         case 'light-pencil':
@@ -366,7 +365,7 @@ class StoryboarderSketchPane extends EventEmitter {
     if (keytracker('<alt>')) {
       // don't switch if we're already on an eraser
       if (this.toolbar.getBrushOptions().kind !== 'eraser') {
-        this.isQuickErasing = true
+        this.toolbar.setIsQuickErasing(true)
         this.prevTool = this.toolbar.getBrushOptions()
         this.setBrushTool('eraser', this.toolbar.getBrushOptions('eraser'))
       }
@@ -374,8 +373,8 @@ class StoryboarderSketchPane extends EventEmitter {
   }
 
   unsetQuickErase () {
-    if (this.isQuickErasing) {
-      this.isQuickErasing = false
+    if (this.toolbar.getIsQuickErasing()) {
+      this.toolbar.setIsQuickErasing(false)
       this.setBrushTool(this.prevTool.kind, this.prevTool)
       this.prevTool = null
     }
