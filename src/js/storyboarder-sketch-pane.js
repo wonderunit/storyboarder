@@ -162,10 +162,9 @@ class StoryboarderSketchPane extends EventEmitter {
   }
 
   canvasCursorMove (e) {
-    let x = e.clientX + window.pageXOffset
-    let y = e.clientY + window.pageYOffset
-    this.brushPointerContainer.style.setProperty('left', x + 'px')
-    this.brushPointerContainer.style.setProperty('top', y + 'px')
+    let x = e.clientX + window.scrollX
+    let y = e.clientY + window.scrollY
+    this.brushPointerContainer.style.transform = 'translate(' + x + 'px, ' + y + 'px)'
   }
 
   canvasPointerOver () {
