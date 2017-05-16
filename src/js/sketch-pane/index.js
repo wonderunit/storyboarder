@@ -74,10 +74,12 @@ class SketchPane extends EventEmitter {
     return this.domElement
   }
 
-  getRelativePosition (absoluteX, absoluteY) {
-    let rect = this.domElement.getBoundingClientRect()
-    return {x: absoluteX - rect.left,y: absoluteY - rect.top}
-  }
+  // NOTE never used. could remove.
+  //
+  // getRelativePosition (absoluteX, absoluteY) {
+  //   let rect = this.domElement.getBoundingClientRect()
+  //   return { x: absoluteX - rect.left, y: absoluteY - rect.top }
+  // }
 
   getCanvasSize () {
     return {width: this.size.width, height: this.size.height} //clone size
