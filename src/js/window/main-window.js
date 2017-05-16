@@ -416,6 +416,7 @@ let loadBoardUI = ()=> {
 
 
 
+  // HACK force initialize
   sfx.setMute(true)
   toolbar.setState({ brush: 'pencil' })
   sfx.setMute(false)

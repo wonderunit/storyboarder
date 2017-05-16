@@ -4,6 +4,7 @@ const Color = require('color-js')
 const util = require('../utils/index.js')
 const sfx = require('../wonderunit-sound.js')
 
+// TODO why even have these constants if we don't use them consistently?
 const BRUSH_PENCIL = 'pencil'
 const BRUSH_LIGHT_PENCIL = 'light-pencil'
 const BRUSH_PEN = 'pen'
