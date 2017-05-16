@@ -161,6 +161,8 @@ class StoryboarderSketchPane extends EventEmitter {
     document.removeEventListener('pointerup', this.canvasPointerUp)
   }
 
+  // TODO FIXME is window.scrollX causing a layout recalc?
+  //            is window.scrollX even necessary?
   canvasCursorMove (e) {
     let x = e.clientX + window.scrollX
     let y = e.clientY + window.scrollY
