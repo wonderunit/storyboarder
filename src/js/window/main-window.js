@@ -525,6 +525,12 @@ let loadBoardUI = ()=> {
     textInputMode = false
   })
 
+  window.addEventListener('beforeunload', event => {
+    console.log('Close requested! Saving ...')
+    saveBoardFile()
+    saveImageFile()
+  })
+
   resize()
 
   setTimeout(()=>{remote.getCurrentWindow().show()}, 200)
