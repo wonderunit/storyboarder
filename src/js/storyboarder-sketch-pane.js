@@ -9,8 +9,9 @@ class StoryboarderSketchPane extends EventEmitter {
   constructor (el, canvasSize) {
     super()
 
-    this.layerIndexByName = ['reference', 'main', 'onion', 'notes', 'guides', 'composite']
-    this.visibleLayers = ['reference', 'main', 'notes']
+    // HACK hardcoded
+    this.visibleLayersIndices = [0, 1, 3] // reference, main, notes
+    this.compositeIndex = 5 // composite
 
     this.canvasPointerUp = this.canvasPointerUp.bind(this)
     this.canvasPointerDown = this.canvasPointerDown.bind(this)
@@ -49,7 +50,7 @@ class StoryboarderSketchPane extends EventEmitter {
     this.sketchPane.on('ondown', () => {
       if (this.sketchPane.paintingKnockout) {
         if (this.isMultiLayerOperation) {
-          this.emit('addToUndoStack', this.visibleLayers.map(n => this.layerIndexByName.indexOf(n)))
+          this.emit('addToUndoStack', this.visibleLayersIndices)
         } else {
           this.emit('addToUndoStack')
         }
@@ -74,7 +75,7 @@ class StoryboarderSketchPane extends EventEmitter {
       // brushes: yes
       if (this.isMultiLayerOperation) {
         // trigger a save to any layer possibly changed by the operation
-        this.emit('markDirty', this.visibleLayers.map(n => this.layerIndexByName.indexOf(n)))
+        this.emit('markDirty', this.visibleLayersIndices)
         this.isMultiLayerOperation = false
       } else {
         this.emit('markDirty', [this.sketchPane.getCurrentLayerIndex()])
@@ -282,7 +283,7 @@ class StoryboarderSketchPane extends EventEmitter {
    *
    */
   clearLayers (layerIndices) {
-    if (!layerIndices) layerIndices = this.visibleLayers.map(n => this.layerIndexByName.indexOf(n))
+    if (!layerIndices) layerIndices = this.visibleLayersIndices
     this.emit('addToUndoStack', layerIndices)
     for (let index of layerIndices) {
       this.sketchPane.clearLayer(index)
@@ -302,7 +303,7 @@ class StoryboarderSketchPane extends EventEmitter {
     for (var i = 0; i < this.sketchPane.layers.length; ++i) {
       this.sketchPane.flipLayer(i)
     }
-    this.emit('markDirty', this.visibleLayers.map(n => this.layerIndexByName.indexOf(n)))
+    this.emit('markDirty', this.visibleLayersIndices)
   }
   setBrushTool (kind, options) {
     if (this.getIsDrawingOrStabilizing()) {
@@ -323,19 +324,19 @@ class StoryboarderSketchPane extends EventEmitter {
     this.brush.setHardness(options.hardness)
 
     if (!this.toolbar.getIsQuickErasing()) {
-      let layerName
+      let selectedLayerIndex
       switch (kind) {
         case 'light-pencil':
-          layerName = 'reference'
+          selectedLayerIndex = 0 // HACK hardcoded
           break
         case 'note-pen':
-          layerName = 'notes'
+          selectedLayerIndex = 3 // HACK hardcoded
           break
         default:
-          layerName = 'main'
+          selectedLayerIndex = 1 // HACK hardcoded
           break
       }
-      this.sketchPane.selectLayer(this.layerIndexByName.indexOf(layerName))
+      this.sketchPane.selectLayer(selectedLayerIndex)
 
       // fat eraser
       if (kind === 'eraser') {
@@ -389,15 +390,12 @@ class StoryboarderSketchPane extends EventEmitter {
 
     this.isMultiLayerOperation = true
 
-    let compositeIndex = this.layerIndexByName.indexOf('composite')
-    let compositeContext = this.sketchPane.getLayerContext(compositeIndex)
+    let compositeContext = this.sketchPane.getLayerContext(this.compositeIndex)
 
-    this.sketchPane.clearLayer(compositeIndex)
+    this.sketchPane.clearLayer(this.compositeIndex)
 
     // draw composite from layers
-    for (let name of this.visibleLayers) {
-      let index = this.layerIndexByName.indexOf(name)
-
+    for (let index of this.visibleLayersIndices) {
       let canvas = this.sketchPane.getLayerCanvas(index)
       let context = this.sketchPane.getLayerContext(index)
 
@@ -405,7 +403,7 @@ class StoryboarderSketchPane extends EventEmitter {
     }
 
     // select that layer
-    this.sketchPane.selectLayer(compositeIndex)
+    this.sketchPane.selectLayer(this.compositeIndex)
 
     // listen to beforeup
     this.sketchPane.on('onbeforeup', this.stopMultiLayerOperation)
@@ -413,24 +411,17 @@ class StoryboarderSketchPane extends EventEmitter {
 
   // TODO indices instead of names
   setCompositeLayerVisibility (value) {
-    let compositeIndex = this.layerIndexByName.indexOf('composite')
-
     // solo the composite layer
-    for (let name of this.visibleLayers) {
-      let index = this.layerIndexByName.indexOf(name)
+    for (let index of this.visibleLayersIndices) {
       this.sketchPane.setLayerVisible(!value, index)
     }
-    this.sketchPane.setLayerVisible(value, compositeIndex)
+    this.sketchPane.setLayerVisible(value, this.compositeIndex)
   }
 
   stopMultiLayerOperation () {
     if (!this.isMultiLayerOperation) return
 
-    let compositeIndex = this.layerIndexByName.indexOf('composite')
-
-    for (let name of this.visibleLayers) {
-      let index = this.layerIndexByName.indexOf(name)
-
+    for (let index of this.visibleLayersIndices) {
       // apply result of erase bitmap to layer
       // code from SketchPane#drawPaintingCanvas
       let context = this.sketchPane.getLayerContext(index)
@@ -463,8 +454,11 @@ class StoryboarderSketchPane extends EventEmitter {
     }
   }
 
+  // FIXME DEPRECATED remove references in main-window if possible, use indices instead
   getLayerCanvasByName (name) {
-    return this.sketchPane.getLayerCanvas(this.layerIndexByName.indexOf(name))
+    // HACK hardcoded
+    const layerIndexByName = ['reference', 'main', 'onion', 'notes', 'guides', 'composite']
+    return this.sketchPane.getLayerCanvas(layerIndexByName.indexOf(name))
   }
 
   getSnapshotAsCanvas (index) {
@@ -475,10 +469,6 @@ class StoryboarderSketchPane extends EventEmitter {
   
   getIsDrawingOrStabilizing () {
     return this.sketchPane.isDrawing || this.sketchPane.isStabilizing
-  }
-
-  getCurrentLayerName () {
-    return this.layerIndexByName[this.sketchPane.getCurrentLayerIndex()]
   }
 }
 
