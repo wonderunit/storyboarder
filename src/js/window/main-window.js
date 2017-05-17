@@ -2285,7 +2285,7 @@ let pasteBoards = () => {
       let data = JSON.parse(text)
       newBoards = data.boards
     } catch (err) {
-      console.err(err)
+      console.error(err)
     }
   }
 
