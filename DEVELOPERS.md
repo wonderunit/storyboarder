@@ -37,6 +37,8 @@ For Linux, you will need these dependencies:
 - icnsutils - provides `icns2png`
 - graphicsmagick
 
+It is possible to [build for Linux on other platforms using a Docker container](https://github.com/electron-userland/electron-builder/wiki/Docker).
+
 ## Deploying
 
 Remember to sync data files that have server representation (like `messages.json`).
