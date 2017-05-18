@@ -1,17 +1,11 @@
-// via: right-now
-const now = () => {
-  var time = process.hrtime()
-  return time[0] * 1e3 + time[1] / 1e6
-}
-
 class Stabilizer {
   constructor (downFunction, moveFunction, upFunction, level, weight, x, y, pressure, interval) {
     this.downFunction = downFunction
     this.moveFunction = moveFunction
     this.upFunction = upFunction
     this.interval = interval || 5
-    this.follow = 1 - Math.min(0.95, Math.max(0, weight));
-    this.paramTable = [];
+    this.follow = 1 - Math.min(0.95, Math.max(0, weight))
+    this.paramTable = []
     this.current = {x: x, y: y, pressure: pressure}
     for (var i = 0; i < level; ++i) {
       this.paramTable.push({ x: x, y: y, pressure: pressure })
@@ -23,11 +17,8 @@ class Stabilizer {
       downFunction(x, y, pressure)
     }
 
-    this.onRequestAnimationFrame = this.onRequestAnimationFrame.bind(this)
-    this.elapsed = 0
-    this.shouldMove = true
-    this.then = now()
-    requestAnimationFrame(this.onRequestAnimationFrame)
+    this._move = this._move.bind(this)
+    setTimeout(this._move, this.interval)
   }
 
   getParamTable () { 
@@ -85,27 +76,9 @@ class Stabilizer {
       this.upFunction(this.last.x, this.last.y, this.last.pressure)
     } else {
       this.moveFunction(this.last.x, this.last.y, this.last.pressure)
-
-      this.elapsed = 0
-      this.shouldMove = true
-      this.then = now()
+      setTimeout(this._move, this.interval)
     }
   }
-
-  onRequestAnimationFrame () {
-    if (this.shouldMove) {
-      let delta = now() - this.then
-      this.elapsed += delta
-      if (this.elapsed > this.interval) {
-        this.elapsed = 0
-        this.shouldMove = false
-        this.then = null
-        this._move()
-      }
-    }
-    requestAnimationFrame(this.onRequestAnimationFrame)
-  }
-
 }
 
 module.exports = Stabilizer
