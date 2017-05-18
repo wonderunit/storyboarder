@@ -1901,6 +1901,10 @@ let utter = new SpeechSynthesisUtterance()
 
 let stopPlaying = () => {
   clearTimeout(frameTimer)
+
+  // prevent unnecessary calls
+  if (!playbackMode) return
+
   playbackMode = false
   utter.onend = null
   ipcRenderer.send('resumeSleep')
