@@ -33,6 +33,7 @@ const housekeeping = () => {
 }
 
 const setupTooltipForElement = (el) => {
+  if (!getEnableTooltips()) return false
   let title = el.dataset.tooltipTitle
   let description = el.dataset.tooltipDescription || ''
   let keys = el.dataset.tooltipKeys
