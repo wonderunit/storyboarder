@@ -1394,7 +1394,10 @@ let renderThumbnailButtons = () => {
       newBoard(boardData.boards.length)
       gotoBoard(boardData.boards.length)
     })
-    
+
+    // NOTE tooltips.setupTooltipForElement checks prefs each time, e.g.:
+    // if (sharedObj.prefs['enableTooltips']) { }
+    // ... which is slow
     tooltips.setupTooltipForElement(el)
   }
 }
