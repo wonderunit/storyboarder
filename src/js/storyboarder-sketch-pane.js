@@ -201,6 +201,80 @@ class StoryboarderSketchPane extends EventEmitter {
     this.brushPointerContainer.appendChild(brushPointer)
   }
 
+  setQuickEraseIfRequested () {
+    if (keytracker('<alt>')) {
+      // don't switch if we're already on an eraser
+      if (this.toolbar.getBrushOptions().kind !== 'eraser') {
+        this.toolbar.setIsQuickErasing(true)
+        this.prevTool = this.toolbar.getBrushOptions()
+        this.setBrushTool('eraser', this.toolbar.getBrushOptions('eraser'))
+      }
+    }
+  }
+
+  unsetQuickErase () {
+    if (this.toolbar.getIsQuickErasing()) {
+      this.toolbar.setIsQuickErasing(false)
+      this.setBrushTool(this.prevTool.kind, this.prevTool)
+      this.prevTool = null
+    }
+  }
+
+  startMultiLayerOperation () {
+    if (this.isMultiLayerOperation) return
+
+    this.isMultiLayerOperation = true
+
+    let compositeContext = this.sketchPane.getLayerContext(this.compositeIndex)
+
+    this.sketchPane.clearLayer(this.compositeIndex)
+
+    // draw composite from layers
+    for (let index of this.visibleLayersIndices) {
+      let canvas = this.sketchPane.getLayerCanvas(index)
+      let context = this.sketchPane.getLayerContext(index)
+
+      compositeContext.drawImage(canvas, 0, 0)
+    }
+
+    // select that layer
+    this.sketchPane.selectLayer(this.compositeIndex)
+
+    // listen to beforeup
+    this.sketchPane.on('onbeforeup', this.stopMultiLayerOperation)
+  }
+
+  // TODO indices instead of names
+  setCompositeLayerVisibility (value) {
+    // solo the composite layer
+    for (let index of this.visibleLayersIndices) {
+      this.sketchPane.setLayerVisible(!value, index)
+    }
+    this.sketchPane.setLayerVisible(value, this.compositeIndex)
+  }
+
+  stopMultiLayerOperation () {
+    if (!this.isMultiLayerOperation) return
+
+    for (let index of this.visibleLayersIndices) {
+      // apply result of erase bitmap to layer
+      // code from SketchPane#drawPaintingCanvas
+      let context = this.sketchPane.getLayerContext(index)
+      let w = this.sketchPane.size.width
+      let h = this.sketchPane.size.height
+      context.save()
+      context.globalAlpha = 1
+      context.globalCompositeOperation = 'destination-out'
+      context.drawImage(this.sketchPane.paintingCanvas, 0, 0, w, h)
+      context.restore()
+    }
+
+    // reset
+    this.setCompositeLayerVisibility(false)
+
+    this.sketchPane.removeListener('onbeforeup', this.stopMultiLayerOperation)
+  }
+
   // given a clientX and clientY,
   //   calculate the equivalent point on the sketchPane
   //     considering position and scale of the sketchPane
@@ -364,80 +438,6 @@ class StoryboarderSketchPane extends EventEmitter {
     this.brush.setColor(color.toCSS())
     this.sketchPane.setTool(this.brush)
     this.updatePointer()
-  }
-
-  setQuickEraseIfRequested () {
-    if (keytracker('<alt>')) {
-      // don't switch if we're already on an eraser
-      if (this.toolbar.getBrushOptions().kind !== 'eraser') {
-        this.toolbar.setIsQuickErasing(true)
-        this.prevTool = this.toolbar.getBrushOptions()
-        this.setBrushTool('eraser', this.toolbar.getBrushOptions('eraser'))
-      }
-    }
-  }
-
-  unsetQuickErase () {
-    if (this.toolbar.getIsQuickErasing()) {
-      this.toolbar.setIsQuickErasing(false)
-      this.setBrushTool(this.prevTool.kind, this.prevTool)
-      this.prevTool = null
-    }
-  }
-
-  startMultiLayerOperation () {
-    if (this.isMultiLayerOperation) return
-
-    this.isMultiLayerOperation = true
-
-    let compositeContext = this.sketchPane.getLayerContext(this.compositeIndex)
-
-    this.sketchPane.clearLayer(this.compositeIndex)
-
-    // draw composite from layers
-    for (let index of this.visibleLayersIndices) {
-      let canvas = this.sketchPane.getLayerCanvas(index)
-      let context = this.sketchPane.getLayerContext(index)
-
-      compositeContext.drawImage(canvas, 0, 0)
-    }
-
-    // select that layer
-    this.sketchPane.selectLayer(this.compositeIndex)
-
-    // listen to beforeup
-    this.sketchPane.on('onbeforeup', this.stopMultiLayerOperation)
-  }
-
-  // TODO indices instead of names
-  setCompositeLayerVisibility (value) {
-    // solo the composite layer
-    for (let index of this.visibleLayersIndices) {
-      this.sketchPane.setLayerVisible(!value, index)
-    }
-    this.sketchPane.setLayerVisible(value, this.compositeIndex)
-  }
-
-  stopMultiLayerOperation () {
-    if (!this.isMultiLayerOperation) return
-
-    for (let index of this.visibleLayersIndices) {
-      // apply result of erase bitmap to layer
-      // code from SketchPane#drawPaintingCanvas
-      let context = this.sketchPane.getLayerContext(index)
-      let w = this.sketchPane.size.width
-      let h = this.sketchPane.size.height
-      context.save()
-      context.globalAlpha = 1
-      context.globalCompositeOperation = 'destination-out'
-      context.drawImage(this.sketchPane.paintingCanvas, 0, 0, w, h)
-      context.restore()
-    }
-
-    // reset
-    this.setCompositeLayerVisibility(false)
-
-    this.sketchPane.removeListener('onbeforeup', this.stopMultiLayerOperation)
   }
 
   // HACK copied from toolbar
