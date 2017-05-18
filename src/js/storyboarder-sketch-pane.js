@@ -137,6 +137,9 @@ class StoryboarderSketchPane extends EventEmitter {
   }
 
   canvasPointerDown (e) {
+    // prevent overlapping calls
+    if (this.getIsDrawingOrStabilizing()) return
+
     // quick erase : on
     this.setQuickEraseIfRequested()
 
