@@ -28,6 +28,8 @@ class StoryboarderSketchPane extends EventEmitter {
     this.containerSize = null
     this.scaleFactor = null
 
+    this.moveEventsQueue = []
+    this.cursorEventsQueue = []
     this.lineMileageCounter = new LineMileageCounter()
     
     this.isMultiLayerOperation = false
@@ -119,6 +121,9 @@ class StoryboarderSketchPane extends EventEmitter {
     
     // adjust sizes
     this.renderContainerSize()
+
+    this.onFrame = this.onFrame.bind(this)
+    requestAnimationFrame(this.onFrame)
   }
 
   onKeyDown (e) {
@@ -150,12 +155,25 @@ class StoryboarderSketchPane extends EventEmitter {
 
   canvasPointerMove (e) {
     let pointerPosition = this.getRelativePosition(e.clientX, e.clientY)
-    this.sketchPane.move(pointerPosition.x, pointerPosition.y, e.pointerType === "pen" ? e.pressure : 1)
-    this.lineMileageCounter.add(pointerPosition)
-    this.emit('pointermove', pointerPosition.x, pointerPosition.y, e.pointerType === "pen" ? e.pressure : 1, e.pointerType)
+
+    this.moveEventsQueue.push({
+      clientX: e.clientX,
+      clientY: e.clientY,
+
+      x: pointerPosition.x,
+      y: pointerPosition.y,
+      pointerType: e.pointerType,
+      pressure: e.pressure
+    })
   }
 
   canvasPointerUp (e) {
+    // force render remaining move events early, before frame loop
+    this.renderEvents()
+    // clear both event queues
+    this.moveEventsQueue = []
+    this.cursorEventsQueue = []
+
     let pointerPosition = this.getRelativePosition(e.clientX, e.clientY)
     this.sketchPane.up(pointerPosition.x, pointerPosition.y, e.pointerType === "pen" ? e.pressure : 1)
     this.emit('lineMileage', this.lineMileageCounter.get())
@@ -163,12 +181,8 @@ class StoryboarderSketchPane extends EventEmitter {
     document.removeEventListener('pointerup', this.canvasPointerUp)
   }
 
-  // TODO FIXME is window.scrollX causing a layout recalc?
-  //            is window.scrollX even necessary?
-  canvasCursorMove (e) {
-    let x = e.clientX + window.scrollX
-    let y = e.clientY + window.scrollY
-    this.brushPointerContainer.style.transform = 'translate(' + x + 'px, ' + y + 'px)'
+  canvasCursorMove (event) {
+    this.cursorEventsQueue.push({ clientX: event.clientX, clientY: event.clientY })
   }
 
   canvasPointerOver () {
@@ -177,7 +191,37 @@ class StoryboarderSketchPane extends EventEmitter {
 
   canvasPointerOut () {
     this.sketchPaneDOMElement.removeEventListener('pointermove', this.canvasCursorMove)
+  }
 
+  onFrame (timestep) {
+    this.renderEvents()
+    requestAnimationFrame(this.onFrame)
+  }
+
+  renderEvents () {
+    let lastCursorEvent,
+        moveEvent
+
+    // render the cursor
+    if (this.cursorEventsQueue.length) {
+      lastCursorEvent = this.cursorEventsQueue.pop()
+
+      // update the position of the cursor
+      this.brushPointerContainer.style.transform = 'translate(' + lastCursorEvent.clientX + 'px, ' + lastCursorEvent.clientY + 'px)'
+
+      this.cursorEventsQueue = []
+    }
+
+    // render movements
+    if (this.moveEventsQueue.length) {
+      while (this.moveEventsQueue.length) {
+        moveEvent = this.moveEventsQueue.shift()
+        this.sketchPane.move(moveEvent.x, moveEvent.y, moveEvent.pointerType === "pen" ? moveEvent.pressure : 1)
+        this.lineMileageCounter.add({ x: moveEvent.y, y: moveEvent.y })
+      }
+
+      // report only the most recent event back to the app
+      this.emit('pointermove', moveEvent.x, moveEvent.y, moveEvent.pointerType === "pen" ? moveEvent.pressure : 1, moveEvent.pointerType)
     }
   }
 
