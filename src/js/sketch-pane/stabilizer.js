@@ -16,7 +16,11 @@ class Stabilizer {
     if (downFunction != null) {
       downFunction(x, y, pressure)
     }
-    setTimeout(this._move.bind(this), this.interval)
+
+    this.onRequestAnimationFrame = this.onRequestAnimationFrame.bind(this)
+    this.elapsed = 0
+    this.shouldMove = true
+    requestAnimationFrame(this.onRequestAnimationFrame)
   }
 
   getParamTable () { 
@@ -69,13 +73,27 @@ class Stabilizer {
     if (this.upCalled) {
       while(delta > 1) {
         this.moveFunction(this.last.x, this.last.y, this.last.pressure)
-        delta = this._move(true);
+        delta = this._move(true)
       }
       this.upFunction(this.last.x, this.last.y, this.last.pressure)
     } else {
       this.moveFunction(this.last.x, this.last.y, this.last.pressure)
-      setTimeout(this._move.bind(this), this.interval);
+
+      this.elapsed = 0
+      this.shouldMove = true
     }
+  }
+
+  onRequestAnimationFrame (delta) {
+    if (this.shouldMove) {
+      this.elapsed += delta
+      if (this.elapsed > this.interval) {
+        this.elapsed = 0
+        this.shouldMove = false
+        this._move()
+      }
+    }
+    requestAnimationFrame(this.onRequestAnimationFrame)
   }
 
 }
