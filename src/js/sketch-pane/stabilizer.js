@@ -1,3 +1,9 @@
+// via: right-now
+const now = () => {
+  var time = process.hrtime()
+  return time[0] * 1e3 + time[1] / 1e6
+}
+
 class Stabilizer {
   constructor (downFunction, moveFunction, upFunction, level, weight, x, y, pressure, interval) {
     this.downFunction = downFunction
@@ -20,6 +26,7 @@ class Stabilizer {
     this.onRequestAnimationFrame = this.onRequestAnimationFrame.bind(this)
     this.elapsed = 0
     this.shouldMove = true
+    this.then = now()
     requestAnimationFrame(this.onRequestAnimationFrame)
   }
 
@@ -81,15 +88,18 @@ class Stabilizer {
 
       this.elapsed = 0
       this.shouldMove = true
+      this.then = now()
     }
   }
 
-  onRequestAnimationFrame (delta) {
+  onRequestAnimationFrame () {
     if (this.shouldMove) {
+      let delta = now() - this.then
       this.elapsed += delta
       if (this.elapsed > this.interval) {
         this.elapsed = 0
         this.shouldMove = false
+        this.then = null
         this._move()
       }
     }
