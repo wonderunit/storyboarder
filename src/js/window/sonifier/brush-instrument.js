@@ -67,9 +67,9 @@ module.exports = (opt = { samplePath: './snd/drawing-loop.wav' }) => {
   const setWarble = (warble, fast) => {
     let speed = fast ? 0.05 : 0.5
     if (warble) {
-      filterB.filter.frequency.rampTo(3000, 0.05)
+      //filterB.filter.frequency.rampTo(3000, 0.05)
     } else {
-      filterB.filter.frequency.rampTo(9000, 0.05)
+      //filterB.filter.frequency.rampTo(9000, 0.05)
     }
   }
 

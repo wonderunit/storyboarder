@@ -38,7 +38,7 @@ const Sequence = (_list = [], offset = 0) => {
 module.exports = () => {
   let seq = Sequence(progression, 0) // , Math.floor(Math.random() * progression.length)
 
-  let synth = new Tone.PolySynth(8, Tone.Synth)
+  let synth = new Tone.PolySynth(6, Tone.Synth)
     .set({
       "oscillator" : {
         "type" : "square2"
@@ -51,7 +51,7 @@ module.exports = () => {
       },
     })
 
-  let bassSynth2 = new Tone.PolySynth(3, Tone.Synth)
+  let bassSynth2 = new Tone.PolySynth(1, Tone.Synth)
     .set({
       "oscillator" : {
         "type" : "sine"

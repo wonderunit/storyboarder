@@ -49,7 +49,7 @@ const setMute = value => isMuted = value
 
 // set up sound sources.
 
-var synth = new Tone.PolySynth(10, Tone.Synth)
+var synth = new Tone.PolySynth(3, Tone.Synth)
 synth.set({
   "oscillator" : {
     "type" : "square2"
@@ -62,7 +62,7 @@ synth.set({
  },
 })
 
-var bassSynth = new Tone.PolySynth(10, Tone.FMSynth)
+var bassSynth = new Tone.PolySynth(3, Tone.FMSynth)
 bassSynth.set({
   "harmonicity":3,
   "modulationIndex":20,
@@ -87,7 +87,7 @@ bassSynth.set({
 }})
 bassSynth.set('volume', -6)
 
-var bassSynth2 = new Tone.PolySynth(10, Tone.Synth)
+var bassSynth2 = new Tone.PolySynth(3, Tone.Synth)
 bassSynth2.set({
   "oscillator" : {
     "type" : "sine"
@@ -101,7 +101,7 @@ bassSynth2.set({
 })
 bassSynth2.set('volume', -12).toMaster()
 
-var errorSynth = new Tone.PolySynth(10, Tone.Synth)
+var errorSynth = new Tone.PolySynth(3, Tone.Synth)
 errorSynth.set({
   "oscillator" : {
     "type" : "sawtooth"
