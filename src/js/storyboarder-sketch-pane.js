@@ -108,6 +108,7 @@ class StoryboarderSketchPane extends EventEmitter {
     this.brushPointerContainer.className = 'brush-pointer'
     this.brushPointerContainer.style.position = 'absolute'
     this.brushPointerContainer.style.pointerEvents = 'none'
+    document.body.appendChild(this.brushPointerContainer)
 
     // measure
     this.updateContainerSize()
@@ -172,14 +173,11 @@ class StoryboarderSketchPane extends EventEmitter {
 
   canvasPointerOver () {
     this.sketchPaneDOMElement.addEventListener('pointermove', this.canvasCursorMove)
-    document.body.appendChild(this.brushPointerContainer)
   }
 
   canvasPointerOut () {
     this.sketchPaneDOMElement.removeEventListener('pointermove', this.canvasCursorMove)
 
-    if (this.brushPointerContainer.parentElement) {
-      this.brushPointerContainer.parentElement.removeChild(this.brushPointerContainer)
     }
   }
 
