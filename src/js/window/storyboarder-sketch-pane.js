@@ -13,10 +13,12 @@ const keytracker = require('../utils/keytracker')
  *
  *  @param {HTMLElement} el reference to the container element, e.g. reference to div#storyboarder-sketch-pane
  *  @param {array} canvasSize array of [width, height]. width is always 900.
-*/
+ */
 class StoryboarderSketchPane extends EventEmitter {
   constructor (el, canvasSize) {
     super()
+
+    this.containerPadding = 100
 
     // HACK hardcoded
     this.visibleLayersIndices = [0, 1, 3] // reference, main, notes
@@ -83,7 +85,7 @@ class StoryboarderSketchPane extends EventEmitter {
     window.addEventListener('keydown', this.onKeyDown)
     window.addEventListener('keyup', this.onKeyUp)
 
-    // measure
+    // measure and update cached size data
     this.updateContainerSize()
 
     // add container to element
@@ -341,32 +343,45 @@ class StoryboarderSketchPane extends EventEmitter {
       : [frameSize[0], imageSize[1] * frameSize[0] / imageSize[0]]
   }
 
+  /**
+   * Given the dimensions of the wrapper element (this.el),
+   *   update the fixed size .container to fit, with padding applied
+   *   update the containerSize, cached for use by the renderer
+   *   update the scaleFactor, used by the pointer
+   */
   updateContainerSize () {
-    let padding = 100
-
+    // this.sketchPaneDOMElement.style.display = 'none'
+    
     let rect = this.el.getBoundingClientRect()
-    let elSize = [rect.width - padding, rect.height - padding]
+    let size = [rect.width - this.containerPadding, rect.height - this.containerPadding]
 
-    this.containerSize = this.fit(elSize, this.canvasSize).map(Math.floor)
+    this.containerSize = this.fit(size, this.canvasSize).map(Math.floor)
     this.scaleFactor = this.containerSize[1] / this.canvasSize[1] // based on height
   }
 
   // TODO should this container scaling be a SketchPane feature?
-  // TODO why don't we use SketchPane#setCanvasSize?
+  /**
+   * Given the cached dimensions representing the available area (this.containerSize)
+   *   update the fixed size .container to fit, with padding applied
+   */
   renderContainerSize () {
+    // the container
     this.containerEl.style.width = this.containerSize[0] + 'px'
     this.containerEl.style.height = this.containerSize[1] + 'px'
 
-    let sketchPaneDOMElement = this.sketchPane.getDOMElement()
-    sketchPaneDOMElement.style.width = this.containerSize[0] + 'px'
-    sketchPaneDOMElement.style.height = this.containerSize[1] + 'px'
+    // the sketchpane
+    this.sketchPaneDOMElement.style.width = this.containerSize[0] + 'px'
+    this.sketchPaneDOMElement.style.height = this.containerSize[1] + 'px'
 
+    // the painting canvas
     this.sketchPane.paintingCanvas.style.width = this.containerSize[0] + 'px'
     this.sketchPane.paintingCanvas.style.height = this.containerSize[1] + 'px'
 
+    // the dirtyRectDisplay
     this.sketchPane.dirtyRectDisplay.style.width = this.containerSize[0] + 'px'
     this.sketchPane.dirtyRectDisplay.style.height = this.containerSize[1] + 'px'
 
+    // each layer
     let layers = this.sketchPane.getLayers()
     for (let i = 0; i < layers.length; ++i) {
       let canvas = this.sketchPane.getLayerCanvas(i)
@@ -374,6 +389,7 @@ class StoryboarderSketchPane extends EventEmitter {
       canvas.style.height = this.containerSize[1] + 'px'
     }
 
+    // cache the boundingClientRect
     this.boundingClientRect = this.sketchPaneDOMElement.getBoundingClientRect()
   }
 
