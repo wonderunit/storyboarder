@@ -123,19 +123,22 @@ module.exports = () => {
       )
       firstNote = false
     }
-    if (velocity > 0.25) {
-      synth.triggerAttackRelease(
-        Tone.Frequency(seq.recent()).transpose(Math.random() > 0.5 ? +12 : 0),
-        "32n",
-        undefined,
-        velocity)
-      
-      synth.triggerAttackRelease(
-        Tone.Frequency(seq.recent()).transpose(velocity > 0.4 ? +12 : 0),
-        "16n",
-        undefined,
-        velocity * 0.5
-      )
+
+    if (enableHighQualityAudio) {
+      if (velocity > 0.25) {
+        synth.triggerAttackRelease(
+          Tone.Frequency(seq.recent()).transpose(Math.random() > 0.5 ? +12 : 0),
+          "32n",
+          undefined,
+          velocity)
+        
+        synth.triggerAttackRelease(
+          Tone.Frequency(seq.recent()).transpose(velocity > 0.4 ? +12 : 0),
+          "16n",
+          undefined,
+          velocity * 0.5
+        )
+      }
     }
 
     shouldTrigger = false
