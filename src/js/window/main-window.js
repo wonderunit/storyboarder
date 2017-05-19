@@ -7,7 +7,7 @@ const menu = require('../menu.js')
 const util = require('../utils/index.js')
 const Color = require('color-js')
 
-const StoryboarderSketchPane = require('../storyboarder-sketch-pane.js')
+const StoryboarderSketchPane = require('./storyboarder-sketch-pane.js')
 const undoStack = require('../undo-stack.js')
 
 const Toolbar = require('./toolbar.js')

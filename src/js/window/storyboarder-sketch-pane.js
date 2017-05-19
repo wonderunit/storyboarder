@@ -1,9 +1,10 @@
 const EventEmitter = require('events').EventEmitter
 
-const SketchPane = require('./sketch-pane')
-const Brush = require('./sketch-pane/brush')
+const SketchPane = require('../sketch-pane')
+const Brush = require('../sketch-pane/brush')
+const LineMileageCounter = require('./line-mileage-counter')
 
-const keytracker = require('./utils/keytracker')
+const keytracker = require('../utils/keytracker')
 
 class StoryboarderSketchPane extends EventEmitter {
   constructor (el, canvasSize) {
@@ -514,37 +515,6 @@ class StoryboarderSketchPane extends EventEmitter {
   
   getIsDrawingOrStabilizing () {
     return this.sketchPane.isDrawing || this.sketchPane.isStabilizing
-  }
-}
-
-class LineMileageCounter {
-  constructor () {
-    this.reset()
-  }
-
-  distance (p1, p2) {
-    return Math.hypot(p2.x - p1.x, p2.y - p1.y)
-  }
-
-  reset () {
-    this.value = 0
-    this.prev = null
-  }
-
-  add (curr) {
-    if (this.prev) {
-      this.value += this.diff(this.prev, curr)
-    }
-    this.prev = curr
-  }
-
-  get () {
-    return this.value
-  }
-
-  diff (prev, curr) {
-    let v = this.distance(prev, curr)
-    return isNaN(v) ? 0 : v
   }
 }
 
