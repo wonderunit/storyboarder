@@ -1,13 +1,24 @@
 const EventEmitter = require('events').EventEmitter
 
-const SketchPane = require('./sketch-pane')
-const Brush = require('./sketch-pane/brush')
+const SketchPane = require('../sketch-pane')
+const Brush = require('../sketch-pane/brush')
+const LineMileageCounter = require('./line-mileage-counter')
 
-const keytracker = require('./utils/keytracker')
+const keytracker = require('../utils/keytracker')
 
+/**
+ *  Wrap the SketchPane component with features Storyboarder needs
+ *
+ *  Adds a `div.container` to contain the SketchPane. Updated on resize to fit within workspace.
+ *
+ *  @param {HTMLElement} el reference to the container element, e.g. reference to div#storyboarder-sketch-pane
+ *  @param {array} canvasSize array of [width, height]. width is always 900.
+ */
 class StoryboarderSketchPane extends EventEmitter {
   constructor (el, canvasSize) {
     super()
+
+    this.containerPadding = 100
 
     // HACK hardcoded
     this.visibleLayersIndices = [0, 1, 3] // reference, main, notes
@@ -28,6 +39,8 @@ class StoryboarderSketchPane extends EventEmitter {
     this.containerSize = null
     this.scaleFactor = null
 
+    this.moveEventsQueue = []
+    this.cursorEventsQueue = []
     this.lineMileageCounter = new LineMileageCounter()
     
     this.isMultiLayerOperation = false
@@ -35,54 +48,24 @@ class StoryboarderSketchPane extends EventEmitter {
     this.prevTool = null
     this.toolbar = null
 
+    // brush pointer
+    this.brushPointerContainer = document.createElement('div')
+    this.brushPointerContainer.className = 'brush-pointer'
+    this.brushPointerContainer.style.position = 'absolute'
+    this.brushPointerContainer.style.pointerEvents = 'none'
+    document.body.appendChild(this.brushPointerContainer)
+
+    // container
     this.containerEl = document.createElement('div')
     this.containerEl.classList.add('container')
 
     // sketchpane
     this.sketchPane = new SketchPane()
+    this.sketchPane.on('ondown', this.onSketchPaneDown.bind(this))
+    this.sketchPane.on('onbeforeup', this.onSketchPaneBeforeUp.bind(this))
+    this.sketchPane.on('onup', this.onSketchPaneOnUp.bind(this))
     this.sketchPane.setCanvasSize(...this.canvasSize)
-
-
-
-    // store snapshot on pointerdown?
-    // eraser : yes
-    // brushes: no
-    this.sketchPane.on('ondown', () => {
-      if (this.sketchPane.paintingKnockout) {
-        if (this.isMultiLayerOperation) {
-          this.emit('addToUndoStack', this.visibleLayersIndices)
-        } else {
-          this.emit('addToUndoStack')
-        }
-      }
-    })
-    // store snapshot before pointer up?
-    // eraser : no
-    // brushes: yes
-    this.sketchPane.on('onbeforeup', () => {
-      if (!this.sketchPane.paintingKnockout) {
-        this.emit('addToUndoStack')
-      }
-    })
-    this.sketchPane.on('onup', (...args) => {
-      // quick erase : off
-      this.unsetQuickErase()
-
-      this.emit('onup', ...args)
-
-      // store snapshot on up?
-      // eraser : yes
-      // brushes: yes
-      if (this.isMultiLayerOperation) {
-        // trigger a save to any layer possibly changed by the operation
-        this.emit('markDirty', this.visibleLayersIndices)
-        this.isMultiLayerOperation = false
-      } else {
-        this.emit('markDirty', [this.sketchPane.getCurrentLayerIndex()])
-      }
-    })
-
-
+    this.sketchPaneDOMElement = this.sketchPane.getDOMElement()
 
     this.sketchPane.addLayer(0) // reference
     this.sketchPane.fillLayer('#fff')
@@ -96,28 +79,65 @@ class StoryboarderSketchPane extends EventEmitter {
     this.sketchPane.setToolStabilizeLevel(10)
     this.sketchPane.setToolStabilizeWeight(0.2)
 
-    this.sketchPaneDOMElement = this.sketchPane.getDOMElement()
     this.el.addEventListener('pointerdown', this.canvasPointerDown)
     this.sketchPaneDOMElement.addEventListener('pointerover', this.canvasPointerOver)
     this.sketchPaneDOMElement.addEventListener('pointerout', this.canvasPointerOut)
     window.addEventListener('keydown', this.onKeyDown)
     window.addEventListener('keyup', this.onKeyUp)
 
-    // brush pointer
-    this.brushPointerContainer = document.createElement('div')
-    this.brushPointerContainer.className = 'brush-pointer'
-    this.brushPointerContainer.style.position = 'absolute'
-    this.brushPointerContainer.style.pointerEvents = 'none'
-
-    // measure
+    // measure and update cached size data
     this.updateContainerSize()
 
-    // add sketchpane
+    // add container to element
     this.el.appendChild(this.containerEl)
+    // add SketchPane to container
     this.containerEl.appendChild(this.sketchPaneDOMElement)
-    
+
     // adjust sizes
     this.renderContainerSize()
+
+    this.onFrame = this.onFrame.bind(this)
+    requestAnimationFrame(this.onFrame)
+  }
+
+  // store snapshot on pointerdown?
+  // eraser : yes
+  // brushes: no
+  onSketchPaneDown () {
+    if (this.sketchPane.paintingKnockout) {
+      if (this.isMultiLayerOperation) {
+        this.emit('addToUndoStack', this.visibleLayersIndices)
+      } else {
+        this.emit('addToUndoStack')
+      }
+    }
+  }
+
+  // store snapshot before pointer up?
+  // eraser : no
+  // brushes: yes
+  onSketchPaneBeforeUp () {
+    if (!this.sketchPane.paintingKnockout) {
+      this.emit('addToUndoStack')
+    }
+  }
+
+  onSketchPaneOnUp (...args) {
+    // quick erase : off
+    this.unsetQuickErase()
+
+    this.emit('onup', ...args)
+
+    // store snapshot on up?
+    // eraser : yes
+    // brushes: yes
+    if (this.isMultiLayerOperation) {
+      // trigger a save to any layer possibly changed by the operation
+      this.emit('markDirty', this.visibleLayersIndices)
+      this.isMultiLayerOperation = false
+    } else {
+      this.emit('markDirty', [this.sketchPane.getCurrentLayerIndex()])
+    }
   }
 
   onKeyDown (e) {
@@ -131,6 +151,9 @@ class StoryboarderSketchPane extends EventEmitter {
   }
 
   canvasPointerDown (e) {
+    // prevent overlapping calls
+    if (this.getIsDrawingOrStabilizing()) return
+
     // quick erase : on
     this.setQuickEraseIfRequested()
 
@@ -149,12 +172,25 @@ class StoryboarderSketchPane extends EventEmitter {
 
   canvasPointerMove (e) {
     let pointerPosition = this.getRelativePosition(e.clientX, e.clientY)
-    this.sketchPane.move(pointerPosition.x, pointerPosition.y, e.pointerType === "pen" ? e.pressure : 1)
-    this.lineMileageCounter.add(pointerPosition)
-    this.emit('pointermove', pointerPosition.x, pointerPosition.y, e.pointerType === "pen" ? e.pressure : 1, e.pointerType)
+
+    this.moveEventsQueue.push({
+      clientX: e.clientX,
+      clientY: e.clientY,
+
+      x: pointerPosition.x,
+      y: pointerPosition.y,
+      pointerType: e.pointerType,
+      pressure: e.pressure
+    })
   }
 
   canvasPointerUp (e) {
+    // force render remaining move events early, before frame loop
+    this.renderEvents()
+    // clear both event queues
+    this.moveEventsQueue = []
+    this.cursorEventsQueue = []
+
     let pointerPosition = this.getRelativePosition(e.clientX, e.clientY)
     this.sketchPane.up(pointerPosition.x, pointerPosition.y, e.pointerType === "pen" ? e.pressure : 1)
     this.emit('lineMileage', this.lineMileageCounter.get())
@@ -162,43 +198,124 @@ class StoryboarderSketchPane extends EventEmitter {
     document.removeEventListener('pointerup', this.canvasPointerUp)
   }
 
-  // TODO FIXME is window.scrollX causing a layout recalc?
-  //            is window.scrollX even necessary?
-  canvasCursorMove (e) {
-    let x = e.clientX + window.scrollX
-    let y = e.clientY + window.scrollY
-    this.brushPointerContainer.style.transform = 'translate(' + x + 'px, ' + y + 'px)'
+  canvasCursorMove (event) {
+    this.cursorEventsQueue.push({ clientX: event.clientX, clientY: event.clientY })
   }
 
   canvasPointerOver () {
     this.sketchPaneDOMElement.addEventListener('pointermove', this.canvasCursorMove)
-    document.body.appendChild(this.brushPointerContainer)
+    this.brushPointerContainer.style.display = 'block'
   }
 
   canvasPointerOut () {
     this.sketchPaneDOMElement.removeEventListener('pointermove', this.canvasCursorMove)
+    this.brushPointerContainer.style.display = 'none'
+  }
 
-    if (this.brushPointerContainer.parentElement) {
-      this.brushPointerContainer.parentElement.removeChild(this.brushPointerContainer)
+  onFrame (timestep) {
+    this.renderEvents()
+    requestAnimationFrame(this.onFrame)
+  }
+
+  renderEvents () {
+    let lastCursorEvent,
+        moveEvent
+
+    // render the cursor
+    if (this.cursorEventsQueue.length) {
+      lastCursorEvent = this.cursorEventsQueue.pop()
+
+      // update the position of the cursor
+      this.brushPointerContainer.style.transform = 'translate(' + lastCursorEvent.clientX + 'px, ' + lastCursorEvent.clientY + 'px)'
+
+      this.cursorEventsQueue = []
+    }
+
+    // render movements
+    if (this.moveEventsQueue.length) {
+      while (this.moveEventsQueue.length) {
+        moveEvent = this.moveEventsQueue.shift()
+        this.sketchPane.move(moveEvent.x, moveEvent.y, moveEvent.pointerType === "pen" ? moveEvent.pressure : 1)
+        this.lineMileageCounter.add({ x: moveEvent.y, y: moveEvent.y })
+      }
+
+      // report only the most recent event back to the app
+      this.emit('pointermove', moveEvent.x, moveEvent.y, moveEvent.pointerType === "pen" ? moveEvent.pressure : 1, moveEvent.pointerType)
     }
   }
 
-  updatePointer () {
-    let image = null
-    let threshold = 0xff
-    // TODO why are we creating a new pointer every time?
-    let brushPointer = this.sketchPane.createBrushPointer(
-      image, 
-      Math.max(6, this.brush.getSize() * this.scaleFactor),
-      this.brush.getAngle(),
-      threshold,
-      true)
-    brushPointer.style.display = 'block'
-    brushPointer.style.setProperty('margin-left', '-' + (brushPointer.width * 0.5) + 'px')
-    brushPointer.style.setProperty('margin-top', '-' + (brushPointer.height * 0.5) + 'px')
+  setQuickEraseIfRequested () {
+    if (keytracker('<alt>')) {
+      // don't switch if we're already on an eraser
+      if (this.toolbar.getBrushOptions().kind !== 'eraser') {
+        this.toolbar.setIsQuickErasing(true)
+        this.prevTool = this.toolbar.getBrushOptions()
+        this.setBrushTool('eraser', this.toolbar.getBrushOptions('eraser'))
+      }
+    }
+  }
 
-    this.brushPointerContainer.innerHTML = ''
-    this.brushPointerContainer.appendChild(brushPointer)
+  unsetQuickErase () {
+    if (this.toolbar.getIsQuickErasing()) {
+      this.toolbar.setIsQuickErasing(false)
+      this.setBrushTool(this.prevTool.kind, this.prevTool)
+      this.prevTool = null
+    }
+  }
+
+  startMultiLayerOperation () {
+    if (this.isMultiLayerOperation) return
+
+    this.isMultiLayerOperation = true
+
+    let compositeContext = this.sketchPane.getLayerContext(this.compositeIndex)
+
+    this.sketchPane.clearLayer(this.compositeIndex)
+
+    // draw composite from layers
+    for (let index of this.visibleLayersIndices) {
+      let canvas = this.sketchPane.getLayerCanvas(index)
+      let context = this.sketchPane.getLayerContext(index)
+
+      compositeContext.drawImage(canvas, 0, 0)
+    }
+
+    // select that layer
+    this.sketchPane.selectLayer(this.compositeIndex)
+
+    // listen to beforeup
+    this.sketchPane.on('onbeforeup', this.stopMultiLayerOperation)
+  }
+
+  // TODO indices instead of names
+  setCompositeLayerVisibility (value) {
+    // solo the composite layer
+    for (let index of this.visibleLayersIndices) {
+      this.sketchPane.setLayerVisible(!value, index)
+    }
+    this.sketchPane.setLayerVisible(value, this.compositeIndex)
+  }
+
+  stopMultiLayerOperation () {
+    if (!this.isMultiLayerOperation) return
+
+    for (let index of this.visibleLayersIndices) {
+      // apply result of erase bitmap to layer
+      // code from SketchPane#drawPaintingCanvas
+      let context = this.sketchPane.getLayerContext(index)
+      let w = this.sketchPane.size.width
+      let h = this.sketchPane.size.height
+      context.save()
+      context.globalAlpha = 1
+      context.globalCompositeOperation = 'destination-out'
+      context.drawImage(this.sketchPane.paintingCanvas, 0, 0, w, h)
+      context.restore()
+    }
+
+    // reset
+    this.setCompositeLayerVisibility(false)
+
+    this.sketchPane.removeListener('onbeforeup', this.stopMultiLayerOperation)
   }
 
   // given a clientX and clientY,
@@ -226,32 +343,45 @@ class StoryboarderSketchPane extends EventEmitter {
       : [frameSize[0], imageSize[1] * frameSize[0] / imageSize[0]]
   }
 
+  /**
+   * Given the dimensions of the wrapper element (this.el),
+   *   update the fixed size .container to fit, with padding applied
+   *   update the containerSize, cached for use by the renderer
+   *   update the scaleFactor, used by the pointer
+   */
   updateContainerSize () {
-    let padding = 100
-
+    // this.sketchPaneDOMElement.style.display = 'none'
+    
     let rect = this.el.getBoundingClientRect()
-    let elSize = [rect.width - padding, rect.height - padding]
+    let size = [rect.width - this.containerPadding, rect.height - this.containerPadding]
 
-    this.containerSize = this.fit(elSize, this.canvasSize).map(Math.floor)
+    this.containerSize = this.fit(size, this.canvasSize).map(Math.floor)
     this.scaleFactor = this.containerSize[1] / this.canvasSize[1] // based on height
   }
 
   // TODO should this container scaling be a SketchPane feature?
-  // TODO why don't we use SketchPane#setCanvasSize?
+  /**
+   * Given the cached dimensions representing the available area (this.containerSize)
+   *   update the fixed size .container to fit, with padding applied
+   */
   renderContainerSize () {
+    // the container
     this.containerEl.style.width = this.containerSize[0] + 'px'
     this.containerEl.style.height = this.containerSize[1] + 'px'
 
-    let sketchPaneDOMElement = this.sketchPane.getDOMElement()
-    sketchPaneDOMElement.style.width = this.containerSize[0] + 'px'
-    sketchPaneDOMElement.style.height = this.containerSize[1] + 'px'
+    // the sketchpane
+    this.sketchPaneDOMElement.style.width = this.containerSize[0] + 'px'
+    this.sketchPaneDOMElement.style.height = this.containerSize[1] + 'px'
 
+    // the painting canvas
     this.sketchPane.paintingCanvas.style.width = this.containerSize[0] + 'px'
     this.sketchPane.paintingCanvas.style.height = this.containerSize[1] + 'px'
 
+    // the dirtyRectDisplay
     this.sketchPane.dirtyRectDisplay.style.width = this.containerSize[0] + 'px'
     this.sketchPane.dirtyRectDisplay.style.height = this.containerSize[1] + 'px'
 
+    // each layer
     let layers = this.sketchPane.getLayers()
     for (let i = 0; i < layers.length; ++i) {
       let canvas = this.sketchPane.getLayerCanvas(i)
@@ -259,7 +389,26 @@ class StoryboarderSketchPane extends EventEmitter {
       canvas.style.height = this.containerSize[1] + 'px'
     }
 
+    // cache the boundingClientRect
     this.boundingClientRect = this.sketchPaneDOMElement.getBoundingClientRect()
+  }
+
+  updatePointer () {
+    let image = null
+    let threshold = 0xff
+    // TODO why are we creating a new pointer every time?
+    let brushPointer = this.sketchPane.createBrushPointer(
+      image, 
+      Math.max(6, this.brush.getSize() * this.scaleFactor),
+      this.brush.getAngle(),
+      threshold,
+      true)
+    brushPointer.style.display = 'block'
+    brushPointer.style.setProperty('margin-left', '-' + (brushPointer.width * 0.5) + 'px')
+    brushPointer.style.setProperty('margin-top', '-' + (brushPointer.height * 0.5) + 'px')
+
+    this.brushPointerContainer.innerHTML = ''
+    this.brushPointerContainer.appendChild(brushPointer)
   }
 
   resize () {
@@ -366,80 +515,6 @@ class StoryboarderSketchPane extends EventEmitter {
     this.updatePointer()
   }
 
-  setQuickEraseIfRequested () {
-    if (keytracker('<alt>')) {
-      // don't switch if we're already on an eraser
-      if (this.toolbar.getBrushOptions().kind !== 'eraser') {
-        this.toolbar.setIsQuickErasing(true)
-        this.prevTool = this.toolbar.getBrushOptions()
-        this.setBrushTool('eraser', this.toolbar.getBrushOptions('eraser'))
-      }
-    }
-  }
-
-  unsetQuickErase () {
-    if (this.toolbar.getIsQuickErasing()) {
-      this.toolbar.setIsQuickErasing(false)
-      this.setBrushTool(this.prevTool.kind, this.prevTool)
-      this.prevTool = null
-    }
-  }
-
-  startMultiLayerOperation () {
-    if (this.isMultiLayerOperation) return
-
-    this.isMultiLayerOperation = true
-
-    let compositeContext = this.sketchPane.getLayerContext(this.compositeIndex)
-
-    this.sketchPane.clearLayer(this.compositeIndex)
-
-    // draw composite from layers
-    for (let index of this.visibleLayersIndices) {
-      let canvas = this.sketchPane.getLayerCanvas(index)
-      let context = this.sketchPane.getLayerContext(index)
-
-      compositeContext.drawImage(canvas, 0, 0)
-    }
-
-    // select that layer
-    this.sketchPane.selectLayer(this.compositeIndex)
-
-    // listen to beforeup
-    this.sketchPane.on('onbeforeup', this.stopMultiLayerOperation)
-  }
-
-  // TODO indices instead of names
-  setCompositeLayerVisibility (value) {
-    // solo the composite layer
-    for (let index of this.visibleLayersIndices) {
-      this.sketchPane.setLayerVisible(!value, index)
-    }
-    this.sketchPane.setLayerVisible(value, this.compositeIndex)
-  }
-
-  stopMultiLayerOperation () {
-    if (!this.isMultiLayerOperation) return
-
-    for (let index of this.visibleLayersIndices) {
-      // apply result of erase bitmap to layer
-      // code from SketchPane#drawPaintingCanvas
-      let context = this.sketchPane.getLayerContext(index)
-      let w = this.sketchPane.size.width
-      let h = this.sketchPane.size.height
-      context.save()
-      context.globalAlpha = 1
-      context.globalCompositeOperation = 'destination-out'
-      context.drawImage(this.sketchPane.paintingCanvas, 0, 0, w, h)
-      context.restore()
-    }
-
-    // reset
-    this.setCompositeLayerVisibility(false)
-
-    this.sketchPane.removeListener('onbeforeup', this.stopMultiLayerOperation)
-  }
-
   // HACK copied from toolbar
   cloneOptions (opt) {
     return {
@@ -469,37 +544,6 @@ class StoryboarderSketchPane extends EventEmitter {
   
   getIsDrawingOrStabilizing () {
     return this.sketchPane.isDrawing || this.sketchPane.isStabilizing
-  }
-}
-
-class LineMileageCounter {
-  constructor () {
-    this.reset()
-  }
-
-  distance (p1, p2) {
-    return Math.hypot(p2.x - p1.x, p2.y - p1.y)
-  }
-
-  reset () {
-    this.value = 0
-    this.prev = null
-  }
-
-  add (curr) {
-    if (this.prev) {
-      this.value += this.diff(this.prev, curr)
-    }
-    this.prev = curr
-  }
-
-  get () {
-    return this.value
-  }
-
-  diff (prev, curr) {
-    let v = this.distance(prev, curr)
-    return isNaN(v) ? 0 : v
   }
 }
 

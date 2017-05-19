@@ -1,6 +1,10 @@
 const Tone = require('tone')
 const tonal = require('tonal')
 
+const { remote } = require('electron')
+const sharedObj = remote.getGlobal('sharedObj')
+const enableHighQualityAudio = sharedObj.prefs['enableHighQualityAudio']
+
 const util = require('../../utils')
 
 let progression = [
@@ -38,7 +42,7 @@ const Sequence = (_list = [], offset = 0) => {
 module.exports = () => {
   let seq = Sequence(progression, 0) // , Math.floor(Math.random() * progression.length)
 
-  let synth = new Tone.PolySynth(8, Tone.Synth)
+  let synth = new Tone.PolySynth(enableHighQualityAudio ? 8 : 6, Tone.Synth)
     .set({
       "oscillator" : {
         "type" : "square2"
@@ -51,7 +55,7 @@ module.exports = () => {
       },
     })
 
-  let bassSynth2 = new Tone.PolySynth(3, Tone.Synth)
+  let bassSynth2 = new Tone.PolySynth(enableHighQualityAudio ? 3 : 1, Tone.Synth)
     .set({
       "oscillator" : {
         "type" : "sine"
@@ -69,13 +73,17 @@ module.exports = () => {
 
   var synthVol = new Tone.Volume(-6)
 
-  var bassSynth2Vol = new Tone.Volume(-6)
+  var bassSynth2Vol = new Tone.Volume(enableHighQualityAudio ? -6 : -16) // reduce volume when reverb is not available
 
-  var verb = new Tone.Freeverb(0.96, 1000)
-              .set('wet', 0.1)
-
-  synth.chain(synthFilter, synthVol, verb, Tone.Master)
-  bassSynth2.chain(bassSynth2Vol, verb, Tone.Master)
+  let verb
+  if (enableHighQualityAudio) {
+    verb = new Tone.Freeverb(0.96, 1000).set('wet', 0.1)
+    synth.chain(synthFilter, synthVol, verb, Tone.Master)
+    bassSynth2.chain(bassSynth2Vol, verb, Tone.Master)
+  } else {
+    synth.chain(synthFilter, synthVol, Tone.Master)
+    bassSynth2.chain(bassSynth2Vol, Tone.Master)
+  }
 
   let lastChangeAt = null
   let shouldTrigger = false
@@ -115,19 +123,22 @@ module.exports = () => {
       )
       firstNote = false
     }
-    if (velocity > 0.25) {
-      synth.triggerAttackRelease(
-        Tone.Frequency(seq.recent()).transpose(Math.random() > 0.5 ? +12 : 0),
-        "32n",
-        undefined,
-        velocity)
-      
-      synth.triggerAttackRelease(
-        Tone.Frequency(seq.recent()).transpose(velocity > 0.4 ? +12 : 0),
-        "16n",
-        undefined,
-        velocity * 0.5
-      )
+
+    if (enableHighQualityAudio) {
+      if (velocity > 0.25) {
+        synth.triggerAttackRelease(
+          Tone.Frequency(seq.recent()).transpose(Math.random() > 0.5 ? +12 : 0),
+          "32n",
+          undefined,
+          velocity)
+        
+        synth.triggerAttackRelease(
+          Tone.Frequency(seq.recent()).transpose(velocity > 0.4 ? +12 : 0),
+          "16n",
+          undefined,
+          velocity * 0.5
+        )
+      }
     }
 
     shouldTrigger = false

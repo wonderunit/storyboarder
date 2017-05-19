@@ -4,8 +4,8 @@ class Stabilizer {
     this.moveFunction = moveFunction
     this.upFunction = upFunction
     this.interval = interval || 5
-    this.follow = 1 - Math.min(0.95, Math.max(0, weight));
-    this.paramTable = [];
+    this.follow = 1 - Math.min(0.95, Math.max(0, weight))
+    this.paramTable = []
     this.current = {x: x, y: y, pressure: pressure}
     for (var i = 0; i < level; ++i) {
       this.paramTable.push({ x: x, y: y, pressure: pressure })
@@ -16,7 +16,9 @@ class Stabilizer {
     if (downFunction != null) {
       downFunction(x, y, pressure)
     }
-    setTimeout(this._move.bind(this), this.interval)
+
+    this._move = this._move.bind(this)
+    setTimeout(this._move, this.interval)
   }
 
   getParamTable () { 
@@ -69,15 +71,14 @@ class Stabilizer {
     if (this.upCalled) {
       while(delta > 1) {
         this.moveFunction(this.last.x, this.last.y, this.last.pressure)
-        delta = this._move(true);
+        delta = this._move(true)
       }
       this.upFunction(this.last.x, this.last.y, this.last.pressure)
     } else {
       this.moveFunction(this.last.x, this.last.y, this.last.pressure)
-      setTimeout(this._move.bind(this), this.interval);
+      setTimeout(this._move, this.interval)
     }
   }
-
 }
 
 module.exports = Stabilizer

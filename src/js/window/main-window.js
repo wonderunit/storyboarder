@@ -7,7 +7,7 @@ const menu = require('../menu.js')
 const util = require('../utils/index.js')
 const Color = require('color-js')
 
-const StoryboarderSketchPane = require('../storyboarder-sketch-pane.js')
+const StoryboarderSketchPane = require('./storyboarder-sketch-pane.js')
 const undoStack = require('../undo-stack.js')
 
 const Toolbar = require('./toolbar.js')
@@ -119,6 +119,9 @@ const load = (event, args) => {
 
   loadBoardUI()
   updateBoardUI()
+  resize()
+  // wait for reflow
+  setTimeout(() => { remote.getCurrentWindow().show() }, 200)
 }
 ipcRenderer.on('load', load)
 
@@ -531,10 +534,9 @@ let loadBoardUI = ()=> {
     saveImageFile()
   })
 
-  resize()
-
-  setTimeout(()=>{remote.getCurrentWindow().show()}, 200)
-  //remote.getCurrentWebContents().openDevTools()
+  // for debugging:
+  //
+  // remote.getCurrentWebContents().openDevTools()
 }
 
 let updateBoardUI = ()=> {
@@ -1394,7 +1396,10 @@ let renderThumbnailButtons = () => {
       newBoard(boardData.boards.length)
       gotoBoard(boardData.boards.length)
     })
-    
+
+    // NOTE tooltips.setupTooltipForElement checks prefs each time, e.g.:
+    // if (sharedObj.prefs['enableTooltips']) { }
+    // ... which is slow
     tooltips.setupTooltipForElement(el)
   }
 }
@@ -1898,6 +1903,10 @@ let utter = new SpeechSynthesisUtterance()
 
 let stopPlaying = () => {
   clearTimeout(frameTimer)
+
+  // prevent unnecessary calls
+  if (!playbackMode) return
+
   playbackMode = false
   utter.onend = null
   ipcRenderer.send('resumeSleep')

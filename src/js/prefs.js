@@ -10,6 +10,7 @@ const defaultPrefs = {
   enableDrawingSoundEffects: true,
   enableDrawingMelodySoundEffects: true,
   enableUISoundEffects: true,
+  enableHighQualityAudio: false,
   enableTooltips: true,
   enableAspirationalMessages: true
 }

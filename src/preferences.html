@@ -44,6 +44,17 @@
             <span></span>User Interface Sound Effects
           </label>
         </div>
+
+        <div class="preferences-input">
+          <input
+            type="checkbox"
+            name="enableHighQualityAudio"
+            id="enableHighQualityAudio" />
+
+          <label for="enableHighQualityAudio">
+            <span></span>Enable High Quality Audio<sup>*</sup>
+          </label>
+        </div>
       </div>
 
       <div class="preferences-fieldset">
@@ -68,6 +79,12 @@
             <span></span>Show Hourly Affirmations
           </label>
         </div>
+
+        <footer class="preferences-footer">
+          <div class="preferences-hint">
+            <sup>*</sup> Please restart Storyboarder to apply changes.
+          </div>
+        </footer>
       </div>
     </div>
     <script src="./js/windows/preferences/editor.js"></script>

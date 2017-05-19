@@ -20,6 +20,9 @@ let size
 let engine
 let model
 
+let enableDrawingSoundEffects
+let enableDrawingMelodySoundEffects
+
 let prev
 let curr
 let bufferA = vec2.create(),
@@ -78,8 +81,12 @@ const start = (x, y, pressure, pointerType) => {
   bufferA = vec2.fromValues(0, 0)
   bufferB = vec2.fromValues(0, 0)
 
-  if (sharedObj.prefs['enableDrawingSoundEffects']) instrument.noteOn()
-  if (sharedObj.prefs['enableDrawingMelodySoundEffects']) melodies.start()
+  // update prefs cache
+  enableDrawingSoundEffects = sharedObj.prefs['enableDrawingSoundEffects']
+  enableDrawingMelodySoundEffects = sharedObj.prefs['enableDrawingMelodySoundEffects']
+
+  if (enableDrawingSoundEffects) instrument.noteOn()
+  if (enableDrawingMelodySoundEffects) melodies.start()
 
   trigger(x, y, pressure, pointerType)
   renderDirectionChange(x, y, 0)
@@ -89,8 +96,8 @@ const stop = () => {
   model.isActive = false
   model.isOnCanvas = false
 
-  if (sharedObj.prefs['enableDrawingSoundEffects']) instrument.noteOff()
-  if (sharedObj.prefs['enableDrawingMelodySoundEffects']) melodies.stop()
+  if (enableDrawingSoundEffects) instrument.noteOff()
+  if (enableDrawingMelodySoundEffects) melodies.stop()
 }
 
 // NOTE curently c<x,y> are always absolute to canvas w/h (e.g.; 900 x 900 * aspectRatio)
@@ -121,10 +128,10 @@ const trigger = (x, y, pressure, pointerType) => {
 
   if (model.pointerType === 'pen') {
     let velocity = ease.sineOut(util.clamp(model.pressureGain, 0, 1))
-    if (sharedObj.prefs['enableDrawingMelodySoundEffects']) melodies.trigger({ velocity })
+    if (enableDrawingMelodySoundEffects) melodies.trigger({ velocity })
   } else {
     let velocity = util.clamp(model.accelGain, 0, 1)
-    if (sharedObj.prefs['enableDrawingMelodySoundEffects']) melodies.trigger({ velocity })
+    if (enableDrawingMelodySoundEffects) melodies.trigger({ velocity })
   }
 
   prev = curr
