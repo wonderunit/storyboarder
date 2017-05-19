@@ -38,54 +38,24 @@ class StoryboarderSketchPane extends EventEmitter {
     this.prevTool = null
     this.toolbar = null
 
+    // brush pointer
+    this.brushPointerContainer = document.createElement('div')
+    this.brushPointerContainer.className = 'brush-pointer'
+    this.brushPointerContainer.style.position = 'absolute'
+    this.brushPointerContainer.style.pointerEvents = 'none'
+    document.body.appendChild(this.brushPointerContainer)
+
+    // container
     this.containerEl = document.createElement('div')
     this.containerEl.classList.add('container')
 
     // sketchpane
     this.sketchPane = new SketchPane()
+    this.sketchPane.on('ondown', this.onSketchPaneDown.bind(this))
+    this.sketchPane.on('onbeforeup', this.onSketchPaneBeforeUp.bind(this))
+    this.sketchPane.on('onup', this.onSketchPaneOnUp.bind(this))
     this.sketchPane.setCanvasSize(...this.canvasSize)
-
-
-
-    // store snapshot on pointerdown?
-    // eraser : yes
-    // brushes: no
-    this.sketchPane.on('ondown', () => {
-      if (this.sketchPane.paintingKnockout) {
-        if (this.isMultiLayerOperation) {
-          this.emit('addToUndoStack', this.visibleLayersIndices)
-        } else {
-          this.emit('addToUndoStack')
-        }
-      }
-    })
-    // store snapshot before pointer up?
-    // eraser : no
-    // brushes: yes
-    this.sketchPane.on('onbeforeup', () => {
-      if (!this.sketchPane.paintingKnockout) {
-        this.emit('addToUndoStack')
-      }
-    })
-    this.sketchPane.on('onup', (...args) => {
-      // quick erase : off
-      this.unsetQuickErase()
-
-      this.emit('onup', ...args)
-
-      // store snapshot on up?
-      // eraser : yes
-      // brushes: yes
-      if (this.isMultiLayerOperation) {
-        // trigger a save to any layer possibly changed by the operation
-        this.emit('markDirty', this.visibleLayersIndices)
-        this.isMultiLayerOperation = false
-      } else {
-        this.emit('markDirty', [this.sketchPane.getCurrentLayerIndex()])
-      }
-    })
-
-
+    this.sketchPaneDOMElement = this.sketchPane.getDOMElement()
 
     this.sketchPane.addLayer(0) // reference
     this.sketchPane.fillLayer('#fff')
@@ -99,32 +69,65 @@ class StoryboarderSketchPane extends EventEmitter {
     this.sketchPane.setToolStabilizeLevel(10)
     this.sketchPane.setToolStabilizeWeight(0.2)
 
-    this.sketchPaneDOMElement = this.sketchPane.getDOMElement()
     this.el.addEventListener('pointerdown', this.canvasPointerDown)
     this.sketchPaneDOMElement.addEventListener('pointerover', this.canvasPointerOver)
     this.sketchPaneDOMElement.addEventListener('pointerout', this.canvasPointerOut)
     window.addEventListener('keydown', this.onKeyDown)
     window.addEventListener('keyup', this.onKeyUp)
 
-    // brush pointer
-    this.brushPointerContainer = document.createElement('div')
-    this.brushPointerContainer.className = 'brush-pointer'
-    this.brushPointerContainer.style.position = 'absolute'
-    this.brushPointerContainer.style.pointerEvents = 'none'
-    document.body.appendChild(this.brushPointerContainer)
-
     // measure
     this.updateContainerSize()
 
-    // add sketchpane
+    // add container to element
     this.el.appendChild(this.containerEl)
+    // add SketchPane to container
     this.containerEl.appendChild(this.sketchPaneDOMElement)
-    
+
     // adjust sizes
     this.renderContainerSize()
 
     this.onFrame = this.onFrame.bind(this)
     requestAnimationFrame(this.onFrame)
+  }
+
+  // store snapshot on pointerdown?
+  // eraser : yes
+  // brushes: no
+  onSketchPaneDown () {
+    if (this.sketchPane.paintingKnockout) {
+      if (this.isMultiLayerOperation) {
+        this.emit('addToUndoStack', this.visibleLayersIndices)
+      } else {
+        this.emit('addToUndoStack')
+      }
+    }
+  }
+
+  // store snapshot before pointer up?
+  // eraser : no
+  // brushes: yes
+  onSketchPaneBeforeUp () {
+    if (!this.sketchPane.paintingKnockout) {
+      this.emit('addToUndoStack')
+    }
+  }
+
+  onSketchPaneOnUp (...args) {
+    // quick erase : off
+    this.unsetQuickErase()
+
+    this.emit('onup', ...args)
+
+    // store snapshot on up?
+    // eraser : yes
+    // brushes: yes
+    if (this.isMultiLayerOperation) {
+      // trigger a save to any layer possibly changed by the operation
+      this.emit('markDirty', this.visibleLayersIndices)
+      this.isMultiLayerOperation = false
+    } else {
+      this.emit('markDirty', [this.sketchPane.getCurrentLayerIndex()])
+    }
   }
 
   onKeyDown (e) {
