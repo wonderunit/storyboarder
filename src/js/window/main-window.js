@@ -119,6 +119,9 @@ const load = (event, args) => {
 
   loadBoardUI()
   updateBoardUI()
+  resize()
+  // wait for reflow
+  setTimeout(() => { remote.getCurrentWindow().show() }, 200)
 }
 ipcRenderer.on('load', load)
 
@@ -531,10 +534,9 @@ let loadBoardUI = ()=> {
     saveImageFile()
   })
 
-  resize()
-
-  setTimeout(()=>{remote.getCurrentWindow().show()}, 200)
-  //remote.getCurrentWebContents().openDevTools()
+  // for debugging:
+  //
+  // remote.getCurrentWebContents().openDevTools()
 }
 
 let updateBoardUI = ()=> {
