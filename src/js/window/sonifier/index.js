@@ -20,8 +20,8 @@ let size
 let engine
 let model
 
-  let enableDrawingSoundEffects
-  let enableDrawingMelodySoundEffects
+let enableDrawingSoundEffects
+let enableDrawingMelodySoundEffects
 
 let prev
 let curr
