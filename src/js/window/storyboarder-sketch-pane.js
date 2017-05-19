@@ -202,10 +202,12 @@ class StoryboarderSketchPane extends EventEmitter {
 
   canvasPointerOver () {
     this.sketchPaneDOMElement.addEventListener('pointermove', this.canvasCursorMove)
+    this.brushPointerContainer.style.display = 'block'
   }
 
   canvasPointerOut () {
     this.sketchPaneDOMElement.removeEventListener('pointermove', this.canvasCursorMove)
+    this.brushPointerContainer.style.display = 'none'
   }
 
   onFrame (timestep) {
