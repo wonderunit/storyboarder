@@ -23,6 +23,7 @@ Tone.Transport.latencyHint = 'playback'
 Tone.Transport.start("+0.1")
 
 const getEnableUISoundEffects = () => sharedObj.prefs['enableUISoundEffects']
+const getEnableHighQualityAudio = () => sharedObj.prefs['enableUISoundEffects']
 
 let chords = [
   ['a4', 'b4', 'c5', 'e5'],
@@ -49,7 +50,7 @@ const setMute = value => isMuted = value
 
 // set up sound sources.
 
-var synth = new Tone.PolySynth(3, Tone.Synth)
+var synth = new Tone.PolySynth(getEnableHighQualityAudio() ? 8 : 4, Tone.Synth)
 synth.set({
   "oscillator" : {
     "type" : "square2"
