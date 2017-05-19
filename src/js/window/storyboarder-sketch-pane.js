@@ -6,6 +6,14 @@ const LineMileageCounter = require('./line-mileage-counter')
 
 const keytracker = require('../utils/keytracker')
 
+/**
+ *  Wrap the SketchPane component with features Storyboarder needs
+ *
+ *  Adds a `div.container` to contain the SketchPane. Updated on resize to fit within workspace.
+ *
+ *  @param {HTMLElement} el reference to the container element, e.g. reference to div#storyboarder-sketch-pane
+ *  @param {array} canvasSize array of [width, height]. width is always 900.
+*/
 class StoryboarderSketchPane extends EventEmitter {
   constructor (el, canvasSize) {
     super()
