@@ -272,6 +272,102 @@ let shotProperties = {
     despair: {
       weight: 1
     },
+    get_up: {
+      weight: 0
+    },
+    on_fours: {
+      weight: 0
+    },
+    sit_hug_knees: {
+      weight: 0
+    },
+    holding_flashlight: {
+      weight: 0
+    },
+    brace_for_explosion: {
+      weight: 0
+    },
+    pushback_by_explosion: {
+      weight: 0
+    },
+    touch_out_in_front: {
+      weight: 0
+    },
+    gun_point_side: {
+      weight: 0
+    },
+    punch: {
+      weight: 0
+    },
+    sit_hands_on_table: {
+      weight: 0
+    },
+    sit_talk: {
+      weight: 0
+    },
+    door_open: {
+      weight: 0
+    },
+    sit_hands_folded_under_chin: {
+      weight: 0
+    },
+    standing_over_table: {
+      weight: 0
+    },
+    walk_look_back: {
+      weight: 0
+    },
+    jump_over: {
+      weight: 0
+    },
+    sit_typing: {
+      weight: 0
+    },
+    cellphone_chat: {
+      weight: 0
+    },
+    climbing_up_stairs: {
+      weight: 0
+    },
+    climbing_down_stairs: {
+      weight: 0
+    },
+    dive: {
+      weight: 0
+    },
+    hang_one_arm: {
+      weight: 0
+    },
+    welcome_open_arms: {
+      weight: 0
+    },
+    on_bicycle: {
+      weight: 0
+    },
+    sit_lean_table: {
+      weight: 0
+    },
+    on_skateboard: {
+      weight: 0
+    },
+    cellphone_talk: {
+      weight: 0
+    },
+    crawl: {
+      weight: 0
+    },
+    run_lateral: {
+      weight: 0
+    },
+    reach_above: {
+      weight: 0
+    },
+    reach_jump_forward: {
+      weight: 0
+    },
+    talk_explain: {
+      weight: 0
+    },
   },
   model: {
     female: {

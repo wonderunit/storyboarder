@@ -111,9 +111,12 @@ const outlineWidth = 0.015
 
 let backgroundScene
 let contentScene
+let gridScene
 
 let effect
 let camera
+let tempGridCam
+
 let renderer
 
 let directionalLight
@@ -123,6 +126,7 @@ let textures
 let dummyModels
 let dummyGroup
 let roomGroup 
+let gridGroup
 
 let mixer
 
@@ -139,12 +143,17 @@ let setup = (config) => {
   contentScene = new THREE.Scene()
   contentScene.add(new THREE.AmbientLight(0x161616, 1))
 
+  gridScene = new THREE.Scene()
+  gridScene.background = new THREE.Color( 0xFFFFFF )
+  gridScene.add(new THREE.AmbientLight(0x111111, 1))
+
+
   // create renderer
   renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true })
   renderer.setPixelRatio(1)
   renderer.setSize(config.width, config.height)
   renderer.autoClear = false
-renderer.physicallyBasedShading = true
+  //renderer.physicallyBasedShading = true
   // create effect system for renderer
   effect = new THREE.OutlineEffect(renderer)
   effect.setSize(config.width, config.height)
@@ -165,6 +174,9 @@ renderer.physicallyBasedShading = true
   
   contentScene.add(camera)
   backgroundScene.add(camera)
+  
+  tempGridCam = new THREE.PerspectiveCamera(30, config.width / config.height, .01, 1000)
+  gridScene.add(tempGridCam)
 
   directionalLight = new THREE.DirectionalLight(0xFFFFFF, 1)
   directionalLight.position.set(0, 1, 3);
@@ -225,6 +237,12 @@ let loadTextures = () => {
   imageLoader.load('data/sts/decal_logo.png', ( image ) => {
     textures.decalGreatjob.image = image
     textures.decalGreatjob.needsUpdate = true
+  })
+
+  textures.volume = new THREE.Texture()
+  imageLoader.load('data/sts/grid_volume.png', ( image ) => {
+    textures.volume.image = image
+    textures.volume.needsUpdate = true
   })
 }
 
@@ -296,7 +314,7 @@ let loadDummyModels = () => {
 
   loader.load("data/sts/stdummy_boxmodel.jd", (data) => {
     let material = new THREE.MeshToonMaterial({
-      //map: textures.boxmodel,
+      map: textures.boxmodel,
       color: 0xffffff,
       emissive: 0x0,
       specular: 0x0,
@@ -493,6 +511,11 @@ let render = () => {
     param.material.outlineParameters.color = new THREE.Color( 0x0 )
   })
   effect.render(contentScene, camera)
+
+  // //renderer.clearDepth()
+  // renderer.clear()
+  // renderer.render(gridScene, tempGridCam)
+
 }
 
 let buildSquareRoom = (w, l, h, layer) => {
@@ -805,6 +828,12 @@ let setupContent = (params) => {
       break
   }
 
+  // spit out poses
+  // for (var i = 0; i < mainCharacter.geometry.animations.length; i++) {
+  //   console.log(mainCharacter.geometry.animations[i])
+  // }
+
+
   // POSE MAIN CHARACTER
   var mixer1 = new THREE.AnimationMixer( mainCharacter )
   var action
@@ -813,6 +842,9 @@ let setupContent = (params) => {
   } else {
     action = mixer1.clipAction('stand', mainCharacter)
   }
+
+  // action = mixer1.clipAction('on_bicycle', mainCharacter)
+  // console.log(action)
 
   action.clampWhenFinished = true
   action.setLoop(THREE.LoopOnce)
@@ -879,6 +911,63 @@ let setupContent = (params) => {
 
 
   contentScene.add(dummyGroup)
+
+
+
+  gridScene.remove(gridGroup)
+  gridGroup = new THREE.Group()
+
+
+  tempGridCam.position.y = Math.random() * .4+.4
+  tempGridCam.position.z = Math.random() * .4+.4
+  tempGridCam.position.x = Math.random() * .4+.4
+   tempGridCam.rotation.x = Math.random() * .4
+   tempGridCam.rotation.y = Math.random() * 2
+
+
+
+  // DRAW GRID
+  let material = new THREE.MeshBasicMaterial({
+    map: textures.volume,
+    transparent: true,
+    opacity: .3,
+    belnding: THREE.MultiplyBlending,
+    side: THREE.DoubleSide
+  })
+  //material.depthFunc = THREE.LessEqualDepth
+  material.depthWrite = false
+  material.premultipliedAlpha = true
+  textures.volume.wrapS = THREE.RepeatWrapping;
+  textures.volume.wrapT = THREE.RepeatWrapping;
+
+  let scale = 1
+
+  textures.volume.repeat.set(100*scale, 100*scale)
+  // material.transparent = true
+  // material.blending = THREE.MultiplyBlending
+  // material.opacity = 1
+
+  console.log(material)
+  var geometry = new THREE.PlaneGeometry( 100, 100, 32 );
+  //var material = new THREE.MeshBasicMaterial( {color: 0xffff00, side: THREE.DoubleSide} );
+  
+  for (var i = -100; i < 100; i++) {
+    material.opacity = Math.random() * 1
+    var plane = new THREE.Mesh( geometry, material );
+    plane.translateZ((i*(1/scale)))
+    gridGroup.add( plane )
+  }
+
+  for (var i = -100; i < 100; i++) {
+    var plane = new THREE.Mesh( geometry, material );
+    plane.rotation.y = -Math.PI / 2
+    plane.translateZ((i*(1/scale)))
+    gridGroup.add( plane )
+  }
+
+
+  gridScene.add(gridGroup)
+  console.log(gridScene)
 }
 
 
