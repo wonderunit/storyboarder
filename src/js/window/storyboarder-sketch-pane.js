@@ -589,6 +589,20 @@ class MovingStrategy {
     this.container = container
     this.startAt = null
     this.pos = null
+
+    this.storedLayers = {}
+    for (let index of [0, 1, 3]) {// HACK hardcoded
+      let context = this.container.sketchPane.getLayerContext(index)
+      let storedCanvas = document.createElement('canvas')
+      let storedContext = storedCanvas.getContext('2d')
+      storedCanvas.width = context.canvas.width
+      storedCanvas.height = context.canvas.height
+      storedContext.drawImage(context.canvas, 0, 0)
+      this.storedLayers[index] = {
+        canvas: storedCanvas,
+        offset: [0, 0]
+      }
+    }
   }
 
   canvasPointerDown (e) {
@@ -663,17 +677,14 @@ class MovingStrategy {
     let w = this.container.sketchPane.size.width
     let h = this.container.sketchPane.size.height
 
-    let storedCanvas = document.createElement('canvas')
-    let storedContext = storedCanvas.getContext('2d')
-    storedCanvas.width = context.canvas.width
-    storedCanvas.height = context.canvas.height
-    storedContext.drawImage(context.canvas, 0, 0)
+    this.storedLayers[index].offset[0] += this.pos[0]
+    this.storedLayers[index].offset[1] += this.pos[1]
 
     context.save()
     context.globalAlpha = 1
 
     context.clearRect(0, 0, w, h)
-    context.drawImage(storedCanvas, this.pos[0], this.pos[1])
+    context.drawImage(this.storedLayers[index].canvas, this.storedLayers[index].offset[0], this.storedLayers[index].offset[1])
 
     context.restore()
   }
