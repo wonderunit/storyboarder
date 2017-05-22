@@ -252,8 +252,6 @@ class StoryboarderSketchPane extends EventEmitter {
     // draw composite from layers
     for (let index of this.visibleLayersIndices) {
       let canvas = this.sketchPane.getLayerCanvas(index)
-      let context = this.sketchPane.getLayerContext(index)
-
       compositeContext.drawImage(canvas, 0, 0)
     }
 
