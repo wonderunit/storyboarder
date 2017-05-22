@@ -366,15 +366,15 @@ let loadBoardUI = ()=> {
 
   toolbar.on('move', () => {
     toolbar.setState({ transformMode: 'move' })
-    // storyboarderSketchPane.moveContents()
+    storyboarderSketchPane.moveContents()
   })
   toolbar.on('scale', () => {
     toolbar.setState({ transformMode: 'scale' })
-    // storyboarderSketchPane.scaleContents()
+    storyboarderSketchPane.scaleContents()
   })
   toolbar.on('cancelTransform', () => {
     toolbar.setState({ transformMode: null })
-    // storyboarderSketchPane.cancelTransform()
+    storyboarderSketchPane.cancelTransform()
   })
   // sketchPane.on('moveMode', enabled => {
   //   if (enabled) {

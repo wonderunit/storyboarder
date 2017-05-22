@@ -18,7 +18,7 @@ class StoryboarderSketchPane extends EventEmitter {
   constructor (el, canvasSize) {
     super()
 
-    this.strategy = new DrawingStrategy(this)
+    this.cancelTransform() // set Drawing Strategy
 
     this.containerPadding = 100
 
@@ -513,6 +513,17 @@ class StoryboarderSketchPane extends EventEmitter {
   getIsDrawingOrStabilizing () {
     return this.sketchPane.isDrawing || this.sketchPane.isStabilizing
   }
+
+  moveContents () {
+    // TODO dispose of prior strategy?
+    this.strategy = new MovingStrategy(this)
+  }
+  scaleContents () {
+    console.warn('Scale Contents Not Implemented')
+  }
+  cancelTransform () {
+    this.strategy = new DrawingStrategy(this)
+  }  
 }
 
 class DrawingStrategy {
@@ -570,6 +581,58 @@ class DrawingStrategy {
     // paint the erase bitmap onto the given layer
     context.globalCompositeOperation = 'destination-out'
     context.drawImage(this.container.sketchPane.paintingCanvas, 0, 0, w, h)
+
+    context.restore()
+  }
+}
+
+class MovingStrategy {
+  constructor (container) {
+    this.container = container
+  }
+
+  canvasPointerDown (e) {
+    // prevent overlapping calls
+    if (this.container.getIsDrawingOrStabilizing()) return
+
+    this.container.startMultiLayerOperation()
+    this.container.setCompositeLayerVisibility(true)
+
+    let pointerPosition = this.container.getRelativePosition(e.clientX, e.clientY)
+    this.container.lineMileageCounter.reset()
+
+    document.addEventListener('pointermove', this.container.canvasPointerMove)
+    document.addEventListener('pointerup', this.container.canvasPointerUp)
+  }
+
+  canvasPointerUp (e) {
+    // force render remaining move events early, before frame loop
+    this.container.renderEvents()
+    // clear both event queues
+    this.container.moveEventsQueue = []
+    this.container.cursorEventsQueue = []
+
+    let pointerPosition = this.container.getRelativePosition(e.clientX, e.clientY)
+
+    document.removeEventListener('pointermove', this.container.canvasPointerMove)
+    document.removeEventListener('pointerup', this.container.canvasPointerUp)
+  }
+  
+  renderMoveEvent (moveEvent) {
+    // move the composite layer
+    // TODO
+    console.log('MovingStrategy#renderMoveEvent', this.container.sketchPane.paintingCanvas)
+  }
+
+  applyMultiLayerOperationByLayerIndex (index) {
+    let context = this.container.sketchPane.getLayerContext(index)
+    let w = this.container.sketchPane.size.width
+    let h = this.container.sketchPane.size.height
+    context.save()
+    context.globalAlpha = 1
+
+    // translate each layer image
+    // TODO
 
     context.restore()
   }
