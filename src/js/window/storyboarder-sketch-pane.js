@@ -587,20 +587,31 @@ class DrawingStrategy {
 class MovingStrategy {
   constructor (container) {
     this.container = container
+    this.startAt = null
+    this.pos = null
   }
 
   canvasPointerDown (e) {
     // prevent overlapping calls
     if (this.container.getIsDrawingOrStabilizing()) return
 
+    let pointerPosition = this.container.getRelativePosition(e.clientX, e.clientY)
+    this.startAt = [pointerPosition.x, pointerPosition.y]
+    this.pos = [0, 0]
+    this.container.lineMileageCounter.reset()
+    this.container.emit('addToUndoStack', [0, 1, 3]) // HACK hardcoded
+
     this.container.startMultiLayerOperation()
     this.container.setCompositeLayerVisibility(true)
 
-    let pointerPosition = this.container.getRelativePosition(e.clientX, e.clientY)
-    this.container.lineMileageCounter.reset()
+    // NOTE can fake an initial move event using this:
+    // this.container.canvasPointerMove(e)
 
     document.addEventListener('pointermove', this.container.canvasPointerMove)
     document.addEventListener('pointerup', this.container.canvasPointerUp)
+
+    // NOTE can trigger sound events using this:
+    // this.container.emit('pointerdown', pointerPosition.x, pointerPosition.y, e.pointerType === "pen" ? e.pressure : 1, e.pointerType)
   }
 
   canvasPointerUp (e) {
@@ -610,7 +621,18 @@ class MovingStrategy {
     this.container.moveEventsQueue = []
     this.container.cursorEventsQueue = []
 
-    let pointerPosition = this.container.getRelativePosition(e.clientX, e.clientY)
+    // reset the painting layer
+    let size = this.container.sketchPane.getCanvasSize()
+    let paintingContext = this.container.sketchPane.paintingCanvas.getContext('2d')
+    paintingContext.clearRect(0, 0, size.width, size.height)
+
+    // let pointerPosition = this.container.getRelativePosition(e.clientX, e.clientY)
+    this.container.stopMultiLayerOperation()
+    this.startAt = null
+    this.pos = null
+
+    this.container.emit('markDirty', [0, 1, 3]) // HACK hardcoded
+    this.container.isMultiLayerOperation = false
 
     document.removeEventListener('pointermove', this.container.canvasPointerMove)
     document.removeEventListener('pointerup', this.container.canvasPointerUp)
@@ -618,19 +640,40 @@ class MovingStrategy {
   
   renderMoveEvent (moveEvent) {
     // move the composite layer
-    // TODO
-    console.log('MovingStrategy#renderMoveEvent', this.container.sketchPane.paintingCanvas)
+    let compositeContext = this.container.sketchPane.getLayerContext(this.container.compositeIndex)
+    let paintingContext = this.container.sketchPane.paintingCanvas.getContext('2d')
+
+    let w = this.container.sketchPane.size.width
+    let h = this.container.sketchPane.size.height
+
+    this.pos = [
+      moveEvent.x - this.startAt[0],
+      moveEvent.y - this.startAt[1]
+    ].map(Math.floor)
+
+    // re-draw to the painting layer
+    paintingContext.clearRect(0, 0, w, h)
+    paintingContext.drawImage(compositeContext.canvas, this.pos[0], this.pos[1])
   }
 
   applyMultiLayerOperationByLayerIndex (index) {
+    if (!this.pos) return
+
     let context = this.container.sketchPane.getLayerContext(index)
     let w = this.container.sketchPane.size.width
     let h = this.container.sketchPane.size.height
+
+    let storedCanvas = document.createElement('canvas')
+    let storedContext = storedCanvas.getContext('2d')
+    storedCanvas.width = context.canvas.width
+    storedCanvas.height = context.canvas.height
+    storedContext.drawImage(context.canvas, 0, 0)
+
     context.save()
     context.globalAlpha = 1
 
-    // translate each layer image
-    // TODO
+    context.clearRect(0, 0, w, h)
+    context.drawImage(storedCanvas, this.pos[0], this.pos[1])
 
     context.restore()
   }
