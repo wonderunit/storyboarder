@@ -339,13 +339,16 @@ let loadBoardUI = ()=> {
   })
 
   toolbar.on('brush', (kind, options) => {
+    toolbar.emit('cancelTransform')
     storyboarderSketchPane.setBrushTool(kind, options)
     sfx.playEffect('tool-' + kind)
   })
   toolbar.on('brush:size', size => {
+    toolbar.emit('cancelTransform')
     storyboarderSketchPane.setBrushSize(size)
   })
   toolbar.on('brush:color', color => {
+    toolbar.emit('cancelTransform')
     storyboarderSketchPane.setBrushColor(color)
   })
 
@@ -362,13 +365,16 @@ let loadBoardUI = ()=> {
 
 
   toolbar.on('move', () => {
-    // sketchPane.moveContents()
+    toolbar.setState({ transformMode: 'move' })
+    // storyboarderSketchPane.moveContents()
   })
   toolbar.on('scale', () => {
-    // sketchPane.scaleContents()
+    toolbar.setState({ transformMode: 'scale' })
+    // storyboarderSketchPane.scaleContents()
   })
   toolbar.on('cancelTransform', () => {
-    // sketchPane.cancelTransform()
+    toolbar.setState({ transformMode: null })
+    // storyboarderSketchPane.cancelTransform()
   })
   // sketchPane.on('moveMode', enabled => {
   //   if (enabled) {
