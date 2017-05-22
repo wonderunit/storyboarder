@@ -18,6 +18,8 @@ class StoryboarderSketchPane extends EventEmitter {
   constructor (el, canvasSize) {
     super()
 
+    this.strategy = new DrawingStrategy(this)
+
     this.containerPadding = 100
 
     // HACK hardcoded
@@ -80,6 +82,7 @@ class StoryboarderSketchPane extends EventEmitter {
     this.sketchPane.setToolStabilizeWeight(0.2)
 
     this.el.addEventListener('pointerdown', this.canvasPointerDown)
+
     this.sketchPaneDOMElement.addEventListener('pointerover', this.canvasPointerOver)
     this.sketchPaneDOMElement.addEventListener('pointerout', this.canvasPointerOut)
     window.addEventListener('keydown', this.onKeyDown)
@@ -150,24 +153,8 @@ class StoryboarderSketchPane extends EventEmitter {
     }
   }
 
-  canvasPointerDown (e) {
-    // prevent overlapping calls
-    if (this.getIsDrawingOrStabilizing()) return
-
-    // quick erase : on
-    this.setQuickEraseIfRequested()
-
-    if (!this.toolbar.getIsQuickErasing() && this.sketchPane.getPaintingKnockout()) {
-      this.startMultiLayerOperation()
-      this.setCompositeLayerVisibility(true)
-    }
-
-    let pointerPosition = this.getRelativePosition(e.clientX, e.clientY)
-    this.lineMileageCounter.reset()
-    this.sketchPane.down(pointerPosition.x, pointerPosition.y, e.pointerType === "pen" ? e.pressure : 1)
-    document.addEventListener('pointermove', this.canvasPointerMove)
-    document.addEventListener('pointerup', this.canvasPointerUp)
-    this.emit('pointerdown', pointerPosition.x, pointerPosition.y, e.pointerType === "pen" ? e.pressure : 1, e.pointerType)
+  canvasPointerDown (event) {
+    this.strategy.canvasPointerDown(event)
   }
 
   canvasPointerMove (e) {
@@ -185,17 +172,7 @@ class StoryboarderSketchPane extends EventEmitter {
   }
 
   canvasPointerUp (e) {
-    // force render remaining move events early, before frame loop
-    this.renderEvents()
-    // clear both event queues
-    this.moveEventsQueue = []
-    this.cursorEventsQueue = []
-
-    let pointerPosition = this.getRelativePosition(e.clientX, e.clientY)
-    this.sketchPane.up(pointerPosition.x, pointerPosition.y, e.pointerType === "pen" ? e.pressure : 1)
-    this.emit('lineMileage', this.lineMileageCounter.get())
-    document.removeEventListener('pointermove', this.canvasPointerMove)
-    document.removeEventListener('pointerup', this.canvasPointerUp)
+    this.strategy.canvasPointerUp(event)
   }
 
   canvasCursorMove (event) {
@@ -235,7 +212,7 @@ class StoryboarderSketchPane extends EventEmitter {
     if (this.moveEventsQueue.length) {
       while (this.moveEventsQueue.length) {
         moveEvent = this.moveEventsQueue.shift()
-        this.sketchPane.move(moveEvent.x, moveEvent.y, moveEvent.pointerType === "pen" ? moveEvent.pressure : 1)
+        this.strategy.renderMoveEvent(moveEvent)
         this.lineMileageCounter.add({ x: moveEvent.y, y: moveEvent.y })
       }
 
@@ -300,16 +277,7 @@ class StoryboarderSketchPane extends EventEmitter {
     if (!this.isMultiLayerOperation) return
 
     for (let index of this.visibleLayersIndices) {
-      // apply result of erase bitmap to layer
-      // code from SketchPane#drawPaintingCanvas
-      let context = this.sketchPane.getLayerContext(index)
-      let w = this.sketchPane.size.width
-      let h = this.sketchPane.size.height
-      context.save()
-      context.globalAlpha = 1
-      context.globalCompositeOperation = 'destination-out'
-      context.drawImage(this.sketchPane.paintingCanvas, 0, 0, w, h)
-      context.restore()
+      this.strategy.applyMultiLayerOperationByLayerIndex(index)
     }
 
     // reset
@@ -544,6 +512,66 @@ class StoryboarderSketchPane extends EventEmitter {
   
   getIsDrawingOrStabilizing () {
     return this.sketchPane.isDrawing || this.sketchPane.isStabilizing
+  }
+}
+
+class DrawingStrategy {
+  constructor (container) {
+    this.container = container
+  }
+
+  canvasPointerDown (e) {
+    // prevent overlapping calls
+    if (this.container.getIsDrawingOrStabilizing()) return
+
+    // quick erase : on
+    this.container.setQuickEraseIfRequested()
+
+    if (!this.container.toolbar.getIsQuickErasing() && this.container.sketchPane.getPaintingKnockout()) {
+      this.container.startMultiLayerOperation()
+      this.container.setCompositeLayerVisibility(true)
+    }
+
+    let pointerPosition = this.container.getRelativePosition(e.clientX, e.clientY)
+    this.container.lineMileageCounter.reset()
+    this.container.sketchPane.down(pointerPosition.x, pointerPosition.y, e.pointerType === "pen" ? e.pressure : 1)
+    document.addEventListener('pointermove', this.container.canvasPointerMove)
+    document.addEventListener('pointerup', this.container.canvasPointerUp)
+    this.container.emit('pointerdown', pointerPosition.x, pointerPosition.y, e.pointerType === "pen" ? e.pressure : 1, e.pointerType)    
+  }
+
+  canvasPointerUp (e) {
+    // force render remaining move events early, before frame loop
+    this.container.renderEvents()
+    // clear both event queues
+    this.container.moveEventsQueue = []
+    this.container.cursorEventsQueue = []
+
+    let pointerPosition = this.container.getRelativePosition(e.clientX, e.clientY)
+    this.container.sketchPane.up(pointerPosition.x, pointerPosition.y, e.pointerType === "pen" ? e.pressure : 1)
+    this.container.emit('lineMileage', this.container.lineMileageCounter.get())
+    document.removeEventListener('pointermove', this.container.canvasPointerMove)
+    document.removeEventListener('pointerup', this.container.canvasPointerUp)
+  }
+  
+  renderMoveEvent (moveEvent) {
+    this.container.sketchPane.move(moveEvent.x, moveEvent.y, moveEvent.pointerType === "pen" ? moveEvent.pressure : 1)    
+  }
+
+  applyMultiLayerOperationByLayerIndex (index) {
+    // apply result of erase bitmap to layer
+    // code from SketchPane#drawPaintingCanvas
+    let context = this.container.sketchPane.getLayerContext(index)
+    let w = this.container.sketchPane.size.width
+    let h = this.container.sketchPane.size.height
+    context.save()
+    context.globalAlpha = 1
+
+    // paint the erase bitmap onto the given layer
+    context.globalCompositeOperation = 'destination-out'
+    context.drawImage(this.container.sketchPane.paintingCanvas, 0, 0, w, h)
+
+    context.restore()
   }
 }
 
