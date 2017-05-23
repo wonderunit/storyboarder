@@ -242,21 +242,9 @@ class StoryboarderSketchPane extends EventEmitter {
 
   startMultiLayerOperation () {
     if (this.isMultiLayerOperation) return
-
     this.isMultiLayerOperation = true
 
-    let compositeContext = this.sketchPane.getLayerContext(this.compositeIndex)
-
-    this.sketchPane.clearLayer(this.compositeIndex)
-
-    // draw composite from layers
-    for (let index of this.visibleLayersIndices) {
-      let canvas = this.sketchPane.getLayerCanvas(index)
-      compositeContext.drawImage(canvas, 0, 0)
-    }
-
-    // select that layer
-    this.sketchPane.selectLayer(this.compositeIndex)
+    this.strategy.startMultiLayerOperation()
 
     // listen to beforeup
     this.sketchPane.on('onbeforeup', this.stopMultiLayerOperation)
@@ -282,6 +270,15 @@ class StoryboarderSketchPane extends EventEmitter {
     this.setCompositeLayerVisibility(false)
 
     this.sketchPane.removeListener('onbeforeup', this.stopMultiLayerOperation)
+  }
+
+  // draw composite from layers
+  drawComposite (layerIndices, destinationContext) {
+    for (let index of layerIndices) {
+      let canvas = this.sketchPane.getLayerCanvas(index)
+      destinationContext.drawImage(canvas, 0, 0)
+    }
+    return destinationContext
   }
 
   // given a clientX and clientY,
@@ -564,7 +561,17 @@ class DrawingStrategy {
   }
   
   renderMoveEvent (moveEvent) {
-    this.container.sketchPane.move(moveEvent.x, moveEvent.y, moveEvent.pointerType === "pen" ? moveEvent.pressure : 1)    
+    this.container.sketchPane.move(moveEvent.x, moveEvent.y, moveEvent.pointerType === "pen" ? moveEvent.pressure : 1)
+  }
+
+  startMultiLayerOperation () {
+    let compositeContext = this.container.sketchPane.getLayerContext(this.container.compositeIndex)
+    this.container.sketchPane.clearLayer(this.container.compositeIndex)
+
+    this.container.drawComposite(this.container.visibleLayersIndices, compositeContext)
+
+    // select that layer
+    this.container.sketchPane.selectLayer(this.container.compositeIndex)
   }
 
   applyMultiLayerOperationByLayerIndex (index) {
@@ -593,6 +600,14 @@ class MovingStrategy {
     this.container = container
     this.startAt = null
     this.pos = null
+    this.offset = [0, 0]
+
+    let size = this.container.sketchPane.getCanvasSize()
+    this.storedComposite = document.createElement('canvas')
+    let storedContext = this.storedComposite.getContext('2d')
+    this.storedComposite.width = size.width
+    this.storedComposite.height = size.height
+    this.container.drawComposite(this.container.visibleLayersIndices, storedContext)
 
     this.storedLayers = {}
     for (let index of [0, 1, 3]) {// HACK hardcoded
@@ -625,8 +640,8 @@ class MovingStrategy {
     this.container.startMultiLayerOperation()
     this.container.setCompositeLayerVisibility(true)
 
-    // NOTE can fake an initial move event using this:
-    // this.container.canvasPointerMove(e)
+    // fake an initial move event
+    this.container.canvasPointerMove(e)
 
     document.addEventListener('pointermove', this.container.canvasPointerMove)
     document.addEventListener('pointerup', this.container.canvasPointerUp)
@@ -660,8 +675,7 @@ class MovingStrategy {
   }
   
   renderMoveEvent (moveEvent) {
-    // move the composite layer
-    let compositeContext = this.container.sketchPane.getLayerContext(this.container.compositeIndex)
+    let compositeContext = this.storedComposite.getContext('2d')
     let paintingContext = this.container.sketchPane.paintingCanvas.getContext('2d')
 
     let w = this.container.sketchPane.size.width
@@ -672,9 +686,17 @@ class MovingStrategy {
       moveEvent.y - this.startAt[1]
     ].map(Math.floor)
 
-    // re-draw to the painting layer
+    // re-draw composite to the painting layer
     paintingContext.clearRect(0, 0, w, h)
-    paintingContext.drawImage(compositeContext.canvas, this.pos[0], this.pos[1])
+    paintingContext.drawImage(compositeContext.canvas, this.pos[0] + this.offset[0], this.pos[1] + this.offset[1])
+  }
+
+  startMultiLayerOperation () {
+    let compositeContext = this.container.sketchPane.getLayerContext(this.container.compositeIndex)
+    this.container.sketchPane.clearLayer(this.container.compositeIndex)
+
+    // select that layer
+    this.container.sketchPane.selectLayer(this.container.compositeIndex)
   }
 
   applyMultiLayerOperationByLayerIndex (index) {
@@ -686,6 +708,10 @@ class MovingStrategy {
 
     this.storedLayers[index].offset[0] += this.pos[0]
     this.storedLayers[index].offset[1] += this.pos[1]
+
+    // HACK this is set 3 times, once for each layer
+    this.offset[0] = this.storedLayers[index].offset[0]
+    this.offset[1] = this.storedLayers[index].offset[1]
 
     context.save()
     context.globalAlpha = 1
@@ -699,6 +725,8 @@ class MovingStrategy {
   dispose () {
     this.container.updatePointer()
     document.querySelector('#storyboarder-sketch-pane .container').style.cursor = 'none'
+
+    this.storedLayers = null
   }
 }
 
