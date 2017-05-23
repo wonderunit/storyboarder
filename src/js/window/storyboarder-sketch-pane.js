@@ -514,10 +514,15 @@ class StoryboarderSketchPane extends EventEmitter {
     this.strategy = new MovingStrategy(this)
   }
   scaleContents () {
+    if (this.strategy) this.strategy.dispose()
     console.warn('Scale Contents Not Implemented')
   }
   cancelTransform () {
+    if (this.strategy) this.strategy.dispose()
     this.strategy = new DrawingStrategy(this)
+    if (this.toolbar) {
+      this.setBrushTool(this.toolbar.getBrushOptions().kind, this.toolbar.getBrushOptions())
+    }
   }  
 }
 
@@ -723,6 +728,9 @@ class MovingStrategy {
   }
 
   dispose () {
+    // force stop
+    this.container.stopMultiLayerOperation()
+
     this.container.updatePointer()
     document.querySelector('#storyboarder-sketch-pane .container').style.cursor = 'none'
 

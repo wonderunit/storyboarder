@@ -869,6 +869,7 @@ let goNextBoard = (direction, shouldPreserveSelections = false)=> {
 }
 
 let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
+  toolbar.emit('cancelTransform')
   return new Promise((resolve, reject) => {
     currentBoard = boardNumber
     currentBoard = Math.max(currentBoard, 0)
