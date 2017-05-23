@@ -628,7 +628,7 @@ class MovingStrategy {
       }
     }
 
-    this.container.brushPointerContainer.innerHTML = ''
+    this.container.brushPointerContainer.style.visibility = 'hidden'
     document.querySelector('#storyboarder-sketch-pane .container').style.cursor = 'move'
   }
 
@@ -731,6 +731,7 @@ class MovingStrategy {
     // force stop
     this.container.stopMultiLayerOperation()
 
+    this.container.brushPointerContainer.style.visibility = 'visible'
     this.container.updatePointer()
     document.querySelector('#storyboarder-sketch-pane .container').style.cursor = 'none'
 
