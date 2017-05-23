@@ -515,7 +515,7 @@ class StoryboarderSketchPane extends EventEmitter {
   }
   scaleContents () {
     if (this.strategy) this.strategy.dispose()
-    console.warn('Scale Contents Not Implemented')
+    this.strategy = new ScalingStrategy(this)
   }
   cancelTransform () {
     if (this.strategy) this.strategy.dispose()
@@ -736,6 +736,139 @@ class MovingStrategy {
     document.querySelector('#storyboarder-sketch-pane .container').style.cursor = 'none'
 
     this.storedLayers = null
+  }
+}
+
+class ScalingStrategy {
+  constructor (container) {
+    this.container = container
+
+    this.startAt = null
+    this.translate = [0, 0]
+    this.scale = 1
+
+    this.container.brushPointerContainer.style.visibility = 'hidden'
+    document.querySelector('#storyboarder-sketch-pane .container').style.cursor = 'move'
+  }
+
+  canvasPointerDown (e) {
+    // prevent overlapping calls
+    if (this.container.getIsDrawingOrStabilizing()) return
+
+    let pointerPosition = this.container.getRelativePosition(e.clientX, e.clientY)
+    this.startAt = [pointerPosition.x, pointerPosition.y]
+    this.translate = [this.startAt[0], this.startAt[1]]
+    this.scale = 1
+
+    this.container.lineMileageCounter.reset()
+    this.container.emit('addToUndoStack', [0, 1, 3]) // HACK hardcoded
+
+    this.container.startMultiLayerOperation()
+    this.container.setCompositeLayerVisibility(true)
+
+    // fake an initial move event
+    this.container.canvasPointerMove(e)
+
+    document.addEventListener('pointermove', this.container.canvasPointerMove)
+    document.addEventListener('pointerup', this.container.canvasPointerUp)
+
+    // NOTE can trigger sound events using this:
+    // this.container.emit('pointerdown', pointerPosition.x, pointerPosition.y, e.pointerType === "pen" ? e.pressure : 1, e.pointerType)
+  }
+
+  canvasPointerUp (e) {
+    // force render remaining move events early, before frame loop
+    this.container.renderEvents()
+    // clear both event queues
+    this.container.moveEventsQueue = []
+    this.container.cursorEventsQueue = []
+
+    // reset the painting layer
+    let size = this.container.sketchPane.getCanvasSize()
+    let paintingContext = this.container.sketchPane.paintingCanvas.getContext('2d')
+    paintingContext.clearRect(0, 0, size.width, size.height)
+
+    // let pointerPosition = this.container.getRelativePosition(e.clientX, e.clientY)
+    this.container.stopMultiLayerOperation()
+
+    this.startAt = null
+    this.translate = [0, 0]
+    this.scale = 1
+
+    this.container.emit('markDirty', [0, 1, 3]) // HACK hardcoded
+    this.container.isMultiLayerOperation = false
+
+    document.removeEventListener('pointermove', this.container.canvasPointerMove)
+    document.removeEventListener('pointerup', this.container.canvasPointerUp)
+  }
+
+  renderMoveEvent (moveEvent) {
+    let compositeContext = this.container.sketchPane.getLayerContext(this.container.compositeIndex)
+    let context = this.container.sketchPane.paintingCanvas.getContext('2d')
+
+    let w = this.container.sketchPane.size.width
+    let h = this.container.sketchPane.size.height
+
+    let deltaX = moveEvent.x - this.startAt[0]
+
+    this.scale = 1 + (deltaX / w)
+
+    // re-draw composite to the painting layer
+    context.save()
+    context.clearRect(0, 0, w, h)
+    context.translate(this.translate[0], this.translate[1])
+    context.scale(this.scale, this.scale)
+    context.translate(-this.translate[0], -this.translate[1])
+    context.drawImage(compositeContext.canvas, 0, 0)
+    context.restore()
+  }
+
+  startMultiLayerOperation () {
+    let compositeContext = this.container.sketchPane.getLayerContext(this.container.compositeIndex)
+    this.container.sketchPane.clearLayer(this.container.compositeIndex)
+
+    this.container.drawComposite(this.container.visibleLayersIndices, compositeContext)
+
+    // select that layer
+    this.container.sketchPane.selectLayer(this.container.compositeIndex)
+  }
+
+  applyMultiLayerOperationByLayerIndex (index) {
+    if (!this.startAt) return
+
+    let context = this.container.sketchPane.getLayerContext(index)
+    let w = this.container.sketchPane.size.width
+    let h = this.container.sketchPane.size.height
+
+    // store a copy
+    let storedCanvas = document.createElement('canvas')
+    let storedContext = storedCanvas.getContext('2d')
+    storedCanvas.width = context.canvas.width
+    storedCanvas.height = context.canvas.height
+    storedContext.drawImage(context.canvas, 0, 0)
+
+    context.save()
+    context.globalAlpha = 1
+
+    // clear the original
+    context.clearRect(0, 0, w, h)
+
+    // draw with scaling
+    context.translate(this.translate[0], this.translate[1])
+    context.scale(this.scale, this.scale)
+    context.translate(-this.translate[0], -this.translate[1])
+    context.drawImage(storedContext.canvas, 0, 0)
+    
+    context.restore()
+  }
+
+  dispose () {
+    // force stop
+    this.container.stopMultiLayerOperation()
+
+    this.container.brushPointerContainer.style.visibility = 'visible'
+    this.container.updatePointer()
+    document.querySelector('#storyboarder-sketch-pane .container').style.cursor = 'none'
   }
 }
 
