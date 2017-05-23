@@ -513,7 +513,7 @@ class StoryboarderSketchPane extends EventEmitter {
   }
 
   moveContents () {
-    // TODO dispose of prior strategy?
+    if (this.strategy) this.strategy.dispose()
     this.strategy = new MovingStrategy(this)
   }
   scaleContents () {
@@ -582,6 +582,10 @@ class DrawingStrategy {
 
     context.restore()
   }
+  
+  dispose () {
+    //
+  }
 }
 
 class MovingStrategy {
@@ -603,6 +607,9 @@ class MovingStrategy {
         offset: [0, 0]
       }
     }
+
+    this.container.brushPointerContainer.innerHTML = ''
+    document.querySelector('#storyboarder-sketch-pane .container').style.cursor = 'move'
   }
 
   canvasPointerDown (e) {
@@ -687,6 +694,11 @@ class MovingStrategy {
     context.drawImage(this.storedLayers[index].canvas, this.storedLayers[index].offset[0], this.storedLayers[index].offset[1])
 
     context.restore()
+  }
+
+  dispose () {
+    this.container.updatePointer()
+    document.querySelector('#storyboarder-sketch-pane .container').style.cursor = 'none'
   }
 }
 
