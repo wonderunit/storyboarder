@@ -748,7 +748,7 @@ class ScalingStrategy {
     this.scale = 1
 
     this.container.brushPointerContainer.style.visibility = 'hidden'
-    document.querySelector('#storyboarder-sketch-pane .container').style.cursor = 'move'
+    document.querySelector('#storyboarder-sketch-pane .container').style.cursor = 'ew-resize'
   }
 
   canvasPointerDown (e) {
