@@ -2727,6 +2727,8 @@ const applyUndoStateForImage = (state) => {
 
       markImageFileDirty([layerData.index])
     }
+
+    toolbar.emit('cancelTransform')
   }).catch(e => console.error(e))
 }
 
