@@ -20,6 +20,7 @@ const NotificationData = require('../../data/messages.json')
 const Guides = require('./guides.js')
 const OnionSkin = require('./onion-skin.js')
 const Sonifier = require('./sonifier/index.js')
+const LayersEditor = require('./layers-editor.js')
 const sfx = require('../wonderunit-sound.js')
 const keytracker = require('../utils/keytracker.js')
 
@@ -80,6 +81,7 @@ let colorPicker
 let transport
 let guides
 let onionSkin
+let layersEditor
 
 let storyboarderSketchPane
 
@@ -517,6 +519,7 @@ let loadBoardUI = ()=> {
 
   guides = new Guides(storyboarderSketchPane.getLayerCanvasByName('guides'))
   onionSkin = new OnionSkin(storyboarderSketchPane, boardPath)
+  layersEditor = new LayersEditor(storyboarderSketchPane)
 
   sfx.init()
 
@@ -1006,7 +1009,6 @@ let renderMetaData = ()=> {
   } else {
     document.querySelector('#line-miles').innerHTML = '0 line miles'
   }
-
 
   renderStats()
 }
