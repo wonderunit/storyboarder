@@ -291,10 +291,18 @@ class StoryboarderSketchPane extends EventEmitter {
   }
 
   // draw composite from layers
-  drawComposite (layerIndices, destinationContext) {
+  drawComposite (layerIndices, destinationContext, options = { withOpacity: false }) {
     for (let index of layerIndices) {
       let canvas = this.sketchPane.getLayerCanvas(index)
-      destinationContext.drawImage(canvas, 0, 0)
+      
+      if (options.withOpacity) {
+        destinationContext.save()
+        destinationContext.globalAlpha = this.sketchPane.getLayerOpacity(index)
+        destinationContext.drawImage(canvas, 0, 0)
+        destinationContext.restore()
+      } else {
+        destinationContext.drawImage(canvas, 0, 0)
+      }
     }
     return destinationContext
   }
