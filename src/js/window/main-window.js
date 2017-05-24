@@ -18,6 +18,7 @@ const Transport = require('./transport.js')
 const notifications = require('./notifications.js')
 const NotificationData = require('../../data/messages.json')
 const Guides = require('./guides.js')
+const OnionSkin = require('./onion-skin.js')
 const Sonifier = require('./sonifier/index.js')
 const sfx = require('../wonderunit-sound.js')
 const keytracker = require('../utils/keytracker.js')
@@ -78,6 +79,7 @@ let contextMenu
 let colorPicker
 let transport
 let guides
+let onionSkin
 
 let storyboarderSketchPane
 
@@ -420,8 +422,8 @@ let loadBoardUI = ()=> {
   toolbar.on('diagonals', value => {
     guides.setState({ diagonals: value })
   })
-  toolbar.on('onion', () => {
-    alert('Onion Skin. This feature is not ready yet :(')
+  toolbar.on('onion', value => {
+    onionSkin.setEnabled(value)
   })
   toolbar.on('captions', () => {
     // HACK!!!
@@ -505,7 +507,7 @@ let loadBoardUI = ()=> {
   })
 
   guides = new Guides(storyboarderSketchPane.getLayerCanvasByName('guides'))
-
+  onionSkin = new OnionSkin(storyboarderSketchPane, boardPath)
 
   sfx.init()
 
@@ -1099,7 +1101,7 @@ let updateSketchPaneBoard = () => {
     let board = boardData.boards[currentBoard]
     
 
-    // always load the main board
+    // always load the main layer
     let layersData = [
       [1, board.url] // HACK hardcoded index
     ]
@@ -1171,7 +1173,12 @@ let updateSketchPaneBoard = () => {
           storyboarderSketchPane.sketchPane.clearLayer(index)
         }
       }
-      resolve()
+
+      onionSkin.load(
+        boardData.boards[currentBoard],
+        boardData.boards[currentBoard - 1],
+        boardData.boards[currentBoard + 1]
+      ).then(() => resolve()).catch(err => console.warn(err))
     }).catch(err => console.warn(err))
   })
 }
