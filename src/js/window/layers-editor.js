@@ -16,8 +16,6 @@ class LayersEditor {
       event.preventDefault()
       this.setLayerOpacity(event.target.value / 100, 0)
     })
-
-    setImmediate(() => document.querySelector('.layers-ui-reference-opacity').value = 100)
   }
 
   toggleLayer (index) {

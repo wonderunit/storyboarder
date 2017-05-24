@@ -182,7 +182,7 @@ let loadBoardUI = ()=> {
 
 
 
-  for (var item of document.querySelectorAll('#board-metadata input, textarea')) {
+  for (var item of document.querySelectorAll('#board-metadata input:not(.layers-ui-reference-opacity), textarea')) {
     item.addEventListener('focus', (e)=> {
       textInputMode = true
       textInputAllowAdvance = false
@@ -976,7 +976,7 @@ let renderMarkerPosition = () => {
 let renderMetaData = ()=> {
   document.querySelector('#board-metadata #shot').innerHTML = 'Shot: ' + boardData.boards[currentBoard].shot
   document.querySelector('#board-metadata #board-numbers').innerHTML = 'Board: ' + boardData.boards[currentBoard].number + ' of ' + boardData.boards.length
-  for (var item of document.querySelectorAll('#board-metadata input, textarea')) {
+  for (var item of document.querySelectorAll('#board-metadata input:not(.layers-ui-reference-opacity), textarea')) {
     item.value = ''
     item.checked = false
   }
