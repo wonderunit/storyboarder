@@ -307,6 +307,28 @@ class StoryboarderSketchPane extends EventEmitter {
     return destinationContext
   }
 
+  mergeLayers (src, dst) {
+    // create a temporary canvas
+    let composite = document.createElement('canvas')
+    let size = this.sketchPane.getCanvasSize()
+    composite.width = size.width
+    composite.height = size.height
+    let compositeContext = composite.getContext('2d')
+
+    // draw layers, in order, to temporary canvas
+    this.drawComposite([dst, src], compositeContext, { withOpacity: true })
+
+    // clear dst
+    this.sketchPane.clearLayer(dst)
+
+    // stamp composite onto main
+    let dstContext = this.sketchPane.getLayerContext(dst)
+    dstContext.drawImage(compositeContext.canvas, 0, 0)
+
+    // clear the src
+    this.sketchPane.clearLayer(src)
+  }
+
   // given a clientX and clientY,
   //   calculate the equivalent point on the sketchPane
   //     considering position and scale of the sketchPane

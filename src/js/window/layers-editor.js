@@ -33,16 +33,15 @@ class LayersEditor {
     this.storyboarderSketchPane.clearLayers([index])
   }
 
-  // main to reference
+  // merge `main` on top of `reference`
   mergeDown () {
     event.preventDefault()
-    console.log('mergeDown')
+    this.storyboarderSketchPane.mergeLayers(1, 0) // HACK hardcoded
   }
 
-  // reference to main
+  // merge `reference` on top of `main`
   mergeUp () {
-    event.preventDefault()
-    console.log('mergeUp')
+    this.storyboarderSketchPane.mergeLayers(0, 1) // HACK hardcoded
   }
 
   setLayerOpacity (opacity, index) {
