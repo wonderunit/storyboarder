@@ -41,10 +41,11 @@ class StoryboarderSketchPane extends EventEmitter {
     this.containerSize = null
     this.scaleFactor = null
 
+    this.isPointerDown = false
     this.moveEventsQueue = []
     this.cursorEventsQueue = []
     this.lineMileageCounter = new LineMileageCounter()
-    
+
     this.isMultiLayerOperation = false
 
     this.prevTool = null
@@ -145,9 +146,9 @@ class StoryboarderSketchPane extends EventEmitter {
 
   onKeyDown (e) {
     if (keytracker('<alt>') && keytracker('<meta>')) {
-      this.toolbar.emit('scale')
+      if (!this.getIsDrawingOrStabilizing()) this.toolbar.emit('scale')
     } else if (keytracker('<meta>')) {
-      this.toolbar.emit('move')
+      if (!this.getIsDrawingOrStabilizing()) this.toolbar.emit('move')
     } else {
       this.setQuickEraseIfRequested()
     }
@@ -159,7 +160,7 @@ class StoryboarderSketchPane extends EventEmitter {
       !keytracker('<meta>')
     ) {
       if (this.toolbar.state.transformMode) {
-        this.toolbar.emit('cancelTransform')
+        if (!this.getIsDrawingOrStabilizing()) this.toolbar.emit('cancelTransform')
       }
     }
     
@@ -169,6 +170,7 @@ class StoryboarderSketchPane extends EventEmitter {
   }
 
   canvasPointerDown (event) {
+    this.isPointerDown = true
     this.strategy.canvasPointerDown(event)
   }
 
@@ -187,6 +189,7 @@ class StoryboarderSketchPane extends EventEmitter {
   }
 
   canvasPointerUp (e) {
+    this.isPointerDown = false
     this.strategy.canvasPointerUp(event)
   }
 
@@ -563,7 +566,7 @@ class DrawingStrategy {
     this.container.sketchPane.down(pointerPosition.x, pointerPosition.y, e.pointerType === "pen" ? e.pressure : 1)
     document.addEventListener('pointermove', this.container.canvasPointerMove)
     document.addEventListener('pointerup', this.container.canvasPointerUp)
-    this.container.emit('pointerdown', pointerPosition.x, pointerPosition.y, e.pointerType === "pen" ? e.pressure : 1, e.pointerType)    
+    this.container.emit('pointerdown', pointerPosition.x, pointerPosition.y, e.pointerType === "pen" ? e.pressure : 1, e.pointerType)
   }
 
   canvasPointerUp (e) {
@@ -611,7 +614,8 @@ class DrawingStrategy {
   }
   
   dispose () {
-    //
+    this.container.stopMultiLayerOperation()
+    this.container.isMultiLayerOperation = false // ensure we reset the var
   }
 }
 

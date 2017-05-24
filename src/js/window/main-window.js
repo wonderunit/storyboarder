@@ -365,14 +365,24 @@ let loadBoardUI = ()=> {
 
 
   toolbar.on('move', () => {
+    if (storyboarderSketchPane.isPointerDown) return
+
     toolbar.setState({ transformMode: 'move' })
     storyboarderSketchPane.moveContents()
   })
   toolbar.on('scale', () => {
+    if (storyboarderSketchPane.isPointerDown) return
+
     toolbar.setState({ transformMode: 'scale' })
     storyboarderSketchPane.scaleContents()
   })
   toolbar.on('cancelTransform', () => {
+    // FIXME prevent this case from happening
+    if (storyboarderSketchPane.isPointerDown) {
+      console.warn('pointer is already down')
+      return
+    }
+
     toolbar.setState({ transformMode: null })
     storyboarderSketchPane.cancelTransform()
   })
