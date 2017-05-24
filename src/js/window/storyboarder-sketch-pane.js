@@ -144,10 +144,25 @@ class StoryboarderSketchPane extends EventEmitter {
   }
 
   onKeyDown (e) {
-    this.setQuickEraseIfRequested()
+    if (keytracker('<alt>') && keytracker('<meta>')) {
+      this.toolbar.emit('scale')
+    } else if (keytracker('<meta>')) {
+      this.toolbar.emit('move')
+    } else {
+      this.setQuickEraseIfRequested()
+    }
   }
 
   onKeyUp (e) {
+    if (
+      !(keytracker('<alt>') && keytracker('<meta>')) &&
+      !keytracker('<meta>')
+    ) {
+      if (this.toolbar.state.transformMode) {
+        this.toolbar.emit('cancelTransform')
+      }
+    }
+    
     if (!this.getIsDrawingOrStabilizing()) {
       this.unsetQuickErase()
     }
