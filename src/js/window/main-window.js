@@ -339,13 +339,16 @@ let loadBoardUI = ()=> {
   })
 
   toolbar.on('brush', (kind, options) => {
+    toolbar.emit('cancelTransform')
     storyboarderSketchPane.setBrushTool(kind, options)
     sfx.playEffect('tool-' + kind)
   })
   toolbar.on('brush:size', size => {
+    toolbar.emit('cancelTransform')
     storyboarderSketchPane.setBrushSize(size)
   })
   toolbar.on('brush:color', color => {
+    toolbar.emit('cancelTransform')
     storyboarderSketchPane.setBrushColor(color)
   })
 
@@ -362,13 +365,26 @@ let loadBoardUI = ()=> {
 
 
   toolbar.on('move', () => {
-    // sketchPane.moveContents()
+    if (storyboarderSketchPane.isPointerDown) return
+
+    toolbar.setState({ transformMode: 'move' })
+    storyboarderSketchPane.moveContents()
   })
   toolbar.on('scale', () => {
-    // sketchPane.scaleContents()
+    if (storyboarderSketchPane.isPointerDown) return
+
+    toolbar.setState({ transformMode: 'scale' })
+    storyboarderSketchPane.scaleContents()
   })
   toolbar.on('cancelTransform', () => {
-    // sketchPane.cancelTransform()
+    // FIXME prevent this case from happening
+    if (storyboarderSketchPane.isPointerDown) {
+      console.warn('pointer is already down')
+      return
+    }
+
+    toolbar.setState({ transformMode: null })
+    storyboarderSketchPane.cancelTransform()
   })
   // sketchPane.on('moveMode', enabled => {
   //   if (enabled) {
@@ -863,6 +879,7 @@ let goNextBoard = (direction, shouldPreserveSelections = false)=> {
 }
 
 let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
+  toolbar.emit('cancelTransform')
   return new Promise((resolve, reject) => {
     currentBoard = boardNumber
     currentBoard = Math.max(currentBoard, 0)
@@ -2720,6 +2737,8 @@ const applyUndoStateForImage = (state) => {
 
       markImageFileDirty([layerData.index])
     }
+
+    toolbar.emit('cancelTransform')
   }).catch(e => console.error(e))
 }
 
