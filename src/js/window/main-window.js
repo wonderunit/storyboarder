@@ -2871,3 +2871,8 @@ ipcRenderer.on('textInputMode', (event, args)=>{
 ipcRenderer.on('importImage', (event, args)=> {
   importImage(args)
 })
+
+ipcRenderer.on('toggleOnionSkin', () => {
+  toolbar.setState({ 'onion': !toolbar.state.onion })
+  toolbar.emit('onion', toolbar.state.onion)
+})

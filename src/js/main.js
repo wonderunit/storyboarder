@@ -600,3 +600,7 @@ ipcMain.on('textInputMode', (event, arg)=> {
 ipcMain.on('preferences', (event, arg) => {
   preferencesUI.show()
 })
+
+ipcMain.on('toggleOnionSkin', () => {
+  mainWindow.webContents.send('toggleOnionSkin')
+})

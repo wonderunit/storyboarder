@@ -333,6 +333,13 @@ const template = [
         }
       },
       {
+        label: 'Toggle Onion Skin',
+        accelerator: 'o',
+        click ( item, focusedWindow, event) {
+          ipcRenderer.send('toggleOnionSkin')
+        }
+      },
+      {
         label: 'Toggle Captions',
         accelerator: 'c',
         click ( item, focusedWindow, event) {
