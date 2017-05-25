@@ -510,6 +510,18 @@ class StoryboarderSketchPane extends EventEmitter {
     }
   }
 
+  createContext () {
+    let size = [
+      this.sketchPane.getCanvasWidth(),
+      this.sketchPane.getCanvasHeight()
+    ]
+    let canvas = document.createElement('canvas')
+    let context = canvas.getContext('2d')
+    canvas.width = size[0]
+    canvas.height = size[1]
+    return context
+  }
+
   // FIXME DEPRECATED remove references in main-window if possible, use indices instead
   getLayerCanvasByName (name) {
     // HACK hardcoded
@@ -626,20 +638,15 @@ class MovingStrategy {
     this.pos = null
     this.offset = [0, 0]
 
-    let size = this.container.sketchPane.getCanvasSize()
-    this.storedComposite = document.createElement('canvas')
-    let storedContext = this.storedComposite.getContext('2d')
-    this.storedComposite.width = size.width
-    this.storedComposite.height = size.height
+    let storedContext = this.container.createContext()
+    this.storedComposite = storedContext.canvas
     this.container.drawComposite(this.container.visibleLayersIndices, storedContext)
 
     this.storedLayers = {}
     for (let index of [0, 1, 3]) {// HACK hardcoded
       let context = this.container.sketchPane.getLayerContext(index)
-      let storedCanvas = document.createElement('canvas')
-      let storedContext = storedCanvas.getContext('2d')
-      storedCanvas.width = context.canvas.width
-      storedCanvas.height = context.canvas.height
+      let storedContext = this.container.createContext()
+      let storedCanvas = storedContext.canvas
       storedContext.drawImage(context.canvas, 0, 0)
       this.storedLayers[index] = {
         canvas: storedCanvas,
@@ -860,10 +867,8 @@ class ScalingStrategy {
     let h = this.container.sketchPane.size.height
 
     // store a copy
-    let storedCanvas = document.createElement('canvas')
-    let storedContext = storedCanvas.getContext('2d')
-    storedCanvas.width = context.canvas.width
-    storedCanvas.height = context.canvas.height
+    
+    let storedContext = this.container.createContext()
     storedContext.drawImage(context.canvas, 0, 0)
 
     context.save()
