@@ -49,19 +49,21 @@ class OnionSkin {
         if (!board) continue
 
         console.log('OnionSkin :: load', board.shot, board.url)
+        
+        let color = board == prevBoard ? '#00f' : '#f00'
 
         if (board.layers) {
           if (board.layers.reference && board.layers.reference.url) {
-            layersData.push([0, board.layers.reference.url]) // HACK hardcoded index
+            layersData.push([0, board.layers.reference.url, color]) // HACK hardcoded index
           }
         }
 
         // always load the main layer
-        layersData.push([1, board.url]) // HACK hardcoded index
+        layersData.push([1, board.url, color]) // HACK hardcoded index
 
         if (board.layers) {
           if (board.layers.notes && board.layers.notes.url) {
-            layersData.push([3, board.layers.notes.url]) // HACK hardcoded index
+            layersData.push([3, board.layers.notes.url, color]) // HACK hardcoded index
           }
         }
 
@@ -93,6 +95,7 @@ class OnionSkin {
         }
       }
 
+      // via https://stackoverflow.com/a/4231508
       Promise.all(loaders).then(result => {
         // key map for easier lookup
         let imagesByFilename = {}
@@ -100,20 +103,34 @@ class OnionSkin {
           if (image) imagesByFilename[filename] = image
         }
 
-        context.save()
-        context.globalAlpha = 0.25
+        let tmpCtx = this.storyboarderSketchPane.createContext()
         context.clearRect(0, 0, size.width, size.height)
-        for (let [index, filename] of layersData) {
+
+        for (let [index, filename, color] of layersData) {
           // do we have an image for this particular layer index?
           let image = imagesByFilename[filename]
           if (image) {
-            console.log('OnionSkin :: rendering layer index:', index, filename)
+            console.log('OnionSkin :: rendering layer index:', index, filename, color)
+            tmpCtx.save()
+            tmpCtx.fillStyle = color
+            tmpCtx.fillRect(0, 0, size.width, size.height)
+            // draw image to offscreen (with tint)
+            tmpCtx.globalCompositeOperation = 'destination-atop'
+            tmpCtx.drawImage(image, 0, 0)
+            tmpCtx.restore()
+
+            // draw image to onion layer
+            context.save()
+            context.globalAlpha = 0.01
             context.drawImage(image, 0, 0)
+            // draw offscreen (with tint) to onion layer
+            context.globalAlpha = 0.2 // strength of tint
+            context.drawImage(tmpCtx.canvas, 0, 0)
+            context.restore()
           } else {
-            console.log('OnionSkin :: missing image for layer index:', index, filename)
+            console.log('OnionSkin :: missing image for layer index:', index, filename, color)
           }
         }
-        context.restore()
 
         this.isLoaded = true
         resolve()
