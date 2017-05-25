@@ -5,6 +5,7 @@ class OnionSkin {
   constructor (storyboarderSketchPane, boardPath) {
     this.storyboarderSketchPane = storyboarderSketchPane
     this.enabled = false
+    this.isLoaded = false
     this.boardPath = boardPath
 
     this.setEnabled(false)
@@ -16,7 +17,17 @@ class OnionSkin {
     console.log('OnionSkin#setEnabled', this.enabled)
   }
   
+  getEnabled () {
+    return this.enabled
+  }
+
+  reset () {
+    this.isLoaded = false
+  }
+
   load (currBoard, prevBoard, nextBoard) {
+    console.log('OnionSkin#load')
+    this.isLoaded = false
     return new Promise((resolve, reject) => {
       let context = this.storyboarderSketchPane.sketchPane.getLayerContext(2) // HACK hardcoded
       let size = this.storyboarderSketchPane.sketchPane.getCanvasSize()
@@ -107,6 +118,7 @@ class OnionSkin {
         }
         context.restore()
 
+        this.isLoaded = true
         resolve()
       })
     })

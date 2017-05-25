@@ -424,6 +424,15 @@ let loadBoardUI = ()=> {
   })
   toolbar.on('onion', value => {
     onionSkin.setEnabled(value)
+    if (onionSkin.getEnabled()) {
+      if (!onionSkin.isLoaded) {
+        onionSkin.load(
+          boardData.boards[currentBoard],
+          boardData.boards[currentBoard - 1],
+          boardData.boards[currentBoard + 1]
+        ).catch(err => console.warn(err))
+      }
+    }
   })
   toolbar.on('captions', () => {
     // HACK!!!
@@ -1174,11 +1183,14 @@ let updateSketchPaneBoard = () => {
         }
       }
 
-      onionSkin.load(
-        boardData.boards[currentBoard],
-        boardData.boards[currentBoard - 1],
-        boardData.boards[currentBoard + 1]
-      ).then(() => resolve()).catch(err => console.warn(err))
+      onionSkin.reset()
+      if (onionSkin.getEnabled()) {
+        onionSkin.load(
+          boardData.boards[currentBoard],
+          boardData.boards[currentBoard - 1],
+          boardData.boards[currentBoard + 1]
+        ).then(() => resolve()).catch(err => console.warn(err))
+      }
     }).catch(err => console.warn(err))
   })
 }
