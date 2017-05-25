@@ -2138,37 +2138,44 @@ ipcRenderer.on('redo', (e, arg)=> {
 let importImage = (imageDataURL) => {
   // TODO: undo
   var image = new Image()
+  image.addEventListener('load', ()=>{
+    console.log(boardData.aspectRatio)
+    console.log((image.height/image.width))
+    console.log(image)
+    let targetWidth
+    let targetHeight
+    let offsetX
+    let offsetY
+
+
+    if (boardData.aspectRatio > (image.height/image.width)) {
+      targetHeight = 900
+      targetWidth = 900 * (image.width/image.height)
+
+      offsetX = Math.round(((900 * boardData.aspectRatio) - targetWidth)/2)
+      offsetY = 0
+    } else {
+      targetWidth = 900 * boardData.aspectRatio
+      targetHeight = targetWidth * (image.width/image.height)
+
+      offsetY = Math.round(900 - targetHeight)
+      offsetX = 0
+    }
+
+
+    // render
+    storyboarderSketchPane
+      .getLayerCanvasByName('reference')
+      .getContext("2d")
+      .drawImage(image, offsetX, offsetY, targetWidth, targetHeight)
+    markImageFileDirty([0]) // HACK hardcoded
+    saveImageFile()
+
+
+  }, false);
+
   image.src = imageDataURL
 
-  let targetWidth
-  let targetHeight
-  let offsetX
-  let offsetY
-
-  console.log(boardData.aspectRatio)
-  console.log((image.height/image.width))
-  if (boardData.aspectRatio > (image.height/image.width)) {
-    targetHeight = 900
-    targetWidth = 900 * (image.width/image.height)
-
-    offsetX = Math.round(((900 * boardData.aspectRatio) - targetWidth)/2)
-    offsetY = 0
-  } else {
-    targetWidth = 900 * boardData.aspectRatio
-    targetHeight = targetWidth * (image.width/image.height)
-
-    offsetY = Math.round(900 - targetHeight)
-    offsetX = 0
-  }
-
-
-  // render
-  storyboarderSketchPane
-    .getLayerCanvasByName('reference')
-    .getContext("2d")
-    .drawImage(image, offsetX, offsetY, targetWidth, targetHeight)
-  markImageFileDirty([0]) // HACK hardcoded
-  saveImageFile()
 }
 
 let loadPNGImageFileAsDataURI = (filepath) => {
@@ -2845,5 +2852,7 @@ ipcRenderer.on('textInputMode', (event, args)=>{
 })
 
 ipcRenderer.on('importImage', (event, args)=> {
+  //console.log(args)
+
   importImage(args)
 })
