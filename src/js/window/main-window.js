@@ -731,7 +731,12 @@ let saveImageFile = () => {
 
 const updateThumbnail = imageFilePath => {
   let width = Math.floor(60 * boardData.aspectRatio), height = 60
+
+  storyboarderSketchPane.sketchPane.setLayerVisible(false, 2) // HACK hardcoded
+  storyboarderSketchPane.sketchPane.setLayerVisible(false, 4) // HACK hardcoded
   let canvas = storyboarderSketchPane.sketchPane.createFlattenThumbnail(width * 2, height * 2)
+  storyboarderSketchPane.sketchPane.setLayerVisible(true, 2) // HACK hardcoded
+  storyboarderSketchPane.sketchPane.setLayerVisible(true, 4) // HACK hardcoded
 
   let imageData = canvas
     .toDataURL('image/png')
