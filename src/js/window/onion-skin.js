@@ -72,43 +72,40 @@ class OnionSkin {
               if (fs.existsSync(imageFilePath)) {
                 let image = new Image()
                 image.onload = () => {
-                  // draw
-                  resolve([index, image])
+                  // resolve
+                  resolve([filename, image])
                 }
                 image.onerror = err => {
                   // clear
                   console.warn(err)
-                  resolve([index, null])
+                  resolve([filename, null])
                 }
                 image.src = imageFilePath + '?' + Math.random()
               } else {
                 // clear
-                resolve([index, null])
+                resolve([filename, null])
               }
             } catch (err) {
               // clear
-              resolve([index, null])
+              resolve([filename, null])
             }
           }))
         }
       }
 
       Promise.all(loaders).then(result => {
+        // key map for easier lookup
+        let imagesByFilename = {}
+        for (let [filename, image] of result) {
+          if (image) imagesByFilename[filename] = image
+        }
+
         context.save()
         context.globalAlpha = 0.25
         context.clearRect(0, 0, size.width, size.height)
         for (let [index, filename] of layersData) {
-
-          // key map for easier looku
-          let imagesToDrawByLayerIndex = []
-          for (let [index, image] of result) {
-            if (image) {
-              imagesToDrawByLayerIndex[index] = image
-            }
-          }
-
           // do we have an image for this particular layer index?
-          let image = imagesToDrawByLayerIndex[index]
+          let image = imagesByFilename[filename]
           if (image) {
             console.log('OnionSkin :: rendering layer index:', index, filename)
             context.drawImage(image, 0, 0)
