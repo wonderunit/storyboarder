@@ -14,7 +14,6 @@ class OnionSkin {
   setEnabled (value) {
     this.enabled = value
     this.storyboarderSketchPane.sketchPane.setLayerOpacity(this.enabled ? 1 : 0, 2) // HACK hardcoded
-    console.log('OnionSkin#setEnabled', this.enabled)
   }
   
   getEnabled () {
@@ -26,21 +25,10 @@ class OnionSkin {
   }
 
   load (currBoard, prevBoard, nextBoard) {
-    console.log('OnionSkin#load')
     this.isLoaded = false
     return new Promise((resolve, reject) => {
       let context = this.storyboarderSketchPane.sketchPane.getLayerContext(2) // HACK hardcoded
       let size = this.storyboarderSketchPane.sketchPane.getCanvasSize()
-
-      // TODO if not enabled, clear the onion layer
-      // TODO   (this works, but when re-enabled on a new board, needs to know enough to reload images it doesn't have...)
-      // if (!this.enabled) {
-      //   context.clearRect(0, 0, size.width, size.height)
-      //   resolve()
-      //   return
-      // }
-
-      console.log('OnionSkin :: load')
 
       let layersData = []
       let loaders = []
@@ -48,8 +36,6 @@ class OnionSkin {
       for (let board of [prevBoard, nextBoard]) {
         if (!board) continue
 
-        console.log('OnionSkin :: load', board.shot, board.url)
-        
         let color = board == prevBoard ? '#00f' : '#f00'
 
         if (board.layers) {
@@ -110,7 +96,7 @@ class OnionSkin {
           // do we have an image for this particular layer index?
           let image = imagesByFilename[filename]
           if (image) {
-            console.log('OnionSkin :: rendering layer index:', index, filename, color)
+            // console.log('OnionSkin :: rendering layer index:', index, filename, color)
             tmpCtx.save()
             tmpCtx.fillStyle = color
             tmpCtx.fillRect(0, 0, size.width, size.height)
@@ -128,7 +114,7 @@ class OnionSkin {
             context.drawImage(tmpCtx.canvas, 0, 0)
             context.restore()
           } else {
-            console.log('OnionSkin :: missing image for layer index:', index, filename, color)
+            // console.log('OnionSkin :: missing image for layer index:', index, filename, color)
           }
         }
 
