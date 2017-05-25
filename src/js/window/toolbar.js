@@ -100,7 +100,9 @@ const initialState = {
   grid: false,
   center: false,
   thirds: false,
-  diagonals: false
+  diagonals: false,
+  
+  onion: false
 }
 
 class Toolbar extends EventEmitter {
@@ -338,7 +340,8 @@ class Toolbar extends EventEmitter {
         this.emit('diagonals', this.state.diagonals)
         break
       case 'onion':
-        this.emit('onion')
+        this.setState({ onion: !this.state.onion })
+        this.emit('onion', this.state.onion)
         break
       case 'captions':
         this.toggleCaptions()
@@ -442,6 +445,9 @@ class Toolbar extends EventEmitter {
     centerEl.classList.toggle('active', this.state.center)
     thirdsEl.classList.toggle('active', this.state.thirds)
     diagonalsEl.classList.toggle('active', this.state.diagonals)
+
+    let onionEl = this.el.querySelector('#toolbar-onion')
+    onionEl.classList.toggle('active', this.state.onion)
 
     if (this.state.brushes[this.state.brush].color) {
       this.el.querySelector('#toolbar-current-color .icon').style.backgroundColor = this.state.brushes[this.state.brush].color.toCSS()
