@@ -291,12 +291,54 @@ class StoryboarderSketchPane extends EventEmitter {
   }
 
   // draw composite from layers
-  drawComposite (layerIndices, destinationContext) {
+  drawComposite (layerIndices, destinationContext, options = { withOpacity: false }) {
     for (let index of layerIndices) {
       let canvas = this.sketchPane.getLayerCanvas(index)
-      destinationContext.drawImage(canvas, 0, 0)
+      
+      if (options.withOpacity) {
+        destinationContext.save()
+        destinationContext.globalAlpha = this.sketchPane.getLayerOpacity(index)
+        destinationContext.drawImage(canvas, 0, 0)
+        destinationContext.restore()
+      } else {
+        destinationContext.drawImage(canvas, 0, 0)
+      }
     }
     return destinationContext
+  }
+
+  mergeLayers (layers, destination) {
+    // make a unique, sorted array of dirty layers
+    let dirtyLayers = [...new Set(layers.concat(destination))].sort()
+    // save an undo snapshot
+    this.emit('addToUndoStack', dirtyLayers)
+
+    // create a temporary canvas
+    let composite = document.createElement('canvas')
+    let size = this.sketchPane.getCanvasSize()
+    composite.width = size.width
+    composite.height = size.height
+    let compositeContext = composite.getContext('2d')
+
+    // draw layers, in order, to temporary canvas
+    this.drawComposite(layers, compositeContext, { withOpacity: true })
+
+    // clear destination
+    this.sketchPane.clearLayer(destination)
+
+    // stamp composite onto main
+    let destinationContext = this.sketchPane.getLayerContext(destination)
+    destinationContext.drawImage(compositeContext.canvas, 0, 0)
+
+    // clear the source layers
+    for (let index of layers) {
+      if (index !== destination) {
+        this.sketchPane.clearLayer(index)
+      }
+    }
+
+    // mark all layers dirty
+    this.emit('markDirty', dirtyLayers)
   }
 
   // given a clientX and clientY,
