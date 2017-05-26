@@ -59,9 +59,9 @@ const initialState = {
     [BRUSH_BRUSH]: {
       kind: BRUSH_BRUSH,
       size: 100,
-      spacing: 0.2,
+      spacing: 0.03,
       flow: 0.7,
-      hardness: 0,
+      hardness: 1,
       opacity: 0.2,
       color: Color('#9E9E9E'),
       palette: [
