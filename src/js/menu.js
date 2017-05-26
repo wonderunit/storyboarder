@@ -421,7 +421,11 @@ const template = [
     submenu: [
       {
         label: 'Learn More',
-        click () { require('electron').shell.openExternal('http://www.setpixel.com') }
+        click () { require('electron').shell.openExternal('https://wonderunit.com/software/storyboarder/') }
+      },
+      {
+        label: 'Found a bug? Submit an issue!!!',
+        click () { require('electron').shell.openExternal('https://github.com/wonderunit/storyboarder/issues/new') }
       }
     ]
   }
@@ -597,7 +601,11 @@ const welcomeTemplate = [
     submenu: [
       {
         label: 'Learn More',
-        click () { require('electron').shell.openExternal('http://www.setpixel.com') }
+        click () { require('electron').shell.openExternal('https://wonderunit.com/software/storyboarder/') }
+      },
+      {
+        label: 'Found a bug? Submit an issue!!!',
+        click () { require('electron').shell.openExternal('https://github.com/wonderunit/storyboarder/issues/new') }
       }
     ]
   }
