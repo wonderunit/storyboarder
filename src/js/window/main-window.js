@@ -812,6 +812,7 @@ let deleteBoards = (args)=> {
     }
   }
   gotoBoard(currentBoard)
+  sfx.playEffect('trash')
 }
 
 /**
