@@ -320,6 +320,12 @@ const template = [
           ipcRenderer.send('flipBoard')
         }
       },
+      {
+        label: 'Flip Vertical',
+        click ( item, focusedWindow, event) {
+          ipcRenderer.send('flipBoard', true)
+        }
+      },
     ]
   },
   {

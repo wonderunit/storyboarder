@@ -427,11 +427,11 @@ class StoryboarderSketchPane extends EventEmitter {
     this.emit('markDirty', [this.sketchPane.getCurrentLayerIndex()])
   }
 
-  flipLayers () {
+  flipLayers (vertical) {
     this.emit('addToUndoStack')
     // HACK operates on all layers
     for (var i = 0; i < this.sketchPane.layers.length; ++i) {
-      this.sketchPane.flipLayer(i)
+      this.sketchPane.flipLayer(i, vertical)
     }
     this.emit('markDirty', this.visibleLayersIndices)
   }
