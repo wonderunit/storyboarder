@@ -2868,6 +2868,7 @@ ipcRenderer.on('brushSize', (e, direction) => {
 ipcRenderer.on('flipBoard', (e, arg)=> {
   if (!textInputMode) {
     storyboarderSketchPane.flipLayers(arg)
+    sfx.playEffect('metal')
   }
 })
 
