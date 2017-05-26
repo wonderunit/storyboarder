@@ -540,10 +540,16 @@ class StoryboarderSketchPane extends EventEmitter {
   }
 
   moveContents () {
+    // are we already moving?
+    if (this.strategy instanceof MovingStrategy) return
+
     if (this.strategy) this.strategy.dispose()
     this.strategy = new MovingStrategy(this)
   }
   scaleContents () {
+    // are we already scaling?
+    if (this.strategy instanceof ScalingStrategy) return
+
     if (this.strategy) this.strategy.dispose()
     this.strategy = new ScalingStrategy(this)
   }
