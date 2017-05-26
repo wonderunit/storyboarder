@@ -311,6 +311,10 @@ const playEffect = effect => {
       metalSynth.set({ 'frequency': 110 })
       metalSynth.triggerAttackRelease()
       break
+    case 'metal':
+      metalSynth.set({ 'frequency': 880 })
+      metalSynth.triggerAttackRelease()
+      break
     default:
       if (multiPlayer) {
         multiPlayer.stopIfPlaying(effect)

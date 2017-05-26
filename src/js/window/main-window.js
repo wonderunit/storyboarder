@@ -406,10 +406,20 @@ let loadBoardUI = ()=> {
 
 
   toolbar.on('undo', () => {
-    undoStack.undo()
+    if (undoStack.getCanUndo()) {
+      undoStack.undo()
+      sfx.bip('c6')
+    } else {
+      sfx.error()
+    }
   })
   toolbar.on('redo', () => {
-    undoStack.redo()
+    if (undoStack.getCanRedo()) {
+      undoStack.redo()
+      sfx.bip('c7')
+    } else {
+      sfx.error()
+    }
   })
   
   toolbar.on('grid', value => {
@@ -619,6 +629,11 @@ let newBoard = (position, shouldAddToUndoStack = true) => {
   markBoardFileDirty() // to save new board data
   renderThumbnailDrawer()
   storeUndoStateForScene()
+
+  // is this not a brand new storyboarder project?
+  if (shouldAddToUndoStack) {
+    sfx.bip('c6')
+  }
 }
 
 let markBoardFileDirty = () => {
@@ -799,6 +814,7 @@ let deleteBoards = (args)=> {
     }
   }
   gotoBoard(currentBoard)
+  sfx.playEffect('trash')
 }
 
 /**
@@ -1332,6 +1348,9 @@ let renderThumbnailDrawer = ()=> {
     })
 
     // external
+    contextMenu.on('shown', () => {
+      sfx.playEffect('metal')
+    })
     contextMenu.on('add', () => {
       newBoard()
       gotoBoard(currentBoard+1)
@@ -1876,9 +1895,19 @@ window.onkeydown = (e)=> {
       case 'KeyZ':
        if (e.metaKey || e.ctrlKey) {
           if (e.shiftKey) {
-            undoStack.redo()
+            if (undoStack.getCanRedo()) {
+              undoStack.redo()
+              sfx.bip('c7')
+            } else {
+              sfx.error()
+            }
           } else {
-            undoStack.undo()
+            if (undoStack.getCanUndo()) {
+              undoStack.undo()
+              sfx.bip('c6')
+            } else {
+              sfx.error()
+            }
           }
           e.preventDefault()
         }
@@ -2151,15 +2180,25 @@ ipcRenderer.on('nextScene', (event, args)=>{
 
 // tools
 
-ipcRenderer.on('undo', (e, arg)=> {
+ipcRenderer.on('undo', (e, arg) => {
   if (!textInputMode) {
-    undoStack.undo()
+    if (undoStack.getCanUndo()) {
+      undoStack.undo()
+      sfx.bip('c6')
+    } else {
+      sfx.error()
+    }
   }
 })
 
-ipcRenderer.on('redo', (e, arg)=> {
+ipcRenderer.on('redo', (e, arg) => {
   if (!textInputMode) {
-    undoStack.redo()
+    if (undoStack.getCanRedo()) {
+      undoStack.redo()
+      sfx.bip('c7')
+    } else {
+      sfx.error()
+    }
   }
 })
 
@@ -2835,6 +2874,7 @@ ipcRenderer.on('brushSize', (e, direction) => {
 ipcRenderer.on('flipBoard', (e, arg)=> {
   if (!textInputMode) {
     storyboarderSketchPane.flipLayers(arg)
+    sfx.playEffect('metal')
   }
 })
 

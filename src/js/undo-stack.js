@@ -31,6 +31,18 @@ class UndoList {
     return this.state.past.length + 1
   }
 
+  getCanUndo () {
+    console.log('canUndo')
+    console.log(this.state)
+    return this.state.past.length > 0
+  }
+
+  getCanRedo () {
+    console.log('canRedo')
+    console.log(this.state)
+    return this.state.future.length > 0
+  }
+
   undo () {
     const { past, present, future } = this.state
 
@@ -284,3 +296,5 @@ module.exports.addImageData = addImageData
 module.exports.addSceneData = addSceneData
 module.exports.undo = undo
 module.exports.redo = redo
+module.exports.getCanUndo = () => undoList.getCanUndo()
+module.exports.getCanRedo = () => undoList.getCanRedo()

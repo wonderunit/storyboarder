@@ -60,6 +60,7 @@ class ContextMenu extends EventEmitter {
   }
   
   fadeIn () {
+    this.emit('shown')
     this.innerEl.classList.add('appear-anim')
   }
 
