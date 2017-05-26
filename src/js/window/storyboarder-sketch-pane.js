@@ -548,6 +548,9 @@ class StoryboarderSketchPane extends EventEmitter {
     this.strategy = new ScalingStrategy(this)
   }
   cancelTransform () {
+    // are we already drawing?
+    if (this.strategy instanceof DrawingStrategy) return
+
     if (this.strategy) this.strategy.dispose()
     this.strategy = new DrawingStrategy(this)
     if (this.toolbar) {
