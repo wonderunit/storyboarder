@@ -34,6 +34,9 @@ body {
 
 }
 
+body::-webkit-scrollbar {
+    display: none;
+}
 
 #scenes::-webkit-scrollbar {
     display: none;
@@ -347,6 +350,13 @@ body {
   background-color: #555;
 }
 
+#board-metadata::-webkit-scrollbar {
+    display: none;
+}
+
+.board-metadata-container::-webkit-scrollbar {
+    display: none;
+}
 
 
 #board-metadata {
