@@ -794,6 +794,13 @@ class ScalingStrategy {
 
     this.container.startMultiLayerOperation()
     this.container.setCompositeLayerVisibility(true)
+    
+    // HACK ensure paintingCanvas is visible
+    // might need this due to the 'pointer is already down' bug?
+    //  maybe once that's fixed we can remove?
+    //
+    // maybe relatd to SketchPane#setPaintingKnockout?
+    this.container.sketchPane.paintingCanvas.style.visibility = 'visible'
 
     // fake an initial move event
     this.container.canvasPointerMove(e)
