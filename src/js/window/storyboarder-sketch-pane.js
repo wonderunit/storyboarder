@@ -308,6 +308,11 @@ class StoryboarderSketchPane extends EventEmitter {
   }
 
   mergeLayers (layers, destination) {
+    // make a unique, sorted array of dirty layers
+    let dirtyLayers = [...new Set(layers.concat(destination))].sort()
+    // save an undo snapshot
+    this.emit('addToUndoStack', dirtyLayers)
+
     // create a temporary canvas
     let composite = document.createElement('canvas')
     let size = this.sketchPane.getCanvasSize()
@@ -331,6 +336,9 @@ class StoryboarderSketchPane extends EventEmitter {
         this.sketchPane.clearLayer(index)
       }
     }
+
+    // mark all layers dirty
+    this.emit('markDirty', dirtyLayers)
   }
 
   // given a clientX and clientY,
