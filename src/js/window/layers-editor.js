@@ -2,13 +2,13 @@ class LayersEditor {
   constructor (storyboarderSketchPane) {
     this.storyboarderSketchPane = storyboarderSketchPane
 
-    document.querySelector('.layers-ui-notes-visible').addEventListener('pointerdown', this.toggleLayer.bind(this, 3))
+    // document.querySelector('.layers-ui-notes-visible').addEventListener('pointerdown', this.toggleLayer.bind(this, 3))
     document.querySelector('.layers-ui-notes-clear').addEventListener('pointerdown', this.clearLayer.bind(this, 3))
 
-    document.querySelector('.layers-ui-main-visible').addEventListener('pointerdown', this.toggleLayer.bind(this, 1))
+    // document.querySelector('.layers-ui-main-visible').addEventListener('pointerdown', this.toggleLayer.bind(this, 1))
     document.querySelector('.layers-ui-main-merge').addEventListener('pointerdown', this.mergeDown.bind(this))
 
-    document.querySelector('.layers-ui-reference-visible').addEventListener('pointerdown', this.toggleLayer.bind(this, 0))
+    // document.querySelector('.layers-ui-reference-visible').addEventListener('pointerdown', this.toggleLayer.bind(this, 0))
     document.querySelector('.layers-ui-reference-merge').addEventListener('pointerdown', this.mergeUp.bind(this))
     document.querySelector('.layers-ui-reference-clear').addEventListener('pointerdown', this.clearLayer.bind(this, 0))
 
