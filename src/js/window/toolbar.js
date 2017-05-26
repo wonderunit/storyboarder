@@ -85,8 +85,8 @@ const initialState = {
       kind: BRUSH_ERASER,
       size: 30,
 
-      spacing: 0.2,
-      flow: 1.0,
+      spacing: 0.05,
+      flow: 6.0,
       hardness: 0.9,
       opacity: 1.0,
 
