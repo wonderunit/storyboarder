@@ -617,6 +617,11 @@ let newBoard = (position, shouldAddToUndoStack = true) => {
   markBoardFileDirty() // to save new board data
   renderThumbnailDrawer()
   storeUndoStateForScene()
+
+  // is this not a brand new storyboarder project?
+  if (shouldAddToUndoStack) {
+    sfx.bip('c6')
+  }
 }
 
 let markBoardFileDirty = () => {
