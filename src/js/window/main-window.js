@@ -1345,6 +1345,9 @@ let renderThumbnailDrawer = ()=> {
     })
 
     // external
+    contextMenu.on('shown', () => {
+      sfx.playEffect('metal')
+    })
     contextMenu.on('add', () => {
       newBoard()
       gotoBoard(currentBoard+1)
