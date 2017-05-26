@@ -560,6 +560,8 @@ let loadBoardUI = ()=> {
 
   window.addEventListener('beforeunload', event => {
     console.log('Close requested! Saving ...')
+    // TODO THIS IS SLOW AS HELL. NEED TO FIX PREFS
+    toolbar.savePrefs()
     saveBoardFile()
     saveImageFile()
   })

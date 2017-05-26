@@ -1,4 +1,7 @@
 const EventEmitter = require('events').EventEmitter
+const { remote } = require('electron')
+const prefsModule = require('electron').remote.require('./../js/prefs')
+
 const Color = require('color-js')
 
 const util = require('../utils/index.js')
@@ -108,7 +111,30 @@ const initialState = {
 class Toolbar extends EventEmitter {
   constructor (el) {
     super()
-    this.state = initialState
+
+    // TODO PREFS ARE JANK AS FUCK. NEED TO REDO THIS
+    let prefState
+    prefState = util.stringifyClone(prefsModule.getPrefs())
+
+    if (prefState  && prefState.toolbarState) {
+      for (var key in prefState.toolbarState.brushes) {
+        let paletteValue = prefState.toolbarState.brushes[key].color
+        let color = new Color({red: paletteValue.red, green: paletteValue.green, blue: paletteValue.blue, alpha: paletteValue.alpha})
+        prefState.toolbarState.brushes[key].color = color
+        let newPalette = []
+        for (var i = 0; i < prefState.toolbarState.brushes[key].palette.length; i++) {
+          paletteValue = prefState.toolbarState.brushes[key].palette[i]
+          color = new Color({red: paletteValue.red, green: paletteValue.green, blue: paletteValue.blue, alpha: paletteValue.alpha})
+          newPalette.push(color)
+        }
+        prefState.toolbarState.brushes[key].palette = newPalette
+      }
+      this.state = prefState.toolbarState
+    } else {
+      this.state = initialState
+    }
+
+
     this.el = el
     this.swatchTimer = null
     this.swatchDelay = 2000
@@ -121,6 +147,15 @@ class Toolbar extends EventEmitter {
 
     this.attachedCallback(this.el)
   }
+
+  savePrefs () {
+    let sharedObj = remote.getGlobal('sharedObj')
+    let prefs = util.stringifyClone(sharedObj.prefs)
+    prefs.toolbarState = this.state
+    sharedObj.prefs = prefs
+    prefsModule.savePrefs(prefs)
+  }
+
 
   setState (newState) {
     this.state = Object.assign(this.state, newState)
@@ -348,7 +383,7 @@ class Toolbar extends EventEmitter {
         break
 
       default:
-        console.log('toolbar selection', selection)
+        // console.log('toolbar selection', selection)
         break
     }
   }
@@ -480,7 +515,7 @@ class Toolbar extends EventEmitter {
   }
   
   onButtonOver (event) {
-    console.log('onButtonOver', event)
+    // console.log('onButtonOver', event)
     sfx.rollover()
   }
 }

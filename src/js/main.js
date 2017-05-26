@@ -15,6 +15,7 @@ const appServer = new(require('./express-app/app'))
 const preferencesUI = require('./windows/preferences')()
 
 const pkg = require('../../package.json')
+const util = require('./utils/index.js')
 
 //https://github.com/luiseduardobrito/sample-chat-electron
 
@@ -399,6 +400,10 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
 }
 
 let addToRecentDocs = (filename, metadata) => {
+
+  // TODO PREFS ARE SUPER JANK. NEED TO REDO.
+  let prefs = util.stringifyClone(global.sharedObj.prefs)
+
   if (!prefs.recentDocuments) {
     prefs.recentDocuments = []
   }

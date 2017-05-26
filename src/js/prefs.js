@@ -34,8 +34,10 @@ const load = () => {
   }
 }
 
-const savePrefs = _prefs =>
+const savePrefs = (_prefs) => {
+  prefs = _prefs
   fs.writeFileSync(prefFile, JSON.stringify(_prefs, null, 2))
+}
 
 const getPrefs = () =>
   prefs
