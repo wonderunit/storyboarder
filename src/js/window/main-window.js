@@ -408,7 +408,7 @@ let loadBoardUI = ()=> {
   toolbar.on('undo', () => {
     if (undoStack.getCanUndo()) {
       undoStack.undo()
-      sfx.bip('c6')
+      sfx.rollover()
     } else {
       sfx.error()
     }
@@ -416,7 +416,7 @@ let loadBoardUI = ()=> {
   toolbar.on('redo', () => {
     if (undoStack.getCanRedo()) {
       undoStack.redo()
-      sfx.bip('c7')
+      sfx.rollover()
     } else {
       sfx.error()
     }
@@ -1897,14 +1897,14 @@ window.onkeydown = (e)=> {
           if (e.shiftKey) {
             if (undoStack.getCanRedo()) {
               undoStack.redo()
-              sfx.bip('c7')
+              sfx.rollover()
             } else {
               sfx.error()
             }
           } else {
             if (undoStack.getCanUndo()) {
               undoStack.undo()
-              sfx.bip('c6')
+              sfx.rollover()
             } else {
               sfx.error()
             }
@@ -2184,7 +2184,7 @@ ipcRenderer.on('undo', (e, arg) => {
   if (!textInputMode) {
     if (undoStack.getCanUndo()) {
       undoStack.undo()
-      sfx.bip('c6')
+      sfx.rollover()
     } else {
       sfx.error()
     }
@@ -2195,7 +2195,7 @@ ipcRenderer.on('redo', (e, arg) => {
   if (!textInputMode) {
     if (undoStack.getCanRedo()) {
       undoStack.redo()
-      sfx.bip('c7')
+      sfx.rollover()
     } else {
       sfx.error()
     }
