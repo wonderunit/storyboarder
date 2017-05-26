@@ -2877,11 +2877,12 @@ ipcRenderer.on('textInputMode', (event, args)=>{
 
 ipcRenderer.on('importImage', (event, args)=> {
   //console.log(args)
-
   importImage(args)
 })
 
-ipcRenderer.on('toggleOnionSkin', () => {
-  toolbar.setState({ 'onion': !toolbar.state.onion })
-  toolbar.emit('onion', toolbar.state.onion)
+ipcRenderer.on('toggleGuide', (event, args) => {
+  if (!textInputMode) {
+    toolbar.setState({ [args]: !toolbar.state[args] })
+    toolbar.emit(args, toolbar.state[args])
+  }
 })

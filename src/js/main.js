@@ -601,6 +601,6 @@ ipcMain.on('preferences', (event, arg) => {
   preferencesUI.show()
 })
 
-ipcMain.on('toggleOnionSkin', () => {
-  mainWindow.webContents.send('toggleOnionSkin')
+ipcMain.on('toggleGuide', (event, arg) => {
+  mainWindow.webContents.send('toggleGuide', arg)
 })

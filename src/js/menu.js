@@ -333,10 +333,37 @@ const template = [
         }
       },
       {
+        type: 'separator'
+      },
+      {
+        label: 'Toggle Grid Guide',
+        click ( item, focusedWindow, event) {
+          ipcRenderer.send('toggleGuide', 'grid')
+        }
+      },
+      {
+        label: 'Toggle Center Guide',
+        click ( item, focusedWindow, event) {
+          ipcRenderer.send('toggleGuide', 'center')
+        }
+      },
+      {
+        label: 'Toggle Thirds Guide',
+        click ( item, focusedWindow, event) {
+          ipcRenderer.send('toggleGuide', 'thirds')
+        }
+      },
+      {
+        label: 'Toggle Diagonal Guide',
+        click ( item, focusedWindow, event) {
+          ipcRenderer.send('toggleGuide', 'diagonals')
+        }
+      },
+      {
         label: 'Toggle Onion Skin',
         accelerator: 'o',
         click ( item, focusedWindow, event) {
-          ipcRenderer.send('toggleOnionSkin')
+          ipcRenderer.send('toggleGuide', 'onion')
         }
       },
       {
