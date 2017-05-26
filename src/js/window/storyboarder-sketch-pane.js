@@ -307,7 +307,7 @@ class StoryboarderSketchPane extends EventEmitter {
     return destinationContext
   }
 
-  mergeLayers (src, dst) {
+  mergeLayers (layers, destination) {
     // create a temporary canvas
     let composite = document.createElement('canvas')
     let size = this.sketchPane.getCanvasSize()
@@ -316,17 +316,21 @@ class StoryboarderSketchPane extends EventEmitter {
     let compositeContext = composite.getContext('2d')
 
     // draw layers, in order, to temporary canvas
-    this.drawComposite([dst, src], compositeContext, { withOpacity: true })
+    this.drawComposite(layers, compositeContext, { withOpacity: true })
 
-    // clear dst
-    this.sketchPane.clearLayer(dst)
+    // clear destination
+    this.sketchPane.clearLayer(destination)
 
     // stamp composite onto main
-    let dstContext = this.sketchPane.getLayerContext(dst)
-    dstContext.drawImage(compositeContext.canvas, 0, 0)
+    let destinationContext = this.sketchPane.getLayerContext(destination)
+    destinationContext.drawImage(compositeContext.canvas, 0, 0)
 
-    // clear the src
-    this.sketchPane.clearLayer(src)
+    // clear the source layers
+    for (let index of layers) {
+      if (index !== destination) {
+        this.sketchPane.clearLayer(index)
+      }
+    }
   }
 
   // given a clientX and clientY,
