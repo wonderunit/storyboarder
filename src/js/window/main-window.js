@@ -317,6 +317,11 @@ let loadBoardUI = ()=> {
       // 1) try to find nearest thumbnail, otherwise,
       // HACK 2) try to find last known thumbnail position
       let el = thumbnailFromPoint(x, y) || thumbnailCursor.el
+      let offset = 0
+      if (el) {
+        offset = el.getBoundingClientRect().width
+        el = thumbnailFromPoint(x, y, offset/2)
+      } 
 
       if (!el) {
         console.warn("couldn't find nearest thumbnail")
@@ -661,7 +666,9 @@ let newBoard = (position, shouldAddToUndoStack = true) => {
 
   // is this not a brand new storyboarder project?
   if (shouldAddToUndoStack) {
-    sfx.bip('c6')
+    //sfx.bip('c6')
+    sfx.down(-2,0)
+
   }
 }
 
@@ -843,7 +850,8 @@ let deleteBoards = (args)=> {
     }
   }
   gotoBoard(currentBoard)
-  sfx.playEffect('trash')
+      sfx.playEffect('trash')
+      sfx.negative()
 }
 
 /**
@@ -911,8 +919,9 @@ let duplicateBoard = () => {
   renderThumbnailDrawer()
   gotoBoard(currentBoard)
   storeUndoStateForScene()
-  sfx.bip('c7')
-  notifications.notify({message: 'Just duplicated board', timing: 5})
+  //sfx.bip('c7')
+  sfx.down(-1,2)
+  notifications.notify({message: 'Duplicated board', timing: 5})
 }
 
 /**
@@ -927,15 +936,17 @@ const clearLayers = shouldEraseCurrentLayer => {
   if (toolbar.state.brush !== 'eraser' && (keytracker('<alt>') || shouldEraseCurrentLayer)) {
     storyboarderSketchPane.clearLayers([storyboarderSketchPane.sketchPane.getCurrentLayerIndex()])
     saveImageFile()
+    sfx.playEffect('trash')
   } else {
     if (storyboarderSketchPane.isEmpty()) {
       deleteBoards()
+
     } else {
       storyboarderSketchPane.clearLayers()
       saveImageFile()
+      sfx.playEffect('trash')
     }
   }
-  sfx.playEffect('trash')
 }
 
 ///////////////////////////////////////////////////////////////
@@ -2623,6 +2634,8 @@ let reorderBoardsLeft = () => {
     moveSelectedBoards(position)
     renderThumbnailDrawer()
     gotoBoard(currentBoard, true)
+        sfx.playEffect('on')
+
   }
 }
 
@@ -2635,6 +2648,8 @@ let reorderBoardsRight = () => {
     moveSelectedBoards(position)
     renderThumbnailDrawer()
     gotoBoard(currentBoard, true)
+    sfx.playEffect('metal')
+
   }
 }
 
@@ -2645,11 +2660,16 @@ let enableEditMode = () => {
     renderThumbnailCursor()
     renderThumbnailDrawerSelections()
     contextMenu.remove()
+    sfx.positive()
+    sfx.playEffect('on')
+
   }
 }
 
 let disableEditMode = () => {
   if (isEditMode) {
+    sfx.playEffect('metal')
+    sfx.negative()
     isEditMode = false
     thumbnailCursor.visible = false
     renderThumbnailCursor()
@@ -2657,8 +2677,9 @@ let disableEditMode = () => {
   }
 }
 
-let thumbnailFromPoint = (x, y) => {
-  let el = document.elementFromPoint(x, y)
+let thumbnailFromPoint = (x, y, offset) => {
+  if (!offset) { offset = 0 }
+  let el = document.elementFromPoint(x-offset, y)
 
   if (!el || !el.classList.contains('thumbnail')) return null
 
@@ -2700,6 +2721,12 @@ let updateThumbnailCursor = (x, y) => {
   }
 
   let el = thumbnailFromPoint(x, y)
+  let offset = 0
+  if (el) {
+    offset = el.getBoundingClientRect().width
+    el = thumbnailFromPoint(x, y, offset/2)
+  } 
+
   if (el) thumbnailCursor.el = el // only update if found
   if (!el) return
   

@@ -220,12 +220,13 @@ let down = (octaveShift, noteOffset) => {
 let negative = () => {
   if (!getEnableUISoundEffects()) return
 
+  let highnote = chords[currentChord][3]
   let bassnote = chords[currentChord][0]
-  bassSynth.triggerAttackRelease(Tone.Frequency(bassnote).transpose((-12*3)+5), 0.2, undefined, 0.3);
-  synth.triggerAttackRelease(Tone.Frequency(bassnote).transpose((+12*2)+5), "16n", undefined, 0.9);
+  bassSynth.triggerAttackRelease(Tone.Frequency(highnote).transpose((-12*3)), 0.2, undefined, 0.2);
+  synth.triggerAttackRelease(Tone.Frequency(highnote).transpose((+12*2)), "16n", undefined, 0.4);
   setTimeout(()=>{
-    bassSynth.triggerAttackRelease(Tone.Frequency(bassnote).transpose((-12*3)), 0.2, undefined, 0.3);
-    synth.triggerAttackRelease(Tone.Frequency(bassnote).transpose((+12*2)), "16n", undefined, 0.9);
+    bassSynth.triggerAttackRelease(Tone.Frequency(bassnote).transpose((-12*3)), 0.2, undefined, 0.2);
+    synth.triggerAttackRelease(Tone.Frequency(bassnote).transpose((+12*2)), "16n", undefined, 0.4);
   }, 150)
   advanceNote(1) 
 }
@@ -235,15 +236,15 @@ let positive = () => {
 
   let bassnote = chords[currentChord][0]
   bassSynth.triggerAttackRelease(Tone.Frequency(bassnote).transpose(-12*3), 0.2, undefined, 0.4);
-  synth.triggerAttackRelease(Tone.Frequency(bassnote).transpose(+12*2), "16n", undefined, 1);
+  synth.triggerAttackRelease(Tone.Frequency(bassnote).transpose(+12*2), "16n", undefined, .2);
 
   setTimeout(()=>{
-    synth.triggerAttackRelease(Tone.Frequency(bassnote).transpose((+12*2)+5), "64n", undefined, 0.9);
-    bassSynth.triggerAttackRelease(Tone.Frequency(bassnote).transpose((-12*2)), 0.2, undefined, 0.3);
+    synth.triggerAttackRelease(Tone.Frequency(bassnote).transpose((+12*2)+5), "64n", undefined, 0.4);
+    bassSynth.triggerAttackRelease(Tone.Frequency(bassnote).transpose((-12*2)), 0.2, undefined, 0.2);
   }, 150)
 
   setTimeout(()=>{
-    synth.triggerAttackRelease(Tone.Frequency(bassnote).transpose((+12*3)), "16n", undefined, 0.9);
+    synth.triggerAttackRelease(Tone.Frequency(bassnote).transpose((+12*3)), "16n", undefined, 0.3);
   }, 300)
   advanceNote(1) 
 }
@@ -276,7 +277,7 @@ const init = () => {
   if (!getEnableUISoundEffects()) return
 
   multiPlayer = new Tone.MultiPlayer(new Tone.Buffers(filePathsForSoundEffects))
-                .set('volume', -6)
+                .set('volume', -20)
                 .toMaster()
   multiPlayer.stopIfPlaying = function (bufferName) {
     if (this._activeSources[bufferName] && this._activeSources[bufferName].length) {
