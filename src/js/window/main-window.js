@@ -372,6 +372,7 @@ let loadBoardUI = ()=> {
   })
   toolbar.on('brush:color', color => {
     toolbar.emit('cancelTransform')
+    sfx.playEffect('metal')
     storyboarderSketchPane.setBrushColor(color)
   })
 
@@ -389,13 +390,13 @@ let loadBoardUI = ()=> {
 
   toolbar.on('move', () => {
     if (storyboarderSketchPane.isPointerDown) return
-
+      sfx.playEffect('metal')
     toolbar.setState({ transformMode: 'move' })
     storyboarderSketchPane.moveContents()
   })
   toolbar.on('scale', () => {
     if (storyboarderSketchPane.isPointerDown) return
-
+      sfx.playEffect('metal')
     toolbar.setState({ transformMode: 'scale' })
     storyboarderSketchPane.scaleContents()
   })
@@ -431,6 +432,7 @@ let loadBoardUI = ()=> {
     } else {
       sfx.error()
     }
+    sfx.playEffect('metal')
   })
   toolbar.on('redo', () => {
     if (undoStack.getCanRedo()) {
@@ -439,19 +441,24 @@ let loadBoardUI = ()=> {
     } else {
       sfx.error()
     }
+    sfx.playEffect('metal')
   })
   
   toolbar.on('grid', value => {
     guides.setState({ grid: value })
+    sfx.playEffect('metal')
   })
   toolbar.on('center', value => {
     guides.setState({ center: value })
+    sfx.playEffect('metal')
   })
   toolbar.on('thirds', value => {
     guides.setState({ thirds: value })
+    sfx.playEffect('metal')
   })
   toolbar.on('diagonals', value => {
     guides.setState({ diagonals: value })
+    sfx.playEffect('metal')
   })
   toolbar.on('onion', value => {
     onionSkin.setEnabled(value)
@@ -464,6 +471,7 @@ let loadBoardUI = ()=> {
         ).catch(err => console.warn(err))
       }
     }
+    sfx.playEffect('metal')
   })
   toolbar.on('captions', () => {
     // HACK!!!
@@ -471,6 +479,7 @@ let loadBoardUI = ()=> {
     el.style.visibility = el.style.visibility == 'hidden'
       ? 'visible'
       : 'hidden'
+    sfx.playEffect('metal')
   })
 
   storyboarderSketchPane.toolbar = toolbar
@@ -522,6 +531,7 @@ let loadBoardUI = ()=> {
     colorPicker.setState({ color: color.toCSS() })
   }
   toolbar.on('current-color-picker', color => {
+    sfx.positive()
     colorPicker.attachTo(document.getElementById('toolbar-current-color'))
     colorPicker.removeAllListeners('color') // HACK
 
@@ -531,6 +541,8 @@ let loadBoardUI = ()=> {
     colorPicker.addListener('color', setCurrentColor)
   })
   toolbar.on('palette-color-picker', (color, target, brush, index) => {
+    sfx.positive()
+
     colorPicker.attachTo(target)
     colorPicker.removeAllListeners('color') // HACK
 
@@ -2900,8 +2912,10 @@ ipcRenderer.on('brushSize', (e, direction) => {
   if (!textInputMode) {
     if (direction > 0) {
       toolbar.changeBrushSize(1)
+      sfx.playEffect('brush-size-up')
     } else {
       toolbar.changeBrushSize(-1)
+      sfx.playEffect('brush-size-down')
     }
   }
 })

@@ -235,7 +235,7 @@ class Toolbar extends EventEmitter {
     }
 
     for (let buttonEl of swatchButtons) {
-      buttonEl.addEventListener('pointerup', this.onSwatchUp)
+      //buttonEl.addEventListener('pointerup', this.onSwatchUp)
       buttonEl.addEventListener('pointerdown', this.onSwatchDown)
     }
 
@@ -392,6 +392,22 @@ class Toolbar extends EventEmitter {
     if (this.state.brush == 'eraser') return
     clearTimeout(this.swatchTimer)
     this.swatchTimer = setTimeout(this.onSwatchColorPicker.bind(this, event.target), this.swatchDelay)
+    if (this.swatchTimer) {
+      // timer is still running so we never showed the Color Picker
+      let selection = this.getEventTargetSelection(event.target)
+      switch(selection) {
+        case 'palette-colorA':
+          this.emit('current-set-color', this.getCurrentPalette()[0])
+          break
+        case 'palette-colorB':
+          this.emit('current-set-color', this.getCurrentPalette()[1])
+          break
+        case 'palette-colorC':
+          this.emit('current-set-color', this.getCurrentPalette()[2])
+          break
+      }
+    }
+    document.addEventListener('pointerup', this.onSwatchUp)
   }
   
   onSwatchColorPicker (target) {
@@ -416,21 +432,6 @@ class Toolbar extends EventEmitter {
   onSwatchUp (event) {
     if (this.state.brush == 'eraser') return
 
-    if (this.swatchTimer) {
-      // timer is still running so we never showed the Color Picker
-      let selection = this.getEventTargetSelection(event.target)
-      switch(selection) {
-        case 'palette-colorA':
-          this.emit('current-set-color', this.getCurrentPalette()[0])
-          break
-        case 'palette-colorB':
-          this.emit('current-set-color', this.getCurrentPalette()[1])
-          break
-        case 'palette-colorC':
-          this.emit('current-set-color', this.getCurrentPalette()[2])
-          break
-      }
-    }
     clearTimeout(this.swatchTimer)
   }
 

@@ -191,7 +191,7 @@ let rollover = () => {
   let note = chords[currentChord][currentNote % (chords[0].length)]
   let bassnote = chords[currentChord][0]
   let onote = chords2[currentChord][currentNote % (chords[0].length)]
-  synth.triggerAttackRelease(Tone.Frequency(note).transpose(+12), "16n", undefined, 0.02);
+  synth.triggerAttackRelease(Tone.Frequency(note).transpose(+12), "16n", undefined, 0.03);
   if (currentNote == 0) {
     bassSynth2.triggerAttackRelease(Tone.Frequency(note).transpose(+12*1), "8n", undefined, 0.03);
   }
@@ -211,8 +211,9 @@ let down = (octaveShift, noteOffset) => {
 
   let bassnote = chords[currentChord][0]
   let highnote = chords[currentChord][noteOffset]
-  bassSynth.triggerAttackRelease(Tone.Frequency(bassnote).transpose(-12*3), 0.2, undefined, 0.25);
-  synth.triggerAttackRelease(Tone.Frequency(highnote).transpose(+12*2).transpose(+12*octaveShift), "16n", undefined, 0.25);
+  console.log(Tone.Frequency(highnote).transpose(12*octaveShift))
+  bassSynth.triggerAttackRelease(Tone.Frequency(bassnote).transpose(-12*3), "16n", undefined, 0.2);
+  synth.triggerAttackRelease(Tone.Frequency(highnote).transpose(12*octaveShift).transpose(24), "16n", undefined,  0.2);
   advanceNote(1) 
 }
 
@@ -321,6 +322,14 @@ const playEffect = effect => {
       break
     case 'metal':
       metalSynth.set({ 'frequency': 880 })
+      metalSynth.triggerAttackRelease()
+      break
+    case 'brush-size-up':
+      metalSynth.set({ 'frequency': 880*1.4 })
+      metalSynth.triggerAttackRelease()
+      break
+    case 'brush-size-down':
+      metalSynth.set({ 'frequency': 880*1.2 })
       metalSynth.triggerAttackRelease()
       break
     default:
