@@ -10,6 +10,7 @@
 .tooltip-element {
   position: absolute;
   display: none; 
+  z-index: 999;
 }
   .tooltip-element.tooltip-open {
     display: block; 
