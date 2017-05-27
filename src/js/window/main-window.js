@@ -475,19 +475,17 @@ let loadBoardUI = ()=> {
 
   storyboarderSketchPane.toolbar = toolbar
 
-
+  if (!toolbar.getState().captions) {
+    let el = document.querySelector('#canvas-caption')
+    el.style.visibility = 'hidden'
+  }
 
   // HACK force initialize
   sfx.setMute(true)
   toolbar.setState({ brush: 'pencil' })
   sfx.setMute(false)
 
-
-
   tooltips.init()
-
-
-
 
   transport = new Transport()
   transport.on('previousScene', () => {
@@ -2009,7 +2007,7 @@ let disableDragMode = () => {
 
 let playbackMode = false
 let frameTimer
-let speakingMode = true
+let speakingMode = false
 let utter = new SpeechSynthesisUtterance()
 
 let stopPlaying = () => {
@@ -2043,7 +2041,7 @@ let playAdvance = function(first) {
     goNextBoard(1)
   }
 
-  if (playbackMode && boardData.boards[currentBoard].dialogue) {
+  if (playbackMode && boardData.boards[currentBoard].dialogue && speakingMode) {
     speechSynthesis.cancel()
     utter.pitch = 0.65
     utter.rate = 1.1
@@ -2972,4 +2970,8 @@ ipcRenderer.on('toggleNewShot', (event, args) => {
   if (!textInputMode) {
     toggleNewShot()
   }
+})
+
+ipcRenderer.on('toggleSpeaking', (event, args) => {
+  speakingMode = !speakingMode
 })

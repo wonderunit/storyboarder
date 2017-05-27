@@ -438,6 +438,10 @@ class Toolbar extends EventEmitter {
     return this.state.brushes[this.state.brush].palette
   }
 
+  getState () {
+    return this.state
+  }
+
   render () {
     let brushesEls = this.el.querySelectorAll('.button[data-group=brushes]')
     for (let brushEl of brushesEls) {
