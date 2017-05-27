@@ -254,7 +254,17 @@ let loadBoardUI = ()=> {
       scrollPoint = [dragTarget.scrollLeft, dragTarget.scrollTop]
       mouseDragStartX = e.clientX
       periodicDragUpdate()
-      console.log(e)
+    }
+  })
+
+  document.querySelector('.board-metadata-container').addEventListener('pointerdown', (e)=>{
+    if (e.pointerType == 'pen' || e.pointerType == 'mouse') {
+      dragTarget = document.querySelector('.board-metadata-container')
+      dragTarget.style.overflow = 'hidden'
+      dragTarget.style.scrollBehavior = 'unset'
+      dragMode = true
+      dragPoint = [e.pageX, e.pageY]
+      scrollPoint = [dragTarget.scrollLeft, dragTarget.scrollTop]
     }
   })
 
@@ -1570,7 +1580,6 @@ let renderScenes = ()=> {
   let sceneNodes = document.querySelectorAll('#scenes .scene')
   for (var node of sceneNodes) {
     node.addEventListener('pointerdown', (e)=>{
-      //console.log(e.target.dataset.node)
       if (currentScene !== Number(e.target.dataset.node)) {
         currentScene = Number(e.target.dataset.node)
         loadScene(currentScene)
@@ -1588,7 +1597,6 @@ let renderScenes = ()=> {
       dragMode = true
       dragPoint = [e.pageX, e.pageY]
       scrollPoint = [dragTarget.scrollLeft, dragTarget.scrollTop]
-      console.log(e)
     }
   })
 
@@ -1600,7 +1608,6 @@ let renderScenes = ()=> {
       dragMode = true
       dragPoint = [e.pageX, e.pageY]
       scrollPoint = [dragTarget.scrollLeft, dragTarget.scrollTop]
-      console.log(e)
     }
   })
 }
