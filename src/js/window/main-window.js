@@ -882,6 +882,8 @@ let duplicateBoard = () => {
   renderThumbnailDrawer()
   gotoBoard(currentBoard)
   storeUndoStateForScene()
+  sfx.bip('c7')
+  notifications.notify({message: 'Just duplicated board', timing: 5})
 }
 
 /**
