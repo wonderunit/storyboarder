@@ -11,7 +11,11 @@ const removeNotification = (index) => {
     el.style.opacity = 0
     clearTimeout(notification.index)
     if (el.parentNode) {
-      setTimeout(() => el.parentNode.removeChild(el), 1000)
+      setTimeout(() => {
+        if (el.parentNode) {
+          el.parentNode.removeChild(el)
+        }
+      }, 1000)
     }
   }
 }
