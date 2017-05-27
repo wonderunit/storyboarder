@@ -1109,35 +1109,49 @@ const renderStats = () => {
   }
 }
 
-
-
 let nextScene = ()=> {
-  if (currentBoard < (boardData.boards.length -1) && currentBoard !== 0) {
-    currentBoard = (boardData.boards.length -1)
-    gotoBoard(currentBoard)
+  if (scriptData) {
+    if (currentBoard < (boardData.boards.length -1) && currentBoard !== 0) {
+      currentBoard = (boardData.boards.length -1)
+      gotoBoard(currentBoard)
+    } else {
+      saveBoardFile()
+      currentScene++
+      loadScene(currentScene)
+      renderScript()
+      updateBoardUI()
+    }
   } else {
-    saveBoardFile()
-    currentScene++
-    loadScene(currentScene)
-    renderScript()
-    updateBoardUI()
+    if (currentBoard < (boardData.boards.length -1)) {
+      currentBoard = (boardData.boards.length -1)
+      gotoBoard(currentBoard)
+    } else {
+      sfx.error()
+    }
   }
 }
 
 let previousScene = ()=> {
-  if (currentBoard > 0) {
-    currentBoard = 0
-    gotoBoard(currentBoard)
+  if (scriptData) {
+    if (currentBoard > 0) {
+      currentBoard = 0
+      gotoBoard(currentBoard)
+    } else {
+      saveBoardFile()
+      currentScene--
+      currentScene = Math.max(0, currentScene)
+      loadScene(currentScene)
+      renderScript()
+      updateBoardUI()
+    }
   } else {
-    saveBoardFile()
-    currentScene--
-    currentScene = Math.max(0, currentScene)
-    loadScene(currentScene)
-    renderScript()
-    updateBoardUI()
+    if (currentBoard > 0) {
+      currentBoard = 0
+      gotoBoard(currentBoard)
+    } else {
+      sfx.error()
+    }
   }
-
-  //gotoBoard(currentBoard)
 }
 
 let updateSketchPaneBoard = () => {
