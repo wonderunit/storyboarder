@@ -171,6 +171,9 @@ const template = [
         }
       },
       {
+        type: 'separator'
+      },
+      {
         accelerator: 'CmdOrCtrl+Backspace',
         label: 'Delete Board(s)',
         click ( item, focusedWindow, event) {
@@ -185,11 +188,17 @@ const template = [
         }
       },
       {
+        type: 'separator'
+      },
+      {
         accelerator: 'D',
         label: 'Duplicate Board',
         click ( item, focusedWindow, event) {
           ipcRenderer.send('duplicateBoard')
         }
+      },
+      {
+        type: 'separator'
       },
       {
         accelerator: 'Alt+Left',
@@ -203,6 +212,16 @@ const template = [
         label: 'Reorder Right',
         click ( item, focusedWindow, event) {
           ipcRenderer.send('reorderBoardsRight')
+        }
+      },
+      {
+        type: 'separator'
+      },
+      {
+        accelerator: '/',
+        label: 'Toggle Board as New Shot',
+        click ( item, focusedWindow, event) {
+          ipcRenderer.send('toggleNewShot')
         }
       },
     ]

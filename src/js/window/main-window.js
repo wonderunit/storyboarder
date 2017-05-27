@@ -129,6 +129,15 @@ const load = (event, args) => {
 }
 ipcRenderer.on('load', load)
 
+let toggleNewShot = () => {
+  storeUndoStateForScene(true)
+  boardData.boards[currentBoard].newShot = !boardData.boards[currentBoard].newShot
+  sfx.playEffect(boardData.boards[currentBoard].newShot ? 'on' : 'off')
+  document.querySelector('input[name="newShot"]').checked = boardData.boards[currentBoard].newShot
+  markBoardFileDirty()
+  renderThumbnailDrawer()
+  storeUndoStateForScene()
+}
 
 let addToLineMileage = value => {
   let board = boardData.boards[currentBoard]
@@ -1243,7 +1252,6 @@ let renderThumbnailDrawer = ()=> {
     }
   }
 
-  console.log("HAS SHOTS!!!!")
   let currentShot = 0
   let subShot = 0
   let boardNumber = 1
@@ -2930,5 +2938,11 @@ ipcRenderer.on('toggleGuide', (event, args) => {
   if (!textInputMode) {
     toolbar.setState({ [args]: !toolbar.state[args] })
     toolbar.emit(args, toolbar.state[args])
+  }
+})
+
+ipcRenderer.on('toggleNewShot', (event, args) => {
+  if (!textInputMode) {
+    toggleNewShot()
   }
 })

@@ -609,3 +609,7 @@ ipcMain.on('preferences', (event, arg) => {
 ipcMain.on('toggleGuide', (event, arg) => {
   mainWindow.webContents.send('toggleGuide', arg)
 })
+
+ipcMain.on('toggleNewShot', (event, arg) => {
+  mainWindow.webContents.send('toggleNewShot', arg)
+})
