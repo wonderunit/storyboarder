@@ -191,20 +191,28 @@ let rollover = () => {
   let note = chords[currentChord][currentNote % (chords[0].length)]
   let bassnote = chords[currentChord][0]
   let onote = chords2[currentChord][currentNote % (chords[0].length)]
-  synth.triggerAttackRelease(Tone.Frequency(note).transpose(+12), "16n", undefined, 0.05);
+  synth.triggerAttackRelease(Tone.Frequency(note).transpose(+12), "16n", undefined, 0.02);
   if (currentNote == 0) {
     bassSynth2.triggerAttackRelease(Tone.Frequency(note).transpose(+12*1), "8n", undefined, 0.03);
   }
-  synth.triggerAttackRelease(Tone.Frequency(onote).transpose(+24), "16n", undefined, 0.1);
+  synth.triggerAttackRelease(Tone.Frequency(onote).transpose(+24), "16n", undefined, 0.05);
   advanceNote(1)
 }
 
-let down = () => {
+let down = (octaveShift, noteOffset) => {
   if (!getEnableUISoundEffects()) return
 
+  if (!octaveShift) {
+    octaveShift = 0
+  }
+  if (!noteOffset) {
+    noteOffset = 0
+  }
+
   let bassnote = chords[currentChord][0]
-  bassSynth.triggerAttackRelease(Tone.Frequency(bassnote).transpose(-12*3), 0.2, undefined, 0.4);
-  synth.triggerAttackRelease(Tone.Frequency(bassnote).transpose(+12*2), "16n", undefined, 1);
+  let highnote = chords[currentChord][noteOffset]
+  bassSynth.triggerAttackRelease(Tone.Frequency(bassnote).transpose(-12*3), 0.2, undefined, 0.25);
+  synth.triggerAttackRelease(Tone.Frequency(highnote).transpose(+12*2).transpose(+12*octaveShift), "16n", undefined, 0.25);
   advanceNote(1) 
 }
 
@@ -243,11 +251,11 @@ let error = () => {
   if (!getEnableUISoundEffects()) return
 
   let bassnote = chords[currentChord][0]
-    bassSynth.triggerAttackRelease(Tone.Frequency(bassnote).transpose((-12*2)), 0.1, undefined, 0.3);
-    errorSynth.triggerAttackRelease(Tone.Frequency(bassnote).transpose((-12*2)), "64n", undefined, 0.3);
+    bassSynth.triggerAttackRelease(Tone.Frequency(bassnote).transpose((-12*2)), 0.1, undefined, 0.2);
+    errorSynth.triggerAttackRelease(Tone.Frequency(bassnote).transpose((-12*2)), "64n", undefined, 0.2);
   setTimeout(()=>{
-    bassSynth.triggerAttackRelease(Tone.Frequency(bassnote).transpose((-12*3)), 0.1, undefined, 0.3);
-    errorSynth.triggerAttackRelease(Tone.Frequency(bassnote).transpose((-12*3)), "64n", undefined, 0.3);
+    bassSynth.triggerAttackRelease(Tone.Frequency(bassnote).transpose((-12*3)), 0.1, undefined, 0.2);
+    errorSynth.triggerAttackRelease(Tone.Frequency(bassnote).transpose((-12*3)), "64n", undefined, 0.2);
   }, 150)
   advanceNote(1) 
 }
@@ -286,22 +294,22 @@ const playEffect = effect => {
       setTimeout(positive, 150)
       break
     case 'tool-light-pencil':
-      bip('c4')
+      down(-2,3)
       break
     case 'tool-pencil':
-      bip('e4')
+      down(-1)
       break
     case 'tool-pen':
-      bip('b4')
+      down(0)
       break
     case 'tool-brush':
-      bip('c5')
+      down(1)
       break
     case 'tool-note-pen':
-      bip('e5')
+      down(0,3)
       break
     case 'tool-eraser':
-      bip('b5')
+      down(-3)
       break
     case 'on':
       metalSynth.set({ 'frequency': 220 })
