@@ -906,8 +906,14 @@ let duplicateBoard = () => {
 const clearLayers = shouldEraseCurrentLayer => {
   if (toolbar.state.brush !== 'eraser' && (keytracker('<alt>') || shouldEraseCurrentLayer)) {
     storyboarderSketchPane.clearLayers([storyboarderSketchPane.sketchPane.getCurrentLayerIndex()])
+    saveImageFile()
   } else {
-    storyboarderSketchPane.clearLayers()
+    if (storyboarderSketchPane.isEmpty()) {
+      deleteBoards()
+    } else {
+      storyboarderSketchPane.clearLayers()
+      saveImageFile()
+    }
   }
   sfx.playEffect('trash')
 }

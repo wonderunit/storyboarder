@@ -463,6 +463,17 @@ class StoryboarderSketchPane extends EventEmitter {
     this.emit('markDirty', layerIndices)
   }
 
+  isEmpty () {
+
+    let layerIndices = this.visibleLayersIndices
+    for (let index of layerIndices) {
+      if (!this.sketchPane.isEmptyLayer(index)) {
+        return false
+      }
+    }
+    return true
+  }
+
   fillLayer (fillColor) {
     this.emit('addToUndoStack')
     this.sketchPane.fillLayer(fillColor, this.sketchPane.getCurrentLayerIndex())

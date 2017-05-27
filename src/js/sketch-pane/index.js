@@ -265,6 +265,15 @@ class SketchPane extends EventEmitter {
     this.emit('onlayerselect', {index: index})
   }
 
+  isEmptyLayer (index) {
+    index = (index == null) ? this.layerIndex : index
+    let context = this.getLayerContext(index)
+    var blank = document.createElement('canvas')
+    blank.width = context.canvas.width
+    blank.height = context.canvas.height
+    return context.canvas.toDataURL() == blank.toDataURL()
+  }
+
   clearLayer (index) {
     index = (index == null) ? this.layerIndex : index
     let context = this.getLayerContext(index)
