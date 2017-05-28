@@ -2737,10 +2737,68 @@ let renderThumbnailCursor = () => {
   }
 }
 
+const welcomeMessage = () => {
+  let message = []
+  let otherMessages
+  let hour = new Date().getHours()
+  if (hour < 12) {
+    message.push('Good morning!')
+    otherMessages = [
+      "It's time for a healthy breakfast!",
+      "It's beautiful out today – At least where I am.",
+      "You look great today.",
+      "",
+      ""
+    ]
+    message.push(otherMessages[Math.floor(Math.random()*otherMessages.length)])
+  } else if (hour > 12 && hour <= 17) {
+    message.push('Good afternoon!')
+    otherMessages = [
+      "If you do a great job, I'll let you have an afternoon snack! Don't tell your mom.",
+      "",
+      "Almost quittin' time AMIRITE?",
+      "I'm still hungry. You?",
+      "Should we take a walk later?",
+    ]
+    message.push(otherMessages[Math.floor(Math.random()*otherMessages.length)])
+  } else if (hour > 17) {
+    message.push('Good evening!')
+    otherMessages = [
+      "When it gets dark out is when I do my best work.",
+      "Hey. I was just about to leave.",
+      "",
+    ]
+    message.push(otherMessages[Math.floor(Math.random()*otherMessages.length)])
+  } else if (hour == 12) {
+    message.push('Lunch time!')
+    otherMessages = [
+      "Wait, you're working at lunchtime? Your boss sounds like a real dick.",
+      "Did you even eat yet?",
+      "Yeah! Let's work together!",
+    ]
+    message.push(otherMessages[Math.floor(Math.random()*otherMessages.length)])
+  }
+  otherMessages = [
+    "It's time to board!",
+    "Let's tell some great stories!",
+    "I love storyboarding! Let's make something great together!",
+    "If you like Storyboarder, maybe like tell your friends on Twitter.",
+  ]
+  message.push(otherMessages[Math.floor(Math.random()*otherMessages.length)])
+  otherMessages = [
+    "Here's a quote I totally did not just download from the internet:",
+    "I think you're the best.",
+    "If you have ideas for Storyboarder, let us know! We'd love to hear from you.",
+    "",
+  ]
+  message.push(otherMessages[Math.floor(Math.random()*otherMessages.length)])
+  notifications.notify({message: message.join(' '), timing: 20})
+} 
+
 const setupRandomizedNotifications = () => {  
   let defaultMessages = util.shuffle(NotificationData.messages)
 
-  //notifications.notify({message: 'Hello!', timing: 5})
+  welcomeMessage()
 
   fetch('https://wonderunit.com/software/storyboarder/messages.json').then(response => {
     if (response.ok) {
