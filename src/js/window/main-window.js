@@ -436,6 +436,7 @@ let loadBoardUI = ()=> {
       sfx.rollover()
     } else {
       sfx.error()
+      notifications.notify({message: 'Nothing left to undo!', timing: 5})
     }
     sfx.playEffect('metal')
   })
@@ -445,6 +446,7 @@ let loadBoardUI = ()=> {
       sfx.rollover()
     } else {
       sfx.error()
+      notifications.notify({message: 'Nothing more to redo!', timing: 5})
     }
     sfx.playEffect('metal')
   })
@@ -940,11 +942,12 @@ const clearLayers = shouldEraseCurrentLayer => {
   } else {
     if (storyboarderSketchPane.isEmpty()) {
       deleteBoards()
-
+      notifications.notify({message: 'Deleted board', timing: 5})
     } else {
       storyboarderSketchPane.clearLayers()
       saveImageFile()
       sfx.playEffect('trash')
+      notifications.notify({message: 'Cleared canvas', timing: 5})
     }
   }
 }
@@ -1958,6 +1961,7 @@ window.onkeydown = (e)=> {
               sfx.rollover()
             } else {
               sfx.error()
+              notifications.notify({message: 'Nothing more to redo!', timing: 5})
             }
           } else {
             if (undoStack.getCanUndo()) {
@@ -1965,6 +1969,7 @@ window.onkeydown = (e)=> {
               sfx.rollover()
             } else {
               sfx.error()
+              notifications.notify({message: 'Nothing left to undo!', timing: 5})
             }
           }
           e.preventDefault()
@@ -2245,6 +2250,7 @@ ipcRenderer.on('undo', (e, arg) => {
       sfx.rollover()
     } else {
       sfx.error()
+      notifications.notify({message: 'Nothing more to redo!', timing: 5})
     }
   }
 })
@@ -2256,6 +2262,7 @@ ipcRenderer.on('redo', (e, arg) => {
       sfx.rollover()
     } else {
       sfx.error()
+      notifications.notify({message: 'Nothing left to undo!', timing: 5})
     }
   }
 })
