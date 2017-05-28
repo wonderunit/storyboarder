@@ -139,13 +139,189 @@ let toggleNewShot = () => {
   storeUndoStateForScene()
 }
 
+const commentOnLineMileage = (miles) => {
+  let message = []
+  let otherMessages
+  switch (miles) {
+    case 0.01:
+      otherMessages = [
+        "Yes!!! The first stroke. I remember my first stroke – fondly.",
+        "I can tell this one is going to be good!",
+        "What are you drawing?",
+        "Let's make this one better than the last one.",
+        "What's happening in this point of the story?",
+        "Here we go again!",
+        "Let's do this!",
+        "I wish I could draw as good as that.",
+      ]
+      message.push(otherMessages[Math.floor(Math.random()*otherMessages.length)])
+      sfx.playEffect('metal')
+      break
+    case 1: 
+      otherMessages = [
+        "Looking great!!!",
+        "Absolutely fantastic!",
+        "You're like a regular Picaso.",
+        "Hey - this looks great. And to think I doubted you.",
+        "This is way better than your last board!",
+        "Hooray! A great start.",
+        "I can see great form in this one.",
+        "There is so much potential with this drawing!",
+        "Imagine when your friends see this.",
+        "Let's keep the line miles to a minimum.",
+      ]
+      message.push(otherMessages[Math.floor(Math.random()*otherMessages.length)])
+      sfx.playEffect('tool-pencil')
+      break
+    case 5: 
+      message.push('5 line miles.')
+      otherMessages = [
+        "You should be done with your rough drawing.",
+        "You got the basic form down?",
+        "Are you sure this is the layout you want?",
+        "Let's get to cleaning this up!",
+        "Such great composition!",
+        "Oh. Now I can see what you're going for.",
+        "Let's wrap this one up.",
+        "Beautiful.",
+        "You make me proud.",
+      ]
+      message.push(otherMessages[Math.floor(Math.random()*otherMessages.length)])
+      sfx.playEffect('tool-light-pencil')
+      break
+    case 8: 
+      message.push('8 line miles.')
+      otherMessages = [
+        "Let's finish this up!",
+        "Are you done yet?",
+        "We have so many other boards to do still...",
+        "Yes.. Very close to done.",
+        "Can we move on to the next drawing and come back to this one?",
+        "I think you need to pee.",
+        "Is it finished?",
+        "Yeah.. I'm gonna need you to come in this weekend and finish the rest of these boards.",
+        "Wrap it up!",
+      ]
+      message.push(otherMessages[Math.floor(Math.random()*otherMessages.length)])
+      sfx.playEffect('tool-brush')
+      break
+    case 10: 
+      message.push('10 miles!')
+      otherMessages = [
+        "Let's finish this up!",
+        "Are you done yet?",
+        "Alright, I think this one is done.",
+        "Yes.. Very close to done. Actually, looks done to me.",
+        "Let's move on.",
+        "Remember, you're not making the next Moner Lisa.",
+        "Who do you think you are, Picaso?",
+        "Looks great! But let's not make it too great.",
+        "Sweet!",
+      ]
+      message.push(otherMessages[Math.floor(Math.random()*otherMessages.length)])
+      sfx.positive()
+      break
+    case 20: 
+      message.push('20 miles!!!')
+      otherMessages = [
+        "This is done. Let's move on.",
+        "Woot. You're finished!",
+        "You're taking too long.",
+        "Come on buddy... put the pen down.",
+        "You know you're not burning that many more calories working this hard on this board.",
+        "YESSSS!!! BEAUTIFUL!!!!",
+        "I LOVE IT!!!!",
+        "How did you learn to draw so well?",
+      ]
+      message.push(otherMessages[Math.floor(Math.random()*otherMessages.length)])
+      sfx.negative()
+      break
+    case 50: 
+      message.push('50 miles!!!')
+      otherMessages = [
+        "Uhh.. I fell asleep. What did I miss?",
+        "Are you painting the sixteen chapel or something?",
+        "I'm waiting for your paint to dry.",
+        "Come on buddy... put the pen down. Let's go for a walk.",
+        "Why don't you tweet this masterpiece out?",
+        "Hey. This is like some sort of torture.",
+        "I thought it looked nice an hour ago.",
+        "How about starting a new board?",
+      ]
+      message.push(otherMessages[Math.floor(Math.random()*otherMessages.length)])
+      sfx.negative()
+      break
+    case 100: 
+      message.push('100 miles!!!')
+      otherMessages = [
+        "Nope!!! I'm going to delete this board if you keep drawing. Just kidding. Or am I?",
+        "I FEEL ASLEEP.",
+        "Wake me up when you need me.",
+        "Dude. You remember you are storyboarding.",
+        "Let's go for a walk.",
+        "How many boards do we have left?",
+        "I thought it looked nice 2 hours ago.",
+        "How about starting a new board?",
+        "Post this one to twitter, it's a fucking masterpiece.",
+      ]
+      message.push(otherMessages[Math.floor(Math.random()*otherMessages.length)])
+      sfx.error()
+      break
+    case 200: 
+      message.push('200 miles!!!')
+      otherMessages = [
+        "Now you're just fucking with me.",
+        "I FEEL ASLEEP.",
+        "You haven't worked your wrist out this hard since you were 13.",
+        "I think your pen is going to break.",
+      ]
+      message.push(otherMessages[Math.floor(Math.random()*otherMessages.length)])
+      sfx.error()
+      break
+    case 300: 
+      message.push('300 miles!!!')
+      otherMessages = [
+        "I quit.",
+        "Imagine what I'll say at 1000 miles.",
+        "I'm going home.",
+        "I hate you.",
+      ]
+      message.push(otherMessages[Math.floor(Math.random()*otherMessages.length)])
+      sfx.error()
+      break
+    case 500: 
+      message.push('500 miles!!!')
+      otherMessages = [
+        "So close to 1000!!!",
+      ]
+      message.push(otherMessages[Math.floor(Math.random()*otherMessages.length)])
+      sfx.error()
+      break
+    case 1000: 
+      message.push('1000 miles!!!')
+      otherMessages = [
+        "Great job. :/ See ya.",
+      ]
+      message.push(otherMessages[Math.floor(Math.random()*otherMessages.length)])
+      sfx.error()
+      setTimeout(()=> {window.close()}, 5000);
+      break
+  }
+  notifications.notify({message: message.join(' '), timing: 10})
+}
+
 let addToLineMileage = value => {
   let board = boardData.boards[currentBoard]
-  if (board.lineMileage) {
-    board.lineMileage += value
-  } else {
-    board.lineMileage = value
+  if (!(board.lineMileage)) { 
+    board.lineMileage = 0 
   }
+  let mileageChecks = [0.01,1,5,8,10,20,50,100,200,300,1000]
+  for (let checkAmount of mileageChecks) {
+    if ((board.lineMileage/5280 < checkAmount) && ((board.lineMileage + value)/5280 > checkAmount)) {
+      commentOnLineMileage(checkAmount)
+    }
+  }
+  board.lineMileage += value
   markBoardFileDirty()
   renderMetaData()
 }
@@ -498,7 +674,7 @@ let loadBoardUI = ()=> {
 
   // HACK force initialize
   sfx.setMute(true)
-  toolbar.setState({ brush: 'pencil' })
+  toolbar.setState({ brush: 'light-pencil' })
   sfx.setMute(false)
 
   tooltips.init()
