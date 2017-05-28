@@ -1005,9 +1005,9 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
 
       //document.querySelector('#thumbnail-container').scrollLeft = (document.querySelector("[data-thumbnail='" + currentBoard + "']").offsetLeft)-200
     } else {
-      setImmediate((currentBoard)=>{
+      setTimeout((currentBoard)=>{
         document.querySelector("[data-thumbnail='" + currentBoard + "']").classList.add('active')
-      },currentBoard)
+      },10,currentBoard)
     }
 
     renderMetaData()
@@ -1280,6 +1280,8 @@ let updateSketchPaneBoard = () => {
           boardData.boards[currentBoard - 1],
           boardData.boards[currentBoard + 1]
         ).then(() => resolve()).catch(err => console.warn(err))
+      } else {
+        resolve()
       }
     }).catch(err => console.warn(err))
   })
@@ -1914,10 +1916,12 @@ let loadScene = (sceneNumber) => {
   boardPath = boardPath.join(path.sep)
   console.log('BOARD PATH:', boardPath)
 
+  if (onionSkin) {
+    onionSkin.setBoardPath(boardPath)
+  }
+
   dragTarget = document.querySelector('#thumbnail-container')
   dragTarget.style.scrollBehavior = 'unset'
-
-
 }
 
 window.onmousedown = (e) => {

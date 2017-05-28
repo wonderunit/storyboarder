@@ -442,11 +442,10 @@ body::-webkit-scrollbar {
   display: none;
 }
 
-/*label {
-  left: 50px;
+.board-metadata-container label {
   position: relative;
 
-}*/
+}
 
 input[type="checkbox"] + label span {
     display:inline-block;

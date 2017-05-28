@@ -24,6 +24,10 @@ class OnionSkin {
     this.isLoaded = false
   }
 
+  setBoardPath (path) {
+    this.boardPath = path
+  }
+
   load (currBoard, prevBoard, nextBoard) {
     this.isLoaded = false
     return new Promise((resolve, reject) => {
