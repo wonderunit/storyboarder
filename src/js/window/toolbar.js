@@ -17,7 +17,7 @@ const BRUSH_ERASER = 'eraser'
 
 const initialState = {
   transformMode: null,
-  captions: true,
+  captions: false,
 
   brush: null,
   isQuickErasing: false,
@@ -130,6 +130,12 @@ class Toolbar extends EventEmitter {
         prefState.toolbarState.brushes[key].palette = newPalette
       }
       this.state = prefState.toolbarState
+      this.state.grid   = false
+      this.state.center = false
+      this.state.thirds = false
+      this.state.diagonals = false
+      this.state.onion = false
+      //this.state.captions   = false
     } else {
       this.state = initialState
     }
