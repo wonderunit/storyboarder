@@ -642,6 +642,8 @@ let newBoard = (position, shouldAddToUndoStack = true) => {
   if (shouldAddToUndoStack) {
     saveImageFile() // force-save any current work
     storeUndoStateForScene(true)
+    notifications.notify({message: "Added a new board. Let's make it a great one!", timing: 5})
+
   }
 
   if (typeof position == "undefined") position = currentBoard + 1
@@ -845,11 +847,18 @@ let deleteBoards = (args)=> {
     selections.clear()
     renderThumbnailDrawer()
     storeUndoStateForScene()
+    if (arr.length > 1) {
+      notifications.notify({message: "Deleted " + arr.length + " boards.", timing: 5})
+    } else {
+      notifications.notify({message: "Deleted board.", timing: 5})
+    }
+
   } else {
     // delete a single board
     storeUndoStateForScene(true)
     deleteSingleBoard(currentBoard)
     storeUndoStateForScene()
+    notifications.notify({message: "Deleted board", timing: 5})
 
     // if not requested to move forward
     // we take action to move intentionally backward
@@ -858,8 +867,9 @@ let deleteBoards = (args)=> {
     }
   }
   gotoBoard(currentBoard)
-      sfx.playEffect('trash')
-      sfx.negative()
+  sfx.playEffect('trash')
+  sfx.negative()
+
 }
 
 /**
@@ -929,7 +939,7 @@ let duplicateBoard = () => {
   storeUndoStateForScene()
   //sfx.bip('c7')
   sfx.down(-1,2)
-  notifications.notify({message: 'Duplicated board', timing: 5})
+  notifications.notify({message: 'Duplicated board.', timing: 5})
 }
 
 /**
@@ -948,12 +958,11 @@ const clearLayers = shouldEraseCurrentLayer => {
   } else {
     if (storyboarderSketchPane.isEmpty()) {
       deleteBoards()
-      notifications.notify({message: 'Deleted board', timing: 5})
     } else {
       storyboarderSketchPane.clearLayers()
       saveImageFile()
       sfx.playEffect('trash')
-      notifications.notify({message: 'Cleared canvas', timing: 5})
+      notifications.notify({message: 'Cleared canvas.', timing: 5})
     }
   }
 }
@@ -1173,6 +1182,7 @@ let nextScene = ()=> {
       gotoBoard(currentBoard)
     } else {
       sfx.error()
+      notifications.notify({message: "Sorry buddy. I can't go back further.", timing: 5})
     }
   }
 }
@@ -1196,6 +1206,7 @@ let previousScene = ()=> {
       gotoBoard(currentBoard)
     } else {
       sfx.error()
+      notifications.notify({message: "Nope. I can't go any further.", timing: 5})
     }
   }
 }
@@ -2436,11 +2447,6 @@ let copyBoards = () => {
  *          b) from `image`, one new board with clipboard image data inserted as reference layer
  *
  * TODO:
- * - parse one or many boards for data
- * - paste image data to reference layer
- * - support layers
- * - separate board data from layer data
- * - handle errors for un-supported clipboard types, JSON errors
  */
 let pasteBoards = () => {
   if (textInputMode) return
@@ -2598,8 +2604,8 @@ let reorderBoardsLeft = () => {
     moveSelectedBoards(position)
     renderThumbnailDrawer()
     gotoBoard(currentBoard, true)
-        sfx.playEffect('on')
-
+    sfx.playEffect('on')
+    notifications.notify({message: 'Reordered to the left!', timing: 5})
   }
 }
 
@@ -2613,7 +2619,7 @@ let reorderBoardsRight = () => {
     renderThumbnailDrawer()
     gotoBoard(currentBoard, true)
     sfx.playEffect('metal')
-
+    notifications.notify({message: 'Reordered to the right!', timing: 5})
   }
 }
 
@@ -2638,6 +2644,7 @@ let disableEditMode = () => {
     thumbnailCursor.visible = false
     renderThumbnailCursor()
     renderThumbnailDrawerSelections()
+    notifications.notify({message: 'Reordered!', timing: 5})
   }
 }
 
@@ -2732,6 +2739,8 @@ let renderThumbnailCursor = () => {
 
 const setupRandomizedNotifications = () => {  
   let defaultMessages = util.shuffle(NotificationData.messages)
+
+  //notifications.notify({message: 'Hello!', timing: 5})
 
   fetch('https://wonderunit.com/software/storyboarder/messages.json').then(response => {
     if (response.ok) {
@@ -2915,6 +2924,7 @@ ipcRenderer.on('flipBoard', (e, arg)=> {
   if (!textInputMode) {
     storyboarderSketchPane.flipLayers(arg)
     sfx.playEffect('metal')
+    notifications.notify({message: 'I flipped the board.', timing: 5})
   }
 })
 
