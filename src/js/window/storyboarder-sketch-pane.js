@@ -253,7 +253,9 @@ class StoryboarderSketchPane extends EventEmitter {
   unsetQuickErase () {
     if (this.toolbar.getIsQuickErasing()) {
       this.toolbar.setIsQuickErasing(false)
-      this.setBrushTool(this.prevTool.kind, this.prevTool)
+      if (this.prevTool) {
+        this.setBrushTool(this.prevTool.kind, this.prevTool)
+      }
       this.prevTool = null
     }
   }

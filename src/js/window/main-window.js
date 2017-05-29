@@ -85,6 +85,12 @@ let layersEditor
 
 let storyboarderSketchPane
 
+let dragMode = false
+let preventDragMode = false
+let dragPoint
+let dragTarget
+let scrollPoint
+
 menu.setMenu()
 
 ///////////////////////////////////////////////////////////////
@@ -155,7 +161,6 @@ const commentOnLineMileage = (miles) => {
         "I wish I could draw as good as that.",
       ]
       message.push(otherMessages[Math.floor(Math.random()*otherMessages.length)])
-      sfx.playEffect('metal')
       break
     case 1: 
       otherMessages = [
@@ -444,6 +449,23 @@ let loadBoardUI = ()=> {
     }
   })
 
+
+  for (var item of document.querySelectorAll('.board-metadata-container input, .board-metadata-container textarea')) {
+    item.addEventListener('pointerdown', (e)=>{
+      preventDragMode = true
+      dragTarget = document.querySelector('.board-metadata-container')
+      dragTarget.style.scrollBehavior = 'smooth'
+    })
+  }
+
+  
+    
+    // for (var item of document.querySelectorAll('.thumbnail')) {
+    //   item.classList.remove('active')
+    // }
+
+
+
   document.querySelector('#show-in-finder-button').addEventListener('pointerdown', (e)=>{
     let board = boardData.boards[currentBoard]
     let imageFilename = path.join(boardPath, 'images', board.url)
@@ -471,9 +493,8 @@ let loadBoardUI = ()=> {
       return
     }
 
-    if (dragMode) {
+    if (dragMode && !preventDragMode) {
       dragTarget.scrollLeft = scrollPoint[0] + (dragPoint[0] - e.pageX)
-      console.log(scrollPoint[0], dragPoint[0], e.pageX)
       dragTarget.scrollTop = scrollPoint[1] + (dragPoint[1] - e.pageY)
     }
   })
@@ -481,6 +502,7 @@ let loadBoardUI = ()=> {
   window.addEventListener('pointerup', (e)=>{
     if (dragMode) {
       disableDragMode()
+      preventDragMode = false
     }
 
     mouseDragStartX = null
@@ -1157,6 +1179,8 @@ let goNextBoard = (direction, shouldPreserveSelections = false)=> {
   gotoBoard(currentBoard, shouldPreserveSelections)
 }
 
+let animatedScrollingTimer = +new Date()
+
 let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
   toolbar.emit('cancelTransform')
   return new Promise((resolve, reject) => {
@@ -1179,13 +1203,18 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
       let containerDiv = document.querySelector('#thumbnail-container')
 
       if ((thumbDiv.offsetLeft+thumbDiv.offsetWidth+200) > (containerDiv.scrollLeft + containerDiv.offsetWidth)) {
-        console.log("offscreen!!")
-        containerDiv.scrollLeft = thumbDiv.offsetLeft - 300
+        if (((+new Date())-animatedScrollingTimer) > 2000) {
+          containerDiv.scrollLeft = thumbDiv.offsetLeft - 300
+          animatedScrollingTimer = +new Date()
+        }
+
       }
 
       if ((thumbDiv.offsetLeft-200) < (containerDiv.scrollLeft)) {
-        console.log("offscreen!!")
-        containerDiv.scrollLeft = thumbDiv.offsetLeft - containerDiv.offsetWidth + 300
+        if (((+new Date())-animatedScrollingTimer) > 2000) {
+          containerDiv.scrollLeft = thumbDiv.offsetLeft - containerDiv.offsetWidth + 300
+          animatedScrollingTimer = +new Date()
+        }
       }
 
 
@@ -1756,11 +1785,6 @@ let renderTimeline = () => {
   // HACK restore original position of marker
   if (getMarkerEl()) getMarkerEl().style.left = markerLeft
 }
-
-let dragMode = false
-let dragPoint
-let dragTarget
-let scrollPoint
 
 let renderScenes = ()=> {
   let html = []
@@ -2968,7 +2992,7 @@ const welcomeMessage = () => {
     "",
   ]
   message.push(otherMessages[Math.floor(Math.random()*otherMessages.length)])
-  notifications.notify({message: message.join(' '), timing: 20})
+  notifications.notify({message: message.join(' '), timing: 10})
 } 
 
 const setupRandomizedNotifications = () => {  
