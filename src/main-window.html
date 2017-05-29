@@ -211,24 +211,38 @@
             <div class="number"><svg class="smallicon"><use xlink:href="./img/symbol-defs.svg#icon-board"></use></svg><span id="shot"></span></div>
             <div class="row" id="board-numbers">12 of 76</div>
             <div class="row" data-tooltip
+              data-tooltip-title="Line Mileage"
+              data-tooltip-description="As you draw, the line miles for the shot add up. This is useful to know how much you are drawing per shot. Remember, you aren't trying to make the next Moner Lisa. You're just trying to get the idea across."
+              data-tooltip-keys=""
+              data-tooltip-position="left middle">
+              <svg class="smallericon"><use xlink:href="./img/symbol-defs.svg#icon-linemileage"></use></svg><span id="line-miles"></span>
+            </div>
+            <div class="hardrule"></div>
+            <div class="row" data-tooltip
               data-tooltip-title="Is this board a new shot?"
               data-tooltip-description="Check this box if the board is a new shot. You can have multiple boards per shot. This way you can animate or make a transition in a shot."
               data-tooltip-keys="/"
               data-tooltip-position="left middle">
               <input type="checkbox" name="newShot" id="newShot" /><label for="newShot"><span></span>New Shot?</label>
             </div>
-            <div class="hardrule"></div>
             <div class="row">
               <div><svg class="smallicon"><use xlink:href="./img/symbol-defs.svg#icon-duration"></use></svg>Duration</div>
-              <input type="text" name="duration" data-tooltip
-              data-tooltip-title="Set the board duration"
-              data-tooltip-description="Enter the number of milliseconds for a board. There are 1000 milliseconds in a second. 2000 milliseconds is the default."
-              data-tooltip-keys=""
-              data-tooltip-position="left middle">ms <input type="text" name="frames" data-tooltip
-              data-tooltip-title="Set the board duration"
-              data-tooltip-description="Enter the number of frames for a board. There are 24 frames in a second. 48 frames is the default."
-              data-tooltip-keys=""
-              data-tooltip-position="left middle">frames
+              <div class="row">
+                <div class="col">
+                  <input type="text" name="duration" placeholder="ms" data-tooltip
+                  data-tooltip-title="Set the board duration"
+                  data-tooltip-description="Enter the number of milliseconds for a board. There are 1000 milliseconds in a second. 2000 milliseconds is the default."
+                  data-tooltip-keys=""
+                  data-tooltip-position="left middle"> 
+                </div>
+                <div class="col">
+                  <input type="text" name="frames" placeholder="frames" data-tooltip
+                  data-tooltip-title="Set the board duration"
+                  data-tooltip-description="Enter the number of frames for a board. There are 24 frames in a second. 48 frames is the default."
+                  data-tooltip-keys=""
+                  data-tooltip-position="left middle">
+                </div>
+              </div>
             </div>
             <div class="row">
               <div><svg class="smallicon"><use xlink:href="./img/symbol-defs.svg#icon-dialogue"></use></svg>Dialogue <span id="suggested-dialogue-duration"></span></div>
@@ -247,42 +261,39 @@
               data-tooltip-position="left middle"></textarea>
             </div>
             <div class="row">
-              <div><svg class="smallicon"><use xlink:href="./img/symbol-defs.svg#icon-notes"></use></svg>Notes</div>
+              <div class="inline"><svg class="smallicon"><use xlink:href="./img/symbol-defs.svg#icon-notes"></use></svg>Notes</div>
+              <div class="layers-ui-notes-clear flatbutton small"> <svg class="smallericon"><use xlink:href="./img/symbol-defs.svg#icon-trash"></use></svg>Clear</div>
               <textarea name="notes" data-tooltip
               data-tooltip-title="Notes for the board"
               data-tooltip-description="Write some notes. Could be board notes for changes, or just some notes for the shot."
               data-tooltip-keys=""
               data-tooltip-position="left middle"></textarea>
             </div>
-            <div class="hardrule"></div>
+            <!-- <div class="hardrule"></div> -->
             <div class="row">
-              <div class="layers-ui">
-                <div>Notes</div>
-                <!-- <a class="layers-ui-notes-visible" href="#">visible</a> -->
-                <a class="layers-ui-notes-clear" href="#">clear</a>
-
-                <div style="margin-top: 20px">Main</div>
-                <!-- <a class="layers-ui-main-visible" href="#">visible</a> -->
-                <a class="layers-ui-main-merge" href="#">merge down</a>
-
-                <div style="margin-top: 20px">Reference</div>
-                <!-- <a class="layers-ui-reference-visible" href="#">visible</a> -->
-                <a class="layers-ui-reference-merge" href="#">merge up</a>
-                <a class="layers-ui-reference-clear" href="#">clear</a>
-                <div>
-                  opacity
-                  <input class="layers-ui-reference-opacity" type="range" min="20" max="98" step="26" value="98">
+              <div class="inline"><svg class="smallicon"><use xlink:href="./img/symbol-defs.svg#icon-notes"></use></svg>Light Layer</div>
+              <div class="layers-ui-reference-clear flatbutton small"> <svg class="smallericon"><use xlink:href="./img/symbol-defs.svg#icon-trash"></use></svg>Clear</div>
+              <div>
+                <div class="col">
+                  <div class="layers-ui-main-merge flatbutton" data-tooltip
+                  data-tooltip-title="Show board in file system"
+                  data-tooltip-description="Click here to show the board image file in the file system. This is useful for external editors."
+                  data-tooltip-keys=""
+                  data-tooltip-position="left middle"><svg class="smallicon"><use xlink:href="./img/symbol-defs.svg#icon-showfile"></use></svg>Merge Down</div>
                 </div>
+                <div class="col">
+                  <div class="layers-ui-reference-merge flatbutton" data-tooltip
+                  data-tooltip-title="Show board in file system"
+                  data-tooltip-description="Click here to show the board image file in the file system. This is useful for external editors."
+                  data-tooltip-keys=""
+                  data-tooltip-position="left middle"><svg class="smallicon"><use xlink:href="./img/symbol-defs.svg#icon-showfile"></use></svg>Merge Up</div>
+                </div>
+              </div>
+              <div>
+                <input class="layers-ui-reference-opacity" type="range" min="20" max="98" step="26" value="98">
               </div>
             </div>
             <div class="hardrule"></div>
-            <div class="row" data-tooltip
-              data-tooltip-title="Line Mileage"
-              data-tooltip-description="As you draw, the line miles for the shot add up. This is useful to know how much you are drawing per shot. Remember, you aren't trying to make the next Moner Lisa. You're just trying to get the idea across."
-              data-tooltip-keys=""
-              data-tooltip-position="left middle">
-              <svg class="smallicon"><use xlink:href="./img/symbol-defs.svg#icon-linemileage"></use></svg><span id="line-miles"></span>
-            </div>
             <div class="row">
               <div class="flatbutton" id="show-in-finder-button" data-tooltip
               data-tooltip-title="Show board in file system"

@@ -1110,6 +1110,11 @@ let duplicateBoard = () => {
   board.newShot = false
   board.lastEdited = Date.now()
 
+  // Per Taino's request, we are not duplicating some metadata
+  board.dialogue = ''
+  board.action = ''
+  board.notes = ''
+ 
   // insert
   boardData.boards.splice(currentBoard + 1, 0, board)
   markBoardFileDirty()
