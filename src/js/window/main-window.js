@@ -2164,23 +2164,24 @@ const resize = () => {
 
 window.onkeydown = (e)=> {
   if (!textInputMode) {
-
-    // console.log(e)
-
-    switch (e.code) {
-      case 'KeyC':
+    //console.log(e)
+    switch (e.keyCode) {
+      // C
+      case 67:
         if (e.metaKey || e.ctrlKey) {
           copyBoards()
           e.preventDefault()
         }
         break
-      case 'KeyV':
+      // V
+      case 86:
         if (e.metaKey || e.ctrlKey) {
           pasteBoards()
           e.preventDefault()
         }
         break
-      case 'KeyZ':
+      // Z
+      case 90:
        if (e.metaKey || e.ctrlKey) {
           if (e.shiftKey) {
             if (undoStack.getCanRedo()) {
@@ -2202,26 +2203,28 @@ window.onkeydown = (e)=> {
           e.preventDefault()
         }
         break
-      case 'Tab':
+      // TAB
+      case 9:
         cycleViewMode()
         e.preventDefault()
         break;
-      case 'Escape':
+      // ESCAPE
+      case 27:
         if (dragMode && isEditMode && selections.size) {
           disableEditMode()
           disableDragMode()
         }
         break
     }
-
   }
 
   if (!textInputMode || textInputAllowAdvance) {
 
     // console.log(e)
 
-    switch (e.code) {
-      case 'ArrowLeft':
+    switch (e.keyCode) {
+      // arrow left
+      case 37:
         if (e.metaKey || e.ctrlKey) {
           previousScene()
         } else if (e.altKey) {
@@ -2232,7 +2235,8 @@ window.onkeydown = (e)=> {
         }
         e.preventDefault()
         break
-      case 'ArrowRight':
+      // arrow right
+      case 39:
         if (e.metaKey || e.ctrlKey) {
           nextScene()
         } else if (e.altKey) {
