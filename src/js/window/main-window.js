@@ -1114,6 +1114,7 @@ let duplicateBoard = () => {
   board.dialogue = ''
   board.action = ''
   board.notes = ''
+  board.duration = 0
  
   // insert
   boardData.boards.splice(currentBoard + 1, 0, board)
