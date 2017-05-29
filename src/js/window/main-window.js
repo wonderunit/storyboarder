@@ -130,6 +130,7 @@ const load = (event, args) => {
   loadBoardUI()
   updateBoardUI()
   resize()
+  setTimeout(()=>{storyboarderSketchPane.resize()}, 500)
   // wait for reflow
   setTimeout(() => { remote.getCurrentWindow().show() }, 200)
 }
@@ -347,17 +348,22 @@ let loadBoardUI = ()=> {
     document.getElementById('storyboarder-sketch-pane'),
     size
   )
+  
   window.addEventListener('resize', () => {
     resize()
     storyboarderSketchPane.resize()
+    setTimeout(()=>{storyboarderSketchPane.resize()}, 500)
   })
+
   storyboarderSketchPane.on('addToUndoStack', layerIndices => {
     storeUndoStateForImage(true, layerIndices)
   })
+  
   storyboarderSketchPane.on('markDirty', layerIndices => {
     storeUndoStateForImage(false, layerIndices)
     markImageFileDirty(layerIndices)
   })
+  
   storyboarderSketchPane.on('lineMileage', value => {
     addToLineMileage(value)
   })
