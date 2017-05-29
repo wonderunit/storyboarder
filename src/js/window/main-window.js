@@ -1305,6 +1305,12 @@ let renderMetaData = ()=> {
     document.querySelector('#line-miles').innerHTML = '0 line miles'
   }
 
+  let opacity = Number(document.querySelector('.layers-ui-reference-opacity').value)
+  if (opacity !== 72) {
+    document.querySelector('.layers-ui-reference-opacity').value = 72
+    storyboarderSketchPane.sketchPane.setLayerOpacity(72/100, 0)
+  }
+
   renderStats()
 }
 
