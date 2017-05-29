@@ -1031,49 +1031,53 @@ let deleteSingleBoard = (index) => {
 }
 
 let deleteBoards = (args)=> {
-  if (selections.size) {
-    storeUndoStateForScene(true)
+  if (boardData.boards.length > 1) {
+    if (selections.size) {
+      storeUndoStateForScene(true)
 
-    // delete all selected boards
-    let arr = [...selections]
-    arr.sort(util.compareNumbers).reverse().forEach(n =>
-      deleteSingleBoard(n))
+      // delete all selected boards
+      let arr = [...selections]
+      arr.sort(util.compareNumbers).reverse().forEach(n =>
+        deleteSingleBoard(n))
 
-    if (selections.has(currentBoard)) {
+      if (selections.has(currentBoard)) {
+        // if not requested to move forward
+        // we take action to move intentionally backward
+        if (!args) {
+          currentBoard--
+        }
+      }
+
+      // clear and re-render selections
+      selections.clear()
+      renderThumbnailDrawer()
+      storeUndoStateForScene()
+      if (arr.length > 1) {
+        notifications.notify({message: "Deleted " + arr.length + " boards.", timing: 5})
+      } else {
+        notifications.notify({message: "Deleted board.", timing: 5})
+      }
+
+    } else {
+      // delete a single board
+      storeUndoStateForScene(true)
+      deleteSingleBoard(currentBoard)
+      storeUndoStateForScene()
+      notifications.notify({message: "Deleted board", timing: 5})
+
       // if not requested to move forward
       // we take action to move intentionally backward
       if (!args) {
         currentBoard--
       }
     }
-
-    // clear and re-render selections
-    selections.clear()
-    renderThumbnailDrawer()
-    storeUndoStateForScene()
-    if (arr.length > 1) {
-      notifications.notify({message: "Deleted " + arr.length + " boards.", timing: 5})
-    } else {
-      notifications.notify({message: "Deleted board.", timing: 5})
-    }
-
+    gotoBoard(currentBoard)
+    sfx.playEffect('trash')
+    sfx.negative()
   } else {
-    // delete a single board
-    storeUndoStateForScene(true)
-    deleteSingleBoard(currentBoard)
-    storeUndoStateForScene()
-    notifications.notify({message: "Deleted board", timing: 5})
-
-    // if not requested to move forward
-    // we take action to move intentionally backward
-    if (!args) {
-      currentBoard--
-    }
+    sfx.error()
+    notifications.notify({message: "Cannot delete. You have to have at least one board, silly.", timing: 8})
   }
-  gotoBoard(currentBoard)
-  sfx.playEffect('trash')
-  sfx.negative()
-
 }
 
 /**
