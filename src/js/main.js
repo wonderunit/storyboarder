@@ -613,3 +613,7 @@ ipcMain.on('toggleGuide', (event, arg) => {
 ipcMain.on('toggleNewShot', (event, arg) => {
   mainWindow.webContents.send('toggleNewShot', arg)
 })
+
+ipcMain.on('showTip', (event, arg) => {
+  mainWindow.webContents.send('showTip', arg)
+})

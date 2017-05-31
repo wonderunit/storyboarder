@@ -35,7 +35,7 @@ const addNotification = (data) => {
   `
     <div>
       <div>
-        ${data.message}
+        ${data.message.replace(/\*\*([^*]+)\*\*/g, "<strong>$1<\/strong>")}
       </div>
     ` +
     (data.author ? `<div class="notification-content_author">

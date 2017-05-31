@@ -445,6 +445,16 @@ const template = [
       {
         label: 'Found a bug? Submit an issue!!!',
         click () { require('electron').shell.openExternal('https://github.com/wonderunit/storyboarder/issues/new') }
+      },
+      {
+        type: 'separator'
+      },
+      {
+        label: 'Show me a story tip!',
+        accelerator: 'CmdOrCtrl+T',
+        click ( item, focusedWindow, event) {
+          ipcRenderer.send('showTip')
+        }
       }
     ]
   }

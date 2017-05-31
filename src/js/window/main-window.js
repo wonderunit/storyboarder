@@ -23,6 +23,7 @@ const Sonifier = require('./sonifier/index.js')
 const LayersEditor = require('./layers-editor.js')
 const sfx = require('../wonderunit-sound.js')
 const keytracker = require('../utils/keytracker.js')
+const storyTips = new(require('./story-tips'))(sfx, notifications)
 
 const pkg = require('../../../package.json')
 
@@ -847,7 +848,6 @@ let newBoard = (position, shouldAddToUndoStack = true) => {
     saveImageFile() // force-save any current work
     storeUndoStateForScene(true)
     notifications.notify({message: "Added a new board. Let's make it a great one!", timing: 5})
-
   }
 
   if (typeof position == "undefined") position = currentBoard + 1
@@ -3272,4 +3272,8 @@ ipcRenderer.on('toggleNewShot', (event, args) => {
 
 ipcRenderer.on('toggleSpeaking', (event, args) => {
   speakingMode = !speakingMode
+})
+
+ipcRenderer.on('showTip', (event, args) => {
+  storyTips.show()
 })
