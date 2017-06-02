@@ -9,6 +9,8 @@ const removeNotification = (index) => {
   if (notification) {
     let el = notification.el
     el.style.opacity = 0
+      el.style.height = '0px'
+
     clearTimeout(notification.index)
     if (el.parentNode) {
       setTimeout(() => {

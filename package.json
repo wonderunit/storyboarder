@@ -61,6 +61,7 @@
     "electron-is-dev": "0.1.2",
     "electron-localshortcut": "^1.0.0",
     "express": "^4.15.2",
+    "gifencoder": "^1.0.6",
     "gl-vec2": "^1.0.0",
     "moment": "^2.18.1",
     "socket.io": "^1.7.3",

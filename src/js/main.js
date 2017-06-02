@@ -617,3 +617,7 @@ ipcMain.on('toggleNewShot', (event, arg) => {
 ipcMain.on('showTip', (event, arg) => {
   mainWindow.webContents.send('showTip', arg)
 })
+
+ipcMain.on('exportAnimatedGif', (event, arg) => {
+  mainWindow.webContents.send('exportAnimatedGif', arg)
+})

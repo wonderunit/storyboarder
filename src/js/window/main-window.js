@@ -24,6 +24,7 @@ const LayersEditor = require('./layers-editor.js')
 const sfx = require('../wonderunit-sound.js')
 const keytracker = require('../utils/keytracker.js')
 const storyTips = new(require('./story-tips'))(sfx, notifications)
+const exporter = require('./exporter.js')
 
 const pkg = require('../../../package.json')
 
@@ -2665,6 +2666,32 @@ let copyBoards = () => {
   }
 }
 
+let exportAnimatedGif = () => {
+  // load all the images in the selection
+  if (selections.has(currentBoard)) {
+    saveImageFile()
+  }
+  let boards
+  if (selections.size == 1) {
+    boards = util.stringifyClone(boardData.boards)
+  } else {
+    boards = [...selections].sort(util.compareNumbers).map(n => util.stringifyClone(boardData.boards[n]))
+  }
+  let boardSize = storyboarderSketchPane.sketchPane.getCanvasSize()
+
+  notifications.notify({message: "Exporting " + boards.length + " boards. Please wait...", timing: 5})
+  sfx.down()
+  setTimeout(()=>{
+    exporter.exportAnimatedGif(boards, boardSize, 500, boardPath, boardFilename)
+  }, 1000)
+}
+
+exporter.on('complete', path => {
+  notifications.notify({message: "I exported your board selection as a GIF. Share it with your friends! Post it to you twitter thing or your slack dingus.", timing: 20})
+  sfx.positive()
+  shell.showItemInFolder(path)
+})
+
 /**
  * Paste
  *
@@ -3277,3 +3304,9 @@ ipcRenderer.on('toggleSpeaking', (event, args) => {
 ipcRenderer.on('showTip', (event, args) => {
   storyTips.show()
 })
+
+ipcRenderer.on('exportAnimatedGif', (event, args) => {
+  exportAnimatedGif()
+})
+
+

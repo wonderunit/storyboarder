@@ -52,6 +52,16 @@ const template = [
         type: 'separator'
       },
       {
+        label: 'Export Animated GIF',
+        accelerator: 'CmdOrCtrl+E',
+        click ( item, focusedWindow, event) {
+          ipcRenderer.send('exportAnimatedGif')
+        }
+      },
+      {
+        type: 'separator'
+      },
+      {
         accelerator: 'CmdOrCtrl+P',
         label: 'Print current scene worksheet...',
         click ( item, focusedWindow, event) {
