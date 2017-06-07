@@ -18,6 +18,15 @@ class StoryTips {
     this.notifications.notify({message: tip, timing: 20})
   }
 
+  getTipString () {
+    if (this.tips.length == 0) {
+      this.tips = util.shuffle(tips)
+    }
+    let tip = this.tips.shift()
+    
+    return tip.replace(/\*\*([^*]+)\*\*/g, "$1").replace(/(\r\n|\n|\r)/gm,'')
+  }
+
 }
 
 module.exports = StoryTips

@@ -6,7 +6,7 @@ const vec2 = require('gl-vec2')
 const util = require('../../utils/index.js')
 const Loop = require('../../utils/loop.js')
 
-const sharedObj = remote.getGlobal('sharedObj')
+const prefsModule = require('electron').remote.require('./prefs.js')
 
 const BrushInstrument = require('./brush-instrument')
 const MelodicInstrument = require('./melodic-instrument')
@@ -65,6 +65,9 @@ const init = dimensions => {
 
   engine = new Loop(step)
   engine.start()
+
+  enableDrawingSoundEffects = prefsModule.getPrefs('sound effects')['enableDrawingSoundEffects']
+  enableDrawingMelodySoundEffects = prefsModule.getPrefs('high qual')['enableDrawingMelodySoundEffects']
 }
 
 const setSize = dimensions => {
@@ -80,10 +83,6 @@ const start = (x, y, pressure, pointerType) => {
 
   bufferA = vec2.fromValues(0, 0)
   bufferB = vec2.fromValues(0, 0)
-
-  // update prefs cache
-  enableDrawingSoundEffects = sharedObj.prefs['enableDrawingSoundEffects']
-  enableDrawingMelodySoundEffects = sharedObj.prefs['enableDrawingMelodySoundEffects']
 
   if (enableDrawingSoundEffects) instrument.noteOn()
   if (enableDrawingMelodySoundEffects) melodies.start()

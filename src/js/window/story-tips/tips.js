@@ -42,7 +42,7 @@ tips = [
   `Your story should start with a **world of specific rules** and your **character who is pushing against those rules**.`,
   `Subplot should always relate to the main theme. It should either resonate the theme or contradict it.`,
   `Progressively build conflict with small dilemmas. Increase them to the **climactic conflict**.`,
-  `How your character **changes** at the end illustrates **the theme**.`,
+  `How your character **changes** at the end, illustrates **the theme**.`,
   `**Don't preach**. Don't insist politics. If your goal is to lecture your audience, you are making a really bad movie, Oliver Stone. Show a world and story that a viewer can't help but learn from on their own.`,
   `The more you try to tell the audience how to feel, the more likely they are to **hate your story**.`,
   `The internal, external, and philosophical conflicts are in an epic battle at the **crisis**.`,

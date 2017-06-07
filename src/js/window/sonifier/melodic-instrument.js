@@ -2,8 +2,8 @@ const Tone = require('tone')
 const tonal = require('tonal')
 
 const { remote } = require('electron')
-const sharedObj = remote.getGlobal('sharedObj')
-const enableHighQualityAudio = sharedObj.prefs['enableHighQualityAudio']
+const prefsModule = require('electron').remote.require('./prefs.js')
+const enableHighQualityAudio = prefsModule.getPrefs('melo hi gual')['enableHighQualityAudio']
 
 const util = require('../../utils')
 

@@ -4,17 +4,17 @@ const moment = require('moment')
 const menu = require('../menu.js')
 const util = require('../utils/index.js')
 const sfx = require('../wonderunit-sound.js')
+const prefsModule = require('electron').remote.require('./prefs.js')
 
 const pkg = require('../../../package.json')
-
-const sharedObj = remote.getGlobal('sharedObj')
 
 menu.setWelcomeMenu()
 
 let updateRecentDocuments = () => {
   let count = 0
   let html = []
-  let recentDocuments = sharedObj.prefs['recentDocuments']
+
+  let recentDocuments = prefsModule.getPrefs('welcome')['recentDocuments']
   if (recentDocuments && recentDocuments.length>0) {
     for (var recentDocument of recentDocuments) {
       html.push(`<div class="recent-item" data-filename="${recentDocument.filename}"><img src="./img/fileicon.png"><div class="text">`)
@@ -28,12 +28,9 @@ let updateRecentDocuments = () => {
       html.push('</div></div>')
       count++
     }
-
     document.querySelector('#recent').innerHTML = html.join('')
     document.querySelector('.recent').innerHTML = "RECENT STORYBOARDS"
-
     let recentDivs = document.querySelector("#recent").children
-
     for (var i = 0; i < recentDivs.length; i++) {
       recentDivs[i].onclick = (e)=>{
         console.log(e.currentTarget.dataset.filename)
@@ -43,7 +40,6 @@ let updateRecentDocuments = () => {
       recentDivs[i].addEventListener("pointerdown", ()=>{sfx.down()})
     }
   }
-
   document.querySelector('#recent').scrollTop = 0
 }
 
@@ -101,6 +97,8 @@ ipcRenderer.on('playsfx', (event, args)=>{
       break
   }
 })
+
+sfx.init()
 
 ipcRenderer.on('updateRecentDocuments', (event, args)=>{
   updateRecentDocuments()

@@ -23,6 +23,7 @@ let welcomeWindow
 let newWindow
 
 let mainWindow
+let printWindow
 let sketchWindow
 let welcomeInprogress
 
@@ -32,12 +33,10 @@ let powerSaveId = 0
 
 let previousScript
 
-let prefs = prefModule.getPrefs()
+let prefs = prefModule.getPrefs('main')
 
 let currentFile
 let currentPath
-
-global.sharedObj = { 'prefs': prefs }
 
 appServer.on('pointerEvent', (e)=> {
   console.log('pointerEvent')
@@ -92,10 +91,6 @@ let openNewWindow = () => {
 }
 
 let openWelcomeWindow = ()=> {
-  // RESET PREFS - SHOULD BE COMMENTED OUT
-  // console.log(prefs)
-  // prefs = {scriptFile: `./outl3ine.txt`}
-  // prefModule.savePrefs(prefs)
   welcomeWindow = new BrowserWindow({width: 900, height: 600, center: true, show: false, resizable: false, frame: false})
   welcomeWindow.loadURL(`file://${__dirname}/../welcome.html`)
 
@@ -270,7 +265,6 @@ let processFountainData = (data, create, update) => {
   }
 
   if (update) {
-    //let diffScene = getSceneDifference(previousScript, global.sharedObj['scriptData'])
     mainWindow.webContents.send('updateScript', 1)//, diffScene)
   }
 
@@ -366,7 +360,8 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
       webgl: true,
       experimentalFeatures: true,
       experimentalCanvasFeatures: true,
-      devTools: true
+      devTools: true,
+      plugins: true
     } 
   })
 
@@ -400,19 +395,20 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
 }
 
 let addToRecentDocs = (filename, metadata) => {
+  let prefs = prefModule.getPrefs('add to recent')
 
-  // TODO PREFS ARE SUPER JANK. NEED TO REDO.
-  let prefs = util.stringifyClone(global.sharedObj.prefs)
-
+  let recentDocuments
   if (!prefs.recentDocuments) {
-    prefs.recentDocuments = []
+    recentDocuments = []
+  } else {
+    recentDocuments = prefs.recentDocuments
   }
 
   let currPos = 0
 
-  for (var document of prefs.recentDocuments) {
+  for (var document of recentDocuments) {
     if (document.filename == filename) {
-      prefs.recentDocuments.splice(currPos, 1)
+      recentDocuments.splice(currPos, 1)
       break
     }
     currPos++
@@ -431,10 +427,9 @@ let addToRecentDocs = (filename, metadata) => {
 
   recentDocument.filename = filename
   recentDocument.time = Date.now()
-  prefs.recentDocuments.unshift(recentDocument)
+  recentDocuments.unshift(recentDocument)
   // save
-  prefModule.savePrefs(prefs)
-  global.sharedObj.prefs = prefs
+  prefModule.set('recentDocuments', recentDocuments)
 }
 
 ////////////////////////////////////////////////////////////
@@ -620,4 +615,9 @@ ipcMain.on('showTip', (event, arg) => {
 
 ipcMain.on('exportAnimatedGif', (event, arg) => {
   mainWindow.webContents.send('exportAnimatedGif', arg)
+})
+
+ipcMain.on('printWorksheet', (event, arg) => {
+  //openPrintWindow()
+  mainWindow.webContents.send('printWorksheet', arg)
 })

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="./css/print-window.css">
+  </head>
+  <body>
+    <div id="print-container">
+      <div id="config-pane">
+        <div id="close-button">&#10005;</div>
+        <h1 style="margin-top: 50px;">Print a worksheet</h1>
+        <div>Draw thumbnail boards on this printed worksheet and magically import them back into your storyboarder file!</div>
+        
+        <div class="row">
+          <label for="paper-size">Paper Size</label>
+          <select name="select" id="paper-size"> <!--Supplement an id here instead of using 'name'-->
+            <option value="LTR">Letter</option> 
+            <option value="A4" selected>A4 - For dirty Europeans</option>
+          </select>
+        </div>
+        
+        <div class="row row-grid">
+          <div class="col">
+            <label for="column-number">Columns</label>
+            <select name="select" id="column-number"> <!--Supplement an id here instead of using 'name'-->
+              <option value="1">1</option> 
+              <option value="2">2</option>
+              <option value="3">3</option> 
+              <option value="4">4</option>
+              <option value="5">5</option> 
+              <option value="6">6</option>
+              <option value="7">7</option> 
+              <option value="8">8</option>
+            </select>
+          </div>
+          <div class="col">
+            <label for="row-number">Rows</label>
+            <select name="select" id="row-number"> <!--Supplement an id here instead of using 'name'-->
+              <option value="1">1</option> 
+              <option value="2">2</option>
+              <option value="3">3</option> 
+              <option value="4">4</option>
+              <option value="5">5</option> 
+              <option value="6">6</option>
+              <option value="7">7</option> 
+              <option value="8">8</option>
+            </select>
+          </div>
+        </div>
+        <div class="row">
+          <label for="spacing">Spacing</label>
+          <select name="select" id="spacing"> <!--Supplement an id here instead of using 'name'-->
+            <option value="15">15</option> 
+            <option value="20">20</option>
+            <option value="25">25</option> 
+            <option value="30">30</option>
+          </select>
+        </div>
+        <div id="button-content">
+          <div class="button grey" id="print-button">Print!</div>
+        </div>
+      </div>
+      <div id="preview-pane">
+        <div id="preview-pane-content">
+        <div id="paper">
+          <img id="preview">
+        </div>
+      </div>
+      </div>
+    </div>
+
+  </body>
+  <script>
+    require('./js/window/print-window.js')
+  </script>
+</html>

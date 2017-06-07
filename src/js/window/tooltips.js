@@ -1,11 +1,15 @@
 const { remote } = require('electron')
-
 let { acceleratorAsHtml } = require('../utils/index.js')
-
-const sharedObj = remote.getGlobal('sharedObj')
-const getEnableTooltips = () => sharedObj.prefs['enableTooltips']
-
+const prefsModule = require('electron').remote.require('./prefs.js')
 const Tooltip = require('tether-tooltip')
+const sfx = require('../wonderunit-sound.js')
+
+let enableTooltips
+
+const getPrefs = () => {
+  enableTooltips = prefsModule.getPrefs('tooltips')['enableTooltips']
+}
+
 Tooltip.autoinit = false
 
 let tooltips = []
@@ -33,7 +37,7 @@ const housekeeping = () => {
 }
 
 const setupTooltipForElement = (el) => {
-  if (!getEnableTooltips()) return false
+  if (!enableTooltips) return false
   let title = el.dataset.tooltipTitle
   let description = el.dataset.tooltipDescription || ''
   let keys = el.dataset.tooltipKeys
@@ -41,11 +45,25 @@ const setupTooltipForElement = (el) => {
   let tooltip = new Tooltip({
     target: el,
     content: content(title, description, keys),
-    position
+    position,
+    constrainToWindow: true,
+    constraints: [
+      {
+        to: 'window',
+        pin: true,
+        attachment: 'both'
+      }
+    ],
+    optimizations: {
+      gpu: false
+    },
+    hoverOpenDelay: 1500
+
   })
   // HACK! force close immediately unless we allow tooltips in preferences
   tooltip.drop.on('open', () => {
-    if (!getEnableTooltips()) {
+    sfx.playEffect('metal')
+    if (!enableTooltips) {
       tooltip.close()
     }
   })
@@ -55,7 +73,8 @@ const setupTooltipForElement = (el) => {
 }
 
 const init = () => {
-  if (!getEnableTooltips()) return false
+  getPrefs('pref editor')
+  if (!enableTooltips) return false
 
   const tooltipElements = document.querySelectorAll('[data-tooltip]')
   for (let el of tooltipElements) {
@@ -65,5 +84,6 @@ const init = () => {
 
 module.exports = {
   init,
-  setupTooltipForElement
+  setupTooltipForElement,
+  getPrefs
 }

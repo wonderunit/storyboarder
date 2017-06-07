@@ -52,7 +52,7 @@
     }
   },
   "devDependencies": {
-    "electron": "1.7.0",
+    "electron": "1.7.2",
     "electron-builder": "17.0.2"
   },
   "dependencies": {
@@ -64,6 +64,9 @@
     "gifencoder": "^1.0.6",
     "gl-vec2": "^1.0.0",
     "moment": "^2.18.1",
+    "pdfjs-dist": "^1.8.418",
+    "pdfkit": "^0.8.2",
+    "qr-image": "^3.2.0",
     "socket.io": "^1.7.3",
     "tether": "1.4.0",
     "tether-tooltip": "1.2.0",

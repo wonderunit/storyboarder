@@ -1,29 +1,23 @@
-/*
-  shorten bass - higher octave?
-  bass high should be louder
-
-  play a sequence for:
-    opening
-    new board
-    import
-    present
-    tooltip
-
-  new chord sequences
-*/
-
 const { remote } = require('electron')
 
 const Tone = require('tone')
 const { shuffle } = require('./utils/index.js')
-
-const sharedObj = remote.getGlobal('sharedObj')
+const prefsModule = require('electron').remote.require('./prefs.js')
 
 Tone.Transport.latencyHint = 'playback'
 Tone.Transport.start("+0.1")
 
-const getEnableUISoundEffects = () => sharedObj.prefs['enableUISoundEffects']
-const getEnableHighQualityAudio = () => sharedObj.prefs['enableUISoundEffects']
+let enableUISoundEffects
+let enableHighQualityAudio
+
+const getPrefs = () => {
+  enableUISoundEffects = prefsModule.getPrefs('enableUISoundEffects')['enableUISoundEffects']
+  enableHighQualityAudio = prefsModule.getPrefs('enableHighQualityAudio')['enableHighQualityAudio']
+}
+
+const getEnableUISoundEffects = () => enableUISoundEffects 
+
+const getEnableHighQualityAudio = () => enableHighQualityAudio
 
 let chords = [
   ['a4', 'b4', 'c5', 'e5'],
@@ -274,6 +268,7 @@ const filePathsForSoundEffects = {
 }
 let multiPlayer
 const init = () => {
+  getPrefs()
   if (!getEnableUISoundEffects()) return
 
   multiPlayer = new Tone.MultiPlayer(new Tone.Buffers(filePathsForSoundEffects))

@@ -114,7 +114,7 @@ class Toolbar extends EventEmitter {
 
     // TODO PREFS ARE JANK AS FUCK. NEED TO REDO THIS
     let prefState
-    prefState = util.stringifyClone(prefsModule.getPrefs())
+    prefState = util.stringifyClone(prefsModule.getPrefs('toolbar'))
 
     if (prefState  && prefState.toolbarState) {
       for (var key in prefState.toolbarState.brushes) {
@@ -155,13 +155,8 @@ class Toolbar extends EventEmitter {
   }
 
   savePrefs () {
-    let sharedObj = remote.getGlobal('sharedObj')
-    let prefs = util.stringifyClone(sharedObj.prefs)
-    prefs.toolbarState = this.state
-    sharedObj.prefs = prefs
-    prefsModule.savePrefs(prefs)
+    prefsModule.set('toolbarState', this.state)
   }
-
 
   setState (newState) {
     this.state = Object.assign(this.state, newState)
@@ -169,7 +164,6 @@ class Toolbar extends EventEmitter {
       // the brush changed
       this.emit('brush', this.state.brush, this.getBrushOptions())
     }
-
     this.render()
   }
 

@@ -1,19 +1,12 @@
 const { remote } = require('electron')
-const prefsModule = require('electron').remote.require('./../js/prefs')
-
 const util = require('./js/utils')
+const prefsModule = require('electron').remote.require('./prefs.js')
 
-const sharedObj = remote.getGlobal('sharedObj')
-
-const save = () => {
-  sharedObj.prefs = prefs
-  prefsModule.savePrefs(prefs)
-}
+let prefs = prefsModule.getPrefs('prefs window')
 
 const onChange = (name, event) => {
-  prefs[name] = event.target.checked
+  prefsModule.set(name, event.target.checked)
   render()
-  save()
 }
 
 const render = () => {
@@ -21,8 +14,6 @@ const render = () => {
     el.checked = prefs[el.name]
   }
 }
-
-let prefs = util.stringifyClone(sharedObj.prefs)
 
 let inputs = document.querySelectorAll('input[type="checkbox"]')
 

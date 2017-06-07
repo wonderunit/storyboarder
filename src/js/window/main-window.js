@@ -6,6 +6,7 @@ const path = require('path')
 const menu = require('../menu.js')
 const util = require('../utils/index.js')
 const Color = require('color-js')
+const settings = require('electron-settings')
 
 const StoryboarderSketchPane = require('./storyboarder-sketch-pane.js')
 const undoStack = require('../undo-stack.js')
@@ -25,6 +26,8 @@ const sfx = require('../wonderunit-sound.js')
 const keytracker = require('../utils/keytracker.js')
 const storyTips = new(require('./story-tips'))(sfx, notifications)
 const exporter = require('./exporter.js')
+const prefsModule = require('electron').remote.require('./prefs.js')
+
 
 const pkg = require('../../../package.json')
 
@@ -3074,7 +3077,7 @@ const runRandomizedNotifications = (messages) => {
   let count = 0, duration = 60 * 60 * 1000, timeout
   const tick = () => {
     // only fire notification if enabled in preferences
-    if (sharedObj.prefs['enableAspirationalMessages']) {
+    if (prefsModule.getPrefs('aspirational')['enableAspirationalMessages']) {
       notifications.notify(messages[count++ % messages.length])
     }
     timeout = setTimeout(tick, duration)
@@ -3309,4 +3312,34 @@ ipcRenderer.on('exportAnimatedGif', (event, args) => {
   exportAnimatedGif()
 })
 
+let printWindow
 
+
+ipcRenderer.on('printWorksheet', (event, args) => {
+  if (!printWindow) {
+    printWindow = new remote.BrowserWindow({
+      width: 1200, 
+      height: 800, 
+      minWidth: 600, 
+      minHeight: 600, 
+      backgroundColor: '#333333',
+      show: false, 
+      center: true, 
+      parent: remote.getCurrentWindow(), 
+      resizable: true, 
+      frame: false, 
+      modal: true, 
+      webPreferences: {plugins: true}})
+    printWindow.loadURL(`file://${__dirname}/../../print-window.html`)
+  } else {
+    if (!printWindow.isVisible()) {
+      printWindow.show()
+      printWindow.webContents.send('worksheetData',boardData.aspectRatio)
+    }
+  }
+
+  printWindow.once('ready-to-show', () => {
+    printWindow.show()
+    printWindow.webContents.send('worksheetData',boardData.aspectRatio)
+  })
+})
