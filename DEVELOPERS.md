@@ -2,7 +2,7 @@
 
 Tested with node v6.1.0.
 
-## Developing
+## Developing (optionally you could use [yarn](https://yarnpkg.com/en/))
 
     $ npm install
     $ npm start
