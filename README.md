@@ -67,6 +67,7 @@ If it's off center or too big or too small, you can shift your drawing around or
 Need a straight line? Hold shift while you're drawing and you got straight lines.
 
 ## There are 5 guide overlays to toggle:
+
 *  Grid
 *  Center Marks
 *  Thirds
@@ -75,30 +76,30 @@ Need a straight line? Hold shift while you're drawing and you got straight lines
 
 ## We got mad simple key commands:
 
-* 1 = light pencil
-* 2 = pencil
-* 3 = pen
-* 4 = brush  
-* 5 = eraser
-* DELETE/BACKSPACE = clear
-* COMMAND+Z = undo
-* COMMAND+Y = redo  
-* [ = smaller brush
-* ] = bigger brush  
-* HOLD SHIFT WHILE DRAWING = straight lines  
-* HOLD COMMAND = move contents
-* COMMAND+OPTION = scale contents  
-* HOLD OPTION = color pick  
+* Light Pencil: <kbd>1</kbd>
+* Pencil: <kbd>2</kbd>
+* Pen: <kbd>3</kbd>
+* Brush: <kbd>4</kbd>
+* Eraser: <kbd>5</kbd>
+* Clear: <kbd>Delete</kbd> or <kbd>Backspace</kbd>
+* Undo: <kbd>Cmd</kbd>+<kbd>z</kbd>
+* Redo: <kbd>Cmd</kbd>+<kbd>y</kbd>
+* Smaller Brush: <kbd>[</kbd>
+* Bigger Brush: <kbd>]</kbd>
+* Straight Lines: <kbd>Hold shift while drawing</kbd>
+* Move Contents: <kbd>Hold command</kbd>
+* Scale Contents: <kbd>Cmd</kbd>+<kbd>Option</kbd>
+* Color Pick: <kbd>Hold Option</kbd>
 
 ## FAQ
 
-**"CHARLES, I RESPEKT UR OPINIONATED SOFTWARE DESIGN GANGSTER, BUT I NEED TO POLISH MY DRAWINGS TIGHTER."**  
+**"CHARLES, I RESPEKT UR OPINIONATED SOFTWARE DESIGN GANGSTER, BUT I NEED TO POLISH MY DRAWINGS TIGHTER."**
 No problem, needy bruh. You can click a button to edit in photoshop, and when you save, it updates in Storyboarder.
 
-**"CHARLES, STORYBOARDER IS REVOLUTIONARY. PERHAPS BIGGER THAN JESUS AND WRESTLING. - Saul Bass"**  
+**"CHARLES, STORYBOARDER IS REVOLUTIONARY. PERHAPS BIGGER THAN JESUS AND WRESTLING. - Saul Bass"**
 Fuck you, Saul Bass. Absolutely bigger than Jesus and wrestling. Also, your work output has really dropped off in recent years.
 
-**"HOW COME WHEN I'M DRAWING, I HEAR THE IMPERIAL MARCH?"**  
+**"HOW COME WHEN I'M DRAWING, I HEAR THE IMPERIAL MARCH?"**
 You're probably boarding on the Simpsons. You might want to escape North Korea through China. If not shot crossing the river, you will probably be sold into slavery by the Chinese. Work for 5 years, buy your freedom and make your way to Seoul. This should fix your issue. You're welcome.
 
 ## Contributers
