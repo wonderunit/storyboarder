@@ -6,7 +6,6 @@ const path = require('path')
 const menu = require('../menu.js')
 const util = require('../utils/index.js')
 const Color = require('color-js')
-const settings = require('electron-settings')
 
 const StoryboarderSketchPane = require('./storyboarder-sketch-pane.js')
 const undoStack = require('../undo-stack.js')
