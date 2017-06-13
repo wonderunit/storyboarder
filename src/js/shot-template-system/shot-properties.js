@@ -302,7 +302,7 @@ let shotProperties = {
     sit_hands_on_table: {
       weight: 0
     },
-    sit_talk: {
+    sit_lean_table: {
       weight: 0
     },
     door_open: {
@@ -344,7 +344,7 @@ let shotProperties = {
     on_bicycle: {
       weight: 0
     },
-    sit_lean_table: {
+    sit_talk: {
       weight: 0
     },
     on_skateboard: {
@@ -366,6 +366,165 @@ let shotProperties = {
       weight: 0
     },
     talk_explain: {
+      weight: 0
+    },
+    arms_open: {
+      weight: 0
+    },
+    laugh: {
+      weight: 0
+    },
+    defiant: {
+      weight: 0
+    },
+    scared: {
+      weight: 0
+    },
+    motorcycle: {
+      weight: 0
+    },
+    motorcycle_turn: {
+      weight: 0
+    },
+    fly: {
+      weight: 0
+    },
+    zero_gravity: {
+      weight: 0
+    },
+    threaten_knife: {
+      weight: 0
+    },
+    gun_tactical: {
+      weight: 0
+    },
+    throw: {
+      weight: 0
+    },
+    jog: {
+      weight: 0
+    },
+    stand_baby: {
+      weight: 0
+    },
+    climb_ladder: {
+      weight: 0
+    },
+    swim: {
+      weight: 0
+    },
+    car_drive: {
+      weight: 0
+    },
+    car_turn: {
+      weight: 0
+    },
+    car_passenger: {
+      weight: 0
+    },
+    sit_uncooperative: {
+      weight: 0
+    },
+    injury_shoulder: {
+      weight: 0
+    },
+    hit_from_behind: {
+      weight: 0
+    },
+    choking: {
+      weight: 0
+    },
+    freefall: {
+      weight: 0
+    },
+    prisoner: {
+      weight: 0
+    },
+    hands_up: {
+      weight: 0
+    },
+    hi: {
+      weight: 0
+    },
+    plead: {
+      weight: 0
+    },
+    sit_reading: {
+      weight: 0
+    },
+    sit_sorrow: {
+      weight: 0
+    },
+    stand_sorrow: {
+      weight: 0
+    },
+    beggar: {
+      weight: 0
+    },
+    stand_watch: {
+      weight: 0
+    },
+    hide: {
+      weight: 0
+    },
+    sleep: {
+      weight: 0
+    },
+    stop: {
+      weight: 0
+    },
+    dead: {
+      weight: 0
+    },
+    smoke: {
+      weight: 0
+    },
+    drink: {
+      weight: 0
+    },
+    umbrella: {
+      weight: 0
+    },
+    frustrated: {
+      weight: 0
+    },
+    sweeping: {
+      weight: 0
+    },
+    lift: {
+      weight: 0
+    },
+    skateboard_coasting: {
+      weight: 0
+    },
+    skateboard_wide_turn: {
+      weight: 0
+    },
+    stand_backpack: {
+      weight: 0
+    },
+    tuck_roll: {
+      weight: 0
+    },
+    door_close: {
+      weight: 0
+    },
+    back_against_wall: {
+      weight: 0
+    },
+    kick_high: {
+      weight: 0
+    },
+    sit_lounge: {
+      weight: 0
+    },
+    sit_tv: {
+      weight: 0
+    },
+    dance: {
+      weight: 0
+    },
+    peek_in: {
       weight: 0
     },
   },

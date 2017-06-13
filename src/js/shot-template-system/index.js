@@ -106,10 +106,13 @@ const shotProperties = require('../shot-template-system/shot-properties.js')
 const alternateValues = require('../shot-template-system/alternate-values.js')
 const cameraLensAngles = require('../shot-template-system/camera-lens-angles.js')
 
+var objLoader = require('../vendor/OBJLoader.js')
+
 const METERS_PER_FEET = 0.3048
 const outlineWidth = 0.015
 
 let backgroundScene
+let objectScene
 let contentScene
 let gridScene
 
@@ -124,6 +127,7 @@ let directionalLight
 let manager 
 let textures 
 let dummyModels
+let objModels
 let dummyGroup
 let roomGroup 
 let gridGroup
@@ -139,6 +143,9 @@ let setup = (config) => {
   backgroundScene.background = new THREE.Color( 0xFFFFFF )
   backgroundScene.add(new THREE.AmbientLight(0x161616, 1))
 
+  objectScene = new THREE.Scene()
+  objectScene.add(new THREE.AmbientLight(0x333333, 1))
+
   // create scene
   contentScene = new THREE.Scene()
   contentScene.add(new THREE.AmbientLight(0x161616, 1))
@@ -146,7 +153,6 @@ let setup = (config) => {
   gridScene = new THREE.Scene()
   gridScene.background = new THREE.Color( 0xFFFFFF )
   gridScene.add(new THREE.AmbientLight(0x111111, 1))
-
 
   // create renderer
   renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true })
@@ -163,6 +169,7 @@ let setup = (config) => {
 
   loadTextures()
   loadDummyModels()
+  loadObjs()
 
   createGroundPlane()
 
@@ -173,6 +180,7 @@ let setup = (config) => {
   camera.updateProjectionMatrix()
   
   contentScene.add(camera)
+  objectScene.add(camera)
   backgroundScene.add(camera)
   
   tempGridCam = new THREE.PerspectiveCamera(30, config.width / config.height, .01, 1000)
@@ -194,10 +202,16 @@ let loadTextures = () => {
     textures.male.needsUpdate = true
   })
 
-  textures.female = new THREE.Texture()
-  imageLoader.load('data/sts/stdummy_female_texture.png', ( image ) => {
-    textures.female.image = image
-    textures.female.needsUpdate = true
+  textures.femaleBody = new THREE.Texture()
+  imageLoader.load('data/sts/stdummy_female_tex_body.png', ( image ) => {
+    textures.femaleBody.image = image
+    textures.femaleBody.needsUpdate = true
+  })
+
+  textures.femaleHead = new THREE.Texture()
+  imageLoader.load('data/sts/stdummy_female_tex_head.png', ( image ) => {
+    textures.femaleHead.image = image
+    textures.femaleHead.needsUpdate = true
   })
 
   textures.boxmodel = new THREE.Texture()
@@ -244,6 +258,18 @@ let loadTextures = () => {
     textures.volume.image = image
     textures.volume.needsUpdate = true
   })
+
+  textures.chair = new THREE.Texture()
+  imageLoader.load('data/sts/chair_uv.png', ( image ) => {
+    textures.chair.image = image
+    textures.chair.needsUpdate = true
+  })
+
+  textures.tree = new THREE.Texture()
+  imageLoader.load('data/sts/tree_uv.png', ( image ) => {
+    textures.tree.image = image
+    textures.tree.needsUpdate = true
+  })
 }
 
 let loadDummyModels = () => {
@@ -253,7 +279,7 @@ let loadDummyModels = () => {
 
   loader.load("data/sts/stdummy_female.jd", (data) => {
     let material = new THREE.MeshToonMaterial({
-      map: textures.female,
+      map: textures.femaleBody,
       color: 0xffffff,
       emissive: 0x0,
       specular: 0x0,
@@ -268,8 +294,27 @@ let loadDummyModels = () => {
       visible: true,
       keepAlive: true
     }
+    let material2 = new THREE.MeshToonMaterial({
+      map: textures.femaleHead,
+      color: 0xffffff,
+      emissive: 0x0,
+      specular: 0x0,
+      skinning: true,
+      shininess: 0,
+      shading: THREE.SmoothShading,
+    })
+    material2.outlineParameters = {
+      thickness: .005,//outlineWidth,
+      color: new THREE.Color( 0x0 ),
+      alpha: 0.6,
+      visible: true,
+      keepAlive: true
+    }
+
+    var multiMaterial = new THREE.MultiMaterial([material, material2])
+
     for (var i = 0; i < data.geometries.length; ++i) {
-      var mesh = new THREE.SkinnedMesh(data.geometries[i], material)
+      var mesh = new THREE.SkinnedMesh(data.geometries[i], multiMaterial)
       var bbox = new THREE.Box3().setFromObject(mesh);
       var height = bbox.max.y - bbox.min.y
       var targetHeight = 1.6256
@@ -345,6 +390,110 @@ let loadDummyModels = () => {
 
 }
 
+let loadObjs = () => {
+  objModels = {}
+
+  console.log("SUPPPP")
+
+
+  objLoader = new THREE.OBJLoader( manager );
+  
+  objLoader.load( 'data/sts/chair.obj', function ( object ) {
+    console.log(object)
+    object.traverse( function ( child ) {
+      if ( child instanceof THREE.Mesh ) {
+        // let material = new THREE.MeshToonMaterial({
+        //   map: textures.chair,
+        //   color: 0xffffff,
+        //   emissive: 0x0,
+        //   specular: 0x0,
+        //   skinning: true,
+        //   shininess: 0,
+        //   gradientMap: textures.gradientMap,
+        // })
+
+
+
+        var mesh = child
+        var bbox = new THREE.Box3().setFromObject(mesh);
+        var height = bbox.max.y - bbox.min.y
+        var targetHeight = 0.8
+        var scale = targetHeight / height
+        mesh.scale.set(scale, scale, scale)
+        mesh.updateMatrix()
+
+        
+
+        mesh.material.map = textures.chair
+        //mesh.material.color = 0xffffff
+        objModels.chair = mesh
+
+      }
+    })
+  })
+
+  objLoader.load( 'data/sts/tree.obj', function ( object ) {
+    console.log(object)
+    object.traverse( function ( child ) {
+      if ( child instanceof THREE.Mesh ) {
+        // let material = new THREE.MeshToonMaterial({
+        //   map: textures.chair,
+        //   color: 0xffffff,
+        //   emissive: 0x0,
+        //   specular: 0x0,
+        //   skinning: true,
+        //   shininess: 0,
+        //   gradientMap: textures.gradientMap,
+        // })
+
+
+
+        var mesh = child
+        var bbox = new THREE.Box3().setFromObject(mesh);
+        var height = bbox.max.y - bbox.min.y
+        var targetHeight = 8
+        var scale = targetHeight / height
+        mesh.scale.set(scale, scale, scale)
+        mesh.updateMatrix()
+
+        
+
+        mesh.material.map = textures.tree
+        //mesh.material.color = 0xffffff
+        objModels.tree = mesh
+
+      }
+    })
+
+
+
+  })
+
+  // objLoader.load("data/sts/chair.obj", (data) => {
+  //   console.log(data)
+  //   let material = new THREE.MeshToonMaterial({
+  //     map: textures.male,
+  //     color: 0xffffff,
+  //     emissive: 0x0,
+  //     specular: 0x0,
+  //     skinning: true,
+  //     shininess: 0,
+  //     gradientMap: textures.gradientMap,
+  //     shading: THREE.SmoothShading,
+  //   })
+  //   material.outlineParameters = {
+  //     thickness: .005, //outlineWidth,
+  //     color: new THREE.Color( 0x0 ),
+  //     alpha: 0.6,
+  //     visible: true,
+  //     keepAlive: true
+  //   }
+
+
+
+  // })
+
+}
 
 let createGroundPlane = () => {
   var geometry = new THREE.PlaneGeometry( 135 / 3, 135 / 3, 32 )
@@ -495,20 +644,23 @@ let render = () => {
   effect.render(backgroundScene, camera)
   renderer.clearDepth()
 
+  renderer.render(objectScene, camera)
+  renderer.clearDepth()
+
   dummyGroup.children.forEach( (param) => {
-    console.log(param)
-    param.material.outlineParameters.thickness = 0.013
-    param.material.outlineParameters.alpha = 0.8
-    param.material.outlineParameters.color = new THREE.Color( 0x333333 )
+    // console.log(param)
+    // param.material[0].outlineParameters.thickness = 0.013
+    // param.material[0].outlineParameters.alpha = 0.8
+    // param.material[0].outlineParameters.color = new THREE.Color( 0x333333 )
   })
 
   effect.render(contentScene, camera)
   renderer.clearDepth()
   dummyGroup.children.forEach( (param) => {
-    console.log(param)
-    param.material.outlineParameters.thickness = 0.007
-    param.material.outlineParameters.alpha = 0.6
-    param.material.outlineParameters.color = new THREE.Color( 0x0 )
+    // console.log(param)
+    // param.material[0].outlineParameters.thickness = 0.007
+    // param.material[0].outlineParameters.alpha = 0.6
+    // param.material[0].outlineParameters.color = new THREE.Color( 0x0 )
   })
   effect.render(contentScene, camera)
 
@@ -761,10 +913,19 @@ let setupContent = (params) => {
 
   // ADD STUFF TO ROOM!!!
   // createReferenceCube()
+  let tree = objModels.tree.clone()
+  tree.translateX(Math.random()*5)
+  tree.translateZ(-10)
+
+  objectScene.add(tree)
+
 
   // SET UP DUMMIES
   contentScene.remove(dummyGroup)
   dummyGroup = new THREE.Group()
+
+
+
 
   let mainCharacter
 
@@ -931,7 +1092,7 @@ let setupContent = (params) => {
     map: textures.volume,
     transparent: true,
     opacity: .3,
-    belnding: THREE.MultiplyBlending,
+    blending: THREE.MultiplyBlending,
     side: THREE.DoubleSide
   })
   //material.depthFunc = THREE.LessEqualDepth
