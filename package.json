@@ -56,6 +56,7 @@
     "electron-builder": "17.0.2"
   },
   "dependencies": {
+    "ag-psd": "^1.0.0",
     "color-js": "^1.0.4",
     "eases": "1.0.8",
     "electron-is-dev": "0.1.2",
