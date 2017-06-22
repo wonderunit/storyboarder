@@ -28,6 +28,8 @@ const exporter = require('./exporter.js')
 const prefsModule = require('electron').remote.require('./prefs.js')
 
 const writePsd = require('ag-psd').writePsd;
+const readPsd = require('ag-psd').readPsd;
+const initializeCanvas = require('ag-psd').initializeCanvas;
 
 const pkg = require('../../../package.json')
 
@@ -507,7 +509,29 @@ let loadBoardUI = ()=> {
     let imageFilePath = path.join(boardPath, 'images', `board-${board.number}.psd`)
     const buffer = writePsd(psd);
     fs.writeFileSync(imageFilePath, buffer);
-    shell.openItem(imageFilePath)
+    shell.openItem(imageFilePath);
+    fs.watchFile(imageFilePath, (cur, prev) => {
+      initializeCanvas((width, height) => {
+        let canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        return canvas;
+      });
+      const buffer = fs.readFileSync(imageFilePath);
+      const psd = readPsd(buffer);
+      if(!psd || !psd.children) {
+        return;
+      }
+      let mainCanvas = storyboarderSketchPane.getLayerCanvasByName("main");
+      let ctx = mainCanvas.getContext('2d');
+      for(let layer of psd.children) {
+        if(layer.name == "notes" || layer.name == "reference" || !layer.canvas) {
+          continue;
+        }
+        let imageData = layer.canvas.getContext('2d').getImageData(0, 0, 1600, 900);
+        ctx.putImageData(imageData, layer.left, layer.top);
+      }
+    });
   })
 
   window.addEventListener('pointermove', (e)=>{
