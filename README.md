@@ -10,10 +10,9 @@ Whether you are a story artist, writer, director, in advertising, or just a pers
 
 ## Downloads
 
-[Click here to download the latest release](https://wonderunit.com/storyboarder/)
-(darwin for mac, win32 for windows, and linux)
+### [Click here to download the latest release](https://wonderunit.com/storyboarder/)
 
-Working towards a beta. [PLEASE PLEASE PLEASE submit issues with bugs, ideas, suggestions, or any feedback! Thanks!](https://github.com/wonderunit/storyboarder/issues)
+[PLEASE PLEASE PLEASE submit issues with bugs, ideas, suggestions, or any feedback! Thanks!](https://github.com/wonderunit/storyboarder/issues)
 
 ## It's easy...
 
