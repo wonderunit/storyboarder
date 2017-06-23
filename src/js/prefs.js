@@ -2,6 +2,7 @@ const fs = require('fs')
 const path = require('path')
 const { app } = require('electron')
 const pkg = require('../../package.json')
+const util = require('./utils/index.js') // for Object.equals
 
 // TODO pref specifics shouldnt be in this module.
 const prefFile = path.join(app.getPath('userData'), 'pref.json')
