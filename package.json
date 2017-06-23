@@ -60,6 +60,7 @@
     "eases": "1.0.8",
     "electron-is-dev": "0.1.2",
     "electron-localshortcut": "^1.0.0",
+    "electron-updater": "2.4.2",
     "express": "^4.15.2",
     "gifencoder": "^1.0.6",
     "gl-vec2": "^1.0.0",
