@@ -55,7 +55,7 @@ let layerStatus = {
   main:       { dirty: false },
   reference:  { dirty: false },
   notes:      { dirty: false },
-
+  
   composite:  { dirty: false } // TODO do we need this?
 }
 let imageFileDirtyTimer
@@ -170,7 +170,7 @@ const commentOnLineMileage = (miles) => {
       ]
       message.push(otherMessages[Math.floor(Math.random()*otherMessages.length)])
       break
-    case 1:
+    case 1: 
       otherMessages = [
         "Looking great!!!",
         "Absolutely fantastic!",
@@ -186,7 +186,7 @@ const commentOnLineMileage = (miles) => {
       message.push(otherMessages[Math.floor(Math.random()*otherMessages.length)])
       sfx.playEffect('tool-pencil')
       break
-    case 5:
+    case 5: 
       message.push('5 line miles.')
       otherMessages = [
         "You should be done with your rough drawing.",
@@ -202,7 +202,7 @@ const commentOnLineMileage = (miles) => {
       message.push(otherMessages[Math.floor(Math.random()*otherMessages.length)])
       sfx.playEffect('tool-light-pencil')
       break
-    case 8:
+    case 8: 
       message.push('8 line miles.')
       otherMessages = [
         "Let's finish this up!",
@@ -218,7 +218,7 @@ const commentOnLineMileage = (miles) => {
       message.push(otherMessages[Math.floor(Math.random()*otherMessages.length)])
       sfx.playEffect('tool-brush')
       break
-    case 10:
+    case 10: 
       message.push('10 miles!')
       otherMessages = [
         "Let's finish this up!",
@@ -234,7 +234,7 @@ const commentOnLineMileage = (miles) => {
       message.push(otherMessages[Math.floor(Math.random()*otherMessages.length)])
       sfx.positive()
       break
-    case 20:
+    case 20: 
       message.push('20 miles!!!')
       otherMessages = [
         "This is done. Let's move on.",
@@ -249,7 +249,7 @@ const commentOnLineMileage = (miles) => {
       message.push(otherMessages[Math.floor(Math.random()*otherMessages.length)])
       sfx.negative()
       break
-    case 50:
+    case 50: 
       message.push('50 miles!!!')
       otherMessages = [
         "Uhh.. I fell asleep. What did I miss?",
@@ -264,7 +264,7 @@ const commentOnLineMileage = (miles) => {
       message.push(otherMessages[Math.floor(Math.random()*otherMessages.length)])
       sfx.negative()
       break
-    case 100:
+    case 100: 
       message.push('100 miles!!!')
       otherMessages = [
         "Nope!!! I'm going to delete this board if you keep drawing. Just kidding. Or am I?",
@@ -280,7 +280,7 @@ const commentOnLineMileage = (miles) => {
       message.push(otherMessages[Math.floor(Math.random()*otherMessages.length)])
       sfx.error()
       break
-    case 200:
+    case 200: 
       message.push('200 miles!!!')
       otherMessages = [
         "Now you're just fucking with me.",
@@ -291,7 +291,7 @@ const commentOnLineMileage = (miles) => {
       message.push(otherMessages[Math.floor(Math.random()*otherMessages.length)])
       sfx.error()
       break
-    case 300:
+    case 300: 
       message.push('300 miles!!!')
       otherMessages = [
         "I quit.",
@@ -302,7 +302,7 @@ const commentOnLineMileage = (miles) => {
       message.push(otherMessages[Math.floor(Math.random()*otherMessages.length)])
       sfx.error()
       break
-    case 500:
+    case 500: 
       message.push('500 miles!!!')
       otherMessages = [
         "So close to 1000!!!",
@@ -310,7 +310,7 @@ const commentOnLineMileage = (miles) => {
       message.push(otherMessages[Math.floor(Math.random()*otherMessages.length)])
       sfx.error()
       break
-    case 1000:
+    case 1000: 
       message.push('1000 miles!!!')
       otherMessages = [
         "Great job. :/ See ya.",
@@ -325,8 +325,8 @@ const commentOnLineMileage = (miles) => {
 
 let addToLineMileage = value => {
   let board = boardData.boards[currentBoard]
-  if (!(board.lineMileage)) {
-    board.lineMileage = 0
+  if (!(board.lineMileage)) { 
+    board.lineMileage = 0 
   }
   let mileageChecks = [0.01,1,5,8,10,20,50,100,200,300,1000]
   for (let checkAmount of mileageChecks) {
@@ -355,7 +355,7 @@ let loadBoardUI = ()=> {
     document.getElementById('storyboarder-sketch-pane'),
     size
   )
-
+  
   window.addEventListener('resize', () => {
     resize()
     storyboarderSketchPane.resize()
@@ -365,12 +365,12 @@ let loadBoardUI = ()=> {
   storyboarderSketchPane.on('addToUndoStack', layerIndices => {
     storeUndoStateForImage(true, layerIndices)
   })
-
+  
   storyboarderSketchPane.on('markDirty', layerIndices => {
     storeUndoStateForImage(false, layerIndices)
     markImageFileDirty(layerIndices)
   })
-
+  
   storyboarderSketchPane.on('lineMileage', value => {
     addToLineMileage(value)
   })
@@ -471,8 +471,8 @@ let loadBoardUI = ()=> {
     })
   }
 
-
-
+  
+    
     // for (var item of document.querySelectorAll('.thumbnail')) {
     //   item.classList.remove('active')
     // }
@@ -576,7 +576,7 @@ let loadBoardUI = ()=> {
       if (el) {
         offset = el.getBoundingClientRect().width
         el = thumbnailFromPoint(x, y, offset/2)
-      }
+      } 
 
       if (!el) {
         console.warn("couldn't find nearest thumbnail")
@@ -705,7 +705,7 @@ let loadBoardUI = ()=> {
     }
     sfx.playEffect('metal')
   })
-
+  
   toolbar.on('grid', value => {
     guides.setState({ grid: value })
     sfx.playEffect('metal')
@@ -1175,7 +1175,7 @@ let duplicateBoard = () => {
   board.action = ''
   board.notes = ''
   board.duration = 0
-
+ 
   // insert
   boardData.boards.splice(currentBoard + 1, 0, board)
   markBoardFileDirty()
@@ -1253,11 +1253,11 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
     currentBoard = boardNumber
     currentBoard = Math.max(currentBoard, 0)
     currentBoard = Math.min(currentBoard, boardData.boards.length-1)
-
+    
     if (!shouldPreserveSelections) selections.clear()
     selections = new Set([...selections.add(currentBoard)].sort(util.compareNumbers))
     renderThumbnailDrawerSelections()
-
+    
     for (var item of document.querySelectorAll('.thumbnail')) {
       item.classList.remove('active')
     }
@@ -1304,7 +1304,7 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
       document.querySelector('.layers-ui-reference-opacity').value = 72
       storyboarderSketchPane.sketchPane.setLayerOpacity(72/100, 0)
     }
-
+    
     updateSketchPaneBoard().then(() => resolve()).catch(e => console.error(e))
   })
 }
@@ -1389,11 +1389,11 @@ const renderStats = () => {
 
   let stats = []
   let totalNewShots = boardData.boards.reduce((a, b) => a + (b.newShot ? 1 : 0), 0) || 1
-  secondaryStats.push(
+  secondaryStats.push( 
     `${boardData.boards.length} ${util.pluralize(boardData.boards.length, 'board').toUpperCase()}, ` +
     `${totalNewShots} ${util.pluralize(totalNewShots, 'shot').toUpperCase()}`
   )
-
+  
   let totalLineMileage = boardData.boards.reduce((a, b) => a + (b.lineMileage || 0), 0)
   let avgLineMileage = totalLineMileage / boardData.boards.length
   secondaryStats.push( (avgLineMileage/5280).toFixed(1) + ' AVG. LINE MILEAGE' )
@@ -1409,9 +1409,9 @@ const renderStats = () => {
   //
   // if (scriptData) {
   //   let numScenes = scriptData.filter(data => data.type == 'scene').length
-
+  
   //   let numBoards = 'N' // TODO sum total number of boards in the script
-
+  
   //   document.querySelector('#right-stats .stats-primary').innerHTML = `${numScenes} SCENES ${numBoards} BOARDS`
   // } else {
   //   let numBoards = boardData.boards.length
@@ -1491,7 +1491,7 @@ let updateSketchPaneBoard = () => {
   return new Promise((resolve, reject) => {
     // get current board
     let board = boardData.boards[currentBoard]
-
+    
 
     // always load the main layer
     let layersData = [
@@ -1780,7 +1780,7 @@ let renderThumbnailDrawer = ()=> {
         renderThumbnailDrawerSelections()
       } else if (currentBoard !== index) {
         // go to board by index
-
+        
         // reset selections
         selections.clear()
 
@@ -1814,7 +1814,7 @@ let renderThumbnailButtons = () => {
       <div class="icon">✚</div>
     `
     drawerEl.appendChild(el)
-
+    
     el.addEventListener('pointerdown', event => {
       newBoard(boardData.boards.length)
       gotoBoard(boardData.boards.length)
@@ -2036,7 +2036,7 @@ let setDragTarget = (x) => {
 
   let mouseX = x - containerRect.left
   let midpointX = containerRect.width / 2
-
+  
   // distance ratio -1...0...1
   let distance = (mouseX - midpointX) / midpointX
 
@@ -2046,7 +2046,7 @@ let setDragTarget = (x) => {
   if (distance < -0.5)
   {
     strength = -util.norm(distance, -0.5, -1)
-  }
+  } 
   // 0.5..1
   else if (distance > 0.5)
   {
@@ -2069,7 +2069,7 @@ let updateDrag = () => {
     return
   }
 
-
+  
   if (isEditMode && dragMode) {
     setDragTarget(lastPointer.x)
     updateThumbnailCursor(lastPointer.x, lastPointer.y)
@@ -2874,9 +2874,9 @@ let moveSelectedBoards = (position) => {
   if (position > firstSelection) {
     position = position - numRemoved
   }
-
-  console.log('move starting at board', firstSelection,
-              ', moving', numRemoved,
+  
+  console.log('move starting at board', firstSelection, 
+              ', moving', numRemoved, 
               'boards to index', position)
 
   boardData.boards.splice(position, 0, ...movedBoards)
@@ -2997,11 +2997,11 @@ let updateThumbnailCursor = (x, y) => {
   if (el) {
     offset = el.getBoundingClientRect().width
     el = thumbnailFromPoint(x, y, offset/2)
-  }
+  } 
 
   if (el) thumbnailCursor.el = el // only update if found
   if (!el) return
-
+  
   // store a reference to the nearest thumbnail
   thumbnailCursor.el = el
 
@@ -3013,14 +3013,14 @@ let updateThumbnailCursor = (x, y) => {
                       el.offsetParent.offsetParent.scrollLeft
 
   let elementOffsetX = el.getBoundingClientRect().right
-
+  
   // is this an end shot?
   if (el.classList.contains('endShot')) {
     elementOffsetX += 5
   }
 
   let arrowOffsetX = -8
-
+  
   thumbnailCursor.x = sidebarOffsetX +
                       scrollOffsetX +
                       elementOffsetX +
@@ -3094,9 +3094,9 @@ const welcomeMessage = () => {
   ]
   message.push(otherMessages[Math.floor(Math.random()*otherMessages.length)])
   notifications.notify({message: message.join(' '), timing: 10})
-}
+} 
 
-const setupRandomizedNotifications = () => {
+const setupRandomizedNotifications = () => {  
   let defaultMessages = util.shuffle(NotificationData.messages)
 
   welcomeMessage()
@@ -3142,7 +3142,7 @@ const getSceneObjectByIndex = (index) =>
   scriptData && scriptData.find(data => data.type == 'scene' && data.scene_number == index + 1)
 
 const storeUndoStateForScene = (isBefore) => {
-  let scene = getSceneObjectByIndex(currentScene)
+  let scene = getSceneObjectByIndex(currentScene) 
   // sceneId is allowed to be null (for a single storyboard with no script)
   let sceneId = scene && scene.scene_id
   undoStack.addSceneData(isBefore, { sceneId : sceneId, boardData: util.stringifyClone(boardData) })
@@ -3364,17 +3364,17 @@ let printWindow
 ipcRenderer.on('printWorksheet', (event, args) => {
   if (!printWindow) {
     printWindow = new remote.BrowserWindow({
-      width: 1200,
-      height: 800,
-      minWidth: 600,
-      minHeight: 600,
+      width: 1200, 
+      height: 800, 
+      minWidth: 600, 
+      minHeight: 600, 
       backgroundColor: '#333333',
-      show: false,
-      center: true,
-      parent: remote.getCurrentWindow(),
-      resizable: true,
-      frame: false,
-      modal: true,
+      show: false, 
+      center: true, 
+      parent: remote.getCurrentWindow(), 
+      resizable: true, 
+      frame: false, 
+      modal: true, 
       webPreferences: {plugins: true}})
     printWindow.loadURL(`file://${__dirname}/../../print-window.html`)
   } else {
