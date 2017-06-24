@@ -530,6 +530,8 @@ let loadBoardUI = ()=> {
         }
         ctx.drawImage(layer.canvas, layer.left, layer.top);
       }
+      markImageFileDirty([1]);
+      saveImageFile();
     });
   })
 
