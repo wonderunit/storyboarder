@@ -486,16 +486,7 @@ let loadBoardUI = ()=> {
   })
 
   document.querySelector('#open-in-photoshop-button').addEventListener('pointerdown', (e)=>{
-    let board = boardData.boards[currentBoard]
-    let imageFilename = path.join(boardPath, 'images', board.url)
-
-    let layersData = [
-      'main',
-      'reference',
-      'notes',
-    ]
-
-    let children = layersData.map(layerName => {
+    let children = ['main', 'reference', 'notes'].map(layerName => {
       return {
         "name": layerName,
         "canvas": storyboarderSketchPane.getLayerCanvasByName(layerName)
@@ -506,10 +497,12 @@ let loadBoardUI = ()=> {
       height: storyboarderSketchPane.canvasSize[1],
       children: children
     };
+    let board = boardData.boards[currentBoard]
     let imageFilePath = path.join(boardPath, 'images', `board-${board.number}.psd`)
     const buffer = writePsd(psd);
     fs.writeFileSync(imageFilePath, buffer);
     shell.openItem(imageFilePath);
+
     fs.watchFile(imageFilePath, (cur, prev) => {
       initializeCanvas((width, height) => {
         let canvas = document.createElement('canvas');
