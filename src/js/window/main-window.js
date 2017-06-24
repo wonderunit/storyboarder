@@ -502,8 +502,8 @@ let loadBoardUI = ()=> {
       }
     });
     let psd = {
-      width: 1600,
-      height: 900,
+      width: storyboarderSketchPane.canvasSize[0],
+      height: storyboarderSketchPane.canvasSize[1],
       children: children
     };
     let imageFilePath = path.join(boardPath, 'images', `board-${board.number}.psd`)
@@ -528,8 +528,7 @@ let loadBoardUI = ()=> {
         if(layer.name == "notes" || layer.name == "reference" || !layer.canvas) {
           continue;
         }
-        let imageData = layer.canvas.getContext('2d').getImageData(0, 0, 1600, 900);
-        ctx.putImageData(imageData, layer.left, layer.top);
+        ctx.drawImage(layer.canvas, layer.left, layer.top);
       }
     });
   })
