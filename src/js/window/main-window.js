@@ -27,6 +27,9 @@ const storyTips = new(require('./story-tips'))(sfx, notifications)
 const exporter = require('./exporter.js')
 const prefsModule = require('electron').remote.require('./prefs.js')
 
+const writePsd = require('ag-psd').writePsd;
+const readPsd = require('ag-psd').readPsd;
+const initializeCanvas = require('ag-psd').initializeCanvas;
 
 const pkg = require('../../../package.json')
 
@@ -483,9 +486,46 @@ let loadBoardUI = ()=> {
   })
 
   document.querySelector('#open-in-photoshop-button').addEventListener('pointerdown', (e)=>{
+    let children = ['main', 'reference', 'notes'].map(layerName => {
+      return {
+        "name": layerName,
+        "canvas": storyboarderSketchPane.getLayerCanvasByName(layerName)
+      }
+    });
+    let psd = {
+      width: storyboarderSketchPane.canvasSize[0],
+      height: storyboarderSketchPane.canvasSize[1],
+      children: children
+    };
     let board = boardData.boards[currentBoard]
-    let imageFilename = path.join(boardPath, 'images', board.url)
-    shell.openItem(imageFilename)
+    let imageFilePath = path.join(boardPath, 'images', `board-${board.number}.psd`)
+    const buffer = writePsd(psd);
+    fs.writeFileSync(imageFilePath, buffer);
+    shell.openItem(imageFilePath);
+
+    fs.watchFile(imageFilePath, (cur, prev) => {
+      initializeCanvas((width, height) => {
+        let canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        return canvas;
+      });
+      const buffer = fs.readFileSync(imageFilePath);
+      const psd = readPsd(buffer);
+      if(!psd || !psd.children) {
+        return;
+      }
+      let mainCanvas = storyboarderSketchPane.getLayerCanvasByName("main");
+      let ctx = mainCanvas.getContext('2d');
+      for(let layer of psd.children) {
+        if(layer.name == "notes" || layer.name == "reference" || !layer.canvas) {
+          continue;
+        }
+        ctx.drawImage(layer.canvas, layer.left, layer.top);
+      }
+      markImageFileDirty([1]);
+      saveImageFile();
+    });
   })
 
   window.addEventListener('pointermove', (e)=>{
