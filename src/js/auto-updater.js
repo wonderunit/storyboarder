@@ -9,36 +9,49 @@ const { dialog } = require('electron')
 const autoUpdater = require('electron-updater').autoUpdater
 
 const init = win => {
-  autoUpdater.on('checking-for-update', () => {
-    dialog.showMessageBox(null, { message: 'Checking for update...' })
-  })
+  // autoUpdater.on('checking-for-update', () => {
+  //   dialog.showMessageBox(null, { message: 'Checking for update...' })
+  // })
   autoUpdater.on('update-available', (ev, info) => {
-    dialog.showMessageBox(null, { message: 'Update available.' })
+    dialog.showMessageBox(
+      null,
+      {
+        type: 'question',
+        message: `An update is available to version ${ev.version}. Update now? There will be a short delay while we download the update and install it for you.`,
+        buttons: ['Later', 'Download and Install Now']
+      },
+      index => {
+        if (index) {
+          // Download and Install
+          autoUpdater.downloadUpdate()
+
+          autoUpdater.on('download-progress', (progressObj) => {
+            let log_message = "Download speed: " + progressObj.bytesPerSecond
+            log_message = log_message + ' - Downloaded ' + progressObj.percent + '%'
+            log_message = log_message + ' (' + progressObj.transferred + "/" + progressObj.total + ')'
+            dialog.showMessageBox(null, { message: log_message })
+          })
+          autoUpdater.on('update-downloaded', (ev, info) => {
+            dialog.showMessageBox(null, { message: 'Update downloaded; will install in 5 seconds' })
+            // Wait 5 seconds, then quit and install
+            // In your application, you don't need to wait 5 seconds.
+            // You could call autoUpdater.quitAndInstall(); immediately
+            setTimeout(function() {
+              autoUpdater.quitAndInstall()
+            }, 5000)
+          })
+        }
+      }
+    )
   })
-  autoUpdater.on('update-not-available', (ev, info) => {
-    dialog.showMessageBox(null, { message: 'Update not available.' })
-  })
+  // autoUpdater.on('update-not-available', (ev, info) => {
+  //   dialog.showMessageBox(null, { message: 'Update not available.' })
+  // })
   autoUpdater.on('error', (ev, err) => {
     dialog.showMessageBox(null, { message: 'Error in auto-updater.' })
   })
-  autoUpdater.on('download-progress', (progressObj) => {
-    let log_message = "Download speed: " + progressObj.bytesPerSecond
-    log_message = log_message + ' - Downloaded ' + progressObj.percent + '%'
-    log_message = log_message + ' (' + progressObj.transferred + "/" + progressObj.total + ')'
-    dialog.showMessageBox(null, { message: log_message })
-  })
-  autoUpdater.on('update-downloaded', (ev, info) => {
-    dialog.showMessageBox(null, { message: 'Update downloaded; will install in 5 seconds' })
-  });
-  autoUpdater.on('update-downloaded', (ev, info) => {
-    // Wait 5 seconds, then quit and install
-    // In your application, you don't need to wait 5 seconds.
-    // You could call autoUpdater.quitAndInstall(); immediately
-    setTimeout(function() {
-      autoUpdater.quitAndInstall()
-    }, 5000)
-  })
 
+  autoUpdater.autoDownload = false
   autoUpdater.checkForUpdates()
 }
 
