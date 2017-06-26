@@ -1,10 +1,8 @@
-//
-// for reference:
-//
+// REFERENCE
 // https://github.com/iffy/electron-updater-example/blob/master/main.js
 // https://github.com/wulkano/kap/blob/b326a5a398affb3652650ddc70d3a95724e755db/app/src/main/auto-updater.js
 
-const { dialog } = require('electron')
+const { BrowserWindow, dialog, app } = electron = require('electron')
 
 const autoUpdater = require('electron-updater').autoUpdater
 
@@ -22,15 +20,33 @@ const init = win => {
       },
       index => {
         if (index) {
-          // Download and Install
-          autoUpdater.downloadUpdate()
+          // close current windows
+          BrowserWindow.getAllWindows().forEach(w => w.close())
+
+          let win
+          win = new BrowserWindow({
+            width: 600,
+            height: 320,
+            show: false,
+            center: true,
+            resizable: false,
+            backgroundColor: '#E5E5E5',
+            webPreferences: {
+              devTools: true
+            }
+          })
+          win.on('closed', () => {
+            win = null
+          })
+          win.loadURL(`file://${__dirname}/../update.html`)
+          win.once('ready-to-show', () => {
+            win.show()
+          })
 
           autoUpdater.on('download-progress', (progressObj) => {
-            let log_message = "Download speed: " + progressObj.bytesPerSecond
-            log_message = log_message + ' - Downloaded ' + progressObj.percent + '%'
-            log_message = log_message + ' (' + progressObj.transferred + "/" + progressObj.total + ')'
-            dialog.showMessageBox(null, { message: log_message })
+            win.webContents.send('progress', progressObj)
           })
+
           autoUpdater.on('update-downloaded', (ev, info) => {
             dialog.showMessageBox(null, { message: 'Update downloaded; will install in 5 seconds' })
             // Wait 5 seconds, then quit and install
@@ -40,6 +56,16 @@ const init = win => {
               autoUpdater.quitAndInstall()
             }, 5000)
           })
+
+          // fail gracelessly if we can't update properly
+          autoUpdater.on('error', (ev, err) => {
+            dialog.showMessageBox(null, { message: 'Update failed. Quitting.' })
+            win.close()
+            app.quit()
+          })
+
+          // Download and Install
+          autoUpdater.downloadUpdate()
         }
       }
     )

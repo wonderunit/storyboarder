@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="./css/fonts.css">
+    <link rel="stylesheet" href="./css/update.css">
+    <title>Auto Update</title>
+  </head>
+  <body class="update-window">
+    <h1 class="update-title">Downloading …</h1>
+
+    <div class="update-block">
+      <div class="update-progress">
+        <div class="update-progress_bar"></div>
+      </div>
+      <div class="update-status">
+        0%
+      </div>
+    </div>
+
+    <script>
+      require('electron').ipcRenderer.on('progress', (event, progressObj) => {
+        let barHtml = document.querySelector('.update-progress_bar')
+        barHtml.style.width = `${progressObj.percent}%`
+
+        let statusHtml = document.querySelector('.update-status')
+        statusHtml.innerHTML = `${Math.floor(progressObj.percent)}%`
+      })
+    </script>
+  </body>
+</html>
