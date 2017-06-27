@@ -26,7 +26,7 @@ const init = win => {
           let win
           win = new BrowserWindow({
             width: 600,
-            height: 320,
+            height: 720,
             show: false,
             center: true,
             resizable: false,
@@ -40,6 +40,7 @@ const init = win => {
           })
           win.loadURL(`file://${__dirname}/../update.html`)
           win.once('ready-to-show', () => {
+            win.webContents.send('release-notes', ev.releaseNotes)
             win.show()
           })
 

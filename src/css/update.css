@@ -16,6 +16,12 @@
   min-height: 100vh;
 }
 
+.update-title {
+  font-size: 40px;
+  margin: 0 0 40px 0;
+  font-weight: 900;
+}
+
 .update-block {
   padding: 0 0 12px 0;
   width: 100%;
@@ -36,4 +42,18 @@
   width: 100%;
   text-align: right;
   padding: 6px 0;
+}
+
+.update-subheading {
+  font-size: 32px;
+  margin: 32px 0 0 0;
+  font-weight: 900;
+}
+
+.update-release-notes {
+  padding: 0 0 12px 0;
+  width: 100%;
+  height: auto;
+  overflow: scroll;
+  font-size: 87.5%;
 }
