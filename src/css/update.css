@@ -53,7 +53,5 @@
 .update-release-notes {
   padding: 0 0 12px 0;
   width: 100%;
-  height: auto;
-  overflow: scroll;
   font-size: 87.5%;
 }
