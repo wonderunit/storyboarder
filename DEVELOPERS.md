@@ -39,7 +39,7 @@ For Linux, you will need these dependencies:
 
 It is possible to [build for Linux on other platforms using a Docker container](https://github.com/electron-userland/electron-builder/wiki/Docker).
 
-## Publishing
+## Testing Auto-Update
 
 - `latest.yml` (for Windows) and `latest-mac.yml` (for Mac) must be published in the GitHub Release along with the other release files.
 
@@ -52,6 +52,22 @@ provider: github
 ```
 
 ... then decrement the current version in `package.json`. You will be notified that the app is out-of-date (although in dev mode, when unsigned, Squirrel.Mac will throw `Error: Could not get code signature for running application`)
+
+## Publishing
+
+Be sure to have a local `GH_TOKEN` environment variable. For the value:
+
+    Go to: https://github.com/settings/tokens/new
+    Token description: Storyboarder Publishing
+    Select scopes: [x] public_repo
+
+Create a Draft in GitHub Releases as the target for publishing
+
+Then, publish:
+
+    GH_TOKEN={...} npm run dist:mac -- --publish onTagOrDraft
+    GH_TOKEN={...} npm run dist:win -- --publish onTagOrDraft
+    GH_TOKEN={...} npm run dist:linux -- --publish onTagOrDraft
 
 ## Deploying
 
