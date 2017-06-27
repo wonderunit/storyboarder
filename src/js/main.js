@@ -17,6 +17,8 @@ const preferencesUI = require('./windows/preferences')()
 const pkg = require('../../package.json')
 const util = require('./utils/index.js')
 
+const autoUpdater = require('./auto-updater')
+
 //https://github.com/luiseduardobrito/sample-chat-electron
 
 let welcomeWindow
@@ -115,7 +117,10 @@ let openWelcomeWindow = ()=> {
   }
 
   welcomeWindow.once('ready-to-show', () => {
-    setTimeout(()=>{welcomeWindow.show()}, 300)
+    setTimeout(() => {
+      welcomeWindow.show()
+      autoUpdater.init(welcomeWindow)
+    }, 300)
   })
 
   welcomeWindow.once('close', () => {

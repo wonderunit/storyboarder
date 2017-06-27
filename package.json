@@ -1,7 +1,7 @@
 {
   "name": "storyboarder",
   "productName": "Storyboarder",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "The fastest way to storyboard.",
   "main": "src/js/main.js",
   "scripts": {
@@ -53,7 +53,7 @@
   },
   "devDependencies": {
     "electron": "1.7.2",
-    "electron-builder": "17.0.2"
+    "electron-builder": "19.8.0"
   },
   "dependencies": {
     "ag-psd": "^1.0.0",
@@ -61,6 +61,7 @@
     "eases": "1.0.8",
     "electron-is-dev": "0.1.2",
     "electron-localshortcut": "^1.0.0",
+    "electron-updater": "2.4.3",
     "express": "^4.15.2",
     "gifencoder": "^1.0.6",
     "gl-vec2": "^1.0.0",
