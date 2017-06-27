@@ -37,7 +37,22 @@ For Linux, you will need these dependencies:
 - icnsutils - provides `icns2png`
 - graphicsmagick
 
-It is possible to [build for Linux on other platforms using a Docker container](https://github.com/electron-userland/electron-builder/wiki/Docker).
+It is possible to [build for Linux on other platforms using a Docker container](https://github.com/electron-userland/electron-builder/wiki/Docker). See instructions below.
+
+### Building for Linux and Windows with Docker for Mac
+
+Install [Docker for Mac](https://www.docker.com/docker-mac), then:
+
+```
+git clone git@github.com:wonderunit/storyboarder.git
+git pull
+docker run --rm -ti -v ${PWD}:/project -v ${PWD##*/}-node-modules:/project/node_modules -v ~/.electron:/root/.electron electronuserland/electron-builder:wine
+cd storyboarder
+npm install
+npm prune
+npm run dist:linux
+npm run dist:win
+```
 
 ## Testing Auto-Update
 
