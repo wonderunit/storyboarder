@@ -4,6 +4,7 @@ const path = require('path')
 const GIFEncoder = require('gifencoder')
 const moment = require('moment')
 
+const exporterCommon = require('../exporters/common.js')
 const exporterFcp = require('../exporters/final-cut-pro.js')
 const util = require('../utils/index.js')
 
@@ -23,6 +24,12 @@ const getImage = (url) => {
 class Exporter extends EventEmitter {
   constructor () {
     super()
+  }
+
+  drawFlattenedBoardLayersToContext (context, board) {
+    //
+    // TODO draw each usable layer to context
+    //
   }
 
   exportFcp (boardData, boardAbsolutePath) {
@@ -46,6 +53,25 @@ class Exporter extends EventEmitter {
     let xml = exporterFcp.generateFinalCutProXml(exporterFcp.generateFinalCutProData(boardData))
     fs.writeFileSync(path.join(outputPath, basename + '.fcpxml'), xml)
 
+    // export ALL layers of each one of the boards
+    
+    let index = 1
+    let canvas = document.createElement('canvas')
+    let context = canvas.getContext('2d')
+    let [ width, height ] = exporterCommon.boardFileImageSize(boardData)
+    canvas.width = width
+    canvas.height = height
+    for (let board in boardData.boards) {
+      let filename = util.zeroFill(4, index) + '.png'
+
+      context.fillStyle = 'white'
+      context.fillRect(0, 0, context.canvas.width, context.canvas.height)
+      this.drawFlattenedBoardLayersToContext(context, board)
+
+      let imageData = canvas.toDataURL().replace(/^data:image\/\w+;base64,/, '')
+      fs.writeFileSync(path.join(outputPath, filename), imageData, 'base64')
+      index++
+    }
     return outputPath
   }
 
