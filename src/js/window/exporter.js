@@ -1,9 +1,11 @@
 const EventEmitter = require('events').EventEmitter
 const fs = require('fs')
 const path = require('path')
-const util = require('../utils/index.js')
 const GIFEncoder = require('gifencoder')
 const moment = require('moment')
+
+const exporterFcp = require('../exporters/final-cut-pro.js')
+const util = require('../utils/index.js')
 
 const getImage = (url) => {
   return new Promise(function(resolve, reject){
@@ -21,6 +23,30 @@ const getImage = (url) => {
 class Exporter extends EventEmitter {
   constructor () {
     super()
+  }
+
+  exportFcp (boardData, boardAbsolutePath) {
+    let dirname = path.dirname(boardAbsolutePath)
+    let basename = path.basename(boardAbsolutePath)
+
+    let exportsPath = path.join(dirname, 'exports')
+
+    if (!fs.existsSync(exportsPath)) {
+      fs.mkdirSync(exportsPath)
+    }
+
+    let outputPath = path.join(
+      exportsPath,
+      basename + ' Final Cut Pro X ' + moment().format('YYYY-MM-DD hh.mm.ss')
+    )
+    if (!fs.existsSync(outputPath)) {
+      fs.mkdirSync(outputPath)
+    }
+
+    let xml = exporterFcp.generateFinalCutProXml(exporterFcp.generateFinalCutProData(boardData))
+    fs.writeFileSync(path.join(outputPath, basename + '.fcpxml'), xml)
+
+    return outputPath
   }
 
   exportAnimatedGif (boards, boardSize, destWidth, boardPath) {

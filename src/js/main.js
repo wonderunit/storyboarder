@@ -622,6 +622,10 @@ ipcMain.on('exportAnimatedGif', (event, arg) => {
   mainWindow.webContents.send('exportAnimatedGif', arg)
 })
 
+ipcMain.on('exportFcp', (event, arg) => {
+  mainWindow.webContents.send('exportFcp', arg)
+})
+
 ipcMain.on('printWorksheet', (event, arg) => {
   //openPrintWindow()
   mainWindow.webContents.send('printWorksheet', arg)
