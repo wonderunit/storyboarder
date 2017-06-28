@@ -1,4 +1,16 @@
-let clipItem = data =>
+const util = require('../utils')
+
+// data functions
+const boardFileImageSize = boardFileData =>
+  (boardFileData.aspectRatio >= 1)
+    ? [900 * boardFileData.aspectRatio, 900]
+    : [900, 900 / boardFileData.aspectRatio]
+
+const msecsToFrames = (fps, value) =>
+  (fps/1000) * value
+
+// fcp templating
+const clipItem = data =>
 `
 					<clipitem id="${data.id}">
 						<!-- id -->
@@ -41,7 +53,7 @@ let clipItem = data =>
 					</clipitem>
 `
 
-let generateFinalCutProXml = data =>
+const generateFinalCutProXml = data =>
 `
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE xmeml>
@@ -122,6 +134,31 @@ let generateFinalCutProXml = data =>
 </xmeml>
 `
 
+const generateFinalCutProData = boardData => {
+  let [height, width] = boardFileImageSize(boardData)
+
+  let clipItems = []
+  let currFrame = 0
+  for (let board of boardData.boards) {
+    let lastFrame = msecsToFrames(24, board.duration)
+    let endFrame = Math.round(currFrame + lastFrame)
+    clipItems.push({
+      start: Math.round(currFrame),
+      end: endFrame
+    })
+    currFrame = endFrame
+  }
+
+  return {
+    sequenceId: 'sequence-1',
+    uuid: util.uidGen(),
+    width: width,
+    height: height,
+    clipItems: clipItems
+  }
+}
+
 module.exports = {
+  generateFinalCutProData,
   generateFinalCutProXml
 }
