@@ -178,6 +178,8 @@ const generateFinalCutProData = boardData => {
 
       fileWidth: 5760, // ???
       fileHeight: 3840, // ???
+      fileWidth: width,
+      fileHeight: height,
 
       label2: 'Lavender'
     }
