@@ -1586,6 +1586,7 @@ let renderThumbnailDrawerSelections = () => {
 }
 
 let renderThumbnailDrawer = ()=> {
+
   let hasShots = false
   for (var board of boardData.boards) {
     if (board.newShot) {
@@ -1787,9 +1788,13 @@ let renderThumbnailDrawer = ()=> {
 
   renderThumbnailButtons()
   renderTimeline()
+  
 
   //gotoBoard(currentBoard)
 }
+
+
+
 
 let renderThumbnailButtons = () => {
   if (!document.getElementById('thumbnail-add-btn')) {
@@ -1809,6 +1814,10 @@ let renderThumbnailButtons = () => {
     drawerEl.appendChild(el)
     
     el.addEventListener('pointerdown', event => {
+      let eventMouseOut = document.createEvent('MouseEvents')
+      eventMouseOut.initMouseEvent('mouseout', true, true)
+      el.dispatchEvent(eventMouseOut)
+      tooltips.removeTooltipForElement(el)
       newBoard(boardData.boards.length)
       gotoBoard(boardData.boards.length)
     })
@@ -3352,6 +3361,7 @@ ipcRenderer.on('exportAnimatedGif', (event, args) => {
 })
 
 let printWindow
+let importWindow
 
 
 ipcRenderer.on('printWorksheet', (event, args) => {
@@ -3367,8 +3377,8 @@ ipcRenderer.on('printWorksheet', (event, args) => {
       parent: remote.getCurrentWindow(), 
       resizable: true, 
       frame: false, 
-      modal: true, 
-      webPreferences: {plugins: true}})
+      modal: true
+    })
     printWindow.loadURL(`file://${__dirname}/../../print-window.html`)
   } else {
     if (!printWindow.isVisible()) {
@@ -3380,5 +3390,34 @@ ipcRenderer.on('printWorksheet', (event, args) => {
   printWindow.once('ready-to-show', () => {
     printWindow.show()
     printWindow.webContents.send('worksheetData',boardData.aspectRatio)
+  })
+})
+
+ipcRenderer.on('importWorksheets', (event, args) => {
+  if (!importWindow) {
+    importWindow = new remote.BrowserWindow({
+      width: 1200, 
+      height: 800, 
+      minWidth: 600, 
+      minHeight: 600, 
+      backgroundColor: '#333333',
+      show: false, 
+      center: true, 
+      parent: remote.getCurrentWindow(), 
+      resizable: true, 
+      frame: false, 
+      modal: true
+    })
+    importWindow.loadURL(`file://${__dirname}/../../import-window.html`)
+  } else {
+    if (!importWindow.isVisible()) {
+      importWindow.show()
+      //printWindow.webContents.send('worksheetData',boardData.aspectRatio)
+    }
+  }
+
+  importWindow.once('ready-to-show', () => {
+    importWindow.show()
+    //printWindow.webContents.send('worksheetData',boardData.aspectRatio)
   })
 })

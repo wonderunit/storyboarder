@@ -626,3 +626,8 @@ ipcMain.on('printWorksheet', (event, arg) => {
   //openPrintWindow()
   mainWindow.webContents.send('printWorksheet', arg)
 })
+
+ipcMain.on('importWorksheets', (event, arg) => {
+  //openPrintWindow()
+  mainWindow.webContents.send('importWorksheets', arg)
+})

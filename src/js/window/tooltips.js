@@ -47,6 +47,7 @@ const setupTooltipForElement = (el) => {
     content: content(title, description, keys),
     position,
     constrainToWindow: true,
+    remove: true,
     constraints: [
       {
         to: 'window',
@@ -72,6 +73,17 @@ const setupTooltipForElement = (el) => {
   return tooltip
 }
 
+const removeTooltipForElement = (el) => {
+  for (let tooltip of tooltips) {
+    if (tooltip.options.target == el) {
+      tooltip.open()
+      tooltip.close()
+      tooltip.destroy()
+    }
+  }
+
+}
+
 const init = () => {
   getPrefs('pref editor')
   if (!enableTooltips) return false
@@ -85,5 +97,7 @@ const init = () => {
 module.exports = {
   init,
   setupTooltipForElement,
+  removeTooltipForElement,
+  housekeeping,
   getPrefs
 }
