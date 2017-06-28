@@ -143,9 +143,10 @@ const generateFinalCutProData = boardData => {
   let currFrame = 0
   let index = 1
   for (let board of boardData.boards) {
-    let fileFilename = board.url
+    // TODO could use number of boards to determine zeroFill width?
+    let fileFilename = util.zeroFill(4, index) + '.png'
         // filename without path: file://localhost/filename.JPG
-        filePathUrl = `file://localhost/${board.url}`
+        filePathUrl = `file://localhost/${fileFilename}`
 
     let lastFrame = msecsToFrames(24, board.duration),
         endFrame = Math.round(currFrame + lastFrame)
