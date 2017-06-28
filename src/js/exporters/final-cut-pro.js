@@ -60,6 +60,10 @@ const generateFinalCutProXml = data =>
 <xmeml version="4">
 	<sequence id="${data.sequenceId}">
 		<uuid>${data.uuid}</uuid>
+    <rate>
+      <timebase>24</timebase>
+      <ntsc>FALSE</ntsc>
+    </rate>
 		<media>
 			<video>
 				<format>
