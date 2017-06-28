@@ -21,7 +21,7 @@ const clipItem = data =>
 						<enabled>TRUE</enabled>
 						<duration>${data.duration}</duration>
 						<rate>
-							<timebase>${data.timebase}</timebase>
+							<timebase>24</timebase>
 							<ntsc>TRUE</ntsc>
 						</rate>
 						<!-- start time in frames (24fps) -->
@@ -33,7 +33,7 @@ const clipItem = data =>
 						<!-- file id -->
 						<file id="${data.fileId}">
 							<!-- filename -->
-							<name>${data.fileName}</name>
+							<name>${data.fileFilename}</name>
 							<!-- filename without path: file://localhost/filename.JPG -->
 							<pathurl>${data.filePathUrl}</pathurl>
 							<media>
@@ -77,8 +77,7 @@ const generateFinalCutProXml = data =>
 						<colordepth>24</colordepth>
 					</samplecharacteristics>
 				</format>
-				<track>
-          ${data.clipItems.map(clipItem).join('\n')}
+				<track>${data.clipItems.map(clipItem).join('\n')}
 					<!-- END OF CLIPS -->
 					<enabled>TRUE</enabled>
 					<locked>FALSE</locked>
@@ -139,19 +138,53 @@ const generateFinalCutProData = boardData => {
 
   let clipItems = []
   let currFrame = 0
+  let index = 1
   for (let board of boardData.boards) {
-    let lastFrame = msecsToFrames(24, board.duration)
-    let endFrame = Math.round(currFrame + lastFrame)
-    clipItems.push({
-      start: Math.round(currFrame),
-      end: endFrame
-    })
+    let fileFilename = board.url
+        // filename without path: file://localhost/filename.JPG
+        filePathUrl = `file://localhost/${board.url}`
+
+    let lastFrame = msecsToFrames(24, board.duration),
+        endFrame = Math.round(currFrame + lastFrame)
+
+    let clipItem = {
+      start: currFrame,
+      end: endFrame,
+
+      id: `clipitem-${index}`,
+      masterClipId: `masterclip-${index}`,
+
+      // set name if dialogue or action, otherwise filename
+      name: board.dialogue
+              ? board.dialogue
+              : board.action
+                ? board.action
+                : fileFilename,
+
+      description: board.notes
+                     ? board.notes
+                     : '',
+
+      duration: 1294705, // ???
+      timebase: 24,
+
+      fileId: `file-${index}`,
+      fileFilename,
+      filePathUrl,
+
+      fileWidth: 5760, // ???
+      fileHeight: 3840, // ???
+
+      label2: 'Lavender'
+    }
+    clipItems.push(clipItem)
     currFrame = endFrame
+    index++
   }
 
   return {
     sequenceId: 'sequence-1',
-    uuid: util.uidGen(),
+    uuid: util.uuid4(),
     width: width,
     height: height,
     clipItems: clipItems
