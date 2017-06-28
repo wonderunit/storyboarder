@@ -78,7 +78,6 @@ const removeTooltipForElement = (el) => {
     if (tooltip.options.target == el) {
       tooltip.open()
       tooltip.close()
-      tooltip.destroy()
     }
   }
 

@@ -1817,7 +1817,6 @@ let renderThumbnailButtons = () => {
       let eventMouseOut = document.createEvent('MouseEvents')
       eventMouseOut.initMouseEvent('mouseout', true, true)
       el.dispatchEvent(eventMouseOut)
-      tooltips.removeTooltipForElement(el)
       newBoard(boardData.boards.length)
       gotoBoard(boardData.boards.length)
     })
