@@ -212,6 +212,28 @@ let openDialogue = () => {
   })
 }
 
+let importImagesDialogue = () => {
+  dialog.showOpenDialog(
+    {
+      title:"Import Boards", 
+      filters:[
+        {name: 'Images', extensions: ['png', 'jpg']},
+      ],
+      properties: [
+        "openFile",
+        "openDirectory",
+        "multiSelections"
+      ]
+    },
+
+    (filepaths)=>{
+      if (filepaths) {
+        mainWindow.webContents.send('insertNewBoardsWithFiles', filepaths)
+      }
+    }
+  )
+}
+
 let processFountainData = (data, create, update) => {
   let scriptData = fountain.parse(data, true)
   let locations = fountainDataParser.getLocations(scriptData.tokens)
@@ -544,6 +566,10 @@ ipcMain.on('openFile', (e, arg)=> {
 
 ipcMain.on('openDialogue', (e, arg)=> {
   openDialogue()
+})
+
+ipcMain.on('importImagesDialogue', (e, arg)=> {
+  importImagesDialogue()
 })
 
 ipcMain.on('createNew', (e, arg)=> {
