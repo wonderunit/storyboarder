@@ -175,8 +175,6 @@ const generateFinalCutProData = boardData => {
       fileFilename,
       filePathUrl,
 
-      fileWidth: 5760, // ???
-      fileHeight: 3840, // ???
       fileWidth: width,
       fileHeight: height,
 
