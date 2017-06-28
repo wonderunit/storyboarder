@@ -54,8 +54,7 @@ const clipItem = data =>
 `
 
 const generateFinalCutProXml = data =>
-`
-<?xml version="1.0" encoding="UTF-8"?>
+`<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE xmeml>
 <xmeml version="4">
 	<sequence id="${data.sequenceId}">
