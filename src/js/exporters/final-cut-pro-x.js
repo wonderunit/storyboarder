@@ -51,7 +51,11 @@ const generateFinalCutProXData = (boardData, { boardAbsolutePath, outputPath }) 
   for (let board of boardData.boards) {
     let filename = boardFilenameForExport(board, index, basenameWithoutExt)
 
-    let lastFrame = msecsToFrames(24, util.isUndefined(board.duration) ? boardData.defaultBoardTiming : board.duration),
+    let duration = util.isUndefined(board.duration)
+                     ? boardData.defaultBoardTiming
+                     : board.duration
+
+    let lastFrame = msecsToFrames(24, duration),
         endFrame = Math.round(currFrame + lastFrame)
 
     assets.push({
@@ -71,7 +75,7 @@ const generateFinalCutProXData = (boardData, { boardAbsolutePath, outputPath }) 
       index,
       name: `${basenameWithoutExt}-board-${index + 1}`,
       offset: `${currFrame * 100}/2400s`,
-      duration: `${endFrame * 100}/2400s`,
+      duration: `${duration}/2400s`,
       start: '0s'
     })
 
