@@ -29,23 +29,18 @@ class Exporter extends EventEmitter {
   drawFlattenedBoardLayersToContext (context, board, boardAbsolutePath) {
     return new Promise(resolve => {
       let filenames = exporterCommon.boardOrderedLayerFilenames(board)
-      
-      console.log('got filenames', filenames, { board, boardAbsolutePath })
 
       let loaders = []
       for (let filename of filenames) {
         if (filename) {
-          console.log('adding', filename, 'to loaders')
           let imageFilePath = path.join(path.dirname(boardAbsolutePath), 'images', filename)
           loaders.push(getImage(imageFilePath))
         }
       }
       
       Promise.all(loaders).then(result => {
-        console.log('done loading!', result)
         for (let image of result) {
           if (image) {
-            console.log('drawing', image.src, 'to', context)
             context.globalAlpha = 1
             context.drawImage(image, 0, 0)
           }
@@ -92,9 +87,8 @@ class Exporter extends EventEmitter {
           canvas.height = height
           context.fillStyle = 'white'
           context.fillRect(0, 0, context.canvas.width, context.canvas.height)
-          console.log('! drawing flattened', filename)
+
           this.drawFlattenedBoardLayersToContext(context, board, boardAbsolutePath).then(() => {
-            console.log('! saving', filename)
             let imageData = canvas.toDataURL().replace(/^data:image\/\w+;base64,/, '')
             fs.writeFileSync(path.join(outputPath, filename), imageData, 'base64')
           })
