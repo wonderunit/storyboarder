@@ -228,6 +228,7 @@ let importImagesDialogue = () => {
 
     (filepaths)=>{
       if (filepaths) {
+        filepaths = filepaths.sort()
         let filepathsRecursive = []
         let handleDirectory = (dirPath) => {
           let innerFilenames = fs.readdirSync(dirPath)
