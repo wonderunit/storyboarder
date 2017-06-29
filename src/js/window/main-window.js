@@ -2742,6 +2742,14 @@ exporter.on('complete', path => {
   shell.showItemInFolder(path)
 })
 
+const exportFcp = () => {
+  exporter.exportFcp(boardData, boardFilename).then(outputPath => {
+    notifications.notify({message: "Your scene has been exported for Final Cut Pro X.", timing: 20})
+    sfx.positive()
+    shell.showItemInFolder(outputPath)
+  })
+}
+
 /**
  * Paste
  *
@@ -3357,6 +3365,10 @@ ipcRenderer.on('showTip', (event, args) => {
 
 ipcRenderer.on('exportAnimatedGif', (event, args) => {
   exportAnimatedGif()
+})
+
+ipcRenderer.on('exportFcp', (event, args) => {
+  exportFcp()
 })
 
 let printWindow

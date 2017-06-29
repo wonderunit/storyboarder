@@ -1,9 +1,12 @@
 const EventEmitter = require('events').EventEmitter
 const fs = require('fs')
 const path = require('path')
-const util = require('../utils/index.js')
 const GIFEncoder = require('gifencoder')
 const moment = require('moment')
+
+const exporterCommon = require('../exporters/common.js')
+const exporterFcp = require('../exporters/final-cut-pro-x.js')
+const util = require('../utils/index.js')
 
 const getImage = (url) => {
   return new Promise(function(resolve, reject){
@@ -21,6 +24,85 @@ const getImage = (url) => {
 class Exporter extends EventEmitter {
   constructor () {
     super()
+  }
+
+  drawFlattenedBoardLayersToContext (context, board, boardAbsolutePath) {
+    return new Promise(resolve => {
+      let filenames = exporterCommon.boardOrderedLayerFilenames(board)
+
+      let loaders = []
+      for (let filename of filenames) {
+        if (filename) {
+          let imageFilePath = path.join(path.dirname(boardAbsolutePath), 'images', filename)
+          loaders.push(getImage(imageFilePath))
+        }
+      }
+      
+      Promise.all(loaders).then(result => {
+        for (let image of result) {
+          if (image) {
+            context.globalAlpha = 1
+            context.drawImage(image, 0, 0)
+          }
+        }
+        
+        resolve()
+      })
+    })
+  }
+
+  exportFcp (boardData, boardAbsolutePath) {
+    return new Promise(resolve => {
+      let dirname = path.dirname(boardAbsolutePath)
+      let basename = path.basename(boardAbsolutePath)
+
+      let exportsPath = path.join(dirname, 'exports')
+
+      if (!fs.existsSync(exportsPath)) {
+        fs.mkdirSync(exportsPath)
+      }
+
+      let outputPath = path.join(
+        exportsPath,
+        basename + ' Final Cut Pro X ' + moment().format('YYYY-MM-DD hh.mm.ss')
+      )
+      if (!fs.existsSync(outputPath)) {
+        fs.mkdirSync(outputPath)
+      }
+
+      let xml = exporterFcp.generateFinalCutProXXml(exporterFcp.generateFinalCutProXData(boardData, { boardAbsolutePath, outputPath }))
+      fs.writeFileSync(path.join(outputPath, basename + '.fcpxml'), xml)
+
+      // export ALL layers of each one of the boards
+      let index = 0
+      let writers = []
+      for (let board of boardData.boards) {
+        writers.push(new Promise(resolve => {
+          let basenameWithoutExt = path.basename(boardAbsolutePath, path.extname(boardAbsolutePath))
+          let filenameforExport = exporterCommon.boardFilenameForExport(board, index, basenameWithoutExt)
+
+          let canvas = document.createElement('canvas')
+          let context = canvas.getContext('2d')
+          let [ width, height ] = exporterCommon.boardFileImageSize(boardData)
+          canvas.width = width
+          canvas.height = height
+          context.fillStyle = 'white'
+          context.fillRect(0, 0, context.canvas.width, context.canvas.height)
+
+          this.drawFlattenedBoardLayersToContext(context, board, boardAbsolutePath).then(() => {
+            let imageData = canvas.toDataURL().replace(/^data:image\/\w+;base64,/, '')
+            fs.writeFileSync(path.join(outputPath, filenameforExport), imageData, 'base64')
+          })
+          resolve()
+        }))
+
+        index++
+      }
+
+      Promise.all(writers).then(() => {
+        resolve(outputPath)
+      })
+    })
   }
 
   exportAnimatedGif (boards, boardSize, destWidth, boardPath) {

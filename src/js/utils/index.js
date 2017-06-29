@@ -26,6 +26,32 @@ let uidGen = (chars)=> {
   return ("00000" + (Math.random()*Math.pow(36,chars) << 0).toString(36)).slice(-chars).toUpperCase()
 }
 
+// via https://gist.github.com/kaizhu256/4482069
+let uuid4 = () => {
+  // return uuid of form xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
+  var uuid = '', ii
+  for (ii = 0; ii < 32; ii += 1) {
+    switch (ii) {
+    case 8:
+    case 20:
+      uuid += '-'
+      uuid += (Math.random() * 16 | 0).toString(16)
+      break
+    case 12:
+      uuid += '-'
+      uuid += '4'
+      break
+    case 16:
+      uuid += '-'
+      uuid += (Math.random() * 4 | 8).toString(16)
+      break
+    default:
+      uuid += (Math.random() * 16 | 0).toString(16)
+    }
+  }
+  return uuid
+}
+
 let wordCount = (text)=>  {
   if (!text) return 0
   return text.trim().replace(/ +(?= )/g,'').split(' ').length
@@ -120,9 +146,24 @@ Object.equals = function( x, y ) {
   return true;
 }
 
+/**
+ * via https://github.com/feross/zero-fill
+ * Given a number, return a zero-filled string.
+ * From http://stackoverflow.com/questions/1267283/
+ * @param  {number} width
+ * @param  {number} number
+ * @return {string}
+ */
+const zeroFill = (width, number, pad = '0') => {
+  width -= number.toString().length
+  if (width > 0) return new Array(width + (/\./.test(number) ? 2 : 1)).join(pad) + number
+  return number + ''
+}
+
 module.exports = {
   msToTime,
   uidGen,
+  uuid4,
   durationOfWords,
   range,
   norm,
@@ -134,5 +175,6 @@ module.exports = {
   shuffle,
   compareNumbers,
   pluralize,
-  sample
+  sample,
+  zeroFill
 }
