@@ -12,9 +12,6 @@ const msecsToFrames = (fps, value) =>
 // array of fixed size, ordered positions
 const boardOrderedLayerFilenames = board => {
   let filenames = []
-  
-  console.log('boardOrderedLayerFilenames')
-  console.log({ board })
 
   // reference
   filenames.push(
