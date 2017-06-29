@@ -1,4 +1,4 @@
-const exporterFcpX = require('../../src/js/exporters/final-cut-pro-x.js')
+const exporterFcp = require('../../src/js/exporters/final-cut-pro.js')
 
 let boardFileData = {
   "version": "0.6.0",
@@ -52,6 +52,6 @@ let boardFileData = {
 
 let boardAbsolutePath = '/Users/me/projects/storyboarder/example/example.storyboarder'
 let outputPath = '/Users/me/projects/storyboarder/example/example.storyboarder/exports/output'
-let xml = exporterFcpX.generateFinalCutProXXml(exporterFcpX.generateFinalCutProXData(boardFileData, { boardAbsolutePath, outputPath }))
+let xml = exporterFcp.generateFinalCutProXml(exporterFcp.generateFinalCutProData(boardFileData, { boardAbsolutePath, outputPath }))
 
 console.log(xml)
