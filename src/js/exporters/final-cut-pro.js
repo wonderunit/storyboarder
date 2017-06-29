@@ -140,7 +140,7 @@ const generateFinalCutProData = boardData => {
         // filename without path: file://localhost/filename.JPG
         filePathUrl = `file://localhost/${fileFilename}`
 
-    let lastFrame = msecsToFrames(24, board.duration),
+    let lastFrame = msecsToFrames(24, util.isUndefined(board.duration) ? boardData.defaultBoardTiming : board.duration),
         endFrame = Math.round(currFrame + lastFrame)
 
     let clipItem = {
