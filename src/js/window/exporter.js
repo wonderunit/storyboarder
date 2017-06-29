@@ -26,53 +26,87 @@ class Exporter extends EventEmitter {
     super()
   }
 
-  drawFlattenedBoardLayersToContext (context, board) {
-    //
-    // TODO draw each usable layer to context
-    //
+  drawFlattenedBoardLayersToContext (context, board, boardAbsolutePath) {
+    return new Promise(resolve => {
+      let filenames = exporterCommon.boardOrderedLayerFilenames(board)
+      
+      console.log('got filenames', filenames, { board, boardAbsolutePath })
+
+      let loaders = []
+      for (let filename of filenames) {
+        if (filename) {
+          console.log('adding', filename, 'to loaders')
+          loaders.push(getImage(path.join(path.dirname(boardAbsolutePath), 'images', filename)))
+        }
+      }
+      
+      Promise.all(loaders).then(result => {
+        console.log('done loading!', result)
+        for (let image of result) {
+          if (image) {
+            console.log('drawing', image.src, 'to', context)
+            context.globalAlpha = 1
+            context.drawImage(image, 0, 0)
+          }
+        }
+        
+        resolve()
+      })
+    })
   }
 
   exportFcp (boardData, boardAbsolutePath) {
-    let dirname = path.dirname(boardAbsolutePath)
-    let basename = path.basename(boardAbsolutePath)
+    return new Promise(resolve => {
+      let dirname = path.dirname(boardAbsolutePath)
+      let basename = path.basename(boardAbsolutePath)
 
-    let exportsPath = path.join(dirname, 'exports')
+      let exportsPath = path.join(dirname, 'exports')
 
-    if (!fs.existsSync(exportsPath)) {
-      fs.mkdirSync(exportsPath)
-    }
+      if (!fs.existsSync(exportsPath)) {
+        fs.mkdirSync(exportsPath)
+      }
 
-    let outputPath = path.join(
-      exportsPath,
-      basename + ' Final Cut Pro X ' + moment().format('YYYY-MM-DD hh.mm.ss')
-    )
-    if (!fs.existsSync(outputPath)) {
-      fs.mkdirSync(outputPath)
-    }
+      let outputPath = path.join(
+        exportsPath,
+        basename + ' Final Cut Pro X ' + moment().format('YYYY-MM-DD hh.mm.ss')
+      )
+      if (!fs.existsSync(outputPath)) {
+        fs.mkdirSync(outputPath)
+      }
 
-    let xml = exporterFcp.generateFinalCutProXXml(exporterFcp.generateFinalCutProXData(boardData, { boardAbsolutePath, outputPath }))
-    fs.writeFileSync(path.join(outputPath, basename + '.fcpxml'), xml)
+      let xml = exporterFcp.generateFinalCutProXXml(exporterFcp.generateFinalCutProXData(boardData, { boardAbsolutePath, outputPath }))
+      fs.writeFileSync(path.join(outputPath, basename + '.fcpxml'), xml)
 
-    // export ALL layers of each one of the boards
-    
-    let index = 1
-    let canvas = document.createElement('canvas')
-    let context = canvas.getContext('2d')
-    let [ width, height ] = exporterCommon.boardFileImageSize(boardData)
-    canvas.width = width
-    canvas.height = height
-    for (let board in boardData.boards) {
-      let filename = util.zeroFill(4, index) + '.png'
+      // export ALL layers of each one of the boards
+      let index = 0
+      let writers = []
+      for (let board of boardData.boards) {
+        writers.push(new Promise(resolve => {
+          let filename = util.zeroFill(4, index + 1) + '.png'
 
-      context.fillStyle = 'white'
-      context.fillRect(0, 0, context.canvas.width, context.canvas.height)
-      this.drawFlattenedBoardLayersToContext(context, board)
+          let canvas = document.createElement('canvas')
+          let context = canvas.getContext('2d')
+          let [ width, height ] = exporterCommon.boardFileImageSize(boardData)
+          canvas.width = width
+          canvas.height = height
+          context.fillStyle = 'white'
+          context.fillRect(0, 0, context.canvas.width, context.canvas.height)
+          console.log('! drawing flattened', filename)
+          this.drawFlattenedBoardLayersToContext(context, board, boardAbsolutePath).then(() => {
+            console.log('! saving', filename)
+            let imageData = canvas.toDataURL().replace(/^data:image\/\w+;base64,/, '')
+            fs.writeFileSync(path.join(outputPath, filename), imageData, 'base64')
+          })
+          resolve()
+        }))
 
-      let imageData = canvas.toDataURL().replace(/^data:image\/\w+;base64,/, '')
-      fs.writeFileSync(path.join(outputPath, filename), imageData, 'base64')
-      index++
-    }
-    return outputPath
+        index++
+      }
+
+      Promise.all(writers).then(() => {
+        resolve(outputPath)
+      })
+    })
   }
 
   exportAnimatedGif (boards, boardSize, destWidth, boardPath) {

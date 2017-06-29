@@ -2735,10 +2735,11 @@ exporter.on('complete', path => {
 })
 
 const exportFcp = () => {
-  let outputPath = exporter.exportFcp(boardData, boardFilename)
-  notifications.notify({message: "Your scene has been exported for Final Cut Pro X.", timing: 20})
-  sfx.positive()
-  shell.showItemInFolder(outputPath)
+  exporter.exportFcp(boardData, boardFilename).then(outputPath => {
+    notifications.notify({message: "Your scene has been exported for Final Cut Pro X.", timing: 20})
+    sfx.positive()
+    shell.showItemInFolder(outputPath)
+  })
 }
 
 /**
