@@ -18,9 +18,6 @@ let getBase64ImageDataFromFilePath = (filepath) => {
       return getBase64TypeFromFilePath('png', filepath)
     case "jpg":
       return getBase64TypeFromFilePath('jpg', filepath)
-    case "tif":
-    case "tiff":
-      return getBase64TypeFromFilePath('tiff', filepath)
   }
 }
 

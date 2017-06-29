@@ -228,7 +228,29 @@ let importImagesDialogue = () => {
 
     (filepaths)=>{
       if (filepaths) {
-        mainWindow.webContents.send('insertNewBoardsWithFiles', filepaths)
+        let filepathsRecursive = []
+        let handleDirectory = (dirPath) => {
+          let innerFilenames = fs.readdirSync(dirPath)
+          for(let innerFilename of innerFilenames) {
+            var innerFilePath = path.join(dirPath, innerFilename)
+            let stats = fs.statSync(innerFilePath)
+            if(stats.isFile()) {
+              filepathsRecursive.push(innerFilePath)
+            } else if(stats.isDirectory()) {
+              handleDirectory(innerFilePath)
+            }
+          }
+        }
+        for(let filepath of filepaths) {
+          let stats = fs.statSync(filepath)
+          if(stats.isFile()) {
+            filepathsRecursive.push(filepath)
+          } else if(stats.isDirectory()) {
+            handleDirectory(filepath)
+          }
+        }
+        
+        mainWindow.webContents.send('insertNewBoardsWithFiles', filepathsRecursive)
       }
     }
   )

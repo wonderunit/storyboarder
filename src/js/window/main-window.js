@@ -932,8 +932,11 @@ let newBoard = (position, shouldAddToUndoStack = true) => {
 let insertNewBoardsWithFiles = (filepaths) => {
   let insertionIndex = currentBoard+1
   let imageFilePromises = filepaths.map(filepath => {
-    let board = insertNewBoardDataAtPosition(insertionIndex++)
     let imageData = FileReader.getBase64ImageDataFromFilePath(filepath)
+    if(!imageData) {
+      return new Promise((fulfill)=>fulfill())
+    }
+    let board = insertNewBoardDataAtPosition(insertionIndex++)
     var image = new Image()
     image.src = imageData
 
