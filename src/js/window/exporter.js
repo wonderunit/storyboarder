@@ -78,7 +78,8 @@ class Exporter extends EventEmitter {
       let writers = []
       for (let board of boardData.boards) {
         writers.push(new Promise(resolve => {
-          let filename = util.zeroFill(4, index + 1) + '.png'
+          let basenameWithoutExt = path.basename(boardAbsolutePath, path.extname(boardAbsolutePath))
+          let filenameforExport = exporterCommon.boardFilenameForExport(board, index, basenameWithoutExt)
 
           let canvas = document.createElement('canvas')
           let context = canvas.getContext('2d')
@@ -90,7 +91,7 @@ class Exporter extends EventEmitter {
 
           this.drawFlattenedBoardLayersToContext(context, board, boardAbsolutePath).then(() => {
             let imageData = canvas.toDataURL().replace(/^data:image\/\w+;base64,/, '')
-            fs.writeFileSync(path.join(outputPath, filename), imageData, 'base64')
+            fs.writeFileSync(path.join(outputPath, filenameforExport), imageData, 'base64')
           })
           resolve()
         }))

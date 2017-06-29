@@ -1,3 +1,5 @@
+const util = require('../utils')
+
 // data functions
 const boardFileImageSize = boardFileData =>
   (boardFileData.aspectRatio >= 1)
@@ -34,8 +36,12 @@ const boardOrderedLayerFilenames = board => {
   return filenames
 }
 
+const boardFilenameForExport = (board, index, basenameWithoutExt) =>
+  `${basenameWithoutExt}-board-${index + 1}-` + util.zeroFill(4, index + 1) + '.png'
+
 module.exports = {
   boardFileImageSize,
   boardOrderedLayerFilenames,
+  boardFilenameForExport,
   msecsToFrames
 }
