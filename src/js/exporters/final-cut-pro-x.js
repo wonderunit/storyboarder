@@ -73,7 +73,7 @@ const generateFinalCutProXData = (boardData, { boardAbsolutePath, outputPath }) 
 
     videos.push({
       index,
-      name: `${basenameWithoutExt}-board-${index + 1}`,
+      name: `${board.shot}`,
       offset: `${currFrame * 100}/2400s`,
       duration: `${Math.round(msecsToFrames(24, duration)) * 100}/2400s`,
       start: '0s'
