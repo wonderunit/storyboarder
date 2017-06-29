@@ -963,6 +963,16 @@ let insertNewBoardsWithFiles = (filepaths) => {
         context.drawImage(image, 0, 0, image.width, image.height)
         var imageDataSized = canvas.toDataURL()
         saveDataURLtoFile(imageDataSized, board.url)
+
+        // thumbnail
+        let thumbRatio = 60/image.height
+        canvas.width = image.width = thumbRatio * image.width
+        canvas.height = image.height = thumbRatio * image.height
+        context.drawImage(image, 0, 0, image.width, image.height)
+        var imageDataSized = canvas.toDataURL()
+        let thumbPath = board.url.replace('.png', '-thumbnail.png')
+        saveDataURLtoFile(imageDataSized, thumbPath)
+
         fulfill()
       })
     })
@@ -1096,8 +1106,15 @@ let saveImageFile = () => {
   }
 }
 
+const getThumbnailSize = () => {
+  return {
+    width: Math.floor(60 * boardData.aspectRatio), 
+    height: 60
+  }
+}
+
 const updateThumbnail = imageFilePath => {
-  let width = Math.floor(60 * boardData.aspectRatio), height = 60
+  let {width, height} = getThumbnailSize()
 
   storyboarderSketchPane.sketchPane.setLayerVisible(false, 2) // HACK hardcoded
   storyboarderSketchPane.sketchPane.setLayerVisible(false, 4) // HACK hardcoded
