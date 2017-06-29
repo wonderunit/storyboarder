@@ -1,14 +1,12 @@
 # Storyboarder
 
-Go from idea in your head to storyboard as fast as possible.
-
-[![IMAGE ALT TEXT HERE](http://img.youtube.com/vi/07BantTVjLQ/0.jpg)](http://www.youtube.com/watch?v=07BantTVjLQ)
-
 Storyboarder makes it easy to visualize a story as fast you can draw stick figures. Quickly draw to test if a story idea works. Create and show animatics to others. Express your story idea without making a movie.
+
+![screenshot](https://user-images.githubusercontent.com/441117/27712058-4404e214-5cf3-11e7-8fa3-b88ae924d154.gif)
 
 Whether you are a story artist, writer, director, in advertising, or just a person with an idea, you can use this to quickly make storyboards.
 
-## Downloads
+## Download
 
 ### [Click here to download the latest release](https://wonderunit.com/storyboarder/)
 
