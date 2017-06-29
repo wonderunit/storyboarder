@@ -23,7 +23,7 @@ const generateFinalCutProXXml = data =>
     <library>
         <event name="${data.eventName}">
             <project name="${data.projectName}">
-                <sequence format="r1">
+                <sequence format="r1" renderColorSpace="Rec. 709">
                     <spine>
                         ${data.videos.map(video).join('\n                        ')}
                     </spine>
