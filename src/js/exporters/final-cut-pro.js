@@ -139,7 +139,7 @@ const generateFinalCutProData = (boardData, { boardAbsolutePath, outputPath }) =
 
   let clipItems = []
   let currFrame = 0
-  let index = 1
+  let index = 0
   for (let board of boardData.boards) {
     let fileFilename = boardFilenameForExport(board, index, basenameWithoutExt),
         filePathUrl = `file://${outputPath}/${fileFilename}`
@@ -155,8 +155,8 @@ const generateFinalCutProData = (boardData, { boardAbsolutePath, outputPath }) =
       start: currFrame,
       end: endFrame,
 
-      id: `clipitem-${index}`,
-      masterClipId: `masterclip-${index}`,
+      id: `clipitem-${index + 1}`,
+      masterClipId: `masterclip-${index + 1}`,
 
       // set name if dialogue or action, otherwise filename
       name: board.dialogue
@@ -172,7 +172,7 @@ const generateFinalCutProData = (boardData, { boardAbsolutePath, outputPath }) =
       duration: 1294705, // ???
       timebase: 24,
 
-      fileId: `file-${index}`,
+      fileId: `file-${index + 1}`,
       fileFilename,
       filePathUrl,
 
