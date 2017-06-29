@@ -5,7 +5,7 @@ const GIFEncoder = require('gifencoder')
 const moment = require('moment')
 
 const exporterCommon = require('../exporters/common.js')
-const exporterFcp = require('../exporters/final-cut-pro.js')
+const exporterFcp = require('../exporters/final-cut-pro-x.js')
 const util = require('../utils/index.js')
 
 const getImage = (url) => {
@@ -50,7 +50,7 @@ class Exporter extends EventEmitter {
       fs.mkdirSync(outputPath)
     }
 
-    let xml = exporterFcp.generateFinalCutProXml(exporterFcp.generateFinalCutProData(boardData))
+    let xml = exporterFcp.generateFinalCutProXXml(exporterFcp.generateFinalCutProXData(boardData, { boardAbsolutePath, outputPath }))
     fs.writeFileSync(path.join(outputPath, basename + '.fcpxml'), xml)
 
     // export ALL layers of each one of the boards
