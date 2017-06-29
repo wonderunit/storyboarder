@@ -36,7 +36,8 @@ class Exporter extends EventEmitter {
       for (let filename of filenames) {
         if (filename) {
           console.log('adding', filename, 'to loaders')
-          loaders.push(getImage(path.join(path.dirname(boardAbsolutePath), 'images', filename)))
+          let imageFilePath = path.join(path.dirname(boardAbsolutePath), 'images', filename)
+          loaders.push(getImage(imageFilePath))
         }
       }
       
