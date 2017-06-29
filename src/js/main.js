@@ -212,6 +212,50 @@ let openDialogue = () => {
   })
 }
 
+let importImagesDialogue = () => {
+  dialog.showOpenDialog(
+    {
+      title:"Import Boards", 
+      filters:[
+        {name: 'Images', extensions: ['png', 'jpg']},
+      ],
+      properties: [
+        "openFile",
+        "openDirectory",
+        "multiSelections"
+      ]
+    },
+
+    (filepaths)=>{
+      if (filepaths) {
+        let filepathsRecursive = []
+        let handleDirectory = (dirPath) => {
+          let innerFilenames = fs.readdirSync(dirPath)
+          for(let innerFilename of innerFilenames) {
+            var innerFilePath = path.join(dirPath, innerFilename)
+            let stats = fs.statSync(innerFilePath)
+            if(stats.isFile()) {
+              filepathsRecursive.push(innerFilePath)
+            } else if(stats.isDirectory()) {
+              handleDirectory(innerFilePath)
+            }
+          }
+        }
+        for(let filepath of filepaths) {
+          let stats = fs.statSync(filepath)
+          if(stats.isFile()) {
+            filepathsRecursive.push(filepath)
+          } else if(stats.isDirectory()) {
+            handleDirectory(filepath)
+          }
+        }
+        
+        mainWindow.webContents.send('insertNewBoardsWithFiles', filepathsRecursive)
+      }
+    }
+  )
+}
+
 let processFountainData = (data, create, update) => {
   let scriptData = fountain.parse(data, true)
   let locations = fountainDataParser.getLocations(scriptData.tokens)
@@ -544,6 +588,10 @@ ipcMain.on('openFile', (e, arg)=> {
 
 ipcMain.on('openDialogue', (e, arg)=> {
   openDialogue()
+})
+
+ipcMain.on('importImagesDialogue', (e, arg)=> {
+  importImagesDialogue()
 })
 
 ipcMain.on('createNew', (e, arg)=> {

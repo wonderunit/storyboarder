@@ -13,6 +13,13 @@ const template = [
         }
       },
       {
+        label: 'Import Storyboards',
+        accelerator: 'CmdOrCtrl+Shift+i',
+        click ( item, focusedWindow, event) {
+          ipcRenderer.send('importImagesDialogue')
+        }
+      },
+      {
         type: 'separator'
       },
       {

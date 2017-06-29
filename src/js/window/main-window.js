@@ -27,6 +27,7 @@ const storyTips = new(require('./story-tips'))(sfx, notifications)
 const exporter = require('./exporter.js')
 const prefsModule = require('electron').remote.require('./prefs.js')
 
+const FileReader = require('../files/FileReader.js')
 const writePsd = require('ag-psd').writePsd;
 const readPsd = require('ag-psd').readPsd;
 const initializeCanvas = require('ag-psd').initializeCanvas;
@@ -886,16 +887,7 @@ let updateBoardUI = ()=> {
 // Board Operations
 ///////////////////////////////////////////////////////////////
 
-let newBoard = (position, shouldAddToUndoStack = true) => {
-  if (shouldAddToUndoStack) {
-    saveImageFile() // force-save any current work
-    storeUndoStateForScene(true)
-    notifications.notify({message: "Added a new board. Let's make it a great one!", timing: 5})
-  }
-
-  if (typeof position == "undefined") position = currentBoard + 1
-
-  // create array entry
+let insertNewBoardDataAtPosition = (position) => {
   let uid = util.uidGen(5)
 
   let board = {
@@ -906,8 +898,22 @@ let newBoard = (position, shouldAddToUndoStack = true) => {
     layers: {}
   }
 
-  // insert
   boardData.boards.splice(position, 0, board)
+
+  return board
+}
+
+let newBoard = (position, shouldAddToUndoStack = true) => {
+  if (shouldAddToUndoStack) {
+    saveImageFile() // force-save any current work
+    storeUndoStateForScene(true)
+    notifications.notify({message: "Added a new board. Let's make it a great one!", timing: 5})
+  }
+
+  if (typeof position == "undefined") position = currentBoard + 1
+
+  // create array entry
+  insertNewBoardDataAtPosition(position)
 
   // indicate dirty for save sweep
   markImageFileDirty([1]) // mark save for 'main' layer only // HACK hardcoded
@@ -921,6 +927,64 @@ let newBoard = (position, shouldAddToUndoStack = true) => {
     sfx.down(-2,0)
 
   }
+}
+
+let insertNewBoardsWithFiles = (filepaths) => {
+  let insertionIndex = currentBoard+1
+  let imageFilePromises = filepaths.map(filepath => {
+    let imageData = FileReader.getBase64ImageDataFromFilePath(filepath)
+    if(!imageData) {
+      return new Promise((fulfill)=>fulfill())
+    }
+    let board = insertNewBoardDataAtPosition(insertionIndex++)
+    var image = new Image()
+    image.src = imageData
+
+    return new Promise((fulfill, reject)=>{
+      setImmediate(()=>{
+        // resize the image if it's too big.
+        let boardSize = storyboarderSketchPane.sketchPane.getCanvasSize()
+        if(boardSize.width < image.width) {
+          let scale = boardSize.width / image.width
+          image.width = scale * image.width
+          image.height = scale * image.height
+        }
+        if(boardSize.height < image.height) {
+          let scale = boardSize.height / image.height
+          image.width = scale * image.width
+          image.height = scale * image.height
+        }
+
+        // try pooling
+        var canvas = document.createElement('canvas')
+        canvas.width = image.width
+        canvas.height = image.height
+        let context = canvas.getContext('2d')
+        context.drawImage(image, 0, 0, image.width, image.height)
+        var imageDataSized = canvas.toDataURL()
+        saveDataURLtoFile(imageDataSized, board.url)
+
+        // thumbnail
+        let thumbRatio = 60/image.height
+        canvas.width = image.width = thumbRatio * image.width
+        canvas.height = image.height = thumbRatio * image.height
+        context.drawImage(image, 0, 0, image.width, image.height)
+        var imageDataSized = canvas.toDataURL()
+        let thumbPath = board.url.replace('.png', '-thumbnail.png')
+        saveDataURLtoFile(imageDataSized, thumbPath)
+
+        fulfill()
+      })
+    })
+
+  })
+
+  Promise.all(imageFilePromises)
+    .then(()=>{
+      markImageFileDirty([1])
+      markBoardFileDirty() // to save new board data
+      renderThumbnailDrawer()
+    })
 }
 
 let markBoardFileDirty = () => {
@@ -1042,8 +1106,15 @@ let saveImageFile = () => {
   }
 }
 
+const getThumbnailSize = () => {
+  return {
+    width: Math.floor(60 * boardData.aspectRatio), 
+    height: 60
+  }
+}
+
 const updateThumbnail = imageFilePath => {
-  let width = Math.floor(60 * boardData.aspectRatio), height = 60
+  let {width, height} = getThumbnailSize()
 
   storyboarderSketchPane.sketchPane.setLayerVisible(false, 2) // HACK hardcoded
   storyboarderSketchPane.sketchPane.setLayerVisible(false, 4) // HACK hardcoded
@@ -2607,14 +2678,6 @@ let importImage = (imageDataURL) => {
 
 }
 
-let loadPNGImageFileAsDataURI = (filepath) => {
-  if (!fs.existsSync(filepath)) return null
-
-  // via https://gist.github.com/mklabs/1260228/71d62802f82e5ac0bd97fcbd54b1214f501f7e77
-  let data = fs.readFileSync(filepath).toString('base64')
-  return `data:image/png;base64,${data}`
-}
-
 /**
  * Copy
  *
@@ -2654,7 +2717,7 @@ let copyBoards = () => {
     boards = boards.map(board => {
 
       let filepath = path.join(boardPath, 'images', board.url)
-      let data = loadPNGImageFileAsDataURI(filepath)
+      let data = FileReader.getBase64ImageDataFromFilePath(filepath)
       if (data) {
         board.imageDataURL = data
       } else {
@@ -2665,7 +2728,7 @@ let copyBoards = () => {
         for (let layerName of ['reference', 'notes']) { // HACK hardcoded
           if (board.layers[layerName]) {
             let filepath = path.join(boardPath, 'images', board.layers[layerName].url)
-            let data = loadPNGImageFileAsDataURI(filepath)
+            let data = FileReader.getBase64ImageDataFromFilePath(filepath)
             if (data) {
               board.layers[layerName].imageDataURL = data
             } else {
@@ -3335,6 +3398,10 @@ ipcRenderer.on('toggleCaptions', (event, args)=>{
 ipcRenderer.on('textInputMode', (event, args)=>{
   textInputMode = args
   textInputAllowAdvance = false
+})
+
+ipcRenderer.on('insertNewBoardsWithFiles', (event, filepaths)=> {
+  insertNewBoardsWithFiles(filepaths)
 })
 
 ipcRenderer.on('importImage', (event, args)=> {
