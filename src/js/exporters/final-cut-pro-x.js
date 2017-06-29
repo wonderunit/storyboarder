@@ -75,7 +75,7 @@ const generateFinalCutProXData = (boardData, { boardAbsolutePath, outputPath }) 
       index,
       name: `${basenameWithoutExt}-board-${index + 1}`,
       offset: `${currFrame * 100}/2400s`,
-      duration: `${duration}/2400s`,
+      duration: `${Math.round(msecsToFrames(24, duration)) * 100}/2400s`,
       start: '0s'
     })
 
