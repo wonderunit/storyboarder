@@ -34,7 +34,7 @@ const generateFinalCutProXXml = data =>
 </fcpxml>`
 
 const generateFinalCutProXData = (boardData, { boardAbsolutePath, outputPath }) => {
-  let [height, width] = boardFileImageSize(boardData)
+  let [width, height] = boardFileImageSize(boardData)
 
   let dirname = path.dirname(boardAbsolutePath)
 

@@ -129,7 +129,7 @@ const generateFinalCutProXml = data =>
 `
 
 const generateFinalCutProData = boardData => {
-  let [height, width] = boardFileImageSize(boardData)
+  let [width, height] = boardFileImageSize(boardData)
 
   let clipItems = []
   let currFrame = 0
