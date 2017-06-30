@@ -4,12 +4,13 @@ const readPsd = require('ag-psd').readPsd;
 const initializeCanvas = require('ag-psd').initializeCanvas;
 
 /**
- * Retrieve a base 64 representation of an image file
+ * Retrieve an ojbect with base 64 representations of an image file ready for storyboard pane layers.
  *  
  * @param {string} filepath 
- * @returns {string}
+ * @param {Object} options
+ * @returns {Object} An object with data for notes (optional), reference (optional), and main
  */
-let getBase64ImageDataFromFilePath = (filepath) => {
+let getBase64ImageDataFromFilePath = (filepath, options={}) => {
   let arr = filepath.split(path.sep)
   let filename = arr[arr.length-1]
   let filenameParts =filename.toLowerCase().split('.')
@@ -17,11 +18,11 @@ let getBase64ImageDataFromFilePath = (filepath) => {
 
   switch(type) {
     case "png":
-      return getBase64TypeFromFilePath('png', filepath)
+      return { "main": getBase64TypeFromFilePath('png', filepath) }
     case "jpg":
-      return getBase64TypeFromFilePath('jpg', filepath)
+      return { "main": getBase64TypeFromFilePath('jpg', filepath) }
     case "psd":
-      return getBase64TypeFromPhotoshopFilePath(filepath)
+      return getBase64TypeFromPhotoshopFilePath(filepath, options)
   }
 }
 
@@ -33,7 +34,7 @@ let getBase64TypeFromFilePath = (type, filepath) => {
   return `data:image/${type};base64,${data}`
 }
 
-let getBase64TypeFromPhotoshopFilePath = (filepath) => {
+let getBase64TypeFromPhotoshopFilePath = (filepath, options) => {
   if (!fs.existsSync(filepath)) return null
 
   initializeCanvas((width, height) => {
@@ -55,16 +56,57 @@ let getBase64TypeFromPhotoshopFilePath = (filepath) => {
   if(!psd || !psd.children) {
     return;
   }
-  let canvas = document.createElement('canvas')
-  canvas.width = psd.width
-  canvas.height = psd.height
-  let ctx = canvas.getContext('2d');
-  for(let layer of psd.children) {
-    if(layer.canvas) {
-      ctx.drawImage(layer.canvas, layer.left, layer.top);
-    }
+  let mainCanvas = options.mainCanvas 
+  if(!mainCanvas) {
+    mainCanvas = document.createElement('canvas')
+    mainCanvas.width = psd.width
+    mainCanvas.height = psd.height
   }
-  return canvas.toDataURL()
+  let mainContext = mainCanvas.getContext('2d');
+  mainContext.clearRect(0, 0, mainCanvas.width, mainCanvas.height)
+
+  let notesCanvas = options.notesCanvas
+  if(!notesCanvas) {
+    notesCanvas = document.createElement('canvas')
+    notesCanvas.width = psd.width
+    notesCanvas.height = psd.height
+  }
+  let notesContext = notesCanvas.getContext('2d');
+  notesContext.clearRect(0, 0, notesCanvas.width, notesCanvas.height)
+
+  let referenceCanvas = options.referenceCanvas
+  if(!referenceCanvas) {
+    referenceCanvas = document.createElement('canvas')
+    referenceCanvas.width = psd.width
+    referenceCanvas.height = psd.height
+  }
+  let referenceContext = referenceCanvas.getContext('2d')
+  referenceContext.clearRect(0, 0, referenceCanvas.width, referenceCanvas.height)
+
+  let targetContext
+  for(let layer of psd.children) {
+    if(!layer.canvas) {
+      continue;
+    }
+    let targetContext
+    switch(layer.name) {
+      case "notes":
+        targetContext = notesContext
+        break
+      case "reference":
+        targetContext = referenceContext
+        break
+      default:
+        targetContext = mainContext
+        break
+    }
+    targetContext.drawImage(layer.canvas, layer.left, layer.top)
+  }
+  return {
+    main: mainCanvas.toDataURL(),
+    notes: notesCanvas.toDataURL(),
+    reference: referenceCanvas.toDataURL()
+  }
 }
 
 module.exports = {
