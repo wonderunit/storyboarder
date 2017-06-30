@@ -4,84 +4,17 @@ const path = require('path')
 const GIFEncoder = require('gifencoder')
 const moment = require('moment')
 
-const exporterCommon = require('../exporters/common.js')
+const {
+  boardFileImageSize,
+  boardFilenameForExport,
+  getImage,
+  exportFlattenedBoard,
+  ensureExportsPathExists
+} = require('../exporters/common.js')
+
 const exporterFcpX = require('../exporters/final-cut-pro-x.js')
 const exporterFcp = require('../exporters/final-cut-pro.js')
 const util = require('../utils/index.js')
-
-//
-//
-// utility functions (could be moved to exporters/common)
-//
-const getImage = (url) => {
-  return new Promise(function(resolve, reject){
-    let img = new Image()
-    img.onload = () => {
-      resolve(img)
-    }
-    img.onerror = () => {
-      reject(img)
-    }
-    img.src = url
-  })
-}
-
-const exportFlattenedBoard = (board, filenameforExport, { size, boardAbsolutePath, outputPath }) => {
-  return new Promise(resolve => {
-    let canvas = document.createElement('canvas')
-    let context = canvas.getContext('2d')
-    let [ width, height ] = size
-    canvas.width = width
-    canvas.height = height
-    context.fillStyle = 'white'
-    context.fillRect(0, 0, context.canvas.width, context.canvas.height)
-
-    drawFlattenedBoardLayersToContext(context, board, boardAbsolutePath).then(() => {
-      let imageData = canvas.toDataURL().replace(/^data:image\/\w+;base64,/, '')
-      fs.writeFileSync(path.join(outputPath, filenameforExport), imageData, 'base64')
-      resolve()
-    }).catch(err => {
-      console.error(err)
-    })
-  })
-}
-
-const drawFlattenedBoardLayersToContext = (context, board, boardAbsolutePath) => {
-  return new Promise(resolve => {
-    let filenames = exporterCommon.boardOrderedLayerFilenames(board)
-
-    let loaders = []
-    for (let filename of filenames) {
-      if (filename) {
-        let imageFilePath = path.join(path.dirname(boardAbsolutePath), 'images', filename)
-        loaders.push(getImage(imageFilePath))
-      }
-    }
-    
-    Promise.all(loaders).then(result => {
-      for (let image of result) {
-        if (image) {
-          context.globalAlpha = 1
-          context.drawImage(image, 0, 0)
-        }
-      }
-      
-      resolve()
-    })
-  })
-}
-
-const ensureExportsPathExists = (boardAbsolutePath) => {
-  let dirname = path.dirname(boardAbsolutePath)
-
-  let exportsPath = path.join(dirname, 'exports')
-
-  if (!fs.existsSync(exportsPath)) {
-    fs.mkdirSync(exportsPath)
-  }
-  
-  return exportsPath
-}
 
 class Exporter extends EventEmitter {
   constructor () {
@@ -114,12 +47,12 @@ class Exporter extends EventEmitter {
       let basenameWithoutExt = path.basename(boardAbsolutePath, path.extname(boardAbsolutePath))
       for (let board of boardData.boards) {
         writers.push(new Promise(resolve => {
-          let filenameforExport = exporterCommon.boardFilenameForExport(board, index, basenameWithoutExt)
+          let filenameforExport = boardFilenameForExport(board, index, basenameWithoutExt)
           exportFlattenedBoard(
             board,
             filenameforExport,
             {
-              size: exporterCommon.boardFileImageSize(boardData),
+              size: boardFileImageSize(boardData),
               boardAbsolutePath,
               outputPath
             }
@@ -154,12 +87,12 @@ class Exporter extends EventEmitter {
       let basenameWithoutExt = path.basename(boardAbsolutePath, path.extname(boardAbsolutePath))
       for (let board of boardData.boards) {
         writers.push(new Promise(resolve => {
-          let filenameforExport = exporterCommon.boardFilenameForExport(board, index, basenameWithoutExt)
+          let filenameforExport = boardFilenameForExport(board, index, basenameWithoutExt)
           exportFlattenedBoard(
             board,
             filenameforExport,
             {
-              size: exporterCommon.boardFileImageSize(boardData),
+              size: boardFileImageSize(boardData),
               boardAbsolutePath,
               outputPath
             }
