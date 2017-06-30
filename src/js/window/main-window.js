@@ -505,28 +505,22 @@ let loadBoardUI = ()=> {
     shell.openItem(imageFilePath);
 
     fs.watchFile(imageFilePath, (cur, prev) => {
-      initializeCanvas((width, height) => {
-        let canvas = document.createElement('canvas');
-        canvas.width = width;
-        canvas.height = height;
-        return canvas;
-      });
-      const buffer = fs.readFileSync(imageFilePath);
-      const psd = readPsd(buffer);
-      if(!psd || !psd.children) {
+      let referenceCanvas = storyboarderSketchPane.getLayerCanvasByName("reference")
+      let mainCanvas = storyboarderSketchPane.getLayerCanvasByName("main")
+
+      let readerOptions = {
+        mainCanvas: mainCanvas,
+        referenceCanvas: referenceCanvas,
+        notesCanvas: storyboarderSketchPane.getLayerCanvasByName("notes")
+      }
+      var psdData = FileReader.getBase64ImageDataFromFilePath(imageFilePath, readerOptions)
+      if(!psdData || !psdData.main) {
         return;
       }
-      let mainCanvas = storyboarderSketchPane.getLayerCanvasByName("main");
-      let ctx = mainCanvas.getContext('2d');
-      ctx.clearRect(0, 0, mainCanvas.width, mainCanvas.height)
-      for(let layer of psd.children) {
-        if(layer.name == "notes" || layer.name == "reference" || !layer.canvas) {
-          continue;
-        }
-        ctx.drawImage(layer.canvas, layer.left, layer.top);
-      }
-      markImageFileDirty([1]);
-      saveImageFile();
+
+      markImageFileDirty([0, 1, 3]) // reference, main, notes layers
+      saveImageFile()
+      
     });
   })
 
@@ -934,12 +928,12 @@ let insertNewBoardsWithFiles = (filepaths) => {
   let insertionIndex = currentBoard+1
   let imageFilePromises = filepaths.map(filepath => {
     let imageData = FileReader.getBase64ImageDataFromFilePath(filepath)
-    if(!imageData) {
+    if(!imageData || !imageData.main) {
       return new Promise((fulfill)=>fulfill())
     }
     let board = insertNewBoardDataAtPosition(insertionIndex++)
     var image = new Image()
-    image.src = imageData
+    image.src = imageData.main
 
     return new Promise((fulfill, reject)=>{
       setImmediate(()=>{
@@ -2719,8 +2713,8 @@ let copyBoards = () => {
 
       let filepath = path.join(boardPath, 'images', board.url)
       let data = FileReader.getBase64ImageDataFromFilePath(filepath)
-      if (data) {
-        board.imageDataURL = data
+      if (data && data.main) {
+        board.imageDataURL = data.main
       } else {
         console.warn("could not load image for board", board.url)
       }
@@ -2730,8 +2724,8 @@ let copyBoards = () => {
           if (board.layers[layerName]) {
             let filepath = path.join(boardPath, 'images', board.layers[layerName].url)
             let data = FileReader.getBase64ImageDataFromFilePath(filepath)
-            if (data) {
-              board.layers[layerName].imageDataURL = data
+            if (data && data.main) {
+              board.layers[layerName].imageDataURL = data.main
             } else {
               console.warn("could not load image for board", board.layers[layerName].url)
             }
