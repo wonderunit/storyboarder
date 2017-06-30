@@ -2807,7 +2807,15 @@ exporter.on('complete', path => {
 
 const exportFcp = () => {
   exporter.exportFcp(boardData, boardFilename).then(outputPath => {
-    notifications.notify({message: "Your scene has been exported for Final Cut Pro X.", timing: 20})
+    notifications.notify({message: "Your scene has been exported for Final Cut Pro X and Premiere.", timing: 20})
+    sfx.positive()
+    shell.showItemInFolder(outputPath)
+  })
+}
+
+const exportImages = () => {
+  exporter.exportImages(boardData, boardFilename).then(outputPath => {
+    notifications.notify({message: "Your scene has been exported as images.", timing: 20})
     sfx.positive()
     shell.showItemInFolder(outputPath)
   })
@@ -3436,6 +3444,10 @@ ipcRenderer.on('exportAnimatedGif', (event, args) => {
 
 ipcRenderer.on('exportFcp', (event, args) => {
   exportFcp()
+})
+
+ipcRenderer.on('exportImages', (event, args) => {
+  exportImages()
 })
 
 let printWindow

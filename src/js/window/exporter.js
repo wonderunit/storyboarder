@@ -9,6 +9,10 @@ const exporterFcpX = require('../exporters/final-cut-pro-x.js')
 const exporterFcp = require('../exporters/final-cut-pro.js')
 const util = require('../utils/index.js')
 
+//
+//
+// utility functions (could be moved to exporters/common)
+//
 const getImage = (url) => {
   return new Promise(function(resolve, reject){
     let img = new Image()
@@ -22,47 +26,74 @@ const getImage = (url) => {
   })
 }
 
+const exportFlattenedBoard = (board, filenameforExport, { size, boardAbsolutePath, outputPath }) => {
+  return new Promise(resolve => {
+    let canvas = document.createElement('canvas')
+    let context = canvas.getContext('2d')
+    let [ width, height ] = size
+    canvas.width = width
+    canvas.height = height
+    context.fillStyle = 'white'
+    context.fillRect(0, 0, context.canvas.width, context.canvas.height)
+
+    drawFlattenedBoardLayersToContext(context, board, boardAbsolutePath).then(() => {
+      let imageData = canvas.toDataURL().replace(/^data:image\/\w+;base64,/, '')
+      fs.writeFileSync(path.join(outputPath, filenameforExport), imageData, 'base64')
+      resolve()
+    }).catch(err => {
+      console.error(err)
+    })
+  })
+}
+
+const drawFlattenedBoardLayersToContext = (context, board, boardAbsolutePath) => {
+  return new Promise(resolve => {
+    let filenames = exporterCommon.boardOrderedLayerFilenames(board)
+
+    let loaders = []
+    for (let filename of filenames) {
+      if (filename) {
+        let imageFilePath = path.join(path.dirname(boardAbsolutePath), 'images', filename)
+        loaders.push(getImage(imageFilePath))
+      }
+    }
+    
+    Promise.all(loaders).then(result => {
+      for (let image of result) {
+        if (image) {
+          context.globalAlpha = 1
+          context.drawImage(image, 0, 0)
+        }
+      }
+      
+      resolve()
+    })
+  })
+}
+
+const ensureExportsPathExists = (boardAbsolutePath) => {
+  let dirname = path.dirname(boardAbsolutePath)
+
+  let exportsPath = path.join(dirname, 'exports')
+
+  if (!fs.existsSync(exportsPath)) {
+    fs.mkdirSync(exportsPath)
+  }
+  
+  return exportsPath
+}
+
 class Exporter extends EventEmitter {
   constructor () {
     super()
   }
 
-  drawFlattenedBoardLayersToContext (context, board, boardAbsolutePath) {
-    return new Promise(resolve => {
-      let filenames = exporterCommon.boardOrderedLayerFilenames(board)
-
-      let loaders = []
-      for (let filename of filenames) {
-        if (filename) {
-          let imageFilePath = path.join(path.dirname(boardAbsolutePath), 'images', filename)
-          loaders.push(getImage(imageFilePath))
-        }
-      }
-      
-      Promise.all(loaders).then(result => {
-        for (let image of result) {
-          if (image) {
-            context.globalAlpha = 1
-            context.drawImage(image, 0, 0)
-          }
-        }
-        
-        resolve()
-      })
-    })
-  }
-
   exportFcp (boardData, boardAbsolutePath) {
     return new Promise(resolve => {
-      let dirname = path.dirname(boardAbsolutePath)
+      
+      let exportsPath = ensureExportsPathExists(boardAbsolutePath)
+
       let basename = path.basename(boardAbsolutePath)
-
-      let exportsPath = path.join(dirname, 'exports')
-
-      if (!fs.existsSync(exportsPath)) {
-        fs.mkdirSync(exportsPath)
-      }
-
       let outputPath = path.join(
         exportsPath,
         basename + ' Exported ' + moment().format('YYYY-MM-DD hh.mm.ss')
@@ -80,24 +111,59 @@ class Exporter extends EventEmitter {
       // export ALL layers of each one of the boards
       let index = 0
       let writers = []
+      let basenameWithoutExt = path.basename(boardAbsolutePath, path.extname(boardAbsolutePath))
       for (let board of boardData.boards) {
         writers.push(new Promise(resolve => {
-          let basenameWithoutExt = path.basename(boardAbsolutePath, path.extname(boardAbsolutePath))
           let filenameforExport = exporterCommon.boardFilenameForExport(board, index, basenameWithoutExt)
+          exportFlattenedBoard(
+            board,
+            filenameforExport,
+            {
+              size: exporterCommon.boardFileImageSize(boardData),
+              boardAbsolutePath,
+              outputPath
+            }
+          ).then(() => resolve()).catch(err => console.error(err))
+        }))
 
-          let canvas = document.createElement('canvas')
-          let context = canvas.getContext('2d')
-          let [ width, height ] = exporterCommon.boardFileImageSize(boardData)
-          canvas.width = width
-          canvas.height = height
-          context.fillStyle = 'white'
-          context.fillRect(0, 0, context.canvas.width, context.canvas.height)
+        index++
+      }
 
-          this.drawFlattenedBoardLayersToContext(context, board, boardAbsolutePath).then(() => {
-            let imageData = canvas.toDataURL().replace(/^data:image\/\w+;base64,/, '')
-            fs.writeFileSync(path.join(outputPath, filenameforExport), imageData, 'base64')
-          })
-          resolve()
+      Promise.all(writers).then(() => {
+        resolve(outputPath)
+      })
+    })
+  }
+  
+  exportImages (boardData, boardAbsolutePath) {
+    return new Promise(resolve => {
+      let exportsPath = ensureExportsPathExists(boardAbsolutePath)
+
+      let basename = path.basename(boardAbsolutePath)
+      let outputPath = path.join(
+        exportsPath,
+        basename + ' Images ' + moment().format('YYYY-MM-DD hh.mm.ss')
+      )
+      if (!fs.existsSync(outputPath)) {
+        fs.mkdirSync(outputPath)
+      }
+
+      // export ALL layers of each one of the boards
+      let index = 0
+      let writers = []
+      let basenameWithoutExt = path.basename(boardAbsolutePath, path.extname(boardAbsolutePath))
+      for (let board of boardData.boards) {
+        writers.push(new Promise(resolve => {
+          let filenameforExport = exporterCommon.boardFilenameForExport(board, index, basenameWithoutExt)
+          exportFlattenedBoard(
+            board,
+            filenameforExport,
+            {
+              size: exporterCommon.boardFileImageSize(boardData),
+              boardAbsolutePath,
+              outputPath
+            }
+          ).then(() => resolve()).catch(err => console.error(err))
         }))
 
         index++
