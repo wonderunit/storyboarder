@@ -72,6 +72,12 @@ const template = [
         }
       },
       {
+        label: 'Export Scene as Images',
+        click (item, focusedWindow, event) {
+          ipcRenderer.send('exportImages')
+        }
+      },
+      {
         type: 'separator'
       },
       {

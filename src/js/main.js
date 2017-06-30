@@ -675,6 +675,10 @@ ipcMain.on('exportFcp', (event, arg) => {
   mainWindow.webContents.send('exportFcp', arg)
 })
 
+ipcMain.on('exportImages', (event, arg) => {
+  mainWindow.webContents.send('exportImages', arg)
+})
+
 ipcMain.on('printWorksheet', (event, arg) => {
   //openPrintWindow()
   mainWindow.webContents.send('printWorksheet', arg)
