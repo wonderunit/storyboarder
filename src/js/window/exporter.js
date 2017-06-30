@@ -5,7 +5,8 @@ const GIFEncoder = require('gifencoder')
 const moment = require('moment')
 
 const exporterCommon = require('../exporters/common.js')
-const exporterFcp = require('../exporters/final-cut-pro-x.js')
+const exporterFcpX = require('../exporters/final-cut-pro-x.js')
+const exporterFcp = require('../exporters/final-cut-pro.js')
 const util = require('../utils/index.js')
 
 const getImage = (url) => {
@@ -64,14 +65,17 @@ class Exporter extends EventEmitter {
 
       let outputPath = path.join(
         exportsPath,
-        basename + ' Final Cut Pro X ' + moment().format('YYYY-MM-DD hh.mm.ss')
+        basename + ' Exported ' + moment().format('YYYY-MM-DD hh.mm.ss')
       )
       if (!fs.existsSync(outputPath)) {
         fs.mkdirSync(outputPath)
       }
 
-      let xml = exporterFcp.generateFinalCutProXXml(exporterFcp.generateFinalCutProXData(boardData, { boardAbsolutePath, outputPath }))
-      fs.writeFileSync(path.join(outputPath, basename + '.fcpxml'), xml)
+      let xml = exporterFcp.generateFinalCutProXml(exporterFcp.generateFinalCutProData(boardData, { boardAbsolutePath, outputPath }))
+      fs.writeFileSync(path.join(outputPath, basename + '.xml'), xml)
+
+      let fcpxml = exporterFcpX.generateFinalCutProXXml(exporterFcpX.generateFinalCutProXData(boardData, { boardAbsolutePath, outputPath }))
+      fs.writeFileSync(path.join(outputPath, basename + '.fcpxml'), fcpxml)
 
       // export ALL layers of each one of the boards
       let index = 0

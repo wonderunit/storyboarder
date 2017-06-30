@@ -66,7 +66,7 @@ const template = [
         }
       },
       {
-        label: 'Export Scene for Final Cut Pro X …',
+        label: 'Export Scene for Final Cut Pro X and Premiere',
         click (item, focusedWindow, event) {
           ipcRenderer.send('exportFcp')
         }
