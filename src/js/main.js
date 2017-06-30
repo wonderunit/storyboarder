@@ -217,7 +217,7 @@ let importImagesDialogue = () => {
     {
       title:"Import Boards", 
       filters:[
-        {name: 'Images', extensions: ['png', 'jpg']},
+        {name: 'Images', extensions: ['png', 'jpg', 'psd']},
       ],
       properties: [
         "openFile",
