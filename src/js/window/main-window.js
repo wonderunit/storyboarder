@@ -487,7 +487,7 @@ let loadBoardUI = ()=> {
   })
 
   document.querySelector('#open-in-photoshop-button').addEventListener('pointerdown', (e)=>{
-    let children = ['main', 'reference', 'notes'].map(layerName => {
+    let children = ['reference', 'main', 'notes'].map(layerName => {
       return {
         "name": layerName,
         "canvas": storyboarderSketchPane.getLayerCanvasByName(layerName)
@@ -518,6 +518,7 @@ let loadBoardUI = ()=> {
       }
       let mainCanvas = storyboarderSketchPane.getLayerCanvasByName("main");
       let ctx = mainCanvas.getContext('2d');
+      ctx.clearRect(0, 0, mainCanvas.width, mainCanvas.height)
       for(let layer of psd.children) {
         if(layer.name == "notes" || layer.name == "reference" || !layer.canvas) {
           continue;
