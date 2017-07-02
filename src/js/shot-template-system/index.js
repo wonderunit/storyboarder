@@ -16,8 +16,6 @@ To think about:
     Try to see where the system fails to do what is expected
     Try to identify missing parameters for the system
 
-
-
 EXAMPLES FOR PARSER:
   medium single backlit
   wide single
@@ -91,6 +89,13 @@ STS TODO
     tree
     car
     table
+
+
+-=-=-=-=-=-
+
+Generate grid as image
+
+
 // 1s dead center backlit ls eye
 */
 
@@ -196,29 +201,42 @@ let loadTextures = () => {
 
   textures = {}
 
-  textures.male = new THREE.Texture()
-  imageLoader.load('data/sts/stdummy_male_texture.png', ( image ) => {
-    textures.male.image = image
-    textures.male.needsUpdate = true
+  textures.maleBody = new THREE.Texture()
+  imageLoader.load('data/sts/dummies/stdummy_male_tex_body.png', ( image ) => {
+    textures.maleBody.image = image
+    textures.maleBody.needsUpdate = true
+  })
+
+  textures.maleHead = new THREE.Texture()
+  imageLoader.load('data/sts/dummies/stdummy_male_tex_head.png', ( image ) => {
+    textures.maleHead.image = image
+    textures.maleHead.needsUpdate = true
   })
 
   textures.femaleBody = new THREE.Texture()
-  imageLoader.load('data/sts/stdummy_female_tex_body.png', ( image ) => {
+  imageLoader.load('data/sts/dummies/stdummy_female_tex_body.png', ( image ) => {
     textures.femaleBody.image = image
     textures.femaleBody.needsUpdate = true
   })
 
   textures.femaleHead = new THREE.Texture()
-  imageLoader.load('data/sts/stdummy_female_tex_head.png', ( image ) => {
+  imageLoader.load('data/sts/dummies/stdummy_female_tex_head.png', ( image ) => {
     textures.femaleHead.image = image
     textures.femaleHead.needsUpdate = true
   })
 
-  textures.boxmodel = new THREE.Texture()
-  imageLoader.load('data/sts/stdummy_boxmodel_texture.png', ( image ) => {
-    textures.boxmodel.image = image
-    textures.boxmodel.needsUpdate = true
+  textures.boxmodelBody = new THREE.Texture()
+  imageLoader.load('data/sts/dummies/stdummy_boxmodel_tex_body.png', ( image ) => {
+    textures.boxmodelBody.image = image
+    textures.boxmodelBody.needsUpdate = true
   })
+
+  textures.boxmodelHead = new THREE.Texture()
+  imageLoader.load('data/sts/dummies/stdummy_boxmodel_tex_head.png', ( image ) => {
+    textures.boxmodelHead.image = image
+    textures.boxmodelHead.needsUpdate = true
+  })
+
 
   textures.ground = new THREE.Texture()
   imageLoader.load('data/sts/grid_floor.png', ( image ) => {
@@ -260,13 +278,13 @@ let loadTextures = () => {
   })
 
   textures.chair = new THREE.Texture()
-  imageLoader.load('data/sts/chair_uv.png', ( image ) => {
+  imageLoader.load('data/sts/objects/chair_uv.png', ( image ) => {
     textures.chair.image = image
     textures.chair.needsUpdate = true
   })
 
   textures.tree = new THREE.Texture()
-  imageLoader.load('data/sts/tree_uv.png', ( image ) => {
+  imageLoader.load('data/sts/objects/tree_uv.png', ( image ) => {
     textures.tree.image = image
     textures.tree.needsUpdate = true
   })
@@ -277,7 +295,7 @@ let loadDummyModels = () => {
   
   dummyModels = {}
 
-  loader.load("data/sts/stdummy_female.jd", (data) => {
+  loader.load("data/sts/dummies/stdummy_female.jd", (data) => {
     let material = new THREE.MeshToonMaterial({
       map: textures.femaleBody,
       color: 0xffffff,
@@ -288,7 +306,7 @@ let loadDummyModels = () => {
       shading: THREE.SmoothShading,
     })
     material.outlineParameters = {
-      thickness: .005,//outlineWidth,
+      thickness: outlineWidth,
       color: new THREE.Color( 0x0 ),
       alpha: 0.6,
       visible: true,
@@ -304,7 +322,7 @@ let loadDummyModels = () => {
       shading: THREE.SmoothShading,
     })
     material2.outlineParameters = {
-      thickness: .005,//outlineWidth,
+      thickness: outlineWidth,
       color: new THREE.Color( 0x0 ),
       alpha: 0.6,
       visible: true,
@@ -326,26 +344,44 @@ let loadDummyModels = () => {
     }
   })
 
-  loader.load("data/sts/stdummy_male.jd", (data) => {
+  loader.load("data/sts/dummies/stdummy_male.jd", (data) => {
     let material = new THREE.MeshToonMaterial({
-      map: textures.male,
+      map: textures.maleBody,
       color: 0xffffff,
       emissive: 0x0,
       specular: 0x0,
       skinning: true,
       shininess: 0,
-      gradientMap: textures.gradientMap,
       shading: THREE.SmoothShading,
     })
     material.outlineParameters = {
-      thickness: .005, //outlineWidth,
+      thickness: outlineWidth,
       color: new THREE.Color( 0x0 ),
       alpha: 0.6,
       visible: true,
       keepAlive: true
     }
+    let material2 = new THREE.MeshToonMaterial({
+      map: textures.maleHead,
+      color: 0xffffff,
+      emissive: 0x0,
+      specular: 0x0,
+      skinning: true,
+      shininess: 0,
+      shading: THREE.SmoothShading,
+    })
+    material2.outlineParameters = {
+      thickness: outlineWidth,
+      color: new THREE.Color( 0x0 ),
+      alpha: 0.6,
+      visible: true,
+      keepAlive: true
+    }
+
+    var multiMaterial = new THREE.MultiMaterial([material, material2])
+
     for (var i = 0; i < data.geometries.length; ++i) {
-      var mesh = new THREE.SkinnedMesh(data.geometries[i], material)
+      var mesh = new THREE.SkinnedMesh(data.geometries[i], multiMaterial)
       var bbox = new THREE.Box3().setFromObject(mesh);
       var height = bbox.max.y - bbox.min.y
       var targetHeight = 1.8
@@ -357,26 +393,44 @@ let loadDummyModels = () => {
     }
   })
 
-  loader.load("data/sts/stdummy_boxmodel.jd", (data) => {
+  loader.load("data/sts/dummies/stdummy_boxmodel.jd", (data) => {
     let material = new THREE.MeshToonMaterial({
-      map: textures.boxmodel,
+      map: textures.boxmodelBody,
       color: 0xffffff,
       emissive: 0x0,
       specular: 0x0,
       skinning: true,
       shininess: 0,
-      gradientMap: textures.gradientMap,
       shading: THREE.SmoothShading,
     })
     material.outlineParameters = {
-      thickness: .025, //outlineWidth,
+      thickness: outlineWidth,
       color: new THREE.Color( 0x0 ),
       alpha: 0.6,
       visible: true,
       keepAlive: true
     }
+    let material2 = new THREE.MeshToonMaterial({
+      map: textures.boxmodelHead,
+      color: 0xffffff,
+      emissive: 0x0,
+      specular: 0x0,
+      skinning: true,
+      shininess: 0,
+      shading: THREE.SmoothShading,
+    })
+    material2.outlineParameters = {
+      thickness: outlineWidth,
+      color: new THREE.Color( 0x0 ),
+      alpha: 0.6,
+      visible: true,
+      keepAlive: true
+    }
+
+    var multiMaterial = new THREE.MultiMaterial([material, material2])
+
     for (var i = 0; i < data.geometries.length; ++i) {
-      var mesh = new THREE.SkinnedMesh(data.geometries[i], material)
+      var mesh = new THREE.SkinnedMesh(data.geometries[i], multiMaterial)
       var bbox = new THREE.Box3().setFromObject(mesh);
       var height = bbox.max.y - bbox.min.y
       var targetHeight = 1.7
@@ -393,27 +447,12 @@ let loadDummyModels = () => {
 let loadObjs = () => {
   objModels = {}
 
-  console.log("SUPPPP")
-
-
   objLoader = new THREE.OBJLoader( manager );
   
-  objLoader.load( 'data/sts/chair.obj', function ( object ) {
+  objLoader.load( 'data/sts/objects/chair.obj', function ( object ) {
     console.log(object)
     object.traverse( function ( child ) {
       if ( child instanceof THREE.Mesh ) {
-        // let material = new THREE.MeshToonMaterial({
-        //   map: textures.chair,
-        //   color: 0xffffff,
-        //   emissive: 0x0,
-        //   specular: 0x0,
-        //   skinning: true,
-        //   shininess: 0,
-        //   gradientMap: textures.gradientMap,
-        // })
-
-
-
         var mesh = child
         var bbox = new THREE.Box3().setFromObject(mesh);
         var height = bbox.max.y - bbox.min.y
@@ -421,33 +460,16 @@ let loadObjs = () => {
         var scale = targetHeight / height
         mesh.scale.set(scale, scale, scale)
         mesh.updateMatrix()
-
-        
-
         mesh.material.map = textures.chair
-        //mesh.material.color = 0xffffff
         objModels.chair = mesh
-
       }
     })
   })
 
-  objLoader.load( 'data/sts/tree.obj', function ( object ) {
+  objLoader.load( 'data/sts/objects/tree.obj', function ( object ) {
     console.log(object)
     object.traverse( function ( child ) {
       if ( child instanceof THREE.Mesh ) {
-        // let material = new THREE.MeshToonMaterial({
-        //   map: textures.chair,
-        //   color: 0xffffff,
-        //   emissive: 0x0,
-        //   specular: 0x0,
-        //   skinning: true,
-        //   shininess: 0,
-        //   gradientMap: textures.gradientMap,
-        // })
-
-
-
         var mesh = child
         var bbox = new THREE.Box3().setFromObject(mesh);
         var height = bbox.max.y - bbox.min.y
@@ -455,18 +477,11 @@ let loadObjs = () => {
         var scale = targetHeight / height
         mesh.scale.set(scale, scale, scale)
         mesh.updateMatrix()
-
-        
-
         mesh.material.map = textures.tree
         //mesh.material.color = 0xffffff
         objModels.tree = mesh
-
       }
     })
-
-
-
   })
 
   // objLoader.load("data/sts/chair.obj", (data) => {
@@ -648,19 +663,22 @@ let render = () => {
   renderer.clearDepth()
 
   dummyGroup.children.forEach( (param) => {
-    // console.log(param)
-    // param.material[0].outlineParameters.thickness = 0.013
-    // param.material[0].outlineParameters.alpha = 0.8
-    // param.material[0].outlineParameters.color = new THREE.Color( 0x333333 )
+    param.material.materials.forEach ( (mat) => {
+      mat.outlineParameters.thickness = 0.013
+      mat.outlineParameters.alpha = 0.8
+      mat.outlineParameters.color = new THREE.Color( 0x333333 )
+    })
+
   })
 
   effect.render(contentScene, camera)
   renderer.clearDepth()
   dummyGroup.children.forEach( (param) => {
-    // console.log(param)
-    // param.material[0].outlineParameters.thickness = 0.007
-    // param.material[0].outlineParameters.alpha = 0.6
-    // param.material[0].outlineParameters.color = new THREE.Color( 0x0 )
+    param.material.materials.forEach ( (mat) => {
+      mat.outlineParameters.thickness = 0.007
+      mat.outlineParameters.alpha = 0.6
+      mat.outlineParameters.color = new THREE.Color( 0x0 )
+    })
   })
   effect.render(contentScene, camera)
 
