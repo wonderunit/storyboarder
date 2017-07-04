@@ -62,6 +62,8 @@ document.querySelector('iframe').onload = ()=>{
   })
 }
 
+document.querySelector('iframe').src = "https://wonderunit.com/ads/storyboarder/"
+
 document.querySelector('#getting-started').onclick = ()=> {
   //shell.openExternal("https://wonderunit.com")
 }
