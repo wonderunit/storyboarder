@@ -14,7 +14,8 @@ const defaultPrefs = {
   enableUISoundEffects: true,
   enableHighQualityAudio: false,
   enableTooltips: true,
-  enableAspirationalMessages: true
+  enableAspirationalMessages: true,
+  defaultBoardTiming: 2000
 }
 
 let prefs
