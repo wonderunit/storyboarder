@@ -6,6 +6,13 @@ const template = [
     label: 'File',
     submenu: [
       {
+        label: 'Save',
+        accelerator: 'CmdOrCtrl+S',
+        click ( item, focusedWindow, event) {
+          ipcRenderer.send('save')
+        }
+      },
+      {
         label: 'Open...',
         accelerator: 'CmdOrCtrl+O',
         click ( item, focusedWindow, event) {
@@ -173,7 +180,6 @@ const template = [
         type: 'separator'
       },
       {
-        accelerator: 'CmdOrCtrl+S',
         label: 'Toggle speaking',
         type: 'checkbox',
         click ( item, focusedWindow, event) {
