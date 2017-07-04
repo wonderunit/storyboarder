@@ -364,7 +364,7 @@ let createNew = () => {
             version: pkg.version,
             aspectRatio: 2.333,
             fps: 24,
-            defaultBoardTiming: 2000,
+            defaultBoardTiming: prefs.defaultBoardTiming,
             boards: []
           }
           let aspects = [2.39, 2, 1.85, 1.7777777777777777, 0.5625, 1, 1.3333333333333333]
