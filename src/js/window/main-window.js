@@ -856,6 +856,17 @@ let loadBoardUI = ()=> {
     saveImageFile()
   })
 
+  console.log('*****')
+  console.log('prefsModule', prefsModule)
+  prefsModule.on('change', newPrefs => {
+    console.log('window saw prefs change', newPrefs)
+    if (boardData && boardData.defaultBoardTiming != newPrefs.defaultBoardTiming) {
+      console.log('updating boardData.defaultBoardTiming to reflect prefs.defaultBoardTiming')
+      boardData.defaultBoardTiming = newPrefs.defaultBoardTiming
+      renderMetaData()
+    }
+  })
+
   // for debugging:
   //
   // remote.getCurrentWebContents().openDevTools()
