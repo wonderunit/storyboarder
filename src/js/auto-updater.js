@@ -75,7 +75,8 @@ const init = win => {
   //   dialog.showMessageBox(null, { message: 'Update not available.' })
   // })
   autoUpdater.on('error', (ev, err) => {
-    dialog.showMessageBox(null, { message: 'Error in auto-updater.' })
+    console.error('Error in auto-updater.')
+    // dialog.showMessageBox(null, { message: 'Error in auto-updater.' })
   })
 
   autoUpdater.autoDownload = false
