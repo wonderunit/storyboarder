@@ -217,7 +217,7 @@ let importImagesDialogue = () => {
     {
       title:"Import Boards", 
       filters:[
-        {name: 'Images', extensions: ['png', 'jpg', 'psd']},
+        {name: 'Images', extensions: ['png', 'jpg', 'jpeg', 'psd']},
       ],
       properties: [
         "openFile",
@@ -391,6 +391,10 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
   }
   if (newWindow) {
     newWindow.hide()
+  }
+
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.close()
   }
 
   const { width, height } = electron.screen.getPrimaryDisplay().workAreaSize

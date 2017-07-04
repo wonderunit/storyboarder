@@ -20,49 +20,6 @@ const template = [
         }
       },
       {
-        label: 'Import Storyboards',
-        accelerator: 'CmdOrCtrl+Shift+i',
-        click ( item, focusedWindow, event) {
-          ipcRenderer.send('importImagesDialogue')
-        }
-      },
-      {
-        type: 'separator'
-      },
-      {
-        label: 'Export Treatment...',
-        click ( item, focusedWindow, event) {
-          ipcRenderer.send('exportTreatment')
-        }
-      },
-      {
-        label: 'Export to Fountain Screenplay...',
-        click ( item, focusedWindow, event) {
-          ipcRenderer.send('exportFountain')
-        }
-      },
-      {
-        label: 'Export to Outliner...',
-        click ( item, focusedWindow, event) {
-          ipcRenderer.send('exportOutliner')
-        }
-      },
-      {
-        label: 'Export to CSV file...',
-        click ( item, focusedWindow, event) {
-          ipcRenderer.send('exportCSV')
-        }
-      },
-      {
-        type: 'separator'
-      },
-      {
-        label: 'Export poster to PDF...',
-        click ( item, focusedWindow, event) {
-          ipcRenderer.send('exportPoster')
-        }
-      },
-      {
         type: 'separator'
       },
       {
@@ -89,7 +46,7 @@ const template = [
       },
       {
         accelerator: 'CmdOrCtrl+P',
-        label: 'Print current scene worksheet...',
+        label: 'Print a Storyboarder worksheet...',
         click ( item, focusedWindow, event) {
           ipcRenderer.send('printWorksheet')
         }
@@ -99,6 +56,16 @@ const template = [
         label: 'Import worksheets...',
         click ( item, focusedWindow, event) {
           ipcRenderer.send('importWorksheets')
+        }
+      },
+      {
+        type: 'separator'
+      },
+      {
+        label: 'Import Images...',
+        accelerator: 'CmdOrCtrl+Shift+i',
+        click ( item, focusedWindow, event) {
+          ipcRenderer.send('importImagesDialogue')
         }
       },
     ]
@@ -607,7 +574,7 @@ const welcomeTemplate = [
         label: 'Open...',
         accelerator: 'CmdOrCtrl+O',
         click ( item, focusedWindow, event) {
-          ipcRenderer.send('openFile')
+          ipcRenderer.send('openDialogue')
         }
       }
     ]
