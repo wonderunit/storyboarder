@@ -2816,6 +2816,15 @@ const exportImages = () => {
   })
 }
 
+let save = () => {
+  saveImageFile()
+  saveBoardFile()
+  sfx.positive()
+  notifications.notify({message: "Saving is automatic. I already saved before you pressed this, so you don't really need to save at all. \n\nBut I did want you to know, that I think you're special - and I like you just the way you are.\n\nHere's a story tip..." , timing: 15})
+  setTimeout(()=>{storyTips.show()}, 1000)
+}
+
+
 /**
  * Paste
  *
@@ -3505,4 +3514,8 @@ ipcRenderer.on('importWorksheets', (event, args) => {
     importWindow.show()
     //printWindow.webContents.send('worksheetData',boardData.aspectRatio)
   })
+})
+
+ipcRenderer.on('save', (event, args) => {
+  save()
 })
