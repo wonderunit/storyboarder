@@ -88,7 +88,7 @@ class WorksheetPrinter extends EventEmitter {
     x = documentSize[1]-margin[2]-qrSize
     y = margin[1]
 
-    doc.image(app.getPath('temp') + 'qrcode.png', x, y, {width: qrSize, height: qrSize})
+    doc.image(path.join(app.getPath('temp'), 'qrcode.png'), x, y, {width: qrSize, height: qrSize})
     doc.save()
     doc.rotate(-90, {origin: [x, y]})
     doc.font('thin')
