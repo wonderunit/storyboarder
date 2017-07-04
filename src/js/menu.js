@@ -475,7 +475,7 @@ const template = [
     submenu: [
       {
         label: 'Learn More',
-        click () { require('electron').shell.openExternal('https://wonderunit.com/software/storyboarder/') }
+        click () { require('electron').shell.openExternal('https://wonderunit.com/storyboarder/') }
       },
       {
         label: 'Found a bug? Submit an issue!!!',
