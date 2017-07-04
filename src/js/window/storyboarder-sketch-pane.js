@@ -739,6 +739,10 @@ class MovingStrategy {
     this.container.startMultiLayerOperation()
     this.container.setCompositeLayerVisibility(true)
 
+    // if we previously were in erase mode, undo its effects,
+    //   and ensure paintingCanvas is visible
+    this.container.sketchPane.setPaintingKnockout(false)
+
     // fake an initial move event
     this.container.canvasPointerMove(e)
 
@@ -861,12 +865,9 @@ class ScalingStrategy {
     this.container.startMultiLayerOperation()
     this.container.setCompositeLayerVisibility(true)
     
-    // HACK ensure paintingCanvas is visible
-    // might need this due to the 'pointer is already down' bug?
-    //  maybe once that's fixed we can remove?
-    //
-    // maybe relatd to SketchPane#setPaintingKnockout?
-    this.container.sketchPane.paintingCanvas.style.visibility = 'visible'
+    // if we previously were in erase mode, undo its effects,
+    //   and ensure paintingCanvas is visible
+    this.container.sketchPane.setPaintingKnockout(false)
 
     // fake an initial move event
     this.container.canvasPointerMove(e)
