@@ -702,18 +702,22 @@ class MovingStrategy {
     this.pos = null
     this.offset = [0, 0]
 
+    // store a composite of all the layers
+    // TODO is storedContext properly disposed?
     let storedContext = this.container.createContext()
     this.storedComposite = storedContext.canvas
     this.container.drawComposite(this.container.visibleLayersIndices, storedContext)
 
+    // store each of the layers individually
     this.storedLayers = {}
     for (let index of [0, 1, 3]) {// HACK hardcoded
-      let context = this.container.sketchPane.getLayerContext(index)
-      let storedContext = this.container.createContext()
-      let storedCanvas = storedContext.canvas
-      storedContext.drawImage(context.canvas, 0, 0)
+      let layerContext = this.container.sketchPane.getLayerContext(index)
+      let storedLayerContext = this.container.createContext()
+      let storedLayerCanvas = storedLayerContext.canvas
+      storedLayerContext.drawImage(layerContext.canvas, 0, 0)
+      // TODO is this.storedLayers properly disposed?
       this.storedLayers[index] = {
-        canvas: storedCanvas,
+        canvas: storedLayerCanvas,
         offset: [0, 0]
       }
     }
@@ -794,6 +798,7 @@ class MovingStrategy {
     this.container.sketchPane.selectLayer(this.container.compositeIndex)
   }
 
+  // actually move the layer content
   applyMultiLayerOperationByLayerIndex (index) {
     if (!this.pos) return
 
