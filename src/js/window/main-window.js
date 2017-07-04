@@ -1429,6 +1429,14 @@ let renderMetaData = ()=> {
   } else {
     document.querySelector('#line-miles').innerHTML = '0 line miles'
   }
+
+  if (boardData.defaultBoardTiming) {
+    document.querySelector('input[name="duration"]').dataset.tooltipDescription = `Enter the number of milliseconds for a board. There are 1000 milliseconds in a second. ${boardData.defaultBoardTiming} milliseconds is the default.`
+
+    let defaultFramesPerBoard = Math.round(boardData.defaultBoardTiming / 1000 * 24)
+    document.querySelector('input[name="frames"]').dataset.tooltipDescription = `Enter the number of frames for a board. There are 24 frames in a second. ${defaultFramesPerBoard} frames is the default.`
+  }
+
   renderStats()
 }
 
