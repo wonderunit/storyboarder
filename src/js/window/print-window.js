@@ -35,13 +35,13 @@ const print = () => {
   let cmd
   switch (os.platform()) {
     case 'darwin':
-      cmd = 'lpr -o landscape ' + app.getPath('temp') + 'worksheetoutput.pdf'
+      cmd = 'lpr -o landscape ' + path.join(app.getPath('temp'), 'worksheetoutput.pdf')
       break
     case 'linux':
-      cmd = 'lp ' + app.getPath('temp') + 'worksheetoutput.pdf'
+      cmd = 'lp ' + path.join(app.getPath('temp'), 'worksheetoutput.pdf')
       break
     case 'win32':
-      cmd = path.join(app.getAppPath(), 'src', 'data', 'app', 'SumatraPDF.exe') + ' -print-to-default ' + app.getPath('temp') + 'worksheetoutput.pdf'
+      cmd = path.join(app.getAppPath(), 'src', 'data', 'app', 'SumatraPDF.exe') + ' -print-to-default ' + path.join(app.getPath('temp'), 'worksheetoutput.pdf')
       break
   }
   let output = child_process.execSync(cmd)
