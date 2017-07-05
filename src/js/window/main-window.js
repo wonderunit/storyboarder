@@ -2487,7 +2487,7 @@ let playAdvance = function(first) {
   if (boardData.boards[currentBoard].duration) {
     frameDuration = boardData.boards[currentBoard].duration
   } else {
-    frameDuration = 2000
+    frameDuration = boardData.defaultBoardTiming
   }
   frameTimer = setTimeout(playAdvance, frameDuration)
 }
