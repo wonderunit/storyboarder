@@ -2827,7 +2827,7 @@ let exportAnimatedGif = () => {
   notifications.notify({message: "Exporting " + boards.length + " boards. Please wait...", timing: 5})
   sfx.down()
   setTimeout(()=>{
-    exporter.exportAnimatedGif(boards, boardSize, 500, boardPath, boardFilename)
+    exporter.exportAnimatedGif(boards, boardSize, 800, boardPath, boardFilename, true)
   }, 1000)
 }
 
