@@ -1,6 +1,7 @@
 const fs = require('fs')
 const path = require('path')
 const { app } = require('electron')
+
 const pkg = require('../../package.json')
 const util = require('./utils/index.js') // for Object.equals
 
@@ -14,7 +15,8 @@ const defaultPrefs = {
   enableUISoundEffects: true,
   enableHighQualityAudio: false,
   enableTooltips: true,
-  enableAspirationalMessages: true
+  enableAspirationalMessages: true,
+  defaultBoardTiming: 2000
 }
 
 let prefs

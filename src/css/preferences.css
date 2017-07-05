@@ -83,3 +83,12 @@ input[type=checkbox]:checked + label:before {
   position: absolute;
   color: white;
 }
+
+input[type=number] {
+  font-size: 14px;
+  padding: 10px;
+  color: white;
+  background: #3A3A3A;
+  border: none;
+  border-radius: 3px;
+}
