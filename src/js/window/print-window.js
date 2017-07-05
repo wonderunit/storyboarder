@@ -14,6 +14,8 @@ let rows
 let cols
 let spacing
 
+let currentScene
+let scriptData
 // on change save preferences
 
 window.pdf = pdf
@@ -33,9 +35,6 @@ document.querySelector('#print-button').onclick = (e) => {
 
 const print = () => {
   let cmd
-
-  console.log(document.querySelector('#copies').value)
-
 
   switch (os.platform()) {
     case 'darwin':
@@ -158,13 +157,15 @@ const loadWindow = () => {
 }
 
 const generateWorksheet = () => {
-  console.log(paperSize, aspectRatio, rows, cols, spacing, 0, storyTips.getTipString())
-  worksheetPrinter.generate(paperSize, aspectRatio, rows, cols, spacing, 0, storyTips.getTipString())
+  console.log(paperSize, aspectRatio, rows, cols, spacing, currentScene, storyTips.getTipString(), scriptData)
+  worksheetPrinter.generate(paperSize, aspectRatio, rows, cols, spacing, currentScene, storyTips.getTipString(), scriptData)
 }
 
 loadWindow()
 
-ipcRenderer.on('worksheetData', (event, _aspectRatio) => {
+ipcRenderer.on('worksheetData', (event, _aspectRatio, _currentScene, _scriptData) => {
   aspectRatio = _aspectRatio
+  currentScene = _currentScene
+  scriptData = _scriptData
   generateWorksheet()
 })

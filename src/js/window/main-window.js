@@ -3463,6 +3463,8 @@ let importWindow
 
 
 ipcRenderer.on('printWorksheet', (event, args) => {
+  console.log(boardData)
+
   if (!printWindow) {
     printWindow = new remote.BrowserWindow({
       width: 1200, 
@@ -3481,13 +3483,13 @@ ipcRenderer.on('printWorksheet', (event, args) => {
   } else {
     if (!printWindow.isVisible()) {
       printWindow.show()
-      printWindow.webContents.send('worksheetData',boardData.aspectRatio)
+      printWindow.webContents.send('worksheetData',boardData.aspectRatio, currentScene, scriptData)
     }
   }
 
   printWindow.once('ready-to-show', () => {
     printWindow.show()
-    printWindow.webContents.send('worksheetData',boardData.aspectRatio)
+    printWindow.webContents.send('worksheetData',boardData.aspectRatio, currentScene, scriptData)
   })
 })
 

@@ -28,7 +28,8 @@ class WorksheetPrinter extends EventEmitter {
     })
   }
 
-  generate (paperSize, aspectRatio, rows, cols, spacing, sceneNumber, tipString, mobileURL) {
+  generate (paperSize, aspectRatio, rows, cols, spacing, sceneNumber, tipString, scriptData) {
+
     let headerHeight = 80
     let documentSize
     if (paperSize == 'LTR') {
@@ -39,26 +40,6 @@ class WorksheetPrinter extends EventEmitter {
     aspectRatio = aspectRatio.toFixed(3)
     if (!sceneNumber) sceneNumber = 0
     let margin = [22, 22, 22, 40]
-
-    // let currentSection = ''
-    // let sceneNumber = 0
-    // let node
-    //let currentSection
-
-    // for (var i = 0; i < outlineData.length; i++) {
-    //   if (outlineData[i].type == 'section') {
-    //     currentSection = outlineData[i].text
-    //   } else if (outlineData[i].type == 'scene') {
-    //     sceneNumber++
-    //     if (i == currentNode) {
-    //       node = outlineData[i]
-    //       break;
-    //     }
-    //   }
-    // }
-
-    // let node = {}
-    // node.text = "sup"
 
     let doc = new pdfDocument({size: documentSize, layout: 'landscape', margin: 0})
     doc.registerFont('thin', path.join(__dirname, '..', '..', 'fonts', 'proximanova', 'ProximaNova-Thin.ttf'))
@@ -96,20 +77,63 @@ class WorksheetPrinter extends EventEmitter {
     doc.text('CODE: ' + qrText, x-qrSize, y-10, {width: qrSize, align: 'left'})
     doc.restore()
 
-    if (sceneNumber) {
-      doc.font('regular')
-      doc.fontSize(8)
-      let t = currentSection+': SCENE ' + sceneNumber
-      doc.text(t, margin[0], margin[1], {align: 'left'})
-      let w = doc.widthOfString(t, {align: 'left'})
-      doc.font('thin')
-      doc.text('DRAFT: ' + moment().format('MMMM Do, YYYY').toUpperCase(), margin[0]+w+7, margin[1], {align: 'left'})
-      doc.fontSize(14)
-      doc.font('bold')
-      doc.text(node.text, margin[0], margin[1]+8, {align: 'left'})
-      doc.fontSize(5)
-      doc.font('light')
-      doc.text(node.description, {columns: 2, columnGap: 15, height: 60, width: 465})
+
+
+//   for (var node of scriptData ) {
+//     switch (node.type) {
+//       case 'section':
+//         html.push('<div class="section node">' + node.text + '</div>')
+//         break
+//       case 'scene':
+//         if (node.scene_number !== 0) {
+//           if (currentScene == (Number(node.scene_number)-1)) {
+//             html.push('<div class="scene node active" data-node="' + (Number(node.scene_number)-1) + '" style="background:' + getSceneColor(node.slugline) + '">')
+//           } else {
+//             html.push('<div class="scene node" data-node="' + (Number(node.scene_number)-1) + '" style="background:' + getSceneColor(node.slugline) + '">')
+//           }
+//           html.push('<div class="number">SCENE ' + node.scene_number + ' - ' + util.msToTime(node.duration) + '</div>')
+//           if (node.slugline) {
+//             html.push('<div class="slugline">' + node.slugline + '</div>')
+//           }
+//           if (node.synopsis) {
+//             html.push('<div class="synopsis">' + node.synopsis + '</div>')
+//           }
+//           // time, duration, page, word_count
+//           html.push('</div>')
+//         }
+//         break
+//     }
+//     i++
+//   }
+
+    if (scriptData) {
+      for (var node of scriptData ) {
+        switch (node.type) {
+          case 'section':
+            break
+          case 'scene':
+            if (node.scene_number !== 0) {
+              if (sceneNumber == (Number(node.scene_number)-1)) {
+                doc.font('regular')
+                doc.fontSize(8)
+                let t = 'SCENE ' + node.scene_number + ' - ' + util.msToTime(node.duration)
+                doc.text(t, margin[0], margin[1], {align: 'left'})
+                let w = doc.widthOfString(t, {align: 'left'})
+                doc.font('thin')
+                doc.text('DRAFT: ' + moment().format('MMMM Do, YYYY').toUpperCase(), margin[0]+w+7, margin[1], {align: 'left'})
+                doc.fontSize(14)
+                doc.font('bold')
+                doc.text(node.slugline, margin[0], margin[1]+8, {align: 'left'})
+                doc.fontSize(5)
+                doc.font('light')
+                if (node.synopsis) {
+                  doc.text(node.synopsis, {columns: 2, columnGap: 15, height: 60, width: 465})
+                }
+              }
+            }
+            break
+        }
+      }
     } else {
       doc.font('thin')
       doc.fontSize(8)
