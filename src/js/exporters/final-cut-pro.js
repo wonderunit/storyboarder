@@ -142,14 +142,16 @@ const generateFinalCutProData = (boardData, { boardAbsolutePath, outputPath }) =
   let index = 0
   for (let board of boardData.boards) {
     let fileFilename = boardFilenameForExport(board, index, basenameWithoutExt),
-        filePathUrl = `file://${outputPath}/${fileFilename}`
+        filePathUrl = `./${fileFilename}` //`file://${outputPath}/${fileFilename}`
 
-    let duration = util.isUndefined(board.duration)
+    let duration = (util.isUndefined(board.duration) || board.duration == 0)
                      ? boardData.defaultBoardTiming
                      : board.duration
 
     let lastFrame = msecsToFrames(24, duration),
         endFrame = Math.round(currFrame + lastFrame)
+
+    console.log(board.duration)
 
     let clipItem = {
       start: currFrame,
