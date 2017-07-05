@@ -856,6 +856,10 @@ let loadBoardUI = ()=> {
     saveImageFile()
   })
 
+  // text input mode on blur, to prevent menu trigger on preferences typing
+  window.addEventListener('blur', () => {
+    textInputMode = true
+  })
   ipcRenderer.on('prefs:change', (event, newPrefs) => {
     if (boardData && boardData.defaultBoardTiming != newPrefs.defaultBoardTiming) {
       boardData.defaultBoardTiming = newPrefs.defaultBoardTiming
