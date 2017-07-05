@@ -33,17 +33,22 @@ document.querySelector('#print-button').onclick = (e) => {
 
 const print = () => {
   let cmd
+
+  console.log(document.querySelector('#copies').value)
+
+
   switch (os.platform()) {
     case 'darwin':
-      cmd = 'lpr -o landscape ' + path.join(app.getPath('temp'), 'worksheetoutput.pdf')
+      cmd = 'lpr -o landscape -#' + document.querySelector('#copies').value + ' ' + path.join(app.getPath('temp'), 'worksheetoutput.pdf') 
       break
     case 'linux':
-      cmd = 'lp ' + path.join(app.getPath('temp'), 'worksheetoutput.pdf')
+      cmd = 'lp -n ' + document.querySelector('#copies').value + ' ' +  path.join(app.getPath('temp'), 'worksheetoutput.pdf')
       break
     case 'win32':
-      cmd = path.join(app.getAppPath(), 'src', 'data', 'app', 'SumatraPDF.exe') + ' -print-to-default ' + path.join(app.getPath('temp'), 'worksheetoutput.pdf')
+      cmd = path.join(app.getAppPath(), 'src', 'data', 'app', 'SumatraPDF.exe') + ' -print-to-default -print-settings "' + document.querySelector('#copies').value + 'x" ' + path.join(app.getPath('temp'), 'worksheetoutput.pdf')
       break
   }
+
   let output = child_process.execSync(cmd)
 }
 
