@@ -171,7 +171,7 @@ class Exporter extends EventEmitter {
           context.fillRect(0,0,destSize.width,destSize.height)
           context.drawImage(canvases[i], 0,0,destSize.width,destSize.height)
           if (mark) {
-            context.drawImage(watermarkImage,destSize.width-watermarkImage.width+2,destSize.height-watermarkImage.height+5)
+            context.drawImage(watermarkImage,destSize.width-watermarkImage.width,destSize.height-watermarkImage.height)
           }
           let duration
           if (boards[i].duration) {
