@@ -72,7 +72,6 @@ document.querySelector('#open-storyboard').onclick = ()=> {
   document.querySelector('#open-storyboard').style.pointerEvents = 'none'
   setTimeout(()=>{document.querySelector('#open-storyboard').style.pointerEvents = 'auto'}, 1000)
   ipcRenderer.send('openDialogue')
-
 }
 
 document.querySelector('#new-storyboard').onclick = ()=> {
