@@ -978,6 +978,8 @@ let insertNewBoardsWithFiles = (filepaths) => {
           savePath = board.url
         } else {
           board.layers[targetLayer] = { "url": savePath }
+          // save out an empty main layer
+          saveDataURLtoFile((document.createElement('canvas')).toDataURL(), board.url)
         }
         saveDataURLtoFile(imageDataSized, savePath)
 
