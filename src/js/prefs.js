@@ -1,8 +1,6 @@
 const fs = require('fs')
 const path = require('path')
 const { app } = require('electron')
-const EventEmitter = require('events').EventEmitter
-module.exports = new EventEmitter()
 
 const pkg = require('../../package.json')
 const util = require('./utils/index.js') // for Object.equals
@@ -48,7 +46,6 @@ const savePrefs = (newPref) => {
     console.log("SAVING TO DISK")
     fs.writeFileSync(prefFile, JSON.stringify(newPref, null, 2))
   }
-  module.exports.emit('changed', newPref)
 }
 
 const set = (keyPath, value, sync) => {
@@ -72,11 +69,9 @@ const set = (keyPath, value, sync) => {
     //console.log(prefs)
     if (sync) {
       fs.writeFileSync(prefFile, JSON.stringify(prefs, null, 2))
-      module.exports.emit('changed', prefs)
     } else {
       fs.writeFile(prefFile, JSON.stringify(prefs, null, 2), (err) => {
         console.log("SAVED ASYNC")
-        module.exports.emit('changed', prefs)
       })
     }
   }
@@ -102,6 +97,8 @@ const init = () => {
 
 init()
 
-module.exports.savePrefs = savePrefs
-module.exports.getPrefs = getPrefs
-module.exports.set = set
+module.exports = {
+  savePrefs,
+  getPrefs,
+  set
+}
