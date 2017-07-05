@@ -692,3 +692,7 @@ ipcMain.on('importWorksheets', (event, arg) => {
 ipcMain.on('save', (event, arg) => {
   mainWindow.webContents.send('save', arg)
 })
+
+ipcMain.on('prefs:change', (event, arg) => {
+  mainWindow.webContents.send('prefs:change', arg)
+})

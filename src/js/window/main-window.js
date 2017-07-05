@@ -856,13 +856,10 @@ let loadBoardUI = ()=> {
     saveImageFile()
   })
 
-  console.log('*****')
-  console.log('prefsModule', prefsModule)
-  prefsModule.on('change', newPrefs => {
-    console.log('window saw prefs change', newPrefs)
+  ipcRenderer.on('prefs:change', (event, newPrefs) => {
     if (boardData && boardData.defaultBoardTiming != newPrefs.defaultBoardTiming) {
-      console.log('updating boardData.defaultBoardTiming to reflect prefs.defaultBoardTiming')
       boardData.defaultBoardTiming = newPrefs.defaultBoardTiming
+      saveBoardFile()
       renderMetaData()
     }
   })
@@ -1441,6 +1438,7 @@ let renderMetaData = ()=> {
     document.querySelector('#line-miles').innerHTML = '0 line miles'
   }
 
+  // TODO how to regenerate tooltips?
   if (boardData.defaultBoardTiming) {
     document.querySelector('input[name="duration"]').dataset.tooltipDescription = `Enter the number of milliseconds for a board. There are 1000 milliseconds in a second. ${boardData.defaultBoardTiming} milliseconds is the default.`
 

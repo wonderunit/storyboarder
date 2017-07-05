@@ -1,4 +1,4 @@
-const { remote } = require('electron')
+const { remote, ipcRenderer } = require('electron')
 const util = require('./js/utils')
 const prefsModule = require('electron').remote.require('./prefs.js')
 
@@ -20,6 +20,12 @@ const render = () => {
       el.checked = prefs[el.name]
     } else if (el.type == 'number') {
       el.value = prefs[el.name]
+
+      // HACK notify when this pref changes
+      if (el.name == 'defaultBoardTiming') {
+        ipcRenderer.send('prefs:change', { defaultBoardTiming: el.value })
+      }
+
     }
   }
 }
