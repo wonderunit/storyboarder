@@ -938,14 +938,18 @@ let newBoard = (position, shouldAddToUndoStack = true) => {
 
 let insertNewBoardsWithFiles = (filepaths) => {
   let insertionIndex = currentBoard+1
+  let targetLayer = prefsModule.getPrefs('main')['importTargetLayer'] || 'reference'
   let imageFilePromises = filepaths.map(filepath => {
+    let readerOptions = {
+      importTargetLayer: targetLayer
+    }
     let imageData = FileReader.getBase64ImageDataFromFilePath(filepath)
-    if(!imageData || !imageData.main) {
+    if(!imageData) {
       return new Promise((fulfill)=>fulfill())
     }
     let board = insertNewBoardDataAtPosition(insertionIndex++)
     var image = new Image()
-    image.src = imageData.main
+    image.src = imageData[targetLayer]
 
     return new Promise((fulfill, reject)=>{
       setImmediate(()=>{
@@ -962,19 +966,29 @@ let insertNewBoardsWithFiles = (filepaths) => {
           image.height = scale * image.height
         }
 
-        // try pooling
+        // TODO: try pooling
         var canvas = document.createElement('canvas')
         canvas.width = image.width
         canvas.height = image.height
         let context = canvas.getContext('2d')
         context.drawImage(image, 0, 0, image.width, image.height)
         var imageDataSized = canvas.toDataURL()
-        saveDataURLtoFile(imageDataSized, board.url)
+        let savePath = board.url.replace('.png', '-reference.png')
+        if(targetLayer === "main") {
+          savePath = board.url
+        } else {
+          board.layers[targetLayer] = { "url": savePath }
+        }
+        saveDataURLtoFile(imageDataSized, savePath)
 
         // thumbnail
-        let thumbRatio = 60/image.height
-        canvas.width = image.width = thumbRatio * image.width
-        canvas.height = image.height = thumbRatio * image.height
+        const thumbnailHeight = 60
+        let thumbRatio = thumbnailHeight / boardSize.height
+        
+        image.width = (image.width / boardSize.width) * (thumbRatio * boardSize.width)
+        image.height = image.height / boardSize.height * 60
+        canvas.width = thumbRatio * boardSize.width
+        canvas.height = thumbnailHeight
         context.drawImage(image, 0, 0, image.width, image.height)
         var imageDataSized = canvas.toDataURL()
         let thumbPath = board.url.replace('.png', '-thumbnail.png')

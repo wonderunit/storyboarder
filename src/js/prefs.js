@@ -16,7 +16,8 @@ const defaultPrefs = {
   enableHighQualityAudio: false,
   enableTooltips: true,
   enableAspirationalMessages: true,
-  defaultBoardTiming: 2000
+  defaultBoardTiming: 2000,
+  importTargetLayer: "reference"
 }
 
 let prefs
