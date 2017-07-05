@@ -108,7 +108,7 @@ class Exporter extends EventEmitter {
     })
   }
 
-  exportAnimatedGif (boards, boardSize, destWidth, boardPath, mark) {
+  exportAnimatedGif (boards, boardSize, destWidth, boardPath, mark, boardData) {
     let canvases = []
 
     let sequence = Promise.resolve()
@@ -160,7 +160,7 @@ class Exporter extends EventEmitter {
         encoder.createReadStream().pipe(fs.createWriteStream(filepath))
         encoder.start()
         encoder.setRepeat(0)   // 0 for repeat, -1 for no-repeat
-        encoder.setDelay(2000)  // frame delay in ms
+        encoder.setDelay(boardData.defaultBoardTiming)  // frame delay in ms
         encoder.setQuality(10) // image quality. 10 is default.
         let canvas = document.createElement('canvas')
         canvas.width = destSize.width
@@ -177,7 +177,7 @@ class Exporter extends EventEmitter {
           if (boards[i].duration) {
             duration = boards[i].duration
           } else {
-            duration = 2000
+            duration = boardData.defaultBoardTiming
           }
           encoder.setDelay(duration)
          encoder.addFrame(context)
