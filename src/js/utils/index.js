@@ -160,6 +160,8 @@ const zeroFill = (width, number, pad = '0') => {
   return number + ''
 }
 
+let uniq = arr => [...new Set(arr)]
+
 module.exports = {
   msToTime,
   uidGen,
@@ -176,5 +178,6 @@ module.exports = {
   compareNumbers,
   pluralize,
   sample,
-  zeroFill
+  zeroFill,
+  uniq
 }
