@@ -1150,14 +1150,17 @@ let openInEditor = () => {
         readerOptions.referenceCanvas = storyboarderSketchPane.getLayerCanvasByName("reference")
         readerOptions.mainCanvas = storyboarderSketchPane.getLayerCanvasByName("main")
         readerOptions.notesCanvas = storyboarderSketchPane.getLayerCanvasByName("notes")
+        storeUndoStateForImage(true, [0, 1, 3])
         isCurrentBoard = true
       }
+      
       psdData = FileReader.getBase64ImageDataFromFilePath(imageFilePath, readerOptions)
       if(!psdData || !psdData.main) {
         return;
       }
 
       if(isCurrentBoard) {
+        storeUndoStateForImage(false, [0, 1, 3])
         markImageFileDirty([0, 1, 3]) // reference, main, notes layers
         saveImageFile()
         renderThumbnailDrawer()
