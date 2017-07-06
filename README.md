@@ -12,6 +12,8 @@ Whether you are a story artist, writer, director, in advertising, or just a pers
 
 [PLEASE PLEASE PLEASE submit issues with bugs, ideas, suggestions, or any feedback! Thanks!](https://github.com/wonderunit/storyboarder/issues)
 
+Also, if this project seems interesting, could you press that star button at the top right? Thanks!!!!
+
 ## It's easy...
 
 1. Start a blank storyboard or open a Fountain screenplay.
