@@ -1870,7 +1870,7 @@ let renderThumbnailDrawer = ()=> {
       pasteBoards()
     })
     contextMenu.on('import', () => {
-      alert('Import. Coming Soon!')
+      ipcRenderer.send('importImagesDialogue')
     })
     contextMenu.on('reorder-left', () => {
       reorderBoardsLeft()
