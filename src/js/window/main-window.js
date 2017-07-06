@@ -499,28 +499,34 @@ let loadBoardUI = ()=> {
       children: children
     };
     let board = boardData.boards[currentBoard]
-    let imageFilePath = path.join(boardPath, 'images', `board-${board.number}.psd`)
+    let imageFilePath = path.join(boardPath, 'images', board.url.replace('.png', '.psd'))
     const buffer = writePsd(psd);
     fs.writeFileSync(imageFilePath, buffer);
     shell.openItem(imageFilePath);
 
     fs.watchFile(imageFilePath, (cur, prev) => {
-      let referenceCanvas = storyboarderSketchPane.getLayerCanvasByName("reference")
-      let mainCanvas = storyboarderSketchPane.getLayerCanvasByName("main")
-
-      let readerOptions = {
-        mainCanvas: mainCanvas,
-        referenceCanvas: referenceCanvas,
-        notesCanvas: storyboarderSketchPane.getLayerCanvasByName("notes")
+      let psdData
+      let readerOptions = {}
+      let curBoard = boardData.boards[currentBoard]
+      // Update the current canvas if it's the same board coming back in.
+      if(curBoard.uid === board.uid) {
+        readerOptions.referenceCanvas = storyboarderSketchPane.getLayerCanvasByName("reference")
+        readerOptions.mainCanvas = storyboarderSketchPane.getLayerCanvasByName("main")
+        readerOptions.notesCanvas = storyboarderSketchPane.getLayerCanvasByName("notes")
       }
-      var psdData = FileReader.getBase64ImageDataFromFilePath(imageFilePath, readerOptions)
+      psdData = FileReader.getBase64ImageDataFromFilePath(imageFilePath, readerOptions)
+      
       if(!psdData || !psdData.main) {
         return;
       }
-
+      let mainURL = imageFilePath.replace(".psd", ".png")
+      saveDataURLtoFile(psdData.main, board.url)
+      psdData.notes && saveDataURLtoFile(psdData.notes, board.url.replace('.png', '-notes.png'))
+      psdData.reference && saveDataURLtoFile(psdData.reference, board.url.replace('.png', '-reference.png'))
+      // this is needed to update the display.
       markImageFileDirty([0, 1, 3]) // reference, main, notes layers
       saveImageFile()
-      
+      renderThumbnailDrawer()
     });
   })
 
