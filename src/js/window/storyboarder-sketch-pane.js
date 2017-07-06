@@ -311,7 +311,7 @@ class StoryboarderSketchPane extends EventEmitter {
 
   mergeLayers (layers, destination) {
     // make a unique, sorted array of dirty layers
-    let dirtyLayers = [...new Set(layers.concat(destination))].sort()
+    let dirtyLayers = [...new Set(layers.concat(destination))].sort(util.compareNumbers)
     // save an undo snapshot
     this.emit('addToUndoStack', dirtyLayers)
 
