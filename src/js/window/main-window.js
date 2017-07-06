@@ -1458,6 +1458,7 @@ let renderMetaData = ()=> {
 
       if (uniqueDurations.length == 1) {
         // unified
+        let duration = uniqueDurations[0]
         document.querySelector('input[name="duration"]').value = duration
         document.querySelector('input[name="frames"]').value = msecsToFrames(duration)
       } else {
