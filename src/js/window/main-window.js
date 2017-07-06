@@ -487,47 +487,7 @@ let loadBoardUI = ()=> {
   })
 
   document.querySelector('#open-in-photoshop-button').addEventListener('pointerdown', (e)=>{
-    let children = ['reference', 'main', 'notes'].map(layerName => {
-      return {
-        "name": layerName,
-        "canvas": storyboarderSketchPane.getLayerCanvasByName(layerName)
-      }
-    });
-    let psd = {
-      width: storyboarderSketchPane.canvasSize[0],
-      height: storyboarderSketchPane.canvasSize[1],
-      children: children
-    };
-    let board = boardData.boards[currentBoard]
-    let imageFilePath = path.join(boardPath, 'images', board.url.replace('.png', '.psd'))
-    const buffer = writePsd(psd);
-    fs.writeFileSync(imageFilePath, buffer);
-    shell.openItem(imageFilePath);
-
-    fs.watchFile(imageFilePath, (cur, prev) => {
-      let psdData
-      let readerOptions = {}
-      let curBoard = boardData.boards[currentBoard]
-      // Update the current canvas if it's the same board coming back in.
-      if(curBoard.uid === board.uid) {
-        readerOptions.referenceCanvas = storyboarderSketchPane.getLayerCanvasByName("reference")
-        readerOptions.mainCanvas = storyboarderSketchPane.getLayerCanvasByName("main")
-        readerOptions.notesCanvas = storyboarderSketchPane.getLayerCanvasByName("notes")
-      }
-      psdData = FileReader.getBase64ImageDataFromFilePath(imageFilePath, readerOptions)
-      
-      if(!psdData || !psdData.main) {
-        return;
-      }
-      let mainURL = imageFilePath.replace(".psd", ".png")
-      saveDataURLtoFile(psdData.main, board.url)
-      psdData.notes && saveDataURLtoFile(psdData.notes, board.url.replace('.png', '-notes.png'))
-      psdData.reference && saveDataURLtoFile(psdData.reference, board.url.replace('.png', '-reference.png'))
-      // this is needed to update the display.
-      markImageFileDirty([0, 1, 3]) // reference, main, notes layers
-      saveImageFile()
-      renderThumbnailDrawer()
-    });
+    openInEditor()
   })
 
   window.addEventListener('pointermove', (e)=>{
@@ -1134,6 +1094,50 @@ let saveImageFile = () => {
     el.src = imageFilePath + '?' + Date.now()
   }
 }
+
+let openInEditor = () => {
+    let children = ['reference', 'main', 'notes'].map(layerName => {
+      return {
+        "name": layerName,
+        "canvas": storyboarderSketchPane.getLayerCanvasByName(layerName)
+      }
+    });
+    let psd = {
+      width: storyboarderSketchPane.canvasSize[0],
+      height: storyboarderSketchPane.canvasSize[1],
+      children: children
+    };
+    let board = boardData.boards[currentBoard]
+    let imageFilePath = path.join(boardPath, 'images', board.url.replace('.png', '.psd'))
+    const buffer = writePsd(psd);
+    fs.writeFileSync(imageFilePath, buffer);
+    shell.openItem(imageFilePath);
+
+    fs.watchFile(imageFilePath, (cur, prev) => {
+      let psdData
+      let readerOptions = {}
+      let curBoard = boardData.boards[currentBoard]
+      // Update the current canvas if it's the same board coming back in.
+      if(curBoard.uid === board.uid) {
+        readerOptions.referenceCanvas = storyboarderSketchPane.getLayerCanvasByName("reference")
+        readerOptions.mainCanvas = storyboarderSketchPane.getLayerCanvasByName("main")
+        readerOptions.notesCanvas = storyboarderSketchPane.getLayerCanvasByName("notes")
+      }
+      psdData = FileReader.getBase64ImageDataFromFilePath(imageFilePath, readerOptions)
+      
+      if(!psdData || !psdData.main) {
+        return;
+      }
+      let mainURL = imageFilePath.replace(".psd", ".png")
+      saveDataURLtoFile(psdData.main, board.url)
+      psdData.notes && saveDataURLtoFile(psdData.notes, board.url.replace('.png', '-notes.png'))
+      psdData.reference && saveDataURLtoFile(psdData.reference, board.url.replace('.png', '-reference.png'))
+      // this is needed to update the display.
+      markImageFileDirty([0, 1, 3]) // reference, main, notes layers
+      saveImageFile()
+      renderThumbnailDrawer()
+    });
+  }
 
 const getThumbnailSize = () => {
   return {
@@ -2619,6 +2623,10 @@ ipcRenderer.on('newBoard', (event, args)=>{
       gotoBoard(currentBoard)
     }
   }
+})
+
+ipcRenderer.on('openInEditor', (event, args)=>{
+  openInEditor()
 })
 
 ipcRenderer.on('togglePlayback', (event, args)=>{

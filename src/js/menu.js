@@ -100,6 +100,16 @@ const template = [
         label: 'Select All',
         accelerator: 'CmdOrCtrl+A',
         role: 'selectall'
+      },
+      {
+        type: 'separator'
+      },
+      {
+        label: 'Open in Editor',
+        accelerator: 'CmdOrCtrl+.',
+        click ( item, focusedWindow, event) {
+          ipcRenderer.send('openInEditor')
+        }
       }
     ]
   },
