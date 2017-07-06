@@ -1102,6 +1102,16 @@ let openInEditor = () => {
         "canvas": storyboarderSketchPane.getLayerCanvasByName(layerName)
       }
     });
+    var whiteBG = document.createElement('canvas')
+    whiteBG.width = storyboarderSketchPane.canvasSize[0]
+    whiteBG.height = storyboarderSketchPane.canvasSize[1]
+    var whiteBGContext = whiteBG.getContext('2d')
+    whiteBGContext.fillStyle = 'white'
+    whiteBGContext.fillRect(0, 0, whiteBG.width, whiteBG.height)
+    children = [{
+      "name": "guide white background",
+      "canvas": whiteBG
+    }].concat(children)
     let psd = {
       width: storyboarderSketchPane.canvasSize[0],
       height: storyboarderSketchPane.canvasSize[1],
