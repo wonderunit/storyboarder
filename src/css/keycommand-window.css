@@ -1,0 +1,83 @@
+body {
+  margin: 0;
+  padding: 0;
+  color: black;
+  font-family: 'proximanova';
+  font-weight: 300;
+  background: #333333;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor:default;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+
+
+#keyboard {
+  background: lightgray;
+  padding: 10px;
+  border-radius: 5px;
+  display: flex;
+  flex-direction: row;
+  color: rgba(0,0,0,0.5);
+  font-weight: 500;
+}
+
+
+#keyboard .left {
+  margin-right: 15px;
+  width: 800px;
+}
+
+#keyboard .right {
+  font-size: 12px;
+  line-height: 12px;
+}
+
+.row {
+  display: flex;
+  flex-direction: row;
+  height: 50px;
+  justify-content: center;
+
+}
+
+.row:nth-of-type(1) {
+  height: 30px;
+}
+
+.row:nth-of-type(6) {
+  height: 60px;
+}
+
+#key-Space {
+  min-width: 330px;
+}
+
+.key {
+
+  box-sizing: border-box;
+  background-color: rgba(255,255,255,0.8);
+  border-radius: 5px;
+  box-shadow: 0 4px 0px rgba(100, 100, 100, 0.4),0 2px 2px 4px rgba(0, 0, 0, 0.02),0 4px 0px 2px rgba(0, 0, 0, 0.1);
+/*  flex:1 0 auto;
+*/  min-width: 45px;
+  text-align:center;
+
+  margin:5px;  /* and that, will result in a 10px gap */
+  position: relative;
+}
+
+.key.fill {
+  flex-grow: 1;
+  font-size: 12px;
+}
+
+.key span {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  transform: translate(-50%, -50%);
+}
