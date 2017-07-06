@@ -87,6 +87,7 @@ const drawFlattenedBoardLayersToContext = (context, board, boardAbsolutePath) =>
     Promise.all(loaders).then(result => {
       for (let image of result) {
         if (image) {
+          // TODO respect reference opacity
           context.globalAlpha = 1
           context.drawImage(image, 0, 0)
         }
@@ -111,7 +112,6 @@ const ensureExportsPathExists = (boardAbsolutePath) => {
 
 module.exports = {
   boardFileImageSize,
-  boardOrderedLayerFilenames,
   boardFilenameForExport,
   msecsToFrames,
 
