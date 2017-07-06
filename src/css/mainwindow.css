@@ -547,6 +547,16 @@ textarea:focus, input:focus {
   bottom: 70px;
 }
 
+#board-metadata input:disabled,
+#board-metadata textarea:disabled,
+#board-metadata input[type="checkbox"] + label.disabled {
+  opacity: 0.25;
+  cursor: default;
+}
+#board-metadata input[type="checkbox"] + label.disabled span {
+  cursor: default;
+}
+
 /*
 
 http://slides.com/sarasoueidan/building-better-interfaces-with-svg#/2
@@ -772,3 +782,4 @@ input[type=range]::-webkit-slider-thumb {
 input[type=range]:focus::-webkit-slider-runnable-track {
   background: #444;
 }
+

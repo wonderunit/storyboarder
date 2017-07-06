@@ -1434,13 +1434,17 @@ let renderMarkerPosition = () => {
   document.querySelector('#timeline .right-block').innerHTML = util.msToTime(totalTime)
 }
 
-let renderMetaData = ()=> {
+let renderMetaData = () => {
   document.querySelector('#board-metadata #shot').innerHTML = 'Shot: ' + boardData.boards[currentBoard].shot
   document.querySelector('#board-metadata #board-numbers').innerHTML = 'Board: ' + boardData.boards[currentBoard].number + ' of ' + boardData.boards.length
-  for (var item of document.querySelectorAll('#board-metadata input:not(.layers-ui-reference-opacity), textarea')) {
+
+  // reset values
+  let editableInputs = document.querySelectorAll('#board-metadata input:not(.layers-ui-reference-opacity), textarea')
+  for (var item of editableInputs) {
     item.value = ''
     item.checked = false
   }
+
   if (boardData.boards[currentBoard].newShot) {
     document.querySelector('input[name="newShot"]').checked = true
   }
@@ -1451,9 +1455,21 @@ let renderMetaData = ()=> {
   if (boardData.boards[currentBoard].duration) {
     if (selections.size == 1) {
       // show current board
+      for (let input of editableInputs) {
+        input.disabled = false
+        let label = document.querySelector(`label[for="${input.name}"]`)
+        label && label.classList.remove('disabled')
+      }
+
       document.querySelector('input[name="duration"]').value = boardData.boards[currentBoard].duration
       document.querySelector('input[name="frames"]').value = msecsToFrames(boardData.boards[currentBoard].duration)
     } else {
+      for (let input of editableInputs) {
+        input.disabled = (input.name !== 'duration' && input.name !== 'frames')
+        let label = document.querySelector(`label[for="${input.name}"]`)
+        label && label.classList.add('disabled')
+      }
+
       let uniqueDurations = util.uniq(boardData.boards.map(b => b.duration))
 
       if (uniqueDurations.length == 1) {
