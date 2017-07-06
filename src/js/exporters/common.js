@@ -117,6 +117,5 @@ module.exports = {
 
   getImage,
   exportFlattenedBoard,
-  drawFlattenedBoardLayersToContext,
   ensureExportsPathExists
 }
