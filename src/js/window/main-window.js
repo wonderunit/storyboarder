@@ -1145,24 +1145,27 @@ let openInEditor = () => {
       let readerOptions = {}
       let curBoard = boardData.boards[currentBoard]
       // Update the current canvas if it's the same board coming back in.
+      let isCurrentBoard = false
       if(curBoard.uid === board.uid) {
         readerOptions.referenceCanvas = storyboarderSketchPane.getLayerCanvasByName("reference")
         readerOptions.mainCanvas = storyboarderSketchPane.getLayerCanvasByName("main")
         readerOptions.notesCanvas = storyboarderSketchPane.getLayerCanvasByName("notes")
       }
       psdData = FileReader.getBase64ImageDataFromFilePath(imageFilePath, readerOptions)
-      
       if(!psdData || !psdData.main) {
         return;
       }
-      let mainURL = imageFilePath.replace(".psd", ".png")
-      saveDataURLtoFile(psdData.main, board.url)
-      psdData.notes && saveDataURLtoFile(psdData.notes, board.url.replace('.png', '-notes.png'))
-      psdData.reference && saveDataURLtoFile(psdData.reference, board.url.replace('.png', '-reference.png'))
-      // this is needed to update the display.
-      markImageFileDirty([0, 1, 3]) // reference, main, notes layers
-      saveImageFile()
-      renderThumbnailDrawer()
+
+      if(isCurrentBoard) {
+        markImageFileDirty([0, 1, 3]) // reference, main, notes layers
+        saveImageFile()
+        renderThumbnailDrawer()
+      } else {
+        let mainURL = imageFilePath.replace(".psd", ".png")
+        saveDataURLtoFile(psdData.main, board.url)
+        psdData.notes && saveDataURLtoFile(psdData.notes, board.url.replace('.png', '-notes.png'))
+        psdData.reference && saveDataURLtoFile(psdData.reference, board.url.replace('.png', '-reference.png'))
+      }
     });
   }
 
