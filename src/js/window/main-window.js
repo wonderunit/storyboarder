@@ -911,6 +911,7 @@ let insertNewBoardsWithFiles = (filepaths) => {
     }
     let imageData = FileReader.getBase64ImageDataFromFilePath(filepath)
     if(!imageData) {
+      notifications.notify({message: `Oops! There was a problem importing ${filepath}`, timing: 10})
       return new Promise((fulfill)=>fulfill())
     }
     let board = insertNewBoardDataAtPosition(insertionIndex++)
@@ -973,6 +974,9 @@ let insertNewBoardsWithFiles = (filepaths) => {
       markImageFileDirty([1])
       markBoardFileDirty() // to save new board data
       renderThumbnailDrawer()
+      let count = imageFilePromises.length
+      let message = `Imported ${count} image${count !== 1 ? 's':''}.\n\nThe image${count !== 1 ? 's are':' is'} on the reference layer, so you can draw over ${count !== 1 ? 'them':'it'}. If you'd like ${count !== 1 ? 'them':'it'} to be the main layer, you can merge ${count !== 1 ? 'them':'it'} up on the sidebar`
+      notifications.notify({message: message, timing: 10})
     })
 }
 
