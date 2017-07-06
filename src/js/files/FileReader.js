@@ -94,7 +94,7 @@ let getBase64TypeFromPhotoshopFilePath = (filepath, options) => {
     if(!layer.canvas) {
       continue;
     }
-    if(layer.name.indexOf('guide') >= 0) {
+    if(layer.name.indexOf('Background') >= 0) {
       continue
     }
     let targetContext

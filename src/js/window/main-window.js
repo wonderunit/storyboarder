@@ -916,81 +916,90 @@ let newBoard = (position, shouldAddToUndoStack = true) => {
 }
 
 let insertNewBoardsWithFiles = (filepaths) => {
-  let insertionIndex = currentBoard+1
-  let targetLayer = prefsModule.getPrefs('main')['importTargetLayer'] || 'reference'
-  let imageFilePromises = filepaths.map(filepath => {
-    let readerOptions = {
-      importTargetLayer: targetLayer
-    }
-    let imageData = FileReader.getBase64ImageDataFromFilePath(filepath)
-    if(!imageData) {
-      notifications.notify({message: `Oops! There was a problem importing ${filepath}`, timing: 10})
-      return new Promise((fulfill)=>fulfill())
-    }
-    let board = insertNewBoardDataAtPosition(insertionIndex++)
-    var image = new Image()
-    image.src = imageData[targetLayer]
+  let count = filepaths.length
+  let message = `Importing ${count} image${count !== 1 ? 's':''}.\nPlease wait...`
+  notifications.notify({message: message, timing: 2})
 
-    return new Promise((fulfill, reject)=>{
-      setImmediate(()=>{
-        // resize the image if it's too big.
-        let boardSize = storyboarderSketchPane.sketchPane.getCanvasSize()
-        if(boardSize.width < image.width) {
-          let scale = boardSize.width / image.width
-          image.width = scale * image.width
-          image.height = scale * image.height
-        }
-        if(boardSize.height < image.height) {
-          let scale = boardSize.height / image.height
-          image.width = scale * image.width
-          image.height = scale * image.height
-        }
+  setTimeout(()=> {
+    let insertionIndex = currentBoard+1
+    let targetLayer = prefsModule.getPrefs('main')['importTargetLayer'] || 'reference'
+    let imageFilePromises = filepaths.map(filepath => {
+      let readerOptions = {
+        importTargetLayer: targetLayer
+      }
+      let imageData = FileReader.getBase64ImageDataFromFilePath(filepath)
+      if(!imageData) {
+        notifications.notify({message: `Oops! There was a problem importing ${filepath}`, timing: 10})
+        return new Promise((fulfill)=>fulfill())
+      }
+      let board = insertNewBoardDataAtPosition(insertionIndex++)
+      var image = new Image()
+      image.src = imageData[targetLayer]
 
-        // TODO: try pooling
-        var canvas = document.createElement('canvas')
-        canvas.width = image.width
-        canvas.height = image.height
-        let context = canvas.getContext('2d')
-        context.drawImage(image, 0, 0, image.width, image.height)
-        var imageDataSized = canvas.toDataURL()
-        let savePath = board.url.replace('.png', '-reference.png')
-        if(targetLayer === "main") {
-          savePath = board.url
-        } else {
-          board.layers[targetLayer] = { "url": savePath }
-          // save out an empty main layer
-          saveDataURLtoFile((document.createElement('canvas')).toDataURL(), board.url)
-        }
-        saveDataURLtoFile(imageDataSized, savePath)
+      return new Promise((fulfill, reject)=>{
+        setImmediate(()=>{
+          // resize the image if it's too big.
+          let boardSize = storyboarderSketchPane.sketchPane.getCanvasSize()
+          if(boardSize.width < image.width) {
+            let scale = boardSize.width / image.width
+            image.width = scale * image.width
+            image.height = scale * image.height
+          }
+          if(boardSize.height < image.height) {
+            let scale = boardSize.height / image.height
+            image.width = scale * image.width
+            image.height = scale * image.height
+          }
 
-        // thumbnail
-        const thumbnailHeight = 60
-        let thumbRatio = thumbnailHeight / boardSize.height
-        
-        image.width = (image.width / boardSize.width) * (thumbRatio * boardSize.width)
-        image.height = image.height / boardSize.height * 60
-        canvas.width = thumbRatio * boardSize.width
-        canvas.height = thumbnailHeight
-        context.drawImage(image, 0, 0, image.width, image.height)
-        var imageDataSized = canvas.toDataURL()
-        let thumbPath = board.url.replace('.png', '-thumbnail.png')
-        saveDataURLtoFile(imageDataSized, thumbPath)
+          // TODO: try pooling
+          var canvas = document.createElement('canvas')
+          canvas.width = image.width
+          canvas.height = image.height
+          let context = canvas.getContext('2d')
+          context.drawImage(image, 0, 0, image.width, image.height)
+          var imageDataSized = canvas.toDataURL()
+          let savePath = board.url.replace('.png', '-reference.png')
+          if(targetLayer === "main") {
+            savePath = board.url
+          } else {
+            board.layers[targetLayer] = { "url": savePath }
+            // save out an empty main layer
+            saveDataURLtoFile((document.createElement('canvas')).toDataURL(), board.url)
+          }
+          saveDataURLtoFile(imageDataSized, savePath)
 
-        fulfill()
+          // thumbnail
+          const thumbnailHeight = 60
+          let thumbRatio = thumbnailHeight / boardSize.height
+          
+          image.width = (image.width / boardSize.width) * (thumbRatio * boardSize.width)
+          image.height = image.height / boardSize.height * 60
+          canvas.width = thumbRatio * boardSize.width
+          canvas.height = thumbnailHeight
+          context.drawImage(image, 0, 0, image.width, image.height)
+          var imageDataSized = canvas.toDataURL()
+          let thumbPath = board.url.replace('.png', '-thumbnail.png')
+          saveDataURLtoFile(imageDataSized, thumbPath)
+
+          fulfill()
+        })
       })
+
     })
 
-  })
+    Promise.all(imageFilePromises)
+      .then(()=>{
+        markImageFileDirty([1])
+        markBoardFileDirty() // to save new board data
+        renderThumbnailDrawer()
+        let count = imageFilePromises.length
+        let message = `Imported ${count} image${count !== 1 ? 's':''}.\n\nThe image${count !== 1 ? 's are':' is'} on the reference layer, so you can draw over ${count !== 1 ? 'them':'it'}. If you'd like ${count !== 1 ? 'them':'it'} to be the main layer, you can merge ${count !== 1 ? 'them':'it'} up on the sidebar`
+        notifications.notify({message: message, timing: 10})
+        sfx.positive()
+      })
+  }, 1000)
 
-  Promise.all(imageFilePromises)
-    .then(()=>{
-      markImageFileDirty([1])
-      markBoardFileDirty() // to save new board data
-      renderThumbnailDrawer()
-      let count = imageFilePromises.length
-      let message = `Imported ${count} image${count !== 1 ? 's':''}.\n\nThe image${count !== 1 ? 's are':' is'} on the reference layer, so you can draw over ${count !== 1 ? 'them':'it'}. If you'd like ${count !== 1 ? 'them':'it'} to be the main layer, you can merge ${count !== 1 ? 'them':'it'} up on the sidebar`
-      notifications.notify({message: message, timing: 10})
-    })
+
 }
 
 let markBoardFileDirty = () => {
@@ -1113,8 +1122,9 @@ let saveImageFile = () => {
 }
 
 let openInEditor = () => {
-    let children = ['reference', 'main', 'notes'].map(layerName => {
+    let children = ['reference', 'main', 'notes'].map((layerName, i) => {
       return {
+        "id": (i+2),
         "name": layerName,
         "canvas": storyboarderSketchPane.getLayerCanvasByName(layerName)
       }
@@ -1126,16 +1136,21 @@ let openInEditor = () => {
     whiteBGContext.fillStyle = 'white'
     whiteBGContext.fillRect(0, 0, whiteBG.width, whiteBG.height)
     children = [{
-      "name": "guide white background",
+      "id": 1,
+      "name": "Background",
       "canvas": whiteBG
     }].concat(children)
     let psd = {
       width: storyboarderSketchPane.canvasSize[0],
       height: storyboarderSketchPane.canvasSize[1],
+      imageResources: {layerSelectionIds: [3] },
       children: children
     };
     let board = boardData.boards[currentBoard]
     let imageFilePath = path.join(boardPath, 'images', board.url.replace('.png', '.psd'))
+    
+    console.log(psd)
+
     const buffer = writePsd(psd);
     fs.writeFileSync(imageFilePath, buffer);
     shell.openItem(imageFilePath);
