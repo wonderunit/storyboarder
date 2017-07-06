@@ -99,6 +99,9 @@ let dragPoint
 let dragTarget
 let scrollPoint
 
+const msecsToFrames = value => Math.round(value / 1000 * 24)
+const framesToMsecs = value => Math.round(value / 24 * 1000)
+
 menu.setMenu()
 
 ///////////////////////////////////////////////////////////////
@@ -415,15 +418,25 @@ let loadBoardUI = ()=> {
       renderThumbnailDrawer()
     })
 
-    item.addEventListener('input', (e)=> {
+    item.addEventListener('input', e => {
       switch (e.target.name) {
         case 'duration':
-          boardData.boards[currentBoard].duration = Number(e.target.value)
-          document.querySelector('input[name="frames"]').value = Math.round(Number(e.target.value)/1000*24)
+          document.querySelector('input[name="frames"]').value = msecsToFrames(Number(e.target.value))
+
+          for (let index of selections) {
+            boardData.boards[index].duration = Number(e.target.value)
+          }
+          renderThumbnailDrawer()
+          renderMarkerPosition()
           break
         case 'frames':
-          boardData.boards[currentBoard].duration = Math.round(Number(e.target.value)/24*1000)
-          document.querySelector('input[name="duration"]').value =  Math.round(Number(e.target.value)/24*1000)
+          document.querySelector('input[name="duration"]').value = framesToMsecs(Number(e.target.value))
+
+          for (let index of selections) {
+            boardData.boards[index].duration = framesToMsecs(Number(e.target.value))
+          }
+          renderThumbnailDrawer()
+          renderMarkerPosition()
           break
         case 'dialogue':
           boardData.boards[currentBoard].dialogue = (e.target.value)
@@ -1421,23 +1434,56 @@ let renderMarkerPosition = () => {
   document.querySelector('#timeline .right-block').innerHTML = util.msToTime(totalTime)
 }
 
-let renderMetaData = ()=> {
+let renderMetaData = () => {
   document.querySelector('#board-metadata #shot').innerHTML = 'Shot: ' + boardData.boards[currentBoard].shot
   document.querySelector('#board-metadata #board-numbers').innerHTML = 'Board: ' + boardData.boards[currentBoard].number + ' of ' + boardData.boards.length
-  for (var item of document.querySelectorAll('#board-metadata input:not(.layers-ui-reference-opacity), textarea')) {
+
+  // reset values
+  let editableInputs = document.querySelectorAll('#board-metadata input:not(.layers-ui-reference-opacity), textarea')
+  for (var item of editableInputs) {
     item.value = ''
     item.checked = false
   }
+
   if (boardData.boards[currentBoard].newShot) {
     document.querySelector('input[name="newShot"]').checked = true
   }
   if (!boardData.boards[currentBoard].dialogue) {
     document.querySelector('#canvas-caption').style.display = 'none'
   }
+
   if (boardData.boards[currentBoard].duration) {
-    document.querySelector('input[name="duration"]').value = boardData.boards[currentBoard].duration
-    document.querySelector('input[name="frames"]').value = Math.round(boardData.boards[currentBoard].duration/1000*24)
+    if (selections.size == 1) {
+      // show current board
+      for (let input of editableInputs) {
+        input.disabled = false
+        let label = document.querySelector(`label[for="${input.name}"]`)
+        label && label.classList.remove('disabled')
+      }
+
+      document.querySelector('input[name="duration"]').value = boardData.boards[currentBoard].duration
+      document.querySelector('input[name="frames"]').value = msecsToFrames(boardData.boards[currentBoard].duration)
+    } else {
+      for (let input of editableInputs) {
+        input.disabled = (input.name !== 'duration' && input.name !== 'frames')
+        let label = document.querySelector(`label[for="${input.name}"]`)
+        label && label.classList.add('disabled')
+      }
+
+      let uniqueDurations = util.uniq(boardData.boards.map(b => b.duration))
+
+      if (uniqueDurations.length == 1) {
+        // unified
+        let duration = uniqueDurations[0]
+        document.querySelector('input[name="duration"]').value = duration
+        document.querySelector('input[name="frames"]').value = msecsToFrames(duration)
+      } else {
+        document.querySelector('input[name="duration"]').value = null
+        document.querySelector('input[name="frames"]').value = null
+      }
+    }
   }
+
   if (boardData.boards[currentBoard].dialogue) {
     document.querySelector('textarea[name="dialogue"]').value = boardData.boards[currentBoard].dialogue
     document.querySelector('#canvas-caption').innerHTML = boardData.boards[currentBoard].dialogue
@@ -1459,12 +1505,12 @@ let renderMetaData = ()=> {
   }
 
   // TODO how to regenerate tooltips?
-  if (boardData.defaultBoardTiming) {
-    document.querySelector('input[name="duration"]').dataset.tooltipDescription = `Enter the number of milliseconds for a board. There are 1000 milliseconds in a second. ${boardData.defaultBoardTiming} milliseconds is the default.`
-
-    let defaultFramesPerBoard = Math.round(boardData.defaultBoardTiming / 1000 * 24)
-    document.querySelector('input[name="frames"]').dataset.tooltipDescription = `Enter the number of frames for a board. There are 24 frames in a second. ${defaultFramesPerBoard} frames is the default.`
-  }
+  // if (boardData.defaultBoardTiming) {
+  //   document.querySelector('input[name="duration"]').dataset.tooltipDescription = `Enter the number of milliseconds for a board. There are 1000 milliseconds in a second. ${boardData.defaultBoardTiming} milliseconds is the default.`
+  // 
+  //   let defaultFramesPerBoard = Math.round(boardData.defaultBoardTiming / 1000 * 24)
+  //   document.querySelector('input[name="frames"]').dataset.tooltipDescription = `Enter the number of frames for a board. There are 24 frames in a second. ${defaultFramesPerBoard} frames is the default.`
+  // }
 
   renderStats()
 }

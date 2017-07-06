@@ -5,6 +5,7 @@ const Brush = require('../sketch-pane/brush')
 const LineMileageCounter = require('./line-mileage-counter')
 
 const keytracker = require('../utils/keytracker')
+const util = require('../utils')
 
 /**
  *  Wrap the SketchPane component with features Storyboarder needs
