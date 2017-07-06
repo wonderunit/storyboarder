@@ -1150,6 +1150,7 @@ let openInEditor = () => {
         readerOptions.referenceCanvas = storyboarderSketchPane.getLayerCanvasByName("reference")
         readerOptions.mainCanvas = storyboarderSketchPane.getLayerCanvasByName("main")
         readerOptions.notesCanvas = storyboarderSketchPane.getLayerCanvasByName("notes")
+        isCurrentBoard = true
       }
       psdData = FileReader.getBase64ImageDataFromFilePath(imageFilePath, readerOptions)
       if(!psdData || !psdData.main) {
