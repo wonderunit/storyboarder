@@ -94,6 +94,9 @@ let getBase64TypeFromPhotoshopFilePath = (filepath, options) => {
     if(!layer.canvas) {
       continue;
     }
+    if(layer.name.indexOf('guide') >= 0) {
+      continue
+    }
     let targetContext
     switch(layer.name) {
       case "notes":

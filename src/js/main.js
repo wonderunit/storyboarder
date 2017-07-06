@@ -518,6 +518,10 @@ ipcMain.on('togglePlayback', (e, arg)=> {
   mainWindow.webContents.send('togglePlayback')
 })
 
+ipcMain.on('openInEditor', (e, arg)=> {
+  mainWindow.webContents.send('openInEditor')
+})
+
 ipcMain.on('goPreviousBoard', (e, arg)=> {
   mainWindow.webContents.send('goPreviousBoard')
 })

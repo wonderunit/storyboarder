@@ -500,41 +500,7 @@ let loadBoardUI = ()=> {
   })
 
   document.querySelector('#open-in-photoshop-button').addEventListener('pointerdown', (e)=>{
-    let children = ['reference', 'main', 'notes'].map(layerName => {
-      return {
-        "name": layerName,
-        "canvas": storyboarderSketchPane.getLayerCanvasByName(layerName)
-      }
-    });
-    let psd = {
-      width: storyboarderSketchPane.canvasSize[0],
-      height: storyboarderSketchPane.canvasSize[1],
-      children: children
-    };
-    let board = boardData.boards[currentBoard]
-    let imageFilePath = path.join(boardPath, 'images', `board-${board.number}.psd`)
-    const buffer = writePsd(psd);
-    fs.writeFileSync(imageFilePath, buffer);
-    shell.openItem(imageFilePath);
-
-    fs.watchFile(imageFilePath, (cur, prev) => {
-      let referenceCanvas = storyboarderSketchPane.getLayerCanvasByName("reference")
-      let mainCanvas = storyboarderSketchPane.getLayerCanvasByName("main")
-
-      let readerOptions = {
-        mainCanvas: mainCanvas,
-        referenceCanvas: referenceCanvas,
-        notesCanvas: storyboarderSketchPane.getLayerCanvasByName("notes")
-      }
-      var psdData = FileReader.getBase64ImageDataFromFilePath(imageFilePath, readerOptions)
-      if(!psdData || !psdData.main) {
-        return;
-      }
-
-      markImageFileDirty([0, 1, 3]) // reference, main, notes layers
-      saveImageFile()
-      
-    });
+    openInEditor()
   })
 
   window.addEventListener('pointermove', (e)=>{
@@ -958,6 +924,7 @@ let insertNewBoardsWithFiles = (filepaths) => {
     }
     let imageData = FileReader.getBase64ImageDataFromFilePath(filepath)
     if(!imageData) {
+      notifications.notify({message: `Oops! There was a problem importing ${filepath}`, timing: 10})
       return new Promise((fulfill)=>fulfill())
     }
     let board = insertNewBoardDataAtPosition(insertionIndex++)
@@ -1020,6 +987,9 @@ let insertNewBoardsWithFiles = (filepaths) => {
       markImageFileDirty([1])
       markBoardFileDirty() // to save new board data
       renderThumbnailDrawer()
+      let count = imageFilePromises.length
+      let message = `Imported ${count} image${count !== 1 ? 's':''}.\n\nThe image${count !== 1 ? 's are':' is'} on the reference layer, so you can draw over ${count !== 1 ? 'them':'it'}. If you'd like ${count !== 1 ? 'them':'it'} to be the main layer, you can merge ${count !== 1 ? 'them':'it'} up on the sidebar`
+      notifications.notify({message: message, timing: 10})
     })
 }
 
@@ -1141,6 +1111,60 @@ let saveImageFile = () => {
     el.src = imageFilePath + '?' + Date.now()
   }
 }
+
+let openInEditor = () => {
+    let children = ['reference', 'main', 'notes'].map(layerName => {
+      return {
+        "name": layerName,
+        "canvas": storyboarderSketchPane.getLayerCanvasByName(layerName)
+      }
+    });
+    var whiteBG = document.createElement('canvas')
+    whiteBG.width = storyboarderSketchPane.canvasSize[0]
+    whiteBG.height = storyboarderSketchPane.canvasSize[1]
+    var whiteBGContext = whiteBG.getContext('2d')
+    whiteBGContext.fillStyle = 'white'
+    whiteBGContext.fillRect(0, 0, whiteBG.width, whiteBG.height)
+    children = [{
+      "name": "guide white background",
+      "canvas": whiteBG
+    }].concat(children)
+    let psd = {
+      width: storyboarderSketchPane.canvasSize[0],
+      height: storyboarderSketchPane.canvasSize[1],
+      children: children
+    };
+    let board = boardData.boards[currentBoard]
+    let imageFilePath = path.join(boardPath, 'images', board.url.replace('.png', '.psd'))
+    const buffer = writePsd(psd);
+    fs.writeFileSync(imageFilePath, buffer);
+    shell.openItem(imageFilePath);
+
+    fs.watchFile(imageFilePath, (cur, prev) => {
+      let psdData
+      let readerOptions = {}
+      let curBoard = boardData.boards[currentBoard]
+      // Update the current canvas if it's the same board coming back in.
+      if(curBoard.uid === board.uid) {
+        readerOptions.referenceCanvas = storyboarderSketchPane.getLayerCanvasByName("reference")
+        readerOptions.mainCanvas = storyboarderSketchPane.getLayerCanvasByName("main")
+        readerOptions.notesCanvas = storyboarderSketchPane.getLayerCanvasByName("notes")
+      }
+      psdData = FileReader.getBase64ImageDataFromFilePath(imageFilePath, readerOptions)
+      
+      if(!psdData || !psdData.main) {
+        return;
+      }
+      let mainURL = imageFilePath.replace(".psd", ".png")
+      saveDataURLtoFile(psdData.main, board.url)
+      psdData.notes && saveDataURLtoFile(psdData.notes, board.url.replace('.png', '-notes.png'))
+      psdData.reference && saveDataURLtoFile(psdData.reference, board.url.replace('.png', '-reference.png'))
+      // this is needed to update the display.
+      markImageFileDirty([0, 1, 3]) // reference, main, notes layers
+      saveImageFile()
+      renderThumbnailDrawer()
+    });
+  }
 
 const getThumbnailSize = () => {
   return {
@@ -2659,6 +2683,10 @@ ipcRenderer.on('newBoard', (event, args)=>{
       gotoBoard(currentBoard)
     }
   }
+})
+
+ipcRenderer.on('openInEditor', (event, args)=>{
+  openInEditor()
 })
 
 ipcRenderer.on('togglePlayback', (event, args)=>{
