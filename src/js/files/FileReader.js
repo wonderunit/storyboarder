@@ -89,9 +89,13 @@ let getBase64TypeFromPhotoshopFilePath = (filepath, options) => {
   let referenceContext = referenceCanvas.getContext('2d')
   referenceContext.clearRect(0, 0, referenceCanvas.width, referenceCanvas.height)
 
+  let numChannelValues = (1 << psd.bitsPerChannel) - 1
   let targetContext
   for(let layer of psd.children) {
     if(!layer.canvas) {
+      continue;
+    }
+    if(layer.hidden) {
       continue;
     }
     if(layer.name.indexOf('Background') >= 0) {
@@ -109,6 +113,7 @@ let getBase64TypeFromPhotoshopFilePath = (filepath, options) => {
         targetContext = mainContext
         break
     }
+    targetContext.globalAlpha = layer.opacity / numChannelValues
     targetContext.drawImage(layer.canvas, layer.left, layer.top)
   }
   return {
