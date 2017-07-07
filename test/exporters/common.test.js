@@ -27,7 +27,33 @@ describe('exporters/common', function () {
   //   tmpFolder.removeCallback()
   // })
 
-  it('can export a thumbnail to a file', function(done) {
+  // exporters/common#flattenBoardToContext
+  // used by main-window#updateThumbnail
+  it('can build a thumbnail image, from memory, to a context', function (done) {
+    let size = [900, 900]
+
+    let canvasImageSources = [
+      {
+        canvasImageSource: document.createElement('canvas'),
+        opacity: 1
+      },
+      {
+        canvasImageSource: document.createElement('canvas'),
+        opacity: 0.5
+      }
+    ]
+
+    let canvas = document.createElement('canvas')
+    canvas.width = size[0]
+    canvas.height = size[1]
+    let context = canvas.getContext('2d')
+    exporterCommon.flattenBoardToContext(context, canvasImageSources, size)
+
+    done()
+  })
+
+  // exporters/common#exportFlattenedBoard
+  // used by exporters
   it('can export a thumbnail image, from files, to a file', function(done) {
     let projectAbsolutePath = path.resolve(path.join(fixturesPath, 'example', 'example.storyboarder'))
     let project = JSON.parse(fs.readFileSync(projectAbsolutePath))
