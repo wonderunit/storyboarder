@@ -67,7 +67,7 @@ const exportFlattenedBoard = (board, filenameForExport, { size, projectAbsoluteP
     context.fillStyle = 'white'
     context.fillRect(0, 0, context.canvas.width, context.canvas.height)
 
-    drawFlattenedBoardLayersToContext(context, board, projectAbsolutePath).then(() => {
+    drawFlattenedBoardLayersToContext(context, board, projectAbsolutePath, size).then(() => {
       let imageData = canvas.toDataURL().replace(/^data:image\/\w+;base64,/, '')
       let pathToExport = path.join(outputPath, filenameForExport)
       fs.writeFileSync(pathToExport, imageData, 'base64')
@@ -78,7 +78,7 @@ const exportFlattenedBoard = (board, filenameForExport, { size, projectAbsoluteP
   })
 }
 
-const drawFlattenedBoardLayersToContext = (context, board, projectAbsolutePath) => {
+const drawFlattenedBoardLayersToContext = (context, board, projectAbsolutePath, size) => {
   return new Promise(resolve => {
     let { indices, filenames } = boardOrderedLayerFilenames(board)
 
@@ -93,7 +93,7 @@ const drawFlattenedBoardLayersToContext = (context, board, projectAbsolutePath) 
         let index = indices[n]
         if (image) {
           context.globalAlpha = 1
-          context.drawImage(image, 0, 0)
+          context.drawImage(image, 0, 0, size[0], size[1])
         }
       })
 
