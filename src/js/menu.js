@@ -452,6 +452,13 @@ const template = [
         type: 'separator'
       },
       {
+        label: 'Key Commands...',
+        accelerator: 'CmdOrCtrl+K',
+        click ( item, focusedWindow, event) {
+          ipcRenderer.send('showKeyCommands')
+        }
+      },
+      {
         label: 'Show me a story tip!',
         accelerator: 'CmdOrCtrl+T',
         click ( item, focusedWindow, event) {
