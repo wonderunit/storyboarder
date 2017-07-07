@@ -25,6 +25,7 @@ const sfx = require('../wonderunit-sound.js')
 const keytracker = require('../utils/keytracker.js')
 const storyTips = new(require('./story-tips'))(sfx, notifications)
 const exporter = require('./exporter.js')
+const exporterCommon = require('../exporters/common')
 const prefsModule = require('electron').remote.require('./prefs.js')
 
 const FileReader = require('../files/FileReader.js')
@@ -1110,7 +1111,7 @@ let saveImageFile = () => {
   console.log(`saved ${numSaved} modified layers`)
 
   // create/update the thumbnail image file
-  let imageFilePath = path.join(boardPath, 'images', board.url.replace('.png', '-thumbnail.png'))
+  let imageFilePath = path.join(boardPath, 'images', exporterCommon.boardFilenameForThumbnail(board))
   updateThumbnail(imageFilePath)
 
   // load the thumbnail image file
@@ -1195,6 +1196,7 @@ const getThumbnailSize = () => {
   }
 }
 
+// 
 const updateThumbnail = imageFilePath => {
   let {width, height} = getThumbnailSize()
 
@@ -3061,7 +3063,8 @@ let pasteBoards = () => {
       sequence = sequence.then(function() {
         return gotoBoard(task)
       }).then(function(result) {
-        let imageFilePath = path.join(boardPath, 'images', boardData.boards[currentBoard].url.replace('.png', '-thumbnail.png'))
+        // 
+        let imageFilePath = path.join(boardPath, 'images', exporterCommon.boardFilenameForThumbnail(boardData.boards[currentBoard]))
         updateThumbnail(imageFilePath)
       })
     })
