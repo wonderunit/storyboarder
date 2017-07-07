@@ -92,9 +92,6 @@ const drawFlattenedBoardLayersToContext = (context, board, projectAbsolutePath) 
       images.forEach((image, n) => {
         let index = indices[n]
         if (image) {
-          if (index === 0) { // HACK hardcoded reference layer
-            // TODO use reference layer opacity, if it exists
-          }
           context.globalAlpha = 1
           context.drawImage(image, 0, 0)
         }
