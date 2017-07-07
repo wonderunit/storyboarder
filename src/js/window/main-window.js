@@ -1231,8 +1231,6 @@ const updateThumbnail = imageFilePath => {
   } catch (err) {
     console.error(err)
   }
-
-  thumbnail = null
 }
 
 let deleteSingleBoard = (index) => {
