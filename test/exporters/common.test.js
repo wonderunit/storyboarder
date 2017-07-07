@@ -71,7 +71,7 @@ describe('exporters/common', function () {
     let size = [Math.floor(60 * project.aspectRatio), 60]
     let outputPath = tmpFolder.name
   
-    exporterCommon.exportFlattenedBoard(board, filenameForExport, { size, projectAbsolutePath, outputPath }).then((pathToExport) => {
+    exporterCommon.exportFlattenedBoard(board, filenameForExport, size, projectAbsolutePath, outputPath).then((pathToExport) => {
       console.log('exported to', pathToExport)
       assert(pathToExport.length)
       shell.showItemInFolder(pathToExport)

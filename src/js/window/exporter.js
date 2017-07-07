@@ -51,11 +51,9 @@ class Exporter extends EventEmitter {
           exportFlattenedBoard(
             board,
             filenameForExport,
-            {
-              size: boardFileImageSize(boardData),
-              projectAbsolutePath,
-              outputPath
-            }
+            boardFileImageSize(boardData),
+            projectAbsolutePath,
+            outputPath
           ).then(() => resolve()).catch(err => console.error(err))
         }))
 
@@ -91,11 +89,9 @@ class Exporter extends EventEmitter {
           exportFlattenedBoard(
             board,
             filenameForExport,
-            {
-              size: boardFileImageSize(boardData),
-              projectAbsolutePath,
-              outputPath
-            }
+            boardFileImageSize(boardData),
+            projectAbsolutePath,
+            outputPath
           ).then(() => resolve()).catch(err => console.error(err))
         }))
 

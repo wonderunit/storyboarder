@@ -57,7 +57,7 @@ const getImage = (url) => {
   })
 }
 
-const exportFlattenedBoard = (board, filenameForExport, { size, projectAbsolutePath, outputPath }) => {
+const exportFlattenedBoard = (board, filenameForExport, size, projectAbsolutePath, outputPath) => {
   return new Promise(resolve => {
 
     // TODO can we extract this to a fn?
