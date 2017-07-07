@@ -89,19 +89,35 @@ const drawFlattenedBoardLayersToContext = (context, board, projectAbsolutePath, 
     }
 
     Promise.all(loaders).then(images => {
-      images.forEach((image, n) => {
-        let index = indices[n]
-        if (image) {
-          context.globalAlpha = 1
-          context.drawImage(image, 0, 0, size[0], size[1])
+
+      let canvasImageSourcesData = []
+
+      images.forEach((canvasImageSource, n) => {
+        // let layerIndex = indices[n]
+        if (canvasImageSource) {
+          canvasImageSourcesData.push({
+            canvasImageSource,
+            opacity: 1
+          })
         }
       })
+
+      flattenBoardToContext(context, canvasImageSourcesData, size)
 
       resolve()
     }).catch(err => {
       console.error(err)
     })
   })
+}
+
+const flattenBoardToContext = (context, canvasImageSourcesData, size) => {
+  context.save()
+  for (let source of canvasImageSourcesData) {
+    context.globalAlpha = source.opacity
+    context.drawImage(source.canvasImageSource, 0, 0, size[0], size[1])
+  }
+  context.restore()
 }
 
 const ensureExportsPathExists = (projectAbsolutePath) => {
