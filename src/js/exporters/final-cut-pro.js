@@ -129,13 +129,13 @@ const generateFinalCutProXml = data =>
 </xmeml>
 `
 
-const generateFinalCutProData = (boardData, { boardAbsolutePath, outputPath }) => {
+const generateFinalCutProData = (boardData, { projectFileAbsolutePath, outputPath }) => {
   let [width, height] = boardFileImageSize(boardData)
 
-  let dirname = path.dirname(boardAbsolutePath)
+  let dirname = path.dirname(projectFileAbsolutePath)
 
-  let extname = path.extname(boardAbsolutePath)
-  let basenameWithoutExt = path.basename(boardAbsolutePath, extname)
+  let extname = path.extname(projectFileAbsolutePath)
+  let basenameWithoutExt = path.basename(projectFileAbsolutePath, extname)
 
   let clipItems = []
   let currFrame = 0

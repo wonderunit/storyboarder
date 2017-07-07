@@ -14,27 +14,30 @@ const msecsToFrames = (fps, value) =>
 
 // array of fixed size, ordered positions
 const boardOrderedLayerFilenames = board => {
+  let indices = []
   let filenames = []
 
   // reference
-  filenames.push(
-    (board.layers && board.layers.reference)
-    ? board.layers.reference.url
-    : null
-  )
+  if (board.layers && board.layers.reference) {
+    indices.push(0)
+    filenames.push(board.layers.reference.url)
+  }
 
   // main
+  indices.push(1)
   filenames.push(board.url)
 
   // notes
-  filenames.push(
-    (board.layers && board.layers.notes)
-    ? board.layers.notes.url
-    : null
-  )
+  if (board.layers && board.layers.notes) {
+    indices.push(3)
+    filenames.push(board.layers.notes.url)
+  }
   
-  return filenames
+  return { indices, filenames }
 }
+
+const boardFilenameForThumbnail = board =>
+  board.url.replace('.png', '-thumbnail.png')
 
 const boardFilenameForExport = (board, index, basenameWithoutExt) =>
   `${basenameWithoutExt}-board-${index + 1}-` + util.zeroFill(4, index + 1) + '.png'
@@ -45,60 +48,71 @@ const getImage = (url) => {
     img.onload = () => {
       resolve(img)
     }
+    // TODO test a rejection
     img.onerror = () => {
-      reject(img)
+      console.log('error loading image')
+      reject(null)
     }
     img.src = url
   })
 }
 
-const exportFlattenedBoard = (board, filenameforExport, { size, boardAbsolutePath, outputPath }) => {
+const exportFlattenedBoard = (board, filenameForExport, size, projectFileAbsolutePath, outputPath) => {
   return new Promise(resolve => {
+
+    // TODO can we extract this to a fn?
     let canvas = document.createElement('canvas')
     let context = canvas.getContext('2d')
-    let [ width, height ] = size
-    canvas.width = width
-    canvas.height = height
+    canvas.width = size[0]
+    canvas.height = size[1]
+
     context.fillStyle = 'white'
     context.fillRect(0, 0, context.canvas.width, context.canvas.height)
 
-    drawFlattenedBoardLayersToContext(context, board, boardAbsolutePath).then(() => {
+    let { indices, filenames } = boardOrderedLayerFilenames(board)
+
+    let loaders = []
+    for (let filename of filenames) {
+      let imageFilePath = path.join(path.dirname(projectFileAbsolutePath), 'images', filename)
+      loaders.push(getImage(imageFilePath))
+    }
+
+    Promise.all(loaders).then(images => {
+
+      let canvasImageSourcesData = []
+      images.forEach((canvasImageSource, n) => {
+        // let layerIndex = indices[n]
+        if (canvasImageSource) {
+          canvasImageSourcesData.push({
+            canvasImageSource,
+            opacity: 1
+          })
+        }
+      })
+
+      flattenBoardToContext(context, canvasImageSourcesData, size)
+
       let imageData = canvas.toDataURL().replace(/^data:image\/\w+;base64,/, '')
-      fs.writeFileSync(path.join(outputPath, filenameforExport), imageData, 'base64')
-      resolve()
+      let pathToExport = path.join(outputPath, filenameForExport)
+      fs.writeFileSync(pathToExport, imageData, 'base64')
+      resolve(pathToExport)
     }).catch(err => {
       console.error(err)
     })
   })
 }
 
-const drawFlattenedBoardLayersToContext = (context, board, boardAbsolutePath) => {
-  return new Promise(resolve => {
-    let filenames = boardOrderedLayerFilenames(board)
-
-    let loaders = []
-    for (let filename of filenames) {
-      if (filename) {
-        let imageFilePath = path.join(path.dirname(boardAbsolutePath), 'images', filename)
-        loaders.push(getImage(imageFilePath))
-      }
-    }
-    
-    Promise.all(loaders).then(result => {
-      for (let image of result) {
-        if (image) {
-          context.globalAlpha = 1
-          context.drawImage(image, 0, 0)
-        }
-      }
-      
-      resolve()
-    })
-  })
+const flattenBoardToContext = (context, canvasImageSourcesData, size) => {
+  context.save()
+  for (let source of canvasImageSourcesData) {
+    context.globalAlpha = source.opacity
+    context.drawImage(source.canvasImageSource, 0, 0, size[0], size[1])
+  }
+  context.restore()
 }
 
-const ensureExportsPathExists = (boardAbsolutePath) => {
-  let dirname = path.dirname(boardAbsolutePath)
+const ensureExportsPathExists = (projectFileAbsolutePath) => {
+  let dirname = path.dirname(projectFileAbsolutePath)
 
   let exportsPath = path.join(dirname, 'exports')
 
@@ -111,12 +125,12 @@ const ensureExportsPathExists = (boardAbsolutePath) => {
 
 module.exports = {
   boardFileImageSize,
-  boardOrderedLayerFilenames,
   boardFilenameForExport,
+  boardFilenameForThumbnail,
   msecsToFrames,
 
   getImage,
   exportFlattenedBoard,
-  drawFlattenedBoardLayersToContext,
+  flattenBoardToContext,
   ensureExportsPathExists
 }

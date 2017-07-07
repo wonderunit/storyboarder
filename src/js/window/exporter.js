@@ -21,12 +21,12 @@ class Exporter extends EventEmitter {
     super()
   }
 
-  exportFcp (boardData, boardAbsolutePath) {
+  exportFcp (boardData, projectFileAbsolutePath) {
     return new Promise(resolve => {
       
-      let exportsPath = ensureExportsPathExists(boardAbsolutePath)
+      let exportsPath = ensureExportsPathExists(projectFileAbsolutePath)
 
-      let basename = path.basename(boardAbsolutePath)
+      let basename = path.basename(projectFileAbsolutePath)
       let outputPath = path.join(
         exportsPath,
         basename + ' Exported ' + moment().format('YYYY-MM-DD hh.mm.ss')
@@ -35,27 +35,25 @@ class Exporter extends EventEmitter {
         fs.mkdirSync(outputPath)
       }
 
-      let xml = exporterFcp.generateFinalCutProXml(exporterFcp.generateFinalCutProData(boardData, { boardAbsolutePath, outputPath }))
+      let xml = exporterFcp.generateFinalCutProXml(exporterFcp.generateFinalCutProData(boardData, { projectFileAbsolutePath, outputPath }))
       fs.writeFileSync(path.join(outputPath, basename + '.xml'), xml)
 
-      let fcpxml = exporterFcpX.generateFinalCutProXXml(exporterFcpX.generateFinalCutProXData(boardData, { boardAbsolutePath, outputPath }))
+      let fcpxml = exporterFcpX.generateFinalCutProXXml(exporterFcpX.generateFinalCutProXData(boardData, { projectFileAbsolutePath, outputPath }))
       fs.writeFileSync(path.join(outputPath, basename + '.fcpxml'), fcpxml)
 
       // export ALL layers of each one of the boards
       let index = 0
       let writers = []
-      let basenameWithoutExt = path.basename(boardAbsolutePath, path.extname(boardAbsolutePath))
+      let basenameWithoutExt = path.basename(projectFileAbsolutePath, path.extname(projectFileAbsolutePath))
       for (let board of boardData.boards) {
         writers.push(new Promise(resolve => {
-          let filenameforExport = boardFilenameForExport(board, index, basenameWithoutExt)
+          let filenameForExport = boardFilenameForExport(board, index, basenameWithoutExt)
           exportFlattenedBoard(
             board,
-            filenameforExport,
-            {
-              size: boardFileImageSize(boardData),
-              boardAbsolutePath,
-              outputPath
-            }
+            filenameForExport,
+            boardFileImageSize(boardData),
+            projectFileAbsolutePath,
+            outputPath
           ).then(() => resolve()).catch(err => console.error(err))
         }))
 
@@ -68,11 +66,11 @@ class Exporter extends EventEmitter {
     })
   }
   
-  exportImages (boardData, boardAbsolutePath) {
+  exportImages (boardData, projectFileAbsolutePath) {
     return new Promise(resolve => {
-      let exportsPath = ensureExportsPathExists(boardAbsolutePath)
+      let exportsPath = ensureExportsPathExists(projectFileAbsolutePath)
 
-      let basename = path.basename(boardAbsolutePath)
+      let basename = path.basename(projectFileAbsolutePath)
       let outputPath = path.join(
         exportsPath,
         basename + ' Images ' + moment().format('YYYY-MM-DD hh.mm.ss')
@@ -84,18 +82,16 @@ class Exporter extends EventEmitter {
       // export ALL layers of each one of the boards
       let index = 0
       let writers = []
-      let basenameWithoutExt = path.basename(boardAbsolutePath, path.extname(boardAbsolutePath))
+      let basenameWithoutExt = path.basename(projectFileAbsolutePath, path.extname(projectFileAbsolutePath))
       for (let board of boardData.boards) {
         writers.push(new Promise(resolve => {
-          let filenameforExport = boardFilenameForExport(board, index, basenameWithoutExt)
+          let filenameForExport = boardFilenameForExport(board, index, basenameWithoutExt)
           exportFlattenedBoard(
             board,
-            filenameforExport,
-            {
-              size: boardFileImageSize(boardData),
-              boardAbsolutePath,
-              outputPath
-            }
+            filenameForExport,
+            boardFileImageSize(boardData),
+            projectFileAbsolutePath,
+            outputPath
           ).then(() => resolve()).catch(err => console.error(err))
         }))
 

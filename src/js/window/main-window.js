@@ -25,6 +25,7 @@ const sfx = require('../wonderunit-sound.js')
 const keytracker = require('../utils/keytracker.js')
 const storyTips = new(require('./story-tips'))(sfx, notifications)
 const exporter = require('./exporter.js')
+const exporterCommon = require('../exporters/common')
 const prefsModule = require('electron').remote.require('./prefs.js')
 
 const FileReader = require('../files/FileReader.js')
@@ -1110,7 +1111,7 @@ let saveImageFile = () => {
   console.log(`saved ${numSaved} modified layers`)
 
   // create/update the thumbnail image file
-  let imageFilePath = path.join(boardPath, 'images', board.url.replace('.png', '-thumbnail.png'))
+  let imageFilePath = path.join(boardPath, 'images', exporterCommon.boardFilenameForThumbnail(board))
   updateThumbnail(imageFilePath)
 
   // load the thumbnail image file
@@ -1188,21 +1189,37 @@ let openInEditor = () => {
     });
   }
 
-const getThumbnailSize = () => {
-  return {
-    width: Math.floor(60 * boardData.aspectRatio), 
-    height: 60
-  }
-}
-
 const updateThumbnail = imageFilePath => {
-  let {width, height} = getThumbnailSize()
+  let size = [
+    Math.floor(60 * boardData.aspectRatio),
+    60
+  ]
 
-  storyboarderSketchPane.sketchPane.setLayerVisible(false, 2) // HACK hardcoded
-  storyboarderSketchPane.sketchPane.setLayerVisible(false, 4) // HACK hardcoded
-  let canvas = storyboarderSketchPane.sketchPane.createFlattenThumbnail(width * 2, height * 2)
-  storyboarderSketchPane.sketchPane.setLayerVisible(true, 2) // HACK hardcoded
-  storyboarderSketchPane.sketchPane.setLayerVisible(true, 4) // HACK hardcoded
+  let canvasImageSources = [
+    // reference
+    {
+      canvasImageSource: storyboarderSketchPane.sketchPane.getLayerCanvas(0),
+      opacity: storyboarderSketchPane.sketchPane.getLayerOpacity(0)
+    },
+    // main
+    {
+      canvasImageSource: storyboarderSketchPane.sketchPane.getLayerCanvas(1),
+      opacity: storyboarderSketchPane.sketchPane.getLayerOpacity(1)
+    },
+    // notes
+    {
+      canvasImageSource: storyboarderSketchPane.sketchPane.getLayerCanvas(3),
+      opacity: storyboarderSketchPane.sketchPane.getLayerOpacity(3)
+    }
+  ]
+
+  let canvas = document.createElement('canvas')
+  canvas.width = size[0]
+  canvas.height = size[1]
+  let context = canvas.getContext('2d')
+  context.fillStyle = 'white'
+  context.fillRect(0, 0, context.canvas.width, context.canvas.height)
+  exporterCommon.flattenBoardToContext(context, canvasImageSources, size)
 
   let imageData = canvas
     .toDataURL('image/png')
@@ -1214,8 +1231,6 @@ const updateThumbnail = imageFilePath => {
   } catch (err) {
     console.error(err)
   }
-
-  thumbnail = null
 }
 
 let deleteSingleBoard = (index) => {
@@ -3061,7 +3076,8 @@ let pasteBoards = () => {
       sequence = sequence.then(function() {
         return gotoBoard(task)
       }).then(function(result) {
-        let imageFilePath = path.join(boardPath, 'images', boardData.boards[currentBoard].url.replace('.png', '-thumbnail.png'))
+        // 
+        let imageFilePath = path.join(boardPath, 'images', exporterCommon.boardFilenameForThumbnail(boardData.boards[currentBoard]))
         updateThumbnail(imageFilePath)
       })
     })
