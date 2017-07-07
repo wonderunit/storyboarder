@@ -374,6 +374,9 @@ let loadBoardUI = ()=> {
   storyboarderSketchPane.on('markDirty', layerIndices => {
     storeUndoStateForImage(false, layerIndices)
     markImageFileDirty(layerIndices)
+
+    updateThumbnailFile()
+    updateThumbnailDisplay()
   })
   
   storyboarderSketchPane.on('lineMileage', value => {
@@ -1111,15 +1114,8 @@ let saveImageFile = () => {
   console.log(`saved ${numSaved} modified layers`)
 
   // create/update the thumbnail image file
-  let imageFilePath = path.join(boardPath, 'images', exporterCommon.boardFilenameForThumbnail(board))
-  updateThumbnail(imageFilePath)
-
-  // load the thumbnail image file
-  let el = document.querySelector(`[data-thumbnail="${currentBoard}"] img`)
-  // does it exist in the thumbnail drawer already?
-  if (el) {
-    el.src = imageFilePath + '?' + Date.now()
-  }
+  updateThumbnailFile()
+  updateThumbnailDisplay()
 }
 
 let openInEditor = () => {
@@ -1189,7 +1185,9 @@ let openInEditor = () => {
     });
   }
 
-const updateThumbnail = imageFilePath => {
+const updateThumbnailFile = () => {
+  let imageFilePath = path.join(boardPath, 'images', exporterCommon.boardFilenameForThumbnail(boardData.boards[currentBoard]))
+
   let size = [
     Math.floor(60 * boardData.aspectRatio),
     60
@@ -1230,6 +1228,16 @@ const updateThumbnail = imageFilePath => {
     console.log('saved thumbnail', imageFilePath)
   } catch (err) {
     console.error(err)
+  }
+}
+
+const updateThumbnailDisplay = () => {
+  // load the thumbnail image file
+  let el = document.querySelector(`[data-thumbnail="${currentBoard}"] img`)
+  // does it exist in the thumbnail drawer already?
+  if (el) {
+    let imageFilePath = path.join(boardPath, 'images', exporterCommon.boardFilenameForThumbnail(boardData.boards[currentBoard]))
+    el.src = imageFilePath + '?' + Date.now()
   }
 }
 
@@ -3077,8 +3085,8 @@ let pasteBoards = () => {
         return gotoBoard(task)
       }).then(function(result) {
         // 
-        let imageFilePath = path.join(boardPath, 'images', exporterCommon.boardFilenameForThumbnail(boardData.boards[currentBoard]))
-        updateThumbnail(imageFilePath)
+        updateThumbnailFile()
+        updateThumbnailDisplay()
       })
     })
     sequence.then(()=>{
