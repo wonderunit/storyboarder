@@ -1190,8 +1190,8 @@ const updateThumbnailFile = () => {
   let imageFilePath = path.join(boardPath, 'images', exporterCommon.boardFilenameForThumbnail(boardData.boards[currentBoard]))
 
   let size = [
-    Math.floor(60 * boardData.aspectRatio),
-    60
+    Math.floor(60 * boardData.aspectRatio) * 2,
+    60 * 2
   ]
 
   let canvasImageSources = [
