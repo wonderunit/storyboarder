@@ -140,5 +140,6 @@ module.exports = {
 
   getImage,
   exportFlattenedBoard,
+  flattenBoardToContext,
   ensureExportsPathExists
 }

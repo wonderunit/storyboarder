@@ -1189,22 +1189,35 @@ let openInEditor = () => {
     });
   }
 
-const getThumbnailSize = () => {
-  return {
-    width: Math.floor(60 * boardData.aspectRatio), 
-    height: 60
-  }
-}
-
-// 
 const updateThumbnail = imageFilePath => {
-  let {width, height} = getThumbnailSize()
+  let size = [
+    Math.floor(60 * boardData.aspectRatio),
+    60
+  ]
 
-  storyboarderSketchPane.sketchPane.setLayerVisible(false, 2) // HACK hardcoded
-  storyboarderSketchPane.sketchPane.setLayerVisible(false, 4) // HACK hardcoded
-  let canvas = storyboarderSketchPane.sketchPane.createFlattenThumbnail(width * 2, height * 2)
-  storyboarderSketchPane.sketchPane.setLayerVisible(true, 2) // HACK hardcoded
-  storyboarderSketchPane.sketchPane.setLayerVisible(true, 4) // HACK hardcoded
+  let canvasImageSources = [
+    // reference
+    {
+      canvasImageSource: storyboarderSketchPane.sketchPane.getLayerCanvas(0),
+      opacity: storyboarderSketchPane.sketchPane.getLayerOpacity(0)
+    },
+    // main
+    {
+      canvasImageSource: storyboarderSketchPane.sketchPane.getLayerCanvas(1),
+      opacity: storyboarderSketchPane.sketchPane.getLayerOpacity(1)
+    },
+    // notes
+    {
+      canvasImageSource: storyboarderSketchPane.sketchPane.getLayerCanvas(3),
+      opacity: storyboarderSketchPane.sketchPane.getLayerOpacity(3)
+    }
+  ]
+
+  let canvas = document.createElement('canvas')
+  canvas.width = size[0]
+  canvas.height = size[1]
+  let context = canvas.getContext('2d')
+  exporterCommon.flattenBoardToContext(context, canvasImageSources, size)
 
   let imageData = canvas
     .toDataURL('image/png')
