@@ -55,10 +55,10 @@ describe('exporters/common', function () {
   // exporters/common#exportFlattenedBoard
   // used by exporters
   it('can export a thumbnail image, from files, to a file', function(done) {
-    let projectAbsolutePath = path.resolve(path.join(fixturesPath, 'example', 'example.storyboarder'))
-    let project = JSON.parse(fs.readFileSync(projectAbsolutePath))
+    let projectFileAbsolutePath = path.resolve(path.join(fixturesPath, 'example', 'example.storyboarder'))
+    let project = JSON.parse(fs.readFileSync(projectFileAbsolutePath))
   
-    let basenameWithoutExt = path.basename(projectAbsolutePath, path.extname(projectAbsolutePath))
+    let basenameWithoutExt = path.basename(projectFileAbsolutePath, path.extname(projectFileAbsolutePath))
     let index = 0
     let board = project.boards[index]
   
@@ -71,7 +71,7 @@ describe('exporters/common', function () {
     let size = [Math.floor(60 * project.aspectRatio), 60]
     let outputPath = tmpFolder.name
   
-    exporterCommon.exportFlattenedBoard(board, filenameForExport, size, projectAbsolutePath, outputPath).then((pathToExport) => {
+    exporterCommon.exportFlattenedBoard(board, filenameForExport, size, projectFileAbsolutePath, outputPath).then((pathToExport) => {
       console.log('exported to', pathToExport)
       assert(pathToExport.length)
       shell.showItemInFolder(pathToExport)

@@ -50,8 +50,8 @@ let boardFileData = {
   ]
 }
 
-let boardAbsolutePath = '/Users/me/projects/storyboarder/example/example.storyboarder'
+let projectFileAbsolutePath = '/Users/me/projects/storyboarder/example/example.storyboarder'
 let outputPath = '/Users/me/projects/storyboarder/example/example.storyboarder/exports/output'
-let xml = exporterFcp.generateFinalCutProXml(exporterFcp.generateFinalCutProData(boardFileData, { boardAbsolutePath, outputPath }))
+let xml = exporterFcp.generateFinalCutProXml(exporterFcp.generateFinalCutProData(boardFileData, { projectFileAbsolutePath, outputPath }))
 
 console.log(xml)

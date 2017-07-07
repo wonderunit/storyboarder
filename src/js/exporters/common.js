@@ -57,7 +57,7 @@ const getImage = (url) => {
   })
 }
 
-const exportFlattenedBoard = (board, filenameForExport, size, projectAbsolutePath, outputPath) => {
+const exportFlattenedBoard = (board, filenameForExport, size, projectFileAbsolutePath, outputPath) => {
   return new Promise(resolve => {
 
     // TODO can we extract this to a fn?
@@ -73,7 +73,7 @@ const exportFlattenedBoard = (board, filenameForExport, size, projectAbsolutePat
 
     let loaders = []
     for (let filename of filenames) {
-      let imageFilePath = path.join(path.dirname(projectAbsolutePath), 'images', filename)
+      let imageFilePath = path.join(path.dirname(projectFileAbsolutePath), 'images', filename)
       loaders.push(getImage(imageFilePath))
     }
 
@@ -111,8 +111,8 @@ const flattenBoardToContext = (context, canvasImageSourcesData, size) => {
   context.restore()
 }
 
-const ensureExportsPathExists = (projectAbsolutePath) => {
-  let dirname = path.dirname(projectAbsolutePath)
+const ensureExportsPathExists = (projectFileAbsolutePath) => {
+  let dirname = path.dirname(projectFileAbsolutePath)
 
   let exportsPath = path.join(dirname, 'exports')
 

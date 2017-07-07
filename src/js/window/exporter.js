@@ -21,12 +21,12 @@ class Exporter extends EventEmitter {
     super()
   }
 
-  exportFcp (boardData, projectAbsolutePath) {
+  exportFcp (boardData, projectFileAbsolutePath) {
     return new Promise(resolve => {
       
-      let exportsPath = ensureExportsPathExists(projectAbsolutePath)
+      let exportsPath = ensureExportsPathExists(projectFileAbsolutePath)
 
-      let basename = path.basename(projectAbsolutePath)
+      let basename = path.basename(projectFileAbsolutePath)
       let outputPath = path.join(
         exportsPath,
         basename + ' Exported ' + moment().format('YYYY-MM-DD hh.mm.ss')
@@ -35,16 +35,16 @@ class Exporter extends EventEmitter {
         fs.mkdirSync(outputPath)
       }
 
-      let xml = exporterFcp.generateFinalCutProXml(exporterFcp.generateFinalCutProData(boardData, { projectAbsolutePath, outputPath }))
+      let xml = exporterFcp.generateFinalCutProXml(exporterFcp.generateFinalCutProData(boardData, { projectFileAbsolutePath, outputPath }))
       fs.writeFileSync(path.join(outputPath, basename + '.xml'), xml)
 
-      let fcpxml = exporterFcpX.generateFinalCutProXXml(exporterFcpX.generateFinalCutProXData(boardData, { projectAbsolutePath, outputPath }))
+      let fcpxml = exporterFcpX.generateFinalCutProXXml(exporterFcpX.generateFinalCutProXData(boardData, { projectFileAbsolutePath, outputPath }))
       fs.writeFileSync(path.join(outputPath, basename + '.fcpxml'), fcpxml)
 
       // export ALL layers of each one of the boards
       let index = 0
       let writers = []
-      let basenameWithoutExt = path.basename(projectAbsolutePath, path.extname(projectAbsolutePath))
+      let basenameWithoutExt = path.basename(projectFileAbsolutePath, path.extname(projectFileAbsolutePath))
       for (let board of boardData.boards) {
         writers.push(new Promise(resolve => {
           let filenameForExport = boardFilenameForExport(board, index, basenameWithoutExt)
@@ -52,7 +52,7 @@ class Exporter extends EventEmitter {
             board,
             filenameForExport,
             boardFileImageSize(boardData),
-            projectAbsolutePath,
+            projectFileAbsolutePath,
             outputPath
           ).then(() => resolve()).catch(err => console.error(err))
         }))
@@ -66,11 +66,11 @@ class Exporter extends EventEmitter {
     })
   }
   
-  exportImages (boardData, projectAbsolutePath) {
+  exportImages (boardData, projectFileAbsolutePath) {
     return new Promise(resolve => {
-      let exportsPath = ensureExportsPathExists(projectAbsolutePath)
+      let exportsPath = ensureExportsPathExists(projectFileAbsolutePath)
 
-      let basename = path.basename(projectAbsolutePath)
+      let basename = path.basename(projectFileAbsolutePath)
       let outputPath = path.join(
         exportsPath,
         basename + ' Images ' + moment().format('YYYY-MM-DD hh.mm.ss')
@@ -82,7 +82,7 @@ class Exporter extends EventEmitter {
       // export ALL layers of each one of the boards
       let index = 0
       let writers = []
-      let basenameWithoutExt = path.basename(projectAbsolutePath, path.extname(projectAbsolutePath))
+      let basenameWithoutExt = path.basename(projectFileAbsolutePath, path.extname(projectFileAbsolutePath))
       for (let board of boardData.boards) {
         writers.push(new Promise(resolve => {
           let filenameForExport = boardFilenameForExport(board, index, basenameWithoutExt)
@@ -90,7 +90,7 @@ class Exporter extends EventEmitter {
             board,
             filenameForExport,
             boardFileImageSize(boardData),
-            projectAbsolutePath,
+            projectFileAbsolutePath,
             outputPath
           ).then(() => resolve()).catch(err => console.error(err))
         }))
