@@ -1,7 +1,7 @@
 //
 // USAGE:
 //
-// electron-mocha --renderer test/exporters/renderer.test.js
+// electron-mocha --renderer test/exporters/common.test.js
 //
 
 'use strict';
