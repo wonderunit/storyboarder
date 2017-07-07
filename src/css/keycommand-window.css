@@ -1,0 +1,335 @@
+body {
+  margin: 0;
+  padding: 0;
+  color: black;
+  font-family: 'proximanova';
+  font-weight: 300;
+  background: #333333;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor:default;
+  overflow: hidden;
+  box-sizing: border-box;
+  -webkit-app-region: drag;
+}
+
+html, body {
+  height: 100%;
+
+}
+
+#container {
+  display: block;
+  margin: 50px 50px 0 50px;
+  box-sizing: border-box;
+  bottom: 0;
+  position: absolute;
+  top: 0;
+}
+
+#keyboard {
+  display: block;
+  background: lightgray;
+  padding: 10px;
+  border-radius: 13px;
+  display: flex;
+  flex-direction: row;
+  color: rgba(0,0,0,0.5);
+  font-weight: 500;
+  box-shadow: inset 0 -6px 0px rgba(0, 0, 0, 0.2),0 1px 6px 2px rgba(0, 0, 0, 0.5);
+  padding-bottom: 15px;
+  position: relative;
+}
+
+.cols {
+  height: auto;
+}
+
+#keyboard .left {
+  margin-right: 15px;
+  width: 850px;
+}
+
+#keyboard .right {
+  font-size: 12px;
+  line-height: 12px;
+}
+
+.row {
+  display: flex;
+  flex-direction: row;
+  height: 60px;
+  justify-content: center;
+
+}
+
+.row:nth-of-type(1) {
+  height: 40px;
+}
+
+.row:nth-of-type(6) {
+  height: 70px;
+}
+
+#keyboard .right .row:nth-of-type(6) {
+  height: 60px;
+}
+
+#keyboard .right .row:nth-of-type(4) {
+  height: 70px;
+}
+
+
+
+#key-space {
+  min-width: 300px;
+}
+
+#key-rightcommand, #key-leftcommand {
+  min-width: 65px;
+}
+
+#key-windows {
+  font-size: 20px;
+}
+
+.key {
+
+  box-sizing: border-box;
+  background-color: rgba(255,255,255,0.8);
+  border-radius: 5px;
+  box-shadow: inset 0 -4px 0px rgba(0, 0, 0, 0.2),0 1px 0px 2px rgba(0, 0, 0, 0.5),0 1px 0px 0px rgba(0, 0, 0, 0.0);
+  
+/*  background-color: rgba(255,100,100,0.8);
+  box-shadow: inset 0 -4px 0px rgba(0, 0, 0, 0.2),0 1px 0px 2px rgba(0, 0, 0, 0.5), 0 1px 0px 4px rgba(255, 0, 0, 0.5);
+*//*  flex:1 0 auto;
+*/  min-width: 48px;
+  text-align:center;
+
+  margin: 4px 5px;  /* and that, will result in a 10px gap */
+  position: relative;
+  transition: all .1s;
+}
+
+.key.fill {
+  flex: 2 1 auto;
+  font-size: 12px;
+}
+
+.key span {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  transform: translate(-50%, -50%);
+}
+
+.commands {
+  margin-top: 30px;
+  column-count: 4;
+  column-gap: 30px;  
+  position: relative;
+  height: calc(100% - 375px - 30px);
+}
+
+.set {
+  color: white;
+  display: inline-block;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.section {
+  padding-left: 7px;
+  margin-left: -10px;
+  line-height: 25px;
+  width: 100%;
+  color: rgba(255,255,255,0.8);
+  border-bottom: 5px solid rgba(255,255,255,0.2);
+  margin-bottom: 10px;
+}
+
+.section.color-1 {
+  border-bottom: 5px solid #832afe;
+}
+
+.section.color-2 {
+  border-bottom: 5px solid #8b5601;
+}
+
+.section.color-3 {
+  border-bottom: 5px solid #2f56ff;
+}
+
+.section.color-4 {
+  border-bottom: 5px solid #04970e;
+}
+
+.section.color-5 {
+  border-bottom: 5px solid #d42929;
+}
+
+.section.color-6 {
+  border-bottom: 5px solid #636a01;
+}
+
+.section.color-7 {
+  border-bottom: 5px solid #01828a;
+}
+
+.section.color-8 {
+  border-bottom: 5px solid #a0366b;
+}
+
+
+.command {
+  font-size: 14px;
+  padding: 5px 3px 5px 7px;
+  margin-left: -10px;
+  border-radius: 3px;
+}
+
+.command:hover {
+  background: rgba(255,255,255,0.1);
+}
+
+.command:hover kbd {
+  background: rgba(255,255,255,0.9);
+}
+
+.command.highlight kbd {
+  background: rgba(255,255,255,0.9);
+}
+
+
+span.keyset {
+  float: right;
+  color: rgba(255,255,255,0.3);
+}
+
+kbd {
+  display: inline-block;
+  font-family: 'proximanova';
+  font-size: 12px;  
+  background: rgba(255,255,255,0.5);
+  padding: 2px 5px;
+  border-radius: 2px;
+  color: #333333;
+  font-weight: 700;
+  position: relative;
+  top: -2px;
+  min-width: 8px;
+  text-align: center;
+  margin: 0 2px;
+}
+
+.highlight {
+  background: black;
+}
+
+#keyboard:not(.hover) .type-Help, .highlight.color-8 {
+  background: #f9d9e9;
+}
+
+#keyboard:not(.hover) .type-Window, .highlight.color-7 {
+  background: #bdedf0;
+}
+
+#keyboard:not(.hover) .type-View, .highlight.color-6 {
+  background: #edf0bd;
+}
+
+#keyboard:not(.hover) .type-Tools, .highlight.color-5 {
+  background: #f0bdbd;
+}
+
+#keyboard:not(.hover) .type-Boards, .highlight.color-4 {
+  background: #b3e0b6;
+}
+
+#keyboard:not(.hover) .type-Navigation, .highlight.color-3 {
+  background: #b9c5f9;
+}
+
+#keyboard:not(.hover) .type-Edit, .highlight.color-2 {
+  background: #f9e0b9;
+}
+
+#keyboard:not(.hover) .type-File, .highlight.color-1 {
+  background: #d4b9f9;
+}
+
+.active {
+  color: white;
+  font-weight: 500;
+/*  animation-name: example;
+  animation-duration: 0.6s;
+*/}
+
+.press-1 {
+  animation-delay: 0s;
+}
+
+.press-2 {
+  animation-delay: .3s;
+}
+
+.press-3 {
+  animation-delay: .6s;
+}
+
+.active.color-1 {
+  background: #691ddb !important;
+  box-shadow: inset 0 -4px 0px rgba(0, 0, 0, 0.2),0 1px 0px 2px rgba(0, 0, 0, 0.5),0 1px 0px 3px #691ddb;
+}
+
+.active.color-2 {
+  background: #db8e1d !important;
+  box-shadow: inset 0 -4px 0px rgba(0, 0, 0, 0.2),0 1px 0px 2px rgba(0, 0, 0, 0.5),0 1px 0px 3px #db8e1d;
+}
+
+.active.color-3 {
+  background: #1d44db !important;
+  box-shadow: inset 0 -4px 0px rgba(0, 0, 0, 0.2),0 1px 0px 2px rgba(0, 0, 0, 0.5),0 1px 0px 3px #1d44db;
+}
+
+.active.color-4 {
+  background: #2aaf30 !important;
+  box-shadow: inset 0 -4px 0px rgba(0, 0, 0, 0.2),0 1px 0px 2px rgba(0, 0, 0, 0.5),0 1px 0px 3px #2aaf30;
+}
+
+.active.color-5 {
+  background: #c62d2f !important;
+  box-shadow: inset 0 -4px 0px rgba(0, 0, 0, 0.2),0 1px 0px 2px rgba(0, 0, 0, 0.5),0 1px 0px 3px #c62d2f;
+}
+
+.active.color-6 {
+  background: #bfc62d !important;
+  box-shadow: inset 0 -4px 0px rgba(0, 0, 0, 0.2),0 1px 0px 2px rgba(0, 0, 0, 0.5),0 1px 0px 3px #bfc62d;
+}
+
+.active.color-7 {
+  background: #2dbfc6 !important;
+  box-shadow: inset 0 -4px 0px rgba(0, 0, 0, 0.2),0 1px 0px 2px rgba(0, 0, 0, 0.5),0 1px 0px 3px #2dbfc6;
+}
+.active.color-8 {
+  background: #bd5d8e !important;
+  box-shadow: inset 0 -4px 0px rgba(0, 0, 0, 0.2),0 1px 0px 2px rgba(0, 0, 0, 0.5),0 1px 0px 3px #bd5d8e;
+}
+
+/*@keyframes example {
+    0%   {filter: brightness(1) contrast(100%);}
+    1%   {filter: brightness(1) contrast(100%);}
+    2%   {filter: brightness(1.3) contrast(200%);}
+    100% {filter: brightness(1) contrast(100%);}
+}
+*/
+/*.active-1 {
+  background: red !important;
+}
+
+.active-2 {
+  background: yellow !important;
+}*/
+
+

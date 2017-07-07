@@ -27,6 +27,8 @@ let newWindow
 let mainWindow
 let printWindow
 let sketchWindow
+let keyCommandWindow
+
 let welcomeInprogress
 
 let statWatcher
@@ -76,6 +78,15 @@ app.on('ready', ()=> {
   // open the welcome window when the app loads up first
   openWelcomeWindow()
 })
+
+let openKeyCommandWindow = ()=> {
+    keyCommandWindow = new BrowserWindow({width: 1158, height: 925, maximizable: false, center: true, show: false, resizable: false, frame: false, titleBarStyle: 'hidden-inset'})
+    keyCommandWindow.loadURL(`file://${__dirname}/../keycommand-window.html`)
+    keyCommandWindow.once('ready-to-show', () => {
+      setTimeout(()=>{keyCommandWindow.show()},500)
+    })
+
+}
 
 app.on('activate', ()=> {
   if (!mainWindow && !welcomeWindow) openWelcomeWindow()
@@ -704,3 +715,8 @@ ipcMain.on('save', (event, arg) => {
 ipcMain.on('prefs:change', (event, arg) => {
   mainWindow.webContents.send('prefs:change', arg)
 })
+
+ipcMain.on('showKeyCommands', (event, arg) => {
+  openKeyCommandWindow()
+})
+
