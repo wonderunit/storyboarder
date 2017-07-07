@@ -1217,6 +1217,8 @@ const updateThumbnail = imageFilePath => {
   canvas.width = size[0]
   canvas.height = size[1]
   let context = canvas.getContext('2d')
+  context.fillStyle = 'white'
+  context.fillRect(0, 0, context.canvas.width, context.canvas.height)
   exporterCommon.flattenBoardToContext(context, canvasImageSources, size)
 
   let imageData = canvas
