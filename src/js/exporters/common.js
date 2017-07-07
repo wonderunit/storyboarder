@@ -59,27 +59,16 @@ const getImage = (url) => {
 
 const exportFlattenedBoard = (board, filenameForExport, { size, projectAbsolutePath, outputPath }) => {
   return new Promise(resolve => {
+
+    // TODO can we extract this to a fn?
     let canvas = document.createElement('canvas')
     let context = canvas.getContext('2d')
-    let [ width, height ] = size
-    canvas.width = width
-    canvas.height = height
+    canvas.width = size[0]
+    canvas.height = size[1]
+
     context.fillStyle = 'white'
     context.fillRect(0, 0, context.canvas.width, context.canvas.height)
 
-    drawFlattenedBoardLayersToContext(context, board, projectAbsolutePath, size).then(() => {
-      let imageData = canvas.toDataURL().replace(/^data:image\/\w+;base64,/, '')
-      let pathToExport = path.join(outputPath, filenameForExport)
-      fs.writeFileSync(pathToExport, imageData, 'base64')
-      resolve(pathToExport)
-    }).catch(err => {
-      console.error(err)
-    })
-  })
-}
-
-const drawFlattenedBoardLayersToContext = (context, board, projectAbsolutePath, size) => {
-  return new Promise(resolve => {
     let { indices, filenames } = boardOrderedLayerFilenames(board)
 
     let loaders = []
@@ -91,7 +80,6 @@ const drawFlattenedBoardLayersToContext = (context, board, projectAbsolutePath, 
     Promise.all(loaders).then(images => {
 
       let canvasImageSourcesData = []
-
       images.forEach((canvasImageSource, n) => {
         // let layerIndex = indices[n]
         if (canvasImageSource) {
@@ -104,7 +92,10 @@ const drawFlattenedBoardLayersToContext = (context, board, projectAbsolutePath, 
 
       flattenBoardToContext(context, canvasImageSourcesData, size)
 
-      resolve()
+      let imageData = canvas.toDataURL().replace(/^data:image\/\w+;base64,/, '')
+      let pathToExport = path.join(outputPath, filenameForExport)
+      fs.writeFileSync(pathToExport, imageData, 'base64')
+      resolve(pathToExport)
     }).catch(err => {
       console.error(err)
     })
