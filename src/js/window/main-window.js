@@ -376,7 +376,7 @@ let loadBoardUI = ()=> {
     markImageFileDirty(layerIndices)
 
     updateThumbnailFile()
-    updateThumbnailDisplay()
+    updateThumbnailDisplay(currentBoard)
   })
   
   storyboarderSketchPane.on('lineMileage', value => {
@@ -1115,7 +1115,7 @@ let saveImageFile = () => {
 
   // create/update the thumbnail image file
   updateThumbnailFile()
-  updateThumbnailDisplay()
+  updateThumbnailDisplay(currentBoard)
 }
 
 let openInEditor = () => {
@@ -1185,6 +1185,7 @@ let openInEditor = () => {
     });
   }
 
+// always operates on currentBoard
 const updateThumbnailFile = () => {
   let imageFilePath = path.join(boardPath, 'images', exporterCommon.boardFilenameForThumbnail(boardData.boards[currentBoard]))
 
@@ -1231,12 +1232,12 @@ const updateThumbnailFile = () => {
   }
 }
 
-const updateThumbnailDisplay = () => {
+const updateThumbnailDisplay = index => {
   // load the thumbnail image file
-  let el = document.querySelector(`[data-thumbnail="${currentBoard}"] img`)
+  let el = document.querySelector(`[data-thumbnail="${index}"] img`)
   // does it exist in the thumbnail drawer already?
   if (el) {
-    let imageFilePath = path.join(boardPath, 'images', exporterCommon.boardFilenameForThumbnail(boardData.boards[currentBoard]))
+    let imageFilePath = path.join(boardPath, 'images', exporterCommon.boardFilenameForThumbnail(boardData.boards[index]))
     el.src = imageFilePath + '?' + Date.now()
   }
 }
@@ -3086,7 +3087,7 @@ let pasteBoards = () => {
       }).then(function(result) {
         // 
         updateThumbnailFile()
-        updateThumbnailDisplay()
+        updateThumbnailDisplay(currentBoard)
       })
     })
     sequence.then(()=>{
