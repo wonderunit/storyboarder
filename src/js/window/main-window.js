@@ -375,8 +375,9 @@ let loadBoardUI = ()=> {
     storeUndoStateForImage(false, layerIndices)
     markImageFileDirty(layerIndices)
 
-    updateThumbnailFile()
-    updateThumbnailDisplay(currentBoard)
+    saveThumbnailFile(currentBoard).then(() => {
+      updateThumbnailDisplay(currentBoard)
+    })
   })
   
   storyboarderSketchPane.on('lineMileage', value => {
@@ -1114,8 +1115,9 @@ let saveImageFile = () => {
   console.log(`saved ${numSaved} modified layers`)
 
   // create/update the thumbnail image file
-  updateThumbnailFile()
-  updateThumbnailDisplay(currentBoard)
+  saveThumbnailFile(currentBoard).then(() => {
+    updateThumbnailDisplay(currentBoard)
+  })
 }
 
 let openInEditor = () => {
@@ -1185,47 +1187,71 @@ let openInEditor = () => {
     });
   }
 
-// always operates on currentBoard
-const updateThumbnailFile = () => {
-  let imageFilePath = path.join(boardPath, 'images', exporterCommon.boardFilenameForThumbnail(boardData.boards[currentBoard]))
 
-  let size = [
-    Math.floor(60 * boardData.aspectRatio) * 2,
-    60 * 2
-  ]
-
-  let canvasImageSources = [
-    // reference
-    {
-      canvasImageSource: storyboarderSketchPane.sketchPane.getLayerCanvas(0),
-      opacity: storyboarderSketchPane.sketchPane.getLayerOpacity(0)
-    },
-    // main
-    {
-      canvasImageSource: storyboarderSketchPane.sketchPane.getLayerCanvas(1),
-      opacity: storyboarderSketchPane.sketchPane.getLayerOpacity(1)
-    },
-    // notes
-    {
-      canvasImageSource: storyboarderSketchPane.sketchPane.getLayerCanvas(3),
-      opacity: storyboarderSketchPane.sketchPane.getLayerOpacity(3)
+const saveThumbnailFile = index => {
+  return new Promise((resolve, reject) => {
+    let imageFilePath = path.join(boardPath, 'images', exporterCommon.boardFilenameForThumbnail(boardData.boards[index]))
+    
+    let size = [
+      Math.floor(60 * boardData.aspectRatio) * 2,
+      60 * 2
+    ]
+    
+    let context = createBlankContext(size)
+    let canvas = context.canvas
+    
+    let promise
+    let canvasImageSources
+    if (index == currentBoard) {
+      // grab from memory
+      canvasImageSources = [
+        // reference
+        {
+          canvasImageSource: storyboarderSketchPane.sketchPane.getLayerCanvas(0),
+          opacity: storyboarderSketchPane.sketchPane.getLayerOpacity(0)
+        },
+        // main
+        {
+          canvasImageSource: storyboarderSketchPane.sketchPane.getLayerCanvas(1),
+          opacity: storyboarderSketchPane.sketchPane.getLayerOpacity(1)
+        },
+        // notes
+        {
+          canvasImageSource: storyboarderSketchPane.sketchPane.getLayerCanvas(3),
+          opacity: storyboarderSketchPane.sketchPane.getLayerOpacity(3)
+        }
+      ]
+      exporterCommon.flattenCanvasImageSourcesDataToContext(context, canvasImageSources, size)
+      promise = Promise.resolve()
+    } else {
+      // grab from files
+      promise = exporterCommon.flattenBoardToCanvas(
+        boardData.boards[index],
+        canvas,
+        size,
+        boardFilename
+      )
     }
-  ]
 
-  let context = createBlankContext(size)
-  let canvas = context.canvas
-  exporterCommon.flattenCanvasImageSourcesDataToContext(context, canvasImageSources, size)
-
-  let imageData = canvas
-    .toDataURL('image/png')
-    .replace(/^data:image\/\w+;base64,/, '')
-
-  try {
-    fs.writeFileSync(imageFilePath, imageData, 'base64')
-    console.log('saved thumbnail', imageFilePath)
-  } catch (err) {
-    console.error(err)
-  }
+    promise.then(() => {
+      let imageData = canvas
+        .toDataURL('image/png')
+        .replace(/^data:image\/\w+;base64,/, '')
+    
+      try {
+        fs.writeFile(imageFilePath, imageData, 'base64', () => {
+          resolve()
+          console.log('saved thumbnail', imageFilePath)
+        })
+      } catch (err) {
+        console.error(err)
+        reject(err)
+      }
+    }).catch(err => {
+      console.log(err)
+      reject(err)
+    })
+  })
 }
 
 const updateThumbnailDisplay = index => {
@@ -3456,6 +3482,10 @@ const applyUndoStateForImage = (state) => {
 
       markImageFileDirty([layerData.index])
     }
+
+    saveThumbnailFile(state.boardIndex).then(() => {
+      updateThumbnailDisplay(state.boardIndex)
+    })
 
     toolbar.emit('cancelTransform')
   }).catch(e => console.error(e))
