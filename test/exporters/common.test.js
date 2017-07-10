@@ -83,4 +83,27 @@ describe('exporters/common', function () {
       done(err)
     })
   })
+
+  // exporters/common#exportFlattenedBoard
+  // used by exporters
+  it('can handle a file no longer existing', function(done) {
+    let projectFileAbsolutePath = path.resolve(path.join(fixturesPath, 'example', 'example.storyboarder'))
+    let project = JSON.parse(fs.readFileSync(projectFileAbsolutePath))
+  
+    let basenameWithoutExt = path.basename(projectFileAbsolutePath, path.extname(projectFileAbsolutePath))
+    let index = 0
+    let board = project.boards[index]
+    let filenameForExport = exporterCommon.boardFilenameForThumbnail(board)
+  
+    let size = [Math.floor(60 * project.aspectRatio), 60]
+    let outputPath = tmpFolder.name
+  
+    board.url = 'missing.png'
+  
+    exporterCommon.exportFlattenedBoard(board, filenameForExport, size, projectFileAbsolutePath, outputPath).then((pathToExport) => {
+    }).catch(err => {
+      assert(err.message.match('Error: Could not load'))
+      done()
+    }).catch(done)
+  })
 })

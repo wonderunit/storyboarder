@@ -42,23 +42,21 @@ const boardFilenameForThumbnail = board =>
 const boardFilenameForExport = (board, index, basenameWithoutExt) =>
   `${basenameWithoutExt}-board-${index + 1}-` + util.zeroFill(4, index + 1) + '.png'
 
-const getImage = (url) => {
+const getImage = url => {
   return new Promise(function(resolve, reject){
     let img = new Image()
     img.onload = () => {
       resolve(img)
     }
-    // TODO test a rejection
     img.onerror = () => {
-      console.log('error loading image')
-      reject(null)
+      reject(new Error(`Could not load image ${url}`))
     }
     img.src = url
   })
 }
 
 const exportFlattenedBoard = (board, filenameForExport, size, projectFileAbsolutePath, outputPath) => {
-  return new Promise(resolve => {
+  return new Promise((resolve, reject) => {
 
     // TODO can we extract this to a fn?
     let canvas = document.createElement('canvas')
@@ -97,7 +95,7 @@ const exportFlattenedBoard = (board, filenameForExport, size, projectFileAbsolut
       fs.writeFileSync(pathToExport, imageData, 'base64')
       resolve(pathToExport)
     }).catch(err => {
-      console.error(err)
+      reject(new Error(err))
     })
   })
 }
