@@ -55,6 +55,16 @@ const getImage = url => {
   })
 }
 
+/**
+ * Reads layer files and exports flattened image to a file
+ * Can be used to generate thumbnails if `size` is smaller than actual size
+ * @param {object} board the board object
+ * @param {string} filenameForExport filename without path
+ * @param {array} size [width:Number, height:Number]
+ * @param {string} projectFileAbsolutePath full path to .storyboarder project
+ * @param {string} outputPath full path of folder where file will be exported
+ * @returns {Promise} resolves with the absolute path to the exported file
+ */
 const exportFlattenedBoard = (board, filenameForExport, size, projectFileAbsolutePath, outputPath) => {
   return new Promise((resolve, reject) => {
 
