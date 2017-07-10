@@ -42,23 +42,31 @@ const boardFilenameForThumbnail = board =>
 const boardFilenameForExport = (board, index, basenameWithoutExt) =>
   `${basenameWithoutExt}-board-${index + 1}-` + util.zeroFill(4, index + 1) + '.png'
 
-const getImage = (url) => {
+const getImage = url => {
   return new Promise(function(resolve, reject){
     let img = new Image()
     img.onload = () => {
       resolve(img)
     }
-    // TODO test a rejection
     img.onerror = () => {
-      console.log('error loading image')
-      reject(null)
+      reject(new Error(`Could not load image ${url}`))
     }
     img.src = url
   })
 }
 
+/**
+ * Reads layer files and exports flattened image to a file
+ * Can be used to generate thumbnails if `size` is smaller than actual size
+ * @param {object} board the board object
+ * @param {string} filenameForExport filename without path
+ * @param {array} size [width:int, height:int]
+ * @param {string} projectFileAbsolutePath full path to .storyboarder project
+ * @param {string} outputPath full path of folder where file will be exported
+ * @returns {Promise} resolves with the absolute path to the exported file
+ */
 const exportFlattenedBoard = (board, filenameForExport, size, projectFileAbsolutePath, outputPath) => {
-  return new Promise(resolve => {
+  return new Promise((resolve, reject) => {
 
     // TODO can we extract this to a fn?
     let canvas = document.createElement('canvas')
@@ -97,11 +105,17 @@ const exportFlattenedBoard = (board, filenameForExport, size, projectFileAbsolut
       fs.writeFileSync(pathToExport, imageData, 'base64')
       resolve(pathToExport)
     }).catch(err => {
-      console.error(err)
+      reject(new Error(err))
     })
   })
 }
 
+/**
+ * Write a flattened image to the context, given an array of layer description objects
+ * @param {CanvasRenderingContext2D} context reference to the destination context
+ * @param {array} canvasImageSourcesData array of layer description objects: { canvasImageSource:CanvasImageSource, opacity:int }
+ * @param {array} size [width:int, height:int]
+ */
 const flattenBoardToContext = (context, canvasImageSourcesData, size) => {
   context.save()
   for (let source of canvasImageSourcesData) {

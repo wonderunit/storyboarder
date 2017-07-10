@@ -9,7 +9,8 @@
     "dist:mac": "build -m",
     "dist:win": "build -w",
     "dist:linux": "build -l",
-    "dist": "build -mwl"
+    "dist": "build -mwl",
+    "test": "./node_modules/.bin/electron-mocha --renderer test/**/*.test.js"
   },
   "repository": {
     "type": "git",
