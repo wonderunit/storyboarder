@@ -27,7 +27,7 @@ describe('exporters/common', function () {
   //   tmpFolder.removeCallback()
   // })
 
-  // exporters/common#flattenBoardToContext
+  // exporters/common#flattenCanvasImageSourcesDataToContext
   // used by main-window#updateThumbnail
   it('can build a thumbnail image, from memory, to a context', function (done) {
     let size = [900, 900]
@@ -47,7 +47,7 @@ describe('exporters/common', function () {
     canvas.width = size[0]
     canvas.height = size[1]
     let context = canvas.getContext('2d')
-    exporterCommon.flattenBoardToContext(context, canvasImageSources, size)
+    exporterCommon.flattenCanvasImageSourcesDataToContext(context, canvasImageSources, size)
 
     done()
   })
@@ -101,6 +101,7 @@ describe('exporters/common', function () {
     board.url = 'missing.png'
   
     exporterCommon.exportFlattenedBoard(board, filenameForExport, size, projectFileAbsolutePath, outputPath).then((pathToExport) => {
+      done(new Error('failed to catch missing image'))
     }).catch(err => {
       assert(err.message.match('Error: Could not load'))
       done()

@@ -1212,13 +1212,9 @@ const updateThumbnailFile = () => {
     }
   ]
 
-  let canvas = document.createElement('canvas')
-  canvas.width = size[0]
-  canvas.height = size[1]
-  let context = canvas.getContext('2d')
-  context.fillStyle = 'white'
-  context.fillRect(0, 0, context.canvas.width, context.canvas.height)
-  exporterCommon.flattenBoardToContext(context, canvasImageSources, size)
+  let context = createBlankContext(size)
+  let canvas = context.canvas
+  exporterCommon.flattenCanvasImageSourcesDataToContext(context, canvasImageSources, size)
 
   let imageData = canvas
     .toDataURL('image/png')
@@ -2856,18 +2852,21 @@ let importImage = (imageDataURL) => {
 let copyBoards = () => {
   if (textInputMode) return // ignore copy command in text input mode
 
-  // copy more than one boards
   if (selections.size > 1) {
+    //
+    //
+    // copy multiple boards
+    //
     if (selections.has(currentBoard)) {
       saveImageFile()
     }
 
-    // grab data for each board
-    let boards = [...selections].sort(util.compareNumbers).map(n => util.stringifyClone(boardData.boards[n]))
+    // make a copy of the board data for each selected board
+    let selectedBoardIds = [...selections].sort(util.compareNumbers)
+    let boards = selectedBoardIds.map(n => util.stringifyClone(boardData.boards[n]))
 
     // inject image data for each board
     boards = boards.map(board => {
-
       let filepath = path.join(boardPath, 'images', board.url)
       let data = FileReader.getBase64ImageDataFromFilePath(filepath)
       if (data && data.main) {
@@ -2900,6 +2899,10 @@ let copyBoards = () => {
     clipboard.write(payload)
 
   } else {
+    //
+    //
+    // copy one board
+    //
     saveImageFile() // ensure we have all layers created in the data and saved to disk
 
     // copy a single board (the current board)
@@ -2918,16 +2921,27 @@ let copyBoards = () => {
         }
       }
     }
-    let size = storyboarderSketchPane.sketchPane.getCanvasSize()
-    let snapshot = storyboarderSketchPane.sketchPane.createFlattenThumbnail(size.width, size.height)
-    let payload = {
-      image: nativeImage.createFromDataURL(snapshot.toDataURL()),
-      text: JSON.stringify({ boards: [board] }, null, 2)
-    }
-    clipboard.clear()
-    clipboard.write(payload)
 
-    snapshot = null
+    let { width, height } = storyboarderSketchPane.sketchPane.getCanvasSize()
+    let size = [width, height]
+    let canvas = createBlankContext(size).canvas
+    exporterCommon.flattenBoardToCanvas(
+      board,
+      canvas,
+      size,
+      boardFilename
+    ).then(() => {
+      let payload = {
+        image: nativeImage.createFromDataURL(canvas.toDataURL()),
+        text: JSON.stringify({ boards: [board] }, null, 2)
+      }
+      clipboard.clear()
+      clipboard.write(payload)
+      notifications.notify({ message: "Copied" })
+    }).catch(err => {
+      console.log(err)
+      notifications.notify({ message: "Error. Couldn't copy." })
+    })
   }
 }
 
@@ -3445,6 +3459,16 @@ const applyUndoStateForImage = (state) => {
 
     toolbar.emit('cancelTransform')
   }).catch(e => console.error(e))
+}
+
+const createBlankContext = size => {
+  let canvas = document.createElement('canvas')
+  let context = canvas.getContext('2d')
+  canvas.width = size[0]
+  canvas.height = size[1]
+  context.fillStyle = 'white'
+  context.fillRect(0, 0, context.canvas.width, context.canvas.height)
+  return context
 }
 
 ipcRenderer.on('setTool', (e, arg)=> {

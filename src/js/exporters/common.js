@@ -43,7 +43,7 @@ const boardFilenameForExport = (board, index, basenameWithoutExt) =>
   `${basenameWithoutExt}-board-${index + 1}-` + util.zeroFill(4, index + 1) + '.png'
 
 const getImage = url => {
-  return new Promise(function(resolve, reject){
+  return new Promise((resolve, reject) => {
     let img = new Image()
     img.onload = () => {
       resolve(img)
@@ -68,42 +68,52 @@ const getImage = url => {
 const exportFlattenedBoard = (board, filenameForExport, size, projectFileAbsolutePath, outputPath) => {
   return new Promise((resolve, reject) => {
 
-    // TODO can we extract this to a fn?
-    let canvas = document.createElement('canvas')
-    let context = canvas.getContext('2d')
-    canvas.width = size[0]
-    canvas.height = size[1]
+    let canvas = createBlankContext(size).canvas
 
-    context.fillStyle = 'white'
-    context.fillRect(0, 0, context.canvas.width, context.canvas.height)
+    flattenBoardToCanvas(board, canvas, size, projectFileAbsolutePath)
+      .then(() => {
+        let imageData = canvas.toDataURL().replace(/^data:image\/\w+;base64,/, '')
+        let pathToExport = path.join(outputPath, filenameForExport)
+        fs.writeFileSync(pathToExport, imageData, 'base64')
+        resolve(pathToExport)
+      }).catch(err => {
+        reject(err)
+      })
+  })
+}
 
+const createBlankContext = size => {
+  let canvas = document.createElement('canvas')
+  let context = canvas.getContext('2d')
+  canvas.width = size[0]
+  canvas.height = size[1]
+  context.fillStyle = 'white'
+  context.fillRect(0, 0, context.canvas.width, context.canvas.height)
+  return context
+}
+
+// convert board data to canvasImageSourcesData
+const getCanvasImageSourcesDataForBoard = (board, projectFileAbsolutePath) => {
+  return new Promise((resolve, reject) => {
     let { indices, filenames } = boardOrderedLayerFilenames(board)
 
-    let loaders = []
-    for (let filename of filenames) {
-      let imageFilePath = path.join(path.dirname(projectFileAbsolutePath), 'images', filename)
-      loaders.push(getImage(imageFilePath))
-    }
+    let getImageFilePath = (filename) => path.join(path.dirname(projectFileAbsolutePath), 'images', filename)
+
+    let loaders = filenames.map(filename => getImage(getImageFilePath(filename)))
 
     Promise.all(loaders).then(images => {
-
       let canvasImageSourcesData = []
       images.forEach((canvasImageSource, n) => {
         // let layerIndex = indices[n]
         if (canvasImageSource) {
           canvasImageSourcesData.push({
+            // layerIndex,
             canvasImageSource,
             opacity: 1
           })
         }
       })
-
-      flattenBoardToContext(context, canvasImageSourcesData, size)
-
-      let imageData = canvas.toDataURL().replace(/^data:image\/\w+;base64,/, '')
-      let pathToExport = path.join(outputPath, filenameForExport)
-      fs.writeFileSync(pathToExport, imageData, 'base64')
-      resolve(pathToExport)
+      resolve(canvasImageSourcesData)
     }).catch(err => {
       reject(new Error(err))
     })
@@ -111,18 +121,40 @@ const exportFlattenedBoard = (board, filenameForExport, size, projectFileAbsolut
 }
 
 /**
- * Write a flattened image to the context, given an array of layer description objects
+ * Given an given an array of layer description objects (CanvasImageSourcesData),
+ *  draws a flattened image to the context
  * @param {CanvasRenderingContext2D} context reference to the destination context
- * @param {array} canvasImageSourcesData array of layer description objects: { canvasImageSource:CanvasImageSource, opacity:int }
+ * @param {array} canvasImageSourcesData array of layer description objects: { canvasImageSource:CanvasImageSource, opacity:int }:CanvasImageSourcesData
  * @param {array} size [width:int, height:int]
  */
-const flattenBoardToContext = (context, canvasImageSourcesData, size) => {
+const flattenCanvasImageSourcesDataToContext = (context, canvasImageSourcesData, size) => {
   context.save()
   for (let source of canvasImageSourcesData) {
     context.globalAlpha = source.opacity
     context.drawImage(source.canvasImageSource, 0, 0, size[0], size[1])
   }
   context.restore()
+}
+
+/**
+ * Reads layer files and draws flattened image to a canvas
+ * Can be used to generate thumbnails if `size` is smaller than actual size
+ * @param {object} board the board object
+ * @param {HTMLCanvasElement} canvas destination canvas
+ * @param {array} size [width:int, height:int]
+ * @param {string} projectFileAbsolutePath full path to .storyboarder project
+ * @returns {Promise}
+ */
+const flattenBoardToCanvas = (board, canvas, size, projectFileAbsolutePath) => {
+  return new Promise((resolve, reject) => {
+    getCanvasImageSourcesDataForBoard(board, projectFileAbsolutePath)
+      .then(canvasImageSourcesData => {
+        flattenCanvasImageSourcesDataToContext(canvas.getContext('2d'), canvasImageSourcesData, size)
+        resolve()
+      }).catch(err => {
+        reject(err)
+      })
+  })
 }
 
 const ensureExportsPathExists = (projectFileAbsolutePath) => {
@@ -145,6 +177,7 @@ module.exports = {
 
   getImage,
   exportFlattenedBoard,
-  flattenBoardToContext,
+  flattenCanvasImageSourcesDataToContext,
+  flattenBoardToCanvas,
   ensureExportsPathExists
 }
