@@ -151,8 +151,6 @@ const generateFinalCutProData = (boardData, { projectFileAbsolutePath, outputPat
     let lastFrame = msecsToFrames(24, duration),
         endFrame = Math.round(currFrame + lastFrame)
 
-    console.log(board.duration)
-
     let clipItem = {
       start: currFrame,
       end: endFrame,

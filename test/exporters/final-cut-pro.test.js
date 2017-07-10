@@ -1,3 +1,5 @@
+const assert = require('assert')
+
 const exporterFcp = require('../../src/js/exporters/final-cut-pro.js')
 
 let boardFileData = {
@@ -50,8 +52,13 @@ let boardFileData = {
   ]
 }
 
-let projectFileAbsolutePath = '/Users/me/projects/storyboarder/example/example.storyboarder'
-let outputPath = '/Users/me/projects/storyboarder/example/example.storyboarder/exports/output'
-let xml = exporterFcp.generateFinalCutProXml(exporterFcp.generateFinalCutProData(boardFileData, { projectFileAbsolutePath, outputPath }))
-
-console.log(xml)
+describe('exporters/final-cut-pro', () => {
+  it('can generate final cut pro / adobe premiere xml', () => {
+    assert.doesNotThrow(() => {
+      let projectFileAbsolutePath = '/Users/me/projects/storyboarder/example/example.storyboarder'
+      let outputPath = '/Users/me/projects/storyboarder/example/example.storyboarder/exports/output'
+      let xml = exporterFcp.generateFinalCutProXml(exporterFcp.generateFinalCutProData(boardFileData, { projectFileAbsolutePath, outputPath }))
+      assert(xml.length > 32)
+    })
+  })
+})

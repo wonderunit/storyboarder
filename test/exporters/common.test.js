@@ -72,9 +72,12 @@ describe('exporters/common', function () {
     let outputPath = tmpFolder.name
   
     exporterCommon.exportFlattenedBoard(board, filenameForExport, size, projectFileAbsolutePath, outputPath).then((pathToExport) => {
-      console.log('exported to', pathToExport)
+      // console.log('exported to', pathToExport)
       assert(pathToExport.length)
-      shell.showItemInFolder(pathToExport)
+      //
+      // uncomment this to reveal the flattened board 
+      //
+      // shell.showItemInFolder(pathToExport)
       done()
     }).catch(err => {
       done(err)
