@@ -60,7 +60,7 @@ const getImage = url => {
  * Can be used to generate thumbnails if `size` is smaller than actual size
  * @param {object} board the board object
  * @param {string} filenameForExport filename without path
- * @param {array} size [width:Number, height:Number]
+ * @param {array} size [width:int, height:int]
  * @param {string} projectFileAbsolutePath full path to .storyboarder project
  * @param {string} outputPath full path of folder where file will be exported
  * @returns {Promise} resolves with the absolute path to the exported file
@@ -110,6 +110,12 @@ const exportFlattenedBoard = (board, filenameForExport, size, projectFileAbsolut
   })
 }
 
+/**
+ * Write a flattened image to the context, given an array of layer description objects
+ * @param {CanvasRenderingContext2D} context reference to the destination context
+ * @param {array} canvasImageSourcesData array of layer description objects: { canvasImageSource:CanvasImageSource, opacity:int }
+ * @param {array} size [width:int, height:int]
+ */
 const flattenBoardToContext = (context, canvasImageSourcesData, size) => {
   context.save()
   for (let source of canvasImageSourcesData) {
