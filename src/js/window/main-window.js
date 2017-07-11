@@ -2925,8 +2925,8 @@ let copyBoards = () => {
     }
 
     // make a copy of the board data for each selected board
-    let selectedBoardIds = [...selections].sort(util.compareNumbers)
-    let boards = selectedBoardIds.map(n => util.stringifyClone(boardData.boards[n]))
+    let selectedBoardIndexes = [...selections].sort(util.compareNumbers)
+    let boards = selectedBoardIndexes.map(n => util.stringifyClone(boardData.boards[n]))
 
     // inject image data for each board
     boards = boards.map(board => {
