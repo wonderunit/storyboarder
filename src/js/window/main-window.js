@@ -378,6 +378,8 @@ let loadBoardUI = ()=> {
     saveThumbnailFile(currentBoard).then(() => {
       updateThumbnailDisplay(currentBoard)
     })
+
+    // TODO save progress image
   })
   
   storyboarderSketchPane.on('lineMileage', value => {
@@ -1187,6 +1189,42 @@ let openInEditor = () => {
     });
   }
 
+
+// // always currentBoard
+// const saveProgressFile = () => {
+//   let imageFilePath = ''//
+//   let size = [x, y]//
+
+//     let context = createBlankContext(size)
+//     let canvas = context.canvas//
+
+//     let canvasImageSources = storyboarderSketchPane.getCanvasImageSources()
+
+//   exporterCommon.flattenCanvasImageSourfocesDataToContext(context, canvasImageSources, size)
+
+//   // save
+
+//   // could use  saveDataURLtoFile, which is sync
+
+//   promise.then(() => {
+//       let imageData = canvas
+//         .toDataURL('image/png')
+//         .replace(/^data:image\/\w+;base64,/, '')
+    
+//       try {
+//         fs.writeFile(imageFilePath, imageData, 'base64', () => {
+//           resolve()
+//           console.log('saved thumbnail', imageFilePath)
+//         })
+//       } catch (err) {
+//         console.error(err)
+//         reject(err)
+//       }/
+
+
+
+
+// }
 
 const saveThumbnailFile = index => {
   return new Promise((resolve, reject) => {
