@@ -66,15 +66,27 @@ class Exporter extends EventEmitter {
     })
   }
   
-  exportImages (boardData, projectFileAbsolutePath) {
-    return new Promise(resolve => {
-      let exportsPath = ensureExportsPathExists(projectFileAbsolutePath)
+  exportPDF (boardData, projectFileAbsolutePath) {
+    let outputPath = app.getPath('temp')
 
-      let basename = path.basename(projectFileAbsolutePath)
-      let outputPath = path.join(
-        exportsPath,
-        basename + ' Images ' + moment().format('YYYY-MM-DD hh.mm.ss')
-      )
+    this.exportImages(boardData, projectFileAbsolutePath, outputPath).then(() => {
+      console.log('wrote images to', outputPath, ' -- ready to write PDF')
+    }).catch(err => {
+      console.log(err)
+    })
+  }
+
+  exportImages (boardData, projectFileAbsolutePath, outputPath = null) {
+    return new Promise(resolve => {
+      if (util.isUndefined(outputPath)) {
+        let exportsPath = ensureExportsPathExists(projectFileAbsolutePath)
+
+        let basename = path.basename(projectFileAbsolutePath)
+        let outputPath = path.join(
+          exportsPath,
+          basename + ' Images ' + moment().format('YYYY-MM-DD hh.mm.ss')
+        }
+      }
       if (!fs.existsSync(outputPath)) {
         fs.mkdirSync(outputPath)
       }
@@ -100,6 +112,8 @@ class Exporter extends EventEmitter {
 
       Promise.all(writers).then(() => {
         resolve(outputPath)
+      }).catch(err => {
+        console.log(err)
       })
     })
   }
