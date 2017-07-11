@@ -836,8 +836,8 @@ let loadBoardUI = ()=> {
     console.log('Close requested! Saving ...')
     // TODO THIS IS SLOW AS HELL. NEED TO FIX PREFS
     toolbar.savePrefs()
-    saveBoardFile()
-    saveImageFile()
+    saveImageFile() // NOTE image is saved first, which ensures layers are present in data
+    saveBoardFile() // ... then project data can be saved
   })
 
   // text input mode on blur, to prevent menu trigger on preferences typing
