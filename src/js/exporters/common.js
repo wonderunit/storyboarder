@@ -68,7 +68,7 @@ const getImage = url => {
 const exportFlattenedBoard = (board, filenameForExport, size, projectFileAbsolutePath, outputPath) => {
   return new Promise((resolve, reject) => {
 
-    let canvas = createBlankContext(size).canvas
+    let canvas = createWhiteContext(size).canvas
 
     flattenBoardToCanvas(board, canvas, size, projectFileAbsolutePath)
       .then(() => {
@@ -82,7 +82,7 @@ const exportFlattenedBoard = (board, filenameForExport, size, projectFileAbsolut
   })
 }
 
-const createBlankContext = size => {
+const createWhiteContext = size => {
   let canvas = document.createElement('canvas')
   let context = canvas.getContext('2d')
   canvas.width = size[0]
