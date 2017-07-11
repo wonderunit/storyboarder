@@ -1235,7 +1235,8 @@ const saveThumbnailFile = index => {
       60 * 2
     ]
     
-    let context = createBlankContext(size)
+    let context = createSizedContext(size)
+    fillContext(context, 'white')
     let canvas = context.canvas
     
     let promise
@@ -2987,7 +2988,8 @@ let copyBoards = () => {
 
     let { width, height } = storyboarderSketchPane.sketchPane.getCanvasSize()
     let size = [width, height]
-    let canvas = createBlankContext(size).canvas
+    // create transparent canvas, appropriately sized
+    let canvas = createSizedContext(size).canvas
     exporterCommon.flattenBoardToCanvas(
       board,
       canvas,
@@ -3528,14 +3530,17 @@ const applyUndoStateForImage = (state) => {
   }).catch(e => console.error(e))
 }
 
-const createBlankContext = size => {
+const createSizedContext = size => {
   let canvas = document.createElement('canvas')
   let context = canvas.getContext('2d')
   canvas.width = size[0]
   canvas.height = size[1]
-  context.fillStyle = 'white'
-  context.fillRect(0, 0, context.canvas.width, context.canvas.height)
   return context
+}
+
+const fillContext = (context, fillStyle = 'white') => {
+  context.fillStyle = fillStyle
+  context.fillRect(0, 0, context.canvas.width, context.canvas.height)
 }
 
 ipcRenderer.on('setTool', (e, arg)=> {
