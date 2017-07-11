@@ -3067,12 +3067,13 @@ let save = () => {
  * Creates  a) from `text`, one or more new boards with layers inserted from clipboard JSON data
  *          b) from `image`, one new board with clipboard image data inserted as reference layer
  *
- * TODO:
  */
 let pasteBoards = () => {
   if (textInputMode) return
+
   // save the current image to disk
   saveImageFile()
+
   let newBoards
   // do we have JSON data?
   let text = clipboard.readText()
@@ -3081,13 +3082,16 @@ let pasteBoards = () => {
       let data = JSON.parse(text)
       newBoards = data.boards
       if (data.boards.length > 1) {
-        notifications.notify({message: "Pasting " + data.boards.length + " boards." , timing: 5})
+        notifications.notify({ message: "Pasting " + data.boards.length + " boards.", timing: 5 })
       } else {
-        notifications.notify({message: "Pasting a board." , timing: 5})
+        notifications.notify({ message: "Pasting a board." , timing: 5 })
       }
     } catch (err) {
-      // it could be an image
-      //newBoards = undefined
+      // if there is an error parsing the JSON
+      // ignore it, and continue on
+      // (it may be a valid single image instead)
+      // be sure to clear newBoards
+      newBoards = null
     }
   }
   // ... otherwise ...
@@ -3095,88 +3099,87 @@ let pasteBoards = () => {
     // ... do we have image data?
     let image = clipboard.readImage()
     if (!image.isEmpty()) {
+      let { width, height } = storyboarderSketchPane.sketchPane.getCanvasSize()
+      let size = [width, height]
+      let blankCanvas = createSizedContext(size).canvas
       newBoards = [
         {
           newShot: false,
-          imageDataURL: null,
+          imageDataURL: blankCanvas.toDataURL(), // blank main
           layers: {
             reference: {
-              imageDataURL: image.toDataURL()
+              imageDataURL: image.toDataURL() // paste into reference layer
             }
           }
         }
       ]
-      notifications.notify({message: "Pasting a sweet image you probably copied from the internet, you dirty dog, you. It's on the reference layer, so feel free to draw over it. You can resize or reposition it." , timing: 10})
+      notifications.notify({ message: "Pasting a sweet image you probably copied from the internet, you dirty dog, you. It's on the reference layer, so feel free to draw over it. You can resize or reposition it." , timing: 10 })
     }
   }
   let selectionsAsArray = [...selections].sort(util.compareNumbers)
   if (newBoards) {
     sfx.positive()
+
     // store the "before" state
     storeUndoStateForScene(true)
-    let generateThumbTasks = []
-    let newBoardPos = selectionsAsArray[selectionsAsArray.length-1]
-    for (let newBoard of newBoards) {
-      newBoardPos++
+    const mutateClipboardBoardObjectToBoardObject = (newBoardPos, c) => {
       // assign a new uid to the board, regardless of source
       let uid = util.uidGen(5)
-      newBoard.uid = uid
-      newBoard.url = 'board-' + newBoardPos + '-' + uid + '.png'
+
+      c.uid = uid
+      c.url = 'board-' + newBoardPos + '-' + uid + '.png'
+
       // set some basic data for the new board
-      newBoard.newShot = newBoard.newShot || false
-      newBoard.lastEdited = Date.now()
-      if (newBoard.imageDataURL) {
+      c.newShot = c.newShot || false
+      c.lastEdited = Date.now()
+
+      if (c.imageDataURL) {
         // extract the image data from JSON
-        // save it to disk yo
-        saveDataURLtoFile(newBoard.imageDataURL, newBoard.url)
-        delete newBoard.imageDataURL
+        saveDataURLtoFile(c.imageDataURL, c.url)
+        delete c.imageDataURL
       }
+
       // HACK hardcoded
-      if (newBoard.layers) {
-        if (newBoard.layers.reference) {
-          newBoard.layers.reference.url = newBoard.url.replace('.png', '-reference.png')
-          saveDataURLtoFile(newBoard.layers.reference.imageDataURL, newBoard.layers.reference.url)
-          delete newBoard.layers.reference.imageDataURL
+      if (c.layers) {
+        if (c.layers.reference) {
+          c.layers.reference.url = c.url.replace('.png', '-reference.png')
+          saveDataURLtoFile(c.layers.reference.imageDataURL, c.layers.reference.url)
+          delete c.layers.reference.imageDataURL
         }
-        if (newBoard.layers.notes) {
-          newBoard.layers.notes.url = newBoard.url.replace('.png', '-notes.png')
-          saveDataURLtoFile(newBoard.layers.notes.imageDataURL, newBoard.layers.notes.url)
-          delete newBoard.layers.notes.imageDataURL
+        if (c.layers.notes) {
+          c.layers.notes.url = c.url.replace('.png', '-notes.png')
+          saveDataURLtoFile(c.layers.notes.imageDataURL, c.layers.notes.url)
+          delete c.layers.notes.imageDataURL
         }
       }
-      generateThumbTasks.push(newBoardPos)
-      // insert the new board data
+    }
+    
+    let updaters = []
+    let newBoardPos = selectionsAsArray[selectionsAsArray.length - 1] // insert after the right-most current selection
+    for (let newBoard of newBoards) {
+      newBoardPos++
+
+      mutateClipboardBoardObjectToBoardObject(newBoardPos, newBoard)
       boardData.boards.splice(newBoardPos, 0, newBoard)
-      markBoardFileDirty()
+
+      // save and display an updated thumbnail file for this board index
+      updaters.push(
+        saveThumbnailFile(newBoardPos)
+          .then(() => updateThumbnailDisplay(newBoardPos))
+      )
     }
 
-    // render thumbnails
-
-    // IF YOU THINK I COPIED THIS NINJA SHIT FROM STACK OVERFLOW,
-    // FUCK YOU. I THOUGHT WE WERE FRIENDS.
-    // I CAN'T EVEN.
-
-    let sequence = Promise.resolve()
-    // Loop over each generateThumbTasks, and add on a promise to the
-    // end of the 'sequence' promise.
-    generateThumbTasks.forEach((task)=> {
-      // Chain one computation onto the sequence
-      sequence = sequence.then(function() {
-        return gotoBoard(task)
-      }).then(function(result) {
-        // 
-        updateThumbnailFile()
-        updateThumbnailDisplay(currentBoard)
-      })
-    })
-    sequence.then(()=>{
+    Promise.all(updaters).then(() => {
+      markBoardFileDirty()
+      storeUndoStateForScene()
       renderThumbnailDrawer()
+      gotoBoard(newBoardPos)
+      console.log('paste complete')
+    }).catch(err => {
+      console.log(err)
     })
-    renderThumbnailDrawer()
-    storeUndoStateForScene()
   } else {
-    // ain't no shit i can paste in here yo.
-    notifications.notify({message: "There's nothing in the clipboard that I can paste. Are you sure you copied it right?", timing: 8})
+    notifications.notify({ message: "There's nothing in the clipboard that I can paste. Are you sure you copied it right?", timing: 8 })
     sfx.error()
   }
 }
