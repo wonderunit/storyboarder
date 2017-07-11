@@ -2931,9 +2931,9 @@ let copyBoards = () => {
     // inject image data for each board
     boards = boards.map(board => {
       let filepath = path.join(boardPath, 'images', board.url)
-      let data = FileReader.getBase64ImageDataFromFilePath(filepath)
-      if (data && data.main) {
-        board.imageDataURL = data.main
+      let data = FileReader.getBase64TypeFromFilePath('png', filepath)
+      if (data) {
+        board.imageDataURL = data
       } else {
         console.warn("could not load image for board", board.url)
       }
@@ -2942,9 +2942,9 @@ let copyBoards = () => {
         for (let layerName of ['reference', 'notes']) { // HACK hardcoded
           if (board.layers[layerName]) {
             let filepath = path.join(boardPath, 'images', board.layers[layerName].url)
-            let data = FileReader.getBase64ImageDataFromFilePath(filepath)
-            if (data && data.main) {
-              board.layers[layerName].imageDataURL = data.main
+            let data = FileReader.getBase64TypeFromFilePath('png', filepath)
+            if (data) {
+              board.layers[layerName].imageDataURL = data
             } else {
               console.warn("could not load image for board", board.layers[layerName].url)
             }
