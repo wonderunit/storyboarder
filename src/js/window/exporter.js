@@ -85,7 +85,7 @@ class Exporter extends EventEmitter {
         let outputPath = path.join(
           exportsPath,
           basename + ' Images ' + moment().format('YYYY-MM-DD hh.mm.ss')
-        }
+        )
       }
       if (!fs.existsSync(outputPath)) {
         fs.mkdirSync(outputPath)
