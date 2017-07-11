@@ -25,6 +25,7 @@ const sfx = require('../wonderunit-sound.js')
 const keytracker = require('../utils/keytracker.js')
 const storyTips = new(require('./story-tips'))(sfx, notifications)
 const exporter = require('./exporter.js')
+const exporterCommon = require('../exporters/common')
 const prefsModule = require('electron').remote.require('./prefs.js')
 
 const FileReader = require('../files/FileReader.js')
@@ -98,6 +99,9 @@ let preventDragMode = false
 let dragPoint
 let dragTarget
 let scrollPoint
+
+const msecsToFrames = value => Math.round(value / 1000 * 24)
+const framesToMsecs = value => Math.round(value / 24 * 1000)
 
 menu.setMenu()
 
@@ -370,6 +374,12 @@ let loadBoardUI = ()=> {
   storyboarderSketchPane.on('markDirty', layerIndices => {
     storeUndoStateForImage(false, layerIndices)
     markImageFileDirty(layerIndices)
+
+    saveThumbnailFile(currentBoard).then(() => {
+      updateThumbnailDisplay(currentBoard)
+    })
+
+    // TODO save progress image
   })
   
   storyboarderSketchPane.on('lineMileage', value => {
@@ -415,15 +425,25 @@ let loadBoardUI = ()=> {
       renderThumbnailDrawer()
     })
 
-    item.addEventListener('input', (e)=> {
+    item.addEventListener('input', e => {
       switch (e.target.name) {
         case 'duration':
-          boardData.boards[currentBoard].duration = Number(e.target.value)
-          document.querySelector('input[name="frames"]').value = Math.round(Number(e.target.value)/1000*24)
+          document.querySelector('input[name="frames"]').value = msecsToFrames(Number(e.target.value))
+
+          for (let index of selections) {
+            boardData.boards[index].duration = Number(e.target.value)
+          }
+          renderThumbnailDrawer()
+          renderMarkerPosition()
           break
         case 'frames':
-          boardData.boards[currentBoard].duration = Math.round(Number(e.target.value)/24*1000)
-          document.querySelector('input[name="duration"]').value =  Math.round(Number(e.target.value)/24*1000)
+          document.querySelector('input[name="duration"]').value = framesToMsecs(Number(e.target.value))
+
+          for (let index of selections) {
+            boardData.boards[index].duration = framesToMsecs(Number(e.target.value))
+          }
+          renderThumbnailDrawer()
+          renderMarkerPosition()
           break
         case 'dialogue':
           boardData.boards[currentBoard].dialogue = (e.target.value)
@@ -487,41 +507,7 @@ let loadBoardUI = ()=> {
   })
 
   document.querySelector('#open-in-photoshop-button').addEventListener('pointerdown', (e)=>{
-    let children = ['reference', 'main', 'notes'].map(layerName => {
-      return {
-        "name": layerName,
-        "canvas": storyboarderSketchPane.getLayerCanvasByName(layerName)
-      }
-    });
-    let psd = {
-      width: storyboarderSketchPane.canvasSize[0],
-      height: storyboarderSketchPane.canvasSize[1],
-      children: children
-    };
-    let board = boardData.boards[currentBoard]
-    let imageFilePath = path.join(boardPath, 'images', `board-${board.number}.psd`)
-    const buffer = writePsd(psd);
-    fs.writeFileSync(imageFilePath, buffer);
-    shell.openItem(imageFilePath);
-
-    fs.watchFile(imageFilePath, (cur, prev) => {
-      let referenceCanvas = storyboarderSketchPane.getLayerCanvasByName("reference")
-      let mainCanvas = storyboarderSketchPane.getLayerCanvasByName("main")
-
-      let readerOptions = {
-        mainCanvas: mainCanvas,
-        referenceCanvas: referenceCanvas,
-        notesCanvas: storyboarderSketchPane.getLayerCanvasByName("notes")
-      }
-      var psdData = FileReader.getBase64ImageDataFromFilePath(imageFilePath, readerOptions)
-      if(!psdData || !psdData.main) {
-        return;
-      }
-
-      markImageFileDirty([0, 1, 3]) // reference, main, notes layers
-      saveImageFile()
-      
-    });
+    openInEditor()
   })
 
   window.addEventListener('pointermove', (e)=>{
@@ -852,8 +838,20 @@ let loadBoardUI = ()=> {
     console.log('Close requested! Saving ...')
     // TODO THIS IS SLOW AS HELL. NEED TO FIX PREFS
     toolbar.savePrefs()
-    saveBoardFile()
-    saveImageFile()
+    saveImageFile() // NOTE image is saved first, which ensures layers are present in data
+    saveBoardFile() // ... then project data can be saved
+  })
+
+  // text input mode on blur, to prevent menu trigger on preferences typing
+  window.addEventListener('blur', () => {
+    textInputMode = true
+  })
+  ipcRenderer.on('prefs:change', (event, newPrefs) => {
+    if (boardData && boardData.defaultBoardTiming != newPrefs.defaultBoardTiming) {
+      boardData.defaultBoardTiming = newPrefs.defaultBoardTiming
+      saveBoardFile()
+      renderMetaData()
+    }
   })
 
   // for debugging:
@@ -925,61 +923,90 @@ let newBoard = (position, shouldAddToUndoStack = true) => {
 }
 
 let insertNewBoardsWithFiles = (filepaths) => {
-  let insertionIndex = currentBoard+1
-  let imageFilePromises = filepaths.map(filepath => {
-    let imageData = FileReader.getBase64ImageDataFromFilePath(filepath)
-    if(!imageData || !imageData.main) {
-      return new Promise((fulfill)=>fulfill())
-    }
-    let board = insertNewBoardDataAtPosition(insertionIndex++)
-    var image = new Image()
-    image.src = imageData.main
+  let count = filepaths.length
+  let message = `Importing ${count} image${count !== 1 ? 's':''}.\nPlease wait...`
+  notifications.notify({message: message, timing: 2})
 
-    return new Promise((fulfill, reject)=>{
-      setImmediate(()=>{
-        // resize the image if it's too big.
-        let boardSize = storyboarderSketchPane.sketchPane.getCanvasSize()
-        if(boardSize.width < image.width) {
-          let scale = boardSize.width / image.width
-          image.width = scale * image.width
-          image.height = scale * image.height
-        }
-        if(boardSize.height < image.height) {
-          let scale = boardSize.height / image.height
-          image.width = scale * image.width
-          image.height = scale * image.height
-        }
+  setTimeout(()=> {
+    let insertionIndex = currentBoard+1
+    let targetLayer = prefsModule.getPrefs('main')['importTargetLayer'] || 'reference'
+    let imageFilePromises = filepaths.map(filepath => {
+      let readerOptions = {
+        importTargetLayer: targetLayer
+      }
+      let imageData = FileReader.getBase64ImageDataFromFilePath(filepath)
+      if(!imageData) {
+        notifications.notify({message: `Oops! There was a problem importing ${filepath}`, timing: 10})
+        return new Promise((fulfill)=>fulfill())
+      }
+      let board = insertNewBoardDataAtPosition(insertionIndex++)
+      var image = new Image()
+      image.src = imageData[targetLayer]
 
-        // try pooling
-        var canvas = document.createElement('canvas')
-        canvas.width = image.width
-        canvas.height = image.height
-        let context = canvas.getContext('2d')
-        context.drawImage(image, 0, 0, image.width, image.height)
-        var imageDataSized = canvas.toDataURL()
-        saveDataURLtoFile(imageDataSized, board.url)
+      return new Promise((fulfill, reject)=>{
+        setImmediate(()=>{
+          // resize the image if it's too big.
+          let boardSize = storyboarderSketchPane.sketchPane.getCanvasSize()
+          if(boardSize.width < image.width) {
+            let scale = boardSize.width / image.width
+            image.width = scale * image.width
+            image.height = scale * image.height
+          }
+          if(boardSize.height < image.height) {
+            let scale = boardSize.height / image.height
+            image.width = scale * image.width
+            image.height = scale * image.height
+          }
 
-        // thumbnail
-        let thumbRatio = 60/image.height
-        canvas.width = image.width = thumbRatio * image.width
-        canvas.height = image.height = thumbRatio * image.height
-        context.drawImage(image, 0, 0, image.width, image.height)
-        var imageDataSized = canvas.toDataURL()
-        let thumbPath = board.url.replace('.png', '-thumbnail.png')
-        saveDataURLtoFile(imageDataSized, thumbPath)
+          // TODO: try pooling
+          var canvas = document.createElement('canvas')
+          canvas.width = image.width
+          canvas.height = image.height
+          let context = canvas.getContext('2d')
+          context.drawImage(image, 0, 0, image.width, image.height)
+          var imageDataSized = canvas.toDataURL()
+          let savePath = board.url.replace('.png', '-reference.png')
+          if(targetLayer === "main") {
+            savePath = board.url
+          } else {
+            board.layers[targetLayer] = { "url": savePath }
+            // save out an empty main layer
+            saveDataURLtoFile((document.createElement('canvas')).toDataURL(), board.url)
+          }
+          saveDataURLtoFile(imageDataSized, savePath)
 
-        fulfill()
+          // thumbnail
+          const thumbnailHeight = 60
+          let thumbRatio = thumbnailHeight / boardSize.height
+          
+          image.width = (image.width / boardSize.width) * (thumbRatio * boardSize.width)
+          image.height = image.height / boardSize.height * 60
+          canvas.width = thumbRatio * boardSize.width
+          canvas.height = thumbnailHeight
+          context.drawImage(image, 0, 0, image.width, image.height)
+          var imageDataSized = canvas.toDataURL()
+          let thumbPath = board.url.replace('.png', '-thumbnail.png')
+          saveDataURLtoFile(imageDataSized, thumbPath)
+
+          fulfill()
+        })
       })
+
     })
 
-  })
+    Promise.all(imageFilePromises)
+      .then(()=>{
+        markImageFileDirty([1])
+        markBoardFileDirty() // to save new board data
+        renderThumbnailDrawer()
+        let count = imageFilePromises.length
+        let message = `Imported ${count} image${count !== 1 ? 's':''}.\n\nThe image${count !== 1 ? 's are':' is'} on the reference layer, so you can draw over ${count !== 1 ? 'them':'it'}. If you'd like ${count !== 1 ? 'them':'it'} to be the main layer, you can merge ${count !== 1 ? 'them':'it'} up on the sidebar`
+        notifications.notify({message: message, timing: 10})
+        sfx.positive()
+      })
+  }, 1000)
 
-  Promise.all(imageFilePromises)
-    .then(()=>{
-      markImageFileDirty([1])
-      markBoardFileDirty() // to save new board data
-      renderThumbnailDrawer()
-    })
+
 }
 
 let markBoardFileDirty = () => {
@@ -1090,45 +1117,188 @@ let saveImageFile = () => {
   console.log(`saved ${numSaved} modified layers`)
 
   // create/update the thumbnail image file
-  let imageFilePath = path.join(boardPath, 'images', board.url.replace('.png', '-thumbnail.png'))
-  updateThumbnail(imageFilePath)
+  saveThumbnailFile(currentBoard).then(() => {
+    updateThumbnailDisplay(currentBoard)
+  })
+}
 
+let openInEditor = () => {
+    let children = ['reference', 'main', 'notes'].map((layerName, i) => {
+      return {
+        "id": (i+2),
+        "name": layerName,
+        "canvas": storyboarderSketchPane.getLayerCanvasByName(layerName)
+      }
+    });
+    var whiteBG = document.createElement('canvas')
+    whiteBG.width = storyboarderSketchPane.canvasSize[0]
+    whiteBG.height = storyboarderSketchPane.canvasSize[1]
+    var whiteBGContext = whiteBG.getContext('2d')
+    whiteBGContext.fillStyle = 'white'
+    whiteBGContext.fillRect(0, 0, whiteBG.width, whiteBG.height)
+    children = [{
+      "id": 1,
+      "name": "Background",
+      "canvas": whiteBG
+    }].concat(children)
+    let psd = {
+      width: storyboarderSketchPane.canvasSize[0],
+      height: storyboarderSketchPane.canvasSize[1],
+      imageResources: {layerSelectionIds: [3] },
+      children: children
+    };
+    let board = boardData.boards[currentBoard]
+    let imageFilePath = path.join(boardPath, 'images', board.url.replace('.png', '.psd'))
+    
+    console.log(psd)
+
+    const buffer = writePsd(psd);
+    fs.writeFileSync(imageFilePath, buffer);
+    shell.openItem(imageFilePath);
+
+    fs.watchFile(imageFilePath, (cur, prev) => {
+      let psdData
+      let readerOptions = {}
+      let curBoard = boardData.boards[currentBoard]
+      // Update the current canvas if it's the same board coming back in.
+      let isCurrentBoard = false
+      if(curBoard.uid === board.uid) {
+        readerOptions.referenceCanvas = storyboarderSketchPane.getLayerCanvasByName("reference")
+        readerOptions.mainCanvas = storyboarderSketchPane.getLayerCanvasByName("main")
+        readerOptions.notesCanvas = storyboarderSketchPane.getLayerCanvasByName("notes")
+        storeUndoStateForImage(true, [0, 1, 3])
+        isCurrentBoard = true
+      }
+      
+      psdData = FileReader.getBase64ImageDataFromFilePath(imageFilePath, readerOptions)
+      if(!psdData || !psdData.main) {
+        return;
+      }
+
+      if(isCurrentBoard) {
+        storeUndoStateForImage(false, [0, 1, 3])
+        markImageFileDirty([0, 1, 3]) // reference, main, notes layers
+        saveImageFile()
+        renderThumbnailDrawer()
+      } else {
+        let mainURL = imageFilePath.replace(".psd", ".png")
+        saveDataURLtoFile(psdData.main, board.url)
+        psdData.notes && saveDataURLtoFile(psdData.notes, board.url.replace('.png', '-notes.png'))
+        psdData.reference && saveDataURLtoFile(psdData.reference, board.url.replace('.png', '-reference.png'))
+      }
+    });
+  }
+
+
+// // always currentBoard
+// const saveProgressFile = () => {
+//   let imageFilePath = ''//
+//   let size = [x, y]//
+
+//     let context = createBlankContext(size)
+//     let canvas = context.canvas//
+
+//     let canvasImageSources = storyboarderSketchPane.getCanvasImageSources()
+
+//   exporterCommon.flattenCanvasImageSourfocesDataToContext(context, canvasImageSources, size)
+
+//   // save
+
+//   // could use  saveDataURLtoFile, which is sync
+
+//   promise.then(() => {
+//       let imageData = canvas
+//         .toDataURL('image/png')
+//         .replace(/^data:image\/\w+;base64,/, '')
+    
+//       try {
+//         fs.writeFile(imageFilePath, imageData, 'base64', () => {
+//           resolve()
+//           console.log('saved thumbnail', imageFilePath)
+//         })
+//       } catch (err) {
+//         console.error(err)
+//         reject(err)
+//       }/
+
+
+
+
+// }
+
+const saveThumbnailFile = index => {
+  return new Promise((resolve, reject) => {
+    let imageFilePath = path.join(boardPath, 'images', exporterCommon.boardFilenameForThumbnail(boardData.boards[index]))
+    
+    let size = [
+      Math.floor(60 * boardData.aspectRatio) * 2,
+      60 * 2
+    ]
+    
+    let context = createBlankContext(size)
+    let canvas = context.canvas
+    
+    let promise
+    let canvasImageSources
+    if (index == currentBoard) {
+      // grab from memory
+      canvasImageSources = [
+        // reference
+        {
+          canvasImageSource: storyboarderSketchPane.sketchPane.getLayerCanvas(0),
+          opacity: storyboarderSketchPane.sketchPane.getLayerOpacity(0)
+        },
+        // main
+        {
+          canvasImageSource: storyboarderSketchPane.sketchPane.getLayerCanvas(1),
+          opacity: storyboarderSketchPane.sketchPane.getLayerOpacity(1)
+        },
+        // notes
+        {
+          canvasImageSource: storyboarderSketchPane.sketchPane.getLayerCanvas(3),
+          opacity: storyboarderSketchPane.sketchPane.getLayerOpacity(3)
+        }
+      ]
+      promise = exporterCommon.flattenCanvasImageSourfocesDataToContext(context, canvasImageSources, size)
+    } else {
+      // grab from files
+      promise = exporterCommon.flattenBoardToCanvas(
+        boardData.boards[index],
+        canvas,
+        size,
+        boardFilename
+      )
+    }
+
+    promise.then(() => {
+      let imageData = canvas
+        .toDataURL('image/png')
+        .replace(/^data:image\/\w+;base64,/, '')
+    
+      try {
+        fs.writeFile(imageFilePath, imageData, 'base64', () => {
+          resolve()
+          console.log('saved thumbnail', imageFilePath)
+        })
+      } catch (err) {
+        console.error(err)
+        reject(err)
+      }
+    }).catch(err => {
+      console.log(err)
+      reject(err)
+    })
+  })
+}
+
+const updateThumbnailDisplay = index => {
   // load the thumbnail image file
-  let el = document.querySelector(`[data-thumbnail="${currentBoard}"] img`)
+  let el = document.querySelector(`[data-thumbnail="${index}"] img`)
   // does it exist in the thumbnail drawer already?
   if (el) {
+    let imageFilePath = path.join(boardPath, 'images', exporterCommon.boardFilenameForThumbnail(boardData.boards[index]))
     el.src = imageFilePath + '?' + Date.now()
   }
-}
-
-const getThumbnailSize = () => {
-  return {
-    width: Math.floor(60 * boardData.aspectRatio), 
-    height: 60
-  }
-}
-
-const updateThumbnail = imageFilePath => {
-  let {width, height} = getThumbnailSize()
-
-  storyboarderSketchPane.sketchPane.setLayerVisible(false, 2) // HACK hardcoded
-  storyboarderSketchPane.sketchPane.setLayerVisible(false, 4) // HACK hardcoded
-  let canvas = storyboarderSketchPane.sketchPane.createFlattenThumbnail(width * 2, height * 2)
-  storyboarderSketchPane.sketchPane.setLayerVisible(true, 2) // HACK hardcoded
-  storyboarderSketchPane.sketchPane.setLayerVisible(true, 4) // HACK hardcoded
-
-  let imageData = canvas
-    .toDataURL('image/png')
-    .replace(/^data:image\/\w+;base64,/, '')
-
-  try {
-    fs.writeFileSync(imageFilePath, imageData, 'base64')
-    console.log('saved thumbnail', imageFilePath)
-  } catch (err) {
-    console.error(err)
-  }
-
-  thumbnail = null
 }
 
 let deleteSingleBoard = (index) => {
@@ -1393,23 +1563,56 @@ let renderMarkerPosition = () => {
   document.querySelector('#timeline .right-block').innerHTML = util.msToTime(totalTime)
 }
 
-let renderMetaData = ()=> {
+let renderMetaData = () => {
   document.querySelector('#board-metadata #shot').innerHTML = 'Shot: ' + boardData.boards[currentBoard].shot
   document.querySelector('#board-metadata #board-numbers').innerHTML = 'Board: ' + boardData.boards[currentBoard].number + ' of ' + boardData.boards.length
-  for (var item of document.querySelectorAll('#board-metadata input:not(.layers-ui-reference-opacity), textarea')) {
+
+  // reset values
+  let editableInputs = document.querySelectorAll('#board-metadata input:not(.layers-ui-reference-opacity), textarea')
+  for (var item of editableInputs) {
     item.value = ''
     item.checked = false
   }
+
   if (boardData.boards[currentBoard].newShot) {
     document.querySelector('input[name="newShot"]').checked = true
   }
   if (!boardData.boards[currentBoard].dialogue) {
     document.querySelector('#canvas-caption').style.display = 'none'
   }
+
   if (boardData.boards[currentBoard].duration) {
-    document.querySelector('input[name="duration"]').value = boardData.boards[currentBoard].duration
-    document.querySelector('input[name="frames"]').value = Math.round(boardData.boards[currentBoard].duration/1000*24)
+    if (selections.size == 1) {
+      // show current board
+      for (let input of editableInputs) {
+        input.disabled = false
+        let label = document.querySelector(`label[for="${input.name}"]`)
+        label && label.classList.remove('disabled')
+      }
+
+      document.querySelector('input[name="duration"]').value = boardData.boards[currentBoard].duration
+      document.querySelector('input[name="frames"]').value = msecsToFrames(boardData.boards[currentBoard].duration)
+    } else {
+      for (let input of editableInputs) {
+        input.disabled = (input.name !== 'duration' && input.name !== 'frames')
+        let label = document.querySelector(`label[for="${input.name}"]`)
+        label && label.classList.add('disabled')
+      }
+
+      let uniqueDurations = util.uniq(boardData.boards.map(b => b.duration))
+
+      if (uniqueDurations.length == 1) {
+        // unified
+        let duration = uniqueDurations[0]
+        document.querySelector('input[name="duration"]').value = duration
+        document.querySelector('input[name="frames"]').value = msecsToFrames(duration)
+      } else {
+        document.querySelector('input[name="duration"]').value = null
+        document.querySelector('input[name="frames"]').value = null
+      }
+    }
   }
+
   if (boardData.boards[currentBoard].dialogue) {
     document.querySelector('textarea[name="dialogue"]').value = boardData.boards[currentBoard].dialogue
     document.querySelector('#canvas-caption').innerHTML = boardData.boards[currentBoard].dialogue
@@ -1429,6 +1632,15 @@ let renderMetaData = ()=> {
   } else {
     document.querySelector('#line-miles').innerHTML = '0 line miles'
   }
+
+  // TODO how to regenerate tooltips?
+  // if (boardData.defaultBoardTiming) {
+  //   document.querySelector('input[name="duration"]').dataset.tooltipDescription = `Enter the number of milliseconds for a board. There are 1000 milliseconds in a second. ${boardData.defaultBoardTiming} milliseconds is the default.`
+  // 
+  //   let defaultFramesPerBoard = Math.round(boardData.defaultBoardTiming / 1000 * 24)
+  //   document.querySelector('input[name="frames"]').dataset.tooltipDescription = `Enter the number of frames for a board. There are 24 frames in a second. ${defaultFramesPerBoard} frames is the default.`
+  // }
+
   renderStats()
 }
 
@@ -1787,7 +1999,7 @@ let renderThumbnailDrawer = ()=> {
       pasteBoards()
     })
     contextMenu.on('import', () => {
-      alert('Import. Coming Soon!')
+      ipcRenderer.send('importImagesDialogue')
     })
     contextMenu.on('reorder-left', () => {
       reorderBoardsLeft()
@@ -2207,9 +2419,9 @@ let loadScene = (sceneNumber) => {
 
           let directoryName = 'Scene-' + node.scene_number + '-'
           if (node.synopsis) {
-            directoryName += node.synopsis.substring(0, 50).replace(/\|&;\$%@"<>\(\)\+,/g, '').replace(/\./g, '').replace(/ - /g, ' ').replace(/ /g, '-')
+            directoryName += node.synopsis.substring(0, 50).replace(/\|&;\$%@"<>\(\)\+,/g, '').replace(/\./g, '').replace(/ - /g, ' ').replace(/ /g, '-').replace(/[|&;/:$%@"{}?|<>()+,]/g, '-')
           } else {
-            directoryName += node.slugline.substring(0, 50).replace(/\|&;\$%@"<>\(\)\+,/g, '').replace(/\./g, '').replace(/ - /g, ' ').replace(/ /g, '-')
+            directoryName += node.slugline.substring(0, 50).replace(/\|&;\$%@"<>\(\)\+,/g, '').replace(/\./g, '').replace(/ - /g, ' ').replace(/ /g, '-').replace(/[|&;/:$%@"{}?|<>()+,]/g, '-')
           }
           directoryName += '-' + node.scene_id
 
@@ -2450,7 +2662,7 @@ let playAdvance = function(first) {
   if (boardData.boards[currentBoard].duration) {
     frameDuration = boardData.boards[currentBoard].duration
   } else {
-    frameDuration = 2000
+    frameDuration = boardData.defaultBoardTiming
   }
   frameTimer = setTimeout(playAdvance, frameDuration)
 }
@@ -2578,6 +2790,10 @@ ipcRenderer.on('newBoard', (event, args)=>{
   }
 })
 
+ipcRenderer.on('openInEditor', (event, args)=>{
+  openInEditor()
+})
+
 ipcRenderer.on('togglePlayback', (event, args)=>{
   if (!textInputMode) {
     togglePlayback()
@@ -2699,18 +2915,21 @@ let importImage = (imageDataURL) => {
 let copyBoards = () => {
   if (textInputMode) return // ignore copy command in text input mode
 
-  // copy more than one boards
   if (selections.size > 1) {
+    //
+    //
+    // copy multiple boards
+    //
     if (selections.has(currentBoard)) {
       saveImageFile()
     }
 
-    // grab data for each board
-    let boards = [...selections].sort(util.compareNumbers).map(n => util.stringifyClone(boardData.boards[n]))
+    // make a copy of the board data for each selected board
+    let selectedBoardIds = [...selections].sort(util.compareNumbers)
+    let boards = selectedBoardIds.map(n => util.stringifyClone(boardData.boards[n]))
 
     // inject image data for each board
     boards = boards.map(board => {
-
       let filepath = path.join(boardPath, 'images', board.url)
       let data = FileReader.getBase64ImageDataFromFilePath(filepath)
       if (data && data.main) {
@@ -2743,6 +2962,10 @@ let copyBoards = () => {
     clipboard.write(payload)
 
   } else {
+    //
+    //
+    // copy one board
+    //
     saveImageFile() // ensure we have all layers created in the data and saved to disk
 
     // copy a single board (the current board)
@@ -2761,16 +2984,27 @@ let copyBoards = () => {
         }
       }
     }
-    let size = storyboarderSketchPane.sketchPane.getCanvasSize()
-    let snapshot = storyboarderSketchPane.sketchPane.createFlattenThumbnail(size.width, size.height)
-    let payload = {
-      image: nativeImage.createFromDataURL(snapshot.toDataURL()),
-      text: JSON.stringify({ boards: [board] }, null, 2)
-    }
-    clipboard.clear()
-    clipboard.write(payload)
 
-    snapshot = null
+    let { width, height } = storyboarderSketchPane.sketchPane.getCanvasSize()
+    let size = [width, height]
+    let canvas = createBlankContext(size).canvas
+    exporterCommon.flattenBoardToCanvas(
+      board,
+      canvas,
+      size,
+      boardFilename
+    ).then(() => {
+      let payload = {
+        image: nativeImage.createFromDataURL(canvas.toDataURL()),
+        text: JSON.stringify({ boards: [board] }, null, 2)
+      }
+      clipboard.clear()
+      clipboard.write(payload)
+      notifications.notify({ message: "Copied" })
+    }).catch(err => {
+      console.log(err)
+      notifications.notify({ message: "Error. Couldn't copy." })
+    })
   }
 }
 
@@ -2790,7 +3024,7 @@ let exportAnimatedGif = () => {
   notifications.notify({message: "Exporting " + boards.length + " boards. Please wait...", timing: 5})
   sfx.down()
   setTimeout(()=>{
-    exporter.exportAnimatedGif(boards, boardSize, 500, boardPath, boardFilename)
+    exporter.exportAnimatedGif(boards, boardSize, 800, boardPath, boardFilename, true, boardData)
   }, 1000)
 }
 
@@ -2815,6 +3049,15 @@ const exportImages = () => {
     shell.showItemInFolder(outputPath)
   })
 }
+
+let save = () => {
+  saveImageFile()
+  saveBoardFile()
+  sfx.positive()
+  notifications.notify({message: "Saving is automatic. I already saved before you pressed this, so you don't really need to save at all. \n\nBut I did want you to know, that I think you're special - and I like you just the way you are.\n\nHere's a story tip..." , timing: 15})
+  setTimeout(()=>{storyTips.show()}, 1000)
+}
+
 
 /**
  * Paste
@@ -2919,8 +3162,9 @@ let pasteBoards = () => {
       sequence = sequence.then(function() {
         return gotoBoard(task)
       }).then(function(result) {
-        let imageFilePath = path.join(boardPath, 'images', boardData.boards[currentBoard].url.replace('.png', '-thumbnail.png'))
-        updateThumbnail(imageFilePath)
+        // 
+        updateThumbnailFile()
+        updateThumbnailDisplay(currentBoard)
       })
     })
     sequence.then(()=>{
@@ -3173,27 +3417,10 @@ const welcomeMessage = () => {
 
 const setupRandomizedNotifications = () => {  
   let defaultMessages = util.shuffle(NotificationData.messages)
-
-  welcomeMessage()
-
-  fetch('https://wonderunit.com/software/storyboarder/messages.json').then(response => {
-    if (response.ok) {
-      response.json().then(json => {
-        runRandomizedNotifications(util.shuffle(json.messages))
-      }).catch(e => {
-        console.warn('Could not parse messages')
-        runRandomizedNotifications(defaultMessages)
-      })
-    } else {
-      console.warn('Could not read messages')
-      runRandomizedNotifications(defaultMessages)
-    }
-  }).catch(e => {
-    console.warn('Could not load messages')
-    console.warn(e)
-    runRandomizedNotifications(defaultMessages)
-  })
+  setTimeout(()=>{welcomeMessage()}, 1000)
+  setTimeout(()=>{runRandomizedNotifications(defaultMessages)}, 3000)
 }
+
 const runRandomizedNotifications = (messages) => {
   let count = 0, duration = 60 * 60 * 1000, timeout
   const tick = () => {
@@ -3293,8 +3520,22 @@ const applyUndoStateForImage = (state) => {
       markImageFileDirty([layerData.index])
     }
 
+    saveThumbnailFile(state.boardIndex).then(() => {
+      updateThumbnailDisplay(state.boardIndex)
+    })
+
     toolbar.emit('cancelTransform')
   }).catch(e => console.error(e))
+}
+
+const createBlankContext = size => {
+  let canvas = document.createElement('canvas')
+  let context = canvas.getContext('2d')
+  canvas.width = size[0]
+  canvas.height = size[1]
+  context.fillStyle = 'white'
+  context.fillRect(0, 0, context.canvas.width, context.canvas.height)
+  return context
 }
 
 ipcRenderer.on('setTool', (e, arg)=> {
@@ -3450,6 +3691,8 @@ let importWindow
 
 
 ipcRenderer.on('printWorksheet', (event, args) => {
+  console.log(boardData)
+
   if (!printWindow) {
     printWindow = new remote.BrowserWindow({
       width: 1200, 
@@ -3468,13 +3711,13 @@ ipcRenderer.on('printWorksheet', (event, args) => {
   } else {
     if (!printWindow.isVisible()) {
       printWindow.show()
-      printWindow.webContents.send('worksheetData',boardData.aspectRatio)
+      printWindow.webContents.send('worksheetData',boardData.aspectRatio, currentScene, scriptData)
     }
   }
 
   printWindow.once('ready-to-show', () => {
     printWindow.show()
-    printWindow.webContents.send('worksheetData',boardData.aspectRatio)
+    printWindow.webContents.send('worksheetData',boardData.aspectRatio, currentScene, scriptData)
   })
 })
 
@@ -3505,4 +3748,8 @@ ipcRenderer.on('importWorksheets', (event, args) => {
     importWindow.show()
     //printWindow.webContents.send('worksheetData',boardData.aspectRatio)
   })
+})
+
+ipcRenderer.on('save', (event, args) => {
+  save()
 })

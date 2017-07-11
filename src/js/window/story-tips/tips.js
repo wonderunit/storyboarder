@@ -105,7 +105,7 @@ tips = [
   `Your **character's values** should be the total opposite of the **world's values**.`,
   `What does your character choose under the **greatest pressure**?`,
   `**What is at stake** for the character? What's to be gained or lost?`,
-  `How do you want the audience to feel at the end of you movie?`,
+  `How do you want the audience to feel at the end of your movie?`,
   `**Characters must use exposition** to get what they want. If they don't, it's not needed.`,
   `**Character's values** should be designed such that the **conflict** occurs by them simply being in the same room.`,
   `A good story makes the audience **draw conclusions on their own**. It doesn't tell them what to think.`,

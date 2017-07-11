@@ -62,11 +62,15 @@ document.querySelector('iframe').onload = ()=>{
   })
 }
 
+document.querySelector('iframe').src = "https://wonderunit.com/ads/storyboarder/"
+
 document.querySelector('#getting-started').onclick = ()=> {
   //shell.openExternal("https://wonderunit.com")
 }
 
 document.querySelector('#open-storyboard').onclick = ()=> {
+  document.querySelector('#open-storyboard').style.pointerEvents = 'none'
+  setTimeout(()=>{document.querySelector('#open-storyboard').style.pointerEvents = 'auto'}, 1000)
   ipcRenderer.send('openDialogue')
 }
 
@@ -84,7 +88,6 @@ document.querySelector('#new-storyboard' ).addEventListener("pointerdown", ()=>{
 document.querySelector("span[data-js='version-number']").innerHTML = ` v${pkg.version}`
 
 ipcRenderer.on('playsfx', (event, args)=>{
-  console.log("sup")
   switch (args) {
     case 'negative':
       sfx.negative()

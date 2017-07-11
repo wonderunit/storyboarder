@@ -5,6 +5,7 @@ const Brush = require('../sketch-pane/brush')
 const LineMileageCounter = require('./line-mileage-counter')
 
 const keytracker = require('../utils/keytracker')
+const util = require('../utils')
 
 /**
  *  Wrap the SketchPane component with features Storyboarder needs
@@ -311,7 +312,7 @@ class StoryboarderSketchPane extends EventEmitter {
 
   mergeLayers (layers, destination) {
     // make a unique, sorted array of dirty layers
-    let dirtyLayers = [...new Set(layers.concat(destination))].sort()
+    let dirtyLayers = [...new Set(layers.concat(destination))].sort(util.compareNumbers)
     // save an undo snapshot
     this.emit('addToUndoStack', dirtyLayers)
 
@@ -702,18 +703,22 @@ class MovingStrategy {
     this.pos = null
     this.offset = [0, 0]
 
+    // store a composite of all the layers
+    // TODO is storedContext properly disposed?
     let storedContext = this.container.createContext()
     this.storedComposite = storedContext.canvas
     this.container.drawComposite(this.container.visibleLayersIndices, storedContext)
 
+    // store each of the layers individually
     this.storedLayers = {}
     for (let index of [0, 1, 3]) {// HACK hardcoded
-      let context = this.container.sketchPane.getLayerContext(index)
-      let storedContext = this.container.createContext()
-      let storedCanvas = storedContext.canvas
-      storedContext.drawImage(context.canvas, 0, 0)
+      let layerContext = this.container.sketchPane.getLayerContext(index)
+      let storedLayerContext = this.container.createContext()
+      let storedLayerCanvas = storedLayerContext.canvas
+      storedLayerContext.drawImage(layerContext.canvas, 0, 0)
+      // TODO is this.storedLayers properly disposed?
       this.storedLayers[index] = {
-        canvas: storedCanvas,
+        canvas: storedLayerCanvas,
         offset: [0, 0]
       }
     }
@@ -734,6 +739,10 @@ class MovingStrategy {
 
     this.container.startMultiLayerOperation()
     this.container.setCompositeLayerVisibility(true)
+
+    // if we previously were in erase mode, undo its effects,
+    //   and ensure paintingCanvas is visible
+    this.container.sketchPane.setPaintingKnockout(false)
 
     // fake an initial move event
     this.container.canvasPointerMove(e)
@@ -794,6 +803,7 @@ class MovingStrategy {
     this.container.sketchPane.selectLayer(this.container.compositeIndex)
   }
 
+  // actually move the layer content
   applyMultiLayerOperationByLayerIndex (index) {
     if (!this.pos) return
 
@@ -856,12 +866,9 @@ class ScalingStrategy {
     this.container.startMultiLayerOperation()
     this.container.setCompositeLayerVisibility(true)
     
-    // HACK ensure paintingCanvas is visible
-    // might need this due to the 'pointer is already down' bug?
-    //  maybe once that's fixed we can remove?
-    //
-    // maybe relatd to SketchPane#setPaintingKnockout?
-    this.container.sketchPane.paintingCanvas.style.visibility = 'visible'
+    // if we previously were in erase mode, undo its effects,
+    //   and ensure paintingCanvas is visible
+    this.container.sketchPane.setPaintingKnockout(false)
 
     // fake an initial move event
     this.container.canvasPointerMove(e)

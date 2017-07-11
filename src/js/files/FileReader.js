@@ -10,20 +10,26 @@ const initializeCanvas = require('ag-psd').initializeCanvas;
  * @param {Object} options
  * @returns {Object} An object with data for notes (optional), reference (optional), and main
  */
-let getBase64ImageDataFromFilePath = (filepath, options={}) => {
+let getBase64ImageDataFromFilePath = (filepath, options={importTargetLayer:"reference"}) => {
+  let {importTargetLayer} = options
   let arr = filepath.split(path.sep)
   let filename = arr[arr.length-1]
   let filenameParts =filename.toLowerCase().split('.')
   let type = filenameParts[filenameParts.length-1]
 
+  let result = {}
   switch(type) {
     case "png":
-      return { "main": getBase64TypeFromFilePath('png', filepath) }
+      result[importTargetLayer] = getBase64TypeFromFilePath('png', filepath)
+      break
     case "jpg":
-      return { "main": getBase64TypeFromFilePath('jpg', filepath) }
+      result[importTargetLayer] = getBase64TypeFromFilePath('jpg', filepath)
+      break
     case "psd":
-      return getBase64TypeFromPhotoshopFilePath(filepath, options)
+      result = getBase64TypeFromPhotoshopFilePath(filepath, options)
+      break
   }
+  return result
 }
 
 let getBase64TypeFromFilePath = (type, filepath) => {
@@ -83,10 +89,17 @@ let getBase64TypeFromPhotoshopFilePath = (filepath, options) => {
   let referenceContext = referenceCanvas.getContext('2d')
   referenceContext.clearRect(0, 0, referenceCanvas.width, referenceCanvas.height)
 
+  let numChannelValues = (1 << psd.bitsPerChannel) - 1
   let targetContext
   for(let layer of psd.children) {
     if(!layer.canvas) {
       continue;
+    }
+    if(layer.hidden) {
+      continue;
+    }
+    if(layer.name.indexOf('Background') >= 0) {
+      continue
     }
     let targetContext
     switch(layer.name) {
@@ -100,6 +113,7 @@ let getBase64TypeFromPhotoshopFilePath = (filepath, options) => {
         targetContext = mainContext
         break
     }
+    targetContext.globalAlpha = layer.opacity / numChannelValues
     targetContext.drawImage(layer.canvas, layer.left, layer.top)
   }
   return {

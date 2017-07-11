@@ -6,53 +6,17 @@ const template = [
     label: 'File',
     submenu: [
       {
+        label: 'Save',
+        accelerator: 'CmdOrCtrl+S',
+        click ( item, focusedWindow, event) {
+          ipcRenderer.send('save')
+        }
+      },
+      {
         label: 'Open...',
         accelerator: 'CmdOrCtrl+O',
         click ( item, focusedWindow, event) {
           ipcRenderer.send('openDialogue')
-        }
-      },
-      {
-        label: 'Import Storyboards',
-        accelerator: 'CmdOrCtrl+Shift+i',
-        click ( item, focusedWindow, event) {
-          ipcRenderer.send('importImagesDialogue')
-        }
-      },
-      {
-        type: 'separator'
-      },
-      {
-        label: 'Export Treatment...',
-        click ( item, focusedWindow, event) {
-          ipcRenderer.send('exportTreatment')
-        }
-      },
-      {
-        label: 'Export to Fountain Screenplay...',
-        click ( item, focusedWindow, event) {
-          ipcRenderer.send('exportFountain')
-        }
-      },
-      {
-        label: 'Export to Outliner...',
-        click ( item, focusedWindow, event) {
-          ipcRenderer.send('exportOutliner')
-        }
-      },
-      {
-        label: 'Export to CSV file...',
-        click ( item, focusedWindow, event) {
-          ipcRenderer.send('exportCSV')
-        }
-      },
-      {
-        type: 'separator'
-      },
-      {
-        label: 'Export poster to PDF...',
-        click ( item, focusedWindow, event) {
-          ipcRenderer.send('exportPoster')
         }
       },
       {
@@ -82,7 +46,7 @@ const template = [
       },
       {
         accelerator: 'CmdOrCtrl+P',
-        label: 'Print current scene worksheet...',
+        label: 'Print a Storyboarder worksheet...',
         click ( item, focusedWindow, event) {
           ipcRenderer.send('printWorksheet')
         }
@@ -92,6 +56,16 @@ const template = [
         label: 'Import worksheets...',
         click ( item, focusedWindow, event) {
           ipcRenderer.send('importWorksheets')
+        }
+      },
+      {
+        type: 'separator'
+      },
+      {
+        label: 'Import Images...',
+        accelerator: 'CmdOrCtrl+Shift+i',
+        click ( item, focusedWindow, event) {
+          ipcRenderer.send('importImagesDialogue')
         }
       },
     ]
@@ -126,6 +100,16 @@ const template = [
         label: 'Select All',
         accelerator: 'CmdOrCtrl+A',
         role: 'selectall'
+      },
+      {
+        type: 'separator'
+      },
+      {
+        label: 'Open in Editor',
+        accelerator: 'CmdOrCtrl+.',
+        click ( item, focusedWindow, event) {
+          ipcRenderer.send('openInEditor')
+        }
       }
     ]
   },
@@ -173,7 +157,6 @@ const template = [
         type: 'separator'
       },
       {
-        accelerator: 'CmdOrCtrl+S',
         label: 'Toggle speaking',
         type: 'checkbox',
         click ( item, focusedWindow, event) {
@@ -469,7 +452,7 @@ const template = [
     submenu: [
       {
         label: 'Learn More',
-        click () { require('electron').shell.openExternal('https://wonderunit.com/software/storyboarder/') }
+        click () { require('electron').shell.openExternal('https://wonderunit.com/storyboarder/') }
       },
       {
         label: 'Found a bug? Submit an issue!!!',
@@ -477,6 +460,13 @@ const template = [
       },
       {
         type: 'separator'
+      },
+      {
+        label: 'Key Commands...',
+        accelerator: 'CmdOrCtrl+K',
+        click ( item, focusedWindow, event) {
+          ipcRenderer.send('showKeyCommands')
+        }
       },
       {
         label: 'Show me a story tip!',
@@ -601,7 +591,7 @@ const welcomeTemplate = [
         label: 'Open...',
         accelerator: 'CmdOrCtrl+O',
         click ( item, focusedWindow, event) {
-          ipcRenderer.send('openFile')
+          ipcRenderer.send('openDialogue')
         }
       }
     ]

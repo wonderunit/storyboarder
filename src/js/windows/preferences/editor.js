@@ -1,21 +1,36 @@
-const { remote } = require('electron')
+const { remote, ipcRenderer } = require('electron')
 const util = require('./js/utils')
 const prefsModule = require('electron').remote.require('./prefs.js')
 
 let prefs = prefsModule.getPrefs('prefs window')
 
 const onChange = (name, event) => {
-  prefsModule.set(name, event.target.checked)
+  let el = event.target
+  if (el.type == 'checkbox') {
+    prefsModule.set(name, el.checked)
+  } else if (el.type == 'number') {
+    prefsModule.set(name, el.value)
+  }
   render()
 }
 
 const render = () => {
   for (let el of inputs) {
-    el.checked = prefs[el.name]
+    if (el.type == 'checkbox') {
+      el.checked = prefs[el.name]
+    } else if (el.type == 'number') {
+      el.value = prefs[el.name]
+
+      // HACK notify when this pref changes
+      if (el.name == 'defaultBoardTiming') {
+        ipcRenderer.send('prefs:change', { defaultBoardTiming: el.value })
+      }
+
+    }
   }
 }
 
-let inputs = document.querySelectorAll('input[type="checkbox"]')
+let inputs = document.querySelectorAll('input[type="checkbox"], input[type="number"]')
 
 // bind
 for (let el of inputs) {

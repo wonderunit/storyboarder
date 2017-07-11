@@ -27,6 +27,8 @@ let newWindow
 let mainWindow
 let printWindow
 let sketchWindow
+let keyCommandWindow
+
 let welcomeInprogress
 
 let statWatcher
@@ -76,6 +78,15 @@ app.on('ready', ()=> {
   // open the welcome window when the app loads up first
   openWelcomeWindow()
 })
+
+let openKeyCommandWindow = ()=> {
+    keyCommandWindow = new BrowserWindow({width: 1158, height: 925, maximizable: false, center: true, show: false, resizable: false, frame: false, titleBarStyle: 'hidden-inset'})
+    keyCommandWindow.loadURL(`file://${__dirname}/../keycommand-window.html`)
+    keyCommandWindow.once('ready-to-show', () => {
+      setTimeout(()=>{keyCommandWindow.show()},500)
+    })
+
+}
 
 app.on('activate', ()=> {
   if (!mainWindow && !welcomeWindow) openWelcomeWindow()
@@ -217,7 +228,7 @@ let importImagesDialogue = () => {
     {
       title:"Import Boards", 
       filters:[
-        {name: 'Images', extensions: ['png', 'jpg', 'psd']},
+        {name: 'Images', extensions: ['png', 'jpg', 'jpeg', 'psd']},
       ],
       properties: [
         "openFile",
@@ -364,7 +375,7 @@ let createNew = () => {
             version: pkg.version,
             aspectRatio: 2.333,
             fps: 24,
-            defaultBoardTiming: 2000,
+            defaultBoardTiming: prefs.defaultBoardTiming,
             boards: []
           }
           let aspects = [2.39, 2, 1.85, 1.7777777777777777, 0.5625, 1, 1.3333333333333333]
@@ -391,6 +402,10 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
   }
   if (newWindow) {
     newWindow.hide()
+  }
+
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.close()
   }
 
   const { width, height } = electron.screen.getPrimaryDisplay().workAreaSize
@@ -512,6 +527,10 @@ ipcMain.on('reorderBoardsRight', (e, arg)=> {
 
 ipcMain.on('togglePlayback', (e, arg)=> {
   mainWindow.webContents.send('togglePlayback')
+})
+
+ipcMain.on('openInEditor', (e, arg)=> {
+  mainWindow.webContents.send('openInEditor')
 })
 
 ipcMain.on('goPreviousBoard', (e, arg)=> {
@@ -688,3 +707,16 @@ ipcMain.on('importWorksheets', (event, arg) => {
   //openPrintWindow()
   mainWindow.webContents.send('importWorksheets', arg)
 })
+
+ipcMain.on('save', (event, arg) => {
+  mainWindow.webContents.send('save', arg)
+})
+
+ipcMain.on('prefs:change', (event, arg) => {
+  mainWindow.webContents.send('prefs:change', arg)
+})
+
+ipcMain.on('showKeyCommands', (event, arg) => {
+  openKeyCommandWindow()
+})
+

@@ -9,7 +9,8 @@
     "dist:mac": "build -m",
     "dist:win": "build -w",
     "dist:linux": "build -l",
-    "dist": "build -mwl"
+    "dist": "build -mwl",
+    "test": "./node_modules/.bin/electron-mocha --renderer test/**/*.test.js"
   },
   "repository": {
     "type": "git",
@@ -53,7 +54,10 @@
   },
   "devDependencies": {
     "electron": "1.7.2",
-    "electron-builder": "19.8.0"
+    "electron-builder": "19.8.0",
+    "electron-mocha": "4.0.0",
+    "mocha": "3.4.2",
+    "tmp": "0.0.31"
   },
   "dependencies": {
     "ag-psd": "^1.0.0",

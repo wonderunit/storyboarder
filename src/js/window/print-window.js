@@ -14,6 +14,8 @@ let rows
 let cols
 let spacing
 
+let currentScene
+let scriptData
 // on change save preferences
 
 window.pdf = pdf
@@ -33,17 +35,19 @@ document.querySelector('#print-button').onclick = (e) => {
 
 const print = () => {
   let cmd
+
   switch (os.platform()) {
     case 'darwin':
-      cmd = 'lpr -o landscape ' + app.getPath('temp') + 'worksheetoutput.pdf'
+      cmd = 'lpr -o landscape -#' + document.querySelector('#copies').value + ' ' + path.join(app.getPath('temp'), 'worksheetoutput.pdf') 
       break
     case 'linux':
-      cmd = 'lp ' + app.getPath('temp') + 'worksheetoutput.pdf'
+      cmd = 'lp -n ' + document.querySelector('#copies').value + ' ' +  path.join(app.getPath('temp'), 'worksheetoutput.pdf')
       break
     case 'win32':
-      cmd = path.join(app.getAppPath(), 'src', 'data', 'app', 'SumatraPDF.exe') + ' -print-to-default ' + app.getPath('temp') + 'worksheetoutput.pdf'
+      cmd = path.join(app.getAppPath(), 'src', 'data', 'app', 'SumatraPDF.exe') + ' -print-to-default -print-settings "' + document.querySelector('#copies').value + 'x" ' + path.join(app.getPath('temp'), 'worksheetoutput.pdf')
       break
   }
+
   let output = child_process.execSync(cmd)
 }
 
@@ -153,13 +157,15 @@ const loadWindow = () => {
 }
 
 const generateWorksheet = () => {
-  console.log(paperSize, aspectRatio, rows, cols, spacing, 0, storyTips.getTipString())
-  worksheetPrinter.generate(paperSize, aspectRatio, rows, cols, spacing, 0, storyTips.getTipString())
+  console.log(paperSize, aspectRatio, rows, cols, spacing, currentScene, storyTips.getTipString(), scriptData)
+  worksheetPrinter.generate(paperSize, aspectRatio, rows, cols, spacing, currentScene, storyTips.getTipString(), scriptData)
 }
 
 loadWindow()
 
-ipcRenderer.on('worksheetData', (event, _aspectRatio) => {
+ipcRenderer.on('worksheetData', (event, _aspectRatio, _currentScene, _scriptData) => {
   aspectRatio = _aspectRatio
+  currentScene = _currentScene
+  scriptData = _scriptData
   generateWorksheet()
 })
