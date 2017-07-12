@@ -268,6 +268,26 @@ let importImagesDialogue = () => {
   )
 }
 
+let importWorksheetDialogue = () => {
+  dialog.showOpenDialog(
+    {
+      title:"Import Worksheet", 
+      filters:[
+        {name: 'Images', extensions: ['png', 'jpg', 'jpeg']},
+      ],
+      properties: [
+        "openFile",
+      ]
+    },
+
+    (filepath)=>{
+      if (filepath) {
+        mainWindow.webContents.send('importWorksheets', filepath)
+      }
+    }
+  )
+}
+
 let processFountainData = (data, create, update) => {
   let scriptData = fountain.parse(data, true)
   let locations = fountainDataParser.getLocations(scriptData.tokens)
@@ -704,8 +724,10 @@ ipcMain.on('printWorksheet', (event, arg) => {
 })
 
 ipcMain.on('importWorksheets', (event, arg) => {
+  console.log("SUPPPP")
   //openPrintWindow()
-  mainWindow.webContents.send('importWorksheets', arg)
+  importWorksheetDialogue()
+  //mainWindow.webContents.send('importWorksheets', arg)
 })
 
 ipcMain.on('save', (event, arg) => {

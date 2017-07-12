@@ -11,26 +11,75 @@ const jsfeat = require('../vendor/jsfeat-min.js')
 const fs = require('fs')
 const QrCode = require('qrcode-reader');
 
+let sourceImage
+let flatImage
+
+let cropMarks
+let code
+let offset = [0,-20]
+
+/*
+
+  todo:
+    error if cant get 4 points
+    error if cant get qr code
+
+    get flat image and show it
+    get crop marks from the qr data
+    draw the crop marks
+
+
+
+*/
+
+
 document.querySelector('#close-button').onclick = (e) => {
   ipcRenderer.send('playsfx', 'negative')
   let window = remote.getCurrentWindow()
   window.hide()
 }
 
-const loadWindow = () => {
-  let image = new Image()
+document.querySelector('#import-button').onclick = (e) => {
+  ipcRenderer.send('playsfx', 'positive')
+  // PRINT
+  importImages()
 
-  image.onload = () => {
-    console.log("IMAGE LOADED!!!!")
+  console.log("HEELLLLOOO")
+  // let window = remote.getCurrentWindow()
+  // window.hide()
+}
 
+const importImages = () => {
+  let destCanvas = document.createElement('canvas')
+  destCanvas.height = 900
+  destCanvas.width = (900*Number(code[5]))
+
+  for (var i = 0; i < cropMarks.length; i++) {
+    destCanvas.getContext("2d").drawImage(flatImage, cropMarks[i][0]*flatImage.width+offset[0], cropMarks[i][1]*flatImage.height+offset[1], cropMarks[i][2]*flatImage.width, cropMarks[i][3]*flatImage.height, 0, 0, destCanvas.width, destCanvas.height)
+    imgData = destCanvas.toDataURL().replace(/^data:image\/\w+;base64,/, '')
+    fs.writeFileSync(path.join(app.getPath('temp'), 'crop' + i + '.png'), imgData, 'base64')
+
+  }
+
+
+}
+
+
+
+const processWorksheetImage = (imageSrc) => {
+  sourceImage = new Image()
+
+  sourceImage.onload = () => {
+    console.log("SOURCE IMAGE LOADED!!!!")
+    console.log(app.getPath('temp'))
     // STEP
     // create a 1500px wide image to deal with
     let canvas = document.createElement('canvas')
-    let imageAspect = image.width/image.height
+    let imageAspect = sourceImage.width/sourceImage.height
     canvas.width = 1500
     canvas.height = Math.round(1500/imageAspect)
     let context = canvas.getContext('2d')
-    context.drawImage(image, 0,0, canvas.width, canvas.height)
+    context.drawImage(sourceImage, 0,0, canvas.width, canvas.height)
     let imageData = context.getImageData(0, 0, canvas.width, canvas.height)
 
     // STEP
@@ -38,19 +87,19 @@ const loadWindow = () => {
     let img_u8 = new jsfeat.matrix_t(canvas.width, canvas.height, jsfeat.U8C1_t);
     jsfeat.imgproc.grayscale(imageData.data, canvas.width, canvas.height, img_u8);
     imageData = context.getImageData(0, 0, canvas.width, canvas.height)
-    outputImage(img_u8, context, 'step1.png')
+    outputImage(img_u8, context, path.join(app.getPath('temp'), 'step1.png'))
 
     // STEP
     // gaussian blur to remove noise and small lines
     var r = 8;
     var kernel_size = (r+1) << 1;
     jsfeat.imgproc.gaussian_blur(img_u8, img_u8, kernel_size, 0);
-    outputImage(img_u8, context, 'step2.png')
+    outputImage(img_u8, context, path.join(app.getPath('temp'), 'step2.png'))
 
     // STEP
     // canny edge detection to find lines
     jsfeat.imgproc.canny(img_u8, img_u8, 10, 50);
-    outputImage(img_u8, context, 'step3.png')
+    outputImage(img_u8, context, path.join(app.getPath('temp'), 'step3.png'))
 
     // STEP
     // perform hough transform to find all lines greater than 250 strength
@@ -148,75 +197,153 @@ const loadWindow = () => {
       }
     }
     let imgData = context.canvas.toDataURL().replace(/^data:image\/\w+;base64,/, '')
-    fs.writeFileSync('step4.png', imgData, 'base64')
+    fs.writeFileSync(path.join(app.getPath('temp'), 'step4.png'), imgData, 'base64')
 
     console.log(cornerPoints)
-    // STEP
-    // reorder points in the right order
-    cornerPoints.sort((b,a) => {
-      console.log((Math.atan2(a[0]-0.5,a[1]-0.5)),(Math.atan2(b[0]-0.5,b[1]-0.5)))
-      return (Math.atan2(a[0]-0.5,a[1]-0.5))-(Math.atan2(b[0]-0.5,b[1]-0.5))
-    })
-    cornerPoints.unshift(cornerPoints.pop())
 
-    console.log(cornerPoints)
-    // STEP
-    // TODO: check the area, should error if too small or less than 4 points
+    if (cornerPoints.length !== 4) {
+      alert(`Error: I couldn't find 4 corners of the paper in the image.`)
+      // should show ui for point corners.
+    } else {
+      // STEP
+      // reorder points in the right order
+      cornerPoints.sort((b,a) => {
+        console.log((Math.atan2(a[0]-0.5,a[1]-0.5)),(Math.atan2(b[0]-0.5,b[1]-0.5)))
+        return (Math.atan2(a[0]-0.5,a[1]-0.5))-(Math.atan2(b[0]-0.5,b[1]-0.5))
+      })
+      cornerPoints.unshift(cornerPoints.pop())
 
-    // STEP 
-    // reverse warp to read qr code
-    canvas.width = 2500
-    canvas.height = Math.round(2500/(11/8.5))
-    context = canvas.getContext('2d')
-    context.drawImage(image, 0,0, canvas.width, canvas.height)
-    imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+      console.log(cornerPoints)
+      // STEP
+      // TODO: check the area, should error if too small or less than 4 points
+
+      // STEP 
+      // reverse warp to read qr code
+      canvas.width = 2500
+      canvas.height = Math.round(2500/(11/8.5))
+      context = canvas.getContext('2d')
+      context.drawImage(sourceImage, 0,0, canvas.width, canvas.height)
+      imageData = context.getImageData(0, 0, canvas.width, canvas.height);
 
 
-    img_u8 = new jsfeat.matrix_t(canvas.width, canvas.height, jsfeat.U8_t | jsfeat.C1_t);
-    // img_u8_warp = new jsfeat.matrix_t(640, 480, jsfeat.U8_t | jsfeat.C1_t);
-    img_u8_warp = new jsfeat.matrix_t(canvas.width, canvas.height, jsfeat.U8_t | jsfeat.C1_t);
-    transform = new jsfeat.matrix_t(3, 3, jsfeat.F32_t | jsfeat.C1_t);
-    jsfeat.math.perspective_4point_transform(transform, 
-                                                    cornerPoints[0][0]*canvas.width,   cornerPoints[0][1]*canvas.height,   0,  0,
-                                                    cornerPoints[1][0]*canvas.width,   cornerPoints[1][1]*canvas.height,   canvas.width, 0,
-                                                    cornerPoints[2][0]*canvas.width,   cornerPoints[2][1]*canvas.height, canvas.width, canvas.height,
-                                                    cornerPoints[3][0]*canvas.width,   cornerPoints[3][1]*canvas.height, 0, canvas.height);
-    jsfeat.matmath.invert_3x3(transform, transform);
+      img_u8 = new jsfeat.matrix_t(canvas.width, canvas.height, jsfeat.U8_t | jsfeat.C1_t);
+      // img_u8_warp = new jsfeat.matrix_t(640, 480, jsfeat.U8_t | jsfeat.C1_t);
+      img_u8_warp = new jsfeat.matrix_t(canvas.width, canvas.height, jsfeat.U8_t | jsfeat.C1_t);
+      transform = new jsfeat.matrix_t(3, 3, jsfeat.F32_t | jsfeat.C1_t);
+      jsfeat.math.perspective_4point_transform(transform, 
+                                                      cornerPoints[0][0]*canvas.width,   cornerPoints[0][1]*canvas.height,   0,  0,
+                                                      cornerPoints[1][0]*canvas.width,   cornerPoints[1][1]*canvas.height,   canvas.width, 0,
+                                                      cornerPoints[2][0]*canvas.width,   cornerPoints[2][1]*canvas.height, canvas.width, canvas.height,
+                                                      cornerPoints[3][0]*canvas.width,   cornerPoints[3][1]*canvas.height, 0, canvas.height);
+      jsfeat.matmath.invert_3x3(transform, transform);
 
-    jsfeat.imgproc.grayscale(imageData.data, canvas.width, canvas.height, img_u8);
-    jsfeat.imgproc.warp_perspective(img_u8, img_u8_warp, transform, 0);
+      jsfeat.imgproc.grayscale(imageData.data, canvas.width, canvas.height, img_u8);
+      jsfeat.imgproc.warp_perspective(img_u8, img_u8_warp, transform, 0);
 
-    var data_u32 = new Uint32Array(imageData.data.buffer);
-    var alpha = (0xff << 24);
-    var i = img_u8_warp.cols*img_u8_warp.rows, pix = 0;
-    while(--i >= 0) {
-      pix = img_u8_warp.data[i];
-      data_u32[i] = alpha | (pix << 16) | (pix << 8) | pix;
+      var data_u32 = new Uint32Array(imageData.data.buffer);
+      var alpha = (0xff << 24);
+      var i = img_u8_warp.cols*img_u8_warp.rows, pix = 0;
+      while(--i >= 0) {
+        pix = img_u8_warp.data[i];
+        data_u32[i] = alpha | (pix << 16) | (pix << 8) | pix;
+      }
+      context.putImageData(imageData, 0, 0);
+      imgData = context.canvas.toDataURL().replace(/^data:image\/\w+;base64,/, '')
+      fs.writeFileSync(path.join(app.getPath('temp'), 'step5.png'), imgData, 'base64')
+
+      let qrCanvas = document.createElement('canvas')
+      qrCanvas.width = 500
+      qrCanvas.height = 500
+      let qrContext = qrCanvas.getContext('2d')
+      qrContext.drawImage(context.canvas, -context.canvas.width+500,0, context.canvas.width, context.canvas.height)
+      let qrImageData = qrContext.getImageData(0, 0, qrCanvas.width, qrCanvas.height)
+
+      var newImageData = contrastImage(qrImageData, 150)
+      qrContext.putImageData(newImageData, 0, 0);
+      
+      imgData = qrContext.canvas.toDataURL().replace(/^data:image\/\w+;base64,/, '')
+      fs.writeFileSync(path.join(app.getPath('temp'), 'step6.png'), imgData, 'base64')
+
+
+      var qr = new QrCode();
+      qr.callback = function(err, result) { 
+        console.log("GOT BACK RESULT: ", err, result )
+        console.log("BEGIN CROPPING:" )
+        if (err) {
+          alert(`ERROR: NO QR - ` + err)
+        } else {
+          // if i got qr,
+          code = result.result.split('-')
+
+
+          canvas.width = 2500
+
+          // make a new image based on paper size
+          // copy src image in
+          if (code[1] == 'LTR') {
+            canvas.height = Math.round(2500/(11/8.5))
+          } else {
+            canvas.height = Math.round(2500/(842/595))
+          }
+
+          context = canvas.getContext('2d')
+          context.drawImage(sourceImage, 0,0, canvas.width, canvas.height)
+          imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+
+          img_u8 = new jsfeat.matrix_t(canvas.width, canvas.height, jsfeat.U8_t | jsfeat.C1_t);
+          img_u8_warp = new jsfeat.matrix_t(canvas.width, canvas.height, jsfeat.U8_t | jsfeat.C1_t);
+          transform = new jsfeat.matrix_t(3, 3, jsfeat.F32_t | jsfeat.C1_t);
+          jsfeat.math.perspective_4point_transform(transform, 
+                                                          cornerPoints[0][0]*canvas.width,   cornerPoints[0][1]*canvas.height,   0,  0,
+                                                          cornerPoints[1][0]*canvas.width,   cornerPoints[1][1]*canvas.height,   canvas.width, 0,
+                                                          cornerPoints[2][0]*canvas.width,   cornerPoints[2][1]*canvas.height, canvas.width, canvas.height,
+                                                          cornerPoints[3][0]*canvas.width,   cornerPoints[3][1]*canvas.height, 0, canvas.height);
+          jsfeat.matmath.invert_3x3(transform, transform);
+
+          jsfeat.imgproc.grayscale(imageData.data, canvas.width, canvas.height, img_u8);
+          jsfeat.imgproc.warp_perspective(img_u8, img_u8_warp, transform, 0);
+
+          var data_u32 = new Uint32Array(imageData.data.buffer);
+          var alpha = (0xff << 24);
+          var i = img_u8_warp.cols*img_u8_warp.rows, pix = 0;
+          while(--i >= 0) {
+            pix = img_u8_warp.data[i];
+            data_u32[i] = alpha | (pix << 16) | (pix << 8) | pix;
+          }
+          context.putImageData(imageData, 0, 0);
+
+          flatImage = context.canvas
+
+          // get crop marks
+
+          cropMarks = generateCropMarks(code[1], Number(code[5]), Number(code[2]), Number(code[3]), Number(code[4]))
+
+
+          context.fillStyle = 'rgba(255,0,0,0.1)';
+          for (var i = 0; i < cropMarks.length; i++) {
+
+            // console.log(cropMarks[0],canvas.width)
+
+            // console.log((cropMarks[0]*canvas.width, cropMarks[1]*canvas.height, cropMarks[2]*canvas.width, cropMarks[3]*canvas.height))
+            context.fillRect(cropMarks[i][0]*canvas.width+offset[0], cropMarks[i][1]*canvas.height+offset[1], cropMarks[i][2]*canvas.width, cropMarks[i][3]*canvas.height)
+          }
+
+          // draw them        
+
+          imgData = context.canvas.toDataURL().replace(/^data:image\/\w+;base64,/, '')
+          fs.writeFileSync(path.join(app.getPath('temp'), 'flatpaper.png'), imgData, 'base64')
+
+          document.querySelector("#preview").src = path.join(app.getPath('temp'), 'flatpaper.png?'+ Math.round(Math.random()*10000))
+        }
+      }
+      qr.decode(qrImageData)
+
+
+
+
+
     }
-    context.putImageData(imageData, 0, 0);
-    imgData = context.canvas.toDataURL().replace(/^data:image\/\w+;base64,/, '')
-    fs.writeFileSync('step5.png', imgData, 'base64')
 
-    let qrCanvas = document.createElement('canvas')
-    qrCanvas.width = 500
-    qrCanvas.height = 500
-    let qrContext = qrCanvas.getContext('2d')
-    qrContext.drawImage(context.canvas, -context.canvas.width+500,0, context.canvas.width, context.canvas.height)
-    let qrImageData = qrContext.getImageData(0, 0, qrCanvas.width, qrCanvas.height)
-
-    var newImageData = contrastImage(qrImageData, 150)
-    qrContext.putImageData(newImageData, 0, 0);
-    
-    imgData = qrContext.canvas.toDataURL().replace(/^data:image\/\w+;base64,/, '')
-    fs.writeFileSync('step6.png', imgData, 'base64')
-
-
-    var qr = new QrCode();
-    qr.callback = function(err, result) { 
-      console.log("GOT BACK RESULT: ", err, result )
-      console.log("BEGIN CROPPING:" )
-    }
-    qr.decode(qrImageData)
 
 
 
@@ -229,7 +356,7 @@ const loadWindow = () => {
 
   }
 
-  image.src = '/Users/setpixel/Desktop/test5.jpg'
+  sourceImage.src = imageSrc[0]
 }
 
 function contrastImage(imageData, contrast) {
@@ -304,10 +431,7 @@ const checkLineIntersection = (line1StartX, line1StartY, line1EndX, line1EndY, l
     }
     // if line1 and line2 are segments, they intersect if both of the above are true
     return result;
-};
-
-
-
+}
 
 const outputImage = (img_u8, context, filename) => {
   let imageData = context.getImageData(0, 0, context.canvas.width, context.canvas.height)
@@ -325,5 +449,44 @@ const outputImage = (img_u8, context, filename) => {
 }
 
 
+const generateCropMarks = (paperSize, aspectRatio, rows, cols, spacing) => {
+  let headerHeight = 80
+  let documentSize
+  if (paperSize == 'LTR') {
+    documentSize = [8.5*72,11*72]
+  } else {
+    documentSize = [595,842]
+  }
+  console.log(aspectRatio)
+  aspectRatio = aspectRatio.toFixed(3)
+  let margin = [22, 22, 22, 40]
 
-loadWindow()
+  let boxesDim = [cols,rows]
+  let boxSize = [(documentSize[1]-margin[0]-margin[2]-(spacing * (boxesDim[0]-1)))/boxesDim[0], (documentSize[0]-margin[1]-margin[3]-headerHeight-(spacing * (boxesDim[1])))/boxesDim[1] ]
+
+  let cropMarks = []
+
+  for (var iy = 0; iy < boxesDim[1]; iy++) {
+    for (var ix = 0; ix < boxesDim[0]; ix++) {
+      let x = margin[0]+(ix*boxSize[0])+(ix*spacing)
+      let y = margin[1]+(iy*boxSize[1])+((iy+1)*spacing)+headerHeight
+      let offset
+      let box
+
+      if((boxSize[0]/boxSize[1])>aspectRatio) {
+        offset = [(boxSize[0]-(boxSize[1]*aspectRatio))/2,0]
+        box = [x+offset[0],y, boxSize[1]*aspectRatio, boxSize[1]]
+      } else {
+        offset = [0, (boxSize[1]-(boxSize[0]/aspectRatio))/2]
+        box = [x,y+offset[1], boxSize[0], boxSize[0]/aspectRatio]
+      }
+      cropMarks.push([box[0]/documentSize[1],box[1]/documentSize[0],box[2]/documentSize[1],box[3]/documentSize[0]])
+    }
+  }
+  return cropMarks
+}
+
+ipcRenderer.on('worksheetImage', (event, args) => {
+  processWorksheetImage(args)
+  remote.getCurrentWindow().show()
+})

@@ -8,20 +8,13 @@
     <div id="print-container">
       <div id="config-pane">
         <div id="close-button">&#10005;</div>
-        <h1 style="margin-top: 50px;">Print a worksheet</h1>
-        <div>Draw thumbnail boards on this printed worksheet and magically import them back into your storyboarder file!</div>
+        <h1 style="margin-top: 50px;">Import a worksheet</h1>
+        <div>Woot. You made beautiful drawings on this worksheet. Now let's get them into Storyboarder. If the boxes, look lined up, click import! Otherwise mess with the offset and the scaling.</div>
         
-        <div class="row">
-          <label for="paper-size">Paper Size</label>
-          <select name="select" id="paper-size"> <!--Supplement an id here instead of using 'name'-->
-            <option value="LTR">Letter</option> 
-            <option value="A4" selected>A4 - For dirty Europeans</option>
-          </select>
-        </div>
-        
+       
         <div class="row row-grid">
           <div class="col">
-            <label for="column-number">Columns</label>
+            <label for="column-number">Calibration X</label>
             <select name="select" id="column-number"> <!--Supplement an id here instead of using 'name'-->
               <option value="1">1</option> 
               <option value="2">2</option>
@@ -34,7 +27,7 @@
             </select>
           </div>
           <div class="col">
-            <label for="row-number">Rows</label>
+            <label for="row-number">Calibration Y</label>
             <select name="select" id="row-number"> <!--Supplement an id here instead of using 'name'-->
               <option value="1">1</option> 
               <option value="2">2</option>
@@ -48,16 +41,16 @@
           </div>
         </div>
         <div class="row">
-          <label for="spacing">Spacing</label>
+          <label for="spacing">Crop in</label>
           <select name="select" id="spacing"> <!--Supplement an id here instead of using 'name'-->
-            <option value="15">15</option> 
-            <option value="20">20</option>
-            <option value="25">25</option> 
-            <option value="30">30</option>
+            <option value="15">100%</option> 
+            <option value="20">80%</option>
+            <option value="25">120%</option> 
+            <option value="30">150%</option>
           </select>
         </div>
         <div id="button-content">
-          <div class="button grey" id="print-button">Print!</div>
+          <div class="button grey" id="import-button">Import!</div>
         </div>
       </div>
       <div id="preview-pane">
