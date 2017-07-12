@@ -22,7 +22,10 @@ module.exports = () => {
     })
     win.loadURL(`file://${__dirname}/../../../preferences.html`)
     win.once('ready-to-show', () => {
-      win.show()
+      // wait for the DOM to render
+      setTimeout(() => {
+        win.show()
+      }, 125)
     })
   }
 
