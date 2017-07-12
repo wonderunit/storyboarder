@@ -3760,14 +3760,12 @@ ipcRenderer.on('importWorksheets', (event, args) => {
     importWindow.loadURL(`file://${__dirname}/../../import-window.html`)
   } else {
     if (!importWindow.isVisible()) {
-      importWindow.show()
-      //printWindow.webContents.send('worksheetData',boardData.aspectRatio)
+      importWindow.webContents.send('worksheetImage',args)
     }
   }
 
   importWindow.once('ready-to-show', () => {
-    importWindow.show()
-    //printWindow.webContents.send('worksheetData',boardData.aspectRatio)
+    importWindow.webContents.send('worksheetImage',args)
   })
 })
 
