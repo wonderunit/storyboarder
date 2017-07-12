@@ -1260,7 +1260,8 @@ const saveThumbnailFile = index => {
           opacity: storyboarderSketchPane.sketchPane.getLayerOpacity(3)
         }
       ]
-      promise = exporterCommon.flattenCanvasImageSourcesDataToContext(context, canvasImageSources, size)
+      exporterCommon.flattenCanvasImageSourcesDataToContext(context, canvasImageSources, size)
+      promise = Promise.resolve()
     } else {
       // grab from files
       promise = exporterCommon.flattenBoardToCanvas(
