@@ -3163,11 +3163,8 @@ let pasteBoards = () => {
       mutateClipboardBoardObjectToBoardObject(newBoardPos, newBoard)
       boardData.boards.splice(newBoardPos, 0, newBoard)
 
-      // save and display an updated thumbnail file for this board index
-      updaters.push(
-        saveThumbnailFile(newBoardPos)
-          .then(() => updateThumbnailDisplay(newBoardPos))
-      )
+      // save an updated thumbnail file for this board index
+      updaters.push(saveThumbnailFile(newBoardPos))
     }
 
     Promise.all(updaters).then(() => {
