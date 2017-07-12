@@ -125,4 +125,5 @@ let getBase64TypeFromPhotoshopFilePath = (filepath, options) => {
 
 module.exports = {
   getBase64ImageDataFromFilePath,
+  getBase64TypeFromFilePath
 }
