@@ -3117,12 +3117,31 @@ let pasteBoards = () => {
       notifications.notify({ message: "Pasting a sweet image you probably copied from the internet, you dirty dog, you. It's on the reference layer, so feel free to draw over it. You can resize or reposition it." , timing: 10 })
     }
   }
-  let selectionsAsArray = [...selections].sort(util.compareNumbers)
-  if (newBoards) {
-    sfx.positive()
 
+  if (newBoards) {
+    let selectionsAsArray = [...selections].sort(util.compareNumbers)
+    let newBoardPos = selectionsAsArray[selectionsAsArray.length - 1] // insert after the right-most current selection
+    
+    insertBoardsFromClipboardData(newBoards, newBoardPos).then(() => {
+      console.log('paste complete')
+      sfx.positive()
+      gotoBoard(newBoardPos)
+    }).catch(err => {
+      notifications.notify({ message: "Whoops. Could not paste boards. Got an error for some reason.", timing: 8 })
+      console.log(err)
+    })
+
+  } else {
+    notifications.notify({ message: "There's nothing in the clipboard that I can paste. Are you sure you copied it right?", timing: 8 })
+    sfx.error()
+  }
+}
+
+let insertBoardsFromClipboardData = (newBoards, newBoardPos) => {
+  return new Promise((resolve, reject) => {
     // store the "before" state
     storeUndoStateForScene(true)
+
     const mutateClipboardBoardObjectToBoardObject = (newBoardPos, c) => {
       // assign a new uid to the board, regardless of source
       let uid = util.uidGen(5)
@@ -3156,7 +3175,6 @@ let pasteBoards = () => {
     }
     
     let updaters = []
-    let newBoardPos = selectionsAsArray[selectionsAsArray.length - 1] // insert after the right-most current selection
     for (let newBoard of newBoards) {
       newBoardPos++
 
@@ -3170,18 +3188,15 @@ let pasteBoards = () => {
     Promise.all(updaters).then(() => {
       markBoardFileDirty()
       storeUndoStateForScene()
-      renderThumbnailDrawer()
-      gotoBoard(newBoardPos)
-      console.log('paste complete')
-    }).catch(err => {
-      console.log(err)
-    })
-  } else {
-    notifications.notify({ message: "There's nothing in the clipboard that I can paste. Are you sure you copied it right?", timing: 8 })
-    sfx.error()
-  }
-}
 
+      renderThumbnailDrawer()
+
+      resolve()
+    }).catch(err => {
+      reject(err)
+    })
+  })
+}
 let moveSelectedBoards = (position) => {
   console.log('moveSelectedBoards(' + position + ')')
   storeUndoStateForScene(true)
