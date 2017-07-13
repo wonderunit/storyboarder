@@ -1226,7 +1226,7 @@ let openInEditor = () => {
 
 // }
 
-const saveThumbnailFile = index => {
+const saveThumbnailFile = (index, options = { forceReadFromFiles: false }) => {
   return new Promise((resolve, reject) => {
     let imageFilePath = path.join(boardPath, 'images', exporterCommon.boardFilenameForThumbnail(boardData.boards[index]))
     
@@ -1241,7 +1241,7 @@ const saveThumbnailFile = index => {
     
     let promise
     let canvasImageSources
-    if (index == currentBoard) {
+    if (!options.forceReadFromFiles && index == currentBoard) {
       // grab from memory
       canvasImageSources = [
         // reference
@@ -3190,7 +3190,7 @@ const insertBoards = (dest, insertAt, boards, { imageDataByBoardIndex }) => {
 
         //
         // update the thumbnail
-        return saveThumbnailFile(position)
+        return saveThumbnailFile(position, { forceReadFromFiles: true })
       })
     })
 
@@ -3234,6 +3234,9 @@ const importFromWorksheet = (imageArray) => {
   Promise.resolve().then(() => {
     // store the "before" state
     storeUndoStateForScene(true)
+
+    // save the current layers to disk
+    saveImageFile()
 
     return insertBoards(boardData.boards, insertAt, boards, { imageDataByBoardIndex })
   }).then(() => {
