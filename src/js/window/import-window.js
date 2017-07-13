@@ -23,11 +23,17 @@ let offset = [0,-20]
   todo:
     error if cant get 4 points
     error if cant get qr code
+  
+    see if we can speed up window open
+    disable button on clicking import
 
-    get flat image and show it
-    get crop marks from the qr data
-    draw the crop marks
+    hook up offsets
+    hook up crop %
+    save to prefs
 
+    dont import blanks
+
+    make work with cell phone capture
 
 
 */

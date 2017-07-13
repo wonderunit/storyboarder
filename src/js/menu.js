@@ -103,13 +103,6 @@ const template = [
       },
       {
         type: 'separator'
-      },
-      {
-        label: 'Open in Editor',
-        accelerator: 'CmdOrCtrl+.',
-        click ( item, focusedWindow, event) {
-          ipcRenderer.send('openInEditor')
-        }
       }
     ]
   },
@@ -357,6 +350,16 @@ const template = [
           ipcRenderer.send('flipBoard', true)
         }
       },
+      {
+        type: 'separator'
+      },
+      {
+        label: 'Edit in Photoshop',
+        accelerator: 'CmdOrCtrl+.',
+        click ( item, focusedWindow, event) {
+          ipcRenderer.send('openInEditor')
+        }
+      }
     ]
   },
   {
