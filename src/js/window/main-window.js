@@ -3155,41 +3155,48 @@ let pasteBoards = () => {
   }
 }
 
-// TODO handle possibility that the aspect ratio isnt the same as the board target
-//  see: insertNewBoardsWithFiles for example
 const insertBoards = (dest, insertAt, boards, { imageDataByBoardIndex }) => {
   const LAYER_INDEX_REFERENCE = 0
   const LAYER_INDEX_MAIN = 1
   const LAYER_INDEX_NOTES = 2
 
+  // TODO pass `size` as argument instead of relying on storyboarderSketchPane
+  let { width, height } = storyboarderSketchPane.sketchPane.getCanvasSize()
+  let size = [width, height]
+
   return new Promise((resolve, reject) => {
     let tasks = Promise.resolve()
-    let updaters = boards.map((board, index) => {
-      tasks = tasks.then(() => {
-        let position = insertAt + index
+    boards.forEach((board, index) => {
+      // for each board
+      let position = insertAt + index
+      let imageData = imageDataByBoardIndex[index]
 
-        //
-        // save dataUri to files
-        let imageData = imageDataByBoardIndex[index]
-        if (imageData) {
-          if (imageData[LAYER_INDEX_MAIN]) {
-            saveDataURLtoFile(imageData[LAYER_INDEX_MAIN], board.url)
-          }
+      // scale layer images and save to files
+      if (imageData) {
 
-          if (imageData[LAYER_INDEX_REFERENCE]) {
-            saveDataURLtoFile(imageData[LAYER_INDEX_REFERENCE], board.layers.reference.url)
-          }
-
-          if (imageData[LAYER_INDEX_NOTES]) {
-            saveDataURLtoFile(imageData[LAYER_INDEX_NOTES], board.layers.notes.url)
-          }
+        if (imageData[LAYER_INDEX_MAIN]) {
+          tasks = tasks.then(() =>
+            fitImageData(size, imageData[LAYER_INDEX_MAIN]).then(scaledImageData =>
+              saveDataURLtoFile(scaledImageData, board.url)))
         }
 
-        //
+        if (imageData[LAYER_INDEX_REFERENCE]) {
+          tasks = tasks.then(() =>
+            fitImageData(size, imageData[LAYER_INDEX_REFERENCE]).then(scaledImageData =>
+              saveDataURLtoFile(scaledImageData, board.layers.reference.url)))
+        }
+
+        if (imageData[LAYER_INDEX_NOTES]) {
+          tasks = tasks.then(() =>
+            fitImageData(size, imageData[LAYER_INDEX_NOTES]).then(scaledImageData =>
+              saveDataURLtoFile(scaledImageData, board.layers.notes.url)))
+        }
+      }
+
+      tasks = tasks.then(() => {
         // add to the data
         dest.splice(position, 0, board)
 
-        //
         // update the thumbnail
         return saveThumbnailFile(position, { forceReadFromFiles: true })
       })
@@ -3229,6 +3236,30 @@ const fitToDst = (dst, src) => {
   let y = (hs - hnew)/2
 
   return [x, y, wnew, hnew]
+}
+
+const fitImageData = (boardSize, imageData) => {
+  return new Promise((resolve, reject) => {
+    exporterCommon.getImage(imageData).then(image => {
+      // if ratio matches,
+      // don't bother drawing,
+      // just return original image data
+      if (
+        image.width  == boardSize[0] &&
+        image.height == boardSize[1]
+      ) {
+        resolve(imageData)
+      } else {
+        let context = createSizedContext(boardSize)
+        let canvas = context.canvas
+        context.drawImage(image, ...fitToDst(canvas, image).map(Math.round))
+        resolve(canvas.toDataURL())
+      }
+    }).catch(err => {
+      console.log(err)
+      reject(err)
+    })
+  })
 }
 
 
