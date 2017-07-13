@@ -3027,7 +3027,7 @@ let exportAnimatedGif = () => {
   notifications.notify({message: "Exporting " + boards.length + " boards. Please wait...", timing: 5})
   sfx.down()
   setTimeout(()=>{
-    exporter.exportAnimatedGif(boards, boardSize, 800, boardPath, boardFilename, true, boardData)
+    exporter.exportAnimatedGif(boards, boardSize, 800, boardPath, true, boardData)
   }, 1000)
 }
 
@@ -3202,6 +3202,55 @@ const insertBoards = (dest, insertAt, boards, { imageDataByBoardIndex }) => {
     })
   })
 }
+
+
+const importFromWorksheet = (imageArray) => {
+  let insertAt = 0 // pos
+  let boards = []
+
+  for (var i = 0; i < imageArray.length; i++) {
+    let board = {}
+    let uid = util.uidGen(5)
+    board.uid = uid
+    board.url = 'board-' + (insertAt+i) + '-' + board.uid + '.png'
+    board.layers = {reference: {url: board.url.replace('.png', '-reference.png')}}
+    board.newShot = false
+    board.lastEdited = Date.now()
+
+    boards.push(board)
+  }
+
+  let blankCanvas = document.createElement('canvas').toDataURL()
+
+  let imageDataByBoardIndex = []
+  for (var i = 0; i < imageArray.length; i++) {
+    let board = {}
+    board[0] = imageArray[i]
+    board[1] = blankCanvas
+    imageDataByBoardIndex.push(board)
+  }
+
+  // insert boards from worksheet data
+  Promise.resolve().then(() => {
+    // store the "before" state
+    storeUndoStateForScene(true)
+
+    return insertBoards(boardData.boards, insertAt, boards, { imageDataByBoardIndex })
+  }).then(() => {
+    markBoardFileDirty()
+    storeUndoStateForScene()
+    return renderThumbnailDrawer()
+  }).then(() => {
+    console.log('import complete')
+    sfx.positive()
+    return gotoBoard(newBoardPos)
+  }).catch(err => {
+    notifications.notify({ message: "Whoops. Could not import.", timing: 8 })
+    console.log(err)
+  })
+}
+
+
 
 // TODO rewrite copyBoards so this isn't necessary
 // TODO extract these formatters, cleanup
@@ -3841,6 +3890,10 @@ ipcRenderer.on('printWorksheet', (event, args) => {
     printWindow.show()
     printWindow.webContents.send('worksheetData',boardData.aspectRatio, currentScene, scriptData)
   })
+})
+
+ipcRenderer.on('importFromWorksheet', (event, args) => {
+  importFromWorksheet(args)
 })
 
 ipcRenderer.on('importWorksheets', (event, args) => {

@@ -175,6 +175,7 @@ module.exports = {
   boardFilenameForThumbnail,
   msecsToFrames,
 
+  getImage,
   exportFlattenedBoard,
   flattenCanvasImageSourcesDataToContext,
   flattenBoardToCanvas,

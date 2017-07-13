@@ -53,15 +53,14 @@ const importImages = () => {
   let destCanvas = document.createElement('canvas')
   destCanvas.height = 900
   destCanvas.width = (900*Number(code[5]))
-
+  let images = []
   for (var i = 0; i < cropMarks.length; i++) {
     destCanvas.getContext("2d").drawImage(flatImage, cropMarks[i][0]*flatImage.width+offset[0], cropMarks[i][1]*flatImage.height+offset[1], cropMarks[i][2]*flatImage.width, cropMarks[i][3]*flatImage.height, 0, 0, destCanvas.width, destCanvas.height)
-    imgData = destCanvas.toDataURL().replace(/^data:image\/\w+;base64,/, '')
-    fs.writeFileSync(path.join(app.getPath('temp'), 'crop' + i + '.png'), imgData, 'base64')
-
+    // imgData = destCanvas.toDataURL().replace(/^data:image\/\w+;base64,/, '')
+    // fs.writeFileSync(path.join(app.getPath('temp'), 'crop' + i + '.png'), imgData, 'base64')
+    images.push(destCanvas.toDataURL())
   }
-
-
+  remote.getCurrentWindow().getParentWindow().webContents.send('importFromWorksheet',images)
 }
 
 
@@ -312,20 +311,27 @@ const processWorksheetImage = (imageSrc) => {
           }
           context.putImageData(imageData, 0, 0);
 
-          flatImage = context.canvas
+          flatImage = document.createElement('canvas')
+          flatImage.width = context.canvas.width
+          flatImage.height = context.canvas.height
+          flatImage.getContext('2d').drawImage(context.canvas, 0, 0)
 
           // get crop marks
-
           cropMarks = generateCropMarks(code[1], Number(code[5]), Number(code[2]), Number(code[3]), Number(code[4]))
-
-
-          context.fillStyle = 'rgba(255,0,0,0.1)';
           for (var i = 0; i < cropMarks.length; i++) {
+            let fatOutline = 15
+            context.lineWidth = fatOutline
+            context.strokeStyle = 'rgba(20,20,200,0.1)';
+            context.strokeRect(cropMarks[i][0]*canvas.width+offset[0]-(fatOutline/2), cropMarks[i][1]*canvas.height+offset[1]-(fatOutline/2), cropMarks[i][2]*canvas.width+(fatOutline*1), cropMarks[i][3]*canvas.height+(fatOutline*1))
 
-            // console.log(cropMarks[0],canvas.width)
 
-            // console.log((cropMarks[0]*canvas.width, cropMarks[1]*canvas.height, cropMarks[2]*canvas.width, cropMarks[3]*canvas.height))
-            context.fillRect(cropMarks[i][0]*canvas.width+offset[0], cropMarks[i][1]*canvas.height+offset[1], cropMarks[i][2]*canvas.width, cropMarks[i][3]*canvas.height)
+            fatOutline = 0
+            context.lineWidth = 1
+            context.strokeStyle = 'rgba(20,20,200,1)';
+
+            context.strokeRect(cropMarks[i][0]*canvas.width+offset[0]-fatOutline, cropMarks[i][1]*canvas.height+offset[1]-fatOutline, cropMarks[i][2]*canvas.width+(fatOutline*2), cropMarks[i][3]*canvas.height+(fatOutline*2))
+
+
           }
 
           // draw them        
