@@ -3243,7 +3243,7 @@ const importFromWorksheet = (imageArray) => {
   }).then(() => {
     console.log('import complete')
     sfx.positive()
-    return gotoBoard(newBoardPos)
+    return gotoBoard(insertAt)
   }).catch(err => {
     notifications.notify({ message: "Whoops. Could not import.", timing: 8 })
     console.log(err)
