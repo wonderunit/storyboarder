@@ -3121,11 +3121,28 @@ let pasteBoards = () => {
   if (newBoards) {
     let selectionsAsArray = [...selections].sort(util.compareNumbers)
     let newBoardPos = selectionsAsArray[selectionsAsArray.length - 1] // insert after the right-most current selection
-    
-    insertBoardsFromClipboardData(newBoards, newBoardPos).then(() => {
+
+    newBoardPos = newBoardPos + 1 // actual splice point
+
+    // TODO change clipboard data format to make this easier and eliminate convertFromClipboardFormat
+    let { imageDataByBoardIndex, boards } = convertFromClipboardFormat(newBoards, newBoardPos)
+    let insertAt = newBoardPos
+
+    // insert boards from clipboard data
+    Promise.resolve().then(() => {
+      // store the "before" state
+      storeUndoStateForScene(true)
+
+      return insertBoards(boardData.boards, insertAt, boards, { imageDataByBoardIndex })
+    }).then(() => {
+      markBoardFileDirty()
+      storeUndoStateForScene()
+
+      return renderThumbnailDrawer()
+    }).then(() => {
       console.log('paste complete')
       sfx.positive()
-      gotoBoard(newBoardPos)
+      return gotoBoard(newBoardPos)
     }).catch(err => {
       notifications.notify({ message: "Whoops. Could not paste boards. Got an error for some reason.", timing: 8 })
       console.log(err)
@@ -3137,66 +3154,150 @@ let pasteBoards = () => {
   }
 }
 
-let insertBoardsFromClipboardData = (newBoards, newBoardPos) => {
+// TODO handle possibility that the aspect ratio isnt the same as the board target
+//  see: insertNewBoardsWithFiles for example
+const insertBoards = (dest, insertAt, boards, { imageDataByBoardIndex }) => {
+  const LAYER_INDEX_REFERENCE = 0
+  const LAYER_INDEX_MAIN = 1
+  const LAYER_INDEX_NOTES = 2
+
   return new Promise((resolve, reject) => {
-    // store the "before" state
-    storeUndoStateForScene(true)
+    let tasks = Promise.resolve()
+    let updaters = boards.map((board, index) => {
+      tasks = tasks.then(() => {
+        let position = insertAt + index
 
-    const mutateClipboardBoardObjectToBoardObject = (newBoardPos, c) => {
-      // assign a new uid to the board, regardless of source
-      let uid = util.uidGen(5)
+        //
+        // save dataUri to files
+        let imageData = imageDataByBoardIndex[index]
+        if (imageData) {
+          if (imageData[LAYER_INDEX_MAIN]) {
+            saveDataURLtoFile(imageData[LAYER_INDEX_MAIN], board.url)
+          }
 
-      c.uid = uid
-      c.url = 'board-' + newBoardPos + '-' + uid + '.png'
+          if (imageData[LAYER_INDEX_REFERENCE]) {
+            saveDataURLtoFile(imageData[LAYER_INDEX_REFERENCE], board.layers.reference.url)
+          }
 
-      // set some basic data for the new board
-      c.newShot = c.newShot || false
-      c.lastEdited = Date.now()
-
-      if (c.imageDataURL) {
-        // extract the image data from JSON
-        saveDataURLtoFile(c.imageDataURL, c.url)
-        delete c.imageDataURL
-      }
-
-      // HACK hardcoded
-      if (c.layers) {
-        if (c.layers.reference) {
-          c.layers.reference.url = c.url.replace('.png', '-reference.png')
-          saveDataURLtoFile(c.layers.reference.imageDataURL, c.layers.reference.url)
-          delete c.layers.reference.imageDataURL
+          if (imageData[LAYER_INDEX_NOTES]) {
+            saveDataURLtoFile(imageData[LAYER_INDEX_NOTES], board.layers.notes.url)
+          }
         }
-        if (c.layers.notes) {
-          c.layers.notes.url = c.url.replace('.png', '-notes.png')
-          saveDataURLtoFile(c.layers.notes.imageDataURL, c.layers.notes.url)
-          delete c.layers.notes.imageDataURL
-        }
-      }
-    }
-    
-    let updaters = []
-    for (let newBoard of newBoards) {
-      newBoardPos++
 
-      mutateClipboardBoardObjectToBoardObject(newBoardPos, newBoard)
-      boardData.boards.splice(newBoardPos, 0, newBoard)
+        //
+        // add to the data
+        dest.splice(position, 0, board)
 
-      // save an updated thumbnail file for this board index
-      updaters.push(saveThumbnailFile(newBoardPos))
-    }
+        //
+        // update the thumbnail
+        return saveThumbnailFile(position)
+      })
+    })
 
-    Promise.all(updaters).then(() => {
-      markBoardFileDirty()
-      storeUndoStateForScene()
-
-      renderThumbnailDrawer()
-
+    tasks.then(() => {
       resolve()
     }).catch(err => {
-      reject(err)
+      console.log(err)
+      reject()
     })
   })
 }
+
+// TODO rewrite copyBoards so this isn't necessary
+// TODO extract these formatters, cleanup
+const convertFromClipboardFormat = (newBoards, newBoardPos) => {
+  const LAYER_INDEX_REFERENCE = 0
+  const LAYER_INDEX_MAIN = 1
+  const LAYER_INDEX_NOTES = 2
+
+  let insertAt = newBoardPos
+
+  // extract image data from clipboard
+  let imageDataByBoardIndex = newBoards.map((clipBoardBoard, index) => {
+    let imageData = {}
+    
+    if (clipBoardBoard.imageDataURL) {
+      imageData[LAYER_INDEX_MAIN] = clipBoardBoard.imageDataURL
+    }
+
+    if (clipBoardBoard.layers) {
+      if (clipBoardBoard.layers.reference) {
+        imageData[LAYER_INDEX_REFERENCE] = clipBoardBoard.layers.reference.imageDataURL
+      }
+      if (clipBoardBoard.layers.notes) {
+        imageData[LAYER_INDEX_NOTES] = clipBoardBoard.layers.notes.imageDataURL
+      }
+    }
+
+    return imageData
+  })
+
+  // remove image data
+  newBoards = newBoards.map((clipBoardBoard, index) => {
+    if (clipBoardBoard.imageDataURL) {
+      delete clipBoardBoard.imageDataURL
+    }
+
+    if (clipBoardBoard.layers) {
+      if (clipBoardBoard.layers.reference) {
+        delete clipBoardBoard.layers.reference.imageDataURL
+      }
+      if (clipBoardBoard.layers.notes) {
+        delete clipBoardBoard.layers.notes.imageDataURL
+      }
+    }
+
+    return clipBoardBoard
+  })
+
+  newBoards = newBoards.map((board, index) => {
+    // assign a new uid to the board, regardless of source
+    let uid = util.uidGen(5)
+
+    board.uid = uid
+
+    board.layers = board.layers || {} // ???
+
+    // set some basic data for the new board
+    board.newShot = board.newShot || false
+    board.lastEdited = Date.now()
+    
+    return board
+  })
+
+  // update board filenames
+  newBoards = newBoards.map((board, index) => {
+    let position = insertAt + index
+    board.url = 'board-' + position + '-' + board.uid + '.png'
+
+    let imageData = imageDataByBoardIndex[index]
+    if (imageData) {
+      if (imageData[LAYER_INDEX_MAIN]) {
+      }
+
+      if (imageData[LAYER_INDEX_REFERENCE]) {
+        board.layers = Object.assign(board.layers, {
+          reference: {
+            url: board.url.replace('.png', '-reference.png')
+          }
+        })
+      }
+
+      if (imageData[LAYER_INDEX_NOTES]) {
+        board.layers = Object.assign(board.layers, {
+          notes: {
+            url: board.url.replace('.png', '-notes.png')
+          }
+        })
+      }
+    }
+
+    return board
+  })
+
+  return { imageDataByBoardIndex, boards: newBoards }
+}
+
 let moveSelectedBoards = (position) => {
   console.log('moveSelectedBoards(' + position + ')')
   storeUndoStateForScene(true)
