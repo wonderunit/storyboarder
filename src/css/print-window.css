@@ -301,6 +301,20 @@ h2 {
   max-height: 90vh;
 }
 
+#paper-2 {
+  user-drag: none;
+  user-select: none;
+  -webkit-user-select: none;
+  border-radius: 1px;
+  box-shadow: 0px 3px 7px rgba(0,0,0,0.3); 
+  max-height:90vh; max-width:100%;
+  transform: rotate3d(1, 0, 1, 0deg);
+  max-width: 100%;
+  max-height: 90vh;
+}
+
+
+
 #preview {
   max-width: 100%;
   max-height: 90vh;
