@@ -101,15 +101,16 @@ const getCanvasImageSourcesDataForBoard = (board, projectFileAbsolutePath) => {
 
     let loaders = filenames.map(filename => getImage(getImageFilePath(filename)))
 
+    let defaultOpacityForReferenceLayer = 72/100
     Promise.all(loaders).then(images => {
       let canvasImageSourcesData = []
       images.forEach((canvasImageSource, n) => {
-        // let layerIndex = indices[n]
+        let layerIndex = indices[n]
         if (canvasImageSource) {
           canvasImageSourcesData.push({
             // layerIndex,
             canvasImageSource,
-            opacity: 1
+            opacity: layerIndex === 0 ? defaultOpacityForReferenceLayer : 1
           })
         }
       })
