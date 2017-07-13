@@ -28,17 +28,18 @@ html, body {
 }
 
 #keyboard {
+  left: -10px;
   display: block;
-  background: lightgray;
+/*  background: lightgray;
   padding: 10px;
   border-radius: 13px;
-  display: flex;
+*/   display: flex;
   flex-direction: row;
-  color: rgba(0,0,0,0.5);
+ color: rgba(0,0,0,0.5);
   font-weight: 500;
-  box-shadow: inset 0 -6px 0px rgba(0, 0, 0, 0.2),0 1px 6px 2px rgba(0, 0, 0, 0.5);
+/*  box-shadow: inset 0 -6px 0px rgba(0, 0, 0, 0.2),0 1px 6px 2px rgba(0, 0, 0, 0.5);
   padding-bottom: 15px;
-  position: relative;
+*/  position: relative;
 }
 
 .cols {
@@ -46,7 +47,7 @@ html, body {
 }
 
 #keyboard .left {
-  margin-right: 15px;
+  margin-right: 35px;
   width: 850px;
 }
 
@@ -96,9 +97,9 @@ html, body {
 .key {
 
   box-sizing: border-box;
-  background-color: rgba(255,255,255,0.8);
+  background-color: rgba(255,255,255,0.3);
   border-radius: 5px;
-  box-shadow: inset 0 -4px 0px rgba(0, 0, 0, 0.2),0 1px 0px 2px rgba(0, 0, 0, 0.5),0 1px 0px 0px rgba(0, 0, 0, 0.0);
+  box-shadow: inset 0 -4px 0px rgba(0, 0, 0, 0.2),0 1px 5px 0px rgba(0, 0, 0, 0.3),0 1px 0px 0px rgba(0, 0, 0, 0.0);
   
 /*  background-color: rgba(255,100,100,0.8);
   box-shadow: inset 0 -4px 0px rgba(0, 0, 0, 0.2),0 1px 0px 2px rgba(0, 0, 0, 0.5), 0 1px 0px 4px rgba(255, 0, 0, 0.5);
@@ -150,55 +151,58 @@ html, body {
 }
 
 .section.color-1 {
-  border-bottom: 5px solid #832afe;
+  border-bottom: 5px solid #483168;
 }
 
 .section.color-2 {
-  border-bottom: 5px solid #8b5601;
+  border-bottom: 5px solid #4a3c26;
 }
 
 .section.color-3 {
-  border-bottom: 5px solid #2f56ff;
+  border-bottom: 5px solid #323c68;
 }
 
 .section.color-4 {
-  border-bottom: 5px solid #04970e;
+  border-bottom: 5px solid #274d29;
 }
 
 .section.color-5 {
-  border-bottom: 5px solid #d42929;
+  border-bottom: 5px solid #5d3030;
 }
 
 .section.color-6 {
-  border-bottom: 5px solid #636a01;
+  border-bottom: 5px solid #3f4126;
 }
 
 .section.color-7 {
-  border-bottom: 5px solid #01828a;
+  border-bottom: 5px solid #26474a;
 }
 
 .section.color-8 {
-  border-bottom: 5px solid #a0366b;
+  border-bottom: 5px solid #4f3441;
 }
 
 
 .command {
+      color: rgba(255,255,255,0.5);
   font-size: 14px;
   padding: 5px 3px 5px 7px;
   margin-left: -10px;
   border-radius: 3px;
 }
 
-.command:hover {
-  background: rgba(255,255,255,0.1);
+.command strong {
+  color: rgba(255,255,255,0.8);
+  font-weight: 400;
 }
 
-.command:hover kbd {
-  background: rgba(255,255,255,0.9);
+
+.command:hover, .command.highlight {
+  background: rgba(255,255,255,0.2);
 }
 
-.command.highlight kbd {
-  background: rgba(255,255,255,0.9);
+.command:hover kbd, .command.highlight kbd {
+  background: rgba(255,255,255,0.6);
 }
 
 
@@ -211,7 +215,7 @@ kbd {
   display: inline-block;
   font-family: 'proximanova';
   font-size: 12px;  
-  background: rgba(255,255,255,0.5);
+  background: rgba(255,255,255,0.3);
   padding: 2px 5px;
   border-radius: 2px;
   color: #333333;
@@ -224,44 +228,53 @@ kbd {
 }
 
 .highlight {
-  background: black;
+  opacity: 1 !important;
 }
 
 #keyboard:not(.hover) .type-Help, .highlight.color-8 {
   background: #f9d9e9;
+  opacity: 0.6;
 }
 
 #keyboard:not(.hover) .type-Window, .highlight.color-7 {
   background: #bdedf0;
+  opacity: 0.6;
 }
 
 #keyboard:not(.hover) .type-View, .highlight.color-6 {
   background: #edf0bd;
+  opacity: 0.6;
 }
 
 #keyboard:not(.hover) .type-Tools, .highlight.color-5 {
   background: #f0bdbd;
+  opacity: 0.6;
 }
 
 #keyboard:not(.hover) .type-Boards, .highlight.color-4 {
   background: #b3e0b6;
+  opacity: 0.6;
 }
 
 #keyboard:not(.hover) .type-Navigation, .highlight.color-3 {
   background: #b9c5f9;
+  opacity: 0.6;
 }
 
 #keyboard:not(.hover) .type-Edit, .highlight.color-2 {
   background: #f9e0b9;
+  opacity: 0.6;
 }
 
 #keyboard:not(.hover) .type-File, .highlight.color-1 {
   background: #d4b9f9;
+  opacity: 0.6;
 }
 
 .active {
-  color: white;
+  color: rgba(255,255,255,0.8);
   font-weight: 500;
+  opacity: 1 !important;
 /*  animation-name: example;
   animation-duration: 0.6s;
 */}
@@ -280,41 +293,41 @@ kbd {
 
 .active.color-1 {
   background: #691ddb !important;
-  box-shadow: inset 0 -4px 0px rgba(0, 0, 0, 0.2),0 1px 0px 2px rgba(0, 0, 0, 0.5),0 1px 0px 3px #691ddb;
+  box-shadow: inset 0 -4px 0px rgba(0, 0, 0, 0.2),0 0px 0px 3px rgba(0,0, 0, 0.4);/*,0 1px 0px 3px #691ddb;*/
 }
 
 .active.color-2 {
   background: #db8e1d !important;
-  box-shadow: inset 0 -4px 0px rgba(0, 0, 0, 0.2),0 1px 0px 2px rgba(0, 0, 0, 0.5),0 1px 0px 3px #db8e1d;
+  box-shadow: inset 0 -4px 0px rgba(0, 0, 0, 0.2),0 0px 0px 3px rgba(0,0, 0, 0.4);
 }
 
 .active.color-3 {
   background: #1d44db !important;
-  box-shadow: inset 0 -4px 0px rgba(0, 0, 0, 0.2),0 1px 0px 2px rgba(0, 0, 0, 0.5),0 1px 0px 3px #1d44db;
+  box-shadow: inset 0 -4px 0px rgba(0, 0, 0, 0.2),0 0px 0px 3px rgba(0,0, 0, 0.4);
 }
 
 .active.color-4 {
   background: #2aaf30 !important;
-  box-shadow: inset 0 -4px 0px rgba(0, 0, 0, 0.2),0 1px 0px 2px rgba(0, 0, 0, 0.5),0 1px 0px 3px #2aaf30;
+  box-shadow: inset 0 -4px 0px rgba(0, 0, 0, 0.2),0 0px 0px 3px rgba(0,0, 0, 0.4);
 }
 
 .active.color-5 {
   background: #c62d2f !important;
-  box-shadow: inset 0 -4px 0px rgba(0, 0, 0, 0.2),0 1px 0px 2px rgba(0, 0, 0, 0.5),0 1px 0px 3px #c62d2f;
+  box-shadow: inset 0 -4px 0px rgba(0, 0, 0, 0.2),0 0px 0px 3px rgba(0,0, 0, 0.4);
 }
 
 .active.color-6 {
   background: #bfc62d !important;
-  box-shadow: inset 0 -4px 0px rgba(0, 0, 0, 0.2),0 1px 0px 2px rgba(0, 0, 0, 0.5),0 1px 0px 3px #bfc62d;
+  box-shadow: inset 0 -4px 0px rgba(0, 0, 0, 0.2),0 0px 0px 3px rgba(0,0, 0, 0.4);
 }
 
 .active.color-7 {
   background: #2dbfc6 !important;
-  box-shadow: inset 0 -4px 0px rgba(0, 0, 0, 0.2),0 1px 0px 2px rgba(0, 0, 0, 0.5),0 1px 0px 3px #2dbfc6;
+  box-shadow: inset 0 -4px 0px rgba(0, 0, 0, 0.2),0 0px 0px 3px rgba(0,0, 0, 0.4);
 }
 .active.color-8 {
   background: #bd5d8e !important;
-  box-shadow: inset 0 -4px 0px rgba(0, 0, 0, 0.2),0 1px 0px 2px rgba(0, 0, 0, 0.5),0 1px 0px 3px #bd5d8e;
+  box-shadow: inset 0 -4px 0px rgba(0, 0, 0, 0.2),0 0px 0px 3px rgba(0,0, 0, 0.4);
 }
 
 /*@keyframes example {

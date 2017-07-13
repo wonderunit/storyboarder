@@ -145,13 +145,14 @@ let commands = [
       ['Use Palette Color 2', '9'],
       ['Use Palette Color 3', '0'],
       ['Flip Horizontal', 'CmdOrCtrl+F'],
+      ['<strong>Edit in Photoshop</strong>', 'CmdOrCtrl+.'],
     ]
   ],
   ["View", [
       ['<strong>Cycle View Mode</strong>', 'Tab'],
       ['Toggle Onion Skin', 'O'],
       ['Toggle Captions', 'C'],
-      ['togglefullscreen', 'F11'],
+      ['Toggle Fullscreen', 'F11'],
     ]
   ],
   ["Window", [
