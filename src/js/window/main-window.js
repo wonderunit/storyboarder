@@ -347,6 +347,7 @@ let addToLineMileage = value => {
 let loadBoardUI = ()=> {
   let aspectRatio = boardData.aspectRatio
 
+  let size
   if (aspectRatio >= 1) {
     size = [900 * aspectRatio, 900]
   } else {
