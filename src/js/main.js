@@ -42,6 +42,8 @@ let prefs = prefModule.getPrefs('main')
 let currentFile
 let currentPath
 
+let toBeOpenedPath
+
 appServer.on('pointerEvent', (e)=> {
   console.log('pointerEvent')
 })
@@ -52,18 +54,21 @@ appServer.on('image', (e)=> {
   mainWindow.webContents.send('importImage', e.fileData)
 })
 
-
-
+// this only works on mac.
+app.on('open-file', (event, path) => {
+  event.preventDefault()
+  if (app.isReady()) {
+    openFile(path)
+  } else {
+    toBeOpenedPath = path
+  }
+})
 
 app.on('ready', ()=> {
- 
-
-
-
   // via https://github.com/electron/electron/issues/4690#issuecomment-217435222
   const argv = process.defaultApp ? process.argv.slice(2) : process.argv
 
-  // was an argument passed?
+  //was an argument passed?
   if (isDev && argv[0]) {
     let filePath = path.resolve(argv[0])
     if (fs.existsSync(filePath)) {
@@ -74,18 +79,23 @@ app.on('ready', ()=> {
       console.error('Could not load', filePath)
     }
   }
+ 
+  // this only works on mac.
+  if (toBeOpenedPath) {
+    openFile(toBeOpenedPath)
+    return
+  }
 
-  // open the welcome window when the app loads up first
+  //open the welcome window when the app loads up first
   openWelcomeWindow()
 })
 
 let openKeyCommandWindow = ()=> {
-    keyCommandWindow = new BrowserWindow({width: 1158, height: 925, maximizable: false, center: true, show: false, resizable: false, frame: false, titleBarStyle: 'hidden-inset'})
-    keyCommandWindow.loadURL(`file://${__dirname}/../keycommand-window.html`)
-    keyCommandWindow.once('ready-to-show', () => {
-      setTimeout(()=>{keyCommandWindow.show()},500)
-    })
-
+  keyCommandWindow = new BrowserWindow({width: 1158, height: 925, maximizable: false, center: true, show: false, resizable: false, frame: false, titleBarStyle: 'hidden-inset'})
+  keyCommandWindow.loadURL(`file://${__dirname}/../keycommand-window.html`)
+  keyCommandWindow.once('ready-to-show', () => {
+    setTimeout(()=>{keyCommandWindow.show()},500)
+  })
 }
 
 app.on('activate', ()=> {
@@ -741,4 +751,3 @@ ipcMain.on('prefs:change', (event, arg) => {
 ipcMain.on('showKeyCommands', (event, arg) => {
   openKeyCommandWindow()
 })
-

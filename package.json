@@ -50,6 +50,10 @@
           "path": "/Applications"
         }
       ]
+    },
+    "fileAssociations": {
+      "ext": "storyboarder",
+      "name": "STORYBOARDER"
     }
   },
   "devDependencies": {
