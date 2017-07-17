@@ -28,7 +28,7 @@ const exporter = require('./exporter.js')
 const exporterCommon = require('../exporters/common')
 const prefsModule = require('electron').remote.require('./prefs.js')
 
-const FileReader = require('../files/FileReader.js')
+const FileReader = require('../files/file-helper.js')
 const writePsd = require('ag-psd').writePsd;
 const readPsd = require('ag-psd').readPsd;
 const initializeCanvas = require('ag-psd').initializeCanvas;
