@@ -65,6 +65,7 @@ app.on('open-file', (event, path) => {
 })
 
 app.on('ready', ()=> {
+  openWelcomeWindow()
   // via https://github.com/electron/electron/issues/4690#issuecomment-217435222
   const argv = process.defaultApp ? process.argv.slice(2) : process.argv
 
@@ -87,7 +88,6 @@ app.on('ready', ()=> {
   }
 
   //open the welcome window when the app loads up first
-  openWelcomeWindow()
 })
 
 let openKeyCommandWindow = ()=> {
