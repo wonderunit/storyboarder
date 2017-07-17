@@ -28,7 +28,7 @@ const exporter = require('./exporter.js')
 const exporterCommon = require('../exporters/common')
 const prefsModule = require('electron').remote.require('./prefs.js')
 
-const FileReader = require('../files/file-helper.js')
+const FileHelper = require('../files/file-helper.js')
 const writePsd = require('ag-psd').writePsd;
 const readPsd = require('ag-psd').readPsd;
 const initializeCanvas = require('ag-psd').initializeCanvas;
@@ -935,7 +935,7 @@ let insertNewBoardsWithFiles = (filepaths) => {
       let readerOptions = {
         importTargetLayer: targetLayer
       }
-      let imageData = FileReader.getBase64ImageDataFromFilePath(filepath)
+      let imageData = FileHelper.getBase64ImageDataFromFilePath(filepath)
       if(!imageData) {
         notifications.notify({message: `Oops! There was a problem importing ${filepath}`, timing: 10})
         return new Promise((fulfill)=>fulfill())
@@ -1171,7 +1171,7 @@ let openInEditor = () => {
         isCurrentBoard = true
       }
       
-      psdData = FileReader.getBase64ImageDataFromFilePath(imageFilePath, readerOptions)
+      psdData = FileHelper.getBase64ImageDataFromFilePath(imageFilePath, readerOptions)
       if(!psdData || !psdData.main) {
         return;
       }
@@ -2934,7 +2934,7 @@ let copyBoards = () => {
     // inject image data for each board
     boards = boards.map(board => {
       let filepath = path.join(boardPath, 'images', board.url)
-      let data = FileReader.getBase64TypeFromFilePath('png', filepath)
+      let data = FileHelper.getBase64TypeFromFilePath('png', filepath)
       if (data) {
         board.imageDataURL = data
       } else {
@@ -2945,7 +2945,7 @@ let copyBoards = () => {
         for (let layerName of ['reference', 'notes']) { // HACK hardcoded
           if (board.layers[layerName]) {
             let filepath = path.join(boardPath, 'images', board.layers[layerName].url)
-            let data = FileReader.getBase64TypeFromFilePath('png', filepath)
+            let data = FileHelper.getBase64TypeFromFilePath('png', filepath)
             if (data) {
               board.layers[layerName].imageDataURL = data
             } else {
