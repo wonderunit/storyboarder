@@ -37,6 +37,10 @@ const pkg = require('../../../package.json')
 
 const sharedObj = remote.getGlobal('sharedObj')
 
+const LAYER_INDEX_REFERENCE = 0
+const LAYER_INDEX_MAIN = 1
+const LAYER_INDEX_NOTES = 2
+
 let boardFilename
 let boardPath
 let boardData
@@ -2918,10 +2922,6 @@ let importImage = (imageDataURL) => {
 let copyBoards = () => {
   if (textInputMode) return // ignore copy command in text input mode
 
-  const LAYER_INDEX_REFERENCE = 0
-  const LAYER_INDEX_MAIN = 1
-  const LAYER_INDEX_NOTES = 2
-
   if (selections.size > 1) {
     //
     //
@@ -3082,10 +3082,6 @@ let save = () => {
 let pasteBoards = () => {
   if (textInputMode) return
 
-  const LAYER_INDEX_REFERENCE = 0
-  const LAYER_INDEX_MAIN = 1
-  const LAYER_INDEX_NOTES = 2
-
   // save the current image to disk
   saveImageFile()
 
@@ -3182,10 +3178,6 @@ let pasteBoards = () => {
 }
 
 const insertBoards = (dest, insertAt, boards, { layerDataByBoardIndex }) => {
-  const LAYER_INDEX_REFERENCE = 0
-  const LAYER_INDEX_MAIN = 1
-  const LAYER_INDEX_NOTES = 2
-
   // TODO pass `size` as argument instead of relying on storyboarderSketchPane
   let { width, height } = storyboarderSketchPane.sketchPane.getCanvasSize()
   let size = [width, height]
@@ -3342,10 +3334,6 @@ const importFromWorksheet = (imageArray) => {
 
 // TODO extract these formatters, cleanup
 const migrateBoardData = (newBoards, insertAt) => {
-  const LAYER_INDEX_REFERENCE = 0
-  const LAYER_INDEX_MAIN = 1
-  const LAYER_INDEX_NOTES = 2
-
   // assign a new uid to the board, regardless of source
   newBoards = newBoards.map((board) => {
     board.uid = util.uidGen(5)
