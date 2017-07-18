@@ -2897,7 +2897,7 @@ let importImage = (imageDataURL) => {
  *
  * Copies to the clipboard, as 'text', a JSON object containing
  * `boards` (an array of board objects), and
- * `imageDataByBoardIndex` with base64 image data inserted, e.g.:
+ * `layerDataByBoardIndex` with base64 image data inserted, e.g.:
  *
  * {
  *   boards: [
@@ -2906,7 +2906,7 @@ let importImage = (imageDataURL) => {
  *       layers: { ... }
  *     }
  *   },
- *   imageDataByBoardIndex: [
+ *   layerDataByBoardIndex: [
  *     'data:image/png;base64,...'
  *   ]
  * }
@@ -2936,7 +2936,7 @@ let copyBoards = () => {
     let boards = selectedBoardIndexes.map(n => util.stringifyClone(boardData.boards[n]))
 
     // inject image data for each board
-    let imageDataByBoardIndex = boards.map((board, index) => {
+    let layerDataByBoardIndex = boards.map((board, index) => {
       let result = {}
       let filepath = path.join(boardPath, 'images', board.url)
       let data = FileHelper.getBase64TypeFromFilePath('png', filepath)
@@ -2964,7 +2964,7 @@ let copyBoards = () => {
     })
 
     let payload = {
-      text: JSON.stringify({ boards, imageDataByBoardIndex }, null, 2)
+      text: JSON.stringify({ boards, layerDataByBoardIndex }, null, 2)
     }
     clipboard.clear()
     clipboard.write(payload)
@@ -3006,7 +3006,7 @@ let copyBoards = () => {
     ).then(() => {
       let payload = {
         image: nativeImage.createFromDataURL(canvas.toDataURL()),
-        text: JSON.stringify({ boards: [board], imageDataByBoardIndex: [imageData] }, null, 2)
+        text: JSON.stringify({ boards: [board], layerDataByBoardIndex: [imageData] }, null, 2)
       }
       clipboard.clear()
       clipboard.write(payload)
@@ -3090,7 +3090,7 @@ let pasteBoards = () => {
   saveImageFile()
 
   let newBoards
-  let imageDataByBoardIndex
+  let layerDataByBoardIndex
 
   // do we have JSON data?
   let text = clipboard.readText()
@@ -3099,7 +3099,7 @@ let pasteBoards = () => {
       let data = JSON.parse(text)
 
       newBoards = data.boards
-      imageDataByBoardIndex = data.imageDataByBoardIndex
+      layerDataByBoardIndex = data.layerDataByBoardIndex
 
       if (newBoards.length > 1) {
         notifications.notify({ message: "Pasting " + newBoards.length + " boards.", timing: 5 })
@@ -3138,7 +3138,7 @@ let pasteBoards = () => {
           }
         }
       ]
-      imageDataByBoardIndex = [{
+      layerDataByBoardIndex = [{
         [LAYER_INDEX_REFERENCE]: image.toDataURL(),
         [LAYER_INDEX_MAIN]: blankCanvas.toDataURL()
       }]
@@ -3160,7 +3160,7 @@ let pasteBoards = () => {
       // store the "before" state
       storeUndoStateForScene(true)
 
-      return insertBoards(boardData.boards, insertAt, boards, { imageDataByBoardIndex })
+      return insertBoards(boardData.boards, insertAt, boards, { layerDataByBoardIndex })
     }).then(() => {
       markBoardFileDirty()
       storeUndoStateForScene()
@@ -3181,7 +3181,7 @@ let pasteBoards = () => {
   }
 }
 
-const insertBoards = (dest, insertAt, boards, { imageDataByBoardIndex }) => {
+const insertBoards = (dest, insertAt, boards, { layerDataByBoardIndex }) => {
   const LAYER_INDEX_REFERENCE = 0
   const LAYER_INDEX_MAIN = 1
   const LAYER_INDEX_NOTES = 2
@@ -3195,7 +3195,7 @@ const insertBoards = (dest, insertAt, boards, { imageDataByBoardIndex }) => {
     boards.forEach((board, index) => {
       // for each board
       let position = insertAt + index
-      let imageData = imageDataByBoardIndex[index]
+      let imageData = layerDataByBoardIndex[index]
 
       // scale layer images and save to files
       if (imageData) {
@@ -3307,12 +3307,12 @@ const importFromWorksheet = (imageArray) => {
 
   let blankCanvas = document.createElement('canvas').toDataURL()
 
-  let imageDataByBoardIndex = []
+  let layerDataByBoardIndex = []
   for (var i = 0; i < imageArray.length; i++) {
     let board = {}
     board[0] = imageArray[i]
     board[1] = blankCanvas
-    imageDataByBoardIndex.push(board)
+    layerDataByBoardIndex.push(board)
   }
 
   // insert boards from worksheet data
@@ -3323,7 +3323,7 @@ const importFromWorksheet = (imageArray) => {
     // save the current layers to disk
     saveImageFile()
 
-    return insertBoards(boardData.boards, insertAt, boards, { imageDataByBoardIndex })
+    return insertBoards(boardData.boards, insertAt, boards, { layerDataByBoardIndex })
   }).then(() => {
     markBoardFileDirty()
     storeUndoStateForScene()
