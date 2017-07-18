@@ -2895,28 +2895,32 @@ let importImage = (imageDataURL) => {
 /**
  * Copy
  *
- * Copies to the clipboard as 'text' a JSON object representing the board data with base64 imageDataURL inserted, e.g.:
+ * Copies to the clipboard, as 'text', a JSON object containing
+ * `boards` (an array of board objects), and
+ * `imageDataByBoardIndex` with base64 image data inserted, e.g.:
  *
  * {
- *   ...
- *   imageDataURL: ...,       // main
- *   layers: {
- *     reference: {           // reference
+ *   boards: [
+ *     {
  *       url: ...,
- *       imageDataURL: ...
- *     },
- *     reference: {           // notes
- *       url: ...,
- *       imageDataURL: ...
+ *       layers: { ... }
  *     }
- *   }
+ *   },
+ *   imageDataByBoardIndex: [
+ *     'data:image/png;base64,...'
+ *   ]
  * }
  *
- * For a single board, it will also add a flattened bitmap of all visible layers as an 'image' to the clipboard
+ * For a single board, it will also add a flattened bitmap
+ * of all visible layers as an 'image' to the clipboard.
  *
  */
 let copyBoards = () => {
   if (textInputMode) return // ignore copy command in text input mode
+
+  const LAYER_INDEX_REFERENCE = 0
+  const LAYER_INDEX_MAIN = 1
+  const LAYER_INDEX_NOTES = 2
 
   if (selections.size > 1) {
     //
@@ -2932,22 +2936,23 @@ let copyBoards = () => {
     let boards = selectedBoardIndexes.map(n => util.stringifyClone(boardData.boards[n]))
 
     // inject image data for each board
-    boards = boards.map(board => {
+    let imageDataByBoardIndex = boards.map((board, index) => {
+      let result = {}
       let filepath = path.join(boardPath, 'images', board.url)
       let data = FileHelper.getBase64TypeFromFilePath('png', filepath)
       if (data) {
-        board.imageDataURL = data
+        result[LAYER_INDEX_MAIN] = data
       } else {
         console.warn("could not load image for board", board.url)
       }
 
       if (board.layers) {
-        for (let layerName of ['reference', 'notes']) { // HACK hardcoded
+        for (let [layerName, sym] of [['reference', LAYER_INDEX_REFERENCE], ['notes', LAYER_INDEX_NOTES]]) { // HACK hardcoded
           if (board.layers[layerName]) {
             let filepath = path.join(boardPath, 'images', board.layers[layerName].url)
             let data = FileHelper.getBase64TypeFromFilePath('png', filepath)
             if (data) {
-              board.layers[layerName].imageDataURL = data
+              result[sym] = data
             } else {
               console.warn("could not load image for board", board.layers[layerName].url)
             }
@@ -2955,11 +2960,11 @@ let copyBoards = () => {
         }
       }
 
-      return board
+      return result
     })
 
     let payload = {
-      text: JSON.stringify({ boards }, null, 2)
+      text: JSON.stringify({ boards, imageDataByBoardIndex }, null, 2)
     }
     clipboard.clear()
     clipboard.write(payload)
@@ -2978,12 +2983,13 @@ let copyBoards = () => {
     //
     let board = util.stringifyClone(boardData.boards[currentBoard])
 
-    board.imageDataURL = storyboarderSketchPane.getLayerCanvasByName('main').toDataURL()
+    let imageData = {}
+    imageData[LAYER_INDEX_MAIN] = storyboarderSketchPane.getLayerCanvasByName('main').toDataURL()
+
     if (board.layers) {
-      for (let layerName of ['reference', 'notes']) { // HACK hardcoded
+      for (let [layerName, sym] of [['reference', LAYER_INDEX_REFERENCE], ['notes', LAYER_INDEX_NOTES]]) { // HACK hardcoded
         if (board.layers[layerName]) {
-          console.log('copyBoards: adding', layerName)
-          board.layers[layerName].imageDataURL = storyboarderSketchPane.getLayerCanvasByName(layerName).toDataURL()
+          imageData[sym] = storyboarderSketchPane.getLayerCanvasByName(layerName).toDataURL()
         }
       }
     }
@@ -3000,7 +3006,7 @@ let copyBoards = () => {
     ).then(() => {
       let payload = {
         image: nativeImage.createFromDataURL(canvas.toDataURL()),
-        text: JSON.stringify({ boards: [board] }, null, 2)
+        text: JSON.stringify({ boards: [board], imageDataByBoardIndex: [imageData] }, null, 2)
       }
       clipboard.clear()
       clipboard.write(payload)
@@ -3066,68 +3072,88 @@ let save = () => {
 /**
  * Paste
  *
- * Creates  a) from `text`, one or more new boards with layers inserted from clipboard JSON data
- *          b) from `image`, one new board with clipboard image data inserted as reference layer
+ * Creates  a) from `text`, one or more new boards
+ *               with board objects from the clipboard JSON
+ *               and board layer images from the base64 clipboard JSON
+ *          b) from `image`, one new board
+ *               with clipboard image data inserted as reference layer
  *
  */
 let pasteBoards = () => {
   if (textInputMode) return
 
+  const LAYER_INDEX_REFERENCE = 0
+  const LAYER_INDEX_MAIN = 1
+  const LAYER_INDEX_NOTES = 2
+
   // save the current image to disk
   saveImageFile()
 
   let newBoards
+  let imageDataByBoardIndex
+
   // do we have JSON data?
   let text = clipboard.readText()
   if (text !== "") {
     try {
       let data = JSON.parse(text)
+
       newBoards = data.boards
-      if (data.boards.length > 1) {
-        notifications.notify({ message: "Pasting " + data.boards.length + " boards.", timing: 5 })
+      imageDataByBoardIndex = data.imageDataByBoardIndex
+
+      if (newBoards.length > 1) {
+        notifications.notify({ message: "Pasting " + newBoards.length + " boards.", timing: 5 })
       } else {
-        notifications.notify({ message: "Pasting a board." , timing: 5 })
+        notifications.notify({ message: "Pasting a board.", timing: 5 })
       }
     } catch (err) {
       // if there is an error parsing the JSON
       // ignore it, and continue on
       // (it may be a valid single image instead)
       // be sure to clear newBoards
+      console.log(err)
       newBoards = null
     }
   }
   // ... otherwise ...
   if (!newBoards) {
-    // ... do we have image data?
+    // ... do we have just image data?
     let image = clipboard.readImage()
     if (!image.isEmpty()) {
+
+      // make a blank canvas placeholder for the main image
       let { width, height } = storyboarderSketchPane.sketchPane.getCanvasSize()
       let size = [width, height]
       let blankCanvas = createSizedContext(size).canvas
+
+      // convert clipboard data to board object and layer data
       newBoards = [
         {
           newShot: false,
-          imageDataURL: blankCanvas.toDataURL(), // blank main
+          url: 'imported.png', // placeholder filename
           layers: {
             reference: {
-              imageDataURL: image.toDataURL() // paste into reference layer
+              url: 'imported-reference.png' // placeholder filename
             }
           }
         }
       ]
+      imageDataByBoardIndex = [{
+        [LAYER_INDEX_REFERENCE]: image.toDataURL(),
+        [LAYER_INDEX_MAIN]: blankCanvas.toDataURL()
+      }]
+
       notifications.notify({ message: "Pasting a sweet image you probably copied from the internet, you dirty dog, you. It's on the reference layer, so feel free to draw over it. You can resize or reposition it." , timing: 10 })
     }
   }
 
   if (newBoards) {
     let selectionsAsArray = [...selections].sort(util.compareNumbers)
-    let newBoardPos = selectionsAsArray[selectionsAsArray.length - 1] // insert after the right-most current selection
+    let insertAt = selectionsAsArray[selectionsAsArray.length - 1] // insert after the right-most current selection
 
-    newBoardPos = newBoardPos + 1 // actual splice point
+    insertAt = insertAt + 1 // actual splice point
 
-    // TODO change clipboard data format to make this easier and eliminate convertFromClipboardFormat
-    let { imageDataByBoardIndex, boards } = convertFromClipboardFormat(newBoards, newBoardPos)
-    let insertAt = newBoardPos
+    let boards = migrateBoardData(newBoards, insertAt)
 
     // insert boards from clipboard data
     Promise.resolve().then(() => {
@@ -3143,7 +3169,7 @@ let pasteBoards = () => {
     }).then(() => {
       console.log('paste complete')
       sfx.positive()
-      return gotoBoard(newBoardPos)
+      return gotoBoard(insertAt)
     }).catch(err => {
       notifications.notify({ message: "Whoops. Could not paste boards. Got an error for some reason.", timing: 8 })
       console.log(err)
@@ -3314,60 +3340,21 @@ const importFromWorksheet = (imageArray) => {
 
 
 
-// TODO rewrite copyBoards so this isn't necessary
 // TODO extract these formatters, cleanup
-const convertFromClipboardFormat = (newBoards, newBoardPos) => {
+const migrateBoardData = (newBoards, insertAt) => {
   const LAYER_INDEX_REFERENCE = 0
   const LAYER_INDEX_MAIN = 1
   const LAYER_INDEX_NOTES = 2
 
-  let insertAt = newBoardPos
-
-  // extract image data from clipboard
-  let imageDataByBoardIndex = newBoards.map((clipBoardBoard, index) => {
-    let imageData = {}
-    
-    if (clipBoardBoard.imageDataURL) {
-      imageData[LAYER_INDEX_MAIN] = clipBoardBoard.imageDataURL
-    }
-
-    if (clipBoardBoard.layers) {
-      if (clipBoardBoard.layers.reference) {
-        imageData[LAYER_INDEX_REFERENCE] = clipBoardBoard.layers.reference.imageDataURL
-      }
-      if (clipBoardBoard.layers.notes) {
-        imageData[LAYER_INDEX_NOTES] = clipBoardBoard.layers.notes.imageDataURL
-      }
-    }
-
-    return imageData
+  // assign a new uid to the board, regardless of source
+  newBoards = newBoards.map((board) => {
+    board.uid = util.uidGen(5)
+    return board
   })
 
-  // remove image data
-  newBoards = newBoards.map((clipBoardBoard, index) => {
-    if (clipBoardBoard.imageDataURL) {
-      delete clipBoardBoard.imageDataURL
-    }
-
-    if (clipBoardBoard.layers) {
-      if (clipBoardBoard.layers.reference) {
-        delete clipBoardBoard.layers.reference.imageDataURL
-      }
-      if (clipBoardBoard.layers.notes) {
-        delete clipBoardBoard.layers.notes.imageDataURL
-      }
-    }
-
-    return clipBoardBoard
-  })
-
-  newBoards = newBoards.map((board, index) => {
-    // assign a new uid to the board, regardless of source
-    let uid = util.uidGen(5)
-
-    board.uid = uid
-
-    board.layers = board.layers || {} // ???
+  // set some basic data for the new board
+  newBoards = newBoards.map((board) => {
+    board.layers = board.layers || {} // TODO is this necessary?
 
     // set some basic data for the new board
     board.newShot = board.newShot || false
@@ -3376,37 +3363,23 @@ const convertFromClipboardFormat = (newBoards, newBoardPos) => {
     return board
   })
 
-  // update board filenames
+  // update board layers filenames based on uid
   newBoards = newBoards.map((board, index) => {
     let position = insertAt + index
     board.url = 'board-' + position + '-' + board.uid + '.png'
 
-    let imageData = imageDataByBoardIndex[index]
-    if (imageData) {
-      if (imageData[LAYER_INDEX_MAIN]) {
-      }
+    if (board.layers.reference) {
+      board.layers.reference.url = board.url.replace('.png', '-reference.png')
+    }
 
-      if (imageData[LAYER_INDEX_REFERENCE]) {
-        board.layers = Object.assign(board.layers, {
-          reference: {
-            url: board.url.replace('.png', '-reference.png')
-          }
-        })
-      }
-
-      if (imageData[LAYER_INDEX_NOTES]) {
-        board.layers = Object.assign(board.layers, {
-          notes: {
-            url: board.url.replace('.png', '-notes.png')
-          }
-        })
-      }
+    if (board.layers.notes) {
+      board.layers.notes.url = board.url.replace('.png', '-notes.png')
     }
 
     return board
   })
 
-  return { imageDataByBoardIndex, boards: newBoards }
+  return newBoards
 }
 
 let moveSelectedBoards = (position) => {
