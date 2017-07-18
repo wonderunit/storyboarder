@@ -380,9 +380,7 @@ let loadBoardUI = ()=> {
     storeUndoStateForImage(false, layerIndices)
     markImageFileDirty(layerIndices)
 
-    saveThumbnailFile(currentBoard).then(index => {
-      updateThumbnailDisplay(index)
-    })
+    saveThumbnailFile(currentBoard).then(index => updateThumbnailDisplay(index))
 
     // TODO save progress image
   })
@@ -1122,9 +1120,7 @@ let saveImageFile = () => {
   console.log(`saved ${numSaved} modified layers`)
 
   // create/update the thumbnail image file
-  return saveThumbnailFile(currentBoard).then(index => {
-    updateThumbnailDisplay(index)
-  })
+  return saveThumbnailFile(currentBoard).then(index => updateThumbnailDisplay(index))
 }
 
 let openInEditor = () => {
