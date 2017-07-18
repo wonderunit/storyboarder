@@ -380,8 +380,8 @@ let loadBoardUI = ()=> {
     storeUndoStateForImage(false, layerIndices)
     markImageFileDirty(layerIndices)
 
-    saveThumbnailFile(currentBoard).then(() => {
-      updateThumbnailDisplay(currentBoard)
+    saveThumbnailFile(currentBoard).then(index => {
+      updateThumbnailDisplay(index)
     })
 
     // TODO save progress image
@@ -1122,8 +1122,8 @@ let saveImageFile = () => {
   console.log(`saved ${numSaved} modified layers`)
 
   // create/update the thumbnail image file
-  saveThumbnailFile(currentBoard).then(() => {
-    updateThumbnailDisplay(currentBoard)
+  return saveThumbnailFile(currentBoard).then(index => {
+    updateThumbnailDisplay(index)
   })
 }
 
@@ -1285,7 +1285,7 @@ const saveThumbnailFile = (index, options = { forceReadFromFiles: false }) => {
       try {
         fs.writeFile(imageFilePath, imageData, 'base64', () => {
           console.log('saved thumbnail', imageFilePath)
-          resolve()
+          resolve(index)
         })
       } catch (err) {
         console.error(err)
@@ -3711,8 +3711,8 @@ const applyUndoStateForImage = (state) => {
       markImageFileDirty([layerData.index])
     }
 
-    saveThumbnailFile(state.boardIndex).then(() => {
-      updateThumbnailDisplay(state.boardIndex)
+    return saveThumbnailFile(state.boardIndex).then(index => {
+      updateThumbnailDisplay(index)
     })
 
     toolbar.emit('cancelTransform')
