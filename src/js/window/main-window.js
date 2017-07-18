@@ -1468,13 +1468,14 @@ const clearLayers = shouldEraseCurrentLayer => {
 ///////////////////////////////////////////////////////////////
 
 let goNextBoard = (direction, shouldPreserveSelections = false)=> {
-  saveImageFile()
-  if (direction) {
-    currentBoard += direction
-  } else {
-    currentBoard++
-  }
-  gotoBoard(currentBoard, shouldPreserveSelections)
+  return saveImageFile().then(() => {
+    if (direction) {
+      currentBoard += direction
+    } else {
+      currentBoard++
+    }
+    return gotoBoard(currentBoard, shouldPreserveSelections)
+  })
 }
 
 let animatedScrollingTimer = +new Date()
