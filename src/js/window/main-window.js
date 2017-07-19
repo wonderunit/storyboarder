@@ -871,12 +871,13 @@ let updateBoardUI = ()=> {
     newBoard(0, false)
   }
   // update sketchpane
-  updateSketchPaneBoard()
-  // update thumbail drawer
-  renderThumbnailDrawer()
-  // update timeline
-  // update metadata
-  gotoBoard(currentBoard)
+  updateSketchPaneBoard().then(() => {
+    // update thumbail drawer
+    renderThumbnailDrawer()
+    // update timeline
+    // update metadata
+    gotoBoard(currentBoard)
+  })
 }
 
 ///////////////////////////////////////////////////////////////
