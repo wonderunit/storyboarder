@@ -3,6 +3,7 @@ const fs = require('fs')
 const path = require('path')
 const GIFEncoder = require('gifencoder')
 const moment = require('moment')
+const app = require("electron").remote.app
 
 const {
   boardFileImageSize,
@@ -14,6 +15,7 @@ const {
 
 const exporterFcpX = require('../exporters/final-cut-pro-x.js')
 const exporterFcp = require('../exporters/final-cut-pro.js')
+const exporterPDF = require('../exporters/pdf.js')
 const util = require('../utils/index.js')
 
 class Exporter extends EventEmitter {
@@ -65,28 +67,53 @@ class Exporter extends EventEmitter {
       })
     })
   }
-  
-  exportPDF (boardData, projectFileAbsolutePath) {
-    let outputPath = app.getPath('temp')
 
-    this.exportImages(boardData, projectFileAbsolutePath, outputPath).then(() => {
-      console.log('wrote images to', outputPath, ' -- ready to write PDF')
-    }).catch(err => {
-      console.log(err)
+ 
+  exportPDF (boardData, projectFileAbsolutePath) {
+    return new Promise(resolve => {
+      let outputPath = app.getPath('temp')
+
+      let index = 0
+      let writers = []
+      let basenameWithoutExt = path.basename(projectFileAbsolutePath, path.extname(projectFileAbsolutePath))
+      for (let board of boardData.boards) {
+        writers.push(new Promise(resolve => {
+          let filenameForExport = `board-` + index + '.jpg'
+          exportFlattenedBoard(
+            board,
+            filenameForExport,
+            boardFileImageSize(boardData),
+            projectFileAbsolutePath,
+            outputPath,
+            0.4
+          ).then(() => resolve()).catch(err => console.error(err))
+        }))
+        index++
+      }
+      
+      Promise.all(writers).then(() => {
+        let exportsPath = ensureExportsPathExists(projectFileAbsolutePath)
+        let filepath = path.join(exportsPath, basenameWithoutExt + ' ' + moment().format('YYYY-MM-DD hh.mm.ss') + '.pdf')
+        exporterPDF.generatePDF('LTR', 1.773, 3, 3, 10, boardData, basenameWithoutExt, filepath)
+        resolve(filepath)
+      }).catch(err => {
+        console.log(err)
+      })
+
     })
   }
 
   exportImages (boardData, projectFileAbsolutePath, outputPath = null) {
     return new Promise(resolve => {
-      if (util.isUndefined(outputPath)) {
-        let exportsPath = ensureExportsPathExists(projectFileAbsolutePath)
-
-        let basename = path.basename(projectFileAbsolutePath)
-        let outputPath = path.join(
+      let exportsPath = ensureExportsPathExists(projectFileAbsolutePath)
+      let basename = path.basename(projectFileAbsolutePath)
+      if (!outputPath) {
+        outputPath = path.join(
           exportsPath,
-          basename + ' Images ' + moment().format('YYYY-MM-DD hh.mm.ss')
+         basename + ' Images ' + moment().format('YYYY-MM-DD hh.mm.ss')
         )
       }
+
       if (!fs.existsSync(outputPath)) {
         fs.mkdirSync(outputPath)
       }

@@ -3073,19 +3073,40 @@ exporter.on('complete', path => {
 })
 
 const exportFcp = () => {
-  exporter.exportFcp(boardData, boardFilename).then(outputPath => {
-    notifications.notify({message: "Your scene has been exported for Final Cut Pro X and Premiere.", timing: 20})
-    sfx.positive()
-    shell.showItemInFolder(outputPath)
-  })
+  notifications.notify({message: "Exporting " + boardData.boards.length + " boards to FCP and Premiere. Please wait...", timing: 5})
+  sfx.down()
+  setTimeout(()=>{
+    exporter.exportFcp(boardData, boardFilename).then(outputPath => {
+      notifications.notify({message: "Your scene has been exported for Final Cut Pro X and Premiere.", timing: 20})
+      sfx.positive()
+      shell.showItemInFolder(outputPath)
+    })
+  }, 1000)
 }
 
 const exportImages = () => {
-  exporter.exportImages(boardData, boardFilename).then(outputPath => {
-    notifications.notify({message: "Your scene has been exported as images.", timing: 20})
-    sfx.positive()
-    shell.showItemInFolder(outputPath)
-  })
+  notifications.notify({message: "Exporting " + boardData.boards.length + " to a folder. Please wait...", timing: 5})
+  sfx.down()
+  setTimeout(()=>{
+    exporter.exportImages(boardData, boardFilename).then(outputPath => {
+      notifications.notify({message: "Your scene has been exported as images.", timing: 20})
+      sfx.positive()
+      shell.showItemInFolder(outputPath)
+    })
+  }, 1000)
+}
+
+
+const exportPDF = () => {
+  notifications.notify({message: "Exporting " + boardData.boards.length + " boards to PDF. Please wait...", timing: 5})
+  sfx.down()
+  setTimeout(()=>{
+    exporter.exportPDF(boardData, boardFilename).then(outputPath => {
+      notifications.notify({message: "Your scene has been exported as a PDF.", timing: 20})
+      sfx.positive()
+      shell.showItemInFolder(outputPath)
+    })
+  }, 1000)
 }
 
 let save = () => {
@@ -3904,6 +3925,10 @@ ipcRenderer.on('exportFcp', (event, args) => {
 
 ipcRenderer.on('exportImages', (event, args) => {
   exportImages()
+})
+
+ipcRenderer.on('exportPDF', (event, args) => {
+  exportPDF()
 })
 
 let printWindow

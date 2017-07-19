@@ -42,6 +42,12 @@ const template = [
         }
       },
       {
+        label: 'Export a PDF',
+        click (item, focusedWindow, event) {
+          ipcRenderer.send('exportPDF')
+        }
+      },
+      {
         type: 'separator'
       },
       {
