@@ -1230,7 +1230,10 @@ let openInEditor = () => {
 // }
 
 const saveThumbnailFile = (index, options = { forceReadFromFiles: false }) => {
+  console.log('saveThumbnailFile')
+  console.trace()
   return new Promise((resolve, reject) => {
+    console.log('saveThumbnailFile number:', index + 1, exporterCommon.boardFilenameForThumbnail(boardData.boards[index]))
     let imageFilePath = path.join(boardPath, 'images', exporterCommon.boardFilenameForThumbnail(boardData.boards[index]))
     
     let size = [
