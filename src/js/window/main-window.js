@@ -1119,7 +1119,7 @@ let saveImageFile = () => {
     }
   }
 
-  console.log(`saved ${numSaved} modified layers`)
+  // console.log(`saved ${numSaved} modified layers`)
 
   // create/update the thumbnail image file
   return saveThumbnailFile(currentBoard).then(index => updateThumbnailDisplay(index))
@@ -1292,11 +1292,11 @@ const saveThumbnailFile = (index, options = { forceReadFromFiles: false }) => {
     
       try {
         fs.writeFile(imageFilePath, imageData, 'base64', () => {
-          console.log('saved thumbnail', imageFilePath)
+          console.log('saving thumbnail', path.basename(imageFilePath))
           resolve(index)
         })
       } catch (err) {
-        console.error(err)
+        console.log(err)
         reject(err)
       }
     }).catch(err => {
@@ -1306,12 +1306,13 @@ const saveThumbnailFile = (index, options = { forceReadFromFiles: false }) => {
   })
 }
 
+// load the thumbnail image file
 const updateThumbnailDisplay = index => {
-  // load the thumbnail image file
   let el = document.querySelector(`[data-thumbnail="${index}"] img`)
   // does it exist in the thumbnail drawer already?
   if (el) {
     let imageFilePath = path.join(boardPath, 'images', exporterCommon.boardFilenameForThumbnail(boardData.boards[index]))
+    console.log('update thumbnail', path.basename(imageFilePath))
     el.src = imageFilePath + '?' + Date.now()
   }
 }
@@ -1849,11 +1850,11 @@ let updateSketchPaneBoard = () => {
 
         // do we have an image for this particular layer index?
         if (image) {
-          console.log('rendering layer index:', index)
+          // console.log('rendering layer index:', index)
           storyboarderSketchPane.sketchPane.clearLayer(index)
           context.drawImage(image, 0, 0)
         } else {
-          console.log('clearing layer index:', index)
+          // console.log('clearing layer index:', index)
           storyboarderSketchPane.sketchPane.clearLayer(index)
         }
       }
@@ -1965,6 +1966,7 @@ let renderThumbnailDrawer = ()=> {
     let imageFilename = path.join(boardPath, 'images', board.url.replace('.png', '-thumbnail.png'))
     try {
       if (fs.existsSync(imageFilename)) {
+        console.log('setting  thumbnail', path.basename(imageFilename))
         html.push('<div class="top">')
         html.push('<img src="' + imageFilename + '" height="60" width="' + thumbnailWidth + '">')
         html.push('</div>')
