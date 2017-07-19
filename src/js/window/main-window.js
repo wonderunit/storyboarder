@@ -41,6 +41,13 @@ const LAYER_INDEX_REFERENCE = 0
 const LAYER_INDEX_MAIN = 1
 const LAYER_INDEX_NOTES = 2
 
+const CanvasBufferOutputFileStrategy = require('../utils/canvas-buffer-ouput-file.js')
+const CanvasBufferOutputGifStrategy = require('../utils/canvas-buffer-ouput-gif.js')
+const CanvasBuffer = require('../utils/canvas-buffer.js')
+let screenRecordingBuffer
+let screenRecordingFrameNum = 0
+let isRecording = false
+
 let boardFilename
 let boardPath
 let boardData
@@ -382,7 +389,12 @@ let loadBoardUI = ()=> {
 
     saveThumbnailFile(currentBoard).then(index => updateThumbnailDisplay(index))
 
-    // TODO save progress image
+    // save progress image
+    if(isRecording) {
+      let snapshotCanvas = storyboarderSketchPane.sketchPane.getLayerCanvas(1)
+      let filepath = path.join(boardPath, 'images', `recording-${screenRecordingFrameNum++}.png`)
+      screenRecordingBuffer.addToBuffer(snapshotCanvas, filepath)
+    }
   })
   
   storyboarderSketchPane.on('lineMileage', value => {
@@ -2526,6 +2538,20 @@ window.onkeydown = (e)=> {
           e.preventDefault()
         }
         break
+      // r
+      // case 82:
+      //   if(isRecording) {
+      //     screenRecordingBuffer.flushBuffer()
+      //     isRecording = false
+      //   } else {
+      //     isRecording = true
+      //     let filepath = path.join(boardPath, 'images', `recording-${screenRecordingFrameNum}.gif`)
+      //     let strategy = new CanvasBufferOutputGifStrategy({filepath: filepath, width: 400, height: 225})
+      //     if (e.metaKey || e.ctrlKey) {
+      //       strategy = new CanvasBufferOutputFileStrategy()
+      //     }
+      //     screenRecordingBuffer = new CanvasBuffer({strategy})
+      //   }
       // V
       case 86:
         if (e.metaKey || e.ctrlKey) {
