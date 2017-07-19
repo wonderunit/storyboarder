@@ -1379,72 +1379,71 @@ let deleteBoards = (args)=> {
  */
 let duplicateBoard = () => {
   storeUndoStateForScene(true)
-  saveImageFile()
+  saveImageFile().then(() => {
 
-  let board = util.stringifyClone(boardData.boards[currentBoard])
+    let insertAt = currentBoard + 1
 
-  let size = storyboarderSketchPane.sketchPane.getCanvasSize()
-  let getImageDataForLayerByIndex = index => storyboarderSketchPane.sketchPane.getLayerContext(index).getImageData(0, 0, size.width, size.height)
+    let boardSrc = boardData.boards[currentBoard]
+    let boardDst = migrateBoardData([util.stringifyClone(boardSrc)], insertAt)[0]
 
-  let imageDataByLayerIndex = []
+    // Per Taino's request, we are not duplicating some metadata
+    boardDst.dialogue = ''
+    boardDst.action = ''
+    boardDst.notes = ''
+    boardDst.duration = 0
 
-  // set uid
-  let uid = util.uidGen(5)
-  board.uid = uid
-  // update board url
-  board.url = 'board-' + (currentBoard + 1) + '-' + uid + '.png'
-  // HACK hardcoded
-  imageDataByLayerIndex[1] = getImageDataForLayerByIndex(1)
-  // update layer urls
-  if (board.layers) {
-    if (board.layers.reference) {
-      board.layers.reference.url = board.url.replace('.png', '-reference.png')
-      // HACK hardcoded
-      imageDataByLayerIndex[0] = getImageDataForLayerByIndex(0)
+    //
+    //
+    // copy files
+    //
+    try {
+      console.log('copying files from index', currentBoard, 'to index', insertAt)
+      let filePairs = []
+      // main
+      filePairs.push({ from: boardSrc.url, to: boardDst.url })
+      // reference
+      if (boardSrc.layers.reference) {
+        filePairs.push({ from: boardSrc.layers.reference.url, to: boardDst.layers.reference.url })
+      }
+      // notes
+      if (boardSrc.layers.notes) {
+        filePairs.push({ from: boardSrc.layers.notes.url, to: boardDst.layers.notes.url })
+      }
+      // thumbnail
+      filePairs.push({ from: exporterCommon.boardFilenameForThumbnail(boardSrc), to: exporterCommon.boardFilenameForThumbnail(boardDst) })
+
+      // absolute paths
+      filePairs = filePairs.map(filePair => Object.assign(filePair, {
+        from: path.join(boardPath, 'images', filePair.from),
+        to: path.join(boardPath, 'images', filePair.to)
+      }))
+
+      for (let { from, to } of filePairs) {
+        console.log('copying to', to, 'from', from)
+        fs.writeFileSync(to, fs.readFileSync(from))
+      }
+
+      // insert data
+      boardData.boards.splice(insertAt, 0, boardDst)
+
+      markBoardFileDirty()
+      storeUndoStateForScene()
+
+      // boardData.boards has changed, so
+      //   reflect spliced board in thumbnail drawer
+      renderThumbnailDrawer()
+
+      // go to board
+      gotoBoard(insertAt)
+
+      // sfx.bip('c7')
+      sfx.down(-1, 2)
+      notifications.notify({ message: 'Duplicated board.', timing: 5 })
+    } catch (err) {
+      console.error(err)
+      notifications.notify({ message: 'Error: Could not duplicate board.', timing: 5 })
     }
-    if (board.layers.notes) {
-      board.layers.notes.url = board.url.replace('.png', '-notes.png')
-      // HACK hardcoded
-      imageDataByLayerIndex[3] = getImageDataForLayerByIndex(3)
-    }
-  }
-  board.newShot = false
-  board.lastEdited = Date.now()
-
-  // Per Taino's request, we are not duplicating some metadata
-  board.dialogue = ''
-  board.action = ''
-  board.notes = ''
-  board.duration = 0
- 
-  // insert
-  boardData.boards.splice(currentBoard + 1, 0, board)
-  markBoardFileDirty()
-
-  // go to board
-  gotoBoard(currentBoard + 1)
-
-  //
-  // draw contents to board layers
-  //
-  // HACK hardcoded
-  for (let n of [0, 1, 3]) {
-    if (imageDataByLayerIndex[n]) {
-      let context = storyboarderSketchPane.sketchPane.getLayerContext(n)
-      context.putImageData(imageDataByLayerIndex[n], 0, 0)
-
-      markImageFileDirty([n])
-    }
-  }
-
-  saveImageFile()
-
-  renderThumbnailDrawer()
-  gotoBoard(currentBoard)
-  storeUndoStateForScene()
-  //sfx.bip('c7')
-  sfx.down(-1,2)
-  notifications.notify({message: 'Duplicated board.', timing: 5})
+  })
 }
 
 /**
@@ -3359,7 +3358,7 @@ const migrateBoardData = (newBoards, insertAt) => {
   // update board layers filenames based on uid
   newBoards = newBoards.map((board, index) => {
     let position = insertAt + index
-    board.url = 'board-' + position + '-' + board.uid + '.png'
+    board.url = 'board-' + (position + 1) + '-' + board.uid + '.png'
 
     if (board.layers.reference) {
       board.layers.reference.url = board.url.replace('.png', '-reference.png')
