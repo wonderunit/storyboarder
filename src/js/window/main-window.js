@@ -3359,7 +3359,7 @@ const migrateBoardData = (newBoards, insertAt) => {
   // update board layers filenames based on uid
   newBoards = newBoards.map((board, index) => {
     let position = insertAt + index
-    board.url = 'board-' + position + '-' + board.uid + '.png'
+    board.url = 'board-' + (position + 1) + '-' + board.uid + '.png'
 
     if (board.layers.reference) {
       board.layers.reference.url = board.url.replace('.png', '-reference.png')
