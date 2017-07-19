@@ -1082,9 +1082,12 @@ let saveImageFile = () => {
     ['notes', board.url.replace('.png', '-notes.png')]
   ]
 
+  let shouldSaveThumbnail = false
+
   let numSaved = 0
   for (let [layerName, filename] of layersData) {
     if (layerStatus[layerName].dirty) {
+      shouldSaveThumbnail = true
       clearTimeout(imageFileDirtyTimer)
 
       let canvas = storyboarderSketchPane.getLayerCanvasByName(layerName)
@@ -1121,10 +1124,12 @@ let saveImageFile = () => {
 
   console.log(`saved ${numSaved} modified layers`)
 
-  // create/update the thumbnail image file
-  saveThumbnailFile(currentBoard).then(() => {
-    updateThumbnailDisplay(currentBoard)
-  })
+  // create/update the thumbnail image file if necessary
+  let tasks = Promise.resolve()
+  if (shouldSaveThumbnail) {
+    tasks = saveThumbnailFile(currentBoard).then(() => updateThumbnailDisplay(currentBoard))
+  }
+  return tasks
 }
 
 let openInEditor = () => {
