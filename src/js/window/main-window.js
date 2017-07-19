@@ -45,6 +45,7 @@ let boardFilename
 let boardPath
 let boardData
 let currentBoard = 0
+let currentBoardHasRendered = false
 
 let scriptData
 let locations
@@ -1243,7 +1244,8 @@ const saveThumbnailFile = (index, options = { forceReadFromFiles: false }) => {
     
     let promise
     let canvasImageSources
-    if (!options.forceReadFromFiles && index == currentBoard) {
+    if (!options.forceReadFromFiles && (index == currentBoard) && currentBoardHasRendered) {
+      console.log('\tfrom memory')
       // grab from memory
       canvasImageSources = [
         // reference
@@ -1262,9 +1264,15 @@ const saveThumbnailFile = (index, options = { forceReadFromFiles: false }) => {
           opacity: storyboarderSketchPane.sketchPane.getLayerOpacity(3)
         }
       ]
+
+      for (let s of canvasImageSources) {
+        console.log(s.canvasImageSource)
+      }
+
       exporterCommon.flattenCanvasImageSourcesDataToContext(context, canvasImageSources, size)
       promise = Promise.resolve()
     } else {
+      console.log('\tfrom files')
       // grab from files
       promise = exporterCommon.flattenBoardToCanvas(
         boardData.boards[index],
@@ -1764,7 +1772,9 @@ let previousScene = ()=> {
 }
 
 let updateSketchPaneBoard = () => {
+  currentBoardHasRendered = false
   return new Promise((resolve, reject) => {
+    console.log('updateSketchPaneBoard currentBoard:', currentBoard)
     // get current board
     let board = boardData.boards[currentBoard]
     
@@ -1828,7 +1838,10 @@ let updateSketchPaneBoard = () => {
       for (let index of visibleLayerIndexes) {
         let image = layersToDrawByIndex[index]
 
-        let context = storyboarderSketchPane.sketchPane.getLayerCanvas(index).getContext('2d')
+        let canvas = storyboarderSketchPane.sketchPane.getLayerCanvas(index)
+        canvas.dataset.boardurl = board.url
+        canvas.id = Math.floor(Math.random()*16777215).toString(16) // for debugging
+        let context = canvas.getContext('2d')
         context.globalAlpha = 1
 
         // do we have an image for this particular layer index?
@@ -1848,8 +1861,14 @@ let updateSketchPaneBoard = () => {
           boardData.boards[currentBoard],
           boardData.boards[currentBoard - 1],
           boardData.boards[currentBoard + 1]
-        ).then(() => resolve()).catch(err => console.warn(err))
+        ).then(() => {
+          console.log('updateSketchPaneBoard done')
+          currentBoardHasRendered = true
+          resolve()
+        }).catch(err => console.warn(err))
       } else {
+        console.log('updateSketchPaneBoard done')
+        currentBoardHasRendered = true
         resolve()
       }
     }).catch(err => console.warn(err))
