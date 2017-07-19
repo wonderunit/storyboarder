@@ -65,14 +65,19 @@ const getImage = url => {
  * @param {string} outputPath full path of folder where file will be exported
  * @returns {Promise} resolves with the absolute path to the exported file
  */
-const exportFlattenedBoard = (board, filenameForExport, size, projectFileAbsolutePath, outputPath) => {
+const exportFlattenedBoard = (board, filenameForExport, size, projectFileAbsolutePath, outputPath, jpegQuality=null) => {
   return new Promise((resolve, reject) => {
 
     let canvas = createWhiteContext(size).canvas
 
     flattenBoardToCanvas(board, canvas, size, projectFileAbsolutePath)
       .then(() => {
-        let imageData = canvas.toDataURL().replace(/^data:image\/\w+;base64,/, '')
+        let imageData
+        if (jpegQuality) {
+          imageData = canvas.toDataURL('image/jpeg', jpegQuality).replace(/^data:image\/\w+;base64,/, '')
+        } else {
+          imageData = canvas.toDataURL().replace(/^data:image\/\w+;base64,/, '')
+        }
         let pathToExport = path.join(outputPath, filenameForExport)
         fs.writeFileSync(pathToExport, imageData, 'base64')
         resolve(pathToExport)
