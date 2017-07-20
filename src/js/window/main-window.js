@@ -1093,6 +1093,7 @@ let saveImageFile = () => {
   ]
 
   let shouldSaveThumbnail = false
+  let shouldSaveBoardFile = false
 
   let numSaved = 0
   for (let [layerName, filename] of layersData) {
@@ -1118,8 +1119,7 @@ let saveImageFile = () => {
             board.layers[layerName] = { url: filename }
             console.log('added', layerName, 'to board .layers data')
 
-            // immediately save board file
-            saveBoardFile()
+            shouldSaveBoardFile = true
           }
         }
 
@@ -1130,6 +1130,10 @@ let saveImageFile = () => {
         console.warn(err)
       }
     }
+  }
+  
+  if (shouldSaveBoardFile) {
+    saveBoardFile()
   }
 
   console.log(`saved ${numSaved} modified layers`)
