@@ -521,10 +521,6 @@ let loadBoardUI = ()=> {
     shell.showItemInFolder(imageFilename)
   })
 
-  document.querySelector('#open-in-photoshop-button').addEventListener('pointerdown', (e)=>{
-    openInEditor()
-  })
-
   window.addEventListener('pointermove', (e)=>{
     lastPointer = { x: e.clientX, y: e.clientY }
 
@@ -732,6 +728,9 @@ let loadBoardUI = ()=> {
       ? 'visible'
       : 'hidden'
     sfx.playEffect('metal')
+  })
+  toolbar.on('open-in-photoshop', () => {
+    openInEditor()
   })
 
   storyboarderSketchPane.toolbar = toolbar

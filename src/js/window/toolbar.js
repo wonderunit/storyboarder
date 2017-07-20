@@ -388,6 +388,9 @@ class Toolbar extends EventEmitter {
         this.toggleCaptions()
         break
 
+      case 'open-in-photoshop':
+        this.emit('open-in-photoshop')
+
       default:
         // console.log('toolbar selection', selection)
         break
