@@ -205,7 +205,7 @@ let down = (octaveShift, noteOffset) => {
 
   let bassnote = chords[currentChord][0]
   let highnote = chords[currentChord][noteOffset]
-  console.log(Tone.Frequency(highnote).transpose(12*octaveShift))
+  // console.log(Tone.Frequency(highnote).transpose(12*octaveShift))
   bassSynth.triggerAttackRelease(Tone.Frequency(bassnote).transpose(-12*3), "16n", undefined, 0.2);
   synth.triggerAttackRelease(Tone.Frequency(highnote).transpose(12*octaveShift).transpose(24), "16n", undefined,  0.2);
   advanceNote(1) 

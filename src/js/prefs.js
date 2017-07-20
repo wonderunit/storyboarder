@@ -25,7 +25,7 @@ let prefs
 const load = () => {
   try {
     // load existing prefs
-    console.log("READING FROM DISK")
+    // console.log("READING FROM DISK")
     prefs = JSON.parse(fs.readFileSync(prefFile))
   } catch (e) {
     prefs = defaultPrefs
@@ -38,19 +38,19 @@ const load = () => {
 }
 
 const savePrefs = (newPref) => {
-  console.log('SAVEPREFS')
+  // console.log('SAVEPREFS')
   if (!newPref) return
   if (Object.equals(newPref,prefs)) {
-    console.log("IM THE SAME!!!!")
+    // console.log("IM THE SAME!!!!")
   } else {
     prefs = newPref
-    console.log("SAVING TO DISK")
+    // console.log("SAVING TO DISK")
     fs.writeFileSync(prefFile, JSON.stringify(newPref, null, 2))
   }
 }
 
 const set = (keyPath, value, sync) => {
-  console.log('SETTING')
+  // console.log('SETTING')
   const keys = keyPath.split(/\./)
   let obj = prefs
   while (keys.length > 1) {
@@ -72,14 +72,14 @@ const set = (keyPath, value, sync) => {
       fs.writeFileSync(prefFile, JSON.stringify(prefs, null, 2))
     } else {
       fs.writeFile(prefFile, JSON.stringify(prefs, null, 2), (err) => {
-        console.log("SAVED ASYNC")
+        // console.log("SAVED ASYNC")
       })
     }
   }
 }
 
 const getPrefs = (from) => {
-  console.log("GETTING PREFS!!!", from)
+  // console.log("GETTING PREFS!!!", from)
   return prefs
 }
 

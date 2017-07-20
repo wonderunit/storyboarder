@@ -1849,11 +1849,11 @@ let updateSketchPaneBoard = () => {
 
         // do we have an image for this particular layer index?
         if (image) {
-          console.log('rendering layer index:', index)
+          // console.log('rendering layer index:', index)
           storyboarderSketchPane.sketchPane.clearLayer(index)
           context.drawImage(image, 0, 0)
         } else {
-          console.log('clearing layer index:', index)
+          // console.log('clearing layer index:', index)
           storyboarderSketchPane.sketchPane.clearLayer(index)
         }
       }
