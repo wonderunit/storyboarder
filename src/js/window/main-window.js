@@ -3743,13 +3743,17 @@ const applyUndoStateForImage = (state) => {
     renderScript()
   }
 
-  // if required, go to the board first
-  saveImageFile()
-  let step = currentBoard != state.boardIndex
-    ? gotoBoard
-    : () => Promise.resolve()
+  let sequence = Promise.resolve()
 
-  step(state.boardIndex).then(() => {
+  // wait until save completes
+  sequence = sequence.then(() => saveImageFile())
+
+  // if required, go to the board first
+  if (currentBoard != state.boardIndex) {
+    sequence = sequence.then(() => gotoBoard(state.boardIndex))
+  }
+
+  sequence = sequence.then(() => {
     for (let layerData of state.layers) {
       // get the context of the undo-able layer
       let context = storyboarderSketchPane.sketchPane.getLayerCanvas(layerData.index).getContext('2d')
@@ -3764,10 +3768,11 @@ const applyUndoStateForImage = (state) => {
       markImageFileDirty([layerData.index])
     }
 
-    saveThumbnailFile(state.boardIndex).then(index => updateThumbnailDisplay(index))
-
-    toolbar.emit('cancelTransform')
-  }).catch(e => console.error(e))
+  })
+  .then(() => saveThumbnailFile(state.boardIndex))
+  .then(index => updateThumbnailDisplay(index))
+  .then(() => toolbar.emit('cancelTransform'))
+  .catch(e => console.error(e))
 }
 
 const createSizedContext = size => {
