@@ -729,7 +729,7 @@ let loadBoardUI = ()=> {
       : 'hidden'
     sfx.playEffect('metal')
   })
-  toolbar.on('open-in-photoshop', () => {
+  toolbar.on('open-in-editor', () => {
     openInEditor()
   })
 
