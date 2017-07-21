@@ -694,12 +694,16 @@ div.marker-holder {
 }
 
 #playback #right-stats {
-  font-size: 10px;
-  width: 200px;
+  font-size: 13px;
+  /*width: 200px;*/
   opacity: 0.5;
   text-align: right;
-  right: 5px;
-  position: relative;
+  /*right: 5px;*/
+  /*position: relative;*/
+  align-items: flex-start;
+  padding: 5px 5px 5px 0;
+  box-sizing: border-box;
+  height: 100%;
 }
 
 #playback #icons {
