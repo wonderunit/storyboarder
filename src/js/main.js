@@ -446,6 +446,8 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
     width: Math.min(width, 2480),
     height: Math.min(height, 1350),
 
+    title: path.basename(filename),
+
     minWidth: 1024,
     minHeight: 640,
     show: false,
