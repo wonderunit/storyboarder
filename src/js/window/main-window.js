@@ -1702,6 +1702,8 @@ const renderStats = () => {
   //
   // right stats
   //
+  document.querySelector('#right-stats .stats-primary').innerHTML = path.basename(boardFilename)
+
   // if (scriptData) {
   //   let numScenes = scriptData.filter(data => data.type == 'scene').length
   
@@ -1714,8 +1716,6 @@ const renderStats = () => {
   // }
   // document.querySelector('#right-stats .stats-secondary').innerHTML = `AVG BOARDS PER SCENE, TOTAL TIME`
 
-
-  document.querySelector('#right-stats').style.visibility = 'hidden' // HACK hide right stats for now, until we have real data
 
   if (
     (scriptData && viewMode == 5) ||
