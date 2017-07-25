@@ -43,8 +43,8 @@ class StoryboarderSketchPane extends EventEmitter {
     this.scaleFactor = null
 
     this.isPointerDown = false
-    this.moveEventsQueue = []
-    this.cursorEventsQueue = []
+    this.lastMoveEvent = null
+    this.lastCursorEvent = null
     this.lineMileageCounter = new LineMileageCounter()
 
     this.isMultiLayerOperation = false
@@ -178,7 +178,7 @@ class StoryboarderSketchPane extends EventEmitter {
   canvasPointerMove (e) {
     let pointerPosition = this.getRelativePosition(e.clientX, e.clientY)
 
-    this.moveEventsQueue.push({
+    this.lastMoveEvent = {
       clientX: e.clientX,
       clientY: e.clientY,
 
@@ -186,7 +186,7 @@ class StoryboarderSketchPane extends EventEmitter {
       y: pointerPosition.y,
       pointerType: e.pointerType,
       pressure: e.pressure
-    })
+    }
   }
 
   canvasPointerUp (e) {
@@ -195,7 +195,7 @@ class StoryboarderSketchPane extends EventEmitter {
   }
 
   canvasCursorMove (event) {
-    this.cursorEventsQueue.push({ clientX: event.clientX, clientY: event.clientY })
+    this.lastCursorEvent = { clientX: event.clientX, clientY: event.clientY }
   }
 
   canvasPointerOver () {
@@ -218,25 +218,19 @@ class StoryboarderSketchPane extends EventEmitter {
         moveEvent
 
     // render the cursor
-    if (this.cursorEventsQueue.length) {
-      lastCursorEvent = this.cursorEventsQueue.pop()
-
+    if (this.lastCursorEvent) {
       // update the position of the cursor
-      this.brushPointerContainer.style.transform = 'translate(' + lastCursorEvent.clientX + 'px, ' + lastCursorEvent.clientY + 'px)'
-
-      this.cursorEventsQueue = []
+      this.brushPointerContainer.style.transform = 'translate(' + this.lastCursorEvent.clientX + 'px, ' + this.lastCursorEvent.clientY + 'px)'
+      this.lastCursorEvent = null
     }
 
     // render movements
-    if (this.moveEventsQueue.length) {
-      while (this.moveEventsQueue.length) {
-        moveEvent = this.moveEventsQueue.shift()
-        this.strategy.renderMoveEvent(moveEvent)
-        this.lineMileageCounter.add({ x: moveEvent.y, y: moveEvent.y })
-      }
+    if (this.lastMoveEvent) {
+      this.strategy.renderMoveEvent(this.lastMoveEvent)
+      this.lineMileageCounter.add({ x: this.lastMoveEvent.y, y: this.lastMoveEvent.y })
 
       // report only the most recent event back to the app
-      this.emit('pointermove', moveEvent.x, moveEvent.y, moveEvent.pointerType === "pen" ? moveEvent.pressure : 1, moveEvent.pointerType)
+      this.emit('pointermove', this.lastMoveEvent.x, this.lastMoveEvent.y, this.lastMoveEvent.pointerType === "pen" ? this.lastMoveEvent.pressure : 1, this.lastMoveEvent.pointerType)
     }
   }
 
@@ -650,8 +644,8 @@ class DrawingStrategy {
     // force render remaining move events early, before frame loop
     this.container.renderEvents()
     // clear both event queues
-    this.container.moveEventsQueue = []
-    this.container.cursorEventsQueue = []
+    this.container.lastMoveEvent = null
+    this.container.lastCursorEvent = null
 
     let pointerPosition = this.container.getRelativePosition(e.clientX, e.clientY)
     this.container.sketchPane.up(pointerPosition.x, pointerPosition.y, e.pointerType === "pen" ? e.pressure : 1)
@@ -758,8 +752,8 @@ class MovingStrategy {
     // force render remaining move events early, before frame loop
     this.container.renderEvents()
     // clear both event queues
-    this.container.moveEventsQueue = []
-    this.container.cursorEventsQueue = []
+    this.container.lastMoveEvent = null
+    this.container.lastCursorEvent = null
 
     // reset the painting layer
     let size = this.container.sketchPane.getCanvasSize()
@@ -884,8 +878,8 @@ class ScalingStrategy {
     // force render remaining move events early, before frame loop
     this.container.renderEvents()
     // clear both event queues
-    this.container.moveEventsQueue = []
-    this.container.cursorEventsQueue = []
+    this.container.lastMoveEvent = null
+    this.container.lastCursorEvent = null
 
     // reset the painting layer
     let size = this.container.sketchPane.getCanvasSize()
