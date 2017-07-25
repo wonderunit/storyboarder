@@ -7,7 +7,9 @@ const app = require("electron").remote.app
 
 const {
   boardFileImageSize,
-  boardFilenameForExport,
+  boardFilenameForExport
+} = require('../models/board')
+const {
   getImage,
   exportFlattenedBoard,
   ensureExportsPathExists

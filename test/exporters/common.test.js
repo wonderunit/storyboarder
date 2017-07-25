@@ -13,6 +13,7 @@ const assert = require('assert')
 
 const { shell } = require('electron')
 
+const boardModel = require('../../src/js/models/board')
 const exporterCommon = require('../../src/js/exporters/common')
 
 let fixturesPath = path.join(__dirname, '..', 'fixtures')
@@ -63,10 +64,10 @@ describe('exporters/common', function () {
     let board = project.boards[index]
   
     // this is the export filename
-    // let filenameForExport = exporterCommon.boardFilenameForExport(board, index, basenameWithoutExt)
+    // let filenameForExport = boardModel.boardFilenameForExport(board, index, basenameWithoutExt)
   
     // this is the thumbnail filename
-    let filenameForExport = exporterCommon.boardFilenameForThumbnail(board)
+    let filenameForExport = boardModel.boardFilenameForThumbnail(board)
   
     let size = [Math.floor(60 * project.aspectRatio), 60]
     let outputPath = tmpFolder.name
@@ -93,7 +94,7 @@ describe('exporters/common', function () {
     let basenameWithoutExt = path.basename(projectFileAbsolutePath, path.extname(projectFileAbsolutePath))
     let index = 0
     let board = project.boards[index]
-    let filenameForExport = exporterCommon.boardFilenameForThumbnail(board)
+    let filenameForExport = boardModel.boardFilenameForThumbnail(board)
   
     let size = [Math.floor(60 * project.aspectRatio), 60]
     let outputPath = tmpFolder.name

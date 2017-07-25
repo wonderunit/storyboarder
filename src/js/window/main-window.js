@@ -28,7 +28,7 @@ const exporter = require('./exporter.js')
 const exporterCommon = require('../exporters/common')
 const prefsModule = require('electron').remote.require('./prefs.js')
 
-const boardUpdater = require('../updaters/board')
+const boardModel = require('../models/board')
 
 const FileHelper = require('../files/file-helper.js')
 const writePsd = require('ag-psd').writePsd;
@@ -1253,7 +1253,7 @@ let openInEditor = () => {
 
 const saveThumbnailFile = (index, options = { forceReadFromFiles: false }) => {
   return new Promise((resolve, reject) => {
-    let imageFilePath = path.join(boardPath, 'images', exporterCommon.boardFilenameForThumbnail(boardData.boards[index]))
+    let imageFilePath = path.join(boardPath, 'images', boardModel.boardFilenameForThumbnail(boardData.boards[index]))
     
     let size = [
       Math.floor(60 * boardData.aspectRatio) * 2,
@@ -1323,7 +1323,7 @@ const updateThumbnailDisplay = index => {
   let el = document.querySelector(`[data-thumbnail="${index}"] img`)
   // does it exist in the thumbnail drawer already?
   if (el) {
-    let imageFilePath = path.join(boardPath, 'images', exporterCommon.boardFilenameForThumbnail(boardData.boards[index]))
+    let imageFilePath = path.join(boardPath, 'images', boardModel.boardFilenameForThumbnail(boardData.boards[index]))
     el.src = imageFilePath + '?' + Date.now()
   }
 }
@@ -1425,7 +1425,7 @@ let duplicateBoard = () => {
         filePairs.push({ from: boardSrc.layers.notes.url, to: boardDst.layers.notes.url })
       }
       // thumbnail
-      filePairs.push({ from: exporterCommon.boardFilenameForThumbnail(boardSrc), to: exporterCommon.boardFilenameForThumbnail(boardDst) })
+      filePairs.push({ from: boardModel.boardFilenameForThumbnail(boardSrc), to: boardModel.boardFilenameForThumbnail(boardDst) })
 
       // absolute paths
       filePairs = filePairs.map(filePair => Object.assign(filePair, {
@@ -3388,14 +3388,14 @@ const importFromWorksheet = (imageArray) => {
 
 const migrateBoardData = (newBoards, insertAt) => {
   // assign a new uid to the board, regardless of source
-  newBoards = newBoards.map(boardUpdater.assignUid)
+  newBoards = newBoards.map(boardModel.assignUid)
 
   // set some basic data for the new board
-  newBoards = newBoards.map(boardUpdater.setup)
+  newBoards = newBoards.map(boardModel.setup)
 
   // update board layers filenames based on index
   newBoards = newBoards.map((board, index) =>
-    boardUpdater.updateUrlsFromIndex(board, index))
+    boardModel.updateUrlsFromIndex(board, index))
 
   return newBoards
 }
