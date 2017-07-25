@@ -28,6 +28,8 @@ const exporter = require('./exporter.js')
 const exporterCommon = require('../exporters/common')
 const prefsModule = require('electron').remote.require('./prefs.js')
 
+const boardUpdater = require('../updaters/board')
+
 const FileHelper = require('../files/file-helper.js')
 const writePsd = require('ag-psd').writePsd;
 const readPsd = require('ag-psd').readPsd;
@@ -3384,40 +3386,16 @@ const importFromWorksheet = (imageArray) => {
 
 
 
-// TODO extract these formatters, cleanup
 const migrateBoardData = (newBoards, insertAt) => {
   // assign a new uid to the board, regardless of source
-  newBoards = newBoards.map((board) => {
-    board.uid = util.uidGen(5)
-    return board
-  })
+  newBoards = newBoards.map(boardUpdater.assignUid)
 
   // set some basic data for the new board
-  newBoards = newBoards.map((board) => {
-    board.layers = board.layers || {} // TODO is this necessary?
+  newBoards = newBoards.map(boardUpdater.setup)
 
-    // set some basic data for the new board
-    board.newShot = board.newShot || false
-    board.lastEdited = Date.now()
-    
-    return board
-  })
-
-  // update board layers filenames based on uid
-  newBoards = newBoards.map((board, index) => {
-    let position = insertAt + index
-    board.url = 'board-' + (position + 1) + '-' + board.uid + '.png'
-
-    if (board.layers.reference) {
-      board.layers.reference.url = board.url.replace('.png', '-reference.png')
-    }
-
-    if (board.layers.notes) {
-      board.layers.notes.url = board.url.replace('.png', '-notes.png')
-    }
-
-    return board
-  })
+  // update board layers filenames based on index
+  newBoards = newBoards.map((board, index) =>
+    boardUpdater.updateUrlsFromIndex(board, index))
 
   return newBoards
 }
