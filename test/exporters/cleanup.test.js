@@ -25,7 +25,7 @@ describe('exporters/cleanup', function () {
     tmpFolder = tmp.dirSync({ unsafeCleanup: true })
   })
 
-  it('can prepare data to cleanup a board', function (done) {
+  it('can prepare data to cleanup a scene', function (done) {
     let projectFileAbsolutePath = path.resolve(path.join(fixturesPath, 'ducks', 'ducks.storyboarder'))
     let project = JSON.parse(fs.readFileSync(projectFileAbsolutePath))
 
@@ -38,14 +38,26 @@ describe('exporters/cleanup', function () {
     assert.equal(first.from, 'board-2-42VR9-reference.png')
     assert.equal(first.to, 'board-1-42VR9-reference.png')
     assert.equal(boardData.boards[0].url, renameablePairs[1].to)
-    
+
     // TODO test number, shot
     // assert.equal(boardData.boards[boardData.boards.length - 1].number, boardData.boards.length)
 
     done()
   })
 
-  it('can save a board after cleanup', function (done) {
+  it('knows which files are unused and can be deleted', function (done) {
+    done(new Error('Not Implemented'))
+  })
+
+  it('can rename files', function (done) {
+    done(new Error('Not Implemented'))
+  })
+
+  it('can move unused files to the trash', function (done) {
+    done(new Error('Not Implemented'))
+  })
+
+  it('can save a cleaned project', function (done) {
     done(new Error('Not Implemented'))
   })
 

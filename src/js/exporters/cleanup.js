@@ -6,8 +6,7 @@ const cleanupScene = boardData => {
   let original = boardData.boards.map(boardModel.boardOrderedLayerFilenames)
 
   // update all the urls
-  boardData.boards = boardData.boards
-    .map(boardModel.updateUrlsFromIndex)
+  boardData.boards = boardData.boards.map(boardModel.updateUrlsFromIndex)
     // TODO could update board number?
     // TODO could update shot index? see renderThumbnailDrawer
 
@@ -24,8 +23,10 @@ const cleanupScene = boardData => {
   })
 
   // flatten
+  let renameablePairs = Array.prototype.concat(...result)
+
   return {
-    renameablePairs: Array.prototype.concat(...result),
+    renameablePairs,
     boardData
   }
 }
