@@ -56,8 +56,8 @@ const prepareCleanup = boardData => {
   let originalData = boardData
   let cleanedData = util.stringifyClone(boardData)
   cleanedData.boards = cleanedData.boards.map(boardModel.updateUrlsFromIndex)
-  // TODO could update board number?
-  // TODO could update shot index? see renderThumbnailDrawer
+    // TODO could update board number?
+    // TODO could update shot index? see renderThumbnailDrawer
 
   let pairs = zip(originalData.boards, cleanedData.boards)
 
