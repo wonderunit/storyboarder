@@ -36,17 +36,27 @@ describe('exporters/cleanup', function () {
             'board-2-42VR9.png':                  new Buffer([8, 6, 7, 5, 3, 0, 9]),
             'board-2-42VR9-reference.png':        new Buffer([8, 6, 7, 5, 3, 0, 9]),
             'board-2-42VR9-notes.png':            new Buffer([8, 6, 7, 5, 3, 0, 9]),
+            'board-2-42VR9-thumbnail.png':        new Buffer([8, 6, 7, 5, 3, 0, 9]),
+
             'board-2-J74F5.png':                  new Buffer([8, 6, 7, 5, 3, 0, 9]),
             'board-2-J74F5-reference.png':        new Buffer([8, 6, 7, 5, 3, 0, 9]),
+            'board-2-J74F5-thumbnail.png':        new Buffer([8, 6, 7, 5, 3, 0, 9]),
+
             'board-0-P2FLS.png':                  new Buffer([8, 6, 7, 5, 3, 0, 9]),
             'board-0-P2FLS-reference.png':        new Buffer([8, 6, 7, 5, 3, 0, 9]),
             'board-0-P2FLS-notes.png':            new Buffer([8, 6, 7, 5, 3, 0, 9]),
+            'board-0-P2FLS-thumbnail.png':        new Buffer([8, 6, 7, 5, 3, 0, 9]),
+
             'board-1-WEBM4.png':                  new Buffer([8, 6, 7, 5, 3, 0, 9]),
             'board-1-WEBM4-reference.png':        new Buffer([8, 6, 7, 5, 3, 0, 9]),
             'board-1-WEBM4-notes.png':            new Buffer([8, 6, 7, 5, 3, 0, 9]),
+            'board-1-WEBM4-thumbnail.png':        new Buffer([8, 6, 7, 5, 3, 0, 9]),
+
             'board-98-PQKJM.png':                 new Buffer([8, 6, 7, 5, 3, 0, 9]),
             'board-98-PQKJM-reference.png':       new Buffer([8, 6, 7, 5, 3, 0, 9]),
             'board-98-PQKJM-notes.png':           new Buffer([8, 6, 7, 5, 3, 0, 9]),
+            'board-98-PQKJM-thumbnail.png':       new Buffer([8, 6, 7, 5, 3, 0, 9]),
+
             'unused.png':                         new Buffer([8, 6, 7, 5, 3, 0, 9]),
             'unused.psd':                         new Buffer([8, 6, 7, 5, 3, 0, 9])
           }
@@ -63,6 +73,7 @@ describe('exporters/cleanup', function () {
     } = exporterCleanup.prepareCleanup(project)
 
     let first = renamablePairs[0]
+
     assert.equal(first.from, 'board-2-42VR9-reference.png')
     assert.equal(first.to, 'board-1-42VR9-reference.png')
     assert.equal(boardData.boards[0].url, renamablePairs[1].to)
@@ -81,15 +92,22 @@ describe('exporters/cleanup', function () {
       assert(trashedFiles.includes('unused.png'))
       assert(trashedFiles.includes('unused.psd'))
       assert.equal(trashedFiles.length, 2)
-
+  
       return Promise.resolve()
     }
-
+  
     exporterCleanup
       .cleanupScene(absolutePathToStoryboarderFile, trashFn)
-      .then(() => {
+      .then(newBoardData => {
         let project = JSON.parse(fs.readFileSync(absolutePathToStoryboarderFile))
         assert.equal(project.boards[project.boards.length - 1].url, "board-5-PQKJM.png")
+        assert.equal(newBoardData.boards[0].url, project.boards[0].url)
+
+        assert(
+          fs.readdirSync(path.resolve(path.join(fixturesPath, 'ducks', 'images')))
+            .includes('board-1-42VR9-thumbnail.png')
+        )
+
         done()
       })
       .catch(done)

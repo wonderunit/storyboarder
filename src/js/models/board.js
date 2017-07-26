@@ -64,11 +64,17 @@ const updateUrlsFromIndex = (board, index) => {
   return board
 }
 
+const getLayerFilenames = board => boardOrderedLayerFilenames(board).filenames
+
+const getAllFilenames = board => [...getLayerFilenames(board), boardFilenameForThumbnail(board)]
+
 module.exports = {
   boardFileImageSize,
   boardFilenameForExport,
   boardFilenameForThumbnail,
   boardOrderedLayerFilenames,
+
+  getAllFilenames,
 
   assignUid,
   setup,

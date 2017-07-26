@@ -3,6 +3,11 @@ const path = require('path')
 const trash = require('trash')
 
 const boardModel = require('../models/board')
+const util = require('../utils')
+
+const zip = (a, b) => a.map((v, n) => [v, b[n]])
+
+const flatten = arr => Array.prototype.concat(...arr)
 
 const cleanupScene = (absolutePathToStoryboarderFile, trashFn = trash) => {
   return new Promise((resolve, reject) => {
@@ -23,7 +28,8 @@ const cleanupScene = (absolutePathToStoryboarderFile, trashFn = trash) => {
       }
 
       // find unused files
-      const usedFiles = boardData.boards.map(boardModel.boardOrderedLayerFilenames).reduce((a, b) => [...a, ...b.filenames], [])
+      const usedFiles = flatten(boardData.boards.map(boardModel.getAllFilenames))
+
       const allFiles = fs.readdirSync(absolutePathToImagesFolder)
       const unusedFiles = allFiles.filter(filename => !usedFiles.includes(filename))
 
@@ -35,7 +41,7 @@ const cleanupScene = (absolutePathToStoryboarderFile, trashFn = trash) => {
         // ... then, save JSON
         fs.writeFileSync(absolutePathToStoryboarderFile, JSON.stringify(boardData, null, 2))
       
-        resolve()
+        resolve(boardData)
       }).catch(err => {
         reject(err)
       })
@@ -47,33 +53,35 @@ const cleanupScene = (absolutePathToStoryboarderFile, trashFn = trash) => {
 }
 
 const prepareCleanup = boardData => {
-// rename each file to match its actual position in the list of boards
-  // get a copy of the source filenames
-  let original = boardData.boards.map(boardModel.boardOrderedLayerFilenames)
+  let originalData = boardData
+  let cleanedData = util.stringifyClone(boardData)
+  cleanedData.boards = cleanedData.boards.map(boardModel.updateUrlsFromIndex)
+  // TODO could update board number?
+  // TODO could update shot index? see renderThumbnailDrawer
 
-  // update all the urls
-  boardData.boards = boardData.boards.map(boardModel.updateUrlsFromIndex)
-    // TODO could update board number?
-    // TODO could update shot index? see renderThumbnailDrawer
+  let pairs = zip(originalData.boards, cleanedData.boards)
 
-  // get a copy of the destination filenames
-  let renamed = boardData.boards.map(boardModel.boardOrderedLayerFilenames)
+  let layerFilenamePairs = flatten(pairs.map(([o, c]) => {
+      let filenamesO = boardModel.boardOrderedLayerFilenames(o).filenames
+      let filenamesC = boardModel.boardOrderedLayerFilenames(c).filenames
+      return zip(filenamesO, filenamesC)
+    }))
 
-  // find source and destination
-  let result = original.map((o, n) => {
-    r = renamed[n]
-    return o.filenames.map((from, i) => {
-      let to = r.filenames[i]
-      return { from, to }
-    })
-  })
+  let thumbnailPairs = zip(
+    originalData.boards.map(boardModel.boardFilenameForThumbnail),
+     cleanedData.boards.map(boardModel.boardFilenameForThumbnail)
+   )
+  
+  // concat
+  let filePairs = [...layerFilenamePairs, ...thumbnailPairs]
+    .filter(([a, b]) => a !== b)     // exclude files that don't need to be renamed
+    .map(([a, b]) => ({ from: a, to: b }))
 
-  let renamablePairs = Array.prototype.concat(...result)  // flatten
-                        .filter(p => p.from !== p.to)     // exclude files that don't need to be renamed
+  let renamablePairs = filePairs
 
   return {
     renamablePairs,
-    boardData
+    boardData: cleanedData
   }
 }
 
