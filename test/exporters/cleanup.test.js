@@ -20,12 +20,10 @@ let fixturesPath = path.join(__dirname, '..', 'fixtures')
 
 describe('exporters/cleanup', function () {
   let absolutePathToStoryboarderFile
-  let absolutePathToImagesFolder
 
   before(function () {
     // use real filesystem
     absolutePathToStoryboarderFile = path.resolve(path.join(fixturesPath, 'ducks', 'ducks.storyboarder'))
-    absolutePathToImagesFolder = path.resolve(path.join(fixturesPath, 'ducks', 'images'))
 
     const actualJsonAsString = fs.readFileSync(absolutePathToStoryboarderFile)
 
@@ -88,7 +86,7 @@ describe('exporters/cleanup', function () {
     }
 
     exporterCleanup
-      .cleanupScene(absolutePathToStoryboarderFile, absolutePathToImagesFolder, trashFn)
+      .cleanupScene(absolutePathToStoryboarderFile, trashFn)
       .then(() => {
         let project = JSON.parse(fs.readFileSync(absolutePathToStoryboarderFile))
         assert.equal(project.boards[project.boards.length - 1].url, "board-5-PQKJM.png")

@@ -4,8 +4,9 @@ const trash = require('trash')
 
 const boardModel = require('../models/board')
 
-const cleanupScene = (absolutePathToStoryboarderFile, absolutePathToImagesFolder, trashFn = trash) => {
+const cleanupScene = (absolutePathToStoryboarderFile, trashFn = trash) => {
   return new Promise((resolve, reject) => {
+    let absolutePathToImagesFolder = path.resolve(path.join(path.dirname(absolutePathToStoryboarderFile), 'images'))
     let originalBoardData = JSON.parse(fs.readFileSync(absolutePathToStoryboarderFile))
 
     const {
