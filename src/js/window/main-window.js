@@ -28,6 +28,8 @@ const exporter = require('./exporter.js')
 const exporterCommon = require('../exporters/common')
 const prefsModule = require('electron').remote.require('./prefs.js')
 
+const boardModel = require('../models/board')
+
 const FileHelper = require('../files/file-helper.js')
 const writePsd = require('ag-psd').writePsd;
 const readPsd = require('ag-psd').readPsd;
@@ -1251,7 +1253,7 @@ let openInEditor = () => {
 
 const saveThumbnailFile = (index, options = { forceReadFromFiles: false }) => {
   return new Promise((resolve, reject) => {
-    let imageFilePath = path.join(boardPath, 'images', exporterCommon.boardFilenameForThumbnail(boardData.boards[index]))
+    let imageFilePath = path.join(boardPath, 'images', boardModel.boardFilenameForThumbnail(boardData.boards[index]))
     
     let size = [
       Math.floor(60 * boardData.aspectRatio) * 2,
@@ -1321,7 +1323,7 @@ const updateThumbnailDisplay = index => {
   let el = document.querySelector(`[data-thumbnail="${index}"] img`)
   // does it exist in the thumbnail drawer already?
   if (el) {
-    let imageFilePath = path.join(boardPath, 'images', exporterCommon.boardFilenameForThumbnail(boardData.boards[index]))
+    let imageFilePath = path.join(boardPath, 'images', boardModel.boardFilenameForThumbnail(boardData.boards[index]))
     el.src = imageFilePath + '?' + Date.now()
   }
 }
@@ -1423,7 +1425,7 @@ let duplicateBoard = () => {
         filePairs.push({ from: boardSrc.layers.notes.url, to: boardDst.layers.notes.url })
       }
       // thumbnail
-      filePairs.push({ from: exporterCommon.boardFilenameForThumbnail(boardSrc), to: exporterCommon.boardFilenameForThumbnail(boardDst) })
+      filePairs.push({ from: boardModel.boardFilenameForThumbnail(boardSrc), to: boardModel.boardFilenameForThumbnail(boardDst) })
 
       // absolute paths
       filePairs = filePairs.map(filePair => Object.assign(filePair, {
@@ -3112,6 +3114,16 @@ const exportPDF = () => {
   }, 1000)
 }
 
+const exportCleanup = () => {
+  exporter.exportCleanup(boardData, boardFilename).then(newBoardData => {
+    boardData = newBoardData
+    notifications.notify({ message: "Your scene has been cleaned up!", timing: 20 })
+    sfx.positive()
+  }).catch(err => {
+    console.log(err)
+  })
+}
+
 let save = () => {
   saveImageFile()
   saveBoardFile()
@@ -3384,40 +3396,16 @@ const importFromWorksheet = (imageArray) => {
 
 
 
-// TODO extract these formatters, cleanup
 const migrateBoardData = (newBoards, insertAt) => {
   // assign a new uid to the board, regardless of source
-  newBoards = newBoards.map((board) => {
-    board.uid = util.uidGen(5)
-    return board
-  })
+  newBoards = newBoards.map(boardModel.assignUid)
 
   // set some basic data for the new board
-  newBoards = newBoards.map((board) => {
-    board.layers = board.layers || {} // TODO is this necessary?
+  newBoards = newBoards.map(boardModel.setup)
 
-    // set some basic data for the new board
-    board.newShot = board.newShot || false
-    board.lastEdited = Date.now()
-    
-    return board
-  })
-
-  // update board layers filenames based on uid
-  newBoards = newBoards.map((board, index) => {
-    let position = insertAt + index
-    board.url = 'board-' + (position + 1) + '-' + board.uid + '.png'
-
-    if (board.layers.reference) {
-      board.layers.reference.url = board.url.replace('.png', '-reference.png')
-    }
-
-    if (board.layers.notes) {
-      board.layers.notes.url = board.url.replace('.png', '-notes.png')
-    }
-
-    return board
-  })
+  // update board layers filenames based on index
+  newBoards = newBoards.map((board, index) =>
+    boardModel.updateUrlsFromIndex(board, index))
 
   return newBoards
 }
@@ -3937,6 +3925,10 @@ ipcRenderer.on('exportImages', (event, args) => {
 
 ipcRenderer.on('exportPDF', (event, args) => {
   exportPDF()
+})
+
+ipcRenderer.on('exportCleanup', (event, args) => {
+  exportCleanup()
 })
 
 let printWindow

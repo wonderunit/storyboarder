@@ -1,6 +1,7 @@
 const path = require('path')
 
-const { boardFileImageSize, msecsToFrames, boardFilenameForExport } = require('./common')
+const { msecsToFrames } = require('./common')
+const { boardFileImageSize, boardFilenameForExport } = require('../models/board')
 const util = require('../utils')
 
 // fcp templating

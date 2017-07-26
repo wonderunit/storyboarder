@@ -1,0 +1,103 @@
+{
+  "version": "0.8.0",
+  "aspectRatio": 2.39,
+  "fps": 24,
+  "defaultBoardTiming": "2001",
+  "boards": [
+    {
+      "uid": "42VR9",
+      "url": "board-2-42VR9.png",
+      "newShot": true,
+      "lastEdited": 1500573659774,
+      "layers": {
+        "reference": {
+          "url": "board-2-42VR9-reference.png"
+        },
+        "notes": {
+          "url": "board-2-42VR9-notes.png"
+        }
+      },
+      "number": 1,
+      "shot": "1A",
+      "time": 0,
+      "lineMileage": 0,
+      "notes": "TITLE CARD: DUCKS",
+      "duration": 2000
+    },
+    {
+      "uid": "J74F5",
+      "url": "board-2-J74F5.png",
+      "newShot": true,
+      "lastEdited": 1500497960644,
+      "layers": {
+        "reference": {
+          "url": "board-2-J74F5-reference.png"
+        }
+      },
+      "number": 2,
+      "shot": "2A",
+      "time": 2000,
+      "lineMileage": 9.947787186607343,
+      "duration": 500
+    },
+    {
+      "uid": "P2FLS",
+      "url": "board-0-P2FLS.png",
+      "layers": {
+        "reference": {
+          "url": "board-0-P2FLS-reference.png"
+        },
+        "notes": {
+          "url": "board-0-P2FLS-notes.png"
+        }
+      },
+      "newShot": false,
+      "lastEdited": 1500417576275,
+      "number": 3,
+      "shot": "2B",
+      "time": 2500,
+      "lineMileage": 23.679854997875083,
+      "action": "Ducks are walking across the street.",
+      "duration": 1000
+    },
+    {
+      "uid": "WEBM4",
+      "url": "board-1-WEBM4.png",
+      "layers": {
+        "reference": {
+          "url": "board-1-WEBM4-reference.png"
+        },
+        "notes": {
+          "url": "board-1-WEBM4-notes.png"
+        }
+      },
+      "newShot": false,
+      "lastEdited": 1500417576275,
+      "number": 4,
+      "shot": "2C",
+      "time": 3500,
+      "lineMileage": 5.919963749468871,
+      "duration": 1000
+    },
+    {
+      "uid": "PQKJM",
+      "url": "board-98-PQKJM.png",
+      "newShot": false,
+      "lastEdited": 1500571354085,
+      "layers": {
+        "reference": {
+          "url": "board-98-PQKJM-reference.png"
+        },
+        "notes": {
+          "url": "board-98-PQKJM-notes.png"
+        }
+      },
+      "number": 100,
+      "shot": "29B",
+      "time": 81600,
+      "lineMileage": 0,
+      "dialogue": "Hmm :D",
+      "duration": 4000
+    }
+  ]
+}

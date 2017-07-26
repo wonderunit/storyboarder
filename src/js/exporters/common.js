@@ -1,46 +1,17 @@
 const fs = require('fs')
 const path = require('path')
 
-const util = require('../utils')
+const {
+  boardFileImageSize,
+  boardFilenameForExport,
+  boardFilenameForThumbnail,
+  boardOrderedLayerFilenames
+} = require('../models/board')
 
-// data functions
-const boardFileImageSize = boardFileData =>
-  (boardFileData.aspectRatio >= 1)
-    ? [900 * boardFileData.aspectRatio, 900]
-    : [900, 900 / boardFileData.aspectRatio]
+const util = require('../utils')
 
 const msecsToFrames = (fps, value) =>
   (fps/1000) * value
-
-// array of fixed size, ordered positions
-const boardOrderedLayerFilenames = board => {
-  let indices = []
-  let filenames = []
-
-  // reference
-  if (board.layers && board.layers.reference) {
-    indices.push(0)
-    filenames.push(board.layers.reference.url)
-  }
-
-  // main
-  indices.push(1)
-  filenames.push(board.url)
-
-  // notes
-  if (board.layers && board.layers.notes) {
-    indices.push(3)
-    filenames.push(board.layers.notes.url)
-  }
-  
-  return { indices, filenames }
-}
-
-const boardFilenameForThumbnail = board =>
-  board.url.replace('.png', '-thumbnail.png')
-
-const boardFilenameForExport = (board, index, basenameWithoutExt) =>
-  `${basenameWithoutExt}-board-` + util.zeroFill(5, index + 1) + '.png'
 
 const getImage = url => {
   return new Promise((resolve, reject) => {
@@ -176,11 +147,7 @@ const ensureExportsPathExists = (projectFileAbsolutePath) => {
 }
 
 module.exports = {
-  boardFileImageSize,
-  boardFilenameForExport,
-  boardFilenameForThumbnail,
   msecsToFrames,
-
   getImage,
   exportFlattenedBoard,
   flattenCanvasImageSourcesDataToContext,
