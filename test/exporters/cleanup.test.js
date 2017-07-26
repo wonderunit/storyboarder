@@ -75,18 +75,6 @@ describe('exporters/cleanup', function () {
     done()
   })
 
-  it('knows which files are unused and can be deleted', function (done) {
-    done(new Error('Not Implemented'))
-  })
-
-  it('can rename files', function (done) {
-    done(new Error('Not Implemented'))
-  })
-
-  it('can move unused files to the trash', function (done) {
-    done(new Error('Not Implemented'))
-  })
-
   it('can save a cleaned project', function (done) {
     // mock the trash fn so we can test it
     const trashFn = glob => {

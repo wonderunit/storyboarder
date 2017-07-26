@@ -25,6 +25,7 @@ const cleanupScene = (absolutePathToStoryboarderFile, absolutePathToImagesFolder
       const usedFiles = boardData.boards.map(boardModel.boardOrderedLayerFilenames).reduce((a, b) => [...a, ...b.filenames], [])
       const allFiles = fs.readdirSync(absolutePathToImagesFolder)
       const unusedFiles = allFiles.filter(filename => !usedFiles.includes(filename))
+
       const absolutePathToUnusedFiles = unusedFiles.map(filename => path.join(absolutePathToImagesFolder, filename))
 
       // delete unused files ...
