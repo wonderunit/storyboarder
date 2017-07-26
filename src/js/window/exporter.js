@@ -4,6 +4,7 @@ const path = require('path')
 const GIFEncoder = require('gifencoder')
 const moment = require('moment')
 const app = require("electron").remote.app
+const { dialog } = require('electron').remote
 
 const {
   boardFileImageSize,
@@ -18,11 +19,37 @@ const {
 const exporterFcpX = require('../exporters/final-cut-pro-x.js')
 const exporterFcp = require('../exporters/final-cut-pro.js')
 const exporterPDF = require('../exporters/pdf.js')
+const exporterCleanup = require('../exporters/cleanup.js')
 const util = require('../utils/index.js')
 
 class Exporter extends EventEmitter {
   constructor () {
     super()
+  }
+  
+  exportCleanup (boardData, projectFileAbsolutePath) {
+    return new Promise((resolve, reject) => {
+      dialog.showMessageBox(
+        null,
+        {
+          type: 'warning',
+          title: 'Are You Sure?',
+          message: `Clean Up deletes unused image files, reducing filesize. It cannot be undone. Are you sure you want to do this?`,
+          buttons: ['OK', 'No!'],
+        },
+        index => {
+          if (index == 1) {
+            reject()
+          } else {
+            exporterCleanup.cleanupScene(projectFileAbsolutePath).then(newBoardData => {
+              resolve(newBoardData)
+            }).catch(err => {
+              reject(err)
+            })
+          }
+        }
+      )
+    })
   }
 
   exportFcp (boardData, projectFileAbsolutePath) {
