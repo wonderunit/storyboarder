@@ -734,6 +734,10 @@ ipcMain.on('exportPDF', (event, arg) => {
   mainWindow.webContents.send('exportPDF', arg)
 })
 
+ipcMain.on('exportCleanup', (event, arg) => {
+  mainWindow.webContents.send('exportCleanup', arg)
+})
+
 ipcMain.on('printWorksheet', (event, arg) => {
   //openPrintWindow()
   mainWindow.webContents.send('printWorksheet', arg)

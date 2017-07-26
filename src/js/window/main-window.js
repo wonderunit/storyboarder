@@ -3114,6 +3114,9 @@ const exportPDF = () => {
   }, 1000)
 }
 
+const exportCleanup = () => {
+}
+
 let save = () => {
   saveImageFile()
   saveBoardFile()
@@ -3915,6 +3918,10 @@ ipcRenderer.on('exportImages', (event, args) => {
 
 ipcRenderer.on('exportPDF', (event, args) => {
   exportPDF()
+})
+
+ipcRenderer.on('exportCleanup', (event, args) => {
+  exportCleanup()
 })
 
 let printWindow

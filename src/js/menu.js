@@ -48,6 +48,12 @@ const template = [
         }
       },
       {
+        label: 'Clean Up Scene …',
+        click (item, focusedWindow, event) {
+          ipcRenderer.send('exportCleanup')
+        }
+      },
+      {
         type: 'separator'
       },
       {
