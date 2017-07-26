@@ -48,7 +48,9 @@ describe('exporters/cleanup', function () {
             'board-1-WEBM4-notes.png':            new Buffer([8, 6, 7, 5, 3, 0, 9]),
             'board-98-PQKJM.png':                 new Buffer([8, 6, 7, 5, 3, 0, 9]),
             'board-98-PQKJM-reference.png':       new Buffer([8, 6, 7, 5, 3, 0, 9]),
-            'board-98-PQKJM-notes.png':           new Buffer([8, 6, 7, 5, 3, 0, 9])
+            'board-98-PQKJM-notes.png':           new Buffer([8, 6, 7, 5, 3, 0, 9]),
+            'unused.png':                         new Buffer([8, 6, 7, 5, 3, 0, 9]),
+            'unused.psd':                         new Buffer([8, 6, 7, 5, 3, 0, 9])
           }
         }
       }
@@ -90,7 +92,9 @@ describe('exporters/cleanup', function () {
     const trashFn = glob => {
       let trashedFiles = glob.map(f => path.basename(f))
 
-      assert(trashedFiles.includes('board-98-PQKJM.png'))
+      assert(trashedFiles.includes('unused.png'))
+      assert(trashedFiles.includes('unused.psd'))
+      assert.equal(trashedFiles.length, 2)
 
       return Promise.resolve()
     }

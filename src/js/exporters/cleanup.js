@@ -13,17 +13,15 @@ const cleanupScene = (absolutePathToStoryboarderFile, absolutePathToImagesFolder
     } = prepareCleanup(originalBoardData)
 
     try {
-      let usedFiles = []
-
       // rename the renamable files
       for (let p of renamablePairs) {
         let from = path.join(absolutePathToImagesFolder, p.from)
         let   to = path.join(absolutePathToImagesFolder, p.to)
-        usedFiles.push(p.to)
-        // fs.renameSync(from, to)
+        fs.renameSync(from, to)
       }
 
       // find unused files
+      const usedFiles = boardData.boards.map(boardModel.boardOrderedLayerFilenames).reduce((a, b) => [...a, ...b.filenames], [])
       const allFiles = fs.readdirSync(absolutePathToImagesFolder)
       const unusedFiles = allFiles.filter(filename => !usedFiles.includes(filename))
       const absolutePathToUnusedFiles = unusedFiles.map(filename => path.join(absolutePathToImagesFolder, filename))
