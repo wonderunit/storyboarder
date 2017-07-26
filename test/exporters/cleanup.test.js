@@ -5,11 +5,11 @@
 //
 
 'use strict';
-
 const tmp = require('tmp')
 const fs = require('fs')
 const path = require('path')
 const assert = require('assert')
+const mockFs = require('mock-fs')
 
 const { shell } = require('electron')
 
@@ -19,25 +19,53 @@ const exporterCleanup = require('../../src/js/exporters/cleanup')
 let fixturesPath = path.join(__dirname, '..', 'fixtures')
 
 describe('exporters/cleanup', function () {
-  let tmpFolder
+  let absolutePathToStoryboarderFile
+  let absolutePathToImagesFolder
 
   before(function () {
-    tmpFolder = tmp.dirSync({ unsafeCleanup: true })
+    // use real filesystem
+    absolutePathToStoryboarderFile = path.resolve(path.join(fixturesPath, 'ducks', 'ducks.storyboarder'))
+    absolutePathToImagesFolder = path.resolve(path.join(fixturesPath, 'ducks', 'images'))
+
+    const actualJsonAsString = fs.readFileSync(absolutePathToStoryboarderFile)
+
+    // fake filesystem
+    mockFs({
+      [fixturesPath]: {
+        'ducks': {
+          'ducks.storyboarder': actualJsonAsString,
+          'images': {
+            'board-2-42VR9.png':                  new Buffer([8, 6, 7, 5, 3, 0, 9]),
+            'board-2-42VR9-reference.png':        new Buffer([8, 6, 7, 5, 3, 0, 9]),
+            'board-2-42VR9-notes.png':            new Buffer([8, 6, 7, 5, 3, 0, 9]),
+            'board-2-J74F5.png':                  new Buffer([8, 6, 7, 5, 3, 0, 9]),
+            'board-2-J74F5-reference.png':        new Buffer([8, 6, 7, 5, 3, 0, 9]),
+            'board-0-P2FLS.png':                  new Buffer([8, 6, 7, 5, 3, 0, 9]),
+            'board-0-P2FLS-reference.png':        new Buffer([8, 6, 7, 5, 3, 0, 9]),
+            'board-0-P2FLS-notes.png':            new Buffer([8, 6, 7, 5, 3, 0, 9]),
+            'board-1-WEBM4.png':                  new Buffer([8, 6, 7, 5, 3, 0, 9]),
+            'board-1-WEBM4-reference.png':        new Buffer([8, 6, 7, 5, 3, 0, 9]),
+            'board-1-WEBM4-notes.png':            new Buffer([8, 6, 7, 5, 3, 0, 9]),
+            'board-98-PQKJM.png':                 new Buffer([8, 6, 7, 5, 3, 0, 9]),
+            'board-98-PQKJM-reference.png':       new Buffer([8, 6, 7, 5, 3, 0, 9]),
+            'board-98-PQKJM-notes.png':           new Buffer([8, 6, 7, 5, 3, 0, 9])
+          }
+        }
+      }
+    })
   })
 
   it('can prepare data to cleanup a scene', function (done) {
-    let projectFileAbsolutePath = path.resolve(path.join(fixturesPath, 'ducks', 'ducks.storyboarder'))
-    let project = JSON.parse(fs.readFileSync(projectFileAbsolutePath))
-
+    let project = JSON.parse(fs.readFileSync(absolutePathToStoryboarderFile))
     let {
-      renameablePairs,
+      renamablePairs,
       boardData
-    } = exporterCleanup.cleanupScene(project)
+    } = exporterCleanup.prepareCleanup(project)
 
-    let first = renameablePairs[0]
+    let first = renamablePairs[0]
     assert.equal(first.from, 'board-2-42VR9-reference.png')
     assert.equal(first.to, 'board-1-42VR9-reference.png')
-    assert.equal(boardData.boards[0].url, renameablePairs[1].to)
+    assert.equal(boardData.boards[0].url, renamablePairs[1].to)
 
     // TODO test number, shot
     // assert.equal(boardData.boards[boardData.boards.length - 1].number, boardData.boards.length)
@@ -58,10 +86,29 @@ describe('exporters/cleanup', function () {
   })
 
   it('can save a cleaned project', function (done) {
-    done(new Error('Not Implemented'))
+    // mock the trash fn so we can test it
+    const trashFn = glob => {
+      let trashedFiles = glob.map(f => path.basename(f))
+
+      assert(trashedFiles.includes('board-98-PQKJM.png'))
+
+      return Promise.resolve()
+    }
+
+    exporterCleanup
+      .cleanupScene(absolutePathToStoryboarderFile, absolutePathToImagesFolder, trashFn)
+      .then(() => {
+        let project = JSON.parse(fs.readFileSync(absolutePathToStoryboarderFile))
+        assert.equal(project.boards[project.boards.length - 1].url, "board-5-PQKJM.png")
+        done()
+      })
+      .catch(done)
   })
 
+  // TODO be smart enough to remove blank (no drawing) images from filesystem and data?
+  //
+  //
   after(function () {
-    tmpFolder.removeCallback()
+    mockFs.restore()
   })
 })

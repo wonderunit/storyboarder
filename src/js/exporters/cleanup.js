@@ -1,7 +1,52 @@
+const fs = require('fs')
+const path = require('path')
+
 const boardModel = require('../models/board')
 
+const cleanupScene = (absolutePathToStoryboarderFile, absolutePathToImagesFolder, trashFn) => {
+  return new Promise((resolve, reject) => {
+    let originalBoardData = JSON.parse(fs.readFileSync(absolutePathToStoryboarderFile))
+
+    const {
+      renamablePairs,
+      boardData
+    } = prepareCleanup(originalBoardData)
+
+    try {
+      let usedFiles = []
+
+      // rename the renamable files
+      for (let p of renamablePairs) {
+        let from = path.join(absolutePathToImagesFolder, p.from)
+        let   to = path.join(absolutePathToImagesFolder, p.to)
+        usedFiles.push(p.to)
+        // fs.renameSync(from, to)
+      }
+
+      // find unused files
+      const allFiles = fs.readdirSync(absolutePathToImagesFolder)
+      const unusedFiles = allFiles.filter(filename => !usedFiles.includes(filename))
+      const absolutePathToUnusedFiles = unusedFiles.map(filename => path.join(absolutePathToImagesFolder, filename))
+
+      // delete unused files ...
+      trashFn(absolutePathToUnusedFiles).then(() => {
+
+        // ... then, save JSON
+        fs.writeFileSync(absolutePathToStoryboarderFile, JSON.stringify(boardData, null, 2))
+      
+        resolve()
+      }).catch(err => {
+        reject(err)
+      })
+
+    } catch (err) {
+      reject(err)
+    }
+  })
+}
+
+const prepareCleanup = boardData => {
 // rename each file to match its actual position in the list of boards
-const cleanupScene = boardData => {
   // get a copy of the source filenames
   let original = boardData.boards.map(boardModel.boardOrderedLayerFilenames)
 
@@ -22,15 +67,17 @@ const cleanupScene = boardData => {
     })
   })
 
-  // flatten
-  let renameablePairs = Array.prototype.concat(...result)
+  let renamablePairs = Array.prototype.concat(...result)  // flatten
+                        .filter(p => p.from !== p.to)     // exclude files that don't need to be renamed
 
   return {
-    renameablePairs,
+    renamablePairs,
     boardData
   }
 }
 
 module.exports = {
-  cleanupScene
+  cleanupScene,
+
+  prepareCleanup
 }
