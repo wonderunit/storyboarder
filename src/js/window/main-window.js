@@ -6,10 +6,6 @@ const path = require('path')
 const menu = require('../menu.js')
 const util = require('../utils/index.js')
 const Color = require('color-js')
-const xs = require('xstream').default
-const throttle = require('xstream/extra/throttle').default
-const debounce = require('xstream/extra/debounce').default
-const fromEvent = require('xstream/extra/fromEvent').default
 
 const StoryboarderSketchPane = require('./storyboarder-sketch-pane.js')
 const undoStack = require('../undo-stack.js')
@@ -78,7 +74,9 @@ let layerStatus = {
   composite:  { dirty: false } // TODO do we need this?
 }
 let imageFileDirtyTimer
-let dirtyLayers$
+
+let thumbnailDirty = false
+let thumbnailDirtyTimer
 
 let isEditMode = false
 let editModeTimer
@@ -394,6 +392,8 @@ let loadBoardUI = ()=> {
     storeUndoStateForImage(false, layerIndices)
     markImageFileDirty(layerIndices)
 
+    markThumbnailDirty()
+
     // save progress image
     if(isRecording) {
       let snapshotCanvas = storyboarderSketchPane.sketchPane.getLayerCanvas(1)
@@ -401,14 +401,9 @@ let loadBoardUI = ()=> {
       screenRecordingBuffer.addToBuffer(snapshotCanvas, filepath)
     }
   })
-  dirtyLayers$ = xs.merge(
-                    fromEvent(storyboarderSketchPane, 'pointermove'), // drawing
-                    fromEvent(storyboarderSketchPane, 'markDirty') // pointerup
-                  )
-                  .compose(debounce(500))
-                  .addListener({
-                    next: () => updateThumbnailDisplayFromMemory(currentBoard)
-                  })
+  storyboarderSketchPane.on('pointerdown', () => {
+    clearTimeout(thumbnailDirtyTimer)
+  })
 
   storyboarderSketchPane.on('lineMileage', value => {
     addToLineMileage(value)
@@ -1072,6 +1067,12 @@ let markImageFileDirty = layerIndices => {
   imageFileDirtyTimer = setTimeout(saveImageFile, 5000)
 }
 
+const markThumbnailDirty = () => {
+  thumbnailDirty = true
+  clearTimeout(thumbnailDirtyTimer)
+  thumbnailDirtyTimer = setTimeout(updateThumbnailDisplayFromMemory, 500)
+}
+
 let saveDataURLtoFile = (dataURL, filename) => {
   let imageData = dataURL.replace(/^data:image\/\w+;base64,/, '')
   let imageFilePath = path.join(boardPath, 'images', filename)
@@ -1323,7 +1324,8 @@ const updateThumbnailDisplayFromFile = index => {
   }
 }
 
-const updateThumbnailDisplayFromMemory = index => {
+const updateThumbnailDisplayFromMemory = () => {
+  let index = currentBoard
   return renderThumbnailToNewCanvas(index).then(canvas => {
     let imageData = canvas
       .toDataURL('image/png')
