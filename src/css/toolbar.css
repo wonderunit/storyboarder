@@ -57,7 +57,7 @@
   -webkit-app-region: no-drag
 }
 
-#toolbar .group:not(.group_tools) .button {
+#toolbar .group:not(.group_tools):not(.group_colors) .button {
   border-radius: 5px;
 
   margin-left: 2px;
