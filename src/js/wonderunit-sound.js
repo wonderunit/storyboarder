@@ -43,126 +43,19 @@ let isMuted = false
 const setMute = value => isMuted = value
 
 // set up sound sources.
-
-var synth = new Tone.PolySynth(getEnableHighQualityAudio() ? 8 : 4, Tone.Synth)
-synth.set({
-  "oscillator" : {
-    "type" : "square2"
- },
- "envelope" : {
-    "attack":0.01,
-    "decay":0.01,
-    "sustain":1,
-    "release":3.5,
- },
-})
-
-var bassSynth = new Tone.PolySynth(3, Tone.FMSynth)
-bassSynth.set({
-  "harmonicity":3,
-  "modulationIndex":20,
-  "detune":0,
-  "oscillator":{
-  "type":"square",
-  },
-  "envelope":{
-  "attack":0.01,
-  "decay":0.01,
-  "sustain":1,
-  "release":.1,
-  },
-  "moduation":{
-  "type":"sawtooth",
-  },
-  "modulationEnvelope":{
-  "attack":0.5,
-  "decay":0,
-  "sustain":1,
-  "release":0.5,
-}})
-bassSynth.set('volume', -6)
-
-var bassSynth2 = new Tone.PolySynth(3, Tone.Synth)
-bassSynth2.set({
-  "oscillator" : {
-    "type" : "sine"
- },
- "envelope" : {
-    "attack":3,
-    "decay":0.01,
-    "sustain":0.1,
-    "release":7,
- },
-})
-bassSynth2.set('volume', -12).toMaster()
-
-var errorSynth = new Tone.PolySynth(3, Tone.Synth)
-errorSynth.set({
-  "oscillator" : {
-    "type" : "sawtooth"
- },
- "envelope" : {
-    "attack": 0.1,
-    "decay": 0.01,
-    "sustain": 0.1,
-    "release": 0.5,
- },
-})
-errorSynth.set('volume', -2).toMaster()
-
-var bipSynth = new Tone.MonoSynth()
-  .set({
-    oscillator : {
-      type : 'square'
-    },
-    envelope : {
-      attack: 0.01,
-      decay: 0.1,
-      sustain: 1,
-      release: 0.5,
-    },
-    filter: {
-      Q: 1
-    },
-    filterEnvelope: {
-      attack: 0.3,
-      decay: 0.5,
-      sustain: 1,
-      release: 0.5,
-      baseFrequency: 800,
-      exponent: 4
-    }
-  })
-  .set('volume', -24)
-  .toMaster()
-
-let metalSynth = new Tone.MetalSynth()
-    .set({
-      'frequency': 110,
-      'envelope': {
-        'decay': 0.125,
-        'release': 0.05
-      },
-      'volume': -28
-    })
-    .toMaster()
-
-// set up effects and chain them.
-// var freeverb = new Tone.Freeverb(0.9, 1000) // unused
-var comp = new Tone.Compressor(-10, 5)
-var comp2 = new Tone.Compressor(-10, 5)
-var filter = new Tone.Filter(100, "lowpass", -48)
-filter.set('Q', 2)
-var filter2 = new Tone.Filter(1250, "lowpass", -12)
-filter2.set('Q', 2)
-var filter3 = new Tone.Filter(10, "lowpass", -48)
-filter3.set('Q', 2)
-var vol = new Tone.Volume(-24);
-var vol2 = new Tone.Volume(-46);
-
-synth.chain(comp, filter2, vol, Tone.Master)
-bassSynth.chain( filter, comp2, Tone.Master)
-bassSynth2.chain( filter3,vol2, Tone.Master)
+let synth
+let bassSynth
+let bassSynth2
+let errorSynth
+let bipSynth
+let metalSynth
+let comp
+let comp2
+let filter
+let filter2
+let filter3
+let vol
+let vol2
 
 let advanceNote = (amount) => {
   currentNote+=amount
@@ -270,6 +163,126 @@ let multiPlayer
 const init = () => {
   getPrefs()
   if (!getEnableUISoundEffects()) return
+
+  synth = new Tone.PolySynth(getEnableHighQualityAudio() ? 8 : 4, Tone.Synth)
+  synth.set({
+    "oscillator" : {
+      "type" : "square2"
+  },
+  "envelope" : {
+      "attack":0.01,
+      "decay":0.01,
+      "sustain":1,
+      "release":3.5,
+  },
+  })
+
+  bassSynth = new Tone.PolySynth(3, Tone.FMSynth)
+  bassSynth.set({
+    "harmonicity":3,
+    "modulationIndex":20,
+    "detune":0,
+    "oscillator":{
+    "type":"square",
+    },
+    "envelope":{
+    "attack":0.01,
+    "decay":0.01,
+    "sustain":1,
+    "release":.1,
+    },
+    "moduation":{
+    "type":"sawtooth",
+    },
+    "modulationEnvelope":{
+    "attack":0.5,
+    "decay":0,
+    "sustain":1,
+    "release":0.5,
+  }})
+  bassSynth.set('volume', -6)
+
+  bassSynth2 = new Tone.PolySynth(3, Tone.Synth)
+  bassSynth2.set({
+    "oscillator" : {
+      "type" : "sine"
+  },
+  "envelope" : {
+      "attack":3,
+      "decay":0.01,
+      "sustain":0.1,
+      "release":7,
+  },
+  })
+  bassSynth2.set('volume', -12).toMaster()
+
+  errorSynth = new Tone.PolySynth(3, Tone.Synth)
+  errorSynth.set({
+    "oscillator" : {
+      "type" : "sawtooth"
+  },
+  "envelope" : {
+      "attack": 0.1,
+      "decay": 0.01,
+      "sustain": 0.1,
+      "release": 0.5,
+  },
+  })
+  errorSynth.set('volume', -2).toMaster()
+
+  bipSynth = new Tone.MonoSynth()
+    .set({
+      oscillator : {
+        type : 'square'
+      },
+      envelope : {
+        attack: 0.01,
+        decay: 0.1,
+        sustain: 1,
+        release: 0.5,
+      },
+      filter: {
+        Q: 1
+      },
+      filterEnvelope: {
+        attack: 0.3,
+        decay: 0.5,
+        sustain: 1,
+        release: 0.5,
+        baseFrequency: 800,
+        exponent: 4
+      }
+    })
+    .set('volume', -24)
+    .toMaster()
+
+  metalSynth = new Tone.MetalSynth()
+      .set({
+        'frequency': 110,
+        'envelope': {
+          'decay': 0.125,
+          'release': 0.05
+        },
+        'volume': -28
+      })
+      .toMaster()
+
+  // set up effects and chain them.
+  // var freeverb = new Tone.Freeverb(0.9, 1000) // unused
+  comp = new Tone.Compressor(-10, 5)
+  comp2 = new Tone.Compressor(-10, 5)
+  filter = new Tone.Filter(100, "lowpass", -48)
+  filter.set('Q', 2)
+  filter2 = new Tone.Filter(1250, "lowpass", -12)
+  filter2.set('Q', 2)
+  filter3 = new Tone.Filter(10, "lowpass", -48)
+  filter3.set('Q', 2)
+  vol = new Tone.Volume(-24);
+  vol2 = new Tone.Volume(-46);
+
+  synth.chain(comp, filter2, vol, Tone.Master)
+  bassSynth.chain( filter, comp2, Tone.Master)
+  bassSynth2.chain( filter3,vol2, Tone.Master)
 
   multiPlayer = new Tone.MultiPlayer(new Tone.Buffers(filePathsForSoundEffects))
                 .set('volume', -20)
