@@ -6,6 +6,10 @@ const path = require('path')
 const menu = require('../menu.js')
 const util = require('../utils/index.js')
 const Color = require('color-js')
+const xs = require('xstream').default
+const throttle = require('xstream/extra/throttle').default
+const debounce = require('xstream/extra/debounce').default
+const fromEvent = require('xstream/extra/fromEvent').default
 
 const StoryboarderSketchPane = require('./storyboarder-sketch-pane.js')
 const undoStack = require('../undo-stack.js')
@@ -74,6 +78,7 @@ let layerStatus = {
   composite:  { dirty: false } // TODO do we need this?
 }
 let imageFileDirtyTimer
+let dirtyLayers$
 
 let isEditMode = false
 let editModeTimer
@@ -384,21 +389,10 @@ let loadBoardUI = ()=> {
   storyboarderSketchPane.on('addToUndoStack', layerIndices => {
     storeUndoStateForImage(true, layerIndices)
   })
-  
+
   storyboarderSketchPane.on('markDirty', layerIndices => {
     storeUndoStateForImage(false, layerIndices)
     markImageFileDirty(layerIndices)
-
-    renderThumbnailToNewCanvas(currentBoard).then(canvas => {
-      let imageData = canvas
-        .toDataURL('image/png')
-
-      // find the thumbnail image
-      let el = document.querySelector(`[data-thumbnail="${currentBoard}"] img`)
-      if (el) {
-        el.src = imageData
-      }
-    })
 
     // save progress image
     if(isRecording) {
@@ -407,7 +401,12 @@ let loadBoardUI = ()=> {
       screenRecordingBuffer.addToBuffer(snapshotCanvas, filepath)
     }
   })
-  
+  dirtyLayers$ = fromEvent(storyboarderSketchPane, 'markDirty')
+                  .compose(debounce(500))
+                  .addListener({
+                    next: () => updateThumbnailDisplayFromMemory(currentBoard)
+                  })
+
   storyboarderSketchPane.on('lineMileage', value => {
     addToLineMileage(value)
   })
@@ -1151,7 +1150,7 @@ let saveImageFile = () => {
   // create/update the thumbnail image file if necessary
   let tasks = Promise.resolve()
   if (shouldSaveThumbnail) {
-    tasks = saveThumbnailFile(currentBoard).then(index => updateThumbnailDisplay(index))
+    tasks = saveThumbnailFile(currentBoard).then(index => updateThumbnailDisplayFromFile(index))
   }
   return tasks
 }
@@ -1311,7 +1310,7 @@ const saveThumbnailFile = (index, options = { forceReadFromFiles: false }) => {
   })
 }
 
-const updateThumbnailDisplay = index => {
+const updateThumbnailDisplayFromFile = index => {
   // load the thumbnail image file
   let el = document.querySelector(`[data-thumbnail="${index}"] img`)
   // does it exist in the thumbnail drawer already?
@@ -1319,6 +1318,19 @@ const updateThumbnailDisplay = index => {
     let imageFilePath = path.join(boardPath, 'images', boardModel.boardFilenameForThumbnail(boardData.boards[index]))
     el.src = imageFilePath + '?' + Date.now()
   }
+}
+
+const updateThumbnailDisplayFromMemory = index => {
+  return renderThumbnailToNewCanvas(index).then(canvas => {
+    let imageData = canvas
+      .toDataURL('image/png')
+
+    // find the thumbnail image
+    let el = document.querySelector(`[data-thumbnail="${index}"] img`)
+    if (el) {
+      el.src = imageData
+    }
+  })
 }
 
 let deleteSingleBoard = (index) => {
@@ -3750,7 +3762,7 @@ const applyUndoStateForImage = (state) => {
 
   })
   .then(() => saveThumbnailFile(state.boardIndex))
-  .then(index => updateThumbnailDisplay(index))
+  .then(index => updateThumbnailDisplayFromFile(index))
   .then(() => toolbar.emit('cancelTransform'))
   .catch(e => console.error(e))
 }
