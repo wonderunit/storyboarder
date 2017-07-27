@@ -389,7 +389,19 @@ let loadBoardUI = ()=> {
     storeUndoStateForImage(false, layerIndices)
     markImageFileDirty(layerIndices)
 
-    saveThumbnailFile(currentBoard).then(index => updateThumbnailDisplay(index))
+    renderThumbnailToNewCanvas(currentBoard).then(canvas => {
+      let imageData = canvas
+        .toDataURL('image/png')
+
+      // find the thumbnail image
+      let el = document.querySelector(`[data-thumbnail="${currentBoard}"] img`)
+      if (el) {
+        el.src = imageData
+      }
+
+      // TODO trigger save after 2000 msecs idle
+      // saveThumbnailFile(currentBoard).then(index => updateThumbnailDisplay(index))
+    })
 
     // save progress image
     if(isRecording) {
