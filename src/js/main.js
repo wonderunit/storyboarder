@@ -208,7 +208,7 @@ let openFile = (file) => {
           //[scriptData, locations, characters, metadata]
           let processedData = processFountainData(data, true, false)
           addToRecentDocs(currentFile, processedData[3])
-          loadStoryboarderWindow(null, processedData[0], processedData[1], processedData[2], boardSettings, currentPath)
+          loadStoryboarderWindow(currentFile, processedData[0], processedData[1], processedData[2], boardSettings, currentPath)
         })
       } else {
         boardSettings = JSON.parse(fs.readFileSync(path.join(storyboardsPath, 'storyboard.settings')))
