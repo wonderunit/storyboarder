@@ -7,6 +7,9 @@ const LineMileageCounter = require('./line-mileage-counter')
 const keytracker = require('../utils/keytracker')
 const util = require('../utils')
 
+const prefsModule = require('electron').remote.require('./prefs.js')
+const enableBrushCursor = prefsModule.getPrefs('main')['enableBrushCursor']
+
 /**
  *  Wrap the SketchPane component with features Storyboarder needs
  *
@@ -52,16 +55,23 @@ class StoryboarderSketchPane extends EventEmitter {
     this.prevTool = null
     this.toolbar = null
 
-    // brush pointer
-    this.brushPointerContainer = document.createElement('div')
-    this.brushPointerContainer.className = 'brush-pointer'
-    this.brushPointerContainer.style.position = 'absolute'
-    this.brushPointerContainer.style.pointerEvents = 'none'
-    document.body.appendChild(this.brushPointerContainer)
-
     // container
     this.containerEl = document.createElement('div')
     this.containerEl.classList.add('container')
+
+    // brush pointer
+    if(enableBrushCursor) {
+      this.brushPointerContainer = document.createElement('div')
+      this.brushPointerContainer.className = 'brush-pointer'
+      this.brushPointerContainer.style.position = 'absolute'
+      this.brushPointerContainer.style.pointerEvents = 'none'
+      document.body.appendChild(this.brushPointerContainer)
+    } else {
+      // the query returns null unless we wait for the next tick.
+      process.nextTick(()=>{
+        document.querySelector('#storyboarder-sketch-pane .container').style.cursor = 'default'
+      })
+    }
 
     // sketchpane
     this.sketchPane = new SketchPane()
@@ -200,12 +210,16 @@ class StoryboarderSketchPane extends EventEmitter {
 
   canvasPointerOver () {
     this.sketchPaneDOMElement.addEventListener('pointermove', this.canvasCursorMove)
-    this.brushPointerContainer.style.display = 'block'
+    if(this.brushPointerContainer && this.brushPointerContainer.style) {
+      this.brushPointerContainer.style.display = 'block'
+    }
   }
 
   canvasPointerOut () {
     this.sketchPaneDOMElement.removeEventListener('pointermove', this.canvasCursorMove)
-    this.brushPointerContainer.style.display = 'none'
+    if(this.brushPointerContainer && this.brushPointerContainer.style) {
+      this.brushPointerContainer.style.display = 'none'
+    }
   }
 
   onFrame (timestep) {
@@ -218,7 +232,7 @@ class StoryboarderSketchPane extends EventEmitter {
         moveEvent
 
     // render the cursor
-    if (this.lastCursorEvent) {
+    if (this.lastCursorEvent && this.brushPointerContainer && this.brushPointerContainer.style) {
       // update the position of the cursor
       this.brushPointerContainer.style.transform = 'translate(' + this.lastCursorEvent.clientX + 'px, ' + this.lastCursorEvent.clientY + 'px)'
       this.lastCursorEvent = null
@@ -414,6 +428,9 @@ class StoryboarderSketchPane extends EventEmitter {
   }
 
   updatePointer () {
+    if(!enableBrushCursor) {
+      return
+    }
     let image = null
     let threshold = 0xff
     // TODO why are we creating a new pointer every time?
@@ -737,7 +754,9 @@ class MovingStrategy {
       }
     }
 
-    this.container.brushPointerContainer.style.visibility = 'hidden'
+    if(this.container.brushPointerContainer && this.container.brushPointerContainer.style) {
+      this.container.brushPointerContainer.style.visibility = 'hidden'
+    }
     document.querySelector('#storyboarder-sketch-pane .container').style.cursor = 'move'
   }
 
@@ -845,9 +864,13 @@ class MovingStrategy {
     // force stop
     this.container.stopMultiLayerOperation()
 
-    this.container.brushPointerContainer.style.visibility = 'visible'
+    if(this.container.brushPointerContainer && this.container.brushPointerContainer.style) {
+      this.container.brushPointerContainer.style.visibility = 'visible'
+      document.querySelector('#storyboarder-sketch-pane .container').style.cursor = 'none'
+    } else {
+      document.querySelector('#storyboarder-sketch-pane .container').style.cursor = 'default'
+    }
     this.container.updatePointer()
-    document.querySelector('#storyboarder-sketch-pane .container').style.cursor = 'none'
 
     this.storedLayers = null
   }
@@ -861,7 +884,9 @@ class ScalingStrategy {
     this.translate = [0, 0]
     this.scale = 1
 
-    this.container.brushPointerContainer.style.visibility = 'hidden'
+    if(this.container.brushPointerContainer && this.container.brushPointerContainer.style) {
+      this.container.brushPointerContainer.style.visibility = 'hidden'
+    }
     document.querySelector('#storyboarder-sketch-pane .container').style.cursor = 'ew-resize'
   }
 
@@ -982,9 +1007,13 @@ class ScalingStrategy {
     // force stop
     this.container.stopMultiLayerOperation()
 
-    this.container.brushPointerContainer.style.visibility = 'visible'
+    if(this.container.brushPointerContainer && this.container.brushPointerContainer.style) {
+      this.container.brushPointerContainer.style.visibility = 'visible'
+      document.querySelector('#storyboarder-sketch-pane .container').style.cursor = 'none'
+    } else {
+      document.querySelector('#storyboarder-sketch-pane .container').style.cursor = 'default'
+    }
     this.container.updatePointer()
-    document.querySelector('#storyboarder-sketch-pane .container').style.cursor = 'none'
   }
 }
 
