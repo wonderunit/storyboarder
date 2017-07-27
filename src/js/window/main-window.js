@@ -401,7 +401,10 @@ let loadBoardUI = ()=> {
       screenRecordingBuffer.addToBuffer(snapshotCanvas, filepath)
     }
   })
-  dirtyLayers$ = fromEvent(storyboarderSketchPane, 'markDirty')
+  dirtyLayers$ = xs.merge(
+                    fromEvent(storyboarderSketchPane, 'pointermove'), // drawing
+                    fromEvent(storyboarderSketchPane, 'markDirty') // pointerup
+                  )
                   .compose(debounce(500))
                   .addListener({
                     next: () => updateThumbnailDisplayFromMemory(currentBoard)
