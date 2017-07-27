@@ -22,7 +22,7 @@
 
 .preferences-title {
   font-size: 48px;
-  margin: 0 0 48px 0;
+  margin: 0 0 10px 0;
   font-weight: 900;
 }
 
@@ -39,14 +39,13 @@
 }
 
 .preferences-hint {
-   margin-top: 24px;
    opacity: 0.5;
-   font-size: 87.5%
+   font-size: 87.5%;
+   margin: 10px 0 48px;
  }
  
  .preferences-footer {
-   position: absolute;
-   bottom: 48px;
+   margin-top: 24px;
  }
  
  sup {

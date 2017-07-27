@@ -17,7 +17,12 @@ const defaultPrefs = {
   enableTooltips: true,
   enableAspirationalMessages: true,
   defaultBoardTiming: 2000,
-  importTargetLayer: "reference"
+  importTargetLayer: "reference",
+  enableCanvasPaintingOpacity: true,
+  enableAudio: false,
+  enableBrushCursor: true,
+  enableStabilizer: true,
+  
 }
 
 let prefs
