@@ -20,8 +20,8 @@ const defaultPrefs = {
   importTargetLayer: "reference",
   enableCanvasPaintingOpacity: true,
   enableBrushCursor: true,
-  enableAudio: false,
   enableStabilizer: true,
+  enableAudio: false,
   
 }
 

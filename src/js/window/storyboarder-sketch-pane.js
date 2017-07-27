@@ -9,6 +9,7 @@ const util = require('../utils')
 
 const prefsModule = require('electron').remote.require('./prefs.js')
 const enableBrushCursor = prefsModule.getPrefs('main')['enableBrushCursor']
+const enableStabilizer = prefsModule.getPrefs('main')['enableStabilizer']
 
 /**
  *  Wrap the SketchPane component with features Storyboarder needs
@@ -90,7 +91,11 @@ class StoryboarderSketchPane extends EventEmitter {
     this.sketchPane.addLayer(5) // composite
     this.sketchPane.selectLayer(1)
 
-    this.sketchPane.setToolStabilizeLevel(10)
+    let stabilizeLevel = 0
+    if(enableStabilizer) {
+      stabilizeLevel = 10
+    }
+    this.sketchPane.setToolStabilizeLevel(stabilizeLevel)
     this.sketchPane.setToolStabilizeWeight(0.2)
 
     this.el.addEventListener('pointerdown', this.canvasPointerDown)
