@@ -1151,7 +1151,6 @@ let saveImageFile = () => {
   // create/update the thumbnail image file if necessary
   let tasks = Promise.resolve()
   if (shouldSaveThumbnail) {
-    console.log('\t ... including thumbnail')
     tasks = saveThumbnailFile(currentBoard).then(index => updateThumbnailDisplay(index))
   }
   return tasks
