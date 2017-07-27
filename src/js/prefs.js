@@ -30,6 +30,9 @@ const defaultPrefs = {
 let numCPUs = os.cpus().length
 if(numCPUs <= 2) {
   defaultPrefs.enableDrawingSoundEffects = false
+  defaultPrefs.enableCanvasPaintingOpacity = false
+  defaultPrefs.enableBrushCursor = false
+  defaultPrefs.enableStabilizer = false
 }
 
 let prefs
