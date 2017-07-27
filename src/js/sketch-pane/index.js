@@ -3,6 +3,9 @@ const EventEmitter = require('events').EventEmitter
 const Brush = require('./brush')
 const Stabilizer = require('./stabilizer')
 
+const prefsModule = require('electron').remote.require('./prefs.js')
+const enableCanvasPaintingOpacity = prefsModule.getPrefs('main')['enableCanvasPaintingOpacity']
+
 class SketchPane extends EventEmitter {
   constructor (imageDataList, properties) {
     super()
@@ -414,7 +417,9 @@ class SketchPane extends EventEmitter {
 
   setPaintingOpacity (opacity) {
     this.paintingOpacity = opacity
-    this.paintingCanvas.style.opacity = opacity
+    if(enableCanvasPaintingOpacity) {
+      this.paintingCanvas.style.opacity = opacity
+    }
   }
 
   getPaintingKnockout () {

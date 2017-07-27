@@ -9,6 +9,9 @@
   <body class="preferences-window">
     <div class="preferences-form">
       <h1 class="preferences-title">Preferences</h1>
+      <div class="preferences-hint">
+        Please restart Storyboarder to apply changes.
+      </div>
 
       <div class="preferences-fieldset">
         <h2 class="preferences-subhead">Sounds</h2>
@@ -91,12 +94,28 @@
           </label>
         </div>
 
-        <footer class="preferences-footer">
-          <div class="preferences-hint">
-            <sup>*</sup> Please restart Storyboarder to apply changes.
-          </div>
-        </footer>
       </div>
+
+      <div class="preferences-fieldset">
+        <h2 class="preferences-subhead">Performance Enhancements</h2>
+        <div class="preferences-hint">
+            Disable these if drawing feels slow.
+          </div>
+        <div class="preferences-input">
+          <input
+            type="checkbox"
+            name="enableCanvasPaintingOpacity"
+            id="enableCanvasPaintingOpacity" />
+
+          <label for="enableCanvasPaintingOpacity">
+            <span></span>Enable Brush Opacity While Drawing
+          </label>
+        </div>
+      </div>
+
+      <footer class="preferences-footer">
+        
+      </footer>
     </div>
     <script src="./js/windows/preferences/editor.js"></script>
   </body>
