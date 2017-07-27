@@ -1251,53 +1251,37 @@ let openInEditor = () => {
 
 // }
 
+const getThumbnailSize = boardData => [Math.floor(60 * boardData.aspectRatio) * 2, 60 * 2 ]
+
+const renderThumbnailToNewCanvas = (index, options = { forceReadFromFiles: false }) => {
+  let size = getThumbnailSize(boardData)
+
+  let context = createSizedContext(size)
+  fillContext(context, 'white')
+  let canvas = context.canvas
+
+  let canvasImageSources
+  if (!options.forceReadFromFiles && index == currentBoard) {
+    // grab from memory
+    canvasImageSources = storyboarderSketchPane.getCanvasImageSources()
+    exporterCommon.flattenCanvasImageSourcesDataToContext(context, canvasImageSources, size)
+    return Promise.resolve(canvas)
+  } else {
+    // grab from files
+    return exporterCommon.flattenBoardToCanvas(
+      boardData.boards[index],
+      canvas,
+      size,
+      boardFilename
+    )
+  }
+}
+
 const saveThumbnailFile = (index, options = { forceReadFromFiles: false }) => {
   return new Promise((resolve, reject) => {
     let imageFilePath = path.join(boardPath, 'images', boardModel.boardFilenameForThumbnail(boardData.boards[index]))
-    
-    let size = [
-      Math.floor(60 * boardData.aspectRatio) * 2,
-      60 * 2
-    ]
-    
-    let context = createSizedContext(size)
-    fillContext(context, 'white')
-    let canvas = context.canvas
-    
-    let promise
-    let canvasImageSources
-    if (!options.forceReadFromFiles && index == currentBoard) {
-      // grab from memory
-      canvasImageSources = [
-        // reference
-        {
-          canvasImageSource: storyboarderSketchPane.sketchPane.getLayerCanvas(0),
-          opacity: storyboarderSketchPane.sketchPane.getLayerOpacity(0)
-        },
-        // main
-        {
-          canvasImageSource: storyboarderSketchPane.sketchPane.getLayerCanvas(1),
-          opacity: storyboarderSketchPane.sketchPane.getLayerOpacity(1)
-        },
-        // notes
-        {
-          canvasImageSource: storyboarderSketchPane.sketchPane.getLayerCanvas(3),
-          opacity: storyboarderSketchPane.sketchPane.getLayerOpacity(3)
-        }
-      ]
-      exporterCommon.flattenCanvasImageSourcesDataToContext(context, canvasImageSources, size)
-      promise = Promise.resolve()
-    } else {
-      // grab from files
-      promise = exporterCommon.flattenBoardToCanvas(
-        boardData.boards[index],
-        canvas,
-        size,
-        boardFilename
-      )
-    }
 
-    promise.then(() => {
+    renderThumbnailToNewCanvas(index, options).then(canvas => {
       let imageData = canvas
         .toDataURL('image/png')
         .replace(/^data:image\/\w+;base64,/, '')

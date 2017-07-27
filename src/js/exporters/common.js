@@ -127,7 +127,7 @@ const flattenBoardToCanvas = (board, canvas, size, projectFileAbsolutePath) => {
     getCanvasImageSourcesDataForBoard(board, projectFileAbsolutePath)
       .then(canvasImageSourcesData => {
         flattenCanvasImageSourcesDataToContext(canvas.getContext('2d'), canvasImageSourcesData, size)
-        resolve()
+        resolve(canvas)
       }).catch(err => {
         reject(err)
       })

@@ -612,7 +612,27 @@ class StoryboarderSketchPane extends EventEmitter {
     if (this.toolbar) {
       this.setBrushTool(this.toolbar.getBrushOptions().kind, this.toolbar.getBrushOptions())
     }
-  }  
+  }
+  
+  getCanvasImageSources () {
+    return [
+      // reference
+      {
+        canvasImageSource: this.sketchPane.getLayerCanvas(0),
+        opacity: this.sketchPane.getLayerOpacity(0)
+      },
+      // main
+      {
+        canvasImageSource: this.sketchPane.getLayerCanvas(1),
+        opacity: this.sketchPane.getLayerOpacity(1)
+      },
+      // notes
+      {
+        canvasImageSource: this.sketchPane.getLayerCanvas(3),
+        opacity: this.sketchPane.getLayerOpacity(3)
+      }
+    ]
+  }
 }
 
 class DrawingStrategy {
