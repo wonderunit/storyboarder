@@ -19,8 +19,8 @@ const defaultPrefs = {
   defaultBoardTiming: 2000,
   importTargetLayer: "reference",
   enableCanvasPaintingOpacity: true,
-  enableAudio: false,
   enableBrushCursor: true,
+  enableAudio: false,
   enableStabilizer: true,
   
 }
