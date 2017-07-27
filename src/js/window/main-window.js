@@ -398,9 +398,6 @@ let loadBoardUI = ()=> {
       if (el) {
         el.src = imageData
       }
-
-      // TODO trigger save after 2000 msecs idle
-      // saveThumbnailFile(currentBoard).then(index => updateThumbnailDisplay(index))
     })
 
     // save progress image
@@ -1154,6 +1151,7 @@ let saveImageFile = () => {
   // create/update the thumbnail image file if necessary
   let tasks = Promise.resolve()
   if (shouldSaveThumbnail) {
+    console.log('\t ... including thumbnail')
     tasks = saveThumbnailFile(currentBoard).then(index => updateThumbnailDisplay(index))
   }
   return tasks
