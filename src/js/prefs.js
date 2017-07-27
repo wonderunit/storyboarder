@@ -1,6 +1,7 @@
 const fs = require('fs')
 const path = require('path')
 const { app } = require('electron')
+const os = require("os");
 
 const pkg = require('../../package.json')
 const util = require('./utils/index.js') // for Object.equals
@@ -10,7 +11,7 @@ const prefFile = path.join(app.getPath('userData'), 'pref.json')
 
 const defaultPrefs = {
   version: pkg.version,
-  enableDrawingSoundEffects: false,
+  enableDrawingSoundEffects: true,
   enableDrawingMelodySoundEffects: true,
   enableUISoundEffects: true,
   enableHighQualityAudio: false,
@@ -23,6 +24,12 @@ const defaultPrefs = {
   enableStabilizer: true,
   enableAudio: false,
   enableAnalytics: true
+}
+
+// For slow computers, override the defaults here.
+let numCPUs = os.cpus().length
+if(numCPUs <= 2) {
+  defaultPrefs.enableDrawingSoundEffects = false
 }
 
 let prefs
