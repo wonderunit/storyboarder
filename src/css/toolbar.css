@@ -57,7 +57,7 @@
  * buttons and their icons
  */
 #toolbar .button {
-  -webkit-app-region: no-drag
+  -webkit-app-region: no-drag;
 }
 #toolbar .group:not(.group_tools):not(.group_colors) .button {
   padding: 0;
