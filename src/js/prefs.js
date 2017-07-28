@@ -22,7 +22,7 @@ const defaultPrefs = {
   enableBrushCursor: true,
   enableStabilizer: true,
   enableAudio: false,
-  
+  enableAnalytics: true
 }
 
 let prefs
