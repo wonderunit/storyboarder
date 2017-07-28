@@ -5,10 +5,13 @@
 /**/
 
 .context-menu-container {
+  top: 0px;
+  left: 0px;
   position: absolute;
+  transform: translateX(0) translateY(0) translateZ(0);
+
+  pointer-events: none; /* no pointer events until animated visible */
   z-index: 999;
-  
-  pointer-events: none; 
 }
 
 #context-menu {
@@ -130,6 +133,11 @@
 
 
 .color-picker-container { 
+  top: 0px;
+  left: 0px;
+  position: absolute;
+  transform: translateX(0) translateY(0) translateZ(0);
+
   pointer-events: none; /* no pointer events until animated visible */
   z-index: 999;
 }
