@@ -23,7 +23,6 @@
 }
 #toolbar .column {
   display: flex;
-  /*justify-content: flex-end;*/
   flex-wrap: nowrap;
 }
 #toolbar .column:first-child {
