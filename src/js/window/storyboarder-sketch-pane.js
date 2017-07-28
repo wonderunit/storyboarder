@@ -439,17 +439,23 @@ class StoryboarderSketchPane extends EventEmitter {
     let image = null
     let threshold = 0xff
     // TODO why are we creating a new pointer every time?
-    let brushPointer = this.sketchPane.createBrushPointer(
+    let brushPointerCanvas = this.sketchPane.createBrushPointer(
       image, 
       Math.max(6, this.brush.getSize() * this.scaleFactor),
       this.brush.getAngle(),
       threshold,
       true)
+    
+    let brushPointer = document.createElement('img')
+    brushPointer.src = brushPointerCanvas.toDataURL('image/png')
+    brushPointer.style.width = brushPointerCanvas.width
+    brushPointer.style.height = brushPointerCanvas.height
     brushPointer.style.display = 'block'
-    brushPointer.style.setProperty('margin-left', '-' + (brushPointer.width * 0.5) + 'px')
-    brushPointer.style.setProperty('margin-top', '-' + (brushPointer.height * 0.5) + 'px')
+    brushPointer.style.setProperty('margin-left', '-' + (brushPointerCanvas.width * 0.5) + 'px')
+    brushPointer.style.setProperty('margin-top', '-' + (brushPointerCanvas.height * 0.5) + 'px')
 
     this.brushPointerContainer.innerHTML = ''
+
     this.brushPointerContainer.appendChild(brushPointer)
   }
 
