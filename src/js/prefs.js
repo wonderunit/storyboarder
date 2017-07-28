@@ -32,7 +32,6 @@ if(numCPUs <= 2) {
   defaultPrefs.enableDrawingMelodySoundEffects = false
   defaultPrefs.enableUISoundEffects = false
   defaultPrefs.enableCanvasPaintingOpacity = false
-  defaultPrefs.enableBrushCursor = false
   defaultPrefs.enableStabilizer = false
 }
 
