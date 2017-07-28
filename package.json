@@ -68,6 +68,7 @@
     "ag-psd": "^1.0.0",
     "color-js": "^1.0.4",
     "eases": "1.0.8",
+    "electron-google-analytics": "0.0.16",
     "electron-is-dev": "0.1.2",
     "electron-localshortcut": "^1.0.0",
     "electron-updater": "2.4.3",

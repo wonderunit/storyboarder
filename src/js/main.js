@@ -6,6 +6,8 @@ const isDev = require('electron-is-dev')
 
 const prefModule = require('./prefs')
 
+const analytics = require('./analytics')
+
 const fountain = require('./vendor/fountain')
 const fountainDataParser = require('./fountain-data-parser')
 const fountainSceneIdUtil = require('./fountain-scene-id-util')
@@ -65,6 +67,7 @@ app.on('open-file', (event, path) => {
 })
 
 app.on('ready', ()=> {
+  analytics.init()
   openWelcomeWindow()
   // via https://github.com/electron/electron/issues/4690#issuecomment-217435222
   const argv = process.defaultApp ? process.argv.slice(2) : process.argv
@@ -141,12 +144,14 @@ let openWelcomeWindow = ()=> {
     setTimeout(() => {
       welcomeWindow.show()
       autoUpdater.init(welcomeWindow)
+      analytics.screenView('welcome')
     }, 300)
   })
 
   welcomeWindow.once('close', () => {
     welcomeWindow = null
     if (!welcomeInprogress) {
+      analytics.event('Application', 'quit')
       app.quit()
     } else {
       welcomeInprogress = false
@@ -216,7 +221,7 @@ let openFile = (file) => {
         //[scriptData, locations, characters, metadata]
         let processedData = processFountainData(data, true, false)
         addToRecentDocs(currentFile, processedData[3])
-        loadStoryboarderWindow(null, processedData[0], processedData[1], processedData[2], boardSettings, currentPath)
+        loadStoryboarderWindow(currentFile, processedData[0], processedData[1], processedData[2], boardSettings, currentPath)
       }
 
     })
@@ -418,6 +423,8 @@ let createNew = () => {
           addToRecentDocs(filePath, newBoardObject)
 
           loadStoryboarderWindow(filePath)
+
+          analytics.event('Application', 'new', aspects[response])
         })
       } else {
         console.log("error: already exists")
@@ -437,6 +444,8 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
   if (mainWindow && !mainWindow.isDestroyed()) {
     mainWindow.close()
   }
+
+  analytics.event('Application', 'open', filename)
 
   const { width, height } = electron.screen.getPrimaryDisplay().workAreaSize
   mainWindow = new BrowserWindow({
@@ -475,6 +484,7 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
   mainWindow.loadURL(`file://${__dirname}/../main-window.html`)
   mainWindow.once('ready-to-show', () => {
     mainWindow.webContents.send('load', [filename, scriptData, locations, characters, boardSettings, currentPath])
+    analytics.screenView('main')
   })
 
   if (isDev) {
@@ -487,6 +497,8 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
       if (isDev) ipcMain.removeListener('errorInWindow', onErrorInWindow)
       welcomeWindow.webContents.send('updateRecentDocuments')
       welcomeWindow.show()
+      analytics.screenView('welcome')
+      analytics.event('Application', 'close')
     }
   })
 }
@@ -704,6 +716,7 @@ ipcMain.on('textInputMode', (event, arg)=> {
 
 ipcMain.on('preferences', (event, arg) => {
   preferencesUI.show()
+  analytics.screenView('preferences')
 })
 
 ipcMain.on('toggleGuide', (event, arg) => {
@@ -744,7 +757,6 @@ ipcMain.on('printWorksheet', (event, arg) => {
 })
 
 ipcMain.on('importWorksheets', (event, arg) => {
-  console.log("SUPPPP")
   //openPrintWindow()
   importWorksheetDialogue()
   //mainWindow.webContents.send('importWorksheets', arg)
@@ -760,4 +772,13 @@ ipcMain.on('prefs:change', (event, arg) => {
 
 ipcMain.on('showKeyCommands', (event, arg) => {
   openKeyCommandWindow()
+  analytics.screenView('key commands')
+})
+
+ipcMain.on('analyticsScreen', (event, screenName) => {
+  analytics.screenView(screenName)
+})
+
+ipcMain.on('analyticsEvent', (event, category, action, label, value) => {
+  analytics.event(category, action, label, value)
 })

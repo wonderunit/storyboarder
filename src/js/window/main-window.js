@@ -1223,7 +1223,8 @@ let openInEditor = () => {
         psdData.notes && saveDataURLtoFile(psdData.notes, board.url.replace('.png', '-notes.png'))
         psdData.reference && saveDataURLtoFile(psdData.reference, board.url.replace('.png', '-reference.png'))
       }
-    });
+    })
+    ipcRenderer.send('analyticsEvent', 'Board', 'edit in photoshop')
   }
 
 
@@ -1569,8 +1570,8 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
       document.querySelector('.layers-ui-reference-opacity').value = 72
       storyboarderSketchPane.sketchPane.setLayerOpacity(72/100, 0)
     }
-    
     updateSketchPaneBoard().then(() => resolve()).catch(e => console.error(e))
+    ipcRenderer.send('analyticsEvent', 'Board', 'go to board')
   })
 }
 
@@ -2021,6 +2022,7 @@ let renderThumbnailDrawer = ()=> {
     contextMenu.on('add', () => {
       newBoard()
       gotoBoard(currentBoard+1)
+      ipcRenderer.send('analyticsEvent', 'Board', 'new')
     })
     contextMenu.on('delete', () => {
       deleteBoards()
@@ -2133,6 +2135,7 @@ let renderThumbnailButtons = () => {
       el.dispatchEvent(eventMouseOut)
       newBoard(boardData.boards.length)
       gotoBoard(boardData.boards.length)
+      ipcRenderer.send('analyticsEvent', 'Board', 'new')
     })
 
     // NOTE tooltips.setupTooltipForElement checks prefs each time, e.g.:
@@ -2838,6 +2841,7 @@ ipcRenderer.on('newBoard', (event, args)=>{
       gotoBoard(currentBoard)
     }
   }
+  ipcRenderer.send('analyticsEvent', 'Board', 'new')
 })
 
 ipcRenderer.on('openInEditor', (event, args)=>{
@@ -3827,6 +3831,7 @@ ipcRenderer.on('useColor', (e, arg)=> {
 ipcRenderer.on('clear', (e, arg) => {
   if (!textInputMode) {
     clearLayers(arg)
+    ipcRenderer.send('analyticsEvent', 'Board', 'clear')
   }
 })
 
@@ -3859,6 +3864,7 @@ ipcRenderer.on('deleteBoards', (event, args)=>{
 ipcRenderer.on('duplicateBoard', (event, args)=>{
   if (!textInputMode) {
     duplicateBoard()
+    ipcRenderer.send('analyticsEvent', 'Board', 'duplicate')
   }
 })
 
@@ -3919,26 +3925,32 @@ ipcRenderer.on('toggleSpeaking', (event, args) => {
 
 ipcRenderer.on('showTip', (event, args) => {
   storyTips.show()
+  ipcRenderer.send('analyticsEvent', 'Board', 'showTip')
 })
 
 ipcRenderer.on('exportAnimatedGif', (event, args) => {
   exportAnimatedGif()
+  ipcRenderer.send('analyticsEvent', 'Board', 'exportAnimatedGif')
 })
 
 ipcRenderer.on('exportFcp', (event, args) => {
   exportFcp()
+  ipcRenderer.send('analyticsEvent', 'Board', 'exportFcp')
 })
 
 ipcRenderer.on('exportImages', (event, args) => {
   exportImages()
+  ipcRenderer.send('analyticsEvent', 'Board', 'exportImages')
 })
 
 ipcRenderer.on('exportPDF', (event, args) => {
   exportPDF()
+  ipcRenderer.send('analyticsEvent', 'Board', 'exportPDF')
 })
 
 ipcRenderer.on('exportCleanup', (event, args) => {
   exportCleanup()
+  ipcRenderer.send('analyticsEvent', 'Board', 'exportCleanup')
 })
 
 let printWindow
@@ -3974,6 +3986,7 @@ ipcRenderer.on('printWorksheet', (event, args) => {
     printWindow.show()
     printWindow.webContents.send('worksheetData',boardData.aspectRatio, currentScene, scriptData)
   })
+  ipcRenderer.send('analyticsEvent', 'Board', 'show print window')
 })
 
 ipcRenderer.on('importFromWorksheet', (event, args) => {
@@ -4005,8 +4018,10 @@ ipcRenderer.on('importWorksheets', (event, args) => {
   importWindow.once('ready-to-show', () => {
     importWindow.webContents.send('worksheetImage',args)
   })
+  ipcRenderer.send('analyticsEvent', 'Board', 'show import window')
 })
 
 ipcRenderer.on('save', (event, args) => {
   save()
+  ipcRenderer.send('analyticsEvent', 'Board', 'save')
 })

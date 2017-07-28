@@ -48,6 +48,8 @@ const print = () => {
       break
   }
 
+  ipcRenderer.send('analyticsEvent', 'Board', 'print', null, document.querySelector('#copies').value)
+
   let output = child_process.execSync(cmd)
 }
 
