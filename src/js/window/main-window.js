@@ -75,9 +75,6 @@ let layerStatus = {
 }
 let imageFileDirtyTimer
 
-let thumbnailDirty = false
-let thumbnailDirtyTimer
-
 let drawIdleTimer
 
 let isEditMode = false
@@ -378,8 +375,6 @@ let loadBoardUI = ()=> {
     storeUndoStateForImage(false, layerIndices)
     markImageFileDirty(layerIndices)
 
-    markThumbnailDirty()
-
     // save progress image
     if(isRecording) {
       let snapshotCanvas = storyboarderSketchPane.sketchPane.getLayerCanvas(1)
@@ -388,12 +383,13 @@ let loadBoardUI = ()=> {
     }
   })
   storyboarderSketchPane.on('pointerdown', () => {
-    clearTimeout(thumbnailDirtyTimer)
     clearTimeout(drawIdleTimer)
   })
 
+  // this is essentially pointerup
   storyboarderSketchPane.on('lineMileage', value => {
     addToLineMileage(value)
+    drawIdleTimer = setTimeout(onDrawIdle, 500)
   })
 
 
@@ -1054,12 +1050,6 @@ let markImageFileDirty = layerIndices => {
   imageFileDirtyTimer = setTimeout(saveImageFile, 5000)
 }
 
-const markThumbnailDirty = () => {
-  thumbnailDirty = true
-  clearTimeout(thumbnailDirtyTimer)
-  thumbnailDirtyTimer = setTimeout(updateThumbnailDisplayFromMemory, 500)
-}
-
 const addToLineMileage = value => {
   let board = boardData.boards[currentBoard]
   if (!(board.lineMileage)) { 
@@ -1073,14 +1063,17 @@ const addToLineMileage = value => {
   }
   board.lineMileage += value
   markBoardFileDirty()
-
-  drawIdleTimer = setTimeout(onDrawIdle, 500)
 }
 
 const onDrawIdle = () => {
   clearTimeout(drawIdleTimer)
+
+  // update the line mileage in two places
   renderMetaDataLineMileage()
   renderStats()
+
+  // update the thumbnail
+  updateThumbnailDisplayFromMemory()
 }
 
 let saveDataURLtoFile = (dataURL, filename) => {
