@@ -2592,7 +2592,7 @@ const resize = () => {
   const workspaceWidth = windowWidth - scenesWidth - scriptWidth
 
   const toolbarEl = document.getElementById('toolbar')
-  toolbarEl.classList.toggle('with-reduced-width', workspaceWidth < 1505)
+  toolbarEl.classList.toggle('with-reduced-width', workspaceWidth < 1585)
 }
 
 window.onkeydown = (e)=> {
