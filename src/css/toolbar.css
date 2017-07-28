@@ -230,18 +230,22 @@
 }
 #toolbar #toolbar-light-pencil .icon {
   background-image: url(../img/toolbar-brush-tools-0.png);
+  background-position: 0 calc(130% - 15%);
 }
 #toolbar #toolbar-pencil {
   flex: 106;
 }
 #toolbar #toolbar-pencil .icon {
   background-image: url(../img/toolbar-brush-tools-1.png);
+  background-position: 0 calc(130% - 15%);
 }
 #toolbar #toolbar-pen {
   flex: 120;
+  background-position: 0 calc(100% - 15%);
 }
 #toolbar #toolbar-pen .icon {
   background-image: url(../img/toolbar-brush-tools-2.png);
+  background-position: 0 calc(110% - 15%);
 }
 #toolbar #toolbar-brush {
   flex: 134;
@@ -254,12 +258,14 @@
 }
 #toolbar #toolbar-note-pen .icon {
   background-image: url(../img/toolbar-brush-tools-4.png);
+  background-position: 0 calc(125% - 15%);
 }
 #toolbar #toolbar-eraser {
   flex: 218;
 }
 #toolbar #toolbar-eraser .icon {
   background-image: url(../img/toolbar-brush-tools-5.png);
+  background-position: 0 calc(135% - 15%);
 }
 
 
