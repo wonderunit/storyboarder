@@ -99,6 +99,7 @@
 #toolbar .group_tools .button {
   position: relative;
   overflow: hidden;
+  height: 100%;
 }
 /*
  * REDUCED WIDTH
