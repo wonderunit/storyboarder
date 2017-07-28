@@ -1,6 +1,7 @@
 const fs = require('fs')
 const path = require('path')
 const { app } = require('electron')
+const os = require("os");
 
 const pkg = require('../../package.json')
 const util = require('./utils/index.js') // for Object.equals
@@ -21,8 +22,18 @@ const defaultPrefs = {
   enableCanvasPaintingOpacity: true,
   enableBrushCursor: true,
   enableStabilizer: true,
-  enableAudio: false,
   enableAnalytics: true
+}
+
+// For slow computers, override the defaults here.
+let numCPUs = os.cpus().length
+if(numCPUs <= 2) {
+  defaultPrefs.enableDrawingSoundEffects = false
+  defaultPrefs.enableDrawingMelodySoundEffects = false
+  defaultPrefs.enableUISoundEffects = false
+  defaultPrefs.enableCanvasPaintingOpacity = false
+  defaultPrefs.enableBrushCursor = false
+  defaultPrefs.enableStabilizer = false
 }
 
 let prefs
