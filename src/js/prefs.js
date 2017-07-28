@@ -26,8 +26,9 @@ const defaultPrefs = {
 }
 
 // For slow computers, override the defaults here.
-let numCPUs = os.cpus().length
-if(numCPUs <= 2) {
+let cpus = os.cpus()
+let cpu = cpus[0]
+if(cpus.length <= 2 || cpu.speed <= 2000) {
   defaultPrefs.enableDrawingSoundEffects = false
   defaultPrefs.enableDrawingMelodySoundEffects = false
   defaultPrefs.enableUISoundEffects = false
