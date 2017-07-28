@@ -54,6 +54,9 @@
     "fileAssociations": {
       "ext": "storyboarder",
       "name": "STORYBOARDER"
+    },
+    "nsis": {
+      "perMachine": true
     }
   },
   "devDependencies": {
