@@ -16,8 +16,9 @@ let ses
 
 // TODO ADD EXCEPTION TRACKING
 // hit type: exception
-// timing tracking
 // screen resolution
+// pen vs mouse
+// keyboard vs nav buttons
 
 let enabled = true
 
@@ -98,5 +99,6 @@ const timing = (category, name, ms) => {
 module.exports = {
   init,
   screenView,
-  event
+  event,
+  timing
 }

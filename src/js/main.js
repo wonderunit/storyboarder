@@ -445,8 +445,6 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
     mainWindow.close()
   }
 
-  analytics.event('Application', 'open', filename)
-
   const { width, height } = electron.screen.getPrimaryDisplay().workAreaSize
   mainWindow = new BrowserWindow({
     acceptFirstMouse: true,
@@ -781,4 +779,9 @@ ipcMain.on('analyticsScreen', (event, screenName) => {
 
 ipcMain.on('analyticsEvent', (event, category, action, label, value) => {
   analytics.event(category, action, label, value)
+})
+
+
+ipcMain.on('analyticsTiming', (event, category, name, ms) => {
+  analytics.timing(category, name, ms)
 })

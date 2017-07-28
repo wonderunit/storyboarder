@@ -118,6 +118,10 @@ let scrollPoint
 const msecsToFrames = value => Math.round(value / 1000 * 24)
 const framesToMsecs = value => Math.round(value / 24 * 1000)
 
+
+//  analytics.event('Application', 'open', filename)
+
+
 menu.setMenu()
 
 ///////////////////////////////////////////////////////////////
@@ -126,6 +130,9 @@ menu.setMenu()
 
 const load = (event, args) => {
   if (args[1]) {
+    console.log("LOADING FOUNTAIN FILE", args[0])
+    ipcRenderer.send('analyticsEvent', 'Application', 'open script', args[0])
+
     // there is scriptData - the window opening is a script type
     scriptData = args[1]
     locations = args[2]
@@ -149,9 +156,9 @@ const load = (event, args) => {
     boardPath = boardFilename.split(path.sep)
     boardPath.pop()
     boardPath = boardPath.join(path.sep)
-    console.log(' BOARD PATH: ', boardPath)
-
+    console.log(' BOARD PATH: ', boardFilename)
     boardData = JSON.parse(fs.readFileSync(boardFilename))
+    ipcRenderer.send('analyticsEvent', 'Application', 'open', boardFilename, boardData.boards.length)
   }
 
   loadBoardUI()
@@ -1579,7 +1586,7 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
       storyboarderSketchPane.sketchPane.setLayerOpacity(72/100, 0)
     }
     updateSketchPaneBoard().then(() => resolve()).catch(e => console.error(e))
-    ipcRenderer.send('analyticsEvent', 'Board', 'go to board')
+    ipcRenderer.send('analyticsEvent', 'Board', 'go to board', null, currentBoard)
   })
 }
 
@@ -2541,6 +2548,9 @@ let loadScene = (sceneNumber) => {
 
   dragTarget = document.querySelector('#thumbnail-container')
   dragTarget.style.scrollBehavior = 'unset'
+
+  ipcRenderer.send('analyticsEvent', 'Application', 'open', boardFilename, boardData.boards.length)
+
 }
 
 window.onmousedown = (e) => {

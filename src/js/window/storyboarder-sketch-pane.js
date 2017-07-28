@@ -1,5 +1,8 @@
 const EventEmitter = require('events').EventEmitter
 
+const {ipcRenderer} = require('electron')
+
+
 const SketchPane = require('../sketch-pane')
 const Brush = require('../sketch-pane/brush')
 const LineMileageCounter = require('./line-mileage-counter')
@@ -22,6 +25,8 @@ const enableStabilizer = prefsModule.getPrefs('main')['enableStabilizer']
 class StoryboarderSketchPane extends EventEmitter {
   constructor (el, canvasSize) {
     super()
+    this.prevTimeStamp = 0
+    this.frameLengthArray = []
 
     this.cancelTransform() // set Drawing Strategy
 
@@ -207,6 +212,22 @@ class StoryboarderSketchPane extends EventEmitter {
   canvasPointerUp (e) {
     this.isPointerDown = false
     this.strategy.canvasPointerUp(event)
+
+    if (this.frameLengthArray.length > 20) {
+      // get average frame duration
+      let sum = this.frameLengthArray.reduce(function(a, b) { return a + b; })
+      let avg = sum / this.frameLengthArray.length
+      // get longest
+      this.frameLengthArray.sort().pop()
+      let max = this.frameLengthArray.reverse()[0]
+      // send data
+      // 1 in 10 chance to send
+      if (Date.now() % 8 == 1) {
+        ipcRenderer.send('analyticsTiming', 'Performance', 'average frame', avg)
+        ipcRenderer.send('analyticsTiming', 'Performance', 'max frame', max)
+      }
+    }
+    this.frameLengthArray = []
   }
 
   canvasCursorMove (event) {
@@ -216,18 +237,24 @@ class StoryboarderSketchPane extends EventEmitter {
   canvasPointerOver () {
     this.sketchPaneDOMElement.addEventListener('pointermove', this.canvasCursorMove)
     if(this.brushPointerContainer && this.brushPointerContainer.style) {
-      this.brushPointerContainer.style.display = 'block'
+      //this.brushPointerContainer.style.visibility = 'visible'
+      //    transform: translate(780px, 282px);
     }
   }
 
   canvasPointerOut () {
     this.sketchPaneDOMElement.removeEventListener('pointermove', this.canvasCursorMove)
     if(this.brushPointerContainer && this.brushPointerContainer.style) {
-      this.brushPointerContainer.style.display = 'none'
+      //this.brushPointerContainer.style.visibility = 'hidden'
+          this.brushPointerContainer.style.transform =  'translate(-1080px, 282px)'
     }
   }
 
   onFrame (timestep) {
+    if (this.isPointerDown) {
+      this.frameLengthArray.push(timestep - this.prevTimeStamp)
+    }
+    this.prevTimeStamp = timestep
     this.renderEvents()
     requestAnimationFrame(this.onFrame)
   }
