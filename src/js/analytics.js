@@ -19,7 +19,12 @@ let ses
 // timing tracking
 // screen resolution
 
-const init = () => {
+let enabled = true
+
+const init = shouldEnable => {
+  enabled = shouldEnable
+  if (!enabled) return
+
   ses = session.fromPartition('persist:name')
   // get the UUID from file
   fs.readFile(uuidFile, "utf8", (err, data) => {
@@ -53,6 +58,8 @@ const init = () => {
 }
 
 const screenView = (screenName) => {
+  if (!enabled) return
+
   analytics.send('screenview', {
     cd: screenName,
     an: pkg.name,
@@ -62,6 +69,7 @@ const screenView = (screenName) => {
 }
 
 const event = (category, action, label, value) => {
+  if (!enabled) return
   let params = {
     ec: category,
     ea: action,
@@ -78,6 +86,8 @@ const event = (category, action, label, value) => {
 }
 
 const timing = (category, name, ms) => {
+  if (!enabled) return
+
   analytics.send('timing', {
     utc: category, 
     utv: name, 
