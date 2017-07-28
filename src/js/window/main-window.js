@@ -78,6 +78,8 @@ let imageFileDirtyTimer
 let thumbnailDirty = false
 let thumbnailDirtyTimer
 
+let drawIdleTimer
+
 let isEditMode = false
 let editModeTimer
 let enableEditModeDelay = 750 // msecs
@@ -344,24 +346,6 @@ const commentOnLineMileage = (miles) => {
   notifications.notify({message: message.join(' '), timing: 10})
 }
 
-let addToLineMileage = value => {
-  let board = boardData.boards[currentBoard]
-  if (!(board.lineMileage)) { 
-    board.lineMileage = 0 
-  }
-  let mileageChecks = [0.01,1,5,8,10,20,50,100,200,300,1000]
-  for (let checkAmount of mileageChecks) {
-    if ((board.lineMileage/5280 < checkAmount) && ((board.lineMileage + value)/5280 > checkAmount)) {
-      commentOnLineMileage(checkAmount)
-    }
-  }
-  board.lineMileage += value
-  markBoardFileDirty()
-
-  renderMetaDataLineMileage()
-  renderStats()
-}
-
 let loadBoardUI = ()=> {
   let aspectRatio = boardData.aspectRatio
 
@@ -405,6 +389,7 @@ let loadBoardUI = ()=> {
   })
   storyboarderSketchPane.on('pointerdown', () => {
     clearTimeout(thumbnailDirtyTimer)
+    clearTimeout(drawIdleTimer)
   })
 
   storyboarderSketchPane.on('lineMileage', value => {
@@ -1073,6 +1058,29 @@ const markThumbnailDirty = () => {
   thumbnailDirty = true
   clearTimeout(thumbnailDirtyTimer)
   thumbnailDirtyTimer = setTimeout(updateThumbnailDisplayFromMemory, 500)
+}
+
+const addToLineMileage = value => {
+  let board = boardData.boards[currentBoard]
+  if (!(board.lineMileage)) { 
+    board.lineMileage = 0 
+  }
+  let mileageChecks = [0.01,1,5,8,10,20,50,100,200,300,1000]
+  for (let checkAmount of mileageChecks) {
+    if ((board.lineMileage/5280 < checkAmount) && ((board.lineMileage + value)/5280 > checkAmount)) {
+      commentOnLineMileage(checkAmount)
+    }
+  }
+  board.lineMileage += value
+  markBoardFileDirty()
+
+  drawIdleTimer = setTimeout(onDrawIdle, 500)
+}
+
+const onDrawIdle = () => {
+  clearTimeout(drawIdleTimer)
+  renderMetaDataLineMileage()
+  renderStats()
 }
 
 let saveDataURLtoFile = (dataURL, filename) => {
