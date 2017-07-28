@@ -2584,14 +2584,15 @@ window.onmousedown = (e) => {
 }
 
 const resize = () => {
-  // measure the main area
-  const mainEl = document.getElementById('storyboarder-main')
+  // measure the area available to the drawing workspace
+  const scenesWidth = document.getElementById('scenes').getBoundingClientRect().width
+  const scriptWidth = document.getElementById('script').getBoundingClientRect().width
+  const windowWidth = document.body.offsetWidth
+
+  const workspaceWidth = windowWidth - scenesWidth - scriptWidth
+
   const toolbarEl = document.getElementById('toolbar')
-  if (mainEl && toolbarEl) {
-    const rect = mainEl.getBoundingClientRect()
-    const isReducedWidth = rect.width < 1505
-    toolbarEl.classList.toggle('with-reduced-width', isReducedWidth)
-  }
+  toolbarEl.classList.toggle('with-reduced-width', workspaceWidth < 1505)
 }
 
 window.onkeydown = (e)=> {
