@@ -28,6 +28,7 @@
 }
 #toolbar .column:first-child {
   flex: 1;
+  min-width: 350px;
   max-width: 550px;
 }
 #toolbar .column:last-child {
@@ -67,10 +68,12 @@
   height: 100%;
 }
 #toolbar .group:not(.group_tools):not(.group_colors) .icon {
-  min-width: 25px;
-  min-height: 25px;
-  max-width: 45px;
-  max-height: 45px;
+  min-width: 30px;
+  min-height: 30px;
+  max-width: 35px;
+  max-height: 35px;
+  /*max-width: 45px;
+  max-height: 45px;*/
 }
 /*
  * brush tools
@@ -97,14 +100,28 @@
   position: relative;
   overflow: hidden;
 }
-#toolbar .group_tools .icon-toolbar-tool {
-  /*top: 0;*/
-}
 /*
- * etc
+ * REDUCED WIDTH
  */
+ /* hide undo/redo */
 #toolbar.with-reduced-width .column .group.group_undo_redo {
   display: none;
+}
+/* normal width: space out the buttons */
+#toolbar .group:not(.group_tools):not(.group_colors) .button {
+  margin-top: 2px;
+  margin-bottom: 4px;
+  margin-left: 2px;
+  padding: 15px;
+}
+/* reduced width: don't space out the buttons */
+#toolbar.with-reduced-width .group:not(.group_tools):not(.group_colors) .button {
+  margin: 0;
+  padding: 0;
+}
+/* reduced width: less space above toolbar colors */
+#toolbar.with-reduced-width .toolbar-colors {
+  margin-top: 0;
 }
 
 
@@ -122,23 +139,9 @@
 
 #toolbar .group:not(.group_tools):not(.group_colors) .button {
   border-radius: 5px;
-
-  /* TODO */
-  /*
-  margin-top: 2px;
-  margin-bottom: 4px;
-  margin-left: 2px;
-  padding: 15px;
-  */
-
   /*width: 35px;
   height: 35px;*/
 }
-/*@media only screen and (max-width: 1709px) {
-  #toolbar .group:not(.group_tools) .button {
-    padding: 5px;
-  }
-}*/
 
 
 
@@ -214,7 +217,9 @@
   /*filter: brightness(160%) drop-shadow(0px 0px 5px rgba(0, 0, 0, 0.4));*/
     /*transition: bottom 0.125s ease-in-out, filter 0.1 linear;*/
 }
-
+#toolbar .group_tools .button {
+  padding: 0 3px;
+}
 #toolbar #toolbar-light-pencil {
   flex: 135;
 }
@@ -262,11 +267,6 @@
   margin-left: 10px;
   margin-right: 10px;
 }
-/*@media only screen and (max-width: 1709px) {
-  #toolbar .toolbar-colors {
-    margin-top: 0;
-  }
-}*/
 #toolbar .toolbar-colors_column {
   display: flex;
   background-color: #292929;
