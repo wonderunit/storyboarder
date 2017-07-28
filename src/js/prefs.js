@@ -22,7 +22,6 @@ const defaultPrefs = {
   enableCanvasPaintingOpacity: true,
   enableBrushCursor: true,
   enableStabilizer: true,
-  enableAudio: false,
   enableAnalytics: true
 }
 
@@ -30,6 +29,8 @@ const defaultPrefs = {
 let numCPUs = os.cpus().length
 if(numCPUs <= 2) {
   defaultPrefs.enableDrawingSoundEffects = false
+  defaultPrefs.enableDrawingMelodySoundEffects = false
+  defaultPrefs.enableUISoundEffects = false
   defaultPrefs.enableCanvasPaintingOpacity = false
   defaultPrefs.enableBrushCursor = false
   defaultPrefs.enableStabilizer = false
