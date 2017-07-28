@@ -1519,6 +1519,8 @@ let animatedScrollingTimer = +new Date()
 let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
   toolbar.emit('cancelTransform')
   return new Promise((resolve, reject) => {
+    clearTimeout(drawIdleTimer)
+
     currentBoard = boardNumber
     currentBoard = Math.max(currentBoard, 0)
     currentBoard = Math.min(currentBoard, boardData.boards.length-1)
