@@ -83,7 +83,7 @@
   flex: 1;
 
   display: flex;
-  align-items: flex-end;
+  align-items: flex-start;
 
   margin-top: -10px; /* flush with top */
   margin-right: 45px;
@@ -191,31 +191,33 @@
 */
 
 
-#toolbar .button .icon-toolbar-tool {
+#toolbar .group_tools .button .icon-toolbar-tool {
   background-position: bottom center;
   background-repeat: no-repeat;
   background-size: cover;
   position: relative;
 
   /*position: absolute;*/
-  /*padding-bottom: 5px; */ /* make room for the drop shadow */
+  /*padding-bottom: 5px; /* make room for the drop shadow */*/
 
   /*bottom: 15px;*/
-  /*filter: brightness(100%) drop-shadow(0px 0px 5px rgba(0, 0, 0, 0.4));*/
-  /*transition: bottom 0.15s ease-out, filter 0.15s linear;*/
+  filter: brightness(100%) drop-shadow(0px 0px 5px rgba(0, 0, 0, 0.4));
+  transition: height 0.15s ease-out, filter 0.15s linear;
+}
+#toolbar .group_tools .button .icon-toolbar-tool {
+  height: 85%;
 }
 
-#toolbar .button .icon-toolbar-tool:hover {
-  /*bottom: 0px;*/
-  /*filter: brightness(130%) drop-shadow(0px 0px 5px rgba(0, 0, 0, 0.4));*/
-    /*transition: bottom 0.125s ease-in-out, filter 0.1 linear;*/
+#toolbar .group_tools .button:hover .icon-toolbar-tool {
+  height: 100%;
+  filter: brightness(130%) drop-shadow(0px 0px 5px rgba(0, 0, 0, 0.4));
+  transition: height 0.125s ease-in-out, filter 0.1 linear;
 }
 
-#toolbar .button.active       .icon-toolbar-tool,
-#toolbar .button.active:hover .icon-toolbar-tool {
-  /*bottom: 0px;*/
-  /*filter: brightness(160%) drop-shadow(0px 0px 5px rgba(0, 0, 0, 0.4));*/
-    /*transition: bottom 0.125s ease-in-out, filter 0.1 linear;*/
+#toolbar .group_tools .button.active .icon-toolbar-tool {
+  height: 100%;
+  filter: brightness(160%) drop-shadow(0px 0px 5px rgba(0, 0, 0, 0.4));
+  transition: height 0.125s ease-in-out, filter 0.1 linear;
 }
 #toolbar .group_tools .button {
   padding: 0 3px;
