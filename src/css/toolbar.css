@@ -205,7 +205,7 @@
 
   /*bottom: 15px;*/
   filter: brightness(100%) drop-shadow(0px 0px 5px rgba(0, 0, 0, 0.4));
-  transition: height 0.15s ease-out, filter 0.15s linear;
+  transition: height 0.15s ease-out;
 }
 #toolbar .group_tools .button .icon-toolbar-tool {
   height: 85%;
@@ -214,13 +214,13 @@
 #toolbar .group_tools .button:hover .icon-toolbar-tool {
   height: 100%;
   filter: brightness(130%) drop-shadow(0px 0px 5px rgba(0, 0, 0, 0.4));
-  transition: height 0.125s ease-in-out, filter 0.1 linear;
+  transition: height 0.125s ease-in-out;
 }
 
 #toolbar .group_tools .button.active .icon-toolbar-tool {
   height: 100%;
   filter: brightness(160%) drop-shadow(0px 0px 5px rgba(0, 0, 0, 0.4));
-  transition: height 0.125s ease-in-out, filter 0.1 linear;
+  transition: height 0.125s ease-in-out;
 }
 #toolbar .group_tools .button {
   padding: 0 3px;
