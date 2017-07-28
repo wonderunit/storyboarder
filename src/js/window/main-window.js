@@ -75,8 +75,7 @@ let layerStatus = {
 }
 let imageFileDirtyTimer
 
-let thumbnailDirty = false
-let thumbnailDirtyTimer
+let drawIdleTimer
 
 let isEditMode = false
 let editModeTimer
@@ -344,22 +343,6 @@ const commentOnLineMileage = (miles) => {
   notifications.notify({message: message.join(' '), timing: 10})
 }
 
-let addToLineMileage = value => {
-  let board = boardData.boards[currentBoard]
-  if (!(board.lineMileage)) { 
-    board.lineMileage = 0 
-  }
-  let mileageChecks = [0.01,1,5,8,10,20,50,100,200,300,1000]
-  for (let checkAmount of mileageChecks) {
-    if ((board.lineMileage/5280 < checkAmount) && ((board.lineMileage + value)/5280 > checkAmount)) {
-      commentOnLineMileage(checkAmount)
-    }
-  }
-  board.lineMileage += value
-  markBoardFileDirty()
-  renderMetaData()
-}
-
 let loadBoardUI = ()=> {
   let aspectRatio = boardData.aspectRatio
 
@@ -392,8 +375,6 @@ let loadBoardUI = ()=> {
     storeUndoStateForImage(false, layerIndices)
     markImageFileDirty(layerIndices)
 
-    markThumbnailDirty()
-
     // save progress image
     if(isRecording) {
       let snapshotCanvas = storyboarderSketchPane.sketchPane.getLayerCanvas(1)
@@ -402,11 +383,13 @@ let loadBoardUI = ()=> {
     }
   })
   storyboarderSketchPane.on('pointerdown', () => {
-    clearTimeout(thumbnailDirtyTimer)
+    clearTimeout(drawIdleTimer)
   })
 
+  // this is essentially pointerup
   storyboarderSketchPane.on('lineMileage', value => {
     addToLineMileage(value)
+    drawIdleTimer = setTimeout(onDrawIdle, 500)
   })
 
 
@@ -1067,10 +1050,30 @@ let markImageFileDirty = layerIndices => {
   imageFileDirtyTimer = setTimeout(saveImageFile, 5000)
 }
 
-const markThumbnailDirty = () => {
-  thumbnailDirty = true
-  clearTimeout(thumbnailDirtyTimer)
-  thumbnailDirtyTimer = setTimeout(updateThumbnailDisplayFromMemory, 500)
+const addToLineMileage = value => {
+  let board = boardData.boards[currentBoard]
+  if (!(board.lineMileage)) { 
+    board.lineMileage = 0 
+  }
+  let mileageChecks = [0.01,1,5,8,10,20,50,100,200,300,1000]
+  for (let checkAmount of mileageChecks) {
+    if ((board.lineMileage/5280 < checkAmount) && ((board.lineMileage + value)/5280 > checkAmount)) {
+      commentOnLineMileage(checkAmount)
+    }
+  }
+  board.lineMileage += value
+  markBoardFileDirty()
+}
+
+const onDrawIdle = () => {
+  clearTimeout(drawIdleTimer)
+
+  // update the line mileage in two places
+  renderMetaDataLineMileage()
+  renderStats()
+
+  // update the thumbnail
+  updateThumbnailDisplayFromMemory()
 }
 
 let saveDataURLtoFile = (dataURL, filename) => {
@@ -1516,6 +1519,8 @@ let animatedScrollingTimer = +new Date()
 let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
   toolbar.emit('cancelTransform')
   return new Promise((resolve, reject) => {
+    clearTimeout(drawIdleTimer)
+
     currentBoard = boardNumber
     currentBoard = Math.max(currentBoard, 0)
     currentBoard = Math.min(currentBoard, boardData.boards.length-1)
@@ -1664,11 +1669,7 @@ let renderMetaData = () => {
   if (boardData.boards[currentBoard].notes) {
     document.querySelector('textarea[name="notes"]').value = boardData.boards[currentBoard].notes
   }
-  if (boardData.boards[currentBoard].lineMileage){
-    document.querySelector('#line-miles').innerHTML = (boardData.boards[currentBoard].lineMileage/5280).toFixed(1) + ' line miles'
-  } else {
-    document.querySelector('#line-miles').innerHTML = '0 line miles'
-  }
+  renderMetaDataLineMileage()
 
   // TODO how to regenerate tooltips?
   // if (boardData.defaultBoardTiming) {
@@ -1679,6 +1680,15 @@ let renderMetaData = () => {
   // }
 
   renderStats()
+}
+
+const renderMetaDataLineMileage = () => {
+  let board = boardData.boards[currentBoard]
+  if (board.lineMileage){
+    document.querySelector('#line-miles').innerHTML = (board.lineMileage/5280).toFixed(1) + ' line miles'
+  } else {
+    document.querySelector('#line-miles').innerHTML = '0 line miles'
+  }
 }
 
 const renderStats = () => {
