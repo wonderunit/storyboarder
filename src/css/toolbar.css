@@ -28,7 +28,7 @@
 #toolbar .column:first-child {
   flex: 1;
   min-width: 350px;
-  max-width: 550px;
+  max-width: 450px;
 }
 #toolbar .column:last-child {
   flex: 1;
