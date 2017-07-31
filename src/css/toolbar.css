@@ -10,8 +10,6 @@
 
   /* to avoid Mac top-left controls (close/minimize/zoom) */
   padding-left: 80px;
-  /* to balance out for centering */
-  padding-right: 80px;
 }
 #toolbar .column {
   display: flex;
@@ -30,7 +28,6 @@
 .with-scenes-visible #toolbar {
   /* if script OR scenes visible, don't bother accomodating for Mac top-left controls*/
   padding-left: 10px;
-  padding-right: 10px;
 }
 
 /*
