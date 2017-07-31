@@ -3,6 +3,8 @@
   display: flex;
   justify-content: center;
 
+  height: 120px;
+
   padding-top: 10px;
   padding-bottom: 10px;
 
@@ -16,10 +18,6 @@
   /* if script OR scenes visible, don't bother accomodating for Mac top-left controls*/
   padding-left: 10px;
   padding-right: 10px;
-}
-
-#toolbar {
-  height: 120px;
 }
 #toolbar .column {
   display: flex;
@@ -77,6 +75,8 @@
 #toolbar .group_tools {
   margin-right: 0;
   flex: 1;
+
+  height: 120px;
 
   display: flex;
   align-items: flex-start;
