@@ -37,4 +37,9 @@ for (let el of inputs) {
   el.addEventListener('change', onChange.bind(this, el.name))
 }
 
+window.ondragover = () => { return false }
+window.ondragleave = () => { return false }
+window.ondragend = () => { return false }
+window.ondrop = () => { return false }
+
 render()

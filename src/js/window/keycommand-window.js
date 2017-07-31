@@ -353,5 +353,10 @@ let renderCommands = () => {
 
 }
 
+window.ondragover = () => { return false }
+window.ondragleave = () => { return false }
+window.ondragend = () => { return false }
+window.ondrop = () => { return false }
+
 renderKeyboard()
 renderCommands()

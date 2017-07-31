@@ -29,3 +29,8 @@ document.querySelector('#new-blank').addEventListener("mouseover", ()=>{
 document.querySelector('#new-blank').addEventListener("mousedown", ()=>{
   ipcRenderer.send('playsfx', 'down')
 })
+
+window.ondragover = () => { return false }
+window.ondragleave = () => { return false }
+window.ondragend = () => { return false }
+window.ondrop = () => { return false }

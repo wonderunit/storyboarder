@@ -502,3 +502,8 @@ ipcRenderer.on('worksheetImage', (event, args) => {
   processWorksheetImage(args)
   remote.getCurrentWindow().show()
 })
+
+window.ondragover = () => { return false }
+window.ondragleave = () => { return false }
+window.ondragend = () => { return false }
+window.ondrop = () => { return false }
