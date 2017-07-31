@@ -136,6 +136,10 @@
   /*width: 35px;
   height: 35px;*/
 }
+.with-scenes-visible #toolbar.with-reduced-width .group_tools {
+  margin-left: 5px;
+  margin-right: 0;
+}
 
 
 
