@@ -223,8 +223,8 @@ class StoryboarderSketchPane extends EventEmitter {
       // send data
       // 1 in 10 chance to send
       if (Date.now() % 8 == 1) {
-        ipcRenderer.send('analyticsTiming', 'Performance', 'average frame', avg)
-        ipcRenderer.send('analyticsTiming', 'Performance', 'max frame', max)
+        ipcRenderer.send('analyticsTiming', 'Performance', 'averageframe', avg)
+        ipcRenderer.send('analyticsTiming', 'Performance', 'maxframe', max)
       }
     }
     this.frameLengthArray = []

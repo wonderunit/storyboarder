@@ -1,7 +1,7 @@
 const fs = require('fs')
 const os = require('os')
 const path = require('path')
-const { app, session } = require('electron')
+const { app, session } = electron = require('electron')
 const util = require('./utils')
 const pkg = require('../../package.json')
 
@@ -19,6 +19,8 @@ let ses
 // screen resolution
 // pen vs mouse
 // keyboard vs nav buttons
+// ping
+
 
 let enabled = true
 
@@ -41,12 +43,17 @@ const init = shouldEnable => {
     } else {
       uuid = data
     }
+
+    let { width, height } = electron.screen.getPrimaryDisplay().workAreaSize
+
     analytics.send('event', {
       ec: 'Application', 
       ea: 'start', 
       an: pkg.name,
       av: pkg.version,
+      sr: width + 'x' + height,
       sc: 'start',
+      ua: ses.getUserAgent(),
       cd1: os.arch(),
       cd2: os.platform(),
       cd3: os.type(),
@@ -89,16 +96,47 @@ const event = (category, action, label, value) => {
 const timing = (category, name, ms) => {
   if (!enabled) return
 
-  analytics.send('timing', {
+  let params = {
     utc: category, 
     utv: name, 
-    utt: ms,
-  }, uuid)
+    utt: Math.round(ms),
+  }
+
+  analytics.send('timing', params, uuid)
+}
+
+const exception = (error, url, line) => {
+  if (!enabled) return
+
+  let params = {
+    exd: error.substring(0,30) + ' | ' + url.substring(url.length - 30) + ' | ' + line
+    an: pkg.name,
+    av: pkg.version,
+    sr: width + 'x' + height,
+    ua: ses.getUserAgent(),
+  }
+
+  analytics.send('exception', params, uuid)
+}
+
+const ping = () => {
+  if (!enabled) return
+
+  let params = {
+    ec: 'Ping',
+    ea: 'ping',
+    ua: ses.getUserAgent(),
+    ni: 0
+  }
+
+  analytics.send('event', params, uuid)
 }
 
 module.exports = {
   init,
   screenView,
   event,
-  timing
+  timing,
+  exception,
+  ping,
 }

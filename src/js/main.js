@@ -90,6 +90,9 @@ app.on('ready', () => {
     return
   }
 
+
+  setInterval(()=>{ analytics.ping() }, 60*1000)
+
   //open the welcome window when the app loads up first
 })
 
@@ -469,6 +472,7 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
     } 
   })
 
+
   // http://stackoverflow.com/a/39305399
   const onErrorInWindow = (event, error, url, line) => {
     if (mainWindow) {
@@ -476,6 +480,7 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
       mainWindow.webContents.openDevTools()
     }
     console.error(error, url, line)
+    analytics.exception(error, url, line)
   }
 
   if (isDev) ipcMain.on('errorInWindow', onErrorInWindow)
