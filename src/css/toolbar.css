@@ -13,12 +13,6 @@
   /* to balance out for centering */
   padding-right: 80px;
 }
-.with-script-visible #toolbar,
-.with-scenes-visible #toolbar {
-  /* if script OR scenes visible, don't bother accomodating for Mac top-left controls*/
-  padding-left: 10px;
-  padding-right: 10px;
-}
 #toolbar .column {
   display: flex;
   flex-wrap: nowrap;
@@ -31,6 +25,14 @@
 #toolbar .column:last-child {
   flex: 1;
 }
+
+.with-script-visible #toolbar,
+.with-scenes-visible #toolbar {
+  /* if script OR scenes visible, don't bother accomodating for Mac top-left controls*/
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
 /*
  * groups
  */
@@ -45,15 +47,32 @@
   border-radius: 8px;
   padding: 6px;
 }
+
 /*
  * buttons and their icons
  */
 #toolbar .button {
   -webkit-app-region: no-drag;
 }
-#toolbar .group:not(.group_tools):not(.group_colors) .button {
-  padding: 0;
+#toolbar .button > svg {
+  pointer-events: none;
 }
+
+#toolbar .group:not(.group_tools):not(.group_colors) .button:hover {
+  background-color: #444;
+}
+
+#toolbar .group:not(.group_tools):not(.group_colors) .button.active,
+#toolbar .group:not(.group_tools):not(.group_colors) .button.active:hover {
+  background-color: #222;
+}
+
+#toolbar .icon {
+  --color1: #888;
+  --color2: #555;
+  filter: drop-shadow( 0px 1px 0px rgba(0, 0, 0, 0.3) );
+}
+
 #toolbar .icon {
   width: 100%;
   height: 100%;
@@ -63,12 +82,8 @@
   min-height: 30px;
   max-width: 35px;
   max-height: 35px;
-
-  /*
-  max-width: 45px;
-  max-height: 45px;
-  */
 }
+
 /*
  * brush tools
  */
@@ -95,6 +110,7 @@
   overflow: hidden;
   height: 100%;
 }
+
 /*
  * REDUCED WIDTH
  */
@@ -119,60 +135,11 @@
   margin-top: 0;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 #toolbar .group:not(.group_tools):not(.group_colors) .button {
   border-radius: 5px;
   /*width: 35px;
   height: 35px;*/
 }
-
-
-
-
-
-#toolbar .button > svg {
-  pointer-events: none;
-}
-
-#toolbar .group:not(.group_tools) .button:hover {
-  background-color: #444;
-}
-
-#toolbar .group:not(.group_tools) .button.active,
-#toolbar .group:not(.group_tools) .button.active:hover {
-  background-color: #222;
-}
-
-#toolbar .icon {
-  /*width: 35px;
-  height: 35px;*/
-  --color1: #888;
-  --color2: #555;
-  filter: drop-shadow( 0px 1px 0px rgba(0, 0, 0, 0.3) );
-}
-
-/*#toolbar .group_tools .button,
-#toolbar .group_tools .icon-toolbar-tool {
-  width: 85px;
-  height: 130px;
-}
-
-#toolbar #toolbar-eraser.button,
-#toolbar #toolbar-eraser .icon {
-  width: 115px;
-}*/
 
 /* uncomment for a helpful spacing debugger */
 /*
