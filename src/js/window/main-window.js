@@ -2591,8 +2591,12 @@ const resize = () => {
 
   const workspaceWidth = windowWidth - scenesWidth - scriptWidth
 
+  let breakpoint = (scenesWidth && scriptWidth)
+    ? 1585 + 200
+    : 1585
+
   const toolbarEl = document.getElementById('toolbar')
-  toolbarEl.classList.toggle('with-reduced-width', workspaceWidth < 1585)
+  toolbarEl.classList.toggle('with-reduced-width', workspaceWidth < breakpoint)
 }
 
 window.onkeydown = (e)=> {
