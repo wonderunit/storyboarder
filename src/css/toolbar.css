@@ -50,6 +50,7 @@
  */
 #toolbar .button {
   -webkit-app-region: no-drag;
+  display: flex;
 }
 #toolbar .button > svg {
   pointer-events: none;
