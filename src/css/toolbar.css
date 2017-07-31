@@ -7,178 +7,227 @@
   padding-bottom: 10px;
 
   /* to avoid Mac top-left controls (close/minimize/zoom) */
-  padding-left: 60px;
-  /* to balance out for centering */
-  padding-right: 60px;
+  padding-left: 80px;
 }
+#toolbar .column {
+  display: flex;
+  flex-wrap: nowrap;
+}
+#toolbar .column:first-child {
+  flex: 1;
+  min-width: 350px;
+  max-width: 550px;
+}
+#toolbar .column:last-child {
+  padding-right: 80px;
+}
+
 .with-script-visible #toolbar,
 .with-scenes-visible #toolbar {
   /* if script OR scenes visible, don't bother accomodating for Mac top-left controls*/
   padding-left: 10px;
-  padding-right: 10px;
-}
-/* when no script/scenes, prefer tightly aligning right for multi-row cols at smaller screen widths */
-@media only screen and (max-width: 1749px) {
-  #toolbar {
-    padding-right: 10px;
-  }
-}
-#toolbar.with-reduced-width .column:last-child .group:not(:first-child) {
-  display: none;
 }
 
-#toolbar .column {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-}
-
+/*
+ * groups
+ */
 #toolbar .group {
   display: flex;
   position: relative;
 }
-#toolbar .group:not(:last-child) {
+#toolbar .group:not(:last-child):not(.group_tools):not(.group_colors) {
   margin-right: 10px;
 }
-
 #toolbar .group:not(.group_tools) {
+  display: flex;
+  align-items: flex-start;
+
   border-radius: 8px;
-  padding: 6px;
-  height: 56px;
-}
-#toolbar .group_tools {
-  margin-top: -10px;
-  margin-right: 45px;
+  padding: 6px 6px 0 6px;
 }
 
-#toolbar .button { /* */ }
-
+/*
+ * buttons and their icons
+ */
 #toolbar .button {
-  -webkit-app-region: no-drag
+  -webkit-app-region: no-drag;
+  display: flex;
 }
-
-#toolbar .group:not(.group_tools) .button {
-  border-radius: 5px;
-
-  margin-left: 2px;
-  margin-bottom: 4px;
-
-  padding: 15px;
-  margin-top: 2px;
-  
-  width: 35px;
-  height: 35px;
-}
-#toolbar .group_tools .button {
-  position: relative;
-  overflow: hidden;
-}
-@media only screen and (max-width: 1709px) {
-  #toolbar .group:not(.group_tools) .button {
-    padding: 5px;
-  }
-}
-
 #toolbar .button > svg {
   pointer-events: none;
 }
 
-#toolbar .group:not(.group_tools) .button:hover {
+#toolbar .group:not(.group_tools):not(.group_colors) .button:hover {
   background-color: #444;
 }
 
-#toolbar .group:not(.group_tools) .button.active,
-#toolbar .group:not(.group_tools) .button.active:hover {
+#toolbar .group:not(.group_tools):not(.group_colors) .button.active,
+#toolbar .group:not(.group_tools):not(.group_colors) .button.active:hover {
   background-color: #222;
 }
-
 #toolbar .icon {
-  width: 35px;
-  height: 35px;
+  width: 100%;
+  height: 100%;
+
   --color1: #888;
   --color2: #555;
   filter: drop-shadow( 0px 1px 0px rgba(0, 0, 0, 0.3) );
 }
+#toolbar .group:not(.group_tools):not(.group_colors) .icon {
+  min-width: 30px;
+  min-height: 30px;
+  max-width: 35px;
+  max-height: 35px;
+}
 
+/*
+ * brush tools: layout
+ */
+#toolbar .group_tools {
+  flex: 1;
+
+  height: 130px;
+
+  display: flex;
+  align-items: flex-start;
+
+  margin-top: -10px; /* flush with top */
+  margin-right: 45px;
+}
 #toolbar .group_tools .button,
 #toolbar .group_tools .icon-toolbar-tool {
-  width: 85px;
-  height: 130px;
-}
-
-#toolbar #toolbar-eraser.button,
-#toolbar #toolbar-eraser .icon {
-  width: 115px;
-}
-
-/* uncomment for a helpful spacing debugger */
-/*
-#toolbar .icon-toolbar-tool:after {
-  content: ' ';
-  display: block;
   width: 100%;
   height: 100%;
-  background: linear-gradient(to right, rgba(0,0,255,0.1) 0%, rgba(255,0,0,0.1) 100%);
+  max-height: 100%;
 }
-*/
+#toolbar .group_tools .button {
+  position: relative;
+  overflow: hidden;
+  height: 100%;
+}
+
+/*
+ * REDUCED WIDTH
+ */
+ /* hide undo/redo */
+#toolbar.with-reduced-width .column .group.group_undo_redo {
+  display: none;
+}
+/* normal width: space out the buttons */
+#toolbar .group:not(.group_tools):not(.group_colors) .button {
+  margin-top: 2px;
+  margin-bottom: 4px;
+  margin-left: 2px;
+  padding: 15px;
+}
+/* reduced width: don't space out the buttons */
+#toolbar.with-reduced-width .group:not(.group_tools):not(.group_colors) .button {
+  margin: 0;
+  padding: 0;
+}
+/* reduced width: less space above toolbar colors */
+#toolbar.with-reduced-width .toolbar-colors {
+  margin-top: 0;
+}
+
+#toolbar .group:not(.group_tools):not(.group_colors) .button {
+  border-radius: 5px;
+  /*width: 35px;
+  height: 35px;*/
+}
+#toolbar.with-reduced-width .group_tools {
+  margin-right: 15px;
+}
+.with-scenes-visible #toolbar.with-reduced-width .group_tools {
+  margin-left: 5px;
+}
 
 
-#toolbar .button .icon-toolbar-tool {
-  position: absolute;
-  background: transparent url(../img/toolbar-brush-tools.png) 0 0 / 690px 300px no-repeat;
-  padding-bottom: 5px; /* make room for the drop shadow */
 
-  bottom: 15px;
+/*
+ * brush tools: graphics
+ */
+#toolbar .group_tools .button {
+  padding: 0 6px;
+}
+
+#toolbar .group_tools .button .icon-toolbar-tool {
+  background-position: bottom center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  position: relative;
+
+  height: 85%;
+
   filter: brightness(100%) drop-shadow(0px 0px 5px rgba(0, 0, 0, 0.4));
-  transition: bottom 0.15s ease-out, filter 0.15s linear;
+  transition: height 0.15s ease-out;
 }
 
-#toolbar .button .icon-toolbar-tool:hover {
-  bottom: 0px;
+#toolbar .group_tools .button:hover .icon-toolbar-tool {
+  height: 100%;
   filter: brightness(130%) drop-shadow(0px 0px 5px rgba(0, 0, 0, 0.4));
-  /*transition: bottom 0.125s ease-in-out, filter 0.1 linear;*/
+  transition: height 0.125s ease-in-out;
 }
-
-#toolbar .button.active       .icon-toolbar-tool,
-#toolbar .button.active:hover .icon-toolbar-tool {
-  bottom: 0px;
+#toolbar .group_tools .button.active .icon-toolbar-tool {
+  height: 100%;
   filter: brightness(160%) drop-shadow(0px 0px 5px rgba(0, 0, 0, 0.4));
-  /*transition: bottom 0.125s ease-in-out, filter 0.1 linear;*/
+  transition: height 0.125s ease-in-out;
 }
 
-#toolbar .button .icon-toolbar-tool_light-pencil {
-  background-position: calc((-115px * 0) + 3px - 15px) -170px;
+#toolbar #toolbar-light-pencil {
+  flex: 135;
 }
-#toolbar .button .icon-toolbar-tool_pencil {
-  background-position: calc((-115px * 1) + 3px - 15px) -170px;
+#toolbar #toolbar-light-pencil .icon {
+  background-image: url(../img/toolbar-brush-tools-0.png);
+  /*background-position: 0 130%;*/
 }
-#toolbar .button .icon-toolbar-tool_pen {
-  background-position: calc((-115px * 2) + 3px - 15px) -170px;
+#toolbar #toolbar-pencil {
+  flex: 106;
 }
-#toolbar .button .icon-toolbar-tool_brush {
-  background-position: calc((-115px * 3) + 1px - 15px) -170px;
+#toolbar #toolbar-pencil .icon {
+  background-image: url(../img/toolbar-brush-tools-1.png);
+  /*background-position: 0 130%;*/
 }
-#toolbar .button .icon-toolbar-tool_note-pen {
-  background-position: calc((-115px * 4) + 2px - 15px) -170px;
+#toolbar #toolbar-pen {
+  flex: 120;
+  /*background-position: 0 100%;*/
 }
-#toolbar .button .icon-toolbar-tool_eraser {
-  background-position: calc((-115px * 5) + -1px) -170px;
+#toolbar #toolbar-pen .icon {
+  background-image: url(../img/toolbar-brush-tools-2.png);
+  /*background-position: 0 110%;*/
+}
+#toolbar #toolbar-brush {
+  flex: 134;
+}
+#toolbar #toolbar-brush .icon {
+  background-image: url(../img/toolbar-brush-tools-3.png);
+  /*background-position: 0 100%;*/
+}
+#toolbar #toolbar-note-pen {
+  flex: 108;
+}
+#toolbar #toolbar-note-pen .icon {
+  background-image: url(../img/toolbar-brush-tools-4.png);
+  /*background-position: 0 125%;*/
+}
+#toolbar #toolbar-eraser {
+  flex: 218;
+}
+#toolbar #toolbar-eraser .icon {
+  background-image: url(../img/toolbar-brush-tools-5.png);
+  /*background-position: 0 135%;*/
 }
 
 
-
+/*
+ * colors
+ */
 #toolbar .toolbar-colors {
   display: flex;
   margin-top: 10px;
   margin-left: 10px;
   margin-right: 10px;
 }
-@media only screen and (max-width: 1709px) {
-  #toolbar .toolbar-colors {
-    margin-top: 0;
-  }
-}
-
 #toolbar .toolbar-colors_column {
   display: flex;
   background-color: #292929;
@@ -228,7 +277,6 @@
   bottom: -10px;
   left: 0;
 }
-
 #toolbar .group .toolbar-colors .button {
   padding: 0;
   margin: 0;
@@ -236,17 +284,14 @@
   width: 100%;
   height: 100%;
 }
-
 #toolbar .toolbar-colors .icon {
   width: 100%;
   height: 100%;
   filter: none;
 }
-
 #toolbar .toolbar-colors .button:not(:last-child) {
   margin-right: 10px;
 }
-
 #toolbar .toolbar-colors .icon.icon-toolbar-color_current {
   border-radius: 4px;
   background-color: black;
@@ -257,6 +302,35 @@
   width: 32px;
 }
 
+#toolbar.with-reduced-width .toolbar-colors .icon.icon-toolbar-color_palette {
+  width: 24px;
+}
+#toolbar.with-reduced-width .column:last-child {
+  padding-right: 0;
+}
+
+
+#toolbar.with-reduced-width .toolbar-colors {
+  margin-left: 0;
+  margin-right: 0;
+}
+#toolbar.with-reduced-width .toolbar-colors_column:first-child {
+  padding: 4px;
+  width: 33px;
+  height: 33px;
+}
+#toolbar.with-reduced-width .toolbar-colors_column:last-child {
+  border-top-right-radius: 5px;
+  border-bottom-right-radius: 5px;
+  padding: 4px 4px 4px 2px;
+  height: 24px;
+}
+#toolbar .toolbar-colors .button:not(:last-child) {
+  margin-right: 6px;
+}
+/*
+ * brush size controls
+ */
 .toolbar-brush-size-controls {
   position: absolute;
   margin-top: 48px;
@@ -286,3 +360,21 @@
   color: #444;
   cursor: pointer;
 }
+
+#toolbar.with-reduced-width .toolbar-brush-size-controls {
+  margin-top: 36px;
+  margin-left: -12px;
+}
+
+
+
+/* uncomment for a helpful spacing debugger */
+/*
+#toolbar .icon-toolbar-tool:after {
+  content: ' ';
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to right, rgba(0,0,255,0.1) 0%, rgba(255,0,0,0.1) 100%);
+}
+*/
