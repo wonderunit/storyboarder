@@ -106,3 +106,20 @@ sfx.init()
 ipcRenderer.on('updateRecentDocuments', (event, args)=>{
   updateRecentDocuments()
 })
+
+window.ondragover = () => { return false }
+window.ondragleave = () => { return false }
+window.ondragend = () => { return false }
+window.ondrop = e => {
+  e.preventDefault()
+  if(!e || !e.dataTransfer || !e.dataTransfer.files || !e.dataTransfer.files.length) {
+    return
+  }
+  for(let file of e.dataTransfer.files) {
+    if(file.name.indexOf(".storyboarder") > -1) {
+      hasStoryboarderFile = true
+      ipcRenderer.send('openFile', file.path)
+      break
+    }
+  }
+}
