@@ -300,6 +300,28 @@
   width: 32px;
 }
 
+#toolbar.with-reduced-width .toolbar-colors .icon.icon-toolbar-color_palette {
+  width: 24px;
+}
+
+#toolbar.with-reduced-width .toolbar-colors {
+  margin-left: 0;
+  margin-right: 0;
+}
+#toolbar.with-reduced-width .toolbar-colors_column:first-child {
+  padding: 4px;
+  width: 33px;
+  height: 33px;
+}
+#toolbar.with-reduced-width .toolbar-colors_column:last-child {
+  border-top-right-radius: 5px;
+  border-bottom-right-radius: 5px;
+  padding: 4px 4px 4px 2px;
+  height: 24px;
+}
+#toolbar .toolbar-colors .button:not(:last-child) {
+  margin-right: 6px;
+}
 /*
  * brush size controls
  */
@@ -331,6 +353,11 @@
   width: 16px;
   color: #444;
   cursor: pointer;
+}
+
+#toolbar.with-reduced-width .toolbar-brush-size-controls {
+  margin-top: 36px;
+  margin-left: -12px;
 }
 
 
