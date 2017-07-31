@@ -82,7 +82,7 @@
 }
 
 /*
- * brush tools
+ * brush tools: layout
  */
 #toolbar .group_tools {
   margin-right: 0;
@@ -140,21 +140,23 @@
 
 
 
+/*
+ * brush tools: graphics
+ */
+#toolbar .group_tools .button {
+  padding: 0 3px;
+}
+
 #toolbar .group_tools .button .icon-toolbar-tool {
   background-position: bottom center;
   background-repeat: no-repeat;
   background-size: cover;
   position: relative;
 
-  /*position: absolute;*/
-  /*padding-bottom: 5px; /* make room for the drop shadow */*/
+  height: 85%;
 
-  /*bottom: 15px;*/
   filter: brightness(100%) drop-shadow(0px 0px 5px rgba(0, 0, 0, 0.4));
   transition: height 0.15s ease-out;
-}
-#toolbar .group_tools .button .icon-toolbar-tool {
-  height: 85%;
 }
 
 #toolbar .group_tools .button:hover .icon-toolbar-tool {
@@ -162,15 +164,12 @@
   filter: brightness(130%) drop-shadow(0px 0px 5px rgba(0, 0, 0, 0.4));
   transition: height 0.125s ease-in-out;
 }
-
 #toolbar .group_tools .button.active .icon-toolbar-tool {
   height: 100%;
   filter: brightness(160%) drop-shadow(0px 0px 5px rgba(0, 0, 0, 0.4));
   transition: height 0.125s ease-in-out;
 }
-#toolbar .group_tools .button {
-  padding: 0 3px;
-}
+
 #toolbar #toolbar-light-pencil {
   flex: 135;
 }
