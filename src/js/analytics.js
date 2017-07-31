@@ -109,7 +109,7 @@ const exception = (error, url, line) => {
   if (!enabled) return
 
   let params = {
-    exd: error.substring(0,30) + ' | ' + url.substring(url.length - 30) + ' | ' + line
+    exd: error.substring(0,30) + ' | ' + url.substring(url.length - 30) + ' | ' + line,
     an: pkg.name,
     av: pkg.version,
     sr: width + 'x' + height,
