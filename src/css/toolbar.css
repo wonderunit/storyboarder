@@ -37,12 +37,15 @@
   display: flex;
   position: relative;
 }
+#toolbar .group:not(:last-child):not(.group_tools):not(.group_colors) {
+  margin-right: 10px;
+}
 #toolbar .group:not(.group_tools) {
   display: flex;
   align-items: flex-start;
 
   border-radius: 8px;
-  padding: 6px;
+  padding: 6px 6px 0 6px;
 }
 
 /*
