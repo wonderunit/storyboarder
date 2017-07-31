@@ -146,7 +146,7 @@
  * brush tools: graphics
  */
 #toolbar .group_tools .button {
-  padding: 0 3px;
+  padding: 0 6px;
 }
 
 #toolbar .group_tools .button .icon-toolbar-tool {
