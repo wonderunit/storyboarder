@@ -21,6 +21,7 @@
   max-width: 550px;
 }
 #toolbar .column:last-child {
+  padding-right: 80px;
 }
 
 .with-script-visible #toolbar,
@@ -303,6 +304,10 @@
 #toolbar.with-reduced-width .toolbar-colors .icon.icon-toolbar-color_palette {
   width: 24px;
 }
+#toolbar.with-reduced-width .column:last-child {
+  padding-right: 0;
+}
+
 
 #toolbar.with-reduced-width .toolbar-colors {
   margin-left: 0;
