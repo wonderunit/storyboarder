@@ -21,7 +21,6 @@
   max-width: 550px;
 }
 #toolbar .column:last-child {
-  flex: 1;
 }
 
 .with-script-visible #toolbar,
