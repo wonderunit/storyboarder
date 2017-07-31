@@ -237,16 +237,14 @@ class StoryboarderSketchPane extends EventEmitter {
   canvasPointerOver () {
     this.sketchPaneDOMElement.addEventListener('pointermove', this.canvasCursorMove)
     if(this.brushPointerContainer && this.brushPointerContainer.style) {
-      //this.brushPointerContainer.style.visibility = 'visible'
-      //    transform: translate(780px, 282px);
+      this.brushPointerContainer.style.visibility = 'visible'
     }
   }
 
   canvasPointerOut () {
     this.sketchPaneDOMElement.removeEventListener('pointermove', this.canvasCursorMove)
     if(this.brushPointerContainer && this.brushPointerContainer.style) {
-      //this.brushPointerContainer.style.visibility = 'hidden'
-          this.brushPointerContainer.style.transform =  'translate(-1080px, 282px)'
+      this.brushPointerContainer.style.visibility = 'hidden'
     }
   }
 
