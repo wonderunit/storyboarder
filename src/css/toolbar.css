@@ -3,8 +3,6 @@
   display: flex;
   justify-content: center;
 
-  height: 120px;
-
   padding-top: 10px;
   padding-bottom: 10px;
 
@@ -88,7 +86,7 @@
 #toolbar .group_tools {
   flex: 1;
 
-  height: 120px;
+  height: 130px;
 
   display: flex;
   align-items: flex-start;
