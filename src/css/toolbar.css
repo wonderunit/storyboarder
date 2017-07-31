@@ -85,7 +85,6 @@
  * brush tools: layout
  */
 #toolbar .group_tools {
-  margin-right: 0;
   flex: 1;
 
   height: 120px;
