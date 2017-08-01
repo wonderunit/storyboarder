@@ -17,6 +17,12 @@
   flex: 1;
   min-width: 350px;
   max-width: 550px;
+
+  height: 10vw;
+  max-height: 130px; /* never larger than child element group */
+  margin-top: -10px; /* flush with top */
+  align-items: flex-end;
+  overflow: hidden;
 }
 #toolbar .column:last-child {
   padding-right: 80px;
@@ -91,7 +97,6 @@
   display: flex;
   align-items: flex-start;
 
-  margin-top: -10px; /* flush with top */
   margin-right: 45px;
 }
 #toolbar .group_tools .button,
