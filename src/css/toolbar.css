@@ -25,7 +25,7 @@
   overflow: hidden;
 }
 #toolbar.with-reduced-width .column:first-child {
-  min-width: 350px; /* allow brush tools to collapse at smaller workspace widths */
+  min-width: 280px; /* allow brush tools to collapse at smaller workspace widths */
 }
 #toolbar .column:last-child {
   padding-right: 80px;
