@@ -364,6 +364,7 @@ body::-webkit-scrollbar {
   display: flex;
   position: relative;
   width: 300px;
+  transition: 0.3s width;
 }
 
 .board-metadata-container {

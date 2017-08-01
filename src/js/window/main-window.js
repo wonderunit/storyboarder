@@ -161,13 +161,17 @@ const load = (event, args) => {
   loadBoardUI()
   updateBoardUI().then(() => {
     resize()
-    setImmediate(() =>
-      requestAnimationFrame(() =>
+    setTimeout(() => {
+      storyboarderSketchPane.resize()
+
+      setImmediate(() =>
         requestAnimationFrame(() =>
-          remote.getCurrentWindow().show()
+          requestAnimationFrame(() =>
+            remote.getCurrentWindow().show()
+          )
         )
       )
-    )
+    }, 500) // TODO hack, remove this #440
   })
 }
 ipcRenderer.on('load', load)
@@ -372,12 +376,7 @@ let loadBoardUI = ()=> {
   
   window.addEventListener('resize', () => {
     resize()
-    // wait for resize layout to finish before measuring and resizing sketchPane
-    setImmediate(() =>
-      requestAnimationFrame(() =>
-        storyboarderSketchPane.resize()
-      )
-    )
+    setTimeout(() => storyboarderSketchPane.resize(), 500) // TODO hack, remove this #440
   })
 
   window.ondragover = () => { return false }
