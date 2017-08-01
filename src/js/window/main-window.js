@@ -163,7 +163,9 @@ const load = (event, args) => {
     resize()
     setImmediate(() =>
       requestAnimationFrame(() =>
-        remote.getCurrentWindow().show()
+        requestAnimationFrame(() =>
+          remote.getCurrentWindow().show()
+        )
       )
     )
   })
