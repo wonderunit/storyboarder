@@ -159,10 +159,10 @@ const load = (event, args) => {
   }
 
   loadBoardUI()
-  updateBoardUI()
-  resize()
-  // wait for reflow
-  setTimeout(() => { remote.getCurrentWindow().show() }, 200)
+  updateBoardUI().then(() => {
+    resize()
+    remote.getCurrentWindow().show()
+  })
 }
 ipcRenderer.on('load', load)
 
@@ -894,7 +894,7 @@ let loadBoardUI = ()=> {
   // remote.getCurrentWebContents().openDevTools()
 }
 
-let updateBoardUI = ()=> {
+let updateBoardUI = () => {
   document.querySelector('#canvas-caption').style.display = 'none'
   renderViewMode()
 
@@ -902,13 +902,20 @@ let updateBoardUI = ()=> {
     // create a new board
     newBoard(0, false)
   }
+
+  let sequence = Promise.resolve()
+  
   // update sketchpane
-  updateSketchPaneBoard()
+  sequence.then(() => updateSketchPaneBoard())
+  
   // update thumbail drawer
-  renderThumbnailDrawer()
   // update timeline
+  sequence.then(() => renderThumbnailDrawer())
+
   // update metadata
-  gotoBoard(currentBoard)
+  sequence.then(() => gotoBoard(currentBoard))
+
+  return sequence
 }
 
 ///////////////////////////////////////////////////////////////
