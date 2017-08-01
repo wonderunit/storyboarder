@@ -13,7 +13,8 @@ const {
 const {
   getImage,
   exportFlattenedBoard,
-  ensureExportsPathExists
+  ensureExportsPathExists,
+  flattenBoardToCanvas
 } = require('../exporters/common.js')
 
 const exporterFcpX = require('../exporters/final-cut-pro-x.js')
@@ -96,7 +97,6 @@ class Exporter extends EventEmitter {
       })
     })
   }
-
  
   exportPDF (boardData, projectFileAbsolutePath) {
     return new Promise(resolve => {
@@ -176,44 +176,43 @@ class Exporter extends EventEmitter {
 
   exportAnimatedGif (boards, boardSize, destWidth, boardPath, mark, boardData) {
     let canvases = []
-
-    let sequence = Promise.resolve()
-
+    let aspect = boardSize.height / boardSize.width
+    let destSize = {width: destWidth, height: Math.floor(destWidth*aspect)}
+    let fragmentText = (ctx, text, maxWidth) => {
+      let words = text.split(' '),
+        lines = [],
+        line = ""
+      if (ctx.measureText(text).width < maxWidth) {
+        return [text]
+      }
+      while (words.length > 0) {
+        while (ctx.measureText(words[0]).width >= maxWidth) {
+          var tmp = words[0]
+          words[0] = tmp.slice(0, -1)
+          if (words.length > 1) {
+            words[1] = tmp.slice(-1) + words[1]
+          } else {
+            words.push(tmp.slice(-1))
+          }
+        }
+        if (ctx.measureText(line + words[0]).width < maxWidth) {
+          line += words.shift() + " "
+        } else {
+          lines.push(line)
+          line = ""
+        }
+        if (words.length === 0) {
+          lines.push(line)
+        }
+      }
+      return lines
+    }
     getImage('./img/watermark.png').then( (watermarkImage) => {
-
       boards.forEach((board)=> {
-        // Chain one computation onto the sequence
-        let canvas = document.createElement('canvas')
-        canvas.width = boardSize.width
-        canvas.height = boardSize.height
-        let context = canvas.getContext('2d')
-        sequence = sequence.then(function() {
-          if (board.layers) {
-            // get reference layer if exists
-            if (board.layers['reference']) {
-              let filepath = path.join(boardPath, 'images', board.layers['reference'].url)
-              return getImage(filepath)
-            }
-          }
-        }).then(function(result) {
-          // Draw reference if exists and load main.
-          if (result) {
-            context.drawImage(result,0,0)
-          }
-          let filepath = path.join(boardPath, 'images', board.url)
-          return getImage(filepath)
-        }).then(function(result) {
-          // draw main and push it to the array of canvases
-          if (result) {
-            context.drawImage(result,0,0)
-          }
-          canvases.push(canvas)
-        })
+        let canvas = flattenBoardToCanvas(board, null, [destSize.width, destSize.height], path.join(boardPath, 't.storyboarder'))
+        canvases.push(canvas)
       })
-
-      sequence.then(()=>{
-        let aspect = boardSize.height / boardSize.width
-        let destSize = {width: destWidth, height: Math.floor(destWidth*aspect)}
+      Promise.all(canvases).then((values) => {
         let encoder = new GIFEncoder(destSize.width, destSize.height)
         // save in the boards directory
         let filename = boardPath.split(path.sep)
@@ -222,22 +221,58 @@ class Exporter extends EventEmitter {
           fs.mkdirSync(path.join(boardPath, 'exports'))
         }
         let filepath = path.join(boardPath, 'exports', filename + ' ' + moment().format('YYYY-MM-DD hh.mm.ss') + '.gif')
-        console.log(filepath)
         encoder.createReadStream().pipe(fs.createWriteStream(filepath))
         encoder.start()
         encoder.setRepeat(0)   // 0 for repeat, -1 for no-repeat
         encoder.setDelay(boardData.defaultBoardTiming)  // frame delay in ms
         encoder.setQuality(10) // image quality. 10 is default.
-        let canvas = document.createElement('canvas')
-        canvas.width = destSize.width
-        canvas.height = destSize.height
-        let context = canvas.getContext('2d')
         for (var i = 0; i < boards.length; i++) {
-          context.fillStyle = 'white'
-          context.fillRect(0,0,destSize.width,destSize.height)
-          context.drawImage(canvases[i], 0,0,destSize.width,destSize.height)
+          let canvas = values[i]
+          let context = canvas.getContext('2d')
           if (mark) {
             context.drawImage(watermarkImage,destSize.width-watermarkImage.width,destSize.height-watermarkImage.height)
+          }
+          if (boards[i].dialogue) {
+            let text = boards[i].dialogue
+            let fontSize = 22
+            context.font = "bold " + fontSize + "px proximanova";
+            context.textAlign = "center";
+            context.fillStyle = "white"
+            context.miterLimit = 1
+            context.lineJoin = "round"
+            context.lineWidth = 4
+            let lines = fragmentText(context, text, 450)
+
+            let outlinecanvas = document.createElement('canvas')
+            let outlinecontext = outlinecanvas.getContext('2d')
+            outlinecanvas.width = destSize.width
+            outlinecanvas.height = destSize.height
+
+            lines.forEach((line, i)=> {
+              let xOffset = (i + 1) * (fontSize + 6) + (destSize.height - ((lines.length+1) * (fontSize + 6)))-20
+              let textWidth = context.measureText(line).width/2
+              outlinecontext.lineWidth = 50
+              outlinecontext.lineCap = "round"
+              outlinecontext.strokeStyle = "rgba(0,0,0,1)"
+              outlinecontext.beginPath()
+              outlinecontext.moveTo((destWidth/2)-textWidth, xOffset-(6))
+              outlinecontext.lineTo((destWidth/2)+textWidth, xOffset-(6))
+              outlinecontext.stroke()
+            })
+
+            context.globalAlpha = 0.4
+            context.drawImage(outlinecanvas, 0, 0)
+            context.globalAlpha = 1
+
+            lines.forEach((line, i)=> {
+              let xOffset = (i + 1) * (fontSize + 6) + (destSize.height - ((lines.length+1) * (fontSize + 6)))-20
+              context.lineWidth = 6
+              context.strokeStyle = "rgb(0,0,0)"
+              context.strokeText(line.trim(), destWidth/2, xOffset)
+              context.strokeStyle = "rgba(0,0,0,0.2)"
+              context.strokeText(line.trim(), destWidth/2, xOffset+2)
+              context.fillText(line.trim(), destWidth/2,xOffset)
+            })
           }
           let duration
           if (boards[i].duration) {
@@ -251,7 +286,8 @@ class Exporter extends EventEmitter {
         encoder.finish()
         // emit a finish event!
         this.emit('complete', filepath)
-      })
+
+      })      
     })
   }
 

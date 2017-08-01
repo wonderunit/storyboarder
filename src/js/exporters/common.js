@@ -123,7 +123,9 @@ const flattenCanvasImageSourcesDataToContext = (context, canvasImageSourcesData,
  * @returns {Promise}
  */
 const flattenBoardToCanvas = (board, canvas, size, projectFileAbsolutePath) => {
+
   return new Promise((resolve, reject) => {
+    if (!canvas) { canvas = createWhiteContext(size).canvas }
     getCanvasImageSourcesDataForBoard(board, projectFileAbsolutePath)
       .then(canvasImageSourcesData => {
         flattenCanvasImageSourcesDataToContext(canvas.getContext('2d'), canvasImageSourcesData, size)
