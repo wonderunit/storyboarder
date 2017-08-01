@@ -123,9 +123,9 @@
 }
 /* normal width: space out the buttons */
 #toolbar .group:not(.group_tools):not(.group_colors) .button {
-  margin-top: 2px;
-  margin-bottom: 4px;
-  margin-left: 2px;
+  position: relative;
+  top: 2px;
+  left: 2px;
   padding: 15px;
 
   border-radius: 5px;
