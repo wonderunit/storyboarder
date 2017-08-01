@@ -904,16 +904,16 @@ let updateBoardUI = () => {
   }
 
   let sequence = Promise.resolve()
-  
+
   // update sketchpane
-  sequence.then(() => updateSketchPaneBoard())
-  
+  sequence = sequence.then(() => updateSketchPaneBoard())
+
   // update thumbail drawer
   // update timeline
-  sequence.then(() => renderThumbnailDrawer())
+  sequence = sequence.then(() => renderThumbnailDrawer())
 
   // update metadata
-  sequence.then(() => gotoBoard(currentBoard))
+  sequence = sequence.then(() => gotoBoard(currentBoard))
 
   return sequence
 }
