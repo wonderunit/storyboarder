@@ -2888,11 +2888,7 @@ let cycleViewMode = ()=> {
         break
     }
   }
-  setImmediate(() =>
-    requestAnimationFrame(() =>
-      storyboarderSketchPane.resize()
-    )
-  )
+  storyboarderSketchPane.resize()
   renderViewMode()
   renderStats()
 }
