@@ -159,11 +159,20 @@ const load = (event, args) => {
   }
 
   loadBoardUI()
-  updateBoardUI()
-  resize()
-  setTimeout(()=>{storyboarderSketchPane.resize()}, 500)
-  // wait for reflow
-  setTimeout(() => { remote.getCurrentWindow().show() }, 200)
+  updateBoardUI().then(() => {
+    resize()
+    setTimeout(() => {
+      storyboarderSketchPane.resize()
+
+      setImmediate(() =>
+        requestAnimationFrame(() =>
+          requestAnimationFrame(() =>
+            remote.getCurrentWindow().show()
+          )
+        )
+      )
+    }, 500) // TODO hack, remove this #440
+  })
 }
 ipcRenderer.on('load', load)
 
@@ -367,8 +376,7 @@ let loadBoardUI = ()=> {
   
   window.addEventListener('resize', () => {
     resize()
-    storyboarderSketchPane.resize()
-    setTimeout(()=>{storyboarderSketchPane.resize()}, 500)
+    setTimeout(() => storyboarderSketchPane.resize(), 500) // TODO hack, remove this #440
   })
 
   window.ondragover = () => { return false }
@@ -896,7 +904,7 @@ let loadBoardUI = ()=> {
   // remote.getCurrentWebContents().openDevTools()
 }
 
-let updateBoardUI = ()=> {
+let updateBoardUI = () => {
   document.querySelector('#canvas-caption').style.display = 'none'
   renderViewMode()
 
@@ -904,13 +912,20 @@ let updateBoardUI = ()=> {
     // create a new board
     newBoard(0, false)
   }
+
+  let sequence = Promise.resolve()
+
   // update sketchpane
-  updateSketchPaneBoard()
+  sequence = sequence.then(() => updateSketchPaneBoard())
+
   // update thumbail drawer
-  renderThumbnailDrawer()
   // update timeline
+  sequence = sequence.then(() => renderThumbnailDrawer())
+
   // update metadata
-  gotoBoard(currentBoard)
+  sequence = sequence.then(() => gotoBoard(currentBoard))
+
+  return sequence
 }
 
 ///////////////////////////////////////////////////////////////
