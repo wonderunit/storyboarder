@@ -2591,7 +2591,7 @@ const resize = () => {
 
   const workspaceWidth = windowWidth - scenesWidth - scriptWidth
 
-  let breakpoint = 1585 + 400
+  let breakpoint = 1585 + 210
 
   const toolbarEl = document.getElementById('toolbar')
   toolbarEl.classList.toggle('with-reduced-width', workspaceWidth < breakpoint)

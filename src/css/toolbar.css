@@ -15,8 +15,17 @@
 }
 #toolbar .column:first-child {
   flex: 1;
-  min-width: 350px;
+  min-width: 550px; /* prevent brush tools from collapsing by default */
   max-width: 550px;
+
+  height: 10vw;
+  max-height: 130px; /* never larger than child element group */
+  margin-top: -10px; /* flush with top */
+  align-items: flex-end;
+  overflow: hidden;
+}
+#toolbar.with-reduced-width .column:first-child {
+  min-width: 280px; /* allow brush tools to collapse at smaller workspace widths */
 }
 #toolbar .column:last-child {
   padding-right: 80px;
@@ -91,7 +100,6 @@
   display: flex;
   align-items: flex-start;
 
-  margin-top: -10px; /* flush with top */
   margin-right: 45px;
 }
 #toolbar .group_tools .button,
@@ -115,10 +123,12 @@
 }
 /* normal width: space out the buttons */
 #toolbar .group:not(.group_tools):not(.group_colors) .button {
-  margin-top: 2px;
-  margin-bottom: 4px;
-  margin-left: 2px;
+  position: relative;
+  top: 2px;
+  left: 2px;
   padding: 15px;
+
+  border-radius: 5px;
 }
 /* reduced width: don't space out the buttons */
 #toolbar.with-reduced-width .group:not(.group_tools):not(.group_colors) .button {
@@ -130,11 +140,6 @@
   margin-top: 0;
 }
 
-#toolbar .group:not(.group_tools):not(.group_colors) .button {
-  border-radius: 5px;
-  /*width: 35px;
-  height: 35px;*/
-}
 #toolbar.with-reduced-width .group_tools {
   margin-right: 15px;
 }
@@ -148,7 +153,7 @@
  * brush tools: graphics
  */
 #toolbar .group_tools .button {
-  padding: 0 6px;
+  padding: 0 9px;
 }
 
 #toolbar .group_tools .button .icon-toolbar-tool {
