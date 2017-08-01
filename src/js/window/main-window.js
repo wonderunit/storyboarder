@@ -161,7 +161,6 @@ const load = (event, args) => {
   loadBoardUI()
   updateBoardUI()
   resize()
-  setTimeout(()=>{storyboarderSketchPane.resize()}, 500)
   // wait for reflow
   setTimeout(() => { remote.getCurrentWindow().show() }, 200)
 }
@@ -368,7 +367,6 @@ let loadBoardUI = ()=> {
   window.addEventListener('resize', () => {
     resize()
     storyboarderSketchPane.resize()
-    setTimeout(()=>{storyboarderSketchPane.resize()}, 500)
   })
 
   window.ondragover = () => { return false }
