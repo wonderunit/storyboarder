@@ -15,7 +15,7 @@
 }
 #toolbar .column:first-child {
   flex: 1;
-  min-width: 350px;
+  min-width: 550px; /* prevent brush tools from collapsing by default */
   max-width: 550px;
 
   height: 10vw;
@@ -23,6 +23,9 @@
   margin-top: -10px; /* flush with top */
   align-items: flex-end;
   overflow: hidden;
+}
+#toolbar.with-reduced-width .column:first-child {
+  min-width: 350px; /* allow brush tools to collapse at smaller workspace widths */
 }
 #toolbar .column:last-child {
   padding-right: 80px;
