@@ -372,7 +372,10 @@ let loadBoardUI = ()=> {
   
   window.addEventListener('resize', () => {
     resize()
-    storyboarderSketchPane.resize()
+    // wait for resize layout to finish before measuring and resizing sketchPane
+    setImmediate(() =>
+      storyboarderSketchPane.resize()
+    )
   })
 
   window.ondragover = () => { return false }
@@ -2884,7 +2887,9 @@ let cycleViewMode = ()=> {
         break
     }
   }
-  storyboarderSketchPane.resize()
+  setImmediate(() =>
+    storyboarderSketchPane.resize()
+  )
   renderViewMode()
   renderStats()
 }
