@@ -2580,6 +2580,8 @@ window.onmousedown = (e) => {
 }
 
 const resize = () => {
+  const toolbarEl = document.getElementById('toolbar')
+
   // measure the area available to the drawing workspace
   const scenesWidth = document.getElementById('scenes').getBoundingClientRect().width
   const scriptWidth = document.getElementById('script').getBoundingClientRect().width
@@ -2587,10 +2589,13 @@ const resize = () => {
 
   const workspaceWidth = windowWidth - scenesWidth - scriptWidth
 
-  let breakpoint = 1585 + 210
+  // toolbar buttons start getting smaller right away
+  let breakpointToolbar = 1795
+  toolbarEl.classList.toggle('with-toolbar-small', workspaceWidth <= breakpointToolbar)
 
-  const toolbarEl = document.getElementById('toolbar')
-  toolbarEl.classList.toggle('with-reduced-width', workspaceWidth < breakpoint)
+  // when the workspace is constrained, then the brush tools contract as well
+  let breakpointWorkspace = 1535
+  toolbarEl.classList.toggle('with-workspace-small', workspaceWidth <= breakpointWorkspace)
 }
 
 window.onkeydown = (e)=> {

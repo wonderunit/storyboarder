@@ -24,7 +24,7 @@
   align-items: flex-end;
   overflow: hidden;
 }
-#toolbar.with-reduced-width .column:first-child {
+#toolbar.with-workspace-small .column:first-child {
   min-width: 280px; /* allow brush tools to collapse at smaller workspace widths */
 }
 #toolbar .column:last-child {
@@ -118,7 +118,7 @@
  * REDUCED WIDTH
  */
  /* hide undo/redo */
-#toolbar.with-reduced-width .column .group.group_undo_redo {
+#toolbar.with-workspace-small .column .group.group_undo_redo {
   display: none;
 }
 /* normal width: space out the buttons */
@@ -130,20 +130,25 @@
 
   border-radius: 5px;
 }
+#toolbar.with-toolbar-small .group:not(.group_tools):not(.group_colors) .button {
+  top: 9px;
+  padding: 6px;
+}
 /* reduced width: don't space out the buttons */
-#toolbar.with-reduced-width .group:not(.group_tools):not(.group_colors) .button {
+#toolbar.with-toolbar-small.with-workspace-small .group:not(.group_tools):not(.group_colors) .button {
+  top: -2px;
   margin: 0;
   padding: 0;
 }
 /* reduced width: less space above toolbar colors */
-#toolbar.with-reduced-width .toolbar-colors {
+#toolbar.with-workspace-small .toolbar-colors {
   margin-top: 0;
 }
 
-#toolbar.with-reduced-width .group_tools {
+#toolbar.with-workspace-small .group_tools {
   margin-right: 15px;
 }
-.with-scenes-visible #toolbar.with-reduced-width .group_tools {
+.with-scenes-visible #toolbar.with-workspace-small .group_tools {
   margin-left: 5px;
 }
 
@@ -307,24 +312,24 @@
   width: 32px;
 }
 
-#toolbar.with-reduced-width .toolbar-colors .icon.icon-toolbar-color_palette {
+#toolbar.with-workspace-small .toolbar-colors .icon.icon-toolbar-color_palette {
   width: 24px;
 }
-#toolbar.with-reduced-width .column:last-child {
+#toolbar.with-workspace-small .column:last-child {
   padding-right: 0;
 }
 
 
-#toolbar.with-reduced-width .toolbar-colors {
+#toolbar.with-workspace-small .toolbar-colors {
   margin-left: 0;
   margin-right: 0;
 }
-#toolbar.with-reduced-width .toolbar-colors_column:first-child {
+#toolbar.with-workspace-small .toolbar-colors_column:first-child {
   padding: 4px;
   width: 33px;
   height: 33px;
 }
-#toolbar.with-reduced-width .toolbar-colors_column:last-child {
+#toolbar.with-workspace-small .toolbar-colors_column:last-child {
   border-top-right-radius: 5px;
   border-bottom-right-radius: 5px;
   padding: 4px 4px 4px 2px;
@@ -366,7 +371,7 @@
   cursor: pointer;
 }
 
-#toolbar.with-reduced-width .toolbar-brush-size-controls {
+#toolbar.with-workspace-small .toolbar-brush-size-controls {
   margin-top: 36px;
   margin-left: -12px;
 }
