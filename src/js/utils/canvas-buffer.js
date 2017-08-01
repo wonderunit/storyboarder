@@ -4,7 +4,7 @@ class CanvasBuffer {
   constructor(options) {
     this.canvasPool = []
     this.buffer = []
-    this.strategy = options && options.strategy || new CanvasBufferOutputFileStrategy()
+    this.strategy = options && options.outputStrategy || new CanvasBufferOutputFileStrategy()
   }
 
   addToBuffer(sourceCanvas, metaData) {
