@@ -127,6 +127,8 @@
   margin-bottom: 4px;
   margin-left: 2px;
   padding: 15px;
+
+  border-radius: 5px;
 }
 /* reduced width: don't space out the buttons */
 #toolbar.with-reduced-width .group:not(.group_tools):not(.group_colors) .button {
@@ -138,11 +140,6 @@
   margin-top: 0;
 }
 
-#toolbar .group:not(.group_tools):not(.group_colors) .button {
-  border-radius: 5px;
-  /*width: 35px;
-  height: 35px;*/
-}
 #toolbar.with-reduced-width .group_tools {
   margin-right: 15px;
 }
