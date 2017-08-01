@@ -161,7 +161,11 @@ const load = (event, args) => {
   loadBoardUI()
   updateBoardUI().then(() => {
     resize()
-    setImmediate(() => remote.getCurrentWindow().show())
+    setImmediate(() =>
+      requestAnimationFrame(() =>
+        remote.getCurrentWindow().show()
+      )
+    )
   })
 }
 ipcRenderer.on('load', load)
