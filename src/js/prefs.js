@@ -22,7 +22,8 @@ const defaultPrefs = {
   enableCanvasPaintingOpacity: true,
   enableBrushCursor: true,
   enableStabilizer: true,
-  enableAnalytics: true
+  enableAnalytics: true,
+  enableAutoSave: true
 }
 
 // For slow computers, override the defaults here.
