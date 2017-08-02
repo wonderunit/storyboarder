@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="./css/transport.css">
     <link rel="stylesheet" href="./css/notifications.css">
     <link rel="stylesheet" href="./css/guides.css">
+    <link rel="stylesheet" href="./css/sts-container.css">
   </head>
   <body>
     <div id="drag-handle"></div>
@@ -226,7 +227,16 @@
               data-tooltip-position="left middle">
               <svg class="smallericon"><use xlink:href="./img/symbol-defs.svg#icon-linemileage"></use></svg><span id="line-miles"></span>
             </div>
+
+            <div id="sts-container">
+              <input id="sts-input1" type="text" placeholder="Enter shot type: for example, medium shot">
+              <button id="sts-button">Generate</button>
+              <div id="sts-select"></div>
+              <div id="sts-shots"></div>
+            </div>
+
             <div class="hardrule"></div>
+
             <div class="row" data-tooltip
               data-tooltip-title="Is this board a new shot?"
               data-tooltip-description="Check this box if the board is a new shot. You can have multiple boards per shot. This way you can animate or make a transition in a shot."

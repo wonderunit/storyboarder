@@ -36,6 +36,8 @@ const writePsd = require('ag-psd').writePsd;
 const readPsd = require('ag-psd').readPsd;
 const initializeCanvas = require('ag-psd').initializeCanvas;
 
+const StsSidebar = require('./sts-sidebar.js')
+
 const pkg = require('../../../package.json')
 
 const sharedObj = remote.getGlobal('sharedObj')
@@ -47,8 +49,6 @@ const LAYER_INDEX_NOTES = 2
 const CanvasRecorder = require('../utils/canvas-recorder.js')
 let isRecording = false
 let canvasRecorder
-
-const ShotTemplateSystem = require('../shot-template-system')
 
 let boardFilename
 let boardPath
@@ -121,8 +121,6 @@ const framesToMsecs = value => Math.round(value / 24 * 1000)
 
 //  analytics.event('Application', 'open', filename)
 
-
-let shotTemplateSystem
 
 menu.setMenu()
 
@@ -912,8 +910,7 @@ let loadBoardUI = ()=> {
     }
   })
 
-  shotTemplateSystem = new ShotTemplateSystem()
-  window.shotTemplateSystem = shotTemplateSystem
+  StsSidebar.init()
 
   // for debugging:
   //
