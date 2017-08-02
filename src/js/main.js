@@ -505,7 +505,7 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
           type: 'question',
           buttons: ['Yes', 'No'],
           title: 'Confirm',
-          message: 'Unsaved data will be lost. Are you sure you want to quit?'
+          message: 'Your Storyboarder file is not saved. Are you sure you want to quit?'
         }, function (response) {
           if (response === 0) { // Runs the following if 'Yes' is clicked
             app.showExitPrompt = false
