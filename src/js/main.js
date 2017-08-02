@@ -407,12 +407,10 @@ let createNew = () => {
         if (fs.existsSync(filename)) {
           if (fs.lstatSync(filename).isDirectory()) {
             console.log('\ttrash existing folder', filename)
-            tasks = tasks.then(() => trash(filename)).catch(err => {
-              reject(err)
-            })
+            tasks = tasks.then(() => trash(filename)).catch(err => reject(err))
           } else {
             dialog.showMessageBox(null, { message: "Could not overwrite file " + path.basename(filename) + ". Only folders can be overwritten." })
-            return
+            return reject(null)
           }
         }
 
@@ -454,9 +452,7 @@ let createNew = () => {
 
             analytics.event('Application', 'new', newBoardObject.aspectRatio)
           })
-        }).catch(err => {
-          reject(err)
-        })
+        }).catch(err => reject(err))
 
         tasks.then(resolve)
       } else {
@@ -709,7 +705,9 @@ ipcMain.on('importImagesDialogue', (e, arg)=> {
 
 ipcMain.on('createNew', (e, arg)=> {
   createNew().catch(err => {
-    dialog.showMessageBox(null, { type: 'error', message: err.message })
+    if (err) {
+      dialog.showMessageBox(null, { type: 'error', message: err.message })
+    }
   })
 })
 
