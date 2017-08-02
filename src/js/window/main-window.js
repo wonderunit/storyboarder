@@ -2615,15 +2615,25 @@ const resize = () => {
 
 window.onkeydown = (e)=> {
   if (!textInputMode) {
-    //console.log(e)
+    console.log(e)
     switch (e.keyCode) {
-      // C
+      // C - Copy
       case 67:
         if (e.metaKey || e.ctrlKey) {
           copyBoards()
           e.preventDefault()
         }
         break
+      // X - Cut
+      case 88:
+        if (e.metaKey || e.ctrlKey) {
+          copyBoards()
+          deleteBoards()
+          notifications.notify({message: 'Copied boards to clipboard.', timing: 5})
+          e.preventDefault()
+        }
+        break
+
       // r
       // case 82:
       //   if(isRecording) {
