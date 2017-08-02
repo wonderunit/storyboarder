@@ -145,8 +145,6 @@ const generatePDF = (paperSize, layout='landscape', rows, cols, spacing, boardDa
           }
           offset = (boxSize[0]-imgSize[0])/2
 
-
-
           let imagefilename = path.join(app.getPath('temp'), `board-` + currentBoard + '.jpg')
 
           doc.image(imagefilename, x+offset,y, {width: imgSize[0]})
@@ -155,17 +153,6 @@ const generatePDF = (paperSize, layout='landscape', rows, cols, spacing, boardDa
           let lineWidth = 5
           doc.lineWidth(.1)
           .stroke() 
-
-
-         // doc.rect(box[0],box[1],imgSize[0],imgSize[1])
-         //  doc.lineWidth(1)
-         //  .stroke() 
-
-         // doc.rect(box[0],box[1],boxSize[0],boxSize[1])
-         //  doc.lineWidth(1)
-         //  .stroke() 
-
-
 
           if (boardData.boards[currentBoard].newShot) {
             doc.rect(x+offset,y,0,imgSize[1])
@@ -191,26 +178,85 @@ const generatePDF = (paperSize, layout='landscape', rows, cols, spacing, boardDa
             textOffset = 5
           }
 
-
+          let leftAligned = false
 
           if (boardData.boards[currentBoard].dialogue) {
             doc.fontSize(7)
             doc.font('bold')
-            doc.text(boardData.boards[currentBoard].dialogue, x,y+imgSize[1]+textOffset, {width: boxSize[0], align: 'center'});
-            textOffset += doc.heightOfString(boardData.boards[currentBoard].dialogue, {width: boxSize[0], align: 'center'})
+
+            if (imgSize[0] > doc.widthOfString(boardData.boards[currentBoard].dialogue)) {
+              // draw center
+              doc.text(boardData.boards[currentBoard].dialogue, x+offset,y+imgSize[1]+textOffset, {width: imgSize[0], align: 'center'})
+              textOffset += doc.heightOfString(boardData.boards[currentBoard].dialogue, {width: imgSize[0], align: 'center'})
+            } else {
+              let metaHeight = doc.heightOfString(boardData.boards[currentBoard].dialogue, {width: imgSize[0]})
+              if( boardData.boards[index].action ) { 
+                doc.save()
+                doc.fontSize(7)
+                doc.font('regular')
+                metaHeight += doc.heightOfString(boardData.boards[currentBoard].action, {width: boxSize[0], align: 'center'})
+                doc.restore()
+              }
+              if( boardData.boards[currentBoard].action && boardData.boards[currentBoard].dialogue ) { 
+                metaHeight += 10
+              }
+              if( boardData.boards[currentBoard].action || boardData.boards[currentBoard].dialogue ) { 
+                metaHeight += 5
+              }
+              if (textHeight > metaHeight) {
+                // draw left on image left
+                doc.text(boardData.boards[currentBoard].dialogue, x+offset,y+imgSize[1]+textOffset, {width: imgSize[0], align: 'left'})
+                textOffset += doc.heightOfString(boardData.boards[currentBoard].dialogue, {width: imgSize[0], align: 'left'})
+                leftAligned = true
+              } else {
+                //     align left on box left
+                doc.text(boardData.boards[currentBoard].dialogue, x,y+imgSize[1]+textOffset, {width: boxSize[0], align: 'left'})
+                textOffset += doc.heightOfString(boardData.boards[currentBoard].dialogue, {width: boxSize[0], align: 'left'})
+                leftAligned = true
+              }
+            }
           }
 
 
           if( boardData.boards[currentBoard].action && boardData.boards[currentBoard].dialogue ) { 
-            textOffset += 10
+            textOffset += 7
           }
 
           if (boardData.boards[currentBoard].action) {
             doc.fontSize(7)
             doc.font('regular')
-            doc.text(boardData.boards[currentBoard].action, x,y+imgSize[1]+textOffset, {width: boxSize[0], align: 'center'});
-          }
 
+            if ((imgSize[0] > doc.widthOfString(boardData.boards[currentBoard].action)) && !leftAligned) {
+              // draw center
+              doc.text(boardData.boards[currentBoard].action, x+offset,y+imgSize[1]+textOffset, {width: imgSize[0], align: 'center'})
+              textOffset += doc.heightOfString(boardData.boards[currentBoard].action, {width: imgSize[0], align: 'center'})
+            } else {
+              let metaHeight = doc.heightOfString(boardData.boards[currentBoard].action, {width: imgSize[0]})
+              if( boardData.boards[index].dialogue ) { 
+                doc.save()
+                doc.fontSize(7)
+                doc.font('bold')
+                metaHeight += doc.heightOfString(boardData.boards[currentBoard].dialogue, {width: boxSize[0], align: 'center'})
+                doc.restore()
+              }
+              if( boardData.boards[currentBoard].action && boardData.boards[currentBoard].dialogue ) { 
+                metaHeight += 10
+              }
+              if( boardData.boards[currentBoard].action || boardData.boards[currentBoard].dialogue ) { 
+                metaHeight += 5
+              }
+              doc.font('regular')
+              if (textHeight > metaHeight) {
+                // draw left on image left
+                doc.text(boardData.boards[currentBoard].action, x+offset,y+imgSize[1]+textOffset, {width: imgSize[0], align: 'left'})
+                textOffset += doc.heightOfString(boardData.boards[currentBoard].action, {width: imgSize[0], align: 'left'})
+              } else {
+                //     align left on box left
+                doc.text(boardData.boards[currentBoard].action, x,y+imgSize[1]+textOffset, {width: boxSize[0], align: 'left'})
+                textOffset += doc.heightOfString(boardData.boards[currentBoard].action, {width: boxSize[0], align: 'left'})
+              }
+            }
+          }
           currentBoard++
         }
       }
