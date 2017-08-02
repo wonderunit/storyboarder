@@ -1,4 +1,5 @@
 const {ipcRenderer, shell, remote, nativeImage, clipboard} = require('electron')
+const { app } = require('electron').remote
 const child_process = require('child_process')
 //const electronLocalshortcut = require('electron-localshortcut');
 const fs = require('fs')
@@ -1063,6 +1064,7 @@ let insertNewBoardsWithFiles = (filepaths) => {
 
 let markBoardFileDirty = () => {
   boardFileDirty = true
+  app.showExitPrompt = true
   clearTimeout(boardFileDirtyTimer)
   boardFileDirtyTimer = setTimeout(saveBoardFile, 5000)
 }
@@ -1081,6 +1083,7 @@ let saveBoardFile = (opt = { force: false }) => {
     if (opt.force || prefsModule.getPrefs()['enableAutoSave']) {
       fs.writeFileSync(boardFilename, JSON.stringify(boardData, null, 2))
       boardFileDirty = false
+      app.showExitPrompt = false
       console.log('saved board file:', boardFilename)
     }
   }
