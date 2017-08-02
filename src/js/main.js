@@ -95,8 +95,6 @@ app.on('ready', () => {
 
 
   setInterval(()=>{ analytics.ping() }, 60*1000)
-
-  openStsWindow()
 })
 
 let openKeyCommandWindow = ()=> {
@@ -122,16 +120,6 @@ let openNewWindow = () => {
   }
   newWindow.show()
 }
-
-let openStsWindow = () => {
-  console.log("sts")
-  if (!stsWindow) {
-    stsWindow = new BrowserWindow({width: 1500, height: 1300, show: false})
-    stsWindow.loadURL(`file://${__dirname}/../sts-window.html`)
-  }
-  stsWindow.show()
-}
-
 
 let openWelcomeWindow = ()=> {
   welcomeWindow = new BrowserWindow({width: 900, height: 600, center: true, show: false, resizable: false, frame: false})
