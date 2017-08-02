@@ -100,7 +100,8 @@ const getPrefs = (from) => {
 }
 
 const migrate = () => {
-  prefs = Object.assign(defaultPrefs, prefs)
+  prefs = Object.assign({}, defaultPrefs, prefs)
+  prefs.version = defaultPrefs.version
 }
 
 const init = () => {
