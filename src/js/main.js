@@ -3,6 +3,7 @@ const {app, ipcMain, BrowserWindow, globalShortcut, dialog, powerSaveBlocker} = 
 const fs = require('fs')
 const path = require('path')
 const isDev = require('electron-is-dev')
+const trash = require('trash')
 
 const prefModule = require('./prefs')
 
@@ -392,58 +393,76 @@ let getSceneDifference = (scriptA, scriptB) => {
 ////////////////////////////////////////////////////////////
 
 let createNew = () => {
-  dialog.showSaveDialog({
-    title: "New storyboard",
-    buttonLabel: "Create",
-  },
-  filename => {
-    if (filename) {
-      console.log(filename)
-      let boardName = path.basename(filename)
+  return new Promise((resolve, reject) => {
+    dialog.showSaveDialog({
+      title: "New storyboard",
+      buttonLabel: "Create",
+    },
+    filename => {
+      if (filename) {
+        console.log(filename)
 
-      if (fs.existsSync(filename)) {
-        dialog.showMessageBox(null, { message: "File or folder already exists. Storyboarder will not overwrite." })
-        return
-      }
+        let tasks = Promise.resolve()
 
-      fs.mkdirSync(filename)
-      dialog.showMessageBox({
-        type: 'question',
-        buttons: ['Ultrawide: 2.39:1',
-                  'Doublewide: 2.00:1',
-                  'Wide: 1.85:1',
-                  'HD: 16:9',
-                  'Vertical HD: 9:16',
-                  'Square: 1:1',
-                  'Old: 4:3'],
-        defaultId: 3,
-        title: 'Which aspect ratio?',
-        message: 'Which aspect ratio would you like to use?',
-        detail: "The aspect ratio defines the size of your boards. " +
-                "2.35 is the widest, like what you would watch in a movie. " +
-                "16x9 is what you would watch on a modern TV. " +
-                "4x3 is what your grandpops watched back when screens flickered and programming was wholesome.",
-      }, response => {
-        let filePath = path.join(filename, boardName + '.storyboarder')
-
-        let newBoardObject = {
-          version: pkg.version,
-          aspectRatio: [2.39, 2, 1.85, 1.7777777777777777, 0.5625, 1, 1.3333333333333333][response],
-          fps: 24,
-          defaultBoardTiming: prefs.defaultBoardTiming,
-          boards: []
+        if (fs.existsSync(filename)) {
+          if (fs.lstatSync(filename).isDirectory()) {
+            console.log('\ttrash existing folder', filename)
+            tasks = tasks.then(() => trash(filename)).catch(err => {
+              reject(err)
+            })
+          } else {
+            dialog.showMessageBox(null, { message: "Could not overwrite file " + path.basename(filename) + ". Only folders can be overwritten." })
+            return
+          }
         }
 
-        fs.writeFileSync(filePath, JSON.stringify(newBoardObject))
-        fs.mkdirSync(path.join(filename, 'images'))
+        tasks = tasks.then(() => {
+          fs.mkdirSync(filename)
+          dialog.showMessageBox({
+            type: 'question',
+            buttons: ['Ultrawide: 2.39:1',
+                      'Doublewide: 2.00:1',
+                      'Wide: 1.85:1',
+                      'HD: 16:9',
+                      'Vertical HD: 9:16',
+                      'Square: 1:1',
+                      'Old: 4:3'],
+            defaultId: 3,
+            title: 'Which aspect ratio?',
+            message: 'Which aspect ratio would you like to use?',
+            detail: "The aspect ratio defines the size of your boards. " +
+                    "2.35 is the widest, like what you would watch in a movie. " +
+                    "16x9 is what you would watch on a modern TV. " +
+                    "4x3 is what your grandpops watched back when screens flickered and programming was wholesome.",
+          }, response => {
+            let boardName = path.basename(filename)
+            let filePath = path.join(filename, boardName + '.storyboarder')
 
-        addToRecentDocs(filePath, newBoardObject)
-        loadStoryboarderWindow(filePath)
+            let newBoardObject = {
+              version: pkg.version,
+              aspectRatio: [2.39, 2, 1.85, 1.7777777777777777, 0.5625, 1, 1.3333333333333333][response],
+              fps: 24,
+              defaultBoardTiming: prefs.defaultBoardTiming,
+              boards: []
+            }
 
-        analytics.event('Application', 'new', newBoardObject.aspectRatio)
-      })
+            fs.writeFileSync(filePath, JSON.stringify(newBoardObject))
+            fs.mkdirSync(path.join(filename, 'images'))
 
-    }
+            addToRecentDocs(filePath, newBoardObject)
+            loadStoryboarderWindow(filePath)
+
+            analytics.event('Application', 'new', newBoardObject.aspectRatio)
+          })
+        }).catch(err => {
+          reject(err)
+        })
+
+        tasks.then(resolve)
+      } else {
+        reject()
+      }
+    })
   })
 }
 
@@ -689,7 +708,9 @@ ipcMain.on('importImagesDialogue', (e, arg)=> {
 })
 
 ipcMain.on('createNew', (e, arg)=> {
-  createNew()
+  createNew().catch(err => {
+    dialog.showMessageBox(null, { type: 'error', message: err.message })
+  })
 })
 
 ipcMain.on('openNewWindow', (e, arg)=> {
