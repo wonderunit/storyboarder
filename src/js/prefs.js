@@ -22,7 +22,8 @@ const defaultPrefs = {
   enableCanvasPaintingOpacity: true,
   enableBrushCursor: true,
   enableStabilizer: true,
-  enableAnalytics: true
+  enableAnalytics: true,
+  enableAutoSave: true
 }
 
 // For slow computers, override the defaults here.
@@ -100,7 +101,8 @@ const getPrefs = (from) => {
 }
 
 const migrate = () => {
-  prefs = Object.assign(defaultPrefs, prefs)
+  prefs = Object.assign({}, defaultPrefs, prefs)
+  prefs.version = defaultPrefs.version
 }
 
 const init = () => {

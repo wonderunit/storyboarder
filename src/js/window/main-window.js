@@ -1,4 +1,5 @@
 const {ipcRenderer, shell, remote, nativeImage, clipboard} = require('electron')
+const { app } = require('electron').remote
 const child_process = require('child_process')
 //const electronLocalshortcut = require('electron-localshortcut');
 const fs = require('fs')
@@ -1063,11 +1064,12 @@ let insertNewBoardsWithFiles = (filepaths) => {
 
 let markBoardFileDirty = () => {
   boardFileDirty = true
+  app.showExitPrompt = true
   clearTimeout(boardFileDirtyTimer)
   boardFileDirtyTimer = setTimeout(saveBoardFile, 5000)
 }
 
-let saveBoardFile = () => {
+let saveBoardFile = (opt = { force: false }) => {
   // are we still drawing?
   if (storyboarderSketchPane.getIsDrawingOrStabilizing()) {
     // wait, then retry
@@ -1075,13 +1077,15 @@ let saveBoardFile = () => {
     return
   }
 
-
   if (boardFileDirty) {
     clearTimeout(boardFileDirtyTimer)
     boardData.version = pkg.version
-    fs.writeFileSync(boardFilename, JSON.stringify(boardData, null, 2))
-    boardFileDirty = false
-    console.log('saved board file:', boardFilename)
+    if (opt.force || prefsModule.getPrefs()['enableAutoSave']) {
+      fs.writeFileSync(boardFilename, JSON.stringify(boardData, null, 2))
+      boardFileDirty = false
+      app.showExitPrompt = false
+      console.log('saved board file:', boardFilename)
+    }
   }
 }
 
@@ -3229,10 +3233,15 @@ const exportCleanup = () => {
 
 let save = () => {
   saveImageFile()
-  saveBoardFile()
+  saveBoardFile({ force: true })
   sfx.positive()
-  notifications.notify({message: "Saving is automatic. I already saved before you pressed this, so you don't really need to save at all. \n\nBut I did want you to know, that I think you're special - and I like you just the way you are.\n\nHere's a story tip..." , timing: 15})
-  setTimeout(()=>{storyTips.show()}, 1000)
+
+  if (prefsModule.getPrefs()['enableAutoSave']) {
+    notifications.notify({message: "Saving is automatic. I already saved before you pressed this, so you don't really need to save at all. \n\nBut I did want you to know, that I think you're special - and I like you just the way you are.\n\nHere's a story tip..." , timing: 15})
+    setTimeout(()=>{storyTips.show()}, 1000)
+  } else {
+    notifications.notify({ message: "Saved." })
+  }
 }
 
 

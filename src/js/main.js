@@ -46,6 +46,8 @@ let currentPath
 
 let toBeOpenedPath
 
+app.showExitPrompt = false
+
 appServer.on('pointerEvent', (e)=> {
   console.log('pointerEvent')
 })
@@ -495,13 +497,29 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
     mainWindow.webContents.on('devtools-closed', event => { mainWindow.webContents.send('devtools-closed') })
   }
 
-  mainWindow.once('close', () => {
-    if (welcomeWindow) {
-      if (isDev) ipcMain.removeListener('errorInWindow', onErrorInWindow)
-      welcomeWindow.webContents.send('updateRecentDocuments')
-      welcomeWindow.show()
-      analytics.screenView('welcome')
-      analytics.event('Application', 'close')
+  // via https://github.com/electron/electron/issues/2301#issuecomment-308384017
+  mainWindow.on('close', event => {
+    if (app.showExitPrompt) {
+        event.preventDefault() // Prevents the window from closing
+        dialog.showMessageBox({
+          type: 'question',
+          buttons: ['Yes', 'No'],
+          title: 'Confirm',
+          message: 'Your Storyboarder file is not saved. Are you sure you want to quit?'
+        }, function (response) {
+          if (response === 0) { // Runs the following if 'Yes' is clicked
+            app.showExitPrompt = false
+            mainWindow.close()
+          }
+        })
+    } else {
+      if (welcomeWindow) {
+        if (isDev) ipcMain.removeListener('errorInWindow', onErrorInWindow)
+        welcomeWindow.webContents.send('updateRecentDocuments')
+        welcomeWindow.show()
+        analytics.screenView('welcome')
+        analytics.event('Application', 'close')
+      }
     }
   })
 }
