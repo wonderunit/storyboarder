@@ -64,8 +64,9 @@ const onShotClick = event => {
 }
 
 const onShotDblclick = event => {
+  let shotParams = JSON.parse(event.target.firstChild.dataset.shotParams)
   let img = event.target.firstChild
-  emitter.emit('select', img)
+  emitter.emit('select', img, shotParams)
 }
 
 const init = config => {

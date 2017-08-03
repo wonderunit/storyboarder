@@ -911,7 +911,15 @@ let loadBoardUI = ()=> {
   })
 
   StsSidebar.init({ width: size[0], height: size[1] })
-  StsSidebar.on('select', image => storyboarderSketchPane.replaceLayer(LAYER_INDEX_REFERENCE, image))
+  StsSidebar.on('select', (img, params) => {
+    let board = boardData.boards[currentBoard]
+    board.sts = {
+      params
+    }
+    markBoardFileDirty()
+
+    storyboarderSketchPane.replaceLayer(LAYER_INDEX_REFERENCE, img)
+  })
 
   // for debugging:
   //
