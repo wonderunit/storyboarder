@@ -55,13 +55,14 @@ let generateShot = (params) => {
   })
 }
 
-init = () => {
+reset = () => {
   document.querySelector("#sts-select").innerHTML = shotTemplateSystem.getParamSelects()
+  document.querySelector('#sts-shots').innerHTML = ''
   attachListeners()
 }
 
 //setTimeout(()=>{shotTemplateSystem.saveImagesToDisk(1000)}, 2000)
 
 module.exports = {
-  init
+  reset
 }

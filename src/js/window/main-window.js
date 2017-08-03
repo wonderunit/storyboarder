@@ -910,8 +910,6 @@ let loadBoardUI = ()=> {
     }
   })
 
-  StsSidebar.init()
-
   // for debugging:
   //
   // remote.getCurrentWebContents().openDevTools()
@@ -1630,6 +1628,8 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
 
     renderMetaData()
     renderMarkerPosition()
+
+    StsSidebar.reset()
 
     let opacity = Number(document.querySelector('.layers-ui-reference-opacity').value)
     if (opacity !== 72) {
