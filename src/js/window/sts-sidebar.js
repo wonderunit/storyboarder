@@ -1,16 +1,6 @@
-const shotTemplateSystem = new(require('../shot-template-system/'))({width: 2500, height: 900})
+const ShotTemplateSystem = require('../shot-template-system')
 
-window.shotTemplateSystem = shotTemplateSystem
-
-document.querySelector("#sts-input1").onkeydown = function(event) {
-  if (event.keyCode == 13) {
-    var shotParams = shotTemplateSystem.parseParamsText(document.querySelector("#sts-input1").value)
-    generateShot(shotParams)
-    document.querySelector("#sts-select").innerHTML = ''
-    document.querySelector("#sts-select").innerHTML = shotTemplateSystem.getParamSelects(shotParams)
-    attachListeners()
-  }
-}
+let shotTemplateSystem
 
 let attachListeners = () => {
   for (let element of document.querySelectorAll('#sts-select select')) {
@@ -55,7 +45,25 @@ let generateShot = (params) => {
   })
 }
 
-reset = () => {
+const onInputKeyDown = event => {
+  if (event.keyCode == 13) {
+    var shotParams = shotTemplateSystem.parseParamsText(document.querySelector("#sts-input1").value)
+    generateShot(shotParams)
+    document.querySelector("#sts-select").innerHTML = ''
+    document.querySelector("#sts-select").innerHTML = shotTemplateSystem.getParamSelects(shotParams)
+    attachListeners()
+  }
+}
+
+const init = config => {
+  console.log('StsSidebar.init', config)
+  shotTemplateSystem = new ShotTemplateSystem(config)
+  window.shotTemplateSystem = shotTemplateSystem
+
+  document.querySelector("#sts-input1").addEventListener('keydown', onInputKeyDown)
+}
+
+const reset = () => {
   document.querySelector("#sts-select").innerHTML = shotTemplateSystem.getParamSelects()
   document.querySelector('#sts-shots').innerHTML = ''
   attachListeners()
@@ -64,5 +72,6 @@ reset = () => {
 //setTimeout(()=>{shotTemplateSystem.saveImagesToDisk(1000)}, 2000)
 
 module.exports = {
+  init,
   reset
 }

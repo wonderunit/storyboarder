@@ -910,6 +910,8 @@ let loadBoardUI = ()=> {
     }
   })
 
+  StsSidebar.init({ width: size[0], height: size[1] })
+
   // for debugging:
   //
   // remote.getCurrentWebContents().openDevTools()
