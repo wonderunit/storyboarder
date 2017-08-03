@@ -56,7 +56,6 @@ const onInputKeyDown = event => {
 }
 
 const init = config => {
-  console.log('StsSidebar.init', config)
   shotTemplateSystem = new ShotTemplateSystem(config)
   window.shotTemplateSystem = shotTemplateSystem
 
