@@ -77,6 +77,7 @@
     "electron-updater": "2.4.3",
     "express": "^4.15.2",
     "gifencoder": "^1.0.6",
+    "gl": "^4.0.3",
     "gl-vec2": "^1.0.0",
     "jsfeat": "0.0.8",
     "moment": "^2.18.1",

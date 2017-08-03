@@ -33,6 +33,7 @@ let sketchWindow
 let keyCommandWindow
 
 let welcomeInprogress
+let stsWindow
 
 let statWatcher
 
@@ -69,6 +70,7 @@ app.on('open-file', (event, path) => {
 
 app.on('ready', () => {
   analytics.init(prefs.enableAnalytics)
+  // open the welcome window when the app loads up first
   openWelcomeWindow()
   // via https://github.com/electron/electron/issues/4690#issuecomment-217435222
   const argv = process.defaultApp ? process.argv.slice(2) : process.argv
@@ -93,8 +95,6 @@ app.on('ready', () => {
 
 
   setInterval(()=>{ analytics.ping() }, 60*1000)
-
-  //open the welcome window when the app loads up first
 })
 
 let openKeyCommandWindow = ()=> {
@@ -107,6 +107,7 @@ let openKeyCommandWindow = ()=> {
 
 app.on('activate', ()=> {
   if (!mainWindow && !welcomeWindow) openWelcomeWindow()
+  
 })
 
 let openNewWindow = () => {

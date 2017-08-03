@@ -36,6 +36,8 @@ const writePsd = require('ag-psd').writePsd;
 const readPsd = require('ag-psd').readPsd;
 const initializeCanvas = require('ag-psd').initializeCanvas;
 
+const StsSidebar = require('./sts-sidebar.js')
+
 const pkg = require('../../../package.json')
 
 const sharedObj = remote.getGlobal('sharedObj')
@@ -908,6 +910,20 @@ let loadBoardUI = ()=> {
     }
   })
 
+  StsSidebar.init({ width: size[0], height: size[1] })
+  StsSidebar.on('select', (img, params) => {
+    let board = boardData.boards[currentBoard]
+
+    board.sts = {
+      params
+    }
+    markBoardFileDirty()
+
+    if (!img) return
+
+    storyboarderSketchPane.replaceLayer(LAYER_INDEX_REFERENCE, img)
+  })
+
   // for debugging:
   //
   // remote.getCurrentWebContents().openDevTools()
@@ -1626,6 +1642,8 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
 
     renderMetaData()
     renderMarkerPosition()
+
+    StsSidebar.reset(boardData.boards[currentBoard].sts)
 
     let opacity = Number(document.querySelector('.layers-ui-reference-opacity').value)
     if (opacity !== 72) {

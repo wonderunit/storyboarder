@@ -530,6 +530,14 @@ class StoryboarderSketchPane extends EventEmitter {
     this.emit('markDirty', [this.sketchPane.getCurrentLayerIndex()])
   }
 
+  replaceLayer (index, image) {
+    this.emit('addToUndoStack')
+    this.sketchPane.clearLayer(index)
+    let context = this.sketchPane.getLayerContext(index)
+    context.drawImage(image, 0, 0)
+    this.emit('markDirty', [index])
+  }
+
   flipLayers (vertical) {
     this.emit('addToUndoStack', this.visibleLayersIndices)
     // HACK operates on all layers
