@@ -76,8 +76,9 @@ const init = config => {
   document.querySelector("#sts-input1").addEventListener('keydown', onInputKeyDown)
 }
 
-const reset = () => {
-  document.querySelector("#sts-select").innerHTML = shotTemplateSystem.getParamSelects()
+const reset = sts => {
+  let shotParams = (sts && sts.params) ? sts.params : null
+  document.querySelector("#sts-select").innerHTML = shotTemplateSystem.getParamSelects(shotParams)
   document.querySelector('#sts-shots').innerHTML = ''
   attachListeners()
 }

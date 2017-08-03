@@ -1640,7 +1640,7 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
     renderMetaData()
     renderMarkerPosition()
 
-    StsSidebar.reset()
+    StsSidebar.reset(boardData.boards[currentBoard].sts)
 
     let opacity = Number(document.querySelector('.layers-ui-reference-opacity').value)
     if (opacity !== 72) {
