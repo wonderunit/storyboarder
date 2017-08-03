@@ -47,8 +47,6 @@ let currentPath
 
 let toBeOpenedPath
 
-app.showExitPrompt = false
-
 appServer.on('pointerEvent', (e)=> {
   console.log('pointerEvent')
 })
@@ -521,22 +519,24 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
     mainWindow.webContents.on('devtools-closed', event => { mainWindow.webContents.send('devtools-closed') })
   }
 
-  // via https://github.com/electron/electron/issues/2301#issuecomment-308384017
-  mainWindow.on('close', event => {
-    if (app.showExitPrompt) {
-        event.preventDefault() // Prevents the window from closing
-        dialog.showMessageBox({
-          type: 'question',
-          buttons: ['Yes', 'No'],
-          title: 'Confirm',
-          message: 'Your Storyboarder file is not saved. Are you sure you want to quit?'
-        }, function (response) {
-          if (response === 0) { // Runs the following if 'Yes' is clicked
-            app.showExitPrompt = false
-            mainWindow.close()
-          }
-        })
-    } else {
+  // via https://github.com/electron/electron/blob/master/docs/api/web-contents.md#event-will-prevent-unload
+  //     https://github.com/electron/electron/pull/9331
+  //
+  // if beforeunload is telling us to prevent unload ...
+  mainWindow.webContents.on('will-prevent-unload', event => {
+    const choice = dialog.showMessageBox({
+      type: 'question',
+      buttons: ['Yes', 'No'],
+      title: 'Confirm',
+      message: 'Your Storyboarder file is not saved. Are you sure you want to quit?'
+    })
+
+    const leave = (choice === 0)
+
+    if (leave) {
+      // ignore the default behavior of preventing unload
+      // ... which means we'll actually ... _allow_ unload :)
+
       if (welcomeWindow) {
         if (isDev) ipcMain.removeListener('errorInWindow', onErrorInWindow)
         welcomeWindow.webContents.send('updateRecentDocuments')
@@ -544,6 +544,8 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
         analytics.screenView('welcome')
         analytics.event('Application', 'close')
       }
+
+      event.preventDefault()
     }
   })
 }

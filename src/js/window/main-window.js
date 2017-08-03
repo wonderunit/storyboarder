@@ -882,10 +882,18 @@ let loadBoardUI = ()=> {
 
   window.addEventListener('beforeunload', event => {
     console.log('Close requested! Saving ...')
+
     // TODO THIS IS SLOW AS HELL. NEED TO FIX PREFS
     toolbar.savePrefs()
     saveImageFile() // NOTE image is saved first, which ensures layers are present in data
     saveBoardFile() // ... then project data can be saved
+
+    // still dirty?
+    if (boardFileDirty) {
+      // pass the electron-specific flag
+      // to trigger `will-prevent-unload` handler in main.js
+      event.returnValue = false
+    }
   })
 
   // text input mode on blur, to prevent menu trigger on preferences typing
@@ -1064,7 +1072,6 @@ let insertNewBoardsWithFiles = (filepaths) => {
 
 let markBoardFileDirty = () => {
   boardFileDirty = true
-  app.showExitPrompt = true
   clearTimeout(boardFileDirtyTimer)
   boardFileDirtyTimer = setTimeout(saveBoardFile, 5000)
 }
@@ -1083,7 +1090,6 @@ let saveBoardFile = (opt = { force: false }) => {
     if (opt.force || prefsModule.getPrefs()['enableAutoSave']) {
       fs.writeFileSync(boardFilename, JSON.stringify(boardData, null, 2))
       boardFileDirty = false
-      app.showExitPrompt = false
       console.log('saved board file:', boardFilename)
     }
   }
