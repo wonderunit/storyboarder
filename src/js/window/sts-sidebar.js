@@ -4,17 +4,7 @@ let shotTemplateSystem
 
 let attachListeners = () => {
   for (let element of document.querySelectorAll('#sts-select select')) {
-    element.addEventListener("change", (event) => {
-      if (event.target.value !== "") {
-        element.className = "picked"
-      } else {
-        element.classList.remove("picked")
-      }
-      
-      let params = getAllSTSParamSelections()
-      document.querySelector("#sts-input1").value = shotTemplateSystem.getTextString(params)
-      generateShot(params)
-    })
+    element.addEventListener("change", onSelectChange)
   }
 }
 
@@ -36,13 +26,7 @@ let generateShot = (params) => {
   img.dataset.shotParams = JSON.stringify(shot.shotParams)
   div.appendChild(img)
   document.querySelector("#sts-shots").insertBefore(div, document.querySelector("#sts-shots div"))
-  div.addEventListener("click", (event) => {
-    let shotParams = JSON.parse(event.target.firstChild.dataset.shotParams)
-    document.querySelector("#sts-select").innerHTML = ''
-    document.querySelector("#sts-select").innerHTML = shotTemplateSystem.getParamSelects(shotParams)
-    document.querySelector("#sts-input1").value = shotTemplateSystem.getTextString(shotParams)
-    attachListeners()
-  })
+  div.addEventListener("click", onShotClick)
 }
 
 const onInputKeyDown = event => {
@@ -53,6 +37,26 @@ const onInputKeyDown = event => {
     document.querySelector("#sts-select").innerHTML = shotTemplateSystem.getParamSelects(shotParams)
     attachListeners()
   }
+}
+
+const onSelectChange = event => {
+  if (event.target.value !== "") {
+    element.className = "picked"
+  } else {
+    element.classList.remove("picked")
+  }
+  
+  let params = getAllSTSParamSelections()
+  document.querySelector("#sts-input1").value = shotTemplateSystem.getTextString(params)
+  generateShot(params)
+}
+
+const onShotClick = event => {
+  let shotParams = JSON.parse(event.target.firstChild.dataset.shotParams)
+  document.querySelector("#sts-select").innerHTML = ''
+  document.querySelector("#sts-select").innerHTML = shotTemplateSystem.getParamSelects(shotParams)
+  document.querySelector("#sts-input1").value = shotTemplateSystem.getTextString(shotParams)
+  attachListeners()
 }
 
 const init = config => {
