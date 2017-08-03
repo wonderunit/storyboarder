@@ -1,6 +1,9 @@
+const EventEmitter = require('events').EventEmitter
+
 const ShotTemplateSystem = require('../shot-template-system')
 
 let shotTemplateSystem
+let emitter = new EventEmitter()
 
 let attachListeners = () => {
   for (let element of document.querySelectorAll('#sts-select select')) {
@@ -26,6 +29,7 @@ let generateShot = (params) => {
   img.dataset.shotParams = JSON.stringify(shot.shotParams)
   div.appendChild(img)
   document.querySelector("#sts-shots").insertBefore(div, document.querySelector("#sts-shots div"))
+  div.addEventListener('dblclick', onShotDblclick)
   div.addEventListener("click", onShotClick)
 }
 
@@ -59,6 +63,11 @@ const onShotClick = event => {
   attachListeners()
 }
 
+const onShotDblclick = event => {
+  let img = event.target.firstChild
+  emitter.emit('select', img)
+}
+
 const init = config => {
   shotTemplateSystem = new ShotTemplateSystem(config)
   window.shotTemplateSystem = shotTemplateSystem
@@ -74,7 +83,7 @@ const reset = () => {
 
 //setTimeout(()=>{shotTemplateSystem.saveImagesToDisk(1000)}, 2000)
 
-module.exports = {
+module.exports = Object.assign(emitter, {
   init,
   reset
-}
+})
