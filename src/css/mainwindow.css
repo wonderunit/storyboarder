@@ -363,7 +363,7 @@ body::-webkit-scrollbar {
 #board-metadata {
   display: flex;
   position: relative;
-  width: 300px;
+  width: 350px;
   transition: 0.3s width;
 }
 
