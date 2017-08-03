@@ -93,6 +93,8 @@ const generatePDF = (paperSize, layout='landscape', rows, cols, spacing, boardDa
   }
 
   // calculate imgSize
+  // TODO ASPECT RATIO PROBLEM
+  // where text action and dialogue are too high
   let imgSize
   if((boxSize[0]/(boxSize[1]-textHeight))< aspectRatio) {
     imgSize = [boxSize[0], boxSize[0]/aspectRatio]

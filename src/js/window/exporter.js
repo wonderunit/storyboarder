@@ -251,13 +251,19 @@ class Exporter extends EventEmitter {
             lines.forEach((line, i)=> {
               let xOffset = (i + 1) * (fontSize + 6) + (destSize.height - ((lines.length+1) * (fontSize + 6)))-20
               let textWidth = context.measureText(line).width/2
-              outlinecontext.lineWidth = 50
+              outlinecontext.lineWidth = 15
               outlinecontext.lineCap = "square"
+              outlinecontext.lineJoin = "round"
               outlinecontext.strokeStyle = "rgba(0,0,0,1)"
-              outlinecontext.beginPath()
-              outlinecontext.moveTo((destWidth/2)-textWidth, xOffset-(6))
-              outlinecontext.lineTo((destWidth/2)+textWidth, xOffset-(6))
-              outlinecontext.stroke()
+              let padding = 35
+              outlinecontext.fillRect((destWidth/2)-textWidth-(padding/2), xOffset-(6)-(padding/2), textWidth*2+padding, padding)
+              outlinecontext.strokeRect((destWidth/2)-textWidth-(padding/2), xOffset-(6)-(padding/2), textWidth*2+padding, padding)
+
+
+              // outlinecontext.beginPath()
+              // outlinecontext.moveTo((destWidth/2)-textWidth, xOffset-(6))
+              // outlinecontext.lineTo((destWidth/2)+textWidth, xOffset-(6))
+              // outlinecontext.stroke()
             })
 
             context.globalAlpha = 0.5
