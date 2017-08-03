@@ -911,6 +911,7 @@ let loadBoardUI = ()=> {
   })
 
   StsSidebar.init({ width: size[0], height: size[1] })
+  StsSidebar.on('select', image => storyboarderSketchPane.replaceLayer(LAYER_INDEX_REFERENCE, image))
 
   // for debugging:
   //
