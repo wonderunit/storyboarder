@@ -45,9 +45,9 @@ const onInputKeyDown = event => {
 
 const onSelectChange = event => {
   if (event.target.value !== "") {
-    element.className = "picked"
+    event.target.className = "picked"
   } else {
-    element.classList.remove("picked")
+    event.target.classList.remove("picked")
   }
   
   let params = getAllSTSParamSelections()
