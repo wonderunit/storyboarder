@@ -228,13 +228,6 @@
               <svg class="smallericon"><use xlink:href="./img/symbol-defs.svg#icon-linemileage"></use></svg><span id="line-miles"></span>
             </div>
 
-            <div id="sts-container">
-              <input id="sts-input1" type="text" placeholder="Enter shot type: for example, medium shot">
-              <button id="sts-button">Generate</button>
-              <div id="sts-select"></div>
-              <div id="sts-shots"></div>
-            </div>
-
             <div class="hardrule"></div>
 
             <div class="row" data-tooltip
@@ -292,7 +285,9 @@
               data-tooltip-keys=""
               data-tooltip-position="left middle"></textarea>
             </div>
-            <!-- <div class="hardrule"></div> -->
+
+            <div class="hardrule"></div>
+
             <div class="row">
               <div class="inline"><svg class="smallicon"><use xlink:href="./img/symbol-defs.svg#icon-lightbox"></use></svg>Light Layer</div>
               <div class="layers-ui-reference-clear flatbutton small" data-tooltip
@@ -300,6 +295,14 @@
               data-tooltip-description="Clear the light layer for this board. You can also clear it when you are on the light pencil drawing tool and you press:"
               data-tooltip-keys="Alt+Backspace"
               data-tooltip-position="left middle"> <svg class="smallericon"><use xlink:href="./img/symbol-defs.svg#icon-trash"></use></svg>Clear</div>
+
+              <div id="sts-sidebar">
+                <input id="sts-input1" type="text" placeholder="Enter shot type: for example, medium shot">
+                <button id="sts-button">Generate</button>
+                <div id="sts-select"></div>
+                <div id="sts-shots"></div>
+              </div>
+
               <div>
                 <div class="col">
                   <div class="layers-ui-main-merge flatbutton" data-tooltip
@@ -324,7 +327,9 @@
                   data-tooltip-position="left middle" type="range" min="20" max="98" step="26" value="98">
               </div>
             </div>
+
             <div class="hardrule"></div>
+
             <div class="row">
               <div class="flatbutton" id="show-in-finder-button" data-tooltip
               data-tooltip-title="Show board in file system"
