@@ -69,20 +69,24 @@ const onShotDblclick = event => {
   emitter.emit('select', img, shotParams)
 }
 
+const onReset = event => {
+  reset()
+  emitter.emit('select', null, {})
+}
+
 const init = config => {
   shotTemplateSystem = new ShotTemplateSystem(config)
   window.shotTemplateSystem = shotTemplateSystem
 
   document.querySelector("#sts-input1").addEventListener('keydown', onInputKeyDown)
+  document.querySelector('#sts-reset').addEventListener('click', onReset)
 }
 
 const reset = sts => {
   let shotParams = (sts && sts.params) ? sts.params : null
-  document.querySelector("#sts-select").innerHTML = shotTemplateSystem.getParamSelects(shotParams)
 
-  if (shotParams) {
-    document.querySelector("#sts-input1").value = shotTemplateSystem.getTextString(shotParams)
-  }
+  document.querySelector("#sts-select").innerHTML = shotTemplateSystem.getParamSelects(shotParams)
+  document.querySelector("#sts-input1").value = shotTemplateSystem.getTextString(shotParams)
 
   document.querySelector('#sts-shots').innerHTML = ''
   attachListeners()

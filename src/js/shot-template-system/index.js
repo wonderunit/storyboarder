@@ -1493,6 +1493,8 @@ let parseShotText = (text) => {
 }
 
 let getTextString = (params) => {
+  if (!params) return ''
+
   string = []
   Object.getOwnPropertyNames(params).forEach( (param) => {
     if (alternateValues[params[param]]) {
