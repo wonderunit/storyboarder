@@ -38,11 +38,6 @@ const generatePDF = (paperSize, layout='landscape', rows, cols, spacing, boardDa
   doc.registerFont('bold', path.join(__dirname, '..', '..', 'fonts', 'proximanova', 'ProximaNova-Bold.ttf'))
   let stream = doc.pipe(fs.createWriteStream(filepath))
 
-  console.log('boards: ', boardData.boards.length)
-
-  console.log('pages: ', boardData.boards.length/(rows*cols))
-  console.log(boardData)
-
   let pages = Math.ceil(boardData.boards.length/(rows*cols))
   let currentBoard = 0
 
@@ -175,8 +170,7 @@ const generatePDF = (paperSize, layout='landscape', rows, cols, spacing, boardDa
 
           let textOffset = 0
 
-
-          if( boardData.boards[index].action || boardData.boards[index].dialogue ) { 
+          if( boardData.boards[currentBoard].action || boardData.boards[currentBoard].dialogue ) { 
             textOffset = 5
           }
 
