@@ -79,6 +79,11 @@ const init = config => {
 const reset = sts => {
   let shotParams = (sts && sts.params) ? sts.params : null
   document.querySelector("#sts-select").innerHTML = shotTemplateSystem.getParamSelects(shotParams)
+
+  if (shotParams) {
+    document.querySelector("#sts-input1").value = shotTemplateSystem.getTextString(shotParams)
+  }
+
   document.querySelector('#sts-shots').innerHTML = ''
   attachListeners()
 }
