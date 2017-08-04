@@ -300,7 +300,7 @@ class StoryboarderSketchPane extends EventEmitter {
   }
 
   startMultiLayerOperation () {
-    if (this.isMultiLayerOperation) return
+    // if (this.isMultiLayerOperation) return
     this.isMultiLayerOperation = true
 
     this.strategy.startMultiLayerOperation()
