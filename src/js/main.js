@@ -525,6 +525,7 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
   //
   // if beforeunload is telling us to prevent unload ...
   mainWindow.webContents.on('will-prevent-unload', event => {
+
     const choice = dialog.showMessageBox({
       type: 'question',
       buttons: ['Yes', 'No'],
@@ -537,19 +538,22 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
     if (leave) {
       // ignore the default behavior of preventing unload
       // ... which means we'll actually ... _allow_ unload :)
-
-      if (welcomeWindow) {
-        if (isDev) ipcMain.removeListener('errorInWindow', onErrorInWindow)
-        welcomeWindow.webContents.send('updateRecentDocuments')
-        welcomeWindow.show()
-        analytics.screenView('welcome')
-        analytics.event('Application', 'close')
-      }
-
       event.preventDefault()
     }
   })
+
+  mainWindow.once('closed', event => {
+    if (welcomeWindow) {
+      if (isDev) ipcMain.removeListener('errorInWindow', onErrorInWindow)
+      welcomeWindow.webContents.send('updateRecentDocuments')
+      welcomeWindow.show()
+      analytics.screenView('welcome')
+      analytics.event('Application', 'close')
+    }
+  })
+
 }
+
 
 let addToRecentDocs = (filename, metadata) => {
   let prefs = prefModule.getPrefs('add to recent')
