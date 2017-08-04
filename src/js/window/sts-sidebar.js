@@ -34,14 +34,23 @@ let generateShot = (params) => {
   div.addEventListener("click", onShotClick)
 }
 
+const clearImages = () => {
+  document.querySelector('#sts-shots').innerHTML = ''
+}
+
+const addShot = () => {
+  var shotParams = shotTemplateSystem.parseParamsText(document.querySelector("#sts-input1").value)
+  generateShot(shotParams)
+  sfx.bip('c5')
+  document.querySelector("#sts-select").innerHTML = shotTemplateSystem.getParamSelects(shotParams)
+  attachListeners()
+}
+
+/* events */
+
 const onInputKeyDown = event => {
   if (event.keyCode == 13) {
-    var shotParams = shotTemplateSystem.parseParamsText(document.querySelector("#sts-input1").value)
-    generateShot(shotParams)
-    sfx.bip('c5')
-    document.querySelector("#sts-select").innerHTML = ''
-    document.querySelector("#sts-select").innerHTML = shotTemplateSystem.getParamSelects(shotParams)
-    attachListeners()
+    addShot()
   }
 }
 
@@ -60,7 +69,6 @@ const onSelectChange = event => {
 
 const onShotClick = event => {
   let shotParams = JSON.parse(event.target.firstChild.dataset.shotParams)
-  document.querySelector("#sts-select").innerHTML = ''
   document.querySelector("#sts-select").innerHTML = shotTemplateSystem.getParamSelects(shotParams)
   document.querySelector("#sts-input1").value = shotTemplateSystem.getTextString(shotParams)
   attachListeners()
@@ -73,17 +81,19 @@ const onShotDblclick = event => {
   emitter.emit('select', img, shotParams)
 }
 
-const onReset = event => {
-  reset()
-  emitter.emit('select', null, {})
+const onRandom = event => {
+  document.querySelector("#sts-input1").value = ''
+  addShot()
 }
+
+/* exports */
 
 const init = config => {
   shotTemplateSystem = new ShotTemplateSystem(config)
   window.shotTemplateSystem = shotTemplateSystem
 
   document.querySelector("#sts-input1").addEventListener('keydown', onInputKeyDown)
-  document.querySelector('#sts-reset').addEventListener('click', onReset)
+  document.querySelector('#sts-random').addEventListener('click', onRandom)
 }
 
 const reset = sts => {
@@ -91,8 +101,7 @@ const reset = sts => {
 
   document.querySelector("#sts-select").innerHTML = shotTemplateSystem.getParamSelects(shotParams)
   document.querySelector("#sts-input1").value = shotTemplateSystem.getTextString(shotParams)
-
-  document.querySelector('#sts-shots').innerHTML = ''
+  clearImages()
   attachListeners()
 }
 
