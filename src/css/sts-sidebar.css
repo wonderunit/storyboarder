@@ -61,9 +61,6 @@
 
 
 
-#sts-button {
-  display: none;
-}
 
 #sts-select *:focus {
   outline: none;
