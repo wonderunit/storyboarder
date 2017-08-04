@@ -330,9 +330,9 @@ class Toolbar extends EventEmitter {
       case 'trash':
         this.emit('trash')
         break
-      case 'fill':
-        this.emit('fill', this.state.brushes[this.state.brush].color)
-        break
+      // case 'fill':
+      //   this.emit('fill', this.state.brushes[this.state.brush].color)
+      //   break
 
       case 'move':
         this.state.transformMode == 'move'
@@ -494,8 +494,6 @@ class Toolbar extends EventEmitter {
 
     if (this.state.brushes[this.state.brush].color) {
       this.el.querySelector('#toolbar-current-color .icon').style.backgroundColor = this.state.brushes[this.state.brush].color.toCSS()
-
-      this.el.querySelector('#toolbar-fill').style.setProperty('--color3', this.state.brushes[this.state.brush].color.toCSS())
     }
 
     const palette = this.getCurrentPalette()

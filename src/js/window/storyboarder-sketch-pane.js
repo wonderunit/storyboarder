@@ -520,12 +520,6 @@ class StoryboarderSketchPane extends EventEmitter {
     return true
   }
 
-  fillLayer (fillColor) {
-    this.emit('addToUndoStack')
-    this.sketchPane.fillLayer(fillColor, this.sketchPane.getCurrentLayerIndex())
-    this.emit('markDirty', [this.sketchPane.getCurrentLayerIndex()])
-  }
-
   replaceLayer (index, image) {
     this.emit('addToUndoStack')
     this.sketchPane.clearLayer(index)
