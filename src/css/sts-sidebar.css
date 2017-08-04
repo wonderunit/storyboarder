@@ -65,7 +65,7 @@
   display: none;
 }
 
-#sts-shots *:focus {
+#sts-select *:focus {
   outline: none;
 }
 
