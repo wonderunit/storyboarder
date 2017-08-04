@@ -300,7 +300,7 @@ class StoryboarderSketchPane extends EventEmitter {
   }
 
   startMultiLayerOperation () {
-    if (this.isMultiLayerOperation) return
+    // if (this.isMultiLayerOperation) return
     this.isMultiLayerOperation = true
 
     this.strategy.startMultiLayerOperation()
@@ -332,18 +332,14 @@ class StoryboarderSketchPane extends EventEmitter {
   }
 
   // draw composite from layers
-  drawComposite (layerIndices, destinationContext, options = { withOpacity: false }) {
+  drawComposite (layerIndices, destinationContext) {
     for (let index of layerIndices) {
       let canvas = this.sketchPane.getLayerCanvas(index)
       
-      if (options.withOpacity) {
-        destinationContext.save()
-        destinationContext.globalAlpha = this.sketchPane.getLayerOpacity(index)
-        destinationContext.drawImage(canvas, 0, 0)
-        destinationContext.restore()
-      } else {
-        destinationContext.drawImage(canvas, 0, 0)
-      }
+      destinationContext.save()
+      destinationContext.globalAlpha = this.sketchPane.getLayerOpacity(index)
+      destinationContext.drawImage(canvas, 0, 0)
+      destinationContext.restore()
     }
     return destinationContext
   }
@@ -362,7 +358,7 @@ class StoryboarderSketchPane extends EventEmitter {
     let compositeContext = composite.getContext('2d')
 
     // draw layers, in order, to temporary canvas
-    this.drawComposite(layers, compositeContext, { withOpacity: true })
+    this.drawComposite(layers, compositeContext)
 
     // clear destination
     this.sketchPane.clearLayer(destination)
