@@ -97,8 +97,16 @@ const init = config => {
 }
 
 const reset = sts => {
-  let shotParams = (sts && sts.params) ? sts.params : null
+  // if there is no data ...
+  if (!sts || !sts.params) {
+    // ... populate from existing select boxes ...
+    let params = getAllSTSParamSelections()
+    document.querySelector("#sts-input1").value = shotTemplateSystem.getTextString(params)
+    return
+  }
 
+  // ... otherwise, populate from data
+  let shotParams = sts.params
   document.querySelector("#sts-select").innerHTML = shotTemplateSystem.getParamSelects(shotParams)
   document.querySelector("#sts-input1").value = shotTemplateSystem.getTextString(shotParams)
   clearImages()
