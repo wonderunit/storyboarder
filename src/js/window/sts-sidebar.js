@@ -1,6 +1,7 @@
 const EventEmitter = require('events').EventEmitter
 
 const ShotTemplateSystem = require('../shot-template-system')
+const sfx = require('../wonderunit-sound')
 
 let shotTemplateSystem
 let emitter = new EventEmitter()
@@ -37,6 +38,7 @@ const onInputKeyDown = event => {
   if (event.keyCode == 13) {
     var shotParams = shotTemplateSystem.parseParamsText(document.querySelector("#sts-input1").value)
     generateShot(shotParams)
+    sfx.bip('c5')
     document.querySelector("#sts-select").innerHTML = ''
     document.querySelector("#sts-select").innerHTML = shotTemplateSystem.getParamSelects(shotParams)
     attachListeners()
@@ -53,6 +55,7 @@ const onSelectChange = event => {
   let params = getAllSTSParamSelections()
   document.querySelector("#sts-input1").value = shotTemplateSystem.getTextString(params)
   generateShot(params)
+  sfx.bip('c6')
 }
 
 const onShotClick = event => {
@@ -66,6 +69,7 @@ const onShotClick = event => {
 const onShotDblclick = event => {
   let shotParams = JSON.parse(event.target.firstChild.dataset.shotParams)
   let img = event.target.firstChild
+  sfx.playEffect('fill')
   emitter.emit('select', img, shotParams)
 }
 
