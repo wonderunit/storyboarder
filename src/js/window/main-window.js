@@ -631,12 +631,6 @@ let loadBoardUI = ()=> {
   toolbar.on('duplicate', () => {
     duplicateBoard()
   })
-  toolbar.on('import', () => {
-    alert('Import. This feature is not ready yet :(')
-  })
-  toolbar.on('print', () => {
-    alert('Print. This feature is not ready yet :(')
-  })
 
   toolbar.on('brush', (kind, options) => {
     toolbar.emit('cancelTransform')

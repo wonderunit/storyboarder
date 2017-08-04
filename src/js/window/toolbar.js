@@ -288,12 +288,6 @@ class Toolbar extends EventEmitter {
       case 'duplicate':
         this.emit('duplicate')
         break
-      case 'import':
-        this.emit('import')
-        break
-      case 'print':
-        this.emit('print')
-        break
       
       // brushes
       case 'light-pencil':
