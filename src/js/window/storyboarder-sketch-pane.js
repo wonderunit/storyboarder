@@ -332,18 +332,14 @@ class StoryboarderSketchPane extends EventEmitter {
   }
 
   // draw composite from layers
-  drawComposite (layerIndices, destinationContext, options = { withOpacity: false }) {
+  drawComposite (layerIndices, destinationContext) {
     for (let index of layerIndices) {
       let canvas = this.sketchPane.getLayerCanvas(index)
       
-      if (options.withOpacity) {
-        destinationContext.save()
-        destinationContext.globalAlpha = this.sketchPane.getLayerOpacity(index)
-        destinationContext.drawImage(canvas, 0, 0)
-        destinationContext.restore()
-      } else {
-        destinationContext.drawImage(canvas, 0, 0)
-      }
+      destinationContext.save()
+      destinationContext.globalAlpha = this.sketchPane.getLayerOpacity(index)
+      destinationContext.drawImage(canvas, 0, 0)
+      destinationContext.restore()
     }
     return destinationContext
   }
@@ -362,7 +358,7 @@ class StoryboarderSketchPane extends EventEmitter {
     let compositeContext = composite.getContext('2d')
 
     // draw layers, in order, to temporary canvas
-    this.drawComposite(layers, compositeContext, { withOpacity: true })
+    this.drawComposite(layers, compositeContext)
 
     // clear destination
     this.sketchPane.clearLayer(destination)
@@ -743,7 +739,7 @@ class DrawingStrategy {
     let compositeContext = this.container.sketchPane.getLayerContext(this.container.compositeIndex)
     this.container.sketchPane.clearLayer(this.container.compositeIndex)
 
-    this.container.drawComposite(this.container.visibleLayersIndices, compositeContext, { withOpacity: true })
+    this.container.drawComposite(this.container.visibleLayersIndices, compositeContext)
 
     // select that layer
     this.container.sketchPane.selectLayer(this.container.compositeIndex)
@@ -782,7 +778,7 @@ class MovingStrategy {
     // TODO is storedContext properly disposed?
     let storedContext = this.container.createContext()
     this.storedComposite = storedContext.canvas
-    this.container.drawComposite(this.container.visibleLayersIndices, storedContext, { withOpacity: true })
+    this.container.drawComposite(this.container.visibleLayersIndices, storedContext)
 
     // store each of the layers individually
     this.storedLayers = {}
@@ -1014,7 +1010,7 @@ class ScalingStrategy {
     let compositeContext = this.container.sketchPane.getLayerContext(this.container.compositeIndex)
     this.container.sketchPane.clearLayer(this.container.compositeIndex)
 
-    this.container.drawComposite(this.container.visibleLayersIndices, compositeContext, { withOpacity: true })
+    this.container.drawComposite(this.container.visibleLayersIndices, compositeContext)
 
     // select that layer
     this.container.sketchPane.selectLayer(this.container.compositeIndex)
