@@ -743,7 +743,7 @@ class DrawingStrategy {
     let compositeContext = this.container.sketchPane.getLayerContext(this.container.compositeIndex)
     this.container.sketchPane.clearLayer(this.container.compositeIndex)
 
-    this.container.drawComposite(this.container.visibleLayersIndices, compositeContext)
+    this.container.drawComposite(this.container.visibleLayersIndices, compositeContext, { withOpacity: true })
 
     // select that layer
     this.container.sketchPane.selectLayer(this.container.compositeIndex)
@@ -782,7 +782,7 @@ class MovingStrategy {
     // TODO is storedContext properly disposed?
     let storedContext = this.container.createContext()
     this.storedComposite = storedContext.canvas
-    this.container.drawComposite(this.container.visibleLayersIndices, storedContext)
+    this.container.drawComposite(this.container.visibleLayersIndices, storedContext, { withOpacity: true })
 
     // store each of the layers individually
     this.storedLayers = {}
@@ -1014,7 +1014,7 @@ class ScalingStrategy {
     let compositeContext = this.container.sketchPane.getLayerContext(this.container.compositeIndex)
     this.container.sketchPane.clearLayer(this.container.compositeIndex)
 
-    this.container.drawComposite(this.container.visibleLayersIndices, compositeContext)
+    this.container.drawComposite(this.container.visibleLayersIndices, compositeContext, { withOpacity: true })
 
     // select that layer
     this.container.sketchPane.selectLayer(this.container.compositeIndex)
