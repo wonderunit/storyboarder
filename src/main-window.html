@@ -314,16 +314,28 @@
             </div>
             
             <div class="row">
-              <div class="inline"><svg class="smallicon"><use xlink:href="./img/symbol-defs.svg#icon-lightbox"></use></svg>Shot Generator</div>
+              <div class="inline"><svg class="smallicon"><use xlink:href="./img/symbol-defs.svg#icon-lightbox"></use></svg>Shot Image Generator</div>
               <div id="sts-reset" class="flatbutton small" data-tooltip
-              data-tooltip-title="Reset Shot Generator"
-              data-tooltip-description="Reset shot generator settings"
+              data-tooltip-title="Reset Shot Image Generator"
+              data-tooltip-description="Reset shot image generator settings"
               data-tooltip-keys=""
               data-tooltip-position="left middle"> <svg class="smallericon"><use xlink:href="./img/symbol-defs.svg#icon-trash"></use></svg>Reset</div>
               <div id="sts-sidebar">
-                <input id="sts-input1" type="text" placeholder="Enter shot type: for example, medium shot">
-                <div id="sts-select"></div>
-                <div id="sts-shots"></div>
+                <input id="sts-input1" type="text" placeholder="Describe the shot: for example, medium shot" data-tooltip
+                  data-tooltip-title="Shot Description"
+                  data-tooltip-description="Describe the shot: for example, medium shot. Press enter to generate a shot image."
+                  data-tooltip-keys=""
+                  data-tooltip-position="left middle" />
+                <div id="sts-select" data-tooltip
+                  data-tooltip-title="Shot Description Data"
+                  data-tooltip-description="Refine data used to generate shot images."
+                  data-tooltip-keys=""
+                  data-tooltip-position="left middle"></div>
+                <div id="sts-shots" data-tooltip
+                  data-tooltip-title="Generated Shot Images"
+                  data-tooltip-description="Click to refine data for generated shot image. Double-click to use generated shot image as reference layer."
+                  data-tooltip-keys=""
+                  data-tooltip-position="left middle"></div>
               </div>
             </div>
 
