@@ -829,6 +829,11 @@ let loadBoardUI = ()=> {
   guides = new Guides(storyboarderSketchPane.getLayerCanvasByName('guides'))
   onionSkin = new OnionSkin(storyboarderSketchPane, boardPath)
   layersEditor = new LayersEditor(storyboarderSketchPane, sfx, notifications)
+  storyboarderSketchPane.on('pointerdown', () => {
+    if (toolbar.state.brush === 'light-pencil' && storyboarderSketchPane.sketchPane.getLayerOpacity() === 0) {
+      layersEditor.resetOpacity()
+    }
+  })
 
   sfx.init()
 
@@ -1341,6 +1346,9 @@ const renderThumbnailToNewCanvas = (index, options = { forceReadFromFiles: false
   if (!options.forceReadFromFiles && index == currentBoard) {
     // grab from memory
     canvasImageSources = storyboarderSketchPane.getCanvasImageSources()
+    // force reference opacity to default value
+    canvasImageSources[LAYER_INDEX_REFERENCE].opacity = layersEditor.getDefaultReferenceOpacity()
+    // render to context
     exporterCommon.flattenCanvasImageSourcesDataToContext(context, canvasImageSources, size)
     return Promise.resolve(canvas)
   } else {
@@ -1633,11 +1641,12 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
 
     StsSidebar.reset(boardData.boards[currentBoard].sts)
 
+    // reset reference layer opacity (if necessary)
     let opacity = Number(document.querySelector('.layers-ui-reference-opacity').value)
-    if (opacity !== 72) {
-      document.querySelector('.layers-ui-reference-opacity').value = 72
-      storyboarderSketchPane.sketchPane.setLayerOpacity(72/100, 0)
+    if (opacity !== layersEditor.getDefaultReferenceOpacity()) {
+      layersEditor.resetOpacity()
     }
+
     updateSketchPaneBoard().then(() => resolve()).catch(e => console.error(e))
     ipcRenderer.send('analyticsEvent', 'Board', 'go to board', null, currentBoard)
   })
