@@ -33,10 +33,12 @@ let generateShot = (params) => {
   document.querySelector("#sts-shots").insertBefore(div, document.querySelector("#sts-shots div"))
   div.addEventListener('dblclick', onShotDblclick)
   div.addEventListener("click", onShotClick)
+  renderPlaceholders()
 }
 
-const clearImages = () => {
+const resetImages = () => {
   document.querySelector('#sts-shots').innerHTML = ''
+  renderPlaceholders()
 }
 
 const addShot = () => {
@@ -45,6 +47,37 @@ const addShot = () => {
   sfx.bip('c5')
   document.querySelector("#sts-select").innerHTML = shotTemplateSystem.getParamSelects(shotParams)
   attachListeners()
+}
+
+const renderPlaceholders = () => {
+  let maxPlaceholders = 7
+
+  let images = document.querySelectorAll('#sts-shots > div:not(.placeholder)')
+  let placeholders = document.querySelectorAll('#sts-shots > div.placeholder')
+
+  let numRequired = maxPlaceholders - images.length
+  let numRendered = placeholders.length
+
+  if (numRequired > numRendered) {
+    // add some
+    for (let i = numRendered; i < numRequired; i++) {
+      var div = document.createElement('div')
+      div.classList.add('placeholder')
+      document.querySelector("#sts-shots").appendChild(div)
+      // preserve aspect ratio of image
+      let pct = 1 / aspectRatio * 100
+      div.style.paddingBottom = pct + "%"
+    }
+  } else {
+    if (numRendered > 0) {
+      // remove some
+      let numToRemove = numRendered - numRequired
+      for (let i = 0; i < numToRemove; i++) {
+        let el = document.querySelector('#sts-shots > div.placeholder:last-child')
+        el.parentNode.removeChild(el)
+      }
+    }
+  }
 }
 
 /* events */
@@ -113,7 +146,7 @@ const reset = sts => {
 
   document.querySelector("#sts-select").innerHTML = shotTemplateSystem.getParamSelects(shotParams)
   document.querySelector("#sts-input1").value = shotTemplateSystem.getTextString(shotParams)
-  clearImages()
+  resetImages()
   attachListeners()
 }
 

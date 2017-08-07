@@ -58,7 +58,10 @@
 
 
 
-
+#sts-shots div.placeholder {
+  width: 100%;
+  background-color: #3a3a3a;
+}
 
 
 
