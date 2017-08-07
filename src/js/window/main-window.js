@@ -1633,11 +1633,14 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
 
     StsSidebar.reset(boardData.boards[currentBoard].sts)
 
+    // reset reference layer opacity
+    let startingOpacity = 75
     let opacity = Number(document.querySelector('.layers-ui-reference-opacity').value)
-    if (opacity !== 72) {
-      document.querySelector('.layers-ui-reference-opacity').value = 72
-      storyboarderSketchPane.sketchPane.setLayerOpacity(72/100, 0)
+    if (opacity !== startingOpacity) {
+      document.querySelector('.layers-ui-reference-opacity').value = startingOpacity
+      storyboarderSketchPane.sketchPane.setLayerOpacity(startingOpacity / 100, 0)
     }
+
     updateSketchPaneBoard().then(() => resolve()).catch(e => console.error(e))
     ipcRenderer.send('analyticsEvent', 'Board', 'go to board', null, currentBoard)
   })
