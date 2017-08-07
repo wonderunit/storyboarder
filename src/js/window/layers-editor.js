@@ -64,6 +64,16 @@ class LayersEditor {
   setLayerOpacity (opacity, index) {
     this.storyboarderSketchPane.sketchPane.setLayerOpacity(opacity, index)
   }
+
+  getDefaultReferenceOpacity () {
+    return 75
+  }
+
+  resetOpacity () {
+    let opacity = this.getDefaultReferenceOpacity()
+    document.querySelector('.layers-ui-reference-opacity').value = opacity
+    this.setLayerOpacity(opacity / 100, 0)
+  }
 }
 
 module.exports = LayersEditor
