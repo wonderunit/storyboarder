@@ -5,6 +5,7 @@ const sfx = require('../wonderunit-sound')
 
 let shotTemplateSystem
 let emitter = new EventEmitter()
+let aspectRatio
 
 let attachListeners = () => {
   for (let element of document.querySelectorAll('#sts-select select')) {
@@ -89,6 +90,7 @@ const onRandom = event => {
 /* exports */
 
 const init = config => {
+  aspectRatio = config.width / config.height
   shotTemplateSystem = new ShotTemplateSystem(config)
   window.shotTemplateSystem = shotTemplateSystem
 
