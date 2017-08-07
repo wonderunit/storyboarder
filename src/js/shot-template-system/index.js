@@ -1567,7 +1567,8 @@ class ShotTemplateSystem extends EventEmitter {
   }
 
   getParamSelects (shotParams) {
-    let baseParams = ['content', 'shotType', 'horizontalAngle', 'verticalAngle', 'roomSize']
+    let baseParams = Object.keys(shotProperties)
+
     let selectOptions = {}
 
     // this is janky here.. shouldnt be setting selected
