@@ -1346,6 +1346,9 @@ const renderThumbnailToNewCanvas = (index, options = { forceReadFromFiles: false
   if (!options.forceReadFromFiles && index == currentBoard) {
     // grab from memory
     canvasImageSources = storyboarderSketchPane.getCanvasImageSources()
+    // force reference opacity to default value
+    canvasImageSources[LAYER_INDEX_REFERENCE].opacity = layersEditor.getDefaultReferenceOpacity()
+    // render to context
     exporterCommon.flattenCanvasImageSourcesDataToContext(context, canvasImageSources, size)
     return Promise.resolve(canvas)
   } else {
