@@ -120,7 +120,6 @@ let openNewWindow = () => {
     newWindow = new BrowserWindow({width: 600, height: 580, show: false, center: true, parent: welcomeWindow, resizable: false, frame: false, modal: true})
     newWindow.loadURL(`file://${__dirname}/../new.html`)
     newWindow.once('ready-to-show', () => {
-      console.log('ready-to-show')
       newWindow.show()
     })
   } else {
