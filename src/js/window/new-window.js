@@ -21,8 +21,10 @@ document.querySelector('#new-script').addEventListener("mousedown", () => {
 })
 
 // new blank
-document.querySelector('#new-blank').addEventListener('click') = () => {
-  ipcRenderer.send('createNew')
+document.querySelector('#new-blank').addEventListener('click', () => {
+  // switch tabs
+  document.querySelectorAll('.tab')[0].style.display = 'none'
+  document.querySelectorAll('.tab')[1].style.display = 'block'
 })
 
 document.querySelector('#new-blank').addEventListener("mouseover", () => {
@@ -37,3 +39,13 @@ window.ondragover = () => { return false }
 window.ondragleave = () => { return false }
 window.ondragend = () => { return false }
 window.ondrop = () => { return false }
+
+document.querySelectorAll('.example').forEach(el => {
+  el.addEventListener('click', event => {
+    ipcRenderer.send('createNew', el.dataset.aspectRatio)
+    event.preventDefault()
+  })
+})
+
+// start on tab 0
+document.querySelectorAll('.tab')[0].style.display = 'block'

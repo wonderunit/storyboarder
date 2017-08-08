@@ -112,13 +112,20 @@ app.on('activate', ()=> {
 
 let openNewWindow = () => {
   if (!newWindow) {
+    // TODO this code is never called currently, as the window is created w/ welcome
     newWindow = new BrowserWindow({width: 600, height: 580, show: false, center: true, parent: welcomeWindow, resizable: false, frame: false, modal: true})
     newWindow.loadURL(`file://${__dirname}/../new.html`)
     newWindow.once('ready-to-show', () => {
+      console.log('ready-to-show')
       newWindow.show()
     })
+  } else {
+    // ensure we clear the tabs
+    newWindow.reload()
+    setTimeout(() => {
+      newWindow.show()
+    }, 200)
   }
-  newWindow.show()
 }
 
 let openWelcomeWindow = ()=> {
@@ -391,7 +398,7 @@ let getSceneDifference = (scriptA, scriptB) => {
 // new functions
 ////////////////////////////////////////////////////////////
 
-let createNew = () => {
+let createNew = aspectRatio => {
   return new Promise((resolve, reject) => {
     dialog.showSaveDialog({
       title: "New storyboard",
@@ -408,49 +415,34 @@ let createNew = () => {
             console.log('\ttrash existing folder', filename)
             tasks = tasks.then(() => trash(filename)).catch(err => reject(err))
           } else {
-            dialog.showMessageBox(null, { message: "Could not overwrite file " + path.basename(filename) + ". Only folders can be overwritten." })
+            dialog.showMessageBox(null, {
+              message: "Could not overwrite file " + path.basename(filename) + ". Only folders can be overwritten." 
+            })
             return reject(null)
           }
         }
 
         tasks = tasks.then(() => {
           fs.mkdirSync(filename)
-          dialog.showMessageBox({
-            type: 'question',
-            buttons: ['Ultrawide: 2.39:1',
-                      'Doublewide: 2.00:1',
-                      'Wide: 1.85:1',
-                      'HD: 16:9',
-                      'Vertical HD: 9:16',
-                      'Square: 1:1',
-                      'Old: 4:3'],
-            defaultId: 3,
-            title: 'Which aspect ratio?',
-            message: 'Which aspect ratio would you like to use?',
-            detail: "The aspect ratio defines the size of your boards. " +
-                    "2.35 is the widest, like what you would watch in a movie. " +
-                    "16x9 is what you would watch on a modern TV. " +
-                    "4x3 is what your grandpops watched back when screens flickered and programming was wholesome.",
-          }, response => {
-            let boardName = path.basename(filename)
-            let filePath = path.join(filename, boardName + '.storyboarder')
 
-            let newBoardObject = {
-              version: pkg.version,
-              aspectRatio: [2.39, 2, 1.85, 1.7777777777777777, 0.5625, 1, 1.3333333333333333][response],
-              fps: 24,
-              defaultBoardTiming: prefs.defaultBoardTiming,
-              boards: []
-            }
+          let boardName = path.basename(filename)
+          let filePath = path.join(filename, boardName + '.storyboarder')
 
-            fs.writeFileSync(filePath, JSON.stringify(newBoardObject))
-            fs.mkdirSync(path.join(filename, 'images'))
+          let newBoardObject = {
+            version: pkg.version,
+            aspectRatio: aspectRatio,
+            fps: 24,
+            defaultBoardTiming: prefs.defaultBoardTiming,
+            boards: []
+          }
 
-            addToRecentDocs(filePath, newBoardObject)
-            loadStoryboarderWindow(filePath)
+          fs.writeFileSync(filePath, JSON.stringify(newBoardObject))
+          fs.mkdirSync(path.join(filename, 'images'))
 
-            analytics.event('Application', 'new', newBoardObject.aspectRatio)
-          })
+          addToRecentDocs(filePath, newBoardObject)
+          loadStoryboarderWindow(filePath)
+
+          analytics.event('Application', 'new', newBoardObject.aspectRatio)
         }).catch(err => reject(err))
 
         tasks.then(resolve)
@@ -710,12 +702,16 @@ ipcMain.on('importImagesDialogue', (e, arg)=> {
   importImagesDialogue()
 })
 
-ipcMain.on('createNew', (e, arg)=> {
-  createNew().catch(err => {
-    if (err) {
-      dialog.showMessageBox(null, { type: 'error', message: err.message })
-    }
-  })
+ipcMain.on('createNew', (e, ...args) => {
+  newWindow.hide()
+  createNew(...args)
+    .then(() => {
+    })
+    .catch(err => {
+      if (err) {
+        dialog.showMessageBox(null, { type: 'error', message: err.message })
+      }
+    })
 })
 
 ipcMain.on('openNewWindow', (e, arg)=> {
