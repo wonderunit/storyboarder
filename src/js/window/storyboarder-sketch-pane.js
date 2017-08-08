@@ -237,7 +237,10 @@ class StoryboarderSketchPane extends EventEmitter {
   canvasPointerOver () {
     this.sketchPaneDOMElement.addEventListener('pointermove', this.canvasCursorMove)
     if(this.brushPointerContainer && this.brushPointerContainer.style) {
-      this.brushPointerContainer.style.visibility = 'visible'
+      // HACK only show cursor if we're in drawing mode (not moving/scaling)
+      if (this.strategy instanceof DrawingStrategy) {
+        this.brushPointerContainer.style.visibility = 'visible'
+      }
     }
   }
 
