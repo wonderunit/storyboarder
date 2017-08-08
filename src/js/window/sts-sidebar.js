@@ -142,11 +142,12 @@ const reset = sts => {
   } else {
     // ... otherwise, populate from data
     shotParams = sts.params
+    // ... and reset any current images
+    resetImages()
   }
 
   document.querySelector("#sts-select").innerHTML = shotTemplateSystem.getParamSelects(shotParams)
   document.querySelector("#sts-input1").value = shotTemplateSystem.getTextString(shotParams)
-  resetImages()
   attachListeners()
 }
 
