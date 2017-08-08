@@ -48,6 +48,8 @@ let currentPath
 
 let toBeOpenedPath
 
+let onCreateNew
+
 appServer.on('pointerEvent', (e)=> {
   console.log('pointerEvent')
 })
@@ -111,6 +113,8 @@ app.on('activate', ()=> {
 })
 
 let openNewWindow = () => {
+  onCreateNew = createNewGivenAspectRatio
+
   if (!newWindow) {
     // TODO this code is never called currently, as the window is created w/ welcome
     newWindow = new BrowserWindow({width: 600, height: 580, show: false, center: true, parent: welcomeWindow, resizable: false, frame: false, modal: true})
@@ -201,41 +205,39 @@ let openFile = (file) => {
       let storyboardsPath = file.split(path.sep)
       storyboardsPath.pop()
       storyboardsPath = path.join(storyboardsPath.join(path.sep), 'storyboards')
+
+      // TODO can we wait until aspect ratio has been input before creating?
+      //      because currently, if the user cancels after this, they get an empty folder on their filesystem
       if (!fs.existsSync(storyboardsPath)){
         fs.mkdirSync(storyboardsPath)
       }
+
       currentFile = file
       currentPath = storyboardsPath
+
       // check for storyboard.settings file
-      let boardSettings
       if (!fs.existsSync(path.join(storyboardsPath, 'storyboard.settings'))){
-        // pop dialogue ask for aspect ratio
-        dialog.showMessageBox({
-          type: 'question',
-          buttons: ['Ultrawide: 2.39:1','Doublewide: 2.00:1','Wide: 1.85:1','HD: 16:9','Vertical HD: 9:16','Square: 1:1','Old: 4:3'],
-          defaultId: 3,
-          title: 'Which aspect ratio?',
-          message: 'Which aspect ratio would you like to use?',
-          detail: 'The aspect ratio defines the size of your boards. 2.35 is the widest, like what you would watch in a movie. 16x9 is what you would watch on a modern TV. 4x3 is what your grandpops watched back when screens flickered and programming was wholesome.',
-        }, (response)=>{
-          boardSettings = {lastScene: 0}
-          let aspects = [2.39, 2, 1.85, 1.7777777777777777, 0.5625, 1, 1.3333333333333333]
-          boardSettings.aspectRatio = aspects[response]
-          fs.writeFileSync(path.join(storyboardsPath, 'storyboard.settings'), JSON.stringify(boardSettings))
-          //[scriptData, locations, characters, metadata]
-          let processedData = processFountainData(data, true, false)
-          addToRecentDocs(currentFile, processedData[3])
-          loadStoryboarderWindow(currentFile, processedData[0], processedData[1], processedData[2], boardSettings, currentPath)
-        })
+
+        newWindow.webContents.send('setTab', 1)
+        newWindow.show()
+        onCreateNew = (aspectRatio) =>
+          createNewFromExistingFile(
+            aspectRatio,
+
+            data,
+            storyboardsPath,
+            currentFile,
+            currentPath
+          )
+
       } else {
-        boardSettings = JSON.parse(fs.readFileSync(path.join(storyboardsPath, 'storyboard.settings')))
+        let boardSettings = JSON.parse(fs.readFileSync(path.join(storyboardsPath, 'storyboard.settings')))
         if (!boardSettings.lastScene) { boardSettings.lastScene = 0 }
         //[scriptData, locations, characters, metadata]
         let processedData = processFountainData(data, true, false)
         addToRecentDocs(currentFile, processedData[3])
         loadStoryboarderWindow(currentFile, processedData[0], processedData[1], processedData[2], boardSettings, currentPath)
       }
-
     })
   }
 }
@@ -398,7 +400,7 @@ let getSceneDifference = (scriptA, scriptB) => {
 // new functions
 ////////////////////////////////////////////////////////////
 
-let createNew = aspectRatio => {
+let createNewGivenAspectRatio = aspectRatio => {
   return new Promise((resolve, reject) => {
     dialog.showSaveDialog({
       title: "New storyboard",
@@ -452,6 +454,22 @@ let createNew = aspectRatio => {
     })
   })
 }
+
+let createNewFromExistingFile = (aspectRatio, data, storyboardsPath, currentFile, currentPath) =>
+  new Promise((resolve, reject) => {
+    let boardSettings = {
+      lastScene: 0,
+      aspectRatio
+    }
+    fs.writeFileSync(path.join(storyboardsPath, 'storyboard.settings'), JSON.stringify(boardSettings))
+    //[scriptData, locations, characters, metadata]
+    let processedData = processFountainData(data, true, false)
+    
+    addToRecentDocs(currentFile, processedData[3])
+    loadStoryboarderWindow(currentFile, processedData[0], processedData[1], processedData[2], boardSettings, currentPath)
+
+    resolve()
+  })
 
 let loadStoryboarderWindow = (filename, scriptData, locations, characters, boardSettings, currentPath) => {
   if (welcomeWindow) {
@@ -704,7 +722,7 @@ ipcMain.on('importImagesDialogue', (e, arg)=> {
 
 ipcMain.on('createNew', (e, ...args) => {
   newWindow.hide()
-  createNew(...args)
+  onCreateNew(...args)
     .then(() => {
     })
     .catch(err => {

@@ -47,5 +47,14 @@ document.querySelectorAll('.example').forEach(el => {
   })
 })
 
+const setTab = index => {
+  document.querySelectorAll('.tab').forEach(el => el.style.display = 'none')
+  document.querySelectorAll('.tab')[index].style.display = 'block'
+}
+
+ipcRenderer.on('setTab', (event, index) => {
+  setTab(index)
+})
+
 // start on tab 0
-document.querySelectorAll('.tab')[0].style.display = 'block'
+setTab(0)
