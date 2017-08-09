@@ -32,6 +32,8 @@ let printWindow
 let sketchWindow
 let keyCommandWindow
 
+let loadingStatusWindow
+
 let welcomeInprogress
 let stsWindow
 
@@ -497,6 +499,18 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
     } 
   })
 
+  if (!loadingStatusWindow) {
+    loadingStatusWindow = new BrowserWindow({
+      width: 450,
+      height: 150,
+      title: `Loading ${path.basename(filename, path.extname(filename))}`
+    })
+  }
+  loadingStatusWindow.loadURL(`file://${__dirname}/../loading-status.html`)
+  loadingStatusWindow.once('ready-to-show', () => {
+    loadingStatusWindow.show()
+  })
+
 
   // http://stackoverflow.com/a/39305399
   const onErrorInWindow = (event, error, url, line) => {
@@ -547,6 +561,9 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
       if (isDev) ipcMain.removeListener('errorInWindow', onErrorInWindow)
       welcomeWindow.webContents.send('updateRecentDocuments')
       welcomeWindow.show()
+
+      loadingStatusWindow.hide()
+
       analytics.screenView('welcome')
       analytics.event('Application', 'close')
     }

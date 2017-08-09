@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="./css/fonts.css">
+    <title>Loading</title>
+    <style>
+      html {
+        height: 100%;
+      }
+      body {
+        margin: 0;
+        padding: 0;
+
+        background-color: #E5E5E5;
+        color: #3A3A3A;
+
+        font-family: 'proximanova';
+        font-weight: 300;
+
+        user-select: none;
+        -webkit-user-select: none;
+
+        cursor: default;
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+
+        height: 100%;
+
+        padding: 0 40px;
+      }
+      .title {
+        font-size: 32px;
+        margin: 0;
+        font-weight: 900;
+        flex: 1;
+        margin-top: -3px; /* optical */
+      }
+      .messages {
+        flex: 1;
+        min-height: 32px;
+      }
+    </style>
+  </head>
+  <body>
+
+    <div>
+      <div class="title">Loading <span class="filename">truncatedName</span></div>
+      <div class="messages">Loading things and also stuff …</div>
+    </div>
+
+  </body>
+</html>
