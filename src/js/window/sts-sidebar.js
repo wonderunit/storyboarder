@@ -38,7 +38,6 @@ let generateShot = (params) => {
 
 const resetImages = () => {
   document.querySelector('#sts-shots').innerHTML = ''
-  renderPlaceholders()
 }
 
 const addShot = () => {
@@ -145,6 +144,8 @@ const reset = sts => {
     // ... and reset any current images
     resetImages()
   }
+
+  renderPlaceholders()
 
   document.querySelector("#sts-select").innerHTML = shotTemplateSystem.getParamSelects(shotParams)
   document.querySelector("#sts-input1").value = shotTemplateSystem.getTextString(shotParams)
