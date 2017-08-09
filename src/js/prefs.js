@@ -23,7 +23,8 @@ const defaultPrefs = {
   enableBrushCursor: true,
   enableStabilizer: true,
   enableAnalytics: true,
-  enableAutoSave: true
+  enableAutoSave: true,
+  enablePSDdelete: true
 }
 
 // For slow computers, override the defaults here.
