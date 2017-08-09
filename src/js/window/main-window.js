@@ -44,7 +44,10 @@ const sharedObj = remote.getGlobal('sharedObj')
 
 const LAYER_INDEX_REFERENCE = 0
 const LAYER_INDEX_MAIN = 1
-const LAYER_INDEX_NOTES = 2
+// onion = 2
+const LAYER_INDEX_NOTES = 3
+// guides = 4
+const LAYER_INDEX_COMPOSITE = 5
 
 const CanvasRecorder = require('../utils/canvas-recorder.js')
 let isRecording = false
@@ -65,13 +68,12 @@ let currentScene = 0
 let boardFileDirty = false
 let boardFileDirtyTimer
 
-// TODO switch to layer indexes
 let layerStatus = {
-  main:       { dirty: false },
-  reference:  { dirty: false },
-  notes:      { dirty: false },
-  
-  composite:  { dirty: false } // TODO do we need this?
+  [LAYER_INDEX_REFERENCE]:  { dirty: false },
+  [LAYER_INDEX_MAIN]:       { dirty: false },
+  [LAYER_INDEX_NOTES]:      { dirty: false },
+
+  [LAYER_INDEX_COMPOSITE]:  { dirty: false } // TODO do we need this?
 }
 let imageFileDirtyTimer
 
@@ -1105,11 +1107,8 @@ let saveBoardFile = (opt = { force: false }) => {
 }
 
 let markImageFileDirty = layerIndices => {
-  // HACK because layerStatus uses names, we need to convert
-  const layerIndexByName = ['reference', 'main', 'onion', 'notes', 'guides', 'composite']
   for (let index of layerIndices) {
-    let layerName = layerIndexByName[index]
-    layerStatus[layerName].dirty = true
+    layerStatus[index].dirty = true
   }
 
   clearTimeout(imageFileDirtyTimer)
@@ -1169,21 +1168,21 @@ let saveImageFile = () => {
   let board = boardData.boards[currentBoard]
 
   let layersData = [
-    ['main', board.url],
-    ['reference', board.url.replace('.png', '-reference.png')],
-    ['notes', board.url.replace('.png', '-notes.png')]
+    [1, 'main', board.url],
+    [0, 'reference', board.url.replace('.png', '-reference.png')],
+    [3, 'notes', board.url.replace('.png', '-notes.png')]
   ]
 
   let shouldSaveThumbnail = false
   let shouldSaveBoardFile = false
 
   let numSaved = 0
-  for (let [layerName, filename] of layersData) {
-    if (layerStatus[layerName].dirty) {
+  for (let [index, layerName, filename] of layersData) {
+    if (layerStatus[index].dirty) {
       shouldSaveThumbnail = true
       clearTimeout(imageFileDirtyTimer)
 
-      let canvas = storyboarderSketchPane.getLayerCanvasByName(layerName)
+      let canvas = storyboarderSketchPane.sketchPane.getLayerCanvas(index)
       let imageFilePath = path.join(boardPath, 'images', filename)
 
       let imageData = canvas
@@ -1194,7 +1193,7 @@ let saveImageFile = () => {
         fs.writeFileSync(imageFilePath, imageData, 'base64')
 
         // add to boardData if it doesn't already exist
-        if (layerName !== 'main') {
+        if (index !== LAYER_INDEX_MAIN) {
           board.layers = board.layers || {}
 
           if (!board.layers[layerName]) {
@@ -1205,7 +1204,7 @@ let saveImageFile = () => {
           }
         }
 
-        layerStatus[layerName].dirty = false
+        layerStatus[index].dirty = false
         numSaved++
         console.log('\tsaved', layerName, 'to', filename)
       } catch (err) {
