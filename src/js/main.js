@@ -49,6 +49,7 @@ let currentPath
 let toBeOpenedPath
 
 let onCreateNew
+let isLoadingProject
 
 appServer.on('pointerEvent', (e)=> {
   console.log('pointerEvent')
@@ -463,7 +464,7 @@ let createNewFromExistingFile = (aspectRatio, data, storyboardsPath, currentFile
     fs.writeFileSync(path.join(storyboardsPath, 'storyboard.settings'), JSON.stringify(boardSettings))
     //[scriptData, locations, characters, metadata]
     let processedData = processFountainData(data, true, false)
-    
+
     addToRecentDocs(currentFile, processedData[3])
     loadStoryboarderWindow(currentFile, processedData[0], processedData[1], processedData[2], boardSettings, currentPath)
 
@@ -471,6 +472,8 @@ let createNewFromExistingFile = (aspectRatio, data, storyboardsPath, currentFile
   })
 
 let loadStoryboarderWindow = (filename, scriptData, locations, characters, boardSettings, currentPath) => {
+  isLoadingProject = true
+
   if (welcomeWindow) {
     welcomeWindow.hide()
   }
@@ -521,6 +524,7 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
   mainWindow.loadURL(`file://${__dirname}/../main-window.html`)
   mainWindow.once('ready-to-show', () => {
     mainWindow.webContents.send('load', [filename, scriptData, locations, characters, boardSettings, currentPath])
+    isLoadingProject = false
     analytics.screenView('main')
   })
 
@@ -534,7 +538,6 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
   //
   // if beforeunload is telling us to prevent unload ...
   mainWindow.webContents.on('will-prevent-unload', event => {
-
     const choice = dialog.showMessageBox({
       type: 'question',
       buttons: ['Yes', 'No'],
@@ -555,12 +558,19 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
     if (welcomeWindow) {
       if (isDev) ipcMain.removeListener('errorInWindow', onErrorInWindow)
       welcomeWindow.webContents.send('updateRecentDocuments')
-      welcomeWindow.show()
-      analytics.screenView('welcome')
+
+      // when old workspace is closed,
+      //   show the welcome window
+      // EXCEPT if we're currently loading a new workspace
+      //        (to take old's place)
+      if (!isLoadingProject) {
+        welcomeWindow.show()
+        analytics.screenView('welcome')
+      }
+
       analytics.event('Application', 'close')
     }
   })
-
 }
 
 
