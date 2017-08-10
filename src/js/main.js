@@ -128,8 +128,7 @@ let openWelcomeWindow = () => {
     width: 450,
     height: 150,
     backgroundColor: '#E5E5E5',
-    show: false,
-    closable: false
+    show: false
   })
 
   welcomeWindow = new BrowserWindow({width: 900, height: 600, center: true, show: false, resizable: false, frame: false})
@@ -563,8 +562,6 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
       welcomeWindow.webContents.send('updateRecentDocuments')
       welcomeWindow.show()
 
-      loadingStatusWindow && loadingStatusWindow.hide()
-
       analytics.screenView('welcome')
       analytics.event('Application', 'close')
     }
@@ -862,10 +859,10 @@ ipcMain.on('analyticsTiming', (event, category, name, ms) => {
 })
 
 ipcMain.on('log', (event, opt) => {
-  loadingStatusWindow && loadingStatusWindow.webContents.send('log', opt)
+  !loadingStatusWindow.isDestroyed() && loadingStatusWindow.webContents.send('log', opt)
 })
 
 ipcMain.on('workspaceReady', event => {
   mainWindow && mainWindow.show()
-  loadingStatusWindow && loadingStatusWindow.hide()
+  !loadingStatusWindow.isDestroyed() && loadingStatusWindow.hide()
 })
