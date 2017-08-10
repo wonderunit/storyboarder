@@ -164,7 +164,7 @@ let uniq = arr => [...new Set(arr)]
 
 // via https://stackoverflow.com/questions/5723154/truncate-a-string-in-the-middle-with-javascript
 //     https://stackoverflow.com/questions/831552/ellipsis-in-the-middle-of-a-text-mac-style/36470401#36470401
-const truncateMiddle = (string, maxLength, separator = '…') => {
+const truncateMiddle = (string, maxLength = 30, separator = '…') => {
   if (!string) return string
   if (maxLength < 1) return string
   if (string.length <= maxLength) return string
