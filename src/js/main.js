@@ -504,8 +504,9 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
     loadingStatusWindow = new BrowserWindow({
       width: 450,
       height: 150,
-      title: `Loading ${projectName}`
+      title: `Loading ${projectName}`,
       backgroundColor: '#E5E5E5',
+      show: false
     })
   }
   loadingStatusWindow.loadURL(`file://${__dirname}/../loading-status.html?name=${projectName}`)
@@ -527,7 +528,6 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
   if (isDev) ipcMain.on('errorInWindow', onErrorInWindow)
   mainWindow.loadURL(`file://${__dirname}/../main-window.html`)
   mainWindow.once('ready-to-show', () => {
-    loadingStatusWindow.hide()
     mainWindow.webContents.send('load', [filename, scriptData, locations, characters, boardSettings, currentPath])
     analytics.screenView('main')
   })
@@ -542,7 +542,6 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
   //
   // if beforeunload is telling us to prevent unload ...
   mainWindow.webContents.on('will-prevent-unload', event => {
-
     const choice = dialog.showMessageBox({
       type: 'question',
       buttons: ['Yes', 'No'],
@@ -864,5 +863,10 @@ ipcMain.on('analyticsTiming', (event, category, name, ms) => {
 })
 
 ipcMain.on('log', (event, opt) => {
-  loadingStatusWindow.webContents.send('log', opt)
+  loadingStatusWindow && loadingStatusWindow.webContents.send('log', opt)
+})
+
+ipcMain.on('workspaceReady', event => {
+  mainWindow && mainWindow.show()
+  loadingStatusWindow && loadingStatusWindow.hide()
 })
