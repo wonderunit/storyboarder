@@ -43,7 +43,7 @@ const resetImages = () => {
 const addShot = () => {
   var shotParams = shotTemplateSystem.parseParamsText(document.querySelector("#sts-input1").value)
   generateShot(shotParams)
-  sfx.bip('c5')
+  sfx.playEffect('metal')
   document.querySelector("#sts-select").innerHTML = shotTemplateSystem.getParamSelects(shotParams)
   attachListeners()
 }
