@@ -2739,35 +2739,35 @@ window.onkeydown = (e)=> {
         break
 
       // r
-      case 82:
-        if(isRecording) {
-          let snapshotCanvases = [
-            storyboarderSketchPane.sketchPane.getLayerCanvas(0),
-            storyboarderSketchPane.sketchPane.getLayerCanvas(1),
-            storyboarderSketchPane.sketchPane.getLayerCanvas(3)
-          ]
-          // make sure we capture the last frame
-          canvasRecorder.capture(snapshotCanvases, {force: true})
-          canvasRecorder.stop()
-          isRecording = false
-          isRecordingStarted = false
-        } else {
-          isRecording = true
+      // case 82:
+      //   if(isRecording) {
+      //     let snapshotCanvases = [
+      //       storyboarderSketchPane.sketchPane.getLayerCanvas(0),
+      //       storyboarderSketchPane.sketchPane.getLayerCanvas(1),
+      //       storyboarderSketchPane.sketchPane.getLayerCanvas(3)
+      //     ]
+      //     // make sure we capture the last frame
+      //     canvasRecorder.capture(snapshotCanvases, {force: true})
+      //     canvasRecorder.stop()
+      //     isRecording = false
+      //     isRecordingStarted = false
+      //   } else {
+      //     isRecording = true
 
-          let outputStrategy = "CanvasBufferOutputGifStrategy"
-          if (e.metaKey || e.ctrlKey) {
-            outputStrategy = "CanvasBufferOutputFileStrategy"
-          }
-          let exportsPath = exporterCommon.ensureExportsPathExists(boardFilename)
-          canvasRecorder = new CanvasRecorder({
-            exportsPath: exportsPath,
-            outputStrategy: outputStrategy,
-            recordingStrategy: "RecordingStrategyFrameRatio", //"RecordingStrategyTimeRatio",
-            recordingTime: 10,
-            outputTime: 1,
-          })
-          canvasRecorder.start()
-        }
+      //     let outputStrategy = "CanvasBufferOutputGifStrategy"
+      //     if (e.metaKey || e.ctrlKey) {
+      //       outputStrategy = "CanvasBufferOutputFileStrategy"
+      //     }
+      //     let exportsPath = exporterCommon.ensureExportsPathExists(boardFilename)
+      //     canvasRecorder = new CanvasRecorder({
+      //       exportsPath: exportsPath,
+      //       outputStrategy: outputStrategy,
+      //       recordingStrategy: "RecordingStrategyFrameRatio", //"RecordingStrategyTimeRatio",
+      //       recordingTime: 10,
+      //       outputTime: 1,
+      //     })
+      //     canvasRecorder.start()
+      //   }
       // V
       case 86:
         if (e.metaKey || e.ctrlKey) {
