@@ -499,14 +499,15 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
     } 
   })
 
+  let projectName = path.basename(filename, path.extname(filename))
   if (!loadingStatusWindow) {
     loadingStatusWindow = new BrowserWindow({
       width: 450,
       height: 150,
-      title: `Loading ${path.basename(filename, path.extname(filename))}`
+      title: `Loading ${projectName}`
     })
   }
-  loadingStatusWindow.loadURL(`file://${__dirname}/../loading-status.html`)
+  loadingStatusWindow.loadURL(`file://${__dirname}/../loading-status.html?name=${projectName}`)
   loadingStatusWindow.once('ready-to-show', () => {
     loadingStatusWindow.show()
   })
@@ -525,6 +526,7 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
   if (isDev) ipcMain.on('errorInWindow', onErrorInWindow)
   mainWindow.loadURL(`file://${__dirname}/../main-window.html`)
   mainWindow.once('ready-to-show', () => {
+    loadingStatusWindow.hide()
     mainWindow.webContents.send('load', [filename, scriptData, locations, characters, boardSettings, currentPath])
     analytics.screenView('main')
   })

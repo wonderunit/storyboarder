@@ -46,9 +46,25 @@
   <body>
 
     <div>
-      <div class="title">Loading <span class="filename">truncatedName</span></div>
-      <div class="messages">Loading things and also stuff …</div>
+      <div class="title">Loading <span class="filename"></span></div>
+      <div class="messages"></div>
     </div>
 
   </body>
+  <script>
+    const { ipcRenderer } = require('electron')
+    const util = require('./js/utils')
+
+    const titleEl = document.querySelector('.title')
+    const messagesEl = document.querySelector('.messages')
+
+    const params = (new URL(document.location)).searchParams
+    titleEl.textContent = 'Loading ' + util.truncateMiddle(params.get('name'))
+
+    ipcRenderer.on('log', (event, opt) => {
+      if (opt.type === 'progress') {
+        messagesEl.textContent = opt.message + ' …'
+      }
+    })
+  </script>
 </html>
