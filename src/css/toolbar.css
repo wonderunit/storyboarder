@@ -371,6 +371,24 @@
   cursor: pointer;
 }
 
+.toolbar-pomodoro-rest {
+  width: 85px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.toolbar-pomodoro-running {
+  width: 85px;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.toolbar-pomodoro-running-status {
+  color: #666;
+}
+
 #toolbar.with-workspace-small .toolbar-brush-size-controls {
   margin-top: 36px;
   margin-left: -12px;

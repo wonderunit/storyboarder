@@ -18,6 +18,7 @@ const defaultPrefs = {
   enableTooltips: true,
   enableAspirationalMessages: true,
   defaultBoardTiming: 2000,
+  pomodoroTimerMinutes: 25,
   importTargetLayer: "reference",
   enableCanvasPaintingOpacity: true,
   enableBrushCursor: true,

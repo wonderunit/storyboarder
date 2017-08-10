@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="./css/transport.css">
     <link rel="stylesheet" href="./css/notifications.css">
     <link rel="stylesheet" href="./css/guides.css">
+    <link rel="stylesheet" href="./css/pomodoro-timer.css">
     <link rel="stylesheet" href="./css/sts-sidebar.css">
   </head>
   <body>
@@ -203,6 +204,22 @@
               data-tooltip-keys="CmdOrCtrl+."
               data-tooltip-position="bottom right">
               <svg class="icon"><use xlink:href="./img/symbol-defs.svg#icon-photoshop"></use></svg>
+            </div>
+          </div>
+          <div class="group">
+            <div id="toolbar-pomodoro-rest" class="button toolbar-pomodoro-rest" data-tooltip
+                data-tooltip-title="Pomodoro Timer"
+                data-tooltip-description="Start a pomodoro timer."
+                data-tooltip-position="bottom center">
+                <svg id="toolbar-pomodoro-rest-icon" class="icon"><use xlink:href="./img/symbol-defs.svg#icon-duration"></use></svg>
+            </div>
+            <div id="toolbar-pomodoro-running" class="button toolbar-pomodoro-running" data-tooltip
+                data-tooltip-title="Pomodoro Timer"
+                data-tooltip-description="Pomodoro timer status."
+                data-tooltip-position="bottom center"
+                style="display: none;">
+                <svg id="toolbar-pomodoro-running-icon" class="icon"><use xlink:href="./img/symbol-defs.svg#icon-duration"></use></svg>
+                <div id="toolbar-pomodoro-running-status" class="toolbar-pomodoro-running-status"></div>
             </div>
           </div>
         </div>

@@ -9,5 +9,9 @@
       <title>play</title>
       <polygon points="1.212 20.481 18.948 10.24 1.212 0 1.212 20.481"/>
     </symbol>
+    <symbol id="icon-stop" viewBox="0 0 16 16">
+      <title>play</title>
+      <rect x="2" y="2" width="12" height="12"/>
+    </symbol>
   </defs>
 </svg>
