@@ -30,11 +30,14 @@ class Recorder extends EventEmitter {
     }
     this.recordingStrategy = recordingStrategy
 
+    let targetOutputWidth = this.options.outputWidth || 400
+    let targetOutputHeight = this.options.outputHeight || 225
+
     let outputStrategy
     this.exportsPath = options.exportsPath
     switch(options.outputStrategy) {
       case "CanvasBufferOutputGifStrategy":
-        outputStrategy = new CanvasBufferOutputGifStrategy({filepath: options.filepath, width: 400, height: 225})
+        outputStrategy = new CanvasBufferOutputGifStrategy({filepath: options.filepath, width: targetOutputWidth, height: targetOutputHeight})
         break
       case "CanvasBufferOutputFileStrategy":
       default:
