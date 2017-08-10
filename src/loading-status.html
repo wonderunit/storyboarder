@@ -3,7 +3,6 @@
   <head>
     <meta charset="utf-8">
     <link rel="stylesheet" href="./css/fonts.css">
-    <title>Loading</title>
     <style>
       html {
         height: 100%;
@@ -59,7 +58,9 @@
     const messagesEl = document.querySelector('.messages')
 
     const params = (new URL(document.location)).searchParams
-    titleEl.textContent = 'Loading ' + util.truncateMiddle(params.get('name'))
+    let title = 'Loading ' + util.truncateMiddle(params.get('name'))
+    titleEl.textContent = title
+    document.title = title
 
     ipcRenderer.on('log', (event, opt) => {
       if (opt.type === 'progress') {
