@@ -103,7 +103,7 @@ const EventEmitter = require('events').EventEmitter
 
 window.THREE = require('../vendor/three.min.js')
 const JDLoader = require('../vendor/JDLoader.min.js')
-const {MeshLine, MeshLineMaterial} = require('../vendor/THREE.Meshline.js')
+const {MeshLine, MeshLineMaterial} = require('../vendor/THREE.MeshLine.js')
 const OutlineEffect = require('../vendor/effects/OutlineEffect.js')
 const BufferSubdivisionModifier = require('../vendor/modifiers/BufferSubdivisionModifier.js')
 
