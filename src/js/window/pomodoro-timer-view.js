@@ -172,6 +172,7 @@ class PomodorTimerView extends EventEmitter {
     this.innerEl = this.el.querySelector('#pomodoro-timer')
     this.transitionToState(this.state)
     this.el.addEventListener('pointerleave', this.onPointerLeave.bind(this))
+    this.el.addEventListener('pointerenter', this.onPointerEnter.bind(this))
     
   }
 
@@ -274,7 +275,17 @@ class PomodorTimerView extends EventEmitter {
   }
 
   onPointerLeave (event) {
-    this.remove()
+    this.pointerTimerID = setTimeout(()=>{
+      this.remove()
+      this.pointerTimerID = null
+    }, 350)
+  }
+  
+  onPointerEnter (event) {
+    if(this.pointerTimerID) {
+      clearTimeout(this.pointerTimerID)
+      this.pointerTimerID = null
+    }
   }
 
   remove () {
