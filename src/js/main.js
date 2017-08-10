@@ -856,7 +856,10 @@ ipcMain.on('analyticsEvent', (event, category, action, label, value) => {
   analytics.event(category, action, label, value)
 })
 
-
 ipcMain.on('analyticsTiming', (event, category, name, ms) => {
   analytics.timing(category, name, ms)
+})
+
+ipcMain.on('log', (event, opt) => {
+  loadingStatusWindow.webContents.send('log', opt)
 })

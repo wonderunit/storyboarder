@@ -132,6 +132,7 @@ menu.setMenu()
 
 const load = (event, args) => {
   if (args[1]) {
+    log({ type: 'progress', message: 'Loading Fountain File' })
     console.log("LOADING FOUNTAIN FILE", args[0])
     ipcRenderer.send('analyticsEvent', 'Application', 'open script', args[0])
 
@@ -153,6 +154,7 @@ const load = (event, args) => {
     renderScript()
 
   } else {
+    log({ type: 'progress', message: 'Loading Project File' })
     // if not, its just a simple single boarder file
     boardFilename = args[0]
     boardPath = boardFilename.split(path.sep)
@@ -165,6 +167,8 @@ const load = (event, args) => {
 
   loadBoardUI()
   updateBoardUI().then(() => {
+    log({ type: 'progress', message: 'Preparing to display' })
+
     resize()
     setTimeout(() => {
       storyboarderSketchPane.resize()
@@ -362,6 +366,8 @@ const commentOnLineMileage = (miles) => {
 }
 
 let loadBoardUI = ()=> {
+  log({ type: 'progress', message: 'Loading User Interface' })
+
   let aspectRatio = boardData.aspectRatio
 
   let size
@@ -925,6 +931,8 @@ let loadBoardUI = ()=> {
 }
 
 let updateBoardUI = () => {
+  log({ type: 'progress', message: 'Rendering User Interface' })
+
   document.querySelector('#canvas-caption').style.display = 'none'
   renderViewMode()
 
@@ -4143,3 +4151,5 @@ ipcRenderer.on('save', (event, args) => {
   save()
   ipcRenderer.send('analyticsEvent', 'Board', 'save')
 })
+
+const log = opt => ipcRenderer.send('log', opt)
