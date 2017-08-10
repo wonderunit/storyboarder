@@ -11,6 +11,8 @@ const {
 
 const util = require('../utils')
 
+const DEFAULT_REFERENCE_LAYER_OPACITY = 75
+
 const msecsToFrames = (fps, value) =>
   (fps/1000) * value
 
@@ -78,7 +80,6 @@ const getCanvasImageSourcesDataForBoard = (board, projectFileAbsolutePath) => {
 
     let loaders = filenames.map(filename => getImage(getImageFilePath(filename)))
 
-    let defaultOpacityForReferenceLayer = 72/100
     Promise.all(loaders).then(images => {
       let canvasImageSourcesData = []
       images.forEach((canvasImageSource, n) => {
@@ -87,7 +88,7 @@ const getCanvasImageSourcesDataForBoard = (board, projectFileAbsolutePath) => {
           canvasImageSourcesData.push({
             // layerIndex,
             canvasImageSource,
-            opacity: layerIndex === 0 ? defaultOpacityForReferenceLayer : 1
+            opacity: layerIndex === 0 ? DEFAULT_REFERENCE_LAYER_OPACITY : 1
           })
         }
       })
@@ -150,6 +151,8 @@ const ensureExportsPathExists = (projectFileAbsolutePath) => {
 }
 
 module.exports = {
+  DEFAULT_REFERENCE_LAYER_OPACITY,
+
   msecsToFrames,
   getImage,
   exportFlattenedBoard,

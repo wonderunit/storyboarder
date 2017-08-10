@@ -1417,7 +1417,7 @@ const renderThumbnailToNewCanvas = (index, options = { forceReadFromFiles: false
     // grab from memory
     canvasImageSources = storyboarderSketchPane.getCanvasImageSources()
     // force reference opacity to default value
-    canvasImageSources[LAYER_INDEX_REFERENCE].opacity = layersEditor.getDefaultReferenceOpacity()
+    canvasImageSources[LAYER_INDEX_REFERENCE].opacity = exporterCommon.DEFAULT_REFERENCE_LAYER_OPACITY
     // render to context
     exporterCommon.flattenCanvasImageSourcesDataToContext(context, canvasImageSources, size)
     return Promise.resolve(canvas)
@@ -1722,7 +1722,7 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
 
     // reset reference layer opacity (if necessary)
     let opacity = Number(document.querySelector('.layers-ui-reference-opacity').value)
-    if (opacity !== layersEditor.getDefaultReferenceOpacity()) {
+    if (opacity !== exporterCommon.DEFAULT_REFERENCE_LAYER_OPACITY) {
       layersEditor.resetOpacity()
     }
 
