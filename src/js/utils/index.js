@@ -162,6 +162,24 @@ const zeroFill = (width, number, pad = '0') => {
 
 let uniq = arr => [...new Set(arr)]
 
+// via https://stackoverflow.com/questions/5723154/truncate-a-string-in-the-middle-with-javascript
+//     https://stackoverflow.com/questions/831552/ellipsis-in-the-middle-of-a-text-mac-style/36470401#36470401
+const truncateMiddle = (string, maxLength, separator = '…') => {
+  if (!string) return string
+  if (maxLength < 1) return string
+  if (string.length <= maxLength) return string
+  if (maxLength == 1) return string.substring(0, 1) + separator
+
+  var midpoint = Math.ceil(string.length / 2)
+  var toremove = string.length - maxLength
+  var lstrip = Math.ceil(toremove / 2)
+  var rstrip = toremove - lstrip
+
+  return string.substring(0, midpoint - lstrip) +
+         separator +
+         string.substring(midpoint + rstrip)
+}
+
 module.exports = {
   msToTime,
   uidGen,
@@ -179,5 +197,6 @@ module.exports = {
   pluralize,
   sample,
   zeroFill,
-  uniq
+  uniq,
+  truncateMiddle
 }
