@@ -507,7 +507,7 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
   loadingStatusWindow = new BrowserWindow({
     width: 450,
     height: 150,
-    backgroundColor: '#E5E5E5',
+    backgroundColor: '#333333',
     show: false,
     frame: false
   })
