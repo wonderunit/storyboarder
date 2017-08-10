@@ -28,6 +28,7 @@ const storyTips = new(require('./story-tips'))(sfx, notifications)
 const exporter = require('./exporter.js')
 const exporterCommon = require('../exporters/common')
 const prefsModule = require('electron').remote.require('./prefs.js')
+const { dialog } = require('electron').remote
 
 const boardModel = require('../models/board')
 
@@ -1232,7 +1233,22 @@ let openInEditor = () => {
     let board = boardData.boards[currentBoard]
     let imageFilePath = path.join(boardPath, 'images', board.url.replace('.png', '.psd'))
 
-    if (prefsModule.getPrefs()['enablePSDdelete'] || !fs.existsSync(imageFilePath)) {
+    let psdExists = fs.existsSync(imageFilePath);
+
+    if (prefsModule.getPrefs()['enablePSDdelete'] || !psdExists) {
+        if (psdExists) {
+            let ret = dialog.showMessageBox(null, {
+                type: 'warning',
+                buttons: ['Yes', 'No'],
+                title: 'Warning',
+                message: 'Changes in the PSD file will be overwritten.'
+            })
+
+            if (ret == 1) {
+                return
+            }
+        }
+
         let children = ['reference', 'main', 'notes'].map((layerName, i) => {
           return {
             "id": (i+2),
