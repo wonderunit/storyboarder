@@ -1,3 +1,5 @@
+const { DEFAULT_REFERENCE_LAYER_OPACITY } = require('../exporters/common')
+
 class LayersEditor {
   constructor (storyboarderSketchPane, sfx, notifications) {
     this.storyboarderSketchPane = storyboarderSketchPane
@@ -65,14 +67,9 @@ class LayersEditor {
     this.storyboarderSketchPane.sketchPane.setLayerOpacity(opacity, index)
   }
 
-  getDefaultReferenceOpacity () {
-    return 75
-  }
-
   resetOpacity () {
-    let opacity = this.getDefaultReferenceOpacity()
-    document.querySelector('.layers-ui-reference-opacity').value = opacity
-    this.setLayerOpacity(opacity / 100, 0)
+    document.querySelector('.layers-ui-reference-opacity').value = DEFAULT_REFERENCE_LAYER_OPACITY
+    this.setLayerOpacity(DEFAULT_REFERENCE_LAYER_OPACITY / 100, 0)
   }
 }
 
