@@ -564,7 +564,7 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
       welcomeWindow.webContents.send('updateRecentDocuments')
       welcomeWindow.show()
 
-      loadingStatusWindow.hide()
+      loadingStatusWindow && loadingStatusWindow.hide()
 
       analytics.screenView('welcome')
       analytics.event('Application', 'close')
