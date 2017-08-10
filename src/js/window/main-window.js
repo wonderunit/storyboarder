@@ -176,7 +176,7 @@ const load = (event, args) => {
       setImmediate(() =>
         requestAnimationFrame(() =>
           requestAnimationFrame(() =>
-            remote.getCurrentWindow().show()
+            ipcRenderer.send('workspaceReady')
           )
         )
       )
