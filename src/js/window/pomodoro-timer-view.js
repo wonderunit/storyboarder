@@ -143,7 +143,7 @@ class PomodorTimerView extends EventEmitter {
           </div>
           <div id="pomodoro-timer-tweet-button"  class="pomodoro-timer-button">
             <div class="pomodoro-timer-button-copy">Tweet</div>
-            <svg id="pomodoro-timer-start-icon" class="pomodoro-timer-button-icon"><use xlink:href="./img/social.svg#icon-twitter"></use></svg>
+            <svg id="pomodoro-timer-start-icon" class="pomodoro-timer-button-icon" style="height:25px; "><use xlink:href="./img/social.svg#icon-twitter"></use></svg>
           </div>
           <div id="pomodoro-timer-continue-button"  class="pomodoro-timer-button">
             <div class="pomodoro-timer-button-copy">Continue</div>
@@ -197,8 +197,10 @@ class PomodorTimerView extends EventEmitter {
         })
       }
       this.el.querySelector('#pomodoro-timer-recordings-label').innerHTML = `Latest Timelapses`
+      this.el.querySelector('#pomodoro-timer-recordings-label').style.display = `block`
     } else {
-      this.el.querySelector('#pomodoro-timer-recordings-label').innerHTML = `Your sprint recordings will show up here!`
+      this.el.querySelector('#pomodoro-timer-recordings-label').innerHTML = ``
+      this.el.querySelector('#pomodoro-timer-recordings-label').style.display = `none`
     }
   }
 
@@ -305,7 +307,7 @@ class PomodorTimerView extends EventEmitter {
   }
 
   tweet() {
-    shell.openExternal('https://twitter.com/intent/tweet?text=I just finished a sketch sprint with Storyboarder!')
+    shell.openExternal('https://twitter.com/intent/tweet?text=' + encodeURIComponent('I just finished a sketch sprint with Storyboarder! #sketchsprint'))
   }
   
   getStartTimeFriendly() {
