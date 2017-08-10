@@ -15,6 +15,7 @@ const Toolbar = require('./toolbar.js')
 const tooltips = require('./tooltips.js')
 const ContextMenu = require('./context-menu.js')
 const ColorPicker = require('./color-picker.js')
+const PomodoroTimerView = require('./pomodoro-timer-view.js')
 const Transport = require('./transport.js')
 const notifications = require('./notifications.js')
 const NotificationData = require('../../data/messages.json')
@@ -49,8 +50,10 @@ const LAYER_INDEX_NOTES = 3
 // guides = 4
 const LAYER_INDEX_COMPOSITE = 5
 
-const CanvasRecorder = require('../utils/canvas-recorder.js')
+const CanvasRecorder = require('../recording/canvas-recorder.js')
+const moment = require('moment')
 let isRecording = false
+let isRecordingStarted = false
 let canvasRecorder
 
 let boardFilename
@@ -108,6 +111,7 @@ let transport
 let guides
 let onionSkin
 let layersEditor
+let pomodoroTimerView
 
 let storyboarderSketchPane
 
@@ -426,8 +430,13 @@ let loadBoardUI = ()=> {
 
     // save progress image
     if(isRecording) {
-      let snapshotCanvas = storyboarderSketchPane.sketchPane.getLayerCanvas(1)
-      canvasRecorder.capture(snapshotCanvas)
+      let snapshotCanvases = [
+        storyboarderSketchPane.sketchPane.getLayerCanvas(0),
+        storyboarderSketchPane.sketchPane.getLayerCanvas(1),
+        storyboarderSketchPane.sketchPane.getLayerCanvas(3),
+      ]
+      canvasRecorder.capture(snapshotCanvases)
+      if(!isRecordingStarted) isRecordingStarted = true
     }
   })
   storyboarderSketchPane.on('pointerdown', () => {
@@ -867,7 +876,59 @@ let loadBoardUI = ()=> {
   undoStack.on('undo', onUndoStackAction)
   undoStack.on('redo', onUndoStackAction)
 
+  // Pomodoro Timer
+  pomodoroTimerView = new PomodoroTimerView()
+  toolbar.on('pomodoro-rest', () => {
+    sfx.positive()
+    pomodoroTimerView.attachTo(document.getElementById('toolbar-pomodoro-rest'))
 
+    pomodoroTimerView.addListener('update', (data)=>{
+      toolbar.updatePomodoroTimer(data)
+
+      if(isRecording && data.state === "completed") {
+        // make sure we capture the last frame
+        canvasRecorder.capture([
+          storyboarderSketchPane.sketchPane.getLayerCanvas(0),
+          storyboarderSketchPane.sketchPane.getLayerCanvas(1),
+          storyboarderSketchPane.sketchPane.getLayerCanvas(3)
+        ], {force: true})
+        canvasRecorder.stop()
+        isRecording = false
+        isRecordingStarted = false
+      }
+    })
+
+    pomodoroTimerView.addListener('cancel', (data)=>{
+      canvasRecorder.cancel()
+      isRecording = false
+      isRecordingStarted = false
+    })
+
+    pomodoroTimerView.addListener('start', (data)=>{
+      toolbar.startPomodoroTimer(data)
+
+      isRecording = true
+      let exportsPath = exporterCommon.ensureExportsPathExists(boardFilename)
+      let filename = path.basename(boardFilename, path.extname(boardFilename)) + " timelapse " + moment().format('YYYY-MM-DD hh.mm.ss')
+      canvasRecorder = new CanvasRecorder({
+        exportsPath: exportsPath,
+        filename: filename,
+        outputStrategy: "CanvasBufferOutputGifStrategy",
+        recordingStrategy: "RecordingStrategyTimeRatio",
+        recordingTime: data.duration,
+        outputTime: 1,
+      })
+
+      canvasRecorder.on('recording-ready', (filepaths)=> {
+        pomodoroTimerView.newRecordingReady(filepaths)
+      })
+      canvasRecorder.start()
+    })
+
+  })
+  toolbar.on('pomodoro-running', () => {
+    pomodoroTimerView.attachTo(document.getElementById('toolbar-pomodoro-running'))
+  })
 
   // Devtools
   ipcRenderer.on('devtools-focused', () => {
@@ -1593,6 +1654,15 @@ let goNextBoard = (direction, shouldPreserveSelections = false)=> {
 let animatedScrollingTimer = +new Date()
 
 let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
+  if(isRecording && isRecordingStarted) {
+    // make sure we capture the last frame
+    canvasRecorder.capture([
+      storyboarderSketchPane.sketchPane.getLayerCanvas(0),
+      storyboarderSketchPane.sketchPane.getLayerCanvas(1),
+      storyboarderSketchPane.sketchPane.getLayerCanvas(3)
+    ], {force: true, duration: 500})
+  }
+
   toolbar.emit('cancelTransform')
   return new Promise((resolve, reject) => {
     clearTimeout(drawIdleTimer)
@@ -2667,30 +2737,35 @@ window.onkeydown = (e)=> {
         break
 
       // r
-      // case 82:
-      //   if(isRecording) {
-      //     let snapshotCanvas = storyboarderSketchPane.sketchPane.getLayerCanvas(1)
-      //     // make sure we capture the last frame
-      //     canvasRecorder.capture(snapshotCanvas, {force: true})
-      //     canvasRecorder.stop()
-      //     isRecording = false
-      //   } else {
-      //     isRecording = true
+      case 82:
+        if(isRecording) {
+          let snapshotCanvases = [
+            storyboarderSketchPane.sketchPane.getLayerCanvas(0),
+            storyboarderSketchPane.sketchPane.getLayerCanvas(1),
+            storyboarderSketchPane.sketchPane.getLayerCanvas(3)
+          ]
+          // make sure we capture the last frame
+          canvasRecorder.capture(snapshotCanvases, {force: true})
+          canvasRecorder.stop()
+          isRecording = false
+          isRecordingStarted = false
+        } else {
+          isRecording = true
 
-      //     let outputStrategy = "CanvasBufferOutputGifStrategy"
-      //     if (e.metaKey || e.ctrlKey) {
-      //       outputStrategy = "CanvasBufferOutputFileStrategy"
-      //     }
-      //     let exportsPath = exporterCommon.ensureExportsPathExists(boardFilename)
-      //     canvasRecorder = new CanvasRecorder({
-      //       exportsPath: exportsPath,
-      //       outputStrategy: outputStrategy,
-      //       recordingStrategy: "RecordingStrategyTimeRatio",
-      //       recordingTime: 10,
-      //       outputTime: 1,
-      //     })
-      //     canvasRecorder.start()
-      //   }
+          let outputStrategy = "CanvasBufferOutputGifStrategy"
+          if (e.metaKey || e.ctrlKey) {
+            outputStrategy = "CanvasBufferOutputFileStrategy"
+          }
+          let exportsPath = exporterCommon.ensureExportsPathExists(boardFilename)
+          canvasRecorder = new CanvasRecorder({
+            exportsPath: exportsPath,
+            outputStrategy: outputStrategy,
+            recordingStrategy: "RecordingStrategyFrameRatio", //"RecordingStrategyTimeRatio",
+            recordingTime: 10,
+            outputTime: 1,
+          })
+          canvasRecorder.start()
+        }
       // V
       case 86:
         if (e.metaKey || e.ctrlKey) {

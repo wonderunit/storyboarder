@@ -7,14 +7,17 @@ class CanvasBuffer {
     this.strategy = options && options.outputStrategy || new CanvasBufferOutputFileStrategy()
   }
 
-  addToBuffer(sourceCanvas, metaData) {
+  addToBuffer(sourceCanvases, metaData) {
     // let start = Date.now()
-    
+    let sourceCanvas = sourceCanvases[0]
+    if(!sourceCanvas) return
     let bufferCanvas = this._getCanvasForBuffer()
     bufferCanvas.width = sourceCanvas.width
     bufferCanvas.height = sourceCanvas.height
     let bufferContext = bufferCanvas.getContext('2d')
-    bufferContext.drawImage(sourceCanvas, 0, 0, sourceCanvas.width, sourceCanvas.height);
+    for(let sourceCanvas of sourceCanvases) {
+      bufferContext.drawImage(sourceCanvas, 0, 0, sourceCanvas.width, sourceCanvas.height)
+    }
     this.buffer.push({canvas: bufferCanvas, metaData: metaData})
 
     // let end = Date.now()
@@ -22,7 +25,7 @@ class CanvasBuffer {
   }
 
   flushBuffer() {
-    this.strategy.flush(this.buffer, this.canvasPool)
+    return this.strategy.flush(this.buffer, this.canvasPool)
   }
 
   _getCanvasForBuffer() {

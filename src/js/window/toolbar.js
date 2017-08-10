@@ -381,9 +381,17 @@ class Toolbar extends EventEmitter {
       case 'captions':
         this.toggleCaptions()
         break
-
       case 'open-in-editor':
         this.emit('open-in-editor')
+        break
+      case 'pomodoro-rest':
+        sfx.playEffect('metal')
+        this.emit('pomodoro-rest')
+        break
+      case 'pomodoro-running':
+      case 'pomodoro-running-status':
+        this.emit('pomodoro-running')
+        break
 
       default:
         // console.log('toolbar selection', selection)
@@ -523,6 +531,33 @@ class Toolbar extends EventEmitter {
   onButtonOver (event) {
     // console.log('onButtonOver', event)
     sfx.rollover()
+  }
+
+  startPomodoroTimer(data) {
+    let elRest = document.querySelector('#toolbar-pomodoro-rest')
+    elRest.style.display = 'none'
+    let elRunning = document.querySelector('#toolbar-pomodoro-running')
+    elRunning.style.display = 'flex'
+    let elRunningStatus = document.querySelector('#toolbar-pomodoro-running-status')
+    elRunningStatus.innerHTML = data.remainingFriendly
+  }
+
+  updatePomodoroTimer(data={remaining:0}) {
+    let elRest = document.querySelector('#toolbar-pomodoro-rest')
+    let elRunning = document.querySelector('#toolbar-pomodoro-running')
+    let elRunningStatus = document.querySelector('#toolbar-pomodoro-running-status')
+    switch(data.state) {
+      case "running":
+        elRunningStatus.innerHTML = data.remainingFriendly
+        break
+      case "completed":
+        elRest.style.display = 'flex'
+        elRunning.style.display = 'none'
+        break
+      case "rest":
+        elRest.style.display = 'flex'
+        elRunning.style.display = 'none'
+    }
   }
 }
 
