@@ -4,6 +4,7 @@ const Tether = require('tether')
 const PomodoroTimer = require('../pomodoro-timer.js')
 const prefsModule = require('electron').remote.require('./prefs.js')
 const userDataHelper = require('../files/user-data-helper.js')
+const sfx = require('../wonderunit-sound.js')
 const moment = require('moment')
 const fs = require('fs')
 
@@ -215,8 +216,9 @@ class PomodorTimerView extends EventEmitter {
           shell.showItemInFolder(event.target.dataset.filepath)
         })
       }
-      this.fadeIn()
     }
+    this.fadeIn()
+    sfx.positive()
   }
 
   attachTo (target) {
@@ -287,6 +289,7 @@ class PomodorTimerView extends EventEmitter {
     this.pomodoroTimer.start()
     this.emit("start", {duration: this.pomodoroTimerMinutes, remainingFriendly: this.getStartTimeFriendly()})
     this.transitionToState("running")
+    sfx.positive()
 
     prefsModule.set('pomodoroTimerMinutes', this.pomodoroTimerMinutes)
   }
