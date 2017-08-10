@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="./css/fonts.css">
+    <style>
+      html {
+        height: 100%;
+      }
+      body {
+        margin: 0;
+        padding: 0;
+
+        background-color: #333333;
+        color: #aaa;
+
+        font-family: 'proximanova';
+        font-weight: 300;
+
+        user-select: none;
+        -webkit-user-select: none;
+
+        cursor: default;
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+
+        height: 100%;
+
+        padding: 0 40px;
+      }
+      .title {
+        font-size: 32px;
+        line-height: 1;
+        margin: 0;
+        font-weight: 900;
+        flex: 1;
+        margin-top: -3px; /* optical */
+        padding-bottom: 2px; /* optical */
+      }
+      .messages {
+        flex: 1;
+        min-height: 32px;
+      }
+    </style>
+  </head>
+  <body>
+
+    <div>
+      <div class="title">Loading <span class="filename"></span></div>
+      <div class="messages">Initializing …</div>
+    </div>
+
+  </body>
+  <script>
+    const { ipcRenderer } = require('electron')
+    const util = require('./js/utils')
+
+    const titleEl = document.querySelector('.title')
+    const messagesEl = document.querySelector('.messages')
+
+    const params = (new URL(document.location)).searchParams
+    let title = 'Loading ' + util.truncateMiddle(params.get('name'))
+    titleEl.textContent = title
+    document.title = title
+
+    ipcRenderer.on('log', (event, opt) => {
+      if (opt.type === 'progress') {
+        messagesEl.textContent = opt.message + ' …'
+      }
+    })
+  </script>
+</html>

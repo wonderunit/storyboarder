@@ -32,6 +32,8 @@ let printWindow
 let sketchWindow
 let keyCommandWindow
 
+let loadingStatusWindow
+
 let welcomeInprogress
 let stsWindow
 
@@ -83,6 +85,10 @@ app.on('ready', () => {
     let filePath = path.resolve(argv[0])
     if (fs.existsSync(filePath)) {
       openFile(filePath)
+
+      // HACK prevent upcoming welcomeWindow.show
+      welcomeWindow.once('show', () => welcomeWindow.hide())
+
       return
 
     } else {
@@ -132,7 +138,7 @@ let openNewWindow = () => {
   }
 }
 
-let openWelcomeWindow = ()=> {
+let openWelcomeWindow = () => {
   welcomeWindow = new BrowserWindow({width: 900, height: 600, center: true, show: false, resizable: false, frame: false})
   welcomeWindow.loadURL(`file://${__dirname}/../welcome.html`)
 
@@ -509,6 +515,19 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
     } 
   })
 
+  let projectName = path.basename(filename, path.extname(filename))
+  loadingStatusWindow = new BrowserWindow({
+    width: 450,
+    height: 150,
+    backgroundColor: '#333333',
+    show: false,
+    frame: false
+  })
+  loadingStatusWindow.loadURL(`file://${__dirname}/../loading-status.html?name=${projectName}`)
+  loadingStatusWindow.once('ready-to-show', () => {
+    loadingStatusWindow.show()
+  })
+
 
   // http://stackoverflow.com/a/39305399
   const onErrorInWindow = (event, error, url, line) => {
@@ -558,7 +577,6 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
     if (welcomeWindow) {
       if (isDev) ipcMain.removeListener('errorInWindow', onErrorInWindow)
       welcomeWindow.webContents.send('updateRecentDocuments')
-
       // when old workspace is closed,
       //   show the welcome window
       // EXCEPT if we're currently loading a new workspace
@@ -567,7 +585,6 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
         welcomeWindow.show()
         analytics.screenView('welcome')
       }
-
       analytics.event('Application', 'close')
     }
   })
@@ -862,7 +879,15 @@ ipcMain.on('analyticsEvent', (event, category, action, label, value) => {
   analytics.event(category, action, label, value)
 })
 
-
 ipcMain.on('analyticsTiming', (event, category, name, ms) => {
   analytics.timing(category, name, ms)
+})
+
+ipcMain.on('log', (event, opt) => {
+  !loadingStatusWindow.isDestroyed() && loadingStatusWindow.webContents.send('log', opt)
+})
+
+ipcMain.on('workspaceReady', event => {
+  mainWindow && mainWindow.show()
+  !loadingStatusWindow.isDestroyed() && loadingStatusWindow.hide()
 })
