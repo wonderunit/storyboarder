@@ -123,7 +123,15 @@ let openNewWindow = () => {
   newWindow.show()
 }
 
-let openWelcomeWindow = ()=> {
+let openWelcomeWindow = () => {
+  loadingStatusWindow = new BrowserWindow({
+    width: 450,
+    height: 150,
+    backgroundColor: '#E5E5E5',
+    show: false,
+    closable: false
+  })
+
   welcomeWindow = new BrowserWindow({width: 900, height: 600, center: true, show: false, resizable: false, frame: false})
   welcomeWindow.loadURL(`file://${__dirname}/../welcome.html`)
 
@@ -500,18 +508,9 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
   })
 
   let projectName = path.basename(filename, path.extname(filename))
-  if (!loadingStatusWindow) {
-    loadingStatusWindow = new BrowserWindow({
-      width: 450,
-      height: 150,
-      title: `Loading ${projectName}`,
-      backgroundColor: '#E5E5E5',
-      show: false
-    })
-  }
   loadingStatusWindow.loadURL(`file://${__dirname}/../loading-status.html?name=${projectName}`)
   loadingStatusWindow.once('ready-to-show', () => {
-    loadingStatusWindow.show()
+    setTimeout(() => loadingStatusWindow.show(), 100) // wait for reflow :/
   })
 
 
