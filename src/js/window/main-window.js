@@ -2429,7 +2429,7 @@ let renderScript = ()=> {
           let durationAsDataAttr = item.duration ? ` data-duration="${item.duration}"` : ''
           switch (item.type) {
             case 'action':
-              html.push('<div class="item" data-notes="' + item.text + '"' + durationAsDataAttr + '>' + item.text + '</div>')
+              html.push('<div class="item" data-action="' + item.text + '"' + durationAsDataAttr + '>' + item.text + '</div>')
               break
             case 'dialogue':
               html.push('<div class="item" data-dialogue="' + item.text + '"' + durationAsDataAttr + '>' + item.character + '<div class="dialogue" style="pointer-events: none">' + item.text + '</div></div>')
