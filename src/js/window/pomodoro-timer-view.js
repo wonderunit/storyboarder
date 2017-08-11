@@ -271,13 +271,12 @@ class PomodorTimerView extends EventEmitter {
     this.innerEl.classList.add('appear-anim')
 
     tooltips.closeAll()
-    document.querySelector('#toolbar-pomodoro-rest').dataset.tooltipIgnore = true
+    tooltips.setIgnore(document.querySelector('#toolbar-pomodoro-rest'), true)
   }
 
   fadeOut () {
     this.innerEl.classList.remove('appear-anim')
-
-    delete document.querySelector('#toolbar-pomodoro-rest').dataset.tooltipIgnore
+    tooltips.setIgnore(document.querySelector('#toolbar-pomodoro-rest'), false)
   }
 
   onPointerLeave (event) {

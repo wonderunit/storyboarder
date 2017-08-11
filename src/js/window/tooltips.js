@@ -75,6 +75,14 @@ const setupTooltipForElement = (el) => {
 
 const closeAll = () => tooltips.forEach(t => t.close())
 
+const setIgnore = (el, value) => {
+  if (value) {
+    el.dataset.tooltipIgnore = true
+  } else {
+    delete el.dataset.tooltipIgnore
+  }
+}
+
 const init = () => {
   getPrefs('pref editor')
   if (!enableTooltips) return false
@@ -90,5 +98,6 @@ module.exports = {
   setupTooltipForElement,
   housekeeping,
   getPrefs,
+  setIgnore,
   closeAll
 }
