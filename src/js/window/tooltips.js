@@ -73,6 +73,8 @@ const setupTooltipForElement = (el) => {
   return tooltip
 }
 
+const closeAll = () => tooltips.forEach(t => t.close())
+
 const init = () => {
   getPrefs('pref editor')
   if (!enableTooltips) return false
@@ -87,5 +89,6 @@ module.exports = {
   init,
   setupTooltipForElement,
   housekeeping,
-  getPrefs
+  getPrefs,
+  closeAll
 }
