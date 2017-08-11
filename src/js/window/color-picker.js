@@ -2,6 +2,7 @@ const {ipcRenderer} = require('electron')
 const EventEmitter = require('events').EventEmitter
 const Tether = require('tether')
 const Color = require('color-js')
+const tooltips = require('./tooltips')
 
 class ColorPicker extends EventEmitter {
   constructor () {
@@ -157,10 +158,14 @@ class ColorPicker extends EventEmitter {
   
   fadeIn () {
     this.innerEl.classList.add('appear-anim')
+
+    tooltips.closeAll()
+    tooltips.setIgnore(document.querySelector('#toolbar-current-color'), true)
   }
 
   fadeOut () {
     this.innerEl.classList.remove('appear-anim')
+    tooltips.setIgnore(document.querySelector('#toolbar-current-color'), false)
   }
   
   hasChild (child) {
