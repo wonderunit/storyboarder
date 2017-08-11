@@ -64,13 +64,23 @@ const setupTooltipForElement = (el) => {
   // HACK! force close immediately unless we allow tooltips in preferences
   tooltip.drop.on('open', () => {
     sfx.playEffect('metal')
-    if (!enableTooltips) {
+    if (!enableTooltips || el.dataset.tooltipIgnore) {
       tooltip.close()
     }
   })
   tooltips.push(tooltip)
   housekeeping()
   return tooltip
+}
+
+const closeAll = () => tooltips.forEach(t => t.close())
+
+const setIgnore = (el, value) => {
+  if (value) {
+    el.dataset.tooltipIgnore = true
+  } else {
+    delete el.dataset.tooltipIgnore
+  }
 }
 
 const init = () => {
@@ -87,5 +97,7 @@ module.exports = {
   init,
   setupTooltipForElement,
   housekeeping,
-  getPrefs
+  getPrefs,
+  setIgnore,
+  closeAll
 }

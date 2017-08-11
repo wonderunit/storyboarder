@@ -7,6 +7,7 @@ const userDataHelper = require('../files/user-data-helper.js')
 const sfx = require('../wonderunit-sound.js')
 const moment = require('moment')
 const fs = require('fs')
+const tooltips = require('./tooltips')
 
 class PomodorTimerView extends EventEmitter {
   constructor() {
@@ -268,10 +269,14 @@ class PomodorTimerView extends EventEmitter {
 
   fadeIn () {
     this.innerEl.classList.add('appear-anim')
+
+    tooltips.closeAll()
+    tooltips.setIgnore(document.querySelector('#toolbar-pomodoro-rest'), true)
   }
 
   fadeOut () {
     this.innerEl.classList.remove('appear-anim')
+    tooltips.setIgnore(document.querySelector('#toolbar-pomodoro-rest'), false)
   }
 
   onPointerLeave (event) {
