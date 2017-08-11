@@ -165,7 +165,7 @@ let openWelcomeWindow = () => {
   welcomeWindow.once('ready-to-show', () => {
     setTimeout(() => {
       welcomeWindow.show()
-      autoUpdater.init(welcomeWindow)
+      autoUpdater.init()
       analytics.screenView('welcome')
     }, 300)
   })

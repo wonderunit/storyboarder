@@ -6,7 +6,7 @@ const { BrowserWindow, dialog, app } = electron = require('electron')
 
 const autoUpdater = require('electron-updater').autoUpdater
 
-const init = win => {
+const init = () => {
   // autoUpdater.on('checking-for-update', () => {
   //   dialog.showMessageBox(null, { message: 'Checking for update...' })
   // })
