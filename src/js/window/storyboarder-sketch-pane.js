@@ -186,7 +186,9 @@ class StoryboarderSketchPane extends EventEmitter {
     }
     
     if (!this.getIsDrawingOrStabilizing()) {
-      this.unsetQuickErase()
+      if (!keytracker('<alt>')) {
+        this.unsetQuickErase()
+      }
     }
   }
 
