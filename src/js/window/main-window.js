@@ -1914,7 +1914,7 @@ const renderStats = () => {
   //
   // right stats
   //
-  document.querySelector('#right-stats .stats-primary').innerHTML = path.basename(boardFilename)
+  document.querySelector('#right-stats .stats-primary').innerHTML = util.truncateMiddle(path.basename(boardFilename, path.extname(boardFilename))) + '.storyboarder'
 
   // if (scriptData) {
   //   let numScenes = scriptData.filter(data => data.type == 'scene').length
