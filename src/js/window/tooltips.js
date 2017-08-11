@@ -64,7 +64,7 @@ const setupTooltipForElement = (el) => {
   // HACK! force close immediately unless we allow tooltips in preferences
   tooltip.drop.on('open', () => {
     sfx.playEffect('metal')
-    if (!enableTooltips) {
+    if (!enableTooltips || el.dataset.tooltipIgnore) {
       tooltip.close()
     }
   })
