@@ -1345,7 +1345,7 @@ let openInEditor = () => {
         let updateHandler = (eventType, filename) => {
           let board
           for(let aBoard of boardData.boards) {
-            if(aBoard.psd.includes(filename)) {
+            if(aBoard.psd && aBoard.psd.includes(filename)) {
               board = aBoard
               break
             }
