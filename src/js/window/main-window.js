@@ -33,7 +33,6 @@ const prefsModule = require('electron').remote.require('./prefs.js')
 const boardModel = require('../models/board')
 
 const FileHelper = require('../files/file-helper.js')
-const writePsd = require('ag-psd').writePsd;
 const readPsd = require('ag-psd').readPsd;
 const initializeCanvas = require('ag-psd').initializeCanvas;
 
@@ -1303,71 +1302,106 @@ let saveImageFile = () => {
 }
 
 let openInEditor = () => {
-    let children = ['reference', 'main', 'notes'].map((layerName, i) => {
-      return {
-        "id": (i+2),
-        "name": layerName,
-        "canvas": storyboarderSketchPane.getLayerCanvasByName(layerName)
-      }
-    });
-    var whiteBG = document.createElement('canvas')
-    whiteBG.width = storyboarderSketchPane.canvasSize[0]
-    whiteBG.height = storyboarderSketchPane.canvasSize[1]
-    var whiteBGContext = whiteBG.getContext('2d')
-    whiteBGContext.fillStyle = 'white'
-    whiteBGContext.fillRect(0, 0, whiteBG.width, whiteBG.height)
-    children = [{
-      "id": 1,
-      "name": "Background",
-      "canvas": whiteBG
-    }].concat(children)
-    let psd = {
-      width: storyboarderSketchPane.canvasSize[0],
-      height: storyboarderSketchPane.canvasSize[1],
-      imageResources: {layerSelectionIds: [3] },
-      children: children
-    };
-    let board = boardData.boards[currentBoard]
-    let imageFilePath = path.join(boardPath, 'images', board.url.replace('.png', '.psd'))
+    let imageFilePaths = []
+    let psdPromises = []
+    for(let selection of selections) {
+      psdPromises.push(new Promise((fulfill, reject)=>{
+        let board = boardData.boards[selection]
+        let pngPaths = []
+        if(board.layers.reference && board.layers.reference.url) {
+          pngPaths.push({
+            "url": path.join(boardPath, 'images', board.layers.reference.url),
+            "name": "reference"
+          })
+        }
+        pngPaths.push({
+            "url": path.join(boardPath, 'images', board.url),
+            "name": "main"
+        })
+        if(board.layers.notes && board.layers.notes.url) {
+          pngPaths.push({
+            "url": path.join(boardPath, 'images', board.layers.notes.url),
+            "name": "notes"
+          })
+        }
+        
+        let psdPath = path.join(boardPath, 'images', board.url.replace('.png', '.psd'))
+        
+        FileHelper.writePhotoshopFileFromPNGPathLayers(pngPaths, psdPath)
+          .then(()=>{
+            shell.openItem(psdPath);
+            imageFilePaths.push(psdPath)
+            board.psd = psdPath
+            fulfill()
+          })
+          .catch(error =>{
+            reject(error)
+          })
+      }))
+    }
+
+    Promise.all(psdPromises)
+      .then(()=>{
+        let updateHandler = (eventType, filename) => {
+          let board
+          for(let aBoard of boardData.boards) {
+            if(aBoard.psd.includes(filename)) {
+              board = aBoard
+              break
+            }
+          }
+          if(!board) {
+            return
+          }
+          let psdData
+          let readerOptions = {}
+          let curBoard = boardData.boards[currentBoard]
+          // Update the current canvas if it's the same board coming back in.
+          let isCurrentBoard = false
+          if(curBoard.uid === board.uid) {
+            readerOptions.referenceCanvas = storyboarderSketchPane.getLayerCanvasByName("reference")
+            readerOptions.mainCanvas = storyboarderSketchPane.getLayerCanvasByName("main")
+            readerOptions.notesCanvas = storyboarderSketchPane.getLayerCanvasByName("notes")
+            storeUndoStateForImage(true, [0, 1, 3])
+            isCurrentBoard = true
+          }
+          
+          psdData = FileHelper.getBase64ImageDataFromFilePath(board.psd, readerOptions)
+          if(!psdData || !psdData.main) {
+            return;
+          }
+
+          if(isCurrentBoard) {
+            storeUndoStateForImage(false, [0, 1, 3])
+            markImageFileDirty([0, 1, 3]) // reference, main, notes layers
+            saveImageFile()
+            renderThumbnailDrawer()
+          } else {
+            saveDataURLtoFile(psdData.main, board.url)
+            psdData.notes && saveDataURLtoFile(psdData.notes, board.url.replace('.png', '-notes.png'))
+            psdData.reference && saveDataURLtoFile(psdData.reference, board.url.replace('.png', '-reference.png'))
+          }
+
+          // TODO: set up the correct handler for this.
+          setTimeout(()=>{
+            saveThumbnailFile(boardData.boards.indexOf(board))
+              .then(updateThumbnailDisplayFromFile)
+          }, 500)
+
+          // re-watch the file.
+          // https://github.com/nodejs/node-v0.x-archive/issues/3640#issuecomment-6806347
+          fs.watch(board.psd, updateHandler)
+        }
+
+        for(let imageFilePath of imageFilePaths) {
+          fs.watch(imageFilePath, updateHandler)
+        }
+        ipcRenderer.send('analyticsEvent', 'Board', 'edit in photoshop')
+      })
+      .catch(error =>{
+        console.error(error)
+      })
     
-    console.log(psd)
-
-    const buffer = writePsd(psd);
-    fs.writeFileSync(imageFilePath, buffer);
-    shell.openItem(imageFilePath);
-
-    fs.watchFile(imageFilePath, (cur, prev) => {
-      let psdData
-      let readerOptions = {}
-      let curBoard = boardData.boards[currentBoard]
-      // Update the current canvas if it's the same board coming back in.
-      let isCurrentBoard = false
-      if(curBoard.uid === board.uid) {
-        readerOptions.referenceCanvas = storyboarderSketchPane.getLayerCanvasByName("reference")
-        readerOptions.mainCanvas = storyboarderSketchPane.getLayerCanvasByName("main")
-        readerOptions.notesCanvas = storyboarderSketchPane.getLayerCanvasByName("notes")
-        storeUndoStateForImage(true, [0, 1, 3])
-        isCurrentBoard = true
-      }
-      
-      psdData = FileHelper.getBase64ImageDataFromFilePath(imageFilePath, readerOptions)
-      if(!psdData || !psdData.main) {
-        return;
-      }
-
-      if(isCurrentBoard) {
-        storeUndoStateForImage(false, [0, 1, 3])
-        markImageFileDirty([0, 1, 3]) // reference, main, notes layers
-        saveImageFile()
-        renderThumbnailDrawer()
-      } else {
-        let mainURL = imageFilePath.replace(".psd", ".png")
-        saveDataURLtoFile(psdData.main, board.url)
-        psdData.notes && saveDataURLtoFile(psdData.notes, board.url.replace('.png', '-notes.png'))
-        psdData.reference && saveDataURLtoFile(psdData.reference, board.url.replace('.png', '-reference.png'))
-      }
-    })
-    ipcRenderer.send('analyticsEvent', 'Board', 'edit in photoshop')
   }
 
 
