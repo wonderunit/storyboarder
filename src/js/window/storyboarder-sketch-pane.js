@@ -184,7 +184,7 @@ class StoryboarderSketchPane extends EventEmitter {
         if (!this.getIsDrawingOrStabilizing()) this.toolbar.emit('cancelTransform')
       }
     }
-    
+
     if (!this.getIsDrawingOrStabilizing()) {
       if (!keytracker('<alt>')) {
         this.unsetQuickErase()
@@ -340,7 +340,7 @@ class StoryboarderSketchPane extends EventEmitter {
   drawComposite (layerIndices, destinationContext) {
     for (let index of layerIndices) {
       let canvas = this.sketchPane.getLayerCanvas(index)
-      
+
       destinationContext.save()
       destinationContext.globalAlpha = this.sketchPane.getLayerOpacity(index)
       destinationContext.drawImage(canvas, 0, 0)
@@ -416,7 +416,7 @@ class StoryboarderSketchPane extends EventEmitter {
    */
   updateContainerSize () {
     // this.sketchPaneDOMElement.style.display = 'none'
-    
+
     let rect = this.el.getBoundingClientRect()
     let size = [rect.width - this.containerPadding, rect.height - this.containerPadding]
 
@@ -466,12 +466,12 @@ class StoryboarderSketchPane extends EventEmitter {
     let threshold = 0xff
     // TODO why are we creating a new pointer every time?
     let brushPointerCanvas = this.sketchPane.createBrushPointer(
-      image, 
+      image,
       Math.max(6, this.brush.getSize() * this.scaleFactor),
       this.brush.getAngle(),
       threshold,
       true)
-    
+
     let brushPointer = document.createElement('img')
     brushPointer.src = brushPointerCanvas.toDataURL('image/png')
     brushPointer.style.width = brushPointerCanvas.width
@@ -632,7 +632,12 @@ class StoryboarderSketchPane extends EventEmitter {
   getLayerCanvasByName (name) {
     // HACK hardcoded
     const layerIndexByName = ['reference', 'main', 'onion', 'notes', 'guides', 'composite']
-    return this.sketchPane.getLayerCanvas(layerIndexByName.indexOf(name))
+    let idx = layerIndexByName.indexOf(name)
+    if (idx > -1) {
+        return this.sketchPane.getLayerCanvas(idx)
+    } else {
+        return null
+    }
   }
 
   getSnapshotAsCanvas (index) {
@@ -640,7 +645,7 @@ class StoryboarderSketchPane extends EventEmitter {
     el.id = Math.floor(Math.random()*16777215).toString(16) // for debugging
     return el
   }
-  
+
   getIsDrawingOrStabilizing () {
     return this.sketchPane.isDrawing || this.sketchPane.isStabilizing
   }
@@ -669,7 +674,7 @@ class StoryboarderSketchPane extends EventEmitter {
       this.setBrushTool(this.toolbar.getBrushOptions().kind, this.toolbar.getBrushOptions())
     }
   }
-  
+
   getCanvasImageSources () {
     return [
       // reference
@@ -729,7 +734,7 @@ class DrawingStrategy {
     document.removeEventListener('pointermove', this.container.canvasPointerMove)
     document.removeEventListener('pointerup', this.container.canvasPointerUp)
   }
-  
+
   renderMoveEvent (moveEvent) {
     this.container.sketchPane.move(moveEvent.x, moveEvent.y, moveEvent.pointerType === "pen" ? moveEvent.pressure : 1)
   }
@@ -759,7 +764,7 @@ class DrawingStrategy {
 
     context.restore()
   }
-  
+
   dispose () {
     this.container.stopMultiLayerOperation()
     this.container.isMultiLayerOperation = false // ensure we reset the var
@@ -849,7 +854,7 @@ class MovingStrategy {
     document.removeEventListener('pointermove', this.container.canvasPointerMove)
     document.removeEventListener('pointerup', this.container.canvasPointerUp)
   }
-  
+
   renderMoveEvent (moveEvent) {
     let compositeContext = this.storedComposite.getContext('2d')
     let paintingContext = this.container.sketchPane.paintingCanvas.getContext('2d')
@@ -943,7 +948,7 @@ class ScalingStrategy {
 
     this.container.startMultiLayerOperation()
     this.container.setCompositeLayerVisibility(true)
-    
+
     // if we previously were in erase mode, undo its effects,
     //   and ensure paintingCanvas is visible
     this.container.sketchPane.setPaintingKnockout(false)
@@ -1023,7 +1028,7 @@ class ScalingStrategy {
     let h = this.container.sketchPane.size.height
 
     // store a copy
-    
+
     let storedContext = this.container.createContext()
     storedContext.drawImage(context.canvas, 0, 0)
 
@@ -1038,7 +1043,7 @@ class ScalingStrategy {
     context.scale(this.scale, this.scale)
     context.translate(-this.translate[0], -this.translate[1])
     context.drawImage(storedContext.canvas, 0, 0)
-    
+
     context.restore()
   }
 

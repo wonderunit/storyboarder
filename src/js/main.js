@@ -95,7 +95,7 @@ app.on('ready', () => {
       console.error('Could not load', filePath)
     }
   }
- 
+
   // this only works on mac.
   if (toBeOpenedPath) {
     openFile(toBeOpenedPath)
@@ -116,7 +116,7 @@ let openKeyCommandWindow = ()=> {
 
 app.on('activate', ()=> {
   if (!mainWindow && !welcomeWindow) openWelcomeWindow()
-  
+
 })
 
 let openNewWindow = () => {
@@ -261,7 +261,7 @@ let openDialogue = () => {
 let importImagesDialogue = () => {
   dialog.showOpenDialog(
     {
-      title:"Import Boards", 
+      title:"Import Boards",
       filters:[
         {name: 'Images', extensions: ['png', 'jpg', 'jpeg', 'psd']},
       ],
@@ -296,7 +296,7 @@ let importImagesDialogue = () => {
             handleDirectory(filepath)
           }
         }
-        
+
         mainWindow.webContents.send('insertNewBoardsWithFiles', filepathsRecursive)
       }
     }
@@ -306,7 +306,7 @@ let importImagesDialogue = () => {
 let importWorksheetDialogue = () => {
   dialog.showOpenDialog(
     {
-      title:"Import Worksheet", 
+      title:"Import Worksheet",
       filters:[
         {name: 'Images', extensions: ['png', 'jpg', 'jpeg']},
       ],
@@ -341,7 +341,7 @@ let processFountainData = (data, create, update) => {
         break
       case 'scene':
         metadata.sceneCount++
-        let id 
+        let id
         if (node.scene_id) {
           id = node.scene_id.split('-')
           if (id.length>1) {
@@ -424,7 +424,7 @@ let createNewGivenAspectRatio = aspectRatio => {
             tasks = tasks.then(() => trash(filename)).catch(err => reject(err))
           } else {
             dialog.showMessageBox(null, {
-              message: "Could not overwrite file " + path.basename(filename) + ". Only folders can be overwritten." 
+              message: "Could not overwrite file " + path.basename(filename) + ". Only folders can be overwritten."
             })
             return reject(null)
           }
@@ -512,7 +512,7 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
       experimentalCanvasFeatures: true,
       devTools: true,
       plugins: true
-    } 
+    }
   })
 
   let projectName = path.basename(filename, path.extname(filename))
@@ -663,6 +663,10 @@ ipcMain.on('togglePlayback', (e, arg)=> {
 
 ipcMain.on('openInEditor', (e, arg)=> {
   mainWindow.webContents.send('openInEditor')
+})
+
+ipcMain.on('openInOraEditor', (e, arg)=> {
+  mainWindow.webContents.send('openInOraEditor')
 })
 
 ipcMain.on('goPreviousBoard', (e, arg)=> {
