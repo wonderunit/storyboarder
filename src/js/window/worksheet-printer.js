@@ -37,7 +37,9 @@ class WorksheetPrinter extends EventEmitter {
     } else {
       documentSize = [595,842]
     }
-    aspectRatio = aspectRatio.toFixed(3)
+
+    //console.log(aspectRatio)
+    aspectRatio = Number(aspectRatio).toFixed(3)
     if (!sceneNumber) sceneNumber = 0
     let margin = [22, 22, 22, 40]
 
