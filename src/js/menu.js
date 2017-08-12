@@ -379,6 +379,13 @@ const template = [
         click ( item, focusedWindow, event) {
           ipcRenderer.send('openInEditor')
         }
+      },
+      {
+        label: 'Edit in Ora Editor',
+        accelerator: 'CmdOrCtrl+,',
+        click ( item, focusedWindow, event) {
+          ipcRenderer.send('openInOraEditor')
+        }
       }
     ]
   },
