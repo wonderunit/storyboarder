@@ -64,7 +64,7 @@ appServer.on('image', (e) => {
 })
 
 appServer.on('worksheet', (e) => {
-  console.log('worksheet', e)
+  mainWindow.webContents.send('importWorksheets', [e.fileData])
 })
 
 // this only works on mac.

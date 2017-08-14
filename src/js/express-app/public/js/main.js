@@ -49,14 +49,31 @@ function setEnabled (el, value) {
 
 function onBoardFile (e) {
   let file = e.target.files[0]
-  let container = document.querySelector('.file-board-container')
+  doUploadFile(file, 'image')
+}
+
+function onWorksheetFile (e) {
+  let file = e.target.files[0]
+  doUploadFile(file, 'worksheet')
+}
+
+function doUploadFile (file, target = 'image') {
+  let container = target === 'image'
+    ? document.querySelector('.file-board-container')
+    : document.querySelector('.file-worksheet-container')
 
   setEnabled(container, false)
 
   checkFile(file)
     .then(file => readFile(file))
     .then((result, type) => processFile(result, type))
-    .then(data => sendFile(data))
+    .then(fileData => {
+      if (target === 'worksheet') {
+        socket.emit('worksheet', { fileData })
+      } else {
+        socket.emit('image', { fileData })
+      }
+    })
     .then(() => {
       setTimeout(() => {
         setEnabled(container, true)
@@ -67,10 +84,6 @@ function onBoardFile (e) {
       console.error(err)
       alert(err)
     })
-}
-
-function onWorksheetFile (e) {
-  alert('Chose worksheet file', e)
 }
 
 function checkFile (file) {
@@ -114,8 +127,4 @@ function processFile (dataURL, fileType) {
       reject(new Error('There was an error processing your file!'))
     }
   })
-}
-
-function sendFile(fileData) {
-  socket.emit('image', { fileData: fileData })
 }
