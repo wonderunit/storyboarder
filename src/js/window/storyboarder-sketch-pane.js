@@ -207,7 +207,8 @@ class StoryboarderSketchPane extends EventEmitter {
       x: pointerPosition.x,
       y: pointerPosition.y,
       pointerType: e.pointerType,
-      pressure: e.pressure
+      pressure: e.pressure,
+      shiftKey: e.shiftKey
     }
   }
 
@@ -861,6 +862,14 @@ class MovingStrategy {
       moveEvent.x - this.startAt[0],
       moveEvent.y - this.startAt[1]
     ].map(Math.floor)
+
+    if(moveEvent.shiftKey) {
+      if(Math.abs(this.pos[0]) > Math.abs(this.pos[1])) {
+        this.pos[1] = 0
+      } else {
+        this.pos[0] = 0
+      }
+    }
 
     // re-draw composite to the painting layer
     paintingContext.clearRect(0, 0, w, h)
