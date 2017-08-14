@@ -63,6 +63,10 @@ appServer.on('image', (e) => {
   mainWindow.webContents.send('importImage', e.fileData)
 })
 
+appServer.on('worksheet', (e) => {
+  console.log('worksheet', e)
+})
+
 // this only works on mac.
 app.on('open-file', (event, path) => {
   event.preventDefault()

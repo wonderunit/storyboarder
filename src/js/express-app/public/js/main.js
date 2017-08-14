@@ -35,6 +35,7 @@ document.body.onpointermove = (e) => {
 
 
 document.querySelector("#file-board").addEventListener('change', onBoardFile)
+document.querySelector("#file-worksheet").addEventListener('change', onWorksheetFile)
 
 function setEnabled (el, value) {
   if (value) {
@@ -66,6 +67,10 @@ function onBoardFile (e) {
       console.error(err)
       alert(err)
     })
+}
+
+function onWorksheetFile (e) {
+  alert('Chose worksheet file', e)
 }
 
 function checkFile (file) {
