@@ -530,16 +530,25 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
 
 
   // http://stackoverflow.com/a/39305399
-  const onErrorInWindow = (event, error, url, line) => {
-    if (mainWindow) {
-      mainWindow.show()
-      mainWindow.webContents.openDevTools()
+  // https://developer.mozilla.org/en-US/docs/Web/API/GlobalEventHandlers/onerror
+  const onErrorInWindow = (event, message, source, lineno, colno, error) => {
+    if (isDev) {
+      if (mainWindow) {
+        mainWindow.show()
+        mainWindow.webContents.openDevTools()
+      }
     }
-    console.error(error, url, line)
-    analytics.exception(error, url, line)
+    dialog.showMessageBox({
+      title: 'Error',
+      type: 'error',
+      message: message,
+      detail: 'In file: ' + source + '#' + lineno + ':' + colno
+    })
+    console.error(message, source, lineno, colno)
+    analytics.exception(message, source, lineno)
   }
 
-  if (isDev) ipcMain.on('errorInWindow', onErrorInWindow)
+  ipcMain.on('errorInWindow', onErrorInWindow)
   mainWindow.loadURL(`file://${__dirname}/../main-window.html`)
   mainWindow.once('ready-to-show', () => {
     mainWindow.webContents.send('load', [filename, scriptData, locations, characters, boardSettings, currentPath])
@@ -575,7 +584,7 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
 
   mainWindow.once('closed', event => {
     if (welcomeWindow) {
-      if (isDev) ipcMain.removeListener('errorInWindow', onErrorInWindow)
+      ipcMain.removeListener('errorInWindow', onErrorInWindow)
       welcomeWindow.webContents.send('updateRecentDocuments')
       // when old workspace is closed,
       //   show the welcome window
