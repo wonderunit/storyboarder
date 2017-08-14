@@ -18,35 +18,33 @@ class MobileServer extends EventEmitter {
 
     app.use('/static', express.static(path.join(__dirname, 'public')))
 
-    app.get('/', function(req, res){
+    app.get('/', function(req, res) {
       res.sendFile(__dirname + '/index.html')
-    });
+    })
 
-    http.listen(portNumber, function(){
+    http.listen(portNumber, function() {
       let hostname = os.hostname()
       console.log("http://" + hostname + ":" + portNumber)
       require('dns').lookup(hostname, function (err, add, fam) {
         console.log("http://" + add + ":" + portNumber)
       })
-    });
+    })
 
     io.on('connection', function (socket) {
       //socket.emit('news', { hello: 'world' });
       socket.on('pointerEvent', function (data) {
         that.emit('pointerEvent', data)
-      });
+      })
 
       socket.on('image', function (data) {
         that.emit('image', data)
-      });
-    });
+      })
 
-
+      socket.on('worksheet', function (data) {
+        that.emit('worksheet', data)
+      })
+    })
   }
-
-
-
 }
-
 
 module.exports = MobileServer
