@@ -42,6 +42,7 @@ class ContextMenu extends EventEmitter {
 
     this.el.addEventListener('pointerdown', this.onPointerDown.bind(this))
     this.el.addEventListener('pointerleave', this.onPointerLeave.bind(this))
+    this.el.addEventListener('pointerenter', this.onPointerEnter.bind(this))
     
     this.innerEl = this.el.querySelector('#context-menu')
   }
@@ -52,7 +53,17 @@ class ContextMenu extends EventEmitter {
   }
   
   onPointerLeave (event) {
-    this.emit('pointerleave')
+    this.pointerTimerID = setTimeout(()=>{
+      this.remove()
+      this.pointerTimerID = null
+    }, 350)
+  }
+  
+  onPointerEnter (event) {
+    if(this.pointerTimerID) {
+      clearTimeout(this.pointerTimerID)
+      this.pointerTimerID = null
+    }
   }
 
   onTimeout () {
