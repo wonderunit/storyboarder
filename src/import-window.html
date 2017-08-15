@@ -4,6 +4,22 @@
     <meta charset="UTF-8">
     <link rel="stylesheet" href="./css/print-window.css">
     <title>Import</title>
+    <style>
+      #paper-2 {
+        position: relative;
+      }
+      .corner-point {
+        position: absolute;
+        width: 6px;
+        height: 6px;
+        background-color: red;
+        border-radius: 3px;
+        left: 0;
+        top: 0;
+        margin-left: -3px;
+        margin-top: -3px;
+      }
+    </style>
   </head>
   <body>
     <div id="print-container">
@@ -56,8 +72,9 @@
       </div>
       <div id="preview-pane">
         <div id="preview-pane-content">
-        <div id="paper-2">
-          <img id="preview">
+          <div id="paper-2">
+            <img id="preview">
+          </div>
         </div>
       </div>
       </div>

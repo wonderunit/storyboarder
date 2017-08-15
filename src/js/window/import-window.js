@@ -208,8 +208,8 @@ const processWorksheetImage = (imageSrc) => {
     console.log(cornerPoints)
 
     if (cornerPoints.length !== 4) {
-      alert(`Error: I couldn't find 4 corners of the paper in the image.`)
-      // should show ui for point corners.
+      showCornerPointsEditor(sourceImage)
+
     } else {
       // STEP
       // reorder points in the right order
@@ -370,6 +370,177 @@ const processWorksheetImage = (imageSrc) => {
   }
 
   sourceImage.src = imageSrc[0]
+}
+
+// via http://sam.js.org
+function showCornerPointsEditor () {
+  // alert(`I couldn't find 4 corners of the paper in the image. Please select them manually.`)
+
+  let model = {
+    dimensions: [0, 0],
+    tl: [],
+    tr: [],
+    br: [],
+    bl: [],
+    order: ['tl', 'tr', 'br', 'bl'],
+    labels: ['Top Left', 'Top Right', 'Bottom Right', 'Bottom Left'],
+    curr: 0,
+    complete: false
+  }
+
+  model.present = data => {
+    if (data.type === 'dimensions') {
+      model.dimensions = data.payload
+    }
+
+    if (data.type === 'point') {
+      let x = data.payload[0] / model.dimensions[0]
+      let y = data.payload[1] / model.dimensions[1]
+      model[model.order[model.curr]] = [x, y]
+      if (model.curr === model.order.length - 1) {
+        model.complete = true
+      } else {
+        model.curr++
+      }
+    }
+
+    state(model)
+  }
+
+  // actions
+  const mutate = (data) => {
+    present(data)
+  }
+
+  // state
+  let state = model => {
+    stateRepresentation(model)
+    nextAction(model)
+  }
+
+  const nextAction = model => {
+    if (model.complete) {
+      onComplete()
+    }
+  }
+
+  // view
+  let view = model => {
+    let output = Object.assign({}, model, {
+      title: view.label(model)
+    })
+    display(output)
+  }
+
+  view.label = model => {
+    if (model.complete) {
+      return `Thanks!`
+    } else {
+      return `Please select the ${model.labels[model.curr]} point`
+    }
+  }
+
+  // Actions -> Model
+  const present = data => model.present(data)
+
+  // State -> View
+  const stateRepresentation = model => view(model)
+
+  // View -> Display
+  const display = view => {
+    let container = document.getElementById("preview-pane-content")
+
+    let tlEl = document.getElementById("paper-2").querySelector('.corner-point-tl')
+    let trEl = document.getElementById("paper-2").querySelector('.corner-point-tr')
+    let brEl = document.getElementById("paper-2").querySelector('.corner-point-br')
+    let blEl = document.getElementById("paper-2").querySelector('.corner-point-bl')
+
+    let titleEl = container.querySelector('.instructions')
+    titleEl.textContent = view.title
+
+    let scale = view.dimensions
+
+    for ([point, el, label] of [
+      [view.tl, tlEl, 'tl'],
+      [view.tr, trEl, 'tr'],
+      [view.br, brEl, 'br'],
+      [view.bl, blEl, 'bl']
+    ]) {
+      if (point.length) {
+        el.style.left = Math.floor(point[0] * scale[0]) + 'px'
+        el.style.top = Math.floor(point[1] * scale[1]) + 'px'
+        el.style.visibility = 'visible'
+      } else {
+        el.style.visibility = 'hidden'
+      }
+    }
+
+    container.style.cursor = view.complete
+      ? 'default'
+      : 'crosshair'
+  }
+
+  const onPreviewResize = () => {
+    present({ type: 'dimensions', payload: [document.querySelector("#preview").width, document.querySelector("#preview").height] })
+  }
+
+  const onPointerDown = event => {
+    present({ type: 'dimensions', payload: [document.querySelector("#preview").width, document.querySelector("#preview").height] })
+    present({ type: 'point', payload: [event.offsetX, event.offsetY] })
+  }
+
+  const attach = () => {
+    let container = document.getElementById("preview-pane-content")
+    let titleEl = document.createElement('div')
+    titleEl.classList.add('instructions')
+    container.insertBefore(titleEl, container.firstChild)
+
+    model.order.map(pos => {
+      let el = document.createElement('div')
+      el.classList.add(`corner-point`)
+      el.classList.add(`corner-point-${pos}`)
+      document.getElementById('paper-2').append(el)
+    })
+
+    document.querySelector("#preview").addEventListener('pointerdown', onPointerDown)
+    window.addEventListener('resize', onPreviewResize)
+  }
+
+  const dispose = () => {
+    // remove corner point indicators
+    [...document.querySelectorAll('.corner-point')].map(el => {
+      el.parentNode.removeChild(el)
+    })
+    
+    // remove title
+    let titleEl = document.querySelector('#preview-pane-content .instructions')
+    titleEl.parentNode.removeChild(titleEl)
+    
+    document.querySelector("#preview").removeEventListener('pointerdown', onPointerDown)
+    window.removeEventListener('resize', onPreviewResize)
+  }
+
+  const onComplete = () => {
+    // wait for DOM to update
+    setTimeout(() => {
+      alert('Got points: ' + JSON.stringify([
+        model.tl,
+        model.tr,
+        model.br,
+        model.bl
+      ], null, 2))
+      dispose()
+    }, 100)
+  }
+
+  const init = (sourceImage) => {
+    let previewEl = document.querySelector("#preview")
+    previewEl.src = sourceImage.src
+
+    attach()
+    present({ dimensions: [previewEl.width, previewEl.height] })
+  }
+  init(sourceImage)
 }
 
 function contrastImage(imageData, contrast) {
