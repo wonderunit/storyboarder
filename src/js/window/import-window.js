@@ -407,11 +407,6 @@ function showCornerPointsEditor () {
     state(model)
   }
 
-  // actions
-  const mutate = (data) => {
-    present(data)
-  }
-
   // state
   let state = model => {
     stateRepresentation(model)
