@@ -3642,8 +3642,8 @@ const importFromWorksheet = (imageArray) => {
     storeUndoStateForScene()
     return renderThumbnailDrawer()
   }).then(() => {
-    console.log('import complete')
     sfx.positive()
+    notifications.notify({ message: 'Worksheet Import complete.', timing: 5 })
     return gotoBoard(insertAt)
   }).catch(err => {
     notifications.notify({ message: "Whoops. Could not import.", timing: 8 })

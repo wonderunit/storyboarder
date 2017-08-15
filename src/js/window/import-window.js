@@ -67,6 +67,7 @@ const importImages = () => {
     images.push(destCanvas.toDataURL())
   }
   remote.getCurrentWindow().getParentWindow().webContents.send('importFromWorksheet',images)
+  remote.getCurrentWindow().hide()
 }
 
 
