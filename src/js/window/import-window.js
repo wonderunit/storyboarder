@@ -205,7 +205,7 @@ const processWorksheetImage = (imageSrc) => {
     let imgData = context.canvas.toDataURL().replace(/^data:image\/\w+;base64,/, '')
     fs.writeFileSync(path.join(app.getPath('temp'), 'step4.png'), imgData, 'base64')
 
-    console.log(cornerPoints)
+    console.log({ cornerPoints })
 
     if (cornerPoints.length !== 4) {
       showCornerPointsEditor(sourceImage)
@@ -344,7 +344,7 @@ const processWorksheetImage = (imageSrc) => {
           // draw them        
 
           imgData = context.canvas.toDataURL().replace(/^data:image\/\w+;base64,/, '')
-          fs.writeFileSync(path.join(app.getPath('temp'), 'flatpaper.png'), imgData, 'base64')
+          fs.writeFileSync(path.join(app.getPath('temp'), 'flatpaper.png'), imgData, 'base64') // why do we write a file instead of creating in memory?
 
           document.querySelector("#preview").src = path.join(app.getPath('temp'), 'flatpaper.png?'+ Math.round(Math.random()*10000))
         }
@@ -455,7 +455,7 @@ function showCornerPointsEditor () {
 
     let scale = view.dimensions
 
-    for ([point, el, label] of [
+    for (let [point, el, label] of [
       [view.tl, tlEl, 'tl'],
       [view.tr, trEl, 'tr'],
       [view.br, brEl, 'br'],
@@ -487,6 +487,10 @@ function showCornerPointsEditor () {
   const attach = () => {
     let container = document.getElementById("preview-pane-content")
     let titleEl = document.createElement('div')
+    let previewEl = document.querySelector("#preview")
+
+    previewEl.src = sourceImage.src
+
     titleEl.classList.add('instructions')
     container.insertBefore(titleEl, container.firstChild)
 
@@ -500,39 +504,41 @@ function showCornerPointsEditor () {
     document.querySelector("#preview").addEventListener('pointerdown', onPointerDown)
     window.addEventListener('resize', onPreviewResize)
   }
+  
+  const detach = () => {
+    document.querySelector("#preview").removeEventListener('pointerdown', onPointerDown)
+    window.removeEventListener('resize', onPreviewResize)
+  }
 
   const dispose = () => {
-    // remove corner point indicators
-    [...document.querySelectorAll('.corner-point')].map(el => {
-      el.parentNode.removeChild(el)
-    })
+    let previewEl = document.querySelector("#preview")
+    previewEl.removeAttribute('src')
     
     // remove title
     let titleEl = document.querySelector('#preview-pane-content .instructions')
     titleEl.parentNode.removeChild(titleEl)
     
-    document.querySelector("#preview").removeEventListener('pointerdown', onPointerDown)
-    window.removeEventListener('resize', onPreviewResize)
+    // remove corner point indicators
+    for (let el of document.querySelectorAll('.corner-point')) {
+      el.parentNode.removeChild(el)
+    }
   }
 
   const onComplete = () => {
-    // wait for DOM to update
-    setTimeout(() => {
-      alert('Got points: ' + JSON.stringify([
-        model.tl,
-        model.tr,
-        model.br,
-        model.bl
-      ], null, 2))
-      dispose()
-    }, 100)
+    let points = [
+      model.tl,
+      model.tr,
+      model.br,
+      model.bl
+    ]
+    detach()
+    dispose()
   }
 
   const init = (sourceImage) => {
-    let previewEl = document.querySelector("#preview")
-    previewEl.src = sourceImage.src
-
     attach()
+
+    let previewEl = document.querySelector("#preview")
     present({ dimensions: [previewEl.width, previewEl.height] })
   }
   init(sourceImage)
