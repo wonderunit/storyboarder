@@ -54,11 +54,10 @@ let onCreateNew
 let isLoadingProject
 
 appServer.on('pointerEvent', (e)=> {
-  // console.log('pointerEvent')
+  console.log('pointerEvent')
 })
 
 appServer.on('image', (e) => {
-  console.log('image')
   mainWindow.webContents.send('newBoard', 1)
   mainWindow.webContents.send('importImage', e.fileData)
 })
