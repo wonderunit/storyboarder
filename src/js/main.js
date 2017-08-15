@@ -57,10 +57,13 @@ appServer.on('pointerEvent', (e)=> {
   console.log('pointerEvent')
 })
 
-appServer.on('image', (e)=> {
-  console.log('image')
+appServer.on('image', (e) => {
   mainWindow.webContents.send('newBoard', 1)
   mainWindow.webContents.send('importImage', e.fileData)
+})
+
+appServer.on('worksheet', (e) => {
+  mainWindow.webContents.send('importWorksheets', [e.fileData])
 })
 
 // this only works on mac.

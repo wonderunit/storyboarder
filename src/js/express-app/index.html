@@ -31,11 +31,29 @@
   <link rel="stylesheet" href="/static/css/main.css">
 
   <link rel="manifest" href="/static/manifest.json">
+  
+  <style media="screen">
+    body {
+      margin: 20px;
+    }
+    h1 {
+      margin-top: 0;
+      line-height: 1.125;
+    }
+  </style>
 </head>
 <body>
   <h1>Welcome to Storyboarder on Mobile</h1>
 
-  <input id="file" type="file" accept="image/*">
+  <div class="file-board-container" style="margin-bottom: 30px">
+    Photo Import</br>
+    <input id="file-board" type="file" accept="image/*">
+  </div>
+
+  <div class="file-worksheet-container">
+    Worksheet Import</br>
+    <input id="file-worksheet" type="file" accept="image/*">
+  </div>
 
   <script src="/socket.io/socket.io.js"></script>
   <script src="/static/js/main.js"></script>
