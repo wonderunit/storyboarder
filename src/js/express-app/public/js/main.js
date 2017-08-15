@@ -75,15 +75,18 @@ function doUploadFile (file, target = 'image') {
       }
     })
     .then(() => {
-      setTimeout(() => {
-        setEnabled(container, true)
-        container.querySelector('input').value = null
-      }, 1000)
+      setTimeout(() => reset(container), 1000)
     })
     .catch(err => {
       console.error(err)
       alert(err)
+      reset(container)
     })
+}
+
+function reset (container) {
+  setEnabled(container, true)
+  container.querySelector('input').value = null
 }
 
 function checkFile (file) {
