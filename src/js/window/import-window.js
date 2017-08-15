@@ -500,8 +500,8 @@ const generateCropMarks = (paperSize, aspectRatio, rows, cols, spacing) => {
 }
 
 ipcRenderer.on('worksheetImage', (event, args) => {
-  processWorksheetImage(args)
   remote.getCurrentWindow().show()
+  setTimeout(() => processWorksheetImage(args), 10) // reflow
 })
 
 window.ondragover = () => { return false }
