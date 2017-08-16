@@ -503,6 +503,10 @@ function showCornerPointsEditor () {
 
     document.querySelector("#preview").addEventListener('pointerdown', onPointerDown)
     window.addEventListener('resize', onPreviewResize)
+    remote.getCurrentWindow().once('hide', event => {
+      detach()
+      dispose()
+    })
   }
   
   const detach = () => {
