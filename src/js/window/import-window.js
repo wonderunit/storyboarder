@@ -209,31 +209,124 @@ const processWorksheetImage = (imageSrc) => {
 
     if (cornerPoints.length !== 4) {
       showCornerPointsEditor(sourceImage)
-
-    } else {
-      // STEP
-      // reorder points in the right order
-      cornerPoints.sort((b,a) => {
-        console.log((Math.atan2(a[0]-0.5,a[1]-0.5)),(Math.atan2(b[0]-0.5,b[1]-0.5)))
-        return (Math.atan2(a[0]-0.5,a[1]-0.5))-(Math.atan2(b[0]-0.5,b[1]-0.5))
+        .then(points => {
+          processCornerPoints(points,
+            canvas, context, imageData, img_u8
+          )
+        .catch((err) => {
+          console.log(err)
+          alert("Couldn't import")
+        })
       })
-      cornerPoints.unshift(cornerPoints.pop())
+    } else {
+      processCornerPoints(cornerPoints,
+        canvas, context, imageData, img_u8
+      )
+    }
 
-      console.log(cornerPoints)
-      // STEP
-      // TODO: check the area, should error if too small or less than 4 points
 
-      // STEP 
-      // reverse warp to read qr code
+
+
+
+    // // equalize
+    // jsfeat.imgproc.equalize_histogram(img_u8, img_u8);
+    // outputImage(img_u8, context, 'step3.png')
+
+
+
+  }
+
+  sourceImage.src = imageSrc[0]
+}
+
+function processCornerPoints (cornerPoints, canvas, context, imageData, img_u8) {
+  
+  // STEP
+  // reorder points in the right order
+  cornerPoints.sort((b,a) => {
+    console.log((Math.atan2(a[0]-0.5,a[1]-0.5)),(Math.atan2(b[0]-0.5,b[1]-0.5)))
+    return (Math.atan2(a[0]-0.5,a[1]-0.5))-(Math.atan2(b[0]-0.5,b[1]-0.5))
+  })
+  cornerPoints.unshift(cornerPoints.pop())
+
+  console.log(cornerPoints)
+  // STEP
+  // TODO: check the area, should error if too small or less than 4 points
+
+  // STEP 
+  // reverse warp to read qr code
+  canvas.width = 2500
+  canvas.height = Math.round(2500/(11/8.5))
+  context = canvas.getContext('2d')
+  context.drawImage(sourceImage, 0,0, canvas.width, canvas.height)
+  imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+
+
+  img_u8 = new jsfeat.matrix_t(canvas.width, canvas.height, jsfeat.U8_t | jsfeat.C1_t);
+  // img_u8_warp = new jsfeat.matrix_t(640, 480, jsfeat.U8_t | jsfeat.C1_t);
+  img_u8_warp = new jsfeat.matrix_t(canvas.width, canvas.height, jsfeat.U8_t | jsfeat.C1_t);
+  transform = new jsfeat.matrix_t(3, 3, jsfeat.F32_t | jsfeat.C1_t);
+  jsfeat.math.perspective_4point_transform(transform, 
+                                                  cornerPoints[0][0]*canvas.width,   cornerPoints[0][1]*canvas.height,   0,  0,
+                                                  cornerPoints[1][0]*canvas.width,   cornerPoints[1][1]*canvas.height,   canvas.width, 0,
+                                                  cornerPoints[2][0]*canvas.width,   cornerPoints[2][1]*canvas.height, canvas.width, canvas.height,
+                                                  cornerPoints[3][0]*canvas.width,   cornerPoints[3][1]*canvas.height, 0, canvas.height);
+  jsfeat.matmath.invert_3x3(transform, transform);
+
+  jsfeat.imgproc.grayscale(imageData.data, canvas.width, canvas.height, img_u8);
+  jsfeat.imgproc.warp_perspective(img_u8, img_u8_warp, transform, 0);
+
+  var data_u32 = new Uint32Array(imageData.data.buffer);
+  var alpha = (0xff << 24);
+  var i = img_u8_warp.cols*img_u8_warp.rows, pix = 0;
+  while(--i >= 0) {
+    pix = img_u8_warp.data[i];
+    data_u32[i] = alpha | (pix << 16) | (pix << 8) | pix;
+  }
+  context.putImageData(imageData, 0, 0);
+  imgData = context.canvas.toDataURL().replace(/^data:image\/\w+;base64,/, '')
+  fs.writeFileSync(path.join(app.getPath('temp'), 'step5.png'), imgData, 'base64')
+
+  let qrCanvas = document.createElement('canvas')
+  qrCanvas.width = 500
+  qrCanvas.height = 500
+  let qrContext = qrCanvas.getContext('2d')
+  qrContext.drawImage(context.canvas, -context.canvas.width+500,0, context.canvas.width, context.canvas.height)
+  let qrImageData = qrContext.getImageData(0, 0, qrCanvas.width, qrCanvas.height)
+
+  var newImageData = contrastImage(qrImageData, 150)
+  qrContext.putImageData(newImageData, 0, 0);
+  
+  imgData = qrContext.canvas.toDataURL().replace(/^data:image\/\w+;base64,/, '')
+  fs.writeFileSync(path.join(app.getPath('temp'), 'step6.png'), imgData, 'base64')
+
+
+  var qr = new QrCode();
+  qr.callback = function(err, result) { 
+    console.log("GOT BACK RESULT: ", err, result )
+    console.log("BEGIN CROPPING:" )
+    if (err) {
+      alert(`ERROR: NO QR - ` + err)
+    } else {
+      // if i got qr,
+      code = result.result.split('-')
+
+
       canvas.width = 2500
-      canvas.height = Math.round(2500/(11/8.5))
+
+      // make a new image based on paper size
+      // copy src image in
+      if (code[1] == 'LTR') {
+        canvas.height = Math.round(2500/(11/8.5))
+      } else {
+        canvas.height = Math.round(2500/(842/595))
+      }
+
       context = canvas.getContext('2d')
       context.drawImage(sourceImage, 0,0, canvas.width, canvas.height)
       imageData = context.getImageData(0, 0, canvas.width, canvas.height);
 
-
       img_u8 = new jsfeat.matrix_t(canvas.width, canvas.height, jsfeat.U8_t | jsfeat.C1_t);
-      // img_u8_warp = new jsfeat.matrix_t(640, 480, jsfeat.U8_t | jsfeat.C1_t);
       img_u8_warp = new jsfeat.matrix_t(canvas.width, canvas.height, jsfeat.U8_t | jsfeat.C1_t);
       transform = new jsfeat.matrix_t(3, 3, jsfeat.F32_t | jsfeat.C1_t);
       jsfeat.math.perspective_4point_transform(transform, 
@@ -254,304 +347,225 @@ const processWorksheetImage = (imageSrc) => {
         data_u32[i] = alpha | (pix << 16) | (pix << 8) | pix;
       }
       context.putImageData(imageData, 0, 0);
-      imgData = context.canvas.toDataURL().replace(/^data:image\/\w+;base64,/, '')
-      fs.writeFileSync(path.join(app.getPath('temp'), 'step5.png'), imgData, 'base64')
 
-      let qrCanvas = document.createElement('canvas')
-      qrCanvas.width = 500
-      qrCanvas.height = 500
-      let qrContext = qrCanvas.getContext('2d')
-      qrContext.drawImage(context.canvas, -context.canvas.width+500,0, context.canvas.width, context.canvas.height)
-      let qrImageData = qrContext.getImageData(0, 0, qrCanvas.width, qrCanvas.height)
+      flatImage = document.createElement('canvas')
+      flatImage.width = context.canvas.width
+      flatImage.height = context.canvas.height
+      flatImage.getContext('2d').drawImage(context.canvas, 0, 0)
 
-      var newImageData = contrastImage(qrImageData, 150)
-      qrContext.putImageData(newImageData, 0, 0);
-      
-      imgData = qrContext.canvas.toDataURL().replace(/^data:image\/\w+;base64,/, '')
-      fs.writeFileSync(path.join(app.getPath('temp'), 'step6.png'), imgData, 'base64')
+      // get crop marks
+      cropMarks = generateCropMarks(code[1], Number(code[5]), Number(code[2]), Number(code[3]), Number(code[4]))
+      for (var i = 0; i < cropMarks.length; i++) {
+        let fatOutline = 15
+        context.lineWidth = fatOutline
+        context.strokeStyle = 'rgba(20,20,200,0.1)';
+        context.strokeRect(cropMarks[i][0]*canvas.width+offset[0]-(fatOutline/2), cropMarks[i][1]*canvas.height+offset[1]-(fatOutline/2), cropMarks[i][2]*canvas.width+(fatOutline*1), cropMarks[i][3]*canvas.height+(fatOutline*1))
 
 
-      var qr = new QrCode();
-      qr.callback = function(err, result) { 
-        console.log("GOT BACK RESULT: ", err, result )
-        console.log("BEGIN CROPPING:" )
-        if (err) {
-          alert(`ERROR: NO QR - ` + err)
-        } else {
-          // if i got qr,
-          code = result.result.split('-')
+        fatOutline = 0
+        context.lineWidth = 1
+        context.strokeStyle = 'rgba(20,20,200,1)';
+
+        context.strokeRect(cropMarks[i][0]*canvas.width+offset[0]-fatOutline, cropMarks[i][1]*canvas.height+offset[1]-fatOutline, cropMarks[i][2]*canvas.width+(fatOutline*2), cropMarks[i][3]*canvas.height+(fatOutline*2))
 
 
-          canvas.width = 2500
-
-          // make a new image based on paper size
-          // copy src image in
-          if (code[1] == 'LTR') {
-            canvas.height = Math.round(2500/(11/8.5))
-          } else {
-            canvas.height = Math.round(2500/(842/595))
-          }
-
-          context = canvas.getContext('2d')
-          context.drawImage(sourceImage, 0,0, canvas.width, canvas.height)
-          imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-
-          img_u8 = new jsfeat.matrix_t(canvas.width, canvas.height, jsfeat.U8_t | jsfeat.C1_t);
-          img_u8_warp = new jsfeat.matrix_t(canvas.width, canvas.height, jsfeat.U8_t | jsfeat.C1_t);
-          transform = new jsfeat.matrix_t(3, 3, jsfeat.F32_t | jsfeat.C1_t);
-          jsfeat.math.perspective_4point_transform(transform, 
-                                                          cornerPoints[0][0]*canvas.width,   cornerPoints[0][1]*canvas.height,   0,  0,
-                                                          cornerPoints[1][0]*canvas.width,   cornerPoints[1][1]*canvas.height,   canvas.width, 0,
-                                                          cornerPoints[2][0]*canvas.width,   cornerPoints[2][1]*canvas.height, canvas.width, canvas.height,
-                                                          cornerPoints[3][0]*canvas.width,   cornerPoints[3][1]*canvas.height, 0, canvas.height);
-          jsfeat.matmath.invert_3x3(transform, transform);
-
-          jsfeat.imgproc.grayscale(imageData.data, canvas.width, canvas.height, img_u8);
-          jsfeat.imgproc.warp_perspective(img_u8, img_u8_warp, transform, 0);
-
-          var data_u32 = new Uint32Array(imageData.data.buffer);
-          var alpha = (0xff << 24);
-          var i = img_u8_warp.cols*img_u8_warp.rows, pix = 0;
-          while(--i >= 0) {
-            pix = img_u8_warp.data[i];
-            data_u32[i] = alpha | (pix << 16) | (pix << 8) | pix;
-          }
-          context.putImageData(imageData, 0, 0);
-
-          flatImage = document.createElement('canvas')
-          flatImage.width = context.canvas.width
-          flatImage.height = context.canvas.height
-          flatImage.getContext('2d').drawImage(context.canvas, 0, 0)
-
-          // get crop marks
-          cropMarks = generateCropMarks(code[1], Number(code[5]), Number(code[2]), Number(code[3]), Number(code[4]))
-          for (var i = 0; i < cropMarks.length; i++) {
-            let fatOutline = 15
-            context.lineWidth = fatOutline
-            context.strokeStyle = 'rgba(20,20,200,0.1)';
-            context.strokeRect(cropMarks[i][0]*canvas.width+offset[0]-(fatOutline/2), cropMarks[i][1]*canvas.height+offset[1]-(fatOutline/2), cropMarks[i][2]*canvas.width+(fatOutline*1), cropMarks[i][3]*canvas.height+(fatOutline*1))
-
-
-            fatOutline = 0
-            context.lineWidth = 1
-            context.strokeStyle = 'rgba(20,20,200,1)';
-
-            context.strokeRect(cropMarks[i][0]*canvas.width+offset[0]-fatOutline, cropMarks[i][1]*canvas.height+offset[1]-fatOutline, cropMarks[i][2]*canvas.width+(fatOutline*2), cropMarks[i][3]*canvas.height+(fatOutline*2))
-
-
-          }
-
-          // draw them        
-
-          imgData = context.canvas.toDataURL().replace(/^data:image\/\w+;base64,/, '')
-          fs.writeFileSync(path.join(app.getPath('temp'), 'flatpaper.png'), imgData, 'base64') // why do we write a file instead of creating in memory?
-
-          document.querySelector("#preview").src = path.join(app.getPath('temp'), 'flatpaper.png?'+ Math.round(Math.random()*10000))
-        }
       }
-      qr.decode(qrImageData)
 
+      // draw them        
 
+      imgData = context.canvas.toDataURL().replace(/^data:image\/\w+;base64,/, '')
+      fs.writeFileSync(path.join(app.getPath('temp'), 'flatpaper.png'), imgData, 'base64') // why do we write a file instead of creating in memory?
 
-
-
+      document.querySelector("#preview").src = path.join(app.getPath('temp'), 'flatpaper.png?'+ Math.round(Math.random()*10000))
     }
-
-
-
-
-
-    // // equalize
-    // jsfeat.imgproc.equalize_histogram(img_u8, img_u8);
-    // outputImage(img_u8, context, 'step3.png')
-
-
-
   }
-
-  sourceImage.src = imageSrc[0]
+  qr.decode(qrImageData)
 }
 
 // via http://sam.js.org
 function showCornerPointsEditor () {
-  // alert(`I couldn't find 4 corners of the paper in the image. Please select them manually.`)
+  return new Promise((resolve, reject) => {
+    // alert(`I couldn't find 4 corners of the paper in the image. Please select them manually.`)
 
-  let model = {
-    dimensions: [0, 0],
-    tl: [],
-    tr: [],
-    br: [],
-    bl: [],
-    order: ['tl', 'tr', 'br', 'bl'],
-    labels: ['top left', 'top right', 'bottom right', 'bottom left'],
-    curr: 0,
-    complete: false
-  }
-
-  model.present = data => {
-    if (data.type === 'dimensions') {
-      model.dimensions = data.payload
+    let model = {
+      dimensions: [0, 0],
+      tl: [],
+      tr: [],
+      br: [],
+      bl: [],
+      order: ['tl', 'tr', 'br', 'bl'],
+      labels: ['top left', 'top right', 'bottom right', 'bottom left'],
+      curr: 0,
+      complete: false
     }
 
-    if (data.type === 'point') {
-      let x = data.payload[0] / model.dimensions[0]
-      let y = data.payload[1] / model.dimensions[1]
-      model[model.order[model.curr]] = [x, y]
-      if (model.curr === model.order.length - 1) {
-        model.complete = true
-      } else {
-        model.curr++
+    model.present = data => {
+      if (data.type === 'dimensions') {
+        model.dimensions = data.payload
+      }
+
+      if (data.type === 'point') {
+        let x = data.payload[0] / model.dimensions[0]
+        let y = data.payload[1] / model.dimensions[1]
+        model[model.order[model.curr]] = [x, y]
+        if (model.curr === model.order.length - 1) {
+          model.complete = true
+        } else {
+          model.curr++
+        }
+      }
+
+      state(model)
+    }
+
+    // state
+    let state = model => {
+      stateRepresentation(model)
+      nextAction(model)
+    }
+
+    const nextAction = model => {
+      if (model.complete) {
+        onComplete()
       }
     }
 
-    state(model)
-  }
-
-  // state
-  let state = model => {
-    stateRepresentation(model)
-    nextAction(model)
-  }
-
-  const nextAction = model => {
-    if (model.complete) {
-      onComplete()
+    // view
+    let view = model => {
+      let output = Object.assign({}, model, {
+        title: view.label(model)
+      })
+      display(output)
     }
-  }
 
-  // view
-  let view = model => {
-    let output = Object.assign({}, model, {
-      title: view.label(model)
-    })
-    display(output)
-  }
-
-  view.label = model => {
-    if (model.complete) {
-      return `Thanks!`
-    } else {
-      return `
-        I couldn't find 4 corners of the paper in the image. <br />
-        Please select them manually. <br />
-        Select the <b>${model.labels[model.curr]}</b> corner:
-      `
-    }
-  }
-
-  // Actions -> Model
-  const present = data => model.present(data)
-
-  // State -> View
-  const stateRepresentation = model => view(model)
-
-  // View -> Display
-  const display = view => {
-    let container = document.getElementById("preview-pane-content")
-
-    let tlEl = document.getElementById("paper-2").querySelector('.corner-point-tl')
-    let trEl = document.getElementById("paper-2").querySelector('.corner-point-tr')
-    let brEl = document.getElementById("paper-2").querySelector('.corner-point-br')
-    let blEl = document.getElementById("paper-2").querySelector('.corner-point-bl')
-
-    let titleEl = container.querySelector('.instructions')
-    titleEl.innerHTML = view.title
-
-    let scale = view.dimensions
-
-    for (let [point, el, label] of [
-      [view.tl, tlEl, 'tl'],
-      [view.tr, trEl, 'tr'],
-      [view.br, brEl, 'br'],
-      [view.bl, blEl, 'bl']
-    ]) {
-      if (point.length) {
-        el.style.left = Math.floor(point[0] * scale[0]) + 'px'
-        el.style.top = Math.floor(point[1] * scale[1]) + 'px'
-        el.style.visibility = 'visible'
+    view.label = model => {
+      if (model.complete) {
+        return `Thanks!`
       } else {
-        el.style.visibility = 'hidden'
+        return `
+          I couldn't find 4 corners of the paper in the image. <br />
+          Please select them manually. <br />
+          Select the <b>${model.labels[model.curr]}</b> corner:
+        `
       }
     }
 
-    container.style.cursor = view.complete
-      ? 'default'
-      : 'crosshair'
-  }
+    // Actions -> Model
+    const present = data => model.present(data)
 
-  const onPreviewResize = () => {
-    present({ type: 'dimensions', payload: [document.querySelector("#preview").width, document.querySelector("#preview").height] })
-  }
+    // State -> View
+    const stateRepresentation = model => view(model)
 
-  const onPointerDown = event => {
-    present({ type: 'dimensions', payload: [document.querySelector("#preview").width, document.querySelector("#preview").height] })
-    present({ type: 'point', payload: [event.offsetX, event.offsetY] })
-  }
+    // View -> Display
+    const display = view => {
+      let container = document.getElementById("preview-pane-content")
 
-  const attach = () => {
-    let container = document.getElementById("preview-pane-content")
-    let titleEl = document.createElement('div')
-    let previewEl = document.querySelector("#preview")
+      let tlEl = document.getElementById("paper-2").querySelector('.corner-point-tl')
+      let trEl = document.getElementById("paper-2").querySelector('.corner-point-tr')
+      let brEl = document.getElementById("paper-2").querySelector('.corner-point-br')
+      let blEl = document.getElementById("paper-2").querySelector('.corner-point-bl')
 
-    previewEl.src = sourceImage.src
+      let titleEl = container.querySelector('.instructions')
+      titleEl.innerHTML = view.title
 
-    titleEl.classList.add('instructions')
-    container.insertBefore(titleEl, container.firstChild)
+      let scale = view.dimensions
 
-    model.order.map(pos => {
-      let el = document.createElement('div')
-      el.classList.add(`corner-point`)
-      el.classList.add(`corner-point-${pos}`)
-      document.getElementById('paper-2').append(el)
-    })
+      for (let [point, el, label] of [
+        [view.tl, tlEl, 'tl'],
+        [view.tr, trEl, 'tr'],
+        [view.br, brEl, 'br'],
+        [view.bl, blEl, 'bl']
+      ]) {
+        if (point.length) {
+          el.style.left = Math.floor(point[0] * scale[0]) + 'px'
+          el.style.top = Math.floor(point[1] * scale[1]) + 'px'
+          el.style.visibility = 'visible'
+        } else {
+          el.style.visibility = 'hidden'
+        }
+      }
 
-    document.querySelector("#preview").addEventListener('pointerdown', onPointerDown)
-    window.addEventListener('resize', onPreviewResize)
-    remote.getCurrentWindow().once('hide', event => {
+      container.style.cursor = view.complete
+        ? 'default'
+        : 'crosshair'
+    }
+
+    const onPreviewResize = () => {
+      present({ type: 'dimensions', payload: [document.querySelector("#preview").width, document.querySelector("#preview").height] })
+    }
+
+    const onPointerDown = event => {
+      present({ type: 'dimensions', payload: [document.querySelector("#preview").width, document.querySelector("#preview").height] })
+      present({ type: 'point', payload: [event.offsetX, event.offsetY] })
+    }
+
+    const attach = () => {
+      let container = document.getElementById("preview-pane-content")
+      let titleEl = document.createElement('div')
+      let previewEl = document.querySelector("#preview")
+
+      previewEl.src = sourceImage.src
+
+      titleEl.classList.add('instructions')
+      container.insertBefore(titleEl, container.firstChild)
+
+      model.order.map(pos => {
+        let el = document.createElement('div')
+        el.classList.add(`corner-point`)
+        el.classList.add(`corner-point-${pos}`)
+        document.getElementById('paper-2').append(el)
+      })
+
+      document.querySelector("#preview").addEventListener('pointerdown', onPointerDown)
+      window.addEventListener('resize', onPreviewResize)
+      remote.getCurrentWindow().once('hide', event => {
+        detach()
+        dispose()
+        reject()
+      })
+    }
+    
+    const detach = () => {
+      document.querySelector("#preview").removeEventListener('pointerdown', onPointerDown)
+      window.removeEventListener('resize', onPreviewResize)
+    }
+
+    const dispose = () => {
+      let previewEl = document.querySelector("#preview")
+      previewEl.removeAttribute('src')
+      
+      // remove title
+      let titleEl = document.querySelector('#preview-pane-content .instructions')
+      titleEl.parentNode.removeChild(titleEl)
+      
+      // remove corner point indicators
+      for (let el of document.querySelectorAll('.corner-point')) {
+        el.parentNode.removeChild(el)
+      }
+    }
+
+    const onComplete = () => {
+      let points = [
+        model.tl,
+        model.tr,
+        model.br,
+        model.bl
+      ]
       detach()
       dispose()
-    })
-  }
-  
-  const detach = () => {
-    document.querySelector("#preview").removeEventListener('pointerdown', onPointerDown)
-    window.removeEventListener('resize', onPreviewResize)
-  }
-
-  const dispose = () => {
-    let previewEl = document.querySelector("#preview")
-    previewEl.removeAttribute('src')
-    
-    // remove title
-    let titleEl = document.querySelector('#preview-pane-content .instructions')
-    titleEl.parentNode.removeChild(titleEl)
-    
-    // remove corner point indicators
-    for (let el of document.querySelectorAll('.corner-point')) {
-      el.parentNode.removeChild(el)
+      resolve(points)
     }
-  }
 
-  const onComplete = () => {
-    let points = [
-      model.tl,
-      model.tr,
-      model.br,
-      model.bl
-    ]
-    detach()
-    dispose()
-  }
+    const init = (sourceImage) => {
+      ipcRenderer.send('playsfx', 'error')
 
-  const init = (sourceImage) => {
-    ipcRenderer.send('playsfx', 'error')
+      attach()
 
-    attach()
-
-    let previewEl = document.querySelector("#preview")
-    present({ dimensions: [previewEl.width, previewEl.height] })
-  }
-  init(sourceImage)
+      let previewEl = document.querySelector("#preview")
+      present({ dimensions: [previewEl.width, previewEl.height] })
+    }
+    init(sourceImage)
+  })
 }
 
 function contrastImage(imageData, contrast) {
