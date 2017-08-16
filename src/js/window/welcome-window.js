@@ -98,6 +98,9 @@ ipcRenderer.on('playsfx', (event, args)=>{
     case 'down':
       sfx.down()
       break
+    case 'error':
+      sfx.error()
+      break
   }
 })
 

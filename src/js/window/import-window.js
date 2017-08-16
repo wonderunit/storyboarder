@@ -540,6 +540,8 @@ function showCornerPointsEditor () {
   }
 
   const init = (sourceImage) => {
+    ipcRenderer.send('playsfx', 'error')
+
     attach()
 
     let previewEl = document.querySelector("#preview")
