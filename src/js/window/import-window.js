@@ -420,7 +420,7 @@ function showCornerPointsEditor () {
 
     // state
     let state = model => {
-      stateRepresentation(model)
+      view(model) // State -> View
       nextAction(model)
     }
 
@@ -452,9 +452,6 @@ function showCornerPointsEditor () {
 
     // Actions -> Model
     const present = data => model.present(data)
-
-    // State -> View
-    const stateRepresentation = model => view(model)
 
     // View -> Display
     const display = view => {
