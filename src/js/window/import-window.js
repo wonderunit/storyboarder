@@ -53,7 +53,13 @@ let model = {
   order: ['tl', 'tr', 'br', 'bl'],
   labels: ['top left', 'top right', 'bottom right', 'bottom left'],
   curr: 0,
-  complete: false,
+  hasPoints: false,
+
+  // HACK
+  canvas: undefined,
+  context: undefined,
+  imageData: undefined,
+  img_u8: undefined,
 
   step: 'loading'
 }
@@ -68,7 +74,7 @@ model.present = data => {
     let y = data.payload[1] / model.dimensions[1]
     model[model.order[model.curr]] = [x, y]
     if (model.curr === model.order.length - 1) {
-      model.complete = true
+      model.hasPoints = true
     } else {
       model.curr++
     }
@@ -92,8 +98,16 @@ view.loading = (model) => {
   // TODO reset everything
 
   return ({
-    overview: 'Loading ...',
-    instructions: 'Loading ...'
+    overview: 'Loading …',
+    instructions: 'Loading …'
+  })
+}
+view.processing = (model) => {
+  // TODO reset everything?
+
+  return ({
+    overview: 'Processing …',
+    instructions: 'Processing …'
   })
 }
 view.cornerPointsEditor = (model) => {
@@ -101,20 +115,20 @@ view.cornerPointsEditor = (model) => {
   let titleEl = document.createElement('div')
   let previewEl = document.querySelector("#preview")
 
-  let instructions = model.complete
-    ? `Processing …`
+  if (model.lastStep !== model.step) {
+    previewEl.src = sourceImage.src
+
+    model.order.map(pos => {
+      let el = document.createElement('div')
+      el.classList.add(`corner-point`)
+      el.classList.add(`corner-point-${pos}`)
+      document.getElementById('paper-2').append(el)
+    })
+  }
+
+  let instructions = model.hasPoints
+    ? `We got points!`
     : `Select the <b>${model.labels[model.curr]}</b> corner:`
-
-    if (model.lastStep !== model.step) {
-      previewEl.src = sourceImage.src
-
-      model.order.map(pos => {
-        let el = document.createElement('div')
-        el.classList.add(`corner-point`)
-        el.classList.add(`corner-point-${pos}`)
-        document.getElementById('paper-2').append(el)
-      })
-    }
 
     let tlEl = document.getElementById("paper-2").querySelector('.corner-point-tl')
     let trEl = document.getElementById("paper-2").querySelector('.corner-point-tr')
@@ -138,7 +152,7 @@ view.cornerPointsEditor = (model) => {
       }
     }
 
-    container.style.cursor = view.complete
+    container.style.cursor = view.hasPoints
       ? 'default'
       : 'crosshair'
 
@@ -185,9 +199,35 @@ state.representation = model => {
 }
 
 state.nextAction = model => {
-  // if (model.complete) {
-  //   onComplete()
-  // }
+  if (model.step == 'cornerPointsEditor' && model.hasPoints) {
+    //
+    // dispose of the cornerPointsEditor view
+    //
+    let previewEl = document.querySelector("#preview")
+    previewEl.removeAttribute('src')
+    //
+    // remove corner point indicators
+    for (let el of document.querySelectorAll('.corner-point')) {
+      el.parentNode.removeChild(el)
+    }
+
+    actions.step('processing')
+
+    // allow time for DOM to render
+    setTimeout(() => {
+      processCornerPoints([
+          model.tl,
+          model.tr,
+          model.br,
+          model.bl
+        ], 
+        model.canvas,
+        model.context,
+        model.imageData,
+        model.img_u8
+      )
+    }, 100)
+  }
   model.lastStep = model.step
 }
 
@@ -214,9 +254,6 @@ actions.editCornerPoints = () => {
   let previewEl = document.querySelector("#preview")
   actions.present({ dimensions: [previewEl.width, previewEl.height] })
 }
-actions.processCornerPoints = () => {
-  console.log('TODO processCornerPoints')
-}
 actions.oResize = event => {
   actions.present({
     type: 'dimensions',
@@ -241,64 +278,18 @@ actions.onPointerDown = () => {
   actions.present({ type: 'dimensions', payload: [document.querySelector("#preview").width, document.querySelector("#preview").height] })
   actions.present({ type: 'point', payload: [event.offsetX, event.offsetY] })
 }
-
 ////////////////////////////////////////////////////////////////////////////////
 // Run
 //
 actions.init()
 
 
-// 
+
 // // Actions -> Model
 // const present = data => model.present(data)
 // 
 // // View -> Display
 // const display = view => {
-
-// }
-// 
-// }
-// 
-// 
-// 
-// 
-// const dispose = () => {
-//   let previewEl = document.querySelector("#preview")
-//   previewEl.removeAttribute('src')
-//   
-//   // remove title
-//   let titleEl = document.querySelector('#preview-pane-content .instructions')
-//   titleEl.parentNode.removeChild(titleEl)
-//   
-//   // remove corner point indicators
-//   for (let el of document.querySelectorAll('.corner-point')) {
-//     el.parentNode.removeChild(el)
-//   }
-// }
-// 
-// const onComplete = () => {
-//   let points = [
-//     model.tl,
-//     model.tr,
-//     model.br,
-//     model.bl
-//   ]
-//   detach()
-//   // allow for DOM to render
-//   setTimeout(() => {
-//     dispose()
-//     resolve(points)
-//   }, 100)
-// }
-
-// let actions = {}
-// actions.setStep = value => {
-//   present({ type: 'step', payload: value })
-// }
-
-
-
-
 
 // document.querySelector('#close-button').onclick = (e) => {
 //   ipcRenderer.send('playsfx', 'negative')
@@ -468,15 +459,17 @@ const processWorksheetImage = (imageSrc) => {
     console.log({ cornerPoints })
 
     if (cornerPoints.length !== 4) {
-      // processCornerPoints(cornerPoints,
-      //   canvas, context, imageData, img_u8
-      // )
+      // HACK we should have these always part of the model,
+      //      throughout the codebase,
+      //      instead of creating references here
+      model.canvas = canvas
+      model.context = context
+      model.imageData = imageData
+      model.img_u8 = img_u8
       actions.editCornerPoints()
     } else {
-      actions.processCornerPoints()
-      // processCornerPoints(cornerPoints,
-      //   canvas, context, imageData, img_u8
-      // )
+      actions.step('processing')
+      processCornerPoints(cornerPoints, canvas, context, imageData, img_u8)
     }
 
 
@@ -495,7 +488,6 @@ const processWorksheetImage = (imageSrc) => {
 }
 
 function processCornerPoints (cornerPoints, canvas, context, imageData, img_u8) {
-  
   // STEP
   // reorder points in the right order
   cornerPoints.sort((b,a) => {
@@ -561,11 +553,9 @@ function processCornerPoints (cornerPoints, canvas, context, imageData, img_u8) 
     console.log("GOT BACK RESULT: ", err, result )
     console.log("BEGIN CROPPING:" )
     if (err) {
-      alert(`ERROR: NO QR - ` + err)
+      // alert(`ERROR: NO QR - ` + err)
 
-      // TODO set step
-      // requestQrInput()
-
+      actions.step('qrCodeInput')
     } else {
       // if i got qr,
       code = result.result.split('-')
@@ -635,8 +625,8 @@ function processCornerPoints (cornerPoints, canvas, context, imageData, img_u8) 
       imgData = context.canvas.toDataURL().replace(/^data:image\/\w+;base64,/, '')
       fs.writeFileSync(path.join(app.getPath('temp'), 'flatpaper.png'), imgData, 'base64') // why do we write a file instead of creating in memory?
 
-      // TODO
       document.querySelector("#preview").src = path.join(app.getPath('temp'), 'flatpaper.png?'+ Math.round(Math.random()*10000))
+      actions.step('calibration')
     }
   }
   qr.decode(qrImageData)
