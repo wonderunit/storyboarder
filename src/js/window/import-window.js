@@ -440,7 +440,7 @@ function showCornerPointsEditor () {
 
     view.label = model => {
       if (model.complete) {
-        return `Thanks!`
+        return `Processing …`
       } else {
         return `
           I couldn't find 4 corners of the paper in the image. <br />
@@ -552,8 +552,11 @@ function showCornerPointsEditor () {
         model.bl
       ]
       detach()
-      dispose()
-      resolve(points)
+      // allow for DOM to render
+      setTimeout(() => {
+        dispose()
+        resolve(points)
+      }, 100)
     }
 
     const init = (sourceImage) => {
