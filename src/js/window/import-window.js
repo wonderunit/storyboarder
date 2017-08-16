@@ -94,6 +94,9 @@ let view = {}
 view.init = (model) => {
   return view.loading(model)
 }
+view.reset = (model) => {
+  return ({})
+}
 view.loading = (model) => {
   // TODO reset everything
 
@@ -116,6 +119,7 @@ view.cornerPointsEditor = (model) => {
   let previewEl = document.querySelector("#preview")
 
   if (model.lastStep !== model.step) {
+    // attach
     previewEl.src = sourceImage.src
 
     model.order.map(pos => {
@@ -199,7 +203,8 @@ state.representation = model => {
 }
 
 state.nextAction = model => {
-  if (model.step == 'cornerPointsEditor' && model.hasPoints) {
+  // detatch if step changed
+  if (model.lastStep !== model.step && model.lastStep == 'cornerPointsEditor') {
     //
     // dispose of the cornerPointsEditor view
     //
@@ -210,7 +215,10 @@ state.nextAction = model => {
     for (let el of document.querySelectorAll('.corner-point')) {
       el.parentNode.removeChild(el)
     }
+  }
 
+  // process if its the right time
+  if (model.step == 'cornerPointsEditor' && model.hasPoints) {
     actions.step('processing')
 
     // allow time for DOM to render
@@ -263,23 +271,42 @@ actions.oResize = event => {
     ]
   })
 }
-actions.init = () => {
-  window.addEventListener('resize', actions.onResize)
-  remote.getCurrentWindow().once('hide', actions.onHide)
-  document.querySelector("#preview").addEventListener('pointerdown', actions.onPointerDown)
-  actions.step('init')
-}
-actions.onHide = () => {
-  window.removeEventListener('resize')
-  document.querySelector("#preview").removeEventListener('pointerdown', actions.onPointerDown)
-  actions.step('init')
+actions.onHideWindow = event => {
+  ipcRenderer.send('playsfx', 'negative')
+
+  actions.dispose()
+  actions.step('reset')
+
+  let window = remote.getCurrentWindow()
+  // wait for DOM to render
+  setTimeout(() => {
+    window.hide()
+  }, 100)
 }
 actions.onPointerDown = () => {
   actions.present({ type: 'dimensions', payload: [document.querySelector("#preview").width, document.querySelector("#preview").height] })
   actions.present({ type: 'point', payload: [event.offsetX, event.offsetY] })
 }
+actions.dispose = () => {
+  window.removeEventListener('resize', actions.onResize)
+  document.querySelector("#preview").removeEventListener('pointerdown', actions.onPointerDown)
+  document.querySelector('#close-button').removeEventListener('click', actions.onHideWindow)
+}
+actions.attach = () => {
+  // TODO prevent multiple attatch?
+  window.addEventListener('resize', actions.onResize)
+  document.querySelector("#preview").addEventListener('pointerdown', actions.onPointerDown)
+  document.querySelector('#close-button').addEventListener('click', actions.onHideWindow)
+}
+actions.init = () => {
+  // TODO should we handle if window is hidden from outside?
+  // remote.getCurrentWindow().once('hide', actions.dispose)
+  actions.attach()
+  actions.step('init')
+}
+
 ////////////////////////////////////////////////////////////////////////////////
-// Run
+// Actions
 //
 actions.init()
 
@@ -291,12 +318,7 @@ actions.init()
 // // View -> Display
 // const display = view => {
 
-// document.querySelector('#close-button').onclick = (e) => {
-//   ipcRenderer.send('playsfx', 'negative')
-//   let window = remote.getCurrentWindow()
-//   window.hide()
-// }
-// 
+
 // document.querySelector('#import-button').onclick = (e) => {
 //   ipcRenderer.send('playsfx', 'positive')
 //   // PRINT
@@ -324,6 +346,8 @@ const importImages = () => {
 
 
 const processWorksheetImage = (imageSrc) => {
+  actions.init()
+
   sourceImage = new Image()
 
   sourceImage.onload = () => {
@@ -760,8 +784,12 @@ const generateCropMarks = (paperSize, aspectRatio, rows, cols, spacing) => {
 }
 
 ipcRenderer.on('worksheetImage', (event, args) => {
+  actions.step('init')
   remote.getCurrentWindow().show()
-  setTimeout(() => processWorksheetImage(args), 10) // reflow
+  // wait for DOM to render
+  setTimeout(() => {
+    processWorksheetImage(args)
+  }, 100)
 })
 
 window.ondragover = () => { return false }
