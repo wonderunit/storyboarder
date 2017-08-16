@@ -1,15 +1,12 @@
-const {ipcRenderer, shell, remote} = require('electron')
-const prefModule = require('electron').remote.require('./prefs.js')
-const pdf = require('pdfjs-dist')
-const worksheetPrinter = require('./worksheet-printer.js')
-const storyTips = new(require('./story-tips'))
-const child_process = require('child_process')
+const { ipcRenderer, shell, remote } = require('electron')
 const app = require('electron').remote.app
-const os = require('os')
 const path = require('path')
-const jsfeat = require('../vendor/jsfeat-min.js')
 const fs = require('fs')
-const QrCode = require('qrcode-reader');
+const QrCode = require('qrcode-reader')
+
+const jsfeat = require('../vendor/jsfeat-min')
+
+const prefModule = require('electron').remote.require('./prefs')
 
 let sourceImage
 let flatImage
