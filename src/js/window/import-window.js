@@ -1,3 +1,20 @@
+/*
+  todo:
+    [x] error if cant get 4 points
+    error if cant get qr code
+  
+    see if we can speed up window open
+    disable button on clicking import
+
+    hook up offsets
+    hook up crop %
+    save to prefs
+
+    dont import blanks
+
+    [x] make work with cell phone capture
+*/
+
 const { ipcRenderer, shell, remote } = require('electron')
 const app = require('electron').remote.app
 const path = require('path')
@@ -13,44 +30,291 @@ let flatImage
 
 let cropMarks
 let code
-let offset = [0,-20]
+let offset = [0, -20]
 
 /*
-
-  todo:
-    error if cant get 4 points
-    error if cant get qr code
-  
-    see if we can speed up window open
-    disable button on clicking import
-
-    hook up offsets
-    hook up crop %
-    save to prefs
-
-    dont import blanks
-
-    make work with cell phone capture
-
-
+  states:
+    - initializing
+    - manual corner points
+    - manual qr code selection
+    - calibration
+    - importing to main
 */
 
+////////////////////////////////////////////////////////////////////////////////
+// model
+//
+let model = {
+  dimensions: [0, 0],
+  tl: [],
+  tr: [],
+  br: [],
+  bl: [],
+  order: ['tl', 'tr', 'br', 'bl'],
+  labels: ['top left', 'top right', 'bottom right', 'bottom left'],
+  curr: 0,
+  complete: false,
 
-document.querySelector('#close-button').onclick = (e) => {
-  ipcRenderer.send('playsfx', 'negative')
-  let window = remote.getCurrentWindow()
-  window.hide()
+  step: 'loading'
 }
 
-document.querySelector('#import-button').onclick = (e) => {
-  ipcRenderer.send('playsfx', 'positive')
-  // PRINT
-  importImages()
+model.present = data => {
+  if (data.type === 'dimensions') {
+    model.dimensions = data.payload
+  }
 
-  // close
-  let window = remote.getCurrentWindow()
-  window.hide()
+  if (data.type === 'point') {
+    let x = data.payload[0] / model.dimensions[0]
+    let y = data.payload[1] / model.dimensions[1]
+    model[model.order[model.curr]] = [x, y]
+    if (model.curr === model.order.length - 1) {
+      model.complete = true
+    } else {
+      model.curr++
+    }
+  }
+
+  if (data.type === 'step') {
+    model.step = data.payload
+  }
+
+  state.render(model)
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// View
+//
+let view = {}
+view.init = (model) => {
+  return view.loading(model)
+}
+view.loading = (model) => {
+  // TODO reset everything
+
+  return ({
+    overview: 'Loading ...',
+    instructions: 'Loading ...'
+  })
+}
+view.cornerPointsEditor = (model) => {
+  let container = document.getElementById("preview-pane-content")
+  let titleEl = document.createElement('div')
+  let previewEl = document.querySelector("#preview")
+
+  let instructions = model.complete
+    ? `Processing …`
+    : `Select the <b>${model.labels[model.curr]}</b> corner:`
+
+    if (model.lastStep !== model.step) {
+      previewEl.src = sourceImage.src
+
+      model.order.map(pos => {
+        let el = document.createElement('div')
+        el.classList.add(`corner-point`)
+        el.classList.add(`corner-point-${pos}`)
+        document.getElementById('paper-2').append(el)
+      })
+    }
+
+    let tlEl = document.getElementById("paper-2").querySelector('.corner-point-tl')
+    let trEl = document.getElementById("paper-2").querySelector('.corner-point-tr')
+    let brEl = document.getElementById("paper-2").querySelector('.corner-point-br')
+    let blEl = document.getElementById("paper-2").querySelector('.corner-point-bl')
+
+    let scale = model.dimensions
+    
+    for (let [point, el, label] of [
+      [model.tl, tlEl, 'tl'],
+      [model.tr, trEl, 'tr'],
+      [model.br, brEl, 'br'],
+      [model.bl, blEl, 'bl']
+    ]) {
+      if (point.length) {
+        el.style.left = Math.floor(point[0] * scale[0]) + 'px'
+        el.style.top = Math.floor(point[1] * scale[1]) + 'px'
+        el.style.visibility = 'visible'
+      } else {
+        el.style.visibility = 'hidden'
+      }
+    }
+
+    container.style.cursor = view.complete
+      ? 'default'
+      : 'crosshair'
+
+
+  return ({
+    overview: `I couldn’t find 4 corners of the paper in the image.
+                  Please select them manually.`,
+    instructions
+  })
+}
+view.qrCodeInput = (model) => {
+  return ({
+    overview: `I couldn’t detect the QR code for this worksheet.
+                  You can find it to the left of the QR graphic
+                  on the printed worksheet.`
+  })
+}
+view.calibration = (model) => {
+  return ({
+    overview: `Woot. You made beautiful drawings on this worksheet. 
+                  Now let's get them into Storyboarder. 
+                  If the boxes, look lined up, click import! 
+                  Otherwise mess with the offset and the scaling.`
+  })
+}
+view.display = (representation) => {
+  document.getElementById('overview').innerHTML = representation.overview || ''
+  document.getElementById('import-steps').innerHTML = representation.importSteps || ''
+  document.querySelector('#preview-pane-content .instructions').innerHTML = representation.instructions || ''
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// State
+//
+let state = { view: view }
+
+// Derive the state representation as a function of the systen control state
+state.representation = model => {
+  let representation
+
+  representation = state.view[model.step](model)
+
+  state.view.display(representation)
+}
+
+state.nextAction = model => {
+  // if (model.complete) {
+  //   onComplete()
+  // }
+  model.lastStep = model.step
+}
+
+state.render = model => {
+  state.representation(model)
+  state.nextAction(model)
+}
+
+model.state = state
+
+////////////////////////////////////////////////////////////////////////////////
+// Actions
+//
+let actions = {}
+actions.present = model.present
+actions.step = payload => {
+  actions.present({ type: 'step', payload })
+}
+actions.editCornerPoints = () => {
+  ipcRenderer.send('playsfx', 'error')
+  actions.step('cornerPointsEditor')
+
+  // TODO necessary?
+  let previewEl = document.querySelector("#preview")
+  actions.present({ dimensions: [previewEl.width, previewEl.height] })
+}
+actions.processCornerPoints = () => {
+  console.log('TODO processCornerPoints')
+}
+actions.oResize = event => {
+  actions.present({
+    type: 'dimensions',
+    payload: [
+      document.querySelector("#preview").width,
+      document.querySelector("#preview").height
+    ]
+  })
+}
+actions.init = () => {
+  window.addEventListener('resize', actions.onResize)
+  remote.getCurrentWindow().once('hide', actions.onHide)
+  document.querySelector("#preview").addEventListener('pointerdown', actions.onPointerDown)
+  actions.step('init')
+}
+actions.onHide = () => {
+  window.removeEventListener('resize')
+  document.querySelector("#preview").removeEventListener('pointerdown', actions.onPointerDown)
+  actions.step('init')
+}
+actions.onPointerDown = () => {
+  actions.present({ type: 'dimensions', payload: [document.querySelector("#preview").width, document.querySelector("#preview").height] })
+  actions.present({ type: 'point', payload: [event.offsetX, event.offsetY] })
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Run
+//
+actions.init()
+
+
+// 
+// // Actions -> Model
+// const present = data => model.present(data)
+// 
+// // View -> Display
+// const display = view => {
+
+// }
+// 
+// }
+// 
+// 
+// 
+// 
+// const dispose = () => {
+//   let previewEl = document.querySelector("#preview")
+//   previewEl.removeAttribute('src')
+//   
+//   // remove title
+//   let titleEl = document.querySelector('#preview-pane-content .instructions')
+//   titleEl.parentNode.removeChild(titleEl)
+//   
+//   // remove corner point indicators
+//   for (let el of document.querySelectorAll('.corner-point')) {
+//     el.parentNode.removeChild(el)
+//   }
+// }
+// 
+// const onComplete = () => {
+//   let points = [
+//     model.tl,
+//     model.tr,
+//     model.br,
+//     model.bl
+//   ]
+//   detach()
+//   // allow for DOM to render
+//   setTimeout(() => {
+//     dispose()
+//     resolve(points)
+//   }, 100)
+// }
+
+// let actions = {}
+// actions.setStep = value => {
+//   present({ type: 'step', payload: value })
+// }
+
+
+
+
+
+// document.querySelector('#close-button').onclick = (e) => {
+//   ipcRenderer.send('playsfx', 'negative')
+//   let window = remote.getCurrentWindow()
+//   window.hide()
+// }
+// 
+// document.querySelector('#import-button').onclick = (e) => {
+//   ipcRenderer.send('playsfx', 'positive')
+//   // PRINT
+//   importImages()
+// 
+//   // close
+//   let window = remote.getCurrentWindow()
+//   window.hide()
+// }
 
 const importImages = () => {
   let destCanvas = document.createElement('canvas')
@@ -204,20 +468,15 @@ const processWorksheetImage = (imageSrc) => {
     console.log({ cornerPoints })
 
     if (cornerPoints.length !== 4) {
-      showCornerPointsEditor(sourceImage)
-        .then(points => {
-          processCornerPoints(points,
-            canvas, context, imageData, img_u8
-          )
-        .catch((err) => {
-          console.log(err)
-          alert("Couldn't import")
-        })
-      })
+      // processCornerPoints(cornerPoints,
+      //   canvas, context, imageData, img_u8
+      // )
+      actions.editCornerPoints()
     } else {
-      processCornerPoints(cornerPoints,
-        canvas, context, imageData, img_u8
-      )
+      actions.processCornerPoints()
+      // processCornerPoints(cornerPoints,
+      //   canvas, context, imageData, img_u8
+      // )
     }
 
 
@@ -303,6 +562,10 @@ function processCornerPoints (cornerPoints, canvas, context, imageData, img_u8) 
     console.log("BEGIN CROPPING:" )
     if (err) {
       alert(`ERROR: NO QR - ` + err)
+
+      // TODO set step
+      // requestQrInput()
+
     } else {
       // if i got qr,
       code = result.result.split('-')
@@ -372,196 +635,11 @@ function processCornerPoints (cornerPoints, canvas, context, imageData, img_u8) 
       imgData = context.canvas.toDataURL().replace(/^data:image\/\w+;base64,/, '')
       fs.writeFileSync(path.join(app.getPath('temp'), 'flatpaper.png'), imgData, 'base64') // why do we write a file instead of creating in memory?
 
+      // TODO
       document.querySelector("#preview").src = path.join(app.getPath('temp'), 'flatpaper.png?'+ Math.round(Math.random()*10000))
     }
   }
   qr.decode(qrImageData)
-}
-
-// via http://sam.js.org
-function showCornerPointsEditor () {
-  return new Promise((resolve, reject) => {
-    // alert(`I couldn't find 4 corners of the paper in the image. Please select them manually.`)
-
-    let model = {
-      dimensions: [0, 0],
-      tl: [],
-      tr: [],
-      br: [],
-      bl: [],
-      order: ['tl', 'tr', 'br', 'bl'],
-      labels: ['top left', 'top right', 'bottom right', 'bottom left'],
-      curr: 0,
-      complete: false
-    }
-
-    model.present = data => {
-      if (data.type === 'dimensions') {
-        model.dimensions = data.payload
-      }
-
-      if (data.type === 'point') {
-        let x = data.payload[0] / model.dimensions[0]
-        let y = data.payload[1] / model.dimensions[1]
-        model[model.order[model.curr]] = [x, y]
-        if (model.curr === model.order.length - 1) {
-          model.complete = true
-        } else {
-          model.curr++
-        }
-      }
-
-      state(model)
-    }
-
-    // state
-    let state = model => {
-      view(model) // State -> View
-      nextAction(model)
-    }
-
-    const nextAction = model => {
-      if (model.complete) {
-        onComplete()
-      }
-    }
-
-    // view
-    let view = model => {
-      let output = Object.assign({}, model, {
-        title: view.label(model)
-      })
-      display(output)
-    }
-
-    view.label = model => {
-      if (model.complete) {
-        return `Processing …`
-      } else {
-        return `
-          I couldn’t find 4 corners of the paper in the image. <br />
-          Please select them manually. <br />
-          Select the <b>${model.labels[model.curr]}</b> corner:
-        `
-      }
-    }
-
-    // Actions -> Model
-    const present = data => model.present(data)
-
-    // View -> Display
-    const display = view => {
-      let container = document.getElementById("preview-pane-content")
-
-      let tlEl = document.getElementById("paper-2").querySelector('.corner-point-tl')
-      let trEl = document.getElementById("paper-2").querySelector('.corner-point-tr')
-      let brEl = document.getElementById("paper-2").querySelector('.corner-point-br')
-      let blEl = document.getElementById("paper-2").querySelector('.corner-point-bl')
-
-      let titleEl = container.querySelector('.instructions')
-      titleEl.innerHTML = view.title
-
-      let scale = view.dimensions
-
-      for (let [point, el, label] of [
-        [view.tl, tlEl, 'tl'],
-        [view.tr, trEl, 'tr'],
-        [view.br, brEl, 'br'],
-        [view.bl, blEl, 'bl']
-      ]) {
-        if (point.length) {
-          el.style.left = Math.floor(point[0] * scale[0]) + 'px'
-          el.style.top = Math.floor(point[1] * scale[1]) + 'px'
-          el.style.visibility = 'visible'
-        } else {
-          el.style.visibility = 'hidden'
-        }
-      }
-
-      container.style.cursor = view.complete
-        ? 'default'
-        : 'crosshair'
-    }
-
-    const onPreviewResize = () => {
-      present({ type: 'dimensions', payload: [document.querySelector("#preview").width, document.querySelector("#preview").height] })
-    }
-
-    const onPointerDown = event => {
-      present({ type: 'dimensions', payload: [document.querySelector("#preview").width, document.querySelector("#preview").height] })
-      present({ type: 'point', payload: [event.offsetX, event.offsetY] })
-    }
-
-    const attach = () => {
-      let container = document.getElementById("preview-pane-content")
-      let titleEl = document.createElement('div')
-      let previewEl = document.querySelector("#preview")
-
-      previewEl.src = sourceImage.src
-
-      titleEl.classList.add('instructions')
-      container.insertBefore(titleEl, container.firstChild)
-
-      model.order.map(pos => {
-        let el = document.createElement('div')
-        el.classList.add(`corner-point`)
-        el.classList.add(`corner-point-${pos}`)
-        document.getElementById('paper-2').append(el)
-      })
-
-      document.querySelector("#preview").addEventListener('pointerdown', onPointerDown)
-      window.addEventListener('resize', onPreviewResize)
-      remote.getCurrentWindow().once('hide', event => {
-        detach()
-        dispose()
-        reject()
-      })
-    }
-    
-    const detach = () => {
-      document.querySelector("#preview").removeEventListener('pointerdown', onPointerDown)
-      window.removeEventListener('resize', onPreviewResize)
-    }
-
-    const dispose = () => {
-      let previewEl = document.querySelector("#preview")
-      previewEl.removeAttribute('src')
-      
-      // remove title
-      let titleEl = document.querySelector('#preview-pane-content .instructions')
-      titleEl.parentNode.removeChild(titleEl)
-      
-      // remove corner point indicators
-      for (let el of document.querySelectorAll('.corner-point')) {
-        el.parentNode.removeChild(el)
-      }
-    }
-
-    const onComplete = () => {
-      let points = [
-        model.tl,
-        model.tr,
-        model.br,
-        model.bl
-      ]
-      detach()
-      // allow for DOM to render
-      setTimeout(() => {
-        dispose()
-        resolve(points)
-      }, 100)
-    }
-
-    const init = (sourceImage) => {
-      ipcRenderer.send('playsfx', 'error')
-
-      attach()
-
-      let previewEl = document.querySelector("#preview")
-      present({ dimensions: [previewEl.width, previewEl.height] })
-    }
-    init(sourceImage)
-  })
 }
 
 function contrastImage(imageData, contrast) {
