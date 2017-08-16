@@ -443,7 +443,7 @@ function showCornerPointsEditor () {
         return `Processing …`
       } else {
         return `
-          I couldn't find 4 corners of the paper in the image. <br />
+          I couldn’t find 4 corners of the paper in the image. <br />
           Please select them manually. <br />
           Select the <b>${model.labels[model.curr]}</b> corner:
         `
