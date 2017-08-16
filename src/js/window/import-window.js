@@ -383,7 +383,7 @@ function showCornerPointsEditor () {
     br: [],
     bl: [],
     order: ['tl', 'tr', 'br', 'bl'],
-    labels: ['Top Left', 'Top Right', 'Bottom Right', 'Bottom Left'],
+    labels: ['top left', 'top right', 'bottom right', 'bottom left'],
     curr: 0,
     complete: false
   }
@@ -431,7 +431,11 @@ function showCornerPointsEditor () {
     if (model.complete) {
       return `Thanks!`
     } else {
-      return `Please select the ${model.labels[model.curr]} point`
+      return `
+        I couldn't find 4 corners of the paper in the image. <br />
+        Please select them manually. <br />
+        Select the <b>${model.labels[model.curr]}</b> corner:
+      `
     }
   }
 
@@ -451,7 +455,7 @@ function showCornerPointsEditor () {
     let blEl = document.getElementById("paper-2").querySelector('.corner-point-bl')
 
     let titleEl = container.querySelector('.instructions')
-    titleEl.textContent = view.title
+    titleEl.innerHTML = view.title
 
     let scale = view.dimensions
 
