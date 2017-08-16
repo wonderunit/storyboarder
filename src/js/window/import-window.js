@@ -47,9 +47,9 @@ document.querySelector('#import-button').onclick = (e) => {
   // PRINT
   importImages()
 
-  console.log("HEELLLLOOO")
-  // let window = remote.getCurrentWindow()
-  // window.hide()
+  // close
+  let window = remote.getCurrentWindow()
+  window.hide()
 }
 
 const importImages = () => {
@@ -64,7 +64,6 @@ const importImages = () => {
     images.push(destCanvas.toDataURL())
   }
   remote.getCurrentWindow().getParentWindow().webContents.send('importFromWorksheet',images)
-  remote.getCurrentWindow().hide()
 }
 
 
