@@ -319,6 +319,14 @@ actions.validateQrCode = () => {
 
   return false
 }
+actions.import = () => {
+  ipcRenderer.send('playsfx', 'positive')
+
+  importImages()
+  actions.hideWindow()
+
+  return false
+}
 actions.hideWindow = () => {
   actions.resetModel()
   actions.dispose()
@@ -409,15 +417,6 @@ actions.init()
 // const display = view => {
 
 
-// document.querySelector('#import-button').onclick = (e) => {
-//   ipcRenderer.send('playsfx', 'positive')
-//   // PRINT
-//   importImages()
-// 
-//   // close
-//   let window = remote.getCurrentWindow()
-//   window.hide()
-// }
 
 const importImages = () => {
   let destCanvas = document.createElement('canvas')
