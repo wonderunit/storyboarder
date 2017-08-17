@@ -209,7 +209,7 @@ view.calibration = (model) => {
   const selectIf = (i, n) => isSelected(i, n) ? 'selected' : ''
 
   const optionsStr = i =>
-    [-20, -10, 0, 10, 20].map(n =>
+    [-20, -10, -5, -3, 0, 3, 5, 10, 20].map(n =>
       `<option ${selectIf(i, n)} value="${n}">${n}</option>`
     ).join('\n')
 
