@@ -56,6 +56,7 @@ let model = {
   hasPoints: false,
 
   // HACK
+  cornerPoints: undefined,
   canvas: undefined,
   context: undefined,
   imageData: undefined,
@@ -171,7 +172,18 @@ view.qrCodeInput = (model) => {
   return ({
     overview: `I couldn’t detect the QR code for this worksheet.
                   You can find it to the left of the QR graphic
-                  on the printed worksheet.`
+                  on the printed worksheet.`,
+    form: `
+      <form onsubmit="return actions.validateQrCode()">
+        <div class="row">
+          <label for="qr-code">QR Code:</label>
+          <input id="qr-code" type="text" />
+        </div>
+        <div id="button-content">
+          <div class="button grey" onclick="return actions.validateQrCode()">Next</div>
+        </div>
+      </form>
+    `
   })
 }
 view.calibration = (model) => {
@@ -184,7 +196,7 @@ view.calibration = (model) => {
 }
 view.display = (representation) => {
   document.getElementById('overview').innerHTML = representation.overview || ''
-  document.getElementById('import-steps').innerHTML = representation.importSteps || ''
+  document.getElementById('step-form').innerHTML = representation.form || ''
   document.querySelector('#preview-pane-content .instructions').innerHTML = representation.instructions || ''
 }
 
@@ -228,7 +240,7 @@ state.nextAction = model => {
           model.tr,
           model.br,
           model.bl
-        ], 
+        ],
         model.canvas,
         model.context,
         model.imageData,
@@ -261,6 +273,45 @@ actions.editCornerPoints = () => {
   // TODO necessary?
   let previewEl = document.querySelector("#preview")
   actions.present({ dimensions: [previewEl.width, previewEl.height] })
+}
+actions.validateQrCode = () => {
+  const isNotNumber = n => Number.isNaN(parseInt(n, 10))
+
+  // HACK setting a global
+  code = document.getElementById('qr-code').value.toUpperCase().split('-')
+
+  // e.g.: 0-LTR-5-4-15-1.778-8146
+  let valid = true
+  // sceneNumber
+  if (isNotNumber(code[0])) valid = false
+  // paperSize
+  if (code[1] !== 'LTR') valid = false
+  // rows
+  if (isNotNumber(code[2])) valid = false
+  // cols
+  if (isNotNumber(code[3])) valid = false
+  // spacing
+  if (isNotNumber(code[4])) valid = false
+  // aspectRatio
+  if (isNotNumber(code[5])) valid = false
+
+  if (valid) {
+    action.step('processing')
+
+    // process
+    processQrCode(
+      code,
+      model.cornerPoints,
+      model.canvas,
+      model.context,
+      model.imageData,
+      model.img_u8
+    )
+  } else {
+    alert('Hmm, I couldn’t use that QR code. Are you sure you typed in the right value?')
+  }
+
+  return false
 }
 actions.oResize = event => {
   actions.present({
@@ -486,6 +537,7 @@ const processWorksheetImage = (imageSrc) => {
       // HACK we should have these always part of the model,
       //      throughout the codebase,
       //      instead of creating references here
+      model.cornerPoints = undefined
       model.canvas = canvas
       model.context = context
       model.imageData = imageData
@@ -520,7 +572,6 @@ function processCornerPoints (cornerPoints, canvas, context, imageData, img_u8) 
   })
   cornerPoints.unshift(cornerPoints.pop())
 
-  console.log(cornerPoints)
   // STEP
   // TODO: check the area, should error if too small or less than 4 points
 
@@ -579,83 +630,93 @@ function processCornerPoints (cornerPoints, canvas, context, imageData, img_u8) 
     if (err) {
       // alert(`ERROR: NO QR - ` + err)
 
+      // HACK we should have these always part of the model,
+      //      throughout the codebase,
+      //      instead of creating references here
+      model.cornerPoints = cornerPoints
+      model.canvas = canvas
+      model.context = context
+      model.imageData = imageData
+      model.img_u8 = img_u8
+
       actions.step('qrCodeInput')
     } else {
       // if i got qr,
       code = result.result.split('-')
-
-
-      canvas.width = 2500
-
-      // make a new image based on paper size
-      // copy src image in
-      if (code[1] == 'LTR') {
-        canvas.height = Math.round(2500/(11/8.5))
-      } else {
-        canvas.height = Math.round(2500/(842/595))
-      }
-
-      context = canvas.getContext('2d')
-      context.drawImage(sourceImage, 0,0, canvas.width, canvas.height)
-      imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-
-      img_u8 = new jsfeat.matrix_t(canvas.width, canvas.height, jsfeat.U8_t | jsfeat.C1_t);
-      img_u8_warp = new jsfeat.matrix_t(canvas.width, canvas.height, jsfeat.U8_t | jsfeat.C1_t);
-      transform = new jsfeat.matrix_t(3, 3, jsfeat.F32_t | jsfeat.C1_t);
-      jsfeat.math.perspective_4point_transform(transform, 
-                                                      cornerPoints[0][0]*canvas.width,   cornerPoints[0][1]*canvas.height,   0,  0,
-                                                      cornerPoints[1][0]*canvas.width,   cornerPoints[1][1]*canvas.height,   canvas.width, 0,
-                                                      cornerPoints[2][0]*canvas.width,   cornerPoints[2][1]*canvas.height, canvas.width, canvas.height,
-                                                      cornerPoints[3][0]*canvas.width,   cornerPoints[3][1]*canvas.height, 0, canvas.height);
-      jsfeat.matmath.invert_3x3(transform, transform);
-
-      jsfeat.imgproc.grayscale(imageData.data, canvas.width, canvas.height, img_u8);
-      jsfeat.imgproc.warp_perspective(img_u8, img_u8_warp, transform, 0);
-
-      var data_u32 = new Uint32Array(imageData.data.buffer);
-      var alpha = (0xff << 24);
-      var i = img_u8_warp.cols*img_u8_warp.rows, pix = 0;
-      while(--i >= 0) {
-        pix = img_u8_warp.data[i];
-        data_u32[i] = alpha | (pix << 16) | (pix << 8) | pix;
-      }
-      context.putImageData(imageData, 0, 0);
-
-      flatImage = document.createElement('canvas')
-      flatImage.width = context.canvas.width
-      flatImage.height = context.canvas.height
-      flatImage.getContext('2d').drawImage(context.canvas, 0, 0)
-
-      // get crop marks
-      cropMarks = generateCropMarks(code[1], Number(code[5]), Number(code[2]), Number(code[3]), Number(code[4]))
-      for (var i = 0; i < cropMarks.length; i++) {
-        let fatOutline = 15
-        context.lineWidth = fatOutline
-        context.strokeStyle = 'rgba(20,20,200,0.1)';
-        context.strokeRect(cropMarks[i][0]*canvas.width+offset[0]-(fatOutline/2), cropMarks[i][1]*canvas.height+offset[1]-(fatOutline/2), cropMarks[i][2]*canvas.width+(fatOutline*1), cropMarks[i][3]*canvas.height+(fatOutline*1))
-
-
-        fatOutline = 0
-        context.lineWidth = 1
-        context.strokeStyle = 'rgba(20,20,200,1)';
-
-        context.strokeRect(cropMarks[i][0]*canvas.width+offset[0]-fatOutline, cropMarks[i][1]*canvas.height+offset[1]-fatOutline, cropMarks[i][2]*canvas.width+(fatOutline*2), cropMarks[i][3]*canvas.height+(fatOutline*2))
-
-
-      }
-
-      // draw them        
-
-      imgData = context.canvas.toDataURL().replace(/^data:image\/\w+;base64,/, '')
-      fs.writeFileSync(path.join(app.getPath('temp'), 'flatpaper.png'), imgData, 'base64') // why do we write a file instead of creating in memory?
-
-      document.querySelector("#preview").src = path.join(app.getPath('temp'), 'flatpaper.png?'+ Math.round(Math.random()*10000))
-      actions.step('calibration')
+      processQrCode(code, cornerPoints, canvas, context, imageData, img_u8)
     }
   }
   qr.decode(qrImageData)
 }
 
+function processQrCode (code, cornerPoints, canvas, context, imageData, img_u8) {
+  canvas.width = 2500
+
+  // make a new image based on paper size
+  // copy src image in
+  if (code[1] == 'LTR') {
+    canvas.height = Math.round(2500/(11/8.5))
+  } else {
+    canvas.height = Math.round(2500/(842/595))
+  }
+
+  context = canvas.getContext('2d')
+  context.drawImage(sourceImage, 0,0, canvas.width, canvas.height)
+  imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+
+  img_u8 = new jsfeat.matrix_t(canvas.width, canvas.height, jsfeat.U8_t | jsfeat.C1_t);
+  img_u8_warp = new jsfeat.matrix_t(canvas.width, canvas.height, jsfeat.U8_t | jsfeat.C1_t);
+  transform = new jsfeat.matrix_t(3, 3, jsfeat.F32_t | jsfeat.C1_t);
+  jsfeat.math.perspective_4point_transform(transform, 
+                                                  cornerPoints[0][0]*canvas.width,   cornerPoints[0][1]*canvas.height,   0,  0,
+                                                  cornerPoints[1][0]*canvas.width,   cornerPoints[1][1]*canvas.height,   canvas.width, 0,
+                                                  cornerPoints[2][0]*canvas.width,   cornerPoints[2][1]*canvas.height, canvas.width, canvas.height,
+                                                  cornerPoints[3][0]*canvas.width,   cornerPoints[3][1]*canvas.height, 0, canvas.height);
+  jsfeat.matmath.invert_3x3(transform, transform);
+
+  jsfeat.imgproc.grayscale(imageData.data, canvas.width, canvas.height, img_u8);
+  jsfeat.imgproc.warp_perspective(img_u8, img_u8_warp, transform, 0);
+
+  var data_u32 = new Uint32Array(imageData.data.buffer);
+  var alpha = (0xff << 24);
+  var i = img_u8_warp.cols*img_u8_warp.rows, pix = 0;
+  while(--i >= 0) {
+    pix = img_u8_warp.data[i];
+    data_u32[i] = alpha | (pix << 16) | (pix << 8) | pix;
+  }
+  context.putImageData(imageData, 0, 0);
+
+  flatImage = document.createElement('canvas')
+  flatImage.width = context.canvas.width
+  flatImage.height = context.canvas.height
+  flatImage.getContext('2d').drawImage(context.canvas, 0, 0)
+
+  // get crop marks
+  cropMarks = generateCropMarks(code[1], Number(code[5]), Number(code[2]), Number(code[3]), Number(code[4]))
+  for (var i = 0; i < cropMarks.length; i++) {
+    let fatOutline = 15
+    context.lineWidth = fatOutline
+    context.strokeStyle = 'rgba(20,20,200,0.1)';
+    context.strokeRect(cropMarks[i][0]*canvas.width+offset[0]-(fatOutline/2), cropMarks[i][1]*canvas.height+offset[1]-(fatOutline/2), cropMarks[i][2]*canvas.width+(fatOutline*1), cropMarks[i][3]*canvas.height+(fatOutline*1))
+
+
+    fatOutline = 0
+    context.lineWidth = 1
+    context.strokeStyle = 'rgba(20,20,200,1)';
+
+    context.strokeRect(cropMarks[i][0]*canvas.width+offset[0]-fatOutline, cropMarks[i][1]*canvas.height+offset[1]-fatOutline, cropMarks[i][2]*canvas.width+(fatOutline*2), cropMarks[i][3]*canvas.height+(fatOutline*2))
+
+
+  }
+
+  // draw them        
+
+  imgData = context.canvas.toDataURL().replace(/^data:image\/\w+;base64,/, '')
+  fs.writeFileSync(path.join(app.getPath('temp'), 'flatpaper.png'), imgData, 'base64') // why do we write a file instead of creating in memory?
+
+  document.querySelector("#preview").src = path.join(app.getPath('temp'), 'flatpaper.png?'+ Math.round(Math.random()*10000))
+  actions.step('calibration')
+}
 function contrastImage(imageData, contrast) {
 
     var data = imageData.data;
@@ -796,3 +857,7 @@ window.ondragover = () => { return false }
 window.ondragleave = () => { return false }
 window.ondragend = () => { return false }
 window.ondrop = () => { return false }
+
+module.exports = {
+  actions
+}
