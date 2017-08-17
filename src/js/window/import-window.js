@@ -63,7 +63,11 @@ let model = {
   imageData: undefined,
   img_u8: undefined,
 
-  step: 'loading'
+  step: 'loading',
+
+  // for change tracking. TODO is there a better way?
+  lastStep: undefined,
+  lastOffset: undefined
 }
 
 model.present = data => {
@@ -84,6 +88,11 @@ model.present = data => {
 
   if (data.type === 'step') {
     model.step = data.payload
+  }
+
+  if (data.offset) {
+    if (typeof data.offset[0] !== 'undefined') model.offset[0] = parseInt(data.offset[0], 10)
+    if (typeof data.offset[1] !== 'undefined') model.offset[1] = parseInt(data.offset[1], 10)
   }
 
   state.render(model)
@@ -191,6 +200,14 @@ view.qrCodeInput = (model) => {
   })
 }
 view.calibration = (model) => {
+  const isSelected = (i, n) => model.offset[i] === parseInt(n, 10)
+  const selectIf = (i, n) => isSelected(i, n) ? 'selected' : ''
+
+  const optionsStr = i =>
+    [-20, -10, 0, 10, 20].map(n =>
+      `<option ${selectIf(i, n)} value="${n}">${n}</option>`
+    ).join('\n')
+
   return ({
     overview: `Woot. You made beautiful drawings on this worksheet. 
                   Now let’s get them into Storyboarder. 
@@ -200,29 +217,15 @@ view.calibration = (model) => {
     `
       <div class="row row-grid">
         <div class="col">
-          <label for="column-number">Calibration X</label>
-          <select name="select" id="column-number">
-            <option value="1">1</option> 
-            <option value="2">2</option>
-            <option value="3">3</option> 
-            <option value="4">4</option>
-            <option value="5">5</option> 
-            <option value="6">6</option>
-            <option value="7">7</option> 
-            <option value="8">8</option>
+          <label for="column-number">Offset X</label>
+          <select name="select" id="column-number" onchange="return actions.setOffset(this.value, undefined)">
+            ${optionsStr(0)}
           </select>
         </div>
         <div class="col">
-          <label for="row-number">Calibration Y</label>
-          <select name="select" id="row-number">
-            <option value="1">1</option> 
-            <option value="2">2</option>
-            <option value="3">3</option> 
-            <option value="4">4</option>
-            <option value="5">5</option> 
-            <option value="6">6</option>
-            <option value="7">7</option> 
-            <option value="8">8</option>
+          <label for="row-number">Offset Y</label>
+          <select name="select" id="row-number" onchange="return actions.setOffset(undefined, this.value)">
+            ${optionsStr(1)}
           </select>
         </div>
       </div>
@@ -298,6 +301,17 @@ state.nextAction = model => {
     }, 100)
   }
   model.lastStep = model.step
+
+  if (model.lastOffset) {
+    if (
+      model.lastOffset[0] !== model.offset[0] ||
+      model.lastOffset[1] !== model.offset[1]
+    ) {
+      // offset has changed
+      alert('offset has changed to' + model.offset)
+    }
+  }
+  model.lastOffset = model.offset
 }
 
 state.render = model => {
@@ -401,6 +415,10 @@ actions.onPointerDown = () => {
   actions.present({ type: 'dimensions', payload: [document.querySelector("#preview").width, document.querySelector("#preview").height] })
   actions.present({ type: 'point', payload: [event.offsetX, event.offsetY] })
 }
+actions.setOffset = (x, y) => {
+  model.present({ offset: [x, y] })
+  return false
+}
 // NOTE kind of a hack, this should really go through .present
 //      also, could use an initialState for this instead
 actions.resetModel = () => {
@@ -419,6 +437,9 @@ actions.resetModel = () => {
   model.context = undefined
   model.imageData = undefined
   model.img_u8 = undefined
+
+  model.lastStep = undefined
+  model.lastOffset = undefined
 }
 actions.dispose = () => {
   window.removeEventListener('resize', actions.onResize)
