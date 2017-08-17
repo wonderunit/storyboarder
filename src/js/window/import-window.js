@@ -30,7 +30,6 @@ let flatImage
 
 let cropMarks
 let code
-let offset = [0, -20]
 
 /*
   states:
@@ -54,6 +53,8 @@ let model = {
   labels: ['top left', 'top right', 'bottom right', 'bottom left'],
   curr: 0,
   hasPoints: false,
+
+  offset: [0, 0],
 
   // HACK
   cornerPoints: undefined,
@@ -192,9 +193,54 @@ view.qrCodeInput = (model) => {
 view.calibration = (model) => {
   return ({
     overview: `Woot. You made beautiful drawings on this worksheet. 
-                  Now let's get them into Storyboarder. 
+                  Now let’s get them into Storyboarder. 
                   If the boxes, look lined up, click import! 
-                  Otherwise mess with the offset and the scaling.`
+                  Otherwise mess with the offset.`,
+    form:
+    `
+      <div class="row row-grid">
+        <div class="col">
+          <label for="column-number">Calibration X</label>
+          <select name="select" id="column-number">
+            <option value="1">1</option> 
+            <option value="2">2</option>
+            <option value="3">3</option> 
+            <option value="4">4</option>
+            <option value="5">5</option> 
+            <option value="6">6</option>
+            <option value="7">7</option> 
+            <option value="8">8</option>
+          </select>
+        </div>
+        <div class="col">
+          <label for="row-number">Calibration Y</label>
+          <select name="select" id="row-number">
+            <option value="1">1</option> 
+            <option value="2">2</option>
+            <option value="3">3</option> 
+            <option value="4">4</option>
+            <option value="5">5</option> 
+            <option value="6">6</option>
+            <option value="7">7</option> 
+            <option value="8">8</option>
+          </select>
+        </div>
+      </div>
+      <!--
+      <div class="row">
+        <label for="spacing">Crop in</label>
+        <select name="select" id="spacing">
+          <option value="15">100%</option> 
+          <option value="20">80%</option>
+          <option value="25">120%</option> 
+          <option value="30">150%</option>
+        </select>
+      </div>
+      -->
+      <div id="button-content">
+        <div class="button grey" id="import-button" onclick="return actions.import()">Import!</div>
+      </div>
+    `
   })
 }
 view.display = (representation) => {
@@ -366,6 +412,8 @@ actions.resetModel = () => {
   model.curr = 0
   model.hasPoints = false
 
+  model.offset = [0, 0]
+
   model.cornerPoints = undefined
   model.canvas = undefined
   model.context = undefined
@@ -408,8 +456,6 @@ actions.init = () => {
 //
 actions.init()
 
-
-
 // // Actions -> Model
 // const present = data => model.present(data)
 // 
@@ -424,7 +470,7 @@ const importImages = () => {
   destCanvas.width = (900*Number(code[5]))
   let images = []
   for (var i = 0; i < cropMarks.length; i++) {
-    destCanvas.getContext("2d").drawImage(flatImage, cropMarks[i][0]*flatImage.width+offset[0], cropMarks[i][1]*flatImage.height+offset[1], cropMarks[i][2]*flatImage.width, cropMarks[i][3]*flatImage.height, 0, 0, destCanvas.width, destCanvas.height)
+    destCanvas.getContext("2d").drawImage(flatImage, cropMarks[i][0]*flatImage.width+model.offset[0], cropMarks[i][1]*flatImage.height+model.offset[1], cropMarks[i][2]*flatImage.width, cropMarks[i][3]*flatImage.height, 0, 0, destCanvas.width, destCanvas.height)
     // imgData = destCanvas.toDataURL().replace(/^data:image\/\w+;base64,/, '')
     // fs.writeFileSync(path.join(app.getPath('temp'), 'crop' + i + '.png'), imgData, 'base64')
     images.push(destCanvas.toDataURL())
@@ -735,14 +781,14 @@ function processQrCode (code, cornerPoints, canvas, context, imageData, img_u8) 
     let fatOutline = 15
     context.lineWidth = fatOutline
     context.strokeStyle = 'rgba(20,20,200,0.1)';
-    context.strokeRect(cropMarks[i][0]*canvas.width+offset[0]-(fatOutline/2), cropMarks[i][1]*canvas.height+offset[1]-(fatOutline/2), cropMarks[i][2]*canvas.width+(fatOutline*1), cropMarks[i][3]*canvas.height+(fatOutline*1))
+    context.strokeRect(cropMarks[i][0]*canvas.width+model.offset[0]-(fatOutline/2), cropMarks[i][1]*canvas.height+model.offset[1]-(fatOutline/2), cropMarks[i][2]*canvas.width+(fatOutline*1), cropMarks[i][3]*canvas.height+(fatOutline*1))
 
 
     fatOutline = 0
     context.lineWidth = 1
     context.strokeStyle = 'rgba(20,20,200,1)';
 
-    context.strokeRect(cropMarks[i][0]*canvas.width+offset[0]-fatOutline, cropMarks[i][1]*canvas.height+offset[1]-fatOutline, cropMarks[i][2]*canvas.width+(fatOutline*2), cropMarks[i][3]*canvas.height+(fatOutline*2))
+    context.strokeRect(cropMarks[i][0]*canvas.width+model.offset[0]-fatOutline, cropMarks[i][1]*canvas.height+model.offset[1]-fatOutline, cropMarks[i][2]*canvas.width+(fatOutline*2), cropMarks[i][3]*canvas.height+(fatOutline*2))
 
 
   }
