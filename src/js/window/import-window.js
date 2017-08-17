@@ -96,6 +96,9 @@ view.init = (model) => {
   return view.loading(model)
 }
 view.reset = (model) => {
+  let previewEl = document.querySelector("#preview")
+  previewEl.removeAttribute('src')
+
   return ({})
 }
 view.loading = (model) => {
@@ -325,6 +328,7 @@ actions.oResize = event => {
 actions.onHideWindow = event => {
   ipcRenderer.send('playsfx', 'negative')
 
+  actions.resetModel()
   actions.dispose()
   actions.step('reset')
 
@@ -337,6 +341,23 @@ actions.onHideWindow = event => {
 actions.onPointerDown = () => {
   actions.present({ type: 'dimensions', payload: [document.querySelector("#preview").width, document.querySelector("#preview").height] })
   actions.present({ type: 'point', payload: [event.offsetX, event.offsetY] })
+}
+// NOTE kind of a hack, this should really go through .present
+//      also, could use an initialState for this instead
+actions.resetModel = () => {
+  model.dimensions = [0, 0]
+  model.tl = []
+  model.tr = []
+  model.br = []
+  model.bl = []
+  model.curr = 0
+  model.hasPoints = false
+
+  model.cornerPoints = undefined
+  model.canvas = undefined
+  model.context = undefined
+  model.imageData = undefined
+  model.img_u8 = undefined
 }
 actions.dispose = () => {
   window.removeEventListener('resize', actions.onResize)
