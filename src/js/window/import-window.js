@@ -299,17 +299,20 @@ actions.validateQrCode = () => {
   if (isNotNumber(code[5])) valid = false
 
   if (valid) {
-    action.step('processing')
+    actions.step('processing')
 
-    // process
-    processQrCode(
-      code,
-      model.cornerPoints,
-      model.canvas,
-      model.context,
-      model.imageData,
-      model.img_u8
-    )
+    // allow time for DOM to render
+    setTimeout(() => {
+      // process
+      processQrCode(
+        code,
+        model.cornerPoints,
+        model.canvas,
+        model.context,
+        model.imageData,
+        model.img_u8
+      )
+    }, 100)
   } else {
     alert('Hmm, I couldn’t use that QR code. Are you sure you typed in the right value?')
   }
