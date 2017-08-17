@@ -367,13 +367,11 @@ actions.resetModel = () => {
 actions.dispose = () => {
   window.removeEventListener('resize', actions.onResize)
   document.querySelector("#preview").removeEventListener('pointerdown', actions.onPointerDown)
-  document.querySelector('#close-button').removeEventListener('click', actions.onHideWindow)
 }
 actions.attach = () => {
   // TODO prevent multiple attatch?
   window.addEventListener('resize', actions.onResize)
   document.querySelector("#preview").addEventListener('pointerdown', actions.onPointerDown)
-  document.querySelector('#close-button').addEventListener('click', actions.onHideWindow)
 }
 actions.init = () => {
   // TODO should we handle if window is hidden from outside?
