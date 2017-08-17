@@ -319,6 +319,17 @@ actions.validateQrCode = () => {
 
   return false
 }
+actions.hideWindow = () => {
+  actions.resetModel()
+  actions.dispose()
+  actions.step('reset')
+
+  let window = remote.getCurrentWindow()
+  // wait for DOM to render
+  setTimeout(() => {
+    window.hide()
+  }, 100)
+}
 actions.oResize = event => {
   actions.present({
     type: 'dimensions',
@@ -330,16 +341,7 @@ actions.oResize = event => {
 }
 actions.onHideWindow = event => {
   ipcRenderer.send('playsfx', 'negative')
-
-  actions.resetModel()
-  actions.dispose()
-  actions.step('reset')
-
-  let window = remote.getCurrentWindow()
-  // wait for DOM to render
-  setTimeout(() => {
-    window.hide()
-  }, 100)
+  actions.hideWindow()
 }
 actions.onPointerDown = () => {
   actions.present({ type: 'dimensions', payload: [document.querySelector("#preview").width, document.querySelector("#preview").height] })
