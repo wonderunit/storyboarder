@@ -308,10 +308,10 @@ state.nextAction = model => {
       model.lastOffset[1] !== model.offset[1]
     ) {
       // offset has changed
-      alert('offset has changed to' + model.offset)
+      alert('offset has changed to ' + model.offset)
     }
   }
-  model.lastOffset = model.offset
+  model.lastOffset = [model.offset[0], model.offset[1]]
 }
 
 state.render = model => {
