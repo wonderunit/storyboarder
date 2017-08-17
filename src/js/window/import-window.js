@@ -55,6 +55,7 @@ let model = {
   hasPoints: false,
 
   offset: [0, 0],
+  inputLocked: true,
 
   // HACK
   cornerPoints: undefined,
@@ -90,9 +91,13 @@ model.present = data => {
     model.step = data.payload
   }
 
-  if (data.offset) {
+  if (typeof data.offset !== 'undefined') {
     if (typeof data.offset[0] !== 'undefined') model.offset[0] = parseInt(data.offset[0], 10)
     if (typeof data.offset[1] !== 'undefined') model.offset[1] = parseInt(data.offset[1], 10)
+  }
+
+  if (typeof data.inputLocked !== 'undefined') {
+    model.inputLocked = data.inputLocked
   }
 
   state.render(model)
@@ -208,6 +213,14 @@ view.calibration = (model) => {
       `<option ${selectIf(i, n)} value="${n}">${n}</option>`
     ).join('\n')
 
+  const disabledIfInputLocked = model.inputLocked
+    ? ' disabled'
+    : ''
+
+  const buttonStr = model.inputLocked
+    ? `<div class="button grey" id="import-button">Processing …</div>`
+    : `<div class="button grey" id="import-button" onclick="return actions.import()">Import!</div>`
+
   return ({
     overview: `Woot. You made beautiful drawings on this worksheet. 
                   Now let’s get them into Storyboarder. 
@@ -218,13 +231,13 @@ view.calibration = (model) => {
       <div class="row row-grid">
         <div class="col">
           <label for="column-number">Offset X</label>
-          <select name="select" id="column-number" onchange="return actions.setOffset(this.value, undefined)">
+          <select ${disabledIfInputLocked} name="select" id="column-number" onchange="return actions.setOffset(this.value, undefined)">
             ${optionsStr(0)}
           </select>
         </div>
         <div class="col">
           <label for="row-number">Offset Y</label>
-          <select name="select" id="row-number" onchange="return actions.setOffset(undefined, this.value)">
+          <select ${disabledIfInputLocked} name="select" id="row-number" onchange="return actions.setOffset(undefined, this.value)">
             ${optionsStr(1)}
           </select>
         </div>
@@ -241,7 +254,7 @@ view.calibration = (model) => {
       </div>
       -->
       <div id="button-content">
-        <div class="button grey" id="import-button" onclick="return actions.import()">Import!</div>
+        ${buttonStr}
       </div>
     `
   })
@@ -302,16 +315,35 @@ state.nextAction = model => {
   }
   model.lastStep = model.step
 
+  let shouldReProcess = false
   if (model.lastOffset) {
     if (
       model.lastOffset[0] !== model.offset[0] ||
       model.lastOffset[1] !== model.offset[1]
     ) {
       // offset has changed
-      alert('offset has changed to ' + model.offset)
+      // trigger re-processing
+      shouldReProcess = true
     }
   }
   model.lastOffset = [model.offset[0], model.offset[1]]
+
+  if (shouldReProcess) {
+    actions.setInputLocked(true)
+
+    // allow time for DOM to render
+    setTimeout(() => {
+      // process
+      processQrCode(
+        code,
+        model.cornerPoints,
+        model.canvas,
+        model.context,
+        model.imageData,
+        model.img_u8
+      )
+    }, 100)
+  }
 }
 
 state.render = model => {
@@ -328,6 +360,9 @@ let actions = {}
 actions.present = model.present
 actions.step = payload => {
   actions.present({ type: 'step', payload })
+}
+actions.setInputLocked = inputLocked => {
+  actions.present({ inputLocked })
 }
 actions.editCornerPoints = () => {
   ipcRenderer.send('playsfx', 'error')
@@ -416,7 +451,7 @@ actions.onPointerDown = () => {
   actions.present({ type: 'point', payload: [event.offsetX, event.offsetY] })
 }
 actions.setOffset = (x, y) => {
-  model.present({ offset: [x, y] })
+  actions.present({ offset: [x, y] })
   return false
 }
 // NOTE kind of a hack, this should really go through .present
@@ -431,6 +466,7 @@ actions.resetModel = () => {
   model.hasPoints = false
 
   model.offset = [0, 0]
+  model.inputLocked = true
 
   model.cornerPoints = undefined
   model.canvas = undefined
@@ -728,6 +764,19 @@ function processCornerPoints (cornerPoints, canvas, context, imageData, img_u8) 
   fs.writeFileSync(path.join(app.getPath('temp'), 'step6.png'), imgData, 'base64')
 
 
+
+  // HACK we should have these always part of the model,
+  //      throughout the codebase,
+  //      instead of global,
+  //      so that we don't have to update references here
+  model.cornerPoints = cornerPoints
+  model.canvas = canvas
+  model.context = context
+  model.imageData = imageData
+  model.img_u8 = img_u8
+
+
+
   var qr = new QrCode();
   qr.callback = function(err, result) { 
     console.log("GOT BACK RESULT: ", err, result )
@@ -735,15 +784,9 @@ function processCornerPoints (cornerPoints, canvas, context, imageData, img_u8) 
     if (err) {
       // alert(`ERROR: NO QR - ` + err)
 
-      // HACK we should have these always part of the model,
-      //      throughout the codebase,
-      //      instead of creating references here
-      model.cornerPoints = cornerPoints
-      model.canvas = canvas
-      model.context = context
-      model.imageData = imageData
-      model.img_u8 = img_u8
-
+      // because we're interrupting the flow here,
+      // we had to set model.* above
+      // so they're available to pass later when we resume the flow
       actions.step('qrCodeInput')
     } else {
       // if i got qr,
@@ -820,6 +863,8 @@ function processQrCode (code, cornerPoints, canvas, context, imageData, img_u8) 
   fs.writeFileSync(path.join(app.getPath('temp'), 'flatpaper.png'), imgData, 'base64') // why do we write a file instead of creating in memory?
 
   document.querySelector("#preview").src = path.join(app.getPath('temp'), 'flatpaper.png?'+ Math.round(Math.random()*10000))
+
+  actions.setInputLocked(false)
   actions.step('calibration')
 }
 function contrastImage(imageData, contrast) {
