@@ -1,3 +1,20 @@
+/*
+  todo:
+    [x] error if cant get 4 points
+    error if cant get qr code
+  
+    see if we can speed up window open
+    disable button on clicking import
+
+    hook up offsets
+    hook up crop %
+    save to prefs
+
+    dont import blanks
+
+    [x] make work with cell phone capture
+*/
+
 const { ipcRenderer, shell, remote } = require('electron')
 const app = require('electron').remote.app
 const path = require('path')
@@ -13,63 +30,525 @@ let flatImage
 
 let cropMarks
 let code
-let offset = [0,-20]
 
 /*
-
-  todo:
-    error if cant get 4 points
-    error if cant get qr code
-  
-    see if we can speed up window open
-    disable button on clicking import
-
-    hook up offsets
-    hook up crop %
-    save to prefs
-
-    dont import blanks
-
-    make work with cell phone capture
-
-
+  states:
+    - initializing
+    - manual corner points
+    - manual qr code selection
+    - calibration
+    - importing to main
 */
 
+////////////////////////////////////////////////////////////////////////////////
+// model
+//
+let model = {
+  dimensions: [0, 0],
+  tl: [],
+  tr: [],
+  br: [],
+  bl: [],
+  order: ['tl', 'tr', 'br', 'bl'],
+  labels: ['top left', 'top right', 'bottom right', 'bottom left'],
+  curr: 0,
+  hasPoints: false,
 
-document.querySelector('#close-button').onclick = (e) => {
-  ipcRenderer.send('playsfx', 'negative')
-  let window = remote.getCurrentWindow()
-  window.hide()
+  offset: [0, 0],
+  inputLocked: true,
+
+  // HACK
+  cornerPoints: undefined,
+  canvas: undefined,
+  context: undefined,
+  imageData: undefined,
+  img_u8: undefined,
+
+  step: 'loading',
+
+  // for change tracking. TODO is there a better way?
+  lastStep: undefined,
+  lastOffset: undefined
 }
 
-document.querySelector('#import-button').onclick = (e) => {
+model.present = data => {
+  if (data.type === 'dimensions') {
+    model.dimensions = data.payload
+  }
+
+  if (data.type === 'point') {
+    let x = data.payload[0] / model.dimensions[0]
+    let y = data.payload[1] / model.dimensions[1]
+    model[model.order[model.curr]] = [x, y]
+    if (model.curr === model.order.length - 1) {
+      model.hasPoints = true
+    } else {
+      model.curr++
+    }
+  }
+
+  if (data.type === 'step') {
+    model.step = data.payload
+  }
+
+  if (typeof data.offset !== 'undefined') {
+    if (typeof data.offset[0] !== 'undefined') model.offset[0] = parseInt(data.offset[0], 10)
+    if (typeof data.offset[1] !== 'undefined') model.offset[1] = parseInt(data.offset[1], 10)
+  }
+
+  if (typeof data.inputLocked !== 'undefined') {
+    model.inputLocked = data.inputLocked
+  }
+
+  state.render(model)
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// View
+//
+let view = {}
+view.init = (model) => {
+  return view.loading(model)
+}
+view.reset = (model) => {
+  let previewEl = document.querySelector("#preview")
+  previewEl.removeAttribute('src')
+
+  return ({})
+}
+view.loading = (model) => {
+  // TODO reset everything
+
+  return ({
+    overview: 'Loading …',
+    instructions: 'Loading …'
+  })
+}
+view.processing = (model) => {
+  // TODO reset everything?
+
+  return ({
+    overview: 'Processing …',
+    instructions: 'Processing …'
+  })
+}
+view.cornerPointsEditor = (model) => {
+  let container = document.getElementById("preview-pane-content")
+  let titleEl = document.createElement('div')
+  let previewEl = document.querySelector("#preview")
+
+  if (model.lastStep !== model.step) {
+    // attach
+    previewEl.src = sourceImage.src
+
+    model.order.map(pos => {
+      let el = document.createElement('div')
+      el.classList.add(`corner-point`)
+      el.classList.add(`corner-point-${pos}`)
+      document.getElementById('paper-2').append(el)
+    })
+  }
+
+  let instructions = model.hasPoints
+    ? `We got points!`
+    : `Select the <b>${model.labels[model.curr]}</b> corner:`
+
+    let tlEl = document.getElementById("paper-2").querySelector('.corner-point-tl')
+    let trEl = document.getElementById("paper-2").querySelector('.corner-point-tr')
+    let brEl = document.getElementById("paper-2").querySelector('.corner-point-br')
+    let blEl = document.getElementById("paper-2").querySelector('.corner-point-bl')
+
+    let scale = model.dimensions
+    
+    for (let [point, el, label] of [
+      [model.tl, tlEl, 'tl'],
+      [model.tr, trEl, 'tr'],
+      [model.br, brEl, 'br'],
+      [model.bl, blEl, 'bl']
+    ]) {
+      if (point.length) {
+        el.style.left = Math.floor(point[0] * scale[0]) + 'px'
+        el.style.top = Math.floor(point[1] * scale[1]) + 'px'
+        el.style.visibility = 'visible'
+      } else {
+        el.style.visibility = 'hidden'
+      }
+    }
+
+    container.style.cursor = view.hasPoints
+      ? 'default'
+      : 'crosshair'
+
+
+  return ({
+    overview: `I couldn’t find 4 corners of the paper in the image.
+                  Please select them manually.`,
+    instructions
+  })
+}
+view.qrCodeInput = (model) => {
+  return ({
+    overview: `I couldn’t detect the QR code for this worksheet.
+                  You can find it to the left of the QR graphic
+                  on the printed worksheet.`,
+    form: `
+      <form onsubmit="return actions.validateQrCode()">
+        <div class="row">
+          <label for="qr-code">QR Code:</label>
+          <input id="qr-code" type="text" />
+        </div>
+        <div id="button-content">
+          <div class="button grey" onclick="return actions.validateQrCode()">Next</div>
+        </div>
+      </form>
+    `
+  })
+}
+view.calibration = (model) => {
+  const isSelected = (i, n) => model.offset[i] === parseInt(n, 10)
+  const selectIf = (i, n) => isSelected(i, n) ? 'selected' : ''
+
+  const optionsStr = i =>
+    [-20, -10, -5, -3, 0, 3, 5, 10, 20].map(n =>
+      `<option ${selectIf(i, n)} value="${n}">${n}</option>`
+    ).join('\n')
+
+  const disabledIfInputLocked = model.inputLocked
+    ? ' disabled'
+    : ''
+
+  const buttonStr = model.inputLocked
+    ? `<div class="button grey" id="import-button">Processing …</div>`
+    : `<div class="button grey" id="import-button" onclick="return actions.import()">Import!</div>`
+
+  return ({
+    overview: `Woot. You made beautiful drawings on this worksheet. 
+                  Now let’s get them into Storyboarder. 
+                  If the boxes, look lined up, click import! 
+                  Otherwise mess with the offset.`,
+    form:
+    `
+      <div class="row row-grid">
+        <div class="col">
+          <label for="column-number">Offset X</label>
+          <select ${disabledIfInputLocked} name="select" id="column-number" onchange="return actions.setOffset(this.value, undefined)">
+            ${optionsStr(0)}
+          </select>
+        </div>
+        <div class="col">
+          <label for="row-number">Offset Y</label>
+          <select ${disabledIfInputLocked} name="select" id="row-number" onchange="return actions.setOffset(undefined, this.value)">
+            ${optionsStr(1)}
+          </select>
+        </div>
+      </div>
+      <!--
+      <div class="row">
+        <label for="spacing">Crop in</label>
+        <select name="select" id="spacing">
+          <option value="15">100%</option> 
+          <option value="20">80%</option>
+          <option value="25">120%</option> 
+          <option value="30">150%</option>
+        </select>
+      </div>
+      -->
+      <div id="button-content">
+        ${buttonStr}
+      </div>
+    `
+  })
+}
+view.display = (representation) => {
+  document.getElementById('overview').innerHTML = representation.overview || ''
+  document.getElementById('step-form').innerHTML = representation.form || ''
+  document.querySelector('#preview-pane-content .instructions').innerHTML = representation.instructions || ''
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// State
+//
+let state = { view: view }
+
+// Derive the state representation as a function of the systen control state
+state.representation = model => {
+  let representation
+
+  representation = state.view[model.step](model)
+
+  state.view.display(representation)
+}
+
+state.nextAction = model => {
+  // detatch if step changed
+  if (model.lastStep !== model.step && model.lastStep == 'cornerPointsEditor') {
+    //
+    // dispose of the cornerPointsEditor view
+    //
+    let previewEl = document.querySelector("#preview")
+    previewEl.removeAttribute('src')
+    //
+    // remove corner point indicators
+    for (let el of document.querySelectorAll('.corner-point')) {
+      el.parentNode.removeChild(el)
+    }
+  }
+
+  // process if its the right time
+  if (model.step == 'cornerPointsEditor' && model.hasPoints) {
+    actions.step('processing')
+
+    // allow time for DOM to render
+    setTimeout(() => {
+      processCornerPoints([
+          model.tl,
+          model.tr,
+          model.br,
+          model.bl
+        ],
+        model.canvas,
+        model.context,
+        model.imageData,
+        model.img_u8
+      )
+    }, 100)
+  }
+  model.lastStep = model.step
+
+  let shouldReProcess = false
+  if (model.lastOffset) {
+    if (
+      model.lastOffset[0] !== model.offset[0] ||
+      model.lastOffset[1] !== model.offset[1]
+    ) {
+      // offset has changed
+      // trigger re-processing
+      shouldReProcess = true
+    }
+  }
+  model.lastOffset = [model.offset[0], model.offset[1]]
+
+  if (shouldReProcess) {
+    actions.setInputLocked(true)
+
+    // allow time for DOM to render
+    setTimeout(() => {
+      // process
+      processQrCode(
+        code,
+        model.cornerPoints,
+        model.canvas,
+        model.context,
+        model.imageData,
+        model.img_u8
+      )
+    }, 100)
+  }
+}
+
+state.render = model => {
+  state.representation(model)
+  state.nextAction(model)
+}
+
+model.state = state
+
+////////////////////////////////////////////////////////////////////////////////
+// Actions
+//
+let actions = {}
+actions.present = model.present
+actions.step = payload => {
+  actions.present({ type: 'step', payload })
+}
+actions.setInputLocked = inputLocked => {
+  actions.present({ inputLocked })
+}
+actions.editCornerPoints = () => {
+  ipcRenderer.send('playsfx', 'error')
+  actions.step('cornerPointsEditor')
+
+  // TODO necessary?
+  let previewEl = document.querySelector("#preview")
+  actions.present({ dimensions: [previewEl.width, previewEl.height] })
+}
+actions.validateQrCode = () => {
+  const isNotNumber = n => Number.isNaN(parseInt(n, 10))
+
+  // HACK setting a global
+  code = document.getElementById('qr-code').value.toUpperCase().split('-')
+
+  // e.g.: 0-LTR-5-4-15-1.778-8146
+  let valid = true
+  // sceneNumber
+  if (isNotNumber(code[0])) valid = false
+  // paperSize
+  if (code[1] !== 'LTR') valid = false
+  // rows
+  if (isNotNumber(code[2])) valid = false
+  // cols
+  if (isNotNumber(code[3])) valid = false
+  // spacing
+  if (isNotNumber(code[4])) valid = false
+  // aspectRatio
+  if (isNotNumber(code[5])) valid = false
+
+  if (valid) {
+    actions.step('processing')
+
+    // allow time for DOM to render
+    setTimeout(() => {
+      // process
+      processQrCode(
+        code,
+        model.cornerPoints,
+        model.canvas,
+        model.context,
+        model.imageData,
+        model.img_u8
+      )
+    }, 100)
+  } else {
+    alert('Hmm, I couldn’t use that QR code. Are you sure you typed in the right value?')
+  }
+
+  return false
+}
+actions.import = () => {
   ipcRenderer.send('playsfx', 'positive')
-  // PRINT
-  importImages()
 
-  console.log("HEELLLLOOO")
-  // let window = remote.getCurrentWindow()
-  // window.hide()
+  actions.setInputLocked(true)
+  // allow DOM to render
+  setTimeout(() => {
+    let images = getImagesToImport()
+    importImages(images)
+    actions.hideWindow()
+  }, 100)
+
+  return false
+}
+actions.hideWindow = () => {
+  actions.resetModel()
+  actions.dispose()
+  actions.step('reset')
+
+  let window = remote.getCurrentWindow()
+  // wait for DOM to render
+  setTimeout(() => {
+    window.hide()
+  }, 100)
+}
+actions.oResize = event => {
+  actions.present({
+    type: 'dimensions',
+    payload: [
+      document.querySelector("#preview").width,
+      document.querySelector("#preview").height
+    ]
+  })
+}
+actions.onHideWindow = event => {
+  ipcRenderer.send('playsfx', 'negative')
+  actions.hideWindow()
+}
+actions.onPointerDown = () => {
+  actions.present({ type: 'dimensions', payload: [document.querySelector("#preview").width, document.querySelector("#preview").height] })
+  actions.present({ type: 'point', payload: [event.offsetX, event.offsetY] })
+}
+actions.setOffset = (x, y) => {
+  actions.present({ offset: [x, y] })
+  return false
+}
+// NOTE kind of a hack, this should really go through .present
+//      also, could use an initialState for this instead
+actions.resetModel = () => {
+  model.dimensions = [0, 0]
+  model.tl = []
+  model.tr = []
+  model.br = []
+  model.bl = []
+  model.curr = 0
+  model.hasPoints = false
+
+  model.offset = [0, 0]
+  model.inputLocked = true
+
+  model.cornerPoints = undefined
+  model.canvas = undefined
+  model.context = undefined
+  model.imageData = undefined
+  model.img_u8 = undefined
+
+  model.lastStep = undefined
+  model.lastOffset = undefined
+}
+actions.dispose = () => {
+  window.removeEventListener('resize', actions.onResize)
+  document.querySelector("#preview").removeEventListener('pointerdown', actions.onPointerDown)
+}
+actions.attach = () => {
+  // TODO prevent multiple attatch?
+  window.addEventListener('resize', actions.onResize)
+  document.querySelector("#preview").addEventListener('pointerdown', actions.onPointerDown)
+}
+actions.init = () => {
+  // TODO should we handle if window is hidden from outside?
+  // remote.getCurrentWindow().once('hide', actions.dispose)
+
+  //
+  // on each key input,
+  //   prevent application menu keyboard shortcuts
+  //     so that we can type in the QR code input
+  //
+  // via https://electron.atom.io/docs/api/web-contents/#event-before-input-event
+  //     https://github.com/electron/electron/blob/master/docs/api/web-contents.md#contentssetignoremenushortcutsignore-experimental
+  //     https://github.com/electron/electron/issues/1334#issuecomment-310920998
+  let win = remote.getCurrentWindow()
+  win.webContents.on('before-input-event', (event, input) => {
+    // only enable application menu keyboard shortcuts when Ctrl/Cmd are down
+    win.webContents.setIgnoreMenuShortcuts(!input.control && !input.meta)
+  })
+
+  actions.attach()
+  actions.step('init')
 }
 
-const importImages = () => {
+////////////////////////////////////////////////////////////////////////////////
+// Actions
+//
+actions.init()
+
+// // Actions -> Model
+// const present = data => model.present(data)
+// 
+// // View -> Display
+// const display = view => {
+
+
+
+const getImagesToImport = () => {
   let destCanvas = document.createElement('canvas')
   destCanvas.height = 900
   destCanvas.width = (900*Number(code[5]))
   let images = []
   for (var i = 0; i < cropMarks.length; i++) {
-    destCanvas.getContext("2d").drawImage(flatImage, cropMarks[i][0]*flatImage.width+offset[0], cropMarks[i][1]*flatImage.height+offset[1], cropMarks[i][2]*flatImage.width, cropMarks[i][3]*flatImage.height, 0, 0, destCanvas.width, destCanvas.height)
+    destCanvas.getContext("2d").drawImage(flatImage, cropMarks[i][0]*flatImage.width+model.offset[0], cropMarks[i][1]*flatImage.height+model.offset[1], cropMarks[i][2]*flatImage.width, cropMarks[i][3]*flatImage.height, 0, 0, destCanvas.width, destCanvas.height)
     // imgData = destCanvas.toDataURL().replace(/^data:image\/\w+;base64,/, '')
     // fs.writeFileSync(path.join(app.getPath('temp'), 'crop' + i + '.png'), imgData, 'base64')
     images.push(destCanvas.toDataURL())
   }
-  remote.getCurrentWindow().getParentWindow().webContents.send('importFromWorksheet',images)
-  remote.getCurrentWindow().hide()
+  return images
+}
+
+const importImages = images => {
+  remote.getCurrentWindow().getParentWindow().webContents.send('importFromWorksheet', images)
 }
 
 
 
 const processWorksheetImage = (imageSrc) => {
+  actions.init()
+
   sourceImage = new Image()
 
   sourceImage.onload = () => {
@@ -205,20 +684,18 @@ const processWorksheetImage = (imageSrc) => {
     console.log({ cornerPoints })
 
     if (cornerPoints.length !== 4) {
-      showCornerPointsEditor(sourceImage)
-        .then(points => {
-          processCornerPoints(points,
-            canvas, context, imageData, img_u8
-          )
-        .catch((err) => {
-          console.log(err)
-          alert("Couldn't import")
-        })
-      })
+      // HACK we should have these always part of the model,
+      //      throughout the codebase,
+      //      instead of creating references here
+      model.cornerPoints = undefined
+      model.canvas = canvas
+      model.context = context
+      model.imageData = imageData
+      model.img_u8 = img_u8
+      actions.editCornerPoints()
     } else {
-      processCornerPoints(cornerPoints,
-        canvas, context, imageData, img_u8
-      )
+      actions.step('processing')
+      processCornerPoints(cornerPoints, canvas, context, imageData, img_u8)
     }
 
 
@@ -237,7 +714,6 @@ const processWorksheetImage = (imageSrc) => {
 }
 
 function processCornerPoints (cornerPoints, canvas, context, imageData, img_u8) {
-  
   // STEP
   // reorder points in the right order
   cornerPoints.sort((b,a) => {
@@ -246,7 +722,6 @@ function processCornerPoints (cornerPoints, canvas, context, imageData, img_u8) 
   })
   cornerPoints.unshift(cornerPoints.pop())
 
-  console.log(cornerPoints)
   // STEP
   // TODO: check the area, should error if too small or less than 4 points
 
@@ -298,273 +773,109 @@ function processCornerPoints (cornerPoints, canvas, context, imageData, img_u8) 
   fs.writeFileSync(path.join(app.getPath('temp'), 'step6.png'), imgData, 'base64')
 
 
+
+  // HACK we should have these always part of the model,
+  //      throughout the codebase,
+  //      instead of global,
+  //      so that we don't have to update references here
+  model.cornerPoints = cornerPoints
+  model.canvas = canvas
+  model.context = context
+  model.imageData = imageData
+  model.img_u8 = img_u8
+
+
+
   var qr = new QrCode();
   qr.callback = function(err, result) { 
     console.log("GOT BACK RESULT: ", err, result )
     console.log("BEGIN CROPPING:" )
     if (err) {
-      alert(`ERROR: NO QR - ` + err)
+      // alert(`ERROR: NO QR - ` + err)
+
+      // because we're interrupting the flow here,
+      // we had to set model.* above
+      // so they're available to pass later when we resume the flow
+      actions.step('qrCodeInput')
     } else {
       // if i got qr,
       code = result.result.split('-')
-
-
-      canvas.width = 2500
-
-      // make a new image based on paper size
-      // copy src image in
-      if (code[1] == 'LTR') {
-        canvas.height = Math.round(2500/(11/8.5))
-      } else {
-        canvas.height = Math.round(2500/(842/595))
-      }
-
-      context = canvas.getContext('2d')
-      context.drawImage(sourceImage, 0,0, canvas.width, canvas.height)
-      imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-
-      img_u8 = new jsfeat.matrix_t(canvas.width, canvas.height, jsfeat.U8_t | jsfeat.C1_t);
-      img_u8_warp = new jsfeat.matrix_t(canvas.width, canvas.height, jsfeat.U8_t | jsfeat.C1_t);
-      transform = new jsfeat.matrix_t(3, 3, jsfeat.F32_t | jsfeat.C1_t);
-      jsfeat.math.perspective_4point_transform(transform, 
-                                                      cornerPoints[0][0]*canvas.width,   cornerPoints[0][1]*canvas.height,   0,  0,
-                                                      cornerPoints[1][0]*canvas.width,   cornerPoints[1][1]*canvas.height,   canvas.width, 0,
-                                                      cornerPoints[2][0]*canvas.width,   cornerPoints[2][1]*canvas.height, canvas.width, canvas.height,
-                                                      cornerPoints[3][0]*canvas.width,   cornerPoints[3][1]*canvas.height, 0, canvas.height);
-      jsfeat.matmath.invert_3x3(transform, transform);
-
-      jsfeat.imgproc.grayscale(imageData.data, canvas.width, canvas.height, img_u8);
-      jsfeat.imgproc.warp_perspective(img_u8, img_u8_warp, transform, 0);
-
-      var data_u32 = new Uint32Array(imageData.data.buffer);
-      var alpha = (0xff << 24);
-      var i = img_u8_warp.cols*img_u8_warp.rows, pix = 0;
-      while(--i >= 0) {
-        pix = img_u8_warp.data[i];
-        data_u32[i] = alpha | (pix << 16) | (pix << 8) | pix;
-      }
-      context.putImageData(imageData, 0, 0);
-
-      flatImage = document.createElement('canvas')
-      flatImage.width = context.canvas.width
-      flatImage.height = context.canvas.height
-      flatImage.getContext('2d').drawImage(context.canvas, 0, 0)
-
-      // get crop marks
-      cropMarks = generateCropMarks(code[1], Number(code[5]), Number(code[2]), Number(code[3]), Number(code[4]))
-      for (var i = 0; i < cropMarks.length; i++) {
-        let fatOutline = 15
-        context.lineWidth = fatOutline
-        context.strokeStyle = 'rgba(20,20,200,0.1)';
-        context.strokeRect(cropMarks[i][0]*canvas.width+offset[0]-(fatOutline/2), cropMarks[i][1]*canvas.height+offset[1]-(fatOutline/2), cropMarks[i][2]*canvas.width+(fatOutline*1), cropMarks[i][3]*canvas.height+(fatOutline*1))
-
-
-        fatOutline = 0
-        context.lineWidth = 1
-        context.strokeStyle = 'rgba(20,20,200,1)';
-
-        context.strokeRect(cropMarks[i][0]*canvas.width+offset[0]-fatOutline, cropMarks[i][1]*canvas.height+offset[1]-fatOutline, cropMarks[i][2]*canvas.width+(fatOutline*2), cropMarks[i][3]*canvas.height+(fatOutline*2))
-
-
-      }
-
-      // draw them        
-
-      imgData = context.canvas.toDataURL().replace(/^data:image\/\w+;base64,/, '')
-      fs.writeFileSync(path.join(app.getPath('temp'), 'flatpaper.png'), imgData, 'base64') // why do we write a file instead of creating in memory?
-
-      document.querySelector("#preview").src = path.join(app.getPath('temp'), 'flatpaper.png?'+ Math.round(Math.random()*10000))
+      processQrCode(code, cornerPoints, canvas, context, imageData, img_u8)
     }
   }
   qr.decode(qrImageData)
 }
 
-// via http://sam.js.org
-function showCornerPointsEditor () {
-  return new Promise((resolve, reject) => {
-    // alert(`I couldn't find 4 corners of the paper in the image. Please select them manually.`)
+function processQrCode (code, cornerPoints, canvas, context, imageData, img_u8) {
+  canvas.width = 2500
 
-    let model = {
-      dimensions: [0, 0],
-      tl: [],
-      tr: [],
-      br: [],
-      bl: [],
-      order: ['tl', 'tr', 'br', 'bl'],
-      labels: ['top left', 'top right', 'bottom right', 'bottom left'],
-      curr: 0,
-      complete: false
-    }
+  // make a new image based on paper size
+  // copy src image in
+  if (code[1] == 'LTR') {
+    canvas.height = Math.round(2500/(11/8.5))
+  } else {
+    canvas.height = Math.round(2500/(842/595))
+  }
 
-    model.present = data => {
-      if (data.type === 'dimensions') {
-        model.dimensions = data.payload
-      }
+  context = canvas.getContext('2d')
+  context.drawImage(sourceImage, 0,0, canvas.width, canvas.height)
+  imageData = context.getImageData(0, 0, canvas.width, canvas.height);
 
-      if (data.type === 'point') {
-        let x = data.payload[0] / model.dimensions[0]
-        let y = data.payload[1] / model.dimensions[1]
-        model[model.order[model.curr]] = [x, y]
-        if (model.curr === model.order.length - 1) {
-          model.complete = true
-        } else {
-          model.curr++
-        }
-      }
+  img_u8 = new jsfeat.matrix_t(canvas.width, canvas.height, jsfeat.U8_t | jsfeat.C1_t);
+  img_u8_warp = new jsfeat.matrix_t(canvas.width, canvas.height, jsfeat.U8_t | jsfeat.C1_t);
+  transform = new jsfeat.matrix_t(3, 3, jsfeat.F32_t | jsfeat.C1_t);
+  jsfeat.math.perspective_4point_transform(transform, 
+                                                  cornerPoints[0][0]*canvas.width,   cornerPoints[0][1]*canvas.height,   0,  0,
+                                                  cornerPoints[1][0]*canvas.width,   cornerPoints[1][1]*canvas.height,   canvas.width, 0,
+                                                  cornerPoints[2][0]*canvas.width,   cornerPoints[2][1]*canvas.height, canvas.width, canvas.height,
+                                                  cornerPoints[3][0]*canvas.width,   cornerPoints[3][1]*canvas.height, 0, canvas.height);
+  jsfeat.matmath.invert_3x3(transform, transform);
 
-      state(model)
-    }
+  jsfeat.imgproc.grayscale(imageData.data, canvas.width, canvas.height, img_u8);
+  jsfeat.imgproc.warp_perspective(img_u8, img_u8_warp, transform, 0);
 
-    // state
-    let state = model => {
-      view(model) // State -> View
-      nextAction(model)
-    }
+  var data_u32 = new Uint32Array(imageData.data.buffer);
+  var alpha = (0xff << 24);
+  var i = img_u8_warp.cols*img_u8_warp.rows, pix = 0;
+  while(--i >= 0) {
+    pix = img_u8_warp.data[i];
+    data_u32[i] = alpha | (pix << 16) | (pix << 8) | pix;
+  }
+  context.putImageData(imageData, 0, 0);
 
-    const nextAction = model => {
-      if (model.complete) {
-        onComplete()
-      }
-    }
+  flatImage = document.createElement('canvas')
+  flatImage.width = context.canvas.width
+  flatImage.height = context.canvas.height
+  flatImage.getContext('2d').drawImage(context.canvas, 0, 0)
 
-    // view
-    let view = model => {
-      let output = Object.assign({}, model, {
-        title: view.label(model)
-      })
-      display(output)
-    }
+  // get crop marks
+  cropMarks = generateCropMarks(code[1], Number(code[5]), Number(code[2]), Number(code[3]), Number(code[4]))
+  for (var i = 0; i < cropMarks.length; i++) {
+    let fatOutline = 15
+    context.lineWidth = fatOutline
+    context.strokeStyle = 'rgba(20,20,200,0.1)';
+    context.strokeRect(cropMarks[i][0]*canvas.width+model.offset[0]-(fatOutline/2), cropMarks[i][1]*canvas.height+model.offset[1]-(fatOutline/2), cropMarks[i][2]*canvas.width+(fatOutline*1), cropMarks[i][3]*canvas.height+(fatOutline*1))
 
-    view.label = model => {
-      if (model.complete) {
-        return `Processing …`
-      } else {
-        return `
-          I couldn’t find 4 corners of the paper in the image. <br />
-          Please select them manually. <br />
-          Select the <b>${model.labels[model.curr]}</b> corner:
-        `
-      }
-    }
 
-    // Actions -> Model
-    const present = data => model.present(data)
+    fatOutline = 0
+    context.lineWidth = 1
+    context.strokeStyle = 'rgba(20,20,200,1)';
 
-    // View -> Display
-    const display = view => {
-      let container = document.getElementById("preview-pane-content")
+    context.strokeRect(cropMarks[i][0]*canvas.width+model.offset[0]-fatOutline, cropMarks[i][1]*canvas.height+model.offset[1]-fatOutline, cropMarks[i][2]*canvas.width+(fatOutline*2), cropMarks[i][3]*canvas.height+(fatOutline*2))
 
-      let tlEl = document.getElementById("paper-2").querySelector('.corner-point-tl')
-      let trEl = document.getElementById("paper-2").querySelector('.corner-point-tr')
-      let brEl = document.getElementById("paper-2").querySelector('.corner-point-br')
-      let blEl = document.getElementById("paper-2").querySelector('.corner-point-bl')
 
-      let titleEl = container.querySelector('.instructions')
-      titleEl.innerHTML = view.title
+  }
 
-      let scale = view.dimensions
+  // draw them        
 
-      for (let [point, el, label] of [
-        [view.tl, tlEl, 'tl'],
-        [view.tr, trEl, 'tr'],
-        [view.br, brEl, 'br'],
-        [view.bl, blEl, 'bl']
-      ]) {
-        if (point.length) {
-          el.style.left = Math.floor(point[0] * scale[0]) + 'px'
-          el.style.top = Math.floor(point[1] * scale[1]) + 'px'
-          el.style.visibility = 'visible'
-        } else {
-          el.style.visibility = 'hidden'
-        }
-      }
+  imgData = context.canvas.toDataURL().replace(/^data:image\/\w+;base64,/, '')
+  fs.writeFileSync(path.join(app.getPath('temp'), 'flatpaper.png'), imgData, 'base64') // why do we write a file instead of creating in memory?
 
-      container.style.cursor = view.complete
-        ? 'default'
-        : 'crosshair'
-    }
+  document.querySelector("#preview").src = path.join(app.getPath('temp'), 'flatpaper.png?'+ Math.round(Math.random()*10000))
 
-    const onPreviewResize = () => {
-      present({ type: 'dimensions', payload: [document.querySelector("#preview").width, document.querySelector("#preview").height] })
-    }
-
-    const onPointerDown = event => {
-      present({ type: 'dimensions', payload: [document.querySelector("#preview").width, document.querySelector("#preview").height] })
-      present({ type: 'point', payload: [event.offsetX, event.offsetY] })
-    }
-
-    const attach = () => {
-      let container = document.getElementById("preview-pane-content")
-      let titleEl = document.createElement('div')
-      let previewEl = document.querySelector("#preview")
-
-      previewEl.src = sourceImage.src
-
-      titleEl.classList.add('instructions')
-      container.insertBefore(titleEl, container.firstChild)
-
-      model.order.map(pos => {
-        let el = document.createElement('div')
-        el.classList.add(`corner-point`)
-        el.classList.add(`corner-point-${pos}`)
-        document.getElementById('paper-2').append(el)
-      })
-
-      document.querySelector("#preview").addEventListener('pointerdown', onPointerDown)
-      window.addEventListener('resize', onPreviewResize)
-      remote.getCurrentWindow().once('hide', event => {
-        detach()
-        dispose()
-        reject()
-      })
-    }
-    
-    const detach = () => {
-      document.querySelector("#preview").removeEventListener('pointerdown', onPointerDown)
-      window.removeEventListener('resize', onPreviewResize)
-    }
-
-    const dispose = () => {
-      let previewEl = document.querySelector("#preview")
-      previewEl.removeAttribute('src')
-      
-      // remove title
-      let titleEl = document.querySelector('#preview-pane-content .instructions')
-      titleEl.parentNode.removeChild(titleEl)
-      
-      // remove corner point indicators
-      for (let el of document.querySelectorAll('.corner-point')) {
-        el.parentNode.removeChild(el)
-      }
-    }
-
-    const onComplete = () => {
-      let points = [
-        model.tl,
-        model.tr,
-        model.br,
-        model.bl
-      ]
-      detach()
-      // allow for DOM to render
-      setTimeout(() => {
-        dispose()
-        resolve(points)
-      }, 100)
-    }
-
-    const init = (sourceImage) => {
-      ipcRenderer.send('playsfx', 'error')
-
-      attach()
-
-      let previewEl = document.querySelector("#preview")
-      present({ dimensions: [previewEl.width, previewEl.height] })
-    }
-    init(sourceImage)
-  })
+  actions.setInputLocked(false)
+  actions.step('calibration')
 }
-
 function contrastImage(imageData, contrast) {
 
     var data = imageData.data;
@@ -693,11 +1004,19 @@ const generateCropMarks = (paperSize, aspectRatio, rows, cols, spacing) => {
 }
 
 ipcRenderer.on('worksheetImage', (event, args) => {
+  actions.step('init')
   remote.getCurrentWindow().show()
-  setTimeout(() => processWorksheetImage(args), 10) // reflow
+  // wait for DOM to render
+  setTimeout(() => {
+    processWorksheetImage(args)
+  }, 100)
 })
 
 window.ondragover = () => { return false }
 window.ondragleave = () => { return false }
 window.ondragend = () => { return false }
 window.ondrop = () => { return false }
+
+module.exports = {
+  actions
+}
