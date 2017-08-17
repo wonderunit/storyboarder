@@ -24,7 +24,10 @@ const defaultPrefs = {
   enableBrushCursor: true,
   enableStabilizer: true,
   enableAnalytics: true,
-  enableAutoSave: true
+  enableAutoSave: true,
+  import: {
+    offset: [0, 0]
+  }
 }
 
 // For slow computers, override the defaults here.
