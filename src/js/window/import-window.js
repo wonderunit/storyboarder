@@ -417,8 +417,13 @@ actions.validateQrCode = () => {
 actions.import = () => {
   ipcRenderer.send('playsfx', 'positive')
 
-  importImages()
-  actions.hideWindow()
+  actions.setInputLocked(true)
+  // allow DOM to render
+  setTimeout(() => {
+    let images = getImagesToImport()
+    importImages(images)
+    actions.hideWindow()
+  }, 100)
 
   return false
 }
@@ -521,7 +526,7 @@ actions.init()
 
 
 
-const importImages = () => {
+const getImagesToImport = () => {
   let destCanvas = document.createElement('canvas')
   destCanvas.height = 900
   destCanvas.width = (900*Number(code[5]))
@@ -532,7 +537,11 @@ const importImages = () => {
     // fs.writeFileSync(path.join(app.getPath('temp'), 'crop' + i + '.png'), imgData, 'base64')
     images.push(destCanvas.toDataURL())
   }
-  remote.getCurrentWindow().getParentWindow().webContents.send('importFromWorksheet',images)
+  return images
+}
+
+const importImages = images => {
+  remote.getCurrentWindow().getParentWindow().webContents.send('importFromWorksheet', images)
 }
 
 
