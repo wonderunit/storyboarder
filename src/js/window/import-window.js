@@ -376,6 +376,21 @@ actions.attach = () => {
 actions.init = () => {
   // TODO should we handle if window is hidden from outside?
   // remote.getCurrentWindow().once('hide', actions.dispose)
+
+  //
+  // on each key input,
+  //   prevent application menu keyboard shortcuts
+  //     so that we can type in the QR code input
+  //
+  // via https://electron.atom.io/docs/api/web-contents/#event-before-input-event
+  //     https://github.com/electron/electron/blob/master/docs/api/web-contents.md#contentssetignoremenushortcutsignore-experimental
+  //     https://github.com/electron/electron/issues/1334#issuecomment-310920998
+  let win = remote.getCurrentWindow()
+  win.webContents.on('before-input-event', (event, input) => {
+    // only enable application menu keyboard shortcuts when Ctrl/Cmd are down
+    win.webContents.setIgnoreMenuShortcuts(!input.control && !input.meta)
+  })
+
   actions.attach()
   actions.step('init')
 }
