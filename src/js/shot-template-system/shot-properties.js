@@ -19,51 +19,51 @@ let shotProperties = {
     },
     cu: {
       caption: "Closeup",
-      weight: 10
+      weight: 30
     },
     mcu: {
       caption: "Medium closeup",
-      weight: 10
+      weight: 40
     },
     bust: {
-      weight: 10
+      weight: 50
     },
     ms: {
       caption: "Medium shot",
-      weight: 10
+      weight: 90
     },
     mls: {
       caption: "Medium long shot",
-      weight: 10
+      weight: 50
     },
     ls: {
       caption: "Long shot",
-      weight: 10
+      weight: 40
     },
     els: {
       caption: "Extreme long shot",
-      weight: 10
+      weight: 30
     }
   },
   content: {
     oneShot: {
       caption: "Single",
-      weight: 10
+      weight: 80
     },
     twoShot: {
       caption: "Double",
-      weight: 10
+      weight: 1
     },
     threeShot: {
       caption: "Three shot",
-      weight: 10
+      weight: 1
     },
     ots: {
       caption: "Over the shoulder",
-      weight: 30
+      weight: 20
     },
     groupShot: {
-      weight: 10
+      weight: 1
     }
   },
   horizontalComposition: {
@@ -102,7 +102,7 @@ let shotProperties = {
       weight: 3
     },
     eye: {
-      weight: 10
+      weight: 20
     },
     low: {
       weight: 5
@@ -144,7 +144,7 @@ let shotProperties = {
   },
   background: {
     light: {
-      weight: 20
+      weight: 30
     },
     dim: {
       weight: 4
@@ -185,7 +185,7 @@ let shotProperties = {
       weight: 1
     },
     silhouette: {
-      weight: 1
+      weight: 0
     },
   },
   roomSize: {
@@ -193,7 +193,7 @@ let shotProperties = {
       weight: 1
     },
     mediumRoom: {
-      weight: 1
+      weight: 5
     },
     largeRoom: {
       weight: 1
@@ -205,18 +205,18 @@ let shotProperties = {
       weight: 1
     },
     outside: {
-      weight: 1
+      weight: 10
     }
   },
   pose: {
     stand: {
-      weight: 1
+      weight: 95
     },
     walk: {
       weight: 1
     },
     run: {
-      weight: 1
+      weight: 0
     },
     point: {
       weight: 1
@@ -225,7 +225,7 @@ let shotProperties = {
       weight: 1
     },
     hunch_over: {
-      weight: 1
+      weight: 0
     },
     cross_arms: {
       weight: 1
@@ -237,40 +237,40 @@ let shotProperties = {
       weight: 1
     },
     lean_back: {
-      weight: 1
+      weight: 0
     },
     hold_something: {
-      weight: 1
+      weight: 0
     },
     turn_around: {
-      weight: 1
+      weight: 0
     },
     wide_stance: {
-      weight: 1
+      weight: 0
     },
     kneeling: {
-      weight: 1
+      weight: 0
     },
     sit_on_floor: {
-      weight: 1
+      weight: 0
     },
     squatting: {
-      weight: 1
+      weight: 0
     },
     indian_style: {
-      weight: 1
+      weight: 0
     },
     on_back: {
-      weight: 1
+      weight: 0
     },
     slouch: {
       weight: 1
     },
     fall: {
-      weight: 1
+      weight: 0
     },
     despair: {
-      weight: 1
+      weight: 0
     },
     get_up: {
       weight: 0
@@ -530,10 +530,10 @@ let shotProperties = {
   },
   model: {
     female: {
-      weight: 1
+      weight: 50
     },
     male: {
-      weight: 1
+      weight: 50
     },
     boxmodel: {
       weight: 1
