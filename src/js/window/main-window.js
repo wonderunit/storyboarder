@@ -202,35 +202,36 @@ const commentOnLineMileage = (miles) => {
   let message = []
   let otherMessages
   switch (miles) {
-    case 0.01:
-      otherMessages = [
-        "Yes!!! The first stroke. I remember my first stroke – fondly.",
-        "I can tell this one is going to be good!",
-        "What are you drawing?",
-        "Let's make this one better than the last one.",
-        "What's happening in this point of the story?",
-        "Here we go again!",
-        "Let's do this!",
-        "I wish I could draw as good as that.",
-      ]
-      message.push(otherMessages[Math.floor(Math.random()*otherMessages.length)])
-      break
-    case 1: 
-      otherMessages = [
-        "Looking great!!!",
-        "Absolutely fantastic!",
-        "You're like a regular Picaso.",
-        "Hey - this looks great. And to think I doubted you.",
-        "This is way better than your last board!",
-        "Hooray! A great start.",
-        "I can see great form in this one.",
-        "There is so much potential with this drawing!",
-        "Imagine when your friends see this.",
-        "Let's keep the line miles to a minimum.",
-      ]
-      message.push(otherMessages[Math.floor(Math.random()*otherMessages.length)])
-      sfx.playEffect('tool-pencil')
-      break
+    // REMOVED TO LIMIT NOTIFICATIONS
+    // case 0.01:
+    //   otherMessages = [
+    //     "Yes!!! The first stroke. I remember my first stroke – fondly.",
+    //     "I can tell this one is going to be good!",
+    //     "What are you drawing?",
+    //     "Let's make this one better than the last one.",
+    //     "What's happening in this point of the story?",
+    //     "Here we go again!",
+    //     "Let's do this!",
+    //     "I wish I could draw as good as that.",
+    //   ]
+    //   message.push(otherMessages[Math.floor(Math.random()*otherMessages.length)])
+    //   break
+    // case 1: 
+    //   otherMessages = [
+    //     "Looking great!!!",
+    //     "Absolutely fantastic!",
+    //     "You're like a regular Picaso.",
+    //     "Hey - this looks great. And to think I doubted you.",
+    //     "This is way better than your last board!",
+    //     "Hooray! A great start.",
+    //     "I can see great form in this one.",
+    //     "There is so much potential with this drawing!",
+    //     "Imagine when your friends see this.",
+    //     "Let's keep the line miles to a minimum.",
+    //   ]
+    //   message.push(otherMessages[Math.floor(Math.random()*otherMessages.length)])
+    //   sfx.playEffect('tool-pencil')
+    //   break
     case 5: 
       message.push('5 line miles.')
       otherMessages = [
@@ -1046,7 +1047,7 @@ let newBoard = (position, shouldAddToUndoStack = true) => {
   if (shouldAddToUndoStack) {
     saveImageFile() // force-save any current work
     storeUndoStateForScene(true)
-    notifications.notify({message: "Added a new board. Let's make it a great one!", timing: 5})
+    //notifications.notify({message: "Added a new board. Let's make it a great one!", timing: 5})
   }
 
   if (typeof position == "undefined") position = currentBoard + 1
@@ -1194,7 +1195,7 @@ const addToLineMileage = value => {
   if (!(board.lineMileage)) { 
     board.lineMileage = 0 
   }
-  let mileageChecks = [0.01,1,5,8,10,20,50,100,200,300,1000]
+  let mileageChecks = [5,8,10,20,50,100,200,300,1000]
   for (let checkAmount of mileageChecks) {
     if ((board.lineMileage/5280 < checkAmount) && ((board.lineMileage + value)/5280 > checkAmount)) {
       commentOnLineMileage(checkAmount)
@@ -3905,7 +3906,7 @@ const welcomeMessage = () => {
 
 const setupRandomizedNotifications = () => {  
   let defaultMessages = util.shuffle(NotificationData.messages)
-  setTimeout(()=>{welcomeMessage()}, 1000)
+  //setTimeout(()=>{welcomeMessage()}, 1000)
   setTimeout(()=>{runRandomizedNotifications(defaultMessages)}, 3000)
 }
 
