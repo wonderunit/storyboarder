@@ -91,6 +91,16 @@ model.present = data => {
     model.step = data.payload
   }
 
+  if (data.type === 'resetCorners') {
+    model.tl = []
+    model.tr = []
+    model.br = []
+    model.bl = []
+    model.curr = 0
+    model.hasPoints = false
+    model.cornerPoints = undefined
+  }
+
   if (typeof data.offset !== 'undefined') {
     if (typeof data.offset[0] !== 'undefined') model.offset[0] = parseInt(data.offset[0], 10)
     if (typeof data.offset[1] !== 'undefined') model.offset[1] = parseInt(data.offset[1], 10)
@@ -181,8 +191,7 @@ view.cornerPointsEditor = (model) => {
 
 
   return ({
-    overview: `I couldn’t find 4 corners of the paper in the image.
-                  Please select them manually.`,
+    overview: `Please select each of the 4 corners of the paper in the image.`,
     instructions
   })
 }
@@ -241,6 +250,9 @@ view.calibration = (model) => {
             ${optionsStr(1)}
           </select>
         </div>
+      </div>
+      <div class="row">
+        <a href="#" onclick="return actions.onTweakCorners()">Tweak Corner Points</a>
       </div>
       <!--
       <div class="row">
@@ -366,11 +378,7 @@ actions.setInputLocked = inputLocked => {
 }
 actions.editCornerPoints = () => {
   ipcRenderer.send('playsfx', 'error')
-  actions.step('cornerPointsEditor')
-
-  // TODO necessary?
-  let previewEl = document.querySelector("#preview")
-  actions.present({ dimensions: [previewEl.width, previewEl.height] })
+  actions.onTweakCorners()
 }
 actions.validateQrCode = () => {
   const isNotNumber = n => Number.isNaN(parseInt(n, 10))
@@ -454,6 +462,17 @@ actions.onHideWindow = event => {
 actions.onPointerDown = () => {
   actions.present({ type: 'dimensions', payload: [document.querySelector("#preview").width, document.querySelector("#preview").height] })
   actions.present({ type: 'point', payload: [event.offsetX, event.offsetY] })
+}
+actions.onTweakCorners = event => {
+  // TODO should resetCorners be part of the state transition to cornerPointsEditor ?
+  actions.present({ type: 'resetCorners' })
+  actions.step('cornerPointsEditor')
+
+  // TODO necessary?
+  let previewEl = document.querySelector("#preview")
+  actions.present({ dimensions: [previewEl.width, previewEl.height] })
+
+  return false
 }
 actions.setOffset = (x, y) => {
   actions.present({ offset: [x, y] })
