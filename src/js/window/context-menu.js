@@ -89,12 +89,22 @@ class ContextMenu extends EventEmitter {
 
       if (this.tethered) this.remove()
 
+      let targetRect = target.getBoundingClientRect()
+
+      let targetMiddle = ((targetRect.right - targetRect.left) / 2) + targetRect.left
+      let attachment = 'bottom center'
+      let targetAttachment = 'top center'
+      if (targetMiddle - 150 < 0) {
+        attachment = 'bottom left'
+        targetAttachment = 'top left'
+      }
+
       this.target = target
       this.tethered = new Tether({
         element: this.el,
         target: this.target,
-        attachment: 'bottom center',
-        targetAttachment: 'top center'
+        attachment,
+        targetAttachment
       })
 
       this.timer = setTimeout(this.onTimeout.bind(this), this.delay)
