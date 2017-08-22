@@ -54,7 +54,11 @@ let model = {
   curr: 0,
   hasPoints: false,
 
-  offset: [0, 0],
+  // initialize offset from prefs, make a copy
+  offset: [
+    prefModule.getPrefs().import.offset[0],
+    prefModule.getPrefs().import.offset[1]
+  ],
   inputLocked: true,
 
   // HACK
@@ -111,6 +115,13 @@ model.present = data => {
   }
 
   state.render(model)
+
+  model.persist()
+}
+model.persist = () => {
+  prefModule.set('import', {
+    offset: model.offset
+  })
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -489,7 +500,7 @@ actions.resetModel = () => {
   model.curr = 0
   model.hasPoints = false
 
-  model.offset = [0, 0]
+  // model.offset = [0, 0] // never reset offset
   model.inputLocked = true
 
   model.cornerPoints = undefined
