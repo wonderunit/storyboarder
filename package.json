@@ -35,8 +35,15 @@
       "!notes",
       "!test"
     ],
+    "mac": {
+      "icon": "build/icon.icns"
+    },
+    "win":{
+      "icon": "build/icon.ico"
+    },
     "dmg": {
       "background": "build/background.png",
+      "icon": "build/icon.icns",
       "iconSize": 140,
       "contents": [
         {
@@ -53,8 +60,17 @@
     },
     "fileAssociations": {
       "ext": "storyboarder",
-      "name": "STORYBOARDER"
+      "name": "Storyboarder file",
+      "icon": "build/fileassociation/file"
     },
+    "protocols": [
+      {
+        "name": "Storyboarder",
+        "schemes": [
+          "storyboarder"
+        ]
+      }
+    ],
     "nsis": {
       "perMachine": true
     }
