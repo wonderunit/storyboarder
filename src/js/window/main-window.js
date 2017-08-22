@@ -2753,7 +2753,7 @@ const resize = () => {
   toolbarEl.classList.toggle('with-toolbar-small', workspaceWidth <= breakpointToolbar)
 
   // when the workspace is constrained, then the brush tools contract as well
-  let breakpointWorkspace = 1535
+  let breakpointWorkspace = 1635
   toolbarEl.classList.toggle('with-workspace-small', workspaceWidth <= breakpointWorkspace)
 }
 
