@@ -263,7 +263,7 @@ view.calibration = (model) => {
         </div>
       </div>
       <div class="row">
-        <a href="#" onclick="return actions.onTweakCorners()">Tweak Corner Points</a>
+        <a class="link-button" href="#" onclick="return actions.onTweakCorners()">Tweak Corner Points</a>
       </div>
       <!--
       <div class="row">
