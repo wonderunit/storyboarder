@@ -391,7 +391,10 @@ let loadBoardUI = ()=> {
   
   window.addEventListener('resize', () => {
     resize()
+    // this is pretty hacky.
     setTimeout(() => storyboarderSketchPane.resize(), 500) // TODO hack, remove this #440
+    setTimeout(() => storyboarderSketchPane.resize(), 1000) // TODO hack, remove this #440
+    setTimeout(() => storyboarderSketchPane.resize(), 1100) // TODO hack, remove this #440
   })
 
   window.ondragover = () => { return false }
