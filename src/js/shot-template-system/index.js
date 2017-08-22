@@ -265,11 +265,11 @@ let loadTextures = () => {
     textures.gradientMap.needsUpdate = true
   })
 
-  textures.decalGreatjob = new THREE.Texture()
-  imageLoader.load('data/sts/decal_logo.png', ( image ) => {
-    textures.decalGreatjob.image = image
-    textures.decalGreatjob.needsUpdate = true
-  })
+  // textures.decalGreatjob = new THREE.Texture()
+  // imageLoader.load('data/sts/decal_logo.png', ( image ) => {
+  //   textures.decalGreatjob.image = image
+  //   textures.decalGreatjob.needsUpdate = true
+  // })
 
   textures.volume = new THREE.Texture()
   imageLoader.load('data/sts/grid_volume.png', ( image ) => {
@@ -931,11 +931,11 @@ let setupContent = (params) => {
 
   // ADD STUFF TO ROOM!!!
   // createReferenceCube()
-  let tree = objModels.tree.clone()
-  tree.translateX(Math.random()*5)
-  tree.translateZ(-10)
+  // let tree = objModels.tree.clone()
+  // tree.translateX(Math.random()*5)
+  // tree.translateZ(-10)
 
-  objectScene.add(tree)
+  // objectScene.add(tree)
 
 
   // SET UP DUMMIES
