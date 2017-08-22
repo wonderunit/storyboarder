@@ -2753,7 +2753,7 @@ const resize = () => {
   const workspaceWidth = windowWidth - scenesWidth - scriptWidth
 
   // toolbar buttons start getting smaller right away
-  let breakpointToolbar = 1795
+  let breakpointToolbar = 1895
   toolbarEl.classList.toggle('with-toolbar-small', workspaceWidth <= breakpointToolbar)
 
   // when the workspace is constrained, then the brush tools contract as well
