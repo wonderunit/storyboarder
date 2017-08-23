@@ -3,6 +3,8 @@ const { app } = require('electron').remote
 const child_process = require('child_process')
 //const electronLocalshortcut = require('electron-localshortcut');
 const fs = require('fs')
+const os = require('os')
+const dns = require('dns')
 const path = require('path')
 const menu = require('../menu.js')
 const util = require('../utils/index.js')
@@ -4268,6 +4270,15 @@ ipcRenderer.on('printWorksheet', (event, args) => {
 
 ipcRenderer.on('importFromWorksheet', (event, args) => {
   importFromWorksheet(args)
+})
+
+ipcRenderer.on('importNotification', (event, args) => {
+  let hostname = os.hostname()
+  let that = this
+  dns.lookup(hostname, function (err, add, fam) {
+    let message =  "Did you know that you can import directly from your phone?\n\nOn your mobile phone, go to the web browser and type in: \n\n" + add + ":1888"
+    notifications.notify({message: message, timing: 60})
+  })
 })
 
 ipcRenderer.on('importWorksheets', (event, args) => {

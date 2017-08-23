@@ -757,6 +757,7 @@ ipcMain.on('openDialogue', (e, arg)=> {
 
 ipcMain.on('importImagesDialogue', (e, arg)=> {
   importImagesDialogue()
+  mainWindow.webContents.send('importNotification', arg)
 })
 
 ipcMain.on('createNew', (e, ...args) => {
@@ -868,7 +869,7 @@ ipcMain.on('printWorksheet', (event, arg) => {
 ipcMain.on('importWorksheets', (event, arg) => {
   //openPrintWindow()
   importWorksheetDialogue()
-  //mainWindow.webContents.send('importWorksheets', arg)
+  mainWindow.webContents.send('importNotification', arg)
 })
 
 ipcMain.on('save', (event, arg) => {
