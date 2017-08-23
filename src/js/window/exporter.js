@@ -123,7 +123,7 @@ class Exporter extends EventEmitter {
       Promise.all(writers).then(() => {
         let exportsPath = ensureExportsPathExists(projectFileAbsolutePath)
         let filepath = path.join(exportsPath, basenameWithoutExt + ' ' + moment().format('YYYY-MM-DD hh.mm.ss') + '.pdf')
-        exporterPDF.generatePDF('LTR', 1.773, 3, 3, 10, boardData, basenameWithoutExt, filepath)
+        exporterPDF.generatePDF('LTR', "landscape", 3, 3, 10, boardData, basenameWithoutExt, filepath)
         resolve(filepath)
       }).catch(err => {
         console.log(err)

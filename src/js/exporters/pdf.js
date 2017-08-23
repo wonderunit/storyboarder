@@ -109,7 +109,7 @@ const generatePDF = (paperSize, layout='landscape', rows, cols, spacing, boardDa
     doc.text(basenameWithoutExt.toUpperCase(), margin[0], margin[1], {align: 'left'})
     doc.font('thin')
     doc.fontSize(5)
-    doc.text(('Boards: ' + boardData.boards.length + '  |  SHots: ' + parseInt(boardData.boards[boardData.boards.length-1].shot) + '  |  Duration: ' + util.msToTime(boardData.boards[boardData.boards.length-1].time) + '  |  Aspect Ratio: ' + aspectRatio.toFixed(3)).toUpperCase(), margin[0], margin[1]+13+1+2, {align: 'left'})
+    doc.text(('Boards: ' + boardData.boards.length + '  |  SHots: ' + parseInt(boardData.boards[boardData.boards.length-1].shot) + '  |  Duration: ' + util.msToTime(boardData.boards[boardData.boards.length-1].time) + '  |  Aspect Ratio: ' + Number(aspectRatio).toFixed(3)).toUpperCase(), margin[0], margin[1]+13+1+2, {align: 'left'})
 
     doc.font('thin')
     doc.fontSize(5)
