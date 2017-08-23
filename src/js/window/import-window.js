@@ -1005,7 +1005,7 @@ const generateCropMarks = (paperSize, aspectRatio, rows, cols, spacing) => {
     documentSize = [595,842]
   }
   console.log(aspectRatio)
-  aspectRatio = aspectRatio.toFixed(3)
+  aspectRatio = Number(aspectRatio).toFixed(3)
   let margin = [22, 22, 22, 40]
 
   let boxesDim = [cols,rows]
