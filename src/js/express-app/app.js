@@ -10,6 +10,23 @@ const io = require('socket.io')(http)
 
 const portNumber = 1888
 
+const model = {
+  canImport: false,
+
+  present (data) {
+    if (typeof data.canImport !== 'undefined') model.canImport = data.canImport
+
+    state.render(model)
+  }
+}
+
+let state = {
+  render (model) {
+    // broadcast every change
+    io.of('/').emit('canImport', model.canImport)
+  }
+}
+
 class MobileServer extends EventEmitter {
 
   constructor () {
@@ -31,6 +48,9 @@ class MobileServer extends EventEmitter {
     })
 
     io.on('connection', function (socket) {
+      // re-broadcast state
+      state.render(model)
+
       //socket.emit('news', { hello: 'world' });
       socket.on('pointerEvent', function (data) {
         that.emit('pointerEvent', data)
@@ -47,7 +67,7 @@ class MobileServer extends EventEmitter {
   }
 
   setCanImport (canImport) {
-    io.of('/').emit('canImport', canImport)
+    model.present({ canImport })
   }
 }
 
