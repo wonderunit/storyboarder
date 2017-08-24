@@ -598,6 +598,9 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
         welcomeWindow.show()
         analytics.screenView('welcome')
       }
+
+      appServer.setCanImport(false)
+
       analytics.event('Application', 'close')
     }
   })
@@ -902,6 +905,8 @@ ipcMain.on('log', (event, opt) => {
 })
 
 ipcMain.on('workspaceReady', event => {
+  appServer.setCanImport(true)
+
   mainWindow && mainWindow.show()
   !loadingStatusWindow.isDestroyed() && loadingStatusWindow.hide()
 })
