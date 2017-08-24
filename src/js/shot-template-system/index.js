@@ -450,7 +450,6 @@ let loadObjs = () => {
   objLoader = new THREE.OBJLoader( manager );
   
   objLoader.load( 'data/sts/objects/chair.obj', function ( object ) {
-    console.log(object)
     object.traverse( function ( child ) {
       if ( child instanceof THREE.Mesh ) {
         var mesh = child
@@ -467,7 +466,6 @@ let loadObjs = () => {
   })
 
   objLoader.load( 'data/sts/objects/tree.obj', function ( object ) {
-    console.log(object)
     object.traverse( function ( child ) {
       if ( child instanceof THREE.Mesh ) {
         var mesh = child
@@ -946,6 +944,7 @@ let setupContent = (params) => {
 
 
   let mainCharacter
+  let secondCharacter = null
 
   switch (params.model) {
     case "male":
@@ -1000,10 +999,10 @@ let setupContent = (params) => {
     case "ots":
       mainCharacter.translateZ(-1)
       dummyGroup.add(mainCharacter)
-      var newPerson2 = mainCharacter.clone()
-      newPerson2.translateZ(1)
-      newPerson2.rotateY(Math.PI)
-      dummyGroup.add(newPerson2)
+      secondCharacter = mainCharacter.clone()
+      secondCharacter.translateZ(1)
+      secondCharacter.rotateY(Math.PI)
+      dummyGroup.add(secondCharacter)
       break
   }
 
@@ -1022,13 +1021,20 @@ let setupContent = (params) => {
     action = mixer1.clipAction('stand', mainCharacter)
   }
 
-  // action = mixer1.clipAction('on_bicycle', mainCharacter)
-  // console.log(action)
-
   action.clampWhenFinished = true
   action.setLoop(THREE.LoopOnce)
   action.play()
   mixer1.update(10)
+
+  if (secondCharacter) {
+    var mixer2 = new THREE.AnimationMixer( secondCharacter )
+    var action2
+    action2 = mixer2.clipAction('stand', secondCharacter)
+    action2.clampWhenFinished = true
+    action2.setLoop(THREE.LoopOnce)
+    action2.play()
+    mixer2.update(10)
+  }
 
   // HEAD DIRECTION
   var direction = [0,-.3,Math.random()*.1 - .05]
@@ -1126,7 +1132,6 @@ let setupContent = (params) => {
   // material.blending = THREE.MultiplyBlending
   // material.opacity = 1
 
-  console.log(material)
   var geometry = new THREE.PlaneGeometry( 100, 100, 32 );
   //var material = new THREE.MeshBasicMaterial( {color: 0xffff00, side: THREE.DoubleSide} );
   
@@ -1146,7 +1151,6 @@ let setupContent = (params) => {
 
 
   gridScene.add(gridGroup)
-  console.log(gridScene)
 }
 
 
@@ -1302,7 +1306,6 @@ let setupShotType = (params) => {
 
   camera.rotation.set(0,0,0)
 
-  console.log(params.horizontalAngle)
   switch (params.horizontalAngle) {
     case 'left':
       camera.rotateY(-Math.random()*(Math.PI/3)-.2)
@@ -1337,7 +1340,6 @@ let setupShotType = (params) => {
 
 
 
-  console.log(params.verticalAngle)
   switch (params.verticalAngle) {
     case 'birdsEye':
       var angle = Math.random()*40+40
@@ -1378,13 +1380,11 @@ let setupShotType = (params) => {
     camera.rotateX(-(camera.fov * Math.PI / 180/4))
   }
   let hFOV = 2 * Math.atan( Math.tan( camera.fov * Math.PI / 180 / 2 ) * (2500/900) )
-  console.log(hFOV)
   
 
 //  camera.updateMatrixWorld()
   //camera.geometry.applyMatrix(camera.matrixWorld)
 
-  console.log(params.horizontalComposition)
   switch (params.horizontalComposition) {
     case 'auto':
 
@@ -1652,6 +1652,16 @@ class ShotTemplateSystem extends EventEmitter {
         this.shotParams[property] = this.definedShotParams[property]
       } else {
         this.shotParams[property] = this.chooseRandomValue(shotProperties[property])
+      }
+    }
+
+    if (this.shotParams.content == 'ots') {
+      if (this.shotParams.horizontalAngle == 'center' || this.shotParams.horizontalAngle == 'deadCenter') {
+        if (Math.random() > .5) {
+          this.shotParams.horizontalAngle = 'right'
+        } else {
+          this.shotParams.horizontalAngle = 'left'
+        }
       }
     }
   }

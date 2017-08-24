@@ -6,7 +6,7 @@ let alternateValues = {
   mcu: ['medium close', 'medium close-up', 'medium closeup'],
   ms: ['medium', 'medium shot', 'waist', 'mid', 'med'],
   mls: ['medium long', 'three quarters', 'threequarters'],
-  ls: ['long', 'full', 'wide shot', 'long shot', 'ws'],
+  ls: ['full', 'wide shot', 'long shot', 'ws'],
   els: ['extreme long', 'exteme full', 'extreme wide shot', 'ews'],
   oneShot: ['single person', 'one shot', 'single', '1s'],
   twoShot: ['double', '2s'],
@@ -43,6 +43,8 @@ let alternateValues = {
   turn_around: ['turning'],
   sit_on_floor: ['sitting on floor'],
   on_back: ['laying'],
+  male: ['man', 'dude', 'guy', 'boy'],
+  female: ['girl', 'woman'],
 }
 
 module.exports = alternateValues
