@@ -45,6 +45,10 @@ class MobileServer extends EventEmitter {
       })
     })
   }
+
+  setCanImport (canImport) {
+    io.of('/').emit('canImport', canImport)
+  }
 }
 
 module.exports = MobileServer

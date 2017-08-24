@@ -7,19 +7,73 @@ listen for image
 send stroke data
 ui design
 blocking if there is no connection
+if reconnected, should already know if window is open or not (via appServer)
+when disconnected, disable UI
 
 */
 
-var socket = io.connect('/', { reconnectionDelay: 200, reconnectionDelayMax: 500 })
+let model = {
+  connected: false,
+  canImport: false,
 
-socket.on('connect_error', function (data) {
+  present (data) {
+    if (typeof data.connected !== 'undefined') model.connected = data.connected
+    if (typeof data.canImport !== 'undefined') model.canImport = data.canImport
+
+    state.render(model)
+  }
+}
+
+let state = {
+  representation (model) {
+    let representation = model
+    view.display(representation)
+  },
+  render () {
+    state.representation(model)
+    // state.nextAction(model)
+  }
+}
+
+let view = {
+  init (model) {
+    return model
+  },
+  display (representation) {
+    document.querySelector('.container').innerHTML = representation.canImport
+      ? ''
+      : '<br />Please open a Storyboarder project in the app before importing.'
+  }
+}
+
+let actions = {
+  setCanImport (canImport) {
+    model.present({ canImport })
+  },
+  setConnected (connected) {
+    model.present({ connected })
+  }
+}
+
+var socket = io.connect('/', { reconnectionDelay: 200, reconnectionDelayMax: 500, rejectUnauthorized: false })
+
+socket.on('connect', () => actions.setConnected(true))
+socket.on('disconnect', () => actions.setConnected(true))
+
+socket.on('connect_error', function (error) {
   console.log("connect error - are you sure Storyboarder is running on your computer?")
-  console.log(data)
+  // console.log(error)
+  actions.setConnected(false)
 })
 
 socket.on('reconnect', function (data) {
   console.log("reconnected!!!")
   console.log(data)
+  actions.setConnected(true)
+})
+
+socket.on('canImport', (data) => {
+  actions.setCanImport(data)
 })
 
 document.body.onpointermove = (e) => {
@@ -131,3 +185,6 @@ function processFile (dataURL, fileType) {
     }
   })
 }
+
+// initialize view
+view.display(view.init(model))
