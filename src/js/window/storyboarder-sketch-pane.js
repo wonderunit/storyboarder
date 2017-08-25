@@ -72,12 +72,13 @@ class StoryboarderSketchPane extends EventEmitter {
       this.brushPointerContainer.style.position = 'absolute'
       this.brushPointerContainer.style.pointerEvents = 'none'
       document.body.appendChild(this.brushPointerContainer)
-    } else {
-      // the query returns null unless we wait for the next tick.
-      process.nextTick(()=>{
-        document.querySelector('#storyboarder-sketch-pane .container').style.cursor = 'default'
-      })
     }
+
+    // setup and render (if necessary) pointer cursor
+    this.isCursorOnDrawingArea = false
+    this.cursorType = 'drawing'
+    // the DOM query returns null unless we wait for the next tick.
+    process.nextTick(() => this.renderCursor())
 
     // sketchpane
     this.sketchPane = new SketchPane()
@@ -123,6 +124,32 @@ class StoryboarderSketchPane extends EventEmitter {
 
     this.onFrame = this.onFrame.bind(this)
     requestAnimationFrame(this.onFrame)
+  }
+
+  renderCursor () {
+    if (this.isCursorOnDrawingArea) {
+      switch (this.cursorType) {
+        case 'move':
+          document.querySelector('#storyboarder-sketch-pane .container').style.cursor = 'move'
+          this.brushPointerContainer.style.visibility = 'hidden'
+          break
+
+        case 'ew-resize':
+          document.querySelector('#storyboarder-sketch-pane .container').style.cursor = 'ew-resize'
+          this.brushPointerContainer.style.visibility = 'hidden'
+          break
+
+        case 'drawing':
+        default:
+          document.querySelector('#storyboarder-sketch-pane .container').style.cursor = 'none'
+          this.brushPointerContainer.style.visibility = 'visible'
+          break
+      }
+
+    } else {
+      document.querySelector('#storyboarder-sketch-pane .container').style.cursor = 'default'
+      this.brushPointerContainer.style.visibility = 'hidden'
+    }
   }
 
   // store snapshot on pointerdown?
@@ -239,19 +266,16 @@ class StoryboarderSketchPane extends EventEmitter {
 
   canvasPointerOver () {
     this.sketchPaneDOMElement.addEventListener('pointermove', this.canvasCursorMove)
-    if(this.brushPointerContainer && this.brushPointerContainer.style) {
-      // HACK only show cursor if we're in drawing mode (not moving/scaling)
-      if (this.strategy instanceof DrawingStrategy) {
-        this.brushPointerContainer.style.visibility = 'visible'
-      }
-    }
+
+    this.isCursorOnDrawingArea = true
+    this.renderCursor()
   }
 
   canvasPointerOut () {
     this.sketchPaneDOMElement.removeEventListener('pointermove', this.canvasCursorMove)
-    if(this.brushPointerContainer && this.brushPointerContainer.style) {
-      this.brushPointerContainer.style.visibility = 'hidden'
-    }
+
+    this.isCursorOnDrawingArea = false
+    this.renderCursor()
   }
 
   onFrame (timestep) {
@@ -794,10 +818,8 @@ class MovingStrategy {
       }
     }
 
-    if(this.container.brushPointerContainer && this.container.brushPointerContainer.style) {
-      this.container.brushPointerContainer.style.visibility = 'hidden'
-    }
-    document.querySelector('#storyboarder-sketch-pane .container').style.cursor = 'move'
+    this.container.cursorType = 'move'
+    this.container.renderCursor()
   }
 
   canvasPointerDown (e) {
@@ -912,13 +934,10 @@ class MovingStrategy {
     // force stop
     this.container.stopMultiLayerOperation()
 
-    if(this.container.brushPointerContainer && this.container.brushPointerContainer.style) {
-      this.container.brushPointerContainer.style.visibility = 'visible'
-      document.querySelector('#storyboarder-sketch-pane .container').style.cursor = 'none'
-    } else {
-      document.querySelector('#storyboarder-sketch-pane .container').style.cursor = 'default'
-    }
     this.container.updatePointer()
+
+    this.container.cursorType = 'drawing'
+    this.container.renderCursor()
 
     this.storedLayers = null
   }
@@ -932,10 +951,8 @@ class ScalingStrategy {
     this.translate = [0, 0]
     this.scale = 1
 
-    if(this.container.brushPointerContainer && this.container.brushPointerContainer.style) {
-      this.container.brushPointerContainer.style.visibility = 'hidden'
-    }
-    document.querySelector('#storyboarder-sketch-pane .container').style.cursor = 'ew-resize'
+    this.container.cursorType = 'ew-resize'
+    this.container.renderCursor()
   }
 
   canvasPointerDown (e) {
@@ -1055,13 +1072,10 @@ class ScalingStrategy {
     // force stop
     this.container.stopMultiLayerOperation()
 
-    if(this.container.brushPointerContainer && this.container.brushPointerContainer.style) {
-      this.container.brushPointerContainer.style.visibility = 'visible'
-      document.querySelector('#storyboarder-sketch-pane .container').style.cursor = 'none'
-    } else {
-      document.querySelector('#storyboarder-sketch-pane .container').style.cursor = 'default'
-    }
     this.container.updatePointer()
+
+    this.container.cursorType = 'drawing'
+    this.container.renderCursor()
   }
 }
 
