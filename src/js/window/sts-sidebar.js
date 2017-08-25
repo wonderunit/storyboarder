@@ -28,7 +28,10 @@ let generateShot = (params) => {
   var div = document.createElement('div')
   var img = document.createElement('img')
   img.src = shot.image
+
   img.dataset.shotParams = JSON.stringify(shot.shotParams)
+  img.dataset.camera = JSON.stringify(shotTemplateSystem.getCurrentCameraAsJSON())
+
   div.appendChild(img)
   document.querySelector("#sts-shots").insertBefore(div, document.querySelector("#sts-shots div"))
   div.addEventListener('dblclick', onShotDblclick)
@@ -109,9 +112,10 @@ const onShotClick = event => {
 
 const onShotDblclick = event => {
   let shotParams = JSON.parse(event.target.firstChild.dataset.shotParams)
+  let camera = JSON.parse(event.target.firstChild.dataset.camera)
   let img = event.target.firstChild
   sfx.playEffect('fill')
-  emitter.emit('select', img, shotParams)
+  emitter.emit('select', img, shotParams, camera)
 }
 
 const onRandom = event => {

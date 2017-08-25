@@ -1686,6 +1686,15 @@ class ShotTemplateSystem extends EventEmitter {
     }
   }
 
+  // returns an object, not a string
+  getCurrentCameraAsJSON () {
+    return {
+      fov: camera.fov,
+      position: camera.position.toArray(),
+      rotation: camera.rotation.toArray()
+    }
+  }
+
 }
 
 module.exports = ShotTemplateSystem

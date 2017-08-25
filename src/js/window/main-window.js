@@ -982,11 +982,12 @@ let loadBoardUI = ()=> {
   })
 
   StsSidebar.init({ width: size[0], height: size[1] })
-  StsSidebar.on('select', (img, params) => {
+  StsSidebar.on('select', (img, params, camera) => {
     let board = boardData.boards[currentBoard]
 
     board.sts = {
-      params
+      params,
+      camera
     }
     markBoardFileDirty()
 
