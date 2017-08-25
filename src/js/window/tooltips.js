@@ -47,19 +47,24 @@ const setupTooltipForElement = (el) => {
     content: content(title, description, keys),
     position,
     constrainToWindow: true,
-    constraints: [
-      {
-        to: 'window',
-        pin: true,
-        attachment: 'both'
-      }
-    ],
 
     // Set to true if you'd like the drop element
     // to be removed from the DOM when the drop is closed
     // and recreated when it's opened.
     // via http://github.hubspot.com/drop/
     remove: false,
+
+    // tether options
+    // via http://tether.io/
+    tetherOptions: {
+      constraints: [
+        {
+          to: 'window',
+          attachment: 'both'
+        }
+      ]
+    },
+
     optimizations: {
       gpu: false
     },
