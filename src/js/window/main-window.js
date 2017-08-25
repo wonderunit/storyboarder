@@ -745,8 +745,8 @@ let loadBoardUI = ()=> {
     guides.setState({ thirds: value })
     sfx.playEffect('metal')
   })
-  toolbar.on('diagonals', value => {
-    guides.setState({ diagonals: value })
+  toolbar.on('perspective', value => {
+    guides.setState({ perspective: value })
     sfx.playEffect('metal')
   })
   toolbar.on('onion', value => {

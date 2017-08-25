@@ -414,9 +414,9 @@ const template = [
         }
       },
       {
-        label: 'Toggle Diagonal Guide',
+        label: 'Toggle 3D Guide',
         click ( item, focusedWindow, event) {
-          ipcRenderer.send('toggleGuide', 'diagonals')
+          ipcRenderer.send('toggleGuide', 'perspective')
         }
       },
       {

@@ -12,7 +12,7 @@ class Guides extends EventEmitter {
       grid: false,
       center: false,
       thirds: false,
-      diagonals: false
+      perspective: false
     }
 
     // for crisp lines
@@ -65,7 +65,7 @@ class Guides extends EventEmitter {
     if (this.state.grid)   this.drawGrid(this.offscreenContext, this.width, this.height, rgba(...lineColorWhite.slice(0, 3), 1.0), 3)
     if (this.state.center) this.drawCenter(this.offscreenContext, this.width, this.height, rgba(...lineColorWhite.slice(0, 3), 1.0), 3)
     if (this.state.thirds) this.drawThirds(this.offscreenContext, this.width, this.height, rgba(...lineColorWhite.slice(0, 3), 1.0), 3)
-    if (this.state.diagonals) this.drawDiagonals(this.offscreenContext, this.width, this.height, rgba(...lineColorWhite.slice(0, 3), 1.0), 3)
+
     this.context.globalAlpha = lineColorWhite.slice(-1)[0]
     this.context.drawImage(this.offscreenCanvas, 0, 0, this.width, this.height)
     this.context.globalAlpha = 1.0
@@ -92,9 +92,9 @@ class Guides extends EventEmitter {
     this.context.globalAlpha = lineColorStrong.slice(-1)[0]
     this.context.drawImage(this.offscreenCanvas, 0, 0, this.width, this.height)
 
-    // diagonals
+    // perspectives
     this.offscreenContext.clearRect(0, 0, this.width, this.height)
-    if (this.state.diagonals) this.drawDiagonals(this.offscreenContext, this.width, this.height, rgba(...lineColorNormal.slice(0, 3), 1.0), 1)
+    if (this.state.perspective) this.drawPerspective(this.offscreenContext, this.width, this.height)
     this.context.globalAlpha = lineColorNormal.slice(-1)[0]
     this.context.drawImage(this.offscreenCanvas, 0, 0, this.width, this.height)
 
@@ -175,39 +175,13 @@ class Guides extends EventEmitter {
     context.translate(-this.translateShift, -this.translateShift)
   }
 
-  drawDiagonals (context, width, height, color, lineWidth) {
-    let midpointX = Math.floor(width / 2)
-    let midpointY = Math.floor(height / 2)
-    context.translate(this.translateShift, this.translateShift)
-    context.lineWidth = lineWidth
-    context.strokeStyle = color
-
-    // cross TL to BR
-    context.beginPath()
+  drawPerspective (context, width, height) {
+    context.save()
+    context.translate(0, 0)
     context.moveTo(0, 0)
-    context.lineTo(width, height)
-    context.stroke()
-    // cross BL to TR
-    context.beginPath()
-    context.moveTo(0, height)
-    context.lineTo(width, 0)
-    context.stroke()
-
-    // TL corner to B mid to TR corner
-    context.beginPath()
-    context.moveTo(0, 0)
-    context.lineTo(midpointX, height)
-    context.lineTo(width, 0)
-    context.stroke()
-
-    // BL corner to T mid to BR corner
-    context.beginPath()
-    context.moveTo(0, height)
-    context.lineTo(midpointX, 0)
-    context.lineTo(width, height)
-    context.stroke()
-
-    context.translate(-this.translateShift, -this.translateShift)
+    context.font = '48px monospace'
+    context.fillText('Perspective Guide Goes Here', width / 4, height / 2)
+    context.restore()
   }
 }
 
