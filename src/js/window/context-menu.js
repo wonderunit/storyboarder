@@ -97,6 +97,9 @@ class ContextMenu extends EventEmitter {
       if (targetMiddle - 150 < 0) {
         attachment = 'bottom left'
         targetAttachment = 'top left'
+      } else if (targetMiddle + 150 > window.innerWidth) {
+        attachment = 'bottom right'
+        targetAttachment = 'top right'
       }
 
       this.target = target
