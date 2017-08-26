@@ -119,7 +119,6 @@ const outlineWidth = 0.015
 let backgroundScene
 let objectScene
 let contentScene
-let gridScene
 
 let effect
 let camera
@@ -135,7 +134,6 @@ let dummyModels
 let objModels
 let dummyGroup
 let roomGroup 
-let gridGroup
 
 let mixer
 
@@ -154,10 +152,6 @@ let setup = (config) => {
   // create scene
   contentScene = new THREE.Scene()
   contentScene.add(new THREE.AmbientLight(0x161616, 1))
-
-  gridScene = new THREE.Scene()
-  gridScene.background = new THREE.Color( 0xFFFFFF )
-  gridScene.add(new THREE.AmbientLight(0x111111, 1))
 
   // create renderer
   renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true })
@@ -188,9 +182,6 @@ let setup = (config) => {
   objectScene.add(camera)
   backgroundScene.add(camera)
   
-  tempGridCam = new THREE.PerspectiveCamera(30, config.width / config.height, .01, 1000)
-  gridScene.add(tempGridCam)
-
   directionalLight = new THREE.DirectionalLight(0xFFFFFF, 1)
   directionalLight.position.set(0, 1, 3);
   contentScene.add(directionalLight)
@@ -680,10 +671,6 @@ let render = () => {
   })
   effect.render(contentScene, camera)
 
-  // //renderer.clearDepth()
-  // renderer.clear()
-  // renderer.render(gridScene, tempGridCam)
-
 }
 
 let buildSquareRoom = (w, l, h, layer) => {
@@ -1096,61 +1083,6 @@ let setupContent = (params) => {
 
 
   contentScene.add(dummyGroup)
-
-
-
-  gridScene.remove(gridGroup)
-  gridGroup = new THREE.Group()
-
-
-  tempGridCam.position.y = Math.random() * .4+.4
-  tempGridCam.position.z = Math.random() * .4+.4
-  tempGridCam.position.x = Math.random() * .4+.4
-   tempGridCam.rotation.x = Math.random() * .4
-   tempGridCam.rotation.y = Math.random() * 2
-
-
-
-  // DRAW GRID
-  let material = new THREE.MeshBasicMaterial({
-    map: textures.volume,
-    transparent: true,
-    opacity: .3,
-    blending: THREE.MultiplyBlending,
-    side: THREE.DoubleSide
-  })
-  //material.depthFunc = THREE.LessEqualDepth
-  material.depthWrite = false
-  material.premultipliedAlpha = true
-  textures.volume.wrapS = THREE.RepeatWrapping;
-  textures.volume.wrapT = THREE.RepeatWrapping;
-
-  let scale = 1
-
-  textures.volume.repeat.set(100*scale, 100*scale)
-  // material.transparent = true
-  // material.blending = THREE.MultiplyBlending
-  // material.opacity = 1
-
-  var geometry = new THREE.PlaneGeometry( 100, 100, 32 );
-  //var material = new THREE.MeshBasicMaterial( {color: 0xffff00, side: THREE.DoubleSide} );
-  
-  for (var i = -100; i < 100; i++) {
-    material.opacity = Math.random() * 1
-    var plane = new THREE.Mesh( geometry, material );
-    plane.translateZ((i*(1/scale)))
-    gridGroup.add( plane )
-  }
-
-  for (var i = -100; i < 100; i++) {
-    var plane = new THREE.Mesh( geometry, material );
-    plane.rotation.y = -Math.PI / 2
-    plane.translateZ((i*(1/scale)))
-    gridGroup.add( plane )
-  }
-
-
-  gridScene.add(gridGroup)
 }
 
 
@@ -1506,6 +1438,29 @@ let getTextString = (params) => {
   return string.join(', ')
 }
 
+let toScreenPosition = (obj, camera) => {
+
+  camera.updateMatrixWorld( true )
+  camera.updateProjectionMatrix()
+
+  // console.log(obj,camera)
+
+
+  let vector = new THREE.Vector3()
+  let widthHalf = 0.5*renderer.context.canvas.width
+  let heightHalf = 0.5*renderer.context.canvas.height
+
+  obj.updateMatrixWorld()
+  vector.setFromMatrixPosition(obj.matrixWorld)
+
+  vector.project(camera)
+
+  vector.x = ( vector.x * widthHalf ) + widthHalf
+  vector.y = - ( vector.y * heightHalf ) + heightHalf
+
+  return { x: vector.x, y: vector.y }
+}
+
 ////////////////////////////////////////////////////
 // ShotTemplateSystem
 ////////////////////////////////////////////////////
@@ -1544,6 +1499,8 @@ class ShotTemplateSystem extends EventEmitter {
     setupFov(this.shotParams.fov)
     setupShotType(this.shotParams)
 
+    this.requestGrid()
+
     render()
     if (imgOpts) {
       return {image: renderer.domElement.toDataURL(imgOpts), shotParams: this.shotParams}
@@ -1551,6 +1508,39 @@ class ShotTemplateSystem extends EventEmitter {
       return {image: renderer.domElement.toDataURL(), shotParams: this.shotParams}
     }
   }
+
+  requestGrid (cameraParams, rotation) {
+
+    let gridCamera = new THREE.PerspectiveCamera(30, dimensions[0] / dimensions[1], .01, 1000)
+    
+    gridCamera.position.y = 1.3
+    gridCamera.position.z = 2
+    gridCamera.rotation.y = 1.3
+    gridCamera.aspect = dimensions[0] / dimensions[1]
+    gridCamera.updateProjectionMatrix()
+
+    //backgroundScene.add(gridCamera)
+
+    let divObj = new THREE.Object3D()
+    divObj.position.x = 10000
+    console.log(toScreenPosition(divObj,gridCamera))
+    divObj.position.x = -10000
+    console.log(toScreenPosition(divObj,gridCamera))
+
+    divObj.position.y = -10000
+    console.log(toScreenPosition(divObj,gridCamera))
+    divObj.position.y = 10000
+    console.log(toScreenPosition(divObj,gridCamera))
+
+   divObj.position.z = -10000
+    console.log(toScreenPosition(divObj,gridCamera))
+    divObj.position.z = 10000
+    console.log(toScreenPosition(divObj,gridCamera))
+
+
+
+  }
+
  
   saveImagesToDisk (count) {
     let shot
