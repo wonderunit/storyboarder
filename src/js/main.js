@@ -910,3 +910,7 @@ ipcMain.on('workspaceReady', event => {
   mainWindow && mainWindow.show()
   !loadingStatusWindow.isDestroyed() && loadingStatusWindow.hide()
 })
+
+ipcMain.on('exportWorksheetPdf', (event, sourcePath) => {
+  mainWindow.webContents.send('exportWorksheetPdf', sourcePath)
+})

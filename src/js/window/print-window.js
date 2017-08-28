@@ -33,6 +33,13 @@ document.querySelector('#print-button').onclick = (e) => {
   window.hide()
 }
 
+document.querySelector('#pdf-button').onclick = (e) => {
+  let sourcePath = path.join(app.getPath('temp'), 'worksheetoutput.pdf')
+  ipcRenderer.send('exportWorksheetPdf', sourcePath)
+  let window = remote.getCurrentWindow()
+  window.hide()
+}
+
 const print = () => {
   let cmd
 

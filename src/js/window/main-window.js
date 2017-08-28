@@ -4246,7 +4246,25 @@ ipcRenderer.on('exportCleanup', (event, args) => {
 let printWindow
 let importWindow
 
-
+ipcRenderer.on('exportWorksheetPdf', (event, sourcePath) => {
+  let outputPath = path.join(
+    exporterCommon.ensureExportsPathExists(boardFilename),
+    'Worksheet ' + moment().format('YYYY-MM-DD hh.mm.ss') + '.pdf'
+  )
+  
+  if (!fs.existsSync(outputPath)) {
+    fs.writeFileSync(outputPath, fs.readFileSync(sourcePath))
+  
+    notifications.notify({ message: "A Worksheet PDF has been exported.", timing: 20 })
+    sfx.positive()
+    shell.showItemInFolder(outputPath)
+  
+  } else {
+    console.error('File exists')
+    sfx.error()
+    notifications.notify({ message: "Could not export Worksheet PDF.", timing: 20 })
+  }
+})
 ipcRenderer.on('printWorksheet', (event, args) => {
   console.log(boardData)
 
