@@ -5,7 +5,7 @@ const util = require('../utils/index.js')
 const rgba = (r, g, b, a) => `rgba(${r}, ${g}, ${b}, ${parseFloat(a)})`
 
 class Guides extends EventEmitter {
-  constructor (el) {
+  constructor (el, opt = {}) {
     super()
 
     this.state = {
@@ -23,7 +23,13 @@ class Guides extends EventEmitter {
     this.context = null
     this.offscreenCanvas = null
     this.offscreenContext = null
-    
+
+    this.perspectiveGridFn = opt.perspectiveGridFn
+    this.perspectiveParams = {
+      cameraParams: {},
+      rotation: 0
+    }
+
     this.attachTo(el)
     this.render()
   }
@@ -92,11 +98,15 @@ class Guides extends EventEmitter {
     this.context.globalAlpha = lineColorStrong.slice(-1)[0]
     this.context.drawImage(this.offscreenCanvas, 0, 0, this.width, this.height)
 
-    // perspectives
-    this.offscreenContext.clearRect(0, 0, this.width, this.height)
-    if (this.state.perspective) this.drawPerspective(this.offscreenContext, this.width, this.height)
-    this.context.globalAlpha = lineColorNormal.slice(-1)[0]
-    this.context.drawImage(this.offscreenCanvas, 0, 0, this.width, this.height)
+    // perspective
+    if (this.state.perspective) {
+      this.offscreenContext.clearRect(0, 0, this.width, this.height)
+      this.drawPerspective(this.offscreenContext, this.width, this.height)
+
+      this.context.globalAlpha = lineColorStrong.slice(-1)[0]
+      this.context.drawImage(this.offscreenCanvas, 0, 0, this.width, this.height)
+      this.context.globalAlpha = 1.0
+    }
 
     this.context.globalAlpha = 1.0
   }
@@ -176,12 +186,23 @@ class Guides extends EventEmitter {
   }
 
   drawPerspective (context, width, height) {
+    let canvas = this.perspectiveGridFn(
+      this.perspectiveParams.cameraParams,
+      this.perspectiveParams.rotation
+    )
     context.save()
     context.translate(0, 0)
     context.moveTo(0, 0)
-    context.font = '48px monospace'
-    context.fillText('Perspective Guide Goes Here', width / 4, height / 2)
+    context.drawImage(canvas, 0, 0)
     context.restore()
+  }
+
+  setPerspectiveParams (opt = {}) {
+    this.perspectiveParams = {
+      cameraParams: opt.cameraParams,
+      rotation: opt.rotation
+    }
+    this.render()
   }
 }
 

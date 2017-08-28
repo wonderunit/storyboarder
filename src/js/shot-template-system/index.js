@@ -1571,9 +1571,10 @@ class ShotTemplateSystem extends EventEmitter {
         ctx.stroke()
       }
     }
-    // draw horizon line
-    var image = canvas.toDataURL("image/png").replace(/^data:image\/(png|jpg|jpeg);base64,/, "")
-    require("fs").writeFileSync("/Users/setpixel/Desktop/guide.png", image, 'base64')
+
+    // TODO draw horizon line
+
+    return canvas
   }
  
   saveImagesToDisk (count) {

@@ -125,10 +125,9 @@ const onRandom = event => {
 
 /* exports */
 
-const init = config => {
-  aspectRatio = config.width / config.height
-  shotTemplateSystem = new ShotTemplateSystem(config)
-  window.shotTemplateSystem = shotTemplateSystem
+const init = (_shotTemplateSystem, _aspectRatio) => {
+  shotTemplateSystem = window.shotTemplateSystem = _shotTemplateSystem
+  aspectRatio = _aspectRatio
 
   document.querySelector("#sts-input1").addEventListener('keydown', onInputKeyDown)
   document.querySelector('#sts-random').addEventListener('click', onRandom)
