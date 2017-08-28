@@ -1516,6 +1516,22 @@ class ShotTemplateSystem extends EventEmitter {
   }
 
   requestGrid (cameraParams, rotation) {
+    if (!cameraParams) {
+      cameraParams = {
+        "fov": 50,
+        "position": [
+          0.030685489997267723,
+          1.7039645020808787,
+          1.0074787537662795
+        ],
+        "rotation": [
+          -0.23178741542716963,
+          0,
+          0,
+          "XYZ"
+        ]
+      }
+    }
     let gridCamera = new THREE.PerspectiveCamera(cameraParams.fov, dimensions[0] / dimensions[1], .01, 1000)
     gridCamera.position.x = cameraParams.position[0]
     gridCamera.position.y = cameraParams.position[1]
