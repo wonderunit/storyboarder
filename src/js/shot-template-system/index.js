@@ -1520,12 +1520,12 @@ class ShotTemplateSystem extends EventEmitter {
       cameraParams = {
         "fov": 50,
         "position": [
-          0.030685489997267723,
-          1.7039645020808787,
-          1.0074787537662795
+          0.1,
+          1.7,
+          1
         ],
         "rotation": [
-          -0.23178741542716963,
+          -0.232,
           0,
           0,
           "XYZ"
@@ -1578,9 +1578,9 @@ class ShotTemplateSystem extends EventEmitter {
         let x = (perspectivePoint[i].x+100000) * Math.cos(angle) - (perspectivePoint[i].y) * Math.sin(angle)
         let y = (perspectivePoint[i].y) * Math.cos(angle) - (perspectivePoint[i].x+100000) * Math.sin(angle)
         if (j % 5 == 0) {
-          ctx.lineWidth = 0.3
+          ctx.lineWidth = 0.6
         } else {
-          ctx.lineWidth = .1
+          ctx.lineWidth = .2
         }
         ctx.strokeStyle = color[i]
         ctx.lineTo(x,y)
@@ -1589,6 +1589,18 @@ class ShotTemplateSystem extends EventEmitter {
     }
 
     // TODO draw horizon line
+    let horizonAngle = Math.atan2(perspectivePoint[2].y - perspectivePoint[0].y, perspectivePoint[2].x - perspectivePoint[0].x)
+    let x = Math.cos(horizonAngle) * (10000) - Math.sin(horizonAngle) * (0) + perspectivePoint[2].x
+    let y = Math.sin(horizonAngle) * (10000) - Math.cos(horizonAngle) * (0) + perspectivePoint[2].y
+    ctx.beginPath()
+    ctx.setLineDash([10, 4])
+    ctx.moveTo(x, y)
+    let x2 = Math.cos(horizonAngle) * (-20000) - Math.sin(horizonAngle) * (0) + x 
+    let y2 = Math.sin(horizonAngle) * (-20000) - Math.cos(horizonAngle) * (0) + y
+    ctx.lineWidth = 1
+    ctx.strokeStyle = "black"
+    ctx.lineTo(x2,y2)
+    ctx.stroke()
 
     return canvas
   }
