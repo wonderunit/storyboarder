@@ -132,6 +132,12 @@ const init = config => {
 
   document.querySelector("#sts-input1").addEventListener('keydown', onInputKeyDown)
   document.querySelector('#sts-random').addEventListener('click', onRandom)
+
+  document.querySelector("#shot-generator-container").addEventListener('click', ()=>{
+    if (document.querySelector("#board-metadata .board-metadata-container").scrollTop == 0) {
+      document.querySelector("#board-metadata .board-metadata-container").scrollTop = document.querySelector("#shot-generator-container").offsetTop
+    }
+  })
 }
 
 const reset = sts => {
