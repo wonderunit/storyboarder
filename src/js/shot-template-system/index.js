@@ -119,7 +119,6 @@ const outlineWidth = 0.015
 let backgroundScene
 let objectScene
 let contentScene
-let gridScene
 
 let effect
 let camera
@@ -135,7 +134,6 @@ let dummyModels
 let objModels
 let dummyGroup
 let roomGroup 
-let gridGroup
 
 let mixer
 
@@ -154,10 +152,6 @@ let setup = (config) => {
   // create scene
   contentScene = new THREE.Scene()
   contentScene.add(new THREE.AmbientLight(0x161616, 1))
-
-  gridScene = new THREE.Scene()
-  gridScene.background = new THREE.Color( 0xFFFFFF )
-  gridScene.add(new THREE.AmbientLight(0x111111, 1))
 
   // create renderer
   renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true })
@@ -188,9 +182,6 @@ let setup = (config) => {
   objectScene.add(camera)
   backgroundScene.add(camera)
   
-  tempGridCam = new THREE.PerspectiveCamera(30, config.width / config.height, .01, 1000)
-  gridScene.add(tempGridCam)
-
   directionalLight = new THREE.DirectionalLight(0xFFFFFF, 1)
   directionalLight.position.set(0, 1, 3);
   contentScene.add(directionalLight)
@@ -680,10 +671,6 @@ let render = () => {
   })
   effect.render(contentScene, camera)
 
-  // //renderer.clearDepth()
-  // renderer.clear()
-  // renderer.render(gridScene, tempGridCam)
-
 }
 
 let buildSquareRoom = (w, l, h, layer) => {
@@ -1096,61 +1083,6 @@ let setupContent = (params) => {
 
 
   contentScene.add(dummyGroup)
-
-
-
-  gridScene.remove(gridGroup)
-  gridGroup = new THREE.Group()
-
-
-  tempGridCam.position.y = Math.random() * .4+.4
-  tempGridCam.position.z = Math.random() * .4+.4
-  tempGridCam.position.x = Math.random() * .4+.4
-   tempGridCam.rotation.x = Math.random() * .4
-   tempGridCam.rotation.y = Math.random() * 2
-
-
-
-  // DRAW GRID
-  let material = new THREE.MeshBasicMaterial({
-    map: textures.volume,
-    transparent: true,
-    opacity: .3,
-    blending: THREE.MultiplyBlending,
-    side: THREE.DoubleSide
-  })
-  //material.depthFunc = THREE.LessEqualDepth
-  material.depthWrite = false
-  material.premultipliedAlpha = true
-  textures.volume.wrapS = THREE.RepeatWrapping;
-  textures.volume.wrapT = THREE.RepeatWrapping;
-
-  let scale = 1
-
-  textures.volume.repeat.set(100*scale, 100*scale)
-  // material.transparent = true
-  // material.blending = THREE.MultiplyBlending
-  // material.opacity = 1
-
-  var geometry = new THREE.PlaneGeometry( 100, 100, 32 );
-  //var material = new THREE.MeshBasicMaterial( {color: 0xffff00, side: THREE.DoubleSide} );
-  
-  for (var i = -100; i < 100; i++) {
-    material.opacity = Math.random() * 1
-    var plane = new THREE.Mesh( geometry, material );
-    plane.translateZ((i*(1/scale)))
-    gridGroup.add( plane )
-  }
-
-  for (var i = -100; i < 100; i++) {
-    var plane = new THREE.Mesh( geometry, material );
-    plane.rotation.y = -Math.PI / 2
-    plane.translateZ((i*(1/scale)))
-    gridGroup.add( plane )
-  }
-
-
-  gridScene.add(gridGroup)
 }
 
 
@@ -1506,6 +1438,35 @@ let getTextString = (params) => {
   return string.join(', ')
 }
 
+let toScreenPosition = (obj, camera) => {
+
+  // camera.updateMatrixWorld( true )
+  // camera.updateProjectionMatrix()
+
+  // console.log(obj,camera)
+
+
+  let vector = new THREE.Vector3()
+  let widthHalf = 0.5*renderer.context.canvas.width
+  let heightHalf = 0.5*renderer.context.canvas.height
+
+  obj.updateMatrixWorld()
+  vector.setFromMatrixPosition(obj.matrixWorld)
+
+  vector.project(camera)
+
+  vector.x = ( vector.x * widthHalf ) + widthHalf
+  vector.y = - ( vector.y * heightHalf ) + heightHalf
+
+  return { x: vector.x, y: vector.y }
+}
+
+let distance = (point1, point2) => {
+  let a = point2.x-point1.x
+  let b = point2.y-point1.y
+  return Math.sqrt(a*a+b*b)
+}
+
 ////////////////////////////////////////////////////
 // ShotTemplateSystem
 ////////////////////////////////////////////////////
@@ -1544,12 +1505,104 @@ class ShotTemplateSystem extends EventEmitter {
     setupFov(this.shotParams.fov)
     setupShotType(this.shotParams)
 
+    this.requestGrid(this.getCurrentCameraAsJSON())
+
     render()
     if (imgOpts) {
       return {image: renderer.domElement.toDataURL(imgOpts), shotParams: this.shotParams}
     } else {
       return {image: renderer.domElement.toDataURL(), shotParams: this.shotParams}
     }
+  }
+
+  requestGrid (cameraParams, rotation) {
+    if (!cameraParams) {
+      cameraParams = {
+        "fov": 50,
+        "position": [
+          0.1,
+          1.7,
+          1
+        ],
+        "rotation": [
+          -0.232,
+          0,
+          0,
+          "XYZ"
+        ]
+      }
+    }
+    let gridCamera = new THREE.PerspectiveCamera(cameraParams.fov, dimensions[0] / dimensions[1], .01, 1000)
+    gridCamera.position.x = cameraParams.position[0]
+    gridCamera.position.y = cameraParams.position[1]
+    gridCamera.position.z = cameraParams.position[2]
+    gridCamera.rotation.x = cameraParams.rotation[0]
+    gridCamera.rotation.y = cameraParams.rotation[1]
+    gridCamera.rotation.z = cameraParams.rotation[2]
+
+    gridCamera.updateProjectionMatrix()
+    gridCamera.updateMatrixWorld( true )
+
+    let prop = ['x','y','z']
+    let color = ['rgb(0,0,100)', 'rgb(100,100,0)','rgb(0,100,0)']
+    let perspectivePoint = []
+    let extreme = 150
+
+    for (var i = 0; i < 3; i++) {
+      let divObjA = new THREE.Object3D()
+      divObjA.position[prop[i]] = extreme
+      let pointA = toScreenPosition(divObjA,gridCamera)
+      console.log(pointA)
+      let divObjB = new THREE.Object3D()
+      divObjB.position[prop[i]] = -(extreme)
+      let pointB = toScreenPosition(divObjB,gridCamera)
+      console.log(pointB)
+      if (distance(pointA, {x: dimensions[0]/2, y: dimensions[1]/2}) < distance(pointB, {x: dimensions[0]/2, y: dimensions[1]/2})) {
+        perspectivePoint[i] = pointA
+      } else {
+        perspectivePoint[i] = pointB
+      }
+    }
+
+    let canvas = document.createElement('canvas')
+    canvas.width  = dimensions[0]
+    canvas.height = dimensions[1]  
+    let ctx = canvas.getContext('2d')
+    for (var i = 0; i < 3; i++) {
+      let dist = distance(perspectivePoint[i], {x: dimensions[0]/2, y: dimensions[1]/2})
+      let amt = Math.max(dist/1.5,360)
+      for (var j = 0; j < (amt-1); j++) {
+        ctx.beginPath()
+        ctx.moveTo(perspectivePoint[i].x, perspectivePoint[i].y)
+        let angle = (j*(360/(amt))) * Math.PI / 180
+        let x = (perspectivePoint[i].x+100000) * Math.cos(angle) - (perspectivePoint[i].y) * Math.sin(angle)
+        let y = (perspectivePoint[i].y) * Math.cos(angle) - (perspectivePoint[i].x+100000) * Math.sin(angle)
+        if (j % 5 == 0) {
+          ctx.lineWidth = 0.6
+        } else {
+          ctx.lineWidth = .2
+        }
+        ctx.strokeStyle = color[i]
+        ctx.lineTo(x,y)
+        ctx.stroke()
+      }
+    }
+
+    // TODO draw horizon line
+    let horizonAngle = Math.atan2(perspectivePoint[2].y - perspectivePoint[0].y, perspectivePoint[2].x - perspectivePoint[0].x)
+    let x = Math.cos(horizonAngle) * (10000) - Math.sin(horizonAngle) * (0) + perspectivePoint[2].x
+    let y = Math.sin(horizonAngle) * (10000) - Math.cos(horizonAngle) * (0) + perspectivePoint[2].y
+    ctx.beginPath()
+    ctx.setLineDash([10, 4])
+    ctx.moveTo(x, y)
+    let x2 = Math.cos(horizonAngle) * (-20000) - Math.sin(horizonAngle) * (0) + x 
+    let y2 = Math.sin(horizonAngle) * (-20000) - Math.cos(horizonAngle) * (0) + y
+    ctx.lineWidth = 1
+    ctx.strokeStyle = "black"
+    ctx.lineTo(x2,y2)
+    ctx.stroke()
+
+    return canvas
   }
  
   saveImagesToDisk (count) {

@@ -20,7 +20,7 @@ const render = () => {
     grid: true,
     center: true,
     thirds: true,
-    diagonals: true
+    perspective: true
   }
 
   guides = new Guides(canvas)

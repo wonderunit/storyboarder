@@ -103,7 +103,7 @@ const initialState = {
   grid: false,
   center: false,
   thirds: false,
-  diagonals: false,
+  perspective: false,
   
   onion: false
 }
@@ -133,7 +133,7 @@ class Toolbar extends EventEmitter {
       this.state.grid   = false
       this.state.center = false
       this.state.thirds = false
-      this.state.diagonals = false
+      this.state.perspective = false
       this.state.onion = false
       //this.state.captions   = false
     } else {
@@ -370,9 +370,9 @@ class Toolbar extends EventEmitter {
         this.setState({ thirds: !this.state.thirds })
         this.emit('thirds', this.state.thirds)
         break
-      case 'diagonals':
-        this.setState({ diagonals: !this.state.diagonals })
-        this.emit('diagonals', this.state.diagonals)
+      case 'perspective':
+        this.setState({ perspective: !this.state.perspective })
+        this.emit('perspective', this.state.perspective)
         break
       case 'onion':
         this.setState({ onion: !this.state.onion })
@@ -491,11 +491,11 @@ class Toolbar extends EventEmitter {
     let gridEl = this.el.querySelector('#toolbar-grid')
     let centerEl = this.el.querySelector('#toolbar-center')
     let thirdsEl = this.el.querySelector('#toolbar-thirds')
-    let diagonalsEl = this.el.querySelector('#toolbar-diagonals')
+    let perspectiveEl = this.el.querySelector('#toolbar-perspective')
     gridEl.classList.toggle('active', this.state.grid)
     centerEl.classList.toggle('active', this.state.center)
     thirdsEl.classList.toggle('active', this.state.thirds)
-    diagonalsEl.classList.toggle('active', this.state.diagonals)
+    perspectiveEl.classList.toggle('active', this.state.perspective)
 
     let onionEl = this.el.querySelector('#toolbar-onion')
     onionEl.classList.toggle('active', this.state.onion)

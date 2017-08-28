@@ -38,6 +38,7 @@ const FileHelper = require('../files/file-helper.js')
 const readPsd = require('ag-psd').readPsd;
 const initializeCanvas = require('ag-psd').initializeCanvas;
 
+const ShotTemplateSystem = require('../shot-template-system')
 const StsSidebar = require('./sts-sidebar.js')
 
 const pkg = require('../../../package.json')
@@ -113,6 +114,7 @@ let guides
 let onionSkin
 let layersEditor
 let pomodoroTimerView
+let shotTemplateSystem
 
 let storyboarderSketchPane
 
@@ -383,8 +385,7 @@ let loadBoardUI = ()=> {
     size = [900, 900 / aspectRatio]
   }
 
-
-
+  shotTemplateSystem = new ShotTemplateSystem({ width: size[0], height: size[1] })
 
   storyboarderSketchPane = new StoryboarderSketchPane(
     document.getElementById('storyboarder-sketch-pane'),
@@ -745,8 +746,8 @@ let loadBoardUI = ()=> {
     guides.setState({ thirds: value })
     sfx.playEffect('metal')
   })
-  toolbar.on('diagonals', value => {
-    guides.setState({ diagonals: value })
+  toolbar.on('perspective', value => {
+    guides.setState({ perspective: value })
     sfx.playEffect('metal')
   })
   toolbar.on('onion', value => {
@@ -848,7 +849,7 @@ let loadBoardUI = ()=> {
     toolbar.changeCurrentColor(color)
   })
 
-  guides = new Guides(storyboarderSketchPane.getLayerCanvasByName('guides'))
+  guides = new Guides(storyboarderSketchPane.getLayerCanvasByName('guides'), { perspectiveGridFn: shotTemplateSystem.requestGrid })
   onionSkin = new OnionSkin(storyboarderSketchPane, boardPath)
   layersEditor = new LayersEditor(storyboarderSketchPane, sfx, notifications)
   storyboarderSketchPane.on('pointerdown', () => {
@@ -981,7 +982,7 @@ let loadBoardUI = ()=> {
     }
   })
 
-  StsSidebar.init({ width: size[0], height: size[1] })
+  StsSidebar.init(shotTemplateSystem, size[0] / size[1])
   StsSidebar.on('select', (img, params, camera) => {
     let board = boardData.boards[currentBoard]
 
@@ -990,6 +991,10 @@ let loadBoardUI = ()=> {
       camera
     }
     markBoardFileDirty()
+    guides.setPerspectiveParams({
+      cameraParams: board.sts && board.sts.camera,
+      rotation: 0
+    })
 
     if (!img) return
 
@@ -1764,6 +1769,11 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
     renderMarkerPosition()
 
     StsSidebar.reset(boardData.boards[currentBoard].sts)
+    guides.setPerspectiveParams({
+      cameraParams: boardData.boards[currentBoard].sts && boardData.boards[currentBoard].sts.camera,
+      rotation: 0
+    })
+
 
     // reset reference layer opacity (if necessary)
     let opacity = Number(document.querySelector('.layers-ui-reference-opacity').value)
