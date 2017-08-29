@@ -81,10 +81,10 @@ app.on('ready', () => {
   })
   appServer.on('error', err => {
     if (err.errno === 'EADDRINUSE') {
-      dialog.showMessageBox(null, {
-        type: 'error',
-        message: 'Could not start the mobile web app server. The port was already in use. Is Storyboarder already open?'
-      })
+      // dialog.showMessageBox(null, {
+      //   type: 'error',
+      //   message: 'Could not start the mobile web app server. The port was already in use. Is Storyboarder already open?'
+      // })
     } else {
       dialog.showMessageBox(null, {
         type: 'error',
