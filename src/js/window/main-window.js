@@ -1,7 +1,6 @@
 const {ipcRenderer, shell, remote, nativeImage, clipboard} = require('electron')
 const { app } = require('electron').remote
 const child_process = require('child_process')
-//const electronLocalshortcut = require('electron-localshortcut');
 const fs = require('fs')
 const os = require('os')
 const dns = require('dns')
