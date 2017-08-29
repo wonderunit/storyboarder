@@ -22,7 +22,7 @@ const model = {
 
 let state = {
   render (model) {
-    // broadcast every change
+    // broadcast every change that the mobile app might care about
     io.of('/').emit('canImport', model.canImport)
   }
 }
@@ -37,6 +37,10 @@ class MobileServer extends EventEmitter {
 
     app.get('/', function(req, res) {
       res.sendFile(__dirname + '/index.html')
+    })
+
+    http.on('error', err => {
+      that.emit('error', err)
     })
 
     http.listen(portNumber, function() {

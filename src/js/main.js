@@ -13,7 +13,7 @@ const fountain = require('./vendor/fountain')
 const fountainDataParser = require('./fountain-data-parser')
 const fountainSceneIdUtil = require('./fountain-scene-id-util')
 
-const appServer = new(require('./express-app/app'))
+const MobileServer = require('./express-app/app')
 
 const preferencesUI = require('./windows/preferences')()
 
@@ -53,18 +53,7 @@ let toBeOpenedPath
 let onCreateNew
 let isLoadingProject
 
-appServer.on('pointerEvent', (e)=> {
-  console.log('pointerEvent')
-})
-
-appServer.on('image', (e) => {
-  mainWindow.webContents.send('newBoard', 1)
-  mainWindow.webContents.send('importImage', e.fileData)
-})
-
-appServer.on('worksheet', (e) => {
-  mainWindow.webContents.send('importWorksheets', [e.fileData])
-})
+let appServer
 
 // this only works on mac.
 app.on('open-file', (event, path) => {
@@ -78,6 +67,32 @@ app.on('open-file', (event, path) => {
 
 app.on('ready', () => {
   analytics.init(prefs.enableAnalytics)
+
+  appServer = new MobileServer()
+  appServer.on('pointerEvent', (e)=> {
+    console.log('pointerEvent')
+  })
+  appServer.on('image', (e) => {
+    mainWindow.webContents.send('newBoard', 1)
+    mainWindow.webContents.send('importImage', e.fileData)
+  })
+  appServer.on('worksheet', (e) => {
+    mainWindow.webContents.send('importWorksheets', [e.fileData])
+  })
+  appServer.on('error', err => {
+    if (err.errno === 'EADDRINUSE') {
+      dialog.showMessageBox(null, {
+        type: 'error',
+        message: 'Could not start the mobile web app server. The port was already in use. Is Storyboarder already open?'
+      })
+    } else {
+      dialog.showMessageBox(null, {
+        type: 'error',
+        message: err
+      })
+    }
+  })
+
   // open the welcome window when the app loads up first
   openWelcomeWindow()
   // via https://github.com/electron/electron/issues/4690#issuecomment-217435222
