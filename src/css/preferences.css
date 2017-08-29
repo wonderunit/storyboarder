@@ -17,7 +17,7 @@
 }
 
 .preferences-form {
-  padding: 60px;
+  padding: 48px 60px 60px;
 }
 
 .preferences-title {
@@ -27,7 +27,7 @@
 }
 
 .preferences-fieldset {
-  padding: 0 0 12px 0;
+  padding: 0 0 24px 0;
 }
 .preferences-subhead {
   font-size: 24px;
@@ -39,15 +39,11 @@
 }
 
 .preferences-hint {
-   opacity: 0.5;
-   font-size: 87.5%;
-   margin: 10px 0 48px;
+  margin-top: 0.5rem;
+  opacity: 0.5;
+  font-size: 87.5%;
  }
- 
- .preferences-footer {
-   margin-top: 24px;
- }
- 
+  
  sup {
    font-size: 125%;
    line-height: 0;
