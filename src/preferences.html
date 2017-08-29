@@ -9,55 +9,8 @@
   <body class="preferences-window">
     <div class="preferences-form">
       <h1 class="preferences-title">Preferences</h1>
-      <div class="preferences-hint">
+      <div class="preferences-hint" style="margin: 0 0 48px">
         Please restart Storyboarder to apply changes.
-      </div>
-
-      <div class="preferences-fieldset">
-        <h2 class="preferences-subhead">Sounds</h2>
-        <div class="preferences-input">
-          <input
-            type="checkbox"
-            name="enableDrawingSoundEffects"
-            id="enableDrawingSoundEffects" />
-
-          <label for="enableDrawingSoundEffects">
-            <span></span>Drawing Sound Effects
-          </label>
-        </div>
-
-        <div class="preferences-input">
-          <input
-            type="checkbox"
-            name="enableDrawingMelodySoundEffects"
-            id="enableDrawingMelodySoundEffects" />
-
-          <label for="enableDrawingMelodySoundEffects">
-            <span></span>Drawing Melodies
-          </label>
-        </div>
-
-        <div class="preferences-input">
-          <input
-            type="checkbox"
-            name="enableUISoundEffects"
-            id="enableUISoundEffects" />
-
-          <label for="enableUISoundEffects">
-            <span></span>User Interface Sound Effects
-          </label>
-        </div>
-
-        <div class="preferences-input">
-          <input
-            type="checkbox"
-            name="enableHighQualityAudio"
-            id="enableHighQualityAudio" />
-
-          <label for="enableHighQualityAudio">
-            <span></span>Enable High Quality Audio<sup>*</sup>
-          </label>
-        </div>
       </div>
 
       <div class="preferences-fieldset">
@@ -115,15 +68,64 @@
             id="defaultBoardTiming" />
 
           <label for="defaultBoardTiming">
-            <span></span>Default Board Timing (in msecs)
+            <span style="font-size: 87.5%; margin-left: 0.5em;">
+              Default Board Timing (in msecs)
+            </span>
           </label>
         </div>
 
       </div>
 
       <div class="preferences-fieldset">
+        <h2 class="preferences-subhead">Sounds</h2>
+        <div class="preferences-input">
+          <input
+            type="checkbox"
+            name="enableDrawingSoundEffects"
+            id="enableDrawingSoundEffects" />
+
+          <label for="enableDrawingSoundEffects">
+            <span></span>Drawing Sound Effects
+          </label>
+        </div>
+
+        <div class="preferences-input">
+          <input
+            type="checkbox"
+            name="enableDrawingMelodySoundEffects"
+            id="enableDrawingMelodySoundEffects" />
+
+          <label for="enableDrawingMelodySoundEffects">
+            <span></span>Drawing Melodies
+          </label>
+        </div>
+
+        <div class="preferences-input">
+          <input
+            type="checkbox"
+            name="enableUISoundEffects"
+            id="enableUISoundEffects" />
+
+          <label for="enableUISoundEffects">
+            <span></span>User Interface Sound Effects
+          </label>
+        </div>
+
+        <div class="preferences-input">
+          <input
+            type="checkbox"
+            name="enableHighQualityAudio"
+            id="enableHighQualityAudio" />
+
+          <label for="enableHighQualityAudio">
+            <span></span>Enable High Quality Audio<sup>*</sup>
+          </label>
+        </div>
+      </div>
+
+      <div class="preferences-fieldset">
         <h2 class="preferences-subhead">Performance Enhancements</h2>
-        <div class="preferences-hint">
+        <div class="preferences-hint" style="margin: 0 0 24px">
             Disable these if drawing feels slow.
           </div>
         <div class="preferences-input">
@@ -146,6 +148,9 @@
           <label for="enableBrushCursor">
             <span></span>Enable Brush Cursor While Drawing
           </label>
+          <div class="preferences-hint">
+            When enabled, brush cursor matches brush tool size. When disabled, the faster system cursor is used.
+          </div>
         </div>
 
         <div class="preferences-input">

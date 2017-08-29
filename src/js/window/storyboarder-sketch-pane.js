@@ -131,24 +131,28 @@ class StoryboarderSketchPane extends EventEmitter {
       switch (this.cursorType) {
         case 'move':
           document.querySelector('#storyboarder-sketch-pane .container').style.cursor = 'move'
-          this.brushPointerContainer.style.visibility = 'hidden'
+          if (this.brushPointerContainer) this.brushPointerContainer.style.visibility = 'hidden'
           break
 
         case 'ew-resize':
           document.querySelector('#storyboarder-sketch-pane .container').style.cursor = 'ew-resize'
-          this.brushPointerContainer.style.visibility = 'hidden'
+          if (this.brushPointerContainer) this.brushPointerContainer.style.visibility = 'hidden'
           break
 
         case 'drawing':
         default:
-          document.querySelector('#storyboarder-sketch-pane .container').style.cursor = 'none'
-          this.brushPointerContainer.style.visibility = 'visible'
+          if (this.brushPointerContainer) {
+            document.querySelector('#storyboarder-sketch-pane .container').style.cursor = 'none'
+            this.brushPointerContainer.style.visibility = 'visible'
+          } else {
+            document.querySelector('#storyboarder-sketch-pane .container').style.cursor = 'crosshair'
+          }
           break
       }
 
     } else {
       document.querySelector('#storyboarder-sketch-pane .container').style.cursor = 'default'
-      this.brushPointerContainer.style.visibility = 'hidden'
+      if (this.brushPointerContainer) this.brushPointerContainer.style.visibility = 'hidden'
     }
   }
 
