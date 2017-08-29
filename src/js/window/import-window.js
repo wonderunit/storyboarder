@@ -565,7 +565,12 @@ const getImagesToImport = () => {
     destCanvas.getContext("2d").drawImage(flatImage, cropMarks[i][0]*flatImage.width+model.offset[0], cropMarks[i][1]*flatImage.height+model.offset[1], cropMarks[i][2]*flatImage.width, cropMarks[i][3]*flatImage.height, 0, 0, destCanvas.width, destCanvas.height)
     // imgData = destCanvas.toDataURL().replace(/^data:image\/\w+;base64,/, '')
     // fs.writeFileSync(path.join(app.getPath('temp'), 'crop' + i + '.png'), imgData, 'base64')
-    images.push(destCanvas.toDataURL())
+
+    if (checkForImageContent(destCanvas)) {
+      images.push(destCanvas.toDataURL())
+    } else {
+      console.log('Skipping blank image', i)
+    }
   }
   return images
 }
@@ -979,6 +984,38 @@ const checkLineIntersection = (line1StartX, line1StartY, line1EndX, line1EndY, l
     // if line1 and line2 are segments, they intersect if both of the above are true
     return result;
 }
+
+const checkForImageContent = canvas => {
+  let context = canvas.getContext('2d')
+  let imageData = context.getImageData(0, 0, canvas.width, canvas.height)
+
+  // get pixels
+  let img_u8 = new jsfeat.matrix_t(canvas.width, canvas.height, jsfeat.U8C1_t)
+  jsfeat.imgproc.grayscale(imageData.data, canvas.width, canvas.height, img_u8)
+
+  // blur
+  let r = 8
+  let kernel_size = (r+1) << 1
+  jsfeat.imgproc.gaussian_blur(img_u8, img_u8, kernel_size, 0)
+
+  // canny
+  jsfeat.imgproc.canny(img_u8, img_u8, 10, 50)
+
+  let i = img_u8.cols * img_u8.rows, pix = 0
+  let count = 0
+  while (--i >= 0) {
+    count+= img_u8.data[i]
+  }
+
+  // 0 = empty, 255 drawn
+  const threshold = canvas.width * canvas.height * 255 * 0.0009
+  if (count >= threshold) {
+    return true
+  } else {
+    return false
+  }
+}
+
 
 const outputImage = (img_u8, context, filename) => {
   let imageData = context.getImageData(0, 0, context.canvas.width, context.canvas.height)
