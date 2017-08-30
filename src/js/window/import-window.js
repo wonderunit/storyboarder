@@ -987,14 +987,18 @@ const checkLineIntersection = (line1StartX, line1StartY, line1EndX, line1EndY, l
 
 const checkForImageContent = canvas => {
   let context = canvas.getContext('2d')
-  let imageData = context.getImageData(0, 0, canvas.width, canvas.height)
+  
+  let cropFactor = 0.2
 
+  let imageData = context.getImageData(Math.floor(canvas.width*cropFactor), Math.floor(canvas.height*cropFactor), canvas.width-(Math.floor(canvas.width*cropFactor)*2), canvas.height-(Math.floor(canvas.height*cropFactor)*2))
+
+  let dim = [canvas.width-(Math.floor(canvas.width*cropFactor)*2), canvas.height-(Math.floor(canvas.height*cropFactor)*2)]
   // get pixels
-  let img_u8 = new jsfeat.matrix_t(canvas.width, canvas.height, jsfeat.U8C1_t)
-  jsfeat.imgproc.grayscale(imageData.data, canvas.width, canvas.height, img_u8)
+  let img_u8 = new jsfeat.matrix_t(dim[0], dim[1], jsfeat.U8C1_t)
+  jsfeat.imgproc.grayscale(imageData.data, dim[0], dim[1], img_u8)
 
   // blur
-  let r = 8
+  let r = Math.floor(dim[0]/150)
   let kernel_size = (r+1) << 1
   jsfeat.imgproc.gaussian_blur(img_u8, img_u8, kernel_size, 0)
 
@@ -1008,7 +1012,7 @@ const checkForImageContent = canvas => {
   }
 
   // 0 = empty, 255 drawn
-  const threshold = canvas.width * canvas.height * 255 * 0.0009
+  const threshold = dim[0] * dim[1] * .0005
   if (count >= threshold) {
     return true
   } else {
