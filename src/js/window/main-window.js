@@ -44,12 +44,14 @@ const pkg = require('../../../package.json')
 
 const sharedObj = remote.getGlobal('sharedObj')
 
-const LAYER_INDEX_REFERENCE = 0
-const LAYER_INDEX_MAIN = 1
-// onion = 2
-const LAYER_INDEX_NOTES = 3
-// guides = 4
-const LAYER_INDEX_COMPOSITE = 5
+const {
+  LAYER_INDEX_REFERENCE,
+  LAYER_INDEX_MAIN,
+  LAYER_INDEX_NOTES,
+  LAYER_INDEX_COMPOSITE,
+
+  LAYER_NAME_BY_INDEX
+} = require('../constants')
 
 const CanvasRecorder = require('../recording/canvas-recorder.js')
 const moment = require('moment')

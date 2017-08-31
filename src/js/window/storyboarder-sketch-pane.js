@@ -10,6 +10,8 @@ const LineMileageCounter = require('./line-mileage-counter')
 const keytracker = require('../utils/keytracker')
 const util = require('../utils')
 
+const { LAYER_NAME_BY_INDEX } = require('../constants')
+
 const prefsModule = require('electron').remote.require('./prefs.js')
 const enableBrushCursor = prefsModule.getPrefs('main')['enableBrushCursor']
 const enableStabilizer = prefsModule.getPrefs('main')['enableStabilizer']
@@ -660,9 +662,7 @@ class StoryboarderSketchPane extends EventEmitter {
 
   // FIXME DEPRECATED remove references in main-window if possible, use indices instead
   getLayerCanvasByName (name) {
-    // HACK hardcoded
-    const layerIndexByName = ['reference', 'main', 'onion', 'notes', 'guides', 'composite']
-    return this.sketchPane.getLayerCanvas(layerIndexByName.indexOf(name))
+    return this.sketchPane.getLayerCanvas(LAYER_NAME_BY_INDEX.indexOf(name))
   }
 
   getSnapshotAsCanvas (index) {

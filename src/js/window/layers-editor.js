@@ -1,3 +1,7 @@
+const {
+  LAYER_INDEX_REFERENCE
+} = require('../constants')
+
 const { DEFAULT_REFERENCE_LAYER_OPACITY } = require('../exporters/common')
 
 class LayersEditor {
