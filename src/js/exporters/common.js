@@ -11,7 +11,7 @@ const {
 
 const util = require('../utils')
 
-const DEFAULT_REFERENCE_LAYER_OPACITY = 75
+const DEFAULT_REFERENCE_LAYER_OPACITY = 0.75
 
 const msecsToFrames = (fps, value) =>
   (fps/1000) * value

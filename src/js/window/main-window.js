@@ -858,7 +858,7 @@ let loadBoardUI = ()=> {
   })
   storyboarderSketchPane.on('pointerdown', () => {
     if (toolbar.state.brush === 'light-pencil' && storyboarderSketchPane.sketchPane.getLayerOpacity() === 0) {
-      layersEditor.setReferenceOpacity(exporterCommon.DEFAULT_REFERENCE_LAYER_OPACITY / 100)
+      layersEditor.setReferenceOpacity(exporterCommon.DEFAULT_REFERENCE_LAYER_OPACITY)
     }
   })
 
@@ -2119,7 +2119,7 @@ let updateSketchPaneBoard = () => {
                               board.layers[LAYER_NAME_BY_INDEX[LAYER_INDEX_REFERENCE]] && 
                               typeof board.layers[LAYER_NAME_BY_INDEX[LAYER_INDEX_REFERENCE]].opacity !== 'undefined'
         ? board.layers[LAYER_NAME_BY_INDEX[LAYER_INDEX_REFERENCE]].opacity
-        : exporterCommon.DEFAULT_REFERENCE_LAYER_OPACITY / 100
+        : exporterCommon.DEFAULT_REFERENCE_LAYER_OPACITY
       layersEditor.setReferenceOpacity(referenceOpacity)
 
       onionSkin.reset()

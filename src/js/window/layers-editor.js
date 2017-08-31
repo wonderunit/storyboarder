@@ -16,7 +16,7 @@ class LayersEditor extends EventEmitter {
     this.model = {
       layers: {
         [LAYER_INDEX_REFERENCE]: {
-          opacity: DEFAULT_REFERENCE_LAYER_OPACITY / 100
+          opacity: DEFAULT_REFERENCE_LAYER_OPACITY
         }
       }
     }
