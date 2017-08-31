@@ -85,12 +85,28 @@ const getCanvasImageSourcesDataForBoard = (board, projectFileAbsolutePath) => {
       images.forEach((canvasImageSource, n) => {
         let layerIndex = indices[n]
         if (canvasImageSource) {
+
+          // default opacity for all layers is 1
+          let opacity = 1
+
+          // special case for reference layer
+          if (layerIndex === 0) {
+            if (board.layers &&
+                board.layers.reference &&
+                !util.isUndefined(board.layers.reference.opacity))
+            {
+              // ... if defined, use that opacity value
+              opacity = board.layers.reference.opacity
+            } else {
+              // ... otherwise, use default for reference layer
+              opacity = DEFAULT_REFERENCE_LAYER_OPACITY
+            }
+          }
+
           canvasImageSourcesData.push({
             // layerIndex,
             canvasImageSource,
-            opacity: layerIndex === 0
-              ? (board.layers && board.layers.reference && board.layers.reference.opacity) || DEFAULT_REFERENCE_LAYER_OPACITY
-              : 1
+            opacity
           })
         }
       })
