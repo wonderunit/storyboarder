@@ -92,6 +92,10 @@ class LayersEditor extends EventEmitter {
     this.present({ opacity: { index: LAYER_INDEX_REFERENCE, value }})
   }
   
+  getReferenceOpacity () {
+    return this.model.layers[LAYER_INDEX_REFERENCE].opacity
+  }
+  
   render (model) {
     let index = LAYER_INDEX_REFERENCE
     let value = model.layers[index].opacity

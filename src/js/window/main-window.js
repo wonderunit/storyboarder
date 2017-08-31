@@ -854,13 +854,7 @@ let loadBoardUI = ()=> {
   onionSkin = new OnionSkin(storyboarderSketchPane, boardPath)
   layersEditor = new LayersEditor(storyboarderSketchPane, sfx, notifications)
   layersEditor.on('opacity', opacity => {
-    let layerName = LAYER_NAME_BY_INDEX[opacity.index]
-    // if the layer has a data object ...
-    if (boardData.boards[currentBoard].layers[layerName]) {
-      // ... update the value
-      boardData.boards[currentBoard].layers[layerName].opacity = opacity.value
-    }
-    markBoardFileDirty()
+    markImageFileDirty([LAYER_INDEX_REFERENCE])
   })
   storyboarderSketchPane.on('pointerdown', () => {
     if (toolbar.state.brush === 'light-pencil' && storyboarderSketchPane.sketchPane.getLayerOpacity() === 0) {
@@ -1310,6 +1304,16 @@ let saveImageFile = () => {
           }
         }
 
+        // special handling for reference layer
+        if (index === LAYER_INDEX_REFERENCE) {
+          // be sure to update the board file if the opacity changed
+          let referenceOpacity = layersEditor.getReferenceOpacity()
+          if (board.layers.reference.opacity !== referenceOpacity) {
+            board.layers.reference.opacity = referenceOpacity
+            shouldSaveBoardFile = true
+          }
+        }
+
         layerStatus[index].dirty = false
         numSaved++
         console.log('\tsaved', layerName, 'to', filename)
@@ -1318,7 +1322,7 @@ let saveImageFile = () => {
       }
     }
   }
-  
+
   if (shouldSaveBoardFile) {
     saveBoardFile()
   }
