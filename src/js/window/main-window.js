@@ -1324,6 +1324,7 @@ let saveImageFile = () => {
   }
 
   if (shouldSaveBoardFile) {
+    markBoardFileDirty()
     saveBoardFile()
   }
 
