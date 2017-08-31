@@ -88,7 +88,9 @@ const getCanvasImageSourcesDataForBoard = (board, projectFileAbsolutePath) => {
           canvasImageSourcesData.push({
             // layerIndex,
             canvasImageSource,
-            opacity: layerIndex === 0 ? DEFAULT_REFERENCE_LAYER_OPACITY : 1
+            opacity: layerIndex === 0
+              ? (board.layers && board.layers.reference && board.layers.reference.opacity) || DEFAULT_REFERENCE_LAYER_OPACITY
+              : 1
           })
         }
       })
@@ -125,7 +127,6 @@ const flattenCanvasImageSourcesDataToContext = (context, canvasImageSourcesData,
  * @returns {Promise}
  */
 const flattenBoardToCanvas = (board, canvas, size, projectFileAbsolutePath) => {
-
   return new Promise((resolve, reject) => {
     if (!canvas) { canvas = createWhiteContext(size).canvas }
     getCanvasImageSourcesDataForBoard(board, projectFileAbsolutePath)
