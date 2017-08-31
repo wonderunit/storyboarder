@@ -853,9 +853,18 @@ let loadBoardUI = ()=> {
   guides = new Guides(storyboarderSketchPane.getLayerCanvasByName('guides'), { perspectiveGridFn: shotTemplateSystem.requestGrid })
   onionSkin = new OnionSkin(storyboarderSketchPane, boardPath)
   layersEditor = new LayersEditor(storyboarderSketchPane, sfx, notifications)
+  layersEditor.on('opacity', opacity => {
+    let layerName = LAYER_NAME_BY_INDEX[opacity.index]
+    // if the layer has a data object ...
+    if (boardData.boards[currentBoard].layers[layerName]) {
+      // ... update the value
+      boardData.boards[currentBoard].layers[layerName].opacity = opacity.value
+    }
+    markBoardFileDirty()
+  })
   storyboarderSketchPane.on('pointerdown', () => {
     if (toolbar.state.brush === 'light-pencil' && storyboarderSketchPane.sketchPane.getLayerOpacity() === 0) {
-      layersEditor.resetOpacity()
+      layersEditor.setReferenceOpacity(exporterCommon.DEFAULT_REFERENCE_LAYER_OPACITY / 100)
     }
   })
 
@@ -1779,21 +1788,16 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
     renderMetaData()
     renderMarkerPosition()
 
+    let board = boardData.boards[currentBoard]
+
     if (shotTemplateSystem.isEnabled()) {
-      StsSidebar.reset(boardData.boards[currentBoard].sts)
+      StsSidebar.reset(board.sts)
     }
 
     guides.setPerspectiveParams({
-      cameraParams: boardData.boards[currentBoard].sts && boardData.boards[currentBoard].sts.camera,
+      cameraParams: board.sts && board.sts.camera,
       rotation: 0
     })
-
-
-    // reset reference layer opacity (if necessary)
-    let opacity = Number(document.querySelector('.layers-ui-reference-opacity').value)
-    if (opacity !== exporterCommon.DEFAULT_REFERENCE_LAYER_OPACITY) {
-      layersEditor.resetOpacity()
-    }
 
     updateSketchPaneBoard().then(() => resolve()).catch(e => console.error(e))
     ipcRenderer.send('analyticsEvent', 'Board', 'go to board', null, currentBoard)
@@ -2105,6 +2109,14 @@ let updateSketchPaneBoard = () => {
           storyboarderSketchPane.sketchPane.clearLayer(index)
         }
       }
+
+      // load opacity from data, if data exists
+      let referenceOpacity =  board.layers && 
+                              board.layers[LAYER_NAME_BY_INDEX[LAYER_INDEX_REFERENCE]] && 
+                              typeof board.layers[LAYER_NAME_BY_INDEX[LAYER_INDEX_REFERENCE]].opacity !== 'undefined'
+        ? board.layers[LAYER_NAME_BY_INDEX[LAYER_INDEX_REFERENCE]].opacity
+        : exporterCommon.DEFAULT_REFERENCE_LAYER_OPACITY / 100
+      layersEditor.setReferenceOpacity(referenceOpacity)
 
       onionSkin.reset()
       if (onionSkin.getEnabled()) {
