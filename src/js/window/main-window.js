@@ -912,7 +912,8 @@ let loadBoardUI = ()=> {
     pomodoroTimerView.addListener('start', (data)=>{
       toolbar.startPomodoroTimer(data)
       let boardSize = storyboarderSketchPane.sketchPane.getCanvasSize()
-      let targetOutputHeight = (400/boardSize.width)*boardSize.height
+      let outputWidth = 700
+      let targetOutputHeight = (outputWidth/boardSize.width)*boardSize.height
 
       isRecording = true
       let exportsPath = exporterCommon.ensureExportsPathExists(boardFilename)
@@ -921,7 +922,7 @@ let loadBoardUI = ()=> {
         exportsPath: exportsPath,
         filename: filename,
         outputStrategy: "CanvasBufferOutputGifStrategy",
-        outputWidth: 700,
+        outputWidth: outputWidth,
         outputHeight: targetOutputHeight,
         recordingStrategy: "RecordingStrategyTimeRatio",
         recordingTime: data.duration
