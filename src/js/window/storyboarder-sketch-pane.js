@@ -728,7 +728,11 @@ class DrawingStrategy {
 
   canvasPointerDown (e) {
     // via https://developer.mozilla.org/en-US/docs/Web/API/Pointer_events#Determining_button_states
-    this.isEraseButtonActive = e.buttons == 32
+    if (e.buttons == 32 || e.buttons == 2) {
+      this.container.isEraseButtonActive = true
+    } else {
+      this.container.isEraseButtonActive = false
+    }
 
     // prevent overlapping calls
     if (this.container.getIsDrawingOrStabilizing()) return
@@ -751,7 +755,11 @@ class DrawingStrategy {
 
   canvasPointerUp (e) {
     // via https://developer.mozilla.org/en-US/docs/Web/API/Pointer_events#Determining_button_states
-    this.isEraseButtonActive = e.buttons == 32
+    if (e.buttons == 32 || e.buttons == 2) {
+      this.container.isEraseButtonActive = true
+    } else {
+      this.container.isEraseButtonActive = false
+    }
 
     // force render remaining move events early, before frame loop
     this.container.renderEvents()
