@@ -921,7 +921,7 @@ let loadBoardUI = ()=> {
         exportsPath: exportsPath,
         filename: filename,
         outputStrategy: "CanvasBufferOutputGifStrategy",
-        outputWidth: 400,
+        outputWidth: 700,
         outputHeight: targetOutputHeight,
         recordingStrategy: "RecordingStrategyTimeRatio",
         recordingTime: data.duration,
@@ -2484,7 +2484,7 @@ let renderScript = ()=> {
               html.push('<div class="item" data-action="' + item.text + '"' + durationAsDataAttr + '>' + item.text + '</div>')
               break
             case 'dialogue':
-              html.push('<div class="item" data-dialogue="' + item.text + '"' + durationAsDataAttr + '>' + item.character + '<div class="dialogue" style="pointer-events: none">' + item.text + '</div></div>')
+              html.push('<div class="item" data-character="' + item.character + '" data-dialogue="' + item.text + '"' + durationAsDataAttr + '>' + item.character + '<div class="dialogue" style="pointer-events: none">' + item.text + '</div></div>')
               break
             case 'transition':
               html.push('<div class="item transition" data-notes="' + item.text + '"' + durationAsDataAttr + '>' + item.text + '</div>')
@@ -2508,7 +2508,7 @@ let renderScript = ()=> {
         duration = event.target.dataset.duration
       }
       if (event.target.dataset.dialogue) {
-        dialogue = event.target.dataset.dialogue
+        dialogue = event.target.dataset.character + ': ' + event.target.dataset.dialogue
       }
       if (event.target.dataset.action) {
         action = event.target.dataset.action
