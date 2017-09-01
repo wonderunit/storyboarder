@@ -924,8 +924,7 @@ let loadBoardUI = ()=> {
         outputWidth: 400,
         outputHeight: targetOutputHeight,
         recordingStrategy: "RecordingStrategyTimeRatio",
-        recordingTime: data.duration,
-        outputTime: 1,
+        recordingTime: data.duration
       })
 
       canvasRecorder.on('recording-ready', (filepaths)=> {

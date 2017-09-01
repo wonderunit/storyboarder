@@ -98,9 +98,9 @@ class Recorder extends EventEmitter {
 
 class RecordingStrategyTimeRatio {
   constructor(options) {
+    // recording time is in minutes.
     this.recordingTime = options.recordingTime || 10
-    this.outputTime = options.outputTime || 1
-    this.timeAllowance = (this.recordingTime / this.outputTime)*500
+    this.timeAllowance = this.recordingTime * 60 * 2
   }
 
   isFrameRecorded() {
