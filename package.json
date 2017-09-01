@@ -95,7 +95,7 @@
     "gl-vec2": "^1.0.0",
     "jsfeat": "0.0.8",
     "moment": "^2.18.1",
-    "pdfjs-dist": "^1.9.491",
+    "pdfjs-dist": "1.9.426",
     "pdfkit": "^0.8.3",
     "qr-image": "^3.2.0",
     "qrcode-reader": "^1.0.0",
