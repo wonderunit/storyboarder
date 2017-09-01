@@ -921,7 +921,7 @@ let loadBoardUI = ()=> {
         exportsPath: exportsPath,
         filename: filename,
         outputStrategy: "CanvasBufferOutputGifStrategy",
-        outputWidth: 400,
+        outputWidth: 700,
         outputHeight: targetOutputHeight,
         recordingStrategy: "RecordingStrategyTimeRatio",
         recordingTime: data.duration
@@ -980,26 +980,32 @@ let loadBoardUI = ()=> {
     }
   })
 
-  StsSidebar.init(shotTemplateSystem, size[0] / size[1])
-  StsSidebar.on('select', (img, params, camera) => {
-    let board = boardData.boards[currentBoard]
+  if (shotTemplateSystem.isEnabled()) {
+    StsSidebar.init(shotTemplateSystem, size[0] / size[1])
+    StsSidebar.on('select', (img, params, camera) => {
+      let board = boardData.boards[currentBoard]
 
-    board.sts = {
-      params,
-      camera
-    }
-    markBoardFileDirty()
-    guides.setPerspectiveParams({
-      cameraParams: board.sts && board.sts.camera,
-      rotation: 0
+      board.sts = {
+        params,
+        camera
+      }
+      markBoardFileDirty()
+      guides.setPerspectiveParams({
+        cameraParams: board.sts && board.sts.camera,
+        rotation: 0
+      })
+
+      if (!img) return
+
+      storyboarderSketchPane.replaceLayer(LAYER_INDEX_REFERENCE, img)
+      // force a file save and thumbnail update
+      saveImageFile()
     })
+  } else {
+    document.querySelector('#shot-generator-container').remove()
+  }
 
-    if (!img) return
 
-    storyboarderSketchPane.replaceLayer(LAYER_INDEX_REFERENCE, img)
-    // force a file save and thumbnail update
-    saveImageFile()
-  })
 
   // for debugging:
   //
@@ -1766,7 +1772,10 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
     renderMetaData()
     renderMarkerPosition()
 
-    StsSidebar.reset(boardData.boards[currentBoard].sts)
+    if (shotTemplateSystem.isEnabled()) {
+      StsSidebar.reset(boardData.boards[currentBoard].sts)
+    }
+
     guides.setPerspectiveParams({
       cameraParams: boardData.boards[currentBoard].sts && boardData.boards[currentBoard].sts.camera,
       rotation: 0
@@ -2483,7 +2492,7 @@ let renderScript = ()=> {
               html.push('<div class="item" data-action="' + item.text + '"' + durationAsDataAttr + '>' + item.text + '</div>')
               break
             case 'dialogue':
-              html.push('<div class="item" data-dialogue="' + item.text + '"' + durationAsDataAttr + '>' + item.character + '<div class="dialogue" style="pointer-events: none">' + item.text + '</div></div>')
+              html.push('<div class="item" data-character="' + item.character + '" data-dialogue="' + item.text + '"' + durationAsDataAttr + '>' + item.character + '<div class="dialogue" style="pointer-events: none">' + item.text + '</div></div>')
               break
             case 'transition':
               html.push('<div class="item transition" data-notes="' + item.text + '"' + durationAsDataAttr + '>' + item.text + '</div>')
@@ -2507,7 +2516,7 @@ let renderScript = ()=> {
         duration = event.target.dataset.duration
       }
       if (event.target.dataset.dialogue) {
-        dialogue = event.target.dataset.dialogue
+        dialogue = event.target.dataset.character + ': ' + event.target.dataset.dialogue
       }
       if (event.target.dataset.action) {
         action = event.target.dataset.action

@@ -42,22 +42,26 @@ document.querySelector('#pdf-button').onclick = (e) => {
 
 const print = () => {
   let cmd
-
+  let output
   switch (os.platform()) {
     case 'darwin':
       cmd = 'lpr -o landscape -#' + document.querySelector('#copies').value + ' ' + path.join(app.getPath('temp'), 'worksheetoutput.pdf') 
+      output = child_process.execSync(cmd)
       break
     case 'linux':
       cmd = 'lp -n ' + document.querySelector('#copies').value + ' ' +  path.join(app.getPath('temp'), 'worksheetoutput.pdf')
+      output = child_process.execSync(cmd)
       break
     case 'win32':
-      cmd = path.join(app.getAppPath(), 'src', 'data', 'app', 'SumatraPDF.exe') + ' -print-to-default -print-settings "' + document.querySelector('#copies').value + 'x" ' + path.join(app.getPath('temp'), 'worksheetoutput.pdf')
+      cmd = path.join(app.getAppPath(), 'src', 'data', 'app', 'SumatraPDF.exe')
+      let params = ['-print-to-default', '-silent', '-print-settings "' + document.querySelector('#copies').value + 'x"', path.join(app.getPath('temp'), 'worksheetoutput.pdf')]
+      console.log(params)
+      child_process.execFile(cmd, params, (e,s,d)=> {
+        console.log(s)
+      })
       break
   }
-
   ipcRenderer.send('analyticsEvent', 'Board', 'print', null, document.querySelector('#copies').value)
-
-  let output = child_process.execSync(cmd)
 }
 
 document.querySelector('#paper-size').addEventListener('change', (e) => {
@@ -116,7 +120,7 @@ const loadWindow = () => {
     // Disable workers to avoid yet another cross-origin issue (workers need
     // the URL of the script to be loaded, and dynamically loading a cross-origin
     // script does not work).
-     PDFJS.disableWorker = true;
+    // PDFJS.disableWorker = true;
 
     // The workerSrc property shall be specified.
     //console.log(require('pdfjs-dist/build/pdf.worker.js'))
