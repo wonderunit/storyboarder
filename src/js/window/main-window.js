@@ -981,26 +981,32 @@ let loadBoardUI = ()=> {
     }
   })
 
-  StsSidebar.init(shotTemplateSystem, size[0] / size[1])
-  StsSidebar.on('select', (img, params, camera) => {
-    let board = boardData.boards[currentBoard]
+  if (shotTemplateSystem.isEnabled()) {
+    StsSidebar.init(shotTemplateSystem, size[0] / size[1])
+    StsSidebar.on('select', (img, params, camera) => {
+      let board = boardData.boards[currentBoard]
 
-    board.sts = {
-      params,
-      camera
-    }
-    markBoardFileDirty()
-    guides.setPerspectiveParams({
-      cameraParams: board.sts && board.sts.camera,
-      rotation: 0
+      board.sts = {
+        params,
+        camera
+      }
+      markBoardFileDirty()
+      guides.setPerspectiveParams({
+        cameraParams: board.sts && board.sts.camera,
+        rotation: 0
+      })
+
+      if (!img) return
+
+      storyboarderSketchPane.replaceLayer(LAYER_INDEX_REFERENCE, img)
+      // force a file save and thumbnail update
+      saveImageFile()
     })
+  } else {
+    document.querySelector('#shot-generator-container').remove()
+  }
 
-    if (!img) return
 
-    storyboarderSketchPane.replaceLayer(LAYER_INDEX_REFERENCE, img)
-    // force a file save and thumbnail update
-    saveImageFile()
-  })
 
   // for debugging:
   //
@@ -1767,7 +1773,10 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
     renderMetaData()
     renderMarkerPosition()
 
-    StsSidebar.reset(boardData.boards[currentBoard].sts)
+    if (shotTemplateSystem.isEnabled()) {
+      StsSidebar.reset(boardData.boards[currentBoard].sts)
+    }
+
     guides.setPerspectiveParams({
       cameraParams: boardData.boards[currentBoard].sts && boardData.boards[currentBoard].sts.camera,
       rotation: 0

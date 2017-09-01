@@ -101,6 +101,8 @@ Generate grid as image
 
 const EventEmitter = require('events').EventEmitter
 
+const Detector = require('../vendor/Detector.js')
+
 window.THREE = require('../vendor/three.min.js')
 const JDLoader = require('../vendor/JDLoader.min.js')
 const {MeshLine, MeshLineMaterial} = require('../vendor/THREE.MeshLine.js')
@@ -1479,7 +1481,13 @@ class ShotTemplateSystem extends EventEmitter {
     this.definedShotParams = {}
     this.shotParams = {}
 
-    setup(config)
+    this.enabled = false
+
+    if (Detector.webgl) {
+      this.enabled = true
+      setup(config)
+    }
+
   }
 
   parseParamsText (string) {
@@ -1746,6 +1754,10 @@ class ShotTemplateSystem extends EventEmitter {
       position: camera.position.toArray(),
       rotation: camera.rotation.toArray()
     }
+  }
+
+  isEnabled () {
+    return this.enabled
   }
 
 }
