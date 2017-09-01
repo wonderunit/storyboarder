@@ -892,12 +892,16 @@ let loadBoardUI = ()=> {
 
       if(isRecording && data.state === "completed") {
         // make sure we capture the last frame
+        notifications.notify({message: "Congratulations! Generating your timelapse! This can take a minute.", timing: 5})
+
         canvasRecorder.capture([
           storyboarderSketchPane.sketchPane.getLayerCanvas(0),
           storyboarderSketchPane.sketchPane.getLayerCanvas(1),
           storyboarderSketchPane.sketchPane.getLayerCanvas(3)
         ], {force: true})
-        canvasRecorder.stop()
+        setTimeout(()=>{
+          canvasRecorder.stop()
+        }, 2000)
         isRecording = false
         isRecordingStarted = false
       }
