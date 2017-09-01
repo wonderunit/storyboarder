@@ -57,6 +57,7 @@ class StoryboarderSketchPane extends EventEmitter {
     this.lineMileageCounter = new LineMileageCounter()
 
     this.isMultiLayerOperation = false
+    this.isEraseButtonActive = false
 
     this.prevTool = null
     this.toolbar = null
@@ -217,7 +218,7 @@ class StoryboarderSketchPane extends EventEmitter {
     }
     
     if (!this.getIsDrawingOrStabilizing()) {
-      if (!keytracker('<alt>')) {
+      if (!keytracker('<alt>') && !this.isEraseButtonActive) {
         this.unsetQuickErase()
       }
     }
@@ -313,7 +314,7 @@ class StoryboarderSketchPane extends EventEmitter {
   }
 
   setQuickEraseIfRequested () {
-    if (keytracker('<alt>')) {
+    if (keytracker('<alt>') || this.isEraseButtonActive) {
       // don't switch if we're already on an eraser
       if (this.toolbar.getBrushOptions().kind !== 'eraser') {
         this.toolbar.setIsQuickErasing(true)
@@ -726,6 +727,13 @@ class DrawingStrategy {
   }
 
   canvasPointerDown (e) {
+    // via https://developer.mozilla.org/en-US/docs/Web/API/Pointer_events#Determining_button_states
+    if (e.buttons == 32 || e.buttons == 2) {
+      this.container.isEraseButtonActive = true
+    } else {
+      this.container.isEraseButtonActive = false
+    }
+
     // prevent overlapping calls
     if (this.container.getIsDrawingOrStabilizing()) return
 
@@ -746,6 +754,13 @@ class DrawingStrategy {
   }
 
   canvasPointerUp (e) {
+    // via https://developer.mozilla.org/en-US/docs/Web/API/Pointer_events#Determining_button_states
+    if (e.buttons == 32 || e.buttons == 2) {
+      this.container.isEraseButtonActive = true
+    } else {
+      this.container.isEraseButtonActive = false
+    }
+
     // force render remaining move events early, before frame loop
     this.container.renderEvents()
     // clear both event queues
