@@ -104,7 +104,7 @@ const initialState = {
   center: false,
   thirds: false,
   perspective: false,
-  
+
   onion: false
 }
 
@@ -241,7 +241,7 @@ class Toolbar extends EventEmitter {
 
     for (let el of overableControls) {
       el.addEventListener('pointerenter', this.onButtonOver)
-    }    
+    }
   }
 
   // TODO cleanup, remove listeners
@@ -268,7 +268,7 @@ class Toolbar extends EventEmitter {
       palette: opt.palette.map(color => color.clone())
     }
   }
-  
+
   getBrushOptions (brushName) {
     brushName = brushName || this.state.brush
     return this.cloneOptions(this.state.brushes[brushName])
@@ -288,7 +288,7 @@ class Toolbar extends EventEmitter {
       case 'duplicate':
         this.emit('duplicate')
         break
-      
+
       // brushes
       case 'light-pencil':
         if (this.state.transformMode) this.emit('cancelTransform')
@@ -392,7 +392,6 @@ class Toolbar extends EventEmitter {
       case 'pomodoro-running-status':
         this.emit('pomodoro-running')
         break
-
       default:
         // console.log('toolbar selection', selection)
         break
@@ -420,7 +419,7 @@ class Toolbar extends EventEmitter {
     }
     document.addEventListener('pointerup', this.onSwatchUp)
   }
-  
+
   onSwatchColorPicker (target) {
     clearTimeout(this.swatchTimer)
     this.swatchTimer = null
@@ -480,7 +479,7 @@ class Toolbar extends EventEmitter {
         btnMove.classList.remove('active')
         break
     }
-    
+
     let btnCaptions = this.el.querySelector('#toolbar-captions')
     if (this.state.captions) {
       btnCaptions.classList.add('active')
@@ -517,7 +516,7 @@ class Toolbar extends EventEmitter {
     const brushSizeValue = this.getBrushOptions().size
     brushSizeEl.innerHTML = Math.round(brushSizeValue)
   }
-  
+
   onBrushSizePointerDown (event) {
     let direction = parseInt(event.target.dataset.direction)
     this.changeBrushSize(direction, true)
@@ -527,7 +526,7 @@ class Toolbar extends EventEmitter {
     this.setState({ captions: !this.state.captions })
     this.emit('captions')
   }
-  
+
   onButtonOver (event) {
     // console.log('onButtonOver', event)
     sfx.rollover()

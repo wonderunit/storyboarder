@@ -10,6 +10,8 @@ const onChange = (name, event) => {
     prefsModule.set(name, el.checked)
   } else if (el.type == 'number') {
     prefsModule.set(name, el.value)
+  } else if (el.type == 'radio') {
+    prefsModule.set(name, el.value)
   }
   render()
 }
@@ -18,6 +20,8 @@ const render = () => {
   for (let el of inputs) {
     if (el.type == 'checkbox') {
       el.checked = prefs[el.name]
+    } else if (el.type == 'radio' && prefs[el.name] === el.value) {
+      el.checked = "checked"
     } else if (el.type == 'number') {
       el.value = prefs[el.name]
 
@@ -30,7 +34,7 @@ const render = () => {
   }
 }
 
-let inputs = document.querySelectorAll('input[type="checkbox"], input[type="number"]')
+let inputs = document.querySelectorAll('input[type="checkbox"], input[type="number"], input[type="radio"]')
 
 // bind
 for (let el of inputs) {
