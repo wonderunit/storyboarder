@@ -777,9 +777,6 @@ let loadBoardUI = ()=> {
   toolbar.on('open-in-editor', () => {
     openInEditor()
   })
-  toolbar.on('open-in-ora-editor', () => {
-    openInOraEditor()
-  })
 
   storyboarderSketchPane.toolbar = toolbar
 
@@ -1330,6 +1327,16 @@ let saveImageFile = () => {
 }
 
 let openInEditor = () => {
+  var editor = prefsModule.getPrefs('main')['editor']
+
+  if (editor === 'PSD') {
+    openInPSDEditor()
+  } else if (editor === 'ORA') {
+    openInOraEditor()
+  }
+}
+
+let openInPSDEditor = () => {
     let imageFilePaths = []
     let psdPromises = []
     for(let selection of selections) {

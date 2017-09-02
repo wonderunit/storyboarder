@@ -392,9 +392,6 @@ class Toolbar extends EventEmitter {
       case 'pomodoro-running-status':
         this.emit('pomodoro-running')
         break
-      case 'open-in-ora-editor':
-        this.emit('open-in-ora-editor')
-        break
       default:
         // console.log('toolbar selection', selection)
         break

@@ -27,7 +27,8 @@ const defaultPrefs = {
   enableAutoSave: true,
   import: {
     offset: [0, 0]
-  }
+  },
+  editor: "PSD"
 }
 
 // For slow computers, override the defaults here.
