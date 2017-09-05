@@ -862,6 +862,7 @@ let loadBoardUI = ()=> {
           // update data
           // layers are in data already, change data directly
           board.layers.reference.opacity = opacity.value
+          markImageFileDirty([LAYER_INDEX_REFERENCE])
           markBoardFileDirty()
         }
       } else {
