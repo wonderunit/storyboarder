@@ -854,7 +854,22 @@ let loadBoardUI = ()=> {
   onionSkin = new OnionSkin(storyboarderSketchPane, boardPath)
   layersEditor = new LayersEditor(storyboarderSketchPane, sfx, notifications)
   layersEditor.on('opacity', opacity => {
-    markImageFileDirty([LAYER_INDEX_REFERENCE])
+    // should we update the value of the project data?
+    let board = boardData.boards[currentBoard]
+    if (opacity.index === LAYER_INDEX_REFERENCE) {
+      if (board.layers && board.layers.reference && !util.isUndefined(board.layers.reference)) {
+        if (board.layers.reference.opacity !== opacity.value) {
+          // update data
+          // layers are in data already, change data directly
+          board.layers.reference.opacity = opacity.value
+          markBoardFileDirty()
+        }
+      } else {
+        // create data
+        // need to create layers
+        markImageFileDirty([LAYER_INDEX_REFERENCE])
+      }
+    }
   })
   storyboarderSketchPane.on('pointerdown', () => {
     if (toolbar.state.brush === 'light-pencil' && storyboarderSketchPane.sketchPane.getLayerOpacity() === 0) {
@@ -1298,18 +1313,18 @@ let saveImageFile = () => {
 
           if (!board.layers[layerName]) {
             board.layers[layerName] = { url: filename }
+
+            // special handling for reference layer
+            if (index === LAYER_INDEX_REFERENCE) {
+              let referenceOpacity = layersEditor.getReferenceOpacity()
+              if (board.layers.reference.opacity !== referenceOpacity) {
+                // update the value
+                board.layers.reference.opacity = referenceOpacity
+              }
+            }
+
             console.log('added', layerName, 'to board .layers data')
 
-            shouldSaveBoardFile = true
-          }
-        }
-
-        // special handling for reference layer
-        if (index === LAYER_INDEX_REFERENCE) {
-          // be sure to update the board file if the opacity changed
-          let referenceOpacity = layersEditor.getReferenceOpacity()
-          if (board.layers.reference.opacity !== referenceOpacity) {
-            board.layers.reference.opacity = referenceOpacity
             shouldSaveBoardFile = true
           }
         }
