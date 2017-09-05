@@ -44,12 +44,14 @@ const pkg = require('../../../package.json')
 
 const sharedObj = remote.getGlobal('sharedObj')
 
-const LAYER_INDEX_REFERENCE = 0
-const LAYER_INDEX_MAIN = 1
-// onion = 2
-const LAYER_INDEX_NOTES = 3
-// guides = 4
-const LAYER_INDEX_COMPOSITE = 5
+const {
+  LAYER_INDEX_REFERENCE,
+  LAYER_INDEX_MAIN,
+  LAYER_INDEX_NOTES,
+  LAYER_INDEX_COMPOSITE,
+
+  LAYER_NAME_BY_INDEX
+} = require('../constants')
 
 const CanvasRecorder = require('../recording/canvas-recorder.js')
 const moment = require('moment')
@@ -851,9 +853,28 @@ let loadBoardUI = ()=> {
   guides = new Guides(storyboarderSketchPane.getLayerCanvasByName('guides'), { perspectiveGridFn: shotTemplateSystem.requestGrid })
   onionSkin = new OnionSkin(storyboarderSketchPane, boardPath)
   layersEditor = new LayersEditor(storyboarderSketchPane, sfx, notifications)
+  layersEditor.on('opacity', opacity => {
+    // should we update the value of the project data?
+    let board = boardData.boards[currentBoard]
+    if (opacity.index === LAYER_INDEX_REFERENCE) {
+      if (board.layers && board.layers.reference && !util.isUndefined(board.layers.reference)) {
+        if (board.layers.reference.opacity !== opacity.value) {
+          // update data
+          // layers are in data already, change data directly
+          board.layers.reference.opacity = opacity.value
+          markImageFileDirty([LAYER_INDEX_REFERENCE])
+          markBoardFileDirty()
+        }
+      } else {
+        // create data
+        // need to create layers
+        markImageFileDirty([LAYER_INDEX_REFERENCE])
+      }
+    }
+  })
   storyboarderSketchPane.on('pointerdown', () => {
     if (toolbar.state.brush === 'light-pencil' && storyboarderSketchPane.sketchPane.getLayerOpacity() === 0) {
-      layersEditor.resetOpacity()
+      layersEditor.setReferenceOpacity(exporterCommon.DEFAULT_REFERENCE_LAYER_OPACITY)
     }
   })
 
@@ -1293,6 +1314,16 @@ let saveImageFile = () => {
 
           if (!board.layers[layerName]) {
             board.layers[layerName] = { url: filename }
+
+            // special handling for reference layer
+            if (index === LAYER_INDEX_REFERENCE) {
+              let referenceOpacity = layersEditor.getReferenceOpacity()
+              if (board.layers.reference.opacity !== referenceOpacity) {
+                // update the value
+                board.layers.reference.opacity = referenceOpacity
+              }
+            }
+
             console.log('added', layerName, 'to board .layers data')
 
             shouldSaveBoardFile = true
@@ -1307,8 +1338,9 @@ let saveImageFile = () => {
       }
     }
   }
-  
+
   if (shouldSaveBoardFile) {
+    markBoardFileDirty()
     saveBoardFile()
   }
 
@@ -1475,8 +1507,6 @@ const renderThumbnailToNewCanvas = (index, options = { forceReadFromFiles: false
   if (!options.forceReadFromFiles && index == currentBoard) {
     // grab from memory
     canvasImageSources = storyboarderSketchPane.getCanvasImageSources()
-    // force reference opacity to default value
-    canvasImageSources[LAYER_INDEX_REFERENCE].opacity = exporterCommon.DEFAULT_REFERENCE_LAYER_OPACITY
     // render to context
     exporterCommon.flattenCanvasImageSourcesDataToContext(context, canvasImageSources, size)
     return Promise.resolve(canvas)
@@ -1777,21 +1807,16 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
     renderMetaData()
     renderMarkerPosition()
 
+    let board = boardData.boards[currentBoard]
+
     if (shotTemplateSystem.isEnabled()) {
-      StsSidebar.reset(boardData.boards[currentBoard].sts)
+      StsSidebar.reset(board.sts)
     }
 
     guides.setPerspectiveParams({
-      cameraParams: boardData.boards[currentBoard].sts && boardData.boards[currentBoard].sts.camera,
+      cameraParams: board.sts && board.sts.camera,
       rotation: 0
     })
-
-
-    // reset reference layer opacity (if necessary)
-    let opacity = Number(document.querySelector('.layers-ui-reference-opacity').value)
-    if (opacity !== exporterCommon.DEFAULT_REFERENCE_LAYER_OPACITY) {
-      layersEditor.resetOpacity()
-    }
 
     updateSketchPaneBoard().then(() => resolve()).catch(e => console.error(e))
     ipcRenderer.send('analyticsEvent', 'Board', 'go to board', null, currentBoard)
@@ -2103,6 +2128,14 @@ let updateSketchPaneBoard = () => {
           storyboarderSketchPane.sketchPane.clearLayer(index)
         }
       }
+
+      // load opacity from data, if data exists
+      let referenceOpacity =  board.layers && 
+                              board.layers[LAYER_NAME_BY_INDEX[LAYER_INDEX_REFERENCE]] && 
+                              typeof board.layers[LAYER_NAME_BY_INDEX[LAYER_INDEX_REFERENCE]].opacity !== 'undefined'
+        ? board.layers[LAYER_NAME_BY_INDEX[LAYER_INDEX_REFERENCE]].opacity
+        : exporterCommon.DEFAULT_REFERENCE_LAYER_OPACITY
+      layersEditor.setReferenceOpacity(referenceOpacity)
 
       onionSkin.reset()
       if (onionSkin.getEnabled()) {

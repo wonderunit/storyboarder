@@ -1,10 +1,25 @@
+const EventEmitter = require('events').EventEmitter
+
+const {
+  LAYER_INDEX_REFERENCE
+} = require('../constants')
+
 const { DEFAULT_REFERENCE_LAYER_OPACITY } = require('../exporters/common')
 
-class LayersEditor {
+class LayersEditor extends EventEmitter {
   constructor (storyboarderSketchPane, sfx, notifications) {
+    super()
     this.storyboarderSketchPane = storyboarderSketchPane
     this.sfx = sfx
     this.notifications = notifications
+
+    this.model = {
+      layers: {
+        [LAYER_INDEX_REFERENCE]: {
+          opacity: DEFAULT_REFERENCE_LAYER_OPACITY
+        }
+      }
+    }
 
     // document.querySelector('.layers-ui-notes-visible').addEventListener('pointerdown', this.toggleLayer.bind(this, 3))
     document.querySelector('.layers-ui-notes-clear').addEventListener('click', ()=>{
@@ -31,21 +46,21 @@ class LayersEditor {
         sfx.negative()
         notifications.notify({message: 'Merged the light layer up to the main layer. The light layer is now baked into the main layer. If this is not what you want, undo now!', timing: 5})
     })
+
     document.querySelector('.layers-ui-reference-opacity').addEventListener('input', event => {
       event.preventDefault()
-      this.setLayerOpacity(event.target.value / 100, 0)
+      this.setReferenceOpacity(event.target.value / 100)
     })
+
+    this.render(this.model)
   }
 
-  toggleLayer (index) {
-    event.preventDefault()
-    let curr = this.storyboarderSketchPane.sketchPane.getLayerOpacity(index)
-    if (curr > 0) {
-      this.storyboarderSketchPane.sketchPane.setLayerOpacity(0, index)
-    } else {
-      this.storyboarderSketchPane.sketchPane.setLayerOpacity(1, index)
-    }
-  }
+  // NOT USED
+  //
+  // toggleLayer (index) {
+  //   event.preventDefault()
+  //   this.present({ opacity: { index: LAYER_INDEX_REFERENCE, toggle: true })
+  // }
 
   clearLayer (index) {
     event.preventDefault()
@@ -63,13 +78,29 @@ class LayersEditor {
     this.storyboarderSketchPane.mergeLayers([0, 1], 1) // HACK hardcoded
   }
 
-  setLayerOpacity (opacity, index) {
-    this.storyboarderSketchPane.sketchPane.setLayerOpacity(opacity, index)
+  present (data) {
+    if (data.opacity) {
+      this.model.layers[data.opacity.index].opacity = data.opacity.value
+      this.render(this.model)
+      this.emit('opacity', data.opacity)
+    }
   }
 
-  resetOpacity () {
-    document.querySelector('.layers-ui-reference-opacity').value = DEFAULT_REFERENCE_LAYER_OPACITY
-    this.setLayerOpacity(DEFAULT_REFERENCE_LAYER_OPACITY / 100, 0)
+  // public method
+  // value = 0...1.0
+  setReferenceOpacity (value) {
+    this.present({ opacity: { index: LAYER_INDEX_REFERENCE, value }})
+  }
+  
+  getReferenceOpacity () {
+    return this.model.layers[LAYER_INDEX_REFERENCE].opacity
+  }
+  
+  render (model) {
+    let index = LAYER_INDEX_REFERENCE
+    let value = model.layers[index].opacity
+    document.querySelector('.layers-ui-reference-opacity').value = value * 100
+    this.storyboarderSketchPane.sketchPane.setLayerOpacity(value, index)
   }
 }
 

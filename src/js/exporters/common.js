@@ -11,7 +11,7 @@ const {
 
 const util = require('../utils')
 
-const DEFAULT_REFERENCE_LAYER_OPACITY = 75
+const DEFAULT_REFERENCE_LAYER_OPACITY = 0.75
 
 const msecsToFrames = (fps, value) =>
   (fps/1000) * value
@@ -85,10 +85,28 @@ const getCanvasImageSourcesDataForBoard = (board, projectFileAbsolutePath) => {
       images.forEach((canvasImageSource, n) => {
         let layerIndex = indices[n]
         if (canvasImageSource) {
+
+          // default opacity for all layers is 1
+          let opacity = 1
+
+          // special case for reference layer
+          if (layerIndex === 0) {
+            if (board.layers &&
+                board.layers.reference &&
+                !util.isUndefined(board.layers.reference.opacity))
+            {
+              // ... if defined, use that opacity value
+              opacity = board.layers.reference.opacity
+            } else {
+              // ... otherwise, use default for reference layer
+              opacity = DEFAULT_REFERENCE_LAYER_OPACITY
+            }
+          }
+
           canvasImageSourcesData.push({
             // layerIndex,
             canvasImageSource,
-            opacity: layerIndex === 0 ? DEFAULT_REFERENCE_LAYER_OPACITY : 1
+            opacity
           })
         }
       })
@@ -125,7 +143,6 @@ const flattenCanvasImageSourcesDataToContext = (context, canvasImageSourcesData,
  * @returns {Promise}
  */
 const flattenBoardToCanvas = (board, canvas, size, projectFileAbsolutePath) => {
-
   return new Promise((resolve, reject) => {
     if (!canvas) { canvas = createWhiteContext(size).canvas }
     getCanvasImageSourcesDataForBoard(board, projectFileAbsolutePath)
