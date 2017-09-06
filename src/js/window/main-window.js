@@ -1344,9 +1344,12 @@ let saveImageFile = () => {
 
   // create/update the thumbnail image file if necessary
   let tasks = Promise.resolve()
+  let indexToSave = currentBoard // copy value
   if (shouldSaveThumbnail) {
-    tasks = saveThumbnailFile(currentBoard).then(index => updateThumbnailDisplayFromFile(index))
+    tasks = tasks.then(() => saveThumbnailFile(indexToSave))
+    tasks = tasks.then(() => updateThumbnailDisplayFromFile(indexToSave))
   }
+
   return tasks
 }
 
