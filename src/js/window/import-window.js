@@ -54,11 +54,13 @@ let model = {
   curr: 0,
   hasPoints: false,
 
-  // initialize offset from prefs, make a copy
+  // initialize from prefs, make a copy
   offset: [
     prefModule.getPrefs().import.offset[0],
     prefModule.getPrefs().import.offset[1]
   ],
+  skipBlankBoards: prefModule.getPrefs().import.skipBlankBoards,
+
   inputLocked: true,
 
   // HACK
@@ -110,6 +112,10 @@ model.present = data => {
     if (typeof data.offset[1] !== 'undefined') model.offset[1] = parseInt(data.offset[1], 10)
   }
 
+  if (typeof data.skipBlankBoards !== 'undefined') {
+    model.skipBlankBoards = data.skipBlankBoards
+  }
+
   if (typeof data.inputLocked !== 'undefined') {
     model.inputLocked = data.inputLocked
   }
@@ -120,7 +126,8 @@ model.present = data => {
 }
 model.persist = () => {
   prefModule.set('import', {
-    offset: model.offset
+    offset: model.offset,
+    skipBlankBoards: model.skipBlankBoards
   })
 }
 
@@ -261,6 +268,12 @@ view.calibration = (model) => {
             ${optionsStr(1)}
           </select>
         </div>
+      </div>
+      <div class="row">
+          <select ${disabledIfInputLocked} name="select" id="skip-blank-boards" onchange="return actions.setSkipBlankBoards(this.value === 'true')">
+            <option ${model.skipBlankBoards ? 'selected': ''} value="true">Skip Blank Boards</option>
+            <option ${!model.skipBlankBoards ? 'selected': ''} value="false">Include Blank Boards</option>
+          </select>
       </div>
       <div class="row" style="margin-top: 35px;">
         <a class="link-button" href="#" onclick="return actions.onTweakCorners()">Tweak Corner Points</a>
@@ -439,7 +452,7 @@ actions.import = () => {
   actions.setInputLocked(true)
   // allow DOM to render
   setTimeout(() => {
-    let images = getImagesToImport()
+    let images = getImagesToImport({ skipBlankBoards: model.skipBlankBoards })
     importImages(images)
     actions.hideWindow()
   }, 100)
@@ -487,6 +500,10 @@ actions.onTweakCorners = event => {
 }
 actions.setOffset = (x, y) => {
   actions.present({ offset: [x, y] })
+  return false
+}
+actions.setSkipBlankBoards = skipBlankBoards => {
+  actions.present({ skipBlankBoards })
   return false
 }
 // NOTE kind of a hack, this should really go through .present
@@ -556,7 +573,7 @@ actions.init()
 
 
 
-const getImagesToImport = () => {
+const getImagesToImport = (options = { skipBlankBoards: true }) => {
   let destCanvas = document.createElement('canvas')
   destCanvas.height = 900
   destCanvas.width = (900*Number(code[5]))
@@ -566,7 +583,7 @@ const getImagesToImport = () => {
     // imgData = destCanvas.toDataURL().replace(/^data:image\/\w+;base64,/, '')
     // fs.writeFileSync(path.join(app.getPath('temp'), 'crop' + i + '.png'), imgData, 'base64')
 
-    if (checkForImageContent(destCanvas)) {
+    if (!options.skipBlankBoards || checkForImageContent(destCanvas)) {
       images.push(destCanvas.toDataURL())
     } else {
       console.log('Skipping blank image', i)

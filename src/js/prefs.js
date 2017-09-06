@@ -26,7 +26,8 @@ const defaultPrefs = {
   enableAnalytics: true,
   enableAutoSave: true,
   import: {
-    offset: [0, 0]
+    offset: [0, 0],
+    skipBlankBoards: true
   }
 }
 
