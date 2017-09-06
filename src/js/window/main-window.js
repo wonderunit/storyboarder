@@ -645,17 +645,6 @@ let loadBoardUI = ()=> {
   })
 
   toolbar = new Toolbar(document.getElementById("toolbar"))
-  toolbar.on('add', () => {
-    newBoard()
-    gotoBoard(currentBoard+1)
-  })
-  toolbar.on('delete', () => {
-    deleteBoards()
-  })
-  toolbar.on('duplicate', () => {
-    duplicateBoard()
-  })
-
   toolbar.on('brush', (kind, options) => {
     toolbar.emit('cancelTransform')
     storyboarderSketchPane.setBrushTool(kind, options)
@@ -1024,7 +1013,9 @@ let loadBoardUI = ()=> {
       if (!img) return
 
       storyboarderSketchPane.replaceLayer(LAYER_INDEX_REFERENCE, img)
+
       // force a file save and thumbnail update
+      markImageFileDirty([LAYER_INDEX_REFERENCE])
       saveImageFile()
     })
   } else {
@@ -1085,29 +1076,34 @@ let insertNewBoardDataAtPosition = (position) => {
 }
 
 let newBoard = (position, shouldAddToUndoStack = true) => {
+  let tasks = Promise.resolve()
+
   if (shouldAddToUndoStack) {
-    saveImageFile() // force-save any current work
-    storeUndoStateForScene(true)
+    tasks = tasks.then(() => saveImageFile()) // force-save any current work
+    tasks = tasks.then(() => storeUndoStateForScene(true))
     //notifications.notify({message: "Added a new board. Let's make it a great one!", timing: 5})
   }
 
-  if (typeof position == "undefined") position = currentBoard + 1
+  tasks = tasks.then(() => {
+    if (typeof position == "undefined") position = currentBoard + 1
 
-  // create array entry
-  insertNewBoardDataAtPosition(position)
+    // create array entry
+    insertNewBoardDataAtPosition(position)
 
-  // indicate dirty for save sweep
-  markImageFileDirty([1]) // mark save for 'main' layer only // HACK hardcoded
-  markBoardFileDirty() // to save new board data
-  renderThumbnailDrawer()
-  storeUndoStateForScene()
+    // indicate dirty for save sweep
+    markImageFileDirty([1]) // mark save for 'main' layer only // HACK hardcoded
+    markBoardFileDirty() // to save new board data
+    renderThumbnailDrawer()
+    storeUndoStateForScene()
 
-  // is this not a brand new storyboarder project?
-  if (shouldAddToUndoStack) {
-    //sfx.bip('c6')
-    sfx.down(-2,0)
+    // is this not a brand new storyboarder project?
+    if (shouldAddToUndoStack) {
+      //sfx.bip('c6')
+      sfx.down(-2, 0)
+    }
+  })
 
-  }
+  return tasks
 }
 
 let insertNewBoardsWithFiles = (filepaths) => {
@@ -1348,9 +1344,12 @@ let saveImageFile = () => {
 
   // create/update the thumbnail image file if necessary
   let tasks = Promise.resolve()
+  let indexToSave = currentBoard // copy value
   if (shouldSaveThumbnail) {
-    tasks = saveThumbnailFile(currentBoard).then(index => updateThumbnailDisplayFromFile(index))
+    tasks = tasks.then(() => saveThumbnailFile(indexToSave))
+    tasks = tasks.then(() => updateThumbnailDisplayFromFile(indexToSave))
   }
+
   return tasks
 }
 
@@ -1532,7 +1531,7 @@ const saveThumbnailFile = (index, options = { forceReadFromFiles: false }) => {
     
       try {
         fs.writeFile(imageFilePath, imageData, 'base64', () => {
-          console.log('saved thumbnail', imageFilePath)
+          console.log('saved thumbnail', imageFilePath, 'at index:', index)
           resolve(index)
         })
       } catch (err) {
@@ -2236,10 +2235,11 @@ let renderThumbnailDrawer = ()=> {
     let thumbnailWidth = Math.floor(60 * boardData.aspectRatio)
     html.push('" style="width: ' + thumbnailWidth + 'px;">')
     let imageFilename = path.join(boardPath, 'images', board.url.replace('.png', '-thumbnail.png'))
+    let cacheBuster = '?' + Date.now()
     try {
       if (fs.existsSync(imageFilename)) {
         html.push('<div class="top">')
-        html.push('<img src="' + imageFilename + '" height="60" width="' + thumbnailWidth + '">')
+        html.push('<img src="' + imageFilename + cacheBuster + '" height="60" width="' + thumbnailWidth + '">')
         html.push('</div>')
       } else {
         // blank image
@@ -2283,9 +2283,10 @@ let renderThumbnailDrawer = ()=> {
       sfx.playEffect('metal')
     })
     contextMenu.on('add', () => {
-      newBoard()
-      gotoBoard(currentBoard+1)
-      ipcRenderer.send('analyticsEvent', 'Board', 'new')
+      newBoard().then(() => {
+        gotoBoard(currentBoard + 1)
+        ipcRenderer.send('analyticsEvent', 'Board', 'new')
+      })
     })
     contextMenu.on('delete', () => {
       deleteBoards()
@@ -3133,12 +3134,16 @@ ipcRenderer.on('newBoard', (event, args)=>{
   if (!textInputMode) {
     if (args > 0) {
       // insert after
-      newBoard()
-      gotoBoard(currentBoard+1)
+      newBoard().then(() => {
+        gotoBoard(currentBoard + 1)
+        ipcRenderer.send('analyticsEvent', 'Board', 'new')
+      })
     } else {
       // inset before
-      newBoard(currentBoard)
-      gotoBoard(currentBoard)
+      newBoard(currentBoard).then(() => {
+        gotoBoard(currentBoard)
+        ipcRenderer.send('analyticsEvent', 'Board', 'new')
+      })
     }
   }
   ipcRenderer.send('analyticsEvent', 'Board', 'new')
