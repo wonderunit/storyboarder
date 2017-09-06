@@ -645,17 +645,6 @@ let loadBoardUI = ()=> {
   })
 
   toolbar = new Toolbar(document.getElementById("toolbar"))
-  toolbar.on('add', () => {
-    newBoard()
-    gotoBoard(currentBoard+1)
-  })
-  toolbar.on('delete', () => {
-    deleteBoards()
-  })
-  toolbar.on('duplicate', () => {
-    duplicateBoard()
-  })
-
   toolbar.on('brush', (kind, options) => {
     toolbar.emit('cancelTransform')
     storyboarderSketchPane.setBrushTool(kind, options)

@@ -278,17 +278,6 @@ class Toolbar extends EventEmitter {
     let selection = this.getEventTargetSelection(event.target)
 
     switch (selection) {
-      // board operations
-      case 'add':
-        this.emit('add')
-        break
-      case 'delete':
-        this.emit('delete')
-        break
-      case 'duplicate':
-        this.emit('duplicate')
-        break
-      
       // brushes
       case 'light-pencil':
         if (this.state.transformMode) this.emit('cancelTransform')
