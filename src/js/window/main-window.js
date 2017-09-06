@@ -1076,29 +1076,34 @@ let insertNewBoardDataAtPosition = (position) => {
 }
 
 let newBoard = (position, shouldAddToUndoStack = true) => {
+  let tasks = Promise.resolve()
+
   if (shouldAddToUndoStack) {
-    saveImageFile() // force-save any current work
-    storeUndoStateForScene(true)
+    tasks = tasks.then(() => saveImageFile()) // force-save any current work
+    tasks = tasks.then(() => storeUndoStateForScene(true))
     //notifications.notify({message: "Added a new board. Let's make it a great one!", timing: 5})
   }
 
-  if (typeof position == "undefined") position = currentBoard + 1
+  tasks = tasks.then(() => {
+    if (typeof position == "undefined") position = currentBoard + 1
 
-  // create array entry
-  insertNewBoardDataAtPosition(position)
+    // create array entry
+    insertNewBoardDataAtPosition(position)
 
-  // indicate dirty for save sweep
-  markImageFileDirty([1]) // mark save for 'main' layer only // HACK hardcoded
-  markBoardFileDirty() // to save new board data
-  renderThumbnailDrawer()
-  storeUndoStateForScene()
+    // indicate dirty for save sweep
+    markImageFileDirty([1]) // mark save for 'main' layer only // HACK hardcoded
+    markBoardFileDirty() // to save new board data
+    renderThumbnailDrawer()
+    storeUndoStateForScene()
 
-  // is this not a brand new storyboarder project?
-  if (shouldAddToUndoStack) {
-    //sfx.bip('c6')
-    sfx.down(-2,0)
+    // is this not a brand new storyboarder project?
+    if (shouldAddToUndoStack) {
+      //sfx.bip('c6')
+      sfx.down(-2, 0)
+    }
+  })
 
-  }
+  return tasks
 }
 
 let insertNewBoardsWithFiles = (filepaths) => {
@@ -2274,9 +2279,9 @@ let renderThumbnailDrawer = ()=> {
       sfx.playEffect('metal')
     })
     contextMenu.on('add', () => {
-      newBoard()
-      gotoBoard(currentBoard+1)
-      ipcRenderer.send('analyticsEvent', 'Board', 'new')
+      newBoard().then(() => {
+        gotoBoard(currentBoard + 1)
+      })
     })
     contextMenu.on('delete', () => {
       deleteBoards()
@@ -3124,12 +3129,14 @@ ipcRenderer.on('newBoard', (event, args)=>{
   if (!textInputMode) {
     if (args > 0) {
       // insert after
-      newBoard()
-      gotoBoard(currentBoard+1)
+      newBoard().then(() => {
+        gotoBoard(currentBoard + 1)
+      })
     } else {
       // inset before
-      newBoard(currentBoard)
-      gotoBoard(currentBoard)
+      newBoard(currentBoard).then(() => {
+        gotoBoard(currentBoard)
+      })
     }
   }
   ipcRenderer.send('analyticsEvent', 'Board', 'new')
