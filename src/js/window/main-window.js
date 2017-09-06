@@ -2281,6 +2281,7 @@ let renderThumbnailDrawer = ()=> {
     contextMenu.on('add', () => {
       newBoard().then(() => {
         gotoBoard(currentBoard + 1)
+        ipcRenderer.send('analyticsEvent', 'Board', 'new')
       })
     })
     contextMenu.on('delete', () => {
@@ -3131,11 +3132,13 @@ ipcRenderer.on('newBoard', (event, args)=>{
       // insert after
       newBoard().then(() => {
         gotoBoard(currentBoard + 1)
+        ipcRenderer.send('analyticsEvent', 'Board', 'new')
       })
     } else {
       // inset before
       newBoard(currentBoard).then(() => {
         gotoBoard(currentBoard)
+        ipcRenderer.send('analyticsEvent', 'Board', 'new')
       })
     }
   }
