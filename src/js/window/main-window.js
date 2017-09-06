@@ -1528,7 +1528,7 @@ const saveThumbnailFile = (index, options = { forceReadFromFiles: false }) => {
     
       try {
         fs.writeFile(imageFilePath, imageData, 'base64', () => {
-          console.log('saved thumbnail', imageFilePath)
+          console.log('saved thumbnail', imageFilePath, 'at index:', index)
           resolve(index)
         })
       } catch (err) {
