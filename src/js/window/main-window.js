@@ -1013,7 +1013,9 @@ let loadBoardUI = ()=> {
       if (!img) return
 
       storyboarderSketchPane.replaceLayer(LAYER_INDEX_REFERENCE, img)
+
       // force a file save and thumbnail update
+      markImageFileDirty([LAYER_INDEX_REFERENCE])
       saveImageFile()
     })
   } else {
