@@ -2235,10 +2235,11 @@ let renderThumbnailDrawer = ()=> {
     let thumbnailWidth = Math.floor(60 * boardData.aspectRatio)
     html.push('" style="width: ' + thumbnailWidth + 'px;">')
     let imageFilename = path.join(boardPath, 'images', board.url.replace('.png', '-thumbnail.png'))
+    let cacheBuster = '?' + Date.now()
     try {
       if (fs.existsSync(imageFilename)) {
         html.push('<div class="top">')
-        html.push('<img src="' + imageFilename + '" height="60" width="' + thumbnailWidth + '">')
+        html.push('<img src="' + imageFilename + cacheBuster + '" height="60" width="' + thumbnailWidth + '">')
         html.push('</div>')
       } else {
         // blank image
