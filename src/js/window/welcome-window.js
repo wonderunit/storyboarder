@@ -8,7 +8,9 @@ const prefsModule = require('electron').remote.require('./prefs.js')
 
 const pkg = require('../../../package.json')
 
-menu.setWelcomeMenu()
+remote.getCurrentWindow().on('focus', () => {
+  menu.setWelcomeMenu()
+})
 
 let updateRecentDocuments = () => {
   let count = 0
