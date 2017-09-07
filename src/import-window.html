@@ -31,6 +31,36 @@
         box-sizing: border-box;
         padding: 10px;
       }
+
+      input[type=checkbox] {
+        display: none;
+      }
+
+      input[type="checkbox"] + label span {
+        display: inline-block;
+        width: 22px;
+        height: 22px;
+        margin: -2px 10px 0 0;
+        vertical-align: middle;
+        background: #3A3A3A;
+        border-radius: 3px;
+        /*cursor: pointer;*/
+      }
+
+      input[type=checkbox]:checked + label:before {
+        content:'✖';
+        padding-left: 5px;
+        padding-top: 3px;
+        text-shadow: 0px 1px 1px rgba(0, 0, 0, .2);
+        font-size: 15px;
+        text-align: center;
+        line-height: 1;
+        position: absolute;
+        color: white;
+        
+        padding-right: 6px;
+        padding-bottom: 3px;
+      }
     </style>
   </head>
   <body>

@@ -270,10 +270,10 @@ view.calibration = (model) => {
         </div>
       </div>
       <div class="row">
-          <select ${disabledIfInputLocked} name="select" id="skip-blank-boards" onchange="return actions.setSkipBlankBoards(this.value === 'true')">
-            <option ${model.skipBlankBoards ? 'selected': ''} value="true">Skip Blank Boards</option>
-            <option ${!model.skipBlankBoards ? 'selected': ''} value="false">Include Blank Boards</option>
-          </select>
+        <input type="checkbox" ${model.skipBlankBoards ? 'checked' : ''} id="skip-blank-boards" onchange="return actions.setSkipBlankBoards(this.checked ? true : false)" />
+        <label for="skip-blank-boards">
+          <span></span>Skip Blank Boards
+        </label>
       </div>
       <div class="row" style="margin-top: 35px;">
         <a class="link-button" href="#" onclick="return actions.onTweakCorners()">Tweak Corner Points</a>
