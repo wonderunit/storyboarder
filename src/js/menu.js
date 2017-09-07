@@ -1,15 +1,20 @@
 const { Menu, app } = require('electron').remote
 const { ipcRenderer, shell } = require('electron')
+const isDev = require('electron-is-dev')
 
 let SubMenuFragments = {}
 SubMenuFragments.View = [
-  {
-    label: 'Reload',
-    accelerator: 'CmdOrCtrl+R',
-    click (item, focusedWindow) {
-      if (focusedWindow) focusedWindow.reload()
-    }
-  },
+  ...isDev
+    ? [
+        {
+          label: 'Reload',
+          accelerator: 'CmdOrCtrl+R',
+          click (item, focusedWindow) {
+            if (focusedWindow) focusedWindow.reload()
+          }
+        }
+      ]
+    : [],
   {
     label: 'Toggle Developer Tools',
     accelerator: process.platform === 'darwin' ? 'Alt+Command+I' : 'Ctrl+Shift+I',
