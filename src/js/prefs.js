@@ -111,7 +111,8 @@ const migrate = () => {
 }
 
 const init = () => {
-  //console.log("I AM INIT")
+  console.log('Loading preferences from', prefFile)
+
   load()
   if (prefs.version !== defaultPrefs.version) {
     migrate()

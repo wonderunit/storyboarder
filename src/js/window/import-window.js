@@ -60,6 +60,7 @@ let model = {
     prefModule.getPrefs().import.offset[1]
   ],
   skipBlankBoards: prefModule.getPrefs().import.skipBlankBoards,
+  lastValidQrCode: prefModule.getPrefs().import.lastValidQrCode || '',
 
   inputLocked: true,
 
@@ -116,6 +117,10 @@ model.present = data => {
     model.skipBlankBoards = data.skipBlankBoards
   }
 
+  if (typeof data.lastValidQrCode !== 'undefined') {
+    model.lastValidQrCode = data.lastValidQrCode
+  }
+
   if (typeof data.inputLocked !== 'undefined') {
     model.inputLocked = data.inputLocked
   }
@@ -127,7 +132,8 @@ model.present = data => {
 model.persist = () => {
   prefModule.set('import', {
     offset: model.offset,
-    skipBlankBoards: model.skipBlankBoards
+    skipBlankBoards: model.skipBlankBoards,
+    lastValidQrCode: model.lastValidQrCode
   })
 }
 
@@ -215,14 +221,17 @@ view.cornerPointsEditor = (model) => {
 }
 view.qrCodeInput = (model) => {
   return ({
-    overview: `I couldn’t detect the QR code for this worksheet.
-                  You can find it to the left of the QR graphic
-                  on the printed worksheet.`,
+    overview: 'I couldn’t detect the QR code for this worksheet. ' +
+              (
+                model.lastValidQrCode.length
+                ? 'I guessed a QR code based on the last working one you gave me. '
+                : ''
+              ) + 'You can find the correct QR code to the left of the QR graphic on the printed worksheet.',
     form: `
       <form onsubmit="return actions.validateQrCode()">
         <div class="row">
           <label for="qr-code">QR Code:</label>
-          <input id="qr-code" type="text" />
+          <input id="qr-code" type="text" value="${model.lastValidQrCode}" />
         </div>
         <div id="button-content">
           <div class="button grey" onclick="return actions.validateQrCode()">Next</div>
@@ -505,6 +514,9 @@ actions.setOffset = (x, y) => {
 actions.setSkipBlankBoards = skipBlankBoards => {
   actions.present({ skipBlankBoards })
   return false
+}
+actions.setLastValidQrCode = lastValidQrCode => {
+  actions.present({ lastValidQrCode })
 }
 // NOTE kind of a hack, this should really go through .present
 //      also, could use an initialState for this instead
@@ -859,6 +871,8 @@ function processCornerPoints (cornerPoints, canvas, context, imageData, img_u8) 
 }
 
 function processQrCode (code, cornerPoints, canvas, context, imageData, img_u8) {
+  actions.setLastValidQrCode(code.join('-'))
+
   canvas.width = 2500
 
   // make a new image based on paper size
