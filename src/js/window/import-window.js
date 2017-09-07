@@ -258,13 +258,13 @@ view.calibration = (model) => {
       <div class="row row-grid">
         <div class="col">
           <label for="column-number">Offset X</label>
-          <select ${disabledIfInputLocked} name="select" id="column-number" onchange="return actions.setOffset(this.value, undefined)">
+          <select ${disabledIfInputLocked} id="column-number" onchange="return actions.setOffset(this.value, undefined)">
             ${optionsStr(0)}
           </select>
         </div>
         <div class="col">
           <label for="row-number">Offset Y</label>
-          <select ${disabledIfInputLocked} name="select" id="row-number" onchange="return actions.setOffset(undefined, this.value)">
+          <select ${disabledIfInputLocked} id="row-number" onchange="return actions.setOffset(undefined, this.value)">
             ${optionsStr(1)}
           </select>
         </div>
