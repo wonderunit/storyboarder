@@ -997,6 +997,10 @@ let loadBoardUI = ()=> {
 
   if (shotTemplateSystem.isEnabled()) {
     StsSidebar.init(shotTemplateSystem, size[0] / size[1])
+    StsSidebar.on('change', () => {
+      // HACK reset any open tooltips
+      tooltips.closeAll()
+    })
     StsSidebar.on('select', (img, params, camera) => {
       let board = boardData.boards[currentBoard]
 
