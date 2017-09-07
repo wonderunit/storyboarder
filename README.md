@@ -104,3 +104,7 @@ You're probably boarding on the Simpsons. You might want to escape North Korea t
 ## Contributers
 
 We would love help on this project. If you are interested in helping out feel free to email charles@wonderunit.com or submit a PR.
+
+## License 
+
+ISC 
