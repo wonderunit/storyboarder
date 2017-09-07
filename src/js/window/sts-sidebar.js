@@ -47,7 +47,7 @@ const addShot = () => {
   var shotParams = shotTemplateSystem.parseParamsText(document.querySelector("#sts-input1").value)
   generateShot(shotParams)
   sfx.playEffect('metal')
-  document.querySelector("#sts-select").innerHTML = shotTemplateSystem.getParamSelects(shotParams)
+  renderSelects(shotTemplateSystem.getParamSelects(shotParams))
   attachListeners()
 }
 
@@ -82,6 +82,11 @@ const renderPlaceholders = () => {
   }
 }
 
+const renderSelects = selects => {
+  document.querySelector("#sts-select").innerHTML = selects
+  emitter.emit('change')
+}
+
 /* events */
 
 const onInputKeyDown = event => {
@@ -105,7 +110,7 @@ const onSelectChange = event => {
 
 const onShotClick = event => {
   let shotParams = JSON.parse(event.target.firstChild.dataset.shotParams)
-  document.querySelector("#sts-select").innerHTML = shotTemplateSystem.getParamSelects(shotParams)
+  renderSelects(shotTemplateSystem.getParamSelects(shotParams))
   document.querySelector("#sts-input1").value = shotTemplateSystem.getTextString(shotParams)
   attachListeners()
 }
@@ -156,7 +161,7 @@ const reset = sts => {
 
   renderPlaceholders()
 
-  document.querySelector("#sts-select").innerHTML = shotTemplateSystem.getParamSelects(shotParams)
+  renderSelects(shotTemplateSystem.getParamSelects(shotParams))
   document.querySelector("#sts-input1").value = shotTemplateSystem.getTextString(shotParams)
   attachListeners()
 }
