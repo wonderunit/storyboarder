@@ -1095,6 +1095,7 @@ let newBoard = (position, shouldAddToUndoStack = true) => {
     markBoardFileDirty() // to save new board data
     renderThumbnailDrawer()
     storeUndoStateForScene()
+    gotoBoard(position) // go to new board on creation 
 
     // is this not a brand new storyboarder project?
     if (shouldAddToUndoStack) {
