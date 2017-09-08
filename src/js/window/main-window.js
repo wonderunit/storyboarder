@@ -3394,7 +3394,7 @@ let exportAnimatedGif = () => {
 }
 
 exporter.on('complete', path => {
-  notifications.notify({message: "I exported your board selection as a GIF. Share it with your friends! Post it to you twitter thing or your slack dingus.", timing: 20})
+  notifications.notify({message: "I exported your board selection as a GIF. Share it with your friends! Post it to your twitter thing or your slack dingus.", timing: 20})
   sfx.positive()
   shell.showItemInFolder(path)
 })
