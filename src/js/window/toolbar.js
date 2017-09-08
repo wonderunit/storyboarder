@@ -504,7 +504,7 @@ class Toolbar extends EventEmitter {
 
     const brushSizeEl = this.el.querySelector('.toolbar-brush-size-controls_val')
     const brushSizeValue = this.getBrushOptions().size
-    brushSizeEl.innerHTML = Math.round(brushSizeValue)
+    brushSizeEl.innerHTML = ` size ${Math.round(brushSizeValue).toString()} `
   }
   
   onBrushSizePointerDown (event) {
