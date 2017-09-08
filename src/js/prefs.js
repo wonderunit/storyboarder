@@ -11,9 +11,9 @@ const prefFile = path.join(app.getPath('userData'), 'pref.json')
 
 const defaultPrefs = {
   version: pkg.version,
-  enableDrawingSoundEffects: true,
-  enableDrawingMelodySoundEffects: true,
-  enableUISoundEffects: true,
+  enableDrawingSoundEffects: false,
+  enableDrawingMelodySoundEffects: false,
+  enableUISoundEffects: false,
   enableHighQualityAudio: false,
   enableTooltips: true,
   enableAspirationalMessages: true,
