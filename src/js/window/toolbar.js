@@ -7,7 +7,6 @@ const Color = require('color-js')
 const util = require('../utils/index.js')
 const sfx = require('../wonderunit-sound.js')
 
-// TODO why even have these constants if we don't use them consistently?
 const BRUSH_PENCIL = 'pencil'
 const BRUSH_LIGHT_PENCIL = 'light-pencil'
 const BRUSH_PEN = 'pen'
@@ -162,7 +161,7 @@ class Toolbar extends EventEmitter {
     this.state = Object.assign(this.state, newState)
     if (newState.brush) {
       // the brush changed
-      this.emit('brush', this.state.brush, this.getBrushOptions())
+      this.emit(BRUSH_BRUSH, this.state.brush, this.getBrushOptions())
     }
     this.render()
   }
@@ -279,40 +278,40 @@ class Toolbar extends EventEmitter {
 
     switch (selection) {
       // brushes
-      case 'light-pencil':
+      case BRUSH_LIGHT_PENCIL:
         if (this.state.transformMode) this.emit('cancelTransform')
-        if (this.state.brush !== 'light-pencil') {
-          this.setState({ brush: 'light-pencil' })
+        if (this.state.brush !== BRUSH_LIGHT_PENCIL) {
+          this.setState({ brush: BRUSH_LIGHT_PENCIL })
         }
         break
-      case 'pencil':
+      case BRUSH_PENCIL:
         if (this.state.transformMode) this.emit('cancelTransform')
-        if (this.state.brush !== 'pencil') {
-          this.setState({ brush: 'pencil' })
+        if (this.state.brush !== BRUSH_PENCIL) {
+          this.setState({ brush: BRUSH_PENCIL })
         }
         break
-      case 'pen':
+      case BRUSH_PEN:
         if (this.state.transformMode) this.emit('cancelTransform')
-        if (this.state.brush !== 'pen') {
-          this.setState({ brush: 'pen' })
+        if (this.state.brush !== BRUSH_PEN) {
+          this.setState({ brush: BRUSH_PEN })
         }
         break
-      case 'brush':
+      case BRUSH_BRUSH:
         if (this.state.transformMode) this.emit('cancelTransform')
-        if (this.state.brush !== 'brush') {
-          this.setState({ brush: 'brush' })
+        if (this.state.brush !== BRUSH_BRUSH) {
+          this.setState({ brush: BRUSH_BRUSH })
         }
         break
-      case 'note-pen':
+      case BRUSH_NOTE_PEN:
         if (this.state.transformMode) this.emit('cancelTransform')
-        if (this.state.brush !== 'note-pen') {
-          this.setState({ brush: 'note-pen' })
+        if (this.state.brush !== BRUSH_NOTE_PEN) {
+          this.setState({ brush: BRUSH_NOTE_PEN })
         }
         break
-      case 'eraser':
+      case BRUSH_ERASER:
         if (this.state.transformMode) this.emit('cancelTransform')
-        if (this.state.brush !== 'eraser') {
-          this.setState({ brush: 'eraser' })
+        if (this.state.brush !== BRUSH_ERASER) {
+          this.setState({ brush: BRUSH_ERASER })
         }
         break
 
@@ -343,7 +342,7 @@ class Toolbar extends EventEmitter {
         break
 
       case 'current-color':
-        if (this.state.brush == 'eraser') break
+        if (this.state.brush == BRUSH_ERASER) break
         this.emit('current-color-picker', this.state.brushes[this.state.brush].color)
         break
 
@@ -389,7 +388,7 @@ class Toolbar extends EventEmitter {
   }
 
   onSwatchDown (event) {
-    if (this.state.brush == 'eraser') return
+    if (this.state.brush == BRUSH_ERASER) return
     clearTimeout(this.swatchTimer)
     this.swatchTimer = setTimeout(this.onSwatchColorPicker.bind(this, event.target), this.swatchDelay)
     if (this.swatchTimer) {
@@ -430,7 +429,7 @@ class Toolbar extends EventEmitter {
   }
 
   onSwatchUp (event) {
-    if (this.state.brush == 'eraser') return
+    if (this.state.brush == BRUSH_ERASER) return
 
     clearTimeout(this.swatchTimer)
   }
