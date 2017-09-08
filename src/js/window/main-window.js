@@ -132,7 +132,9 @@ const framesToMsecs = value => Math.round(value / 24 * 1000)
 //  analytics.event('Application', 'open', filename)
 
 
-menu.setMenu()
+remote.getCurrentWindow().on('focus', () => {
+  menu.setMenu()
+})
 
 ///////////////////////////////////////////////////////////////
 // Loading / Init Operations
