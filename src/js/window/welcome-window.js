@@ -61,8 +61,7 @@ document.querySelector('iframe').onload = ()=>{
     element.addEventListener("pointerdown", ()=>{sfx.down()})
   })
 }
-
-document.querySelector('iframe').src = "https://wonderunit.com/ads/storyboarder/"
+document.querySelector('iframe').src = "https://wonderunit.com/ads/storyboarder?" + Math.round(Date.now() / 1000 / 60 / 6)
 
 document.querySelector('#getting-started').onclick = ()=> {
   //shell.openExternal("https://wonderunit.com")
