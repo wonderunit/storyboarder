@@ -4,7 +4,10 @@ module.exports = () => {
   let win
 
   const show = () => {
-    if (win) return
+    if (win) {
+      win.focus()
+      return
+    }
 
     win = new BrowserWindow({
       width: 600,
