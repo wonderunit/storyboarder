@@ -7,5 +7,5 @@
 <!-- * How to recreate the bug, step-by-step -->
 <!-- * What you expected to happen -->
 <!-- * What actually happened -->
-<!-- * Infos about your computer machine, operating system, hardware, etc. -->
-
+<!-- * Your computer’s operating system (Mac, Windows, Linux) and version -->
+<!-- * Your computer hardware specs (Processor, Graphics Card, RAM, Screen Resolution, etc.) -->
