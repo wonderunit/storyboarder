@@ -7,6 +7,8 @@ const Color = require('color-js')
 const util = require('../utils/index.js')
 const sfx = require('../wonderunit-sound.js')
 
+const Detector = require('../vendor/Detector.js')
+
 // TODO why even have these constants if we don't use them consistently?
 const BRUSH_PENCIL = 'pencil'
 const BRUSH_LIGHT_PENCIL = 'light-pencil'
@@ -505,6 +507,11 @@ class Toolbar extends EventEmitter {
     const brushSizeEl = this.el.querySelector('.toolbar-brush-size-controls_val')
     const brushSizeValue = this.getBrushOptions().size
     brushSizeEl.innerHTML = Math.round(brushSizeValue)
+
+    // prevent perspective guide when WebGL is not available
+    if (!Detector.webgl) {
+      perspectiveEl.style.display = 'none'
+    }
   }
   
   onBrushSizePointerDown (event) {

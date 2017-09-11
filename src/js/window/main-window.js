@@ -841,7 +841,7 @@ let loadBoardUI = ()=> {
     toolbar.changeCurrentColor(color)
   })
 
-  guides = new Guides(storyboarderSketchPane.getLayerCanvasByName('guides'), { perspectiveGridFn: shotTemplateSystem.requestGrid })
+  guides = new Guides(storyboarderSketchPane.getLayerCanvasByName('guides'), { perspectiveGridFn: shotTemplateSystem.requestGrid.bind(shotTemplateSystem) })
   onionSkin = new OnionSkin(storyboarderSketchPane, boardPath)
   layersEditor = new LayersEditor(storyboarderSketchPane, sfx, notifications)
   layersEditor.on('opacity', opacity => {
@@ -1025,6 +1025,7 @@ let loadBoardUI = ()=> {
       saveImageFile()
     })
   } else {
+    notifications.notify({ message: 'For better performance on your machine, Shot Generator and Perspective Guide have been disabled.' })
     document.querySelector('#shot-generator-container').remove()
   }
 
