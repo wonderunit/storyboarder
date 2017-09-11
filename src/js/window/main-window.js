@@ -841,7 +841,7 @@ let loadBoardUI = ()=> {
     toolbar.changeCurrentColor(color)
   })
 
-  guides = new Guides(storyboarderSketchPane.getLayerCanvasByName('guides'), { perspectiveGridFn: shotTemplateSystem.requestGrid })
+  guides = new Guides(storyboarderSketchPane.getLayerCanvasByName('guides'), { perspectiveGridFn: shotTemplateSystem.requestGrid.bind(shotTemplateSystem) })
   onionSkin = new OnionSkin(storyboarderSketchPane, boardPath)
   layersEditor = new LayersEditor(storyboarderSketchPane, sfx, notifications)
   layersEditor.on('opacity', opacity => {
