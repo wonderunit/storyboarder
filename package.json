@@ -58,6 +58,10 @@
         }
       ]
     },
+    "linux": {
+      "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
+      "category": "Graphics"
+    },
     "fileAssociations": {
       "ext": "storyboarder",
       "name": "Storyboarder file",
