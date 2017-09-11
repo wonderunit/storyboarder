@@ -1524,6 +1524,8 @@ class ShotTemplateSystem extends EventEmitter {
   }
 
   requestGrid (cameraParams, rotation) {
+    if (!this.enabled) return
+
     if (!cameraParams) {
       cameraParams = {
         "fov": 50,
