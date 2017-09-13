@@ -55,9 +55,13 @@ let boardFileData = {
 describe('exporters/final-cut-pro', () => {
   it('can generate final cut pro / adobe premiere xml', () => {
     assert.doesNotThrow(() => {
-      let projectFileAbsolutePath = '/Users/me/projects/storyboarder/example/example.storyboarder'
-      let outputPath = '/Users/me/projects/storyboarder/example/example.storyboarder/exports/output'
+      let projectFileAbsolutePath = '/Users/me/projects/storyboarder/example\ storyboard/example\ storyboard.storyboarder'
+      let outputPath = '/Users/me/projects/storyboarder/example\ storyboard/example\ storyboard.storyboarder/exports/output'
       let xml = exporterFcp.generateFinalCutProXml(exporterFcp.generateFinalCutProData(boardFileData, { projectFileAbsolutePath, outputPath }))
+
+      // check percentage-encoding for filename
+      assert(xml.includes("<pathurl>./example%20storyboard-board-00001.png</pathurl>"))
+
       assert(xml.length > 32)
     })
   })

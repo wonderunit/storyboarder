@@ -69,7 +69,7 @@ const generateFinalCutProXData = (boardData, { projectFileAbsolutePath, outputPa
       (for example, ./Media/MyMovie.mov).
       via https://developer.apple.com/library/content/documentation/FinalCutProX/Reference/FinalCutProXXMLFormat/Resources/Resources.html#//apple_ref/doc/uid/TP40011227-CH16-SW1
       */
-      src: `./${filename}` // `file://${outputPath}/${filename}`,
+      src: `./${encodeURI(filename)}` // `file://${outputPath}/${filename}`,
     })
 
     videos.push({
