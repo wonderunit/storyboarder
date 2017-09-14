@@ -1,7 +1,7 @@
 {
   "name": "storyboarder",
   "productName": "Storyboarder",
-  "version": "0.12.0",
+  "version": "0.12.1",
   "description": "The fastest way to storyboard.",
   "main": "src/js/main.js",
   "scripts": {
