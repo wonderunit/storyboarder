@@ -186,7 +186,7 @@ const generatePDF = (paperSize, layout='landscape', rows, cols, spacing, boardDa
               textOffset += doc.heightOfString(boardData.boards[currentBoard].dialogue, {width: imgSize[0], align: 'center'})
             } else {
               let metaHeight = doc.heightOfString(boardData.boards[currentBoard].dialogue, {width: imgSize[0]})
-              if( boardData.boards[index].action ) { 
+              if( boardData.boards[currentBoard].action ) { 
                 doc.save()
                 doc.fontSize(7)
                 doc.font('regular')
@@ -228,7 +228,7 @@ const generatePDF = (paperSize, layout='landscape', rows, cols, spacing, boardDa
               textOffset += doc.heightOfString(boardData.boards[currentBoard].action, {width: imgSize[0], align: 'center'})
             } else {
               let metaHeight = doc.heightOfString(boardData.boards[currentBoard].action, {width: imgSize[0]})
-              if( boardData.boards[index].dialogue ) { 
+              if( boardData.boards[currentBoard].dialogue ) { 
                 doc.save()
                 doc.fontSize(7)
                 doc.font('bold')
