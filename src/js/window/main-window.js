@@ -886,8 +886,9 @@ let loadBoardUI = ()=> {
     if (state.type == 'image') {
       applyUndoStateForImage(state)
     } else if (state.type == 'scene') {
-      saveImageFile() // needed for redo
-      applyUndoStateForScene(state)
+      saveImageFile().then(() => { // needed for redo
+        applyUndoStateForScene(state)
+      })
     }
   }
   undoStack.on('undo', onUndoStackAction)
