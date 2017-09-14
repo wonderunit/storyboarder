@@ -154,9 +154,6 @@ AppMenu.Edit = () => ({
       accelerator: 'CmdOrCtrl+A',
       role: 'selectall'
     },
-    {
-      type: 'separator'
-    },
 
     // add Edit > Preferences on Windows
     ...process.platform == 'win32'
