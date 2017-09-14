@@ -1048,18 +1048,16 @@ let updateBoardUI = () => {
     newBoard(0, false)
   }
 
+  return renderScene()
+}
+
+// whenever the scene changes
+const renderScene = () => {
   let sequence = Promise.resolve()
-
-  // update sketchpane
-  sequence = sequence.then(() => updateSketchPaneBoard())
-
-  // update thumbail drawer
-  // update timeline
+  // render the thumbnail drawer
   sequence = sequence.then(() => renderThumbnailDrawer())
-
-  // update metadata
+  // go to the correct board
   sequence = sequence.then(() => gotoBoard(currentBoard))
-
   return sequence
 }
 
@@ -2020,7 +2018,7 @@ let nextScene = ()=> {
       currentScene++
       loadScene(currentScene)
       renderScript()
-      updateBoardUI()
+      renderScene()
     }
   } else {
     if (currentBoard < (boardData.boards.length -1)) {
@@ -2044,7 +2042,7 @@ let previousScene = ()=> {
       currentScene = Math.max(0, currentScene)
       loadScene(currentScene)
       renderScript()
-      updateBoardUI()
+      renderScene()
     }
   } else {
     if (currentBoard > 0) {
@@ -2487,7 +2485,7 @@ let renderScenes = ()=> {
         currentScene = Number(e.target.dataset.node)
         loadScene(currentScene)
         renderScript()
-        updateBoardUI()
+        renderScene()
       }
     }, true, true)
   }
@@ -4023,7 +4021,7 @@ const applyUndoStateForScene = (state) => {
     renderScript()
   }
   boardData = state.sceneData
-  updateBoardUI()
+  renderScene()
 }
 
 // TODO memory management. dispose unused canvases
