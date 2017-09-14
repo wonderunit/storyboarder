@@ -20,8 +20,8 @@ const init = () => {
       },
       index => {
         if (index) {
-          // close current windows
-          BrowserWindow.getAllWindows().forEach(w => w.close())
+          // On Windows, this causes an error. Skipping for now.
+          // BrowserWindow.getAllWindows().forEach(w => w.close())
 
           let win
           win = new BrowserWindow({
