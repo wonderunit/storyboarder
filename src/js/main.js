@@ -124,11 +124,28 @@ app.on('ready', () => {
   setInterval(()=>{ analytics.ping() }, 60*1000)
 })
 
-let openKeyCommandWindow = ()=> {
-  keyCommandWindow = new BrowserWindow({width: 1158, height: 925, maximizable: false, center: true, show: false, resizable: false, frame: false, titleBarStyle: 'hidden-inset'})
+let openKeyCommandWindow = () => {
+  if (keyCommandWindow) {
+    keyCommandWindow.focus()
+    return
+  }
+
+  keyCommandWindow = new BrowserWindow({
+    width: 1158,
+    height: 925,
+    maximizable: false,
+    center: true,
+    show: false,
+    resizable: false,
+    frame: false,
+    titleBarStyle: 'hidden-inset'
+  })
   keyCommandWindow.loadURL(`file://${__dirname}/../keycommand-window.html`)
   keyCommandWindow.once('ready-to-show', () => {
-    setTimeout(()=>{keyCommandWindow.show()},500)
+    setTimeout(() => keyCommandWindow.show(), 250) // wait for DOM
+  })
+  keyCommandWindow.on('close', () => {
+    keyCommandWindow = null
   })
 }
 
