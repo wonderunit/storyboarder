@@ -493,6 +493,9 @@ let loadBoardUI = ()=> {
           markBoardFileDirty()
           textInputMode = false
           break
+        case 'dialogue':
+          renderCaption()
+          break
       }
       renderThumbnailDrawer()
     })
@@ -1905,7 +1908,7 @@ let renderMetaData = () => {
 
   if (boardData.boards[currentBoard].dialogue) {
     document.querySelector('textarea[name="dialogue"]').value = boardData.boards[currentBoard].dialogue
-    document.querySelector('#canvas-caption').innerHTML = boardData.boards[currentBoard].dialogue
+    renderCaption()
     document.querySelector('#canvas-caption').style.display = 'block'
     document.querySelector('#suggested-dialogue-duration').innerHTML = util.durationOfWords(boardData.boards[currentBoard].dialogue, 300)+300 + "ms"
   } else {
@@ -1928,6 +1931,10 @@ let renderMetaData = () => {
   // }
 
   renderStats()
+}
+
+const renderCaption = () => {
+  document.querySelector('#canvas-caption').innerHTML = boardData.boards[currentBoard].dialogue
 }
 
 const renderMetaDataLineMileage = () => {
