@@ -5,40 +5,40 @@ const fs = require('fs')
 const os = require('os')
 const dns = require('dns')
 const path = require('path')
-const menu = require('../menu.js')
-const util = require('../utils/index.js')
+const menu = require('../menu')
+const util = require('../utils/index')
 const Color = require('color-js')
 
-const StoryboarderSketchPane = require('./storyboarder-sketch-pane.js')
-const undoStack = require('../undo-stack.js')
+const StoryboarderSketchPane = require('./storyboarder-sketch-pane')
+const undoStack = require('../undo-stack')
 
-const Toolbar = require('./toolbar.js')
-const tooltips = require('./tooltips.js')
-const ContextMenu = require('./context-menu.js')
-const ColorPicker = require('./color-picker.js')
-const PomodoroTimerView = require('./pomodoro-timer-view.js')
-const Transport = require('./transport.js')
-const notifications = require('./notifications.js')
+const Toolbar = require('./toolbar')
+const tooltips = require('./tooltips')
+const ContextMenu = require('./context-menu')
+const ColorPicker = require('./color-picker')
+const PomodoroTimerView = require('./pomodoro-timer-view')
+const Transport = require('./transport')
+const notifications = require('./notifications')
 const NotificationData = require('../../data/messages.json')
-const Guides = require('./guides.js')
-const OnionSkin = require('./onion-skin.js')
-const Sonifier = require('./sonifier/index.js')
-const LayersEditor = require('./layers-editor.js')
-const sfx = require('../wonderunit-sound.js')
-const keytracker = require('../utils/keytracker.js')
+const Guides = require('./guides')
+const OnionSkin = require('./onion-skin')
+const Sonifier = require('./sonifier/index')
+const LayersEditor = require('./layers-editor')
+const sfx = require('../wonderunit-sound')
+const keytracker = require('../utils/keytracker')
 const storyTips = new(require('./story-tips'))(sfx, notifications)
-const exporter = require('./exporter.js')
+const exporter = require('./exporter')
 const exporterCommon = require('../exporters/common')
-const prefsModule = require('electron').remote.require('./prefs.js')
+const prefsModule = require('electron').remote.require('./prefs')
 
 const boardModel = require('../models/board')
 
-const FileHelper = require('../files/file-helper.js')
+const FileHelper = require('../files/file-helper')
 const readPsd = require('ag-psd').readPsd;
 const initializeCanvas = require('ag-psd').initializeCanvas;
 
 const ShotTemplateSystem = require('../shot-template-system')
-const StsSidebar = require('./sts-sidebar.js')
+const StsSidebar = require('./sts-sidebar')
 
 const pkg = require('../../../package.json')
 
@@ -53,7 +53,7 @@ const {
   LAYER_NAME_BY_INDEX
 } = require('../constants')
 
-const CanvasRecorder = require('../recording/canvas-recorder.js')
+const CanvasRecorder = require('../recording/canvas-recorder')
 const moment = require('moment')
 let isRecording = false
 let isRecordingStarted = false

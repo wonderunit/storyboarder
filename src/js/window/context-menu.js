@@ -1,6 +1,6 @@
 const EventEmitter = require('events').EventEmitter
 const Tether = require('tether')
-let { acceleratorAsHtml } = require('../utils/accelerator.js')
+let { acceleratorAsHtml } = require('../utils/accelerator')
 
 class ContextMenu extends EventEmitter {
   constructor () {

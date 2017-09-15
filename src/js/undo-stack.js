@@ -13,7 +13,7 @@ https://github.com/TheSeamau5/elm-undo-redo/blob/master/src/UndoList.elm
 const EventEmitter = require('events').EventEmitter
 module.exports = new EventEmitter()
 
-const util = require('./utils/index.js')
+const util = require('./utils/index')
 
 class UndoList {
   constructor () {

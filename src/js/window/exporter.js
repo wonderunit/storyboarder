@@ -15,13 +15,13 @@ const {
   exportFlattenedBoard,
   ensureExportsPathExists,
   flattenBoardToCanvas
-} = require('../exporters/common.js')
+} = require('../exporters/common')
 
-const exporterFcpX = require('../exporters/final-cut-pro-x.js')
-const exporterFcp = require('../exporters/final-cut-pro.js')
-const exporterPDF = require('../exporters/pdf.js')
-const exporterCleanup = require('../exporters/cleanup.js')
-const util = require('../utils/index.js')
+const exporterFcpX = require('../exporters/final-cut-pro-x')
+const exporterFcp = require('../exporters/final-cut-pro')
+const exporterPDF = require('../exporters/pdf')
+const exporterCleanup = require('../exporters/cleanup')
+const util = require('../utils/index')
 
 class Exporter extends EventEmitter {
   constructor () {

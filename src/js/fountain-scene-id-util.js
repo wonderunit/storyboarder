@@ -1,4 +1,4 @@
-const util = require('./utils/index.js')
+const util = require('./utils/index')
 
 var regex = {
   scene_heading: /^((?:\*{0,3}_?)?(?:(?:int|ext|est|i\/e)[. ]).+)|^(?:\.(?!\.+))(.+)/i,

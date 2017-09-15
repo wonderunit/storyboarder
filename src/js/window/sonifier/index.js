@@ -3,10 +3,10 @@ const Tone = require('tone')
 const ease = require('eases')
 const vec2 = require('gl-vec2')
 
-const util = require('../../utils/index.js')
-const Loop = require('../../utils/loop.js')
+const util = require('../../utils/index')
+const Loop = require('../../utils/loop')
 
-const prefsModule = require('electron').remote.require('./prefs.js')
+const prefsModule = require('electron').remote.require('./prefs')
 
 const BrushInstrument = require('./brush-instrument')
 const MelodicInstrument = require('./melodic-instrument')

@@ -4,10 +4,10 @@ const prefsModule = require('electron').remote.require('./../js/prefs')
 
 const Color = require('color-js')
 
-const util = require('../utils/index.js')
-const sfx = require('../wonderunit-sound.js')
+const util = require('../utils/index')
+const sfx = require('../wonderunit-sound')
 
-const Detector = require('../vendor/Detector.js')
+const Detector = require('../vendor/Detector')
 
 // TODO why even have these constants if we don't use them consistently?
 const BRUSH_PENCIL = 'pencil'

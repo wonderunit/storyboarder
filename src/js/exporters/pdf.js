@@ -1,6 +1,6 @@
 const fs = require('fs')
 const path = require('path')
-const util = require('../utils/index.js')
+const util = require('../utils/index')
 const pdfDocument = require('pdfkit')
 const moment = require('moment')
 const app = require('electron').remote.app

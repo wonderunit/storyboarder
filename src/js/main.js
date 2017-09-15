@@ -18,7 +18,7 @@ const MobileServer = require('./express-app/app')
 const preferencesUI = require('./windows/preferences')()
 
 const pkg = require('../../package.json')
-const util = require('./utils/index.js')
+const util = require('./utils/index')
 
 const autoUpdater = require('./auto-updater')
 

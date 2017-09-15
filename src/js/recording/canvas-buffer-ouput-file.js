@@ -1,7 +1,7 @@
 const fs = require('fs')
 const path = require('path')
 const { fork } = require('child_process');
-const forked = fork(__dirname+'/../files/forked-file-writer.js')
+const forked = fork(__dirname+'/../files/forked-file-writer')
 
 class CanvasBufferOutputFileStrategy {
   constructor(options) {

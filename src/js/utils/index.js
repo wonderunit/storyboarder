@@ -1,4 +1,4 @@
-let { acceleratorAsHtml } = require('./accelerator.js')
+let { acceleratorAsHtml } = require('./accelerator')
 
 let msToTime = (s)=> {
   if(!s) s = 0

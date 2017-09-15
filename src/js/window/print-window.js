@@ -1,7 +1,7 @@
 const {ipcRenderer, shell, remote} = require('electron')
-const prefModule = require('electron').remote.require('./prefs.js')
+const prefModule = require('electron').remote.require('./prefs')
 const pdf = require('pdfjs-dist')
-const worksheetPrinter = require('./worksheet-printer.js')
+const worksheetPrinter = require('./worksheet-printer')
 const storyTips = new(require('./story-tips'))
 const child_process = require('child_process')
 const app = require('electron').remote.app
@@ -123,9 +123,9 @@ const loadWindow = () => {
     // PDFJS.disableWorker = true;
 
     // The workerSrc property shall be specified.
-    //console.log(require('pdfjs-dist/build/pdf.worker.js'))
+    //console.log(require('pdfjs-dist/build/pdf.worker'))
 
-    PDFJS.workerSrc = '../node_modules/pdfjs-dist/build/pdf.worker.js'
+    PDFJS.workerSrc = '../node_modules/pdfjs-dist/build/pdf.worker'
 
     // Using DocumentInitParameters object to load binary data.
     var loadingTask = PDFJS.getDocument(path);

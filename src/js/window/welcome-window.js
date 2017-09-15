@@ -1,10 +1,10 @@
 const {ipcRenderer, shell, remote} = require('electron')
 const path = require('path')
 const moment = require('moment')
-const menu = require('../menu.js')
-const util = require('../utils/index.js')
-const sfx = require('../wonderunit-sound.js')
-const prefsModule = require('electron').remote.require('./prefs.js')
+const menu = require('../menu')
+const util = require('../utils/index')
+const sfx = require('../wonderunit-sound')
+const prefsModule = require('electron').remote.require('./prefs')
 
 const pkg = require('../../../package.json')
 

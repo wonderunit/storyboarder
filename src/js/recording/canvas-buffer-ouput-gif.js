@@ -1,6 +1,6 @@
 const fs = require('fs')
 const GIFEncoder = require('gifencoder')
-const { getImage } = require('../exporters/common.js')
+const { getImage } = require('../exporters/common')
 
 class CanvasBufferOutputGifStrategy {
   constructor(options) {

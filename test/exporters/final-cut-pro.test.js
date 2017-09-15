@@ -1,6 +1,6 @@
 const assert = require('assert')
 
-const exporterFcp = require('../../src/js/exporters/final-cut-pro.js')
+const exporterFcp = require('../../src/js/exporters/final-cut-pro')
 
 let boardFileData = {
   "version": "0.6.0",

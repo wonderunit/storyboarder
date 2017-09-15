@@ -1,6 +1,6 @@
 const { remote, ipcRenderer } = require('electron')
 const util = require('./js/utils')
-const prefsModule = require('electron').remote.require('./prefs.js')
+const prefsModule = require('electron').remote.require('./prefs')
 
 let prefs = prefsModule.getPrefs('prefs window')
 

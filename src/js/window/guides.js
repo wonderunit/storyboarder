@@ -1,6 +1,6 @@
 const EventEmitter = require('events').EventEmitter
 
-const util = require('../utils/index.js')
+const util = require('../utils/index')
 
 const rgba = (r, g, b, a) => `rgba(${r}, ${g}, ${b}, ${parseFloat(a)})`
 

@@ -101,19 +101,19 @@ Generate grid as image
 
 const EventEmitter = require('events').EventEmitter
 
-const Detector = require('../vendor/Detector.js')
+const Detector = require('../vendor/Detector')
 
-window.THREE = require('../vendor/three.min.js')
-const JDLoader = require('../vendor/JDLoader.min.js')
-const {MeshLine, MeshLineMaterial} = require('../vendor/THREE.MeshLine.js')
-const OutlineEffect = require('../vendor/effects/OutlineEffect.js')
-const BufferSubdivisionModifier = require('../vendor/modifiers/BufferSubdivisionModifier.js')
+window.THREE = require('../vendor/three.min')
+const JDLoader = require('../vendor/JDLoader.min')
+const {MeshLine, MeshLineMaterial} = require('../vendor/THREE.MeshLine')
+const OutlineEffect = require('../vendor/effects/OutlineEffect')
+const BufferSubdivisionModifier = require('../vendor/modifiers/BufferSubdivisionModifier')
 
-const shotProperties = require('../shot-template-system/shot-properties.js')
-const alternateValues = require('../shot-template-system/alternate-values.js')
-const cameraLensAngles = require('../shot-template-system/camera-lens-angles.js')
+const shotProperties = require('../shot-template-system/shot-properties')
+const alternateValues = require('../shot-template-system/alternate-values')
+const cameraLensAngles = require('../shot-template-system/camera-lens-angles')
 
-var objLoader = require('../vendor/OBJLoader.js')
+var objLoader = require('../vendor/OBJLoader')
 
 const METERS_PER_FEET = 0.3048
 const outlineWidth = 0.015

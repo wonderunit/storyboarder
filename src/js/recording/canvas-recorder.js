@@ -1,9 +1,9 @@
 const path = require('path')
 const EventEmitter = require('events').EventEmitter
-const CanvasBufferOutputFileStrategy = require('./canvas-buffer-ouput-file.js')
-const CanvasBufferOutputGifStrategy = require('./canvas-buffer-ouput-gif.js')
-const CanvasBuffer = require('./canvas-buffer.js')
-const userDataHelper = require('../files/user-data-helper.js')
+const CanvasBufferOutputFileStrategy = require('./canvas-buffer-ouput-file')
+const CanvasBufferOutputGifStrategy = require('./canvas-buffer-ouput-gif')
+const CanvasBuffer = require('./canvas-buffer')
+const userDataHelper = require('../files/user-data-helper')
 
 class Recorder extends EventEmitter {
   constructor(options = {}) {

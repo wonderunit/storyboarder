@@ -12,7 +12,7 @@ const util = require('../utils')
 
 const { LAYER_NAME_BY_INDEX } = require('../constants')
 
-const prefsModule = require('electron').remote.require('./prefs.js')
+const prefsModule = require('electron').remote.require('./prefs')
 const enableBrushCursor = prefsModule.getPrefs('main')['enableBrushCursor']
 const enableStabilizer = prefsModule.getPrefs('main')['enableStabilizer']
 

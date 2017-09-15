@@ -1,4 +1,4 @@
-const Guides = require('../../../src/js/window/guides.js')
+const Guides = require('../../../src/js/window/guides')
 
 const wrapperEl = document.querySelector('.wrapper')
 

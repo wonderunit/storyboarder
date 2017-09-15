@@ -1,5 +1,5 @@
-const util = require('../../utils/index.js')
-const tips = require('./tips.js')
+const util = require('../../utils/index')
+const tips = require('./tips')
 
 
 class StoryTips {

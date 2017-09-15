@@ -1,4 +1,4 @@
-const CanvasBufferOutputFileStrategy = require('./canvas-buffer-ouput-file.js')
+const CanvasBufferOutputFileStrategy = require('./canvas-buffer-ouput-file')
 
 class CanvasBuffer {
   constructor(options) {

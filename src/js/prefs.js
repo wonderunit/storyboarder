@@ -4,7 +4,7 @@ const { app } = require('electron')
 const os = require("os");
 
 const pkg = require('../../package.json')
-const util = require('./utils/index.js') // for Object.equals
+const util = require('./utils/index') // for Object.equals
 
 // TODO pref specifics shouldnt be in this module.
 const prefFile = path.join(app.getPath('userData'), 'pref.json')

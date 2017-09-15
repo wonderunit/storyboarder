@@ -1,4 +1,4 @@
-const util = require('../utils/index.js')
+const util = require('../utils/index')
 
 const boardFileImageSize = boardFileData =>
   (boardFileData.aspectRatio >= 1)
