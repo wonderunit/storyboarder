@@ -2409,8 +2409,9 @@ let renderThumbnailButtons = () => {
       let eventMouseOut = document.createEvent('MouseEvents')
       eventMouseOut.initMouseEvent('mouseout', true, true)
       el.dispatchEvent(eventMouseOut)
-      newBoard(boardData.boards.length)
-      gotoBoard(boardData.boards.length)
+      newBoard(boardData.boards.length).then(() => {
+        gotoBoard(boardData.boards.length)
+      })
       ipcRenderer.send('analyticsEvent', 'Board', 'new')
     })
 
