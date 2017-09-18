@@ -2914,9 +2914,9 @@ window.onkeydown = (e)=> {
           e.preventDefault()
         }
         break
-      // TAB
+      // TAB and SHIFT+TAB
       case 9:
-        cycleViewMode()
+        cycleViewMode(e.shiftKey ? -1 : +1)
         e.preventDefault()
         break;
       // ESCAPE
@@ -3037,9 +3037,9 @@ let playAdvance = function(first) {
 
 //// VIEW
 
-let cycleViewMode = ()=> {
+let cycleViewMode = (direction = +1) => {
   if (scriptData) {
-    viewMode = ((viewMode+1)%6)
+    viewMode = (viewMode + 6 + direction) % 6
     switch (viewMode) {
       case 0:
         document.querySelector('#scenes').style.display = 'block'
@@ -3087,7 +3087,7 @@ let cycleViewMode = ()=> {
         break
     }
   } else {
-    viewMode = ((viewMode+1)%4)
+    viewMode = (viewMode + 4 + direction) % 4
     switch (viewMode) {
       case 0:
         document.querySelector('#scenes').style.display = 'none'
@@ -4235,7 +4235,7 @@ ipcRenderer.on('reorderBoardsRight', (event, args)=>{
 
 ipcRenderer.on('cycleViewMode', (event, args)=>{
   if (!textInputMode) {
-    cycleViewMode()
+    cycleViewMode(args)
   }
 })
 

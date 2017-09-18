@@ -150,6 +150,7 @@ let commands = [
   ],
   ["View", [
       ['<strong>Cycle View Mode</strong>', 'Tab'],
+      ['Reverse Cycle View Mode', 'Shift+Tab'],
       ['Toggle Onion Skin', 'O'],
       ['Toggle Captions', 'C'],
       ['Toggle Fullscreen', 'F11'],
