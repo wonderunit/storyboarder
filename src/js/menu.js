@@ -450,7 +450,16 @@ AppMenu.View = () => ({
       label: 'Cycle View Mode',
       accelerator: 'Tab',
       click (item, focusedWindow, event) {
-        ipcRenderer.send('cycleViewMode')
+        // NOTE this is only triggered by menu directly, not by key
+        ipcRenderer.send('cycleViewMode', +1)
+      }
+    },
+    {
+      label: 'Reverse Cycle View Mode',
+      accelerator: 'Shift+Tab',
+      click (item, focusedWindow, event) {
+        // NOTE this is only triggered by menu directly, not by key
+        ipcRenderer.send('cycleViewMode', -1)
       }
     },
     {
