@@ -125,7 +125,7 @@ const loadWindow = () => {
     // The workerSrc property shall be specified.
     //console.log(require('pdfjs-dist/build/pdf.worker'))
 
-    PDFJS.workerSrc = '../node_modules/pdfjs-dist/build/pdf.worker'
+    PDFJS.workerSrc = '../node_modules/pdfjs-dist/build/pdf.worker.js'
 
     // Using DocumentInitParameters object to load binary data.
     var loadingTask = PDFJS.getDocument(path);
