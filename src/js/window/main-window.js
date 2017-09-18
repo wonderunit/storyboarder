@@ -321,7 +321,7 @@ const commentOnLineMileage = (miles) => {
       message.push('100 miles!!!')
       otherMessages = [
         "Nope!!! I'm going to delete this board if you keep drawing. Just kidding. Or am I?",
-        "I FEEL ASLEEP.",
+        "I FELL ASLEEP.",
         "Wake me up when you need me.",
         "Dude. You remember you are storyboarding.",
         "Let's go for a walk.",
@@ -337,7 +337,7 @@ const commentOnLineMileage = (miles) => {
       message.push('200 miles!!!')
       otherMessages = [
         "Now you're just fucking with me.",
-        "I FEEL ASLEEP.",
+        "I FELL ASLEEP.",
         "You haven't worked your wrist out this hard since you were 13.",
         "I think your pen is going to break.",
       ]
