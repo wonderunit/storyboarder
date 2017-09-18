@@ -149,11 +149,13 @@ AppMenu.Edit = () => ({
       accelerator: 'CmdOrCtrl+V',
       role: 'paste'
     },
+    /*
     {
       label: 'Select All',
       accelerator: 'CmdOrCtrl+A',
       role: 'selectall'
     },
+    */
 
     // add Edit > Preferences on Windows
     ...process.platform == 'win32'

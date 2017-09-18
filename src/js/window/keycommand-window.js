@@ -109,7 +109,7 @@ let commands = [
       ['Redo', 'Shift+CmdOrCtrl+Z'],
       ['Copy', 'CmdOrCtrl+C'],
       ['Paste', 'CmdOrCtrl+V'],
-      ['Select All', 'CmdOrCtrl+A'],
+      // ['Select All', 'CmdOrCtrl+A'],
     ]
   ],
   ["Navigation", [
