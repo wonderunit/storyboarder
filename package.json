@@ -22,7 +22,6 @@
     "storyboarder"
   ],
   "author": "Wonder Unit Inc.",
-  "license": "ISC",
   "build": {
     "asar": true,
     "appId": "com.wonderunit.storyboarder",
