@@ -2679,9 +2679,9 @@ let periodicDragUpdate = () => {
 ///////////////////////////////////////////////////////////////
 
 
-let loadScene = (sceneNumber) => {
+let loadScene = async (sceneNumber) => {
   if (boardData) {
-    saveImageFile()
+    await saveImageFile()
     saveBoardFile()
   }
 
