@@ -140,7 +140,7 @@ remote.getCurrentWindow().on('focus', () => {
 // Loading / Init Operations
 ///////////////////////////////////////////////////////////////
 
-const load = (event, args) => {
+const load = async (event, args) => {
   if (args[1]) {
     log({ type: 'progress', message: 'Loading Fountain File' })
     console.log("LOADING FOUNTAIN FILE", args[0])
@@ -155,7 +155,7 @@ const load = (event, args) => {
 
     //renderScenes()
     currentScene = boardSettings.lastScene
-    loadScene(currentScene)
+    await loadScene(currentScene)
 
     assignColors()
     document.querySelector('#scenes').style.display = 'block'
@@ -176,22 +176,22 @@ const load = (event, args) => {
   }
 
   loadBoardUI()
-  updateBoardUI().then(() => {
-    log({ type: 'progress', message: 'Preparing to display' })
+  await updateBoardUI()
 
-    resize()
-    setTimeout(() => {
-      storyboarderSketchPane.resize()
+  log({ type: 'progress', message: 'Preparing to display' })
 
-      setImmediate(() =>
+  resize()
+  setTimeout(() => {
+    storyboarderSketchPane.resize()
+
+    setImmediate(() =>
+      requestAnimationFrame(() =>
         requestAnimationFrame(() =>
-          requestAnimationFrame(() =>
-            ipcRenderer.send('workspaceReady')
-          )
+          ipcRenderer.send('workspaceReady')
         )
       )
-    }, 500) // TODO hack, remove this #440
-  })
+    )
+  }, 500) // TODO hack, remove this #440
 }
 ipcRenderer.on('load', load)
 
@@ -1046,12 +1046,7 @@ let updateBoardUI = () => {
   document.querySelector('#canvas-caption').style.display = 'none'
   renderViewMode()
 
-  if (boardData.boards.length == 0) {
-    // create a new board
-    newBoard(0, false)
-  }
-
-  return renderScene()
+  return ensureBoardExists().then(() => renderScene())
 }
 
 // whenever the scene changes
@@ -2023,9 +2018,10 @@ let nextScene = ()=> {
     } else {
       saveBoardFile()
       currentScene++
-      loadScene(currentScene)
-      renderScript()
-      renderScene()
+      loadScene(currentScene).then(() => {
+        renderScript()
+        renderScene()
+      })
     }
   } else {
     if (currentBoard < (boardData.boards.length -1)) {
@@ -2047,9 +2043,10 @@ let previousScene = ()=> {
       saveBoardFile()
       currentScene--
       currentScene = Math.max(0, currentScene)
-      loadScene(currentScene)
-      renderScript()
-      renderScene()
+      loadScene(currentScene).then(() => {
+        renderScript()
+        renderScene()
+      })
     }
   } else {
     if (currentBoard > 0) {
@@ -2491,9 +2488,10 @@ let renderScenes = ()=> {
     node.addEventListener('pointerdown', (e)=>{
       if (currentScene !== Number(e.target.dataset.node)) {
         currentScene = Number(e.target.dataset.node)
-        loadScene(currentScene)
-        renderScript()
-        renderScene()
+        loadScene(currentScene).then(() => {
+          renderScript()
+          renderScene()
+        })
       }
     }, true, true)
   }
@@ -2773,22 +2771,15 @@ let loadScene = (sceneNumber) => {
           boardData = JSON.parse(fs.readFileSync(boardFilename))
         }
 
-        //check if boards scene exists in
+        // update UI to reflect current scene node
+        let currentNodeId = Number(node.scene_number) - 1
 
         for (var item of document.querySelectorAll('#scenes .scene')) {
           item.classList.remove('active')
         }
-
-      console.log((Number(node.scene_number)-1))
-
-
-        if (document.querySelector("[data-node='" + (Number(node.scene_number)-1) + "']")) {
-          document.querySelector("[data-node='" + (Number(node.scene_number)-1) + "']").classList.add('active')
+        if (document.querySelector("[data-node='" + currentNodeId + "']")) {
+          document.querySelector("[data-node='" + currentNodeId + "']").classList.add('active')
         }
-
-
-
-
         break
       }
     }
@@ -2808,6 +2799,17 @@ let loadScene = (sceneNumber) => {
 
   ipcRenderer.send('analyticsEvent', 'Application', 'open', boardFilename, boardData.boards.length)
 
+  return ensureBoardExists()
+}
+
+const ensureBoardExists = () => {
+  // ensure at least one board exists
+  if (boardData.boards.length == 0) {
+    // create a new board
+    return newBoard(0, false)
+  } else {
+    return Promise.resolve()
+  }
 }
 
 window.onmousedown = (e) => {
@@ -4025,8 +4027,9 @@ const applyUndoStateForScene = (state) => {
     // go to that scene
     saveBoardFile()
     currentScene = getSceneNumberBySceneId(state.sceneId)
-    loadScene(currentScene)
-    renderScript()
+    loadScene(currentScene).then(() => {
+      renderScript()
+    })
   }
   boardData = state.sceneData
   renderScene()
@@ -4063,8 +4066,9 @@ const applyUndoStateForImage = (state) => {
     saveImageFile()
     // go to the requested scene
     currentScene = getSceneNumberBySceneId(state.sceneId)
-    loadScene(currentScene)
-    renderScript()
+    loadScene(currentScene).then(() => {
+      renderScript()
+    })
   }
 
   let sequence = Promise.resolve()
