@@ -2520,7 +2520,10 @@ let renderScenes = ()=> {
   })
 }
 
-let renderScript = ()=> {
+let renderScript = () => {
+  // HACK basic HTML strip, adds two spaces. could use 'striptags' lib instead?
+  const stripHtml = string => string.replace(/<[^>]+>/g, ' ')
+
   // console.log('renderScript currentScene:', currentScene)
   let sceneCount = 0
   let html = []
@@ -2540,13 +2543,13 @@ let renderScript = ()=> {
           let durationAsDataAttr = item.duration ? ` data-duration="${item.duration}"` : ''
           switch (item.type) {
             case 'action':
-              html.push('<div class="item" data-action="' + item.text + '"' + durationAsDataAttr + '>' + item.text + '</div>')
+              html.push('<div class="item" data-action="' + stripHtml(item.text) + '"' + durationAsDataAttr + '>' + stripHtml(item.text) + '</div>')
               break
             case 'dialogue':
-              html.push('<div class="item" data-character="' + item.character + '" data-dialogue="' + item.text + '"' + durationAsDataAttr + '>' + item.character + '<div class="dialogue" style="pointer-events: none">' + item.text + '</div></div>')
+              html.push('<div class="item" data-character="' + stripHtml(item.character) + '" data-dialogue="' + stripHtml(item.text) + '"' + durationAsDataAttr + '>' + stripHtml(item.character) + '<div class="dialogue" style="pointer-events: none">' + stripHtml(item.text) + '</div></div>')
               break
             case 'transition':
-              html.push('<div class="item transition" data-notes="' + item.text + '"' + durationAsDataAttr + '>' + item.text + '</div>')
+              html.push('<div class="item transition" data-notes="' + stripHtml(item.text) + '"' + durationAsDataAttr + '>' + stripHtml(item.text) + '</div>')
               break
           }
         }
