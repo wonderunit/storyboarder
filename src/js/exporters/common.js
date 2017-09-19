@@ -5,7 +5,6 @@ const moment = require('moment')
 const {
   boardFileImageSize,
   boardFilenameForExport,
-  boardFilenameForThumbnail,
   boardOrderedLayerFilenames
 } = require('../models/board')
 
