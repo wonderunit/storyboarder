@@ -5,6 +5,15 @@ var regex = {
   scene_number: /( *#(.+)# *)/,
 };
 
+// trim newlines
+let trim = string => string.replace(/\r?\n|\r/, '')
+
+// EOL char
+let eol = string => {
+  let m = string.match(/\r?\n|\r/)
+  return m && m[0] || ''
+}
+
 var insertSceneIds = function (script) {
   var src    = script.split(/\n/g)
     , i      = src.length, line, match, parts, text, meta, x, xlen, dual
@@ -27,7 +36,7 @@ var insertSceneIds = function (script) {
           meta = meta[2];
           text = text.replace(regex.scene_number, '');
         } else {
-          src[i] = src[i] + ' #' + sceneCount + '-' + util.uidGen(5) + '#'
+          src[i] = trim(src[i]) + ' #' + sceneCount + '-' + util.uidGen(5) + '#' + eol(src[i])
           addedIds = true
         }
       }
