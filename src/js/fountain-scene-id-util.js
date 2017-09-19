@@ -5,10 +5,10 @@ var regex = {
   scene_number: /( *#(.+)# *)/,
 };
 
-// trim newlines
+// trim all newlines
 let trim = string => string.replace(/\r?\n|\r/, '')
 
-// EOL char
+// get the EOL char
 let eol = string => {
   let m = string.match(/\r?\n|\r/)
   return m && m[0] || ''

@@ -4,8 +4,9 @@ const assert = require('assert')
 const fountainSceneIdUtil = require('../../src/js/fountain-scene-id-util')
 
 describe('fountainSceneIdUtil', () => {
-  it('insertSceneIds works on Windows files with ASCII 13 carriage returns', done => {
-    let fixtureFile = './test/fixtures/fountain/ascii-13-carriage-returns.fountain'
+  // \n
+  it('insertSceneIds works for files with line feed newlines', done => {
+    let fixtureFile = './test/fixtures/fountain/eol-lf.fountain'
     fs.readFile(fixtureFile, 'utf-8', (err, data) => {
       let resultA = fountainSceneIdUtil.insertSceneIds(data)
       let resultB = fountainSceneIdUtil.insertSceneIds(resultA[0])
@@ -13,8 +14,9 @@ describe('fountainSceneIdUtil', () => {
       done()
     })
   })
-  it('insertSceneIds works on UNIX files with newlines', done => {
-    let fixtureFile = './test/fixtures/fountain/unix-newlines.fountain'
+  // \r\n
+  it('insertSceneIds works for files with carriage return + line feed newlines', done => {
+    let fixtureFile = './test/fixtures/fountain/eol-crlf.fountain'
     fs.readFile(fixtureFile, 'utf-8', (err, data) => {
       let resultA = fountainSceneIdUtil.insertSceneIds(data)
       let resultB = fountainSceneIdUtil.insertSceneIds(resultA[0])
