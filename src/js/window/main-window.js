@@ -637,10 +637,11 @@ let loadBoardUI = ()=> {
 
       if (!util.isUndefined(index)) {
         console.log('user requests move operation:', selections, 'to insert after', index)
-        saveImageFile()
-        moveSelectedBoards(index)
-        renderThumbnailDrawer()
-        gotoBoard(currentBoard, true)
+        saveImageFile().then(() => {
+          moveSelectedBoards(index)
+          renderThumbnailDrawer()
+          gotoBoard(currentBoard, true)
+        })
       } else {
         console.log('could not find point for move operation')
       }
