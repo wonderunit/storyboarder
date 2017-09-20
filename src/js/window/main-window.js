@@ -2369,10 +2369,11 @@ let renderThumbnailDrawer = ()=> {
         // reset selections
         selections.clear()
 
-        saveImageFile()
-        currentBoard = index
-        renderThumbnailDrawerSelections()
-        gotoBoard(currentBoard)
+        saveImageFile().then(() => {
+          currentBoard = index
+          renderThumbnailDrawerSelections()
+          gotoBoard(currentBoard)
+        })
       }
     }, true, true)
   }
