@@ -3688,7 +3688,7 @@ const fitImageData = (boardSize, imageData) => {
 }
 
 
-const importFromWorksheet = (imageArray) => {
+const importFromWorksheet = async (imageArray) => {
   let insertAt = 0 // pos
   let boards = []
 
@@ -3714,27 +3714,31 @@ const importFromWorksheet = (imageArray) => {
     layerDataByBoardIndex.push(board)
   }
 
+  //
+  //
   // insert boards from worksheet data
-  Promise.resolve().then(() => {
+  //
+  try {
+    notifications.notify({ message: 'Worksheet Import starting …', timing: 5 })
+
     // store the "before" state
     storeUndoStateForScene(true)
 
     // save the current layers to disk
-    saveImageFile()
+    await saveImageFile()
+    await insertBoards(boardData.boards, insertAt, boards, { layerDataByBoardIndex })
 
-    return insertBoards(boardData.boards, insertAt, boards, { layerDataByBoardIndex })
-  }).then(() => {
     markBoardFileDirty()
     storeUndoStateForScene()
-    return renderThumbnailDrawer()
-  }).then(() => {
+    renderThumbnailDrawer()
+
     sfx.positive()
     notifications.notify({ message: 'Worksheet Import complete.', timing: 5 })
     return gotoBoard(insertAt)
-  }).catch(err => {
+  } catch (err) {
     notifications.notify({ message: "Whoops. Could not import.", timing: 8 })
     console.log(err)
-  })
+  }
 }
 
 
