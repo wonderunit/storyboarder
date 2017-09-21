@@ -1358,109 +1358,134 @@ let saveImageFile = () => {
   return tasks
 }
 
-let openInEditor = () => {
-    let imageFilePaths = []
-    let psdPromises = []
-    for(let selection of selections) {
-      psdPromises.push(new Promise((fulfill, reject)=>{
-        let board = boardData.boards[selection]
-        let pngPaths = []
-        if(board.layers.reference && board.layers.reference.url) {
-          pngPaths.push({
-            "url": path.join(boardPath, 'images', board.layers.reference.url),
-            "name": "reference"
-          })
-        }
-        pngPaths.push({
-            "url": path.join(boardPath, 'images', board.url),
-            "name": "main"
-        })
-        if(board.layers.notes && board.layers.notes.url) {
-          pngPaths.push({
-            "url": path.join(boardPath, 'images', board.layers.notes.url),
-            "name": "notes"
-          })
-        }
-        
-        let psdPath = path.join(boardPath, 'images', board.url.replace('.png', '.psd'))
-        
-        FileHelper.writePhotoshopFileFromPNGPathLayers(pngPaths, psdPath)
-          .then(()=>{
-            shell.openItem(psdPath);
-            imageFilePaths.push(psdPath)
-            board.psd = psdPath
-            fulfill()
-          })
-          .catch(error =>{
-            reject(error)
-          })
-      }))
+let openInEditor = async () => {
+  console.log('openInEditor')
+
+  let selectedBoards = []
+  let imageFilePaths = []
+
+  try {
+    // assume selection always includes currentBoard, 
+    // so make sure we've saved its contents to the filesystem
+    await saveImageFile()
+
+    for (let selection of selections) {
+      console.log('\tselection:', selection)
+      selectedBoards.push(boardData.boards[selection])
     }
 
-    Promise.all(psdPromises)
-      .then(()=>{
-        let updateHandler = (eventType, filename) => {
-          let board
-          for(let aBoard of boardData.boards) {
-            if(aBoard.psd && aBoard.psd.includes(filename)) {
-              board = aBoard
-              break
-            }
-          }
-          if(!board) {
-            return
-          }
-          let psdData
-          let readerOptions = {}
-          let curBoard = boardData.boards[currentBoard]
-          // Update the current canvas if it's the same board coming back in.
-          let isCurrentBoard = false
-          if(curBoard.uid === board.uid) {
-            readerOptions.referenceCanvas = storyboarderSketchPane.getLayerCanvasByName("reference")
-            readerOptions.mainCanvas = storyboarderSketchPane.getLayerCanvasByName("main")
-            readerOptions.notesCanvas = storyboarderSketchPane.getLayerCanvasByName("notes")
-            storeUndoStateForImage(true, [0, 1, 3])
-            isCurrentBoard = true
-          }
-          
-          psdData = FileHelper.getBase64ImageDataFromFilePath(board.psd, readerOptions)
-          if(!psdData || !psdData.main) {
-            return;
-          }
-
-          if(isCurrentBoard) {
-            storeUndoStateForImage(false, [0, 1, 3])
-            markImageFileDirty([0, 1, 3]) // reference, main, notes layers
-            saveImageFile()
-            renderThumbnailDrawer()
-          } else {
-            saveDataURLtoFile(psdData.main, board.url)
-            psdData.notes && saveDataURLtoFile(psdData.notes, board.url.replace('.png', '-notes.png'))
-            psdData.reference && saveDataURLtoFile(psdData.reference, board.url.replace('.png', '-reference.png'))
-          }
-
-          // TODO: set up the correct handler for this.
-          setTimeout(()=>{
-            saveThumbnailFile(boardData.boards.indexOf(board))
-              .then(updateThumbnailDisplayFromFile)
-          }, 500)
-
-          // re-watch the file.
-          // https://github.com/nodejs/node-v0.x-archive/issues/3640#issuecomment-6806347
-          fs.watch(board.psd, updateHandler)
-        }
-
-        for(let imageFilePath of imageFilePaths) {
-          fs.watch(imageFilePath, updateHandler)
-        }
-        ipcRenderer.send('analyticsEvent', 'Board', 'edit in photoshop')
+    // save each selected board to its own PSD
+    for (board of selectedBoards) {
+      // collect the layer data
+      let pngPaths = []
+      if (board.layers.reference && board.layers.reference.url) {
+        pngPaths.push({
+          url: path.join(boardPath, 'images', board.layers.reference.url),
+          name: "reference"
+        })
+      }
+      pngPaths.push({
+          url: path.join(boardPath, 'images', board.url),
+          name: "main"
       })
-      .catch(error =>{
-        console.error(error)
-      })
-    
+      if (board.layers.notes && board.layers.notes.url) {
+        pngPaths.push({
+          url: path.join(boardPath, 'images', board.layers.notes.url),
+          name: "notes"
+        })
+      }
+
+      // assign a PSD file path
+      let psdPath = path.join(boardPath, 'images', board.url.replace('.png', '.psd'))
+
+      await FileHelper.writePhotoshopFileFromPNGPathLayers(pngPaths, psdPath)
+      
+      // update the 'link'
+      board.link = path.basename(psdPath)
+    }
+
+    // save the data changes immediately
+    markBoardFileDirty()
+    saveBoardFile()
+
+    // actually open each board
+    for (board of selectedBoards) {
+      console.log('\tshell.openItem', board.link)
+      shell.openItem(path.join(boardPath, 'images', board.link))
+      board.linkOpened = true
+    }
+
+    //
+    //
+    // watch each board
+    //
+    let updateHandler = (eventType, filename) => {
+      console.log('updateHandler', eventType, filename)
+
+      // let board
+      // for(let aBoard of boardData.boards) {
+      //   if(aBoard.link && aBoard.link === filename) {
+      //     board = aBoard
+      //     break
+      //   }
+      // }
+      // if(!board) {
+      //   return
+      // }
+      // let psdData
+      // let readerOptions = {}
+      // let curBoard = boardData.boards[currentBoard]
+      // // Update the current canvas if it's the same board coming back in.
+      // let isCurrentBoard = false
+      // if(curBoard.uid === board.uid) {
+      //   readerOptions.referenceCanvas = storyboarderSketchPane.getLayerCanvasByName("reference")
+      //   readerOptions.mainCanvas = storyboarderSketchPane.getLayerCanvasByName("main")
+      //   readerOptions.notesCanvas = storyboarderSketchPane.getLayerCanvasByName("notes")
+      //   storeUndoStateForImage(true, [0, 1, 3])
+      //   isCurrentBoard = true
+      // }
+      // 
+      // psdData = FileHelper.getBase64ImageDataFromFilePath(path.join(boardPath, 'images', board.link), readerOptions)
+      // if(!psdData || !psdData.main) {
+      //   return;
+      // }
+      // 
+      // if(isCurrentBoard) {
+      //   storeUndoStateForImage(false, [0, 1, 3])
+      //   markImageFileDirty([0, 1, 3]) // reference, main, notes layers
+      //   saveImageFile()
+      //   renderThumbnailDrawer()
+      // } else {
+      //   saveDataURLtoFile(psdData.main, board.url)
+      //   psdData.notes && saveDataURLtoFile(psdData.notes, board.url.replace('.png', '-notes.png'))
+      //   psdData.reference && saveDataURLtoFile(psdData.reference, board.url.replace('.png', '-reference.png'))
+      // }
+      // 
+      // // TODO: set up the correct handler for this.
+      // setTimeout(()=>{
+      //   saveThumbnailFile(boardData.boards.indexOf(board))
+      //     .then(updateThumbnailDisplayFromFile)
+      // }, 500)
+
+      // TODO why is this necessary?
+      // re-watch the file.
+      // https://github.com/nodejs/node-v0.x-archive/issues/3640#issuecomment-6806347
+      // fs.watch(path.join(boardPath, 'images', board.link), updateHandler)
+
+      return
+    }
+
+    for (let board of selectedBoards) {
+      fs.watch(path.join(boardPath, 'images', board.link), updateHandler)
+    }
+    ipcRenderer.send('analyticsEvent', 'Board', 'edit in photoshop')
+
+  } catch (error) {
+    // TODO alert the user of the error
+    console.error(error)
+    return
   }
-
+}
 
 // // always currentBoard
 // const saveProgressFile = () => {
