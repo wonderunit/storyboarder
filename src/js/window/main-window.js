@@ -867,9 +867,32 @@ let loadBoardUI = ()=> {
       }
     }
   })
-  storyboarderSketchPane.on('pointerdown', () => {
+  storyboarderSketchPane.on('requestPointerDown', () => {
+    // if artist is drawing on the reference layer, ensure it has opacity
     if (toolbar.state.brush === 'light-pencil' && storyboarderSketchPane.sketchPane.getLayerOpacity() === 0) {
       layersEditor.setReferenceOpacity(exporterCommon.DEFAULT_REFERENCE_LAYER_OPACITY)
+    }
+
+    // if artist is drawing on a linked layer...
+    let board = boardData.boards[currentBoard]
+    if (board.link) {
+      // ...cancel the drawing
+      storyboarderSketchPane.denyPointerDown()
+
+      // ...prompt them, to see if they really want to remove the link
+      const choice = remote.dialog.showMessageBox({
+        type: 'question',
+        buttons: ['Yes, let me draw you psycho!', `No, preserve the links, yo.`],
+        title: `Drawing on linked board? Are you sure?`,
+        message: `This board is linked to ${board.link}. If you continue drawing, the linked file will be out-of-date. OK?`
+      })
+
+      const shouldBreakLink = (choice === 0)
+
+      if (shouldBreakLink) {
+        delete board.link
+        markBoardFileDirty()
+      }
     }
   })
 
