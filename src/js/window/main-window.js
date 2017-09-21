@@ -1397,75 +1397,86 @@ let openInEditor = async () => {
 
       // assign a PSD file path
       let psdPath = path.join(boardPath, 'images', board.url.replace('.png', '.psd'))
+      let shouldOverwrite = false
+      if (fs.existsSync(psdPath)) {
+        const choice = remote.dialog.showMessageBox({
+          type: 'question',
+          buttons: ['Yes, overwrite', `No, open existing file`],
+          title: `Overwrite ${board.link}`,
+          message: `${board.link} exists. Overwrite it?`
+        })
+        shouldOverwrite = (choice === 0)
+      }
 
-      await FileHelper.writePhotoshopFileFromPNGPathLayers(pngPaths, psdPath)
+      if (shouldOverwrite) {
+        await FileHelper.writePhotoshopFileFromPNGPathLayers(pngPaths, psdPath)
+      }
       
       // update the 'link'
       board.link = path.basename(psdPath)
     }
 
-    // save the data changes immediately
+    // the board links changed, so save the project JSON file
     markBoardFileDirty()
-    saveBoardFile()
 
     // actually open each board
     for (board of selectedBoards) {
       console.log('\tshell.openItem', board.link)
       shell.openItem(path.join(boardPath, 'images', board.link))
-      board.linkOpened = true
     }
 
     //
     //
     // watch each board
     //
-    let updateHandler = (eventType, filename) => {
+    let updateHandler = async (eventType, filename) => {
       console.log('updateHandler', eventType, filename)
 
-      // let board
-      // for(let aBoard of boardData.boards) {
-      //   if(aBoard.link && aBoard.link === filename) {
-      //     board = aBoard
-      //     break
-      //   }
-      // }
-      // if(!board) {
-      //   return
-      // }
-      // let psdData
-      // let readerOptions = {}
-      // let curBoard = boardData.boards[currentBoard]
-      // // Update the current canvas if it's the same board coming back in.
-      // let isCurrentBoard = false
-      // if(curBoard.uid === board.uid) {
-      //   readerOptions.referenceCanvas = storyboarderSketchPane.getLayerCanvasByName("reference")
-      //   readerOptions.mainCanvas = storyboarderSketchPane.getLayerCanvasByName("main")
-      //   readerOptions.notesCanvas = storyboarderSketchPane.getLayerCanvasByName("notes")
-      //   storeUndoStateForImage(true, [0, 1, 3])
-      //   isCurrentBoard = true
-      // }
-      // 
-      // psdData = FileHelper.getBase64ImageDataFromFilePath(path.join(boardPath, 'images', board.link), readerOptions)
-      // if(!psdData || !psdData.main) {
-      //   return;
-      // }
-      // 
-      // if(isCurrentBoard) {
-      //   storeUndoStateForImage(false, [0, 1, 3])
-      //   markImageFileDirty([0, 1, 3]) // reference, main, notes layers
-      //   saveImageFile()
-      //   renderThumbnailDrawer()
-      // } else {
-      //   saveDataURLtoFile(psdData.main, board.url)
-      //   psdData.notes && saveDataURLtoFile(psdData.notes, board.url.replace('.png', '-notes.png'))
-      //   psdData.reference && saveDataURLtoFile(psdData.reference, board.url.replace('.png', '-reference.png'))
-      // }
-      // 
-      // // TODO: set up the correct handler for this.
-      // setTimeout(()=>{
-      //   saveThumbnailFile(boardData.boards.indexOf(board))
-      //     .then(updateThumbnailDisplayFromFile)
-      // }, 500)
+      // find the board by link filename
+      let board
+      for (let b of boardData.boards) {
+        if (b.link && b.link === filename) {
+          board = b
+          break
+        }
+      }
+      if (!board) {
+        return
+      }
+
+      let psdData
+      let readerOptions = {}
+      let curBoard = boardData.boards[currentBoard]
+      // Update the current canvas if it's the same board coming back in.
+      let isCurrentBoard = false
+
+      if (curBoard.uid === board.uid) {
+        readerOptions.referenceCanvas = storyboarderSketchPane.getLayerCanvasByName("reference")
+        readerOptions.mainCanvas = storyboarderSketchPane.getLayerCanvasByName("main")
+        readerOptions.notesCanvas = storyboarderSketchPane.getLayerCanvasByName("notes")
+        storeUndoStateForImage(true, [0, 1, 3])
+        isCurrentBoard = true
+      }
+      
+      psdData = FileHelper.getBase64ImageDataFromFilePath(path.join(boardPath, 'images', board.link), readerOptions)
+      if (!psdData || !psdData.main) {
+        return
+      }
+
+      if (isCurrentBoard) {
+        storeUndoStateForImage(false, [0, 1, 3])
+        markImageFileDirty([0, 1, 3]) // reference, main, notes layers
+        // save image and update thumbnail
+        await saveImageFile()
+        renderThumbnailDrawer()
+      } else {
+        saveDataURLtoFile(psdData.main, board.url)
+        psdData.notes && saveDataURLtoFile(psdData.notes, board.url.replace('.png', '-notes.png'))
+        psdData.reference && saveDataURLtoFile(psdData.reference, board.url.replace('.png', '-reference.png'))
+
+        let index = await saveThumbnailFile(boardData.boards.indexOf(board))
+        await updateThumbnailDisplayFromFile(index)
+      }
 
       // TODO why is this necessary?
       // re-watch the file.
