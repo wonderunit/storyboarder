@@ -8,6 +8,7 @@ const path = require('path')
 const menu = require('../menu')
 const util = require('../utils/index')
 const Color = require('color-js')
+const chokidar = require('chokidar')
 
 const StoryboarderSketchPane = require('./storyboarder-sketch-pane')
 const undoStack = require('../undo-stack')
@@ -73,6 +74,8 @@ let currentScene = 0
 
 let boardFileDirty = false
 let boardFileDirtyTimer
+
+let watcher // for chokidar
 
 let layerStatus = {
   [LAYER_INDEX_REFERENCE]:  { dirty: false },
@@ -1010,6 +1013,9 @@ let loadBoardUI = ()=> {
       // pass the electron-specific flag
       // to trigger `will-prevent-unload` handler in main.js
       event.returnValue = false
+    } else {
+      // remove any existing listeners
+      watcher && watcher.close()
     }
   })
 
@@ -1057,6 +1063,7 @@ let loadBoardUI = ()=> {
     document.querySelector('#shot-generator-container').remove()
   }
 
+  // setup filesystem watcher
 
 
   // for debugging:
@@ -1425,8 +1432,8 @@ let openInEditor = async () => {
         const choice = remote.dialog.showMessageBox({
           type: 'question',
           buttons: ['Yes, overwrite', `No, open existing file`],
-          title: `Overwrite ${board.link}`,
-          message: `${board.link} exists. Overwrite it?`
+          title: `Overwrite ${path.basename(psdPath)}`,
+          message: `${path.basename(psdPath)} exists. Overwrite it?`
         })
         shouldOverwrite = (choice === 0)
       }
@@ -1448,69 +1455,14 @@ let openInEditor = async () => {
       shell.openItem(path.join(boardPath, 'images', board.link))
     }
 
-    //
-    //
-    // watch each board
-    //
-    let updateHandler = async (eventType, filename) => {
-      console.log('updateHandler', eventType, filename)
+    // TODO should we stop watching PSDs that aren't part of the new selection?
+    // reset the watcher
+    // watcher.close()
 
-      // find the board by link filename
-      let board
-      for (let b of boardData.boards) {
-        if (b.link && b.link === filename) {
-          board = b
-          break
-        }
-      }
-      if (!board) {
-        return
-      }
-
-      let psdData
-      let readerOptions = {}
-      let curBoard = boardData.boards[currentBoard]
-      // Update the current canvas if it's the same board coming back in.
-      let isCurrentBoard = false
-
-      if (curBoard.uid === board.uid) {
-        readerOptions.referenceCanvas = storyboarderSketchPane.getLayerCanvasByName("reference")
-        readerOptions.mainCanvas = storyboarderSketchPane.getLayerCanvasByName("main")
-        readerOptions.notesCanvas = storyboarderSketchPane.getLayerCanvasByName("notes")
-        storeUndoStateForImage(true, [0, 1, 3])
-        isCurrentBoard = true
-      }
-      
-      psdData = FileHelper.getBase64ImageDataFromFilePath(path.join(boardPath, 'images', board.link), readerOptions)
-      if (!psdData || !psdData.main) {
-        return
-      }
-
-      if (isCurrentBoard) {
-        storeUndoStateForImage(false, [0, 1, 3])
-        markImageFileDirty([0, 1, 3]) // reference, main, notes layers
-        // save image and update thumbnail
-        await saveImageFile()
-        renderThumbnailDrawer()
-      } else {
-        saveDataURLtoFile(psdData.main, board.url)
-        psdData.notes && saveDataURLtoFile(psdData.notes, board.url.replace('.png', '-notes.png'))
-        psdData.reference && saveDataURLtoFile(psdData.reference, board.url.replace('.png', '-reference.png'))
-
-        let index = await saveThumbnailFile(boardData.boards.indexOf(board))
-        await updateThumbnailDisplayFromFile(index)
-      }
-
-      // TODO why is this necessary?
-      // re-watch the file.
-      // https://github.com/nodejs/node-v0.x-archive/issues/3640#issuecomment-6806347
-      // fs.watch(path.join(boardPath, 'images', board.link), updateHandler)
-
-      return
-    }
-
+    // add current selection to the watcher
     for (let board of selectedBoards) {
-      fs.watch(path.join(boardPath, 'images', board.link), updateHandler)
+      watcher.add(path.join(boardPath, 'images', board.link))
+      console.log('chokidar is watching', watcher.getWatched())
     }
     ipcRenderer.send('analyticsEvent', 'Board', 'edit in photoshop')
 
@@ -1519,6 +1471,57 @@ let openInEditor = async () => {
     console.error(error)
     return
   }
+}
+const onLinkedFileChange = async (eventType, filepath, stats) => {
+  console.log('onLinkedFileChange', eventType, filepath, stats)
+  let filename = path.basename(filepath)
+
+  // find the board by link filename
+  let board
+  for (let b of boardData.boards) {
+    if (b.link && b.link === filename) {
+      board = b
+      break
+    }
+  }
+  if (!board) {
+    return
+  }
+  
+  let psdData
+  let readerOptions = {}
+  let curBoard = boardData.boards[currentBoard]
+  // Update the current canvas if it's the same board coming back in.
+  let isCurrentBoard = false
+  
+  if (curBoard.uid === board.uid) {
+    readerOptions.referenceCanvas = storyboarderSketchPane.getLayerCanvasByName("reference")
+    readerOptions.mainCanvas = storyboarderSketchPane.getLayerCanvasByName("main")
+    readerOptions.notesCanvas = storyboarderSketchPane.getLayerCanvasByName("notes")
+    storeUndoStateForImage(true, [0, 1, 3])
+    isCurrentBoard = true
+  }
+  
+  psdData = FileHelper.getBase64ImageDataFromFilePath(path.join(boardPath, 'images', board.link), readerOptions)
+  if (!psdData || !psdData.main) {
+    return
+  }
+  
+  if (isCurrentBoard) {
+    storeUndoStateForImage(false, [0, 1, 3])
+    markImageFileDirty([0, 1, 3]) // reference, main, notes layers
+    // save image and update thumbnail
+    await saveImageFile()
+    renderThumbnailDrawer()
+  } else {
+    saveDataURLtoFile(psdData.main, board.url)
+    psdData.notes && saveDataURLtoFile(psdData.notes, board.url.replace('.png', '-notes.png'))
+    psdData.reference && saveDataURLtoFile(psdData.reference, board.url.replace('.png', '-reference.png'))
+  
+    let index = await saveThumbnailFile(boardData.boards.indexOf(board))
+    await updateThumbnailDisplayFromFile(index)
+  }
+  return
 }
 
 // // always currentBoard
