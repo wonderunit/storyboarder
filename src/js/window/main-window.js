@@ -1064,6 +1064,9 @@ let loadBoardUI = ()=> {
   }
 
   // setup filesystem watcher
+  watcher = chokidar.watch()
+  watcher.on('all', onLinkedFileChange)
+
 
 
   // for debugging:
