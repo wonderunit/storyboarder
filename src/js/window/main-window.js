@@ -1488,6 +1488,7 @@ const onLinkedFileChange = async (eventType, filepath, stats) => {
     }
   }
   if (!board) {
+    console.log('Tried to update, from editor, a file that no longer exists in the project:', filename)
     return
   }
   
