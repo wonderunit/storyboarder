@@ -1123,35 +1123,41 @@ let insertNewBoardDataAtPosition = (position) => {
   return board
 }
 
-let newBoard = (position, shouldAddToUndoStack = true) => {
-  let tasks = Promise.resolve()
-
-  if (shouldAddToUndoStack) {
-    tasks = tasks.then(() => saveImageFile()) // force-save any current work
-    tasks = tasks.then(() => storeUndoStateForScene(true))
-    //notifications.notify({message: "Added a new board. Let's make it a great one!", timing: 5})
+let newBoard = async (position, shouldAddToUndoStack = true) => {
+  if (isSavingImageFile) {
+    // notifications.notify({ message: 'Could not create new board. Please wait until Storyboarder has saved all recent image edits.', timing: 5 })
+    sfx.error()
+    return Promise.reject('not ready')
   }
 
-  tasks = tasks.then(() => {
-    if (typeof position == "undefined") position = currentBoard + 1
+  if (typeof position == "undefined") position = currentBoard + 1
 
-    // create array entry
-    insertNewBoardDataAtPosition(position)
+  if (shouldAddToUndoStack) {
+    await saveImageFile() // force-save any current work
+    await storeUndoStateForScene(true)
+  }
 
-    // indicate dirty for save sweep
-    markImageFileDirty([1]) // mark save for 'main' layer only // HACK hardcoded
-    markBoardFileDirty() // to save new board data
-    renderThumbnailDrawer()
-    storeUndoStateForScene()
+  // create array entry
+  insertNewBoardDataAtPosition(position)
 
-    // is this not a brand new storyboarder project?
-    if (shouldAddToUndoStack) {
-      //sfx.bip('c6')
-      sfx.down(-2, 0)
-    }
-  })
+  // NOTE because we immediately call `gotoBoard` after this,
+  //      the following causes the _newly created_ duplicate to be marked dirty
+  //      (not the current board)
+  // indicate dirty for save sweep
+  markImageFileDirty([1]) // 'main' layer is dirty // HACK hardcoded
+  markBoardFileDirty() // board data is dirty
 
-  return tasks
+  renderThumbnailDrawer()
+  storeUndoStateForScene()
+
+  // play a sound effect (unless this is for a brand new project)
+  if (shouldAddToUndoStack) {
+    // notifications.notify({ message: "Added a new board. Let's make it a great one!", timing: 5 })
+    // sfx.bip('c6')
+    sfx.down(-2, 0)
+  }
+
+  return position
 }
 
 let insertNewBoardsWithFiles = (filepaths) => {
