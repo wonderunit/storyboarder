@@ -3673,14 +3673,14 @@ let pasteBoards = () => {
 
     insertAt = insertAt + 1 // actual splice point
 
-    let boards = migrateBoardData(newBoards, insertAt)
+    migrateBoardData(newBoards, insertAt)
 
     // insert boards from clipboard data
     Promise.resolve().then(() => {
       // store the "before" state
       storeUndoStateForScene(true)
 
-      return insertBoards(boardData.boards, insertAt, boards, { layerDataByBoardIndex })
+      return insertBoards(boardData.boards, insertAt, newBoards, { layerDataByBoardIndex })
     }).then(() => {
       markBoardFileDirty()
       storeUndoStateForScene()
@@ -3748,7 +3748,7 @@ const insertBoards = (dest, insertAt, boards, { layerDataByBoardIndex }) => {
       resolve()
     }).catch(err => {
       console.log(err)
-      reject()
+      reject(err)
     })
   })
 }
@@ -3858,9 +3858,8 @@ const importFromWorksheet = async (imageArray) => {
   }
 }
 
-
-
-const migrateBoardData = (newBoards, insertAt) => {
+// NOTE: migrateBoardData mutates the object passed to it
+const migrateBoardData = (newBoards, insertAt = 0) => {
   // assign a new uid to the board, regardless of source
   newBoards = newBoards.map(boardModel.assignUid)
 
@@ -3869,7 +3868,7 @@ const migrateBoardData = (newBoards, insertAt) => {
 
   // update board layers filenames based on index
   newBoards = newBoards.map((board, index) =>
-    boardModel.updateUrlsFromIndex(board, index))
+    boardModel.updateUrlsFromIndex(board, insertAt + index))
 
   return newBoards
 }
