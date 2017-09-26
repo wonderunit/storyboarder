@@ -1443,10 +1443,7 @@ let openInEditor = async () => {
       }
 
       if (shouldOverwrite) {
-        let result = await FileHelper.writePhotoshopFileFromPNGPathLayers(pngPaths, psdPath)
-        if (!result) {
-          notifications.notify({ message: '[WARNING] Could not open editor' })
-        }
+        await FileHelper.writePhotoshopFileFromPNGPathLayers(pngPaths, psdPath)
       }
       
       // update the 'link'
@@ -1459,7 +1456,11 @@ let openInEditor = async () => {
     // actually open each board
     for (board of selectedBoards) {
       console.log('\tshell.openItem', board.link)
-      shell.openItem(path.join(boardPath, 'images', board.link))
+      let result = shell.openItem(path.join(boardPath, 'images', board.link))
+      console.log('\tresult:', result)
+      if (!result) {
+        notifications.notify({ message: '[WARNING] Could not open editor' })
+      }
     }
 
     // TODO should we stop watching PSDs that aren't part of the new selection?
