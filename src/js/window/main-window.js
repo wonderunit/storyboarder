@@ -182,6 +182,8 @@ const load = async (event, args) => {
     loadBoardUI()
     await updateBoardUI()
 
+    verifyScene()
+
     log({ type: 'progress', message: 'Preparing to display' })
 
     resize()
@@ -385,6 +387,25 @@ const commentOnLineMileage = (miles) => {
       break
   }
   notifications.notify({message: message.join(' '), timing: 10})
+}
+
+const verifyScene = () => {
+  // find all used files
+  const flatten = arr => Array.prototype.concat(...arr)
+  const usedFiles = flatten(boardData.boards.map(board => ([
+    ...boardModel.boardOrderedLayerFilenames(board).filenames,
+    boardModel.boardFilenameForThumbnail(board),
+    ...(board.link ? [board.link] : [])
+  ])))
+
+  // notify about any missing file
+  for (let filename of usedFiles) {
+    if (!fs.existsSync(path.join(boardPath, 'images', filename))) {
+      let message = `[WARNING] Missing File\n${filename}`
+      console.warn(message)
+      notifications.notify({ message })
+    }
+  }
 }
 
 let loadBoardUI = ()=> {
