@@ -1440,7 +1440,17 @@ let openInEditor = async () => {
           message: `${path.basename(psdPath)} exists. Overwrite it?`
         })
         shouldOverwrite = (choice === 0)
+      } else {
+        // if expected PSD doesn't exist,
+        // but .link has a value
+        if (board.link) {
+          notifications.notify({
+            message:  `[WARNING] Could not find linked file:\n${board.link}\n` +
+                      `Saving to:\n${path.basename(psdPath)} instead.`
+          })
+        }
       }
+
 
       if (shouldOverwrite) {
         await FileHelper.writePhotoshopFileFromPNGPathLayers(pngPaths, psdPath)
