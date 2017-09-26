@@ -1327,6 +1327,7 @@ let saveImageFile = async () => {
   // are we still drawing?
   if (storyboarderSketchPane.getIsDrawingOrStabilizing()) {
     // wait, then retry
+    console.warn('Still drawing. Not ready to save yet. Retry in 5s')
     imageFileDirtyTimer = setTimeout(saveImageFile, 5000)
     isSavingImageFile = false
     return
