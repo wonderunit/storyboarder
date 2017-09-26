@@ -1469,7 +1469,7 @@ let openInEditor = async () => {
     for (board of selectedBoards) {
       console.log('\tshell.openItem', board.link)
       let result = shell.openItem(path.join(boardPath, 'images', board.link))
-      console.log('\tresult:', result)
+      console.log('\tshell.openItem result:', result)
       if (!result) {
         notifications.notify({ message: '[WARNING] Could not open editor' })
       }
@@ -1485,7 +1485,7 @@ let openInEditor = async () => {
     // add current selection to the watcher
     for (let board of selectedBoards) {
       watcher.add(path.join(boardPath, 'images', board.link))
-      console.log('chokidar is watching', watcher.getWatched())
+      console.log('\twatching', watcher.getWatched())
     }
     ipcRenderer.send('analyticsEvent', 'Board', 'edit in photoshop')
 
