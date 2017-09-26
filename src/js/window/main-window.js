@@ -1742,73 +1742,80 @@ let deleteBoards = (args)=> {
  * Duplicates layers and board data, updating board data as required to reflect new uid
  *
  */
-let duplicateBoard = () => {
+let duplicateBoard = async () => {
+  if (isSavingImageFile) {
+    sfx.error()
+    // notifications.notify({ message: 'Could not duplicate board. Please wait until Storyboarder has saved all recent image edits.', timing: 5 })
+    return Promise.reject('not ready')
+  }
+
   storeUndoStateForScene(true)
-  saveImageFile().then(() => {
+  await saveImageFile()
 
-    let insertAt = currentBoard + 1
+  let insertAt = currentBoard + 1
+  let boardSrc = boardData.boards[currentBoard]
+  let boardDst = migrateBoardData([util.stringifyClone(boardSrc)], insertAt)[0]
 
-    let boardSrc = boardData.boards[currentBoard]
-    let boardDst = migrateBoardData([util.stringifyClone(boardSrc)], insertAt)[0]
+  // Per Taino's request, we are not duplicating some metadata
+  boardDst.dialogue = ''
+  boardDst.action = ''
+  boardDst.notes = ''
+  boardDst.duration = 0
 
-    // Per Taino's request, we are not duplicating some metadata
-    boardDst.dialogue = ''
-    boardDst.action = ''
-    boardDst.notes = ''
-    boardDst.duration = 0
-
-    //
-    //
-    // copy files
-    //
-    try {
-      console.log('copying files from index', currentBoard, 'to index', insertAt)
-      let filePairs = []
-      // main
-      filePairs.push({ from: boardSrc.url, to: boardDst.url })
-      // reference
-      if (boardSrc.layers.reference) {
-        filePairs.push({ from: boardSrc.layers.reference.url, to: boardDst.layers.reference.url })
-      }
-      // notes
-      if (boardSrc.layers.notes) {
-        filePairs.push({ from: boardSrc.layers.notes.url, to: boardDst.layers.notes.url })
-      }
-      // thumbnail
-      filePairs.push({ from: boardModel.boardFilenameForThumbnail(boardSrc), to: boardModel.boardFilenameForThumbnail(boardDst) })
-
-      // absolute paths
-      filePairs = filePairs.map(filePair => Object.assign(filePair, {
-        from: path.join(boardPath, 'images', filePair.from),
-        to: path.join(boardPath, 'images', filePair.to)
-      }))
-
-      for (let { from, to } of filePairs) {
-        console.log('copying to', to, 'from', from)
-        fs.writeFileSync(to, fs.readFileSync(from))
-      }
-
-      // insert data
-      boardData.boards.splice(insertAt, 0, boardDst)
-
-      markBoardFileDirty()
-      storeUndoStateForScene()
-
-      // boardData.boards has changed, so
-      //   reflect spliced board in thumbnail drawer
-      renderThumbnailDrawer()
-
-      // go to board
-      gotoBoard(insertAt)
-
-      // sfx.bip('c7')
-      sfx.down(-1, 2)
-      notifications.notify({ message: 'Duplicated board.', timing: 5 })
-    } catch (err) {
-      console.error(err)
-      notifications.notify({ message: 'Error: Could not duplicate board.', timing: 5 })
+  try {
+    // console.log('copying files from index', currentBoard, 'to index', insertAt)
+    let filePairs = []
+    // main
+    filePairs.push({ from: boardSrc.url, to: boardDst.url })
+    // reference
+    if (boardSrc.layers.reference) {
+      filePairs.push({ from: boardSrc.layers.reference.url, to: boardDst.layers.reference.url })
     }
-  })
+    // notes
+    if (boardSrc.layers.notes) {
+      filePairs.push({ from: boardSrc.layers.notes.url, to: boardDst.layers.notes.url })
+    }
+    // thumbnail
+    filePairs.push({ from: boardModel.boardFilenameForThumbnail(boardSrc), to: boardModel.boardFilenameForThumbnail(boardDst) })
+
+    // absolute paths
+    filePairs = filePairs.map(filePair => ({
+      from: path.join(boardPath, 'images', filePair.from),
+      to: path.join(boardPath, 'images', filePair.to)
+    }))
+
+    for (let { from, to } of filePairs) {
+      // console.log('duplicate', path.basename(from), 'to', path.basename(to))
+      if (!fs.existsSync(from)) {
+        console.error('Could not find', from)
+        throw new Error('Could not find', from)
+      }
+    }
+
+    for (let { from, to } of filePairs) {
+      fs.writeFileSync(to, fs.readFileSync(from))
+    }
+
+    // insert data
+    boardData.boards.splice(insertAt, 0, boardDst)
+
+    markBoardFileDirty()
+    storeUndoStateForScene()
+
+    // boardData.boards has changed,
+    // so reflect spliced board in thumbnail drawer
+    renderThumbnailDrawer()
+
+    // sfx.bip('c7')
+    sfx.down(-1, 2)
+    notifications.notify({ message: 'Duplicated board.', timing: 5 })
+    
+    return insertAt
+  } catch (err) {
+    console.error(err)
+    notifications.notify({ message: 'Error: Could not duplicate board.', timing: 5 })
+    throw new Error(err)
+  }
 }
 
 /**
