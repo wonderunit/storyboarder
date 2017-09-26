@@ -146,11 +146,16 @@ let writePhotoshopFileFromPNGPathLayers = (pngPathLayers, psdPath, options) => {
           i++
           fulfill()
         }
+        curLayerImg.onerror = () => {
+          let message = `could not load image: ${layerObject.url}`
+          console.warn(message)
+          reject(message)
+        }
         curLayerImg.src = layerObject.url
       })  
     })
 
-    Promise.all(loadPromises)
+    return Promise.all(loadPromises)
       .then(()=>{
         var whiteBG = document.createElement('canvas')
         whiteBG.width = psdWidth
@@ -170,7 +175,7 @@ let writePhotoshopFileFromPNGPathLayers = (pngPathLayers, psdPath, options) => {
           children: children
         };
 
-        const buffer = writePsd(psd);
+        const buffer = writePsd(psd)
         fs.writeFileSync(psdPath, buffer)
         fulfill()
       })
