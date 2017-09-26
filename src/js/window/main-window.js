@@ -1430,8 +1430,9 @@ let openInEditor = async () => {
 
       // assign a PSD file path
       let psdPath = path.join(boardPath, 'images', board.url.replace('.png', '.psd'))
-      let shouldOverwrite = false
+      let shouldOverwrite = true
       if (fs.existsSync(psdPath)) {
+        shouldOverwrite = false
         const choice = remote.dialog.showMessageBox({
           type: 'question',
           buttons: ['Yes, overwrite', `No, open existing file`],
@@ -1442,7 +1443,10 @@ let openInEditor = async () => {
       }
 
       if (shouldOverwrite) {
-        await FileHelper.writePhotoshopFileFromPNGPathLayers(pngPaths, psdPath)
+        let result = await FileHelper.writePhotoshopFileFromPNGPathLayers(pngPaths, psdPath)
+        if (!result) {
+          notifications.notify({ message: '[WARNING] Could not open editor' })
+        }
       }
       
       // update the 'link'
@@ -1470,7 +1474,7 @@ let openInEditor = async () => {
     ipcRenderer.send('analyticsEvent', 'Board', 'edit in photoshop')
 
   } catch (error) {
-    // TODO alert the user of the error
+    notifications.notify({ message: '[WARNING] Error opening files in editor.' })
     console.error(error)
     return
   }
