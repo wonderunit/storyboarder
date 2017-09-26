@@ -2159,9 +2159,9 @@ let updateSketchPaneBoard = () => {
               // draw
               resolve([index, image])
             }
-            image.onerror = err => {
+            image.onerror = () => {
               // clear
-              console.warn(err)
+              console.warn('updateSketchPaneBoard could not load', filename)
               resolve([index, null])
             }
             image.src = imageFilePath + '?' + Math.random()
