@@ -2405,16 +2405,21 @@ let renderThumbnailDrawer = ()=> {
       sfx.playEffect('metal')
     })
     contextMenu.on('add', () => {
-      newBoard().then(() => {
-        gotoBoard(currentBoard + 1)
+      newBoard().then(index => {
+        gotoBoard(index)
         ipcRenderer.send('analyticsEvent', 'Board', 'new')
-      })
+      }).catch(err => console.error(err))
     })
     contextMenu.on('delete', () => {
       deleteBoards()
     })
     contextMenu.on('duplicate', () => {
       duplicateBoard()
+        .then(index => {
+          gotoBoard(index)
+          ipcRenderer.send('analyticsEvent', 'Board', 'duplicate')
+        })
+        .catch(err => console.error(err))
     })
     contextMenu.on('copy', () => {
       copyBoards()
@@ -2520,10 +2525,10 @@ let renderThumbnailButtons = () => {
       let eventMouseOut = document.createEvent('MouseEvents')
       eventMouseOut.initMouseEvent('mouseout', true, true)
       el.dispatchEvent(eventMouseOut)
-      newBoard(boardData.boards.length).then(() => {
-        gotoBoard(boardData.boards.length)
-      })
-      ipcRenderer.send('analyticsEvent', 'Board', 'new')
+      newBoard(boardData.boards.length).then(index => {
+        gotoBoard(index)
+        ipcRenderer.send('analyticsEvent', 'Board', 'new')
+      }).catch(err => console.error(err))
     })
 
     // NOTE tooltips.setupTooltipForElement checks prefs each time, e.g.:
@@ -3270,16 +3275,16 @@ ipcRenderer.on('newBoard', (event, args)=>{
   if (!textInputMode) {
     if (args > 0) {
       // insert after
-      newBoard().then(() => {
-        gotoBoard(currentBoard + 1)
+      newBoard().then(index => {
+        gotoBoard(index)
         ipcRenderer.send('analyticsEvent', 'Board', 'new')
-      })
+      }).catch(err => console.error(err))
     } else {
-      // inset before
+      // insert before
       newBoard(currentBoard).then(() => {
         gotoBoard(currentBoard)
         ipcRenderer.send('analyticsEvent', 'Board', 'new')
-      })
+      }).catch(err => console.error(err))
     }
   }
   ipcRenderer.send('analyticsEvent', 'Board', 'new')
@@ -4345,7 +4350,11 @@ ipcRenderer.on('deleteBoards', (event, args)=>{
 ipcRenderer.on('duplicateBoard', (event, args)=>{
   if (!textInputMode) {
     duplicateBoard()
-    ipcRenderer.send('analyticsEvent', 'Board', 'duplicate')
+      .then(index => {
+        gotoBoard(index)
+        ipcRenderer.send('analyticsEvent', 'Board', 'duplicate')
+      })
+      .catch(err => console.error(err))
   }
 })
 
