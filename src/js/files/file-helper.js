@@ -11,22 +11,19 @@ const writePsd = require('ag-psd').writePsd;
  * @param {Object} options
  * @returns {Object} An object with data for notes (optional), reference (optional), and main
  */
-let getBase64ImageDataFromFilePath = (filepath, options={importTargetLayer:"reference"}) => {
-  let {importTargetLayer} = options
-  let arr = filepath.split(path.sep)
-  let filename = arr[arr.length-1]
-  let filenameParts =filename.toLowerCase().split('.')
-  let type = filenameParts[filenameParts.length-1]
+let getBase64ImageDataFromFilePath = (filepath, options={ importTargetLayer: 'reference' }) => {
+  let { importTargetLayer } = options
+  let type = path.extname(filepath)
 
   let result = {}
-  switch(type) {
-    case "png":
+  switch (type) {
+    case '.png':
       result[importTargetLayer] = getBase64TypeFromFilePath('png', filepath)
       break
-    case "jpg":
+    case '.jpg':
       result[importTargetLayer] = getBase64TypeFromFilePath('jpg', filepath)
       break
-    case "psd":
+    case '.psd':
       result = getBase64TypeFromPhotoshopFilePath(filepath, options)
       break
   }
@@ -149,11 +146,16 @@ let writePhotoshopFileFromPNGPathLayers = (pngPathLayers, psdPath, options) => {
           i++
           fulfill()
         }
+        curLayerImg.onerror = () => {
+          let message = `could not load image: ${layerObject.url}`
+          console.warn(message)
+          reject(message)
+        }
         curLayerImg.src = layerObject.url
       })  
     })
 
-    Promise.all(loadPromises)
+    return Promise.all(loadPromises)
       .then(()=>{
         var whiteBG = document.createElement('canvas')
         whiteBG.width = psdWidth
@@ -173,7 +175,7 @@ let writePhotoshopFileFromPNGPathLayers = (pngPathLayers, psdPath, options) => {
           children: children
         };
 
-        const buffer = writePsd(psd);
+        const buffer = writePsd(psd)
         fs.writeFileSync(psdPath, buffer)
         fulfill()
       })

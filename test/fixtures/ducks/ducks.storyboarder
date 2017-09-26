@@ -22,7 +22,8 @@
       "time": 0,
       "lineMileage": 0,
       "notes": "TITLE CARD: DUCKS",
-      "duration": 2000
+      "duration": 2000,
+      "link": "board-2-42VR9.psd"
     },
     {
       "uid": "J74F5",
@@ -58,7 +59,8 @@
       "time": 2500,
       "lineMileage": 23.679854997875083,
       "action": "Ducks are walking across the street.",
-      "duration": 1000
+      "duration": 1000,
+      "link": "board-0-P2FLS.psd"
     },
     {
       "uid": "WEBM4",

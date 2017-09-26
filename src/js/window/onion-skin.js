@@ -67,9 +67,9 @@ class OnionSkin {
                   // resolve
                   resolve([filename, image])
                 }
-                image.onerror = err => {
+                image.onerror = () => {
                   // clear
-                  console.warn(err)
+                  console.warn('could not load image', filename)
                   resolve([filename, null])
                 }
                 image.src = imageFilePath + '?' + Math.random()

@@ -8,6 +8,7 @@ const path = require('path')
 const menu = require('../menu')
 const util = require('../utils/index')
 const Color = require('color-js')
+const chokidar = require('chokidar')
 
 const StoryboarderSketchPane = require('./storyboarder-sketch-pane')
 const undoStack = require('../undo-stack')
@@ -73,6 +74,8 @@ let currentScene = 0
 
 let boardFileDirty = false
 let boardFileDirtyTimer
+
+let watcher // for chokidar
 
 let layerStatus = {
   [LAYER_INDEX_REFERENCE]:  { dirty: false },
@@ -867,9 +870,34 @@ let loadBoardUI = ()=> {
       }
     }
   })
-  storyboarderSketchPane.on('pointerdown', () => {
+  storyboarderSketchPane.on('requestPointerDown', () => {
+    // if artist is drawing on the reference layer, ensure it has opacity
     if (toolbar.state.brush === 'light-pencil' && storyboarderSketchPane.sketchPane.getLayerOpacity() === 0) {
       layersEditor.setReferenceOpacity(exporterCommon.DEFAULT_REFERENCE_LAYER_OPACITY)
+    }
+
+    // if artist is drawing on a linked layer...
+    let board = boardData.boards[currentBoard]
+    if (board.link) {
+      // ...cancel the drawing
+      storyboarderSketchPane.denyPointerDown()
+
+      // ...prompt them, to see if they really want to remove the link
+      const choice = remote.dialog.showMessageBox({
+        type: 'question',
+        buttons: ['Yes, let me draw you psycho!', `No, preserve the links, yo.`],
+        title: `Drawing on linked board? Are you sure?`,
+        message: `This board is linked to ${board.link}. If you continue drawing, the linked file will be out-of-date. OK?`
+      })
+
+      const shouldBreakLink = (choice === 0)
+
+      if (shouldBreakLink) {
+        notifications.notify({ message: `Stopped watching\n${board.link}\nfor changes.` })
+        watcher.unwatch(path.join(boardPath, 'images', board.link))
+        delete board.link
+        markBoardFileDirty()
+      }
     }
   })
 
@@ -987,6 +1015,9 @@ let loadBoardUI = ()=> {
       // pass the electron-specific flag
       // to trigger `will-prevent-unload` handler in main.js
       event.returnValue = false
+    } else {
+      // remove any existing listeners
+      watcher && watcher.close()
     }
   })
 
@@ -1033,6 +1064,10 @@ let loadBoardUI = ()=> {
     notifications.notify({ message: 'For better performance on your machine, Shot Generator and Perspective Guide have been disabled.' })
     document.querySelector('#shot-generator-container').remove()
   }
+
+  // setup filesystem watcher
+  watcher = chokidar.watch()
+  watcher.on('all', onLinkedFileChange)
 
 
 
@@ -1358,109 +1393,160 @@ let saveImageFile = () => {
   return tasks
 }
 
-let openInEditor = () => {
-    let imageFilePaths = []
-    let psdPromises = []
-    for(let selection of selections) {
-      psdPromises.push(new Promise((fulfill, reject)=>{
-        let board = boardData.boards[selection]
-        let pngPaths = []
-        if(board.layers.reference && board.layers.reference.url) {
-          pngPaths.push({
-            "url": path.join(boardPath, 'images', board.layers.reference.url),
-            "name": "reference"
-          })
-        }
-        pngPaths.push({
-            "url": path.join(boardPath, 'images', board.url),
-            "name": "main"
-        })
-        if(board.layers.notes && board.layers.notes.url) {
-          pngPaths.push({
-            "url": path.join(boardPath, 'images', board.layers.notes.url),
-            "name": "notes"
-          })
-        }
-        
-        let psdPath = path.join(boardPath, 'images', board.url.replace('.png', '.psd'))
-        
-        FileHelper.writePhotoshopFileFromPNGPathLayers(pngPaths, psdPath)
-          .then(()=>{
-            shell.openItem(psdPath);
-            imageFilePaths.push(psdPath)
-            board.psd = psdPath
-            fulfill()
-          })
-          .catch(error =>{
-            reject(error)
-          })
-      }))
+let openInEditor = async () => {
+  console.log('openInEditor')
+
+  let selectedBoards = []
+  let imageFilePaths = []
+
+  try {
+    // assume selection always includes currentBoard, 
+    // so make sure we've saved its contents to the filesystem
+    await saveImageFile()
+
+    for (let selection of selections) {
+      console.log('\tselection:', selection)
+      selectedBoards.push(boardData.boards[selection])
     }
 
-    Promise.all(psdPromises)
-      .then(()=>{
-        let updateHandler = (eventType, filename) => {
-          let board
-          for(let aBoard of boardData.boards) {
-            if(aBoard.psd && aBoard.psd.includes(filename)) {
-              board = aBoard
-              break
-            }
-          }
-          if(!board) {
-            return
-          }
-          let psdData
-          let readerOptions = {}
-          let curBoard = boardData.boards[currentBoard]
-          // Update the current canvas if it's the same board coming back in.
-          let isCurrentBoard = false
-          if(curBoard.uid === board.uid) {
-            readerOptions.referenceCanvas = storyboarderSketchPane.getLayerCanvasByName("reference")
-            readerOptions.mainCanvas = storyboarderSketchPane.getLayerCanvasByName("main")
-            readerOptions.notesCanvas = storyboarderSketchPane.getLayerCanvasByName("notes")
-            storeUndoStateForImage(true, [0, 1, 3])
-            isCurrentBoard = true
-          }
-          
-          psdData = FileHelper.getBase64ImageDataFromFilePath(board.psd, readerOptions)
-          if(!psdData || !psdData.main) {
-            return;
-          }
-
-          if(isCurrentBoard) {
-            storeUndoStateForImage(false, [0, 1, 3])
-            markImageFileDirty([0, 1, 3]) // reference, main, notes layers
-            saveImageFile()
-            renderThumbnailDrawer()
-          } else {
-            saveDataURLtoFile(psdData.main, board.url)
-            psdData.notes && saveDataURLtoFile(psdData.notes, board.url.replace('.png', '-notes.png'))
-            psdData.reference && saveDataURLtoFile(psdData.reference, board.url.replace('.png', '-reference.png'))
-          }
-
-          // TODO: set up the correct handler for this.
-          setTimeout(()=>{
-            saveThumbnailFile(boardData.boards.indexOf(board))
-              .then(updateThumbnailDisplayFromFile)
-          }, 500)
-
-          // re-watch the file.
-          // https://github.com/nodejs/node-v0.x-archive/issues/3640#issuecomment-6806347
-          fs.watch(board.psd, updateHandler)
-        }
-
-        for(let imageFilePath of imageFilePaths) {
-          fs.watch(imageFilePath, updateHandler)
-        }
-        ipcRenderer.send('analyticsEvent', 'Board', 'edit in photoshop')
+    // save each selected board to its own PSD
+    for (board of selectedBoards) {
+      // collect the layer data
+      let pngPaths = []
+      if (board.layers.reference && board.layers.reference.url) {
+        pngPaths.push({
+          url: path.join(boardPath, 'images', board.layers.reference.url),
+          name: "reference"
+        })
+      }
+      pngPaths.push({
+          url: path.join(boardPath, 'images', board.url),
+          name: "main"
       })
-      .catch(error =>{
-        console.error(error)
-      })
-    
+      if (board.layers.notes && board.layers.notes.url) {
+        pngPaths.push({
+          url: path.join(boardPath, 'images', board.layers.notes.url),
+          name: "notes"
+        })
+      }
+
+      // assign a PSD file path
+      let psdPath = path.join(boardPath, 'images', board.url.replace('.png', '.psd'))
+      let shouldOverwrite = true
+      if (fs.existsSync(psdPath)) {
+        shouldOverwrite = false
+        const choice = remote.dialog.showMessageBox({
+          type: 'question',
+          buttons: ['Yes, overwrite', `No, open existing file`],
+          title: `Overwrite ${path.basename(psdPath)}`,
+          message: `${path.basename(psdPath)} exists. Overwrite it?`
+        })
+        shouldOverwrite = (choice === 0)
+      } else {
+        // if expected PSD doesn't exist,
+        // but .link has a value
+        if (board.link) {
+          notifications.notify({
+            message:  `[WARNING] Could not find linked file:\n${board.link}\n` +
+                      `Saving to:\n${path.basename(psdPath)} instead.`
+          })
+        }
+      }
+
+
+      if (shouldOverwrite) {
+        await FileHelper.writePhotoshopFileFromPNGPathLayers(pngPaths, psdPath)
+      }
+      
+      // update the 'link'
+      board.link = path.basename(psdPath)
+    }
+
+    // the board links changed, so save the project JSON file
+    markBoardFileDirty()
+
+    // actually open each board
+    for (board of selectedBoards) {
+      console.log('\tshell.openItem', board.link)
+      let result = shell.openItem(path.join(boardPath, 'images', board.link))
+      console.log('\tshell.openItem result:', result)
+      if (!result) {
+        notifications.notify({ message: '[WARNING] Could not open editor' })
+      }
+    }
+
+    // NOTE PSDs that are being watched from previous selections
+    //      continue to be watched.
+    //      We don’t clear them out until 1) we remove the link
+    //      or 2) the end of the session (beforeunload).
+    //      To stop watching old selections, could do something like:
+    //          watcher.close() or watcher.unwatch()
+
+    // add current selection to the watcher
+    for (let board of selectedBoards) {
+      watcher.add(path.join(boardPath, 'images', board.link))
+      console.log('\twatching', watcher.getWatched())
+    }
+    ipcRenderer.send('analyticsEvent', 'Board', 'edit in photoshop')
+
+  } catch (error) {
+    notifications.notify({ message: '[WARNING] Error opening files in editor.' })
+    console.error(error)
+    return
   }
+}
+const onLinkedFileChange = async (eventType, filepath, stats) => {
+  console.log('onLinkedFileChange', eventType, filepath, stats)
+  let filename = path.basename(filepath)
 
+  // find the board by link filename
+  let board
+  for (let b of boardData.boards) {
+    if (b.link && b.link === filename) {
+      board = b
+      break
+    }
+  }
+  if (!board) {
+    console.log('Tried to update, from editor, a file that no longer exists in the project:', filename)
+    return
+  }
+  
+  let psdData
+  let readerOptions = {}
+  let curBoard = boardData.boards[currentBoard]
+  // Update the current canvas if it's the same board coming back in.
+  let isCurrentBoard = false
+  
+  if (curBoard.uid === board.uid) {
+    readerOptions.referenceCanvas = storyboarderSketchPane.getLayerCanvasByName("reference")
+    readerOptions.mainCanvas = storyboarderSketchPane.getLayerCanvasByName("main")
+    readerOptions.notesCanvas = storyboarderSketchPane.getLayerCanvasByName("notes")
+    storeUndoStateForImage(true, [0, 1, 3])
+    isCurrentBoard = true
+  }
+  
+  psdData = FileHelper.getBase64ImageDataFromFilePath(path.join(boardPath, 'images', board.link), readerOptions)
+  if (!psdData || !psdData.main) {
+    return
+  }
+  
+  if (isCurrentBoard) {
+    storeUndoStateForImage(false, [0, 1, 3])
+    markImageFileDirty([0, 1, 3]) // reference, main, notes layers
+    // save image and update thumbnail
+    await saveImageFile()
+    renderThumbnailDrawer()
+  } else {
+    saveDataURLtoFile(psdData.main, board.url)
+    psdData.notes && saveDataURLtoFile(psdData.notes, board.url.replace('.png', '-notes.png'))
+    psdData.reference && saveDataURLtoFile(psdData.reference, board.url.replace('.png', '-reference.png'))
+  
+    let index = await saveThumbnailFile(boardData.boards.indexOf(board))
+    await updateThumbnailDisplayFromFile(index)
+  }
+  return
+}
 
 // // always currentBoard
 // const saveProgressFile = () => {
@@ -2093,9 +2179,9 @@ let updateSketchPaneBoard = () => {
               // draw
               resolve([index, image])
             }
-            image.onerror = err => {
+            image.onerror = () => {
               // clear
-              console.warn(err)
+              console.warn('updateSketchPaneBoard could not load', filename)
               resolve([index, null])
             }
             image.src = imageFilePath + '?' + Math.random()

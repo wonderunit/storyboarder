@@ -20,22 +20,46 @@ const cleanupScene = (absolutePathToStoryboarderFile, trashFn = trash) => {
     } = prepareCleanup(originalBoardData)
 
     try {
-      // rename the renamable files
-      for (let p of renamablePairs) {
+      // rename the renamable files (layers, thumbnails, linked files)
+      for (let p of [...renamablePairs]) {
         let from = path.join(absolutePathToImagesFolder, p.from)
         let   to = path.join(absolutePathToImagesFolder, p.to)
-        fs.renameSync(from, to)
+        if (fs.existsSync(from)) {
+          // console.log('rename', p.from, p.to)
+          fs.renameSync(from, to)
+        } else {
+          // console.log('skip', p.from, p.to)
+        }
       }
 
-      // find unused files
-      const usedFiles = flatten(boardData.boards.map(boardModel.getAllFilenames))
+      // if the linked file does not exist, delete it from data
+      boardData.boards = boardData.boards.map(b => {
+        if (b.link && !fs.existsSync(path.join(absolutePathToImagesFolder, b.link))) {
+          // console.log('could not find', b.link)
+          // console.log('removing link')
+          delete b.link
+        }
+        return b
+      })
+
+      //
+      //
+      // find and delete unused files ...
+      //
+
+      // ... first, find all used filenames for: layers, thumbnails, links
+      const usedFiles = flatten(boardData.boards.map(board => ([
+        ...boardModel.boardOrderedLayerFilenames(board).filenames,
+        boardModel.boardFilenameForThumbnail(board),
+        ...(board.link ? [board.link] : [])
+      ])))
 
       const allFiles = fs.readdirSync(absolutePathToImagesFolder)
       const unusedFiles = allFiles.filter(filename => !usedFiles.includes(filename))
 
       const absolutePathToUnusedFiles = unusedFiles.map(filename => path.join(absolutePathToImagesFolder, filename))
 
-      // delete unused files ...
+      // ... now, delete unused files ...
       trashFn(absolutePathToUnusedFiles).then(() => {
 
         // ... then, save JSON
@@ -43,10 +67,12 @@ const cleanupScene = (absolutePathToStoryboarderFile, trashFn = trash) => {
       
         resolve(boardData)
       }).catch(err => {
+        console.error(err)
         reject(err)
       })
 
     } catch (err) {
+      console.error(err)
       reject(err)
     }
   })
@@ -55,7 +81,14 @@ const cleanupScene = (absolutePathToStoryboarderFile, trashFn = trash) => {
 const prepareCleanup = boardData => {
   let originalData = boardData
   let cleanedData = util.stringifyClone(boardData)
-  cleanedData.boards = cleanedData.boards.map(boardModel.updateUrlsFromIndex)
+  cleanedData.boards = cleanedData.boards
+                        .map(boardModel.updateUrlsFromIndex)
+                        .map(b => {
+                          if (b.link) {
+                            b.link = boardModel.getUpdatedLinkFilename(b)
+                          }
+                          return b
+                        })
     // TODO could update board number?
     // TODO could update shot index? see renderThumbnailDrawer
 
@@ -71,13 +104,17 @@ const prepareCleanup = boardData => {
     originalData.boards.map(boardModel.boardFilenameForThumbnail),
      cleanedData.boards.map(boardModel.boardFilenameForThumbnail)
    )
-  
-  // concat
-  let filePairs = [...layerFilenamePairs, ...thumbnailPairs]
-    .filter(([a, b]) => a !== b)     // exclude files that don't need to be renamed
-    .map(([a, b]) => ({ from: a, to: b }))
 
-  let renamablePairs = filePairs
+  let linkPairs = zip(
+    originalData.boards.map(b => b.link),
+     cleanedData.boards.map(b => b.link)
+   )
+   linkPairs = linkPairs.filter(pairs => !util.isUndefined(pairs[0]))
+
+  // concat file pairs
+  let renamablePairs = [...layerFilenamePairs, ...thumbnailPairs, ...linkPairs]
+    .filter(([a, b]) => a !== b) // include only filenames that require renaming
+    .map(([a, b]) => ({ from: a, to: b }))
 
   return {
     renamablePairs,

@@ -409,10 +409,12 @@ let processFountainData = (data, create, update) => {
   }
 
   if (create) {
-    fs.watchFile(currentFile, {persistent: false}, (e) => {
-      console.log("TODO SHOULD LOAD FILE")
-      //loadFile(false, true)
-    })
+    // TODO use chokidar to watch the file, reload
+
+    // fs.watchFile(currentFile, {persistent: false}, (e) => {
+    //   console.log("TODO SHOULD LOAD FILE")
+    //   //loadFile(false, true)
+    // })
   }
 
   if (update) {

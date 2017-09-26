@@ -37,6 +37,8 @@ describe('exporters/cleanup', function () {
             'board-2-42VR9-reference.png':        new Buffer([8, 6, 7, 5, 3, 0, 9]),
             'board-2-42VR9-notes.png':            new Buffer([8, 6, 7, 5, 3, 0, 9]),
             'board-2-42VR9-thumbnail.png':        new Buffer([8, 6, 7, 5, 3, 0, 9]),
+            // linked PSD
+            'board-2-42VR9.psd':                  new Buffer([8, 6, 7, 5, 3, 0, 9]),
 
             'board-2-J74F5.png':                  new Buffer([8, 6, 7, 5, 3, 0, 9]),
             'board-2-J74F5-reference.png':        new Buffer([8, 6, 7, 5, 3, 0, 9]),
@@ -56,6 +58,8 @@ describe('exporters/cleanup', function () {
             'board-98-PQKJM-reference.png':       new Buffer([8, 6, 7, 5, 3, 0, 9]),
             'board-98-PQKJM-notes.png':           new Buffer([8, 6, 7, 5, 3, 0, 9]),
             'board-98-PQKJM-thumbnail.png':       new Buffer([8, 6, 7, 5, 3, 0, 9]),
+            // unlinked PSD
+            'board-98-PQKJM.psd':                 new Buffer([8, 6, 7, 5, 3, 0, 9]),
 
             'unused.png':                         new Buffer([8, 6, 7, 5, 3, 0, 9]),
             'unused.psd':                         new Buffer([8, 6, 7, 5, 3, 0, 9])
@@ -91,7 +95,11 @@ describe('exporters/cleanup', function () {
 
       assert(trashedFiles.includes('unused.png'))
       assert(trashedFiles.includes('unused.psd'))
-      assert.equal(trashedFiles.length, 2)
+
+      // it deletes PSDs that are not linked (board-98-PQKJM.psd)
+      assert(trashedFiles.includes('board-98-PQKJM.psd'))
+
+      assert.equal(trashedFiles.length, 3)
   
       return Promise.resolve()
     }
@@ -107,6 +115,14 @@ describe('exporters/cleanup', function () {
           fs.readdirSync(path.resolve(path.join(fixturesPath, 'ducks', 'images')))
             .includes('board-1-42VR9-thumbnail.png')
         )
+
+        // it renames PSDs that are linked (board-2-42VR9.psd)
+        assert.equal(fs.existsSync(path.join(fixturesPath, 'ducks', 'images', 'board-2-42VR9.psd')), false)
+        assert.equal(fs.existsSync(path.join(fixturesPath, 'ducks', 'images', 'board-1-42VR9.psd')), true)
+
+        // it removes links for PSD files that don't exist (board-0-P2FLS.png)
+        assert.equal(newBoardData.boards[2].url, 'board-3-P2FLS.png') // confirm it was renamed
+        assert.equal(typeof newBoardData.boards[2].link, 'undefined') // confirm the link was deleted
 
         done()
       })

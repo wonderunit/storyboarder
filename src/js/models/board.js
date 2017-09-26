@@ -1,3 +1,4 @@
+const path = require('path')
 const util = require('../utils/index')
 
 const boardFileImageSize = boardFileData =>
@@ -64,9 +65,10 @@ const updateUrlsFromIndex = (board, index) => {
   return board
 }
 
-const getLayerFilenames = board => boardOrderedLayerFilenames(board).filenames
-
-const getAllFilenames = board => [...getLayerFilenames(board), boardFilenameForThumbnail(board)]
+// calculate link filename from url filename, preserving link extension
+const getUpdatedLinkFilename = board => {
+  return path.basename(board.url, path.extname(board.url)) + path.extname(board.link)
+}
 
 module.exports = {
   boardFileImageSize,
@@ -74,7 +76,7 @@ module.exports = {
   boardFilenameForThumbnail,
   boardOrderedLayerFilenames,
 
-  getAllFilenames,
+  getUpdatedLinkFilename,
 
   assignUid,
   setup,

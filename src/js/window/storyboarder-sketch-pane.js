@@ -227,8 +227,17 @@ class StoryboarderSketchPane extends EventEmitter {
   }
 
   canvasPointerDown (event) {
+    // indicate that we want to draw
     this.isPointerDown = true
-    this.strategy.canvasPointerDown(event)
+
+    // ask the system if its ok to draw
+    // system will call .denyPointerDown() if it wants us to stop
+    this.emit('requestPointerDown')
+
+    // if its still ok to draw, continue
+    if (this.isPointerDown) {
+      this.strategy.canvasPointerDown(event)
+    }
   }
 
   canvasPointerMove (e) {
@@ -698,6 +707,10 @@ class StoryboarderSketchPane extends EventEmitter {
     if (this.toolbar) {
       this.setBrushTool(this.toolbar.getBrushOptions().kind, this.toolbar.getBrushOptions())
     }
+  }
+  // called only when attempting to draw over a linked board
+  denyPointerDown () {
+    this.isPointerDown = false
   }
   
   getCanvasImageSources () {
