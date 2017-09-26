@@ -85,6 +85,7 @@ let layerStatus = {
   [LAYER_INDEX_COMPOSITE]:  { dirty: false } // TODO do we need this?
 }
 let imageFileDirtyTimer
+let isSavingImageFile = false // lock for saveImageFile
 
 let drawIdleTimer
 
@@ -1315,11 +1316,13 @@ let saveDataURLtoFile = (dataURL, filename) => {
 // this function saves only the CURRENT board
 // call it before changing boards to ensure the current work is saved
 //
-let saveImageFile = () => {
+let saveImageFile = async () => {
+  isSavingImageFile = true
   // are we still drawing?
   if (storyboarderSketchPane.getIsDrawingOrStabilizing()) {
     // wait, then retry
     imageFileDirtyTimer = setTimeout(saveImageFile, 5000)
+    isSavingImageFile = false
     return
   }
 
@@ -1390,14 +1393,15 @@ let saveImageFile = () => {
   console.log(`saved ${numSaved} modified layers`)
 
   // create/update the thumbnail image file if necessary
-  let tasks = Promise.resolve()
   let indexToSave = currentBoard // copy value
   if (shouldSaveThumbnail) {
-    tasks = tasks.then(() => saveThumbnailFile(indexToSave))
-    tasks = tasks.then(() => updateThumbnailDisplayFromFile(indexToSave))
+    await saveThumbnailFile(indexToSave)
+    await updateThumbnailDisplayFromFile(indexToSave)
   }
 
-  return tasks
+  isSavingImageFile = false
+
+  return indexToSave
 }
 
 let openInEditor = async () => {
