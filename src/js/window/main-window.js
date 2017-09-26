@@ -893,6 +893,8 @@ let loadBoardUI = ()=> {
       const shouldBreakLink = (choice === 0)
 
       if (shouldBreakLink) {
+        notifications.notify({ message: `Stopped watching\n${board.link}\nfor changes.` })
+        watcher.unwatch(path.join(boardPath, 'images', board.link))
         delete board.link
         markBoardFileDirty()
       }
@@ -1473,9 +1475,12 @@ let openInEditor = async () => {
       }
     }
 
-    // TODO should we stop watching PSDs that aren't part of the new selection?
-    // reset the watcher
-    // watcher.close()
+    // NOTE PSDs that are being watched from previous selections
+    //      continue to be watched.
+    //      We don’t clear them out until 1) we remove the link
+    //      or 2) the end of the session (beforeunload).
+    //      To stop watching old selections, could do something like:
+    //          watcher.close() or watcher.unwatch()
 
     // add current selection to the watcher
     for (let board of selectedBoards) {
