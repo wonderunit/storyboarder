@@ -269,15 +269,29 @@ let openFile = (file) => {
             storyboardsPath,
             currentFile,
             currentPath
-          )
+          ).catch(error => {
+            console.error(error)
+          })
 
       } else {
         let boardSettings = JSON.parse(fs.readFileSync(path.join(storyboardsPath, 'storyboard.settings')))
         if (!boardSettings.lastScene) { boardSettings.lastScene = 0 }
         //[scriptData, locations, characters, metadata]
-        let processedData = processFountainData(data, true, false)
-        addToRecentDocs(currentFile, processedData[3])
-        loadStoryboarderWindow(currentFile, processedData[0], processedData[1], processedData[2], boardSettings, currentPath)
+
+        let processedData
+        try {
+          processedData = processFountainData(data, true, false)
+        } catch (error) {
+          dialog.showMessageBox({
+            type: 'error',
+            message: 'Could not read Fountain script.\n' + error.message,
+          })
+        }
+
+        if (processedData) {
+          addToRecentDocs(currentFile, processedData[3])
+          loadStoryboarderWindow(currentFile, processedData[0], processedData[1], processedData[2], boardSettings, currentPath)
+        }
       }
     })
   }
@@ -369,10 +383,13 @@ let processFountainData = (data, create, update) => {
     return fs.statSync(path.join(currentPath, file)).isDirectory();
   });
 
+  // fallback title in case one is not provided
+  metadata.title = path.basename(currentFile, path.extname(currentFile))
+
   for (var node of scriptData) {
     switch (node.type) {
       case 'title':
-        metadata.title = node.text.replace(/<(?:.|\n)*?>/gm, '')
+        if (node.text) { metadata.title = node.text.replace(/<(?:.|\n)*?>/gm, '') }
         break
       case 'scene':
         metadata.sceneCount++
@@ -397,6 +414,14 @@ let processFountainData = (data, create, update) => {
         break
     }
   }
+
+  let scenesWithSceneNumbers = scriptData.reduce(
+    (coll, node) =>
+      (node.type === 'scene' && node.scene_number)
+        ? coll + 1
+        : coll
+  , 0)
+  if (scenesWithSceneNumbers === 0) throw new Error('Could not find any numbered scenes in this Fountain script.')
 
   switch (scriptData[scriptData.length-1].type) {
     case 'section':
@@ -506,12 +531,24 @@ let createNewFromExistingFile = (aspectRatio, data, storyboardsPath, currentFile
     }
     fs.writeFileSync(path.join(storyboardsPath, 'storyboard.settings'), JSON.stringify(boardSettings))
     //[scriptData, locations, characters, metadata]
-    let processedData = processFountainData(data, true, false)
 
-    addToRecentDocs(currentFile, processedData[3])
-    loadStoryboarderWindow(currentFile, processedData[0], processedData[1], processedData[2], boardSettings, currentPath)
+    let processedData
+    try {
+      processedData = processFountainData(data, true, false)
+    } catch (error) {
+      dialog.showMessageBox({
+        type: 'error',
+        message: 'Could not read existing Fountain script.\n' + error.message,
+      })
+    }
 
-    resolve()
+    if (processedData) {
+      addToRecentDocs(currentFile, processedData[3])
+      loadStoryboarderWindow(currentFile, processedData[0], processedData[1], processedData[2], boardSettings, currentPath)
+      resolve()
+    } else {
+      reject()
+    }
   })
 
 let loadStoryboarderWindow = (filename, scriptData, locations, characters, boardSettings, currentPath) => {
