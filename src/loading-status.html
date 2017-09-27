@@ -68,6 +68,9 @@
       if (opt.type === 'progress') {
         messagesEl.textContent = opt.message + ' …'
       }
+      if (opt.type === 'error') {
+        messagesEl.textContent = '⚠ ' + opt.message
+      }
     })
   </script>
 </html>
