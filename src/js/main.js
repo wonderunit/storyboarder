@@ -269,15 +269,29 @@ let openFile = (file) => {
             storyboardsPath,
             currentFile,
             currentPath
-          )
+          ).catch(error => {
+            console.error(error)
+          })
 
       } else {
         let boardSettings = JSON.parse(fs.readFileSync(path.join(storyboardsPath, 'storyboard.settings')))
         if (!boardSettings.lastScene) { boardSettings.lastScene = 0 }
         //[scriptData, locations, characters, metadata]
-        let processedData = processFountainData(data, true, false)
-        addToRecentDocs(currentFile, processedData[3])
-        loadStoryboarderWindow(currentFile, processedData[0], processedData[1], processedData[2], boardSettings, currentPath)
+
+        let processedData
+        try {
+          processedData = processFountainData(data, true, false)
+        } catch (error) {
+          dialog.showMessageBox({
+            type: 'error',
+            message: 'Could not read Fountain script.',
+          })
+        }
+
+        if (processedData) {
+          addToRecentDocs(currentFile, processedData[3])
+          loadStoryboarderWindow(currentFile, processedData[0], processedData[1], processedData[2], boardSettings, currentPath)
+        }
       }
     })
   }
@@ -506,12 +520,24 @@ let createNewFromExistingFile = (aspectRatio, data, storyboardsPath, currentFile
     }
     fs.writeFileSync(path.join(storyboardsPath, 'storyboard.settings'), JSON.stringify(boardSettings))
     //[scriptData, locations, characters, metadata]
-    let processedData = processFountainData(data, true, false)
 
-    addToRecentDocs(currentFile, processedData[3])
-    loadStoryboarderWindow(currentFile, processedData[0], processedData[1], processedData[2], boardSettings, currentPath)
+    let processedData
+    try {
+      processedData = processFountainData(data, true, false)
+    } catch (error) {
+      dialog.showMessageBox({
+        type: 'error',
+        message: 'Could not read existing Fountain script.',
+      })
+    }
 
-    resolve()
+    if (processedData) {
+      addToRecentDocs(currentFile, processedData[3])
+      loadStoryboarderWindow(currentFile, processedData[0], processedData[1], processedData[2], boardSettings, currentPath)
+      resolve()
+    } else {
+      reject()
+    }
   })
 
 let loadStoryboarderWindow = (filename, scriptData, locations, characters, boardSettings, currentPath) => {
