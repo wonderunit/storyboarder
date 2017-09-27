@@ -284,7 +284,7 @@ let openFile = (file) => {
         } catch (error) {
           dialog.showMessageBox({
             type: 'error',
-            message: 'Could not read Fountain script.',
+            message: 'Could not read Fountain script.\n' + error.message,
           })
         }
 
@@ -530,7 +530,7 @@ let createNewFromExistingFile = (aspectRatio, data, storyboardsPath, currentFile
     } catch (error) {
       dialog.showMessageBox({
         type: 'error',
-        message: 'Could not read existing Fountain script.',
+        message: 'Could not read existing Fountain script.\n' + error.message,
       })
     }
 
