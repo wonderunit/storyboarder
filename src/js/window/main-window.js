@@ -2884,21 +2884,25 @@ let loadScene = async (sceneNumber) => {
     }
   }
 
-  boardPath = boardFilename.split(path.sep)
-  boardPath.pop()
-  boardPath = boardPath.join(path.sep)
-  console.log('BOARD PATH:', boardPath)
+  if (boardFilename) {
+    boardPath = boardFilename.split(path.sep)
+    boardPath.pop()
+    boardPath = boardPath.join(path.sep)
+    console.log('BOARD PATH:', boardPath)
 
-  if (onionSkin) {
-    onionSkin.setBoardPath(boardPath)
+    if (onionSkin) {
+      onionSkin.setBoardPath(boardPath)
+    }
+
+    dragTarget = document.querySelector('#thumbnail-container')
+    dragTarget.style.scrollBehavior = 'unset'
+
+    ipcRenderer.send('analyticsEvent', 'Application', 'open', boardFilename, boardData.boards.length)
+
+    return ensureBoardExists()
+  } else {
+    throw new Error(`Missing .storyboarder file for scene ${sceneNumber}.`)
   }
-
-  dragTarget = document.querySelector('#thumbnail-container')
-  dragTarget.style.scrollBehavior = 'unset'
-
-  ipcRenderer.send('analyticsEvent', 'Application', 'open', boardFilename, boardData.boards.length)
-
-  return ensureBoardExists()
 }
 
 const ensureBoardExists = () => {
