@@ -2153,6 +2153,7 @@ let nextScene = ()=> {
       saveBoardFile()
       currentScene++
       loadScene(currentScene).then(() => {
+        verifyScene()
         renderScript()
         renderScene()
       })
@@ -2178,6 +2179,7 @@ let previousScene = ()=> {
       currentScene--
       currentScene = Math.max(0, currentScene)
       loadScene(currentScene).then(() => {
+        verifyScene()
         renderScript()
         renderScene()
       })
@@ -2629,6 +2631,7 @@ let renderScenes = ()=> {
       if (currentScene !== Number(e.target.dataset.node)) {
         currentScene = Number(e.target.dataset.node)
         loadScene(currentScene).then(() => {
+          verifyScene()
           renderScript()
           renderScene()
         })
@@ -4178,6 +4181,7 @@ const applyUndoStateForScene = (state) => {
     saveBoardFile()
     currentScene = getSceneNumberBySceneId(state.sceneId)
     loadScene(currentScene).then(() => {
+      verifyScene()
       renderScript()
     })
   }
@@ -4217,6 +4221,7 @@ const applyUndoStateForImage = (state) => {
     // go to the requested scene
     currentScene = getSceneNumberBySceneId(state.sceneId)
     loadScene(currentScene).then(() => {
+      verifyScene()
       renderScript()
     })
   }
