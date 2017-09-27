@@ -144,57 +144,64 @@ remote.getCurrentWindow().on('focus', () => {
 ///////////////////////////////////////////////////////////////
 
 const load = async (event, args) => {
-  if (args[1]) {
-    log({ type: 'progress', message: 'Loading Fountain File' })
-    console.log("LOADING FOUNTAIN FILE", args[0])
-    ipcRenderer.send('analyticsEvent', 'Application', 'open script', args[0])
+  try {
+    if (args[1]) {
+      log({ type: 'progress', message: 'Loading Fountain File' })
+      console.log("LOADING FOUNTAIN FILE", args[0])
+      ipcRenderer.send('analyticsEvent', 'Application', 'open script', args[0])
 
-    // there is scriptData - the window opening is a script type
-    scriptData = args[1]
-    locations = args[2]
-    characters = args[3]
-    boardSettings = args[4]
-    currentPath = args[5]
+      // there is scriptData - the window opening is a script type
+      scriptData = args[1]
+      locations = args[2]
+      characters = args[3]
+      boardSettings = args[4]
+      currentPath = args[5]
 
-    //renderScenes()
-    currentScene = boardSettings.lastScene
-    await loadScene(currentScene)
+      //renderScenes()
+      currentScene = boardSettings.lastScene
+      await loadScene(currentScene)
 
-    assignColors()
-    document.querySelector('#scenes').style.display = 'block'
-    document.querySelector('#script').style.display = 'block'
-    renderScenes()
-    renderScript()
+      assignColors()
+      document.querySelector('#scenes').style.display = 'block'
+      document.querySelector('#script').style.display = 'block'
+      renderScenes()
+      renderScript()
+    } else {
+      log({ type: 'progress', message: 'Loading Project File' })
+      // if not, its just a simple single boarder file
+      boardFilename = args[0]
+      boardPath = boardFilename.split(path.sep)
+      boardPath.pop()
+      boardPath = boardPath.join(path.sep)
+      console.log(' BOARD PATH: ', boardFilename)
+      boardData = JSON.parse(fs.readFileSync(boardFilename))
+      ipcRenderer.send('analyticsEvent', 'Application', 'open', boardFilename, boardData.boards.length)
+    }
 
-  } else {
-    log({ type: 'progress', message: 'Loading Project File' })
-    // if not, its just a simple single boarder file
-    boardFilename = args[0]
-    boardPath = boardFilename.split(path.sep)
-    boardPath.pop()
-    boardPath = boardPath.join(path.sep)
-    console.log(' BOARD PATH: ', boardFilename)
-    boardData = JSON.parse(fs.readFileSync(boardFilename))
-    ipcRenderer.send('analyticsEvent', 'Application', 'open', boardFilename, boardData.boards.length)
-  }
+    loadBoardUI()
+    await updateBoardUI()
 
-  loadBoardUI()
-  await updateBoardUI()
+    log({ type: 'progress', message: 'Preparing to display' })
 
-  log({ type: 'progress', message: 'Preparing to display' })
+    resize()
+    setTimeout(() => {
+      storyboarderSketchPane.resize()
 
-  resize()
-  setTimeout(() => {
-    storyboarderSketchPane.resize()
-
-    setImmediate(() =>
-      requestAnimationFrame(() =>
+      setImmediate(() =>
         requestAnimationFrame(() =>
-          ipcRenderer.send('workspaceReady')
+          requestAnimationFrame(() =>
+            ipcRenderer.send('workspaceReady')
+          )
         )
       )
-    )
-  }, 500) // TODO hack, remove this #440
+    }, 500) // TODO hack, remove this #440
+  } catch (error) {
+    remote.dialog.showMessageBox({
+      type: 'error',
+      message: error.message
+    })
+    log({ type: 'error', message: error.message })
+  }
 }
 ipcRenderer.on('load', load)
 
