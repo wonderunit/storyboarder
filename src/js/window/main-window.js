@@ -85,6 +85,7 @@ let layerStatus = {
   [LAYER_INDEX_COMPOSITE]:  { dirty: false } // TODO do we need this?
 }
 let imageFileDirtyTimer
+let isSavingImageFile = false // lock for saveImageFile
 
 let drawIdleTimer
 
@@ -180,6 +181,8 @@ const load = async (event, args) => {
 
     loadBoardUI()
     await updateBoardUI()
+
+    verifyScene()
 
     log({ type: 'progress', message: 'Preparing to display' })
 
@@ -384,6 +387,25 @@ const commentOnLineMileage = (miles) => {
       break
   }
   notifications.notify({message: message.join(' '), timing: 10})
+}
+
+const verifyScene = () => {
+  // find all used files
+  const flatten = arr => Array.prototype.concat(...arr)
+  const usedFiles = flatten(boardData.boards.map(board => ([
+    ...boardModel.boardOrderedLayerFilenames(board).filenames,
+    boardModel.boardFilenameForThumbnail(board),
+    ...(board.link ? [board.link] : [])
+  ])))
+
+  // notify about any missing file
+  for (let filename of usedFiles) {
+    if (!fs.existsSync(path.join(boardPath, 'images', filename))) {
+      let message = `[WARNING] Missing File\n${filename}`
+      console.warn(message)
+      notifications.notify({ message })
+    }
+  }
 }
 
 let loadBoardUI = ()=> {
@@ -1122,35 +1144,41 @@ let insertNewBoardDataAtPosition = (position) => {
   return board
 }
 
-let newBoard = (position, shouldAddToUndoStack = true) => {
-  let tasks = Promise.resolve()
-
-  if (shouldAddToUndoStack) {
-    tasks = tasks.then(() => saveImageFile()) // force-save any current work
-    tasks = tasks.then(() => storeUndoStateForScene(true))
-    //notifications.notify({message: "Added a new board. Let's make it a great one!", timing: 5})
+let newBoard = async (position, shouldAddToUndoStack = true) => {
+  if (isSavingImageFile) {
+    // notifications.notify({ message: 'Could not create new board. Please wait until Storyboarder has saved all recent image edits.', timing: 5 })
+    sfx.error()
+    return Promise.reject('not ready')
   }
 
-  tasks = tasks.then(() => {
-    if (typeof position == "undefined") position = currentBoard + 1
+  if (typeof position == "undefined") position = currentBoard + 1
 
-    // create array entry
-    insertNewBoardDataAtPosition(position)
+  if (shouldAddToUndoStack) {
+    await saveImageFile() // force-save any current work
+    await storeUndoStateForScene(true)
+  }
 
-    // indicate dirty for save sweep
-    markImageFileDirty([1]) // mark save for 'main' layer only // HACK hardcoded
-    markBoardFileDirty() // to save new board data
-    renderThumbnailDrawer()
-    storeUndoStateForScene()
+  // create array entry
+  insertNewBoardDataAtPosition(position)
 
-    // is this not a brand new storyboarder project?
-    if (shouldAddToUndoStack) {
-      //sfx.bip('c6')
-      sfx.down(-2, 0)
-    }
-  })
+  // NOTE because we immediately call `gotoBoard` after this,
+  //      the following causes the _newly created_ duplicate to be marked dirty
+  //      (not the current board)
+  // indicate dirty for save sweep
+  markImageFileDirty([1]) // 'main' layer is dirty // HACK hardcoded
+  markBoardFileDirty() // board data is dirty
 
-  return tasks
+  renderThumbnailDrawer()
+  storeUndoStateForScene()
+
+  // play a sound effect (unless this is for a brand new project)
+  if (shouldAddToUndoStack) {
+    // notifications.notify({ message: "Added a new board. Let's make it a great one!", timing: 5 })
+    // sfx.bip('c6')
+    sfx.down(-2, 0)
+  }
+
+  return position
 }
 
 let insertNewBoardsWithFiles = (filepaths) => {
@@ -1315,11 +1343,14 @@ let saveDataURLtoFile = (dataURL, filename) => {
 // this function saves only the CURRENT board
 // call it before changing boards to ensure the current work is saved
 //
-let saveImageFile = () => {
+let saveImageFile = async () => {
+  isSavingImageFile = true
   // are we still drawing?
   if (storyboarderSketchPane.getIsDrawingOrStabilizing()) {
     // wait, then retry
+    console.warn('Still drawing. Not ready to save yet. Retry in 5s')
     imageFileDirtyTimer = setTimeout(saveImageFile, 5000)
+    isSavingImageFile = false
     return
   }
 
@@ -1390,14 +1421,15 @@ let saveImageFile = () => {
   console.log(`saved ${numSaved} modified layers`)
 
   // create/update the thumbnail image file if necessary
-  let tasks = Promise.resolve()
   let indexToSave = currentBoard // copy value
   if (shouldSaveThumbnail) {
-    tasks = tasks.then(() => saveThumbnailFile(indexToSave))
-    tasks = tasks.then(() => updateThumbnailDisplayFromFile(indexToSave))
+    await saveThumbnailFile(indexToSave)
+    await updateThumbnailDisplayFromFile(indexToSave)
   }
 
-  return tasks
+  isSavingImageFile = false
+
+  return indexToSave
 }
 
 let openInEditor = async () => {
@@ -1731,73 +1763,80 @@ let deleteBoards = (args)=> {
  * Duplicates layers and board data, updating board data as required to reflect new uid
  *
  */
-let duplicateBoard = () => {
+let duplicateBoard = async () => {
+  if (isSavingImageFile) {
+    sfx.error()
+    // notifications.notify({ message: 'Could not duplicate board. Please wait until Storyboarder has saved all recent image edits.', timing: 5 })
+    return Promise.reject('not ready')
+  }
+
   storeUndoStateForScene(true)
-  saveImageFile().then(() => {
+  await saveImageFile()
 
-    let insertAt = currentBoard + 1
+  let insertAt = currentBoard + 1
+  let boardSrc = boardData.boards[currentBoard]
+  let boardDst = migrateBoardData([util.stringifyClone(boardSrc)], insertAt)[0]
 
-    let boardSrc = boardData.boards[currentBoard]
-    let boardDst = migrateBoardData([util.stringifyClone(boardSrc)], insertAt)[0]
+  // Per Taino's request, we are not duplicating some metadata
+  boardDst.dialogue = ''
+  boardDst.action = ''
+  boardDst.notes = ''
+  boardDst.duration = 0
 
-    // Per Taino's request, we are not duplicating some metadata
-    boardDst.dialogue = ''
-    boardDst.action = ''
-    boardDst.notes = ''
-    boardDst.duration = 0
-
-    //
-    //
-    // copy files
-    //
-    try {
-      console.log('copying files from index', currentBoard, 'to index', insertAt)
-      let filePairs = []
-      // main
-      filePairs.push({ from: boardSrc.url, to: boardDst.url })
-      // reference
-      if (boardSrc.layers.reference) {
-        filePairs.push({ from: boardSrc.layers.reference.url, to: boardDst.layers.reference.url })
-      }
-      // notes
-      if (boardSrc.layers.notes) {
-        filePairs.push({ from: boardSrc.layers.notes.url, to: boardDst.layers.notes.url })
-      }
-      // thumbnail
-      filePairs.push({ from: boardModel.boardFilenameForThumbnail(boardSrc), to: boardModel.boardFilenameForThumbnail(boardDst) })
-
-      // absolute paths
-      filePairs = filePairs.map(filePair => Object.assign(filePair, {
-        from: path.join(boardPath, 'images', filePair.from),
-        to: path.join(boardPath, 'images', filePair.to)
-      }))
-
-      for (let { from, to } of filePairs) {
-        console.log('copying to', to, 'from', from)
-        fs.writeFileSync(to, fs.readFileSync(from))
-      }
-
-      // insert data
-      boardData.boards.splice(insertAt, 0, boardDst)
-
-      markBoardFileDirty()
-      storeUndoStateForScene()
-
-      // boardData.boards has changed, so
-      //   reflect spliced board in thumbnail drawer
-      renderThumbnailDrawer()
-
-      // go to board
-      gotoBoard(insertAt)
-
-      // sfx.bip('c7')
-      sfx.down(-1, 2)
-      notifications.notify({ message: 'Duplicated board.', timing: 5 })
-    } catch (err) {
-      console.error(err)
-      notifications.notify({ message: 'Error: Could not duplicate board.', timing: 5 })
+  try {
+    // console.log('copying files from index', currentBoard, 'to index', insertAt)
+    let filePairs = []
+    // main
+    filePairs.push({ from: boardSrc.url, to: boardDst.url })
+    // reference
+    if (boardSrc.layers.reference) {
+      filePairs.push({ from: boardSrc.layers.reference.url, to: boardDst.layers.reference.url })
     }
-  })
+    // notes
+    if (boardSrc.layers.notes) {
+      filePairs.push({ from: boardSrc.layers.notes.url, to: boardDst.layers.notes.url })
+    }
+    // thumbnail
+    filePairs.push({ from: boardModel.boardFilenameForThumbnail(boardSrc), to: boardModel.boardFilenameForThumbnail(boardDst) })
+
+    // absolute paths
+    filePairs = filePairs.map(filePair => ({
+      from: path.join(boardPath, 'images', filePair.from),
+      to: path.join(boardPath, 'images', filePair.to)
+    }))
+
+    for (let { from, to } of filePairs) {
+      // console.log('duplicate', path.basename(from), 'to', path.basename(to))
+      if (!fs.existsSync(from)) {
+        console.error('Could not find', from)
+        throw new Error('Could not find', from)
+      }
+    }
+
+    for (let { from, to } of filePairs) {
+      fs.writeFileSync(to, fs.readFileSync(from))
+    }
+
+    // insert data
+    boardData.boards.splice(insertAt, 0, boardDst)
+
+    markBoardFileDirty()
+    storeUndoStateForScene()
+
+    // boardData.boards has changed,
+    // so reflect spliced board in thumbnail drawer
+    renderThumbnailDrawer()
+
+    // sfx.bip('c7')
+    sfx.down(-1, 2)
+    notifications.notify({ message: 'Duplicated board.', timing: 5 })
+    
+    return insertAt
+  } catch (err) {
+    console.error(err)
+    notifications.notify({ message: 'Error: Could not duplicate board.', timing: 5 })
+    throw new Error(err)
+  }
 }
 
 /**
@@ -2114,6 +2153,7 @@ let nextScene = ()=> {
       saveBoardFile()
       currentScene++
       loadScene(currentScene).then(() => {
+        verifyScene()
         renderScript()
         renderScene()
       })
@@ -2139,6 +2179,7 @@ let previousScene = ()=> {
       currentScene--
       currentScene = Math.max(0, currentScene)
       loadScene(currentScene).then(() => {
+        verifyScene()
         renderScript()
         renderScene()
       })
@@ -2387,16 +2428,21 @@ let renderThumbnailDrawer = ()=> {
       sfx.playEffect('metal')
     })
     contextMenu.on('add', () => {
-      newBoard().then(() => {
-        gotoBoard(currentBoard + 1)
+      newBoard().then(index => {
+        gotoBoard(index)
         ipcRenderer.send('analyticsEvent', 'Board', 'new')
-      })
+      }).catch(err => console.error(err))
     })
     contextMenu.on('delete', () => {
       deleteBoards()
     })
     contextMenu.on('duplicate', () => {
       duplicateBoard()
+        .then(index => {
+          gotoBoard(index)
+          ipcRenderer.send('analyticsEvent', 'Board', 'duplicate')
+        })
+        .catch(err => console.error(err))
     })
     contextMenu.on('copy', () => {
       copyBoards()
@@ -2502,10 +2548,10 @@ let renderThumbnailButtons = () => {
       let eventMouseOut = document.createEvent('MouseEvents')
       eventMouseOut.initMouseEvent('mouseout', true, true)
       el.dispatchEvent(eventMouseOut)
-      newBoard(boardData.boards.length).then(() => {
-        gotoBoard(boardData.boards.length)
-      })
-      ipcRenderer.send('analyticsEvent', 'Board', 'new')
+      newBoard(boardData.boards.length).then(index => {
+        gotoBoard(index)
+        ipcRenderer.send('analyticsEvent', 'Board', 'new')
+      }).catch(err => console.error(err))
     })
 
     // NOTE tooltips.setupTooltipForElement checks prefs each time, e.g.:
@@ -2585,6 +2631,7 @@ let renderScenes = ()=> {
       if (currentScene !== Number(e.target.dataset.node)) {
         currentScene = Number(e.target.dataset.node)
         loadScene(currentScene).then(() => {
+          verifyScene()
           renderScript()
           renderScene()
         })
@@ -3252,16 +3299,16 @@ ipcRenderer.on('newBoard', (event, args)=>{
   if (!textInputMode) {
     if (args > 0) {
       // insert after
-      newBoard().then(() => {
-        gotoBoard(currentBoard + 1)
+      newBoard().then(index => {
+        gotoBoard(index)
         ipcRenderer.send('analyticsEvent', 'Board', 'new')
-      })
+      }).catch(err => console.error(err))
     } else {
-      // inset before
+      // insert before
       newBoard(currentBoard).then(() => {
         gotoBoard(currentBoard)
         ipcRenderer.send('analyticsEvent', 'Board', 'new')
-      })
+      }).catch(err => console.error(err))
     }
   }
   ipcRenderer.send('analyticsEvent', 'Board', 'new')
@@ -3655,14 +3702,14 @@ let pasteBoards = () => {
 
     insertAt = insertAt + 1 // actual splice point
 
-    let boards = migrateBoardData(newBoards, insertAt)
+    migrateBoardData(newBoards, insertAt)
 
     // insert boards from clipboard data
     Promise.resolve().then(() => {
       // store the "before" state
       storeUndoStateForScene(true)
 
-      return insertBoards(boardData.boards, insertAt, boards, { layerDataByBoardIndex })
+      return insertBoards(boardData.boards, insertAt, newBoards, { layerDataByBoardIndex })
     }).then(() => {
       markBoardFileDirty()
       storeUndoStateForScene()
@@ -3730,7 +3777,7 @@ const insertBoards = (dest, insertAt, boards, { layerDataByBoardIndex }) => {
       resolve()
     }).catch(err => {
       console.log(err)
-      reject()
+      reject(err)
     })
   })
 }
@@ -3840,9 +3887,8 @@ const importFromWorksheet = async (imageArray) => {
   }
 }
 
-
-
-const migrateBoardData = (newBoards, insertAt) => {
+// NOTE: migrateBoardData mutates the object passed to it
+const migrateBoardData = (newBoards, insertAt = 0) => {
   // assign a new uid to the board, regardless of source
   newBoards = newBoards.map(boardModel.assignUid)
 
@@ -3851,7 +3897,7 @@ const migrateBoardData = (newBoards, insertAt) => {
 
   // update board layers filenames based on index
   newBoards = newBoards.map((board, index) =>
-    boardModel.updateUrlsFromIndex(board, index))
+    boardModel.updateUrlsFromIndex(board, insertAt + index))
 
   return newBoards
 }
@@ -4135,6 +4181,7 @@ const applyUndoStateForScene = (state) => {
     saveBoardFile()
     currentScene = getSceneNumberBySceneId(state.sceneId)
     loadScene(currentScene).then(() => {
+      verifyScene()
       renderScript()
     })
   }
@@ -4174,6 +4221,7 @@ const applyUndoStateForImage = (state) => {
     // go to the requested scene
     currentScene = getSceneNumberBySceneId(state.sceneId)
     loadScene(currentScene).then(() => {
+      verifyScene()
       renderScript()
     })
   }
@@ -4328,7 +4376,11 @@ ipcRenderer.on('deleteBoards', (event, args)=>{
 ipcRenderer.on('duplicateBoard', (event, args)=>{
   if (!textInputMode) {
     duplicateBoard()
-    ipcRenderer.send('analyticsEvent', 'Board', 'duplicate')
+      .then(index => {
+        gotoBoard(index)
+        ipcRenderer.send('analyticsEvent', 'Board', 'duplicate')
+      })
+      .catch(err => console.error(err))
   }
 })
 
