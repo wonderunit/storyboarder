@@ -383,10 +383,13 @@ let processFountainData = (data, create, update) => {
     return fs.statSync(path.join(currentPath, file)).isDirectory();
   });
 
+  // fallback title in case one is not provided
+  metadata.title = path.basename(currentFile, path.extname(currentFile))
+
   for (var node of scriptData) {
     switch (node.type) {
       case 'title':
-        metadata.title = node.text.replace(/<(?:.|\n)*?>/gm, '')
+        if (node.text) { metadata.title = node.text.replace(/<(?:.|\n)*?>/gm, '') }
         break
       case 'scene':
         metadata.sceneCount++
