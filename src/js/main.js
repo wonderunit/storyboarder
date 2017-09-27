@@ -415,6 +415,14 @@ let processFountainData = (data, create, update) => {
     }
   }
 
+  let scenesWithSceneNumbers = scriptData.reduce(
+    (coll, node) =>
+      (node.type === 'scene' && node.scene_number)
+        ? coll + 1
+        : coll
+  , 0)
+  if (scenesWithSceneNumbers === 0) throw new Error('Could not find any numbered scenes in this Fountain script.')
+
   switch (scriptData[scriptData.length-1].type) {
     case 'section':
       metadata.totalMovieTime = scriptData[scriptData.length-1].time + scriptData[scriptData.length-1].duration
