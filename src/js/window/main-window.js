@@ -1591,6 +1591,12 @@ let openInEditor = async () => {
 }
 const onLinkedFileChange = async (eventType, filepath, stats) => {
   console.log('onLinkedFileChange', eventType, filepath, stats)
+  if (eventType !== 'change') {
+    // ignore `add` events, etc
+    // we only care about `change` events (explicit save events)
+    return
+  }
+
   let filename = path.basename(filepath)
 
   // find the board by link filename
