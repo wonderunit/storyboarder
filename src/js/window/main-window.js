@@ -1471,32 +1471,61 @@ let openInEditor = async () => {
 
       // assign a PSD file path
       let psdPath = path.join(boardPath, 'images', board.url.replace('.png', '.psd'))
+
+      // fs.statSync checks if file exists without triggering a change that Photoshop would detect
+      //
+      // fs.existSync will trigger "The disk copy of “file.psd” was changed since you last opened or saved it.
+      //                         Do you wish to update it?"
+      let fileExists = false
+      try {
+        if (fs.statSync(psdPath).isFile()) {
+          fileExists = true
+        }
+      } catch (err) {
+        if (err.code === 'ENOENT') {
+          fileExists = false
+        } else {
+          throw err
+        }
+      }
+
       let shouldOverwrite = true
-      if (fs.existsSync(psdPath)) {
-        shouldOverwrite = false
-        const choice = remote.dialog.showMessageBox({
-          type: 'question',
-          buttons: ['Yes, overwrite', `No, open existing file`],
-          title: `Overwrite ${path.basename(psdPath)}`,
-          message: `${path.basename(psdPath)} exists. Overwrite it?`
-        })
-        shouldOverwrite = (choice === 0)
-      } else {
-        // if expected PSD doesn't exist,
-        // but .link has a value
+      if (fileExists) {
         if (board.link) {
+          // file exists and link exists
+          // don't overwrite, don't prompt
+          shouldOverwrite = false
+        } else {
+          // file exists but link does not exist
+          // we need to know if user wants us to overwrite existing file before linking
+          shouldOverwrite = false
+          const choice = remote.dialog.showMessageBox({
+            type: 'question',
+            title: `Overwrite ${path.extname(psdPath)}?`,
+            message: `A PSD file already exists for this board. Overwrite it?`,
+            buttons: ['Yes, overwrite', `No, open existing PSD`]
+          })
+          shouldOverwrite = (choice === 0)
+        }
+      } else {
+        if (board.link) {
+          // file doesn’t exist but link exists
+          let shouldOverwrite = true
           notifications.notify({
             message:  `[WARNING] Could not find linked file:\n${board.link}\n` +
                       `Saving to:\n${path.basename(psdPath)} instead.`
           })
+          // TODO could check to see if psdPath and board.link differ? that would be a weird edge case
+        } else {
+          // file doesn't exist AND link doesn't exist
+          let shouldOverwrite = true
         }
       }
-
 
       if (shouldOverwrite) {
         await FileHelper.writePhotoshopFileFromPNGPathLayers(pngPaths, psdPath)
       }
-      
+
       // update the 'link'
       board.link = path.basename(psdPath)
     }
