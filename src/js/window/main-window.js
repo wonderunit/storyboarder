@@ -1121,7 +1121,9 @@ let loadBoardUI = ()=> {
   }
 
   // setup filesystem watcher
-  watcher = chokidar.watch()
+  watcher = chokidar.watch(null, {
+    disableGlobbing: true // treat file strings as literal file names
+  })
   watcher.on('all', onLinkedFileChange)
 
 
@@ -1578,8 +1580,9 @@ let openInEditor = async () => {
 
     // add current selection to the watcher
     for (let board of selectedBoards) {
+      console.log('\twatcher add', path.join(boardPath, 'images', board.link))
       watcher.add(path.join(boardPath, 'images', board.link))
-      console.log('\twatching', watcher.getWatched())
+      console.log('\twatching', JSON.stringify(watcher.getWatched(), null, 2))
     }
     ipcRenderer.send('analyticsEvent', 'Board', 'edit in photoshop')
 
