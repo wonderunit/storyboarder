@@ -1628,6 +1628,7 @@ const onLinkedFileChange = async (eventType, filepath, stats) => {
   
   psdData = FileHelper.getBase64ImageDataFromFilePath(path.join(boardPath, 'images', board.link), readerOptions)
   if (!psdData || !psdData.main) {
+    notifications.notify({ message: `[WARNING] Could not import from file ${path.basename(filepath)}. You may be using an unsupported PSD feature.` })
     return
   }
   
