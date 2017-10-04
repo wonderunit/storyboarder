@@ -914,18 +914,44 @@ let loadBoardUI = ()=> {
       // ...prompt them, to see if they really want to remove the link
       const choice = remote.dialog.showMessageBox({
         type: 'question',
-        buttons: ['Yes, let me draw you psycho!', `No, preserve the links, yo.`],
-        title: `Drawing on linked board? Are you sure?`,
-        message: `This board is linked to ${board.link}. If you continue drawing, the linked file will be out-of-date. OK?`
+        message: 'This board was edited in Photoshop and linked to a PSD file. ' +
+                 'What would you like to do?',
+        buttons: [
+          'Open in Photoshop', // 0
+          'Draw in Storyboarder', // 1
+          'Cancel' // 2
+        ],
+        defaultId: 2
       })
 
-      const shouldBreakLink = (choice === 0)
+      if (choice === 0) {
+        // Open in Photoshop
+        openInEditor()
 
-      if (shouldBreakLink) {
-        notifications.notify({ message: `Stopped watching\n${board.link}\nfor changes.` })
-        watcher.unwatch(path.join(boardPath, 'images', board.link))
-        delete board.link
-        markBoardFileDirty()
+      } else if (choice === 1) {
+        // Draw in Storyboarder
+        const confirmChoice = remote.dialog.showMessageBox({
+          type: 'question',
+          message: 'If you draw, Storyboarder will stop watching ' +
+                   'Photoshop for changes, and unlink the PSD from ' +
+                   'this board. Are you absolutely sure?',
+          buttons: [
+            'Unlink and Draw', // 0
+            'Cancel' // 1
+          ],
+          defaultId: 1
+        })
+        
+        if (confirmChoice === 0) {
+          // Unlink and Draw
+          notifications.notify({ message: `Stopped watching\n${board.link}\nfor changes.` })
+          watcher.unwatch(path.join(boardPath, 'images', board.link))
+          delete board.link
+          markBoardFileDirty()
+        }
+      } else {
+        // Cancel
+        return
       }
     }
   })
