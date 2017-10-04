@@ -1496,7 +1496,7 @@ let openInEditor = async () => {
       }
 
       // assign a PSD file path
-      let psdPath = path.join(boardPath, 'images', board.url.replace('.png', '.psd'))
+      let psdPath = path.join(boardPath, 'images', boardModel.boardFilenameForLink(board))
 
       // fs.statSync checks if file exists without triggering a change that Photoshop would detect
       //
@@ -1860,6 +1860,13 @@ let duplicateBoard = async () => {
     }
     // thumbnail
     filePairs.push({ from: boardModel.boardFilenameForThumbnail(boardSrc), to: boardModel.boardFilenameForThumbnail(boardDst) })
+
+    // link (if any)
+    if (boardSrc.link) {
+      let from = boardSrc.link
+      let to = boardDst.link
+      filePairs.push({ from, to })
+    }
 
     // absolute paths
     filePairs = filePairs.map(filePair => ({
@@ -3960,6 +3967,14 @@ const migrateBoardData = (newBoards, insertAt = 0) => {
   // update board layers filenames based on index
   newBoards = newBoards.map((board, index) =>
     boardModel.updateUrlsFromIndex(board, insertAt + index))
+  
+  // update link
+  newBoards = newBoards.map((board, index) => {
+    if (board.link) {
+      board.link = boardModel.boardFilenameForLink(board)
+    }
+    return board
+  })
 
   return newBoards
 }
