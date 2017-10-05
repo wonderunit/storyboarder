@@ -444,6 +444,7 @@ const verifyScene = () => {
                     `It will be unlinked.`
         notifications.notify({ message, timing: 60 })
         delete board.link
+        markBoardFileDirty()
       }
     }
   }
