@@ -101,6 +101,10 @@ Fuck you, Saul Bass. Absolutely bigger than Jesus and wrestling. Also, your work
 **"HOW COME WHEN I'M DRAWING, I HEAR THE IMPERIAL MARCH?"**
 You're probably boarding on the Simpsons. You might want to escape North Korea through China. If not shot crossing the river, you will probably be sold into slavery by the Chinese. Work for 5 years, buy your freedom and make your way to Seoul. This should fix your issue. You're welcome.
 
+## Notes on Open Source License
+
+https://wonderunit.com/thoughts-on-free-and-open-source/
+
 ## Contributers
 
 We would love help on this project. If you are interested in helping out feel free to email charles@wonderunit.com or submit a PR.
