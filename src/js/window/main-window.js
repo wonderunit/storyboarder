@@ -392,20 +392,17 @@ const commentOnLineMileage = (miles) => {
 const verifyScene = () => {
   // find all used files
   const flatten = arr => Array.prototype.concat(...arr)
-  const usedFiles = flatten(boardData.boards.map(board => ([
+  const pngFiles = flatten(boardData.boards.map(board => ([
     ...boardModel.boardOrderedLayerFilenames(board).filenames,
-    boardModel.boardFilenameForThumbnail(board),
-    ...(board.link ? [board.link] : [])
+    boardModel.boardFilenameForThumbnail(board)
   ])))
 
   //
   //
-  // PNG notify about any missing PNG file, create it
+  // PNG: notify about any missing PNG file, create it
   //
   let missing = []
-  for (let filename of usedFiles) {
-    if (path.extname(filename) !== '.png') return
-
+  for (let filename of pngFiles) {
     if (!fs.existsSync(path.join(boardPath, 'images', filename))) {
       missing.push(filename)
     }
@@ -438,8 +435,19 @@ const verifyScene = () => {
 
   //
   //
-  // TODO PSD notify about any missing PSD file, and unlink
+  // PSD: notify about any missing PSD file, and unlink
   //
+  for (let board of boardData.boards) {
+    if (board.link) {
+      if (!fs.existsSync(path.join(boardPath, 'images', board.link))) {
+      let message = `[WARNING] This scene is missing the linked file ${board.link}.` +
+                    `It will be unlinked.`
+        notifications.notify({ message, timing: 60 })
+        delete board.link
+      }
+    }
+  }
+
 }
 
 let loadBoardUI = ()=> {
