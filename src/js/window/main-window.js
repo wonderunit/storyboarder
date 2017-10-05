@@ -398,14 +398,48 @@ const verifyScene = () => {
     ...(board.link ? [board.link] : [])
   ])))
 
-  // notify about any missing file
+  //
+  //
+  // PNG notify about any missing PNG file, create it
+  //
+  let missing = []
   for (let filename of usedFiles) {
+    if (path.extname(filename) !== '.png') return
+
     if (!fs.existsSync(path.join(boardPath, 'images', filename))) {
-      let message = `[WARNING] Missing File\n${filename}`
-      console.warn(message)
-      notifications.notify({ message })
+      missing.push(filename)
     }
   }
+
+  if (missing.length) {
+    let message = `[WARNING] This scene is missing the following file(s):\n\n${missing.join('\n')}\n\n` +
+                  `This is probably not your fault, but is a bug caused by previous releases of Storyboarder.`
+
+    notifications.notify({ message, timing: 60 })
+
+    //
+    // TODO why don't we store `size` in a data structure that represents the scene?
+    //
+    // create placeholder image
+    let { width, height } = storyboarderSketchPane.sketchPane.getCanvasSize()
+    let size = [width, height]
+    let context = createSizedContext(size)
+    fillContext(context, 'white')
+    let canvas = context.canvas
+    let imageData = canvas.toDataURL()
+
+    for (let filename of missing) {
+      console.log('saving placeholder', filename)
+      saveDataURLtoFile(imageData, filename)
+    }
+    notifications.notify({ message: 'We’ved added placeholder files for any missing image(s).' +
+                                    'You should not see this warning again for this scene.', timing: 60 })
+  }
+
+  //
+  //
+  // TODO PSD notify about any missing PSD file, and unlink
+  //
 }
 
 let loadBoardUI = ()=> {
