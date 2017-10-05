@@ -3729,9 +3729,10 @@ const exportPDF = () => {
 
 const exportCleanup = () => {
   exporter.exportCleanup(boardData, boardFilename).then(newBoardData => {
-    boardData = newBoardData
-    notifications.notify({ message: "Your scene has been cleaned up!", timing: 20 })
+    // notifications.notify({ message: "Your scene has been cleaned up!", timing: 20 })
     sfx.positive()
+    // force reload
+    ipcRenderer.send('openFile', boardFilename)
   }).catch(err => {
     console.log(err)
   })
