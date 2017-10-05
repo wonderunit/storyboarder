@@ -1743,7 +1743,8 @@ const updateThumbnailDisplayFromFile = index => {
   // does it exist in the thumbnail drawer already?
   if (el) {
     let imageFilePath = path.join(boardPath, 'images', boardModel.boardFilenameForThumbnail(boardData.boards[index]))
-    el.src = imageFilePath + '?' + Date.now()
+    let src = imageFilePath + '?' + getEtag(imageFilePath)
+    el.src = src
   }
 }
 
@@ -2453,7 +2454,8 @@ let renderThumbnailDrawer = ()=> {
     try {
       if (fs.existsSync(imageFilename)) {
         html.push('<div class="top">')
-        html.push('<img src="' + imageFilename + '" height="60" width="' + thumbnailWidth + '">')
+        let src = imageFilename + '?' + getEtag(imageFilename)
+        html.push('<img src="' + src + '" height="60" width="' + thumbnailWidth + '">')
         html.push('</div>')
       } else {
         // blank image
@@ -4346,6 +4348,20 @@ const createSizedContext = size => {
 const fillContext = (context, fillStyle = 'white') => {
   context.fillStyle = fillStyle
   context.fillRect(0, 0, context.canvas.width, context.canvas.height)
+}
+
+const getEtag = filename => {
+  try {
+    let s = fs.statSync(filename)
+    let etag = s.dev + '-' + s.ino + '-' + s.mtime.getTime()
+    return etag
+  } catch (err) {
+    if (err.code === 'ENOENT') {
+      console.warn('File not found', filename)
+    } else {
+      throw err
+    }
+  }
 }
 
 ipcRenderer.on('setTool', (e, arg)=> {
