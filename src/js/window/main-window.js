@@ -132,6 +132,13 @@ let scrollPoint
 const msecsToFrames = value => Math.round(value / 1000 * 24)
 const framesToMsecs = value => Math.round(value / 24 * 1000)
 
+// TODO better name than etags?
+// TODO store in boardData instead, but exclude from JSON?
+// cache buster for thumbnails
+let etags = {}
+const setEtag = absoluteFilePath => { etags[absoluteFilePath] = Date.now() }
+const getEtag = absoluteFilePath => etags[absoluteFilePath] || '0'
+
 
 //  analytics.event('Application', 'open', filename)
 
@@ -1631,7 +1638,11 @@ const onLinkedFileChange = async (eventType, filepath, stats) => {
     notifications.notify({ message: `[WARNING] Could not import from file ${path.basename(filepath)}. You may be using an unsupported PSD feature.` })
     return
   }
-  
+
+  // electron will cache the image, not realizing it has changed by external process
+  // so we explicitly indicate to renderer that the file has changed
+  setEtag(path.join(boardPath, 'images', boardModel.boardFilenameForThumbnail(board)))
+
   if (isCurrentBoard) {
     storeUndoStateForImage(false, [0, 1, 3])
     markImageFileDirty([0, 1, 3]) // reference, main, notes layers
@@ -1742,8 +1753,9 @@ const updateThumbnailDisplayFromFile = index => {
   let el = document.querySelector(`[data-thumbnail="${index}"] img`)
   // does it exist in the thumbnail drawer already?
   if (el) {
-    let imageFilePath = path.join(boardPath, 'images', boardModel.boardFilenameForThumbnail(boardData.boards[index]))
-    let src = imageFilePath + '?' + getEtag(imageFilePath)
+    let board = boardData.boards[index]
+    let imageFilePath = path.join(boardPath, 'images', boardModel.boardFilenameForThumbnail(board))
+    let src = imageFilePath + '?' + getEtag(path.join(boardPath, 'images', boardModel.boardFilenameForThumbnail(board)))
     el.src = src
   }
 }
@@ -2454,7 +2466,7 @@ let renderThumbnailDrawer = ()=> {
     try {
       if (fs.existsSync(imageFilename)) {
         html.push('<div class="top">')
-        let src = imageFilename + '?' + getEtag(imageFilename)
+        let src = imageFilename + '?' + getEtag(path.join(boardPath, 'images', boardModel.boardFilenameForThumbnail(board)))
         html.push('<img src="' + src + '" height="60" width="' + thumbnailWidth + '">')
         html.push('</div>')
       } else {
@@ -4348,20 +4360,6 @@ const createSizedContext = size => {
 const fillContext = (context, fillStyle = 'white') => {
   context.fillStyle = fillStyle
   context.fillRect(0, 0, context.canvas.width, context.canvas.height)
-}
-
-const getEtag = filename => {
-  try {
-    let s = fs.statSync(filename)
-    let etag = s.dev + '-' + s.ino + '-' + s.mtime.getTime()
-    return etag
-  } catch (err) {
-    if (err.code === 'ENOENT') {
-      console.warn('File not found', filename)
-    } else {
-      throw err
-    }
-  }
 }
 
 ipcRenderer.on('setTool', (e, arg)=> {
