@@ -436,7 +436,7 @@ const verifyScene = () => {
       console.log('saving placeholder', filename)
       saveDataURLtoFile(imageData, filename)
     }
-    notifications.notify({ message: 'We’ved added placeholder files for any missing image(s).' +
+    notifications.notify({ message: 'We’ved added placeholder files for any missing image(s). ' +
                                     'You should not see this warning again for this scene.', timing: 60 })
   }
 
