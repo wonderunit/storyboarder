@@ -422,14 +422,9 @@ const verifyScene = () => {
 
     notifications.notify({ message, timing: 60 })
 
-    //
-    // TODO why don't we store `size` in a data structure that represents the scene?
-    //
     // create placeholder image
-    let { width, height } = storyboarderSketchPane.sketchPane.getCanvasSize()
-    let size = [width, height]
+    let size = boardModel.boardFileImageSize(boardData)
     let context = createSizedContext(size)
-    fillContext(context, 'white')
     let canvas = context.canvas
     let imageData = canvas.toDataURL()
 
@@ -458,17 +453,10 @@ const verifyScene = () => {
   }
 }
 
-let loadBoardUI = ()=> {
+let loadBoardUI = () => {
   log({ type: 'progress', message: 'Loading User Interface' })
 
-  let aspectRatio = boardData.aspectRatio
-
-  let size
-  if (aspectRatio >= 1) {
-    size = [900 * aspectRatio, 900]
-  } else {
-    size = [900, 900 / aspectRatio]
-  }
+  let size = boardModel.boardFileImageSize(boardData)
 
   shotTemplateSystem = new ShotTemplateSystem({ width: size[0], height: size[1] })
 
@@ -1422,6 +1410,7 @@ let saveDataURLtoFile = (dataURL, filename) => {
 //
 let saveImageFile = async () => {
   isSavingImageFile = true
+
   // are we still drawing?
   if (storyboarderSketchPane.getIsDrawingOrStabilizing()) {
     // wait, then retry
@@ -3085,7 +3074,16 @@ const ensureBoardExists = async () => {
   if (boardData.boards.length == 0) {
     // create a new board
     await newBoard(0, false)
-    await saveImageFile()
+
+    // create a placeholder main.png image so verifyScene won't squawk
+    let size = boardModel.boardFileImageSize(boardData)
+    let context = createSizedContext(size)
+    let canvas = context.canvas
+    let imageData = canvas.toDataURL()
+    saveDataURLtoFile(imageData, boardData.boards[0].url)
+
+    // create a placeholder thumbnail image
+    await saveThumbnailFile(0, { forceReadFromFiles: true })
   } else {
     return
   }
