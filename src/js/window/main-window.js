@@ -139,6 +139,7 @@ let etags = {}
 const setEtag = absoluteFilePath => { etags[absoluteFilePath] = Date.now() }
 const getEtag = absoluteFilePath => etags[absoluteFilePath] || '0'
 
+let readyToClose = false
 
 //  analytics.event('Application', 'open', filename)
 
@@ -390,7 +391,7 @@ const commentOnLineMileage = (miles) => {
       ]
       message.push(otherMessages[Math.floor(Math.random()*otherMessages.length)])
       sfx.error()
-      setTimeout(()=> {window.close()}, 5000);
+      setTimeout(()=> { forceClose() }, 5000);
       break
   }
   notifications.notify({message: message.join(' '), timing: 10})
@@ -1107,22 +1108,44 @@ let loadBoardUI = ()=> {
     textInputMode = false
   })
 
+
+
   window.addEventListener('beforeunload', event => {
-    console.log('Close requested! Saving ...')
+    if (!readyToClose) {
+      // trigger 'will-prevent-unload'
+      event.returnValue = false
+    }
+  })
+  ipcRenderer.on('will-close', async event => {
+    // TODO don't try closing if already closing
 
     // TODO THIS IS SLOW AS HELL. NEED TO FIX PREFS
     toolbar.savePrefs()
-    saveImageFile() // NOTE image is saved first, which ensures layers are present in data
+
+    await saveImageFile() // NOTE image is saved first, which ensures layers are present in data
     saveBoardFile() // ... then project data can be saved
 
-    // still dirty?
+    let shouldLeave = true
+
+    // if autosave is off,
+    // and file(s) are unsaved,
+    // prompt user to see if they really want to close
+    // and prevent closing if they cancel
     if (boardFileDirty) {
-      // pass the electron-specific flag
-      // to trigger `will-prevent-unload` handler in main.js
-      event.returnValue = false
-    } else {
+      const choice = remote.dialog.showMessageBox({
+        type: 'question',
+        buttons: ['Yes', 'No'],
+        title: 'Confirm',
+        message: 'Your Storyboarder file is not saved. Are you sure you want to quit?'
+      })
+      shouldLeave = (choice === 0)
+    }
+
+    if (shouldLeave) {
       // remove any existing listeners
       watcher && watcher.close()
+      
+      forceClose()
     }
   })
 
@@ -3731,6 +3754,7 @@ const exportCleanup = () => {
   exporter.exportCleanup(boardData, boardFilename).then(newBoardData => {
     // notifications.notify({ message: "Your scene has been cleaned up!", timing: 20 })
     sfx.positive()
+    forceClose()
     // force reload
     ipcRenderer.send('openFile', boardFilename)
   }).catch(err => {
@@ -4394,6 +4418,11 @@ const applyUndoStateForImage = (state) => {
   .then(index => updateThumbnailDisplayFromFile(index))
   .then(() => toolbar.emit('cancelTransform'))
   .catch(e => console.error(e))
+}
+
+const forceClose = () => {
+  readyToClose = true
+  window.close()
 }
 
 const createSizedContext = size => {

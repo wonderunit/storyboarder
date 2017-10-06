@@ -636,26 +636,23 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
     mainWindow.webContents.on('devtools-closed', event => { mainWindow.webContents.send('devtools-closed') })
   }
 
+
+
   // via https://github.com/electron/electron/blob/master/docs/api/web-contents.md#event-will-prevent-unload
   //     https://github.com/electron/electron/pull/9331
+  //     https://stackoverflow.com/a/36100742
   //
-  // if beforeunload is telling us to prevent unload ...
+  // if beforeunload set event.returnValue = false ...
   mainWindow.webContents.on('will-prevent-unload', event => {
-    const choice = dialog.showMessageBox({
-      type: 'question',
-      buttons: ['Yes', 'No'],
-      title: 'Confirm',
-      message: 'Your Storyboarder file is not saved. Are you sure you want to quit?'
-    })
-
-    const leave = (choice === 0)
-
-    if (leave) {
-      // ignore the default behavior of preventing unload
-      // ... which means we'll actually ... _allow_ unload :)
-      event.preventDefault()
-    }
+    // always block, and force a call to `will-close`
+    mainWindow.webContents.send('will-close')
+    // NOTE to bypass and close immediately, call: `event.preventDefault()`
   })
+  ipcMain.on('ready-to-close', event => {
+    mainWindow.close()
+  })
+
+
 
   mainWindow.once('closed', event => {
     if (welcomeWindow) {
