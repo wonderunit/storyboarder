@@ -1489,9 +1489,6 @@ let saveImageFile = async () => {
   // create/update the thumbnail image file if necessary
   let indexToSave = currentBoard // copy value
   if (shouldSaveThumbnail) {
-    // explicitly indicate to renderer that the file has changed
-    setEtag(path.join(boardPath, 'images', boardModel.boardFilenameForThumbnail(board)))
-
     await saveThumbnailFile(indexToSave)
     await updateThumbnailDisplayFromFile(indexToSave)
   }
@@ -1759,29 +1756,23 @@ const renderThumbnailToNewCanvas = (index, options = { forceReadFromFiles: false
   }
 }
 
-const saveThumbnailFile = (index, options = { forceReadFromFiles: false }) => {
-  return new Promise((resolve, reject) => {
-    let imageFilePath = path.join(boardPath, 'images', boardModel.boardFilenameForThumbnail(boardData.boards[index]))
+const saveThumbnailFile = async (index, options = { forceReadFromFiles: false }) => {
+  let imageFilePath = path.join(boardPath, 'images', boardModel.boardFilenameForThumbnail(boardData.boards[index]))
 
-    renderThumbnailToNewCanvas(index, options).then(canvas => {
-      let imageData = canvas
-        .toDataURL('image/png')
-        .replace(/^data:image\/\w+;base64,/, '')
-    
-      try {
-        fs.writeFile(imageFilePath, imageData, 'base64', () => {
-          console.log('saved thumbnail', imageFilePath, 'at index:', index)
-          resolve(index)
-        })
-      } catch (err) {
-        console.error(err)
-        reject(err)
-      }
-    }).catch(err => {
-      console.log(err)
-      reject(err)
-    })
-  })
+  let canvas = await renderThumbnailToNewCanvas(index, options)
+
+  // explicitly indicate to renderer that the file has changed
+  setEtag(imageFilePath)
+
+  let imageData = canvas
+    .toDataURL('image/png')
+    .replace(/^data:image\/\w+;base64,/, '')
+
+  fs.writeFileSync(imageFilePath, imageData, 'base64')
+
+  console.log('saved thumbnail', imageFilePath, 'at index:', index)
+
+  return index
 }
 
 const updateThumbnailDisplayFromFile = index => {
