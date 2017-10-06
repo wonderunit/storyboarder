@@ -1489,6 +1489,9 @@ let saveImageFile = async () => {
   // create/update the thumbnail image file if necessary
   let indexToSave = currentBoard // copy value
   if (shouldSaveThumbnail) {
+    // explicitly indicate to renderer that the file has changed
+    setEtag(path.join(boardPath, 'images', boardModel.boardFilenameForThumbnail(board)))
+
     await saveThumbnailFile(indexToSave)
     await updateThumbnailDisplayFromFile(indexToSave)
   }
@@ -1673,10 +1676,6 @@ const onLinkedFileChange = async (eventType, filepath, stats) => {
     return
   }
 
-  // electron will cache the image, not realizing it has changed by external process
-  // so we explicitly indicate to renderer that the file has changed
-  setEtag(path.join(boardPath, 'images', boardModel.boardFilenameForThumbnail(board)))
-
   if (isCurrentBoard) {
     storeUndoStateForImage(false, [0, 1, 3])
     markImageFileDirty([0, 1, 3]) // reference, main, notes layers
@@ -1688,6 +1687,9 @@ const onLinkedFileChange = async (eventType, filepath, stats) => {
     psdData.notes && saveDataURLtoFile(psdData.notes, board.url.replace('.png', '-notes.png'))
     psdData.reference && saveDataURLtoFile(psdData.reference, board.url.replace('.png', '-reference.png'))
   
+    // explicitly indicate to renderer that the file has changed
+    setEtag(path.join(boardPath, 'images', boardModel.boardFilenameForThumbnail(board)))
+
     let index = await saveThumbnailFile(boardData.boards.indexOf(board))
     await updateThumbnailDisplayFromFile(index)
   }
