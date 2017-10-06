@@ -396,6 +396,7 @@ const commentOnLineMileage = (miles) => {
   notifications.notify({message: message.join(' '), timing: 10})
 }
 
+// NOTE we assume that all resources (board data and images) are saved BEFORE calling verifyScene
 const verifyScene = () => {
   // find all used files
   const flatten = arr => Array.prototype.concat(...arr)
@@ -455,7 +456,6 @@ const verifyScene = () => {
       }
     }
   }
-
 }
 
 let loadBoardUI = ()=> {
@@ -1183,23 +1183,22 @@ let loadBoardUI = ()=> {
   // remote.getCurrentWebContents().openDevTools()
 }
 
-let updateBoardUI = () => {
+let updateBoardUI = async () => {
   log({ type: 'progress', message: 'Rendering User Interface' })
 
   document.querySelector('#canvas-caption').style.display = 'none'
   renderViewMode()
 
-  return ensureBoardExists().then(() => renderScene())
+  await ensureBoardExists()
+  await renderScene()
 }
 
 // whenever the scene changes
-const renderScene = () => {
-  let sequence = Promise.resolve()
+const renderScene = async () => {
   // render the thumbnail drawer
-  sequence = sequence.then(() => renderThumbnailDrawer())
+  renderThumbnailDrawer()
   // go to the correct board
-  sequence = sequence.then(() => gotoBoard(currentBoard))
-  return sequence
+  await gotoBoard(currentBoard)
 }
 
 ///////////////////////////////////////////////////////////////
@@ -3075,19 +3074,20 @@ let loadScene = async (sceneNumber) => {
 
     ipcRenderer.send('analyticsEvent', 'Application', 'open', boardFilename, boardData.boards.length)
 
-    return ensureBoardExists()
+    await ensureBoardExists()
   } else {
     throw new Error(`Missing .storyboarder file for scene ${sceneNumber}.`)
   }
 }
 
-const ensureBoardExists = () => {
+const ensureBoardExists = async () => {
   // ensure at least one board exists
   if (boardData.boards.length == 0) {
     // create a new board
-    return newBoard(0, false)
+    await newBoard(0, false)
+    await saveImageFile()
   } else {
-    return Promise.resolve()
+    return
   }
 }
 
