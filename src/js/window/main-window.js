@@ -1977,15 +1977,16 @@ const clearLayers = shouldEraseCurrentLayer => {
 // UI Rendering
 ///////////////////////////////////////////////////////////////
 
-let goNextBoard = (direction, shouldPreserveSelections = false)=> {
-  saveImageFile().then(() => {
-    if (direction) {
-      currentBoard += direction
-    } else {
-      currentBoard++
-    }
-    gotoBoard(currentBoard, shouldPreserveSelections)
-  })
+let goNextBoard = async (direction, shouldPreserveSelections = false) => {
+  await saveImageFile()
+
+  if (direction) {
+    currentBoard += direction
+  } else {
+    currentBoard++
+  }
+
+  await gotoBoard(currentBoard, shouldPreserveSelections)
 }
 
 let animatedScrollingTimer = +new Date()
@@ -3265,22 +3266,23 @@ let stopPlaying = () => {
   if (transport) transport.setState({ playbackMode })
 }
 
-let togglePlayback = ()=> {
+let togglePlayback = async ()=> {
   playbackMode = !playbackMode
   if (playbackMode) {
     ipcRenderer.send('preventSleep')
-    playAdvance(true)
+    await playAdvance(true)
   } else {
     stopPlaying()
   }
   transport.setState({ playbackMode })
 }
 
-let playAdvance = function(first) {
-  //clearTimeout(playheadTimer)
+let playAdvance = async (first) => {
+  // clearTimeout(playheadTimer)
   clearTimeout(frameTimer)
+
   if (!first) {
-    goNextBoard(1)
+    await goNextBoard(1)
   }
 
   if (playbackMode && boardData.boards[currentBoard].dialogue && speakingMode) {
