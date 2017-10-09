@@ -8,7 +8,8 @@ body {
   user-select: none;
   -webkit-user-select: none;
   cursor:default;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: scroll;
   box-sizing: border-box;
   -webkit-app-region: drag;
 }
@@ -25,6 +26,7 @@ html, body {
   bottom: 0;
   position: absolute;
   top: 0;
+  height: 875px;
 }
 
 #keyboard {
