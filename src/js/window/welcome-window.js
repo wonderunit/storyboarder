@@ -12,6 +12,19 @@ remote.getCurrentWindow().on('focus', () => {
   menu.setWelcomeMenu()
 })
 
+const onFileDrop = e => {
+  e.preventDefault()
+  if (!e || !e.dataTransfer || !e.dataTransfer.files || !e.dataTransfer.files.length) {
+    return
+  }
+  for (let file of e.dataTransfer.files) {
+    if (path.extname(file.name) === ".storyboarder" || path.extname(file.name) === ".fountain") {
+      ipcRenderer.send('openFile', file.path)
+      break
+    }
+  }
+}
+
 let updateRecentDocuments = () => {
   let count = 0
   let html = []
@@ -62,6 +75,13 @@ document.querySelector('iframe').onload = ()=>{
     element.addEventListener("mouseover", ()=>{sfx.rollover()})
     element.addEventListener("pointerdown", ()=>{sfx.down()})
   })
+
+  // handle dropping a file onto the iframe
+  let contentDocument = document.querySelector('iframe').contentDocument
+  contentDocument.ondragover = () => { return false }
+  contentDocument.ondragleave = () => { return false }
+  contentDocument.ondragend = () => { return false }
+  contentDocument.ondrop = onFileDrop
 }
 document.querySelector('iframe').src = "https://wonderunit.com/ads/storyboarder?" + Math.round(Date.now() / 1000 / 60 / 6)
 
@@ -114,16 +134,4 @@ ipcRenderer.on('updateRecentDocuments', (event, args)=>{
 window.ondragover = () => { return false }
 window.ondragleave = () => { return false }
 window.ondragend = () => { return false }
-window.ondrop = e => {
-  e.preventDefault()
-  if(!e || !e.dataTransfer || !e.dataTransfer.files || !e.dataTransfer.files.length) {
-    return
-  }
-  for(let file of e.dataTransfer.files) {
-    if(file.name.indexOf(".storyboarder") > -1) {
-      hasStoryboarderFile = true
-      ipcRenderer.send('openFile', file.path)
-      break
-    }
-  }
-}
+window.ondrop = onFileDrop
