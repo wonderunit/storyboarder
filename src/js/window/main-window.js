@@ -61,11 +61,12 @@ let isRecording = false
 let isRecordingStarted = false
 let canvasRecorder
 
-let boardFilename
+let boardFilename // absolute path to .storyboarder
 let boardPath
 let boardData
 let currentBoard = 0
 
+let scriptFilePath // .fountain, only used for multi-scene projects
 let scriptData
 let locations
 let characters
@@ -158,6 +159,8 @@ const load = async (event, args) => {
       log({ type: 'progress', message: 'Loading Fountain File' })
       console.log("LOADING FOUNTAIN FILE", args[0])
       ipcRenderer.send('analyticsEvent', 'Application', 'open script', args[0])
+
+      scriptFilePath = args[0]
 
       // there is scriptData - the window opening is a script type
       scriptData = args[1]
