@@ -65,7 +65,8 @@ const getFilesUsedByProject = srcFilePath => {
       let storyboarderFilename = fs.readdirSync(parentPath).find(file => path.extname(file) === '.storyboarder')
 
       if (storyboarderFilename) {
-        files.push(srcFilePath, ...getAllAbsoluteFilePathsUsedByScene(path.join(parentPath, storyboarderFilename)))
+        let storyboarderFilePath = path.join(parentPath, storyboarderFilename)
+        files.push(storyboarderFilePath, ...getAllAbsoluteFilePathsUsedByScene(storyboarderFilePath))
       } else {
         // can't find a .storyboarder file
         console.warn(`Missing expected .storyboarder file in ${parentPath}`)
