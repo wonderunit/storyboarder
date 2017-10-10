@@ -39,6 +39,16 @@ AppMenu.File = () => ({
   label: 'File',
   submenu: [
     {
+      label: 'Open…',
+      accelerator: 'CmdOrCtrl+O',
+      click (item, focusedWindow, event) {
+        ipcRenderer.send('openDialogue')
+      }
+    },
+    {
+      type: 'separator'
+    },
+    {
       label: 'Save',
       accelerator: 'CmdOrCtrl+S',
       click (item, focusedWindow, event) {
@@ -46,10 +56,10 @@ AppMenu.File = () => ({
       }
     },
     {
-      label: 'Open…',
-      accelerator: 'CmdOrCtrl+O',
+      label: 'Save As …',
+      accelerator: 'CmdOrCtrl+Shift+S',
       click (item, focusedWindow, event) {
-        ipcRenderer.send('openDialogue')
+        ipcRenderer.send('saveAs')
       }
     },
     {

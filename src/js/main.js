@@ -950,6 +950,10 @@ ipcMain.on('save', (event, arg) => {
   mainWindow.webContents.send('save', arg)
 })
 
+ipcMain.on('saveAs', (event, arg) => {
+  mainWindow.webContents.send('saveAs', arg)
+})
+
 ipcMain.on('prefs:change', (event, arg) => {
   mainWindow.webContents.send('prefs:change', arg)
 })
