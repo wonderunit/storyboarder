@@ -1,4 +1,4 @@
-const fs = require('fs')
+const fs = require('fs-extra')
 const path = require('path')
 const R = require('ramda')
 
@@ -26,7 +26,7 @@ const getAllAbsoluteFilePathsUsedByScene = srcFilePath => {
   // find all the files used in the scene
   let usedFiles = getRelativeImagePathsUsedByScene(scene)
   return [
-    srcFilePath,
+    // srcFilePath,
     ...usedFiles.map(f => path.join(srcFolderPath, 'images', f))
   ]
 }
@@ -45,7 +45,7 @@ const getFilesUsedByProject = srcFilePath => {
     let files = []
 
     // .fountain file
-    files.push(srcFilePath)
+    // files.push(srcFilePath)
 
     // copy the storyboard.settings file
     files.push(path.join(srcFolderPath, 'storyboards', 'storyboard.settings'))
@@ -60,7 +60,7 @@ const getFilesUsedByProject = srcFilePath => {
       let storyboarderFilename = fs.readdirSync(parentPath).find(file => path.extname(file) === '.storyboarder')
 
       if (storyboarderFilename) {
-        files.push(...getAllAbsoluteFilePathsUsedByScene(path.join(parentPath, storyboarderFilename)))
+        files.push(srcFilePath, ...getAllAbsoluteFilePathsUsedByScene(path.join(parentPath, storyboarderFilename)))
       } else {
         // can't find a .storyboarder file
         console.warn(`Missing expected .storyboarder file in ${parentPath}`)
@@ -74,45 +74,55 @@ const getFilesUsedByProject = srcFilePath => {
 }
 
 // copy the project files
+//
 // single-scene or multi-scene
-// for multi-scene, this includes .fountain and .settings and scene folders
+// (for multi-scene, this includes .fountain and .settings and scene folders)
 //
 // for each scene ...
-// ... grab all the files in the scene
-// ... for multi-scene, grab the script and .settings
+//   ... grab all the files in the scene
+//   ... for multi-scene, grab the script and .settings
+//
+// srcFilePath:   absolute path to source project .storyboarder or .fountain
+//
+// dstFolderPath: absolute path to destination folder
+//                basename will be used to rename the destination project file
 //
 const copyProject = (srcFilePath, dstFolderPath) => {
   let srcFolderPath = path.dirname(srcFilePath)
 
-  console.log('Copying project', srcFilePath, 'to folder', dstFolderPath)
+  // console.log('Copying project', srcFilePath, 'to folder', dstFolderPath)
 
   let files = getFilesUsedByProject(srcFilePath)
 
-  let pairs = files.map(from => {
-    return {
+  // TODO handle rename
+  let dstBasename = path.basename(dstFolderPath)
+  let dstExt = path.extname(srcFilePath)
+
+  let pairs = [
+    // project file
+    { from: srcFilePath, to: path.join(dstFolderPath, `${dstBasename}${dstExt}`) },
+
+    // interior files
+    ...files.map(from => ({
       from: from,
       to: from.replace(srcFolderPath, dstFolderPath)
+    }))
+  ]
+
+  if (!fs.existsSync(dstFolderPath)) {
+    throw new Error(`ENOENT: could not find destination folder ${dstFolderPath}`)
+  }
+
+  pairs.forEach(({ from, to }) => {
+    if (fs.existsSync(from)) {
+      fs.copySync(from, to)
+    } else {
+      throw new Error(`ENOENT: could not find source file ${from}`)
     }
   })
-
-  // trace for debugging
-  const relpath = str => str.replace(path.join(process.cwd(), 'test', 'fixtures'), '')
-  console.log(
-    pairs.map(({ from, to }) => {
-      return {
-        from: relpath(from),
-        to: relpath(to)
-      }
-    })
-  )
-
-  // TODO
-
-  // copy all files
-  // ... warn if missing
-  // ... warn if failed
 }
 
 module.exports = {
+  getFilesUsedByProject,
   copyProject
 }
