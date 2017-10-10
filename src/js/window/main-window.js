@@ -1,7 +1,7 @@
 const {ipcRenderer, shell, remote, nativeImage, clipboard} = require('electron')
 const { app } = require('electron').remote
 const child_process = require('child_process')
-const fs = require('fs')
+const fs = require('fs-extra')
 const os = require('os')
 const dns = require('dns')
 const path = require('path')
@@ -30,6 +30,7 @@ const keytracker = require('../utils/keytracker')
 const storyTips = new(require('./story-tips'))(sfx, notifications)
 const exporter = require('./exporter')
 const exporterCommon = require('../exporters/common')
+const exporterCopyProject = require('../exporters/copy-project')
 const prefsModule = require('electron').remote.require('./prefs')
 
 const boardModel = require('../models/board')
@@ -60,11 +61,12 @@ let isRecording = false
 let isRecordingStarted = false
 let canvasRecorder
 
-let boardFilename
+let boardFilename // absolute path to .storyboarder
 let boardPath
 let boardData
 let currentBoard = 0
 
+let scriptFilePath // .fountain, only used for multi-scene projects
 let scriptData
 let locations
 let characters
@@ -157,6 +159,8 @@ const load = async (event, args) => {
       log({ type: 'progress', message: 'Loading Fountain File' })
       console.log("LOADING FOUNTAIN FILE", args[0])
       ipcRenderer.send('analyticsEvent', 'Application', 'open script', args[0])
+
+      scriptFilePath = args[0]
 
       // there is scriptData - the window opening is a script type
       scriptData = args[1]
@@ -4402,6 +4406,72 @@ const fillContext = (context, fillStyle = 'white') => {
   context.fillRect(0, 0, context.canvas.width, context.canvas.height)
 }
 
+const saveAsFolder = async () => {
+  let srcFilePath = scriptFilePath
+    ? scriptFilePath // use the .fountain file, if it is defined …
+    : boardFilename // … otherwise, use the .storyboarder file
+
+  // ensure the current board file is saved
+  await saveImageFile()
+  saveBoardFile()
+
+  // display the file selection window
+  let dstFolderPath = remote.dialog.showSaveDialog(null, {
+    defaultPath: path.basename(srcFilePath, path.extname(srcFilePath))
+  })
+
+  // user cancelled
+  if (!dstFolderPath) {
+    return
+  }
+
+  // TODO could sanitize filename?
+  //      e.g.: https://github.com/parshap/node-sanitize-filename
+
+  // cancel if no value
+  if (!dstFolderPath.length || dstFolderPath === '' || dstFolderPath === ' ') {
+    remote.dialog.showMessageBox({ message: 'Please choose a valid folder name' })
+    saveAsFolder() // loop
+    return
+  }
+
+  // cancel if filename has an extension
+  if (path.extname(dstFolderPath).length) {
+    remote.dialog.showMessageBox({ message: 'Please choose a valid folder name (not a file name)' })
+    saveAsFolder() // loop
+    return
+  }
+
+  notifications.notify({ message: `Saving to “${path.basename(dstFolderPath)}” …`})
+
+  try {
+    // console.log('Copying to', dstFolderPath)
+
+    // NOTE THIS OVERWRITES EXISTING FILES IN THE SELECTED FOLDER
+    //
+    // delete existing contents of the folder (if any)
+    // and ensure the folder exists
+    //
+    fs.emptyDirSync(dstFolderPath)
+
+    // copy the project files to the new location
+    exporterCopyProject.copyProject(srcFilePath, dstFolderPath)
+
+    ipcRenderer.send('analyticsEvent', 'Board', 'save-as')
+
+    let dstFilePath = path.join(dstFolderPath, path.basename(dstFolderPath) + path.extname(srcFilePath))
+
+    // reload the project
+    ipcRenderer.send('openFile', dstFilePath)
+  } catch (error) {
+    console.error(error)
+    remote.dialog.showMessageBox({
+      type: 'error',
+      message: error.message
+    })
+  }
+}
+
 ipcRenderer.on('setTool', (e, arg)=> {
   if (!toolbar) return
 
@@ -4699,5 +4769,7 @@ ipcRenderer.on('save', (event, args) => {
   save()
   ipcRenderer.send('analyticsEvent', 'Board', 'save')
 })
+
+ipcRenderer.on('saveAs', (event, args) => saveAsFolder())
 
 const log = opt => ipcRenderer.send('log', opt)

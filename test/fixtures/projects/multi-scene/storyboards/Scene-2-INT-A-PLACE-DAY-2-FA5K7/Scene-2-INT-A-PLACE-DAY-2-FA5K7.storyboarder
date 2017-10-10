@@ -1,0 +1,23 @@
+{
+  "version": "0.13.1",
+  "aspectRatio": "1.7777777777777777",
+  "fps": 24,
+  "defaultBoardTiming": 2000,
+  "boards": [
+    {
+      "uid": "35FBF",
+      "url": "board-1-35FBF.png",
+      "newShot": false,
+      "lastEdited": 1507651686478,
+      "layers": {
+        "reference": {
+          "url": "board-1-35FBF-reference.png",
+          "opacity": 0.75
+        }
+      },
+      "number": 1,
+      "shot": "1A",
+      "time": 0
+    }
+  ]
+}
