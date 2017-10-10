@@ -4442,8 +4442,10 @@ const saveAsFolder = async () => {
     return
   }
 
+  notifications.notify({ message: `Saving to “${path.basename(dstFolderPath)}” …`})
+
   try {
-    console.log('Copying to', dstFolderPath)
+    // console.log('Copying to', dstFolderPath)
 
     // NOTE THIS OVERWRITES EXISTING FILES IN THE SELECTED FOLDER
     //
@@ -4453,13 +4455,14 @@ const saveAsFolder = async () => {
     fs.emptyDirSync(dstFolderPath)
 
     // copy the project files to the new location
-    let srcFilePath = boardFilename
     exporterCopyProject.copyProject(srcFilePath, dstFolderPath)
 
     ipcRenderer.send('analyticsEvent', 'Board', 'save-as')
 
+    let dstFilePath = path.join(dstFolderPath, path.basename(dstFolderPath) + path.extname(srcFilePath))
+
     // reload the project
-    ipcRenderer.send('openFile', path.join(dstFolderPath, path.basename(dstFolderPath) + path.extname(srcFilePath)))
+    ipcRenderer.send('openFile', dstFilePath)
   } catch (error) {
     console.error(error)
     remote.dialog.showMessageBox({
