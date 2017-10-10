@@ -20,11 +20,11 @@ let fixturesPath = path.join(__dirname, '..', 'fixtures')
 
 // TODO
 describe('exporters/copyProject', () => {
-  // it('can copy a single-scene project', () => {
-  //   let srcFilePath = path.resolve(path.join(fixturesPath, 'ducks', 'ducks.storyboarder'))
-  //   let dstFolderPath = path.resolve(path.join(fixturesPath, 'ducks02'))
-  //   exporterCopyProject.copyProject(srcFilePath, dstFolderPath)
-  // })
+  it('can copy a single-scene project', () => {
+    let srcFilePath = path.resolve(path.join(fixturesPath, 'ducks', 'ducks.storyboarder'))
+    let dstFolderPath = path.resolve(path.join(fixturesPath, 'ducks02'))
+    exporterCopyProject.copyProject(srcFilePath, dstFolderPath)
+  })
   it('can copy a multi-scene project', () => {
     let srcFilePath = path.resolve(path.join(fixturesPath, 'projects', 'multi-scene', 'multi-scene.fountain'))
     let dstFolderPath = path.resolve(path.join(fixturesPath, 'projects', 'multi-scene02'))
