@@ -39,13 +39,18 @@ const getFilesUsedByProject = srcFilePath => {
   // is this a multi-scene project?
   const isMultiScene = (path.extname(srcFilePath) === '.fountain')
 
-  // TODO test that `storyboards/` and `storyboard.settings` exist
-
   if (isMultiScene) {
     let files = []
 
     // .fountain file
     // files.push(srcFilePath)
+
+    if (
+      !fs.existsSync(path.join(srcFolderPath, 'storyboards')) ||
+      !fs.existsSync(path.join(srcFolderPath, 'storyboards', 'storyboard.settings'))
+    ) {
+      throw new Error('This script not part of a Storyboarder project')
+    }
 
     // copy the storyboard.settings file
     files.push(path.join(srcFolderPath, 'storyboards', 'storyboard.settings'))
