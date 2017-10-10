@@ -94,7 +94,6 @@ const copyProject = (srcFilePath, dstFolderPath) => {
 
   let files = getFilesUsedByProject(srcFilePath)
 
-  // TODO handle rename
   let dstBasename = path.basename(dstFolderPath)
   let dstExt = path.extname(srcFilePath)
 

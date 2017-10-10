@@ -17,8 +17,6 @@ const exporterCopyProject = require('../../src/js/exporters/copy-project')
 
 let fixturesPath = path.join(__dirname, '..', 'fixtures')
 
-
-// TODO
 describe('exporters/copyProject', () => {
   before(function () {
     // fake filesystem
