@@ -4407,6 +4407,10 @@ const fillContext = (context, fillStyle = 'white') => {
 }
 
 const saveAsFolder = async () => {
+  let srcFilePath = scriptFilePath
+    ? scriptFilePath // use the .fountain file, if it is defined …
+    : boardFilename // … otherwise, use the .storyboarder file
+
   // ensure the current board file is saved
   await saveImageFile()
   saveBoardFile()
