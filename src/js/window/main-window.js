@@ -31,6 +31,7 @@ const storyTips = new(require('./story-tips'))(sfx, notifications)
 const exporter = require('./exporter')
 const exporterCommon = require('../exporters/common')
 const exporterCopyProject = require('../exporters/copy-project')
+const exporterArchive = require('../exporters/archive')
 const prefsModule = require('electron').remote.require('./prefs')
 
 const boardModel = require('../models/board')
@@ -4411,7 +4412,7 @@ const saveAsFolder = async () => {
     ? scriptFilePath // use the .fountain file, if it is defined …
     : boardFilename // … otherwise, use the .storyboarder file
 
-  // ensure the current board file is saved
+  // ensure the current board and data is saved
   await saveImageFile()
   saveBoardFile()
 
@@ -4469,6 +4470,32 @@ const saveAsFolder = async () => {
       type: 'error',
       message: error.message
     })
+  }
+}
+
+const exportZIP = async () => {
+  let srcFilePath = scriptFilePath
+    ? scriptFilePath // use the .fountain file, if it is defined …
+    : boardFilename // … otherwise, use the .storyboarder file
+
+  // ensure the current board and data is saved
+  await saveImageFile()
+  saveBoardFile()
+
+  notifications.notify({ message: `Exporting ZIP file …` })
+
+  let basename = path.basename(srcFilePath, path.extname(srcFilePath))
+  let timestamp = moment().format('YYYY-MM-DD hh.mm.ss')
+  let exportFilePath = path.join(boardPath, 'exports', `${basename}-${timestamp}.zip`)
+
+  try {
+    await exporterArchive.exportAsZIP(srcFilePath, exportFilePath)
+
+    notifications.notify({ message: `Done.` })
+    shell.showItemInFolder(exportFilePath)
+  } catch (err) {
+    notifications.notify({ message: `[ERROR] ${err.message}` })
+    notifications.notify({ message: `Failed.` })
   }
 }
 
@@ -4771,5 +4798,7 @@ ipcRenderer.on('save', (event, args) => {
 })
 
 ipcRenderer.on('saveAs', (event, args) => saveAsFolder())
+
+ipcRenderer.on('exportZIP', (event, args) => exportZIP())
 
 const log = opt => ipcRenderer.send('log', opt)

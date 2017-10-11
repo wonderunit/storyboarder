@@ -91,6 +91,12 @@ AppMenu.File = () => ({
       }
     },
     {
+      label: 'Export Project as ZIP',
+      click (item, focusedWindow, event) {
+        ipcRenderer.send('exportZIP')
+      }
+    },
+    {
       type: 'separator'
     },
     {

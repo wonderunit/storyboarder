@@ -930,6 +930,9 @@ ipcMain.on('exportImages', (event, arg) => {
 ipcMain.on('exportPDF', (event, arg) => {
   mainWindow.webContents.send('exportPDF', arg)
 })
+ipcMain.on('exportZIP', (event, arg) => {
+  mainWindow.webContents.send('exportZIP', arg)
+})
 
 ipcMain.on('exportCleanup', (event, arg) => {
   mainWindow.webContents.send('exportCleanup', arg)
