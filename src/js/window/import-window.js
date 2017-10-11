@@ -748,17 +748,24 @@ const processWorksheetImage = (imageSrc) => {
     console.log({ cornerPoints })
 
     if (cornerPoints.length !== 4) {
-      // HACK we should have these always part of the model,
-      //      throughout the codebase,
-      //      instead of creating references here
+      // if we couldn't find the points, ask the artist
+
+      // HACK
+      // we should keep these variables in the model
+      // instead of creating references here
       model.cornerPoints = undefined
       model.canvas = canvas
       model.context = context
       model.imageData = imageData
       model.img_u8 = img_u8
+
       actions.editCornerPoints()
     } else {
-      actions.step('processing')
+      // if we detected the points,
+      // ensure they're in the correct order
+      cornerPoints = sortCornerPoints(cornerPoints)
+
+      actions.step('processing')      
       processCornerPoints(cornerPoints, canvas, context, imageData, img_u8)
     }
 
@@ -777,15 +784,17 @@ const processWorksheetImage = (imageSrc) => {
   sourceImage.src = imageSrc[0]
 }
 
-function processCornerPoints (cornerPoints, canvas, context, imageData, img_u8) {
-  // STEP
-  // reorder points in the right order
-  cornerPoints.sort((b,a) => {
+const sortCornerPoints = (cornerPoints) => {
+  let result = cornerPoints.slice(0)
+  result.sort((b,a) => {
     console.log((Math.atan2(a[0]-0.5,a[1]-0.5)),(Math.atan2(b[0]-0.5,b[1]-0.5)))
     return (Math.atan2(a[0]-0.5,a[1]-0.5))-(Math.atan2(b[0]-0.5,b[1]-0.5))
   })
-  cornerPoints.unshift(cornerPoints.pop())
+  result.unshift(result.pop())
+  return result
+}
 
+function processCornerPoints (cornerPoints, canvas, context, imageData, img_u8) {
   // STEP
   // TODO: check the area, should error if too small or less than 4 points
 
