@@ -88,6 +88,7 @@
   },
   "dependencies": {
     "ag-psd": "^1.2.0",
+    "archiver": "2.0.3",
     "chokidar": "1.7.0",
     "color-js": "^1.0.4",
     "eases": "1.0.8",
