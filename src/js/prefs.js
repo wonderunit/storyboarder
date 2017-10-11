@@ -105,9 +105,9 @@ const getPrefs = (from) => {
   return prefs
 }
 
-const migrate = () => {
-  prefs = Object.assign({}, defaultPrefs, prefs)
-  prefs.version = defaultPrefs.version
+const migrate = (oldPrefs, newPrefs) => {
+  console.log(`Migrating preferences from v${prefs.version} to v${defaultPrefs.version}`)
+  return Object.assign({}, oldPrefs, newPrefs, { version: newPrefs.version })
 }
 
 const init = () => {
@@ -115,8 +115,8 @@ const init = () => {
 
   load()
   if (prefs.version !== defaultPrefs.version) {
-    migrate()
-    savePrefs(prefs)
+    let newPrefs = migrate(prefs, defaultPrefs)
+    savePrefs(newPrefs)
   }
 }
 
