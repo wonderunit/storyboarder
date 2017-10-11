@@ -27,15 +27,15 @@ const exportAsZIP = async (srcFilePath, exportFilePath) => {
       await new Promise((resolve, reject) => {
         // zip the folder
         tmpZipFilePath = path.join(tmpdir.name, path.basename(srcFilePath, path.extname(srcFilePath)) + Date.now() + '.zip')
-        console.log('writing', tmpZipFilePath)
+        // console.log('writing', tmpZipFilePath)
         let output = fs.createWriteStream(tmpZipFilePath)
         let archive = archiver('zip', {
           zlib: { level: 9 } // compression level
         })
         // listen for all archive data to be written
         output.on('close', function() {
-          console.log(archive.pointer() + ' total bytes')
-          console.log('archiver has been finalized and the output file descriptor has closed.')
+          // console.log(archive.pointer() + ' total bytes')
+          // console.log('archiver has been finalized and the output file descriptor has closed.')
           resolve()
         })
         // good practice to catch warnings (ie stat failures and other non-blocking errors)
@@ -65,8 +65,8 @@ const exportAsZIP = async (srcFilePath, exportFilePath) => {
       // copy zip to exports
       fs.copySync(tmpZipFilePath, exportFilePath)
     } catch (err) {
-      console.log('got an error :/')
-      console.error(err)
+      // console.log('got an error :/')
+      // console.error(err)
       throw err
     }
   } finally {
