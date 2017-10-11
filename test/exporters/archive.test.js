@@ -29,7 +29,6 @@ describe('exporters/archive/exportAsZIP', () => {
 
         let stat = fs.statSync(exportFilePath)
         assert(stat.size > 22, 'ZIP file size should be greater than 22 bytes')
-
       } finally {
         fs.emptyDirSync(tmpdir.name)
         tmpdir.removeCallback()

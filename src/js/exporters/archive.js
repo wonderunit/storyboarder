@@ -55,33 +55,8 @@ const exportAsZIP = async (srcFilePath, exportFilePath) => {
         // pipe archive data to the file
         archive.pipe(output)    
 
-
-
-        // TODO actually append the files!
-          // // append a file from stream
-          // var file1 = __dirname + '/file1.txt';
-          // archive.append(fs.createReadStream(file1), { name: 'file1.txt' });
-          // 
-          // // append a file from string
-          // archive.append('string cheese!', { name: 'file2.txt' });
-          // 
-          // // append a file from buffer
-          // var buffer3 = Buffer.from('buff it!');
-          // archive.append(buffer3, { name: 'file3.txt' });
-          // 
-          // // append a file
-          // archive.file('file1.txt', { name: 'file4.txt' });
-          // 
-          // // append files from a sub-directory and naming it `new-subdir` within the archive
-          // archive.directory('subdir/', 'new-subdir');
-          // 
-          // // append files from a sub-directory, putting its contents at the root of archive
-          // archive.directory('subdir/', false);
-          // 
-          // // append files from a glob pattern
-          // archive.glob('subdir/*.txt');
-
-
+        // append files from a directory, putting its contents at the root of archive
+        archive.directory(dstFolderPath, false)
 
         // finalize the archive (ie we are done appending files but streams have to finish yet)
         archive.finalize()
