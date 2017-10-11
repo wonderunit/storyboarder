@@ -748,9 +748,10 @@ const processWorksheetImage = (imageSrc) => {
     console.log({ cornerPoints })
 
     if (cornerPoints.length !== 4) {
-      // HACK we should have these always part of the model,
-      //      throughout the codebase,
-      //      instead of creating references here
+
+      // HACK
+      // we should keep these variables in the model
+      // instead of creating references here
       model.cornerPoints = undefined
       model.canvas = canvas
       model.context = context
