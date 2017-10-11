@@ -1377,12 +1377,17 @@ const addToLineMileage = value => {
   if (!(board.lineMileage)) { 
     board.lineMileage = 0 
   }
-  let mileageChecks = [5,8,10,20,50,100,200,300,1000]
-  for (let checkAmount of mileageChecks) {
-    if ((board.lineMileage/5280 < checkAmount) && ((board.lineMileage + value)/5280 > checkAmount)) {
-      commentOnLineMileage(checkAmount)
+
+  let allowNotificationsForLineMileage = prefsModule.getPrefs()['allowNotificationsForLineMileage']
+  if (allowNotificationsForLineMileage) {
+    let mileageChecks = [5,8,10,20,50,100,200,300,1000]
+    for (let checkAmount of mileageChecks) {
+      if ((board.lineMileage/5280 < checkAmount) && ((board.lineMileage + value)/5280 > checkAmount)) {
+        commentOnLineMileage(checkAmount)
+      }
     }
   }
+
   board.lineMileage += value
   markBoardFileDirty()
 }

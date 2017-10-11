@@ -25,6 +25,10 @@ const defaultPrefs = {
   enableStabilizer: true,
   enableAnalytics: true,
   enableAutoSave: true,
+
+  // notifications
+  allowNotificationsForLineMileage: true,
+
   import: {
     offset: [0, 0],
     skipBlankBoards: true
