@@ -41,8 +41,8 @@ const exportAsZIP = async (srcFilePath, exportFilePath) => {
         // good practice to catch warnings (ie stat failures and other non-blocking errors)
         archive.on('warning', function(err) {
           if (err.code === 'ENOENT') {
-            // log warning
-            console.log(err)
+            // throw error
+            reject(err)
           } else {
             // throw error
             reject(err)
