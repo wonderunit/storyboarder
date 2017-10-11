@@ -19,8 +19,6 @@ describe('exporters/archive/exportAsZIP', () => {
       let tmpdir = tmp.dirSync()
 
       try {
-        // TODO calculate filename based on current exports contents?
-        // TODO calculate exportFilePath based on project path?
         let exportFilePath = path.join(tmpdir.name, 'multi-scene-file.zip')
 
         await exporterArchive.exportAsZIP(fountainProjectPath, exportFilePath)
