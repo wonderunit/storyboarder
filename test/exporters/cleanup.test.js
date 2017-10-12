@@ -5,7 +5,6 @@
 //
 
 'use strict';
-const tmp = require('tmp')
 const fs = require('fs')
 const path = require('path')
 const assert = require('assert')
@@ -48,6 +47,7 @@ describe('exporters/cleanup', function () {
             'board-0-P2FLS-reference.png':        new Buffer([8, 6, 7, 5, 3, 0, 9]),
             'board-0-P2FLS-notes.png':            new Buffer([8, 6, 7, 5, 3, 0, 9]),
             'board-0-P2FLS-thumbnail.png':        new Buffer([8, 6, 7, 5, 3, 0, 9]),
+            // board-0-P2FLS.psd
 
             'board-1-WEBM4.png':                  new Buffer([8, 6, 7, 5, 3, 0, 9]),
             'board-1-WEBM4-reference.png':        new Buffer([8, 6, 7, 5, 3, 0, 9]),
