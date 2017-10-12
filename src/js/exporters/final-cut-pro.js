@@ -144,7 +144,7 @@ const generateFinalCutProData = (boardData, { projectFileAbsolutePath, outputPat
   let index = 0
   for (let board of boardData.boards) {
     let fileFilename = boardFilenameForExport(board, index, basenameWithoutExt),
-        filePathUrl = `./${encodeURI(fileFilename)}` //`file://${outputPath}/${fileFilename}`
+        filePathUrl = `./${encodeURI(fileFilename.replace(/\s+/g, '-'))}` //`file://${outputPath}/${fileFilename}`
 
     let duration = (util.isUndefined(board.duration) || board.duration == 0)
                      ? boardData.defaultBoardTiming
