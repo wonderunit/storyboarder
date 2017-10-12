@@ -484,6 +484,7 @@ let loadBoardUI = () => {
     for(let file of e.dataTransfer.files) {
       if(file.name.indexOf(".storyboarder") > -1) {
         hasStoryboarderFile = true
+        // force load
         ipcRenderer.send('openFile', file.path)
         break
       } else {
@@ -1337,6 +1338,8 @@ let markBoardFileDirty = () => {
 }
 
 let saveBoardFile = (opt = { force: false }) => {
+  // TODO is this check still even necessary?
+  //
   // are we still drawing?
   if (storyboarderSketchPane.getIsDrawingOrStabilizing()) {
     // wait, then retry
