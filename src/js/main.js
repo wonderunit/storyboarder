@@ -232,6 +232,7 @@ let openFile = (file) => {
     /// LOAD FOUNTAIN FILE
     fs.readFile(file, 'utf-8', (err,data)=>{
       sceneIdScript = fountainSceneIdUtil.insertSceneIds(data)
+      let sceneIdScript = fountainSceneIdUtil.insertSceneIds(data)
       if (sceneIdScript[1]) {
         dialog.showMessageBox({
           type: 'info',
