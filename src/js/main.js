@@ -445,6 +445,7 @@ const onScriptFileChange = (eventType, filepath, stats) => {
   if (eventType === 'change') {
     //
     // TODO MD5 hash to see if change is worth reading?
+    //      getSceneDifference?
 
     let data = fs.readFileSync(filepath, 'utf-8')
 
