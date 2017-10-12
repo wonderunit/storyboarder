@@ -445,9 +445,7 @@ let processFountainData = (data, create, update) => {
 
 const onScriptFileChange = (eventType, filepath, stats) => {
   if (eventType === 'change') {
-    //
     // TODO MD5 hash to see if change is worth reading?
-    //      getSceneDifference?
 
     let data = fs.readFileSync(filepath, 'utf-8')
 
@@ -477,19 +475,20 @@ const ensureSceneIds = (filePath, data) => {
 }
 
 
-let getSceneDifference = (scriptA, scriptB) => {
-  let i = 0
-  for (var node of scriptB) {
-    if(!scriptA[i]) {
-      return i
-    }
-    if (JSON.stringify(node) !== JSON.stringify(scriptA[i])) {
-      return i
-    }
-    i++
-  }
-  return false
-}
+// unused
+// let getSceneDifference = (scriptA, scriptB) => {
+//   let i = 0
+//   for (var node of scriptB) {
+//     if(!scriptA[i]) {
+//       return i
+//     }
+//     if (JSON.stringify(node) !== JSON.stringify(scriptA[i])) {
+//       return i
+//     }
+//     i++
+//   }
+//   return false
+// }
 
 
 ////////////////////////////////////////////////////////////
