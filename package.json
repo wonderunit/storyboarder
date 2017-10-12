@@ -83,8 +83,7 @@
     "electron-builder": "19.26.3",
     "electron-mocha": "4.0.0",
     "mocha": "3.5.0",
-    "mock-fs": "4.4.1",
-    "tmp": "0.0.33"
+    "mock-fs": "4.4.1"
   },
   "dependencies": {
     "ag-psd": "^1.2.0",
@@ -112,6 +111,7 @@
     "tonal": "0.69.9",
     "tone": "^0.10.0",
     "trash": "4.0.1",
-    "vkey": "1.0.1"
+    "vkey": "1.0.1",
+    "tmp": "0.0.33"
   }
 }
