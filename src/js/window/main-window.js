@@ -4504,6 +4504,20 @@ const exportZIP = async () => {
   }
 }
 
+const reloadScript = (args) => { // [scriptData, locations, characters]
+  scriptData = args[0]
+  locations = args[1]
+  characters = args[2]
+
+  assignColors()
+  document.querySelector('#scenes').style.display = 'block'
+  document.querySelector('#script').style.display = 'block'
+  renderScenes()
+  renderScript()
+
+  notifications.notify({ message: 'Fountain script has changed. Reloaded.'})
+}
+
 ipcRenderer.on('setTool', (e, arg)=> {
   if (!toolbar) return
 
@@ -4805,5 +4819,7 @@ ipcRenderer.on('save', (event, args) => {
 ipcRenderer.on('saveAs', (event, args) => saveAsFolder())
 
 ipcRenderer.on('exportZIP', (event, args) => exportZIP())
+
+ipcRenderer.on('reloadScript', (event, args) => reloadScript(args))
 
 const log = opt => ipcRenderer.send('log', opt)

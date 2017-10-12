@@ -4,6 +4,7 @@ const fs = require('fs')
 const path = require('path')
 const isDev = require('electron-is-dev')
 const trash = require('trash')
+const chokidar = require('chokidar')
 
 const prefModule = require('./prefs')
 
@@ -37,7 +38,7 @@ let loadingStatusWindow
 let welcomeInprogress
 let stsWindow
 
-let statWatcher
+let scriptWatcher
 
 let powerSaveId = 0
 
@@ -231,7 +232,6 @@ let openFile = (file) => {
   } else if (type == 'fountain') {
     /// LOAD FOUNTAIN FILE
     fs.readFile(file, 'utf-8', (err,data)=>{
-      sceneIdScript = fountainSceneIdUtil.insertSceneIds(data)
       let sceneIdScript = fountainSceneIdUtil.insertSceneIds(data)
       if (sceneIdScript[1]) {
         dialog.showMessageBox({
@@ -435,19 +435,38 @@ let processFountainData = (data, create, update) => {
   }
 
   if (create) {
-    // TODO use chokidar to watch the file, reload
-
-    // fs.watchFile(currentFile, {persistent: false}, (e) => {
-    //   console.log("TODO SHOULD LOAD FILE")
-    //   //loadFile(false, true)
-    // })
+    let scriptFilePath = currentFile
+    scriptWatcher = chokidar.watch(scriptFilePath, {
+      disableGlobbing: true // treat file strings as literal file names
+    })
+    scriptWatcher.on('all', onScriptFileChange)
   }
 
-  if (update) {
-    mainWindow.webContents.send('updateScript', 1)//, diffScene)
-  }
+  // unused 
+  // if (update) {
+  //   mainWindow.webContents.send('updateScript', 1)//, diffScene)
+  // }
 
   return [scriptData, locations, characters, metadata]
+}
+
+const onScriptFileChange = (eventType, filepath, stats) => {
+  if (eventType === 'change') {
+    //
+    // TODO MD5 hash to see if change is worth reading?
+
+    let data = fs.readFileSync(filepath, 'utf-8')
+
+    // write scene ids for any new scenes
+    let sceneIdScript = fountainSceneIdUtil.insertSceneIds(data)
+    if (sceneIdScript[1]) {
+      fs.writeFileSync(filepath, sceneIdScript[0])
+      data = sceneIdScript[0]
+    }
+
+    let [scriptData, locations, characters, metadata] = processFountainData(data, false, false)
+    mainWindow.webContents.send('reloadScript', [scriptData, locations, characters])
+  }
 }
 
 let getSceneDifference = (scriptA, scriptB) => {
