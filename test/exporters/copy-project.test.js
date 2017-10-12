@@ -5,7 +5,6 @@
 //
 
 'use strict';
-const tmp = require('tmp')
 const fs = require('fs-extra')
 const path = require('path')
 const assert = require('assert')
