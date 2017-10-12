@@ -231,18 +231,9 @@ let openFile = (file) => {
     loadStoryboarderWindow(file)
   } else if (type == 'fountain') {
     /// LOAD FOUNTAIN FILE
-    fs.readFile(file, 'utf-8', (err,data)=>{
-      let sceneIdScript = fountainSceneIdUtil.insertSceneIds(data)
-      if (sceneIdScript[1]) {
-        dialog.showMessageBox({
-          type: 'info',
-          message: 'We added scene IDs to your fountain script.',
-          detail: "Scene IDs are what we use to make sure we put the storyboards in the right place. If you have your script open in an editor, you should reload it. Also, you can change your script around as much as you want, but please don't change the scene IDs.",
-          buttons: ['OK']
-        })
-        fs.writeFileSync(file, sceneIdScript[0])
-        data = sceneIdScript[0]
-      }
+    fs.readFile(file, 'utf-8', (err, data) => {
+      ensureSceneIds(file, data)
+
       // check for storyboards directory
       let storyboardsPath = file.split(path.sep)
       storyboardsPath.pop()
@@ -458,16 +449,30 @@ const onScriptFileChange = (eventType, filepath, stats) => {
     let data = fs.readFileSync(filepath, 'utf-8')
 
     // write scene ids for any new scenes
-    let sceneIdScript = fountainSceneIdUtil.insertSceneIds(data)
-    if (sceneIdScript[1]) {
-      fs.writeFileSync(filepath, sceneIdScript[0])
-      data = sceneIdScript[0]
-    }
+    ensureSceneIds(filepath, data)
 
     let [scriptData, locations, characters, metadata] = processFountainData(data, false, false)
     mainWindow.webContents.send('reloadScript', [scriptData, locations, characters])
   }
 }
+
+// mutates `data` reference
+const ensureSceneIds = (filePath, data) => {
+  let sceneIdScript = fountainSceneIdUtil.insertSceneIds(data)
+
+  if (sceneIdScript[1]) {
+    dialog.showMessageBox({
+      type: 'info',
+      message: 'We added scene IDs to your fountain script.',
+      detail: "Scene IDs are what we use to make sure we put the storyboards in the right place. If you have your script open in an editor, you should reload it. Also, you can change your script around as much as you want, but please don't change the scene IDs.",
+      buttons: ['OK']
+    })
+
+    fs.writeFileSync(filePath, sceneIdScript[0])
+    data = sceneIdScript[0]
+  }
+}
+
 
 let getSceneDifference = (scriptA, scriptB) => {
   let i = 0
