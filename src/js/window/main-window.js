@@ -170,15 +170,7 @@ const load = async (event, args) => {
       boardSettings = args[4]
       currentPath = args[5]
 
-      //renderScenes()
-      currentScene = boardSettings.lastScene
-      await loadScene(currentScene)
-
-      assignColors()
-      document.querySelector('#scenes').style.display = 'block'
-      document.querySelector('#script').style.display = 'block'
-      renderScenes()
-      renderScript()
+      await updateSceneFromScript()
     } else {
       log({ type: 'progress', message: 'Loading Project File' })
       // if not, its just a simple single boarder file
@@ -4504,6 +4496,30 @@ const exportZIP = async () => {
   }
 }
 
+const reloadScript = async (args) => { // [scriptData, locations, characters]
+  scriptData = args[0]
+  locations = args[1]
+  characters = args[2]
+
+  await updateSceneFromScript()
+
+  // goto the board and render the drawer
+  renderScene()
+
+  notifications.notify({ message: 'Fountain script has changed. Reloaded.'})
+}
+
+const updateSceneFromScript = async () => {
+  currentScene = boardSettings.lastScene
+  await loadScene(currentScene)
+
+  assignColors()
+  document.querySelector('#scenes').style.display = 'block'
+  document.querySelector('#script').style.display = 'block'
+  renderScenes()
+  renderScript()
+}
+
 ipcRenderer.on('setTool', (e, arg)=> {
   if (!toolbar) return
 
@@ -4805,5 +4821,7 @@ ipcRenderer.on('save', (event, args) => {
 ipcRenderer.on('saveAs', (event, args) => saveAsFolder())
 
 ipcRenderer.on('exportZIP', (event, args) => exportZIP())
+
+ipcRenderer.on('reloadScript', (event, args) => reloadScript(args))
 
 const log = opt => ipcRenderer.send('log', opt)

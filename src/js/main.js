@@ -4,6 +4,7 @@ const fs = require('fs')
 const path = require('path')
 const isDev = require('electron-is-dev')
 const trash = require('trash')
+const chokidar = require('chokidar')
 
 const prefModule = require('./prefs')
 
@@ -37,7 +38,7 @@ let loadingStatusWindow
 let welcomeInprogress
 let stsWindow
 
-let statWatcher
+let scriptWatcher
 
 let powerSaveId = 0
 
@@ -230,18 +231,9 @@ let openFile = (file) => {
     loadStoryboarderWindow(file)
   } else if (type == 'fountain') {
     /// LOAD FOUNTAIN FILE
-    fs.readFile(file, 'utf-8', (err,data)=>{
-      sceneIdScript = fountainSceneIdUtil.insertSceneIds(data)
-      if (sceneIdScript[1]) {
-        dialog.showMessageBox({
-          type: 'info',
-          message: 'We added scene IDs to your fountain script.',
-          detail: "Scene IDs are what we use to make sure we put the storyboards in the right place. If you have your script open in an editor, you should reload it. Also, you can change your script around as much as you want, but please don't change the scene IDs.",
-          buttons: ['OK']
-        })
-        fs.writeFileSync(file, sceneIdScript[0])
-        data = sceneIdScript[0]
-      }
+    fs.readFile(file, 'utf-8', (err, data) => {
+      data = ensureSceneIds(file, data)
+
       // check for storyboards directory
       let storyboardsPath = file.split(path.sep)
       storyboardsPath.pop()
@@ -434,34 +426,77 @@ let processFountainData = (data, create, update) => {
   }
 
   if (create) {
-    // TODO use chokidar to watch the file, reload
+    if (scriptWatcher) { scriptWatcher.close() }
 
-    // fs.watchFile(currentFile, {persistent: false}, (e) => {
-    //   console.log("TODO SHOULD LOAD FILE")
-    //   //loadFile(false, true)
-    // })
+    let scriptFilePath = currentFile
+    scriptWatcher = chokidar.watch(scriptFilePath, {
+      disableGlobbing: true // treat file strings as literal file names
+    })
+    scriptWatcher.on('all', onScriptFileChange)
   }
 
-  if (update) {
-    mainWindow.webContents.send('updateScript', 1)//, diffScene)
-  }
+  // unused 
+  // if (update) {
+  //   mainWindow.webContents.send('updateScript', 1)//, diffScene)
+  // }
 
   return [scriptData, locations, characters, metadata]
 }
 
-let getSceneDifference = (scriptA, scriptB) => {
-  let i = 0
-  for (var node of scriptB) {
-    if(!scriptA[i]) {
-      return i
+const onScriptFileChange = (eventType, filepath, stats) => {
+  if (eventType === 'change') {
+    // TODO MD5 hash to see if change is worth reading?
+
+    try {
+      let data = fs.readFileSync(filepath, 'utf-8')
+
+      // write scene ids for any new scenes
+      data = ensureSceneIds(filepath, data)
+
+      let [scriptData, locations, characters, metadata] = processFountainData(data, false, false)
+      mainWindow.webContents.send('reloadScript', [scriptData, locations, characters])
+    } catch (error) {
+      dialog.showMessageBox({
+        type: 'error',
+        message: 'Could not reload Fountain script.\n' + error.message,
+      })
     }
-    if (JSON.stringify(node) !== JSON.stringify(scriptA[i])) {
-      return i
-    }
-    i++
   }
-  return false
 }
+
+const ensureSceneIds = (filePath, data) => {
+  let sceneIdScript = fountainSceneIdUtil.insertSceneIds(data)
+
+  if (sceneIdScript[1]) {
+    dialog.showMessageBox({
+      type: 'info',
+      message: 'We added scene IDs to your fountain script.',
+      detail: "Scene IDs are what we use to make sure we put the storyboards in the right place. If you have your script open in an editor, you should reload it. Also, you can change your script around as much as you want, but please don't change the scene IDs.",
+      buttons: ['OK']
+    })
+
+    fs.writeFileSync(filePath, sceneIdScript[0])
+    data = sceneIdScript[0]
+  }
+
+  return data
+}
+
+
+// unused
+// let getSceneDifference = (scriptA, scriptB) => {
+//   let i = 0
+//   for (var node of scriptB) {
+//     if(!scriptA[i]) {
+//       return i
+//     }
+//     if (JSON.stringify(node) !== JSON.stringify(scriptA[i])) {
+//       return i
+//     }
+//     i++
+//   }
+//   return false
+// }
 
 
 ////////////////////////////////////////////////////////////
@@ -671,6 +706,9 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
       }
 
       appServer.setCanImport(false)
+
+      // stop watching any fountain files
+      if (scriptWatcher) { scriptWatcher.close() }
 
       analytics.event('Application', 'close')
     }
