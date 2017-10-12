@@ -447,13 +447,20 @@ const onScriptFileChange = (eventType, filepath, stats) => {
   if (eventType === 'change') {
     // TODO MD5 hash to see if change is worth reading?
 
-    let data = fs.readFileSync(filepath, 'utf-8')
+    try {
+      let data = fs.readFileSync(filepath, 'utf-8')
 
-    // write scene ids for any new scenes
-    ensureSceneIds(filepath, data)
+      // write scene ids for any new scenes
+      ensureSceneIds(filepath, data)
 
-    let [scriptData, locations, characters, metadata] = processFountainData(data, false, false)
-    mainWindow.webContents.send('reloadScript', [scriptData, locations, characters])
+      let [scriptData, locations, characters, metadata] = processFountainData(data, false, false)
+      mainWindow.webContents.send('reloadScript', [scriptData, locations, characters])
+    } catch (error) {
+      dialog.showMessageBox({
+        type: 'error',
+        message: 'Could not reload Fountain script.\n' + error.message,
+      })
+    }
   }
 }
 
