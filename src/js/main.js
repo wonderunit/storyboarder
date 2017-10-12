@@ -426,6 +426,8 @@ let processFountainData = (data, create, update) => {
   }
 
   if (create) {
+    if (scriptWatcher) { scriptWatcher.close() }
+
     let scriptFilePath = currentFile
     scriptWatcher = chokidar.watch(scriptFilePath, {
       disableGlobbing: true // treat file strings as literal file names
@@ -697,6 +699,9 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
       }
 
       appServer.setCanImport(false)
+
+      // stop watching any fountain files
+      if (scriptWatcher) { scriptWatcher.close() }
 
       analytics.event('Application', 'close')
     }
