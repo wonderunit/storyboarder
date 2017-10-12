@@ -232,7 +232,7 @@ let openFile = (file) => {
   } else if (type == 'fountain') {
     /// LOAD FOUNTAIN FILE
     fs.readFile(file, 'utf-8', (err, data) => {
-      ensureSceneIds(file, data)
+      data = ensureSceneIds(file, data)
 
       // check for storyboards directory
       let storyboardsPath = file.split(path.sep)
@@ -451,7 +451,7 @@ const onScriptFileChange = (eventType, filepath, stats) => {
       let data = fs.readFileSync(filepath, 'utf-8')
 
       // write scene ids for any new scenes
-      ensureSceneIds(filepath, data)
+      data = ensureSceneIds(filepath, data)
 
       let [scriptData, locations, characters, metadata] = processFountainData(data, false, false)
       mainWindow.webContents.send('reloadScript', [scriptData, locations, characters])
@@ -464,7 +464,6 @@ const onScriptFileChange = (eventType, filepath, stats) => {
   }
 }
 
-// mutates `data` reference
 const ensureSceneIds = (filePath, data) => {
   let sceneIdScript = fountainSceneIdUtil.insertSceneIds(data)
 
@@ -479,6 +478,8 @@ const ensureSceneIds = (filePath, data) => {
     fs.writeFileSync(filePath, sceneIdScript[0])
     data = sceneIdScript[0]
   }
+
+  return data
 }
 
 
