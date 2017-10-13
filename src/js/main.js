@@ -5,6 +5,7 @@ const path = require('path')
 const isDev = require('electron-is-dev')
 const trash = require('trash')
 const chokidar = require('chokidar')
+const os = require('os')
 
 const prefModule = require('./prefs')
 
@@ -68,6 +69,37 @@ app.on('open-file', (event, path) => {
 
 app.on('ready', () => {
   analytics.init(prefs.enableAnalytics)
+
+  if (os.platform() === 'darwin') {
+    if (!isDev && !app.isInApplicationsFolder()) {
+      const choice = dialog.showMessageBox({
+        type: 'question',
+        title: 'Move to Applications folder?',
+        message: 'Would you like to move Storyboarder to the Applications folder?',
+        buttons: ['Move to Applications', 'Do Not Move'],
+        defaultId: 1
+      })
+    
+      const yes = (choice === 0)
+      
+      if (yes) {
+        try {
+          let didMove = app.moveToApplicationsFolder()
+          if (!didMove) {
+            dialog.showMessageBox(null, {
+              type: 'error',
+              message: 'Could not move to Applications folder'
+            })
+          }
+        } catch (err) {
+          dialog.showMessageBox(null, {
+            type: 'error',
+            message: err.message
+          })
+        }
+      }
+    }
+  }
 
   appServer = new MobileServer()
   appServer.on('pointerEvent', (e)=> {
