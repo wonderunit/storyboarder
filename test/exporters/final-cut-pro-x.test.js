@@ -54,15 +54,16 @@ let boardFileData = {
 
 describe('exporters/final-cut-pro-x', () => {
   it('can generate final cut pro x xml', () => {
+    let xml
     assert.doesNotThrow(() => {
       let projectFileAbsolutePath = '/Users/me/projects/storyboarder/example\ storyboard/example\ storyboard.storyboarder'
       let outputPath = '/Users/me/projects/storyboarder/example\ storyboard/example\ storyboard.storyboarder/exports/output'
-      let xml = exporterFcpX.generateFinalCutProXXml(exporterFcpX.generateFinalCutProXData(boardFileData, { projectFileAbsolutePath, outputPath }))
-
-      // check percentage-encoding for filename
-      assert(xml.includes('src="./example%20storyboard-board-00001.png'))
-
-      assert(xml.length > 32)
+      xml = exporterFcpX.generateFinalCutProXXml(exporterFcpX.generateFinalCutProXData(boardFileData, { projectFileAbsolutePath, outputPath }))
     })
+
+    // check dash in filename
+    assert(xml.includes('src="./example-storyboard-board-00001.png'))
+
+    assert(xml.length > 32)
   })
 })

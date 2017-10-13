@@ -180,6 +180,8 @@ const truncateMiddle = (string, maxLength = 30, separator = '…') => {
          string.substring(midpoint + rstrip)
 }
 
+const dashed = str => str.replace(/\s+/g, '-')
+
 module.exports = {
   msToTime,
   uidGen,
@@ -198,5 +200,6 @@ module.exports = {
   sample,
   zeroFill,
   uniq,
-  truncateMiddle
+  truncateMiddle,
+  dashed
 }

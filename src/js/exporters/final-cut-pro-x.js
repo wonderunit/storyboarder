@@ -50,7 +50,7 @@ const generateFinalCutProXData = (boardData, { projectFileAbsolutePath, outputPa
   let currFrame = 0
   let index = 0
   for (let board of boardData.boards) {
-    let filename = boardFilenameForExport(board, index, basenameWithoutExt)
+    let filename = util.dashed(boardFilenameForExport(board, index, basenameWithoutExt))
 
     let duration = util.isUndefined(board.duration)
                      ? boardData.defaultBoardTiming
