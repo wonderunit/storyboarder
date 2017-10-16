@@ -2661,9 +2661,11 @@ let renderThumbnailButtons = () => {
     drawerEl.appendChild(el)
     
     el.addEventListener('pointerdown', event => {
+      // TODO can we remove this? is it still necessary?
       let eventMouseOut = document.createEvent('MouseEvents')
       eventMouseOut.initMouseEvent('mouseout', true, true)
       el.dispatchEvent(eventMouseOut)
+
       newBoard(boardData.boards.length).then(index => {
         gotoBoard(index)
         ipcRenderer.send('analyticsEvent', 'Board', 'new')
