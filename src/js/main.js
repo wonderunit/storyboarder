@@ -71,7 +71,11 @@ app.on('ready', () => {
   analytics.init(prefs.enableAnalytics)
 
   if (os.platform() === 'darwin') {
-    if (!isDev && !app.isInApplicationsFolder()) {
+    if (
+      !process.env.RUNNING_IN_SPECTRON &&
+      !isDev &&
+      !app.isInApplicationsFolder()
+    ) {
       const choice = dialog.showMessageBox({
         type: 'question',
         title: 'Move to Applications folder?',
