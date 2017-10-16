@@ -86,3 +86,9 @@ Then, publish:
 ## Deploying
 
 Remember to sync data files that have server representation (like `messages.json`).
+
+## Vendored Libraries
+
+We're using a modified version of `drop`, forked at `wonderunit/drop`.
+A built version of it is kept in `src/js/vendor/tether-drop` and referenced by `package-lock.json`.
+To make changes, work from a clone of the `fork`, build, and copy the built `drop.js` to `dist/js/drop.js`.
