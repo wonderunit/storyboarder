@@ -1,9 +1,10 @@
 // USAGE
-// mocha test/app/index.test.js
+// NODE_ENV=test mocha test/app/index.test.js
 
 const Application = require('spectron').Application
 const assert = require('assert')
 const os = require('os')
+const { ipcRenderer } = require('electron')
 
 const getAppArgs = () => {
   // uncomment this to test dev mode app
@@ -24,7 +25,7 @@ const getAppArgs = () => {
   }
 }
 
-describe('application launch', function () {
+describe('application', function () {
   this.timeout(10000)
 
   beforeEach(function () {
@@ -44,5 +45,35 @@ describe('application launch', function () {
   it('shows welcomeWindow and newWindow', async function () {
     let count = await this.app.client.getWindowCount()
     assert.equal(count, 2) // welcomeWindow and newWindow
+  })
+
+  it('can open a new project', async function () {
+    // await new Promise(resolve => setTimeout(resolve, 10000))
+
+    await this.app.client.waitUntilWindowLoaded()
+
+    this.app.electron.ipcRenderer.send(
+      'openFile',
+      './test/fixtures/projects/multi-scene/multi-scene.fountain'
+    )
+
+    await new Promise(async resolve => {
+      let interval = setInterval(async () => {
+        let count = await this.app.client.getWindowCount()
+        // ensure that the workspace window has loaded
+        if (count === 4) {
+          clearInterval(interval)
+          resolve()
+        }
+      }, 500)
+    })
+
+    await this.app.client.windowByIndex(3) // focus the workspace window
+
+    // ensure the UI has loaded
+    await this.app.client.waitUntilTextExists(
+      '.stats-primary',
+      'Scene-1-EXT-A-P…ACE-DAY-1-ZX3ZM.storyboarder'
+    )
   })
 })
