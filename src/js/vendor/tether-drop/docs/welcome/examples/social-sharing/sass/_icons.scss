@@ -1,0 +1,41 @@
+@font-face {
+	font-family: "icomoon";
+	src: url("../fonts/icomoon.eot");
+	src: url("../fonts/icomoon.eot?#iefix") format("embedded-opentype"),
+		 url("../fonts/icomoon.svg#icomoon") format("svg"),
+		 url("../fonts/icomoon.woff") format("woff"),
+		 url("../fonts/icomoon.ttf") format("truetype");
+	font-weight: normal;
+	font-style: normal
+}
+
+.icon-monkey:before      { content: "\38" }
+.icon-bear:before        { content: "\28" }
+.icon-squirrel:before    { content: "\6f" }
+.icon-elephant:before    { content: "\65" }
+.icon-google-plus:before { content: "\21" }
+.icon-facebook:before    { content: "\22" }
+.icon-twitter:before     { content: "\23" }
+.icon-github:before      { content: "\24" }
+.icon-tux:before         { content: "\25" }
+.icon-apple:before       { content: "\26" }
+.icon-android:before     { content: "\27" }
+.icon-windows:before     { content: "\29" }
+.icon-sun:before         { content: "\2a" }
+.icon-cloudy:before      { content: "\2b" }
+.icon-weather:before     { content: "\2c" }
+.icon-lightning:before   { content: "\2d" }
+.icon-rainy:before       { content: "\2e" }
+.icon-windy:before       { content: "\2f" }
+.icon-chrome:before      { content: "\30" }
+.icon-firefox:before     { content: "\31" }
+.icon-IE:before          { content: "\32" }
+.icon-opera:before       { content: "\33" }
+.icon-safari:before      { content: "\34" }
+.icon-finder:before      { content: "\35" }
+.icon-camera:before      { content: "\3a" }
+.icon-diamond:before     { content: "\36" }
+.icon-rocket:before      { content: "\37" }
+.icon-cars:before        { content: "\39" }
+.icon-clock:before       { content: "\3b" }
+.icon-star:before        { content: "\3c" }

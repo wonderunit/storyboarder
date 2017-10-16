@@ -1,0 +1,470 @@
+@import compass/css3
+@import compass/utilities/general/clearfix
+
+html, body
+    height: 100%
+
+body
+    margin: 0
+    font-family: "proxima-nova", "Helvetica Neue", sans-serif
+
+.drop-element.drop-theme-arrows-bounce
+
+    &.drop-out-of-bounds
+        display: none
+
+.drop-element
+
+    .drop-target
+        display: block
+        padding: 20px
+        background: #ccc
+
+.button
+    display: inline-block
+    border: 2px solid #333
+    color: #333
+    padding: 1em 1.25em
+    font-weight: 500
+    text-transform: uppercase
+    letter-spacing: 3px
+    text-decoration: none
+    cursor: pointer
+    width: 140px
+    font-size: .8em
+    line-height: 1.3em
+
+.button.dark
+    background: #333
+    color: #fff
+
+.drop-hero.drop-element.drop-theme-arrows-bounce-dark
+
+    .drop-content
+        padding: 40px
+
+    h1, h2, p
+        text-align: center
+        margin: 0
+        font-weight: 100
+
+    h1
+        margin-bottom: 40px
+
+    h2
+        margin-bottom: 45px
+
+    h1
+        font-size: 45px
+        line-height: 1
+
+    .button
+        font-weight: 100
+        color: #fff
+        border-color: #fff
+        width: 200px
+        max-width: 100%
+
+    @media (max-width: 768px)
+
+        .drop-content
+            padding: 20px
+
+        h1
+            font-size: 30px
+            margin-bottom: 20px
+
+        h2
+            font-size: 18px
+            margin-bottom: 25px
+
+.showcase
+    position: relative
+
+    @media (min-width: 900px)
+        display: table
+        height: 100%
+        width: 100%
+
+        &:after
+            content: ""
+            display: block
+            position: absolute
+            left: 0
+            right: 0
+            bottom: 20px
+            margin: auto
+            height: 0
+            width: 0
+            border-width: 18px
+            border-style: solid
+            border-color: transparent
+            border-top-color: rgba(0, 0, 0, 0.2)
+
+        &.no-next-arrow:after
+            display: none
+
+    .showcase-inner
+        padding: 20px 10px
+
+        @media (min-width: 900px)
+            padding: 10px
+            margin: 40px auto 60px
+            display: table-cell
+            vertical-align: middle
+
+        h1
+            font-size: 50px
+            text-align: center
+            font-weight: 300
+
+            @media (max-width: 567px)
+                font-size: 40px
+
+        h2
+            font-size: 24px
+            text-align: center
+            font-weight: 300
+            margin: 1em 0 1em
+
+        p
+            text-align: center
+
+    &.hero
+        +background-image(linear-gradient(135deg, #8eaaff, #80ff84))
+        text-align: center
+
+        &:after
+            -webkit-animation: up-and-down 4s linear infinite
+            -moz-animation: up-and-down 4s linear infinite
+            -ms-animation: up-and-down 4s linear infinite
+            -o-animation: up-and-down 4s linear infinite
+            animation: up-and-down 4s linear infinite
+            border-top-color: rgba(0, 0, 0, 0.4)
+
+        .drop-target
+            +inline-block
+            margin: 0 auto 20px
+            width: 300px
+            height: 1px
+            margin-bottom: 400px
+
+            @media (max-width: 900px)
+                margin-bottom: 300px
+
+            @media (max-width: 567px)
+
+                h2
+                    font-size: 14px
+
+    &.examples
+        background: #fff
+
+    &.about
+        +background-image(linear-gradient(135deg, #fff5e7, #ffedfe))
+
+        a
+            color: #7c4b78
+
+        p
+            +box-sizing(border-box)
+            text-align: left
+            width: 500px
+            max-width: 100%
+            margin-left: auto
+            margin-right: auto
+
+            > code
+                background: rgba(0, 0, 0, 0.05)
+
+        pre
+            +box-sizing(border-box)
+            text-align: left
+            width: 500px
+            max-width: 100%
+            margin-left: auto
+            margin-right: auto
+
+            @media (max-width: 700px)
+                width: auto
+
+.examples-wrap
+
+    @media (min-width: 900px)
+        padding: 60px 0
+
+    h1
+        text-align: center
+        font-size: 45px
+        margin-bottom: 50px
+
+        @media (min-width: 900px)
+            margin-bottom: 100px
+
+    h1, h2, h3
+        font-weight: normal
+
+    h3
+        margin-top: 0
+        line-height: 1
+        margin-bottom: 30px
+
+    .examples
+        margin: 0 auto
+
+        @media (min-width: 900px)
+            width: 800px
+
+        .example
+            margin-bottom: 100px
+            text-align: center
+
+            h2
+                margin-bottom: 10px
+
+            .example-inner
+                margin-bottom: 20px
+
+                .drop-content
+                    display: none
+
+                .drop-target
+                    cursor: pointer
+
+                .drop-target-example-drop-theme-arrows-bounce-dark
+                    +inline-block
+                    +border-radius(4px)
+                    padding: 0 20px
+                    height: 60px
+                    line-height: 60px
+                    background: #000
+                    color: #fff
+                    font-size: 20px
+
+                .drop-target-example-hover-card
+
+                    &, img
+                        +border-radius(3px)
+                        +inline-block
+                        height: 50px
+                        width: 50px
+
+            .example-credit
+                opacity: 0.5
+
+                a
+                    color: inherit
+
+            @media (min-width: 900px)
+                +pie-clearfix
+
+                .example-info
+                    float: left
+                    width: 300px
+                    text-align: left
+
+                    h2, h3
+                        text-align: left
+
+                    h2
+                        line-height: 1
+                        margin-top: 0
+                        margin-bottom: 10px
+
+                    h3
+                        color: #888
+
+                .example-inner
+                    float: right
+                    width: 300px
+                    text-align: right
+
+$hoverCardWidth: 400px
+$hoverCardHeight: 246px
+$hoverCardArrowWidth: 14px
+$hoverCardArrowHeight: 7px
+
+.drop-theme-basic.drop-target-example-hover-card.drop-element
+    +transform(translateZ(0))
+    +transition(opacity .2s)
+    opacity: 0
+
+    &.drop-open
+        display: none
+
+    &.drop-open-transitionend
+        display: block
+
+    &.drop-after-open
+        opacity: 1
+
+    .drop-content
+        +border-radius(4px)
+        +box-shadow(none)
+        +transform(translateZ(0))
+        +filter(drop-shadow(0 2px 4px rgba(0, 0, 0, .3)))
+        background: transparent
+        padding: 0
+        width: $hoverCardWidth
+        height: $hoverCardHeight
+
+        .hover-card-mask, .hover-card-image
+
+            img
+                position: absolute
+                width: $hoverCardWidth
+                height: $hoverCardHeight
+
+        .hover-card-mask
+            display: none
+            position: absolute
+            left: 0
+            right: 0
+            margin: auto
+            width: $hoverCardArrowWidth
+            height: $hoverCardArrowHeight
+            -webkit-mask-position: 0
+            -webkit-mask-repeat: no-repeat
+
+            img
+                left: - (($hoverCardWidth - $hoverCardArrowWidth) / 2)
+
+        .hover-card-image
+            +border-radius(4px)
+            position: absolute
+            overflow: hidden
+            width: $hoverCardWidth
+            height: $hoverCardHeight
+
+            &:after
+                +background-image(linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.5)))
+                content: ""
+                position: absolute
+                top: 50%
+                left: 0
+                bottom: 0
+                right: 0
+
+        .drop-content-inner
+            position: absolute
+            top: 0
+            left: 0
+            bottom: 0
+            right: 0
+
+            .avatar
+                position: absolute
+                left: 20px
+                bottom: 20px
+
+                img
+                    +border-radius(4px)
+                    height: 100px
+                    width: 100px
+                    display: block
+
+            .name, .title
+                position: absolute
+                color: #fff
+                line-height: 1
+
+            .name
+                left: 138px
+                bottom: 44px
+                font-size: 27px
+
+            .title
+                left: 140px
+                bottom: 24px
+                font-size: 16px
+                font-weight: 100
+
+    &.drop-pinned .drop-content .hover-card-image
+
+        img
+            top: 0
+            bottom: auto
+
+    &.drop-element-attached-top, &.drop-element-attached-bottom
+
+        .drop-content
+
+            .hover-card-mask
+                display: block
+
+            .hover-card-image
+                height: $hoverCardHeight - $hoverCardArrowHeight
+
+    &.drop-element-attached-top .drop-content
+
+        .hover-card-mask
+            top: 0
+            -webkit-mask-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAHAQMAAAACie5aAAAABlBMVEUAAAD///+l2Z/dAAAAAXRSTlMAQObYZgAAAB1JREFUCNdjYGZgYG9g4D/AIP+Awf4DQ/0Phv9/AC9MBvpONp+aAAAAAElFTkSuQmCC)
+
+            img
+                top: 0
+
+        .hover-card-image
+            top: $hoverCardArrowHeight
+
+            img
+                top: - $hoverCardArrowHeight
+
+    &.drop-element-attached-bottom .drop-content
+
+        .hover-card-mask
+            bottom: 0
+            -webkit-mask-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAHAQMAAAACie5aAAAABlBMVEUAAAD///+l2Z/dAAAAAXRSTlMAQObYZgAAAB1JREFUCNdj+P+Hof4Hg/0HBvkHDPwHGNgbGJgZAGA8Bvqkms0ZAAAAAElFTkSuQmCC)
+
+            img
+                bottom: 0
+
+        .hover-card-image
+            bottom: $hoverCardArrowHeight
+
+            img
+                bottom: - $hoverCardArrowHeight
+
+@-webkit-keyframes up-and-down
+    0%
+        -webkit-transform: translate3d(0, -20px, 0)
+        transform: translate3d(0, -20px, 0)
+    50%
+        -webkit-transform: translate3d(0, 0, 0)
+        transform: translate3d(0, 0, 0)
+    100%
+        -webkit-transform: translate3d(0, -20px, 0)
+        transform: translate3d(0, -20px, 0)
+
+@-moz-keyframes up-and-down
+    0%
+        -moz-transform: translate3d(0, -20px, 0)
+        transform: translate3d(0, -20px, 0)
+    50%
+        -moz-transform: translate3d(0, 0, 0)
+        transform: translate3d(0, 0, 0)
+    100%
+        -moz-transform: translate3d(0, -20px, 0)
+        transform: translate3d(0, -20px, 0)
+
+@-o-keyframes up-and-down
+    0%
+        -o-transform: translate3d(0, -20px, 0)
+        transform: translate3d(0, -20px, 0)
+    50%
+        -o-transform: translate3d(0, 0, 0)
+        transform: translate3d(0, 0, 0)
+    100%
+        -o-transform: translate3d(0, -20px, 0)
+        transform: translate3d(0, -20px, 0)
+
+@-o-keyframes up-and-down
+    0%
+        -o-transform: translate3d(0, -20px, 0)
+        transform: translate3d(0, -20px, 0)
+    50%
+        -o-transform: translate3d(0, 0, 0)
+        transform: translate3d(0, 0, 0)
+    100%
+        -o-transform: translate3d(0, -20px, 0)
+        transform: translate3d(0, -20px, 0)

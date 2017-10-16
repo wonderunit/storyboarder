@@ -1,0 +1,152 @@
+@import compass/css3
+@import compass/utilities/general/clearfix
+@import compass/css3/user-interface
+
+@import ../../../../../bower_components/tether/sass/helpers/tether
++tether($themePrefix: "drop")
+
+@import icons
+
+.drop-example-theme-social-sharing
+
+    &.drop-target
+        +inline-block
+        cursor: pointer
+        background: #000
+        color: #fff
+        display: inline-block
+        padding: 0 20px
+        height: 60px
+        line-height: 60px
+        font-size: 20px
+        width: 137px
+        text-align: center
+
+    &.drop-element
+        +transform(translateZ(0))
+        +transition(opacity 360ms)
+        opacity: .999
+        width: 137px + 40px
+
+        &.drop-open
+            display: none
+
+        &.drop-open-transitionend
+            display: block
+
+        &.drop-after-open
+            +transition(none)
+            opacity: 1
+
+        .drop-content
+            overflow: hidden
+            position: relative
+
+            span
+
+                &[class^="icon-"], &[class*=" icon-"]
+                    padding: 0 20px 0 70px
+
+                    &:before
+                        font-family: 'icomoon'
+                        font-style: normal
+                        font-weight: normal
+                        position: absolute
+                        font-size: 30px
+                        line-height: 30px
+                        height: 30px
+                        width: 30px
+                        top: 0
+                        bottom: 0
+                        left: 20px
+                        margin: auto
+                        text-align: center
+                        speak: none
+
+            ul
+                position: relative
+                display: block
+                list-style-type: none
+                margin: 0
+                padding: 0
+
+                li
+                    position: relative
+                    display: block
+
+                    span
+                        +user-select(none)
+                        width: 100%
+                        background: #e0e0e0
+                        line-height: 60px
+                        height: 60px
+                        padding: 0 30px 0 75px
+                        display: block
+                        color: inherit
+                        cursor: pointer
+                        -webkit-backface-visibility: hidden
+                        -webkit-touch-callout: none
+                        font-size: 20px
+                        font-weight: normal
+
+                        +transform(translate3d(0, 0, 0))
+
+                        &:hover
+                            background: #000
+                            color: #fff
+
+                    &:nth-child(1) span
+                        +transform(translate3d(0, -60px, 0))
+                        +transition(transform 240ms ease 0ms)
+
+                    &:nth-child(2) span
+                        +transform(translate3d(0, -120px, 0))
+                        +transition(transform 240ms ease 60ms)
+
+                    &:nth-child(3) span
+                        +transform(translate3d(0, -180px, 0))
+                        +transition(transform 240ms ease 120ms)
+
+        &.drop-after-open .drop-content ul li
+
+            &:nth-child(1) span
+                +transform(translate3d(0, 0, 0))
+                +transition(transform 240ms ease 120ms)
+
+            &:nth-child(2) span
+                +transform(translate3d(0, 0, 0))
+                +transition(transform 240ms ease 60ms)
+
+            &:nth-child(3) span
+                +transform(translate3d(0, 0, 0))
+                +transition(transform 240ms ease 0ms)
+
+        &.drop-element-attached-bottom
+
+            .drop-content ul li
+
+                &:nth-child(1) span
+                    +transform(translate3d(0, 180px, 0))
+                    +transition(transform 240ms ease 120ms)
+
+                &:nth-child(2) span
+                    +transform(translate3d(0, 120px, 0))
+                    +transition(transform 240ms ease 60ms)
+
+                &:nth-child(3) span
+                    +transform(translate3d(0, 60px, 0))
+                    +transition(transform 240ms ease 0ms)
+
+            &.drop-after-open .drop-content ul li
+
+                &:nth-child(1) span
+                    +transform(translate3d(0, 0, 0))
+                    +transition(transform 240ms ease 0ms)
+
+                &:nth-child(2) span
+                    +transform(translate3d(0, 0, 0))
+                    +transition(transform 240ms ease 60ms)
+
+                &:nth-child(3) span
+                    +transform(translate3d(0, 0, 0))
+                    +transition(transform 240ms ease 120ms)

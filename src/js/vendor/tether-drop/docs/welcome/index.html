@@ -1,0 +1,224 @@
+<!doctype html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>Drop</title>
+    <meta name="description" content="Drop is a JavaScript and CSS library. It is free and open source and was developed by HubSpot developers Adam Schwartz (@adamfschwartz) and Zack Bloom (@zackbloom).">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <link rel="icon" href="http://static.hubspot.com/favicon.ico">
+
+    <script type="text/javascript" src="//use.typekit.net/jbn8qxr.js"></script>
+    <script type="text/javascript">try{Typekit.load();}catch(e){}</script>
+
+    <!-- Drop themes -->
+    <link rel="stylesheet" href="/drop/dist/css/drop-theme-basic.css" />
+    <link rel="stylesheet" href="/drop/dist/css/drop-theme-arrows-bounce-dark.css" />
+    <link rel="stylesheet" href="/drop/dist/css/drop-theme-hubspot-popovers.css" />
+
+    <!-- Example themes -->
+    <link rel="stylesheet" href="/drop/docs/welcome/examples/social-sharing/css/drop-example-theme-social-sharing.css" />
+
+    <!-- Welcome docs styles -->
+    <link rel="stylesheet" href="/drop/docs/welcome/css/prism.css" />
+    <link rel="stylesheet" href="/drop/docs/welcome/css/welcome.css" />
+</head>
+<body>
+    <div class="showcase hero">
+        <div class="showcase-inner">
+            <a class="drop-target"></a>
+        </div>
+    </div>
+
+    <div class="showcase examples">
+        <div class="showcase-inner">
+            <div class="examples-wrap">
+                <h1>Examples</h1>
+                <div class="examples">
+                    <div class="example" data-theme="drop-theme-arrows-bounce-dark">
+                        <div class="example-info">
+                            <h2>"The Popup"</h2>
+                            <h3>Scale Bounce with Arrows</h3>
+                        </div>
+                        <div class="example-inner">
+                            <a class="drop-target drop-target-example-drop-theme-arrows-bounce-dark">Size</a>
+                            <div class="drop-content">
+                                <input type="range" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="example" data-theme="drop-example-theme-social-sharing">
+                        <div class="example-info">
+                            <h2>"The Social Share"</h2>
+                            <h3>List Flyout</h3>
+                        </div>
+                        <div class="example-inner">
+                            <a class="drop-target">Share</a>
+                            <div class="drop-content">
+                                <ul>
+                                    <li><span class="icon-facebook">Facebook</span></li>
+                                    <li><span class="icon-twitter">Twitter</span></li>
+                                    <li><span class="icon-github">GitHub</span></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="example" data-theme="drop-theme-basic drop-target-example-hover-card" data-open-on="hover">
+                        <div class="example-info">
+                            <h2>"The Hover Card"</h2>
+                            <h3>Facebook-style Image Hover Card</h3>
+                        </div>
+                        <div class="example-inner">
+                            <div class="drop-target drop-target-example-hover-card">
+                                <img src="/drop/docs/welcome/images/elias.png" />
+                            </div>
+                            <div class="drop-content">
+                                <div class="hover-card-mask">
+                                    <img src="/drop/docs/welcome/images/elias-kitesurfing.png" />
+                                </div>
+                                <div class="hover-card-image">
+                                    <img src="/drop/docs/welcome/images/elias-kitesurfing.png" />
+                                </div>
+                                <div class="drop-content-inner">
+                                    <div class="avatar">
+                                        <img src="/drop/docs/welcome/images/elias.png" />
+                                    </div>
+                                    <div class="name">
+                                        Elias Torres
+                                    </div>
+                                    <div class="title">
+                                        VP Engineering, HubSpot
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- preload image -->
+                            <div style="height: 0; overflow: hidden">
+                                <img src="/drop/docs/welcome/images/elias-kitesurfing.png" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="example" data-theme="drop-theme-hubspot-popovers">
+                        <div class="example-info">
+                            <h2>"The Popover"</h2>
+                            <h3>Popover Messages</h3>
+                        </div>
+                        <div class="example-inner">
+                            <a class="drop-target drop-theme-hubspot-popovers">About Drop.js</a>
+                            <div class="drop-content">
+                                <div class="drop-content-inner">
+                                    <h3 class="title">Drop.js</h3>
+                                    <p>Drop.js is a fast and capable dropdown library built on <a href="/tether/docs/welcome" target="_blank" style="color: inherit">Tether</a>.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <br>
+                    <br>
+                    <br>
+                    <br>
+                    <!--
+                    <div class="example">
+                        <h2>The Context Menu</h2>
+                        <div class="example-inner">http://www.lexus-int.com/news/</div>
+                    </div>
+                    <div class="example">
+                        <h2>Fold Down</h2>
+                        <div class="example-inner">http://www.lexus-int.com/news/</div>
+                    </div>
+                    -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="showcase about">
+        <div class="showcase-inner">
+            <h1>How to Use</h1>
+            <p>Drop is an open-source JavaScript and CSS library that creates and positions dropdowns. It's powered by <a href="/tether">Tether.js</a>.</p>
+            <p>To use, first download the latest <a href="https://github.com/HubSpot/tether/releases" target="_blank">tether</a> and <a href="https://github.com/HubSpot/drop/releases" target="_blank">drop</a> releases.
+            <p>Then add this to your page:</p>
+<pre class="  language-markup"><code class="  language-markup"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>link</span> <span class="token attr-name">rel</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>stylesheet<span class="token punctuation">"</span></span> <span class="token attr-name">href</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>drop-theme-arrows.css<span class="token punctuation">"</span></span> <span class="token punctuation">/&gt;</span></span>
+<span class="token script"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>script</span> <span class="token attr-name">src</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>tether.min.js<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>script</span><span class="token punctuation">&gt;</span></span></span>
+<span class="token script"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>script</span> <span class="token attr-name">src</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>drop.min.js<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>script</span><span class="token punctuation">&gt;</span></span></span></code></pre>
+            <p>Then you can start creating drops. Learn more by visiting the <a href="/drop">documentation</a>.
+        </div>
+    </div>
+
+    <div class="showcase last-showcase no-next-arrow share">
+        <div class="showcase-inner">
+            <h1>Share</h1>
+            <h2>Help us spread the word.</h2>
+            <!-- Share -->
+            <style>
+                .share-buttons {
+                    margin: 4em auto;
+                    text-align: center;
+                }
+                .share-button {
+                    display: inline-block;
+                }
+                .retweet-button {
+                    width: 100px;
+                    margin-left: 20px;
+                }
+                .github-stars {
+                    width: 100px;
+                }
+            </style>
+            <div class="share-buttons">
+                <div class="share-button retweet-button">
+                    <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://github.hubspot.com/drop/docs/welcome" data-text="Tether.js - Marrying elements for life" data-count="horizontal" data-via="HubSpotDev">Tweet</a>
+                    <script>
+                        (function(){
+                            var recommends, button;
+
+                            if (Math.random() >= 0.5) {
+                                recommends = ['hubspotdev', 'zackbloom', 'adamfschwartz'];
+                            } else {
+                                recommends = ['hubspotdev', 'adamfschwartz', 'zackbloom'];
+                            }
+
+                            button = document.querySelector('.twitter-share-button');
+
+                            if (button) {
+                                button.setAttribute('data-related', recommends.join(','));
+                            }
+                        })();
+                    </script>
+                    <script type="text/javascript" src="http://platform.twitter.com/widgets.js"></script>
+                </div>
+                <div class="share-button github-stars-button">
+                    <iframe src="http://ghbtns.com/github-btn.html?user=HubSpot&amp;repo=drop&amp;type=watch&amp;count=true&amp;size=small" allowtransparency="true" frameborder="0" scrolling="0" width="100" height="20"></iframe>
+                </div>
+            </p>
+        </div>
+    </div>
+
+    <script src="/drop/bower_components/tether/dist/js/tether.js"></script>
+    <script src="/drop/dist/js/drop.js"></script>
+
+    <script src="/drop/docs/welcome/js/jquery.js"></script>
+    <script src="/drop/docs/welcome/js/log.js"></script>
+    <script src="/drop/docs/welcome/js/welcome.js"></script>
+
+    <!-- HubSpot analytics -->
+    <script type="text/javascript">
+        (function(d,s,i,r) {
+            if (d.getElementById(i)){return;}
+            var n=d.createElement(s),e=d.getElementsByTagName(s)[0];
+            n.id=i;n.src='//js.hubspot.com/analytics/'+(Math.ceil(new Date()/r)*r)+'/51294.js';
+            e.parentNode.insertBefore(n, e);
+        })(document,"script","hs-analytics",300000);
+    </script>
+
+    <!-- Google analytics -->
+    <script>
+        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+        ga('create', 'UA-45159009-1', 'hubspot.com');
+        ga('send', 'pageview');
+    </script>
+</body>
+</html>

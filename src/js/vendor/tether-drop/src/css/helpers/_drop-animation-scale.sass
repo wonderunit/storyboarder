@@ -1,0 +1,64 @@
+=drop-animation-scale($themePrefix: "drop", $themeName: "default", $attachmentOffset: 0, $easing: "linear")
+    .#{ $themePrefix }-element.#{ $themePrefix }-theme-#{ $themeName }
+        transform: translateZ(0)
+        transition: opacity 100ms
+        opacity: 0
+
+        .#{ $themePrefix }-content
+            transition: transform .3s $easing
+            transform: scale(0) translateZ(0)
+
+        &.#{ $themePrefix }-open
+            display: none
+
+        &.#{ $themePrefix }-open-transitionend
+            display: block
+
+        &.#{ $themePrefix }-after-open
+            transition: none
+            opacity: 1
+
+            .#{ $themePrefix }-content
+                transform: scale(1) translateZ(0)
+
+        // Centers and middles
+
+        &.#{ $themePrefix }-element-attached-bottom.#{ $themePrefix }-element-attached-center .#{ $themePrefix }-content
+            transform-origin: 50% calc(100% + #{ $attachmentOffset })
+
+        &.#{ $themePrefix }-element-attached-top.#{ $themePrefix }-element-attached-center .#{ $themePrefix }-content
+            transform-origin: 50% (-$attachmentOffset)
+
+        &.#{ $themePrefix }-element-attached-right.#{ $themePrefix }-element-attached-middle .#{ $themePrefix }-content
+            transform-origin: calc(100% + #{ $attachmentOffset }) 50%
+
+        &.#{ $themePrefix }-element-attached-left.#{ $themePrefix }-element-attached-middle .#{ $themePrefix }-content
+            transform-origin: (-$attachmentOffset) 50%
+
+        // Top and bottom corners
+
+        &.#{ $themePrefix }-element-attached-top.#{ $themePrefix }-element-attached-left.#{ $themePrefix }-target-attached-bottom .#{ $themePrefix }-content
+            transform-origin: 0 (-$attachmentOffset)
+
+        &.#{ $themePrefix }-element-attached-top.#{ $themePrefix }-element-attached-right.#{ $themePrefix }-target-attached-bottom .#{ $themePrefix }-content
+            transform-origin: 100% (-$attachmentOffset)
+
+        &.#{ $themePrefix }-element-attached-bottom.#{ $themePrefix }-element-attached-left.#{ $themePrefix }-target-attached-top .#{ $themePrefix }-content
+            transform-origin: 0 calc(100% + #{ $attachmentOffset })
+
+        &.#{ $themePrefix }-element-attached-bottom.#{ $themePrefix }-element-attached-right.#{ $themePrefix }-target-attached-top .#{ $themePrefix }-content
+            transform-origin: 100% calc(100% + #{ $attachmentOffset })
+
+        // Side corners
+
+        &.#{ $themePrefix }-element-attached-top.#{ $themePrefix }-element-attached-right.#{ $themePrefix }-target-attached-left .#{ $themePrefix }-content
+            transform-origin: calc(100% + #{ $attachmentOffset }) 0
+
+        &.#{ $themePrefix }-element-attached-top.#{ $themePrefix }-element-attached-left.#{ $themePrefix }-target-attached-right .#{ $themePrefix }-content
+            transform-origin: (-$attachmentOffset) 0
+
+        &.#{ $themePrefix }-element-attached-bottom.#{ $themePrefix }-element-attached-right.#{ $themePrefix }-target-attached-left .#{ $themePrefix }-content
+            transform-origin: calc(100% + #{ $attachmentOffset }) 100%
+
+        &.#{ $themePrefix }-element-attached-bottom.#{ $themePrefix }-element-attached-left.#{ $themePrefix }-target-attached-right .#{ $themePrefix }-content
+            transform-origin: (-$attachmentOffset) 100%

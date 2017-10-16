@@ -1,0 +1,14 @@
+// https://github.com/HubSpot/drop/issues/9
+// Since Twitter Boostrap sets these z-indexes:
+//
+// @zindex-navbar:            1000;
+// @zindex-dropdown:          1000;
+// @zindex-popover:           1010;
+// @zindex-tooltip:           1030;
+// @zindex-navbar-fixed:      1030;
+// @zindex-modal-background:  1040;
+// @zindex-modal:             1050;
+//
+// We make sure Drops always end up on top:
+.drop
+    z-index: 1060

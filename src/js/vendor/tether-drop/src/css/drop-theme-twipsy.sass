@@ -1,0 +1,30 @@
+@import ../bower_components/tether/src/css/helpers/tether
+@import ../bower_components/tether/src/css/helpers/tether-theme-arrows
+
+$themePrefix: "drop"
+$themeName: "twipsy"
+$arrowSize: 10px
+$backgroundColor: #414141
+$color: #fff
+$useDropShadow: false
+
++tether($themePrefix: $themePrefix)
++tether-theme-arrows($themePrefix: $themePrefix, $themeName: $themeName, $arrowSize: $arrowSize, $backgroundColor: $backgroundColor, $color: $color, $useDropShadow: $useDropShadow)
+
+.drop-element.drop-theme-twipsy
+    opacity: 0
+    transition: opacity 150ms
+
+    .drop-content
+        box-shadow: 0 3px 7px rgba(0, 0, 0, .2)
+        border-radius: 2px
+        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif
+        padding: 3px 8px
+        line-height: 18px
+        font-size: 11px
+
+    &.drop-open-transitionend
+        display: block
+
+    &.drop-after-open
+        opacity: 1

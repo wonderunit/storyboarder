@@ -1,0 +1,39 @@
+@import ../bower_components/tether/src/css/helpers/tether
+@import ../bower_components/tether/src/css/helpers/tether-theme-arrows
+
+$themePrefix: "drop"
+$themeName: "hubspot-popovers"
+$arrowSize: 10px
+$backgroundColor: #ebebeb
+$color: #444
+$useDropShadow: false
+
++tether($themePrefix: $themePrefix)
++tether-theme-arrows($themePrefix: $themePrefix, $themeName: $themeName, $arrowSize: $arrowSize, $backgroundColor: $backgroundColor, $color: $color, $useDropShadow: $useDropShadow)
+
+.drop-element.drop-theme-hubspot-popovers
+
+    .drop-content
+        box-shadow: 0 3px 7px rgba(0, 0, 0, .2)
+        border-radius: 2px
+        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif
+        //border: 1px solid #b3b3b3
+        padding: 3px
+        font-size: 13px
+
+        .drop-content-inner
+            border: 1px solid #dbdbdb
+            padding: 14px
+            background: #fff
+            overflow: hidden
+            width: 280px
+
+            .title
+                font-size: 18px
+                margin-top: 0
+                margin-bottom: 12px
+                font-weight: normal
+                line-height: 1
+
+            p:last-child
+                margin-bottom: 0

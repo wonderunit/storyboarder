@@ -1,0 +1,30 @@
+{
+  "name": "tether-drop",
+  "version": "1.4.3",
+  "homepage": "https://github.com/HubSpot/drop",
+  "authors": [
+    "Adam Schwartz <adam.flynn.schwartz@gmail.com>",
+    "Zack Bloom <zackbloom@gmail.com>"
+  ],
+  "maintainers": [
+    "Nicholas Hwang <nick.joosung.hwang@gmail.com>"
+  ],
+  "description": "Client-side library for creating dropdowns",
+  "keywords": [
+    "dropdown",
+    "overlay",
+    "tether"
+  ],
+  "license": "MIT",
+  "main": "dist/js/drop.js",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "tether": "^1.1.0"
+  }
+}

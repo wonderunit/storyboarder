@@ -1,0 +1,39 @@
+{
+  "name": "tether-drop",
+  "version": "1.4.3",
+  "description": "Client-side library for creating dropdowns",
+  "authors": [
+    "Zack Bloom <zackbloom@gmail.com>",
+    "Adam Schwartz <adam.flynn.schwartz@gmail.com>"
+  ],
+  "maintainers": [
+    "Nicholas Hwang <nick.joosung.hwang@gmail.com>"
+  ],
+  "scripts": {
+    "build": "gulp build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/HubSpot/drop.git"
+  },
+  "license": "MIT",
+  "main": "dist/js/drop.js",
+  "devDependencies": {
+    "del": "^1.1.1",
+    "eslint": "^1.7.3",
+    "gulp": "^3.9.0",
+    "gulp-autoprefixer": "^2.3.1",
+    "gulp-babel": "^5.1.0",
+    "gulp-bump": "^0.3.0",
+    "gulp-header": "^1.2.2",
+    "gulp-minify-css": "^1.1.6",
+    "gulp-plumber": "^1.0.1",
+    "gulp-rename": "^1.2.2",
+    "gulp-sass": "^2.0.1",
+    "gulp-uglify": "^1.2.0",
+    "gulp-wrap-umd": "^0.2.1"
+  },
+  "dependencies": {
+    "tether": "^1.1.0"
+  }
+}
