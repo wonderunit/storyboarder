@@ -62,6 +62,7 @@ const init = shouldEnable => {
       cd6: os.cpus().length,
       cd7: os.cpus()[0].speed,
     }, uuid)
+      .catch(_handleError)
   })
 }
 
@@ -74,6 +75,7 @@ const screenView = (screenName) => {
     av: pkg.version,
     ua: ses.getUserAgent(),
   }, uuid)
+    .catch(_handleError)
 }
 
 const event = (category, action, label, value) => {
@@ -91,6 +93,7 @@ const event = (category, action, label, value) => {
   }
 
   analytics.send('event', params, uuid)
+    .catch(_handleError)
 }
 
 const timing = (category, name, ms) => {
@@ -103,6 +106,7 @@ const timing = (category, name, ms) => {
   }
 
   analytics.send('timing', params, uuid)
+    .catch(_handleError)
 }
 
 const exception = (error, url, line) => {
@@ -116,6 +120,7 @@ const exception = (error, url, line) => {
   }
 
   analytics.send('exception', params, uuid)
+    .catch(_handleError)
 }
 
 const ping = () => {
@@ -129,6 +134,15 @@ const ping = () => {
   }
 
   analytics.send('event', params, uuid)
+    .catch(_handleError)
+}
+
+const _handleError = err => {
+  if (err.code === 'ENOTFOUND') {
+    console.error('No network connection to', err.hostname)
+  } else {
+    console.error(err)
+  }
 }
 
 module.exports = {
