@@ -23,6 +23,11 @@ You can run a quick view test using [`budo`](https://github.com/mattdesl/budo) i
 
 `budo` will "Live Reload" changes as you work, in either the main source or the test harness.
 
+To test the built version:
+
+    $ npx electron-builder --dir # build for current platform to dist/
+    $ mocha test/app/index.test.js # run the tests
+
 ## Building a Release
 
     $ npm run dist:mac    # Mac only

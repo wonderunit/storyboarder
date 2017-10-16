@@ -83,7 +83,8 @@
     "electron-builder": "19.26.3",
     "electron-mocha": "4.0.0",
     "mocha": "3.5.0",
-    "mock-fs": "4.4.1"
+    "mock-fs": "4.4.1",
+    "spectron": "3.7.2"
   },
   "dependencies": {
     "ag-psd": "^1.2.0",
