@@ -25,7 +25,7 @@ install:
   - npm install -g npm@5.5.1
 
 build_script:
-  - npx electron-builder --dir
+  - npm run dist:win
 
 test_script:
   - npm test && mocha test/app/index.test.main.js
