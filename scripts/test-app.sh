@@ -1,3 +1,4 @@
 #!/usr/bin/env bash
 npx electron-builder --dir
-mocha test/app/index.test.js
+npm test
+mocha test/app/index.test.main.js
