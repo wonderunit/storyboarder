@@ -1,5 +1,5 @@
 // USAGE
-// NODE_ENV=test mocha test/app/index.test.js
+// NODE_ENV=test mocha test/app/index.test.main.js
 
 const Application = require('spectron').Application
 const assert = require('assert')
