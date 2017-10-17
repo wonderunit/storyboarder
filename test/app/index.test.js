@@ -20,6 +20,16 @@ const getAppArgs = () => {
         path: './dist/mac/Storyboarder.app/Contents/MacOS/Storyboarder'
       }
       break
+    case 'win32':
+      return {
+        path: './dist/win-unpacked/Storyboarder.exe'
+      }
+      break
+    case 'linux':
+      return {
+        path: './dist/linux-unpacked/storyboarder'
+      }
+      break
     default:
       throw new Error('Cannot test on this platform yet.')
   }
