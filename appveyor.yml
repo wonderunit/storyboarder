@@ -1,0 +1,36 @@
+image: Visual Studio 2015
+
+version: "{build}"
+
+skip_tags: true
+clone_folder: c:\projects\storyboarder
+clone_depth: 10
+
+platform:
+  - x64
+  - x86
+
+environment:
+  global:
+    NODE_VERSION: 8.4.0
+
+  matrix:
+  - TASK: test
+
+matrix:
+  fast_finish: true
+
+install:
+  - ps: Install-Product node $env:NODE_VERSION $env:PLATFORM
+  - npm install -g npm@5.5.1
+
+build_script:
+  - npx electron-builder --dir
+
+test_script:
+  - npm test && mocha test/app/index.test.main.js
+
+deploy: off
+
+cache:
+  - '%APPVEYOR_BUILD_FOLDER%\electron'
