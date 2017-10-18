@@ -1133,6 +1133,8 @@ let loadBoardUI = () => {
       tooltips.closeAll()
     })
     StsSidebar.on('select', (img, params, camera) => {
+      if (storyboarderSketchPane.preventIfLocked()) return
+
       let board = boardData.boards[currentBoard]
 
       board.sts = {
@@ -1967,6 +1969,8 @@ let duplicateBoard = async () => {
  *       we should erase ONLY the current layer
  */
 const clearLayers = shouldEraseCurrentLayer => {
+  if (storyboarderSketchPane.preventIfLocked()) return
+
   if (toolbar.state.brush !== 'eraser' && (keytracker('<alt>') || shouldEraseCurrentLayer)) {
     storyboarderSketchPane.clearLayers([storyboarderSketchPane.sketchPane.getCurrentLayerIndex()])
     saveImageFile()
@@ -4655,6 +4659,8 @@ window.addEventListener('keydown', e => {
 
 
 ipcRenderer.on('flipBoard', (e, arg)=> {
+  if (storyboarderSketchPane.preventIfLocked()) return
+
   if (!textInputMode) {
     storyboarderSketchPane.flipLayers(arg)
     sfx.playEffect('metal')

@@ -1,6 +1,6 @@
 const EventEmitter = require('events').EventEmitter
 
-const {ipcRenderer} = require('electron')
+const { ipcRenderer, remote } = require('electron')
 
 
 const SketchPane = require('../sketch-pane')
@@ -165,6 +165,17 @@ class StoryboarderSketchPane extends EventEmitter {
         // allow drawing
         this.setStrategy(DrawingStrategy)
       }
+    }
+  }
+
+  preventIfLocked () {
+    if (this.isLocked) {
+      remote.dialog.showMessageBox({
+        message: 'The current board is linked to a PSD and cannot be changed. To unlink, double-click the board art.',
+      })
+      return true
+    } else {
+      return false
     }
   }
 
@@ -614,8 +625,6 @@ class StoryboarderSketchPane extends EventEmitter {
   }
 
   flipLayers (vertical) {
-    // TODO prevent if locked
-
     this.emit('addToUndoStack', this.visibleLayersIndices)
     // HACK operates on all layers
     for (var i = 0; i < this.sketchPane.layers.length; ++i) {
