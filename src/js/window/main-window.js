@@ -1882,7 +1882,7 @@ let duplicateBoard = async () => {
 
   let insertAt = currentBoard + 1
   let boardSrc = boardData.boards[currentBoard]
-  let boardDst = migrateBoardData([util.stringifyClone(boardSrc)], insertAt)[0]
+  let boardDst = migrateBoards([util.stringifyClone(boardSrc)], insertAt)[0]
 
   // Per Taino's request, we are not duplicating some metadata
   boardDst.dialogue = ''
@@ -3762,7 +3762,7 @@ let save = () => {
  *               with clipboard image data inserted as reference layer
  *
  */
-let pasteBoards = () => {
+let pasteBoards = async () => {
   if (textInputMode) return
 
   // save the current image to disk
@@ -3832,27 +3832,60 @@ let pasteBoards = () => {
 
     insertAt = insertAt + 1 // actual splice point
 
-    migrateBoardData(newBoards, insertAt)
+    // make a copy
+    let oldBoards = util.stringifyClone(newBoards)
+    // replace newBoards with a copy, migrated
+    newBoards = migrateBoards(newBoards, insertAt)
 
+    //
+    //
     // insert boards from clipboard data
-    Promise.resolve().then(() => {
-      // store the "before" state
+    //
+    // store the "before" state
+    try {
       storeUndoStateForScene(true)
 
-      return insertBoards(boardData.boards, insertAt, newBoards, { layerDataByBoardIndex })
-    }).then(() => {
+
+
+      // copy linked boards
+      newBoards.forEach((dst, n) => {
+        let src = oldBoards[n]
+        if (src.link) {
+
+          let from  = path.join(boardPath, 'images', src.link)
+          let to    = path.join(boardPath, 'images', dst.link)
+
+          if (fs.existsSync(from)) {
+            console.log('copying linked PSD', from, 'to', to)
+            fs.writeFileSync(to, fs.readFileSync(from))
+          } else {
+            notifications.notify({
+              message: `[WARNING]. Could not copy linked file ${src.link}`,
+              timing: 8
+            })
+          }
+
+        }
+      })
+
+
+
+      await insertBoards(boardData.boards, insertAt, newBoards, { layerDataByBoardIndex })
+
       markBoardFileDirty()
       storeUndoStateForScene()
 
-      return renderThumbnailDrawer()
-    }).then(() => {
+      renderThumbnailDrawer()
+
+
       console.log('paste complete')
       sfx.positive()
       return gotoBoard(insertAt)
-    }).catch(err => {
-      notifications.notify({ message: "Whoops. Could not paste boards. Got an error for some reason.", timing: 8 })
+
+    } catch (err) {
+      notifications.notify({ message: `Whoops. Could not paste boards. ${err.message}`, timing: 8 })
       console.log(err)
-    })
+    }
 
   } else {
     notifications.notify({ message: "There's nothing in the clipboard that I can paste. Are you sure you copied it right?", timing: 8 })
@@ -4017,10 +4050,11 @@ const importFromWorksheet = async (imageArray) => {
   }
 }
 
-// NOTE: migrateBoardData mutates the object passed to it
-const migrateBoardData = (newBoards, insertAt = 0) => {
+const migrateBoards = (oldBoards, insertAt = 0) => {
+  let newBoards = []
+
   // assign a new uid to the board, regardless of source
-  newBoards = newBoards.map(boardModel.assignUid)
+  newBoards = oldBoards.map(boardModel.assignUid)
 
   // set some basic data for the new board
   newBoards = newBoards.map(boardModel.setup)
@@ -4028,7 +4062,7 @@ const migrateBoardData = (newBoards, insertAt = 0) => {
   // update board layers filenames based on index
   newBoards = newBoards.map((board, index) =>
     boardModel.updateUrlsFromIndex(board, insertAt + index))
-  
+
   // update link
   newBoards = newBoards.map((board, index) => {
     if (board.link) {
