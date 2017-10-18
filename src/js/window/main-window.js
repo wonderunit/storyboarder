@@ -940,13 +940,13 @@ let loadBoardUI = () => {
     if (toolbar.state.brush === 'light-pencil' && storyboarderSketchPane.sketchPane.getLayerOpacity() === 0) {
       layersEditor.setReferenceOpacity(exporterCommon.DEFAULT_REFERENCE_LAYER_OPACITY)
     }
+  })
 
+  // ask if its ok to draw
+  storyboarderSketchPane.on('requestUnlock', () => {
     // if artist is drawing on a linked layer...
     let board = boardData.boards[currentBoard]
     if (board.link) {
-      // ...cancel the drawing
-      storyboarderSketchPane.denyPointerDown()
-
       // ...prompt them, to see if they really want to remove the link
       const choice = remote.dialog.showMessageBox({
         type: 'question',
@@ -984,6 +984,8 @@ let loadBoardUI = () => {
           watcher.unwatch(path.join(boardPath, 'images', board.link))
           delete board.link
           markBoardFileDirty()
+
+          storyboarderSketchPane.setIsLocked(false)
         }
       } else {
         // Cancel
@@ -1513,6 +1515,9 @@ let openInEditor = async () => {
     // assume selection always includes currentBoard, 
     // so make sure we've saved its contents to the filesystem
     await saveImageFile()
+    // and indicate that it is now locked
+    storyboarderSketchPane.setIsLocked(true)
+
 
     for (let selection of selections) {
       console.log('\tselection:', selection)
@@ -2388,6 +2393,8 @@ let updateSketchPaneBoard = () => {
           storyboarderSketchPane.sketchPane.clearLayer(index)
         }
       }
+
+      storyboarderSketchPane.setIsLocked( !util.isUndefined(board.link) )
 
       // load opacity from data, if data exists
       let referenceOpacity =  board.layers && 

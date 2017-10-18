@@ -30,7 +30,7 @@ class StoryboarderSketchPane extends EventEmitter {
     this.prevTimeStamp = 0
     this.frameLengthArray = []
 
-    this.cancelTransform() // set Drawing Strategy
+    this.cancelTransform()
 
     this.containerPadding = 100
 
@@ -47,6 +47,7 @@ class StoryboarderSketchPane extends EventEmitter {
     this.stopMultiLayerOperation = this.stopMultiLayerOperation.bind(this)
     this.onKeyDown = this.onKeyDown.bind(this)
     this.onKeyUp = this.onKeyUp.bind(this)
+    this.onDblClick = this.onDblClick.bind(this)
 
     this.el = el
     this.canvasSize = canvasSize
@@ -63,6 +64,8 @@ class StoryboarderSketchPane extends EventEmitter {
 
     this.prevTool = null
     this.toolbar = null
+
+    this.isLocked = false
 
     // container
     this.containerEl = document.createElement('div')
@@ -107,6 +110,8 @@ class StoryboarderSketchPane extends EventEmitter {
     this.sketchPane.setToolStabilizeLevel(stabilizeLevel)
     this.sketchPane.setToolStabilizeWeight(0.2)
 
+    this.el.addEventListener('dblclick', this.onDblClick)
+
     this.el.addEventListener('pointerdown', this.canvasPointerDown)
 
     this.sketchPaneDOMElement.addEventListener('pointerover', this.canvasPointerOver)
@@ -127,11 +132,50 @@ class StoryboarderSketchPane extends EventEmitter {
 
     this.onFrame = this.onFrame.bind(this)
     requestAnimationFrame(this.onFrame)
+
+    this.setStrategy(LockedStrategy)
+  }
+
+  setStrategy (Strategy) {
+    if (this.strategy instanceof Strategy) return
+
+    if (this.strategy instanceof LockedStrategy) {
+      // can't unlock if locked
+      if (this.isLocked) {
+        return
+      }
+    }
+
+    if (this.strategy) this.strategy.dispose()
+
+    this.strategy = new Strategy(this)
+  }
+
+  setIsLocked (shouldLock) {
+    console.log('storyboarderSketchPane#setIsLocked', shouldLock)
+
+    if (shouldLock) {
+      this.isLocked = true
+      this.setStrategy(LockedStrategy)
+    } else {
+      this.isLocked = false
+
+      // if it's currently locked
+      if (this.strategy instanceof LockedStrategy) {
+        // allow drawing
+        this.setStrategy(DrawingStrategy)
+      }
+    }
   }
 
   renderCursor () {
     if (this.isCursorOnDrawingArea) {
       switch (this.cursorType) {
+        case 'not-allowed':
+          document.querySelector('#storyboarder-sketch-pane .container').style.cursor = 'not-allowed'
+          if (this.brushPointerContainer) this.brushPointerContainer.style.visibility = 'hidden'
+          break
+
         case 'move':
           document.querySelector('#storyboarder-sketch-pane .container').style.cursor = 'move'
           if (this.brushPointerContainer) this.brushPointerContainer.style.visibility = 'hidden'
@@ -227,17 +271,7 @@ class StoryboarderSketchPane extends EventEmitter {
   }
 
   canvasPointerDown (event) {
-    // indicate that we want to draw
-    this.isPointerDown = true
-
-    // ask the system if its ok to draw
-    // system will call .denyPointerDown() if it wants us to stop
-    this.emit('requestPointerDown')
-
-    // if its still ok to draw, continue
-    if (this.isPointerDown) {
-      this.strategy.canvasPointerDown(event)
-    }
+    this.strategy.canvasPointerDown(event)
   }
 
   canvasPointerMove (e) {
@@ -256,7 +290,6 @@ class StoryboarderSketchPane extends EventEmitter {
   }
 
   canvasPointerUp (e) {
-    this.isPointerDown = false
     this.strategy.canvasPointerUp(event)
 
     if (this.frameLengthArray.length > 20) {
@@ -292,6 +325,12 @@ class StoryboarderSketchPane extends EventEmitter {
 
     this.isCursorOnDrawingArea = false
     this.renderCursor()
+  }
+
+  onDblClick (event) {
+    if (this.isLocked) {
+      this.emit('requestUnlock')
+    }
   }
 
   onFrame (timestep) {
@@ -575,6 +614,8 @@ class StoryboarderSketchPane extends EventEmitter {
   }
 
   flipLayers (vertical) {
+    // TODO prevent if locked
+
     this.emit('addToUndoStack', this.visibleLayersIndices)
     // HACK operates on all layers
     for (var i = 0; i < this.sketchPane.layers.length; ++i) {
@@ -685,32 +726,19 @@ class StoryboarderSketchPane extends EventEmitter {
   }
 
   moveContents () {
-    // are we already moving?
-    if (this.strategy instanceof MovingStrategy) return
-
-    if (this.strategy) this.strategy.dispose()
-    this.strategy = new MovingStrategy(this)
+    this.setStrategy(MovingStrategy)
   }
   scaleContents () {
-    // are we already scaling?
-    if (this.strategy instanceof ScalingStrategy) return
-
-    if (this.strategy) this.strategy.dispose()
-    this.strategy = new ScalingStrategy(this)
+    this.setStrategy(ScalingStrategy)
   }
   cancelTransform () {
-    // are we already drawing?
     if (this.strategy instanceof DrawingStrategy) return
 
-    if (this.strategy) this.strategy.dispose()
-    this.strategy = new DrawingStrategy(this)
+    this.setStrategy(DrawingStrategy)
+
     if (this.toolbar) {
       this.setBrushTool(this.toolbar.getBrushOptions().kind, this.toolbar.getBrushOptions())
     }
-  }
-  // called only when attempting to draw over a linked board
-  denyPointerDown () {
-    this.isPointerDown = false
   }
   
   getCanvasImageSources () {
@@ -740,6 +768,8 @@ class DrawingStrategy {
   }
 
   canvasPointerDown (e) {
+    this.container.isPointerDown = true
+
     // via https://developer.mozilla.org/en-US/docs/Web/API/Pointer_events#Determining_button_states
     if (e.buttons == 32 || e.buttons == 2) {
       this.container.isEraseButtonActive = true
@@ -767,6 +797,8 @@ class DrawingStrategy {
   }
 
   canvasPointerUp (e) {
+    this.container.isPointerDown = false
+
     // via https://developer.mozilla.org/en-US/docs/Web/API/Pointer_events#Determining_button_states
     if (e.buttons == 32 || e.buttons == 2) {
       this.container.isEraseButtonActive = true
@@ -818,6 +850,8 @@ class DrawingStrategy {
   }
   
   dispose () {
+    this.isPointerDown = false
+
     this.container.stopMultiLayerOperation()
     this.container.isMultiLayerOperation = false // ensure we reset the var
   }
@@ -1106,6 +1140,36 @@ class ScalingStrategy {
 
     this.container.updatePointer()
 
+    this.container.cursorType = 'drawing'
+    this.container.renderCursor()
+  }
+}
+
+class LockedStrategy {
+  constructor (container) {
+    this.container = container
+
+    this.container.cursorType = 'not-allowed'
+    this.container.renderCursor()
+  }
+  
+  canvasPointerDown (e) {
+    this.isPointerDown = false
+  }
+
+  canvasPointerUp (e) {
+  }
+
+  renderMoveEvent (moveEvent) {
+  }
+
+  startMultiLayerOperation () {
+  }
+
+  applyMultiLayerOperationByLayerIndex (index) {
+  }
+
+  dispose () {
     this.container.cursorType = 'drawing'
     this.container.renderCursor()
   }
