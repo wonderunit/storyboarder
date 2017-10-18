@@ -1882,7 +1882,7 @@ let duplicateBoard = async () => {
 
   let insertAt = currentBoard + 1
   let boardSrc = boardData.boards[currentBoard]
-  let boardDst = migrateBoardData([util.stringifyClone(boardSrc)], insertAt)[0]
+  let boardDst = migrateBoards([util.stringifyClone(boardSrc)], insertAt)[0]
 
   // Per Taino's request, we are not duplicating some metadata
   boardDst.dialogue = ''
@@ -3832,7 +3832,10 @@ let pasteBoards = () => {
 
     insertAt = insertAt + 1 // actual splice point
 
-    migrateBoardData(newBoards, insertAt)
+    // make a copy
+    let oldBoards = util.stringifyClone(newBoards)
+    // replace newBoards with a copy, migrated
+    newBoards = migrateBoards(newBoards, insertAt)
 
     // insert boards from clipboard data
     Promise.resolve().then(() => {
@@ -4017,10 +4020,11 @@ const importFromWorksheet = async (imageArray) => {
   }
 }
 
-// NOTE: migrateBoardData mutates the object passed to it
-const migrateBoardData = (newBoards, insertAt = 0) => {
+const migrateBoards = (oldBoards, insertAt = 0) => {
+  let newBoards = []
+
   // assign a new uid to the board, regardless of source
-  newBoards = newBoards.map(boardModel.assignUid)
+  newBoards = oldBoards.map(boardModel.assignUid)
 
   // set some basic data for the new board
   newBoards = newBoards.map(boardModel.setup)
@@ -4028,7 +4032,7 @@ const migrateBoardData = (newBoards, insertAt = 0) => {
   // update board layers filenames based on index
   newBoards = newBoards.map((board, index) =>
     boardModel.updateUrlsFromIndex(board, insertAt + index))
-  
+
   // update link
   newBoards = newBoards.map((board, index) => {
     if (board.link) {
