@@ -3762,7 +3762,7 @@ let save = () => {
  *               with clipboard image data inserted as reference layer
  *
  */
-let pasteBoards = () => {
+let pasteBoards = async () => {
   if (textInputMode) return
 
   // save the current image to disk
@@ -3837,25 +3837,55 @@ let pasteBoards = () => {
     // replace newBoards with a copy, migrated
     newBoards = migrateBoards(newBoards, insertAt)
 
+    //
+    //
     // insert boards from clipboard data
-    Promise.resolve().then(() => {
-      // store the "before" state
+    //
+    // store the "before" state
+    try {
       storeUndoStateForScene(true)
 
-      return insertBoards(boardData.boards, insertAt, newBoards, { layerDataByBoardIndex })
-    }).then(() => {
+
+
+      // copy linked boards
+      newBoards.forEach((dst, n) => {
+        let src = oldBoards[n]
+        if (src.link) {
+
+          let from  = path.join(boardPath, 'images', src.link)
+          let to    = path.join(boardPath, 'images', dst.link)
+
+          if (fs.existsSync(from)) {
+            console.log('copying linked PSD', from, 'to', to)
+            fs.writeFileSync(to, fs.readFileSync(from))
+          } else {
+            notifications.notify({
+              message: `[WARNING]. Could not copy linked file ${src.link}`,
+              timing: 8
+            })
+          }
+
+        }
+      })
+
+
+
+      await insertBoards(boardData.boards, insertAt, newBoards, { layerDataByBoardIndex })
+
       markBoardFileDirty()
       storeUndoStateForScene()
 
-      return renderThumbnailDrawer()
-    }).then(() => {
+      renderThumbnailDrawer()
+
+
       console.log('paste complete')
       sfx.positive()
       return gotoBoard(insertAt)
-    }).catch(err => {
-      notifications.notify({ message: "Whoops. Could not paste boards. Got an error for some reason.", timing: 8 })
+
+    } catch (err) {
+      notifications.notify({ message: `Whoops. Could not paste boards. ${err.message}`, timing: 8 })
       console.log(err)
-    })
+    }
 
   } else {
     notifications.notify({ message: "There's nothing in the clipboard that I can paste. Are you sure you copied it right?", timing: 8 })
