@@ -778,6 +778,8 @@ let loadBoardUI = () => {
 
 
   toolbar.on('undo', () => {
+    if (storyboarderSketchPane.preventIfLocked()) return
+
     if (undoStack.getCanUndo()) {
       undoStack.undo()
       sfx.rollover()
@@ -788,6 +790,8 @@ let loadBoardUI = () => {
     sfx.playEffect('metal')
   })
   toolbar.on('redo', () => {
+    if (storyboarderSketchPane.preventIfLocked()) return
+
     if (undoStack.getCanRedo()) {
       undoStack.redo()
       sfx.rollover()
@@ -3185,6 +3189,8 @@ window.onkeydown = (e)=> {
       // Z
       case 90:
        if (e.metaKey || e.ctrlKey) {
+         if (storyboarderSketchPane.preventIfLocked()) return
+
           if (e.shiftKey) {
             if (undoStack.getCanRedo()) {
               undoStack.redo()
@@ -3487,6 +3493,9 @@ ipcRenderer.on('nextScene', (event, args)=>{
 // tools
 
 ipcRenderer.on('undo', (e, arg) => {
+  console.log('ipcRenderer undo')
+  if (storyboarderSketchPane.preventIfLocked()) return
+
   if (!textInputMode) {
     if (undoStack.getCanUndo()) {
       undoStack.undo()
@@ -3499,6 +3508,9 @@ ipcRenderer.on('undo', (e, arg) => {
 })
 
 ipcRenderer.on('redo', (e, arg) => {
+  console.log('ipcRenderer redo')
+  if (storyboarderSketchPane.preventIfLocked()) return
+
   if (!textInputMode) {
     if (undoStack.getCanRedo()) {
       undoStack.redo()
