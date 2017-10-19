@@ -152,8 +152,6 @@ class StoryboarderSketchPane extends EventEmitter {
   }
 
   setIsLocked (shouldLock) {
-    console.log('storyboarderSketchPane#setIsLocked', shouldLock)
-
     if (shouldLock) {
       this.isLocked = true
       this.setStrategy(LockedStrategy)
