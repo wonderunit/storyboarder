@@ -706,7 +706,12 @@ let loadBoardUI = () => {
       if (!util.isUndefined(index)) {
         console.log('user requests move operation:', selections, 'to insert after', index)
         saveImageFile().then(() => {
-          moveSelectedBoards(index)
+          let didChange = moveSelectedBoards(index)
+
+          if (didChange) {
+            notifications.notify({message: 'Reordered!', timing: 5})
+          }
+
           renderThumbnailDrawer()
           gotoBoard(currentBoard, true)
         })
@@ -4095,14 +4100,13 @@ const migrateBoards = (oldBoards, insertAt = 0) => {
   return newBoards
 }
 
-let moveSelectedBoards = (position) => {
-  console.log('moveSelectedBoards(' + position + ')')
-  storeUndoStateForScene(true)
+let moveSelectedBoards = position => {
+  let didChange = false
+
+  // console.log('moveSelectedBoards position:', position)
 
   let numRemoved = selections.size
   let firstSelection = [...selections].sort(util.compareNumbers)[0]
-
-  let movedBoards = boardData.boards.splice(firstSelection, numRemoved)
 
   // if moving forward in the list
   // account for position change due to removed elements
@@ -4110,25 +4114,34 @@ let moveSelectedBoards = (position) => {
     position = position - numRemoved
   }
   
-  console.log('move starting at board', firstSelection, 
-              ', moving', numRemoved, 
-              'boards to index', position)
+  // console.log('move starting at board', firstSelection, 
+  //             ', moving', numRemoved, 
+  //             'boards to index', position)
 
-  boardData.boards.splice(position, 0, ...movedBoards)
+  if (firstSelection !== position) {
+    didChange = true
 
-  // how far from the start of the selection was the current board?
-  let offset = currentBoard - firstSelection
+    storeUndoStateForScene(true)
 
-  // what are the new bounds of our selection?
-  let b = Math.min(position + movedBoards.length - 1, boardData.boards.length - 1)
-  let a = b - (selections.size - 1)
-  // update selection
-  selections = new Set(util.range(a, b))
-  // update currentBoard
-  currentBoard = a + offset
+    let movedBoards = boardData.boards.splice(firstSelection, numRemoved)
+    boardData.boards.splice(position, 0, ...movedBoards)
 
-  markBoardFileDirty()
-  storeUndoStateForScene()
+    // how far from the start of the selection was the current board?
+    let offset = currentBoard - firstSelection
+
+    // what are the new bounds of our selection?
+    let b = Math.min(position + movedBoards.length - 1, boardData.boards.length - 1)
+    let a = b - (selections.size - 1)
+    // update selection
+    selections = new Set(util.range(a, b))
+    // update currentBoard
+    currentBoard = a + offset
+
+    markBoardFileDirty()
+    storeUndoStateForScene()
+  }
+
+  return didChange
 }
 
 let reorderBoardsLeft = () => {
@@ -4180,7 +4193,6 @@ let disableEditMode = () => {
     thumbnailCursor.visible = false
     renderThumbnailCursor()
     renderThumbnailDrawerSelections()
-    notifications.notify({message: 'Reordered!', timing: 5})
   }
 }
 
