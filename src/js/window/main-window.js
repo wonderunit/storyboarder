@@ -3493,7 +3493,6 @@ ipcRenderer.on('nextScene', (event, args)=>{
 // tools
 
 ipcRenderer.on('undo', (e, arg) => {
-  console.log('ipcRenderer undo')
   if (storyboarderSketchPane.preventIfLocked()) return
 
   if (!textInputMode) {
@@ -3508,7 +3507,6 @@ ipcRenderer.on('undo', (e, arg) => {
 })
 
 ipcRenderer.on('redo', (e, arg) => {
-  console.log('ipcRenderer redo')
   if (storyboarderSketchPane.preventIfLocked()) return
 
   if (!textInputMode) {
