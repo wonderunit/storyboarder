@@ -63,18 +63,24 @@ class LayersEditor extends EventEmitter {
   // }
 
   clearLayer (index) {
+    if (this.storyboarderSketchPane.preventIfLocked()) return
+
     event.preventDefault()
     this.storyboarderSketchPane.clearLayers([index])
   }
 
   // merge `main` and `reference` and draw to `reference`
   mergeDown () {
+    if (this.storyboarderSketchPane.preventIfLocked()) return
+
     event.preventDefault()
     this.storyboarderSketchPane.mergeLayers([0, 1], 0) // HACK hardcoded
   }
 
   // merge `main` and `reference` and draw to `main`
   mergeUp () {
+    if (this.storyboarderSketchPane.preventIfLocked()) return
+
     this.storyboarderSketchPane.mergeLayers([0, 1], 1) // HACK hardcoded
   }
 

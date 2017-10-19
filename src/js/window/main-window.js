@@ -778,6 +778,8 @@ let loadBoardUI = () => {
 
 
   toolbar.on('undo', () => {
+    if (storyboarderSketchPane.preventIfLocked()) return
+
     if (undoStack.getCanUndo()) {
       undoStack.undo()
       sfx.rollover()
@@ -788,6 +790,8 @@ let loadBoardUI = () => {
     sfx.playEffect('metal')
   })
   toolbar.on('redo', () => {
+    if (storyboarderSketchPane.preventIfLocked()) return
+
     if (undoStack.getCanRedo()) {
       undoStack.redo()
       sfx.rollover()
@@ -940,13 +944,13 @@ let loadBoardUI = () => {
     if (toolbar.state.brush === 'light-pencil' && storyboarderSketchPane.sketchPane.getLayerOpacity() === 0) {
       layersEditor.setReferenceOpacity(exporterCommon.DEFAULT_REFERENCE_LAYER_OPACITY)
     }
+  })
 
+  // ask if its ok to draw
+  storyboarderSketchPane.on('requestUnlock', () => {
     // if artist is drawing on a linked layer...
     let board = boardData.boards[currentBoard]
     if (board.link) {
-      // ...cancel the drawing
-      storyboarderSketchPane.denyPointerDown()
-
       // ...prompt them, to see if they really want to remove the link
       const choice = remote.dialog.showMessageBox({
         type: 'question',
@@ -984,6 +988,8 @@ let loadBoardUI = () => {
           watcher.unwatch(path.join(boardPath, 'images', board.link))
           delete board.link
           markBoardFileDirty()
+
+          storyboarderSketchPane.setIsLocked(false)
         }
       } else {
         // Cancel
@@ -1131,6 +1137,8 @@ let loadBoardUI = () => {
       tooltips.closeAll()
     })
     StsSidebar.on('select', (img, params, camera) => {
+      if (storyboarderSketchPane.preventIfLocked()) return
+
       let board = boardData.boards[currentBoard]
 
       board.sts = {
@@ -1513,6 +1521,9 @@ let openInEditor = async () => {
     // assume selection always includes currentBoard, 
     // so make sure we've saved its contents to the filesystem
     await saveImageFile()
+    // and indicate that it is now locked
+    storyboarderSketchPane.setIsLocked(true)
+
 
     for (let selection of selections) {
       console.log('\tselection:', selection)
@@ -1962,6 +1973,8 @@ let duplicateBoard = async () => {
  *       we should erase ONLY the current layer
  */
 const clearLayers = shouldEraseCurrentLayer => {
+  if (storyboarderSketchPane.preventIfLocked()) return
+
   if (toolbar.state.brush !== 'eraser' && (keytracker('<alt>') || shouldEraseCurrentLayer)) {
     storyboarderSketchPane.clearLayers([storyboarderSketchPane.sketchPane.getCurrentLayerIndex()])
     saveImageFile()
@@ -2388,6 +2401,8 @@ let updateSketchPaneBoard = () => {
           storyboarderSketchPane.sketchPane.clearLayer(index)
         }
       }
+
+      storyboarderSketchPane.setIsLocked( !util.isUndefined(board.link) )
 
       // load opacity from data, if data exists
       let referenceOpacity =  board.layers && 
@@ -3174,6 +3189,8 @@ window.onkeydown = (e)=> {
       // Z
       case 90:
        if (e.metaKey || e.ctrlKey) {
+         if (storyboarderSketchPane.preventIfLocked()) return
+
           if (e.shiftKey) {
             if (undoStack.getCanRedo()) {
               undoStack.redo()
@@ -3476,6 +3493,8 @@ ipcRenderer.on('nextScene', (event, args)=>{
 // tools
 
 ipcRenderer.on('undo', (e, arg) => {
+  if (storyboarderSketchPane.preventIfLocked()) return
+
   if (!textInputMode) {
     if (undoStack.getCanUndo()) {
       undoStack.undo()
@@ -3488,6 +3507,8 @@ ipcRenderer.on('undo', (e, arg) => {
 })
 
 ipcRenderer.on('redo', (e, arg) => {
+  if (storyboarderSketchPane.preventIfLocked()) return
+
   if (!textInputMode) {
     if (undoStack.getCanRedo()) {
       undoStack.redo()
@@ -4648,6 +4669,8 @@ window.addEventListener('keydown', e => {
 
 
 ipcRenderer.on('flipBoard', (e, arg)=> {
+  if (storyboarderSketchPane.preventIfLocked()) return
+
   if (!textInputMode) {
     storyboarderSketchPane.flipLayers(arg)
     sfx.playEffect('metal')
