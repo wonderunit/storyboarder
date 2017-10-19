@@ -56,10 +56,11 @@ let getBase64TypeFromPhotoshopFilePath = (filepath, options) => {
     console.error(exception)
     return null
   }
-  
+
   if(!psd || !psd.children) {
     return;
   }
+
   let mainCanvas = options.mainCanvas 
   if(!mainCanvas) {
     mainCanvas = document.createElement('canvas')
@@ -88,32 +89,44 @@ let getBase64TypeFromPhotoshopFilePath = (filepath, options) => {
   referenceContext.clearRect(0, 0, referenceCanvas.width, referenceCanvas.height)
 
   let numChannelValues = (1 << psd.bitsPerChannel) - 1
-  let targetContext
-  for(let layer of psd.children) {
-    if(!layer.canvas) {
-      continue;
-    }
-    if(layer.hidden) {
-      continue;
-    }
-    if(layer.name.indexOf('Background') >= 0) {
-      continue
-    }
-    let targetContext
-    switch(layer.name) {
+
+  // return target based on layer name (used for root)
+  let targetFromLayerName = layer => {
+    switch (layer.name) {
       case "notes":
-        targetContext = notesContext
+        return notesContext
         break
       case "reference":
-        targetContext = referenceContext
+        return referenceContext
         break
       default:
-        targetContext = mainContext
+        return mainContext
         break
     }
-    targetContext.globalAlpha = layer.opacity / numChannelValues
-    targetContext.drawImage(layer.canvas, layer.left, layer.top)
   }
+  // return target which is always Storyboarder’s 'main' layer (used for all children, e.g.: in folders)
+  let targetAlwaysMain = () => mainContext
+
+  let addLayersRecursively = (children, getTargetContext = targetFromLayerName) => {
+    for (let layer of children) {
+      if (
+        !layer.hidden &&                          // it's not hidden
+        layer.canvas &&                           // it has a canvas
+        layer.name.indexOf('Background') === -1   // it's not named as the Background layer
+      ) {
+        let targetContext = getTargetContext(layer)
+        targetContext.globalAlpha = layer.opacity / numChannelValues
+        targetContext.drawImage(layer.canvas, layer.left, layer.top)
+      }
+
+      if (layer.children) {
+        addLayersRecursively(layer.children, targetAlwaysMain)
+      }        
+    }
+  }
+  addLayersRecursively(psd.children)
+
+
   return {
     main: mainCanvas.toDataURL(),
     notes: notesCanvas.toDataURL(),
