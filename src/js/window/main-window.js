@@ -2012,8 +2012,6 @@ let goNextBoard = async (direction, shouldPreserveSelections = false) => {
   await gotoBoard(currentBoard, shouldPreserveSelections)
 }
 
-let animatedScrollingTimer = +new Date()
-
 let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
   if(isRecording && isRecordingStarted) {
     // make sure we capture the last frame
@@ -2040,38 +2038,43 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
       item.classList.remove('active')
     }
 
-    if (document.querySelector("[data-thumbnail='" + currentBoard + "']")) {
-      document.querySelector("[data-thumbnail='" + currentBoard + "']").classList.add('active')
+    let thumbDiv = document.querySelector(`[data-thumbnail='${currentBoard}']`)
+    if (thumbDiv) {
+      thumbDiv.classList.add('active')
+      thumbDiv.scrollIntoView()
 
-      let thumbDiv = document.querySelector("[data-thumbnail='" + currentBoard + "']")
+      let thumbL = thumbDiv.offsetLeft
+      let thumbR = thumbDiv.offsetLeft + thumbDiv.offsetWidth
+
       let containerDiv = document.querySelector('#thumbnail-container')
+      let containerL = containerDiv.scrollLeft
+      let containerR = containerDiv.scrollLeft + containerDiv.offsetWidth
 
-      if ((thumbDiv.offsetLeft+thumbDiv.offsetWidth+200) > (containerDiv.scrollLeft + containerDiv.offsetWidth)) {
-        if (((+new Date())-animatedScrollingTimer) > 2000) {
-          containerDiv.scrollLeft = thumbDiv.offsetLeft - 300
-          animatedScrollingTimer = +new Date()
-        }
-
+      if (thumbR > containerR) {
+        // if right side of thumbnail is beyond the right edge of the visible container
+        // scroll the visible container
+        // to reveal up to the right edge of the thumbnail
+        containerDiv.scrollLeft = (thumbL - containerDiv.offsetWidth) + thumbDiv.offsetWidth
+      } else if (containerL > thumbL) {
+        // if left side of thumbnail is beyond the left edge of the visible container
+        // scroll the visible container
+        // to reveal up to the left edge of the thumbnail
+        containerDiv.scrollLeft = thumbL
       }
-
-      if ((thumbDiv.offsetLeft-200) < (containerDiv.scrollLeft)) {
-        if (((+new Date())-animatedScrollingTimer) > 2000) {
-          containerDiv.scrollLeft = thumbDiv.offsetLeft - containerDiv.offsetWidth + 300
-          animatedScrollingTimer = +new Date()
-        }
-      }
-
-
-      // console.log()
-      // console.log(.scrollLeft)
-      // console.log(document.querySelector('#thumbnail-container').offsetWidth)
-
-
-      //document.querySelector('#thumbnail-container').scrollLeft = (document.querySelector("[data-thumbnail='" + currentBoard + "']").offsetLeft)-200
     } else {
-      setTimeout((currentBoard)=>{
-        document.querySelector("[data-thumbnail='" + currentBoard + "']").classList.add('active')
-      },10,currentBoard)
+      //
+      // TODO when would this happen?
+      //
+      // wait for render, then update
+      setTimeout(
+        n => {
+          let newThumb = document.querySelector(`[data-thumbnail='${n}']`)
+          newThumb.classList.add('active')
+          newThumb.scrollIntoView()
+        },
+        10,
+        currentBoard
+      )
     }
 
     renderMetaData()
@@ -3270,7 +3273,7 @@ let disableDragMode = () => {
   clearTimeout(periodicDragUpdateTimer)
   dragMode = false
   dragTarget.style.overflow = 'scroll'
-  dragTarget.style.scrollBehavior = 'smooth'
+  // dragTarget.style.scrollBehavior = 'smooth'
 }
 
 ///////////////////////////////////////////////////////////////
