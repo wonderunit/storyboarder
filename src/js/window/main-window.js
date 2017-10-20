@@ -1011,8 +1011,10 @@ let loadBoardUI = () => {
       let node = Number(event.target.dataset.node)
       if (!util.isUndefined(node) && !isNaN(node)) {
         if (currentBoard !== node) {
-          currentBoard = node
-          gotoBoard(currentBoard)
+          saveImageFile().then(() => {
+            currentBoard = node
+            gotoBoard(currentBoard)
+          })
         }
       }
     }
@@ -2746,9 +2748,11 @@ let renderTimeline = () => {
 
   let boardNodes = document.querySelectorAll('#timeline #movie-timeline-content .t-scene')
   for (var board of boardNodes) {
-    board.addEventListener('pointerdown', (e)=>{
-      currentBoard = Number(e.target.dataset.node)
-      gotoBoard(currentBoard)
+    board.addEventListener('pointerdown', (e) => {
+      saveImageFile().then(() => {
+        currentBoard = Number(e.target.dataset.node)
+        gotoBoard(currentBoard)
+      })
     }, true, true)
   }
 
