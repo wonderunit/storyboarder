@@ -2042,6 +2042,25 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
     if (thumbDiv) {
       thumbDiv.classList.add('active')
       thumbDiv.scrollIntoView()
+
+      let thumbL = thumbDiv.offsetLeft
+      let thumbR = thumbDiv.offsetLeft + thumbDiv.offsetWidth
+
+      let containerDiv = document.querySelector('#thumbnail-container')
+      let containerL = containerDiv.scrollLeft
+      let containerR = containerDiv.scrollLeft + containerDiv.offsetWidth
+
+      if (thumbR > containerR) {
+        // if right side of thumbnail is beyond the right edge of the visible container
+        // scroll the visible container
+        // to reveal up to the right edge of the thumbnail
+        containerDiv.scrollLeft = (thumbL - containerDiv.offsetWidth) + thumbDiv.offsetWidth
+      } else if (containerL > thumbL) {
+        // if left side of thumbnail is beyond the left edge of the visible container
+        // scroll the visible container
+        // to reveal up to the left edge of the thumbnail
+        containerDiv.scrollLeft = thumbL
+      }
     } else {
       //
       // TODO when would this happen?
