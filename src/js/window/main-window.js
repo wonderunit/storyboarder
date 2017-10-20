@@ -2705,16 +2705,16 @@ let renderTimeline = () => {
   let markerLeft = getMarkerEl() ? getMarkerEl().style.left : '0px'
 
   let html = []
+
   html.push('<div class="marker-holder"><div class="marker"></div></div>')
-  var i = 0
-  for (var board of boardData.boards ) {
-    if (board.duration) {
-      html.push(`<div style="flex:${board.duration};" data-node="${i}" class="t-scene"></div>`)
-    } else {
-      html.push(`<div style="flex: 2000;" data-node="${i}" class="t-scene"></div>`)
-    }
-    i++
-  }
+
+  boardData.boards.forEach((board, i) => {
+    let duration = util.isUndefined(board.duration) ? 2000 : board.duration
+    html.push(
+      `<div style="flex: ${duration}" data-node="${i}" class="t-scene"></div>`
+    )
+  })
+
   document.querySelector('#timeline #movie-timeline-content').innerHTML = html.join('')
 
   let boardNodes = document.querySelectorAll('#timeline #movie-timeline-content .t-scene')
