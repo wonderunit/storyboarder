@@ -3270,7 +3270,7 @@ let disableDragMode = () => {
   clearTimeout(periodicDragUpdateTimer)
   dragMode = false
   dragTarget.style.overflow = 'scroll'
-  dragTarget.style.scrollBehavior = 'smooth'
+  // dragTarget.style.scrollBehavior = 'smooth'
 }
 
 ///////////////////////////////////////////////////////////////

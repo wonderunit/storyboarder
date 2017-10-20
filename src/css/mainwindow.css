@@ -170,7 +170,7 @@ body::-webkit-scrollbar {
   height: 100px;
   width: 100%;
   overflow: scroll;
-  scroll-behavior: smooth;
+  /*scroll-behavior: smooth;*/
 }
 
 #thumbnail-container::-webkit-scrollbar {
