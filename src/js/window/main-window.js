@@ -1003,6 +1003,30 @@ let loadBoardUI = () => {
     }
   })
 
+
+  // setup timeline dragging
+  let tlEl = document.querySelector('#movie-timeline-content')  
+  tlEl.addEventListener('pointerdown', () => {
+    let onPointerMove = event => {
+      let node = Number(event.target.dataset.node)
+      if (!util.isUndefined(node) && !isNaN(node)) {
+        if (currentBoard !== node) {
+          currentBoard = node
+          gotoBoard(currentBoard)
+        }
+      }
+    }
+    
+    let onPointerUp = () => {
+      tlEl.removeEventListener('pointermove', onPointerMove)
+      window.removeEventListener('pointerup', onPointerUp)
+    }
+    tlEl.addEventListener('pointermove', onPointerMove)
+    window.addEventListener('pointerup', onPointerUp)
+  })
+  
+
+
   sfx.init()
 
   const enableDrawingSoundEffects = prefsModule.getPrefs('sound effects')['enableDrawingSoundEffects']
