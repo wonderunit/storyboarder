@@ -4,6 +4,12 @@ Tested with node v6.1.0.
 
 ## Developing
 
+Use Node Version Manager to set the proper version of Node in your environment:
+
+    $ nvm use
+
+> If you do not have `nvm` on your machine, follow [these instructions](https://github.com/creationix/nvm#installation) to install it.
+
     $ npm install
     $ npm start
 
