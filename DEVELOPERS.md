@@ -10,6 +10,8 @@ Use Node Version Manager to set the proper version of Node in your environment:
 
 > If you do not have `nvm` on your machine, follow [these instructions](https://github.com/creationix/nvm#installation) to install it.
 
+Next, install the package dependencies then start the application:
+
     $ npm install
     $ npm start
 
