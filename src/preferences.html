@@ -53,15 +53,17 @@
         <div class="preferences-input">
           <input
             type="checkbox"
-            name="enableAutomaticLinkedFileReload"
-            id="enableAutomaticLinkedFileReload" />
+            name="enableForcePsdReloadOnFocus"
+            id="enableForcePsdReloadOnFocus" />
 
-          <label for="enableAutomaticLinkedFileReload">
-            <span></span>Reload linked boards automatically when PSD changes
+          <label for="enableForcePsdReloadOnFocus">
+            <span></span>Force reload of watched PSD when Storyboarder regains focus
           </label>
           <div class="preferences-hint">
-            Disable this option if automatic reload isn’t working.<br/>
-            If disabled, boards reload from PSD manually when Storyboarder regains focus.
+            Enable if working from a network drive.
+            Disable to improve performance when switching between
+            Storyboarder and other apps. When disabled, Storyboarder only 
+            watches PSD files in the background (which is not supported on all computers).
           </div>
         </div>
 

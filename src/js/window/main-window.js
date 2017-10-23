@@ -1680,8 +1680,6 @@ let openInEditor = async () => {
 const onLinkedFileChange = async (eventType, filepath, stats) => {
   console.log('onLinkedFileChange', eventType, filepath, stats)
 
-  if (!prefsModule.getPrefs()['enableAutomaticLinkedFileReload']) return
-
   if (eventType !== 'change') {
     // ignore `add` events, etc
     // we only care about `change` events (explicit save events)
@@ -4936,7 +4934,7 @@ ipcRenderer.on('exportZIP', (event, args) => exportZIP())
 ipcRenderer.on('reloadScript', (event, args) => reloadScript(args))
 
 ipcRenderer.on('focus', async event => {
-  if (prefsModule.getPrefs()['enableAutomaticLinkedFileReload']) return
+  if (!prefsModule.getPrefs()['enableForcePsdReloadOnFocus']) return
 
   // update watched files
   let watched = watcher.getWatched()

@@ -25,7 +25,7 @@ const defaultPrefs = {
   enableStabilizer: true,
   enableAnalytics: true,
   enableAutoSave: true,
-  enableAutomaticLinkedFileReload: true,
+  enableForcePsdReloadOnFocus: true,
 
   // notifications
   allowNotificationsForLineMileage: true,
