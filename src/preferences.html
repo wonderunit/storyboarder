@@ -52,6 +52,23 @@
 
         <div class="preferences-input">
           <input
+            type="checkbox"
+            name="enableForcePsdReloadOnFocus"
+            id="enableForcePsdReloadOnFocus" />
+
+          <label for="enableForcePsdReloadOnFocus">
+            <span></span>Force reload of watched PSD when Storyboarder regains focus
+          </label>
+          <div class="preferences-hint">
+            Enable if working from a network drive.
+            Disable to improve performance when switching between
+            Storyboarder and other apps. When disabled, Storyboarder only 
+            watches PSD files in the background (which is not supported on all computers).
+          </div>
+        </div>
+
+        <div class="preferences-input">
+          <input
             type="number"
             name="defaultBoardTiming"
             id="defaultBoardTiming" />

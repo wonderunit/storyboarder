@@ -1679,6 +1679,7 @@ let openInEditor = async () => {
 }
 const onLinkedFileChange = async (eventType, filepath, stats) => {
   console.log('onLinkedFileChange', eventType, filepath, stats)
+
   if (eventType !== 'change') {
     // ignore `add` events, etc
     // we only care about `change` events (explicit save events)
@@ -1686,7 +1687,10 @@ const onLinkedFileChange = async (eventType, filepath, stats) => {
   }
 
   let filename = path.basename(filepath)
+  await refreshLinkedBoardByFilename(filename)
+}
 
+const refreshLinkedBoardByFilename = async filename => {
   // find the board by link filename
   let board
   for (let b of boardData.boards) {
@@ -1696,10 +1700,10 @@ const onLinkedFileChange = async (eventType, filepath, stats) => {
     }
   }
   if (!board) {
-    console.log('Tried to update, from editor, a file that no longer exists in the project:', filename)
+    console.log('Tried to update, from editor, a file that does not exist in the scene:', filename)
     return
   }
-  
+
   let psdData
   let readerOptions = {}
   let curBoard = boardData.boards[currentBoard]
@@ -1716,7 +1720,7 @@ const onLinkedFileChange = async (eventType, filepath, stats) => {
   
   psdData = FileHelper.getBase64ImageDataFromFilePath(path.join(boardPath, 'images', board.link), readerOptions)
   if (!psdData || !psdData.main) {
-    notifications.notify({ message: `[WARNING] Could not import from file ${path.basename(filepath)}. You may be using an unsupported PSD feature.` })
+    notifications.notify({ message: `[WARNING] Could not import from file ${filename}. You may be using an unsupported PSD feature.` })
     return
   }
 
@@ -4928,5 +4932,18 @@ ipcRenderer.on('saveAs', (event, args) => saveAsFolder())
 ipcRenderer.on('exportZIP', (event, args) => exportZIP())
 
 ipcRenderer.on('reloadScript', (event, args) => reloadScript(args))
+
+ipcRenderer.on('focus', async event => {
+  if (!prefsModule.getPrefs()['enableForcePsdReloadOnFocus']) return
+
+  // update watched files
+  let watched = watcher.getWatched()
+  for (let dir of Object.keys(watched)) {
+    for (let filename of watched[dir]) {
+      console.log('refreshing', filename)
+      await refreshLinkedBoardByFilename(filename)
+    }
+  }
+})
 
 const log = opt => ipcRenderer.send('log', opt)

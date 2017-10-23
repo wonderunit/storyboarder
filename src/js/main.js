@@ -703,6 +703,10 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
     mainWindow.webContents.on('devtools-closed', event => { mainWindow.webContents.send('devtools-closed') })
   }
 
+  mainWindow.on('focus', () => {
+    mainWindow.webContents.send('focus')
+  })
+
   // via https://github.com/electron/electron/blob/master/docs/api/web-contents.md#event-will-prevent-unload
   //     https://github.com/electron/electron/pull/9331
   //
