@@ -2742,7 +2742,12 @@ let renderTimeline = () => {
   html.push('<div class="marker-holder"><div class="marker"></div></div>')
 
   boardData.boards.forEach((board, i) => {
-    let duration = util.isUndefined(board.duration) ? 2000 : board.duration
+    // if board duration is undefined or 0, use the default,
+    // otherwise use the value given
+    let duration = (util.isUndefined(board.duration) || board.duration === 0)
+      ? prefsModule.getPrefs().defaultBoardTiming
+      : board.duration
+
     html.push(
       `<div style="flex: ${duration}" data-node="${i}" class="t-scene"></div>`
     )
