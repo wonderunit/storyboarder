@@ -24,7 +24,13 @@ const insertSceneIds = (fdxObj, generateNumber = () => util.uidGen(5)) => {
             switch (element.$.Type) {
               case 'Scene Heading':
                 if (typeof element.$.Number === 'undefined') {
-                  element.$.Number = generateNumber()
+                  return {
+                    ...element,
+                    $: {
+                      ...element.$,
+                      Number: generateNumber()
+                    }
+                  }
                 }
                 break
             }
