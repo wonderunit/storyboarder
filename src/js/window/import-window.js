@@ -424,7 +424,7 @@ actions.validateQrCode = () => {
   // sceneNumber
   if (isNotNumber(code[0])) valid = false
   // paperSize
-  if (code[1] !== 'LTR') valid = false
+  if (code[1] !== 'LTR' && code[1] !== 'A4') valid = false
   // rows
   if (isNotNumber(code[2])) valid = false
   // cols
