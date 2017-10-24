@@ -12,15 +12,28 @@ const durationOfWords = (text, durationPerWord) =>
   : 0
 
 const insertSceneIds = (fdxObj, generateNumber = () => util.uidGen(5)) => {
-  fdxObj.FinalDraft.Content[0].Paragraph.forEach((element, i) => {
-    switch (element.$.Type) {
-      case 'Scene Heading':
-        if (typeof element.$.Number === 'undefined') {
-          element.$.Number = generateNumber()
+  return {
+    ...fdxObj,
+    FinalDraft: {
+      ...fdxObj.FinalDraft,
+      Content: {
+        ...fdxObj.FinalDraft.Content,
+        [0]: {
+          ...fdxObj.FinalDraft.Content[0],
+          Paragraph: fdxObj.FinalDraft.Content[0].Paragraph.map((element, i) => {
+            switch (element.$.Type) {
+              case 'Scene Heading':
+                if (typeof element.$.Number === 'undefined') {
+                  element.$.Number = generateNumber()
+                }
+                break
+            }
+            return element
+          })
         }
-        break
+      }
     }
-  })
+  }
 }
 
 const importFdxData = async fdxObj => {
