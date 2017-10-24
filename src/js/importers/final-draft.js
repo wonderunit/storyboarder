@@ -1,5 +1,5 @@
 const fs = require('fs')
-const xml2js = require('xml2js')
+const util = require('../utils')
 
 const wordCount = text =>
   text
@@ -11,17 +11,19 @@ const durationOfWords = (text, durationPerWord) =>
   ? wordCount(text) * durationPerWord
   : 0
 
-const parseStringAsync = async (parser, xmlString) =>
-  new Promise((resolve, reject) =>
-      parser.parseString(xmlString, (err, json) =>
-          err
-            ? reject(err)
-            : resolve(json)))
+const insertSceneIds = (fdxObj, generateNumber = () => util.uidGen(5)) => {
+  fdxObj.FinalDraft.Content[0].Paragraph.forEach((element, i) => {
+    switch (element.$.Type) {
+      case 'Scene Heading':
+        if (typeof element.$.Number === 'undefined') {
+          element.$.Number = generateNumber()
+        }
+        break
+    }
+  })
+}
 
-const importFdxData = async data => {
-  const parser = new xml2js.Parser()
-  let result = await parseStringAsync(parser, data)
-
+const importFdxData = async fdxObj => {
   let script = []
   let sceneAtom = { type: 'scene', script: [] }
 
@@ -37,7 +39,7 @@ const importFdxData = async data => {
 
   let token
 
-  result.FinalDraft.Content[0].Paragraph.forEach((element, i) => {
+  fdxObj.FinalDraft.Content[0].Paragraph.forEach((element, i) => {
     switch (element.$.Type) {
       case 'Scene Heading':
         if (sceneAtom['script'].length > 0) {
@@ -154,5 +156,6 @@ const importFdxData = async data => {
 }
 
 module.exports = {
-  importFdxData
+  importFdxData,
+  insertSceneIds
 }
