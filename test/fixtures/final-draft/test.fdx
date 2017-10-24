@@ -1,0 +1,2949 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<FinalDraft DocumentType="Script" Template="No" Version="3">
+
+  <Content>
+    <Paragraph Type="Action">
+      <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="AllCaps">Fade in:</Text>
+    </Paragraph>
+    <Paragraph Bookmark="Start" Number="123" Type="Scene Heading">
+      <SceneProperties Color="#00000000FFFF" Length="2/8" Page="1" Title="Opening image">
+        <Summary>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">Calm fields of wheat. Farmland. The heart of America.</Text>
+          </Paragraph>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">In darkness.</Text>
+          </Paragraph>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+          </Paragraph>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">Set location and time.</Text>
+          </Paragraph>
+        </Summary>
+        <SceneArcBeats/>
+      </SceneProperties>
+      <ScriptNote Author="" Color="#FFFFC8C80000" DateModified="20130522T001325" DateTime="20130522T000939" Name="geography" Type="Info">
+        <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+          <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">Near Plattsmouth Nebraska.</Text>
+        </Paragraph>
+        <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+          <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+        </Paragraph>
+        <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+          <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">Rivers nearby: Platte joins Missouri River</Text>
+        </Paragraph>
+      </ScriptNote>
+      <Text>EXT. Mast 2 3 farm - nIGHT</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Wheat fields. Etched in darkness and moonlight. For the moment it’s calm.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="Bold">TITLE: Nebraska, 1875.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>A WOMAN CRIES OUT, drawing our attention to a scant farm house in the distance.</Text>
+    </Paragraph>
+    <Paragraph Number="2" Type="Scene Heading">
+      <SceneProperties Color="#00000000FFFF" Length="1" Page="1" Title="Walter's scar">
+        <Summary>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">Meet Walter and his son Henry.</Text>
+          </Paragraph>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+          </Paragraph>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">See Walter's scar = his wife Sarah passes while attempting childbirth.</Text>
+          </Paragraph>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+          </Paragraph>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">Seen through Henry's POV.</Text>
+          </Paragraph>
+        </Summary>
+        <SceneArcBeats>
+          <CharacterArcBeat Name="DOCTOR"></CharacterArcBeat>
+          <CharacterArcBeat Name="HENRY">Happy-go-lucky to this point, Henry's life is about to take a major turn.
+
+At this crucial point he loses his mother, and in a way his father too.
+
+This is Henry's scar.
+
+He will bury an anger that he'll spend the rest of his life wrestling with.</CharacterArcBeat>
+          <CharacterArcBeat Name="WALTER">Walter is the kind of man who doesn't say more than he has to. He doesn't emote. But he loves his wife. When she dies he breaks.
+
+In a way this is the death of Walter as well.</CharacterArcBeat>
+        </SceneArcBeats>
+      </SceneProperties>
+      <Text>EXT. Mast house - cONTINUOUS</Text>
+    </Paragraph>
+    <Paragraph Number="123" Type="Action">
+      <Text>Perched on the house’s front stair is HENRY MAST. He’s 11 years old and anxious as anything. </Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>His mother’s intermittent screams emanate from the house.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Nearby his father WALTER MAST, 40’s, smokes a pipe. Keeps his back to his son. Trying to hide the worry in his weathered face.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>More screams from inside.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>Henry</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Was it like this with me?</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Walter looks to Henry. His lack of response confirms it wasn’t. Something is wrong.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Then, silence.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Walter lowers his pipe. Faces the front door. Waiting. Standing in the painful silence.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>He can’t take it anymore -- lunges forward -- bursts in the front door --</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Henry strains to see past his father. </Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>His pregnant MOTHER lies motionless on the kitchen table.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>A weary DOCTOR approaches Walter with trembling hands.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>Doctor</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>I’m sorry, Walter.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>He can barely pat Walter on the shoulder as he passes by.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="AllCaps"></Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Walter’s emotions overwhelm him. He folds in on himself, dropping to his knees before his dead wife.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Henry watches from the doorway. His eyes welling with tears.</Text>
+    </Paragraph>
+    <Paragraph Type="Transition">
+      <Text>Fade out:</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="AllCaps">Fade in:</Text>
+    </Paragraph>
+    <Paragraph Number="3" Type="Scene Heading">
+      <SceneProperties Color="#00000000FFFF" Length="2/8" Page="2" Title="burying Sarah">
+        <Summary>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">Walter digs graves</Text>
+          </Paragraph>
+        </Summary>
+        <SceneArcBeats>
+          <CharacterArcBeat Name="WALTER">Walter buries his pain by focusing on tasks. He won't deal with it directly. He can't. </CharacterArcBeat>
+        </SceneArcBeats>
+      </SceneProperties>
+      <Text>EXT. Mast farm - dAY</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Under grey skies. Walter hacks at the earth with a shovel. Stone-faced. Focused only on his task. Dig.</Text>
+    </Paragraph>
+    <Paragraph Type="Transition">
+      <Text>CuT TO:</Text>
+    </Paragraph>
+    <Paragraph Number="4" Type="Scene Heading">
+      <SceneProperties Color="#00000000FFFF" Length="2/8" Page="2" Title="Grave">
+        <Summary>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">Walter and Henry at the graves</Text>
+          </Paragraph>
+        </Summary>
+        <SceneArcBeats>
+          <CharacterArcBeat Name="HENRY"></CharacterArcBeat>
+          <CharacterArcBeat Name="WALTER"></CharacterArcBeat>
+        </SceneArcBeats>
+      </SceneProperties>
+      <Text>Later</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Walter and Henry stand before a fresh grave bearing two wooden crosses. There are no words.</Text>
+    </Paragraph>
+    <Paragraph Type="Transition">
+      <Text>FADE OUT:</Text>
+    </Paragraph>
+    <Paragraph Number="5" Type="Scene Heading">
+      <SceneProperties Color="#0000FFFF0000" Length="4/8" Page="2" Title="Eight months later">
+        <Summary>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">See Walter now. A drunk.</Text>
+          </Paragraph>
+        </Summary>
+        <SceneArcBeats>
+          <CharacterArcBeat Name="HENRY"></CharacterArcBeat>
+          <CharacterArcBeat Name="WALTER">Whatever life Walter contained it's been sucked from him and replaced with whiskey.
+
+He's a failing father and farmer now. An alcoholic barely holding it together.
+
+</CharacterArcBeat>
+        </SceneArcBeats>
+      </SceneProperties>
+      <Text>iNT. Mast HOUSE - walter’s bedroom - mORNING</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Sunrise spills through an open window. A soft breeze tickles the curtains.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Somewhere in the mess on the bed lies Walter. A farmer ought to be up by now. </Text>
+    </Paragraph>
+    <Paragraph Bookmark="Eight months later" Type="Action">
+      <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="Bold">TITLE: Eight months later</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>HENRY (o.S.)</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Pa!</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Walter groans.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>HENRY (o.S.)</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Pa, we’re going to be late.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Walter swings his legs out of bed. An empty whiskey bottle falls to the floor. Not that he noticed.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Walter’s face hangs heavy. Tired. Unshaven.</Text>
+    </Paragraph>
+    <Paragraph Number="6" Type="Scene Heading">
+      <SceneProperties Length="1/8" Page="2" Title="asdfsdasd">
+        <Summary>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">asdasdasd</Text>
+          </Paragraph>
+        </Summary>
+        <SceneArcBeats/>
+      </SceneProperties>
+      <Text>Sadasdasdasdasd - DAY</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="AllCaps"></Text>
+    </Paragraph>
+    <Paragraph Number="7" Type="Scene Heading">
+      <SceneProperties Color="#0000FFFF0000" Length="3/8" Page="3" Title="Walter and Henry head to church">
+        <Summary>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">The farm is falling apart. As is Walter.</Text>
+          </Paragraph>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+          </Paragraph>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">Henry is eager to go to church for some reason.</Text>
+          </Paragraph>
+        </Summary>
+        <SceneArcBeats>
+          <CharacterArcBeat Name="HENRY"></CharacterArcBeat>
+          <CharacterArcBeat Name="WALTER"></CharacterArcBeat>
+        </SceneArcBeats>
+      </SceneProperties>
+      <Text>EXT. Mast HOUSE - DAY</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>The fields look fallow. Henry drives their farm wagon, and their one horse, up to the front of the house.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Henry’s shirt is tucked in and his hair is combed. His version of Sunday’s best when you can’t afford more.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Walter exits the house, tucking his shirt in as he goes.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>HENRY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Come on!</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Walter climbs into the wagon at his own pace.</Text>
+    </Paragraph>
+    <Paragraph Number="8" Type="Scene Heading">
+      <SceneProperties Color="#0000FFFF0000" Length="4/8" Page="3" Title="Church">
+        <Summary>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">Meet Louis briefly, and his family - specifically daughter Mary, who it is very clear Henry likes.</Text>
+          </Paragraph>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+          </Paragraph>
+        </Summary>
+        <SceneArcBeats>
+          <CharacterArcBeat Name="ANNA"></CharacterArcBeat>
+          <CharacterArcBeat Name="ELIZABETH"></CharacterArcBeat>
+          <CharacterArcBeat Name="HENRY"></CharacterArcBeat>
+          <CharacterArcBeat Name="LOUIS"></CharacterArcBeat>
+          <CharacterArcBeat Name="MARY"></CharacterArcBeat>
+          <CharacterArcBeat Name="WALTER"></CharacterArcBeat>
+        </SceneArcBeats>
+      </SceneProperties>
+      <Text>iNT. Modest frontier church - DAY</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <ScriptNote Author="" Color="#FFFF00000000" DateModified="20130523T215528" DateTime="20130221T003447" Name="replace hymn" Type="Research">
+        <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+          <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">"All Creatures Of Our God And King" was modernized from an older hymn. This version wouldn't have been sung in 1875. It came to be sometime around 1900. Need to find a different song. One that fits chronologically.</Text>
+        </Paragraph>
+        <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+          <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+        </Paragraph>
+        <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+          <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">http://www.youtube.com/watch?v=HSb1-9i-fDA</Text>
+        </Paragraph>
+        <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+          <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+        </Paragraph>
+        <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+          <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">Reference:</Text>
+        </Paragraph>
+        <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+          <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+        </Paragraph>
+        <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+          <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">http://en.wikipedia.org/wiki/Canticle_of_the_Sun</Text>
+        </Paragraph>
+      </ScriptNote>
+      <Text>The church is shoulder-to-shoulder as PARISHIONERS sing </Text>
+      <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="Underline">All Creatures Of Our God And King</Text>
+      <Text>.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Perched in the front pew and singing louder than anyone is LOUIS SUTTER, early 40’s. His opulent clothes hinting at arrogance. There’s no dirt under this man’s nails.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>To Louis’s sides are his wife ELIZABETH, late 30’s, and daughters ANNA, 9, and MARY, 11.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Mary takes her eyes off her hymnal just long enough to catch Henry staring at her from another pew, a few rows back. </Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Henry doesn’t look away. Just offers a soft smile that Mary returns.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Walter sings from the doorway with the same lack of enthusiasm he’s given the rest of the day.</Text>
+    </Paragraph>
+    <Paragraph Number="9" Type="Scene Heading">
+      <SceneProperties Color="#0000FFFF0000" Length="6/8" Page="3" Title="Angry farmers">
+        <Summary>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">After church Walter talks with Neighbor about Louis buying farms in the area.</Text>
+          </Paragraph>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+          </Paragraph>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">Create a feeling of dread for Louis.</Text>
+          </Paragraph>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+          </Paragraph>
+        </Summary>
+        <SceneArcBeats>
+          <CharacterArcBeat Name="GRIM FARMER"></CharacterArcBeat>
+          <CharacterArcBeat Name="LOUIS"></CharacterArcBeat>
+          <CharacterArcBeat Name="NEIGHBOR"></CharacterArcBeat>
+          <CharacterArcBeat Name="WALTER"></CharacterArcBeat>
+          <CharacterArcBeat Name="WOEFUL FARMER"></CharacterArcBeat>
+        </SceneArcBeats>
+      </SceneProperties>
+      <ScriptNote Author="" Color="#0000FFFF0000" DateModified="20130522T001028" DateTime="20130225T183807" Name="tighten up" Type="Polish">
+        <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+          <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">- shorter? </Text>
+        </Paragraph>
+        <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+          <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">- Walter's role in this scene? This is his first dialogue in the movie. Or should he even speak? It's page 4 before he says anything.</Text>
+        </Paragraph>
+      </ScriptNote>
+      <Text>EXT. Modest frontier church - DAY</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Parishioners vacate the church. Walter chats with a group of fellow FARMERS.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>grim farmer</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Heard he bought another one.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>woEFUL farmer</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Where?</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>grim farmer</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Sarpy county.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>Neighbor</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Sarpy... He’s out to own the whole territory. Nebraska even.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>WaLTER</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Man’s got means. What can you do?</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>Neighbor</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Tell you what I’d like to do--</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Louis exits the church, glad-handing everyone as he goes.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>Neighbor</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Look at that peacock. Like he’s president or something.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Louis passes by. His steely gaze locks with Walter’s.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>Neighbor</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Be a cold day in hell before he gets my farm.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Walter can’t pull his uneasy eyes from Louis.</Text>
+    </Paragraph>
+    <Paragraph Number="10" Type="Scene Heading">
+      <SceneProperties Color="#0000FFFF0000" Length="6/8" Page="4" Title="Walter visits bank">
+        <Summary>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">Walter is denied an extension on his farm's loan</Text>
+          </Paragraph>
+        </Summary>
+        <SceneArcBeats>
+          <CharacterArcBeat Name="BANK OFFICIAL"></CharacterArcBeat>
+          <CharacterArcBeat Name="WALTER">Walter is a proud man. It kills him to ask for help but it's what he's been reduced to.</CharacterArcBeat>
+        </SceneArcBeats>
+      </SceneProperties>
+      <Text>iNT. small town bank - DAY</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Walter sits across the desk from a BANK OFFICIAL who can’t stop wringing his hands.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>BANK OFFICIAL</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>I’d really like to help. I really would...</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>WaLTER</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>I’m not asking for a hand-out, George. It’s been a tough season. I just need more time.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>Bank official</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>You’ve already exceeded the grace period. Twice.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>WALTER</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>I know--</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>BANK OFFICIAL</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>You’ve accrued penalties that frankly it doesn’t appear you’re capable of recompensing.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>WALTER</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>I know--</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>BANK OFFICIAL</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>If you’re unable to make payment by month’s end you’re going to default on your mortgage and the bank will be forced to foreclose. Do you understand what I’m saying? We’ll take your farm, Walter.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>This hits Walter hard.</Text>
+    </Paragraph>
+    <Paragraph Number="11" Type="Scene Heading">
+      <SceneProperties Color="#0000FFFF0000" Length="3/8" Page="5" Title="where's Henry?">
+        <Summary>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">Walter returns, can't find Henry.</Text>
+          </Paragraph>
+        </Summary>
+        <SceneArcBeats>
+          <CharacterArcBeat Name="WALTER"></CharacterArcBeat>
+        </SceneArcBeats>
+      </SceneProperties>
+      <Text>EXT. Mast FARM - DAY</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Walter stops his wagon in front of the house. A moment passes as he take stock of his situation.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>He grabs a whiskey bottle and knocks it back. Takes a long hard look at his farm.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>WaLTER</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Henry!</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>No response.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>WALTER</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Boy!</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Nothing. Where is he?</Text>
+    </Paragraph>
+    <Paragraph Number="12" Type="Scene Heading">
+      <SceneProperties Color="#0000FFFF0000" Length="4/8" Page="5" Title="Henry and Mary">
+        <Summary>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">Get a sense for Mary as she and Henry share time.</Text>
+          </Paragraph>
+        </Summary>
+        <SceneArcBeats>
+          <CharacterArcBeat Name="HENRY"></CharacterArcBeat>
+          <CharacterArcBeat Name="MARY"></CharacterArcBeat>
+        </SceneArcBeats>
+      </SceneProperties>
+      <Text>eXT. prairie - DAy</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>A kite. Flying high over the prairie. Below there’s laughter.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Mary wrestles with the kite line. It’s windy enough that the kite keeps pulling at her hands.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>She trades smiles with Henry.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>-- a gust of wind grabs the kite -- jerks Mary to her toes --</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Henry springs into action. Grabs her. </Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Their weight too much, the kite line SNAPS and they fall to the ground in a heap.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>They’re face-to-face. Smiles and awkwardness. If they were older this would be where they’d kiss. Instead --</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>-- they look to the sky. Mary’s kite floats away forever.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Suddenly Mary bursts out laughing and leaps to her feet. </Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Henry watches her dance to music only she can hear. Gliding across the prairie without a care in the world. Henry smiles.</Text>
+    </Paragraph>
+    <Paragraph Number="13" Type="Scene Heading">
+      <SceneProperties Color="#0000FFFF0000" Length="4/8" Page="6" Title="home life sucks">
+        <Summary>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">Show the strained relationship between Walter and Henry.</Text>
+          </Paragraph>
+        </Summary>
+        <SceneArcBeats>
+          <CharacterArcBeat Name="HENRY"></CharacterArcBeat>
+          <CharacterArcBeat Name="WALTER"></CharacterArcBeat>
+        </SceneArcBeats>
+      </SceneProperties>
+      <Text>EXT. Mast HOUSE - sunset</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Henry approaches the house with a contented smile. Until he gets close enough to see --</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Walter is on the porch. Smoking his pipe. On his way to drunk.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>WALTER</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Where you been?</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>HENRY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Out.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Henry blasts past him. Letting the door slam after him.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>WALTER</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>You missed your chores!</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Walter doesn’t go after him. Like always.</Text>
+    </Paragraph>
+    <Paragraph Number="14" Type="Scene Heading">
+      <SceneProperties Color="#0000FFFF0000" Length="1 1/8" Page="6" Title="Neighbor calls it quits/Walter's future reflected">
+        <Summary>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">Walter finds Neighbor packing up, moving on. Louis has bought his farm.</Text>
+          </Paragraph>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+          </Paragraph>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">A glimpse at Walter's future.</Text>
+          </Paragraph>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+          </Paragraph>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">Walter is indignant to his neighbor.</Text>
+          </Paragraph>
+        </Summary>
+        <SceneArcBeats>
+          <CharacterArcBeat Name="LOUIS"></CharacterArcBeat>
+          <CharacterArcBeat Name="NEIGHBOR">Neighbor states theme to Walter.
+"Time to move on."</CharacterArcBeat>
+          <CharacterArcBeat Name="NEIGHBOR'S DAUGHTER 1"></CharacterArcBeat>
+          <CharacterArcBeat Name="NEIGHBOR'S DAUGHTER 2"></CharacterArcBeat>
+          <CharacterArcBeat Name="NEIGHBOR'S WIFE"></CharacterArcBeat>
+          <CharacterArcBeat Name="WALTER">Walter and Neighbor were great friends. And both in the same boat financially. His leaving will seem like an act of betrayal because:
+
+1. It adds to Watler's loneliness
+2. It's like looking at his failed future
+
+Walter will be a petulant jerk to him
+
+Neighbor echoes theme to Walter:
+"TIME TO MOVE ON"</CharacterArcBeat>
+        </SceneArcBeats>
+      </SceneProperties>
+      <Text>eXT. Neighbor farm - DAY</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Walter’s wagon enters the long dusty lane to his neighbor’s farm. </Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>As he nears the house he spots an unexpected sight: Neighbor packing his wagon.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Neighbor is visibly upset.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>WALTER</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>What’s going on here?</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>NEIGHBOR</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>I didn’t have a choice. </Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Walter looks to the house where Louis is directing MEN. Walter realizes: Neighbor sold his farm.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>NEIGHBOR</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>I got a family to think about.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>WALTER</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>What did he offer?</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>NEIGHBOR</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Enough. He offered enough.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <ScriptNote Author="" Color="#89895757CFCF" DateModified="20130523T215209" DateTime="20130523T215146" Name="character name with no dialgoue" Type="errors">
+        <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+          <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">remove the unused character name</Text>
+        </Paragraph>
+      </ScriptNote>
+      <Text>WALTER</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Neighbor lifts his WIFE and TWO DAUGHTERS into the wagon. Then climbs in himself.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Walter is incensed. Betrayed.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>WALTER</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>I never thought you’d be the sort to cut and run. Well go ahead. Scurry back to Kansas, you gutless cur. See if you can’t get work making womens’ dresses cuz you sure as hell ain’t no granger.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Neighbor takes the abuse. He couldn’t feel much worse anyway. </Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>NEIGHBOR</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>There’s nothing here for me. Nothing for you either. Time to move on.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Neighbor flicks the reigns. His wagon ambles off.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Walter can feel Louis’s eyes on him. Staring at him with fixed interest. Walter meets his gaze. Two titans of will in a silent stand-off.</Text>
+    </Paragraph>
+    <Paragraph Number="15" Type="Scene Heading">
+      <SceneProperties Color="#0000FFFF0000" Length="2/8" Page="7" Title="Louis approaches">
+        <Summary>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">Louis approaches</Text>
+          </Paragraph>
+        </Summary>
+        <SceneArcBeats>
+          <CharacterArcBeat Name="LOUIS"></CharacterArcBeat>
+          <CharacterArcBeat Name="WALTER"></CharacterArcBeat>
+        </SceneArcBeats>
+      </SceneProperties>
+      <Text>eXT. mast farm - dAY</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>The sun blazes overhead. Walter is in the field, struggling to run a plow behind his horse.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Louis’s carriage rustles down the farm lane. </Text>
+    </Paragraph>
+    <Paragraph Number="16" Type="Scene Heading">
+      <SceneProperties Color="#FFFF00000000" Length="2" Page="7" Title="Walter rejects Louis">
+        <Summary>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">Louis offers Watler his best deal. Walter refuses.</Text>
+          </Paragraph>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">Louis opens up on him. About how unreasonable he is.</Text>
+          </Paragraph>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+          </Paragraph>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">He just can't understand him. How can he turn down a good deal?</Text>
+          </Paragraph>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+          </Paragraph>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">Maybe he's too drunk (soaked) to know a good deal.</Text>
+          </Paragraph>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">or</Text>
+          </Paragraph>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">He wouldn't know a good deal unless it was at the bottom of a bottle.</Text>
+          </Paragraph>
+        </Summary>
+        <SceneArcBeats>
+          <CharacterArcBeat Name="HENRY"></CharacterArcBeat>
+          <CharacterArcBeat Name="LOUIS">1. Starts off insulting and intimidating Henry. True nature. Preying on the weak.
+
+2. Changes gears when Walter appears. Civil. Smoozey. He wants something from him and he's smart enough to know not to bully him from the start.
+
+3. Offers a mediocre deal.
+
+4. Offers a better deal.
+
+5. Reveals himself again. He feels insulted by Walter. Why wouldn't he take his deal? Threatens him.
+
+Overall Arc Beat:
+He's a prideful shark that doesn't handle defeat well.
+
+
+
+
+
+
+
+</CharacterArcBeat>
+          <CharacterArcBeat Name="WALTER">Walter is underwater on his farm. He needs a way out. Louis provides that way. Even offers a very favorable deal. 
+
+Walter cannot accept.
+
+It's not about money.
+
+Sarah is buried there. Walter will be too.
+
+He just can't let go.</CharacterArcBeat>
+        </SceneArcBeats>
+      </SceneProperties>
+      <Text>EXT. masT HOUSE - momeNTS LATER</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Louis climbs from his carriage just as Henry rounds the house and freezes -- stunned to see him.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>Louis</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Afternoon, son. Is your father here?</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Henry doesn’t answer. Intimidated on every level.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LoUIS</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>I asked you a question. It’s impolite not to answer. That is unless you’re dumb. You’re not dumb, are you, boy?</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Louis approaches Henry. Each step further illustrating how small Henry is to him.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>WALTER (o.S.)</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Go on inside, Henry.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Louis turns to see Walter only a few steps away.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>WALTER</Text>
+    </Paragraph>
+    <Paragraph Type="Parenthetical">
+      <Text>(to Henry)</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Go on.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Henry runs inside.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LOUIS</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Afternoon, Mr. Mast. My name is Louis--</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>WALTER</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>I know who you are. I’m not interested.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LOUIS</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>You haven’t heard my offer.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>WALTER</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>I ain’t selling. Not now. Not ever.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LOUIS</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Then I guess I made the trip out here for nothing.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Louis is still wearing his salesman’s smile. Walter’s not buying, and damn sure he ain’t selling.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LOUIS</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Well be that as it may, I’m already here. I might as well unburden myself of my proposal. </Text>
+      <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="AllCaps">T</Text>
+      <Text>welve cents an acre would be more than a smart sprinkle but I can tell you’re a shaver and I don’t aim to waste your time. Thirteen cents.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Walter spits. Louis can’t believe it. He’s amused by a hard bargain.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LOUIS</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Sakes you are a shaver. All right, Mr. Mast. You win. Best offer. Eighteen cents on the acre. That’s a right smart deal. Far more than it’s worth. Especially considering its current state. What say you to that, sir?</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>WaLTER</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Appreciate your offer, Mr. Sutter. The answer is no.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Walter turns, heads back toward the fields. </Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Louis is beside himself with rage.</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <ScriptNote Author="" Color="#89895757CFCF" DateModified="20130523T215742" DateTime="20130523T215642" Name="dialogue with no character name above it" Type="errors">
+        <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+          <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">dialogue should have a character name above it. </Text>
+        </Paragraph>
+      </ScriptNote>
+      <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="Italic">This shouldn’t be here.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LOUIS</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>You turn your back on me?</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Walter turns back, cautious of the tiger he’s uncaged.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Louis’s demeanor has flipped. The salesman’s smile has been replaced by a venomous rage.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LOUIS</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>I offered you a fair deal. </Text>
+      <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="Underline">A fair deal.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>WALTER</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>I meant no disrespect Mr. Sutter--</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LOUIS</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Money is respect! I offered you mine and you turned your back to me. You’re going to regret this.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Louis storms back to his carriage.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Walter looks uneasy. Sees Henry staring at him from the front door. </Text>
+    </Paragraph>
+    <Paragraph Number="17" Type="Scene Heading">
+      <SceneProperties Color="#0000FFFF0000" Length="2/8" Page="9" Title="Louis visits the bank">
+        <Summary>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">Louis visits the bank</Text>
+          </Paragraph>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+          </Paragraph>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">Intent: buy Walter's loan</Text>
+          </Paragraph>
+        </Summary>
+        <SceneArcBeats>
+          <CharacterArcBeat Name="BANK OFFICIAL"></CharacterArcBeat>
+          <CharacterArcBeat Name="LOUIS"></CharacterArcBeat>
+        </SceneArcBeats>
+      </SceneProperties>
+      <Text>iNT. small town bank - DAY</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>A satchel is dropped onto the Bank Official’s desk. The size and weight of which could hold a lot of money.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>He looks up to see Louis wearing a devious smile.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LOUIS</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Good afternoon.</Text>
+    </Paragraph>
+    <Paragraph Bookmark="Walter loses his farm" Number="18" Type="Scene Heading">
+      <SceneProperties Color="#FFFFFFFF0000" Length="1 1/8" Page="9" Title="Walter informed of sold loan">
+        <Summary>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">Bank official visits Walter, informs him his loan has been sold to Louis</Text>
+          </Paragraph>
+        </Summary>
+        <SceneArcBeats>
+          <CharacterArcBeat Name="BANK OFFICIAL"></CharacterArcBeat>
+          <CharacterArcBeat Name="LOUIS"></CharacterArcBeat>
+          <CharacterArcBeat Name="WALTER"></CharacterArcBeat>
+        </SceneArcBeats>
+      </SceneProperties>
+      <Text>eXT. maST FARM - eVENING</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Walter exits his house to find the Bank Official on his front door step with an apologetic nervousness.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Walter spots Louis a few yards away. Smirking.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>WALTER</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>What are you doing here?</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LOUIS</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>I’ve come for restitution.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>WaLTER</Text>
+    </Paragraph>
+    <Paragraph Type="Parenthetical">
+      <Text>(to Bank Official)</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>What have you done?</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>BANK OFFICIAL</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>I’m sorry, Walter.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LOUIS</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>The bank was wise enough to sell me your loan. You see, they know a smart deal when they see one.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>WALTER</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>You can’t do that.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>BANK OFFICIAL</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>We didn’t have a choice. You’re over head and ears. Mr. Sutter paid in full.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LOUIS</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Don’t worry, Walter, I’m not a hard hearted man. You have till the end of the week to square even. Which by my account is three months plus interest. Then it’s mine.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Walter looks he’s about to explode. Somewhere between tears and rage.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>WaLTER</Text>
+    </Paragraph>
+    <Paragraph Type="Parenthetical">
+      <Text>(to Bank Official)</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Please. My wife is buried in this land.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Shamefaced, Bank Official can’t even look at Walter.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LOUIS</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>You mean my land.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Walter’s torrid eyes peg Louis’s smug, haughty face so hard it could leave marks.</Text>
+    </Paragraph>
+    <Paragraph Number="19" Type="Scene Heading">
+      <SceneProperties Color="#0000FFFF0000" Length="5/8" Page="11" Title="Henry and Mary">
+        <Summary>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">More Henry and Mary alone time. Bonding. Provide a spark of hope for Henry to leave his father.</Text>
+          </Paragraph>
+        </Summary>
+        <SceneArcBeats>
+          <CharacterArcBeat Name="HENRY"></CharacterArcBeat>
+          <CharacterArcBeat Name="MARY"></CharacterArcBeat>
+        </SceneArcBeats>
+      </SceneProperties>
+      <Text>EXT. praIRIE - afterNOON</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Henry and Mary trudge over the terrain in step.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>HeNRY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>What’s school like?</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>Mary</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <ScriptNote Author="" Color="#89895757CFCF" DateModified="20130523T215027" DateTime="20130523T214938" Name="mispelled word" Type="errors">
+        <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+          <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">should be: don't know</Text>
+        </Paragraph>
+      </ScriptNote>
+      <Text>I dunno. Fun I guess. My Daddy says anyone worth their salt has an education. You’ve never been?</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>HENRY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Pa won’t let me.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>MARY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>How come?</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>HENRY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>He needs my help on the farm.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>MARY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>You aren’t there now.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>HENRY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>I hate that place. Besides, I’d rather be with you.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>MARY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Maybe you could come live with us.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Henry looks rocked by the possibility. A meager jolt of hope.</Text>
+    </Paragraph>
+    <Paragraph Number="20" Type="Scene Heading">
+      <SceneProperties Color="#0000FFFF0000" Length="1 3/8" Page="11" Title="Louis catches Mary with Henry. ">
+        <Summary>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">Louis catches Mary with Henry. Tells him he can’t see her because his dad is a no good piece of trash.</Text>
+          </Paragraph>
+        </Summary>
+        <SceneArcBeats>
+          <CharacterArcBeat Name="HENRY"></CharacterArcBeat>
+          <CharacterArcBeat Name="LOUIS"></CharacterArcBeat>
+          <CharacterArcBeat Name="MARY"></CharacterArcBeat>
+        </SceneArcBeats>
+      </SceneProperties>
+      <Text>Ext. Creek - sunSET</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Henry and Mary come to a small creek. Henry dashes across a fallen log to cross it.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Mary attempts to traverse the log but it’s unstable, wobbling  under her weight. She’s nervous and looks as if she’s going in the creek.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Suddenly Henry appears back on the log. He grabs her by the hand and leads her to the other side.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Once off the log Henry notices Mary doesn’t let go of his hand. He likes it.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>They head toward her house, hand in hand. Each one stealing little glimpses and giggles at each other.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LOUIS (o.S.)</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Let go of her!</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Henry looks shocked. Sees Louis thundering toward them.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Louis shoves Henry away from Mary. Hard.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LOUIS</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Don’t ever put hands on my daughter.</Text>
+    </Paragraph>
+    <Paragraph Type="Parenthetical">
+      <Text>(to Mary)</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>You are never to see this boy again. Never! Do you understand?</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Mary begins to tear up. She doesn’t understand.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>MARY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>But... why?</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LOUIS</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Because I said. Now get inside the house!</Text>
+    </Paragraph>
+    <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="1.50" RightIndent="7.50" SpaceBefore="12" Spacing="1" StartsNewPage="No" Type="General">
+      <ScriptNote Author="" Color="#FFFFFFFF0000" DateModified="20130523T220156" DateTime="20130523T220130" Name="Dual Dialogue" Type="Polish">
+        <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+          <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+        </Paragraph>
+      </ScriptNote>
+      <DualDialogue>
+        <Paragraph Type="Character">
+          <Text>MARY</Text>
+        </Paragraph>
+        <Paragraph Type="Dialogue">
+          <Text>But Daddy--</Text>
+        </Paragraph>
+        <Paragraph Type="Character">
+          <Text>LOUIS</Text>
+        </Paragraph>
+        <Paragraph Type="Dialogue">
+          <Text>I said get!</Text>
+        </Paragraph>
+      </DualDialogue>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>With tears in her eyes Mary runs to the house.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Louis turns his attention back to Henry.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LOUIS</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Your father put you up to this?</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>HeNRY</Text>
+    </Paragraph>
+    <Paragraph Type="Parenthetical">
+      <Text>(confused)</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>No, sir.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LOUIS</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Yeah, sure. He is a salty mop isn’t he?</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>HENRY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>I’m not like him.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LOUIS</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>What do you possibly think you have to offer my daughter? You come from nothing. You are nothing. You are your father’s son. Don’t ever go near my daughter again.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Louis leaves Henry broken-hearted in the last bit of sunset. Darkness is coming.</Text>
+    </Paragraph>
+    <Paragraph Number="21" Type="Scene Heading">
+      <SceneProperties Color="#0000FFFF0000" Length="6/8" Page="13" Title="Walter VS Henry">
+        <Summary>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">Walter is a mess. When Henry shows up he yells at him. Henry yells back. Animosity.</Text>
+          </Paragraph>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+          </Paragraph>
+        </Summary>
+        <SceneArcBeats>
+          <CharacterArcBeat Name="HENRY"></CharacterArcBeat>
+          <CharacterArcBeat Name="WALTER">Walter goes too far. When Henry agitates him out of frustration. Walter meets it with violence, striking Henry.
+
+This drives the wedge between him and Henry further.
+
+It also causes Walter to hate himself even more.</CharacterArcBeat>
+        </SceneArcBeats>
+      </SceneProperties>
+      <Text>INT. maST houSE - nIGHT</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>A cast iron skillet drops to the floor with a CLANG as the steak Walter was cooking in it falls out. Walter cries out, having burned himself by the fire.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>He wraps his hand in a towel, muffling curses. He takes a swig from his whiskey bottle to help dull the pain.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Henry storms in.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>WALTER</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Get that steak off the floor will ya?</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>HeNRY</Text>
+    </Paragraph>
+    <Paragraph Type="Parenthetical">
+      <Text>(re: the whiskey)</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <ScriptNote Author="" Color="#00000000FFFF" DateModified="20130813T163606" DateTime="20130308T221733" Name="slang terms for drunk" Type="1800's slang">
+        <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+          <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">Shaney </Text>
+        </Paragraph>
+        <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+          <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">Spooney</Text>
+        </Paragraph>
+        <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+          <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">Corned</Text>
+        </Paragraph>
+        <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+          <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">Tangled-footed </Text>
+        </Paragraph>
+      </ScriptNote>
+      <Text>Looks like you’ve already had dinner.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>WALTER</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Watch the sass, boy. Where you been? I can never find you. I need your help around here. I’m trying to save the farm.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>HENRY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>You couldn’t even save ma.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Walter slaps Henry across the face. Immediately regretting it.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>A tear rolls down Henry’s face but he doesn’t whimper. Instead he stares into Walter with contempt.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>HENRY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>I hate you.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Henry heads to his room. Walter is left hating himself.</Text>
+    </Paragraph>
+    <Paragraph Number="22" Type="Scene Heading">
+      <SceneProperties Color="#0000FFFF0000" Length="3/8" Page="13" Title="Louis at home">
+        <SceneArcBeats>
+          <CharacterArcBeat Name="ELIZABETH"></CharacterArcBeat>
+          <CharacterArcBeat Name="LOUIS"></CharacterArcBeat>
+        </SceneArcBeats>
+      </SceneProperties>
+      <Text>inT. sUTTER HOUSE - louis’s office - nIGHT</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Louis reads over documents by lantern light. His wife Elizabeth fills the doorway.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>Elizabeth</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>She’s stopped crying... if you’re interested.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <ScriptNote Author="" Color="#89895757CFCF" DateModified="20130523T215422" DateTime="20130523T215345" Name="two consecutive character dialogues" Type="errors">
+        <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+          <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">this one should be removed</Text>
+        </Paragraph>
+      </ScriptNote>
+      <Text>ELIZABETH</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="Italic">This dialogue shouldn’t be here.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Louis puts his paperwork down. Of course he’s interested.</Text>
+    </Paragraph>
+    <Paragraph Number="23" Type="Scene Heading">
+      <SceneProperties Color="#0000FFFF0000" Length="3/8" Page="14" Title="Louis's motivation for Mary">
+        <Summary>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">Show that Louis actually does care about his family. He's not a jerk for jerk's sake. Everything he does, even if they seem horrible, are to provide for and keep safe his family.</Text>
+          </Paragraph>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+          </Paragraph>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">Mary hugs him back. Showing he is worthy of love. Though we don't comletely see it. His daughter has obviously seen more from him than we have.</Text>
+          </Paragraph>
+        </Summary>
+        <SceneArcBeats>
+          <CharacterArcBeat Name="LOUIS"></CharacterArcBeat>
+          <CharacterArcBeat Name="MARY"></CharacterArcBeat>
+          <CharacterArcBeat Name="WALTER">Walter's dark knight of the soul moment. He could use a pick-me-up but there's no one around to give it to him.</CharacterArcBeat>
+        </SceneArcBeats>
+      </SceneProperties>
+      <Text>INT. sUTTER HOUSE - mary’s room - nIGHT</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Louis peeks in. Mary’s on her bed, her back to the door. Louis crosses the room, sits gingerly on her bed. Takes his time finding the right words.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LOUIS</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>I’m only trying to do what’s best by you. Someday you’ll understand.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>No response from Mary. Louis considers leaving for a beat.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Mary gets up, climbs into her father’s arms and hugs him tight. He hugs her back. Hard to say ‘I love you’ when you’re upset but it doesn’t mean you can’t show it.</Text>
+    </Paragraph>
+    <Paragraph Type="Transition">
+      <Text>FADE OUT.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>FADE IN:</Text>
+    </Paragraph>
+    <Paragraph Bookmark="foreshadowing the event" Number="24" Type="Scene Heading">
+      <SceneProperties Color="#0000FFFF0000" Length="4/8" Page="14" Title="Walter visits Sarah’s grave">
+        <Summary>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">Walter visits Sarah’s grave. He's at his wit's end.</Text>
+          </Paragraph>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+          </Paragraph>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">A locust lands while he's talking to her. As if it's a sign.</Text>
+          </Paragraph>
+        </Summary>
+        <SceneArcBeats>
+          <CharacterArcBeat Name="WALTER">Walter's dark knight of the soul moment. He could use a pick-me-up but there's no one around to give it to him.</CharacterArcBeat>
+        </SceneArcBeats>
+      </SceneProperties>
+      <ScriptNote Author="" Color="#89895757CFCF" DateModified="20130614T185450" DateTime="20130614T183619" Name="every element added to a scene" Type="errors">
+        <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+          <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">This scene demonstrates the use of every default element in Final Draft.</Text>
+        </Paragraph>
+        <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+          <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+        </Paragraph>
+        <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+          <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">- Transition</Text>
+        </Paragraph>
+        <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+          <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">- Scene Heading</Text>
+        </Paragraph>
+        <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+          <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">- Cast List (rarely used outside of half-hour TV)</Text>
+        </Paragraph>
+        <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+          <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">- Action</Text>
+        </Paragraph>
+        <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+          <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">- Shot</Text>
+        </Paragraph>
+        <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+          <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">- Character</Text>
+        </Paragraph>
+        <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+          <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">- Parenthetical</Text>
+        </Paragraph>
+        <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+          <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">- Dialogue</Text>
+        </Paragraph>
+        <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+          <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">- General</Text>
+        </Paragraph>
+      </ScriptNote>
+      <Text>eXT. mAST FARM - DAY</Text>
+    </Paragraph>
+    <Paragraph Type="Cast List">
+      <Text>(WALTER)</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Abashed, Walter stands before his wife’s grave, wringing his hands.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>WALTER</Text>
+    </Paragraph>
+    <Paragraph Type="Parenthetical">
+      <Text>(softly)</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>I don’t know what to do. Sure could use your advice.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>As if an answer -- </Text>
+    </Paragraph>
+    <Paragraph Type="Shot">
+      <Text>A ROCKY MOUNTAIN LOCUST lands on his wife’s grave marker.</Text>
+    </Paragraph>
+    <Paragraph Alignment="Center" FirstIndent="0.00" Leading="Regular" LeftIndent="1.50" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No" Type="General">
+      <Text>Production note: grave marker is a weathered cross.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Walter studies it, looking for meaning.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>After a moment it flutters away.</Text>
+    </Paragraph>
+    <Paragraph Number="25" Type="Scene Heading">
+      <SceneProperties Color="#0000FFFF0000" Length="2/8" Page="14" Title="Henry returns">
+        <Summary>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">Mary discovers Henry is back</Text>
+          </Paragraph>
+        </Summary>
+        <SceneArcBeats>
+          <CharacterArcBeat Name="HENRY"></CharacterArcBeat>
+          <CharacterArcBeat Name="MARY"></CharacterArcBeat>
+          <CharacterArcBeat Name="WALTER">Walter's lowest point to date.
+
+1. His wife and child are dead
+2. He's a pitiful alcoholic
+3. He's losing his farm
+4. His relationship with his son is horrible
+
+He's lost it all. Angry, and probably drunk, he's had enough.
+
+When the horse knocks him on his butt and destroys his land and wife's grave it's time to act.</CharacterArcBeat>
+        </SceneArcBeats>
+      </SceneProperties>
+      <Text>inT. sUTTER HOUSE - DAY</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Mary combs through the hair of her doll. Suddenly there’s a PLINK of something against her window.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Mary goes to the window to investigate. </Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Below: Henry, waves for her to come outside.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Mary’s face lights up when she sees him.</Text>
+    </Paragraph>
+    <Paragraph Number="26" Type="Scene Heading">
+      <SceneProperties Color="#0000FFFF0000" Length="5/8" Page="15" Title="Walter breaks">
+        <Summary>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">Walter in the field by himself. </Text>
+          </Paragraph>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+          </Paragraph>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">His equipment breaks and his horse runs off. Horse damages Sarah's grave stone. (must setup grave earlier)</Text>
+          </Paragraph>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+          </Paragraph>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">He's at his breaking point.</Text>
+          </Paragraph>
+        </Summary>
+        <SceneArcBeats>
+          <CharacterArcBeat Name="WALTER">Walter's lowest point to date.
+
+1. His wife and child are dead
+2. He's a pitiful alcoholic
+3. He's losing his farm
+4. His relationship with his son is horrible
+
+He's lost it all. Angry, and probably drunk, he's had enough.
+
+When the horse knocks him on his butt and destroys his land and wife's grave it's time to act.</CharacterArcBeat>
+        </SceneArcBeats>
+      </SceneProperties>
+      <Text>EXT. maST FARM - DAY</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <ScriptNote Author="" Color="#89895757CFCF" DateModified="20130614T182839" DateTime="20130614T182839" Name="empty element" Type="errors">
+        <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+          <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">should be removed</Text>
+        </Paragraph>
+      </ScriptNote>
+      <Text>A plow share chews up earth as it goes. </Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Walter’s in the field running it behind his horse.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Suddenly the horse stops.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>WALTER</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Come on.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Walter snaps the reigns but his horse doesn’t respond.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Frustrated Walter moves beside it. Smacks it on the butt. Nothing. He tries again -- slapping it so hard the horse rears up -- knocks Walter to the ground -- </Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <ScriptNote Author="" Color="#89895757CFCF" DateModified="20130523T214852" DateTime="20130523T214814" Name="two spaces to start the line" Type="errors">
+        <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+          <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+        </Paragraph>
+      </ScriptNote>
+      <Text>  The horse breaks from the field, dragging the plow behind.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Walter can only watch as it jangles and digs, puncturing his land in a Morse code of destruction.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>WALTER</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>No!</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>The horse barrels right into his wife’s grave. Destroying the cross. Ripping soil like an open wound.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Walter clenches his jaw. Lets out a roar. He’s had enough...</Text>
+    </Paragraph>
+    <Paragraph Number="27" Type="Scene Heading">
+      <SceneProperties Color="#0000FFFF0000" Length="6/8" Page="15" Title="Henry's big plan">
+        <Summary>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">Henry hatches a plan for him and Mary to escape</Text>
+          </Paragraph>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+          </Paragraph>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">Problem being Mary has it pretty good. She doesn't want to leave her family and her big house.</Text>
+          </Paragraph>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+          </Paragraph>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">His plan is crazy to her. She rejects him.</Text>
+          </Paragraph>
+        </Summary>
+        <SceneArcBeats>
+          <CharacterArcBeat Name="HENRY"></CharacterArcBeat>
+          <CharacterArcBeat Name="MARY"></CharacterArcBeat>
+        </SceneArcBeats>
+      </SceneProperties>
+      <Text>eXT. suTTER HOUSE - DAY</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Henry and Mary hide behind a tree in her back yard.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>HENRY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>There’s a train tonight. Well have to go on the fly and hide in the cow crate so the bulls don’t get us. When we get to Lincoln we’ll find a flop. I’ll get work in a factory. You’ll have to work too.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Mary looks dismayed by his plan.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>MARY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>I don’t want to leave.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>HENRY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>It’s okay. I’m scared too. We’ll be fine.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>MARY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>That’s easy for you to say you’re not leaving anything behind.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Henry is stunned. She’s never insulted him before.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>HENRY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>It’s the only way we can be together.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Mary hesitates... can barely speak.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>MARY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>I don’t want to go.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Henry sinks back. Crestfallen.</Text>
+    </Paragraph>
+    <Paragraph Number="28" Type="Scene Heading">
+      <SceneProperties Color="#0000FFFF0000" Length="2/8" Page="16" Title="Louis looks for Mary">
+        <Summary>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">Louis hunts for Mary</Text>
+          </Paragraph>
+        </Summary>
+        <SceneArcBeats>
+          <CharacterArcBeat Name="LOUIS"></CharacterArcBeat>
+        </SceneArcBeats>
+      </SceneProperties>
+      <Text>INT. sUTTER HOUSE - same time</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Louis scans the house.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LOUIS</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Mary?</Text>
+    </Paragraph>
+    <Paragraph Number="29" Type="Scene Heading">
+      <SceneProperties Color="#FFFF00000000" Length="2 7/8" Page="16" Title="IT ALL GOES DOWN">
+        <Summary>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">Mary agrees to run away with Henry. </Text>
+          </Paragraph>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+          </Paragraph>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">Louis catches them. Is about to lay the beat down on Henry when Walter shows up with a rifle.</Text>
+          </Paragraph>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+          </Paragraph>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">It's all about ot go down.</Text>
+          </Paragraph>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+          </Paragraph>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">...and then come the LOCUSTS!</Text>
+          </Paragraph>
+        </Summary>
+        <SceneArcBeats>
+          <CharacterArcBeat Name="ELIZABETH"></CharacterArcBeat>
+          <CharacterArcBeat Name="HENRY"></CharacterArcBeat>
+          <CharacterArcBeat Name="LOUIS"></CharacterArcBeat>
+          <CharacterArcBeat Name="MARY"></CharacterArcBeat>
+          <CharacterArcBeat Name="WALTER">Walter tries to kill Louis.
+
+At his nadir he accepts whatever comes next. Including his own death.
+
+</CharacterArcBeat>
+        </SceneArcBeats>
+      </SceneProperties>
+      <Text>back outside with mary and henry</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Henry grabs Mary’s hand.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>HENRY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>If I leave now you’re never going to see me again.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>He waits for sign from Mary but she offers none. Can’t even meet his eyes. </Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Defeated Henry stands. Instantly he’s yanked back down by Mary.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>MARY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Okay.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Her eyes are heavy with sadness but at least they look at Henry. It’s enough.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Henry tends a soft smile. Happy she’s coming.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>HENRY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Okay.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Henry rises just as a hand clamps down on him from behind -- throws him across the lawn.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LOUIS</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>What did I tell you? </Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>MARY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Daddy, no!</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Henry tries to get up but Louis shoves him further across the lawn. Advancing faster than he can react.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LOUIS</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>What were the words I spoke?</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Another shove.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LOUIS</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>If you’ve forgotten than perhaps I need to beat them into your memory.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Louis raises his fist to strike Henry.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LOUIS</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Keep away from my--</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>CRACK! A SHOT rings out. </Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Louis jolts as his shoulder dribbles blood, nipped by the bullet that just whizzed by him. A flesh wound.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Walter stands thirty yards away. Staring down the smoking barrel of his Winchester rifle.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>His tone is measured and firm.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>WALTER</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Step away from my boy.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Mary screams. Runs in the house.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LOUIS</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>You shot me. You fuddled dolt.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Mouth agape, Henry scrutinizes Walter. Unsure if he fired a warning shot or if he’s so drunk he missed.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LOUIS</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>You’ll be in the calaboose by dinner. I’ll see to that. You’ve dug your own grave.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Walter cocks the lever on his rifle. </Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Henry can see now: that was no warning shot. </Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Louis sees it too. Finally as nervous as he should be.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LOUIS</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Wait a minute now. Hold on...</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Walter takes aim.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Suddenly Elizabeth emerges from the house with Louis’s rifle trained on Walter. Mary just behind her.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>HeNRY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>No!</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Walter sees her.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>elIZABETH</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>I’m a God fearing woman, mister, but if you don’t get that rifle off my husband I’ll bury you.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Eyes dart from side-to-side. Who will be the first to flinch?</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Nobody moves. The air so thick with tension no one even breathes.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Walter refocuses on Louis. Resigned to whatever fate comes after. He fingers the trigger. Ready.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Suddenly a locust lands on Walter’s gun barrel.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Walter studies it. Perplexed.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Is it a sign from his wife?</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Another locust zips by. Then another.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>The sunlight dims on everyone -- as if a large cloud has moved overhead.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Then comes the noise: the strange, awful BUZZING. Growing louder with each second. Getting closer.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Everyone can feel it. Something’s not right.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Mary’s the first to look up. Her eyes going wide. Mouth agape.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>MARY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Daddy...</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Louis looks to the sky. The dread washing over his face too.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Finally Walter pries his focus from Louis. Gazes to the heavens.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>The sky is alive in a swarm of locusts. Millions of them. Enough to block the sun, and every other inch of sky.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Walter lowers his rifle in sheer awe.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>WALTER</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>My God.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Louis stumbles toward the house.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LOUIS</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Inside! Everybody inside!</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Everyone rushes for the house as the swarm descends at them.</Text>
+    </Paragraph>
+    <Paragraph Number="30" Type="Scene Heading">
+      <SceneProperties Color="#FFFF00000000" Length="1" Page="19" Title="at the door">
+        <Summary>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">Louis VS Walter at the front door. </Text>
+          </Paragraph>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+          </Paragraph>
+          <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+            <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">He won't let them in!</Text>
+          </Paragraph>
+        </Summary>
+        <SceneArcBeats>
+          <CharacterArcBeat Name="ELIZABETH"></CharacterArcBeat>
+          <CharacterArcBeat Name="HENRY"></CharacterArcBeat>
+          <CharacterArcBeat Name="LOUIS"></CharacterArcBeat>
+          <CharacterArcBeat Name="MARY"></CharacterArcBeat>
+          <CharacterArcBeat Name="WALTER">Walter must choose between hurting Louis or saving Henry.</CharacterArcBeat>
+        </SceneArcBeats>
+      </SceneProperties>
+      <Text>Int./ext. SUTTER HOUSE - front door - conTINUOUS</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Elizabeth pushes Mary inside. Louis pulls the screen door tight behind.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>ELIZABETH</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>What are you doing?</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Henry and Walter scramble for the porch. Swatting locusts as they go.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Henry gets to the door first. He jerks at the handle but Louis holds it fast.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>HeNRY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Let us in.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Henry jerks at the door to no avail.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>MARY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Let him in.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>ELIZABETH</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Louis, please.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>The locusts are everywhere now. Engulfing the landscape. The ground turning to a living carpet of hungry insects.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Walter finally makes it to the porch.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Louis lets go of the door -- grabs his rifle from Elizabeth -- raises it in time to meet Walter’s. Both men are face-to-face with each other’s guns.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Locusts crawl across Walter but he doesn’t flinch. This could be his chance to kill Louis.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>HeNRY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Mr. Sutter--</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>MARY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Daddy...</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LOUIS</Text>
+    </Paragraph>
+    <Paragraph Type="Parenthetical">
+      <Text>(to Walter)</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>You’re not getting in here with that rifle.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Walter stares into Louis’s cold eyes. </Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>He can hear Henry screaming, struggling to wipe the locusts clean. They need to get inside fast.</Text>
+    </Paragraph>
+  </Content>
+
+  <Watermarking Opacity="70" Position="Diagonal Descending">
+    <DynamicContent>
+      <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+    </DynamicContent>
+    <Distribution>
+      <Name></Name>
+    </Distribution>
+    <WatermarkImage Height="144"></WatermarkImage>
+  </Watermarking>
+
+  <HeaderAndFooter FooterFirstPage="Yes" FooterVisible="No" HeaderFirstPage="No" HeaderVisible="Yes" StartingPage="1">
+    <Header>
+      <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="1.25" RightIndent="-1.00" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""> </Text>
+        <DynamicLabel Type="Last Revised"/>
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""> </Text>
+        <DynamicLabel Type="Page #"/>
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">.</Text>
+        <Tabstops>
+          <Tabstop Position="4.50" Type="Center"/>
+          <Tabstop Position="7.25" Type="Right"/>
+        </Tabstops>
+      </Paragraph>
+    </Header>
+    <Footer>
+      <Paragraph Alignment="Right" FirstIndent="0.00" Leading="Regular" LeftIndent="1.25" RightIndent="-1.25" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""> </Text>
+      </Paragraph>
+    </Footer>
+  </HeaderAndFooter>
+
+  <SpellCheckIgnoreLists>
+    <IgnoredRanges>
+      <Range End="31" Start="29"/>
+      <Range End="50" Start="41"/>
+      <Range End="128" Start="123"/>
+      <Range End="217" Start="212"/>
+      <Range End="427" Start="423"/>
+      <Range End="2523" Start="2519"/>
+      <Range End="2657" Start="2653"/>
+      <Range End="3168" Start="3163"/>
+      <Range End="3191" Start="3186"/>
+      <Range End="6366" Start="6359"/>
+      <Range End="6378" Start="6375"/>
+      <Range End="8554" Start="8547"/>
+      <Range End="10267" Start="10262"/>
+      <Range End="14019" Start="14014"/>
+      <Range End="17341" Start="17336"/>
+    </IgnoredRanges>
+    <IgnoredWords/>
+  </SpellCheckIgnoreLists>
+
+  <PageLayout BackgroundColor="#FFFFFFFFFFFF" BottomMargin="72" BreakDialogueAndActionAtSentences="Yes" DocumentLeading="Normal" FooterMargin="36" ForegroundColor="#000000000000" HeaderMargin="36" InvisiblesColor="#808080808080" TopMargin="72" UsesSmartQuotes="Yes">
+    <PageSize Height="11.00" Width="8.50"/>
+    <AutoCastList AddParentheses="Yes" AutomaticallyGenerate="Yes" CastListElement="Cast List"/>
+  </PageLayout>
+
+  <WindowState Height="1109" Left="1446" Mode="Normal" Top="208" Width="985"/>
+
+  <TextState Scaling="100" Selection="546,546" ShowInvisibles="Yes"/>
+
+  <ElementSettings Type="General">
+    <FontSpec AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""/>
+    <ParagraphSpec Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="1.50" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+    <Behavior PaginateAs="General" ReturnKey="General" Shortcut="0"/>
+  </ElementSettings>
+
+  <ElementSettings Type="Scene Heading">
+    <FontSpec AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="AllCaps"/>
+    <ParagraphSpec Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="1.50" RightIndent="7.50" SpaceBefore="24" Spacing="1" StartsNewPage="No"/>
+    <Behavior PaginateAs="Scene Heading" ReturnKey="Action" Shortcut="1"/>
+  </ElementSettings>
+
+  <ElementSettings Type="Action">
+    <FontSpec AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""/>
+    <ParagraphSpec Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="1.50" RightIndent="7.50" SpaceBefore="12" Spacing="1" StartsNewPage="No"/>
+    <Behavior PaginateAs="Action" ReturnKey="Action" Shortcut="2"/>
+  </ElementSettings>
+
+  <ElementSettings Type="Character">
+    <FontSpec AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="AllCaps"/>
+    <ParagraphSpec Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="3.50" RightIndent="7.25" SpaceBefore="12" Spacing="1" StartsNewPage="No"/>
+    <Behavior PaginateAs="Character" ReturnKey="Dialogue" Shortcut="3"/>
+  </ElementSettings>
+
+  <ElementSettings Type="Parenthetical">
+    <FontSpec AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""/>
+    <ParagraphSpec Alignment="Left" FirstIndent="-0.10" Leading="Regular" LeftIndent="3.00" RightIndent="5.50" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+    <Behavior PaginateAs="Parenthetical" ReturnKey="Dialogue" Shortcut="4"/>
+  </ElementSettings>
+
+  <ElementSettings Type="Dialogue">
+    <FontSpec AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""/>
+    <ParagraphSpec Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="2.50" RightIndent="6.00" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+    <Behavior PaginateAs="Dialogue" ReturnKey="Action" Shortcut="5"/>
+  </ElementSettings>
+
+  <ElementSettings Type="Transition">
+    <FontSpec AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="AllCaps"/>
+    <ParagraphSpec Alignment="Right" FirstIndent="0.00" Leading="Regular" LeftIndent="5.50" RightIndent="7.10" SpaceBefore="12" Spacing="1" StartsNewPage="No"/>
+    <Behavior PaginateAs="Transition" ReturnKey="Scene Heading" Shortcut="6"/>
+  </ElementSettings>
+
+  <ElementSettings Type="Shot">
+    <FontSpec AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="AllCaps"/>
+    <ParagraphSpec Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="1.50" RightIndent="7.50" SpaceBefore="24" Spacing="1" StartsNewPage="No"/>
+    <Behavior PaginateAs="Scene Heading" ReturnKey="Action" Shortcut="7"/>
+  </ElementSettings>
+
+  <ElementSettings Type="Cast List">
+    <FontSpec AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="AllCaps"/>
+    <ParagraphSpec Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="1.50" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+    <Behavior PaginateAs="Action" ReturnKey="Action" Shortcut="8"/>
+  </ElementSettings>
+
+  <TitlePage>
+    <HeaderAndFooter FooterFirstPage="Yes" FooterVisible="No" HeaderFirstPage="No" HeaderVisible="Yes" StartingPage="1">
+      <Header>
+        <Paragraph Alignment="Right" FirstIndent="0.00" Leading="Regular" LeftIndent="1.25" RightIndent="-1.25" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+          <DynamicLabel Type="Page #"/>
+          <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">.</Text>
+        </Paragraph>
+      </Header>
+      <Footer>
+        <Paragraph Alignment="Right" FirstIndent="0.00" Leading="Regular" LeftIndent="1.25" RightIndent="-1.25" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+          <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+        </Paragraph>
+      </Footer>
+    </HeaderAndFooter>
+    <Content>
+      <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+      <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+      <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+      <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+      <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+      <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+      <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+      <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+      <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+      <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+      <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+      <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+      <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+      <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+      <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+      <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+      <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+      <Paragraph Alignment="Center" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="Underline+AllCaps">FARMLAND</Text>
+      </Paragraph>
+      <Paragraph Alignment="Center" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+      <Paragraph Alignment="Center" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">by</Text>
+      </Paragraph>
+      <Paragraph Alignment="Center" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+      <Paragraph Alignment="Center" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">Jeffrey Stoltzfus</Text>
+      </Paragraph>
+      <Paragraph Alignment="Center" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+      <Paragraph Alignment="Center" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+      <Paragraph Alignment="Center" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+      <Paragraph Alignment="Center" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+      <Paragraph Alignment="Center" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">Inspired by a true event</Text>
+      </Paragraph>
+      <Paragraph Alignment="Center" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+      <Paragraph Alignment="Center" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+      <Paragraph Alignment="Center" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+      <Paragraph Alignment="Center" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+      <Paragraph Alignment="Center" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+      <Paragraph Alignment="Center" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+      <Paragraph Alignment="Center" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+      <Paragraph Alignment="Center" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+      <Paragraph Alignment="Center" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+      <Paragraph Alignment="Center" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+      <Paragraph Alignment="Center" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+      <Paragraph Alignment="Center" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+      <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+      <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+      <Paragraph Alignment="Full" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+      <Paragraph Alignment="Full" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+      <Paragraph Alignment="Full" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+      <Paragraph Alignment="Full" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+      <Paragraph Alignment="Full" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+      <Paragraph Alignment="Full" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+      <Paragraph Alignment="Full" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+      <Paragraph Alignment="Full" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+      <Paragraph Alignment="Full" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">Address</Text>
+      </Paragraph>
+      <Paragraph Alignment="Full" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">Phone Number</Text>
+      </Paragraph>
+      <Paragraph Alignment="Full" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">Email address</Text>
+      </Paragraph>
+      <Paragraph Alignment="Full" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+      <Paragraph Alignment="Full" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+      <Paragraph Alignment="Full" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+      <Paragraph Alignment="Full" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+      <Paragraph Alignment="Full" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+      <Paragraph Alignment="Full" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+      <Paragraph Alignment="Full" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+      <Paragraph Alignment="Full" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+      <Paragraph Alignment="Full" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+      <Paragraph Alignment="Full" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+      <Paragraph Alignment="Full" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+      <Paragraph Alignment="Full" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+      <Paragraph Alignment="Full" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+      <Paragraph Alignment="Full" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+      <Paragraph Alignment="Full" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+      <Paragraph Alignment="Full" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+      <Paragraph Alignment="Full" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+      <Paragraph Alignment="Full" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+      <Paragraph Alignment="Full" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+      <Paragraph Alignment="Full" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+      <Paragraph Alignment="Center" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="Italic">"You cannot find peace by avoiding life."</Text>
+      </Paragraph>
+      <Paragraph Alignment="Center" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+      <Paragraph Alignment="Center" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="Italic">-- Virginia Woolf</Text>
+      </Paragraph>
+    </Content>
+    <TextState Scaling="100" Selection="150,150" ShowInvisibles="No"/>
+  </TitlePage>
+
+  <UnanchoredScriptNotes>
+    <ScriptNote Author="" Color="#89895757CFCF" DateModified="20130614T182916" DateTime="20130614T180959" Name="every element used" Type="errors">
+      <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+    </ScriptNote>
+    <ScriptNote Author="" Color="#FFFFFFFF0000" DateModified="20130522T001503" DateTime="20130221T190323" Name="alternate titles" Type="">
+      <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">- The Swarm</Text>
+      </Paragraph>
+      <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">- Heartland</Text>
+      </Paragraph>
+      <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""></Text>
+      </Paragraph>
+    </ScriptNote>
+  </UnanchoredScriptNotes>
+
+  <SmartType>
+    <Characters>
+      <Character>Louis</Character>
+      <Character>Walter</Character>
+      <Character>Henry</Character>
+      <Character>Mary</Character>
+      <Character>Bank official</Character>
+      <Character>Neighbor</Character>
+      <Character>Elizabeth</Character>
+      <Character>grim farmer</Character>
+      <Character>Woeful farmer</Character>
+      <Character>Doctor</Character>
+      <Character>NEIGHBOR'S WIFE</Character>
+      <Character>NEIGHBOR'S DAUGHTER 2</Character>
+      <Character>NEIGHBOR'S DAUGHTER 1</Character>
+      <Character>ANNA</Character>
+      <Character>LOUI</Character>
+    </Characters>
+    <Extensions>
+      <Extension>(V.O.)</Extension>
+      <Extension>(O.S.)</Extension>
+      <Extension>(O.C.)</Extension>
+      <Extension>(CONT'D)</Extension>
+      <Extension>(SUBTITLE)</Extension>
+    </Extensions>
+    <SceneIntros Separator=". ">
+      <SceneIntro>INT</SceneIntro>
+      <SceneIntro>EXT</SceneIntro>
+      <SceneIntro>I/E</SceneIntro>
+      <SceneIntro>INT./EXT</SceneIntro>
+    </SceneIntros>
+    <Locations>
+      <Location>Mast farm</Location>
+      <Location>Mast HOUSE</Location>
+      <Location>church</Location>
+      <Location>sUTTER HOUSE</Location>
+      <Location>SUTTER HOUSE - front door</Location>
+      <Location>outside with mary and henry</Location>
+      <Location>sUTTER HOUSE - mary’s room</Location>
+      <Location>sUTTER HOUSE - louis’s office</Location>
+      <Location>Creek</Location>
+      <Location>praIRIE</Location>
+      <Location>baNK</Location>
+      <Location>Neighbor farm</Location>
+      <Location>Mast HOUSE - walter’s bedroom</Location>
+      <Location>LOCATION</Location>
+      <Location>SADASDASDASDASD</Location>
+    </Locations>
+    <TimesOfDay Separator=" - ">
+      <TimeOfDay>DAY</TimeOfDay>
+      <TimeOfDay>NIGHT</TimeOfDay>
+      <TimeOfDay>AFTERNOON</TimeOfDay>
+      <TimeOfDay>MORNING</TimeOfDay>
+      <TimeOfDay>EVENING</TimeOfDay>
+      <TimeOfDay>LATER</TimeOfDay>
+      <TimeOfDay>MOMENTS LATER</TimeOfDay>
+      <TimeOfDay>CONTINUOUS</TimeOfDay>
+      <TimeOfDay>THE NEXT DAY</TimeOfDay>
+      <TimeOfDay>WALTER'S BEDROOM</TimeOfDay>
+      <TimeOfDay>SUNSET</TimeOfDay>
+      <TimeOfDay>MARY'S ROOM</TimeOfDay>
+      <TimeOfDay>SAME TIME</TimeOfDay>
+    </TimesOfDay>
+    <Transitions>
+      <Transition>CUT TO:</Transition>
+      <Transition>FADE IN:</Transition>
+      <Transition>FADE OUT.</Transition>
+      <Transition>FADE TO:</Transition>
+      <Transition>DISSOLVE TO:</Transition>
+      <Transition>BACK TO:</Transition>
+      <Transition>MATCH CUT TO:</Transition>
+      <Transition>JUMP CUT TO:</Transition>
+      <Transition>FADE TO BLACK.</Transition>
+      <Transition>Fade out:</Transition>
+    </Transitions>
+  </SmartType>
+
+  <MoresAndContinueds>
+    <FontSpec AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""/>
+    <DialogueBreaks AutomaticCharacterContinueds="No" BottomOfPage="Yes" DialogueBottom="(MORE)" DialogueTop="(CONT'D)" TopOfNext="Yes"/>
+    <SceneBreaks ContinuedNumber="No" SceneBottom="(CONTINUED)" SceneBottomOfPage="No" SceneTop="CONTINUED:" SceneTopOfNext="No"/>
+  </MoresAndContinueds>
+
+  <LockedPages/>
+
+  <Revisions ActiveSet="1" Location="7.75" RevisionMode="No" RevisionsShown="Active" ShowAllMarks="No" ShowAllSets="No" ShowPageColor="No">
+    <Revision Color="#000000000000" FullRevision="No" ID="1" Mark="*" Name="Blue Rev. (mm/dd/yyyy)" PageColor="#C6C6EDEDFEFE" Style=""/>
+    <Revision Color="#000000000000" FullRevision="No" ID="2" Mark="*" Name="Pink Rev. (mm/dd/yyyy)" PageColor="#FDFDCCCCD4D4" Style=""/>
+    <Revision Color="#000000000000" FullRevision="No" ID="3" Mark="*" Name="Yellow Rev. (mm/dd/yyyy)" PageColor="#FDFDFFFFABAB" Style=""/>
+    <Revision Color="#000000000000" FullRevision="No" ID="4" Mark="*" Name="Green Rev. (mm/dd/yyyy)" PageColor="#D1D1FEFED0D0" Style=""/>
+    <Revision Color="#000000000000" FullRevision="No" ID="5" Mark="*" Name="Goldenrod Rev. (mm/dd/yyyy)" PageColor="#FAFACDCD3939" Style=""/>
+    <Revision Color="#000000000000" FullRevision="No" ID="6" Mark="*" Name="Buff Rev. (mm/dd/yyyy)" PageColor="#FCFCEDED9D9D" Style=""/>
+    <Revision Color="#000000000000" FullRevision="No" ID="7" Mark="*" Name="Salmon Rev. (mm/dd/yyyy)" PageColor="#F8F8AEAE8E8E" Style=""/>
+    <Revision Color="#000000000000" FullRevision="No" ID="8" Mark="*" Name="Cherry Rev. (mm/dd/yyyy)" PageColor="#FBFBA4A4B4B4" Style=""/>
+    <Revision Color="#000000000000" FullRevision="No" ID="9" Mark="*" Name="Tan Rev. (mm/dd/yyyy)" PageColor="#FDFDF1F1C7C7" Style=""/>
+    <Revision Color="#000000000000" FullRevision="No" ID="10" Mark="*" Name="2nd White Rev. (mm/dd/yyyy)" PageColor="#FFFFFFFFFFFF" Style=""/>
+    <Revision Color="#000000000000" FullRevision="No" ID="11" Mark="*" Name="2nd Blue Rev. (mm/dd/yyyy)" PageColor="#C6C6EDEDFEFE" Style=""/>
+    <Revision Color="#000000000000" FullRevision="No" ID="12" Mark="*" Name="2nd Pink Rev. (mm/dd/yyyy)" PageColor="#FDFDCCCCD4D4" Style=""/>
+    <Revision Color="#000000000000" FullRevision="No" ID="13" Mark="*" Name="2nd Yellow Rev. (mm/dd/yyyy)" PageColor="#FDFDFFFFABAB" Style=""/>
+    <Revision Color="#000000000000" FullRevision="No" ID="14" Mark="*" Name="2nd Green Rev. (mm/dd/yyyy)" PageColor="#D1D1FEFED0D0" Style=""/>
+    <Revision Color="#000000000000" FullRevision="No" ID="15" Mark="*" Name="2nd Goldenrod Rev. (mm/dd/yyyy)" PageColor="#FAFACDCD3939" Style=""/>
+    <Revision Color="#000000000000" FullRevision="No" ID="16" Mark="*" Name="2nd Buff Rev. (mm/dd/yyyy)" PageColor="#FCFCEDED9D9D" Style=""/>
+    <Revision Color="#000000000000" FullRevision="No" ID="17" Mark="*" Name="2nd Salmon Rev. (mm/dd/yyyy)" PageColor="#F8F8AEAE8E8E" Style=""/>
+    <Revision Color="#000000000000" FullRevision="No" ID="18" Mark="*" Name="2nd Cherry Rev. (mm/dd/yyyy)" PageColor="#FBFBA4A4B4B4" Style=""/>
+    <Revision Color="#000000000000" FullRevision="No" ID="19" Mark="*" Name="2nd Tan Rev. (mm/dd/yyyy)" PageColor="#FDFDF1F1C7C7" Style=""/>
+  </Revisions>
+
+  <SplitState ActivePanel="1" SplitMode="None" SplitterPosition="0">
+    <ScriptPanel DisplayMode="Normal">
+      <FontSpec AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Verdana" RevisionID="0" Size="9" Style=""/>
+    </ScriptPanel>
+  </SplitState>
+
+  <Macros>
+    <Macro Element="Scene Heading" Name="INT" Shortcut="Ctrl+Alt+1" Text="INT. " Transition="None">
+      <Alias Confirm="No" MatchCase="No" SmartReplace="Yes" Text="" WordOnly="No">
+        <ActivateIn Element="General"/>
+        <ActivateIn Element="Scene Heading"/>
+        <ActivateIn Element="Action"/>
+        <ActivateIn Element="Character"/>
+        <ActivateIn Element="Parenthetical"/>
+        <ActivateIn Element="Dialogue"/>
+        <ActivateIn Element="Transition"/>
+        <ActivateIn Element="Shot"/>
+      </Alias>
+    </Macro>
+    <Macro Element="Scene Heading" Name="EXT" Shortcut="Ctrl+Alt+2" Text="EXT. " Transition="None">
+      <Alias Confirm="No" MatchCase="No" SmartReplace="Yes" Text="" WordOnly="No">
+        <ActivateIn Element="General"/>
+        <ActivateIn Element="Scene Heading"/>
+        <ActivateIn Element="Action"/>
+        <ActivateIn Element="Character"/>
+        <ActivateIn Element="Parenthetical"/>
+        <ActivateIn Element="Dialogue"/>
+        <ActivateIn Element="Transition"/>
+        <ActivateIn Element="Shot"/>
+      </Alias>
+    </Macro>
+    <Macro Element="Scene Heading" Name="I/E" Shortcut="Ctrl+Alt+3" Text="I/E " Transition="None">
+      <Alias Confirm="No" MatchCase="No" SmartReplace="Yes" Text="" WordOnly="No">
+        <ActivateIn Element="General"/>
+        <ActivateIn Element="Scene Heading"/>
+        <ActivateIn Element="Action"/>
+        <ActivateIn Element="Character"/>
+        <ActivateIn Element="Parenthetical"/>
+        <ActivateIn Element="Dialogue"/>
+        <ActivateIn Element="Transition"/>
+        <ActivateIn Element="Shot"/>
+      </Alias>
+    </Macro>
+    <Macro Element="Scene Heading" Name="DAY" Shortcut="Ctrl+Alt+4" Text=" - DAY" Transition="Action">
+      <Alias Confirm="No" MatchCase="No" SmartReplace="Yes" Text="" WordOnly="No">
+        <ActivateIn Element="General"/>
+        <ActivateIn Element="Scene Heading"/>
+        <ActivateIn Element="Action"/>
+        <ActivateIn Element="Character"/>
+        <ActivateIn Element="Parenthetical"/>
+        <ActivateIn Element="Dialogue"/>
+        <ActivateIn Element="Transition"/>
+        <ActivateIn Element="Shot"/>
+      </Alias>
+    </Macro>
+    <Macro Element="Scene Heading" Name="NIGHT" Shortcut="Ctrl+Alt+5" Text=" - NIGHT" Transition="Action">
+      <Alias Confirm="No" MatchCase="No" SmartReplace="Yes" Text="" WordOnly="No">
+        <ActivateIn Element="General"/>
+        <ActivateIn Element="Scene Heading"/>
+        <ActivateIn Element="Action"/>
+        <ActivateIn Element="Character"/>
+        <ActivateIn Element="Parenthetical"/>
+        <ActivateIn Element="Dialogue"/>
+        <ActivateIn Element="Transition"/>
+        <ActivateIn Element="Shot"/>
+      </Alias>
+    </Macro>
+    <Macro Element="Scene Heading" Name="SUNRISE" Shortcut="Ctrl+Alt+6" Text=" - SUNRISE" Transition="Action">
+      <Alias Confirm="No" MatchCase="No" SmartReplace="Yes" Text="" WordOnly="No">
+        <ActivateIn Element="General"/>
+        <ActivateIn Element="Scene Heading"/>
+        <ActivateIn Element="Action"/>
+        <ActivateIn Element="Character"/>
+        <ActivateIn Element="Parenthetical"/>
+        <ActivateIn Element="Dialogue"/>
+        <ActivateIn Element="Transition"/>
+        <ActivateIn Element="Shot"/>
+      </Alias>
+    </Macro>
+    <Macro Element="Scene Heading" Name="MAGIC" Shortcut="Ctrl+Alt+7" Text=" - MAGIC" Transition="Action">
+      <Alias Confirm="No" MatchCase="No" SmartReplace="Yes" Text="" WordOnly="No">
+        <ActivateIn Element="General"/>
+        <ActivateIn Element="Scene Heading"/>
+        <ActivateIn Element="Action"/>
+        <ActivateIn Element="Character"/>
+        <ActivateIn Element="Parenthetical"/>
+        <ActivateIn Element="Dialogue"/>
+        <ActivateIn Element="Transition"/>
+        <ActivateIn Element="Shot"/>
+      </Alias>
+    </Macro>
+    <Macro Element="Parenthetical" Name="CONT" Shortcut="Ctrl+Alt+8" Text="continuing" Transition="Dialogue">
+      <Alias Confirm="No" MatchCase="No" SmartReplace="Yes" Text="" WordOnly="No">
+        <ActivateIn Element="General"/>
+        <ActivateIn Element="Scene Heading"/>
+        <ActivateIn Element="Action"/>
+        <ActivateIn Element="Character"/>
+        <ActivateIn Element="Parenthetical"/>
+        <ActivateIn Element="Dialogue"/>
+        <ActivateIn Element="Transition"/>
+        <ActivateIn Element="Shot"/>
+      </Alias>
+    </Macro>
+    <Macro Element="Parenthetical" Name="INTER" Shortcut="Ctrl+Alt+9" Text="interrupting" Transition="Dialogue">
+      <Alias Confirm="No" MatchCase="No" SmartReplace="Yes" Text="" WordOnly="No">
+        <ActivateIn Element="General"/>
+        <ActivateIn Element="Scene Heading"/>
+        <ActivateIn Element="Action"/>
+        <ActivateIn Element="Character"/>
+        <ActivateIn Element="Parenthetical"/>
+        <ActivateIn Element="Dialogue"/>
+        <ActivateIn Element="Transition"/>
+        <ActivateIn Element="Shot"/>
+      </Alias>
+    </Macro>
+    <Macro Element="None" Name="WALTER" Shortcut="Ctrl+Shift+W" Text="Walter" Transition="None">
+      <Alias Confirm="No" MatchCase="No" SmartReplace="Yes" Text="" WordOnly="No">
+        <ActivateIn Element="General"/>
+        <ActivateIn Element="Scene Heading"/>
+        <ActivateIn Element="Action"/>
+        <ActivateIn Element="Character"/>
+        <ActivateIn Element="Parenthetical"/>
+        <ActivateIn Element="Dialogue"/>
+        <ActivateIn Element="Transition"/>
+        <ActivateIn Element="Shot"/>
+      </Alias>
+    </Macro>
+    <Macro Element="Transition" Name="CUTTO" Shortcut="Ctrl+Shift+Alt+1" Text="CUT TO:" Transition="Scene Heading">
+      <Alias Confirm="No" MatchCase="No" SmartReplace="Yes" Text="" WordOnly="No">
+        <ActivateIn Element="General"/>
+        <ActivateIn Element="Scene Heading"/>
+        <ActivateIn Element="Action"/>
+        <ActivateIn Element="Character"/>
+        <ActivateIn Element="Parenthetical"/>
+        <ActivateIn Element="Dialogue"/>
+        <ActivateIn Element="Transition"/>
+        <ActivateIn Element="Shot"/>
+      </Alias>
+    </Macro>
+    <Macro Element="Action" Name="FADEIN" Shortcut="Ctrl+Shift+Alt+2" Text="FADE IN:" Transition="Scene Heading">
+      <Alias Confirm="No" MatchCase="No" SmartReplace="Yes" Text="" WordOnly="No">
+        <ActivateIn Element="General"/>
+        <ActivateIn Element="Scene Heading"/>
+        <ActivateIn Element="Action"/>
+        <ActivateIn Element="Character"/>
+        <ActivateIn Element="Parenthetical"/>
+        <ActivateIn Element="Dialogue"/>
+        <ActivateIn Element="Transition"/>
+        <ActivateIn Element="Shot"/>
+      </Alias>
+    </Macro>
+    <Macro Element="Transition" Name="FADEOUT" Shortcut="Ctrl+Shift+Alt+3" Text="FADE OUT." Transition="Scene Heading">
+      <Alias Confirm="No" MatchCase="No" SmartReplace="Yes" Text="" WordOnly="No">
+        <ActivateIn Element="General"/>
+        <ActivateIn Element="Scene Heading"/>
+        <ActivateIn Element="Action"/>
+        <ActivateIn Element="Character"/>
+        <ActivateIn Element="Parenthetical"/>
+        <ActivateIn Element="Dialogue"/>
+        <ActivateIn Element="Transition"/>
+        <ActivateIn Element="Shot"/>
+      </Alias>
+    </Macro>
+    <Macro Element="Transition" Name="FADETO" Shortcut="Ctrl+Shift+Alt+4" Text="FADE TO:" Transition="Scene Heading">
+      <Alias Confirm="No" MatchCase="No" SmartReplace="Yes" Text="" WordOnly="No">
+        <ActivateIn Element="General"/>
+        <ActivateIn Element="Scene Heading"/>
+        <ActivateIn Element="Action"/>
+        <ActivateIn Element="Character"/>
+        <ActivateIn Element="Parenthetical"/>
+        <ActivateIn Element="Dialogue"/>
+        <ActivateIn Element="Transition"/>
+        <ActivateIn Element="Shot"/>
+      </Alias>
+    </Macro>
+    <Macro Element="Transition" Name="DISSLV" Shortcut="Ctrl+Shift+Alt+5" Text="DISSOLVE TO:" Transition="Scene Heading">
+      <Alias Confirm="No" MatchCase="No" SmartReplace="Yes" Text="" WordOnly="No">
+        <ActivateIn Element="General"/>
+        <ActivateIn Element="Scene Heading"/>
+        <ActivateIn Element="Action"/>
+        <ActivateIn Element="Character"/>
+        <ActivateIn Element="Parenthetical"/>
+        <ActivateIn Element="Dialogue"/>
+        <ActivateIn Element="Transition"/>
+        <ActivateIn Element="Shot"/>
+      </Alias>
+    </Macro>
+    <Macro Element="Transition" Name="BACKTO" Shortcut="Ctrl+Shift+Alt+6" Text="BACK TO:" Transition="Scene Heading">
+      <Alias Confirm="No" MatchCase="No" SmartReplace="Yes" Text="" WordOnly="No">
+        <ActivateIn Element="General"/>
+        <ActivateIn Element="Scene Heading"/>
+        <ActivateIn Element="Action"/>
+        <ActivateIn Element="Character"/>
+        <ActivateIn Element="Parenthetical"/>
+        <ActivateIn Element="Dialogue"/>
+        <ActivateIn Element="Transition"/>
+        <ActivateIn Element="Shot"/>
+      </Alias>
+    </Macro>
+    <Macro Element="Transition" Name="MATCHCUT" Shortcut="Ctrl+Shift+Alt+7" Text="MATCH CUT TO:" Transition="Scene Heading">
+      <Alias Confirm="No" MatchCase="No" SmartReplace="Yes" Text="" WordOnly="No">
+        <ActivateIn Element="General"/>
+        <ActivateIn Element="Scene Heading"/>
+        <ActivateIn Element="Action"/>
+        <ActivateIn Element="Character"/>
+        <ActivateIn Element="Parenthetical"/>
+        <ActivateIn Element="Dialogue"/>
+        <ActivateIn Element="Transition"/>
+        <ActivateIn Element="Shot"/>
+      </Alias>
+    </Macro>
+    <Macro Element="Transition" Name="JUMPCUT" Shortcut="Ctrl+Shift+Alt+8" Text="JUMP CUT TO:" Transition="Scene Heading">
+      <Alias Confirm="No" MatchCase="No" SmartReplace="Yes" Text="" WordOnly="No">
+        <ActivateIn Element="General"/>
+        <ActivateIn Element="Scene Heading"/>
+        <ActivateIn Element="Action"/>
+        <ActivateIn Element="Character"/>
+        <ActivateIn Element="Parenthetical"/>
+        <ActivateIn Element="Dialogue"/>
+        <ActivateIn Element="Transition"/>
+        <ActivateIn Element="Shot"/>
+      </Alias>
+    </Macro>
+    <Macro Element="Transition" Name="FBLACK" Shortcut="Ctrl+Shift+Alt+9" Text="FADE TO BLACK." Transition="None">
+      <Alias Confirm="No" MatchCase="No" SmartReplace="Yes" Text="" WordOnly="No">
+        <ActivateIn Element="General"/>
+        <ActivateIn Element="Scene Heading"/>
+        <ActivateIn Element="Action"/>
+        <ActivateIn Element="Character"/>
+        <ActivateIn Element="Parenthetical"/>
+        <ActivateIn Element="Dialogue"/>
+        <ActivateIn Element="Transition"/>
+        <ActivateIn Element="Shot"/>
+      </Alias>
+    </Macro>
+    <Macro Element="None" Name="" Shortcut="E" Text="" Transition="None">
+      <Alias Confirm="No" MatchCase="No" SmartReplace="Yes" Text="" WordOnly="No">
+        <ActivateIn Element="General"/>
+        <ActivateIn Element="Scene Heading"/>
+        <ActivateIn Element="Action"/>
+        <ActivateIn Element="Character"/>
+        <ActivateIn Element="Parenthetical"/>
+        <ActivateIn Element="Dialogue"/>
+        <ActivateIn Element="Transition"/>
+        <ActivateIn Element="Shot"/>
+      </Alias>
+    </Macro>
+  </Macros>
+
+  <Actors>
+    <Actor MacVoice="" Name="Man 1" Pitch="Normal" Speed="Medium" WinVoice=""/>
+    <Actor MacVoice="" Name="Man 2" Pitch="Normal" Speed="Medium" WinVoice=""/>
+    <Actor MacVoice="" Name="Woman 1" Pitch="Normal" Speed="Medium" WinVoice=""/>
+    <Actor MacVoice="" Name="Woman 2" Pitch="Normal" Speed="Medium" WinVoice=""/>
+    <Actor MacVoice="" Name="Boy 1" Pitch="Normal" Speed="Medium" WinVoice=""/>
+    <Actor MacVoice="" Name="Boy 2" Pitch="Normal" Speed="Medium" WinVoice=""/>
+    <Actor MacVoice="" Name="Girl 1" Pitch="Normal" Speed="Medium" WinVoice=""/>
+    <Actor MacVoice="" Name="Girl 2" Pitch="Normal" Speed="Medium" WinVoice=""/>
+    <Actor MacVoice="" Name="Old Man" Pitch="Normal" Speed="Medium" WinVoice=""/>
+    <Actor MacVoice="" Name="Old Woman" Pitch="Normal" Speed="Medium" WinVoice=""/>
+  </Actors>
+
+  <Cast>
+    <Narrator Actor="Man 1">
+      <Element Type="Character"/>
+      <Element Type="Dialogue"/>
+    </Narrator>
+    <Member Actor="Man 1" Character="Louis"/>
+    <Member Actor="Man 1" Character="Walter"/>
+    <Member Actor="Man 1" Character="Henry"/>
+    <Member Actor="Man 1" Character="Mary"/>
+    <Member Actor="Man 1" Character="Bank official"/>
+    <Member Actor="Man 1" Character="Neighbor"/>
+    <Member Actor="Man 1" Character="Elizabeth"/>
+    <Member Actor="Man 1" Character="grim farmer"/>
+    <Member Actor="Man 1" Character="Woeful farmer"/>
+    <Member Actor="Man 1" Character="Doctor"/>
+    <Member Actor="Man 1" Character="NEIGHBOR'S WIFE"/>
+    <Member Actor="Man 1" Character="NEIGHBOR'S DAUGHTER 2"/>
+    <Member Actor="Man 1" Character="NEIGHBOR'S DAUGHTER 1"/>
+    <Member Actor="Man 1" Character="ANNA"/>
+    <Member Actor="Man 1" Character="LOUI"/>
+  </Cast>
+
+  <SceneNumberOptions LeftLocation="0.75" NumberScheme="1A" RightLocation="7.38" ShowNumbersOnLeft="Yes" ShowNumbersOnRight="Yes">
+    <FontSpec AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""/>
+  </SceneNumberOptions>
+
+  <CastList SortOption="Alphabetical">
+    <CustomOrder/>
+  </CastList>
+
+  <CharacterHighlighting>
+    <Character Color="#FFFFFFFFFFFF" Name="BANK OFFICIAL" Visible="No"/>
+    <Character Color="#FFFFFFFFFFFF" Name="DOCTOR" Visible="No"/>
+    <Character Color="#FFFFFFFFFFFF" Name="ELIZABETH" Visible="No"/>
+    <Character Color="#FFFFFFFFFFFF" Name="GRIM FARMER" Visible="No"/>
+    <Character Color="#FFFFFFFFFFFF" Name="HENRY" Visible="No"/>
+    <Character Color="#FFFFFFFFFFFF" Name="LOUIS" Visible="No"/>
+    <Character Color="#FFFFFFFFFFFF" Name="MARY" Visible="No"/>
+    <Character Color="#FFFFFFFFFFFF" Name="NEIGHBOR" Visible="No"/>
+    <Character Color="#FFFFFFFFFFFF" Name="WALTER" Visible="No"/>
+    <Character Color="#FFFFFFFFFFFF" Name="WOEFUL FARMER" Visible="No"/>
+  </CharacterHighlighting>
+
+  <CharacterNavigatorPreferences IsSortAscending="Yes" SortColumn="Order">
+    <Column Width="52">Order</Column>
+    <Column Width="73">Title</Column>
+    <Column Width="148">Location</Column>
+    <Column UserType="CharacterColumnType" Width="65">WALTER</Column>
+    <Column UserType="CharacterArcColumnType" Width="101">WALTER</Column>
+  </CharacterNavigatorPreferences>
+
+  <AltCollection/>
+
+  <TargetScriptLength>120</TargetScriptLength>
+
+  <ListItems>
+    <ListItem Color="#FFFFFFFFFFFF" Id="2dddd7b6-f1c2-412e-a4ee-c931d2f67a61" Title="dasfasdf" Type="Beat">
+      <Content>
+        <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+          <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Arial" RevisionID="0" Size="12" Style="">asdfasdf</Text>
+        </Paragraph>
+      </Content>
+    </ListItem>
+  </ListItems>
+
+  <DisplayBoards>
+    <DisplayBoard Height="10000" ScrollOrigin="0,0" Type="Beat" Width="24000" ZoomLevel="100.000">
+      <Item Height="100" Id="2dddd7b6-f1c2-412e-a4ee-c931d2f67a61" Left="396" Top="339" Width="240"/>
+    </DisplayBoard>
+    <DisplayBoard Height="56" ScrollOrigin="0,0" Type="StoryMap" Width="2032" ZoomLevel="100.000"/>
+  </DisplayBoards>
+
+</FinalDraft>
