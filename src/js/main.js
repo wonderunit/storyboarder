@@ -716,7 +716,7 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
       type: 'question',
       buttons: ['Yes', 'No'],
       title: 'Confirm',
-      message: 'Your Storyboarder file is not saved. Are you sure you want to quit?'
+      message: 'Your Storyboarder file is not saved. Are you sure you want to close the workspace?'
     })
 
     const leave = (choice === 0)
