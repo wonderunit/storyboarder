@@ -10,7 +10,7 @@
     "dist:win": "build -w",
     "dist:linux": "build -l",
     "dist": "build -mwl",
-    "test": "./node_modules/.bin/electron-mocha --renderer test/**/*.test.js"
+    "test": "mocha $(find test -name '*[!renderer].test.js') && electron-mocha --renderer test/**/*.renderer.test.js"
   },
   "repository": {
     "type": "git",
