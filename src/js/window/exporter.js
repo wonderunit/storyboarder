@@ -35,7 +35,7 @@ class Exporter extends EventEmitter {
         {
           type: 'warning',
           title: 'Are You Sure?',
-          message: `Clean Up deletes unused image files, reducing filesize. It cannot be undone. Are you sure you want to do this?`,
+          message: `Clean Up deletes unused image files, reducing file size. It cannot be undone. Are you sure you want to do this?`,
           buttons: ['Yes', 'No'],
         },
         index => {
