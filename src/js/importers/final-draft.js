@@ -1,5 +1,6 @@
 const fs = require('fs')
 const util = require('../utils')
+const xml2js = require('xml2js')
 
 const wordCount = text =>
   text
@@ -23,6 +24,21 @@ const insertSceneIds = (fdxObj, generateNumber = () => util.uidGen(5)) => {
     }
   })
 }
+
+
+const _wrapAsync = fn => async (...rest) =>
+  new Promise((resolve, reject) =>
+      fn(...rest, (err, ...result) =>
+          err
+            ? reject(err)
+            : resolve(...result)))
+
+const parseXmlStringAsync = _wrapAsync((new xml2js.Parser()).parseString)
+
+const readFdxFile = async filepath => {
+  return await parseXmlStringAsync(fs.readFileSync(filepath))
+}
+
 
 const importFdxData = async fdxObj => {
   let script = []
@@ -157,6 +173,7 @@ const importFdxData = async fdxObj => {
 }
 
 module.exports = {
+  readFdxFile,
   importFdxData,
   insertSceneIds
 }

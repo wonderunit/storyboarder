@@ -3,14 +3,7 @@ const path = require('path')
 const assert = require('assert')
 const xml2js = require('xml2js')
 
-const finalDraftImporter = require('../../src/js/importers/final-draft')
-
-const _wrapAsync = fn => async (fn, ...rest) =>
-  new Promise((resolve, reject) =>
-      fn(...rest, (err, ...result) =>
-          err
-            ? reject(err)
-            : resolve(...result)))
+const importerFinalDraft = require('../../src/js/importers/final-draft')
 
 const assertThrowsAsynchronously = async (test, error) => {
   try {
@@ -23,18 +16,13 @@ const assertThrowsAsynchronously = async (test, error) => {
 }
 
 describe('final-draft', () => {
-  let fdxStr
-  let fdxObj
-
-  let parser = new xml2js.Parser()
-  let parseXmlStringAsync = _wrapAsync(parser.parseString)
-
   let getFirstScene = fdxObj => fdxObj.FinalDraft.Content[0].Paragraph.find(e => e.$.Type === 'Scene Heading')
 
+  let fdxObj
   beforeEach(async () => {
-    fdxStr = fs.readFileSync(path.join(__dirname, '..', 'fixtures', 'final-draft', 'test.fdx'))
-    fdxObj = await parseXmlStringAsync(parser.parseString, fdxStr)
+    fdxObj = await importerFinalDraft.readFdxFile(path.join(__dirname, '..', 'fixtures', 'final-draft', 'test.fdx'))
   })
+
   describe('insertSceneIds', () => {
     it('can insert scene ids', async () => {
       // intentionally remove the the first scene's number
@@ -44,7 +32,7 @@ describe('final-draft', () => {
       assert.equal(getFirstScene(fdxObj).$.Number, undefined)
 
       // insert scene ids
-      finalDraftImporter.insertSceneIds(fdxObj)
+      importerFinalDraft.insertSceneIds(fdxObj)
 
       // ensure that the first scene now has a number
       let firstSceneAfter = getFirstScene(fdxObj)
@@ -62,11 +50,11 @@ describe('final-draft', () => {
   })
   describe('importFdxData', () => {
     it('throws an error if data can not be parsed', async () => {
-      assertThrowsAsynchronously(async () => await finalDraftImporter.importFdxData({}), Error)
+      assertThrowsAsynchronously(async () => await importerFinalDraft.importFdxData({}), Error)
     })
     it('can parse a script', async () => {
-      finalDraftImporter.insertSceneIds(fdxObj)
-      let script = await finalDraftImporter.importFdxData(fdxObj)
+      importerFinalDraft.insertSceneIds(fdxObj)
+      let script = await importerFinalDraft.importFdxData(fdxObj)
 
       assert.equal(script[1].type, 'scene')
       assert.equal(script[1].script[0].time, 8400)
