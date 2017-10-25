@@ -12,18 +12,6 @@ const durationOfWords = (text, durationPerWord) =>
   ? wordCount(text) * durationPerWord
   : 0
 
-// mutates fdxObj
-const insertSceneIds = (fdxObj, generateNumber = () => util.uidGen(5)) => {
-  fdxObj.FinalDraft.Content[0].Paragraph.forEach((element, i) => {
-    switch (element.$.Type) {
-      case 'Scene Heading':
-        if (typeof element.$.Number === 'undefined') {
-          element.$.Number = generateNumber()
-        }
-        break
-    }
-  })
-}
 
 
 const _wrapAsync = fn => async (...rest) =>
@@ -40,7 +28,21 @@ const readFdxFile = async filepath => {
 }
 
 
-const importFdxData = async fdxObj => {
+
+// mutates fdxObj
+const insertSceneIds = (fdxObj, generateNumber = () => util.uidGen(5)) => {
+  fdxObj.FinalDraft.Content[0].Paragraph.forEach((element, i) => {
+    switch (element.$.Type) {
+      case 'Scene Heading':
+        if (typeof element.$.Number === 'undefined') {
+          element.$.Number = generateNumber()
+        }
+        break
+    }
+  })
+}
+
+const importFdxData = fdxObj => {
   let script = []
   let sceneAtom = { type: 'scene', script: [] }
 
