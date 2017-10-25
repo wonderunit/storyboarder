@@ -1,6 +1,7 @@
 const fs = require('fs')
 const util = require('../utils')
 const xml2js = require('xml2js')
+const R = require('ramda')
 
 const wordCount = text =>
   text
@@ -170,12 +171,22 @@ const importFdxData = fdxObj => {
     }
     // console.log(element.$.Type)
   })
-  
+
   return script
 }
+
+const getScriptLocations = scriptData =>
+  R.toPairs(scriptData
+    .filter(x => x.type === 'scene')
+    .reduce((locations, scene) => {
+      locations[scene.slugline] = R.defaultTo(0, locations[scene.slugline]) + 1
+      return locations
+    }, []))
 
 module.exports = {
   readFdxFile,
   importFdxData,
-  insertSceneIds
+  insertSceneIds,
+
+  getScriptLocations
 }
