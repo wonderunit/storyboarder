@@ -75,10 +75,10 @@ describe('final-draft', () => {
       let script = await importerFinalDraft.importFdxData(fdxObj)
 
       let locations = importerFinalDraft.getScriptLocations(script)
-      assert.equal(locations[0][0], 'EXT. Mast 2 3 farm - nIGHT')
+      assert.equal(locations[0][0], 'EXT. Mast 2 3 farm')
       assert.equal(locations[0][1], 1)
 
-      assert.equal(locations[9][0], 'iNT. small town bank - DAY')
+      assert.equal(locations[9][0], 'iNT. small town bank')
       assert.equal(locations[9][1], 2)
     })
   })

@@ -179,7 +179,13 @@ const getScriptLocations = scriptData =>
   R.toPairs(scriptData
     .filter(x => x.type === 'scene')
     .reduce((locations, scene) => {
-      locations[scene.slugline] = R.defaultTo(0, locations[scene.slugline]) + 1
+      location = scene.slugline.split(' - ')
+      if (location.length > 1) {
+        location.pop()
+      }
+      location = location.join(' - ')
+
+      locations[location] = R.defaultTo(0, locations[location]) + 1
       return locations
     }, []))
 
