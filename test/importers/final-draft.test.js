@@ -36,12 +36,6 @@ describe('final-draft', () => {
     fdxObj = await parseXmlStringAsync(parser.parseString, fdxStr)
   })
   describe('insertSceneIds', () => {
-    it('returns a new object', () => {
-      let before = fdxObj
-      let after = finalDraftImporter.insertSceneIds(before)
-      assert.equal(before, fdxObj)
-      assert.notEqual(before, after)
-    })
     it('can insert scene ids', async () => {
       // intentionally remove the the first scene's number
       let firstSceneBefore = getFirstScene(fdxObj)
@@ -50,7 +44,7 @@ describe('final-draft', () => {
       assert.equal(getFirstScene(fdxObj).$.Number, undefined)
 
       // insert scene ids
-      fdxObj = finalDraftImporter.insertSceneIds(fdxObj)
+      finalDraftImporter.insertSceneIds(fdxObj)
 
       // ensure that the first scene now has a number
       let firstSceneAfter = getFirstScene(fdxObj)
@@ -71,7 +65,7 @@ describe('final-draft', () => {
       assertThrowsAsynchronously(async () => await finalDraftImporter.importFdxData({}), Error)
     })
     it('can parse a script', async () => {
-      fdxObj = finalDraftImporter.insertSceneIds(fdxObj)
+      finalDraftImporter.insertSceneIds(fdxObj)
       let script = await finalDraftImporter.importFdxData(fdxObj)
 
       assert.equal(script[1].type, 'scene')
