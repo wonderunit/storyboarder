@@ -15,6 +15,9 @@ const fountain = require('./vendor/fountain')
 const fountainDataParser = require('./fountain-data-parser')
 const fountainSceneIdUtil = require('./fountain-scene-id-util')
 
+const importerFinalDraft = require('./importers/final-draft')
+const xml2js = require('xml2js')
+
 const MobileServer = require('./express-app/app')
 
 const preferencesUI = require('./windows/preferences')()
@@ -249,20 +252,56 @@ let openWelcomeWindow = () => {
   })
 }
 
-let openFile = (file) => {
-  let arr = file.split(path.sep)
-  let filename = arr[arr.length-1]
-  let filenameParts =filename.toLowerCase().split('.')
-  let type = filenameParts[filenameParts.length-1]
-  if (type == 'storyboarder') {
+let openFile = filepath => {
+  let filename = path.basename(filepath)
+  let extname = path.extname(filepath)
+
+  if (extname === '.storyboarder') {
     /// LOAD STORYBOARDER FILE
     addToRecentDocs(file, {
       boards: 2,
       time: 3000,
     })
     loadStoryboarderWindow(file)
-  } else if (type == 'fountain') {
-    /// LOAD FOUNTAIN FILE
+
+  } else if (extname === '.fdx') {
+    fs.readFile(filepath, 'utf-8', (err, data) => {
+      if (err) {
+        dialog.showMessageBox({
+          type: 'error',
+          message: 'Could not open Final Draft file.\n' + error.message,
+        })
+        return
+      }
+      let parser = new xml2js.Parser()
+      parser.parseString(data, (err, fdxObj) => {
+        if (err) {
+          dialog.showMessageBox({
+            type: 'error',
+            message: 'Could not parse Final Draft XML.\n' + error.message,
+          })
+          return
+        }
+
+        try {
+          importerFinalDraft.insertSceneIds(fdxObj)
+        } catch (err) {
+          dialog.showMessageBox({
+            type: 'error',
+            message: 'Could not add scene ids to Final Draft data.\n' + error.message,
+          })
+          return
+        }
+        
+        let script = importerFinalDraft.importFdxData(fdxObj)
+
+        dialog.showMessageBox({
+          message: 'Got Final Draft data.'
+        })
+      })
+    })
+
+  } else if (extname == '.fountain') {
     fs.readFile(file, 'utf-8', (err, data) => {
       data = ensureSceneIds(file, data)
 
@@ -323,8 +362,8 @@ let openFile = (file) => {
 
 let openDialogue = () => {
   dialog.showOpenDialog({title:"Open Script", filters:[
-      {name: 'Screenplay or Storyboarder', extensions: ['fountain', 'storyboarder']},
-    ]}, (filenames)=>{
+      {name: 'Screenplay or Storyboarder', extensions: ['storyboarder', 'fountain', 'fdx']},
+    ]}, (filenames) => {
       if (filenames) {
         openFile(filenames[0])
       }
@@ -899,7 +938,7 @@ ipcMain.on('openFile', (e, arg)=> {
   openFile(arg)
 })
 
-ipcMain.on('openDialogue', (e, arg)=> {
+ipcMain.on('openDialogue', (e, arg) => {
   openDialogue()
 })
 
