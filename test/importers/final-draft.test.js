@@ -69,17 +69,21 @@ describe('final-draft', () => {
       assert(script[1].script[1].text.includes('Perched on the house’s front stair is HENRY MAST'))
     })
   })
-  describe('getScriptLocations', () => {
-    it('can extract all locations from script data', async () => {
+  describe('script functions', () => {
+    let script
+    beforeEach(async () => {
       importerFinalDraft.insertSceneIds(fdxObj)
-      let script = await importerFinalDraft.importFdxData(fdxObj)
+      script = await importerFinalDraft.importFdxData(fdxObj)
+    })
+    describe('getScriptLocations', () => {
+      it('can extract all locations from script data', async () => {
+        let locations = importerFinalDraft.getScriptLocations(script)
+        assert.equal(locations[0][0], 'EXT. Mast 2 3 farm')
+        assert.equal(locations[0][1], 1)
 
-      let locations = importerFinalDraft.getScriptLocations(script)
-      assert.equal(locations[0][0], 'EXT. Mast 2 3 farm')
-      assert.equal(locations[0][1], 1)
-
-      assert.equal(locations[9][0], 'iNT. small town bank')
-      assert.equal(locations[9][1], 2)
+        assert.equal(locations[9][0], 'iNT. small town bank')
+        assert.equal(locations[9][1], 2)
+      })
     })
   })
 })
