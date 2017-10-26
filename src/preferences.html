@@ -1,45 +1,41 @@
 <!DOCTYPE html>
 <html>
-  <head>
+
+<head>
     <meta charset="utf-8">
     <link rel="stylesheet" href="./css/fonts.css">
     <link rel="stylesheet" href="./css/preferences.css">
     <title>Preferences</title>
-  </head>
-  <body class="preferences-window">
+</head>
+
+<body class="preferences-window">
     <div class="preferences-form">
-      <h1 class="preferences-title">Preferences</h1>
-      <div class="preferences-hint" style="margin: 0 0 48px">
-        Please restart Storyboarder to apply changes.
-      </div>
+        <h1 class="preferences-title">Preferences</h1>
+        <div class="preferences-hint" style="margin: 0 0 48px">
+            Please restart Storyboarder to apply changes.
+        </div>
 
-      <div class="preferences-fieldset">
-        <div class="preferences-input">
-          <input
-            type="checkbox"
-            name="enableTooltips"
-            id="enableTooltips" />
+        <div class="preferences-fieldset">
+            <div class="preferences-input">
+                <input type="checkbox" name="enableTooltips" id="enableTooltips" />
 
-          <label for="enableTooltips">
+                <label for="enableTooltips">
             <span></span>Show Tooltips
           </label>
-        </div>
+            </div>
 
-        <div class="preferences-input">
-          <input
-            type="checkbox"
-            name="enableAutoSave"
-            id="enableAutoSave" />
+            <div class="preferences-input">
+                <input type="checkbox" name="enableAutoSave" id="enableAutoSave" />
 
-          <label for="enableAutoSave">
+                <label for="enableAutoSave">
             <span></span>Save Project Data Automatically
           </label>
-          <div class="preferences-hint">
-            When disabled, use "File > Save" to save project data. Note that changes to image data are always saved automatically.
-          </div>
-        </div>
+                <div class="preferences-hint">
+                    When disabled, use "File &gt; Save" to save project data. Note that changes to image data are always saved automatically.
+                </div>
+            </div>
 
-        <!-- <div class="preferences-input">
+            <!-- <div class="preferences-input">
           <input
             type="checkbox"
             name="enableAnalytics"
@@ -50,159 +46,123 @@
           </label>
         </div> -->
 
-        <div class="preferences-input">
-          <input
-            type="checkbox"
-            name="enableForcePsdReloadOnFocus"
-            id="enableForcePsdReloadOnFocus" />
+            <div class="preferences-input">
+                <input type="checkbox" name="enableForcePsdReloadOnFocus" id="enableForcePsdReloadOnFocus" />
 
-          <label for="enableForcePsdReloadOnFocus">
+                <label for="enableForcePsdReloadOnFocus">
             <span></span>Force reload of watched PSD when Storyboarder regains focus
           </label>
-          <div class="preferences-hint">
-            Enable if working from a network drive.
-            Disable to improve performance when switching between
-            Storyboarder and other apps. When disabled, Storyboarder only 
-            watches PSD files in the background (which is not supported on all computers).
-          </div>
-        </div>
+                <div class="preferences-hint">
+                    Enable if working from a network drive. Disable to improve performance when switching between Storyboarder and other apps. When disabled, Storyboarder only watches PSD files in the background (which is not supported on all computers).
+                </div>
+            </div>
 
-        <div class="preferences-input">
-          <input
-            type="number"
-            name="defaultBoardTiming"
-            id="defaultBoardTiming" />
+            <div class="preferences-input">
+                <input type="number" name="defaultBoardTiming" id="defaultBoardTiming" />
 
-          <label for="defaultBoardTiming">
+                <label for="defaultBoardTiming">
             <span style="font-size: 87.5%; margin-left: 0.5em;">
               Default Board Timing (in msecs)
             </span>
           </label>
+            </div>
+
         </div>
 
-      </div>
+        <div class="preferences-fieldset">
+            <h2 class="preferences-subhead">Notifications</h2>
 
-      <div class="preferences-fieldset">
-        <h2 class="preferences-subhead">Notifications</h2>
+            <div class="preferences-input">
+                <input type="checkbox" name="enableAspirationalMessages" id="enableAspirationalMessages" />
 
-        <div class="preferences-input">
-          <input
-            type="checkbox"
-            name="enableAspirationalMessages"
-            id="enableAspirationalMessages" />
-
-          <label for="enableAspirationalMessages">
+                <label for="enableAspirationalMessages">
             <span></span>Show Hourly Affirmations
           </label>
-        </div>
+            </div>
 
-        <div class="preferences-input">
-          <input
-            type="checkbox"
-            name="allowNotificationsForLineMileage"
-            id="allowNotificationsForLineMileage" />
+            <div class="preferences-input">
+                <input type="checkbox" name="allowNotificationsForLineMileage" id="allowNotificationsForLineMileage" />
 
-          <label for="allowNotificationsForLineMileage">
+                <label for="allowNotificationsForLineMileage">
             <span></span>Allow Comments on Line Mileage
           </label>
+            </div>
         </div>
-      </div>
 
-      <div class="preferences-fieldset">
-        <h2 class="preferences-subhead">Sounds</h2>
-        <div class="preferences-hint" style="margin: 0 0 24px">
-          Sounds might slow down Storyboarder on some computers.<br />
-          You can turn them off for better performance.
-        </div>
-        <div class="preferences-input">
-          <input
-            type="checkbox"
-            name="enableDrawingSoundEffects"
-            id="enableDrawingSoundEffects" />
+        <div class="preferences-fieldset">
+            <h2 class="preferences-subhead">Sounds</h2>
+            <div class="preferences-hint" style="margin: 0 0 24px">
+                Sounds might slow down Storyboarder on some computers.<br /> You can turn them off for better performance.
+            </div>
+            <div class="preferences-input">
+                <input type="checkbox" name="enableDrawingSoundEffects" id="enableDrawingSoundEffects" />
 
-          <label for="enableDrawingSoundEffects">
+                <label for="enableDrawingSoundEffects">
             <span></span>Drawing Sound Effects
           </label>
-        </div>
+            </div>
 
-        <div class="preferences-input">
-          <input
-            type="checkbox"
-            name="enableDrawingMelodySoundEffects"
-            id="enableDrawingMelodySoundEffects" />
+            <div class="preferences-input">
+                <input type="checkbox" name="enableDrawingMelodySoundEffects" id="enableDrawingMelodySoundEffects" />
 
-          <label for="enableDrawingMelodySoundEffects">
+                <label for="enableDrawingMelodySoundEffects">
             <span></span>Drawing Melodies
           </label>
-        </div>
+            </div>
 
-        <div class="preferences-input">
-          <input
-            type="checkbox"
-            name="enableUISoundEffects"
-            id="enableUISoundEffects" />
+            <div class="preferences-input">
+                <input type="checkbox" name="enableUISoundEffects" id="enableUISoundEffects" />
 
-          <label for="enableUISoundEffects">
+                <label for="enableUISoundEffects">
             <span></span>User Interface Sound Effects
           </label>
-        </div>
+            </div>
 
-        <div class="preferences-input">
-          <input
-            type="checkbox"
-            name="enableHighQualityAudio"
-            id="enableHighQualityAudio" />
+            <div class="preferences-input">
+                <input type="checkbox" name="enableHighQualityAudio" id="enableHighQualityAudio" />
 
-          <label for="enableHighQualityAudio">
+                <label for="enableHighQualityAudio">
             <span></span>Enable High Quality Audio
           </label>
+            </div>
         </div>
-      </div>
 
-      <div class="preferences-fieldset">
-        <h2 class="preferences-subhead">Performance Enhancements</h2>
-        <div class="preferences-hint" style="margin: 0 0 24px">
-            Disable these if drawing feels slow.
-          </div>
-        <div class="preferences-input">
-          <input
-            type="checkbox"
-            name="enableCanvasPaintingOpacity"
-            id="enableCanvasPaintingOpacity" />
+        <div class="preferences-fieldset">
+            <h2 class="preferences-subhead">Performance Enhancements</h2>
+            <div class="preferences-hint" style="margin: 0 0 24px">
+                Disable these if drawing feels slow.
+            </div>
+            <div class="preferences-input">
+                <input type="checkbox" name="enableCanvasPaintingOpacity" id="enableCanvasPaintingOpacity" />
 
-          <label for="enableCanvasPaintingOpacity">
+                <label for="enableCanvasPaintingOpacity">
             <span></span>Enable Brush Opacity While Drawing
           </label>
-        </div>
+            </div>
 
-        <div class="preferences-input">
-          <input
-            type="checkbox"
-            name="enableBrushCursor"
-            id="enableBrushCursor" />
+            <div class="preferences-input">
+                <input type="checkbox" name="enableBrushCursor" id="enableBrushCursor" />
 
-          <label for="enableBrushCursor">
+                <label for="enableBrushCursor">
             <span></span>Enable Brush Cursor While Drawing
           </label>
-          <div class="preferences-hint">
-            When enabled, brush cursor matches brush tool size. When disabled, the faster system cursor is used.
-          </div>
-        </div>
+                <div class="preferences-hint">
+                    When enabled, brush cursor matches brush tool size. When disabled, the faster system cursor is used.
+                </div>
+            </div>
 
-        <div class="preferences-input">
-          <input
-            type="checkbox"
-            name="enableStabilizer"
-            id="enableStabilizer" />
+            <div class="preferences-input">
+                <input type="checkbox" name="enableStabilizer" id="enableStabilizer" />
 
-          <label for="enableStabilizer">
+                <label for="enableStabilizer">
             <span></span>Enable Line Smoothing
           </label>
+            </div>
+
         </div>
-        
-      </div>
 
     </div>
     <script src="./js/windows/preferences/editor.js"></script>
-  </body>
+</body>
+
 </html>
