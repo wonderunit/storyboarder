@@ -100,7 +100,7 @@ const importFdxData = fdxObj => {
             sceneAtom['slugline'] = element.Text[0]
           }
         }
-        sceneAtom['slugline'] = sceneAtom['slugline'].toUpperCase()
+        sceneAtom['slugline'] = sceneAtom['slugline'] && sceneAtom['slugline'].toUpperCase()
         sceneAtom['time'] = currentTime
         //console.log(element.Text[0])
         break
