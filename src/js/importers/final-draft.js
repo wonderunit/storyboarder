@@ -175,6 +175,24 @@ const importFdxData = fdxObj => {
   return script
 }
 
+const getScriptCharacters = scriptData =>
+  R.pipe(
+    R.filter(node => node.type === 'scene'),
+    R.reduce((characters, scene) => {
+      R.pipe(
+        R.filter(n => typeof n.character !== 'undefined'),
+        R.forEach(node => {
+          character = node.character.split('(')[0].split(' AND ')[0].trim()
+
+          characters[character] = R.defaultTo(0, characters[character]) + 1
+        })
+      )(scene.script)
+      return characters
+    }, []),
+    R.toPairs
+  )(scriptData)
+
+
 const getScriptLocations = scriptData =>
   R.toPairs(scriptData
     .filter(x => x.type === 'scene')
@@ -194,5 +212,6 @@ module.exports = {
   importFdxData,
   insertSceneIds,
 
-  getScriptLocations
+  getScriptLocations,
+  getScriptCharacters
 }

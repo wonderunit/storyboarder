@@ -85,5 +85,15 @@ describe('final-draft', () => {
         assert.equal(locations[9][1], 2)
       })
     })
+    describe('getScriptCharacters', () => {
+      it('can extract all characters from script data', async () => {
+        let characters = importerFinalDraft.getScriptCharacters(script)
+        assert.equal(characters[0][0], 'Henry')
+        assert.equal(characters[0][1], 1)
+        
+        assert.equal(characters[2][0], 'HENRY')
+        assert.equal(characters[2][1], 15)
+      })
+    })
   })
 })
