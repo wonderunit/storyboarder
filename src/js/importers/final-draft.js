@@ -59,23 +59,27 @@ const importFdxData = fdxObj => {
 
   let token
 
+  let flush = () => {
+    if (sceneAtom['script'].length > 0) {
+      sceneAtom['duration'] = (currentTime - startSceneTime)
+      sceneAtom['word_count'] = sceneWordCount
+      if (!sceneAtom['scene_number']) {
+        sceneAtom['scene_number'] = currentScene
+      }
+      if (!sceneAtom['scene_id']) {
+        sceneAtom['scene_id'] = "G" + currentScene
+      }
+      if (!sceneAtom['slugline']) {
+        sceneAtom['slugline'] = "BLACK"
+      }
+      script.push(sceneAtom)
+    }
+  }
+
   fdxObj.FinalDraft.Content[0].Paragraph.forEach((element, i) => {
     switch (element.$.Type) {
       case 'Scene Heading':
-        if (sceneAtom['script'].length > 0) {
-          sceneAtom['duration'] = (currentTime - startSceneTime)
-          sceneAtom['word_count'] = sceneWordCount
-          if (!sceneAtom['scene_number']) {
-            sceneAtom['scene_number'] = currentScene
-          }
-          if (!sceneAtom['scene_id']) {
-            sceneAtom['scene_id'] = "G" + currentScene
-          }
-          if (!sceneAtom['slugline']) {
-            sceneAtom['slugline'] = "BLACK"
-          }
-          script.push(sceneAtom)
-        }
+        flush()
 
         startSceneTime = currentTime
         sceneWordCount = 0
@@ -168,12 +172,14 @@ const importFdxData = fdxObj => {
             currentTime += token['duration']
             sceneAtom['script'].push(token)
             sceneWordCount += wordCount(token.text)
-          }        
+          }
         }
         break
     }
     // console.log(element.$.Type)
   })
+
+  flush()
 
   return script
 }
