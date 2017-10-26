@@ -262,11 +262,11 @@ let openFile = filepath => {
 
   if (extname === '.storyboarder') {
     /// LOAD STORYBOARDER FILE
-    addToRecentDocs(file, {
+    addToRecentDocs(filepath, {
       boards: 2,
       time: 3000,
     })
-    loadStoryboarderWindow(file)
+    loadStoryboarderWindow(filepath)
 
   } else if (extname === '.fdx') {
     fs.readFile(filepath, 'utf-8', (err, data) => {
