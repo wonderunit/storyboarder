@@ -67,7 +67,7 @@ let boardPath
 let boardData
 let currentBoard = 0
 
-let scriptFilePath // .fountain, only used for multi-scene projects
+let scriptFilePath // .fountain/.fdx, only used for multi-scene projects
 let scriptData
 let locations
 let characters
@@ -4524,7 +4524,7 @@ const fillContext = (context, fillStyle = 'white') => {
 
 const saveAsFolder = async () => {
   let srcFilePath = scriptFilePath
-    ? scriptFilePath // use the .fountain file, if it is defined …
+    ? scriptFilePath // use the .fountain/.fdx file, if it is defined …
     : boardFilename // … otherwise, use the .storyboarder file
 
   // ensure the current board and data is saved
@@ -4590,7 +4590,7 @@ const saveAsFolder = async () => {
 
 const exportZIP = async () => {
   let srcFilePath = scriptFilePath
-    ? scriptFilePath // use the .fountain file, if it is defined …
+    ? scriptFilePath // use the .fountain/.fdx file, if it is defined …
     : boardFilename // … otherwise, use the .storyboarder file
 
   // ensure the current board and data is saved
