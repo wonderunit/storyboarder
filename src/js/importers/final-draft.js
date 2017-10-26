@@ -100,6 +100,7 @@ const importFdxData = fdxObj => {
             sceneAtom['slugline'] = element.Text[0]
           }
         }
+        sceneAtom['slugline'] = sceneAtom['slugline'].toUpperCase()
         sceneAtom['time'] = currentTime
         //console.log(element.Text[0])
         break
@@ -133,7 +134,7 @@ const importFdxData = fdxObj => {
 
       case 'Character':
         //console.log(element.Text[0])
-        currentCharacter = element.Text[0]
+        currentCharacter = element.Text[0].toUpperCase()
         sceneWordCount += wordCount(element.Text[0])
         break
 

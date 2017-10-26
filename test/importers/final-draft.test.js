@@ -78,21 +78,19 @@ describe('final-draft', () => {
     describe('getScriptLocations', () => {
       it('can extract all locations from script data', async () => {
         let locations = importerFinalDraft.getScriptLocations(script)
-        assert.equal(locations[0][0], 'EXT. Mast 2 3 farm')
+        assert.equal(locations[0][0], 'EXT. MAST 2 3 FARM')
         assert.equal(locations[0][1], 1)
-
-        assert.equal(locations[9][0], 'iNT. small town bank')
-        assert.equal(locations[9][1], 2)
+        assert.equal(locations[8][0], 'INT. SMALL TOWN BANK')
+        assert.equal(locations[8][1], 2)
       })
     })
     describe('getScriptCharacters', () => {
       it('can extract all characters from script data', async () => {
         let characters = importerFinalDraft.getScriptCharacters(script)
-        assert.equal(characters[0][0], 'Henry')
-        assert.equal(characters[0][1], 1)
-        
-        assert.equal(characters[2][0], 'HENRY')
-        assert.equal(characters[2][1], 15)
+        assert.equal(characters[0][0], 'HENRY')
+        assert.equal(characters[0][1], 22)
+        assert.equal(characters[2][0], 'GRIM FARMER')
+        assert.equal(characters[2][1], 2)
       })
     })
   })
