@@ -96,7 +96,9 @@ const importFdxData = fdxObj => {
         if (element.Text[0]._) {
           sceneAtom['slugline'] = element.Text[0]._
         } else {
-          sceneAtom['slugline'] = element.Text[0]
+          if (typeof element.Text[0] === 'string') {
+            sceneAtom['slugline'] = element.Text[0]
+          }
         }
         sceneAtom['time'] = currentTime
         //console.log(element.Text[0])
