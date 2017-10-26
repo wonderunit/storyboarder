@@ -31,13 +31,13 @@ const getAllAbsoluteFilePathsUsedByScene = srcFilePath => {
   ]
 }
 
-// srcFilePath: absolute path to project file (.storyboarder or .fountain)
+// srcFilePath: absolute path to project file (.storyboarder or .fountain/.fdx)
 const getFilesUsedByProject = srcFilePath => {
   // for convenience
   let srcFolderPath = path.dirname(srcFilePath)
 
   // is this a multi-scene project?
-  const isMultiScene = (path.extname(srcFilePath) === '.fountain')
+  const isMultiScene = (path.extname(srcFilePath) === '.fountain' || path.extname(srcFilePath) === '.fdx')
 
   if (isMultiScene) {
     let files = []
@@ -82,13 +82,13 @@ const getFilesUsedByProject = srcFilePath => {
 // copy the project files
 //
 // single-scene or multi-scene
-// (for multi-scene, this includes .fountain and .settings and scene folders)
+// (for multi-scene, this includes .fountain/.fdx and .settings and scene folders)
 //
 // for each scene ...
 //   ... grab all the files in the scene
 //   ... for multi-scene, grab the script and .settings
 //
-// srcFilePath:   absolute path to source project .storyboarder or .fountain
+// srcFilePath:   absolute path to source project .storyboarder or .fountain/.fdx
 //
 // dstFolderPath: absolute path to destination folder
 //                basename will be used to rename the destination project file
