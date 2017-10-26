@@ -157,8 +157,8 @@ remote.getCurrentWindow().on('focus', () => {
 const load = async (event, args) => {
   try {
     if (args[1]) {
-      log({ type: 'progress', message: 'Loading Fountain File' })
-      console.log("LOADING FOUNTAIN FILE", args[0])
+      log({ type: 'progress', message: 'Loading Project with Script' })
+      console.log("LOADING SCRIPT FILE", args[0])
       ipcRenderer.send('analyticsEvent', 'Application', 'open script', args[0])
 
       scriptFilePath = args[0]
@@ -2769,7 +2769,7 @@ let renderTimeline = () => {
   if (getMarkerEl()) getMarkerEl().style.left = markerLeft
 }
 
-let renderScenes = ()=> {
+let renderScenes = () => {
   let html = []
   let angle = 0
   let i = 0
@@ -3025,6 +3025,7 @@ let loadScene = async (sceneNumber) => {
         let directoryFound = false
         let foundDirectoryName
 
+        console.log('scene:')
         console.log(node)
 
         let id
@@ -4618,7 +4619,7 @@ const reloadScript = async (args) => { // [scriptData, locations, characters]
   // goto the board and render the drawer
   renderScene()
 
-  notifications.notify({ message: 'Fountain script has changed. Reloaded.'})
+  notifications.notify({ message: 'Script has changed. Reloaded.'})
 }
 
 const updateSceneFromScript = async () => {
