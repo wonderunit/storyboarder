@@ -50,12 +50,13 @@ let previousScript
 
 let prefs = prefModule.getPrefs('main')
 
+// state
 let currentFile
 let currentPath
+let currentScriptDataObject
 
 let toBeOpenedPath
 
-let onCreateNew
 let isLoadingProject
 
 let appServer
@@ -191,7 +192,10 @@ app.on('activate', ()=> {
 })
 
 let openNewWindow = () => {
-  onCreateNew = createNewGivenAspectRatio
+  // reset state
+  currentFile = undefined
+  currentPath = undefined
+  currentScriptDataObject = undefined
 
   if (!newWindow) {
     // TODO this code is never called currently, as the window is created w/ welcome
@@ -283,80 +287,85 @@ let openFile = filepath => {
           return
         }
 
+        currentFile = filepath
+        currentPath = path.join(path.dirname(currentFile), 'storyboards')
+
         try {
-          importerFinalDraft.insertSceneIds(fdxObj)
-        } catch (err) {
+          let [scriptData, locations, characters, metadata] = processFdxData(fdxObj)
+
+          setWatchedScript()
+
+          findOrCreateProjectFolder([
+            scriptData,
+            locations,
+            characters,
+            metadata
+          ])
+        } catch (error) {
+          console.error(error)
           dialog.showMessageBox({
             type: 'error',
-            message: 'Could not add scene ids to Final Draft data.\n' + error.message,
+            message: 'Could not parse Final Draft data.\n' + error.message
           })
-          return
         }
-        
-        let script = importerFinalDraft.importFdxData(fdxObj)
-
-        dialog.showMessageBox({
-          message: 'Got Final Draft data.'
-        })
       })
     })
 
   } else if (extname == '.fountain') {
-    fs.readFile(file, 'utf-8', (err, data) => {
-      data = ensureSceneIds(file, data)
+    currentFile = filepath
+    currentPath = path.join(path.dirname(currentFile), 'storyboards')
 
-      // check for storyboards directory
-      let storyboardsPath = file.split(path.sep)
-      storyboardsPath.pop()
-      storyboardsPath = path.join(storyboardsPath.join(path.sep), 'storyboards')
-
-      // TODO can we wait until aspect ratio has been input before creating?
-      //      because currently, if the user cancels after this, they get an empty folder on their filesystem
-      if (!fs.existsSync(storyboardsPath)){
-        fs.mkdirSync(storyboardsPath)
+    fs.readFile(filepath, 'utf-8', (err, data) => {
+      if (err) {
+        dialog.showMessageBox({
+          type: 'error',
+          message: 'Could not read Fountain script.\n' + error.message,
+        })
+        return
       }
-
-      currentFile = file
-      currentPath = storyboardsPath
-
-      // check for storyboard.settings file
-      if (!fs.existsSync(path.join(storyboardsPath, 'storyboard.settings'))){
-
-        newWindow.webContents.send('setTab', 1)
-        newWindow.show()
-        onCreateNew = (aspectRatio) =>
-          createNewFromExistingFile(
-            aspectRatio,
-
-            data,
-            storyboardsPath,
-            currentFile,
-            currentPath
-          ).catch(error => {
-            console.error(error)
-          })
-
-      } else {
-        let boardSettings = JSON.parse(fs.readFileSync(path.join(storyboardsPath, 'storyboard.settings')))
-        if (!boardSettings.lastScene) { boardSettings.lastScene = 0 }
-        //[scriptData, locations, characters, metadata]
-
-        let processedData
-        try {
-          processedData = processFountainData(data, true, false)
-        } catch (error) {
-          dialog.showMessageBox({
-            type: 'error',
-            message: 'Could not read Fountain script.\n' + error.message,
-          })
-        }
-
-        if (processedData) {
-          addToRecentDocs(currentFile, processedData[3])
-          loadStoryboarderWindow(currentFile, processedData[0], processedData[1], processedData[2], boardSettings, currentPath)
-        }
+      try {
+        data = ensureFountainSceneIds(filepath, data)
+        findOrCreateProjectFolder(
+          processFountainData(data, true, false)
+        )
+      } catch (error) {
+        console.error(error)
+        dialog.showMessageBox({
+          type: 'error',
+          message: 'Could not parse Fountain script.\n' + error.message,
+        })
       }
     })
+  }
+}
+
+const findOrCreateProjectFolder = (scriptDataObject) => {
+  // check for storyboard.settings file
+  if (fs.existsSync(path.join(currentPath, 'storyboard.settings'))) {
+    // project already exists
+    let boardSettings = JSON.parse(fs.readFileSync(path.join(currentPath, 'storyboard.settings')))
+    if (!boardSettings.lastScene) {
+      boardSettings.lastScene = 0
+    }
+
+    switch (path.extname(currentFile)) {
+      case '.fdx':
+        // console.log('got existing .fdx project data')
+        addToRecentDocs(currentFile, scriptDataObject[3])
+        loadStoryboarderWindow(currentFile, scriptDataObject[0], scriptDataObject[1], scriptDataObject[2], boardSettings, currentPath)
+        break
+      case '.fountain':
+        // console.log('got existing .fountain project data')
+        addToRecentDocs(currentFile, scriptDataObject[3])
+        loadStoryboarderWindow(currentFile, scriptDataObject[0], scriptDataObject[1], scriptDataObject[2], boardSettings, currentPath)
+        break
+    }
+
+  } else {
+    // create
+    currentScriptDataObject = scriptDataObject
+    newWindow.webContents.send('setTab', 1)
+    newWindow.show()
   }
 }
 
@@ -435,6 +444,34 @@ let importWorksheetDialogue = () => {
   )
 }
 
+const processFdxData = fdxObj => {
+  try {
+    importerFinalDraft.insertSceneIds(fdxObj)
+  } catch (err) {
+    throw new Error('Could not add scene ids to Final Draft data.\n' + error.message)
+    return
+  }
+
+  let scriptData = importerFinalDraft.importFdxData(fdxObj)
+
+  let locations = importerFinalDraft.getScriptLocations(scriptData)
+  let characters = importerFinalDraft.getScriptCharacters(scriptData)
+
+  let metadata = {
+    type: 'script',
+
+    // TODO is this metadata needed?
+    //
+    // sceneBoardsCount: 0,
+    // sceneCount: 0,
+    // totalMovieTime: 0,
+
+    title: path.basename(currentFile, path.extname(currentFile))
+  }
+
+  return [scriptData, locations, characters, metadata]
+}
+
 let processFountainData = (data, create, update) => {
   let scriptData = fountain.parse(data, true)
   let locations = fountainDataParser.getLocations(scriptData.tokens)
@@ -496,15 +533,7 @@ let processFountainData = (data, create, update) => {
       break
   }
 
-  if (create) {
-    if (scriptWatcher) { scriptWatcher.close() }
-
-    let scriptFilePath = currentFile
-    scriptWatcher = chokidar.watch(scriptFilePath, {
-      disableGlobbing: true // treat file strings as literal file names
-    })
-    scriptWatcher.on('all', onScriptFileChange)
-  }
+  if (create) setWatchedScript()
 
   // unused 
   // if (update) {
@@ -518,24 +547,56 @@ const onScriptFileChange = (eventType, filepath, stats) => {
   if (eventType === 'change') {
     // TODO MD5 hash to see if change is worth reading?
 
-    try {
-      let data = fs.readFileSync(filepath, 'utf-8')
+    let data = fs.readFileSync(filepath, 'utf-8')
 
-      // write scene ids for any new scenes
-      data = ensureSceneIds(filepath, data)
+    if (path.extname(filepath) === '.fountain') {
+      try {
+        // write scene ids for any new scenes
+        data = ensureFountainSceneIds(filepath, data)
+        let [scriptData, locations, characters, metadata] = processFountainData(data, false, false)
+        mainWindow.webContents.send('reloadScript', [scriptData, locations, characters])
+      } catch (error) {
+        dialog.showMessageBox({
+          type: 'error',
+          message: 'Could not reload script.\n' + error.message
+        })
+      }
 
-      let [scriptData, locations, characters, metadata] = processFountainData(data, false, false)
-      mainWindow.webContents.send('reloadScript', [scriptData, locations, characters])
-    } catch (error) {
-      dialog.showMessageBox({
-        type: 'error',
-        message: 'Could not reload Fountain script.\n' + error.message,
+    } else if (path.extname(filepath) === '.fdx') {
+      let parser = new xml2js.Parser()
+      parser.parseString(data, (err, fdxObj) => {
+        if (err) {
+          dialog.showMessageBox({
+            type: 'error',
+            message: 'Could not parse Final Draft XML.\n' + error.message,
+          })
+          return
+        }
+
+        try {
+          let [scriptData, locations, characters, metadata] = processFdxData(fdxObj)
+          mainWindow.webContents.send('reloadScript', [scriptData, locations, characters])
+        } catch (error) {
+          dialog.showMessageBox({
+            type: 'error',
+            message: 'Could not reload script.\n' + error.message
+          })
+        }
       })
     }
   }
 }
 
-const ensureSceneIds = (filePath, data) => {
+const setWatchedScript = () => {
+  if (scriptWatcher) { scriptWatcher.close() }
+
+  scriptWatcher = chokidar.watch(currentFile, {
+    disableGlobbing: true // treat file strings as literal file names
+  })
+  scriptWatcher.on('all', onScriptFileChange)
+}
+
+const ensureFountainSceneIds = (filePath, data) => {
   let sceneIdScript = fountainSceneIdUtil.insertSceneIds(data)
 
   if (sceneIdScript[1]) {
@@ -574,22 +635,21 @@ const ensureSceneIds = (filePath, data) => {
 // new functions
 ////////////////////////////////////////////////////////////
 
-let createNewGivenAspectRatio = aspectRatio => {
-  return new Promise((resolve, reject) => {
+const createAndLoadScene = aspectRatio =>
+  new Promise((resolve, reject) => {
     dialog.showSaveDialog({
       title: "New storyboard",
       buttonLabel: "Create",
     },
-    filename => {
+    async filename => {
       if (filename) {
         console.log(filename)
-
-        let tasks = Promise.resolve()
-
+    
+        // TODO test overwriting a folder
         if (fs.existsSync(filename)) {
           if (fs.lstatSync(filename).isDirectory()) {
             console.log('\ttrash existing folder', filename)
-            tasks = tasks.then(() => trash(filename)).catch(err => reject(err))
+            await trash(filename)
           } else {
             dialog.showMessageBox(null, {
               message: "Could not overwrite file " + path.basename(filename) + ". Only folders can be overwritten." 
@@ -598,64 +658,48 @@ let createNewGivenAspectRatio = aspectRatio => {
           }
         }
 
-        tasks = tasks.then(() => {
-          fs.mkdirSync(filename)
+        fs.mkdirSync(filename)
 
-          let boardName = path.basename(filename)
-          let filePath = path.join(filename, boardName + '.storyboarder')
+        let boardName = path.basename(filename)
+        let filePath = path.join(filename, boardName + '.storyboarder')
 
-          let newBoardObject = {
-            version: pkg.version,
-            aspectRatio: aspectRatio,
-            fps: 24,
-            defaultBoardTiming: prefs.defaultBoardTiming,
-            boards: []
-          }
+        let newBoardObject = {
+          version: pkg.version,
+          aspectRatio: aspectRatio,
+          fps: 24,
+          defaultBoardTiming: prefs.defaultBoardTiming,
+          boards: []
+        }
+  
+        fs.writeFileSync(filePath, JSON.stringify(newBoardObject))
+        fs.mkdirSync(path.join(filename, 'images'))
+  
+        addToRecentDocs(filePath, newBoardObject)
+        loadStoryboarderWindow(filePath)
+  
+        analytics.event('Application', 'new', newBoardObject.aspectRatio)
 
-          fs.writeFileSync(filePath, JSON.stringify(newBoardObject))
-          fs.mkdirSync(path.join(filename, 'images'))
-
-          addToRecentDocs(filePath, newBoardObject)
-          loadStoryboarderWindow(filePath)
-
-          analytics.event('Application', 'new', newBoardObject.aspectRatio)
-        }).catch(err => reject(err))
-
-        tasks.then(resolve)
+        resolve()
       } else {
         reject()
       }
     })
   })
+
+const createAndLoadProject = aspectRatio => {
+  if (!fs.existsSync(currentPath)) {
+    fs.mkdirSync(currentPath)
+  }
+
+  let boardSettings = {
+    lastScene: 0,
+    aspectRatio
+  }
+  fs.writeFileSync(path.join(currentPath, 'storyboard.settings'), JSON.stringify(boardSettings))
+
+  addToRecentDocs(currentFile, currentScriptDataObject[3])
+  loadStoryboarderWindow(currentFile, currentScriptDataObject[0], currentScriptDataObject[1], currentScriptDataObject[2], boardSettings, currentPath)
 }
-
-let createNewFromExistingFile = (aspectRatio, data, storyboardsPath, currentFile, currentPath) =>
-  new Promise((resolve, reject) => {
-    let boardSettings = {
-      lastScene: 0,
-      aspectRatio
-    }
-    fs.writeFileSync(path.join(storyboardsPath, 'storyboard.settings'), JSON.stringify(boardSettings))
-    //[scriptData, locations, characters, metadata]
-
-    let processedData
-    try {
-      processedData = processFountainData(data, true, false)
-    } catch (error) {
-      dialog.showMessageBox({
-        type: 'error',
-        message: 'Could not read existing Fountain script.\n' + error.message,
-      })
-    }
-
-    if (processedData) {
-      addToRecentDocs(currentFile, processedData[3])
-      loadStoryboarderWindow(currentFile, processedData[0], processedData[1], processedData[2], boardSettings, currentPath)
-      resolve()
-    } else {
-      reject()
-    }
-  })
 
 let loadStoryboarderWindow = (filename, scriptData, locations, characters, boardSettings, currentPath) => {
   isLoadingProject = true
@@ -947,16 +991,16 @@ ipcMain.on('importImagesDialogue', (e, arg)=> {
   mainWindow.webContents.send('importNotification', arg)
 })
 
-ipcMain.on('createNew', (e, ...args) => {
+ipcMain.on('createNew', (e, aspectRatio) => {
   newWindow.hide()
-  onCreateNew(...args)
-    .then(() => {
-    })
-    .catch(err => {
-      if (err) {
-        dialog.showMessageBox(null, { type: 'error', message: err.message })
-      }
-    })
+
+  let isProject = path.extname(currentFile) === '.fdx' || path.extname(currentFile) === '.fountain'
+
+  if (isProject) {
+    createAndLoadProject(aspectRatio)
+  } else {
+    createAndLoadScene(aspectRatio)
+  }
 })
 
 ipcMain.on('openNewWindow', (e, arg)=> {
