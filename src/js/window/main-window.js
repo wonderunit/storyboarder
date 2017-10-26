@@ -3798,8 +3798,13 @@ const exportCleanup = () => {
   exporter.exportCleanup(boardData, boardFilename).then(newBoardData => {
     // notifications.notify({ message: "Your scene has been cleaned up!", timing: 20 })
     sfx.positive()
-    // force reload
-    ipcRenderer.send('openFile', boardFilename)
+
+    let srcFilePath = scriptFilePath
+      ? scriptFilePath // use the .fountain/.fdx file, if it is defined …
+      : boardFilename // … otherwise, use the .storyboarder file
+
+    // force reload of project or scene
+    ipcRenderer.send('openFile', srcFilePath)
   }).catch(err => {
     console.log(err)
   })
