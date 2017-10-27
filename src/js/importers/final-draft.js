@@ -32,15 +32,19 @@ const readFdxFile = async filepath => {
 
 // mutates fdxObj
 const insertSceneIds = (fdxObj, generateNumber = () => util.uidGen(5)) => {
+  let inserted = []
   fdxObj.FinalDraft.Content[0].Paragraph.forEach((element, i) => {
     switch (element.$.Type) {
       case 'Scene Heading':
         if (typeof element.$.Number === 'undefined') {
-          element.$.Number = generateNumber()
+          let uid = generateNumber()
+          inserted.push(uid)
+          element.$.Number = uid
         }
         break
     }
   })
+  return inserted
 }
 
 const importFdxData = fdxObj => {

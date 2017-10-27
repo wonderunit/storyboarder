@@ -48,6 +48,46 @@ describe('final-draft', () => {
       )
     })
   })
+  describe('insertSceneIds', () => {
+    it('reports if scene ids were inserted', async () => {
+      let fakeFdxObj = {
+        FinalDraft: {
+          '$': {
+            DocumentType: 'Script',
+            Template: 'No',
+            Version: '3'
+          },
+          Content: [{
+            Paragraph: [
+              {
+                '$': {
+                  Type: 'Scene Heading',
+                  Number: '1'
+                }
+              },
+              {
+                '$': {
+                  Type: 'Scene Heading',
+                  Number: '2'
+                }
+              },
+              {
+                '$': {
+                  Type: 'Scene Heading'
+                  // missing number
+                }
+              }
+            ]
+          }]
+        }
+      }
+      let added = importerFinalDraft.insertSceneIds(fakeFdxObj)
+      assert.equal(added.length, 1)
+
+      let addedAgain = importerFinalDraft.insertSceneIds(fakeFdxObj)
+      assert.equal(addedAgain.length, 0)
+    })
+  })
   describe('importFdxData', () => {
     it('throws an error if data can not be parsed', async () => {
       assertThrowsAsynchronously(async () => await importerFinalDraft.importFdxData({}), Error)
