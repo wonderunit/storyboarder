@@ -2620,6 +2620,7 @@ let renderThumbnailDrawer = ()=> {
       pasteBoards()
     })
     contextMenu.on('import', () => {
+      // TODO could move the dialog code out of main.js and call it directly here via remote.dialog
       ipcRenderer.send('importImagesDialogue')
     })
     contextMenu.on('reorder-left', () => {
