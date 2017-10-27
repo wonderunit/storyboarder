@@ -823,10 +823,6 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
     mainWindow.webContents.on('devtools-closed', event => { mainWindow.webContents.send('devtools-closed') })
   }
 
-  mainWindow.on('focus', () => {
-    mainWindow.webContents.send('focus')
-  })
-
   // via https://github.com/electron/electron/blob/master/docs/api/web-contents.md#event-will-prevent-unload
   //     https://github.com/electron/electron/pull/9331
   //
@@ -1179,8 +1175,20 @@ ipcMain.on('log', (event, opt) => {
 ipcMain.on('workspaceReady', event => {
   appServer.setCanImport(true)
 
-  mainWindow && mainWindow.show()
   !loadingStatusWindow.isDestroyed() && loadingStatusWindow.hide()
+
+  if (!mainWindow) return
+  mainWindow.show()
+  // only after the workspace is ready will it start getting future focus events
+  mainWindow.on('focus', () => {
+    mainWindow.webContents.send('focus')
+
+    let isProject = path.extname(currentFile) === '.fdx' || path.extname(currentFile) === '.fountain'
+    if (isProject) {
+      // force an onScriptFileChange call
+      onScriptFileChange('change', currentFile)
+    }
+  })
 })
 
 ipcMain.on('exportWorksheetPdf', (event, sourcePath) => {
