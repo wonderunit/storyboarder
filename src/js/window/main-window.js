@@ -67,7 +67,7 @@ let boardPath
 let boardData
 let currentBoard = 0
 
-let scriptFilePath // .fountain, only used for multi-scene projects
+let scriptFilePath // .fountain/.fdx, only used for multi-scene projects
 let scriptData
 let locations
 let characters
@@ -157,8 +157,8 @@ remote.getCurrentWindow().on('focus', () => {
 const load = async (event, args) => {
   try {
     if (args[1]) {
-      log({ type: 'progress', message: 'Loading Fountain File' })
-      console.log("LOADING FOUNTAIN FILE", args[0])
+      log({ type: 'progress', message: 'Loading Project with Script' })
+      console.log("LOADING SCRIPT FILE", args[0])
       ipcRenderer.send('analyticsEvent', 'Application', 'open script', args[0])
 
       scriptFilePath = args[0]
@@ -2806,7 +2806,7 @@ let renderTimeline = () => {
   if (getMarkerEl()) getMarkerEl().style.left = markerLeft
 }
 
-let renderScenes = ()=> {
+let renderScenes = () => {
   let html = []
   let angle = 0
   let i = 0
@@ -3062,6 +3062,7 @@ let loadScene = async (sceneNumber) => {
         let directoryFound = false
         let foundDirectoryName
 
+        console.log('scene:')
         console.log(node)
 
         let id
@@ -3837,8 +3838,13 @@ const exportCleanup = () => {
   exporter.exportCleanup(boardData, boardFilename).then(newBoardData => {
     // notifications.notify({ message: "Your scene has been cleaned up!", timing: 20 })
     sfx.positive()
-    // force reload
-    ipcRenderer.send('openFile', boardFilename)
+
+    let srcFilePath = scriptFilePath
+      ? scriptFilePath // use the .fountain/.fdx file, if it is defined …
+      : boardFilename // … otherwise, use the .storyboarder file
+
+    // force reload of project or scene
+    ipcRenderer.send('openFile', srcFilePath)
   }).catch(err => {
     console.log(err)
   })
@@ -4558,7 +4564,7 @@ const fillContext = (context, fillStyle = 'white') => {
 
 const saveAsFolder = async () => {
   let srcFilePath = scriptFilePath
-    ? scriptFilePath // use the .fountain file, if it is defined …
+    ? scriptFilePath // use the .fountain/.fdx file, if it is defined …
     : boardFilename // … otherwise, use the .storyboarder file
 
   // ensure the current board and data is saved
@@ -4624,7 +4630,7 @@ const saveAsFolder = async () => {
 
 const exportZIP = async () => {
   let srcFilePath = scriptFilePath
-    ? scriptFilePath // use the .fountain file, if it is defined …
+    ? scriptFilePath // use the .fountain/.fdx file, if it is defined …
     : boardFilename // … otherwise, use the .storyboarder file
 
   // ensure the current board and data is saved
@@ -4658,7 +4664,7 @@ const reloadScript = async (args) => { // [scriptData, locations, characters]
   // goto the board and render the drawer
   renderScene()
 
-  notifications.notify({ message: 'Fountain script has changed. Reloaded.'})
+  notifications.notify({ message: 'Script has changed. Reloaded.'})
 }
 
 const updateSceneFromScript = async () => {

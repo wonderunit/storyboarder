@@ -12,7 +12,7 @@ const tmp = require('tmp')
 const exporterArchive = require('../../src/js/exporters/archive')
 
 let fixturesPath = path.join(__dirname, '..', 'fixtures')
-let fountainProjectPath = path.resolve(path.join(fixturesPath, 'projects', 'multi-scene', 'multi-scene.fountain'))
+let fountainProjectPath = path.resolve(path.join(fixturesPath, 'projects', 'multi-scene', 'multi-scene.fdx'))
 
 describe('exporters/archive/exportAsZIP', () => {
   it('can export to ZIP', async () => {

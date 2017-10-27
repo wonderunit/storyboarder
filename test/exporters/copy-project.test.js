@@ -24,7 +24,7 @@ describe('exporters/copyProject', () => {
       [fixturesPath]: {
         'projects': {
           'multi-scene': {
-            'multi-scene.fountain': fs.readFileSync(path.resolve(path.join(fixturesPath, 'projects', 'multi-scene', 'multi-scene.fountain'))),
+            'multi-scene.fdx': fs.readFileSync(path.resolve(path.join(fixturesPath, 'projects', 'multi-scene', 'multi-scene.fdx'))),
             'storyboards': {
               'storyboard.settings': fs.readFileSync(path.resolve(path.join(fixturesPath, 'projects', 'multi-scene', 'storyboards', 'storyboard.settings'))),
               'Scene-1-EXT-A-PLACE-DAY-1-ZX3ZM': {
@@ -123,14 +123,14 @@ describe('exporters/copyProject', () => {
     assert(fs.existsSync(path.join(dstFolderPath, 'new-single-scene.storyboarder')))
   })
   it('can copy a multi-scene project', () => {
-    let srcFilePath = path.resolve(path.join(fixturesPath, 'projects', 'multi-scene', 'multi-scene.fountain'))
+    let srcFilePath = path.resolve(path.join(fixturesPath, 'projects', 'multi-scene', 'multi-scene.fdx'))
     let dstFolderPath = path.resolve(path.join(fixturesPath, 'projects', 'new-multi-scene'))
-    assert.equal(exporterCopyProject.getFilesUsedByProject(srcFilePath).length, 13) // files, excluding .fountain
+    assert.equal(exporterCopyProject.getFilesUsedByProject(srcFilePath).length, 13) // files, excluding .fdx
 
     fs.mkdirSync(dstFolderPath)
     exporterCopyProject.copyProject(srcFilePath, dstFolderPath)
 
-    assert(fs.existsSync(path.join(dstFolderPath, 'new-multi-scene.fountain')))
+    assert(fs.existsSync(path.join(dstFolderPath, 'new-multi-scene.fdx')))
   })
   it('throws an error when the source does not exist', () => {
     let srcFilePath = path.resolve(path.join(fixturesPath, '404', '404.storyboarder'))
