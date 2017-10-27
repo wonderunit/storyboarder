@@ -447,28 +447,7 @@ let importWorksheetDialogue = () => {
 
 const processFdxData = fdxObj => {
   try {
-    let added = importerFinalDraft.insertSceneIds(fdxObj)
-    if (added.length) {
-      let builder = new xml2js.Builder({
-        xmldec: {
-          version: '1.0',
-          encoding: 'UTF-8',
-          standalone: false
-        }
-      })
-      let xml = builder.buildObject(fdxObj)
-      fs.writeFileSync(currentFile, xml)
-
-      dialog.showMessageBox({
-        type: 'info',
-        message: 'We added scene IDs to the Final Draft script',
-        detail: "Scene IDs are what we use to make sure we put the storyboards in the right place. " + 
-                "If you have your script open in an editor, you should reload it. " +
-                "Also, you can change your script around as much as you want, "+
-                "but please don't change the scene IDs.",
-        buttons: ['OK']
-      })
-    }
+    ensureFdxSceneIds(fdxObj)
   } catch (err) {
     throw new Error('Could not add scene ids to Final Draft data.\n' + error.message)
     return
@@ -594,6 +573,7 @@ const onScriptFileChange = (eventType, filepath, stats) => {
         }
 
         try {
+          ensureFdxSceneIds(fdxObj)
           let [scriptData, locations, characters, metadata] = processFdxData(fdxObj)
           mainWindow.webContents.send('reloadScript', [scriptData, locations, characters])
         } catch (error) {
@@ -614,6 +594,32 @@ const setWatchedScript = () => {
     disableGlobbing: true // treat file strings as literal file names
   })
   scriptWatcher.on('all', onScriptFileChange)
+}
+
+const ensureFdxSceneIds = fdxObj => {
+  let added = importerFinalDraft.insertSceneIds(fdxObj)
+
+  if (added.length) {
+    let builder = new xml2js.Builder({
+      xmldec: {
+        version: '1.0',
+        encoding: 'UTF-8',
+        standalone: false
+      }
+    })
+    let xml = builder.buildObject(fdxObj)
+    fs.writeFileSync(currentFile, xml)
+
+    dialog.showMessageBox({
+      type: 'info',
+      message: 'We added scene IDs to the Final Draft script',
+      detail: "Scene IDs are what we use to make sure we put the storyboards in the right place. " + 
+              "If you have your script open in an editor, you should reload it. " +
+              "Also, you can change your script around as much as you want, "+
+              "but please don't change the scene IDs.",
+      buttons: ['OK']
+    })
+  }
 }
 
 const ensureFountainSceneIds = (filePath, data) => {
