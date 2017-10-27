@@ -52,6 +52,7 @@ let prefs = prefModule.getPrefs('main')
 
 // state
 let currentFile
+let currentFileLastModified
 let currentPath
 let currentScriptDataObject // used to store data until 'createNew' ipc fires back
 
@@ -194,6 +195,7 @@ app.on('activate', ()=> {
 let openNewWindow = () => {
   // reset state
   currentFile = undefined
+  currentFileLastModified = undefined
   currentPath = undefined
   currentScriptDataObject = undefined
 
@@ -544,8 +546,16 @@ let processFountainData = (data, create, update) => {
 
 const onScriptFileChange = (eventType, filepath, stats) => {
   if (eventType === 'change') {
-    // TODO MD5 hash to see if change is worth reading?
 
+    // check last modified to determine if we should reload
+    let lastModified = fs.statSync(currentFile).mtimeMs
+    if (currentFileLastModified && (lastModified === currentFileLastModified)) {
+      // file hasn't changed. cancel.
+      return
+    }
+    currentFileLastModified = lastModified
+
+    // load
     let data = fs.readFileSync(filepath, 'utf-8')
 
     if (path.extname(filepath) === '.fountain') {
