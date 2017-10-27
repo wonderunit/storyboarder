@@ -3565,18 +3565,22 @@ ipcRenderer.on('redo', (e, arg) => {
   }
 })
 
-let importImage = (imageDataURL) => {
+// import image from mobile server
+let importImage = imageDataURL => {
   // TODO: undo
-  var image = new Image()
-  image.addEventListener('load', ()=>{
+
+  console.log('importImage')
+
+  let image = new Image()
+  image.addEventListener('load', () => {
     console.log(boardData.aspectRatio)
     console.log((image.height/image.width))
     console.log(image)
+
     let targetWidth
     let targetHeight
     let offsetX
     let offsetY
-
 
     if (boardData.aspectRatio > (image.height/image.width)) {
       targetHeight = 900
@@ -3592,7 +3596,6 @@ let importImage = (imageDataURL) => {
       offsetX = 0
     }
 
-
     // render
     storyboarderSketchPane
       .getLayerCanvasByName('reference')
@@ -3600,12 +3603,12 @@ let importImage = (imageDataURL) => {
       .drawImage(image, offsetX, offsetY, targetWidth, targetHeight)
     markImageFileDirty([0]) // HACK hardcoded
     saveImageFile()
-
-
-  }, false);
+  })
+  image.addEventListener('error', () => {
+    notifications.notify({ message: 'Could not read the image file' })
+  })
 
   image.src = imageDataURL
-
 }
 
 /**
