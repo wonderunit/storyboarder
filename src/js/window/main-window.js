@@ -1283,29 +1283,49 @@ let newBoard = async (position, shouldAddToUndoStack = true) => {
   return position
 }
 
-let insertNewBoardsWithFiles = (filepaths) => {
+// on "Import Images" or mouse drop
+//
+// - JPG/JPEG,
+// - PNG
+// - PSD, must have a layer named 'reference' (unless importTargetLayer preference is set to load a different one)
+//
+let insertNewBoardsWithFiles = async filepaths => {
+  // TODO saveImageFile() first?
+
   let count = filepaths.length
-  let message = `Importing ${count} image${count !== 1 ? 's':''}.\nPlease wait...`
-  notifications.notify({message: message, timing: 2})
+  notifications.notify({
+    message: `Importing ${count} image${count !== 1 ? 's':''}.\nPlease wait...`,
+    timing: 2
+  })
 
-  setTimeout(()=> {
-    let insertionIndex = currentBoard+1
-    let targetLayer = prefsModule.getPrefs('main')['importTargetLayer'] || 'reference'
-    let imageFilePromises = filepaths.map(filepath => {
-      let readerOptions = {
-        importTargetLayer: targetLayer
-      }
-      let imageData = FileHelper.getBase64ImageDataFromFilePath(filepath)
-      if(!imageData) {
-        notifications.notify({message: `Oops! There was a problem importing ${filepath}`, timing: 10})
-        return new Promise((fulfill)=>fulfill())
-      }
-      let board = insertNewBoardDataAtPosition(insertionIndex++)
-      var image = new Image()
-      image.src = imageData[targetLayer]
+  let insertionIndex = currentBoard + 1
 
-      return new Promise((fulfill, reject)=>{
-        setImmediate(()=>{
+  // TODO when do we ever have importTargetLayer set to anything but 'reference?'
+  let targetLayer = prefsModule.getPrefs('main')['importTargetLayer'] || 'reference'
+  let readerOptions = {
+    importTargetLayer: targetLayer
+  }
+
+  let numAdded = 0
+
+  for (let filepath of filepaths) {
+    let imageData = FileHelper.getBase64ImageDataFromFilePath(filepath, readerOptions)
+    if (!imageData || !imageData[targetLayer]) {
+      notifications.notify({ message: `Oops! There was a problem importing ${filepath}`, timing: 10 })
+      return
+    }
+
+    try {
+      await new Promise((resolve, reject) => {
+        let image = new Image()
+
+        //
+        // TODO DRY this up
+        // TODO we have functions elsewhere that do a lot of this
+        //
+        image.onload = () => {
+          let board = insertNewBoardDataAtPosition(insertionIndex++)
+
           // resize the image if it's too big.
           let boardSize = storyboarderSketchPane.sketchPane.getCanvasSize()
           if(boardSize.width < image.width) {
@@ -1348,26 +1368,42 @@ let insertNewBoardsWithFiles = (filepaths) => {
           var imageDataSized = canvas.toDataURL()
           let thumbPath = board.url.replace('.png', '-thumbnail.png')
           saveDataURLtoFile(imageDataSized, thumbPath)
+          numAdded++
+          resolve()
+        }
 
-          fulfill()
-        })
+        image.onerror = event => {
+          reject(new Error(`Image file is missing or invalid`))
+        }
+
+        image.src = imageData[targetLayer]
       })
+    } catch (error) {
+      console.error('Got error', error)
+      notifications.notify({ message: `Could not load image ${path.basename(filepath)}\n` + error.message, timing: 10 })
+    }
+  }
 
-    })
+  // TODO do we need to mark the current layer dirty??
+  //
+  // if (targetLayer === 'reference') {
+  //   markImageFileDirty([LAYER_INDEX_REFERENCE])
+  // } else {
+  //   markImageFileDirty([LAYER_INDEX_MAIN])
+  // }
 
-    Promise.all(imageFilePromises)
-      .then(()=>{
-        markImageFileDirty([1])
-        markBoardFileDirty() // to save new board data
-        renderThumbnailDrawer()
-        let count = imageFilePromises.length
-        let message = `Imported ${count} image${count !== 1 ? 's':''}.\n\nThe image${count !== 1 ? 's are':' is'} on the reference layer, so you can draw over ${count !== 1 ? 'them':'it'}. If you'd like ${count !== 1 ? 'them':'it'} to be the main layer, you can merge ${count !== 1 ? 'them':'it'} up on the sidebar`
-        notifications.notify({message: message, timing: 10})
-        sfx.positive()
-      })
-  }, 1000)
+  markBoardFileDirty() // to save new board data
+  renderThumbnailDrawer()
 
-
+  notifications.notify({
+    message:  `Imported ${numAdded} image${numAdded !== 1 ? 's':''}.\n\n` +
+              `The image${numAdded !== 1 ? 's are':' is'} on the reference layer, `+
+              `so you can draw over ${numAdded !== 1 ? 'them':'it'}. ` +
+              `If you'd like ${numAdded !== 1 ? 'them':'it'} to be the main layer, ` +
+              `you can merge ${numAdded !== 1 ? 'them':'it'} up on the sidebar`,
+    timing: 10
+  })
+  sfx.positive()
 }
 
 let markBoardFileDirty = () => {
@@ -3566,18 +3602,22 @@ ipcRenderer.on('redo', (e, arg) => {
   }
 })
 
-let importImage = (imageDataURL) => {
+// import image from mobile server
+let importImage = imageDataURL => {
   // TODO: undo
-  var image = new Image()
-  image.addEventListener('load', ()=>{
+
+  console.log('importImage')
+
+  let image = new Image()
+  image.addEventListener('load', () => {
     console.log(boardData.aspectRatio)
     console.log((image.height/image.width))
     console.log(image)
+
     let targetWidth
     let targetHeight
     let offsetX
     let offsetY
-
 
     if (boardData.aspectRatio > (image.height/image.width)) {
       targetHeight = 900
@@ -3593,7 +3633,6 @@ let importImage = (imageDataURL) => {
       offsetX = 0
     }
 
-
     // render
     storyboarderSketchPane
       .getLayerCanvasByName('reference')
@@ -3601,12 +3640,12 @@ let importImage = (imageDataURL) => {
       .drawImage(image, offsetX, offsetY, targetWidth, targetHeight)
     markImageFileDirty([0]) // HACK hardcoded
     saveImageFile()
-
-
-  }, false);
+  })
+  image.addEventListener('error', () => {
+    notifications.notify({ message: 'Could not read the image file' })
+  })
 
   image.src = imageDataURL
-
 }
 
 /**

@@ -13,7 +13,7 @@ const writePsd = require('ag-psd').writePsd;
  */
 let getBase64ImageDataFromFilePath = (filepath, options={ importTargetLayer: 'reference' }) => {
   let { importTargetLayer } = options
-  let type = path.extname(filepath)
+  let type = path.extname(filepath).toLowerCase()
 
   let result = {}
   switch (type) {
@@ -21,6 +21,7 @@ let getBase64ImageDataFromFilePath = (filepath, options={ importTargetLayer: 're
       result[importTargetLayer] = getBase64TypeFromFilePath('png', filepath)
       break
     case '.jpg':
+    case '.jpeg':
       result[importTargetLayer] = getBase64TypeFromFilePath('jpg', filepath)
       break
     case '.psd':
