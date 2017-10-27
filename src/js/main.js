@@ -341,7 +341,9 @@ let openFile = filepath => {
 
 const findOrCreateProjectFolder = (scriptDataObject) => {
   // check for storyboard.settings file
-  if (fs.existsSync(path.join(currentPath, 'storyboard.settings'))) {
+  if (fs.existsSync(path.join(currentPath)) && 
+      fs.existsSync(path.join(currentPath, 'storyboard.settings'))) 
+  {
     // project already exists
     let boardSettings = JSON.parse(fs.readFileSync(path.join(currentPath, 'storyboard.settings')))
     if (!boardSettings.lastScene) {
@@ -482,9 +484,9 @@ let processFountainData = (data, create, update) => {
   scriptData = fountainDataParser.parse(scriptData.tokens)
   let metadata = {type: 'script', sceneBoardsCount: 0, sceneCount: 0, totalMovieTime: 0}
 
-  let boardsDirectoryFolders = fs.readdirSync(currentPath).filter(function(file) {
-    return fs.statSync(path.join(currentPath, file)).isDirectory();
-  });
+  let boardsDirectoryFolders = fs.existsSync(currentPath)
+    ? fs.readdirSync(currentPath).filter(file => fs.statSync(path.join(currentPath, file)).isDirectory())
+    : []
 
   // fallback title in case one is not provided
   metadata.title = path.basename(currentFile, path.extname(currentFile))
