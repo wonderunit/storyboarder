@@ -293,11 +293,9 @@ let openFile = filepath => {
         try {
           let [scriptData, locations, characters, metadata] = processFdxData(fdxObj)
 
-          setWatchedScript()
-
           findOrCreateProjectFolder([
             scriptData,
-            locations,
+            locations,  
             characters,
             metadata
           ])
@@ -351,11 +349,13 @@ const findOrCreateProjectFolder = (scriptDataObject) => {
     switch (path.extname(currentFile)) {
       case '.fdx':
         // console.log('got existing .fdx project data')
+        setWatchedScript()
         addToRecentDocs(currentFile, scriptDataObject[3])
         loadStoryboarderWindow(currentFile, scriptDataObject[0], scriptDataObject[1], scriptDataObject[2], boardSettings, currentPath)
         break
       case '.fountain':
         // console.log('got existing .fountain project data')
+        setWatchedScript()
         addToRecentDocs(currentFile, scriptDataObject[3])
         loadStoryboarderWindow(currentFile, scriptDataObject[0], scriptDataObject[1], scriptDataObject[2], boardSettings, currentPath)
         break
@@ -366,6 +366,7 @@ const findOrCreateProjectFolder = (scriptDataObject) => {
     currentScriptDataObject = scriptDataObject
     newWindow.webContents.send('setTab', 1)
     newWindow.show()
+    // wait for 'createNew' via ipc, which triggers createAndLoadProject
   }
 }
 
@@ -554,8 +555,6 @@ let processFountainData = (data, create, update) => {
       break
   }
 
-  if (create) setWatchedScript()
-
   // unused 
   // if (update) {
   //   mainWindow.webContents.send('updateScript', 1)//, diffScene)
@@ -718,6 +717,7 @@ const createAndLoadProject = aspectRatio => {
   }
   fs.writeFileSync(path.join(currentPath, 'storyboard.settings'), JSON.stringify(boardSettings))
 
+  setWatchedScript()
   addToRecentDocs(currentFile, currentScriptDataObject[3])
   loadStoryboarderWindow(currentFile, currentScriptDataObject[0], currentScriptDataObject[1], currentScriptDataObject[2], boardSettings, currentPath)
 }
