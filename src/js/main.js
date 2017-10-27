@@ -53,7 +53,7 @@ let prefs = prefModule.getPrefs('main')
 // state
 let currentFile
 let currentPath
-let currentScriptDataObject
+let currentScriptDataObject // used to store data until 'createNew' ipc fires back
 
 let toBeOpenedPath
 
