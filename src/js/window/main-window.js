@@ -1287,7 +1287,7 @@ let newBoard = async (position, shouldAddToUndoStack = true) => {
 //
 // - JPG/JPEG,
 // - PNG
-// - PSD, with named layer 'main' or 'reference'
+// - PSD, must have a layer named 'reference' (unless importTargetLayer preference is set to load a different one)
 //
 let insertNewBoardsWithFiles = async filepaths => {
   // TODO saveImageFile() first?
