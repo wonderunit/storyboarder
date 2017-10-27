@@ -1029,12 +1029,10 @@ ipcMain.on('importImagesDialogue', (e, arg)=> {
 ipcMain.on('createNew', (e, aspectRatio) => {
   newWindow.hide()
 
-  let isProject = path.extname(currentFile) === '.fdx' || path.extname(currentFile) === '.fountain'
-
+  let isProject = currentFile && (path.extname(currentFile) === '.fdx' || path.extname(currentFile) === '.fountain')
   if (isProject) {
     createAndLoadProject(aspectRatio)
   } else {
-    // TODO is this ever used?
     createAndLoadScene(aspectRatio)
   }
 })
@@ -1187,7 +1185,8 @@ ipcMain.on('workspaceReady', event => {
     mainWindow.webContents.send('focus')
 
     // if we're on a script-based project ...
-    if (currentFile) {
+    let isProject = currentFile && (path.extname(currentFile) === '.fdx' || path.extname(currentFile) === '.fountain')
+    if (isProject) {
       // force an onScriptFileChange call
       onScriptFileChange('change', currentFile)
     }
