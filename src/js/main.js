@@ -1034,6 +1034,7 @@ ipcMain.on('createNew', (e, aspectRatio) => {
   if (isProject) {
     createAndLoadProject(aspectRatio)
   } else {
+    // TODO is this ever used?
     createAndLoadScene(aspectRatio)
   }
 })
@@ -1185,8 +1186,8 @@ ipcMain.on('workspaceReady', event => {
   mainWindow.on('focus', () => {
     mainWindow.webContents.send('focus')
 
-    let isProject = path.extname(currentFile) === '.fdx' || path.extname(currentFile) === '.fountain'
-    if (isProject) {
+    // if we're on a script-based project ...
+    if (currentFile) {
       // force an onScriptFileChange call
       onScriptFileChange('change', currentFile)
     }
