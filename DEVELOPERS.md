@@ -45,7 +45,7 @@ Install [Docker for Mac](https://www.docker.com/docker-mac), then:
 
 ```
 git clone git@github.com:wonderunit/storyboarder.git storyboarder
-docker run --rm -ti -v ${PWD}:/project -v ${PWD##*/}-node-modules:/project/node_modules -v ~/.electron:/root/.electron electronuserland/electron-builder:wine
+docker run --rm -ti -v ${PWD}:/project -v ${PWD##*/}-node-modules:/project/node_modules -v ~/.electron:/root/.electron electronuserland/builder:wine
 cd storyboarder
 npm install
 npm prune
