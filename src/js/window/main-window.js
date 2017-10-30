@@ -3607,6 +3607,22 @@ ipcRenderer.on('redo', (e, arg) => {
   }
 })
 
+ipcRenderer.on('copy', () => {
+  if (textInputMode) {
+    remote.getCurrentWebContents().copy()
+  } else {
+    copyBoards()
+  }
+})
+
+ipcRenderer.on('paste', () => {
+  if (textInputMode) {
+    remote.getCurrentWebContents().paste()
+  } else {
+    pasteBoards()
+  }
+})
+
 // import image from mobile server
 let importImage = imageDataURL => {
   // TODO: undo

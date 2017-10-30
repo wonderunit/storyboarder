@@ -162,12 +162,16 @@ AppMenu.Edit = () => ({
     {
       label: 'Copy',
       accelerator: 'CmdOrCtrl+C',
-      role: 'copy'
+      click (item, focusedWindow, event) {
+        ipcRenderer.send('copy')
+      }
     },
     {
       label: 'Paste',
       accelerator: 'CmdOrCtrl+V',
-      role: 'paste'
+      click (item, focusedWindow, event) {
+        ipcRenderer.send('paste')
+      }
     },
     /*
     {
