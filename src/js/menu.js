@@ -140,7 +140,9 @@ AppMenu.Edit = () => ({
     {
       label: 'Undo',
       accelerator: 'CmdOrCtrl+Z',
-      role: 'undo'
+      click (item, focusedWindow, event) {
+        ipcRenderer.send('undo')
+      }
     },
     {
       label: 'Redo',

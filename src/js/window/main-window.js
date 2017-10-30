@@ -3576,9 +3576,11 @@ ipcRenderer.on('nextScene', (event, args)=>{
 // tools
 
 ipcRenderer.on('undo', (e, arg) => {
-  if (storyboarderSketchPane.preventIfLocked()) return
+  if (textInputMode) {
+    remote.getCurrentWebContents().undo()
+  } else {
+    if (storyboarderSketchPane.preventIfLocked()) return
 
-  if (!textInputMode) {
     if (undoStack.getCanUndo()) {
       undoStack.undo()
       sfx.rollover()
