@@ -147,7 +147,9 @@ AppMenu.Edit = () => ({
     {
       label: 'Redo',
       accelerator: 'Shift+CmdOrCtrl+Z',
-      role: 'redo'
+      click (item, focusedWindow, event) {
+        ipcRenderer.send('redo')
+      }
     },
     {
       type: 'separator'

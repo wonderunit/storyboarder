@@ -3592,9 +3592,11 @@ ipcRenderer.on('undo', (e, arg) => {
 })
 
 ipcRenderer.on('redo', (e, arg) => {
-  if (storyboarderSketchPane.preventIfLocked()) return
+  if (textInputMode) {
+    remote.getCurrentWebContents().redo()
+  } else {
+    if (storyboarderSketchPane.preventIfLocked()) return
 
-  if (!textInputMode) {
     if (undoStack.getCanRedo()) {
       undoStack.redo()
       sfx.rollover()
