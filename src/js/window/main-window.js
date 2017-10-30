@@ -3584,7 +3584,7 @@ ipcRenderer.on('undo', (e, arg) => {
       sfx.rollover()
     } else {
       sfx.error()
-      notifications.notify({message: 'Nothing more to redo!', timing: 5})
+      notifications.notify({message: 'Nothing more to undo!', timing: 5})
     }
   }
 })
@@ -3598,7 +3598,7 @@ ipcRenderer.on('redo', (e, arg) => {
       sfx.rollover()
     } else {
       sfx.error()
-      notifications.notify({message: 'Nothing left to undo!', timing: 5})
+      notifications.notify({message: 'Nothing left to redo!', timing: 5})
     }
   }
 })
