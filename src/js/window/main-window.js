@@ -3419,8 +3419,18 @@ let playAdvance = async (first) => {
 //// VIEW
 
 let cycleViewMode = (direction = +1) => {
+const cycleViewMode = (direction = +1) => {
   if (scriptData) {
     viewMode = (viewMode + 6 + direction) % 6
+  } else {
+    viewMode = (viewMode + 4 + direction) % 4
+  }
+
+  renderViewMode()
+}
+
+const renderViewMode = () => {
+  if (scriptData) {
     switch (viewMode) {
       case 0:
         document.querySelector('#scenes').style.display = 'block'
@@ -3468,7 +3478,6 @@ let cycleViewMode = (direction = +1) => {
         break
     }
   } else {
-    viewMode = (viewMode + 4 + direction) % 4
     switch (viewMode) {
       case 0:
         document.querySelector('#scenes').style.display = 'none'
@@ -3504,12 +3513,9 @@ let cycleViewMode = (direction = +1) => {
         break
     }
   }
-  storyboarderSketchPane.resize()
-  renderViewMode()
-  renderStats()
-}
 
-const renderViewMode = () => {
+  storyboarderSketchPane.resize()
+
   document.body.classList.toggle(
     'with-script-visible',
     document.querySelector('#script').style.display == 'block'
@@ -3518,6 +3524,8 @@ const renderViewMode = () => {
     'with-scenes-visible',
     document.querySelector('#scenes').style.display == 'block'
   )
+
+  renderStats()
 }
 
 const toggleCaptions = () => {
