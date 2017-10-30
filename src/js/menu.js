@@ -140,12 +140,16 @@ AppMenu.Edit = () => ({
     {
       label: 'Undo',
       accelerator: 'CmdOrCtrl+Z',
-      role: 'undo'
+      click (item, focusedWindow, event) {
+        ipcRenderer.send('undo')
+      }
     },
     {
       label: 'Redo',
       accelerator: 'Shift+CmdOrCtrl+Z',
-      role: 'redo'
+      click (item, focusedWindow, event) {
+        ipcRenderer.send('redo')
+      }
     },
     {
       type: 'separator'
@@ -158,12 +162,16 @@ AppMenu.Edit = () => ({
     {
       label: 'Copy',
       accelerator: 'CmdOrCtrl+C',
-      role: 'copy'
+      click (item, focusedWindow, event) {
+        ipcRenderer.send('copy')
+      }
     },
     {
       label: 'Paste',
       accelerator: 'CmdOrCtrl+V',
-      role: 'paste'
+      click (item, focusedWindow, event) {
+        ipcRenderer.send('paste')
+      }
     },
     /*
     {

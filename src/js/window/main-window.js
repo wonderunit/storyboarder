@@ -3576,9 +3576,11 @@ ipcRenderer.on('nextScene', (event, args)=>{
 // tools
 
 ipcRenderer.on('undo', (e, arg) => {
-  if (storyboarderSketchPane.preventIfLocked()) return
+  if (textInputMode) {
+    remote.getCurrentWebContents().undo()
+  } else {
+    if (storyboarderSketchPane.preventIfLocked()) return
 
-  if (!textInputMode) {
     if (undoStack.getCanUndo()) {
       undoStack.undo()
       sfx.rollover()
@@ -3590,9 +3592,11 @@ ipcRenderer.on('undo', (e, arg) => {
 })
 
 ipcRenderer.on('redo', (e, arg) => {
-  if (storyboarderSketchPane.preventIfLocked()) return
+  if (textInputMode) {
+    remote.getCurrentWebContents().redo()
+  } else {
+    if (storyboarderSketchPane.preventIfLocked()) return
 
-  if (!textInputMode) {
     if (undoStack.getCanRedo()) {
       undoStack.redo()
       sfx.rollover()
@@ -3600,6 +3604,22 @@ ipcRenderer.on('redo', (e, arg) => {
       sfx.error()
       notifications.notify({message: 'Nothing left to redo!', timing: 5})
     }
+  }
+})
+
+ipcRenderer.on('copy', () => {
+  if (textInputMode) {
+    remote.getCurrentWebContents().copy()
+  } else {
+    copyBoards()
+  }
+})
+
+ipcRenderer.on('paste', () => {
+  if (textInputMode) {
+    remote.getCurrentWebContents().paste()
+  } else {
+    pasteBoards()
   }
 })
 
