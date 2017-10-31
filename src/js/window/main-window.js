@@ -33,6 +33,7 @@ const exporterCommon = require('../exporters/common')
 const exporterCopyProject = require('../exporters/copy-project')
 const exporterArchive = require('../exporters/archive')
 const prefsModule = require('electron').remote.require('./prefs')
+const sceneSettingsView = require('./scene-settings-view')
 
 const boardModel = require('../models/board')
 
@@ -132,8 +133,8 @@ let dragPoint
 let dragTarget
 let scrollPoint
 
-const msecsToFrames = value => Math.round(value / 1000 * 24)
-const framesToMsecs = value => Math.round(value / 24 * 1000)
+const msecsToFrames = value => Math.round(value / 1000 * boardData.fps)
+const framesToMsecs = value => Math.round(value / boardData.fps * 1000)
 
 // TODO better name than etags?
 // TODO store in boardData instead, but exclude from JSON?
@@ -1194,6 +1195,14 @@ let loadBoardUI = () => {
     notifications.notify({ message: 'For better performance on your machine, Shot Generator and Perspective Guide have been disabled.' })
     document.querySelector('#shot-generator-container').remove()
   }
+
+  sceneSettingsView.init({ fps: boardData.fps })
+  sceneSettingsView.on('fps', fps => {
+    if (boardData.fps !== fps) {
+      boardData.fps = fps
+      markBoardFileDirty()
+    }
+  })
 
   // setup filesystem watcher
   watcher = chokidar.watch(null, {
