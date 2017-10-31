@@ -103,6 +103,7 @@ let textInputMode = false
 let textInputAllowAdvance = false
 
 let viewMode = 0
+let pitchMode = false
 
 let selections = new Set()
 
@@ -877,6 +878,9 @@ let loadBoardUI = () => {
   })
   transport.on('nextScene', () => {
     nextScene()
+  })
+  transport.on('pitchMode', () => {
+    enablePitchMode()
   })
 
   notifications.init(document.getElementById('notifications'))
@@ -3305,6 +3309,9 @@ window.onkeydown = (e)=> {
           disableEditMode()
           disableDragMode()
         }
+        if (pitchMode) {
+          disablePitchMode()
+        }
         break
     }
   }
@@ -3418,7 +3425,19 @@ let playAdvance = async (first) => {
 
 //// VIEW
 
-let cycleViewMode = (direction = +1) => {
+const enablePitchMode = () => {
+  pitchMode = true
+  viewMode = scriptData ? 5 : 3
+  renderViewMode()
+  remote.getCurrentWindow().setFullScreen(true)
+}
+const disablePitchMode = () => {
+  pitchMode = false
+  viewMode = 0
+  renderViewMode()
+  remote.getCurrentWindow().setFullScreen(false)
+}
+
 const cycleViewMode = (direction = +1) => {
   if (scriptData) {
     viewMode = (viewMode + 6 + direction) % 6
