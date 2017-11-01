@@ -4755,6 +4755,7 @@ ipcRenderer.on('brushSize', (e, direction) => {
     }
   }
 })
+// TODO move this code into the toolbar
 // HACK to support changing eraser size during quick erase
 window.addEventListener('keydown', e => {
   if (!toolbar) return
