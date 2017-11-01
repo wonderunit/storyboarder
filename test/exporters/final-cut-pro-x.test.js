@@ -119,5 +119,21 @@ describe('exporters/final-cut-pro-x', () => {
     assert(xml.includes('<video name="1A" offset="0s" ref="r3" duration="2900/2997s" start="0s"/>'))
     assert(xml.includes('<video name="2A" offset="2900/2997s" ref="r4" duration="3100/2997s" start="0s"/>'))
   })
-  it('can generate at 59.94 fps')
+  it('can generate at 59.94 fps', () => {
+    boardFileData.fps = 59.94
+    boardFileData.boards[0].time      = 0
+    boardFileData.boards[0].duration  = 29 / boardFileData.fps * 1000
+    boardFileData.boards[1].time      = boardFileData.boards[0].duration
+    boardFileData.boards[1].duration  = 31 / boardFileData.fps * 1000
+
+    xml = getXml(boardFileData)
+
+    // check fps calculations
+    // <format id="r1" frameDuration="100/2997s" width="900" height="900"/>
+    let m = xml.match(/frameDuration="([^"]+)"/)
+    assert.equal(m[1], '50/2997s')
+
+    assert(xml.includes('<video name="1A" offset="0s" ref="r3" duration="1450/2997s" start="0s"/>'))
+    assert(xml.includes('<video name="2A" offset="1450/2997s" ref="r4" duration="1550/2997s" start="0s"/>'))
+  })
 })
