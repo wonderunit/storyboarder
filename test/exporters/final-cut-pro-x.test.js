@@ -99,8 +99,8 @@ describe('exporters/final-cut-pro-x', () => {
     let m = xml.match(/frameDuration="([^"]+)"/)
     assert.equal(m[1], '100/2400s')
 
-    assert(xml.includes('<video name="1A" offset="0" ref="r3" duration="290/2400s" start="0s"/>'))
-    assert(xml.includes('<video name="2A" offset="290/2400s" ref="r4" duration="310/2400s" start="0s"/>'))
+    assert(xml.includes('<video name="1A" offset="0s" ref="r3" duration="2900/2400s" start="0s"/>'))
+    assert(xml.includes('<video name="2A" offset="2900/2400s" ref="r4" duration="3100/2400s" start="0s"/>'))
   })
   it('can generate at 29.97 fps')
   it('can generate at 59.94 fps')

@@ -16,7 +16,15 @@ const util = require('../utils')
 const scaledFraction = (base, value = 1) =>
   base === 0 || value === 0
     ? '0'
-    : Fraction(base).inverse().mul(value).toFraction()
+    : minBase(Fraction(base).inverse().mul(value).toFraction())
+
+// convert e.g.: 1/24 to 100/2400
+const minBase = str => {
+  let parts = str.split('/')
+  return parts.length === 2 && parts[1].length < 4
+      ? parts.map(p => p * 100).join('/')
+      : str
+}
 
 // <asset id="r3" name="board-1-9MZ1P" src="file:///board-1-9MZ1P.png" start="0s" duration="0s" hasVideo="1" format="r2"></asset>
 const asset = (data, index) =>
