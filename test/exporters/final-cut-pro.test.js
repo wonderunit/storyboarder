@@ -80,7 +80,8 @@ describe('exporters/final-cut-pro', () => {
     assert.doesNotThrow(() => xml = getXml(boardFileData))
     
     // check fps calculations
-    assert(xml.includes('<timebase>23.976</timebase>'))
+    assert(xml.includes('<timebase>24</timebase>'))
+    assert(xml.includes('<ntsc>TRUE</ntsc>'))
     assert(xml.includes(`<end>${29}</end>`))
     assert(xml.includes(`<end>${29 + 31}</end>`))
   })
@@ -97,6 +98,7 @@ describe('exporters/final-cut-pro', () => {
     
     // check fps calculations
     assert(xml.includes('<timebase>24</timebase>'))
+    assert(xml.includes('<ntsc>FALSE</ntsc>'))
     assert(xml.includes(`<end>${29}</end>`))
     assert(xml.includes(`<end>${29 + 31}</end>`))
   })
@@ -112,7 +114,8 @@ describe('exporters/final-cut-pro', () => {
     assert.doesNotThrow(() => xml = getXml(boardFileData))
     
     // check fps calculations
-    assert(xml.includes('<timebase>29.97</timebase>'))
+    assert(xml.includes('<timebase>30</timebase>'))
+    assert(xml.includes('<ntsc>TRUE</ntsc>'))
     assert(xml.includes(`<end>${29}</end>`))
     assert(xml.includes(`<end>${29 + 31}</end>`))
   })
@@ -128,8 +131,20 @@ describe('exporters/final-cut-pro', () => {
     assert.doesNotThrow(() => xml = getXml(boardFileData))
     
     // check fps calculations
-    assert(xml.includes('<timebase>59.94</timebase>'))
+    assert(xml.includes('<timebase>60</timebase>'))
+    assert(xml.includes('<ntsc>TRUE</ntsc>'))
     assert(xml.includes(`<end>${29}</end>`))
     assert(xml.includes(`<end>${29 + 31}</end>`))
+  })
+  it('can generate at 60 fps', () => {
+    let xml
+
+    boardFileData.fps = 60
+
+    assert.doesNotThrow(() => xml = getXml(boardFileData))
+    
+    // check fps calculations
+    assert(xml.includes('<timebase>60</timebase>'))
+    assert(xml.includes('<ntsc>FALSE</ntsc>'))
   })
 })

@@ -18,7 +18,7 @@ const clipItem = data =>
 						<duration>${data.duration}</duration>
 						<rate>
 							<timebase>${data.timebase}</timebase>
-							<ntsc>TRUE</ntsc>
+							<ntsc>${data.ntsc}</ntsc>
 						</rate>
 						<!-- start time in frames (${data.timebase}fps) -->
 						<start>${data.start}</start>
@@ -56,7 +56,7 @@ const generateFinalCutProXml = data =>
 		<uuid>${data.uuid}</uuid>
 		<rate>
 			<timebase>${data.timebase}</timebase>
-			<ntsc>FALSE</ntsc>
+			<ntsc>${data.ntsc}</ntsc>
 		</rate>
 		<media>
 			<video>
@@ -139,7 +139,12 @@ const generateFinalCutProData = (boardData, { projectFileAbsolutePath, outputPat
   let extname = path.extname(projectFileAbsolutePath)
   let basenameWithoutExt = path.basename(projectFileAbsolutePath, extname)
 
-  let timebase = Math.round(boardData.fps * 1000) / 1000
+  // fps is always rounded up
+  let timebase = Math.ceil(boardData.fps)
+  // ntsc is set true if fps is a decimal, false if fps is an integer
+  let ntsc = boardData.fps % 1 > 0
+    ? 'TRUE'
+    : 'FALSE'
 
   let clipItems = []
   let currFrame = 0
@@ -175,6 +180,7 @@ const generateFinalCutProData = (boardData, { projectFileAbsolutePath, outputPat
 
       duration: 1294705, // ???
       timebase,
+      ntsc,
 
       fileId: `file-${index + 1}`,
       fileFilename,
@@ -197,7 +203,8 @@ const generateFinalCutProData = (boardData, { projectFileAbsolutePath, outputPat
     height: height,
     clipItems: clipItems,
     
-    timebase
+    timebase,
+    ntsc
   }
 }
 
