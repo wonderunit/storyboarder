@@ -53,17 +53,83 @@ let boardFileData = {
 }
 
 describe('exporters/final-cut-pro', () => {
+  const getXml = boardFileData => {
+    let projectFileAbsolutePath = '/Users/me/projects/storyboarder/example\ storyboard/example\ storyboard.storyboarder'
+    let outputPath = '/Users/me/projects/storyboarder/example\ storyboard/example\ storyboard.storyboarder/exports/output'
+    return exporterFcp.generateFinalCutProXml(exporterFcp.generateFinalCutProData(boardFileData, { projectFileAbsolutePath, outputPath }))
+  }
   it('can generate final cut pro / adobe premiere xml', () => {
     let xml
-    assert.doesNotThrow(() => {
-      let projectFileAbsolutePath = '/Users/me/projects/storyboarder/example\ storyboard/example\ storyboard.storyboarder'
-      let outputPath = '/Users/me/projects/storyboarder/example\ storyboard/example\ storyboard.storyboarder/exports/output'
-      xml = exporterFcp.generateFinalCutProXml(exporterFcp.generateFinalCutProData(boardFileData, { projectFileAbsolutePath, outputPath }))
-    })
+
+    assert.doesNotThrow(() => xml = getXml(boardFileData))
 
     // check dash in filename
     assert(xml.includes("<pathurl>./example-storyboard-board-00001.png</pathurl>"))
-
+    
     assert(xml.length > 32)
+  })
+  it('can generate at 23.976 fps', () => {
+    let xml
+
+    boardFileData.fps = 24000 / 1001 // 23.97602397
+    boardFileData.boards[0].time      = 0
+    boardFileData.boards[0].duration  = 29 / boardFileData.fps * 1000
+    boardFileData.boards[1].time      = boardFileData.boards[0].duration
+    boardFileData.boards[1].duration  = 31 / boardFileData.fps * 1000
+
+    assert.doesNotThrow(() => xml = getXml(boardFileData))
+    
+    // check fps calculations
+    assert(xml.includes('<timebase>23.976</timebase>'))
+    assert(xml.includes(`<end>${29}</end>`))
+    assert(xml.includes(`<end>${29 + 31}</end>`))
+  })
+  it('can generate at 24 fps', () => {
+    let xml
+
+    boardFileData.fps = 24
+    boardFileData.boards[0].time      = 0
+    boardFileData.boards[0].duration  = 29 / boardFileData.fps * 1000
+    boardFileData.boards[1].time      = boardFileData.boards[0].duration
+    boardFileData.boards[1].duration  = 31 / boardFileData.fps * 1000
+
+    assert.doesNotThrow(() => xml = getXml(boardFileData))
+    
+    // check fps calculations
+    assert(xml.includes('<timebase>24</timebase>'))
+    assert(xml.includes(`<end>${29}</end>`))
+    assert(xml.includes(`<end>${29 + 31}</end>`))
+  })
+  it('can generate at 29.97 fps', () => {
+    let xml
+
+    boardFileData.fps = 29.97
+    boardFileData.boards[0].time      = 0
+    boardFileData.boards[0].duration  = 29 / boardFileData.fps * 1000
+    boardFileData.boards[1].time      = boardFileData.boards[0].duration
+    boardFileData.boards[1].duration  = 31 / boardFileData.fps * 1000
+
+    assert.doesNotThrow(() => xml = getXml(boardFileData))
+    
+    // check fps calculations
+    assert(xml.includes('<timebase>29.97</timebase>'))
+    assert(xml.includes(`<end>${29}</end>`))
+    assert(xml.includes(`<end>${29 + 31}</end>`))
+  })
+  it('can generate at 59.94 fps', () => {
+    let xml
+
+    boardFileData.fps = 59.94
+    boardFileData.boards[0].time      = 0
+    boardFileData.boards[0].duration  = 29 / boardFileData.fps * 1000
+    boardFileData.boards[1].time      = boardFileData.boards[0].duration
+    boardFileData.boards[1].duration  = 31 / boardFileData.fps * 1000
+
+    assert.doesNotThrow(() => xml = getXml(boardFileData))
+    
+    // check fps calculations
+    assert(xml.includes('<timebase>59.94</timebase>'))
+    assert(xml.includes(`<end>${29}</end>`))
+    assert(xml.includes(`<end>${29 + 31}</end>`))
   })
 })

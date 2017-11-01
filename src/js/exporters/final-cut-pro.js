@@ -17,12 +17,12 @@ const clipItem = data =>
 						<enabled>TRUE</enabled>
 						<duration>${data.duration}</duration>
 						<rate>
-							<timebase>24</timebase>
+							<timebase>${data.timebase}</timebase>
 							<ntsc>TRUE</ntsc>
 						</rate>
-						<!-- start time in frames (24fps) -->
+						<!-- start time in frames (${data.timebase}fps) -->
 						<start>${data.start}</start>
-						<!-- end time in frames (24fps) -->
+						<!-- end time in frames (${data.timebase}fps) -->
 						<end>${data.end}</end>
 						<in>107892</in>
 						<out>107916</out>
@@ -55,7 +55,7 @@ const generateFinalCutProXml = data =>
 	<sequence id="${data.sequenceId}">
 		<uuid>${data.uuid}</uuid>
 		<rate>
-			<timebase>24</timebase>
+			<timebase>${data.timebase}</timebase>
 			<ntsc>FALSE</ntsc>
 		</rate>
 		<media>
@@ -63,7 +63,7 @@ const generateFinalCutProXml = data =>
 				<format>
 					<samplecharacteristics>
 						<rate>
-							<timebase>24</timebase>
+							<timebase>${data.timebase}</timebase>
 						</rate>
 						<!-- WIDTH -->
 						<width>${data.width}</width>
@@ -139,6 +139,8 @@ const generateFinalCutProData = (boardData, { projectFileAbsolutePath, outputPat
   let extname = path.extname(projectFileAbsolutePath)
   let basenameWithoutExt = path.basename(projectFileAbsolutePath, extname)
 
+  let timebase = Math.round(boardData.fps * 1000) / 1000
+
   let clipItems = []
   let currFrame = 0
   let index = 0
@@ -150,8 +152,8 @@ const generateFinalCutProData = (boardData, { projectFileAbsolutePath, outputPat
                      ? boardData.defaultBoardTiming
                      : board.duration
 
-    let lastFrame = msecsToFrames(24, duration),
-        endFrame = Math.round(currFrame + lastFrame)
+    let lastFrame = Math.round(msecsToFrames(boardData.fps, duration)),
+        endFrame = currFrame + lastFrame
 
     let clipItem = {
       start: currFrame,
@@ -172,7 +174,7 @@ const generateFinalCutProData = (boardData, { projectFileAbsolutePath, outputPat
                      : '',
 
       duration: 1294705, // ???
-      timebase: 24,
+      timebase,
 
       fileId: `file-${index + 1}`,
       fileFilename,
@@ -193,7 +195,9 @@ const generateFinalCutProData = (boardData, { projectFileAbsolutePath, outputPat
     uuid: util.uuid4(),
     width: width,
     height: height,
-    clipItems: clipItems
+    clipItems: clipItems,
+    
+    timebase
   }
 }
 
