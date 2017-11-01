@@ -4757,6 +4757,8 @@ ipcRenderer.on('brushSize', (e, direction) => {
 })
 // HACK to support changing eraser size during quick erase
 window.addEventListener('keydown', e => {
+  if (!toolbar) return
+
   // when alt key is held down during Quick Erase mode,
   // menu won't trigger the '[' and ']' accelerators
   // so we need to detect the combination
