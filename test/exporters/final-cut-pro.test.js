@@ -71,7 +71,7 @@ describe('exporters/final-cut-pro', () => {
   it('can generate at 23.976 fps', () => {
     let xml
 
-    boardFileData.fps = 24000 / 1001 // 23.97602397
+    boardFileData.fps = 23.976 // AKA 23.97602397 AKA 24000/1001
     boardFileData.boards[0].time      = 0
     boardFileData.boards[0].duration  = 29 / boardFileData.fps * 1000
     boardFileData.boards[1].time      = boardFileData.boards[0].duration

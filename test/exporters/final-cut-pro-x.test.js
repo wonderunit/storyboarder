@@ -69,7 +69,7 @@ describe('exporters/final-cut-pro-x', () => {
     assert(xml.length > 32)
   })
   it('can generate at 23.976 fps', () => {
-    boardFileData.fps = 1 / (1001 / 24000) // 23.97602397
+    boardFileData.fps = 23.976 // AKA 23.97602397 AKA 24000/1001
     boardFileData.boards[0].time      = 0
     boardFileData.boards[0].duration  = 29 / boardFileData.fps * 1000
     boardFileData.boards[1].time      = boardFileData.boards[0].duration

@@ -68,6 +68,10 @@ const generateFinalCutProXData = (boardData, { projectFileAbsolutePath, outputPa
   let assets = [],
       videos = []
 
+  let normalizedFps = boardData.fps === 23.976
+    ? 24000 / 1001 // better precision
+    : boardData.fps
+
   let currFrame = 0
   let index = 0
   for (let board of boardData.boards) {
@@ -77,11 +81,11 @@ const generateFinalCutProXData = (boardData, { projectFileAbsolutePath, outputPa
                      ? boardData.defaultBoardTiming
                      : board.duration
 
-    let lastFrameOfBoard = Math.round(msecsToFrames(boardData.fps, duration)),
+    let lastFrameOfBoard = Math.round(msecsToFrames(normalizedFps, duration)),
         endFrame = currFrame + lastFrameOfBoard
 
     let offsetInFrames = currFrame
-    let durationInFrames = Math.round(msecsToFrames(boardData.fps, duration))
+    let durationInFrames = Math.round(msecsToFrames(normalizedFps, duration))
 
     assets.push({
       index,
@@ -100,8 +104,8 @@ const generateFinalCutProXData = (boardData, { projectFileAbsolutePath, outputPa
       index,
       name: `${board.shot}`,
 
-      offset: scaledFraction(boardData.fps, offsetInFrames) + 's',
-      duration: scaledFraction(boardData.fps, durationInFrames) + 's',
+      offset: scaledFraction(normalizedFps, offsetInFrames) + 's',
+      duration: scaledFraction(normalizedFps, durationInFrames) + 's',
 
       start: '0s'
     })
@@ -119,7 +123,7 @@ const generateFinalCutProXData = (boardData, { projectFileAbsolutePath, outputPa
     assets,
     videos,
     
-    fps: boardData.fps
+    fps: normalizedFps
   }
 }
 
