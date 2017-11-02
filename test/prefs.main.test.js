@@ -8,7 +8,7 @@ const pkg = require('../package.json')
 const prefsModule = require('../src/js/prefs')
 
 const adjustMajorVer = (str, value = +1) => {
-  let parts = pkg.version.split('.')
+  let parts = str.split('.')
   return [Number(parts[0]) + value, ...parts.slice(1)].join('.')
 }
 
