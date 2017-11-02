@@ -183,8 +183,12 @@ const load = async (event, args) => {
       boardPath.pop()
       boardPath = boardPath.join(path.sep)
       console.log(' BOARD PATH: ', boardFilename)
-      boardData = JSON.parse(fs.readFileSync(boardFilename))
-      ipcRenderer.send('analyticsEvent', 'Application', 'open', boardFilename, boardData.boards.length)
+      try {
+        boardData = JSON.parse(fs.readFileSync(boardFilename))
+        ipcRenderer.send('analyticsEvent', 'Application', 'open', boardFilename, boardData.boards.length)
+      } catch (error) {
+        throw new Error(`Could not read file ${path.basename(boardFilename)}. The file may be inaccessible or corrupt.\nError: ${error.message}`)
+      }
     }
 
     loadBoardUI()
@@ -207,11 +211,12 @@ const load = async (event, args) => {
       )
     }, 500) // TODO hack, remove this #440
   } catch (error) {
+    log({ type: 'error', message: error.message })
     remote.dialog.showMessageBox({
       type: 'error',
       message: error.message
     })
-    log({ type: 'error', message: error.message })
+    // TODO add a cancel button to loading view when a fatal error occurs?
   }
 }
 ipcRenderer.on('load', load)
