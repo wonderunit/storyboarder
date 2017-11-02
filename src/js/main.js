@@ -704,7 +704,7 @@ const createAndLoadScene = aspectRatio =>
         let newBoardObject = {
           version: pkg.version,
           aspectRatio: aspectRatio,
-          fps: 24,
+          fps: prefModule.getPrefs().lastUsedFps || 24,
           defaultBoardTiming: prefs.defaultBoardTiming,
           boards: []
         }
