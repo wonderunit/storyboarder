@@ -8,6 +8,8 @@ const chokidar = require('chokidar')
 const os = require('os')
 
 const prefModule = require('./prefs')
+prefModule.init(path.join(app.getPath('userData'), 'pref.json'))
+
 
 const analytics = require('./analytics')
 
