@@ -13,52 +13,65 @@ const adjustMajorVer = (str, value = +1) => {
 }
 
 describe('prefs', () => {
-  const pathToPrefsFile = path.join(app.getPath('userData'), 'pref.json')
+  describe('versionCanBeMigrated', () => {
+    it('can check if a version can be migrated', () => {
+      assert.equal(prefsModule.versionCanBeMigrated('0.0.1', '0.0.2'), true)
+      assert.equal(prefsModule.versionCanBeMigrated('0.1.0', '0.2.0'), true)
+      assert.equal(prefsModule.versionCanBeMigrated('1.0.0', '2.0.0'), true)
 
-  it('has some default preferences', () => {
-    const initialState = {
-      version: adjustMajorVer(pkg.version, -1),
-      enableAspirationalMessages: false
-    }
-
-    mockFs({
-      [path.dirname(pathToPrefsFile)]: {
-        'pref.json': JSON.stringify(initialState)
-      }
+      assert.equal(prefsModule.versionCanBeMigrated('0.0.3', '0.0.2'), false)
+      assert.equal(prefsModule.versionCanBeMigrated('0.3.0', '0.2.0'), false)
+      assert.equal(prefsModule.versionCanBeMigrated('3.0.0', '2.0.0'), false)
     })
-
-    prefsModule.init(pathToPrefsFile)
-
-    // should migrate version
-    assert.equal(prefsModule.getPrefs().version, pkg.version)
-
-    // should respect users choice for `enableAspirationalMessages`
-    assert.equal(prefsModule.getPrefs().enableAspirationalMessages, false)
-
-    // should write missing `lastUsedFps`
-    assert.equal(prefsModule.getPrefs().lastUsedFps, 24)
   })
-
-  // if the version of Storyboarder currently running
-  // is OLDER (LESS THAN) the version in preferences
-  // do NOT migrate preferences
-  it('should not decrement preferences version if Storyboarder is old', () => {
-    const initialState = {
-      version: adjustMajorVer(pkg.version, +1)
-    }
-    mockFs({
-      [path.dirname(pathToPrefsFile)]: {
-        'pref.json': JSON.stringify(initialState)
+  describe('init', () => {
+    const pathToPrefsFile = path.join(app.getPath('userData'), 'pref.json')
+  
+    it('has some default preferences', () => {
+      const initialState = {
+        version: adjustMajorVer(pkg.version, -1),
+        enableAspirationalMessages: false
       }
+  
+      mockFs({
+        [path.dirname(pathToPrefsFile)]: {
+          'pref.json': JSON.stringify(initialState)
+        }
+      })
+  
+      prefsModule.init(pathToPrefsFile)
+  
+      // should migrate version
+      assert.equal(prefsModule.getPrefs().version, pkg.version)
+  
+      // should respect users choice for `enableAspirationalMessages`
+      assert.equal(prefsModule.getPrefs().enableAspirationalMessages, false)
+  
+      // should write missing `lastUsedFps`
+      assert.equal(prefsModule.getPrefs().lastUsedFps, 24)
     })
-
-    prefsModule.init(pathToPrefsFile)
-
-    // should NOT migrate version
-    assert.equal(prefsModule.getPrefs().version, initialState.version)
-  })
-
-  after(function () {
-    mockFs.restore()
+  
+    // if the version of Storyboarder currently running
+    // is OLDER (LESS THAN) the version in preferences
+    // do NOT migrate preferences
+    it('should not decrement preferences version if Storyboarder is old', () => {
+      const initialState = {
+        version: adjustMajorVer(pkg.version, +1)
+      }
+      mockFs({
+        [path.dirname(pathToPrefsFile)]: {
+          'pref.json': JSON.stringify(initialState)
+        }
+      })
+  
+      prefsModule.init(pathToPrefsFile)
+  
+      // should NOT migrate version
+      assert.equal(prefsModule.getPrefs().version, initialState.version)
+    })
+  
+    after(function () {
+      mockFs.restore()
+    })
   })
 })

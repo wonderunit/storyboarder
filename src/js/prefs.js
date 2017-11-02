@@ -126,12 +126,25 @@ const migrate = (_currentPrefs, _defaultPrefs) => {
   return mergedPrefs
 }
 
+// naive check
+const versionCanBeMigrated = (from, to) => {
+  let f = from.split('.')
+  let t = to.split('.')
+
+  // is from lt than to?
+  if (f[0] < t[0]) return true
+  if (f[1] < t[1]) return true
+  if (f[2] < t[2]) return true
+
+  return false
+}
+
 const init = _prefFile => {
   prefFile = _prefFile
   console.log('Loading preferences from', prefFile)
 
   load()
-  if (prefs.version !== defaultPrefs.version) {
+  if (versionCanBeMigrated(prefs.version, defaultPrefs.version)) {
     let newPrefs = migrate(prefs, defaultPrefs)
     savePrefs(newPrefs)
   }
@@ -142,5 +155,6 @@ module.exports = {
   getPrefs,
   set,
 
-  init
+  init,
+  versionCanBeMigrated
 }
