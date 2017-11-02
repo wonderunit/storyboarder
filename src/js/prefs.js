@@ -26,6 +26,8 @@ const defaultPrefs = {
   enableAnalytics: true,
   enableAutoSave: true,
   enableForcePsdReloadOnFocus: true,
+  
+  lastUsedFps: 24,
 
   // notifications
   allowNotificationsForLineMileage: true,

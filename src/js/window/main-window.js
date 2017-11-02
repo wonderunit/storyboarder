@@ -3118,7 +3118,7 @@ let loadScene = async (sceneNumber) => {
           let newBoardObject = {
             version: pkg.version,
             aspectRatio: boardSettings.aspectRatio,
-            fps: 24,
+            fps: prefsModule.getPrefs().lastUsedFps || 24,
             defaultBoardTiming: 2000,
             boards: []
           }

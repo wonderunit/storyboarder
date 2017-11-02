@@ -1,4 +1,5 @@
 const EventEmitter = require('events').EventEmitter
+const prefModule = require('electron').remote.require('./prefs')
 
 let emitter = new EventEmitter()
 
@@ -11,6 +12,8 @@ let model = {
     if (data.fps) {
       model.fps = parseFloat(data.fps)
       emitter.emit('fps', model.fps)
+      // persist
+      prefModule.set('lastUsedFps', model.fps)
     }
     render()
   }
