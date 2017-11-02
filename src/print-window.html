@@ -9,14 +9,22 @@
     <div id="print-container">
       <div id="config-pane">
         <div id="close-button">&#10005;</div>
-        <h1 style="margin-top: 50px;">Print a worksheet</h1>
-        <div>Draw thumbnail boards on this printed worksheet and magically import them back into your storyboarder file!</div>
+        <h1 id="config-title">Print</h1>
+        <div id="config-intro">Your storyboard printed the way you like. Choose the format and either directly print or export it to PDF.</div>
         
         <div class="row">
           <label for="paper-size">Paper Size</label>
           <select name="select" id="paper-size"> <!--Supplement an id here instead of using 'name'-->
             <option value="LTR">Letter</option> 
             <option value="A4" selected>A4</option>
+          </select>
+        </div>
+
+        <div class="row" id="paper-orientation-row">
+          <label for="paper-size">Paper Orientation</label>
+          <select name="select" id="paper-orientation"> <!--Supplement an id here instead of using 'name'-->
+            <option value="landscape">Landscape</option>
+            <option value="portrait" selected>Portrait</option>
           </select>
         </div>
         
@@ -84,11 +92,27 @@
         </div>
       </div>
       <div id="preview-pane">
-        <div id="preview-pane-content">
-        <div id="paper">
-          <img id="preview">
+        <div id="preview-loading"><div class="loader-box"><div class="sk-cube-grid">
+          <div class="sk-cube sk-cube1"></div>
+          <div class="sk-cube sk-cube2"></div>
+          <div class="sk-cube sk-cube3"></div>
+          <div class="sk-cube sk-cube4"></div>
+          <div class="sk-cube sk-cube5"></div>
+          <div class="sk-cube sk-cube6"></div>
+          <div class="sk-cube sk-cube7"></div>
+          <div class="sk-cube sk-cube8"></div>
+          <div class="sk-cube sk-cube9"></div>
+        </div></div></div>
+        <div id="page-navigation" style="visible:hidden">
+          <button id="prev_button" class="page-button">Previous</button>
+          <div class="page-info">Page <span id="page_num">1</span> / <span id="page_count">3</span></div>
+          <button id="next_button" class="page-button">Next</button>
         </div>
-      </div>
+        <div id="preview-pane-content">
+          <div id="paper">
+            <img id="preview"/>
+          </div>
+        </div>
       </div>
     </div>
 

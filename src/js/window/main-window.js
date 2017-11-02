@@ -3841,19 +3841,6 @@ const exportImages = () => {
   }, 1000)
 }
 
-
-const exportPDF = () => {
-  notifications.notify({message: "Exporting " + boardData.boards.length + " boards to PDF. Please wait...", timing: 5})
-  sfx.down()
-  setTimeout(()=>{
-    exporter.exportPDF(boardData, boardFilename).then(outputPath => {
-      notifications.notify({message: "Your scene has been exported as a PDF.", timing: 20})
-      sfx.positive()
-      shell.showItemInFolder(outputPath)
-    })
-  }, 1000)
-}
-
 const exportCleanup = () => {
   exporter.exportCleanup(boardData, boardFilename).then(newBoardData => {
     // notifications.notify({ message: "Your scene has been cleaned up!", timing: 20 })
@@ -4891,23 +4878,19 @@ ipcRenderer.on('exportImages', (event, args) => {
   ipcRenderer.send('analyticsEvent', 'Board', 'exportImages')
 })
 
-ipcRenderer.on('exportPDF', (event, args) => {
-  exportPDF()
-  ipcRenderer.send('analyticsEvent', 'Board', 'exportPDF')
-})
-
 ipcRenderer.on('exportCleanup', (event, args) => {
   exportCleanup()
   ipcRenderer.send('analyticsEvent', 'Board', 'exportCleanup')
 })
 
-let printWindow
 let importWindow
+let printWindow = [null, null]
+const WORKSHEETPW = 0
+const PDFEXPORTPW = 1
 
-ipcRenderer.on('exportWorksheetPdf', (event, sourcePath) => {
+ipcRenderer.on('exportPrintablePdf', (event, sourcePath, filename) => {
   let outputPath = path.join(
-    exporterCommon.ensureExportsPathExists(boardFilename),
-    'Worksheet ' + moment().format('YYYY-MM-DD hh.mm.ss') + '.pdf'
+    exporterCommon.ensureExportsPathExists(boardFilename), filename + ' ' + moment().format('YYYY-MM-DD hh.mm.ss') + '.pdf'
   )
   
   if (!fs.existsSync(outputPath)) {
@@ -4923,11 +4906,21 @@ ipcRenderer.on('exportWorksheetPdf', (event, sourcePath) => {
     notifications.notify({ message: "Could not export Worksheet PDF.", timing: 20 })
   }
 })
+
+ipcRenderer.on('exportPDF', (event, args) => {
+  openPrintWindow(PDFEXPORTPW, showPDFPrintWindow);
+  ipcRenderer.send('analyticsEvent', 'Board', 'exportPDF')
+})
+
+
 ipcRenderer.on('printWorksheet', (event, args) => {
   console.log(boardData)
+  openPrintWindow(WORKSHEETPW, showWorksheetPrintWindow);
+})
 
-  if (!printWindow) {
-    printWindow = new remote.BrowserWindow({
+const openPrintWindow = (printWindowType, showPrintWindow) => {
+  if (!printWindow[printWindowType]) {
+    printWindow[printWindowType] = new remote.BrowserWindow({
       width: 1200, 
       height: 800, 
       minWidth: 600, 
@@ -4937,23 +4930,29 @@ ipcRenderer.on('printWorksheet', (event, args) => {
       center: true, 
       parent: remote.getCurrentWindow(), 
       resizable: true, 
-      frame: false, 
+      frame: false,
       modal: true
     })
-    printWindow.loadURL(`file://${__dirname}/../../print-window.html`)
-  } else {
-    if (!printWindow.isVisible()) {
-      printWindow.show()
-      printWindow.webContents.send('worksheetData',boardData.aspectRatio, currentScene, scriptData)
-    }
+    printWindow[printWindowType].loadURL(`file://${__dirname}/../../print-window.html`)
+    printWindow[printWindowType].once('ready-to-show', () => {
+      showPrintWindow(printWindow[printWindowType]);
+    })
+  } else if (!printWindow[printWindowType].isVisible()) {
+      showPrintWindow(printWindow[printWindowType]);
   }
 
-  printWindow.once('ready-to-show', () => {
-    printWindow.show()
-    printWindow.webContents.send('worksheetData',boardData.aspectRatio, currentScene, scriptData)
-  })
   ipcRenderer.send('analyticsEvent', 'Board', 'show print window')
-})
+}
+
+const showPDFPrintWindow = (printWindow) => {
+  printWindow.webContents.send('exportPDFData', boardData, boardFilename)
+  printWindow.show();
+}
+
+const showWorksheetPrintWindow = (printWindow) => {
+  printWindow.webContents.send('worksheetData',boardData.aspectRatio, currentScene, scriptData)
+  printWindow.show();
+}
 
 ipcRenderer.on('importFromWorksheet', (event, args) => {
   importFromWorksheet(args)
