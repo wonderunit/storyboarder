@@ -128,8 +128,8 @@ const migrate = (_currentPrefs, _defaultPrefs) => {
 
 // naive check
 const versionCanBeMigrated = (from, to) => {
-  let f = from.split('.')
-  let t = to.split('.')
+  let f = from.split('.').map(n => parseInt(n, 10))
+  let t = to.split('.').map(n => parseInt(n, 10))
 
   // is from lt than to?
   if (f[0] < t[0]) return true
