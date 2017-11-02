@@ -85,12 +85,6 @@ AppMenu.File = () => ({
       }
     },
     {
-      label: 'Export a PDF',
-      click (item, focusedWindow, event) {
-        ipcRenderer.send('exportPDF')
-      }
-    },
-    {
       label: 'Export Project as ZIP',
       click (item, focusedWindow, event) {
         ipcRenderer.send('exportZIP')
@@ -110,6 +104,16 @@ AppMenu.File = () => ({
     },
     {
       accelerator: 'CmdOrCtrl+P',
+      label: 'Print or export to PDF…',
+      click (item, focusedWindow, event) {
+        ipcRenderer.send('exportPDF')
+      }
+    },
+    {
+      type: 'separator'
+    },
+    {
+      accelerator: 'CmdOrCtrl+Shift+P',
       label: 'Print a Storyboarder worksheet…',
       click (item, focusedWindow, event) {
         ipcRenderer.send('printWorksheet')
