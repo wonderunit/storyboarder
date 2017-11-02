@@ -1,13 +1,13 @@
 const fs = require('fs')
 const path = require('path')
 const { app } = require('electron')
-const os = require("os");
+const os = require("os")
+const R = require('ramda')
 
 const pkg = require('../../package.json')
 const util = require('./utils/index') // for Object.equals
 
-// TODO pref specifics shouldnt be in this module.
-const prefFile = path.join(app.getPath('userData'), 'pref.json')
+let prefFile
 
 const defaultPrefs = {
   version: pkg.version,
@@ -57,6 +57,7 @@ const load = () => {
     // console.log("READING FROM DISK")
     prefs = JSON.parse(fs.readFileSync(prefFile))
   } catch (e) {
+    console.error('Could not read prefs. Loading defaults.')
     prefs = defaultPrefs
     try {
       savePrefs(prefs)
@@ -112,12 +113,21 @@ const getPrefs = (from) => {
   return prefs
 }
 
-const migrate = (oldPrefs, newPrefs) => {
-  console.log(`Migrating preferences from v${prefs.version} to v${defaultPrefs.version}`)
-  return Object.assign({}, oldPrefs, newPrefs, { version: newPrefs.version })
+const migrate = (_currentPrefs, _defaultPrefs) => {
+  console.log(`Migrating preferences from ${_currentPrefs.version} to v${_defaultPrefs.version}`)
+
+  // Set properties only if they don't exist
+  // via https://github.com/ramda/ramda/wiki/Cookbook#set-properties-only-if-they-dont-exist
+  let mergedPrefs = Object.assign(
+    R.merge(_defaultPrefs, _currentPrefs),
+    { version: _defaultPrefs.version }
+  )
+
+  return mergedPrefs
 }
 
-const init = () => {
+const init = _prefFile => {
+  prefFile = _prefFile
   console.log('Loading preferences from', prefFile)
 
   load()
@@ -127,10 +137,10 @@ const init = () => {
   }
 }
 
-init()
-
 module.exports = {
   savePrefs,
   getPrefs,
-  set
+  set,
+
+  init
 }
