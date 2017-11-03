@@ -80,15 +80,10 @@
           </label>
         </div>
 
-        <div class="preferences-input" style="margin-top: 2em">
-          <div style="display:flex">
-            <div style="width:30%; padding: 9px 0 7px 0; line-height: 1">
-              <label for="absolutePathToImageEditor">
-                Image Editor
-              </label>
-            </div>
+        <div class="preferences-input" style="margin-top: 2rem; margin-bottom: 1rem">
 
-            <div style="width:70%; text-align: right">
+          <div style="display:flex">
+            <div style="width:50%;">
               <a href="#" id="absolutePathToImageEditor_filename" class="filename"></a>
               <input
                 hidden="true"
@@ -96,8 +91,18 @@
                 name="absolutePathToImageEditor"
                 id="absolutePathToImageEditor" />
             </div>
+            <div style="width:50%;">
+              <label for="absolutePathToImageEditor" class="label-filename">
+                PSD Image Editor
+              </label>
+            </div>
+          </div>
+          <div class="preferences-hint">
+            The path to the .app or .exe for the PSD Image Editor. By default this will be the application associated in your operating system for opening PSD files.
+            To reset to default, cancel the file prompt.
           </div>
         </div>
+        
       </div>
 
       <div class="preferences-fieldset">
