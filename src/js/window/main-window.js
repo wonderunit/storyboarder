@@ -9,6 +9,7 @@ const menu = require('../menu')
 const util = require('../utils/index')
 const Color = require('color-js')
 const chokidar = require('chokidar')
+const plist = require('plist')
 
 const StoryboarderSketchPane = require('./storyboarder-sketch-pane')
 const undoStack = require('../undo-stack')
@@ -1701,19 +1702,48 @@ let openInEditor = async () => {
 
     // actually open each board
     for (board of selectedBoards) {
-      let absolutePathToImageEditor = prefsModule.getPrefs()['absolutePathToImageEditor']
-      if (absolutePathToImageEditor) {
-        remote.dialog.showMessageBox({
-          message: `Artist wants to open the file with ${absolutePathToImageEditor}`
-        })
-        
+      let errmsg
+
+      let linkedPath = path.join(boardPath, 'images', board.link)
+      let editorPath = prefsModule.getPrefs()['absolutePathToImageEditor']
+      if (editorPath) {
+        let binaryPath
+
+        // use .exe directly on win32
+        if (editorPath.match(/\.exe$/)) {
+          binaryPath = editorPath
+
+        // find binary in .app package on macOS
+        } else if (editorPath.match(/\.app$/)) {
+          let obj = plist.parse(fs.readFileSync(path.join(editorPath, 'Contents', 'Info.plist'), 'utf8'))
+          if (obj.CFBundlePackageType === 'APPL') {
+            binaryPath = path.join(editorPath, 'Contents', 'MacOS', obj.CFBundleExecutable)
+          }
+        }
+
+        if (binaryPath) {
+          child_process.exec(`"${binaryPath}" ${linkedPath}`, (error, stdout, stderr) => {
+            if (error) {
+              notifications.notify({ message: `[WARNING] ${error}` })
+              return
+            }
+            // console.log(`stdout: ${stdout}`)
+            // console.log(`stderr: ${stderr}`)
+          })
+        } else {
+          errmsg = 'Could not open editor'
+        }
       } else {
         console.log('\tshell.openItem', board.link)
-        let result = shell.openItem(path.join(boardPath, 'images', board.link))
+        let result = shell.openItem(pathToLinkedFile)
         console.log('\tshell.openItem result:', result)
         if (!result) {
-          notifications.notify({ message: '[WARNING] Could not open editor' })
+          errmsg = 'Could not open editor'
         }
+      }
+
+      if (errmsg) {
+        notifications.notify({ message: `[WARNING] ${errmsg}` })
       }
     }
 
