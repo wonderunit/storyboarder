@@ -1704,21 +1704,21 @@ let openInEditor = async () => {
     for (board of selectedBoards) {
       let errmsg
 
-      let linkedPath = path.join(boardPath, 'images', board.link)
-      let editorPath = prefsModule.getPrefs()['absolutePathToImageEditor']
-      if (editorPath) {
+      let pathToLinkedFile = path.join(boardPath, 'images', board.link)
+      let pathToEditor = prefsModule.getPrefs()['absolutePathToImageEditor']
+      if (pathToEditor) {
         let binaryPath
 
         // use .exe directly on win32
-        if (editorPath.match(/\.exe$/)) {
-          binaryPath = editorPath
+        if (pathToEditor.match(/\.exe$/)) {
+          binaryPath = pathToEditor
 
         // find binary in .app package on macOS
-        } else if (editorPath.match(/\.app$/)) {
+      } else if (pathToEditor.match(/\.app$/)) {
           try {
-            let obj = plist.parse(fs.readFileSync(path.join(editorPath, 'Contents', 'Info.plist'), 'utf8'))
+            let obj = plist.parse(fs.readFileSync(path.join(pathToEditor, 'Contents', 'Info.plist'), 'utf8'))
             if (obj.CFBundlePackageType === 'APPL') {
-              binaryPath = path.join(editorPath, 'Contents', 'MacOS', obj.CFBundleExecutable)
+              binaryPath = path.join(pathToEditor, 'Contents', 'MacOS', obj.CFBundleExecutable)
             } else {
               errmsg = 'Not a valid .app package'
             }
@@ -1728,7 +1728,7 @@ let openInEditor = async () => {
         }
 
         if (binaryPath) {
-          child_process.exec(`"${binaryPath}" ${linkedPath}`, (error, stdout, stderr) => {
+          child_process.exec(`"${binaryPath}" ${pathToLinkedFile}`, (error, stdout, stderr) => {
             if (error) {
               notifications.notify({ message: `[WARNING] ${error}` })
               return
