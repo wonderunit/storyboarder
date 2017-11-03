@@ -26,6 +26,7 @@ const defaultPrefs = {
   enableAnalytics: true,
   enableAutoSave: true,
   enableForcePsdReloadOnFocus: true,
+  absolutePathToImageEditor: undefined,
   
   lastUsedFps: 24,
 

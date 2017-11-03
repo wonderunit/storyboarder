@@ -1701,11 +1701,19 @@ let openInEditor = async () => {
 
     // actually open each board
     for (board of selectedBoards) {
-      console.log('\tshell.openItem', board.link)
-      let result = shell.openItem(path.join(boardPath, 'images', board.link))
-      console.log('\tshell.openItem result:', result)
-      if (!result) {
-        notifications.notify({ message: '[WARNING] Could not open editor' })
+      let absolutePathToImageEditor = prefsModule.getPrefs()['absolutePathToImageEditor']
+      if (absolutePathToImageEditor) {
+        remote.dialog.showMessageBox({
+          message: `Artist wants to open the file with ${absolutePathToImageEditor}`
+        })
+        
+      } else {
+        console.log('\tshell.openItem', board.link)
+        let result = shell.openItem(path.join(boardPath, 'images', board.link))
+        console.log('\tshell.openItem result:', result)
+        if (!result) {
+          notifications.notify({ message: '[WARNING] Could not open editor' })
+        }
       }
     }
 
