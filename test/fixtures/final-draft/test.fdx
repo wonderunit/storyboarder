@@ -93,7 +93,9 @@ In a way this is the death of Walter as well.</CharacterArcBeat>
       <Text>More screams from inside.</Text>
     </Paragraph>
     <Paragraph Type="Character">
-      <Text>Henry</Text>
+      <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">
+        Henry
+      </Text>
     </Paragraph>
     <Paragraph Type="Dialogue">
       <Text>Was it like this with me?</Text>
