@@ -12,9 +12,9 @@ let prefs,
 const onChange = (name, event) => {
   let el = event.target
   if (el.type == 'checkbox') {
-    prefsModule.set(name, el.checked)
+    prefsModule.set(name, el.checked, true)
   } else if (el.type == 'number') {
-    prefsModule.set(name, el.value)
+    prefsModule.set(name, el.value, true)
   }
   render()
 }
@@ -26,10 +26,10 @@ const onFilenameClick = event => {
     filenames => {
       event.target.style.pointerEvents = 'auto'
       if (filenames) {
-        prefsModule.set('absolutePathToImageEditor', filenames[0])
+        prefsModule.set('absolutePathToImageEditor', filenames[0], true)
         render()
       } else {
-        prefsModule.set('absolutePathToImageEditor', undefined)
+        prefsModule.set('absolutePathToImageEditor', undefined, true)
         render()
       }
     }
