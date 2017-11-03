@@ -88,3 +88,14 @@ input[type=number] {
   border: none;
   border-radius: 3px;
 }
+
+
+a.filename {
+  padding: 8px 10px;
+  background-color: #393939;
+  color: #FDFDFD;
+  border-radius: 6px;
+  line-height: 1;
+  display: inline-block;
+  text-decoration: none;
+}
