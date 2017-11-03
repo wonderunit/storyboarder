@@ -1719,8 +1719,9 @@ let openInEditor = async () => {
             let obj = plist.parse(fs.readFileSync(path.join(editorPath, 'Contents', 'Info.plist'), 'utf8'))
             if (obj.CFBundlePackageType === 'APPL') {
               binaryPath = path.join(editorPath, 'Contents', 'MacOS', obj.CFBundleExecutable)
+            } else {
+              errmsg = 'Not a valid .app package'
             }
-            errmsg = 'Not a valid .app package'
           } catch (err) {
             errmsg = 'Could not find executable binary in .app'
           }
