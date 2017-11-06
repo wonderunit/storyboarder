@@ -861,6 +861,10 @@ class DrawingStrategy {
 
     this.container.stopMultiLayerOperation()
     this.container.isMultiLayerOperation = false // ensure we reset the var
+
+    // remove listeners
+    document.removeEventListener('pointermove', this.container.canvasPointerMove)
+    document.removeEventListener('pointerup', this.container.canvasPointerUp)
   }
 }
 
@@ -1013,6 +1017,10 @@ class MovingStrategy {
     this.container.renderCursor()
 
     this.storedLayers = null
+
+    // remove listeners
+    document.removeEventListener('pointermove', this.container.canvasPointerMove)
+    document.removeEventListener('pointerup', this.container.canvasPointerUp)
   }
 }
 
@@ -1149,6 +1157,10 @@ class ScalingStrategy {
 
     this.container.cursorType = 'drawing'
     this.container.renderCursor()
+
+    // remove listeners
+    document.removeEventListener('pointermove', this.container.canvasPointerMove)
+    document.removeEventListener('pointerup', this.container.canvasPointerUp)
   }
 }
 
