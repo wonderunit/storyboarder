@@ -1173,7 +1173,7 @@ class LockedStrategy {
   }
   
   canvasPointerDown (e) {
-    this.isPointerDown = false
+    this.container.isPointerDown = false
   }
 
   canvasPointerUp (e) {
