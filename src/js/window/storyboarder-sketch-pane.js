@@ -138,10 +138,6 @@ class StoryboarderSketchPane extends EventEmitter {
   setStrategy (Strategy) {
     if (this.strategy instanceof Strategy) return
 
-    // hack prevent switching
-    // if (Strategy === MovingStrategy) return   // prevent Moving
-    // if (Strategy === ScalingStrategy) return  // prevent Scaling
-
     if (this.strategy instanceof LockedStrategy) {
       // can't unlock if locked
       if (this.isLocked) {
