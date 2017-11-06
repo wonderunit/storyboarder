@@ -30,6 +30,7 @@ class StoryboarderSketchPane extends EventEmitter {
     this.prevTimeStamp = 0
     this.frameLengthArray = []
 
+    // NOTE sets DrawingStrategy
     this.cancelTransform()
 
     this.containerPadding = 100
@@ -132,8 +133,6 @@ class StoryboarderSketchPane extends EventEmitter {
 
     this.onFrame = this.onFrame.bind(this)
     requestAnimationFrame(this.onFrame)
-
-    this.setStrategy(LockedStrategy)
   }
 
   setStrategy (Strategy) {
