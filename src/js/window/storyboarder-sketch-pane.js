@@ -30,6 +30,7 @@ class StoryboarderSketchPane extends EventEmitter {
     this.prevTimeStamp = 0
     this.frameLengthArray = []
 
+    // NOTE sets DrawingStrategy
     this.cancelTransform()
 
     this.containerPadding = 100
@@ -132,8 +133,6 @@ class StoryboarderSketchPane extends EventEmitter {
 
     this.onFrame = this.onFrame.bind(this)
     requestAnimationFrame(this.onFrame)
-
-    this.setStrategy(LockedStrategy)
   }
 
   setStrategy (Strategy) {
@@ -145,6 +144,17 @@ class StoryboarderSketchPane extends EventEmitter {
         return
       }
     }
+
+
+
+    // HACK
+    // force render remaining move events early, before frame loop
+    this.renderEvents()
+    // clear both event queues
+    this.lastMoveEvent = null
+    this.lastCursorEvent = null
+
+
 
     if (this.strategy) this.strategy.dispose()
 
@@ -857,10 +867,14 @@ class DrawingStrategy {
   }
   
   dispose () {
-    this.isPointerDown = false
+    this.container.isPointerDown = false
 
     this.container.stopMultiLayerOperation()
     this.container.isMultiLayerOperation = false // ensure we reset the var
+
+    // remove listeners
+    document.removeEventListener('pointermove', this.container.canvasPointerMove)
+    document.removeEventListener('pointerup', this.container.canvasPointerUp)
   }
 }
 
@@ -1013,6 +1027,10 @@ class MovingStrategy {
     this.container.renderCursor()
 
     this.storedLayers = null
+
+    // remove listeners
+    document.removeEventListener('pointermove', this.container.canvasPointerMove)
+    document.removeEventListener('pointerup', this.container.canvasPointerUp)
   }
 }
 
@@ -1149,6 +1167,10 @@ class ScalingStrategy {
 
     this.container.cursorType = 'drawing'
     this.container.renderCursor()
+
+    // remove listeners
+    document.removeEventListener('pointermove', this.container.canvasPointerMove)
+    document.removeEventListener('pointerup', this.container.canvasPointerUp)
   }
 }
 
@@ -1161,7 +1183,7 @@ class LockedStrategy {
   }
   
   canvasPointerDown (e) {
-    this.isPointerDown = false
+    this.container.isPointerDown = false
   }
 
   canvasPointerUp (e) {
