@@ -321,7 +321,7 @@ let openFile = filepath => {
       if (err) {
         dialog.showMessageBox({
           type: 'error',
-          message: 'Could not read Fountain script.\n' + error.message,
+          message: 'Could not read Fountain script.\n' + err.message,
         })
         return
       }
