@@ -857,7 +857,7 @@ class DrawingStrategy {
   }
   
   dispose () {
-    this.isPointerDown = false
+    this.container.isPointerDown = false
 
     this.container.stopMultiLayerOperation()
     this.container.isMultiLayerOperation = false // ensure we reset the var
