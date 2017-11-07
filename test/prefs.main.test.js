@@ -22,6 +22,8 @@ describe('prefs (main)', () => {
       assert.equal(prefsModule.versionCanBeMigrated('0.0.3', '0.0.2'), false)
       assert.equal(prefsModule.versionCanBeMigrated('0.3.0', '0.2.0'), false)
       assert.equal(prefsModule.versionCanBeMigrated('3.0.0', '2.0.0'), false)
+
+      assert.equal(prefsModule.versionCanBeMigrated('1.1.0', '1.0.1'), false)
     })
   })
   describe('init', () => {
