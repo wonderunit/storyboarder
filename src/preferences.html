@@ -80,6 +80,29 @@
           </label>
         </div>
 
+        <div class="preferences-input" style="margin-top: 2rem; margin-bottom: 1rem">
+
+          <div style="display:flex">
+            <div>
+              <a href="#" id="absolutePathToImageEditor_filename" class="filename"></a>
+              <input
+                hidden="true"
+                type="text"
+                name="absolutePathToImageEditor"
+                id="absolutePathToImageEditor" />
+            </div>
+            <div>
+              <label for="absolutePathToImageEditor" class="label-filename">
+                External PSD Editor
+              </label>
+            </div>
+          </div>
+          <div class="preferences-hint">
+            Select an application (e.g.: .exe or .app). By default this will be the application associated in your operating system for opening PSD files.
+            To reset to default, cancel the file prompt.
+          </div>
+        </div>
+        
       </div>
 
       <div class="preferences-fieldset">

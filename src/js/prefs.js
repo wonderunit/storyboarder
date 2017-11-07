@@ -26,6 +26,7 @@ const defaultPrefs = {
   enableAnalytics: true,
   enableAutoSave: true,
   enableForcePsdReloadOnFocus: true,
+  absolutePathToImageEditor: undefined,
   
   lastUsedFps: 24,
 
@@ -110,7 +111,7 @@ const set = (keyPath, value, sync) => {
 
 const getPrefs = (from) => {
   // console.log("GETTING PREFS!!!", from)
-  return prefs
+  return util.stringifyClone(prefs) // TODO why do we have to clone this?
 }
 
 const migrate = (_currentPrefs, _defaultPrefs) => {
@@ -126,17 +127,23 @@ const migrate = (_currentPrefs, _defaultPrefs) => {
   return mergedPrefs
 }
 
-// naive check
+const compareVersions = (v1, v2) => {
+  for (let i = 0; i < v1.length; i++) {
+    if (v1[i] < v2[i]) {
+      return -1
+    } else if (v1[i] > v2[i]) {
+      return +1
+    }
+  }
+
+  return 0
+}
+
+// naive check, assumes lengths are equal and format is simply `major.minor.patch`
 const versionCanBeMigrated = (from, to) => {
-  let f = from.split('.').map(n => parseInt(n, 10))
-  let t = to.split('.').map(n => parseInt(n, 10))
-
-  // is from lt than to?
-  if (f[0] < t[0]) return true
-  if (f[1] < t[1]) return true
-  if (f[2] < t[2]) return true
-
-  return false
+  let v1 = from.split('.').map(n => parseInt(n, 10))
+  let v2 = to.split('.').map(n => parseInt(n, 10))
+  return compareVersions(v1, v2) === -1
 }
 
 const init = _prefFile => {

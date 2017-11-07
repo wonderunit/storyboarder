@@ -12,7 +12,7 @@ const adjustMajorVer = (str, value = +1) => {
   return [Number(parts[0]) + value, ...parts.slice(1)].join('.')
 }
 
-describe('prefs', () => {
+describe('prefs (main)', () => {
   describe('versionCanBeMigrated', () => {
     it('can check if a version can be migrated', () => {
       assert.equal(prefsModule.versionCanBeMigrated('0.0.1', '0.0.2'), true)
@@ -22,6 +22,8 @@ describe('prefs', () => {
       assert.equal(prefsModule.versionCanBeMigrated('0.0.3', '0.0.2'), false)
       assert.equal(prefsModule.versionCanBeMigrated('0.3.0', '0.2.0'), false)
       assert.equal(prefsModule.versionCanBeMigrated('3.0.0', '2.0.0'), false)
+
+      assert.equal(prefsModule.versionCanBeMigrated('1.1.0', '1.0.1'), false)
     })
   })
   describe('init', () => {
@@ -72,6 +74,34 @@ describe('prefs', () => {
   
     after(function () {
       mockFs.restore()
+    })
+  })
+  describe('getPrefs/set', () => {
+    before(() => {
+      const pathToPrefsFile = path.join(app.getPath('userData'), 'pref.json')
+
+      const initialState = {
+        version: pkg.version,
+        enableTooltips: false
+      }
+  
+      mockFs({
+        [path.dirname(pathToPrefsFile)]: {
+          'pref.json': JSON.stringify(initialState)
+        }
+      })
+
+      prefsModule.init(pathToPrefsFile)
+    })
+    it('can set and get values', () => {
+      prefsModule.set('enableTooltips', false)
+      assert.equal(prefsModule.getPrefs()['enableTooltips'], false)
+
+      prefsModule.set('enableTooltips', true)
+      assert.equal(prefsModule.getPrefs()['enableTooltips'], true)
+
+      prefsModule.set('enableTooltips', false)
+      assert.equal(prefsModule.getPrefs()['enableTooltips'], false)
     })
   })
 })

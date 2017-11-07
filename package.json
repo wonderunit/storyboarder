@@ -1,7 +1,7 @@
 {
   "name": "storyboarder",
   "productName": "Storyboarder",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "The fastest way to storyboard.",
   "main": "src/js/main.js",
   "scripts": {
@@ -10,7 +10,7 @@
     "dist:win": "build -w",
     "dist:linux": "build -l",
     "dist": "build -mwl",
-    "test": "mocha $(find test -name '*[!renderer].test.js') && electron-mocha --renderer test/**/*.renderer.test.js && electron-mocha test/**/*.main.test.js"
+    "test": "mocha $(find test -name '*[!renderer].test.js') && electron-mocha --renderer test/*.renderer.test.js test/**/*.renderer.test.js && electron-mocha test/**/*.main.test.js"
   },
   "repository": {
     "type": "git",
@@ -103,6 +103,7 @@
     "moment": "^2.18.1",
     "pdfjs-dist": "1.9.426",
     "pdfkit": "^0.8.3",
+    "plist": "2.1.0",
     "qr-image": "^3.2.0",
     "qrcode-reader": "^1.0.0",
     "ramda": "0.25.0",
