@@ -111,7 +111,7 @@ const set = (keyPath, value, sync) => {
 
 const getPrefs = (from) => {
   // console.log("GETTING PREFS!!!", from)
-  return prefs
+  return util.stringifyClone(prefs) // TODO why do we have to clone this?
 }
 
 const migrate = (_currentPrefs, _defaultPrefs) => {
