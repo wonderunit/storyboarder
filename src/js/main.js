@@ -695,7 +695,7 @@ const ensureFountainSceneIds = (filePath, data) => {
 const createAndLoadScene = aspectRatio =>
   new Promise((resolve, reject) => {
     dialog.showSaveDialog({
-      title: "New storyboard",
+      title: "New Storyboard",
       buttonLabel: "Create",
     },
     async filename => {
