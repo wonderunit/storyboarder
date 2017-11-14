@@ -353,9 +353,7 @@ let openFile = filepath => {
 
 const findOrCreateProjectFolder = (scriptDataObject) => {
   // check for storyboard.settings file
-  if (fs.existsSync(path.join(currentPath)) && 
-      fs.existsSync(path.join(currentPath, 'storyboard.settings'))) 
-  {
+  if (fs.existsSync(path.join(currentPath, 'storyboard.settings'))) {
     // project already exists
     let boardSettings = JSON.parse(fs.readFileSync(path.join(currentPath, 'storyboard.settings')))
     if (!boardSettings.lastScene) {
