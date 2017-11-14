@@ -22,18 +22,6 @@
   /* Pretty Modern Browsers */
   font-weight: 900; }
 
-@font-face {
-  font-family: 'courierprime';
-  src: url('../fonts/courierprime/courier-prime.ttf');
-  /* Pretty Modern Browsers */
-  font-weight: 200; }
-
-@font-face {
-  font-family: 'courierprimesans';
-  src: url('../fonts/courierprime/courier-prime-sans.ttf');
-  /* Pretty Modern Browsers */
-  font-weight: 200; }
-
 body {
   display: flex;
   flex-direction: row;
