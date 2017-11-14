@@ -1,10 +1,4 @@
 @font-face {
-  font-family: 'blenderpro';
-  src: url('../fonts/blenderpro/blenderpro-thin-webfont.woff') format('woff');
-  /* Pretty Modern Browsers */
-  font-weight: 400; }
-
-@font-face {
   font-family: 'proximanova';
   src: url('../fonts/proximanova/ProximaNova-Reg-webfont.woff') format('woff');
   /* Pretty Modern Browsers */
