@@ -610,6 +610,27 @@ let loadBoardUI = () => {
       }
       markBoardFileDirty()
     })
+      //Manages focus in text fields
+      item.addEventListener('keydown', e => {
+        notifications.notify({message: e.key, timing: 5})
+          switch (e.target.name) {
+        //Digital values
+        case 'duration':
+        case 'frames':
+          if(e.key=='Escape'||e.key=='Enter'){
+            e.target.blur()
+          }
+          break
+        //Text fields
+        case 'dialogue':
+        case 'action':
+        case 'notes':
+          if(e.key=='Escape'||e.key=='Enter'&&e.ctrlKey){
+              e.target.blur()
+          }
+          break
+      }
+      })
   }
 
   document.querySelector('#thumbnail-container').addEventListener('pointerdown', (e)=>{
