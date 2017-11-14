@@ -701,8 +701,7 @@ const createAndLoadScene = aspectRatio =>
     async filename => {
       if (filename) {
         console.log(filename)
-    
-        // TODO test overwriting a folder
+
         if (fs.existsSync(filename)) {
           if (fs.lstatSync(filename).isDirectory()) {
             console.log('\ttrash existing folder', filename)
