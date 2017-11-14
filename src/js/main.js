@@ -1,6 +1,6 @@
 const {app, ipcMain, BrowserWindow, globalShortcut, dialog, powerSaveBlocker} = electron = require('electron')
 
-const fs = require('fs')
+const fs = require('fs-extra')
 const path = require('path')
 const isDev = require('electron-is-dev')
 const trash = require('trash')
@@ -744,9 +744,7 @@ const createAndLoadScene = aspectRatio =>
   })
 
 const createAndLoadProject = aspectRatio => {
-  if (!fs.existsSync(currentPath)) {
-    fs.mkdirSync(currentPath)
-  }
+  fs.ensureDirSync(currentPath)
 
   let boardSettings = {
     lastScene: 0,
