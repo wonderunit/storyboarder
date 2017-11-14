@@ -49,7 +49,7 @@ const getFilesUsedByProject = srcFilePath => {
       !fs.existsSync(path.join(srcFolderPath, 'storyboards')) ||
       !fs.existsSync(path.join(srcFolderPath, 'storyboards', 'storyboard.settings'))
     ) {
-      throw new Error('This script not part of a Storyboarder project')
+      throw new Error('This script is not part of a Storyboarder project')
     }
 
     // copy the storyboard.settings file
