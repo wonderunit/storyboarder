@@ -1,23 +1,31 @@
 @font-face {
-  font-family: 'proximanova';
-  src: url('../fonts/proximanova/ProximaNova-Reg-webfont.woff') format('woff');
-  /* Pretty Modern Browsers */
-  font-weight: 400; }
+  font-family: 'wonderunitsans';
+  src: url('../fonts/wonder-unit-sans/WonderUnitSans-Regular.woff2') format('woff2');
+  font-weight: 400;
+}
 
 @font-face {
-  font-family: 'proximanova';
-  src: url('../fonts/proximanova/ProximaNova-Light-webfont.woff') format('woff');
-  /* Pretty Modern Browsers */
-  font-weight: 300; }
+  font-family: 'wonderunitsans';
+  src: url('../fonts/wonder-unit-sans/WonderUnitSans-Light.woff2') format('woff2');
+  font-weight: 300;
+}
 
 @font-face {
-  font-family: 'proximanova';
-  src: url('../fonts/proximanova/ProximaNova-Bold-webfont.woff') format('woff');
-  /* Pretty Modern Browsers */
-  font-weight: 700; }
+  font-family: 'wonderunitsans';
+  src: url('../fonts/wonder-unit-sans/WonderUnitSans-Bold.woff2') format('woff2');
+  font-weight: 700;
+}
 
+/* not used by PDF */
 @font-face {
-  font-family: 'proximanova';
-  src: url('../fonts/proximanova/proximanova-black-webfont.woff') format('woff');
-  /* Pretty Modern Browsers */
-  font-weight: 900; }
+  font-family: 'wonderunitsans';
+  src: url('../fonts/wonder-unit-sans/WonderUnitSans-Black.woff2') format('woff2');
+  font-weight: 900;
+}
+
+/* only used by PDF */
+@font-face {
+  font-family: 'wonderunitsans';
+  src: url('../fonts/wonder-unit-sans/WonderUnitSans-Thin.woff2') format('woff2');
+  font-weight: 900;
+}
