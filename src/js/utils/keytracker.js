@@ -29,4 +29,13 @@ function keydown(e) {
   down[keys[e.keyCode]] = true
 }
 
-module.exports = pressed
+const findMatching = (map, keys) =>
+  R.reject(R.isNil, 
+    R.flatten(R.props(keys, map)))
+
+const isActive = (map, key, keys) => findMatching(map, keys).includes(key)
+
+module.exports = {
+  pressed,
+  isActive: (map, key) => isActive(map, key, down)
+}

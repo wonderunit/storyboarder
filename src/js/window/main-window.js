@@ -10,6 +10,7 @@ const util = require('../utils/index')
 const Color = require('color-js')
 const chokidar = require('chokidar')
 const plist = require('plist')
+const R = require('ramda')
 
 const StoryboarderSketchPane = require('./storyboarder-sketch-pane')
 const undoStack = require('../undo-stack')
@@ -27,7 +28,7 @@ const OnionSkin = require('./onion-skin')
 const Sonifier = require('./sonifier/index')
 const LayersEditor = require('./layers-editor')
 const sfx = require('../wonderunit-sound')
-const keytracker = require('../utils/keytracker')
+const keytrackerModule = require('../utils/keytracker')
 const storyTips = new(require('./story-tips'))(sfx, notifications)
 const exporter = require('./exporter')
 const exporterCommon = require('../exporters/common')
@@ -147,6 +148,13 @@ let etags = {}
 const setEtag = absoluteFilePath => { etags[absoluteFilePath] = Date.now() }
 const getEtag = absoluteFilePath => etags[absoluteFilePath] || '0'
 
+const keyMap = {
+  'drawing:brush-size:inc': ']',
+  'drawing:brush-size:dec': '['
+}
+const invertedKeyMap = R.invert(keyMap)
+const keytracker = keytrackerModule.pressed
+const isKeyBindingActive = name => keytrackerModule.isActive(invertedKeyMap, keys)
 
 //  analytics.event('Application', 'open', filename)
 
@@ -4852,14 +4860,12 @@ window.addEventListener('keydown', e => {
     toolbar.render()
   }
   if (toolbar.getIsQuickErasing()) {
-    if (e.altKey) {
-      if (e.code === 'BracketRight') {
-        changeEraserSizeDuringQuickErase(1)
-        sfx.playEffect('brush-size-up')
-      } else if (e.code === 'BracketLeft') {
-        changeEraserSizeDuringQuickErase(-1)
-        sfx.playEffect('brush-size-down')
-      }
+    if (isKeyBindingActive('drawing:brush-size:inc')) {
+      changeEraserSizeDuringQuickErase(1)
+      sfx.playEffect('brush-size-up')
+    } else if (isKeyBindingActive('drawing:brush-size:dec')) {
+      changeEraserSizeDuringQuickErase(-1)
+      sfx.playEffect('brush-size-down')
     }
   }
 })

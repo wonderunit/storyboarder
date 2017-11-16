@@ -7,7 +7,7 @@ const SketchPane = require('../sketch-pane')
 const Brush = require('../sketch-pane/brush')
 const LineMileageCounter = require('./line-mileage-counter')
 
-const keytracker = require('../utils/keytracker')
+const keytrackerModule = require('../utils/keytracker')
 const util = require('../utils')
 
 const { LAYER_NAME_BY_INDEX } = require('../constants')
@@ -15,6 +15,8 @@ const { LAYER_NAME_BY_INDEX } = require('../constants')
 const prefsModule = require('electron').remote.require('./prefs')
 const enableBrushCursor = prefsModule.getPrefs('main')['enableBrushCursor']
 const enableStabilizer = prefsModule.getPrefs('main')['enableStabilizer']
+
+const keytracker = keytrackerModule.pressed
 
 /**
  *  Wrap the SketchPane component with features Storyboarder needs
