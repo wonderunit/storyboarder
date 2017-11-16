@@ -15,6 +15,7 @@ body {
   user-select: none;
   -webkit-user-select: none;
   cursor:default;
+  line-height: 1.4;
 }
 
 #drag-handle {
