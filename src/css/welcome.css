@@ -1,45 +1,3 @@
-@font-face {
-  font-family: 'blenderpro';
-  src: url('../fonts/blenderpro/blenderpro-thin-webfont.woff') format('woff');
-  /* Pretty Modern Browsers */
-  font-weight: 400; }
-
-@font-face {
-  font-family: 'proximanova';
-  src: url('../fonts/proximanova/ProximaNova-Reg-webfont.woff') format('woff');
-  /* Pretty Modern Browsers */
-  font-weight: 400; }
-
-@font-face {
-  font-family: 'proximanova';
-  src: url('../fonts/proximanova/ProximaNova-Light-webfont.woff') format('woff');
-  /* Pretty Modern Browsers */
-  font-weight: 300; }
-
-@font-face {
-  font-family: 'proximanova';
-  src: url('../fonts/proximanova/ProximaNova-Bold-webfont.woff') format('woff');
-  /* Pretty Modern Browsers */
-  font-weight: 700; }
-
-@font-face {
-  font-family: 'proximanova';
-  src: url('../fonts/proximanova/proximanova-black-webfont.woff') format('woff');
-  /* Pretty Modern Browsers */
-  font-weight: 900; }
-
-@font-face {
-  font-family: 'courierprime';
-  src: url('../fonts/courierprime/courier-prime.ttf');
-  /* Pretty Modern Browsers */
-  font-weight: 200; }
-
-@font-face {
-  font-family: 'courierprimesans';
-  src: url('../fonts/courierprime/courier-prime-sans.ttf');
-  /* Pretty Modern Browsers */
-  font-weight: 200; }
-
 body {
   display: flex;
   flex-direction: row;
@@ -48,7 +6,7 @@ body {
   color: white;
   background: black;
   background-size: cover;
-  font-family: 'proximanova';
+  font-family: 'wonderunitsans';
   font-weight: 300;
   overflow: hidden;
 }
@@ -115,7 +73,7 @@ iframe {
 
 .title .text h1 {
   font-size: 48px;
-  margin: -6px 0;
+  margin: 0;
   font-weight: 900;
 }
 
