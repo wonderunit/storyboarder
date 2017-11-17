@@ -2,6 +2,27 @@ const { Menu, app } = require('electron').remote
 const { ipcRenderer, shell } = require('electron')
 const isDev = require('electron-is-dev')
 
+const keytrackerModule = require('./utils/keytracker')
+
+// show key command hints based on key binding preferences
+// NOTE changing key bindings requires an app restart
+const path = require('path')
+const prefsModule = require('electron').remote.require('./prefs')
+prefsModule.init(path.join(app.getPath('userData'), 'pref.json'))
+const keyMap = prefsModule.getPrefs('key bindings')['keyBindings']
+const setMenuKeyBindings = template => {
+  for (let m of template) {
+    for (let mi of m.submenu) {
+      if (mi._binding) {
+        if (mi._binding) {
+          mi.accelerator = keyMap[mi._binding]
+          delete mi._binding
+        }
+      }
+    }
+  }
+}
+
 let SubMenuFragments = {}
 SubMenuFragments.View = [
   ...isDev
@@ -406,12 +427,18 @@ AppMenu.Tools = () => ({
       type: 'separator'
     },
     {
-      accelerator: '[',
       label: 'Smaller Brush',
+      _binding: 'drawing:brush-size:dec',
+      click (item, focusedWindow, event) {
+        ipcRenderer.send('brushSize', -1)
+      }
     },
     {
-      accelerator: ']',
       label: 'Larger Brush',
+      _binding: 'drawing:brush-size:inc',
+      click (item, focusedWindow, event) {
+        ipcRenderer.send('brushSize', 1)
+      }
     },
     {
       type: 'separator'
@@ -720,6 +747,9 @@ const welcomeTemplate = [
     ]
   }
 ]
+
+setMenuKeyBindings(template)
+setMenuKeyBindings(welcomeTemplate)
 
 const menuInstance = Menu.buildFromTemplate(template)
 const welcomeMenuInstance = Menu.buildFromTemplate(welcomeTemplate)
