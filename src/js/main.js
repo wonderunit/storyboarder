@@ -1,6 +1,6 @@
 const {app, ipcMain, BrowserWindow, globalShortcut, dialog, powerSaveBlocker} = electron = require('electron')
 
-const fs = require('fs')
+const fs = require('fs-extra')
 const path = require('path')
 const isDev = require('electron-is-dev')
 const trash = require('trash')
@@ -8,6 +8,8 @@ const chokidar = require('chokidar')
 const os = require('os')
 
 const prefModule = require('./prefs')
+prefModule.init(path.join(app.getPath('userData'), 'pref.json'))
+
 
 const analytics = require('./analytics')
 
@@ -133,22 +135,31 @@ app.on('ready', () => {
 
   // open the welcome window when the app loads up first
   openWelcomeWindow()
-  // via https://github.com/electron/electron/issues/4690#issuecomment-217435222
-  const argv = process.defaultApp ? process.argv.slice(2) : process.argv
 
-  //was an argument passed?
-  if (isDev && argv[0]) {
-    let filePath = path.resolve(argv[0])
-    if (fs.existsSync(filePath)) {
-      openFile(filePath)
+  // TODO why is loading via arg limited to dev mode only?
+  // was an argument passed?
+  if (isDev) {
+    // via https://github.com/electron/electron/issues/4690#issuecomment-217435222
+    const argv = process.defaultApp ? process.argv.slice(2) : process.argv
 
-      // HACK prevent upcoming welcomeWindow.show
-      welcomeWindow.once('show', () => welcomeWindow.hide())
+    if (argv[0]) {
+      let filePath = path.resolve(argv[0])
+      if (fs.existsSync(filePath)) {
 
-      return
+        // wait 300 msecs for windows to load
+        setTimeout(() => openFile(filePath), 300)
 
-    } else {
-      console.error('Could not load', filePath)
+        // HACK prevent upcoming welcomeWindow.show
+        // welcomeWindow.once('show', () => welcomeWindow.hide())
+        return
+
+      } else {
+        console.error('Could not load', filePath)
+        dialog.showErrorBox(
+          'Could not load requested file',
+          `Error loading ${filePath}`
+        )
+      }
     }
   }
  
@@ -237,6 +248,7 @@ let openWelcomeWindow = () => {
       count++
     }
     prefs.recentDocuments = recentDocumentsCopy
+    prefModule.set('recentDocuments', recentDocumentsCopy)
   }
 
   welcomeWindow.once('ready-to-show', () => {
@@ -319,7 +331,7 @@ let openFile = filepath => {
       if (err) {
         dialog.showMessageBox({
           type: 'error',
-          message: 'Could not read Fountain script.\n' + error.message,
+          message: 'Could not read Fountain script.\n' + err.message,
         })
         return
       }
@@ -341,9 +353,7 @@ let openFile = filepath => {
 
 const findOrCreateProjectFolder = (scriptDataObject) => {
   // check for storyboard.settings file
-  if (fs.existsSync(path.join(currentPath)) && 
-      fs.existsSync(path.join(currentPath, 'storyboard.settings'))) 
-  {
+  if (fs.existsSync(path.join(currentPath, 'storyboard.settings'))) {
     // project already exists
     let boardSettings = JSON.parse(fs.readFileSync(path.join(currentPath, 'storyboard.settings')))
     if (!boardSettings.lastScene) {
@@ -375,9 +385,18 @@ const findOrCreateProjectFolder = (scriptDataObject) => {
 }
 
 let openDialogue = () => {
-  dialog.showOpenDialog({title:"Open Script", filters:[
-      {name: 'Screenplay or Storyboarder', extensions: ['storyboarder', 'fountain', 'fdx']},
-    ]}, (filenames) => {
+  dialog.showOpenDialog({
+    title: "Open Script or Storyboarder",
+    filters:[
+      {
+        name: 'Screenplay or Storyboarder',
+        extensions: [
+          'storyboarder',
+          'fountain',
+          'fdx'
+        ]
+      },
+    ]}, filenames => {
       if (filenames) {
         openFile(filenames[0])
       }
@@ -676,14 +695,13 @@ const ensureFountainSceneIds = (filePath, data) => {
 const createAndLoadScene = aspectRatio =>
   new Promise((resolve, reject) => {
     dialog.showSaveDialog({
-      title: "New storyboard",
+      title: "New Storyboard",
       buttonLabel: "Create",
     },
     async filename => {
       if (filename) {
         console.log(filename)
-    
-        // TODO test overwriting a folder
+
         if (fs.existsSync(filename)) {
           if (fs.lstatSync(filename).isDirectory()) {
             console.log('\ttrash existing folder', filename)
@@ -704,7 +722,7 @@ const createAndLoadScene = aspectRatio =>
         let newBoardObject = {
           version: pkg.version,
           aspectRatio: aspectRatio,
-          fps: 24,
+          fps: prefModule.getPrefs().lastUsedFps || 24,
           defaultBoardTiming: prefs.defaultBoardTiming,
           boards: []
         }
@@ -725,9 +743,7 @@ const createAndLoadScene = aspectRatio =>
   })
 
 const createAndLoadProject = aspectRatio => {
-  if (!fs.existsSync(currentPath)) {
-    fs.mkdirSync(currentPath)
-  }
+  fs.ensureDirSync(currentPath)
 
   let boardSettings = {
     lastScene: 0,

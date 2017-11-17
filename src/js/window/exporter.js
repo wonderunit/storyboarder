@@ -232,7 +232,7 @@ class Exporter extends EventEmitter {
           if (boards[i].dialogue) {
             let text = boards[i].dialogue
             let fontSize = 22
-            context.font = "300 " + fontSize + "px proximanova";
+            context.font = "300 " + fontSize + "px wonderunitsans";
             context.textAlign = "center";
             context.fillStyle = "white"
             context.miterLimit = 1

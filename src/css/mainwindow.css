@@ -2,7 +2,7 @@ body {
   margin: 0;
   padding: 0;
   color: black;
-  font-family: 'proximanova';
+  font-family: 'wonderunitsans';
   font-weight: 300;
   background: #333333;
   user-select: none;
@@ -190,8 +190,8 @@ body::-webkit-scrollbar {
   left: 0;
   margin-top: 7px;
 
-  width: 0; 
-  height: 0; 
+  width: 0;
+  height: 0;
   border-left: 8px solid transparent;
   border-right: 8px solid transparent;
   border-top: 10px solid #999;
@@ -249,15 +249,13 @@ body::-webkit-scrollbar {
 }
 
 #thumbnail-drawer .thumbnail.active {
-  background: #ffc000;
-  background: #777;
+  background: #699EF2;
   color: #000;
   transition: all 0s ease-out;
 }
 
 #thumbnail-drawer .thumbnail.selected {
-  background: #ffc000;
-  background: #777;
+  background: #699EF2;
   color: #000;
   top: 0px;
   position: relative;
@@ -281,7 +279,7 @@ body::-webkit-scrollbar {
   box-shadow: none;
 }
 
-#thumbnail-drawer img:after {  
+#thumbnail-drawer img:after {
   content: "";
   position: absolute;
   z-index: 2;
@@ -340,7 +338,7 @@ body::-webkit-scrollbar {
   border-radius: 5px;
   line-height: 40px;
   text-align: center;
-  
+
   margin-top: -10px;
   color: #333;
   font-size: 18px;
@@ -477,7 +475,7 @@ input[type="checkbox"] + label span {
     cursor:pointer;
 }
 input[type="checkbox"]:checked + label span {
-  
+
   background: #444;
 }
 
@@ -786,4 +784,3 @@ input[type=range]::-webkit-slider-thumb {
 input[type=range]:focus::-webkit-slider-runnable-track {
   background: #444;
 }
-

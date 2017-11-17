@@ -13,6 +13,14 @@ const durationOfWords = (text, durationPerWord) =>
   ? wordCount(text) * durationPerWord
   : 0
 
+const elementText = element => {
+  if (typeof element.Text[0] === 'string') {
+    return element.Text[0]
+  } else if (element.Text[0]._) {
+    return element.Text[0]._
+  }
+  return undefined
+}
 
 
 const _wrapAsync = fn => async (...rest) =>
@@ -142,8 +150,10 @@ const importFdxData = fdxObj => {
 
       case 'Character':
         //console.log(element.Text[0])
-        currentCharacter = element.Text[0].toUpperCase()
-        sceneWordCount += wordCount(element.Text[0])
+        if (elementText(element)) {
+          currentCharacter = elementText(element).toUpperCase()
+          sceneWordCount += wordCount(currentCharacter)
+        }
         break
 
       case 'Parenthetical':

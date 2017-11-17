@@ -9,6 +9,7 @@ const menu = require('../menu')
 const util = require('../utils/index')
 const Color = require('color-js')
 const chokidar = require('chokidar')
+const plist = require('plist')
 
 const StoryboarderSketchPane = require('./storyboarder-sketch-pane')
 const undoStack = require('../undo-stack')
@@ -32,7 +33,11 @@ const exporter = require('./exporter')
 const exporterCommon = require('../exporters/common')
 const exporterCopyProject = require('../exporters/copy-project')
 const exporterArchive = require('../exporters/archive')
+
 const prefsModule = require('electron').remote.require('./prefs')
+prefsModule.init(path.join(app.getPath('userData'), 'pref.json'))
+
+const sceneSettingsView = require('./scene-settings-view')
 
 const boardModel = require('../models/board')
 
@@ -132,8 +137,8 @@ let dragPoint
 let dragTarget
 let scrollPoint
 
-const msecsToFrames = value => Math.round(value / 1000 * 24)
-const framesToMsecs = value => Math.round(value / 24 * 1000)
+const msecsToFrames = value => Math.round(value / 1000 * boardData.fps)
+const framesToMsecs = value => Math.round(value / boardData.fps * 1000)
 
 // TODO better name than etags?
 // TODO store in boardData instead, but exclude from JSON?
@@ -179,8 +184,12 @@ const load = async (event, args) => {
       boardPath.pop()
       boardPath = boardPath.join(path.sep)
       console.log(' BOARD PATH: ', boardFilename)
-      boardData = JSON.parse(fs.readFileSync(boardFilename))
-      ipcRenderer.send('analyticsEvent', 'Application', 'open', boardFilename, boardData.boards.length)
+      try {
+        boardData = JSON.parse(fs.readFileSync(boardFilename))
+        ipcRenderer.send('analyticsEvent', 'Application', 'open', boardFilename, boardData.boards.length)
+      } catch (error) {
+        throw new Error(`Could not read file ${path.basename(boardFilename)}. The file may be inaccessible or corrupt.\nError: ${error.message}`)
+      }
     }
 
     loadBoardUI()
@@ -203,11 +212,12 @@ const load = async (event, args) => {
       )
     }, 500) // TODO hack, remove this #440
   } catch (error) {
+    log({ type: 'error', message: error.message })
     remote.dialog.showMessageBox({
       type: 'error',
       message: error.message
     })
-    log({ type: 'error', message: error.message })
+    // TODO add a cancel button to loading view when a fatal error occurs?
   }
 }
 ipcRenderer.on('load', load)
@@ -599,6 +609,28 @@ let loadBoardUI = () => {
           break
       }
       markBoardFileDirty()
+    })
+
+    // keyboard control over focus in text fields
+    item.addEventListener('keydown', e => {
+      switch (e.target.name) {
+        // numbers
+        case 'duration':
+        case 'frames':
+        if (e.key === 'Escape' || e.key === 'Enter') {
+          e.target.blur()
+        }
+        break
+    
+        // text
+        case 'dialogue':
+        case 'action':
+        case 'notes':
+        if (e.key === 'Escape' || (e.key === 'Enter' && (e.metaKey || e.ctrlKey))) {
+          e.target.blur()
+        }
+        break
+      }
     })
   }
 
@@ -1195,6 +1227,14 @@ let loadBoardUI = () => {
     document.querySelector('#shot-generator-container').remove()
   }
 
+  sceneSettingsView.init({ fps: boardData.fps })
+  sceneSettingsView.on('fps', fps => {
+    if (boardData.fps !== fps) {
+      boardData.fps = fps
+      markBoardFileDirty()
+    }
+  })
+
   // setup filesystem watcher
   watcher = chokidar.watch(null, {
     disableGlobbing: true // treat file strings as literal file names
@@ -1684,11 +1724,54 @@ let openInEditor = async () => {
 
     // actually open each board
     for (board of selectedBoards) {
-      console.log('\tshell.openItem', board.link)
-      let result = shell.openItem(path.join(boardPath, 'images', board.link))
-      console.log('\tshell.openItem result:', result)
-      if (!result) {
-        notifications.notify({ message: '[WARNING] Could not open editor' })
+      let errmsg
+
+      let pathToLinkedFile = path.join(boardPath, 'images', board.link)
+      let pathToEditor = prefsModule.getPrefs()['absolutePathToImageEditor']
+      if (pathToEditor) {
+        let binaryPath
+
+        // use .exe directly on win32
+        if (pathToEditor.match(/\.exe$/)) {
+          binaryPath = pathToEditor
+
+        // find binary in .app package on macOS
+      } else if (pathToEditor.match(/\.app$/)) {
+          try {
+            let obj = plist.parse(fs.readFileSync(path.join(pathToEditor, 'Contents', 'Info.plist'), 'utf8'))
+            if (obj.CFBundlePackageType === 'APPL') {
+              binaryPath = path.join(pathToEditor, 'Contents', 'MacOS', obj.CFBundleExecutable)
+            } else {
+              errmsg = 'Not a valid .app package'
+            }
+          } catch (err) {
+            errmsg = 'Could not find executable binary in .app'
+          }
+        }
+
+        if (binaryPath) {
+          child_process.exec(`"${binaryPath}" ${pathToLinkedFile}`, (error, stdout, stderr) => {
+            if (error) {
+              notifications.notify({ message: `[WARNING] ${error}` })
+              return
+            }
+            // console.log(`stdout: ${stdout}`)
+            // console.log(`stderr: ${stderr}`)
+          })
+        } else {
+          errmsg = 'Could not open editor'
+        }
+      } else {
+        console.log('\tshell.openItem', board.link)
+        let result = shell.openItem(pathToLinkedFile)
+        console.log('\tshell.openItem result:', result)
+        if (!result) {
+          errmsg = 'Could not open editor'
+        }
+      }
+
+      if (errmsg) {
+        notifications.notify({ message: `[WARNING] ${errmsg}` })
       }
     }
 
@@ -3047,15 +3130,16 @@ let loadScene = async (sceneNumber) => {
 
   currentBoard = 0
 
-  // does the boardfile/directory exist?
-  let boardsDirectoryFolders = fs.readdirSync(currentPath).filter(function(file) {
-    return fs.statSync(path.join(currentPath, file)).isDirectory()
-  })
+  let boardsDirectoryFolders = fs.readdirSync(currentPath)
+   .filter(
+     file => fs.statSync(path.join(currentPath, file)).isDirectory()
+   )
 
   let sceneCount = 0
 
   for (var node of scriptData) {
     if (node.type == 'scene') {
+      // does the boardfile/directory exist?
       if (sceneNumber == (Number(node.scene_number)-1)) {
         // load script
         sceneCount++
@@ -3109,7 +3193,7 @@ let loadScene = async (sceneNumber) => {
           let newBoardObject = {
             version: pkg.version,
             aspectRatio: boardSettings.aspectRatio,
-            fps: 24,
+            fps: prefsModule.getPrefs().lastUsedFps || 24,
             defaultBoardTiming: 2000,
             boards: []
           }

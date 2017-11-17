@@ -5,7 +5,7 @@
   background-color: #E5E5E5;
   color: #3A3A3A;
 
-  font-family: 'proximanova';
+  font-family: 'wonderunitsans';
   font-weight: 300;
 
   user-select: none;
@@ -87,4 +87,21 @@ input[type=number] {
   background: #3A3A3A;
   border: none;
   border-radius: 3px;
+}
+
+.label-filename {
+  margin-left: 0.5rem;
+  display: block;
+  padding: 9px 0 7px 0;
+  line-height: 1;
+}
+
+a.filename {
+  padding: 8px 10px;
+  background-color: #393939;
+  color: #FDFDFD;
+  border-radius: 6px;
+  line-height: 1;
+  display: inline-block;
+  text-decoration: none;
 }

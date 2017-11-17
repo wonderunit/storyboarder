@@ -1,9 +1,30 @@
 // https://developer.apple.com/library/content/documentation/FinalCutProX/Reference/FinalCutProXXMLFormat
 const path = require('path')
+const Fraction = require('fraction.js')
 
 const { msecsToFrames } = require('./common')
 const { boardFileImageSize, boardFilenameForExport } = require('../models/board')
 const util = require('../utils')
+
+// via https://developer.apple.com/library/content/documentation/FinalCutProX/Reference/FinalCutProXXMLFormat/StoryElements/StoryElements.html
+// Time values are expressed as a rational number of seconds
+// with a 64-bit numerator and a 32-bit denominator. 
+// Frame rates for NTSC-compatible media, for example, 
+// use a frame duration of 1001/30000s (29.97 fps) or 1001/60000s (59.94 fps). 
+// If a time value is equal to a whole number of seconds, 
+// the fraction may be reduced into whole seconds (for example, 5s).
+const scaledFraction = (base, value = 1) =>
+  base === 0 || value === 0
+    ? '0'
+    : minBase(Fraction(base).inverse().mul(value).toFraction())
+
+// convert e.g.: 1/24 to 100/2400
+const minBase = str => {
+  let parts = str.split('/')
+  return parts.length === 2 && parts[1].length < 4
+      ? parts.map(p => p * 100).join('/')
+      : str
+}
 
 // <asset id="r3" name="board-1-9MZ1P" src="file:///board-1-9MZ1P.png" start="0s" duration="0s" hasVideo="1" format="r2"></asset>
 const asset = (data, index) =>
@@ -19,7 +40,7 @@ const generateFinalCutProXXml = data =>
 <!DOCTYPE fcpxml>
 <fcpxml version="1.6">
     <resources>
-        <format id="r1" frameDuration="100/2400s" width="${data.width}" height="${data.height}"/>
+        <format id="r1" frameDuration="${scaledFraction(data.fps, 1)}s" width="${data.width}" height="${data.height}"/>
         <format id="r2" name="${data.format}" width="${data.width}" height="${data.height}"/>
         ${data.assets.map(asset).join('\n        ')}
     </resources>
@@ -47,6 +68,10 @@ const generateFinalCutProXData = (boardData, { projectFileAbsolutePath, outputPa
   let assets = [],
       videos = []
 
+  let normalizedFps = boardData.fps === 23.976
+    ? 24000 / 1001 // better precision
+    : boardData.fps
+
   let currFrame = 0
   let index = 0
   for (let board of boardData.boards) {
@@ -56,8 +81,11 @@ const generateFinalCutProXData = (boardData, { projectFileAbsolutePath, outputPa
                      ? boardData.defaultBoardTiming
                      : board.duration
 
-    let lastFrame = msecsToFrames(24, duration),
-        endFrame = Math.round(currFrame + lastFrame)
+    let lastFrameOfBoard = Math.round(msecsToFrames(normalizedFps, duration)),
+        endFrame = currFrame + lastFrameOfBoard
+
+    let offsetInFrames = currFrame
+    let durationInFrames = Math.round(msecsToFrames(normalizedFps, duration))
 
     assets.push({
       index,
@@ -75,8 +103,10 @@ const generateFinalCutProXData = (boardData, { projectFileAbsolutePath, outputPa
     videos.push({
       index,
       name: `${board.shot}`,
-      offset: `${currFrame * 100}/2400s`,
-      duration: `${Math.round(msecsToFrames(24, duration)) * 100}/2400s`,
+
+      offset: scaledFraction(normalizedFps, offsetInFrames) + 's',
+      duration: scaledFraction(normalizedFps, durationInFrames) + 's',
+
       start: '0s'
     })
 
@@ -91,7 +121,9 @@ const generateFinalCutProXData = (boardData, { projectFileAbsolutePath, outputPa
     eventName: 'Storyboarder',
     projectName: basenameWithoutExt, // TODO arg for board name
     assets,
-    videos
+    videos,
+    
+    fps: normalizedFps
   }
 }
 

@@ -18,9 +18,13 @@ Don't worry if you think someone submitted the issue before, if you have somethi
 
 Would you like to contribue to the project? Yay!
 
+If you submit a pull request, we will need you to sign a CLA: https://cla-assistant.io/wonderunit/storyboarder
+
 If you want to fix some small bugs, feel free to submit a PR. 
 
 If you'd like to work on something bigger than that, hit me up on twitter [@charlesforman](https://twitter.com/charlesforman). We can chat there or in our Slack chat.
+
+
 
 **Thanks!!!**
 
