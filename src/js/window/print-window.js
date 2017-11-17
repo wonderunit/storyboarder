@@ -38,6 +38,7 @@ document.querySelector('#close-button').onclick = (e) => {
 }
 
 document.querySelector('#print-button').onclick = (e) => {
+  if (!pdfdocument) return false;
   ipcRenderer.send('playsfx', 'positive')
   // PRINT
   print()
@@ -47,6 +48,7 @@ document.querySelector('#print-button').onclick = (e) => {
 }
 
 document.querySelector('#pdf-button').onclick = (e) => {
+  if (!pdfdocument) return false;
   if (boardFilename) {
     let basenameWithoutExt = path.basename(boardFilename, path.extname(boardFilename))
     ipcRenderer.send('exportPrintablePdf', pdfdocument, basenameWithoutExt)
@@ -154,8 +156,6 @@ const loadWindow = () => {
   document.querySelector('#next_button').addEventListener('click', onNextPage);
 
   worksheetPrinter.on('generated', (path)=>{
-    pdfdocument = path;
-
     // Disable workers to avoid yet another cross-origin issue (workers need
     // the URL of the script to be loaded, and dynamically loading a cross-origin
     // script does not work).
@@ -198,6 +198,7 @@ const reloadPDFDocument = (path) => {
 
     // Initial/first page rendering
     renderPage(pageNum);
+    pdfdocument = path;
   }).catch(() => {
     // Sometime the PDF loading fails for obscur reason and retrying succeed, hence this code
     if (retry < 3) {
@@ -287,6 +288,7 @@ function onNextPage() {
 }
 
 const generatePDF = () => {
+  pdfdocument = null;
   if (boardData) {
     exportPDF()
   } else {
@@ -303,7 +305,6 @@ const generateWorksheet = () => {
 const exportPDF = () => {
   displaySpinner(true);
   exporter.exportPDF(boardData, boardFilename, paperSize, paperOrientation, rows, cols, spacing, path.join(app.getPath('temp'), 'boardoutput.pdf')).then(outputPath => {
-    pdfdocument = outputPath
     reloadPDFDocument(outputPath)
   })
 }
