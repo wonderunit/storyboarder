@@ -148,10 +148,6 @@ let etags = {}
 const setEtag = absoluteFilePath => { etags[absoluteFilePath] = Date.now() }
 const getEtag = absoluteFilePath => etags[absoluteFilePath] || '0'
 
-const keyMap = {
-  'drawing:brush-size:inc': ']',
-  'drawing:brush-size:dec': '['
-}
 const invertedKeyMap = R.invert(keyMap)
 const keytracker = keytrackerModule.pressed
 const isKeyBindingActive = name => keytrackerModule.isActive(invertedKeyMap, keys)

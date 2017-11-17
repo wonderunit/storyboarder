@@ -36,6 +36,11 @@ const defaultPrefs = {
   import: {
     offset: [0, 0],
     skipBlankBoards: true
+  },
+  
+  keyBindings: {
+    'drawing:brush-size:inc': ']',
+    'drawing:brush-size:dec': '['
   }
 }
 
