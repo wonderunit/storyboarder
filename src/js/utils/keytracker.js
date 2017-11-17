@@ -1,32 +1,31 @@
 // via https://raw.githubusercontent.com/hughsk/key-pressed/master/index.js
-var keys = require('vkey')
-var list = Object.keys(keys)
-var down = {}
+const keys = require('vkey')
+const R = require('ramda')
 
-reset()
+const list = Object.keys(keys)
 
-window.addEventListener('keydown', keydown, false)
-window.addEventListener('keyup', keyup, false)
-window.addEventListener('blur', reset, false)
+let down = {}
+let ordered = new Set()
 
-function pressed(key) {
+function pressed (key) {
   return key
     ? down[key]
     : down
 }
 
-function reset() {
-  list.forEach(function(code) {
-    down[keys[code]] = false
-  })
+function reset () {
+  list.forEach(code => down[keys[code]] = false)
+  ordered = new Set()
 }
 
-function keyup(e) {
-  down[keys[e.keyCode]] = false
-}
-
-function keydown(e) {
+function keydown (e) {
   down[keys[e.keyCode]] = true
+  ordered.add(keys[e.keyCode])
+}
+
+function keyup (e) {
+  down[keys[e.keyCode]] = false
+  ordered.delete(keys[e.keyCode])
 }
 
 const findMatching = (map, keys) =>
@@ -35,7 +34,12 @@ const findMatching = (map, keys) =>
 
 const isActive = (map, key, keys) => findMatching(map, keys).includes(key)
 
+reset()
+window.addEventListener('keydown', keydown, false)
+window.addEventListener('keyup', keyup, false)
+window.addEventListener('blur', reset, false)
+
 module.exports = {
   pressed,
-  isActive: (map, key) => isActive(map, key, down)
+  isActive: (map, key) => isActive(map, key, [...ordered])
 }

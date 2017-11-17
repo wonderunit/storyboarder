@@ -408,16 +408,10 @@ AppMenu.Tools = () => ({
     {
       accelerator: '[',
       label: 'Smaller Brush',
-      click (item, focusedWindow, event) {
-        ipcRenderer.send('brushSize', -1)
-      }
     },
     {
       accelerator: ']',
       label: 'Larger Brush',
-      click (item, focusedWindow, event) {
-        ipcRenderer.send('brushSize', 1)
-      }
     },
     {
       type: 'separator'

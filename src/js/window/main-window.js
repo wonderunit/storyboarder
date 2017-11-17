@@ -148,9 +148,11 @@ let etags = {}
 const setEtag = absoluteFilePath => { etags[absoluteFilePath] = Date.now() }
 const getEtag = absoluteFilePath => etags[absoluteFilePath] || '0'
 
+// NOTE requires restart to grab new key bindings
+const keyMap = prefsModule.getPrefs('key bindings')['keyBindings']
 const invertedKeyMap = R.invert(keyMap)
 const keytracker = keytrackerModule.pressed
-const isKeyBindingActive = name => keytrackerModule.isActive(invertedKeyMap, keys)
+const isKeyBindingActive = name => keytrackerModule.isActive(invertedKeyMap, name)
 
 //  analytics.event('Application', 'open', filename)
 
@@ -3304,9 +3306,19 @@ const resize = () => {
   toolbarEl.classList.toggle('with-workspace-small', workspaceWidth <= breakpointWorkspace)
 }
 
-window.onkeydown = (e)=> {
+window.onkeydown = e => {
   if (!textInputMode) {
-    console.log(e)
+
+    if (isKeyBindingActive('drawing:brush-size:inc')) {
+      toolbar.changeBrushSize(1)
+      sfx.playEffect('brush-size-up')
+    }
+
+    if (isKeyBindingActive('drawing:brush-size:dec')) {
+      toolbar.changeBrushSize(-1)
+      sfx.playEffect('brush-size-down')
+    }
+
     switch (e.keyCode) {
       // C - Copy
       case 67:
@@ -4824,7 +4836,6 @@ ipcRenderer.on('clear', (e, arg) => {
   }
 })
 
-ipcRenderer.on('brushSize', (e, direction) => {
 window.addEventListener('keydown', e => {
   if (toolbar) {
     // TODO move this code into the toolbar
@@ -4856,17 +4867,6 @@ window.addEventListener('keydown', e => {
     }
   }
 })
-  if (!textInputMode) {
-    if (direction > 0) {
-      toolbar.changeBrushSize(1)
-      sfx.playEffect('brush-size-up')
-    } else {
-      toolbar.changeBrushSize(-1)
-      sfx.playEffect('brush-size-down')
-    }
-  }
-})
-
 
 ipcRenderer.on('flipBoard', (e, arg)=> {
   if (storyboarderSketchPane.preventIfLocked()) return
