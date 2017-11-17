@@ -40,8 +40,7 @@ const generatePDF = (paperSize, layout='landscape', rows, cols, spacing, boardDa
   let doc = new pdfDocument({size: documentSize, layout: layout, margin: 0})
 
   doc.registerFont('thin', path.join(__dirname, '..', '..', 'fonts', 'wonder-unit-sans', 'WonderUnitSans-Thin.ttf'))
-  doc.registerFont('light', path.join(__dirname, '..', '..', 'fonts', 'wonder-unit-sans', 'WonderUnitSans-Light.ttf'))
-  doc.registerFont('regular', path.join(__dirname, '..', '..', 'fonts', 'wonder-unit-sans', 'WonderUnitSans-Regular.ttf'))
+  doc.registerFont('italic', path.join(__dirname, '..', '..', 'fonts', 'wonder-unit-sans', 'WonderUnitSans-RegularItalic.ttf'))
   doc.registerFont('bold', path.join(__dirname, '..', '..', 'fonts', 'wonder-unit-sans', 'WonderUnitSans-Bold.ttf'))
 
   let stream = doc.pipe(fs.createWriteStream(filepath))
@@ -80,7 +79,7 @@ const generatePDF = (paperSize, layout='landscape', rows, cols, spacing, boardDa
       textHeight += doc.heightOfString(boardData.boards[index].dialogue, {width: boxSize[0], align: 'center'});
     }
     if( boardData.boards[index].action ) { 
-      doc.font('regular')
+      doc.font('italic')
       textHeight += doc.heightOfString(boardData.boards[index].action, {width: boxSize[0], align: 'left'});
     }
     textHeight += (boardData.boards[currentBoard].action) ? 17 : 10;
@@ -185,7 +184,7 @@ const generatePDF = (paperSize, layout='landscape', rows, cols, spacing, boardDa
             if (shrinkedImg) {
               let metaHeight = doc.heightOfString(boardData.boards[currentBoard].dialogue, {width: imgSize[0], align: 'center'})
               if( boardData.boards[currentBoard].action ) { 
-                doc.font('regular')
+                doc.font('italic')
                 metaHeight += doc.heightOfString(boardData.boards[currentBoard].action, {width: imgSize[0], align: 'left'})
                 doc.font('bold')
               }
@@ -202,7 +201,7 @@ const generatePDF = (paperSize, layout='landscape', rows, cols, spacing, boardDa
           }
 
           if (boardData.boards[currentBoard].action) {
-            doc.font('regular')
+            doc.font('italic')
 
             if (shrinkedImg && !boardData.boards[currentBoard].dialogue) {
               imgAligned = (textHeight > (doc.heightOfString(boardData.boards[currentBoard].action, {width: imgSize[0], align: 'left'}) + 5))
@@ -215,7 +214,8 @@ const generatePDF = (paperSize, layout='landscape', rows, cols, spacing, boardDa
         }
       }
     }
-  
+
+/*
     doc.save()
     doc.translate(doc.page.width-margin[2]-105, doc.page.height-margin[3])
     doc.scale(0.3)
@@ -232,10 +232,22 @@ const generatePDF = (paperSize, layout='landscape', rows, cols, spacing, boardDa
     doc.path('M189.1,15.4C189.1,15.5,189,15.5,189.1,15.4l-0.4,0.1c-0.1,0-0.1,0-0.1-0.1V4c0-0.1,0-0.1,0.1-0.1h0.3c0,0,0.1,0,0.1,0.1      V15.4z').fill()
     doc.path('M202.3,3.9c0.1,0,0.1,0,0.1,0.1v0.3c0,0.1,0,0.1-0.1,0.1h-3.8v11c0,0.1,0,0.1-0.1,0.1h-0.3c-0.1,0-0.1,0-0.1-0.1v-11h-3.7      c-0.1,0-0.1,0-0.1-0.1V4c0-0.1,0-0.1,0.1-0.1H202.3z').fill()
     doc.restore()
+*/
 
-    doc.fontSize(6)
+    doc.fontSize(10)
     doc.font('thin')
-    doc.text('|   Storyboarder', doc.page.width-margin[2]-50, doc.page.height-margin[3]-1.0, {width: 50, align: 'right'})
+    let logoWidth = doc.widthOfString('')
+    doc.fontSize(5)
+    let wuWidth = doc.widthOfString(' WONDER UNIT', {characterSpacing: 1})
+    doc.fontSize(6)
+    let sbWidth = doc.widthOfString('   |   Storyboarder')
+
+    doc.fontSize(10)
+    doc.text('', doc.page.width-margin[2]-logoWidth-wuWidth-sbWidth-1.25, doc.page.height-margin[3]-1.25, {lineBreak: false})
+    doc.fontSize(5)
+    doc.text(' WONDER UNIT', doc.page.width-margin[2]-wuWidth-sbWidth, doc.page.height-margin[3]+0.5, {lineBreak: false, characterSpacing: 1})
+    doc.fontSize(6)
+    doc.text('   |   Storyboarder', doc.page.width-margin[2]-sbWidth, doc.page.height-margin[3], {lineBreak: false})
   }
   doc.end()
 }
