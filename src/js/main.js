@@ -1006,6 +1006,10 @@ ipcMain.on('clear', (e, arg) => {
   mainWindow.webContents.send('clear', arg)
 })
 
+ipcMain.on('brushSize', (e, arg) => {
+  mainWindow.webContents.send('brushSize', arg)
+})
+
 ipcMain.on('flipBoard', (e, arg)=> {
   mainWindow.webContents.send('flipBoard', arg)
 })

@@ -3306,19 +3306,20 @@ const resize = () => {
   toolbarEl.classList.toggle('with-workspace-small', workspaceWidth <= breakpointWorkspace)
 }
 
-window.onkeydown = e => {
+ipcRenderer.on('brushSize', (e, direction) => {
   if (!textInputMode) {
-
-    if (isKeyBindingActive('drawing:brush-size:inc')) {
+    if (direction > 0) {
       toolbar.changeBrushSize(1)
       sfx.playEffect('brush-size-up')
-    }
-
-    if (isKeyBindingActive('drawing:brush-size:dec')) {
+    } else {
       toolbar.changeBrushSize(-1)
       sfx.playEffect('brush-size-down')
     }
+  }
+})
 
+window.onkeydown = e => {
+  if (!textInputMode) {
     switch (e.keyCode) {
       // C - Copy
       case 67:
