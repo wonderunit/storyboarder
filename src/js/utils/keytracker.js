@@ -1,38 +1,80 @@
-// via https://raw.githubusercontent.com/hughsk/key-pressed/master/index.js
-const keys = require('vkey')
 const R = require('ramda')
 
-const list = Object.keys(keys)
+let down = new Set()
 
-let down = {}
-let ordered = new Set()
+function hasCombo (key, down) {
+  let keys = key.split(/\+/)
+  for (let k of keys) {
+    if (k === 'CommandOrControl' || k === 'CmdOrCtrl') {
+      return hasCombo(key.replace(k, 'Control'), down) ||
+             hasCombo(key.replace(k, 'Meta'), down)
+    }
+    if (!down.has(k)) return false
+  }
+  return true
+}
 
 function pressed (key) {
   return key
-    ? down[key]
-    : down
+    ? hasCombo(key, down)
+    : [...down]
 }
 
 function reset () {
-  list.forEach(code => down[keys[code]] = false)
-  ordered = new Set()
+  down = new Set()
 }
 
 function keydown (e) {
-  down[keys[e.keyCode]] = true
-  ordered.add(keys[e.keyCode])
+  down.add(e.key)
 }
 
 function keyup (e) {
-  down[keys[e.keyCode]] = false
-  ordered.delete(keys[e.keyCode])
+  down.delete(e.key)
 }
 
-const findMatching = (map, keys) =>
-  R.reject(R.isNil, 
-    R.flatten(R.props(keys, map)))
+function convertElectronAccelerators (list) {
+  let accum = {}
+  for (let k of Object.keys(list)) {
 
-const isActive = (map, key, keys) => findMatching(map, keys).includes(key)
+    let replaced = false
+    for (let token of [/CommandOrControl/, /CmdOrCtrl/]) {
+      if (k.match(token)) {
+        accum[k.replace(token, 'Command')] = list[k]
+        accum[k.replace(token, 'Control')] = list[k]
+        replaced = true
+      }
+    }
+    if (!replaced) accum[k] = list[k]
+
+  }
+  // TODO remove dupes?
+  return accum
+}
+
+const keyIndexed = list => {
+  let acc = []
+  for (k of Object.keys(list)) {
+    acc.push(
+      [k.split('+').sort(), list[k]]
+    )
+  }
+  return acc
+}
+
+// TODO should we not invert the index?
+const isActive = (list, name) => {
+  // first, find all the items that list the command
+  let matching = list.filter(m => m[1].includes(name))
+  for (l of matching) {
+    let combo = l[0]
+    let matchesAll = true
+    for (let key of combo) {
+      if (!down.has(key)) matchesAll = false
+    }
+    if (matchesAll) return true
+  }
+  return false
+}
 
 reset()
 window.addEventListener('keydown', keydown, false)
@@ -41,5 +83,7 @@ window.addEventListener('blur', reset, false)
 
 module.exports = {
   pressed,
-  isActive: (map, key) => isActive(map, key, [...ordered])
+  isActive,
+  convertElectronAccelerators,
+  keyIndexed
 }
