@@ -4979,15 +4979,23 @@ ipcRenderer.on('exportPrintablePdf', (event, sourcePath, filename) => {
   
   if (!fs.existsSync(outputPath)) {
     fs.writeFileSync(outputPath, fs.readFileSync(sourcePath))
-  
-    notifications.notify({ message: "A Worksheet PDF has been exported.", timing: 20 })
+
+    if (filename == 'Worksheet') {
+      notifications.notify({message: "A Worksheet PDF has been exported.", timing: 20})
+    } else {
+      notifications.notify({message: "A Storyboard PDF has been exported.", timing: 20})
+    }
     sfx.positive()
     shell.showItemInFolder(outputPath)
   
   } else {
     console.error('File exists')
     sfx.error()
-    notifications.notify({ message: "Could not export Worksheet PDF.", timing: 20 })
+    if (filename == 'Worksheet') {
+      notifications.notify({ message: "Could not export Worksheet PDF.", timing: 20 })
+    } else {
+      notifications.notify({message: "Could not export Storyboard PDF.", timing: 20})
+    }
   }
 })
 
