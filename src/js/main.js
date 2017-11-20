@@ -1209,6 +1209,6 @@ ipcMain.on('workspaceReady', event => {
   })
 })
 
-ipcMain.on('exportWorksheetPdf', (event, sourcePath) => {
-  mainWindow.webContents.send('exportWorksheetPdf', sourcePath)
+ipcMain.on('exportPrintablePdf', (event, sourcePath, fileName) => {
+  mainWindow.webContents.send('exportPrintablePdf', sourcePath, fileName)
 })

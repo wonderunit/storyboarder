@@ -90,7 +90,7 @@ class Exporter extends EventEmitter {
     return outputPath
   }
  
-  exportPDF (boardData, projectFileAbsolutePath) {
+  exportPDF (boardData, projectFileAbsolutePath, _paperSize, _paperOrientation, _rows, _cols, _spacing, _filepath) {
     return new Promise(resolve => {
       let outputPath = app.getPath('temp')
 
@@ -114,8 +114,13 @@ class Exporter extends EventEmitter {
       
       Promise.all(writers).then(() => {
         let exportsPath = ensureExportsPathExists(projectFileAbsolutePath)
-        let filepath = path.join(exportsPath, basenameWithoutExt + ' ' + moment().format('YYYY-MM-DD hh.mm.ss') + '.pdf')
-        exporterPDF.generatePDF('LTR', "landscape", 3, 3, 10, boardData, basenameWithoutExt, filepath)
+        let filepath = _filepath ? _filepath : path.join(exportsPath, basenameWithoutExt + ' ' + moment().format('YYYY-MM-DD hh.mm.ss') + '.pdf')
+        let paperSize = _paperSize ? _paperSize : 'LTR'
+        let paperOrientation = _paperOrientation ? _paperOrientation : "landscape"
+        let rows = _rows ? _rows : 3
+        let cols = _cols ? _cols : 3
+        let spacing = _spacing ? _spacing : 10
+        exporterPDF.generatePDF(paperSize, paperOrientation, rows, cols, spacing, boardData, basenameWithoutExt, filepath)
         resolve(filepath)
       }).catch(err => {
         console.log(err)
