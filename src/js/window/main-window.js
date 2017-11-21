@@ -5038,12 +5038,12 @@ const openPrintWindow = (printWindowType, showPrintWindow) => {
 
 const showPDFPrintWindow = (printWindow) => {
   printWindow.webContents.send('exportPDFData', boardData, boardFilename)
-  printWindow.show();
+  setTimeout(()=>{printWindow.show()}, 200)
 }
 
 const showWorksheetPrintWindow = (printWindow) => {
   printWindow.webContents.send('worksheetData',boardData.aspectRatio, currentScene, scriptData)
-  printWindow.show();
+  setTimeout(()=>{printWindow.show()}, 200)
 }
 
 ipcRenderer.on('importFromWorksheet', (event, args) => {

@@ -297,16 +297,23 @@ const generatePDF = () => {
 }
 
 const generateWorksheet = () => {
-  displaySpinner(true);
+  displaySpinner(true)
   console.log(paperSize, aspectRatio, rows, cols, spacing, currentScene, storyTips.getTipString(), scriptData)
-  worksheetPrinter.generate(paperSize, aspectRatio, rows, cols, spacing, currentScene, storyTips.getTipString(), scriptData)
+  setTimeout(()=>{
+    worksheetPrinter.generate(paperSize, aspectRatio, rows, cols, spacing, currentScene, storyTips.getTipString(), scriptData)
+  }, 500)
 }
 
 const exportPDF = () => {
-  displaySpinner(true);
-  exporter.exportPDF(boardData, boardFilename, paperSize, paperOrientation, rows, cols, spacing, path.join(app.getPath('temp'), 'boardoutput.pdf')).then(outputPath => {
-    reloadPDFDocument(outputPath)
-  })
+  displaySpinner(true)
+
+
+  setTimeout(()=>{
+    exporter.exportPDF(boardData, boardFilename, paperSize, paperOrientation, rows, cols, spacing, path.join(app.getPath('temp'), 'boardoutput.pdf')).then(outputPath => {
+      reloadPDFDocument(outputPath)
+    })
+  }, 500)
+  
 }
 
 loadWindow()
