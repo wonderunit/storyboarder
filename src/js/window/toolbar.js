@@ -143,6 +143,10 @@ class Toolbar extends EventEmitter {
       this.state = initialState
     }
 
+    // Do not recover isQuickResizing from saved toolbarState
+    // (Ths is a temporary state)
+    this.isQuickResizing = initialState.isQuickResizing;
+
 
     this.el = el
     this.swatchTimer = null
@@ -212,6 +216,7 @@ class Toolbar extends EventEmitter {
   }
 
   setIsQuickResizing (value) {
+    console.log("setIsQuickResizing: " + value)
     this.state.isQuickResizing = value
   }
 

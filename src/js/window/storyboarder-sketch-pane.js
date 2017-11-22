@@ -372,7 +372,13 @@ class StoryboarderSketchPane extends EventEmitter {
     // render the cursor
     if (this.lastCursorEvent && this.brushPointerContainer && this.brushPointerContainer.style) {
       // update the position of the cursor
-      this.brushPointerContainer.style.transform = 'translate(' + this.lastCursorEvent.clientX + 'px, ' + this.lastCursorEvent.clientY + 'px)'
+      // If using quick resize, draw the cursor at the start position instead of the current mouse position
+      if (this.toolbar.getIsQuickResizing()) {
+        let clientStartPos = this.getAbsolutePosition(this.strategy.startAt.x, this.strategy.startAt.y)
+        this.brushPointerContainer.style.transform = 'translate(' + clientStartPos.x + 'px, ' + clientStartPos.y + 'px)'
+      } else {
+        this.brushPointerContainer.style.transform = 'translate(' + this.lastCursorEvent.clientX + 'px, ' + this.lastCursorEvent.clientY + 'px)'
+      }
       this.lastCursorEvent = null
     }
 
@@ -415,7 +421,7 @@ class StoryboarderSketchPane extends EventEmitter {
 
   unsetQuickResize () {
     if (this.toolbar.getIsQuickResizing()) {
-      this.toolbar.setIsQuickResizing(false);
+      this.toolbar.setIsQuickResizing(false)
     }
   }
 
@@ -511,6 +517,21 @@ class StoryboarderSketchPane extends EventEmitter {
     return {
       x: rectOnCanvas.x * scaleFactorX,
       y: rectOnCanvas.y * scaleFactorY
+    }
+  }
+
+  // Inverse getRelativePosition, i.e. given a point relative to the sketchPane
+  // return an absolute position in the window
+  getAbsolutePosition (relativeX, relativeY) {
+    let rect = this.boundingClientRect
+    let scaleFactorX = this.canvasSize[0] / rect.width
+    let scaleFactorY = this.canvasSize[1] / rect.height
+
+    let rectOnCanvas = {x: relativeX / scaleFactorX, y: relativeY / scaleFactorY}
+
+    return {
+      x: rectOnCanvas.x + rect.left,
+      y: rectOnCanvas.y + rect.top
     }
   }
 
@@ -801,6 +822,7 @@ class DrawingStrategy {
 
     // For quick resize
     this.startAt = null
+    this.startBrushSize = null
   }
 
   canvasPointerDown (e) {
@@ -827,11 +849,11 @@ class DrawingStrategy {
     }
 
     let pointerPosition = this.container.getRelativePosition(e.clientX, e.clientY)
-    if (this.container.toolbar.getIsQuickResizing()) {
-      this.startAt = [pointerPosition.x, pointerPosition.y]
-    }
     this.container.lineMileageCounter.reset()
-    if (!this.container.toolbar.getIsQuickResizing()) {
+    if (this.container.toolbar.getIsQuickResizing()) {
+      this.startAt = {x: pointerPosition.x, y: pointerPosition.y}
+      this.startBrushSize = this.container.brush.getSize()
+    } else {
       this.container.sketchPane.down(pointerPosition.x, pointerPosition.y, e.pointerType === "pen" ? e.pressure : 1)
     }
     document.addEventListener('pointermove', this.container.canvasPointerMove)
@@ -856,6 +878,7 @@ class DrawingStrategy {
     this.container.lastCursorEvent = null
 
     this.startAt = null
+    this.startBrushSize = null
     
     let pointerPosition = this.container.getRelativePosition(e.clientX, e.clientY)
     if (!this.container.toolbar.getIsQuickResizing()) {
@@ -871,8 +894,8 @@ class DrawingStrategy {
   renderMoveEvent (moveEvent) {
     // If quick resizing (ctrl+click when pointer went down), override move handler
     if (this.container.toolbar.getIsQuickResizing()) {
-      let dx = moveEvent.x - this.startAt[0]
-      let dy = moveEvent.y - this.startAt[1]
+      let dx = moveEvent.x - this.startAt.x + this.startBrushSize
+      let dy = moveEvent.y - this.startAt.y
       let length = Math.sqrt(dx * dx + dy * dy)
       this.container.toolbar.setBrushSize(length)
     }
