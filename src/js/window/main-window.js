@@ -2773,8 +2773,13 @@ let renderThumbnailDrawer = ()=> {
 
       // always track cursor position
       updateThumbnailCursor(e.clientX, e.clientY)
-      editModeTimer = setTimeout(enableEditMode, enableEditModeDelay)
-
+      
+      if (e.button == 0) {
+        editModeTimer = setTimeout(enableEditMode, enableEditModeDelay)
+      } else {
+        enableEditMode()
+      }
+      
       let index = Number(e.target.dataset.thumbnail)
       if (selections.has(index)) {
         // ignore
