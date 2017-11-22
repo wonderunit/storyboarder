@@ -831,7 +831,9 @@ class DrawingStrategy {
       this.startAt = [pointerPosition.x, pointerPosition.y]
     }
     this.container.lineMileageCounter.reset()
-    this.container.sketchPane.down(pointerPosition.x, pointerPosition.y, e.pointerType === "pen" ? e.pressure : 1)
+    if (!this.container.toolbar.getIsQuickResizing()) {
+      this.container.sketchPane.down(pointerPosition.x, pointerPosition.y, e.pointerType === "pen" ? e.pressure : 1)
+    }
     document.addEventListener('pointermove', this.container.canvasPointerMove)
     document.addEventListener('pointerup', this.container.canvasPointerUp)
     this.container.emit('pointerdown', pointerPosition.x, pointerPosition.y, e.pointerType === "pen" ? e.pressure : 1, e.pointerType)
@@ -856,7 +858,9 @@ class DrawingStrategy {
     this.startAt = null
     
     let pointerPosition = this.container.getRelativePosition(e.clientX, e.clientY)
-    this.container.sketchPane.up(pointerPosition.x, pointerPosition.y, e.pointerType === "pen" ? e.pressure : 1)
+    if (!this.container.toolbar.getIsQuickResizing()) {
+      this.container.sketchPane.up(pointerPosition.x, pointerPosition.y, e.pointerType === "pen" ? e.pressure : 1)
+    }
     this.container.emit('lineMileage', this.container.lineMileageCounter.get())
     document.removeEventListener('pointermove', this.container.canvasPointerMove)
     document.removeEventListener('pointerup', this.container.canvasPointerUp)
