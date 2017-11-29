@@ -131,6 +131,15 @@ const generateFinalCutProXml = data =>
 </xmeml>
 `
 
+const sanitizeNameString = function (nameString) {
+    return nameString.replace(/&/g, '+')
+               .replace(/</g, '-')
+               .replace(/>/g, '-')
+               .replace(/"/g, '')
+               .replace(/'/g, '')
+               .replace(/\//g, '');
+  };
+
 const generateFinalCutProData = (boardData, { projectFileAbsolutePath, outputPath }) => {
   let [width, height] = boardFileImageSize(boardData)
 
@@ -169,13 +178,13 @@ const generateFinalCutProData = (boardData, { projectFileAbsolutePath, outputPat
 
       // set name if dialogue or action, otherwise filename
       name: board.dialogue
-              ? board.dialogue
+              ? sanitizeNameString(board.dialogue)
               : board.action
-                ? board.action
+                ? sanitizeNameString(board.action)
                 : fileFilename,
 
       description: board.notes
-                     ? board.notes
+                     ? sanitizeNameString(board.notes)
                      : '',
 
       duration: 1294705, // ???
