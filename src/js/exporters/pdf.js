@@ -9,16 +9,20 @@ const app = require('electron').remote.app
 
   Add scene information and synopsis
 
-
-
   find the longest string of dialogue and text
   how much vertical space I need for it?
   make thumb fit in that space
-
   
 */
 
+
 const generatePDF = (paperSize, layout='landscape', rows, cols, spacing, boardData, basenameWithoutExt, filepath) => {
+
+  let stringContainsForeign = (testString) => {
+    let regexForeign = /[^AÁĂÂÄÀĀĄÅÃÆBCĆČÇĊDÐĎĐEÉĚÊËĖÈĒĘFGĞĢĠHĦIÍÎÏİÌĪĮJKĶLĹĽĻŁMNŃŇŅŊÑOÓÔÖÒŐŌØÕŒPÞQRŔŘŖSŚŠŞȘTŦŤŢȚUÚÛÜÙŰŪŲŮVWẂŴẄẀXYÝŶŸỲZŹŽŻaáăâäàāąåãæbcćčçċdðďđeéěêëėèēęfgğģġhħiıíîïìīįjkķlĺľļłmnńňņŋñoóôöòőōøõœpþqrŕřŗsśšşșßtŧťţțuúûüùűūųůvwẃŵẅẁxyýŷÿỳzźžż0123456789.,\/#!$%\^&\*;:{}=\-_`~()\s\?¿—–-€₪¢₡¤$ƒ₣₤₧₨£¥⋅+−×÷=≠><≥≤±≈~¬∞∫Ω∆∏∑√µ∂%‰⊳⊲↑→↓←●◊■▲▼★☐♦✓@&¶§©®℗™°|¦†ℓ‡№℮^⌘\'\"„“”‘‛’´˘ˇ¸ˆ¨˙`˝¯˛˚˜]/;
+    return regexForeign.test(testString)
+  }
+
 
   let headerHeight = 40
   let documentSize
@@ -42,6 +46,8 @@ const generatePDF = (paperSize, layout='landscape', rows, cols, spacing, boardDa
   doc.registerFont('thin', path.join(__dirname, '..', '..', 'fonts', 'wonder-unit-sans', 'WonderUnitSans-Thin.ttf'))
   doc.registerFont('italic', path.join(__dirname, '..', '..', 'fonts', 'wonder-unit-sans', 'WonderUnitSans-RegularItalic.ttf'))
   doc.registerFont('bold', path.join(__dirname, '..', '..', 'fonts', 'wonder-unit-sans', 'WonderUnitSans-Bold.ttf'))
+  doc.registerFont('fallback', path.join(__dirname, '..', '..', 'fonts', 'unicore.ttf'))
+
 
   let stream = doc.pipe(fs.createWriteStream(filepath))
 
@@ -178,20 +184,38 @@ const generatePDF = (paperSize, layout='landscape', rows, cols, spacing, boardDa
 
           doc.fontSize(7)
 
+          console.log(stringContainsForeign("sup"))
+
           if (boardData.boards[currentBoard].dialogue) {
-            doc.font('bold')
+
+            if (stringContainsForeign(boardData.boards[currentBoard].dialogue)) {
+              doc.font('fallback')
+            } else {
+              doc.font('bold')
+            }
 
             if (shrinkedImg) {
               let metaHeight = doc.heightOfString(boardData.boards[currentBoard].dialogue, {width: imgSize[0], align: 'center'})
               if( boardData.boards[currentBoard].action ) { 
-                doc.font('italic')
+
+                if (stringContainsForeign(boardData.boards[currentBoard].action)) {
+                  doc.font('fallback')
+                } else {
+                  doc.font('italic')
+                }
                 metaHeight += doc.heightOfString(boardData.boards[currentBoard].action, {width: imgSize[0], align: 'left'})
-                doc.font('bold')
+                
+                if (stringContainsForeign(boardData.boards[currentBoard].dialogue)) {
+                  doc.font('fallback')
+                } else {
+                  doc.font('bold')
+                }
               }
               metaHeight += (boardData.boards[currentBoard].action) ? 17 : 10;
               imgAligned = textHeight >= metaHeight
             }
 
+            
             doc.text(boardData.boards[currentBoard].dialogue, x+(imgAligned ? offset : 0),y+imgSize[1]+textOffset, {width: imgAligned ? imgSize[0] : boxSize[0], align: 'center'})
             textOffset += doc.heightOfString(boardData.boards[currentBoard].dialogue, {width: imgAligned ? imgSize[0] : boxSize[0], align: 'center'})
 
@@ -201,7 +225,11 @@ const generatePDF = (paperSize, layout='landscape', rows, cols, spacing, boardDa
           }
 
           if (boardData.boards[currentBoard].action) {
-            doc.font('italic')
+            if (stringContainsForeign(boardData.boards[currentBoard].action)) {
+              doc.font('fallback')
+            } else {
+              doc.font('italic')
+            }
 
             if (shrinkedImg && !boardData.boards[currentBoard].dialogue) {
               imgAligned = (textHeight > (doc.heightOfString(boardData.boards[currentBoard].action, {width: imgSize[0], align: 'left'}) + 5))
