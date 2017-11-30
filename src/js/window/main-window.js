@@ -355,7 +355,7 @@ const commentOnLineMileage = (miles) => {
         "How many boards do we have left?",
         "I thought it looked nice 2 hours ago.",
         "How about starting a new board?",
-        "Post this one to twitter, it's a fucking masterpiece.",
+        "Post this one to twitter, it's a f*cking masterpiece.",
       ]
       message.push(otherMessages[Math.floor(Math.random()*otherMessages.length)])
       sfx.error()
@@ -2823,7 +2823,7 @@ let renderThumbnailButtons = () => {
     let el = document.createElement('div')
     el.dataset.tooltip = true
     el.dataset.tooltipTitle = 'New Board'
-    el.dataset.tooltipDescription = 'Create a new board and draw some new shit. Then press N again and draw some more shit.'
+    el.dataset.tooltipDescription = 'Create a new board and draw something. Then press N again and draw some more things.'
     el.dataset.tooltipKeys = 'N'
     el.dataset.tooltipPosition = 'top center'
     el.id = 'thumbnail-add-btn'
@@ -4497,7 +4497,7 @@ const welcomeMessage = () => {
   } else if (hour == 12) {
     message.push('Lunch time!')
     otherMessages = [
-      "Wait, you're working at lunchtime? Your boss sounds like a real dick.",
+      "Wait, you're working at lunchtime? Your boss sounds like a real jerk.",
       "Did you even eat yet?",
       "Yeah! Let's work together!",
     ]

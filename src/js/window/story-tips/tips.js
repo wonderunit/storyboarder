@@ -12,7 +12,7 @@ tips = [
   `Start your story on a scene revealing a new unique world and a character who is **completely uncomfortable** in it.`,
   `Keep mounting the character's emotions.`,
   `From the midpoint of your story, accelerate the plot, escalate the stakes, and **eliminate audience expectations**.`,
-  `Your character needs **flaws**. A flawless character learns nothing. They don't change. **They are boring as fuck**.`,
+  `Your character needs **flaws**. A flawless character learns nothing. They don't change. **They are boring AF**.`,
   `Come on dude. **Be unexpected.**
 
   What's the most unexpected thing that could happen right now?`,

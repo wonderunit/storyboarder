@@ -140,7 +140,7 @@ class PomodorTimerView extends EventEmitter {
           <div id="pomodoro-timer-recordings">
           </div>
           <div id="pomodoro-timer-success-message">
-            Or at least smarter than Donald Trump's kids. That's a great session you just had, and that's a great timelapse.
+            Or at least smarter than I am. (I'm a computer.) That's a great session you just had, and that's a great timelapse.
           </div>
           <div id="pomodoro-timer-tweet-button"  class="pomodoro-timer-button">
             <div class="pomodoro-timer-button-copy">Tweet</div>
