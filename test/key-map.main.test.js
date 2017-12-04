@@ -1,3 +1,5 @@
+// NOTE just for testing, not integrated
+
 const assert = require('assert')
 
 const R = require('ramda')
