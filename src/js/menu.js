@@ -1,3 +1,8 @@
+/*
+The `_binding` property is special. Its value is the command name we'll look up
+in the key map to find the `accelerator`. We replace all `binding_`s with their
+associated `accelerator`.
+*/
 const { Menu, app } = require('electron').remote
 const { ipcRenderer, shell } = require('electron')
 const isDev = require('electron-is-dev')
@@ -10,6 +15,8 @@ const path = require('path')
 const prefsModule = require('electron').remote.require('./prefs')
 prefsModule.init(path.join(app.getPath('userData'), 'pref.json'))
 const keyMap = prefsModule.getPrefs('key bindings')['keyBindings']
+
+// replace `_binding` with the associated `accelerator`
 const setMenuKeyBindings = (template, keyMap) => {
   for (let m of template) {
     for (let mi of m.submenu) {
