@@ -14,10 +14,8 @@ const setMenuKeyBindings = template => {
   for (let m of template) {
     for (let mi of m.submenu) {
       if (mi._binding) {
-        if (mi._binding) {
-          mi.accelerator = keyMap[mi._binding]
-          delete mi._binding
-        }
+        mi.accelerator = keyMap[mi._binding]
+        delete mi._binding
       }
     }
   }
