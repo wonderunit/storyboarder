@@ -152,7 +152,8 @@ const getEtag = absoluteFilePath => etags[absoluteFilePath] || '0'
 const keyMap = prefsModule.getPrefs('key bindings')['keyBindings']
 const invertedKeyMap = R.invert(keyMap)
 const keytracker = keytrackerModule.pressed
-const isKeyBindingActive = name => keytrackerModule.isActive(invertedKeyMap, name)
+const keyBindingsByKeyCombo = keytrackerModule.keyIndexed(keytrackerModule.convertElectronAccelerators(invertedKeyMap))
+const isKeyBindingActive = name => keytrackerModule.isActive(keyBindingsByKeyCombo, name)
 
 //  analytics.event('Application', 'open', filename)
 
@@ -2135,18 +2136,20 @@ let duplicateBoard = async () => {
 const clearLayers = shouldEraseCurrentLayer => {
   if (storyboarderSketchPane.preventIfLocked()) return
 
-  if (toolbar.state.brush !== 'eraser' && (keytracker('<alt>') || shouldEraseCurrentLayer)) {
+  if (toolbar.state.brush !== 'eraser' && (isKeyBindingActive('drawing:clear-current-layer-modifier') || shouldEraseCurrentLayer)) {
     storyboarderSketchPane.clearLayers([storyboarderSketchPane.sketchPane.getCurrentLayerIndex()])
     saveImageFile()
     sfx.playEffect('trash')
+    notifications.notify({ message: 'Cleared current layer.', timing: 5 })
   } else {
     if (storyboarderSketchPane.isEmpty()) {
       deleteBoards()
+      notifications.notify({ message: 'Deleted board.', timing: 5 })
     } else {
       storyboarderSketchPane.clearLayers()
       saveImageFile()
       sfx.playEffect('trash')
-      notifications.notify({message: 'Cleared canvas.', timing: 5})
+      notifications.notify({ message: 'Cleared all layers.', timing: 5 })
     }
   }
 }
