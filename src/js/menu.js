@@ -10,7 +10,7 @@ const path = require('path')
 const prefsModule = require('electron').remote.require('./prefs')
 prefsModule.init(path.join(app.getPath('userData'), 'pref.json'))
 const keyMap = prefsModule.getPrefs('key bindings')['keyBindings']
-const setMenuKeyBindings = template => {
+const setMenuKeyBindings = (template, keyMap) => {
   for (let m of template) {
     for (let mi of m.submenu) {
       if (mi._binding) {
@@ -746,8 +746,8 @@ const welcomeTemplate = [
   }
 ]
 
-setMenuKeyBindings(template)
-setMenuKeyBindings(welcomeTemplate)
+setMenuKeyBindings(template, keyMap)
+setMenuKeyBindings(welcomeTemplate, keyMap)
 
 const menuInstance = Menu.buildFromTemplate(template)
 const welcomeMenuInstance = Menu.buildFromTemplate(welcomeTemplate)
