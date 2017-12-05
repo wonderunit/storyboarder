@@ -284,12 +284,14 @@ let renderCommands = () => {
       html.push('<span class="keyset">')
       // get the commands root command and put the classtype in that keyboard button
       let keyEl = document.querySelector('#key-' + commandParts[1][0])
-      keyEl.classList.add('type-' + classType)
-      if (!keyEl.dataset.color) {
-        keyEl.dataset.color = (i+1)
+      if (keyEl) {
+        keyEl.classList.add('type-' + classType)
+        if (!keyEl.dataset.color) {
+          keyEl.dataset.color = (i+1)
+        }
+        //keyEl.classList.add('color-' + (i+1))
+        keyEl.dataset.type = classType
       }
-      //keyEl.classList.add('color-' + (i+1))
-      keyEl.dataset.type = classType
       html.push(acceleratorAsHtml(commands[i][1][y][1]))
       html.push('</span>')
       html.push('</div>')
@@ -307,19 +309,21 @@ let renderCommands = () => {
       })
       let commandParts = acceleratorParts(event.target.dataset.command)
       let keyEl = document.querySelector('#key-' + commandParts[1][0])
-      let modifierSide
-      if (keyEl.getBoundingClientRect().left > 480) {
-        modifierSide = 'right'
-      } else {
-        modifierSide = 'left'
+      if (keyEl) {
+        let modifierSide
+        if (keyEl.getBoundingClientRect().left > 480) {
+          modifierSide = 'right'
+        } else {
+          modifierSide = 'left'
+        }
+        let i
+        for (i = 0; i < commandParts[0].length; i++) {
+          document.querySelector('#key-' + modifierSide + commandParts[0][i].toLowerCase()).classList.add('active')
+          document.querySelector('#key-' + modifierSide + commandParts[0][i].toLowerCase()).classList.add('color-' + event.target.dataset.color)
+          document.querySelector('#key-' + modifierSide + commandParts[0][i].toLowerCase()).classList.add('highlight')
+        }
+        keyEl.classList.add('active')
       }
-      let i
-      for (i = 0; i < commandParts[0].length; i++) {
-        document.querySelector('#key-' + modifierSide + commandParts[0][i].toLowerCase()).classList.add('active')
-        document.querySelector('#key-' + modifierSide + commandParts[0][i].toLowerCase()).classList.add('color-' + event.target.dataset.color)
-        document.querySelector('#key-' + modifierSide + commandParts[0][i].toLowerCase()).classList.add('highlight')
-      }
-      keyEl.classList.add('active')
     });
 
     el.addEventListener('mouseleave', function(event) {
