@@ -51,6 +51,7 @@ function convertElectronAccelerators (list) {
   return accum
 }
 
+// TODO do we need this?
 const keyIndexed = list => {
   let acc = []
   for (k of Object.keys(list)) {
@@ -61,10 +62,10 @@ const keyIndexed = list => {
   return acc
 }
 
+// TODO should we keep a cache of active commands?
 // TODO should we not invert the index?
-const isActive = (list, name) => {
-  // first, find all the items that list the command
-  let matching = list.filter(m => m[1].includes(name))
+const isActive = (invertedKeyMap, name) => {
+  let matching = invertedKeyMap.filter(m => m[1].includes(name))
   for (l of matching) {
     let combo = l[0]
     let matchesAll = true
