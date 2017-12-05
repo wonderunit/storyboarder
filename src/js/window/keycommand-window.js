@@ -1,5 +1,13 @@
 var os = require('os')
 
+const { app } = require('electron').remote
+const path = require('path')
+const prefsModule = require('electron').remote.require('./prefs')
+prefsModule.init(path.join(app.getPath('userData'), 'pref.json'))
+const keyMap = prefsModule.getPrefs('key bindings')['keyBindings']
+const keyForCommandCode = commandCode => keyMap[commandCode]
+
+
 let IS_MAC = os.platform() === 'darwin'
 //IS_MAC = false
 
@@ -72,6 +80,9 @@ const CODE_KEY_MAP = {
   '/': 'forwardslash',
   'LeftAlt': IS_MAC ? 'leftoption' : 'leftalt',
   'RightAlt': IS_MAC ? 'rightoption' : 'rightalt',
+
+  '>': 'comma',
+  '<': 'period'
 }
 
 let keyMapLeft = [
@@ -139,8 +150,8 @@ let commands = [
       ['Eraser', '6'],
       ['<strong>Clear All Layers</strong>', 'Backspace'],
       ['Clear Layer', 'Alt+Backspace'],
-      ['<strong>Smaller Brush</strong>', '['],
-      ['<strong>Larger Brush</strong>', ']'],
+      ['<strong>Smaller Brush</strong>', keyForCommandCode('drawing:brush-size:inc')],
+      ['<strong>Larger Brush</strong>', keyForCommandCode('drawing:brush-size:dec')],
       ['Use Palette Color 1', '8'],
       ['Use Palette Color 2', '9'],
       ['Use Palette Color 3', '0'],
