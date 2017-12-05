@@ -41,6 +41,7 @@ const defaultPrefs = {
   keyBindings: {
     'drawing:brush-size:inc': ']',
     'drawing:brush-size:dec': '['
+    'drawing:clear-current-layer-modifier': 'Alt'
   }
 }
 
