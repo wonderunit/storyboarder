@@ -1730,27 +1730,21 @@ let openInEditor = async () => {
       let pathToEditor = prefsModule.getPrefs()['absolutePathToImageEditor']
       if (pathToEditor) {
         let binaryPath
+        let execString
 
         // use .exe directly on win32
         if (pathToEditor.match(/\.exe$/)) {
           binaryPath = pathToEditor
-
+          execString = `"${binaryPath}" "${pathToLinkedFile}"`
         // find binary in .app package on macOS
-      } else if (pathToEditor.match(/\.app$/)) {
-          try {
-            let obj = plist.parse(fs.readFileSync(path.join(pathToEditor, 'Contents', 'Info.plist'), 'utf8'))
-            if (obj.CFBundlePackageType === 'APPL') {
-              binaryPath = path.join(pathToEditor, 'Contents', 'MacOS', obj.CFBundleExecutable)
-            } else {
-              errmsg = 'Not a valid .app package'
-            }
-          } catch (err) {
-            errmsg = 'Could not find executable binary in .app'
-          }
+        } else if (pathToEditor.match(/\.app$/)) {
+          binaryPath = pathToEditor
+          execString = `open -a "${binaryPath}" "${pathToLinkedFile}"`
         }
 
         if (binaryPath) {
-          child_process.exec(`"${binaryPath}" ${pathToLinkedFile}`, (error, stdout, stderr) => {
+          child_process.exec(execString, (error, stdout, stderr) => {
+            console.log(execString)
             if (error) {
               notifications.notify({ message: `[WARNING] ${error}` })
               return

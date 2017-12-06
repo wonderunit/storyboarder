@@ -154,6 +154,9 @@ let writePhotoshopFileFromPNGPathLayers = (pngPathLayers, psdPath, options) => {
           curCanvas.width = curLayerImg.width
           curCanvas.height = curLayerImg.height
           context.drawImage(curLayerImg, 0, 0)
+          // hack
+          context.fillStyle = 'rgba(0,0,0,0.1)'
+          context.fillRect(0,0, 1, 1)
           child.canvas = curCanvas
           psdWidth = curLayerImg.width > psdWidth ? curLayerImg.width : psdWidth
           psdHeight = curLayerImg.height > psdHeight ? curLayerImg.height : psdHeight
