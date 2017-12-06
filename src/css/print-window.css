@@ -226,7 +226,8 @@ h2 {
   padding: 20px;
   box-sizing: border-box;
   color: rgba(0,0,0,0.6);
-   position: relative;
+  position: relative;
+  overflow: scroll;
 }
 
 #config-title {
@@ -329,12 +330,32 @@ input {
 }
 
 #button-content {
-  width: 100%;
-  position: absolute;
+  width: 300px;
+  position: fixed;
   bottom: 0;
   left: 0;
   padding: 20px;
   box-sizing: border-box;
+}
+
+#print-button {
+  width: 50%;
+  display: inline-block;
+}
+
+#pdf-button {
+  width: 50%;
+  padding: 24px 15px;
+  margin-left: 13px;
+  position: relative;
+  bottom: 0;
+  border-radius: 10px;
+  font-weight: 300;
+  font-size: 18px;
+  transition: 300ms background;
+  box-sizing: border-box;
+  -webkit-app-region: initial;
+  cursor: default;
 }
 
 .row {
@@ -355,9 +376,10 @@ input {
   color: #555;
   text-decoration: none;
   background: rgba(255, 255, 255, 0.25);
-  padding: 12px;
+  /*padding: 12px;*/
   border-radius: 6px;
 }
+
 .link-button:hover {
   color: #444;
   background: rgba(255, 255, 255, 0.4);
