@@ -96,6 +96,7 @@ app.on('ready', () => {
   }
   // attempt to merge it in with defaults
   try {
+    console.log('Reading', keymapPath)
     store.dispatch({
       type: 'SET_KEYMAP',
       payload: JSON.parse(fs.readFileSync(keymapPath, { encoding: 'utf8' }))
