@@ -11,6 +11,12 @@ const Color = require('color-js')
 const chokidar = require('chokidar')
 const plist = require('plist')
 
+
+const { getInitialStateRenderer } = require('electron-redux')
+const configureStore = require('../shared/store/configureStore')
+const observeStore = require('../shared/helpers/observeStore')
+
+
 const StoryboarderSketchPane = require('./storyboarder-sketch-pane')
 const undoStack = require('../undo-stack')
 
@@ -51,6 +57,11 @@ const StsSidebar = require('./sts-sidebar')
 const pkg = require('../../../package.json')
 
 const sharedObj = remote.getGlobal('sharedObj')
+
+
+const store = configureStore(getInitialStateRenderer(), 'renderer')
+window.$r = { store } // for debugging, e.g.: $r.store.getStore()
+
 
 const {
   LAYER_INDEX_REFERENCE,

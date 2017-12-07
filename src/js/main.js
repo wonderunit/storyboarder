@@ -11,6 +11,11 @@ const prefModule = require('./prefs')
 prefModule.init(path.join(app.getPath('userData'), 'pref.json'))
 
 
+const configureStore = require('./shared/store/configureStore')
+const observeStore = require('./shared/helpers/observeStore')
+const actions = require('./shared/actions')
+const defaultKeyMap = require('./shared/helpers/defaultKeyMap')
+
 const analytics = require('./analytics')
 
 const fountain = require('./vendor/fountain')
@@ -30,6 +35,11 @@ const util = require('./utils/index')
 const autoUpdater = require('./auto-updater')
 
 //https://github.com/luiseduardobrito/sample-chat-electron
+
+
+const store = configureStore({}, 'main')
+
+
 
 let welcomeWindow
 let newWindow
@@ -76,6 +86,28 @@ app.on('open-file', (event, path) => {
 
 app.on('ready', () => {
   analytics.init(prefs.enableAnalytics)
+
+  // try to load key map
+  const keymapPath = path.join(app.getPath('userData'), 'keymap.json')
+  // ensure keymap.json exists
+  if (!fs.existsSync(keymapPath)) {
+    console.log('Creating', keymapPath)
+    fs.writeFileSync(keymapPath, JSON.stringify(defaultKeyMap, null, 2) + '\n')
+  }
+  // attempt to merge it in with defaults
+  try {
+    store.dispatch({
+      type: 'SET_KEYMAP',
+      payload: JSON.parse(fs.readFileSync(keymapPath, { encoding: 'utf8' }))
+    })
+  } catch (err) {
+    console.error(err)
+    dialog.showMessageBox({
+      type: 'error',
+      message: `Whoops! An error ocurred while trying to read keymap.json.
+                Using default keymap instead.\n\n${err}`
+    })
+  }
 
   if (os.platform() === 'darwin') {
     if (!isDev && !app.isInApplicationsFolder()) {
