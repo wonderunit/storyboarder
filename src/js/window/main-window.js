@@ -33,7 +33,8 @@ const OnionSkin = require('./onion-skin')
 const Sonifier = require('./sonifier/index')
 const LayersEditor = require('./layers-editor')
 const sfx = require('../wonderunit-sound')
-const keytracker = require('../utils/keytracker')
+const { createIsCommandPressed } = require('../utils/keytracker')
+
 const storyTips = new(require('./story-tips'))(sfx, notifications)
 const exporter = require('./exporter')
 const exporterCommon = require('../exporters/common')
@@ -61,6 +62,7 @@ const sharedObj = remote.getGlobal('sharedObj')
 
 const store = configureStore(getInitialStateRenderer(), 'renderer')
 window.$r = { store } // for debugging, e.g.: $r.store.getStore()
+const isCommandPressed = createIsCommandPressed(store)
 
 
 const {
@@ -480,7 +482,8 @@ let loadBoardUI = () => {
 
   storyboarderSketchPane = new StoryboarderSketchPane(
     document.getElementById('storyboarder-sketch-pane'),
-    size
+    size,
+    store
   )
   
   window.addEventListener('resize', () => {
@@ -2134,18 +2137,20 @@ let duplicateBoard = async () => {
 const clearLayers = shouldEraseCurrentLayer => {
   if (storyboarderSketchPane.preventIfLocked()) return
 
-  if (toolbar.state.brush !== 'eraser' && (keytracker('<alt>') || shouldEraseCurrentLayer)) {
+  if (toolbar.state.brush !== 'eraser' && (isCommandPressed('drawing:clear-current-layer-modifier') || shouldEraseCurrentLayer)) {
     storyboarderSketchPane.clearLayers([storyboarderSketchPane.sketchPane.getCurrentLayerIndex()])
     saveImageFile()
     sfx.playEffect('trash')
+    notifications.notify({ message: 'Cleared current layer.', timing: 5 })
   } else {
     if (storyboarderSketchPane.isEmpty()) {
       deleteBoards()
+      notifications.notify({ message: 'Deleted board.', timing: 5 })
     } else {
       storyboarderSketchPane.clearLayers()
       saveImageFile()
       sfx.playEffect('trash')
-      notifications.notify({message: 'Cleared canvas.', timing: 5})
+      notifications.notify({ message: 'Cleared all layers.', timing: 5 })
     }
   }
 }

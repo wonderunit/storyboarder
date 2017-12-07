@@ -7,7 +7,7 @@ const SketchPane = require('../sketch-pane')
 const Brush = require('../sketch-pane/brush')
 const LineMileageCounter = require('./line-mileage-counter')
 
-const keytracker = require('../utils/keytracker')
+const { createIsCommandPressed } = require('../utils/keytracker')
 const util = require('../utils')
 
 const { LAYER_NAME_BY_INDEX } = require('../constants')
@@ -25,8 +25,10 @@ const enableStabilizer = prefsModule.getPrefs('main')['enableStabilizer']
  *  @param {array} canvasSize array of [width, height]. width is always 900.
  */
 class StoryboarderSketchPane extends EventEmitter {
-  constructor (el, canvasSize) {
+  constructor (el, canvasSize, store) {
     super()
+    this.isCommandPressed = createIsCommandPressed(store)
+
     this.prevTimeStamp = 0
     this.frameLengthArray = []
 
@@ -263,9 +265,9 @@ class StoryboarderSketchPane extends EventEmitter {
   }
 
   onKeyDown (e) {
-    if (keytracker('<alt>') && keytracker('<meta>')) {
+    if (this.isCommandPressed('drawing:scale-mode')) {
       if (!this.getIsDrawingOrStabilizing()) this.toolbar.emit('scale')
-    } else if (keytracker('<meta>')) {
+    } else if (this.isCommandPressed('drawing:move-mode')) {
       if (!this.getIsDrawingOrStabilizing()) this.toolbar.emit('move')
     } else {
       this.setQuickEraseIfRequested()
@@ -274,8 +276,8 @@ class StoryboarderSketchPane extends EventEmitter {
 
   onKeyUp (e) {
     if (
-      !(keytracker('<alt>') && keytracker('<meta>')) &&
-      !keytracker('<meta>')
+      !this.isCommandPressed('drawing:scale-mode') &&
+      !this.isCommandPressed('drawing:move-mode')
     ) {
       if (this.toolbar.state.transformMode) {
         if (!this.getIsDrawingOrStabilizing()) this.toolbar.emit('cancelTransform')
@@ -283,7 +285,7 @@ class StoryboarderSketchPane extends EventEmitter {
     }
     
     if (!this.getIsDrawingOrStabilizing()) {
-      if (!keytracker('<alt>') && !this.isEraseButtonActive) {
+      if (!this.isCommandPressed('drawing:quick-erase-modifier') && !this.isEraseButtonActive) {
         this.unsetQuickErase()
       }
     }
@@ -383,7 +385,7 @@ class StoryboarderSketchPane extends EventEmitter {
   }
 
   setQuickEraseIfRequested () {
-    if (keytracker('<alt>') || this.isEraseButtonActive) {
+    if (this.isCommandPressed('drawing:quick-erase-modifier') || this.isEraseButtonActive) {
       // don't switch if we're already on an eraser
       if (this.toolbar.getBrushOptions().kind !== 'eraser') {
         this.toolbar.setIsQuickErasing(true)
