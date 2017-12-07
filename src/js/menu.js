@@ -1,6 +1,16 @@
 const { Menu, app } = require('electron').remote
 const { ipcRenderer, shell } = require('electron')
 const isDev = require('electron-is-dev')
+const { getInitialStateRenderer } = require('electron-redux')
+
+const configureStore = require('./shared/store/configureStore')
+const observeStore = require('./shared/helpers/observeStore')
+
+const store = configureStore(getInitialStateRenderer(), 'renderer')
+
+// TODO subscribe to store, update menu when keymap changes
+
+let keymap = store.getState().entities.keymap
 
 let SubMenuFragments = {}
 SubMenuFragments.View = [
@@ -406,14 +416,14 @@ AppMenu.Tools = () => ({
       type: 'separator'
     },
     {
-      accelerator: '[',
+      accelerator: keymap['drawing:brush-size:dec'],
       label: 'Smaller Brush',
       click (item, focusedWindow, event) {
         ipcRenderer.send('brushSize', -1)
       }
     },
     {
-      accelerator: ']',
+      accelerator: keymap['drawing:brush-size:inc'],
       label: 'Larger Brush',
       click (item, focusedWindow, event) {
         ipcRenderer.send('brushSize', 1)
@@ -727,16 +737,17 @@ const welcomeTemplate = [
   }
 ]
 
-const menuInstance = Menu.buildFromTemplate(template)
-const welcomeMenuInstance = Menu.buildFromTemplate(welcomeTemplate)
-
-const menu = {
-  setWelcomeMenu: function() {
-    Menu.setApplicationMenu(welcomeMenuInstance)
-  },
-  setMenu: function() {
-    Menu.setApplicationMenu(menuInstance)
-  }
+const setWelcomeMenu = () => {
+  let welcomeMenuInstance = Menu.buildFromTemplate(welcomeTemplate)
+  Menu.setApplicationMenu(welcomeMenuInstance)
 }
 
-module.exports = menu
+const setMenu = () => {
+  let menuInstance = Menu.buildFromTemplate(template)
+  Menu.setApplicationMenu(menuInstance)
+}
+
+module.exports = {
+  setWelcomeMenu,
+  setMenu
+}
