@@ -30,6 +30,9 @@ const defaultKeyMap = {
   "menu:tools:brush": "4",
   "menu:tools:note-pen": "5",
   "menu:tools:eraser": "6",
+  "menu:tools:clear-all-layers": "Backspace",
+  "menu:tools:clear-layer": "Alt+Backspace",
+
   "menu:tools:edit-in-photoshop": "CommandOrControl+.",
 
   "menu:tools:flip-horizontal": "CommandOrControl+f",

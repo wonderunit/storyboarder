@@ -401,14 +401,14 @@ AppMenu.Tools = () => ({
       type: 'separator'
     },
     {
-      accelerator: 'Backspace',
+      accelerator: keystrokeFor("menu:tools:clear-all-layers"),
       label: 'Clear All Layers',
       click (item, focusedWindow, event) {
         ipcRenderer.send('clear')
       }
     },
     {
-      accelerator: 'Alt+Backspace',
+      accelerator: keystrokeFor("menu:tools:clear-layer"),
       label: 'Clear Layer',
       click (item, focusedWindow, event) {
         ipcRenderer.send('clear', true)
