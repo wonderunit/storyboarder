@@ -7,7 +7,8 @@ const configureStore = require('../shared/store/configureStore')
 
 const store = configureStore(getInitialStateRenderer(), 'renderer')
 
-const keystrokeFor = commandCode => store.getState().entities.keymap[commandCode]
+const capitalizeSingleLetters = keystroke => keystroke.split('+').map(k => k.length === 1 ? k.toUpperCase() : k).join('+')
+const keystrokeFor = commandCode => capitalizeSingleLetters(store.getState().entities.keymap[commandCode])
 
 let IS_MAC = os.platform() === 'darwin'
 //IS_MAC = false
