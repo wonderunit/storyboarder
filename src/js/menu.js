@@ -476,7 +476,7 @@ AppMenu.Tools = () => ({
     },
     {
       label: 'Edit in Photoshop',
-      accelerator: 'CmdOrCtrl+.',
+      accelerator: keystrokeFor('menu:tools:edit-in-photoshop'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('openInEditor')
       }

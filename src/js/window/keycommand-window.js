@@ -155,7 +155,7 @@ let commands = [
       ['Use Palette Color 2', keystrokeFor("9")],
       ['Use Palette Color 3', keystrokeFor("0")],
       ['Flip Horizontal', keystrokeFor("menu:tools:flip-horizontal")],
-      ['<strong>Edit in Photoshop</strong>', keystrokeFor("CmdOrCtrl+.")],
+      ['<strong>Edit in Photoshop</strong>', keystrokeFor("menu:tools:edit-in-photoshop")],
     ]
   ],
   ["View", [
