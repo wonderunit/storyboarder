@@ -141,7 +141,7 @@ let commands = [
     ]
   ],
   ["Tools", [
-      ['<strong>Light Pencil</strong>', keystrokeFor("1")],
+      ['<strong>Light Pencil</strong>', keystrokeFor("menu:tools:light-pencil")],
       ['Pencil', keystrokeFor("2")],
       ['<strong>Pen</strong>', keystrokeFor("3")],
       ['Brush', keystrokeFor("4")],

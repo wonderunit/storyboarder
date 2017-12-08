@@ -356,7 +356,7 @@ AppMenu.Tools = () => ({
   label: 'Tools',
   submenu: [
     {
-      accelerator: '1',
+      accelerator: keystrokeFor('menu:tools:light-pencil'),
       label: 'Light Pencil',
       click (item, focusedWindow, event) {
         ipcRenderer.send('setTool', 'lightPencil')

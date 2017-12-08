@@ -21,8 +21,10 @@ const defaultKeyMap = {
   "menu:navigation:previous-scene": "CommandOrControl+Left",
   "menu:navigation:next-scene": "CommandOrControl+Right",
 
+  "menu:tools:light-pencil": "1",
+
   "menu:tools:flip-horizontal": "CommandOrControl+f",
-  
+
   "workspace:thumbnails:select-multiple-modifier": "Shift"
 }
 
