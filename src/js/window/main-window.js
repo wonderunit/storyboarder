@@ -2793,7 +2793,7 @@ let renderThumbnailDrawer = ()=> {
       let index = Number(e.target.dataset.thumbnail)
       if (selections.has(index)) {
         // ignore
-      } else if (e.shiftKey) {
+      } else if (isCommandPressed("workspace:thumbnails:select-multiple-modifier")) {
 
         if (selections.size == 0 && !util.isUndefined(currentBoard)) {
           // use currentBoard as starting point
@@ -3420,7 +3420,7 @@ window.onkeydown = (e)=> {
         } else if (e.altKey) {
           reorderBoardsLeft()
         } else if (isCommandPressed("menu:navigation:previous-board")) {
-          let shouldPreserveSelections = e.shiftKey
+          let shouldPreserveSelections = isCommandPressed("workspace:thumbnails:select-multiple-modifier")
           goNextBoard(-1, shouldPreserveSelections)
         }
         e.preventDefault()
@@ -3432,7 +3432,7 @@ window.onkeydown = (e)=> {
         } else if (e.altKey) {
           reorderBoardsRight()
         } else if (isCommandPressed("menu:navigation:next-board")) {
-          let shouldPreserveSelections = e.shiftKey
+          let shouldPreserveSelections = isCommandPressed("workspace:thumbnails:select-multiple-modifier")
           goNextBoard(1, shouldPreserveSelections)
         }
         e.preventDefault()

@@ -19,7 +19,9 @@ const defaultKeyMap = {
   "menu:navigation:previous-board": "Left",
   "menu:navigation:next-board": "Right",
 
-  "menu:tools:flip-horizontal": "CommandOrControl+f"
+  "menu:tools:flip-horizontal": "CommandOrControl+f",
+  
+  "workspace:thumbnails:select-multiple-modifier": "Shift"
 }
 
 module.exports = defaultKeyMap
