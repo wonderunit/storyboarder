@@ -283,7 +283,7 @@ AppMenu.Boards = () => ({
   label: 'Boards',
   submenu: [
     {
-      accelerator: 'N',
+      accelerator: keystrokeFor('menu:boards:new-board'),
       label: 'New Board',
       click (item, focusedWindow, event) {
         ipcRenderer.send('newBoard', 1)
