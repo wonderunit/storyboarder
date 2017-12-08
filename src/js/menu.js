@@ -363,35 +363,35 @@ AppMenu.Tools = () => ({
       }
     },
     {
-      accelerator: '2',
+      accelerator: keystrokeFor('menu:tools:pencil'),
       label: 'Pencil',
       click (item, focusedWindow, event) {
         ipcRenderer.send('setTool', 'pencil')
       }
     },
     {
-      accelerator: '3',
+      accelerator: keystrokeFor('menu:tools:pen'),
       label: 'Pen',
       click (item, focusedWindow, event) {
         ipcRenderer.send('setTool', 'pen')
       }
     },
     {
-      accelerator: '4',
+      accelerator: keystrokeFor('menu:tools:brush'),
       label: 'Brush',
       click (item, focusedWindow, event) {
         ipcRenderer.send('setTool', 'brush')
       }
     },
     {
-      accelerator: '5',
+      accelerator: keystrokeFor('menu:tools:note-pen'),
       label: 'Note Pen',
       click (item, focusedWindow, event) {
         ipcRenderer.send('setTool', 'notePen')
       }
     },
     {
-      accelerator: '6',
+      accelerator: keystrokeFor('menu:tools:eraser'),
       label: 'Eraser',
       click (item, focusedWindow, event) {
         ipcRenderer.send('setTool', 'eraser')

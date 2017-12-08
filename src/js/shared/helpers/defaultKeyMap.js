@@ -22,6 +22,11 @@ const defaultKeyMap = {
   "menu:navigation:next-scene": "CommandOrControl+Right",
 
   "menu:tools:light-pencil": "1",
+  "menu:tools:pencil": "2",
+  "menu:tools:pen": "3",
+  "menu:tools:brush": "4",
+  "menu:tools:note-pen": "5",
+  "menu:tools:eraser": "6",
 
   "menu:tools:flip-horizontal": "CommandOrControl+f",
 
