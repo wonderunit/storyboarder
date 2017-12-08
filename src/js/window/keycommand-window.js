@@ -1,5 +1,7 @@
 var os = require('os')
 
+const { normalizeKeyForEvent } = require('../utils/keytracker')
+
 let IS_MAC = os.platform() === 'darwin'
 //IS_MAC = false
 
@@ -351,6 +353,17 @@ let renderCommands = () => {
       })
     });
   });
+
+  // key command tester
+  let outputEl = document.createElement('div')
+  outputEl.innerHTML = `<div class="output" style="color: white; position: absolute; bottom: 0; left: 0"></div>`
+  document.querySelector('.commands').appendChild(outputEl.firstChild)
+  document.addEventListener('keydown', event => {
+    document.querySelector('.output').innerText = `Key: ${normalizeKeyForEvent(event)}`
+  })
+  document.addEventListener('keyup', event => {
+    document.querySelector('.output').innerText = ''
+  })
 
 }
 
