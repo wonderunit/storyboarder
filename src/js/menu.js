@@ -60,7 +60,7 @@ AppMenu.File = () => ({
     },
     {
       label: 'Save',
-      accelerator: 'CmdOrCtrl+S',
+      accelerator: keymap['menu:file:save'],
       click (item, focusedWindow, event) {
         ipcRenderer.send('save')
       }
