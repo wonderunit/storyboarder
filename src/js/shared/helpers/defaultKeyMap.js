@@ -14,6 +14,7 @@ const defaultKeyMap = {
   "menu:file:export-animated-gif": "CmdOrCtrl+e",
   "menu:file:print-worksheet": "CmdOrCtrl+Shift+P",
   "menu:file:import-worksheets": "CmdOrCtrl+I",
+  "menu:file:import-images": "CmdOrCtrl+Shift+i",
 
   "menu:tools:flip-horizontal": "CommandOrControl+f"
 }
