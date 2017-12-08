@@ -182,8 +182,9 @@ app.on('ready', () => {
         // wait 300 msecs for windows to load
         setTimeout(() => openFile(filePath), 300)
 
-        // HACK prevent upcoming welcomeWindow.show
-        // welcomeWindow.once('show', () => welcomeWindow.hide())
+        // prevent welcomeWindow from popping up
+        welcomeWindow.hide()
+        welcomeWindow.removeAllListeners('ready-to-show')
         return
 
       } else {
