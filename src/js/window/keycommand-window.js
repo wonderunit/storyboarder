@@ -106,12 +106,9 @@ let keyMapRight = [
 
 let commands = [
   ["File", [
-      ['Save', keystrokeFor('menu:file:save')],
-      ['Open...', keystrokeFor('menu:file:open')],
-      ['<strong>Export Animated GIF</strong>', keystrokeFor('menu:file:export-animated-gif')],
-      ['<strong>Print a Worksheet...</strong>', 'CmdOrCtrl+P'],
-      ['Import Worksheets...', 'CmdOrCtrl+I'],
-      ['<strong>Import Images...</strong>', 'CmdOrCtrl+Shift+i'],
+      ['Save', keystrokeFor("menu:file:save")],
+      ['Open...', keystrokeFor("menu:file:open")],
+      ['<strong>Export Animated GIF</strong>', keystrokeFor("menu:file:export-animated-gif")],
       ['<strong>Print a Worksheet...</strong>', keystrokeFor("menu:file:print-worksheet")],
       ['Import Worksheets...', keystrokeFor("menu:file:import-worksheets")],
     ]
