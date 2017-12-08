@@ -7,7 +7,10 @@ const defaultKeyMap = {
   "drawing:scale-mode": "CommandOrControl+Alt",
   "drawing:move-mode": "CommandOrControl",
   "drawing:quick-erase-modifier": "Alt",
+
   "menu:file:open": "CommandOrControl+o",
+  "menu:file:save": "CmdOrCtrl+s",
+
   "menu:tools:flip-horizontal": "CommandOrControl+f"
 }
 

@@ -106,7 +106,7 @@ let keyMapRight = [
 
 let commands = [
   ["File", [
-      ['Save', 'CmdOrCtrl+S'],
+      ['Save', keystrokeFor('menu:file:save')],
       ['Open...', keystrokeFor('menu:file:open')],
       ['<strong>Export Animated GIF</strong>', 'CmdOrCtrl+E'],
       ['<strong>Print a Worksheet...</strong>', 'CmdOrCtrl+P'],
