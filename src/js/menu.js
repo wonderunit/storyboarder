@@ -130,7 +130,7 @@ AppMenu.File = () => ({
       }
     },
     {
-      accelerator: 'CmdOrCtrl+I',
+      accelerator: keystrokeFor("menu:file:import-worksheets"),
       label: 'Import worksheets…',
       click (item, focusedWindow, event) {
         ipcRenderer.send('importWorksheets')
