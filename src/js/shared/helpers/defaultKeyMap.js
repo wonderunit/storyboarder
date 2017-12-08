@@ -12,6 +12,7 @@ const defaultKeyMap = {
   "menu:file:save": "CmdOrCtrl+s",
   "menu:file:save-as": "CmdOrCtrl+Shift+s",
   "menu:file:export-animated-gif": "CmdOrCtrl+e",
+  "menu:file:print-worksheet": "CmdOrCtrl+Shift+P",
 
   "menu:tools:flip-horizontal": "CommandOrControl+f"
 }

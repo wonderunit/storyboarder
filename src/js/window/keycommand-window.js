@@ -112,6 +112,7 @@ let commands = [
       ['<strong>Print a Worksheet...</strong>', 'CmdOrCtrl+P'],
       ['Import Worksheets...', 'CmdOrCtrl+I'],
       ['<strong>Import Images...</strong>', 'CmdOrCtrl+Shift+i'],
+      ['<strong>Print a Worksheet...</strong>', keystrokeFor("menu:file:print-worksheet")],
     ]
   ],
   ["Edit", [

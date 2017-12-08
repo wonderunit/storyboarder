@@ -123,7 +123,7 @@ AppMenu.File = () => ({
       type: 'separator'
     },
     {
-      accelerator: 'CmdOrCtrl+Shift+P',
+      accelerator: keystrokeFor("menu:file:print-worksheet"),
       label: 'Print a Storyboarder worksheet…',
       click (item, focusedWindow, event) {
         ipcRenderer.send('printWorksheet')
