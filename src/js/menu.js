@@ -290,7 +290,7 @@ AppMenu.Boards = () => ({
       }
     },
     {
-      accelerator: 'Shift+N',
+      accelerator: keystrokeFor('menu:boards:new-board-before'),
       label: 'New Board Before',
       click (item, focusedWindow, event) {
         ipcRenderer.send('newBoard', -1)

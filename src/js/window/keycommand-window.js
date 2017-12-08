@@ -131,7 +131,7 @@ let commands = [
   ],
   ["Boards", [
       ['<strong>New Board</strong>', keystrokeFor("menu:boards:new-board")],
-      ['New Board Before', keystrokeFor("Shift+N")],
+      ['New Board Before', keystrokeFor("menu:boards:new-board-before")],
       ['<strong>Delete Board(s)</strong>', keystrokeFor("CmdOrCtrl+Backspace")],
       ['Delete Board(s)', keystrokeFor("CmdOrCtrl+Delete")],
       ['<strong>Duplicate Board</strong>', keystrokeFor("D")],
