@@ -459,7 +459,7 @@ AppMenu.Tools = () => ({
       type: 'separator'
     },
     {
-      accelerator: 'CmdOrCtrl+F',
+      accelerator: keystrokeFor("menu:tools:flip-horizontal"),
       label: 'Flip Horizontal',
       click (item, focusedWindow, event) {
         ipcRenderer.send('flipBoard')
