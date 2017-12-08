@@ -50,7 +50,7 @@ AppMenu.File = () => ({
   submenu: [
     {
       label: 'Open…',
-      accelerator: 'CmdOrCtrl+O',
+      accelerator: keymap['menu:file:open'],
       click (item, focusedWindow, event) {
         ipcRenderer.send('openDialogue')
       }
