@@ -3312,7 +3312,7 @@ const resize = () => {
 
 window.onkeydown = (e)=> {
   if (!textInputMode) {
-    console.log(e)
+    // console.log('window.onkeydown', e)
     switch (e.keyCode) {
       // C - Copy
       case 67:
