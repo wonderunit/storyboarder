@@ -60,23 +60,37 @@ document.addEventListener('visibilitychange', reset, false)
 const _normalizeMatchableKey = key => 
   key === 'Meta' || key === 'Control' ? 'CommandOrControl' : key
 
-// NOTE: order matters. e.g.: CommandAndControl+Alt != Alt+CommandAndControl
-const findMatchingCommandsByKeys = (keymap, keys) => {
-  if (!keys) return []
+// NOTE: order does not matter. e.g.: CommandAndControl+Alt == Alt+CommandAndControl
+const findMatchingCommandsByKeys = (keymap, pressedKeys) => {
+  if (!pressedKeys) return []
 
-  let keystroke = keys.join('+')
-  let normalizedKeystroke = keys.map(_normalizeMatchableKey).join('+')
+  let normalizedPressedKeys = pressedKeys.map(_normalizeMatchableKey)
 
   let matches = new Set()
   for (let command of Object.keys(keymap)) {
-    let matchingKeystroke = keymap[command]
-    if (matchingKeystroke === keystroke ||
-        matchingKeystroke === normalizedKeystroke) {
-      matches.add(command)
+    let keystroke = keymap[command].split('+')
+
+    // matches non-normalized?
+    let matchesPressed = true
+    for (let k of keystroke) {
+      if (!pressedKeys.includes(k))
+        matchesPressed = false
     }
+    if (matchesPressed)
+      matches.add(command)
+
+    // matches normalized?
+    let matchesNormalized = true
+    for (let k of keystroke) {
+      if (!normalizedPressedKeys.includes(k))
+        matchesNormalized = false
+    }
+    if (matchesNormalized)
+      matches.add(command)
   }
   return [...matches]
 }
+
 
 const createIsCommandPressed = store =>
   cmd => findMatchingCommandsByKeys(
