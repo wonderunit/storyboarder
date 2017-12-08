@@ -3415,7 +3415,7 @@ window.onkeydown = (e)=> {
     switch (e.keyCode) {
       // arrow left
       case 37:
-        if (e.metaKey || e.ctrlKey) {
+        if (isCommandPressed("menu:navigation:previous-scene")) {
           previousScene()
         } else if (e.altKey) {
           reorderBoardsLeft()
@@ -3427,7 +3427,7 @@ window.onkeydown = (e)=> {
         break
       // arrow right
       case 39:
-        if (e.metaKey || e.ctrlKey) {
+        if (isCommandPressed("menu:navigation:next-scene")) {
           nextScene()
         } else if (e.altKey) {
           reorderBoardsRight()

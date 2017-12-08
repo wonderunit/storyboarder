@@ -252,14 +252,16 @@ AppMenu.Navigation = () => ({
       }
     },
     {
-      accelerator: 'CmdOrCtrl+Left',
+      // NOTE for some reason, this accelerator does not trigger a click (CmdOrCtrl+Left)
+      accelerator: keystrokeFor('menu:navigation:previous-scene'),
       label: 'Previous Scene',
       click (item, focusedWindow, event) {
         ipcRenderer.send('previousScene')
       }
     },
     {
-      accelerator: 'CmdOrCtrl+Right',
+      // NOTE for some reason, this accelerator does not trigger a click (CmdOrCtrl+Right)
+      accelerator: keystrokeFor('menu:navigation:next-scene'),
       label: 'Next Scene',
       click (item, focusedWindow, event) {
         ipcRenderer.send('nextScene')

@@ -18,6 +18,8 @@ const defaultKeyMap = {
 
   "menu:navigation:previous-board": "Left",
   "menu:navigation:next-board": "Right",
+  "menu:navigation:previous-scene": "CommandOrControl+Left",
+  "menu:navigation:next-scene": "CommandOrControl+Right",
 
   "menu:tools:flip-horizontal": "CommandOrControl+f",
   
