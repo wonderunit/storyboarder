@@ -1,4 +1,10 @@
+const vkey = require('../utils/vkey')
+
 let down = new Set()
+
+function normalizeKeyForEvent (event) {
+  return vkey[event.keyCode]
+}
 
 function pressed (key) {
   return key
@@ -11,11 +17,11 @@ function reset () {
 }
 
 function keydown (e) {
-  down.add(e.key)
+  down.add(normalizeKeyForEvent(e))
 }
 
 function keyup (e) {
-  if (e.key === 'Meta') {
+  if (normalizeKeyForEvent(e) === 'Meta') {
     // on OS X, keys pressed after the Meta key is held will not send a `keyup` 
     // see: https://github.com/electron/electron/issues/5188
     //      https://codepen.io/alexduloz/pen/nteqG
@@ -40,7 +46,7 @@ function keyup (e) {
     // }
     // down = newDown
   }
-  down.delete(e.key)
+  down.delete(normalizeKeyForEvent(e))
 }
 
 reset()
@@ -81,5 +87,6 @@ const createIsCommandPressed = store =>
 module.exports = {
   pressed,
   findMatchingCommandsByKeys,
-  createIsCommandPressed
+  createIsCommandPressed,
+  normalizeKeyForEvent
 }
