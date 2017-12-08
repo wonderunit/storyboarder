@@ -9,12 +9,12 @@ const defaultKeyMap = {
   "drawing:quick-erase-modifier": "Alt",
 
   "menu:file:open": "CommandOrControl+o",
-  "menu:file:save": "CmdOrCtrl+s",
-  "menu:file:save-as": "CmdOrCtrl+Shift+s",
-  "menu:file:export-animated-gif": "CmdOrCtrl+e",
-  "menu:file:print-worksheet": "CmdOrCtrl+Shift+P",
-  "menu:file:import-worksheets": "CmdOrCtrl+I",
-  "menu:file:import-images": "CmdOrCtrl+Shift+i",
+  "menu:file:save": "CommandOrControl+s",
+  "menu:file:save-as": "CommandOrControl+Shift+s",
+  "menu:file:export-animated-gif": "CommandOrControl+e",
+  "menu:file:print-worksheet": "CommandOrControl+Shift+P",
+  "menu:file:import-worksheets": "CommandOrControl+I",
+  "menu:file:import-images": "CommandOrControl+Shift+i",
 
   "menu:navigation:previous-board": "Left",
   "menu:navigation:next-board": "Right",
