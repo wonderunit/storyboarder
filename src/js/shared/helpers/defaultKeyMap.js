@@ -10,6 +10,7 @@ const defaultKeyMap = {
 
   "menu:file:open": "CommandOrControl+o",
   "menu:file:save": "CmdOrCtrl+s",
+  "menu:file:save-as": "CmdOrCtrl+Shift+s",
 
   "menu:tools:flip-horizontal": "CommandOrControl+f"
 }
