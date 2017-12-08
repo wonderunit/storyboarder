@@ -154,9 +154,9 @@ let commands = [
       ['Clear Layer', keystrokeFor("menu:tools:clear-layer")],
       ['<strong>Smaller Brush</strong>', keystrokeFor("drawing:brush-size:dec")],
       ['<strong>Larger Brush</strong>', keystrokeFor("drawing:brush-size:inc")],
-      ['Use Palette Color 1', keystrokeFor("8")],
-      ['Use Palette Color 2', keystrokeFor("9")],
-      ['Use Palette Color 3', keystrokeFor("0")],
+      ['Use Palette Color 1', keystrokeFor("menu:tools:palette-color-1")],
+      ['Use Palette Color 2', keystrokeFor("menu:tools:palette-color-2")],
+      ['Use Palette Color 3', keystrokeFor("menu:tools:palette-color-3")],
       ['Flip Horizontal', keystrokeFor("menu:tools:flip-horizontal")],
       ['<strong>Edit in Photoshop</strong>', keystrokeFor("menu:tools:edit-in-photoshop")],
     ]

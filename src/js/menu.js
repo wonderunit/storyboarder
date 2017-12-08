@@ -435,21 +435,21 @@ AppMenu.Tools = () => ({
       type: 'separator'
     },
     {
-      accelerator: '8',
+      accelerator: keystrokeFor("menu:tools:palette-color-1"),
       label: 'Use Palette Color 1',
       click (item, focusedWindow, event) {
         ipcRenderer.send('useColor', 1)
       }
     },
     {
-      accelerator: '9',
+      accelerator: keystrokeFor("menu:tools:palette-color-2"),
       label: 'Use Palette Color 2',
       click (item, focusedWindow, event) {
         ipcRenderer.send('useColor', 2)
       }
     },
     {
-      accelerator: '0',
+      accelerator: keystrokeFor("menu:tools:palette-color-3"),
       label: 'Use Palette Color 3',
       click (item, focusedWindow, event) {
         ipcRenderer.send('useColor', 3)

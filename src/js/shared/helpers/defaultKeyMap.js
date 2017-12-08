@@ -32,6 +32,9 @@ const defaultKeyMap = {
   "menu:tools:eraser": "6",
   "menu:tools:clear-all-layers": "Backspace",
   "menu:tools:clear-layer": "Alt+Backspace",
+  "menu:tools:palette-color-1": "8",
+  "menu:tools:palette-color-2": "9",
+  "menu:tools:palette-color-3": "0",
 
   "menu:tools:edit-in-photoshop": "CommandOrControl+.",
 
