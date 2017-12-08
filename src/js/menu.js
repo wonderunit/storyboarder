@@ -77,7 +77,7 @@ AppMenu.File = () => ({
     },
     {
       label: 'Export Animated GIF',
-      accelerator: 'CmdOrCtrl+E',
+      accelerator: keystrokeFor('menu:file:export-animated-gif'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('exportAnimatedGif')
       }

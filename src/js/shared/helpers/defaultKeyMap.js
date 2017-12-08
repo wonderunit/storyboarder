@@ -11,6 +11,7 @@ const defaultKeyMap = {
   "menu:file:open": "CommandOrControl+o",
   "menu:file:save": "CmdOrCtrl+s",
   "menu:file:save-as": "CmdOrCtrl+Shift+s",
+  "menu:file:export-animated-gif": "CmdOrCtrl+e",
 
   "menu:tools:flip-horizontal": "CommandOrControl+f"
 }

@@ -108,7 +108,7 @@ let commands = [
   ["File", [
       ['Save', keystrokeFor('menu:file:save')],
       ['Open...', keystrokeFor('menu:file:open')],
-      ['<strong>Export Animated GIF</strong>', 'CmdOrCtrl+E'],
+      ['<strong>Export Animated GIF</strong>', keystrokeFor('menu:file:export-animated-gif')],
       ['<strong>Print a Worksheet...</strong>', 'CmdOrCtrl+P'],
       ['Import Worksheets...', 'CmdOrCtrl+I'],
       ['<strong>Import Images...</strong>', 'CmdOrCtrl+Shift+i'],
