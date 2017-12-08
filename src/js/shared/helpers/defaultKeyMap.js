@@ -21,7 +21,7 @@ const defaultKeyMap = {
   "menu:navigation:previous-scene": "CommandOrControl+Left",
   "menu:navigation:next-scene": "CommandOrControl+Right",
 
-  "menu:boards:new-board": 'n',
+  "menu:boards:new-board": "n",
   "menu:boards:new-board-before": "Shift+n",
 
   "menu:tools:light-pencil": "1",
