@@ -1,6 +1,6 @@
 var os = require('os')
 
-const { normalizeKeyForEvent } = require('../utils/keytracker')
+const { normalizeKeyForEvent, pressed, findMatchingCommandsByKeys } = require('../utils/keytracker')
 
 const { getInitialStateRenderer } = require('electron-redux')
 const configureStore = require('../shared/store/configureStore')
@@ -373,9 +373,17 @@ let renderCommands = () => {
     style="color: rgba(255, 255, 255, 0.8); font-size: 13px; position: absolute; bottom: 0; left: 0">
   </div>`
   document.querySelector('.commands').appendChild(outputEl.firstChild)
-  const renderKeyTester = event => document.querySelector('.output').innerHTML = 
-    `<span style="color: rgba(255, 255, 255, 0.6); letter-spaceing: 0.1em">KEY</span>&nbsp;
-     <span style="color: rgba(255, 255, 255, 0.8)">${normalizeKeyForEvent(event)}</span>`
+  // <span style="color: rgba(255, 255, 255, 0.6); letter-spaceing: 0.1em">KEY</span>
+  // &nbsp;
+  // <span style="color: rgba(255, 255, 255, 0.8)">${normalizeKeyForEvent(event)}</span>
+  const renderKeyTester = event => document.querySelector('.output').innerHTML = `
+    <span style="color: rgba(255, 255, 255, 0.6); letter-spacing: 0.05em">PRESSED</span>
+     <span style="color: rgba(255, 255, 255, 0.8)">${pressed().join('+')}</span>
+
+    &nbsp;&nbsp;&nbsp;
+    <span style="color: rgba(255, 255, 255, 0.6); letter-spacing: 0.05em">COMMANDS</span>
+     <span style="color: rgba(255, 255, 255, 0.8)">${findMatchingCommandsByKeys(store.getState().entities.keymap, pressed()).join(', ')}</span>
+  `
   const resetKeyTester = event => document.querySelector('.output').innerHTML = ''
   window.addEventListener('keydown', renderKeyTester)
   window.addEventListener('keyup', resetKeyTester)
