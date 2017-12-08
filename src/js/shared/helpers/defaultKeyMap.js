@@ -16,6 +16,9 @@ const defaultKeyMap = {
   "menu:file:import-worksheets": "CmdOrCtrl+I",
   "menu:file:import-images": "CmdOrCtrl+Shift+i",
 
+  "menu:navigation:previous-board": "Left",
+  "menu:navigation:next-board": "Right",
+
   "menu:tools:flip-horizontal": "CommandOrControl+f"
 }
 

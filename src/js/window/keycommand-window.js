@@ -123,8 +123,8 @@ let commands = [
     ]
   ],
   ["Navigation", [
-      ['<strong>Previous Board</strong>', keystrokeFor("Left")],
-      ['<strong>Next Board</strong>', keystrokeFor("Right")],
+      ['<strong>Previous Board</strong>', keystrokeFor("menu:navigation:previous-board")],
+      ['<strong>Next Board</strong>', keystrokeFor("menu:navigation:next-board")],
       ['Previous Scene', keystrokeFor("CmdOrCtrl+Left")],
       ['Next Scene', keystrokeFor("CmdOrCtrl+Right")],
     ]

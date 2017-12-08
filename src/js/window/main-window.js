@@ -3419,7 +3419,7 @@ window.onkeydown = (e)=> {
           previousScene()
         } else if (e.altKey) {
           reorderBoardsLeft()
-        } else {
+        } else if (isCommandPressed("menu:navigation:previous-board")) {
           let shouldPreserveSelections = e.shiftKey
           goNextBoard(-1, shouldPreserveSelections)
         }
@@ -3431,7 +3431,7 @@ window.onkeydown = (e)=> {
           nextScene()
         } else if (e.altKey) {
           reorderBoardsRight()
-        } else {
+        } else if (isCommandPressed("menu:navigation:next-board")) {
           let shouldPreserveSelections = e.shiftKey
           goNextBoard(1, shouldPreserveSelections)
         }
