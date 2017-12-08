@@ -4862,14 +4862,12 @@ window.addEventListener('keydown', e => {
     toolbar.render()
   }
   if (toolbar.getIsQuickErasing()) {
-    if (e.altKey) {
-      if (e.code === 'BracketRight') {
-        changeEraserSizeDuringQuickErase(1)
-        sfx.playEffect('brush-size-up')
-      } else if (e.code === 'BracketLeft') {
-        changeEraserSizeDuringQuickErase(-1)
-        sfx.playEffect('brush-size-down')
-      }
+    if (isCommandPressed('drawing:quick-erase-size:inc')) {
+      changeEraserSizeDuringQuickErase(1)
+      sfx.playEffect('brush-size-up')
+    } else if (isCommandPressed('drawing:quick-erase-size:dec')) {
+      changeEraserSizeDuringQuickErase(-1)
+      sfx.playEffect('brush-size-down')
     }
   }
 })
