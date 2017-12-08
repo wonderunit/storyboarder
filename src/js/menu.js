@@ -10,7 +10,7 @@ const store = configureStore(getInitialStateRenderer(), 'renderer')
 
 // TODO subscribe to store, update menu when keymap changes
 
-let keymap = store.getState().entities.keymap
+let keystrokeFor = command => store.getState().entities.keymap[command]
 
 let SubMenuFragments = {}
 SubMenuFragments.View = [
@@ -50,7 +50,7 @@ AppMenu.File = () => ({
   submenu: [
     {
       label: 'Open…',
-      accelerator: keymap['menu:file:open'],
+      accelerator: keystrokeFor('menu:file:open'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('openDialogue')
       }
@@ -60,14 +60,14 @@ AppMenu.File = () => ({
     },
     {
       label: 'Save',
-      accelerator: keymap['menu:file:save'],
+      accelerator: keystrokeFor('menu:file:save'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('save')
       }
     },
     {
       label: 'Save As …',
-      accelerator: keymap['menu:file:save-as'],
+      accelerator: keystrokeFor('menu:file:save-as'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('saveAs')
       }
@@ -416,14 +416,14 @@ AppMenu.Tools = () => ({
       type: 'separator'
     },
     {
-      accelerator: keymap['drawing:brush-size:dec'],
+      accelerator: keystrokeFor('drawing:brush-size:dec'),
       label: 'Smaller Brush',
       click (item, focusedWindow, event) {
         ipcRenderer.send('brushSize', -1)
       }
     },
     {
-      accelerator: keymap['drawing:brush-size:inc'],
+      accelerator: keystrokeFor('drawing:brush-size:inc'),
       label: 'Larger Brush',
       click (item, focusedWindow, event) {
         ipcRenderer.send('brushSize', 1)
