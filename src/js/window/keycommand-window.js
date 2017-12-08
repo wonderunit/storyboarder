@@ -2,6 +2,13 @@ var os = require('os')
 
 const { normalizeKeyForEvent } = require('../utils/keytracker')
 
+const { getInitialStateRenderer } = require('electron-redux')
+const configureStore = require('../shared/store/configureStore')
+
+const store = configureStore(getInitialStateRenderer(), 'renderer')
+
+const keystrokeFor = commandCode => store.getState().entities.keymap[commandCode]
+
 let IS_MAC = os.platform() === 'darwin'
 //IS_MAC = false
 
@@ -99,7 +106,7 @@ let keyMapRight = [
 let commands = [
   ["File", [
       ['Save', 'CmdOrCtrl+S'],
-      ['Open...', 'CmdOrCtrl+O'],
+      ['Open...', keystrokeFor('menu:file:open')],
       ['<strong>Export Animated GIF</strong>', 'CmdOrCtrl+E'],
       ['<strong>Print a Worksheet...</strong>', 'CmdOrCtrl+P'],
       ['Import Worksheets...', 'CmdOrCtrl+I'],
@@ -141,12 +148,12 @@ let commands = [
       ['Eraser', '6'],
       ['<strong>Clear All Layers</strong>', 'Backspace'],
       ['Clear Layer', 'Alt+Backspace'],
-      ['<strong>Smaller Brush</strong>', '['],
-      ['<strong>Larger Brush</strong>', ']'],
+      ['<strong>Smaller Brush</strong>', keystrokeFor('drawing:brush-size:dec')],
+      ['<strong>Larger Brush</strong>', keystrokeFor('drawing:brush-size:inc')],
       ['Use Palette Color 1', '8'],
       ['Use Palette Color 2', '9'],
       ['Use Palette Color 3', '0'],
-      ['Flip Horizontal', 'CmdOrCtrl+F'],
+      ['Flip Horizontal', keystrokeFor('menu:tools:flip-horizontal')],
       ['<strong>Edit in Photoshop</strong>', 'CmdOrCtrl+.'],
     ]
   ],
