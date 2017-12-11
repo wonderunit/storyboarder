@@ -215,7 +215,7 @@ AppMenu.Edit = () => ({
         },
         {
           label: 'Preferences',
-          accelerator: 'CmdOrCtrl+,',
+          accelerator: keystrokeFor('menu:edit:preferences'),
           click: () => ipcRenderer.send('preferences')
         }
       ]
@@ -629,7 +629,7 @@ AppMenu.about = (options = { includePreferences: false }) => {
         },
         {
           label: 'Preferences',
-          accelerator: 'Cmd+,',
+          accelerator: keystrokeFor('menu:about:preferences'),
           click: () => ipcRenderer.send('preferences')
         }
       ]

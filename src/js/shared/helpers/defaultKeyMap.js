@@ -57,7 +57,13 @@ const defaultKeyMap = {
   
   "menu:help:show-story-tip": "CommandOrControl+t",
 
-  "workspace:thumbnails:select-multiple-modifier": "Shift"
+  "workspace:thumbnails:select-multiple-modifier": "Shift",
+  
+  // macOS
+  "menu:about:preferences": "CommandOrControl+,",
+
+  // Windows
+  "menu:edit:preferences": "CommandOrControl+,",
 }
 
 module.exports = defaultKeyMap
