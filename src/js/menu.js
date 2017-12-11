@@ -300,14 +300,14 @@ AppMenu.Boards = () => ({
       type: 'separator'
     },
     {
-      accelerator: 'CmdOrCtrl+Backspace',
+      accelerator: keystrokeFor('menu:boards:delete-boards'),
       label: 'Delete Board(s)',
       click (item, focusedWindow, event) {
         ipcRenderer.send('deleteBoards')
       }
     },
     {
-      accelerator: 'CmdOrCtrl+Delete',
+      accelerator: keystrokeFor('menu:boards:delete-boards-go-forward'),
       label: 'Delete Board(s) - Go Forward',
       click (item, focusedWindow, event) {
         ipcRenderer.send('deleteBoards', 1)
