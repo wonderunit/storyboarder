@@ -15,6 +15,7 @@ const defaultKeyMap = {
   "menu:file:print-worksheet": "CommandOrControl+Shift+p",
   "menu:file:import-worksheets": "CommandOrControl+i",
   "menu:file:import-images": "CommandOrControl+Shift+i",
+  "menu:file:print": "CommandOrControl+p",
 
   "menu:navigation:previous-board": "Left",
   "menu:navigation:next-board": "Right",

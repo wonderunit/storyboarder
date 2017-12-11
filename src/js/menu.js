@@ -125,7 +125,7 @@ AppMenu.File = () => ({
       type: 'separator'
     },
     {
-      accelerator: 'CmdOrCtrl+P',
+      accelerator: keystrokeFor('menu:file:print'),
       label: 'Print or export to PDF…',
       click (item, focusedWindow, event) {
         ipcRenderer.send('exportPDF')
