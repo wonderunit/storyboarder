@@ -26,6 +26,8 @@ const defaultKeyMap = {
   "menu:boards:delete-boards": "CmdOrCtrl+Backspace",
   "menu:boards:delete-boards-go-forward": "CmdOrCtrl+Delete",
   "menu:boards:duplicate": "d",
+  "menu:boards:reorder-left": "Alt+Left",
+  "menu:boards:reorder-right": "Alt+Right",
 
   "menu:tools:light-pencil": "1",
   "menu:tools:pencil": "2",

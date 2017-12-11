@@ -138,8 +138,8 @@ let commands = [
       ['<strong>Delete Board(s)</strong>', keystrokeFor("menu:boards:delete-boards")],
       ['Delete & Go Forward', keystrokeFor("menu:boards:delete-boards-go-forward")],
       ['<strong>Duplicate Board</strong>', keystrokeFor("menu:boards:duplicate")],
-      ['Reorder Left', keystrokeFor("Alt+Left")],
-      ['Reorder Right', keystrokeFor("Alt+Right")],
+      ['Reorder Left', keystrokeFor("menu:boards:reorder-left")],
+      ['Reorder Right', keystrokeFor("menu:boards:reorder-right")],
       ['Toggle Board as New Shot', keystrokeFor("/")],
     ]
   ],

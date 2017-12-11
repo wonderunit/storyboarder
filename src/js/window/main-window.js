@@ -3414,33 +3414,35 @@ window.onkeydown = (e)=> {
 
   if (!textInputMode || textInputAllowAdvance) {
 
-    // console.log(e)
+    //
+    //
+    // arrow left
+    //
+    if (isCommandPressed("menu:navigation:previous-scene")) {
+      e.preventDefault()
+      previousScene()
+    } else if (isCommandPressed("menu:boards:reorder-left")) {
+      e.preventDefault()
+      reorderBoardsLeft()
+    } else if (isCommandPressed("menu:navigation:previous-board")) {
+      e.preventDefault()
+      let shouldPreserveSelections = isCommandPressed("workspace:thumbnails:select-multiple-modifier")
+      goNextBoard(-1, shouldPreserveSelections)
 
-    switch (e.keyCode) {
-      // arrow left
-      case 37:
-        if (isCommandPressed("menu:navigation:previous-scene")) {
-          previousScene()
-        } else if (e.altKey) {
-          reorderBoardsLeft()
-        } else if (isCommandPressed("menu:navigation:previous-board")) {
-          let shouldPreserveSelections = isCommandPressed("workspace:thumbnails:select-multiple-modifier")
-          goNextBoard(-1, shouldPreserveSelections)
-        }
-        e.preventDefault()
-        break
-      // arrow right
-      case 39:
-        if (isCommandPressed("menu:navigation:next-scene")) {
-          nextScene()
-        } else if (e.altKey) {
-          reorderBoardsRight()
-        } else if (isCommandPressed("menu:navigation:next-board")) {
-          let shouldPreserveSelections = isCommandPressed("workspace:thumbnails:select-multiple-modifier")
-          goNextBoard(1, shouldPreserveSelections)
-        }
-        e.preventDefault()
-        break
+    //
+    //
+    // arrow right
+    //
+    } else if (isCommandPressed("menu:navigation:next-scene")) {
+      e.preventDefault()
+      nextScene()
+    } else if (isCommandPressed("menu:boards:reorder-right")) {
+      e.preventDefault()
+      reorderBoardsRight()
+    } else if (isCommandPressed("menu:navigation:next-board")) {
+      e.preventDefault()
+      let shouldPreserveSelections = isCommandPressed("workspace:thumbnails:select-multiple-modifier")
+      goNextBoard(1, shouldPreserveSelections)
     }
   }
 

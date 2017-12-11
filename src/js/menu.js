@@ -327,14 +327,14 @@ AppMenu.Boards = () => ({
       type: 'separator'
     },
     {
-      accelerator: 'Alt+Left',
+      accelerator: keystrokeFor('menu:boards:reorder-left'),
       label: 'Reorder Left',
       click (item, focusedWindow, event) {
         ipcRenderer.send('reorderBoardsLeft')
       }
     },
     {
-      accelerator: 'Alt+Right',
+      accelerator: keystrokeFor('menu:boards:reorder-right'),
       label: 'Reorder Right',
       click (item, focusedWindow, event) {
         ipcRenderer.send('reorderBoardsRight')
