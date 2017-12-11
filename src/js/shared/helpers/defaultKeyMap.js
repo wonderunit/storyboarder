@@ -25,6 +25,7 @@ const defaultKeyMap = {
   "menu:boards:new-board-before": "Shift+n",
   "menu:boards:delete-boards": "CmdOrCtrl+Backspace",
   "menu:boards:delete-boards-go-forward": "CmdOrCtrl+Delete",
+  "menu:boards:duplicate": "d",
 
   "menu:tools:light-pencil": "1",
   "menu:tools:pencil": "2",

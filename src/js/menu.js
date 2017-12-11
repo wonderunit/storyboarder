@@ -317,7 +317,7 @@ AppMenu.Boards = () => ({
       type: 'separator'
     },
     {
-      accelerator: 'D',
+      accelerator: keystrokeFor('menu:boards:duplicate'),
       label: 'Duplicate Board',
       click (item, focusedWindow, event) {
         ipcRenderer.send('duplicateBoard')
