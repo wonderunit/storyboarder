@@ -612,7 +612,7 @@ AppMenu.help = () => ({
     },
     {
       label: 'Show me a story tip!',
-      accelerator: 'CmdOrCtrl+T',
+      accelerator: keystrokeFor('menu:help:show-story-tip'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('showTip')
       }

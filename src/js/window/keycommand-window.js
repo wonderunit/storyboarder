@@ -175,7 +175,7 @@ let commands = [
     ]
   ],
   ["Help", [
-      ['Show me a story tip!', keystrokeFor("CmdOrCtrl+T")],
+      ['Show me a story tip!', keystrokeFor("menu:help:show-story-tip")],
     ]
   ],
 
