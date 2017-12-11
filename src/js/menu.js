@@ -538,7 +538,7 @@ AppMenu.View = () => ({
     },
     {
       label: 'Toggle Captions',
-      accelerator: 'c',
+      accelerator: keystrokeFor('menu:view:toggle-captions'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('toggleCaptions')
       }
