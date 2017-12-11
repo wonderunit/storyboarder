@@ -170,8 +170,8 @@ let commands = [
     ]
   ],
   ["Window", [
-      ['Close Window', keystrokeFor("CmdOrCtrl+W")],
-      ['Minimize Window', keystrokeFor("CmdOrCtrl+M")],
+      ['Close Window', keystrokeFor("menu:window:close")],
+      ['Minimize Window', keystrokeFor("menu:window:minimize")],
     ]
   ],
   ["Help", [

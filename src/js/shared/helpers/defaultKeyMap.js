@@ -49,6 +49,9 @@ const defaultKeyMap = {
   "menu:view:onion-skin": "o",
   "menu:view:toggle-captions": "c",
   "menu:view:toggle-full-screen": "F11",
+
+  "menu:window:minimize": "CmdOrCtrl+m",
+  "menu:window:close": "CmdOrCtrl+w",
   
   "menu:help:show-story-tip": "CommandOrControl+t",
 

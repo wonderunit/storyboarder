@@ -46,12 +46,12 @@ SubMenuFragments.help = [
 SubMenuFragments.windowing = [
   {
     label: 'Minimize',
-    accelerator: 'CmdOrCtrl+M',
+    accelerator: keystrokeFor("menu:window:minimize"),
     role: 'minimize'
   },
   {
     label: 'Close Window',
-    accelerator: 'CmdOrCtrl+W',
+    accelerator: keystrokeFor("menu:window:close"),
     role: 'close'
   }
 ]
