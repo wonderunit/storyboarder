@@ -344,7 +344,7 @@ AppMenu.Boards = () => ({
       type: 'separator'
     },
     {
-      accelerator: '/',
+      accelerator: keystrokeFor("menu:boards:toggle-new-shot"),
       label: 'Toggle Board as New Shot',
       click (item, focusedWindow, event) {
         ipcRenderer.send('toggleNewShot')
