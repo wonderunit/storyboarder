@@ -43,6 +43,18 @@ SubMenuFragments.help = [
     click () { shell.openExternal('https://github.com/wonderunit/storyboarder/issues/new') }
   }
 ]
+SubMenuFragments.windowing = [
+  {
+    label: 'Minimize',
+    accelerator: 'CmdOrCtrl+M',
+    role: 'minimize'
+  },
+  {
+    label: 'Close Window',
+    accelerator: 'CmdOrCtrl+W',
+    role: 'close'
+  }
+]
 
 let AppMenu = {}
 AppMenu.File = () => ({
@@ -560,16 +572,6 @@ AppMenu.window = () => {
   let extension = process.platform == 'darwin'
     ? [
         {
-          label: 'Close',
-          accelerator: 'CmdOrCtrl+W',
-          role: 'close'
-        },
-        {
-          label: 'Minimize',
-          accelerator: 'CmdOrCtrl+M',
-          role: 'minimize'
-        },
-        {
           label: 'Zoom',
           role: 'zoom'
         },
@@ -586,12 +588,7 @@ AppMenu.window = () => {
   return {
     role: 'window',
     submenu: [
-      {
-        role: 'minimize'
-      },
-      {
-        role: 'close'
-      },
+      ...SubMenuFragments.windowing,
       ...extension
     ]
   }
@@ -723,12 +720,7 @@ const welcomeTemplate = [
   {
     role: 'window',
     submenu: [
-      {
-        role: 'minimize'
-      },
-      {
-        role: 'close'
-      }
+      ...SubMenuFragments.windowing
     ]
   },
   {
