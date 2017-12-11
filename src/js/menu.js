@@ -551,7 +551,7 @@ AppMenu.View = () => ({
       type: 'separator'
     },
     {
-      accelerator: 'F11',
+      accelerator: keystrokeFor("menu:view:toggle-full-screen"),
       role: 'togglefullscreen'
     }
   ]
