@@ -135,9 +135,9 @@ let commands = [
   ["Boards", [
       ['<strong>New Board</strong>', keystrokeFor("menu:boards:new-board")],
       ['New Board Before', keystrokeFor("menu:boards:new-board-before")],
-      ['<strong>Delete Board(s)</strong>', keystrokeFor("CmdOrCtrl+Backspace")],
-      ['Delete Board(s)', keystrokeFor("CmdOrCtrl+Delete")],
       ['<strong>Duplicate Board</strong>', keystrokeFor("D")],
+      ['<strong>Delete Board(s)</strong>', keystrokeFor("menu:boards:delete-boards")],
+      ['Delete & Go Forward', keystrokeFor("menu:boards:delete-boards-go-forward")],
       ['Reorder Left', keystrokeFor("Alt+Left")],
       ['Reorder Right', keystrokeFor("Alt+Right")],
       ['Toggle Board as New Shot', keystrokeFor("/")],
