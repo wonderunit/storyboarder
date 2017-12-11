@@ -35,10 +35,8 @@ const defaultKeyMap = {
   "menu:tools:palette-color-1": "8",
   "menu:tools:palette-color-2": "9",
   "menu:tools:palette-color-3": "0",
-
-  "menu:tools:edit-in-photoshop": "CommandOrControl+.",
-
   "menu:tools:flip-horizontal": "CommandOrControl+f",
+  "menu:tools:edit-in-photoshop": "CommandOrControl+.",
   
   "menu:view:cycle-view-mode": "Tab",
   "menu:view:cycle-view-mode-reverse": "Shift+Tab",
