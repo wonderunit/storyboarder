@@ -604,7 +604,7 @@ AppMenu.help = () => ({
     },
     {
       label: 'Key Commands…',
-      accelerator: 'CmdOrCtrl+K',
+      accelerator: keystrokeFor('menu:help:show-key-commands'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('showKeyCommands')
       }

@@ -55,6 +55,7 @@ const defaultKeyMap = {
   "menu:window:minimize": "CommandOrControl+m",
   "menu:window:close": "CommandOrControl+w",
   
+  "menu:help:show-key-commands": "CommandOrControl+k",
   "menu:help:show-story-tip": "CommandOrControl+t",
 
   "workspace:thumbnails:select-multiple-modifier": "Shift",
