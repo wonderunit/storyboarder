@@ -23,8 +23,8 @@ const defaultKeyMap = {
 
   "menu:boards:new-board": "n",
   "menu:boards:new-board-before": "Shift+n",
-  "menu:boards:delete-boards": "CmdOrCtrl+Backspace",
-  "menu:boards:delete-boards-go-forward": "CmdOrCtrl+Delete",
+  "menu:boards:delete-boards": "CommandOrControl+Backspace",
+  "menu:boards:delete-boards-go-forward": "CommandOrControl+Delete",
   "menu:boards:duplicate": "d",
   "menu:boards:reorder-left": "Alt+Left",
   "menu:boards:reorder-right": "Alt+Right",
@@ -50,8 +50,8 @@ const defaultKeyMap = {
   "menu:view:toggle-captions": "c",
   "menu:view:toggle-full-screen": "F11",
 
-  "menu:window:minimize": "CmdOrCtrl+m",
-  "menu:window:close": "CmdOrCtrl+w",
+  "menu:window:minimize": "CommandOrControl+m",
+  "menu:window:close": "CommandOrControl+w",
   
   "menu:help:show-story-tip": "CommandOrControl+t",
 
