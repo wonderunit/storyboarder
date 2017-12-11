@@ -1186,7 +1186,7 @@ let loadBoardUI = () => {
   })
 
   if (shotTemplateSystem.isEnabled()) {
-    StsSidebar.init(shotTemplateSystem, size[0] / size[1])
+    StsSidebar.init(shotTemplateSystem, size[0] / size[1], store)
     StsSidebar.on('change', () => {
       // HACK reset any open tooltips
       tooltips.closeAll()

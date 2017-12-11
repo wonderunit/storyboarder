@@ -98,9 +98,14 @@ const createIsCommandPressed = store =>
       pressed()
     ).includes(cmd)
 
+// HACK will only match for single, exact key:command mapping (not multiple keys)
+const createIsEventMatchForCommand = store =>
+  (event, cmd) => store.getState().entities.keymap[cmd] === normalizeKeyForEvent(event)
+
 module.exports = {
   pressed,
   findMatchingCommandsByKeys,
   createIsCommandPressed,
+  createIsEventMatchForCommand,
   normalizeKeyForEvent
 }
