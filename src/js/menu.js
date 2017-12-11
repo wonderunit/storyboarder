@@ -531,7 +531,7 @@ AppMenu.View = () => ({
     },
     {
       label: 'Toggle Onion Skin',
-      accelerator: 'o',
+      accelerator: keystrokeFor('menu:view:onion-skin'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('toggleGuide', 'onion')
       }

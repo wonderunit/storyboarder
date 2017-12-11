@@ -40,6 +40,7 @@ const defaultKeyMap = {
   
   "menu:view:cycle-view-mode": "Tab",
   "menu:view:cycle-view-mode-reverse": "Shift+Tab",
+  "menu:view:onion-skin": "o",
 
   "workspace:thumbnails:select-multiple-modifier": "Shift"
 }

@@ -164,7 +164,7 @@ let commands = [
   ["View", [
       ['<strong>Cycle View Mode</strong>', keystrokeFor("menu:view:cycle-view-mode")],
       ['Reverse Cycle View Mode', keystrokeFor("menu:view:cycle-view-mode-reverse")],
-      ['Toggle Onion Skin', keystrokeFor("O")],
+      ['Toggle Onion Skin', keystrokeFor("menu:view:onion-skin")],
       ['Toggle Captions', keystrokeFor("C")],
       ['Toggle Fullscreen', keystrokeFor("F11")],
     ]
