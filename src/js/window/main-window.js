@@ -3393,11 +3393,6 @@ window.onkeydown = (e)=> {
           e.preventDefault()
         }
         break
-      // TAB and SHIFT+TAB
-      case 9:
-        cycleViewMode(e.shiftKey ? -1 : +1)
-        e.preventDefault()
-        break;
       // ESCAPE
       case 27:
         if (dragMode && isEditMode && selections.size) {
@@ -3405,6 +3400,15 @@ window.onkeydown = (e)=> {
           disableDragMode()
         }
         break
+    }
+
+    // TAB and SHIFT+TAB
+    if (isCommandPressed('menu:view:cycle-view-mode-reverse')) {
+      cycleViewMode(-1)
+      e.preventDefault()
+    } else if (isCommandPressed('menu:view:cycle-view-mode')) {
+      cycleViewMode(+1)
+      e.preventDefault()
     }
   }
 

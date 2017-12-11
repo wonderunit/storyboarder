@@ -39,6 +39,9 @@ const defaultKeyMap = {
   "menu:tools:edit-in-photoshop": "CommandOrControl+.",
 
   "menu:tools:flip-horizontal": "CommandOrControl+f",
+  
+  "menu:view:cycle-view-mode": "Tab",
+  "menu:view:cycle-view-mode-reverse": "Shift+Tab",
 
   "workspace:thumbnails:select-multiple-modifier": "Shift"
 }
