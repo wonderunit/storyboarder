@@ -165,14 +165,14 @@ AppMenu.Edit = () => ({
   submenu: [
     {
       label: 'Undo',
-      accelerator: 'CmdOrCtrl+Z',
+      accelerator: keystrokeFor('menu:edit:undo'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('undo')
       }
     },
     {
       label: 'Redo',
-      accelerator: 'Shift+CmdOrCtrl+Z',
+      accelerator: keystrokeFor('menu:edit:redo'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('redo')
       }
@@ -182,19 +182,19 @@ AppMenu.Edit = () => ({
     },
     {
       label: 'Cut',
-      accelerator: 'CmdOrCtrl+X',
+      accelerator: keystrokeFor('menu:edit:cut'),
       role: 'cut'
     },
     {
       label: 'Copy',
-      accelerator: 'CmdOrCtrl+C',
+      accelerator: keystrokeFor('menu:edit:copy'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('copy')
       }
     },
     {
       label: 'Paste',
-      accelerator: 'CmdOrCtrl+V',
+      accelerator: keystrokeFor('menu:edit:paste'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('paste')
       }

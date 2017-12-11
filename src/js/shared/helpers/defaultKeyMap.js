@@ -17,7 +17,13 @@ const defaultKeyMap = {
   "menu:file:import-images": "CommandOrControl+Shift+i",
   "menu:file:print": "CommandOrControl+p",
 
+  "menu:edit:undo": "CommandOrControl+z",
+  "menu:edit:redo": "Shift+CommandOrControl+z",
+  "menu:edit:cut": "CommandOrControl+x",
+  "menu:edit:copy": "CommandOrControl+c",
+  "menu:edit:paste": "CommandOrControl+v",
   "menu:edit:select-all": "CommandOrControl+a",
+
   "menu:navigation:previous-board": "Left",
   "menu:navigation:next-board": "Right",
   "menu:navigation:previous-scene": "CommandOrControl+Left",

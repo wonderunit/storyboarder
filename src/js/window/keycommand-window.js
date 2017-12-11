@@ -118,10 +118,10 @@ let commands = [
     ]
   ],
   ["Edit", [
-      ['<strong>Undo</strong>', keystrokeFor("CmdOrCtrl+Z")],
-      ['Redo', keystrokeFor("Shift+CmdOrCtrl+Z")],
-      ['Copy', keystrokeFor("CmdOrCtrl+C")],
-      ['Paste', keystrokeFor("CmdOrCtrl+V")],
+      ['<strong>Undo</strong>', keystrokeFor("menu:edit:undo")],
+      ['Redo', keystrokeFor("menu:edit:redo")],
+      ['Copy', keystrokeFor("menu:edit:copy")],
+      ['Paste', keystrokeFor("menu:edit:paste")],
       // ['Select All', keystrokeFor("menu:edit:select-all")],
     ]
   ],
