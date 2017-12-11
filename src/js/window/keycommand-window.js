@@ -122,7 +122,7 @@ let commands = [
       ['Redo', keystrokeFor("Shift+CmdOrCtrl+Z")],
       ['Copy', keystrokeFor("CmdOrCtrl+C")],
       ['Paste', keystrokeFor("CmdOrCtrl+V")],
-      // ['Select All', keystrokeFor("CmdOrCtrl+A")],
+      // ['Select All', keystrokeFor("menu:edit:select-all")],
     ]
   ],
   ["Navigation", [

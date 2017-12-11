@@ -199,13 +199,11 @@ AppMenu.Edit = () => ({
         ipcRenderer.send('paste')
       }
     },
-    /*
     {
       label: 'Select All',
-      accelerator: 'CmdOrCtrl+A',
+      accelerator: keystrokeFor('menu:edit:select-all'),
       role: 'selectall'
     },
-    */
 
     // add Edit > Preferences on Windows
     ...process.platform == 'win32'
