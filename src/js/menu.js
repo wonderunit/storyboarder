@@ -250,14 +250,16 @@ AppMenu.Navigation = () => ({
       type: 'separator'
     },
     {
-      // accelerator: 'Left',
+      // commented out. we don't route this through the menu.
+      // accelerator: keystrokeFor('menu:navigation:previous-board'),
       label: 'Previous Board',
       click (item, focusedWindow, event) {
         ipcRenderer.send('goPreviousBoard')
       }
     },
     {
-      // accelerator: 'Right',
+      // commented out. we don't route this through the menu.
+      // accelerator: keystrokeFor('menu:navigation:next-board'),
       label: 'Next Board',
       click (item, focusedWindow, event) {
         ipcRenderer.send('goNextBoard')
