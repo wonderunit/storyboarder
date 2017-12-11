@@ -3313,103 +3313,99 @@ const resize = () => {
 window.onkeydown = (e)=> {
   if (!textInputMode) {
     // console.log('window.onkeydown', e)
-    switch (e.keyCode) {
-      // C - Copy
-      case 67:
-        if (e.metaKey || e.ctrlKey) {
-          copyBoards()
-          e.preventDefault()
-        }
-        break
-      // X - Cut
-      case 88:
-        if (e.metaKey || e.ctrlKey) {
-          copyBoards()
-          deleteBoards()
-          notifications.notify({message: 'Copied boards to clipboard.', timing: 5})
-          e.preventDefault()
-        }
-        break
 
-      // r
-      // case 82:
-      //   if(isRecording) {
-      //     let snapshotCanvases = [
-      //       storyboarderSketchPane.sketchPane.getLayerCanvas(0),
-      //       storyboarderSketchPane.sketchPane.getLayerCanvas(1),
-      //       storyboarderSketchPane.sketchPane.getLayerCanvas(3)
-      //     ]
-      //     // make sure we capture the last frame
-      //     canvasRecorder.capture(snapshotCanvases, {force: true})
-      //     canvasRecorder.stop()
-      //     isRecording = false
-      //     isRecordingStarted = false
-      //   } else {
-      //     isRecording = true
+    if (isCommandPressed('menu:edit:copy')) {
+      e.preventDefault()
+      copyBoards()
+      notifications.notify({ message: 'Copied board(s) to clipboard.', timing: 5 })
 
-      //     let outputStrategy = "CanvasBufferOutputGifStrategy"
-      //     if (e.metaKey || e.ctrlKey) {
-      //       outputStrategy = "CanvasBufferOutputFileStrategy"
-      //     }
-      //     let exportsPath = exporterCommon.ensureExportsPathExists(boardFilename)
-      //     canvasRecorder = new CanvasRecorder({
-      //       exportsPath: exportsPath,
-      //       outputStrategy: outputStrategy,
-      //       recordingStrategy: "RecordingStrategyFrameRatio", //"RecordingStrategyTimeRatio",
-      //       recordingTime: 10,
-      //       outputTime: 1,
-      //     })
-      //     canvasRecorder.start()
-      //   }
-      // V
-      case 86:
-        if (e.metaKey || e.ctrlKey) {
-          pasteBoards()
-          e.preventDefault()
-        }
-        break
-      // Z
-      case 90:
-       if (e.metaKey || e.ctrlKey) {
-         if (storyboarderSketchPane.preventIfLocked()) return
+    } else if (isCommandPressed('menu:edit:cut')) {
+      e.preventDefault()
+      copyBoards()
+      deleteBoards()
+      notifications.notify({ message: 'Cut board(s) to clipboard.', timing: 5 })
 
-          if (e.shiftKey) {
-            if (undoStack.getCanRedo()) {
-              undoStack.redo()
-              sfx.rollover()
-            } else {
-              sfx.error()
-              notifications.notify({message: 'Nothing more to redo!', timing: 5})
-            }
-          } else {
-            if (undoStack.getCanUndo()) {
-              undoStack.undo()
-              sfx.rollover()
-            } else {
-              sfx.error()
-              notifications.notify({message: 'Nothing left to undo!', timing: 5})
-            }
-          }
-          e.preventDefault()
-        }
-        break
-      // ESCAPE
-      case 27:
-        if (dragMode && isEditMode && selections.size) {
-          disableEditMode()
-          disableDragMode()
-        }
-        break
-    }
+    } else if (isCommandPressed('menu:edit:paste')) {
+      e.preventDefault()
+      pasteBoards()
+
+    } else if (isCommandPressed('menu:edit:redo')) {
+      e.preventDefault()
+
+      // FIXME TODO only prevent if undo state board was the locked board #929
+      if (storyboarderSketchPane.preventIfLocked()) return
+
+      if (undoStack.getCanRedo()) {
+        undoStack.redo()
+        sfx.rollover()
+      } else {
+        sfx.error()
+        notifications.notify({ message: 'Nothing more to redo!', timing: 5 })
+      }
+
+    } else if (isCommandPressed('menu:edit:undo')) {
+      e.preventDefault()
+
+      // FIXME TODO only prevent if undo state board was the locked board #929
+      if (storyboarderSketchPane.preventIfLocked()) return
+
+      if (undoStack.getCanUndo()) {
+        undoStack.undo()
+        sfx.rollover()
+      } else {
+        sfx.error()
+        notifications.notify({ message: 'Nothing left to undo!', timing: 5 })
+      }
+
+    // ESCAPE
+    } else if (isCommandPressed('drawing:exit-current-mode')) {
+      e.preventDefault()
+
+      if (dragMode && isEditMode && selections.size) {
+        disableEditMode()
+        disableDragMode()
+      }
 
     // TAB and SHIFT+TAB
-    if (isCommandPressed('menu:view:cycle-view-mode-reverse')) {
+    } else if (isCommandPressed('menu:view:cycle-view-mode-reverse')) {
       cycleViewMode(-1)
       e.preventDefault()
+
     } else if (isCommandPressed('menu:view:cycle-view-mode')) {
       cycleViewMode(+1)
       e.preventDefault()
     }
+
+    // r
+    // case 82:
+    //   if(isRecording) {
+    //     let snapshotCanvases = [
+    //       storyboarderSketchPane.sketchPane.getLayerCanvas(0),
+    //       storyboarderSketchPane.sketchPane.getLayerCanvas(1),
+    //       storyboarderSketchPane.sketchPane.getLayerCanvas(3)
+    //     ]
+    //     // make sure we capture the last frame
+    //     canvasRecorder.capture(snapshotCanvases, {force: true})
+    //     canvasRecorder.stop()
+    //     isRecording = false
+    //     isRecordingStarted = false
+    //   } else {
+    //     isRecording = true
+
+    //     let outputStrategy = "CanvasBufferOutputGifStrategy"
+    //     if (e.metaKey || e.ctrlKey) {
+    //       outputStrategy = "CanvasBufferOutputFileStrategy"
+    //     }
+    //     let exportsPath = exporterCommon.ensureExportsPathExists(boardFilename)
+    //     canvasRecorder = new CanvasRecorder({
+    //       exportsPath: exportsPath,
+    //       outputStrategy: outputStrategy,
+    //       recordingStrategy: "RecordingStrategyFrameRatio", //"RecordingStrategyTimeRatio",
+    //       recordingTime: 10,
+    //       outputTime: 1,
+    //     })
+    //     canvasRecorder.start()
+    //   }
   }
 
   if (!textInputMode || textInputAllowAdvance) {
