@@ -218,15 +218,16 @@ kbd {
   font-family: 'wonderunitsans';
   font-size: 12px;  
   background: rgba(255,255,255,0.3);
-  padding: 2px 5px;
+  padding: 2px 5px 0;
   border-radius: 2px;
   color: #333333;
   font-weight: 700;
   position: relative;
-  top: -2px;
+  top: 0;
   min-width: 8px;
   text-align: center;
   margin: 0 2px;
+  line-height: 1;
 }
 
 .highlight {
