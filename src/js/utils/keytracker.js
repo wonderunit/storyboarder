@@ -60,7 +60,7 @@ document.addEventListener('visibilitychange', reset, false)
 const _normalizeMatchableKey = key => 
   key === 'Meta' || key === 'Control' ? 'CommandOrControl' : key
 
-// NOTE: order does not matter. e.g.: CommandAndControl+Alt == Alt+CommandAndControl
+// NOTE: order does not matter. e.g.: CommandOrControl+Alt == Alt+CommandOrControl
 const findMatchingCommandsByKeys = (keymap, pressedKeys) => {
   if (!pressedKeys) return []
 
