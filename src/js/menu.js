@@ -695,7 +695,7 @@ const welcomeTemplate = [
     submenu: [
       {
         label: 'Open…',
-        accelerator: 'CmdOrCtrl+O',
+        accelerator: keystrokeFor('menu:file:open'),
         click (item, focusedWindow, event) {
           ipcRenderer.send('openDialogue')
         }
