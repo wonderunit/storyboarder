@@ -73,6 +73,10 @@ const defaultKeyMap = {
 
   // Windows
   "menu:edit:preferences": "CommandOrControl+,",
+
+  "input:cancel": "Escape",
+  "input:commit:single-line": "Enter",
+  "input:commit:multi-line": "CommandOrControl+Enter"
 }
 
 module.exports = defaultKeyMap

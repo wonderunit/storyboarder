@@ -624,28 +624,6 @@ let loadBoardUI = () => {
       }
       markBoardFileDirty()
     })
-
-    // keyboard control over focus in text fields
-    item.addEventListener('keydown', e => {
-      switch (e.target.name) {
-        // numbers
-        case 'duration':
-        case 'frames':
-        if (e.key === 'Escape' || e.key === 'Enter') {
-          e.target.blur()
-        }
-        break
-    
-        // text
-        case 'dialogue':
-        case 'action':
-        case 'notes':
-        if (e.key === 'Escape' || (e.key === 'Enter' && (e.metaKey || e.ctrlKey))) {
-          e.target.blur()
-        }
-        break
-      }
-    })
   }
 
   document.querySelector('#thumbnail-container').addEventListener('pointerdown', (e)=>{
@@ -3311,6 +3289,28 @@ const resize = () => {
 }
 
 window.onkeydown = (e)=> {
+  if (textInputMode) {
+    // keyboard control over focus in text fields
+    switch (e.target.name) {
+      // numbers
+      case 'duration':
+      case 'frames':
+      if (isCommandPressed('input:cancel') || isCommandPressed('input:commit:single-line')) {
+        e.target.blur()
+      }
+      break
+  
+      // text
+      case 'dialogue':
+      case 'action':
+      case 'notes':
+      if (isCommandPressed('input:cancel') || isCommandPressed('input:commit:multi-line')) {
+        e.target.blur()
+      }
+      break
+    }
+  }
+  
   if (!textInputMode) {
     // console.log('window.onkeydown', e)
 
