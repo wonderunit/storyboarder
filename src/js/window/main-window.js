@@ -3523,45 +3523,48 @@ let togglePlayback = async ()=> {
   transport.setState({ playbackMode })
 }
 
-let playAdvance = async (first) => {
+let playAdvance = async (first, isComplete) => {
   // clearTimeout(playheadTimer)
   clearTimeout(frameTimer)
 
   // are we at the end?
-  if (currentBoard === boardData.boards.length - 1) {
+  if (isComplete) {
     stopPlaying()
-    return
-  }
-
-  if (first) {
-    audioPlayback.start()
-    audioPlayback.playBoard(currentBoard)
   } else {
-    audioPlayback.playBoard(currentBoard + 1)
-    await goNextBoard(1)
+
+    if (first) {
+      audioPlayback.start()
+      audioPlayback.playBoard(currentBoard)
+    } else {
+      audioPlayback.playBoard(currentBoard + 1)
+      await goNextBoard(1)
+    }
+
+    if (playbackMode && boardData.boards[currentBoard].dialogue && speakingMode) {
+      speechSynthesis.cancel()
+      utter.pitch = 0.65
+      utter.rate = 1.1
+
+      var string = boardData.boards[currentBoard].dialogue.split(':')
+      string = string[string.length-1]
+
+      utter.text = string
+      speechSynthesis.speak(utter)
+    }
+
+    var frameDuration
+    if (boardData.boards[currentBoard].duration) {
+      frameDuration = boardData.boards[currentBoard].duration
+    } else {
+      frameDuration = boardData.defaultBoardTiming
+    }
+    frameTimer = setTimeout(
+      playAdvance, 
+      frameDuration, 
+      false, // first
+      currentBoard === boardData.boards.length - 1 // isComplete
+    )
   }
-
-  if (playbackMode && boardData.boards[currentBoard].dialogue && speakingMode) {
-    speechSynthesis.cancel()
-    utter.pitch = 0.65
-    utter.rate = 1.1
-
-    var string = boardData.boards[currentBoard].dialogue.split(':')
-    string = string[string.length-1]
-
-    utter.text = string
-    speechSynthesis.speak(utter)
-  }
-
-
-
-  var frameDuration
-  if (boardData.boards[currentBoard].duration) {
-    frameDuration = boardData.boards[currentBoard].duration
-  } else {
-    frameDuration = boardData.defaultBoardTiming
-  }
-  frameTimer = setTimeout(playAdvance, frameDuration)
 }
 
 
