@@ -2333,6 +2333,32 @@ let renderMetaData = () => {
   // }
 
   renderStats()
+
+  let audiofileContainerEl = document.querySelector('.audiofile_container')
+  let audiofileTextEl = audiofileContainerEl.querySelector('.audiofile_text')
+  let audiofileInputEl = audiofileContainerEl.querySelector('input#audiofile')
+  let audiofileSvgUseEl = audiofileContainerEl.querySelector('svg use')
+  let boardAudiofileFilename = boardData.boards[currentBoard].audiofile
+
+  if (boardAudiofileFilename) {
+    // on
+    audiofileInputEl.value = boardAudiofileFilename
+    audiofileTextEl.innerHTML = util.truncateMiddle(boardAudiofileFilename)
+    audiofileSvgUseEl.setAttribute('xlink:href',
+      audiofileSvgUseEl.getAttribute('xlink:href')
+        .split('#')[0] + '#icon-speaker-on')
+  } else {
+    // mute
+    audiofileInputEl.value = ''
+    audiofileTextEl.innerHTML = '<span class="muted">' +
+                                  '<span class="paren">(</span>' + 
+                                  '<span>no audio</span>' +
+                                  '<span class="paren">)</span>' +
+                                '</span>'
+    audiofileSvgUseEl.setAttribute('xlink:href',
+      audiofileSvgUseEl.getAttribute('xlink:href')
+        .split('#')[0] + '#icon-speaker-off')
+  }
 }
 
 const renderCaption = () => {
