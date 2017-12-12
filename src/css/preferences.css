@@ -96,12 +96,36 @@ input[type=number] {
   line-height: 1;
 }
 
-a.filename {
+/* see: .flatbutton */
+a.button {
   padding: 8px 10px;
-  background-color: #393939;
+  background-color: #3a3a3a;
   color: #FDFDFD;
   border-radius: 6px;
-  line-height: 1;
   display: inline-block;
   text-decoration: none;
+  font-size: 15px;
+}
+
+a.button:hover {
+  background: #444;
+}
+
+/* via mainwindow.css */
+.smallicon {
+  width: 25px;
+  height: 25px;
+  --color1: #888;
+  --color2: #444;
+  vertical-align: middle;
+  top: -2px;
+  left: -5px;
+  margin-right: -8px;
+  position: relative;
+  filter: drop-shadow(0px 1px 0px rgba(0, 0, 0, 0.3));
+}
+
+#revealKeyMapFile {
+  line-height: 25px;
+  padding: 4px 10px 2px 8px;
 }

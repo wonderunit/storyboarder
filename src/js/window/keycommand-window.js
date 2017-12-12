@@ -1,5 +1,16 @@
 var os = require('os')
 
+const { pressed, findMatchingCommandsByKeys } = require('../utils/keytracker')
+
+const { getInitialStateRenderer } = require('electron-redux')
+const configureStore = require('../shared/store/configureStore')
+
+const store = configureStore(getInitialStateRenderer(), 'renderer')
+
+const capitalizeSingleLetters = keystroke => keystroke.split('+').map(k => k.length === 1 ? k.toUpperCase() : k).join('+')
+
+const keystrokeFor = commandCode => capitalizeSingleLetters(store.getState().entities.keymap[commandCode])
+
 let IS_MAC = os.platform() === 'darwin'
 //IS_MAC = false
 
@@ -96,73 +107,73 @@ let keyMapRight = [
 
 let commands = [
   ["File", [
-      ['Save', 'CmdOrCtrl+S'],
-      ['Open...', 'CmdOrCtrl+O'],
-      ['<strong>Export Animated GIF</strong>', 'CmdOrCtrl+E'],
-      ['<strong>Print a Worksheet...</strong>', 'CmdOrCtrl+P'],
-      ['Import Worksheets...', 'CmdOrCtrl+I'],
-      ['<strong>Import Images...</strong>', 'CmdOrCtrl+Shift+i'],
+      ['Save', keystrokeFor("menu:file:save")],
+      ['Open...', keystrokeFor("menu:file:open")],
+      ['<strong>Export Animated GIF</strong>', keystrokeFor("menu:file:export-animated-gif")],
+      ['<strong>Print a Worksheet...</strong>', keystrokeFor("menu:file:print-worksheet")],
+      ['Import Worksheets...', keystrokeFor("menu:file:import-worksheets")],
+      ['<strong>Import Images...</strong>', keystrokeFor("menu:file:import-images")],
     ]
   ],
   ["Edit", [
-      ['<strong>Undo</strong>', 'CmdOrCtrl+Z'],
-      ['Redo', 'Shift+CmdOrCtrl+Z'],
-      ['Copy', 'CmdOrCtrl+C'],
-      ['Paste', 'CmdOrCtrl+V'],
-      // ['Select All', 'CmdOrCtrl+A'],
+      ['<strong>Undo</strong>', keystrokeFor("menu:edit:undo")],
+      ['Redo', keystrokeFor("menu:edit:redo")],
+      ['Copy', keystrokeFor("menu:edit:copy")],
+      ['Paste', keystrokeFor("menu:edit:paste")],
+      // ['Select All', keystrokeFor("menu:edit:select-all")],
     ]
   ],
   ["Navigation", [
-      ['<strong>Previous Board</strong>', 'Left'],
-      ['<strong>Next Board</strong>', 'Right'],
-      ['Previous Scene', 'CmdOrCtrl+Left'],
-      ['Next Scene', 'CmdOrCtrl+Right'],
+      ['<strong>Previous Board</strong>', keystrokeFor("menu:navigation:previous-board")],
+      ['<strong>Next Board</strong>', keystrokeFor("menu:navigation:next-board")],
+      ['Previous Scene', keystrokeFor("menu:navigation:previous-scene")],
+      ['Next Scene', keystrokeFor("menu:navigation:next-scene")],
     ]
   ],
   ["Boards", [
-      ['<strong>New Board</strong>', 'N'],
-      ['New Board Before', 'Shift+N'],
-      ['<strong>Delete Board(s)</strong>', 'CmdOrCtrl+Backspace'],
-      ['Delete Board(s)', 'CmdOrCtrl+Delete'],
-      ['<strong>Duplicate Board</strong>', 'D'],
-      ['Reorder Left', 'Alt+Left'],
-      ['Reorder Right', 'Alt+Right'],
-      ['Toggle Board as New Shot', '/'],
+      ['<strong>New Board</strong>', keystrokeFor("menu:boards:new-board")],
+      ['New Board Before', keystrokeFor("menu:boards:new-board-before")],
+      ['<strong>Delete Board(s)</strong>', keystrokeFor("menu:boards:delete-boards")],
+      ['Delete & Go Forward', keystrokeFor("menu:boards:delete-boards-go-forward")],
+      ['<strong>Duplicate Board</strong>', keystrokeFor("menu:boards:duplicate")],
+      ['Reorder Left', keystrokeFor("menu:boards:reorder-left")],
+      ['Reorder Right', keystrokeFor("menu:boards:reorder-right")],
+      ['Toggle Board as New Shot', keystrokeFor("menu:boards:toggle-new-shot")],
     ]
   ],
   ["Tools", [
-      ['<strong>Light Pencil</strong>', '1'],
-      ['Pencil', '2'],
-      ['<strong>Pen</strong>', '3'],
-      ['Brush', '4'],
-      ['Note Pen', '5'],
-      ['Eraser', '6'],
-      ['<strong>Clear All Layers</strong>', 'Backspace'],
-      ['Clear Layer', 'Alt+Backspace'],
-      ['<strong>Smaller Brush</strong>', '['],
-      ['<strong>Larger Brush</strong>', ']'],
-      ['Use Palette Color 1', '8'],
-      ['Use Palette Color 2', '9'],
-      ['Use Palette Color 3', '0'],
-      ['Flip Horizontal', 'CmdOrCtrl+F'],
-      ['<strong>Edit in Photoshop</strong>', 'CmdOrCtrl+.'],
+      ['<strong>Light Pencil</strong>', keystrokeFor("menu:tools:light-pencil")],
+      ['Pencil', keystrokeFor("menu:tools:pencil")],
+      ['<strong>Pen</strong>', keystrokeFor("menu:tools:pen")],
+      ['Brush', keystrokeFor("menu:tools:brush")],
+      ['Note Pen', keystrokeFor("menu:tools:note-pen")],
+      ['Eraser', keystrokeFor("menu:tools:eraser")],
+      ['<strong>Clear All Layers</strong>', keystrokeFor("menu:tools:clear-all-layers")],
+      ['Clear Layer', keystrokeFor("menu:tools:clear-layer")],
+      ['<strong>Smaller Brush</strong>', keystrokeFor("drawing:brush-size:dec")],
+      ['<strong>Larger Brush</strong>', keystrokeFor("drawing:brush-size:inc")],
+      ['Use Palette Color 1', keystrokeFor("menu:tools:palette-color-1")],
+      ['Use Palette Color 2', keystrokeFor("menu:tools:palette-color-2")],
+      ['Use Palette Color 3', keystrokeFor("menu:tools:palette-color-3")],
+      ['Flip Horizontal', keystrokeFor("menu:tools:flip-horizontal")],
+      ['<strong>Edit in Photoshop</strong>', keystrokeFor("menu:tools:edit-in-photoshop")],
     ]
   ],
   ["View", [
-      ['<strong>Cycle View Mode</strong>', 'Tab'],
-      ['Reverse Cycle View Mode', 'Shift+Tab'],
-      ['Toggle Onion Skin', 'O'],
-      ['Toggle Captions', 'C'],
-      ['Toggle Fullscreen', 'F11'],
+      ['<strong>Cycle View Mode</strong>', keystrokeFor("menu:view:cycle-view-mode")],
+      ['Reverse Cycle View Mode', keystrokeFor("menu:view:cycle-view-mode-reverse")],
+      ['Toggle Onion Skin', keystrokeFor("menu:view:onion-skin")],
+      ['Toggle Captions', keystrokeFor("menu:view:toggle-captions")],
+      ['Toggle Fullscreen', keystrokeFor("menu:view:toggle-full-screen")],
     ]
   ],
   ["Window", [
-      ['Close Window', 'CmdOrCtrl+W'],
-      ['Minimize Window', 'CmdOrCtrl+M'],
+      ['Close Window', keystrokeFor("menu:window:close")],
+      ['Minimize Window', keystrokeFor("menu:window:minimize")],
     ]
   ],
   ["Help", [
-      ['Show me a story tip!', 'CmdOrCtrl+T'],
+      ['Show me a story tip!', keystrokeFor("menu:help:show-story-tip")],
     ]
   ],
 
@@ -273,12 +284,14 @@ let renderCommands = () => {
       html.push('<span class="keyset">')
       // get the commands root command and put the classtype in that keyboard button
       let keyEl = document.querySelector('#key-' + commandParts[1][0])
-      keyEl.classList.add('type-' + classType)
-      if (!keyEl.dataset.color) {
-        keyEl.dataset.color = (i+1)
+      if (keyEl) {
+        keyEl.classList.add('type-' + classType)
+        if (!keyEl.dataset.color) {
+          keyEl.dataset.color = (i+1)
+        }
+        //keyEl.classList.add('color-' + (i+1))
+        keyEl.dataset.type = classType
       }
-      //keyEl.classList.add('color-' + (i+1))
-      keyEl.dataset.type = classType
       html.push(acceleratorAsHtml(commands[i][1][y][1]))
       html.push('</span>')
       html.push('</div>')
@@ -296,19 +309,21 @@ let renderCommands = () => {
       })
       let commandParts = acceleratorParts(event.target.dataset.command)
       let keyEl = document.querySelector('#key-' + commandParts[1][0])
-      let modifierSide
-      if (keyEl.getBoundingClientRect().left > 480) {
-        modifierSide = 'right'
-      } else {
-        modifierSide = 'left'
+      if (keyEl) {
+        let modifierSide
+        if (keyEl.getBoundingClientRect().left > 480) {
+          modifierSide = 'right'
+        } else {
+          modifierSide = 'left'
+        }
+        let i
+        for (i = 0; i < commandParts[0].length; i++) {
+          document.querySelector('#key-' + modifierSide + commandParts[0][i].toLowerCase()).classList.add('active')
+          document.querySelector('#key-' + modifierSide + commandParts[0][i].toLowerCase()).classList.add('color-' + event.target.dataset.color)
+          document.querySelector('#key-' + modifierSide + commandParts[0][i].toLowerCase()).classList.add('highlight')
+        }
+        keyEl.classList.add('active')
       }
-      let i
-      for (i = 0; i < commandParts[0].length; i++) {
-        document.querySelector('#key-' + modifierSide + commandParts[0][i].toLowerCase()).classList.add('active')
-        document.querySelector('#key-' + modifierSide + commandParts[0][i].toLowerCase()).classList.add('color-' + event.target.dataset.color)
-        document.querySelector('#key-' + modifierSide + commandParts[0][i].toLowerCase()).classList.add('highlight')
-      }
-      keyEl.classList.add('active')
     });
 
     el.addEventListener('mouseleave', function(event) {
@@ -351,6 +366,31 @@ let renderCommands = () => {
       })
     });
   });
+
+  // key command tester
+  let outputEl = document.createElement('div')
+  outputEl.innerHTML = `<div
+    class="output"
+    style="color: rgba(255, 255, 255, 0.8); font-size: 13px; position: absolute; bottom: 0; left: 0">
+  </div>`
+  document.querySelector('.commands').appendChild(outputEl.firstChild)
+  const renderKeyTester = event => {
+    let matchingCommands = findMatchingCommandsByKeys(store.getState().entities.keymap, pressed()).join(', ')
+    let keysStr = `<span style="color: rgba(255, 255, 255, 0.6); letter-spacing: 0.05em">PRESSED</span>
+                   <span style="color: rgba(255, 255, 255, 0.8)">${pressed().join('+')}</span>`
+    let matchingCommandsStr = matchingCommands
+      ? `&nbsp;&nbsp;&nbsp;
+          <span style="color: rgba(255, 255, 255, 0.6); letter-spacing: 0.05em">COMMANDS</span>
+          <span style="color: rgba(255, 255, 255, 0.8)">${matchingCommands}</span>
+         `
+      : ''
+    document.querySelector('.output').innerHTML = keysStr + matchingCommandsStr
+  }
+  const resetKeyTester = event => document.querySelector('.output').innerHTML = ''
+  window.addEventListener('keydown', renderKeyTester)
+  window.addEventListener('keyup', resetKeyTester)
+  window.addEventListener('blur', resetKeyTester)
+  document.addEventListener('visibilitychange', resetKeyTester)
 
 }
 

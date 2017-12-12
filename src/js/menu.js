@@ -1,6 +1,16 @@
 const { Menu, app } = require('electron').remote
 const { ipcRenderer, shell } = require('electron')
 const isDev = require('electron-is-dev')
+const { getInitialStateRenderer } = require('electron-redux')
+
+const configureStore = require('./shared/store/configureStore')
+const observeStore = require('./shared/helpers/observeStore')
+
+const store = configureStore(getInitialStateRenderer(), 'renderer')
+
+// TODO subscribe to store, update menu when keymap changes
+
+let keystrokeFor = command => store.getState().entities.keymap[command]
 
 let SubMenuFragments = {}
 SubMenuFragments.View = [
@@ -17,7 +27,7 @@ SubMenuFragments.View = [
     : [],
   {
     label: 'Toggle Developer Tools',
-    accelerator: process.platform === 'darwin' ? 'Alt+Command+I' : 'Ctrl+Shift+I',
+    accelerator: keystrokeFor('menu:view:toggle-developer-tools'),
     click (item, focusedWindow) {
       if (focusedWindow) focusedWindow.webContents.toggleDevTools()
     }
@@ -33,6 +43,18 @@ SubMenuFragments.help = [
     click () { shell.openExternal('https://github.com/wonderunit/storyboarder/issues/new') }
   }
 ]
+SubMenuFragments.windowing = [
+  {
+    label: 'Minimize',
+    accelerator: keystrokeFor("menu:window:minimize"),
+    role: 'minimize'
+  },
+  {
+    label: 'Close Window',
+    accelerator: keystrokeFor("menu:window:close"),
+    role: 'close'
+  }
+]
 
 let AppMenu = {}
 AppMenu.File = () => ({
@@ -40,7 +62,7 @@ AppMenu.File = () => ({
   submenu: [
     {
       label: 'Open…',
-      accelerator: 'CmdOrCtrl+O',
+      accelerator: keystrokeFor('menu:file:open'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('openDialogue')
       }
@@ -50,14 +72,14 @@ AppMenu.File = () => ({
     },
     {
       label: 'Save',
-      accelerator: 'CmdOrCtrl+S',
+      accelerator: keystrokeFor('menu:file:save'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('save')
       }
     },
     {
       label: 'Save As …',
-      accelerator: 'CmdOrCtrl+Shift+S',
+      accelerator: keystrokeFor('menu:file:save-as'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('saveAs')
       }
@@ -67,7 +89,7 @@ AppMenu.File = () => ({
     },
     {
       label: 'Export Animated GIF',
-      accelerator: 'CmdOrCtrl+E',
+      accelerator: keystrokeFor('menu:file:export-animated-gif'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('exportAnimatedGif')
       }
@@ -103,7 +125,7 @@ AppMenu.File = () => ({
       type: 'separator'
     },
     {
-      accelerator: 'CmdOrCtrl+P',
+      accelerator: keystrokeFor('menu:file:print'),
       label: 'Print or export to PDF…',
       click (item, focusedWindow, event) {
         ipcRenderer.send('exportPDF')
@@ -113,14 +135,14 @@ AppMenu.File = () => ({
       type: 'separator'
     },
     {
-      accelerator: 'CmdOrCtrl+Shift+P',
+      accelerator: keystrokeFor("menu:file:print-worksheet"),
       label: 'Print a Storyboarder worksheet…',
       click (item, focusedWindow, event) {
         ipcRenderer.send('printWorksheet')
       }
     },
     {
-      accelerator: 'CmdOrCtrl+I',
+      accelerator: keystrokeFor("menu:file:import-worksheets"),
       label: 'Import worksheets…',
       click (item, focusedWindow, event) {
         ipcRenderer.send('importWorksheets')
@@ -131,7 +153,7 @@ AppMenu.File = () => ({
     },
     {
       label: 'Import Images…',
-      accelerator: 'CmdOrCtrl+Shift+i',
+      accelerator: keystrokeFor("menu:file:import-images"),
       click (item, focusedWindow, event) {
         ipcRenderer.send('importImagesDialogue')
       }
@@ -143,14 +165,14 @@ AppMenu.Edit = () => ({
   submenu: [
     {
       label: 'Undo',
-      accelerator: 'CmdOrCtrl+Z',
+      accelerator: keystrokeFor('menu:edit:undo'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('undo')
       }
     },
     {
       label: 'Redo',
-      accelerator: 'Shift+CmdOrCtrl+Z',
+      accelerator: keystrokeFor('menu:edit:redo'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('redo')
       }
@@ -160,30 +182,28 @@ AppMenu.Edit = () => ({
     },
     {
       label: 'Cut',
-      accelerator: 'CmdOrCtrl+X',
+      accelerator: keystrokeFor('menu:edit:cut'),
       role: 'cut'
     },
     {
       label: 'Copy',
-      accelerator: 'CmdOrCtrl+C',
+      accelerator: keystrokeFor('menu:edit:copy'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('copy')
       }
     },
     {
       label: 'Paste',
-      accelerator: 'CmdOrCtrl+V',
+      accelerator: keystrokeFor('menu:edit:paste'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('paste')
       }
     },
-    /*
     {
       label: 'Select All',
-      accelerator: 'CmdOrCtrl+A',
+      accelerator: keystrokeFor('menu:edit:select-all'),
       role: 'selectall'
     },
-    */
 
     // add Edit > Preferences on Windows
     ...process.platform == 'win32'
@@ -193,7 +213,7 @@ AppMenu.Edit = () => ({
         },
         {
           label: 'Preferences',
-          accelerator: 'CmdOrCtrl+,',
+          accelerator: keystrokeFor('menu:edit:preferences'),
           click: () => ipcRenderer.send('preferences')
         }
       ]
@@ -228,28 +248,32 @@ AppMenu.Navigation = () => ({
       type: 'separator'
     },
     {
-      // accelerator: 'Left',
+      // commented out. we don't route this through the menu.
+      // accelerator: keystrokeFor('menu:navigation:previous-board'),
       label: 'Previous Board',
       click (item, focusedWindow, event) {
         ipcRenderer.send('goPreviousBoard')
       }
     },
     {
-      // accelerator: 'Right',
+      // commented out. we don't route this through the menu.
+      // accelerator: keystrokeFor('menu:navigation:next-board'),
       label: 'Next Board',
       click (item, focusedWindow, event) {
         ipcRenderer.send('goNextBoard')
       }
     },
     {
-      accelerator: 'CmdOrCtrl+Left',
+      // NOTE for some reason, this accelerator does not trigger a click (CmdOrCtrl+Left)
+      accelerator: keystrokeFor('menu:navigation:previous-scene'),
       label: 'Previous Scene',
       click (item, focusedWindow, event) {
         ipcRenderer.send('previousScene')
       }
     },
     {
-      accelerator: 'CmdOrCtrl+Right',
+      // NOTE for some reason, this accelerator does not trigger a click (CmdOrCtrl+Right)
+      accelerator: keystrokeFor('menu:navigation:next-scene'),
       label: 'Next Scene',
       click (item, focusedWindow, event) {
         ipcRenderer.send('nextScene')
@@ -271,14 +295,14 @@ AppMenu.Boards = () => ({
   label: 'Boards',
   submenu: [
     {
-      accelerator: 'N',
+      accelerator: keystrokeFor('menu:boards:new-board'),
       label: 'New Board',
       click (item, focusedWindow, event) {
         ipcRenderer.send('newBoard', 1)
       }
     },
     {
-      accelerator: 'Shift+N',
+      accelerator: keystrokeFor('menu:boards:new-board-before'),
       label: 'New Board Before',
       click (item, focusedWindow, event) {
         ipcRenderer.send('newBoard', -1)
@@ -288,14 +312,14 @@ AppMenu.Boards = () => ({
       type: 'separator'
     },
     {
-      accelerator: 'CmdOrCtrl+Backspace',
+      accelerator: keystrokeFor('menu:boards:delete-boards'),
       label: 'Delete Board(s)',
       click (item, focusedWindow, event) {
         ipcRenderer.send('deleteBoards')
       }
     },
     {
-      accelerator: 'CmdOrCtrl+Delete',
+      accelerator: keystrokeFor('menu:boards:delete-boards-go-forward'),
       label: 'Delete Board(s) - Go Forward',
       click (item, focusedWindow, event) {
         ipcRenderer.send('deleteBoards', 1)
@@ -305,7 +329,7 @@ AppMenu.Boards = () => ({
       type: 'separator'
     },
     {
-      accelerator: 'D',
+      accelerator: keystrokeFor('menu:boards:duplicate'),
       label: 'Duplicate Board',
       click (item, focusedWindow, event) {
         ipcRenderer.send('duplicateBoard')
@@ -315,14 +339,14 @@ AppMenu.Boards = () => ({
       type: 'separator'
     },
     {
-      accelerator: 'Alt+Left',
+      accelerator: keystrokeFor('menu:boards:reorder-left'),
       label: 'Reorder Left',
       click (item, focusedWindow, event) {
         ipcRenderer.send('reorderBoardsLeft')
       }
     },
     {
-      accelerator: 'Alt+Right',
+      accelerator: keystrokeFor('menu:boards:reorder-right'),
       label: 'Reorder Right',
       click (item, focusedWindow, event) {
         ipcRenderer.send('reorderBoardsRight')
@@ -332,7 +356,7 @@ AppMenu.Boards = () => ({
       type: 'separator'
     },
     {
-      accelerator: '/',
+      accelerator: keystrokeFor("menu:boards:toggle-new-shot"),
       label: 'Toggle Board as New Shot',
       click (item, focusedWindow, event) {
         ipcRenderer.send('toggleNewShot')
@@ -344,42 +368,42 @@ AppMenu.Tools = () => ({
   label: 'Tools',
   submenu: [
     {
-      accelerator: '1',
+      accelerator: keystrokeFor('menu:tools:light-pencil'),
       label: 'Light Pencil',
       click (item, focusedWindow, event) {
         ipcRenderer.send('setTool', 'lightPencil')
       }
     },
     {
-      accelerator: '2',
+      accelerator: keystrokeFor('menu:tools:pencil'),
       label: 'Pencil',
       click (item, focusedWindow, event) {
         ipcRenderer.send('setTool', 'pencil')
       }
     },
     {
-      accelerator: '3',
+      accelerator: keystrokeFor('menu:tools:pen'),
       label: 'Pen',
       click (item, focusedWindow, event) {
         ipcRenderer.send('setTool', 'pen')
       }
     },
     {
-      accelerator: '4',
+      accelerator: keystrokeFor('menu:tools:brush'),
       label: 'Brush',
       click (item, focusedWindow, event) {
         ipcRenderer.send('setTool', 'brush')
       }
     },
     {
-      accelerator: '5',
+      accelerator: keystrokeFor('menu:tools:note-pen'),
       label: 'Note Pen',
       click (item, focusedWindow, event) {
         ipcRenderer.send('setTool', 'notePen')
       }
     },
     {
-      accelerator: '6',
+      accelerator: keystrokeFor('menu:tools:eraser'),
       label: 'Eraser',
       click (item, focusedWindow, event) {
         ipcRenderer.send('setTool', 'eraser')
@@ -389,14 +413,14 @@ AppMenu.Tools = () => ({
       type: 'separator'
     },
     {
-      accelerator: 'Backspace',
+      accelerator: keystrokeFor("menu:tools:clear-all-layers"),
       label: 'Clear All Layers',
       click (item, focusedWindow, event) {
         ipcRenderer.send('clear')
       }
     },
     {
-      accelerator: 'Alt+Backspace',
+      accelerator: keystrokeFor("menu:tools:clear-layer"),
       label: 'Clear Layer',
       click (item, focusedWindow, event) {
         ipcRenderer.send('clear', true)
@@ -406,14 +430,14 @@ AppMenu.Tools = () => ({
       type: 'separator'
     },
     {
-      accelerator: '[',
+      accelerator: keystrokeFor('drawing:brush-size:dec'),
       label: 'Smaller Brush',
       click (item, focusedWindow, event) {
         ipcRenderer.send('brushSize', -1)
       }
     },
     {
-      accelerator: ']',
+      accelerator: keystrokeFor('drawing:brush-size:inc'),
       label: 'Larger Brush',
       click (item, focusedWindow, event) {
         ipcRenderer.send('brushSize', 1)
@@ -423,21 +447,21 @@ AppMenu.Tools = () => ({
       type: 'separator'
     },
     {
-      accelerator: '8',
+      accelerator: keystrokeFor("menu:tools:palette-color-1"),
       label: 'Use Palette Color 1',
       click (item, focusedWindow, event) {
         ipcRenderer.send('useColor', 1)
       }
     },
     {
-      accelerator: '9',
+      accelerator: keystrokeFor("menu:tools:palette-color-2"),
       label: 'Use Palette Color 2',
       click (item, focusedWindow, event) {
         ipcRenderer.send('useColor', 2)
       }
     },
     {
-      accelerator: '0',
+      accelerator: keystrokeFor("menu:tools:palette-color-3"),
       label: 'Use Palette Color 3',
       click (item, focusedWindow, event) {
         ipcRenderer.send('useColor', 3)
@@ -447,7 +471,7 @@ AppMenu.Tools = () => ({
       type: 'separator'
     },
     {
-      accelerator: 'CmdOrCtrl+F',
+      accelerator: keystrokeFor("menu:tools:flip-horizontal"),
       label: 'Flip Horizontal',
       click (item, focusedWindow, event) {
         ipcRenderer.send('flipBoard')
@@ -464,7 +488,7 @@ AppMenu.Tools = () => ({
     },
     {
       label: 'Edit in Photoshop',
-      accelerator: 'CmdOrCtrl+.',
+      accelerator: keystrokeFor('menu:tools:edit-in-photoshop'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('openInEditor')
       }
@@ -476,7 +500,7 @@ AppMenu.View = () => ({
   submenu: [
     {
       label: 'Cycle View Mode',
-      accelerator: 'Tab',
+      accelerator: keystrokeFor('menu:view:cycle-view-mode'),
       click (item, focusedWindow, event) {
         // NOTE this is only triggered by menu directly, not by key
         ipcRenderer.send('cycleViewMode', +1)
@@ -484,7 +508,7 @@ AppMenu.View = () => ({
     },
     {
       label: 'Reverse Cycle View Mode',
-      accelerator: 'Shift+Tab',
+      accelerator: keystrokeFor('menu:view:cycle-view-mode-reverse'),
       click (item, focusedWindow, event) {
         // NOTE this is only triggered by menu directly, not by key
         ipcRenderer.send('cycleViewMode', -1)
@@ -519,14 +543,14 @@ AppMenu.View = () => ({
     },
     {
       label: 'Toggle Onion Skin',
-      accelerator: 'o',
+      accelerator: keystrokeFor('menu:view:onion-skin'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('toggleGuide', 'onion')
       }
     },
     {
       label: 'Toggle Captions',
-      accelerator: 'c',
+      accelerator: keystrokeFor('menu:view:toggle-captions'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('toggleCaptions')
       }
@@ -539,7 +563,7 @@ AppMenu.View = () => ({
       type: 'separator'
     },
     {
-      accelerator: 'F11',
+      accelerator: keystrokeFor("menu:view:toggle-full-screen"),
       role: 'togglefullscreen'
     }
   ]
@@ -547,16 +571,6 @@ AppMenu.View = () => ({
 AppMenu.window = () => {
   let extension = process.platform == 'darwin'
     ? [
-        {
-          label: 'Close',
-          accelerator: 'CmdOrCtrl+W',
-          role: 'close'
-        },
-        {
-          label: 'Minimize',
-          accelerator: 'CmdOrCtrl+M',
-          role: 'minimize'
-        },
         {
           label: 'Zoom',
           role: 'zoom'
@@ -574,12 +588,7 @@ AppMenu.window = () => {
   return {
     role: 'window',
     submenu: [
-      {
-        role: 'minimize'
-      },
-      {
-        role: 'close'
-      },
+      ...SubMenuFragments.windowing,
       ...extension
     ]
   }
@@ -593,14 +602,14 @@ AppMenu.help = () => ({
     },
     {
       label: 'Key Commands…',
-      accelerator: 'CmdOrCtrl+K',
+      accelerator: keystrokeFor('menu:help:show-key-commands'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('showKeyCommands')
       }
     },
     {
       label: 'Show me a story tip!',
-      accelerator: 'CmdOrCtrl+T',
+      accelerator: keystrokeFor('menu:help:show-story-tip'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('showTip')
       }
@@ -620,7 +629,7 @@ AppMenu.about = (options = { includePreferences: false }) => {
         },
         {
           label: 'Preferences',
-          accelerator: 'Cmd+,',
+          accelerator: keystrokeFor('menu:about:preferences'),
           click: () => ipcRenderer.send('preferences')
         }
       ]
@@ -684,7 +693,7 @@ const welcomeTemplate = [
     submenu: [
       {
         label: 'Open…',
-        accelerator: 'CmdOrCtrl+O',
+        accelerator: keystrokeFor('menu:file:open'),
         click (item, focusedWindow, event) {
           ipcRenderer.send('openDialogue')
         }
@@ -711,12 +720,7 @@ const welcomeTemplate = [
   {
     role: 'window',
     submenu: [
-      {
-        role: 'minimize'
-      },
-      {
-        role: 'close'
-      }
+      ...SubMenuFragments.windowing
     ]
   },
   {
@@ -727,16 +731,17 @@ const welcomeTemplate = [
   }
 ]
 
-const menuInstance = Menu.buildFromTemplate(template)
-const welcomeMenuInstance = Menu.buildFromTemplate(welcomeTemplate)
-
-const menu = {
-  setWelcomeMenu: function() {
-    Menu.setApplicationMenu(welcomeMenuInstance)
-  },
-  setMenu: function() {
-    Menu.setApplicationMenu(menuInstance)
-  }
+const setWelcomeMenu = () => {
+  let welcomeMenuInstance = Menu.buildFromTemplate(welcomeTemplate)
+  Menu.setApplicationMenu(welcomeMenuInstance)
 }
 
-module.exports = menu
+const setMenu = () => {
+  let menuInstance = Menu.buildFromTemplate(template)
+  Menu.setApplicationMenu(menuInstance)
+}
+
+module.exports = {
+  setWelcomeMenu,
+  setMenu
+}

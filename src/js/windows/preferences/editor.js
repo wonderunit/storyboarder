@@ -1,4 +1,4 @@
-const { remote, ipcRenderer } = require('electron')
+const { remote, ipcRenderer, shell } = require('electron')
 const path = require('path')
 
 const util = require('./js/utils')
@@ -7,7 +7,8 @@ const prefsModule = require('electron').remote.require('./prefs')
 let prefs,
     inputs,
     imgEditorEl,
-    imgEditorInput
+    imgEditorInput,
+    revealKeyMapFileEl
 
 const onChange = (name, event) => {
   let el = event.target
@@ -34,6 +35,12 @@ const onFilenameClick = event => {
       }
     }
   )
+}
+
+const onRevealKeyMapFileClick = event => {
+  event.preventDefault()
+  let keymapPath = path.join(remote.app.getPath('userData'), 'keymap.json')
+  shell.showItemInFolder(keymapPath)
 }
 
 const render = () => {
@@ -69,6 +76,7 @@ const init = () => {
 
   imgEditorEl = document.querySelector('#absolutePathToImageEditor_filename')
   imgEditorInput = document.querySelector('#absolutePathToImageEditor')
+  revealKeyMapFileEl = document.querySelector('#revealKeyMapFile')
 
   // bind
   for (let el of inputs) {
@@ -76,6 +84,8 @@ const init = () => {
   }
 
   imgEditorEl.addEventListener('click', onFilenameClick.bind(this))
+  
+  revealKeyMapFileEl.addEventListener('click', onRevealKeyMapFileClick.bind(this))
 
   window.ondragover = () => { return false }
   window.ondragleave = () => { return false }

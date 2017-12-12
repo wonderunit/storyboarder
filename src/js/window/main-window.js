@@ -11,6 +11,12 @@ const Color = require('color-js')
 const chokidar = require('chokidar')
 const plist = require('plist')
 
+
+const { getInitialStateRenderer } = require('electron-redux')
+const configureStore = require('../shared/store/configureStore')
+const observeStore = require('../shared/helpers/observeStore')
+
+
 const StoryboarderSketchPane = require('./storyboarder-sketch-pane')
 const undoStack = require('../undo-stack')
 
@@ -27,7 +33,8 @@ const OnionSkin = require('./onion-skin')
 const Sonifier = require('./sonifier/index')
 const LayersEditor = require('./layers-editor')
 const sfx = require('../wonderunit-sound')
-const keytracker = require('../utils/keytracker')
+const { createIsCommandPressed } = require('../utils/keytracker')
+
 const storyTips = new(require('./story-tips'))(sfx, notifications)
 const exporter = require('./exporter')
 const exporterCommon = require('../exporters/common')
@@ -51,6 +58,12 @@ const StsSidebar = require('./sts-sidebar')
 const pkg = require('../../../package.json')
 
 const sharedObj = remote.getGlobal('sharedObj')
+
+
+const store = configureStore(getInitialStateRenderer(), 'renderer')
+window.$r = { store } // for debugging, e.g.: $r.store.getStore()
+const isCommandPressed = createIsCommandPressed(store)
+
 
 const {
   LAYER_INDEX_REFERENCE,
@@ -469,7 +482,8 @@ let loadBoardUI = () => {
 
   storyboarderSketchPane = new StoryboarderSketchPane(
     document.getElementById('storyboarder-sketch-pane'),
-    size
+    size,
+    store
   )
   
   window.addEventListener('resize', () => {
@@ -609,28 +623,6 @@ let loadBoardUI = () => {
           break
       }
       markBoardFileDirty()
-    })
-
-    // keyboard control over focus in text fields
-    item.addEventListener('keydown', e => {
-      switch (e.target.name) {
-        // numbers
-        case 'duration':
-        case 'frames':
-        if (e.key === 'Escape' || e.key === 'Enter') {
-          e.target.blur()
-        }
-        break
-    
-        // text
-        case 'dialogue':
-        case 'action':
-        case 'notes':
-        if (e.key === 'Escape' || (e.key === 'Enter' && (e.metaKey || e.ctrlKey))) {
-          e.target.blur()
-        }
-        break
-      }
     })
   }
 
@@ -1194,7 +1186,7 @@ let loadBoardUI = () => {
   })
 
   if (shotTemplateSystem.isEnabled()) {
-    StsSidebar.init(shotTemplateSystem, size[0] / size[1])
+    StsSidebar.init(shotTemplateSystem, size[0] / size[1], store)
     StsSidebar.on('change', () => {
       // HACK reset any open tooltips
       tooltips.closeAll()
@@ -2123,18 +2115,20 @@ let duplicateBoard = async () => {
 const clearLayers = shouldEraseCurrentLayer => {
   if (storyboarderSketchPane.preventIfLocked()) return
 
-  if (toolbar.state.brush !== 'eraser' && (keytracker('<alt>') || shouldEraseCurrentLayer)) {
+  if (toolbar.state.brush !== 'eraser' && (isCommandPressed('drawing:clear-current-layer-modifier') || shouldEraseCurrentLayer)) {
     storyboarderSketchPane.clearLayers([storyboarderSketchPane.sketchPane.getCurrentLayerIndex()])
     saveImageFile()
     sfx.playEffect('trash')
+    notifications.notify({ message: 'Cleared current layer.', timing: 5 })
   } else {
     if (storyboarderSketchPane.isEmpty()) {
       deleteBoards()
+      notifications.notify({ message: 'Deleted board.', timing: 5 })
     } else {
       storyboarderSketchPane.clearLayers()
       saveImageFile()
       sfx.playEffect('trash')
-      notifications.notify({message: 'Cleared canvas.', timing: 5})
+      notifications.notify({ message: 'Cleared all layers.', timing: 5 })
     }
   }
 }
@@ -2777,7 +2771,7 @@ let renderThumbnailDrawer = ()=> {
       let index = Number(e.target.dataset.thumbnail)
       if (selections.has(index)) {
         // ignore
-      } else if (e.shiftKey) {
+      } else if (isCommandPressed("workspace:thumbnails:select-multiple-modifier")) {
 
         if (selections.size == 0 && !util.isUndefined(currentBoard)) {
           // use currentBoard as starting point
@@ -3295,132 +3289,156 @@ const resize = () => {
 }
 
 window.onkeydown = (e)=> {
-  if (!textInputMode) {
-    console.log(e)
-    switch (e.keyCode) {
-      // C - Copy
-      case 67:
-        if (e.metaKey || e.ctrlKey) {
-          copyBoards()
-          e.preventDefault()
-        }
-        break
-      // X - Cut
-      case 88:
-        if (e.metaKey || e.ctrlKey) {
-          copyBoards()
-          deleteBoards()
-          notifications.notify({message: 'Copied boards to clipboard.', timing: 5})
-          e.preventDefault()
-        }
-        break
-
-      // r
-      // case 82:
-      //   if(isRecording) {
-      //     let snapshotCanvases = [
-      //       storyboarderSketchPane.sketchPane.getLayerCanvas(0),
-      //       storyboarderSketchPane.sketchPane.getLayerCanvas(1),
-      //       storyboarderSketchPane.sketchPane.getLayerCanvas(3)
-      //     ]
-      //     // make sure we capture the last frame
-      //     canvasRecorder.capture(snapshotCanvases, {force: true})
-      //     canvasRecorder.stop()
-      //     isRecording = false
-      //     isRecordingStarted = false
-      //   } else {
-      //     isRecording = true
-
-      //     let outputStrategy = "CanvasBufferOutputGifStrategy"
-      //     if (e.metaKey || e.ctrlKey) {
-      //       outputStrategy = "CanvasBufferOutputFileStrategy"
-      //     }
-      //     let exportsPath = exporterCommon.ensureExportsPathExists(boardFilename)
-      //     canvasRecorder = new CanvasRecorder({
-      //       exportsPath: exportsPath,
-      //       outputStrategy: outputStrategy,
-      //       recordingStrategy: "RecordingStrategyFrameRatio", //"RecordingStrategyTimeRatio",
-      //       recordingTime: 10,
-      //       outputTime: 1,
-      //     })
-      //     canvasRecorder.start()
-      //   }
-      // V
-      case 86:
-        if (e.metaKey || e.ctrlKey) {
-          pasteBoards()
-          e.preventDefault()
-        }
-        break
-      // Z
-      case 90:
-       if (e.metaKey || e.ctrlKey) {
-         if (storyboarderSketchPane.preventIfLocked()) return
-
-          if (e.shiftKey) {
-            if (undoStack.getCanRedo()) {
-              undoStack.redo()
-              sfx.rollover()
-            } else {
-              sfx.error()
-              notifications.notify({message: 'Nothing more to redo!', timing: 5})
-            }
-          } else {
-            if (undoStack.getCanUndo()) {
-              undoStack.undo()
-              sfx.rollover()
-            } else {
-              sfx.error()
-              notifications.notify({message: 'Nothing left to undo!', timing: 5})
-            }
-          }
-          e.preventDefault()
-        }
-        break
-      // TAB and SHIFT+TAB
-      case 9:
-        cycleViewMode(e.shiftKey ? -1 : +1)
-        e.preventDefault()
-        break;
-      // ESCAPE
-      case 27:
-        if (dragMode && isEditMode && selections.size) {
-          disableEditMode()
-          disableDragMode()
-        }
-        break
+  if (textInputMode) {
+    // keyboard control over focus in text fields
+    switch (e.target.name) {
+      // numbers
+      case 'duration':
+      case 'frames':
+      if (isCommandPressed('input:cancel') || isCommandPressed('input:commit:single-line')) {
+        e.target.blur()
+      }
+      break
+  
+      // text
+      case 'dialogue':
+      case 'action':
+      case 'notes':
+      if (isCommandPressed('input:cancel') || isCommandPressed('input:commit:multi-line')) {
+        e.target.blur()
+      }
+      break
     }
+  }
+  
+  if (!textInputMode) {
+    // console.log('window.onkeydown', e)
+
+    if (isCommandPressed('menu:edit:copy')) {
+      e.preventDefault()
+      copyBoards()
+      notifications.notify({ message: 'Copied board(s) to clipboard.', timing: 5 })
+
+    } else if (isCommandPressed('menu:edit:cut')) {
+      e.preventDefault()
+      copyBoards()
+      deleteBoards()
+      notifications.notify({ message: 'Cut board(s) to clipboard.', timing: 5 })
+
+    } else if (isCommandPressed('menu:edit:paste')) {
+      e.preventDefault()
+      pasteBoards()
+
+    } else if (isCommandPressed('menu:edit:redo')) {
+      e.preventDefault()
+
+      // FIXME TODO only prevent if undo state board was the locked board #929
+      if (storyboarderSketchPane.preventIfLocked()) return
+
+      if (undoStack.getCanRedo()) {
+        undoStack.redo()
+        sfx.rollover()
+      } else {
+        sfx.error()
+        notifications.notify({ message: 'Nothing more to redo!', timing: 5 })
+      }
+
+    } else if (isCommandPressed('menu:edit:undo')) {
+      e.preventDefault()
+
+      // FIXME TODO only prevent if undo state board was the locked board #929
+      if (storyboarderSketchPane.preventIfLocked()) return
+
+      if (undoStack.getCanUndo()) {
+        undoStack.undo()
+        sfx.rollover()
+      } else {
+        sfx.error()
+        notifications.notify({ message: 'Nothing left to undo!', timing: 5 })
+      }
+
+    // ESCAPE
+    } else if (isCommandPressed('drawing:exit-current-mode')) {
+      e.preventDefault()
+
+      if (dragMode && isEditMode && selections.size) {
+        disableEditMode()
+        disableDragMode()
+      }
+
+    // TAB and SHIFT+TAB
+    } else if (isCommandPressed('menu:view:cycle-view-mode-reverse')) {
+      cycleViewMode(-1)
+      e.preventDefault()
+
+    } else if (isCommandPressed('menu:view:cycle-view-mode')) {
+      cycleViewMode(+1)
+      e.preventDefault()
+    }
+
+    // r
+    // case 82:
+    //   if(isRecording) {
+    //     let snapshotCanvases = [
+    //       storyboarderSketchPane.sketchPane.getLayerCanvas(0),
+    //       storyboarderSketchPane.sketchPane.getLayerCanvas(1),
+    //       storyboarderSketchPane.sketchPane.getLayerCanvas(3)
+    //     ]
+    //     // make sure we capture the last frame
+    //     canvasRecorder.capture(snapshotCanvases, {force: true})
+    //     canvasRecorder.stop()
+    //     isRecording = false
+    //     isRecordingStarted = false
+    //   } else {
+    //     isRecording = true
+
+    //     let outputStrategy = "CanvasBufferOutputGifStrategy"
+    //     if (e.metaKey || e.ctrlKey) {
+    //       outputStrategy = "CanvasBufferOutputFileStrategy"
+    //     }
+    //     let exportsPath = exporterCommon.ensureExportsPathExists(boardFilename)
+    //     canvasRecorder = new CanvasRecorder({
+    //       exportsPath: exportsPath,
+    //       outputStrategy: outputStrategy,
+    //       recordingStrategy: "RecordingStrategyFrameRatio", //"RecordingStrategyTimeRatio",
+    //       recordingTime: 10,
+    //       outputTime: 1,
+    //     })
+    //     canvasRecorder.start()
+    //   }
   }
 
   if (!textInputMode || textInputAllowAdvance) {
 
-    // console.log(e)
+    //
+    //
+    // arrow left
+    //
+    if (isCommandPressed("menu:navigation:previous-scene")) {
+      e.preventDefault()
+      previousScene()
+    } else if (isCommandPressed("menu:boards:reorder-left")) {
+      e.preventDefault()
+      reorderBoardsLeft()
+    } else if (isCommandPressed("menu:navigation:previous-board")) {
+      e.preventDefault()
+      let shouldPreserveSelections = isCommandPressed("workspace:thumbnails:select-multiple-modifier")
+      goNextBoard(-1, shouldPreserveSelections)
 
-    switch (e.keyCode) {
-      // arrow left
-      case 37:
-        if (e.metaKey || e.ctrlKey) {
-          previousScene()
-        } else if (e.altKey) {
-          reorderBoardsLeft()
-        } else {
-          let shouldPreserveSelections = e.shiftKey
-          goNextBoard(-1, shouldPreserveSelections)
-        }
-        e.preventDefault()
-        break
-      // arrow right
-      case 39:
-        if (e.metaKey || e.ctrlKey) {
-          nextScene()
-        } else if (e.altKey) {
-          reorderBoardsRight()
-        } else {
-          let shouldPreserveSelections = e.shiftKey
-          goNextBoard(1, shouldPreserveSelections)
-        }
-        e.preventDefault()
-        break
+    //
+    //
+    // arrow right
+    //
+    } else if (isCommandPressed("menu:navigation:next-scene")) {
+      e.preventDefault()
+      nextScene()
+    } else if (isCommandPressed("menu:boards:reorder-right")) {
+      e.preventDefault()
+      reorderBoardsRight()
+    } else if (isCommandPressed("menu:navigation:next-board")) {
+      e.preventDefault()
+      let shouldPreserveSelections = isCommandPressed("workspace:thumbnails:select-multiple-modifier")
+      goNextBoard(1, shouldPreserveSelections)
     }
   }
 
@@ -4846,14 +4864,12 @@ window.addEventListener('keydown', e => {
     toolbar.render()
   }
   if (toolbar.getIsQuickErasing()) {
-    if (e.altKey) {
-      if (e.code === 'BracketRight') {
-        changeEraserSizeDuringQuickErase(1)
-        sfx.playEffect('brush-size-up')
-      } else if (e.code === 'BracketLeft') {
-        changeEraserSizeDuringQuickErase(-1)
-        sfx.playEffect('brush-size-down')
-      }
+    if (isCommandPressed('drawing:quick-erase-size:inc')) {
+      changeEraserSizeDuringQuickErase(1)
+      sfx.playEffect('brush-size-up')
+    } else if (isCommandPressed('drawing:quick-erase-size:dec')) {
+      changeEraserSizeDuringQuickErase(-1)
+      sfx.playEffect('brush-size-down')
     }
   }
 })

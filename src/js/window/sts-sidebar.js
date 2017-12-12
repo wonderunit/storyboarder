@@ -3,9 +3,13 @@ const EventEmitter = require('events').EventEmitter
 const ShotTemplateSystem = require('../shot-template-system')
 const sfx = require('../wonderunit-sound')
 
+const { createIsEventMatchForCommand } = require('../utils/keytracker')
+
 let shotTemplateSystem
 let emitter = new EventEmitter()
 let aspectRatio
+let store
+let isEventMatchForCommand
 
 let attachListeners = () => {
   for (let element of document.querySelectorAll('#sts-select select')) {
@@ -90,7 +94,8 @@ const renderSelects = selects => {
 /* events */
 
 const onInputKeyDown = event => {
-  if (event.keyCode == 13) {
+  console.log('onInputKeyDown', 'input:commit:single-line')
+  if (isEventMatchForCommand(event, "input:commit:single-line")) {
     addShot()
   }
 }
@@ -130,9 +135,10 @@ const onRandom = event => {
 
 /* exports */
 
-const init = (_shotTemplateSystem, _aspectRatio) => {
+const init = (_shotTemplateSystem, _aspectRatio, _store) => {
   shotTemplateSystem = window.shotTemplateSystem = _shotTemplateSystem
   aspectRatio = _aspectRatio
+  store = _store
 
   document.querySelector("#sts-input1").addEventListener('keydown', onInputKeyDown)
   document.querySelector('#sts-random').addEventListener('click', onRandom)
@@ -142,6 +148,9 @@ const init = (_shotTemplateSystem, _aspectRatio) => {
       document.querySelector("#board-metadata .board-metadata-container").scrollTop = document.querySelector("#shot-generator-container").offsetTop
     }
   })
+
+  // TODO rebind if store changes
+  isEventMatchForCommand = createIsEventMatchForCommand(store)
 }
 
 const reset = sts => {

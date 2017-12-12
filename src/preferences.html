@@ -84,7 +84,7 @@
 
           <div style="display:flex">
             <div>
-              <a href="#" id="absolutePathToImageEditor_filename" class="filename"></a>
+              <a href="#" id="absolutePathToImageEditor_filename" class="button"></a>
               <input
                 hidden="true"
                 type="text"
@@ -100,6 +100,19 @@
           <div class="preferences-hint">
             Select an application (e.g.: .exe or .app). By default this will be the application associated in your operating system for opening PSD files.
             To reset to default, cancel the file prompt.
+          </div>
+        </div>
+
+        <div class="preferences-input">
+          <a id="revealKeyMapFile" class="button" href="#">
+            <svg class="smallicon"><use xlink:href="./img/symbol-defs.svg#icon-showfile"></use></svg>
+            <span>
+              Reveal Keymap File
+            </span>
+          </a>
+          <div class="preferences-hint">
+            You can choose which keys are bound to which Storyboarder commands by editing
+            the Keymap JSON file in a source code editor like Atom or VS Code.
           </div>
         </div>
         
