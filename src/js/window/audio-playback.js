@@ -9,7 +9,6 @@ class AudioPlayback {
     this.getAudioFilePath = getAudioFilePath
 
     this.buffers = new Tone.Buffers()
-    this.currentBoard = 0
     this.hasLoaded = false
     this.players = new Tone.Players()
 
@@ -23,6 +22,7 @@ class AudioPlayback {
   }
 
   // TODO main-window should call updateBuffers whenever board order or audio data changes
+  //          could key of board `time`??
   updateBuffers () {
     console.log('AudioPlayback#updateBuffers')
 
@@ -43,17 +43,53 @@ class AudioPlayback {
   }
 
   playBoard (index) {
+    let MSECS_IN_A_SECOND = 1000
+
     console.log('AudioPlayback#playBoard', index)
-    
-    this.currentBoard = index
-    
-    let board = this.sceneData.boards[this.currentBoard]
-    console.log('\taudio:', board.audio)
 
-    if (board.audio) {
-      this.players.get(board.audio.filename).start()
+    let playingBoard = this.sceneData.boards[index]
 
-      // TODO play any overlapping buffers at correct offset
+    for (let i = 0; i < this.sceneData.boards.length; i++) {
+      let board = this.sceneData.boards[i]
+
+      if (board.audio) {
+        let buffer = this.buffers.get(board.audio.filename)
+
+        if (!buffer.loaded) {
+          console.error('audio not yet loaded', board.audio.filename)
+          continue
+        }
+
+        console.log('found', board.audio.filename, 'with duration', buffer.duration, 'at', board.time)
+
+        if (board === playingBoard) {
+            console.log('\tplaying current board')
+            this.players.get(board.audio.filename).start()
+
+        // does this board end AFTER this current playing board starts?
+        } else if (
+          // it started before
+          board.time < playingBoard.time &&
+          // ... but it ends after
+          ((board.time + (buffer.duration * MSECS_IN_A_SECOND)) > playingBoard.time)
+        ) {
+          console.log('\tfound overlapping board, i')
+          if (board.audio) {
+            let offsetInMsecs = playingBoard.time - board.time
+            console.log('\tplaying overlapping', board.audio.filename, 'at offset', offsetInMsecs)
+            let player = this.players.get(board.audio.filename)
+            if (player.state !== 'started') {
+              player.start(
+                // start now
+                Tone.Time(),
+
+                // offset by offsetInMsecs (converted to seconds)
+                offsetInMsecs / MSECS_IN_A_SECOND
+              )
+            }
+          }
+        }
+      }
     }
   }
 
