@@ -2338,12 +2338,12 @@ let renderMetaData = () => {
   let audiofileTextEl = audiofileContainerEl.querySelector('.audiofile_text')
   let audiofileInputEl = audiofileContainerEl.querySelector('input#audiofile')
   let audiofileSvgUseEl = audiofileContainerEl.querySelector('svg use')
-  let boardAudiofileFilename = boardData.boards[currentBoard].audiofile
+  let boardAudio = boardData.boards[currentBoard].audio
 
-  if (boardAudiofileFilename) {
+  if (boardAudio) {
     // on
-    audiofileInputEl.value = boardAudiofileFilename
-    audiofileTextEl.innerHTML = util.truncateMiddle(boardAudiofileFilename)
+    audiofileInputEl.value = boardAudio.filename
+    audiofileTextEl.innerHTML = util.truncateMiddle(boardAudio.filename)
     audiofileSvgUseEl.setAttribute('xlink:href',
       audiofileSvgUseEl.getAttribute('xlink:href')
         .split('#')[0] + '#icon-speaker-on')
