@@ -1233,7 +1233,11 @@ let loadBoardUI = () => {
     }
   })
 
-  audioPlayback = new AudioPlayback()
+  audioPlayback = new AudioPlayback({
+    store,
+    sceneData: boardData,
+    getAudioFilePath: (filename) => path.join(boardPath, 'images', filename)
+  })
 
   // setup filesystem watcher
   watcher = chokidar.watch(null, {
@@ -1260,7 +1264,8 @@ let updateBoardUI = async () => {
 
 // whenever the scene changes
 const renderScene = async () => {
-  audioPlayback.loadBuffers(boardData.boards)
+  audioPlayback.resetBuffers()
+  audioPlayback.updateBuffers()
 
   // render the thumbnail drawer
   renderThumbnailDrawer()
