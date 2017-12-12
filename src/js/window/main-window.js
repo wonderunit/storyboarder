@@ -3515,6 +3515,12 @@ let playAdvance = async (first) => {
   // clearTimeout(playheadTimer)
   clearTimeout(frameTimer)
 
+  // are we at the end?
+  if (currentBoard === boardData.boards.length - 1) {
+    stopPlaying()
+    return
+  }
+
   if (!first) {
     await goNextBoard(1)
   }
