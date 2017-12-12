@@ -55,6 +55,8 @@ const initializeCanvas = require('ag-psd').initializeCanvas;
 const ShotTemplateSystem = require('../shot-template-system')
 const StsSidebar = require('./sts-sidebar')
 
+const AudioPlayback = require('./audio-playback')
+
 const pkg = require('../../../package.json')
 
 const sharedObj = remote.getGlobal('sharedObj')
@@ -141,6 +143,7 @@ let onionSkin
 let layersEditor
 let pomodoroTimerView
 let shotTemplateSystem
+let audioPlayback
 
 let storyboarderSketchPane
 
@@ -1168,6 +1171,9 @@ let loadBoardUI = () => {
       // to trigger `will-prevent-unload` handler in main.js
       event.returnValue = false
     } else {
+      // dispose of any audio buffers
+      audioPlayback.dispose()
+
       // remove any existing listeners
       watcher && watcher.close()
     }
@@ -1227,6 +1233,8 @@ let loadBoardUI = () => {
     }
   })
 
+  audioPlayback = new AudioPlayback()
+
   // setup filesystem watcher
   watcher = chokidar.watch(null, {
     disableGlobbing: true // treat file strings as literal file names
@@ -1252,6 +1260,8 @@ let updateBoardUI = async () => {
 
 // whenever the scene changes
 const renderScene = async () => {
+  audioPlayback.loadBuffers(boardData.boards)
+
   // render the thumbnail drawer
   renderThumbnailDrawer()
   // go to the correct board
@@ -3490,6 +3500,8 @@ let utter = new SpeechSynthesisUtterance()
 let stopPlaying = () => {
   clearTimeout(frameTimer)
 
+  audioPlayback.stop()
+
   // prevent unnecessary calls
   if (!playbackMode) return
 
@@ -3521,7 +3533,11 @@ let playAdvance = async (first) => {
     return
   }
 
-  if (!first) {
+  if (first) {
+    audioPlayback.start()
+    audioPlayback.playBoard(currentBoard)
+  } else {
+    audioPlayback.playBoard(currentBoard + 1)
     await goNextBoard(1)
   }
 
