@@ -56,6 +56,7 @@ const ShotTemplateSystem = require('../shot-template-system')
 const StsSidebar = require('./sts-sidebar')
 
 const AudioPlayback = require('./audio-playback')
+const AudioFileControlView = require('./audio-file-control-view')
 
 const pkg = require('../../../package.json')
 
@@ -144,6 +145,7 @@ let layersEditor
 let pomodoroTimerView
 let shotTemplateSystem
 let audioPlayback
+let audioFileControlView
 
 let storyboarderSketchPane
 
@@ -1237,6 +1239,32 @@ let loadBoardUI = () => {
     store,
     sceneData: boardData,
     getAudioFilePath: (filename) => path.join(boardPath, 'images', filename)
+  })
+  audioFileControlView = new AudioFileControlView({
+    onSelectFile: function (filepath) {
+      remote.dialog.showMessageBox({
+        message: `You selected ${filepath}`
+      })
+    },
+    onSelectFileCancel: function () {
+      remote.dialog.showMessageBox({
+        message: `Cancelled.`
+      })
+    },
+    onRequestFile: function (event) {
+      event.preventDefault()
+      remote.dialog.showOpenDialog(
+        { title: 'Select Audio File' },
+        filenames => {
+          if (filenames) {
+            this.onSelectFile(filenames[0])
+          } else {
+            console.log(this)
+            this.onSelectFileCancel()
+          }
+        }
+      )
+    }
   })
 
   // setup filesystem watcher
@@ -2349,38 +2377,9 @@ let renderMetaData = () => {
 
   renderStats()
 
-  let audiofileContainerEl = document.querySelector('.audiofile_container')
-  let audiofileTextEl = audiofileContainerEl.querySelector('.audiofile_text')
-  let audiofileInputEl = audiofileContainerEl.querySelector('input#audiofile')
-  let audiofileSvgUseEl = audiofileContainerEl.querySelector('svg use')
-  let boardAudio = boardData.boards[currentBoard].audio
-
-  if (boardAudio) {
-    // on
-    audiofileInputEl.value = boardAudio.filename
-
-    // audiofileTextEl.innerHTML = util.truncateMiddle(boardAudio.filename)
-    audiofileTextEl.innerHTML = '<span>' +
-                                  // '<span class="paren">(</span>' + 
-                                  'Audio' + // : 3s 44.1khz 16bit
-                                  // '<span class="paren">)</span>' +
-                                '</span>'
-
-    audiofileSvgUseEl.setAttribute('xlink:href',
-      audiofileSvgUseEl.getAttribute('xlink:href')
-        .split('#')[0] + '#icon-speaker-on')
-  } else {
-    // mute
-    audiofileInputEl.value = ''
-    audiofileTextEl.innerHTML = '<span class="muted">' +
-                                  // '<span class="paren">(</span>' + 
-                                  'Select Audio File' +
-                                  // '<span class="paren">)</span>' +
-                                '</span>'
-    audiofileSvgUseEl.setAttribute('xlink:href',
-      audiofileSvgUseEl.getAttribute('xlink:href')
-        .split('#')[0] + '#icon-speaker-off')
-  }
+  audioFileControlView.render({
+    boardAudio: boardData.boards[currentBoard].audio
+  })
 }
 
 const renderCaption = () => {
