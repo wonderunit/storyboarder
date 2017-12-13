@@ -298,15 +298,26 @@
 
             <div class="row">
               <div class="audiofile_container">
-                <div class="flatbutton">
-                  <svg class="smallicon">
-                    <use xlink:href="./img/symbol-defs.svg#icon-speaker-on"></use>
-                  </svg>
+                <div class="audiofile_button">
+                  <div class="flatbutton">
+                    <div class="audiofile_icon">
+                      <svg class="smallicon">
+                        <use xlink:href="./img/symbol-defs.svg#icon-speaker-on"></use>
+                      </svg>
+                    </div>
 
-                  <span class="audiofile_text">
-                    <span class="paren">(</span><span>no audio</span><span class="paren">)</span>
-                  </span>
+                    <span class="audiofile_text">
+                      <span class="paren">(</span><a>no audio</a><span class="paren">)</span>
+                    </span>
+                  </div>
                 </div>
+
+                <div class="audiofile_clear">
+                  <svg class="smallicon">
+                    <use xlink:href="./img/symbol-defs.svg#icon-trash"></use>
+                  </svg>
+                </div>
+
                 <input
                   hidden="true"
                   type="text"
