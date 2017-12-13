@@ -283,7 +283,7 @@ AppMenu.Navigation = () => ({
       type: 'separator'
     },
     {
-      label: 'Stop All Sounds',
+      label: 'Stop All Board Audio',
       accelerator: keystrokeFor('menu:navigation:stop-all-sounds'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('stopAllSounds')
