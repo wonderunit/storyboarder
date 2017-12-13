@@ -27,7 +27,7 @@ class AudioPlayback {
     console.log('AudioPlayback#updateBuffers')
 
     for (let board of this.sceneData.boards) {
-      if (!board.audio) return
+      if (!board.audio) continue
 
       if (!this.buffers.has(board.audio.filename)) {
         console.log('\tloading', board.audio.filename)
