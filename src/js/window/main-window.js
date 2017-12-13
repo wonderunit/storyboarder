@@ -2712,6 +2712,15 @@ let renderThumbnailDrawer = ()=> {
     }
     html.push('<div class="info">')
     html.push('<div class="number">' + board.shot + '</div>')
+    if (board.audio && board.audio.filename.length) {
+      html.push(`
+        <div class="audio">
+          <svg>
+            <use xlink:href="./img/symbol-defs.svg#icon-speaker-on"></use>
+          </svg>
+        </div>
+      `)
+    }
     html.push('<div class="caption">')
     if (board.dialogue) {
       html.push(board.dialogue)
