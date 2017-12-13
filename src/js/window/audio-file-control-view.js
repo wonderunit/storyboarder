@@ -14,6 +14,7 @@ class AudioFileControlView {
     let audiofileTextEl = this.el.querySelector('.audiofile_text')
     let audiofileInputEl = this.el.querySelector('input#audiofile')
     let audiofileSvgUseEl = this.el.querySelector('svg use')
+    let audiofileClearBtnEl = this.el.querySelector('.audiofile_clear')
 
     if (boardAudio) {
       // on
@@ -29,6 +30,9 @@ class AudioFileControlView {
       audiofileSvgUseEl.setAttribute('xlink:href',
         audiofileSvgUseEl.getAttribute('xlink:href')
           .split('#')[0] + '#icon-speaker-on')
+
+      audiofileClearBtnEl.style.opacity = 1.0
+      audiofileClearBtnEl.style.pointerEvents = 'auto'
     } else {
       // mute
       audiofileInputEl.value = ''
@@ -40,6 +44,9 @@ class AudioFileControlView {
       audiofileSvgUseEl.setAttribute('xlink:href',
         audiofileSvgUseEl.getAttribute('xlink:href')
           .split('#')[0] + '#icon-speaker-off')
+
+      audiofileClearBtnEl.style.opacity = 0.5
+      audiofileClearBtnEl.style.pointerEvents = 'none'
     }
   }
 }
