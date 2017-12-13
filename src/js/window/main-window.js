@@ -2337,8 +2337,12 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
       rotation: 0
     })
 
-    updateSketchPaneBoard().then(() => resolve()).catch(e => console.error(e))
     ipcRenderer.send('analyticsEvent', 'Board', 'go to board', null, currentBoard)
+
+    updateSketchPaneBoard().then(() => {
+      audioPlayback.playBoard(currentBoard)
+      resolve()
+    }).catch(e => console.error(e))
   })
 }
 
@@ -3622,7 +3626,6 @@ let playAdvance = async (first, isComplete) => {
       audioPlayback.start()
       audioPlayback.playBoard(currentBoard)
     } else {
-      audioPlayback.playBoard(currentBoard + 1)
       await goNextBoard(1)
     }
 

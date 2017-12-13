@@ -13,6 +13,7 @@ class AudioPlayback {
     this.players = new Tone.Players()
 
     this.resetBuffers()
+    this.isPlaying = false
 
     this.onBuffersLoaded = this.onBuffersLoaded.bind(this)
   }
@@ -46,6 +47,8 @@ class AudioPlayback {
     let MSECS_IN_A_SECOND = 1000
 
     console.log('AudioPlayback#playBoard', index)
+
+    if (!this.isPlaying) return
 
     let playingBoard = this.sceneData.boards[index]
 
@@ -106,10 +109,13 @@ class AudioPlayback {
       this.players.add(name, this.buffers.get(name))
       console.log(this.players)
     }
+    this.isPlaying = true
   }
 
   stop () {
     console.log('AudioPlayback#stop')
+
+    this.isPlaying = false
     this.players.stopAll()
   }
 
