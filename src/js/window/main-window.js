@@ -1242,28 +1242,94 @@ let loadBoardUI = () => {
   })
   audioFileControlView = new AudioFileControlView({
     onSelectFile: function (filepath) {
-      remote.dialog.showMessageBox({
-        message: `You selected ${filepath}`
-      })
+      console.log('AudioFileControlView#onSelectFile', markBoardFileDirty)
+      let board = boardData.boards[currentBoard]
+
+      // rename to match uid
+      let newFilename = `${board.uid}-${path.basename(filepath)}`
+
+      // copy to project folder
+      console.log('copySync', filepath, path.join(boardPath, 'images', newFilename))
+      fs.copySync(
+        filepath,
+        path.join(boardPath, 'images', newFilename)
+      )
+      
+      // update board’s audio object
+      board.audio = board.audio || {}
+      board.audio.filename = newFilename
+      
+      // mark .storyboarder scene JSON file dirty
+      markBoardFileDirty()
+      
+      // update the audio playback buffers
+      audioPlayback.updateBuffers()
+      renderThumbnailDrawer()
+      audioFileControlView.render({ boardAudio: board.audio })
     },
     onSelectFileCancel: function () {
-      remote.dialog.showMessageBox({
-        message: `Cancelled.`
-      })
+      // NOOP
     },
     onRequestFile: function (event) {
       event.preventDefault()
+      // TODO limit file extensions?
       remote.dialog.showOpenDialog(
-        { title: 'Select Audio File' },
+        {
+          title: 'Select Audio File',
+          filters: [
+            {
+              name: 'Audio',
+              extensions: [
+                'wav',
+                'mp3',
+                'm4a',
+                'mp4'
+              ]
+            }
+          ]
+        },
         filenames => {
           if (filenames) {
             this.onSelectFile(filenames[0])
           } else {
-            console.log(this)
             this.onSelectFileCancel()
           }
         }
       )
+    },
+    onClear: function () {
+      console.log('AudioFileControlView#clear', markBoardFileDirty)
+
+      let board = boardData.boards[currentBoard]      
+
+      if (!board.audio) return
+
+      const choice = remote.dialog.showMessageBox({
+        type: 'question',
+        buttons: ['Yes', 'No'],
+        title: 'Confirm',
+        message:  'Are you sure?\n' +
+                  'Audio will be removed from this board.\n' +
+                  'NOTE: File will not be deleted from disk.'
+      })
+
+      const shouldClear = (choice === 0)
+
+      if (shouldClear) {
+        // remove board’s audio object
+        delete board.audio
+
+        // mark .storyboarder scene JSON file dirty
+        markBoardFileDirty()
+
+        // TODO could clear out unused buffers to save RAM
+        // audioPlayback.resetBuffers()
+
+        // update the audio playback buffers
+        audioPlayback.updateBuffers()
+        renderThumbnailDrawer()
+        audioFileControlView.render({ boardAudio: board.audio })
+      }
     }
   })
 

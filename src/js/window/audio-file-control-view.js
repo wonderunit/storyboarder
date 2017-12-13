@@ -1,12 +1,14 @@
 class AudioFileControlView {
-  constructor ({ onRequestFile, onSelectFile, onSelectFileCancel }) {
+  constructor ({ onRequestFile, onSelectFile, onSelectFileCancel, onClear }) {
     this.onRequestFile = onRequestFile.bind(this)
     this.onSelectFile = onSelectFile.bind(this)
     this.onSelectFileCancel = onSelectFileCancel.bind(this)
+    this.onClear = onClear.bind(this)
 
     this.el = document.querySelector('.audiofile_container')
 
-    this.el.addEventListener('click', this.onRequestFile)
+    this.el.querySelector('.audiofile_button').addEventListener('click', this.onRequestFile)
+    this.el.querySelector('.audiofile_clear').addEventListener('click', this.onClear)
   }
   render ({ boardAudio }) {
     let audiofileTextEl = this.el.querySelector('.audiofile_text')
