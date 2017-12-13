@@ -47,7 +47,8 @@ class AudioPlayback {
   playBoard (index) {
     console.log('AudioPlayback#playBoard', index)
 
-    if (!this.isPlaying) return
+    // is the user auditioning audio by moving from board to board?
+    let isAuditioning = !this.isPlaying
 
     const MSECS_IN_A_SECOND = 1000
 
@@ -77,6 +78,10 @@ class AudioPlayback {
           board.time < playingBoard.time &&
           // ... but it ends after
           ((board.time + (player.buffer.duration * MSECS_IN_A_SECOND)) > playingBoard.time)
+          // ... and we're NOT in auditioning mode
+          //   (i.e.: we don't want to play overlapping audio from prior boards
+          //    when we're auditioning a single board)
+          && !isAuditioning
         ) {
           console.log('\tfound overlapping board, i')
           if (board.audio) {
