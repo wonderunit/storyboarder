@@ -39,6 +39,7 @@ const defaultKeyMap = {
   "menu:boards:reorder-left": "Alt+Left",
   "menu:boards:reorder-right": "Alt+Right",
   "menu:boards:toggle-new-shot": "/",
+  "menu:boards:add-audio-file": 'a',
 
   "menu:tools:light-pencil": "1",
   "menu:tools:pencil": "2",

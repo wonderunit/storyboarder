@@ -1271,7 +1271,7 @@ let loadBoardUI = () => {
       // NOOP
     },
     onRequestFile: function (event) {
-      event.preventDefault()
+      if (event) event.preventDefault()
       // TODO limit file extensions?
       remote.dialog.showOpenDialog(
         {
@@ -5269,5 +5269,8 @@ ipcRenderer.on('focus', async event => {
 
 ipcRenderer.on('stopAllSounds', () =>
   audioPlayback.stopAllSounds())
+
+ipcRenderer.on('addAudioFile', () =>
+  audioFileControlView.onRequestFile())
 
 const log = opt => ipcRenderer.send('log', opt)

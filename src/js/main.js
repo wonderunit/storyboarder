@@ -1128,6 +1128,9 @@ ipcMain.on('toggleSpeaking', (event, arg)=> {
 ipcMain.on('stopAllSounds', event =>
   mainWindow.webContents.send('stopAllSounds'))
 
+ipcMain.on('addAudioFile', event =>
+  mainWindow.webContents.send('addAudioFile'))
+
 ipcMain.on('playsfx', (event, arg)=> {
   if (welcomeWindow) {
     welcomeWindow.webContents.send('playsfx', arg)

@@ -363,12 +363,19 @@ AppMenu.Boards = () => ({
       type: 'separator'
     },
     {
+      accelerator: keystrokeFor("menu:boards:add-audio-file"),
+      label: 'Add Audio File…',
+      click (item, focusedWindow, event) {
+        ipcRenderer.send('addAudioFile')
+      }
+    },
+    {
       accelerator: keystrokeFor("menu:boards:toggle-new-shot"),
       label: 'Toggle Board as New Shot',
       click (item, focusedWindow, event) {
         ipcRenderer.send('toggleNewShot')
       }
-    },
+    }
   ]
 })
 AppMenu.Tools = () => ({
