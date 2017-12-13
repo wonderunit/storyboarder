@@ -3603,12 +3603,13 @@ let stopPlaying = () => {
 }
 
 let togglePlayback = async ()=> {
-  playbackMode = !playbackMode
   if (playbackMode) {
+    stopPlaying()
+    playbackMode = false
+  } else {
+    playbackMode = true
     ipcRenderer.send('preventSleep')
     await playAdvance(true)
-  } else {
-    stopPlaying()
   }
   transport.setState({ playbackMode })
 }
