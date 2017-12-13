@@ -3520,10 +3520,10 @@ let utter = new SpeechSynthesisUtterance()
 let stopPlaying = () => {
   clearTimeout(frameTimer)
 
-  audioPlayback.stop()
-
   // prevent unnecessary calls
   if (!playbackMode) return
+
+  audioPlayback.stop()
 
   playbackMode = false
   utter.onend = null
