@@ -8,47 +8,48 @@ class AudioPlayback {
     this.sceneData = sceneData
     this.getAudioFilePath = getAudioFilePath
 
-    this.buffers = new Tone.Buffers()
-    this.hasLoaded = false
-    this.players = new Tone.Players()
+    this.players
 
-    this.resetBuffers()
     this.isPlaying = false
 
-    this.onBuffersLoaded = this.onBuffersLoaded.bind(this)
+    this.resetBuffers()
   }
 
   resetBuffers () {
-    this.buffers = new Tone.Buffers()
+    // reset existing players
+    if (this.players) {
+      this.players.stopAll()
+      this.players.dispose()
+    }
+
+    this.players = new Tone.Players().toMaster()
   }
 
-  // TODO main-window should call updateBuffers whenever board order or audio data changes
-  //          could key of board `time`??
   updateBuffers () {
     console.log('AudioPlayback#updateBuffers')
 
     for (let board of this.sceneData.boards) {
       if (!board.audio) continue
 
-      if (!this.buffers.has(board.audio.filename)) {
+      if (!this.players.has(board.audio.filename)) {
         console.log('\tloading', board.audio.filename)
-        this.buffers.add(board.audio.filename, this.getAudioFilePath(board.audio.filename), this.onBuffersLoaded)
-        this.hasLoaded = this.buffers.loaded
+
+        // TODO error handling
+        // TODO loading status
+        this.players.add(board.audio.filename, this.getAudioFilePath(board.audio.filename))
+        // this.hasLoaded = this.buffers.loaded
       }
     }
-  }
 
-  onBuffersLoaded (event) {
-    console.log('\tonBuffersLoaded', event)
-    this.hasLoaded = this.buffers.loaded
+    // TODO remove any buffers for files no longer referenced in scene boards
   }
 
   playBoard (index) {
-    let MSECS_IN_A_SECOND = 1000
-
     console.log('AudioPlayback#playBoard', index)
 
     if (!this.isPlaying) return
+
+    const MSECS_IN_A_SECOND = 1000
 
     let playingBoard = this.sceneData.boards[index]
 
@@ -56,25 +57,26 @@ class AudioPlayback {
       let board = this.sceneData.boards[i]
 
       if (board.audio) {
-        let buffer = this.buffers.get(board.audio.filename)
+        let player = this.players.get(board.audio.filename)
 
-        if (!buffer.loaded) {
+        if (!player.buffer.loaded) {
           console.error('audio not yet loaded', board.audio.filename)
           continue
         }
 
-        console.log('found', board.audio.filename, 'with duration', buffer.duration, 'at', board.time)
+        console.log('found', board.audio.filename, 'with duration', player.buffer.duration, 'at', board.time)
 
         if (board === playingBoard) {
-            console.log('\tplaying current board')
-            this.players.get(board.audio.filename).start()
+          console.log('\tplaying current board', board.audio.filename, this.players.get(board.audio.filename))
+
+          this.players.get(board.audio.filename).start()
 
         // does this board end AFTER this current playing board starts?
         } else if (
           // it started before
           board.time < playingBoard.time &&
           // ... but it ends after
-          ((board.time + (buffer.duration * MSECS_IN_A_SECOND)) > playingBoard.time)
+          ((board.time + (player.buffer.duration * MSECS_IN_A_SECOND)) > playingBoard.time)
         ) {
           console.log('\tfound overlapping board, i')
           if (board.audio) {
@@ -98,17 +100,6 @@ class AudioPlayback {
 
   start () {
     console.log('AudioPlayback#start')
-    if (this.players) {
-      this.players.stopAll()
-      this.players.dispose()
-    }
-    this.players = new Tone.Players().toMaster()
-
-    for (let name in this.buffers._buffers) {
-      console.log('adding a player for', name)
-      this.players.add(name, this.buffers.get(name))
-      console.log(this.players)
-    }
     this.isPlaying = true
   }
 
@@ -123,7 +114,6 @@ class AudioPlayback {
     console.log('AudioPlayback#dispose')
     this.players.stopAll()
     this.players.dispose()
-    this.buffers.dispose()
   }
 }
 
