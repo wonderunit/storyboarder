@@ -283,6 +283,13 @@ AppMenu.Navigation = () => ({
       type: 'separator'
     },
     {
+      label: 'Stop All Sounds',
+      accelerator: keystrokeFor('menu:navigation:stop-all-sounds'),
+      click (item, focusedWindow, event) {
+        ipcRenderer.send('stopAllSounds')
+      }
+    },
+    {
       label: 'Toggle speaking',
       type: 'checkbox',
       click (item, focusedWindow, event) {

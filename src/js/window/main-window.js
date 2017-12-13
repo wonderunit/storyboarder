@@ -5267,4 +5267,7 @@ ipcRenderer.on('focus', async event => {
   }
 })
 
+ipcRenderer.on('stopAllSounds', () =>
+  audioPlayback.stopAllSounds())
+
 const log = opt => ipcRenderer.send('log', opt)

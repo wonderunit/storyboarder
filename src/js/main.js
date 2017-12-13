@@ -1125,6 +1125,9 @@ ipcMain.on('toggleSpeaking', (event, arg)=> {
   mainWindow.webContents.send('toggleSpeaking')
 })
 
+ipcMain.on('stopAllSounds', event =>
+  mainWindow.webContents.send('stopAllSounds'))
+
 ipcMain.on('playsfx', (event, arg)=> {
   if (welcomeWindow) {
     welcomeWindow.webContents.send('playsfx', arg)

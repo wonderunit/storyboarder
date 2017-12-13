@@ -29,6 +29,7 @@ const defaultKeyMap = {
   "menu:navigation:next-board": "Right",
   "menu:navigation:previous-scene": "CommandOrControl+Left",
   "menu:navigation:next-scene": "CommandOrControl+Right",
+  "menu:navigation:stop-all-sounds": "CommandOrControl+/",
 
   "menu:boards:new-board": "n",
   "menu:boards:new-board-before": "Shift+n",

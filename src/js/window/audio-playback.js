@@ -115,6 +115,10 @@ class AudioPlayback {
     this.players.stopAll()
   }
 
+  stopAllSounds () {
+    this.players.stopAll()
+  }
+
   dispose () {
     console.log('AudioPlayback#dispose')
     this.players.stopAll()
