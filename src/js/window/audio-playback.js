@@ -69,6 +69,19 @@ class AudioPlayback {
         }
       }
 
+      // clear unused players
+      //
+      // for every loaded audio file ...
+      let sceneAudioFilenames = this.sceneData.boards.map(b => b.audio).map(a => a && a.filename).filter(a => !!a)
+      for (let filename of Object.keys(this.players._players)) {
+        // ... check to see if it's not referenced in the scene
+        if (!sceneAudioFilenames.includes(filename)) {
+          // remove the unused player
+          this.players._players[filename].dispose()
+          delete this.players._players[filename]
+        }
+      }
+
       remaining = loadables.length
 
       if (remaining === 0) {
