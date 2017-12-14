@@ -5273,10 +5273,16 @@ ipcRenderer.on('focus', async event => {
   }
 })
 
-ipcRenderer.on('stopAllSounds', () =>
-  audioPlayback.stopAllSounds())
+ipcRenderer.on('stopAllSounds', () => {
+  if (!textInputMode) {
+    audioPlayback.stopAllSounds()
+  }
+})
 
-ipcRenderer.on('addAudioFile', () =>
-  audioFileControlView.onRequestFile())
+ipcRenderer.on('addAudioFile', () => {
+  if (!textInputMode) {
+    audioFileControlView.onRequestFile()
+  }
+})
 
 const log = opt => ipcRenderer.send('log', opt)
