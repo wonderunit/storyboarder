@@ -3489,15 +3489,6 @@ window.onkeydown = (e)=> {
         notifications.notify({ message: 'Nothing left to undo!', timing: 5 })
       }
 
-    // ESCAPE
-    } else if (isCommandPressed('drawing:exit-current-mode')) {
-      e.preventDefault()
-
-      if (dragMode && isEditMode && selections.size) {
-        disableEditMode()
-        disableDragMode()
-      }
-
     // TAB and SHIFT+TAB
     } else if (isCommandPressed('menu:view:cycle-view-mode-reverse')) {
       cycleViewMode(-1)
@@ -3506,6 +3497,22 @@ window.onkeydown = (e)=> {
     } else if (isCommandPressed('menu:view:cycle-view-mode')) {
       cycleViewMode(+1)
       e.preventDefault()
+    }
+
+    // ESCAPE
+    if (isCommandPressed('drawing:exit-current-mode')) {
+      e.preventDefault()
+
+      if (dragMode && isEditMode && selections.size) {
+        disableEditMode()
+        disableDragMode()
+      }
+    }
+
+    // ESCAPE
+    if (isCommandPressed('menu:navigation:stop-all-sounds')) {
+      e.preventDefault()
+      audioPlayback.stopAllSounds()
     }
 
     // r
