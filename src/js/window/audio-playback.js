@@ -69,7 +69,7 @@ class AudioPlayback {
         }
       }
 
-      // clear unused players
+      // remove any players for files no longer referenced in scene boards
       //
       // for every loaded audio file ...
       let sceneAudioFilenames = this.sceneData.boards.map(b => b.audio).map(a => a && a.filename).filter(a => !!a)
@@ -92,8 +92,6 @@ class AudioPlayback {
         }
       }
     })
-
-    // TODO remove any players for files no longer referenced in scene boards
   }
   
   supportsType (url) {
