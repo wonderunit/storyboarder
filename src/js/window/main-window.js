@@ -101,6 +101,13 @@ let boardFileDirtyTimer
 
 let watcher // for chokidar
 
+const ALLOWED_AUDIO_FILE_EXTENSIONS = [
+  'wav',
+  'mp3',
+  'm4a',
+  'mp4'
+]
+
 let layerStatus = {
   [LAYER_INDEX_REFERENCE]:  { dirty: false },
   [LAYER_INDEX_MAIN]:       { dirty: false },
@@ -510,9 +517,23 @@ let loadBoardUI = () => {
       return
     }
 
+    let files = e.dataTransfer.files
+
+    for (let file of files) {
+      let hasRecognizedExtension = ALLOWED_AUDIO_FILE_EXTENSIONS.includes(path.extname(file.name).replace('.', ''))
+      if (
+        hasRecognizedExtension &&
+        audioPlayback.supportsType(file.name)
+      ) {
+        notifications.notify({ message: `Copying audio file\n${file.name}`, timing: 5 })
+        audioFileControlView.onSelectFile(file.path)
+        return
+      }
+    }
+
     let hasStoryboarderFile = false
     let filepaths = []
-    for (let file of e.dataTransfer.files) {
+    for (let file of files) {
       if (file.name.indexOf(".storyboarder") > -1) {
         hasStoryboarderFile = true
         // force load
@@ -1282,12 +1303,7 @@ let loadBoardUI = () => {
           filters: [
             {
               name: 'Audio',
-              extensions: [
-                'wav',
-                'mp3',
-                'm4a',
-                'mp4'
-              ]
+              extensions: ALLOWED_AUDIO_FILE_EXTENSIONS
             }
           ]
         },

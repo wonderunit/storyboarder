@@ -82,6 +82,10 @@ class AudioPlayback {
 
     // TODO remove any players for files no longer referenced in scene boards
   }
+  
+  supportsType (url) {
+    return Tone.Buffer.supportsType(url)
+  }
 
   playBoard (index) {
     console.log('AudioPlayback#playBoard', index)
