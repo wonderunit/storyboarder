@@ -505,13 +505,15 @@ let loadBoardUI = () => {
 
   window.ondrop = e => {
     e.preventDefault()
-    if(!e || !e.dataTransfer || !e.dataTransfer.files || !e.dataTransfer.files.length) {
+
+    if (!e || !e.dataTransfer || !e.dataTransfer.files || !e.dataTransfer.files.length) {
       return
     }
+
     let hasStoryboarderFile = false
     let filepaths = []
-    for(let file of e.dataTransfer.files) {
-      if(file.name.indexOf(".storyboarder") > -1) {
+    for (let file of e.dataTransfer.files) {
+      if (file.name.indexOf(".storyboarder") > -1) {
         hasStoryboarderFile = true
         // force load
         ipcRenderer.send('openFile', file.path)
@@ -521,7 +523,7 @@ let loadBoardUI = () => {
       }
     }
 
-    if(!hasStoryboarderFile) {
+    if (!hasStoryboarderFile) {
       insertNewBoardsWithFiles(filepaths)
     }
   }
