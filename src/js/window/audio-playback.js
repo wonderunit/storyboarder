@@ -25,7 +25,7 @@ class AudioPlayback {
     this.players = new Tone.Players().toMaster()
   }
 
-  async updateBuffers () {
+  updateBuffers () {
     console.log('AudioPlayback#updateBuffers')
 
     return new Promise((resolve, reject) => {
@@ -71,8 +71,12 @@ class AudioPlayback {
 
       remaining = loadables.length
 
-      for (let filepath of loadables) {
-        this.players.add(filepath, this.getAudioFilePath(filepath), onLoad)
+      if (remaining === 0) {
+        resolve({ failed })
+      } else {
+        for (let filepath of loadables) {
+          this.players.add(filepath, this.getAudioFilePath(filepath), onLoad)
+        }
       }
     })
 
