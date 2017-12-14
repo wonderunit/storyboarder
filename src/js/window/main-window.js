@@ -1272,12 +1272,26 @@ let loadBoardUI = () => {
       let newFilename = `${board.uid}-${path.basename(filepath)}`
 
       // copy to project folder
-      console.log('copySync', filepath, path.join(boardPath, 'images', newFilename))
-      fs.copySync(
-        filepath,
-        path.join(boardPath, 'images', newFilename)
-      )
+      let newpath = path.join(boardPath, 'images', newFilename)
       
+      let shouldOverwrite = true
+      if (fs.existsSync(newpath)) {
+        const choice = remote.dialog.showMessageBox({
+          type: 'question',
+          buttons: ['Yes', 'No'],
+          title: 'Confirm',
+          message:  `A file named ${path.basename(newpath)} already exists in this project. Overwrite it?`
+        })
+
+        shouldOverwrite = (choice === 0)
+      }      
+      if (!shouldOverwrite) {
+        notifications.notify({ message: 'Cancelled', timing: 5 })
+        return
+      }
+
+      fs.copySync(filepath, newpath)
+
       // update board’s audio object
       board.audio = board.audio || {}
       board.audio.filename = newFilename
