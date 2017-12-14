@@ -17,6 +17,9 @@
           "url": "board-2-42VR9-notes.png"
         }
       },
+      "audio": {
+        "filename": "audio.wav"
+      },
       "number": 1,
       "shot": "1A",
       "time": 0,
@@ -51,6 +54,9 @@
         "notes": {
           "url": "board-0-P2FLS-notes.png"
         }
+      },
+      "audio": {
+        "filename": "non-existing.wav"
       },
       "newShot": false,
       "lastEdited": 1500417576275,

@@ -38,6 +38,8 @@ describe('exporters/cleanup', function () {
             'board-2-42VR9-thumbnail.png':        new Buffer([8, 6, 7, 5, 3, 0, 9]),
             // linked PSD
             'board-2-42VR9.psd':                  new Buffer([8, 6, 7, 5, 3, 0, 9]),
+            // an existing audio file
+            'audio.wav':                          new Buffer([8, 6, 7, 5, 3, 0, 9]),
 
             'board-2-J74F5.png':                  new Buffer([8, 6, 7, 5, 3, 0, 9]),
             'board-2-J74F5-reference.png':        new Buffer([8, 6, 7, 5, 3, 0, 9]),
@@ -60,6 +62,8 @@ describe('exporters/cleanup', function () {
             'board-98-PQKJM-thumbnail.png':       new Buffer([8, 6, 7, 5, 3, 0, 9]),
             // unlinked PSD
             'board-98-PQKJM.psd':                 new Buffer([8, 6, 7, 5, 3, 0, 9]),
+            // a not used
+            'unused.wav':                         new Buffer([8, 6, 7, 5, 3, 0, 9]),
 
             'unused.png':                         new Buffer([8, 6, 7, 5, 3, 0, 9]),
             'unused.psd':                         new Buffer([8, 6, 7, 5, 3, 0, 9])
@@ -90,6 +94,7 @@ describe('exporters/cleanup', function () {
 
   it('can save a cleaned project', function (done) {
     // mock the trash fn so we can test it
+    // (`trash` doesn't work with mockFS)
     const trashFn = glob => {
       let trashedFiles = glob.map(f => path.basename(f))
 
@@ -99,7 +104,20 @@ describe('exporters/cleanup', function () {
       // it deletes PSDs that are not linked (board-98-PQKJM.psd)
       assert(trashedFiles.includes('board-98-PQKJM.psd'))
 
-      assert.equal(trashedFiles.length, 3)
+      // it deletes audio files that are not referenced (unused.wav)
+      assert(trashedFiles.includes('unused.wav'))
+
+      assert.equal(trashedFiles.length, 4)
+
+      //
+      // fake trash the file
+      // (this works with mockFS)
+      glob.forEach(f => {
+        if (f.includes('test') && f.includes('fixtures')) { // sanity check
+          // console.log('deleting', f)
+          fs.unlinkSync(f)
+        }
+      })
   
       return Promise.resolve()
     }
@@ -116,6 +134,8 @@ describe('exporters/cleanup', function () {
             .includes('board-1-42VR9-thumbnail.png')
         )
 
+        // LINKS
+        //
         // it renames PSDs that are linked (board-2-42VR9.psd)
         assert.equal(fs.existsSync(path.join(fixturesPath, 'ducks', 'images', 'board-2-42VR9.psd')), false)
         assert.equal(fs.existsSync(path.join(fixturesPath, 'ducks', 'images', 'board-1-42VR9.psd')), true)
@@ -123,6 +143,23 @@ describe('exporters/cleanup', function () {
         // it removes links for PSD files that don't exist (board-0-P2FLS.png)
         assert.equal(newBoardData.boards[2].url, 'board-3-P2FLS.png') // confirm it was renamed
         assert.equal(typeof newBoardData.boards[2].link, 'undefined') // confirm the link was deleted
+
+        // AUDIO
+        //
+        // - delete audio object if file doesn't exist
+        // - delete file if filename isn't referenced by a board's audio object
+
+        // it preserves audio object for audio files that exist
+        assert.equal(newBoardData.boards[0].audio.filename, 'audio.wav')
+
+        // it removes audio object for audio files that don’t exist
+        assert.equal(typeof newBoardData.boards[2].audio, 'undefined') // confirm the audio file was deleted
+
+        // it copies audio files that exist
+        assert.equal(fs.existsSync(path.join(fixturesPath, 'ducks', 'images', 'audio.wav')), true)
+        // but not those that don't
+        assert.equal(fs.existsSync(path.join(fixturesPath, 'ducks', 'images', 'unused.wav')), false)
+        assert.equal(fs.existsSync(path.join(fixturesPath, 'ducks', 'images', 'non-existing.wav')), false)
 
         done()
       })
