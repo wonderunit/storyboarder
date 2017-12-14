@@ -2209,6 +2209,8 @@ let duplicateBoard = async () => {
       filePairs.push({ from, to })
     }
 
+    // NOTE: audio is not copied
+
     // absolute paths
     filePairs = filePairs.map(filePair => ({
       from: path.join(boardPath, 'images', filePair.from),
@@ -4254,6 +4256,9 @@ let pasteBoards = async () => {
       // copy linked boards
       newBoards.forEach((dst, n) => {
         let src = oldBoards[n]
+
+        // NOTE: audio is not copied
+
         if (src.link) {
 
           let from  = path.join(boardPath, 'images', src.link)
