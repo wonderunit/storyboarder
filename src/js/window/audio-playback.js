@@ -25,23 +25,58 @@ class AudioPlayback {
     this.players = new Tone.Players().toMaster()
   }
 
-  updateBuffers () {
+  async updateBuffers () {
     console.log('AudioPlayback#updateBuffers')
 
-    for (let board of this.sceneData.boards) {
-      if (!board.audio) continue
+    return new Promise((resolve, reject) => {
+      let loadables = []
+      let failed = []
+      let remaining = 0
 
-      if (!this.players.has(board.audio.filename)) {
-        console.log('\tloading', board.audio.filename)
-
-        // TODO error handling
-        // TODO loading status
-        this.players.add(board.audio.filename, this.getAudioFilePath(board.audio.filename))
-        // this.hasLoaded = this.buffers.loaded
+      let onLoad = player => {
+        // console.log('onLoad', player)
+        remaining--
+        checkDone()
       }
-    }
 
-    // TODO remove any buffers for files no longer referenced in scene boards
+      let onError = event => {
+        if (event instanceof ProgressEvent) {
+          // find the associated player by comparing XHRs :/
+          for (let filename of Object.keys(this.players._players)) {
+            let player = this.players._players[filename]
+            if (player.buffer._xhr === event.target) {
+              failed.push(filename)
+            }
+          }
+        }
+        remaining--
+        checkDone()
+      }
+
+      let checkDone = () => {
+        if (remaining === 0) {
+          Tone.Buffer.off('error', onError)
+          resolve({ failed })
+        }
+      }
+      Tone.Buffer.on('error', onError)
+
+      for (let board of this.sceneData.boards) {
+        if (!board.audio) continue
+
+        if (!this.players.has(board.audio.filename)) {
+          loadables.push(board.audio.filename)
+        }
+      }
+
+      remaining = loadables.length
+
+      for (let filepath of loadables) {
+        this.players.add(filepath, this.getAudioFilePath(filepath), onLoad)
+      }
+    })
+
+    // TODO remove any players for files no longer referenced in scene boards
   }
 
   playBoard (index) {

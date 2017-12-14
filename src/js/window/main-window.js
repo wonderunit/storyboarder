@@ -1243,7 +1243,7 @@ let loadBoardUI = () => {
     getAudioFilePath: (filename) => path.join(boardPath, 'images', filename)
   })
   audioFileControlView = new AudioFileControlView({
-    onSelectFile: function (filepath) {
+    onSelectFile: async function (filepath) {
       console.log('AudioFileControlView#onSelectFile', markBoardFileDirty)
       let board = boardData.boards[currentBoard]
 
@@ -1265,7 +1265,8 @@ let loadBoardUI = () => {
       markBoardFileDirty()
       
       // update the audio playback buffers
-      audioPlayback.updateBuffers()
+      let { failed } = await audioPlayback.updateBuffers()
+      failed.forEach(filename => notifications.notify({ message: `Could not load audio file ${filename}` }))
       renderThumbnailDrawer()
       audioFileControlView.render({ boardAudio: board.audio })
     },
@@ -1299,7 +1300,7 @@ let loadBoardUI = () => {
         }
       )
     },
-    onClear: function () {
+    onClear: async function () {
       console.log('AudioFileControlView#clear', markBoardFileDirty)
 
       let board = boardData.boards[currentBoard]      
@@ -1328,7 +1329,8 @@ let loadBoardUI = () => {
         // audioPlayback.resetBuffers()
 
         // update the audio playback buffers
-        audioPlayback.updateBuffers()
+        let { failed } = await audioPlayback.updateBuffers()
+        failed.forEach(filename => notifications.notify({ message: `Could not load audio file ${filename}` }))
         renderThumbnailDrawer()
         audioFileControlView.render({ boardAudio: board.audio })
       }
@@ -1361,7 +1363,9 @@ let updateBoardUI = async () => {
 // whenever the scene changes
 const renderScene = async () => {
   audioPlayback.resetBuffers()
-  audioPlayback.updateBuffers()
+
+  let { failed } = await audioPlayback.updateBuffers()
+  failed.forEach(filename => notifications.notify({ message: `Could not load audio file ${filename}` }))
 
   // render the thumbnail drawer
   renderThumbnailDrawer()
