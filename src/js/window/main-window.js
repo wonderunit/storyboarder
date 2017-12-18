@@ -4109,7 +4109,7 @@ const exportFcp = () => {
   sfx.down()
   setTimeout(()=>{
     exporter.exportFcp(boardData, boardFilename).then(outputPath => {
-      notifications.notify({message: "Your scene has been exported for Final Cut Pro X and Premiere.", timing: 20})
+      notifications.notify({message: "Your scene has been exported for Final Cut Pro X and Premiere. \n(Audio export is not supported yet)", timing: 20})
       sfx.positive()
       shell.showItemInFolder(outputPath)
     })
