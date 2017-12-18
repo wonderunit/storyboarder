@@ -15,6 +15,10 @@ class AudioPlayback {
     this.resetBuffers()
   }
 
+  setSceneData (sceneData) {
+    this.sceneData = sceneData
+  }
+
   resetBuffers () {
     // reset existing players
     if (this.players) {

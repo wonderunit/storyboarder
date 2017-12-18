@@ -1392,6 +1392,7 @@ let updateBoardUI = async () => {
 
 // whenever the scene changes
 const renderScene = async () => {
+  audioPlayback.setSceneData(boardData)
   audioPlayback.resetBuffers()
 
   const { failed } = await audioPlayback.updateBuffers()
