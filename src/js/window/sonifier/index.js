@@ -179,10 +179,10 @@ const step = dt => {
   if (model.pointerType === 'pen') {
     let penGain = ease.sineIn(util.clamp(model.pressureGain, 0, 1))
     let blend = (penGain * 0.5) * (model.accelGain)
-    let v = Tone.prototype.equalPowerScale(util.clamp(blend, 0, 1))
+    let v = Tone.equalPowerScale(util.clamp(blend, 0, 1))
     instrument.setGain(v)
   } else {
-    let v = Tone.prototype.equalPowerScale(util.clamp(model.accelGain, 0, 1))
+    let v = Tone.equalPowerScale(util.clamp(model.accelGain, 0, 1))
     instrument.setGain(v)
   }
   model.accelGain *= 0.2 * frameSize // dampen

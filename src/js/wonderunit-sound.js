@@ -284,7 +284,7 @@ const init = () => {
   bassSynth.chain( filter, comp2, Tone.Master)
   bassSynth2.chain( filter3,vol2, Tone.Master)
 
-  multiPlayer = new Tone.MultiPlayer(new Tone.Buffers(filePathsForSoundEffects))
+  multiPlayer = new Tone.Players(new Tone.Buffers(filePathsForSoundEffects))
                 .set('volume', -20)
                 .toMaster()
   multiPlayer.stopIfPlaying = function (bufferName) {
