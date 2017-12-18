@@ -42,6 +42,13 @@ const cleanupScene = (absolutePathToStoryboarderFile, trashFn = trash) => {
         return b
       })
 
+      // if the audio file does not exist, delete the audio object from the board data
+      boardData.boards.forEach(b => {
+        if (b.audio && !fs.existsSync(path.join(absolutePathToImagesFolder, b.audio.filename))) {
+          delete b.audio
+        }
+      })
+
       //
       //
       // find and delete unused files ...
@@ -51,7 +58,8 @@ const cleanupScene = (absolutePathToStoryboarderFile, trashFn = trash) => {
       const usedFiles = flatten(boardData.boards.map(board => ([
         ...boardModel.boardOrderedLayerFilenames(board).filenames,
         boardModel.boardFilenameForThumbnail(board),
-        ...(board.link ? [board.link] : [])
+        ...(board.link ? [board.link] : []),
+        ...(board.audio ? [board.audio.filename] : [])
       ])))
 
       const allFiles = fs.readdirSync(absolutePathToImagesFolder)

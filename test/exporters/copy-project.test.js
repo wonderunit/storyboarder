@@ -16,8 +16,23 @@ const exporterCopyProject = require('../../src/js/exporters/copy-project')
 
 let fixturesPath = path.join(__dirname, '..', 'fixtures')
 
+// remove the reference to `non-existing.wav` so we can continue without error
+const modifyDucks = () => {
+  let ducksPath = path.resolve(path.join(fixturesPath, 'ducks', 'ducks.storyboarder'))
+  let modifiedJson = JSON.parse(fs.readFileSync(ducksPath))
+  modifiedJson.boards.forEach(b => {
+    if (b.audio && b.audio.filename === 'non-existing.wav') {
+      delete b.audio
+    }
+  })
+  fs.writeFileSync(
+    ducksPath,
+    JSON.stringify(modifiedJson, null, 2)
+  )
+}
+
 describe('exporters/copyProject', () => {
-  before(function () {
+  beforeEach(function () {
     // fake filesystem
     // clone some actual files to use as source material
     mockFs({
@@ -63,6 +78,7 @@ describe('exporters/copyProject', () => {
             'board-2-42VR9-notes.png':            new Buffer([8, 6, 7, 5, 3, 0, 9]),
             'board-2-42VR9-thumbnail.png':        new Buffer([8, 6, 7, 5, 3, 0, 9]),
             'board-2-42VR9.psd':                  new Buffer([8, 6, 7, 5, 3, 0, 9]),
+            'audio.wav':                          new Buffer([8, 6, 7, 5, 3, 0, 9]),
 
             'board-2-J74F5.png':                  new Buffer([8, 6, 7, 5, 3, 0, 9]),
             'board-2-J74F5-reference.png':        new Buffer([8, 6, 7, 5, 3, 0, 9]),
@@ -112,10 +128,23 @@ describe('exporters/copyProject', () => {
   //   )
   // })
 
-  it('can copy a single-scene project', () => {
+  it('throws an error when a referenced file (non-existing.wav) is missing', () => {
     let srcFilePath = path.resolve(path.join(fixturesPath, 'ducks', 'ducks.storyboarder'))
     let dstFolderPath = path.resolve(path.join(fixturesPath, 'new-single-scene'))
-    assert.equal(exporterCopyProject.getFilesUsedByProject(srcFilePath).length, 21) // files, excluding .storyboarder
+    fs.ensureDirSync(dstFolderPath)
+    assert.throws(
+      () => {
+        exporterCopyProject.copyProject(srcFilePath, dstFolderPath)
+      },
+      /ENOENT/
+    )
+  })
+  it('can copy a single-scene project', () => {
+    modifyDucks()
+
+    // run the actual test
+    let srcFilePath = path.resolve(path.join(fixturesPath, 'ducks', 'ducks.storyboarder'))
+    let dstFolderPath = path.resolve(path.join(fixturesPath, 'new-single-scene'))
 
     fs.ensureDirSync(dstFolderPath)
     exporterCopyProject.copyProject(srcFilePath, dstFolderPath)
@@ -145,7 +174,7 @@ describe('exporters/copyProject', () => {
     )
   })
 
-  after(function () {
+  afterEach(function () {
     mockFs.restore()
   })
 })

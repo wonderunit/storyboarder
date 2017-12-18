@@ -55,6 +55,9 @@ const initializeCanvas = require('ag-psd').initializeCanvas;
 const ShotTemplateSystem = require('../shot-template-system')
 const StsSidebar = require('./sts-sidebar')
 
+const AudioPlayback = require('./audio-playback')
+const AudioFileControlView = require('./audio-file-control-view')
+
 const pkg = require('../../../package.json')
 
 const sharedObj = remote.getGlobal('sharedObj')
@@ -97,6 +100,13 @@ let boardFileDirty = false
 let boardFileDirtyTimer
 
 let watcher // for chokidar
+
+const ALLOWED_AUDIO_FILE_EXTENSIONS = [
+  'wav',
+  'mp3',
+  'm4a',
+  'mp4'
+]
 
 let layerStatus = {
   [LAYER_INDEX_REFERENCE]:  { dirty: false },
@@ -141,6 +151,8 @@ let onionSkin
 let layersEditor
 let pomodoroTimerView
 let shotTemplateSystem
+let audioPlayback
+let audioFileControlView
 
 let storyboarderSketchPane
 
@@ -500,13 +512,29 @@ let loadBoardUI = () => {
 
   window.ondrop = e => {
     e.preventDefault()
-    if(!e || !e.dataTransfer || !e.dataTransfer.files || !e.dataTransfer.files.length) {
+
+    if (!e || !e.dataTransfer || !e.dataTransfer.files || !e.dataTransfer.files.length) {
       return
     }
+
+    let files = e.dataTransfer.files
+
+    for (let file of files) {
+      let hasRecognizedExtension = ALLOWED_AUDIO_FILE_EXTENSIONS.includes(path.extname(file.name).replace('.', ''))
+      if (
+        hasRecognizedExtension &&
+        audioPlayback.supportsType(file.name)
+      ) {
+        notifications.notify({ message: `Copying audio file\n${file.name}`, timing: 5 })
+        audioFileControlView.onSelectFile(file.path)
+        return
+      }
+    }
+
     let hasStoryboarderFile = false
     let filepaths = []
-    for(let file of e.dataTransfer.files) {
-      if(file.name.indexOf(".storyboarder") > -1) {
+    for (let file of files) {
+      if (file.name.indexOf(".storyboarder") > -1) {
         hasStoryboarderFile = true
         // force load
         ipcRenderer.send('openFile', file.path)
@@ -516,7 +544,7 @@ let loadBoardUI = () => {
       }
     }
 
-    if(!hasStoryboarderFile) {
+    if (!hasStoryboarderFile) {
       insertNewBoardsWithFiles(filepaths)
     }
   }
@@ -1168,6 +1196,9 @@ let loadBoardUI = () => {
       // to trigger `will-prevent-unload` handler in main.js
       event.returnValue = false
     } else {
+      // dispose of any audio buffers
+      audioPlayback.dispose()
+
       // remove any existing listeners
       watcher && watcher.close()
     }
@@ -1227,6 +1258,115 @@ let loadBoardUI = () => {
     }
   })
 
+  audioPlayback = new AudioPlayback({
+    store,
+    sceneData: boardData,
+    getAudioFilePath: (filename) => path.join(boardPath, 'images', filename)
+  })
+  audioFileControlView = new AudioFileControlView({
+    onSelectFile: async function (filepath) {
+      console.log('AudioFileControlView#onSelectFile', markBoardFileDirty)
+      let board = boardData.boards[currentBoard]
+
+      // rename to match uid
+      let newFilename = `${board.uid}-${path.basename(filepath)}`
+
+      // copy to project folder
+      let newpath = path.join(boardPath, 'images', newFilename)
+      
+      let shouldOverwrite = true
+      if (fs.existsSync(newpath)) {
+        const choice = remote.dialog.showMessageBox({
+          type: 'question',
+          buttons: ['Yes', 'No'],
+          title: 'Confirm',
+          message:  `A file named ${path.basename(newpath)} already exists in this project. Overwrite it?`
+        })
+
+        shouldOverwrite = (choice === 0)
+      }      
+      if (!shouldOverwrite) {
+        notifications.notify({ message: 'Cancelled', timing: 5 })
+        return
+      }
+
+      fs.copySync(filepath, newpath)
+
+      // update board’s audio object
+      board.audio = board.audio || {}
+      board.audio.filename = newFilename
+      
+      // mark .storyboarder scene JSON file dirty
+      markBoardFileDirty()
+      
+      // update the audio playback buffers
+      const { failed } = await audioPlayback.updateBuffers()
+      failed.forEach(filename => notifications.notify({ message: `Could not load audio file ${filename}` }))
+      renderThumbnailDrawer()
+      audioFileControlView.render({ boardAudio: board.audio })
+    },
+    onSelectFileCancel: function () {
+      // NOOP
+    },
+    onRequestFile: function (event) {
+      if (event) event.preventDefault()
+      // TODO limit file extensions?
+      remote.dialog.showOpenDialog(
+        {
+          title: 'Select Audio File',
+          filters: [
+            {
+              name: 'Audio',
+              extensions: ALLOWED_AUDIO_FILE_EXTENSIONS
+            }
+          ]
+        },
+        filenames => {
+          if (filenames) {
+            this.onSelectFile(filenames[0])
+          } else {
+            this.onSelectFileCancel()
+          }
+        }
+      )
+    },
+    onClear: async function () {
+      console.log('AudioFileControlView#clear', markBoardFileDirty)
+
+      let board = boardData.boards[currentBoard]      
+
+      if (!board.audio) return
+
+      const choice = remote.dialog.showMessageBox({
+        type: 'question',
+        buttons: ['Yes', 'No'],
+        title: 'Confirm',
+        message:  'Are you sure?\n' +
+                  'Audio will be removed from this board.\n' +
+                  'NOTE: File will not be deleted from disk.'
+      })
+
+      const shouldClear = (choice === 0)
+
+      if (shouldClear) {
+        // remove board’s audio object
+        delete board.audio
+
+        // mark .storyboarder scene JSON file dirty
+        markBoardFileDirty()
+
+        // TODO could clear out unused buffers to save RAM
+        // audioPlayback.resetBuffers()
+
+        // update the audio playback buffers
+        const { failed } = await audioPlayback.updateBuffers()
+        failed.forEach(filename => notifications.notify({ message: `Could not load audio file ${filename}` }))
+        renderThumbnailDrawer()
+        audioFileControlView.render({ boardAudio: board.audio })
+      }
+    }
+  })
+
   // setup filesystem watcher
   watcher = chokidar.watch(null, {
     disableGlobbing: true // treat file strings as literal file names
@@ -1252,6 +1392,12 @@ let updateBoardUI = async () => {
 
 // whenever the scene changes
 const renderScene = async () => {
+  audioPlayback.setSceneData(boardData)
+  audioPlayback.resetBuffers()
+
+  const { failed } = await audioPlayback.updateBuffers()
+  failed.forEach(filename => notifications.notify({ message: `Could not load audio file ${filename}` }))
+
   // render the thumbnail drawer
   renderThumbnailDrawer()
   // go to the correct board
@@ -2064,6 +2210,8 @@ let duplicateBoard = async () => {
       filePairs.push({ from, to })
     }
 
+    // NOTE: audio is not copied
+
     // absolute paths
     filePairs = filePairs.map(filePair => ({
       from: path.join(boardPath, 'images', filePair.from),
@@ -2228,8 +2376,12 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
       rotation: 0
     })
 
-    updateSketchPaneBoard().then(() => resolve()).catch(e => console.error(e))
     ipcRenderer.send('analyticsEvent', 'Board', 'go to board', null, currentBoard)
+
+    updateSketchPaneBoard().then(() => {
+      audioPlayback.playBoard(currentBoard)
+      resolve()
+    }).catch(e => console.error(e))
   })
 }
 
@@ -2333,6 +2485,10 @@ let renderMetaData = () => {
   // }
 
   renderStats()
+
+  audioFileControlView.render({
+    boardAudio: boardData.boards[currentBoard].audio
+  })
 }
 
 const renderCaption = () => {
@@ -2671,6 +2827,15 @@ let renderThumbnailDrawer = ()=> {
     }
     html.push('<div class="info">')
     html.push('<div class="number">' + board.shot + '</div>')
+    if (board.audio && board.audio.filename.length) {
+      html.push(`
+        <div class="audio">
+          <svg>
+            <use xlink:href="./img/symbol-defs.svg#icon-speaker-on"></use>
+          </svg>
+        </div>
+      `)
+    }
     html.push('<div class="caption">')
     if (board.dialogue) {
       html.push(board.dialogue)
@@ -3357,15 +3522,6 @@ window.onkeydown = (e)=> {
         notifications.notify({ message: 'Nothing left to undo!', timing: 5 })
       }
 
-    // ESCAPE
-    } else if (isCommandPressed('drawing:exit-current-mode')) {
-      e.preventDefault()
-
-      if (dragMode && isEditMode && selections.size) {
-        disableEditMode()
-        disableDragMode()
-      }
-
     // TAB and SHIFT+TAB
     } else if (isCommandPressed('menu:view:cycle-view-mode-reverse')) {
       cycleViewMode(-1)
@@ -3374,6 +3530,22 @@ window.onkeydown = (e)=> {
     } else if (isCommandPressed('menu:view:cycle-view-mode')) {
       cycleViewMode(+1)
       e.preventDefault()
+    }
+
+    // ESCAPE
+    if (isCommandPressed('drawing:exit-current-mode')) {
+      e.preventDefault()
+
+      if (dragMode && isEditMode && selections.size) {
+        disableEditMode()
+        disableDragMode()
+      }
+    }
+
+    // ESCAPE
+    if (isCommandPressed('menu:navigation:stop-all-sounds')) {
+      e.preventDefault()
+      audioPlayback.stopAllSounds()
     }
 
     // r
@@ -3467,6 +3639,8 @@ let stopPlaying = () => {
   // prevent unnecessary calls
   if (!playbackMode) return
 
+  audioPlayback.stop()
+
   playbackMode = false
   utter.onend = null
   ipcRenderer.send('resumeSleep')
@@ -3475,45 +3649,58 @@ let stopPlaying = () => {
 }
 
 let togglePlayback = async ()=> {
-  playbackMode = !playbackMode
   if (playbackMode) {
+    stopPlaying()
+    playbackMode = false
+  } else {
+    playbackMode = true
     ipcRenderer.send('preventSleep')
     await playAdvance(true)
-  } else {
-    stopPlaying()
   }
   transport.setState({ playbackMode })
 }
 
-let playAdvance = async (first) => {
+let playAdvance = async (first, isComplete) => {
   // clearTimeout(playheadTimer)
   clearTimeout(frameTimer)
 
-  if (!first) {
-    await goNextBoard(1)
-  }
-
-  if (playbackMode && boardData.boards[currentBoard].dialogue && speakingMode) {
-    speechSynthesis.cancel()
-    utter.pitch = 0.65
-    utter.rate = 1.1
-
-    var string = boardData.boards[currentBoard].dialogue.split(':')
-    string = string[string.length-1]
-
-    utter.text = string
-    speechSynthesis.speak(utter)
-  }
-
-
-
-  var frameDuration
-  if (boardData.boards[currentBoard].duration) {
-    frameDuration = boardData.boards[currentBoard].duration
+  // are we at the end?
+  if (isComplete) {
+    stopPlaying()
   } else {
-    frameDuration = boardData.defaultBoardTiming
+
+    if (first) {
+      audioPlayback.start()
+      audioPlayback.playBoard(currentBoard)
+    } else {
+      await goNextBoard(1)
+    }
+
+    if (playbackMode && boardData.boards[currentBoard].dialogue && speakingMode) {
+      speechSynthesis.cancel()
+      utter.pitch = 0.65
+      utter.rate = 1.1
+
+      var string = boardData.boards[currentBoard].dialogue.split(':')
+      string = string[string.length-1]
+
+      utter.text = string
+      speechSynthesis.speak(utter)
+    }
+
+    var frameDuration
+    if (boardData.boards[currentBoard].duration) {
+      frameDuration = boardData.boards[currentBoard].duration
+    } else {
+      frameDuration = boardData.defaultBoardTiming
+    }
+    frameTimer = setTimeout(
+      playAdvance, 
+      frameDuration, 
+      false, // first
+      currentBoard === boardData.boards.length - 1 // isComplete
+    )
   }
-  frameTimer = setTimeout(playAdvance, frameDuration)
 }
 
 
@@ -3923,7 +4110,7 @@ const exportFcp = () => {
   sfx.down()
   setTimeout(()=>{
     exporter.exportFcp(boardData, boardFilename).then(outputPath => {
-      notifications.notify({message: "Your scene has been exported for Final Cut Pro X and Premiere.", timing: 20})
+      notifications.notify({message: "Your scene has been exported for Final Cut Pro X and Premiere. \n(Audio export is not supported yet)", timing: 20})
       sfx.positive()
       shell.showItemInFolder(outputPath)
     })
@@ -4070,6 +4257,9 @@ let pasteBoards = async () => {
       // copy linked boards
       newBoards.forEach((dst, n) => {
         let src = oldBoards[n]
+
+        // NOTE: audio is not copied
+
         if (src.link) {
 
           let from  = path.join(boardPath, 'images', src.link)
@@ -5123,6 +5313,18 @@ ipcRenderer.on('focus', async event => {
       console.log('refreshing', filename)
       await refreshLinkedBoardByFilename(filename)
     }
+  }
+})
+
+ipcRenderer.on('stopAllSounds', () => {
+  if (!textInputMode) {
+    audioPlayback.stopAllSounds()
+  }
+})
+
+ipcRenderer.on('addAudioFile', () => {
+  if (!textInputMode) {
+    audioFileControlView.onRequestFile()
   }
 })
 

@@ -29,6 +29,7 @@ const defaultKeyMap = {
   "menu:navigation:next-board": "Right",
   "menu:navigation:previous-scene": "CommandOrControl+Left",
   "menu:navigation:next-scene": "CommandOrControl+Right",
+  "menu:navigation:stop-all-sounds": "Escape",
 
   "menu:boards:new-board": "n",
   "menu:boards:new-board-before": "Shift+n",
@@ -38,6 +39,7 @@ const defaultKeyMap = {
   "menu:boards:reorder-left": "Alt+Left",
   "menu:boards:reorder-right": "Alt+Right",
   "menu:boards:toggle-new-shot": "/",
+  "menu:boards:add-audio-file": 'a',
 
   "menu:tools:light-pencil": "1",
   "menu:tools:pencil": "2",

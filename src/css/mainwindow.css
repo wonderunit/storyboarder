@@ -301,6 +301,20 @@ body::-webkit-scrollbar {
   font-weight: 700;
 }
 
+#thumbnail-drawer .thumbnail .audio svg {
+  width: 14px;
+  height: 14px;
+  vertical-align: top;
+  --color1: #888;
+  position: relative;
+  top: -2px;
+  margin-bottom: -3px;
+}
+
+#thumbnail-drawer .thumbnail.selected .audio svg {
+  --color1: #000;
+}
+
 #thumbnail-drawer .thumbnail .duration {
   opacity: 0.8;
 }
@@ -783,4 +797,54 @@ input[type=range]::-webkit-slider-thumb {
 }
 input[type=range]:focus::-webkit-slider-runnable-track {
   background: #444;
+}
+
+.audiofile_container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.audiofile_container .audiofile_button {
+  width: 100%;
+}
+#board-metadata .audiofile_container .flatbutton {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0;
+}
+.audiofile_container .audiofile_icon {
+  margin-right: 5px;
+}
+.audiofile_container .audiofile_icon .smallicon {
+  top: -1px;
+}
+
+.audiofile_container .audiofile_text {
+  position: relative;
+  line-height: 1;
+}
+.audiofile_container .audiofile_text a {
+  color: inherit;
+  text-decoration: underline;
+}
+.audiofile_container .audiofile_text .paren {
+  position: relative;
+  font-size: 88%;
+  top: 0.045em;
+  padding: 0 0.125em;
+}
+.audiofile_container input#audiofile {
+  display: none;
+}
+.audiofile_container .muted {
+  opacity: 0.6;
+}
+.audiofile_container .audiofile_clear {
+  margin: 0 0 0 10px;
+}
+#board-metadata .audiofile_container .audiofile_clear .flatbutton {
+  padding: 10px;
+}
+.audiofile_container .audiofile_clear .smallicon {
+  margin: 0;
 }

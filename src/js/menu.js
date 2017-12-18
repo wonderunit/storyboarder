@@ -283,6 +283,14 @@ AppMenu.Navigation = () => ({
       type: 'separator'
     },
     {
+      label: 'Stop All Board Audio',
+      // NOTE: menu won't send this, we have to listen for it explicitly in the key handler
+      accelerator: keystrokeFor('menu:navigation:stop-all-sounds'),
+      click (item, focusedWindow, event) {
+        ipcRenderer.send('stopAllSounds')
+      }
+    },
+    {
       label: 'Toggle speaking',
       type: 'checkbox',
       click (item, focusedWindow, event) {
@@ -356,12 +364,19 @@ AppMenu.Boards = () => ({
       type: 'separator'
     },
     {
+      accelerator: keystrokeFor("menu:boards:add-audio-file"),
+      label: 'Add Audio File…',
+      click (item, focusedWindow, event) {
+        ipcRenderer.send('addAudioFile')
+      }
+    },
+    {
       accelerator: keystrokeFor("menu:boards:toggle-new-shot"),
       label: 'Toggle Board as New Shot',
       click (item, focusedWindow, event) {
         ipcRenderer.send('toggleNewShot')
       }
-    },
+    }
   ]
 })
 AppMenu.Tools = () => ({

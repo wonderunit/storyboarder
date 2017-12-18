@@ -10,14 +10,15 @@ const withFromToPaths = (filename, src, dst) => ({
   to: path.join(dst, filename)
 })
 
-const getImageFilesUsedByBoard = board => ([
+const getMediaFilesUsedByBoard = board => ([
   ...boardModel.boardOrderedLayerFilenames(board).filenames,  // all PNG files
   boardModel.boardFilenameForThumbnail(board),                // thumbnail
-  ...(board.link ? [board.link] : [])                         // any linked PSD
+  ...(board.link ? [board.link] : []),                        // any linked PSD
+  ...(board.audio ? [board.audio.filename] : [])              // any audio
 ])
 
 const getRelativeImagePathsUsedByScene = scene =>
-  R.flatten(scene.boards.map(getImageFilesUsedByBoard))
+  R.flatten(scene.boards.map(getMediaFilesUsedByBoard))
 
 const getAllAbsoluteFilePathsUsedByScene = srcFilePath => {
   let srcFolderPath = path.dirname(srcFilePath)
