@@ -2,8 +2,6 @@ const Tone = require('tone')
 
 class AudioPlayback {
   constructor ({ store, sceneData, getAudioFilePath }) {
-    console.log('new AudioPlayback')
-
     this.store = store
     this.sceneData = sceneData
     this.getAudioFilePath = getAudioFilePath
@@ -30,8 +28,6 @@ class AudioPlayback {
   }
 
   updateBuffers () {
-    console.log('AudioPlayback#updateBuffers')
-
     return new Promise((resolve, reject) => {
       let loadables = []
       let failed = []
@@ -81,6 +77,7 @@ class AudioPlayback {
         // ... check to see if it's not referenced in the scene
         if (!sceneAudioFilenames.includes(filename)) {
           // remove the unused player
+          console.log('removing unused player', filename)
           this.players._players[filename].dispose()
           delete this.players._players[filename]
         }
@@ -103,8 +100,6 @@ class AudioPlayback {
   }
 
   playBoard (index) {
-    console.log('AudioPlayback#playBoard', index)
-
     // is the user auditioning audio by moving from board to board?
     let isAuditioning = !this.isPlaying
 
@@ -123,10 +118,10 @@ class AudioPlayback {
           continue
         }
 
-        console.log('found', board.audio.filename, 'with duration', player.buffer.duration, 'at', board.time)
+        // console.log('found', board.audio.filename, 'with duration', player.buffer.duration, 'at', board.time)
 
         if (board === playingBoard) {
-          console.log('\tplaying current board', board.audio.filename, this.players.get(board.audio.filename))
+          // console.log('\tplaying current board', board.audio.filename, this.players.get(board.audio.filename))
 
           this.players.get(board.audio.filename).start()
 
@@ -141,10 +136,10 @@ class AudioPlayback {
           //    when we're auditioning a single board)
           && !isAuditioning
         ) {
-          console.log('\tfound overlapping board, i')
+          // console.log('\tfound overlapping board, i')
           if (board.audio) {
             let offsetInMsecs = playingBoard.time - board.time
-            console.log('\tplaying overlapping', board.audio.filename, 'at offset', offsetInMsecs)
+            // console.log('\tplaying overlapping', board.audio.filename, 'at offset', offsetInMsecs)
             let player = this.players.get(board.audio.filename)
             if (player.state !== 'started') {
               player.start(
@@ -162,13 +157,10 @@ class AudioPlayback {
   }
 
   start () {
-    console.log('AudioPlayback#start')
     this.isPlaying = true
   }
 
   stop () {
-    console.log('AudioPlayback#stop')
-
     this.isPlaying = false
     this.players.stopAll()
   }
@@ -178,7 +170,6 @@ class AudioPlayback {
   }
 
   dispose () {
-    console.log('AudioPlayback#dispose')
     this.players.stopAll()
     this.players.dispose()
   }
