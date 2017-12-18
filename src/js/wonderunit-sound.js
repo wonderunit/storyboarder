@@ -284,14 +284,9 @@ const init = () => {
   bassSynth.chain( filter, comp2, Tone.Master)
   bassSynth2.chain( filter3,vol2, Tone.Master)
 
-  multiPlayer = new Tone.Players(new Tone.Buffers(filePathsForSoundEffects))
+  multiPlayer = new Tone.Players(filePathsForSoundEffects)
                 .set('volume', -20)
                 .toMaster()
-  multiPlayer.stopIfPlaying = function (bufferName) {
-    if (this._activeSources[bufferName] && this._activeSources[bufferName].length) {
-      this.stop(bufferName)
-    }
-  }
 }
 // route for sound effects by name/purpose
 const playEffect = effect => {
@@ -343,8 +338,14 @@ const playEffect = effect => {
       break
     default:
       if (multiPlayer) {
-        multiPlayer.stopIfPlaying(effect)
-        multiPlayer.start(effect)
+        if (multiPlayer.has(effect)) {
+          let player = multiPlayer.get(effect)
+          // stop if playing
+          if (player.state === 'started') {
+            multiPlayer.get(effect).stop()
+          }
+          multiPlayer.get(effect).start()
+        }
       }
       break
   }
