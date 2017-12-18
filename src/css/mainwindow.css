@@ -841,13 +841,6 @@ input[type=range]:focus::-webkit-slider-runnable-track {
 }
 .audiofile_container .audiofile_clear {
   margin: 0 0 0 10px;
-  /* padding: 9px; */
-  /* margin: 0 5px 0 8px; */
-  /*
-  padding: 8px;
-  border: 2px solid #3e3e3e;
-  border-radius: 4px;
-  */
 }
 #board-metadata .audiofile_container .audiofile_clear .flatbutton {
   padding: 10px;
