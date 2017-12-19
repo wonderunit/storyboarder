@@ -1,3 +1,6 @@
+// TODO profile `render` performance (especially when not recording)
+// TODO split recording feature into its own component?
+//
 class AudioFileControlView {
   constructor ({ onRequestFile, onSelectFile, onSelectFileCancel, onClear, onToggleRecord }) {
     this.state = {
