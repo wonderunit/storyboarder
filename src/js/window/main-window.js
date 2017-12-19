@@ -1378,15 +1378,13 @@ let loadBoardUI = () => {
       event.preventDefault()
       if (R.isNil(recordingToBoardIndex)) {
         recordingToBoardIndex = currentBoard
-        audioFileControlView.setState({
-          boardAudio: boardData.boards[recordingToBoardIndex].audio,
-          isRecording: true
+        audioFileControlView.startRecording({
+          boardAudio: boardData.boards[recordingToBoardIndex].audio
         })
       } else {
         recordingToBoardIndex = undefined
-        audioFileControlView.setState({
-          boardAudio: boardData.boards[currentBoard].audio,
-          isRecording: false
+        audioFileControlView.stopRecording({
+          boardAudio: boardData.boards[currentBoard].audio
         })
       }
     }

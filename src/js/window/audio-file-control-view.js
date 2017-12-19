@@ -1,5 +1,10 @@
 class AudioFileControlView {
   constructor ({ onRequestFile, onSelectFile, onSelectFileCancel, onClear, onToggleRecord }) {
+    this.state = {
+      boardAudio: undefined,
+      isRecording: false
+    }
+
     this.onRequestFile = onRequestFile.bind(this)
     this.onSelectFile = onSelectFile.bind(this)
     this.onSelectFileCancel = onSelectFileCancel.bind(this)
@@ -28,11 +33,27 @@ class AudioFileControlView {
       }
     })
     ro.observe(recordVisualization)
+
+    this.setState(this.state)
   }
 
   setState (state) {
     this.state = state
     this.render()
+  }
+
+  startRecording ({ boardAudio }) {
+    this.setState({
+      boardAudio,
+      isRecording: true
+    })
+  }
+
+  stopRecording ({ boardAudio }) {
+    this.setState({
+      boardAudio,
+      isRecording: false
+    })
   }
 
   render () {
