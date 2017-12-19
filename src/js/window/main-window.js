@@ -1306,7 +1306,7 @@ let loadBoardUI = () => {
       const { failed } = await audioPlayback.updateBuffers()
       failed.forEach(filename => notifications.notify({ message: `Could not load audio file ${filename}` }))
       renderThumbnailDrawer()
-      audioFileControlView.render({
+      audioFileControlView.setState({
         boardAudio: board.audio,
         isRecording: !R.isNil(recordingToBoardIndex)
       })
@@ -1368,7 +1368,7 @@ let loadBoardUI = () => {
         const { failed } = await audioPlayback.updateBuffers()
         failed.forEach(filename => notifications.notify({ message: `Could not load audio file ${filename}` }))
         renderThumbnailDrawer()
-        audioFileControlView.render({
+        audioFileControlView.setState({
           boardAudio: board.audio,
           isRecording: !R.isNil(recordingToBoardIndex)
         })
@@ -1378,13 +1378,13 @@ let loadBoardUI = () => {
       event.preventDefault()
       if (R.isNil(recordingToBoardIndex)) {
         recordingToBoardIndex = currentBoard
-        audioFileControlView.render({
+        audioFileControlView.setState({
           boardAudio: boardData.boards[recordingToBoardIndex].audio,
           isRecording: true
         })
       } else {
         recordingToBoardIndex = undefined
-        audioFileControlView.render({
+        audioFileControlView.setState({
           boardAudio: boardData.boards[currentBoard].audio,
           isRecording: false
         })
@@ -2511,7 +2511,7 @@ let renderMetaData = () => {
 
   renderStats()
 
-  audioFileControlView.render({
+  audioFileControlView.setState({
     boardAudio: boardData.boards[currentBoard].audio,
     isRecording: !R.isNil(recordingToBoardIndex)
   })

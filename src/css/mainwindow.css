@@ -849,10 +849,15 @@ input[type=range]:focus::-webkit-slider-runnable-track {
   margin: 0;
 }
 
+.recording_container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
 .recording_container .record_button {
   margin-right: 10px;
 }
-.recording_container .record_button .flatbutton {
+#board-metadata .recording_container .record_button .flatbutton {
   padding: 10px 15px;
 }
 .recording_container .record_icon {
@@ -861,4 +866,14 @@ input[type=range]:focus::-webkit-slider-runnable-track {
   display: flex;
   justify-content: center;
   align-items: center;
+}
+.recording_container .record_visualization {
+  width: 100%;
+  height: 45px;
+}
+.recording_container .record_visualization canvas {
+  width: 100%;
+  height: 100%;
+  background-color: #222;
+  border-radius: 4px;
 }

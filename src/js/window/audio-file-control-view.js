@@ -12,32 +12,86 @@ class AudioFileControlView {
     this.el.querySelector('.audiofile_clear').addEventListener('click', this.onClear)
 
     this.el.querySelector('.record_button').addEventListener('click', this.onToggleRecord)
+
+    // add resize observer
+    let recordVisualization = this.el.querySelector('.record_visualization')
+    let context = recordVisualization.querySelector('canvas').getContext('2d')
+    let ro = new ResizeObserver(entries => {
+      for (let entry of entries) {
+        if (entry.target === recordVisualization) {
+          // re-size
+          context.canvas.width = entry.contentRect.width
+          context.canvas.height = entry.contentRect.height
+          // trigger a re-render
+          this.setState(this.state)
+        }
+      }
+    })
+    ro.observe(recordVisualization)
   }
 
-  render ({ boardAudio, isRecording }) {
+  setState (state) {
+    this.state = state
+    this.render()
+  }
+
+  render () {
+    const { boardAudio, isRecording } = this.state
+
     let audiofileTextEl = this.el.querySelector('.audiofile_text')
     let audiofileInputEl = this.el.querySelector('input#audiofile')
     let audiofileSvgUseEl = this.el.querySelector('svg use')
     let audiofileClearBtnEl = this.el.querySelector('.audiofile_clear')
     let audiofileButton = this.el.querySelector('.audiofile_button')
 
+    let recordingContainerEl = this.el.querySelector('.recording_container')
     let recordButton = this.el.querySelector('.record_button')
+    let recordVisualization = this.el.querySelector('.record_visualization')
+    let context = recordVisualization.querySelector('canvas').getContext('2d')
 
     if (isRecording) {
-      [audiofileButton, audiofileInputEl, audiofileClearBtnEl].forEach(el =>
-          el.style.visibility = 'hidden')
+      audiofileButton.style.display = 'none'
+      audiofileClearBtnEl.style.display = 'none'
+      recordingContainerEl.style.width = '100%'
+
+      recordVisualization.style.display = 'flex'
       recordButton.querySelector('.record_icon span').innerHTML = 'S'
 
-      
+      context.clearRect(0, 0, context.canvas.width, context.canvas.height)
+      context.fillStyle = '#f00'
+
+      context.beginPath()
+      context.arc(0, 0, 5, 0, Math.PI * 2)
+      context.closePath()
+      context.fill()
+
+      context.beginPath()
+      context.arc(context.canvas.width, 0, 5, 0, Math.PI * 2)
+      context.closePath()
+      context.fill()
+
+      context.beginPath()
+      context.arc(context.canvas.width, context.canvas.height, 5, 0, Math.PI * 2)
+      context.closePath()
+      context.fill()
+
+      context.beginPath()
+      context.arc(0, context.canvas.height, 5, 0, Math.PI * 2)
+      context.closePath()
+      context.fill()
 
       return
     }
 
 
 
-    [audiofileButton, audiofileInputEl, audiofileClearBtnEl].forEach(el =>
-        el.style.visibility = 'visible')
+    audiofileButton.style.display = 'block'
+    audiofileClearBtnEl.style.display = 'block'
+    recordingContainerEl.style.width = 'auto'
+
+    recordVisualization.style.display = 'none'
     recordButton.querySelector('.record_icon span').innerHTML = 'R'
+    context.clearRect(0, 0, context.canvas.width, context.canvas.height)
 
     if (boardAudio) {
       // on
