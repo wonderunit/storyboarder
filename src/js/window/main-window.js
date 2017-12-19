@@ -10,6 +10,7 @@ const util = require('../utils/index')
 const Color = require('color-js')
 const chokidar = require('chokidar')
 const plist = require('plist')
+const R = require('ramda')
 
 
 const { getInitialStateRenderer } = require('electron-redux')
@@ -98,6 +99,8 @@ let currentScene = 0
 
 let boardFileDirty = false
 let boardFileDirtyTimer
+
+let recordingToBoardIndex = undefined
 
 let watcher // for chokidar
 
@@ -1303,7 +1306,10 @@ let loadBoardUI = () => {
       const { failed } = await audioPlayback.updateBuffers()
       failed.forEach(filename => notifications.notify({ message: `Could not load audio file ${filename}` }))
       renderThumbnailDrawer()
-      audioFileControlView.render({ boardAudio: board.audio })
+      audioFileControlView.render({
+        boardAudio: board.audio,
+        isRecording: !R.isNil(recordingToBoardIndex)
+      })
     },
     onSelectFileCancel: function () {
       // NOOP
@@ -1362,7 +1368,26 @@ let loadBoardUI = () => {
         const { failed } = await audioPlayback.updateBuffers()
         failed.forEach(filename => notifications.notify({ message: `Could not load audio file ${filename}` }))
         renderThumbnailDrawer()
-        audioFileControlView.render({ boardAudio: board.audio })
+        audioFileControlView.render({
+          boardAudio: board.audio,
+          isRecording: !R.isNil(recordingToBoardIndex)
+        })
+      }
+    },
+    onToggleRecord: function (event) {
+      event.preventDefault()
+      if (R.isNil(recordingToBoardIndex)) {
+        recordingToBoardIndex = currentBoard
+        audioFileControlView.render({
+          boardAudio: boardData.boards[recordingToBoardIndex].audio,
+          isRecording: true
+        })
+      } else {
+        recordingToBoardIndex = undefined
+        audioFileControlView.render({
+          boardAudio: boardData.boards[currentBoard].audio,
+          isRecording: false
+        })
       }
     }
   })
@@ -2487,7 +2512,8 @@ let renderMetaData = () => {
   renderStats()
 
   audioFileControlView.render({
-    boardAudio: boardData.boards[currentBoard].audio
+    boardAudio: boardData.boards[currentBoard].audio,
+    isRecording: !R.isNil(recordingToBoardIndex)
   })
 }
 

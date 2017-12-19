@@ -1,20 +1,42 @@
 class AudioFileControlView {
-  constructor ({ onRequestFile, onSelectFile, onSelectFileCancel, onClear }) {
+  constructor ({ onRequestFile, onSelectFile, onSelectFileCancel, onClear, onToggleRecord }) {
     this.onRequestFile = onRequestFile.bind(this)
     this.onSelectFile = onSelectFile.bind(this)
     this.onSelectFileCancel = onSelectFileCancel.bind(this)
     this.onClear = onClear.bind(this)
+    this.onToggleRecord = onToggleRecord.bind(this)
 
     this.el = document.querySelector('.audiofile_container')
 
     this.el.querySelector('.audiofile_button').addEventListener('click', this.onRequestFile)
     this.el.querySelector('.audiofile_clear').addEventListener('click', this.onClear)
+
+    this.isRecording = false
+    this.el.querySelector('.record_button').addEventListener('click', this.onToggleRecord)
   }
-  render ({ boardAudio }) {
+
+  render ({ boardAudio, isRecording }) {
     let audiofileTextEl = this.el.querySelector('.audiofile_text')
     let audiofileInputEl = this.el.querySelector('input#audiofile')
     let audiofileSvgUseEl = this.el.querySelector('svg use')
     let audiofileClearBtnEl = this.el.querySelector('.audiofile_clear')
+    let audiofileButton = this.el.querySelector('.audiofile_button')
+
+    let recordButton = this.el.querySelector('.record_button')
+
+    if (isRecording) {
+      [audiofileButton, audiofileInputEl, audiofileClearBtnEl].forEach(el =>
+          el.style.visibility = 'hidden')
+
+      recordButton.querySelector('.record_icon span').innerHTML = 'S'
+
+      return
+    } else {
+      [audiofileButton, audiofileInputEl, audiofileClearBtnEl].forEach(el =>
+          el.style.visibility = 'visible')
+
+      recordButton.querySelector('.record_icon span').innerHTML = 'R'
+    }
 
     if (boardAudio) {
       // on

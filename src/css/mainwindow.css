@@ -848,3 +848,17 @@ input[type=range]:focus::-webkit-slider-runnable-track {
 .audiofile_container .audiofile_clear .smallicon {
   margin: 0;
 }
+
+.recording_container .record_button {
+  margin-right: 10px;
+}
+.recording_container .record_button .flatbutton {
+  padding: 10px 15px;
+}
+.recording_container .record_icon {
+  width: 25px;
+  height: 25px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
