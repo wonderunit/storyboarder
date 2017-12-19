@@ -98,16 +98,10 @@ class AudioFileControlView {
       }
 
       if (lastMeter) {
-        context.fillStyle = '#f00'
-        context.beginPath()
-        context.fillRect(
-          0,
-          context.canvas.height - 2,
-          context.canvas.width * Tone.dbToGain(lastMeter), // scale to 0…1
-          2
+        drawMeter(
+          context,
+          Tone.dbToGain(lastMeter) // scale to 0…1
         )
-        context.closePath()
-        context.fill()
       }
 
       // FOR DEBUGGING draw registration marks
@@ -242,7 +236,7 @@ class Recorder {
 }
 
 // via https://webaudiodemos.appspot.com/AudioRecorder/js/audiodisplay.js
-function drawBuffer (width, height, context, data) {
+const drawBuffer = (width, height, context, data) => {
   let step = Math.ceil(data.length / width / 2) // TODO why do we need to / 2 to fit?
   let amp = height / 2
   context.fillStyle = 'silver'
@@ -268,7 +262,7 @@ function drawBuffer (width, height, context, data) {
 }
 
 // via https://github.com/Tonejs/Tone.js/blob/3ea44d3af63d365243f853b97738e3d1c15c0822/examples/analysis.html#L93
-function drawWaveform (context, data) {
+const drawWaveform = (context, data) => {
 	// let waveformGradient = context.createLinearGradient(
   //   0, 0, context.canvas.width, context.canvas.height)
 	// waveformGradient.addColorStop(0, '#ddd')
@@ -279,7 +273,7 @@ function drawWaveform (context, data) {
 	context.beginPath()
 	context.lineJoin = 'round'
 	context.lineWidth = 1.5
-	context.strokeStyle = 'red' // waveformGradient
+	context.strokeStyle = '#699EF2' // waveformGradient
 	context.moveTo(0, 0.5 * context.canvas.height)
 	for (var i = 1, len = data.length; i < len; i++) {
 		var val = (data[i] + 1) / 2
@@ -288,6 +282,19 @@ function drawWaveform (context, data) {
 		context.lineTo(x, y)
 	}
 	context.stroke()
+}
+
+const drawMeter = (context, value) => {
+  context.fillStyle = '#699EF2'
+  context.beginPath()
+  context.fillRect(
+    0,
+    context.canvas.height - 2,
+    context.canvas.width * value,
+    2
+  )
+  context.closePath()
+  context.fill()
 }
 
 module.exports = AudioFileControlView
