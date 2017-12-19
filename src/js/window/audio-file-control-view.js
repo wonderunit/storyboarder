@@ -1,6 +1,6 @@
 // TODO profile `render` performance (especially when not recording)
 // TODO split recording feature into its own component?
-//
+// TODO performance of recorder -- maybe dispose when not in use?
 class AudioFileControlView {
   constructor ({ onRequestFile, onSelectFile, onSelectFileCancel, onClear, onToggleRecord }) {
     this.state = {
@@ -38,14 +38,22 @@ class AudioFileControlView {
     ro.observe(recordVisualization)
 
     this.setState(this.state)
+
+    this.recorder = new Recorder()
+    this.recorder.initialize() // async
   }
 
-  setState (state) {
-    this.state = state
+  setState (newState) {
+    this.state = Object.assign(this.state, newState)
     this.render()
   }
 
   startRecording ({ boardAudio }) {
+    this.recorder.start({
+      onAudioData: ({ lastAudioData, lastMeter }) => {
+        this.setState({ lastAudioData, lastMeter })
+      }
+    })
     this.setState({
       boardAudio,
       isRecording: true
@@ -53,6 +61,7 @@ class AudioFileControlView {
   }
 
   stopRecording ({ boardAudio }) {
+    this.recorder.stop()
     this.setState({
       boardAudio,
       isRecording: false
@@ -60,7 +69,7 @@ class AudioFileControlView {
   }
 
   render () {
-    const { boardAudio, isRecording } = this.state
+    const { boardAudio, isRecording, lastAudioData, lastMeter } = this.state
 
     let audiofileTextEl = this.el.querySelector('.audiofile_text')
     let audiofileInputEl = this.el.querySelector('input#audiofile')
@@ -82,27 +91,47 @@ class AudioFileControlView {
       recordButton.querySelector('.record_icon span').innerHTML = 'S'
 
       context.clearRect(0, 0, context.canvas.width, context.canvas.height)
-      context.fillStyle = '#f00'
 
-      context.beginPath()
-      context.arc(0, 0, 5, 0, Math.PI * 2)
-      context.closePath()
-      context.fill()
+      if (lastAudioData) {
+        // drawBuffer(context.canvas.width, context.canvas.height, context, lastAudioData)
+        drawWaveform(context, lastAudioData)
+      }
 
-      context.beginPath()
-      context.arc(context.canvas.width, 0, 5, 0, Math.PI * 2)
-      context.closePath()
-      context.fill()
+      if (lastMeter) {
+        context.fillStyle = '#f00'
+        context.beginPath()
+        context.fillRect(
+          0,
+          context.canvas.height - 2,
+          context.canvas.width * Tone.dbToGain(lastMeter), // scale to 0…1
+          2
+        )
+        context.closePath()
+        context.fill()
+      }
 
-      context.beginPath()
-      context.arc(context.canvas.width, context.canvas.height, 5, 0, Math.PI * 2)
-      context.closePath()
-      context.fill()
-
-      context.beginPath()
-      context.arc(0, context.canvas.height, 5, 0, Math.PI * 2)
-      context.closePath()
-      context.fill()
+      // FOR DEBUGGING draw registration marks
+      //
+      // context.fillStyle = '#f00'
+      // context.beginPath()
+      // context.arc(0, 0, 5, 0, Math.PI * 2)
+      // context.closePath()
+      // context.fill()
+      // 
+      // context.beginPath()
+      // context.arc(context.canvas.width, 0, 5, 0, Math.PI * 2)
+      // context.closePath()
+      // context.fill()
+      // 
+      // context.beginPath()
+      // context.arc(context.canvas.width, context.canvas.height, 5, 0, Math.PI * 2)
+      // context.closePath()
+      // context.fill()
+      // 
+      // context.beginPath()
+      // context.arc(0, context.canvas.height, 5, 0, Math.PI * 2)
+      // context.closePath()
+      // context.fill()
 
       return
     }
@@ -150,6 +179,115 @@ class AudioFileControlView {
       audiofileClearBtnEl.style.pointerEvents = 'none'
     }
   }
+}
+
+const Tone = require('tone')
+
+// states: initializing, stopped, recording, finalizing
+class Recorder {
+  async initialize () {
+    this.userMedia = new Tone.UserMedia()
+    this.analyser = new Tone.Analyser({ type: 'waveform', size: 1024 })
+    this.meter = new Tone.Meter()
+
+    this.lastMeter = 0
+
+    await this.userMedia.open()
+
+    this.userMedia.connect(this.analyser)
+    this.userMedia.connect(this.meter)
+
+    this.mediaRecorder = new MediaRecorder(
+      this.userMedia._mediaStream.mediaStream,
+      {
+        mimeType: 'audio/webm;codec=opus'
+      }
+    )
+  }
+
+  start ({ onAudioData }) {
+    console.log('Recorder#start')
+
+    if (this.mediaRecorder.state === 'recording') return
+
+    this.onAudioDataCallback = onAudioData.bind(this)
+    this.chunks = []
+
+    this.mediaRecorder.start({
+      timeslice: 1000
+    })
+
+    this.mediaRecorder.ondataavailable = this.onAudioData.bind(this)
+  }
+
+  stop () {
+    console.log('Recorder#stop')
+    this.onAudioDataCallback = undefined
+
+    this.mediaRecorder.stop()
+    // TODO do we get more onAudioData after `stop` called?
+
+    return this.chunks
+  }
+
+  onAudioData (event) {
+    this.chunks.push(event.data)
+    if (this.onAudioDataCallback) {
+      this.onAudioDataCallback({
+        lastAudioData: this.analyser.getValue(),
+        lastMeter: this.meter.getLevel()
+      })
+    }
+  }
+}
+
+// via https://webaudiodemos.appspot.com/AudioRecorder/js/audiodisplay.js
+function drawBuffer (width, height, context, data) {
+  let step = Math.ceil(data.length / width / 2) // TODO why do we need to / 2 to fit?
+  let amp = height / 2
+  context.fillStyle = 'silver'
+  context.clearRect(0, 0, width, height)
+  for (let i = 0; i < width; i++) {
+    let min = 1.0
+    let max = -1.0
+    for (j = 0; j < step; j++) {
+      let datum = data[(i*step)+j]
+
+      if (datum < min)
+          min = datum
+      if (datum > max)
+          max = datum
+    }
+    context.fillRect(
+      i,
+      (1 + min) * amp,
+      1,
+      Math.max(1, (max - min) * amp)
+    )
+  }
+}
+
+// via https://github.com/Tonejs/Tone.js/blob/3ea44d3af63d365243f853b97738e3d1c15c0822/examples/analysis.html#L93
+function drawWaveform (context, data) {
+	// let waveformGradient = context.createLinearGradient(
+  //   0, 0, context.canvas.width, context.canvas.height)
+	// waveformGradient.addColorStop(0, '#ddd')
+	// waveformGradient.addColorStop(1, '#000')
+
+	context.clearRect(
+    0, 0, context.canvas.width, context.canvas.height)
+	context.beginPath()
+	context.lineJoin = 'round'
+	context.lineWidth = 1.5
+	context.strokeStyle = 'red' // waveformGradient
+	context.moveTo(0, 0.5 * context.canvas.height)
+	for (var i = 1, len = data.length; i < len; i++) {
+		var val = (data[i] + 1) / 2
+		var x = context.canvas.width * (i / len)
+		var y = val * context.canvas.height
+		context.lineTo(x, y)
+	}
+	context.stroke()
 }
 
 module.exports = AudioFileControlView
