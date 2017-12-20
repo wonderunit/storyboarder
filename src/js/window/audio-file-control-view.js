@@ -2,14 +2,14 @@
 // TODO split recording feature into its own component?
 // TODO performance of recorder -- maybe dispose when not in use?
 // TODO test clicking record button while already counting down or recording
-// TODO cancel countdown
-// TODO simplify isRecording to be part of mode?
+// TODO ability to cancel countdown
 // TODO monitoring during countdown
+// TODO stop all sounds if recording audio?
+// TODO trim last x msecs on playback
 class AudioFileControlView {
   constructor ({ onRequestFile, onSelectFile, onSelectFileCancel, onClear, onToggleRecord, onAudioComplete }) {
     this.state = {
       boardAudio: undefined,
-      isRecording: false,
       mode: 'initializing', // initializing, stopped, countdown, recording, finalizing
       counter: undefined
     }
@@ -58,7 +58,7 @@ class AudioFileControlView {
   }
 
   startCountdown ({ onComplete }) {
-    if (this.countdown) return
+    if (this.state.mode === 'countdown' || this.countdown) return
 
     this.countdown = new Countdown()
     this.countdown.start({
@@ -79,29 +79,36 @@ class AudioFileControlView {
       },
       onAudioComplete: (buffer) => {
         console.log('AudioFileControlView#onAudioComplete')
+        this.setState({ mode: 'stopped' })
         this.onAudioCompleteCallback(buffer)
       }
     })
+
     this.setState({
       boardAudio,
-      isRecording: true,
       mode: 'recording'
     })
   }
 
+  isCountingDownOrRecording () {
+    return this.state.mode === 'countdown' ||
+           this.state.mode === 'recording'
+  }
+
   stopRecording ({ boardAudio }) {
-    if (!this.state.isRecording) return
+    console.log('AudioFileControlView#stopRecording', 'isCountingDownOrRecording?', this.isCountingDownOrRecording())
+    if (!this.isCountingDownOrRecording()) return
 
     this.recorder.stop()
+
     this.setState({
       boardAudio,
-      isRecording: false,
-      mode: 'stopped'
+      mode: 'finalizing'
     })
   }
 
   render () {
-    const { boardAudio, isRecording, lastAudioData, lastMeter } = this.state
+    const { boardAudio, lastAudioData, lastMeter } = this.state
 
     let audiofileTextEl = this.el.querySelector('.audiofile_text')
     let audiofileInputEl = this.el.querySelector('input#audiofile')
@@ -114,7 +121,7 @@ class AudioFileControlView {
     let recordVisualization = this.el.querySelector('.record_visualization')
     let context = recordVisualization.querySelector('canvas').getContext('2d')
 
-    if (this.state.mode === 'countdown' || isRecording) {
+    if (this.isCountingDownOrRecording()) {
       audiofileButton.style.display = 'none'
       audiofileClearBtnEl.style.display = 'none'
       recordingContainerEl.style.width = '100%'
@@ -126,7 +133,7 @@ class AudioFileControlView {
         recordButton.querySelector('.record_icon span').innerHTML = this.state.counter
       }
 
-      if (isRecording) {
+      if (this.state.mode === 'recording') {
         // stop icon
         recordButton.querySelector('.record_icon span').innerHTML =
           `<div style="width: 12px; height: 12px; background-color: red">&nbsp;</div>`
@@ -170,6 +177,9 @@ class AudioFileControlView {
       return
     }
 
+    if (this.state.mode === 'finalizing') {
+      console.log('Finalizing ...')
+    }
 
 
     audiofileButton.style.display = 'block'
@@ -262,13 +272,12 @@ class Recorder {
   }
 
   stop () {
-    if (!this.mediaRecorder.state === 'recording') return
+    if (this.mediaRecorder.state != 'recording') return
 
-    console.log('Recorder#stop')
+    console.log('Recorder#stop', 'mediaRecorder.state:', this.mediaRecorder.state)
     this.onAudioDataCallback = undefined
 
     this.mediaRecorder.stop()
-    // TODO do we get more onAudioData after `stop` called?
 
     this.isFinalizing = true
   }

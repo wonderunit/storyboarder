@@ -1307,8 +1307,7 @@ let loadBoardUI = () => {
       failed.forEach(filename => notifications.notify({ message: `Could not load audio file ${filename}` }))
       renderThumbnailDrawer()
       audioFileControlView.setState({
-        boardAudio: board.audio,
-        isRecording: !R.isNil(recordingToBoardIndex)
+        boardAudio: board.audio
       })
     },
     onSelectFileCancel: function () {
@@ -1369,13 +1368,18 @@ let loadBoardUI = () => {
         failed.forEach(filename => notifications.notify({ message: `Could not load audio file ${filename}` }))
         renderThumbnailDrawer()
         audioFileControlView.setState({
-          boardAudio: board.audio,
-          isRecording: !R.isNil(recordingToBoardIndex)
+          boardAudio: board.audio
         })
       }
     },
     onToggleRecord: function (event) {
       event.preventDefault()
+
+      // TODO should this be managed by AudioFileControlView#onToggleRecord handler?
+      if (audioFileControlView.state.mode === 'countdown') {
+        return
+      }
+
       if (R.isNil(recordingToBoardIndex)) {
         recordingToBoardIndex = currentBoard
         audioFileControlView.startCountdown({
@@ -1389,7 +1393,6 @@ let loadBoardUI = () => {
         audioFileControlView.stopRecording({
           boardAudio: boardData.boards[currentBoard].audio
         })
-        // TODO show the 'finalizing' state, prevent UI input until ready
       }
     },
     onAudioComplete: async function (buffer) {
@@ -1414,8 +1417,7 @@ let loadBoardUI = () => {
 
         renderThumbnailDrawer()
         audioFileControlView.setState({
-          boardAudio: boardData.boards[currentBoard].audio,
-          isRecording: false
+          boardAudio: boardData.boards[currentBoard].audio
         })
         return
       }
@@ -1457,8 +1459,7 @@ let loadBoardUI = () => {
       failed.forEach(filename => notifications.notify({ message: `Could not load audio file ${filename}` }))
       renderThumbnailDrawer()
       audioFileControlView.setState({
-        boardAudio: boardData.boards[currentBoard].audio,
-        isRecording: false
+        boardAudio: boardData.boards[currentBoard].audio
       })
 
 
@@ -2587,8 +2588,7 @@ let renderMetaData = () => {
   renderStats()
 
   audioFileControlView.setState({
-    boardAudio: boardData.boards[currentBoard].audio,
-    isRecording: !R.isNil(recordingToBoardIndex)
+    boardAudio: boardData.boards[currentBoard].audio
   })
 }
 
