@@ -150,11 +150,20 @@ class AudioFileControlView {
       context.clearRect(0, 0, context.canvas.width, context.canvas.height)
       if (lastAudioData) {
         // drawBuffer(context.canvas.width, context.canvas.height, context, lastAudioData)
-        drawWaveform(context, lastAudioData)
+        drawWaveform(
+          context,
+          this.state.mode === 'countdown'
+            ? 'silver'
+            : '#699EF2',
+          lastAudioData
+        )
       }
       if (lastMeter) {
         drawMeter(
           context,
+          this.state.mode === 'countdown'
+            ? 'silver'
+            : '#699EF2',
           Tone.dbToGain(lastMeter) // scale to 0…1
         )
       }
@@ -186,7 +195,8 @@ class AudioFileControlView {
     }
 
     if (this.state.mode === 'finalizing') {
-      console.log('Finalizing ...')
+      console.log('finalizing ...')
+      return
     }
 
 
@@ -364,7 +374,7 @@ const drawBuffer = (width, height, context, data) => {
 }
 
 // via https://github.com/Tonejs/Tone.js/blob/3ea44d3af63d365243f853b97738e3d1c15c0822/examples/analysis.html#L93
-const drawWaveform = (context, data) => {
+const drawWaveform = (context, color = '#699EF2', data) => {
 	// let waveformGradient = context.createLinearGradient(
   //   0, 0, context.canvas.width, context.canvas.height)
 	// waveformGradient.addColorStop(0, '#ddd')
@@ -375,7 +385,7 @@ const drawWaveform = (context, data) => {
 	context.beginPath()
 	context.lineJoin = 'round'
 	context.lineWidth = 1.5
-	context.strokeStyle = '#699EF2' // waveformGradient
+	context.strokeStyle = color // waveformGradient
 	context.moveTo(0, 0.5 * context.canvas.height)
 	for (var i = 1, len = data.length; i < len; i++) {
 		var val = (data[i] + 1) / 2
@@ -386,8 +396,8 @@ const drawWaveform = (context, data) => {
 	context.stroke()
 }
 
-const drawMeter = (context, value) => {
-  context.fillStyle = '#699EF2'
+const drawMeter = (context, color = '#699EF2', value) => {
+  context.fillStyle = color
   context.beginPath()
   context.fillRect(
     0,
