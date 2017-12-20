@@ -145,7 +145,10 @@ class AudioFileControlView {
     recordingContainerEl.style.width = 'auto'
 
     recordVisualization.style.display = 'none'
-    recordButton.querySelector('.record_icon span').innerHTML = 'R'
+    // record icon
+    recordButton.querySelector('.record_icon span').innerHTML = `
+      <div style="width: 12px; height: 12px; background-color: red; border-radius: 12px;">&nbsp;</div>
+    `
     context.clearRect(0, 0, context.canvas.width, context.canvas.height)
 
     if (boardAudio) {
