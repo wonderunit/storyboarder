@@ -4,6 +4,7 @@
 // TODO test clicking record button while already counting down or recording
 // TODO cancel countdown
 // TODO simplify isRecording to be part of mode?
+// TODO monitoring during countdown
 class AudioFileControlView {
   constructor ({ onRequestFile, onSelectFile, onSelectFileCancel, onClear, onToggleRecord, onAudioComplete }) {
     this.state = {
@@ -113,36 +114,29 @@ class AudioFileControlView {
     let recordVisualization = this.el.querySelector('.record_visualization')
     let context = recordVisualization.querySelector('canvas').getContext('2d')
 
-    if (this.state.mode === 'countdown') {
+    if (this.state.mode === 'countdown' || isRecording) {
       audiofileButton.style.display = 'none'
       audiofileClearBtnEl.style.display = 'none'
       recordingContainerEl.style.width = '100%'
 
       recordVisualization.style.display = 'flex'
-      recordButton.querySelector('.record_icon span').innerHTML = this.state.counter
+
+      if (this.state.mode === 'countdown') {
+        // countdown
+        recordButton.querySelector('.record_icon span').innerHTML = this.state.counter
+      }
+
+      if (isRecording) {
+        // stop icon
+        recordButton.querySelector('.record_icon span').innerHTML =
+          `<div style="width: 12px; height: 12px; background-color: red">&nbsp;</div>`
+      }
 
       context.clearRect(0, 0, context.canvas.width, context.canvas.height)
-      return
-    }
-
-    if (isRecording) {
-      audiofileButton.style.display = 'none'
-      audiofileClearBtnEl.style.display = 'none'
-      recordingContainerEl.style.width = '100%'
-
-      recordVisualization.style.display = 'flex'
-      // stop icon
-      recordButton.querySelector('.record_icon span').innerHTML = `
-        <div style="width: 12px; height: 12px; background-color: red">&nbsp;</div>
-      `
-
-      context.clearRect(0, 0, context.canvas.width, context.canvas.height)
-
       if (lastAudioData) {
         // drawBuffer(context.canvas.width, context.canvas.height, context, lastAudioData)
         drawWaveform(context, lastAudioData)
       }
-
       if (lastMeter) {
         drawMeter(
           context,
