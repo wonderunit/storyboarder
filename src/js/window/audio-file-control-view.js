@@ -2,7 +2,7 @@
 // TODO split recording feature into its own component?
 // TODO performance of recorder -- maybe dispose when not in use?
 class AudioFileControlView {
-  constructor ({ onRequestFile, onSelectFile, onSelectFileCancel, onClear, onToggleRecord }) {
+  constructor ({ onRequestFile, onSelectFile, onSelectFileCancel, onClear, onToggleRecord, onAudioComplete }) {
     this.state = {
       boardAudio: undefined,
       isRecording: false
@@ -13,6 +13,7 @@ class AudioFileControlView {
     this.onSelectFileCancel = onSelectFileCancel.bind(this)
     this.onClear = onClear.bind(this)
     this.onToggleRecord = onToggleRecord.bind(this)
+    this.onAudioCompleteCallback = onAudioComplete.bind(this)
 
     this.el = document.querySelector('.audiofile_container')
 
@@ -52,6 +53,10 @@ class AudioFileControlView {
     this.recorder.start({
       onAudioData: ({ lastAudioData, lastMeter }) => {
         this.setState({ lastAudioData, lastMeter })
+      },
+      onAudioComplete: (buffer) => {
+        console.log('AudioFileControlView#onAudioComplete')
+        this.onAudioCompleteCallback(buffer)
       }
     })
     this.setState({
@@ -199,17 +204,21 @@ class Recorder {
     )
   }
 
-  start ({ onAudioData }) {
+  start ({ onAudioData, onAudioComplete }) {
     console.log('Recorder#start')
 
     if (this.mediaRecorder.state === 'recording') return
 
     this.onAudioDataCallback = onAudioData.bind(this)
+    this.onAudioCompleteCallback = onAudioComplete.bind(this)
+
     this.chunks = []
 
     this.mediaRecorder.start({
       timeslice: 1000
     })
+
+    this.isFinalizing = false
 
     this.mediaRecorder.ondataavailable = this.onAudioData.bind(this)
   }
@@ -221,10 +230,11 @@ class Recorder {
     this.mediaRecorder.stop()
     // TODO do we get more onAudioData after `stop` called?
 
-    return this.chunks
+    this.isFinalizing = true
   }
 
   onAudioData (event) {
+    console.log('Recorder#onAudioData')
     this.chunks.push(event.data)
     if (this.onAudioDataCallback) {
       this.onAudioDataCallback({
@@ -232,6 +242,24 @@ class Recorder {
         lastMeter: this.meter.getLevel()
       })
     }
+
+    if (this.isFinalizing) {
+      this.isFinalizing = false
+      this.onAudioComplete()
+    }
+  }
+
+  onAudioComplete () {
+    console.log('AudioRecorder#onAudioComplete')
+
+    let blob = new Blob(this.chunks, { 'type': 'audio/webm;codec=opus' })
+    let reader = new FileReader()
+    reader.onload = () => {
+      let buffer = new Buffer(reader.result)
+      this.onAudioCompleteCallback(buffer)
+      this.chunks = []
+    }
+    reader.readAsArrayBuffer(blob)
   }
 }
 

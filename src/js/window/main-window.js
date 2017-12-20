@@ -1382,11 +1382,65 @@ let loadBoardUI = () => {
           boardAudio: boardData.boards[recordingToBoardIndex].audio
         })
       } else {
-        recordingToBoardIndex = undefined
         audioFileControlView.stopRecording({
           boardAudio: boardData.boards[currentBoard].audio
         })
+        // TODO show the 'finalizing' state, prevent UI input until ready
       }
+    },
+    onAudioComplete: async function (buffer) {
+      // TODO can this ever actually happen?
+      if (R.isNil(recordingToBoardIndex)) {
+        console.error('whoops! not currently recording!')
+        return        
+      }
+
+      let board = boardData.boards[recordingToBoardIndex]
+
+      // name to match uid
+      let datestamp = Date.now() // (new Date()).toISOString()
+      let newFilename = `${board.uid}-audio-${datestamp}.webm`
+
+      // copy to project folder
+      let newPath = path.join(boardPath, 'images', newFilename)
+
+      console.log('saving audio to', newPath)
+
+      fs.writeFileSync(newPath, buffer, {}, (err, res) => {
+        if (err) {
+          console.error(err)
+          notifications.notify({ message: `Error saving audio. ${err}`, timing: 5 })
+          return
+        }
+        notifications.notify({ message: 'Saved audio!', timing: 5 })
+      })
+
+      
+      
+      //
+      // TODO DRY THIS UP
+      //
+      //
+
+      // update board’s audio object
+      board.audio = board.audio || {}
+      board.audio.filename = newFilename
+      
+      // mark .storyboarder scene JSON file dirty
+      markBoardFileDirty()
+      
+      // update the audio playback buffers
+      const { failed } = await audioPlayback.updateBuffers()
+      failed.forEach(filename => notifications.notify({ message: `Could not load audio file ${filename}` }))
+      renderThumbnailDrawer()
+      audioFileControlView.setState({
+        boardAudio: boardData.boards[currentBoard].audio,
+        isRecording: false
+      })
+
+
+
+      recordingToBoardIndex = undefined
     }
   })
 
