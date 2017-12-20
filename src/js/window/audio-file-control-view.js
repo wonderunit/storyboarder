@@ -3,7 +3,6 @@
 // TODO performance of recorder -- maybe dispose when not in use?
 // TODO test clicking record button while already counting down or recording
 // TODO ability to cancel countdown
-// TODO monitoring during countdown
 // TODO stop all sounds if recording audio?
 // TODO trim last x msecs on playback
 class AudioFileControlView {
@@ -68,6 +67,12 @@ class AudioFileControlView {
       onComplete: onComplete.bind(this),
       onTick: ({ counter }) => this.setState({ counter, mode: 'countdown' })
     })
+
+    this.recorder.monitor({
+      onAudioData: ({ lastAudioData, lastMeter }) => {
+        this.setState({ lastAudioData, lastMeter })
+      }
+    })
   }
 
   startRecording ({ boardAudio }) {
@@ -131,8 +136,6 @@ class AudioFileControlView {
 
       recordVisualization.style.display = 'flex'
 
-      context.clearRect(0, 0, context.canvas.width, context.canvas.height)
-
       if (this.state.mode === 'countdown') {
         // countdown
         recordButton.querySelector('.record_icon span').innerHTML = this.state.counter
@@ -142,17 +145,18 @@ class AudioFileControlView {
         // stop icon
         recordButton.querySelector('.record_icon span').innerHTML =
           `<div style="width: 12px; height: 12px; background-color: red">&nbsp;</div>`
+      }
 
-        if (lastAudioData) {
-          // drawBuffer(context.canvas.width, context.canvas.height, context, lastAudioData)
-          drawWaveform(context, lastAudioData)
-        }
-        if (lastMeter) {
-          drawMeter(
-            context,
-            Tone.dbToGain(lastMeter) // scale to 0…1
-          )
-        }
+      context.clearRect(0, 0, context.canvas.width, context.canvas.height)
+      if (lastAudioData) {
+        // drawBuffer(context.canvas.width, context.canvas.height, context, lastAudioData)
+        drawWaveform(context, lastAudioData)
+      }
+      if (lastMeter) {
+        drawMeter(
+          context,
+          Tone.dbToGain(lastMeter) // scale to 0…1
+        )
       }
 
       // FOR DEBUGGING draw registration marks
@@ -241,7 +245,7 @@ class Recorder {
     this.analyser = new Tone.Analyser({ type: 'waveform', size: 1024 })
     this.meter = new Tone.Meter()
 
-    this.lastMeter = 0
+    this.isFinalizing = false
 
     await this.userMedia.open()
 
@@ -256,20 +260,27 @@ class Recorder {
     )
   }
 
+  monitor ({ onAudioData }) {
+    this.mediaRecorder.start({
+      timeslice: 1000
+    })
+
+    this.mediaRecorder.ondataavailable = () => {
+      onAudioData({
+        lastAudioData: this.analyser.getValue(),
+        lastMeter: this.meter.getLevel()
+      })
+    }
+  }
+
+  // start (assumes .monitor has already been called)
   start ({ onAudioData, onAudioComplete }) {
     console.log('Recorder#start')
-
-    if (this.mediaRecorder.state === 'recording') return
 
     this.onAudioDataCallback = onAudioData.bind(this)
     this.onAudioCompleteCallback = onAudioComplete.bind(this)
 
     this.chunks = []
-
-    this.mediaRecorder.start({
-      timeslice: 1000
-    })
-
     this.isFinalizing = false
 
     this.mediaRecorder.ondataavailable = this.onAudioData.bind(this)
@@ -298,6 +309,7 @@ class Recorder {
 
     if (this.isFinalizing) {
       this.isFinalizing = false
+      this.mediaRecorder.ondataavailable = undefined
       this.onAudioComplete()
     }
   }
