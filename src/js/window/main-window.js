@@ -1432,15 +1432,14 @@ let loadBoardUI = () => {
 
       console.log('saving audio to', newPath)
 
-      fs.writeFileSync(newPath, buffer, {}, (err, res) => {
-        if (err) {
-          console.error(err)
-          notifications.notify({ message: `Error saving audio. ${err}`, timing: 5 })
-          return
-        }
+      try {
+        fs.writeFileSync(newPath, buffer, { encoding: 'binary' })
         notifications.notify({ message: 'Saved audio!', timing: 5 })
-      })
-
+      } catch (err) {
+        console.error(err)
+        notifications.notify({ message: `Error saving audio. ${err}`, timing: 5 })
+        return
+      }
       
       
       //

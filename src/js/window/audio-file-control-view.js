@@ -245,6 +245,7 @@ class Recorder {
     this.analyser = new Tone.Analyser({ type: 'waveform', size: 1024 })
     this.meter = new Tone.Meter()
 
+    this.monitorInterval = undefined
     this.isFinalizing = false
 
     await this.userMedia.open()
@@ -261,21 +262,24 @@ class Recorder {
   }
 
   monitor ({ onAudioData }) {
-    this.mediaRecorder.start({
-      timeslice: 1000
-    })
-
-    this.mediaRecorder.ondataavailable = () => {
+    this.monitorInterval = setInterval(() => {
+      console.log('monitor', 'onAudioData:', onAudioData)
       onAudioData({
         lastAudioData: this.analyser.getValue(),
         lastMeter: this.meter.getLevel()
       })
-    }
+    }, 1000 / 15) // 15 fps monitor
   }
 
   // start (assumes .monitor has already been called)
   start ({ onAudioData, onAudioComplete }) {
     console.log('Recorder#start')
+
+    if (this.monitorInterval) clearInterval(this.monitorInterval)
+
+    this.mediaRecorder.start({
+      timeslice: 1000
+    })
 
     this.onAudioDataCallback = onAudioData.bind(this)
     this.onAudioCompleteCallback = onAudioComplete.bind(this)
