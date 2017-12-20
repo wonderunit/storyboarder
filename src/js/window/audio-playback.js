@@ -11,12 +11,17 @@ class AudioPlayback {
     this.isPlaying = false
     
     this.isBypassed = false
+    this.enableAudition = false
 
     this.resetBuffers()
   }
 
   setBypassed (value) {
     this.isBypassed = value
+  }
+
+  toggleAudition () {
+    this.enableAudition = !this.enableAudition
   }
 
   setSceneData (sceneData) {
@@ -110,6 +115,9 @@ class AudioPlayback {
 
     // is the user auditioning audio by moving from board to board?
     let isAuditioning = !this.isPlaying
+
+    // should we prevent auditioning?
+    if (isAuditioning && !this.enableAudition) return
 
     const MSECS_IN_A_SECOND = 1000
     const FADE_OUT_IN_SECONDS = 0.5

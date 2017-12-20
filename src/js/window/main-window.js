@@ -5431,4 +5431,8 @@ ipcRenderer.on('addAudioFile', () => {
   }
 })
 
+ipcRenderer.on('toggleAudition', value => {
+  audioPlayback.toggleAudition()
+})
+
 const log = opt => ipcRenderer.send('log', opt)

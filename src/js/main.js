@@ -1252,3 +1252,7 @@ ipcMain.on('workspaceReady', event => {
 ipcMain.on('exportPrintablePdf', (event, sourcePath, fileName) => {
   mainWindow.webContents.send('exportPrintablePdf', sourcePath, fileName)
 })
+
+ipcMain.on('toggleAudition', (event) => {
+  mainWindow.webContents.send('toggleAudition')
+})

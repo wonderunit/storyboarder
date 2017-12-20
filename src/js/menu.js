@@ -296,6 +296,13 @@ AppMenu.Navigation = () => ({
       click (item, focusedWindow, event) {
         ipcRenderer.send('toggleSpeaking')
       }
+    },
+    {
+      label: 'Audition Board Audio',
+      type: 'checkbox',
+      click (item, focusedWindow, event) {
+        ipcRenderer.send('toggleAudition')
+      }
     }
   ]
 })
