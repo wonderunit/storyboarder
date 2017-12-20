@@ -9,8 +9,14 @@ class AudioPlayback {
     this.players
 
     this.isPlaying = false
+    
+    this.isBypassed = false
 
     this.resetBuffers()
+  }
+
+  setBypassed (value) {
+    this.isBypassed = value
   }
 
   setSceneData (sceneData) {
@@ -100,6 +106,8 @@ class AudioPlayback {
   }
 
   playBoard (index) {
+    if (this.isBypassed) return
+
     // is the user auditioning audio by moving from board to board?
     let isAuditioning = !this.isPlaying
 

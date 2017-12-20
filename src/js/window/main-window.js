@@ -1502,7 +1502,9 @@ const renderScene = async () => {
   // render the thumbnail drawer
   renderThumbnailDrawer()
   // go to the correct board
+  audioPlayback.setBypassed(true)
   await gotoBoard(currentBoard)
+  audioPlayback.setBypassed(false)
 }
 
 ///////////////////////////////////////////////////////////////
