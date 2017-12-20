@@ -112,6 +112,10 @@ class AudioPlayback {
     let isAuditioning = !this.isPlaying
 
     const MSECS_IN_A_SECOND = 1000
+    const FADE_OUT_IN_SECONDS = 0.5
+
+    // unused. this literally cuts at the exact point.
+    const CUT_EARLY_IN_SECONDS = 0.5
 
     let playingBoard = this.sceneData.boards[index]
 
@@ -131,7 +135,17 @@ class AudioPlayback {
         if (board === playingBoard) {
           // console.log('\tplaying current board', board.audio.filename, this.players.get(board.audio.filename))
 
-          this.players.get(board.audio.filename).start()
+          let durationInSeconds = Math.max(0, player.buffer.duration - CUT_EARLY_IN_SECONDS)
+
+          player.fadeOut = FADE_OUT_IN_SECONDS
+          player.start(
+            // start now
+            Tone.Time(),
+            // no offset
+            0,
+            // duration, cut early
+            // durationInSeconds
+          )
 
         // does this board end AFTER this current playing board starts?
         } else if (
@@ -150,12 +164,17 @@ class AudioPlayback {
             // console.log('\tplaying overlapping', board.audio.filename, 'at offset', offsetInMsecs)
             let player = this.players.get(board.audio.filename)
             if (player.state !== 'started') {
+              let durationInSeconds = Math.max(0, (player.buffer.duration - (offsetInMsecs / MSECS_IN_A_SECOND) - CUT_EARLY_IN_SECONDS))
+              player.fadeOut = FADE_OUT_IN_SECONDS
               player.start(
                 // start now
                 Tone.Time(),
 
                 // offset by offsetInMsecs (converted to seconds)
-                offsetInMsecs / MSECS_IN_A_SECOND
+                offsetInMsecs / MSECS_IN_A_SECOND,
+
+                // duration, cut early
+                // durationInSeconds
               )
             }
           }
