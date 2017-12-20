@@ -1378,8 +1378,12 @@ let loadBoardUI = () => {
       event.preventDefault()
       if (R.isNil(recordingToBoardIndex)) {
         recordingToBoardIndex = currentBoard
-        audioFileControlView.startRecording({
-          boardAudio: boardData.boards[recordingToBoardIndex].audio
+        audioFileControlView.startCountdown({
+          onComplete: function () {
+            audioFileControlView.startRecording({
+              boardAudio: boardData.boards[recordingToBoardIndex].audio
+            })
+          }
         })
       } else {
         audioFileControlView.stopRecording({
@@ -1396,6 +1400,25 @@ let loadBoardUI = () => {
       }
 
       let board = boardData.boards[recordingToBoardIndex]
+
+      // NOTE catch for if they very quickly hit the stop button before chunks?
+      // TODO can we reproduce this? can this really happen?
+      //      maybe just fail silently?
+      if (!buffer) {
+        notifications.notify({ message: 'No audio recorded.', timing: 5 })
+        
+        //
+        // TODO DRY THIS UP
+        //
+        //
+
+        renderThumbnailDrawer()
+        audioFileControlView.setState({
+          boardAudio: boardData.boards[currentBoard].audio,
+          isRecording: false
+        })
+        return
+      }
 
       // name to match uid
       let datestamp = Date.now() // (new Date()).toISOString()

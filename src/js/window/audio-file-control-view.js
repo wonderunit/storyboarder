@@ -1,11 +1,16 @@
 // TODO profile `render` performance (especially when not recording)
 // TODO split recording feature into its own component?
 // TODO performance of recorder -- maybe dispose when not in use?
+// TODO test clicking record button while already counting down or recording
+// TODO cancel countdown
+// TODO simplify isRecording to be part of mode?
 class AudioFileControlView {
   constructor ({ onRequestFile, onSelectFile, onSelectFileCancel, onClear, onToggleRecord, onAudioComplete }) {
     this.state = {
       boardAudio: undefined,
-      isRecording: false
+      isRecording: false,
+      mode: 'initializing', // initializing, stopped, countdown, recording, finalizing
+      counter: undefined
     }
 
     this.onRequestFile = onRequestFile.bind(this)
@@ -42,6 +47,8 @@ class AudioFileControlView {
 
     this.recorder = new Recorder()
     this.recorder.initialize() // async
+    
+    this.countdown = undefined
   }
 
   setState (newState) {
@@ -49,7 +56,22 @@ class AudioFileControlView {
     this.render()
   }
 
+  startCountdown ({ onComplete }) {
+    if (this.countdown) return
+
+    this.countdown = new Countdown()
+    this.countdown.start({
+      onComplete: onComplete.bind(this),
+      onTick: ({ counter }) => this.setState({ counter, mode: 'countdown' })
+    })
+  }
+
   startRecording ({ boardAudio }) {
+    if (this.countdown) {
+      this.countdown.dispose()
+      this.countdown = undefined
+    }
+
     this.recorder.start({
       onAudioData: ({ lastAudioData, lastMeter }) => {
         this.setState({ lastAudioData, lastMeter })
@@ -61,15 +83,19 @@ class AudioFileControlView {
     })
     this.setState({
       boardAudio,
-      isRecording: true
+      isRecording: true,
+      mode: 'recording'
     })
   }
 
   stopRecording ({ boardAudio }) {
+    if (!this.state.isRecording) return
+
     this.recorder.stop()
     this.setState({
       boardAudio,
-      isRecording: false
+      isRecording: false,
+      mode: 'stopped'
     })
   }
 
@@ -86,6 +112,18 @@ class AudioFileControlView {
     let recordButton = this.el.querySelector('.record_button')
     let recordVisualization = this.el.querySelector('.record_visualization')
     let context = recordVisualization.querySelector('canvas').getContext('2d')
+
+    if (this.state.mode === 'countdown') {
+      audiofileButton.style.display = 'none'
+      audiofileClearBtnEl.style.display = 'none'
+      recordingContainerEl.style.width = '100%'
+
+      recordVisualization.style.display = 'flex'
+      recordButton.querySelector('.record_icon span').innerHTML = this.state.counter
+
+      context.clearRect(0, 0, context.canvas.width, context.canvas.height)
+      return
+    }
 
     if (isRecording) {
       audiofileButton.style.display = 'none'
@@ -230,6 +268,8 @@ class Recorder {
   }
 
   stop () {
+    if (!this.mediaRecorder.state === 'recording') return
+
     console.log('Recorder#stop')
     this.onAudioDataCallback = undefined
 
@@ -257,6 +297,11 @@ class Recorder {
 
   onAudioComplete () {
     console.log('AudioRecorder#onAudioComplete')
+
+    if (!this.chunks.length) {
+      this.onAudioCompleteCallback(null)
+      return
+    }
 
     let blob = new Blob(this.chunks, { 'type': 'audio/webm;codec=opus' })
     let reader = new FileReader()
@@ -329,6 +374,53 @@ const drawMeter = (context, value) => {
   )
   context.closePath()
   context.fill()
+}
+
+class Countdown {
+  constructor () {
+    console.log('new Countdown')
+    this.counter = 0
+    this.timer = undefined
+
+    this.onCompleteCallback = undefined
+    this.onTickCallback = undefined
+
+    this._onTick = this._onTick.bind(this)
+  }
+
+  start ({ onComplete, onTick }) {
+    console.log('Countdown#start', { onComplete, onTick })
+
+    this.onCompleteCallback = onComplete
+    this.onTickCallback = onTick
+
+    this.counter = 3
+    clearTimeout(this.timer)
+    this._onTick()
+  }
+
+  _onTick () {
+    console.log('Countdown#_onTick', this.onTickCallback)
+    if (this._isComplete()) {
+      this._onComplete()
+    } else {
+      this.timer = setTimeout(this._onTick, 1000)
+      this.onTickCallback({ counter: Number(this.counter) }) // send a copy
+      this.counter = this.counter - 1
+    }
+  }
+
+  _onComplete () {
+    this.onCompleteCallback()
+  }
+
+  _isComplete () {
+    return this.counter === 0
+  }
+
+  dispose () {
+    clearTimeout(this.timer)
+  }
 }
 
 module.exports = AudioFileControlView
