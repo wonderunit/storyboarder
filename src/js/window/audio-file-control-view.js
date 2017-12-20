@@ -93,7 +93,10 @@ class AudioFileControlView {
       recordingContainerEl.style.width = '100%'
 
       recordVisualization.style.display = 'flex'
-      recordButton.querySelector('.record_icon span').innerHTML = 'S'
+      // stop icon
+      recordButton.querySelector('.record_icon span').innerHTML = `
+        <div style="width: 12px; height: 12px; background-color: red">&nbsp;</div>
+      `
 
       context.clearRect(0, 0, context.canvas.width, context.canvas.height)
 
