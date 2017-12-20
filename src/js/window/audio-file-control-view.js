@@ -1,10 +1,3 @@
-// TODO profile `render` performance (especially when not recording)
-// TODO split recording feature into its own component?
-// TODO performance of recorder -- maybe dispose when not in use?
-// TODO test clicking record button while already counting down or recording
-// TODO ability to cancel countdown
-// TODO stop all sounds if recording audio?
-// TODO trim last x msecs on playback
 class AudioFileControlView {
   constructor ({ onRequestFile, onSelectFile, onSelectFileCancel, onClear, onToggleRecord, onAudioComplete }) {
     this.state = {
