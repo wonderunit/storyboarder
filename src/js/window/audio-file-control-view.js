@@ -11,7 +11,10 @@ class AudioFileControlView {
     this.state = {
       boardAudio: undefined,
       mode: 'initializing', // initializing, stopped, countdown, recording, finalizing
-      counter: undefined
+      counter: undefined,
+
+      lastAudioData: undefined,
+      lastMeter: undefined
     }
 
     this.onRequestFile = onRequestFile.bind(this)
@@ -79,7 +82,7 @@ class AudioFileControlView {
       },
       onAudioComplete: (buffer) => {
         console.log('AudioFileControlView#onAudioComplete')
-        this.setState({ mode: 'stopped' })
+        this.setState({ mode: 'stopped', lastAudioData: undefined, lastMeter: undefined })
         this.onAudioCompleteCallback(buffer)
       }
     })
@@ -128,6 +131,8 @@ class AudioFileControlView {
 
       recordVisualization.style.display = 'flex'
 
+      context.clearRect(0, 0, context.canvas.width, context.canvas.height)
+
       if (this.state.mode === 'countdown') {
         // countdown
         recordButton.querySelector('.record_icon span').innerHTML = this.state.counter
@@ -137,18 +142,17 @@ class AudioFileControlView {
         // stop icon
         recordButton.querySelector('.record_icon span').innerHTML =
           `<div style="width: 12px; height: 12px; background-color: red">&nbsp;</div>`
-      }
 
-      context.clearRect(0, 0, context.canvas.width, context.canvas.height)
-      if (lastAudioData) {
-        // drawBuffer(context.canvas.width, context.canvas.height, context, lastAudioData)
-        drawWaveform(context, lastAudioData)
-      }
-      if (lastMeter) {
-        drawMeter(
-          context,
-          Tone.dbToGain(lastMeter) // scale to 0…1
-        )
+        if (lastAudioData) {
+          // drawBuffer(context.canvas.width, context.canvas.height, context, lastAudioData)
+          drawWaveform(context, lastAudioData)
+        }
+        if (lastMeter) {
+          drawMeter(
+            context,
+            Tone.dbToGain(lastMeter) // scale to 0…1
+          )
+        }
       }
 
       // FOR DEBUGGING draw registration marks
