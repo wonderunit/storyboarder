@@ -1375,8 +1375,9 @@ let loadBoardUI = () => {
     onToggleRecord: function (event) {
       event.preventDefault()
 
+      // prevent toggle during countdown and finalizing
       // TODO should this be managed by AudioFileControlView#onToggleRecord handler?
-      if (audioFileControlView.state.mode === 'countdown') {
+      if (audioFileControlView.state.mode === 'countdown' || audioFileControlView.state.mode === 'finalizing') {
         return
       }
 
