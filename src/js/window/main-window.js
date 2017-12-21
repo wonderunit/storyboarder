@@ -10,6 +10,7 @@ const util = require('../utils/index')
 const Color = require('color-js')
 const chokidar = require('chokidar')
 const plist = require('plist')
+const R = require('ramda')
 
 
 const { getInitialStateRenderer } = require('electron-redux')
@@ -98,6 +99,8 @@ let currentScene = 0
 
 let boardFileDirty = false
 let boardFileDirtyTimer
+
+let recordingToBoardIndex = undefined
 
 let watcher // for chokidar
 
@@ -1265,6 +1268,11 @@ let loadBoardUI = () => {
   })
   audioFileControlView = new AudioFileControlView({
     onSelectFile: async function (filepath) {
+      if (audioFileControlView.state.mode != 'stopped') {
+        notifications.notify({ message: `Can't add an audio file while recording.`, timing: 5 })
+        return
+      }
+
       console.log('AudioFileControlView#onSelectFile', markBoardFileDirty)
       let board = boardData.boards[currentBoard]
 
@@ -1293,24 +1301,33 @@ let loadBoardUI = () => {
       fs.copySync(filepath, newpath)
 
       // update board’s audio object
+      storeUndoStateForScene(true)
       board.audio = board.audio || {}
       board.audio.filename = newFilename
+      storeUndoStateForScene()
       
       // mark .storyboarder scene JSON file dirty
       markBoardFileDirty()
-      
+
       // update the audio playback buffers
       const { failed } = await audioPlayback.updateBuffers()
       failed.forEach(filename => notifications.notify({ message: `Could not load audio file ${filename}` }))
       renderThumbnailDrawer()
-      audioFileControlView.render({ boardAudio: board.audio })
+      audioFileControlView.setState({
+        boardAudio: board.audio
+      })
     },
     onSelectFileCancel: function () {
       // NOOP
     },
     onRequestFile: function (event) {
       if (event) event.preventDefault()
-      // TODO limit file extensions?
+
+      if (audioFileControlView.state.mode != 'stopped') {
+        notifications.notify({ message: `Can't add an audio file while recording.`, timing: 5 })
+        return
+      }
+
       remote.dialog.showOpenDialog(
         {
           title: 'Select Audio File',
@@ -1350,7 +1367,9 @@ let loadBoardUI = () => {
 
       if (shouldClear) {
         // remove board’s audio object
+        storeUndoStateForScene(true)
         delete board.audio
+        storeUndoStateForScene()
 
         // mark .storyboarder scene JSON file dirty
         markBoardFileDirty()
@@ -1362,8 +1381,104 @@ let loadBoardUI = () => {
         const { failed } = await audioPlayback.updateBuffers()
         failed.forEach(filename => notifications.notify({ message: `Could not load audio file ${filename}` }))
         renderThumbnailDrawer()
-        audioFileControlView.render({ boardAudio: board.audio })
+        audioFileControlView.setState({
+          boardAudio: board.audio
+        })
       }
+    },
+    onToggleRecord: function (event) {
+      event.preventDefault()
+
+      // prevent toggle during countdown and finalizing
+      // TODO should this be managed by AudioFileControlView#onToggleRecord handler?
+      if (audioFileControlView.state.mode === 'countdown' || audioFileControlView.state.mode === 'finalizing') {
+        return
+      }
+
+      if (R.isNil(recordingToBoardIndex)) {
+        // silence current sounds
+        audioPlayback.stopAllSounds()
+        // prevent auditioning
+        audioPlayback.pushState()
+        audioPlayback.setEnableAudition(false)
+
+        recordingToBoardIndex = currentBoard
+        audioFileControlView.startCountdown({
+          onComplete: function () {
+            audioFileControlView.startRecording({
+              boardAudio: boardData.boards[recordingToBoardIndex].audio
+            })
+          }
+        })
+      } else {
+        audioFileControlView.stopRecording({
+          boardAudio: boardData.boards[currentBoard].audio
+        })
+      }
+    },
+    onAudioComplete: async function (buffer) {
+      // set auditioning to prior value
+      audioPlayback.popState()
+
+      // TODO can this ever actually happen?
+      if (R.isNil(recordingToBoardIndex)) {
+        console.error('whoops! not currently recording!')
+        return        
+      }
+
+      let board = boardData.boards[recordingToBoardIndex]
+
+      // NOTE catch for if they very quickly hit the stop button before chunks?
+      // TODO can we reproduce this? can this really happen?
+      //      maybe just fail silently?
+      if (!buffer) {
+        notifications.notify({ message: 'No audio recorded.', timing: 5 })
+
+        renderThumbnailDrawer()
+        audioFileControlView.setState({
+          boardAudio: boardData.boards[currentBoard].audio
+        })
+        return
+      }
+
+      // name to match uid
+      let datestamp = Date.now() // (new Date()).toISOString()
+      let newFilename = `${board.uid}-audio-${datestamp}.webm`
+
+      // copy to project folder
+      let newPath = path.join(boardPath, 'images', newFilename)
+
+      console.log('saving audio to', newPath)
+
+      try {
+        fs.writeFileSync(newPath, buffer, { encoding: 'binary' })
+        notifications.notify({ message: 'Saved audio!', timing: 5 })
+      } catch (err) {
+        console.error(err)
+        notifications.notify({ message: `Error saving audio. ${err}`, timing: 5 })
+        return
+      }
+
+      // update board’s audio object
+      storeUndoStateForScene(true)
+      board.audio = board.audio || {}
+      board.audio.filename = newFilename
+      storeUndoStateForScene()
+      
+      // mark .storyboarder scene JSON file dirty
+      markBoardFileDirty()
+      
+      // update the audio playback buffers
+      const { failed } = await audioPlayback.updateBuffers()
+      failed.forEach(filename => notifications.notify({ message: `Could not load audio file ${filename}` }))
+      renderThumbnailDrawer()
+      audioFileControlView.setState({
+        boardAudio: boardData.boards[currentBoard].audio
+      })
+
+
+
+      recordingToBoardIndex = undefined
     }
   })
 
@@ -1401,7 +1516,9 @@ const renderScene = async () => {
   // render the thumbnail drawer
   renderThumbnailDrawer()
   // go to the correct board
+  audioPlayback.setBypassed(true)
   await gotoBoard(currentBoard)
+  audioPlayback.setBypassed(false)
 }
 
 ///////////////////////////////////////////////////////////////
@@ -2486,7 +2603,7 @@ let renderMetaData = () => {
 
   renderStats()
 
-  audioFileControlView.render({
+  audioFileControlView.setState({
     boardAudio: boardData.boards[currentBoard].audio
   })
 }
@@ -5326,6 +5443,10 @@ ipcRenderer.on('addAudioFile', () => {
   if (!textInputMode) {
     audioFileControlView.onRequestFile()
   }
+})
+
+ipcRenderer.on('toggleAudition', value => {
+  audioPlayback.toggleAudition()
 })
 
 const log = opt => ipcRenderer.send('log', opt)

@@ -1,5 +1,7 @@
 const Tone = require('tone')
 
+const AppMenu = require('../menu')
+
 class AudioPlayback {
   constructor ({ store, sceneData, getAudioFilePath }) {
     this.store = store
@@ -9,8 +11,39 @@ class AudioPlayback {
     this.players
 
     this.isPlaying = false
+    
+    this.isBypassed = false
+    this.enableAudition = false
+
+    this._storedState = {}
 
     this.resetBuffers()
+  }
+
+  setBypassed (value) {
+    this.isBypassed = value
+  }
+
+  setEnableAudition (value) {
+    this.enableAudition = value
+
+    // HACK we're controlling the menu directly here
+    //      a cleaner solution would be to ask the menu to make the change,
+    //      listen for the change,
+    //      and then update the view state in response
+    AppMenu.setEnableAudition(value)
+  }
+
+  toggleAudition () {
+    this.setEnableAudition(!this.enableAudition)
+  }
+  pushState () {
+    this._storedState = {
+      enableAudition: this.enableAudition
+    }
+  }
+  popState () {
+    this.setEnableAudition(this._storedState.enableAudition)
   }
 
   setSceneData (sceneData) {
@@ -100,10 +133,19 @@ class AudioPlayback {
   }
 
   playBoard (index) {
+    if (this.isBypassed) return
+
     // is the user auditioning audio by moving from board to board?
     let isAuditioning = !this.isPlaying
 
+    // should we prevent auditioning?
+    if (isAuditioning && !this.enableAudition) return
+
     const MSECS_IN_A_SECOND = 1000
+    const FADE_OUT_IN_SECONDS = 0.5
+
+    // unused. this literally cuts at the exact point.
+    const CUT_EARLY_IN_SECONDS = 0.5
 
     let playingBoard = this.sceneData.boards[index]
 
@@ -123,7 +165,23 @@ class AudioPlayback {
         if (board === playingBoard) {
           // console.log('\tplaying current board', board.audio.filename, this.players.get(board.audio.filename))
 
-          this.players.get(board.audio.filename).start()
+          let durationInSeconds = Math.max(0, player.buffer.duration - CUT_EARLY_IN_SECONDS)
+
+          player.fadeOut = FADE_OUT_IN_SECONDS
+
+          // TODO
+          // If audio is already playing, .stop is called on the player by Tone. But,
+          // for some reason, this causes a warning:
+          // "Time is in the past. Scheduled time must be >= AudioContext.currentTime"
+          // Couldn't figure out how to prevent that. Seems to be harmless? :/
+          player.start(
+            // start now
+            Tone.Time(),
+            // no offset
+            0,
+            // duration, cut early
+            // durationInSeconds
+          )
 
         // does this board end AFTER this current playing board starts?
         } else if (
@@ -142,12 +200,17 @@ class AudioPlayback {
             // console.log('\tplaying overlapping', board.audio.filename, 'at offset', offsetInMsecs)
             let player = this.players.get(board.audio.filename)
             if (player.state !== 'started') {
+              let durationInSeconds = Math.max(0, (player.buffer.duration - (offsetInMsecs / MSECS_IN_A_SECOND) - CUT_EARLY_IN_SECONDS))
+              player.fadeOut = FADE_OUT_IN_SECONDS
               player.start(
                 // start now
                 Tone.Time(),
 
                 // offset by offsetInMsecs (converted to seconds)
-                offsetInMsecs / MSECS_IN_A_SECOND
+                offsetInMsecs / MSECS_IN_A_SECOND,
+
+                // duration, cut early
+                // durationInSeconds
               )
             }
           }
