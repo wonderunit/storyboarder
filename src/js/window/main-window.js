@@ -1300,9 +1300,11 @@ let loadBoardUI = () => {
 
       fs.copySync(filepath, newpath)
 
+      storeUndoStateForScene(true)
       // update board’s audio object
       board.audio = board.audio || {}
       board.audio.filename = newFilename
+      storeUndoStateForScene()
       
       // mark .storyboarder scene JSON file dirty
       markBoardFileDirty()
@@ -1365,7 +1367,9 @@ let loadBoardUI = () => {
 
       if (shouldClear) {
         // remove board’s audio object
+        storeUndoStateForScene(true)
         delete board.audio
+        storeUndoStateForScene()
 
         // mark .storyboarder scene JSON file dirty
         markBoardFileDirty()
@@ -1457,9 +1461,11 @@ let loadBoardUI = () => {
       //
       //
 
+      storeUndoStateForScene(true)
       // update board’s audio object
       board.audio = board.audio || {}
       board.audio.filename = newFilename
+      storeUndoStateForScene()
       
       // mark .storyboarder scene JSON file dirty
       markBoardFileDirty()
