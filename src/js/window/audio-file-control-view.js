@@ -124,6 +124,8 @@ class AudioFileControlView {
     let recordVisualization = this.el.querySelector('.record_visualization')
     let context = recordVisualization.querySelector('canvas').getContext('2d')
 
+    this.el.className = `audiofile_container audiofile_container--${this.state.mode}`
+
     if (this.isCountingDownOrRecording()) {
       audiofileButton.style.display = 'none'
       audiofileClearBtnEl.style.display = 'none'
@@ -139,7 +141,7 @@ class AudioFileControlView {
       if (this.state.mode === 'recording') {
         // stop icon
         recordButton.querySelector('.record_icon span').innerHTML =
-          `<div style="width: 12px; height: 12px; background-color: red">&nbsp;</div>`
+          `<div class="record_icon_stop">&nbsp;</div>`
       }
 
       context.clearRect(0, 0, context.canvas.width, context.canvas.height)
@@ -202,7 +204,7 @@ class AudioFileControlView {
     recordVisualization.style.display = 'none'
     // record icon
     recordButton.querySelector('.record_icon span').innerHTML = `
-      <div style="width: 12px; height: 12px; background-color: red; border-radius: 12px;">&nbsp;</div>
+      <div class="record_icon_record">&nbsp;</div>
     `
     context.clearRect(0, 0, context.canvas.width, context.canvas.height)
 

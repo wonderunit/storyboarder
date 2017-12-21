@@ -881,3 +881,23 @@ input[type=range]:focus::-webkit-slider-runnable-track {
   background-color: #222;
   border-radius: 4px;
 }
+
+.recording_container .record_icon .record_icon_stop {
+  width: 12px;
+  height: 12px;
+  background-color: red;
+}
+
+.recording_container .record_icon .record_icon_record {
+  width: 12px;
+  height: 12px;
+  background-color: #888;
+  border-radius: 12px;
+}
+
+#board-metadata .audiofile_container--countdown .flatbutton,
+#board-metadata .audiofile_container--countdown .flatbutton:hover,
+#board-metadata .audiofile_container--recording .flatbutton,
+#board-metadata .audiofile_container--recording .flatbutton:hover{
+  background-color: #5d2b2b;
+}
