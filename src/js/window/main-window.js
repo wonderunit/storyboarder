@@ -1268,6 +1268,11 @@ let loadBoardUI = () => {
   })
   audioFileControlView = new AudioFileControlView({
     onSelectFile: async function (filepath) {
+      if (audioFileControlView.state.mode != 'stopped') {
+        notifications.notify({ message: `Can't add an audio file while recording.`, timing: 5 })
+        return
+      }
+
       console.log('AudioFileControlView#onSelectFile', markBoardFileDirty)
       let board = boardData.boards[currentBoard]
 
@@ -1315,7 +1320,12 @@ let loadBoardUI = () => {
     },
     onRequestFile: function (event) {
       if (event) event.preventDefault()
-      // TODO limit file extensions?
+
+      if (audioFileControlView.state.mode != 'stopped') {
+        notifications.notify({ message: `Can't add an audio file while recording.`, timing: 5 })
+        return
+      }
+
       remote.dialog.showOpenDialog(
         {
           title: 'Select Audio File',
