@@ -1400,7 +1400,7 @@ let loadBoardUI = () => {
         audioPlayback.stopAllSounds()
         // prevent auditioning
         audioPlayback.pushState()
-        audioPlayback.enableAudition = false
+        audioPlayback.setEnableAudition(false)
 
         recordingToBoardIndex = currentBoard
         audioFileControlView.startCountdown({

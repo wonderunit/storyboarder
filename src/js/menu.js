@@ -763,7 +763,15 @@ const setMenu = () => {
   Menu.setApplicationMenu(menuInstance)
 }
 
+const setEnableAudition = value =>
+  Menu
+    .getApplicationMenu().items.find(n => n.label === 'Navigation')
+    .submenu.items.find(n => n.label === 'Audition Board Audio')
+    .checked = value
+
 module.exports = {
   setWelcomeMenu,
-  setMenu
+  setMenu,
+
+  setEnableAudition
 }

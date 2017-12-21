@@ -1,5 +1,7 @@
 const Tone = require('tone')
 
+const AppMenu = require('../menu')
+
 class AudioPlayback {
   constructor ({ store, sceneData, getAudioFilePath }) {
     this.store = store
@@ -22,8 +24,23 @@ class AudioPlayback {
     this.isBypassed = value
   }
 
+  setEnableAudition (value) {
+    this.enableAudition = value
+
+    // HACK we're controlling the menu directly here
+    //      a cleaner solution would be to ask the menu to make the change,
+    //      listen for the change,
+    //      and then update the view state in response
+    try {
+      AppMenu.setEnableAudition(value)
+    } catch (err) {
+      console.error('could not sync with menu')
+      console.error(err)
+    }
+  }
+
   toggleAudition () {
-    this.enableAudition = !this.enableAudition
+    this.setEnableAudition(!this.enableAudition)
   }
   pushState () {
     this._storedState = {
@@ -31,7 +48,7 @@ class AudioPlayback {
     }
   }
   popState () {
-    this.enableAudition = this._storedState.enableAudition
+    this.setEnableAudition(this._storedState.enableAudition)
   }
 
   setSceneData (sceneData) {
