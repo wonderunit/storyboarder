@@ -39,12 +39,14 @@ class AudioFileControlView {
     })
     ro.observe(recordVisualization)
 
-    this.setState(this.state)
+    this.countdown = undefined
+
+    this.setState(this.state) // render
 
     this.recorder = new Recorder()
-    this.recorder.initialize() // async
-    
-    this.countdown = undefined
+    this.recorder.initialize().then(() => {
+      this.setState({ mode: 'stopped' })
+    })
   }
 
   setState (newState) {
