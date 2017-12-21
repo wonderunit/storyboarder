@@ -1300,15 +1300,15 @@ let loadBoardUI = () => {
 
       fs.copySync(filepath, newpath)
 
-      storeUndoStateForScene(true)
       // update board’s audio object
+      storeUndoStateForScene(true)
       board.audio = board.audio || {}
       board.audio.filename = newFilename
       storeUndoStateForScene()
       
       // mark .storyboarder scene JSON file dirty
       markBoardFileDirty()
-      
+
       // update the audio playback buffers
       const { failed } = await audioPlayback.updateBuffers()
       failed.forEach(filename => notifications.notify({ message: `Could not load audio file ${filename}` }))
@@ -1424,11 +1424,6 @@ let loadBoardUI = () => {
       //      maybe just fail silently?
       if (!buffer) {
         notifications.notify({ message: 'No audio recorded.', timing: 5 })
-        
-        //
-        // TODO DRY THIS UP
-        //
-        //
 
         renderThumbnailDrawer()
         audioFileControlView.setState({
@@ -1454,15 +1449,9 @@ let loadBoardUI = () => {
         notifications.notify({ message: `Error saving audio. ${err}`, timing: 5 })
         return
       }
-      
-      
-      //
-      // TODO DRY THIS UP
-      //
-      //
 
-      storeUndoStateForScene(true)
       // update board’s audio object
+      storeUndoStateForScene(true)
       board.audio = board.audio || {}
       board.audio.filename = newFilename
       storeUndoStateForScene()
