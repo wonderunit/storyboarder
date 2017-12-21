@@ -31,12 +31,7 @@ class AudioPlayback {
     //      a cleaner solution would be to ask the menu to make the change,
     //      listen for the change,
     //      and then update the view state in response
-    try {
-      AppMenu.setEnableAudition(value)
-    } catch (err) {
-      console.error('could not sync with menu')
-      console.error(err)
-    }
+    AppMenu.setEnableAudition(value)
   }
 
   toggleAudition () {
