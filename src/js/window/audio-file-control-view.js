@@ -81,7 +81,6 @@ class AudioFileControlView {
         this.setState({ lastAudioData, lastMeter })
       },
       onAudioComplete: (buffer) => {
-        console.log('AudioFileControlView#onAudioComplete')
         this.setState({ mode: 'stopped', lastAudioData: undefined, lastMeter: undefined })
         this.onAudioCompleteCallback(buffer)
       }
@@ -99,7 +98,6 @@ class AudioFileControlView {
   }
 
   stopRecording ({ boardAudio }) {
-    console.log('AudioFileControlView#stopRecording', 'isCountingDownOrRecording?', this.isCountingDownOrRecording())
     if (!this.isCountingDownOrRecording()) return
 
     this.recorder.stop()
@@ -191,10 +189,10 @@ class AudioFileControlView {
       return
     }
 
-    if (this.state.mode === 'finalizing') {
-      console.log('finalizing ...')
-      return
-    }
+    // if (this.state.mode === 'finalizing') {
+    //   console.log('finalizing ...')
+    //   return
+    // }
 
 
     audiofileButton.style.display = 'block'
@@ -270,7 +268,6 @@ class Recorder {
 
   monitor ({ onAudioData }) {
     this.monitorInterval = setInterval(() => {
-      console.log('monitor', 'onAudioData:', onAudioData)
       onAudioData({
         lastAudioData: this.analyser.getValue(),
         lastMeter: this.meter.getLevel()
@@ -280,8 +277,6 @@ class Recorder {
 
   // start (assumes .monitor has already been called)
   start ({ onAudioData, onAudioComplete }) {
-    console.log('Recorder#start')
-
     if (this.monitorInterval) clearInterval(this.monitorInterval)
 
     this.mediaRecorder.start({
@@ -299,8 +294,6 @@ class Recorder {
 
   stop () {
     if (this.mediaRecorder.state != 'recording') return
-
-    console.log('Recorder#stop', 'mediaRecorder.state:', this.mediaRecorder.state)
     this.onAudioDataCallback = undefined
 
     this.mediaRecorder.stop()
@@ -309,7 +302,6 @@ class Recorder {
   }
 
   onAudioData (event) {
-    console.log('Recorder#onAudioData')
     this.chunks.push(event.data)
     if (this.onAudioDataCallback) {
       this.onAudioDataCallback({
@@ -326,8 +318,6 @@ class Recorder {
   }
 
   onAudioComplete () {
-    console.log('AudioRecorder#onAudioComplete')
-
     if (!this.chunks.length) {
       this.onAudioCompleteCallback(null)
       return
@@ -408,7 +398,6 @@ const drawMeter = (context, color = '#699EF2', value) => {
 
 class Countdown {
   constructor () {
-    console.log('new Countdown')
     this.counter = 0
     this.timer = undefined
 
@@ -419,8 +408,6 @@ class Countdown {
   }
 
   start ({ onComplete, onTick }) {
-    console.log('Countdown#start', { onComplete, onTick })
-
     this.onCompleteCallback = onComplete
     this.onTickCallback = onTick
 
@@ -430,7 +417,6 @@ class Countdown {
   }
 
   _onTick () {
-    console.log('Countdown#_onTick', this.onTickCallback)
     if (this._isComplete()) {
       this._onComplete()
     } else {
