@@ -1273,7 +1273,6 @@ let loadBoardUI = () => {
         return
       }
 
-      console.log('AudioFileControlView#onSelectFile', markBoardFileDirty)
       let board = boardData.boards[currentBoard]
 
       // rename to match uid
@@ -1348,8 +1347,6 @@ let loadBoardUI = () => {
       )
     },
     onClear: async function () {
-      console.log('AudioFileControlView#clear', markBoardFileDirty)
-
       let board = boardData.boards[currentBoard]      
 
       if (!board.audio) return
