@@ -13,6 +13,8 @@ class AudioPlayback {
     this.isBypassed = false
     this.enableAudition = false
 
+    this._storedState = {}
+
     this.resetBuffers()
   }
 
@@ -22,6 +24,14 @@ class AudioPlayback {
 
   toggleAudition () {
     this.enableAudition = !this.enableAudition
+  }
+  pushState () {
+    this._storedState = {
+      enableAudition: this.enableAudition
+    }
+  }
+  popState () {
+    this.enableAudition = this._storedState.enableAudition
   }
 
   setSceneData (sceneData) {

@@ -1396,6 +1396,12 @@ let loadBoardUI = () => {
       }
 
       if (R.isNil(recordingToBoardIndex)) {
+        // silence current sounds
+        audioPlayback.stopAllSounds()
+        // prevent auditioning
+        audioPlayback.pushState()
+        audioPlayback.enableAudition = false
+
         recordingToBoardIndex = currentBoard
         audioFileControlView.startCountdown({
           onComplete: function () {
@@ -1411,6 +1417,9 @@ let loadBoardUI = () => {
       }
     },
     onAudioComplete: async function (buffer) {
+      // set auditioning to prior value
+      audioPlayback.popState()
+
       // TODO can this ever actually happen?
       if (R.isNil(recordingToBoardIndex)) {
         console.error('whoops! not currently recording!')
