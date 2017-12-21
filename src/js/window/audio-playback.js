@@ -168,6 +168,12 @@ class AudioPlayback {
           let durationInSeconds = Math.max(0, player.buffer.duration - CUT_EARLY_IN_SECONDS)
 
           player.fadeOut = FADE_OUT_IN_SECONDS
+
+          // TODO
+          // If audio is already playing, .stop is called on the player by Tone. But,
+          // for some reason, this causes a warning:
+          // "Time is in the past. Scheduled time must be >= AudioContext.currentTime"
+          // Couldn't figure out how to prevent that. Seems to be harmless? :/
           player.start(
             // start now
             Tone.Time(),
