@@ -242,6 +242,7 @@ class AudioFileControlView {
 }
 
 const Tone = require('tone')
+const WavEncoder = require("wav-encoder")
 
 // states: initializing, stopped, recording, finalizing
 class Recorder {
@@ -326,8 +327,36 @@ class Recorder {
     let blob = new Blob(this.chunks, { 'type': 'audio/webm;codec=opus' })
     let reader = new FileReader()
     reader.onload = () => {
-      let buffer = new Buffer(reader.result)
-      this.onAudioCompleteCallback(buffer)
+      Tone.context.decodeAudioData(
+        reader.result,
+        audioBuffer => {
+          let sampleRate = audioBuffer.sampleRate
+          let bitDepth = audioBuffer.bitDepth
+          let channelData = []
+
+          for (let i = 0; i < audioBuffer.numberOfChannels; i++) {
+            channelData.push(audioBuffer.getChannelData(i))
+          }
+          
+          let arrayBuffer = WavEncoder.encode.sync({
+            sampleRate,
+            channelData
+          }, {
+            bitDepth,
+            float: false,
+            symmetric: false // compatibility with Chrome
+          })
+
+          this.onAudioCompleteCallback(new Buffer(arrayBuffer))
+          this.chunks = []
+        },
+        err => {
+          console.error('could not decode audio data', err)
+          this.onAudioCompleteCallback(null)
+          this.chunks = []
+        }
+      )
+
       this.chunks = []
     }
     reader.readAsArrayBuffer(blob)

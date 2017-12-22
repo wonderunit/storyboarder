@@ -1440,7 +1440,7 @@ let loadBoardUI = () => {
 
       // name to match uid
       let datestamp = Date.now() // (new Date()).toISOString()
-      let newFilename = `${board.uid}-audio-${datestamp}.webm`
+      let newFilename = `${board.uid}-audio-${datestamp}.wav`
 
       // copy to project folder
       let newPath = path.join(boardPath, 'images', newFilename)
