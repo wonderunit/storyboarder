@@ -431,6 +431,8 @@ const drawMeter = (context, color = '#699EF2', value) => {
 
 class Countdown {
   constructor () {
+    this.tickDuration = 600
+
     this.counter = 0
     this.timer = undefined
 
@@ -453,7 +455,7 @@ class Countdown {
     if (this._isComplete()) {
       this._onComplete()
     } else {
-      this.timer = setTimeout(this._onTick, 1000)
+      this.timer = setTimeout(this._onTick, this.tickDuration)
       this.onTickCallback({ counter: Number(this.counter) }) // send a copy
       this.counter = this.counter - 1
     }
