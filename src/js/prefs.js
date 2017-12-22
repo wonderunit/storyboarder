@@ -36,7 +36,9 @@ const defaultPrefs = {
   import: {
     offset: [0, 0],
     skipBlankBoards: true
-  }
+  },
+
+  enableBoardAudition: true
 }
 
 // For slow computers, override the defaults here.

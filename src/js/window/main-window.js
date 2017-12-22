@@ -181,6 +181,8 @@ const getEtag = absoluteFilePath => etags[absoluteFilePath] || '0'
 
 remote.getCurrentWindow().on('focus', () => {
   menu.setMenu()
+  // HACK update to reflect current value
+  audioPlayback.setEnableAudition(audioPlayback.enableAudition)
 })
 
 ///////////////////////////////////////////////////////////////
@@ -1489,6 +1491,11 @@ let loadBoardUI = () => {
     disableGlobbing: true // treat file strings as literal file names
   })
   watcher.on('all', onLinkedFileChange)
+
+  menu.setMenu()
+  // HACK initialize the menu to match the value in preferences
+  audioPlayback.setEnableAudition(prefsModule.getPrefs().enableBoardAudition)
+
 
 
 
