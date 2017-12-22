@@ -1,5 +1,5 @@
 class AudioFileControlView {
-  constructor ({ onRequestFile, onSelectFile, onSelectFileCancel, onClear, onToggleRecord, onAudioComplete }) {
+  constructor ({ onRequestFile, onSelectFile, onSelectFileCancel, onClear, onToggleRecord, onAudioComplete, onCounterTick }) {
     this.state = {
       boardAudio: undefined,
       mode: 'initializing', // initializing, stopped, countdown, recording, finalizing
@@ -15,6 +15,7 @@ class AudioFileControlView {
     this.onClear = onClear.bind(this)
     this.onToggleRecord = onToggleRecord.bind(this)
     this.onAudioCompleteCallback = onAudioComplete.bind(this)
+    this.onCounterTickCallback = onCounterTick.bind(this)
 
     this.el = document.querySelector('.audiofile_container')
 
@@ -60,7 +61,10 @@ class AudioFileControlView {
     this.countdown = new Countdown()
     this.countdown.start({
       onComplete: onComplete.bind(this),
-      onTick: ({ counter }) => this.setState({ counter, mode: 'countdown' })
+      onTick: ({ counter }) => {
+        this.setState({ counter, mode: 'countdown' })
+        this.onCounterTickCallback(counter)
+      }
     })
 
     this.recorder.monitor({

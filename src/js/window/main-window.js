@@ -1476,6 +1476,11 @@ let loadBoardUI = () => {
 
 
       recordingToBoardIndex = undefined
+    },
+    onCounterTick: function (counter) {
+      if (counter > 0) {
+        sfx.playEffect('counter-tick')
+      }
     }
   })
 

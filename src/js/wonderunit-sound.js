@@ -336,6 +336,16 @@ const playEffect = effect => {
       metalSynth.set({ 'frequency': 880*1.2 })
       metalSynth.triggerAttackRelease()
       break
+    case 'counter-tick':
+      bipSynth.envelope.set({
+        attack: 0.0001,
+        decay: 0.2,
+        sustain: 1,
+        release: 0.6
+      }).triggerAttackRelease(
+        Tone.Frequency('c5')
+      )
+      break
     default:
       if (multiPlayer) {
         if (multiPlayer.has(effect)) {
