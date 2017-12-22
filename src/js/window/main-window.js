@@ -3662,6 +3662,11 @@ window.onkeydown = (e)=> {
       audioPlayback.stopAllSounds()
     }
 
+    if (isCommandPressed('menu:navigation:play')) {
+      e.preventDefault()
+      togglePlayback()
+    }
+
     // r
     // case 82:
     //   if(isRecording) {

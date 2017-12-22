@@ -240,7 +240,6 @@ AppMenu.Navigation = () => ({
   submenu: [
     {
       label: 'Play',
-      accelerator: keystrokeFor('menu:navigation:play'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('togglePlayback')
       }
