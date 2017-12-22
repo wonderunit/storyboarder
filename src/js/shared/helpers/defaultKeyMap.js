@@ -25,6 +25,7 @@ const defaultKeyMap = {
   "menu:edit:paste": "CommandOrControl+v",
   "menu:edit:select-all": "CommandOrControl+a",
 
+  "menu:navigation:play": "Space",
   "menu:navigation:previous-board": "Left",
   "menu:navigation:next-board": "Right",
   "menu:navigation:previous-scene": "CommandOrControl+Left",
