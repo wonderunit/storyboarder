@@ -1479,7 +1479,7 @@ let loadBoardUI = () => {
     },
     onCounterTick: function (counter) {
       if (counter > 0) {
-        sfx.playEffect('counter-tick')
+        sfx.counterTick()
       }
     }
   })

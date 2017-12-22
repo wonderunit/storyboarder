@@ -156,12 +156,52 @@ let bip = (note) => {
   advanceNote(1)
 }
 
+// counter tick ALWAYS plays (even if UI sound effects are off)
+let counterTick = () => {
+  bipSynth.envelope.set({
+    attack: 0.0001,
+    decay: 0.2,
+    sustain: 1,
+    release: 0.6
+  }).triggerAttackRelease(
+    Tone.Frequency('c5')
+  )
+}
+
 const filePathsForSoundEffects = {
   "trash": "./snd/trash.wav"
 }
 let multiPlayer
 const init = () => {
   getPrefs()
+
+  // always create bipSynth, which is used by counterTick
+  bipSynth = new Tone.MonoSynth()
+    .set({
+      oscillator : {
+        type : 'square'
+      },
+      envelope : {
+        attack: 0.01,
+        decay: 0.1,
+        sustain: 1,
+        release: 0.5,
+      },
+      filter: {
+        Q: 1
+      },
+      filterEnvelope: {
+        attack: 0.3,
+        decay: 0.5,
+        sustain: 1,
+        release: 0.5,
+        baseFrequency: 800,
+        exponent: 4
+      }
+    })
+    .set('volume', -24)
+    .toMaster()
+
   if (!getEnableUISoundEffects()) return
 
   synth = new Tone.PolySynth(getEnableHighQualityAudio() ? 8 : 4, Tone.Synth)
@@ -229,32 +269,6 @@ const init = () => {
   },
   })
   errorSynth.set('volume', -2).toMaster()
-
-  bipSynth = new Tone.MonoSynth()
-    .set({
-      oscillator : {
-        type : 'square'
-      },
-      envelope : {
-        attack: 0.01,
-        decay: 0.1,
-        sustain: 1,
-        release: 0.5,
-      },
-      filter: {
-        Q: 1
-      },
-      filterEnvelope: {
-        attack: 0.3,
-        decay: 0.5,
-        sustain: 1,
-        release: 0.5,
-        baseFrequency: 800,
-        exponent: 4
-      }
-    })
-    .set('volume', -24)
-    .toMaster()
 
   metalSynth = new Tone.MetalSynth()
       .set({
@@ -336,16 +350,6 @@ const playEffect = effect => {
       metalSynth.set({ 'frequency': 880*1.2 })
       metalSynth.triggerAttackRelease()
       break
-    case 'counter-tick':
-      bipSynth.envelope.set({
-        attack: 0.0001,
-        decay: 0.2,
-        sustain: 1,
-        release: 0.6
-      }).triggerAttackRelease(
-        Tone.Frequency('c5')
-      )
-      break
     default:
       if (multiPlayer) {
         if (multiPlayer.has(effect)) {
@@ -369,6 +373,7 @@ module.exports = {
   negative,
   error,
   bip,
+  counterTick,
   playEffect,
   
   setMute
