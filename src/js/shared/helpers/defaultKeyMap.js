@@ -31,6 +31,7 @@ const defaultKeyMap = {
   "menu:navigation:previous-scene": "CommandOrControl+Left",
   "menu:navigation:next-scene": "CommandOrControl+Right",
   "menu:navigation:stop-all-sounds": "Escape",
+  "menu:navigation:toggle-audition": "Alt+,",
 
   "menu:boards:new-board": "n",
   "menu:boards:new-board-before": "Shift+n",

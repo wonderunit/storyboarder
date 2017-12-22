@@ -300,6 +300,7 @@ AppMenu.Navigation = () => ({
     {
       label: 'Audition Board Audio',
       type: 'checkbox',
+      accelerator: keystrokeFor('menu:navigation:toggle-audition'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('toggleAudition')
       }
