@@ -21,7 +21,8 @@ const boardOrderedLayerFilenames = board => {
   let filenames = []
 
   // reference
-  if (board.layers && board.layers.reference) {
+  if (board.layers && board.layers.reference &&
+      board.layers.reference.url && board.layers.reference.url.length) { // silently ignore blank urls
     indices.push(0)
     filenames.push(board.layers.reference.url)
   }
@@ -31,7 +32,8 @@ const boardOrderedLayerFilenames = board => {
   filenames.push(board.url)
 
   // notes
-  if (board.layers && board.layers.notes) {
+  if (board.layers && board.layers.notes &&
+      board.layers.notes.url && board.layers.notes.url.length) { // silently ignore blank urls
     indices.push(3)
     filenames.push(board.layers.notes.url)
   }
