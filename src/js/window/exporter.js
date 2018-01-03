@@ -1,5 +1,5 @@
 const EventEmitter = require('events').EventEmitter
-const fs = require('fs')
+const fs = require('fs-extra')
 const path = require('path')
 const GIFEncoder = require('gifencoder')
 const moment = require('moment')
@@ -85,8 +85,15 @@ class Exporter extends EventEmitter {
         outputPath
       )
     })
-
     await Promise.all(writers)
+
+    // export ALL audio
+    boardData.boards.forEach((board, index) =>
+      fs.copySync(
+        path.join(path.dirname(projectFileAbsolutePath), 'images', board.audio.filename),
+        path.join(outputPath, board.audio.filename)
+      )
+    )
 
     return outputPath
   }
