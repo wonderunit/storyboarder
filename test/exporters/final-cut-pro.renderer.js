@@ -1,4 +1,4 @@
-// electron-mocha --renderer test/exporters/final-cut-pro.test.js
+// electron-mocha --renderer test/exporters/final-cut-pro.renderer.js
 
 const assert = require('assert')
 const fs = require('fs-extra')

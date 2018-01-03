@@ -50,7 +50,8 @@ const clipItem = data =>
           </clipitem>
 `
 
-const audioTrack = data => `<track
+const audioTrack = data => `
+        <track
           TL.SQTrackAudioKeyframeStyle="0"
           TL.SQTrackShy="0"
           TL.SQTrackExpandedHeight="25"
@@ -200,7 +201,6 @@ const generateFinalCutProXml = data =>
             </channel>
           </group>
         </outputs>
-
         ${data.audioTracks.map(audioTrack).join('\n')}
 
         <track>
