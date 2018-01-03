@@ -1,0 +1,54 @@
+{
+  "version": "1.3.0",
+  "aspectRatio": "1.7777777777777777",
+  "fps": 30,
+  "defaultBoardTiming": 2000,
+  "boards": [
+    {
+      "uid": "1ABCD",
+      "url": "board-1-1ABCD.png",
+      "newShot": false,
+      "lastEdited": 1513895986059,
+      "layers": {
+        "reference": {
+          "url": "board-1-1ABCD-reference.png",
+          "opacity": 0.75
+        },
+        "notes": {
+          "url": "board-1-1ABCD-notes.png"
+        }
+      },
+      "number": 1,
+      "shot": "1A",
+      "time": 0,
+      "audio": {
+        "filename": "1ABCD-audio-1234567890000.wav"
+      },
+      "lineMileage": 0,
+      "action": "mono"
+    },
+    {
+      "uid": "2ABCD",
+      "url": "board-2-2ABCD.png",
+      "newShot": false,
+      "lastEdited": 1513895986059,
+      "layers": {
+        "reference": {
+          "url": "board-2-2ABCD-reference.png",
+          "opacity": 0.75
+        },
+        "notes": {
+          "url": "board-2-2ABCD-notes.png"
+        }
+      },
+      "number": 1,
+      "shot": "1A",
+      "time": 0,
+      "audio": {
+        "filename": "2ABCD-audio-1234567890000.wav"
+      },
+      "lineMileage": 0,
+      "action": "stereo"
+    }
+  ]
+}
