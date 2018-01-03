@@ -41,9 +41,9 @@
           "url": "board-2-2ABCD-notes.png"
         }
       },
-      "number": 1,
-      "shot": "1A",
-      "time": 0,
+      "number": 2,
+      "shot": "2A",
+      "time": 2000,
       "audio": {
         "filename": "2ABCD-audio-1234567890000.wav"
       },
