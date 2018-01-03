@@ -65,7 +65,8 @@ class Exporter extends EventEmitter {
       fs.mkdirSync(outputPath)
     }
 
-    let xml = exporterFcp.generateFinalCutProXml(exporterFcp.generateFinalCutProData(boardData, { projectFileAbsolutePath, outputPath }))
+    let data = await exporterFcp.generateFinalCutProData(boardData, { projectFileAbsolutePath, outputPath })
+    let xml = exporterFcp.generateFinalCutProXml(data)
     fs.writeFileSync(path.join(outputPath, util.dashed(basename + '.xml')), xml)
 
     let fcpxml = exporterFcpX.generateFinalCutProXXml(exporterFcpX.generateFinalCutProXData(boardData, { projectFileAbsolutePath, outputPath }))
