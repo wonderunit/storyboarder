@@ -51,20 +51,7 @@ const clipItem = data =>
 `
 
 const audioTrack = data => `
-        <track
-          TL.SQTrackAudioKeyframeStyle="0"
-          TL.SQTrackShy="0"
-          TL.SQTrackExpandedHeight="25"
-          TL.SQTrackExpanded="0"
-          MZ.TrackTargeted="1"
-          PannerCurrentValue="0.5"
-          PannerIsInverted="true"
-          PannerStartKeyframe="-91445760000000000,0.5,0,0,0,0,0,0"
-          PannerName="Balance"
-          currentExplodedTrackIndex="0"
-          totalExplodedTrackCount="1"
-          premiereTrackType="Stereo"
-          >
+        <track TL.SQTrackAudioKeyframeStyle="0" TL.SQTrackShy="0" TL.SQTrackExpandedHeight="25" TL.SQTrackExpanded="0" MZ.TrackTargeted="1" PannerCurrentValue="0.5" PannerIsInverted="true" PannerStartKeyframe="-91445760000000000,0.5,0,0,0,0,0,0" PannerName="Balance" currentExplodedTrackIndex="0" totalExplodedTrackCount="1" premiereTrackType="Stereo">
           <clipitem id="${data.id}" premiereChannelType="stereo">
             <masterclipid>${data.id}</masterclipid>
             <name>${data.name}</name>
@@ -203,12 +190,12 @@ const generateFinalCutProXml = data =>
         </outputs>
         ${data.audioTracks.map(audioTrack).join('\n')}
 
-        <track>
+        <track TL.SQTrackAudioKeyframeStyle="0" TL.SQTrackShy="0" TL.SQTrackExpandedHeight="25" TL.SQTrackExpanded="0" MZ.TrackTargeted="1" PannerCurrentValue="0.5" PannerIsInverted="true" PannerStartKeyframe="-91445760000000000,0.5,0,0,0,0,0,0" PannerName="Balance" currentExplodedTrackIndex="0" totalExplodedTrackCount="2" premiereTrackType="Stereo">
           <enabled>TRUE</enabled>
           <locked>FALSE</locked>
           <outputchannelindex>1</outputchannelindex>
         </track>
-        <track>
+        <track TL.SQTrackAudioKeyframeStyle="0" TL.SQTrackShy="0" TL.SQTrackExpandedHeight="25" TL.SQTrackExpanded="0" MZ.TrackTargeted="1" PannerCurrentValue="0.5" PannerIsInverted="true" PannerStartKeyframe="-91445760000000000,0.5,0,0,0,0,0,0" PannerName="Balance" currentExplodedTrackIndex="1" totalExplodedTrackCount="2" premiereTrackType="Stereo">
           <enabled>TRUE</enabled>
           <locked>FALSE</locked>
           <outputchannelindex>2</outputchannelindex>
