@@ -173,8 +173,6 @@ describe('exporters/final-cut-pro', () => {
 
     // 500 msec (15 frame @ 30 fps) 44.1khz 16bit stereo WAV
     assert(xml.includes('<name>1ABCD-audio-1234567890000.wav</name>'))
-
-    console.log(xml)
   })
   it('throws error for missing audio', async () => {
     let projectFileAbsolutePath = path.join(__dirname, '..', 'fixtures', 'audio', 'audio.storyboarder')
