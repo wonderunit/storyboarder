@@ -88,12 +88,14 @@ class Exporter extends EventEmitter {
     await Promise.all(writers)
 
     // export ALL audio
-    boardData.boards.forEach((board, index) =>
-      fs.copySync(
-        path.join(path.dirname(projectFileAbsolutePath), 'images', board.audio.filename),
-        path.join(outputPath, board.audio.filename)
-      )
-    )
+    boardData.boards.forEach((board, index) => {
+      if (board.audio && board.audio.filename && board.audio.filename.length) {
+        fs.copySync(
+          path.join(path.dirname(projectFileAbsolutePath), 'images', board.audio.filename),
+          path.join(outputPath, board.audio.filename)
+        )
+      }
+    })
 
     return outputPath
   }
