@@ -1,9 +1,10 @@
-// electron-mocha --renderer test/exporters/final-cut-pro.renderer.js
+// electron-mocha --renderer test/exporters/final-cut-pro.renderer.test.js
 
 const assert = require('assert')
 const fs = require('fs-extra')
 const path = require('path')
 
+window.TONE_SILENCE_VERSION_LOGGING = true
 const exporterFcp = require('../../src/js/exporters/final-cut-pro')
 
 const getBoardFileData = () => ({
@@ -172,6 +173,8 @@ describe('exporters/final-cut-pro', () => {
 
     // 500 msec (15 frame @ 30 fps) 44.1khz 16bit stereo WAV
     assert(xml.includes('<name>1ABCD-audio-1234567890000.wav</name>'))
+
+    console.log(xml)
   })
   it('throws error for missing audio', async () => {
     let projectFileAbsolutePath = path.join(__dirname, '..', 'fixtures', 'audio', 'audio.storyboarder')
