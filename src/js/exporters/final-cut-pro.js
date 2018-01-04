@@ -50,23 +50,9 @@ const clipItem = data =>
           </clipitem>
 `
 
-const audioTrack = data => `
-        <track TL.SQTrackAudioKeyframeStyle="0" TL.SQTrackShy="0" TL.SQTrackExpandedHeight="25" TL.SQTrackExpanded="0" MZ.TrackTargeted="1" PannerCurrentValue="0.5" PannerIsInverted="true" PannerStartKeyframe="-91445760000000000,0.5,0,0,0,0,0,0" PannerName="Balance" currentExplodedTrackIndex="0" totalExplodedTrackCount="1" premiereTrackType="Stereo">
-          <clipitem id="${data.id}" premiereChannelType="stereo">
-            <masterclipid>${data.id}</masterclipid>
-            <name>${data.name}</name>
-            <enabled>TRUE</enabled>
-            <duration>${data.duration}</duration>
-            <rate>
-              <timebase>${data.timebase}</timebase>
-              <ntsc>${data.ntsc}</ntsc>
-            </rate>
-            <start>${data.start}</start>
-            <end>${data.end}</end>
-            <in>${data.in}</in>
-            <out>${data.out}</out>
-            <pproTicksIn>${data.pproTicksIn}</pproTicksIn>
-            <pproTicksOut>${data.pproTicksOut}</pproTicksOut>
+const audioTrackFile = data => 
+  data.currentExplodedTrackIndex === 0
+  ? `
             <file id="${data.fileId}">
               <name>${data.filename}</name>
               <pathurl>${data.pathurl}</pathurl>
@@ -102,10 +88,49 @@ const audioTrack = data => `
 `                </audio>
               </media>
             </file>
+`
+: `<file id="${data.fileId}" />`
+
+const audioTrack = data => `
+        <track TL.SQTrackAudioKeyframeStyle="0" TL.SQTrackShy="0" TL.SQTrackExpandedHeight="25" TL.SQTrackExpanded="0" MZ.TrackTargeted="1" PannerCurrentValue="0.5" PannerIsInverted="true" PannerStartKeyframe="-91445760000000000,0.5,0,0,0,0,0,0" PannerName="Balance" currentExplodedTrackIndex="${data.currentExplodedTrackIndex}" totalExplodedTrackCount="1" premiereTrackType="Stereo">
+          <clipitem id="${data.id}" premiereChannelType="stereo">
+            <masterclipid>${data.masterClipId}</masterclipid>
+            <name>${data.name}</name>
+            <enabled>TRUE</enabled>
+            <duration>${data.duration}</duration>
+            <rate>
+              <timebase>${data.timebase}</timebase>
+              <ntsc>${data.ntsc}</ntsc>
+            </rate>
+            <start>${data.start}</start>
+            <end>${data.end}</end>
+            <in>${data.in}</in>
+            <out>${data.out}</out>
+            <pproTicksIn>${data.pproTicksIn}</pproTicksIn>
+            <pproTicksOut>${data.pproTicksOut}</pproTicksOut>
+
+            ${audioTrackFile(data)}
+
             <sourcetrack>
               <mediatype>audio</mediatype>
-              <trackindex>1</trackindex>
+              <trackindex>${data.sourceTrackIndex}</trackindex>
             </sourcetrack>
+
+            <link>
+              <linkclipref>${data.linkcliprefA}</linkclipref>
+              <mediatype>audio</mediatype>
+              <trackindex>${data.linkTrackIndexA}</trackindex>
+              <clipindex>1</clipindex>
+              <groupindex>1</groupindex>
+            </link>
+            <link>
+              <linkclipref>${data.linkcliprefB}</linkclipref>
+              <mediatype>audio</mediatype>
+              <trackindex>${data.linkTrackIndexB}</trackindex>
+              <clipindex>1</clipindex>
+              <groupindex>1</groupindex>
+            </link>
+
             <logginginfo>
               <description></description>
               <scene></scene>
@@ -239,6 +264,7 @@ const generateFinalCutProData = async (boardData, { projectFileAbsolutePath, out
   let audioTracks = []
   let currFrame = 0
   let index = 0
+  let currAudioIndex = 0
   for (let board of boardData.boards) {
     let fileFilename = util.dashed(boardFilenameForExport(board, index, basenameWithoutExt)),
         filePathUrl = `./${encodeURI(fileFilename)}` //`file://${outputPath}/${fileFilename}`
@@ -304,12 +330,12 @@ const generateFinalCutProData = async (boardData, { projectFileAbsolutePath, out
       let bitDepth = -1
       let sampleRate = buffer._buffer.sampleRate
       let numberOfChannels = buffer.numberOfChannels
-      let outputChannelIndex = (index % 2) + 1 // alternate output channels
+      // let outputChannelIndex = (index % 2) + 1 // alternate output channels
 
       let audioEndFrame = currFrame + Math.round(msecsToFrames(boardData.fps, audioDurationInMsecs))
 
       let audioTrack = {
-        id: `clipitem-${index + 1 + boardData.boards.length}`, // index AFTER the video clips
+        // id: `clipitem-${index + 1 + boardData.boards.length}`, // index AFTER the video clips
         name: board.audio.filename,
 
         duration: msecsToFrames(boardData.fps, audioDurationInMsecs),
@@ -319,13 +345,13 @@ const generateFinalCutProData = async (boardData, { projectFileAbsolutePath, out
 
         start: currFrame,
         end: audioEndFrame,
-        in: currFrame,
-        out: currFrame + Math.round(msecsToFrames(boardData.fps, audioDurationInMsecs)),
+        in: 0,
+        out: Math.round(msecsToFrames(boardData.fps, audioDurationInMsecs)),
 
-        pproTicksIn: pproTicksForFrames(boardData.fps, currFrame),
-        pproTicksOut: pproTicksForFrames(boardData.fps, audioEndFrame),
+        pproTicksIn: pproTicksForFrames(boardData.fps, 0),
+        pproTicksOut: pproTicksForFrames(boardData.fps, Math.round(msecsToFrames(boardData.fps, audioDurationInMsecs))),
 
-        fileId: `file-${index + 1 + boardData.boards.length}`, // index AFTER the video clips
+        // fileId: `file-${index + 1 + boardData.boards.length}`, // index AFTER the video clips
         filename: board.audio.filename,
         pathurl: `./${board.audio.filename}`, // `file://localhost${path.join(dirname, board.audio.filename)}`,
 
@@ -333,9 +359,47 @@ const generateFinalCutProData = async (boardData, { projectFileAbsolutePath, out
         sampleRate: sampleRate,
 
         numberOfChannels: numberOfChannels,
-        outputChannelIndex: outputChannelIndex
+        // outputChannelIndex: outputChannelIndex
       }
-      audioTracks.push(audioTrack)
+      // trackindex should be [1, 1] for mono, [1, 2] for stereo
+      let sourceTrackIndices
+      if (numberOfChannels == 1) {
+        sourceTrackIndices = [1, 1]
+      } {
+        sourceTrackIndices = [1, 2]
+      }
+
+      let links = {
+        linkcliprefA: `clipitem-${currAudioIndex + 1 + boardData.boards.length}`,
+        linkTrackIndexA: currAudioIndex + 1,
+
+        linkcliprefB: `clipitem-${currAudioIndex + 2 + boardData.boards.length}`,
+        linkTrackIndexB: currAudioIndex + 2
+      }
+
+      let masterClipId = `masterclip-${index + 1 + boardData.boards.length}`
+
+      // left
+      audioTracks.push(Object.assign({}, audioTrack, {
+        masterClipId,
+        id: links.linkcliprefA,
+        fileId: `file-${currAudioIndex + 1 + boardData.boards.length}`,
+        currentExplodedTrackIndex: 0,
+        sourceTrackIndex: sourceTrackIndices[0],
+        outputChannelIndex: 1,
+      }, links))
+
+      // right
+      audioTracks.push(Object.assign({}, audioTrack, {
+        masterClipId,
+        id: links.linkcliprefB,
+        fileId: `file-${currAudioIndex + 1 + boardData.boards.length}`, // same file id
+        currentExplodedTrackIndex: 1,
+        sourceTrackIndex: sourceTrackIndices[1],
+        outputChannelIndex: 2
+      }, links))
+
+      currAudioIndex = currAudioIndex + 2
     }
 
     currFrame = endFrame
