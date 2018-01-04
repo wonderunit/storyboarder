@@ -265,6 +265,8 @@ const generateFinalCutProData = async (boardData, { projectFileAbsolutePath, out
   let currFrame = 0
   let index = 0
   let currAudioIndex = 0
+  let timelinePosInMsecs = 0
+  let endInMsecsByTrackNumber = []
   for (let board of boardData.boards) {
     let fileFilename = util.dashed(boardFilenameForExport(board, index, basenameWithoutExt)),
         filePathUrl = `./${encodeURI(fileFilename)}` //`file://${outputPath}/${fileFilename}`
@@ -368,15 +370,26 @@ const generateFinalCutProData = async (boardData, { projectFileAbsolutePath, out
           ? [1, 1] // mono
           : [1, 2] // stereo
 
+      let nextAvailableTrackIndex = endInMsecsByTrackNumber.length
+      for (let i = 0; i < endInMsecsByTrackNumber.length; i++) {
+        let time = endInMsecsByTrackNumber[i]
+        if (timelinePosInMsecs >= time) {
+          nextAvailableTrackIndex = i
+          break
+        }
+      }
+
       let links = {
         linkcliprefA: `clipitem-${currAudioIndex + 1 + boardData.boards.length}`,
-        linkTrackIndexA: nextAvailableTrackIndex + 1,
+        linkTrackIndexA: (nextAvailableTrackIndex * 2) + 1,
 
         linkcliprefB: `clipitem-${currAudioIndex + 2 + boardData.boards.length}`,
-        linkTrackIndexB: nextAvailableTrackIndex + 2
+        linkTrackIndexB: (nextAvailableTrackIndex * 2) + 2
       }
 
       let masterClipId = `masterclip-${index + 1 + boardData.boards.length}`
+
+      endInMsecsByTrackNumber[nextAvailableTrackIndex] = timelinePosInMsecs + audioDurationInMsecs
 
       // left
       audioClips.push(Object.assign({}, audioClip, {
@@ -400,6 +413,8 @@ const generateFinalCutProData = async (boardData, { projectFileAbsolutePath, out
 
       currAudioIndex = currAudioIndex + 2
     }
+
+    timelinePosInMsecs += duration
 
     currFrame = endFrame
     index++
