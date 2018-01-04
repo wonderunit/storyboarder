@@ -361,13 +361,12 @@ const generateFinalCutProData = async (boardData, { projectFileAbsolutePath, out
         numberOfChannels: numberOfChannels,
         // outputChannelIndex: outputChannelIndex
       }
-      // trackindex should be [1, 1] for mono, [1, 2] for stereo
-      let sourceTrackIndices
-      if (numberOfChannels == 1) {
-        sourceTrackIndices = [1, 1]
-      } {
-        sourceTrackIndices = [1, 2]
-      }
+
+      // source’s trackindex
+      let sourceTrackIndices = 
+        numberOfChannels == 1
+          ? [1, 1] // mono
+          : [1, 2] // stereo
 
       let links = {
         linkcliprefA: `clipitem-${currAudioIndex + 1 + boardData.boards.length}`,
