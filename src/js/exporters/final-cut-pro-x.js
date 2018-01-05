@@ -6,6 +6,8 @@ const { msecsToFrames } = require('./common')
 const { boardFileImageSize, boardFilenameForExport } = require('../models/board')
 const util = require('../utils')
 
+const assetOffset = 4
+
 // via https://developer.apple.com/library/content/documentation/FinalCutProX/Reference/FinalCutProXXMLFormat/StoryElements/StoryElements.html
 // Time values are expressed as a rational number of seconds
 // with a 64-bit numerator and a 32-bit denominator. 
@@ -28,12 +30,20 @@ const minBase = str => {
 
 // <asset id="r3" name="board-1-9MZ1P" src="file:///board-1-9MZ1P.png" start="0s" duration="0s" hasVideo="1" format="r2"></asset>
 const asset = (data, index) =>
-  `<asset id="r${data.index + 3}" name="${data.filename}" src="${data.src}" start="0s" duration="0s" hasVideo="1" format="r2"></asset>`
+  data.hasVideo
+  ? `<asset id="r${index + assetOffset}" name="${data.filename}" src="${data.src}" start="0s" duration="0s" hasVideo="1" format="${data.format}"></asset>`
+  : `<asset id="r7" name="2ABCD-audio-1234567890000" uid="AEA99D73E4DF0E20634A6625C6B7E009" src="file:///Users/robby/Downloads/audio.storyboarder-rawbee/2ABCD-audio-1234567890000.wav" start="0s" duration="22050/44100s" hasAudio="1" audioSources="1" audioChannels="2" audioRate="44100">`
 
 // <video name="board-1" offset="0/2400s" ref="r3" duration="4800/2400s" start="0s"/>
 // <video name="board-2" offset="4800/2400s" ref="r4" duration="4800/2400s" start="0s"/>
 const video = (data, index) =>
-  `<video name="${data.name}" offset="${data.offset}" ref="r${data.index + 3}" duration="${data.duration}" start="${data.start}"/>`
+  `<video name="${data.name}" offset="${data.offset}" ref="r${data.index + assetOffset}" duration="${data.duration}" start="${data.start}">
+    ${
+      data.audioName
+      ? `<asset-clip name="${data.audioName}" lane="-1" offset="${data.audioOffset}" ref="r${data.index + assetOffset + 1}" duration="${data.audioDuration}" audioRole="dialogue" format="r3"/>`
+      : ''
+    }
+   </video>`
 
 const generateFinalCutProXXml = data =>
   `<?xml version="1.0" encoding="UTF-8"?>
@@ -42,6 +52,8 @@ const generateFinalCutProXXml = data =>
     <resources>
         <format id="r1" frameDuration="${scaledFraction(data.fps, 1)}s" width="${data.width}" height="${data.height}"/>
         <format id="r2" name="${data.format}" width="${data.width}" height="${data.height}"/>
+        <format id="r3" name="FFVideoFormatRateUndefined"/>
+
         ${data.assets.map(asset).join('\n        ')}
     </resources>
     <library>
@@ -74,6 +86,7 @@ const generateFinalCutProXData = (boardData, { projectFileAbsolutePath, outputPa
 
   let currFrame = 0
   let index = 0
+  let audioIndex = 0
   for (let board of boardData.boards) {
     let filename = util.dashed(boardFilenameForExport(board, index, basenameWithoutExt))
 
@@ -87,8 +100,9 @@ const generateFinalCutProXData = (boardData, { projectFileAbsolutePath, outputPa
     let offsetInFrames = currFrame
     let durationInFrames = Math.round(msecsToFrames(normalizedFps, duration))
 
+    let assetIndex = assets.length
+
     assets.push({
-      index,
       filename,
       /*
       The src attribute is expected to be a string that specifies an
@@ -97,18 +111,38 @@ const generateFinalCutProXData = (boardData, { projectFileAbsolutePath, outputPa
       (for example, ./Media/MyMovie.mov).
       via https://developer.apple.com/library/content/documentation/FinalCutProX/Reference/FinalCutProXXMLFormat/Resources/Resources.html#//apple_ref/doc/uid/TP40011227-CH16-SW1
       */
-      src: `./${encodeURI(filename)}` // `file://${outputPath}/${filename}`,
+      src: `./${encodeURI(filename)}`, // `file://${outputPath}/${filename}`
+      format: 'r2',
+      hasVideo: true
     })
 
-    videos.push({
-      index,
+    let audio = {}
+    if (board.audio) {
+      audio = {
+        audioName:      'ABCDEFG', // '1ABCD-audio-1234567890000',
+        audioOffset:    'ABCDEFG', // '3600s',
+        audioDuration:  'ABCDEFG', // '360000/720000s',
+        audioFilename:  'ABCDEFG', // ''
+      }
+
+      assets.push({
+        index: assets.length,
+        filename: audio.audioName,
+        src: `./${encodeURI(audio.audioFilename)}`, // `file://${outputPath}/${filename}`
+        format: 'r3',
+        hasVideo: false
+      })
+    }
+
+    videos.push(Object.assign({
+      index: assetIndex,
       name: `${board.shot}`,
 
       offset: scaledFraction(normalizedFps, offsetInFrames) + 's',
       duration: scaledFraction(normalizedFps, durationInFrames) + 's',
 
       start: '0s'
-    })
+    }, audio))
 
     currFrame = endFrame
     index++
