@@ -68,26 +68,26 @@ describe('exporters/final-cut-pro', () => {
   it('can generate final cut pro / adobe premiere xml', async () => {
     let xml
     let boardFileData = getBoardFileData()
-  
+
     xml = await getXml(boardFileData)
-  
+
     // check dash in filename
     assert(xml.includes("<pathurl>./example-storyboard-board-00001.png</pathurl>"))
-  
+
     assert(xml.length > 32)
   })
   it('can generate at 23.976 fps', async () => {
     let xml
     let boardFileData = getBoardFileData()
-  
+
     boardFileData.fps = 23.976 // AKA 23.97602397 AKA 24000/1001
     boardFileData.boards[0].time      = 0
     boardFileData.boards[0].duration  = 29 / boardFileData.fps * 1000
     boardFileData.boards[1].time      = boardFileData.boards[0].duration
     boardFileData.boards[1].duration  = 31 / boardFileData.fps * 1000
-  
+
     xml = await getXml(boardFileData)
-  
+
     // check fps calculations
     assert(xml.includes('<timebase>24</timebase>'))
     assert(xml.includes('<ntsc>TRUE</ntsc>'))
@@ -97,15 +97,15 @@ describe('exporters/final-cut-pro', () => {
   it('can generate at 24 fps', async () => {
     let xml
     let boardFileData = getBoardFileData()
-  
+
     boardFileData.fps = 24
     boardFileData.boards[0].time      = 0
     boardFileData.boards[0].duration  = 29 / boardFileData.fps * 1000
     boardFileData.boards[1].time      = boardFileData.boards[0].duration
     boardFileData.boards[1].duration  = 31 / boardFileData.fps * 1000
-  
+
     xml = await getXml(boardFileData)
-  
+
     // check fps calculations
     assert(xml.includes('<timebase>24</timebase>'))
     assert(xml.includes('<ntsc>FALSE</ntsc>'))
@@ -115,15 +115,15 @@ describe('exporters/final-cut-pro', () => {
   it('can generate at 29.97 fps', async () => {
     let xml
     let boardFileData = getBoardFileData()
-  
+
     boardFileData.fps = 29.97
     boardFileData.boards[0].time      = 0
     boardFileData.boards[0].duration  = 29 / boardFileData.fps * 1000
     boardFileData.boards[1].time      = boardFileData.boards[0].duration
     boardFileData.boards[1].duration  = 31 / boardFileData.fps * 1000
-  
+
     xml = await getXml(boardFileData)
-  
+
     // check fps calculations
     assert(xml.includes('<timebase>30</timebase>'))
     assert(xml.includes('<ntsc>TRUE</ntsc>'))
@@ -133,15 +133,15 @@ describe('exporters/final-cut-pro', () => {
   it('can generate at 59.94 fps', async () => {
     let xml
     let boardFileData = getBoardFileData()
-  
+
     boardFileData.fps = 59.94
     boardFileData.boards[0].time      = 0
     boardFileData.boards[0].duration  = 29 / boardFileData.fps * 1000
     boardFileData.boards[1].time      = boardFileData.boards[0].duration
     boardFileData.boards[1].duration  = 31 / boardFileData.fps * 1000
-  
+
     xml = await getXml(boardFileData)
-  
+
     // check fps calculations
     assert(xml.includes('<timebase>60</timebase>'))
     assert(xml.includes('<ntsc>TRUE</ntsc>'))
@@ -151,11 +151,11 @@ describe('exporters/final-cut-pro', () => {
   it('can generate at 60 fps', async () => {
     let xml
     let boardFileData = getBoardFileData()
-  
+
     boardFileData.fps = 60
-  
+
     xml = await getXml(boardFileData)
-  
+
     // check fps calculations
     assert(xml.includes('<timebase>60</timebase>'))
     assert(xml.includes('<ntsc>FALSE</ntsc>'))
