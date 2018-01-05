@@ -272,7 +272,7 @@ const generateFinalCutProData = async (boardData, { projectFileAbsolutePath, out
   let index = 0
   let currAudioIndex = 0
   let timelinePosInMsecs = 0
-  let stereoTracks = [ { endInMsecsByTrackNumber: 0 }]
+  let stereoTracks = [ { endInMsecsByTrackNumber: 0, audioClips: [] }]
   for (let board of boardData.boards) {
     let fileFilename = util.dashed(boardFilenameForExport(board, index, basenameWithoutExt)),
         filePathUrl = `./${encodeURI(fileFilename)}` //`file://${outputPath}/${fileFilename}`
@@ -329,21 +329,19 @@ const generateFinalCutProData = async (boardData, { projectFileAbsolutePath, out
       }
 
       // buffer.length               // length in samples, e.g. 44788
-      // buffer.duration)            // duration in seconds, e.g. 0.933...
-      // buffer._buffer.sampleRate)  // sample rate
-      // buffer.numberOfChannels)    // number of channels (0 if not loaded)
+      // buffer.duration             // duration in seconds, e.g. 0.933...
+      // buffer._buffer.sampleRate   // sample rate
+      // buffer.numberOfChannels     // number of channels (0 if not loaded)
 
       // read the values
       let audioDurationInMsecs = Math.round(buffer.duration * 1000)
       let bitDepth = -1
       let sampleRate = buffer._buffer.sampleRate
       let numberOfChannels = buffer.numberOfChannels
-      // let outputChannelIndex = (index % 2) + 1 // alternate output channels
 
       let audioEndFrame = currFrame + Math.round(msecsToFrames(boardData.fps, audioDurationInMsecs))
 
       let audioClip = {
-        // id: `clipitem-${index + 1 + boardData.boards.length}`, // index AFTER the video clips
         name: board.audio.filename,
 
         duration: msecsToFrames(boardData.fps, audioDurationInMsecs),
@@ -359,7 +357,6 @@ const generateFinalCutProData = async (boardData, { projectFileAbsolutePath, out
         pproTicksIn: pproTicksForFrames(boardData.fps, 0),
         pproTicksOut: pproTicksForFrames(boardData.fps, Math.round(msecsToFrames(boardData.fps, audioDurationInMsecs))),
 
-        // fileId: `file-${index + 1 + boardData.boards.length}`, // index AFTER the video clips
         filename: board.audio.filename,
         pathurl: `./${board.audio.filename}`, // `file://localhost${path.join(dirname, board.audio.filename)}`,
 
@@ -367,16 +364,9 @@ const generateFinalCutProData = async (boardData, { projectFileAbsolutePath, out
         sampleRate: sampleRate,
 
         numberOfChannels: numberOfChannels,
-        // outputChannelIndex: outputChannelIndex
 
         audioIndexPos: currAudioIndex + boardData.boards.length + 1
       }
-
-      // source’s trackindex
-      // let sourceTrackIndices = 
-      //   numberOfChannels == 1
-      //     ? [1, 1] // mono
-      //     : [1, 2] // stereo
 
       let nextAvailableTrackIndex = stereoTracks.length
       for (let i = 0; i < stereoTracks.length; i++) {
@@ -387,51 +377,11 @@ const generateFinalCutProData = async (boardData, { projectFileAbsolutePath, out
         }
       }
 
-      // let links = {
-      //   linkcliprefA: `clipitem-${currAudioIndex + 1 + boardData.boards.length}`,
-      //   linkTrackIndexA: sourceTrackIndices[0],
-      //   linkClipIndexA: (nextAvailableTrackIndex * 2) + 1,
-      // 
-      //   linkcliprefB: `clipitem-${currAudioIndex + 2 + boardData.boards.length}`,
-      //   linkTrackIndexB: sourceTrackIndices[1],
-      //   linkClipIndexB: (nextAvailableTrackIndex * 2) + 2
-      // }
-
-      // console.log({
-      //   // currAudioIndex,
-      //   nextAvailableTrackIndex,
-      //   links,
-      //   timelinePosInMsecs,
-      //   duration,
-      //   audioDurationInMsecs,
-      //   // 'len': endInMsecsByTrackNumber.length
-      // })
-
       stereoTracks[nextAvailableTrackIndex] = stereoTracks[nextAvailableTrackIndex] || {}
       stereoTracks[nextAvailableTrackIndex].audioClips = stereoTracks[nextAvailableTrackIndex].audioClips || []
       stereoTracks[nextAvailableTrackIndex].endInMsecsByTrackNumber = timelinePosInMsecs + audioDurationInMsecs
 
       stereoTracks[nextAvailableTrackIndex].audioClips.push(audioClip)
-
-      // // left
-      // stereoTracks[nextAvailableTrackIndex].audioClips.push(Object.assign({}, audioClip, {
-      //   masterClipId,
-      //   id: links.linkcliprefA,
-      //   fileId: `file-${currAudioIndex + 1 + boardData.boards.length}`,
-      //   currentExplodedTrackIndex: 0,
-      //   sourceTrackIndex: sourceTrackIndices[0],
-      //   outputChannelIndex: 1,
-      // }, links))
-      // 
-      // // right
-      // stereoTracks[nextAvailableTrackIndex].audioClips.push(Object.assign({}, audioClip, {
-      //   masterClipId,
-      //   id: links.linkcliprefB,
-      //   fileId: `file-${currAudioIndex + 1 + boardData.boards.length}`, // same file id
-      //   currentExplodedTrackIndex: 1,
-      //   sourceTrackIndex: sourceTrackIndices[1],
-      //   outputChannelIndex: 2
-      // }, links))
 
       currAudioIndex = currAudioIndex + 2
     }
