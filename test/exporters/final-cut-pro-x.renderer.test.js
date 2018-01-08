@@ -4,6 +4,7 @@ const assert = require('assert')
 const path = require('path')
 const fs = require('fs')
 
+window.TONE_SILENCE_VERSION_LOGGING = true
 const exporterFcpX = require('../../src/js/exporters/final-cut-pro-x')
 
 let boardFileData = {
