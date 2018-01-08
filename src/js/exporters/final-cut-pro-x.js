@@ -100,6 +100,7 @@ const generateFinalCutProXData = async (boardData, { projectFileAbsolutePath, ou
     let offsetInFrames = currFrame
     let durationInFrames = Math.round(msecsToFrames(normalizedFps, duration))
 
+    let videoAssetIndex = assets.length
     assets.push({
       filename,
       /*
@@ -150,20 +151,10 @@ const generateFinalCutProXData = async (boardData, { projectFileAbsolutePath, ou
 
       timelinePosInMsecs += duration
 
-      assetClips = [
-        {
-          filename: board.audio.filename,
-          audioOffset: scaledFraction(normalizedFps, bufferOffsetInFrames) + 's',
-          audioDuration: scaledFraction(normalizedFps, bufferDurationInFrames) + 's',
-
-          ref: 'r-999', // TODO set an offset
-                        // e.g.: r${data.index + assetOffset + 1}
-          lane: `-${lane + 1}`
-        }
-      ]
+      let assetIndex = assets.length
 
       assets.push({
-        index: -100, // TODO set an index
+        index: assetIndex,
         filename: board.audio.filename,
         src: `./${encodeURI(board.audio.filename)}`, // `file://${outputPath}/${filename}`
         format: 'r3',
@@ -172,10 +163,21 @@ const generateFinalCutProXData = async (boardData, { projectFileAbsolutePath, ou
         audioChannels,
         audioRate
       })
+
+      assetClips = [
+        {
+          filename: board.audio.filename,
+          audioOffset: scaledFraction(normalizedFps, bufferOffsetInFrames) + 's',
+          audioDuration: scaledFraction(normalizedFps, bufferDurationInFrames) + 's',
+
+          ref: `r${assetIndex + assetOffset}`,
+          lane: `-${lane + 1}`
+        }
+      ]
     }
 
     videos.push(Object.assign({
-      index: -100,
+      index: videoAssetIndex,
       name: `${board.shot}`,
 
       offset: scaledFraction(normalizedFps, offsetInFrames) + 's',
