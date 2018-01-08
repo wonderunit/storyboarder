@@ -140,12 +140,18 @@ describe('exporters/final-cut-pro-x', () => {
     assert(xml.includes('<video name="1A" offset="0s" ref="r4" duration="1450/2997s" start="0s">'))
     assert(xml.includes('<video name="2A" offset="1450/2997s" ref="r5" duration="1550/2997s" start="0s">'))
   })
-  it('can generate with audio', async () => {
+  it('can generate with overlapping audio', async () => {
     let projectFileAbsolutePath = path.join(__dirname, '..', 'fixtures', 'audio', 'audio.storyboarder')
     let outputPath = path.join(__dirname, '..', 'fixtures', 'audio', 'exports', 'output')
 
     let boardFileData = JSON.parse(fs.readFileSync(projectFileAbsolutePath))
+
+    boardFileData.boards[0].duration = 250
+    boardFileData.boards[1].duration = 250
+
     let data = await exporterFcpX.generateFinalCutProXData(boardFileData, { projectFileAbsolutePath, outputPath })
     let xml = exporterFcpX.generateFinalCutProXXml(data)
+
+    assert(xml.includes('<asset-clip name="2ABCD-audio-1234567890000.wav" lane="-2"'))
   })
 })

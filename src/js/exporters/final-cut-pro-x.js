@@ -85,7 +85,8 @@ const generateFinalCutProXData = async (boardData, { projectFileAbsolutePath, ou
 
   let currFrame = 0
   let index = 0
-  // let audioIndex = 0
+  let timelinePosInMsecs = 0
+  let lanes = [{ endInMsecs: 0 }]
   for (let board of boardData.boards) {
     let filename = util.dashed(boardFilenameForExport(board, index, basenameWithoutExt))
 
@@ -137,6 +138,18 @@ const generateFinalCutProXData = async (boardData, { projectFileAbsolutePath, ou
       // let bufferDurationInFrames = Math.round(msecsToFrames(normalizedFps, buffer.duration * 1000))
       let bufferDurationInFrames = buffer.duration * normalizedFps
 
+      let lane = lanes.length
+      for (let i = 0; i < lanes.length; i++) {
+        if (timelinePosInMsecs >= lanes[i].endInMsecs) {
+          lane = i
+          break
+        }
+      }
+      lanes[lane] = lanes[lane] || {}
+      lanes[lane].endInMsecs = timelinePosInMsecs + buffer.duration * 1000
+
+      timelinePosInMsecs += duration
+
       assetClips = [
         {
           filename: board.audio.filename,
@@ -145,7 +158,7 @@ const generateFinalCutProXData = async (boardData, { projectFileAbsolutePath, ou
 
           ref: 'r-999', // TODO set an offset
                         // e.g.: r${data.index + assetOffset + 1}
-          lane: '-1' // TODO pick a lane
+          lane: `-${lane + 1}`
         }
       ]
 
