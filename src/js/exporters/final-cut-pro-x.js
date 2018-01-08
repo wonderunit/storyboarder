@@ -40,7 +40,7 @@ const asset = (data, index) =>
 const video = (data, index) =>
   `<video name="${data.name}" offset="${data.offset}" ref="r${data.index + assetOffset}" duration="${data.duration}" start="${data.start}">${
       data.assetClips.map(data =>`
-                          <asset-clip name="${data.filename}" lane="${data.lane}" offset="${data.audioOffset}" ref="${data.ref}" duration="${data.audioDuration}" audioRole="dialogue" format="r3"/>`
+                          <asset-clip name="${data.filename}" lane="${data.lane}" offset="0s" ref="${data.ref}" duration="${data.audioDuration}" audioRole="dialogue" format="r3"/>`
       ).join('\n')
     }</video>`
 
@@ -167,7 +167,7 @@ const generateFinalCutProXData = async (boardData, { projectFileAbsolutePath, ou
       assetClips = [
         {
           filename: board.audio.filename,
-          audioOffset: scaledFraction(normalizedFps, bufferOffsetInFrames) + 's',
+          // audioOffset: scaledFraction(normalizedFps, bufferOffsetInFrames) + 's',
           audioDuration: scaledFraction(normalizedFps, bufferDurationInFrames) + 's',
 
           ref: `r${assetIndex + assetOffset}`,
