@@ -69,7 +69,8 @@ class Exporter extends EventEmitter {
     let xml = exporterFcp.generateFinalCutProXml(data)
     fs.writeFileSync(path.join(outputPath, util.dashed(basename + '.xml')), xml)
 
-    let fcpxml = exporterFcpX.generateFinalCutProXXml(exporterFcpX.generateFinalCutProXData(boardData, { projectFileAbsolutePath, outputPath }))
+    let fcpxData = await exporterFcpX.generateFinalCutProXData(boardData, { projectFileAbsolutePath, outputPath })
+    let fcpxml = exporterFcpX.generateFinalCutProXXml(fcpxData)
     fs.writeFileSync(path.join(outputPath, util.dashed(basename + '.fcpxml')), fcpxml)
 
     // export ALL layers of each one of the boards
