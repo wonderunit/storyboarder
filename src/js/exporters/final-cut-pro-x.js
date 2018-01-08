@@ -7,8 +7,6 @@ const { msecsToFrames } = require('./common')
 const { boardFileImageSize, boardFilenameForExport } = require('../models/board')
 const util = require('../utils')
 
-const assetOffset = 4
-
 // via https://developer.apple.com/library/content/documentation/FinalCutProX/Reference/FinalCutProXXMLFormat/StoryElements/StoryElements.html
 // Time values are expressed as a rational number of seconds
 // with a 64-bit numerator and a 32-bit denominator.
@@ -32,13 +30,13 @@ const minBase = str => {
 // <asset id="r3" name="board-1-9MZ1P" src="file:///board-1-9MZ1P.png" start="0s" duration="0s" hasVideo="1" format="r2"></asset>
 const asset = (data, index) =>
   data.hasVideo
-  ? `<asset id="r${index + assetOffset}" name="${data.filename}" src="${data.src}" start="0s" duration="0s" hasVideo="1" format="${data.format}" />`
-  : `<asset id="r${index + assetOffset}" name="${data.filename}" src="${data.src}" start="0s" duration="0s" hasAudio="1" audioSources="1" audioChannels="${data.audioChannels}" audioRate="${data.audioRate}" />`
+  ? `<asset id="r${index + data.assetOffset}" name="${data.filename}" src="${data.src}" start="0s" duration="0s" hasVideo="1" format="${data.format}" />`
+  : `<asset id="r${index + data.assetOffset}" name="${data.filename}" src="${data.src}" start="0s" duration="0s" hasAudio="1" audioSources="1" audioChannels="${data.audioChannels}" audioRate="${data.audioRate}" />`
 
 // <video name="board-1" offset="0/2400s" ref="r3" duration="4800/2400s" start="0s"/>
 // <video name="board-2" offset="4800/2400s" ref="r4" duration="4800/2400s" start="0s"/>
 const video = (data, index) =>
-  `<video name="${data.name}" offset="${data.offset}" ref="r${data.index + assetOffset}" duration="${data.duration}" start="${data.start}">${
+  `<video name="${data.name}" offset="${data.offset}" ref="r${data.index + data.assetOffset}" duration="${data.duration}" start="${data.start}">${
       data.assetClips.map(data =>`
                           <asset-clip name="${data.filename}" lane="${data.lane}" offset="0s" ref="${data.ref}" duration="${data.audioDuration}" audioRole="dialogue" format="r3"/>`
       ).join('\n')
@@ -49,11 +47,8 @@ const generateFinalCutProXXml = data =>
 <!DOCTYPE fcpxml>
 <fcpxml version="1.6">
     <resources>
-        <format id="r1" frameDuration="${scaledFraction(data.fps, 1)}s" width="${data.width}" height="${data.height}"/>
-        <format id="r2" name="${data.format}" width="${data.width}" height="${data.height}"/>
-        <format id="r3" name="FFVideoFormatRateUndefined"/>
-
-        ${data.assets.map(asset).join('\n        ')}
+      ${data.initialAssets.join('\n      ')}
+      ${data.assets.map(asset).join('\n      ')}
     </resources>
     <library>
         <event name="${data.eventName}">
@@ -83,6 +78,13 @@ const generateFinalCutProXData = async (boardData, { projectFileAbsolutePath, ou
     ? 24000 / 1001 // better precision
     : boardData.fps
 
+  let initialAssets = [
+    `<format id="r1" frameDuration="${scaledFraction(normalizedFps, 1)}s" width="${width}" height="${height}"/>`,
+    `<format id="r2" name="FFVideoFormatRateUndefined" width="${width}" height="${height}"/>`,
+    `<format id="r3" name="FFVideoFormatRateUndefined" />`
+  ]
+  let assetOffset = initialAssets.length + 1
+
   let currFrame = 0
   let index = 0
   let timelinePosInMsecs = 0
@@ -102,6 +104,7 @@ const generateFinalCutProXData = async (boardData, { projectFileAbsolutePath, ou
 
     let videoAssetIndex = assets.length
     assets.push({
+      assetOffset,
       filename,
       /*
       The src attribute is expected to be a string that specifies an
@@ -154,6 +157,7 @@ const generateFinalCutProXData = async (boardData, { projectFileAbsolutePath, ou
       let assetIndex = assets.length
 
       assets.push({
+        assetOffset,
         index: assetIndex,
         filename: board.audio.filename,
         src: `./${encodeURI(board.audio.filename)}`, // `file://${outputPath}/${filename}`
@@ -177,6 +181,8 @@ const generateFinalCutProXData = async (boardData, { projectFileAbsolutePath, ou
     }
 
     videos.push(Object.assign({
+      assetOffset,
+
       index: videoAssetIndex,
       name: `${board.shot}`,
 
@@ -193,9 +199,10 @@ const generateFinalCutProXData = async (boardData, { projectFileAbsolutePath, ou
   }
 
   return {
+    initialAssets,
+
     width,
     height,
-    format: 'FFVideoFormatRateUndefined',
     eventName: 'Storyboarder',
     projectName: basenameWithoutExt, // TODO arg for board name
     assets,
