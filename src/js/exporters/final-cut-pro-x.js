@@ -32,8 +32,8 @@ const minBase = str => {
 // <asset id="r3" name="board-1-9MZ1P" src="file:///board-1-9MZ1P.png" start="0s" duration="0s" hasVideo="1" format="r2"></asset>
 const asset = (data, index) =>
   data.hasVideo
-  ? `<asset id="r${index + assetOffset}" name="${data.filename}" src="${data.src}" start="0s" duration="0s" hasVideo="1" format="${data.format}"></asset>`
-  : `<asset id="r${index + assetOffset}" name="${data.filename}" src="${data.src}" start="0s" duration="0s" hasAudio="1" audioSources="1" audioChannels="${data.audioChannels}" audioRate="${data.audioRate}">`
+  ? `<asset id="r${index + assetOffset}" name="${data.filename}" src="${data.src}" start="0s" duration="0s" hasVideo="1" format="${data.format}" />`
+  : `<asset id="r${index + assetOffset}" name="${data.filename}" src="${data.src}" start="0s" duration="0s" hasAudio="1" audioSources="1" audioChannels="${data.audioChannels}" audioRate="${data.audioRate}" />`
 
 // <video name="board-1" offset="0/2400s" ref="r3" duration="4800/2400s" start="0s"/>
 // <video name="board-2" offset="4800/2400s" ref="r4" duration="4800/2400s" start="0s"/>
