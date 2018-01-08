@@ -66,7 +66,7 @@ const stereoTrack = data => `
         </track>
 `
 
-const audioClipFile = data => 
+const audioClipFile = data =>
   data.numberOfChannels == 1 || data.currentExplodedTrackIndex === 0
   ? `
             <file id="file-${data.audioIndexPos}">
@@ -97,7 +97,7 @@ const audioClipFile = data =>
                     <samplerate>${data.sampleRate}</samplerate>
                   </samplecharacteristics>` + */
 `                  <channelcount>${data.numberOfChannels}</channelcount>
-` + 
+` +
 /*`                  <audiochannel>
                     <sourcechannel>1</sourcechannel>
                   </audiochannel>`*/
@@ -399,7 +399,7 @@ const generateFinalCutProData = async (boardData, { projectFileAbsolutePath, out
     height: height,
     clipItems: clipItems,
     stereoTracks: stereoTracks,
-    
+
     timebase,
     ntsc
   }
