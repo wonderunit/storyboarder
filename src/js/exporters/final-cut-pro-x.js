@@ -10,10 +10,10 @@ const assetOffset = 4
 
 // via https://developer.apple.com/library/content/documentation/FinalCutProX/Reference/FinalCutProXXMLFormat/StoryElements/StoryElements.html
 // Time values are expressed as a rational number of seconds
-// with a 64-bit numerator and a 32-bit denominator. 
-// Frame rates for NTSC-compatible media, for example, 
-// use a frame duration of 1001/30000s (29.97 fps) or 1001/60000s (59.94 fps). 
-// If a time value is equal to a whole number of seconds, 
+// with a 64-bit numerator and a 32-bit denominator.
+// Frame rates for NTSC-compatible media, for example,
+// use a frame duration of 1001/30000s (29.97 fps) or 1001/60000s (59.94 fps).
+// If a time value is equal to a whole number of seconds,
 // the fraction may be reduced into whole seconds (for example, 5s).
 const scaledFraction = (base, value = 1) =>
   base === 0 || value === 0
@@ -72,13 +72,13 @@ const generateFinalCutProXXml = data =>
 const generateFinalCutProXData = (boardData, { projectFileAbsolutePath, outputPath }) => {
   let [width, height] = boardFileImageSize(boardData)
 
-  let dirname = path.dirname(projectFileAbsolutePath)
+  // let dirname = path.dirname(projectFileAbsolutePath)
 
   let extname = path.extname(projectFileAbsolutePath)
   let basenameWithoutExt = path.basename(projectFileAbsolutePath, extname)
 
-  let assets = [],
-      videos = []
+  let assets = []
+  let videos = []
 
   let normalizedFps = boardData.fps === 23.976
     ? 24000 / 1001 // better precision
@@ -86,7 +86,7 @@ const generateFinalCutProXData = (boardData, { projectFileAbsolutePath, outputPa
 
   let currFrame = 0
   let index = 0
-  let audioIndex = 0
+  // let audioIndex = 0
   for (let board of boardData.boards) {
     let filename = util.dashed(boardFilenameForExport(board, index, basenameWithoutExt))
 
@@ -94,8 +94,8 @@ const generateFinalCutProXData = (boardData, { projectFileAbsolutePath, outputPa
                      ? boardData.defaultBoardTiming
                      : board.duration
 
-    let lastFrameOfBoard = Math.round(msecsToFrames(normalizedFps, duration)),
-        endFrame = currFrame + lastFrameOfBoard
+    let lastFrameOfBoard = Math.round(msecsToFrames(normalizedFps, duration))
+    let endFrame = currFrame + lastFrameOfBoard
 
     let offsetInFrames = currFrame
     let durationInFrames = Math.round(msecsToFrames(normalizedFps, duration))
@@ -119,10 +119,10 @@ const generateFinalCutProXData = (boardData, { projectFileAbsolutePath, outputPa
     let audio = {}
     if (board.audio) {
       audio = {
-        audioName:      'ABCDEFG', // '1ABCD-audio-1234567890000',
-        audioOffset:    'ABCDEFG', // '3600s',
-        audioDuration:  'ABCDEFG', // '360000/720000s',
-        audioFilename:  'ABCDEFG', // ''
+        audioName: 'ABCDEFG', // '1ABCD-audio-1234567890000',
+        audioOffset: 'ABCDEFG', // '3600s',
+        audioDuration: 'ABCDEFG', // '360000/720000s',
+        audioFilename: 'ABCDEFG' // ''
       }
 
       assets.push({
@@ -156,7 +156,7 @@ const generateFinalCutProXData = (boardData, { projectFileAbsolutePath, outputPa
     projectName: basenameWithoutExt, // TODO arg for board name
     assets,
     videos,
-    
+
     fps: normalizedFps
   }
 }
