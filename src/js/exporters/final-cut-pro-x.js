@@ -1,6 +1,7 @@
 // https://developer.apple.com/library/content/documentation/FinalCutProX/Reference/FinalCutProXXMLFormat
-const path = require('path')
 const Fraction = require('fraction.js')
+const path = require('path')
+const Tone = require('tone')
 
 const { msecsToFrames } = require('./common')
 const { boardFileImageSize, boardFilenameForExport } = require('../models/board')
@@ -32,18 +33,16 @@ const minBase = str => {
 const asset = (data, index) =>
   data.hasVideo
   ? `<asset id="r${index + assetOffset}" name="${data.filename}" src="${data.src}" start="0s" duration="0s" hasVideo="1" format="${data.format}"></asset>`
-  : `<asset id="r7" name="2ABCD-audio-1234567890000" uid="AEA99D73E4DF0E20634A6625C6B7E009" src="file:///Users/robby/Downloads/audio.storyboarder-rawbee/2ABCD-audio-1234567890000.wav" start="0s" duration="22050/44100s" hasAudio="1" audioSources="1" audioChannels="2" audioRate="44100">`
+  : `<asset id="r${index + assetOffset}" name="${data.filename}" src="${data.src}" start="0s" duration="0s" hasAudio="1" audioSources="1" audioChannels="${data.audioChannels}" audioRate="${data.audioRate}">`
 
 // <video name="board-1" offset="0/2400s" ref="r3" duration="4800/2400s" start="0s"/>
 // <video name="board-2" offset="4800/2400s" ref="r4" duration="4800/2400s" start="0s"/>
 const video = (data, index) =>
-  `<video name="${data.name}" offset="${data.offset}" ref="r${data.index + assetOffset}" duration="${data.duration}" start="${data.start}">
-    ${
-      data.audioName
-      ? `<asset-clip name="${data.audioName}" lane="-1" offset="${data.audioOffset}" ref="r${data.index + assetOffset + 1}" duration="${data.audioDuration}" audioRole="dialogue" format="r3"/>`
-      : ''
-    }
-   </video>`
+  `<video name="${data.name}" offset="${data.offset}" ref="r${data.index + assetOffset}" duration="${data.duration}" start="${data.start}">${
+      data.assetClips.map(data =>`
+                          <asset-clip name="${data.filename}" lane="${data.lane}" offset="${data.audioOffset}" ref="${data.ref}" duration="${data.audioDuration}" audioRole="dialogue" format="r3"/>`
+      ).join('\n')
+    }</video>`
 
 const generateFinalCutProXXml = data =>
   `<?xml version="1.0" encoding="UTF-8"?>
@@ -69,10 +68,10 @@ const generateFinalCutProXXml = data =>
     </library>
 </fcpxml>`
 
-const generateFinalCutProXData = (boardData, { projectFileAbsolutePath, outputPath }) => {
+const generateFinalCutProXData = async (boardData, { projectFileAbsolutePath, outputPath }) => {
   let [width, height] = boardFileImageSize(boardData)
 
-  // let dirname = path.dirname(projectFileAbsolutePath)
+  let dirname = path.dirname(projectFileAbsolutePath)
 
   let extname = path.extname(projectFileAbsolutePath)
   let basenameWithoutExt = path.basename(projectFileAbsolutePath, extname)
@@ -100,8 +99,6 @@ const generateFinalCutProXData = (boardData, { projectFileAbsolutePath, outputPa
     let offsetInFrames = currFrame
     let durationInFrames = Math.round(msecsToFrames(normalizedFps, duration))
 
-    let assetIndex = assets.length
-
     assets.push({
       filename,
       /*
@@ -116,33 +113,65 @@ const generateFinalCutProXData = (boardData, { projectFileAbsolutePath, outputPa
       hasVideo: true
     })
 
-    let audio = {}
-    if (board.audio) {
-      audio = {
-        audioName: 'ABCDEFG', // '1ABCD-audio-1234567890000',
-        audioOffset: 'ABCDEFG', // '3600s',
-        audioDuration: 'ABCDEFG', // '360000/720000s',
-        audioFilename: 'ABCDEFG' // ''
+    let assetClips = []
+
+    if (board.audio &&
+        board.audio.filename &&
+        board.audio.filename.length) {
+
+      let buffer
+      try {
+        buffer = await new Tone.Buffer().load(
+          path.join(dirname, 'images', board.audio.filename)
+        )
+      } catch (err) {
+        console.error(err)
+        throw new Error(`could not load audio file ${board.audio.filename}`)
       }
 
+      let audioChannels = buffer.numberOfChannels
+      let audioRate = buffer._buffer.sampleRate
+
+      let bufferOffsetInFrames = currFrame
+
+      // let bufferDurationInFrames = Math.round(msecsToFrames(normalizedFps, buffer.duration * 1000))
+      let bufferDurationInFrames = buffer.duration * normalizedFps
+
+      assetClips = [
+        {
+          filename: board.audio.filename,
+          audioOffset: scaledFraction(normalizedFps, bufferOffsetInFrames) + 's',
+          audioDuration: scaledFraction(normalizedFps, bufferDurationInFrames) + 's',
+
+          ref: 'r-999', // TODO set an offset
+                        // e.g.: r${data.index + assetOffset + 1}
+          lane: '-1' // TODO pick a lane
+        }
+      ]
+
       assets.push({
-        index: assets.length,
-        filename: audio.audioName,
-        src: `./${encodeURI(audio.audioFilename)}`, // `file://${outputPath}/${filename}`
+        index: -100, // TODO set an index
+        filename: board.audio.filename,
+        src: `./${encodeURI(board.audio.filename)}`, // `file://${outputPath}/${filename}`
         format: 'r3',
-        hasVideo: false
+        hasVideo: false,
+
+        audioChannels,
+        audioRate
       })
     }
 
     videos.push(Object.assign({
-      index: assetIndex,
+      index: -100,
       name: `${board.shot}`,
 
       offset: scaledFraction(normalizedFps, offsetInFrames) + 's',
       duration: scaledFraction(normalizedFps, durationInFrames) + 's',
 
-      start: '0s'
-    }, audio))
+      start: '0s',
+
+      assetClips
+    }))
 
     currFrame = endFrame
     index++
