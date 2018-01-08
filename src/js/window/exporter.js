@@ -1,5 +1,5 @@
 const EventEmitter = require('events').EventEmitter
-const fs = require('fs')
+const fs = require('fs-extra')
 const path = require('path')
 const GIFEncoder = require('gifencoder')
 const moment = require('moment')
@@ -65,10 +65,12 @@ class Exporter extends EventEmitter {
       fs.mkdirSync(outputPath)
     }
 
-    let xml = exporterFcp.generateFinalCutProXml(exporterFcp.generateFinalCutProData(boardData, { projectFileAbsolutePath, outputPath }))
+    let data = await exporterFcp.generateFinalCutProData(boardData, { projectFileAbsolutePath, outputPath })
+    let xml = exporterFcp.generateFinalCutProXml(data)
     fs.writeFileSync(path.join(outputPath, util.dashed(basename + '.xml')), xml)
 
-    let fcpxml = exporterFcpX.generateFinalCutProXXml(exporterFcpX.generateFinalCutProXData(boardData, { projectFileAbsolutePath, outputPath }))
+    let fcpxData = await exporterFcpX.generateFinalCutProXData(boardData, { projectFileAbsolutePath, outputPath })
+    let fcpxml = exporterFcpX.generateFinalCutProXXml(fcpxData)
     fs.writeFileSync(path.join(outputPath, util.dashed(basename + '.fcpxml')), fcpxml)
 
     // export ALL layers of each one of the boards
@@ -84,8 +86,17 @@ class Exporter extends EventEmitter {
         outputPath
       )
     })
-
     await Promise.all(writers)
+
+    // export ALL audio
+    boardData.boards.forEach((board, index) => {
+      if (board.audio && board.audio.filename && board.audio.filename.length) {
+        fs.copySync(
+          path.join(path.dirname(projectFileAbsolutePath), 'images', board.audio.filename),
+          path.join(outputPath, board.audio.filename)
+        )
+      }
+    })
 
     return outputPath
   }
