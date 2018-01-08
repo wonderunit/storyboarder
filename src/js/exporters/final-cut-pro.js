@@ -272,7 +272,7 @@ const generateFinalCutProData = async (boardData, { projectFileAbsolutePath, out
   let index = 0
   let currAudioIndex = 0
   let timelinePosInMsecs = 0
-  let stereoTracks = [ { endInMsecsByTrackNumber: 0, audioClips: [] }]
+  let stereoTracks = [ { endInMsecs: 0, audioClips: [] }]
   for (let board of boardData.boards) {
     let fileFilename = util.dashed(boardFilenameForExport(board, index, basenameWithoutExt)),
         filePathUrl = `./${encodeURI(fileFilename)}` //`file://${outputPath}/${fileFilename}`
@@ -370,7 +370,7 @@ const generateFinalCutProData = async (boardData, { projectFileAbsolutePath, out
 
       let nextAvailableTrackIndex = stereoTracks.length
       for (let i = 0; i < stereoTracks.length; i++) {
-        let time = stereoTracks[i].endInMsecsByTrackNumber
+        let time = stereoTracks[i].endInMsecs
         if (timelinePosInMsecs >= time) {
           nextAvailableTrackIndex = i
           break
@@ -379,7 +379,7 @@ const generateFinalCutProData = async (boardData, { projectFileAbsolutePath, out
 
       stereoTracks[nextAvailableTrackIndex] = stereoTracks[nextAvailableTrackIndex] || {}
       stereoTracks[nextAvailableTrackIndex].audioClips = stereoTracks[nextAvailableTrackIndex].audioClips || []
-      stereoTracks[nextAvailableTrackIndex].endInMsecsByTrackNumber = timelinePosInMsecs + audioDurationInMsecs
+      stereoTracks[nextAvailableTrackIndex].endInMsecs = timelinePosInMsecs + audioDurationInMsecs
 
       stereoTracks[nextAvailableTrackIndex].audioClips.push(audioClip)
 
