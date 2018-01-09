@@ -39,10 +39,8 @@ console.log('  version:', ffmpeg.version)
 //   })
 // }
 
-const checkVersion = async () => {
-  // console.log('ffmpeg#ensureVersion')
-
-  return new Promise((resolve, reject) => {
+const checkVersion = async () =>
+  new Promise((resolve, reject) => {
     let matchedVersion
 
     const process = execa(ffmpegPath, [
@@ -55,10 +53,6 @@ const checkVersion = async () => {
         matchedVersion = matchesVersion[1]
       }
     })
-    process.stderr.on('data', data => {
-      data = data.toString().trim()
-      // console.log(data)
-    })
     process.on('error', reject)
     process.on('exit', code => {
       if (code === 0) {
@@ -69,7 +63,6 @@ const checkVersion = async () => {
     })
     process.catch(reject)
   })
-}
 
 // const convertToVideo = async (outputPath, scene) => {
 //   // console.log('ffmpeg#convertToVideo writing to', outputPath, 'with scene data', scene)

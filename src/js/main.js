@@ -89,7 +89,7 @@ app.on('ready', async () => {
 
   const exporterFfmpeg = require('./exporters/ffmpeg')
   let ffmpegVersion = await exporterFfmpeg.checkVersion()
-  console.log('ffmpeg version check returned', ffmpegVersion)
+  console.log('ffmpeg version', ffmpegVersion)
 
   // try to load key map
   const keymapPath = path.join(app.getPath('userData'), 'keymap.json')
