@@ -525,6 +525,11 @@ let loadBoardUI = () => {
     let files = e.dataTransfer.files
 
     for (let file of files) {
+      if (path.extname(file.name).match(/\.aif*/)) {
+        notifications.notify({ message: `Whoops! Sorry, Storyboarder can’t read AIFF files (yet).`, timing: 5 })
+        return
+      }
+
       let hasRecognizedExtension = ALLOWED_AUDIO_FILE_EXTENSIONS.includes(path.extname(file.name).replace('.', ''))
       if (
         hasRecognizedExtension &&
