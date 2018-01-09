@@ -84,8 +84,12 @@ app.on('open-file', (event, path) => {
   }
 })
 
-app.on('ready', () => {
+app.on('ready', async () => {
   analytics.init(prefs.enableAnalytics)
+
+  const exporterFfmpeg = require('./exporters/ffmpeg')
+  let ffmpegVersion = await exporterFfmpeg.checkVersion()
+  console.log('ffmpeg version check returned', ffmpegVersion)
 
   // try to load key map
   const keymapPath = path.join(app.getPath('userData'), 'keymap.json')

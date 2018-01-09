@@ -1,11 +1,12 @@
+const electronUtil = require('electron-util')
 const execa = require('execa')
 const ffmpeg = require('@ffmpeg-installer/ffmpeg')
 
-const ffmpegPath = ffmpeg.path
+const ffmpegPath = electronUtil.fixPathForAsarUnpack(ffmpeg.path)
 
 console.log('initialized exporters/ffmpeg')
-console.log('binary:', ffmpeg.path)
-console.log('version:', ffmpeg.version)
+console.log('  binary:', ffmpeg.path)
+console.log('  version:', ffmpeg.version)
 
 // via https://github.com/wulkano/kap/blob/5769d7658778bfb9ad31fd527326f8407082f910/app/src/scripts/convert.js
 //
