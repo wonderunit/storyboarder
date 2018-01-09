@@ -86,6 +86,7 @@
     "mock-fs": "4.4.1"
   },
   "dependencies": {
+    "@ffmpeg-installer/ffmpeg": "1.0.13",
     "ag-psd": "^1.2.0",
     "archiver": "2.0.3",
     "chokidar": "1.7.0",
