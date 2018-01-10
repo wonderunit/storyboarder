@@ -201,11 +201,11 @@ const convertToVideo = async opts => {
   console.log('\n')
 
   // debugging directory listing
-  console.log('\n')
-  console.log(`tree ${outputPath}:`)
-  let result = await execa('tree', [ outputPath ])
-  console.log(result.stdout)
-  console.log('\n')
+  // console.log('\n')
+  // console.log(`tree ${outputPath}:`)
+  // let result = await execa('tree', [ outputPath ])
+  // console.log(result.stdout)
+  // console.log('\n')
 
   opts.progressCallback(0)
   await convert(opts.outputPath, opts, args)
