@@ -119,7 +119,8 @@ const convertToVideo = async opts => {
       ])
 
       // lol via https://video.stackexchange.com/a/22115
-      let fadeout = `areverse, afade=d=0.5, areverse`
+      // let fadeout = `areverse, afade=d=0.5, areverse`
+      let fadeout = `areverse, afade=d=0.25:curve=exp, areverse`
 
       let filter = board.time > 0
         ? `${fadeout},adelay=${board.time}|${board.time}`
