@@ -4296,8 +4296,8 @@ const exportVideo = async () => {
       scene,
       sceneFilePath,
       {
-        progressCallback: progress =>
-          notifications.notify({message: `${Math.round(progress * 100)}% complete`, timing: 1})
+        progressCallback: progress => {}
+          // notifications.notify({message: `${Math.round(progress * 100)}% complete`, timing: 1})
       }
     )
     notifications.notify({message: "Your scene has been exported to video.", timing: 20})
