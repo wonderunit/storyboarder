@@ -38,7 +38,7 @@ const checkVersion = async () =>
     process.catch(reject)
   })
 
-// via https://github.com/wulkano/kap/blob/5769d7658778bfb9ad31fd527326f8407082f910/app/src/scripts/convert.js
+// via https://github.com/wulkano/kap/blob/5769d76587/app/src/scripts/convert.js
 const convert = async (outputPath, opts, args) =>
   new Promise((resolve, reject) => {
     const converter = execa(ffmpegPath, args)
