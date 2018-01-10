@@ -10,8 +10,8 @@ const exporterCommon = require('../exporters/common')
 
 const ffmpegPath = electronUtil.fixPathForAsarUnpack(ffmpeg.path)
 
-const durationRegex = /Duration: (\d\d:\d\d:\d\d.\d\d)/gm
-const frameRegex = /frame=\s+(\d+)/gm
+// const durationRegex = /Duration: (\d\d:\d\d:\d\d.\d\d)/gm
+// const frameRegex = /frame=\s+(\d+)/gm
 
 const checkVersion = async () =>
   new Promise((resolve, reject) => {
@@ -45,18 +45,25 @@ const convert = async (outputPath, opts, args) =>
     let amountOfFrames
 
     converter.stderr.on('data', data => {
-      data = data.toString().trim()
-      const matchesDuration = durationRegex.exec(data)
-      const matchesFrame = frameRegex.exec(data)
+      //
+      // FIXME this doesn't work because ffmpeg doesn't report the correct Duration
+      //         actual Duration would be Input #0's Duration (the ffconcat stream)
+      //          OR, the time + duration of the final audio
+      //           (whichever is greater)
+      //
+      // data = data.toString().trim()
+      // const matchesDuration = durationRegex.exec(data)
+      // const matchesFrame = frameRegex.exec(data)
+      // 
+      // if (matchesDuration) {
+      //   amountOfFrames = Math.ceil(moment.duration(matchesDuration[1]).asSeconds() * 30)
+      // } else if (matchesFrame) {
+      //   const currentFrame = matchesFrame[1]
+      //   opts.progressCallback(currentFrame / amountOfFrames)
+      // }
 
-      if (matchesDuration) {
-        amountOfFrames = Math.ceil(moment.duration(matchesDuration[1]).asSeconds() * 30)
-      } else if (matchesFrame) {
-        const currentFrame = matchesFrame[1]
-        opts.progressCallback(currentFrame / amountOfFrames)
-      }
       // for debugging
-      console.log(data)
+      // console.log(data)
     })
     converter.on('error', reject)
     converter.on('exit', code => {
@@ -238,7 +245,7 @@ const convertToVideo = async opts => {
   // console.log(result.stdout)
   // console.log('\n')
 
-  opts.progressCallback(0)
+  // opts.progressCallback(0)
   await convert(opts.outputPath, opts, args)
   return outputFilePath
 }
