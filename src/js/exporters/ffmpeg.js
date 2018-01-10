@@ -45,13 +45,14 @@ const convert = async (outputPath, opts, args) =>
     let amountOfFrames
 
     converter.stderr.on('data', data => {
+      data = data.toString().trim()
+
       //
       // FIXME this doesn't work because ffmpeg doesn't report the correct Duration
       //         actual Duration would be Input #0's Duration (the ffconcat stream)
       //          OR, the time + duration of the final audio
       //           (whichever is greater)
       //
-      // data = data.toString().trim()
       // const matchesDuration = durationRegex.exec(data)
       // const matchesFrame = frameRegex.exec(data)
       // 
@@ -63,7 +64,7 @@ const convert = async (outputPath, opts, args) =>
       // }
 
       // for debugging
-      // console.log(data)
+      console.log(data)
     })
     converter.on('error', reject)
     converter.on('exit', code => {
@@ -105,41 +106,38 @@ const convertToVideo = async opts => {
     }
   })
 
-  let audioFilterComplex
-
   const STREAM_OFFSET = 2 // video + watermark
-  let audioArgs = []
-  let filters = []
+
+  let audioFilterComplex
+  let audioFileArgs = []
+  let audioFilters = []
   let audioStreamIndex = 0
   for (let board of scene.boards) {
     if (board.audio) {
-      audioArgs = audioArgs.concat([
+      audioFileArgs = audioFileArgs.concat([
         '-i', path.join(path.dirname(sceneFilePath), 'images', board.audio.filename)
       ])
 
       let filter = board.time > 0
         ? `adelay=${board.time}|${board.time}`
         : `anull`
-        
-      filters.push(
+
+      audioFilters.push(
         `[${audioStreamIndex + STREAM_OFFSET}]${filter}[s${audioStreamIndex + STREAM_OFFSET}]`
       )
+
       audioStreamIndex++
     }
   }
 
-  if (audioArgs.length) {
+  if (audioFileArgs.length) {
     let mixout = ';'
-    for (let i = 0; i < filters.length; i++) {
+    for (let i = 0; i < audioFilters.length; i++) {
       mixout += `[s${i + STREAM_OFFSET}]`
     }
-    mixout += `amix=${filters.length}[mix]`
+    mixout += `amix=${audioFilters.length}[mix]`
 
-    audioFilterComplex = filters.join(';') + mixout
-
-    // audioArgs = audioArgs.concat([
-      // '-map', '[mix]'
-    // ])
+    audioFilterComplex = audioFilters.join(';') + mixout
   }
 
   // generate the ffconcat image sequencer file
@@ -165,38 +163,17 @@ const convertToVideo = async opts => {
   console.log('writing to', outputFilePath)
   console.log('\n')
 
-  let watermarkArgs = [
+  let args = [
+    // Input #0
+    '-i', path.join(outputPath, 'video.ffconcat'),
+
+    // Input #1
     '-i', electronUtil.fixPathForAsarUnpack('src/img/watermark.png'),
   ]
 
-  let args = [
-    '-i', path.join(outputPath, 'video.ffconcat'),
-  ]
+  args = args.concat(audioFileArgs)
 
-  args = args.concat(watermarkArgs)
-
-  args = args.concat(audioArgs)
-  
   args = args.concat([
-    '-r', scene.fps,
-    '-vcodec', 'libx264',
-    '-acodec', 'aac', // 'libvo_aacenc',
-
-    // via https://medium.com/@forasoft/the-grip-of-ffmpeg-4b05d7f7678c
-    // '-b:v', '700k',
-
-    // via https://trac.ffmpeg.org/wiki/Encode/H.264
-    // QuickTime only supports YUV planar color space with 4:2:0 chroma subsampling (use -vf format=yuv420p or -pix_fmt yuv420p) for H.264 video.
-    '-pix_fmt', 'yuv420p',
-
-    // '-b:a', '128k',
-    // '-ar', '44100',
-    
-    // TODO are these necessary?
-    // via https://trac.ffmpeg.org/wiki/Encode/H.264
-    '-tune', 'stillimage',
-    '-preset', 'veryslow',
-
     '-filter_complex',
                         // via https://stackoverflow.com/a/20848224
                         // fixes "width not divisible by 2"
@@ -216,7 +193,28 @@ const convertToVideo = async opts => {
     '-map', '[vid]:v'
   ])
 
-  if (audioArgs.length) {
+  args = args.concat([
+    '-r', scene.fps,
+    '-vcodec', 'libx264',
+    '-acodec', 'aac', // 'libvo_aacenc',
+
+    // via https://medium.com/@forasoft/the-grip-of-ffmpeg-4b05d7f7678c
+    // '-b:v', '700k',
+
+    // via https://trac.ffmpeg.org/wiki/Encode/H.264
+    // QuickTime only supports YUV planar color space with 4:2:0 chroma subsampling (use -vf format=yuv420p or -pix_fmt yuv420p) for H.264 video.
+    '-pix_fmt', 'yuv420p',
+
+    // '-b:a', '128k',
+    // '-ar', '44100',
+    
+    // TODO are these necessary?
+    // via https://trac.ffmpeg.org/wiki/Encode/H.264
+    '-tune', 'stillimage',
+    '-preset', 'veryslow'
+  ])
+
+  if (audioFileArgs.length) {
     args = args.concat([
       '-map', '[mix]:a'
     ])
@@ -231,6 +229,8 @@ const convertToVideo = async opts => {
 
     // overwrite existing
     '-n',
+
+    '-stats',
 
     outputFilePath, // TODO quoting? filename?
   ])
@@ -247,6 +247,7 @@ const convertToVideo = async opts => {
 
   // opts.progressCallback(0)
   await convert(opts.outputPath, opts, args)
+  console.log('done!')
   return outputFilePath
 }
 
