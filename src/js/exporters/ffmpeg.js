@@ -189,7 +189,10 @@ const convertToVideo = async opts => {
 
     // TODO
     // via https://uart.cz/1570/simple-animation-with-ffmpeg/
-    // The -movflags +faststart parameters will move some media informations to the beginning of file, which allows browser to start video even before it was completely downloaded from the server.
+    // The -movflags +faststart parameters will move some media informations to
+    // the beginning of file, which allows browser to start video even before it
+    // was completely downloaded from the server.
+    '-movflags', '+faststart',
 
     // overwrite existing
     '-n',
