@@ -118,7 +118,8 @@ const convertToVideo = async opts => {
         '-i', path.join(path.dirname(sceneFilePath), 'images', board.audio.filename)
       ])
 
-      let fadeout = `afade=t=out:duration=0.5`
+      // lol via https://video.stackexchange.com/a/22115
+      let fadeout = `areverse, afade=d=0.5, areverse`
 
       let filter = board.time > 0
         ? `${fadeout},adelay=${board.time}|${board.time}`
