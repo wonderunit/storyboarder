@@ -151,7 +151,7 @@ const convertToVideo = async opts => {
   console.log('\n')
 
   console.log('\n')
-  const outputFilePath = path.join(outputPath, 'out.mp4')
+  const outputFilePath = path.join(outputPath, `${path.basename(sceneFilePath, path.extname(sceneFilePath))} Exported ${moment().format('YYYY-MM-DD hh.mm.ss')}.mp4`)
   console.log('writing to', outputFilePath)
   console.log('\n')
 
@@ -191,6 +191,9 @@ const convertToVideo = async opts => {
     // via https://uart.cz/1570/simple-animation-with-ffmpeg/
     // The -movflags +faststart parameters will move some media informations to the beginning of file, which allows browser to start video even before it was completely downloaded from the server.
 
+    // overwrite existing
+    '-n',
+
     outputFilePath, // TODO quoting? filename?
   ])
 
@@ -205,7 +208,8 @@ const convertToVideo = async opts => {
   console.log('\n')
 
   opts.progressCallback(0)
-  return convert(opts.outputPath, opts, args)
+  await convert(opts.outputPath, opts, args)
+  return outputFilePath
 }
 
 module.exports = {

@@ -47,11 +47,15 @@ describe('exporters/ffmpeg', () => {
     // for debugging
     //  uncomment to copy the example movie to test/results for inspection
     //
-    // let src = path.join(result, 'out.mp4')
+    // let src = result
     // let dst = path.join(__dirname, '..', 'results', 'out.mp4')
     // console.log('copying', src, 'to', dst, 'for review')
     // fs.copySync(src, dst)
     // console.log('\n\nopen', path.dirname(dst), '\n\n')
+
+    assert(result.includes('audio'))
+    assert(result.includes('Exported'))
+    assert(result.includes('mp4'))
 
     tmpFolder.removeCallback()
   }).timeout(0)

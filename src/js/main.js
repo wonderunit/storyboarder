@@ -1170,6 +1170,10 @@ ipcMain.on('exportAnimatedGif', (event, arg) => {
   mainWindow.webContents.send('exportAnimatedGif', arg)
 })
 
+ipcMain.on('exportVideo', (event, arg) => {
+  mainWindow.webContents.send('exportVideo', arg)
+})
+
 ipcMain.on('exportFcp', (event, arg) => {
   mainWindow.webContents.send('exportFcp', arg)
 })

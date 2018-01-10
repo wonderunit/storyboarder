@@ -4285,6 +4285,31 @@ const exportCleanup = () => {
   })
 }
 
+const exportVideo = async () => {
+  notifications.notify({message: "Exporting " + boardData.boards.length + " boards to video. Please wait...", timing: 5})
+
+  let scene = boardData
+  let sceneFilePath = boardFilename
+
+  try {
+    let outputFilePath = await exporter.exportVideo(
+      scene,
+      sceneFilePath,
+      {
+        progressCallback: progress =>
+          notifications.notify({message: `${Math.round(progress * 100)}% complete`, timing: 1})
+      }
+    )
+    notifications.notify({message: "Your scene has been exported to video.", timing: 20})
+    sfx.positive()
+    shell.showItemInFolder(outputFilePath)
+  } catch (err) {
+    console.error(err)
+    notifications.notify({ message: 'Could not export. An error occurred.' })
+    notifications.notify({ message: err.toString() })
+  }
+}
+
 let save = () => {
   saveImageFile()
   saveBoardFile({ force: true })
@@ -5310,6 +5335,11 @@ ipcRenderer.on('exportImages', (event, args) => {
 ipcRenderer.on('exportCleanup', (event, args) => {
   exportCleanup()
   ipcRenderer.send('analyticsEvent', 'Board', 'exportCleanup')
+})
+
+ipcRenderer.on('exportVideo', (event, args) => {
+  exportVideo()
+  ipcRenderer.send('analyticsEvent', 'Board', 'exportVideo')
 })
 
 let importWindow
