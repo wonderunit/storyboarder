@@ -98,7 +98,9 @@ const convertToVideo = async opts => {
     }
   })
 
-  const STREAM_OFFSET = 1
+  let audioFilterComplex
+
+  const STREAM_OFFSET = 2 // video + watermark
   let audioArgs = []
   let filters = []
   let audioStreamIndex = 0
@@ -126,10 +128,11 @@ const convertToVideo = async opts => {
     }
     mixout += `amix=${filters.length}[mix]`
 
-    audioArgs = audioArgs.concat([
-      '-filter_complex', filters.join(';') + mixout,
-      '-map', '[mix]'
-    ])
+    audioFilterComplex = filters.join(';') + mixout
+
+    // audioArgs = audioArgs.concat([
+      // '-map', '[mix]'
+    // ])
   }
 
   // generate the ffconcat image sequencer file
@@ -155,12 +158,18 @@ const convertToVideo = async opts => {
   console.log('writing to', outputFilePath)
   console.log('\n')
 
+  let watermarkArgs = [
+    '-i', electronUtil.fixPathForAsarUnpack('src/img/watermark.png'),
+  ]
+
   let args = [
     '-i', path.join(outputPath, 'video.ffconcat'),
   ]
 
-  args = args.concat(audioArgs)
+  args = args.concat(watermarkArgs)
 
+  args = args.concat(audioArgs)
+  
   args = args.concat([
     '-r', scene.fps,
     '-vcodec', 'libx264',
@@ -181,13 +190,32 @@ const convertToVideo = async opts => {
     '-tune', 'stillimage',
     '-preset', 'veryslow',
 
-    // via https://stackoverflow.com/a/20848224
-    // fixes "width not divisible by 2"
-    '-vf', 'scale=-2:900',
-    
-    '-map', '0:v',
+    '-filter_complex',
+                        // via https://stackoverflow.com/a/20848224
+                        // fixes "width not divisible by 2"
+                        '[0]scale=-2:900[frame];' + 
 
-    // TODO
+                        // pass overlay through untouched
+                        '[1]null[watermark];' +
+
+                        // overlay watermark w/ shorthand positioning
+                        '[frame][watermark]overlay=W-w:H-h[vid]' +
+
+                        // use audio (if present) or route silence to mix
+                        (audioFilterComplex
+                          ? ';' + audioFilterComplex
+                          : ''),
+
+    '-map', '[vid]:v'
+  ])
+
+  if (audioArgs.length) {
+    args = args.concat([
+      '-map', '[mix]:a'
+    ])
+  }
+
+  args = args.concat([
     // via https://uart.cz/1570/simple-animation-with-ffmpeg/
     // The -movflags +faststart parameters will move some media informations to
     // the beginning of file, which allows browser to start video even before it
