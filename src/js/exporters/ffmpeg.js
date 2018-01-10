@@ -118,13 +118,15 @@ const convertToVideo = async opts => {
         '-i', path.join(path.dirname(sceneFilePath), 'images', board.audio.filename)
       ])
 
-      let filter = board.time > 0
-        ? `adelay=${board.time}|${board.time}`
-        : `anull`
+      let fadeout = `afade=t=out:duration=0.5`
 
-      audioFilters.push(
-        `[${audioStreamIndex + STREAM_OFFSET}]${filter}[s${audioStreamIndex + STREAM_OFFSET}]`
-      )
+      let filter = board.time > 0
+        ? `${fadeout},adelay=${board.time}|${board.time}`
+        : `${fadeout}`
+
+      // stream index
+      let n = audioStreamIndex + STREAM_OFFSET
+      audioFilters.push(`[${n}]${filter}[s${n}]`)
 
       audioStreamIndex++
     }
