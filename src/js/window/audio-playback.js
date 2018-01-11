@@ -142,7 +142,8 @@ class AudioPlayback {
     if (isAuditioning && !this.enableAudition) return
 
     const MSECS_IN_A_SECOND = 1000
-    const FADE_OUT_IN_SECONDS = 0.5
+    // related: ffmpeg.js afade
+    const FADE_OUT_IN_SECONDS = 0.25
 
     // unused. this literally cuts at the exact point.
     // const CUT_EARLY_IN_SECONDS = 0.5
@@ -162,6 +163,7 @@ class AudioPlayback {
 
         // console.log('found', board.audio.filename, 'with duration', player.buffer.duration, 'at', board.time)
 
+        // is this the currently playing board?
         if (board === playingBoard) {
           // console.log('\tplaying current board', board.audio.filename, this.players.get(board.audio.filename))
 

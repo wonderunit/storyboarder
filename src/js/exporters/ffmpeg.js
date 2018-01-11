@@ -94,6 +94,7 @@ const convertToVideo = async opts => {
   await Promise.all(writers)
 
   const STREAM_OFFSET = 2 // video + watermark
+  const FADE_OUT_IN_SECONDS = 0.25
 
   let audioFilterComplex
   let audioFileArgs = []
@@ -107,7 +108,8 @@ const convertToVideo = async opts => {
 
       // lol via https://video.stackexchange.com/a/22115
       // let fadeout = `areverse, afade=d=0.5, areverse`
-      let fadeout = `areverse, afade=d=0.25:curve=exp, areverse`
+      // related: audio-playback.js FADE_OUT_IN_SECONDS
+      let fadeout = `areverse, afade=d=${FADE_OUT_IN_SECONDS}:curve=exp, areverse`
 
       let filter = board.time > 0
         ? `${fadeout},adelay=${board.time}|${board.time}`
