@@ -43,8 +43,8 @@ describe('exporters/ffmpeg', () => {
         outputPath,
         sceneFilePath,
         scene,
-        progressCallback: progress =>
-          console.log(`${progress * 100}% complete`)
+        // FIXME
+        progressCallback: progress => {}
       }
     )
 
