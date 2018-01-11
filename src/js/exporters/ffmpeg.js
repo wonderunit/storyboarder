@@ -93,19 +93,6 @@ const convertToVideo = async opts => {
   )
   await Promise.all(writers)
 
-  // export ALL audio
-  scene.boards.forEach((board, index) => {
-    if (board.audio && board.audio.filename && board.audio.filename.length) {
-      // NOTE
-      // copySync is only in fs-extra
-      // we can use copyFileSync once we reach node v8.5.x
-      fs.copySync(
-        path.join(path.dirname(sceneFilePath), 'images', board.audio.filename),
-        path.join(outputPath, board.audio.filename)
-      )
-    }
-  })
-
   const STREAM_OFFSET = 2 // video + watermark
 
   let audioFilterComplex
