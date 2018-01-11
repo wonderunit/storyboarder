@@ -49,9 +49,12 @@ describe('exporters/ffmpeg', () => {
     //
     // let src = result
     // let dst = path.join(__dirname, '..', 'results', 'out.mp4')
+    // console.log('\n\n')
     // console.log('copying', src, 'to', dst, 'for review')
     // fs.copySync(src, dst)
-    // console.log('\n\nopen', path.dirname(dst), '\n\n')
+    // console.log('\n')
+    // console.log('open', path.dirname(dst))
+    // console.log('\n\n')
 
     assert(result.includes('audio'))
     assert(result.includes('Exported'))
