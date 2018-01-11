@@ -4,7 +4,9 @@ const xml2js = require('xml2js')
 const R = require('ramda')
 
 const wordCount = text =>
-  text
+  text &&
+  // HACK ensure this is a string and .trim exists, fixes some errors #962
+  text.trim
   ? text.trim().replace(/ +(?= )/g,'').split(' ').length
   : 0
 
