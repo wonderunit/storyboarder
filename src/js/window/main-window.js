@@ -1442,6 +1442,8 @@ let loadBoardUI = () => {
         audioFileControlView.setState({
           boardAudio: boardData.boards[currentBoard].audio
         })
+
+        recordingToBoardIndex = undefined
         return
       }
 
@@ -1460,6 +1462,7 @@ let loadBoardUI = () => {
       } catch (err) {
         console.error(err)
         notifications.notify({ message: `Error saving audio. ${err}`, timing: 5 })
+        recordingToBoardIndex = undefined
         return
       }
 
