@@ -22,7 +22,7 @@ class AudioFileControlView {
     this.el.querySelector('.audiofile_button').addEventListener('click', this.onRequestFile)
     this.el.querySelector('.audiofile_clear').addEventListener('click', this.onClear)
 
-    this.el.querySelector('.record_button').addEventListener('click', this.onToggleRecord)
+    this.el.querySelector('.record_button').addEventListener('mousedown', this.onToggleRecord)
 
     // add resize observer
     let recordVisualization = this.el.querySelector('.record_visualization')
