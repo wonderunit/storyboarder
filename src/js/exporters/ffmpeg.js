@@ -42,7 +42,7 @@ const checkVersion = async () =>
 const convert = async (outputPath, opts, args) =>
   new Promise((resolve, reject) => {
     const converter = execa(ffmpegPath, args)
-    let amountOfFrames
+    // let amountOfFrames
 
     converter.stderr.on('data', data => {
       data = data.toString().trim()
@@ -55,7 +55,7 @@ const convert = async (outputPath, opts, args) =>
       //
       // const matchesDuration = durationRegex.exec(data)
       // const matchesFrame = frameRegex.exec(data)
-      // 
+      //
       // if (matchesDuration) {
       //   amountOfFrames = Math.ceil(moment.duration(matchesDuration[1]).asSeconds() * 30)
       // } else if (matchesFrame) {
@@ -83,7 +83,7 @@ const convertToVideo = async opts => {
   // export flattened boards to output path
   console.log('exporting images and audio for output …')
   let writers = scene.boards.map(async board =>
-    await exporterCommon.exportFlattenedBoard(
+    exporterCommon.exportFlattenedBoard(
       board,
       board.url,
       boardModel.boardFileImageSize(scene),
@@ -135,7 +135,6 @@ const convertToVideo = async opts => {
   // add last board twice because ffmpeg ¯\_(ツ)_/¯
   let boardsWithLastBoardTwice = scene.boards.concat(scene.boards[scene.boards.length - 1])
   let videoConcats = ['ffconcat version 1.0']
-  let index = 0
   for (let board of boardsWithLastBoardTwice) {
     let durationInSeconds = boardModel.boardDuration(scene, board) / 1000
     videoConcats.push('')
@@ -159,7 +158,7 @@ const convertToVideo = async opts => {
     '-i', path.join(outputPath, 'video.ffconcat'),
 
     // Input #1
-    '-i', electronUtil.fixPathForAsarUnpack('src/img/watermark.png'),
+    '-i', electronUtil.fixPathForAsarUnpack('src/img/watermark.png')
   ]
 
   args = args.concat(audioFileArgs)
@@ -168,7 +167,7 @@ const convertToVideo = async opts => {
     '-filter_complex',
                         // via https://stackoverflow.com/a/20848224
                         // fixes "width not divisible by 2"
-                        '[0]scale=-2:900[frame];' + 
+                        '[0]scale=-2:900[frame];' +
 
                         // pass overlay through untouched
                         '[1]null[watermark];' +
@@ -198,7 +197,7 @@ const convertToVideo = async opts => {
 
     // '-b:a', '128k',
     // '-ar', '44100',
-    
+
     // TODO are these necessary?
     // via https://trac.ffmpeg.org/wiki/Encode/H.264
     '-tune', 'stillimage',
@@ -223,7 +222,7 @@ const convertToVideo = async opts => {
 
     '-stats',
 
-    outputFilePath, // TODO quoting? filename?
+    outputFilePath
   ])
 
   console.log('calling ffmpeg with args', args)
