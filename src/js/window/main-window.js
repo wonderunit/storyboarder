@@ -1390,14 +1390,8 @@ let loadBoardUI = () => {
         })
       }
     },
-    onToggleRecord: function (event) {
+    onStartRecord: function (event) {
       event.preventDefault()
-
-      // prevent toggle during countdown and finalizing
-      // TODO should this be managed by AudioFileControlView#onToggleRecord handler?
-      if (audioFileControlView.state.mode === 'countdown' || audioFileControlView.state.mode === 'finalizing') {
-        return
-      }
 
       if (R.isNil(recordingToBoardIndex)) {
         // silence current sounds
@@ -1414,7 +1408,12 @@ let loadBoardUI = () => {
             })
           }
         })
-      } else {
+      }
+    },
+    onStopRecord: function (event) {
+      event.preventDefault()
+
+      if (!R.isNil(recordingToBoardIndex)) {
         audioFileControlView.stopRecording({
           boardAudio: boardData.boards[currentBoard].audio
         })

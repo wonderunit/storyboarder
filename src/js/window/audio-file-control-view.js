@@ -1,5 +1,5 @@
 class AudioFileControlView {
-  constructor ({ onRequestFile, onSelectFile, onSelectFileCancel, onClear, onToggleRecord, onAudioComplete, onCounterTick }) {
+  constructor ({ onRequestFile, onSelectFile, onSelectFileCancel, onClear, onStartRecord, onStopRecord, onAudioComplete, onCounterTick }) {
     this.state = {
       boardAudio: undefined,
       mode: 'initializing', // initializing, stopped, countdown, recording, finalizing
@@ -13,7 +13,12 @@ class AudioFileControlView {
     this.onSelectFile = onSelectFile.bind(this)
     this.onSelectFileCancel = onSelectFileCancel.bind(this)
     this.onClear = onClear.bind(this)
-    this.onToggleRecord = onToggleRecord.bind(this)
+
+    this.onStartRecord = onStartRecord.bind(this)
+    this.onStopRecord = onStopRecord.bind(this)
+
+    this.onRecordMouseEvent = this.onRecordMouseEvent.bind(this)
+
     this.onAudioCompleteCallback = onAudioComplete.bind(this)
     this.onCounterTickCallback = onCounterTick.bind(this)
 
@@ -22,7 +27,8 @@ class AudioFileControlView {
     this.el.querySelector('.audiofile_button').addEventListener('click', this.onRequestFile)
     this.el.querySelector('.audiofile_clear').addEventListener('click', this.onClear)
 
-    this.el.querySelector('.record_button').addEventListener('mousedown', this.onToggleRecord)
+    this.recordButtonEl = this.el.querySelector('.record_button')
+    this.recordButtonEl.addEventListener('click', this.onRecordMouseEvent)
 
     // add resize observer
     let recordVisualization = this.el.querySelector('.record_visualization')
@@ -48,6 +54,27 @@ class AudioFileControlView {
     this.recorder.initialize().then(() => {
       this.setState({ mode: 'stopped' })
     })
+  }
+
+  onRecordMouseEvent (event) {
+    // prevent during countdown and finalizing
+    if (event.type === 'click' && this.state.mode === 'stopped') {
+      this.recordButtonEl.removeEventListener('click', this.onRecordMouseEvent)
+      this.recordButtonEl.addEventListener('mousedown', this.onRecordMouseEvent)
+      this.onStartRecord(event)
+    }
+
+    // prevent during countdown and finalizing
+    if (event.type === 'mousedown' && this.state.mode === 'recording') {
+      this.recordButtonEl.removeEventListener('mousedown', this.onRecordMouseEvent)
+      this.onStopRecord(event)
+
+      // wait for the next `click` ...
+      this.recordButtonEl.addEventListener('click', () => {
+        // ... then listen for clicks again
+        this.recordButtonEl.addEventListener('click', this.onRecordMouseEvent)
+      }, { once: true })
+    }
   }
 
   setState (newState) {
@@ -122,7 +149,7 @@ class AudioFileControlView {
     let audiofileButton = this.el.querySelector('.audiofile_button')
 
     let recordingContainerEl = this.el.querySelector('.recording_container')
-    let recordButton = this.el.querySelector('.record_button')
+    let recordButton = this.recordButtonEl
     let recordVisualization = this.el.querySelector('.record_visualization')
     let context = recordVisualization.querySelector('canvas').getContext('2d')
 
