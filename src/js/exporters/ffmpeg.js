@@ -188,24 +188,25 @@ const convertToVideo = async opts => {
   args = args.concat([
     '-r', scene.fps,
     '-vcodec', 'libx264',
-    '-acodec', 'aac', // 'libvo_aacenc',
-
-    // via https://medium.com/@forasoft/the-grip-of-ffmpeg-4b05d7f7678c
-    // '-b:v', '700k',
+    '-acodec', 'aac',
 
     // via https://trac.ffmpeg.org/wiki/Encode/H.264
     // QuickTime only supports YUV planar color space with 4:2:0 chroma subsampling (use -vf format=yuv420p or -pix_fmt yuv420p) for H.264 video.
     '-pix_fmt', 'yuv420p',
 
-    // '-b:a', '128k',
-    // '-ar', '44100',
-
-    // TODO are these necessary?
+    // TODO tweak settings for best output
     // via https://trac.ffmpeg.org/wiki/Encode/H.264
     '-tune', 'stillimage',
     '-preset', 'veryslow'
+
+    // via https://medium.com/@forasoft/the-grip-of-ffmpeg-4b05d7f7678c
+    // '-b:v', '700k',
+
+    // '-b:a', '128k',
+    // '-ar', '44100',
   ])
 
+  // mix audio only if we have at least 1 audio input file
   if (audioFileArgs.length) {
     args = args.concat([
       '-map', '[mix]:a'
@@ -219,7 +220,7 @@ const convertToVideo = async opts => {
     // was completely downloaded from the server.
     '-movflags', '+faststart',
 
-    // overwrite existing
+    // don't overwriting existing file
     '-n',
 
     '-stats',
