@@ -8,10 +8,10 @@ class AudioPlayback {
     this.sceneData = sceneData
     this.getAudioFilePath = getAudioFilePath
 
-    this.players
+    this.players = undefined
 
     this.isPlaying = false
-    
+
     this.isBypassed = false
     this.enableAudition = false
 
@@ -127,7 +127,7 @@ class AudioPlayback {
       }
     })
   }
-  
+
   supportsType (url) {
     return Tone.Buffer.supportsType(url)
   }
@@ -145,7 +145,7 @@ class AudioPlayback {
     const FADE_OUT_IN_SECONDS = 0.5
 
     // unused. this literally cuts at the exact point.
-    const CUT_EARLY_IN_SECONDS = 0.5
+    // const CUT_EARLY_IN_SECONDS = 0.5
 
     let playingBoard = this.sceneData.boards[index]
 
@@ -165,7 +165,7 @@ class AudioPlayback {
         if (board === playingBoard) {
           // console.log('\tplaying current board', board.audio.filename, this.players.get(board.audio.filename))
 
-          let durationInSeconds = Math.max(0, player.buffer.duration - CUT_EARLY_IN_SECONDS)
+          // let durationInSeconds = Math.max(0, player.buffer.duration - CUT_EARLY_IN_SECONDS)
 
           player.fadeOut = FADE_OUT_IN_SECONDS
 
@@ -178,7 +178,7 @@ class AudioPlayback {
             // start now
             Tone.Time(),
             // no offset
-            0,
+            0
             // duration, cut early
             // durationInSeconds
           )
@@ -188,11 +188,11 @@ class AudioPlayback {
           // it started before
           board.time < playingBoard.time &&
           // ... but it ends after
-          ((board.time + (player.buffer.duration * MSECS_IN_A_SECOND)) > playingBoard.time)
+          ((board.time + (player.buffer.duration * MSECS_IN_A_SECOND)) > playingBoard.time) &&
           // ... and we're NOT in auditioning mode
           //   (i.e.: we don't want to play overlapping audio from prior boards
           //    when we're auditioning a single board)
-          && !isAuditioning
+          !isAuditioning
         ) {
           // console.log('\tfound overlapping board, i')
           if (board.audio) {
@@ -200,14 +200,14 @@ class AudioPlayback {
             // console.log('\tplaying overlapping', board.audio.filename, 'at offset', offsetInMsecs)
             let player = this.players.get(board.audio.filename)
             if (player.state !== 'started') {
-              let durationInSeconds = Math.max(0, (player.buffer.duration - (offsetInMsecs / MSECS_IN_A_SECOND) - CUT_EARLY_IN_SECONDS))
+              // let durationInSeconds = Math.max(0, (player.buffer.duration - (offsetInMsecs / MSECS_IN_A_SECOND) - CUT_EARLY_IN_SECONDS))
               player.fadeOut = FADE_OUT_IN_SECONDS
               player.start(
                 // start now
                 Tone.Time(),
 
                 // offset by offsetInMsecs (converted to seconds)
-                offsetInMsecs / MSECS_IN_A_SECOND,
+                offsetInMsecs / MSECS_IN_A_SECOND
 
                 // duration, cut early
                 // durationInSeconds
