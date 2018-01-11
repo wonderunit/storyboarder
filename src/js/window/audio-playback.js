@@ -2,6 +2,13 @@ const Tone = require('tone')
 
 const AppMenu = require('../menu')
 
+// i love my curvy modified tone player.
+// as a teenager i was often teased by my friends
+// for my attraction to audio envelopes on the `exponential` side,
+// curves that the average (basic) bro might refer to as
+// not `linear` (the default shape)
+require('../vendor/ext/tone-player-with-curve.js')
+
 class AudioPlayback {
   constructor ({ store, sceneData, getAudioFilePath }) {
     this.store = store
@@ -143,7 +150,7 @@ class AudioPlayback {
 
     const MSECS_IN_A_SECOND = 1000
     // related: ffmpeg.js afade
-    const FADE_OUT_IN_SECONDS = 0.25
+    const FADE_OUT_IN_SECONDS = 0.35
 
     // unused. this literally cuts at the exact point.
     // const CUT_EARLY_IN_SECONDS = 0.5
@@ -170,6 +177,7 @@ class AudioPlayback {
           // let durationInSeconds = Math.max(0, player.buffer.duration - CUT_EARLY_IN_SECONDS)
 
           player.fadeOut = FADE_OUT_IN_SECONDS
+          player.curve = 'exponential'
 
           // TODO
           // If audio is already playing, .stop is called on the player by Tone. But,
@@ -204,6 +212,7 @@ class AudioPlayback {
             if (player.state !== 'started') {
               // let durationInSeconds = Math.max(0, (player.buffer.duration - (offsetInMsecs / MSECS_IN_A_SECOND) - CUT_EARLY_IN_SECONDS))
               player.fadeOut = FADE_OUT_IN_SECONDS
+              player.curve = 'exponential'
               player.start(
                 // start now
                 Tone.Time(),
