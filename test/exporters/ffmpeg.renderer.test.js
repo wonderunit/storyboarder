@@ -23,6 +23,10 @@ describe('exporters/ffmpeg', () => {
     assert.equal(version, 'N-87313-g73bf0f4-tessus')
   })
   it('can generate an MP4 video for a scene', async () => {
+    // uncomment to test a video with no audio track
+    // let sceneFilePath = path.join(__dirname, '..', 'fixtures', 'example', 'example.storyboarder')
+
+    // should generate video with audio track
     let sceneFilePath = path.join(__dirname, '..', 'fixtures', 'audio', 'audio.storyboarder')
 
     // load scene data
