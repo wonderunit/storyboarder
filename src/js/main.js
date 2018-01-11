@@ -84,8 +84,12 @@ app.on('open-file', (event, path) => {
   }
 })
 
-app.on('ready', () => {
+app.on('ready', async () => {
   analytics.init(prefs.enableAnalytics)
+
+  const exporterFfmpeg = require('./exporters/ffmpeg')
+  let ffmpegVersion = await exporterFfmpeg.checkVersion()
+  console.log('ffmpeg version', ffmpegVersion)
 
   // try to load key map
   const keymapPath = path.join(app.getPath('userData'), 'keymap.json')
@@ -1164,6 +1168,10 @@ ipcMain.on('showTip', (event, arg) => {
 
 ipcMain.on('exportAnimatedGif', (event, arg) => {
   mainWindow.webContents.send('exportAnimatedGif', arg)
+})
+
+ipcMain.on('exportVideo', (event, arg) => {
+  mainWindow.webContents.send('exportVideo', arg)
 })
 
 ipcMain.on('exportFcp', (event, arg) => {

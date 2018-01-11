@@ -21,6 +21,7 @@ const exporterFcpX = require('../exporters/final-cut-pro-x')
 const exporterFcp = require('../exporters/final-cut-pro')
 const exporterPDF = require('../exporters/pdf')
 const exporterCleanup = require('../exporters/cleanup')
+const exporterFfmpeg = require('../exporters/ffmpeg')
 const util = require('../utils/index')
 
 class Exporter extends EventEmitter {
@@ -305,6 +306,19 @@ class Exporter extends EventEmitter {
     })
   }
 
+  async exportVideo (scene, sceneFilePath, opts) {
+
+    let outputPath = ensureExportsPathExists(sceneFilePath)
+
+    return await exporterFfmpeg.convertToVideo(
+      {
+        outputPath,
+        sceneFilePath,
+        scene,
+        progressCallback: opts.progressCallback
+      }
+    )
+  }
 }
 
 module.exports = new Exporter()

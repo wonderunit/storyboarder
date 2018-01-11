@@ -41,6 +41,11 @@ const boardOrderedLayerFilenames = board => {
   return { indices, filenames }
 }
 
+const boardDuration = (scene, board) =>
+  typeof board.duration === 'undefined'
+    ? scene.defaultBoardTiming
+    : board.duration
+
 const assignUid = board => {
   board.uid = util.uidGen(5)
   return board
@@ -81,6 +86,7 @@ module.exports = {
   boardFilenameForThumbnail,
   boardFilenameForLink,
   boardOrderedLayerFilenames,
+  boardDuration,
 
   getUpdatedLinkFilename,
 

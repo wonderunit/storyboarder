@@ -107,6 +107,12 @@ AppMenu.File = () => ({
       }
     },
     {
+      label: 'Export Video',
+      click (item, focusedWindow, event) {
+        ipcRenderer.send('exportVideo')
+      }
+    },
+    {
       label: 'Export Project as ZIP',
       click (item, focusedWindow, event) {
         ipcRenderer.send('exportZIP')

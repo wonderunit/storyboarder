@@ -2,16 +2,23 @@ const Tone = require('tone')
 
 const AppMenu = require('../menu')
 
+// i love my curvy modified tone player.
+// as a teenager i was often teased by my friends
+// for my attraction to audio envelopes on the `exponential` side,
+// curves that the average (basic) bro might refer to as
+// not `linear` (the default shape)
+require('../vendor/ext/tone-player-with-curve.js')
+
 class AudioPlayback {
   constructor ({ store, sceneData, getAudioFilePath }) {
     this.store = store
     this.sceneData = sceneData
     this.getAudioFilePath = getAudioFilePath
 
-    this.players
+    this.players = undefined
 
     this.isPlaying = false
-    
+
     this.isBypassed = false
     this.enableAudition = false
 
@@ -127,7 +134,7 @@ class AudioPlayback {
       }
     })
   }
-  
+
   supportsType (url) {
     return Tone.Buffer.supportsType(url)
   }
@@ -142,10 +149,11 @@ class AudioPlayback {
     if (isAuditioning && !this.enableAudition) return
 
     const MSECS_IN_A_SECOND = 1000
-    const FADE_OUT_IN_SECONDS = 0.5
+    // related: ffmpeg.js afade
+    const FADE_OUT_IN_SECONDS = 0.35
 
     // unused. this literally cuts at the exact point.
-    const CUT_EARLY_IN_SECONDS = 0.5
+    // const CUT_EARLY_IN_SECONDS = 0.5
 
     let playingBoard = this.sceneData.boards[index]
 
@@ -162,12 +170,14 @@ class AudioPlayback {
 
         // console.log('found', board.audio.filename, 'with duration', player.buffer.duration, 'at', board.time)
 
+        // is this the currently playing board?
         if (board === playingBoard) {
           // console.log('\tplaying current board', board.audio.filename, this.players.get(board.audio.filename))
 
-          let durationInSeconds = Math.max(0, player.buffer.duration - CUT_EARLY_IN_SECONDS)
+          // let durationInSeconds = Math.max(0, player.buffer.duration - CUT_EARLY_IN_SECONDS)
 
           player.fadeOut = FADE_OUT_IN_SECONDS
+          player.curve = 'exponential'
 
           // TODO
           // If audio is already playing, .stop is called on the player by Tone. But,
@@ -178,7 +188,7 @@ class AudioPlayback {
             // start now
             Tone.Time(),
             // no offset
-            0,
+            0
             // duration, cut early
             // durationInSeconds
           )
@@ -188,11 +198,11 @@ class AudioPlayback {
           // it started before
           board.time < playingBoard.time &&
           // ... but it ends after
-          ((board.time + (player.buffer.duration * MSECS_IN_A_SECOND)) > playingBoard.time)
+          ((board.time + (player.buffer.duration * MSECS_IN_A_SECOND)) > playingBoard.time) &&
           // ... and we're NOT in auditioning mode
           //   (i.e.: we don't want to play overlapping audio from prior boards
           //    when we're auditioning a single board)
-          && !isAuditioning
+          !isAuditioning
         ) {
           // console.log('\tfound overlapping board, i')
           if (board.audio) {
@@ -200,14 +210,15 @@ class AudioPlayback {
             // console.log('\tplaying overlapping', board.audio.filename, 'at offset', offsetInMsecs)
             let player = this.players.get(board.audio.filename)
             if (player.state !== 'started') {
-              let durationInSeconds = Math.max(0, (player.buffer.duration - (offsetInMsecs / MSECS_IN_A_SECOND) - CUT_EARLY_IN_SECONDS))
+              // let durationInSeconds = Math.max(0, (player.buffer.duration - (offsetInMsecs / MSECS_IN_A_SECOND) - CUT_EARLY_IN_SECONDS))
               player.fadeOut = FADE_OUT_IN_SECONDS
+              player.curve = 'exponential'
               player.start(
                 // start now
                 Tone.Time(),
 
                 // offset by offsetInMsecs (converted to seconds)
-                offsetInMsecs / MSECS_IN_A_SECOND,
+                offsetInMsecs / MSECS_IN_A_SECOND
 
                 // duration, cut early
                 // durationInSeconds
