@@ -4286,7 +4286,7 @@ const exportCleanup = () => {
 }
 
 const exportVideo = async () => {
-  notifications.notify({message: "Exporting " + boardData.boards.length + " boards to video. For long scenes this could take a few minutes. Please wait...", timing: 5})
+  notifications.notify({ message: "Exporting " + boardData.boards.length + " boards to video. For long scenes this could take a few minutes. Please wait...", timing: 30 })
 
   let scene = boardData
   let sceneFilePath = boardFilename
