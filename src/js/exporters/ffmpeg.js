@@ -4,6 +4,7 @@ const ffmpeg = require('@ffmpeg-installer/ffmpeg')
 const fs = require('fs-extra')
 const path = require('path')
 const moment = require('moment')
+const tmp = require('tmp')
 
 const boardModel = require('../models/board')
 const exporterCommon = require('../exporters/common')
@@ -39,7 +40,7 @@ const checkVersion = async () =>
   })
 
 // via https://github.com/wulkano/kap/blob/5769d76587/app/src/scripts/convert.js
-const convert = async (outputPath, opts, args) =>
+const convert = async (opts, args) =>
   new Promise((resolve, reject) => {
     const converter = execa(ffmpegPath, args)
     // let amountOfFrames
@@ -69,7 +70,7 @@ const convert = async (outputPath, opts, args) =>
     converter.on('error', reject)
     converter.on('exit', code => {
       if (code === 0) {
-        resolve(outputPath)
+        resolve(true)
       } else {
         reject(new Error(`Could not use ffmpeg. Failed with error ${code}`))
       }
@@ -80,170 +81,187 @@ const convert = async (outputPath, opts, args) =>
 const convertToVideo = async opts => {
   const { outputPath, sceneFilePath, scene } = opts
 
-  // export flattened boards to output path
-  console.log('exporting images and audio for output …')
-  let writers = scene.boards.map(async board =>
-    exporterCommon.exportFlattenedBoard(
-      board,
-      board.url,
-      boardModel.boardFileImageSize(scene),
-      sceneFilePath,
-      outputPath
+  let tmpDir = tmp.dirSync()
+  let outputFilePath
+  try {
+    // export flattened boards to output path
+    console.log('exporting images and audio for output …')
+    let writers = scene.boards.map(async board =>
+      exporterCommon.exportFlattenedBoard(
+        board,
+        board.url,
+        boardModel.boardFileImageSize(scene),
+        sceneFilePath,
+        tmpDir.name
+      )
     )
-  )
-  await Promise.all(writers)
+    await Promise.all(writers)
 
-  const STREAM_OFFSET = 2 // video + watermark
-  const FADE_OUT_IN_SECONDS = 0.25
+    const STREAM_OFFSET = 2 // video + watermark
+    const FADE_OUT_IN_SECONDS = 0.25
 
-  let audioFilterComplex
-  let audioFileArgs = []
-  let audioFilters = []
-  let audioStreamIndex = 0
-  for (let board of scene.boards) {
-    if (board.audio) {
-      audioFileArgs = audioFileArgs.concat([
-        '-i', path.join(path.dirname(sceneFilePath), 'images', board.audio.filename)
-      ])
+    let audioFilterComplex
+    let audioFileArgs = []
+    let audioFilters = []
+    let audioStreamIndex = 0
+    for (let board of scene.boards) {
+      if (board.audio) {
+        audioFileArgs = audioFileArgs.concat([
+          '-i', path.join(path.dirname(sceneFilePath), 'images', board.audio.filename)
+        ])
 
-      // lol via https://video.stackexchange.com/a/22115
-      // let fadeout = `areverse, afade=d=0.5, areverse`
-      // related: audio-playback.js FADE_OUT_IN_SECONDS
-      let fadeout = `areverse, afade=d=${FADE_OUT_IN_SECONDS}:curve=exp, areverse`
+        // lol via https://video.stackexchange.com/a/22115
+        // let fadeout = `areverse, afade=d=0.5, areverse`
+        // related: audio-playback.js FADE_OUT_IN_SECONDS
+        let fadeout = `areverse, afade=d=${FADE_OUT_IN_SECONDS}:curve=exp, areverse`
 
-      let filter = board.time > 0
-        ? `${fadeout},adelay=${board.time}|${board.time}`
-        : `${fadeout}`
+        let filter = board.time > 0
+          ? `${fadeout},adelay=${board.time}|${board.time}`
+          : `${fadeout}`
 
-      // stream index
-      let n = audioStreamIndex + STREAM_OFFSET
-      audioFilters.push(`[${n}]${filter}[s${n}]`)
+        // stream index
+        let n = audioStreamIndex + STREAM_OFFSET
+        audioFilters.push(`[${n}]${filter}[s${n}]`)
 
-      audioStreamIndex++
+        audioStreamIndex++
+      }
     }
-  }
 
-  if (audioFileArgs.length) {
-    let mixout = ';'
-    for (let i = 0; i < audioFilters.length; i++) {
-      mixout += `[s${i + STREAM_OFFSET}]`
+    if (audioFileArgs.length) {
+      let mixout = ';'
+      for (let i = 0; i < audioFilters.length; i++) {
+        mixout += `[s${i + STREAM_OFFSET}]`
+      }
+      mixout += `amix=${audioFilters.length}[mix]`
+
+      audioFilterComplex = audioFilters.join(';') + mixout
     }
-    mixout += `amix=${audioFilters.length}[mix]`
 
-    audioFilterComplex = audioFilters.join(';') + mixout
-  }
+    // TODO write ffconcat to tmp folder
 
-  // generate the ffconcat image sequencer file
-  // add last board twice because ffmpeg ¯\_(ツ)_/¯
-  let boardsWithLastBoardTwice = scene.boards.concat(scene.boards[scene.boards.length - 1])
-  let videoConcats = ['ffconcat version 1.0']
-  for (let board of boardsWithLastBoardTwice) {
-    let durationInSeconds = boardModel.boardDuration(scene, board) / 1000
-    videoConcats.push('')
-    videoConcats.push(`file ${path.resolve(path.join(path.dirname(sceneFilePath), 'images', board.url))}`)
-    videoConcats.push(`duration ${durationInSeconds}`)
-  }
+    // generate the ffconcat image sequencer file
+    // add last board twice because ffmpeg ¯\_(ツ)_/¯
+    let boardsWithLastBoardTwice = scene.boards.concat(scene.boards[scene.boards.length - 1])
+    let videoConcats = ['ffconcat version 1.0']
+    for (let board of boardsWithLastBoardTwice) {
+      let durationInSeconds = boardModel.boardDuration(scene, board) / 1000
+      videoConcats.push('')
+      videoConcats.push(`file ${path.resolve(path.join(tmpDir.name, board.url))}`)
+      videoConcats.push(`duration ${durationInSeconds}`)
+    }
 
-  console.log('\n')
-  console.log('writing video.ffconcat')
-  console.log(videoConcats.join('\n'))
-  fs.writeFileSync(path.join(outputPath, 'video.ffconcat'), videoConcats.join('\n'))
-  console.log('\n')
+    console.log('\n')
+    console.log('writing video.ffconcat')
+    console.log(videoConcats.join('\n'))
+    fs.writeFileSync(path.join(tmpDir.name, 'video.ffconcat'), videoConcats.join('\n'))
+    console.log('\n')
 
-  console.log('\n')
-  const outputFilePath = path.join(outputPath, `${path.basename(sceneFilePath, path.extname(sceneFilePath))} Exported ${moment().format('YYYY-MM-DD hh.mm.ss')}.mp4`)
-  console.log('writing to', outputFilePath)
-  console.log('\n')
+    console.log('\n')
+    outputFilePath = path.join(outputPath, `${path.basename(sceneFilePath, path.extname(sceneFilePath))} Exported ${moment().format('YYYY-MM-DD hh.mm.ss')}.mp4`)
+    console.log('writing to', outputFilePath)
+    console.log('\n')
 
-  let args = [
-    // accept any filename for ffconcat
-    '-safe', '0',
+    let args = [
+      // accept any filename for ffconcat
+      '-safe', '0',
 
-    // Input #0
-    '-i', path.join(outputPath, 'video.ffconcat'),
+      // Input #0
+      '-i', path.join(tmpDir.name, 'video.ffconcat'),
 
-    // Input #1
-    '-i', electronUtil.fixPathForAsarUnpack('src/img/watermark.png')
-  ]
+      // Input #1
+      '-i', electronUtil.fixPathForAsarUnpack('src/img/watermark.png')
+    ]
 
-  args = args.concat(audioFileArgs)
+    args = args.concat(audioFileArgs)
 
-  args = args.concat([
-    '-filter_complex',
-                        // via https://stackoverflow.com/a/20848224
-                        // fixes "width not divisible by 2"
-                        '[0]scale=-2:900[frame];' +
+    // TODO operate in tmp folder but write to exports folder
 
-                        // pass overlay through untouched
-                        '[1]null[watermark];' +
-
-                        // overlay watermark w/ shorthand positioning
-                        '[frame][watermark]overlay=W-w:H-h[vid]' +
-
-                        // use audio (if present) or route silence to mix
-                        (audioFilterComplex
-                          ? ';' + audioFilterComplex
-                          : ''),
-
-    '-map', '[vid]:v'
-  ])
-
-  args = args.concat([
-    '-r', scene.fps,
-    '-vcodec', 'libx264',
-    '-acodec', 'aac',
-
-    // via https://trac.ffmpeg.org/wiki/Encode/H.264
-    // QuickTime only supports YUV planar color space with 4:2:0 chroma subsampling (use -vf format=yuv420p or -pix_fmt yuv420p) for H.264 video.
-    '-pix_fmt', 'yuv420p',
-
-    // TODO tweak settings for best output
-    // via https://trac.ffmpeg.org/wiki/Encode/H.264
-    '-tune', 'stillimage',
-    '-preset', 'veryslow'
-
-    // via https://medium.com/@forasoft/the-grip-of-ffmpeg-4b05d7f7678c
-    // '-b:v', '700k',
-
-    // '-b:a', '128k',
-    // '-ar', '44100',
-  ])
-
-  // mix audio only if we have at least 1 audio input file
-  if (audioFileArgs.length) {
     args = args.concat([
-      '-map', '[mix]:a'
+      '-filter_complex',
+                          // via https://stackoverflow.com/a/20848224
+                          // fixes "width not divisible by 2"
+                          '[0]scale=-2:900[frame];' +
+
+                          // pass overlay through untouched
+                          '[1]null[watermark];' +
+
+                          // overlay watermark w/ shorthand positioning
+                          '[frame][watermark]overlay=W-w:H-h[vid]' +
+
+                          // use audio (if present) or route silence to mix
+                          (audioFilterComplex
+                            ? ';' + audioFilterComplex
+                            : ''),
+
+      '-map', '[vid]:v'
     ])
+
+    args = args.concat([
+      '-r', scene.fps,
+      '-vcodec', 'libx264',
+      '-acodec', 'aac',
+
+      // via https://trac.ffmpeg.org/wiki/Encode/H.264
+      // QuickTime only supports YUV planar color space with 4:2:0 chroma subsampling (use -vf format=yuv420p or -pix_fmt yuv420p) for H.264 video.
+      '-pix_fmt', 'yuv420p',
+
+      // TODO tweak settings for best output
+      // via https://trac.ffmpeg.org/wiki/Encode/H.264
+      '-tune', 'stillimage',
+      '-preset', 'veryslow'
+
+      // via https://medium.com/@forasoft/the-grip-of-ffmpeg-4b05d7f7678c
+      // '-b:v', '700k',
+
+      // '-b:a', '128k',
+      // '-ar', '44100',
+    ])
+
+    // mix audio only if we have at least 1 audio input file
+    if (audioFileArgs.length) {
+      args = args.concat([
+        '-map', '[mix]:a'
+      ])
+    }
+
+    args = args.concat([
+      // via https://uart.cz/1570/simple-animation-with-ffmpeg/
+      // The -movflags +faststart parameters will move some media informations to
+      // the beginning of file, which allows browser to start video even before it
+      // was completely downloaded from the server.
+      '-movflags', '+faststart',
+
+      // don't overwriting existing file
+      '-n',
+
+      '-stats',
+
+      outputFilePath
+    ])
+
+    console.log('calling ffmpeg with args', args)
+    console.log('\n')
+
+    // debugging directory listing
+    // console.log('\n')
+    // console.log(`tree ${outputPath}:`)
+    // let result = await execa('tree', [ outputPath ])
+    // console.log(result.stdout)
+    // console.log('\n')
+
+    // opts.progressCallback(0)
+    await convert(opts, args)
+
+    // TODO cleanup PNG files
+
+    console.log('ffmpeg complete!')
+  } finally {
+    // cleanup
+    console.log('cleaning', tmpDir.name)
+    fs.emptyDirSync(tmpDir.name)
+    tmpDir.removeCallback()
+    console.log('done!')
   }
-
-  args = args.concat([
-    // via https://uart.cz/1570/simple-animation-with-ffmpeg/
-    // The -movflags +faststart parameters will move some media informations to
-    // the beginning of file, which allows browser to start video even before it
-    // was completely downloaded from the server.
-    '-movflags', '+faststart',
-
-    // don't overwriting existing file
-    '-n',
-
-    '-stats',
-
-    outputFilePath
-  ])
-
-  console.log('calling ffmpeg with args', args)
-  console.log('\n')
-
-  // debugging directory listing
-  // console.log('\n')
-  // console.log(`tree ${outputPath}:`)
-  // let result = await execa('tree', [ outputPath ])
-  // console.log(result.stdout)
-  // console.log('\n')
-
-  // opts.progressCallback(0)
-  await convert(opts.outputPath, opts, args)
-  console.log('done!')
   return outputFilePath
 }
 
