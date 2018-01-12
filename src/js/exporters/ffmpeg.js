@@ -96,6 +96,13 @@ const convertToVideo = async opts => {
   let tmpDir = tmp.dirSync()
   let outputFilePath
   try {
+    // copy the watermark
+    console.log('copying required resources …')
+    fs.copySync(
+      path.join(__dirname, '..', '..', 'img', 'watermark.png'),
+      path.join(tmpDir.name, 'watermark.png')
+    )
+
     // export flattened boards to output path
     console.log('exporting images and audio for output …')
     let writers = scene.boards.map(async board =>
@@ -183,7 +190,7 @@ const convertToVideo = async opts => {
       '-i', path.join(tmpDir.name, 'video.ffconcat'),
 
       // Input #1
-      '-i', path.resolve(electronUtil.fixPathForAsarUnpack('src/img/watermark.png'))
+      '-i', path.join(tmpDir.name, 'watermark.png')
     ]
 
     args = args.concat(audioFileArgs)
@@ -274,7 +281,6 @@ const convertToVideo = async opts => {
     console.log('cleaning', tmpDir.name)
     fs.emptyDirSync(tmpDir.name)
     tmpDir.removeCallback()
-    console.log('done!')
   }
   return outputFilePath
 }
