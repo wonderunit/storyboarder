@@ -183,7 +183,7 @@ const convertToVideo = async opts => {
       '-i', path.join(tmpDir.name, 'video.ffconcat'),
 
       // Input #1
-      '-i', electronUtil.fixPathForAsarUnpack('src/img/watermark.png')
+      '-i', path.resolve(electronUtil.fixPathForAsarUnpack('src/img/watermark.png'))
     ]
 
     args = args.concat(audioFileArgs)
