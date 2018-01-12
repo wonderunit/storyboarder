@@ -140,7 +140,7 @@ const convertToVideo = async opts => {
   for (let board of boardsWithLastBoardTwice) {
     let durationInSeconds = boardModel.boardDuration(scene, board) / 1000
     videoConcats.push('')
-    videoConcats.push(`file ${board.url}`)
+    videoConcats.push(`file ${path.resolve(path.join(path.dirname(sceneFilePath), 'images', board.url))}`)
     videoConcats.push(`duration ${durationInSeconds}`)
   }
 
@@ -156,6 +156,9 @@ const convertToVideo = async opts => {
   console.log('\n')
 
   let args = [
+    // accept any filename for ffconcat
+    '-safe', '0',
+
     // Input #0
     '-i', path.join(outputPath, 'video.ffconcat'),
 
