@@ -160,7 +160,7 @@ const convertToVideo = async opts => {
       videoConcats.push('')
       // via https://superuser.com/questions/718027/ffmpeg-concat-doesnt-work-with-absolute-path
       // > use forward slashes, not backslashes, even in Windows
-      videoConcats.push(`file '${slash(path.resolve(path.join(tmpDir.name, board.url)))}'`)
+      videoConcats.push(`file ${slash(path.resolve(path.join(tmpDir.name, board.url)))}`)
       videoConcats.push(`duration ${durationInSeconds}`)
     }
 
