@@ -63,11 +63,11 @@ cd storyboarder
 npm install
 npm prune
 
-# add the windows ffmpeg, bypassing `npm install`'s os and cpu detection
-npm pack @ffmpeg-installer/win32-x64
+# add the windows ffmpeg, bypassing npm install os and cpu detection
+FFMPEG_BIN_TGZ=`npm pack @ffmpeg-installer/win32-x64`
 mkdir -p node_modules/@ffmpeg-installer/win32-x64
-tar -zxvf ffmpeg-installer-win32-x64-4.0.2.tgz -C node_modules/@ffmpeg-installer/win32-x64 --strip-components=1
-rm ffmpeg-installer-win32-x64-4.0.2.tgz
+tar -zxvf $FFMPEG_BIN_TGZ -C node_modules/@ffmpeg-installer/win32-x64 --strip-components=1
+rm $FFMPEG_BIN_TGZ
 
 # remove the linux ffmpeg
 rm -rf node_modules/@ffmpeg-installer/linux-x64
