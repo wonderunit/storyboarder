@@ -37,20 +37,47 @@ For Linux, you will need these dependencies:
 - icnsutils - provides `icns2png`
 - graphicsmagick
 
-It is possible to [build for Linux on other platforms using a Docker container](https://github.com/electron-userland/electron-builder/wiki/Docker). See instructions below.
+It is possible to [build for Linux on other platforms using a Docker container](https://www.electron.build/multi-platform-build#build-electron-app-using-docker-on-a-local-machine). See instructions below.
 
 ### Building for Linux and Windows with Docker for Mac
 
-Install [Docker for Mac](https://www.docker.com/docker-mac), then:
+First, Install [Docker for Mac](https://www.docker.com/docker-mac).
 
+Clone Storyboarder and start up Docker:
 ```
 git clone git@github.com:wonderunit/storyboarder.git storyboarder
 docker run --rm -ti -v ${PWD}:/project -v ${PWD##*/}-node-modules:/project/node_modules -v ~/.electron:/root/.electron electronuserland/builder:wine
+```
+
+For Linux, in the Docker instance:
+```
 cd storyboarder
 npm install
 npm prune
 npm run dist:linux
-npm run dist:win
+```
+
+For Windows, in the Docker instance:
+```
+cd storyboarder
+npm install
+npm prune
+
+# add the windows ffmpeg, bypassing `npm install`'s os and cpu detection
+npm pack @ffmpeg-installer/win32-x64
+mkdir -p node_modules/@ffmpeg-installer/win32-x64
+tar -zxvf ffmpeg-installer-win32-x64-4.0.2.tgz -C node_modules/@ffmpeg-installer/win32-x64 --strip-components=1
+rm ffmpeg-installer-win32-x64-4.0.2.tgz
+
+# remove the linux ffmpeg
+rm -rf node_modules/@ffmpeg-installer/linux-x64
+
+# if you have the darwin ffmpeg, you npm install'd from mac and that might cause problems
+# try again fresh with npm install from linux
+# ls node_modules/@ffmpeg-installer/darwin-x64
+
+# build (see https://github.com/wonderunit/storyboarder/issues/858)
+ELECTRON_BUILDER_ALLOW_UNRESOLVED_DEPENDENCIES=true npm run dist:win
 ```
 
 ## Testing Auto-Update
