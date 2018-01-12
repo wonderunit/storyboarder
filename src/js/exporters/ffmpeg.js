@@ -14,6 +14,18 @@ const ffmpegPath = electronUtil.fixPathForAsarUnpack(ffmpeg.path)
 // const durationRegex = /Duration: (\d\d:\d\d:\d\d.\d\d)/gm
 // const frameRegex = /frame=\s+(\d+)/gm
 
+// via https://github.com/sindresorhus/slash/blob/master/index.js
+const slash = input => {
+	const isExtendedLengthPath = /^\\\\\?\\/.test(input)
+	const hasNonAscii = /[^\u0000-\u0080]+/.test(input)
+
+	if (isExtendedLengthPath || hasNonAscii) {
+		return input
+	}
+
+	return input.replace(/\\/g, '/')
+}
+
 const checkVersion = async () =>
   new Promise((resolve, reject) => {
     let matchedVersion
@@ -146,7 +158,9 @@ const convertToVideo = async opts => {
     for (let board of boardsWithLastBoardTwice) {
       let durationInSeconds = boardModel.boardDuration(scene, board) / 1000
       videoConcats.push('')
-      videoConcats.push(`file ${path.resolve(path.join(tmpDir.name, board.url))}`)
+      // via https://superuser.com/questions/718027/ffmpeg-concat-doesnt-work-with-absolute-path
+      // > use forward slashes, not backslashes, even in Windows
+      videoConcats.push(`file ${slash(path.resolve(path.join(tmpDir.name, board.url)))}`)
       videoConcats.push(`duration ${durationInSeconds}`)
     }
 
