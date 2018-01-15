@@ -1275,7 +1275,7 @@ let loadBoardUI = () => {
   })
   audioFileControlView = new AudioFileControlView({
     onSelectFile: async function (filepath) {
-      if (audioFileControlView.state.mode != 'stopped') {
+      if (audioFileControlView.state.mode !== 'stopped') {
         notifications.notify({ message: `Can't add an audio file while recording.`, timing: 5 })
         return
       }
@@ -1287,18 +1287,18 @@ let loadBoardUI = () => {
 
       // copy to project folder
       let newpath = path.join(boardPath, 'images', newFilename)
-      
+
       let shouldOverwrite = true
       if (fs.existsSync(newpath)) {
         const choice = remote.dialog.showMessageBox({
           type: 'question',
           buttons: ['Yes', 'No'],
           title: 'Confirm',
-          message:  `A file named ${path.basename(newpath)} already exists in this project. Overwrite it?`
+          message: `A file named ${path.basename(newpath)} already exists in this project. Overwrite it?`
         })
 
         shouldOverwrite = (choice === 0)
-      }      
+      }
       if (!shouldOverwrite) {
         notifications.notify({ message: 'Cancelled', timing: 5 })
         return
@@ -1311,7 +1311,7 @@ let loadBoardUI = () => {
       board.audio = board.audio || {}
       board.audio.filename = newFilename
       storeUndoStateForScene()
-      
+
       // mark .storyboarder scene JSON file dirty
       markBoardFileDirty()
 
@@ -1329,7 +1329,7 @@ let loadBoardUI = () => {
     onRequestFile: function (event) {
       if (event) event.preventDefault()
 
-      if (audioFileControlView.state.mode != 'stopped') {
+      if (audioFileControlView.state.mode !== 'stopped') {
         notifications.notify({ message: `Can't add an audio file while recording.`, timing: 5 })
         return
       }
@@ -1354,7 +1354,7 @@ let loadBoardUI = () => {
       )
     },
     onClear: async function () {
-      let board = boardData.boards[currentBoard]      
+      let board = boardData.boards[currentBoard]
 
       if (!board.audio) return
 
@@ -1362,9 +1362,9 @@ let loadBoardUI = () => {
         type: 'question',
         buttons: ['Yes', 'No'],
         title: 'Confirm',
-        message:  'Are you sure?\n' +
-                  'Audio will be removed from this board.\n' +
-                  'NOTE: File will not be deleted from disk.'
+        message: 'Are you sure?\n' +
+                 'Audio will be removed from this board.\n' +
+                 'NOTE: File will not be deleted from disk.'
       })
 
       const shouldClear = (choice === 0)
@@ -1426,7 +1426,7 @@ let loadBoardUI = () => {
       // TODO can this ever actually happen?
       if (R.isNil(recordingToBoardIndex)) {
         console.error('whoops! not currently recording!')
-        return        
+        return
       }
 
       let board = boardData.boards[recordingToBoardIndex]
@@ -1470,10 +1470,10 @@ let loadBoardUI = () => {
       board.audio = board.audio || {}
       board.audio.filename = newFilename
       storeUndoStateForScene()
-      
+
       // mark .storyboarder scene JSON file dirty
       markBoardFileDirty()
-      
+
       // update the audio playback buffers
       const { failed } = await audioPlayback.updateBuffers()
       failed.forEach(filename => notifications.notify({ message: `Could not load audio file ${filename}` }))
