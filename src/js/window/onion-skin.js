@@ -15,7 +15,7 @@ class OnionSkin {
     this.enabled = value
     this.storyboarderSketchPane.sketchPane.setLayerOpacity(this.enabled ? 1 : 0, 2) // HACK hardcoded
   }
-  
+
   getEnabled () {
     return this.enabled
   }
@@ -40,7 +40,7 @@ class OnionSkin {
       for (let board of [prevBoard, nextBoard]) {
         if (!board) continue
 
-        let color = board == prevBoard ? '#00f' : '#f00'
+        let color = board === prevBoard ? '#00f' : '#f00'
 
         if (board.layers) {
           if (board.layers.reference && board.layers.reference.url) {
@@ -57,7 +57,7 @@ class OnionSkin {
           }
         }
 
-        for (let [index, filename] of layersData) {
+        for (let filename of layersData) {
           loaders.push(new Promise((resolve, reject) => {
             let imageFilePath = path.join(this.boardPath, 'images', filename)
             try {
