@@ -3335,6 +3335,8 @@ let renderScript = () => {
         if (canWrite && action) board.action = action
         if (canWrite && notes) board.notes = notes
 
+        markBoardFileDirty()
+
         renderMetaData()
       }
     }, true, true)
