@@ -1276,7 +1276,7 @@ let loadBoardUI = () => {
   audioFileControlView = new AudioFileControlView({
     onSelectFile: async function (filepath) {
       if (audioFileControlView.state.mode !== 'stopped') {
-        notifications.notify({ message: `Can't add an audio file while recording.`, timing: 5 })
+        notifications.notify({ message: `Can't add an audio file while ${audioFileControlView.state.mode}.`, timing: 5 })
         return
       }
 
@@ -1330,7 +1330,7 @@ let loadBoardUI = () => {
       if (event) event.preventDefault()
 
       if (audioFileControlView.state.mode !== 'stopped') {
-        notifications.notify({ message: `Can't add an audio file while recording.`, timing: 5 })
+        notifications.notify({ message: `Can't add an audio file while ${audioFileControlView.state.mode}.`, timing: 5 })
         return
       }
 
@@ -1490,6 +1490,9 @@ let loadBoardUI = () => {
       if (counter > 0) {
         sfx.counterTick()
       }
+    },
+    onNotify: function (...rest) {
+      notifications.notify(...rest)
     }
   })
 

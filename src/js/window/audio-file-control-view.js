@@ -1,5 +1,5 @@
 class AudioFileControlView {
-  constructor ({ onRequestFile, onSelectFile, onSelectFileCancel, onClear, onStartRecord, onStopRecord, onAudioComplete, onCounterTick }) {
+  constructor ({ onRequestFile, onSelectFile, onSelectFileCancel, onClear, onStartRecord, onStopRecord, onAudioComplete, onCounterTick, onNotify }) {
     this.state = {
       boardAudio: undefined,
       mode: 'initializing', // initializing, stopped, countdown, recording, finalizing
@@ -13,6 +13,7 @@ class AudioFileControlView {
     this.onSelectFile = onSelectFile.bind(this)
     this.onSelectFileCancel = onSelectFileCancel.bind(this)
     this.onClear = onClear.bind(this)
+    this.onNotify = onNotify.bind(this)
 
     this.onStartRecord = onStartRecord.bind(this)
     this.onStopRecord = onStopRecord.bind(this)
@@ -53,6 +54,10 @@ class AudioFileControlView {
     this.recorder = new Recorder()
     this.recorder.initialize().then(() => {
       this.setState({ mode: 'stopped' })
+    }).catch(err => {
+      console.error(err)
+      this.onNotify({ message: 'An error prevented the audio recorder from initializing' })
+      this.onNotify({ message: err.toString() })
     })
   }
 
