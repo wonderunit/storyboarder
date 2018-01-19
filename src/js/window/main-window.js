@@ -1310,14 +1310,15 @@ let loadBoardUI = () => {
       storeUndoStateForScene(true)
       board.audio = board.audio || {}
       board.audio.filename = newFilename
+      // update the audio playback buffers
+      const { failed } = await audioPlayback.updateBuffers()
+      failed.forEach(filename => notifications.notify({ message: `Could not load audio file ${filename}` }))
+      updateAudioDurations()
       storeUndoStateForScene()
 
       // mark .storyboarder scene JSON file dirty
       markBoardFileDirty()
 
-      // update the audio playback buffers
-      const { failed } = await audioPlayback.updateBuffers()
-      failed.forEach(filename => notifications.notify({ message: `Could not load audio file ${filename}` }))
       renderThumbnailDrawer()
       audioFileControlView.setState({
         boardAudio: board.audio
@@ -1373,10 +1374,6 @@ let loadBoardUI = () => {
         // remove board’s audio object
         storeUndoStateForScene(true)
         delete board.audio
-        storeUndoStateForScene()
-
-        // mark .storyboarder scene JSON file dirty
-        markBoardFileDirty()
 
         // TODO could clear out unused buffers to save RAM
         // audioPlayback.resetBuffers()
@@ -1384,6 +1381,11 @@ let loadBoardUI = () => {
         // update the audio playback buffers
         const { failed } = await audioPlayback.updateBuffers()
         failed.forEach(filename => notifications.notify({ message: `Could not load audio file ${filename}` }))
+        storeUndoStateForScene()
+
+        // mark .storyboarder scene JSON file dirty
+        markBoardFileDirty()
+
         renderThumbnailDrawer()
         audioFileControlView.setState({
           boardAudio: board.audio
@@ -1469,14 +1471,15 @@ let loadBoardUI = () => {
       storeUndoStateForScene(true)
       board.audio = board.audio || {}
       board.audio.filename = newFilename
+      // update the audio playback buffers
+      const { failed } = await audioPlayback.updateBuffers()
+      failed.forEach(filename => notifications.notify({ message: `Could not load audio file ${filename}` }))
+      updateAudioDurations()
       storeUndoStateForScene()
 
       // mark .storyboarder scene JSON file dirty
       markBoardFileDirty()
 
-      // update the audio playback buffers
-      const { failed } = await audioPlayback.updateBuffers()
-      failed.forEach(filename => notifications.notify({ message: `Could not load audio file ${filename}` }))
       renderThumbnailDrawer()
       audioFileControlView.setState({
         boardAudio: boardData.boards[currentBoard].audio
@@ -1531,6 +1534,7 @@ const renderScene = async () => {
 
   const { failed } = await audioPlayback.updateBuffers()
   failed.forEach(filename => notifications.notify({ message: `Could not load audio file ${filename}` }))
+  updateAudioDurations()
 
   // render the thumbnail drawer
   renderThumbnailDrawer()
@@ -1718,6 +1722,23 @@ let insertNewBoardsWithFiles = async filepaths => {
     timing: 10
   })
   sfx.positive()
+}
+
+const updateAudioDurations = () => {
+  let shouldSave = false
+  for (let board of boardData.boards) {
+    if (board.audio) {
+      if (!board.audio.duration) {
+        // console.log(`duration missing for ${board.uid}. adding.`)
+        shouldSave = true
+      }
+      board.audio.duration = audioPlayback.getAudioBufferByFilename(board.audio.filename).duration * 1000
+      // console.log(`set audio duration to ${board.audio.duration}`)
+    }
+  }
+  if (shouldSave) {
+    markBoardFileDirty()
+  }
 }
 
 let markBoardFileDirty = () => {
