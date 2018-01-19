@@ -57,7 +57,7 @@ class OnionSkin {
           }
         }
 
-        for (let filename of layersData) {
+        for (let [index, filename] of layersData) {
           loaders.push(new Promise((resolve, reject) => {
             let imageFilePath = path.join(this.boardPath, 'images', filename)
             try {
