@@ -96,7 +96,7 @@ class OnionSkin {
         let tmpCtx = this.storyboarderSketchPane.createContext()
         context.clearRect(0, 0, size.width, size.height)
 
-        for (let [index, filename, color] of layersData) {
+        for (let [filename, color] of layersData) {
           // do we have an image for this particular layer index?
           let image = imagesByFilename[filename]
           if (image) {
