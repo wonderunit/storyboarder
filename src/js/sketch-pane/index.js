@@ -362,6 +362,8 @@ class SketchPane extends EventEmitter {
     console.log(vertical)
     let canvas = this.getLayerCanvas(index)
     let context = this.getLayerContext(index)
+
+    context.save()
     context.globalAlpha = 1
     context.globalCompositeOperation = 'copy'
 
@@ -375,6 +377,8 @@ class SketchPane extends EventEmitter {
 
     context.drawImage(context.canvas, 0, 0)
     context.setTransform(1, 0, 0, 1, 0, 0)
+
+    context.restore()
   }
 
   getLayerOpacity (index) {
