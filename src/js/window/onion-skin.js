@@ -57,7 +57,7 @@ class OnionSkin {
           }
         }
 
-        for (let [_, filename] of layersData) {
+        for (let [index, filename] of layersData) {
           loaders.push(new Promise((resolve, reject) => {
             let imageFilePath = path.join(this.boardPath, 'images', filename)
             try {
@@ -96,7 +96,7 @@ class OnionSkin {
         let tmpCtx = this.storyboarderSketchPane.createContext()
         context.clearRect(0, 0, size.width, size.height)
 
-        for (let [_, filename, color] of layersData) {
+        for (let [index, filename, color] of layersData) {
           // do we have an image for this particular layer index?
           let image = imagesByFilename[filename]
           if (image) {
