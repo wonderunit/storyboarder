@@ -7,7 +7,7 @@ const boardFileImageSize = boardFileData =>
     : [900, 900 / boardFileData.aspectRatio]
 
 const boardFilenameForExport = (board, index, basenameWithoutExt) =>
-  `${basenameWithoutExt}-board-` + util.zeroFill(5, index + 1) + '.png'
+  `${basenameWithoutExt}-board.` + util.zeroFill(4, index + 1) + '.png'
 
 const boardFilenameForThumbnail = board =>
   board.url.replace('.png', '-thumbnail.png')
