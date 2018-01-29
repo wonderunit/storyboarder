@@ -2548,21 +2548,21 @@ let renderMarkerPosition = () => {
 
   let percentage
   if (last.duration) {
-    percentage = (curr.time)/(last.time+last.duration)
+    percentage = (curr.time) / (last.time + last.duration)
   } else {
-    percentage = (curr.time)/(last.time+2000)
+    percentage = (curr.time) / (last.time + boardData.defaultBoardTiming)
   }
 
   let width = document.querySelector('#timeline #movie-timeline-content').offsetWidth
-  document.querySelector('#timeline .marker').style.left = (width*percentage) + 'px'
+  document.querySelector('#timeline .marker').style.left = (width * percentage) + 'px'
 
   document.querySelector('#timeline .left-block').innerHTML = util.msToTime(curr.time)
 
   let totalTime
   if (last.duration) {
-    totalTime = (last.time+last.duration)
+    totalTime = (last.time + last.duration)
   } else {
-    totalTime = (last.time+2000)
+    totalTime = (last.time + boardData.defaultBoardTiming)
   }
   document.querySelector('#timeline .right-block').innerHTML = util.msToTime(totalTime)
 }
