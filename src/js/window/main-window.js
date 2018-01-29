@@ -11,6 +11,7 @@ const Color = require('color-js')
 const chokidar = require('chokidar')
 const plist = require('plist')
 const R = require('ramda')
+const isDev = require('electron-is-dev')
 
 
 const { getInitialStateRenderer } = require('electron-redux')
@@ -242,6 +243,14 @@ const load = async (event, args) => {
       )
     }, 500) // TODO hack, remove this #440
   } catch (error) {
+    console.error(error)
+
+    // DEBUG show current window
+    if (isDev) {
+      remote.getCurrentWindow().show()
+      remote.getCurrentWebContents().openDevTools()
+    }
+
     log({ type: 'error', message: error.message })
     remote.dialog.showMessageBox({
       type: 'error',
