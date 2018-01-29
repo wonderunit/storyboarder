@@ -4749,9 +4749,9 @@ let moveSelectedBoards = position => {
   if (position > firstSelection) {
     position = position - numRemoved
   }
-  
-  // console.log('move starting at board', firstSelection, 
-  //             ', moving', numRemoved, 
+
+  // console.log('move starting at board', firstSelection,
+  //             ', moving', numRemoved,
   //             'boards to index', position)
 
   if (firstSelection !== position) {
