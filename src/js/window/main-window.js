@@ -2479,53 +2479,56 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
 
     currentBoard = boardNumber
     currentBoard = Math.max(currentBoard, 0)
-    currentBoard = Math.min(currentBoard, boardData.boards.length-1)
-    
+    currentBoard = Math.min(currentBoard, boardData.boards.length - 1)
+
     if (!shouldPreserveSelections) selections.clear()
     selections = new Set([...selections.add(currentBoard)].sort(util.compareNumbers))
-    renderThumbnailDrawerSelections()
-    
-    for (var item of document.querySelectorAll('.thumbnail')) {
-      item.classList.remove('active')
-    }
 
-    let thumbDiv = document.querySelector(`[data-thumbnail='${currentBoard}']`)
-    if (thumbDiv) {
-      thumbDiv.classList.add('active')
-      thumbDiv.scrollIntoView()
-
-      let thumbL = thumbDiv.offsetLeft
-      let thumbR = thumbDiv.offsetLeft + thumbDiv.offsetWidth
-
-      let containerDiv = document.querySelector('#thumbnail-container')
-      let containerL = containerDiv.scrollLeft
-      let containerR = containerDiv.scrollLeft + containerDiv.offsetWidth
-
-      if (thumbR >= containerR) {
-        // if right side of thumbnail is beyond the right edge of the visible container
-        // scroll the visible container
-        // to reveal up to the right edge of the thumbnail
-        containerDiv.scrollLeft = (thumbL - containerDiv.offsetWidth) + thumbDiv.offsetWidth + 100
-      } else if (containerL >= thumbL) {
-        // if left side of thumbnail is beyond the left edge of the visible container
-        // scroll the visible container
-        // to reveal up to the left edge of the thumbnail
-        containerDiv.scrollLeft = thumbL - 50
+    let shouldRenderThumbnailDrawer = false
+    if (shouldRenderThumbnailDrawer) {
+      renderThumbnailDrawerSelections()
+      for (var item of document.querySelectorAll('.thumbnail')) {
+        item.classList.remove('active')
       }
-    } else {
-      //
-      // TODO when would this happen?
-      //
-      // wait for render, then update
-      setTimeout(
-        n => {
-          let newThumb = document.querySelector(`[data-thumbnail='${n}']`)
-          newThumb.classList.add('active')
-          newThumb.scrollIntoView()
-        },
-        10,
-        currentBoard
-      )
+
+      let thumbDiv = document.querySelector(`[data-thumbnail='${currentBoard}']`)
+      if (thumbDiv) {
+        thumbDiv.classList.add('active')
+        thumbDiv.scrollIntoView()
+
+        let thumbL = thumbDiv.offsetLeft
+        let thumbR = thumbDiv.offsetLeft + thumbDiv.offsetWidth
+
+        let containerDiv = document.querySelector('#thumbnail-container')
+        let containerL = containerDiv.scrollLeft
+        let containerR = containerDiv.scrollLeft + containerDiv.offsetWidth
+
+        if (thumbR >= containerR) {
+          // if right side of thumbnail is beyond the right edge of the visible container
+          // scroll the visible container
+          // to reveal up to the right edge of the thumbnail
+          containerDiv.scrollLeft = (thumbL - containerDiv.offsetWidth) + thumbDiv.offsetWidth + 100
+        } else if (containerL >= thumbL) {
+          // if left side of thumbnail is beyond the left edge of the visible container
+          // scroll the visible container
+          // to reveal up to the left edge of the thumbnail
+          containerDiv.scrollLeft = thumbL - 50
+        }
+      } else {
+        //
+        // TODO when would this happen?
+        //
+        // wait for render, then update
+        setTimeout(
+          n => {
+            let newThumb = document.querySelector(`[data-thumbnail='${n}']`)
+            newThumb.classList.add('active')
+            newThumb.scrollIntoView()
+          },
+          10,
+          currentBoard
+        )
+      }
     }
 
     renderMetaData()
@@ -2552,6 +2555,9 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
 }
 
 let renderMarkerPosition = () => {
+  let shouldRenderThumbnailDrawer = false
+  if (!shouldRenderThumbnailDrawer) return
+
   let curr = boardData.boards[currentBoard]
   let last = boardData.boards[boardData.boards.length - 1]
 
@@ -2948,6 +2954,9 @@ const updateSceneTiming = () => {
 let renderThumbnailDrawer = () => {
   updateSceneTiming()
 
+  let shouldRenderThumbnailDrawer = false
+  if (!shouldRenderThumbnailDrawer) return
+
   let hasShots = boardData.boards.find(board => board.newShot) != null
 
   let html = []
@@ -3134,6 +3143,9 @@ let renderThumbnailDrawer = () => {
 
 
 let renderThumbnailButtons = () => {
+  let shouldRenderThumbnailDrawer = false
+  if (!shouldRenderThumbnailDrawer) return
+
   if (!document.getElementById('thumbnail-add-btn')) {
     let drawerEl = document.getElementById('thumbnail-drawer')
 
@@ -4812,6 +4824,9 @@ let isBeforeFirstThumbnail = (x, y) => {
 }
 
 let updateThumbnailCursor = (x, y) => {
+  let shouldRenderThumbnailDrawer = false
+  if (!shouldRenderThumbnailDrawer) return
+
   if (isBeforeFirstThumbnail(x, y)) {
     thumbnailCursor.x = 0
     thumbnailCursor.el = null
@@ -4855,12 +4870,14 @@ let updateThumbnailCursor = (x, y) => {
 
 let renderThumbnailCursor = () => {
   let el = document.querySelector('#thumbnail-cursor')
-  if (thumbnailCursor.visible) {
-    el.style.display = ''
-    el.style.left = thumbnailCursor.x + 'px'
-  } else {
-    el.style.display = 'none'
-    el.style.left = '0px'
+  if (el) { // shouldRenderThumbnailDrawer
+    if (thumbnailCursor.visible) {
+      el.style.display = ''
+      el.style.left = thumbnailCursor.x + 'px'
+    } else {
+      el.style.display = 'none'
+      el.style.left = '0px'
+    }
   }
 }
 
