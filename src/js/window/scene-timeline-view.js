@@ -361,7 +361,7 @@ class LaneView {
 }
 LaneView.MINI_HEIGHT = 3
 
-class SceneTimelineView {
+class TimelineView {
   // Required: Define an ordinary constructor to initialize your component.
   constructor (props, children) {
     this.scale = props.scale
@@ -383,6 +383,9 @@ class SceneTimelineView {
     this.onCancelMove = this.onCancelMove.bind(this)
 
     this.onDocumentPointerMove = this.onDocumentPointerMove.bind(this)
+
+    this.onMoveSelectedBoards = props.onMoveSelectedBoards
+    this.onSetCurrentBoardIndex = props.onSetCurrentBoardIndex
 
     this.state = {
       resizableBoardView: undefined,
@@ -604,82 +607,80 @@ class SceneTimelineView {
 
   // TODO replace with common fn
   // TODO sort by time, re-number
-  updateSceneTiming () {
-    // TODO
-    // TODO
-    // TODO
-    return
-
-    this.scene.boards.forEach((board, i) => {
-      // if (board === this.state.draggableBoardView) return
-
-      if (this.state.draggableBoardView &&
-          board === this.state.draggableBoardView.board
-        ) return
-
-      let prevBoard = this.scene.boards[i - 1]
-      if (prevBoard) {
-        board.time = prevBoard.time + boardModel.boardDuration(this.scene, prevBoard)
-      } else {
-        board.time = 0
-      }
-    })
-
-
-
-
-    // HACK re-numbering (copied from main-window.js)
-    let currentShot = 0
-    let subShot = 0
-    let boardNumber = 1
-    let currentTime = 0
-
-    let hasShots = false
-    for (let board of this.scene.boards) {
-      if (board.newShot) {
-        hasShots = true
-        break
-      }
-    }
-
-    for (let board of this.scene.boards) {
-      if (hasShots) {
-        if (board.newShot || (currentShot === 0)) {
-          currentShot++
-          subShot = 0
-        } else {
-          subShot++
-        }
-
-        let substr = String.fromCharCode(97 + (subShot % 26)).toUpperCase()
-        if ((Math.ceil(subShot / 25) - 1) > 0) {
-          substr += (Math.ceil(subShot / 25))
-        }
-        board.shot = currentShot + substr
-        board.number = boardNumber
-      } else {
-        board.number = boardNumber
-        board.shot = (boardNumber) + 'A'
-      }
-      boardNumber++
-
-      board.time = currentTime
-
-      if (board.duration) {
-        currentTime += board.duration
-      } else {
-        currentTime += this.scene.defaultBoardTiming
-      }
-    }
-  }
+  // TODO compare with the updated version we copied over to main-window.js
+  // updateSceneTiming () {
+  //   // TODO
+  //   // TODO
+  //   // TODO
+  //   return
+  // 
+  //   this.scene.boards.forEach((board, i) => {
+  //     // if (board === this.state.draggableBoardView) return
+  // 
+  //     if (this.state.draggableBoardView &&
+  //         board === this.state.draggableBoardView.board
+  //       ) return
+  // 
+  //     let prevBoard = this.scene.boards[i - 1]
+  //     if (prevBoard) {
+  //       board.time = prevBoard.time + boardModel.boardDuration(this.scene, prevBoard)
+  //     } else {
+  //       board.time = 0
+  //     }
+  //   })
+  // 
+  // 
+  // 
+  // 
+  //   // HACK re-numbering (copied from main-window.js)
+  //   let currentShot = 0
+  //   let subShot = 0
+  //   let boardNumber = 1
+  //   let currentTime = 0
+  // 
+  //   let hasShots = false
+  //   for (let board of this.scene.boards) {
+  //     if (board.newShot) {
+  //       hasShots = true
+  //       break
+  //     }
+  //   }
+  // 
+  //   for (let board of this.scene.boards) {
+  //     if (hasShots) {
+  //       if (board.newShot || (currentShot === 0)) {
+  //         currentShot++
+  //         subShot = 0
+  //       } else {
+  //         subShot++
+  //       }
+  // 
+  //       let substr = String.fromCharCode(97 + (subShot % 26)).toUpperCase()
+  //       if ((Math.ceil(subShot / 25) - 1) > 0) {
+  //         substr += (Math.ceil(subShot / 25))
+  //       }
+  //       board.shot = currentShot + substr
+  //       board.number = boardNumber
+  //     } else {
+  //       board.number = boardNumber
+  //       board.shot = (boardNumber) + 'A'
+  //     }
+  //     boardNumber++
+  // 
+  //     board.time = currentTime
+  // 
+  //     if (board.duration) {
+  //       currentTime += board.duration
+  //     } else {
+  //       currentTime += this.scene.defaultBoardTiming
+  //     }
+  //   }
+  // }
 
   async onBoardPointerDown (event, boardView) {
     let index = this.scene.boards.indexOf(boardView.board)
 
-    // TODO
-    // TODO
-    // TODO
-    // actions.setCurrentBoardIndex(index)
+    this.onSetCurrentBoardIndex(index)
 
     if (event.target === boardView.refs.handle) {
       this.state.resizableBoardView = boardView
@@ -719,7 +720,10 @@ class SceneTimelineView {
 
     if (this.state.draggableBoardView || this.state.resizableBoardView) {
       // update the timing for the rest of the scene
-      this.updateSceneTiming()
+      // TODO
+      // TODO
+      // TODO
+      // this.updateSceneTiming()
 
       // TODO add undo state
       // TODO markBoardFileDirty()
@@ -729,63 +733,14 @@ class SceneTimelineView {
   }
 
   async completeDragOrResize (event) {
-    // TODO
-    // TODO
-    // TODO
-    return
     if (this.state.draggableBoardView) {
       let boardToInsertBefore = this.scene.boards.find(board => board.time === this.state.insertPointInMsecs)
       // console.log('boardToInsertBefore', this.scene.boards.indexOf(boardToInsertBefore))
 
-
-
-      // copied from main-window.js
       let selections = new Set([this.scene.boards.indexOf(this.state.draggableBoardView.board)])
       let position = this.scene.boards.indexOf(boardToInsertBefore)
 
-      let didChange = false
-
-      let numRemoved = selections.size
-      let firstSelection = [...selections].sort((a, b) => a - b)[0]
-
-      // if moving forward in the list
-      // account for position change due to removed elements
-      if (position > firstSelection) {
-        position = position - numRemoved
-      }
-
-      // console.log('move starting at board', firstSelection,
-      //             ', moving', numRemoved,
-      //             'boards to index', position)
-
-      if (firstSelection !== position) {
-        didChange = true
-
-        // storeUndoStateForScene(true)
-
-        let movedBoards = this.scene.boards.splice(firstSelection, numRemoved)
-        this.scene.boards.splice(position, 0, ...movedBoards)
-
-        // how far from the start of the selection was the current board?
-        let offset = this.currentBoardIndex - firstSelection
-
-        // what are the new bounds of our selection?
-        let b = Math.min(position + movedBoards.length - 1, this.scene.boards.length - 1)
-        let a = b - (selections.size - 1)
-        // update selection
-        // selections = new Set(util.range(a, b))
-        // update currentBoard
-        this.currentBoardIndex = a + offset
-
-        // markBoardFileDirty()
-        // storeUndoStateForScene()
-      }
-
-
-
-
-      this.updateSceneTiming()
-      // console.log(this.scene.boards.map(b => b.time))
+      let didChange = this.onMoveSelectedBoards(selections, position)
     }
 
     this.state.resizableBoardView = undefined
@@ -797,8 +752,6 @@ class SceneTimelineView {
     this.state.draggableOffsetInPx = 0
 
     this.state.insertPointInMsecs = 0
-
-    await this.update({ scene: this.scene })
   }
 
   async onBoardPointerUp (event, boardView) {
@@ -830,6 +783,95 @@ class SceneTimelineView {
     let scrollLeft = this.position * entireWidth
 
     this.refs.timelineOuter.scrollLeft = scrollLeft
+  }
+}
+
+class SceneTimelineView {
+  constructor (props, children) {
+    this.scale = props.scale
+    this.position = props.position
+
+    this.scene = props.scene
+    this.scenePath = props.scenePath
+
+    this.pixelsPerMsec = props.pixelsPerMsec
+    this.containerWidth = props.containerWidth
+    this.mini = props.mini
+
+    this.currentBoardIndex = props.currentBoardIndex
+    this.getAudioBufferByFilename = props.getAudioBufferByFilename
+
+    this.onMoveSelectedBoards = props.onMoveSelectedBoards
+    this.onSetCurrentBoardIndex = props.onSetCurrentBoardIndex
+
+    etch.initialize(this)
+  }
+
+  render () {
+    return $.div(
+      {},
+      [
+        $.div(
+          { style: 'width: 33.333%;' },
+          $(TimelineView, {
+            ref: 'miniTimelineView',
+
+            scene: this.scene,
+            scenePath: this.scenePath,
+
+            scale: this.scale,
+            position: this.position,
+
+            mini: true,
+
+            currentBoardIndex: this.currentBoardIndex,
+            getAudioBufferByFilename: this.getAudioBufferByFilename
+          })
+        ),
+
+        $(TimelineView, {
+          ref: 'timelineView',
+
+          scene: this.scene,
+          scenePath: this.scenePath,
+
+          scale: this.scale,
+          position: this.position,
+
+          currentBoardIndex: this.currentBoardIndex,
+          getAudioBufferByFilename: this.getAudioBufferByFilename,
+
+          onMoveSelectedBoards: this.onMoveSelectedBoards,
+          onSetCurrentBoardIndex: this.onSetCurrentBoardIndex
+        })
+      ]
+    )
+  }
+
+  update (props, children) {
+    if (props.scene) this.scene = props.scene
+
+    if (props.scale != null) this.scale = props.scale
+    if (props.position != null) this.position = props.position
+
+    if (props.containerWidth != null) this.containerWidth = props.containerWidth
+    if (props.pixelsPerMsec != null) this.pixelsPerMsec = props.pixelsPerMsec
+    if (props.mini != null) this.mini = props.mini
+
+    if (props.currentBoardIndex != null) this.currentBoardIndex = props.currentBoardIndex
+
+    return etch.update(this)
+  }
+
+  async destroy () {
+    // call etch.destroy to remove the element and destroy child components
+    await etch.destroy(this)
+    // then perform custom teardown logic here...
+  }
+
+  connectedCallback () {
+    this.refs.miniTimelineView.connectedCallback()
+    this.refs.timelineView.connectedCallback()
   }
 }
 

@@ -1559,7 +1559,18 @@ const renderScene = async () => {
 
       mini: false,
 
-      getAudioBufferByFilename: audioPlayback.getAudioBufferByFilename.bind(audioPlayback)
+      getAudioBufferByFilename: audioPlayback.getAudioBufferByFilename.bind(audioPlayback),
+
+      onMoveSelectedBoards: (_selections, _position) => {
+        selections = _selections
+        let didChange = moveSelectedBoards(_position)
+        renderThumbnailDrawer() // calls renderSceneTimeline
+        return didChange
+      },
+
+      onSetCurrentBoardIndex: index => {
+        currentBoard = index
+      }
     })
     document.getElementById('scene-timeline-container')
       .appendChild(sceneTimelineView.element)
