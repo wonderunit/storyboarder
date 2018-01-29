@@ -729,7 +729,8 @@ class TimelineView {
       // TODO add undo state
       // TODO markBoardFileDirty()
 
-      // await this.update({ scene: this.scene })
+      // updates the caret
+      await this.update({ }) //  scene: this.scene })
     }
   }
 
