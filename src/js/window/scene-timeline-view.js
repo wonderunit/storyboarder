@@ -1,8 +1,6 @@
 const etch = require('etch')
 const $ = etch.dom
 
-const path = require('path')
-
 const boardModel = require('../models/board')
 const sceneModel = require('../models/scene')
 
@@ -38,7 +36,7 @@ const drawBuffer = (width, height, context, data) => {
 class BoardView {
   constructor (props, children) {
     this.scene = props.scene
-    this.scenePath = props.scenePath
+    this.scenePath = props.scenePath // TODO necessary?
 
     this.board = props.board
     this.kind = props.kind
@@ -55,7 +53,9 @@ class BoardView {
 
     this.onBoardPointerDown = props.onBoardPointerDown
     this.onBoardPointerUp = props.onBoardPointerUp
+
     this.getAudioBufferByFilename = props.getAudioBufferByFilename
+    this.getSrcByUid = props.getSrcByUid
 
     etch.initialize(this)
   }
@@ -81,11 +81,9 @@ class BoardView {
         ? imageHeight + 5 + 5 + 12 + 5
         : 32
 
-    let src = path.join(
-      path.dirname(this.scenePath),
-      'images',
-      boardModel.boardFilenameForThumbnail(this.board)
-    )
+    let src = this.kind === 'board' && !this.mini
+      ? this.getSrcByUid(this.board.uid)
+      : ''
 
     return $.div(
       {
@@ -265,7 +263,7 @@ class BoardView {
 
   update (props = {}, children = {}) {
     if (props.scene != null) this.scene = props.scene
-    if (props.scenePath != null) this.scenePath = props.scenePath
+    if (props.scenePath != null) this.scenePath = props.scenePath // TODO necessary?
 
     if (props.kind != null) this.kind = props.kind
     if (props.board != null) this.board = props.board
@@ -280,6 +278,7 @@ class BoardView {
     if (props.dragging != null) this.dragging = props.dragging
     if (props.mini != null) this.mini = props.mini
 
+    // TODO performance, only render if actually changed
     return etch.update(this)
   }
 
@@ -368,7 +367,7 @@ class TimelineView {
     this.position = props.position
 
     this.scene = props.scene
-    this.scenePath = props.scenePath
+    this.scenePath = props.scenePath // TODO necessary?
 
     this.pixelsPerMsec = props.pixelsPerMsec
     this.containerWidth = props.containerWidth
@@ -377,6 +376,7 @@ class TimelineView {
     this.currentBoardIndex = props.currentBoardIndex
 
     this.getAudioBufferByFilename = props.getAudioBufferByFilename
+    this.getSrcByUid = props.getSrcByUid
 
     this.onBoardPointerDown = this.onBoardPointerDown.bind(this)
     this.onBoardPointerUp = this.onBoardPointerUp.bind(this)
@@ -417,7 +417,7 @@ class TimelineView {
           board: board,
           kind: 'board',
           scene: this.scene,
-          scenePath: this.scenePath,
+          scenePath: this.scenePath, // TODO necessary?
           onBoardPointerDown: this.onBoardPointerDown,
           onBoardPointerUp: this.onBoardPointerUp,
           active: this.currentBoardIndex === index,
@@ -425,7 +425,8 @@ class TimelineView {
           dragging: !!(this.state.draggableBoardView &&
                     this.state.draggableBoardView.board === board),
           mini: this.mini,
-          getAudioBufferByFilename: this.getAudioBufferByFilename
+          getAudioBufferByFilename: this.getAudioBufferByFilename,
+          getSrcByUid: this.getSrcByUid
         }))
 
     let lanes = [{ boards: [], endInMsecs: 0 }]
@@ -468,7 +469,7 @@ class TimelineView {
           board: board,
           kind: 'audio',
           scene: this.scene,
-          scenePath: this.scenePath,
+          scenePath: this.scenePath, 
           active: this.currentBoardIndex === index,
           enabled: !this.state.draggableBoardView,
           dragging: !!(this.state.draggableBoardView &&
@@ -794,7 +795,7 @@ class SceneTimelineView {
     this.position = props.position
 
     this.scene = props.scene
-    this.scenePath = props.scenePath
+    this.scenePath = props.scenePath // TODO necessary?
 
     this.pixelsPerMsec = props.pixelsPerMsec
     this.containerWidth = props.containerWidth
@@ -802,6 +803,7 @@ class SceneTimelineView {
 
     this.currentBoardIndex = props.currentBoardIndex
     this.getAudioBufferByFilename = props.getAudioBufferByFilename
+    this.getSrcByUid = props.getSrcByUid
 
     this.onMoveSelectedBoards = props.onMoveSelectedBoards
     this.onSetCurrentBoardIndex = props.onSetCurrentBoardIndex
@@ -820,7 +822,7 @@ class SceneTimelineView {
             ref: 'miniTimelineView',
 
             scene: this.scene,
-            scenePath: this.scenePath,
+            scenePath: this.scenePath, // TODO necessary?
 
             scale: this.scale,
             position: this.position,
@@ -836,13 +838,15 @@ class SceneTimelineView {
           ref: 'timelineView',
 
           scene: this.scene,
-          scenePath: this.scenePath,
+          scenePath: this.scenePath, // TODO necessary?
 
           scale: this.scale,
           position: this.position,
 
           currentBoardIndex: this.currentBoardIndex,
+
           getAudioBufferByFilename: this.getAudioBufferByFilename,
+          getSrcByUid: this.getSrcByUid,
 
           onMoveSelectedBoards: this.onMoveSelectedBoards,
           onSetCurrentBoardIndex: this.onSetCurrentBoardIndex,

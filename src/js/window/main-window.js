@@ -178,6 +178,7 @@ let etags = {}
 const setEtag = absoluteFilePath => { etags[absoluteFilePath] = Date.now() }
 const getEtag = absoluteFilePath => etags[absoluteFilePath] || '0'
 
+let srcByUid = {}
 
 //  analytics.event('Application', 'open', filename)
 
@@ -1547,8 +1548,11 @@ const renderScene = async () => {
   failed.forEach(filename => notifications.notify({ message: `Could not load audio file ${filename}` }))
   updateAudioDurations()
 
+  // TODO test switching scenes
+  //
   // now that audio buffers have loaded, we can create the scene timeline
   // if it doesn't already exist
+  srcByUid = {}
   if (!sceneTimelineView) {
     sceneTimelineView = new SceneTimelineView({
       scene: boardData,
@@ -1576,6 +1580,19 @@ const renderScene = async () => {
       onModifyBoardDurationByIndex: (index, duration) => {
         boardData.boards[index].duration = duration
         renderThumbnailDrawer()
+      },
+
+      getSrcByUid: uid => {
+        if (srcByUid[uid]) {
+          return srcByUid[uid]
+        } else {
+          let board = boardData.boards.find(b => b.uid === uid)
+          return path.join(
+            path.dirname(boardFilename),
+            'images',
+            boardModel.boardFilenameForThumbnail(board)
+          )
+        }
       }
     })
     document.getElementById('scene-timeline-container')
@@ -2291,6 +2308,12 @@ const updateThumbnailDisplayFromFile = index => {
     let src = imageFilePath + '?' + getEtag(path.join(boardPath, 'images', boardModel.boardFilenameForThumbnail(board)))
     el.src = src
   }
+
+  // delete cached image
+  delete srcByUid[boardData.boards[index].uid]
+
+  // TODO
+  renderSceneTimeline()
 }
 
 const updateThumbnailDisplayFromMemory = () => {
@@ -2299,11 +2322,16 @@ const updateThumbnailDisplayFromMemory = () => {
     let imageData = canvas
       .toDataURL('image/png')
 
+    // cache image
+    srcByUid[boardData.boards[index].uid] = imageData
+
     // find the thumbnail image
     let el = document.querySelector(`[data-thumbnail="${index}"] img`)
     if (el) {
       el.src = imageData
     }
+
+    renderSceneTimeline()
   })
 }
 
