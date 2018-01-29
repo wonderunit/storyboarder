@@ -36,6 +36,7 @@ const Sonifier = require('./sonifier/index')
 const LayersEditor = require('./layers-editor')
 const sfx = require('../wonderunit-sound')
 const { createIsCommandPressed } = require('../utils/keytracker')
+const SceneTimelineView = require('./scene-timeline-view')
 
 const storyTips = new(require('./story-tips'))(sfx, notifications)
 const exporter = require('./exporter')
@@ -157,6 +158,7 @@ let pomodoroTimerView
 let shotTemplateSystem
 let audioPlayback
 let audioFileControlView
+let sceneTimelineView
 
 let storyboarderSketchPane
 
@@ -1545,6 +1547,25 @@ const renderScene = async () => {
   failed.forEach(filename => notifications.notify({ message: `Could not load audio file ${filename}` }))
   updateAudioDurations()
 
+  // now that audio buffers have loaded, we can create the scene timeline
+  // if it doesn't already exist
+  if (!sceneTimelineView) {
+    sceneTimelineView = new SceneTimelineView({
+      scene: boardData,
+      scenePath: boardFilename,
+
+      scale: 1,
+      position: 0,
+
+      mini: false,
+
+      getAudioBufferByFilename: audioPlayback.getAudioBufferByFilename.bind(audioPlayback)
+    })
+    document.getElementById('scene-timeline-container')
+      .appendChild(sceneTimelineView.element)
+    sceneTimelineView.connectedCallback()
+  }
+
   // render the thumbnail drawer
   renderThumbnailDrawer()
   // go to the correct board
@@ -2484,6 +2505,11 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
     if (!shouldPreserveSelections) selections.clear()
     selections = new Set([...selections.add(currentBoard)].sort(util.compareNumbers))
 
+    sceneTimelineView.update({
+      scene: boardData,
+      currentBoardIndex: currentBoard
+    })
+
     let shouldRenderThumbnailDrawer = false
     if (shouldRenderThumbnailDrawer) {
       renderThumbnailDrawerSelections()
@@ -2900,6 +2926,11 @@ let updateSketchPaneBoard = () => {
 }
 
 let renderThumbnailDrawerSelections = () => {
+  sceneTimelineView.update({
+    scene: boardData,
+    currentBoardIndex: currentBoard
+  })
+
   let thumbnails = document.querySelectorAll('.thumbnail')
 
   for (let thumb of thumbnails) {
@@ -2953,6 +2984,11 @@ const updateSceneTiming = () => {
 
 let renderThumbnailDrawer = () => {
   updateSceneTiming()
+
+  sceneTimelineView.update({
+    scene: boardData,
+    currentBoardIndex: currentBoard
+  })
 
   let shouldRenderThumbnailDrawer = false
   if (!shouldRenderThumbnailDrawer) return
