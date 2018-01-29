@@ -386,6 +386,7 @@ class TimelineView {
 
     this.onMoveSelectedBoards = props.onMoveSelectedBoards
     this.onSetCurrentBoardIndex = props.onSetCurrentBoardIndex
+    this.onModifyBoardDurationByIndex = props.onModifyBoardDurationByIndex
 
     this.state = {
       resizableBoardView: undefined,
@@ -602,8 +603,9 @@ class TimelineView {
     }
   }
 
-  async updateCaret () {
-  }
+  // DEPRECATED
+  // async updateCaret () {
+  // }
 
   // TODO replace with common fn
   // TODO sort by time, re-number
@@ -690,10 +692,8 @@ class TimelineView {
       this.state.draggableBoardView = boardView
       this.state.draggableBoardOriginalTime = boardView.board.time
       this.state.draggableOffsetInPx = 0
-      await this.updateCaret()
+      // await this.updateCaret()
     }
-
-    await this.update({ scene: this.scene })
   }
 
   async onDocumentPointerMove (event) {
@@ -703,19 +703,20 @@ class TimelineView {
     }
 
     if (this.state.draggableBoardView) {
-      await this.updateCaret()
+      // await this.updateCaret()
     }
 
     if (this.state.resizableBoardView) {
-      let board = this.scene.boards.find(b => b === this.state.resizableBoardView.board)
+      let index = this.scene.boards.indexOf(this.state.resizableBoardView.board)
       let movementX = this.state.resizableOffsetInPx / (this.pixelsPerMsec * this.scale)
 
       let minDuration = Math.round(1000 / this.scene.fps)
-      board.duration = Math.max(minDuration,
+      let newDuration = Math.max(minDuration,
         Math.round(
           (this.state.resizableBoardOriginalDuration + movementX) / 100
         ) * 100
       )
+      this.onModifyBoardDurationByIndex(index, newDuration)
     }
 
     if (this.state.draggableBoardView || this.state.resizableBoardView) {
@@ -728,7 +729,7 @@ class TimelineView {
       // TODO add undo state
       // TODO markBoardFileDirty()
 
-      await this.update({ scene: this.scene })
+      // await this.update({ scene: this.scene })
     }
   }
 
@@ -803,6 +804,7 @@ class SceneTimelineView {
 
     this.onMoveSelectedBoards = props.onMoveSelectedBoards
     this.onSetCurrentBoardIndex = props.onSetCurrentBoardIndex
+    this.onModifyBoardDurationByIndex = props.onModifyBoardDurationByIndex
 
     etch.initialize(this)
   }
@@ -842,7 +844,8 @@ class SceneTimelineView {
           getAudioBufferByFilename: this.getAudioBufferByFilename,
 
           onMoveSelectedBoards: this.onMoveSelectedBoards,
-          onSetCurrentBoardIndex: this.onSetCurrentBoardIndex
+          onSetCurrentBoardIndex: this.onSetCurrentBoardIndex,
+          onModifyBoardDurationByIndex: this.onModifyBoardDurationByIndex
         })
       ]
     )

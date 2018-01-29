@@ -1561,6 +1561,11 @@ const renderScene = async () => {
 
       getAudioBufferByFilename: audioPlayback.getAudioBufferByFilename.bind(audioPlayback),
 
+      onSetCurrentBoardIndex: index => {
+        currentBoard = index
+        renderThumbnailDrawer()
+      },
+
       onMoveSelectedBoards: (_selections, _position) => {
         selections = _selections
         let didChange = moveSelectedBoards(_position)
@@ -1568,8 +1573,9 @@ const renderScene = async () => {
         return didChange
       },
 
-      onSetCurrentBoardIndex: index => {
-        currentBoard = index
+      onModifyBoardDurationByIndex: (index, duration) => {
+        boardData.boards[index].duration = duration
+        renderThumbnailDrawer()
       }
     })
     document.getElementById('scene-timeline-container')
