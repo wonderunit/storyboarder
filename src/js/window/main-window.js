@@ -5550,3 +5550,26 @@ ipcRenderer.on('toggleAudition', value => {
 })
 
 const log = opt => ipcRenderer.send('log', opt)
+
+// HACK to support Cmd+R reloading
+if (isDev) {
+  // wait
+  setTimeout(() => {
+    // … if no boardData present after timeout, we probably just Cmd+R reloaded
+    if (!boardData) {
+      // were we passed a filename in the `npm start` arguments?
+      let filePath = process.env.npm_package_scripts_start
+      filePath = filePath.replace(/"/g, '')
+      filePath = filePath.replace('electron .', '')
+      filePath = filePath.replace(/^\s/, '')
+      if (filePath.length) {
+        // try to load that file again
+        load(null, [
+          path.resolve(
+            path.join(__dirname, '../../../' + filePath)
+          )
+        ])
+      }
+    }
+  }, 500)
+}
