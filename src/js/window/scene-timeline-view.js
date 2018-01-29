@@ -81,6 +81,12 @@ class BoardView {
         ? imageHeight + 5 + 5 + 12 + 5
         : 32
 
+    let src = path.join(
+      path.dirname(this.scenePath),
+      'images',
+      boardModel.boardFilenameForThumbnail(this.board)
+    )
+
     return $.div(
       {
         class: 'board',
@@ -188,11 +194,7 @@ class BoardView {
                   width: `${(imageHeight) * this.scene.aspectRatio}px`,
                   height: `${imageHeight}px`
                 },
-                src: path.join(
-                  path.dirname(this.scenePath),
-                  'images',
-                  boardModel.boardFilenameForThumbnail(this.board)
-                )
+                src: src
               })
               : null,
             kind === 'board'
