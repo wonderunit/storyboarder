@@ -2896,41 +2896,33 @@ let renderThumbnailDrawerSelections = () => {
   }
 }
 
-let renderThumbnailDrawer = ()=> {
-
-  let hasShots = false
-  for (var board of boardData.boards) {
-    if (board.newShot) {
-      hasShots = true
-      break
-    }
-  }
+const updateSceneTiming = () => {
+  let hasShots = boardData.boards.find(board => board.newShot) != null
 
   let currentShot = 0
   let subShot = 0
   let boardNumber = 1
   let currentTime = 0
 
-  for (var board of boardData.boards) {
+  for (let board of boardData.boards) {
     if (hasShots) {
-      if (board.newShot || (currentShot==0)) {
+      if (board.newShot || (currentShot === 0)) {
         currentShot++
         subShot = 0
       } else {
         subShot++
       }
 
-      substr = String.fromCharCode(97 + (subShot%26)).toUpperCase()
-      if ((Math.ceil(subShot/25)-1) > 0) {
-        substr+= (Math.ceil(subShot/25))
+      let substr = String.fromCharCode(97 + (subShot % 26)).toUpperCase()
+      if ((Math.ceil(subShot / 25) - 1) > 0) {
+        substr += (Math.ceil(subShot / 25))
       }
 
       board.shot = currentShot + substr
       board.number = boardNumber
-
     } else {
       board.number = boardNumber
-      board.shot = (boardNumber) + "A"
+      board.shot = (boardNumber) + 'A'
     }
     boardNumber++
 
@@ -2939,29 +2931,32 @@ let renderThumbnailDrawer = ()=> {
     if (board.duration) {
       currentTime += board.duration
     } else {
-      currentTime += 2000
+      currentTime += boardData.defaultBoardTiming
     }
   }
+}
 
+let renderThumbnailDrawer = () => {
+  updateSceneTiming()
 
+  let hasShots = boardData.boards.find(board => board.newShot) != null
 
   let html = []
   let i = 0
-  for (var board of boardData.boards) {
+  for (let board of boardData.boards) {
     html.push('<div data-thumbnail="' + i + '" class="thumbnail')
     if (hasShots) {
-      if (board.newShot || (i==0)) {
+      if (board.newShot || (i === 0)) {
         html.push(' startShot')
       }
 
-      if (i < boardData.boards.length-1) {
-        if (boardData.boards[i+1].newShot) {
+      if (i < boardData.boards.length - 1) {
+        if (boardData.boards[i + 1].newShot) {
           html.push(' endShot')
         }
       } else {
         html.push(' endShot')
       }
-
     } else {
       html.push(' startShot')
       html.push(' endShot')
@@ -3063,7 +3058,7 @@ let renderThumbnailDrawer = ()=> {
   let thumbnails = document.querySelectorAll('.thumbnail')
   for (var thumb of thumbnails) {
     thumb.addEventListener('pointerenter', (e) => {
-      if (!isEditMode && selections.size <= 1 && e.target.dataset.thumbnail == currentBoard) {
+      if (!isEditMode && selections.size <= 1 && e.target.dataset.thumbnail === currentBoard) {
         contextMenu.attachTo(e.target)
       }
     })
@@ -3073,29 +3068,28 @@ let renderThumbnailDrawer = ()=> {
       }
     })
     thumb.addEventListener('pointermove', (e) => {
-      if (!isEditMode && selections.size <= 1 && e.target.dataset.thumbnail == currentBoard) {
+      if (!isEditMode && selections.size <= 1 && e.target.dataset.thumbnail === currentBoard) {
         contextMenu.attachTo(e.target)
       }
     })
-    thumb.addEventListener('pointerdown', (e)=>{
-      console.log("DOWN")
+    thumb.addEventListener('pointerdown', (e) => {
+      console.log('DOWN')
       if (!isEditMode && selections.size <= 1) contextMenu.attachTo(e.target)
 
       // always track cursor position
       updateThumbnailCursor(e.clientX, e.clientY)
-      
-      if (e.button == 0) {
+
+      if (e.button === 0) {
         editModeTimer = setTimeout(enableEditMode, enableEditModeDelay)
       } else {
         enableEditMode()
       }
-      
+
       let index = Number(e.target.dataset.thumbnail)
       if (selections.has(index)) {
         // ignore
-      } else if (isCommandPressed("workspace:thumbnails:select-multiple-modifier")) {
-
-        if (selections.size == 0 && !util.isUndefined(currentBoard)) {
+      } else if (isCommandPressed('workspace:thumbnails:select-multiple-modifier')) {
+        if (selections.size === 0 && !util.isUndefined(currentBoard)) {
           // use currentBoard as starting point
           selections.add(currentBoard)
         }
@@ -3108,7 +3102,7 @@ let renderThumbnailDrawer = ()=> {
         renderThumbnailDrawerSelections()
       } else if (currentBoard !== index) {
         // go to board by index
-        
+
         // reset selections
         selections.clear()
 
@@ -3123,9 +3117,8 @@ let renderThumbnailDrawer = ()=> {
 
   renderThumbnailButtons()
   renderTimeline()
-  
 
-  //gotoBoard(currentBoard)
+  // gotoBoard(currentBoard)
 }
 
 
