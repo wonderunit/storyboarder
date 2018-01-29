@@ -2505,10 +2505,7 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
     if (!shouldPreserveSelections) selections.clear()
     selections = new Set([...selections.add(currentBoard)].sort(util.compareNumbers))
 
-    sceneTimelineView.update({
-      scene: boardData,
-      currentBoardIndex: currentBoard
-    })
+    renderSceneTimeline()
 
     let shouldRenderThumbnailDrawer = false
     if (shouldRenderThumbnailDrawer) {
@@ -2926,10 +2923,7 @@ let updateSketchPaneBoard = () => {
 }
 
 let renderThumbnailDrawerSelections = () => {
-  sceneTimelineView.update({
-    scene: boardData,
-    currentBoardIndex: currentBoard
-  })
+  renderSceneTimeline()
 
   let thumbnails = document.querySelectorAll('.thumbnail')
 
@@ -2982,13 +2976,17 @@ const updateSceneTiming = () => {
   }
 }
 
-let renderThumbnailDrawer = () => {
-  updateSceneTiming()
-
+const renderSceneTimeline = () => {
   sceneTimelineView.update({
     scene: boardData,
     currentBoardIndex: currentBoard
   })
+}
+
+let renderThumbnailDrawer = () => {
+  updateSceneTiming()
+
+  renderSceneTimeline()
 
   let shouldRenderThumbnailDrawer = false
   if (!shouldRenderThumbnailDrawer) return
