@@ -1563,7 +1563,7 @@ const renderScene = async () => {
 
       onSetCurrentBoardIndex: index => {
         currentBoard = index
-        renderThumbnailDrawer()
+        gotoBoard(currentBoard)
       },
 
       onMoveSelectedBoards: (_selections, _position) => {
