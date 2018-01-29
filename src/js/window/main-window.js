@@ -3001,7 +3001,7 @@ let renderThumbnailDrawer = ()=> {
     if (board.duration) {
       html.push(util.msToTime(board.duration))
     } else {
-      html.push(util.msToTime(2000))
+      html.push(util.msToTime(boardData.defaultBoardTiming))
     }
     html.push('</div>')
     html.push('</div>')
