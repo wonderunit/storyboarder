@@ -481,7 +481,7 @@ class TimelineView {
           board: board,
           kind: 'audio',
           scene: this.scene,
-          scenePath: this.scenePath, 
+          scenePath: this.scenePath,
           active: this.currentBoardIndex === index,
           enabled: !this.state.draggableBoardView,
           dragging: !!(this.state.draggableBoardView &&
