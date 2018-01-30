@@ -262,6 +262,17 @@ class BoardView {
   }
 
   update (props = {}, children = {}) {
+    // very basic change tracking
+    let dirty = false
+    let trackables = [
+      'board', 'src', 'scale', 'offset', 'active', 'enabled', 'dragging', 'pixelsPerMsec'
+    ]
+    for (let k of trackables) {
+      if (props[k] != null && props[k] !== this[k]) {
+        dirty = true
+      }
+    }
+
     if (props.scene != null) this.scene = props.scene
     if (props.scenePath != null) this.scenePath = props.scenePath // TODO necessary?
 
@@ -278,8 +289,9 @@ class BoardView {
     if (props.dragging != null) this.dragging = props.dragging
     if (props.mini != null) this.mini = props.mini
 
-    // TODO performance, only render if actually changed
-    return etch.update(this)
+    if (dirty) {
+      return etch.update(this)
+    }
   }
 
   // FIXME moving 1A to the 8A slot was not calling update/writeAfterUpdate for 8A
