@@ -36,28 +36,36 @@ const drawBuffer = (width, height, context, data) => {
 class ScaleControlView {
   constructor (props) {
     this.style = props.style
+    this.containerWidth = 0
 
     this.state = {
       dragTarget: undefined,
+      dragStartX: 0,
       dragX: 0
     }
 
     this.onCancelMove = this.onCancelMove.bind(this)
     this.onDocumentPointerMove = this.onDocumentPointerMove.bind(this)
 
+    this.ro = undefined
+
     etch.initialize(this)
   }
-  update (props) {
+  update (props = {}) {
+    if (props.containerWidth != null) this.containerWidth = props.containerWidth
     etch.update(this)
   }
   render () {
+    let containerWidth = this.containerWidth
     let handleWidth = this.constructor.HANDLE_WIDTH
 
     return $.div({
-      style: this.style +
-            `width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);`
+      refs: 'container',
+      style: `position: absolute;
+              top: 0;
+              left: 0;
+              bottom: 0;
+              right: 0;`
     }, [
       $.div({
         on: {
@@ -68,7 +76,7 @@ class ScaleControlView {
         style: `position: absolute;
                 width: 100%;
                 top: 0;
-                left: 0;
+                left: ${containerWidth}px;
                 height: 100%;
                 cursor: ew-resize;
 
@@ -77,7 +85,7 @@ class ScaleControlView {
                 line-height: 1;
 
                 background-color: rgba(0, 0, 255, 0.5);`
-      }, `t:${this.state.dragTarget} x:${this.state.dragX}`),
+      }, `t:${this.state.dragTarget} sx:${this.state.dragStartX} dx:${this.state.dragX}`),
       $.div({
         on: {
           pointerdown: this.onHandlePointerDown,
@@ -110,7 +118,24 @@ class ScaleControlView {
   async destroy () {
     await etch.destroy(this)
 
+    this.ro.disconnect()
+
     this.removeEventListeners()
+  }
+
+  connectedCallback () {
+    this.ro = new window.ResizeObserver(entries => {
+      for (let entry of entries) {
+        if (entry.target === this.refs.container) {
+          this.onElementResize(entry.contentRect, true)
+        }
+      }
+    })
+    this.ro.observe(this.element)
+  }
+
+  onElementResize (rect) {
+    this.update({ containerWidth: rect.width })
   }
 
   onHandlePointerDown (event) {
@@ -118,6 +143,8 @@ class ScaleControlView {
         event.target === this.refs.handleRight ||
         event.target === this.refs.handleMiddle) {
       this.state.dragTarget = event.target
+      this.state.dragStartX = this.state.dragTarget.getBoundingClientRect().left
+      this.state.dragX = 0
     }
     this.attachEventListeners()
     this.update()
@@ -144,6 +171,7 @@ class ScaleControlView {
   resetDrag () {
     this.state.dragTarget = undefined
     this.state.dragX = 0
+    this.state.dragStartX = 0
   }
   attachEventListeners () {
     document.addEventListener('pointerup', this.onCancelMove)
@@ -934,7 +962,6 @@ class SceneTimelineView {
     this.scenePath = props.scenePath // TODO necessary?
 
     this.pixelsPerMsec = props.pixelsPerMsec
-    this.containerWidth = props.containerWidth
     this.mini = props.mini
 
     this.currentBoardIndex = props.currentBoardIndex
@@ -951,14 +978,15 @@ class SceneTimelineView {
   render () {
     return $.div(
       {
-        style: `margin: 0 10px;`
+        style: `margin: 0 ${6 + ScaleControlView.HANDLE_WIDTH * 2}px;`
       },
       [
         $.div(
-          { style: `position: relative;
-                    width: 300px;
-                    margin-left: ${ScaleControlView.HANDLE_WIDTH}px;
-                    margin-bottom: 10px;` },
+          {
+            style: `position: relative;
+                    width: 100%;
+                    margin: 0 0 10px 0;`
+          },
           [
             $(TimelineView, {
               ref: 'miniTimelineView',
@@ -974,13 +1002,7 @@ class SceneTimelineView {
               currentBoardIndex: this.currentBoardIndex,
               getAudioBufferByFilename: this.getAudioBufferByFilename
             }),
-            $(ScaleControlView, {
-              style: `position: absolute;
-                      top: 0;
-                      left: 0;
-                      bottom: 0;
-                      right: 0;`
-            })
+            $(ScaleControlView, { ref: 'ScaleControlView' })
           ]
         ),
 
@@ -1012,7 +1034,6 @@ class SceneTimelineView {
     if (props.scale != null) this.scale = props.scale
     if (props.position != null) this.position = props.position
 
-    if (props.containerWidth != null) this.containerWidth = props.containerWidth
     if (props.pixelsPerMsec != null) this.pixelsPerMsec = props.pixelsPerMsec
     if (props.mini != null) this.mini = props.mini
 
@@ -1030,6 +1051,7 @@ class SceneTimelineView {
   connectedCallback () {
     this.refs.miniTimelineView.connectedCallback()
     this.refs.timelineView.connectedCallback()
+    this.refs.ScaleControlView.connectedCallback()
   }
 }
 
