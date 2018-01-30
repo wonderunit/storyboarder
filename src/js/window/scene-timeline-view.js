@@ -33,6 +33,131 @@ const drawBuffer = (width, height, context, data) => {
   }
 }
 
+class ScaleControlView {
+  constructor (props) {
+    this.style = props.style
+
+    this.state = {
+      dragTarget: undefined,
+      dragX: 0
+    }
+
+    this.onCancelMove = this.onCancelMove.bind(this)
+    this.onDocumentPointerMove = this.onDocumentPointerMove.bind(this)
+
+    etch.initialize(this)
+  }
+  update (props) {
+    etch.update(this)
+  }
+  render () {
+    let handleWidth = this.constructor.HANDLE_WIDTH
+
+    return $.div({
+      style: this.style +
+            `width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);`
+    }, [
+      $.div({
+        on: {
+          pointerdown: this.onHandlePointerDown,
+          pointerup: this.onHandlePointerUp
+        },
+        ref: 'handleMiddle',
+        style: `position: absolute;
+                width: 100%;
+                top: 0;
+                left: 0;
+                height: 100%;
+                cursor: ew-resize;
+
+                color: white;
+                font-size: 12px;
+                line-height: 1;
+
+                background-color: rgba(0, 0, 255, 0.5);`
+      }, `t:${this.state.dragTarget} x:${this.state.dragX}`),
+      $.div({
+        on: {
+          pointerdown: this.onHandlePointerDown,
+          pointerup: this.onHandlePointerUp
+        },
+        ref: 'handleLeft',
+        style: `position: absolute;
+                width: ${handleWidth}px;
+                left: -${handleWidth}px;
+                height: 100%;
+                cursor: e-resize;
+                background-color: rgba(255, 0, 0, 0.5);`
+      }),
+      $.div({
+        on: {
+          pointerdown: this.onHandlePointerDown,
+          pointerup: this.onHandlePointerUp
+        },
+        ref: 'handleRight',
+        style: `position: absolute;
+                width: ${handleWidth}px;
+                right: -${handleWidth}px;
+                height: 100%;
+                cursor: w-resize;
+                background-color: rgba(255, 0, 0, 0.5);`
+      })
+    ])
+  }
+
+  async destroy () {
+    await etch.destroy(this)
+
+    this.removeEventListeners()
+  }
+
+  onHandlePointerDown (event) {
+    if (event.target === this.refs.handleLeft ||
+        event.target === this.refs.handleRight ||
+        event.target === this.refs.handleMiddle) {
+      this.state.dragTarget = event.target
+    }
+    this.attachEventListeners()
+    this.update()
+  }
+  onHandlePointerUp (event) {
+    if (event.target === this.refs.handleLeft ||
+        event.target === this.refs.handleRight ||
+        event.target === this.refs.handleMiddle) {
+      // TODO
+    }
+    this.resetDrag()
+    this.removeEventListeners()
+    this.update()
+  }
+  onDocumentPointerMove (event) {
+    this.state.dragX += event.movementX
+    this.update()
+  }
+  onCancelMove (event) {
+    this.resetDrag()
+    this.removeEventListeners()
+    this.update()
+  }
+  resetDrag () {
+    this.state.dragTarget = undefined
+    this.state.dragX = 0
+  }
+  attachEventListeners () {
+    document.addEventListener('pointerup', this.onCancelMove)
+    window.addEventListener('blur', this.onCancelMove)
+    document.addEventListener('pointermove', this.onDocumentPointerMove)
+  }
+  removeEventListeners () {
+    document.removeEventListener('pointerup', this.onCancelMove)
+    window.removeEventListener('blur', this.onCancelMove)
+    document.removeEventListener('pointermove', this.onDocumentPointerMove)
+  }
+}
+ScaleControlView.HANDLE_WIDTH = 4
+
 class BoardView {
   constructor (props, children) {
     this.scene = props.scene
@@ -825,24 +950,38 @@ class SceneTimelineView {
 
   render () {
     return $.div(
-      {},
+      {
+        style: `margin: 0 10px;`
+      },
       [
         $.div(
-          { style: 'width: 33.333%;' },
-          $(TimelineView, {
-            ref: 'miniTimelineView',
+          { style: `position: relative;
+                    width: 300px;
+                    margin-left: ${ScaleControlView.HANDLE_WIDTH}px;
+                    margin-bottom: 10px;` },
+          [
+            $(TimelineView, {
+              ref: 'miniTimelineView',
 
-            scene: this.scene,
-            scenePath: this.scenePath, // TODO necessary?
+              scene: this.scene,
+              scenePath: this.scenePath, // TODO necessary?
 
-            scale: this.scale,
-            position: this.position,
+              scale: this.scale,
+              position: this.position,
 
-            mini: true,
+              mini: true,
 
-            currentBoardIndex: this.currentBoardIndex,
-            getAudioBufferByFilename: this.getAudioBufferByFilename
-          })
+              currentBoardIndex: this.currentBoardIndex,
+              getAudioBufferByFilename: this.getAudioBufferByFilename
+            }),
+            $(ScaleControlView, {
+              style: `position: absolute;
+                      top: 0;
+                      left: 0;
+                      bottom: 0;
+                      right: 0;`
+            })
+          ]
         ),
 
         $(TimelineView, {
