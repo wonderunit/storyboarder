@@ -1,6 +1,8 @@
 const etch = require('etch')
 const $ = etch.dom
 
+const { clamp } = require('../utils')
+
 const boardModel = require('../models/board')
 const sceneModel = require('../models/scene')
 
@@ -38,8 +40,8 @@ class ScaleControlView {
     this.style = props.style
     this.containerWidth = 0
 
-    this.handleLeftPct = 0
-    this.handleRightPct = 1
+    this.handleLeftPct = 0.25
+    this.handleRightPct = 0.75
 
     this.state = {
       dragTarget: undefined,
@@ -75,7 +77,19 @@ class ScaleControlView {
       if (this.state.dragTarget === this.refs.handleRight) {
         handleRightX -= this.state.dragX
       }
+
+      if (this.state.dragTarget === this.refs.handleMiddle) {
+        let handleWidthPct = this.handleRightPct - this.handleLeftPct
+        handleLeftX += this.state.dragX
+        handleRightX = (this.containerWidth - handleLeftX) - (handleWidthPct * this.containerWidth)
+      }
     }
+
+    handleLeftX = clamp(handleLeftX, 0, this.containerWidth)
+    handleRightX = clamp(handleRightX, 0, this.containerWidth)
+
+    let handleMiddleL = handleLeftX
+    let handleMiddleR = handleRightX
 
     return $.div({
       ref: 'container',
@@ -92,9 +106,9 @@ class ScaleControlView {
         },
         ref: 'handleMiddle',
         style: `position: absolute;
-                width: 100%;
                 top: 0;
-                left: 0;
+                left: ${handleMiddleL}px;
+                right: ${handleMiddleR}px;
                 height: 100%;
                 cursor: ew-resize;
 
@@ -212,7 +226,7 @@ class ScaleControlView {
     document.removeEventListener('pointermove', this.onDocumentPointerMove)
   }
 }
-ScaleControlView.HANDLE_WIDTH = 4
+ScaleControlView.HANDLE_WIDTH = 8
 
 class BoardView {
   constructor (props, children) {
