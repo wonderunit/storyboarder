@@ -41,6 +41,8 @@ class BoardView {
     this.board = props.board
     this.kind = props.kind
 
+    this.src = props.src
+
     this.scale = props.scale
     this.offset = props.offset
 
@@ -55,7 +57,6 @@ class BoardView {
     this.onBoardPointerUp = props.onBoardPointerUp
 
     this.getAudioBufferByFilename = props.getAudioBufferByFilename
-    this.getSrcByUid = props.getSrcByUid
 
     etch.initialize(this)
   }
@@ -80,10 +81,6 @@ class BoardView {
       : kind === 'board'
         ? imageHeight + 5 + 5 + 12 + 5
         : 32
-
-    let src = this.kind === 'board' && !this.mini
-      ? this.getSrcByUid(this.board.uid)
-      : ''
 
     return $.div(
       {
@@ -192,7 +189,7 @@ class BoardView {
                   width: `${(imageHeight) * this.scene.aspectRatio}px`,
                   height: `${imageHeight}px`
                 },
-                src: src
+                src: this.src
               })
               : null,
             kind === 'board'
@@ -278,6 +275,8 @@ class BoardView {
 
     if (props.kind != null) this.kind = props.kind
     if (props.board != null) this.board = props.board
+
+    if (props.src != null) this.src = props.src
 
     if (props.scale != null) this.scale = props.scale
     if (props.offset != null) this.offset = props.offset
@@ -427,6 +426,7 @@ class TimelineView {
           pixelsPerMsec: this.pixelsPerMsec,
           scale: this.scale,
           board: board,
+          src: this.mini ? undefined : this.getSrcByUid(board.uid),
           kind: 'board',
           scene: this.scene,
           scenePath: this.scenePath, // TODO necessary?
@@ -437,8 +437,7 @@ class TimelineView {
           dragging: !!(this.state.draggableBoardView &&
                     this.state.draggableBoardView.board === board),
           mini: this.mini,
-          getAudioBufferByFilename: this.getAudioBufferByFilename,
-          getSrcByUid: this.getSrcByUid
+          getAudioBufferByFilename: this.getAudioBufferByFilename
         }))
 
     let lanes = [{ boards: [], endInMsecs: 0 }]
