@@ -40,7 +40,6 @@ class ScaleControlView {
 
     this.state = {
       dragTarget: undefined,
-      dragStartX: 0,
       dragX: 0
     }
 
@@ -56,11 +55,14 @@ class ScaleControlView {
     etch.update(this)
   }
   render () {
-    let containerWidth = this.containerWidth
     let handleWidth = this.constructor.HANDLE_WIDTH
 
+    let pct = this.state.dragTarget
+      ? this.state.dragX / this.containerWidth
+      : 0
+
     return $.div({
-      refs: 'container',
+      ref: 'container',
       style: `position: absolute;
               top: 0;
               left: 0;
@@ -76,7 +78,7 @@ class ScaleControlView {
         style: `position: absolute;
                 width: 100%;
                 top: 0;
-                left: ${containerWidth}px;
+                left: 0;
                 height: 100%;
                 cursor: ew-resize;
 
@@ -85,7 +87,12 @@ class ScaleControlView {
                 line-height: 1;
 
                 background-color: rgba(0, 0, 255, 0.5);`
-      }, `t:${this.state.dragTarget} sx:${this.state.dragStartX} dx:${this.state.dragX}`),
+      },
+        `t:${this.state.dragTarget}
+        dx:${this.state.dragX}
+        cw:${this.containerWidth}
+        pct:${pct}`
+      ),
       $.div({
         on: {
           pointerdown: this.onHandlePointerDown,
@@ -94,7 +101,7 @@ class ScaleControlView {
         ref: 'handleLeft',
         style: `position: absolute;
                 width: ${handleWidth}px;
-                left: -${handleWidth}px;
+                left: ${-handleWidth}px;
                 height: 100%;
                 cursor: e-resize;
                 background-color: rgba(255, 0, 0, 0.5);`
@@ -135,7 +142,14 @@ class ScaleControlView {
   }
 
   onElementResize (rect) {
-    this.update({ containerWidth: rect.width })
+    // cancel any current dragging operation
+    this.resetDrag()
+    this.removeEventListeners()
+
+    // update
+    this.update({
+      containerWidth: rect.width
+    })
   }
 
   onHandlePointerDown (event) {
@@ -143,7 +157,6 @@ class ScaleControlView {
         event.target === this.refs.handleRight ||
         event.target === this.refs.handleMiddle) {
       this.state.dragTarget = event.target
-      this.state.dragStartX = this.state.dragTarget.getBoundingClientRect().left
       this.state.dragX = 0
     }
     this.attachEventListeners()
@@ -171,7 +184,6 @@ class ScaleControlView {
   resetDrag () {
     this.state.dragTarget = undefined
     this.state.dragX = 0
-    this.state.dragStartX = 0
   }
   attachEventListeners () {
     document.addEventListener('pointerup', this.onCancelMove)
