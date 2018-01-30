@@ -38,6 +38,9 @@ class ScaleControlView {
     this.style = props.style
     this.containerWidth = 0
 
+    this.handleLeftPct = 0
+    this.handleRightPct = 1
+
     this.state = {
       dragTarget: undefined,
       dragX: 0
@@ -61,6 +64,19 @@ class ScaleControlView {
       ? this.state.dragX / this.containerWidth
       : 0
 
+    let handleLeftX = this.containerWidth * this.handleLeftPct
+    let handleRightX = this.containerWidth - this.containerWidth * this.handleRightPct
+
+    if (this.state.dragTarget != null) {
+      if (this.state.dragTarget === this.refs.handleLeft) {
+        handleLeftX += this.state.dragX
+      }
+
+      if (this.state.dragTarget === this.refs.handleRight) {
+        handleRightX -= this.state.dragX
+      }
+    }
+
     return $.div({
       ref: 'container',
       style: `position: absolute;
@@ -82,7 +98,7 @@ class ScaleControlView {
                 height: 100%;
                 cursor: ew-resize;
 
-                color: white;
+                color: rgba(255, 255, 255, 0.75);
                 font-size: 12px;
                 line-height: 1;
 
@@ -101,7 +117,7 @@ class ScaleControlView {
         ref: 'handleLeft',
         style: `position: absolute;
                 width: ${handleWidth}px;
-                left: ${-handleWidth}px;
+                left: ${0 - handleWidth + handleLeftX}px;
                 height: 100%;
                 cursor: e-resize;
                 background-color: rgba(255, 0, 0, 0.5);`
@@ -114,7 +130,7 @@ class ScaleControlView {
         ref: 'handleRight',
         style: `position: absolute;
                 width: ${handleWidth}px;
-                right: -${handleWidth}px;
+                right: ${0 - handleWidth + handleRightX}px;
                 height: 100%;
                 cursor: w-resize;
                 background-color: rgba(255, 0, 0, 0.5);`
