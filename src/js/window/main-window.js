@@ -2300,17 +2300,17 @@ const saveThumbnailFile = async (index, options = { forceReadFromFiles: false })
 
 const updateThumbnailDisplayFromFile = index => {
   // load the thumbnail image file
+  let board = boardData.boards[index]
+  let imageFilePath = path.join(boardPath, 'images', boardModel.boardFilenameForThumbnail(board))
+  let src = imageFilePath + '?' + getEtag(path.join(boardPath, 'images', boardModel.boardFilenameForThumbnail(board)))
+
+  // does a thumbnail exist in the thumbnail drawer already?
   let el = document.querySelector(`[data-thumbnail="${index}"] img`)
-  // does it exist in the thumbnail drawer already?
   if (el) {
-    let board = boardData.boards[index]
-    let imageFilePath = path.join(boardPath, 'images', boardModel.boardFilenameForThumbnail(board))
-    let src = imageFilePath + '?' + getEtag(path.join(boardPath, 'images', boardModel.boardFilenameForThumbnail(board)))
     el.src = src
   }
 
-  // delete cached image
-  delete srcByUid[boardData.boards[index].uid]
+  srcByUid[boardData.boards[index].uid] = src
 
   // TODO
   renderSceneTimeline()
