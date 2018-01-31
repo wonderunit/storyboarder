@@ -40,8 +40,10 @@ class ScaleControlView {
     this.style = props.style
     this.containerWidth = 0
 
+    // stored position (does not change during drag)
     this.handleLeftPct = 0
     this.handleRightPct = 1
+    // position updated during drag
     this.handleLeftX = 0
     this.handleRightX = 0
 
