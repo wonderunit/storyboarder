@@ -66,10 +66,6 @@ class ScaleControlView {
   render () {
     let handleWidth = this.constructor.HANDLE_WIDTH
 
-    let pct = this.state.dragTarget
-      ? this.state.dragX / this.containerWidth
-      : 0
-
     return $.div({
       ref: 'container',
       style: `position: absolute;
