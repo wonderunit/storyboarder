@@ -38,6 +38,8 @@ const drawBuffer = (width, height, context, data) => {
 class ScaleControlView {
   constructor (props) {
     this.style = props.style
+    this.onDrag = props.onDrag
+
     this.containerWidth = 0
 
     // stored position (does not change during drag)
@@ -61,6 +63,8 @@ class ScaleControlView {
   }
   update (props = {}) {
     if (props.containerWidth != null) this.containerWidth = props.containerWidth
+    if (props.onDrag != null) this.onDrag = props.onDrag
+
     etch.update(this)
   }
   render () {
@@ -173,6 +177,12 @@ class ScaleControlView {
     this.state.dragX += event.movementX
     this.updateFromDrag()
     this.update()
+
+    let [start, end] = this.getHandlePcts()
+    this.onDrag && this.onDrag({
+      start,
+      end
+    })
   }
   onHandlePointerUp (event) {
     this.setDragChanges()
@@ -214,11 +224,16 @@ class ScaleControlView {
     this.handleRightX = clamp(this.handleRightX, 0, this.containerWidth)
   }
 
-  setDragChanges () {
+  getHandlePcts () {
     let hLeftPct = this.handleLeftX / this.containerWidth
     let hRightPct = 1 - (this.handleRightX / this.containerWidth)
-    this.handleLeftPct = clamp(hLeftPct, 0, 1)
-    this.handleRightPct = clamp(hRightPct, 0, 1)
+    return [clamp(hLeftPct, 0, 1), clamp(hRightPct, 0, 1)]
+  }
+
+  setDragChanges () {
+    let [start, end] = this.getHandlePcts()
+    this.handleLeftPct = clamp(start, 0, 1)
+    this.handleRightPct = clamp(end, 0, 1)
   }
   resetDrag () {
     this.state.dragTarget = undefined
@@ -1000,6 +1015,12 @@ class TimelineView {
     let entireWidth = this.sceneDurationInMsecs * this.pixelsPerMsec * this.scale
     let scrollLeft = this.position * entireWidth
 
+    // if (!this.mini) {
+    //   console.log('timeline', {
+    //     position: this.position,
+    //     scrollLeft
+    //   })
+    // }
     this.refs.timelineOuter.scrollLeft = scrollLeft
   }
 }
@@ -1072,7 +1093,21 @@ class SceneTimelineView {
               currentBoardIndex: this.currentBoardIndex,
               getAudioBufferByFilename: this.getAudioBufferByFilename
             }),
-            $(ScaleControlView, { ref: 'ScaleControlView' })
+
+            $(ScaleControlView, {
+              ref: 'ScaleControlView',
+              onDrag: ({ start, end }) => {
+                let position = start
+                let scale = 1 / (end - start)
+                // console.log('drag', {
+                //   position, scale
+                // })
+                this.update({
+                  position,
+                  scale
+                })
+              }
+            })
           ]
         )
       ]
