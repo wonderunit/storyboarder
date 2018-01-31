@@ -95,10 +95,8 @@ class ScaleControlView {
 
                 background-color: rgba(0, 0, 255, 0.5);`
       },
-        `hLX:${this.handleLeftX.toPrecision(3)}
-         hRX:${this.handleRightX.toPrecision(3)}
-         hLP:${this.handleLeftPct.toPrecision(3)}
-         hRP:${this.handleRightPct.toPrecision(3)}
+        `[${this.handleLeftX.toPrecision(3)}–${this.handleRightX.toPrecision(3)}]
+         [${this.handleLeftPct.toPrecision(3)}–${this.handleRightPct.toPrecision(3)}]
         `
       ),
       $.div({
@@ -173,27 +171,19 @@ class ScaleControlView {
     this.attachEventListeners()
     this.update()
   }
-  onHandlePointerUp (event) {
-    if (event.target === this.refs.handleLeft ||
-        event.target === this.refs.handleRight ||
-        event.target === this.refs.handleMiddle) {
-      this.setDragChanges()
-    }
-    this.resetDrag()
-    this.removeEventListeners()
-    this.update()
-  }
   onDocumentPointerMove (event) {
     this.state.dragX += event.movementX
     this.updateFromDrag()
     this.update()
   }
+  onHandlePointerUp (event) {
+    this.setDragChanges()
+    this.resetDrag()
+    this.removeEventListeners()
+    this.update()
+  }
   onCancelMove (event) {
-    if (event.target === this.refs.handleLeft ||
-        event.target === this.refs.handleRight ||
-        event.target === this.refs.handleMiddle) {
-      this.setDragChanges()
-    }
+    this.setDragChanges()
     this.resetDrag()
     this.removeEventListeners()
     this.update()
@@ -1044,6 +1034,25 @@ class SceneTimelineView {
         style: `margin: 0 ${6 + ScaleControlView.HANDLE_WIDTH * 2}px;`
       },
       [
+        $(TimelineView, {
+          ref: 'timelineView',
+
+          scene: this.scene,
+          scenePath: this.scenePath, // TODO necessary?
+
+          scale: this.scale,
+          position: this.position,
+
+          currentBoardIndex: this.currentBoardIndex,
+
+          getAudioBufferByFilename: this.getAudioBufferByFilename,
+          getSrcByUid: this.getSrcByUid,
+
+          onMoveSelectedBoards: this.onMoveSelectedBoards,
+          onSetCurrentBoardIndex: this.onSetCurrentBoardIndex,
+          onModifyBoardDurationByIndex: this.onModifyBoardDurationByIndex
+        }),
+
         $.div(
           {
             style: `position: relative;
@@ -1067,26 +1076,7 @@ class SceneTimelineView {
             }),
             $(ScaleControlView, { ref: 'ScaleControlView' })
           ]
-        ),
-
-        $(TimelineView, {
-          ref: 'timelineView',
-
-          scene: this.scene,
-          scenePath: this.scenePath, // TODO necessary?
-
-          scale: this.scale,
-          position: this.position,
-
-          currentBoardIndex: this.currentBoardIndex,
-
-          getAudioBufferByFilename: this.getAudioBufferByFilename,
-          getSrcByUid: this.getSrcByUid,
-
-          onMoveSelectedBoards: this.onMoveSelectedBoards,
-          onSetCurrentBoardIndex: this.onSetCurrentBoardIndex,
-          onModifyBoardDurationByIndex: this.onModifyBoardDurationByIndex
-        })
+        )
       ]
     )
   }
