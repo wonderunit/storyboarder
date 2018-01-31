@@ -901,3 +901,10 @@ input[type=range]:focus::-webkit-slider-runnable-track {
 #board-metadata .audiofile_container--recording .flatbutton:hover{
   background-color: #5d2b2b;
 }
+
+#scene-timeline-container .timeline-outer::-webkit-scrollbar {
+  display:none
+}
+#scene-timeline-container .timeline-outer::-webkit-scrollbar-thumb {
+  display:none
+}
