@@ -1064,8 +1064,8 @@ class SceneTimelineView {
               scene: this.scene,
               scenePath: this.scenePath, // TODO necessary?
 
-              scale: this.scale,
-              position: this.position,
+              scale: 1,
+              position: 0,
 
               mini: true,
 
