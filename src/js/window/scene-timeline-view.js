@@ -40,8 +40,10 @@ class ScaleControlView {
     this.style = props.style
     this.containerWidth = 0
 
-    this.handleLeftPct = 0.25
-    this.handleRightPct = 0.75
+    this.handleLeftPct = 0
+    this.handleRightPct = 1
+    this.handleLeftX = 0
+    this.handleRightX = 0
 
     this.state = {
       dragTarget: undefined,
@@ -66,31 +68,6 @@ class ScaleControlView {
       ? this.state.dragX / this.containerWidth
       : 0
 
-    let handleLeftX = this.containerWidth * this.handleLeftPct
-    let handleRightX = this.containerWidth - this.containerWidth * this.handleRightPct
-
-    if (this.state.dragTarget != null) {
-      if (this.state.dragTarget === this.refs.handleLeft) {
-        handleLeftX += this.state.dragX
-      }
-
-      if (this.state.dragTarget === this.refs.handleRight) {
-        handleRightX -= this.state.dragX
-      }
-
-      if (this.state.dragTarget === this.refs.handleMiddle) {
-        let handleWidthPct = this.handleRightPct - this.handleLeftPct
-        handleLeftX += this.state.dragX
-        handleRightX = (this.containerWidth - handleLeftX) - (handleWidthPct * this.containerWidth)
-      }
-    }
-
-    handleLeftX = clamp(handleLeftX, 0, this.containerWidth)
-    handleRightX = clamp(handleRightX, 0, this.containerWidth)
-
-    let handleMiddleL = handleLeftX
-    let handleMiddleR = handleRightX
-
     return $.div({
       ref: 'container',
       style: `position: absolute;
@@ -107,8 +84,8 @@ class ScaleControlView {
         ref: 'handleMiddle',
         style: `position: absolute;
                 top: 0;
-                left: ${handleMiddleL}px;
-                right: ${handleMiddleR}px;
+                left: ${this.handleLeftX}px;
+                right: ${this.handleRightX}px;
                 height: 100%;
                 cursor: ew-resize;
 
@@ -118,10 +95,11 @@ class ScaleControlView {
 
                 background-color: rgba(0, 0, 255, 0.5);`
       },
-        `t:${this.state.dragTarget}
-        dx:${this.state.dragX}
-        cw:${this.containerWidth}
-        pct:${pct}`
+        `hLX:${this.handleLeftX.toPrecision(3)}
+         hRX:${this.handleRightX.toPrecision(3)}
+         hLP:${this.handleLeftPct.toPrecision(3)}
+         hRP:${this.handleRightPct.toPrecision(3)}
+        `
       ),
       $.div({
         on: {
@@ -131,7 +109,7 @@ class ScaleControlView {
         ref: 'handleLeft',
         style: `position: absolute;
                 width: ${handleWidth}px;
-                left: ${0 - handleWidth + handleLeftX}px;
+                left: ${0 - handleWidth + this.handleLeftX}px;
                 height: 100%;
                 cursor: e-resize;
                 background-color: rgba(255, 0, 0, 0.5);`
@@ -144,7 +122,7 @@ class ScaleControlView {
         ref: 'handleRight',
         style: `position: absolute;
                 width: ${handleWidth}px;
-                right: ${0 - handleWidth + handleRightX}px;
+                right: ${0 - handleWidth + this.handleRightX}px;
                 height: 100%;
                 cursor: w-resize;
                 background-color: rgba(255, 0, 0, 0.5);`
@@ -176,6 +154,9 @@ class ScaleControlView {
     this.resetDrag()
     this.removeEventListeners()
 
+    // reflect drag points
+    this.updateFromDrag()
+
     // update
     this.update({
       containerWidth: rect.width
@@ -196,7 +177,7 @@ class ScaleControlView {
     if (event.target === this.refs.handleLeft ||
         event.target === this.refs.handleRight ||
         event.target === this.refs.handleMiddle) {
-      // TODO
+      this.setDragChanges()
     }
     this.resetDrag()
     this.removeEventListeners()
@@ -204,12 +185,52 @@ class ScaleControlView {
   }
   onDocumentPointerMove (event) {
     this.state.dragX += event.movementX
+    this.updateFromDrag()
     this.update()
   }
   onCancelMove (event) {
+    if (event.target === this.refs.handleLeft ||
+        event.target === this.refs.handleRight ||
+        event.target === this.refs.handleMiddle) {
+      this.setDragChanges()
+    }
     this.resetDrag()
     this.removeEventListeners()
     this.update()
+  }
+  updateFromDrag () {
+    // initialize to the last known position (from when dragging started)
+    this.handleLeftX = this.containerWidth * this.handleLeftPct
+    this.handleRightX = this.containerWidth - this.containerWidth * this.handleRightPct
+
+    // add the delta accumulated over all mouse moves since we started dragging
+    if (this.state.dragTarget != null) {
+      if (this.state.dragTarget === this.refs.handleLeft) {
+        this.handleLeftX += this.state.dragX
+      }
+
+      if (this.state.dragTarget === this.refs.handleRight) {
+        this.handleRightX -= this.state.dragX
+      }
+
+      if (this.state.dragTarget === this.refs.handleMiddle) {
+        let handleWidthPct = this.handleRightPct - this.handleLeftPct
+        this.handleLeftX += this.state.dragX
+        this.handleRightX = (this.containerWidth - this.handleLeftX) -
+                        (handleWidthPct * this.containerWidth)
+      }
+    }
+
+    // clamp boundaries
+    this.handleLeftX = clamp(this.handleLeftX, 0, this.containerWidth)
+    this.handleRightX = clamp(this.handleRightX, 0, this.containerWidth)
+  }
+
+  setDragChanges () {
+    let hLeftPct = this.handleLeftX / this.containerWidth
+    let hRightPct = 1 - (this.handleRightX / this.containerWidth)
+    this.handleLeftPct = clamp(hLeftPct, 0, 1)
+    this.handleRightPct = clamp(hRightPct, 0, 1)
   }
   resetDrag () {
     this.state.dragTarget = undefined
