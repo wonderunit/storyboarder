@@ -65,6 +65,20 @@ class ScaleControlView {
     if (props.containerWidth != null) this.containerWidth = props.containerWidth
     if (props.onDrag != null) this.onDrag = props.onDrag
 
+    if (props.position != null) {
+      // update from virtual `position`
+      let handleWidthPct = this.handleRightPct - this.handleLeftPct
+
+      this.handleLeftPct = props.position
+      this.handleRightPct = props.position + handleWidthPct
+
+      // clamp boundaries
+      this.handleLeftPct = clamp(this.handleLeftPct, 0, 1)
+      this.handleRightPct = clamp(this.handleRightPct, 0, 1)
+
+      this.updateFromDrag()
+    }
+
     etch.update(this)
   }
   render () {
@@ -617,6 +631,7 @@ class TimelineView {
     this.onMoveSelectedBoards = props.onMoveSelectedBoards
     this.onSetCurrentBoardIndex = props.onSetCurrentBoardIndex
     this.onModifyBoardDurationByIndex = props.onModifyBoardDurationByIndex
+    this.onScroll = props.onScroll
 
     this.state = {
       resizableBoardView: undefined,
@@ -995,16 +1010,15 @@ class TimelineView {
     await this.completeDragOrResize()
   }
 
-  // async onWheel (event) {
-  //   console.log(this.scale)
-  //   // TODO update external state so it syncs with zoom control
-  //   await this.update({
-  //     scale: this.scale + (event.deltaY * this.pixelsPerMsec),
-  //     position: this.position + (event.deltaX * this.pixelsPerMsec / 100)
-  //   })
-  // }
+  onWheel (event) {
+    let scrollable = this.refs.timelineOuter
+    let position = scrollable.scrollLeft / scrollable.scrollWidth
+    let scale = this.scale // + (event.deltaY * this.pixelsPerMsec)
 
-  // uncomment to use scrollLeft:
+    this.onScroll && this.onScroll({ position, scale })
+  }
+
+  // use scrollLeft:
   async writeAfterUpdate () {
     /*
     let maxPos = 1 - (1 / this.scale)
@@ -1069,7 +1083,13 @@ class SceneTimelineView {
 
           onMoveSelectedBoards: this.onMoveSelectedBoards,
           onSetCurrentBoardIndex: this.onSetCurrentBoardIndex,
-          onModifyBoardDurationByIndex: this.onModifyBoardDurationByIndex
+          onModifyBoardDurationByIndex: this.onModifyBoardDurationByIndex,
+
+          onScroll: ({ position, scale }) => {
+            this.refs.scaleControlView.update({
+              position: position
+            })
+          }
         }),
 
         $.div(
@@ -1095,7 +1115,7 @@ class SceneTimelineView {
             }),
 
             $(ScaleControlView, {
-              ref: 'ScaleControlView',
+              ref: 'scaleControlView',
               onDrag: ({ start, end }) => {
                 let position = start
                 let scale = 1 / (end - start)
@@ -1137,7 +1157,7 @@ class SceneTimelineView {
   connectedCallback () {
     this.refs.miniTimelineView.connectedCallback()
     this.refs.timelineView.connectedCallback()
-    this.refs.ScaleControlView.connectedCallback()
+    this.refs.scaleControlView.connectedCallback()
   }
 }
 
