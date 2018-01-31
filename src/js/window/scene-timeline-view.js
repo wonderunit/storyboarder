@@ -103,18 +103,9 @@ class ScaleControlView {
                 left: ${this.handleLeftX}px;
                 right: ${this.handleRightX}px;
                 height: 100%;
-                cursor: ew-resize;
-
-                color: rgba(255, 255, 255, 0.75);
-                font-size: 12px;
-                line-height: 1;
-
-                background-color: rgba(0, 0, 255, 0.5);`
-      },
-        `[${this.handleLeftX.toPrecision(3)}–${this.handleRightX.toPrecision(3)}]
-         [${this.handleLeftPct.toPrecision(3)}–${this.handleRightPct.toPrecision(3)}]
-        `
-      ),
+                background-color: rgba(0, 0, 255, 0.2);
+                cursor: ew-resize;`
+      }),
       $.div({
         on: {
           pointerdown: this.onHandlePointerDown,
@@ -125,8 +116,8 @@ class ScaleControlView {
                 width: ${handleWidth}px;
                 left: ${0 - handleWidth + this.handleLeftX}px;
                 height: 100%;
-                cursor: e-resize;
-                background-color: rgba(255, 0, 0, 0.5);`
+                background-color: blue;
+                cursor: e-resize;`
       }),
       $.div({
         on: {
@@ -138,8 +129,8 @@ class ScaleControlView {
                 width: ${handleWidth}px;
                 right: ${0 - handleWidth + this.handleRightX}px;
                 height: 100%;
-                cursor: w-resize;
-                background-color: rgba(255, 0, 0, 0.5);`
+                background-color: blue;
+                cursor: w-resize;`
       })
     ])
   }
