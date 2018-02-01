@@ -68,9 +68,18 @@ const exportForWeb = async (srcFilePath, outputFolderPath) => {
 
     for (let board of scene.boards) {
       board.url = path.basename(
-        boardModel.boardFilenameForExport(board, index, basenameWithoutExt),
+        board.url,
         '.png'
       ) + '.jpg'
+
+      // TODO layers? remove?
+
+      if (board.audio) {
+        board.audio.filename = path.basename(
+          board.audio.filename,
+          '.wav'
+        ) + '.mp4'
+      }
     }
 
     fs.writeFileSync(path.join(outputFolderPath, 'main.storyboarder'), JSON.stringify(scene, null, 2))
