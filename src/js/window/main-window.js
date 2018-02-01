@@ -1578,9 +1578,12 @@ const renderScene = async () => {
 
       getAudioBufferByFilename: audioPlayback.getAudioBufferByFilename.bind(audioPlayback),
 
-      onSetCurrentBoardIndex: index => {
-        currentBoard = index
-        gotoBoard(currentBoard)
+      onSetCurrentBoardIndex: async index => {
+        if (currentBoard !== index) {
+          await saveImageFile()
+          currentBoard = index
+          gotoBoard(currentBoard)
+        }
       },
 
       onMoveSelectedBoards: (_selections, _position) => {
