@@ -1,0 +1,105 @@
+const fs = require('fs-extra')
+const path = require('path')
+
+const boardModel = require('../models/board')
+const exporterCommon = require('./common')
+
+const exportForWeb = async (srcFilePath, outputFolderPath) => {
+  console.log('exportForWeb')
+  try {
+    // read the scene
+    let scene = JSON.parse(fs.readFileSync(srcFilePath))
+
+    if (!fs.existsSync(outputFolderPath)) {
+      fs.mkdirSync(outputFolderPath)
+    }
+
+    let writers = []
+    let index = 0
+    let basenameWithoutExt = path.basename(srcFilePath, path.extname(srcFilePath))
+
+    for (let board of scene.boards) {
+      writers.push(new Promise(async resolve => {
+        try {
+          let filenameForExport = path.basename(
+            boardModel.boardFilenameForExport(board, index, basenameWithoutExt),
+            '.png'
+          ) + '.jpg'
+
+          let originalSize = boardModel.boardFileImageSize(scene)
+
+          let fit = fitToDst(
+            { width: Infinity, height: 720 },
+            { width: originalSize[0], height: originalSize[1] }
+          )
+          let reducedSize = [fit[2], fit[3]].map(Math.round)
+
+          let jpegQuality = 0.5
+
+          console.log({
+            board,
+            filenameForExport,
+            originalSize,
+            reducedSize,
+            srcFilePath,
+            outputFolderPath,
+            jpegQuality
+          })
+
+          await exporterCommon.exportFlattenedBoard(
+            board,
+            filenameForExport,
+            reducedSize,
+            srcFilePath,
+            outputFolderPath,
+            jpegQuality
+          )
+
+          resolve()
+        } catch (err) {
+          console.log(err.message)
+          resolve()
+        }
+      }))
+      index = index + 1
+    }
+
+    await Promise.all(writers)
+  } finally {
+    console.log('Done!')
+  }
+}
+
+module.exports = {
+  exportForWeb
+}
+
+// TODO make these shared util fns instead of copying from `main-window.js`
+
+// via https://stackoverflow.com/questions/6565703/math-algorithm-fit-image-to-screen-retain-aspect-ratio
+//
+// Image data: (wi, hi) and define ri = wi / hi
+// Screen resolution: (ws, hs) and define rs = ws / hs
+//
+// rs > ri ? (wi * hs/hi, hs) : (ws, hi * ws/wi)
+//
+// top = (hs - hnew)/2
+// left = (ws - wnew)/2
+
+const fitToDst = (dst, src) => {
+  let wi = src.width
+  let hi = src.height
+  let ri = wi / hi
+
+  let ws = dst.width
+  let hs = dst.height
+  let rs = ws / hs
+
+  let [wnew, hnew] = rs > ri ? [wi * hs / hi, hs] : [ws, hi * ws / wi]
+
+  let x = (ws - wnew) / 2
+  let y = (hs - hnew) / 2
+
+  return [x, y, wnew, hnew]
+}
+

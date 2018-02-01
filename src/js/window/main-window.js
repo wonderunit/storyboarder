@@ -43,6 +43,7 @@ const exporter = require('./exporter')
 const exporterCommon = require('../exporters/common')
 const exporterCopyProject = require('../exporters/copy-project')
 const exporterArchive = require('../exporters/archive')
+const exporterWeb = require('../exporters/web')
 
 const prefsModule = require('electron').remote.require('./prefs')
 prefsModule.init(path.join(app.getPath('userData'), 'pref.json'))
@@ -5302,6 +5303,32 @@ const saveAsFolder = async () => {
   }
 }
 
+const exportWeb = async () => {
+  let srcFilePath = boardFilename
+
+  // ensure the current board and data is saved
+  await saveImageFile()
+  saveBoardFile()
+
+  notifications.notify({ message: `Exporting to web-friendly files …` })
+
+  let basename = path.basename(srcFilePath, path.extname(srcFilePath))
+  let timestamp = moment().format('YYYY-MM-DD hh.mm.ss')
+  let outputFolderPath = path.join(boardPath, 'exports', `${basename}-web-${timestamp}`)
+
+  try {
+    await exporterWeb.exportForWeb(srcFilePath, outputFolderPath)
+
+    // TODO zip it
+
+    notifications.notify({ message: `Done.` })
+    shell.showItemInFolder(outputFolderPath)
+  } catch (err) {
+    notifications.notify({ message: `[ERROR] ${err.message}` })
+    notifications.notify({ message: `Failed.` })
+  }
+}
+
 const exportZIP = async () => {
   let srcFilePath = scriptFilePath
     ? scriptFilePath // use the .fountain/.fdx file, if it is defined …
@@ -5712,6 +5739,8 @@ ipcRenderer.on('save', (event, args) => {
 })
 
 ipcRenderer.on('saveAs', (event, args) => saveAsFolder())
+
+ipcRenderer.on('exportWeb', (event, args) => exportWeb())
 
 ipcRenderer.on('exportZIP', (event, args) => exportZIP())
 
