@@ -1002,11 +1002,16 @@ class TimelineView {
   }
 
   onWheel (event) {
-    let scrollable = this.refs.timelineOuter
-    let position = scrollable.scrollLeft / scrollable.scrollWidth
-    let scale = this.scale // + (event.deltaY * this.pixelsPerMsec)
+    // let scrollable = this.refs.timelineOuter
+    // let position = scrollable.scrollLeft / scrollable.scrollWidth
+    // let scale = this.scale // + (event.deltaY * this.pixelsPerMsec)
 
-    this.onScroll && this.onScroll({ position, scale })
+    this.onScroll && this.onScroll(event)
+
+    event.stopPropagation()
+    event.preventDefault()
+    event.returnValue = false
+    return false
   }
 
   // use scrollLeft:
@@ -1049,6 +1054,9 @@ class SceneTimelineView {
     this.onSetCurrentBoardIndex = props.onSetCurrentBoardIndex
     this.onModifyBoardDurationByIndex = props.onModifyBoardDurationByIndex
 
+    this.onTimelineScroll = this.onTimelineScroll.bind(this)
+    this.onScaleControlDrag = this.onScaleControlDrag.bind(this)
+
     etch.initialize(this)
   }
 
@@ -1076,11 +1084,7 @@ class SceneTimelineView {
           onSetCurrentBoardIndex: this.onSetCurrentBoardIndex,
           onModifyBoardDurationByIndex: this.onModifyBoardDurationByIndex,
 
-          onScroll: ({ position, scale }) => {
-            this.refs.scaleControlView.update({
-              position: position
-            })
-          }
+          onScroll: this.onTimelineScroll
         }),
 
         $.div(
@@ -1107,17 +1111,11 @@ class SceneTimelineView {
 
             $(ScaleControlView, {
               ref: 'scaleControlView',
-              onDrag: ({ start, end }) => {
-                let position = start
-                let scale = 1 / (end - start)
-                // console.log('drag', {
-                //   position, scale
-                // })
-                this.update({
-                  position,
-                  scale
-                })
-              }
+
+              // FIXME scrolling
+              // position: this.position,
+
+              onDrag: this.onScaleControlDrag
             })
           ]
         )
@@ -1149,6 +1147,26 @@ class SceneTimelineView {
     this.refs.miniTimelineView.connectedCallback()
     this.refs.timelineView.connectedCallback()
     this.refs.scaleControlView.connectedCallback()
+  }
+
+  onScaleControlDrag ({ start, end }) {
+    let position = start
+    let scale = 1 / (end - start)
+
+    if (scale === Infinity) return
+    this.update({
+      position,
+      scale
+    })
+  }
+
+  onTimelineScroll (event) {
+    // FIXME scrolling
+    // if (this.scale <= 1) return
+    // let pixelsPerMsec = this.refs.timelineView.containerWidth / this.refs.timelineView.sceneDurationInMsecs
+    // this.position = this.position -= ((event.movementX * pixelsPerMsec) / this.scale)
+    // this.position = clamp(this.position, 0, 1)
+    // this.update({ position: this.position })
   }
 }
 
