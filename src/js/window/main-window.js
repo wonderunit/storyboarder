@@ -1591,8 +1591,13 @@ const renderScene = async () => {
       },
 
       onModifyBoardDurationByIndex: (index, duration) => {
+        // TODO could store undo state after idle?
+        // storeUndoStateForScene(true)
         boardData.boards[index].duration = duration
+        // storeUndoStateForScene()
+        markBoardFileDirty()
         renderThumbnailDrawer()
+        renderMetaData()
       },
 
       getSrcByUid: uid => {
