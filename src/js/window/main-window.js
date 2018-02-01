@@ -1576,6 +1576,8 @@ const renderScene = async () => {
 
       mini: false,
 
+      currentBoardIndex: currentBoard,
+
       getAudioBufferByFilename: audioPlayback.getAudioBufferByFilename.bind(audioPlayback),
 
       onSetCurrentBoardIndex: async index => {
@@ -2682,6 +2684,10 @@ let renderMarkerPosition = () => {
     totalTime = (last.time + boardData.defaultBoardTiming)
   }
   document.querySelector('#timeline .right-block').innerHTML = util.msToTime(totalTime)
+
+  sceneTimelineView.update({
+    currentBoardIndex: currentBoard
+  })
 }
 
 let renderMetaData = () => {

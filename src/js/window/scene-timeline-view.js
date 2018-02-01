@@ -6,7 +6,13 @@ const { clamp } = require('../utils')
 const boardModel = require('../models/board')
 const sceneModel = require('../models/scene')
 
-const msToTime = ms => new Date(ms).toISOString().slice(14, -1)
+const msToTime = ms => {
+  let value = new Date(ms).toISOString().slice(14, -1)
+  // skip minutes if unused
+  if (value.match(/^00:/)) value = value.slice(1, -1)
+  if (value.match(/.00$/)) value = value.slice(0, -3)
+  return value
+}
 
 // via https://webaudiodemos.appspot.com/AudioRecorder/js/audiodisplay.js
 const drawBuffer = (width, height, context, data) => {
@@ -383,7 +389,6 @@ class BoardView {
                     padding: ${kind === 'board' ? '5px' : '0'};
                     box-sizing: border-box;
 
-                    font-family: 'wonderunitsans';
                     line-height: 1;
 
                     ${
@@ -545,7 +550,7 @@ class BoardView {
     this.onBoardPointerUp(event, this)
   }
 }
-BoardView.MINI_HEIGHT = 3
+BoardView.MINI_HEIGHT = 10
 
 class LaneView {
   constructor (props, children) {
@@ -593,7 +598,7 @@ class LaneView {
     this.children.forEach(c => c.component.update())
   }
 }
-LaneView.MINI_HEIGHT = 3
+LaneView.MINI_HEIGHT = 10
 
 class TimelineView {
   // Required: Define an ordinary constructor to initialize your component.
@@ -776,7 +781,7 @@ class TimelineView {
         },
         [
           boardLane,
-          audioLanes,
+          !this.mini ? audioLanes : null,
           this.state.draggableBoardView ? caretView : null
         ]
       )
@@ -975,62 +980,78 @@ class SceneTimelineView {
   }
 
   render () {
+    let sceneDurationInMsecs = sceneModel.sceneDuration(this.scene)
+
+    let currTime = msToTime(Math.floor(this.scene.boards[this.currentBoardIndex].time))
+    let totalTime = msToTime(Math.ceil(sceneDurationInMsecs))
+
     return $.div(
       {
-        style: `margin: 0 ${6 + ScaleControlView.HANDLE_WIDTH * 2}px;`
+        // margin: 0 ${6 + ScaleControlView.HANDLE_WIDTH * 2}px;
       },
       [
-        $(TimelineView, {
-          ref: 'timelineView',
+        $.div({ style: `margin: 0 15px;` },
+          $(TimelineView, {
+            ref: 'timelineView',
 
-          scene: this.scene,
-          scenePath: this.scenePath, // TODO necessary?
+            scene: this.scene,
+            scenePath: this.scenePath, // TODO necessary?
 
-          scale: this.scale,
-          position: this.position,
+            scale: this.scale,
+            position: this.position,
 
-          currentBoardIndex: this.currentBoardIndex,
+            currentBoardIndex: this.currentBoardIndex,
 
-          getAudioBufferByFilename: this.getAudioBufferByFilename,
-          getSrcByUid: this.getSrcByUid,
+            getAudioBufferByFilename: this.getAudioBufferByFilename,
+            getSrcByUid: this.getSrcByUid,
 
-          onMoveSelectedBoards: this.onMoveSelectedBoards,
-          onSetCurrentBoardIndex: this.onSetCurrentBoardIndex,
-          onModifyBoardDurationByIndex: this.onModifyBoardDurationByIndex,
+            onMoveSelectedBoards: this.onMoveSelectedBoards,
+            onSetCurrentBoardIndex: this.onSetCurrentBoardIndex,
+            onModifyBoardDurationByIndex: this.onModifyBoardDurationByIndex,
 
-          onScroll: this.onTimelineScroll
-        }),
+            onScroll: this.onTimelineScroll
+          })
+        ),
 
         $.div(
           {
             style: `position: relative;
                     width: 100%;
-                    margin: 0 0 10px 0;`
+                    display: flex;
+                    flex-direction: row;
+                    color: white;
+                    margin: 0;`
           },
           [
-            $(TimelineView, {
-              ref: 'miniTimelineView',
+            $.div({ class: `timeline__time_block` }, currTime),
+            $.div({ style: `flex: 1; position: relative;` },
+              [
+                $(TimelineView, {
+                  ref: 'miniTimelineView',
 
-              scene: this.scene,
-              scenePath: this.scenePath, // TODO necessary?
+                  scene: this.scene,
+                  scenePath: this.scenePath, // TODO necessary?
 
-              scale: 1,
-              position: 0,
+                  scale: 1,
+                  position: 0,
 
-              mini: true,
+                  mini: true,
 
-              currentBoardIndex: this.currentBoardIndex,
-              getAudioBufferByFilename: this.getAudioBufferByFilename
-            }),
+                  currentBoardIndex: this.currentBoardIndex,
+                  getAudioBufferByFilename: this.getAudioBufferByFilename
+                }),
 
-            $(ScaleControlView, {
-              ref: 'scaleControlView',
+                $(ScaleControlView, {
+                  ref: 'scaleControlView',
 
-              // FIXME scrolling
-              // position: this.position,
+                  // FIXME scrolling
+                  // position: this.position,
 
-              onDrag: this.onScaleControlDrag
-            })
+                  onDrag: this.onScaleControlDrag
+                })
+              ]
+            ),
+            $.div({ class: `timeline__time_block` }, totalTime)
           ]
         )
       ]

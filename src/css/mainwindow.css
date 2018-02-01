@@ -617,6 +617,7 @@ https://icomoon.io/app/#/select
   color: #fff;
 }
 
+.timeline__time_block,
 #timeline .left-block, #timeline .right-block {
   width: 40px;
   padding: 0 8px;
