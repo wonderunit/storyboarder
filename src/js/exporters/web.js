@@ -69,15 +69,18 @@ const exportForWeb = async (srcFilePath, outputFolderPath) => {
       if (board.audio) {
         audioWriters.push(new Promise(async resolve => {
           try {
-            let src = path.join(path.dirname(srcFilePath), board.audio.filename)
+            let src = path.join(path.dirname(srcFilePath), 'images', board.audio.filename)
             let dst = path.join(path.dirname(outputFolderPath), path.basename(board.audio.filename, '.wav') + '.mp4')
 
-            console.log(
-              'TODO convert',
-              src,
-              'to',
-              dst
-            )
+            console.log('\n----')
+            console.log(src)
+            console.log(dst)
+            let audioCtx = new window.AudioContext()
+            let buf = fs.readFileSync(src)
+            let audioBuffer = await audioCtx.decodeAudioData(buf.buffer)
+            console.log('duration:', audioBuffer.duration)
+
+            // TODO can we convert from AudioBuffer to MP4?
 
             resolve()
           } catch (err) {
