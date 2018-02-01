@@ -842,82 +842,6 @@ class TimelineView {
     }
   }
 
-  // DEPRECATED
-  // async updateCaret () {
-  // }
-
-  // TODO replace with common fn
-  // TODO sort by time, re-number
-  // TODO compare with the updated version we copied over to main-window.js
-  // updateSceneTiming () {
-  //   // TODO
-  //   // TODO
-  //   // TODO
-  //   return
-  // 
-  //   this.scene.boards.forEach((board, i) => {
-  //     // if (board === this.state.draggableBoardView) return
-  // 
-  //     if (this.state.draggableBoardView &&
-  //         board === this.state.draggableBoardView.board
-  //       ) return
-  // 
-  //     let prevBoard = this.scene.boards[i - 1]
-  //     if (prevBoard) {
-  //       board.time = prevBoard.time + boardModel.boardDuration(this.scene, prevBoard)
-  //     } else {
-  //       board.time = 0
-  //     }
-  //   })
-  // 
-  // 
-  // 
-  // 
-  //   // HACK re-numbering (copied from main-window.js)
-  //   let currentShot = 0
-  //   let subShot = 0
-  //   let boardNumber = 1
-  //   let currentTime = 0
-  // 
-  //   let hasShots = false
-  //   for (let board of this.scene.boards) {
-  //     if (board.newShot) {
-  //       hasShots = true
-  //       break
-  //     }
-  //   }
-  // 
-  //   for (let board of this.scene.boards) {
-  //     if (hasShots) {
-  //       if (board.newShot || (currentShot === 0)) {
-  //         currentShot++
-  //         subShot = 0
-  //       } else {
-  //         subShot++
-  //       }
-  // 
-  //       let substr = String.fromCharCode(97 + (subShot % 26)).toUpperCase()
-  //       if ((Math.ceil(subShot / 25) - 1) > 0) {
-  //         substr += (Math.ceil(subShot / 25))
-  //       }
-  //       board.shot = currentShot + substr
-  //       board.number = boardNumber
-  //     } else {
-  //       board.number = boardNumber
-  //       board.shot = (boardNumber) + 'A'
-  //     }
-  //     boardNumber++
-  // 
-  //     board.time = currentTime
-  // 
-  //     if (board.duration) {
-  //       currentTime += board.duration
-  //     } else {
-  //       currentTime += this.scene.defaultBoardTiming
-  //     }
-  //   }
-  // }
-
   async onBoardPointerDown (event, boardView) {
     let index = this.scene.boards.indexOf(boardView.board)
 
@@ -931,7 +855,6 @@ class TimelineView {
       this.state.draggableBoardView = boardView
       this.state.draggableBoardOriginalTime = boardView.board.time
       this.state.draggableOffsetInPx = 0
-      // await this.updateCaret()
     }
   }
 
@@ -941,9 +864,7 @@ class TimelineView {
       this.state.draggableOffsetInPx += event.movementX
     }
 
-    if (this.state.draggableBoardView) {
-      // await this.updateCaret()
-    }
+    // if (this.state.draggableBoardView) {}
 
     if (this.state.resizableBoardView) {
       let index = this.scene.boards.indexOf(this.state.resizableBoardView.board)
@@ -959,17 +880,8 @@ class TimelineView {
     }
 
     if (this.state.draggableBoardView || this.state.resizableBoardView) {
-      // update the timing for the rest of the scene
-      // TODO
-      // TODO
-      // TODO
-      // this.updateSceneTiming()
-
-      // TODO add undo state
-      // TODO markBoardFileDirty()
-
       // updates the caret
-      await this.update({ }) //  scene: this.scene })
+      await this.update({ })
     }
   }
 
@@ -981,7 +893,7 @@ class TimelineView {
       let selections = new Set([this.scene.boards.indexOf(this.state.draggableBoardView.board)])
       let position = this.scene.boards.indexOf(boardToInsertBefore)
 
-      let didChange = this.onMoveSelectedBoards(selections, position)
+      this.onMoveSelectedBoards(selections, position)
     }
 
     this.state.resizableBoardView = undefined
