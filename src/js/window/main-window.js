@@ -159,6 +159,7 @@ let shotTemplateSystem
 let audioPlayback
 let audioFileControlView
 let sceneTimelineView
+let timelineModeControlView
 
 let storyboarderSketchPane
 
@@ -179,6 +180,7 @@ const setEtag = absoluteFilePath => { etags[absoluteFilePath] = Date.now() }
 const getEtag = absoluteFilePath => etags[absoluteFilePath] || '0'
 
 let srcByUid = {}
+let shouldRenderThumbnailDrawer = true
 
 //  analytics.event('Application', 'open', filename)
 
@@ -1521,7 +1523,18 @@ let loadBoardUI = () => {
   // HACK initialize the menu to match the value in preferences
   audioPlayback.setEnableAudition(prefsModule.getPrefs().enableBoardAudition)
 
-
+  timelineModeControlView = new TimelineModeControlView({
+    onToggle: () => {
+      shouldRenderThumbnailDrawer = !shouldRenderThumbnailDrawer
+      timelineModeControlView.update({
+        mode: shouldRenderThumbnailDrawer
+          ? 'sequence'
+          : 'time'
+      })
+      renderThumbnailDrawer()
+    }
+  })
+  document.getElementById('timeline-mode-control-view').appendChild(timelineModeControlView.element)
 
 
   // for debugging:
@@ -2565,7 +2578,7 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
 
     renderSceneTimeline()
 
-    let shouldRenderThumbnailDrawer = false
+    // let shouldRenderThumbnailDrawer = false
     if (shouldRenderThumbnailDrawer) {
       renderThumbnailDrawerSelections()
       for (var item of document.querySelectorAll('.thumbnail')) {
@@ -2636,7 +2649,7 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
 }
 
 let renderMarkerPosition = () => {
-  let shouldRenderThumbnailDrawer = false
+  // let shouldRenderThumbnailDrawer = false
   if (!shouldRenderThumbnailDrawer) return
 
   let curr = boardData.boards[currentBoard]
@@ -3044,10 +3057,18 @@ const renderSceneTimeline = () => {
 let renderThumbnailDrawer = () => {
   updateSceneTiming()
 
-  renderSceneTimeline()
+  // update the mode control
+  timelineModeControlView.update({
+    mode: shouldRenderThumbnailDrawer ? 'sequence' : 'time'
+  })
 
-  let shouldRenderThumbnailDrawer = false
-  if (!shouldRenderThumbnailDrawer) return
+  // reflect the current view
+  cycleViewMode(0)
+
+  renderSceneTimeline()
+  if (!shouldRenderThumbnailDrawer) {
+    return
+  }
 
   let hasShots = boardData.boards.find(board => board.newShot) != null
 
@@ -3235,7 +3256,7 @@ let renderThumbnailDrawer = () => {
 
 
 let renderThumbnailButtons = () => {
-  let shouldRenderThumbnailDrawer = false
+  // let shouldRenderThumbnailDrawer = false
   if (!shouldRenderThumbnailDrawer) return
 
   if (!document.getElementById('thumbnail-add-btn')) {
@@ -3274,6 +3295,9 @@ let renderThumbnailButtons = () => {
 }
 
 let renderTimeline = () => {
+  // reflect the current view
+  cycleViewMode(0)
+
   // HACK store original position of marker
   let getMarkerEl = () => document.querySelector('#timeline .marker')
   let markerLeft = getMarkerEl() ? getMarkerEl().style.left : '0px'
@@ -3985,35 +4009,56 @@ let cycleViewMode = (direction = +1) => {
         document.querySelector('#script').style.display = 'block'
         document.querySelector('#board-metadata').style.display = 'flex'
         document.querySelector('#toolbar').style.display = 'flex'
-        document.querySelector('#thumbnail-container').style.display = 'block'
-        document.querySelector('#timeline').style.display = 'flex'
         document.querySelector('#playback #icons').style.display = 'flex'
+
+        document.querySelector('#thumbnail-container').style.display = shouldRenderThumbnailDrawer ? 'block' : 'none'
+        document.querySelector('#timeline').style.display = shouldRenderThumbnailDrawer ? 'flex' : 'none'
+        sceneTimelineView.element.style.display = !shouldRenderThumbnailDrawer ? 'block' : 'none'
+        timelineModeControlView.update({ show: true })
         break
       case 1:
         document.querySelector('#scenes').style.display = 'none'
         document.querySelector('#script').style.display = 'block'
         document.querySelector('#board-metadata').style.display = 'flex'
         document.querySelector('#toolbar').style.display = 'flex'
+
+        document.querySelector('#thumbnail-container').style.display = shouldRenderThumbnailDrawer ? 'block' : 'none'
+        document.querySelector('#timeline').style.display = shouldRenderThumbnailDrawer ? 'flex' : 'none'
+        sceneTimelineView.element.style.display = !shouldRenderThumbnailDrawer ? 'block' : 'none'
+        timelineModeControlView.update({ show: true })
         break
       case 2:
         document.querySelector('#scenes').style.display = 'none'
         document.querySelector('#script').style.display = 'none'
         document.querySelector('#board-metadata').style.display = 'flex'
         document.querySelector('#toolbar').style.display = 'flex'
+
+        document.querySelector('#thumbnail-container').style.display = shouldRenderThumbnailDrawer ? 'block' : 'none'
+        document.querySelector('#timeline').style.display = shouldRenderThumbnailDrawer ? 'flex' : 'none'
+        sceneTimelineView.element.style.display = !shouldRenderThumbnailDrawer ? 'block' : 'none'
+        timelineModeControlView.update({ show: true })
         break
       case 3:
         document.querySelector('#scenes').style.display = 'none'
         document.querySelector('#script').style.display = 'none'
         document.querySelector('#board-metadata').style.display = 'none'
         document.querySelector('#toolbar').style.display = 'flex'
+
+        document.querySelector('#thumbnail-container').style.display = shouldRenderThumbnailDrawer ? 'block' : 'none'
+        document.querySelector('#timeline').style.display = shouldRenderThumbnailDrawer ? 'flex' : 'none'
+        sceneTimelineView.element.style.display = !shouldRenderThumbnailDrawer ? 'block' : 'none'
+        timelineModeControlView.update({ show: true })
         break
       case 4:
         document.querySelector('#scenes').style.display = 'none'
         document.querySelector('#script').style.display = 'none'
         document.querySelector('#board-metadata').style.display = 'none'
         document.querySelector('#toolbar').style.display = 'none'
-        document.querySelector('#thumbnail-container').style.display = 'block'
-        document.querySelector('#timeline').style.display = 'flex'
+
+        document.querySelector('#thumbnail-container').style.display = shouldRenderThumbnailDrawer ? 'block' : 'none'
+        document.querySelector('#timeline').style.display = shouldRenderThumbnailDrawer ? 'flex' : 'none'
+        sceneTimelineView.element.style.display = !shouldRenderThumbnailDrawer ? 'block' : 'none'
+        timelineModeControlView.update({ show: true })
         break
       case 5:
         document.querySelector('#scenes').style.display = 'none'
@@ -4023,6 +4068,8 @@ let cycleViewMode = (direction = +1) => {
         document.querySelector('#thumbnail-container').style.display = 'none'
         document.querySelector('#timeline').style.display = 'none'
         document.querySelector('#playback #icons').style.display = 'none'
+        sceneTimelineView.element.style.display = 'none'
+        timelineModeControlView.update({ show: false })
         break
     }
   } else {
@@ -4033,32 +4080,46 @@ let cycleViewMode = (direction = +1) => {
         document.querySelector('#script').style.display = 'none'
         document.querySelector('#board-metadata').style.display = 'flex'
         document.querySelector('#toolbar').style.display = 'flex'
-        document.querySelector('#thumbnail-container').style.display = 'block'
-        document.querySelector('#timeline').style.display = 'flex'
         document.querySelector('#playback #icons').style.display = 'flex'
+
+        document.querySelector('#thumbnail-container').style.display = shouldRenderThumbnailDrawer ? 'block' : 'none'
+        document.querySelector('#timeline').style.display = shouldRenderThumbnailDrawer ? 'flex' : 'none'
+        sceneTimelineView.element.style.display = !shouldRenderThumbnailDrawer ? 'block' : 'none'
+        timelineModeControlView.update({ show: true })
         break
       case 1:
         document.querySelector('#scenes').style.display = 'none'
         document.querySelector('#script').style.display = 'none'
         document.querySelector('#board-metadata').style.display = 'none'
         document.querySelector('#toolbar').style.display = 'flex'
+
+        document.querySelector('#thumbnail-container').style.display = shouldRenderThumbnailDrawer ? 'block' : 'none'
+        document.querySelector('#timeline').style.display = shouldRenderThumbnailDrawer ? 'flex' : 'none'
+        sceneTimelineView.element.style.display = !shouldRenderThumbnailDrawer ? 'block' : 'none'
+        timelineModeControlView.update({ show: true })
         break
       case 2:
         document.querySelector('#scenes').style.display = 'none'
         document.querySelector('#script').style.display = 'none'
         document.querySelector('#board-metadata').style.display = 'none'
         document.querySelector('#toolbar').style.display = 'none'
-        document.querySelector('#thumbnail-container').style.display = 'block'
-        document.querySelector('#timeline').style.display = 'flex'
+
+        document.querySelector('#thumbnail-container').style.display = shouldRenderThumbnailDrawer ? 'block' : 'none'
+        document.querySelector('#timeline').style.display = shouldRenderThumbnailDrawer ? 'flex' : 'none'
+        sceneTimelineView.element.style.display = !shouldRenderThumbnailDrawer ? 'block' : 'none'
+        timelineModeControlView.update({ show: true })
         break
       case 3:
         document.querySelector('#scenes').style.display = 'none'
         document.querySelector('#script').style.display = 'none'
         document.querySelector('#board-metadata').style.display = 'none'
         document.querySelector('#toolbar').style.display = 'none'
+        document.querySelector('#playback #icons').style.display = 'none'
+
         document.querySelector('#thumbnail-container').style.display = 'none'
         document.querySelector('#timeline').style.display = 'none'
-        document.querySelector('#playback #icons').style.display = 'none'
+        sceneTimelineView.element.style.display = 'none'
+        timelineModeControlView.update({ show: false })
         break
     }
   }
@@ -4916,7 +4977,7 @@ let isBeforeFirstThumbnail = (x, y) => {
 }
 
 let updateThumbnailCursor = (x, y) => {
-  let shouldRenderThumbnailDrawer = false
+  // let shouldRenderThumbnailDrawer = false
   if (!shouldRenderThumbnailDrawer) return
 
   if (isBeforeFirstThumbnail(x, y)) {
@@ -5664,4 +5725,31 @@ if (isDev) {
       }
     }
   }, 500)
+}
+
+class TimelineModeControlView {
+  constructor (props) {
+    this.show = false
+    this.mode = 'sequence'
+
+    this.onToggle = props.onToggle
+
+    this.element = document.createElement('div')
+    this.element.addEventListener('click', this.onToggle)
+    this.element.style.position = 'absolute'
+    this.element.style.marginTop = '-8px'
+    this.element.style.borderRadius = '6px'
+    this.element.style.backgroundColor = '#3A3A3A'
+    this.element.style.padding = '6px'
+  }
+  update (props) {
+    if (props.show != null) this.show = props.show
+    if (props.mode != null) this.mode = props.mode
+
+    this.element.style.display = this.show ? 'block' : 'none'
+
+    this.element.innerHTML = this.mode === 'sequence'
+      ? 'Sequence'
+      : 'Timing'
+  }
 }
