@@ -1652,6 +1652,9 @@ let newBoard = async (position, shouldAddToUndoStack = true) => {
   markImageFileDirty([1]) // 'main' layer is dirty // HACK hardcoded
   markBoardFileDirty() // board data is dirty
 
+  // display blank thumbnail (file will not exist yet)
+  await setThumbnailDisplayAsPending(position)
+
   renderThumbnailDrawer()
   storeUndoStateForScene()
 
@@ -2333,6 +2336,16 @@ const updateThumbnailDisplayFromMemory = () => {
 
     renderSceneTimeline()
   })
+}
+
+const setThumbnailDisplayAsPending = async (index) => {
+  let size = getThumbnailSize(boardData)
+  let context = createSizedContext(size)
+  fillContext(context, 'white')
+  let imageData = context.canvas.toDataURL('image/png')
+
+  // cache image
+  srcByUid[boardData.boards[index].uid] = imageData
 }
 
 let deleteSingleBoard = (index) => {
