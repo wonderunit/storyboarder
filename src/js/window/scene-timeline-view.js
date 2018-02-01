@@ -410,7 +410,7 @@ class BoardView {
                         padding: 0;
                         margin: 0;`,
                 attributes: {
-                  width: `${(imageHeight) * this.scene.aspectRatio}px`,
+                  width: `${Math.round(imageHeight * this.scene.aspectRatio)}px`,
                   height: `${imageHeight}px`
                 },
                 src: this.src
