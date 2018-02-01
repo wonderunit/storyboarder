@@ -319,12 +319,13 @@ body::-webkit-scrollbar {
   opacity: 0.8;
 }
 
+#scene-timeline-container .board__caption,
 #thumbnail-drawer .thumbnail .caption {
   flex: 1;
   margin-left: 2px;
   margin-right: 2px;
   font-weight: 100;
-  white-space:nowrap;
+  white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
   text-align: center;
