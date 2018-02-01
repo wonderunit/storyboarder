@@ -65,6 +65,15 @@ const exportForWeb = async (srcFilePath, outputFolderPath) => {
     }
 
     await Promise.all(writers)
+
+    for (let board of scene.boards) {
+      board.url = path.basename(
+        boardModel.boardFilenameForExport(board, index, basenameWithoutExt),
+        '.png'
+      ) + '.jpg'
+    }
+
+    fs.writeFileSync(path.join(outputFolderPath, 'main.storyboarder'), JSON.stringify(scene, null, 2))
   } finally {
     console.log('Done!')
   }
