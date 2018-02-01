@@ -627,6 +627,7 @@ https://icomoon.io/app/#/select
   align-content: center;
   justify-content: center;
   opacity: 0.5;
+  pointer-events: none;
 }
 
 
