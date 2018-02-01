@@ -5757,7 +5757,7 @@ class TimelineModeControlView {
     this.element.style.display = this.show ? 'block' : 'none'
 
     this.element.innerHTML = this.mode === 'sequence'
-      ? 'Sequence'
-      : 'Timing'
+      ? 'Boards'
+      : 'Timeline'
   }
 }
