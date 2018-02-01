@@ -796,6 +796,8 @@ class TimelineView {
 
     if (props.currentBoardIndex != null) this.currentBoardIndex = props.currentBoardIndex
 
+    // TODO only calculate this when scene changes
+    //      or maybe only on init?
     this.sceneDurationInMsecs = sceneModel.sceneDuration(this.scene)
 
     this.pixelsPerMsec = this.containerWidth / this.sceneDurationInMsecs
