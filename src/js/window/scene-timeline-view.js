@@ -312,6 +312,9 @@ class BoardView {
         ? imageHeight + 5 + 5 + 12 + 5
         : 32
 
+    let isFirst = index === 0
+    let isLast = index === this.scene.boards.length - 1
+
     return $.div(
       {
         class: 'board',
@@ -337,8 +340,6 @@ class BoardView {
                 }
 
                 user-select: none;
-
-                border-radius: 6px;
                 `
       },
       [
@@ -372,7 +373,20 @@ class BoardView {
                   }
 
                   overflow: hidden;
-                  border-radius: 6px;`
+
+                  ${
+                    isFirst
+                      ? `border-top-left-radius: 5px;
+                         border-bottom-left-radius: 5px;`
+                      : ''
+                  }
+
+                  ${
+                    isLast
+                      ? `border-top-right-radius: 5px;
+                         border-bottom-right-radius: 5px;`
+                      : ''
+                  }`
           })
         : $.div(
           {
