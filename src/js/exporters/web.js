@@ -17,7 +17,6 @@ const exportForWeb = async (srcFilePath, outputFolderPath) => {
     let writers = []
     let index = 0
     let basenameWithoutExt = path.basename(srcFilePath, path.extname(srcFilePath))
-
     for (let board of scene.boards) {
       writers.push(new Promise(async resolve => {
         try {
@@ -61,10 +60,35 @@ const exportForWeb = async (srcFilePath, outputFolderPath) => {
           resolve()
         }
       }))
-      index = index + 1
+      index++
     }
-
     await Promise.all(writers)
+
+    let audioWriters = []
+    for (let board of scene.boards) {
+      if (board.audio) {
+        audioWriters.push(new Promise(async resolve => {
+          try {
+            let src = path.join(path.dirname(srcFilePath), board.audio.filename)
+            let dst = path.join(path.dirname(outputFolderPath), path.basename(board.audio.filename, '.wav') + '.mp4')
+
+            console.log(
+              'TODO convert',
+              src,
+              'to',
+              dst
+            )
+
+            resolve()
+          } catch (err) {
+            console.log(err.message)
+            resolve()
+          }
+        }))
+      }
+      index++
+    }
+    await Promise.all(audioWriters)
 
     for (let board of scene.boards) {
       board.url = path.basename(
