@@ -81,9 +81,9 @@ class ScaleControlView {
       // clamp boundaries
       this.handleLeftPct = clamp(this.handleLeftPct, 0, 1)
       this.handleRightPct = clamp(this.handleRightPct, 0, 1)
-
-      this.updateFromDrag()
     }
+
+    this.updateFromDrag()
 
     etch.update(this)
   }
@@ -172,7 +172,7 @@ class ScaleControlView {
     })
 
     // reflect drag points
-    this.updateFromDrag()
+    // this.updateFromDrag()
   }
 
   onHandlePointerDown (event) {
@@ -187,7 +187,7 @@ class ScaleControlView {
   }
   onDocumentPointerMove (event) {
     this.state.dragX += event.movementX
-    this.updateFromDrag()
+    // this.updateFromDrag()
     this.update()
 
     let [start, end] = this.getHandlePcts()
