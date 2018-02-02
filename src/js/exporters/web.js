@@ -100,6 +100,12 @@ const exportForWeb = async (srcFilePath, outputFolderPath) => {
     }
     await Promise.all(audioWriters)
 
+    //
+    //
+    // TODO thumbnail
+    //
+
+    index = 0
     for (let board of scene.boards) {
       board.url = path.basename(
         boardModel.boardFilenameForExport(board, index, basenameWithoutExt),
