@@ -129,7 +129,7 @@ const exportForWeb = async (srcFilePath, outputFolderPath) => {
     //
     // FIXME should grab from flattened PNG instead of JPG
     //
-    let dst = path.join(outputFolderPath, 'anim.jpg')
+    let dst = path.join(outputFolderPath, 'thumbnailanim.jpg')
     let args = []
     let filterArgs = []
     let n = 0
