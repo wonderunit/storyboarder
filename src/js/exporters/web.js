@@ -157,7 +157,12 @@ const exportForWeb = async (srcFilePath, outputFolderPath) => {
     let args = []
     let filterArgs = []
     let n = 0
-    for (let board of scene.boards) {
+    let spritableBoards = JSON.parse(JSON.stringify(scene.boards)) // make a clone
+    if (spritableBoards.length > 10) {
+      // TODO make a better sampling instead of chopping off the remainder :/
+      spritableBoards = spritableBoards.slice(0, 10)
+    }
+    for (let board of spritableBoards) {
       let jpgPath = path.join(
         outputFolderPath,
         path.basename(board.url) // NOTE modified, will grab from JPG
@@ -172,7 +177,8 @@ const exportForWeb = async (srcFilePath, outputFolderPath) => {
       // hstack: assemble horizontally
       '-filter_complex', filterArgs.join('') +
                          filterArgs.map((f, n) => `[s${n}]`).join('') +
-                         'hstack[v]',
+                         // via https://stackoverflow.com/a/47137307
+                         `hstack=${filterArgs.length}[v]`,
 
       '-map', '[v]',
 
