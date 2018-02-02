@@ -48,16 +48,13 @@ class ScaleControlView {
 
     this.containerWidth = 0
 
-    // stored position (does not change during drag)
-    this.handleLeftPct = 0
-    this.handleRightPct = 1
-    // position updated during drag
-    this.handleLeftX = 0
-    this.handleRightX = 0
+    this.position = props.position
+    this.scale = props.scale
 
     this.state = {
       dragTarget: undefined,
-      dragX: 0
+      dragX: undefined,
+      handleRightPct: undefined
     }
 
     this.onCancelMove = this.onCancelMove.bind(this)
@@ -71,19 +68,15 @@ class ScaleControlView {
     if (props.containerWidth != null) this.containerWidth = props.containerWidth
     if (props.onDrag != null) this.onDrag = props.onDrag
 
-    if (props.position != null) {
-      // update from virtual `position`
-      let handleWidthPct = this.handleRightPct - this.handleLeftPct
+    if (props.position != null) this.position = props.position
+    if (props.scale != null) this.scale = props.scale
 
-      this.handleLeftPct = props.position
-      this.handleRightPct = props.position + handleWidthPct
+    let scaleFromZoom = 1 / this.scale
 
-      // clamp boundaries
-      this.handleLeftPct = clamp(this.handleLeftPct, 0, 1)
-      this.handleRightPct = clamp(this.handleRightPct, 0, 1)
-    }
+    this.handleLeftX = this.position * this.containerWidth
 
-    this.updateFromDrag()
+    this.handleRightX = this.containerWidth - 
+      (this.handleLeftX + scaleFromZoom * this.containerWidth)
 
     etch.update(this)
   }
@@ -183,14 +176,10 @@ class ScaleControlView {
     this.resetDrag()
     this.removeEventListeners()
 
-    console.log('ScaleControlView#onElementResize rect', rect)
     // update
     await this.update({
       containerWidth: rect.width
     })
-
-    // reflect drag points
-    // this.updateFromDrag()
   }
 
   onHandlePointerDown (event) {
@@ -199,75 +188,60 @@ class ScaleControlView {
         event.target === this.refs.handleMiddle) {
       this.state.dragTarget = event.target
       this.state.dragX = 0
+      this.state.handleRightPct = (this.containerWidth - this.handleRightX) / this.containerWidth
     }
     this.attachEventListeners()
     this.update()
   }
   onDocumentPointerMove (event) {
     this.state.dragX += event.movementX
-    // this.updateFromDrag()
-    this.update()
 
-    let [start, end] = this.getHandlePcts()
+    // add the delta accumulated over all mouse moves since we started dragging
+    if (this.state.dragTarget != null) {
+      if (this.state.dragTarget === this.refs.handleLeft) {
+
+        // calculate new position
+        this.position += event.movementX / this.containerWidth
+
+        // calculate new scale
+        // NOTE scale is stored as zoom level, e.g.: scale = 2.0 (200% zoom)
+        this.scale = 1 / (this.state.handleRightPct - this.position)
+      }
+
+      if (this.state.dragTarget === this.refs.handleRight) {
+        let originalPx = this.state.handleRightPct * this.containerWidth
+        let newPx = originalPx + this.state.dragX
+        let newRightPct = (newPx / this.containerWidth)
+        this.scale = 1 / (newRightPct - this.position)
+      }
+      
+      if (this.state.dragTarget === this.refs.handleMiddle) {
+        this.position += event.movementX / this.containerWidth
+      }
+    }
+
+    // TODO clamp
+    // this.position = clamp(this.position, 0, 1)
+
     this.onDrag && this.onDrag({
-      start,
-      end
+      position: this.position,
+      scale: this.scale
     })
   }
   onHandlePointerUp (event) {
-    this.setDragChanges()
     this.resetDrag()
     this.removeEventListeners()
     this.update()
   }
   onCancelMove (event) {
-    this.setDragChanges()
     this.resetDrag()
     this.removeEventListeners()
     this.update()
   }
-  updateFromDrag () {
-    // initialize to the last known position (from when dragging started)
-    this.handleLeftX = this.containerWidth * this.handleLeftPct
-    this.handleRightX = this.containerWidth - this.containerWidth * this.handleRightPct
-
-    // add the delta accumulated over all mouse moves since we started dragging
-    if (this.state.dragTarget != null) {
-      if (this.state.dragTarget === this.refs.handleLeft) {
-        this.handleLeftX += this.state.dragX
-      }
-
-      if (this.state.dragTarget === this.refs.handleRight) {
-        this.handleRightX -= this.state.dragX
-      }
-
-      if (this.state.dragTarget === this.refs.handleMiddle) {
-        let handleWidthPct = this.handleRightPct - this.handleLeftPct
-        this.handleLeftX += this.state.dragX
-        this.handleRightX = (this.containerWidth - this.handleLeftX) -
-                        (handleWidthPct * this.containerWidth)
-      }
-    }
-
-    // clamp boundaries
-    this.handleLeftX = clamp(this.handleLeftX, 0, this.containerWidth)
-    this.handleRightX = clamp(this.handleRightX, 0, this.containerWidth)
-  }
-
-  getHandlePcts () {
-    let hLeftPct = this.handleLeftX / this.containerWidth
-    let hRightPct = 1 - (this.handleRightX / this.containerWidth)
-    return [clamp(hLeftPct, 0, 1), clamp(hRightPct, 0, 1)]
-  }
-
-  setDragChanges () {
-    let [start, end] = this.getHandlePcts()
-    this.handleLeftPct = clamp(start, 0, 1)
-    this.handleRightPct = clamp(end, 0, 1)
-  }
   resetDrag () {
     this.state.dragTarget = undefined
-    this.state.dragX = 0
+    this.state.dragX = undefined
+    this.state.handleRightPct = undefined
   }
   attachEventListeners () {
     document.addEventListener('pointerup', this.onCancelMove)
@@ -832,13 +806,12 @@ class TimelineView {
     if (props.pixelsPerMsec != null) this.pixelsPerMsec = props.pixelsPerMsec
     if (props.mini != null) this.mini = props.mini
 
-    if (props.currentBoardIndex != null) this.currentBoardIndex = props.currentBoardIndex
-
     // TODO only calculate this when scene changes
     //      or maybe only on init?
     this.sceneDurationInMsecs = sceneModel.sceneDuration(this.scene)
-
     this.pixelsPerMsec = this.containerWidth / this.sceneDurationInMsecs
+
+    if (props.currentBoardIndex != null) this.currentBoardIndex = props.currentBoardIndex
 
     // perform custom update logic here...
     // then call `etch.update`, which is async and returns a promise
@@ -1077,8 +1050,8 @@ class SceneTimelineView {
                 $(ScaleControlView, {
                   ref: 'scaleControlView',
 
-                  // FIXME scrolling
-                  // position: this.position,
+                  position: this.position,
+                  scale: this.scale,
 
                   onDrag: this.onScaleControlDrag
                 })
@@ -1100,7 +1073,14 @@ class SceneTimelineView {
     if (props.pixelsPerMsec != null) this.pixelsPerMsec = props.pixelsPerMsec
     if (props.mini != null) this.mini = props.mini
 
-    if (props.currentBoardIndex != null) this.currentBoardIndex = props.currentBoardIndex
+    if (props.currentBoardIndex != null) {
+      if (this.currentBoardIndex != props.currentBoardIndex) {
+        let sceneDurationInMsecs = sceneModel.sceneDuration(this.scene)
+        let board = this.scene.boards[props.currentBoardIndex]
+        this.position = board.time / sceneDurationInMsecs
+      }
+      this.currentBoardIndex = props.currentBoardIndex
+    }
 
     return etch.update(this)
   }
@@ -1117,15 +1097,8 @@ class SceneTimelineView {
     this.refs.scaleControlView.connectedCallback()
   }
 
-  onScaleControlDrag ({ start, end }) {
-    let position = start
-    let scale = 1 / (end - start)
-
-    if (scale === Infinity) return
-    this.update({
-      position,
-      scale
-    })
+  onScaleControlDrag ({ position, scale }) {
+    this.update({ position, scale })
   }
 
   onTimelineScroll (event) {
