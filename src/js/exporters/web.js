@@ -77,6 +77,8 @@ const exportForWeb = async (srcFilePath, outputFolderPath) => {
               // Input #0
               '-i', src,
 
+              '-b:a', '64k',
+
               // Output
               dst
             ]
