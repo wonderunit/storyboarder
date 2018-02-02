@@ -116,6 +116,10 @@ const exportForWeb = async (srcFilePath, outputFolderPath) => {
       }
     }
 
+    // TODO thumbnail
+
+    // TODO sprite sheet
+
     fs.writeFileSync(path.join(outputFolderPath, 'main.storyboarder'), JSON.stringify(scene, null, 2))
   } finally {
     console.log('Done!')
