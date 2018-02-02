@@ -102,7 +102,31 @@ const exportForWeb = async (srcFilePath, outputFolderPath) => {
 
     //
     //
-    // TODO thumbnail
+    // export main thumbnail
+    //
+    let board = scene.boards[0]
+    let filenameForExport = 'thumbnail.jpg'
+
+    let originalSize = boardModel.boardFileImageSize(scene)
+
+    let fit = fitToDst(
+      { width: Infinity, height: 400 },
+      { width: originalSize[0], height: originalSize[1] }
+    )
+    let reducedSize = [fit[2], fit[3]].map(Math.round)
+
+    let jpegQuality = 0.5
+
+    await exporterCommon.exportFlattenedBoard(
+      board,
+      filenameForExport,
+      reducedSize,
+      srcFilePath,
+      outputFolderPath,
+      jpegQuality
+    )
+    //
+    //
     //
 
     index = 0
