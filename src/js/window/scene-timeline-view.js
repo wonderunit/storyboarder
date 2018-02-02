@@ -160,18 +160,19 @@ class ScaleControlView {
     this.ro.observe(this.element)
   }
 
-  onElementResize (rect) {
+  async onElementResize (rect) {
     // cancel any current dragging operation
     this.resetDrag()
     this.removeEventListeners()
 
-    // reflect drag points
-    this.updateFromDrag()
-
+    console.log('ScaleControlView#onElementResize rect', rect)
     // update
-    this.update({
+    await this.update({
       containerWidth: rect.width
     })
+
+    // reflect drag points
+    this.updateFromDrag()
   }
 
   onHandlePointerDown (event) {
