@@ -102,7 +102,7 @@ const exportForWeb = async (srcFilePath, outputFolderPath) => {
 
     for (let board of scene.boards) {
       board.url = path.basename(
-        board.url,
+        boardModel.boardFilenameForExport(board, index, basenameWithoutExt),
         '.png'
       ) + '.jpg'
 
@@ -114,12 +114,54 @@ const exportForWeb = async (srcFilePath, outputFolderPath) => {
           '.wav'
         ) + '.mp4'
       }
+      index++
     }
 
-    // TODO thumbnail
+    //
+    //
+    // sprite sheet
+    //
+    // FIXME should grab from flattened PNG instead of JPG
+    //
+    let dst = path.join(outputFolderPath, 'anim.jpg')
+    let args = []
+    let filterArgs = []
+    let n = 0
+    for (let board of scene.boards) {
+      let jpgPath = path.join(
+        outputFolderPath,
+        path.basename(board.url) // NOTE modified, will grab from JPG
+      )
+      args = args.concat([ '-i', jpgPath ])
+      // https://trac.ffmpeg.org/wiki/Scaling
+      // scale: rescale to 200 px height
+      filterArgs.push(`[${n}:v]scale=-1:200[s${n}];`)
+      n++
+    }
+    args = args.concat([
+      // hstack: assemble horizontally
+      '-filter_complex', filterArgs.join('') +
+                         filterArgs.map((f, n) => `[s${n}]`).join('') +
+                         'hstack[v]',
 
-    // TODO sprite sheet
+      '-map', '[v]',
 
+      // Output
+      dst
+    ])
+    console.log('\n\n\n\n\n\n')
+    console.log('-----')
+    console.log(args)
+    console.log('\n\n\n\n\n\n')
+    await exporterFfmpeg.convert(null, args)
+
+    //
+    //
+    //
+
+    //
+    //
+    // write the modified scene
     fs.writeFileSync(path.join(outputFolderPath, 'main.storyboarder'), JSON.stringify(scene, null, 2))
   } finally {
     console.log('Done!')
