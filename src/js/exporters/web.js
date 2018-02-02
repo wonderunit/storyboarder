@@ -77,6 +77,10 @@ const exportForWeb = async (srcFilePath, outputFolderPath) => {
               // Input #0
               '-i', src,
 
+              // mono, via https://trac.ffmpeg.org/wiki/AudioChannelManipulation
+              '-ac', '1',
+
+              // low bitrate
               '-b:a', '64k',
 
               // Output
