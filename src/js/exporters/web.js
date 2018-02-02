@@ -3,6 +3,7 @@ const path = require('path')
 
 const boardModel = require('../models/board')
 const exporterCommon = require('./common')
+const exporterFfmpeg = require('./ffmpeg')
 
 const exportForWeb = async (srcFilePath, outputFolderPath) => {
   console.log('exportForWeb')
@@ -70,20 +71,20 @@ const exportForWeb = async (srcFilePath, outputFolderPath) => {
         audioWriters.push(new Promise(async resolve => {
           try {
             let src = path.join(path.dirname(srcFilePath), 'images', board.audio.filename)
-            let dst = path.join(path.dirname(outputFolderPath), path.basename(board.audio.filename, '.wav') + '.mp4')
+            let dst = path.join(outputFolderPath, path.basename(board.audio.filename, '.wav') + '.mp4')
 
-            console.log('\n----')
-            console.log(src)
-            console.log(dst)
-            let audioCtx = new window.AudioContext()
-            let buf = fs.readFileSync(src)
-            let audioBuffer = await audioCtx.decodeAudioData(buf.buffer)
-            console.log('duration:', audioBuffer.duration)
+            let args = [
+              // Input #0
+              '-i', src,
 
-            // TODO can we convert from AudioBuffer to MP4?
+              // Output
+              dst
+            ]
+            await exporterFfmpeg.convert(null, args)
 
             resolve()
           } catch (err) {
+            console.log(err)
             console.log(err.message)
             resolve()
           }
