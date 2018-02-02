@@ -99,6 +99,25 @@ class ScaleControlView {
               right: 0;`
     }, [
       $.div({
+        ref: 'overlayLeft',
+        style: `position: absolute;
+                top: 0;
+                left: 0px;
+                width: ${this.handleLeftX}px;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.45);`
+      }),
+      $.div({
+        ref: 'overlayRight',
+        style: `position: absolute;
+                top: 0;
+                width: ${this.handleRightX}px;
+                right: 0;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.45);`
+      }),
+
+      $.div({
         on: {
           pointerdown: this.onHandlePointerDown,
           pointerup: this.onHandlePointerUp
@@ -109,7 +128,6 @@ class ScaleControlView {
                 left: ${this.handleLeftX}px;
                 right: ${this.handleRightX}px;
                 height: 100%;
-                background-color: rgba(0, 0, 255, 0.2);
                 cursor: ew-resize;`
       }),
       $.div({
