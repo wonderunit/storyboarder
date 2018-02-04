@@ -1076,7 +1076,7 @@ class SceneTimelineView {
     if (props.mini != null) this.mini = props.mini
 
     if (props.currentBoardIndex != null) {
-      if (this.currentBoardIndex != props.currentBoardIndex) {
+      if (this.currentBoardIndex !== props.currentBoardIndex) {
         let sceneDurationInMsecs = sceneModel.sceneDuration(this.scene)
         let board = this.scene.boards[props.currentBoardIndex]
         // TODO windowing (extending to full duration of board + audio)
