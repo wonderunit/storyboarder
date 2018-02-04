@@ -84,6 +84,14 @@ class ScaleControlView {
   render () {
     let handleWidth = this.constructor.HANDLE_WIDTH
 
+    let handleStyle = `background-color: #777;
+                       width: 8px;
+                       height: 20px;
+                       top: -5px;
+                       z-index: 999;
+                       border-radius: 3px;
+                       box-shadow: 0 1px 1px rgba(0, 0, 0, 0.4);`
+
     return $.div({
       ref: 'container',
       style: `position: absolute;
@@ -132,9 +140,8 @@ class ScaleControlView {
         ref: 'handleLeft',
         style: `position: absolute;
                 width: ${handleWidth}px;
-                left: ${0 - handleWidth + this.handleLeftX}px;
-                height: 100%;
-                background-color: blue;
+                left: ${this.handleLeftX}px;
+                ${handleStyle}
                 cursor: e-resize;`
       }),
       $.div({
@@ -145,9 +152,8 @@ class ScaleControlView {
         ref: 'handleRight',
         style: `position: absolute;
                 width: ${handleWidth}px;
-                right: ${0 - handleWidth + this.handleRightX}px;
-                height: 100%;
-                background-color: blue;
+                right: ${this.handleRightX}px;
+                ${handleStyle}
                 cursor: w-resize;`
       })
     ])
