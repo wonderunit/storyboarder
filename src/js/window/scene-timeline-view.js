@@ -1081,10 +1081,7 @@ class SceneTimelineView {
         let board = this.scene.boards[props.currentBoardIndex]
         // TODO windowing (extending to full duration of board + audio)
         // TODO update scale
-        // TODO clamp
-        this.update({
-          position: board.time / sceneDurationInMsecs
-        })
+        this.position = board.time / sceneDurationInMsecs
       }
       this.currentBoardIndex = props.currentBoardIndex
     }
