@@ -76,7 +76,7 @@ class ScaleControlView {
 
     this.handleLeftX = this.position * this.containerWidth
 
-    this.handleRightX = this.containerWidth - 
+    this.handleRightX = this.containerWidth -
       (this.handleLeftX + scaleFromZoom * this.containerWidth)
 
     etch.update(this)
@@ -1075,7 +1075,12 @@ class SceneTimelineView {
   update (props, children) {
     if (props.scene) this.scene = props.scene
 
-    if (props.scale != null) this.scale = props.scale
+    if (props.scale != null) {
+      if (props.scale > 0 &&
+          props.scale !== Infinity) {
+        this.scale = props.scale
+      }
+    }
     if (props.position != null) this.position = props.position
 
     if (props.pixelsPerMsec != null) this.pixelsPerMsec = props.pixelsPerMsec
@@ -1091,6 +1096,15 @@ class SceneTimelineView {
       }
       this.currentBoardIndex = props.currentBoardIndex
     }
+
+    // let containerWidth = this.refs.timelineView.containerWidth
+    let maxScale = 50
+    //
+    // TODO prevent position from being too close to, or gt than, scale
+    //      at far right
+    //
+    this.position = clamp(this.position, 0, 1)
+    this.scale = clamp(this.scale, 1 / (1 - this.position), maxScale)
 
     return etch.update(this)
   }
