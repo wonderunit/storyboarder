@@ -54,6 +54,7 @@ class ScaleControlView {
     this.state = {
       dragTarget: undefined,
       dragX: undefined,
+      handleLeftPct: undefined,
       handleRightPct: undefined
     }
 
@@ -188,6 +189,7 @@ class ScaleControlView {
         event.target === this.refs.handleMiddle) {
       this.state.dragTarget = event.target
       this.state.dragX = 0
+      this.state.handleLeftPct  = this.handleLeftX / this.containerWidth
       this.state.handleRightPct = (this.containerWidth - this.handleRightX) / this.containerWidth
     }
     this.attachEventListeners()
@@ -196,36 +198,39 @@ class ScaleControlView {
   onDocumentPointerMove (event) {
     this.state.dragX += event.movementX
 
+    let position = this.position
+    let scale = this.scale
+
     // add the delta accumulated over all mouse moves since we started dragging
     if (this.state.dragTarget != null) {
       if (this.state.dragTarget === this.refs.handleLeft) {
 
         // calculate new position
-        this.position += event.movementX / this.containerWidth
+        position = (this.state.handleLeftPct + this.state.dragX) / this.containerWidth
 
         // calculate new scale
         // NOTE scale is stored as zoom level, e.g.: scale = 2.0 (200% zoom)
-        this.scale = 1 / (this.state.handleRightPct - this.position)
+        scale = 1 / (this.state.handleRightPct - position)
       }
 
       if (this.state.dragTarget === this.refs.handleRight) {
         let originalPx = this.state.handleRightPct * this.containerWidth
         let newPx = originalPx + this.state.dragX
         let newRightPct = (newPx / this.containerWidth)
-        this.scale = 1 / (newRightPct - this.position)
+        scale = 1 / (newRightPct - position)
       }
       
       if (this.state.dragTarget === this.refs.handleMiddle) {
-        this.position += event.movementX / this.containerWidth
+        position = (this.state.handleLeftPct + this.state.dragX) / this.containerWidth
       }
     }
 
     // TODO clamp
-    // this.position = clamp(this.position, 0, 1)
+    // position = clamp(this.position, 0, 1)
 
     this.onDrag && this.onDrag({
-      position: this.position,
-      scale: this.scale
+      position,
+      scale
     })
   }
   onHandlePointerUp (event) {
@@ -241,6 +246,7 @@ class ScaleControlView {
   resetDrag () {
     this.state.dragTarget = undefined
     this.state.dragX = undefined
+    this.state.handleLeftPct = undefined
     this.state.handleRightPct = undefined
   }
   attachEventListeners () {
@@ -1077,7 +1083,12 @@ class SceneTimelineView {
       if (this.currentBoardIndex != props.currentBoardIndex) {
         let sceneDurationInMsecs = sceneModel.sceneDuration(this.scene)
         let board = this.scene.boards[props.currentBoardIndex]
-        this.position = board.time / sceneDurationInMsecs
+        // TODO windowing (extending to full duration of board + audio)
+        // TODO update scale
+        // TODO clamp
+        this.update({
+          position: board.time / sceneDurationInMsecs
+        })
       }
       this.currentBoardIndex = props.currentBoardIndex
     }
