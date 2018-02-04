@@ -189,7 +189,7 @@ class ScaleControlView {
         event.target === this.refs.handleMiddle) {
       this.state.dragTarget = event.target
       this.state.dragX = 0
-      this.state.handleLeftPct  = this.handleLeftX / this.containerWidth
+      this.state.handleLeftPct = this.handleLeftX / this.containerWidth
       this.state.handleRightPct = (this.containerWidth - this.handleRightX) / this.containerWidth
     }
     this.attachEventListeners()
