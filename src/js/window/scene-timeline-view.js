@@ -204,9 +204,8 @@ class ScaleControlView {
     // add the delta accumulated over all mouse moves since we started dragging
     if (this.state.dragTarget != null) {
       if (this.state.dragTarget === this.refs.handleLeft) {
-
         // calculate new position
-        position = (this.state.handleLeftPct + this.state.dragX) / this.containerWidth
+        position = this.state.handleLeftPct + (this.state.dragX / this.containerWidth)
 
         // calculate new scale
         // NOTE scale is stored as zoom level, e.g.: scale = 2.0 (200% zoom)
@@ -219,14 +218,11 @@ class ScaleControlView {
         let newRightPct = (newPx / this.containerWidth)
         scale = 1 / (newRightPct - position)
       }
-      
+
       if (this.state.dragTarget === this.refs.handleMiddle) {
-        position = (this.state.handleLeftPct + this.state.dragX) / this.containerWidth
+        position = this.state.handleLeftPct + (this.state.dragX / this.containerWidth)
       }
     }
-
-    // TODO clamp
-    // position = clamp(this.position, 0, 1)
 
     this.onDrag && this.onDrag({
       position,
