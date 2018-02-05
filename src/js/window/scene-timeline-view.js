@@ -906,14 +906,22 @@ class TimelineView {
   }
 
   async completeDragOrResize (event) {
+    let selections
+    let position
+
     if (this.state.draggableBoardView) {
       if (this.state.insertPointInMsecs) {
-        let boardToInsertBefore = this.scene.boards.find(board => board.time === this.state.insertPointInMsecs)
-
-        let selections = new Set([this.scene.boards.indexOf(this.state.draggableBoardView.board)])
-        let position = this.scene.boards.indexOf(boardToInsertBefore)
-
-        this.onMoveSelectedBoards(selections, position)
+        if (this.state.insertPointInMsecs === sceneModel.sceneDuration(this.scene)) {
+          // move to very end of scene
+          selections = new Set([this.scene.boards.indexOf(this.state.draggableBoardView.board)])
+          position = this.scene.boards.length
+        } else {
+          let boardToInsertBefore = this.scene.boards.find(board => board.time === this.state.insertPointInMsecs)
+          if (boardToInsertBefore) {
+            selections = new Set([this.scene.boards.indexOf(this.state.draggableBoardView.board)])
+            position = this.scene.boards.indexOf(boardToInsertBefore)
+          }
+        }
       }
     }
 
@@ -926,6 +934,14 @@ class TimelineView {
     this.state.draggableOffsetInPx = 0
 
     this.state.insertPointInMsecs = undefined
+
+    if (selections != null && position != null) {
+      // request update
+      this.onMoveSelectedBoards(selections, position)
+    } else {
+      // manual update to reflect we cancelled the move operation
+      this.update({ })
+    }
   }
 
   async onBoardPointerUp (event, boardView) {
