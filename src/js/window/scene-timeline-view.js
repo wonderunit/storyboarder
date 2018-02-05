@@ -875,6 +875,7 @@ class TimelineView {
       this.state.draggableBoardOriginalTime = boardView.board.time
       this.state.draggableOffsetInPx = 0
     }
+    this.update({})
   }
 
   async onDocumentPointerMove (event) {
