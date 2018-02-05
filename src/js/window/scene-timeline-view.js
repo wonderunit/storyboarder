@@ -428,6 +428,7 @@ class BoardView {
                         border: none;
                         pointer-events: none;
                         padding: 0;
+                        border-radius: 3px;
                         margin: 0;`,
                 attributes: {
                   width: `${Math.round(imageHeight * this.scene.aspectRatio)}px`,
