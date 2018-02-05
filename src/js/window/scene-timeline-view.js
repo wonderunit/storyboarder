@@ -719,7 +719,7 @@ class TimelineView {
     //     .map(board => etch.dom(BoardView, { scale: this.scale, board: { time: board.time, duration: board.audio.duration }, scene: this.scene }))
     //
     let audioLanes = lanes.map(lane =>
-      etch.dom(LaneView, { kind: 'audio', mini: this.mini }, lane.boards.map((board, index) =>
+      etch.dom(LaneView, { kind: 'audio', mini: this.mini }, lane.boards.map(board =>
         etch.dom(BoardView, {
           pixelsPerMsec: this.pixelsPerMsec,
           scale: this.scale,
@@ -727,7 +727,7 @@ class TimelineView {
           kind: 'audio',
           scene: this.scene,
           scenePath: this.scenePath,
-          active: this.currentBoardIndex === index,
+          active: this.currentBoardIndex === this.scene.boards.indexOf(board),
           enabled: !this.state.draggableBoardView,
           dragging: !!(this.state.draggableBoardView &&
                     this.state.draggableBoardView.board === board),
