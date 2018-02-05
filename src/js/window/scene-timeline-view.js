@@ -1098,7 +1098,7 @@ class SceneTimelineView {
     }
 
     // let containerWidth = this.refs.timelineView.containerWidth
-    let maxScale = 50
+    let maxScale = 40
     //
     // TODO prevent position from being too close to, or gt than, scale
     //      at far right
