@@ -653,7 +653,7 @@ class TimelineView {
       draggableBoardOriginalTime: undefined,
       draggableOffsetInPx: 0,
 
-      insertPointInMsecs: 0
+      insertPointInMsecs: undefined
     }
 
     // perform custom initialization here...
@@ -906,13 +906,14 @@ class TimelineView {
 
   async completeDragOrResize (event) {
     if (this.state.draggableBoardView) {
-      let boardToInsertBefore = this.scene.boards.find(board => board.time === this.state.insertPointInMsecs)
-      // console.log('boardToInsertBefore', this.scene.boards.indexOf(boardToInsertBefore))
+      if (this.state.insertPointInMsecs) {
+        let boardToInsertBefore = this.scene.boards.find(board => board.time === this.state.insertPointInMsecs)
 
-      let selections = new Set([this.scene.boards.indexOf(this.state.draggableBoardView.board)])
-      let position = this.scene.boards.indexOf(boardToInsertBefore)
+        let selections = new Set([this.scene.boards.indexOf(this.state.draggableBoardView.board)])
+        let position = this.scene.boards.indexOf(boardToInsertBefore)
 
-      this.onMoveSelectedBoards(selections, position)
+        this.onMoveSelectedBoards(selections, position)
+      }
     }
 
     this.state.resizableBoardView = undefined
@@ -923,7 +924,7 @@ class TimelineView {
     this.state.draggableBoardOriginalTime = undefined
     this.state.draggableOffsetInPx = 0
 
-    this.state.insertPointInMsecs = 0
+    this.state.insertPointInMsecs = undefined
   }
 
   async onBoardPointerUp (event, boardView) {
