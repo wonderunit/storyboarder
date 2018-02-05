@@ -107,7 +107,7 @@ class ScaleControlView {
                 left: 0px;
                 width: ${this.handleLeftX}px;
                 height: 100%;
-                background-color: rgba(0, 0, 0, 0.6);`
+                background-color: rgba(0, 0, 0, 0.3);`
       }),
       $.div({
         ref: 'overlayRight',
@@ -116,7 +116,7 @@ class ScaleControlView {
                 width: ${this.handleRightX}px;
                 right: 0;
                 height: 100%;
-                background-color: rgba(0, 0, 0, 0.6);`
+                background-color: rgba(0, 0, 0, 0.3);`
       }),
 
       $.div({
