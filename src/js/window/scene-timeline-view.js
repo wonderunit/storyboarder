@@ -302,7 +302,7 @@ class BoardView {
 
     let time = this.board.time
     let padRight = this.mini ? 0 : 10
-    let w = (duration * this.pixelsPerMsec * this.scale)
+    let w = Math.ceil(duration * this.pixelsPerMsec * this.scale)
     let l = (time * this.pixelsPerMsec * this.scale)
 
     let imageHeight = 60
@@ -332,7 +332,7 @@ class BoardView {
                 box-sizing: border-box;
                 position: absolute;
                 top: 0;
-                left: ${l}px;
+                left: ${Math.ceil(l)}px;
 
                 ${
                   this.dragging
