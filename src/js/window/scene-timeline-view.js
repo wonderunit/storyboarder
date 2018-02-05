@@ -892,8 +892,8 @@ class TimelineView {
       let minDuration = Math.round(1000 / this.scene.fps)
       let newDuration = Math.max(minDuration,
         Math.round(
-          (this.state.resizableBoardOriginalDuration + movementX) / 100
-        ) * 100
+          (this.state.resizableBoardOriginalDuration + movementX) / 10
+        ) * 10
       )
       this.onModifyBoardDurationByIndex(index, newDuration)
     }
