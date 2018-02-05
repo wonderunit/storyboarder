@@ -999,7 +999,7 @@ class SceneTimelineView {
     let sceneDurationInMsecs = sceneModel.sceneDuration(this.scene)
 
     let currTime = msToTime(Math.floor(this.scene.boards[this.currentBoardIndex].time))
-    let totalTime = msToTime(Math.ceil(sceneDurationInMsecs))
+    let totalTime = msToTime(Math.ceil(sceneDurationInMsecs / 1000) * 1000)
 
     return $.div(
       {
