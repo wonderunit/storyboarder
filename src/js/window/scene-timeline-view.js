@@ -1108,7 +1108,14 @@ class SceneTimelineView {
         this.scale = props.scale
       }
     }
-    if (props.position != null) this.position = props.position
+
+    if (props.position != null) {
+      if (props.position >= 0) {
+        this.position = props.position
+      } else {
+        this.position = 0
+      }
+    }
 
     if (props.pixelsPerMsec != null) this.pixelsPerMsec = props.pixelsPerMsec
     if (props.mini != null) this.mini = props.mini
