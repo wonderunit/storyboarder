@@ -905,10 +905,10 @@ input[type=range]:focus::-webkit-slider-runnable-track {
   background-color: #5d2b2b;
 }
 
-#scene-timeline-container .timeline-outer::-webkit-scrollbar {
+#scene-timeline-container .timeline-scrollable::-webkit-scrollbar {
   display:none
 }
-#scene-timeline-container .timeline-outer::-webkit-scrollbar-thumb {
+#scene-timeline-container .timeline-scrollable::-webkit-scrollbar-thumb {
   display:none
 }
 

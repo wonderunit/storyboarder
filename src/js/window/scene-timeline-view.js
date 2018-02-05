@@ -738,7 +738,7 @@ class TimelineView {
 
     // let entireWidth = this.sceneDurationInMsecs * this.pixelsPerMsec * this.scale
 
-    let caretView
+    let caretView = null
     if (this.state.draggableBoardView) {
       let movementX = this.state.draggableOffsetInPx / (this.pixelsPerMsec * this.scale)
       let goalTime = this.state.draggableBoardView.board.time + movementX
@@ -777,30 +777,32 @@ class TimelineView {
 
     let boardLane = etch.dom(LaneView, { kind: 'board', mini: this.mini }, boardsViews)
 
-    return $.div(
-      {
-        ref: 'timelineOuter',
-        class: 'timeline-outer',
-        on: {
-          wheel: this.onWheel
-        },
-        style: `position: relative;
-                ${cursor ? `cursor: ${cursor}` : ''};
-                overflow: scroll;`
-      },
+    return $.div({ style: 'position: relative;' }, [
       $.div(
         {
-          class: 'timeline',
+          ref: 'timelineScrollable',
+          class: 'timeline-scrollable',
+          on: {
+            wheel: this.onWheel
+          },
           style: `position: relative;
-                  background-color: #333;`
+                  ${cursor ? `cursor: ${cursor}` : ''};
+                  overflow: scroll;`
         },
-        [
-          boardLane,
-          !this.mini ? audioLanes : null,
-          this.state.draggableBoardView ? caretView : null
-        ]
-      )
-    )
+        $.div(
+          {
+            class: 'timeline',
+            style: `position: relative;
+                    background-color: #333;`
+          },
+          [
+            boardLane,
+            !this.mini ? audioLanes : null
+          ]
+        )
+      ),
+      caretView
+    ])
   }
 
   // Required: Update the component with new properties and children.
@@ -846,7 +848,7 @@ class TimelineView {
 
     this.ro = new window.ResizeObserver(entries => {
       for (let entry of entries) {
-        if (entry.target === this.refs.timelineOuter) {
+        if (entry.target === this.element) {
           this.onElementResize(entry.contentRect, true)
         }
       }
@@ -953,7 +955,7 @@ class TimelineView {
   }
 
   onWheel (event) {
-    // let scrollable = this.refs.timelineOuter
+    // let scrollable = this.refs.timelineScrollable
     // let position = scrollable.scrollLeft / scrollable.scrollWidth
     // let scale = this.scale // + (event.deltaY * this.pixelsPerMsec)
 
@@ -982,7 +984,7 @@ class TimelineView {
     //     scrollLeft
     //   })
     // }
-    this.refs.timelineOuter.scrollLeft = scrollLeft
+    this.refs.timelineScrollable.scrollLeft = scrollLeft
   }
 }
 
