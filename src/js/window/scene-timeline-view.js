@@ -1034,6 +1034,7 @@ class SceneTimelineView {
                     display: flex;
                     flex-direction: row;
                     color: white;
+                    height: 10px;
                     margin: 0;`
           },
           [
