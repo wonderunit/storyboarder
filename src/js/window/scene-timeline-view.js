@@ -749,6 +749,7 @@ class TimelineView {
       this.state.insertPointInMsecs = closest(times, goalTime)
 
       let caretLeft = this.state.insertPointInMsecs * this.pixelsPerMsec * this.scale
+      caretLeft -= this.refs.timelineScrollable.scrollLeft
 
       caretView = $.div(
         {
