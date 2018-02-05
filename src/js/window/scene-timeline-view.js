@@ -970,6 +970,8 @@ class TimelineView {
 
 class SceneTimelineView {
   constructor (props, children) {
+    this.show = true
+
     this.scale = props.scale
     this.position = props.position
 
@@ -1002,6 +1004,7 @@ class SceneTimelineView {
     return $.div(
       {
         // margin: 0 ${6 + ScaleControlView.HANDLE_WIDTH * 2}px;
+        style: `display: ${this.show ? 'block' : 'none'};`
       },
       [
         $.div({ style: `margin: 0 15px;` },
@@ -1074,6 +1077,7 @@ class SceneTimelineView {
   }
 
   update (props, children) {
+    if (props.show != null) this.show = props.show
     if (props.scene) this.scene = props.scene
 
     if (props.scale != null) {
