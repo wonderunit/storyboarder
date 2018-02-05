@@ -795,7 +795,7 @@ class TimelineView {
           {
             // lanes container
             style: `position: relative;
-                    background-color: #333;`
+                    background-color: #444;`
           },
           [
             boardLane,
