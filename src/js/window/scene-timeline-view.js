@@ -910,7 +910,7 @@ class TimelineView {
     let position
 
     if (this.state.draggableBoardView) {
-      if (this.state.insertPointInMsecs) {
+      if (this.state.insertPointInMsecs != null) {
         if (this.state.insertPointInMsecs === sceneModel.sceneDuration(this.scene)) {
           // move to very end of scene
           selections = new Set([this.scene.boards.indexOf(this.state.draggableBoardView.board)])
