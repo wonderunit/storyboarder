@@ -162,7 +162,7 @@ class ScaleControlView {
   async destroy () {
     await etch.destroy(this)
 
-    this.ro.disconnect()
+    this.ro && this.ro.disconnect()
 
     this.removeEventListeners()
   }
@@ -835,7 +835,7 @@ class TimelineView {
     document.removeEventListener('pointermove', this.onDocumentPointerMove)
     window.removeEventListener('blur', this.onCancelMove)
 
-    this.ro.disconnect()
+    this.ro && this.ro.disconnect()
 
     // call etch.destroy to remove the element and destroy child components
     await etch.destroy(this)
