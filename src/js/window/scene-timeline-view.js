@@ -793,7 +793,7 @@ class TimelineView {
         },
         $.div(
           {
-            class: 'timeline',
+            // lanes container
             style: `position: relative;
                     background-color: #333;`
           },
