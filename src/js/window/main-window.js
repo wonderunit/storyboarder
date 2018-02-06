@@ -5356,6 +5356,33 @@ const updateSceneFromScript = async () => {
   renderScript()
 }
 
+class TimelineModeControlView {
+  constructor (props) {
+    this.show = false
+    this.mode = 'sequence'
+
+    this.onToggle = props.onToggle
+
+    this.element = document.createElement('div')
+    this.element.addEventListener('click', this.onToggle)
+    this.element.style.position = 'absolute'
+    this.element.style.marginTop = '-8px'
+    this.element.style.borderRadius = '6px'
+    this.element.style.backgroundColor = '#3A3A3A'
+    this.element.style.padding = '6px'
+  }
+  update (props) {
+    if (props.show != null) this.show = props.show
+    if (props.mode != null) this.mode = props.mode
+
+    this.element.style.display = this.show ? 'block' : 'none'
+
+    this.element.innerHTML = this.mode === 'sequence'
+      ? 'Boards'
+      : 'Timeline'
+  }
+}
+
 ipcRenderer.on('setTool', (e, arg)=> {
   if (!toolbar) return
 
@@ -5740,31 +5767,4 @@ if (isDev) {
       }
     }
   }, 500)
-}
-
-class TimelineModeControlView {
-  constructor (props) {
-    this.show = false
-    this.mode = 'sequence'
-
-    this.onToggle = props.onToggle
-
-    this.element = document.createElement('div')
-    this.element.addEventListener('click', this.onToggle)
-    this.element.style.position = 'absolute'
-    this.element.style.marginTop = '-8px'
-    this.element.style.borderRadius = '6px'
-    this.element.style.backgroundColor = '#3A3A3A'
-    this.element.style.padding = '6px'
-  }
-  update (props) {
-    if (props.show != null) this.show = props.show
-    if (props.mode != null) this.mode = props.mode
-
-    this.element.style.display = this.show ? 'block' : 'none'
-
-    this.element.innerHTML = this.mode === 'sequence'
-      ? 'Boards'
-      : 'Timeline'
-  }
 }
