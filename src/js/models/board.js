@@ -42,9 +42,9 @@ const boardOrderedLayerFilenames = board => {
 }
 
 const boardDuration = (scene, board) =>
-  typeof board.duration === 'undefined'
-    ? scene.defaultBoardTiming
-    : board.duration
+  board.duration != null
+    ? Number(board.duration)
+    : Number(scene.defaultBoardTiming)
 
 const boardDurationWithAudio = (scene, board) =>
   Math.max(
