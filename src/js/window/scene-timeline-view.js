@@ -1152,6 +1152,21 @@ class SceneTimelineView {
         )
       }
     }
+
+    if (props.currentBoardIndex != null) {
+      if (this.currentBoardIndex !== props.currentBoardIndex) {
+        if (this.scale > 1) {
+          let sceneDurationInMsecs = sceneModel.sceneDuration(this.scene)
+          let board = this.scene.boards[props.currentBoardIndex]
+
+          // TODO windowing (extending to full duration of board + audio)
+          // TODO update scale
+          this.position = board.time / sceneDurationInMsecs
+        }
+      }
+
+      this.currentBoardIndex = props.currentBoardIndex
+    }
     return etch.update(this)
   }
 
