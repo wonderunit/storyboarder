@@ -1,18 +1,10 @@
 const etch = require('etch')
 const $ = etch.dom
 
-const { clamp } = require('../utils')
+const { clamp, msToTime } = require('../utils')
 
 const boardModel = require('../models/board')
 const sceneModel = require('../models/scene')
-
-const msToTime = ms => {
-  let value = new Date(ms).toISOString().slice(14, -1)
-  // skip minutes if unused
-  if (value.match(/^00:/)) value = value.slice(1, -1)
-  if (value.match(/.00$/)) value = value.slice(0, -3)
-  return value
-}
 
 // via https://webaudiodemos.appspot.com/AudioRecorder/js/audiodisplay.js
 const drawBuffer = (width, height, context, data) => {
