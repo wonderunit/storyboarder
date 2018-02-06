@@ -1555,8 +1555,6 @@ const renderScene = async () => {
   failed.forEach(filename => notifications.notify({ message: `Could not load audio file ${filename}` }))
   updateAudioDurations()
 
-  // TODO test switching scenes
-  //
   // now that audio buffers have loaded, we can create the scene timeline
   // if it doesn't already exist
   srcByUid = {}
