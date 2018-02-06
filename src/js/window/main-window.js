@@ -1562,7 +1562,6 @@ const renderScene = async () => {
     sceneTimelineView = new SceneTimelineView({
       show: !shouldRenderThumbnailDrawer,
       scene: boardData,
-      scenePath: boardFilename,
 
       scale: 1,
       position: 0,

@@ -270,7 +270,6 @@ ScaleControlView.HANDLE_WIDTH = 8
 class BoardView {
   constructor (props, children) {
     this.scene = props.scene
-    this.scenePath = props.scenePath // TODO necessary?
 
     this.board = props.board
     this.kind = props.kind
@@ -519,7 +518,6 @@ class BoardView {
     }
 
     if (props.scene != null) this.scene = props.scene
-    if (props.scenePath != null) this.scenePath = props.scenePath // TODO necessary?
 
     if (props.kind != null) this.kind = props.kind
     if (props.board != null) this.board = props.board
@@ -626,7 +624,6 @@ class TimelineView {
     this.position = props.position
 
     this.scene = props.scene
-    this.scenePath = props.scenePath // TODO necessary?
 
     this.pixelsPerMsec = props.pixelsPerMsec
     this.containerWidth = props.containerWidth
@@ -678,7 +675,6 @@ class TimelineView {
           src: this.mini ? undefined : this.getSrcByUid(board.uid),
           kind: 'board',
           scene: this.scene,
-          scenePath: this.scenePath, // TODO necessary?
           onBoardPointerDown: this.onBoardPointerDown,
           onBoardPointerUp: this.onBoardPointerUp,
           active: this.currentBoardIndex === index,
@@ -727,7 +723,6 @@ class TimelineView {
           board: board,
           kind: 'audio',
           scene: this.scene,
-          scenePath: this.scenePath,
           active: this.currentBoardIndex === this.scene.boards.indexOf(board),
           enabled: !this.state.draggableBoardView,
           dragging: !!(this.state.draggableBoardView &&
@@ -999,7 +994,6 @@ class SceneTimelineView {
     this.position = props.position
 
     this.scene = props.scene
-    this.scenePath = props.scenePath // TODO necessary?
 
     this.pixelsPerMsec = props.pixelsPerMsec
     this.mini = props.mini
@@ -1035,7 +1029,6 @@ class SceneTimelineView {
             ref: 'timelineView',
 
             scene: this.scene,
-            scenePath: this.scenePath, // TODO necessary?
 
             scale: this.scale,
             position: this.position,
@@ -1071,7 +1064,6 @@ class SceneTimelineView {
                   ref: 'miniTimelineView',
 
                   scene: this.scene,
-                  scenePath: this.scenePath, // TODO necessary?
 
                   scale: 1,
                   position: 0,
