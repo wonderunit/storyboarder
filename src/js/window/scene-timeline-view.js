@@ -1141,9 +1141,6 @@ class SceneTimelineView {
       if (props.position > maxPos) accept = false
 
       if (accept) {
-        // props.position = clamp(props.position, minPos, maxPos)
-        // props.scale = clamp(props.scale, minScale, maxScale)
-
         this.position = props.position
         this.scale = props.scale
 
