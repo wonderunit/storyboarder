@@ -2331,7 +2331,6 @@ const updateThumbnailDisplayFromFile = index => {
 
   srcByUid[boardData.boards[index].uid] = src
 
-  // TODO
   renderSceneTimeline()
 }
 
