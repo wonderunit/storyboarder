@@ -1130,15 +1130,15 @@ class SceneTimelineView {
           let dur = boardModel.boardDurationWithAudio(this.scene, board) / sceneDurationInMsecs
           let end = start + dur
 
-          // request a change via props if range needs to extend to display entire board
           if (start < this.position) {
             props.position = start
-            props.scale = 1 / (scaleFromZoom + (this.position - props.position))
+            props.scale = this.scale
           }
 
           if (end > this.position + scaleFromZoom) {
-            props.position = this.position
-            props.scale = 1 / (end - this.position)
+            let newEnd = this.position + scaleFromZoom
+            props.position = clamp(this.position + (end - newEnd), 0, 1)
+            props.scale = this.scale
           }
         }
       }
