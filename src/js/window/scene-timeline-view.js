@@ -215,7 +215,7 @@ class ScaleControlView {
   }
   onDocumentPointerMove (event) {
     let mouseX = event.x - this.clientRect.left - this.state.startX
-    let containerX = mouseX / this.containerWidth
+    let mousePct = mouseX / this.containerWidth
 
     let position = this.position
     let scale = this.scale
@@ -225,7 +225,7 @@ class ScaleControlView {
       if (this.state.dragTarget === this.refs.handleLeft) {
         // calculate new position
         // clamp, to catch quick mouse movements that go out-of-bounds
-        position = clamp(containerX, 0, this.containerWidth)
+        position = clamp(mousePct, 0, this.containerWidth)
 
         // calculate new scale
         // NOTE scale is stored as zoom level, e.g.: scale = 2.0 (200% zoom)
@@ -233,11 +233,11 @@ class ScaleControlView {
       }
 
       if (this.state.dragTarget === this.refs.handleRight) {
-        scale = 1 / clamp(containerX - position, 0, 1)
+        scale = 1 / clamp(mousePct - position, 0, 1)
       }
 
       if (this.state.dragTarget === this.refs.handleMiddle) {
-        position = clamp(containerX, 0, this.containerWidth)
+        position = clamp(mousePct, 0, this.containerWidth)
       }
     }
 
