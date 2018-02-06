@@ -224,19 +224,20 @@ class ScaleControlView {
     if (this.state.dragTarget != null) {
       if (this.state.dragTarget === this.refs.handleLeft) {
         // calculate new position
-        position = containerX
+        // clamp, to catch quick mouse movements that go out-of-bounds
+        position = clamp(containerX, 0, this.containerWidth)
 
         // calculate new scale
         // NOTE scale is stored as zoom level, e.g.: scale = 2.0 (200% zoom)
-        scale = 1 / (this.state.handleRightPct - position)
+        scale = 1 / clamp(this.state.handleRightPct - position, 0, 1)
       }
 
       if (this.state.dragTarget === this.refs.handleRight) {
-        scale = 1 / (containerX - position)
+        scale = 1 / clamp(containerX - position, 0, 1)
       }
 
       if (this.state.dragTarget === this.refs.handleMiddle) {
-        position = containerX
+        position = clamp(containerX, 0, this.containerWidth)
       }
     }
 
