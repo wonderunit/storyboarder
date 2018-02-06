@@ -692,9 +692,7 @@ class TimelineView {
     let lanes = [{ boards: [], endInMsecs: 0 }]
     let timelinePosInMsecs = 0
     for (let board of this.scene.boards) {
-      let duration = (typeof board.duration === 'undefined' || board.duration === 0)
-                       ? this.scene.defaultBoardTiming
-                       : board.duration
+      let duration = boardModel.boardDuration(this.scene, board)
 
       if (board.audio) {
         let buffer = this.getAudioBufferByFilename(board.audio.filename)
