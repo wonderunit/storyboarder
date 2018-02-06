@@ -1109,6 +1109,8 @@ class SceneTimelineView {
   }
 
   update (props, children) {
+    let MAGIC_FUDGE_FACTOR = 1 / 40
+
     if (props.show != null) this.show = props.show
     if (props.scene) this.scene = props.scene
 
@@ -1126,7 +1128,7 @@ class SceneTimelineView {
       let containerWidth = this.refs.timelineView.containerWidth
 
       let minScale = 1 / (1 - props.position)
-      let maxScale = containerWidth / 40
+      let maxScale = containerWidth * MAGIC_FUDGE_FACTOR
 
       let minPos = 0
       let maxPos = 1 - (1 / maxScale)
