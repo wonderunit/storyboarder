@@ -1525,13 +1525,7 @@ let loadBoardUI = () => {
 
   timelineModeControlView = new TimelineModeControlView({
     onToggle: () => {
-      shouldRenderThumbnailDrawer = !shouldRenderThumbnailDrawer
-      timelineModeControlView.update({
-        mode: shouldRenderThumbnailDrawer
-          ? 'sequence'
-          : 'time'
-      })
-      renderThumbnailDrawer()
+      toggleTimeline()
     }
   })
   document.getElementById('timeline-mode-control-view').appendChild(timelineModeControlView.element)
@@ -4158,6 +4152,16 @@ const toggleCaptions = () => {
   toolbar.toggleCaptions()
 }
 
+const toggleTimeline = () => {
+  shouldRenderThumbnailDrawer = !shouldRenderThumbnailDrawer
+  // timelineModeControlView.update({
+  //   mode: shouldRenderThumbnailDrawer
+  //     ? 'sequence'
+  //     : 'time'
+  // })
+  renderThumbnailDrawer()
+}
+
 ipcRenderer.on('newBoard', (event, args)=>{
   if (!textInputMode) {
     if (args > 0) {
@@ -5520,6 +5524,12 @@ ipcRenderer.on('cycleViewMode', (event, args)=>{
 ipcRenderer.on('toggleCaptions', (event, args)=>{
   if (!textInputMode) {
     toggleCaptions()
+  }
+})
+
+ipcRenderer.on('toggleTimeline', () => {
+  if (!textInputMode) {
+    toggleTimeline()
   }
 })
 

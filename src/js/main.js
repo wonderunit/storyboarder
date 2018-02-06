@@ -1062,6 +1062,9 @@ ipcMain.on('toggleCaptions', (e, arg)=> {
   mainWindow.webContents.send('toggleCaptions', arg)
 })
 
+ipcMain.on('toggleTimeline', () =>
+  mainWindow.webContents.send('toggleTimeline'))
+
 //////////////////
 // Welcome Window
 //////////////////
