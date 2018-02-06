@@ -1136,8 +1136,7 @@ class SceneTimelineView {
           }
 
           if (end > this.position + scaleFromZoom) {
-            let newEnd = this.position + scaleFromZoom
-            props.position = clamp(this.position + (end - newEnd), 0, 1)
+            props.position = clamp(end - scaleFromZoom, 0, 1)
             props.scale = this.scale
           }
         }
