@@ -1194,12 +1194,13 @@ class SceneTimelineView {
   }
 
   onTimelineScroll (event) {
-    // FIXME scrolling
-    // if (this.scale <= 1) return
-    // let pixelsPerMsec = this.refs.timelineView.containerWidth / this.refs.timelineView.sceneDurationInMsecs
-    // this.position = this.position -= ((event.movementX * pixelsPerMsec) / this.scale)
-    // this.position = clamp(this.position, 0, 1)
-    // this.update({ position: this.position })
+    let position = this.position
+    let scale = this.scale
+
+    let containerWidth = this.refs.timelineView.containerWidth
+
+    position = position + (event.deltaX / containerWidth)
+    this.update({ position, scale })
   }
 }
 
