@@ -47,13 +47,14 @@ class ScaleControlView {
     this.onDrag = props.onDrag
 
     this.containerWidth = 0
+    this.clientRect = { top: 0, left: 0, width: 0, height: 0 }
 
     this.position = props.position
     this.scale = props.scale
 
     this.state = {
       dragTarget: undefined,
-      dragX: undefined,
+      startX: undefined,
       handleLeftPct: undefined,
       handleRightPct: undefined
     }
@@ -67,6 +68,8 @@ class ScaleControlView {
   }
   update (props = {}) {
     if (props.containerWidth != null) this.containerWidth = props.containerWidth
+    if (props.clientRect != null) this.clientRect = props.clientRect
+
     if (props.onDrag != null) this.onDrag = props.onDrag
 
     if (props.position != null) this.position = props.position
@@ -185,7 +188,8 @@ class ScaleControlView {
 
     // update
     await this.update({
-      containerWidth: rect.width
+      containerWidth: rect.width,
+      clientRect: this.element.getBoundingClientRect()
     })
   }
 
@@ -194,7 +198,15 @@ class ScaleControlView {
         event.target === this.refs.handleRight ||
         event.target === this.refs.handleMiddle) {
       this.state.dragTarget = event.target
-      this.state.dragX = 0
+
+      // how far into the object did they pointerdown?
+      let mouseX = event.x - this.clientRect.left
+      let objectX = event.target === this.refs.handleRight
+        ? this.containerWidth - this.handleRightX // used for right
+        : this.handleLeftX // used for left and middle
+
+      this.state.startX = mouseX - objectX
+
       this.state.handleLeftPct = this.handleLeftX / this.containerWidth
       this.state.handleRightPct = (this.containerWidth - this.handleRightX) / this.containerWidth
     }
@@ -202,7 +214,8 @@ class ScaleControlView {
     this.update()
   }
   onDocumentPointerMove (event) {
-    this.state.dragX += event.movementX
+    let mouseX = event.x - this.clientRect.left - this.state.startX
+    let containerX = mouseX / this.containerWidth
 
     let position = this.position
     let scale = this.scale
@@ -211,7 +224,7 @@ class ScaleControlView {
     if (this.state.dragTarget != null) {
       if (this.state.dragTarget === this.refs.handleLeft) {
         // calculate new position
-        position = this.state.handleLeftPct + (this.state.dragX / this.containerWidth)
+        position = containerX
 
         // calculate new scale
         // NOTE scale is stored as zoom level, e.g.: scale = 2.0 (200% zoom)
@@ -219,14 +232,11 @@ class ScaleControlView {
       }
 
       if (this.state.dragTarget === this.refs.handleRight) {
-        let originalPx = this.state.handleRightPct * this.containerWidth
-        let newPx = originalPx + this.state.dragX
-        let newRightPct = (newPx / this.containerWidth)
-        scale = 1 / (newRightPct - position)
+        scale = 1 / (containerX - position)
       }
 
       if (this.state.dragTarget === this.refs.handleMiddle) {
-        position = this.state.handleLeftPct + (this.state.dragX / this.containerWidth)
+        position = containerX
       }
     }
 
@@ -247,7 +257,7 @@ class ScaleControlView {
   }
   resetDrag () {
     this.state.dragTarget = undefined
-    this.state.dragX = undefined
+    this.state.startX = undefined
     this.state.handleLeftPct = undefined
     this.state.handleRightPct = undefined
   }
@@ -1102,44 +1112,46 @@ class SceneTimelineView {
     if (props.show != null) this.show = props.show
     if (props.scene) this.scene = props.scene
 
-    if (props.scale != null) {
-      if (props.scale > 0 &&
-          props.scale !== Infinity) {
-        this.scale = props.scale
-      }
-    }
-
-    if (props.position != null) {
-      if (props.position >= 0) {
-        this.position = props.position
-      } else {
-        this.position = 0
-      }
-    }
-
     if (props.pixelsPerMsec != null) this.pixelsPerMsec = props.pixelsPerMsec
     if (props.mini != null) this.mini = props.mini
 
-    if (props.currentBoardIndex != null) {
-      if (this.currentBoardIndex !== props.currentBoardIndex) {
-        let sceneDurationInMsecs = sceneModel.sceneDuration(this.scene)
-        let board = this.scene.boards[props.currentBoardIndex]
-        // TODO windowing (extending to full duration of board + audio)
-        // TODO update scale
-        this.position = board.time / sceneDurationInMsecs
+    if (props.position != null &&
+        props.scale != null) {
+      console.log(
+        '[request]',
+        'pos', props.position.toFixed(3),
+        'scale', props.scale.toFixed(3)
+      )
+
+      let containerWidth = this.refs.timelineView.containerWidth
+
+      let minScale = 1 / (1 - props.position)
+      let maxScale = containerWidth / 40
+
+      let minPos = 0
+      let maxPos = 1 - (1 / maxScale)
+
+      let accept = true
+      if (props.scale < minScale) accept = false
+      if (props.scale > maxScale) accept = false
+      if (props.position < minPos) accept = false
+      if (props.position > maxPos) accept = false
+
+      if (accept) {
+        // props.position = clamp(props.position, minPos, maxPos)
+        // props.scale = clamp(props.scale, minScale, maxScale)
+
+        this.position = props.position
+        this.scale = props.scale
+
+        console.log(
+          '[update]',
+          'maxPos', maxPos,
+          'pos', this.position.toFixed(3),
+          'scale', this.scale.toFixed(3)
+        )
       }
-      this.currentBoardIndex = props.currentBoardIndex
     }
-
-    // let containerWidth = this.refs.timelineView.containerWidth
-    let maxScale = 40
-    //
-    // TODO prevent position from being too close to, or gt than, scale
-    //      at far right
-    //
-    this.position = clamp(this.position, 0, 1)
-    this.scale = clamp(this.scale, 1 / (1 - this.position), maxScale)
-
     return etch.update(this)
   }
 
