@@ -1127,7 +1127,7 @@ class SceneTimelineView {
           let board = this.scene.boards[props.currentBoardIndex]
 
           let start = board.time / sceneDurationInMsecs
-          let dur = boardModel.boardDurationWithAudio(this.scene, board) / sceneDurationInMsecs
+          let dur = boardModel.boardDuration(this.scene, board) / sceneDurationInMsecs
           let end = start + dur
 
           if (start < this.position) {
