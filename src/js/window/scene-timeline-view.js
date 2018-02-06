@@ -1163,8 +1163,6 @@ class SceneTimelineView {
 
           let endPosition = boardModel.boardDurationWithAudio(this.scene, board) / sceneDurationInMsecs
 
-          // TODO windowing (extending to full duration of board + audio)
-          // TODO update scale
           this.position = board.time / sceneDurationInMsecs
           this.scale = 1 / (endPosition)
         }
