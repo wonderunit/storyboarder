@@ -408,13 +408,15 @@ const drawBuffer = (width, height, context, data) => {
   for (let i = 0; i < width; i++) {
     let min = 1.0
     let max = -1.0
-    for (j = 0; j < step; j++) {
-      let datum = data[(i*step)+j]
+    for (let j = 0; j < step; j++) {
+      let datum = data[(i * step) + j]
 
-      if (datum < min)
-          min = datum
-      if (datum > max)
-          max = datum
+      if (datum < min) {
+        min = datum
+      }
+      if (datum > max) {
+        max = datum
+      }
     }
     context.fillRect(
       i,

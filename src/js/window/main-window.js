@@ -11,6 +11,7 @@ const Color = require('color-js')
 const chokidar = require('chokidar')
 const plist = require('plist')
 const R = require('ramda')
+const isDev = require('electron-is-dev')
 
 
 const { getInitialStateRenderer } = require('electron-redux')
@@ -35,6 +36,7 @@ const Sonifier = require('./sonifier/index')
 const LayersEditor = require('./layers-editor')
 const sfx = require('../wonderunit-sound')
 const { createIsCommandPressed } = require('../utils/keytracker')
+const SceneTimelineView = require('./scene-timeline-view')
 
 const storyTips = new(require('./story-tips'))(sfx, notifications)
 const exporter = require('./exporter')
@@ -156,6 +158,8 @@ let pomodoroTimerView
 let shotTemplateSystem
 let audioPlayback
 let audioFileControlView
+let sceneTimelineView
+let timelineModeControlView
 
 let storyboarderSketchPane
 
@@ -175,6 +179,8 @@ let etags = {}
 const setEtag = absoluteFilePath => { etags[absoluteFilePath] = Date.now() }
 const getEtag = absoluteFilePath => etags[absoluteFilePath] || '0'
 
+let srcByUid = {}
+let shouldRenderThumbnailDrawer = true
 
 //  analytics.event('Application', 'open', filename)
 
@@ -242,6 +248,14 @@ const load = async (event, args) => {
       )
     }, 500) // TODO hack, remove this #440
   } catch (error) {
+    console.error(error)
+
+    // DEBUG show current window
+    if (isDev) {
+      remote.getCurrentWindow().show()
+      remote.getCurrentWebContents().openDevTools()
+    }
+
     log({ type: 'error', message: error.message })
     remote.dialog.showMessageBox({
       type: 'error',
@@ -1310,14 +1324,15 @@ let loadBoardUI = () => {
       storeUndoStateForScene(true)
       board.audio = board.audio || {}
       board.audio.filename = newFilename
+      // update the audio playback buffers
+      const { failed } = await audioPlayback.updateBuffers()
+      failed.forEach(filename => notifications.notify({ message: `Could not load audio file ${filename}` }))
+      updateAudioDurations()
       storeUndoStateForScene()
 
       // mark .storyboarder scene JSON file dirty
       markBoardFileDirty()
 
-      // update the audio playback buffers
-      const { failed } = await audioPlayback.updateBuffers()
-      failed.forEach(filename => notifications.notify({ message: `Could not load audio file ${filename}` }))
       renderThumbnailDrawer()
       audioFileControlView.setState({
         boardAudio: board.audio
@@ -1373,10 +1388,6 @@ let loadBoardUI = () => {
         // remove board’s audio object
         storeUndoStateForScene(true)
         delete board.audio
-        storeUndoStateForScene()
-
-        // mark .storyboarder scene JSON file dirty
-        markBoardFileDirty()
 
         // TODO could clear out unused buffers to save RAM
         // audioPlayback.resetBuffers()
@@ -1384,6 +1395,11 @@ let loadBoardUI = () => {
         // update the audio playback buffers
         const { failed } = await audioPlayback.updateBuffers()
         failed.forEach(filename => notifications.notify({ message: `Could not load audio file ${filename}` }))
+        storeUndoStateForScene()
+
+        // mark .storyboarder scene JSON file dirty
+        markBoardFileDirty()
+
         renderThumbnailDrawer()
         audioFileControlView.setState({
           boardAudio: board.audio
@@ -1469,14 +1485,15 @@ let loadBoardUI = () => {
       storeUndoStateForScene(true)
       board.audio = board.audio || {}
       board.audio.filename = newFilename
+      // update the audio playback buffers
+      const { failed } = await audioPlayback.updateBuffers()
+      failed.forEach(filename => notifications.notify({ message: `Could not load audio file ${filename}` }))
+      updateAudioDurations()
       storeUndoStateForScene()
 
       // mark .storyboarder scene JSON file dirty
       markBoardFileDirty()
 
-      // update the audio playback buffers
-      const { failed } = await audioPlayback.updateBuffers()
-      failed.forEach(filename => notifications.notify({ message: `Could not load audio file ${filename}` }))
       renderThumbnailDrawer()
       audioFileControlView.setState({
         boardAudio: boardData.boards[currentBoard].audio
@@ -1506,7 +1523,12 @@ let loadBoardUI = () => {
   // HACK initialize the menu to match the value in preferences
   audioPlayback.setEnableAudition(prefsModule.getPrefs().enableBoardAudition)
 
-
+  timelineModeControlView = new TimelineModeControlView({
+    onToggle: () => {
+      toggleTimeline()
+    }
+  })
+  document.getElementById('timeline-mode-control-view').appendChild(timelineModeControlView.element)
 
 
   // for debugging:
@@ -1531,6 +1553,70 @@ const renderScene = async () => {
 
   const { failed } = await audioPlayback.updateBuffers()
   failed.forEach(filename => notifications.notify({ message: `Could not load audio file ${filename}` }))
+  updateAudioDurations()
+
+  // TODO test switching scenes
+  //
+  // now that audio buffers have loaded, we can create the scene timeline
+  // if it doesn't already exist
+  srcByUid = {}
+  if (!sceneTimelineView) {
+    sceneTimelineView = new SceneTimelineView({
+      show: !shouldRenderThumbnailDrawer,
+      scene: boardData,
+      scenePath: boardFilename,
+
+      scale: 1,
+      position: 0,
+
+      mini: false,
+
+      currentBoardIndex: currentBoard,
+
+      getAudioBufferByFilename: audioPlayback.getAudioBufferByFilename.bind(audioPlayback),
+
+      onSetCurrentBoardIndex: async index => {
+        if (currentBoard !== index) {
+          await saveImageFile()
+          currentBoard = index
+          gotoBoard(currentBoard)
+        }
+      },
+
+      onMoveSelectedBoards: (_selections, _position) => {
+        selections = _selections
+        let didChange = moveSelectedBoards(_position)
+        renderThumbnailDrawer() // calls renderSceneTimeline
+        return didChange
+      },
+
+      onModifyBoardDurationByIndex: (index, duration) => {
+        // TODO could store undo state after idle?
+        // storeUndoStateForScene(true)
+        boardData.boards[index].duration = duration
+        // storeUndoStateForScene()
+        markBoardFileDirty()
+        renderThumbnailDrawer()
+        renderMetaData()
+      },
+
+      getSrcByUid: uid => {
+        if (srcByUid[uid]) {
+          return srcByUid[uid]
+        } else {
+          let board = boardData.boards.find(b => b.uid === uid)
+          return path.join(
+            path.dirname(boardFilename),
+            'images',
+            boardModel.boardFilenameForThumbnail(board)
+          )
+        }
+      }
+    })
+    document.getElementById('scene-timeline-container')
+      .appendChild(sceneTimelineView.element)
+    sceneTimelineView.connectedCallback()
+  }
 
   // render the thumbnail drawer
   renderThumbnailDrawer()
@@ -1583,6 +1669,9 @@ let newBoard = async (position, shouldAddToUndoStack = true) => {
   // indicate dirty for save sweep
   markImageFileDirty([1]) // 'main' layer is dirty // HACK hardcoded
   markBoardFileDirty() // board data is dirty
+
+  // display blank thumbnail (file will not exist yet)
+  await setThumbnailDisplayAsPending(position)
 
   renderThumbnailDrawer()
   storeUndoStateForScene()
@@ -1718,6 +1807,23 @@ let insertNewBoardsWithFiles = async filepaths => {
     timing: 10
   })
   sfx.positive()
+}
+
+const updateAudioDurations = () => {
+  let shouldSave = false
+  for (let board of boardData.boards) {
+    if (board.audio) {
+      if (!board.audio.duration) {
+        // console.log(`duration missing for ${board.uid}. adding.`)
+        shouldSave = true
+      }
+      board.audio.duration = audioPlayback.getAudioBufferByFilename(board.audio.filename).duration * 1000
+      // console.log(`set audio duration to ${board.audio.duration}`)
+    }
+  }
+  if (shouldSave) {
+    markBoardFileDirty()
+  }
 }
 
 let markBoardFileDirty = () => {
@@ -2215,14 +2321,20 @@ const saveThumbnailFile = async (index, options = { forceReadFromFiles: false })
 
 const updateThumbnailDisplayFromFile = index => {
   // load the thumbnail image file
+  let board = boardData.boards[index]
+  let imageFilePath = path.join(boardPath, 'images', boardModel.boardFilenameForThumbnail(board))
+  let src = imageFilePath + '?' + getEtag(path.join(boardPath, 'images', boardModel.boardFilenameForThumbnail(board)))
+
+  // does a thumbnail exist in the thumbnail drawer already?
   let el = document.querySelector(`[data-thumbnail="${index}"] img`)
-  // does it exist in the thumbnail drawer already?
   if (el) {
-    let board = boardData.boards[index]
-    let imageFilePath = path.join(boardPath, 'images', boardModel.boardFilenameForThumbnail(board))
-    let src = imageFilePath + '?' + getEtag(path.join(boardPath, 'images', boardModel.boardFilenameForThumbnail(board)))
     el.src = src
   }
+
+  srcByUid[boardData.boards[index].uid] = src
+
+  // TODO
+  renderSceneTimeline()
 }
 
 const updateThumbnailDisplayFromMemory = () => {
@@ -2231,12 +2343,27 @@ const updateThumbnailDisplayFromMemory = () => {
     let imageData = canvas
       .toDataURL('image/png')
 
+    // cache image
+    srcByUid[boardData.boards[index].uid] = imageData
+
     // find the thumbnail image
     let el = document.querySelector(`[data-thumbnail="${index}"] img`)
     if (el) {
       el.src = imageData
     }
+
+    renderSceneTimeline()
   })
+}
+
+const setThumbnailDisplayAsPending = async (index) => {
+  let size = getThumbnailSize(boardData)
+  let context = createSizedContext(size)
+  fillContext(context, 'white')
+  let imageData = context.canvas.toDataURL('image/png')
+
+  // cache image
+  srcByUid[boardData.boards[index].uid] = imageData
 }
 
 let deleteSingleBoard = (index) => {
@@ -2449,53 +2576,58 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
 
     currentBoard = boardNumber
     currentBoard = Math.max(currentBoard, 0)
-    currentBoard = Math.min(currentBoard, boardData.boards.length-1)
-    
+    currentBoard = Math.min(currentBoard, boardData.boards.length - 1)
+
     if (!shouldPreserveSelections) selections.clear()
     selections = new Set([...selections.add(currentBoard)].sort(util.compareNumbers))
-    renderThumbnailDrawerSelections()
-    
-    for (var item of document.querySelectorAll('.thumbnail')) {
-      item.classList.remove('active')
-    }
 
-    let thumbDiv = document.querySelector(`[data-thumbnail='${currentBoard}']`)
-    if (thumbDiv) {
-      thumbDiv.classList.add('active')
-      thumbDiv.scrollIntoView()
+    renderSceneTimeline()
 
-      let thumbL = thumbDiv.offsetLeft
-      let thumbR = thumbDiv.offsetLeft + thumbDiv.offsetWidth
-
-      let containerDiv = document.querySelector('#thumbnail-container')
-      let containerL = containerDiv.scrollLeft
-      let containerR = containerDiv.scrollLeft + containerDiv.offsetWidth
-
-      if (thumbR >= containerR) {
-        // if right side of thumbnail is beyond the right edge of the visible container
-        // scroll the visible container
-        // to reveal up to the right edge of the thumbnail
-        containerDiv.scrollLeft = (thumbL - containerDiv.offsetWidth) + thumbDiv.offsetWidth + 100
-      } else if (containerL >= thumbL) {
-        // if left side of thumbnail is beyond the left edge of the visible container
-        // scroll the visible container
-        // to reveal up to the left edge of the thumbnail
-        containerDiv.scrollLeft = thumbL - 50
+    // let shouldRenderThumbnailDrawer = false
+    if (shouldRenderThumbnailDrawer) {
+      renderThumbnailDrawerSelections()
+      for (var item of document.querySelectorAll('.thumbnail')) {
+        item.classList.remove('active')
       }
-    } else {
-      //
-      // TODO when would this happen?
-      //
-      // wait for render, then update
-      setTimeout(
-        n => {
-          let newThumb = document.querySelector(`[data-thumbnail='${n}']`)
-          newThumb.classList.add('active')
-          newThumb.scrollIntoView()
-        },
-        10,
-        currentBoard
-      )
+
+      let thumbDiv = document.querySelector(`[data-thumbnail='${currentBoard}']`)
+      if (thumbDiv) {
+        thumbDiv.classList.add('active')
+        thumbDiv.scrollIntoView()
+
+        let thumbL = thumbDiv.offsetLeft
+        let thumbR = thumbDiv.offsetLeft + thumbDiv.offsetWidth
+
+        let containerDiv = document.querySelector('#thumbnail-container')
+        let containerL = containerDiv.scrollLeft
+        let containerR = containerDiv.scrollLeft + containerDiv.offsetWidth
+
+        if (thumbR >= containerR) {
+          // if right side of thumbnail is beyond the right edge of the visible container
+          // scroll the visible container
+          // to reveal up to the right edge of the thumbnail
+          containerDiv.scrollLeft = (thumbL - containerDiv.offsetWidth) + thumbDiv.offsetWidth + 100
+        } else if (containerL >= thumbL) {
+          // if left side of thumbnail is beyond the left edge of the visible container
+          // scroll the visible container
+          // to reveal up to the left edge of the thumbnail
+          containerDiv.scrollLeft = thumbL - 50
+        }
+      } else {
+        //
+        // TODO when would this happen?
+        //
+        // wait for render, then update
+        setTimeout(
+          n => {
+            let newThumb = document.querySelector(`[data-thumbnail='${n}']`)
+            newThumb.classList.add('active')
+            newThumb.scrollIntoView()
+          },
+          10,
+          currentBoard
+        )
+      }
     }
 
     renderMetaData()
@@ -2522,28 +2654,35 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
 }
 
 let renderMarkerPosition = () => {
+  // let shouldRenderThumbnailDrawer = false
+  if (!shouldRenderThumbnailDrawer) return
+
   let curr = boardData.boards[currentBoard]
   let last = boardData.boards[boardData.boards.length - 1]
 
   let percentage
   if (last.duration) {
-    percentage = (curr.time)/(last.time+last.duration)
+    percentage = (curr.time) / (last.time + last.duration)
   } else {
-    percentage = (curr.time)/(last.time+2000)
+    percentage = (curr.time) / (last.time + boardData.defaultBoardTiming)
   }
 
   let width = document.querySelector('#timeline #movie-timeline-content').offsetWidth
-  document.querySelector('#timeline .marker').style.left = (width*percentage) + 'px'
+  document.querySelector('#timeline .marker').style.left = (width * percentage) + 'px'
 
   document.querySelector('#timeline .left-block').innerHTML = util.msToTime(curr.time)
 
   let totalTime
   if (last.duration) {
-    totalTime = (last.time+last.duration)
+    totalTime = (last.time + last.duration)
   } else {
-    totalTime = (last.time+2000)
+    totalTime = (last.time + boardData.defaultBoardTiming)
   }
   document.querySelector('#timeline .right-block').innerHTML = util.msToTime(totalTime)
+
+  sceneTimelineView.update({
+    currentBoardIndex: currentBoard
+  })
 }
 
 let renderMetaData = () => {
@@ -2864,6 +3003,8 @@ let updateSketchPaneBoard = () => {
 }
 
 let renderThumbnailDrawerSelections = () => {
+  renderSceneTimeline()
+
   let thumbnails = document.querySelectorAll('.thumbnail')
 
   for (let thumb of thumbnails) {
@@ -2875,72 +3016,83 @@ let renderThumbnailDrawerSelections = () => {
   }
 }
 
-let renderThumbnailDrawer = ()=> {
-
-  let hasShots = false
-  for (var board of boardData.boards) {
-    if (board.newShot) {
-      hasShots = true
-      break
-    }
-  }
+const updateSceneTiming = () => {
+  let hasShots = boardData.boards.find(board => board.newShot) != null
 
   let currentShot = 0
   let subShot = 0
   let boardNumber = 1
   let currentTime = 0
 
-  for (var board of boardData.boards) {
+  for (let board of boardData.boards) {
     if (hasShots) {
-      if (board.newShot || (currentShot==0)) {
+      if (board.newShot || (currentShot === 0)) {
         currentShot++
         subShot = 0
       } else {
         subShot++
       }
 
-      substr = String.fromCharCode(97 + (subShot%26)).toUpperCase()
-      if ((Math.ceil(subShot/25)-1) > 0) {
-        substr+= (Math.ceil(subShot/25))
+      let substr = String.fromCharCode(97 + (subShot % 26)).toUpperCase()
+      if ((Math.ceil(subShot / 25) - 1) > 0) {
+        substr += (Math.ceil(subShot / 25))
       }
 
       board.shot = currentShot + substr
       board.number = boardNumber
-
     } else {
       board.number = boardNumber
-      board.shot = (boardNumber) + "A"
+      board.shot = (boardNumber) + 'A'
     }
     boardNumber++
 
     board.time = currentTime
 
-    if (board.duration) {
-      currentTime += board.duration
-    } else {
-      currentTime += 2000
-    }
+    currentTime += boardModel.boardDuration(boardData, board)
+  }
+}
+
+const renderSceneTimeline = () => {
+  sceneTimelineView.update({
+    scene: boardData,
+    currentBoardIndex: currentBoard
+  })
+}
+
+let renderThumbnailDrawer = () => {
+  updateSceneTiming()
+
+  // update the mode control
+  timelineModeControlView.update({
+    mode: shouldRenderThumbnailDrawer ? 'sequence' : 'time'
+  })
+
+  // reflect the current view
+  cycleViewMode(0)
+
+  renderSceneTimeline()
+  if (!shouldRenderThumbnailDrawer) {
+    return
   }
 
-
+  let hasShots = boardData.boards.find(board => board.newShot) != null
 
   let html = []
   let i = 0
-  for (var board of boardData.boards) {
+  for (let board of boardData.boards) {
     html.push('<div data-thumbnail="' + i + '" class="thumbnail')
     if (hasShots) {
-      if (board.newShot || (i==0)) {
+      if (board.newShot || (i === 0)) {
         html.push(' startShot')
       }
 
-      if (i < boardData.boards.length-1) {
-        if (boardData.boards[i+1].newShot) {
+      if (i < boardData.boards.length - 1) {
+        if (boardData.boards[i + 1].newShot) {
           html.push(' endShot')
         }
       } else {
         html.push(' endShot')
       }
-
     } else {
       html.push(' startShot')
       html.push(' endShot')
@@ -2980,7 +3132,7 @@ let renderThumbnailDrawer = ()=> {
     if (board.duration) {
       html.push(util.msToTime(board.duration))
     } else {
-      html.push(util.msToTime(2000))
+      html.push(util.msToTime(boardData.defaultBoardTiming))
     }
     html.push('</div>')
     html.push('</div>')
@@ -3042,7 +3194,7 @@ let renderThumbnailDrawer = ()=> {
   let thumbnails = document.querySelectorAll('.thumbnail')
   for (var thumb of thumbnails) {
     thumb.addEventListener('pointerenter', (e) => {
-      if (!isEditMode && selections.size <= 1 && e.target.dataset.thumbnail == currentBoard) {
+      if (!isEditMode && selections.size <= 1 && e.target.dataset.thumbnail === currentBoard) {
         contextMenu.attachTo(e.target)
       }
     })
@@ -3052,29 +3204,28 @@ let renderThumbnailDrawer = ()=> {
       }
     })
     thumb.addEventListener('pointermove', (e) => {
-      if (!isEditMode && selections.size <= 1 && e.target.dataset.thumbnail == currentBoard) {
+      if (!isEditMode && selections.size <= 1 && e.target.dataset.thumbnail === currentBoard) {
         contextMenu.attachTo(e.target)
       }
     })
-    thumb.addEventListener('pointerdown', (e)=>{
-      console.log("DOWN")
+    thumb.addEventListener('pointerdown', (e) => {
+      console.log('DOWN')
       if (!isEditMode && selections.size <= 1) contextMenu.attachTo(e.target)
 
       // always track cursor position
       updateThumbnailCursor(e.clientX, e.clientY)
-      
-      if (e.button == 0) {
+
+      if (e.button === 0) {
         editModeTimer = setTimeout(enableEditMode, enableEditModeDelay)
       } else {
         enableEditMode()
       }
-      
+
       let index = Number(e.target.dataset.thumbnail)
       if (selections.has(index)) {
         // ignore
-      } else if (isCommandPressed("workspace:thumbnails:select-multiple-modifier")) {
-
-        if (selections.size == 0 && !util.isUndefined(currentBoard)) {
+      } else if (isCommandPressed('workspace:thumbnails:select-multiple-modifier')) {
+        if (selections.size === 0 && !util.isUndefined(currentBoard)) {
           // use currentBoard as starting point
           selections.add(currentBoard)
         }
@@ -3087,7 +3238,7 @@ let renderThumbnailDrawer = ()=> {
         renderThumbnailDrawerSelections()
       } else if (currentBoard !== index) {
         // go to board by index
-        
+
         // reset selections
         selections.clear()
 
@@ -3102,15 +3253,17 @@ let renderThumbnailDrawer = ()=> {
 
   renderThumbnailButtons()
   renderTimeline()
-  
 
-  //gotoBoard(currentBoard)
+  // gotoBoard(currentBoard)
 }
 
 
 
 
 let renderThumbnailButtons = () => {
+  // let shouldRenderThumbnailDrawer = false
+  if (!shouldRenderThumbnailDrawer) return
+
   if (!document.getElementById('thumbnail-add-btn')) {
     let drawerEl = document.getElementById('thumbnail-drawer')
 
@@ -3147,6 +3300,9 @@ let renderThumbnailButtons = () => {
 }
 
 let renderTimeline = () => {
+  // reflect the current view
+  cycleViewMode(0)
+
   // HACK store original position of marker
   let getMarkerEl = () => document.querySelector('#timeline .marker')
   let markerLeft = getMarkerEl() ? getMarkerEl().style.left : '0px'
@@ -3849,7 +4005,7 @@ let playAdvance = async (first, isComplete) => {
 
 //// VIEW
 
-let cycleViewMode = (direction = +1) => {
+let cycleViewMode = async (direction = +1) => {
   if (scriptData) {
     viewMode = (viewMode + 6 + direction) % 6
     switch (viewMode) {
@@ -3858,35 +4014,56 @@ let cycleViewMode = (direction = +1) => {
         document.querySelector('#script').style.display = 'block'
         document.querySelector('#board-metadata').style.display = 'flex'
         document.querySelector('#toolbar').style.display = 'flex'
-        document.querySelector('#thumbnail-container').style.display = 'block'
-        document.querySelector('#timeline').style.display = 'flex'
         document.querySelector('#playback #icons').style.display = 'flex'
+
+        document.querySelector('#thumbnail-container').style.display = shouldRenderThumbnailDrawer ? 'block' : 'none'
+        document.querySelector('#timeline').style.display = shouldRenderThumbnailDrawer ? 'flex' : 'none'
+        await await sceneTimelineView.update({ show: !shouldRenderThumbnailDrawer })
+        timelineModeControlView.update({ show: true })
         break
       case 1:
         document.querySelector('#scenes').style.display = 'none'
         document.querySelector('#script').style.display = 'block'
         document.querySelector('#board-metadata').style.display = 'flex'
         document.querySelector('#toolbar').style.display = 'flex'
+
+        document.querySelector('#thumbnail-container').style.display = shouldRenderThumbnailDrawer ? 'block' : 'none'
+        document.querySelector('#timeline').style.display = shouldRenderThumbnailDrawer ? 'flex' : 'none'
+        await sceneTimelineView.update({ show: !shouldRenderThumbnailDrawer })
+        timelineModeControlView.update({ show: true })
         break
       case 2:
         document.querySelector('#scenes').style.display = 'none'
         document.querySelector('#script').style.display = 'none'
         document.querySelector('#board-metadata').style.display = 'flex'
         document.querySelector('#toolbar').style.display = 'flex'
+
+        document.querySelector('#thumbnail-container').style.display = shouldRenderThumbnailDrawer ? 'block' : 'none'
+        document.querySelector('#timeline').style.display = shouldRenderThumbnailDrawer ? 'flex' : 'none'
+        await sceneTimelineView.update({ show: !shouldRenderThumbnailDrawer })
+        timelineModeControlView.update({ show: true })
         break
       case 3:
         document.querySelector('#scenes').style.display = 'none'
         document.querySelector('#script').style.display = 'none'
         document.querySelector('#board-metadata').style.display = 'none'
         document.querySelector('#toolbar').style.display = 'flex'
+
+        document.querySelector('#thumbnail-container').style.display = shouldRenderThumbnailDrawer ? 'block' : 'none'
+        document.querySelector('#timeline').style.display = shouldRenderThumbnailDrawer ? 'flex' : 'none'
+        await sceneTimelineView.update({ show: !shouldRenderThumbnailDrawer })
+        timelineModeControlView.update({ show: true })
         break
       case 4:
         document.querySelector('#scenes').style.display = 'none'
         document.querySelector('#script').style.display = 'none'
         document.querySelector('#board-metadata').style.display = 'none'
         document.querySelector('#toolbar').style.display = 'none'
-        document.querySelector('#thumbnail-container').style.display = 'block'
-        document.querySelector('#timeline').style.display = 'flex'
+
+        document.querySelector('#thumbnail-container').style.display = shouldRenderThumbnailDrawer ? 'block' : 'none'
+        document.querySelector('#timeline').style.display = shouldRenderThumbnailDrawer ? 'flex' : 'none'
+        await sceneTimelineView.update({ show: !shouldRenderThumbnailDrawer })
+        timelineModeControlView.update({ show: true })
         break
       case 5:
         document.querySelector('#scenes').style.display = 'none'
@@ -3896,6 +4073,8 @@ let cycleViewMode = (direction = +1) => {
         document.querySelector('#thumbnail-container').style.display = 'none'
         document.querySelector('#timeline').style.display = 'none'
         document.querySelector('#playback #icons').style.display = 'none'
+        await sceneTimelineView.update({ show: false })
+        timelineModeControlView.update({ show: false })
         break
     }
   } else {
@@ -3906,32 +4085,46 @@ let cycleViewMode = (direction = +1) => {
         document.querySelector('#script').style.display = 'none'
         document.querySelector('#board-metadata').style.display = 'flex'
         document.querySelector('#toolbar').style.display = 'flex'
-        document.querySelector('#thumbnail-container').style.display = 'block'
-        document.querySelector('#timeline').style.display = 'flex'
         document.querySelector('#playback #icons').style.display = 'flex'
+
+        document.querySelector('#thumbnail-container').style.display = shouldRenderThumbnailDrawer ? 'block' : 'none'
+        document.querySelector('#timeline').style.display = shouldRenderThumbnailDrawer ? 'flex' : 'none'
+        await sceneTimelineView.update({ show: !shouldRenderThumbnailDrawer })
+        timelineModeControlView.update({ show: true })
         break
       case 1:
         document.querySelector('#scenes').style.display = 'none'
         document.querySelector('#script').style.display = 'none'
         document.querySelector('#board-metadata').style.display = 'none'
         document.querySelector('#toolbar').style.display = 'flex'
+
+        document.querySelector('#thumbnail-container').style.display = shouldRenderThumbnailDrawer ? 'block' : 'none'
+        document.querySelector('#timeline').style.display = shouldRenderThumbnailDrawer ? 'flex' : 'none'
+        await sceneTimelineView.update({ show: !shouldRenderThumbnailDrawer })
+        timelineModeControlView.update({ show: true })
         break
       case 2:
         document.querySelector('#scenes').style.display = 'none'
         document.querySelector('#script').style.display = 'none'
         document.querySelector('#board-metadata').style.display = 'none'
         document.querySelector('#toolbar').style.display = 'none'
-        document.querySelector('#thumbnail-container').style.display = 'block'
-        document.querySelector('#timeline').style.display = 'flex'
+
+        document.querySelector('#thumbnail-container').style.display = shouldRenderThumbnailDrawer ? 'block' : 'none'
+        document.querySelector('#timeline').style.display = shouldRenderThumbnailDrawer ? 'flex' : 'none'
+        await sceneTimelineView.update({ show: !shouldRenderThumbnailDrawer })
+        timelineModeControlView.update({ show: true })
         break
       case 3:
         document.querySelector('#scenes').style.display = 'none'
         document.querySelector('#script').style.display = 'none'
         document.querySelector('#board-metadata').style.display = 'none'
         document.querySelector('#toolbar').style.display = 'none'
+        document.querySelector('#playback #icons').style.display = 'none'
+
         document.querySelector('#thumbnail-container').style.display = 'none'
         document.querySelector('#timeline').style.display = 'none'
-        document.querySelector('#playback #icons').style.display = 'none'
+        await sceneTimelineView.update({ show: false })
+        timelineModeControlView.update({ show: false })
         break
     }
   }
@@ -3953,6 +4146,16 @@ const renderViewMode = () => {
 
 const toggleCaptions = () => {
   toolbar.toggleCaptions()
+}
+
+const toggleTimeline = () => {
+  shouldRenderThumbnailDrawer = !shouldRenderThumbnailDrawer
+  // timelineModeControlView.update({
+  //   mode: shouldRenderThumbnailDrawer
+  //     ? 'sequence'
+  //     : 'time'
+  // })
+  renderThumbnailDrawer()
 }
 
 ipcRenderer.on('newBoard', (event, args)=>{
@@ -4669,9 +4872,9 @@ let moveSelectedBoards = position => {
   if (position > firstSelection) {
     position = position - numRemoved
   }
-  
-  // console.log('move starting at board', firstSelection, 
-  //             ', moving', numRemoved, 
+
+  // console.log('move starting at board', firstSelection,
+  //             ', moving', numRemoved,
   //             'boards to index', position)
 
   if (firstSelection !== position) {
@@ -4789,6 +4992,9 @@ let isBeforeFirstThumbnail = (x, y) => {
 }
 
 let updateThumbnailCursor = (x, y) => {
+  // let shouldRenderThumbnailDrawer = false
+  if (!shouldRenderThumbnailDrawer) return
+
   if (isBeforeFirstThumbnail(x, y)) {
     thumbnailCursor.x = 0
     thumbnailCursor.el = null
@@ -4832,12 +5038,14 @@ let updateThumbnailCursor = (x, y) => {
 
 let renderThumbnailCursor = () => {
   let el = document.querySelector('#thumbnail-cursor')
-  if (thumbnailCursor.visible) {
-    el.style.display = ''
-    el.style.left = thumbnailCursor.x + 'px'
-  } else {
-    el.style.display = 'none'
-    el.style.left = '0px'
+  if (el) { // shouldRenderThumbnailDrawer
+    if (thumbnailCursor.visible) {
+      el.style.display = ''
+      el.style.left = thumbnailCursor.x + 'px'
+    } else {
+      el.style.display = 'none'
+      el.style.left = '0px'
+    }
   }
 }
 
@@ -5148,6 +5356,33 @@ const updateSceneFromScript = async () => {
   renderScript()
 }
 
+class TimelineModeControlView {
+  constructor (props) {
+    this.show = false
+    this.mode = 'sequence'
+
+    this.onToggle = props.onToggle
+
+    this.element = document.createElement('div')
+    this.element.addEventListener('click', this.onToggle)
+    this.element.style.position = 'absolute'
+    this.element.style.marginTop = '-8px'
+    this.element.style.borderRadius = '6px'
+    this.element.style.backgroundColor = '#3A3A3A'
+    this.element.style.padding = '6px'
+  }
+  update (props) {
+    if (props.show != null) this.show = props.show
+    if (props.mode != null) this.mode = props.mode
+
+    this.element.style.display = this.show ? 'block' : 'none'
+
+    this.element.innerHTML = this.mode === 'sequence'
+      ? 'Boards'
+      : 'Timeline'
+  }
+}
+
 ipcRenderer.on('setTool', (e, arg)=> {
   if (!toolbar) return
 
@@ -5285,6 +5520,12 @@ ipcRenderer.on('cycleViewMode', (event, args)=>{
 ipcRenderer.on('toggleCaptions', (event, args)=>{
   if (!textInputMode) {
     toggleCaptions()
+  }
+})
+
+ipcRenderer.on('toggleTimeline', () => {
+  if (!textInputMode) {
+    toggleTimeline()
   }
 })
 
@@ -5510,3 +5751,26 @@ ipcRenderer.on('toggleAudition', value => {
 })
 
 const log = opt => ipcRenderer.send('log', opt)
+
+// HACK to support Cmd+R reloading
+if (isDev) {
+  // wait
+  setTimeout(() => {
+    // … if no boardData present after timeout, we probably just Cmd+R reloaded
+    if (!boardData) {
+      // were we passed a filename in the `npm start` arguments?
+      let filePath = process.env.npm_package_scripts_start
+      filePath = filePath.replace(/"/g, '')
+      filePath = filePath.replace('electron .', '')
+      filePath = filePath.replace(/^\s/, '')
+      if (filePath.length) {
+        // try to load that file again
+        load(null, [
+          path.resolve(
+            path.join(__dirname, '../../../' + filePath)
+          )
+        ])
+      }
+    }
+  }, 500)
+}

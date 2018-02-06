@@ -319,12 +319,13 @@ body::-webkit-scrollbar {
   opacity: 0.8;
 }
 
+#scene-timeline-container .board__caption,
 #thumbnail-drawer .thumbnail .caption {
   flex: 1;
   margin-left: 2px;
   margin-right: 2px;
   font-weight: 100;
-  white-space:nowrap;
+  white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
   text-align: center;
@@ -617,6 +618,7 @@ https://icomoon.io/app/#/select
   color: #fff;
 }
 
+.timeline__time_block,
 #timeline .left-block, #timeline .right-block {
   width: 40px;
   padding: 0 8px;
@@ -626,6 +628,7 @@ https://icomoon.io/app/#/select
   align-content: center;
   justify-content: center;
   opacity: 0.5;
+  pointer-events: none;
 }
 
 
@@ -900,4 +903,16 @@ input[type=range]:focus::-webkit-slider-runnable-track {
 #board-metadata .audiofile_container--recording .flatbutton,
 #board-metadata .audiofile_container--recording .flatbutton:hover{
   background-color: #5d2b2b;
+}
+
+#scene-timeline-container .timeline-scrollable::-webkit-scrollbar {
+  display:none
+}
+#scene-timeline-container .timeline-scrollable::-webkit-scrollbar-thumb {
+  display:none
+}
+
+#timeline-mode-control-view {
+  font-size: 12px;
+  line-height: 1;
 }

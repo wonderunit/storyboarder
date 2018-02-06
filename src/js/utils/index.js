@@ -73,7 +73,7 @@ let range = (begin, end, step = 1) => {
 
 let norm = (val, min, max) => (val - min) / (max - min)
 
-let clamp = (val, min, max) => val < min? min : (val > max? max : val)
+let clamp = (val, min, max) => val < min ? min : (val > max ? max : val)
 
 // Caveats (via https://github.com/ahmadnassri/stringify-clone)
 // - cannot clone RegExp (returns {})

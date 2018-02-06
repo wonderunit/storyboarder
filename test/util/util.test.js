@@ -1,3 +1,4 @@
+/* global describe it */
 const util = require('../../src/js/utils/index')
 
 const assert = require('assert')
@@ -19,7 +20,9 @@ describe('util', () => {
     assert.equal(util.truncateMiddle(s, 10), '1234567890')
     assert.equal(util.truncateMiddle(s, 11), '1234567890')
   })
+
   it('dashed', () => {
-    assert.equal(util.dashed('this is some text with spaces'), 'this-is-some-text-with-spaces')
+    assert.equal(util.dashed('this is some text with spaces'),
+      'this-is-some-text-with-spaces')
   })
 })

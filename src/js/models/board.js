@@ -42,9 +42,15 @@ const boardOrderedLayerFilenames = board => {
 }
 
 const boardDuration = (scene, board) =>
-  typeof board.duration === 'undefined'
-    ? scene.defaultBoardTiming
-    : board.duration
+  board.duration != null
+    ? Number(board.duration)
+    : Number(scene.defaultBoardTiming)
+
+const boardDurationWithAudio = (scene, board) =>
+  Math.max(
+    board.audio && board.audio.duration ? board.audio.duration : 0,
+    boardDuration(scene, board)
+  )
 
 const assignUid = board => {
   board.uid = util.uidGen(5)
@@ -87,6 +93,7 @@ module.exports = {
   boardFilenameForLink,
   boardOrderedLayerFilenames,
   boardDuration,
+  boardDurationWithAudio,
 
   getUpdatedLinkFilename,
 

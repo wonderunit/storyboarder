@@ -27,6 +27,10 @@ class AudioPlayback {
     this.resetBuffers()
   }
 
+  getAudioBufferByFilename (filename) {
+    return this.players._players[filename].buffer
+  }
+
   setBypassed (value) {
     this.isBypassed = value
   }

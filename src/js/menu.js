@@ -587,6 +587,16 @@ AppMenu.View = () => ({
     {
       type: 'separator'
     },
+    {
+      label: 'Toggle Boards/Timeline Mode',
+      accelerator: keystrokeFor('menu:view:toggle-timeline'),
+      click (item, focusedWindow, event) {
+        ipcRenderer.send('toggleTimeline')
+      }
+    },
+    {
+      type: 'separator'
+    },
     ...SubMenuFragments.View,
     {
       type: 'separator'
