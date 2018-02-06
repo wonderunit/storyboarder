@@ -46,6 +46,12 @@ const boardDuration = (scene, board) =>
     ? scene.defaultBoardTiming
     : board.duration
 
+const boardDurationWithAudio = (scene, board) =>
+  Math.max(
+    board.audio && board.audio.duration ? board.audio.duration : 0,
+    boardDuration(scene, board)
+  )
+
 const assignUid = board => {
   board.uid = util.uidGen(5)
   return board
@@ -87,6 +93,7 @@ module.exports = {
   boardFilenameForLink,
   boardOrderedLayerFilenames,
   boardDuration,
+  boardDurationWithAudio,
 
   getUpdatedLinkFilename,
 
