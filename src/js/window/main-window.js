@@ -3048,11 +3048,7 @@ const updateSceneTiming = () => {
 
     board.time = currentTime
 
-    if (board.duration) {
-      currentTime += board.duration
-    } else {
-      currentTime += boardData.defaultBoardTiming
-    }
+    currentTime += boardModel.boardDuration(boardData, board)
   }
 }
 
