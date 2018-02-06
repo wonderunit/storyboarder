@@ -1118,14 +1118,36 @@ class SceneTimelineView {
     if (props.pixelsPerMsec != null) this.pixelsPerMsec = props.pixelsPerMsec
     if (props.mini != null) this.mini = props.mini
 
+    if (props.currentBoardIndex != null) {
+      if (this.currentBoardIndex !== props.currentBoardIndex) {
+        if (this.scale > 1) {
+          let scaleFromZoom = 1 / this.scale
+
+          let sceneDurationInMsecs = sceneModel.sceneDuration(this.scene)
+          let board = this.scene.boards[props.currentBoardIndex]
+
+          let start = board.time / sceneDurationInMsecs
+          let dur = boardModel.boardDurationWithAudio(this.scene, board) / sceneDurationInMsecs
+          let end = start + dur
+
+          // request a change via props if range needs to extend to display entire board
+          if (start < this.position) {
+            props.position = start
+            props.scale = 1 / (scaleFromZoom + (this.position - props.position))
+          }
+
+          if (end > this.position + scaleFromZoom) {
+            props.position = this.position
+            props.scale = 1 / (end - this.position)
+          }
+        }
+      }
+
+      this.currentBoardIndex = props.currentBoardIndex
+    }
+
     if (props.position != null &&
         props.scale != null) {
-      console.log(
-        '[request]',
-        'pos', props.position.toFixed(3),
-        'scale', props.scale.toFixed(3)
-      )
-
       let containerWidth = this.refs.timelineView.containerWidth
 
       let minScale = 1 / (1 - props.position)
@@ -1153,21 +1175,6 @@ class SceneTimelineView {
       }
     }
 
-    if (props.currentBoardIndex != null) {
-      if (this.currentBoardIndex !== props.currentBoardIndex) {
-        if (this.scale > 1) {
-          let sceneDurationInMsecs = sceneModel.sceneDuration(this.scene)
-          let board = this.scene.boards[props.currentBoardIndex]
-
-          let endPosition = boardModel.boardDurationWithAudio(this.scene, board) / sceneDurationInMsecs
-
-          this.position = board.time / sceneDurationInMsecs
-          this.scale = 1 / (endPosition)
-        }
-      }
-
-      this.currentBoardIndex = props.currentBoardIndex
-    }
     return etch.update(this)
   }
 
