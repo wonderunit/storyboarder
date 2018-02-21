@@ -41,6 +41,7 @@ const boardOrderedLayerFilenames = board => {
   return { indices, filenames }
 }
 
+// TODO clean data on load, instead of converting string-to-number here
 const boardDuration = (scene, board) =>
   board.duration != null
     ? Number(board.duration)
