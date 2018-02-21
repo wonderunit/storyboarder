@@ -11,9 +11,7 @@ const exportForWeb = async (srcFilePath, outputFolderPath) => {
     // read the scene
     let scene = JSON.parse(fs.readFileSync(srcFilePath))
 
-    if (!fs.existsSync(outputFolderPath)) {
-      fs.mkdirSync(outputFolderPath)
-    }
+    fs.ensureDirSync(outputFolderPath)
 
     let writers = []
     let index = 0
