@@ -213,6 +213,10 @@ const load = async (event, args) => {
       currentPath = args[5]
 
       await updateSceneFromScript()
+      store.dispatch({
+        type: 'SCENE_FILE_LOADED',
+        payload: { path: boardFilename }
+      })
     } else {
       log({ type: 'progress', message: 'Loading Project File' })
       // if not, its just a simple single boarder file
@@ -224,6 +228,11 @@ const load = async (event, args) => {
       try {
         boardData = JSON.parse(fs.readFileSync(boardFilename))
         ipcRenderer.send('analyticsEvent', 'Application', 'open', boardFilename, boardData.boards.length)
+
+        store.dispatch({
+          type: 'SCENE_FILE_LOADED',
+          payload: { path: boardFilename }
+        })
       } catch (error) {
         throw new Error(`Could not read file ${path.basename(boardFilename)}. The file may be inaccessible or corrupt.\nError: ${error.message}`)
       }
@@ -1226,6 +1235,11 @@ let loadBoardUI = () => {
 
       // remove any existing listeners
       watcher && watcher.close()
+
+      store.dispatch({
+        type: 'SCENE_FILE_LOADED',
+        payload: { path: null }
+      })
     }
   })
 
