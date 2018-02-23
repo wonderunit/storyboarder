@@ -113,7 +113,7 @@ AppMenu.File = () => ({
       }
     },
     {
-      label: 'Export to Web',
+      label: 'Export to Web …',
       click (item, focusedWindow, event) {
         ipcRenderer.send('exportWeb')
       }

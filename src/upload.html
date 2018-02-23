@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="./css/fonts.css">
+    <link rel="stylesheet" href="./css/upload.css">
+    <title>Upload to Web</title>
+  </head>
+  <body class="upload-window">
+
+    <template id="signin-form">
+      <div style="margin: 10px;">
+        <h1>Sign In to Storyboarders.com</h1>
+        <form>
+          <div style="margin-bottom: 10px;">
+            <div>Email</div>
+            <div>
+              <input name="email" placeholder="user@example.com" autofocus />
+            </div>
+          </div>
+          <div>
+            <div>Password</div>
+            <div>
+              <input name="password" type="password" />
+            </div>
+          </div>
+          <div>
+            <button type="submit">Sign In</button>
+          </div>
+        </form>
+      </div>
+    </template>
+
+    <template id="upload-form">
+      <div style="margin: 10px;">
+        Upload Form
+        <form style="margin: 20px 0">
+          <button type="submit">Upload Scene to Storyboarders.com</button>
+        </form>
+
+        <div>
+          <a id="sign-out" href="#">Sign Out</a>
+        </div>
+      </div>
+    </template>
+
+    <script src="./js/windows/upload.js"></script>
+  </body>
+</html>

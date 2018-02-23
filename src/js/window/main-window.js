@@ -43,7 +43,6 @@ const exporter = require('./exporter')
 const exporterCommon = require('../exporters/common')
 const exporterCopyProject = require('../exporters/copy-project')
 const exporterArchive = require('../exporters/archive')
-const exporterWeb = require('../exporters/web')
 
 const prefsModule = require('electron').remote.require('./prefs')
 prefsModule.init(path.join(app.getPath('userData'), 'pref.json'))
@@ -163,6 +162,8 @@ let sceneTimelineView
 let timelineModeControlView
 
 let storyboarderSketchPane
+
+let exportWebWindow
 
 let dragMode = false
 let preventDragMode = false
@@ -5318,28 +5319,33 @@ const saveAsFolder = async () => {
 }
 
 const exportWeb = async () => {
-  let srcFilePath = boardFilename
-
   // ensure the current board and data is saved
   await saveImageFile()
   saveBoardFile()
 
-  notifications.notify({ message: `Exporting to web-friendly files …` })
+  textInputMode = true
+  textInputAllowAdvance = false
 
-  let basename = path.basename(srcFilePath, path.extname(srcFilePath))
-  let timestamp = moment().format('YYYY-MM-DD hh.mm.ss')
-  let outputFolderPath = path.join(boardPath, 'exports', `${basename}-web-${timestamp}`)
-
-  try {
-    await exporterWeb.exportForWeb(srcFilePath, outputFolderPath)
-
-    // TODO zip it
-
-    notifications.notify({ message: `Done.` })
-    shell.showItemInFolder(outputFolderPath)
-  } catch (err) {
-    notifications.notify({ message: `[ERROR] ${err.message}` })
-    notifications.notify({ message: `Failed.` })
+  if (!exportWebWindow) {
+    exportWebWindow = new remote.BrowserWindow({
+      width: 1200,
+      height: 800,
+      minWidth: 600,
+      minHeight: 600,
+      backgroundColor: '#333333',
+      show: false,
+      center: true,
+      parent: remote.getCurrentWindow(),
+      resizable: true,
+      frame: false,
+      modal: true
+    })
+    exportWebWindow.loadURL(`file://${__dirname}/../../upload.html`)
+    exportWebWindow.once('ready-to-show', () => {
+      exportWebWindow.show()
+    })
+  } else if (!exportWebWindow.isVisible()) {
+    exportWebWindow.show()
   }
 }
 
