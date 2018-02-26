@@ -22,8 +22,8 @@ const API_URI = 'https://storyboarders.com/api'
   prefsModule.init(path.join(remote.app.getPath('userData'), 'pref.json'))
 
   document.addEventListener('keydown', event => {
-    event.preventDefault()
     if (event.key === 'Escape') {
+      event.preventDefault()
       remote.getCurrentWindow().hide()
     }
   })
