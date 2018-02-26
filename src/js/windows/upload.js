@@ -68,7 +68,7 @@ const API_URI = 'https://storyboarders.com/api'
   const onUpload = async event => {
     event.preventDefault()
 
-    document.querySelector('.upload-window__button').value = 'Uploading …'
+    document.querySelector('.upload-window__button').innerHTML = 'Uploading …'
     document.querySelector('.upload-window__button').disabled = true
 
     document.querySelector('.upload-window__output').innerHTML = 'Please be patient. Uploading to the interweb might take a while!'
@@ -153,8 +153,8 @@ const API_URI = 'https://storyboarders.com/api'
 
       document.querySelector('.upload-window__output').innerHTML = 'Done!'
       window.alert('Done!')
-      // TODO close the window
       init()
+      setTimeout(() => remote.getCurrentWindow().hide(), 100)
     } catch (err) {
       console.error(err)
       document.querySelector('.upload-window__output').innerHTML = 'Oops! A server error occurred. Sorry!'
