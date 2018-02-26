@@ -4230,8 +4230,14 @@ ipcRenderer.on('nextScene', (event, args)=>{
 
 ipcRenderer.on('undo', (e, arg) => {
   if (textInputMode) {
-    // TODO support child windows? see copy/paste
-    remote.getCurrentWebContents().undo()
+    // HACK because remote.getCurrentWindow().webContents returns the parent window
+    for (let w of remote.getCurrentWindow().getChildWindows()) {
+      if (w.isFocused()) {
+        w.webContents.undo()
+        return
+      }
+    }
+    remote.getCurrentWindow().webContents.undo()
   } else {
     if (storyboarderSketchPane.preventIfLocked()) return
 
@@ -4247,8 +4253,14 @@ ipcRenderer.on('undo', (e, arg) => {
 
 ipcRenderer.on('redo', (e, arg) => {
   if (textInputMode) {
-    // TODO support child windows? see copy/paste
-    remote.getCurrentWebContents().redo()
+    // HACK because remote.getCurrentWindow().webContents returns the parent window
+    for (let w of remote.getCurrentWindow().getChildWindows()) {
+      if (w.isFocused()) {
+        w.webContents.redo()
+        return
+      }
+    }
+    remote.getCurrentWindow().webContents.redo()
   } else {
     if (storyboarderSketchPane.preventIfLocked()) return
 
