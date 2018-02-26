@@ -171,18 +171,30 @@ const exportForWeb = async (srcFilePath, outputFolderPath) => {
       filterArgs.push(`[${n}:v]scale=-1:200[s${n}];`)
       n++
     }
-    args = args.concat([
-      // hstack: assemble horizontally
-      '-filter_complex', filterArgs.join('') +
-                         filterArgs.map((f, n) => `[s${n}]`).join('') +
-                         // via https://stackoverflow.com/a/47137307
-                         `hstack=${filterArgs.length}[v]`,
+    if (spritableBoards.length === 1) {
+      // can't use hstack for less than 2
+      // ignore filterArgs
+      args = args.concat([
+        '-filter_complex', '[0:v]scale=-1:200[v]',
 
-      '-map', '[v]',
+        '-map', '[v]',
 
-      // Output
-      dst
-    ])
+        dst
+      ])
+    } else {
+      args = args.concat([
+        // hstack: assemble horizontally
+        '-filter_complex', filterArgs.join('') +
+                           filterArgs.map((f, n) => `[s${n}]`).join('') +
+                           // via https://stackoverflow.com/a/47137307
+                           `hstack=${filterArgs.length}[v]`,
+
+        '-map', '[v]',
+
+        // Output
+        dst
+      ])
+    }
     console.log('\n\n\n\n\n\n')
     console.log('-----')
     console.log(args)
