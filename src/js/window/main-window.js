@@ -1203,19 +1203,26 @@ let loadBoardUI = () => {
     pomodoroTimerView.attachTo(document.getElementById('toolbar-pomodoro-running'))
   })
 
+
+
+  //
+  //
   // Devtools
+  //
+  // devtools-blur (faked)
+  const onDevToolsBlur = () => { textInputMode = false }
+  // devtools-focused
   ipcRenderer.on('devtools-focused', () => {
-    // devtools-focused
     textInputMode = true
+    window.addEventListener('focus', onDevToolsBlur)
   })
+  // devtools-closed
   ipcRenderer.on('devtools-closed', () => {
-    // devtools-closed
     textInputMode = false
+    window.removeEventListener('focus', onDevToolsBlur)
   })
-  window.addEventListener('focus', () => {
-    // devtools-blur
-    textInputMode = false
-  })
+
+
 
   window.addEventListener('beforeunload', event => {
     console.log('Close requested! Saving ...')
