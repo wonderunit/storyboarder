@@ -9,30 +9,33 @@
   <body class="upload-window">
 
     <template id="signin-form">
-      <div style="margin: 10px;">
-        <h1>Sign In to Storyboarders.com</h1>
+      <div class="upload-window__form">
+        <h1 class="upload-window__title">Sign In</h1>
         <form>
-          <div style="margin-bottom: 10px;">
-            <div>Email</div>
-            <div>
-              <input name="email" placeholder="user@example.com" autofocus />
+          <fieldset class="upload-window__fieldset">
+            <div class="upload-window__input">
+              <div>Email</div>
+              <div>
+                <input name="email" placeholder="user@example.com" autofocus />
+              </div>
             </div>
-          </div>
-          <div>
-            <div>Password</div>
-            <div>
-              <input name="password" type="password" />
+            <div class="upload-window__input">
+              <div>Password</div>
+              <div>
+                <input name="password" type="password" />
+              </div>
             </div>
-          </div>
-          <div>
-            <button type="submit">Sign In</button>
-          </div>
+            <div>
+              <button class="upload-window__button" type="submit">Sign In</button>
+            </div>
+          </fieldset>
+          <p class="upload-window__hint">Need an account? Sign up at Storyboarders.com.</p>
         </form>
       </div>
     </template>
 
     <template id="upload-form">
-      <div style="margin: 10px;">
+      <div class="upload-window__form">
         Upload Form
         <form style="margin: 20px 0">
           <button type="submit">Upload Scene to Storyboarders.com</button>

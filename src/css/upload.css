@@ -15,3 +15,88 @@
   flex-direction: row;
   min-height: 100vh;
 }
+
+
+.upload-window__form {
+  padding: 48px 60px 60px;
+  width: 100%;
+}
+
+.upload-window__title {
+  font-size: 48px;
+  margin: 0;
+  font-weight: 900;
+}
+
+.upload-window__subhead {
+  font-size: 24px;
+  margin: 12px 0 9px;
+}
+
+
+.upload-window__fieldset {
+  padding: 0 0 24px 0;
+  border: none;
+  width: 300px;
+}
+.upload-window__input {
+  margin: 24px 0;
+}
+.upload-window__input input {
+  margin: 6px 0 0 0;
+}
+
+/* via storyboarders.com css */
+.upload-window__input input {
+  width: 100%;
+  padding: 15px 15px;
+  border: none;
+  border-radius: 4px;
+  box-shadow: 0 0px 0px 0px #bbb, 0 4px 5px 2px rgba(97, 108, 121, 0.1), 0 0px 1px 0px rgba(97, 108, 121, 0.2);
+  font-size: 18px;
+  font-family: 'wonderunitsans', sans-serif;
+  color: #3f454b;
+  transition: box-shadow .1s ease, transform .1s ease;
+}
+.upload-window__input input:hover {
+  outline: none;
+  box-shadow: 0 0px 0px 5px #a8adb6, 0 4px 5px 2px rgba(97, 108, 121, 0.1), 0 0px 1px 0px rgba(97, 108, 121, 0.2);
+}
+.upload-window__button:focus,
+.upload-window__input input:focus {
+  outline: none;
+  box-shadow: 0 0px 0px 5px #ff0097, 0 4px 5px 2px rgba(97, 108, 121, 0.1), 0 0px 1px 0px rgba(97, 108, 121, 0.2);
+}
+
+.upload-window__button {
+  padding: 15px 25px;
+  border: none;
+  border-radius: 8px;
+  background-color: #ff0097;
+  color: white;
+  font-size: 22px;
+  font-weight: 500;
+  box-shadow: 0 0px 0px 0px #ff0097, 0 4px 5px 2px rgba(97, 108, 121, 0.1), 0 0px 1px 0px rgba(97, 108, 121, 0.2);
+  transition: box-shadow .1s ease, transform .1s ease;
+}
+
+
+.upload-window__hint {
+  margin-top: 0.5rem;
+  opacity: 0.5;
+  font-size: 87.5%;
+  line-height: 1.4;
+ }
+  
+ sup {
+   font-size: 125%;
+   line-height: 0;
+   position: relative;
+   vertical-align: baseline;
+   top: 0;
+ }
+
+button.upload-window__button {
+  border: none;
+  cursor: pointer;
+}
