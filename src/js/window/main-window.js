@@ -4230,6 +4230,7 @@ ipcRenderer.on('nextScene', (event, args)=>{
 
 ipcRenderer.on('undo', (e, arg) => {
   if (textInputMode) {
+    // TODO support child windows? see copy/paste
     remote.getCurrentWebContents().undo()
   } else {
     if (storyboarderSketchPane.preventIfLocked()) return
@@ -4246,6 +4247,7 @@ ipcRenderer.on('undo', (e, arg) => {
 
 ipcRenderer.on('redo', (e, arg) => {
   if (textInputMode) {
+    // TODO support child windows? see copy/paste
     remote.getCurrentWebContents().redo()
   } else {
     if (storyboarderSketchPane.preventIfLocked()) return
@@ -4262,7 +4264,17 @@ ipcRenderer.on('redo', (e, arg) => {
 
 ipcRenderer.on('copy', () => {
   if (textInputMode) {
-    remote.getCurrentWebContents().copy()
+    // HACK because remote.getCurrentWindow().webContents returns the parent window
+    for (let w of remote.getCurrentWindow().getChildWindows()) {
+      if (w.isFocused()) {
+        // console.log('copying from child', w)
+        w.webContents.copy()
+        return
+      }
+    }
+
+    // console.log('copying from parent')
+    remote.getCurrentWindow().webContents.copy()
   } else {
     copyBoards()
   }
@@ -4270,7 +4282,17 @@ ipcRenderer.on('copy', () => {
 
 ipcRenderer.on('paste', () => {
   if (textInputMode) {
-    remote.getCurrentWebContents().paste()
+    // HACK because remote.getCurrentWindow().webContents returns the parent window
+    for (let w of remote.getCurrentWindow().getChildWindows()) {
+      if (w.isFocused()) {
+        // console.log('pasting to child', w)
+        w.webContents.paste()
+        return
+      }
+    }
+
+    // console.log('pasting to parent')
+    remote.getCurrentWindow().webContents.paste()
   } else {
     pasteBoards()
   }
