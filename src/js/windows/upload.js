@@ -67,10 +67,11 @@ const API_URI = 'https://storyboarders.com/api'
 
   const onUpload = async event => {
     event.preventDefault()
-    document.body.querySelector('form').style.display = 'none'
-    document.body.querySelector('#sign-out').style.display = 'none'
 
-    document.body.innerHTML = 'Exporting to Web-Friendly ZIP …'
+    document.querySelector('.upload-window__button').value = 'Uploading …'
+    document.querySelector('.upload-window__button').disabled = true
+
+    document.querySelector('.upload-window__output').innerHTML = 'Please be patient. Uploading to the interweb might take a while!'
 
     let sceneFilePath = store.getState().sceneFilePath
     let sceneDirPath = path.dirname(sceneFilePath)
@@ -120,8 +121,6 @@ const API_URI = 'https://storyboarders.com/api'
 
       // remote.shell.showItemInFolder(outputFolderPath)
 
-      document.body.innerHTML = 'Uploading …'
-
       let url = `${API_URI}/upload`
 
       let scene = JSON.parse(fs.readFileSync(sceneFilePath))
@@ -152,11 +151,15 @@ const API_URI = 'https://storyboarders.com/api'
         token: json.renewedToken
       })
 
-      document.body.innerHTML = 'Done!'
+      document.querySelector('.upload-window__output').innerHTML = 'Done!'
+      window.alert('Done!')
+      // TODO close the window
+      init()
     } catch (err) {
-      document.body.innerHTML = 'Failed.'
       console.error(err)
-      window.alert(err.message)
+      document.querySelector('.upload-window__output').innerHTML = 'Oops! A server error occurred. Sorry!'
+      window.alert('Could not upload\n' + err.message)
+      init()
     }
   }
 
