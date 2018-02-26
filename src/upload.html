@@ -35,13 +35,18 @@
     </template>
 
     <template id="upload-form">
-      <div class="upload-window__form">
-        Upload Form
-        <form style="margin: 20px 0">
-          <button type="submit">Upload Scene to Storyboarders.com</button>
-        </form>
+      <div style="display: flex; flex-direction: column; justify-content: space-between; width: 100%;">
+        <div class="upload-window__form">
+          <h1 class="upload-window__title">Upload a Scene</h1>
+          <form style="margin: 40px 0 20px 0;">
+            <fieldset class="upload-window__fieldset">          
+              <button class="upload-window__button" type="submit">Upload</button>
+            </fieldset>
+          </form>
+          <p class="upload-window__subhead">Please be patient. Uploading to the interweb might take a while!</p>
+        </div>
 
-        <div>
+        <div class="upload-window__form" style="text-align: right;">
           <a id="sign-out" href="#">Sign Out</a>
         </div>
       </div>

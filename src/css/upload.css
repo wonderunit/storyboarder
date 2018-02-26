@@ -16,8 +16,14 @@
   min-height: 100vh;
 }
 
+.upload-window a {
+  color: #666;
+  text-decoration: none;
+}
+
 
 .upload-window__form {
+  box-sizing: border-box;
   padding: 48px 60px 60px;
   width: 100%;
 }
@@ -29,7 +35,7 @@
 }
 
 .upload-window__subhead {
-  font-size: 24px;
+  font-size: 18px;
   margin: 12px 0 9px;
 }
 
