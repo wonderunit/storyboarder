@@ -21,6 +21,10 @@
   text-decoration: none;
 }
 
+.upload-window a[rel="external"] {
+  text-decoration: underline;
+}
+
 
 .upload-window__form {
   box-sizing: border-box;

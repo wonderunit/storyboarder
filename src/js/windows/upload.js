@@ -182,6 +182,10 @@ const API_URI = 'https://storyboarders.com/api'
     } else {
       let t = document.querySelector('#signin-form')
       let clone = document.importNode(t.content, true)
+      clone.querySelector('a[rel="external"]').addEventListener('click', event => {
+        event.preventDefault()
+        remote.shell.openExternal(event.target.href)
+      })
 
       clone.querySelector('form').addEventListener('submit', onSubmit)
       document.body.appendChild(clone)
