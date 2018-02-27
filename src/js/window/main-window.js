@@ -3049,7 +3049,7 @@ const updateSceneTiming = () => {
 }
 
 const renderSceneTimeline = () => {
-  sceneTimelineView.update({
+  sceneTimelineView && sceneTimelineView.update({
     scene: boardData,
     currentBoardIndex: currentBoard
   })
