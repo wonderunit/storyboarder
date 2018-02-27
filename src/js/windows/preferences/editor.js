@@ -1,4 +1,5 @@
 const { remote, ipcRenderer, shell } = require('electron')
+const jwt = require('jsonwebtoken')
 const path = require('path')
 
 const util = require('./js/utils')
@@ -76,7 +77,7 @@ const render = () => {
 
   const storyboardersAccountEl = document.getElementById('storyboardersAccount')
   if (prefs.auth) {
-    let auth = JSON.parse(atob(prefs.auth.token.split('.')[1]))
+    let auth = jwt.decode(prefs.auth.token)
     storyboardersAccountEl.style.display = 'flex'
     storyboardersAccountEl.querySelector('.preferences-hint').innerHTML = 
       `Signed In to Storyboarders.com (${auth.user.email})`
