@@ -225,7 +225,7 @@ let openKeyCommandWindow = () => {
     show: false,
     resizable: false,
     frame: false,
-    titleBarStyle: 'hidden-inset'
+    titleBarStyle: 'hiddenInset'
   })
   keyCommandWindow.loadURL(`file://${__dirname}/../keycommand-window.html`)
   keyCommandWindow.once('ready-to-show', () => {
@@ -822,7 +822,7 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
     minHeight: 640,
     show: false,
     resizable: true,
-    titleBarStyle: 'hidden-inset',
+    titleBarStyle: 'hiddenInset',
     webPreferences: {
       webgl: true,
       experimentalFeatures: true,
