@@ -5367,27 +5367,27 @@ const exportWeb = async () => {
   textInputMode = true
   textInputAllowAdvance = false
 
-  if (!exportWebWindow) {
-    exportWebWindow = new remote.BrowserWindow({
-      width: 1200,
-      height: 800,
-      minWidth: 600,
-      minHeight: 600,
-      backgroundColor: '#333333',
-      show: false,
-      center: true,
-      parent: remote.getCurrentWindow(),
-      resizable: true,
-      frame: false,
-      modal: true
-    })
-    exportWebWindow.loadURL(`file://${__dirname}/../../upload.html`)
-    exportWebWindow.once('ready-to-show', () => {
-      exportWebWindow.show()
-    })
-  } else if (!exportWebWindow.isVisible()) {
-    exportWebWindow.show()
+  if (exportWebWindow) {
+    exportWebWindow.destroy()
   }
+
+  exportWebWindow = new remote.BrowserWindow({
+    width: 1200,
+    height: 800,
+    minWidth: 600,
+    minHeight: 600,
+    backgroundColor: '#333333',
+    show: false,
+    center: true,
+    parent: remote.getCurrentWindow(),
+    resizable: true,
+    frame: false,
+    modal: true
+  })
+  exportWebWindow.loadURL(`file://${__dirname}/../../upload.html`)
+  exportWebWindow.once('ready-to-show', () => {
+    exportWebWindow.show()
+  })
 }
 
 const exportZIP = async () => {

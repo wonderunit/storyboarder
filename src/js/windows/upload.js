@@ -59,12 +59,6 @@ const API_URI = 'https://storyboarders.com/api'
     }
   }
 
-  const onSignOut = event => {
-    event.preventDefault()
-    prefsModule.set('auth', undefined)
-    init()
-  }
-
   const onUpload = async event => {
     event.preventDefault()
 
@@ -176,7 +170,6 @@ const API_URI = 'https://storyboarders.com/api'
       let t = document.querySelector('#upload-form')
       let clone = document.importNode(t.content, true)
       clone.querySelector('form').addEventListener('submit', onUpload)
-      clone.querySelector('#sign-out').addEventListener('click', onSignOut)
 
       document.body.appendChild(clone)
     } else {
