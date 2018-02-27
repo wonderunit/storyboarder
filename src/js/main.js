@@ -74,6 +74,9 @@ let isLoadingProject
 
 let appServer
 
+// attempt to support older GPUs
+app.commandLine.appendSwitch('ignore-gpu-blacklist')
+
 // this only works on mac.
 app.on('open-file', (event, path) => {
   event.preventDefault()
