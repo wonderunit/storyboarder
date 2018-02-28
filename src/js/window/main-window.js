@@ -5411,9 +5411,7 @@ const startWebUpload = async () => {
   try {
     let result = await exporterWeb.uploadToWeb(boardFilename)
     notifications.notify({ message: 'Upload complete!' })
-    notifications.notify({ message: result.link })
-    // TODO
-    // remote.shell.openExternal(link)
+    remote.shell.openExternal(result.link)
   } catch (err) {
     console.error(err)
     notifications.notify({ message: 'Whoops! An error occurred while attempting to upload.' })
