@@ -281,7 +281,7 @@ const uploadToWeb = async sceneFilePath => {
 
       // TODO use audio duration
       duration: scene.boards[scene.boards.length - 1].time +
-                scene.boards[scene.boards.length - 1].duration,
+                boardModel.boardDuration(scene, scene.boards[scene.boards.length - 1]),
       boards: scene.boards.length,
       width: Math.round(scene.aspectRatio * 720), // 1721,
       height: 720,
