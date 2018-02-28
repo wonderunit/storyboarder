@@ -1270,3 +1270,6 @@ ipcMain.on('exportPrintablePdf', (event, sourcePath, fileName) => {
 ipcMain.on('toggleAudition', (event) => {
   mainWindow.webContents.send('toggleAudition')
 })
+
+// uploader > main-window
+ipcMain.on('signInSuccess', event => mainWindow.webContents.send('signInSuccess'))

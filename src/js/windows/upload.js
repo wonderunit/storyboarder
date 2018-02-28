@@ -1,11 +1,12 @@
+const archiver = require('archiver')
 const fs = require('fs-extra')
 const moment = require('moment')
 const path = require('path')
+const { ipcRenderer } = require('electron')
 const remote = require('electron').remote
 const request = require('request-promise-native')
 
 const exporterWeb = require('./js/exporters/web')
-const archiver = require('archiver')
 
 const { getInitialStateRenderer } = require('electron-redux')
 const configureStore = require('./js/shared/store/configureStore')
@@ -38,9 +39,14 @@ const onSubmit = async event => {
       token: json.token
     })
 
-    render()
+    ipcRenderer.send('signInSuccess')
+    remote.getCurrentWindow().hide()
   } catch (err) {
-    window.alert(err.message)
+    if (err.statusCode === 403) {
+      window.alert('That email/password combination was not accepted.')
+    } else {
+      window.alert('Whoops! An error occurred.\n' + err.message)
+    }
 
     event.target.querySelector('button').disabled = false
     event.target.querySelector('button').innerHTML = 'Sign In'
