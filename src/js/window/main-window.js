@@ -43,6 +43,7 @@ const exporter = require('./exporter')
 const exporterCommon = require('../exporters/common')
 const exporterCopyProject = require('../exporters/copy-project')
 const exporterArchive = require('../exporters/archive')
+const exporterWeb = require('../exporters/web')
 
 const prefsModule = require('electron').remote.require('./prefs')
 prefsModule.init(path.join(app.getPath('userData'), 'pref.json'))
@@ -5394,7 +5395,7 @@ const showSignInWindow = () => {
 }
 ipcRenderer.on('signInSuccess', () => {
   notifications.notify({ message: 'Success! You’re Signed In!' })
-  startWebUpload()
+  exportWeb()
 })
 const startWebUpload = async () => {
   // ensure the current board and data is saved
@@ -5402,10 +5403,18 @@ const startWebUpload = async () => {
   saveBoardFile()
 
   notifications.notify({ message: 'Uploading to Storyboarders.com …' })
-  // TODO upload
-  notifications.notify({ message: '[TODO]' })
-  notifications.notify({ message: 'Upload complete!' })
-  // TODO open new link in browser
+
+  try {
+    let result = await exporterWeb.uploadToWeb(boardFilename)
+    console.log('Upload OK!')
+    console.log({ result })
+    // TODO
+    // link = result.???
+    // remote.shell.openExternal(link)
+  } catch (err) {
+    console.error(err)
+    notifications.notify({ message: 'Whoops! An error occurred while attempting to upload.' })
+  }
 }
 
 const exportZIP = async () => {

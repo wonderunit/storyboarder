@@ -1,9 +1,18 @@
+const archiver = require('archiver')
 const fs = require('fs-extra')
+const moment = require('moment')
 const path = require('path')
+const { remote } = require('electron')
+const request = require('request-promise-native')
 
 const boardModel = require('../models/board')
 const exporterCommon = require('./common')
 const exporterFfmpeg = require('./ffmpeg')
+
+const prefsModule = remote.require('./prefs')
+
+// const API_URI = 'http://localhost:8080/api'
+const API_URI = 'https://storyboarders.com/api'
 
 const exportForWeb = async (srcFilePath, outputFolderPath) => {
   console.log('exportForWeb')
@@ -214,11 +223,100 @@ const exportForWeb = async (srcFilePath, outputFolderPath) => {
   }
 }
 
-module.exports = {
-  exportForWeb
+const uploadToWeb = async sceneFilePath => {
+  let sceneDirPath = path.dirname(sceneFilePath)
+
+  let basename = path.basename(sceneFilePath, path.extname(sceneFilePath))
+  let timestamp = moment().format('YYYY-MM-DD hh.mm.ss')
+  let outputFolderPath = path.join(sceneDirPath, 'exports', `${basename}-web-${timestamp}`)
+  let zipFilePath = path.join(path.dirname(outputFolderPath), `${path.basename(outputFolderPath)}.zip`)
+
+  try {
+    await exportForWeb(sceneFilePath, outputFolderPath)
+
+    let writer = new Promise((resolve, reject) => {
+      let output = fs.createWriteStream(zipFilePath)
+      let archive = archiver('zip', {
+        zlib: { level: 9 } // compression level
+      })
+      // listen for all archive data to be written
+      output.on('close', function () {
+        resolve()
+      })
+      // good practice to catch warnings (ie stat failures and other non-blocking errors)
+      archive.on('warning', function (err) {
+        if (err.code === 'ENOENT') {
+          // throw error
+          reject(err)
+        } else {
+          // throw error
+          reject(err)
+        }
+      })
+      // good practice to catch this error explicitly
+      archive.on('error', function (err) {
+        reject(err)
+      })
+      // pipe archive data to the file
+      archive.pipe(output)
+
+      // append files from a directory, putting its contents at the root of archive
+      archive.directory(outputFolderPath, false)
+
+      // finalize the archive (ie we are done appending files but streams have to finish yet)
+      archive.finalize()
+    })
+
+    await writer
+
+    // remote.shell.showItemInFolder(outputFolderPath)
+
+    let url = `${API_URI}/upload`
+
+    let scene = JSON.parse(fs.readFileSync(sceneFilePath))
+
+    let formData = {
+      title: path.basename(sceneFilePath, path.extname(sceneFilePath)),
+      // description: TODO populate from form
+
+      // TODO use audio duration
+      duration: scene.boards[scene.boards.length - 1].time +
+                scene.boards[scene.boards.length - 1].duration,
+      boards: scene.boards.length,
+      width: Math.round(scene.aspectRatio * 720), // 1721,
+      height: 720,
+      zip: fs.createReadStream(zipFilePath)
+    }
+
+    let token = prefsModule.getPrefs().auth.token
+
+    let res = await request
+      .post({ url, formData, resolveWithFullResponse: true })
+      .auth(null, null, true, token)
+
+    let json = JSON.parse(res.body)
+
+    console.log('Upload OK')
+    console.log('message:', json.message, 'id:', json.id)
+    console.log({
+      json,
+      res
+    })
+
+    prefsModule.set('auth', {
+      token: json.renewedToken
+    })
+
+    return json
+  } catch (err) {
+    console.error(err)
+    throw err
+  }
 }
 
-// TODO make these shared util fns instead of copying from `main-window.js`
+
+
+// TODO make this a shared util fn instead of copying from `main-window.js`
 
 // via https://stackoverflow.com/questions/6565703/math-algorithm-fit-image-to-screen-retain-aspect-ratio
 //
@@ -247,3 +345,9 @@ const fitToDst = (dst, src) => {
   return [x, y, wnew, hnew]
 }
 
+
+
+module.exports = {
+  exportForWeb,
+  uploadToWeb
+}
