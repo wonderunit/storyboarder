@@ -298,10 +298,6 @@ const uploadToWeb = async sceneFilePath => {
 
     console.log('Upload OK')
     console.log('message:', json.message, 'id:', json.id)
-    console.log({
-      json,
-      res
-    })
 
     prefsModule.set('auth', {
       token: json.renewedToken
@@ -348,6 +344,8 @@ const fitToDst = (dst, src) => {
 
 
 module.exports = {
+  API_URI,
+
   exportForWeb,
   uploadToWeb
 }

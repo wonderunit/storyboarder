@@ -5395,6 +5395,10 @@ const showSignInWindow = () => {
 }
 ipcRenderer.on('signInSuccess', () => {
   notifications.notify({ message: 'Success! You’re Signed In!' })
+
+  // HACK reload prefs to make sure we get auth set from other window :/
+  prefsModule.init(path.join(app.getPath('userData'), 'pref.json'))
+
   exportWeb()
 })
 const startWebUpload = async () => {
@@ -5406,10 +5410,9 @@ const startWebUpload = async () => {
 
   try {
     let result = await exporterWeb.uploadToWeb(boardFilename)
-    console.log('Upload OK!')
-    console.log({ result })
+    notifications.notify({ message: 'Upload complete!' })
+    notifications.notify({ message: result.link })
     // TODO
-    // link = result.???
     // remote.shell.openExternal(link)
   } catch (err) {
     console.error(err)

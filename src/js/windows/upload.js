@@ -1,8 +1,10 @@
 const path = require('path')
 const { ipcRenderer } = require('electron')
 const remote = require('electron').remote
+const request = require('request-promise-native')
 
-const prefsModule = remote.require('./prefs')
+const exporterWeb = require('./js/exporters/web')
+const prefsModule = require('./js/prefs')
 
 const init = () => {
   prefsModule.init(path.join(remote.app.getPath('userData'), 'pref.json'))
@@ -45,7 +47,7 @@ const onSubmit = async event => {
   event.target.querySelector('button').disabled = true
   event.target.querySelector('button').innerHTML = 'Signing In …'
 
-  let url = `${API_URI}/login`
+  let url = `${exporterWeb.API_URI}/login`
 
   let formData = {
     email: event.target.querySelector('[name=email]').value,
