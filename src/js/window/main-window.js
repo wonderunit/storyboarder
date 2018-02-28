@@ -5360,44 +5360,53 @@ const saveAsFolder = async () => {
 }
 
 const exportWeb = async () => {
-  // ensure the current board and data is saved
-  await saveImageFile()
-  saveBoardFile()
-
-  textInputMode = true
-  textInputAllowAdvance = false
-
+  if (!prefsModule.getPrefs().auth) {
+    showSignInWindow()
+  } else {
+    await startWebUpload()
+  }
+}
+const showSignInWindow = () => {
   if (exportWebWindow) {
     exportWebWindow.destroy()
   }
 
-  if (!prefsModule.getPrefs().auth) {
-    // they need to sign in
-    exportWebWindow = new remote.BrowserWindow({
-      width: 1200,
-      height: 800,
-      minWidth: 600,
-      minHeight: 600,
-      backgroundColor: '#333333',
-      show: false,
-      center: true,
-      parent: remote.getCurrentWindow(),
-      resizable: true,
-      frame: false,
-      modal: true
-    })
-    exportWebWindow.loadURL(`file://${__dirname}/../../upload.html`)
-    exportWebWindow.once('ready-to-show', () => {
-      exportWebWindow.show()
-    })
-  } else {
-    // UPLOAD
-    notifications.notify({ message: 'TODO Upload code' })
-  }
+  textInputMode = true
+  textInputAllowAdvance = false
+
+  exportWebWindow = new remote.BrowserWindow({
+    width: 1200,
+    height: 800,
+    minWidth: 600,
+    minHeight: 600,
+    backgroundColor: '#333333',
+    show: false,
+    center: true,
+    parent: remote.getCurrentWindow(),
+    resizable: true,
+    frame: false,
+    modal: true
+  })
+  exportWebWindow.loadURL(`file://${__dirname}/../../upload.html`)
+  exportWebWindow.once('ready-to-show', () => {
+    exportWebWindow.show()
+  })
 }
 ipcRenderer.on('signInSuccess', () => {
   notifications.notify({ message: 'Success! You’re Signed In!' })
+  startWebUpload()
 })
+const startWebUpload = async () => {
+  // ensure the current board and data is saved
+  await saveImageFile()
+  saveBoardFile()
+
+  notifications.notify({ message: 'Uploading to Storyboarders.com …' })
+  // TODO upload
+  notifications.notify({ message: '[TODO]' })
+  notifications.notify({ message: 'Upload complete!' })
+  // TODO open new link in browser
+}
 
 const exportZIP = async () => {
   let srcFilePath = scriptFilePath
