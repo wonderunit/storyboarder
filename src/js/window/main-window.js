@@ -5406,7 +5406,10 @@ const startWebUpload = async () => {
   await saveImageFile()
   saveBoardFile()
 
-  notifications.notify({ message: 'Uploading to Storyboarders.com …' })
+  notifications.notify({ message: 'Uploading to Storyboarders.com. This might take a while …' })
+
+  // let the notification appear
+  await new Promise(resolve => setTimeout(resolve, 1000))
 
   try {
     let result = await exporterWeb.uploadToWeb(boardFilename)
