@@ -1256,6 +1256,9 @@ let loadBoardUI = () => {
   window.addEventListener('blur', () => {
     textInputMode = true
   })
+  window.addEventListener('focus', () => {
+    textInputMode = false
+  })
   ipcRenderer.on('prefs:change', (event, newPrefs) => {
     if (boardData && boardData.defaultBoardTiming != newPrefs.defaultBoardTiming) {
       boardData.defaultBoardTiming = newPrefs.defaultBoardTiming
