@@ -1191,6 +1191,9 @@ ipcMain.on('exportImages', (event, arg) => {
 ipcMain.on('exportPDF', (event, arg) => {
   mainWindow.webContents.send('exportPDF', arg)
 })
+ipcMain.on('exportWeb', (event, arg) => {
+  mainWindow.webContents.send('exportWeb', arg)
+})
 ipcMain.on('exportZIP', (event, arg) => {
   mainWindow.webContents.send('exportZIP', arg)
 })
@@ -1270,3 +1273,6 @@ ipcMain.on('exportPrintablePdf', (event, sourcePath, fileName) => {
 ipcMain.on('toggleAudition', (event) => {
   mainWindow.webContents.send('toggleAudition')
 })
+
+// uploader > main-window
+ipcMain.on('signInSuccess', event => mainWindow.webContents.send('signInSuccess'))

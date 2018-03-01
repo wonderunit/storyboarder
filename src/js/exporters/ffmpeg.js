@@ -287,5 +287,6 @@ const convertToVideo = async opts => {
 
 module.exports = {
   checkVersion,
-  convertToVideo
+  convertToVideo,
+  convert
 }

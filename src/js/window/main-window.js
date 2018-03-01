@@ -43,6 +43,7 @@ const exporter = require('./exporter')
 const exporterCommon = require('../exporters/common')
 const exporterCopyProject = require('../exporters/copy-project')
 const exporterArchive = require('../exporters/archive')
+const exporterWeb = require('../exporters/web')
 
 const prefsModule = require('electron').remote.require('./prefs')
 prefsModule.init(path.join(app.getPath('userData'), 'pref.json'))
@@ -163,6 +164,8 @@ let timelineModeControlView
 
 let storyboarderSketchPane
 
+let exportWebWindow
+
 let dragMode = false
 let preventDragMode = false
 let dragPoint
@@ -212,6 +215,10 @@ const load = async (event, args) => {
       currentPath = args[5]
 
       await updateSceneFromScript()
+      store.dispatch({
+        type: 'SCENE_FILE_LOADED',
+        payload: { path: boardFilename }
+      })
     } else {
       log({ type: 'progress', message: 'Loading Project File' })
       // if not, its just a simple single boarder file
@@ -223,6 +230,11 @@ const load = async (event, args) => {
       try {
         boardData = JSON.parse(fs.readFileSync(boardFilename))
         ipcRenderer.send('analyticsEvent', 'Application', 'open', boardFilename, boardData.boards.length)
+
+        store.dispatch({
+          type: 'SCENE_FILE_LOADED',
+          payload: { path: boardFilename }
+        })
       } catch (error) {
         throw new Error(`Could not read file ${path.basename(boardFilename)}. The file may be inaccessible or corrupt.\nError: ${error.message}`)
       }
@@ -1192,19 +1204,26 @@ let loadBoardUI = () => {
     pomodoroTimerView.attachTo(document.getElementById('toolbar-pomodoro-running'))
   })
 
+
+
+  //
+  //
   // Devtools
+  //
+  // devtools-blur (faked)
+  const onDevToolsBlur = () => { textInputMode = false }
+  // devtools-focused
   ipcRenderer.on('devtools-focused', () => {
-    // devtools-focused
     textInputMode = true
+    window.addEventListener('focus', onDevToolsBlur)
   })
+  // devtools-closed
   ipcRenderer.on('devtools-closed', () => {
-    // devtools-closed
     textInputMode = false
+    window.removeEventListener('focus', onDevToolsBlur)
   })
-  window.addEventListener('focus', () => {
-    // devtools-blur
-    textInputMode = false
-  })
+
+
 
   window.addEventListener('beforeunload', event => {
     console.log('Close requested! Saving ...')
@@ -1225,6 +1244,11 @@ let loadBoardUI = () => {
 
       // remove any existing listeners
       watcher && watcher.close()
+
+      store.dispatch({
+        type: 'SCENE_FILE_LOADED',
+        payload: { path: null }
+      })
     }
   })
 
@@ -4207,7 +4231,14 @@ ipcRenderer.on('nextScene', (event, args)=>{
 
 ipcRenderer.on('undo', (e, arg) => {
   if (textInputMode) {
-    remote.getCurrentWebContents().undo()
+    // HACK because remote.getCurrentWindow().webContents returns the parent window
+    for (let w of remote.getCurrentWindow().getChildWindows()) {
+      if (w.isFocused()) {
+        w.webContents.undo()
+        return
+      }
+    }
+    remote.getCurrentWindow().webContents.undo()
   } else {
     if (storyboarderSketchPane.preventIfLocked()) return
 
@@ -4223,7 +4254,14 @@ ipcRenderer.on('undo', (e, arg) => {
 
 ipcRenderer.on('redo', (e, arg) => {
   if (textInputMode) {
-    remote.getCurrentWebContents().redo()
+    // HACK because remote.getCurrentWindow().webContents returns the parent window
+    for (let w of remote.getCurrentWindow().getChildWindows()) {
+      if (w.isFocused()) {
+        w.webContents.redo()
+        return
+      }
+    }
+    remote.getCurrentWindow().webContents.redo()
   } else {
     if (storyboarderSketchPane.preventIfLocked()) return
 
@@ -4239,7 +4277,17 @@ ipcRenderer.on('redo', (e, arg) => {
 
 ipcRenderer.on('copy', () => {
   if (textInputMode) {
-    remote.getCurrentWebContents().copy()
+    // HACK because remote.getCurrentWindow().webContents returns the parent window
+    for (let w of remote.getCurrentWindow().getChildWindows()) {
+      if (w.isFocused()) {
+        // console.log('copying from child', w)
+        w.webContents.copy()
+        return
+      }
+    }
+
+    // console.log('copying from parent')
+    remote.getCurrentWindow().webContents.copy()
   } else {
     copyBoards()
   }
@@ -4247,7 +4295,17 @@ ipcRenderer.on('copy', () => {
 
 ipcRenderer.on('paste', () => {
   if (textInputMode) {
-    remote.getCurrentWebContents().paste()
+    // HACK because remote.getCurrentWindow().webContents returns the parent window
+    for (let w of remote.getCurrentWindow().getChildWindows()) {
+      if (w.isFocused()) {
+        // console.log('pasting to child', w)
+        w.webContents.paste()
+        return
+      }
+    }
+
+    // console.log('pasting to parent')
+    remote.getCurrentWindow().webContents.paste()
   } else {
     pasteBoards()
   }
@@ -4726,33 +4784,6 @@ const insertBoards = (dest, insertAt, boards, { layerDataByBoardIndex }) => {
   })
 }
 
-// via https://stackoverflow.com/questions/6565703/math-algorithm-fit-image-to-screen-retain-aspect-ratio
-//
-// Image data: (wi, hi) and define ri = wi / hi
-// Screen resolution: (ws, hs) and define rs = ws / hs
-//
-// rs > ri ? (wi * hs/hi, hs) : (ws, hi * ws/wi)
-//
-// top = (hs - hnew)/2
-// left = (ws - wnew)/2
-
-const fitToDst = (dst, src) => {
-  let wi = src.width
-  let hi = src.height
-  let ri = wi / hi
-
-  let ws = dst.width
-  let hs = dst.height
-  let rs = ws / hs
-
-  let [wnew, hnew] = rs > ri ? [wi * hs/hi, hs] : [ws, hi * ws/wi]
-
-  let x = (ws - wnew)/2
-  let y = (hs - hnew)/2
-
-  return [x, y, wnew, hnew]
-}
-
 const fitImageData = (boardSize, imageData) => {
   return new Promise((resolve, reject) => {
     exporterCommon.getImage(imageData).then(image => {
@@ -4767,7 +4798,7 @@ const fitImageData = (boardSize, imageData) => {
       } else {
         let context = createSizedContext(boardSize)
         let canvas = context.canvas
-        context.drawImage(image, ...fitToDst(canvas, image).map(Math.round))
+        context.drawImage(image, ...util.fitToDst(canvas, image).map(Math.round))
         resolve(canvas.toDataURL())
       }
     }).catch(err => {
@@ -5302,6 +5333,73 @@ const saveAsFolder = async () => {
   }
 }
 
+const exportWeb = async () => {
+  if (!prefsModule.getPrefs().auth) {
+    showSignInWindow()
+  } else {
+    await startWebUpload()
+  }
+}
+const showSignInWindow = () => {
+  if (exportWebWindow) {
+    exportWebWindow.destroy()
+  }
+
+  textInputMode = true
+  textInputAllowAdvance = false
+
+  exportWebWindow = new remote.BrowserWindow({
+    width: 1200,
+    height: 800,
+    minWidth: 600,
+    minHeight: 600,
+    backgroundColor: '#333333',
+    show: false,
+    center: true,
+    parent: remote.getCurrentWindow(),
+    resizable: true,
+    frame: false,
+    modal: true
+  })
+  exportWebWindow.loadURL(`file://${__dirname}/../../upload.html`)
+  exportWebWindow.once('ready-to-show', () => {
+    exportWebWindow.show()
+  })
+}
+ipcRenderer.on('signInSuccess', () => {
+  notifications.notify({ message: 'Success! You’re Signed In!' })
+
+  // HACK reload prefs to make sure we get auth set from other window :/
+  prefsModule.init(path.join(app.getPath('userData'), 'pref.json'))
+
+  exportWeb()
+})
+const startWebUpload = async () => {
+  // ensure the current board and data is saved
+  await saveImageFile()
+  saveBoardFile()
+
+  notifications.notify({ message: 'Uploading to Storyboarders.com. This might take a while …' })
+
+  // let the notification appear
+  await new Promise(resolve => setTimeout(resolve, 1000))
+
+  try {
+    let result = await exporterWeb.uploadToWeb(boardFilename)
+    notifications.notify({ message: 'Upload complete!' })
+    remote.shell.openExternal(result.link)
+  } catch (err) {
+    if (err.name === 'StatusCodeError' && err.statusCode === 403) {
+      notifications.notify({ message: 'Oops! Your credentials are invalid or have expired. Please try signing in again to upload.' })
+      prefsModule.set('auth', undefined)
+      showSignInWindow()
+    } else {
+      console.error(err)
+      notifications.notify({ message: 'Whoops! An error occurred while attempting to upload.' })
+    }
+  }
+}
+
 const exportZIP = async () => {
   let srcFilePath = scriptFilePath
     ? scriptFilePath // use the .fountain/.fdx file, if it is defined …
@@ -5712,6 +5810,8 @@ ipcRenderer.on('save', (event, args) => {
 })
 
 ipcRenderer.on('saveAs', (event, args) => saveAsFolder())
+
+ipcRenderer.on('exportWeb', (event, args) => exportWeb())
 
 ipcRenderer.on('exportZIP', (event, args) => exportZIP())
 

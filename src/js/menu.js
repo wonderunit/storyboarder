@@ -113,6 +113,12 @@ AppMenu.File = () => ({
       }
     },
     {
+      label: 'Export to Web …',
+      click (item, focusedWindow, event) {
+        ipcRenderer.send('exportWeb')
+      }
+    },
+    {
       label: 'Export Project as ZIP',
       click (item, focusedWindow, event) {
         ipcRenderer.send('exportZIP')
