@@ -79,11 +79,12 @@
     }
   },
   "devDependencies": {
-    "electron": "2.0.0-beta.1",
-    "electron-builder": "19.53.4",
+    "electron": "1.8.2",
+    "electron-builder": "20.2.0",
     "electron-mocha": "4.0.0",
     "mocha": "3.5.0",
-    "mock-fs": "4.4.1"
+    "mock-fs": "4.4.1",
+    "electron-osx-sign": "^0.4.8"
   },
   "dependencies": {
     "@ffmpeg-installer/ffmpeg": "1.0.13",
