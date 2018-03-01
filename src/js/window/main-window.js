@@ -5413,8 +5413,14 @@ const startWebUpload = async () => {
     notifications.notify({ message: 'Upload complete!' })
     remote.shell.openExternal(result.link)
   } catch (err) {
-    console.error(err)
-    notifications.notify({ message: 'Whoops! An error occurred while attempting to upload.' })
+    if (err.name === 'StatusCodeError' && err.statusCode === 403) {
+      notifications.notify({ message: 'Oops! Your credentials are invalid or have expired. Please try signing in again to upload.' })
+      prefsModule.set('auth', undefined)
+      showSignInWindow()
+    } else {
+      console.error(err)
+      notifications.notify({ message: 'Whoops! An error occurred while attempting to upload.' })
+    }
   }
 }
 
