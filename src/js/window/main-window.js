@@ -1257,6 +1257,16 @@ let loadBoardUI = () => {
     textInputMode = true
   })
   window.addEventListener('focus', () => {
+    // is a child window still claiming focus?
+    for (let w of remote.getCurrentWindow().getChildWindows()) {
+      if (w.isFocused()) {
+        // keep preventing text input
+        textInputMode = true
+        return
+      }
+    }
+
+    // otherwise, allow direct text input again
     textInputMode = false
   })
   ipcRenderer.on('prefs:change', (event, newPrefs) => {
@@ -5367,6 +5377,9 @@ const showSignInWindow = () => {
   exportWebWindow.loadURL(`file://${__dirname}/../../upload.html`)
   exportWebWindow.once('ready-to-show', () => {
     exportWebWindow.show()
+  })
+  exportWebWindow.on('hide', () => {
+    ipcRenderer.send('textInputMode', false)
   })
 }
 ipcRenderer.on('signInSuccess', () => {
