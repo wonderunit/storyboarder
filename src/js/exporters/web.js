@@ -8,6 +8,7 @@ const request = require('request-promise-native')
 const boardModel = require('../models/board')
 const exporterCommon = require('./common')
 const exporterFfmpeg = require('./ffmpeg')
+const { fitToDst } = require('../utils')
 
 const prefsModule = remote.require('./prefs')
 
@@ -309,39 +310,6 @@ const uploadToWeb = async sceneFilePath => {
     throw err
   }
 }
-
-
-
-// TODO make this a shared util fn instead of copying from `main-window.js`
-
-// via https://stackoverflow.com/questions/6565703/math-algorithm-fit-image-to-screen-retain-aspect-ratio
-//
-// Image data: (wi, hi) and define ri = wi / hi
-// Screen resolution: (ws, hs) and define rs = ws / hs
-//
-// rs > ri ? (wi * hs/hi, hs) : (ws, hi * ws/wi)
-//
-// top = (hs - hnew)/2
-// left = (ws - wnew)/2
-
-const fitToDst = (dst, src) => {
-  let wi = src.width
-  let hi = src.height
-  let ri = wi / hi
-
-  let ws = dst.width
-  let hs = dst.height
-  let rs = ws / hs
-
-  let [wnew, hnew] = rs > ri ? [wi * hs / hi, hs] : [ws, hi * ws / wi]
-
-  let x = (ws - wnew) / 2
-  let y = (hs - hnew) / 2
-
-  return [x, y, wnew, hnew]
-}
-
-
 
 module.exports = {
   API_URI,

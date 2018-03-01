@@ -4784,33 +4784,6 @@ const insertBoards = (dest, insertAt, boards, { layerDataByBoardIndex }) => {
   })
 }
 
-// via https://stackoverflow.com/questions/6565703/math-algorithm-fit-image-to-screen-retain-aspect-ratio
-//
-// Image data: (wi, hi) and define ri = wi / hi
-// Screen resolution: (ws, hs) and define rs = ws / hs
-//
-// rs > ri ? (wi * hs/hi, hs) : (ws, hi * ws/wi)
-//
-// top = (hs - hnew)/2
-// left = (ws - wnew)/2
-
-const fitToDst = (dst, src) => {
-  let wi = src.width
-  let hi = src.height
-  let ri = wi / hi
-
-  let ws = dst.width
-  let hs = dst.height
-  let rs = ws / hs
-
-  let [wnew, hnew] = rs > ri ? [wi * hs/hi, hs] : [ws, hi * ws/wi]
-
-  let x = (ws - wnew)/2
-  let y = (hs - hnew)/2
-
-  return [x, y, wnew, hnew]
-}
-
 const fitImageData = (boardSize, imageData) => {
   return new Promise((resolve, reject) => {
     exporterCommon.getImage(imageData).then(image => {
@@ -4825,7 +4798,7 @@ const fitImageData = (boardSize, imageData) => {
       } else {
         let context = createSizedContext(boardSize)
         let canvas = context.canvas
-        context.drawImage(image, ...fitToDst(canvas, image).map(Math.round))
+        context.drawImage(image, ...util.fitToDst(canvas, image).map(Math.round))
         resolve(canvas.toDataURL())
       }
     }).catch(err => {
