@@ -5382,11 +5382,10 @@ const showSignInWindow = () => {
     ipcRenderer.send('textInputMode', false)
   })
 }
-ipcRenderer.on('signInSuccess', () => {
+ipcRenderer.on('signInSuccess', (event, response) => {
   notifications.notify({ message: 'Success! You’re Signed In!' })
 
-  // HACK reload prefs to make sure we get auth set from other window :/
-  prefsModule.init(path.join(app.getPath('userData'), 'pref.json'))
+  prefsModule.set('auth', { token: response.token })
 
   exportWeb()
 })

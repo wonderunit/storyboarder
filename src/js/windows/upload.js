@@ -1,14 +1,10 @@
-const path = require('path')
 const { ipcRenderer } = require('electron')
 const remote = require('electron').remote
 const request = require('request-promise-native')
 
 const exporterWeb = require('./js/exporters/web')
-const prefsModule = require('./js/prefs')
 
 const init = () => {
-  prefsModule.init(path.join(remote.app.getPath('userData'), 'pref.json'))
-
   document.addEventListener('keydown', event => {
     if (event.key === 'Escape') {
       event.preventDefault()
@@ -59,11 +55,11 @@ const onSubmit = async event => {
 
     let json = JSON.parse(res.body)
 
-    prefsModule.set('auth', {
-      token: json.token
-    })
+    if (!json.token) {
+      throw new Error('No token')
+    }
 
-    ipcRenderer.send('signInSuccess')
+    ipcRenderer.send('signInSuccess', json)
     remote.getCurrentWindow().hide()
   } catch (err) {
     if (err.statusCode === 403) {

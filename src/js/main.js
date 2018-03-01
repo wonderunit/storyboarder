@@ -1275,4 +1275,6 @@ ipcMain.on('toggleAudition', (event) => {
 })
 
 // uploader > main-window
-ipcMain.on('signInSuccess', event => mainWindow.webContents.send('signInSuccess'))
+ipcMain.on('signInSuccess', (event, response) => {
+  mainWindow.webContents.send('signInSuccess', response)
+})
