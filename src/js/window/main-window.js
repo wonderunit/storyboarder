@@ -2481,7 +2481,7 @@ let duplicateBoard = async () => {
   boardDst.dialogue = ''
   boardDst.action = ''
   boardDst.notes = ''
-  boardDst.duration = 0
+  boardDst.duration = undefined
 
   try {
     // console.log('copying files from index', currentBoard, 'to index', insertAt)
