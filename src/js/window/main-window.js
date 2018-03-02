@@ -659,20 +659,40 @@ let loadBoardUI = () => {
     item.addEventListener('input', e => {
       switch (e.target.name) {
         case 'duration':
-          document.querySelector('input[name="frames"]').value = msecsToFrames(Number(e.target.value))
+          // if we can't parse the value as a number (e.g.: empty string),
+          // set to undefined
+          // which will render as the scene's default duration
+          let newDuration = isNaN(parseInt(e.target.value, 10))
+            ? undefined
+            : e.target.value
 
+          // set the new duration value
           for (let index of selections) {
-            boardData.boards[index].duration = Number(e.target.value)
+            boardData.boards[index].duration = newDuration
           }
+
+          // update the `frames` view
+          document.querySelector('input[name="frames"]').value = msecsToFrames(boardModel.boardDuration(boardData, boardData.boards[currentBoard]))
+
           renderThumbnailDrawer()
           renderMarkerPosition()
           break
         case 'frames':
-          document.querySelector('input[name="duration"]').value = framesToMsecs(Number(e.target.value))
+          let newFrames = isNaN(parseInt(e.target.value, 10))
+            ? undefined
+            : e.target.value
 
           for (let index of selections) {
-            boardData.boards[index].duration = framesToMsecs(Number(e.target.value))
+            boardData.boards[index].duration = newFrames != null
+              ? framesToMsecs(newFrames)
+              : undefined
           }
+
+          // update the `duration` view
+          document.querySelector('input[name="duration"]').value = newFrames != null
+            ? framesToMsecs(newFrames)
+            : ''
+
           renderThumbnailDrawer()
           renderMarkerPosition()
           break
@@ -2481,7 +2501,7 @@ let duplicateBoard = async () => {
   boardDst.dialogue = ''
   boardDst.action = ''
   boardDst.notes = ''
-  boardDst.duration = undefined
+  boardDst.duration = boardSrc.duration // either `undefined` or a value in msecs
 
   try {
     // console.log('copying files from index', currentBoard, 'to index', insertAt)
@@ -2745,8 +2765,10 @@ let renderMetaData = () => {
         label && label.classList.remove('disabled')
       }
 
-      document.querySelector('input[name="duration"]').value = boardData.boards[currentBoard].duration
-      document.querySelector('input[name="frames"]').value = msecsToFrames(boardData.boards[currentBoard].duration)
+      document.querySelector('input[name="duration"]').value = boardData.boards[currentBoard].duration != null
+        ? boardData.boards[currentBoard].duration
+        : ''
+      document.querySelector('input[name="frames"]').value = msecsToFrames(boardModel.boardDuration(boardData, boardData.boards[currentBoard].duration))
     } else {
       for (let input of editableInputs) {
         input.disabled = (input.name !== 'duration' && input.name !== 'frames')
@@ -2759,8 +2781,10 @@ let renderMetaData = () => {
       if (uniqueDurations.length == 1) {
         // unified
         let duration = uniqueDurations[0]
-        document.querySelector('input[name="duration"]').value = duration
-        document.querySelector('input[name="frames"]').value = msecsToFrames(duration)
+        document.querySelector('input[name="duration"]').value = duration != null
+          ? duration
+          : ''
+        document.querySelector('input[name="frames"]').value = msecsToFrames(boardModel.boardDuration(boardData, boardData.boards[currentBoard].duration))
       } else {
         document.querySelector('input[name="duration"]').value = null
         document.querySelector('input[name="frames"]').value = null
