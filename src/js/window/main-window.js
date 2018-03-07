@@ -3119,10 +3119,19 @@ const renderSceneTimeline = () => {
 let renderThumbnailDrawer = () => {
   updateSceneTiming()
 
-  // update the mode control
-  timelineModeControlView.update({
-    mode: shouldRenderThumbnailDrawer ? 'sequence' : 'time'
-  })
+  // for new script-based projects,
+  // the order the ui is setup is different
+  // and we might not have an instance yet
+  //
+  // TODO a better solution would be
+  //      to ensure timelineModeControlView is present
+  //      before newBoard is called
+  if (timelineModeControlView) {
+    // update the mode control
+    timelineModeControlView.update({
+      mode: shouldRenderThumbnailDrawer ? 'sequence' : 'time'
+    })
+  }
 
   // reflect the current view
   cycleViewMode(0)
