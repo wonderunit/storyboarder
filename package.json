@@ -1,7 +1,7 @@
 {
   "name": "storyboarder",
   "productName": "Storyboarder",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "description": "The fastest way to storyboard.",
   "main": "src/js/main.js",
   "scripts": {
@@ -79,8 +79,8 @@
     }
   },
   "devDependencies": {
-    "electron": "1.8.2",
-    "electron-builder": "20.2.0",
+    "electron": "2.0.0-beta.2",
+    "electron-builder": "20.4.0",
     "electron-mocha": "4.0.0",
     "mocha": "3.5.0",
     "mock-fs": "4.4.1",
@@ -107,7 +107,7 @@
     "gl-vec2": "^1.0.0",
     "jsfeat": "0.0.8",
     "jsonwebtoken": "8.1.1",
-    "moment": "^2.18.1",
+    "moment": "2.19.3",
     "pdfjs-dist": "1.9.426",
     "pdfkit": "^0.8.3",
     "plist": "2.1.0",
