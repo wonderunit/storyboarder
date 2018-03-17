@@ -15,6 +15,7 @@ const { LAYER_NAME_BY_INDEX } = require('../constants')
 const prefsModule = require('electron').remote.require('./prefs')
 const enableBrushCursor = prefsModule.getPrefs('main')['enableBrushCursor']
 const enableStabilizer = prefsModule.getPrefs('main')['enableStabilizer']
+const disablePenEraserDetection = prefsModule.getPrefs('main')['disablePenEraserDetection']
 
 /**
  *  Wrap the SketchPane component with features Storyboarder needs
@@ -790,7 +791,7 @@ class DrawingStrategy {
     this.container.isPointerDown = true
 
     // via https://developer.mozilla.org/en-US/docs/Web/API/Pointer_events#Determining_button_states
-    if (e.buttons == 32 || e.buttons == 2) {
+    if (!disablePenEraserDetection && (e.buttons == 32 || e.buttons == 2)) {
       this.container.isEraseButtonActive = true
     } else {
       this.container.isEraseButtonActive = false
@@ -819,7 +820,7 @@ class DrawingStrategy {
     this.container.isPointerDown = false
 
     // via https://developer.mozilla.org/en-US/docs/Web/API/Pointer_events#Determining_button_states
-    if (e.buttons == 32 || e.buttons == 2) {
+    if (!disablePenEraserDetection && (e.buttons == 32 || e.buttons == 2)) {
       this.container.isEraseButtonActive = true
     } else {
       this.container.isEraseButtonActive = false
