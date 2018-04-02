@@ -48,6 +48,7 @@ let mainWindow
 let printWindow
 let sketchWindow
 let keyCommandWindow
+let sketchPanePreviewWindow
 
 let loadingStatusWindow
 
