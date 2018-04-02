@@ -13,6 +13,8 @@ const plist = require('plist')
 const R = require('ramda')
 const isDev = require('electron-is-dev')
 
+const AlchemancySketchPane = require('alchemancy')
+console.log('alchemancy:', new AlchemancySketchPane())
 
 const { getInitialStateRenderer } = require('electron-redux')
 const configureStore = require('../shared/store/configureStore')
