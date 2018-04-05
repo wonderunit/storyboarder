@@ -2,8 +2,8 @@ const EventEmitter = require('events').EventEmitter
 
 const { ipcRenderer, remote } = require('electron')
 
+const SketchPane = require('alchemancy')
 
-const SketchPane = require('../sketch-pane')
 const Brush = require('../sketch-pane/brush')
 const LineMileageCounter = require('./line-mileage-counter')
 
@@ -91,6 +91,7 @@ class StoryboarderSketchPane extends EventEmitter {
 
     // sketchpane
     this.sketchPane = new SketchPane()
+    this.sketchPane.setSize(...this.canvasSize)
     this.sketchPane.on('ondown', this.onSketchPaneDown.bind(this))
     this.sketchPane.on('onbeforeup', this.onSketchPaneBeforeUp.bind(this))
     this.sketchPane.on('onup', this.onSketchPaneOnUp.bind(this))
