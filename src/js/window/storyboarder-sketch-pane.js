@@ -108,8 +108,7 @@ class StoryboarderSketchPane extends EventEmitter {
 
     this.sketchPane.setImageSize(...this.canvasSize)
 
-    let rect = this.containerEl.getBoundingClientRect()
-    this.sketchPane.resize(rect.width, rect.height)
+    this.resize()
 
     // TODO package brushes in the build
     // TODO async
