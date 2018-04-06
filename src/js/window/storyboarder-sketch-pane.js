@@ -618,7 +618,7 @@ class StoryboarderSketchPane extends EventEmitter {
     // this.renderContainerSize()
 
     const { width, height } = this.containerEl.getBoundingClientRect()
-    this.sketchPane.resize(width, height)
+    this.sketchPane.resize(width - this.containerPadding, height - this.containerPadding)
 
     if (this.brush) {
       this.updatePointer()
