@@ -190,7 +190,7 @@ let shouldRenderThumbnailDrawer = true
 remote.getCurrentWindow().on('focus', () => {
   menu.setMenu()
   // HACK update to reflect current value
-  audioPlayback.setEnableAudition(audioPlayback.enableAudition)
+  audioPlayback && audioPlayback.setEnableAudition(audioPlayback.enableAudition)
 })
 
 ///////////////////////////////////////////////////////////////
@@ -247,17 +247,10 @@ const load = async (event, args) => {
     log({ type: 'progress', message: 'Preparing to display' })
 
     resize()
-    setTimeout(() => {
-      storyboarderSketchPane.resize()
 
-      setImmediate(() =>
-        requestAnimationFrame(() =>
-          requestAnimationFrame(() =>
-            ipcRenderer.send('workspaceReady')
-          )
-        )
-      )
-    }, 500) // TODO hack, remove this #440
+    storyboarderSketchPane.resize()
+    ipcRenderer.send('workspaceReady')
+
   } catch (error) {
     console.error(error)
 
@@ -527,13 +520,10 @@ let loadBoardUI = () => {
     size,
     store
   )
-  
+
   window.addEventListener('resize', () => {
     resize()
-    // this is pretty hacky.
-    setTimeout(() => storyboarderSketchPane.resize(), 500) // TODO hack, remove this #440
-    setTimeout(() => storyboarderSketchPane.resize(), 1000) // TODO hack, remove this #440
-    setTimeout(() => storyboarderSketchPane.resize(), 1100) // TODO hack, remove this #440
+    storyboarderSketchPane.resize()
   })
 
   window.ondragover = () => { return false }
@@ -1044,28 +1034,28 @@ let loadBoardUI = () => {
     toolbar.changeCurrentColor(color)
   })
 
-  guides = new Guides(storyboarderSketchPane.getLayerCanvasByName('guides'), { perspectiveGridFn: shotTemplateSystem.requestGrid.bind(shotTemplateSystem) })
-  onionSkin = new OnionSkin(storyboarderSketchPane, boardPath)
-  layersEditor = new LayersEditor(storyboarderSketchPane, sfx, notifications)
-  layersEditor.on('opacity', opacity => {
-    // should we update the value of the project data?
-    let board = boardData.boards[currentBoard]
-    if (opacity.index === LAYER_INDEX_REFERENCE) {
-      if (board.layers && board.layers.reference && !util.isUndefined(board.layers.reference)) {
-        if (board.layers.reference.opacity !== opacity.value) {
-          // update data
-          // layers are in data already, change data directly
-          board.layers.reference.opacity = opacity.value
-          markImageFileDirty([LAYER_INDEX_REFERENCE])
-          markBoardFileDirty()
-        }
-      } else {
-        // create data
-        // need to create layers
-        markImageFileDirty([LAYER_INDEX_REFERENCE])
-      }
-    }
-  })
+  // guides = new Guides(storyboarderSketchPane.getLayerCanvasByName('guides'), { perspectiveGridFn: shotTemplateSystem.requestGrid.bind(shotTemplateSystem) })
+  // onionSkin = new OnionSkin(storyboarderSketchPane, boardPath)
+  // layersEditor = new LayersEditor(storyboarderSketchPane, sfx, notifications)
+  // layersEditor.on('opacity', opacity => {
+  //   // should we update the value of the project data?
+  //   let board = boardData.boards[currentBoard]
+  //   if (opacity.index === LAYER_INDEX_REFERENCE) {
+  //     if (board.layers && board.layers.reference && !util.isUndefined(board.layers.reference)) {
+  //       if (board.layers.reference.opacity !== opacity.value) {
+  //         // update data
+  //         // layers are in data already, change data directly
+  //         board.layers.reference.opacity = opacity.value
+  //         markImageFileDirty([LAYER_INDEX_REFERENCE])
+  //         markBoardFileDirty()
+  //       }
+  //     } else {
+  //       // create data
+  //       // need to create layers
+  //       markImageFileDirty([LAYER_INDEX_REFERENCE])
+  //     }
+  //   }
+  // })
   storyboarderSketchPane.on('requestPointerDown', () => {
     // if artist is drawing on the reference layer, ensure it has opacity
     if (toolbar.state.brush === 'light-pencil' && storyboarderSketchPane.sketchPane.getLayerOpacity() === 0) {
@@ -1327,7 +1317,7 @@ let loadBoardUI = () => {
         camera
       }
       markBoardFileDirty()
-      guides.setPerspectiveParams({
+      guides && guides.setPerspectiveParams({
         cameraParams: board.sts && board.sts.camera,
         rotation: 0
       })
@@ -1951,6 +1941,8 @@ const addToLineMileage = value => {
 }
 
 const onDrawIdle = () => {
+  return
+
   clearTimeout(drawIdleTimer)
 
   // update the line mileage in two places
@@ -2706,7 +2698,7 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
       StsSidebar.reset(board.sts)
     }
 
-    guides.setPerspectiveParams({
+    guides && guides.setPerspectiveParams({
       cameraParams: board.sts && board.sts.camera,
       rotation: 0
     })
@@ -2971,6 +2963,7 @@ let previousScene = ()=> {
 }
 
 let updateSketchPaneBoard = () => {
+  return Promise.resolve()
   return new Promise((resolve, reject) => {
     // get current board
     let board = boardData.boards[currentBoard]
