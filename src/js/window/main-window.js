@@ -239,7 +239,7 @@ const load = async (event, args) => {
       }
     }
 
-    loadBoardUI()
+    await loadBoardUI()
     await updateBoardUI()
 
     verifyScene()
@@ -247,8 +247,9 @@ const load = async (event, args) => {
     log({ type: 'progress', message: 'Preparing to display' })
 
     resize()
-
     storyboarderSketchPane.resize()
+    await new Promise(resolve => setTimeout(resolve, 50)) // wait for the DOM to catch up to avoid FOUC
+
     ipcRenderer.send('workspaceReady')
 
   } catch (error) {
@@ -508,7 +509,7 @@ const verifyScene = () => {
   }
 }
 
-let loadBoardUI = () => {
+const loadBoardUI = async () => {
   log({ type: 'progress', message: 'Loading User Interface' })
 
   let size = boardModel.boardFileImageSize(boardData)
@@ -520,6 +521,8 @@ let loadBoardUI = () => {
     size,
     store
   )
+  await storyboarderSketchPane.load()
+
 
   window.addEventListener('resize', () => {
     resize()
@@ -1597,7 +1600,7 @@ let loadBoardUI = () => {
   // remote.getCurrentWebContents().openDevTools()
 }
 
-let updateBoardUI = async () => {
+const updateBoardUI = async () => {
   log({ type: 'progress', message: 'Rendering User Interface' })
 
   document.querySelector('#canvas-caption').style.display = 'none'

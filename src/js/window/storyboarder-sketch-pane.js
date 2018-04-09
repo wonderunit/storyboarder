@@ -27,7 +27,13 @@ const enableStabilizer = prefsModule.getPrefs('main')['enableStabilizer']
 class StoryboarderSketchPane extends EventEmitter {
   constructor (el, canvasSize, store) {
     super()
-    this.isCommandPressed = createIsCommandPressed(store)
+    this.el = el
+    this.canvasSize = canvasSize
+    this.store = store
+  }
+
+  async load () {
+    this.isCommandPressed = createIsCommandPressed(this.store)
 
     this.prevTimeStamp = 0
     this.frameLengthArray = []
@@ -52,8 +58,6 @@ class StoryboarderSketchPane extends EventEmitter {
     this.onKeyUp = this.onKeyUp.bind(this)
     this.onDblClick = this.onDblClick.bind(this)
 
-    this.el = el
-    this.canvasSize = canvasSize
     this.containerSize = null
     this.scaleFactor = null
 
@@ -100,12 +104,6 @@ class StoryboarderSketchPane extends EventEmitter {
     this.sketchPane.setImageSize(...this.canvasSize)
     this.resize()
 
-    // HACK wait until first render to avoid FOUC (black background)
-    this.sketchPane.app.renderer.once('postrender', () => {
-      // add SketchPane to container
-      this.containerEl.appendChild(this.sketchPaneDOMElement)
-    })
-
     // measure and update cached size data
     // this.updateContainerSize()
 
@@ -113,8 +111,7 @@ class StoryboarderSketchPane extends EventEmitter {
     // this.renderContainerSize()
 
     // TODO package brushes in the build
-    // TODO async
-    this.sketchPane.loadBrushes({ brushImagePath: '../node_modules/alchemancy/src/img/brush' })
+    await this.sketchPane.loadBrushes({ brushImagePath: '../node_modules/alchemancy/src/img/brush' })
 
     // this.sketchPane.on('onbeforeup', this.onSketchPaneBeforeUp.bind(this)) // MIGRATE
     // this.sketchPane.on('onup', this.onSketchPaneOnUp.bind(this)) // MIGRATE
@@ -127,6 +124,9 @@ class StoryboarderSketchPane extends EventEmitter {
     this.sketchPane.newLayer() // guides
     this.sketchPane.newLayer() // composite
     this.sketchPane.selectLayer(1)
+
+    // add SketchPane to container
+    this.containerEl.appendChild(this.sketchPaneDOMElement)
 
     // TODO cleanup
     // let ro = new window.ResizeObserver(entries => {
