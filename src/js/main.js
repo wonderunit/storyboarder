@@ -1036,9 +1036,8 @@ ipcMain.on('redo', (e, arg)=> {
   mainWindow.webContents.send('redo')
 })
 
-ipcMain.on('setTool', (e, arg)=> {
-  mainWindow.webContents.send('setTool', arg)
-})
+ipcMain.on('setTool', (e, arg) =>
+  mainWindow.webContents.send('setTool', arg))
 
 ipcMain.on('useColor', (e, arg)=> {
   mainWindow.webContents.send('useColor', arg)

@@ -12,6 +12,8 @@ const util = require('../utils')
 
 const { LAYER_NAME_BY_INDEX } = require('../constants')
 
+const observeStore = require('../shared/helpers/observeStore')
+
 const prefsModule = require('electron').remote.require('./prefs')
 const enableBrushCursor = prefsModule.getPrefs('main')['enableBrushCursor']
 const enableStabilizer = prefsModule.getPrefs('main')['enableStabilizer']
@@ -124,6 +126,15 @@ class StoryboarderSketchPane extends EventEmitter {
     this.sketchPane.newLayer() // guides
     this.sketchPane.newLayer() // composite
     this.sketchPane.selectLayer(1)
+
+    observeStore(this.store, state => state.toolbar.activeTool, activeTool => {
+      const state = this.store.getState()
+      const tool = state.toolbar.tools[activeTool]
+      this.sketchPane.brush = this.sketchPane.brushes[tool.brushName]
+      this.sketchPane.brushColor = tool.brushColor
+      this.sketchPane.brushSize = tool.brushSize
+      this.sketchPane.brushOpacity = tool.brushOpacity
+    })
 
     // add SketchPane to container
     this.containerEl.appendChild(this.sketchPaneDOMElement)

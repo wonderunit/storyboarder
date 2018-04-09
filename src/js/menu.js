@@ -406,7 +406,7 @@ AppMenu.Tools = () => ({
       accelerator: keystrokeFor('menu:tools:light-pencil'),
       label: 'Light Pencil',
       click (item, focusedWindow, event) {
-        ipcRenderer.send('setTool', 'lightPencil')
+        ipcRenderer.send('setTool', 'light-pencil')
       }
     },
     {
@@ -434,7 +434,7 @@ AppMenu.Tools = () => ({
       accelerator: keystrokeFor('menu:tools:note-pen'),
       label: 'Note Pen',
       click (item, focusedWindow, event) {
-        ipcRenderer.send('setTool', 'notePen')
+        ipcRenderer.send('setTool', 'note-pen')
       }
     },
     {

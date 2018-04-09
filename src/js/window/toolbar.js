@@ -1,13 +1,13 @@
-const EventEmitter = require('events').EventEmitter
 const { remote } = require('electron')
-const prefsModule = require('electron').remote.require('./../js/prefs')
-
+const EventEmitter = require('events').EventEmitter
 const Color = require('color-js')
 
+const Detector = require('../vendor/Detector')
+
+const prefsModule = remote.require('./../js/prefs')
 const util = require('../utils/index')
 const sfx = require('../wonderunit-sound')
-
-const Detector = require('../vendor/Detector')
+const observeStore = require('../shared/helpers/observeStore')
 
 // TODO why even have these constants if we don't use them consistently?
 const BRUSH_PENCIL = 'pencil'
@@ -111,8 +111,12 @@ const initialState = {
 }
 
 class Toolbar extends EventEmitter {
-  constructor (el) {
+  constructor (store, el) {
     super()
+
+    this.store = store
+    // listen for changes to the toolbar state
+    observeStore(this.store, state => state.toolbar, this.render.bind(this))
 
     // TODO PREFS ARE JANK AS FUCK. NEED TO REDO THIS
     let prefState
@@ -279,42 +283,19 @@ class Toolbar extends EventEmitter {
   onButtonDown (event) {
     let selection = this.getEventTargetSelection(event.target)
 
+    const state = this.store.getState()
+
     switch (selection) {
       // brushes
       case 'light-pencil':
-        if (this.state.transformMode) this.emit('cancelTransform')
-        if (this.state.brush !== 'light-pencil') {
-          this.setState({ brush: 'light-pencil' })
-        }
-        break
       case 'pencil':
-        if (this.state.transformMode) this.emit('cancelTransform')
-        if (this.state.brush !== 'pencil') {
-          this.setState({ brush: 'pencil' })
-        }
-        break
       case 'pen':
-        if (this.state.transformMode) this.emit('cancelTransform')
-        if (this.state.brush !== 'pen') {
-          this.setState({ brush: 'pen' })
-        }
-        break
       case 'brush':
-        if (this.state.transformMode) this.emit('cancelTransform')
-        if (this.state.brush !== 'brush') {
-          this.setState({ brush: 'brush' })
-        }
-        break
       case 'note-pen':
-        if (this.state.transformMode) this.emit('cancelTransform')
-        if (this.state.brush !== 'note-pen') {
-          this.setState({ brush: 'note-pen' })
-        }
-        break
       case 'eraser':
-        if (this.state.transformMode) this.emit('cancelTransform')
-        if (this.state.brush !== 'eraser') {
-          this.setState({ brush: 'eraser' })
+        if (state.toolbar.activeTool !== selection) {
+          if (this.state.transformMode) this.emit('cancelTransform')
+          this.store.dispatch({ type: 'TOOLBAR_TOOL_CHANGE', payload: selection })
         }
         break
 
@@ -446,13 +427,10 @@ class Toolbar extends EventEmitter {
   }
 
   render () {
-    let brushesEls = this.el.querySelectorAll('.button[data-group=brushes]')
-    for (let brushEl of brushesEls) {
-      if (brushEl.id == `toolbar-${this.state.brush}`) {
-        brushEl.classList.add('active')
-      } else {
-        brushEl.classList.remove('active')
-      }
+    const state = this.store.getState()
+
+    for (let brushEl of this.el.querySelectorAll('.button[data-group=brushes]')) {
+      brushEl.classList.toggle('active', brushEl.id === `toolbar-${state.toolbar.activeTool}`)
     }
 
     let btnMove = this.el.querySelector('#toolbar-move')
