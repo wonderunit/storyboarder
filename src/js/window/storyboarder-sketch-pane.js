@@ -92,7 +92,7 @@ class StoryboarderSketchPane extends EventEmitter {
 
 
     // sketchpane
-    this.sketchPane = new SketchPane()
+    this.sketchPane = new SketchPane({ backgroundColor: 0x333333 })
     this.sketchPaneDOMElement = this.sketchPane.getDOMElement()
 
     // measure and update cached size data
