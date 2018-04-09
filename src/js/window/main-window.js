@@ -838,7 +838,7 @@ const loadBoardUI = async () => {
     }
   })
 
-  toolbar = new Toolbar(document.getElementById("toolbar"))
+  toolbar = new Toolbar(store, document.getElementById("toolbar"))
   toolbar.on('brush', (kind, options) => {
     toolbar.emit('cancelTransform')
     storyboarderSketchPane.setBrushTool(kind, options)
@@ -5535,31 +5535,9 @@ class TimelineModeControlView {
   }
 }
 
-ipcRenderer.on('setTool', (e, arg)=> {
-  if (!toolbar) return
-
+ipcRenderer.on('setTool', (e, toolName) => {
   if (!textInputMode && !storyboarderSketchPane.getIsDrawingOrStabilizing()) {
-    console.log('setTool', arg)
-    switch(arg) {
-      case 'lightPencil':
-        toolbar.setState({ brush: 'light-pencil' })
-        break
-      case 'pencil':
-        toolbar.setState({ brush: 'pencil' })
-        break
-      case 'pen':
-        toolbar.setState({ brush: 'pen' })
-        break
-      case 'brush':
-        toolbar.setState({ brush: 'brush' })
-        break
-      case 'notePen':
-        toolbar.setState({ brush: 'note-pen' })
-        break
-      case 'eraser':
-        toolbar.setState({ brush: 'eraser' })
-        break
-    }
+    store.dispatch({ type: 'TOOLBAR_TOOL_CHANGE', payload: toolName })
   }
 })
 

@@ -1,5 +1,8 @@
-const { createStore, applyMiddleware, combineReducers } = require('redux')
+const { combineReducers } = require('redux')
 const defaultKeyMap = require('../helpers/defaultKeyMap')
+
+const toolbar = require('./toolbar')
+
 const sceneFilePath = (state = null, action) => {
   switch (action.type) {
     case 'SCENE_FILE_LOADED':
@@ -9,6 +12,7 @@ const sceneFilePath = (state = null, action) => {
       return state
   }
 }
+
 const keymap = (state = defaultKeyMap, action) => {
   switch (action.type) {
     case 'SET_KEYMAP':
@@ -25,6 +29,7 @@ const keymap = (state = defaultKeyMap, action) => {
 
 module.exports = combineReducers({
   sceneFilePath,
+  toolbar,
   entities: combineReducers({
     keymap
   })

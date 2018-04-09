@@ -1,3 +1,4 @@
+// see also: https://github.com/jprichardson/redux-watch
 const observeStore = (store, select, onChange, shouldInitialize = false) => {
   let currentState
 
