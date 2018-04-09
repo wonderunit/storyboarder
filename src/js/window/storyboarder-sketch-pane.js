@@ -112,7 +112,7 @@ class StoryboarderSketchPane extends EventEmitter {
 
     // TODO package brushes in the build
     // TODO async
-    this.sketchPane.load({ brushImagePath: '../node_modules/alchemancy/src/img/brush' })
+    this.sketchPane.loadBrushes({ brushImagePath: '../node_modules/alchemancy/src/img/brush' })
 
     // this.sketchPane.on('onbeforeup', this.onSketchPaneBeforeUp.bind(this)) // MIGRATE
     // this.sketchPane.on('onup', this.onSketchPaneOnUp.bind(this)) // MIGRATE
