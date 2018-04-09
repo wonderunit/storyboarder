@@ -90,25 +90,27 @@ class StoryboarderSketchPane extends EventEmitter {
     process.nextTick(() => this.renderCursor())
 
 
+    // add container to element
+    this.el.appendChild(this.containerEl)
 
     // sketchpane
     this.sketchPane = new SketchPane({ backgroundColor: 0x333333 })
     this.sketchPaneDOMElement = this.sketchPane.getDOMElement()
 
+    this.sketchPane.setImageSize(...this.canvasSize)
+    this.resize()
+
+    // HACK wait until first render to avoid FOUC (black background)
+    this.sketchPane.app.renderer.once('postrender', () => {
+      // add SketchPane to container
+      this.containerEl.appendChild(this.sketchPaneDOMElement)
+    })
+
     // measure and update cached size data
     // this.updateContainerSize()
 
-    // add container to element
-    this.el.appendChild(this.containerEl)
-    // add SketchPane to container
-    this.containerEl.appendChild(this.sketchPaneDOMElement)
-
     // adjust sizes
     // this.renderContainerSize()
-
-    this.sketchPane.setImageSize(...this.canvasSize)
-
-    this.resize()
 
     // TODO package brushes in the build
     // TODO async
