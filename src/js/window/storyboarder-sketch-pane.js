@@ -143,7 +143,6 @@ class StoryboarderSketchPane extends EventEmitter {
 
 
     // Proxy
-    this.sketchPane.setPaintingOpacity = () => { console.warn('SketchPane#setPaintingOpacity no imp') }
     this.sketchPane.setTool = () => { console.warn('SketchPane#setTool no impl') }
     this.sketchPane.getCanvasWidth = () => { return this.sketchPane.width }
     this.sketchPane.getCanvasHeight = () => { return this.sketchPane.height }
@@ -718,7 +717,6 @@ class StoryboarderSketchPane extends EventEmitter {
       }
     }
 
-    this.sketchPane.setPaintingOpacity(options.opacity)
     this.sketchPane.setTool(this.brush)
 
     this.updatePointer()

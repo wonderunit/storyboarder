@@ -20,7 +20,7 @@ const defaultPrefs = {
   defaultBoardTiming: 2000,
   pomodoroTimerMinutes: 25,
   importTargetLayer: "reference",
-  enableCanvasPaintingOpacity: true,
+  enableCanvasPaintingOpacity: true, // DEPRECATED used by old SketchPane
   enableBrushCursor: true,
   enableStabilizer: true,
   enableAnalytics: true,
@@ -48,7 +48,7 @@ if(cpus.length <= 2 || cpu.speed <= 2000) {
   defaultPrefs.enableDrawingSoundEffects = false
   defaultPrefs.enableDrawingMelodySoundEffects = false
   defaultPrefs.enableUISoundEffects = false
-  defaultPrefs.enableCanvasPaintingOpacity = false
+  defaultPrefs.enableCanvasPaintingOpacity = false // DEPRECATED used by old SketchPane
   defaultPrefs.enableStabilizer = false
 }
 
