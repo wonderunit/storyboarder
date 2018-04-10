@@ -148,9 +148,18 @@ class StoryboarderSketchPane extends EventEmitter {
     // ro.observe(this.containerEl)
     window.addEventListener('resize', e => this.resize())
 
-    window.addEventListener('pointerdown', e => this.sketchPane.down(e))
-    window.addEventListener('pointerup', e => this.sketchPane.up(e))
-    window.addEventListener('pointermove', e => this.sketchPane.move(e))
+    window.addEventListener('pointerdown', e => {
+      this.sketchPane.down(e)
+      this.emit('addToUndoStack', this.sketchPane.getActiveLayerIndices())
+    })
+    window.addEventListener('pointermove', e => {
+      this.sketchPane.move(e)
+    })
+    window.addEventListener('pointerup', e => {
+      let activeLayerIndices = this.sketchPane.getActiveLayerIndices()
+      this.sketchPane.up(e)
+      this.emit('markDirty', activeLayerIndices)
+    })
 
 
 
@@ -778,11 +787,11 @@ class StoryboarderSketchPane extends EventEmitter {
   }
 
   getSnapshotAsCanvas (index) {
-    const el = this.sketchPane.createLayerThumbnail(index)
-    el.id = Math.floor(Math.random()*16777215).toString(16) // for debugging
+    const el = this.sketchPane.getLayerCanvas(index)
+    el.id = Math.floor(Math.random() * 16777215).toString(16) // for debugging
     return el
   }
-  
+
   getIsDrawingOrStabilizing () {
     return this.sketchPane.isDrawing || this.sketchPane.isStabilizing
   }
