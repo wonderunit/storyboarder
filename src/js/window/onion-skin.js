@@ -13,7 +13,7 @@ class OnionSkin {
 
   setEnabled (value) {
     this.enabled = value
-    this.storyboarderSketchPane.sketchPane.setLayerOpacity(this.enabled ? 1 : 0, 2) // HACK hardcoded
+    this.storyboarderSketchPane.setLayerOpacity(2, this.enabled ? 1 : 0) // HACK hardcoded
   }
 
   getEnabled () {

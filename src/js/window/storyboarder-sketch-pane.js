@@ -484,7 +484,7 @@ class StoryboarderSketchPane extends EventEmitter {
       let canvas = this.sketchPane.getLayerCanvas(index)
       
       destinationContext.save()
-      destinationContext.globalAlpha = this.sketchPane.getLayerOpacity(index)
+      destinationContext.globalAlpha = this.getLayerOpacity(index)
       destinationContext.drawImage(canvas, 0, 0)
       destinationContext.restore()
     }
@@ -819,23 +819,29 @@ class StoryboarderSketchPane extends EventEmitter {
   clearLayer (index) {
     this.sketchPane.clearLayer(index)
   }
+  getLayerOpacity (index) {
+    return this.sketchPane.getLayerOpacity(index)
+  }
+  setLayerOpacity (index, opacity) {
+    return this.sketchPane.setLayerOpacity(index, opacity)
+  }
 
   getCanvasImageSources () {
     return [
       // reference
       {
         canvasImageSource: this.sketchPane.getLayerCanvas(0),
-        opacity: this.sketchPane.getLayerOpacity(0)
+        opacity: this.getLayerOpacity(0)
       },
       // main
       {
         canvasImageSource: this.sketchPane.getLayerCanvas(1),
-        opacity: this.sketchPane.getLayerOpacity(1)
+        opacity: this.getLayerOpacity(1)
       },
       // notes
       {
         canvasImageSource: this.sketchPane.getLayerCanvas(3),
-        opacity: this.sketchPane.getLayerOpacity(3)
+        opacity: this.getLayerOpacity(3)
       }
     ]
   }
