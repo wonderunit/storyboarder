@@ -588,9 +588,9 @@ const loadBoardUI = async () => {
     // save progress image
     if(isRecording) {
       let snapshotCanvases = [
-        storyboarderSketchPane.sketchPane.getLayerCanvas(0),
-        storyboarderSketchPane.sketchPane.getLayerCanvas(1),
-        storyboarderSketchPane.sketchPane.getLayerCanvas(3),
+        storyboarderSketchPane.getLayerCanvas(0),
+        storyboarderSketchPane.getLayerCanvas(1),
+        storyboarderSketchPane.getLayerCanvas(3),
       ]
       canvasRecorder.capture(snapshotCanvases)
       if(!isRecordingStarted) isRecordingStarted = true
@@ -1183,9 +1183,9 @@ const loadBoardUI = async () => {
         notifications.notify({message: "Congratulations! Generating your timelapse! This can take a minute.", timing: 5})
 
         canvasRecorder.capture([
-          storyboarderSketchPane.sketchPane.getLayerCanvas(0),
-          storyboarderSketchPane.sketchPane.getLayerCanvas(1),
-          storyboarderSketchPane.sketchPane.getLayerCanvas(3)
+          storyboarderSketchPane.getLayerCanvas(0),
+          storyboarderSketchPane.getLayerCanvas(1),
+          storyboarderSketchPane.getLayerCanvas(3)
         ], {force: true})
         setTimeout(()=>{
           canvasRecorder.stop()
@@ -1327,6 +1327,7 @@ const loadBoardUI = async () => {
 
       if (!img) return
 
+      // TODO
       storyboarderSketchPane.replaceLayer(LAYER_INDEX_REFERENCE, img)
 
       // force a file save and thumbnail update
@@ -2001,7 +2002,7 @@ let saveImageFile = async () => {
       shouldSaveThumbnail = true
       clearTimeout(imageFileDirtyTimer)
 
-      let canvas = storyboarderSketchPane.sketchPane.getLayerCanvas(index)
+      let canvas = storyboarderSketchPane.getLayerCanvas(index)
       let imageFilePath = path.join(boardPath, 'images', filename)
 
       let imageData = canvas
@@ -2626,9 +2627,9 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
   if(isRecording && isRecordingStarted) {
     // make sure we capture the last frame
     canvasRecorder.capture([
-      storyboarderSketchPane.sketchPane.getLayerCanvas(0),
-      storyboarderSketchPane.sketchPane.getLayerCanvas(1),
-      storyboarderSketchPane.sketchPane.getLayerCanvas(3)
+      storyboarderSketchPane.getLayerCanvas(0),
+      storyboarderSketchPane.getLayerCanvas(1),
+      storyboarderSketchPane.getLayerCanvas(3)
     ], {force: true, duration: 500})
   }
 
@@ -2966,11 +2967,10 @@ let previousScene = ()=> {
 }
 
 let updateSketchPaneBoard = () => {
-  return Promise.resolve()
+  console.log('updateSketchPaneBoard')
   return new Promise((resolve, reject) => {
     // get current board
     let board = boardData.boards[currentBoard]
-    
 
     // always load the main layer
     let layersData = [
@@ -3015,7 +3015,6 @@ let updateSketchPaneBoard = () => {
       }))
     }
 
-
     Promise.all(loaders).then(result => {
       const visibleLayerIndexes = [0, 1, 3] // HACK hardcoded
 
@@ -3031,40 +3030,43 @@ let updateSketchPaneBoard = () => {
       for (let index of visibleLayerIndexes) {
         let image = layersToDrawByIndex[index]
 
-        let context = storyboarderSketchPane.sketchPane.getLayerCanvas(index).getContext('2d')
+        let context = storyboarderSketchPane.getLayerCanvas(index).getContext('2d')
         context.globalAlpha = 1
 
         // do we have an image for this particular layer index?
         if (image) {
           // console.log('rendering layer index:', index)
-          storyboarderSketchPane.sketchPane.clearLayer(index)
-          context.drawImage(image, 0, 0)
+          storyboarderSketchPane.sketchPane.replaceLayer(image, index)
         } else {
           // console.log('clearing layer index:', index)
-          storyboarderSketchPane.sketchPane.clearLayer(index)
+          storyboarderSketchPane.clearLayer(index)
         }
       }
 
-      storyboarderSketchPane.setIsLocked( !util.isUndefined(board.link) )
+      storyboarderSketchPane.setIsLocked(!util.isUndefined(board.link))
 
       // load opacity from data, if data exists
-      let referenceOpacity =  board.layers && 
-                              board.layers[LAYER_NAME_BY_INDEX[LAYER_INDEX_REFERENCE]] && 
-                              typeof board.layers[LAYER_NAME_BY_INDEX[LAYER_INDEX_REFERENCE]].opacity !== 'undefined'
+      let referenceOpacity = board.layers &&
+                             board.layers[LAYER_NAME_BY_INDEX[LAYER_INDEX_REFERENCE]] &&
+                             typeof board.layers[LAYER_NAME_BY_INDEX[LAYER_INDEX_REFERENCE]].opacity !== 'undefined'
         ? board.layers[LAYER_NAME_BY_INDEX[LAYER_INDEX_REFERENCE]].opacity
         : exporterCommon.DEFAULT_REFERENCE_LAYER_OPACITY
-      layersEditor.setReferenceOpacity(referenceOpacity)
+      // TODO
+      // layersEditor.setReferenceOpacity(referenceOpacity)
 
-      onionSkin.reset()
-      if (onionSkin.getEnabled()) {
-        onionSkin.load(
-          boardData.boards[currentBoard],
-          boardData.boards[currentBoard - 1],
-          boardData.boards[currentBoard + 1]
-        ).then(() => resolve()).catch(err => console.warn(err))
-      } else {
-        resolve()
-      }
+      resolve()
+
+      // TODO fix onionSkin
+      // onionSkin.reset()
+      // if (onionSkin.getEnabled()) {
+      //   onionSkin.load(
+      //     boardData.boards[currentBoard],
+      //     boardData.boards[currentBoard - 1],
+      //     boardData.boards[currentBoard + 1]
+      //   ).then(() => resolve()).catch(err => console.warn(err))
+      // } else {
+      //   resolve()
+      // }
     }).catch(err => console.warn(err))
   })
 }
@@ -3927,9 +3929,9 @@ window.onkeydown = (e)=> {
     // case 82:
     //   if(isRecording) {
     //     let snapshotCanvases = [
-    //       storyboarderSketchPane.sketchPane.getLayerCanvas(0),
-    //       storyboarderSketchPane.sketchPane.getLayerCanvas(1),
-    //       storyboarderSketchPane.sketchPane.getLayerCanvas(3)
+    //       storyboarderSketchPane.getLayerCanvas(0),
+    //       storyboarderSketchPane.getLayerCanvas(1),
+    //       storyboarderSketchPane.getLayerCanvas(3)
     //     ]
     //     // make sure we capture the last frame
     //     canvasRecorder.capture(snapshotCanvases, {force: true})
@@ -5291,7 +5293,7 @@ const applyUndoStateForImage = (state) => {
   sequence = sequence.then(() => {
     for (let layerData of state.layers) {
       // get the context of the undo-able layer
-      let context = storyboarderSketchPane.sketchPane.getLayerCanvas(layerData.index).getContext('2d')
+      let context = storyboarderSketchPane.getLayerCanvas(layerData.index).getContext('2d')
 
       // draw saved canvas onto layer
       context.save()

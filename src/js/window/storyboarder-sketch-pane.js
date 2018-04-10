@@ -668,11 +668,10 @@ class StoryboarderSketchPane extends EventEmitter {
     return true
   }
 
+  // TODO do we need this?
   replaceLayer (index, image) {
     this.emit('addToUndoStack')
-    this.sketchPane.clearLayer(index)
-    let context = this.sketchPane.getLayerContext(index)
-    context.drawImage(image, 0, 0)
+    this.sketchPane.replaceLayer(image, index)
     this.emit('markDirty', [index])
   }
 
@@ -803,7 +802,15 @@ class StoryboarderSketchPane extends EventEmitter {
       this.setBrushTool(this.toolbar.getBrushOptions().kind, this.toolbar.getBrushOptions())
     }
   }
-  
+
+  // compatibility methods
+  getLayerCanvas (index) {
+    return this.sketchPane.getLayerCanvas(index)
+  }
+  clearLayer (index) {
+    this.sketchPane.clearLayer(index)
+  }
+
   getCanvasImageSources () {
     return [
       // reference
