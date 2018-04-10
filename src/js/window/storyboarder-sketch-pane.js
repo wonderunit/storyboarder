@@ -828,8 +828,8 @@ class StoryboarderSketchPane extends EventEmitter {
   setLayerOpacity (index, opacity) {
     return this.sketchPane.setLayerOpacity(index, opacity)
   }
-  exportLayer (index) {
-    return this.sketchPane.exportLayer(index, 'base64')
+  exportLayer (index, format = 'base64') {
+    return this.sketchPane.exportLayer(index, format)
   }
   //
   //

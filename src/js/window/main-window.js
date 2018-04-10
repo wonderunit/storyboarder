@@ -2003,9 +2003,7 @@ let saveImageFile = async () => {
       clearTimeout(imageFileDirtyTimer)
 
       let imageFilePath = path.join(boardPath, 'images', filename)
-      let imageData = storyboarderSketchPane
-        .exportLayer(index)
-        .replace(/^data:image\/\w+;base64,/, '')
+      let imageData = storyboarderSketchPane.exportLayer(index, 'base64')
 
       try {
         fs.writeFileSync(imageFilePath, imageData, 'base64')
