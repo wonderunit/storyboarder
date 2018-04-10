@@ -43,7 +43,7 @@ const initialState = {
       palette: []
     }
   },
-  activeTool: 'light-pencil'
+  activeTool: undefined
 }
 
 const toolbar = (state = initialState, action) => {

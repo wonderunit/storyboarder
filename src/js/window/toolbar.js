@@ -169,6 +169,7 @@ class Toolbar extends EventEmitter {
     if (newState.brush) {
       // the brush changed
       this.emit('brush', this.state.brush, this.getBrushOptions())
+      this.store.dispatch({ type: 'TOOLBAR_TOOL_CHANGE', payload: this.state.brush })
     }
     this.render()
   }
