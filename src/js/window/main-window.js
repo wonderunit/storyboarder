@@ -586,14 +586,14 @@ const loadBoardUI = async () => {
     markImageFileDirty(layerIndices)
 
     // save progress image
-    if(isRecording) {
+    if (isRecording) {
       let snapshotCanvases = [
         storyboarderSketchPane.getLayerCanvas(0),
         storyboarderSketchPane.getLayerCanvas(1),
-        storyboarderSketchPane.getLayerCanvas(3),
+        storyboarderSketchPane.getLayerCanvas(3)
       ]
       canvasRecorder.capture(snapshotCanvases)
-      if(!isRecordingStarted) isRecordingStarted = true
+      if (!isRecordingStarted) isRecordingStarted = true
     }
   })
   storyboarderSketchPane.on('pointerdown', () => {
