@@ -3035,7 +3035,7 @@ let updateSketchPaneBoard = () => {
         // do we have an image for this particular layer index?
         if (image) {
           // console.log('rendering layer index:', index)
-          storyboarderSketchPane.sketchPane.replaceLayer(image, index)
+          storyboarderSketchPane.sketchPane.replaceLayer(index, image)
         } else {
           // console.log('clearing layer index:', index)
           storyboarderSketchPane.clearLayer(index)

@@ -671,7 +671,7 @@ class StoryboarderSketchPane extends EventEmitter {
   // TODO do we need this?
   replaceLayer (index, image) {
     this.emit('addToUndoStack')
-    this.sketchPane.replaceLayer(image, index)
+    this.sketchPane.replaceLayer(index, image)
     this.emit('markDirty', [index])
   }
 
