@@ -812,7 +812,10 @@ class StoryboarderSketchPane extends EventEmitter {
     }
   }
 
+  //
+  //
   // compatibility methods
+  //
   getLayerCanvas (index) {
     return this.sketchPane.getLayerCanvas(index)
   }
@@ -825,6 +828,12 @@ class StoryboarderSketchPane extends EventEmitter {
   setLayerOpacity (index, opacity) {
     return this.sketchPane.setLayerOpacity(index, opacity)
   }
+  exportLayer (index) {
+    return this.sketchPane.exportLayer(index, 'base64')
+  }
+  //
+  //
+  //
 
   getCanvasImageSources () {
     return [
