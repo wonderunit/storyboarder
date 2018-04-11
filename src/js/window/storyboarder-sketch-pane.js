@@ -100,10 +100,12 @@ class StoryboarderSketchPane extends EventEmitter {
     this.el.appendChild(this.containerEl)
 
     // sketchpane
-    this.sketchPane = new SketchPane({ backgroundColor: 0x333333 })
+    this.sketchPane = new SketchPane({
+      imageWidth: this.canvasSize[0],
+      imageHeight: this.canvasSize[1],
+      backgroundColor: 0x333333,
+    })
     this.sketchPaneDOMElement = this.sketchPane.getDOMElement()
-
-    this.sketchPane.setImageSize(...this.canvasSize)
     this.resize()
 
     // measure and update cached size data
@@ -113,7 +115,9 @@ class StoryboarderSketchPane extends EventEmitter {
     // this.renderContainerSize()
 
     // TODO package brushes in the build
-    await this.sketchPane.loadBrushes({ brushImagePath: '../node_modules/alchemancy/src/img/brush' })
+    await this.sketchPane.loadBrushes({
+      brushImagePath: '../node_modules/alchemancy/src/img/brush'
+    })
 
     // this.sketchPane.on('onbeforeup', this.onSketchPaneBeforeUp.bind(this)) // MIGRATE
     // this.sketchPane.on('onup', this.onSketchPaneOnUp.bind(this)) // MIGRATE
@@ -125,7 +129,7 @@ class StoryboarderSketchPane extends EventEmitter {
     this.sketchPane.newLayer() // notes
     this.sketchPane.newLayer() // guides
     this.sketchPane.newLayer() // composite
-    this.sketchPane.selectLayer(1)
+    this.sketchPane.setCurrentLayerIndex(1)
 
     observeStore(this.store, state => state.toolbar.activeTool, activeTool => {
       const state = this.store.getState()
@@ -149,8 +153,8 @@ class StoryboarderSketchPane extends EventEmitter {
     window.addEventListener('resize', e => this.resize())
 
     window.addEventListener('pointerdown', e => {
-      this.sketchPane.down(e)
       this.emit('addToUndoStack', this.sketchPane.getActiveLayerIndices())
+      this.sketchPane.down(e)
     })
     window.addEventListener('pointermove', e => {
       this.sketchPane.move(e)
@@ -482,7 +486,7 @@ class StoryboarderSketchPane extends EventEmitter {
   drawComposite (layerIndices, destinationContext) {
     for (let index of layerIndices) {
       let canvas = this.sketchPane.getLayerCanvas(index)
-      
+
       destinationContext.save()
       destinationContext.globalAlpha = this.getLayerOpacity(index)
       destinationContext.drawImage(canvas, 0, 0)
