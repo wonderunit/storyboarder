@@ -1147,14 +1147,15 @@ const loadBoardUI = async () => {
   sfx.init()
 
   const enableDrawingSoundEffects = prefsModule.getPrefs('sound effects')['enableDrawingSoundEffects']
-  if(enableDrawingSoundEffects) {
-    storyboarderSketchPane.on('pointerdown', Sonifier.start)
-    storyboarderSketchPane.on('pointermove', Sonifier.trigger)
-    storyboarderSketchPane.sketchPane.on('onup', Sonifier.stop)
-    Sonifier.init(storyboarderSketchPane.sketchPane.getCanvasSize())
-    window.addEventListener('resize', () => {
-      Sonifier.setSize(storyboarderSketchPane.sketchPane.getCanvasSize())
-    })
+  if (enableDrawingSoundEffects) {
+    // TODO
+    // storyboarderSketchPane.on('pointerdown', Sonifier.start)
+    // storyboarderSketchPane.on('pointermove', Sonifier.trigger)
+    // storyboarderSketchPane.sketchPane.on('onup', Sonifier.stop)
+    // Sonifier.init(storyboarderSketchPane.sketchPane.getCanvasSize())
+    // window.addEventListener('resize', () => {
+    //   Sonifier.setSize(storyboarderSketchPane.sketchPane.getCanvasSize())
+    // })
   }
 
   let onUndoStackAction = (state) => {
