@@ -839,6 +839,7 @@ const loadBoardUI = async () => {
     }
   })
 
+  // TODO
   toolbar = new Toolbar(store, document.getElementById("toolbar"))
   toolbar.on('brush', (kind, options) => {
     toolbar.emit('cancelTransform')
@@ -861,28 +862,29 @@ const loadBoardUI = async () => {
   })
 
 
-  toolbar.on('move', () => {
-    if (storyboarderSketchPane.isPointerDown) return
-      sfx.playEffect('metal')
-    toolbar.setState({ transformMode: 'move' })
-    storyboarderSketchPane.moveContents()
-  })
-  toolbar.on('scale', () => {
-    if (storyboarderSketchPane.isPointerDown) return
-      sfx.playEffect('metal')
-    toolbar.setState({ transformMode: 'scale' })
-    storyboarderSketchPane.scaleContents()
-  })
-  toolbar.on('cancelTransform', () => {
-    // FIXME prevent this case from happening
-    if (storyboarderSketchPane.isPointerDown) {
-      console.warn('pointer is already down')
-      return
-    }
+          // toolbar.on('move', () => {
+          //   if (storyboarderSketchPane.isPointerDown) return
+          //     sfx.playEffect('metal')
+          //   toolbar.setState({ transformMode: 'move' })
+          //   storyboarderSketchPane.moveContents()
+          // })
+          // toolbar.on('scale', () => {
+          //   if (storyboarderSketchPane.isPointerDown) return
+          //     sfx.playEffect('metal')
+          //   toolbar.setState({ transformMode: 'scale' })
+          //   storyboarderSketchPane.scaleContents()
+          // })
+          // toolbar.on('cancelTransform', () => {
+          //   // FIXME prevent this case from happening
+          //   if (storyboarderSketchPane.isPointerDown) {
+          //     console.warn('pointer is already down')
+          //     return
+          //   }
+          // 
+          //   toolbar.setState({ transformMode: null })
+          //   storyboarderSketchPane.cancelTransform()
+          // })
 
-    toolbar.setState({ transformMode: null })
-    storyboarderSketchPane.cancelTransform()
-  })
   // sketchPane.on('moveMode', enabled => {
   //   if (enabled) {
   //     toolbar.setState({ transformMode: 'move' })
