@@ -152,17 +152,29 @@ class StoryboarderSketchPane extends EventEmitter {
     // ro.observe(this.containerEl)
     window.addEventListener('resize', e => this.resize())
 
+    this.sketchPane.onStrokeBefore = strokeState =>
+      this.emit('addToUndoStack', strokeState.layerIndices)
+
+    this.sketchPane.onStrokeAfter = strokeState =>
+      this.emit('markDirty', strokeState.layerIndices)
+
     window.addEventListener('pointerdown', e => {
-      this.emit('addToUndoStack', this.sketchPane.getActiveLayerIndices())
-      this.sketchPane.down(e)
+      // stroke options
+      // via https://developer.mozilla.org/en-US/docs/Web/API/Pointer_events#Determining_button_states
+      let options = (e.buttons === 32 || e.altKey)
+        // + shift to erase multiple layers
+        ? e.shiftKey
+          ? { erase: [1, 2, 3] }
+          : { erase: [this.sketchPane.getCurrentLayerIndex()] }
+        : {}
+
+      this.sketchPane.down(e, options)
     })
     window.addEventListener('pointermove', e => {
       this.sketchPane.move(e)
     })
     window.addEventListener('pointerup', e => {
-      let activeLayerIndices = this.sketchPane.getActiveLayerIndices()
       this.sketchPane.up(e)
-      this.emit('markDirty', activeLayerIndices)
     })
 
 
@@ -834,6 +846,13 @@ class StoryboarderSketchPane extends EventEmitter {
   }
   exportLayer (index, format = 'base64') {
     return this.sketchPane.exportLayer(index, format)
+  }
+  // TODO forward to SketchPane methods
+  getLayerDirty (index) {
+    return this.sketchPane.layers[index].dirty
+  }
+  clearLayerDirty (index) {
+    this.sketchPane.layers[index].dirty = false
   }
   //
   //
