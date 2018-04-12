@@ -200,14 +200,16 @@ class StoryboarderSketchPane extends EventEmitter {
     // this.sketchPaneDOMElement.addEventListener('pointerover', this.canvasPointerOver)
     // this.sketchPaneDOMElement.addEventListener('pointerout', this.canvasPointerOut)
 
-    window.addEventListener('keydown', this.onKeyDown)
-    window.addEventListener('keyup', this.onKeyUp)
+        // window.addEventListener('keydown', this.onKeyDown)
+        // window.addEventListener('keyup', this.onKeyUp)
 
     this.onFrame = this.onFrame.bind(this)
     requestAnimationFrame(this.onFrame)
   }
 
   setStrategy (Strategy) {
+    console.log('StoryboarderSketchPane#setStrategy')
+    return
     if (this.strategy instanceof Strategy) return
 
     if (this.strategy instanceof LockedStrategy) {
@@ -494,6 +496,7 @@ class StoryboarderSketchPane extends EventEmitter {
     this.sketchPane.removeListener('onbeforeup', this.stopMultiLayerOperation)
   }
 
+  // TODO
   // draw composite from layers
   drawComposite (layerIndices, destinationContext) {
     for (let index of layerIndices) {
