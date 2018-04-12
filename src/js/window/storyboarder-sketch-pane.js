@@ -164,7 +164,7 @@ class StoryboarderSketchPane extends EventEmitter {
       let options = (e.buttons === 32 || e.altKey)
         // + shift to erase multiple layers
         ? e.shiftKey
-          ? { erase: [1, 2, 3] }
+          ? { erase: [0, 1, 3] } // HACK hardcoded
           : { erase: [this.sketchPane.getCurrentLayerIndex()] }
         : {}
 
