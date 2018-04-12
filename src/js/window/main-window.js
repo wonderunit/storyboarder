@@ -113,13 +113,14 @@ const ALLOWED_AUDIO_FILE_EXTENSIONS = [
   'mp4'
 ]
 
-let layerStatus = {
-  [LAYER_INDEX_REFERENCE]:  { dirty: false },
-  [LAYER_INDEX_MAIN]:       { dirty: false },
-  [LAYER_INDEX_NOTES]:      { dirty: false },
+// let layerStatus = {
+//   [LAYER_INDEX_REFERENCE]:  { dirty: false },
+//   [LAYER_INDEX_MAIN]:       { dirty: false },
+//   [LAYER_INDEX_NOTES]:      { dirty: false },
+// 
+//   [LAYER_INDEX_COMPOSITE]:  { dirty: false } // TODO do we need this?
+// }
 
-  [LAYER_INDEX_COMPOSITE]:  { dirty: false } // TODO do we need this?
-}
 let imageFileDirtyTimer
 let isSavingImageFile = false // lock for saveImageFile
 
@@ -1917,10 +1918,6 @@ let saveBoardFile = (opt = { force: false }) => {
 }
 
 let markImageFileDirty = layerIndices => {
-  for (let index of layerIndices) {
-    layerStatus[index].dirty = true
-  }
-
   clearTimeout(imageFileDirtyTimer)
   imageFileDirtyTimer = setTimeout(saveImageFile, 5000)
 }
@@ -1999,7 +1996,7 @@ let saveImageFile = async () => {
 
   let numSaved = 0
   for (let [index, layerName, filename] of layersData) {
-    if (layerStatus[index].dirty) {
+    if (storyboarderSketchPane.getLayerDirty(index)) {
       shouldSaveThumbnail = true
       clearTimeout(imageFileDirtyTimer)
 
@@ -2031,7 +2028,7 @@ let saveImageFile = async () => {
           }
         }
 
-        layerStatus[index].dirty = false
+        storyboarderSketchPane.clearLayerDirty(index)
         numSaved++
         console.log('\tsaved', layerName, 'to', filename)
       } catch (err) {
