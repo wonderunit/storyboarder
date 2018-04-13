@@ -1162,12 +1162,11 @@ const loadBoardUI = async () => {
   }
 
   let onUndoStackAction = (state) => {
-    if (state.type == 'image') {
+    console.log('onUndoStackAction', state.type, state)
+    if (state.type === 'image') {
       applyUndoStateForImage(state)
-    } else if (state.type == 'scene') {
-      saveImageFile().then(() => { // needed for redo
-        applyUndoStateForScene(state)
-      })
+    } else if (state.type === 'scene') {
+      applyUndoStateForScene(state)
     }
   }
   undoStack.on('undo', onUndoStackAction)
@@ -5208,32 +5207,32 @@ const runRandomizedNotifications = (messages) => {
 
 const getSceneNumberBySceneId = (sceneId) => {
   if (!scriptData) return null
-  let orderedScenes = scriptData.filter(data => data.type == 'scene')
-  return orderedScenes.findIndex(scene => scene.scene_id == sceneId)
+  let orderedScenes = scriptData.filter(data => data.type === 'scene')
+  return orderedScenes.findIndex(scene => scene.scene_id === sceneId)
 }
 
 // returns the scene object (if available) or null
 const getSceneObjectByIndex = (index) =>
-  scriptData && scriptData.find(data => data.type == 'scene' && data.scene_number == index + 1)
+  scriptData && scriptData.find(data => data.type === 'scene' && data.scene_number === index + 1)
 
 const storeUndoStateForScene = (isBefore) => {
-  let scene = getSceneObjectByIndex(currentScene) 
+  let scene = getSceneObjectByIndex(currentScene)
   // sceneId is allowed to be null (for a single storyboard with no script)
   let sceneId = scene && scene.scene_id
-  undoStack.addSceneData(isBefore, { sceneId : sceneId, boardData: util.stringifyClone(boardData) })
+  undoStack.addSceneData(isBefore, { sceneId: sceneId, boardData: util.stringifyClone(boardData) })
 }
-const applyUndoStateForScene = (state) => {
-  if (state.type != 'scene') return // only `scene`s for now
+const applyUndoStateForScene = async (state) => {
+  await saveImageFile() // needed for redo
+  if (state.type !== 'scene') return // only `scene`s for now
 
   let currSceneObj = getSceneObjectByIndex(currentScene)
   if (currSceneObj && currSceneObj.scene_id != state.sceneId) {
     // go to that scene
     saveBoardFile()
     currentScene = getSceneNumberBySceneId(state.sceneId)
-    loadScene(currentScene).then(() => {
-      verifyScene()
-      renderScript()
-    })
+    await loadScene(currentScene)
+    verifyScene()
+    renderScript()
   }
   boardData = state.sceneData
   renderScene()
@@ -5247,8 +5246,9 @@ const storeUndoStateForImage = (isBefore, layerIndices = null) => {
   if (!layerIndices) layerIndices = [storyboarderSketchPane.sketchPane.getCurrentLayerIndex()]
 
   let layers = layerIndices.map(index => {
-    // backup to an offscreen canvas
-    let source = storyboarderSketchPane.getSnapshotAsCanvas(index)
+    // backup to an image
+    let source = new window.Image()
+    source.src = 'data:image/png;base64,' + storyboarderSketchPane.exportLayer(index)
     return {
       index,
       source
@@ -5263,49 +5263,33 @@ const storeUndoStateForImage = (isBefore, layerIndices = null) => {
   })
 }
 
-const applyUndoStateForImage = (state) => {
+const applyUndoStateForImage = async (state) => {
   // if required, go to the scene first
   let currSceneObj = getSceneObjectByIndex(currentScene)
-  if (currSceneObj && currSceneObj.scene_id != state.sceneId) {
+  if (currSceneObj && currSceneObj.scene_id !== state.sceneId) {
     saveImageFile()
     // go to the requested scene
     currentScene = getSceneNumberBySceneId(state.sceneId)
-    loadScene(currentScene).then(() => {
-      verifyScene()
-      renderScript()
-    })
+    await loadScene(currentScene)
+    verifyScene()
+    renderScript()
   }
 
-  let sequence = Promise.resolve()
-
-  // wait until save completes
-  sequence = sequence.then(() => saveImageFile())
+  await saveImageFile()
 
   // if required, go to the board first
-  if (currentBoard != state.boardIndex) {
-    sequence = sequence.then(() => gotoBoard(state.boardIndex))
+  if (currentBoard !== state.boardIndex) {
+    await gotoBoard(state.boardIndex)
   }
 
-  sequence = sequence.then(() => {
-    for (let layerData of state.layers) {
-      // get the context of the undo-able layer
-      let context = storyboarderSketchPane.getLayerCanvas(layerData.index).getContext('2d')
+  for (let layerData of state.layers) {
+    // NOTE doesn't trigger events
+    storyboarderSketchPane.sketchPane.replaceLayer(layerData.index, layerData.source)
+  }
 
-      // draw saved canvas onto layer
-      context.save()
-      context.globalAlpha = 1
-      context.clearRect(0, 0, context.canvas.width, context.canvas.height)
-      context.drawImage(layerData.source, 0, 0)
-      context.restore()
-
-      markImageFileDirty([layerData.index])
-    }
-
-  })
-  .then(() => saveThumbnailFile(state.boardIndex))
-  .then(index => updateThumbnailDisplayFromFile(index))
-  .then(() => toolbar.emit('cancelTransform'))
-  .catch(e => console.error(e))
+  let index = await saveThumbnailFile(state.boardIndex)
+  await updateThumbnailDisplayFromFile(index)
+  toolbar.emit('cancelTransform')
 }
 
 const createSizedContext = size => {
