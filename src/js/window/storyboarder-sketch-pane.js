@@ -686,10 +686,8 @@ class StoryboarderSketchPane extends EventEmitter {
   }
 
   isEmpty () {
-
-    let layerIndices = this.visibleLayersIndices
-    for (let index of layerIndices) {
-      if (!this.sketchPane.isEmptyLayer(index)) {
+    for (let index of this.visibleLayersIndices) {
+      if (!this.sketchPane.isLayerEmpty(index)) {
         return false
       }
     }
