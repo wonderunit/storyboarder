@@ -5226,7 +5226,7 @@ const applyUndoStateForScene = async (state) => {
   if (state.type !== 'scene') return // only `scene`s for now
 
   let currSceneObj = getSceneObjectByIndex(currentScene)
-  if (currSceneObj && currSceneObj.scene_id != state.sceneId) {
+  if (currSceneObj && currSceneObj.scene_id !== state.sceneId) {
     // go to that scene
     saveBoardFile()
     currentScene = getSceneNumberBySceneId(state.sceneId)
