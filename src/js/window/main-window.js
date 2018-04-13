@@ -524,6 +524,8 @@ const loadBoardUI = async () => {
   )
   await storyboarderSketchPane.load()
 
+  // debugging
+  window.storyboarderSketchPane = storyboarderSketchPane
 
   window.addEventListener('resize', () => {
     resize()
