@@ -2344,7 +2344,7 @@ const renderThumbnailToNewCanvas = (index, options = { forceReadFromFiles: false
   let canvas = context.canvas
 
   let canvasImageSources
-  if (!options.forceReadFromFiles && index == currentBoard) {
+  if (!options.forceReadFromFiles && index === currentBoard) {
     // grab from memory
     canvasImageSources = storyboarderSketchPane.getCanvasImageSources()
     // render to context

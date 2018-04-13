@@ -860,23 +860,19 @@ class StoryboarderSketchPane extends EventEmitter {
   //
 
   getCanvasImageSources () {
-    return [
-      // reference
-      {
-        canvasImageSource: this.sketchPane.getLayerCanvas(0),
-        opacity: this.getLayerOpacity(0)
-      },
-      // main
-      {
-        canvasImageSource: this.sketchPane.getLayerCanvas(1),
-        opacity: this.getLayerOpacity(1)
-      },
-      // notes
-      {
-        canvasImageSource: this.sketchPane.getLayerCanvas(3),
-        opacity: this.getLayerOpacity(3)
+    // for reference, main, and notes layers
+    return this.visibleLayersIndices.map(index => {
+      // construct Image from pixel data
+      let canvasImageSource = new window.Image()
+      canvasImageSource.src = 'data:image/png;base64,' + this.exportLayer(index)
+
+      let opacity = this.getLayerOpacity(index)
+
+      return {
+        canvasImageSource,
+        opacity
       }
-    ]
+    })
   }
 }
 
