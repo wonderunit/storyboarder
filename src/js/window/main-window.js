@@ -2585,7 +2585,8 @@ let duplicateBoard = async () => {
 const clearLayers = shouldEraseCurrentLayer => {
   if (storyboarderSketchPane.preventIfLocked()) return
 
-  if (toolbar.state.brush !== 'eraser' && (isCommandPressed('drawing:clear-current-layer-modifier') || shouldEraseCurrentLayer)) {
+  if (store.getState().toolbar.activeTool !== 'eraser' &&
+      (isCommandPressed('drawing:clear-current-layer-modifier') || shouldEraseCurrentLayer)) {
     storyboarderSketchPane.clearLayers([storyboarderSketchPane.sketchPane.getCurrentLayerIndex()])
     saveImageFile()
     sfx.playEffect('trash')
