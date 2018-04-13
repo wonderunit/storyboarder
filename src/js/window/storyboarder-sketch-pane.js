@@ -851,7 +851,6 @@ class StoryboarderSketchPane extends EventEmitter {
     return this.sketchPane.exportLayer(index, format)
   }
 
-  // TODO forward to SketchPane methods. don't reach into .layers directly
   getLayerDirty (index) {
     return this.sketchPane.getLayerDirty(index)
   }
