@@ -5285,8 +5285,10 @@ const applyUndoStateForImage = async (state) => {
   }
 
   for (let layerData of state.layers) {
-    // NOTE doesn't trigger events
+    // NOTE here we intentionally avoid triggering storyboarderSketchPane's `addToUndoStack` event
+    //      by calling sketchPane replaceLayer directly
     storyboarderSketchPane.sketchPane.replaceLayer(layerData.index, layerData.source)
+    markImageFileDirty([layerData.index])
   }
 
   let index = await saveThumbnailFile(state.boardIndex)
