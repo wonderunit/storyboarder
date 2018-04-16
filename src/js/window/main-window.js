@@ -742,6 +742,13 @@ let loadBoardUI = () => {
       document.querySelector('#board-metadata .scroll-indicator').style.display = 'block'
     }
   })
+  document.querySelector('#board-metadata .scroll-indicator').addEventListener('click', e => {
+    let el = document.querySelector('.board-metadata-container')
+    el.scrollTo({
+      top: el.scrollHeight,
+      behavior: 'smooth'
+    })
+  })
 
   for (var item of document.querySelectorAll('.board-metadata-container input, .board-metadata-container textarea')) {
     item.addEventListener('pointerdown', (e)=>{
