@@ -737,9 +737,9 @@ let loadBoardUI = () => {
   // toggle scroll-indicator visibility based on scroll position
   document.querySelector('.board-metadata-container').addEventListener('scroll', e => {
     if (e.target.offsetHeight + e.target.scrollTop === e.target.scrollHeight) {
-      document.querySelector('#board-metadata .scroll-indicator').style.display = 'none'
+      document.querySelector('#board-metadata .scroll-indicator').style.opacity = 0
     } else {
-      document.querySelector('#board-metadata .scroll-indicator').style.display = 'block'
+      document.querySelector('#board-metadata .scroll-indicator').style.opacity = 1.0
     }
   })
   document.querySelector('#board-metadata .scroll-indicator').addEventListener('click', e => {

@@ -416,6 +416,8 @@ body::-webkit-scrollbar {
   display: block;
   --color1: #888;
   z-index: 1;
+  opacity: 1.0;
+  transition: opacity .1s linear;
 }
 
 #board-metadata .flatbutton {
