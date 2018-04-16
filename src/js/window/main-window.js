@@ -5894,6 +5894,12 @@ ipcRenderer.on('toggleAudition', value => {
   audioPlayback.toggleAudition()
 })
 
+ipcRenderer.on('revealShotGenerator', value => {
+  document.querySelector('#shot-generator-container').scrollIntoView({
+    behavior: 'smooth'
+  })
+})
+
 const log = opt => ipcRenderer.send('log', opt)
 
 // HACK to support Cmd+R reloading

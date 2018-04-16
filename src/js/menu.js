@@ -522,6 +522,12 @@ AppMenu.Tools = () => ({
       type: 'separator'
     },
     {
+      label: 'Shot Generator',
+      click (item, focusedWindow, event) {
+        ipcRenderer.send('revealShotGenerator')
+      }
+    },
+    {
       label: 'Edit in Photoshop',
       accelerator: keystrokeFor('menu:tools:edit-in-photoshop'),
       click (item, focusedWindow, event) {
