@@ -734,6 +734,14 @@ let loadBoardUI = () => {
     }
   })
 
+  // toggle scroll-indicator visibility based on scroll position
+  document.querySelector('.board-metadata-container').addEventListener('scroll', e => {
+    if (e.target.offsetHeight + e.target.scrollTop === e.target.scrollHeight) {
+      document.querySelector('#board-metadata .scroll-indicator').style.display = 'none'
+    } else {
+      document.querySelector('#board-metadata .scroll-indicator').style.display = 'block'
+    }
+  })
 
   for (var item of document.querySelectorAll('.board-metadata-container input, .board-metadata-container textarea')) {
     item.addEventListener('pointerdown', (e)=>{
