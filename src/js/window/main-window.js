@@ -1328,7 +1328,7 @@ let loadBoardUI = () => {
     })
   } else {
     notifications.notify({ message: 'For better performance on your machine, Shot Generator and Perspective Guide have been disabled.' })
-    document.querySelector('#shot-generator-container').remove()
+    StsSidebar.setEnabled(false)
   }
 
   sceneSettingsView.init({ fps: boardData.fps })
