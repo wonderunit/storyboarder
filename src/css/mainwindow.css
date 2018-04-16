@@ -407,6 +407,18 @@ body::-webkit-scrollbar {
   pointer-events: none;
 }
 
+#board-metadata .scroll-indicator {
+  width: 16px;
+  height: 8px;
+  position: absolute;
+  left: 50%;
+  margin-left: -8px;
+  bottom: 8px;
+  display: block;
+  --color1: #888;
+  pointer-events: none;
+  z-index: 1;
+}
 
 #board-metadata .flatbutton {
   background: #3a3a3a;

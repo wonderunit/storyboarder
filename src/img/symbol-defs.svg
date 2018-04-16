@@ -578,5 +578,8 @@
       <path style="fill: var(--color1, #ffffff)" d="M13.634,4.547V6.088a4.3,4.3,0,0,1,0,8.3v1.541A5.806,5.806,0,0,0,13.634,4.547Z"/>
       <path style="fill: var(--color1, #ffffff)" d="M13.634,7.329V9.39a1.834,1.834,0,0,1,0,1.7v2.061A3.338,3.338,0,0,0,13.634,7.329Z"/>
     </symbol>
+    <symbol id="icon-small-down-arrow" viewBox="0 0 32 8">
+      <polygon style="fill: var(--color1, #ffffff)" points="0 0 32 0 16 8"></polygon>
+    </symbol>
   </defs>
 </svg>
