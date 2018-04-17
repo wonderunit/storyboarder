@@ -760,10 +760,12 @@ class StoryboarderSketchPane extends EventEmitter {
     this.updatePointer()
   }
 
+  // TODO
   setBrushSize (size) {
-    this.brush.setSize(size)
-    this.sketchPane.setTool(this.brush)
-    this.updatePointer()
+    // this.brush.setSize(size)
+    // this.sketchPane.setTool(this.brush)
+    // this.updatePointer()
+    this.sketchPane.brushSize = size
   }
 
   setBrushColor (color) {
