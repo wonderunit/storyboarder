@@ -1164,7 +1164,6 @@ const loadBoardUI = async () => {
   }
 
   let onUndoStackAction = (state) => {
-    console.log('onUndoStackAction', state.type, state)
     if (state.type === 'image') {
       applyUndoStateForImage(state)
     } else if (state.type === 'scene') {
@@ -2339,19 +2338,21 @@ const getThumbnailSize = boardData => [Math.floor(60 * boardData.aspectRatio) * 
 const renderThumbnailToNewCanvas = (index, options = { forceReadFromFiles: false }) => {
   let size = getThumbnailSize(boardData)
 
-  let context = createSizedContext(size)
-  fillContext(context, 'white')
-  let canvas = context.canvas
-
-  let canvasImageSources
   if (!options.forceReadFromFiles && index === currentBoard) {
-    // grab from memory
-    canvasImageSources = storyboarderSketchPane.getCanvasImageSources()
-    // render to context
-    exporterCommon.flattenCanvasImageSourcesDataToContext(context, canvasImageSources, size)
+    // grab from current sketchpane (in memory)
+    let canvas = storyboarderSketchPane.sketchPane.utils.pixelsToCanvas(
+      storyboarderSketchPane.sketchPane.extractThumbnailPixels(size[0], size[1]),
+      size[0],
+      size[1]
+    )
+
     return Promise.resolve(canvas)
   } else {
     // grab from files
+    let context = createSizedContext(size)
+    // fillContext(context, 'white')
+    let canvas = context.canvas
+
     return exporterCommon.flattenBoardToCanvas(
       boardData.boards[index],
       canvas,
@@ -5248,9 +5249,13 @@ const storeUndoStateForImage = (isBefore, layerIndices = null) => {
   if (!layerIndices) layerIndices = [storyboarderSketchPane.sketchPane.getCurrentLayerIndex()]
 
   let layers = layerIndices.map(index => {
-    // backup to an image
-    let source = new window.Image()
-    source.src = 'data:image/png;base64,' + storyboarderSketchPane.exportLayer(index)
+    // backup to a canvas
+    const source = storyboarderSketchPane.sketchPane.utils.pixelsToCanvas(
+      storyboarderSketchPane.sketchPane.layers[index].pixels(),
+      storyboarderSketchPane.sketchPane.width,
+      storyboarderSketchPane.sketchPane.height
+    )
+
     return {
       index,
       source
@@ -5287,6 +5292,7 @@ const applyUndoStateForImage = async (state) => {
   for (let layerData of state.layers) {
     // NOTE here we intentionally avoid triggering storyboarderSketchPane's `addToUndoStack` event
     //      by calling sketchPane replaceLayer directly
+    // TODO have StoryboarderSketchPane handle this
     storyboarderSketchPane.sketchPane.replaceLayer(layerData.index, layerData.source)
     markImageFileDirty([layerData.index])
   }

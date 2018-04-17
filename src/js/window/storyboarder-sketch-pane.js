@@ -855,25 +855,6 @@ class StoryboarderSketchPane extends EventEmitter {
   clearLayerDirty (index) {
     this.sketchPane.clearLayerDirty(index)
   }
-  //
-  //
-  //
-
-  getCanvasImageSources () {
-    // for reference, main, and notes layers
-    return this.visibleLayersIndices.map(index => {
-      // construct Image from pixel data
-      let canvasImageSource = new window.Image()
-      canvasImageSource.src = 'data:image/png;base64,' + this.exportLayer(index)
-
-      let opacity = this.getLayerOpacity(index)
-
-      return {
-        canvasImageSource,
-        opacity
-      }
-    })
-  }
 }
 
 class DrawingStrategy {
