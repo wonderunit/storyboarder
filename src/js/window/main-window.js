@@ -581,6 +581,7 @@ const loadBoardUI = async () => {
   }
 
   storyboarderSketchPane.on('addToUndoStack', layerIndices => {
+    clearTimeout(drawIdleTimer)
     storeUndoStateForImage(true, layerIndices)
   })
 
@@ -588,26 +589,32 @@ const loadBoardUI = async () => {
     storeUndoStateForImage(false, layerIndices)
     markImageFileDirty(layerIndices)
 
-    // save progress image
-    if (isRecording) {
-      let snapshotCanvases = [
-        storyboarderSketchPane.getLayerCanvas(0),
-        storyboarderSketchPane.getLayerCanvas(1),
-        storyboarderSketchPane.getLayerCanvas(3)
-      ]
-      canvasRecorder.capture(snapshotCanvases)
-      if (!isRecordingStarted) isRecordingStarted = true
-    }
+    drawIdleTimer = setTimeout(onDrawIdle, 500)
+
+    // TODO track line mileage
+    addToLineMileage(storyboarderSketchPane.lineMileageCounter.get())
+
+    // TODO
+    // // save progress image
+    // if (isRecording) {
+    //   let snapshotCanvases = [
+    //     storyboarderSketchPane.getLayerCanvas(0),
+    //     storyboarderSketchPane.getLayerCanvas(1),
+    //     storyboarderSketchPane.getLayerCanvas(3)
+    //   ]
+    //   canvasRecorder.capture(snapshotCanvases)
+    //   if (!isRecordingStarted) isRecordingStarted = true
+    // }
   })
-  storyboarderSketchPane.on('pointerdown', () => {
-    clearTimeout(drawIdleTimer)
-  })
+  // storyboarderSketchPane.on('pointerdown', () => {
+  //   clearTimeout(drawIdleTimer)
+  // })
 
   // this is essentially pointerup
-  storyboarderSketchPane.on('lineMileage', value => {
-    addToLineMileage(value)
-    drawIdleTimer = setTimeout(onDrawIdle, 500)
-  })
+  // storyboarderSketchPane.on('lineMileage', value => {
+  //   addToLineMileage(value)
+  //   drawIdleTimer = setTimeout(onDrawIdle, 500)
+  // })
 
 
 
@@ -1945,8 +1952,6 @@ const addToLineMileage = value => {
 }
 
 const onDrawIdle = () => {
-  return
-
   clearTimeout(drawIdleTimer)
 
   // update the line mileage in two places
