@@ -115,8 +115,6 @@ class Toolbar extends EventEmitter {
     super()
 
     this.store = store
-    // listen for changes to the toolbar state
-    observeStore(this.store, state => state.toolbar, this.render.bind(this))
 
     // TODO PREFS ARE JANK AS FUCK. NEED TO REDO THIS
     let prefState
@@ -158,6 +156,9 @@ class Toolbar extends EventEmitter {
     this.onBrushSizePointerDown = this.onBrushSizePointerDown.bind(this)
 
     this.attachedCallback(this.el)
+
+    // listen for changes to the toolbar state
+    observeStore(this.store, state => state.toolbar, this.render.bind(this), true)
   }
 
   savePrefs () {
