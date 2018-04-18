@@ -140,7 +140,26 @@ class StoryboarderSketchPane extends EventEmitter {
         this.sketchPane.brushColor = tool.color
         this.sketchPane.brushSize = tool.size
         this.sketchPane.brushOpacity = tool.opacity
+
+        // TODO move to a reducer?
+        // if we're not erasing ...
+        if (toolbarState.activeTool !== 'eraser') {
+          // ... set the current layer based on the active tool
+          switch (toolbarState.activeTool) {
+            case 'light-pencil':
+              this.sketchPane.setCurrentLayerIndex(0) // HACK hardcoded
+              break
+            case 'note-pen':
+              this.sketchPane.setCurrentLayerIndex(3) // HACK hardcoded
+              break
+            default:
+              this.sketchPane.setCurrentLayerIndex(1) // HACK hardcoded
+              break
+          }
+        }
       }
+
+      // TODO update pointer?
     }
 
     const updateQuickErase = (e) => {
@@ -196,42 +215,33 @@ class StoryboarderSketchPane extends EventEmitter {
       // stroke options
       // via https://developer.mozilla.org/en-US/docs/Web/API/Pointer_events#Determining_button_states
       // is the user requesting to erase?
-      let options = (e.buttons === 32 || e.altKey)
-        // is the shift key down?
-        ? e.shiftKey
-          // ... then, erase multiple layers
-          ? { erase: [0, 1, 3] } // HACK hardcoded
-          // ... otherwise, only erase current layer
-          : { erase: [this.sketchPane.getCurrentLayerIndex()] }
-        // not erasing
-        : {}
+      let options = {}
 
-      if (options.erase) {
-        // switch to quick-erase mode
-        this.store.dispatch({ type: 'TOOLBAR_TOOL_QUICK_PUSH', payload: 'eraser', meta: { scope: 'local' } })
+      let toolbarState = this.store.getState().toolbar
+
+      if (!toolbarState.prevTool &&
+          toolbarState.activeTool === 'eraser') {
+        // regular erase
+        options.erase = [0, 1, 3]
+      } else {
+        options = (e.buttons === 32 || e.altKey)
+          // is the shift key down?
+          ? e.shiftKey
+            // ... then, erase multiple layers
+            ? { erase: [0, 1, 3] } // HACK hardcoded
+            // ... otherwise, only erase current layer
+            : { erase: [this.sketchPane.getCurrentLayerIndex()] }
+          // not erasing
+          : {}
+
+        if (options.erase) {
+          // switch to quick-erase mode
+          this.store.dispatch({ type: 'TOOLBAR_TOOL_QUICK_PUSH', payload: 'eraser', meta: { scope: 'local' } })
+        }
       }
 
       // sync sketchPane to the current toolbar state
       syncSketchPaneState(this.store.getState().toolbar)
-
-      // TODO move to a reducer?
-      // if we're not erasing ...
-      if (this.store.getState().toolbar.activeTool !== 'eraser') {
-        // ... set the current layer based on the active tool
-        switch (this.store.getState().toolbar.activeTool) {
-          case 'light-pencil':
-            this.sketchPane.setCurrentLayerIndex(0) // HACK hardcoded
-            break
-          case 'note-pen':
-            this.sketchPane.setCurrentLayerIndex(3) // HACK hardcoded
-            break
-          default:
-            this.sketchPane.setCurrentLayerIndex(1) // HACK hardcoded
-            break
-        }
-      }
-
-      // TODO update pointer?
 
       this.sketchPane.down(e, options)
     })
