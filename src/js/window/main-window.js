@@ -5534,7 +5534,7 @@ class TimelineModeControlView {
 
 ipcRenderer.on('setTool', (e, toolName) => {
   if (!textInputMode && !storyboarderSketchPane.getIsDrawingOrStabilizing()) {
-    store.dispatch({ type: 'TOOLBAR_TOOL_CHANGE', payload: toolName })
+    store.dispatch({ type: 'TOOLBAR_TOOL_CHANGE', payload: toolName, meta: { scope: 'local' } })
   }
 })
 

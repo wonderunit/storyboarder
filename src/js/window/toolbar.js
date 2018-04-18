@@ -169,7 +169,7 @@ class Toolbar extends EventEmitter {
     if (newState.brush) {
       // the brush changed
       this.emit('brush', this.state.brush, this.getBrushOptions())
-      this.store.dispatch({ type: 'TOOLBAR_TOOL_CHANGE', payload: this.state.brush })
+      this.store.dispatch({ type: 'TOOLBAR_TOOL_CHANGE', payload: this.state.brush, meta: { scope: 'local' } })
     }
     this.render()
   }
@@ -275,7 +275,7 @@ class Toolbar extends EventEmitter {
       palette: opt.palette.map(color => color.clone())
     }
   }
-  
+
   getBrushOptions (brushName) {
     brushName = brushName || this.state.brush
     return this.cloneOptions(this.state.brushes[brushName])
@@ -296,7 +296,7 @@ class Toolbar extends EventEmitter {
       case 'eraser':
         if (state.toolbar.activeTool !== selection) {
           if (this.state.transformMode) this.emit('cancelTransform')
-          this.store.dispatch({ type: 'TOOLBAR_TOOL_CHANGE', payload: selection })
+          this.store.dispatch({ type: 'TOOLBAR_TOOL_CHANGE', payload: selection, meta: { scope: 'local' } })
         }
         break
 
