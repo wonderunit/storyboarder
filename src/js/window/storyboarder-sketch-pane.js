@@ -846,9 +846,16 @@ class StoryboarderSketchPane extends EventEmitter {
   }
 
   setBrushColor (color) {
-    this.brush.setColor(color.toCSS())
-    this.sketchPane.setTool(this.brush)
-    this.updatePointer()
+    // this.brush.setColor(color.toCSS())
+    // this.sketchPane.setTool(this.brush)
+    // this.updatePointer()
+
+    // convert to number
+    color = ((color.red * 255) << 16) +
+      ((color.green * 255) << 8) +
+      color.blue * 255
+
+    this.store.dispatch({ type: 'TOOLBAR_TOOL_SET', payload: { color }, meta: { scope: 'local' } })
   }
 
   // HACK copied from toolbar
