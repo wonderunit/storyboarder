@@ -191,6 +191,8 @@ class StoryboarderSketchPane extends EventEmitter {
       // TODO avoid false positive clicks :/
       // TODO could store multiErase status / erase layer array in a reducer?
 
+      // configure the tool for drawing
+
       // stroke options
       // via https://developer.mozilla.org/en-US/docs/Web/API/Pointer_events#Determining_button_states
       // is the user requesting to erase?
@@ -211,6 +213,25 @@ class StoryboarderSketchPane extends EventEmitter {
 
       // sync sketchPane to the current toolbar state
       syncSketchPaneState(this.store.getState().toolbar)
+
+      // TODO move to a reducer?
+      // if we're not erasing ...
+      if (this.store.getState().toolbar.activeTool !== 'eraser') {
+        // ... set the current layer based on the active tool
+        switch (this.store.getState().toolbar.activeTool) {
+          case 'light-pencil':
+            this.sketchPane.setCurrentLayerIndex(0) // HACK hardcoded
+            break
+          case 'note-pen':
+            this.sketchPane.setCurrentLayerIndex(3) // HACK hardcoded
+            break
+          default:
+            this.sketchPane.setCurrentLayerIndex(1) // HACK hardcoded
+            break
+        }
+      }
+
+      // TODO update pointer?
 
       this.sketchPane.down(e, options)
     })
@@ -775,30 +796,30 @@ class StoryboarderSketchPane extends EventEmitter {
     this.brush.setFlow(options.flow)
     this.brush.setHardness(options.hardness)
 
-    if (!this.toolbar.getIsQuickErasing()) {
-      let selectedLayerIndex
-      switch (kind) {
-        case 'light-pencil':
-          selectedLayerIndex = 0 // HACK hardcoded
-          break
-        case 'note-pen':
-          selectedLayerIndex = 3 // HACK hardcoded
-          break
-        default:
-          selectedLayerIndex = 1 // HACK hardcoded
-          break
-      }
-      this.sketchPane.selectLayer(selectedLayerIndex)
-
-      // fat eraser
-      if (kind === 'eraser') {
-        this.setCompositeLayerVisibility(false)
-        this.startMultiLayerOperation()
-      } else {
-        this.stopMultiLayerOperation() // force stop, in case we didn't get `onbeforeup` event
-        this.isMultiLayerOperation = false // ensure we reset the var
-      }
-    }
+    // if (!this.toolbar.getIsQuickErasing()) {
+    //   let selectedLayerIndex
+    //   switch (kind) {
+    //     case 'light-pencil':
+    //       selectedLayerIndex = 0 // HACK hardcoded
+    //       break
+    //     case 'note-pen':
+    //       selectedLayerIndex = 3 // HACK hardcoded
+    //       break
+    //     default:
+    //       selectedLayerIndex = 1 // HACK hardcoded
+    //       break
+    //   }
+    //   this.sketchPane.selectLayer(selectedLayerIndex)
+    // 
+    //   // fat eraser
+    //   if (kind === 'eraser') {
+    //     this.setCompositeLayerVisibility(false)
+    //     this.startMultiLayerOperation()
+    //   } else {
+    //     this.stopMultiLayerOperation() // force stop, in case we didn't get `onbeforeup` event
+    //     this.isMultiLayerOperation = false // ensure we reset the var
+    //   }
+    // }
 
     this.sketchPane.setTool(this.brush)
 
