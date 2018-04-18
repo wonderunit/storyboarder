@@ -1,48 +1,49 @@
 const initialState = {
   tools: {
     'light-pencil': {
-      brushName: 'pencil',
-      brushColor: 0x000000,
-      brushSize: 2,
-      brushOpacity: 0.9,
+      name: 'pencil',
+      color: 0x000000,
+      size: 2,
+      opacity: 0.9,
       palette: []
     },
     'pencil': {
-      brushName: 'pencil',
-      brushColor: 0x000000,
-      brushSize: 4,
-      brushOpacity: 0.9,
+      name: 'pencil',
+      color: 0x000000,
+      size: 4,
+      opacity: 0.9,
       palette: []
     },
     'pen': {
-      brushName: 'pen',
-      brushColor: 0x000000,
-      brushSize: 4,
-      brushOpacity: 0.9,
+      name: 'pen',
+      color: 0x000000,
+      size: 4,
+      opacity: 0.9,
       palette: []
     },
     'brush': {
-      brushName: 'brushpen',
-      brushColor: 0x000000,
-      brushSize: 4,
-      brushOpacity: 0.9,
+      name: 'brushpen',
+      color: 0x000000,
+      size: 4,
+      opacity: 0.9,
       palette: []
     },
     'note-pen': {
-      brushName: 'copic',
-      brushColor: 0xff0000,
-      brushSize: 8,
-      brushOpacity: 0.9,
+      name: 'copic',
+      color: 0xff0000,
+      size: 8,
+      opacity: 0.9,
       palette: []
     },
     'eraser': {
-      brushName: 'copic',
-      brushColor: 0xffffff,
-      brushSize: 16,
-      brushOpacity: 1.0,
+      name: 'copic',
+      color: 0xffffff,
+      size: 16,
+      opacity: 1.0,
       palette: []
     }
   },
+  prevTool: undefined,
   activeTool: undefined
 }
 
@@ -54,6 +55,37 @@ const toolbar = (state = initialState, action) => {
         ...state,
         activeTool: action.payload
       }
+    case 'TOOLBAR_TOOL_QUICK_PUSH': {
+      return {
+        ...state,
+        // remember the current tool if it's not an eraser
+        prevTool: state.activeTool !== 'eraser' ? state.activeTool : state.prevTool,
+        activeTool: action.payload
+      }
+    }
+    case 'TOOLBAR_TOOL_QUICK_POP': {
+      return {
+        ...state,
+        prevTool: undefined,
+        // switch to last remembered tool (unless it's empty)
+        activeTool: state.prevTool || state.activeTool
+      }
+    }
+    case 'TOOLBAR_TOOL_SET':
+      return state.activeTool == null
+        ? state
+        : {
+          ...state,
+          tools: {
+            ...state.tools,
+            [state.activeTool]: {
+              ...state.tools[state.activeTool],
+              size: action.payload.size || state.tools[state.activeTool].size,
+              color: action.payload.color || state.tools[state.activeTool].color,
+              opacity: action.payload.opacity || state.tools[state.activeTool].opacity
+            }
+          }
+        }
 
     default:
       return state

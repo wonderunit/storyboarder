@@ -131,14 +131,43 @@ class StoryboarderSketchPane extends EventEmitter {
     this.sketchPane.newLayer() // composite
     this.sketchPane.setCurrentLayerIndex(1)
 
-    observeStore(this.store, state => state.toolbar.activeTool, activeTool => {
-      const state = this.store.getState()
-      const tool = state.toolbar.tools[activeTool]
-      this.sketchPane.brush = this.sketchPane.brushes[tool.brushName]
-      this.sketchPane.brushColor = tool.brushColor
-      this.sketchPane.brushSize = tool.brushSize
-      this.sketchPane.brushOpacity = tool.brushOpacity
-    })
+    // TODO minimum update (e.g.: maybe just cursor size?)
+    // sync sketchpane to state
+    const syncSketchPaneState = toolbarState => {
+      if (toolbarState.activeTool != null) {
+        const tool = toolbarState.tools[toolbarState.activeTool]
+        this.sketchPane.brush = this.sketchPane.brushes[tool.name]
+        this.sketchPane.brushColor = tool.color
+        this.sketchPane.brushSize = tool.size
+        this.sketchPane.brushOpacity = tool.opacity
+      }
+    }
+
+    const updateQuickErase = (e) => {
+      // if we're not drawing
+      if (!this.sketchPane.isDrawing()) {
+        // and erase is not being requested
+        if (!(e.buttons === 32 || e.altKey)) {
+          // ... but we have a prevTool,
+          if (this.store.getState().toolbar.prevTool) {
+            // then switch out of quick-erase mode back to previous tool
+            this.store.dispatch({ type: 'TOOLBAR_TOOL_QUICK_POP', meta: { scope: 'local' } })
+          }
+        }
+      }
+    }
+
+    // sync on change
+    observeStore(
+      this.store,
+      state => state.toolbar,
+      toolbarState => {
+        // update the cursor any time any toolbar-related value changes
+        syncSketchPaneState(toolbarState)
+      },
+      // sync now to init
+      true
+    )
 
     // add SketchPane to container
     this.containerEl.appendChild(this.sketchPaneDOMElement)
@@ -159,14 +188,29 @@ class StoryboarderSketchPane extends EventEmitter {
       this.emit('markDirty', strokeState.layerIndices)
 
     window.addEventListener('pointerdown', e => {
+      // TODO avoid false positive clicks :/
+      // TODO could store multiErase status / erase layer array in a reducer?
+
       // stroke options
       // via https://developer.mozilla.org/en-US/docs/Web/API/Pointer_events#Determining_button_states
+      // is the user requesting to erase?
       let options = (e.buttons === 32 || e.altKey)
-        // + shift to erase multiple layers
+        // is the shift key down?
         ? e.shiftKey
+          // ... then, erase multiple layers
           ? { erase: [0, 1, 3] } // HACK hardcoded
+          // ... otherwise, only erase current layer
           : { erase: [this.sketchPane.getCurrentLayerIndex()] }
+        // not erasing
         : {}
+
+      if (options.erase) {
+        // switch to quick-erase mode
+        this.store.dispatch({ type: 'TOOLBAR_TOOL_QUICK_PUSH', payload: 'eraser', meta: { scope: 'local' } })
+      }
+
+      // sync sketchPane to the current toolbar state
+      syncSketchPaneState(this.store.getState().toolbar)
 
       this.sketchPane.down(e, options)
     })
@@ -175,10 +219,11 @@ class StoryboarderSketchPane extends EventEmitter {
     })
     window.addEventListener('pointerup', e => {
       this.sketchPane.up(e)
+      updateQuickErase(e)
     })
-
-
-
+    window.addEventListener('keyup', e => {
+      updateQuickErase(e)
+    })
 
     // Proxy
     this.sketchPane.setTool = () => { console.warn('SketchPane#setTool no impl') }
@@ -765,7 +810,8 @@ class StoryboarderSketchPane extends EventEmitter {
     // this.brush.setSize(size)
     // this.sketchPane.setTool(this.brush)
     // this.updatePointer()
-    this.sketchPane.brushSize = size
+    // this.sketchPane.brushSize = size
+    this.store.dispatch({ type: 'TOOLBAR_TOOL_SET', payload: { size }, meta: { scope: 'local' } })
   }
 
   setBrushColor (color) {
@@ -811,8 +857,10 @@ class StoryboarderSketchPane extends EventEmitter {
     return el
   }
 
+  // TODO rename to isDrawing, find/replace instances
   getIsDrawingOrStabilizing () {
-    return this.sketchPane.isDrawing || this.sketchPane.isStabilizing
+    return this.sketchPane.isDrawing()
+    // return this.sketchPane.isDrawing || this.sketchPane.isStabilizing
   }
 
   moveContents () {
