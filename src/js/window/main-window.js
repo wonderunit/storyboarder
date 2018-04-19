@@ -4506,37 +4506,49 @@ let copyBoards = () => {
     let board = util.stringifyClone(boardData.boards[currentBoard])
 
     let imageData = {}
-    imageData[LAYER_INDEX_MAIN] = storyboarderSketchPane.getLayerCanvasByName('main').toDataURL()
+    imageData[LAYER_INDEX_MAIN] = storyboarderSketchPane.sketchPane.layers[LAYER_INDEX_MAIN].toDataURL()
 
     if (board.layers) {
       for (let [layerName, sym] of [['reference', LAYER_INDEX_REFERENCE], ['notes', LAYER_INDEX_NOTES]]) { // HACK hardcoded
         if (board.layers[layerName]) {
-          imageData[sym] = storyboarderSketchPane.getLayerCanvasByName(layerName).toDataURL()
+          imageData[sym] = storyboarderSketchPane.sketchPane.layers[sym].toDataURL()
         }
       }
     }
 
-    let { width, height } = storyboarderSketchPane.sketchPane.getCanvasSize()
-    let size = [width, height]
-    // create transparent canvas, appropriately sized
-    let canvas = createSizedContext(size).canvas
-    exporterCommon.flattenBoardToCanvas(
-      board,
-      canvas,
-      size,
-      boardFilename
-    ).then(() => {
+    try {
+      // let { width, height } = storyboarderSketchPane.sketchPane.getCanvasSize()
+      // let size = [width, height]
+      // // create transparent canvas, appropriately sized
+      // let canvas = createSizedContext(size).canvas
+      // await exporterCommon.flattenBoardToCanvas(
+      //   board,
+      //   canvas,
+      //   size,
+      //   boardFilename
+      // )
       let payload = {
-        image: nativeImage.createFromDataURL(canvas.toDataURL()),
+        // image: nativeImage.createFromDataURL(canvas.toDataURL()),
+        // TODO could try nativeImage.createFromBuffer and pass raw pixels?
+        image: nativeImage.createFromDataURL(
+          storyboarderSketchPane.sketchPane.constructor.utils.pixelsToCanvas(
+            storyboarderSketchPane.sketchPane.extractThumbnailPixels(
+              storyboarderSketchPane.sketchPane.width,
+              storyboarderSketchPane.sketchPane.height
+            ),
+            storyboarderSketchPane.sketchPane.width,
+            storyboarderSketchPane.sketchPane.height
+          ).toDataURL()
+        ),
         text: JSON.stringify({ boards: [board], layerDataByBoardIndex: [imageData] }, null, 2)
       }
       clipboard.clear()
       clipboard.write(payload)
       notifications.notify({ message: "Copied" })
-    }).catch(err => {
+    } catch (err) {
       console.log(err)
       notifications.notify({ message: "Error. Couldn't copy." })
-    })
+    }
   }
 }
 
