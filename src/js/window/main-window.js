@@ -1051,26 +1051,26 @@ const loadBoardUI = async () => {
 
   // guides = new Guides(storyboarderSketchPane.getLayerCanvasByName('guides'), { perspectiveGridFn: shotTemplateSystem.requestGrid.bind(shotTemplateSystem) })
   // onionSkin = new OnionSkin(storyboarderSketchPane, boardPath)
-  // layersEditor = new LayersEditor(storyboarderSketchPane, sfx, notifications)
-  // layersEditor.on('opacity', opacity => {
-  //   // should we update the value of the project data?
-  //   let board = boardData.boards[currentBoard]
-  //   if (opacity.index === LAYER_INDEX_REFERENCE) {
-  //     if (board.layers && board.layers.reference && !util.isUndefined(board.layers.reference)) {
-  //       if (board.layers.reference.opacity !== opacity.value) {
-  //         // update data
-  //         // layers are in data already, change data directly
-  //         board.layers.reference.opacity = opacity.value
-  //         markImageFileDirty([LAYER_INDEX_REFERENCE])
-  //         markBoardFileDirty()
-  //       }
-  //     } else {
-  //       // create data
-  //       // need to create layers
-  //       markImageFileDirty([LAYER_INDEX_REFERENCE])
-  //     }
-  //   }
-  // })
+  layersEditor = new LayersEditor(storyboarderSketchPane, sfx, notifications)
+  layersEditor.on('opacity', opacity => {
+    // should we update the value of the project data?
+    let board = boardData.boards[currentBoard]
+    if (opacity.index === LAYER_INDEX_REFERENCE) {
+      if (board.layers && board.layers.reference && !util.isUndefined(board.layers.reference)) {
+        if (board.layers.reference.opacity !== opacity.value) {
+          // update data
+          // layers are in data already, change data directly
+          board.layers.reference.opacity = opacity.value
+          markImageFileDirty([LAYER_INDEX_REFERENCE])
+          markBoardFileDirty()
+        }
+      } else {
+        // create data
+        // need to create layers
+        markImageFileDirty([LAYER_INDEX_REFERENCE])
+      }
+    }
+  })
   storyboarderSketchPane.on('requestPointerDown', () => {
     // if artist is drawing on the reference layer, ensure it has opacity
     if (toolbar.state.brush === 'light-pencil' && storyboarderSketchPane.sketchPane.getLayerOpacity() === 0) {
@@ -3054,8 +3054,7 @@ let updateSketchPaneBoard = () => {
                              typeof board.layers[LAYER_NAME_BY_INDEX[LAYER_INDEX_REFERENCE]].opacity !== 'undefined'
         ? board.layers[LAYER_NAME_BY_INDEX[LAYER_INDEX_REFERENCE]].opacity
         : exporterCommon.DEFAULT_REFERENCE_LAYER_OPACITY
-      // TODO
-      // layersEditor.setReferenceOpacity(referenceOpacity)
+      layersEditor.setReferenceOpacity(referenceOpacity)
 
       resolve()
 
