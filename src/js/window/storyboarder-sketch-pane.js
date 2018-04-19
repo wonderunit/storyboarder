@@ -283,6 +283,11 @@ class StoryboarderSketchPane extends EventEmitter {
     requestAnimationFrame(this.onFrame)
   }
 
+  // for compatibility with older sketchpane code
+  getCanvasSize () {
+    return { width: this.sketchPane.width, height: this.sketchPane.height }
+  }
+
   setStrategy (Strategy) {
     console.log('StoryboarderSketchPane#setStrategy')
     return
