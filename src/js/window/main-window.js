@@ -1927,6 +1927,9 @@ let saveBoardFile = (opt = { force: false }) => {
 }
 
 let markImageFileDirty = layerIndices => {
+  // force update layers dirty flag
+  storyboarderSketchPane.markLayersDirty(layerIndices)
+
   clearTimeout(imageFileDirtyTimer)
   imageFileDirtyTimer = setTimeout(saveImageFile, 5000)
 }
