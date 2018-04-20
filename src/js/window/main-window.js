@@ -2631,14 +2631,15 @@ let goNextBoard = async (direction, shouldPreserveSelections = false) => {
 }
 
 let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
-  if(isRecording && isRecordingStarted) {
-    // make sure we capture the last frame
-    canvasRecorder.capture([
-      storyboarderSketchPane.getLayerCanvas(0),
-      storyboarderSketchPane.getLayerCanvas(1),
-      storyboarderSketchPane.getLayerCanvas(3)
-    ], {force: true, duration: 500})
-  }
+  // TODO
+  // if(isRecording && isRecordingStarted) {
+  //   // make sure we capture the last frame
+  //   canvasRecorder.capture([
+  //     storyboarderSketchPane.getLayerCanvas(0),
+  //     storyboarderSketchPane.getLayerCanvas(1),
+  //     storyboarderSketchPane.getLayerCanvas(3)
+  //   ], {force: true, duration: 500})
+  // }
 
   toolbar.emit('cancelTransform')
   return new Promise((resolve, reject) => {
