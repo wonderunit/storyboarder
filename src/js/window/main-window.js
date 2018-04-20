@@ -4859,30 +4859,26 @@ const insertBoards = (dest, insertAt, boards, { layerDataByBoardIndex }) => {
   })
 }
 
-const fitImageData = (boardSize, imageData) => {
-  return new Promise((resolve, reject) => {
-    exporterCommon.getImage(imageData).then(image => {
-      // if ratio matches,
-      // don't bother drawing,
-      // just return original image data
-      if (
-        image.width  == boardSize[0] &&
-        image.height == boardSize[1]
-      ) {
-        resolve(imageData)
-      } else {
-        let context = createSizedContext(boardSize)
-        let canvas = context.canvas
-        context.drawImage(image, ...util.fitToDst(canvas, image).map(Math.round))
-        resolve(canvas.toDataURL())
-      }
-    }).catch(err => {
-      console.log(err)
-      reject(err)
-    })
-  })
 }
 
+const fitImageData = async (boardSize, imageData) => {
+  let image = await exporterCommon.getImage(imageData)
+
+  // if ratio matches,
+  // don't bother drawing,
+  // just return original image data
+  if (
+    image.width === boardSize[0] &&
+    image.height === boardSize[1]
+  ) {
+    return imageData
+  } else {
+    let context = createSizedContext(boardSize)
+    let canvas = context.canvas
+    context.drawImage(image, ...util.fitToDst(canvas, image).map(Math.round))
+    return canvas.toDataURL()
+  }
+}
 
 const importFromWorksheet = async (imageArray) => {
   let insertAt = 0 // pos
