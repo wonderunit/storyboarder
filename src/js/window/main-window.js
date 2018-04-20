@@ -1740,6 +1740,9 @@ let newBoard = async (position, shouldAddToUndoStack = true) => {
   //      the following causes the _newly created_ duplicate to be marked dirty
   //      (not the current board)
   // indicate dirty for save sweep
+
+  // force update layers dirty flag
+  storyboarderSketchPane.markLayersDirty([1]) // 'main' layer is dirty // HACK hardcoded
   markImageFileDirty([1]) // 'main' layer is dirty // HACK hardcoded
   markBoardFileDirty() // board data is dirty
 
@@ -1927,9 +1930,6 @@ let saveBoardFile = (opt = { force: false }) => {
 }
 
 let markImageFileDirty = layerIndices => {
-  // force update layers dirty flag
-  storyboarderSketchPane.markLayersDirty(layerIndices)
-
   clearTimeout(imageFileDirtyTimer)
   imageFileDirtyTimer = setTimeout(saveImageFile, 5000)
 }
