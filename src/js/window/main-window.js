@@ -4807,58 +4807,42 @@ let pasteBoards = async () => {
   }
 }
 
-const insertBoards = (dest, insertAt, boards, { layerDataByBoardIndex }) => {
+const insertBoards = async (dest, insertAt, boards, { layerDataByBoardIndex }) => {
   // TODO pass `size` as argument instead of relying on storyboarderSketchPane
   let { width, height } = storyboarderSketchPane.getCanvasSize()
   let size = [width, height]
 
-  return new Promise((resolve, reject) => {
-    let tasks = Promise.resolve()
-    boards.forEach((board, index) => {
-      // for each board
-      let position = insertAt + index
-      let imageData = layerDataByBoardIndex[index]
+  for (let index = 0; index < boards.length; index++) {
+    let board = boards[index]
 
-      // scale layer images and save to files
-      if (imageData) {
+    // for each board
+    let position = insertAt + index
+    let imageData = layerDataByBoardIndex[index]
 
-        if (imageData[LAYER_INDEX_MAIN]) {
-          tasks = tasks.then(() =>
-            fitImageData(size, imageData[LAYER_INDEX_MAIN]).then(scaledImageData =>
-              saveDataURLtoFile(scaledImageData, board.url)))
-        }
-
-        if (imageData[LAYER_INDEX_REFERENCE]) {
-          tasks = tasks.then(() =>
-            fitImageData(size, imageData[LAYER_INDEX_REFERENCE]).then(scaledImageData =>
-              saveDataURLtoFile(scaledImageData, board.layers.reference.url)))
-        }
-
-        if (imageData[LAYER_INDEX_NOTES]) {
-          tasks = tasks.then(() =>
-            fitImageData(size, imageData[LAYER_INDEX_NOTES]).then(scaledImageData =>
-              saveDataURLtoFile(scaledImageData, board.layers.notes.url)))
-        }
+    // scale layer images and save to files
+    if (imageData) {
+      if (imageData[LAYER_INDEX_MAIN]) {
+        let scaledImageData = await fitImageData(size, imageData[LAYER_INDEX_MAIN])
+        saveDataURLtoFile(scaledImageData, board.url)
       }
 
-      tasks = tasks.then(() => {
-        // add to the data
-        dest.splice(position, 0, board)
+      if (imageData[LAYER_INDEX_REFERENCE]) {
+        let scaledImageData = await fitImageData(size, imageData[LAYER_INDEX_REFERENCE])
+        saveDataURLtoFile(scaledImageData, board.layers.reference.url)
+      }
 
-        // update the thumbnail
-        return saveThumbnailFile(position, { forceReadFromFiles: true })
-      })
-    })
+      if (imageData[LAYER_INDEX_NOTES]) {
+        let scaledImageData = await fitImageData(size, imageData[LAYER_INDEX_NOTES])
+        saveDataURLtoFile(scaledImageData, board.layers.notes.url)
+      }
+    }
 
-    tasks.then(() => {
-      resolve()
-    }).catch(err => {
-      console.log(err)
-      reject(err)
-    })
-  })
-}
+    // add to the data
+    dest.splice(position, 0, board)
 
+    // update the thumbnail
+    await saveThumbnailFile(position, { forceReadFromFiles: true })
+  }
 }
 
 const fitImageData = async (boardSize, imageData) => {
