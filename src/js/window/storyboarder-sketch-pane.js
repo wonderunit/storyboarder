@@ -942,6 +942,9 @@ class StoryboarderSketchPane extends EventEmitter {
     return this.sketchPane.exportLayer(index, format)
   }
 
+  markLayersDirty (indices) {
+    this.sketchPane.layers.markDirty(indices)
+  }
   getLayerDirty (index) {
     return this.sketchPane.getLayerDirty(index)
   }
