@@ -1,10 +1,10 @@
-const EventEmitter = require('events').EventEmitter
-
 const rgba = (r, g, b, a) => `rgba(${r}, ${g}, ${b}, ${parseFloat(a)})`
 
-class Guides extends EventEmitter {
-  constructor (el, opt = {}) {
-    super()
+class Guides {
+  constructor (opt) {
+    this.width = opt.width
+    this.height = opt.height
+    this.onRender = opt.onRender
 
     this.state = {
       grid: false,
@@ -17,8 +17,6 @@ class Guides extends EventEmitter {
     // see: http://www.mobtowers.com/html5-canvas-crisp-lines-every-time/
     this.translateShift = 0.5
 
-    this.canvas = null
-    this.context = null
     this.offscreenCanvas = null
     this.offscreenContext = null
 
@@ -28,7 +26,16 @@ class Guides extends EventEmitter {
       rotation: 0
     }
 
-    this.attachTo(el)
+    this.offscreenCanvas = document.createElement('canvas')
+    this.offscreenContext = this.offscreenCanvas.getContext('2d')
+    this.offscreenCanvas.width = this.width
+    this.offscreenCanvas.height = this.height
+
+    this.canvas = document.createElement('canvas')
+    this.context = this.canvas.getContext('2d')
+    this.canvas.width = this.width
+    this.canvas.height = this.height
+
     this.render()
   }
 
@@ -38,28 +45,12 @@ class Guides extends EventEmitter {
     this.render()
   }
 
-  attachTo (canvas) {
-    this.canvas = canvas
-    this.context = this.canvas.getContext('2d')
-
-    this.offscreenCanvas = document.createElement('canvas')
-    this.offscreenContext = this.offscreenCanvas.getContext('2d')
-
-    this.offscreenCanvas.width = this.canvas.width
-    this.offscreenCanvas.height = this.canvas.height
-
-    this.width = this.canvas.width
-    this.height = this.canvas.height
-  }
-
   render () {
-    let ctx = this.context
-    ctx.clearRect(0, 0, this.width, this.height)
-
     const lineColorMuted = [0, 0, 0, 0.1]
-    // const lineColorNormal = [0, 0, 0, 0.2]
     const lineColorStrong = [0, 0, 0, 0.4]
     const lineColorWhite = [255, 255, 255, 0.1]
+
+    this.context.clearRect(0, 0, this.width, this.height)
 
     //
     //
@@ -107,6 +98,8 @@ class Guides extends EventEmitter {
     }
 
     this.context.globalAlpha = 1.0
+
+    this.onRender(this.context.canvas)
   }
 
   drawGrid (context, width, height, color, lineWidth) {
