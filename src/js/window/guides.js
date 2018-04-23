@@ -1,7 +1,5 @@
 const EventEmitter = require('events').EventEmitter
 
-const util = require('../utils/index')
-
 const rgba = (r, g, b, a) => `rgba(${r}, ${g}, ${b}, ${parseFloat(a)})`
 
 class Guides extends EventEmitter {
@@ -49,7 +47,7 @@ class Guides extends EventEmitter {
 
     this.offscreenCanvas.width = this.canvas.width
     this.offscreenCanvas.height = this.canvas.height
-    
+
     this.width = this.canvas.width
     this.height = this.canvas.height
   }
@@ -58,8 +56,8 @@ class Guides extends EventEmitter {
     let ctx = this.context
     ctx.clearRect(0, 0, this.width, this.height)
 
-    const lineColorMuted  = [0, 0, 0, 0.1]
-    const lineColorNormal = [0, 0, 0, 0.2]
+    const lineColorMuted = [0, 0, 0, 0.1]
+    // const lineColorNormal = [0, 0, 0, 0.2]
     const lineColorStrong = [0, 0, 0, 0.4]
     const lineColorWhite = [255, 255, 255, 0.1]
 
@@ -68,7 +66,7 @@ class Guides extends EventEmitter {
     // light
     //
     this.offscreenContext.clearRect(0, 0, this.width, this.height)
-    if (this.state.grid)   this.drawGrid(this.offscreenContext, this.width, this.height, rgba(...lineColorWhite.slice(0, 3), 1.0), 3)
+    if (this.state.grid) this.drawGrid(this.offscreenContext, this.width, this.height, rgba(...lineColorWhite.slice(0, 3), 1.0), 3)
     if (this.state.center) this.drawCenter(this.offscreenContext, this.width, this.height, rgba(...lineColorWhite.slice(0, 3), 1.0), 3)
     if (this.state.thirds) this.drawThirds(this.offscreenContext, this.width, this.height, rgba(...lineColorWhite.slice(0, 3), 1.0), 3)
 
@@ -82,7 +80,7 @@ class Guides extends EventEmitter {
     //
     // grid
     this.offscreenContext.clearRect(0, 0, this.width, this.height)
-    if (this.state.grid)   this.drawGrid(this.offscreenContext, this.width, this.height, rgba(...lineColorMuted.slice(0, 3), 1.0), 1)
+    if (this.state.grid) this.drawGrid(this.offscreenContext, this.width, this.height, rgba(...lineColorMuted.slice(0, 3), 1.0), 1)
     this.context.globalAlpha = lineColorMuted.slice(-1)[0]
     this.context.drawImage(this.offscreenCanvas, 0, 0, this.width, this.height)
 
@@ -114,7 +112,7 @@ class Guides extends EventEmitter {
   drawGrid (context, width, height, color, lineWidth) {
     context.translate(this.translateShift, this.translateShift)
     let squareSize = 50
-    let centerX = width / 2
+    // let centerX = width / 2
     let stepsX = width / squareSize
     let stepsY = height / squareSize
     let offsetX = (width / 2) % squareSize
