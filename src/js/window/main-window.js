@@ -1049,7 +1049,15 @@ const loadBoardUI = async () => {
     toolbar.changeCurrentColor(color)
   })
 
-  // guides = new Guides(storyboarderSketchPane.getLayerCanvasByName('guides'), { perspectiveGridFn: shotTemplateSystem.requestGrid.bind(shotTemplateSystem) })
+  guides = new Guides({
+    width: storyboarderSketchPane.sketchPane.width,
+    height: storyboarderSketchPane.sketchPane.height,
+    perspectiveGridFn: shotTemplateSystem.requestGrid.bind(shotTemplateSystem),
+    onRender: guideCanvas => {
+      storyboarderSketchPane.sketchPane.drawOverlay(guideCanvas)
+    }
+  })
+
   // onionSkin = new OnionSkin(storyboarderSketchPane, boardPath)
   layersEditor = new LayersEditor(storyboarderSketchPane, sfx, notifications)
   layersEditor.on('opacity', opacity => {
