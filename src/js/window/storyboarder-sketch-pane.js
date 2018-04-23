@@ -784,10 +784,7 @@ class StoryboarderSketchPane extends EventEmitter {
 
   flipLayers (vertical) {
     this.emit('addToUndoStack', this.visibleLayersIndices)
-    // HACK operates on all layers
-    for (var i = 0; i < this.sketchPane.layers.length; ++i) {
-      this.sketchPane.flipLayer(i, vertical)
-    }
+    this.sketchPane.flipLayers(vertical)
     this.emit('markDirty', this.visibleLayersIndices)
   }
   setBrushTool (kind, options) {
