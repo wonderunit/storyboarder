@@ -17,7 +17,7 @@ const initialState = {
     'tone': {
       name: 'tone',
       color: 0x162A3F,
-      size: 40,
+      size: 50,
       opacity: 0.15,
       palette: []
     },
