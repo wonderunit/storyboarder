@@ -27,12 +27,15 @@
   {
     "name": "tone",
     "descriptiveName": "Tone Brush",
-    "brushImage": "teardrop",
-    "grainImage": "hardwood",
-    "pressureOpacity": 0.3,
-    "scale": 0.5,
-    "movement": 0.7,
-    "sizecale": 0.6
+    "brushImage": "brushsoft",
+    "grainImage": "graincanvas",
+    "pressureOpacity": 0.4,
+    "pressureSize": 0.8,
+    "scale": 4,
+    "tiltOpacity": 0.4,
+    "tiltSize": 1,
+    "spacing": 0.05,
+    "pressureBleed": 0.5
   },
   {
     "name": "pencil",
