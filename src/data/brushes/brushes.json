@@ -1,0 +1,62 @@
+[
+  {
+    "name": "pencil",
+    "descriptiveName": "Pencil",
+    "brushImage": "brushmediumoval",
+    "grainImage": "grainpaper4",
+    "pressureOpacity": 0.7,
+    "pressureSize": 0.8,
+    "scale": 0.8,
+    "tiltOpacity": 0.3,
+    "tiltSize": 1,
+    "movement": 1,
+    "pressureBleed": 1,
+    "spacing": 0.05
+  },
+  {
+    "name": "pen",
+    "descriptiveName": "Pen",
+    "brushImage": "brushhard",
+    "grainImage": "grainpaper2",
+    "pressureOpacity": 0.5,
+    "pressureSize": 0.8,
+    "sizecale": 0.8,
+    "pressureBleed": 2,
+    "tiltSize": 3.8,
+    "tiltOpacity": 1,
+    "movement": 0.9,
+    "spacing": 0.05
+  },
+  {
+    "name": "brush",
+    "descriptiveName": "Brush Pen",
+    "brushImage": "teardrop",
+    "grainImage": "hardwood",
+    "pressureOpacity": 0.3,
+    "scale": 0.5,
+    "movement": 0.7,
+    "sizecale": 0.6
+  },
+  {
+    "name": "note-pen",
+    "descriptiveName": "Note Pen",
+    "brushImage": "brushmediumovalhollow",
+    "grainImage": "grainpaper2",
+    "pressureOpacity": 0.2,
+    "pressureSize": 0.9,
+    "tiltSize": 1,
+    "tiltOpacity": 1,
+    "movement": 0.5
+  },
+  {
+    "name": "eraser",
+    "descriptiveName": "Eraser",
+    "brushImage": "brushmediumovalhollow",
+    "grainImage": "grainpaper2",
+    "pressureOpacity": 0.2,
+    "pressureSize": 0.9,
+    "tiltSize": 1,
+    "tiltOpacity": 1,
+    "movement": 0.5
+  }
+]
