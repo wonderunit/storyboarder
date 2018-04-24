@@ -1,7 +1,7 @@
 const initialState = {
   tools: {
     'light-pencil': {
-      name: 'pencil',
+      name: 'light-pencil',
       color: 0x90CBF9,
       size: 20,
       opacity: 0.25,

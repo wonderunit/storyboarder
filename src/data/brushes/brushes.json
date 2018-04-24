@@ -1,5 +1,19 @@
 [
   {
+    "name": "light-pencil",
+    "descriptiveName": "Light Pencil",
+    "brushImage": "brushmediumoval",
+    "grainImage": "grainpaper4",
+    "pressureOpacity": 0.7,
+    "pressureSize": 0.8,
+    "scale": 0.8,
+    "tiltOpacity": 0.3,
+    "tiltSize": 1,
+    "movement": 1,
+    "pressureBleed": 1,
+    "spacing": 0.05
+  },
+  {
     "name": "pencil",
     "descriptiveName": "Pencil",
     "brushImage": "brushmediumoval",
