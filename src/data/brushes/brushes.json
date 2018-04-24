@@ -53,6 +53,16 @@
     "movement": 0.5
   },
   {
+    "name": "tone",
+    "descriptiveName": "Tone Brush",
+    "brushImage": "teardrop",
+    "grainImage": "hardwood",
+    "pressureOpacity": 0.3,
+    "scale": 0.5,
+    "movement": 0.7,
+    "sizecale": 0.6
+  },
+  {
     "name": "note-pen",
     "descriptiveName": "Note Pen",
     "brushImage": "brushmediumovalhollow",
