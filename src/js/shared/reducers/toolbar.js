@@ -7,20 +7,6 @@ const initialState = {
       opacity: 0.25,
       palette: []
     },
-    'pencil': {
-      name: 'pencil',
-      color: 0x000000,
-      size: 4,
-      opacity: 0.45,
-      palette: []
-    },
-    'pen': {
-      name: 'pen',
-      color: 0x000000,
-      size: 2,
-      opacity: 0.9,
-      palette: []
-    },
     'brush': {
       name: 'brush',
       color: 0x90CBF9,
@@ -30,6 +16,13 @@ const initialState = {
     },
     'tone': {
       name: 'tone',
+      color: 0x000000,
+      size: 2,
+      opacity: 0.9,
+      palette: []
+    },
+    'pen': {
+      name: 'pen',
       color: 0x000000,
       size: 4,
       opacity: 0.9,
