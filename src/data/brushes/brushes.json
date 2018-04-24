@@ -31,7 +31,7 @@
     "grainImage": "graincanvas",
     "pressureOpacity": 0.4,
     "pressureSize": 0.8,
-    "scale": 4,
+    "scale": 0.7,
     "tiltOpacity": 0.4,
     "tiltSize": 1,
     "spacing": 0.05,
