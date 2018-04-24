@@ -16,9 +16,9 @@ const initialState = {
     },
     'tone': {
       name: 'tone',
-      color: 0x000000,
-      size: 2,
-      opacity: 0.9,
+      color: 0x162A3F,
+      size: 40,
+      opacity: 0.15,
       palette: []
     },
     'pencil': {
@@ -31,7 +31,7 @@ const initialState = {
     'pen': {
       name: 'pen',
       color: 0x000000,
-      size: 4,
+      size: 2,
       opacity: 0.9,
       palette: []
     },
