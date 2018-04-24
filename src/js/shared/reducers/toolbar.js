@@ -22,21 +22,21 @@ const initialState = {
       palette: []
     },
     'brush': {
-      name: 'brushpen',
+      name: 'brush',
       color: 0x000000,
       size: 4,
       opacity: 0.9,
       palette: []
     },
     'note-pen': {
-      name: 'copic',
+      name: 'note-pen',
       color: 0xff0000,
       size: 8,
       opacity: 0.9,
       palette: []
     },
     'eraser': {
-      name: 'copic',
+      name: 'eraser',
       color: 0xffffff,
       size: 16,
       opacity: 1.0,

@@ -2,6 +2,8 @@ const EventEmitter = require('events').EventEmitter
 
 const { ipcRenderer, remote } = require('electron')
 
+const fs = require('fs')
+
 const SketchPane = require('alchemancy')
 
 const Brush = require('../sketch-pane/brush')
@@ -103,7 +105,7 @@ class StoryboarderSketchPane extends EventEmitter {
     this.sketchPane = new SketchPane({
       imageWidth: this.canvasSize[0],
       imageHeight: this.canvasSize[1],
-      backgroundColor: 0x333333,
+      backgroundColor: 0x333333
     })
     this.sketchPaneDOMElement = this.sketchPane.getDOMElement()
     this.resize()
@@ -114,9 +116,9 @@ class StoryboarderSketchPane extends EventEmitter {
     // adjust sizes
     // this.renderContainerSize()
 
-    // TODO package brushes in the build
     await this.sketchPane.loadBrushes({
-      brushImagePath: '../node_modules/alchemancy/src/img/brush'
+      brushes: JSON.parse(fs.readFileSync('./src/data/brushes/brushes.json')),
+      brushImagePath: './data/brushes'
     })
 
     // this.sketchPane.on('onbeforeup', this.onSketchPaneBeforeUp.bind(this)) // MIGRATE
