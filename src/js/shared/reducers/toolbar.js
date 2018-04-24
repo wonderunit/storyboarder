@@ -28,6 +28,13 @@ const initialState = {
       opacity: 0.7,
       palette: []
     },
+    'tone': {
+      name: 'tone',
+      color: 0x000000,
+      size: 4,
+      opacity: 0.9,
+      palette: []
+    },
     'note-pen': {
       name: 'note-pen',
       color: 0xff0000,
