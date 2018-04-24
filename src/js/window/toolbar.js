@@ -277,9 +277,10 @@ class Toolbar extends EventEmitter {
     switch (selection) {
       // brushes
       case 'light-pencil':
+      case 'brush':
+      case 'tone':
       case 'pencil':
       case 'pen':
-      case 'brush':
       case 'note-pen':
       case 'eraser':
         if (state.toolbar.activeTool !== selection) {
