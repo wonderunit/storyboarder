@@ -14,6 +14,27 @@
     "spacing": 0.05
   },
   {
+    "name": "brush",
+    "descriptiveName": "Brush Pen",
+    "brushImage": "brushmediumovalhollow",
+    "grainImage": "grainpaper2",
+    "pressureOpacity": 0.2,
+    "pressureSize": 0.9,
+    "tiltSize": 1,
+    "tiltOpacity": 1,
+    "movement": 0.5
+  },
+  {
+    "name": "tone",
+    "descriptiveName": "Tone Brush",
+    "brushImage": "teardrop",
+    "grainImage": "hardwood",
+    "pressureOpacity": 0.3,
+    "scale": 0.5,
+    "movement": 0.7,
+    "sizecale": 0.6
+  },
+  {
     "name": "pencil",
     "descriptiveName": "Pencil",
     "brushImage": "brushmediumoval",
@@ -40,27 +61,6 @@
     "tiltOpacity": 1,
     "movement": 0.9,
     "spacing": 0.05
-  },
-  {
-    "name": "brush",
-    "descriptiveName": "Brush Pen",
-    "brushImage": "brushmediumovalhollow",
-    "grainImage": "grainpaper2",
-    "pressureOpacity": 0.2,
-    "pressureSize": 0.9,
-    "tiltSize": 1,
-    "tiltOpacity": 1,
-    "movement": 0.5
-  },
-  {
-    "name": "tone",
-    "descriptiveName": "Tone Brush",
-    "brushImage": "teardrop",
-    "grainImage": "hardwood",
-    "pressureOpacity": 0.3,
-    "scale": 0.5,
-    "movement": 0.7,
-    "sizecale": 0.6
   },
   {
     "name": "note-pen",
