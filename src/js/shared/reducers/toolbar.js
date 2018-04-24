@@ -21,6 +21,13 @@ const initialState = {
       opacity: 0.9,
       palette: []
     },
+    'pencil': {
+      name: 'pencil',
+      color: 0x000000,
+      size: 4,
+      opacity: 0.45,
+      palette: []
+    },
     'pen': {
       name: 'pen',
       color: 0x000000,
