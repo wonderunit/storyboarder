@@ -30,12 +30,13 @@
   {
     "name": "brush",
     "descriptiveName": "Brush Pen",
-    "brushImage": "teardrop",
-    "grainImage": "hardwood",
-    "pressureOpacity": 0.3,
-    "scale": 0.5,
-    "movement": 0.7,
-    "sizecale": 0.6
+    "brushImage": "brushmediumovalhollow",
+    "grainImage": "grainpaper2",
+    "pressureOpacity": 0.2,
+    "pressureSize": 0.9,
+    "tiltSize": 1,
+    "tiltOpacity": 1,
+    "movement": 0.5
   },
   {
     "name": "note-pen",

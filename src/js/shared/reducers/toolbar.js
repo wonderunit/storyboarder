@@ -2,30 +2,30 @@ const initialState = {
   tools: {
     'light-pencil': {
       name: 'pencil',
-      color: 0x000000,
-      size: 2,
-      opacity: 0.9,
+      color: 0x90CBF9,
+      size: 20,
+      opacity: 0.25,
       palette: []
     },
     'pencil': {
       name: 'pencil',
       color: 0x000000,
       size: 4,
-      opacity: 0.9,
+      opacity: 0.45,
       palette: []
     },
     'pen': {
       name: 'pen',
       color: 0x000000,
-      size: 4,
+      size: 2,
       opacity: 0.9,
       palette: []
     },
     'brush': {
       name: 'brush',
-      color: 0x000000,
-      size: 4,
-      opacity: 0.9,
+      color: 0x90CBF9,
+      size: 26,
+      opacity: 0.7,
       palette: []
     },
     'note-pen': {
@@ -38,7 +38,7 @@ const initialState = {
     'eraser': {
       name: 'eraser',
       color: 0xffffff,
-      size: 16,
+      size: 26,
       opacity: 1.0,
       palette: []
     }
