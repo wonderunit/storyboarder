@@ -1278,3 +1278,6 @@ ipcMain.on('toggleAudition', (event) => {
 ipcMain.on('signInSuccess', (event, response) => {
   mainWindow.webContents.send('signInSuccess', response)
 })
+
+ipcMain.on('revealShotGenerator',
+  event => mainWindow.webContents.send('revealShotGenerator'))

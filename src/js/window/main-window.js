@@ -734,6 +734,21 @@ let loadBoardUI = () => {
     }
   })
 
+  // toggle scroll-indicator visibility based on scroll position
+  document.querySelector('.board-metadata-container').addEventListener('scroll', e => {
+    if (e.target.offsetHeight + e.target.scrollTop === e.target.scrollHeight) {
+      document.querySelector('#board-metadata .scroll-indicator').style.opacity = 0
+    } else {
+      document.querySelector('#board-metadata .scroll-indicator').style.opacity = 1.0
+    }
+  })
+  document.querySelector('#board-metadata .scroll-indicator').addEventListener('click', e => {
+    let el = document.querySelector('.board-metadata-container')
+    el.scrollTo({
+      top: el.scrollHeight,
+      behavior: 'smooth'
+    })
+  })
 
   for (var item of document.querySelectorAll('.board-metadata-container input, .board-metadata-container textarea')) {
     item.addEventListener('pointerdown', (e)=>{
@@ -1328,7 +1343,7 @@ let loadBoardUI = () => {
     })
   } else {
     notifications.notify({ message: 'For better performance on your machine, Shot Generator and Perspective Guide have been disabled.' })
-    document.querySelector('#shot-generator-container').remove()
+    StsSidebar.setEnabled(false)
   }
 
   sceneSettingsView.init({ fps: boardData.fps })
@@ -5892,6 +5907,12 @@ ipcRenderer.on('addAudioFile', () => {
 
 ipcRenderer.on('toggleAudition', value => {
   audioPlayback.toggleAudition()
+})
+
+ipcRenderer.on('revealShotGenerator', value => {
+  document.querySelector('#shot-generator-container').scrollIntoView({
+    behavior: 'smooth'
+  })
 })
 
 const log = opt => ipcRenderer.send('log', opt)
