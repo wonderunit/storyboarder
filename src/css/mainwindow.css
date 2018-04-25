@@ -407,12 +407,14 @@ body::-webkit-scrollbar {
 }
 
 #board-metadata .scroll-indicator {
-  width: 16px;
-  height: 8px;
   position: absolute;
   left: 50%;
-  margin-left: -8px;
-  bottom: 8px;
+
+  width: 12px;
+  height: 6px;
+  margin-left: -6px;
+  bottom: 6px;
+
   display: block;
   --color1: #888;
   z-index: 1;
