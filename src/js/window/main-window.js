@@ -5258,11 +5258,7 @@ const storeUndoStateForImage = (isBefore, layerIndices = null) => {
 
   let layers = layerIndices.map(index => {
     // backup to a canvas
-    const source = storyboarderSketchPane.sketchPane.constructor.utils.pixelsToCanvas(
-      storyboarderSketchPane.sketchPane.layers[index].pixels(),
-      storyboarderSketchPane.sketchPane.width,
-      storyboarderSketchPane.sketchPane.height
-    )
+    const source = storyboarderSketchPane.sketchPane.layers[index].toCanvas()
 
     return {
       index,
