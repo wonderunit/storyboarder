@@ -1,3 +1,5 @@
+const R = require('ramda')
+
 const initialState = {
   tools: {
     'light-pencil': {
@@ -5,7 +7,8 @@ const initialState = {
       color: 0x90CBF9,
       size: 20,
       opacity: 0.25,
-      palette: []
+
+      palette: [0x373737, 0x223131, 0x121212]
     },
     'brush': {
       name: 'brush',
@@ -87,12 +90,30 @@ const toolbar = (state = initialState, action) => {
             ...state.tools,
             [state.activeTool]: {
               ...state.tools[state.activeTool],
-              size: action.payload.size || state.tools[state.activeTool].size,
-              color: action.payload.color || state.tools[state.activeTool].color,
-              opacity: action.payload.opacity || state.tools[state.activeTool].opacity
+              size: action.payload.size != null ? action.payload.size : state.tools[state.activeTool].size,
+              color: action.payload.color != null ? action.payload.color : state.tools[state.activeTool].color,
+              opacity: action.payload.opacity != null ? action.payload.opacity : state.tools[state.activeTool].opacity
             }
           }
         }
+
+    case 'TOOLBAR_TOOL_PALETTE_CHANGE':
+      return {
+        ...state,
+        tools: {
+          ...state.tools,
+          [action.payload.tool]: {
+            ...state.tools[action.payload.tool],
+            palette: action.payload.palette
+          }
+        }
+      }
+
+    case 'TOOLBAR_MERGE_FROM_PREFERENCES':
+      return {
+        ...state,
+        tools: R.mergeDeepRight(state.tools, action.payload.toolbar.tools)
+      }
 
     default:
       return state

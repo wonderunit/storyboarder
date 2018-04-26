@@ -44,9 +44,6 @@ const exporterCopyProject = require('../exporters/copy-project')
 const exporterArchive = require('../exporters/archive')
 const exporterWeb = require('../exporters/web')
 
-const prefsModule = require('electron').remote.require('./prefs')
-prefsModule.init(path.join(app.getPath('userData'), 'pref.json'))
-
 const sceneSettingsView = require('./scene-settings-view')
 
 const boardModel = require('../models/board')
@@ -70,6 +67,16 @@ const store = configureStore(getInitialStateRenderer(), 'renderer')
 window.$r = { store } // for debugging, e.g.: $r.store.getStore()
 const isCommandPressed = createIsCommandPressed(store)
 
+const prefsModule = require('electron').remote.require('./prefs')
+prefsModule.init(path.join(app.getPath('userData'), 'pref.json'))
+// we're gradually migrating prefs to a reducer
+// we read any 2.0 toolbar related prefs into the toolbar reducer manually
+// NOTE this is async so will preferences will be invalid until main IPC dispatches back to renderers
+if (prefsModule.getPrefs().toolbar) {
+  store.dispatch({
+    type: 'TOOLBAR_MERGE_FROM_PREFERENCES', payload: prefsModule.getPrefs()
+  })
+}
 
 const {
   LAYER_INDEX_REFERENCE,
@@ -1274,8 +1281,6 @@ const loadBoardUI = async () => {
   window.addEventListener('beforeunload', event => {
     console.log('Close requested! Saving ...')
 
-    // TODO THIS IS SLOW AS HELL. NEED TO FIX PREFS
-    toolbar.savePrefs()
     saveImageFile() // NOTE image is saved first, which ensures layers are present in data
     saveBoardFile() // ... then project data can be saved
 
@@ -1291,6 +1296,20 @@ const loadBoardUI = async () => {
       // remove any existing listeners
       watcher && watcher.close()
 
+      // dispatch a change to preferences merging in toolbar data
+      // first dispatch locally
+      store.dispatch({ type: 'PREFERENCES_MERGE_FROM_TOOLBAR', payload: store.getState().toolbar, scope: 'local' })
+      console.log('setting toolbar preferences')
+      prefsModule.set('toolbar', store.getState().preferences.toolbar)
+      console.log('writing to prefs.json')
+      prefsModule.savePrefs()
+      // then, let main and the rest of the renderers know
+      // NOTE this is async
+      // TODO use wait-service instead? https://jlongster.com/Two-Weird-Tricks-with-Redux
+      //      would be nice to dispatch to main + renderers, wait until we know they all have state, then save
+      store.dispatch({ type: 'PREFERENCES_MERGE_FROM_TOOLBAR', payload: store.getState().toolbar })
+
+      // TODO should we have an explicit SCENE_FILE_CLOSED dispatch?
       store.dispatch({
         type: 'SCENE_FILE_LOADED',
         payload: { path: null }
