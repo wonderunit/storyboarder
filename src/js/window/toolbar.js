@@ -160,10 +160,6 @@ class Toolbar extends EventEmitter {
     observeStore(this.store, state => state.toolbar, this.render.bind(this), true)
   }
 
-  savePrefs () {
-    prefsModule.set('toolbarState', this.state)
-  }
-
   setState (newState) {
     this.state = Object.assign(this.state, newState)
     if (newState.brush) {

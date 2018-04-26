@@ -1,18 +1,6 @@
 const { combineReducers } = require('redux')
 const defaultKeyMap = require('../helpers/defaultKeyMap')
 
-const toolbar = require('./toolbar')
-
-const sceneFilePath = (state = null, action) => {
-  switch (action.type) {
-    case 'SCENE_FILE_LOADED':
-      return action.payload.path
-
-    default:
-      return state
-  }
-}
-
 const keymap = (state = defaultKeyMap, action) => {
   switch (action.type) {
     case 'SET_KEYMAP':
@@ -27,10 +15,25 @@ const keymap = (state = defaultKeyMap, action) => {
   }
 }
 
+const preferences = require('./preferences')
+
+const sceneFilePath = (state = null, action) => {
+  switch (action.type) {
+    case 'SCENE_FILE_LOADED':
+      return action.payload.path
+
+    default:
+      return state
+  }
+}
+
+const toolbar = require('./toolbar')
+
 module.exports = combineReducers({
-  sceneFilePath,
-  toolbar,
   entities: combineReducers({
     keymap
-  })
+  }),
+  preferences,
+  sceneFilePath,
+  toolbar
 })
