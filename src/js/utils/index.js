@@ -1,4 +1,5 @@
 let { acceleratorAsHtml } = require('./accelerator')
+const Color = require('color-js')
 
 let msToTime = (s)=> {
   if(!s) s = 0
@@ -209,6 +210,18 @@ const fitToDst = (dst, src) => {
   return [x, y, wnew, hnew]
 }
 
+const colorToNumber = color =>
+  ((color.red * 255) << 16) +
+    ((color.green * 255) << 8) +
+    color.blue * 255
+
+const numberToColor = number =>
+  Color([
+    (number >> 16) & 255,
+    (number >> 8) & 255,
+    number & 255
+  ])
+
 module.exports = {
   msToTime,
   uidGen,
@@ -229,5 +242,7 @@ module.exports = {
   uniq,
   truncateMiddle,
   dashed,
-  fitToDst
+  fitToDst,
+  colorToNumber,
+  numberToColor
 }
