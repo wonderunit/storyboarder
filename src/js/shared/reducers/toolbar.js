@@ -106,15 +106,18 @@ const toolbar = (state = initialState, action) => {
             }
           }
         }
-
-    case 'TOOLBAR_TOOL_PALETTE_CHANGE':
+    case 'TOOLBAR_TOOL_PALETTE_SET':
       return {
         ...state,
         tools: {
           ...state.tools,
-          [action.payload.tool]: {
-            ...state.tools[action.payload.tool],
-            palette: action.payload.palette
+          [state.activeTool]: {
+            ...state.tools[state.activeTool],
+            palette: R.update(
+              action.payload.index,
+              action.payload.color,
+              state.tools[state.activeTool].palette
+            )
           }
         }
       }
