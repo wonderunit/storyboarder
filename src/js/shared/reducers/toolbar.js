@@ -155,6 +155,12 @@ const toolbar = (state = initialState, action) => {
         }
       }
 
+    case 'TOOLBAR_GUIDE_TOGGLE':
+      return {
+        ...state,
+        [action.payload]: !state[action.payload]
+      }
+
     default:
       return state
   }

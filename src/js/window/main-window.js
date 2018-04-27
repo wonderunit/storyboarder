@@ -940,22 +940,23 @@ const loadBoardUI = async () => {
     sfx.playEffect('metal')
   })
 
-  toolbar.on('grid', value => {
-    guides.setState({ grid: value })
-    sfx.playEffect('metal')
-  })
-  toolbar.on('center', value => {
-    guides.setState({ center: value })
-    sfx.playEffect('metal')
-  })
-  toolbar.on('thirds', value => {
-    guides.setState({ thirds: value })
-    sfx.playEffect('metal')
-  })
-  toolbar.on('perspective', value => {
-    guides.setState({ perspective: value })
-    sfx.playEffect('metal')
-  })
+  // toolbar.on('grid', value => {
+  //   guides.setState({ grid: value })
+  //   sfx.playEffect('metal')
+  // })
+  // toolbar.on('center', value => {
+  //   guides.setState({ center: value })
+  //   sfx.playEffect('metal')
+  // })
+  // toolbar.on('thirds', value => {
+  //   guides.setState({ thirds: value })
+  //   sfx.playEffect('metal')
+  // })
+  // toolbar.on('perspective', value => {
+  //   guides.setState({ perspective: value })
+  //   sfx.playEffect('metal')
+  // })
+
   toolbar.on('onion', value => {
     onionSkin.setEnabled(value)
     if (onionSkin.getEnabled()) {
@@ -1087,6 +1088,15 @@ const loadBoardUI = async () => {
       storyboarderSketchPane.sketchPane.drawOverlay(guideCanvas)
     }
   })
+  observeStore(store, state => state.toolbar, () => {
+    const state = store.getState()
+    guides.setState({
+      grid: state.toolbar.grid,
+      center: state.toolbar.center,
+      thirds: state.toolbar.thirds,
+      perspective: state.toolbar.perspective
+    })
+  }, true)
 
   // onionSkin = new OnionSkin(storyboarderSketchPane, boardPath)
   layersEditor = new LayersEditor(storyboarderSketchPane, sfx, notifications)

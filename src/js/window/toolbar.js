@@ -318,23 +318,27 @@ class Toolbar extends EventEmitter {
         this.emit('current-color-picker')
         break
 
-      // TODO
       case 'grid':
-        this.setState({ grid: !this.state.grid })
-        this.emit('grid', this.state.grid)
+        this.store.dispatch({ type: 'TOOLBAR_GUIDE_TOGGLE', payload: 'grid' })
+        // this.store.dispatch({ type: 'PLAY_SOUND', payload: 'metal' }) // TODO
+        sfx.playEffect('metal')
         break
       case 'center':
-        this.setState({ center: !this.state.center })
-        this.emit('center', this.state.center)
+        this.store.dispatch({ type: 'TOOLBAR_GUIDE_TOGGLE', payload: 'center' })
+        // this.store.dispatch({ type: 'PLAY_SOUND', payload: 'metal' }) // TODO
+        sfx.playEffect('metal')
         break
       case 'thirds':
-        this.setState({ thirds: !this.state.thirds })
-        this.emit('thirds', this.state.thirds)
+        this.store.dispatch({ type: 'TOOLBAR_GUIDE_TOGGLE', payload: 'thirds' })
+        // this.store.dispatch({ type: 'PLAY_SOUND', payload: 'metal' }) // TODO
+        sfx.playEffect('metal')
         break
       case 'perspective':
-        this.setState({ perspective: !this.state.perspective })
-        this.emit('perspective', this.state.perspective)
+        this.store.dispatch({ type: 'TOOLBAR_GUIDE_TOGGLE', payload: 'perspective' })
+        // this.store.dispatch({ type: 'PLAY_SOUND', payload: 'metal' }) // TODO
+        sfx.playEffect('metal')
         break
+
       case 'onion':
         this.setState({ onion: !this.state.onion })
         this.emit('onion', this.state.onion)
