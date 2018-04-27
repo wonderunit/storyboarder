@@ -12,7 +12,11 @@ describe('toolbar preferences (renderer)', () => {
     // load prefs json
     // merge in state from prefs data (if it exists) to toolbar state
 
-    let preferencesState = {
+    let toolbarState = toolbarReducer(undefined, { type: undefined })
+    // has default captions state
+    assert.equal(toolbarState.captions, false)
+
+    const preferencesState = {
       toolbar: {
         tools: {
           pencil: {
@@ -22,18 +26,19 @@ describe('toolbar preferences (renderer)', () => {
         captions: true
       }
     }
-    let toolbarState = toolbarReducer(undefined, { type: 'TOOLBAR_MERGE_FROM_PREFERENCES', payload: preferencesState })
+
+    toolbarState = toolbarReducer(undefined, { type: 'TOOLBAR_MERGE_FROM_PREFERENCES', payload: preferencesState })
 
     // pencil color changed
     assert.equal(toolbarState.tools.pencil.color, 0xff0000)
     // pencil size same
     assert.equal(toolbarState.tools.pencil.size, 4)
 
-    // toolbar eraser should be the default
-    assert.equal(toolbarState.tools.eraser.color, 0xffffff) // FIXME erase color doesn't matter. should we even bother storing it to prefs?
+    // toolbar eraser should have a default color
+    assert.equal(toolbarState.tools.eraser.color, 0xffffff)
 
-    // captions state is not stored in toolbar yet
-    assert.equal(toolbarState.captions, undefined)
+    // sets caption state from preferences
+    assert.equal(toolbarState.captions, true)
   })
 
   it('can save to prefs.json', () => {
@@ -50,21 +55,25 @@ describe('toolbar preferences (renderer)', () => {
     // change its color to red
     toolbarState = toolbarReducer(toolbarState, { type: 'TOOLBAR_TOOL_SET', payload: { color: 0xff0000 } })
 
+    toolbarState = toolbarReducer(toolbarState, { type: 'TOOLBAR_CAPTIONS_SET', payload: true })
+
     // merge into preferences
+    // captions are included
     // guides and onion skin are ignored intentionally
-    // captions are added manually (because they're not part of the toolbar reducer yet)
     let preferencesState = preferencesReducer(undefined, {
       type: 'PREFERENCES_MERGE_FROM_TOOLBAR',
       payload: {
-        ...toolbarState,
-        captions: true
+        ...toolbarState
       }
     })
 
     // preferences should now have a red pencil
     assert.equal(preferencesState.toolbar.tools['pencil'].color, 0xff0000)
+
     // preferences should now have captions enabled
     assert.equal(preferencesState.toolbar.captions, true)
+
+    // TODO erase color doesn't matter. should we even bother storing it to prefs?
 
     // merge onto other prefs
     // save to a file
