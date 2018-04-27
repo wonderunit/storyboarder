@@ -495,11 +495,13 @@ class Toolbar extends EventEmitter {
     switch (event.target.dataset.direction) {
       case '+1':
         this.store.dispatch({ type: 'TOOLBAR_BRUSH_SIZE_INC' })
-        this.store.dispatch({ type: 'PLAY_SOUND', payload: 'brush-size-up' })
+        // this.store.dispatch({ type: 'PLAY_SOUND', payload: 'brush-size-up' }) // TODO
+        sfx.playEffect('brush-size-up')
         break
       case '-1':
         this.store.dispatch({ type: 'TOOLBAR_BRUSH_SIZE_DEC' })
-        this.store.dispatch({ type: 'PLAY_SOUND', payload: 'brush-size-down' })
+        // this.store.dispatch({ type: 'PLAY_SOUND', payload: 'brush-size-down' }) // TODO
+        sfx.playEffect('brush-size-down')
         break
     }
   }
