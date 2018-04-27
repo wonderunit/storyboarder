@@ -129,6 +129,32 @@ const toolbar = (state = initialState, action) => {
         captions: action.payload.toolbar.captions != null ? action.payload.toolbar.captions : state.captions
       }
 
+    case 'TOOLBAR_BRUSH_SIZE_INC':
+      const TOOLBAR_MAX_SIZE = 256
+      return {
+        ...state,
+        tools: {
+          ...state.tools,
+          [state.activeTool]: {
+            ...state.tools[state.activeTool],
+            size: Math.min(TOOLBAR_MAX_SIZE, state.tools[state.activeTool].size * 1.2)
+          }
+        }
+      }
+
+    case 'TOOLBAR_BRUSH_SIZE_DEC':
+      const TOOLBAR_MIN_SIZE = 1
+      return {
+        ...state,
+        tools: {
+          ...state.tools,
+          [state.activeTool]: {
+            ...state.tools[state.activeTool],
+            size: Math.max(TOOLBAR_MIN_SIZE, state.tools[state.activeTool].size * 0.8)
+          }
+        }
+      }
+
     default:
       return state
   }
