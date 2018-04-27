@@ -856,21 +856,22 @@ const loadBoardUI = async () => {
   })
 
   // TODO
-  toolbar = new Toolbar(store, document.getElementById("toolbar"))
-  toolbar.on('brush', (kind, options) => {
-    toolbar.emit('cancelTransform')
-    storyboarderSketchPane.setBrushTool(kind, options)
-    sfx.playEffect('tool-' + kind)
-  })
-  toolbar.on('brush:size', size => {
-    toolbar.emit('cancelTransform')
-    storyboarderSketchPane.setBrushSize(size)
-  })
-  toolbar.on('brush:color', color => {
-    toolbar.emit('cancelTransform')
-    sfx.playEffect('metal')
-    storyboarderSketchPane.setBrushColor(color)
-  })
+  toolbar = new Toolbar(store, document.getElementById('toolbar'))
+  // TODO
+  // toolbar.on('brush', (kind, options) => {
+  //   toolbar.emit('cancelTransform')
+  //   storyboarderSketchPane.setBrushTool(kind, options)
+  //   sfx.playEffect('tool-' + kind)
+  // })
+  // toolbar.on('brush:size', size => {
+  //   toolbar.emit('cancelTransform')
+  //   storyboarderSketchPane.setBrushSize(size)
+  // })
+  // toolbar.on('brush:color', color => {
+  //   toolbar.emit('cancelTransform')
+  //   sfx.playEffect('metal')
+  //   storyboarderSketchPane.setBrushColor(color)
+  // })
 
 
   toolbar.on('trash', () => {
@@ -940,7 +941,7 @@ const loadBoardUI = async () => {
     }
     sfx.playEffect('metal')
   })
-  
+
   toolbar.on('grid', value => {
     guides.setState({ grid: value })
     sfx.playEffect('metal')
@@ -973,7 +974,7 @@ const loadBoardUI = async () => {
   toolbar.on('captions', () => {
     // HACK!!!
     let el = document.querySelector('#canvas-caption')
-    el.style.visibility = el.style.visibility == 'hidden'
+    el.style.visibility = el.style.visibility === 'hidden'
       ? 'visible'
       : 'hidden'
     sfx.playEffect('metal')
@@ -984,15 +985,19 @@ const loadBoardUI = async () => {
 
   storyboarderSketchPane.toolbar = toolbar
 
-  if (!toolbar.getState().captions) {
-    let el = document.querySelector('#canvas-caption')
-    el.style.visibility = 'hidden'
-  }
+  // TODO
+  // if (!toolbar.getState().captions) {
+  //   let el = document.querySelector('#canvas-caption')
+  //   el.style.visibility = 'hidden'
+  // }
 
   // HACK force initialize
-  sfx.setMute(true)
-  toolbar.setState({ brush: 'light-pencil' })
-  sfx.setMute(false)
+  // sfx.setMute(true)
+  // toolbar.setState({ brush: 'light-pencil' })
+  // sfx.setMute(false)
+  store.dispatch({ type: 'TOOLBAR_TOOL_CHANGE', payload: 'light-pencil' })
+
+
 
   tooltips.init()
 
@@ -1022,39 +1027,59 @@ const loadBoardUI = async () => {
   //
   colorPicker = new ColorPicker()
   const setCurrentColor = color => {
-    storyboarderSketchPane.setBrushColor(color)
-    toolbar.changeCurrentColor(color)
+    console.log('setCurrentColor', color)
+    store.dispatch({ type: 'TOOLBAR_TOOL_SET', payload: { color: util.colorToNumber(color) } })
+    // storyboarderSketchPane.setBrushColor(color)
+    // toolbar.changeCurrentColor(color)
     colorPicker.setState({ color: color.toCSS() })
   }
-  const setPaletteColor = (brush, index, color) => {
-    toolbar.changePaletteColor(brush, index, color)
+  const setPaletteColor = (tool, index, color) => {
+    store.dispatch({
+      type: 'TOOLBAR_TOOL_PALETTE_SET',
+      payload: {
+        index,
+        color: util.colorToNumber(color)
+      }
+    })
+
+    // toolbar.changePaletteColor(brush, index, color)
     colorPicker.setState({ color: color.toCSS() })
   }
-  toolbar.on('current-color-picker', color => {
+  toolbar.on('current-color-picker', () => {
     sfx.positive()
     colorPicker.attachTo(document.getElementById('toolbar-current-color'))
     colorPicker.removeAllListeners('color') // HACK
 
     // initialize color picker active swatch
-    colorPicker.setState({ color: color.toCSS() })
+    const state = store.getState()
+    colorPicker.setState({
+      color: Color(
+        util.numberToColor(state.toolbar.tools[state.toolbar.activeTool].color)
+      )
+    })
 
     colorPicker.addListener('color', setCurrentColor)
   })
-  toolbar.on('palette-color-picker', (color, target, brush, index) => {
+  toolbar.on('palette-color-picker', ({ target, index }) => {
     sfx.positive()
 
     colorPicker.attachTo(target)
     colorPicker.removeAllListeners('color') // HACK
 
-    // initialize color picker active swatch
-    colorPicker.setState({ color: color.toCSS() })
+    // initialize color picker to selected palette color
+    const state = store.getState()
+    colorPicker.setState({
+      color: Color(
+        util.numberToColor(state.toolbar.tools[state.toolbar.activeTool].palette[index])
+      )
+    })
 
-    colorPicker.addListener('color', setPaletteColor.bind(this, brush, index))
+    colorPicker.addListener('color', setPaletteColor.bind(this, state.toolbar.activeTool, index))
   })
-  toolbar.on('current-set-color', color => {
-    storyboarderSketchPane.setBrushColor(color)
-    toolbar.changeCurrentColor(color)
-  })
+  // toolbar.on('current-set-color', color => {
+    // storyboarderSketchPane.setBrushColor(color)
+    // toolbar.changeCurrentColor(color)
+  // })
 
   guides = new Guides({
     width: storyboarderSketchPane.sketchPane.width,
@@ -1298,8 +1323,9 @@ const loadBoardUI = async () => {
 
       // dispatch a change to preferences merging in toolbar data
       // first dispatch locally
-      store.dispatch({ type: 'PREFERENCES_MERGE_FROM_TOOLBAR', payload: store.getState().toolbar, scope: 'local' })
+      store.dispatch({ type: 'PREFERENCES_MERGE_FROM_TOOLBAR', payload: store.getState().toolbar, meta: { scope: 'local' } })
       console.log('setting toolbar preferences')
+      // TODO set caption value from toolbar ui state
       prefsModule.set('toolbar', store.getState().preferences.toolbar)
       console.log('writing to prefs.json')
       prefsModule.savePrefs()
@@ -5556,13 +5582,15 @@ ipcRenderer.on('setTool', (e, toolName) => {
   }
 })
 
-ipcRenderer.on('useColor', (e, arg)=> {
+// TODO
+ipcRenderer.on('useColor', (e, arg) => {
   if (!toolbar) return
 
   if (!textInputMode) {
-    if (toolbar.getCurrentPalette()) {
-      toolbar.emit('current-set-color', toolbar.getCurrentPalette()[arg-1])
-    }
+    // TODO set the color of the current tool to be the given palette index
+    // if (toolbar.getCurrentPalette()) {
+    //   toolbar.emit('current-set-color', toolbar.getCurrentPalette()[arg-1])
+    // }
   }
 })
 
@@ -5577,11 +5605,11 @@ ipcRenderer.on('clear', (e, arg) => {
 ipcRenderer.on('brushSize', (e, direction) => {
   if (!textInputMode) {
     if (direction > 0) {
-      toolbar.changeBrushSize(1)
-      sfx.playEffect('brush-size-up')
+      store.dispatch({ type: 'TOOLBAR_BRUSH_SIZE_INC' })
+      store.dispatch({ type: 'PLAY_SOUND', payload: 'brush-size-up' })
     } else {
-      toolbar.changeBrushSize(-1)
-      sfx.playEffect('brush-size-down')
+      store.dispatch({ type: 'TOOLBAR_BRUSH_SIZE_DEC' })
+      store.dispatch({ type: 'PLAY_SOUND', payload: 'brush-size-down' })
     }
   }
 })
@@ -5689,10 +5717,12 @@ ipcRenderer.on('importImage', (event, args)=> {
 })
 
 ipcRenderer.on('toggleGuide', (event, args) => {
-  if (!textInputMode) {
-    toolbar.setState({ [args]: !toolbar.state[args] })
-    toolbar.emit(args, toolbar.state[args])
-  }
+  // TODO
+
+  // if (!textInputMode) {
+  //   toolbar.setState({ [args]: !toolbar.state[args] })
+  //   toolbar.emit(args, toolbar.state[args])
+  // }
 })
 
 ipcRenderer.on('toggleNewShot', (event, args) => {
