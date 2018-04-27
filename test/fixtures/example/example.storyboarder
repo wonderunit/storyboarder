@@ -1,5 +1,5 @@
 {
-  "version": "1.5.1",
+  "version": "0.7.0",
   "aspectRatio": 1.7777777777777777,
   "fps": 24,
   "defaultBoardTiming": 2000,
@@ -11,8 +11,7 @@
       "lastEdited": 1499375725536,
       "layers": {
         "reference": {
-          "url": "board-1-UDRF3-reference.png",
-          "opacity": 0.75
+          "url": "board-1-UDRF3-reference.png"
         },
         "notes": {
           "url": "board-1-UDRF3-notes.png"
