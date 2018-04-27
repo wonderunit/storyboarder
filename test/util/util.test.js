@@ -33,8 +33,8 @@ describe('util', () => {
   })
 
   it('numberToColor', () => {
-    assert.equal(util.numberToColor(0xff05ff).r, Color('#ff05ff').r)
-    assert.equal(util.numberToColor(0xff05ff).g, Color('#ff05ff').g)
-    assert.equal(util.numberToColor(0xff05ff).b, Color('#ff05ff').b)
+    assert.equal(Color(util.numberToColor(0xff05ff)).r, Color('#ff05ff').r)
+    assert.equal(Color(util.numberToColor(0xff05ff)).g, Color('#ff05ff').g)
+    assert.equal(Color(util.numberToColor(0xff05ff)).b, Color('#ff05ff').b)
   })
 })
