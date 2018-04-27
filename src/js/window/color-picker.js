@@ -129,7 +129,7 @@ class ColorPicker extends EventEmitter {
 
     swatches.forEach((e)=>{
       e.addEventListener('pointerdown', (e)=>{
-        console.log('click!', e.target.dataset)
+        // console.log('click!', e.target.dataset)
         // request a color change from sketchPane
         this.emit('color', Color(e.target.dataset.color))
       })
