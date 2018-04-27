@@ -855,9 +855,7 @@ class StoryboarderSketchPane extends EventEmitter {
     // this.updatePointer()
 
     // convert to number
-    color = ((color.red * 255) << 16) +
-      ((color.green * 255) << 8) +
-      color.blue * 255
+    color = utils.colorToNumber(color)
 
     this.store.dispatch({ type: 'TOOLBAR_TOOL_SET', payload: { color }, meta: { scope: 'local' } })
   }
