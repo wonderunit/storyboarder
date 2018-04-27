@@ -846,7 +846,7 @@ class StoryboarderSketchPane extends EventEmitter {
     // this.sketchPane.setTool(this.brush)
     // this.updatePointer()
     // this.sketchPane.brushSize = size
-    this.store.dispatch({ type: 'TOOLBAR_TOOL_SET', payload: { size }, meta: { scope: 'local' } })
+    this.store.dispatch({ type: 'TOOLBAR_TOOL_SET', payload: { size } })
   }
 
   setBrushColor (color) {
