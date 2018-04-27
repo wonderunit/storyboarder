@@ -125,7 +125,8 @@ const toolbar = (state = initialState, action) => {
     case 'TOOLBAR_MERGE_FROM_PREFERENCES':
       return {
         ...state,
-        tools: R.mergeDeepRight(state.tools, action.payload.toolbar.tools)
+        tools: R.mergeDeepRight(state.tools, action.payload.toolbar.tools),
+        captions: action.payload.toolbar.captions != null ? action.payload.toolbar.captions : state.captions
       }
 
     default:
