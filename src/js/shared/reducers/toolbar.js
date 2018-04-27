@@ -53,6 +53,16 @@ const initialState = {
       palette: [0xffffff, 0xffffff, 0xffffff]
     }
   },
+
+  captions: false,
+
+  grid: false,
+  center: false,
+  thirds: false,
+  perspective: false,
+
+  onion: false,
+
   prevTool: undefined,
   activeTool: undefined
 }
