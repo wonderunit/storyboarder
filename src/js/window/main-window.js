@@ -872,8 +872,6 @@ const loadBoardUI = async () => {
   //   sfx.playEffect('metal')
   //   storyboarderSketchPane.setBrushColor(color)
   // })
-
-
   toolbar.on('trash', () => {
     clearLayers()
   })
@@ -983,7 +981,7 @@ const loadBoardUI = async () => {
     openInEditor()
   })
 
-  storyboarderSketchPane.toolbar = toolbar
+  // storyboarderSketchPane.toolbar = toolbar
 
   // TODO
   // if (!toolbar.getState().captions) {
