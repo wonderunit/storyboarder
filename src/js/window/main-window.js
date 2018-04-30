@@ -1012,11 +1012,11 @@ const loadBoardUI = async () => {
   //
   colorPicker = new ColorPicker()
   const setCurrentColor = color => {
-    console.log('setCurrentColor', color)
     store.dispatch({ type: 'TOOLBAR_TOOL_SET', payload: { color: util.colorToNumber(color) } })
     // storyboarderSketchPane.setBrushColor(color)
     // toolbar.changeCurrentColor(color)
     colorPicker.setState({ color: color.toCSS() })
+    sfx.playEffect('metal')
   }
   const setPaletteColor = (tool, index, color) => {
     store.dispatch({

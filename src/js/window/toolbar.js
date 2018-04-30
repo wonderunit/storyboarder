@@ -284,6 +284,7 @@ class Toolbar extends EventEmitter {
         if (state.toolbar.activeTool !== selection) {
           // if (this.state.transformMode) this.emit('cancelTransform') // TODO
           this.store.dispatch({ type: 'TOOLBAR_TOOL_CHANGE', payload: selection, meta: { scope: 'local' } })
+          sfx.playEffect('tool-' + selection)
         }
         break
 
