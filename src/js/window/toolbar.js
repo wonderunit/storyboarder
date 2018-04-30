@@ -341,8 +341,8 @@ class Toolbar extends EventEmitter {
         break
 
       case 'onion':
-        this.setState({ onion: !this.state.onion })
-        this.emit('onion', this.state.onion)
+        this.store.dispatch({ type: 'TOOLBAR_ONION_TOGGLE' })
+        sfx.playEffect('metal')
         break
       case 'captions':
         // this.toggleCaptions()

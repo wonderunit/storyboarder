@@ -167,6 +167,12 @@ const toolbar = (state = initialState, action) => {
         captions: !state.captions
       }
 
+    case 'TOOLBAR_ONION_TOGGLE':
+      return {
+        ...state,
+        onion: !state.onion
+      }
+
     default:
       return state
   }
