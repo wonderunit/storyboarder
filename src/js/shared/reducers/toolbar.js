@@ -161,6 +161,12 @@ const toolbar = (state = initialState, action) => {
         [action.payload]: !state[action.payload]
       }
 
+    case 'TOOLBAR_CAPTIONS_TOGGLE':
+      return {
+        ...state,
+        captions: !state.captions
+      }
+
     default:
       return state
   }
