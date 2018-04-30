@@ -2,8 +2,10 @@ const EventEmitter = require('events').EventEmitter
 
 const { ipcRenderer, remote } = require('electron')
 
+const fs = require('fs')
 
-const SketchPane = require('../sketch-pane')
+const SketchPane = require('alchemancy')
+
 const Brush = require('../sketch-pane/brush')
 const LineMileageCounter = require('./line-mileage-counter')
 
@@ -11,6 +13,8 @@ const { createIsCommandPressed } = require('../utils/keytracker')
 const util = require('../utils')
 
 const { LAYER_NAME_BY_INDEX } = require('../constants')
+
+const observeStore = require('../shared/helpers/observeStore')
 
 const prefsModule = require('electron').remote.require('./prefs')
 const enableBrushCursor = prefsModule.getPrefs('main')['enableBrushCursor']
@@ -27,7 +31,13 @@ const enableStabilizer = prefsModule.getPrefs('main')['enableStabilizer']
 class StoryboarderSketchPane extends EventEmitter {
   constructor (el, canvasSize, store) {
     super()
-    this.isCommandPressed = createIsCommandPressed(store)
+    this.el = el
+    this.canvasSize = canvasSize
+    this.store = store
+  }
+
+  async load () {
+    this.isCommandPressed = createIsCommandPressed(this.store)
 
     this.prevTimeStamp = 0
     this.frameLengthArray = []
@@ -52,8 +62,6 @@ class StoryboarderSketchPane extends EventEmitter {
     this.onKeyUp = this.onKeyUp.bind(this)
     this.onDblClick = this.onDblClick.bind(this)
 
-    this.el = el
-    this.canvasSize = canvasSize
     this.containerSize = null
     this.scaleFactor = null
 
@@ -75,7 +83,7 @@ class StoryboarderSketchPane extends EventEmitter {
     this.containerEl.classList.add('container')
 
     // brush pointer
-    if(enableBrushCursor) {
+    if (enableBrushCursor) {
       this.brushPointerContainer = document.createElement('div')
       this.brushPointerContainer.className = 'brush-pointer'
       this.brushPointerContainer.style.position = 'absolute'
@@ -89,55 +97,202 @@ class StoryboarderSketchPane extends EventEmitter {
     // the DOM query returns null unless we wait for the next tick.
     process.nextTick(() => this.renderCursor())
 
-    // sketchpane
-    this.sketchPane = new SketchPane()
-    this.sketchPane.on('ondown', this.onSketchPaneDown.bind(this))
-    this.sketchPane.on('onbeforeup', this.onSketchPaneBeforeUp.bind(this))
-    this.sketchPane.on('onup', this.onSketchPaneOnUp.bind(this))
-    this.sketchPane.setCanvasSize(...this.canvasSize)
-    this.sketchPaneDOMElement = this.sketchPane.getDOMElement()
-
-    this.sketchPane.addLayer(0) // reference
-    this.sketchPane.fillLayer('#fff')
-    this.sketchPane.addLayer(1) // main
-    this.sketchPane.addLayer(2) // onion skin
-    this.sketchPane.addLayer(3) // notes
-    this.sketchPane.addLayer(4) // guides
-    this.sketchPane.addLayer(5) // composite
-    this.sketchPane.selectLayer(1)
-
-    let stabilizeLevel = 0
-    if(enableStabilizer) {
-      stabilizeLevel = 10
-    }
-    this.sketchPane.setToolStabilizeLevel(stabilizeLevel)
-    this.sketchPane.setToolStabilizeWeight(0.2)
-
-    this.el.addEventListener('dblclick', this.onDblClick)
-
-    this.el.addEventListener('pointerdown', this.canvasPointerDown)
-
-    this.sketchPaneDOMElement.addEventListener('pointerover', this.canvasPointerOver)
-    this.sketchPaneDOMElement.addEventListener('pointerout', this.canvasPointerOut)
-    window.addEventListener('keydown', this.onKeyDown)
-    window.addEventListener('keyup', this.onKeyUp)
-
-    // measure and update cached size data
-    this.updateContainerSize()
 
     // add container to element
     this.el.appendChild(this.containerEl)
+
+    // sketchpane
+    this.sketchPane = new SketchPane({
+      imageWidth: this.canvasSize[0],
+      imageHeight: this.canvasSize[1],
+      backgroundColor: 0x333333
+    })
+    this.sketchPaneDOMElement = this.sketchPane.getDOMElement()
+    this.resize()
+
+    // measure and update cached size data
+    // this.updateContainerSize()
+
+    // adjust sizes
+    // this.renderContainerSize()
+
+    await this.sketchPane.loadBrushes({
+      brushes: JSON.parse(fs.readFileSync('./src/data/brushes/brushes.json')),
+      brushImagePath: './data/brushes'
+    })
+
+    // this.sketchPane.on('onbeforeup', this.onSketchPaneBeforeUp.bind(this)) // MIGRATE
+    // this.sketchPane.on('onup', this.onSketchPaneOnUp.bind(this)) // MIGRATE
+
+    this.sketchPane.newLayer() // reference
+    // this.sketchPane.fillLayer('#fff')
+    this.sketchPane.newLayer() // main
+    this.sketchPane.newLayer() // onion skin
+    this.sketchPane.newLayer() // notes
+    this.sketchPane.newLayer() // guides
+    this.sketchPane.newLayer() // composite
+    this.sketchPane.setCurrentLayerIndex(1)
+
+    // TODO minimum update (e.g.: maybe just cursor size?)
+    // sync sketchpane to state
+    const syncSketchPaneState = toolbarState => {
+      if (toolbarState.activeTool != null) {
+        const tool = toolbarState.tools[toolbarState.activeTool]
+        this.sketchPane.brush = this.sketchPane.brushes[tool.name]
+        this.sketchPane.brushColor = tool.color
+        this.sketchPane.brushSize = tool.size
+        this.sketchPane.brushOpacity = tool.opacity
+
+        // TODO move to a reducer?
+        // if we're not erasing ...
+        if (toolbarState.activeTool !== 'eraser') {
+          // ... set the current layer based on the active tool
+          switch (toolbarState.activeTool) {
+            case 'light-pencil':
+              this.sketchPane.setCurrentLayerIndex(0) // HACK hardcoded
+              break
+            case 'note-pen':
+              this.sketchPane.setCurrentLayerIndex(3) // HACK hardcoded
+              break
+            default:
+              this.sketchPane.setCurrentLayerIndex(1) // HACK hardcoded
+              break
+          }
+        }
+      }
+
+      // TODO update pointer?
+    }
+
+    const updateQuickErase = (e) => {
+      // if we're not drawing
+      if (!this.sketchPane.isDrawing()) {
+        // and erase is not being requested
+        if (!(e.buttons === 32 || e.altKey)) {
+          // ... but we have a prevTool,
+          if (this.store.getState().toolbar.prevTool) {
+            // then switch out of quick-erase mode back to previous tool
+            this.store.dispatch({ type: 'TOOLBAR_TOOL_QUICK_POP', meta: { scope: 'local' } })
+          }
+        }
+      }
+    }
+
+    // sync on change
+    observeStore(
+      this.store,
+      state => state.toolbar,
+      toolbarState => {
+        // update the cursor any time any toolbar-related value changes
+        syncSketchPaneState(toolbarState)
+      },
+      // sync now to init
+      true
+    )
+
     // add SketchPane to container
     this.containerEl.appendChild(this.sketchPaneDOMElement)
 
-    // adjust sizes
-    this.renderContainerSize()
+    // TODO cleanup
+    // let ro = new window.ResizeObserver(entries => {
+    //   console.log('resize', entries[0].contentRect, this.containerEl)
+    //   const { width, height } = entries[0].contentRect
+    //   this.sketchPane.resize(width, height)
+    // })
+    // ro.observe(this.containerEl)
+    window.addEventListener('resize', e => this.resize())
+
+    this.sketchPane.onStrokeBefore = strokeState =>
+      this.emit('addToUndoStack', strokeState.layerIndices)
+
+    this.sketchPane.onStrokeAfter = strokeState =>
+      this.emit('markDirty', strokeState.layerIndices)
+
+    window.addEventListener('pointerdown', e => {
+      // TODO avoid false positive clicks :/
+      // TODO could store multiErase status / erase layer array in a reducer?
+
+      // configure the tool for drawing
+
+      // stroke options
+      // via https://developer.mozilla.org/en-US/docs/Web/API/Pointer_events#Determining_button_states
+      // is the user requesting to erase?
+      let options = {}
+
+      let toolbarState = this.store.getState().toolbar
+
+      if (!toolbarState.prevTool &&
+          toolbarState.activeTool === 'eraser') {
+        // regular erase
+        options.erase = [0, 1, 3]
+      } else {
+        options = (e.buttons === 32 || e.altKey)
+          // is the shift key down?
+          ? e.shiftKey
+            // ... then, erase multiple layers
+            ? { erase: [0, 1, 3] } // HACK hardcoded
+            // ... otherwise, only erase current layer
+            : { erase: [this.sketchPane.getCurrentLayerIndex()] }
+          // not erasing
+          : {}
+
+        if (options.erase) {
+          // switch to quick-erase mode
+          this.store.dispatch({ type: 'TOOLBAR_TOOL_QUICK_PUSH', payload: 'eraser', meta: { scope: 'local' } })
+        }
+      }
+
+      // sync sketchPane to the current toolbar state
+      syncSketchPaneState(this.store.getState().toolbar)
+
+      this.sketchPane.down(e, options)
+    })
+    window.addEventListener('pointermove', e => {
+      this.sketchPane.move(e)
+    })
+    window.addEventListener('pointerup', e => {
+      this.sketchPane.up(e)
+      updateQuickErase(e)
+    })
+    window.addEventListener('keyup', e => {
+      updateQuickErase(e)
+    })
+
+    // Proxy
+    this.sketchPane.setTool = () => { console.warn('SketchPane#setTool no impl') }
+    this.sketchPane.getCanvasWidth = () => { return this.sketchPane.width }
+    this.sketchPane.getCanvasHeight = () => { return this.sketchPane.height }
+
+
+    // MIGRATE TODO REMOVE 
+    // let stabilizeLevel = 0
+    // if(enableStabilizer) {
+    //   stabilizeLevel = 10
+    // }
+    // this.sketchPane.setToolStabilizeLevel(stabilizeLevel)
+    // this.sketchPane.setToolStabilizeWeight(0.2)
+
+    this.el.addEventListener('dblclick', this.onDblClick)
+
+    // this.el.addEventListener('pointerdown', this.canvasPointerDown)
+    // this.sketchPaneDOMElement.addEventListener('pointerover', this.canvasPointerOver)
+    // this.sketchPaneDOMElement.addEventListener('pointerout', this.canvasPointerOut)
+
+        // window.addEventListener('keydown', this.onKeyDown)
+        // window.addEventListener('keyup', this.onKeyUp)
 
     this.onFrame = this.onFrame.bind(this)
     requestAnimationFrame(this.onFrame)
   }
 
+  // for compatibility with older sketchpane code
+  getCanvasSize () {
+    return { width: this.sketchPane.width, height: this.sketchPane.height }
+  }
+
   setStrategy (Strategy) {
+    console.log('StoryboarderSketchPane#setStrategy')
+    return
     if (this.strategy instanceof Strategy) return
 
     if (this.strategy instanceof LockedStrategy) {
@@ -224,24 +379,11 @@ class StoryboarderSketchPane extends EventEmitter {
     }
   }
 
-  // store snapshot on pointerdown?
-  // eraser : yes
-  // brushes: no
-  onSketchPaneDown () {
-    if (this.sketchPane.paintingKnockout) {
-      if (this.isMultiLayerOperation) {
-        this.emit('addToUndoStack', this.visibleLayersIndices)
-      } else {
-        this.emit('addToUndoStack')
-      }
-    }
-  }
-
   // store snapshot before pointer up?
   // eraser : no
   // brushes: yes
   onSketchPaneBeforeUp () {
-    if (!this.sketchPane.paintingKnockout) {
+    if (!this.sketchPane.getIsErasing()) {
       this.emit('addToUndoStack')
     }
   }
@@ -437,13 +579,14 @@ class StoryboarderSketchPane extends EventEmitter {
     this.sketchPane.removeListener('onbeforeup', this.stopMultiLayerOperation)
   }
 
+  // TODO
   // draw composite from layers
   drawComposite (layerIndices, destinationContext) {
     for (let index of layerIndices) {
       let canvas = this.sketchPane.getLayerCanvas(index)
-      
+
       destinationContext.save()
-      destinationContext.globalAlpha = this.sketchPane.getLayerOpacity(index)
+      destinationContext.globalAlpha = this.getLayerOpacity(index)
       destinationContext.drawImage(canvas, 0, 0)
       destinationContext.restore()
     }
@@ -532,34 +675,41 @@ class StoryboarderSketchPane extends EventEmitter {
    */
   renderContainerSize () {
     // the container
-    this.containerEl.style.width = this.containerSize[0] + 'px'
-    this.containerEl.style.height = this.containerSize[1] + 'px'
+    // this.containerEl.style.width = this.containerSize[0] + 'px'
+    // this.containerEl.style.height = this.containerSize[1] + 'px'
 
-    // the sketchpane
-    this.sketchPaneDOMElement.style.width = this.containerSize[0] + 'px'
-    this.sketchPaneDOMElement.style.height = this.containerSize[1] + 'px'
-
-    // the painting canvas
-    this.sketchPane.paintingCanvas.style.width = this.containerSize[0] + 'px'
-    this.sketchPane.paintingCanvas.style.height = this.containerSize[1] + 'px'
-
-    // the dirtyRectDisplay
-    this.sketchPane.dirtyRectDisplay.style.width = this.containerSize[0] + 'px'
-    this.sketchPane.dirtyRectDisplay.style.height = this.containerSize[1] + 'px'
-
-    // each layer
-    let layers = this.sketchPane.getLayers()
-    for (let i = 0; i < layers.length; ++i) {
-      let canvas = this.sketchPane.getLayerCanvas(i)
-      canvas.style.width = this.containerSize[0] + 'px'
-      canvas.style.height = this.containerSize[1] + 'px'
-    }
+    //
+    // MIGRATE TODO
+    //
+    // // the sketchpane
+    // this.sketchPaneDOMElement.style.width = this.containerSize[0] + 'px'
+    // this.sketchPaneDOMElement.style.height = this.containerSize[1] + 'px'
+    // 
+    // // the painting canvas
+    // this.sketchPane.paintingCanvas.style.width = this.containerSize[0] + 'px'
+    // this.sketchPane.paintingCanvas.style.height = this.containerSize[1] + 'px'
+    // 
+    // // the dirtyRectDisplay
+    // this.sketchPane.dirtyRectDisplay.style.width = this.containerSize[0] + 'px'
+    // this.sketchPane.dirtyRectDisplay.style.height = this.containerSize[1] + 'px'
+    // 
+    // // each layer
+    // let layers = this.sketchPane.getLayers()
+    // for (let i = 0; i < layers.length; ++i) {
+    //   let canvas = this.sketchPane.getLayerCanvas(i)
+    //   canvas.style.width = this.containerSize[0] + 'px'
+    //   canvas.style.height = this.containerSize[1] + 'px'
+    // }
 
     // cache the boundingClientRect
     this.boundingClientRect = this.sketchPaneDOMElement.getBoundingClientRect()
   }
 
   updatePointer () {
+    return // MIGRATING
+     
+    
+
     if(!enableBrushCursor) {
       return
     }
@@ -587,8 +737,11 @@ class StoryboarderSketchPane extends EventEmitter {
   }
 
   resize () {
-    this.updateContainerSize()
-    this.renderContainerSize()
+    // this.updateContainerSize()
+    // this.renderContainerSize()
+
+    const { width, height } = this.containerEl.getBoundingClientRect()
+    this.sketchPane.resize(width - this.containerPadding, height - this.containerPadding)
 
     if (this.brush) {
       this.updatePointer()
@@ -616,41 +769,38 @@ class StoryboarderSketchPane extends EventEmitter {
   }
 
   isEmpty () {
-
-    let layerIndices = this.visibleLayersIndices
-    for (let index of layerIndices) {
-      if (!this.sketchPane.isEmptyLayer(index)) {
+    for (let index of this.visibleLayersIndices) {
+      if (!this.sketchPane.isLayerEmpty(index)) {
         return false
       }
     }
     return true
   }
 
+  // TODO do we need this?
   replaceLayer (index, image) {
     this.emit('addToUndoStack')
-    this.sketchPane.clearLayer(index)
-    let context = this.sketchPane.getLayerContext(index)
-    context.drawImage(image, 0, 0)
+    this.sketchPane.replaceLayer(index, image)
     this.emit('markDirty', [index])
   }
 
   flipLayers (vertical) {
     this.emit('addToUndoStack', this.visibleLayersIndices)
-    // HACK operates on all layers
-    for (var i = 0; i < this.sketchPane.layers.length; ++i) {
-      this.sketchPane.flipLayer(i, vertical)
-    }
+    this.sketchPane.flipLayers(vertical)
     this.emit('markDirty', this.visibleLayersIndices)
   }
   setBrushTool (kind, options) {
+    // TODO
+    return
+
     if (this.getIsDrawingOrStabilizing()) {
       return false
     }
 
     if (kind === 'eraser') {
-      this.sketchPane.setPaintingKnockout(true)
+      this.sketchPane.setIsErasing(true)
     } else {
-      this.sketchPane.setPaintingKnockout(false)
+      this.sketchPane.setIsErasing(false)
     }
 
     this.brush = new Brush()
@@ -660,67 +810,74 @@ class StoryboarderSketchPane extends EventEmitter {
     this.brush.setFlow(options.flow)
     this.brush.setHardness(options.hardness)
 
-    if (!this.toolbar.getIsQuickErasing()) {
-      let selectedLayerIndex
-      switch (kind) {
-        case 'light-pencil':
-          selectedLayerIndex = 0 // HACK hardcoded
-          break
-        case 'note-pen':
-          selectedLayerIndex = 3 // HACK hardcoded
-          break
-        default:
-          selectedLayerIndex = 1 // HACK hardcoded
-          break
-      }
-      this.sketchPane.selectLayer(selectedLayerIndex)
+    // if (!this.toolbar.getIsQuickErasing()) {
+    //   let selectedLayerIndex
+    //   switch (kind) {
+    //     case 'light-pencil':
+    //       selectedLayerIndex = 0 // HACK hardcoded
+    //       break
+    //     case 'note-pen':
+    //       selectedLayerIndex = 3 // HACK hardcoded
+    //       break
+    //     default:
+    //       selectedLayerIndex = 1 // HACK hardcoded
+    //       break
+    //   }
+    //   this.sketchPane.selectLayer(selectedLayerIndex)
+    // 
+    //   // fat eraser
+    //   if (kind === 'eraser') {
+    //     this.setCompositeLayerVisibility(false)
+    //     this.startMultiLayerOperation()
+    //   } else {
+    //     this.stopMultiLayerOperation() // force stop, in case we didn't get `onbeforeup` event
+    //     this.isMultiLayerOperation = false // ensure we reset the var
+    //   }
+    // }
 
-      // fat eraser
-      if (kind === 'eraser') {
-        this.setCompositeLayerVisibility(false)
-        this.startMultiLayerOperation()
-      } else {
-        this.stopMultiLayerOperation() // force stop, in case we didn't get `onbeforeup` event
-        this.isMultiLayerOperation = false // ensure we reset the var
-      }
-    }
-
-    this.sketchPane.setPaintingOpacity(options.opacity)
     this.sketchPane.setTool(this.brush)
 
     this.updatePointer()
   }
 
-  setBrushSize (size) {
-    this.brush.setSize(size)
-    this.sketchPane.setTool(this.brush)
-    this.updatePointer()
-  }
+  // TODO
+  // setBrushSize (size) {
+  //   // this.brush.setSize(size)
+  //   // this.sketchPane.setTool(this.brush)
+  //   // this.updatePointer()
+  //   // this.sketchPane.brushSize = size
+  //   this.store.dispatch({ type: 'TOOLBAR_TOOL_SET', payload: { size } })
+  // }
 
-  setBrushColor (color) {
-    this.brush.setColor(color.toCSS())
-    this.sketchPane.setTool(this.brush)
-    this.updatePointer()
-  }
+  // setBrushColor (color) {
+  //   // this.brush.setColor(color.toCSS())
+  //   // this.sketchPane.setTool(this.brush)
+  //   // this.updatePointer()
+  // 
+  //   // convert to number
+  //   color = utils.colorToNumber(color)
+  // 
+  //   this.store.dispatch({ type: 'TOOLBAR_TOOL_SET', payload: { color }, meta: { scope: 'local' } })
+  // }
 
   // HACK copied from toolbar
-  cloneOptions (opt) {
-    return {
-      kind: opt.kind,
-      size: opt.size,
-      spacing: opt.spacing,
-      flow: opt.flow,
-      hardness: opt.hardness,
-      opacity: opt.opacity,
-      color: opt.color.clone(),
-      palette: opt.palette.map(color => color.clone())
-    }
-  }
+  // cloneOptions (opt) {
+  //   return {
+  //     kind: opt.kind,
+  //     size: opt.size,
+  //     spacing: opt.spacing,
+  //     flow: opt.flow,
+  //     hardness: opt.hardness,
+  //     opacity: opt.opacity,
+  //     color: opt.color.clone(),
+  //     palette: opt.palette.map(color => color.clone())
+  //   }
+  // }
 
   createContext () {
     let size = [
-      this.sketchPane.getCanvasWidth(),
-      this.sketchPane.getCanvasHeight()
+      this.sketchPane.width,
+      this.sketchPane.height
     ]
     let canvas = document.createElement('canvas')
     let context = canvas.getContext('2d')
@@ -735,20 +892,22 @@ class StoryboarderSketchPane extends EventEmitter {
   }
 
   getSnapshotAsCanvas (index) {
-    const el = this.sketchPane.createLayerThumbnail(index)
-    el.id = Math.floor(Math.random()*16777215).toString(16) // for debugging
+    const el = this.sketchPane.getLayerCanvas(index)
+    el.id = Math.floor(Math.random() * 16777215).toString(16) // for debugging
     return el
   }
-  
+
+  // TODO rename to isDrawing, find/replace instances
   getIsDrawingOrStabilizing () {
-    return this.sketchPane.isDrawing || this.sketchPane.isStabilizing
+    return this.sketchPane.isDrawing()
+    // return this.sketchPane.isDrawing || this.sketchPane.isStabilizing
   }
 
   moveContents () {
-    this.setStrategy(MovingStrategy)
+    // this.setStrategy(MovingStrategy)
   }
   scaleContents () {
-    this.setStrategy(ScalingStrategy)
+    // this.setStrategy(ScalingStrategy)
   }
   cancelTransform () {
     if (this.strategy instanceof DrawingStrategy) return
@@ -759,25 +918,35 @@ class StoryboarderSketchPane extends EventEmitter {
       this.setBrushTool(this.toolbar.getBrushOptions().kind, this.toolbar.getBrushOptions())
     }
   }
-  
-  getCanvasImageSources () {
-    return [
-      // reference
-      {
-        canvasImageSource: this.sketchPane.getLayerCanvas(0),
-        opacity: this.sketchPane.getLayerOpacity(0)
-      },
-      // main
-      {
-        canvasImageSource: this.sketchPane.getLayerCanvas(1),
-        opacity: this.sketchPane.getLayerOpacity(1)
-      },
-      // notes
-      {
-        canvasImageSource: this.sketchPane.getLayerCanvas(3),
-        opacity: this.sketchPane.getLayerOpacity(3)
-      }
-    ]
+
+  //
+  //
+  // compatibility methods
+  //
+  getLayerCanvas (index) {
+    return this.sketchPane.getLayerCanvas(index)
+  }
+  clearLayer (index) {
+    this.sketchPane.clearLayer(index)
+  }
+  getLayerOpacity (index) {
+    return this.sketchPane.getLayerOpacity(index)
+  }
+  setLayerOpacity (index, opacity) {
+    return this.sketchPane.setLayerOpacity(index, opacity)
+  }
+  exportLayer (index, format = 'base64') {
+    return this.sketchPane.exportLayer(index, format)
+  }
+
+  markLayersDirty (indices) {
+    this.sketchPane.layers.markDirty(indices)
+  }
+  getLayerDirty (index) {
+    return this.sketchPane.getLayerDirty(index)
+  }
+  clearLayerDirty (index) {
+    this.sketchPane.clearLayerDirty(index)
   }
 }
 
@@ -787,31 +956,45 @@ class DrawingStrategy {
   }
 
   canvasPointerDown (e) {
+    // prevent overlapping calls
+    if (this.container.getIsDrawingOrStabilizing()) return
+
     this.container.isPointerDown = true
 
     // via https://developer.mozilla.org/en-US/docs/Web/API/Pointer_events#Determining_button_states
-    if (e.buttons == 32 || e.buttons == 2) {
+    if (e.buttons === 32 || e.buttons === 2) {
       this.container.isEraseButtonActive = true
     } else {
       this.container.isEraseButtonActive = false
     }
 
-    // prevent overlapping calls
-    if (this.container.getIsDrawingOrStabilizing()) return
-
     // quick erase : on
     this.container.setQuickEraseIfRequested()
 
-    if (!this.container.toolbar.getIsQuickErasing() && this.container.sketchPane.getPaintingKnockout()) {
+    if (!this.container.toolbar.getIsQuickErasing() && this.container.sketchPane.getIsErasing()) { // MIGRATED
       this.container.startMultiLayerOperation()
       this.container.setCompositeLayerVisibility(true)
     }
 
-    let pointerPosition = this.container.getRelativePosition(e.clientX, e.clientY)
     this.container.lineMileageCounter.reset()
-    this.container.sketchPane.down(pointerPosition.x, pointerPosition.y, e.pointerType === "pen" ? e.pressure : 1)
+
+    // store snapshot on pointerdown?
+    // eraser : yes
+    // brushes: no
+    if (this.container.sketchPane.getIsErasing()) { // FKA paintingKnockout
+      if (this.isMultiLayerOperation) {
+        this.emit('addToUndoStack', this.visibleLayersIndices)
+      } else {
+        this.emit('addToUndoStack')
+      }
+    }
+
+    this.container.sketchPane.down(e)
+
     document.addEventListener('pointermove', this.container.canvasPointerMove)
     document.addEventListener('pointerup', this.container.canvasPointerUp)
+
+    let pointerPosition = this.container.getRelativePosition(e.clientX, e.clientY)
     this.container.emit('pointerdown', pointerPosition.x, pointerPosition.y, e.pointerType === "pen" ? e.pressure : 1, e.pointerType)
   }
 
@@ -831,15 +1014,17 @@ class DrawingStrategy {
     this.container.lastMoveEvent = null
     this.container.lastCursorEvent = null
 
-    let pointerPosition = this.container.getRelativePosition(e.clientX, e.clientY)
-    this.container.sketchPane.up(pointerPosition.x, pointerPosition.y, e.pointerType === "pen" ? e.pressure : 1)
+    // let pointerPosition = this.container.getRelativePosition(e.clientX, e.clientY)
+
+    this.container.sketchPane.up(e)
+
     this.container.emit('lineMileage', this.container.lineMileageCounter.get())
     document.removeEventListener('pointermove', this.container.canvasPointerMove)
     document.removeEventListener('pointerup', this.container.canvasPointerUp)
   }
   
   renderMoveEvent (moveEvent) {
-    this.container.sketchPane.move(moveEvent.x, moveEvent.y, moveEvent.pointerType === "pen" ? moveEvent.pressure : 1)
+    this.container.sketchPane.move(moveEvent)
   }
 
   startMultiLayerOperation () {
@@ -926,7 +1111,7 @@ class MovingStrategy {
 
     // if we previously were in erase mode, undo its effects,
     //   and ensure paintingCanvas is visible
-    this.container.sketchPane.setPaintingKnockout(false)
+    this.container.sketchPane.setIsErasing(false)
 
     // fake an initial move event
     this.container.canvasPointerMove(e)
@@ -1065,7 +1250,7 @@ class ScalingStrategy {
     
     // if we previously were in erase mode, undo its effects,
     //   and ensure paintingCanvas is visible
-    this.container.sketchPane.setPaintingKnockout(false)
+    this.container.sketchPane.setIsErasing(false)
 
     // fake an initial move event
     this.container.canvasPointerMove(e)

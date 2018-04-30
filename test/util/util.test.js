@@ -1,4 +1,6 @@
 /* global describe it */
+const Color = require('color-js')
+
 const util = require('../../src/js/utils/index')
 
 const assert = require('assert')
@@ -24,5 +26,15 @@ describe('util', () => {
   it('dashed', () => {
     assert.equal(util.dashed('this is some text with spaces'),
       'this-is-some-text-with-spaces')
+  })
+
+  it('colorToNumber', () => {
+    assert.equal(util.colorToNumber(Color('#ff05ff')), 0xff05ff)
+  })
+
+  it('numberToColor', () => {
+    assert.equal(Color(util.numberToColor(0xff05ff)).r, Color('#ff05ff').r)
+    assert.equal(Color(util.numberToColor(0xff05ff)).g, Color('#ff05ff').g)
+    assert.equal(Color(util.numberToColor(0xff05ff)).b, Color('#ff05ff').b)
   })
 })

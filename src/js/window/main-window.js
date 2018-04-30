@@ -13,7 +13,6 @@ const plist = require('plist')
 const R = require('ramda')
 const isDev = require('electron-is-dev')
 
-
 const { getInitialStateRenderer } = require('electron-redux')
 const configureStore = require('../shared/store/configureStore')
 const observeStore = require('../shared/helpers/observeStore')
@@ -45,9 +44,6 @@ const exporterCopyProject = require('../exporters/copy-project')
 const exporterArchive = require('../exporters/archive')
 const exporterWeb = require('../exporters/web')
 
-const prefsModule = require('electron').remote.require('./prefs')
-prefsModule.init(path.join(app.getPath('userData'), 'pref.json'))
-
 const sceneSettingsView = require('./scene-settings-view')
 
 const boardModel = require('../models/board')
@@ -71,6 +67,16 @@ const store = configureStore(getInitialStateRenderer(), 'renderer')
 window.$r = { store } // for debugging, e.g.: $r.store.getStore()
 const isCommandPressed = createIsCommandPressed(store)
 
+const prefsModule = require('electron').remote.require('./prefs')
+prefsModule.init(path.join(app.getPath('userData'), 'pref.json'))
+// we're gradually migrating prefs to a reducer
+// we read any 2.0 toolbar related prefs into the toolbar reducer manually
+// NOTE this is async so preferences will be invalid until main IPC dispatches back to renderers
+if (prefsModule.getPrefs().toolbar) {
+  store.dispatch({
+    type: 'TOOLBAR_MERGE_FROM_PREFERENCES', payload: prefsModule.getPrefs()
+  })
+}
 
 const {
   LAYER_INDEX_REFERENCE,
@@ -114,13 +120,14 @@ const ALLOWED_AUDIO_FILE_EXTENSIONS = [
   'mp4'
 ]
 
-let layerStatus = {
-  [LAYER_INDEX_REFERENCE]:  { dirty: false },
-  [LAYER_INDEX_MAIN]:       { dirty: false },
-  [LAYER_INDEX_NOTES]:      { dirty: false },
+// let layerStatus = {
+//   [LAYER_INDEX_REFERENCE]:  { dirty: false },
+//   [LAYER_INDEX_MAIN]:       { dirty: false },
+//   [LAYER_INDEX_NOTES]:      { dirty: false },
+// 
+//   [LAYER_INDEX_COMPOSITE]:  { dirty: false } // TODO do we need this?
+// }
 
-  [LAYER_INDEX_COMPOSITE]:  { dirty: false } // TODO do we need this?
-}
 let imageFileDirtyTimer
 let isSavingImageFile = false // lock for saveImageFile
 
@@ -191,7 +198,7 @@ let shouldRenderThumbnailDrawer = true
 remote.getCurrentWindow().on('focus', () => {
   menu.setMenu()
   // HACK update to reflect current value
-  audioPlayback.setEnableAudition(audioPlayback.enableAudition)
+  audioPlayback && audioPlayback.setEnableAudition(audioPlayback.enableAudition)
 })
 
 ///////////////////////////////////////////////////////////////
@@ -240,7 +247,7 @@ const load = async (event, args) => {
       }
     }
 
-    loadBoardUI()
+    await loadBoardUI()
     await updateBoardUI()
 
     verifyScene()
@@ -248,17 +255,11 @@ const load = async (event, args) => {
     log({ type: 'progress', message: 'Preparing to display' })
 
     resize()
-    setTimeout(() => {
-      storyboarderSketchPane.resize()
+    storyboarderSketchPane.resize()
+    await new Promise(resolve => setTimeout(resolve, 50)) // wait for the DOM to catch up to avoid FOUC
 
-      setImmediate(() =>
-        requestAnimationFrame(() =>
-          requestAnimationFrame(() =>
-            ipcRenderer.send('workspaceReady')
-          )
-        )
-      )
-    }, 500) // TODO hack, remove this #440
+    ipcRenderer.send('workspaceReady')
+
   } catch (error) {
     console.error(error)
 
@@ -516,7 +517,7 @@ const verifyScene = () => {
   }
 }
 
-let loadBoardUI = () => {
+const loadBoardUI = async () => {
   log({ type: 'progress', message: 'Loading User Interface' })
 
   let size = boardModel.boardFileImageSize(boardData)
@@ -528,13 +529,14 @@ let loadBoardUI = () => {
     size,
     store
   )
-  
+  await storyboarderSketchPane.load()
+
+  // debugging
+  window.storyboarderSketchPane = storyboarderSketchPane
+
   window.addEventListener('resize', () => {
     resize()
-    // this is pretty hacky.
-    setTimeout(() => storyboarderSketchPane.resize(), 500) // TODO hack, remove this #440
-    setTimeout(() => storyboarderSketchPane.resize(), 1000) // TODO hack, remove this #440
-    setTimeout(() => storyboarderSketchPane.resize(), 1100) // TODO hack, remove this #440
+    storyboarderSketchPane.resize()
   })
 
   window.ondragover = () => { return false }
@@ -586,6 +588,7 @@ let loadBoardUI = () => {
   }
 
   storyboarderSketchPane.on('addToUndoStack', layerIndices => {
+    clearTimeout(drawIdleTimer)
     storeUndoStateForImage(true, layerIndices)
   })
 
@@ -593,26 +596,32 @@ let loadBoardUI = () => {
     storeUndoStateForImage(false, layerIndices)
     markImageFileDirty(layerIndices)
 
-    // save progress image
-    if(isRecording) {
-      let snapshotCanvases = [
-        storyboarderSketchPane.sketchPane.getLayerCanvas(0),
-        storyboarderSketchPane.sketchPane.getLayerCanvas(1),
-        storyboarderSketchPane.sketchPane.getLayerCanvas(3),
-      ]
-      canvasRecorder.capture(snapshotCanvases)
-      if(!isRecordingStarted) isRecordingStarted = true
-    }
+    drawIdleTimer = setTimeout(onDrawIdle, 500)
+
+    // TODO track line mileage
+    addToLineMileage(storyboarderSketchPane.lineMileageCounter.get())
+
+    // TODO
+    // // save progress image
+    // if (isRecording) {
+    //   let snapshotCanvases = [
+    //     storyboarderSketchPane.getLayerCanvas(0),
+    //     storyboarderSketchPane.getLayerCanvas(1),
+    //     storyboarderSketchPane.getLayerCanvas(3)
+    //   ]
+    //   canvasRecorder.capture(snapshotCanvases)
+    //   if (!isRecordingStarted) isRecordingStarted = true
+    // }
   })
-  storyboarderSketchPane.on('pointerdown', () => {
-    clearTimeout(drawIdleTimer)
-  })
+  // storyboarderSketchPane.on('pointerdown', () => {
+  //   clearTimeout(drawIdleTimer)
+  // })
 
   // this is essentially pointerup
-  storyboarderSketchPane.on('lineMileage', value => {
-    addToLineMileage(value)
-    drawIdleTimer = setTimeout(onDrawIdle, 500)
-  })
+  // storyboarderSketchPane.on('lineMileage', value => {
+  //   addToLineMileage(value)
+  //   drawIdleTimer = setTimeout(onDrawIdle, 500)
+  // })
 
 
 
@@ -846,50 +855,51 @@ let loadBoardUI = () => {
     }
   })
 
-  toolbar = new Toolbar(document.getElementById("toolbar"))
-  toolbar.on('brush', (kind, options) => {
-    toolbar.emit('cancelTransform')
-    storyboarderSketchPane.setBrushTool(kind, options)
-    sfx.playEffect('tool-' + kind)
-  })
-  toolbar.on('brush:size', size => {
-    toolbar.emit('cancelTransform')
-    storyboarderSketchPane.setBrushSize(size)
-  })
-  toolbar.on('brush:color', color => {
-    toolbar.emit('cancelTransform')
-    sfx.playEffect('metal')
-    storyboarderSketchPane.setBrushColor(color)
-  })
-
-
+  // TODO
+  toolbar = new Toolbar(store, document.getElementById('toolbar'))
+  // TODO
+  // toolbar.on('brush', (kind, options) => {
+  //   toolbar.emit('cancelTransform')
+  //   storyboarderSketchPane.setBrushTool(kind, options)
+  //   sfx.playEffect('tool-' + kind)
+  // })
+  // toolbar.on('brush:size', size => {
+  //   toolbar.emit('cancelTransform')
+  //   storyboarderSketchPane.setBrushSize(size)
+  // })
+  // toolbar.on('brush:color', color => {
+  //   toolbar.emit('cancelTransform')
+  //   sfx.playEffect('metal')
+  //   storyboarderSketchPane.setBrushColor(color)
+  // })
   toolbar.on('trash', () => {
     clearLayers()
   })
 
 
-  toolbar.on('move', () => {
-    if (storyboarderSketchPane.isPointerDown) return
-      sfx.playEffect('metal')
-    toolbar.setState({ transformMode: 'move' })
-    storyboarderSketchPane.moveContents()
-  })
-  toolbar.on('scale', () => {
-    if (storyboarderSketchPane.isPointerDown) return
-      sfx.playEffect('metal')
-    toolbar.setState({ transformMode: 'scale' })
-    storyboarderSketchPane.scaleContents()
-  })
-  toolbar.on('cancelTransform', () => {
-    // FIXME prevent this case from happening
-    if (storyboarderSketchPane.isPointerDown) {
-      console.warn('pointer is already down')
-      return
-    }
+          // toolbar.on('move', () => {
+          //   if (storyboarderSketchPane.isPointerDown) return
+          //     sfx.playEffect('metal')
+          //   toolbar.setState({ transformMode: 'move' })
+          //   storyboarderSketchPane.moveContents()
+          // })
+          // toolbar.on('scale', () => {
+          //   if (storyboarderSketchPane.isPointerDown) return
+          //     sfx.playEffect('metal')
+          //   toolbar.setState({ transformMode: 'scale' })
+          //   storyboarderSketchPane.scaleContents()
+          // })
+          // toolbar.on('cancelTransform', () => {
+          //   // FIXME prevent this case from happening
+          //   if (storyboarderSketchPane.isPointerDown) {
+          //     console.warn('pointer is already down')
+          //     return
+          //   }
+          // 
+          //   toolbar.setState({ transformMode: null })
+          //   storyboarderSketchPane.cancelTransform()
+          // })
 
-    toolbar.setState({ transformMode: null })
-    storyboarderSketchPane.cancelTransform()
-  })
   // sketchPane.on('moveMode', enabled => {
   //   if (enabled) {
   //     toolbar.setState({ transformMode: 'move' })
@@ -929,23 +939,24 @@ let loadBoardUI = () => {
     }
     sfx.playEffect('metal')
   })
-  
-  toolbar.on('grid', value => {
-    guides.setState({ grid: value })
-    sfx.playEffect('metal')
-  })
-  toolbar.on('center', value => {
-    guides.setState({ center: value })
-    sfx.playEffect('metal')
-  })
-  toolbar.on('thirds', value => {
-    guides.setState({ thirds: value })
-    sfx.playEffect('metal')
-  })
-  toolbar.on('perspective', value => {
-    guides.setState({ perspective: value })
-    sfx.playEffect('metal')
-  })
+
+  // toolbar.on('grid', value => {
+  //   guides.setState({ grid: value })
+  //   sfx.playEffect('metal')
+  // })
+  // toolbar.on('center', value => {
+  //   guides.setState({ center: value })
+  //   sfx.playEffect('metal')
+  // })
+  // toolbar.on('thirds', value => {
+  //   guides.setState({ thirds: value })
+  //   sfx.playEffect('metal')
+  // })
+  // toolbar.on('perspective', value => {
+  //   guides.setState({ perspective: value })
+  //   sfx.playEffect('metal')
+  // })
+
   toolbar.on('onion', value => {
     onionSkin.setEnabled(value)
     if (onionSkin.getEnabled()) {
@@ -959,29 +970,19 @@ let loadBoardUI = () => {
     }
     sfx.playEffect('metal')
   })
-  toolbar.on('captions', () => {
-    // HACK!!!
-    let el = document.querySelector('#canvas-caption')
-    el.style.visibility = el.style.visibility == 'hidden'
-      ? 'visible'
-      : 'hidden'
-    sfx.playEffect('metal')
-  })
   toolbar.on('open-in-editor', () => {
     openInEditor()
   })
 
-  storyboarderSketchPane.toolbar = toolbar
-
-  if (!toolbar.getState().captions) {
-    let el = document.querySelector('#canvas-caption')
-    el.style.visibility = 'hidden'
-  }
+  // storyboarderSketchPane.toolbar = toolbar
 
   // HACK force initialize
-  sfx.setMute(true)
-  toolbar.setState({ brush: 'light-pencil' })
-  sfx.setMute(false)
+  // sfx.setMute(true)
+  // toolbar.setState({ brush: 'light-pencil' })
+  // sfx.setMute(false)
+  store.dispatch({ type: 'TOOLBAR_TOOL_CHANGE', payload: 'light-pencil' })
+
+
 
   tooltips.init()
 
@@ -1011,42 +1012,87 @@ let loadBoardUI = () => {
   //
   colorPicker = new ColorPicker()
   const setCurrentColor = color => {
-    storyboarderSketchPane.setBrushColor(color)
-    toolbar.changeCurrentColor(color)
+    store.dispatch({ type: 'TOOLBAR_TOOL_SET', payload: { color: util.colorToNumber(color) } })
+    // storyboarderSketchPane.setBrushColor(color)
+    // toolbar.changeCurrentColor(color)
+    colorPicker.setState({ color: color.toCSS() })
+    sfx.playEffect('metal')
+  }
+  const setPaletteColor = (tool, index, color) => {
+    store.dispatch({
+      type: 'TOOLBAR_TOOL_PALETTE_SET',
+      payload: {
+        index,
+        color: util.colorToNumber(color)
+      }
+    })
+
+    // toolbar.changePaletteColor(brush, index, color)
     colorPicker.setState({ color: color.toCSS() })
   }
-  const setPaletteColor = (brush, index, color) => {
-    toolbar.changePaletteColor(brush, index, color)
-    colorPicker.setState({ color: color.toCSS() })
-  }
-  toolbar.on('current-color-picker', color => {
+  toolbar.on('current-color-picker', () => {
     sfx.positive()
     colorPicker.attachTo(document.getElementById('toolbar-current-color'))
     colorPicker.removeAllListeners('color') // HACK
 
     // initialize color picker active swatch
-    colorPicker.setState({ color: color.toCSS() })
+    const state = store.getState()
+    colorPicker.setState({
+      color: Color(
+        util.numberToColor(state.toolbar.tools[state.toolbar.activeTool].color)
+      )
+    })
 
     colorPicker.addListener('color', setCurrentColor)
   })
-  toolbar.on('palette-color-picker', (color, target, brush, index) => {
+  toolbar.on('palette-color-picker', ({ target, index }) => {
     sfx.positive()
 
     colorPicker.attachTo(target)
     colorPicker.removeAllListeners('color') // HACK
 
-    // initialize color picker active swatch
-    colorPicker.setState({ color: color.toCSS() })
+    // initialize color picker to selected palette color
+    const state = store.getState()
+    colorPicker.setState({
+      color: Color(
+        util.numberToColor(state.toolbar.tools[state.toolbar.activeTool].palette[index])
+      )
+    })
 
-    colorPicker.addListener('color', setPaletteColor.bind(this, brush, index))
+    colorPicker.addListener('color', setPaletteColor.bind(this, state.toolbar.activeTool, index))
   })
-  toolbar.on('current-set-color', color => {
-    storyboarderSketchPane.setBrushColor(color)
-    toolbar.changeCurrentColor(color)
-  })
+  // toolbar.on('current-set-color', color => {
+    // storyboarderSketchPane.setBrushColor(color)
+    // toolbar.changeCurrentColor(color)
+  // })
 
-  guides = new Guides(storyboarderSketchPane.getLayerCanvasByName('guides'), { perspectiveGridFn: shotTemplateSystem.requestGrid.bind(shotTemplateSystem) })
-  onionSkin = new OnionSkin(storyboarderSketchPane, boardPath)
+  guides = new Guides({
+    width: storyboarderSketchPane.sketchPane.width,
+    height: storyboarderSketchPane.sketchPane.height,
+    perspectiveGridFn: shotTemplateSystem.requestGrid.bind(shotTemplateSystem),
+    onRender: guideCanvas => {
+      storyboarderSketchPane.sketchPane.drawOverlay(guideCanvas)
+    }
+  })
+  // connect toolbar state to UI
+  observeStore(store, state => state.toolbar, () => {
+    const state = store.getState()
+
+    // connect to guides
+    guides.setState({
+      grid: state.toolbar.grid,
+      center: state.toolbar.center,
+      thirds: state.toolbar.thirds,
+      perspective: state.toolbar.perspective
+    })
+
+    // connect to captions
+    document.querySelector('#canvas-caption').style.visibility = state.toolbar.captions
+      ? 'visible'
+      : 'hidden'
+  }, true)
+
+  // onionSkin = new OnionSkin(storyboarderSketchPane, boardPath)
   layersEditor = new LayersEditor(storyboarderSketchPane, sfx, notifications)
   layersEditor.on('opacity', opacity => {
     // should we update the value of the project data?
@@ -1155,23 +1201,22 @@ let loadBoardUI = () => {
   sfx.init()
 
   const enableDrawingSoundEffects = prefsModule.getPrefs('sound effects')['enableDrawingSoundEffects']
-  if(enableDrawingSoundEffects) {
-    storyboarderSketchPane.on('pointerdown', Sonifier.start)
-    storyboarderSketchPane.on('pointermove', Sonifier.trigger)
-    storyboarderSketchPane.sketchPane.on('onup', Sonifier.stop)
-    Sonifier.init(storyboarderSketchPane.sketchPane.getCanvasSize())
-    window.addEventListener('resize', () => {
-      Sonifier.setSize(storyboarderSketchPane.sketchPane.getCanvasSize())
-    })
+  if (enableDrawingSoundEffects) {
+    // TODO
+    // storyboarderSketchPane.on('pointerdown', Sonifier.start)
+    // storyboarderSketchPane.on('pointermove', Sonifier.trigger)
+    // storyboarderSketchPane.sketchPane.on('onup', Sonifier.stop)
+    // Sonifier.init(storyboarderSketchPane.sketchPane.getCanvasSize())
+    // window.addEventListener('resize', () => {
+    //   Sonifier.setSize(storyboarderSketchPane.sketchPane.getCanvasSize())
+    // })
   }
 
   let onUndoStackAction = (state) => {
-    if (state.type == 'image') {
+    if (state.type === 'image') {
       applyUndoStateForImage(state)
-    } else if (state.type == 'scene') {
-      saveImageFile().then(() => { // needed for redo
-        applyUndoStateForScene(state)
-      })
+    } else if (state.type === 'scene') {
+      applyUndoStateForScene(state)
     }
   }
   undoStack.on('undo', onUndoStackAction)
@@ -1191,9 +1236,9 @@ let loadBoardUI = () => {
         notifications.notify({message: "Congratulations! Generating your timelapse! This can take a minute.", timing: 5})
 
         canvasRecorder.capture([
-          storyboarderSketchPane.sketchPane.getLayerCanvas(0),
-          storyboarderSketchPane.sketchPane.getLayerCanvas(1),
-          storyboarderSketchPane.sketchPane.getLayerCanvas(3)
+          storyboarderSketchPane.getLayerCanvas(0),
+          storyboarderSketchPane.getLayerCanvas(1),
+          storyboarderSketchPane.getLayerCanvas(3)
         ], {force: true})
         setTimeout(()=>{
           canvasRecorder.stop()
@@ -1263,8 +1308,6 @@ let loadBoardUI = () => {
   window.addEventListener('beforeunload', event => {
     console.log('Close requested! Saving ...')
 
-    // TODO THIS IS SLOW AS HELL. NEED TO FIX PREFS
-    toolbar.savePrefs()
     saveImageFile() // NOTE image is saved first, which ensures layers are present in data
     saveBoardFile() // ... then project data can be saved
 
@@ -1280,6 +1323,21 @@ let loadBoardUI = () => {
       // remove any existing listeners
       watcher && watcher.close()
 
+      // dispatch a change to preferences merging in toolbar data
+      // first dispatch locally
+      store.dispatch({ type: 'PREFERENCES_MERGE_FROM_TOOLBAR', payload: store.getState().toolbar, meta: { scope: 'local' } })
+      console.log('setting toolbar preferences')
+      // TODO set caption value from toolbar ui state
+      prefsModule.set('toolbar', store.getState().preferences.toolbar)
+      console.log('writing to prefs.json')
+      prefsModule.savePrefs()
+      // then, let main and the rest of the renderers know
+      // NOTE this is async
+      // TODO use wait-service instead? https://jlongster.com/Two-Weird-Tricks-with-Redux
+      //      would be nice to dispatch to main + renderers, wait until we know they all have state, then save
+      store.dispatch({ type: 'PREFERENCES_MERGE_FROM_TOOLBAR', payload: store.getState().toolbar })
+
+      // TODO should we have an explicit SCENE_FILE_CLOSED dispatch?
       store.dispatch({
         type: 'SCENE_FILE_LOADED',
         payload: { path: null }
@@ -1328,13 +1386,14 @@ let loadBoardUI = () => {
         camera
       }
       markBoardFileDirty()
-      guides.setPerspectiveParams({
+      guides && guides.setPerspectiveParams({
         cameraParams: board.sts && board.sts.camera,
         rotation: 0
       })
 
       if (!img) return
 
+      // TODO
       storyboarderSketchPane.replaceLayer(LAYER_INDEX_REFERENCE, img)
 
       // force a file save and thumbnail update
@@ -1608,7 +1667,7 @@ let loadBoardUI = () => {
   // remote.getCurrentWebContents().openDevTools()
 }
 
-let updateBoardUI = async () => {
+const updateBoardUI = async () => {
   log({ type: 'progress', message: 'Rendering User Interface' })
 
   document.querySelector('#canvas-caption').style.display = 'none'
@@ -1736,6 +1795,9 @@ let newBoard = async (position, shouldAddToUndoStack = true) => {
   //      the following causes the _newly created_ duplicate to be marked dirty
   //      (not the current board)
   // indicate dirty for save sweep
+
+  // force update layers dirty flag
+  storyboarderSketchPane.markLayersDirty([1]) // 'main' layer is dirty // HACK hardcoded
   markImageFileDirty([1]) // 'main' layer is dirty // HACK hardcoded
   markBoardFileDirty() // board data is dirty
 
@@ -1923,10 +1985,6 @@ let saveBoardFile = (opt = { force: false }) => {
 }
 
 let markImageFileDirty = layerIndices => {
-  for (let index of layerIndices) {
-    layerStatus[index].dirty = true
-  }
-
   clearTimeout(imageFileDirtyTimer)
   imageFileDirtyTimer = setTimeout(saveImageFile, 5000)
 }
@@ -2003,16 +2061,12 @@ let saveImageFile = async () => {
 
   let numSaved = 0
   for (let [index, layerName, filename] of layersData) {
-    if (layerStatus[index].dirty) {
+    if (storyboarderSketchPane.getLayerDirty(index)) {
       shouldSaveThumbnail = true
       clearTimeout(imageFileDirtyTimer)
 
-      let canvas = storyboarderSketchPane.sketchPane.getLayerCanvas(index)
       let imageFilePath = path.join(boardPath, 'images', filename)
-
-      let imageData = canvas
-        .toDataURL('image/png')
-        .replace(/^data:image\/\w+;base64,/, '')
+      let imageData = storyboarderSketchPane.exportLayer(index, 'base64')
 
       try {
         fs.writeFileSync(imageFilePath, imageData, 'base64')
@@ -2039,7 +2093,7 @@ let saveImageFile = async () => {
           }
         }
 
-        layerStatus[index].dirty = false
+        storyboarderSketchPane.clearLayerDirty(index)
         numSaved++
         console.log('\tsaved', layerName, 'to', filename)
       } catch (err) {
@@ -2347,19 +2401,21 @@ const getThumbnailSize = boardData => [Math.floor(60 * boardData.aspectRatio) * 
 const renderThumbnailToNewCanvas = (index, options = { forceReadFromFiles: false }) => {
   let size = getThumbnailSize(boardData)
 
-  let context = createSizedContext(size)
-  fillContext(context, 'white')
-  let canvas = context.canvas
+  if (!options.forceReadFromFiles && index === currentBoard) {
+    // grab from current sketchpane (in memory)
+    let canvas = storyboarderSketchPane.sketchPane.constructor.utils.pixelsToCanvas(
+      storyboarderSketchPane.sketchPane.extractThumbnailPixels(size[0], size[1]),
+      size[0],
+      size[1]
+    )
 
-  let canvasImageSources
-  if (!options.forceReadFromFiles && index == currentBoard) {
-    // grab from memory
-    canvasImageSources = storyboarderSketchPane.getCanvasImageSources()
-    // render to context
-    exporterCommon.flattenCanvasImageSourcesDataToContext(context, canvasImageSources, size)
     return Promise.resolve(canvas)
   } else {
     // grab from files
+    let context = createSizedContext(size)
+    // fillContext(context, 'white')
+    let canvas = context.canvas
+
     return exporterCommon.flattenBoardToCanvas(
       boardData.boards[index],
       canvas,
@@ -2594,7 +2650,8 @@ let duplicateBoard = async () => {
 const clearLayers = shouldEraseCurrentLayer => {
   if (storyboarderSketchPane.preventIfLocked()) return
 
-  if (toolbar.state.brush !== 'eraser' && (isCommandPressed('drawing:clear-current-layer-modifier') || shouldEraseCurrentLayer)) {
+  if (store.getState().toolbar.activeTool !== 'eraser' &&
+      (isCommandPressed('drawing:clear-current-layer-modifier') || shouldEraseCurrentLayer)) {
     storyboarderSketchPane.clearLayers([storyboarderSketchPane.sketchPane.getCurrentLayerIndex()])
     saveImageFile()
     sfx.playEffect('trash')
@@ -2629,14 +2686,15 @@ let goNextBoard = async (direction, shouldPreserveSelections = false) => {
 }
 
 let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
-  if(isRecording && isRecordingStarted) {
-    // make sure we capture the last frame
-    canvasRecorder.capture([
-      storyboarderSketchPane.sketchPane.getLayerCanvas(0),
-      storyboarderSketchPane.sketchPane.getLayerCanvas(1),
-      storyboarderSketchPane.sketchPane.getLayerCanvas(3)
-    ], {force: true, duration: 500})
-  }
+  // TODO
+  // if(isRecording && isRecordingStarted) {
+  //   // make sure we capture the last frame
+  //   canvasRecorder.capture([
+  //     storyboarderSketchPane.getLayerCanvas(0),
+  //     storyboarderSketchPane.getLayerCanvas(1),
+  //     storyboarderSketchPane.getLayerCanvas(3)
+  //   ], {force: true, duration: 500})
+  // }
 
   toolbar.emit('cancelTransform')
   return new Promise((resolve, reject) => {
@@ -2707,7 +2765,7 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
       StsSidebar.reset(board.sts)
     }
 
-    guides.setPerspectiveParams({
+    guides && guides.setPerspectiveParams({
       cameraParams: board.sts && board.sts.camera,
       rotation: 0
     })
@@ -2767,9 +2825,6 @@ let renderMetaData = () => {
   if (boardData.boards[currentBoard].newShot) {
     document.querySelector('input[name="newShot"]').checked = true
   }
-  if (!boardData.boards[currentBoard].dialogue) {
-    document.querySelector('#canvas-caption').style.display = 'none'
-  }
 
   if (boardData.boards[currentBoard].duration) {
     if (selections.size == 1) {
@@ -2809,12 +2864,10 @@ let renderMetaData = () => {
 
   if (boardData.boards[currentBoard].dialogue) {
     document.querySelector('textarea[name="dialogue"]').value = boardData.boards[currentBoard].dialogue
-    renderCaption()
-    document.querySelector('#canvas-caption').style.display = 'block'
     document.querySelector('#suggested-dialogue-duration').innerHTML = util.durationOfWords(boardData.boards[currentBoard].dialogue, 300)+300 + "ms"
-  } else {
-    document.querySelector('#suggested-dialogue-duration').innerHTML = ''
   }
+  renderCaption()
+
   if (boardData.boards[currentBoard].action) {
     document.querySelector('textarea[name="action"]').value = boardData.boards[currentBoard].action
   }
@@ -2839,7 +2892,13 @@ let renderMetaData = () => {
 }
 
 const renderCaption = () => {
-  document.querySelector('#canvas-caption').innerHTML = boardData.boards[currentBoard].dialogue
+  if (boardData.boards[currentBoard].dialogue) {
+    document.querySelector('#canvas-caption').innerHTML = boardData.boards[currentBoard].dialogue
+    document.querySelector('#canvas-caption').style.display = 'block'
+  } else {
+    document.querySelector('#suggested-dialogue-duration').innerHTML = ''
+    document.querySelector('#canvas-caption').style.display = 'none'
+  }
 }
 
 const renderMetaDataLineMileage = () => {
@@ -2975,7 +3034,6 @@ let updateSketchPaneBoard = () => {
   return new Promise((resolve, reject) => {
     // get current board
     let board = boardData.boards[currentBoard]
-    
 
     // always load the main layer
     let layersData = [
@@ -3020,7 +3078,6 @@ let updateSketchPaneBoard = () => {
       }))
     }
 
-
     Promise.all(loaders).then(result => {
       const visibleLayerIndexes = [0, 1, 3] // HACK hardcoded
 
@@ -3036,40 +3093,42 @@ let updateSketchPaneBoard = () => {
       for (let index of visibleLayerIndexes) {
         let image = layersToDrawByIndex[index]
 
-        let context = storyboarderSketchPane.sketchPane.getLayerCanvas(index).getContext('2d')
-        context.globalAlpha = 1
+        // let context = storyboarderSketchPane.getLayerCanvas(index).getContext('2d')
+        // context.globalAlpha = 1
 
         // do we have an image for this particular layer index?
         if (image) {
           // console.log('rendering layer index:', index)
-          storyboarderSketchPane.sketchPane.clearLayer(index)
-          context.drawImage(image, 0, 0)
+          storyboarderSketchPane.sketchPane.replaceLayer(index, image)
         } else {
           // console.log('clearing layer index:', index)
-          storyboarderSketchPane.sketchPane.clearLayer(index)
+          storyboarderSketchPane.clearLayer(index)
         }
       }
 
-      storyboarderSketchPane.setIsLocked( !util.isUndefined(board.link) )
+      storyboarderSketchPane.setIsLocked(!util.isUndefined(board.link))
 
       // load opacity from data, if data exists
-      let referenceOpacity =  board.layers && 
-                              board.layers[LAYER_NAME_BY_INDEX[LAYER_INDEX_REFERENCE]] && 
-                              typeof board.layers[LAYER_NAME_BY_INDEX[LAYER_INDEX_REFERENCE]].opacity !== 'undefined'
+      let referenceOpacity = board.layers &&
+                             board.layers[LAYER_NAME_BY_INDEX[LAYER_INDEX_REFERENCE]] &&
+                             typeof board.layers[LAYER_NAME_BY_INDEX[LAYER_INDEX_REFERENCE]].opacity !== 'undefined'
         ? board.layers[LAYER_NAME_BY_INDEX[LAYER_INDEX_REFERENCE]].opacity
         : exporterCommon.DEFAULT_REFERENCE_LAYER_OPACITY
       layersEditor.setReferenceOpacity(referenceOpacity)
 
-      onionSkin.reset()
-      if (onionSkin.getEnabled()) {
-        onionSkin.load(
-          boardData.boards[currentBoard],
-          boardData.boards[currentBoard - 1],
-          boardData.boards[currentBoard + 1]
-        ).then(() => resolve()).catch(err => console.warn(err))
-      } else {
-        resolve()
-      }
+      resolve()
+
+      // TODO fix onionSkin
+      // onionSkin.reset()
+      // if (onionSkin.getEnabled()) {
+      //   onionSkin.load(
+      //     boardData.boards[currentBoard],
+      //     boardData.boards[currentBoard - 1],
+      //     boardData.boards[currentBoard + 1]
+      //   ).then(() => resolve()).catch(err => console.warn(err))
+      // } else {
+      //   resolve()
+      // }
     }).catch(err => console.warn(err))
   })
 }
@@ -3932,9 +3991,9 @@ window.onkeydown = (e)=> {
     // case 82:
     //   if(isRecording) {
     //     let snapshotCanvases = [
-    //       storyboarderSketchPane.sketchPane.getLayerCanvas(0),
-    //       storyboarderSketchPane.sketchPane.getLayerCanvas(1),
-    //       storyboarderSketchPane.sketchPane.getLayerCanvas(3)
+    //       storyboarderSketchPane.getLayerCanvas(0),
+    //       storyboarderSketchPane.getLayerCanvas(1),
+    //       storyboarderSketchPane.getLayerCanvas(3)
     //     ]
     //     // make sure we capture the last frame
     //     canvasRecorder.capture(snapshotCanvases, {force: true})
@@ -4225,9 +4284,9 @@ const renderViewMode = () => {
   )
 }
 
-const toggleCaptions = () => {
-  toolbar.toggleCaptions()
-}
+// const toggleCaptions = () => {
+//   toolbar.toggleCaptions()
+// }
 
 const toggleTimeline = () => {
   shouldRenderThumbnailDrawer = !shouldRenderThumbnailDrawer
@@ -4506,37 +4565,49 @@ let copyBoards = () => {
     let board = util.stringifyClone(boardData.boards[currentBoard])
 
     let imageData = {}
-    imageData[LAYER_INDEX_MAIN] = storyboarderSketchPane.getLayerCanvasByName('main').toDataURL()
+    imageData[LAYER_INDEX_MAIN] = storyboarderSketchPane.sketchPane.layers[LAYER_INDEX_MAIN].toDataURL()
 
     if (board.layers) {
       for (let [layerName, sym] of [['reference', LAYER_INDEX_REFERENCE], ['notes', LAYER_INDEX_NOTES]]) { // HACK hardcoded
         if (board.layers[layerName]) {
-          imageData[sym] = storyboarderSketchPane.getLayerCanvasByName(layerName).toDataURL()
+          imageData[sym] = storyboarderSketchPane.sketchPane.layers[sym].toDataURL()
         }
       }
     }
 
-    let { width, height } = storyboarderSketchPane.sketchPane.getCanvasSize()
-    let size = [width, height]
-    // create transparent canvas, appropriately sized
-    let canvas = createSizedContext(size).canvas
-    exporterCommon.flattenBoardToCanvas(
-      board,
-      canvas,
-      size,
-      boardFilename
-    ).then(() => {
+    try {
+      // let { width, height } = storyboarderSketchPane.sketchPane.getCanvasSize()
+      // let size = [width, height]
+      // // create transparent canvas, appropriately sized
+      // let canvas = createSizedContext(size).canvas
+      // await exporterCommon.flattenBoardToCanvas(
+      //   board,
+      //   canvas,
+      //   size,
+      //   boardFilename
+      // )
       let payload = {
-        image: nativeImage.createFromDataURL(canvas.toDataURL()),
+        // image: nativeImage.createFromDataURL(canvas.toDataURL()),
+        // TODO could try nativeImage.createFromBuffer and pass raw pixels?
+        image: nativeImage.createFromDataURL(
+          storyboarderSketchPane.sketchPane.constructor.utils.pixelsToCanvas(
+            storyboarderSketchPane.sketchPane.extractThumbnailPixels(
+              storyboarderSketchPane.sketchPane.width,
+              storyboarderSketchPane.sketchPane.height
+            ),
+            storyboarderSketchPane.sketchPane.width,
+            storyboarderSketchPane.sketchPane.height
+          ).toDataURL()
+        ),
         text: JSON.stringify({ boards: [board], layerDataByBoardIndex: [imageData] }, null, 2)
       }
       clipboard.clear()
       clipboard.write(payload)
       notifications.notify({ message: "Copied" })
-    }).catch(err => {
+    } catch (err) {
       console.log(err)
       notifications.notify({ message: "Error. Couldn't copy." })
-    })
+    }
   }
 }
 
@@ -4698,7 +4769,7 @@ let pasteBoards = async () => {
     if (!image.isEmpty()) {
 
       // make a blank canvas placeholder for the main image
-      let { width, height } = storyboarderSketchPane.sketchPane.getCanvasSize()
+      let { width, height } = storyboarderSketchPane.getCanvasSize()
       let size = [width, height]
       let blankCanvas = createSizedContext(size).canvas
 
@@ -4793,82 +4864,62 @@ let pasteBoards = async () => {
   }
 }
 
-const insertBoards = (dest, insertAt, boards, { layerDataByBoardIndex }) => {
+const insertBoards = async (dest, insertAt, boards, { layerDataByBoardIndex }) => {
   // TODO pass `size` as argument instead of relying on storyboarderSketchPane
-  let { width, height } = storyboarderSketchPane.sketchPane.getCanvasSize()
+  let { width, height } = storyboarderSketchPane.getCanvasSize()
   let size = [width, height]
 
-  return new Promise((resolve, reject) => {
-    let tasks = Promise.resolve()
-    boards.forEach((board, index) => {
-      // for each board
-      let position = insertAt + index
-      let imageData = layerDataByBoardIndex[index]
+  for (let index = 0; index < boards.length; index++) {
+    let board = boards[index]
 
-      // scale layer images and save to files
-      if (imageData) {
+    // for each board
+    let position = insertAt + index
+    let imageData = layerDataByBoardIndex[index]
 
-        if (imageData[LAYER_INDEX_MAIN]) {
-          tasks = tasks.then(() =>
-            fitImageData(size, imageData[LAYER_INDEX_MAIN]).then(scaledImageData =>
-              saveDataURLtoFile(scaledImageData, board.url)))
-        }
-
-        if (imageData[LAYER_INDEX_REFERENCE]) {
-          tasks = tasks.then(() =>
-            fitImageData(size, imageData[LAYER_INDEX_REFERENCE]).then(scaledImageData =>
-              saveDataURLtoFile(scaledImageData, board.layers.reference.url)))
-        }
-
-        if (imageData[LAYER_INDEX_NOTES]) {
-          tasks = tasks.then(() =>
-            fitImageData(size, imageData[LAYER_INDEX_NOTES]).then(scaledImageData =>
-              saveDataURLtoFile(scaledImageData, board.layers.notes.url)))
-        }
+    // scale layer images and save to files
+    if (imageData) {
+      if (imageData[LAYER_INDEX_MAIN]) {
+        let scaledImageData = await fitImageData(size, imageData[LAYER_INDEX_MAIN])
+        saveDataURLtoFile(scaledImageData, board.url)
       }
 
-      tasks = tasks.then(() => {
-        // add to the data
-        dest.splice(position, 0, board)
-
-        // update the thumbnail
-        return saveThumbnailFile(position, { forceReadFromFiles: true })
-      })
-    })
-
-    tasks.then(() => {
-      resolve()
-    }).catch(err => {
-      console.log(err)
-      reject(err)
-    })
-  })
-}
-
-const fitImageData = (boardSize, imageData) => {
-  return new Promise((resolve, reject) => {
-    exporterCommon.getImage(imageData).then(image => {
-      // if ratio matches,
-      // don't bother drawing,
-      // just return original image data
-      if (
-        image.width  == boardSize[0] &&
-        image.height == boardSize[1]
-      ) {
-        resolve(imageData)
-      } else {
-        let context = createSizedContext(boardSize)
-        let canvas = context.canvas
-        context.drawImage(image, ...util.fitToDst(canvas, image).map(Math.round))
-        resolve(canvas.toDataURL())
+      if (imageData[LAYER_INDEX_REFERENCE]) {
+        let scaledImageData = await fitImageData(size, imageData[LAYER_INDEX_REFERENCE])
+        saveDataURLtoFile(scaledImageData, board.layers.reference.url)
       }
-    }).catch(err => {
-      console.log(err)
-      reject(err)
-    })
-  })
+
+      if (imageData[LAYER_INDEX_NOTES]) {
+        let scaledImageData = await fitImageData(size, imageData[LAYER_INDEX_NOTES])
+        saveDataURLtoFile(scaledImageData, board.layers.notes.url)
+      }
+    }
+
+    // add to the data
+    dest.splice(position, 0, board)
+
+    // update the thumbnail
+    await saveThumbnailFile(position, { forceReadFromFiles: true })
+  }
 }
 
+const fitImageData = async (boardSize, imageData) => {
+  let image = await exporterCommon.getImage(imageData)
+
+  // if ratio matches,
+  // don't bother drawing,
+  // just return original image data
+  if (
+    image.width === boardSize[0] &&
+    image.height === boardSize[1]
+  ) {
+    return imageData
+  } else {
+    let context = createSizedContext(boardSize)
+    let canvas = context.canvas
+    context.drawImage(image, ...util.fitToDst(canvas, image).map(Math.round))
+    return canvas.toDataURL()
+  }
+}
 
 const importFromWorksheet = async (imageArray) => {
   let insertAt = 0 // pos
@@ -5215,32 +5266,32 @@ const runRandomizedNotifications = (messages) => {
 
 const getSceneNumberBySceneId = (sceneId) => {
   if (!scriptData) return null
-  let orderedScenes = scriptData.filter(data => data.type == 'scene')
-  return orderedScenes.findIndex(scene => scene.scene_id == sceneId)
+  let orderedScenes = scriptData.filter(data => data.type === 'scene')
+  return orderedScenes.findIndex(scene => scene.scene_id === sceneId)
 }
 
 // returns the scene object (if available) or null
 const getSceneObjectByIndex = (index) =>
-  scriptData && scriptData.find(data => data.type == 'scene' && data.scene_number == index + 1)
+  scriptData && scriptData.find(data => data.type === 'scene' && data.scene_number === index + 1)
 
 const storeUndoStateForScene = (isBefore) => {
-  let scene = getSceneObjectByIndex(currentScene) 
+  let scene = getSceneObjectByIndex(currentScene)
   // sceneId is allowed to be null (for a single storyboard with no script)
   let sceneId = scene && scene.scene_id
-  undoStack.addSceneData(isBefore, { sceneId : sceneId, boardData: util.stringifyClone(boardData) })
+  undoStack.addSceneData(isBefore, { sceneId: sceneId, boardData: util.stringifyClone(boardData) })
 }
-const applyUndoStateForScene = (state) => {
-  if (state.type != 'scene') return // only `scene`s for now
+const applyUndoStateForScene = async (state) => {
+  await saveImageFile() // needed for redo
+  if (state.type !== 'scene') return // only `scene`s for now
 
   let currSceneObj = getSceneObjectByIndex(currentScene)
-  if (currSceneObj && currSceneObj.scene_id != state.sceneId) {
+  if (currSceneObj && currSceneObj.scene_id !== state.sceneId) {
     // go to that scene
     saveBoardFile()
     currentScene = getSceneNumberBySceneId(state.sceneId)
-    loadScene(currentScene).then(() => {
-      verifyScene()
-      renderScript()
-    })
+    await loadScene(currentScene)
+    verifyScene()
+    renderScript()
   }
   boardData = state.sceneData
   renderScene()
@@ -5254,8 +5305,9 @@ const storeUndoStateForImage = (isBefore, layerIndices = null) => {
   if (!layerIndices) layerIndices = [storyboarderSketchPane.sketchPane.getCurrentLayerIndex()]
 
   let layers = layerIndices.map(index => {
-    // backup to an offscreen canvas
-    let source = storyboarderSketchPane.getSnapshotAsCanvas(index)
+    // backup to a canvas
+    const source = storyboarderSketchPane.sketchPane.layers[index].toCanvas()
+
     return {
       index,
       source
@@ -5270,49 +5322,36 @@ const storeUndoStateForImage = (isBefore, layerIndices = null) => {
   })
 }
 
-const applyUndoStateForImage = (state) => {
+const applyUndoStateForImage = async (state) => {
   // if required, go to the scene first
   let currSceneObj = getSceneObjectByIndex(currentScene)
-  if (currSceneObj && currSceneObj.scene_id != state.sceneId) {
+  if (currSceneObj && currSceneObj.scene_id !== state.sceneId) {
     saveImageFile()
     // go to the requested scene
     currentScene = getSceneNumberBySceneId(state.sceneId)
-    loadScene(currentScene).then(() => {
-      verifyScene()
-      renderScript()
-    })
+    await loadScene(currentScene)
+    verifyScene()
+    renderScript()
   }
 
-  let sequence = Promise.resolve()
-
-  // wait until save completes
-  sequence = sequence.then(() => saveImageFile())
+  await saveImageFile()
 
   // if required, go to the board first
-  if (currentBoard != state.boardIndex) {
-    sequence = sequence.then(() => gotoBoard(state.boardIndex))
+  if (currentBoard !== state.boardIndex) {
+    await gotoBoard(state.boardIndex)
   }
 
-  sequence = sequence.then(() => {
-    for (let layerData of state.layers) {
-      // get the context of the undo-able layer
-      let context = storyboarderSketchPane.sketchPane.getLayerCanvas(layerData.index).getContext('2d')
+  for (let layerData of state.layers) {
+    // NOTE here we intentionally avoid triggering storyboarderSketchPane's `addToUndoStack` event
+    //      by calling sketchPane replaceLayer directly
+    // TODO have StoryboarderSketchPane handle this
+    storyboarderSketchPane.sketchPane.replaceLayer(layerData.index, layerData.source)
+    markImageFileDirty([layerData.index])
+  }
 
-      // draw saved canvas onto layer
-      context.save()
-      context.globalAlpha = 1
-      context.clearRect(0, 0, context.canvas.width, context.canvas.height)
-      context.drawImage(layerData.source, 0, 0)
-      context.restore()
-
-      markImageFileDirty([layerData.index])
-    }
-
-  })
-  .then(() => saveThumbnailFile(state.boardIndex))
-  .then(index => updateThumbnailDisplayFromFile(index))
-  .then(() => toolbar.emit('cancelTransform'))
-  .catch(e => console.error(e))
+  let index = await saveThumbnailFile(state.boardIndex)
+  await updateThumbnailDisplayFromFile(index)
+  toolbar.emit('cancelTransform')
 }
 
 const createSizedContext = size => {
@@ -5540,41 +5579,20 @@ class TimelineModeControlView {
   }
 }
 
-ipcRenderer.on('setTool', (e, arg)=> {
-  if (!toolbar) return
-
+ipcRenderer.on('setTool', (e, toolName) => {
   if (!textInputMode && !storyboarderSketchPane.getIsDrawingOrStabilizing()) {
-    console.log('setTool', arg)
-    switch(arg) {
-      case 'lightPencil':
-        toolbar.setState({ brush: 'light-pencil' })
-        break
-      case 'pencil':
-        toolbar.setState({ brush: 'pencil' })
-        break
-      case 'pen':
-        toolbar.setState({ brush: 'pen' })
-        break
-      case 'brush':
-        toolbar.setState({ brush: 'brush' })
-        break
-      case 'notePen':
-        toolbar.setState({ brush: 'note-pen' })
-        break
-      case 'eraser':
-        toolbar.setState({ brush: 'eraser' })
-        break
-    }
+    store.dispatch({ type: 'TOOLBAR_TOOL_CHANGE', payload: toolName, meta: { scope: 'local' } })
   }
 })
 
-ipcRenderer.on('useColor', (e, arg)=> {
-  if (!toolbar) return
-
+ipcRenderer.on('useColor', (e, arg) => {
   if (!textInputMode) {
-    if (toolbar.getCurrentPalette()) {
-      toolbar.emit('current-set-color', toolbar.getCurrentPalette()[arg-1])
-    }
+    // set the color of the current tool to be the given palette index
+    const state = store.getState()
+    const color = state.toolbar.tools[state.toolbar.activeTool].palette[arg - 1]
+    store.dispatch({ type: 'TOOLBAR_TOOL_SET', payload: { color } })
+    colorPicker.setState({ color: Color(color).toCSS() })
+    sfx.playEffect('metal')
   }
 })
 
@@ -5589,44 +5607,46 @@ ipcRenderer.on('clear', (e, arg) => {
 ipcRenderer.on('brushSize', (e, direction) => {
   if (!textInputMode) {
     if (direction > 0) {
-      toolbar.changeBrushSize(1)
+      store.dispatch({ type: 'TOOLBAR_BRUSH_SIZE_INC' })
+      // store.dispatch({ type: 'PLAY_SOUND', payload: 'brush-size-up' }) // TODO
       sfx.playEffect('brush-size-up')
     } else {
-      toolbar.changeBrushSize(-1)
+      store.dispatch({ type: 'TOOLBAR_BRUSH_SIZE_DEC' })
+      // store.dispatch({ type: 'PLAY_SOUND', payload: 'brush-size-down' }) // TODO
       sfx.playEffect('brush-size-down')
     }
   }
 })
-// TODO move this code into the toolbar
-// HACK to support changing eraser size during quick erase
-window.addEventListener('keydown', e => {
-  if (!toolbar) return
-
-  // when alt key is held down during Quick Erase mode,
-  // menu won't trigger the '[' and ']' accelerators
-  // so we need to detect the combination
-  // and call changeBrushSize ourselves
-  const changeEraserSizeDuringQuickErase = direction => {
-    // remember the actual brush we're on
-    let prior = toolbar.state.brush
-    // switch to eraser long enough to change the brush size
-    toolbar.state.brush = 'eraser'
-    // change the brush size, which will re-render the cursor
-    toolbar.changeBrushSize(direction)
-    // re-render the toolbar to reflect prior brush
-    toolbar.state.brush = prior
-    toolbar.render()
-  }
-  if (toolbar.getIsQuickErasing()) {
-    if (isCommandPressed('drawing:quick-erase-size:inc')) {
-      changeEraserSizeDuringQuickErase(1)
-      sfx.playEffect('brush-size-up')
-    } else if (isCommandPressed('drawing:quick-erase-size:dec')) {
-      changeEraserSizeDuringQuickErase(-1)
-      sfx.playEffect('brush-size-down')
-    }
-  }
-})
+    // // TODO move this code into the toolbar
+    // // HACK to support changing eraser size during quick erase
+    // window.addEventListener('keydown', e => {
+    //   if (!toolbar) return
+    // 
+    //   // when alt key is held down during Quick Erase mode,
+    //   // menu won't trigger the '[' and ']' accelerators
+    //   // so we need to detect the combination
+    //   // and call changeBrushSize ourselves
+    //   const changeEraserSizeDuringQuickErase = direction => {
+    //     // remember the actual brush we're on
+    //     let prior = toolbar.state.brush
+    //     // switch to eraser long enough to change the brush size
+    //     toolbar.state.brush = 'eraser'
+    //     // change the brush size, which will re-render the cursor
+    //     toolbar.changeBrushSize(direction)
+    //     // re-render the toolbar to reflect prior brush
+    //     toolbar.state.brush = prior
+    //     toolbar.render()
+    //   }
+    //   if (toolbar.getIsQuickErasing()) {
+    //     if (isCommandPressed('drawing:quick-erase-size:inc')) {
+    //       changeEraserSizeDuringQuickErase(1)
+    //       sfx.playEffect('brush-size-up')
+    //     } else if (isCommandPressed('drawing:quick-erase-size:dec')) {
+    //       changeEraserSizeDuringQuickErase(-1)
+    //       sfx.playEffect('brush-size-down')
+    //     }
+    //   }
+    // })
 
 
 ipcRenderer.on('flipBoard', (e, arg)=> {
@@ -5676,7 +5696,8 @@ ipcRenderer.on('cycleViewMode', (event, args)=>{
 
 ipcRenderer.on('toggleCaptions', (event, args)=>{
   if (!textInputMode) {
-    toggleCaptions()
+    this.store.dispatch({ type: 'TOOLBAR_CAPTIONS_TOGGLE' })
+    sfx.playEffect('metal')
   }
 })
 
@@ -5700,10 +5721,12 @@ ipcRenderer.on('importImage', (event, args)=> {
   importImage(args)
 })
 
-ipcRenderer.on('toggleGuide', (event, args) => {
+ipcRenderer.on('toggleGuide', (event, arg) => {
+  console.log('toggleGuide', arg)
   if (!textInputMode) {
-    toolbar.setState({ [args]: !toolbar.state[args] })
-    toolbar.emit(args, toolbar.state[args])
+    store.dispatch({ type: 'TOOLBAR_GUIDE_TOGGLE', payload: arg })
+    // this.store.dispatch({ type: 'PLAY_SOUND', payload: 'metal' }) // TODO
+    sfx.playEffect('metal')
   }
 })
 
@@ -5917,9 +5940,8 @@ ipcRenderer.on('revealShotGenerator', value => {
 
 const log = opt => ipcRenderer.send('log', opt)
 
-// HACK to support Cmd+R reloading
 if (isDev) {
-  // wait
+  // HACK to support Cmd+R reloading
   setTimeout(() => {
     // … if no boardData present after timeout, we probably just Cmd+R reloaded
     if (!boardData) {
@@ -5938,4 +5960,17 @@ if (isDev) {
       }
     }
   }, 500)
+
+  const Stats = require('stats.js')
+  let stats = new Stats()
+  stats.showPanel(0)
+  document.body.appendChild(stats.dom)
+  stats.dom.style.top = '50px'
+
+  const animate = () => {
+    stats.begin()
+    stats.end()
+    window.requestAnimationFrame(animate)
+  }
+  window.requestAnimationFrame(animate)
 }

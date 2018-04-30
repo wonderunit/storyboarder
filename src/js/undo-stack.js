@@ -32,14 +32,12 @@ class UndoList {
   }
 
   getCanUndo () {
-    console.log('canUndo')
-    console.log(this.state)
+    console.log('can undo?', this.state.past.length > 0)
     return this.state.past.length > 0
   }
 
   getCanRedo () {
-    console.log('canRedo')
-    console.log(this.state)
+    console.log('can redo?', this.state.future.length > 0)
     return this.state.future.length > 0
   }
 

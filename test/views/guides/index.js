@@ -23,7 +23,20 @@ const render = () => {
     perspective: true
   }
 
-  guides = new Guides(canvas)
+  guides = new Guides({
+    width: canvas.width,
+    height: canvas.height,
+    perspectiveGridFn: () => {
+      // NOOP for testing only
+      return document.createElement('canvas')
+    },
+    onRender: guidesCanvas => {
+      let context = canvas.getContext('2d')
+      context.clearRect(0, 0, width, height)
+
+      context.drawImage(guidesCanvas, 0, 0)
+    }
+  })
   guides.setState(state)
 }
 window.addEventListener('resize', render)
