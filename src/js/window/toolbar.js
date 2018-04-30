@@ -344,7 +344,9 @@ class Toolbar extends EventEmitter {
         this.emit('onion', this.state.onion)
         break
       case 'captions':
-        this.toggleCaptions()
+        // this.toggleCaptions()
+        this.store.dispatch({ type: 'TOOLBAR_CAPTIONS_TOGGLE' })
+        sfx.playEffect('metal')
         break
       case 'open-in-editor':
         this.emit('open-in-editor')
@@ -510,10 +512,10 @@ class Toolbar extends EventEmitter {
     }
   }
 
-  toggleCaptions () {
-    this.setState({ captions: !this.state.captions })
-    this.emit('captions')
-  }
+  // toggleCaptions () {
+  //   this.setState({ captions: !this.state.captions })
+  //   this.emit('captions')
+  // }
 
   onButtonOver (event) {
     // console.log('onButtonOver', event)

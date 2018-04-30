@@ -970,25 +970,11 @@ const loadBoardUI = async () => {
     }
     sfx.playEffect('metal')
   })
-  toolbar.on('captions', () => {
-    // HACK!!!
-    let el = document.querySelector('#canvas-caption')
-    el.style.visibility = el.style.visibility === 'hidden'
-      ? 'visible'
-      : 'hidden'
-    sfx.playEffect('metal')
-  })
   toolbar.on('open-in-editor', () => {
     openInEditor()
   })
 
   // storyboarderSketchPane.toolbar = toolbar
-
-  // TODO
-  // if (!toolbar.getState().captions) {
-  //   let el = document.querySelector('#canvas-caption')
-  //   el.style.visibility = 'hidden'
-  // }
 
   // HACK force initialize
   // sfx.setMute(true)
@@ -1088,14 +1074,22 @@ const loadBoardUI = async () => {
       storyboarderSketchPane.sketchPane.drawOverlay(guideCanvas)
     }
   })
+  // connect toolbar state to UI
   observeStore(store, state => state.toolbar, () => {
     const state = store.getState()
+
+    // connect to guides
     guides.setState({
       grid: state.toolbar.grid,
       center: state.toolbar.center,
       thirds: state.toolbar.thirds,
       perspective: state.toolbar.perspective
     })
+
+    // connect to captions
+    document.querySelector('#canvas-caption').style.visibility = state.toolbar.captions
+      ? 'visible'
+      : 'hidden'
   }, true)
 
   // onionSkin = new OnionSkin(storyboarderSketchPane, boardPath)
@@ -2831,9 +2825,6 @@ let renderMetaData = () => {
   if (boardData.boards[currentBoard].newShot) {
     document.querySelector('input[name="newShot"]').checked = true
   }
-  if (!boardData.boards[currentBoard].dialogue) {
-    document.querySelector('#canvas-caption').style.display = 'none'
-  }
 
   if (boardData.boards[currentBoard].duration) {
     if (selections.size == 1) {
@@ -2873,12 +2864,10 @@ let renderMetaData = () => {
 
   if (boardData.boards[currentBoard].dialogue) {
     document.querySelector('textarea[name="dialogue"]').value = boardData.boards[currentBoard].dialogue
-    renderCaption()
-    document.querySelector('#canvas-caption').style.display = 'block'
     document.querySelector('#suggested-dialogue-duration').innerHTML = util.durationOfWords(boardData.boards[currentBoard].dialogue, 300)+300 + "ms"
-  } else {
-    document.querySelector('#suggested-dialogue-duration').innerHTML = ''
   }
+  renderCaption()
+
   if (boardData.boards[currentBoard].action) {
     document.querySelector('textarea[name="action"]').value = boardData.boards[currentBoard].action
   }
@@ -2903,7 +2892,13 @@ let renderMetaData = () => {
 }
 
 const renderCaption = () => {
-  document.querySelector('#canvas-caption').innerHTML = boardData.boards[currentBoard].dialogue
+  if (boardData.boards[currentBoard].dialogue) {
+    document.querySelector('#canvas-caption').innerHTML = boardData.boards[currentBoard].dialogue
+    document.querySelector('#canvas-caption').style.display = 'block'
+  } else {
+    document.querySelector('#suggested-dialogue-duration').innerHTML = ''
+    document.querySelector('#canvas-caption').style.display = 'none'
+  }
 }
 
 const renderMetaDataLineMileage = () => {
@@ -4289,9 +4284,9 @@ const renderViewMode = () => {
   )
 }
 
-const toggleCaptions = () => {
-  toolbar.toggleCaptions()
-}
+// const toggleCaptions = () => {
+//   toolbar.toggleCaptions()
+// }
 
 const toggleTimeline = () => {
   shouldRenderThumbnailDrawer = !shouldRenderThumbnailDrawer
@@ -5702,7 +5697,8 @@ ipcRenderer.on('cycleViewMode', (event, args)=>{
 
 ipcRenderer.on('toggleCaptions', (event, args)=>{
   if (!textInputMode) {
-    toggleCaptions()
+    this.store.dispatch({ type: 'TOOLBAR_CAPTIONS_TOGGLE' })
+    sfx.playEffect('metal')
   }
 })
 
