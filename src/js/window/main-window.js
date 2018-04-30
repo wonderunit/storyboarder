@@ -1071,7 +1071,12 @@ const loadBoardUI = async () => {
     height: storyboarderSketchPane.sketchPane.height,
     perspectiveGridFn: shotTemplateSystem.requestGrid.bind(shotTemplateSystem),
     onRender: guideCanvas => {
-      storyboarderSketchPane.sketchPane.drawOverlay(guideCanvas)
+      // HACK hardcoded
+      storyboarderSketchPane.sketchPane.layers[4].replaceTextureFromCanvas(
+        guideCanvas
+      )
+    }
+  })
     }
   })
   // connect toolbar state to UI
