@@ -40,9 +40,14 @@ class Guides {
   }
 
   setState (newState) {
-    this.state = Object.assign(this.state, newState)
-
-    this.render()
+    let hasChanged = newState.grid !== this.state.grid ||
+                     newState.center !== this.state.center ||
+                     newState.thirds !== this.state.thirds ||
+                     newState.perspective !== this.state.perspective
+    if (hasChanged) {
+      this.state = Object.assign(this.state, newState)
+      this.render()
+    }
   }
 
   render () {

@@ -841,40 +841,38 @@ class StoryboarderSketchPane extends EventEmitter {
   }
 
   // TODO
-  setBrushSize (size) {
-    // this.brush.setSize(size)
-    // this.sketchPane.setTool(this.brush)
-    // this.updatePointer()
-    // this.sketchPane.brushSize = size
-    this.store.dispatch({ type: 'TOOLBAR_TOOL_SET', payload: { size }, meta: { scope: 'local' } })
-  }
+  // setBrushSize (size) {
+  //   // this.brush.setSize(size)
+  //   // this.sketchPane.setTool(this.brush)
+  //   // this.updatePointer()
+  //   // this.sketchPane.brushSize = size
+  //   this.store.dispatch({ type: 'TOOLBAR_TOOL_SET', payload: { size } })
+  // }
 
-  setBrushColor (color) {
-    // this.brush.setColor(color.toCSS())
-    // this.sketchPane.setTool(this.brush)
-    // this.updatePointer()
-
-    // convert to number
-    color = ((color.red * 255) << 16) +
-      ((color.green * 255) << 8) +
-      color.blue * 255
-
-    this.store.dispatch({ type: 'TOOLBAR_TOOL_SET', payload: { color }, meta: { scope: 'local' } })
-  }
+  // setBrushColor (color) {
+  //   // this.brush.setColor(color.toCSS())
+  //   // this.sketchPane.setTool(this.brush)
+  //   // this.updatePointer()
+  // 
+  //   // convert to number
+  //   color = utils.colorToNumber(color)
+  // 
+  //   this.store.dispatch({ type: 'TOOLBAR_TOOL_SET', payload: { color }, meta: { scope: 'local' } })
+  // }
 
   // HACK copied from toolbar
-  cloneOptions (opt) {
-    return {
-      kind: opt.kind,
-      size: opt.size,
-      spacing: opt.spacing,
-      flow: opt.flow,
-      hardness: opt.hardness,
-      opacity: opt.opacity,
-      color: opt.color.clone(),
-      palette: opt.palette.map(color => color.clone())
-    }
-  }
+  // cloneOptions (opt) {
+  //   return {
+  //     kind: opt.kind,
+  //     size: opt.size,
+  //     spacing: opt.spacing,
+  //     flow: opt.flow,
+  //     hardness: opt.hardness,
+  //     opacity: opt.opacity,
+  //     color: opt.color.clone(),
+  //     palette: opt.palette.map(color => color.clone())
+  //   }
+  // }
 
   createContext () {
     let size = [
