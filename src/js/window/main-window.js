@@ -5585,15 +5585,14 @@ ipcRenderer.on('setTool', (e, toolName) => {
   }
 })
 
-// TODO
 ipcRenderer.on('useColor', (e, arg) => {
-  if (!toolbar) return
-
   if (!textInputMode) {
-    // TODO set the color of the current tool to be the given palette index
-    // if (toolbar.getCurrentPalette()) {
-    //   toolbar.emit('current-set-color', toolbar.getCurrentPalette()[arg-1])
-    // }
+    // set the color of the current tool to be the given palette index
+    const state = store.getState()
+    const color = state.toolbar.tools[state.toolbar.activeTool].palette[arg - 1]
+    store.dispatch({ type: 'TOOLBAR_TOOL_SET', payload: { color } })
+    colorPicker.setState({ color: Color(color).toCSS() })
+    sfx.playEffect('metal')
   }
 })
 
