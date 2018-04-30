@@ -5721,13 +5721,13 @@ ipcRenderer.on('importImage', (event, args)=> {
   importImage(args)
 })
 
-ipcRenderer.on('toggleGuide', (event, args) => {
-  // TODO
-
-  // if (!textInputMode) {
-  //   toolbar.setState({ [args]: !toolbar.state[args] })
-  //   toolbar.emit(args, toolbar.state[args])
-  // }
+ipcRenderer.on('toggleGuide', (event, arg) => {
+  console.log('toggleGuide', arg)
+  if (!textInputMode) {
+    store.dispatch({ type: 'TOOLBAR_GUIDE_TOGGLE', payload: arg })
+    // this.store.dispatch({ type: 'PLAY_SOUND', payload: 'metal' }) // TODO
+    sfx.playEffect('metal')
+  }
 })
 
 ipcRenderer.on('toggleNewShot', (event, args) => {
