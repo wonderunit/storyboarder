@@ -957,19 +957,6 @@ const loadBoardUI = async () => {
   //   sfx.playEffect('metal')
   // })
 
-  toolbar.on('onion', value => {
-    onionSkin.setEnabled(value)
-    if (onionSkin.getEnabled()) {
-      if (!onionSkin.isLoaded) {
-        onionSkin.load(
-          boardData.boards[currentBoard],
-          boardData.boards[currentBoard - 1],
-          boardData.boards[currentBoard + 1]
-        ).catch(err => console.warn(err))
-      }
-    }
-    sfx.playEffect('metal')
-  })
   toolbar.on('open-in-editor', () => {
     openInEditor()
   })
@@ -1077,6 +1064,18 @@ const loadBoardUI = async () => {
       )
     }
   })
+  onionSkin = new OnionSkin({
+    width: storyboarderSketchPane.sketchPane.width,
+    height: storyboarderSketchPane.sketchPane.height,
+    onSetEnabled: value => {
+      // HACK hardcoded
+      storyboarderSketchPane.sketchPane.layers[2].setVisible(value)
+    },
+    onRender: onionSkinCanvas => {
+      // HACK hardcoded
+      storyboarderSketchPane.sketchPane.layers[2].replaceTextureFromCanvas(
+        onionSkinCanvas
+      )
     }
   })
   // connect toolbar state to UI
@@ -1095,9 +1094,11 @@ const loadBoardUI = async () => {
     document.querySelector('#canvas-caption').style.visibility = state.toolbar.captions
       ? 'visible'
       : 'hidden'
+
+    // connect to onion skin
+    onionSkin.setEnabled(state.toolbar.onion)
   }, true)
 
-  // onionSkin = new OnionSkin(storyboarderSketchPane, boardPath)
   layersEditor = new LayersEditor(storyboarderSketchPane, sfx, notifications)
   layersEditor.on('opacity', opacity => {
     // should we update the value of the project data?
@@ -3121,19 +3122,13 @@ let updateSketchPaneBoard = () => {
         : exporterCommon.DEFAULT_REFERENCE_LAYER_OPACITY
       layersEditor.setReferenceOpacity(referenceOpacity)
 
-      resolve()
+      onionSkin.load(
+        path.join(boardPath, 'images'),
+        boardData.boards[currentBoard],
+        boardData.boards[currentBoard - 1],
+        boardData.boards[currentBoard + 1])
 
-      // TODO fix onionSkin
-      // onionSkin.reset()
-      // if (onionSkin.getEnabled()) {
-      //   onionSkin.load(
-      //     boardData.boards[currentBoard],
-      //     boardData.boards[currentBoard - 1],
-      //     boardData.boards[currentBoard + 1]
-      //   ).then(() => resolve()).catch(err => console.warn(err))
-      // } else {
-      //   resolve()
-      // }
+      resolve()
     }).catch(err => console.warn(err))
   })
 }
@@ -3833,10 +3828,6 @@ let loadScene = async (sceneNumber) => {
     boardPath.pop()
     boardPath = boardPath.join(path.sep)
     console.log('BOARD PATH:', boardPath)
-
-    if (onionSkin) {
-      onionSkin.setBoardPath(boardPath)
-    }
 
     dragTarget = document.querySelector('#thumbnail-container')
     dragTarget.style.scrollBehavior = 'unset'
@@ -5731,6 +5722,14 @@ ipcRenderer.on('toggleGuide', (event, arg) => {
   console.log('toggleGuide', arg)
   if (!textInputMode) {
     store.dispatch({ type: 'TOOLBAR_GUIDE_TOGGLE', payload: arg })
+    // this.store.dispatch({ type: 'PLAY_SOUND', payload: 'metal' }) // TODO
+    sfx.playEffect('metal')
+  }
+})
+
+ipcRenderer.on('toggleOnionSkin', (event, arg) => {
+  if (!textInputMode) {
+    store.dispatch({ type: 'TOOLBAR_ONION_TOGGLE' })
     // this.store.dispatch({ type: 'PLAY_SOUND', payload: 'metal' }) // TODO
     sfx.playEffect('metal')
   }

@@ -2,130 +2,101 @@ const fs = require('fs')
 const path = require('path')
 
 class OnionSkin {
-  constructor (storyboarderSketchPane, boardPath) {
-    this.storyboarderSketchPane = storyboarderSketchPane
-    this.enabled = false
-    this.isLoaded = false
-    this.boardPath = boardPath
+  constructor ({ width, height, onSetEnabled, onRender }) {
+    this.width = width
+    this.height = height
+    this.onSetEnabled = onSetEnabled
+    this.onRender = onRender
+
+    this.state = { status: 'NotAsked', enabled: false }
+
+    this.canvas = document.createElement('canvas')
+    this.canvas.width = this.width
+    this.canvas.height = this.height
+    this.context = this.canvas.getContext('2d')
+
+    this.tmpCanvas = document.createElement('canvas')
+    this.tmpCanvas.width = this.width
+    this.tmpCanvas.height = this.height
+    this.tmpContext = this.tmpCanvas.getContext('2d')
 
     this.setEnabled(false)
   }
 
   setEnabled (value) {
-    this.enabled = value
-    this.storyboarderSketchPane.setLayerOpacity(2, this.enabled ? 1 : 0) // HACK hardcoded
+    this.state.enabled = value
+
+    this.onSetEnabled(value)
   }
 
-  getEnabled () {
-    return this.enabled
-  }
+  async load (pathToImages, currBoard, prevBoard, nextBoard) {
+    // TODO if already loading, cancel
+    // TODO should we use SketchPane's LayerCollection to setup and render these composites for us?
 
-  reset () {
-    this.isLoaded = false
-  }
+    this.state.status = 'Loading'
 
-  setBoardPath (path) {
-    this.boardPath = path
-  }
+    this.context.clearRect(0, 0, this.width, this.height)
+    for (let board of [prevBoard, nextBoard]) {
+      if (!board) continue
 
-  load (currBoard, prevBoard, nextBoard) {
-    this.isLoaded = false
-    return new Promise((resolve, reject) => {
-      let context = this.storyboarderSketchPane.sketchPane.getLayerContext(2) // HACK hardcoded
-      let size = this.storyboarderSketchPane.sketchPane.getCanvasSize()
+      let color = board === prevBoard ? '#00f' : '#f00'
 
-      let layersData = []
-      let loaders = []
-
-      for (let board of [prevBoard, nextBoard]) {
-        if (!board) continue
-
-        let color = board === prevBoard ? '#00f' : '#f00'
-
-        if (board.layers) {
-          if (board.layers.reference && board.layers.reference.url) {
-            layersData.push([0, board.layers.reference.url, color]) // HACK hardcoded index
-          }
-        }
-
+      // HACK hardcoded
+      let layersData = [
+        // reference layer (if present)
+        ...(board.layers && board.layers.reference)
+          ? [[0, board.layers.reference.url]]
+          : [],
+      
         // always load the main layer
-        layersData.push([1, board.url, color]) // HACK hardcoded index
+        [1, board.url],
+      
+        // notes layer (if present)
+        ...(board.layers && board.layers.notes)
+          ? [[2, board.layers.notes.url]]
+          : [],
+      ]
+    
+      let loaders = layersData.map(
+        ([index, filename]) =>
+          new Promise((resolve, reject) => {
+            let imageFilePath = path.join(pathToImages, filename)
+            let image = new Image()
+            image.onload = () => resolve([index, filename, image])
+            image.onerror = () => resolve([index, filename, null])
+            image.src = imageFilePath + '?' + Math.random()
+          })
+      )
 
-        if (board.layers) {
-          if (board.layers.notes && board.layers.notes.url) {
-            layersData.push([3, board.layers.notes.url, color]) // HACK hardcoded index
-          }
-        }
+      let result = await Promise.all(loaders)
 
-        for (let [index, filename] of layersData) {
-          loaders.push(new Promise((resolve, reject) => {
-            let imageFilePath = path.join(this.boardPath, 'images', filename)
-            try {
-              if (fs.existsSync(imageFilePath)) {
-                let image = new Image()
-                image.onload = () => {
-                  // resolve
-                  resolve([filename, image])
-                }
-                image.onerror = () => {
-                  // clear
-                  console.warn('could not load image', filename)
-                  resolve([filename, null])
-                }
-                image.src = imageFilePath + '?' + Math.random()
-              } else {
-                // clear
-                resolve([filename, null])
-              }
-            } catch (err) {
-              // clear
-              resolve([filename, null])
-            }
-          }))
+      this.tmpContext.clearRect(0, 0, this.width, this.height)
+      for (let [index, filename, image] of result) {
+        if (image) {
+          // tinting (via https://stackoverflow.com/a/4231508)
+          // draw image to tmp with tint
+          this.tmpContext.save()
+          this.tmpContext.fillStyle = color
+          this.tmpContext.fillRect(0, 0, this.width, this.height)
+          this.tmpContext.globalCompositeOperation = 'destination-atop'
+          this.tmpContext.drawImage(image, 0, 0)
+          this.tmpContext.restore()
+
+          // draw faint representation of real image to onion layer
+          this.context.save()
+          this.context.globalAlpha = 0.01
+          this.context.drawImage(image, 0, 0)
+          // draw tinted canvas to onion layer
+          this.context.globalAlpha = 0.2 * (index === 0 ? board.layers.reference.opacity : 1.0) // strength of tint
+          this.context.drawImage(this.tmpContext.canvas, 0, 0)
+          this.context.restore()
         }
       }
+    }
 
-      // via https://stackoverflow.com/a/4231508
-      Promise.all(loaders).then(result => {
-        // key map for easier lookup
-        let imagesByFilename = {}
-        for (let [filename, image] of result) {
-          if (image) imagesByFilename[filename] = image
-        }
+    this.state.status = 'Success'
 
-        let tmpCtx = this.storyboarderSketchPane.createContext()
-        context.clearRect(0, 0, size.width, size.height)
-
-        for (let [index, filename, color] of layersData) {
-          // do we have an image for this particular layer index?
-          let image = imagesByFilename[filename]
-          if (image) {
-            // console.log('OnionSkin :: rendering layer index:', index, filename, color)
-            tmpCtx.save()
-            tmpCtx.fillStyle = color
-            tmpCtx.fillRect(0, 0, size.width, size.height)
-            // draw image to offscreen (with tint)
-            tmpCtx.globalCompositeOperation = 'destination-atop'
-            tmpCtx.drawImage(image, 0, 0)
-            tmpCtx.restore()
-
-            // draw image to onion layer
-            context.save()
-            context.globalAlpha = 0.01
-            context.drawImage(image, 0, 0)
-            // draw offscreen (with tint) to onion layer
-            context.globalAlpha = 0.2 // strength of tint
-            context.drawImage(tmpCtx.canvas, 0, 0)
-            context.restore()
-          } else {
-            // console.log('OnionSkin :: missing image for layer index:', index, filename, color)
-          }
-        }
-
-        this.isLoaded = true
-        resolve()
-      })
-    })
+    this.onRender(this.canvas)
   }
 }
 
