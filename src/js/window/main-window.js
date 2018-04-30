@@ -2404,7 +2404,7 @@ const renderThumbnailToNewCanvas = (index, options = { forceReadFromFiles: false
   if (!options.forceReadFromFiles && index === currentBoard) {
     // grab from current sketchpane (in memory)
     let canvas = storyboarderSketchPane.sketchPane.constructor.utils.pixelsToCanvas(
-      storyboarderSketchPane.sketchPane.extractThumbnailPixels(size[0], size[1]),
+      storyboarderSketchPane.sketchPane.extractThumbnailPixels(size[0], size[1], [0, 1, 3]), // HACK hardcoded
       size[0],
       size[1]
     )
@@ -4593,7 +4593,8 @@ let copyBoards = () => {
           storyboarderSketchPane.sketchPane.constructor.utils.pixelsToCanvas(
             storyboarderSketchPane.sketchPane.extractThumbnailPixels(
               storyboarderSketchPane.sketchPane.width,
-              storyboarderSketchPane.sketchPane.height
+              storyboarderSketchPane.sketchPane.height,
+              [0, 1, 3] // HACK hardcoded
             ),
             storyboarderSketchPane.sketchPane.width,
             storyboarderSketchPane.sketchPane.height
