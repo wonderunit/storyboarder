@@ -71,7 +71,7 @@ const prefsModule = require('electron').remote.require('./prefs')
 prefsModule.init(path.join(app.getPath('userData'), 'pref.json'))
 // we're gradually migrating prefs to a reducer
 // we read any 2.0 toolbar related prefs into the toolbar reducer manually
-// NOTE this is async so will preferences will be invalid until main IPC dispatches back to renderers
+// NOTE this is async so preferences will be invalid until main IPC dispatches back to renderers
 if (prefsModule.getPrefs().toolbar) {
   store.dispatch({
     type: 'TOOLBAR_MERGE_FROM_PREFERENCES', payload: prefsModule.getPrefs()
