@@ -68,6 +68,9 @@ class OnionSkin {
 
     this.context.clearRect(0, 0, this.width, this.height)
 
+    this.context.fillStyle = '#fff'
+    this.context.fillRect(0, 0, this.width, this.height)
+
     for (let board of [prevBoard, nextBoard]) {
       if (!board) continue
 
@@ -103,6 +106,7 @@ class OnionSkin {
       let result = await Promise.all(loaders)
 
       // layer compositing
+      this.tmpContext.save()
       this.tmpContext.clearRect(0, 0, this.width, this.height)
       for (let [index, filename, image] of result) {
         if (image) {
@@ -110,20 +114,27 @@ class OnionSkin {
           this.tmpContext.drawImage(image, 0, 0)
         }
       }
+      this.tmpContext.restore()
 
       // tint
-      // via https://github.com/pixijs/pixi.js/blob/fd2c860/src/core/sprites/canvas/CanvasTinter.js
-      // see also: https://stackoverflow.com/a/4231508
+      this.tintContext.save()
       this.tintContext.clearRect(0, 0, this.width, this.height)
+      this.tintContext.globalCompositeOperation = 'normal'
+      // white box as a base
+      this.tintContext.fillStyle = '#fff'
+      this.tintContext.fillRect(0, 0, this.width, this.height)
+      // draw the image
+      this.tintContext.drawImage(this.tmpContext.canvas, 0, 0)
+      // draw the screened color on top
+      this.tintContext.globalCompositeOperation = 'screen'
       this.tintContext.fillStyle = color
       this.tintContext.fillRect(0, 0, this.width, this.height)
-      this.tintContext.globalCompositeOperation = 'multiply'
-      this.tintContext.drawImage(this.tmpContext.canvas, 0, 0)
-      this.tintContext.globalCompositeOperation = 'destination-atop'
-      this.tintContext.drawImage(this.tmpContext.canvas, 0, 0)
+      this.tintContext.restore()
 
       // draw tinted canvas to main context
-      this.context.globalAlpha = 0.2
+      this.context.save()
+      this.context.globalAlpha = 0.5
+      this.context.globalCompositeOperation = 'multiply'
       this.context.drawImage(this.tintContext.canvas, 0, 0)
       this.context.restore()
     }
