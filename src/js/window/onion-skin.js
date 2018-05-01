@@ -133,7 +133,7 @@ class OnionSkin {
 
       // draw tinted canvas to main context
       this.context.save()
-      this.context.globalAlpha = 0.5
+      this.context.globalAlpha = 0.35
       this.context.globalCompositeOperation = 'multiply'
       this.context.drawImage(this.tintContext.canvas, 0, 0)
       this.context.restore()
