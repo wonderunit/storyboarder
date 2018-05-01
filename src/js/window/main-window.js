@@ -1072,6 +1072,7 @@ const loadBoardUI = async () => {
       storyboarderSketchPane.sketchPane.layers[2].setVisible(value)
     },
     onRender: onionSkinCanvas => {
+      storyboarderSketchPane.sketchPane.layers[2].sprite.blendMode = PIXI.BLEND_MODES.MULTIPLY
       // HACK hardcoded
       storyboarderSketchPane.sketchPane.layers[2].replaceTextureFromCanvas(
         onionSkinCanvas
