@@ -1121,7 +1121,7 @@ const loadBoardUI = async () => {
   })
   storyboarderSketchPane.on('requestPointerDown', () => {
     // if artist is drawing on the reference layer, ensure it has opacity
-    if (toolbar.state.brush === 'light-pencil' && storyboarderSketchPane.sketchPane.getLayerOpacity() === 0) {
+    if (store.getState().toolbar.activeTool === 'light-pencil' && storyboarderSketchPane.getLayerOpacity(0) === 0) { // HACK hardcoded index
       layersEditor.setReferenceOpacity(exporterCommon.DEFAULT_REFERENCE_LAYER_OPACITY)
     }
   })

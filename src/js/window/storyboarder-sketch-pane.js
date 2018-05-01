@@ -246,6 +246,9 @@ class StoryboarderSketchPane extends EventEmitter {
       syncSketchPaneState(this.store.getState().toolbar)
 
       this.sketchPane.down(e, options)
+
+      // just triggers layer opacity check
+      this.emit('requestPointerDown')
     })
     window.addEventListener('pointermove', e => {
       this.sketchPane.move(e)
