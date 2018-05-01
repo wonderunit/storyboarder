@@ -1096,7 +1096,7 @@ const loadBoardUI = async () => {
       : 'hidden'
 
     // connect to onion skin
-    onionSkin.setEnabled(state.toolbar.onion)
+    onionSkin.setState({ enabled: state.toolbar.onion })
   }, true)
 
   layersEditor = new LayersEditor(storyboarderSketchPane, sfx, notifications)
@@ -3122,11 +3122,13 @@ let updateSketchPaneBoard = () => {
         : exporterCommon.DEFAULT_REFERENCE_LAYER_OPACITY
       layersEditor.setReferenceOpacity(referenceOpacity)
 
-      onionSkin.load(
-        path.join(boardPath, 'images'),
-        boardData.boards[currentBoard],
-        boardData.boards[currentBoard - 1],
-        boardData.boards[currentBoard + 1])
+      onionSkin.setState({
+        pathToImages: path.join(boardPath, 'images'),
+        currBoard: boardData.boards[currentBoard],
+        prevBoard: boardData.boards[currentBoard - 1],
+        nextBoard: boardData.boards[currentBoard + 1],
+        enabled: store.getState().toolbar.onion
+      })
 
       resolve()
     }).catch(err => console.warn(err))

@@ -8,7 +8,13 @@ class OnionSkin {
     this.onSetEnabled = onSetEnabled
     this.onRender = onRender
 
-    this.state = { status: 'NotAsked', enabled: false }
+    this.state = {
+      status: 'NotAsked',
+      enabled: false,
+      currBoard: undefined,
+      prevBoard: undefined,
+      nextBoard: undefined
+    }
 
     this.canvas = document.createElement('canvas')
     this.canvas.width = this.width
@@ -20,18 +26,38 @@ class OnionSkin {
     this.tmpCanvas.height = this.height
     this.tmpContext = this.tmpCanvas.getContext('2d')
 
-    this.setEnabled(false)
+    this.onSetEnabled(this.state.enabled)
   }
 
-  setEnabled (value) {
-    this.state.enabled = value
+  setState ({ pathToImages, currBoard, prevBoard, nextBoard, enabled }) {
+    let currBoardChanged = false
+    let enabledChanged = false
 
-    this.onSetEnabled(value)
+    if (pathToImages && currBoard) {
+      currBoardChanged = this.state.currBoard == null || (currBoard.uid != this.state.currBoard.uid)
+
+      this.state.pathToImages = pathToImages
+      this.state.currBoard = currBoard
+      this.state.prevBoard = prevBoard
+      this.state.nextBoard = nextBoard
+    }
+
+    if (enabled != this.state.enabled) {
+      enabledChanged = true
+      this.state.enabled = enabled
+      this.onSetEnabled(this.state.enabled)
+    }
+
+    if (this.state.enabled && (currBoardChanged || enabledChanged)) {
+      this.load()
+    }
   }
 
-  async load (pathToImages, currBoard, prevBoard, nextBoard) {
+  async load () {
     // TODO if already loading, cancel
     // TODO should we use SketchPane's LayerCollection to setup and render these composites for us?
+
+    const { pathToImages, currBoard, prevBoard, nextBoard } = this.state
 
     this.state.status = 'Loading'
 
