@@ -87,7 +87,7 @@ class OnionSkin {
       
         // notes layer (if present)
         ...(board.layers && board.layers.notes)
-          ? [[2, board.layers.notes.url]]
+          ? [[3, board.layers.notes.url]]
           : [],
       ]
 
