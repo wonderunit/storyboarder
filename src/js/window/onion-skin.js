@@ -26,6 +26,11 @@ class OnionSkin {
     this.tmpCanvas.height = this.height
     this.tmpContext = this.tmpCanvas.getContext('2d')
 
+    this.tintCanvas = document.createElement('canvas')
+    this.tintCanvas.width = this.width
+    this.tintCanvas.height = this.height
+    this.tintContext = this.tintCanvas.getContext('2d')
+
     this.onSetEnabled(this.state.enabled)
   }
 
@@ -62,6 +67,7 @@ class OnionSkin {
     this.state.status = 'Loading'
 
     this.context.clearRect(0, 0, this.width, this.height)
+
     for (let board of [prevBoard, nextBoard]) {
       if (!board) continue
 
@@ -96,28 +102,30 @@ class OnionSkin {
 
       let result = await Promise.all(loaders)
 
+      // layer compositing
       this.tmpContext.clearRect(0, 0, this.width, this.height)
       for (let [index, filename, image] of result) {
         if (image) {
-          // tinting (via https://stackoverflow.com/a/4231508)
-          // draw image to tmp with tint
-          this.tmpContext.save()
-          this.tmpContext.fillStyle = color
-          this.tmpContext.fillRect(0, 0, this.width, this.height)
-          this.tmpContext.globalCompositeOperation = 'destination-atop'
+          this.tmpContext.globalAlpha = (index === 0 ? board.layers.reference.opacity : 1.0)
           this.tmpContext.drawImage(image, 0, 0)
-          this.tmpContext.restore()
-
-          // draw faint representation of real image to onion layer
-          this.context.save()
-          this.context.globalAlpha = 0.01
-          this.context.drawImage(image, 0, 0)
-          // draw tinted canvas to onion layer
-          this.context.globalAlpha = 0.2 * (index === 0 ? board.layers.reference.opacity : 1.0) // strength of tint
-          this.context.drawImage(this.tmpContext.canvas, 0, 0)
-          this.context.restore()
         }
       }
+
+      // tint
+      // via https://github.com/pixijs/pixi.js/blob/fd2c860/src/core/sprites/canvas/CanvasTinter.js
+      // see also: https://stackoverflow.com/a/4231508
+      this.tintContext.clearRect(0, 0, this.width, this.height)
+      this.tintContext.fillStyle = color
+      this.tintContext.fillRect(0, 0, this.width, this.height)
+      this.tintContext.globalCompositeOperation = 'multiply'
+      this.tintContext.drawImage(this.tmpContext.canvas, 0, 0)
+      this.tintContext.globalCompositeOperation = 'destination-atop'
+      this.tintContext.drawImage(this.tmpContext.canvas, 0, 0)
+
+      // draw tinted canvas to main context
+      this.context.globalAlpha = 0.2
+      this.context.drawImage(this.tintContext.canvas, 0, 0)
+      this.context.restore()
     }
 
     this.state.status = 'Success'
