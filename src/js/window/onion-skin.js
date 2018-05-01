@@ -35,25 +35,24 @@ class OnionSkin {
   }
 
   setState ({ pathToImages, currBoard, prevBoard, nextBoard, enabled }) {
-    let currBoardChanged = false
-    let enabledChanged = false
+    const currBoardChanged = currBoard && ((this.state.currBoard == null) || (currBoard.uid != this.state.currBoard.uid))
+    const prevBoardChanged = prevBoard && ((this.state.prevBoard == null) || (prevBoard.uid != this.state.prevBoard.uid))
+    const nextBoardChanged = nextBoard && ((this.state.nextBoard == null) || (nextBoard.uid != this.state.nextBoard.uid))
+    const anyBoardChanged = currBoardChanged || prevBoardChanged || nextBoardChanged
 
-    if (pathToImages && currBoard) {
-      currBoardChanged = this.state.currBoard == null || (currBoard.uid != this.state.currBoard.uid)
+    const enabledChanged = enabled != this.state.enabled
 
-      this.state.pathToImages = pathToImages
-      this.state.currBoard = currBoard
-      this.state.prevBoard = prevBoard
-      this.state.nextBoard = nextBoard
-    }
+    this.state.pathToImages = pathToImages || this.state.pathToImages
+    this.state.currBoard = currBoard || this.state.currBoard
+    this.state.prevBoard = prevBoard || this.state.prevBoard
+    this.state.nextBoard = nextBoard || this.state.nextBoard
 
-    if (enabled != this.state.enabled) {
-      enabledChanged = true
+    if (enabledChanged) {
       this.state.enabled = enabled
       this.onSetEnabled(this.state.enabled)
     }
 
-    if (this.state.enabled && (currBoardChanged || enabledChanged)) {
+    if (this.state.enabled && (anyBoardChanged || enabledChanged)) {
       this.load()
     }
   }
@@ -91,7 +90,7 @@ class OnionSkin {
           ? [[2, board.layers.notes.url]]
           : [],
       ]
-    
+
       let loaders = layersData.map(
         ([index, filename]) =>
           new Promise((resolve, reject) => {
