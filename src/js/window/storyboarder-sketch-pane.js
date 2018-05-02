@@ -1195,9 +1195,10 @@ class MovingStrategy {
 
   _onPointerMove (e) {
     this.state.position = this.context.sketchPane.localizePoint(e)
+
     this.state.diff = {
-      x: this.state.position.x - this.state.anchor.x,
-      y: this.state.position.y - this.state.anchor.y
+      x: Math.round(this.state.position.x - this.state.anchor.x),
+      y: Math.round(this.state.position.y - this.state.anchor.y)
     }
 
     // render change
@@ -1207,9 +1208,11 @@ class MovingStrategy {
   }
 
   _onPointerUp (e) {
-    // TODO why does this cause a blur?
+    // stamp change
     for (let index of this.context.visibleLayersIndices) {
+      // overwrite texture
       this.context.sketchPane.layers[index].rewrite()
+      // reset position
       this.context.sketchPane.layers[index].sprite.position = { x: 0, y: 0 }
     }
     window.removeEventListener('pointermove', this._onPointerMove)
