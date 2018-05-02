@@ -230,11 +230,12 @@ class StoryboarderSketchPane extends EventEmitter {
     // requestAnimationFrame(this.onFrame)
 
     this.strategies = {
-      drawing: new DrawingStrategy(this)
+      drawing: new DrawingStrategy(this),
+      moving: new MovingStrategy(this)
     }
 
     // setStrategy
-    this.strategy = this.strategies.drawing
+    this.strategy = this.strategies.moving
     this.strategy.startup()
 
     // add SketchPane to container
@@ -1151,6 +1152,69 @@ class DrawingStrategy {
   //   document.removeEventListener('pointerup', this.container.canvasPointerUp)
   // }
 // }
+
+class MovingStrategy {
+  constructor (context) {
+    this.context = context
+
+    this._onPointerDown = this._onPointerDown.bind(this)
+    this._onPointerMove = this._onPointerMove.bind(this)
+    this._onPointerUp = this._onPointerUp.bind(this)
+  }
+
+  startup () {
+    this.state = {
+      // down coords
+      anchor: undefined,
+      // move coords
+      position: undefined,
+      // diff
+      diff: undefined
+    }
+
+    window.addEventListener('pointerdown', this._onPointerDown)
+    window.addEventListener('pointerup', this._onPointerUp)
+
+    this.context.containerEl.style.cursor = 'move'
+    this.context.sketchPane.cursor.visible = false
+  }
+
+  shutdown () {
+    window.removeEventListener('pointerdown', this._onPointerDown)
+    window.removeEventListener('pointermove', this._onPointerMove)
+    window.removeEventListener('pointerup', this._onPointerUp)
+
+    this.context.containerEl.style.cursor = 'auto'
+    this.context.sketchPane.cursor.visible = true
+  }
+
+  _onPointerDown (e) {
+    this.state.anchor = this.context.sketchPane.localizePoint(e)
+    window.addEventListener('pointermove', this._onPointerMove)
+  }
+
+  _onPointerMove (e) {
+    this.state.position = this.context.sketchPane.localizePoint(e)
+    this.state.diff = {
+      x: this.state.position.x - this.state.anchor.x,
+      y: this.state.position.y - this.state.anchor.y
+    }
+
+    // render change
+    for (let index of this.context.visibleLayersIndices) {
+      this.context.sketchPane.layers[index].sprite.position = this.state.diff
+    }
+  }
+
+  _onPointerUp (e) {
+    // TODO why does this cause a blur?
+    for (let index of this.context.visibleLayersIndices) {
+      this.context.sketchPane.layers[index].rewrite()
+      this.context.sketchPane.layers[index].sprite.position = { x: 0, y: 0 }
+    }
+    window.removeEventListener('pointermove', this._onPointerMove)
+  }
+}
 
 // class MovingStrategy {
 //   constructor (container) {
