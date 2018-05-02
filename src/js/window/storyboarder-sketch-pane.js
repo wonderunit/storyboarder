@@ -941,65 +941,81 @@ class StoryboarderSketchPane extends EventEmitter {
 class DrawingStrategy {
   constructor (context) {
     this.context = context
+
+    this._onPointerDown = this._onPointerDown.bind(this)
+    this._onPointerMove = this._onPointerMove.bind(this)
+    this._onPointerUp = this._onPointerUp.bind(this)
+    this._onKeyUp = this._onKeyUp.bind(this)
   }
 
   startup () {
-    window.addEventListener('pointerdown', e => {
-      // TODO avoid false positive clicks :/
-      // TODO could store multiErase status / erase layer array in a reducer?
-
-      // configure the tool for drawing
-
-      // stroke options
-      // via https://developer.mozilla.org/en-US/docs/Web/API/Pointer_events#Determining_button_states
-      // is the user requesting to erase?
-      let options = {}
-
-      let toolbarState = this.context.store.getState().toolbar
-
-      if (!toolbarState.prevTool &&
-          toolbarState.activeTool === 'eraser') {
-        // regular erase
-        options.erase = [0, 1, 3]
-      } else {
-        options = (e.buttons === 32 || e.altKey)
-          // is the shift key down?
-          ? e.shiftKey
-            // ... then, erase multiple layers
-            ? { erase: [0, 1, 3] } // HACK hardcoded
-            // ... otherwise, only erase current layer
-            : { erase: [this.context.sketchPane.getCurrentLayerIndex()] }
-          // not erasing
-          : {}
-
-        if (options.erase) {
-          // switch to quick-erase mode
-          this.context.store.dispatch({ type: 'TOOLBAR_TOOL_QUICK_PUSH', payload: 'eraser', meta: { scope: 'local' } })
-        }
-      }
-
-      // sync sketchPane to the current toolbar state
-      // syncSketchPaneState(this.store.getState().toolbar)
-
-      this.context.sketchPane.down(e, options)
-
-      // just triggers layer opacity check
-      this.context.emit('requestPointerDown')
-    })
-    window.addEventListener('pointermove', e => {
-      this.context.sketchPane.move(e)
-    })
-    window.addEventListener('pointerup', e => {
-      this.context.sketchPane.up(e)
-      this._updateQuickErase(e)
-    })
-    window.addEventListener('keyup', e => {
-      this._updateQuickErase(e)
-    })
+    window.addEventListener('pointerdown', this._onPointerDown)
+    window.addEventListener('pointermove', this._onPointerMove)
+    window.addEventListener('pointerup', this._onPointerUp)
+    window.addEventListener('keyup', this._onKeyUp)
   }
 
   shutdown () {
-    
+    window.removeEventListener('pointerdown', this._onPointerDown)
+    window.removeEventListener('pointermove', this._onPointerMove)
+    window.removeEventListener('pointerup', this._onPointerUp)
+    window.removeEventListener('keyup', this._onKeyUp)
+  }
+
+  _onPointerDown (e) {
+    // TODO avoid false positive clicks :/
+    // TODO could store multiErase status / erase layer array in a reducer?
+
+    // configure the tool for drawing
+
+    // stroke options
+    // via https://developer.mozilla.org/en-US/docs/Web/API/Pointer_events#Determining_button_states
+    // is the user requesting to erase?
+    let options = {}
+
+    let toolbarState = this.context.store.getState().toolbar
+
+    if (!toolbarState.prevTool &&
+        toolbarState.activeTool === 'eraser') {
+      // regular erase
+      options.erase = [0, 1, 3]
+    } else {
+      options = (e.buttons === 32 || e.altKey)
+        // is the shift key down?
+        ? e.shiftKey
+          // ... then, erase multiple layers
+          ? { erase: [0, 1, 3] } // HACK hardcoded
+          // ... otherwise, only erase current layer
+          : { erase: [this.context.sketchPane.getCurrentLayerIndex()] }
+        // not erasing
+        : {}
+
+      if (options.erase) {
+        // switch to quick-erase mode
+        this.context.store.dispatch({ type: 'TOOLBAR_TOOL_QUICK_PUSH', payload: 'eraser', meta: { scope: 'local' } })
+      }
+    }
+
+    // sync sketchPane to the current toolbar state
+    // syncSketchPaneState(this.store.getState().toolbar)
+
+    this.context.sketchPane.down(e, options)
+
+    // just triggers layer opacity check
+    this.context.emit('requestPointerDown')
+  }
+
+  _onPointerMove (e) {
+    this.context.sketchPane.move(e)
+  }
+
+  _onPointerUp (e) {
+    this.context.sketchPane.up(e)
+    this._updateQuickErase(e)
+  }
+
+  _onKeyUp (e) {
+    this._updateQuickErase(e)
   }
 
   _updateQuickErase (e) {
