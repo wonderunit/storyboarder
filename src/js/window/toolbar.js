@@ -296,14 +296,22 @@ class Toolbar extends EventEmitter {
       //   break
 
       case 'move':
-        this.state.transformMode == 'move'
-          ? this.emit('cancelTransform')
-          : this.emit('move')
+      // TODO
+      // TODO
+      // TODO
+      // TODO
+        // this.state.transformMode == 'move'
+        //   ? this.emit('cancelTransform')
+        //   : this.emit('move')
         break
       case 'scale':
-        this.state.transformMode == 'scale'
-          ? this.emit('cancelTransform')
-          : this.emit('scale')
+        // TODO
+        // TODO
+        // TODO
+        // TODO
+        // this.state.transformMode == 'scale'
+        //   ? this.emit('cancelTransform')
+        //   : this.emit('scale')
         break
 
       // undo/redo
