@@ -18,6 +18,9 @@ const { LAYER_NAME_BY_INDEX } = require('../constants')
 const observeStore = require('../shared/helpers/observeStore')
 
 const prefsModule = require('electron').remote.require('./prefs')
+// TODO
+// TODO enableBrushCursor
+// TODO
 const enableBrushCursor = prefsModule.getPrefs('main')['enableBrushCursor']
 const enableStabilizer = prefsModule.getPrefs('main')['enableStabilizer']
 
@@ -40,8 +43,8 @@ class StoryboarderSketchPane extends EventEmitter {
   async load () {
     this.isCommandPressed = createIsCommandPressed(this.store)
 
-    this.prevTimeStamp = 0
-    this.frameLengthArray = []
+    // this.prevTimeStamp = 0
+    // this.frameLengthArray = []
 
     // NOTE sets DrawingStrategy
     // this.cancelTransform()
@@ -50,7 +53,8 @@ class StoryboarderSketchPane extends EventEmitter {
 
     // HACK hardcoded
     this.visibleLayersIndices = [0, 1, 3] // reference, main, notes
-    this.compositeIndex = 5 // composite
+
+    // this.compositeIndex = 5 // composite
 
     // this.canvasPointerUp = this.canvasPointerUp.bind(this)
     // this.canvasPointerDown = this.canvasPointerDown.bind(this)
@@ -63,40 +67,41 @@ class StoryboarderSketchPane extends EventEmitter {
     // this.onKeyUp = this.onKeyUp.bind(this)
     // this.onDblClick = this.onDblClick.bind(this)
 
-    this.containerSize = null
-    this.scaleFactor = null
+    // this.containerSize = null
+    // this.scaleFactor = null
 
-    this.isPointerDown = false
-    this.lastMoveEvent = null
-    this.lastCursorEvent = null
+    // this.isPointerDown = false
+    // this.lastMoveEvent = null
+    // this.lastCursorEvent = null
+
     this.lineMileageCounter = new LineMileageCounter()
 
-    this.isMultiLayerOperation = false
-    this.isEraseButtonActive = false
+    // this.isMultiLayerOperation = false
+    // this.isEraseButtonActive = false
 
-    this.prevTool = null
-    this.toolbar = null
+    // this.prevTool = null
+    // this.toolbar = null
 
-    this.isLocked = false
+    // this.isLocked = false
 
     // container
     this.containerEl = document.createElement('div')
     this.containerEl.classList.add('container')
 
     // brush pointer
-    if (enableBrushCursor) {
-      this.brushPointerContainer = document.createElement('div')
-      this.brushPointerContainer.className = 'brush-pointer'
-      this.brushPointerContainer.style.position = 'absolute'
-      this.brushPointerContainer.style.pointerEvents = 'none'
-      document.body.appendChild(this.brushPointerContainer)
-    }
+    // if (enableBrushCursor) {
+    //   this.brushPointerContainer = document.createElement('div')
+    //   this.brushPointerContainer.className = 'brush-pointer'
+    //   this.brushPointerContainer.style.position = 'absolute'
+    //   this.brushPointerContainer.style.pointerEvents = 'none'
+    //   document.body.appendChild(this.brushPointerContainer)
+    // }
 
     // setup and render (if necessary) pointer cursor
-    this.isCursorOnDrawingArea = false
-    this.cursorType = 'drawing'
+    // this.isCursorOnDrawingArea = false
+    // this.cursorType = 'drawing'
     // the DOM query returns null unless we wait for the next tick.
-    process.nextTick(() => this.renderCursor())
+    // process.nextTick(() => this.renderCursor())
 
 
     // add container to element
