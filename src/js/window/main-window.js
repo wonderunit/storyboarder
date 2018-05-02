@@ -1400,7 +1400,6 @@ const loadBoardUI = async () => {
 
       if (!img) return
 
-      // TODO
       storyboarderSketchPane.replaceLayer(LAYER_INDEX_REFERENCE, img)
 
       // force a file save and thumbnail update
