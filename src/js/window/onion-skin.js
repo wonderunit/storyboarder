@@ -60,6 +60,7 @@ class OnionSkin {
   async load () {
     // TODO if already loading, cancel
     // TODO should we use SketchPane's LayerCollection to setup and render these composites for us?
+    // TODO cache images for re-use?
 
     const { pathToImages, currBoard, prevBoard, nextBoard } = this.state
 
@@ -74,6 +75,8 @@ class OnionSkin {
       if (!board) continue
 
       let color = board === prevBoard ? '#00f' : '#f00'
+
+      // TODO refactor, unified loader
 
       // HACK hardcoded
       let layersData = [
