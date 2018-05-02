@@ -3,6 +3,7 @@ const EventEmitter = require('events').EventEmitter
 const { ipcRenderer, remote } = require('electron')
 
 const fs = require('fs')
+const path = require('path')
 
 const SketchPane = require('alchemancy')
 
@@ -117,8 +118,8 @@ class StoryboarderSketchPane extends EventEmitter {
     // this.renderContainerSize()
 
     await this.sketchPane.loadBrushes({
-      brushes: JSON.parse(fs.readFileSync('./src/data/brushes/brushes.json')),
-      brushImagePath: './data/brushes'
+      brushes: JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', 'data', 'brushes', 'brushes.json'))),
+      brushImagePath: path.join(__dirname, '..', '..', 'data', 'brushes')
     })
 
     // this.sketchPane.on('onbeforeup', this.onSketchPaneBeforeUp.bind(this)) // MIGRATE
