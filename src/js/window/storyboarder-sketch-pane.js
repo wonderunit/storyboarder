@@ -104,15 +104,18 @@ class StoryboarderSketchPane extends EventEmitter {
     // process.nextTick(() => this.renderCursor())
 
 
-    // add container to element
-    this.el.appendChild(this.containerEl)
-
     // sketchpane
     this.sketchPane = new SketchPane({
       imageWidth: this.canvasSize[0],
       imageHeight: this.canvasSize[1],
       backgroundColor: 0x333333
     })
+
+    await this.sketchPane.loadBrushes({
+      brushes: JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', 'data', 'brushes', 'brushes.json'))),
+      brushImagePath: path.join(__dirname, '..', '..', 'data', 'brushes')
+    })
+
     this.sketchPaneDOMElement = this.sketchPane.getDOMElement()
     this.resize()
 
@@ -121,11 +124,6 @@ class StoryboarderSketchPane extends EventEmitter {
 
     // adjust sizes
     // this.renderContainerSize()
-
-    await this.sketchPane.loadBrushes({
-      brushes: JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', 'data', 'brushes', 'brushes.json'))),
-      brushImagePath: path.join(__dirname, '..', '..', 'data', 'brushes')
-    })
 
     // this.sketchPane.on('onbeforeup', this.onSketchPaneBeforeUp.bind(this)) // MIGRATE
     // this.sketchPane.on('onup', this.onSketchPaneOnUp.bind(this)) // MIGRATE
@@ -170,20 +168,6 @@ class StoryboarderSketchPane extends EventEmitter {
       // TODO update pointer?
     }
 
-    const updateQuickErase = (e) => {
-      // if we're not drawing
-      if (!this.sketchPane.isDrawing()) {
-        // and erase is not being requested
-        if (!(e.buttons === 32 || e.altKey)) {
-          // ... but we have a prevTool,
-          if (this.store.getState().toolbar.prevTool) {
-            // then switch out of quick-erase mode back to previous tool
-            this.store.dispatch({ type: 'TOOLBAR_TOOL_QUICK_POP', meta: { scope: 'local' } })
-          }
-        }
-      }
-    }
-
     // sync on change
     observeStore(
       this.store,
@@ -195,9 +179,6 @@ class StoryboarderSketchPane extends EventEmitter {
       // sync now to init
       true
     )
-
-    // add SketchPane to container
-    this.containerEl.appendChild(this.sketchPaneDOMElement)
 
     // TODO cleanup
     // let ro = new window.ResizeObserver(entries => {
@@ -213,59 +194,6 @@ class StoryboarderSketchPane extends EventEmitter {
 
     this.sketchPane.onStrokeAfter = strokeState =>
       this.emit('markDirty', strokeState.layerIndices)
-
-    window.addEventListener('pointerdown', e => {
-      // TODO avoid false positive clicks :/
-      // TODO could store multiErase status / erase layer array in a reducer?
-
-      // configure the tool for drawing
-
-      // stroke options
-      // via https://developer.mozilla.org/en-US/docs/Web/API/Pointer_events#Determining_button_states
-      // is the user requesting to erase?
-      let options = {}
-
-      let toolbarState = this.store.getState().toolbar
-
-      if (!toolbarState.prevTool &&
-          toolbarState.activeTool === 'eraser') {
-        // regular erase
-        options.erase = [0, 1, 3]
-      } else {
-        options = (e.buttons === 32 || e.altKey)
-          // is the shift key down?
-          ? e.shiftKey
-            // ... then, erase multiple layers
-            ? { erase: [0, 1, 3] } // HACK hardcoded
-            // ... otherwise, only erase current layer
-            : { erase: [this.sketchPane.getCurrentLayerIndex()] }
-          // not erasing
-          : {}
-
-        if (options.erase) {
-          // switch to quick-erase mode
-          this.store.dispatch({ type: 'TOOLBAR_TOOL_QUICK_PUSH', payload: 'eraser', meta: { scope: 'local' } })
-        }
-      }
-
-      // sync sketchPane to the current toolbar state
-      syncSketchPaneState(this.store.getState().toolbar)
-
-      this.sketchPane.down(e, options)
-
-      // just triggers layer opacity check
-      this.emit('requestPointerDown')
-    })
-    window.addEventListener('pointermove', e => {
-      this.sketchPane.move(e)
-    })
-    window.addEventListener('pointerup', e => {
-      this.sketchPane.up(e)
-      updateQuickErase(e)
-    })
-    window.addEventListener('keyup', e => {
-      updateQuickErase(e)
-    })
 
     // Proxy
     this.sketchPane.setTool = () => { console.warn('SketchPane#setTool no impl') }
@@ -292,6 +220,19 @@ class StoryboarderSketchPane extends EventEmitter {
 
     // this.onFrame = this.onFrame.bind(this)
     // requestAnimationFrame(this.onFrame)
+
+    this.strategies = {
+      drawing: new DrawingStrategy(this)
+    }
+    // setStrategy
+    this.strategy = this.strategies.drawing
+    this.strategy.startup()
+
+    // add SketchPane to container
+    this.containerEl.appendChild(this.sketchPaneDOMElement)
+
+    // add container to element
+    this.el.appendChild(this.containerEl)
   }
 
   // for compatibility with older sketchpane code
@@ -997,10 +938,82 @@ class StoryboarderSketchPane extends EventEmitter {
   }
 }
 
-
 class DrawingStrategy {
   constructor (context) {
     this.context = context
+  }
+
+  startup () {
+    window.addEventListener('pointerdown', e => {
+      // TODO avoid false positive clicks :/
+      // TODO could store multiErase status / erase layer array in a reducer?
+
+      // configure the tool for drawing
+
+      // stroke options
+      // via https://developer.mozilla.org/en-US/docs/Web/API/Pointer_events#Determining_button_states
+      // is the user requesting to erase?
+      let options = {}
+
+      let toolbarState = this.context.store.getState().toolbar
+
+      if (!toolbarState.prevTool &&
+          toolbarState.activeTool === 'eraser') {
+        // regular erase
+        options.erase = [0, 1, 3]
+      } else {
+        options = (e.buttons === 32 || e.altKey)
+          // is the shift key down?
+          ? e.shiftKey
+            // ... then, erase multiple layers
+            ? { erase: [0, 1, 3] } // HACK hardcoded
+            // ... otherwise, only erase current layer
+            : { erase: [this.context.sketchPane.getCurrentLayerIndex()] }
+          // not erasing
+          : {}
+
+        if (options.erase) {
+          // switch to quick-erase mode
+          this.context.store.dispatch({ type: 'TOOLBAR_TOOL_QUICK_PUSH', payload: 'eraser', meta: { scope: 'local' } })
+        }
+      }
+
+      // sync sketchPane to the current toolbar state
+      // syncSketchPaneState(this.store.getState().toolbar)
+
+      this.context.sketchPane.down(e, options)
+
+      // just triggers layer opacity check
+      this.context.emit('requestPointerDown')
+    })
+    window.addEventListener('pointermove', e => {
+      this.context.sketchPane.move(e)
+    })
+    window.addEventListener('pointerup', e => {
+      this.context.sketchPane.up(e)
+      this._updateQuickErase(e)
+    })
+    window.addEventListener('keyup', e => {
+      this._updateQuickErase(e)
+    })
+  }
+
+  shutdown () {
+    
+  }
+
+  _updateQuickErase (e) {
+    // if we're not drawing
+    if (!this.context.sketchPane.isDrawing()) {
+      // and erase is not being requested
+      if (!(e.buttons === 32 || e.altKey)) {
+        // ... but we have a prevTool,
+        if (this.context.store.getState().toolbar.prevTool) {
+          // then switch out of quick-erase mode back to previous tool
+          this.context.store.dispatch({ type: 'TOOLBAR_TOOL_QUICK_POP', meta: { scope: 'local' } })
+        }
+      }
+    }
   }
 }
 
