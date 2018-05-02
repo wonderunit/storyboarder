@@ -211,10 +211,18 @@ class StoryboarderSketchPane extends EventEmitter {
 
     this.el.addEventListener('dblclick', this.onDblClick)
 
+    // TODO
+    // TODO
+    // TODO
+    // TODO
     // this.el.addEventListener('pointerdown', this.canvasPointerDown)
     // this.sketchPaneDOMElement.addEventListener('pointerover', this.canvasPointerOver)
     // this.sketchPaneDOMElement.addEventListener('pointerout', this.canvasPointerOut)
 
+    // TODO
+    // TODO
+    // TODO
+    // TODO
         // window.addEventListener('keydown', this.onKeyDown)
         // window.addEventListener('keyup', this.onKeyUp)
 
@@ -224,6 +232,7 @@ class StoryboarderSketchPane extends EventEmitter {
     this.strategies = {
       drawing: new DrawingStrategy(this)
     }
+
     // setStrategy
     this.strategy = this.strategies.drawing
     this.strategy.startup()
