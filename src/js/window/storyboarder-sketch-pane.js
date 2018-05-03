@@ -1198,7 +1198,7 @@ class MovingStrategy {
     window.addEventListener('pointerdown', this._onPointerDown)
     window.addEventListener('pointerup', this._onPointerUp)
 
-    this.context.containerEl.style.cursor = 'move'
+    this.context.sketchPane.app.view.style.cursor = 'move'
     this.context.sketchPane.cursor.visible = false
   }
 
@@ -1211,7 +1211,7 @@ class MovingStrategy {
     window.removeEventListener('pointermove', this._onPointerMove)
     window.removeEventListener('pointerup', this._onPointerUp)
 
-    this.context.containerEl.style.cursor = 'auto'
+    this.context.sketchPane.app.view.style.cursor = 'auto'
     this.context.sketchPane.cursor.visible = true
   }
 
@@ -1238,6 +1238,8 @@ class MovingStrategy {
 
     // kind of a hack, but make sure the sketchPane always tracks where the cursor is, even during the move
     this.context.sketchPane.move(e)
+    // but be sure to takeover the cursor again
+    this.context.sketchPane.app.view.style.cursor = 'move'
   }
 
   _onPointerUp (e) {
