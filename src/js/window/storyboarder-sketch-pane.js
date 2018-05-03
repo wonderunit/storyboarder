@@ -246,8 +246,6 @@ class StoryboarderSketchPane extends EventEmitter {
   }
 
   setStrategy (strategy) {
-    if (this.strategy && !this.strategy.canShutdown()) return
-
     if (this.strategy) this.strategy.shutdown()
 
     this.strategy = this.strategies[strategy]
@@ -963,16 +961,16 @@ class DrawingStrategy {
   }
 
   shutdown () {
+    if (this.context.sketchPane.isDrawing()) {
+      this.context.sketchPane.stopDrawing()
+    }
+
     window.removeEventListener('pointerdown', this._onPointerDown)
     window.removeEventListener('pointermove', this._onPointerMove)
     window.removeEventListener('pointerup', this._onPointerUp)
     window.removeEventListener('keyup', this._onKeyUp)
 
     this.context.sketchPane.app.view.style.cursor = 'auto'
-  }
-
-  canShutdown () {
-    return !this.context.sketchPane.isDrawing()
   }
 
   _onPointerDown (e) {
@@ -1174,8 +1172,10 @@ class MovingStrategy {
       // diff
       diff: undefined,
 
-      // are we not moving?
-      idle: false
+      // did we move? aka dirty
+      moved: false,
+      // have we stamped to the textures yet?
+      stamped: false
     }
 
     window.addEventListener('pointerdown', this._onPointerDown)
@@ -1186,6 +1186,10 @@ class MovingStrategy {
   }
 
   shutdown () {
+    if (this.state.moved && !this.state.stamped) {
+      this._stamp()
+    }
+
     window.removeEventListener('pointerdown', this._onPointerDown)
     window.removeEventListener('pointermove', this._onPointerMove)
     window.removeEventListener('pointerup', this._onPointerUp)
@@ -1194,13 +1198,9 @@ class MovingStrategy {
     this.context.sketchPane.cursor.visible = true
   }
 
-  canShutdown () {
-    return this.state.idle
-  }
-
   _onPointerDown (e) {
-    this.state.idle = false
     this.state.anchor = this.context.sketchPane.localizePoint(e)
+    this.state.moved = false
     window.addEventListener('pointermove', this._onPointerMove)
   }
 
@@ -1212,6 +1212,8 @@ class MovingStrategy {
       y: Math.round(this.state.position.y - this.state.anchor.y)
     }
 
+    this.state.moved = true
+
     // render change
     for (let index of this.context.visibleLayersIndices) {
       this.context.sketchPane.layers[index].sprite.position = this.state.diff
@@ -1219,15 +1221,20 @@ class MovingStrategy {
   }
 
   _onPointerUp (e) {
-    // stamp change
+    this._stamp()
+    window.removeEventListener('pointermove', this._onPointerMove)
+  }
+
+  _stamp () {
+    // stamp position changes to textures
     for (let index of this.context.visibleLayersIndices) {
       // overwrite texture
       this.context.sketchPane.layers[index].rewrite()
       // reset position
       this.context.sketchPane.layers[index].sprite.position = { x: 0, y: 0 }
     }
-    window.removeEventListener('pointermove', this._onPointerMove)
-    this.state.idle = true
+
+    this.state.stamped = true
   }
 }
 
