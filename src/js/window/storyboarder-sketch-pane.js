@@ -1241,9 +1241,7 @@ class MovingStrategy {
     this.state.moved = true
 
     // render change
-    for (let index of this.context.visibleLayersIndices) {
-      this.context.sketchPane.layers[index].sprite.position = this.state.diff
-    }
+    this._render()
 
     // kind of a hack, but make sure the sketchPane always tracks where the cursor is, even during the move
     this.context.sketchPane.move(e)
@@ -1254,6 +1252,12 @@ class MovingStrategy {
   _onPointerUp (e) {
     this._stamp()
     window.removeEventListener('pointermove', this._onPointerMove)
+  }
+
+  _render () {
+    for (let index of this.context.visibleLayersIndices) {
+      this.context.sketchPane.layers[index].sprite.position.set(this.state.diff.x, this.state.diff.y)
+    }
   }
 
   _stamp () {
