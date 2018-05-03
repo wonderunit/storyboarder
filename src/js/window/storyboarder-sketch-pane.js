@@ -63,8 +63,9 @@ class StoryboarderSketchPane extends EventEmitter {
     // this.canvasPointerOut = this.canvasPointerOut.bind(this)
     // this.canvasCursorMove = this.canvasCursorMove.bind(this)
     // this.stopMultiLayerOperation = this.stopMultiLayerOperation.bind(this)
-    // this.onKeyDown = this.onKeyDown.bind(this)
-    // this.onKeyUp = this.onKeyUp.bind(this)
+
+    this.onKeyDown = this.onKeyDown.bind(this)
+    this.onKeyUp = this.onKeyUp.bind(this)
     // this.onDblClick = this.onDblClick.bind(this)
 
     // this.containerSize = null
@@ -219,12 +220,8 @@ class StoryboarderSketchPane extends EventEmitter {
     // this.sketchPaneDOMElement.addEventListener('pointerover', this.canvasPointerOver)
     // this.sketchPaneDOMElement.addEventListener('pointerout', this.canvasPointerOut)
 
-    // TODO
-    // TODO
-    // TODO
-    // TODO
-        // window.addEventListener('keydown', this.onKeyDown)
-        // window.addEventListener('keyup', this.onKeyUp)
+    window.addEventListener('keydown', this.onKeyDown)
+    window.addEventListener('keyup', this.onKeyUp)
 
     // this.onFrame = this.onFrame.bind(this)
     // requestAnimationFrame(this.onFrame)
@@ -234,9 +231,7 @@ class StoryboarderSketchPane extends EventEmitter {
       moving: new MovingStrategy(this)
     }
 
-    // setStrategy
-    this.strategy = this.strategies.moving
-    this.strategy.startup()
+    this.setStrategy('drawing')
 
     // add SketchPane to container
     this.containerEl.appendChild(this.sketchPaneDOMElement)
@@ -248,6 +243,15 @@ class StoryboarderSketchPane extends EventEmitter {
   // for compatibility with older sketchpane code
   getCanvasSize () {
     return { width: this.sketchPane.width, height: this.sketchPane.height }
+  }
+
+  setStrategy (strategy) {
+    if (this.strategy && !this.strategy.canShutdown()) return
+
+    if (this.strategy) this.strategy.shutdown()
+
+    this.strategy = this.strategies[strategy]
+    this.strategy.startup()
   }
 
   // setStrategy (Strategy) {
@@ -386,32 +390,25 @@ class StoryboarderSketchPane extends EventEmitter {
     }
   }
 
-  // onKeyDown (e) {
-  //   if (this.isCommandPressed('drawing:scale-mode')) {
-  //     if (!this.getIsDrawingOrStabilizing()) this.toolbar.emit('scale')
-  //   } else if (this.isCommandPressed('drawing:move-mode')) {
-  //     if (!this.getIsDrawingOrStabilizing()) this.toolbar.emit('move')
-  //   } else {
-  //     this.setQuickEraseIfRequested()
-  //   }
-  // }
-  // 
-  // onKeyUp (e) {
-  //   if (
-  //     !this.isCommandPressed('drawing:scale-mode') &&
-  //     !this.isCommandPressed('drawing:move-mode')
-  //   ) {
-  //     if (this.toolbar.state.transformMode) {
-  //       if (!this.getIsDrawingOrStabilizing()) this.toolbar.emit('cancelTransform')
-  //     }
-  //   }
-  // 
-  //   if (!this.getIsDrawingOrStabilizing()) {
-  //     if (!this.isCommandPressed('drawing:quick-erase-modifier') && !this.isEraseButtonActive) {
-  //       this.unsetQuickErase()
-  //     }
-  //   }
-  // }
+  onKeyDown (e) {
+    if (this.isCommandPressed('drawing:scale-mode')) {
+      // if strategy is transitionable,
+      // switch to scale strategy
+    } else if (this.isCommandPressed('drawing:move-mode')) {
+      // if strategy is transitionable,
+      // switch to move strategy
+      sfx.playEffect('metal')
+      this.setStrategy('moving')
+    }
+  }
+  
+  onKeyUp (e) {
+    if ( !(this.isCommandPressed('drawing:scale-mode') || this.isCommandPressed('drawing:move-mode')) ) {
+      // if strategy is transitionable,
+      // switch to default strategy (drawing)
+      this.setStrategy('drawing')
+    }
+  }
 
   // canvasPointerDown (event) {
   //   this.strategy.canvasPointerDown(event)
@@ -970,6 +967,12 @@ class DrawingStrategy {
     window.removeEventListener('pointermove', this._onPointerMove)
     window.removeEventListener('pointerup', this._onPointerUp)
     window.removeEventListener('keyup', this._onKeyUp)
+
+    this.context.sketchPane.app.view.style.cursor = 'auto'
+  }
+
+  canShutdown () {
+    return !this.context.sketchPane.isDrawing()
   }
 
   _onPointerDown (e) {
@@ -1169,7 +1172,10 @@ class MovingStrategy {
       // move coords
       position: undefined,
       // diff
-      diff: undefined
+      diff: undefined,
+
+      // are we not moving?
+      idle: false
     }
 
     window.addEventListener('pointerdown', this._onPointerDown)
@@ -1188,7 +1194,12 @@ class MovingStrategy {
     this.context.sketchPane.cursor.visible = true
   }
 
+  canShutdown () {
+    return this.state.idle
+  }
+
   _onPointerDown (e) {
+    this.state.idle = false
     this.state.anchor = this.context.sketchPane.localizePoint(e)
     window.addEventListener('pointermove', this._onPointerMove)
   }
@@ -1216,6 +1227,7 @@ class MovingStrategy {
       this.context.sketchPane.layers[index].sprite.position = { x: 0, y: 0 }
     }
     window.removeEventListener('pointermove', this._onPointerMove)
+    this.state.idle = true
   }
 }
 
