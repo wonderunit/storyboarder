@@ -1229,6 +1229,15 @@ class MovingStrategy {
       y: Math.round(this.state.position.y - this.state.anchor.y)
     }
 
+    // shift to move in a straight line
+    if (e.shiftKey) {
+      if (Math.abs(this.state.diff.x) > Math.abs(this.state.diff.y)) {
+        this.state.diff.y = 0
+      } else {
+        this.state.diff.x = 0
+      }
+    }
+
     this.state.moved = true
 
     // render change
@@ -1349,18 +1358,18 @@ class MovingStrategy {
 //     let w = this.container.sketchPane.size.width
 //     let h = this.container.sketchPane.size.height
 // 
-//     this.pos = [
-//       moveEvent.x - this.startAt[0],
-//       moveEvent.y - this.startAt[1]
-//     ].map(Math.floor)
-// 
-//     if(moveEvent.shiftKey) {
-//       if(Math.abs(this.pos[0]) > Math.abs(this.pos[1])) {
-//         this.pos[1] = 0
-//       } else {
-//         this.pos[0] = 0
-//       }
-//     }
+          // this.pos = [
+          //   moveEvent.x - this.startAt[0],
+          //   moveEvent.y - this.startAt[1]
+          // ].map(Math.floor)
+          // 
+          // if(moveEvent.shiftKey) {
+          //   if(Math.abs(this.pos[0]) > Math.abs(this.pos[1])) {
+          //     this.pos[1] = 0
+          //   } else {
+          //     this.pos[0] = 0
+          //   }
+          // }
 // 
 //     // re-draw composite to the painting layer
 //     paintingContext.clearRect(0, 0, w, h)
