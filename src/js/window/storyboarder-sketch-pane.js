@@ -1234,6 +1234,9 @@ class MovingStrategy {
     for (let index of this.context.visibleLayersIndices) {
       this.context.sketchPane.layers[index].sprite.position = this.state.diff
     }
+
+    // kind of a hack, but make sure the sketchPane always tracks where the cursor is, even during the move
+    this.context.sketchPane.move(e)
   }
 
   _onPointerUp (e) {
