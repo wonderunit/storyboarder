@@ -17,6 +17,8 @@ const { LAYER_NAME_BY_INDEX } = require('../constants')
 
 const observeStore = require('../shared/helpers/observeStore')
 
+const sfx = require('../wonderunit-sound')
+
 const prefsModule = require('electron').remote.require('./prefs')
 // TODO
 // TODO enableBrushCursor
@@ -397,14 +399,16 @@ class StoryboarderSketchPane extends EventEmitter {
       // switch to move strategy
       sfx.playEffect('metal')
       this.setStrategy('moving')
+      sfx.playEffect('metal')
     }
   }
-  
+
   onKeyUp (e) {
     if ( !(this.isCommandPressed('drawing:scale-mode') || this.isCommandPressed('drawing:move-mode')) ) {
       // if strategy is transitionable,
       // switch to default strategy (drawing)
       this.setStrategy('drawing')
+      sfx.playEffect('metal')
     }
   }
 
