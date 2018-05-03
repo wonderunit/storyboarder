@@ -166,6 +166,10 @@ class StoryboarderSketchPane extends EventEmitter {
               break
           }
         }
+
+        if ((this.strategy && this.strategy.name) !== toolbarState.mode) {
+          this.setStrategy(toolbarState.mode)
+        }
       }
 
       // TODO update pointer?
@@ -233,7 +237,7 @@ class StoryboarderSketchPane extends EventEmitter {
       moving: new MovingStrategy(this)
     }
 
-    this.setStrategy('drawing')
+    this.store.dispatch({ type: 'TOOLBAR_MODE_SET', payload: 'drawing', meta: { scope: 'local' } })
 
     // add SketchPane to container
     this.containerEl.appendChild(this.sketchPaneDOMElement)
@@ -392,22 +396,18 @@ class StoryboarderSketchPane extends EventEmitter {
 
   onKeyDown (e) {
     if (this.isCommandPressed('drawing:scale-mode')) {
-      // if strategy is transitionable,
       // switch to scale strategy
     } else if (this.isCommandPressed('drawing:move-mode')) {
-      // if strategy is transitionable,
       // switch to move strategy
-      sfx.playEffect('metal')
-      this.setStrategy('moving')
+      this.store.dispatch({ type: 'TOOLBAR_MODE_SET', payload: 'moving', meta: { scope: 'local' } })
       sfx.playEffect('metal')
     }
   }
 
   onKeyUp (e) {
     if ( !(this.isCommandPressed('drawing:scale-mode') || this.isCommandPressed('drawing:move-mode')) ) {
-      // if strategy is transitionable,
       // switch to default strategy (drawing)
-      this.setStrategy('drawing')
+      this.store.dispatch({ type: 'TOOLBAR_MODE_SET', payload: 'drawing', meta: { scope: 'local' } })
       sfx.playEffect('metal')
     }
   }
@@ -950,6 +950,7 @@ class StoryboarderSketchPane extends EventEmitter {
 class DrawingStrategy {
   constructor (context) {
     this.context = context
+    this.name = 'drawing'
 
     this._onPointerDown = this._onPointerDown.bind(this)
     this._onPointerMove = this._onPointerMove.bind(this)
@@ -1161,6 +1162,7 @@ class DrawingStrategy {
 class MovingStrategy {
   constructor (context) {
     this.context = context
+    this.name = 'moving'
 
     this._onPointerDown = this._onPointerDown.bind(this)
     this._onPointerMove = this._onPointerMove.bind(this)

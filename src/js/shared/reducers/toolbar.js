@@ -64,7 +64,9 @@ const initialState = {
   onion: false,
 
   prevTool: undefined,
-  activeTool: undefined
+  activeTool: undefined,
+
+  mode: undefined
 }
 
 const toolbar = (state = initialState, action) => {
@@ -171,6 +173,12 @@ const toolbar = (state = initialState, action) => {
       return {
         ...state,
         onion: !state.onion
+      }
+
+    case 'TOOLBAR_MODE_SET':
+      return {
+        ...state,
+        mode: action.payload
       }
 
     default:
