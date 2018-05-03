@@ -296,13 +296,18 @@ class Toolbar extends EventEmitter {
       //   break
 
       case 'move':
-      // TODO
-      // TODO
-      // TODO
-      // TODO
-        // this.state.transformMode == 'move'
-        //   ? this.emit('cancelTransform')
-        //   : this.emit('move')
+        this.store.dispatch(
+          (dispatch, getState) => {
+            const { mode } = getState().toolbar
+            const payload = mode === 'moving' ? 'drawing' : 'moving'
+            dispatch({
+              type: 'TOOLBAR_MODE_SET',
+              payload,
+              meta: { scope: 'local' }
+            })
+          }
+        )
+        sfx.playEffect('metal')
         break
       case 'scale':
         // TODO
@@ -444,23 +449,23 @@ class Toolbar extends EventEmitter {
       brushEl.classList.toggle('active', brushEl.id === `toolbar-${state.toolbar.activeTool}`)
     }
 
-    // TODO
-    // let btnMove = this.el.querySelector('#toolbar-move')
-    // let btnScale = this.el.querySelector('#toolbar-scale')
-    // switch (this.state.transformMode) {
-    //   case 'move':
-    //     btnMove.classList.add('active')
-    //     btnScale.classList.remove('active')
-    //     break
-    //   case 'scale':
-    //     btnScale.classList.add('active')
-    //     btnMove.classList.remove('active')
-    //     break
-    //   default:
-    //     btnScale.classList.remove('active')
-    //     btnMove.classList.remove('active')
-    //     break
-    // }
+    let btnMove = this.el.querySelector('#toolbar-move')
+    let btnScale = this.el.querySelector('#toolbar-scale')
+
+    switch (state.toolbar.mode) {
+      case 'moving':
+        btnMove.classList.add('active')
+        btnScale.classList.remove('active')
+        break
+      case 'scaling':
+        btnScale.classList.add('active')
+        btnMove.classList.remove('active')
+        break
+      default:
+        btnScale.classList.remove('active')
+        btnMove.classList.remove('active')
+        break
+    }
 
     let btnCaptions = this.el.querySelector('#toolbar-captions')
     if (state.toolbar.captions) {
