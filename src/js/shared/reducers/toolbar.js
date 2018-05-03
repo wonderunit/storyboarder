@@ -66,7 +66,11 @@ const initialState = {
   prevTool: undefined,
   activeTool: undefined,
 
-  mode: undefined
+  // drawing, moving, scaling
+  mode: undefined,
+
+  // busy, idle
+  modeStatus: 'idle'
 }
 
 const toolbar = (state = initialState, action) => {
@@ -178,7 +182,14 @@ const toolbar = (state = initialState, action) => {
     case 'TOOLBAR_MODE_SET':
       return {
         ...state,
-        mode: action.payload
+        // only allow change if currently idle
+        mode: state.modeStatus === 'idle' ? action.payload : state.mode
+      }
+
+    case 'TOOLBAR_MODE_STATUS_SET':
+      return {
+        ...state,
+        modeStatus: action.payload
       }
 
     default:

@@ -399,16 +399,32 @@ class StoryboarderSketchPane extends EventEmitter {
       // switch to scale strategy
     } else if (this.isCommandPressed('drawing:move-mode')) {
       // switch to move strategy
-      this.store.dispatch({ type: 'TOOLBAR_MODE_SET', payload: 'moving', meta: { scope: 'local' } })
-      sfx.playEffect('metal')
+      // attempt change
+      this.store.dispatch({
+        type: 'TOOLBAR_MODE_SET',
+        payload: 'moving',
+        meta: { scope: 'local' }
+      })
+      // play a sound if it worked
+      if (this.store.getState().toolbar.mode === 'moving') {
+        sfx.playEffect('metal')
+      }
     }
   }
 
   onKeyUp (e) {
     if ( !(this.isCommandPressed('drawing:scale-mode') || this.isCommandPressed('drawing:move-mode')) ) {
       // switch to default strategy (drawing)
-      this.store.dispatch({ type: 'TOOLBAR_MODE_SET', payload: 'drawing', meta: { scope: 'local' } })
-      sfx.playEffect('metal')
+      // attempt change
+      this.store.dispatch({
+        type: 'TOOLBAR_MODE_SET',
+        payload: 'drawing',
+        meta: { scope: 'local' }
+      })
+      // play a sound if it worked
+      if (this.store.getState().toolbar.mode === 'drawing') {
+        sfx.playEffect('metal')
+      }
     }
   }
 
@@ -958,6 +974,7 @@ class DrawingStrategy {
   shutdown () {
     if (this.context.sketchPane.isDrawing()) {
       this.context.sketchPane.stopDrawing()
+      this.context.store.dispatch({ type: 'TOOLBAR_MODE_STATUS_SET', payload: 'idle', meta: { scope: 'local' } })
     }
 
     window.removeEventListener('pointerdown', this._onPointerDown)
@@ -969,6 +986,8 @@ class DrawingStrategy {
   }
 
   _onPointerDown (e) {
+    this.context.store.dispatch({ type: 'TOOLBAR_MODE_STATUS_SET', payload: 'busy', meta: { scope: 'local' } })
+
     // TODO avoid false positive clicks :/
     // TODO could store multiErase status / erase layer array in a reducer?
 
@@ -1018,6 +1037,7 @@ class DrawingStrategy {
   _onPointerUp (e) {
     this.context.sketchPane.up(e)
     this._updateQuickErase(e)
+    this.context.store.dispatch({ type: 'TOOLBAR_MODE_STATUS_SET', payload: 'idle', meta: { scope: 'local' } })
   }
 
   _onKeyUp (e) {
