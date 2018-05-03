@@ -296,18 +296,16 @@ class Toolbar extends EventEmitter {
       //   break
 
       case 'move':
-        this.store.dispatch(
-          (dispatch, getState) => {
-            const { mode } = getState().toolbar
-            const payload = mode === 'moving' ? 'drawing' : 'moving'
-            dispatch({
-              type: 'TOOLBAR_MODE_SET',
-              payload,
-              meta: { scope: 'local' }
-            })
-          }
-        )
-        sfx.playEffect('metal')
+        // attempt change
+        this.store.dispatch({
+          type: 'TOOLBAR_MODE_SET',
+          payload: this.store.getState().toolbar.mode === 'moving' ? 'drawing' : 'moving',
+          meta: { scope: 'local' }
+        })
+        // play a sound if it worked
+        if (this.store.getState().toolbar.mode === 'moving') {
+          sfx.playEffect('metal')
+        }
         break
       case 'scale':
         // TODO
