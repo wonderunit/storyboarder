@@ -308,13 +308,16 @@ class Toolbar extends EventEmitter {
         }
         break
       case 'scale':
-        // TODO
-        // TODO
-        // TODO
-        // TODO
-        // this.state.transformMode == 'scale'
-        //   ? this.emit('cancelTransform')
-        //   : this.emit('scale')
+        // attempt change
+        this.store.dispatch({
+          type: 'TOOLBAR_MODE_SET',
+          payload: this.store.getState().toolbar.mode === 'scaling' ? 'drawing' : 'scaling',
+          meta: { scope: 'local' }
+        })
+        // play a sound if it worked
+        if (this.store.getState().toolbar.mode === 'scaling') {
+          sfx.playEffect('metal')
+        }
         break
 
       // undo/redo

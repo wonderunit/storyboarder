@@ -234,7 +234,8 @@ class StoryboarderSketchPane extends EventEmitter {
 
     this.strategies = {
       drawing: new DrawingStrategy(this),
-      moving: new MovingStrategy(this)
+      moving: new MovingStrategy(this),
+      scaling: new ScalingStrategy(this)
     }
 
     this.store.dispatch({ type: 'TOOLBAR_MODE_SET', payload: 'drawing', meta: { scope: 'local' } })
@@ -397,6 +398,17 @@ class StoryboarderSketchPane extends EventEmitter {
   onKeyDown (e) {
     if (this.isCommandPressed('drawing:scale-mode')) {
       // switch to scale strategy
+      // switch to move strategy
+      // attempt change
+      this.store.dispatch({
+        type: 'TOOLBAR_MODE_SET',
+        payload: 'scaling',
+        meta: { scope: 'local' }
+      })
+      // play a sound if it worked
+      if (this.store.getState().toolbar.mode === 'scaling') {
+        sfx.playEffect('metal')
+      }
     } else if (this.isCommandPressed('drawing:move-mode')) {
       // switch to move strategy
       // attempt change
@@ -1428,7 +1440,131 @@ class MovingStrategy {
 //     document.removeEventListener('pointerup', this.container.canvasPointerUp)
 //   }
 // }
-// 
+
+
+
+class ScalingStrategy {
+  constructor (context) {
+    this.context = context
+    this.name = 'scaling'
+
+    this._onPointerDown = this._onPointerDown.bind(this)
+    this._onPointerMove = this._onPointerMove.bind(this)
+    this._onPointerUp = this._onPointerUp.bind(this)
+  }
+
+  startup () {
+    this.state = {
+      // down coords
+      anchor: undefined,
+      // move coords
+      position: undefined,
+      // diff
+      diff: undefined,
+
+      // did we move? aka dirty
+      moved: false,
+      // have we stamped to the textures yet?
+      stamped: false
+    }
+
+    window.addEventListener('pointerdown', this._onPointerDown)
+    window.addEventListener('pointerup', this._onPointerUp)
+
+    this.context.sketchPane.app.view.style.cursor = 'ew-resize'
+    this.context.sketchPane.cursor.visible = false
+  }
+
+  shutdown () {
+    if (this.state.moved && !this.state.stamped) {
+      this._stamp()
+    }
+
+    window.removeEventListener('pointerdown', this._onPointerDown)
+    window.removeEventListener('pointermove', this._onPointerMove)
+    window.removeEventListener('pointerup', this._onPointerUp)
+
+    this.context.sketchPane.app.view.style.cursor = 'auto'
+    this.context.sketchPane.cursor.visible = true
+  }
+
+  _onPointerDown (e) {
+    this.state.anchor = this.context.sketchPane.localizePoint(e)
+    this.state.moved = false
+    window.addEventListener('pointermove', this._onPointerMove)
+  }
+
+  _onPointerMove (e) {
+    this.state.position = this.context.sketchPane.localizePoint(e)
+
+    this.state.diff = {
+      x: Math.round(this.state.position.x - this.state.anchor.x),
+      y: Math.round(this.state.position.y - this.state.anchor.y)
+    }
+
+    // // shift to scale in a straight line
+    // if (e.shiftKey) {
+    //   if (Math.abs(this.state.diff.x) > Math.abs(this.state.diff.y)) {
+    //     this.state.diff.y = 0
+    //   } else {
+    //     this.state.diff.x = 0
+    //   }
+    // }
+
+    this.state.moved = true
+
+    // render change
+    this._render()
+
+    // kind of a hack, but make sure the sketchPane always tracks where the cursor is, even during the move
+    this.context.sketchPane.move(e)
+    // but be sure to takeover the cursor again
+    this.context.sketchPane.app.view.style.cursor = 'ew-resize'
+  }
+
+  _onPointerUp (e) {
+    this._stamp()
+    window.removeEventListener('pointermove', this._onPointerMove)
+  }
+
+  _render () {
+    let scale = 1 + (this.state.diff.x / this.context.sketchPane.width)
+
+    for (let index of this.context.visibleLayersIndices) {
+      let sprite = this.context.sketchPane.layers[index].sprite
+      let width = this.context.sketchPane.width
+      let height = this.context.sketchPane.height
+
+      // console.log(
+      //   'sprite.anchor',
+      //   'from', sprite.anchor,
+      //   'to', this.state.anchor.x / width, this.state.anchor.y / height
+      // )
+
+      sprite.anchor.set(this.state.anchor.x / width, this.state.anchor.y / height)
+      sprite.scale.set(scale, scale)
+      sprite.position.set(this.state.anchor.x, this.state.anchor.y)
+    }
+  }
+
+  _stamp () {
+    // stamp position changes to textures
+    for (let index of this.context.visibleLayersIndices) {
+      // overwrite texture
+      this.context.sketchPane.layers[index].rewrite()
+
+      // reset position
+      this.context.sketchPane.layers[index].sprite.position.set(0, 0)
+      // reset scale
+      this.context.sketchPane.layers[index].sprite.scale.set(1, 1)
+      // reset anchor
+      this.context.sketchPane.layers[index].sprite.anchor.set(0, 0)
+    }
+
+    this.state.stamped = true
+  }
+}
+
 // class ScalingStrategy {
 //   constructor (container) {
 //     this.container = container
