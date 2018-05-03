@@ -1266,7 +1266,7 @@ class MovingStrategy {
       // overwrite texture
       this.context.sketchPane.layers[index].rewrite()
       // reset position
-      this.context.sketchPane.layers[index].sprite.position = { x: 0, y: 0 }
+      this.context.sketchPane.layers[index].sprite.position.set(0, 0)
     }
 
     this.state.stamped = true
