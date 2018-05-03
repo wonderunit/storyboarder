@@ -972,10 +972,11 @@ class DrawingStrategy {
   }
 
   shutdown () {
-    if (this.context.sketchPane.isDrawing()) {
-      this.context.sketchPane.stopDrawing()
-      this.context.store.dispatch({ type: 'TOOLBAR_MODE_STATUS_SET', payload: 'idle', meta: { scope: 'local' } })
-    }
+    // if we ever needed to shutdown DURING drawing, this would be useful
+    // if (this.context.sketchPane.isDrawing()) {
+    //   this.context.sketchPane.stopDrawing()
+    //   this.context.store.dispatch({ type: 'TOOLBAR_MODE_STATUS_SET', payload: 'idle', meta: { scope: 'local' } })
+    // }
 
     window.removeEventListener('pointerdown', this._onPointerDown)
     window.removeEventListener('pointermove', this._onPointerMove)
