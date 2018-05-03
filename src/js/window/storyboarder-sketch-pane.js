@@ -522,16 +522,6 @@ class StoryboarderSketchPane extends EventEmitter {
   //   }
   // }
 
-  // setQuickEraseIfRequested () {
-  //   if (this.isCommandPressed('drawing:quick-erase-modifier') || this.isEraseButtonActive) {
-  //     // don't switch if we're already on an eraser
-  //     if (this.toolbar.getBrushOptions().kind !== 'eraser') {
-  //       this.toolbar.setIsQuickErasing(true)
-  //       this.prevTool = this.toolbar.getBrushOptions()
-  //       this.setBrushTool('eraser', this.toolbar.getBrushOptions('eraser'))
-  //     }
-  //   }
-  // }
 
   // unsetQuickErase () {
   //   if (this.toolbar.getIsQuickErasing()) {
@@ -996,7 +986,7 @@ class DrawingStrategy {
       // regular erase
       options.erase = [0, 1, 3]
     } else {
-      options = (e.buttons === 32 || e.altKey)
+      options = (e.buttons === 32 || this.context.isCommandPressed('drawing:quick-erase-modifier'))
         // is the shift key down?
         ? e.shiftKey
           // ... then, erase multiple layers
