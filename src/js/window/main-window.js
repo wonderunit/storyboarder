@@ -1843,6 +1843,12 @@ let insertNewBoardsWithFiles = async filepaths => {
   let numAdded = 0
 
   for (let filepath of filepaths) {
+    // TODO
+    // TODO
+    // TODO
+    // TODO fix to handle PSDs using canvases
+    // TODO don't use getBase64TypeFromPhotoshopFilePath
+    // TODO
     let imageData = FileHelper.getBase64ImageDataFromFilePath(filepath, readerOptions)
     if (!imageData || !imageData[targetLayer]) {
       notifications.notify({ message: `Oops! There was a problem importing ${filepath}`, timing: 10 })
