@@ -49,8 +49,6 @@ const sceneSettingsView = require('./scene-settings-view')
 const boardModel = require('../models/board')
 
 const FileHelper = require('../files/file-helper')
-const readPsd = require('ag-psd').readPsd;
-const initializeCanvas = require('ag-psd').initializeCanvas;
 
 const ShotTemplateSystem = require('../shot-template-system')
 const StsSidebar = require('./sts-sidebar')
