@@ -1,8 +1,8 @@
 const path = require('path')
 const fs = require('fs')
-const readPsd = require('ag-psd').readPsd;
-const initializeCanvas = require('ag-psd').initializeCanvas;
-const writePsd = require('ag-psd').writePsd;
+const readPsd = require('ag-psd').readPsd
+const initializeCanvas = require('ag-psd').initializeCanvas
+const writePsd = require('ag-psd').writePsd
 
 /**
  * Retrieve an ojbect with base 64 representations of an image file ready for storyboard pane layers.
@@ -124,17 +124,87 @@ let getBase64TypeFromPhotoshopFilePath = (filepath, options) => {
 
       if (layer.children) {
         addLayersRecursively(layer.children, targetAlwaysMain)
-      }        
+      }
     }
   }
   addLayersRecursively(psd.children)
-
 
   return {
     main: mainCanvas.toDataURL(),
     notes: notesCanvas.toDataURL(),
     reference: referenceCanvas.toDataURL()
   }
+}
+
+let readPhotoshopLayersAsCanvases = (filepath, width, height) => {
+  console.log('FileHelper#readPhotoshopLayersAsCanvases')
+
+  if (!fs.existsSync(filepath)) return
+
+  // setup the PSD reader's initializeCanvas function
+  initializeCanvas(
+    (width, height) => {
+      let canvas = document.createElement('canvas')
+      canvas.width = width
+      canvas.height = height
+      return canvas
+    }
+  )
+
+  let psd
+
+  try {
+    const buffer = fs.readFileSync(filepath)
+    psd = readPsd(buffer)
+  } catch (exception) {
+    console.error(exception)
+    return
+  }
+
+  if (!psd || !psd.children) {
+    return
+  }
+
+  let numChannelValues = (1 << psd.bitsPerChannel) - 1
+
+  let canvases = { }
+
+  let addLayersRecursively = (children, root) => {
+    for (let layer of children) {
+      if (
+        // not hidden
+        !layer.hidden &&
+        // has canvas
+        layer.canvas &&
+        // not named "Background"
+        layer.name.indexOf('Background') === -1
+      ) {
+        let name = root ? layer.name : 'main'
+        if (!canvases[name]) {
+          console.log('\tadding canvas', name)
+          canvases[name] = document.createElement('canvas')
+          canvases[name].width = width
+          canvases[name].height = height
+        }
+        let canvas = canvases[name]
+        let context = canvas.getContext('2d')
+
+        console.log('\tdrawing to canvas', name, 'from', layer.name)
+
+        // composite the PSD layer canvas (which may have a smaller rect) to full-size canvas
+        context.globalAlpha = layer.opacity / numChannelValues
+        context.drawImage(layer.canvas, layer.left, layer.top)
+        console.log('\tdrawing complete')
+      }
+
+      if (layer.children) {
+        addLayersRecursively(layer.children, false)
+      }
+    }
+  }
+  addLayersRecursively(psd.children, true)
+
+  return canvases
 }
 
 let writePhotoshopFileFromPNGPathLayers = (pngPathLayers, psdPath, options) => {
@@ -210,5 +280,7 @@ let writePhotoshopFileFromPNGPathLayers = (pngPathLayers, psdPath, options) => {
 module.exports = {
   getBase64ImageDataFromFilePath,
   getBase64TypeFromFilePath,
-  writePhotoshopFileFromPNGPathLayers
+  writePhotoshopFileFromPNGPathLayers,
+
+  readPhotoshopLayersAsCanvases
 }
