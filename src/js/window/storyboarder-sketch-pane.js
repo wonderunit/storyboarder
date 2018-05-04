@@ -333,44 +333,41 @@ class StoryboarderSketchPane extends EventEmitter {
     }
   }
 
-  // TODO
-  // TODO
-  // TODO
-  renderCursor () {
-    return
-    if (this.isCursorOnDrawingArea) {
-      switch (this.cursorType) {
-        case 'not-allowed':
-          document.querySelector('#storyboarder-sketch-pane .container').style.cursor = 'not-allowed'
-          if (this.brushPointerContainer) this.brushPointerContainer.style.visibility = 'hidden'
-          break
-
-        case 'move':
-          document.querySelector('#storyboarder-sketch-pane .container').style.cursor = 'move'
-          if (this.brushPointerContainer) this.brushPointerContainer.style.visibility = 'hidden'
-          break
-
-        case 'ew-resize':
-          document.querySelector('#storyboarder-sketch-pane .container').style.cursor = 'ew-resize'
-          if (this.brushPointerContainer) this.brushPointerContainer.style.visibility = 'hidden'
-          break
-
-        case 'drawing':
-        default:
-          if (this.brushPointerContainer) {
-            document.querySelector('#storyboarder-sketch-pane .container').style.cursor = 'none'
-            this.brushPointerContainer.style.visibility = 'visible'
-          } else {
-            document.querySelector('#storyboarder-sketch-pane .container').style.cursor = 'crosshair'
-          }
-          break
-      }
-
-    } else {
-      document.querySelector('#storyboarder-sketch-pane .container').style.cursor = 'default'
-      if (this.brushPointerContainer) this.brushPointerContainer.style.visibility = 'hidden'
-    }
-  }
+  // renderCursor () {
+  //   return
+  //   if (this.isCursorOnDrawingArea) {
+  //     switch (this.cursorType) {
+  //       case 'not-allowed':
+  //         document.querySelector('#storyboarder-sketch-pane .container').style.cursor = 'not-allowed'
+  //         if (this.brushPointerContainer) this.brushPointerContainer.style.visibility = 'hidden'
+  //         break
+  // 
+  //       case 'move':
+  //         document.querySelector('#storyboarder-sketch-pane .container').style.cursor = 'move'
+  //         if (this.brushPointerContainer) this.brushPointerContainer.style.visibility = 'hidden'
+  //         break
+  // 
+  //       case 'ew-resize':
+  //         document.querySelector('#storyboarder-sketch-pane .container').style.cursor = 'ew-resize'
+  //         if (this.brushPointerContainer) this.brushPointerContainer.style.visibility = 'hidden'
+  //         break
+  // 
+  //       case 'drawing':
+  //       default:
+  //         if (this.brushPointerContainer) {
+  //           document.querySelector('#storyboarder-sketch-pane .container').style.cursor = 'none'
+  //           this.brushPointerContainer.style.visibility = 'visible'
+  //         } else {
+  //           document.querySelector('#storyboarder-sketch-pane .container').style.cursor = 'crosshair'
+  //         }
+  //         break
+  //     }
+  // 
+  //   } else {
+  //     document.querySelector('#storyboarder-sketch-pane .container').style.cursor = 'default'
+  //     if (this.brushPointerContainer) this.brushPointerContainer.style.visibility = 'hidden'
+  //   }
+  // }
 
   // store snapshot before pointer up?
   // eraser : no
