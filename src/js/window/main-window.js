@@ -3123,7 +3123,7 @@ let updateSketchPaneBoard = () => {
         }
       }
 
-      storyboarderSketchPane.setIsLocked(!util.isUndefined(board.link))
+      storyboarderSketchPane.setIsLocked(board.link != null)
 
       // load opacity from data, if data exists
       let referenceOpacity = board.layers &&
