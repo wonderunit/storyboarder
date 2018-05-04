@@ -1400,7 +1400,6 @@ const loadBoardUI = async () => {
 
       if (!img) return
 
-      // TODO
       storyboarderSketchPane.replaceLayer(LAYER_INDEX_REFERENCE, img)
 
       // force a file save and thumbnail update
@@ -2314,6 +2313,9 @@ const onLinkedFileChange = async (eventType, filepath, stats) => {
 }
 
 const refreshLinkedBoardByFilename = async filename => {
+  throw new Error('not implemented')
+  return
+
   // find the board by link filename
   let board
   for (let b of boardData.boards) {
@@ -2334,6 +2336,10 @@ const refreshLinkedBoardByFilename = async filename => {
   let isCurrentBoard = false
   
   if (curBoard.uid === board.uid) {
+    // TODO
+    // TODO
+    // TODO
+    // TODO
     readerOptions.referenceCanvas = storyboarderSketchPane.getLayerCanvasByName("reference")
     readerOptions.mainCanvas = storyboarderSketchPane.getLayerCanvasByName("main")
     readerOptions.notesCanvas = storyboarderSketchPane.getLayerCanvasByName("notes")
@@ -3038,6 +3044,7 @@ let previousScene = ()=> {
 }
 
 let updateSketchPaneBoard = () => {
+  // TODO refactor
   return new Promise((resolve, reject) => {
     // get current board
     let board = boardData.boards[currentBoard]
@@ -4432,6 +4439,13 @@ ipcRenderer.on('paste', () => {
 
 // import image from mobile server
 let importImage = imageDataURL => {
+  // TODO
+  // TODO
+  // TODO
+  // TODO
+  throw new Error('not implemented')
+  return
+
   // TODO: undo
 
   console.log('importImage')
