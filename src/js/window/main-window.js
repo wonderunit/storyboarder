@@ -2370,9 +2370,9 @@ const refreshLinkedBoardByFilename = async filename => {
     await saveImageFile()
     renderThumbnailDrawer()
   } else {
-    saveDataURLtoFile(canvases.main, board.url)
-    canvases.notes && saveDataURLtoFile(canvases.notes, board.url.replace('.png', '-notes.png'))
-    canvases.reference && saveDataURLtoFile(canvases.reference, board.url.replace('.png', '-reference.png'))
+    saveDataURLtoFile(canvases.main.toDataURL(), board.url)
+    canvases.notes && saveDataURLtoFile(canvases.notes.toDataURL(), board.url.replace('.png', '-notes.png'))
+    canvases.reference && saveDataURLtoFile(canvases.reference.toDataURL(), board.url.replace('.png', '-reference.png'))
 
     // explicitly indicate to renderer that the file has changed
     setEtag(path.join(boardPath, 'images', boardModel.boardFilenameForThumbnail(board)))
