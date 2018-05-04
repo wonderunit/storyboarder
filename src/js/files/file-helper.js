@@ -40,6 +40,8 @@ let getBase64TypeFromFilePath = (type, filepath) => {
 }
 
 let getBase64TypeFromPhotoshopFilePath = (filepath, options) => {
+  throw new Error('getBase64TypeFromPhotoshopFilePath is deprecated. use readPhotoshopLayersAsCanvases instead')
+
   if (!fs.existsSync(filepath)) return null
 
   initializeCanvas((width, height) => {
