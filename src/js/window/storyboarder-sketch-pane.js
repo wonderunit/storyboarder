@@ -216,7 +216,7 @@ class StoryboarderSketchPane extends EventEmitter {
     // this.sketchPane.setToolStabilizeLevel(stabilizeLevel)
     // this.sketchPane.setToolStabilizeWeight(0.2)
 
-    this.el.addEventListener('dblclick', this.onDblClick)
+    // this.el.addEventListener('dblclick', this.onDblClick)
 
     // TODO
     // TODO
@@ -235,7 +235,8 @@ class StoryboarderSketchPane extends EventEmitter {
     this.strategies = {
       drawing: new DrawingStrategy(this),
       moving: new MovingStrategy(this),
-      scaling: new ScalingStrategy(this)
+      scaling: new ScalingStrategy(this),
+      locked: new LockedStrategy(this)
     }
 
     this.store.dispatch({ type: 'TOOLBAR_MODE_SET', payload: 'drawing', meta: { scope: 'local' } })
@@ -287,33 +288,44 @@ class StoryboarderSketchPane extends EventEmitter {
   //   this.strategy = new Strategy(this)
   // }
 
-  // TODO
-  // TODO
-  // TODO
   setIsLocked (shouldLock) {
-    return
-    // if (shouldLock) {
-    //   this.isLocked = true
-    //   this.setStrategy(LockedStrategy)
-    // } else {
-    //   this.isLocked = false
-    // 
-    //   // if it's currently locked
-    //   if (this.strategy instanceof LockedStrategy) {
-    //     // allow drawing
-    //     this.setStrategy(DrawingStrategy)
-    //   }
-    // }
+    console.log('StoryboarderSketchPane#setIsLocked', shouldLock)
+    if (shouldLock) {
+      this.store.dispatch({
+        type: 'TOOLBAR_MODE_SET',
+        payload: 'locked',
+        meta: {
+          scope: 'local'
+        }
+      })
+    } else {
+      // if currently locked
+      if (this.strategy instanceof LockedStrategy) {
+        // force a shutdown (because LockedStrategy is always `busy` and prevents otherwise)
+        this.store.dispatch({
+          type: 'TOOLBAR_MODE_STATUS_SET',
+          payload: 'idle',
+          meta: {
+            scope: 'local'
+          }
+        })
+
+        this.store.dispatch({
+          type: 'TOOLBAR_MODE_SET',
+          payload: 'drawing',
+          meta: {
+            scope: 'local'
+          }
+        })
+      }
+    }
   }
 
-  // TODO
-  // TODO
-  // TODO
   preventIfLocked () {
-    return
-    if (this.isLocked) {
+    if (this.strategy instanceof LockedStrategy) {
       remote.dialog.showMessageBox({
-        message: 'The current board is linked to a PSD and cannot be changed. To unlink, double-click the board art.',
+        message: 'The current board is linked to a PSD and cannot be changed. ' +
+                 'To unlink, double-click the board art.'
       })
       return true
     } else {
@@ -1257,6 +1269,7 @@ class MovingStrategy {
 
     // kind of a hack, but make sure the sketchPane always tracks where the cursor is, even during the move
     this.context.sketchPane.move(e)
+
     // but be sure to takeover the cursor again
     this.context.sketchPane.app.view.style.cursor = 'move'
   }
@@ -1704,6 +1717,69 @@ class ScalingStrategy {
 //     document.removeEventListener('pointerup', this.container.canvasPointerUp)
 //   }
 // }
+
+class LockedStrategy {
+  constructor (context) {
+    this.context = context
+    this.name = 'locked'
+
+    this.cursor = 'not-allowed'
+
+    this._onDblClick = this._onDblClick.bind(this)
+
+    this._onPointerDown = this._onPointerDown.bind(this)
+    this._onPointerMove = this._onPointerMove.bind(this)
+    this._onPointerUp = this._onPointerUp.bind(this)
+  }
+
+  startup () {
+    this.context.store.dispatch({ type: 'TOOLBAR_MODE_STATUS_SET', payload: 'busy', meta: { scope: 'local' } })
+
+    this.context.containerEl.addEventListener('dblclick', this._onDblClick)
+
+    window.addEventListener('pointerdown', this._onPointerDown)
+    window.addEventListener('pointermove', this._onPointerMove)
+    window.addEventListener('pointerup', this._onPointerUp)
+
+    this.context.sketchPane.cursor.setEnabled(false)
+  }
+
+  shutdown () {
+    this.context.containerEl.removeEventListener('dblclick', this._onDblClick)
+
+    window.removeEventListener('pointerdown', this._onPointerDown)
+    window.removeEventListener('pointermove', this._onPointerMove)
+    window.removeEventListener('pointerup', this._onPointerUp)
+
+    this.context.sketchPane.cursor.setEnabled(true)
+  }
+
+  _onPointerDown (e) {
+    // kind of a hack, but make sure the sketchPane always tracks where the cursor is, even during the move
+    this.context.sketchPane.move(e)
+
+    this._render()
+    window.addEventListener('pointermove', this._onPointerMove)
+  }
+
+  _onPointerMove (e) {
+    this._render()
+  }
+
+  _onPointerUp (e) {
+    this._render()
+    window.removeEventListener('pointermove', this._onPointerMove)
+  }
+
+  _render (e) {
+    // but be sure to takeover the cursor again
+    this.context.sketchPane.app.view.style.cursor = this.cursor
+  }
+
+  _onDblClick (event) {
+    this.context.emit('requestUnlock')
+  }
+}
 
 // class LockedStrategy {
 //   constructor (container) {
