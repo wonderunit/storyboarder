@@ -1211,7 +1211,7 @@ class MovingStrategy {
     window.addEventListener('pointerup', this._onPointerUp)
 
     this.context.sketchPane.app.view.style.cursor = 'move'
-    this.context.sketchPane.cursor.visible = false
+    this.context.sketchPane.cursor.setEnabled(false)
   }
 
   shutdown () {
@@ -1224,7 +1224,7 @@ class MovingStrategy {
     window.removeEventListener('pointerup', this._onPointerUp)
 
     this.context.sketchPane.app.view.style.cursor = 'auto'
-    this.context.sketchPane.cursor.visible = true
+    this.context.sketchPane.cursor.setEnabled(true)
   }
 
   _onPointerDown (e) {
@@ -1472,7 +1472,7 @@ class ScalingStrategy {
     window.addEventListener('pointerup', this._onPointerUp)
 
     this.context.sketchPane.app.view.style.cursor = 'ew-resize'
-    this.context.sketchPane.cursor.visible = false
+    this.context.sketchPane.cursor.setEnabled(false)
   }
 
   shutdown () {
@@ -1485,7 +1485,7 @@ class ScalingStrategy {
     window.removeEventListener('pointerup', this._onPointerUp)
 
     this.context.sketchPane.app.view.style.cursor = 'auto'
-    this.context.sketchPane.cursor.visible = true
+    this.context.sketchPane.cursor.setEnabled(true)
   }
 
   _onPointerDown (e) {
