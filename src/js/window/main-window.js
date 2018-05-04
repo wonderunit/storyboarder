@@ -1146,7 +1146,6 @@ const loadBoardUI = async () => {
       if (choice === 0) {
         // Open in Photoshop
         openInEditor()
-
       } else if (choice === 1) {
         // Draw in Storyboarder
         const confirmChoice = remote.dialog.showMessageBox({
@@ -1160,7 +1159,7 @@ const loadBoardUI = async () => {
           ],
           defaultId: 1
         })
-        
+
         if (confirmChoice === 0) {
           // Unlink and Draw
           notifications.notify({ message: `Stopped watching\n${board.link}\nfor changes.` })
@@ -1170,9 +1169,6 @@ const loadBoardUI = async () => {
 
           storyboarderSketchPane.setIsLocked(false)
         }
-      } else {
-        // Cancel
-        return
       }
     }
   })
