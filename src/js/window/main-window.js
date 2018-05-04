@@ -2307,8 +2307,7 @@ const onLinkedFileChange = async (eventType, filepath, stats) => {
 }
 
 const refreshLinkedBoardByFilename = async filename => {
-  throw new Error('not implemented')
-  return
+  console.log('refreshLinkedBoardByFilename')
 
   // find the board by link filename
   let board
