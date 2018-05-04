@@ -2319,52 +2319,61 @@ const refreshLinkedBoardByFilename = async filename => {
     }
   }
   if (!board) {
-    console.log('Tried to update, from editor, a file that does not exist in the scene:', filename)
+    console.log('Tried to update, from external editor, a file that does not exist in the scene:', filename)
     return
   }
 
-  let psdData
-  let readerOptions = {}
+  let canvases
   let curBoard = boardData.boards[currentBoard]
+
   // Update the current canvas if it's the same board coming back in.
-  let isCurrentBoard = false
-  
-  if (curBoard.uid === board.uid) {
-    // TODO
-    // TODO
-    // TODO
-    // TODO
-    readerOptions.referenceCanvas = storyboarderSketchPane.getLayerCanvasByName("reference")
-    readerOptions.mainCanvas = storyboarderSketchPane.getLayerCanvasByName("main")
-    readerOptions.notesCanvas = storyboarderSketchPane.getLayerCanvasByName("notes")
-    storeUndoStateForImage(true, [0, 1, 3])
-    isCurrentBoard = true
-  }
-  
-  psdData = FileHelper.getBase64ImageDataFromFilePath(path.join(boardPath, 'images', board.link), readerOptions)
-  if (!psdData || !psdData.main) {
-    notifications.notify({ message: `[WARNING] Could not import from file ${filename}. You may be using an unsupported PSD feature.` })
-    return
-  }
+  let isCurrentBoard = curBoard.uid === board.uid
 
   if (isCurrentBoard) {
+    storeUndoStateForImage(true, [0, 1, 3])
+  }
+
+  console.log('\treading', path.join(boardPath, 'images', board.link))
+
+  canvases = FileHelper.readPhotoshopLayersAsCanvases(
+    path.join(boardPath, 'images', board.link),
+    storyboarderSketchPane.sketchPane.width,
+    storyboarderSketchPane.sketchPane.height
+  )
+
+  if (!canvases || !canvases.main) {
+    notifications.notify({
+      message: `[WARNING] Could not import from file ${filename}. ` +
+               'That PSD might be using a feature (like text layers or masks) ' +
+               'that Storyboarder does not support. ' +
+               'Or, it might be missing required named layers (like main).'
+    })
+    return
+  }
+
+  console.log('\tisCurrentBoard', isCurrentBoard)
+  if (isCurrentBoard) {
+    console.log('canvases', canvases)
+    storyboarderSketchPane.sketchPane.layers[1].replace(canvases.main)
+    canvases.reference && storyboarderSketchPane.sketchPane.layers[0].replace(canvases.reference)
+    canvases.reference && storyboarderSketchPane.sketchPane.layers[3].replace(canvases.notes)
+
     storeUndoStateForImage(false, [0, 1, 3])
     markImageFileDirty([0, 1, 3]) // reference, main, notes layers
     // save image and update thumbnail
     await saveImageFile()
     renderThumbnailDrawer()
   } else {
-    saveDataURLtoFile(psdData.main, board.url)
-    psdData.notes && saveDataURLtoFile(psdData.notes, board.url.replace('.png', '-notes.png'))
-    psdData.reference && saveDataURLtoFile(psdData.reference, board.url.replace('.png', '-reference.png'))
-  
+    saveDataURLtoFile(canvases.main, board.url)
+    canvases.notes && saveDataURLtoFile(canvases.notes, board.url.replace('.png', '-notes.png'))
+    canvases.reference && saveDataURLtoFile(canvases.reference, board.url.replace('.png', '-reference.png'))
+
     // explicitly indicate to renderer that the file has changed
     setEtag(path.join(boardPath, 'images', boardModel.boardFilenameForThumbnail(board)))
 
     let index = await saveThumbnailFile(boardData.boards.indexOf(board))
     await updateThumbnailDisplayFromFile(index)
   }
-  return
 }
 
 // // always currentBoard
