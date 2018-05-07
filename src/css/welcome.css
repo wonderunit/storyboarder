@@ -194,6 +194,7 @@ h2 {
   opacity: 0.8;
   margin-top: -20px; /* offset for empty .recent */
   margin-bottom: -20px; /* offset for #recent padding */
+  line-height: 1.2;
 }
 
 #new-window {
