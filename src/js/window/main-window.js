@@ -4634,31 +4634,45 @@ let copyBoards = () => {
   }
 }
 
-let exportAnimatedGif = () => {
-  // load all the images in the selection
+const exportAnimatedGif = async () => {
+  console.log('main-window#exportAnimatedGif', selections)
   if (selections.has(currentBoard)) {
     saveImageFile()
   }
   let boards
-  if (selections.size == 1) {
+  if (selections.size === 1) {
+    // single value
     boards = util.stringifyClone(boardData.boards)
   } else {
-    boards = [...selections].sort(util.compareNumbers).map(n => util.stringifyClone(boardData.boards[n]))
+    // array of boards
+    boards = [...selections].sort(util.compareNumbers).map(
+      n => util.stringifyClone(boardData.boards[n])
+    )
   }
-  let boardSize = storyboarderSketchPane.sketchPane.getCanvasSize()
+  let boardSize = storyboarderSketchPane.getCanvasSize()
 
-  notifications.notify({message: "Exporting " + boards.length + " boards. Please wait...", timing: 5})
+  notifications.notify({
+    message: 'Exporting ' + boards.length + ' boards. Please wait...',
+    timing: 5
+  })
+
   sfx.down()
-  setTimeout(()=>{
-    exporter.exportAnimatedGif(boards, boardSize, 888, boardPath, true, boardData)
-  }, 1000)
+
+  try {
+    let path = await exporter.exportAnimatedGif(boards, boardSize, 888, boardFilename, true, boardData)
+    notifications.notify({
+      message: 'I exported your board selection as a GIF. Share it with your friends! Post it to your twitter thing or your slack dingus.',
+      timing: 20
+    })
+    sfx.positive()
+    shell.showItemInFolder(path)
+  } catch (err) {
+    console.error(err)
+    notifications.notify({ message: 'Could not export. An error occurred.' })
+    notifications.notify({ message: err.toString() })
+  }
 }
 
-exporter.on('complete', path => {
-  notifications.notify({message: "I exported your board selection as a GIF. Share it with your friends! Post it to your twitter thing or your slack dingus.", timing: 20})
-  sfx.positive()
-  shell.showItemInFolder(path)
-})
 
 const exportFcp = () => {
   notifications.notify({message: "Exporting " + boardData.boards.length + " boards to FCP and Premiere. Please wait...", timing: 5})
