@@ -5733,7 +5733,7 @@ ipcRenderer.on('cycleViewMode', (event, args)=>{
 
 ipcRenderer.on('toggleCaptions', (event, args)=>{
   if (!textInputMode) {
-    this.store.dispatch({ type: 'TOOLBAR_CAPTIONS_TOGGLE' })
+    store.dispatch({ type: 'TOOLBAR_CAPTIONS_TOGGLE' })
     sfx.playEffect('metal')
   }
 })
