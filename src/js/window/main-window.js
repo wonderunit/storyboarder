@@ -5334,6 +5334,8 @@ const applyUndoStateForScene = async (state) => {
   renderScene()
 }
 
+let undoImageCache = new Map()
+
 // TODO memory management. dispose unused canvases
 const storeUndoStateForImage = (isBefore, layerIndices = null) => {
   let scene = getSceneObjectByIndex(currentScene)
@@ -5342,14 +5344,22 @@ const storeUndoStateForImage = (isBefore, layerIndices = null) => {
   if (!layerIndices) layerIndices = [storyboarderSketchPane.sketchPane.getCurrentLayerIndex()]
 
   let layers = layerIndices.map(index => {
-    // backup to a canvas
-    const source = storyboarderSketchPane.sketchPane.layers[index].toCanvas()
+    // backup to raw pixels with premultiplied alpha
+    const source = undoImageCache.size
+    undoImageCache.set(source, {
+      id: source,
+      pixels: storyboarderSketchPane.sketchPane.layers[index].pixels(false),
+      isPreMultiplied: true
+    })
+    // console.log('storeUndoStateForImage to cache id', source)
 
     return {
       index,
       source
     }
   })
+
+  // TODO cleanup undoImageCache
 
   undoStack.addImageData(isBefore, {
     type: 'image',
@@ -5382,7 +5392,22 @@ const applyUndoStateForImage = async (state) => {
     // NOTE here we intentionally avoid triggering storyboarderSketchPane's `addToUndoStack` event
     //      by calling sketchPane replaceLayer directly
     // TODO have StoryboarderSketchPane handle this
-    storyboarderSketchPane.sketchPane.replaceLayer(layerData.index, layerData.source)
+    // console.log('applyUndoStateForImage from cache id', layerData.source)
+    if (undoImageCache.get(layerData.source).isPreMultiplied) {
+      storyboarderSketchPane.sketchPane.constructor.utils.arrayPostDivide(
+        undoImageCache.get(layerData.source).pixels
+      )
+      undoImageCache.get(layerData.source).isPreMultiplied = false
+    }
+    // TODO would it be faster to use texImage2D ?
+    storyboarderSketchPane.sketchPane.replaceLayer(
+      layerData.index,
+      storyboarderSketchPane.sketchPane.constructor.utils.pixelsToCanvas(
+        undoImageCache.get(layerData.source).pixels,
+        storyboarderSketchPane.sketchPane.width,
+        storyboarderSketchPane.sketchPane.height
+      )
+    )
     markImageFileDirty([layerData.index])
   }
 
