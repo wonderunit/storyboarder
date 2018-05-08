@@ -2718,7 +2718,7 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
   //   ], {force: true, duration: 500})
   // }
 
-  toolbar.emit('cancelTransform')
+  // toolbar.emit('cancelTransform')
   return new Promise((resolve, reject) => {
     clearTimeout(drawIdleTimer)
 
@@ -5388,7 +5388,7 @@ const applyUndoStateForImage = async (state) => {
 
   let index = await saveThumbnailFile(state.boardIndex)
   await updateThumbnailDisplayFromFile(index)
-  toolbar.emit('cancelTransform')
+  // toolbar.emit('cancelTransform')
 }
 
 const createSizedContext = size => {
