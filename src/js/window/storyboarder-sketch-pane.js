@@ -615,43 +615,17 @@ class StoryboarderSketchPane extends EventEmitter {
   //   return destinationContext
   // }
 
-  // TODO
-  // TODO
-  // TODO mergeLayers
-  // TODO
-  // mergeLayers (layers, destination) {
-  //   // make a unique, sorted array of dirty layers
-  //   let dirtyLayers = [...new Set(layers.concat(destination))].sort(util.compareNumbers)
-  //   // save an undo snapshot
-  //   this.emit('addToUndoStack', dirtyLayers)
-  // 
-  //   // create a temporary canvas
-  //   let composite = document.createElement('canvas')
-  //   let size = this.sketchPane.getCanvasSize()
-  //   composite.width = size.width
-  //   composite.height = size.height
-  //   let compositeContext = composite.getContext('2d')
-  // 
-  //   // draw layers, in order, to temporary canvas
-  //   this.drawComposite(layers, compositeContext)
-  // 
-  //   // clear destination
-  //   this.sketchPane.clearLayer(destination)
-  // 
-  //   // stamp composite onto main
-  //   let destinationContext = this.sketchPane.getLayerContext(destination)
-  //   destinationContext.drawImage(compositeContext.canvas, 0, 0)
-  // 
-  //   // clear the source layers
-  //   for (let index of layers) {
-  //     if (index !== destination) {
-  //       this.sketchPane.clearLayer(index)
-  //     }
-  //   }
-  // 
-  //   // mark all layers dirty
-  //   this.emit('markDirty', dirtyLayers)
-  // }
+  mergeLayers (sources, destination) {
+    const dirty = [...new Set(sources.concat(destination))]
+
+    // save an undo snapshot
+    this.emit('addToUndoStack', dirty)
+
+    this.sketchPane.layers.merge(sources, destination)
+
+    // mark all layers dirty
+    this.emit('markDirty', dirty)
+  }
 
   // // given a clientX and clientY,
   // //   calculate the equivalent point on the sketchPane
