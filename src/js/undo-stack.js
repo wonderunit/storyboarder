@@ -265,11 +265,11 @@ const cloneState = originalState => {
   let newState = util.stringifyClone(originalState)
 
   // re-insert the references to source (HTMLCanvas)
-  if (originalState.type === 'image') {
-    for (let n = 0; n < newState.layers.length; n++) {
-      newState.layers[n].source = originalState.layers[n].source
-    }
-  }
+  // if (originalState.type === 'image') {
+  //   for (let n = 0; n < newState.layers.length; n++) {
+  //     newState.layers[n].source = originalState.layers[n].source
+  //   }
+  // }
 
   return newState
 }
