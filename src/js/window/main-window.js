@@ -5399,7 +5399,7 @@ const applyUndoStateForImage = async (state) => {
       )
       undoImageCache.get(layerData.source).isPreMultiplied = false
     }
-    // TODO would it be faster to use texImage2D ?
+    // TODO try directly creating texture from pixel data via texImage2D
     storyboarderSketchPane.sketchPane.replaceLayer(
       layerData.index,
       storyboarderSketchPane.sketchPane.constructor.utils.pixelsToCanvas(
