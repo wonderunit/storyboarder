@@ -149,8 +149,7 @@ class UndoList {
     let describe = state => {
       if (state.type === 'image') {
         let layersDesc = state.layers.map(layerData =>
-          `index: ${layerData.index}`)
-        // `index: ${layerData.index} id:${layerData.source.id}`)
+          `index: ${layerData.index} pixels:${layerData.source.pixels.length}`)
         let desc = `
           scene: ${stringOf(state.sceneId)} 
           board: ${stringOf(state.boardIndex)} 
@@ -223,7 +222,7 @@ const imageStateContextsEqual = (a, b) => {
 //                boardIndex, i,
 //                layers: [         // NOTE for proper comparison, must be in the same order each time
 //                  index,
-//                  source          // reference to an HTMLCanvas to be stored
+//                  source          // reference to { pixels, premultiplied } to be stored
 //                ]
 //              }
 //
@@ -266,35 +265,24 @@ const addSceneData = (isBefore, state) => {
   undoList.insert(newState)
 }
 
-const cloneState = originalState => {
-  //
-  // TODO do we still need this conversion from reference to value?
-  //
-  let newState = util.stringifyClone(originalState)
-
-  // re-insert the references to source (HTMLCanvas)
-  // if (originalState.type === 'image') {
-  //   for (let n = 0; n < newState.layers.length; n++) {
-  //     newState.layers[n].source = originalState.layers[n].source
-  //   }
-  // }
-
-  return newState
-}
+const cloneState = state =>
+  state.type === 'scene'
+    // TODO do we still need this conversion from reference to value?
+    //      could we stringifyClone in applyUndoStateForScene instead?
+    ? util.stringifyClone(state)
+    : state
 
 const undo = () => {
   undoList.undo()
   if (undoList.state.present) {
-    let state = cloneState(undoList.state.present)
-    module.exports.emit('undo', state)
+    module.exports.emit('undo', cloneState(undoList.state.present))
   }
 }
 
 const redo = () => {
   undoList.redo()
   if (undoList.state.present) {
-    let state = cloneState(undoList.state.present)
-    module.exports.emit('redo', state)
+    module.exports.emit('redo', cloneState(undoList.state.present))
   }
 }
 

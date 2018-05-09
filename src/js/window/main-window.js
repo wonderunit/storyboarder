@@ -5334,9 +5334,6 @@ const applyUndoStateForScene = async (state) => {
   renderScene()
 }
 
-let undoImageCache = new Map()
-
-// TODO memory management. dispose unused canvases
 const storeUndoStateForImage = (isBefore, layerIndices = null) => {
   let scene = getSceneObjectByIndex(currentScene)
   let sceneId = scene && scene.scene_id
@@ -5344,22 +5341,15 @@ const storeUndoStateForImage = (isBefore, layerIndices = null) => {
   if (!layerIndices) layerIndices = [storyboarderSketchPane.sketchPane.getCurrentLayerIndex()]
 
   let layers = layerIndices.map(index => {
-    // backup to raw pixels with premultiplied alpha
-    const source = undoImageCache.size
-    undoImageCache.set(source, {
-      id: source,
-      pixels: storyboarderSketchPane.sketchPane.layers[index].pixels(false),
-      isPreMultiplied: true
-    })
-    // console.log('storeUndoStateForImage to cache id', source)
-
     return {
       index,
-      source
+      // store raw pixels with premultiplied alpha
+      source: {
+        pixels: storyboarderSketchPane.sketchPane.layers[index].pixels(false),
+        premultiplied: true
+      }
     }
   })
-
-  // TODO cleanup undoImageCache
 
   undoStack.addImageData(isBefore, {
     type: 'image',
@@ -5389,25 +5379,24 @@ const applyUndoStateForImage = async (state) => {
   }
 
   for (let layerData of state.layers) {
-    // NOTE here we intentionally avoid triggering storyboarderSketchPane's `addToUndoStack` event
-    //      by calling sketchPane replaceLayer directly
-    // TODO have StoryboarderSketchPane handle this
-    // console.log('applyUndoStateForImage from cache id', layerData.source)
-    if (undoImageCache.get(layerData.source).isPreMultiplied) {
-      storyboarderSketchPane.sketchPane.constructor.utils.arrayPostDivide(
-        undoImageCache.get(layerData.source).pixels
-      )
-      undoImageCache.get(layerData.source).isPreMultiplied = false
+    let source = layerData.source
+    // un-premultiply pixels, but only once
+    if (source.premultiplied) {
+      storyboarderSketchPane.sketchPane.constructor.utils.arrayPostDivide(source.pixels)
+      // changes source, which is a reference to an to undostack state
+      source.premultiplied = false
     }
+    // NOTE calls replaceLayer directly to avoid triggering `addToUndoStack` event
     // TODO try directly creating texture from pixel data via texImage2D
     storyboarderSketchPane.sketchPane.replaceLayer(
-      layerData.index,
+      source.index,
       storyboarderSketchPane.sketchPane.constructor.utils.pixelsToCanvas(
-        undoImageCache.get(layerData.source).pixels,
+        source.pixels,
         storyboarderSketchPane.sketchPane.width,
         storyboarderSketchPane.sketchPane.height
       )
     )
+
     markImageFileDirty([layerData.index])
   }
 
