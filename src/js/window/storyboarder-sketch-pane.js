@@ -333,6 +333,33 @@ class StoryboarderSketchPane extends EventEmitter {
     }
   }
 
+  getUndoStateForLayer (index) {
+    // store raw pixels with premultiplied alpha
+    return {
+      pixels: this.sketchPane.layers[index].pixels(false),
+      premultiplied: true
+    }
+  }
+  applyUndoStateForLayer (state) {
+    let source = state.source
+    // un-premultiply pixels, but only once
+    if (source.premultiplied) {
+      this.sketchPane.constructor.utils.arrayPostDivide(source.pixels)
+      // changes source, which is a reference to an to undostack state
+      source.premultiplied = false
+    }
+    // NOTE calls replaceLayer directly to avoid triggering `addToUndoStack` event
+    // TODO try directly creating texture from pixel data via texImage2D
+    this.sketchPane.replaceLayer(
+      source.index,
+      this.sketchPane.constructor.utils.pixelsToCanvas(
+        source.pixels,
+        this.sketchPane.width,
+        this.sketchPane.height
+      )
+    )
+  }
+
   // renderCursor () {
   //   return
   //   if (this.isCursorOnDrawingArea) {

@@ -5343,11 +5343,7 @@ const storeUndoStateForImage = (isBefore, layerIndices = null) => {
   let layers = layerIndices.map(index => {
     return {
       index,
-      // store raw pixels with premultiplied alpha
-      source: {
-        pixels: storyboarderSketchPane.sketchPane.layers[index].pixels(false),
-        premultiplied: true
-      }
+      source: storyboarderSketchPane.getUndoStateForLayer(index)
     }
   })
 
@@ -5379,24 +5375,7 @@ const applyUndoStateForImage = async (state) => {
   }
 
   for (let layerData of state.layers) {
-    let source = layerData.source
-    // un-premultiply pixels, but only once
-    if (source.premultiplied) {
-      storyboarderSketchPane.sketchPane.constructor.utils.arrayPostDivide(source.pixels)
-      // changes source, which is a reference to an to undostack state
-      source.premultiplied = false
-    }
-    // NOTE calls replaceLayer directly to avoid triggering `addToUndoStack` event
-    // TODO try directly creating texture from pixel data via texImage2D
-    storyboarderSketchPane.sketchPane.replaceLayer(
-      source.index,
-      storyboarderSketchPane.sketchPane.constructor.utils.pixelsToCanvas(
-        source.pixels,
-        storyboarderSketchPane.sketchPane.width,
-        storyboarderSketchPane.sketchPane.height
-      )
-    )
-
+    storyboarderSketchPane.applyUndoStateForLayer(layerData)
     markImageFileDirty([layerData.index])
   }
 
