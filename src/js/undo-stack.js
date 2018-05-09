@@ -65,7 +65,7 @@ class UndoList {
 
     if (this.debugMode) this.print()
   }
-  
+
   redo () {
     const { past, present, future } = this.state
 
@@ -132,11 +132,13 @@ class UndoList {
       document.body.appendChild(this.debugEl)
     }
 
-    let clear = () =>
+    let clear = () => {
       this.debugEl.innerHTML = ''
+    }
 
-    let trace = (...args) =>
+    let trace = (...args) => {
       this.debugEl.innerHTML += '<div>' + args.join(' ') + '</div>'
+    }
 
     let boardIndexes = arr =>
       arr.map(b => parseInt(b.url.replace('board-', ''), 10)).join(', ')
@@ -145,16 +147,17 @@ class UndoList {
       util.isUndefined(value) ? 'n/a' : value
 
     let describe = state => {
-      if (state.type == 'image') {
+      if (state.type === 'image') {
         let layersDesc = state.layers.map(layerData =>
-          `index: ${layerData.index} id:${layerData.source.id}`)
+          `index: ${layerData.index}`)
+        // `index: ${layerData.index} id:${layerData.source.id}`)
         let desc = `
           scene: ${stringOf(state.sceneId)} 
           board: ${stringOf(state.boardIndex)} 
           layers: [ ${layersDesc.join(', ')} ]
         `
         return [state.type, desc.replace(/\s+/g, ' ')]
-      } else if (state.type == 'scene') {
+      } else if (state.type === 'scene') {
         return [state.type, boardIndexes(state.sceneData.boards)].join(' ')
       }
     }
@@ -178,20 +181,25 @@ let undoList = new UndoList()
 // determine if image state A is equal to state B
 const imageStateContextsEqual = (a, b) => {
   if (
-    a && b &&                                               // are both states present?
+    // are both states present?
+    a && b &&
 
-    a.type == 'image' &&                                    // are they both image states?
-    b.type == 'image' &&
+    // are they both image states?
+    a.type === 'image' &&
+    b.type === 'image' &&
 
-    a.sceneId == b.sceneId &&                               // are they for the same board on the same scene?
-    a.boardIndex == b.boardIndex &&
+    // are they for the same board on the same scene?
+    a.sceneId === b.sceneId &&
+    a.boardIndex === b.boardIndex &&
 
-    a.layers.length == b.layers.length                      // do they have the same number of layers?
+    // do they have the same number of layers?
+    a.layers.length === b.layers.length
   ) {
     // are the layers the same?
     for (let n = 0; n < a.layers.length; n++) {
       if (
-        a.layers[n].index !== b.layers[n].index             // skip if their indices differ
+        // skip if their indices differ
+        a.layers[n].index !== b.layers[n].index
       ) {
         return false
       }
@@ -236,8 +244,8 @@ const addImageData = (isBefore, newState) => {
 
 const sceneStateContextsEqual = (a, b) =>
   a && b &&
-  a.type == 'scene' && b.type == 'scene' &&
-  a.sceneId == b.sceneId
+  a.type === 'scene' && b.type === 'scene' &&
+  a.sceneId === b.sceneId
 
 const addSceneData = (isBefore, state) => {
   const newState = {
