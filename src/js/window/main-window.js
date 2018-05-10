@@ -4915,12 +4915,13 @@ const importFromWorksheet = async (imageArray) => {
   let insertAt = 0 // pos
   let boards = []
 
-  for (var i = 0; i < imageArray.length; i++) {
+  // related: insertNewBoardDataAtPosition
+  for (let i = 0; i < imageArray.length; i++) {
     let board = {}
     let uid = util.uidGen(5)
     board.uid = uid
-    board.url = 'board-' + (insertAt+i) + '-' + board.uid + '.png'
-    board.layers = {reference: {url: board.url.replace('.png', '-reference.png')}}
+    board.url = 'board-' + (insertAt + i) + '-' + board.uid + '.png'
+    board.layers = { reference: { url: board.url.replace('.png', '-reference.png') } }
     board.newShot = false
     board.lastEdited = Date.now()
 
@@ -4930,7 +4931,7 @@ const importFromWorksheet = async (imageArray) => {
   let blankCanvas = document.createElement('canvas').toDataURL()
 
   let layerDataByBoardIndex = []
-  for (var i = 0; i < imageArray.length; i++) {
+  for (let i = 0; i < imageArray.length; i++) {
     let board = {}
     board[0] = imageArray[i]
     board[1] = blankCanvas
@@ -4959,7 +4960,7 @@ const importFromWorksheet = async (imageArray) => {
     notifications.notify({ message: 'Worksheet Import complete.', timing: 5 })
     return gotoBoard(insertAt)
   } catch (err) {
-    notifications.notify({ message: "Whoops. Could not import.", timing: 8 })
+    notifications.notify({ message: 'Whoops. Could not import.', timing: 8 })
     console.log(err)
   }
 }
