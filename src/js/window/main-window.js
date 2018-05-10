@@ -2335,6 +2335,7 @@ const refreshLinkedBoardByFilename = async filename => {
   console.log('\tisCurrentBoard', isCurrentBoard)
   if (isCurrentBoard) {
     console.log('canvases', canvases)
+    // TODO
     storyboarderSketchPane.sketchPane.layers[1].replace(canvases.main)
     canvases.reference && storyboarderSketchPane.sketchPane.layers[0].replace(canvases.reference)
     canvases.reference && storyboarderSketchPane.sketchPane.layers[3].replace(canvases.notes)
@@ -4422,56 +4423,33 @@ ipcRenderer.on('paste', () => {
 })
 
 // import image from mobile server
-let importImage = imageDataURL => {
-  // TODO
-  // TODO
-  // TODO
-  // TODO
-  throw new Error('not implemented')
-  return
+const importImage = async imageDataURL => {
+  console.log('main-window#importImage')
 
-  // TODO: undo
+  // resize image if too big
+  const resizedImageDataUrl = await fitImageData(
+    [storyboarderSketchPane.sketchPane.width, storyboarderSketchPane.sketchPane.height],
+    imageDataURL
+  )
+  let image = await exporterCommon.getImage(imageDataURL)
 
-  console.log('importImage')
+  // TODO should we use storyboarderSketchPane.replaceLayers ?
+  storeUndoStateForImage(true, LAYER_INDEX_REFERENCE)
+  storyboarderSketchPane.sketchPane.layers[LAYER_INDEX_REFERENCE].replace(
+    image,
+    false
+  )
+  storeUndoStateForImage(false, LAYER_INDEX_REFERENCE)
 
-  let image = new Image()
-  image.addEventListener('load', () => {
-    console.log(boardData.aspectRatio)
-    console.log((image.height/image.width))
-    console.log(image)
+  markImageFileDirty([LAYER_INDEX_REFERENCE]) // HACK hardcoded
+  await saveImageFile()
+  renderThumbnailDrawer()
 
-    let targetWidth
-    let targetHeight
-    let offsetX
-    let offsetY
-
-    if (boardData.aspectRatio > (image.height/image.width)) {
-      targetHeight = 900
-      targetWidth = 900 * (image.width/image.height)
-
-      offsetX = Math.round(((900 * boardData.aspectRatio) - targetWidth)/2)
-      offsetY = 0
-    } else {
-      targetWidth = 900 * boardData.aspectRatio
-      targetHeight = targetWidth * (image.width/image.height)
-
-      offsetY = Math.round(900 - targetHeight)
-      offsetX = 0
-    }
-
-    // render
-    storyboarderSketchPane
-      .getLayerCanvasByName('reference')
-      .getContext("2d")
-      .drawImage(image, offsetX, offsetY, targetWidth, targetHeight)
-    markImageFileDirty([0]) // HACK hardcoded
-    saveImageFile()
+  notifications.notify({
+    message: `Image added on top of reference layer`,
+    timing: 10
   })
-  image.addEventListener('error', () => {
-    notifications.notify({ message: 'Could not read the image file' })
-  })
-
-  image.src = imageDataURL
+  sfx.positive()
 }
 
 /**
@@ -5721,9 +5699,9 @@ ipcRenderer.on('insertNewBoardsWithFiles', (event, filepaths)=> {
   insertNewBoardsWithFiles(filepaths)
 })
 
-ipcRenderer.on('importImage', (event, args)=> {
-  //console.log(args)
-  importImage(args)
+ipcRenderer.on('importImage', (event, fileData) => {
+  // console.log('mobile image import fileData:', fileData)
+  importImage(fileData)
 })
 
 ipcRenderer.on('toggleGuide', (event, arg) => {
