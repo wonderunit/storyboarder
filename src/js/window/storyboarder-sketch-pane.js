@@ -1060,11 +1060,14 @@ class DrawingStrategy {
   _onPointerMove (e) {
     this.context.sketchPane.move(e)
 
+    // track X/Y on the full-size texture
     const point = this.context.sketchPane.localizePoint(e)
     this.context.lineMileageCounter.add(point)
 
     // audible event for Sonifier
-    this.context.emit('pointermove', point)
+    if (this.context.sketchPane.isDrawing()) {
+      this.context.emit('pointermove', point)
+    }
   }
 
   _onPointerUp (e) {
