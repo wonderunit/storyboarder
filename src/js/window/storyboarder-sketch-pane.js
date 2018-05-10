@@ -1048,6 +1048,7 @@ class DrawingStrategy {
     // syncSketchPaneState(this.store.getState().toolbar)
 
     this.context.sketchPane.down(e, options)
+    this.context.lineMileageCounter.reset()
 
     // just triggers layer opacity check
     this.context.emit('requestPointerDown')
@@ -1055,12 +1056,14 @@ class DrawingStrategy {
 
   _onPointerMove (e) {
     this.context.sketchPane.move(e)
+    this.context.lineMileageCounter.add(this.context.sketchPane.localizePoint(e))
   }
 
   _onPointerUp (e) {
     this.context.sketchPane.up(e)
     this._updateQuickErase(e)
     this.context.store.dispatch({ type: 'TOOLBAR_MODE_STATUS_SET', payload: 'idle', meta: { scope: 'local' } })
+    this.context.emit('lineMileage', this.context.lineMileageCounter.get())
   }
 
   _onKeyUp (e) {

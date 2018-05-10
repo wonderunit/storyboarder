@@ -596,9 +596,6 @@ const loadBoardUI = async () => {
 
     drawIdleTimer = setTimeout(onDrawIdle, 500)
 
-    // TODO track line mileage
-    addToLineMileage(storyboarderSketchPane.lineMileageCounter.get())
-
     // TODO
     // // save progress image
     // if (isRecording) {
@@ -615,12 +612,8 @@ const loadBoardUI = async () => {
   //   clearTimeout(drawIdleTimer)
   // })
 
-  // this is essentially pointerup
-  // storyboarderSketchPane.on('lineMileage', value => {
-  //   addToLineMileage(value)
-  //   drawIdleTimer = setTimeout(onDrawIdle, 500)
-  // })
-
+  storyboarderSketchPane.on('lineMileage', value =>
+    addToLineMileage(value))
 
 
   let sketchPaneEl = document.querySelector('#storyboarder-sketch-pane')
