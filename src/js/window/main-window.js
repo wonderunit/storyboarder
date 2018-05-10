@@ -1213,11 +1213,11 @@ const loadBoardUI = async () => {
     // })
   }
 
-  let onUndoStackAction = (state) => {
+  const onUndoStackAction = async (state) => {
     if (state.type === 'image') {
-      applyUndoStateForImage(state)
+      await applyUndoStateForImage(state)
     } else if (state.type === 'scene') {
-      applyUndoStateForScene(state)
+      await applyUndoStateForScene(state)
     }
   }
   undoStack.on('undo', onUndoStackAction)
