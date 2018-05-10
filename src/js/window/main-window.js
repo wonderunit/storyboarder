@@ -1826,7 +1826,7 @@ let insertNewBoardsWithFiles = async filepaths => {
 
   let count = filepaths.length
   notifications.notify({
-    message: `Importing ${count} image${count !== 1 ? 's':''}.\nPlease wait...`,
+    message: `Importing ${count} image${count !== 1 ? 's' : ''}.\nPlease wait …`,
     timing: 2
   })
 
@@ -1918,7 +1918,10 @@ let insertNewBoardsWithFiles = async filepaths => {
       })
     } catch (error) {
       console.error('Got error', error)
-      notifications.notify({ message: `Could not load image ${path.basename(filepath)}\n` + error.message, timing: 10 })
+      notifications.notify({
+        message: `Could not load image ${path.basename(filepath)}\n` + error.message,
+        timing: 10
+      })
     }
   }
 
