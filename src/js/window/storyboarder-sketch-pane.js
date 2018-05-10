@@ -1050,13 +1050,21 @@ class DrawingStrategy {
     this.context.sketchPane.down(e, options)
     this.context.lineMileageCounter.reset()
 
+    // audible event for Sonifier
+    this.context.emit('pointerdown', this.context.sketchPane.localizePoint(e))
+
     // just triggers layer opacity check
     this.context.emit('requestPointerDown')
   }
 
   _onPointerMove (e) {
     this.context.sketchPane.move(e)
-    this.context.lineMileageCounter.add(this.context.sketchPane.localizePoint(e))
+
+    const point = this.context.sketchPane.localizePoint(e)
+    this.context.lineMileageCounter.add(point)
+
+    // audible event for Sonifier
+    this.context.emit('pointermove', point)
   }
 
   _onPointerUp (e) {
@@ -1064,6 +1072,9 @@ class DrawingStrategy {
     this._updateQuickErase(e)
     this.context.store.dispatch({ type: 'TOOLBAR_MODE_STATUS_SET', payload: 'idle', meta: { scope: 'local' } })
     this.context.emit('lineMileage', this.context.lineMileageCounter.get())
+
+    // audible event for Sonifier
+    this.context.emit('pointerup', this.context.sketchPane.localizePoint(e))
   }
 
   _onKeyUp (e) {
