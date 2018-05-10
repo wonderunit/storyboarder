@@ -4431,7 +4431,7 @@ const importImage = async imageDataURL => {
     [storyboarderSketchPane.sketchPane.width, storyboarderSketchPane.sketchPane.height],
     imageDataURL
   )
-  let image = await exporterCommon.getImage(imageDataURL)
+  let image = await exporterCommon.getImage(resizedImageDataUrl)
 
   // TODO should we use storyboarderSketchPane.replaceLayers ?
   storeUndoStateForImage(true, LAYER_INDEX_REFERENCE)
