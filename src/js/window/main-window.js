@@ -1821,10 +1821,17 @@ let newBoard = async (position, shouldAddToUndoStack = true) => {
 // - PNG
 // - PSD, must have a layer named 'reference' (unless importTargetLayer preference is set to load a different one)
 //
+// TODO support EXIF orientation
 let insertNewBoardsWithFiles = async filepaths => {
+  console.log('main-window#insertNewBoardsWithFiles')
+
   // TODO saveImageFile() first?
 
-  let count = filepaths.length
+  // TODO when would importTargetLayer not be 'reference'?
+  // TODO insertNewBoardsWithFiles only supports reference and main anyway
+  const targetLayer = prefsModule.getPrefs('main')['importTargetLayer'] || 'reference'
+
+  const count = filepaths.length
   notifications.notify({
     message: `Importing ${count} image${count !== 1 ? 's' : ''}.\nPlease wait …`,
     timing: 2
@@ -1832,90 +1839,58 @@ let insertNewBoardsWithFiles = async filepaths => {
 
   let insertionIndex = currentBoard + 1
 
-  // TODO when do we ever have importTargetLayer set to anything but 'reference?'
-  let targetLayer = prefsModule.getPrefs('main')['importTargetLayer'] || 'reference'
-  let readerOptions = {
-    importTargetLayer: targetLayer
-  }
-
   let numAdded = 0
 
   for (let filepath of filepaths) {
-    // TODO
-    // TODO
-    // TODO
-    // TODO fix to handle PSDs using canvases
-    // TODO don't use getBase64TypeFromPhotoshopFilePath
-    // TODO
-    let imageData = FileHelper.getBase64ImageDataFromFilePath(filepath, readerOptions)
+    let imageData = FileHelper.getBase64ImageDataFromFilePath(
+      filepath,
+      {
+        importTargetLayer: targetLayer
+      }
+    )
+
     if (!imageData || !imageData[targetLayer]) {
-      notifications.notify({ message: `Oops! There was a problem importing ${filepath}`, timing: 10 })
+      console.error('Could not find imageData', { imageData, targetLayer })
+      notifications.notify({
+        message: `Oops! There was a problem importing ${filepath}. Try adding a layer named 'reference' for Storyboarder to import.`,
+        timing: 10
+      })
       return
     }
 
     try {
-      await new Promise((resolve, reject) => {
-        let image = new Image()
+      // resize image if too big
+      const datauri = await fitImageData(
+        [storyboarderSketchPane.sketchPane.width, storyboarderSketchPane.sketchPane.height],
+        imageData[targetLayer]
+      )
 
-        //
-        // TODO DRY this up
-        // TODO we have functions elsewhere that do a lot of this
-        //
-        image.onload = () => {
-          let board = insertNewBoardDataAtPosition(insertionIndex++)
+      let board = insertNewBoardDataAtPosition(insertionIndex)
 
-          // resize the image if it's too big.
-          let boardSize = storyboarderSketchPane.sketchPane.getCanvasSize()
-          if(boardSize.width < image.width) {
-            let scale = boardSize.width / image.width
-            image.width = scale * image.width
-            image.height = scale * image.height
-          }
-          if(boardSize.height < image.height) {
-            let scale = boardSize.height / image.height
-            image.width = scale * image.width
-            image.height = scale * image.height
-          }
+      let savePath
 
-          // TODO: try pooling
-          var canvas = document.createElement('canvas')
-          canvas.width = image.width
-          canvas.height = image.height
-          let context = canvas.getContext('2d')
-          context.drawImage(image, 0, 0, image.width, image.height)
-          var imageDataSized = canvas.toDataURL()
-          let savePath = board.url.replace('.png', '-reference.png')
-          if(targetLayer === "main") {
-            savePath = board.url
-          } else {
-            board.layers[targetLayer] = { "url": savePath }
-            // save out an empty main layer
-            saveDataURLtoFile((document.createElement('canvas')).toDataURL(), board.url)
-          }
-          saveDataURLtoFile(imageDataSized, savePath)
-
-          // thumbnail
-          const thumbnailHeight = 60
-          let thumbRatio = thumbnailHeight / boardSize.height
-          
-          image.width = (image.width / boardSize.width) * (thumbRatio * boardSize.width)
-          image.height = image.height / boardSize.height * 60
-          canvas.width = thumbRatio * boardSize.width
-          canvas.height = thumbnailHeight
-          context.drawImage(image, 0, 0, image.width, image.height)
-          var imageDataSized = canvas.toDataURL()
-          let thumbPath = board.url.replace('.png', '-thumbnail.png')
-          saveDataURLtoFile(imageDataSized, thumbPath)
-          numAdded++
-          resolve()
+      if (targetLayer === 'main') {
+        console.log('adding as main')
+        savePath = board.url
+      } else {
+        console.log('adding as reference')
+        savePath = board.url.replace('.png', '-reference.png')
+        // update the board data
+        board.layers.reference = {
+          url: savePath,
+          opacity: 1.0 // exporterCommon.DEFAULT_REFERENCE_LAYER_OPACITY
         }
+        // save a placeholder main layer
+        saveDataURLtoFile((document.createElement('canvas')).toDataURL(), board.url)
+      }
+      console.log('saving inserted board as', savePath)
+      saveDataURLtoFile(datauri, savePath)
+      await saveThumbnailFile(insertionIndex, { forceReadFromFiles: true })
 
-        image.onerror = event => {
-          reject(new Error(`Image file is missing or invalid`))
-        }
+      markBoardFileDirty() // save new board data
 
-        image.src = imageData[targetLayer]
-      })
+      insertionIndex++
+      numAdded++
     } catch (error) {
       console.error('Got error', error)
       notifications.notify({
@@ -1933,7 +1908,6 @@ let insertNewBoardsWithFiles = async filepaths => {
   //   markImageFileDirty([LAYER_INDEX_MAIN])
   // }
 
-  markBoardFileDirty() // to save new board data
   renderThumbnailDrawer()
 
   notifications.notify({
@@ -2345,9 +2319,7 @@ const refreshLinkedBoardByFilename = async filename => {
   console.log('\treading', path.join(boardPath, 'images', board.link))
 
   canvases = FileHelper.readPhotoshopLayersAsCanvases(
-    path.join(boardPath, 'images', board.link),
-    storyboarderSketchPane.sketchPane.width,
-    storyboarderSketchPane.sketchPane.height
+    path.join(boardPath, 'images', board.link)
   )
 
   if (!canvases || !canvases.main) {

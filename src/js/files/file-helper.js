@@ -39,104 +39,113 @@ let getBase64TypeFromFilePath = (type, filepath) => {
   return `data:image/${type};base64,${data}`
 }
 
-let getBase64TypeFromPhotoshopFilePath = (filepath, options) => {
-  throw new Error('getBase64TypeFromPhotoshopFilePath is deprecated. use readPhotoshopLayersAsCanvases instead')
-
-  if (!fs.existsSync(filepath)) return null
-
-  initializeCanvas((width, height) => {
-        let canvas = document.createElement('canvas');
-        canvas.width = width;
-        canvas.height = height;
-        return canvas;
-      });
-  
-  let psd
-  try {
-    const buffer = fs.readFileSync(filepath)
-    psd = readPsd(buffer)
-  } catch(exception) {
-    console.error(exception)
-    return null
-  }
-
-  if(!psd || !psd.children) {
-    return;
-  }
-
-  let mainCanvas = options.mainCanvas 
-  if(!mainCanvas) {
-    mainCanvas = document.createElement('canvas')
-    mainCanvas.width = psd.width
-    mainCanvas.height = psd.height
-  }
-  let mainContext = mainCanvas.getContext('2d');
-  mainContext.clearRect(0, 0, mainCanvas.width, mainCanvas.height)
-
-  let notesCanvas = options.notesCanvas
-  if(!notesCanvas) {
-    notesCanvas = document.createElement('canvas')
-    notesCanvas.width = psd.width
-    notesCanvas.height = psd.height
-  }
-  let notesContext = notesCanvas.getContext('2d');
-  notesContext.clearRect(0, 0, notesCanvas.width, notesCanvas.height)
-
-  let referenceCanvas = options.referenceCanvas
-  if(!referenceCanvas) {
-    referenceCanvas = document.createElement('canvas')
-    referenceCanvas.width = psd.width
-    referenceCanvas.height = psd.height
-  }
-  let referenceContext = referenceCanvas.getContext('2d')
-  referenceContext.clearRect(0, 0, referenceCanvas.width, referenceCanvas.height)
-
-  let numChannelValues = (1 << psd.bitsPerChannel) - 1
-
-  // return target based on layer name (used for root)
-  let targetFromLayerName = layer => {
-    switch (layer.name) {
-      case "notes":
-        return notesContext
-        break
-      case "reference":
-        return referenceContext
-        break
-      default:
-        return mainContext
-        break
-    }
-  }
-  // return target which is always Storyboarder’s 'main' layer (used for all children, e.g.: in folders)
-  let targetAlwaysMain = () => mainContext
-
-  let addLayersRecursively = (children, getTargetContext = targetFromLayerName) => {
-    for (let layer of children) {
-      if (
-        !layer.hidden &&                          // it's not hidden
-        layer.canvas &&                           // it has a canvas
-        layer.name.indexOf('Background') === -1   // it's not named as the Background layer
-      ) {
-        let targetContext = getTargetContext(layer)
-        targetContext.globalAlpha = layer.opacity / numChannelValues
-        targetContext.drawImage(layer.canvas, layer.left, layer.top)
-      }
-
-      if (layer.children) {
-        addLayersRecursively(layer.children, targetAlwaysMain)
-      }
-    }
-  }
-  addLayersRecursively(psd.children)
-
+const getBase64TypeFromPhotoshopFilePath = (filepath, options) => {
+  const canvases = readPhotoshopLayersAsCanvases(filepath)
   return {
-    main: mainCanvas.toDataURL(),
-    notes: notesCanvas.toDataURL(),
-    reference: referenceCanvas.toDataURL()
+    main: canvases.main && canvases.main.toDataURL(),
+    notes: canvases.notes && canvases.notes.toDataURL(),
+    reference: canvases.reference && canvases.reference.toDataURL()
   }
 }
 
-let readPhotoshopLayersAsCanvases = (filepath, width, height) => {
+// let getBase64TypeFromPhotoshopFilePath = (filepath, options) => {
+//   throw new Error('getBase64TypeFromPhotoshopFilePath is deprecated. use readPhotoshopLayersAsCanvases instead')
+// 
+//   if (!fs.existsSync(filepath)) return null
+// 
+//   initializeCanvas((width, height) => {
+//         let canvas = document.createElement('canvas');
+//         canvas.width = width;
+//         canvas.height = height;
+//         return canvas;
+//       });
+// 
+//   let psd
+//   try {
+//     const buffer = fs.readFileSync(filepath)
+//     psd = readPsd(buffer)
+//   } catch(exception) {
+//     console.error(exception)
+//     return null
+//   }
+// 
+//   if(!psd || !psd.children) {
+//     return;
+//   }
+// 
+//   let mainCanvas = options.mainCanvas 
+//   if(!mainCanvas) {
+//     mainCanvas = document.createElement('canvas')
+//     mainCanvas.width = psd.width
+//     mainCanvas.height = psd.height
+//   }
+//   let mainContext = mainCanvas.getContext('2d');
+//   mainContext.clearRect(0, 0, mainCanvas.width, mainCanvas.height)
+// 
+//   let notesCanvas = options.notesCanvas
+//   if(!notesCanvas) {
+//     notesCanvas = document.createElement('canvas')
+//     notesCanvas.width = psd.width
+//     notesCanvas.height = psd.height
+//   }
+//   let notesContext = notesCanvas.getContext('2d');
+//   notesContext.clearRect(0, 0, notesCanvas.width, notesCanvas.height)
+// 
+//   let referenceCanvas = options.referenceCanvas
+//   if(!referenceCanvas) {
+//     referenceCanvas = document.createElement('canvas')
+//     referenceCanvas.width = psd.width
+//     referenceCanvas.height = psd.height
+//   }
+//   let referenceContext = referenceCanvas.getContext('2d')
+//   referenceContext.clearRect(0, 0, referenceCanvas.width, referenceCanvas.height)
+// 
+//   let numChannelValues = (1 << psd.bitsPerChannel) - 1
+// 
+//   // return target based on layer name (used for root)
+//   let targetFromLayerName = layer => {
+//     switch (layer.name) {
+//       case "notes":
+//         return notesContext
+//         break
+//       case "reference":
+//         return referenceContext
+//         break
+//       default:
+//         return mainContext
+//         break
+//     }
+//   }
+//   // return target which is always Storyboarder’s 'main' layer (used for all children, e.g.: in folders)
+//   let targetAlwaysMain = () => mainContext
+// 
+//   let addLayersRecursively = (children, getTargetContext = targetFromLayerName) => {
+//     for (let layer of children) {
+//       if (
+//         !layer.hidden &&                          // it's not hidden
+//         layer.canvas &&                           // it has a canvas
+//         layer.name.indexOf('Background') === -1   // it's not named as the Background layer
+//       ) {
+//         let targetContext = getTargetContext(layer)
+//         targetContext.globalAlpha = layer.opacity / numChannelValues
+//         targetContext.drawImage(layer.canvas, layer.left, layer.top)
+//       }
+// 
+//       if (layer.children) {
+//         addLayersRecursively(layer.children, targetAlwaysMain)
+//       }
+//     }
+//   }
+//   addLayersRecursively(psd.children)
+// 
+//   return {
+//     main: mainCanvas.toDataURL(),
+//     notes: notesCanvas.toDataURL(),
+//     reference: referenceCanvas.toDataURL()
+//   }
+// }
+
+let readPhotoshopLayersAsCanvases = filepath => {
   console.log('FileHelper#readPhotoshopLayersAsCanvases')
 
   if (!fs.existsSync(filepath)) return
@@ -161,15 +170,28 @@ let readPhotoshopLayersAsCanvases = (filepath, width, height) => {
     return
   }
 
-  if (!psd || !psd.children) {
+  if (!psd) {
+    console.warn('PSD is invalid', psd)
     return
   }
+
+  console.log('got psd', psd)
 
   let numChannelValues = (1 << psd.bitsPerChannel) - 1
 
   let canvases = { }
 
-  let addLayersRecursively = (children, root) => {
+  const canvasNameForLayer = name => {
+    name = name.toLowerCase()
+    if (name === 'reference' || name === 'notes') {
+      return name
+    } else {
+      return 'main'
+    }
+  }
+
+  const addLayersRecursively = (children, root) => {
+    console.log('addLayersRecursively adding', children.length, 'layers')
     for (let layer of children) {
       if (
         // not hidden
@@ -179,12 +201,12 @@ let readPhotoshopLayersAsCanvases = (filepath, width, height) => {
         // not named "Background"
         layer.name.indexOf('Background') === -1
       ) {
-        let name = root ? layer.name : 'main'
+        let name = root ? canvasNameForLayer(layer.name) : 'main'
         if (!canvases[name]) {
           console.log('\tadding canvas', name)
           canvases[name] = document.createElement('canvas')
-          canvases[name].width = width
-          canvases[name].height = height
+          canvases[name].width = psd.width
+          canvases[name].height = psd.height
         }
         let canvas = canvases[name]
         let context = canvas.getContext('2d')
@@ -202,7 +224,14 @@ let readPhotoshopLayersAsCanvases = (filepath, width, height) => {
       }
     }
   }
-  addLayersRecursively(psd.children, true)
+
+  if (psd.children) {
+    // PSD with multiple layers
+    addLayersRecursively(psd.children, true)
+  } else {
+    // PSD with a single layer
+    canvases.reference = psd.canvas
+  }
 
   return canvases
 }
