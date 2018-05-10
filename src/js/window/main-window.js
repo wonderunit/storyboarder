@@ -1825,8 +1825,6 @@ let newBoard = async (position, shouldAddToUndoStack = true) => {
 let insertNewBoardsWithFiles = async filepaths => {
   console.log('main-window#insertNewBoardsWithFiles')
 
-  // TODO saveImageFile() first?
-
   // TODO when would importTargetLayer not be 'reference'?
   // TODO insertNewBoardsWithFiles only supports reference and main anyway
   const targetLayer = prefsModule.getPrefs('main')['importTargetLayer'] || 'reference'
@@ -1865,7 +1863,9 @@ let insertNewBoardsWithFiles = async filepaths => {
         imageData[targetLayer]
       )
 
+      storeUndoStateForScene(true)
       let board = insertNewBoardDataAtPosition(insertionIndex)
+      storeUndoStateForScene()
 
       let savePath
 
