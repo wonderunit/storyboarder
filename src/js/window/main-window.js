@@ -1934,11 +1934,11 @@ let insertNewBoardsWithFiles = async filepaths => {
   renderThumbnailDrawer()
 
   notifications.notify({
-    message:  `Imported ${numAdded} image${numAdded !== 1 ? 's':''}.\n\n` +
-              `The image${numAdded !== 1 ? 's are':' is'} on the reference layer, `+
-              `so you can draw over ${numAdded !== 1 ? 'them':'it'}. ` +
-              `If you'd like ${numAdded !== 1 ? 'them':'it'} to be the main layer, ` +
-              `you can merge ${numAdded !== 1 ? 'them':'it'} up on the sidebar`,
+    message: `Imported ${numAdded} image${numAdded !== 1 ? 's' : ''}.\n\n` +
+             `The image${numAdded !== 1 ? 's are' : ' is'} on the reference layer, ` +
+             `so you can draw over ${numAdded !== 1 ? 'them' : 'it'}. ` +
+             `If you'd like ${numAdded !== 1 ? 'them' : 'it'} to be the main layer, ` +
+             `you can merge ${numAdded !== 1 ? 'them' : 'it'} up on the sidebar`,
     timing: 10
   })
   sfx.positive()
