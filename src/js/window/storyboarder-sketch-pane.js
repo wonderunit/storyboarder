@@ -409,27 +409,24 @@ class StoryboarderSketchPane extends EventEmitter {
     }
   }
 
-  // TODO
-  // TODO
-  // TODO
-  onSketchPaneOnUp (...args) {
-    return
-    // quick erase : off
-    this.unsetQuickErase()
-
-    this.emit('onup', ...args)
-
-    // store snapshot on up?
-    // eraser : yes
-    // brushes: yes
-    if (this.isMultiLayerOperation) {
-      // trigger a save to any layer possibly changed by the operation
-      this.emit('markDirty', this.visibleLayersIndices)
-      this.isMultiLayerOperation = false
-    } else {
-      this.emit('markDirty', [this.sketchPane.getCurrentLayerIndex()])
-    }
-  }
+  // onSketchPaneOnUp (...args) {
+  //   return
+  //   // quick erase : off
+  //   this.unsetQuickErase()
+  // 
+  //   this.emit('onup', ...args)
+  // 
+  //   // store snapshot on up?
+  //   // eraser : yes
+  //   // brushes: yes
+  //   if (this.isMultiLayerOperation) {
+  //     // trigger a save to any layer possibly changed by the operation
+  //     this.emit('markDirty', this.visibleLayersIndices)
+  //     this.isMultiLayerOperation = false
+  //   } else {
+  //     this.emit('markDirty', [this.sketchPane.getCurrentLayerIndex()])
+  //   }
+  // }
 
   onKeyDown (e) {
     if (this.isCommandPressed('drawing:scale-mode')) {
