@@ -668,7 +668,7 @@ class TimelineView {
   // `etch.dom` helper in compiled JSX expressions by the `@jsx` pragma.
   render () {
 
-    console.log("asdfajsdhf kashdf kajhdsf ")
+    //console.log("RENDER IS BEING CALLED EVERY MOUSE UP. WTFFFFFF.")
 
     let boardsViews = this.scene.boards.map((board, index) =>
         etch.dom(BoardView, {

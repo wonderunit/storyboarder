@@ -28,8 +28,7 @@ class AudioPlayback {
   }
 
   getAudioBufferByFilename (filename) {
-    console.log(filename)
-    console.log(this.players._players)
+    // console.log("getAudioBufferByFilename is BEING CALLED A LOT!")
     if (this.players._players) {
       return this.players._players[filename].buffer
     }
