@@ -2829,7 +2829,7 @@ let renderMetaData = () => {
       document.querySelector('input[name="duration"]').value = boardData.boards[currentBoard].duration != null
         ? boardData.boards[currentBoard].duration
         : ''
-      document.querySelector('input[name="frames"]').value = msecsToFrames(boardModel.boardDuration(boardData, boardData.boards[currentBoard].duration))
+      document.querySelector('input[name="frames"]').value = msecsToFrames(boardData.boards[currentBoard].duration)
     } else {
       for (let input of editableInputs) {
         input.disabled = (input.name !== 'duration' && input.name !== 'frames')
