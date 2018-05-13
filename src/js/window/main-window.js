@@ -2534,8 +2534,8 @@ let deleteBoards = (args)=> {
     sfx.playEffect('trash')
     sfx.negative()
   } else {
-    sfx.error()
-    notifications.notify({message: "Cannot delete. You have to have at least one board, silly.", timing: 8})
+    // sfx.error()
+    // notifications.notify({message: "Cannot delete. You have to have at least one board, silly.", timing: 8})
   }
 }
 
