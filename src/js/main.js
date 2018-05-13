@@ -738,6 +738,7 @@ const createAndLoadScene = aspectRatio =>
     dialog.showSaveDialog({
       title: "New Storyboard",
       buttonLabel: "Create",
+      defaultPath: app.getPath('documents'),
     },
     async filename => {
       if (filename) {
