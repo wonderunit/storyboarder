@@ -65,13 +65,13 @@ class AudioFileControlView {
     // prevent during countdown and finalizing
     if (event.type === 'click' && this.state.mode === 'stopped') {
       this.recordButtonEl.removeEventListener('click', this.onRecordMouseEvent)
-      this.recordButtonEl.addEventListener('mousedown', this.onRecordMouseEvent)
+      this.recordButtonEl.addEventListener('pointerdown', this.onRecordMouseEvent)
       this.onStartRecord(event)
     }
 
     // prevent during countdown and finalizing
-    if (event.type === 'mousedown' && this.state.mode === 'recording') {
-      this.recordButtonEl.removeEventListener('mousedown', this.onRecordMouseEvent)
+    if (event.type === 'pointerdown' && this.state.mode === 'recording') {
+      this.recordButtonEl.removeEventListener('pointerdown', this.onRecordMouseEvent)
       this.onStopRecord(event)
 
       // wait for the next `click` ...
