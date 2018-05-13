@@ -38,7 +38,8 @@ const defaultPrefs = {
     skipBlankBoards: true
   },
 
-  enableBoardAudition: true
+  enableBoardAudition: true,
+  disablePenEraserDetection: false
 }
 
 // For slow computers, override the defaults here.
