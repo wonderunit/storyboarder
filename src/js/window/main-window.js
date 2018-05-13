@@ -2560,6 +2560,9 @@ let duplicateBoard = async () => {
   let boardDst = migrateBoards([util.stringifyClone(boardSrc)], insertAt)[0]
 
   // Per Taino's request, we are not duplicating some metadata
+
+  boardDst.audio = null
+  boardDst.newShot = false
   boardDst.dialogue = ''
   boardDst.action = ''
   boardDst.notes = ''
