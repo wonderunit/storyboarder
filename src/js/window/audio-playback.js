@@ -28,7 +28,11 @@ class AudioPlayback {
   }
 
   getAudioBufferByFilename (filename) {
-    return this.players._players[filename].buffer
+    console.log(filename)
+    console.log(this.players._players)
+    if (this.players._players) {
+      return this.players._players[filename].buffer
+    }
   }
 
   setBypassed (value) {
