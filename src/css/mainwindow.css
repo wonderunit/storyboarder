@@ -445,6 +445,15 @@ body::-webkit-scrollbar {
   position:relative;
 }
 
+#board-metadata #suggested-dialogue-duration {
+  font-size: 12px;
+  opacity: 0.5;
+}
+
+#board-metadata #suggested-dialogue-duration:hover {
+  opacity: 0.8;
+}
+
 .inline {
   display: inline-block;
 }

@@ -757,8 +757,13 @@ const loadBoardUI = async () => {
       dragTarget.style.scrollBehavior = 'smooth'
     })
   }
-
   
+  document.querySelector('#suggested-dialogue-duration').addEventListener('pointerdown', (e)=>{
+    let board = boardData.boards[currentBoard]
+    board.duration = e.target.dataset.duration
+    renderMetaData()
+  })
+
     
     // for (var item of document.querySelectorAll('.thumbnail')) {
     //   item.classList.remove('active')
@@ -2858,7 +2863,10 @@ let renderMetaData = () => {
 
   if (boardData.boards[currentBoard].dialogue) {
     document.querySelector('textarea[name="dialogue"]').value = boardData.boards[currentBoard].dialogue
-    document.querySelector('#suggested-dialogue-duration').innerHTML = util.durationOfWords(boardData.boards[currentBoard].dialogue, 300)+300 + "ms"
+    let suggestionDuration = document.querySelector('#suggested-dialogue-duration')
+    let duration = util.durationOfWords(boardData.boards[currentBoard].dialogue, 300)+300
+    suggestionDuration.innerHTML = "// about " + (duration/1000) + " seconds"
+    suggestionDuration.dataset.duration = duration
   }
   renderCaption()
 
