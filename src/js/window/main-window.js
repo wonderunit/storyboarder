@@ -19,6 +19,8 @@ const observeStore = require('../shared/helpers/observeStore')
 
 
 const StoryboarderSketchPane = require('./storyboarder-sketch-pane')
+const { SketchPane } = require('alchemancy')
+const SketchPaneUtil = require('alchemancy').util
 const undoStack = require('../undo-stack')
 
 const Toolbar = require('./toolbar')
@@ -2399,7 +2401,7 @@ const renderThumbnailToNewCanvas = (index, options = { forceReadFromFiles: false
 
   if (!options.forceReadFromFiles && index === currentBoard) {
     // grab from current sketchpane (in memory)
-    let canvas = storyboarderSketchPane.sketchPane.constructor.utils.pixelsToCanvas(
+    let canvas = SketchPaneUtil.pixelsToCanvas(
       storyboarderSketchPane.sketchPane.extractThumbnailPixels(size[0], size[1], [0, 1, 3]), // HACK hardcoded
       size[0],
       size[1]
@@ -4569,7 +4571,7 @@ let copyBoards = () => {
         // image: nativeImage.createFromDataURL(canvas.toDataURL()),
         // TODO could try nativeImage.createFromBuffer and pass raw pixels?
         image: nativeImage.createFromDataURL(
-          storyboarderSketchPane.sketchPane.constructor.utils.pixelsToCanvas(
+          SketchPaneUtil.pixelsToCanvas(
             storyboarderSketchPane.sketchPane.extractThumbnailPixels(
               storyboarderSketchPane.sketchPane.width,
               storyboarderSketchPane.sketchPane.height,

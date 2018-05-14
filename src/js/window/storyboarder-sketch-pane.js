@@ -5,7 +5,8 @@ const { ipcRenderer, remote } = require('electron')
 const fs = require('fs')
 const path = require('path')
 
-const SketchPane = require('alchemancy')
+const { SketchPane } = require('alchemancy')
+const SketchPaneUtil = require('alchemancy').util
 
 const Brush = require('../sketch-pane/brush')
 const LineMileageCounter = require('./line-mileage-counter')
@@ -344,7 +345,7 @@ class StoryboarderSketchPane extends EventEmitter {
     let source = state.source
     // un-premultiply pixels, but only once
     if (source.premultiplied) {
-      this.sketchPane.constructor.utils.arrayPostDivide(source.pixels)
+      SketchPaneUtil.arrayPostDivide(source.pixels)
       // changes source, which is a reference to an to undostack state
       source.premultiplied = false
     }
@@ -352,7 +353,7 @@ class StoryboarderSketchPane extends EventEmitter {
     // TODO try directly creating texture from pixel data via texImage2D
     this.sketchPane.replaceLayer(
       source.index,
-      this.sketchPane.constructor.utils.pixelsToCanvas(
+      SketchPaneUtil.pixelsToCanvas(
         source.pixels,
         this.sketchPane.width,
         this.sketchPane.height
