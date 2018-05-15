@@ -52,6 +52,8 @@ class StoryboarderSketchPane extends EventEmitter {
     // NOTE sets DrawingStrategy
     // this.cancelTransform()
 
+    // a list of all the active layer indices
+    // for multi-erase, move, and scale, this is all the indices that will be stamped
     // HACK hardcoded
     this.visibleLayersIndices = [0, 1, 3] // reference, main, notes
 
@@ -1033,14 +1035,14 @@ class DrawingStrategy {
 
     if (!toolbarState.prevTool &&
         toolbarState.activeTool === 'eraser') {
-      // regular erase
-      options.erase = [0, 1, 3]
+      // regular eraser
+      options.erase = this.context.visibleLayersIndices
     } else {
       options = (e.buttons === 32 || this.context.isCommandPressed('drawing:quick-erase-modifier'))
         // is the shift key down?
         ? e.shiftKey
           // ... then, erase multiple layers
-          ? { erase: [0, 1, 3] } // HACK hardcoded
+          ? { erase: this.context.visibleLayersIndices }
           // ... otherwise, only erase current layer
           : { erase: [this.context.sketchPane.getCurrentLayerIndex()] }
         // not erasing
