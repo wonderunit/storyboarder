@@ -2020,7 +2020,11 @@ let saveDataURLtoFile = (dataURL, filename) => {
 // call it before changing boards to ensure the current work is saved
 //
 let saveImageFile = async () => {
+  console.log('main-window#saveImageFile')
+
   isSavingImageFile = true
+
+  let indexToSave = currentBoard
 
   // are we still drawing?
   if (storyboarderSketchPane.getIsDrawingOrStabilizing()) {
@@ -2031,9 +2035,76 @@ let saveImageFile = async () => {
     return
   }
 
+  const imagesPath = path.join(boardPath, 'images')
 
-  let board = boardData.boards[currentBoard]
+  let board = boardData.boards[indexToSave]
 
+  let numSaved = 0
+  for (let index of storyboarderSketchPane.visibleLayersIndices) {
+    if (storyboarderSketchPane.getLayerDirty(index)) {
+      let layer = storyboarderSketchPane.sketchPane.layers[index]
+      let filename = `board-${board.number}-${board.uid}-${layer.name}.png`
+
+      if (layer.name === 'main') {
+        console.log(`\tskipping layer 'main'`)
+        continue
+      }
+
+      // ensure board.layers exists
+      if (!board.layers) {
+        board.layers = {}
+        markBoardFileDirty()
+      }
+
+      // ensure board.layers[layer.name] exists
+      if (!board.layers[layer.name]) {
+        console.log(`\tadding layer “${layer.name}” to board data`)
+        board.layers[layer.name] = {
+          url: filename,
+
+          // special case for reference layer
+          // initialize the opacity from the LayersEditor's current value
+          // TODO keep the temp ref opacity val somewhere useful
+          opacity: (index === storyboarderSketchPane.sketchPane.layers.findByName('reference').index)
+            ? layersEditor.getReferenceOpacity()
+            : undefined
+        }
+        markBoardFileDirty()
+      }
+
+      let imageFilePath = path.join(imagesPath, filename)
+      console.log(`\tsaving layer “${layer.name}” to ${imageFilePath}`)
+      let imageData = storyboarderSketchPane.exportLayer(index, 'base64')
+      fs.writeFileSync(imageFilePath, imageData, 'base64')
+
+      storyboarderSketchPane.clearLayerDirty(index)
+
+      numSaved++
+    }
+  }
+
+  // TODO should we only clear the timeout if we saved at least one file?
+  clearTimeout(imageFileDirtyTimer)
+
+  saveBoardFile()
+
+  if (numSaved > 0) {
+    console.log(`\tsaved ${numSaved} modified layers`)
+  }
+
+  // create/update the thumbnail image file if necessary
+  if (numSaved > 0) {
+    // TODO can this be synchronous?
+    await saveThumbnailFile(indexToSave)
+    await updateThumbnailDisplayFromFile(indexToSave)
+    // TODO save a posterframe?
+  }
+
+  isSavingImageFile = false
+
+  return indexToSave
+
+  /*
   let layersData = [
     [1, 'main', board.url],
     [0, 'reference', board.url.replace('.png', '-reference.png')],
@@ -2103,6 +2174,7 @@ let saveImageFile = async () => {
   isSavingImageFile = false
 
   return indexToSave
+  */
 }
 
 let openInEditor = async () => {
@@ -3034,103 +3106,147 @@ let previousScene = ()=> {
   }
 }
 
-let updateSketchPaneBoard = () => {
-  // TODO refactor
-  return new Promise((resolve, reject) => {
-    // get current board
-    let board = boardData.boards[currentBoard]
 
-    // always load the main layer
-    let layersData = [
-      [storyboarderSketchPane.sketchPane.layers.findByName('main').index, board.url]
-    ]
-    // load other layers when available
-    if (board.layers) {
-      if (board.layers.reference && board.layers.reference.url) {
-        layersData.push([storyboarderSketchPane.sketchPane.layers.findByName('reference').index, board.layers.reference.url])
-      }
-      if (board.layers.notes && board.layers.notes.url) {
-        layersData.push([storyboarderSketchPane.sketchPane.layers.findByName('notes').index, board.layers.notes.url])
-      }
+// TODO etags?
+const updateSketchPaneBoard = async () => {
+  // get current board
+  let board = boardData.boards[currentBoard]
+
+  const imagesPath = path.join(boardPath, 'images')
+
+  // TODO load a posterframe?
+
+  for (let index of storyboarderSketchPane.visibleLayersIndices) {
+    let layer = storyboarderSketchPane.sketchPane.layers[index]
+
+    // TODO performance :/
+    let image
+    if (board.layers && board.layers[layer.name] && board.layers[layer.name].url) {
+      let filepath = path.join(imagesPath, board.layers[layer.name].url + '?' + Math.random())
+      image = await exporterCommon.getImage(filepath)
     }
-
-
-    let loaders = []
-    for (let [index, filename] of layersData) {
-      loaders.push(new Promise((resolve, reject) => {
-        let imageFilePath = path.join(boardPath, 'images', filename)
-        try {
-          if (fs.existsSync(imageFilePath)) {
-            let image = new Image()
-            image.onload = () => {
-              // draw
-              resolve([index, image])
-            }
-            image.onerror = () => {
-              // clear
-              console.warn('updateSketchPaneBoard could not load', filename)
-              resolve([index, null])
-            }
-            image.src = imageFilePath + '?' + Math.random()
-          } else {
-            // clear
-            resolve([index, null])
-          }
-        } catch (err) {
-          // clear
-          resolve([index, null])
-        }
-      }))
+    if (image) {
+      storyboarderSketchPane.sketchPane.replaceLayer(index, image)
+    } else {        
+      storyboarderSketchPane.clearLayer(index)
     }
+  }
 
-    Promise.all(loaders).then(result => {
-      // key map for easier lookup
-      let layersToDrawByIndex = []
-      for (let [index, image] of result) {
-        if (image) {
-          layersToDrawByIndex[index] = image
-        }
-      }
+  // if a link exists, lock the board
+  storyboarderSketchPane.setIsLocked(board.link != null)
 
-      // loop through ALL visible layers
-      for (let index of storyboarderSketchPane.visibleLayersIndices) {
-        let image = layersToDrawByIndex[index]
+  // load opacity from data, if data exists
+  let referenceOpacity = board.layers &&
+                         board.layers.reference &&
+                         typeof board.layers.reference.opacity !== 'undefined'
+    ? board.layers.reference.opacity
+    : exporterCommon.DEFAULT_REFERENCE_LAYER_OPACITY
+  layersEditor.setReferenceOpacity(referenceOpacity)
 
-        // let context = storyboarderSketchPane.getLayerCanvas(index).getContext('2d')
-        // context.globalAlpha = 1
-
-        // do we have an image for this particular layer index?
-        if (image) {
-          // console.log('rendering layer index:', index)
-          storyboarderSketchPane.sketchPane.replaceLayer(index, image)
-        } else {
-          // console.log('clearing layer index:', index)
-          storyboarderSketchPane.clearLayer(index)
-        }
-      }
-
-      storyboarderSketchPane.setIsLocked(board.link != null)
-
-      // load opacity from data, if data exists
-      let referenceOpacity = board.layers &&
-                             board.layers.reference &&
-                             typeof board.layers.reference.opacity !== 'undefined'
-        ? board.layers.reference.opacity
-        : exporterCommon.DEFAULT_REFERENCE_LAYER_OPACITY
-      layersEditor.setReferenceOpacity(referenceOpacity)
-
-      onionSkin.setState({
-        pathToImages: path.join(boardPath, 'images'),
-        currBoard: boardData.boards[currentBoard],
-        prevBoard: boardData.boards[currentBoard - 1],
-        nextBoard: boardData.boards[currentBoard + 1],
-        enabled: store.getState().toolbar.onion
-      })
-
-      resolve()
-    }).catch(err => console.warn(err))
+  // configure onion skin
+  onionSkin.setState({
+    pathToImages: path.join(boardPath, 'images'),
+    currBoard: boardData.boards[currentBoard],
+    prevBoard: boardData.boards[currentBoard - 1],
+    nextBoard: boardData.boards[currentBoard + 1],
+    enabled: store.getState().toolbar.onion
   })
 }
+  // return new Promise((resolve, reject) => {
+  //   // get current board
+  //   let board = boardData.boards[currentBoard]
+  // 
+  //   // always load the main layer
+  //   let layersData = [
+  //     [storyboarderSketchPane.sketchPane.layers.findByName('main').index, board.url]
+  //   ]
+  //   // load other layers when available
+  //   if (board.layers) {
+  //     if (board.layers.reference && board.layers.reference.url) {
+  //       layersData.push([storyboarderSketchPane.sketchPane.layers.findByName('reference').index, board.layers.reference.url])
+  //     }
+  //     if (board.layers.notes && board.layers.notes.url) {
+  //       layersData.push([storyboarderSketchPane.sketchPane.layers.findByName('notes').index, board.layers.notes.url])
+  //     }
+  //   }
+  // 
+  // 
+  //   let loaders = []
+  //   for (let [index, filename] of layersData) {
+  //     loaders.push(new Promise((resolve, reject) => {
+  //       let imageFilePath = path.join(boardPath, 'images', filename)
+  //       try {
+  //         if (fs.existsSync(imageFilePath)) {
+  //           let image = new Image()
+  //           image.onload = () => {
+  //             // draw
+  //             resolve([index, image])
+  //           }
+  //           image.onerror = () => {
+  //             // clear
+  //             console.warn('updateSketchPaneBoard could not load', filename)
+  //             resolve([index, null])
+  //           }
+  //           image.src = imageFilePath + '?' + Math.random()
+  //         } else {
+  //           // clear
+  //           resolve([index, null])
+  //         }
+  //       } catch (err) {
+  //         // clear
+  //         resolve([index, null])
+  //       }
+  //     }))
+  //   }
+  // 
+  //   Promise.all(loaders).then(result => {
+  //     // key map for easier lookup
+  //     let layersToDrawByIndex = []
+  //     for (let [index, image] of result) {
+  //       if (image) {
+  //         layersToDrawByIndex[index] = image
+  //       }
+  //     }
+  // 
+  //     // loop through ALL visible layers
+  //     for (let index of storyboarderSketchPane.visibleLayersIndices) {
+  //       let image = layersToDrawByIndex[index]
+  // 
+  //       // let context = storyboarderSketchPane.getLayerCanvas(index).getContext('2d')
+  //       // context.globalAlpha = 1
+  // 
+  //       // do we have an image for this particular layer index?
+  //       if (image) {
+  //         // console.log('rendering layer index:', index)
+  //         storyboarderSketchPane.sketchPane.replaceLayer(index, image)
+  //       } else {
+  //         // console.log('clearing layer index:', index)
+  //         storyboarderSketchPane.clearLayer(index)
+  //       }
+  //     }
+  // 
+  //     storyboarderSketchPane.setIsLocked(board.link != null)
+  // 
+  //     // load opacity from data, if data exists
+  //     let referenceOpacity = board.layers &&
+  //                            board.layers.reference &&
+  //                            typeof board.layers.reference.opacity !== 'undefined'
+  //       ? board.layers.reference.opacity
+  //       : exporterCommon.DEFAULT_REFERENCE_LAYER_OPACITY
+  //     layersEditor.setReferenceOpacity(referenceOpacity)
+  // 
+  //     onionSkin.setState({
+  //       pathToImages: path.join(boardPath, 'images'),
+  //       currBoard: boardData.boards[currentBoard],
+  //       prevBoard: boardData.boards[currentBoard - 1],
+  //       nextBoard: boardData.boards[currentBoard + 1],
+  //       enabled: store.getState().toolbar.onion
+  //     })
+  // 
+  //     resolve()
+  //   }).catch(err => console.warn(err))
+  // })
+// }
 
 let renderThumbnailDrawerSelections = () => {
   renderSceneTimeline()
