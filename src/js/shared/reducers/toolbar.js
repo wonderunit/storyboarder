@@ -19,7 +19,7 @@ const initialState = {
       opacity: 0.7,
       palette: [0x4DABF5, 0x607D8B, 0x9E9E9E],
 
-      defaultLayerName: 'main' // 'fill'
+      defaultLayerName: 'fill'
     },
     'tone': {
       name: 'tone',
@@ -28,7 +28,7 @@ const initialState = {
       opacity: 0.15,
       palette: [0x162A3F, 0x162A3F, 0x162A3F],
 
-      defaultLayerName: 'main' // 'tone'
+      defaultLayerName: 'tone'
     },
     'pencil': {
       name: 'pencil',
@@ -37,7 +37,7 @@ const initialState = {
       opacity: 0.45,
       palette: [0x373737, 0x223131, 0x121212],
 
-      defaultLayerName: 'main' // 'pencil'
+      defaultLayerName: 'pencil'
     },
     'pen': {
       name: 'pen',
@@ -46,7 +46,7 @@ const initialState = {
       opacity: 0.9,
       palette: [0x373737, 0x223131, 0x000000],
 
-      defaultLayerName: 'main' // 'ink'
+      defaultLayerName: 'ink'
     },
     'note-pen': {
       name: 'note-pen',

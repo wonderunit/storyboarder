@@ -127,26 +127,37 @@ class StoryboarderSketchPane extends EventEmitter {
 
     // 0 = reference
     this.sketchPane.newLayer({ name: 'reference' })
-    // 1 = main
+    // 1 = main (DEPRECATED)
     this.sketchPane.newLayer({ name: 'main' })
-    // 2 = onion skin
+    // 2 = fill
+    this.sketchPane.newLayer({ name: 'fill' })
+    // 3 = tone
+    this.sketchPane.newLayer({ name: 'tone' })
+    // 4 = pencil
+    this.sketchPane.newLayer({ name: 'pencil' })
+    // 5 = ink
+    this.sketchPane.newLayer({ name: 'ink' })
+    // 6 = onion
     this.sketchPane.newLayer({ name: 'onion' })
-    // 3 = notes
+    // 7 = notes
     this.sketchPane.newLayer({ name: 'notes' })
-    // 4 = guides
+    // 8 = guides
     this.sketchPane.newLayer({ name: 'guides' })
-    // 5 = composite
+    // 9 = composite
     this.sketchPane.newLayer({ name: 'composite' })
 
     this.sketchPane.setCurrentLayerIndex(
-      this.sketchPane.layers.findByName('main').index
+      this.sketchPane.layers.findByName('fill').index
     )
 
     // a list of all the active layer indices
     // for multi-erase, move, and scale, this is all the indices that will be stamped
     this.visibleLayersIndices = [
       this.sketchPane.layers.findByName('reference').index,
-      this.sketchPane.layers.findByName('main').index,
+      this.sketchPane.layers.findByName('fill').index,
+      this.sketchPane.layers.findByName('tone').index,
+      this.sketchPane.layers.findByName('pencil').index,
+      this.sketchPane.layers.findByName('ink').index,
       this.sketchPane.layers.findByName('notes').index
     ]
 
