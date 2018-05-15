@@ -1225,6 +1225,8 @@ class MovingStrategy {
     this._onPointerDown = this._onPointerDown.bind(this)
     this._onPointerMove = this._onPointerMove.bind(this)
     this._onPointerUp = this._onPointerUp.bind(this)
+
+    this._onWindowBlur = this._onWindowBlur.bind(this)
   }
 
   startup () {
@@ -1245,6 +1247,8 @@ class MovingStrategy {
     this.context.sketchPaneDOMElement.addEventListener('pointerdown', this._onPointerDown)
     this.context.sketchPaneDOMElement.addEventListener('pointerup', this._onPointerUp)
 
+    window.addEventListener('blur', this._onWindowBlur)
+
     this.context.sketchPane.app.view.style.cursor = 'move'
     this.context.sketchPane.cursor.setEnabled(false)
   }
@@ -1257,6 +1261,8 @@ class MovingStrategy {
     this.context.sketchPaneDOMElement.removeEventListener('pointerdown', this._onPointerDown)
     this.context.sketchPaneDOMElement.removeEventListener('pointermove', this._onPointerMove)
     this.context.sketchPaneDOMElement.removeEventListener('pointerup', this._onPointerUp)
+
+    window.removeEventListener('blur', this._onWindowBlur)
 
     this.context.sketchPane.app.view.style.cursor = 'auto'
     this.context.sketchPane.cursor.setEnabled(true)
@@ -1300,6 +1306,11 @@ class MovingStrategy {
   _onPointerUp (e) {
     this._stamp()
     this.context.sketchPaneDOMElement.removeEventListener('pointermove', this._onPointerMove)
+  }
+
+  _onWindowBlur () {
+    // attempt to gracefully transition back to drawing
+    this.context.store.dispatch({ type: 'TOOLBAR_MODE_SET', payload: 'drawing', meta: { scope: 'local' } })
   }
 
   _render () {
