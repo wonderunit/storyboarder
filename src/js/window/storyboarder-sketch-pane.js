@@ -983,9 +983,9 @@ class DrawingStrategy {
   }
 
   startup () {
-    window.addEventListener('pointerdown', this._onPointerDown)
-    window.addEventListener('pointermove', this._onPointerMove)
-    window.addEventListener('pointerup', this._onPointerUp)
+    this.context.sketchPaneDOMElement.addEventListener('pointerdown', this._onPointerDown)
+    this.context.sketchPaneDOMElement.addEventListener('pointermove', this._onPointerMove)
+    this.context.sketchPaneDOMElement.addEventListener('pointerup', this._onPointerUp)
     window.addEventListener('keyup', this._onKeyUp)
   }
 
@@ -996,9 +996,9 @@ class DrawingStrategy {
     //   this.context.store.dispatch({ type: 'TOOLBAR_MODE_STATUS_SET', payload: 'idle', meta: { scope: 'local' } })
     // }
 
-    window.removeEventListener('pointerdown', this._onPointerDown)
-    window.removeEventListener('pointermove', this._onPointerMove)
-    window.removeEventListener('pointerup', this._onPointerUp)
+    this.context.sketchPaneDOMElement.removeEventListener('pointerdown', this._onPointerDown)
+    this.context.sketchPaneDOMElement.removeEventListener('pointermove', this._onPointerMove)
+    this.context.sketchPaneDOMElement.removeEventListener('pointerup', this._onPointerUp)
     window.removeEventListener('keyup', this._onKeyUp)
 
     this.context.sketchPane.app.view.style.cursor = 'auto'
@@ -1230,8 +1230,8 @@ class MovingStrategy {
       stamped: false
     }
 
-    window.addEventListener('pointerdown', this._onPointerDown)
-    window.addEventListener('pointerup', this._onPointerUp)
+    this.context.sketchPaneDOMElement.addEventListener('pointerdown', this._onPointerDown)
+    this.context.sketchPaneDOMElement.addEventListener('pointerup', this._onPointerUp)
 
     this.context.sketchPane.app.view.style.cursor = 'move'
     this.context.sketchPane.cursor.setEnabled(false)
@@ -1242,9 +1242,9 @@ class MovingStrategy {
       this._stamp()
     }
 
-    window.removeEventListener('pointerdown', this._onPointerDown)
-    window.removeEventListener('pointermove', this._onPointerMove)
-    window.removeEventListener('pointerup', this._onPointerUp)
+    this.context.sketchPaneDOMElement.removeEventListener('pointerdown', this._onPointerDown)
+    this.context.sketchPaneDOMElement.removeEventListener('pointermove', this._onPointerMove)
+    this.context.sketchPaneDOMElement.removeEventListener('pointerup', this._onPointerUp)
 
     this.context.sketchPane.app.view.style.cursor = 'auto'
     this.context.sketchPane.cursor.setEnabled(true)
@@ -1253,7 +1253,7 @@ class MovingStrategy {
   _onPointerDown (e) {
     this.state.anchor = this.context.sketchPane.localizePoint(e)
     this.state.moved = false
-    window.addEventListener('pointermove', this._onPointerMove)
+    this.context.sketchPaneDOMElement.addEventListener('pointermove', this._onPointerMove)
   }
 
   _onPointerMove (e) {
@@ -1287,7 +1287,7 @@ class MovingStrategy {
 
   _onPointerUp (e) {
     this._stamp()
-    window.removeEventListener('pointermove', this._onPointerMove)
+    this.context.sketchPaneDOMElement.removeEventListener('pointermove', this._onPointerMove)
   }
 
   _render () {
@@ -1492,8 +1492,8 @@ class ScalingStrategy {
       stamped: false
     }
 
-    window.addEventListener('pointerdown', this._onPointerDown)
-    window.addEventListener('pointerup', this._onPointerUp)
+    this.context.sketchPaneDOMElement.addEventListener('pointerdown', this._onPointerDown)
+    this.context.sketchPaneDOMElement.addEventListener('pointerup', this._onPointerUp)
 
     this.context.sketchPane.app.view.style.cursor = 'ew-resize'
     this.context.sketchPane.cursor.setEnabled(false)
@@ -1504,9 +1504,9 @@ class ScalingStrategy {
       this._stamp()
     }
 
-    window.removeEventListener('pointerdown', this._onPointerDown)
-    window.removeEventListener('pointermove', this._onPointerMove)
-    window.removeEventListener('pointerup', this._onPointerUp)
+    this.context.sketchPaneDOMElement.removeEventListener('pointerdown', this._onPointerDown)
+    this.context.sketchPaneDOMElement.removeEventListener('pointermove', this._onPointerMove)
+    this.context.sketchPaneDOMElement.removeEventListener('pointerup', this._onPointerUp)
 
     this.context.sketchPane.app.view.style.cursor = 'auto'
     this.context.sketchPane.cursor.setEnabled(true)
@@ -1515,7 +1515,7 @@ class ScalingStrategy {
   _onPointerDown (e) {
     this.state.anchor = this.context.sketchPane.localizePoint(e)
     this.state.moved = false
-    window.addEventListener('pointermove', this._onPointerMove)
+    this.context.sketchPaneDOMElement.addEventListener('pointermove', this._onPointerMove)
   }
 
   _onPointerMove (e) {
@@ -1548,7 +1548,7 @@ class ScalingStrategy {
 
   _onPointerUp (e) {
     this._stamp()
-    window.removeEventListener('pointermove', this._onPointerMove)
+    this.context.sketchPaneDOMElement.removeEventListener('pointermove', this._onPointerMove)
   }
 
   _render () {
@@ -1748,9 +1748,9 @@ class LockedStrategy {
 
     this.context.containerEl.addEventListener('dblclick', this._onDblClick)
 
-    window.addEventListener('pointerdown', this._onPointerDown)
-    window.addEventListener('pointermove', this._onPointerMove)
-    window.addEventListener('pointerup', this._onPointerUp)
+    this.context.sketchPaneDOMElement.addEventListener('pointerdown', this._onPointerDown)
+    this.context.sketchPaneDOMElement.addEventListener('pointermove', this._onPointerMove)
+    this.context.sketchPaneDOMElement.addEventListener('pointerup', this._onPointerUp)
 
     this.context.sketchPane.cursor.setEnabled(false)
   }
@@ -1758,9 +1758,9 @@ class LockedStrategy {
   shutdown () {
     this.context.containerEl.removeEventListener('dblclick', this._onDblClick)
 
-    window.removeEventListener('pointerdown', this._onPointerDown)
-    window.removeEventListener('pointermove', this._onPointerMove)
-    window.removeEventListener('pointerup', this._onPointerUp)
+    this.context.sketchPaneDOMElement.removeEventListener('pointerdown', this._onPointerDown)
+    this.context.sketchPaneDOMElement.removeEventListener('pointermove', this._onPointerMove)
+    this.context.sketchPaneDOMElement.removeEventListener('pointerup', this._onPointerUp)
 
     this.context.sketchPane.cursor.setEnabled(true)
   }
@@ -1770,7 +1770,7 @@ class LockedStrategy {
     this.context.sketchPane.move(e)
 
     this._render()
-    window.addEventListener('pointermove', this._onPointerMove)
+    this.context.sketchPaneDOMElement.addEventListener('pointermove', this._onPointerMove)
   }
 
   _onPointerMove (e) {
@@ -1779,7 +1779,7 @@ class LockedStrategy {
 
   _onPointerUp (e) {
     this._render()
-    window.removeEventListener('pointermove', this._onPointerMove)
+    this.context.sketchPaneDOMElement.removeEventListener('pointermove', this._onPointerMove)
   }
 
   _render (e) {
