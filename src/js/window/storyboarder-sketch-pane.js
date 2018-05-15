@@ -52,8 +52,6 @@ class StoryboarderSketchPane extends EventEmitter {
     // NOTE sets DrawingStrategy
     // this.cancelTransform()
 
-    this.containerPadding = 100
-
     // HACK hardcoded
     this.visibleLayersIndices = [0, 1, 3] // reference, main, notes
 
@@ -121,7 +119,7 @@ class StoryboarderSketchPane extends EventEmitter {
     })
 
     this.sketchPaneDOMElement = this.sketchPane.getDOMElement()
-    this.resize()
+    // this.resize()
 
     // measure and update cached size data
     // this.updateContainerSize()
@@ -188,15 +186,6 @@ class StoryboarderSketchPane extends EventEmitter {
       true
     )
 
-    // TODO cleanup
-    // let ro = new window.ResizeObserver(entries => {
-    //   console.log('resize', entries[0].contentRect, this.containerEl)
-    //   const { width, height } = entries[0].contentRect
-    //   this.sketchPane.resize(width, height)
-    // })
-    // ro.observe(this.containerEl)
-    window.addEventListener('resize', e => this.resize())
-
     this.sketchPane.onStrokeBefore = strokeState =>
       this.emit('addToUndoStack', strokeState.layerIndices)
 
@@ -241,6 +230,11 @@ class StoryboarderSketchPane extends EventEmitter {
     }
 
     this.store.dispatch({ type: 'TOOLBAR_MODE_SET', payload: 'drawing', meta: { scope: 'local' } })
+
+    this.ro = new window.ResizeObserver(entries =>
+      this.resize(entries[0].contentRect.width, entries[0].contentRect.height)
+    )
+    this.ro.observe(this.containerEl)
 
     // add SketchPane to container
     this.containerEl.appendChild(this.sketchPaneDOMElement)
@@ -761,12 +755,16 @@ class StoryboarderSketchPane extends EventEmitter {
   //   this.brushPointerContainer.appendChild(brushPointer)
   // }
 
-  resize () {
+  resize (width, height) {
     // this.updateContainerSize()
     // this.renderContainerSize()
 
-    const { width, height } = this.containerEl.getBoundingClientRect()
-    this.sketchPane.resize(width - this.containerPadding, height - this.containerPadding)
+    // if (!(width || height)) {
+    //   let rect = this.containerEl.getBoundingClientRect()
+    //   width = rect.width
+    //   height = rect.height
+    // }
+    this.sketchPane.resize(width, height)
 
     // if (this.brush) {
     //   this.updatePointer()

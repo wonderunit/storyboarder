@@ -255,7 +255,7 @@ const load = async (event, args) => {
     log({ type: 'progress', message: 'Preparing to display' })
 
     resize()
-    storyboarderSketchPane.resize()
+    // storyboarderSketchPane.resize()
     await new Promise(resolve => setTimeout(resolve, 50)) // wait for the DOM to catch up to avoid FOUC
 
     ipcRenderer.send('workspaceReady')
@@ -536,7 +536,7 @@ const loadBoardUI = async () => {
 
   window.addEventListener('resize', () => {
     resize()
-    storyboarderSketchPane.resize()
+    // storyboarderSketchPane.resize()
   })
 
   window.ondragover = () => { return false }
@@ -4265,7 +4265,7 @@ let cycleViewMode = async (direction = +1) => {
         break
     }
   }
-  storyboarderSketchPane.resize()
+  // storyboarderSketchPane.resize()
   renderViewMode()
   renderStats()
 }
