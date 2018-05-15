@@ -78,29 +78,28 @@ class OnionSkin {
 
       // TODO refactor, unified loader
 
-      // HACK hardcoded
       let layersData = [
         // reference layer (if present)
         ...(board.layers && board.layers.reference)
-          ? [[0, board.layers.reference.url]]
+          ? [['reference', board.layers.reference.url]]
           : [],
       
         // always load the main layer
-        [1, board.url],
+        ['main', board.url],
       
         // notes layer (if present)
         ...(board.layers && board.layers.notes)
-          ? [[3, board.layers.notes.url]]
+          ? [['notes', board.layers.notes.url]]
           : [],
       ]
 
       let loaders = layersData.map(
-        ([index, filename]) =>
+        ([name, filename]) =>
           new Promise((resolve, reject) => {
             let imageFilePath = path.join(pathToImages, filename)
             let image = new Image()
-            image.onload = () => resolve([index, filename, image])
-            image.onerror = () => resolve([index, filename, null])
+            image.onload = () => resolve([name, filename, image])
+            image.onerror = () => resolve([name, filename, null])
             image.src = imageFilePath + '?' + Math.random()
           })
       )
@@ -110,9 +109,9 @@ class OnionSkin {
       // layer compositing
       this.tmpContext.save()
       this.tmpContext.clearRect(0, 0, this.width, this.height)
-      for (let [index, filename, image] of result) {
+      for (let [name, filename, image] of result) {
         if (image) {
-          this.tmpContext.globalAlpha = (index === 0 ? board.layers.reference.opacity : 1.0)
+          this.tmpContext.globalAlpha = (name === 'reference' ? board.layers.reference.opacity : 1.0)
           this.tmpContext.drawImage(image, 0, 0)
         }
       }

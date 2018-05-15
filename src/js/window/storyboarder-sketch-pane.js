@@ -14,8 +14,6 @@ const LineMileageCounter = require('./line-mileage-counter')
 const { createIsCommandPressed } = require('../utils/keytracker')
 const util = require('../utils')
 
-const { LAYER_NAME_BY_INDEX } = require('../constants')
-
 const observeStore = require('../shared/helpers/observeStore')
 
 const sfx = require('../wonderunit-sound')
@@ -51,11 +49,6 @@ class StoryboarderSketchPane extends EventEmitter {
 
     // NOTE sets DrawingStrategy
     // this.cancelTransform()
-
-    // a list of all the active layer indices
-    // for multi-erase, move, and scale, this is all the indices that will be stamped
-    // HACK hardcoded
-    this.visibleLayersIndices = [0, 1, 3] // reference, main, notes
 
     // this.compositeIndex = 5 // composite
 
@@ -132,14 +125,30 @@ class StoryboarderSketchPane extends EventEmitter {
     // this.sketchPane.on('onbeforeup', this.onSketchPaneBeforeUp.bind(this)) // MIGRATE
     // this.sketchPane.on('onup', this.onSketchPaneOnUp.bind(this)) // MIGRATE
 
-    this.sketchPane.newLayer() // reference
-    // this.sketchPane.fillLayer('#fff')
-    this.sketchPane.newLayer() // main
-    this.sketchPane.newLayer() // onion skin
-    this.sketchPane.newLayer() // notes
-    this.sketchPane.newLayer() // guides
-    this.sketchPane.newLayer() // composite
-    this.sketchPane.setCurrentLayerIndex(1)
+    // 0 = reference
+    this.sketchPane.newLayer({ name: 'reference' })
+    // 1 = main
+    this.sketchPane.newLayer({ name: 'main' })
+    // 2 = onion skin
+    this.sketchPane.newLayer({ name: 'onion' })
+    // 3 = notes
+    this.sketchPane.newLayer({ name: 'notes' })
+    // 4 = guides
+    this.sketchPane.newLayer({ name: 'guides' })
+    // 5 = composite
+    this.sketchPane.newLayer({ name: 'composite' })
+
+    this.sketchPane.setCurrentLayerIndex(
+      this.sketchPane.layers.findByName('main').index
+    )
+
+    // a list of all the active layer indices
+    // for multi-erase, move, and scale, this is all the indices that will be stamped
+    this.visibleLayersIndices = [
+      this.sketchPane.layers.findByName('reference').index,
+      this.sketchPane.layers.findByName('main').index,
+      this.sketchPane.layers.findByName('notes').index
+    ]
 
     // TODO minimum update (e.g.: maybe just cursor size?)
     // sync sketchpane to state
@@ -155,17 +164,9 @@ class StoryboarderSketchPane extends EventEmitter {
         // if we're not erasing ...
         if (toolbarState.activeTool !== 'eraser') {
           // ... set the current layer based on the active tool
-          switch (toolbarState.activeTool) {
-            case 'light-pencil':
-              this.sketchPane.setCurrentLayerIndex(0) // HACK hardcoded
-              break
-            case 'note-pen':
-              this.sketchPane.setCurrentLayerIndex(3) // HACK hardcoded
-              break
-            default:
-              this.sketchPane.setCurrentLayerIndex(1) // HACK hardcoded
-              break
-          }
+          this.sketchPane.setCurrentLayerIndex(
+            this.sketchPane.layers.findByName(tool.defaultLayerName).index
+          )
         }
 
         if ((this.strategy && this.strategy.name) !== toolbarState.mode) {

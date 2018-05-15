@@ -78,15 +78,6 @@ if (prefsModule.getPrefs().toolbar) {
   })
 }
 
-const {
-  LAYER_INDEX_REFERENCE,
-  LAYER_INDEX_MAIN,
-  LAYER_INDEX_NOTES,
-  LAYER_INDEX_COMPOSITE,
-
-  LAYER_NAME_BY_INDEX
-} = require('../constants')
-
 const CanvasRecorder = require('../recording/canvas-recorder')
 const moment = require('moment')
 let isRecording = false
@@ -1056,8 +1047,9 @@ const loadBoardUI = async () => {
     height: storyboarderSketchPane.sketchPane.height,
     perspectiveGridFn: shotTemplateSystem.requestGrid.bind(shotTemplateSystem),
     onRender: guideCanvas => {
-      // HACK hardcoded
-      storyboarderSketchPane.sketchPane.layers[4].replaceTextureFromCanvas(
+      storyboarderSketchPane.sketchPane.layers[
+        storyboarderSketchPane.sketchPane.layers.findByName('guides').index
+      ].replaceTextureFromCanvas(
         guideCanvas
       )
     }
@@ -1066,13 +1058,17 @@ const loadBoardUI = async () => {
     width: storyboarderSketchPane.sketchPane.width,
     height: storyboarderSketchPane.sketchPane.height,
     onSetEnabled: value => {
-      // HACK hardcoded
-      storyboarderSketchPane.sketchPane.layers[2].setVisible(value)
+      storyboarderSketchPane.sketchPane.layers[
+        storyboarderSketchPane.sketchPane.layers.findByName('onion').index
+      ].setVisible(value)
     },
     onRender: onionSkinCanvas => {
-      storyboarderSketchPane.sketchPane.layers[2].sprite.blendMode = PIXI.BLEND_MODES.MULTIPLY
-      // HACK hardcoded
-      storyboarderSketchPane.sketchPane.layers[2].replaceTextureFromCanvas(
+      storyboarderSketchPane.sketchPane.layers[
+        storyboarderSketchPane.sketchPane.layers.findByName('onion').index
+      ].sprite.blendMode = PIXI.BLEND_MODES.MULTIPLY
+      storyboarderSketchPane.sketchPane.layers[
+        storyboarderSketchPane.sketchPane.layers.findByName('onion').index
+      ].replaceTextureFromCanvas(
         onionSkinCanvas
       )
     }
@@ -1102,25 +1098,29 @@ const loadBoardUI = async () => {
   layersEditor.on('opacity', opacity => {
     // should we update the value of the project data?
     let board = boardData.boards[currentBoard]
-    if (opacity.index === LAYER_INDEX_REFERENCE) {
+    if (opacity.index === storyboarderSketchPane.sketchPane.layers.findByName('reference').index) {
       if (board.layers && board.layers.reference && !util.isUndefined(board.layers.reference)) {
         if (board.layers.reference.opacity !== opacity.value) {
           // update data
           // layers are in data already, change data directly
           board.layers.reference.opacity = opacity.value
-          markImageFileDirty([LAYER_INDEX_REFERENCE])
+          markImageFileDirty([storyboarderSketchPane.sketchPane.layers.findByName('reference').index])
           markBoardFileDirty()
         }
       } else {
         // create data
         // need to create layers
-        markImageFileDirty([LAYER_INDEX_REFERENCE])
+        markImageFileDirty([storyboarderSketchPane.sketchPane.layers.findByName('reference').index])
       }
     }
   })
   storyboarderSketchPane.on('requestPointerDown', () => {
     // if artist is drawing on the reference layer, ensure it has opacity
-    if (store.getState().toolbar.activeTool === 'light-pencil' && storyboarderSketchPane.getLayerOpacity(0) === 0) { // HACK hardcoded index
+    if (
+      store.getState().toolbar.activeTool === 'light-pencil' && 
+      storyboarderSketchPane.getLayerOpacity(
+        storyboarderSketchPane.sketchPane.layers.findByName('reference').index) === 0
+      ) {
       layersEditor.setReferenceOpacity(exporterCommon.DEFAULT_REFERENCE_LAYER_OPACITY)
     }
   })
@@ -1394,10 +1394,10 @@ const loadBoardUI = async () => {
 
       if (!img) return
 
-      storyboarderSketchPane.replaceLayer(LAYER_INDEX_REFERENCE, img)
+      storyboarderSketchPane.replaceLayer(storyboarderSketchPane.sketchPane.layers.findByName('reference').index, img)
 
       // force a file save and thumbnail update
-      markImageFileDirty([LAYER_INDEX_REFERENCE])
+      markImageFileDirty([storyboarderSketchPane.sketchPane.layers.findByName('reference').index])
       saveImageFile()
     })
   } else {
@@ -1796,7 +1796,7 @@ let newBoard = async (position, shouldAddToUndoStack = true) => {
   //      (not the current board)
   // indicate dirty for save sweep
 
-  markImageFileDirty([1]) // 'main' layer is dirty // HACK hardcoded
+  markImageFileDirty([storyboarderSketchPane.sketchPane.layers.findByName('main').index]) // 'main' layer is dirty
   markBoardFileDirty() // board data is dirty
 
   // display blank thumbnail (file will not exist yet)
@@ -2056,14 +2056,14 @@ let saveImageFile = async () => {
         fs.writeFileSync(imageFilePath, imageData, 'base64')
 
         // add to boardData if it doesn't already exist
-        if (index !== LAYER_INDEX_MAIN) {
+        if (index !== storyboarderSketchPane.sketchPane.layers.findByName('main').index) {
           board.layers = board.layers || {}
 
           if (!board.layers[layerName]) {
             board.layers[layerName] = { url: filename }
 
             // special handling for reference layer
-            if (index === LAYER_INDEX_REFERENCE) {
+            if (index === storyboarderSketchPane.sketchPane.layers.findByName('reference').index) {
               let referenceOpacity = layersEditor.getReferenceOpacity()
               if (board.layers.reference.opacity !== referenceOpacity) {
                 // update the value
@@ -2402,7 +2402,7 @@ const renderThumbnailToNewCanvas = (index, options = { forceReadFromFiles: false
   if (!options.forceReadFromFiles && index === currentBoard) {
     // grab from current sketchpane (in memory)
     let canvas = SketchPaneUtil.pixelsToCanvas(
-      storyboarderSketchPane.sketchPane.extractThumbnailPixels(size[0], size[1], [0, 1, 3]), // HACK hardcoded
+      storyboarderSketchPane.sketchPane.extractThumbnailPixels(size[0], size[1], storyboarderSketchPane.visibleLayersIndices),
       size[0],
       size[1]
     )
@@ -3042,15 +3042,15 @@ let updateSketchPaneBoard = () => {
 
     // always load the main layer
     let layersData = [
-      [1, board.url] // HACK hardcoded index
+      [storyboarderSketchPane.sketchPane.layers.findByName('main').index, board.url]
     ]
     // load other layers when available
     if (board.layers) {
       if (board.layers.reference && board.layers.reference.url) {
-        layersData.push([0, board.layers.reference.url]) // HACK hardcoded index
+        layersData.push([storyboarderSketchPane.sketchPane.layers.findByName('reference').index, board.layers.reference.url])
       }
       if (board.layers.notes && board.layers.notes.url) {
-        layersData.push([3, board.layers.notes.url]) // HACK hardcoded index
+        layersData.push([storyboarderSketchPane.sketchPane.layers.findByName('notes').index, board.layers.notes.url])
       }
     }
 
@@ -3084,8 +3084,6 @@ let updateSketchPaneBoard = () => {
     }
 
     Promise.all(loaders).then(result => {
-      const visibleLayerIndexes = [0, 1, 3] // HACK hardcoded
-
       // key map for easier lookup
       let layersToDrawByIndex = []
       for (let [index, image] of result) {
@@ -3095,7 +3093,7 @@ let updateSketchPaneBoard = () => {
       }
 
       // loop through ALL visible layers
-      for (let index of visibleLayerIndexes) {
+      for (let index of storyboarderSketchPane.visibleLayersIndices) {
         let image = layersToDrawByIndex[index]
 
         // let context = storyboarderSketchPane.getLayerCanvas(index).getContext('2d')
@@ -3115,9 +3113,9 @@ let updateSketchPaneBoard = () => {
 
       // load opacity from data, if data exists
       let referenceOpacity = board.layers &&
-                             board.layers[LAYER_NAME_BY_INDEX[LAYER_INDEX_REFERENCE]] &&
-                             typeof board.layers[LAYER_NAME_BY_INDEX[LAYER_INDEX_REFERENCE]].opacity !== 'undefined'
-        ? board.layers[LAYER_NAME_BY_INDEX[LAYER_INDEX_REFERENCE]].opacity
+                             board.layers.reference &&
+                             typeof board.layers.reference.opacity !== 'undefined'
+        ? board.layers.reference.opacity
         : exporterCommon.DEFAULT_REFERENCE_LAYER_OPACITY
       layersEditor.setReferenceOpacity(referenceOpacity)
 
@@ -4440,14 +4438,14 @@ const importImage = async imageDataURL => {
   let image = await exporterCommon.getImage(resizedImageDataUrl)
 
   // TODO should we use storyboarderSketchPane.replaceLayers ?
-  storeUndoStateForImage(true, LAYER_INDEX_REFERENCE)
-  storyboarderSketchPane.sketchPane.layers[LAYER_INDEX_REFERENCE].replace(
+  storeUndoStateForImage(true, storyboarderSketchPane.sketchPane.layers.findByName('reference').index)
+  storyboarderSketchPane.sketchPane.layers[storyboarderSketchPane.sketchPane.layers.findByName('reference').index].replace(
     image,
     false
   )
-  storeUndoStateForImage(false, LAYER_INDEX_REFERENCE)
+  storeUndoStateForImage(false, storyboarderSketchPane.sketchPane.layers.findByName('reference').index)
 
-  markImageFileDirty([LAYER_INDEX_REFERENCE]) // HACK hardcoded
+  markImageFileDirty([storyboarderSketchPane.sketchPane.layers.findByName('reference').index])
   await saveImageFile()
   renderThumbnailDrawer()
 
@@ -4503,13 +4501,13 @@ let copyBoards = () => {
       let filepath = path.join(boardPath, 'images', board.url)
       let data = FileHelper.getBase64TypeFromFilePath('png', filepath)
       if (data) {
-        result[LAYER_INDEX_MAIN] = data
+        result[storyboarderSketchPane.sketchPane.layers.findByName('main').index] = data
       } else {
         console.warn("could not load image for board", board.url)
       }
 
       if (board.layers) {
-        for (let [layerName, sym] of [['reference', LAYER_INDEX_REFERENCE], ['notes', LAYER_INDEX_NOTES]]) { // HACK hardcoded
+        for (let [layerName, sym] of [['reference', storyboarderSketchPane.sketchPane.layers.findByName('reference').index], ['notes', storyboarderSketchPane.sketchPane.layers.findByName('notes').index]]) {
           if (board.layers[layerName]) {
             let filepath = path.join(boardPath, 'images', board.layers[layerName].url)
             let data = FileHelper.getBase64TypeFromFilePath('png', filepath)
@@ -4546,10 +4544,10 @@ let copyBoards = () => {
     let board = util.stringifyClone(boardData.boards[currentBoard])
 
     let imageData = {}
-    imageData[LAYER_INDEX_MAIN] = storyboarderSketchPane.sketchPane.layers[LAYER_INDEX_MAIN].toDataURL()
+    imageData[storyboarderSketchPane.sketchPane.layers.findByName('main').index] = storyboarderSketchPane.sketchPane.layers[storyboarderSketchPane.sketchPane.layers.findByName('main').index].toDataURL()
 
     if (board.layers) {
-      for (let [layerName, sym] of [['reference', LAYER_INDEX_REFERENCE], ['notes', LAYER_INDEX_NOTES]]) { // HACK hardcoded
+      for (let [layerName, sym] of [['reference', storyboarderSketchPane.sketchPane.layers.findByName('reference').index], ['notes', storyboarderSketchPane.sketchPane.layers.findByName('reference').notes]]) {
         if (board.layers[layerName]) {
           imageData[sym] = storyboarderSketchPane.sketchPane.layers[sym].toDataURL()
         }
@@ -4575,7 +4573,7 @@ let copyBoards = () => {
             storyboarderSketchPane.sketchPane.extractThumbnailPixels(
               storyboarderSketchPane.sketchPane.width,
               storyboarderSketchPane.sketchPane.height,
-              [0, 1, 3] // HACK hardcoded
+              storyboarderSketchPane.visibleLayersIndices
             ),
             storyboarderSketchPane.sketchPane.width,
             storyboarderSketchPane.sketchPane.height
@@ -4782,8 +4780,8 @@ let pasteBoards = async () => {
         }
       ]
       layerDataByBoardIndex = [{
-        [LAYER_INDEX_REFERENCE]: image.toDataURL(),
-        [LAYER_INDEX_MAIN]: blankCanvas.toDataURL()
+        [storyboarderSketchPane.sketchPane.layers.findByName('reference').index]: image.toDataURL(),
+        [storyboarderSketchPane.sketchPane.layers.findByName('main').index]: blankCanvas.toDataURL()
       }]
 
       notifications.notify({ message: "Pasting a sweet image you probably copied from the internet, you dirty dog, you. It's on the reference layer, so feel free to draw over it. You can resize or reposition it." , timing: 10 })
@@ -4874,18 +4872,18 @@ const insertBoards = async (dest, insertAt, boards, { layerDataByBoardIndex }) =
 
     // scale layer images and save to files
     if (imageData) {
-      if (imageData[LAYER_INDEX_MAIN]) {
-        let scaledImageData = await fitImageData(size, imageData[LAYER_INDEX_MAIN])
+      if (imageData[storyboarderSketchPane.sketchPane.layers.findByName('main').index]) {
+        let scaledImageData = await fitImageData(size, imageData[storyboarderSketchPane.sketchPane.layers.findByName('main').index])
         saveDataURLtoFile(scaledImageData, board.url)
       }
 
-      if (imageData[LAYER_INDEX_REFERENCE]) {
-        let scaledImageData = await fitImageData(size, imageData[LAYER_INDEX_REFERENCE])
+      if (imageData[storyboarderSketchPane.sketchPane.layers.findByName('reference').index]) {
+        let scaledImageData = await fitImageData(size, imageData[storyboarderSketchPane.sketchPane.layers.findByName('reference').index])
         saveDataURLtoFile(scaledImageData, board.layers.reference.url)
       }
 
-      if (imageData[LAYER_INDEX_NOTES]) {
-        let scaledImageData = await fitImageData(size, imageData[LAYER_INDEX_NOTES])
+      if (imageData[storyboarderSketchPane.sketchPane.layers.findByName('notes').index]) {
+        let scaledImageData = await fitImageData(size, imageData[storyboarderSketchPane.sketchPane.layers.findByName('notes').index])
         saveDataURLtoFile(scaledImageData, board.layers.notes.url)
       }
     }

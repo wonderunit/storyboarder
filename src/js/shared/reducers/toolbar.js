@@ -8,49 +8,63 @@ const initialState = {
       size: 20,
       opacity: 0.25,
 
-      palette: [0xCFCFCF, 0x9FA8DA, 0x90CBF9]
+      palette: [0xCFCFCF, 0x9FA8DA, 0x90CBF9],
+
+      defaultLayerName: 'reference'
     },
     'brush': {
       name: 'brush',
       color: 0x90CBF9,
       size: 26,
       opacity: 0.7,
-      palette: [0x4DABF5, 0x607D8B, 0x9E9E9E]
+      palette: [0x4DABF5, 0x607D8B, 0x9E9E9E],
+
+      defaultLayerName: 'main' // 'fill'
     },
     'tone': {
       name: 'tone',
       color: 0x162A3F,
       size: 50,
       opacity: 0.15,
-      palette: [0x162A3F, 0x162A3F, 0x162A3F]
+      palette: [0x162A3F, 0x162A3F, 0x162A3F],
+
+      defaultLayerName: 'main' // 'tone'
     },
     'pencil': {
       name: 'pencil',
       color: 0x121212,
       size: 4,
       opacity: 0.45,
-      palette: [0x373737, 0x223131, 0x121212]
+      palette: [0x373737, 0x223131, 0x121212],
+
+      defaultLayerName: 'main' // 'pencil'
     },
     'pen': {
       name: 'pen',
       color: 0x000000,
       size: 2,
       opacity: 0.9,
-      palette: [0x373737, 0x223131, 0x000000]
+      palette: [0x373737, 0x223131, 0x000000],
+
+      defaultLayerName: 'main' // 'ink'
     },
     'note-pen': {
       name: 'note-pen',
       color: 0xF44336,
       size: 8,
       opacity: 0.9,
-      palette: [0x4CAF50, 0xFF9800, 0xF44336]
+      palette: [0x4CAF50, 0xFF9800, 0xF44336],
+
+      defaultLayerName: 'notes'
     },
     'eraser': {
       name: 'eraser',
       color: 0xffffff,
       size: 26,
       opacity: 1.0,
-      palette: [0xffffff, 0xffffff, 0xffffff]
+      palette: [0xffffff, 0xffffff, 0xffffff],
+
+      defaultLayerName: undefined
     }
   },
 

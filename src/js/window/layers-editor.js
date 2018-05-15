@@ -1,7 +1,5 @@
 const EventEmitter = require('events').EventEmitter
 
-const { LAYER_INDEX_REFERENCE } = require('../constants')
-
 const { DEFAULT_REFERENCE_LAYER_OPACITY } = require('../exporters/common')
 
 class LayersEditor extends EventEmitter {
@@ -13,7 +11,7 @@ class LayersEditor extends EventEmitter {
 
     this.model = {
       layers: {
-        [LAYER_INDEX_REFERENCE]: {
+        [this.storyboarderSketchPane.sketchPane.layers.findByName('reference').index]: {
           opacity: DEFAULT_REFERENCE_LAYER_OPACITY
         }
       }
@@ -77,7 +75,7 @@ class LayersEditor extends EventEmitter {
   //
   // toggleLayer (index) {
   //   event.preventDefault()
-  //   this.present({ opacity: { index: LAYER_INDEX_REFERENCE, toggle: true })
+  //   this.present({ opacity: { index: this.storyboarderSketchPane.sketchPane.layers.findByName('reference').index, toggle: true })
   // }
 
   clearLayer (index) {
@@ -90,14 +88,26 @@ class LayersEditor extends EventEmitter {
   mergeDown () {
     if (this.storyboarderSketchPane.preventIfLocked()) return
 
-    this.storyboarderSketchPane.mergeLayers([0, 1], 0) // HACK hardcoded
+    this.storyboarderSketchPane.mergeLayers(
+      [
+        this.storyboarderSketchPane.sketchPane.layers.findByName('reference'),
+        this.storyboarderSketchPane.sketchPane.layers.findByName('main')
+      ],
+      this.storyboarderSketchPane.sketchPane.layers.findByName('reference')
+    )
   }
 
   // merge `main` and `reference` and draw to `main`
   mergeUp () {
     if (this.storyboarderSketchPane.preventIfLocked()) return
 
-    this.storyboarderSketchPane.mergeLayers([0, 1], 1) // HACK hardcoded
+    this.storyboarderSketchPane.mergeLayers(
+      [
+        this.storyboarderSketchPane.sketchPane.layers.findByName('reference'),
+        this.storyboarderSketchPane.sketchPane.layers.findByName('main')
+      ],
+      this.storyboarderSketchPane.sketchPane.layers.findByName('main')
+    )
   }
 
   present (data) {
@@ -111,15 +121,15 @@ class LayersEditor extends EventEmitter {
   // public method
   // value = 0...1.0
   setReferenceOpacity (value) {
-    this.present({ opacity: { index: LAYER_INDEX_REFERENCE, value } })
+    this.present({ opacity: { index: this.storyboarderSketchPane.sketchPane.layers.findByName('reference').index, value } })
   }
 
   getReferenceOpacity () {
-    return this.model.layers[LAYER_INDEX_REFERENCE].opacity
+    return this.model.layers[this.storyboarderSketchPane.sketchPane.layers.findByName('reference').index].opacity
   }
 
   render (model) {
-    let index = LAYER_INDEX_REFERENCE
+    let index = this.storyboarderSketchPane.sketchPane.layers.findByName('reference').index
     let value = model.layers[index].opacity
     document.querySelector('.layers-ui-reference-opacity').value = value * 100
     this.storyboarderSketchPane.setLayerOpacity(index, value)
