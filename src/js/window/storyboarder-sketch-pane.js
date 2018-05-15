@@ -208,10 +208,6 @@ class StoryboarderSketchPane extends EventEmitter {
 
     // this.el.addEventListener('dblclick', this.onDblClick)
 
-    // TODO
-    // TODO
-    // TODO
-    // TODO
     // this.el.addEventListener('pointerdown', this.canvasPointerDown)
     // this.sketchPaneDOMElement.addEventListener('pointerover', this.canvasPointerOver)
     // this.sketchPaneDOMElement.addEventListener('pointerout', this.canvasPointerOut)
@@ -976,6 +972,8 @@ class DrawingStrategy {
     this.context = context
     this.name = 'drawing'
 
+    this._onPointerOver = this._onPointerOver.bind(this)
+    this._onPointerOut = this._onPointerOut.bind(this)
     this._onPointerDown = this._onPointerDown.bind(this)
     this._onPointerMove = this._onPointerMove.bind(this)
     this._onPointerUp = this._onPointerUp.bind(this)
@@ -983,6 +981,9 @@ class DrawingStrategy {
   }
 
   startup () {
+    this.context.sketchPaneDOMElement.addEventListener('pointerover', this._onPointerOver)
+    this.context.sketchPaneDOMElement.addEventListener('pointerout', this._onPointerOut)
+
     this.context.sketchPaneDOMElement.addEventListener('pointerdown', this._onPointerDown)
     this.context.sketchPaneDOMElement.addEventListener('pointermove', this._onPointerMove)
     this.context.sketchPaneDOMElement.addEventListener('pointerup', this._onPointerUp)
@@ -996,12 +997,23 @@ class DrawingStrategy {
     //   this.context.store.dispatch({ type: 'TOOLBAR_MODE_STATUS_SET', payload: 'idle', meta: { scope: 'local' } })
     // }
 
+    this.context.sketchPaneDOMElement.removeEventListener('pointerover', this._onPointerOver)
+    this.context.sketchPaneDOMElement.removeEventListener('pointerout', this._onPointerOut)
+
     this.context.sketchPaneDOMElement.removeEventListener('pointerdown', this._onPointerDown)
     this.context.sketchPaneDOMElement.removeEventListener('pointermove', this._onPointerMove)
     this.context.sketchPaneDOMElement.removeEventListener('pointerup', this._onPointerUp)
     window.removeEventListener('keyup', this._onKeyUp)
 
     this.context.sketchPane.app.view.style.cursor = 'auto'
+  }
+
+  _onPointerOver (e) {
+    this.context.sketchPane.cursor.setEnabled(true)
+  }
+
+  _onPointerOut (e) {
+    this.context.sketchPane.cursor.setEnabled(false)
   }
 
   _onPointerDown (e) {
