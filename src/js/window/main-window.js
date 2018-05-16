@@ -2039,7 +2039,9 @@ let saveImageFile = async () => {
 
   let board = boardData.boards[indexToSave]
 
-  let numSaved = 0
+  let exportables = []
+  let total = 0
+  let complete = 0
   for (let index of storyboarderSketchPane.visibleLayersIndices) {
     if (storyboarderSketchPane.getLayerDirty(index)) {
       let layer = storyboarderSketchPane.sketchPane.layers[index]
@@ -2073,27 +2075,45 @@ let saveImageFile = async () => {
       }
 
       let imageFilePath = path.join(imagesPath, filename)
-      console.log(`\tsaving layer “${layer.name}” to ${imageFilePath}`)
-      let imageData = storyboarderSketchPane.exportLayer(index, 'base64')
-      fs.writeFileSync(imageFilePath, imageData, 'base64')
+      exportables.push({ index, layer, imageFilePath })
 
-      storyboarderSketchPane.clearLayerDirty(index)
-
-      numSaved++
+      total++
     }
+  }
+
+  // note in the board file all the layers we intend to save now
+  saveBoardFile()
+
+  // TODO if posterframe does not exist should we create? like we do with thumbnails?
+  // save the poster frame first
+  // if at least one layer is dirty, save a poster frame JPG
+  if (total > 0) {
+    savePosterFrame(indexToSave, board)
+  }
+
+  // export layers to PNG
+  for (let { index, layer, imageFilePath } of exportables) {
+    console.log(`\tsaving layer “${layer.name}” to ${imageFilePath}`)
+    fs.writeFileSync(
+      imageFilePath,
+      storyboarderSketchPane.exportLayer(index, 'base64'),
+      'base64'
+    )
+
+    storyboarderSketchPane.clearLayerDirty(index)
+
+    complete++
   }
 
   // TODO should we only clear the timeout if we saved at least one file?
   clearTimeout(imageFileDirtyTimer)
 
-  saveBoardFile()
-
-  if (numSaved > 0) {
-    console.log(`\tsaved ${numSaved} modified layers`)
+  if (complete > 0) {
+    console.log(`\tsaved ${complete} modified layers`)
   }
 
   // create/update the thumbnail image file if necessary
-  if (numSaved > 0) {
+  if (complete > 0) {
     // TODO can this be synchronous?
     await saveThumbnailFile(indexToSave)
     await updateThumbnailDisplayFromFile(indexToSave)
@@ -2175,6 +2195,39 @@ let saveImageFile = async () => {
 
   return indexToSave
   */
+}
+
+// TODO performance pass
+const savePosterFrame = (index, board) => {
+  console.log('main-window#savePosterFrame')
+  if (index !== currentBoard) throw new Error('savePosterFrame: layers have changed')
+
+  const imageFilePath = path.join(
+    boardPath,
+    'images',
+    `board-${board.number}-${board.uid}-posterframe.jpg`
+  )
+
+  // grab fill-size image from current sketchpane (in memory)
+  let pixels = storyboarderSketchPane.sketchPane.extractThumbnailPixels(
+    storyboarderSketchPane.sketchPane.width,
+    storyboarderSketchPane.sketchPane.height,
+    storyboarderSketchPane.visibleLayersIndices
+  )
+
+  SketchPaneUtil.arrayPostDivide(pixels)
+
+  let canvas = SketchPaneUtil.pixelsToCanvas(
+    pixels,
+    storyboarderSketchPane.sketchPane.width,
+    storyboarderSketchPane.sketchPane.height
+  )
+
+  fs.writeFileSync(
+    imageFilePath,
+    canvas.toDataURL('image/jpg').replace(/^data:image\/\w+;base64,/, ''),
+    'base64'
+  )
 }
 
 let openInEditor = async () => {
