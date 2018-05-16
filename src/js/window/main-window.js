@@ -1095,22 +1095,17 @@ const loadBoardUI = async () => {
   }, true)
 
   layersEditor = new LayersEditor(storyboarderSketchPane, sfx, notifications)
-  layersEditor.on('opacity', opacity => {
-    // should we update the value of the project data?
+  layersEditor.on('opacity', params => {
     let board = boardData.boards[currentBoard]
-    if (opacity.index === storyboarderSketchPane.sketchPane.layers.findByName('reference').index) {
-      if (board.layers && board.layers.reference && !util.isUndefined(board.layers.reference)) {
-        if (board.layers.reference.opacity !== opacity.value) {
-          // update data
-          // layers are in data already, change data directly
-          board.layers.reference.opacity = opacity.value
-          markImageFileDirty([storyboarderSketchPane.sketchPane.layers.findByName('reference').index])
-          markBoardFileDirty()
-        }
-      } else {
-        // create data
-        // need to create layers
-        markImageFileDirty([storyboarderSketchPane.sketchPane.layers.findByName('reference').index])
+
+    // if board has a reference layer ...
+    if (board.layers && board.layers.reference) {
+      // ... and the opacity value is stale ...
+      if (board.layers.reference.opacity !== params.value) {
+        // ... update the opacity value ...
+        board.layers.reference.opacity = params.value
+        // ... and save the board file
+        markBoardFileDirty()
       }
     }
   })
