@@ -3167,12 +3167,27 @@ const loadPosterFrame = async board => {
     'images',
     `board-${board.number}-${board.uid}-posterframe.jpg` + '?' + Math.random()
   )
-  let image = await exporterCommon.getImage(imageFilePath)
-  if (image) {
+  try {
+    let image = await exporterCommon.getImage(imageFilePath)
     storyboarderSketchPane.sketchPane.replaceLayer(
       storyboarderSketchPane.sketchPane.layers.findByName('composite').index,
       image
     )
+  } catch (err) {
+    // HACK draw a fake poster frame to occlude the view
+    // FIXME this is slow!!!
+    // TODO we could instead hide/show the layers via PIXI.Sprite#visible?
+    let canvas = document.createElement('canvas')
+    canvas.width = width
+    canvas.height = height
+    let context = canvas.getContext('2d')
+    context.fillStyle = '#ffffff'
+    context.fillRect(0, 0, canvas.width, canvas.height)
+
+    let layer = storyboarderSketchPane.sketchPane.layers.findByName('composite')
+    layer.replaceTextureFromCanvas(canvas)
+
+    // TODO remove the canvas from PIXI cache
   }
 }
 const clearPosterFrame = () =>
