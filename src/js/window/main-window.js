@@ -2223,6 +2223,12 @@ const savePosterFrame = (index, board) => {
     storyboarderSketchPane.sketchPane.height
   )
 
+  // draw a white matte background behind the transparent art
+  let context = canvas.getContext('2d')
+  context.globalCompositeOperation = 'destination-over'
+  context.fillStyle = '#ffffff'
+  context.fillRect(0, 0, canvas.width, canvas.height)
+
   fs.writeFileSync(
     imageFilePath,
     canvas.toDataURL('image/jpeg').replace(/^data:image\/\w+;base64,/, ''),
