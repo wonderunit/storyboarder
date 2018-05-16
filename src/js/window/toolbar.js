@@ -23,6 +23,7 @@ const initialState = {
 
   brush: null,
   isQuickErasing: false,
+  isQuickResizing: false,
 
   brushes: {
     [BRUSH_PENCIL]: {
@@ -142,6 +143,10 @@ class Toolbar extends EventEmitter {
       this.state = initialState
     }
 
+    // Do not recover isQuickResizing from saved toolbarState
+    // (Ths is a temporary state)
+    this.isQuickResizing = initialState.isQuickResizing;
+
 
     this.el = el
     this.swatchTimer = null
@@ -170,8 +175,6 @@ class Toolbar extends EventEmitter {
   }
 
   changeBrushSize (direction, fine = false) {
-    let min = 1
-    let max = 256
     let currSize = this.state.brushes[this.state.brush].size
 
     if (fine) {
@@ -184,10 +187,17 @@ class Toolbar extends EventEmitter {
       }
     }
 
-    if (currSize < min) currSize = min
-    if (currSize > max) currSize = max
+    setBrushSize (currSize)
+  }
 
-    this.state.brushes[this.state.brush].size = currSize
+  setBrushSize (size) {
+    let min = 1
+    let max = 256
+    
+    if (size < min) size = min
+    if (size > max) size = max
+
+    this.state.brushes[this.state.brush].size = size
 
     this.emit('brush:size', this.getBrushOptions().size)
     this.render()
@@ -199,6 +209,15 @@ class Toolbar extends EventEmitter {
 
   setIsQuickErasing (value) {
     this.state.isQuickErasing = value
+  }
+
+  getIsQuickResizing () {
+    return this.state.isQuickResizing
+  }
+
+  setIsQuickResizing (value) {
+    console.log("setIsQuickResizing: " + value)
+    this.state.isQuickResizing = value
   }
 
   changeCurrentColor (color) {

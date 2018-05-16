@@ -249,6 +249,7 @@ class StoryboarderSketchPane extends EventEmitter {
   onSketchPaneOnUp (...args) {
     // quick erase : off
     this.unsetQuickErase()
+    this.unsetQuickResize()
 
     this.emit('onup', ...args)
 
@@ -287,6 +288,9 @@ class StoryboarderSketchPane extends EventEmitter {
     if (!this.getIsDrawingOrStabilizing()) {
       if (!this.isCommandPressed('drawing:quick-erase-modifier') && !this.isEraseButtonActive) {
         this.unsetQuickErase()
+      }
+      if (keytracker('<control>')) {
+        this.unsetQuickResize()
       }
     }
   }
@@ -370,7 +374,13 @@ class StoryboarderSketchPane extends EventEmitter {
     // render the cursor
     if (this.lastCursorEvent && this.brushPointerContainer && this.brushPointerContainer.style) {
       // update the position of the cursor
-      this.brushPointerContainer.style.transform = 'translate(' + this.lastCursorEvent.clientX + 'px, ' + this.lastCursorEvent.clientY + 'px)'
+      // If using quick resize, draw the cursor at the start position instead of the current mouse position
+      if (this.toolbar.getIsQuickResizing()) {
+        let clientStartPos = this.getAbsolutePosition(this.strategy.startAt.x, this.strategy.startAt.y)
+        this.brushPointerContainer.style.transform = 'translate(' + clientStartPos.x + 'px, ' + clientStartPos.y + 'px)'
+      } else {
+        this.brushPointerContainer.style.transform = 'translate(' + this.lastCursorEvent.clientX + 'px, ' + this.lastCursorEvent.clientY + 'px)'
+      }
       this.lastCursorEvent = null
     }
 
@@ -402,6 +412,18 @@ class StoryboarderSketchPane extends EventEmitter {
         this.setBrushTool(this.prevTool.kind, this.prevTool)
       }
       this.prevTool = null
+    }
+  }
+
+  setQuickResizeIfRequested () {
+    if (keytracker('<control>')) {
+      this.toolbar.setIsQuickResizing(true)
+    }
+  }
+
+  unsetQuickResize () {
+    if (this.toolbar.getIsQuickResizing()) {
+      this.toolbar.setIsQuickResizing(false)
     }
   }
 
@@ -497,6 +519,21 @@ class StoryboarderSketchPane extends EventEmitter {
     return {
       x: rectOnCanvas.x * scaleFactorX,
       y: rectOnCanvas.y * scaleFactorY
+    }
+  }
+
+  // Inverse getRelativePosition, i.e. given a point relative to the sketchPane
+  // return an absolute position in the window
+  getAbsolutePosition (relativeX, relativeY) {
+    let rect = this.boundingClientRect
+    let scaleFactorX = this.canvasSize[0] / rect.width
+    let scaleFactorY = this.canvasSize[1] / rect.height
+
+    let rectOnCanvas = {x: relativeX / scaleFactorX, y: relativeY / scaleFactorY}
+
+    return {
+      x: rectOnCanvas.x + rect.left,
+      y: rectOnCanvas.y + rect.top
     }
   }
 
@@ -784,6 +821,10 @@ class StoryboarderSketchPane extends EventEmitter {
 class DrawingStrategy {
   constructor (container) {
     this.container = container
+
+    // For quick resize
+    this.startAt = null
+    this.startBrushSize = null
   }
 
   canvasPointerDown (e) {
@@ -802,6 +843,8 @@ class DrawingStrategy {
     // quick erase : on
     this.container.setQuickEraseIfRequested()
 
+    this.container.setQuickResizeIfRequested()
+
     if (!this.container.toolbar.getIsQuickErasing() && this.container.sketchPane.getPaintingKnockout()) {
       this.container.startMultiLayerOperation()
       this.container.setCompositeLayerVisibility(true)
@@ -809,7 +852,12 @@ class DrawingStrategy {
 
     let pointerPosition = this.container.getRelativePosition(e.clientX, e.clientY)
     this.container.lineMileageCounter.reset()
-    this.container.sketchPane.down(pointerPosition.x, pointerPosition.y, e.pointerType === "pen" ? e.pressure : 1)
+    if (this.container.toolbar.getIsQuickResizing()) {
+      this.startAt = {x: pointerPosition.x, y: pointerPosition.y}
+      this.startBrushSize = this.container.brush.getSize()
+    } else {
+      this.container.sketchPane.down(pointerPosition.x, pointerPosition.y, e.pointerType === "pen" ? e.pressure : 1)
+    }
     document.addEventListener('pointermove', this.container.canvasPointerMove)
     document.addEventListener('pointerup', this.container.canvasPointerUp)
     this.container.emit('pointerdown', pointerPosition.x, pointerPosition.y, e.pointerType === "pen" ? e.pressure : 1, e.pointerType)
@@ -831,15 +879,31 @@ class DrawingStrategy {
     this.container.lastMoveEvent = null
     this.container.lastCursorEvent = null
 
+    this.startAt = null
+    this.startBrushSize = null
+    
     let pointerPosition = this.container.getRelativePosition(e.clientX, e.clientY)
-    this.container.sketchPane.up(pointerPosition.x, pointerPosition.y, e.pointerType === "pen" ? e.pressure : 1)
+    if (!this.container.toolbar.getIsQuickResizing()) {
+      this.container.sketchPane.up(pointerPosition.x, pointerPosition.y, e.pointerType === "pen" ? e.pressure : 1)
+    }
     this.container.emit('lineMileage', this.container.lineMileageCounter.get())
     document.removeEventListener('pointermove', this.container.canvasPointerMove)
     document.removeEventListener('pointerup', this.container.canvasPointerUp)
+
+    this.container.unsetQuickResize();
   }
   
   renderMoveEvent (moveEvent) {
-    this.container.sketchPane.move(moveEvent.x, moveEvent.y, moveEvent.pointerType === "pen" ? moveEvent.pressure : 1)
+    // If quick resizing (ctrl+click when pointer went down), override move handler
+    if (this.container.toolbar.getIsQuickResizing()) {
+      let dx = moveEvent.x - this.startAt.x + this.startBrushSize
+      let dy = moveEvent.y - this.startAt.y
+      let length = Math.sqrt(dx * dx + dy * dy)
+      this.container.toolbar.setBrushSize(length)
+    }
+    else {
+      this.container.sketchPane.move(moveEvent.x, moveEvent.y, moveEvent.pointerType === "pen" ? moveEvent.pressure : 1)
+    }
   }
 
   startMultiLayerOperation () {
