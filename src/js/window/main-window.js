@@ -3110,7 +3110,9 @@ let previousScene = ()=> {
 // TODO etags?
 const updateSketchPaneBoard = async () => {
   // get current board
-  let board = boardData.boards[currentBoard]
+  let indexToLoad = currentBoard
+
+  let board = boardData.boards[indexToLoad]
 
   const imagesPath = path.join(boardPath, 'images')
 
@@ -3146,9 +3148,9 @@ const updateSketchPaneBoard = async () => {
   // configure onion skin
   onionSkin.setState({
     pathToImages: path.join(boardPath, 'images'),
-    currBoard: boardData.boards[currentBoard],
-    prevBoard: boardData.boards[currentBoard - 1],
-    nextBoard: boardData.boards[currentBoard + 1],
+    currBoard: boardData.boards[indexToLoad],
+    prevBoard: boardData.boards[indexToLoad - 1],
+    nextBoard: boardData.boards[indexToLoad + 1],
     enabled: store.getState().toolbar.onion
   })
 }
