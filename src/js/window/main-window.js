@@ -3160,6 +3160,25 @@ let previousScene = ()=> {
 }
 
 
+const loadPosterFrame = async board => {
+  const imageFilePath = path.join(
+    boardPath,
+    'images',
+    `board-${board.number}-${board.uid}-posterframe.jpg`
+  )
+  let image = await exporterCommon.getImage(imageFilePath)
+  if (image) {
+    storyboarderSketchPane.sketchPane.replaceLayer(
+      storyboarderSketchPane.sketchPane.layers.findByName('composite').index,
+      image
+    )
+  }
+}
+const clearPosterFrame = () =>
+  storyboarderSketchPane.clearLayer(
+    storyboarderSketchPane.sketchPane.layers.findByName('composite').index
+  )
+
 // TODO etags?
 const updateSketchPaneBoard = async () => {
   // get current board
@@ -3169,21 +3188,34 @@ const updateSketchPaneBoard = async () => {
 
   const imagesPath = path.join(boardPath, 'images')
 
-  // TODO load a posterframe?
-
+  let loadables = []
   for (let index of storyboarderSketchPane.visibleLayersIndices) {
     let layer = storyboarderSketchPane.sketchPane.layers[index]
 
-    // TODO performance :/
-    let image
+    // clear everything
+    storyboarderSketchPane.clearLayer(index)
+
+    // queue up images for load
     if (board.layers && board.layers[layer.name] && board.layers[layer.name].url) {
       let filepath = path.join(imagesPath, board.layers[layer.name].url + '?' + Math.random())
-      image = await exporterCommon.getImage(filepath)
+      loadables.push({ index, filepath})
     }
-    if (image) {
+  }
+
+  // show the poster frame
+  try {
+    await loadPosterFrame(board)
+  } catch (err) {
+    console.warn('no poster frame')
+  }
+
+  // TODO performance :/
+  for (let { index, filepath } of loadables) {
+    try {
+      let image = await exporterCommon.getImage(filepath)
       storyboarderSketchPane.sketchPane.replaceLayer(index, image)
-    } else {        
-      storyboarderSketchPane.clearLayer(index)
+    } catch (err) {
+      console.error('could not load layer', filepath)
     }
   }
 
@@ -3206,6 +3238,8 @@ const updateSketchPaneBoard = async () => {
     nextBoard: boardData.boards[indexToLoad + 1],
     enabled: store.getState().toolbar.onion
   })
+
+  clearPosterFrame()
 }
   // return new Promise((resolve, reject) => {
   //   // get current board
