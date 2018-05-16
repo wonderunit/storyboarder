@@ -2225,7 +2225,7 @@ const savePosterFrame = (index, board) => {
 
   fs.writeFileSync(
     imageFilePath,
-    canvas.toDataURL('image/jpg').replace(/^data:image\/\w+;base64,/, ''),
+    canvas.toDataURL('image/jpeg').replace(/^data:image\/\w+;base64,/, ''),
     'base64'
   )
 }
