@@ -2205,7 +2205,7 @@ const savePosterFrame = (index, board) => {
   const imageFilePath = path.join(
     boardPath,
     'images',
-    `board-${board.number}-${board.uid}-posterframe.jpg` + '?' + Math.random()
+    `board-${board.number}-${board.uid}-posterframe.jpg`
   )
 
   // grab fill-size image from current sketchpane (in memory)
@@ -3170,7 +3170,7 @@ const loadPosterFrame = async board => {
   const imageFilePath = path.join(
     boardPath,
     'images',
-    `board-${board.number}-${board.uid}-posterframe.jpg`
+    `board-${board.number}-${board.uid}-posterframe.jpg` + '?' + Math.random()
   )
   let image = await exporterCommon.getImage(imageFilePath)
   if (image) {
