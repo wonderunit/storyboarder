@@ -1,5 +1,9 @@
+const Cancelable = require('promise-cancelable').default
+const { CancelationError } = require('promise-cancelable')
 const fs = require('fs')
 const path = require('path')
+
+const exporterCommon = require('../exporters/common')
 
 class OnionSkin {
   constructor ({ width, height, onSetEnabled, onRender }) {
@@ -20,11 +24,6 @@ class OnionSkin {
     this.canvas.width = this.width
     this.canvas.height = this.height
     this.context = this.canvas.getContext('2d')
-
-    this.tmpCanvas = document.createElement('canvas')
-    this.tmpCanvas.width = this.width
-    this.tmpCanvas.height = this.height
-    this.tmpContext = this.tmpCanvas.getContext('2d')
 
     this.tintCanvas = document.createElement('canvas')
     this.tintCanvas.width = this.width
@@ -57,92 +56,79 @@ class OnionSkin {
     }
   }
 
+  // TODO should we use SketchPane's LayerCollection to setup and render these composites for us?
+  // TODO cache images for re-use?
   async load () {
-    // TODO if already loading, cancel
-    // TODO should we use SketchPane's LayerCollection to setup and render these composites for us?
-    // TODO cache images for re-use?
-
     const { pathToImages, currBoard, prevBoard, nextBoard } = this.state
 
-    this.state.status = 'Loading'
+    if (this.cancelable) this.cancelable.cancel()
 
-    this.context.clearRect(0, 0, this.width, this.height)
+    this.cancelable = new Cancelable(async (resolve, reject, onCancel) => {
+      this.state.status = 'Loading'
 
-    this.context.fillStyle = '#fff'
-    this.context.fillRect(0, 0, this.width, this.height)
+      this.context.clearRect(0, 0, this.width, this.height)
 
-    for (let board of [prevBoard, nextBoard]) {
-      if (!board) continue
+      this.context.fillStyle = '#fff'
+      this.context.fillRect(0, 0, this.width, this.height)
 
-      let color = board === prevBoard ? '#00f' : '#f00'
+      for (let board of [prevBoard, nextBoard]) {
+        if (!board) continue
 
-      // TODO refactor, unified loader
+        let color = board === prevBoard ? '#00f' : '#f00'
 
-      let layersData = [
-        // reference layer (if present)
-        ...(board.layers && board.layers.reference)
-          ? [['reference', board.layers.reference.url]]
-          : [],
-      
-        // always load the main layer
-        ['main', board.url],
-      
-        // notes layer (if present)
-        ...(board.layers && board.layers.notes)
-          ? [['notes', board.layers.notes.url]]
-          : [],
-      ]
+        try {
+          // load the posterframe
+          let image = await exporterCommon.getImage(
+            path.join(
+              pathToImages,
+              `board-${board.number}-${board.uid}-posterframe.jpg` + '?' + Math.random()
+            )
+          )
 
-      let loaders = layersData.map(
-        ([name, filename]) =>
-          new Promise((resolve, reject) => {
-            let imageFilePath = path.join(pathToImages, filename)
-            let image = new Image()
-            image.onload = () => resolve([name, filename, image])
-            image.onerror = () => resolve([name, filename, null])
-            image.src = imageFilePath + '?' + Math.random()
-          })
-      )
+          // tint
+          this.tintContext.save()
+          this.tintContext.clearRect(0, 0, this.width, this.height)
+          this.tintContext.globalCompositeOperation = 'normal'
+          // white box as a base
+          this.tintContext.fillStyle = '#fff'
+          this.tintContext.fillRect(0, 0, this.width, this.height)
+          // draw the image
+          this.tintContext.drawImage(image, 0, 0)
+          // draw the screened color on top
+          this.tintContext.globalCompositeOperation = 'screen'
+          this.tintContext.fillStyle = color
+          this.tintContext.fillRect(0, 0, this.width, this.height)
+          this.tintContext.restore()
 
-      let result = await Promise.all(loaders)
-
-      // layer compositing
-      this.tmpContext.save()
-      this.tmpContext.clearRect(0, 0, this.width, this.height)
-      for (let [name, filename, image] of result) {
-        if (image) {
-          this.tmpContext.globalAlpha = (name === 'reference' ? board.layers.reference.opacity : 1.0)
-          this.tmpContext.drawImage(image, 0, 0)
+          // draw tinted canvas to main context
+          this.context.save()
+          this.context.globalAlpha = 0.35
+          this.context.globalCompositeOperation = 'multiply'
+          this.context.drawImage(this.tintContext.canvas, 0, 0)
+          this.context.restore()
+        } catch (err) {
+          // couldn't load placeholder art
+          console.warn(err)
         }
       }
-      this.tmpContext.restore()
 
-      // tint
-      this.tintContext.save()
-      this.tintContext.clearRect(0, 0, this.width, this.height)
-      this.tintContext.globalCompositeOperation = 'normal'
-      // white box as a base
-      this.tintContext.fillStyle = '#fff'
-      this.tintContext.fillRect(0, 0, this.width, this.height)
-      // draw the image
-      this.tintContext.drawImage(this.tmpContext.canvas, 0, 0)
-      // draw the screened color on top
-      this.tintContext.globalCompositeOperation = 'screen'
-      this.tintContext.fillStyle = color
-      this.tintContext.fillRect(0, 0, this.width, this.height)
-      this.tintContext.restore()
+      this.state.status = 'Success'
 
-      // draw tinted canvas to main context
-      this.context.save()
-      this.context.globalAlpha = 0.35
-      this.context.globalCompositeOperation = 'multiply'
-      this.context.drawImage(this.tintContext.canvas, 0, 0)
-      this.context.restore()
-    }
+      this.onRender(this.canvas)
 
-    this.state.status = 'Success'
+      onCancel(() => {
+        this.context.clearRect(0, 0, this.width, this.height)
+        // invalidate
+        this.onRender(this.canvas)
+      })
+    }).catch(err => {
+      // filter out CancelationError reporting
+      if (err.name !== 'CancelationError') {
+        throw err
+      }
+    })
 
-    this.onRender(this.canvas)
+    await this.cancelable
   }
 }
 

@@ -115,6 +115,7 @@
     "pdfjs-dist": "1.9.426",
     "pdfkit": "^0.8.3",
     "plist": "2.1.0",
+    "promise-cancelable": "2.1.1",
     "qr-image": "^3.2.0",
     "qrcode-reader": "^1.0.0",
     "ramda": "0.25.0",
