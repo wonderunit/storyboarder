@@ -11,6 +11,7 @@ const Color = require('color-js')
 const chokidar = require('chokidar')
 const plist = require('plist')
 const R = require('ramda')
+const CAF = require('caf')
 const isDev = require('electron-is-dev')
 
 const { getInitialStateRenderer } = require('electron-redux')
@@ -169,6 +170,9 @@ let preventDragMode = false
 let dragPoint
 let dragTarget
 let scrollPoint
+
+// CAF cancel tokens for async functions
+let cancelTokens = {}
 
 const msecsToFrames = value => Math.round(value / 1000 * boardData.fps)
 const framesToMsecs = value => Math.round(value / boardData.fps * 1000)
@@ -2903,10 +2907,15 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
 
     ipcRenderer.send('analyticsEvent', 'Board', 'go to board', null, currentBoard)
 
-    updateSketchPaneBoard().then(() => {
-      audioPlayback.playBoard(currentBoard)
-      resolve()
-    }).catch(e => console.error(e))
+    updateSketchPaneBoard()
+      .then(() => {
+        audioPlayback.playBoard(currentBoard)
+        resolve()
+      }).catch(e => {
+        console.log('gotoBoard could not updateSketchPaneBoard')
+        console.error(e)
+        reject(e)
+      })
   })
 }
 
@@ -3200,19 +3209,21 @@ const loadPosterFrame = async board => {
     // TODO remove the canvas from PIXI cache
   }
 }
-const clearPosterFrame = () =>
+const clearPosterFrame = () => {
+  console.log('clearPosterFrame')
   storyboarderSketchPane.clearLayer(
     storyboarderSketchPane.sketchPane.layers.findByName('composite').index
   )
+}
 
-// TODO etags?
-const updateSketchPaneBoard = async () => {
-  // get current board
-  let indexToLoad = currentBoard
-
-  let board = boardData.boards[indexToLoad]
+let loaderIds = 0
+function * loadSketchPaneLayers (signal, board, indexToLoad) {
+  const loaderId = ++loaderIds
 
   const imagesPath = path.join(boardPath, 'images')
+
+  // show the poster frame
+  yield loadPosterFrame(board)
 
   let loadables = []
   for (let index of storyboarderSketchPane.visibleLayersIndices) {
@@ -3223,31 +3234,27 @@ const updateSketchPaneBoard = async () => {
 
     // queue up images for load
     if (board.layers && board.layers[layer.name] && board.layers[layer.name].url) {
+      // TODO etags?
       let filepath = path.join(imagesPath, board.layers[layer.name].url + '?' + Math.random())
       loadables.push({ index, filepath})
     }
   }
 
-  // show the poster frame
-  try {
-    await loadPosterFrame(board)
-  } catch (err) {
-    console.warn('no poster frame')
-  }
-
-  // TODO performance :/
   for (let { index, filepath } of loadables) {
-    try {
-      let image = await exporterCommon.getImage(filepath)
-      storyboarderSketchPane.sketchPane.replaceLayer(index, image)
-    } catch (err) {
-      console.error('could not load layer', filepath)
-    }
+    console.log(`[${loaderId}] load layer`, index, path.basename(filepath))
+    let image = yield exporterCommon.getImage(filepath)
+    storyboarderSketchPane.sketchPane.replaceLayer(index, image)
+
+    // HACK yield to get key input and cancel if necessary
+    yield CAF.delay(signal, 1)
+
+    // uncomment to test slow loading
+    // yield CAF.delay(signal, 500)
   }
 
   // if a link exists, lock the board
   storyboarderSketchPane.setIsLocked(board.link != null)
-
+  
   // load opacity from data, if data exists
   let referenceOpacity = board.layers &&
                          board.layers.reference &&
@@ -3255,6 +3262,28 @@ const updateSketchPaneBoard = async () => {
     ? board.layers.reference.opacity
     : exporterCommon.DEFAULT_REFERENCE_LAYER_OPACITY
   layersEditor.setReferenceOpacity(referenceOpacity)
+
+  clearPosterFrame()
+}
+
+const updateSketchPaneBoard = async () => {
+  console.log(`%cupdateSketchPaneBoard`, 'color:purple')
+
+  // cancel any in-progress loading
+  if (cancelTokens.updateSketchPaneBoard && !cancelTokens.updateSketchPaneBoard.signal.aborted) {
+    console.log(`%ccanceling in-progress load`, 'color:red')
+    cancelTokens.updateSketchPaneBoard.abort('cancel')
+    cancelTokens.updateSketchPaneBoard = undefined
+  }
+
+  // start a new loading process
+  cancelTokens.updateSketchPaneBoard = new CAF.cancelToken()
+
+  console.log(`%cloadSketchPaneLayers`, 'color:orange')
+
+  // get current board
+  let indexToLoad = currentBoard
+  let board = boardData.boards[indexToLoad]
 
   // configure onion skin
   onionSkin.setState({
@@ -3265,7 +3294,17 @@ const updateSketchPaneBoard = async () => {
     enabled: store.getState().toolbar.onion
   })
 
-  clearPosterFrame()
+  // load and render the layers
+  try {
+    let cancelable = CAF(loadSketchPaneLayers)
+    let signal = cancelTokens.updateSketchPaneBoard.signal
+    await cancelable(signal, board, indexToLoad)
+  } catch (err) {
+    console.log('failed loadSketchPaneLayers')
+    console.error(err)
+  }
+
+  // load and render the onion skin
   try {
     await onionSkin.load(cancelTokens.updateSketchPaneBoard)
   } catch (err) {
@@ -3273,6 +3312,8 @@ const updateSketchPaneBoard = async () => {
     console.error(err)
   }
 }
+  
+  
   // return new Promise((resolve, reject) => {
   //   // get current board
   //   let board = boardData.boards[currentBoard]
