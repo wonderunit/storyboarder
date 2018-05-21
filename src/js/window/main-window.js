@@ -3275,9 +3275,6 @@ function * loadSketchPaneLayers (signal, board, indexToLoad) {
 const updateSketchPaneBoard = async () => {
   console.log(`%cupdateSketchPaneBoard`, 'color:purple')
 
-  // get current board
-  let indexToLoad = currentBoard
-
   // cancel any in-progress loading
   if (cancelTokens.updateSketchPaneBoard && !cancelTokens.updateSketchPaneBoard.signal.aborted) {
     console.log(`%ccanceling in-progress load`, 'color:red')
@@ -3289,6 +3286,9 @@ const updateSketchPaneBoard = async () => {
   cancelTokens.updateSketchPaneBoard = new CAF.cancelToken()
 
   console.log(`%cloadSketchPaneLayers`, 'color:orange')
+
+  // get current board
+  let indexToLoad = currentBoard
 
   let board = boardData.boards[indexToLoad]
 
