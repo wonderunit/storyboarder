@@ -3,6 +3,7 @@ const fs = require('fs')
 const path = require('path')
 
 const exporterCommon = require('../exporters/common')
+const boardModel = require('../models/board')
 
 class OnionSkin {
   constructor ({ width, height, onSetEnabled, onRender }) {
@@ -114,7 +115,7 @@ class OnionSkin {
 
       try {
 
-        let filename = `board-${board.number}-${board.uid}-posterframe.jpg`
+        let filename = boardModel.boardFilenameForPosterFrame(board)
         let filepath = path.join(pathToImages, filename)
 
         let lastModified

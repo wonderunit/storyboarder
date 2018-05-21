@@ -2054,7 +2054,7 @@ let saveImageFile = async () => {
   for (let index of storyboarderSketchPane.visibleLayersIndices) {
     if (storyboarderSketchPane.getLayerDirty(index)) {
       let layer = storyboarderSketchPane.sketchPane.layers[index]
-      let filename = `board-${board.number}-${board.uid}-${layer.name}.png`
+      let filename = boardModel.boardFilenameForLayer(board, layer.name)
 
       if (layer.name === 'main') {
         console.log(`\tskipping layer 'main'`)
@@ -2214,7 +2214,7 @@ const savePosterFrame = (index, board) => {
   const imageFilePath = path.join(
     boardPath,
     'images',
-    `board-${board.number}-${board.uid}-posterframe.jpg`
+    boardModel.boardFilenameForPosterFrame(board)
   )
 
   // grab fill-size image from current sketchpane (in memory)
@@ -3192,7 +3192,7 @@ let previousScene = ()=> {
 
 const loadPosterFrame = async board => {
   let lastModified
-  const filename = `board-${board.number}-${board.uid}-posterframe.jpg`
+  const filename = boardModel.boardFilenameForPosterFrame(board)
   try {
     // file exists, cache based on mtime
     lastModified = fs.statSync(path.join(boardPath, 'images', filename)).mtimeMs
