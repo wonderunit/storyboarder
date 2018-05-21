@@ -150,18 +150,18 @@ class OnionSkin {
         this.context.globalCompositeOperation = 'multiply'
         this.context.drawImage(this.tintContext.canvas, 0, 0)
         this.context.restore()
+
+        this.state.status = 'Success'
+        this.onRender(this.canvas)
       } catch (err) {
         // couldn't load onion skin art
         console.log('could not load onion skin art')
         console.warn(err)
         this.state.status = 'Failed'
-        throw err
+        // throw err
       }
     }
 
-    this.state.status = 'Success'
-
-    this.onRender(this.canvas)
     console.log(`%c[OnionSkin#_load] complete`, `color:green`)
   }
 }
