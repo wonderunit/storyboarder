@@ -69,7 +69,7 @@ class OnionSkin {
     // cancel any in-progress loading
     if (this.cancelable && !this.cancelable.signal.aborted) {
       console.log('%conion cancel existing', 'color:purple')
-      this.cancelable.abort()
+      this.cancelable.abort('cancel')
       this.cancelable = undefined
     }
 
