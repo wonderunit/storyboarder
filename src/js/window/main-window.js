@@ -3177,20 +3177,26 @@ const loadPosterFrame = async board => {
       storyboarderSketchPane.sketchPane.layers.findByName('composite').index,
       image
     )
+    console.log('loadPosterFrame rendered jpg')
   } catch (err) {
+    console.log('loadPosterFrame failed', err)
     // HACK draw a fake poster frame to occlude the view
     // FIXME this is slow!!!
     // TODO we could instead hide/show the layers via PIXI.Sprite#visible?
     let canvas = document.createElement('canvas')
-    canvas.width = width
-    canvas.height = height
+    canvas.width = storyboarderSketchPane.sketchPane.width
+    canvas.height = storyboarderSketchPane.sketchPane.height
     let context = canvas.getContext('2d')
     context.fillStyle = '#ffffff'
     context.fillRect(0, 0, canvas.width, canvas.height)
+    // context.fillStyle = '#000000'
+    // context.font = '24px serif'
+    // context.fillText('Loading …', (canvas.width - 50) / 2, canvas.height / 2)
+    // context.globalAlpha = 0.5
 
     let layer = storyboarderSketchPane.sketchPane.layers.findByName('composite')
     layer.replaceTextureFromCanvas(canvas)
-
+    console.log('loadPosterFrame rendered white canvas')
     // TODO remove the canvas from PIXI cache
   }
 }
