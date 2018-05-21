@@ -1095,11 +1095,17 @@ const loadBoardUI = async () => {
       : 'hidden'
 
     // connect to onion skin
-    onionSkin.setState({ enabled: state.toolbar.onion })
-    onionSkin.load().catch(err => {
-      console.log('could not load onion skin')
-      console.log(err)
-    })
+    if (onionSkin.state.enabled !== state.toolbar.onion) {
+      if (state.toolbar.onion) {
+        onionSkin.setState({ enabled: true })
+        onionSkin.load().catch(err => {
+          console.log('could not load onion skin')
+          console.log(err)
+        })
+      } else {
+        onionSkin.setState({ enabled: false })
+      }
+    }
   }, true)
 
   layersEditor = new LayersEditor(storyboarderSketchPane, sfx, notifications)
