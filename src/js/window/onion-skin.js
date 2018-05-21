@@ -101,7 +101,7 @@ class OnionSkin {
     console.log(`%c[OnionSkin#_load]`, "color:blue")
     this.state.status = 'Loading'
 
-    this.context.clearRect(0, 0, this.width, this.height)
+    // this.context.clearRect(0, 0, this.width, this.height)
 
     this.context.fillStyle = '#fff'
     this.context.fillRect(0, 0, this.width, this.height)
