@@ -1092,6 +1092,10 @@ const loadBoardUI = async () => {
 
     // connect to onion skin
     onionSkin.setState({ enabled: state.toolbar.onion })
+    onionSkin.load().catch(err => {
+      console.log('could not load onion skin')
+      console.log(err)
+    })
   }, true)
 
   layersEditor = new LayersEditor(storyboarderSketchPane, sfx, notifications)
@@ -3256,6 +3260,12 @@ const updateSketchPaneBoard = async () => {
   })
 
   clearPosterFrame()
+  try {
+    await onionSkin.load(cancelTokens.updateSketchPaneBoard)
+  } catch (err) {
+    console.log('failed onionSkin.load')
+    console.error(err)
+  }
 }
   // return new Promise((resolve, reject) => {
   //   // get current board
