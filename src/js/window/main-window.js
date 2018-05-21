@@ -6249,7 +6249,7 @@ if (isDev) {
         ])
       }
     }
-  }, 500)
+  }, 1500)
 
   const Stats = require('stats.js')
   let stats = new Stats()
