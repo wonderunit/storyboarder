@@ -113,13 +113,21 @@ class OnionSkin {
       console.log(`%c[OnionSkin#_load] start board:${board.index}`, `color:${color}`)
 
       try {
+
+        let filename = `board-${board.number}-${board.uid}-posterframe.jpg`
+        let filepath = path.join(pathToImages, filename)
+
+        let lastModified
+        try {
+          // file exists, cache based on mtime
+          lastModified = fs.statSync(filepath).mtimeMs
+        } catch (err) {
+          // file not found, cache buster based on current time
+          lastModified = Date.now()
+        }
+
         // load the posterframe
-        let image = yield exporterCommon.getImage(
-          path.join(
-            pathToImages,
-            `board-${board.number}-${board.uid}-posterframe.jpg` + '?' + Math.random()
-          )
-        )
+        let image = yield exporterCommon.getImage(filepath + '?' + lastModified)
 
         // tint
         this.tintContext.save()

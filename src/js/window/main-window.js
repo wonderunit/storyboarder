@@ -3191,11 +3191,16 @@ let previousScene = ()=> {
 
 
 const loadPosterFrame = async board => {
-  const imageFilePath = path.join(
-    boardPath,
-    'images',
-    `board-${board.number}-${board.uid}-posterframe.jpg` + '?' + Math.random()
-  )
+  let lastModified
+  const filename = `board-${board.number}-${board.uid}-posterframe.jpg`
+  try {
+    // file exists, cache based on mtime
+    lastModified = fs.statSync(path.join(boardPath, 'images', filename)).mtimeMs
+  } catch (err) {
+    // file not found, cache buster based on current time
+    lastModified = Date.now()
+  }
+  const imageFilePath = path.join(boardPath, 'images', filename + '?' + lastModified)
   try {
     let image = await exporterCommon.getImage(imageFilePath)
     storyboarderSketchPane.sketchPane.replaceLayer(
@@ -3241,6 +3246,9 @@ function * loadSketchPaneLayers (signal, board, indexToLoad) {
   // show the poster frame
   yield loadPosterFrame(board)
 
+  // HACK yield to get key input and cancel if necessary
+  yield CAF.delay(signal, 1)
+
   let loadables = []
   for (let index of storyboarderSketchPane.visibleLayersIndices) {
     let layer = storyboarderSketchPane.sketchPane.layers[index]
@@ -3251,14 +3259,24 @@ function * loadSketchPaneLayers (signal, board, indexToLoad) {
     // queue up images for load
     if (board.layers && board.layers[layer.name] && board.layers[layer.name].url) {
       // TODO etags?
-      let filepath = path.join(imagesPath, board.layers[layer.name].url + '?' + Math.random())
+      let filepath = path.join(imagesPath, board.layers[layer.name].url)
       loadables.push({ index, filepath})
     }
   }
 
   for (let { index, filepath } of loadables) {
     console.log(`[${loaderId}] load layer`, index, path.basename(filepath))
-    let image = yield exporterCommon.getImage(filepath)
+
+    let lastModified
+    try {
+      // file exists, cache based on mtime
+      lastModified = fs.statSync(filepath).mtimeMs
+    } catch (err) {
+      // file not found, cache buster based on current time
+      lastModified = Date.now()
+    }
+
+    let image = yield exporterCommon.getImage(filepath + '?' + lastModified)
     storyboarderSketchPane.sketchPane.replaceLayer(index, image)
 
     // HACK yield to get key input and cancel if necessary
