@@ -67,7 +67,10 @@ class OnionSkin {
     const { pathToImages, currBoard, prevBoard, nextBoard } = this.state
 
     // cancel any in-progress loading
-    if (this.cancelable && !this.cancelable.signal.aborted) {
+    if (this.cancelable && // token exists
+        this.cancelable !== token && // token is old
+        !this.cancelable.signal.aborted // token has not been aborted
+    ) {
       console.log('%conion cancel existing', 'color:purple')
       this.cancelable.abort('cancel')
       this.cancelable = undefined
