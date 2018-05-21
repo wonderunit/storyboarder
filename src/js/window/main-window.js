@@ -2814,16 +2814,26 @@ const clearLayers = shouldEraseCurrentLayer => {
 // UI Rendering
 ///////////////////////////////////////////////////////////////
 
+// TODO handle selections / shouldPreserveSelections ?
+// TODO handle re-ordering?
 let goNextBoard = async (direction, shouldPreserveSelections = false) => {
-  await saveImageFile()
+  let index
 
-  if (direction) {
-    currentBoard += direction
+  index = direction
+    ? currentBoard + direction
+    : currentBoard + 1
+
+  index = Math.min(Math.max(index, 0), boardData.boards.length - 1)
+
+  if (index !== currentBoard) {
+    console.log(index, '!==', currentBoard)
+    await saveImageFile()
+    currentBoard = index
+    console.log('calling gotoBoard')
+    await gotoBoard(currentBoard, shouldPreserveSelections)
   } else {
-    currentBoard++
+    console.log('not calling gotoBoard')
   }
-
-  await gotoBoard(currentBoard, shouldPreserveSelections)
 }
 
 let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
