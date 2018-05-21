@@ -1095,17 +1095,11 @@ const loadBoardUI = async () => {
       : 'hidden'
 
     // connect to onion skin
-    if (onionSkin.state.enabled !== state.toolbar.onion) {
-      if (state.toolbar.onion) {
-        onionSkin.setState({ enabled: true })
-        onionSkin.load().catch(err => {
-          console.log('could not load onion skin')
-          console.log(err)
-        })
-      } else {
-        onionSkin.setState({ enabled: false })
-      }
-    }
+    onionSkin.setState({ enabled: state.toolbar.onion })
+    onionSkin.load().catch(err => {
+      console.log('could not load onion skin')
+      console.log(err)
+    })
   }, true)
 
   layersEditor = new LayersEditor(storyboarderSketchPane, sfx, notifications)
@@ -2814,26 +2808,16 @@ const clearLayers = shouldEraseCurrentLayer => {
 // UI Rendering
 ///////////////////////////////////////////////////////////////
 
-// TODO handle selections / shouldPreserveSelections ?
-// TODO handle re-ordering?
 let goNextBoard = async (direction, shouldPreserveSelections = false) => {
-  let index
+  await saveImageFile()
 
-  index = direction
-    ? currentBoard + direction
-    : currentBoard + 1
-
-  index = Math.min(Math.max(index, 0), boardData.boards.length - 1)
-
-  if (index !== currentBoard) {
-    console.log(index, '!==', currentBoard)
-    await saveImageFile()
-    currentBoard = index
-    console.log('calling gotoBoard')
-    await gotoBoard(currentBoard, shouldPreserveSelections)
+  if (direction) {
+    currentBoard += direction
   } else {
-    console.log('not calling gotoBoard')
+    currentBoard++
   }
+
+  await gotoBoard(currentBoard, shouldPreserveSelections)
 }
 
 let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
@@ -2923,7 +2907,6 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
 
     ipcRenderer.send('analyticsEvent', 'Board', 'go to board', null, currentBoard)
 
-    console.log('calling updateSketchPaneBoard')
     updateSketchPaneBoard()
       .then(() => {
         audioPlayback.playBoard(currentBoard)
@@ -3286,6 +3269,9 @@ function * loadSketchPaneLayers (signal, board, indexToLoad) {
 const updateSketchPaneBoard = async () => {
   console.log(`%cupdateSketchPaneBoard`, 'color:purple')
 
+  // get current board
+  let indexToLoad = currentBoard
+
   // cancel any in-progress loading
   if (cancelTokens.updateSketchPaneBoard && !cancelTokens.updateSketchPaneBoard.signal.aborted) {
     console.log(`%ccanceling in-progress load`, 'color:red')
@@ -3297,9 +3283,6 @@ const updateSketchPaneBoard = async () => {
   cancelTokens.updateSketchPaneBoard = new CAF.cancelToken()
 
   console.log(`%cloadSketchPaneLayers`, 'color:orange')
-
-  // get current board
-  let indexToLoad = currentBoard
 
   let board = boardData.boards[indexToLoad]
 
@@ -6250,7 +6233,7 @@ if (isDev) {
         ])
       }
     }
-  }, 5000)
+  }, 500)
 
   const Stats = require('stats.js')
   let stats = new Stats()
