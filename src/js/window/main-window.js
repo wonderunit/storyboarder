@@ -3269,6 +3269,9 @@ function * loadSketchPaneLayers (signal, board, indexToLoad) {
 const updateSketchPaneBoard = async () => {
   console.log(`%cupdateSketchPaneBoard`, 'color:purple')
 
+  // get current board
+  let indexToLoad = currentBoard
+
   // cancel any in-progress loading
   if (cancelTokens.updateSketchPaneBoard && !cancelTokens.updateSketchPaneBoard.signal.aborted) {
     console.log(`%ccanceling in-progress load`, 'color:red')
@@ -3281,18 +3284,7 @@ const updateSketchPaneBoard = async () => {
 
   console.log(`%cloadSketchPaneLayers`, 'color:orange')
 
-  // get current board
-  let indexToLoad = currentBoard
   let board = boardData.boards[indexToLoad]
-
-  // configure onion skin
-  onionSkin.setState({
-    pathToImages: path.join(boardPath, 'images'),
-    currBoard: boardData.boards[indexToLoad],
-    prevBoard: boardData.boards[indexToLoad - 1],
-    nextBoard: boardData.boards[indexToLoad + 1],
-    enabled: store.getState().toolbar.onion
-  })
 
   // load and render the layers
   try {
@@ -3306,6 +3298,14 @@ const updateSketchPaneBoard = async () => {
 
   // load and render the onion skin
   try {
+    // configure onion skin
+    onionSkin.setState({
+      pathToImages: path.join(boardPath, 'images'),
+      currBoard: boardData.boards[indexToLoad],
+      prevBoard: boardData.boards[indexToLoad - 1],
+      nextBoard: boardData.boards[indexToLoad + 1],
+      enabled: store.getState().toolbar.onion
+    })
     await onionSkin.load(cancelTokens.updateSketchPaneBoard)
   } catch (err) {
     console.log('failed onionSkin.load')
