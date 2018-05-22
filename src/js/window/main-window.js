@@ -5629,7 +5629,7 @@ const applyUndoStateForImage = async (state) => {
   // if required, go to the scene first
   let currSceneObj = getSceneObjectByIndex(currentScene)
   if (currSceneObj && currSceneObj.scene_id !== state.sceneId) {
-    saveImageFile()
+    await saveImageFile()
     // go to the requested scene
     currentScene = getSceneNumberBySceneId(state.sceneId)
     await loadScene(currentScene)
@@ -5637,21 +5637,23 @@ const applyUndoStateForImage = async (state) => {
     renderScript()
   }
 
-  await saveImageFile()
-
   // if required, go to the board first
   if (currentBoard !== state.boardIndex) {
+    await saveImageFile()
     await gotoBoard(state.boardIndex)
   }
+
+  // uncomment to force save on undo/redo
+  // await saveImageFile()
 
   for (let layerData of state.layers) {
     storyboarderSketchPane.applyUndoStateForLayer(layerData)
     markImageFileDirty([layerData.index])
   }
 
-  let index = await saveThumbnailFile(state.boardIndex)
-  await updateThumbnailDisplayFromFile(index)
-  // toolbar.emit('cancelTransform')
+  // uncomment to force save on undo/redo
+  // let index = await saveThumbnailFile(state.boardIndex)
+  // await updateThumbnailDisplayFromFile(index)
 }
 
 const createSizedContext = size => {
