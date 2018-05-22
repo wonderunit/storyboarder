@@ -2717,6 +2717,7 @@ let duplicateBoard = async () => {
   boardDst.notes = ''
   boardDst.duration = boardSrc.duration // either `undefined` or a value in msecs
 
+  // related: copyProject#getMediaFilesUsedByBoard
   try {
     // console.log('copying files from index', currentBoard, 'to index', insertAt)
     let filePairs = []
@@ -2732,6 +2733,8 @@ let duplicateBoard = async () => {
     }
     // thumbnail
     filePairs.push({ from: boardModel.boardFilenameForThumbnail(boardSrc), to: boardModel.boardFilenameForThumbnail(boardDst) })
+    // posterframe
+    filePairs.push({ from: boardModel.boardFilenameForPosterFrame(boardSrc), to: boardModel.boardFilenameForPosterFrame(boardDst) })
 
     // link (if any)
     if (boardSrc.link) {
