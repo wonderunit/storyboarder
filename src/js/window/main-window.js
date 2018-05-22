@@ -3209,26 +3209,10 @@ const loadPosterFrame = async board => {
       image
     )
     console.log('loadPosterFrame rendered jpg')
+    return true
   } catch (err) {
     console.log('loadPosterFrame failed', err)
-    // HACK draw a fake poster frame to occlude the view
-    // FIXME this is slow!!!
-    // TODO we could instead hide/show the layers via PIXI.Sprite#visible?
-    let canvas = document.createElement('canvas')
-    canvas.width = storyboarderSketchPane.sketchPane.width
-    canvas.height = storyboarderSketchPane.sketchPane.height
-    let context = canvas.getContext('2d')
-    context.fillStyle = '#ffffff'
-    context.fillRect(0, 0, canvas.width, canvas.height)
-    // context.fillStyle = '#000000'
-    // context.font = '24px serif'
-    // context.fillText('Loading …', (canvas.width - 50) / 2, canvas.height / 2)
-    // context.globalAlpha = 0.5
-
-    let layer = storyboarderSketchPane.sketchPane.layers.findByName('composite')
-    layer.replaceTextureFromCanvas(canvas)
-    console.log('loadPosterFrame rendered white canvas')
-    // TODO remove the canvas from PIXI cache
+    return false
   }
 }
 const clearPosterFrame = () => {
@@ -3238,6 +3222,30 @@ const clearPosterFrame = () => {
   )
 }
 
+// HACK draw a fake poster frame to occlude the view
+// TODO we could instead hide/show the layers via PIXI.Sprite#visible?
+const renderFakePosterFrame = () => {
+  let canvas = document.createElement('canvas')
+  let context = canvas.getContext('2d')
+
+  canvas.width = storyboarderSketchPane.sketchPane.width
+  canvas.height = storyboarderSketchPane.sketchPane.height
+
+  context.fillStyle = '#ffffff'
+  context.fillRect(0, 0, canvas.width, canvas.height)
+
+  // context.fillStyle = '#000000'
+  // context.font = '24px serif'
+  // context.fillText('Loading …', (canvas.width - 50) / 2, canvas.height / 2)
+  // context.globalAlpha = 0.5
+
+  let layer = storyboarderSketchPane.sketchPane.layers.findByName('composite')
+  layer.replaceTextureFromCanvas(canvas)
+  // TODO remove the canvas from PIXI cache?
+
+  console.log('loadPosterFrame rendered white canvas')
+}
+
 let loaderIds = 0
 function * loadSketchPaneLayers (signal, board, indexToLoad) {
   const loaderId = ++loaderIds
@@ -3245,7 +3253,9 @@ function * loadSketchPaneLayers (signal, board, indexToLoad) {
   const imagesPath = path.join(boardPath, 'images')
 
   // show the poster frame
-  yield loadPosterFrame(board)
+  let hasPosterFrame = yield loadPosterFrame(board)
+
+  if (!hasPosterFrame) renderFakePosterFrame()
 
   // HACK yield to get key input and cancel if necessary
   yield CAF.delay(signal, 1)
@@ -3299,6 +3309,12 @@ function * loadSketchPaneLayers (signal, board, indexToLoad) {
   layersEditor.setReferenceOpacity(referenceOpacity)
 
   clearPosterFrame()
+
+  // no poster frame was found earlier
+  if (!hasPosterFrame) {
+    // so mark all layers dirty to force a poster frame save
+    markImageFileDirty(storyboarderSketchPane.visibleLayersIndices)
+  }
 }
 
 const updateSketchPaneBoard = async () => {
