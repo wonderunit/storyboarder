@@ -10,7 +10,7 @@ const exporterCommon = require('./common')
 const exporterFfmpeg = require('./ffmpeg')
 const { fitToDst } = require('../utils')
 
-const prefsModule = remote.require('./prefs')
+const prefsModule = remote.require(path.join(__dirname, '..', 'prefs'))
 
 // const API_URI = 'http://localhost:8080/api'
 const API_URI = 'https://storyboarders.com/api'
