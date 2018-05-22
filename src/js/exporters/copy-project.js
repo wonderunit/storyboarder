@@ -10,6 +10,7 @@ const withFromToPaths = (filename, src, dst) => ({
   to: path.join(dst, filename)
 })
 
+// see also: cleanup.js usedFiles
 const getMediaFilesUsedByBoard = board => ([
   ...boardModel.boardOrderedLayerFilenames(board).filenames,  // all PNG files
   boardModel.boardFilenameForThumbnail(board),                // thumbnail

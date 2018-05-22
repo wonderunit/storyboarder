@@ -55,6 +55,7 @@ const cleanupScene = (absolutePathToStoryboarderFile, trashFn = trash) => {
       //
 
       // ... first, find all used filenames for: layers, thumbnails, links
+      // see also: getMediaFilesUsedByBoard
       const usedFiles = flatten(boardData.boards.map(board => ([
         ...boardModel.boardOrderedLayerFilenames(board).filenames,
         boardModel.boardFilenameForThumbnail(board),
