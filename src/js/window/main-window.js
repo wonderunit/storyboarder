@@ -5809,6 +5809,7 @@ const startWebUpload = async () => {
   try {
     let result = await exporterWeb.uploadToWeb(boardFilename)
     notifications.notify({ message: 'Upload complete!' })
+    console.log('Uploaded to', result.link)
     remote.shell.openExternal(result.link)
   } catch (err) {
     if (err.name === 'StatusCodeError' && err.statusCode === 403) {
