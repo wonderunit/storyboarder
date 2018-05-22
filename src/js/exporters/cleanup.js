@@ -59,6 +59,7 @@ const cleanupScene = (absolutePathToStoryboarderFile, trashFn = trash) => {
       const usedFiles = flatten(boardData.boards.map(board => ([
         ...boardModel.boardOrderedLayerFilenames(board).filenames,
         boardModel.boardFilenameForThumbnail(board),
+        boardModel.boardFilenameForPosterFrame(board),
         ...(board.link ? [board.link] : []),
         ...(board.audio ? [board.audio.filename] : [])
       ])))
@@ -120,8 +121,13 @@ const prepareCleanup = boardData => {
    )
    linkPairs = linkPairs.filter(pairs => !util.isUndefined(pairs[0]))
 
+  let posterframePairs = zip(
+    originalData.boards.map(boardModel.boardFilenameForPosterFrame),
+    cleanedData.boards.map(boardModel.boardFilenameForPosterFrame)
+  )
+
   // concat file pairs
-  let renamablePairs = [...layerFilenamePairs, ...thumbnailPairs, ...linkPairs]
+  let renamablePairs = [...layerFilenamePairs, ...thumbnailPairs, ...linkPairs, ...posterframePairs]
     .filter(([a, b]) => a !== b) // include only filenames that require renaming
     .map(([a, b]) => ({ from: a, to: b }))
 
