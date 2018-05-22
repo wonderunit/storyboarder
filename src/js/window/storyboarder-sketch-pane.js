@@ -354,26 +354,14 @@ class StoryboarderSketchPane extends EventEmitter {
       // changes source, which is a reference to an to undostack state
       source.premultiplied = false
     }
-    // NOTE calls replaceLayer directly to avoid triggering `addToUndoStack` event
     // TODO try directly creating texture from pixel data via texImage2D
-    this.sketchPane.replaceLayer(
-      source.index,
+    this.sketchPane.layers[source.index].replaceTextureFromCanvas(
       SketchPaneUtil.pixelsToCanvas(
         source.pixels,
         this.sketchPane.width,
         this.sketchPane.height
       )
     )
-
-    // alternately, call replaceTextureFromCanvas directly
-    //
-    // this.sketchPane.layers[source.index].replaceTextureFromCanvas(
-    //   SketchPaneUtil.pixelsToCanvas(
-    //     source.pixels,
-    //     this.sketchPane.width,
-    //     this.sketchPane.height
-    //   )
-    // )
   }
 
   // renderCursor () {
