@@ -341,6 +341,7 @@ class StoryboarderSketchPane extends EventEmitter {
   getUndoStateForLayer (index) {
     // store raw pixels with premultiplied alpha
     return {
+      index,
       pixels: this.sketchPane.layers[index].pixels(false),
       premultiplied: true
     }
@@ -353,10 +354,8 @@ class StoryboarderSketchPane extends EventEmitter {
       // changes source, which is a reference to an to undostack state
       source.premultiplied = false
     }
-    // NOTE calls replaceLayer directly to avoid triggering `addToUndoStack` event
     // TODO try directly creating texture from pixel data via texImage2D
-    this.sketchPane.replaceLayer(
-      source.index,
+    this.sketchPane.layers[source.index].replaceTextureFromCanvas(
       SketchPaneUtil.pixelsToCanvas(
         source.pixels,
         this.sketchPane.width,
@@ -1270,6 +1269,7 @@ class MovingStrategy {
   shutdown () {
     if (this.state.moved && !this.state.stamped) {
       this._stamp()
+      this.context.emit('markDirty', this.context.visibleLayersIndices)
     }
 
     this.context.sketchPaneDOMElement.removeEventListener('pointerdown', this._onPointerDown)
@@ -1283,6 +1283,7 @@ class MovingStrategy {
   }
 
   _onPointerDown (e) {
+    this.context.emit('addToUndoStack', this.context.visibleLayersIndices)
     this.state.anchor = this.context.sketchPane.localizePoint(e)
     this.state.moved = false
     this.context.sketchPaneDOMElement.addEventListener('pointermove', this._onPointerMove)
@@ -1319,6 +1320,7 @@ class MovingStrategy {
 
   _onPointerUp (e) {
     this._stamp()
+    this.context.emit('markDirty', this.context.visibleLayersIndices)
     this.context.sketchPaneDOMElement.removeEventListener('pointermove', this._onPointerMove)
   }
 
@@ -1539,6 +1541,7 @@ class ScalingStrategy {
   shutdown () {
     if (this.state.moved && !this.state.stamped) {
       this._stamp()
+      this.context.emit('markDirty', this.context.visibleLayersIndices)
     }
 
     this.context.sketchPaneDOMElement.removeEventListener('pointerdown', this._onPointerDown)
@@ -1550,6 +1553,7 @@ class ScalingStrategy {
   }
 
   _onPointerDown (e) {
+    this.context.emit('addToUndoStack', this.context.visibleLayersIndices)
     this.state.anchor = this.context.sketchPane.localizePoint(e)
     this.state.moved = false
     this.context.sketchPaneDOMElement.addEventListener('pointermove', this._onPointerMove)
@@ -1585,6 +1589,7 @@ class ScalingStrategy {
 
   _onPointerUp (e) {
     this._stamp()
+    this.context.emit('markDirty', this.context.visibleLayersIndices)
     this.context.sketchPaneDOMElement.removeEventListener('pointermove', this._onPointerMove)
   }
 

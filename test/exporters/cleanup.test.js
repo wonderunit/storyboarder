@@ -40,6 +40,8 @@ describe('exporters/cleanup', function () {
             'board-2-42VR9.psd':                  new Buffer([8, 6, 7, 5, 3, 0, 9]),
             // an existing audio file
             'audio.wav':                          new Buffer([8, 6, 7, 5, 3, 0, 9]),
+            // a posterframe
+            'board-2-42VR9-posterframe.jpg':      new Buffer([8, 6, 7, 5, 3, 0, 9]),
 
             'board-2-J74F5.png':                  new Buffer([8, 6, 7, 5, 3, 0, 9]),
             'board-2-J74F5-reference.png':        new Buffer([8, 6, 7, 5, 3, 0, 9]),
@@ -160,6 +162,9 @@ describe('exporters/cleanup', function () {
         // but not those that don't
         assert.equal(fs.existsSync(path.join(fixturesPath, 'ducks', 'images', 'unused.wav')), false)
         assert.equal(fs.existsSync(path.join(fixturesPath, 'ducks', 'images', 'non-existing.wav')), false)
+
+        // it copies, and renames, the posterframe
+        assert.equal(fs.existsSync(path.join(fixturesPath, 'ducks', 'images', 'board-1-42VR9-posterframe.jpg')), true)
 
         done()
       })

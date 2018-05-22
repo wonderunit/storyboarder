@@ -15,6 +15,12 @@ const boardFilenameForThumbnail = board =>
 const boardFilenameForLink = board =>
   board.url.replace('.png', '.psd')
 
+const boardFilenameForLayer = (board, layerKey) =>
+  board.url.replace('.png', `-${layerKey}.png`)
+
+const boardFilenameForPosterFrame = (board) =>
+  board.url.replace('.png', `-posterframe.jpg`)
+
 // array of fixed size, ordered positions
 const boardOrderedLayerFilenames = board => {
   let indices = []
@@ -92,6 +98,8 @@ module.exports = {
   boardFilenameForExport,
   boardFilenameForThumbnail,
   boardFilenameForLink,
+  boardFilenameForLayer,
+  boardFilenameForPosterFrame,
   boardOrderedLayerFilenames,
   boardDuration,
   boardDurationWithAudio,

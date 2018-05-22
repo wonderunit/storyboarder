@@ -11,6 +11,7 @@ const Color = require('color-js')
 const chokidar = require('chokidar')
 const plist = require('plist')
 const R = require('ramda')
+const CAF = require('caf')
 const isDev = require('electron-is-dev')
 
 const { getInitialStateRenderer } = require('electron-redux')
@@ -170,11 +171,15 @@ let dragPoint
 let dragTarget
 let scrollPoint
 
+// CAF cancel tokens for async functions
+let cancelTokens = {}
+
 const msecsToFrames = value => Math.round(value / 1000 * boardData.fps)
 const framesToMsecs = value => Math.round(value / boardData.fps * 1000)
 
 // TODO better name than etags?
 // TODO store in boardData instead, but exclude from JSON?
+// TODO use mtime trick like we do for layers and posterframes?
 // cache buster for thumbnails
 let etags = {}
 const setEtag = absoluteFilePath => { etags[absoluteFilePath] = Date.now() }
@@ -1091,26 +1096,31 @@ const loadBoardUI = async () => {
       : 'hidden'
 
     // connect to onion skin
-    onionSkin.setState({ enabled: state.toolbar.onion })
+    if (onionSkin.state.enabled !== state.toolbar.onion) {
+      if (state.toolbar.onion) {
+        onionSkin.setState({ enabled: true })
+        onionSkin.load().catch(err => {
+          console.log('could not load onion skin')
+          console.log(err)
+        })
+      } else {
+        onionSkin.setState({ enabled: false })
+      }
+    }
   }, true)
 
   layersEditor = new LayersEditor(storyboarderSketchPane, sfx, notifications)
-  layersEditor.on('opacity', opacity => {
-    // should we update the value of the project data?
+  layersEditor.on('opacity', params => {
     let board = boardData.boards[currentBoard]
-    if (opacity.index === storyboarderSketchPane.sketchPane.layers.findByName('reference').index) {
-      if (board.layers && board.layers.reference && !util.isUndefined(board.layers.reference)) {
-        if (board.layers.reference.opacity !== opacity.value) {
-          // update data
-          // layers are in data already, change data directly
-          board.layers.reference.opacity = opacity.value
-          markImageFileDirty([storyboarderSketchPane.sketchPane.layers.findByName('reference').index])
-          markBoardFileDirty()
-        }
-      } else {
-        // create data
-        // need to create layers
-        markImageFileDirty([storyboarderSketchPane.sketchPane.layers.findByName('reference').index])
+
+    // if board has a reference layer ...
+    if (board.layers && board.layers.reference) {
+      // ... and the opacity value is stale ...
+      if (board.layers.reference.opacity !== params.value) {
+        // ... update the opacity value ...
+        board.layers.reference.opacity = params.value
+        // ... and save the board file
+        markBoardFileDirty()
       }
     }
   })
@@ -2039,11 +2049,13 @@ let saveImageFile = async () => {
 
   let board = boardData.boards[indexToSave]
 
-  let numSaved = 0
+  let exportables = []
+  let total = 0
+  let complete = 0
   for (let index of storyboarderSketchPane.visibleLayersIndices) {
     if (storyboarderSketchPane.getLayerDirty(index)) {
       let layer = storyboarderSketchPane.sketchPane.layers[index]
-      let filename = `board-${board.number}-${board.uid}-${layer.name}.png`
+      let filename = boardModel.boardFilenameForLayer(board, layer.name)
 
       if (layer.name === 'main') {
         console.log(`\tskipping layer 'main'`)
@@ -2073,27 +2085,45 @@ let saveImageFile = async () => {
       }
 
       let imageFilePath = path.join(imagesPath, filename)
-      console.log(`\tsaving layer “${layer.name}” to ${imageFilePath}`)
-      let imageData = storyboarderSketchPane.exportLayer(index, 'base64')
-      fs.writeFileSync(imageFilePath, imageData, 'base64')
+      exportables.push({ index, layer, imageFilePath })
 
-      storyboarderSketchPane.clearLayerDirty(index)
-
-      numSaved++
+      total++
     }
+  }
+
+  // note in the board file all the layers we intend to save now
+  saveBoardFile()
+
+  // TODO if posterframe does not exist should we create? like we do with thumbnails?
+  // save the poster frame first
+  // if at least one layer is dirty, save a poster frame JPG
+  if (total > 0) {
+    savePosterFrame(indexToSave, board)
+  }
+
+  // export layers to PNG
+  for (let { index, layer, imageFilePath } of exportables) {
+    console.log(`\tsaving layer “${layer.name}” to ${imageFilePath}`)
+    fs.writeFileSync(
+      imageFilePath,
+      storyboarderSketchPane.exportLayer(index, 'base64'),
+      'base64'
+    )
+
+    storyboarderSketchPane.clearLayerDirty(index)
+
+    complete++
   }
 
   // TODO should we only clear the timeout if we saved at least one file?
   clearTimeout(imageFileDirtyTimer)
 
-  saveBoardFile()
-
-  if (numSaved > 0) {
-    console.log(`\tsaved ${numSaved} modified layers`)
+  if (complete > 0) {
+    console.log(`\tsaved ${complete} modified layers`)
   }
 
   // create/update the thumbnail image file if necessary
-  if (numSaved > 0) {
+  if (complete > 0) {
     // TODO can this be synchronous?
     await saveThumbnailFile(indexToSave)
     await updateThumbnailDisplayFromFile(indexToSave)
@@ -2175,6 +2205,46 @@ let saveImageFile = async () => {
 
   return indexToSave
   */
+}
+
+// TODO performance pass
+const savePosterFrame = (index, board) => {
+  console.log('main-window#savePosterFrame')
+  // TODO is this check still necessary?
+  if (index !== currentBoard) throw new Error('savePosterFrame: layers have changed')
+
+  const imageFilePath = path.join(
+    boardPath,
+    'images',
+    boardModel.boardFilenameForPosterFrame(board)
+  )
+
+  // grab fill-size image from current sketchpane (in memory)
+  let pixels = storyboarderSketchPane.sketchPane.extractThumbnailPixels(
+    storyboarderSketchPane.sketchPane.width,
+    storyboarderSketchPane.sketchPane.height,
+    storyboarderSketchPane.visibleLayersIndices
+  )
+
+  SketchPaneUtil.arrayPostDivide(pixels)
+
+  let canvas = SketchPaneUtil.pixelsToCanvas(
+    pixels,
+    storyboarderSketchPane.sketchPane.width,
+    storyboarderSketchPane.sketchPane.height
+  )
+
+  // draw a white matte background behind the transparent art
+  let context = canvas.getContext('2d')
+  context.globalCompositeOperation = 'destination-over'
+  context.fillStyle = '#ffffff'
+  context.fillRect(0, 0, canvas.width, canvas.height)
+
+  fs.writeFileSync(
+    imageFilePath,
+    canvas.toDataURL('image/jpeg').replace(/^data:image\/\w+;base64,/, ''),
+    'base64'
+  )
 }
 
 let openInEditor = async () => {
@@ -2746,16 +2816,26 @@ const clearLayers = shouldEraseCurrentLayer => {
 // UI Rendering
 ///////////////////////////////////////////////////////////////
 
+// TODO handle selections / shouldPreserveSelections ?
+// TODO handle re-ordering?
 let goNextBoard = async (direction, shouldPreserveSelections = false) => {
-  await saveImageFile()
+  let index
 
-  if (direction) {
-    currentBoard += direction
+  index = direction
+    ? currentBoard + direction
+    : currentBoard + 1
+
+  index = Math.min(Math.max(index, 0), boardData.boards.length - 1)
+
+  if (index !== currentBoard) {
+    console.log(index, '!==', currentBoard)
+    await saveImageFile()
+    currentBoard = index
+    console.log('calling gotoBoard')
+    await gotoBoard(currentBoard, shouldPreserveSelections)
   } else {
-    currentBoard++
+    console.log('not calling gotoBoard')
   }
-
-  await gotoBoard(currentBoard, shouldPreserveSelections)
 }
 
 let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
@@ -2845,10 +2925,15 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
 
     ipcRenderer.send('analyticsEvent', 'Board', 'go to board', null, currentBoard)
 
-    updateSketchPaneBoard().then(() => {
-      audioPlayback.playBoard(currentBoard)
-      resolve()
-    }).catch(e => console.error(e))
+    updateSketchPaneBoard()
+      .then(() => {
+        audioPlayback.playBoard(currentBoard)
+        resolve()
+      }).catch(e => {
+        console.log('gotoBoard could not updateSketchPaneBoard')
+        console.error(e)
+        reject(e)
+      })
   })
 }
 
@@ -3107,36 +3192,115 @@ let previousScene = ()=> {
 }
 
 
-// TODO etags?
-const updateSketchPaneBoard = async () => {
-  // get current board
-  let indexToLoad = currentBoard
+const loadPosterFrame = async board => {
+  let lastModified
+  const filename = boardModel.boardFilenameForPosterFrame(board)
+  try {
+    // file exists, cache based on mtime
+    lastModified = fs.statSync(path.join(boardPath, 'images', filename)).mtimeMs
+  } catch (err) {
+    // file not found, cache buster based on current time
+    lastModified = Date.now()
+  }
+  const imageFilePath = path.join(boardPath, 'images', filename + '?' + lastModified)
+  try {
+    let image = await exporterCommon.getImage(imageFilePath)
+    storyboarderSketchPane.sketchPane.replaceLayer(
+      storyboarderSketchPane.sketchPane.layers.findByName('composite').index,
+      image
+    )
+    console.log('loadPosterFrame rendered jpg')
+    return true
+  } catch (err) {
+    console.log('loadPosterFrame failed')
+    return false
+  }
+}
+const clearPosterFrame = () => {
+  console.log('clearPosterFrame')
+  storyboarderSketchPane.clearLayer(
+    storyboarderSketchPane.sketchPane.layers.findByName('composite').index
+  )
+}
 
-  let board = boardData.boards[indexToLoad]
+// HACK draw a fake poster frame to occlude the view
+// TODO we could instead hide/show the layers via PIXI.Sprite#visible?
+const renderFakePosterFrame = () => {
+  let canvas = document.createElement('canvas')
+  let context = canvas.getContext('2d')
+
+  canvas.width = storyboarderSketchPane.sketchPane.width
+  canvas.height = storyboarderSketchPane.sketchPane.height
+
+  context.fillStyle = '#ffffff'
+  context.fillRect(0, 0, canvas.width, canvas.height)
+
+  // context.fillStyle = '#000000'
+  // context.font = '24px serif'
+  // context.fillText('Loading …', (canvas.width - 50) / 2, canvas.height / 2)
+  // context.globalAlpha = 0.5
+
+  let layer = storyboarderSketchPane.sketchPane.layers.findByName('composite')
+  layer.replaceTextureFromCanvas(canvas)
+  // TODO remove the canvas from PIXI cache?
+
+  console.log('loadPosterFrame rendered white canvas')
+}
+
+let loaderIds = 0
+function * loadSketchPaneLayers (signal, board, indexToLoad) {
+  const loaderId = ++loaderIds
 
   const imagesPath = path.join(boardPath, 'images')
 
-  // TODO load a posterframe?
+  // show the poster frame
+  let hasPosterFrame = yield loadPosterFrame(board)
 
+  if (!hasPosterFrame) renderFakePosterFrame()
+
+  // HACK yield to get key input and cancel if necessary
+  yield CAF.delay(signal, 1)
+
+  let loadables = []
   for (let index of storyboarderSketchPane.visibleLayersIndices) {
     let layer = storyboarderSketchPane.sketchPane.layers[index]
 
-    // TODO performance :/
-    let image
+    // clear everything
+    storyboarderSketchPane.clearLayer(index)
+
+    // queue up images for load
     if (board.layers && board.layers[layer.name] && board.layers[layer.name].url) {
-      let filepath = path.join(imagesPath, board.layers[layer.name].url + '?' + Math.random())
-      image = await exporterCommon.getImage(filepath)
+      // TODO etags?
+      let filepath = path.join(imagesPath, board.layers[layer.name].url)
+      loadables.push({ index, filepath})
     }
-    if (image) {
-      storyboarderSketchPane.sketchPane.replaceLayer(index, image)
-    } else {        
-      storyboarderSketchPane.clearLayer(index)
+  }
+
+  for (let { index, filepath } of loadables) {
+    console.log(`[${loaderId}] load layer`, index, path.basename(filepath))
+
+    let lastModified
+    try {
+      // file exists, cache based on mtime
+      lastModified = fs.statSync(filepath).mtimeMs
+    } catch (err) {
+      // file not found, cache buster based on current time
+      lastModified = Date.now()
     }
+
+    let image = yield exporterCommon.getImage(filepath + '?' + lastModified)
+    storyboarderSketchPane.sketchPane.replaceLayer(index, image)
+
+    // HACK yield to get key input and cancel if necessary
+    yield CAF.delay(signal, 1)
+
+    // uncomment to test slow loading
+    // yield CAF.delay(signal, 500)
   }
 
   // if a link exists, lock the board
   storyboarderSketchPane.setIsLocked(board.link != null)
-
+  
   // load opacity from data, if data exists
   let referenceOpacity = board.layers &&
                          board.layers.reference &&
@@ -3145,15 +3309,63 @@ const updateSketchPaneBoard = async () => {
     : exporterCommon.DEFAULT_REFERENCE_LAYER_OPACITY
   layersEditor.setReferenceOpacity(referenceOpacity)
 
-  // configure onion skin
-  onionSkin.setState({
-    pathToImages: path.join(boardPath, 'images'),
-    currBoard: boardData.boards[indexToLoad],
-    prevBoard: boardData.boards[indexToLoad - 1],
-    nextBoard: boardData.boards[indexToLoad + 1],
-    enabled: store.getState().toolbar.onion
-  })
+  clearPosterFrame()
+
+  // no poster frame was found earlier
+  if (!hasPosterFrame) {
+    // force a posterframe save
+    savePosterFrame(indexToLoad, board)
+  }
 }
+
+const updateSketchPaneBoard = async () => {
+  console.log(`%cupdateSketchPaneBoard`, 'color:purple')
+
+  // cancel any in-progress loading
+  if (cancelTokens.updateSketchPaneBoard && !cancelTokens.updateSketchPaneBoard.signal.aborted) {
+    console.log(`%ccanceling in-progress load`, 'color:red')
+    cancelTokens.updateSketchPaneBoard.abort('cancel')
+    cancelTokens.updateSketchPaneBoard = undefined
+  }
+
+  // start a new loading process
+  cancelTokens.updateSketchPaneBoard = new CAF.cancelToken()
+
+  console.log(`%cloadSketchPaneLayers`, 'color:orange')
+
+  // get current board
+  let indexToLoad = currentBoard
+
+  let board = boardData.boards[indexToLoad]
+
+  // load and render the layers
+  try {
+    let cancelable = CAF(loadSketchPaneLayers)
+    let signal = cancelTokens.updateSketchPaneBoard.signal
+    await cancelable(signal, board, indexToLoad)
+  } catch (err) {
+    console.log('failed loadSketchPaneLayers')
+    console.error(err)
+  }
+
+  // load and render the onion skin
+  try {
+    // configure onion skin
+    onionSkin.setState({
+      pathToImages: path.join(boardPath, 'images'),
+      currBoard: boardData.boards[indexToLoad],
+      prevBoard: boardData.boards[indexToLoad - 1],
+      nextBoard: boardData.boards[indexToLoad + 1],
+      enabled: store.getState().toolbar.onion
+    })
+    await onionSkin.load(cancelTokens.updateSketchPaneBoard)
+  } catch (err) {
+    console.log('failed onionSkin.load')
+    console.error(err)
+  }
+}
+  
+  
   // return new Promise((resolve, reject) => {
   //   // get current board
   //   let board = boardData.boards[currentBoard]
@@ -5435,7 +5647,7 @@ const applyUndoStateForImage = async (state) => {
   // if required, go to the scene first
   let currSceneObj = getSceneObjectByIndex(currentScene)
   if (currSceneObj && currSceneObj.scene_id !== state.sceneId) {
-    saveImageFile()
+    await saveImageFile()
     // go to the requested scene
     currentScene = getSceneNumberBySceneId(state.sceneId)
     await loadScene(currentScene)
@@ -5443,21 +5655,23 @@ const applyUndoStateForImage = async (state) => {
     renderScript()
   }
 
-  await saveImageFile()
-
   // if required, go to the board first
   if (currentBoard !== state.boardIndex) {
+    await saveImageFile()
     await gotoBoard(state.boardIndex)
   }
+
+  // uncomment to force save on undo/redo
+  // await saveImageFile()
 
   for (let layerData of state.layers) {
     storyboarderSketchPane.applyUndoStateForLayer(layerData)
     markImageFileDirty([layerData.index])
   }
 
-  let index = await saveThumbnailFile(state.boardIndex)
-  await updateThumbnailDisplayFromFile(index)
-  // toolbar.emit('cancelTransform')
+  // uncomment to force save on undo/redo
+  // let index = await saveThumbnailFile(state.boardIndex)
+  // await updateThumbnailDisplayFromFile(index)
 }
 
 const createSizedContext = size => {
@@ -5484,7 +5698,7 @@ const saveAsFolder = async () => {
 
   // display the file selection window
   let dstFolderPath = remote.dialog.showSaveDialog(null, {
-    defaultPath: path.basename(srcFilePath, path.extname(srcFilePath))
+    defaultPath: app.getPath('documents')
   })
 
   // user cancelled
@@ -5595,6 +5809,7 @@ const startWebUpload = async () => {
   try {
     let result = await exporterWeb.uploadToWeb(boardFilename)
     notifications.notify({ message: 'Upload complete!' })
+    console.log('Uploaded to', result.link)
     remote.shell.openExternal(result.link)
   } catch (err) {
     if (err.name === 'StatusCodeError' && err.statusCode === 403) {
@@ -6073,7 +6288,7 @@ if (isDev) {
         ])
       }
     }
-  }, 500)
+  }, 1500)
 
   const Stats = require('stats.js')
   let stats = new Stats()
