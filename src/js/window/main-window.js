@@ -2210,6 +2210,7 @@ let saveImageFile = async () => {
 // TODO performance pass
 const savePosterFrame = (index, board) => {
   console.log('main-window#savePosterFrame')
+  // TODO is this check still necessary?
   if (index !== currentBoard) throw new Error('savePosterFrame: layers have changed')
 
   const imageFilePath = path.join(
@@ -3211,7 +3212,7 @@ const loadPosterFrame = async board => {
     console.log('loadPosterFrame rendered jpg')
     return true
   } catch (err) {
-    console.log('loadPosterFrame failed', err)
+    console.log('loadPosterFrame failed')
     return false
   }
 }
@@ -3312,8 +3313,8 @@ function * loadSketchPaneLayers (signal, board, indexToLoad) {
 
   // no poster frame was found earlier
   if (!hasPosterFrame) {
-    // so mark all layers dirty to force a poster frame save
-    markImageFileDirty(storyboarderSketchPane.visibleLayersIndices)
+    // force a posterframe save
+    savePosterFrame(indexToLoad, board)
   }
 }
 
