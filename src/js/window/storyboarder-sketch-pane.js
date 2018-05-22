@@ -364,6 +364,16 @@ class StoryboarderSketchPane extends EventEmitter {
         this.sketchPane.height
       )
     )
+
+    // alternately, call replaceTextureFromCanvas directly
+    //
+    // this.sketchPane.layers[source.index].replaceTextureFromCanvas(
+    //   SketchPaneUtil.pixelsToCanvas(
+    //     source.pixels,
+    //     this.sketchPane.width,
+    //     this.sketchPane.height
+    //   )
+    // )
   }
 
   // renderCursor () {
