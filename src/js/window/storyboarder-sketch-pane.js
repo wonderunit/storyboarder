@@ -341,6 +341,7 @@ class StoryboarderSketchPane extends EventEmitter {
   getUndoStateForLayer (index) {
     // store raw pixels with premultiplied alpha
     return {
+      index,
       pixels: this.sketchPane.layers[index].pixels(false),
       premultiplied: true
     }
