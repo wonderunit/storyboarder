@@ -5698,7 +5698,7 @@ const saveAsFolder = async () => {
 
   // display the file selection window
   let dstFolderPath = remote.dialog.showSaveDialog(null, {
-    defaultPath: path.basename(srcFilePath, path.extname(srcFilePath))
+    defaultPath: app.getPath('documents')
   })
 
   // user cancelled
