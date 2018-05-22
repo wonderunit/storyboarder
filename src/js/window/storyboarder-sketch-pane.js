@@ -1270,6 +1270,7 @@ class MovingStrategy {
   shutdown () {
     if (this.state.moved && !this.state.stamped) {
       this._stamp()
+      this.context.emit('markDirty', this.context.visibleLayersIndices)
     }
 
     this.context.sketchPaneDOMElement.removeEventListener('pointerdown', this._onPointerDown)
@@ -1283,6 +1284,7 @@ class MovingStrategy {
   }
 
   _onPointerDown (e) {
+    this.context.emit('addToUndoStack', this.context.visibleLayersIndices)
     this.state.anchor = this.context.sketchPane.localizePoint(e)
     this.state.moved = false
     this.context.sketchPaneDOMElement.addEventListener('pointermove', this._onPointerMove)
@@ -1319,6 +1321,7 @@ class MovingStrategy {
 
   _onPointerUp (e) {
     this._stamp()
+    this.context.emit('markDirty', this.context.visibleLayersIndices)
     this.context.sketchPaneDOMElement.removeEventListener('pointermove', this._onPointerMove)
   }
 
@@ -1539,6 +1542,7 @@ class ScalingStrategy {
   shutdown () {
     if (this.state.moved && !this.state.stamped) {
       this._stamp()
+      this.context.emit('markDirty', this.context.visibleLayersIndices)
     }
 
     this.context.sketchPaneDOMElement.removeEventListener('pointerdown', this._onPointerDown)
@@ -1550,6 +1554,7 @@ class ScalingStrategy {
   }
 
   _onPointerDown (e) {
+    this.context.emit('addToUndoStack', this.context.visibleLayersIndices)
     this.state.anchor = this.context.sketchPane.localizePoint(e)
     this.state.moved = false
     this.context.sketchPaneDOMElement.addEventListener('pointermove', this._onPointerMove)
@@ -1585,6 +1590,7 @@ class ScalingStrategy {
 
   _onPointerUp (e) {
     this._stamp()
+    this.context.emit('markDirty', this.context.visibleLayersIndices)
     this.context.sketchPaneDOMElement.removeEventListener('pointermove', this._onPointerMove)
   }
 
