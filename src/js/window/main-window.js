@@ -3273,7 +3273,6 @@ function * loadSketchPaneLayers (signal, board, indexToLoad) {
 
     // queue up images for load
     if (board.layers && board.layers[layer.name] && board.layers[layer.name].url) {
-      // TODO etags?
       let filepath = path.join(imagesPath, board.layers[layer.name].url)
       loadables.push({ index, filepath})
     }
