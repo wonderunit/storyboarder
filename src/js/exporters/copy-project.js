@@ -19,7 +19,7 @@ const getMediaFilesUsedByBoard = board => ([
   ...(board.audio ? [board.audio.filename] : [])              // any audio
 ])
 
-const getRelativeImagePathsUsedByScene = scene =>
+const getRelativeMediaPathsUsedByScene = scene =>
   R.flatten(scene.boards.map(getMediaFilesUsedByBoard))
 
 const getAllAbsoluteFilePathsUsedByScene = srcFilePath => {
@@ -27,7 +27,7 @@ const getAllAbsoluteFilePathsUsedByScene = srcFilePath => {
   // read the scene
   let scene = JSON.parse(fs.readFileSync(srcFilePath))
   // find all the files used in the scene
-  let usedFiles = getRelativeImagePathsUsedByScene(scene)
+  let usedFiles = getRelativeMediaPathsUsedByScene(scene)
   return [
     // srcFilePath,
     ...usedFiles.map(f => path.join(srcFolderPath, 'images', f))
