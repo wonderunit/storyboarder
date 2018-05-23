@@ -2055,33 +2055,36 @@ let saveImageFile = async () => {
   for (let index of storyboarderSketchPane.visibleLayersIndices) {
     if (storyboarderSketchPane.getLayerDirty(index)) {
       let layer = storyboarderSketchPane.sketchPane.layers[index]
-      let filename = boardModel.boardFilenameForLayer(board, layer.name)
 
-      if (layer.name === 'main') {
-        console.log(`\tskipping layer 'main'`)
-        continue
-      }
+      // special case for the `fill` layer (AKA main)
+      let filename
+      if (layer.name === 'fill') {
+        filename = board.url
 
-      // ensure board.layers exists
-      if (!board.layers) {
-        board.layers = {}
-        markBoardFileDirty()
-      }
+      } else {
+        filename = boardModel.boardFilenameForLayer(board, layer.name)
 
-      // ensure board.layers[layer.name] exists
-      if (!board.layers[layer.name]) {
-        console.log(`\tadding layer “${layer.name}” to board data`)
-        board.layers[layer.name] = {
-          url: filename,
-
-          // special case for reference layer
-          // initialize the opacity from the LayersEditor's current value
-          // TODO keep the temp ref opacity val somewhere useful
-          opacity: (index === storyboarderSketchPane.sketchPane.layers.findByName('reference').index)
-            ? layersEditor.getReferenceOpacity()
-            : undefined
+        // ensure board.layers exists
+        if (!board.layers) {
+          board.layers = {}
+          markBoardFileDirty()
         }
-        markBoardFileDirty()
+
+        // ensure board.layers[layer.name] exists
+        if (!board.layers[layer.name]) {
+          console.log(`\tadding layer “${layer.name}” to board data`)
+          board.layers[layer.name] = {
+            url: filename,
+
+            // special case for reference layer
+            // initialize the opacity from the LayersEditor's current value
+            // TODO keep the temp ref opacity val somewhere useful (see: #1116)
+            opacity: (index === storyboarderSketchPane.sketchPane.layers.findByName('reference').index)
+              ? layersEditor.getReferenceOpacity()
+              : undefined
+          }
+          markBoardFileDirty()
+        }
       }
 
       let imageFilePath = path.join(imagesPath, filename)
@@ -3264,17 +3267,27 @@ function * loadSketchPaneLayers (signal, board, indexToLoad) {
   // HACK yield to get key input and cancel if necessary
   yield CAF.delay(signal, 1)
 
+  // queue up image files for load
   let loadables = []
+  // for every layer index
   for (let index of storyboarderSketchPane.visibleLayersIndices) {
+    // get the layer
     let layer = storyboarderSketchPane.sketchPane.layers[index]
 
-    // clear everything
+    // clear the layer
     storyboarderSketchPane.clearLayer(index)
 
-    // queue up images for load
-    if (board.layers && board.layers[layer.name] && board.layers[layer.name].url) {
-      let filepath = path.join(imagesPath, board.layers[layer.name].url)
-      loadables.push({ index, filepath})
+    // special case for the `fill` layer (AKA main layer)
+    if (layer.name === 'fill') {
+      // fill = board.url
+      let filepath = path.join(imagesPath, board.url)
+      loadables.push({ index, filepath })
+
+    // otherwise, do we have data for a layer by this name?
+    } else if (board.layers && board.layers[layer.name] && board.layers[layer.name].url) {
+      let filename = board.layers[layer.name].url
+      let filepath = path.join(imagesPath, filename)
+      loadables.push({ index, filepath })
     }
   }
 
