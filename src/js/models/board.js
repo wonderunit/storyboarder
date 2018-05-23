@@ -93,6 +93,31 @@ const getUpdatedLinkFilename = board => {
   return path.basename(board.url, path.extname(board.url)) + path.extname(board.link)
 }
 
+const getMediaDescription = board => {
+  return {
+    // does board layers exist and is it not an empty object?
+    layers: board.layers && Object.keys(board.layers).length > 1 ?
+      Object.entries(board.layers).reduce(
+        (coll, [k, v]) => {
+          // add all layers that are NOT 'fill'
+          if (k !== 'fill') {
+            coll[k] = v.url
+            return coll
+          }
+        },
+        {
+          // special case to ALWAYS include 'fill' as a layer
+          fill: board.url
+        }
+      )
+      : {},
+    thumbnail: boardFilenameForThumbnail(board),
+    posterframe: boardFilenameForPosterFrame(board),
+    link: board.link == null ? undefined : board.link.filename,
+    audio: board.audio == null ? undefined : board.audio.filename
+  }
+}
+
 module.exports = {
   boardFileImageSize,
   boardFilenameForExport,
@@ -108,5 +133,7 @@ module.exports = {
 
   assignUid,
   setup,
-  updateUrlsFromIndex
+  updateUrlsFromIndex,
+
+  getMediaDescription
 }
