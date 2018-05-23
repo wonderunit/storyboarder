@@ -24,8 +24,9 @@ describe('boardModel', () => {
         assert(media.audio.length)
         assert(media.link == null)
       })
-      it('reads board.url as a fill layer', () => {
-        assert(media.layers.fill, board.url)
+      it('includes board.url and excludes fill layer', () => {
+        assert(media.url == board.url)
+        assert(media.layers.fill == null)
       })
     })
     describe('edge cases', () => {

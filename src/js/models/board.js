@@ -95,6 +95,8 @@ const getUpdatedLinkFilename = board => {
 
 const getMediaDescription = board => {
   return {
+    // 'fill' layer (AKA 'main')
+    url: board.url,
     // does board layers exist and is it not an empty object?
     layers: board.layers && Object.keys(board.layers).length > 1 ?
       Object.entries(board.layers).reduce(
@@ -105,10 +107,7 @@ const getMediaDescription = board => {
             return coll
           }
         },
-        {
-          // special case to ALWAYS include 'fill' as a layer
-          fill: board.url
-        }
+        {}
       )
       : {},
     thumbnail: boardFilenameForThumbnail(board),
