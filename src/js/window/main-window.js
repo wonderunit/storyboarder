@@ -2748,25 +2748,33 @@ let duplicateBoard = async () => {
   boardDst.notes = ''
   boardDst.duration = boardSrc.duration // either `undefined` or a value in msecs
 
-  // related: copyProject#getMediaFilesUsedByBoard
   try {
     // console.log('copying files from index', currentBoard, 'to index', insertAt)
-    let filePairs = []
-    // main
-    filePairs.push({ from: boardSrc.url, to: boardDst.url })
-    // reference
-    if (boardSrc.layers.reference) {
-      filePairs.push({ from: boardSrc.layers.reference.url, to: boardDst.layers.reference.url })
-    }
-    // notes
-    if (boardSrc.layers.notes) {
-      filePairs.push({ from: boardSrc.layers.notes.url, to: boardDst.layers.notes.url })
-    }
-    // thumbnail
-    filePairs.push({ from: boardModel.boardFilenameForThumbnail(boardSrc), to: boardModel.boardFilenameForThumbnail(boardDst) })
-    // posterframe
-    filePairs.push({ from: boardModel.boardFilenameForPosterFrame(boardSrc), to: boardModel.boardFilenameForPosterFrame(boardDst) })
 
+    // every layer
+    let filePairs = boardSrc.layers
+      ? Object.keys(boardSrc.layers)
+        .map(name =>
+          ({
+            from: boardSrc.layers[name].url,
+            to: boardDst.layers[name].url
+          }))
+      : []
+
+    // thumbnail
+    filePairs.push({
+      from: boardModel.boardFilenameForThumbnail(boardSrc),
+      to: boardModel.boardFilenameForThumbnail(boardDst)
+    })
+
+    // posterframe
+    filePairs.push({
+      from: boardModel.boardFilenameForPosterFrame(boardSrc),
+      to: boardModel.boardFilenameForPosterFrame(boardDst)
+    })
+
+    // FIXME should make a renamed copy
+    //       see https://github.com/wonderunit/storyboarder/issues/1165
     // link (if any)
     if (boardSrc.link) {
       let from = boardSrc.link
@@ -2791,6 +2799,7 @@ let duplicateBoard = async () => {
     }
 
     for (let { from, to } of filePairs) {
+      // console.log('duplicate is copying from', from, 'to', to)
       fs.writeFileSync(to, fs.readFileSync(from))
     }
 
