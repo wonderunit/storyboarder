@@ -1805,7 +1805,7 @@ let newBoard = async (position, shouldAddToUndoStack = true) => {
   //      the following causes the _newly created_ duplicate to be marked dirty
   //      (not the current board)
   // indicate dirty for save sweep
-  markImageFileDirty([storyboarderSketchPane.sketchPane.layers.findByName('fill').index]) // 'fill' === board.url
+  markImageFileDirty([storyboarderSketchPane.sketchPane.layers.findByName('fill').index])
   markBoardFileDirty() // board data is dirty
 
   // display blank thumbnail (file will not exist yet)
