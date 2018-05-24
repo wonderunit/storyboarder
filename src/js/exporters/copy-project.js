@@ -5,10 +5,10 @@ const R = require('ramda')
 const boardModel = require('../models/board')
 const util = require('../utils')
 
-const withFromToPaths = (filename, src, dst) => ({
-  from: path.join(src, filename),
-  to: path.join(dst, filename)
-})
+// const withFromToPaths = (filename, src, dst) => ({
+//   from: path.join(src, filename),
+//   to: path.join(dst, filename)
+// })
 
 // see also: cleanup.js usedFiles
 const getMediaFilesUsedByBoard = board => ([
