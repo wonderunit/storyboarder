@@ -3346,7 +3346,7 @@ const updateSketchPaneBoard = async () => {
     await cancelable(signal, board, indexToLoad)
   } catch (err) {
     console.log('failed loadSketchPaneLayers')
-    console.error(err)
+    console.warn(err)
   }
 
   // load and render the onion skin
