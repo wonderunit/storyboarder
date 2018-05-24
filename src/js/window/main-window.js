@@ -243,6 +243,8 @@ const load = async (event, args) => {
       }
     }
 
+    migrateScene()
+
     await loadBoardUI()
     await updateBoardUI()
 
@@ -454,6 +456,40 @@ const commentOnLineMileage = (miles) => {
       break
   }
   notifications.notify({message: message.join(' '), timing: 10})
+}
+
+// TODO this is really similar to verifyScene, but verifyScene requires the UI to be ready (for notifications)
+const migrateScene = () => {
+  console.log('migrateScene')
+  // upgrade to the 1.6 layers format
+  // see: https://github.com/wonderunit/storyboarder/issues/1160
+  let boardImagesPath = path.join(boardPath, 'images')
+  for (let board of boardData.boards) {
+    // if a file exists for the board.url, we haven't migrated yet
+    if (fs.existsSync(path.join(boardImagesPath, board.url))) {
+      // catch edge case where fill layer already exists
+      if (board.layers && board.layers.fill) {
+        console.warn('Found an old main layer but fill already exists')
+        remote.dialog.showMessageBox({
+          type: 'error',
+          message: 'Error while migrating board: fill layer already exists'
+        })
+      } else {
+        // ensure board.layers exists
+        if (!board.layers) {
+          board.layers = {}
+        }
+        // move main layer to fill layer
+        let filename = boardModel.boardFilenameForLayer(board, 'fill')
+        console.log(`Moving ${board.url} to new fill layer ${filename}`)
+        fs.moveSync(path.join(boardImagesPath, board.url), path.join(boardImagesPath, filename))
+        board.layers.fill = {
+          url: filename
+        }
+        markBoardFileDirty()
+      }
+    }
+  }
 }
 
 // NOTE we assume that all resources (board data and images) are saved BEFORE calling verifyScene
@@ -3147,6 +3183,7 @@ let nextScene = ()=> {
       saveBoardFile()
       currentScene++
       loadScene(currentScene).then(() => {
+        migrateScene()
         verifyScene()
         renderScript()
         renderScene()
@@ -3173,6 +3210,7 @@ let previousScene = ()=> {
       currentScene--
       currentScene = Math.max(0, currentScene)
       loadScene(currentScene).then(() => {
+        migrateScene()
         verifyScene()
         renderScript()
         renderScene()
@@ -3849,6 +3887,7 @@ let renderScenes = () => {
       if (currentScene !== Number(e.target.dataset.node)) {
         currentScene = Number(e.target.dataset.node)
         loadScene(currentScene).then(() => {
+          migrateScene()
           verifyScene()
           renderScript()
           renderScene()
@@ -5616,6 +5655,7 @@ const applyUndoStateForScene = async (state) => {
     saveBoardFile()
     currentScene = getSceneNumberBySceneId(state.sceneId)
     await loadScene(currentScene)
+    // migrateScene() // not required here
     verifyScene()
     renderScript()
   }
@@ -5652,6 +5692,7 @@ const applyUndoStateForImage = async (state) => {
     // go to the requested scene
     currentScene = getSceneNumberBySceneId(state.sceneId)
     await loadScene(currentScene)
+    // migrateScene() // not required here
     verifyScene()
     renderScript()
   }
