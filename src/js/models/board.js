@@ -26,22 +26,20 @@ const boardOrderedLayerFilenames = board => {
   let indices = []
   let filenames = []
 
-  // reference
-  if (board.layers && board.layers.reference &&
-      board.layers.reference.url && board.layers.reference.url.length) { // silently ignore blank urls
-    indices.push(0)
-    filenames.push(board.layers.reference.url)
-  }
-
-  // main
-  indices.push(1)
-  filenames.push(board.url)
-
-  // notes
-  if (board.layers && board.layers.notes &&
-      board.layers.notes.url && board.layers.notes.url.length) { // silently ignore blank urls
-    indices.push(3)
-    filenames.push(board.layers.notes.url)
+  // HACK hardcoded
+  // see StoryboarderSketchPane#visibleLayersIndices
+  for (let [index, name] of [
+    [0, 'reference'],
+    [1, 'fill'],
+    [2, 'tone'],
+    [3, 'pencil'],
+    [4, 'ink'],
+    [6, 'notes']
+  ]) {
+    if (board.layers && board.layers[name]) {
+      indices.push(index)
+      filenames.push(board.layers[name].url)
+    }
   }
   
   return { indices, filenames }
