@@ -73,14 +73,11 @@ const setup = board => {
 }
 
 const updateUrlsFromIndex = (board, index) => {
+  // TODO base on board number instead of external index information
   board.url = 'board-' + (index + 1) + '-' + board.uid + '.png'
 
-  if (board.layers.reference) {
-    board.layers.reference.url = board.url.replace('.png', '-reference.png')
-  }
-
-  if (board.layers.notes) {
-    board.layers.notes.url = board.url.replace('.png', '-notes.png')
+  for (let name of Object.keys(board.layers)) {
+    board.layers[name].url = boardFilenameForLayer(board, name)
   }
 
   return board
