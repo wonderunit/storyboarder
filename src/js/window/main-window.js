@@ -4558,7 +4558,9 @@ let cycleViewMode = async (direction = +1) => {
 
         document.querySelector('#thumbnail-container').style.display = shouldRenderThumbnailDrawer ? 'block' : 'none'
         document.querySelector('#timeline').style.display = shouldRenderThumbnailDrawer ? 'flex' : 'none'
-        await await sceneTimelineView.update({ show: !shouldRenderThumbnailDrawer })
+        if (sceneTimelineView) {
+          await sceneTimelineView.update({ show: !shouldRenderThumbnailDrawer })
+        }
         timelineModeControlView.update({ show: true })
         break
       case 1:
@@ -4569,7 +4571,9 @@ let cycleViewMode = async (direction = +1) => {
 
         document.querySelector('#thumbnail-container').style.display = shouldRenderThumbnailDrawer ? 'block' : 'none'
         document.querySelector('#timeline').style.display = shouldRenderThumbnailDrawer ? 'flex' : 'none'
-        await sceneTimelineView.update({ show: !shouldRenderThumbnailDrawer })
+        if (sceneTimelineView) {
+          await sceneTimelineView.update({ show: !shouldRenderThumbnailDrawer })
+        }
         timelineModeControlView.update({ show: true })
         break
       case 2:
@@ -4580,7 +4584,9 @@ let cycleViewMode = async (direction = +1) => {
 
         document.querySelector('#thumbnail-container').style.display = shouldRenderThumbnailDrawer ? 'block' : 'none'
         document.querySelector('#timeline').style.display = shouldRenderThumbnailDrawer ? 'flex' : 'none'
-        await sceneTimelineView.update({ show: !shouldRenderThumbnailDrawer })
+        if (sceneTimelineView) {
+          await sceneTimelineView.update({ show: !shouldRenderThumbnailDrawer })
+        }
         timelineModeControlView.update({ show: true })
         break
       case 3:
@@ -4591,7 +4597,9 @@ let cycleViewMode = async (direction = +1) => {
 
         document.querySelector('#thumbnail-container').style.display = shouldRenderThumbnailDrawer ? 'block' : 'none'
         document.querySelector('#timeline').style.display = shouldRenderThumbnailDrawer ? 'flex' : 'none'
-        await sceneTimelineView.update({ show: !shouldRenderThumbnailDrawer })
+        if (sceneTimelineView) {
+          await sceneTimelineView.update({ show: !shouldRenderThumbnailDrawer })
+        }
         timelineModeControlView.update({ show: true })
         break
       case 4:
@@ -4602,7 +4610,9 @@ let cycleViewMode = async (direction = +1) => {
 
         document.querySelector('#thumbnail-container').style.display = shouldRenderThumbnailDrawer ? 'block' : 'none'
         document.querySelector('#timeline').style.display = shouldRenderThumbnailDrawer ? 'flex' : 'none'
-        await sceneTimelineView.update({ show: !shouldRenderThumbnailDrawer })
+        if (sceneTimelineView) {
+          await sceneTimelineView.update({ show: !shouldRenderThumbnailDrawer })
+        }
         timelineModeControlView.update({ show: true })
         break
       case 5:
@@ -4613,7 +4623,9 @@ let cycleViewMode = async (direction = +1) => {
         document.querySelector('#thumbnail-container').style.display = 'none'
         document.querySelector('#timeline').style.display = 'none'
         document.querySelector('#playback #icons').style.display = 'none'
-        await sceneTimelineView.update({ show: false })
+        if (sceneTimelineView) {
+          await sceneTimelineView.update({ show: false })
+        }
         timelineModeControlView.update({ show: false })
         break
     }
@@ -4629,7 +4641,9 @@ let cycleViewMode = async (direction = +1) => {
 
         document.querySelector('#thumbnail-container').style.display = shouldRenderThumbnailDrawer ? 'block' : 'none'
         document.querySelector('#timeline').style.display = shouldRenderThumbnailDrawer ? 'flex' : 'none'
-        await sceneTimelineView.update({ show: !shouldRenderThumbnailDrawer })
+        if (sceneTimelineView) {
+          await sceneTimelineView.update({ show: !shouldRenderThumbnailDrawer })
+        }
         timelineModeControlView.update({ show: true })
         break
       case 1:
@@ -4640,7 +4654,9 @@ let cycleViewMode = async (direction = +1) => {
 
         document.querySelector('#thumbnail-container').style.display = shouldRenderThumbnailDrawer ? 'block' : 'none'
         document.querySelector('#timeline').style.display = shouldRenderThumbnailDrawer ? 'flex' : 'none'
-        await sceneTimelineView.update({ show: !shouldRenderThumbnailDrawer })
+        if (sceneTimelineView) {
+          await sceneTimelineView.update({ show: !shouldRenderThumbnailDrawer })
+        }
         timelineModeControlView.update({ show: true })
         break
       case 2:
@@ -4651,7 +4667,9 @@ let cycleViewMode = async (direction = +1) => {
 
         document.querySelector('#thumbnail-container').style.display = shouldRenderThumbnailDrawer ? 'block' : 'none'
         document.querySelector('#timeline').style.display = shouldRenderThumbnailDrawer ? 'flex' : 'none'
-        await sceneTimelineView.update({ show: !shouldRenderThumbnailDrawer })
+        if (sceneTimelineView) {
+          await sceneTimelineView.update({ show: !shouldRenderThumbnailDrawer })
+        }
         timelineModeControlView.update({ show: true })
         break
       case 3:
@@ -4663,7 +4681,9 @@ let cycleViewMode = async (direction = +1) => {
 
         document.querySelector('#thumbnail-container').style.display = 'none'
         document.querySelector('#timeline').style.display = 'none'
-        await sceneTimelineView.update({ show: false })
+        if (sceneTimelineView) {
+          await sceneTimelineView.update({ show: false })
+        }
         timelineModeControlView.update({ show: false })
         break
     }
