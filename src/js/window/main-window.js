@@ -2629,7 +2629,7 @@ const saveThumbnailFile = async (index, options = { forceReadFromFiles: false })
 
   fs.writeFileSync(imageFilePath, imageData, 'base64')
 
-  console.log('saved thumbnail', imageFilePath, 'at index:', index)
+  console.log('saved thumbnail', path.basename(imageFilePath), 'at index:', index)
 
   return index
 }
