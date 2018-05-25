@@ -185,6 +185,16 @@ let etags = {}
 const setEtag = absoluteFilePath => { etags[absoluteFilePath] = Date.now() }
 const getEtag = absoluteFilePath => etags[absoluteFilePath] || '0'
 
+const cacheKey = filepath => {
+  try {
+    // file exists, cache based on mtime
+    return fs.statSync(filepath).mtimeMs
+  } catch (err) {
+    // file not found, cache buster based on current time
+    return Date.now()
+  }
+}
+
 let srcByUid = {}
 let shouldRenderThumbnailDrawer = true
 
@@ -3258,15 +3268,10 @@ let previousScene = ()=> {
 
 const loadPosterFrame = async board => {
   let lastModified
-  const filename = boardModel.boardFilenameForPosterFrame(board)
-  try {
-    // file exists, cache based on mtime
-    lastModified = fs.statSync(path.join(boardPath, 'images', filename)).mtimeMs
-  } catch (err) {
-    // file not found, cache buster based on current time
-    lastModified = Date.now()
-  }
-  const imageFilePath = path.join(boardPath, 'images', filename + '?' + lastModified)
+  let filename = boardModel.boardFilenameForPosterFrame(board)
+  let imageFilePath = path.join(boardPath, 'images', filename)
+  imageFilePath = imageFilePath + '?' + cacheKey(imageFilePath)
+
   try {
     let image = await exporterCommon.getImage(imageFilePath)
     storyboarderSketchPane.sketchPane.replaceLayer(
@@ -3346,16 +3351,7 @@ function * loadSketchPaneLayers (signal, board, indexToLoad) {
   for (let { index, filepath } of loadables) {
     console.log(`[${loaderId}] load layer`, index, path.basename(filepath))
 
-    let lastModified
-    try {
-      // file exists, cache based on mtime
-      lastModified = fs.statSync(filepath).mtimeMs
-    } catch (err) {
-      // file not found, cache buster based on current time
-      lastModified = Date.now()
-    }
-
-    let image = yield exporterCommon.getImage(filepath + '?' + lastModified)
+    let image = yield exporterCommon.getImage(filepath + '?' + cacheKey(filepath))
     storyboarderSketchPane.sketchPane.replaceLayer(index, image)
 
     // HACK yield to get key input and cancel if necessary
@@ -4865,16 +4861,6 @@ const importImage = async imageDataURL => {
     timing: 10
   })
   sfx.positive()
-}
-
-const cacheKey = filepath => {
-  try {
-    // file exists, cache based on mtime
-    return fs.statSync(filepath).mtimeMs
-  } catch (err) {
-    // file not found, cache buster based on current time
-    return Date.now()
-  }
 }
 
 /**
