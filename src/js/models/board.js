@@ -21,6 +21,7 @@ const boardFilenameForLayer = (board, layerKey) =>
 const boardFilenameForPosterFrame = (board) =>
   board.url.replace('.png', `-posterframe.jpg`)
 
+// TODO review usage
 // array of fixed size, ordered positions
 const boardOrderedLayerFilenames = board => {
   let indices = []
@@ -90,26 +91,35 @@ const getUpdatedLinkFilename = board => {
 
 const getMediaDescription = board => {
   return {
-    // 'fill' layer (AKA 'main')
-    url: board.url,
     // does board layers exist and is it not an empty object?
-    layers: board.layers && Object.keys(board.layers).length > 1 ?
-      Object.entries(board.layers).reduce(
-        (coll, [k, v]) => {
-          // add all layers that are NOT 'fill'
-          if (k !== 'fill') {
-            coll[k] = v.url
-            return coll
-          }
-        },
-        {}
-      )
+    layers: (board.layers && Object.keys(board.layers).length > 1)
+      // return all the layer filenames
+      ? Object.entries(board.layers).reduce((coll, [name, layer]) => {
+        return {
+          ...coll,
+          [name]: layer.url
+        }
+      }, {})
       : {},
     thumbnail: boardFilenameForThumbnail(board),
     posterframe: boardFilenameForPosterFrame(board),
     link: board.link == null ? undefined : board.link.filename,
     audio: board.audio == null ? undefined : board.audio.filename
   }
+}
+
+const getMediaFilenames = board => {
+  let media = getMediaDescription(board)
+  return [
+    ...Object.values(media.layers),
+    media.thumbnail,
+    media.posterframe,
+    media.link,
+    media.audio
+  ].reduce((coll, value) => {
+    if (value) coll.push(value)
+    return coll
+  }, [])
 }
 
 module.exports = {
@@ -129,5 +139,6 @@ module.exports = {
   setup,
   updateUrlsFromIndex,
 
-  getMediaDescription
+  getMediaDescription,
+  getMediaFilenames
 }

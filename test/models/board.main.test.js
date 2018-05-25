@@ -24,9 +24,8 @@ describe('boardModel', () => {
         assert(media.audio.length)
         assert(media.link == null)
       })
-      it('includes board.url and excludes fill layer', () => {
-        assert(media.url == board.url)
-        assert(media.layers.fill == null)
+      it('excludes board.url', () => {
+        assert(media.url == null)
       })
     })
     describe('edge cases', () => {
@@ -46,6 +45,38 @@ describe('boardModel', () => {
         }
         let media = boardModel.getMediaDescription(board)
         assert(Object.keys(media.layers).length === 0)
+      })
+    })
+  })
+  describe('#getMediaFilenames', () => {
+    describe('when reading from scene data', () => {
+      let board = scene.boards[0]
+      let filenames = boardModel.getMediaFilenames(board)
+      it('lists media files', () => {
+        assert(filenames.length === 5)
+        assert(filenames.includes('board-1-1ABCD-reference.png'))
+        assert(filenames.includes('1ABCD-audio-1234567890000.wav'))
+      })
+    })
+    describe('edge cases', () => {
+      // for old iPad app boards
+      it('can handle a missing layers object', () => {
+        let board = {
+          ...scene.boards[0],
+          layers: undefined
+        }
+        let filenames = boardModel.getMediaFilenames(board)
+        assert(filenames.length === 3)
+        assert(!filenames.includes('board-1-1ABCD-reference.png'))
+      })
+      it('can handle a blank layers object', () => {
+        let board = {
+          ...scene.boards[0],
+          layers: {}
+        }
+        let filenames = boardModel.getMediaFilenames(board)
+        assert(filenames.length === 3)
+        assert(!filenames.includes('board-1-1ABCD-reference.png'))
       })
     })
   })
