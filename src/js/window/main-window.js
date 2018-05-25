@@ -5225,9 +5225,10 @@ let pasteBoards = async () => {
 }
 
 const insertBoards = async (dest, insertAt, boards, { layerDataByBoardIndex }) => {
-  // TODO pass `size` as argument instead of relying on storyboarderSketchPane
-  let { width, height } = storyboarderSketchPane.getCanvasSize()
-  let size = [width, height]
+  let size = [
+    storyboarderSketchPane.sketchPane.width,
+    storyboarderSketchPane.sketchPane.height
+  ]
 
   for (let index = 0; index < boards.length; index++) {
     let board = boards[index]
@@ -5238,19 +5239,14 @@ const insertBoards = async (dest, insertAt, boards, { layerDataByBoardIndex }) =
 
     // scale layer images and save to files
     if (imageData) {
-      if (imageData[storyboarderSketchPane.sketchPane.layers.findByName('main').index]) {
-        let scaledImageData = await fitImageData(size, imageData[storyboarderSketchPane.sketchPane.layers.findByName('main').index])
-        saveDataURLtoFile(scaledImageData, board.url)
-      }
-
-      if (imageData[storyboarderSketchPane.sketchPane.layers.findByName('reference').index]) {
-        let scaledImageData = await fitImageData(size, imageData[storyboarderSketchPane.sketchPane.layers.findByName('reference').index])
-        saveDataURLtoFile(scaledImageData, board.layers.reference.url)
-      }
-
-      if (imageData[storyboarderSketchPane.sketchPane.layers.findByName('notes').index]) {
-        let scaledImageData = await fitImageData(size, imageData[storyboarderSketchPane.sketchPane.layers.findByName('notes').index])
-        saveDataURLtoFile(scaledImageData, board.layers.notes.url)
+      for (let [name, image] of Object.entries(imageData)) {
+        // if this is a valid layer
+        if (storyboarderSketchPane.sketchPane.layers.findByName(name)) {
+          // scale the image
+          let scaledImageData = await fitImageData(size, image)
+          // save it to a file
+          saveDataURLtoFile(scaledImageData, board.layers[name].url)
+        }
       }
     }
 
