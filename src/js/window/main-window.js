@@ -1876,7 +1876,7 @@ let newBoard = async (position, shouldAddToUndoStack = true) => {
 // - PNG
 // - PSD, must have a layer named 'reference' (unless importTargetLayer preference is set to load a different one)
 //
-// TODO support EXIF orientation
+// TODO support EXIF orientation see: https://github.com/wonderunit/storyboarder/issues/1123
 let insertNewBoardsWithFiles = async filepaths => {
   console.log('main-window#insertNewBoardsWithFiles')
 
@@ -1914,7 +1914,10 @@ let insertNewBoardsWithFiles = async filepaths => {
     try {
       // resize image if too big
       const datauri = await fitImageData(
-        [storyboarderSketchPane.sketchPane.width, storyboarderSketchPane.sketchPane.height],
+        [
+          storyboarderSketchPane.sketchPane.width,
+          storyboarderSketchPane.sketchPane.height
+        ],
         imageData[targetLayer]
       )
 
@@ -1922,24 +1925,31 @@ let insertNewBoardsWithFiles = async filepaths => {
       let board = insertNewBoardDataAtPosition(insertionIndex)
       storeUndoStateForScene()
 
-      let savePath
-
-      if (targetLayer === 'main') {
-        console.log('adding as main')
-        savePath = board.url
+      let layerName
+      if (
+        targetLayer === 'main' || // for old preferences files
+        targetLayer === 'fill'
+      ) {
+        console.log('adding as fill')
+        layerName = 'fill'
       } else {
         console.log('adding as reference')
-        savePath = board.url.replace('.png', '-reference.png')
-        // update the board data
-        board.layers.reference = {
-          url: savePath,
-          opacity: 1.0 // exporterCommon.DEFAULT_REFERENCE_LAYER_OPACITY
-        }
-        // save a placeholder main layer
-        saveDataURLtoFile((document.createElement('canvas')).toDataURL(), board.url)
+        layerName = 'reference'
       }
-      console.log('saving inserted board as', savePath)
-      saveDataURLtoFile(datauri, savePath)
+
+      // update the board data
+      board.layers[layerName] = {
+        url: boardModel.boardFilenameForLayer(board, layerName),
+        ...(
+          layerName === 'reference'
+            ? { opacity: 1.0 } // alternatively: exporterCommon.DEFAULT_REFERENCE_LAYER_OPACITY
+            : {}
+        )
+      }
+      console.log('saving inserted board as', board.layers[layerName].url)
+      saveDataURLtoFile(datauri, board.layers[layerName].url)
+
+      await savePosterFrame(board, true)
       await saveThumbnailFile(insertionIndex, { forceReadFromFiles: true })
 
       markBoardFileDirty() // save new board data
@@ -1954,14 +1964,6 @@ let insertNewBoardsWithFiles = async filepaths => {
       })
     }
   }
-
-  // TODO do we need to mark the current layer dirty??
-  //
-  // if (targetLayer === 'reference') {
-  //   markImageFileDirty([LAYER_INDEX_REFERENCE])
-  // } else {
-  //   markImageFileDirty([LAYER_INDEX_MAIN])
-  // }
 
   renderThumbnailDrawer()
 
