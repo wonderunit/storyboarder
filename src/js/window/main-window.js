@@ -4242,18 +4242,6 @@ const ensureBoardExists = async () => {
   if (boardData.boards.length == 0) {
     // create a new board
     await newBoard(0, false)
-
-    // create a placeholder main.png image so verifyScene won't squawk
-    let size = boardModel.boardFileImageSize(boardData)
-    let context = createSizedContext(size)
-    let canvas = context.canvas
-    let imageData = canvas.toDataURL()
-    saveDataURLtoFile(imageData, boardData.boards[0].url)
-
-    // create a placeholder thumbnail image
-    await saveThumbnailFile(0, { forceReadFromFiles: true })
-  } else {
-    return
   }
 }
 
