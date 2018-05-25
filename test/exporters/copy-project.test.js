@@ -162,7 +162,7 @@ describe('exporters/copyProject', () => {
   it('can copy a multi-scene project', () => {
     let srcFilePath = path.resolve(path.join(fixturesPath, 'projects', 'multi-scene', 'multi-scene.fdx'))
     let dstFolderPath = path.resolve(path.join(fixturesPath, 'projects', 'new-multi-scene'))
-    assert.equal(exporterCopyProject.getFilesUsedByProject(srcFilePath).length, 16) // files, excluding .fdx
+    assert.equal(exporterCopyProject.getFilesUsedByProject(srcFilePath).length, 13) // files, excluding .fdx
     fs.mkdirSync(dstFolderPath)
     exporterCopyProject.copyProject(srcFilePath, dstFolderPath)
 

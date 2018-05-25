@@ -5,22 +5,8 @@ const R = require('ramda')
 const boardModel = require('../models/board')
 const util = require('../utils')
 
-// const withFromToPaths = (filename, src, dst) => ({
-//   from: path.join(src, filename),
-//   to: path.join(dst, filename)
-// })
-
-// see also: cleanup.js usedFiles
-const getMediaFilesUsedByBoard = board => ([
-  ...boardModel.boardOrderedLayerFilenames(board).filenames,  // all PNG files
-  boardModel.boardFilenameForThumbnail(board),                // thumbnail
-  boardModel.boardFilenameForPosterFrame(board),              // posterframe
-  ...(board.link ? [board.link] : []),                        // any linked PSD
-  ...(board.audio ? [board.audio.filename] : [])              // any audio
-])
-
 const getRelativeMediaPathsUsedByScene = scene =>
-  R.flatten(scene.boards.map(getMediaFilesUsedByBoard))
+  R.flatten(scene.boards.map(boardModel.getMediaFilenames))
 
 const getAllAbsoluteFilePathsUsedByScene = srcFilePath => {
   let srcFolderPath = path.dirname(srcFilePath)
