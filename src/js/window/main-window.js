@@ -3692,6 +3692,10 @@ let renderThumbnailDrawer = () => {
     })
     contextMenu.on('copy', () => {
       copyBoards()
+        .then(() => notifications.notify({
+          message: 'Copied board(s) to clipboard.', timing: 5
+        }))
+        .catch(err => {})
     })
     contextMenu.on('paste', () => {
       pasteBoards()
@@ -4290,13 +4294,18 @@ window.onkeydown = (e)=> {
     if (isCommandPressed('menu:edit:copy')) {
       e.preventDefault()
       copyBoards()
-      notifications.notify({ message: 'Copied board(s) to clipboard.', timing: 5 })
+        .then(() => notifications.notify({
+          message: 'Copied board(s) to clipboard.', timing: 5
+        }))
+        .catch(err => {})
 
     } else if (isCommandPressed('menu:edit:cut')) {
       e.preventDefault()
       copyBoards()
-      deleteBoards()
-      notifications.notify({ message: 'Cut board(s) to clipboard.', timing: 5 })
+        .then(() => {
+          deleteBoards()
+          notifications.notify({ message: 'Cut board(s) to clipboard.', timing: 5 })
+        }).catch(err => {})
 
     } else if (isCommandPressed('menu:edit:paste')) {
       e.preventDefault()
@@ -4784,6 +4793,10 @@ ipcRenderer.on('copy', () => {
     remote.getCurrentWindow().webContents.copy()
   } else {
     copyBoards()
+      .then(() => notifications.notify({
+        message: 'Copied board(s) to clipboard.', timing: 5
+      }))
+      .catch(err => {})
   }
 })
 
@@ -4835,6 +4848,16 @@ const importImage = async imageDataURL => {
   sfx.positive()
 }
 
+const cacheKey = filepath => {
+  try {
+    // file exists, cache based on mtime
+    return fs.statSync(filepath).mtimeMs
+  } catch (err) {
+    // file not found, cache buster based on current time
+    return Date.now()
+  }
+}
+
 /**
  * Copy
  *
@@ -4845,12 +4868,11 @@ const importImage = async imageDataURL => {
  * {
  *   boards: [
  *     {
- *       url: ...,
  *       layers: { ... }
  *     }
  *   },
  *   layerDataByBoardIndex: [
- *     'data:image/png;base64,...'
+ *     { reference: 'data:image/png;base64,...', ... }
  *   ]
  * }
  *
@@ -4858,96 +4880,51 @@ const importImage = async imageDataURL => {
  * of all visible layers as an 'image' to the clipboard.
  *
  */
-let copyBoards = () => {
+ 
+// TODO cancel token
+let copyBoards = async () => {
   if (textInputMode) return // ignore copy command in text input mode
 
-  if (selections.size > 1) {
-    //
-    //
-    // copy multiple boards
-    //
-    if (selections.has(currentBoard)) {
-      saveImageFile()
-    }
+  try {
+    // list the boards, using a copy of the selection indices set to determine order
+    let boards = [...selections].sort(util.compareNumbers).map(n => boardData.boards[n])
 
-    // make a copy of the board data for each selected board
-    let selectedBoardIndexes = [...selections].sort(util.compareNumbers)
-    let boards = selectedBoardIndexes.map(n => util.stringifyClone(boardData.boards[n]))
+    let multiple = boards.length > 1
 
-    // inject image data for each board
-    let layerDataByBoardIndex = boards.map((board, index) => {
-      let result = {}
-      let filepath = path.join(boardPath, 'images', board.url)
-      let data = FileHelper.getBase64TypeFromFilePath('png', filepath)
-      if (data) {
-        result[storyboarderSketchPane.sketchPane.layers.findByName('main').index] = data
-      } else {
-        console.warn("could not load image for board", board.url)
-      }
+    // save all current layers and data to disk
+    await saveImageFile()
 
-      if (board.layers) {
-        for (let [layerName, sym] of [['reference', storyboarderSketchPane.sketchPane.layers.findByName('reference').index], ['notes', storyboarderSketchPane.sketchPane.layers.findByName('notes').index]]) {
-          if (board.layers[layerName]) {
-            let filepath = path.join(boardPath, 'images', board.layers[layerName].url)
-            let data = FileHelper.getBase64TypeFromFilePath('png', filepath)
-            if (data) {
-              result[sym] = data
-            } else {
-              console.warn("could not load image for board", board.layers[layerName].url)
-            }
-          }
+    // collect layers, by name, for each board
+    let layerDataByBoardIndex = []
+    for (let board of boards) {
+      // all the layers, by name, for this board
+      let layerData = {}
+
+      for (let name of Object.keys(board.layers)) {
+        let filepath = path.join(boardPath, 'images', board.layers[name].url)
+
+        let img = await exporterCommon.getImage(filepath + '?' + cacheKey(filepath))
+        if (img) {
+          let canvas = document.createElement('canvas')
+          let ctx = canvas.getContext('2d')
+          canvas.height = img.naturalHeight
+          canvas.width = img.naturalWidth
+          ctx.drawImage(img, 0, 0)
+          layerData[name] = canvas.toDataURL()
+        } else {
+          console.warn("could not load image for board", board.layers[layerName].url)
         }
       }
 
-      return result
-    })
-
-    let payload = {
-      text: JSON.stringify({ boards, layerDataByBoardIndex }, null, 2)
-    }
-    clipboard.clear()
-    clipboard.write(payload)
-
-  } else {
-    //
-    //
-    // copy one board
-    //
-    saveImageFile() // ensure we have all layers created in the data and saved to disk
-
-    // copy a single board (the current board)
-    // if you have only one board in your selection, we copy the current board
-    //
-    // assumes that UI only allows a single selection when it is also the current board
-    //
-    let board = util.stringifyClone(boardData.boards[currentBoard])
-
-    let imageData = {}
-    imageData[storyboarderSketchPane.sketchPane.layers.findByName('main').index] = storyboarderSketchPane.sketchPane.layers[storyboarderSketchPane.sketchPane.layers.findByName('main').index].toDataURL()
-
-    if (board.layers) {
-      for (let [layerName, sym] of [['reference', storyboarderSketchPane.sketchPane.layers.findByName('reference').index], ['notes', storyboarderSketchPane.sketchPane.layers.findByName('reference').notes]]) {
-        if (board.layers[layerName]) {
-          imageData[sym] = storyboarderSketchPane.sketchPane.layers[sym].toDataURL()
-        }
-      }
+      layerDataByBoardIndex.push(layerData)
     }
 
-    try {
-      // let { width, height } = storyboarderSketchPane.sketchPane.getCanvasSize()
-      // let size = [width, height]
-      // // create transparent canvas, appropriately sized
-      // let canvas = createSizedContext(size).canvas
-      // await exporterCommon.flattenBoardToCanvas(
-      //   board,
-      //   canvas,
-      //   size,
-      //   boardFilename
-      // )
-      let payload = {
-        // image: nativeImage.createFromDataURL(canvas.toDataURL()),
-        // TODO could try nativeImage.createFromBuffer and pass raw pixels?
-        image: nativeImage.createFromDataURL(
+    let image = multiple
+      // multiple doesn't include the image
+      ? undefined
+      // a single flattened PNG image (for pasting to external apps)
+      // NOTE assumes that, in the UI, single selection always === current board
+      : nativeImage.createFromDataURL(
           SketchPaneUtil.pixelsToCanvas(
             storyboarderSketchPane.sketchPane.extractThumbnailPixels(
               storyboarderSketchPane.sketchPane.width,
@@ -4956,17 +4933,23 @@ let copyBoards = () => {
             ),
             storyboarderSketchPane.sketchPane.width,
             storyboarderSketchPane.sketchPane.height
-          ).toDataURL()
-        ),
-        text: JSON.stringify({ boards: [board], layerDataByBoardIndex: [imageData] }, null, 2)
-      }
-      clipboard.clear()
-      clipboard.write(payload)
-      notifications.notify({ message: "Copied" })
-    } catch (err) {
-      console.log(err)
-      notifications.notify({ message: "Error. Couldn't copy." })
+          ).toDataURL())
+
+    let payload = {
+      // if not multiple, we'll have an image for one board (the current board)
+      image,
+      // always include boards and layerDataByBoardIndex
+      text: JSON.stringify({ boards, layerDataByBoardIndex }, null, 2)
     }
+    clipboard.clear()
+    clipboard.write(payload)
+    console.log('Copied', boards.length, 'board(s) to clipboard')
+    // notifications.notify({ message: "Copied" })
+  } catch (err) {
+    console.log('Error. Could not copy.')
+    console.error(err)
+    notifications.notify({ message: 'Error. Couldn’t copy.' })
+    throw err
   }
 }
 
