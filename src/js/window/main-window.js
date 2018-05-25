@@ -2129,7 +2129,7 @@ let saveImageFile = async () => {
   // save the poster frame first
   // if at least one layer is dirty, save a poster frame JPG
   if (total > 0) {
-    savePosterFrame(indexToSave, board)
+    await savePosterFrame(board, indexToSave !== currentBoard)
   }
 
   // export layers to PNG
@@ -2238,32 +2238,48 @@ let saveImageFile = async () => {
   */
 }
 
-// TODO performance pass
-const savePosterFrame = (index, board) => {
-  console.log('main-window#savePosterFrame')
-  // TODO is this check still necessary?
-  if (index !== currentBoard) throw new Error('savePosterFrame: layers have changed')
-
+// TODO performance
+const savePosterFrame = async (board, forceReadFromFiles = false) => {
   const imageFilePath = path.join(
     boardPath,
     'images',
     boardModel.boardFilenameForPosterFrame(board)
   )
 
-  // grab fill-size image from current sketchpane (in memory)
-  let pixels = storyboarderSketchPane.sketchPane.extractThumbnailPixels(
-    storyboarderSketchPane.sketchPane.width,
-    storyboarderSketchPane.sketchPane.height,
-    storyboarderSketchPane.visibleLayersIndices
-  )
+  let canvas
 
-  SketchPaneUtil.arrayPostDivide(pixels)
+  // composite from files
+  if (forceReadFromFiles) {
+    canvas = document.createElement('canvas')
+    canvas.width = storyboarderSketchPane.sketchPane.width
+    canvas.height = storyboarderSketchPane.sketchPane.height
+    await exporterCommon.flattenBoardToCanvas(
+      board,
+      canvas,
+      [
+        canvas.width,
+        canvas.height
+      ],
+      boardFilename
+    )
 
-  let canvas = SketchPaneUtil.pixelsToCanvas(
-    pixels,
-    storyboarderSketchPane.sketchPane.width,
-    storyboarderSketchPane.sketchPane.height
-  )
+  // composite from memory
+  } else {
+    // grab fill-size image from current sketchpane (in memory)
+    let pixels = storyboarderSketchPane.sketchPane.extractThumbnailPixels(
+      storyboarderSketchPane.sketchPane.width,
+      storyboarderSketchPane.sketchPane.height,
+      storyboarderSketchPane.visibleLayersIndices
+    )
+
+    SketchPaneUtil.arrayPostDivide(pixels)
+
+    canvas = SketchPaneUtil.pixelsToCanvas(
+      pixels,
+      storyboarderSketchPane.sketchPane.width,
+      storyboarderSketchPane.sketchPane.height
+    )
+  }
 
   // draw a white matte background behind the transparent art
   let context = canvas.getContext('2d')
@@ -2271,11 +2287,14 @@ const savePosterFrame = (index, board) => {
   context.fillStyle = '#ffffff'
   context.fillRect(0, 0, canvas.width, canvas.height)
 
+  // save to a file
   fs.writeFileSync(
     imageFilePath,
     canvas.toDataURL('image/jpeg').replace(/^data:image\/\w+;base64,/, ''),
     'base64'
   )
+
+  console.log('saved posterframe', path.basename(imageFilePath))
 }
 
 let openInEditor = async () => {
@@ -3362,7 +3381,7 @@ function * loadSketchPaneLayers (signal, board, indexToLoad) {
   // no poster frame was found earlier
   if (!hasPosterFrame) {
     // force a posterframe save
-    savePosterFrame(indexToLoad, board)
+    yield savePosterFrame(board, indexToLoad !== currentBoard)
   }
 }
 
@@ -5252,6 +5271,10 @@ const insertBoards = async (dest, insertAt, boards, { layerDataByBoardIndex }) =
 
     // add to the data
     dest.splice(position, 0, board)
+
+    // save the posterframe
+    // either from SketchPane in memory, or from the filesystem
+    await savePosterFrame(board, position !== currentBoard)
 
     // update the thumbnail
     await saveThumbnailFile(position, { forceReadFromFiles: true })
