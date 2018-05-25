@@ -195,7 +195,7 @@ const cacheKey = filepath => {
   }
 }
 
-let srcByUid = {}
+let srcByUid = {} // TODO review, was used for setThumbnailDisplayAsPending, do we still need it?
 let shouldRenderThumbnailDrawer = true
 
 //  analytics.event('Application', 'open', filename)
@@ -2679,15 +2679,16 @@ const updateThumbnailDisplayFromMemory = () => {
   })
 }
 
-const setThumbnailDisplayAsPending = async (index) => {
-  let size = getThumbnailSize(boardData)
-  let context = createSizedContext(size)
-  fillContext(context, 'white')
-  let imageData = context.canvas.toDataURL('image/png')
-
-  // cache image
-  srcByUid[boardData.boards[index].uid] = imageData
-}
+// DEPRECATED
+// const setThumbnailDisplayAsPending = async (index) => {
+//   let size = getThumbnailSize(boardData)
+//   let context = createSizedContext(size)
+//   fillContext(context, 'white')
+//   let imageData = context.canvas.toDataURL('image/png')
+// 
+//   // cache image
+//   srcByUid[boardData.boards[index].uid] = imageData
+// }
 
 let deleteSingleBoard = (index) => {
   if (boardData.boards.length > 1) {
