@@ -1845,17 +1845,14 @@ let newBoard = async (position, shouldAddToUndoStack = true) => {
   }
 
   // create array entry
-  insertNewBoardDataAtPosition(position)
+  let board = insertNewBoardDataAtPosition(position)
 
-  // NOTE because we immediately call `gotoBoard` after this,
-  //      the following causes the _newly created_ duplicate to be marked dirty
-  //      (not the current board)
-  // indicate dirty for save sweep
-  markImageFileDirty([storyboarderSketchPane.sketchPane.layers.findByName('fill').index])
   markBoardFileDirty() // board data is dirty
 
-  // display blank thumbnail (file will not exist yet)
-  await setThumbnailDisplayAsPending(position)
+  // create blank posterframe
+  await savePosterFrame(board, true)
+  // create blank thumbnail
+  await saveThumbnailFile(position, { forceReadFromFiles: true })
 
   renderThumbnailDrawer()
   storeUndoStateForScene()
