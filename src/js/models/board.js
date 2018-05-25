@@ -92,7 +92,7 @@ const getUpdatedLinkFilename = board => {
 const getMediaDescription = board => {
   return {
     // does board layers exist and is it not an empty object?
-    layers: (board.layers && Object.keys(board.layers).length > 1)
+    layers: (board.layers && Object.keys(board.layers).length)
       // return all the layer filenames
       ? Object.entries(board.layers).reduce((coll, [name, layer]) => {
         return {
