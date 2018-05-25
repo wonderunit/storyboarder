@@ -5285,27 +5285,29 @@ const importFromWorksheet = async (imageArray) => {
   let insertAt = 0 // pos
   let boards = []
 
-  // related: insertNewBoardDataAtPosition
+  // related: insertNewBoardDataAtPosition, migrateBoards
   for (let i = 0; i < imageArray.length; i++) {
     let board = {}
     let uid = util.uidGen(5)
     board.uid = uid
     board.url = 'board-' + (insertAt + i) + '-' + board.uid + '.png'
-    board.layers = { reference: { url: board.url.replace('.png', '-reference.png') } }
+    board.layers = {
+      reference: {
+        url: board.url.replace('.png', '-reference.png')
+      }
+    }
     board.newShot = false
     board.lastEdited = Date.now()
 
     boards.push(board)
   }
 
-  let blankCanvas = document.createElement('canvas').toDataURL()
-
   let layerDataByBoardIndex = []
   for (let i = 0; i < imageArray.length; i++) {
-    let board = {}
-    board[0] = imageArray[i]
-    board[1] = blankCanvas
-    layerDataByBoardIndex.push(board)
+    let layerData = {}
+    layerDataByBoardIndex.push({
+      reference: imageArray[i]
+    })
   }
 
   //
