@@ -3713,7 +3713,7 @@ let renderThumbnailDrawer = () => {
         .catch(err => {})
     })
     contextMenu.on('paste', () => {
-      pasteBoards()
+      pasteBoards().catch(err => {})
     })
     contextMenu.on('import', () => {
       // TODO could move the dialog code out of main.js and call it directly here via remote.dialog
@@ -4324,7 +4324,7 @@ window.onkeydown = (e)=> {
 
     } else if (isCommandPressed('menu:edit:paste')) {
       e.preventDefault()
-      pasteBoards()
+      pasteBoards().catch(err => {})
 
     } else if (isCommandPressed('menu:edit:redo')) {
       e.preventDefault()
@@ -4829,7 +4829,7 @@ ipcRenderer.on('paste', () => {
     // console.log('pasting to parent')
     remote.getCurrentWindow().webContents.paste()
   } else {
-    pasteBoards()
+    pasteBoards().catch(err => {})
   }
 })
 
@@ -5095,98 +5095,89 @@ let pasteBoards = async () => {
   if (textInputMode) return
 
   // save the current image to disk
-  saveImageFile()
+  await saveImageFile()
 
-  let newBoards
-  let layerDataByBoardIndex
+  let pasted
 
-  // do we have JSON data?
+  // is paste a valid object from Storyboarder?
   let text = clipboard.readText()
   if (text !== "") {
     try {
-      let data = JSON.parse(text)
-
-      newBoards = data.boards
-      layerDataByBoardIndex = data.layerDataByBoardIndex
-
-      if (newBoards.length > 1) {
-        notifications.notify({ message: "Pasting " + newBoards.length + " boards.", timing: 5 })
-      } else {
-        notifications.notify({ message: "Pasting a board.", timing: 5 })
-      }
+      pasted = JSON.parse(clipboard.readText())
+      if (!pasted.boards.length || pasted.boards.length < 1) throw new Error('no boards')
+      if (!pasted.layerDataByBoardIndex.length || pasted.layerDataByBoardIndex.length < 1) throw new Error('no layer data')
     } catch (err) {
-      // if there is an error parsing the JSON
-      // ignore it, and continue on
-      // (it may be a valid single image instead)
-      // be sure to clear newBoards
+      console.log('could not parse clipboard as text')
       console.log(err)
-      newBoards = null
     }
   }
-  // ... otherwise ...
-  if (!newBoards) {
-    // ... do we have just image data?
+
+  // paste is probably from an external source
+  if (!pasted) {
+    // can we at least grab the image?
     let image = clipboard.readImage()
     if (!image.isEmpty()) {
-
-      // make a blank canvas placeholder for the main image
-      let { width, height } = storyboarderSketchPane.getCanvasSize()
-      let size = [width, height]
-      let blankCanvas = createSizedContext(size).canvas
-
-      // convert clipboard data to board object and layer data
-      newBoards = [
-        {
-          newShot: false,
-          url: 'imported.png', // placeholder filename
-          layers: {
-            reference: {
-              url: 'imported-reference.png' // placeholder filename
+      pasted = {
+        boards: [
+          // HACK trigger to construct a minimum board
+          {
+            layers: {
+              reference: {
+                url: null
+              }
             }
           }
-        }
-      ]
-      layerDataByBoardIndex = [{
-        [storyboarderSketchPane.sketchPane.layers.findByName('reference').index]: image.toDataURL(),
-        [storyboarderSketchPane.sketchPane.layers.findByName('main').index]: blankCanvas.toDataURL()
-      }]
-
-      notifications.notify({ message: "Pasting a sweet image you probably copied from the internet, you dirty dog, you. It's on the reference layer, so feel free to draw over it. You can resize or reposition it." , timing: 10 })
+        ],
+        layerDataByBoardIndex: [
+          {
+            reference: image.toDataURL()
+          }
+        ]
+      }
+    } else {
+      console.log('could not read clipboard image')
     }
   }
 
-  if (newBoards) {
+  if (pasted && pasted.boards && pasted.boards.length) {
+    if (pasted.boards.length > 1) {
+      notifications.notify({ message: "Pasting " + pasted.boards.length + " boards.", timing: 5 })
+    } else {
+      notifications.notify({ message: "Pasting a board.", timing: 5 })
+    }
+
     let selectionsAsArray = [...selections].sort(util.compareNumbers)
-    let insertAt = selectionsAsArray[selectionsAsArray.length - 1] // insert after the right-most current selection
+
+    // insert after the right-most current selection
+    let insertAt = selectionsAsArray[selectionsAsArray.length - 1]
 
     insertAt = insertAt + 1 // actual splice point
 
-    // make a copy
-    let oldBoards = util.stringifyClone(newBoards)
-    // replace newBoards with a copy, migrated
-    newBoards = migrateBoards(newBoards, insertAt)
+    // old boards is a copy
+    let oldBoards = util.stringifyClone(pasted.boards)
 
-    //
-    //
+    // new boards is a copy, but migrated
+    let newBoards = migrateBoards(util.stringifyClone(pasted.boards), insertAt)
+
+    console.log('pasting boards from', oldBoards, 'to', newBoards)
+
     // insert boards from clipboard data
-    //
-    // store the "before" state
     try {
+      // store the "before" state
       storeUndoStateForScene(true)
-
-
 
       // copy linked boards
       newBoards.forEach((dst, n) => {
         let src = oldBoards[n]
-
+    
         // NOTE: audio is not copied
-
+    
         if (src.link) {
-
+          // TODO is link being migrated properly?
+          // see: https://github.com/wonderunit/storyboarder/issues/1165
           let from  = path.join(boardPath, 'images', src.link)
           let to    = path.join(boardPath, 'images', dst.link)
-
+    
           if (fs.existsSync(from)) {
             console.log('copying linked PSD', from, 'to', to)
             fs.writeFileSync(to, fs.readFileSync(from))
@@ -5196,33 +5187,41 @@ let pasteBoards = async () => {
               timing: 8
             })
           }
-
+    
         }
       })
 
-
-
-      await insertBoards(boardData.boards, insertAt, newBoards, { layerDataByBoardIndex })
+      await insertBoards(
+        boardData.boards,
+        insertAt,
+        newBoards,
+        {
+          layerDataByBoardIndex: pasted.layerDataByBoardIndex
+        }
+      )
 
       markBoardFileDirty()
       storeUndoStateForScene()
 
       renderThumbnailDrawer()
 
-
       console.log('paste complete')
+      notifications.notify({ message: `Paste complete.` })
       sfx.positive()
-      return gotoBoard(insertAt)
+      await gotoBoard(insertAt)
 
     } catch (err) {
+      console.error(err)
+      console.log(error.stack)
+      console.log(new Error().stack)
       notifications.notify({ message: `Whoops. Could not paste boards. ${err.message}`, timing: 8 })
-      console.log(err)
+      throw err
     }
-
   } else {
     notifications.notify({ message: "There's nothing in the clipboard that I can paste. Are you sure you copied it right?", timing: 8 })
     sfx.error()
-  }
+    throw new Error('empty clipboard')
+  }  
 }
 
 const insertBoards = async (dest, insertAt, boards, { layerDataByBoardIndex }) => {
