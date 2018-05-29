@@ -103,7 +103,7 @@ const getMediaDescription = board => {
       : {},
     thumbnail: boardFilenameForThumbnail(board),
     posterframe: boardFilenameForPosterFrame(board),
-    link: board.link == null ? undefined : board.link.filename,
+    link: board.link == null ? undefined : board.link,
     audio: board.audio == null ? undefined : board.audio.filename
   }
 }

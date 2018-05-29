@@ -22,10 +22,19 @@ describe('boardModel', () => {
         assert(media.layers.reference.length)
         assert(media.layers.notes.length)
         assert(media.audio.length)
-        assert(media.link == null)
+        assert(media.link === board.link)
       })
       it('excludes board.url', () => {
         assert(media.url == null)
+      })
+      it('includes link if present', () => {
+        let boardWithLink = {
+          ...board,
+          link: 'board.psd'
+        }
+        let boardWithLinkMedia = boardModel.getMediaDescription(boardWithLink)
+        assert(boardWithLinkMedia.link.length)
+        assert(boardWithLinkMedia.link === boardWithLink.link)
       })
     })
     describe('edge cases', () => {
