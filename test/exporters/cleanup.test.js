@@ -86,7 +86,6 @@ describe('exporters/cleanup', function () {
 
     assert.equal(first.from, 'board-2-42VR9-reference.png')
     assert.equal(first.to, 'board-1-42VR9-reference.png')
-    assert.equal(boardData.boards[0].url, renamablePairs[1].to)
 
     // TODO test number, shot
     // assert.equal(boardData.boards[boardData.boards.length - 1].number, boardData.boards.length)
@@ -109,7 +108,10 @@ describe('exporters/cleanup', function () {
       // it deletes audio files that are not referenced (unused.wav)
       assert(trashedFiles.includes('unused.wav'))
 
-      assert.equal(trashedFiles.length, 4)
+      // it deletes board.url files (no longer used as of Storyboarder 1.6.x)
+      assert(trashedFiles.includes('board-0-P2FLS.png'))
+
+      assert.equal(trashedFiles.length, 9)
 
       //
       // fake trash the file
