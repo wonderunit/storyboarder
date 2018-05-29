@@ -814,11 +814,41 @@ const loadBoardUI = async () => {
     // }
 
 
-
-  document.querySelector('#show-in-finder-button').addEventListener('pointerdown', (e)=>{
+  const getActiveLayerFilePath = () => {
     let board = boardData.boards[currentBoard]
-    let imageFilename = path.join(boardPath, 'images', board.url)
-    shell.showItemInFolder(imageFilename)
+    let state = store.getState()
+    if (state.toolbar.activeTool !== 'eraser') {
+      let filename = boardModel.boardFilenameForLayer(board, state.toolbar.tools[state.toolbar.activeTool].defaultLayerName)
+      let filepath = path.join(boardPath, 'images', filename)
+      try {
+        if (fs.statSync(filepath).isFile()) {
+          return filepath
+        }
+      } catch (err) {
+        if (err.code !== 'ENOENT') {
+          throw err
+        }
+      }
+    }
+  }
+  document.querySelector('#show-in-finder-button').addEventListener('pointerdown', event => {
+    console.log('show-in-finder-button')
+    let filepath = getActiveLayerFilePath()
+    if (filepath) {
+      console.log('revealing', filepath)
+      shell.showItemInFolder(filepath)
+    } else {
+      // e.g.: `eraser`, or a layer image that hasn't save yet
+      console.log('could not find image file for current layer')
+
+      // uncomment to warn artist first
+      // remote.dialog.showMessageBox({
+      //   message: 'This layer does not have an image file yet. It may be empty, or in the process of saving. Please choose a different layer to show.'
+      // })
+
+      // just show the images folder
+      shell.showItemInFolder(path.join(boardPath, 'images'))
+    }
   })
 
   window.addEventListener('pointermove', (e)=>{
