@@ -996,8 +996,8 @@ class DrawingStrategy {
     this.context.sketchPaneDOMElement.addEventListener('pointerout', this._onPointerOut)
 
     this.context.sketchPaneDOMElement.addEventListener('pointerdown', this._onPointerDown)
-    this.context.sketchPaneDOMElement.addEventListener('pointermove', this._onPointerMove)
-    this.context.sketchPaneDOMElement.addEventListener('pointerup', this._onPointerUp)
+    document.addEventListener('pointermove', this._onPointerMove)
+    document.addEventListener('pointerup', this._onPointerUp)
     window.addEventListener('keyup', this._onKeyUp)
   }
 
@@ -1012,8 +1012,8 @@ class DrawingStrategy {
     this.context.sketchPaneDOMElement.removeEventListener('pointerout', this._onPointerOut)
 
     this.context.sketchPaneDOMElement.removeEventListener('pointerdown', this._onPointerDown)
-    this.context.sketchPaneDOMElement.removeEventListener('pointermove', this._onPointerMove)
-    this.context.sketchPaneDOMElement.removeEventListener('pointerup', this._onPointerUp)
+    document.removeEventListener('pointermove', this._onPointerMove)
+    document.removeEventListener('pointerup', this._onPointerUp)
     window.removeEventListener('keyup', this._onKeyUp)
 
     this.context.sketchPane.app.view.style.cursor = 'auto'
