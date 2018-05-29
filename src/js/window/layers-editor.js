@@ -37,14 +37,14 @@ class LayersEditor extends EventEmitter {
       })
     // document.querySelector('.layers-ui-main-visible').addEventListener('pointerdown', this.toggleLayer.bind(this, 1))
     document
-      .querySelector('.layers-ui-main-merge')
+      .querySelector('.layers-ui-fill-merge')
       .addEventListener('click', event => {
         event.preventDefault()
         this.mergeDown()
         sfx.negative()
         notifications.notify({
           message:
-            'Merged the main layer down to the reference layer. If this is not what you want, undo now!',
+            'Merged the fill layer down to the reference layer. If this is not what you want, undo now!',
           timing: 5
         })
       })
@@ -56,7 +56,7 @@ class LayersEditor extends EventEmitter {
         sfx.negative()
         notifications.notify({
           message:
-            'Merged the light layer up to the main layer. The light layer is now baked into the main layer. If this is not what you want, undo now!',
+            'Merged the light layer up to the fill layer. The light layer is now baked into the fill layer. If this is not what you want, undo now!',
           timing: 5
         })
       })
@@ -84,29 +84,29 @@ class LayersEditor extends EventEmitter {
     this.storyboarderSketchPane.clearLayers([index])
   }
 
-  // merge `main` and `reference` and draw to `reference`
+  // merge `fill` and `reference` and draw to `reference`
   mergeDown () {
     if (this.storyboarderSketchPane.preventIfLocked()) return
 
     this.storyboarderSketchPane.mergeLayers(
       [
-        this.storyboarderSketchPane.sketchPane.layers.findByName('reference'),
-        this.storyboarderSketchPane.sketchPane.layers.findByName('main')
+        this.storyboarderSketchPane.sketchPane.layers.findByName('reference').index,
+        this.storyboarderSketchPane.sketchPane.layers.findByName('fill').index
       ],
-      this.storyboarderSketchPane.sketchPane.layers.findByName('reference')
+      this.storyboarderSketchPane.sketchPane.layers.findByName('reference').index
     )
   }
 
-  // merge `main` and `reference` and draw to `main`
+  // merge `fill` and `reference` and draw to `fill`
   mergeUp () {
     if (this.storyboarderSketchPane.preventIfLocked()) return
 
     this.storyboarderSketchPane.mergeLayers(
       [
-        this.storyboarderSketchPane.sketchPane.layers.findByName('reference'),
-        this.storyboarderSketchPane.sketchPane.layers.findByName('main')
+        this.storyboarderSketchPane.sketchPane.layers.findByName('reference').index,
+        this.storyboarderSketchPane.sketchPane.layers.findByName('fill').index
       ],
-      this.storyboarderSketchPane.sketchPane.layers.findByName('main')
+      this.storyboarderSketchPane.sketchPane.layers.findByName('fill').index
     )
   }
 
