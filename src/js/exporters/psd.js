@@ -46,7 +46,7 @@ const asPsdBuffer = async metas => {
     id++
   }
 
-  // generate the background canvas
+  // generate a canvas for the Background layer
   let canvas = document.createElement('canvas')
   canvas.width = psd.width
   canvas.height = psd.height
