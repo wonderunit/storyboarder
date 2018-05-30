@@ -2842,13 +2842,13 @@ let duplicateBoard = async () => {
       to: boardModel.boardFilenameForPosterFrame(boardDst)
     })
 
-    // FIXME should make a renamed copy
-    //       see https://github.com/wonderunit/storyboarder/issues/1165
-    // link (if any)
+    // is there an existing link?
     if (boardSrc.link) {
-      let from = boardSrc.link
-      let to = boardDst.link
-      filePairs.push({ from, to })
+      // make a copy with the new name
+      filePairs.push({
+        from: boardSrc.link,
+        to: boardModel.boardFilenameForLink(boardDst)
+      })
     }
 
     // NOTE: audio is not copied
@@ -5224,7 +5224,7 @@ let pasteBoards = async () => {
           // TODO is link being migrated properly?
           // see: https://github.com/wonderunit/storyboarder/issues/1165
           let from  = path.join(boardPath, 'images', src.link)
-          let to    = path.join(boardPath, 'images', dst.link)
+          let to    = path.join(boardPath, 'images', boardModel.boardFilenameForLink(dst))
     
           if (fs.existsSync(from)) {
             console.log('copying linked PSD', from, 'to', to)
