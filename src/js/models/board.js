@@ -14,6 +14,8 @@ const boardFilenameForThumbnail = board =>
 
 const boardFilenameForLink = board =>
   board.url.replace('.png', '.psd')
+  // alternatively, could calculate link filename from url filename, preserving link extension:
+  // return path.basename(board.url, path.extname(board.url)) + path.extname(board.link)
 
 const boardFilenameForLayer = (board, layerKey) =>
   board.url.replace('.png', `-${layerKey}.png`)
@@ -84,11 +86,6 @@ const updateUrlsFromIndex = (board, index) => {
   return board
 }
 
-// calculate link filename from url filename, preserving link extension
-const getUpdatedLinkFilename = board => {
-  return path.basename(board.url, path.extname(board.url)) + path.extname(board.link)
-}
-
 const getMediaDescription = board => {
   return {
     // does board layers exist and is it not an empty object?
@@ -132,8 +129,6 @@ module.exports = {
   boardOrderedLayerFilenames,
   boardDuration,
   boardDurationWithAudio,
-
-  getUpdatedLinkFilename,
 
   assignUid,
   setup,

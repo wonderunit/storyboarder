@@ -88,7 +88,7 @@ const prepareCleanup = boardData => {
                         .map(boardModel.updateUrlsFromIndex)
                         .map(b => {
                           if (b.link) {
-                            b.link = boardModel.getUpdatedLinkFilename(b)
+                            b.link = boardModel.boardFilenameForLink(b)
                           }
                           return b
                         })
