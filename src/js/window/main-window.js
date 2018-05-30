@@ -46,6 +46,7 @@ const exporterCommon = require('../exporters/common')
 const exporterCopyProject = require('../exporters/copy-project')
 const exporterArchive = require('../exporters/archive')
 const exporterWeb = require('../exporters/web')
+const exporterPsd = require('../exporters/psd')
 
 const sceneSettingsView = require('./scene-settings-view')
 
@@ -2339,41 +2340,54 @@ const savePosterFrame = async (board, forceReadFromFiles = false) => {
 let openInEditor = async () => {
   console.log('openInEditor')
 
-  let selectedBoards = []
-  let imageFilePaths = []
-
   try {
+    let selectedBoards = []
+
     // assume selection always includes currentBoard, 
     // so make sure we've saved its contents to the filesystem
     await saveImageFile()
     // and indicate that it is now locked
     storyboarderSketchPane.setIsLocked(true)
 
-
     for (let selection of selections) {
-      console.log('\tselection:', selection)
       selectedBoards.push(boardData.boards[selection])
     }
 
     // save each selected board to its own PSD
     for (board of selectedBoards) {
-      // collect the layer data
-      let pngPaths = []
-      if (board.layers.reference && board.layers.reference.url) {
-        pngPaths.push({
-          url: path.join(boardPath, 'images', board.layers.reference.url),
-          name: "reference"
-        })
-      }
-      pngPaths.push({
-          url: path.join(boardPath, 'images', board.url),
-          name: "main"
-      })
-      if (board.layers.notes && board.layers.notes.url) {
-        pngPaths.push({
-          url: path.join(boardPath, 'images', board.layers.notes.url),
-          name: "notes"
-        })
+      // collect the layer image data
+      let namedCanvases = []
+      for (let index of storyboarderSketchPane.visibleLayersIndices) {
+        let layer = storyboarderSketchPane.sketchPane.layers[index]
+        if (board.layers[layer.name]) {
+          // load the image to a canvas
+          let image = await exporterCommon.getImage(path.join(boardPath, 'images', board.layers[layer.name].url))
+
+          let canvas = document.createElement('canvas')
+          let context = canvas.getContext('2d')
+
+          canvas.width = image.naturalWidth
+          canvas.height = image.naturalHeight
+
+          context.drawImage(image, 0, 0)
+
+          namedCanvases.push({
+            canvas,
+            name: layer.name
+          })
+        } else {
+          // blank transparent layer
+          let canvas = document.createElement('canvas')
+          let context = canvas.getContext('2d')
+
+          canvas.width = storyboarderSketchPane.sketchPane.width
+          canvas.height = storyboarderSketchPane.sketchPane.height
+
+          namedCanvases.push({
+            canvas,
+            name: layer.name
+          })
+        }
       }
 
       // assign a PSD file path
@@ -2430,7 +2444,8 @@ let openInEditor = async () => {
       }
 
       if (shouldOverwrite) {
-        await FileHelper.writePhotoshopFileFromPNGPathLayers(pngPaths, psdPath)
+        let buffer = await exporterPsd.asPsdBuffer(namedCanvases, psdPath)
+        fs.writeFileSync(psdPath, buffer)
       }
 
       // update the 'link'

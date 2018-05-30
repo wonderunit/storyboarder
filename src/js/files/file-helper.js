@@ -236,80 +236,9 @@ let readPhotoshopLayersAsCanvases = filepath => {
   return canvases
 }
 
-let writePhotoshopFileFromPNGPathLayers = (pngPathLayers, psdPath, options) => {
-  return new Promise((fulfill, reject)=>{
-    let children = []
-    let psdWidth = 0
-    let psdHeight = 0
-    let loadPromises = pngPathLayers.map((layerObject, i)=>{
-      let child = {
-        "id": (i+2),
-        "name": layerObject.name
-      }
-      children.push(child)
-      return new Promise((fulfill, reject) => {
-        let curCanvas = document.createElement('canvas')
-        let context = curCanvas.getContext('2d')
-        let curLayerImg = new Image()
-        curLayerImg.onload = () => {
-          curCanvas.width = curLayerImg.width
-          curCanvas.height = curLayerImg.height
-          context.drawImage(curLayerImg, 0, 0)
-          // hack
-          context.fillStyle = 'rgba(0,0,0,0.1)'
-          context.fillRect(0,0, 1, 1)
-          child.canvas = curCanvas
-          psdWidth = curLayerImg.width > psdWidth ? curLayerImg.width : psdWidth
-          psdHeight = curLayerImg.height > psdHeight ? curLayerImg.height : psdHeight
-          i++
-          fulfill()
-        }
-        curLayerImg.onerror = () => {
-          let message = `could not load image: ${layerObject.url}`
-          console.warn(message)
-          reject(message)
-        }
-        curLayerImg.src = layerObject.url
-      })  
-    })
-
-    return Promise.all(loadPromises)
-      .then(()=>{
-        var whiteBG = document.createElement('canvas')
-        whiteBG.width = psdWidth
-        whiteBG.height = psdHeight
-        var whiteBGContext = whiteBG.getContext('2d')
-        whiteBGContext.fillStyle = 'white'
-        whiteBGContext.fillRect(0, 0, whiteBG.width, whiteBG.height)
-        children = [{
-          "id": 1,
-          "name": "Background",
-          "canvas": whiteBG
-        }].concat(children)
-        let psd = {
-          width: psdWidth,
-          height: psdHeight,
-          imageResources: {layerSelectionIds: [3] },
-          children: children
-        };
-
-        const buffer = writePsd(psd)
-        fs.writeFileSync(psdPath, buffer)
-        fulfill()
-      })
-      .catch(error => {
-        console.error(error)
-        reject(error)
-      })
-
-  })
-
-}
-
 module.exports = {
   getBase64ImageDataFromFilePath,
   getBase64TypeFromFilePath,
-  writePhotoshopFileFromPNGPathLayers,
 
   readPhotoshopLayersAsCanvases
 }
