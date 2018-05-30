@@ -2559,7 +2559,8 @@ const refreshLinkedBoardByFilename = async filename => {
   let isCurrentBoard = curBoard.uid === board.uid
 
   if (isCurrentBoard) {
-    storeUndoStateForImage(true, [0, 1, 3])
+    // save undo state for ALL layers
+    storeUndoStateForImage(true, storyboarderSketchPane.visibleLayersIndices)
   }
 
   console.log('\treading', path.join(boardPath, 'images', board.link))
@@ -2568,39 +2569,64 @@ const refreshLinkedBoardByFilename = async filename => {
     path.join(boardPath, 'images', board.link)
   )
 
-  if (!canvases || !canvases.main) {
+  if (!canvases || !Object.keys(canvases).length) {
     notifications.notify({
       message: `[WARNING] Could not import from file ${filename}. ` +
                'That PSD might be using a feature (like text layers or masks) ' +
                'that Storyboarder does not support. ' +
-               'Or, it might be missing required named layers (like main).'
+               'Or, it might be missing required named layers.'
     })
     return
   }
 
   console.log('\tisCurrentBoard', isCurrentBoard)
   if (isCurrentBoard) {
-    console.log('canvases', canvases)
-    // TODO
-    storyboarderSketchPane.sketchPane.layers[1].replace(canvases.main)
-    canvases.reference && storyboarderSketchPane.sketchPane.layers[0].replace(canvases.reference)
-    canvases.reference && storyboarderSketchPane.sketchPane.layers[3].replace(canvases.notes)
+    // write to SketchPane layers and mark dirty
+    let dirty = []
 
-    storeUndoStateForImage(false, [0, 1, 3])
-    markImageFileDirty([0, 1, 3]) // reference, main, notes layers
-    // save image and update thumbnail
-    await saveImageFile()
-    renderThumbnailDrawer()
+    for (let name in canvases) {
+      let layer = storyboarderSketchPane.sketchPane.layers.findByName(name)
+      if (layer) {
+        layer.replace(canvases[name])
+        dirty.push(layer.index)
+      }
+    }
+
+    if (dirty.length) {
+      storeUndoStateForImage(false, dirty)
+      markImageFileDirty(dirty)
+
+      // uncomment to save ALL layer images immediately
+      // save image and update thumbnail
+      // await saveImageFile()
+
+      // just update thumbnail immediately
+      let index = await saveThumbnailFile(boardData.boards.indexOf(board))
+      await updateThumbnailDisplayFromFile(index)
+
+      renderThumbnailDrawer()
+    }
   } else {
-    saveDataURLtoFile(canvases.main.toDataURL(), board.url)
-    canvases.notes && saveDataURLtoFile(canvases.notes.toDataURL(), board.url.replace('.png', '-notes.png'))
-    canvases.reference && saveDataURLtoFile(canvases.reference.toDataURL(), board.url.replace('.png', '-reference.png'))
+    // write to files
+    for (let name in canvases) {
+      saveDataURLtoFile(canvases[name].toDataURL(), boardModel.boardFilenameForLayer(board, name))
+    }
 
-    // explicitly indicate to renderer that the file has changed
+    // update the thumbnail
+    //
+    // explicitly indicate to renderer that the thumbnail file has changed
+    // FIXME use mtime instead of etags?
     setEtag(path.join(boardPath, 'images', boardModel.boardFilenameForThumbnail(board)))
-
+    // save
     let index = await saveThumbnailFile(boardData.boards.indexOf(board))
+    // render thumbnail
     await updateThumbnailDisplayFromFile(index)
+
+    // save a posterframe for onion skin
+    await savePosterFrame(board, true)
+
+    // FIXME known issue: onion skin does not reload to reflect the changed file
+    //       see: https://github.com/wonderunit/storyboarder/issues/1185
   }
 }
 
