@@ -24,7 +24,7 @@ describe('exporters/psd', function () {
     return canvas
   }
 
-  // exporters/psd#asPsdBuffer
+  // exporters/psd#toPsdBuffer
   it('can generate a psd buffer', async function () {
     let imagesMeta = [
       {
@@ -41,7 +41,7 @@ describe('exporters/psd', function () {
       }
     ]
 
-    let buffer = await exporterPsd.asPsdBuffer(imagesMeta)
+    let buffer = await exporterPsd.toPsdBuffer(imagesMeta)
     assert(buffer.length === 198554)
   })
 })

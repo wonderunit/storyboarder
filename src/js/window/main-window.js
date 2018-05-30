@@ -2444,7 +2444,7 @@ let openInEditor = async () => {
       }
 
       if (shouldOverwrite) {
-        let buffer = await exporterPsd.asPsdBuffer(namedCanvases, psdPath)
+        let buffer = await exporterPsd.toPsdBuffer(namedCanvases, psdPath)
         fs.writeFileSync(psdPath, buffer)
       }
 

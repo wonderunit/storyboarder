@@ -9,7 +9,7 @@ interface Meta {
   canvas: HTMLCanvasElement
 }
 */
-const asPsdBuffer = async metas => {
+const toPsdBuffer = async metas => {
   let psd = {
     width: 0,
     height: 0,
@@ -60,5 +60,5 @@ const asPsdBuffer = async metas => {
 }
 
 module.exports = {
-  asPsdBuffer
+  toPsdBuffer
 }
