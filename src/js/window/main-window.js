@@ -2633,16 +2633,26 @@ const renderThumbnailToNewCanvas = (index, options = { forceReadFromFiles: false
   if (!options.forceReadFromFiles && index === currentBoard) {
     // grab from current sketchpane (in memory)
     let canvas = SketchPaneUtil.pixelsToCanvas(
-      storyboarderSketchPane.sketchPane.extractThumbnailPixels(size[0], size[1], storyboarderSketchPane.visibleLayersIndices),
+      storyboarderSketchPane.sketchPane.extractThumbnailPixels(
+        size[0],
+        size[1],
+        storyboarderSketchPane.visibleLayersIndices
+      ),
       size[0],
       size[1]
     )
+
+    // draw a white matte background behind the transparent art
+    let context = canvas.getContext('2d')
+    context.globalCompositeOperation = 'destination-over'
+    context.fillStyle = '#ffffff'
+    context.fillRect(0, 0, canvas.width, canvas.height)
 
     return Promise.resolve(canvas)
   } else {
     // grab from files
     let context = createSizedContext(size)
-    // fillContext(context, 'white')
+    fillContext(context, 'white')
     let canvas = context.canvas
 
     return exporterCommon.flattenBoardToCanvas(
