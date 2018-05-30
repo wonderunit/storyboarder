@@ -14,11 +14,7 @@ const asPsdBuffer = async metas => {
     width: 0,
     height: 0,
     imageResources: {
-      //
-      // TODO
-      // TODO
-      // TODO
-      //
+      // TODO what does this mean? why 3?
       layerSelectionIds: [3]
     },
     children: [
