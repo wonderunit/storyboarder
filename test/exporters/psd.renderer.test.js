@@ -4,24 +4,44 @@ const path = require('path')
 const assert = require('assert')
 
 const exporterPsd = require('../../src/js/exporters/psd')
+const exporterCommon = require('../../src/js/exporters/common')
 
 describe('exporters/psd', function () {
   const fixturesPath = path.join(__dirname, '..', 'fixtures')
+  const imagesPath = path.join(fixturesPath, 'example', 'images')
 
-  // exporters/psd#imagesMetaToPSDBuffer
+  let asCanvas = async filepath => {
+    let image = await exporterCommon.getImage(filepath)
+
+    let canvas = document.createElement('canvas')
+    let context = canvas.getContext('2d')
+
+    canvas.width = image.naturalWidth
+    canvas.height = image.naturalHeight
+
+    context.drawImage(image, 0, 0)
+
+    return canvas
+  }
+
+  // exporters/psd#asPsdBuffer
   it('can generate a psd buffer', async function () {
     let imagesMeta = [
       {
         name: 'reference',
-        filepath: path.join(fixturesPath, 'example', 'images', 'board-1-UDRF3-reference.png')
+        canvas: await asCanvas(
+          path.join(imagesPath, 'board-1-UDRF3-reference.png')
+        )
       },
       {
         name: 'notes',
-        filepath: path.join(fixturesPath, 'example', 'images', 'board-1-UDRF3-notes.png')
+        canvas: await asCanvas(
+          path.join(imagesPath, 'board-1-UDRF3-notes.png')
+        )
       }
     ]
 
-    let buffer = await exporterPsd.imagesMetaToPSDBuffer(imagesMeta)
+    let buffer = await exporterPsd.asPsdBuffer(imagesMeta)
     assert(buffer.length === 198554)
   })
 })
