@@ -145,8 +145,19 @@ const getBase64TypeFromPhotoshopFilePath = (filepath, options) => {
 //   }
 // }
 
+// TODO move this to importers#fromPsdBuffer ? 
+//      see: https://github.com/wonderunit/storyboarder/issues/1183
 let readPhotoshopLayersAsCanvases = filepath => {
   console.log('FileHelper#readPhotoshopLayersAsCanvases')
+
+  let importable = [
+    'reference',
+    'fill',
+    'tone',
+    'pencil',
+    'ink',
+    'notes'
+  ]
 
   if (!fs.existsSync(filepath)) return
 
@@ -183,10 +194,10 @@ let readPhotoshopLayersAsCanvases = filepath => {
 
   const canvasNameForLayer = name => {
     name = name.toLowerCase()
-    if (name === 'reference' || name === 'notes') {
+    if (importable.includes(name)) {
       return name
     } else {
-      return 'main'
+      return 'fill'
     }
   }
 
@@ -201,7 +212,7 @@ let readPhotoshopLayersAsCanvases = filepath => {
         // not named "Background"
         layer.name.indexOf('Background') === -1
       ) {
-        let name = root ? canvasNameForLayer(layer.name) : 'main'
+        let name = root ? canvasNameForLayer(layer.name) : 'fill'
         if (!canvases[name]) {
           console.log('\tadding canvas', name)
           canvases[name] = document.createElement('canvas')
