@@ -29,7 +29,8 @@ const asPsdBuffer = async metas => {
   let id = 2 // 1 = Background, 2 = Layer #1
   for (meta of metas) {
     // hack
-    // TODO why is this required?
+    // "fix for external editor in storyboarder spec for clip studio pro"
+    // see: https://github.com/wonderunit/storyboarder/commit/d22dd34
     let context = meta.canvas.getContext('2d')
     context.fillStyle = 'rgba(0, 0, 0, 0.1)'
     context.fillRect(0, 0, 1, 1)
