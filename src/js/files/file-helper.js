@@ -5,7 +5,7 @@ const initializeCanvas = require('ag-psd').initializeCanvas
 const writePsd = require('ag-psd').writePsd
 
 /**
- * Retrieve an ojbect with base 64 representations of an image file ready for storyboard pane layers.
+ * Retrieve an object with base 64 representations of an image file ready for storyboard pane layers.
  *  
  * @param {string} filepath 
  * @param {Object} options
