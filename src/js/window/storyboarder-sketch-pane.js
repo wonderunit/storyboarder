@@ -1077,26 +1077,33 @@ class DrawingStrategy {
   }
 
   _onPointerMove (e) {
+    // always update the cursor
     this.context.sketchPane.move(e)
 
-    // track X/Y on the full-size texture
-    const point = this.context.sketchPane.localizePoint(e)
-    this.context.lineMileageCounter.add(point)
-
-    // audible event for Sonifier
     if (this.context.sketchPane.isDrawing()) {
+      // track X/Y on the full-size texture
+      const point = this.context.sketchPane.localizePoint(e)
+      this.context.lineMileageCounter.add(point)
+
+      // audible event for Sonifier
       this.context.emit('pointermove', point)
     }
   }
 
   _onPointerUp (e) {
+    let wasDrawing = this.context.sketchPane.isDrawing()
+
     this.context.sketchPane.up(e)
+
     this._updateQuickErase(e)
     this.context.store.dispatch({ type: 'TOOLBAR_MODE_STATUS_SET', payload: 'idle', meta: { scope: 'local' } })
-    this.context.emit('lineMileage', this.context.lineMileageCounter.get())
 
-    // audible event for Sonifier
-    this.context.emit('pointerup', this.context.sketchPane.localizePoint(e))
+    if (wasDrawing) {
+      this.context.emit('lineMileage', this.context.lineMileageCounter.get())
+
+      // audible event for Sonifier
+      this.context.emit('pointerup', this.context.sketchPane.localizePoint(e))
+    }
   }
 
   _onKeyUp (e) {
