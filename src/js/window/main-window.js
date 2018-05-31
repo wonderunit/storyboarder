@@ -2926,7 +2926,6 @@ let duplicateBoard = async () => {
 
     // insert data
     boardData.boards.splice(insertAt, 0, boardDst)
-
     markBoardFileDirty()
     storeUndoStateForScene()
 
