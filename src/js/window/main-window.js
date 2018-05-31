@@ -2593,6 +2593,8 @@ const refreshLinkedBoardByFilename = async filename => {
     // write to SketchPane layers and mark dirty
     let dirty = []
 
+    // TODO could check and only push if PSD canvas is not blank?
+
     for (let name in canvases) {
       let layer = storyboarderSketchPane.sketchPane.layers.findByName(name)
       if (layer) {
