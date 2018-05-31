@@ -15,7 +15,7 @@ const DEFAULT_REFERENCE_LAYER_OPACITY = 0.75
 const msecsToFrames = (fps, value) =>
   (fps/1000) * value
 
-const getImage = url => {
+const getImage = async url => {
   return new Promise((resolve, reject) => {
     let img = new Image()
     img.onload = () => {

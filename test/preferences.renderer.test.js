@@ -55,9 +55,11 @@ describe('toolbar preferences (renderer)', () => {
     // change its color to red
     toolbarState = toolbarReducer(toolbarState, { type: 'TOOLBAR_TOOL_SET', payload: { color: 0xff0000 } })
 
-    toolbarState = toolbarReducer(toolbarState, { type: 'TOOLBAR_CAPTIONS_SET', payload: true })
+    // set captions to true
+    toolbarState = toolbarReducer(toolbarState, { type: 'TOOLBAR_CAPTIONS_TOGGLE' })
+    assert.equal(toolbarState.captions, true)
 
-    // merge into preferences
+    // merge the toolbar settings into preferences
     // captions are included
     // guides and onion skin are ignored intentionally
     let preferencesState = preferencesReducer(undefined, {

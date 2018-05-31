@@ -80,7 +80,7 @@
     }
   },
   "devDependencies": {
-    "electron": "2.0.0",
+    "electron": "2.0.2",
     "electron-builder": "20.4.0",
     "electron-mocha": "4.0.0",
     "electron-osx-sign": "^0.4.8",
@@ -94,6 +94,7 @@
     "ag-psd": "^1.2.0",
     "alchemancy": "github:wonderunit/alchemancy",
     "archiver": "2.0.3",
+    "caf": "7.0.4",
     "chokidar": "1.7.0",
     "color-js": "^1.0.4",
     "eases": "1.0.8",
@@ -115,6 +116,7 @@
     "pdfjs-dist": "1.9.426",
     "pdfkit": "^0.8.3",
     "plist": "2.1.0",
+    "promise-cancelable": "2.1.1",
     "qr-image": "^3.2.0",
     "qrcode-reader": "^1.0.0",
     "ramda": "0.25.0",

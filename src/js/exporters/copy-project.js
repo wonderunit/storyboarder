@@ -5,27 +5,15 @@ const R = require('ramda')
 const boardModel = require('../models/board')
 const util = require('../utils')
 
-const withFromToPaths = (filename, src, dst) => ({
-  from: path.join(src, filename),
-  to: path.join(dst, filename)
-})
-
-const getMediaFilesUsedByBoard = board => ([
-  ...boardModel.boardOrderedLayerFilenames(board).filenames,  // all PNG files
-  boardModel.boardFilenameForThumbnail(board),                // thumbnail
-  ...(board.link ? [board.link] : []),                        // any linked PSD
-  ...(board.audio ? [board.audio.filename] : [])              // any audio
-])
-
-const getRelativeImagePathsUsedByScene = scene =>
-  R.flatten(scene.boards.map(getMediaFilesUsedByBoard))
+const getRelativeMediaPathsUsedByScene = scene =>
+  R.flatten(scene.boards.map(boardModel.getMediaFilenames))
 
 const getAllAbsoluteFilePathsUsedByScene = srcFilePath => {
   let srcFolderPath = path.dirname(srcFilePath)
   // read the scene
   let scene = JSON.parse(fs.readFileSync(srcFilePath))
   // find all the files used in the scene
-  let usedFiles = getRelativeImagePathsUsedByScene(scene)
+  let usedFiles = getRelativeMediaPathsUsedByScene(scene)
   return [
     // srcFilePath,
     ...usedFiles.map(f => path.join(srcFolderPath, 'images', f))

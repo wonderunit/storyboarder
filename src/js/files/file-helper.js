@@ -1,11 +1,10 @@
 const path = require('path')
 const fs = require('fs')
-const readPsd = require('ag-psd').readPsd
-const initializeCanvas = require('ag-psd').initializeCanvas
-const writePsd = require('ag-psd').writePsd
+
+const importerPsd = require('../importers/psd')
 
 /**
- * Retrieve an ojbect with base 64 representations of an image file ready for storyboard pane layers.
+ * Retrieve an object with base 64 representations of an image file ready for storyboard pane layers.
  *  
  * @param {string} filepath 
  * @param {Object} options
@@ -25,7 +24,12 @@ let getBase64ImageDataFromFilePath = (filepath, options={ importTargetLayer: 're
       result[importTargetLayer] = getBase64TypeFromFilePath('jpg', filepath)
       break
     case '.psd':
-      result = getBase64TypeFromPhotoshopFilePath(filepath, options)
+      try {
+        result = getBase64TypeFromPhotoshopFilePath(filepath, options)
+      } catch (err) {
+        console.error(err)
+        return null
+      }
       break
   }
   return result
@@ -39,13 +43,22 @@ let getBase64TypeFromFilePath = (type, filepath) => {
   return `data:image/${type};base64,${data}`
 }
 
-const getBase64TypeFromPhotoshopFilePath = (filepath, options) => {
-  const canvases = readPhotoshopLayersAsCanvases(filepath)
-  return {
-    main: canvases.main && canvases.main.toDataURL(),
-    notes: canvases.notes && canvases.notes.toDataURL(),
-    reference: canvases.reference && canvases.reference.toDataURL()
+const getBase64TypeFromPhotoshopFilePath = filepath => {
+  if (!fs.existsSync(filepath)) return null
+
+  let canvases = importerPsd.fromPsdBuffer(
+    fs.readFileSync(
+      filepath
+    )
+  )
+
+  // convert in-place
+  for (key in canvases) {
+    canvases[key] = canvases[key].toDataURL()
   }
+
+  // e.g.: { fill: 'data:image/png,...' }
+  return canvases
 }
 
 // let getBase64TypeFromPhotoshopFilePath = (filepath, options) => {
@@ -145,171 +158,7 @@ const getBase64TypeFromPhotoshopFilePath = (filepath, options) => {
 //   }
 // }
 
-let readPhotoshopLayersAsCanvases = filepath => {
-  console.log('FileHelper#readPhotoshopLayersAsCanvases')
-
-  if (!fs.existsSync(filepath)) return
-
-  // setup the PSD reader's initializeCanvas function
-  initializeCanvas(
-    (width, height) => {
-      let canvas = document.createElement('canvas')
-      canvas.width = width
-      canvas.height = height
-      return canvas
-    }
-  )
-
-  let psd
-
-  try {
-    const buffer = fs.readFileSync(filepath)
-    psd = readPsd(buffer)
-  } catch (exception) {
-    console.error(exception)
-    return
-  }
-
-  if (!psd) {
-    console.warn('PSD is invalid', psd)
-    return
-  }
-
-  console.log('got psd', psd)
-
-  let numChannelValues = (1 << psd.bitsPerChannel) - 1
-
-  let canvases = { }
-
-  const canvasNameForLayer = name => {
-    name = name.toLowerCase()
-    if (name === 'reference' || name === 'notes') {
-      return name
-    } else {
-      return 'main'
-    }
-  }
-
-  const addLayersRecursively = (children, root) => {
-    console.log('addLayersRecursively adding', children.length, 'layers')
-    for (let layer of children) {
-      if (
-        // not hidden
-        !layer.hidden &&
-        // has canvas
-        layer.canvas &&
-        // not named "Background"
-        layer.name.indexOf('Background') === -1
-      ) {
-        let name = root ? canvasNameForLayer(layer.name) : 'main'
-        if (!canvases[name]) {
-          console.log('\tadding canvas', name)
-          canvases[name] = document.createElement('canvas')
-          canvases[name].width = psd.width
-          canvases[name].height = psd.height
-        }
-        let canvas = canvases[name]
-        let context = canvas.getContext('2d')
-
-        console.log('\tdrawing to canvas', name, 'from', layer.name)
-
-        // composite the PSD layer canvas (which may have a smaller rect) to full-size canvas
-        context.globalAlpha = layer.opacity / numChannelValues
-        context.drawImage(layer.canvas, layer.left, layer.top)
-        console.log('\tdrawing complete')
-      }
-
-      if (layer.children) {
-        addLayersRecursively(layer.children, false)
-      }
-    }
-  }
-
-  if (psd.children) {
-    // PSD with multiple layers
-    addLayersRecursively(psd.children, true)
-  } else {
-    // PSD with a single layer
-    canvases.reference = psd.canvas
-  }
-
-  return canvases
-}
-
-let writePhotoshopFileFromPNGPathLayers = (pngPathLayers, psdPath, options) => {
-  return new Promise((fulfill, reject)=>{
-    let children = []
-    let psdWidth = 0
-    let psdHeight = 0
-    let loadPromises = pngPathLayers.map((layerObject, i)=>{
-      let child = {
-        "id": (i+2),
-        "name": layerObject.name
-      }
-      children.push(child)
-      return new Promise((fulfill, reject) => {
-        let curCanvas = document.createElement('canvas')
-        let context = curCanvas.getContext('2d')
-        let curLayerImg = new Image()
-        curLayerImg.onload = () => {
-          curCanvas.width = curLayerImg.width
-          curCanvas.height = curLayerImg.height
-          context.drawImage(curLayerImg, 0, 0)
-          // hack
-          context.fillStyle = 'rgba(0,0,0,0.1)'
-          context.fillRect(0,0, 1, 1)
-          child.canvas = curCanvas
-          psdWidth = curLayerImg.width > psdWidth ? curLayerImg.width : psdWidth
-          psdHeight = curLayerImg.height > psdHeight ? curLayerImg.height : psdHeight
-          i++
-          fulfill()
-        }
-        curLayerImg.onerror = () => {
-          let message = `could not load image: ${layerObject.url}`
-          console.warn(message)
-          reject(message)
-        }
-        curLayerImg.src = layerObject.url
-      })  
-    })
-
-    return Promise.all(loadPromises)
-      .then(()=>{
-        var whiteBG = document.createElement('canvas')
-        whiteBG.width = psdWidth
-        whiteBG.height = psdHeight
-        var whiteBGContext = whiteBG.getContext('2d')
-        whiteBGContext.fillStyle = 'white'
-        whiteBGContext.fillRect(0, 0, whiteBG.width, whiteBG.height)
-        children = [{
-          "id": 1,
-          "name": "Background",
-          "canvas": whiteBG
-        }].concat(children)
-        let psd = {
-          width: psdWidth,
-          height: psdHeight,
-          imageResources: {layerSelectionIds: [3] },
-          children: children
-        };
-
-        const buffer = writePsd(psd)
-        fs.writeFileSync(psdPath, buffer)
-        fulfill()
-      })
-      .catch(error => {
-        console.error(error)
-        reject(error)
-      })
-
-  })
-
-}
-
 module.exports = {
   getBase64ImageDataFromFilePath,
-  getBase64TypeFromFilePath,
-  writePhotoshopFileFromPNGPathLayers,
-
-  readPhotoshopLayersAsCanvases
+  getBase64TypeFromFilePath  
 }

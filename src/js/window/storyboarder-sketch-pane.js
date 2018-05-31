@@ -14,8 +14,6 @@ const LineMileageCounter = require('./line-mileage-counter')
 const { createIsCommandPressed } = require('../utils/keytracker')
 const util = require('../utils')
 
-const { LAYER_NAME_BY_INDEX } = require('../constants')
-
 const observeStore = require('../shared/helpers/observeStore')
 
 const sfx = require('../wonderunit-sound')
@@ -51,11 +49,6 @@ class StoryboarderSketchPane extends EventEmitter {
 
     // NOTE sets DrawingStrategy
     // this.cancelTransform()
-
-    // a list of all the active layer indices
-    // for multi-erase, move, and scale, this is all the indices that will be stamped
-    // HACK hardcoded
-    this.visibleLayersIndices = [0, 1, 3] // reference, main, notes
 
     // this.compositeIndex = 5 // composite
 
@@ -132,14 +125,39 @@ class StoryboarderSketchPane extends EventEmitter {
     // this.sketchPane.on('onbeforeup', this.onSketchPaneBeforeUp.bind(this)) // MIGRATE
     // this.sketchPane.on('onup', this.onSketchPaneOnUp.bind(this)) // MIGRATE
 
-    this.sketchPane.newLayer() // reference
-    // this.sketchPane.fillLayer('#fff')
-    this.sketchPane.newLayer() // main
-    this.sketchPane.newLayer() // onion skin
-    this.sketchPane.newLayer() // notes
-    this.sketchPane.newLayer() // guides
-    this.sketchPane.newLayer() // composite
-    this.sketchPane.setCurrentLayerIndex(1)
+    // 0 = reference
+    this.sketchPane.newLayer({ name: 'reference' })
+    // 1 = fill
+    this.sketchPane.newLayer({ name: 'fill' })
+    // 2 = tone
+    this.sketchPane.newLayer({ name: 'tone' })
+    // 3 = pencil
+    this.sketchPane.newLayer({ name: 'pencil' })
+    // 4 = ink
+    this.sketchPane.newLayer({ name: 'ink' })
+    // 5 = onion
+    this.sketchPane.newLayer({ name: 'onion' })
+    // 6 = notes
+    this.sketchPane.newLayer({ name: 'notes' })
+    // 7 = guides
+    this.sketchPane.newLayer({ name: 'guides' })
+    // 8 = composite
+    this.sketchPane.newLayer({ name: 'composite' })
+
+    this.sketchPane.setCurrentLayerIndex(
+      this.sketchPane.layers.findByName('fill').index
+    )
+
+    // a list of all the active layer indices
+    // for multi-erase, move, and scale, this is all the indices that will be stamped
+    this.visibleLayersIndices = [
+      this.sketchPane.layers.findByName('reference').index,
+      this.sketchPane.layers.findByName('fill').index,
+      this.sketchPane.layers.findByName('tone').index,
+      this.sketchPane.layers.findByName('pencil').index,
+      this.sketchPane.layers.findByName('ink').index,
+      this.sketchPane.layers.findByName('notes').index
+    ]
 
     // TODO minimum update (e.g.: maybe just cursor size?)
     // sync sketchpane to state
@@ -155,17 +173,9 @@ class StoryboarderSketchPane extends EventEmitter {
         // if we're not erasing ...
         if (toolbarState.activeTool !== 'eraser') {
           // ... set the current layer based on the active tool
-          switch (toolbarState.activeTool) {
-            case 'light-pencil':
-              this.sketchPane.setCurrentLayerIndex(0) // HACK hardcoded
-              break
-            case 'note-pen':
-              this.sketchPane.setCurrentLayerIndex(3) // HACK hardcoded
-              break
-            default:
-              this.sketchPane.setCurrentLayerIndex(1) // HACK hardcoded
-              break
-          }
+          this.sketchPane.setCurrentLayerIndex(
+            this.sketchPane.layers.findByName(tool.defaultLayerName).index
+          )
         }
 
         if ((this.strategy && this.strategy.name) !== toolbarState.mode) {
@@ -329,6 +339,7 @@ class StoryboarderSketchPane extends EventEmitter {
   getUndoStateForLayer (index) {
     // store raw pixels with premultiplied alpha
     return {
+      index,
       pixels: this.sketchPane.layers[index].pixels(false),
       premultiplied: true
     }
@@ -341,10 +352,8 @@ class StoryboarderSketchPane extends EventEmitter {
       // changes source, which is a reference to an to undostack state
       source.premultiplied = false
     }
-    // NOTE calls replaceLayer directly to avoid triggering `addToUndoStack` event
     // TODO try directly creating texture from pixel data via texImage2D
-    this.sketchPane.replaceLayer(
-      source.index,
+    this.sketchPane.layers[source.index].replaceTextureFromCanvas(
       SketchPaneUtil.pixelsToCanvas(
         source.pixels,
         this.sketchPane.width,
@@ -987,8 +996,8 @@ class DrawingStrategy {
     this.context.sketchPaneDOMElement.addEventListener('pointerout', this._onPointerOut)
 
     this.context.sketchPaneDOMElement.addEventListener('pointerdown', this._onPointerDown)
-    this.context.sketchPaneDOMElement.addEventListener('pointermove', this._onPointerMove)
-    this.context.sketchPaneDOMElement.addEventListener('pointerup', this._onPointerUp)
+    document.addEventListener('pointermove', this._onPointerMove)
+    document.addEventListener('pointerup', this._onPointerUp)
     window.addEventListener('keyup', this._onKeyUp)
   }
 
@@ -1003,8 +1012,8 @@ class DrawingStrategy {
     this.context.sketchPaneDOMElement.removeEventListener('pointerout', this._onPointerOut)
 
     this.context.sketchPaneDOMElement.removeEventListener('pointerdown', this._onPointerDown)
-    this.context.sketchPaneDOMElement.removeEventListener('pointermove', this._onPointerMove)
-    this.context.sketchPaneDOMElement.removeEventListener('pointerup', this._onPointerUp)
+    document.removeEventListener('pointermove', this._onPointerMove)
+    document.removeEventListener('pointerup', this._onPointerUp)
     window.removeEventListener('keyup', this._onKeyUp)
 
     this.context.sketchPane.app.view.style.cursor = 'auto'
@@ -1068,26 +1077,33 @@ class DrawingStrategy {
   }
 
   _onPointerMove (e) {
+    // always update the cursor
     this.context.sketchPane.move(e)
 
-    // track X/Y on the full-size texture
-    const point = this.context.sketchPane.localizePoint(e)
-    this.context.lineMileageCounter.add(point)
-
-    // audible event for Sonifier
     if (this.context.sketchPane.isDrawing()) {
+      // track X/Y on the full-size texture
+      const point = this.context.sketchPane.localizePoint(e)
+      this.context.lineMileageCounter.add(point)
+
+      // audible event for Sonifier
       this.context.emit('pointermove', point)
     }
   }
 
   _onPointerUp (e) {
+    let wasDrawing = this.context.sketchPane.isDrawing()
+
     this.context.sketchPane.up(e)
+
     this._updateQuickErase(e)
     this.context.store.dispatch({ type: 'TOOLBAR_MODE_STATUS_SET', payload: 'idle', meta: { scope: 'local' } })
-    this.context.emit('lineMileage', this.context.lineMileageCounter.get())
 
-    // audible event for Sonifier
-    this.context.emit('pointerup', this.context.sketchPane.localizePoint(e))
+    if (wasDrawing) {
+      this.context.emit('lineMileage', this.context.lineMileageCounter.get())
+
+      // audible event for Sonifier
+      this.context.emit('pointerup', this.context.sketchPane.localizePoint(e))
+    }
   }
 
   _onKeyUp (e) {
@@ -1258,6 +1274,7 @@ class MovingStrategy {
   shutdown () {
     if (this.state.moved && !this.state.stamped) {
       this._stamp()
+      this.context.emit('markDirty', this.context.visibleLayersIndices)
     }
 
     this.context.sketchPaneDOMElement.removeEventListener('pointerdown', this._onPointerDown)
@@ -1271,6 +1288,7 @@ class MovingStrategy {
   }
 
   _onPointerDown (e) {
+    this.context.emit('addToUndoStack', this.context.visibleLayersIndices)
     this.state.anchor = this.context.sketchPane.localizePoint(e)
     this.state.moved = false
     this.context.sketchPaneDOMElement.addEventListener('pointermove', this._onPointerMove)
@@ -1307,6 +1325,7 @@ class MovingStrategy {
 
   _onPointerUp (e) {
     this._stamp()
+    this.context.emit('markDirty', this.context.visibleLayersIndices)
     this.context.sketchPaneDOMElement.removeEventListener('pointermove', this._onPointerMove)
   }
 
@@ -1527,6 +1546,7 @@ class ScalingStrategy {
   shutdown () {
     if (this.state.moved && !this.state.stamped) {
       this._stamp()
+      this.context.emit('markDirty', this.context.visibleLayersIndices)
     }
 
     this.context.sketchPaneDOMElement.removeEventListener('pointerdown', this._onPointerDown)
@@ -1538,6 +1558,7 @@ class ScalingStrategy {
   }
 
   _onPointerDown (e) {
+    this.context.emit('addToUndoStack', this.context.visibleLayersIndices)
     this.state.anchor = this.context.sketchPane.localizePoint(e)
     this.state.moved = false
     this.context.sketchPaneDOMElement.addEventListener('pointermove', this._onPointerMove)
@@ -1573,6 +1594,7 @@ class ScalingStrategy {
 
   _onPointerUp (e) {
     this._stamp()
+    this.context.emit('markDirty', this.context.visibleLayersIndices)
     this.context.sketchPaneDOMElement.removeEventListener('pointermove', this._onPointerMove)
   }
 

@@ -843,7 +843,7 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
     backgroundColor: '#333333',
     show: false,
     frame: false,
-    resizable: false
+    resizable: isDev ? true : false
   })
   loadingStatusWindow.loadURL(`file://${__dirname}/../loading-status.html?name=${encodeURIComponent(projectName)}`)
   loadingStatusWindow.once('ready-to-show', () => {
