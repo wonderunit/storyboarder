@@ -8,7 +8,6 @@ const path = require('path')
 const { SketchPane } = require('alchemancy')
 const SketchPaneUtil = require('alchemancy').util
 
-const Brush = require('../sketch-pane/brush')
 const LineMileageCounter = require('./line-mileage-counter')
 
 const { createIsCommandPressed } = require('../utils/keytracker')
