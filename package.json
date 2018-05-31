@@ -95,7 +95,7 @@
     "alchemancy": "github:wonderunit/alchemancy",
     "archiver": "2.0.3",
     "caf": "7.0.4",
-    "chokidar": "1.7.0",
+    "chokidar": "2.0.3",
     "color-js": "^1.0.4",
     "eases": "1.0.8",
     "electron-google-analytics": "0.0.16",
