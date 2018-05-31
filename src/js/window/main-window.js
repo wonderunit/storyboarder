@@ -48,6 +48,8 @@ const exporterArchive = require('../exporters/archive')
 const exporterWeb = require('../exporters/web')
 const exporterPsd = require('../exporters/psd')
 
+const importerPsd = require('../importers/psd')
+
 const sceneSettingsView = require('./scene-settings-view')
 
 const boardModel = require('../models/board')
@@ -2552,7 +2554,6 @@ const refreshLinkedBoardByFilename = async filename => {
     return
   }
 
-  let canvases
   let curBoard = boardData.boards[currentBoard]
 
   // Update the current canvas if it's the same board coming back in.
@@ -2565,9 +2566,16 @@ const refreshLinkedBoardByFilename = async filename => {
 
   console.log('\treading', path.join(boardPath, 'images', board.link))
 
-  canvases = FileHelper.readPhotoshopLayersAsCanvases(
-    path.join(boardPath, 'images', board.link)
-  )
+  let canvases
+  try {
+    canvases = importerPsd.fromPsdBuffer(
+      fs.readFileSync(
+        path.join(boardPath, 'images', board.link)
+      )
+    )
+  } catch (err) {
+    console.error(err)
+  }
 
   if (!canvases || !Object.keys(canvases).length) {
     notifications.notify({

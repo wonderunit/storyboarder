@@ -1,8 +1,7 @@
 const path = require('path')
 const fs = require('fs')
-const readPsd = require('ag-psd').readPsd
-const initializeCanvas = require('ag-psd').initializeCanvas
-const writePsd = require('ag-psd').writePsd
+
+const importerPsd = require('../importers/psd')
 
 /**
  * Retrieve an object with base 64 representations of an image file ready for storyboard pane layers.
@@ -25,7 +24,12 @@ let getBase64ImageDataFromFilePath = (filepath, options={ importTargetLayer: 're
       result[importTargetLayer] = getBase64TypeFromFilePath('jpg', filepath)
       break
     case '.psd':
-      result = getBase64TypeFromPhotoshopFilePath(filepath, options)
+      try {
+        result = getBase64TypeFromPhotoshopFilePath(filepath, options)
+      } catch (err) {
+        console.error(err)
+        return null
+      }
       break
   }
   return result
@@ -39,13 +43,22 @@ let getBase64TypeFromFilePath = (type, filepath) => {
   return `data:image/${type};base64,${data}`
 }
 
-const getBase64TypeFromPhotoshopFilePath = (filepath, options) => {
-  const canvases = readPhotoshopLayersAsCanvases(filepath)
-  return {
-    main: canvases.main && canvases.main.toDataURL(),
-    notes: canvases.notes && canvases.notes.toDataURL(),
-    reference: canvases.reference && canvases.reference.toDataURL()
+const getBase64TypeFromPhotoshopFilePath = filepath => {
+  if (!fs.existsSync(filepath)) return null
+
+  let canvases = importerPsd.fromPsdBuffer(
+    fs.readFileSync(
+      filepath
+    )
+  )
+
+  // convert in-place
+  for (key in canvases) {
+    canvases[key] = canvases[key].toDataURL()
   }
+
+  // e.g.: { fill: 'data:image/png,...' }
+  return canvases
 }
 
 // let getBase64TypeFromPhotoshopFilePath = (filepath, options) => {
@@ -145,111 +158,7 @@ const getBase64TypeFromPhotoshopFilePath = (filepath, options) => {
 //   }
 // }
 
-// TODO move this to importers#fromPsdBuffer ? 
-//      see: https://github.com/wonderunit/storyboarder/issues/1183
-let readPhotoshopLayersAsCanvases = filepath => {
-  console.log('FileHelper#readPhotoshopLayersAsCanvases')
-
-  let importable = [
-    'reference',
-    'fill',
-    'tone',
-    'pencil',
-    'ink',
-    'notes'
-  ]
-
-  if (!fs.existsSync(filepath)) return
-
-  // setup the PSD reader's initializeCanvas function
-  initializeCanvas(
-    (width, height) => {
-      let canvas = document.createElement('canvas')
-      canvas.width = width
-      canvas.height = height
-      return canvas
-    }
-  )
-
-  let psd
-
-  try {
-    const buffer = fs.readFileSync(filepath)
-    psd = readPsd(buffer)
-  } catch (exception) {
-    console.error(exception)
-    return
-  }
-
-  if (!psd) {
-    console.warn('PSD is invalid', psd)
-    return
-  }
-
-  console.log('got psd', psd)
-
-  let numChannelValues = (1 << psd.bitsPerChannel) - 1
-
-  let canvases = { }
-
-  const canvasNameForLayer = name => {
-    name = name.toLowerCase()
-    if (importable.includes(name)) {
-      return name
-    } else {
-      return 'fill'
-    }
-  }
-
-  const addLayersRecursively = (children, root) => {
-    console.log('addLayersRecursively adding', children.length, 'layers')
-    for (let layer of children) {
-      if (
-        // not hidden
-        !layer.hidden &&
-        // has canvas
-        layer.canvas &&
-        // not named "Background"
-        layer.name.indexOf('Background') === -1
-      ) {
-        let name = root ? canvasNameForLayer(layer.name) : 'fill'
-        if (!canvases[name]) {
-          console.log('\tadding canvas', name)
-          canvases[name] = document.createElement('canvas')
-          canvases[name].width = psd.width
-          canvases[name].height = psd.height
-        }
-        let canvas = canvases[name]
-        let context = canvas.getContext('2d')
-
-        console.log('\tdrawing to canvas', name, 'from', layer.name)
-
-        // composite the PSD layer canvas (which may have a smaller rect) to full-size canvas
-        context.globalAlpha = layer.opacity / numChannelValues
-        context.drawImage(layer.canvas, layer.left, layer.top)
-        console.log('\tdrawing complete')
-      }
-
-      if (layer.children) {
-        addLayersRecursively(layer.children, false)
-      }
-    }
-  }
-
-  if (psd.children) {
-    // PSD with multiple layers
-    addLayersRecursively(psd.children, true)
-  } else {
-    // PSD with a single layer
-    canvases.reference = psd.canvas
-  }
-
-  return canvases
-}
-
 module.exports = {
   getBase64ImageDataFromFilePath,
-  getBase64TypeFromFilePath,
-
-  readPhotoshopLayersAsCanvases
+  getBase64TypeFromFilePath  
 }
