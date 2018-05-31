@@ -835,7 +835,6 @@ const loadBoardUI = async () => {
     }
   }
   document.querySelector('#show-in-finder-button').addEventListener('pointerdown', event => {
-    console.log('show-in-finder-button')
     let filepath = getActiveLayerFilePath()
     if (filepath) {
       console.log('revealing', filepath)
