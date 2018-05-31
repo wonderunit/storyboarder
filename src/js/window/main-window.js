@@ -840,6 +840,8 @@ const loadBoardUI = async () => {
       console.log('revealing', filepath)
       shell.showItemInFolder(filepath)
     } else {
+      // TODO find the first existing layer? see: https://github.com/wonderunit/storyboarder/issues/1173
+
       // e.g.: `eraser`, or a layer image that hasn't save yet
       console.log('could not find image file for current layer')
 
