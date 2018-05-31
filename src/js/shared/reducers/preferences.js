@@ -72,7 +72,13 @@ const preferences = (state = initialState, action) => {
           //   ...action.payload.guides
           // },
           // onion: action.payload.guides != null ? action.payload.guides : state.toolbar.guides,
-          captions: action.payload.captions != null ? action.payload.captions : state.toolbar.captions
+
+          // if `captions` is present in the toolbar payload
+          captions: action.payload.captions != null
+            // use it
+            ? action.payload.captions
+            // otherwise, preserve current value
+            : state.toolbar.captions
         }
       }
 
