@@ -1,7 +1,7 @@
 //
 // USAGE:
 //
-// electron-mocha --renderer test/exporters/common.test.js
+// electron-mocha --renderer test/exporters/common.renderer.test.js
 //
 
 'use strict';
@@ -99,7 +99,7 @@ describe('exporters/common', function () {
     let size = [Math.floor(60 * project.aspectRatio), 60]
     let outputPath = tmpFolder.name
   
-    board.url = 'missing.png'
+    board.layers.reference.url = 'missing.png'
   
     exporterCommon.exportFlattenedBoard(board, filenameForExport, size, projectFileAbsolutePath, outputPath).then((pathToExport) => {
       done(new Error('failed to catch missing image'))
