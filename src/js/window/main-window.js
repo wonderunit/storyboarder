@@ -36,6 +36,7 @@ const Guides = require('./guides')
 const OnionSkin = require('./onion-skin')
 const Sonifier = require('./sonifier/index')
 const LayersEditor = require('./layers-editor')
+const DiagnosticsView = require('./diagnostics-view')
 const sfx = require('../wonderunit-sound')
 const { createIsCommandPressed } = require('../utils/keytracker')
 const SceneTimelineView = require('./scene-timeline-view')
@@ -6320,6 +6321,8 @@ ipcRenderer.on('revealShotGenerator', value => {
 
 const log = opt => ipcRenderer.send('log', opt)
 
+new DiagnosticsView()
+
 if (isDev) {
   // HACK to support Cmd+R reloading
   setTimeout(() => {
@@ -6340,17 +6343,4 @@ if (isDev) {
       }
     }
   }, 1500)
-
-  const Stats = require('stats.js')
-  let stats = new Stats()
-  stats.showPanel(0)
-  document.body.appendChild(stats.dom)
-  stats.dom.style.top = '50px'
-
-  const animate = () => {
-    stats.begin()
-    stats.end()
-    window.requestAnimationFrame(animate)
-  }
-  window.requestAnimationFrame(animate)
 }
