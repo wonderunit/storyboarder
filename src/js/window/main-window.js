@@ -116,14 +116,6 @@ const ALLOWED_AUDIO_FILE_EXTENSIONS = [
   'mp4'
 ]
 
-// let layerStatus = {
-//   [LAYER_INDEX_REFERENCE]:  { dirty: false },
-//   [LAYER_INDEX_MAIN]:       { dirty: false },
-//   [LAYER_INDEX_NOTES]:      { dirty: false },
-// 
-//   [LAYER_INDEX_COMPOSITE]:  { dirty: false } // TODO do we need this?
-// }
-
 let imageFileDirtyTimer
 let isSavingImageFile = false // lock for saveImageFile
 
