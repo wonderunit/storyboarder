@@ -439,11 +439,9 @@ class DrawingStrategy {
     this.context.sketchPane.cursor.setEnabled(false)
   }
 
+  // TODO could store multiErase status / erase layer array in a reducer?
   _onPointerDown (e) {
     this.context.store.dispatch({ type: 'TOOLBAR_MODE_STATUS_SET', payload: 'busy', meta: { scope: 'local' } })
-
-    // TODO avoid false positive clicks :/
-    // TODO could store multiErase status / erase layer array in a reducer?
 
     // configure the tool for drawing
 
