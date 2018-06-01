@@ -569,6 +569,15 @@ const loadBoardUI = async () => {
 
   shotTemplateSystem = new ShotTemplateSystem({ width: size[0], height: size[1] })
 
+  if (!SketchPane.canInitialize()) {
+    remote.dialog.showMessageBox({
+      type: 'error',
+      message: 'Sorry, Storyboarder is not supported on your device because WebGL could not be initialized.'
+    })
+    window.close()
+    return
+  }
+
   storyboarderSketchPane = new StoryboarderSketchPane(
     document.getElementById('storyboarder-sketch-pane'),
     size,
