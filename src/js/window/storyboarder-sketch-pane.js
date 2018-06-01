@@ -56,7 +56,6 @@ class StoryboarderSketchPane extends EventEmitter {
 
     this.onKeyDown = this.onKeyDown.bind(this)
     this.onKeyUp = this.onKeyUp.bind(this)
-    // this.onDblClick = this.onDblClick.bind(this)
 
     // this.containerSize = null
     // this.scaleFactor = null
@@ -211,8 +210,6 @@ class StoryboarderSketchPane extends EventEmitter {
     // }
     // this.sketchPane.setToolStabilizeLevel(stabilizeLevel)
     // this.sketchPane.setToolStabilizeWeight(0.2)
-
-    // this.el.addEventListener('dblclick', this.onDblClick)
 
     // this.el.addEventListener('pointerdown', this.canvasPointerDown)
     // this.sketchPaneDOMElement.addEventListener('pointerover', this.canvasPointerOver)
@@ -537,16 +534,6 @@ class StoryboarderSketchPane extends EventEmitter {
   // 
   //   this.isCursorOnDrawingArea = false
   //   this.renderCursor()
-  // }
-
-  // TODO
-  // TODO
-  // TODO onDblClick, requestUnlock
-  // TODO
-  // onDblClick (event) {
-  //   if (this.isLocked) {
-  //     this.emit('requestUnlock')
-  //   }
   // }
 
   // onFrame (timestep) {
