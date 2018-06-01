@@ -116,14 +116,6 @@ const ALLOWED_AUDIO_FILE_EXTENSIONS = [
   'mp4'
 ]
 
-// let layerStatus = {
-//   [LAYER_INDEX_REFERENCE]:  { dirty: false },
-//   [LAYER_INDEX_MAIN]:       { dirty: false },
-//   [LAYER_INDEX_NOTES]:      { dirty: false },
-// 
-//   [LAYER_INDEX_COMPOSITE]:  { dirty: false } // TODO do we need this?
-// }
-
 let imageFileDirtyTimer
 let isSavingImageFile = false // lock for saveImageFile
 
@@ -651,19 +643,29 @@ const loadBoardUI = async () => {
     storeUndoStateForImage(false, layerIndices)
     markImageFileDirty(layerIndices)
 
-    drawIdleTimer = setTimeout(onDrawIdle, 500)
+    // TODO performance pass. this is slow!
+    //      see: https://github.com/wonderunit/storyboarder/issues/1193
+    if (isRecording) {
+      // grab full-size image from current sketchpane (in memory)
+      let pixels = storyboarderSketchPane.sketchPane.extractThumbnailPixels(
+        storyboarderSketchPane.sketchPane.width,
+        storyboarderSketchPane.sketchPane.height,
+        storyboarderSketchPane.visibleLayersIndices
+      )
+      // un-premultiply
+      SketchPaneUtil.arrayPostDivide(pixels)
+      // send as a canvas
+      canvasRecorder.capture([
+        SketchPaneUtil.pixelsToCanvas(
+          pixels,
+          storyboarderSketchPane.sketchPane.width,
+          storyboarderSketchPane.sketchPane.height
+        )
+      ])
+      if (!isRecordingStarted) isRecordingStarted = true
+    }
 
-    // TODO
-    // // save progress image
-    // if (isRecording) {
-    //   let snapshotCanvases = [
-    //     storyboarderSketchPane.getLayerCanvas(0),
-    //     storyboarderSketchPane.getLayerCanvas(1),
-    //     storyboarderSketchPane.getLayerCanvas(3)
-    //   ]
-    //   canvasRecorder.capture(snapshotCanvases)
-    //   if (!isRecordingStarted) isRecordingStarted = true
-    // }
+    drawIdleTimer = setTimeout(onDrawIdle, 500)
   })
   // storyboarderSketchPane.on('pointerdown', () => {
   //   clearTimeout(drawIdleTimer)
@@ -1336,10 +1338,21 @@ const loadBoardUI = async () => {
         // make sure we capture the last frame
         notifications.notify({message: "Congratulations! Generating your timelapse! This can take a minute.", timing: 5})
 
+        // grab full-size image from current sketchpane (in memory)
+        let pixels = storyboarderSketchPane.sketchPane.extractThumbnailPixels(
+          storyboarderSketchPane.sketchPane.width,
+          storyboarderSketchPane.sketchPane.height,
+          storyboarderSketchPane.visibleLayersIndices
+        )
+        // un-premultiply
+        SketchPaneUtil.arrayPostDivide(pixels)
+        // send as a canvas
         canvasRecorder.capture([
-          storyboarderSketchPane.getLayerCanvas(0),
-          storyboarderSketchPane.getLayerCanvas(1),
-          storyboarderSketchPane.getLayerCanvas(3)
+          SketchPaneUtil.pixelsToCanvas(
+            pixels,
+            storyboarderSketchPane.sketchPane.width,
+            storyboarderSketchPane.sketchPane.height
+          )
         ], {force: true})
         setTimeout(()=>{
           canvasRecorder.stop()
@@ -1357,7 +1370,7 @@ const loadBoardUI = async () => {
 
     pomodoroTimerView.addListener('start', (data)=>{
       toolbar.startPomodoroTimer(data)
-      let boardSize = storyboarderSketchPane.sketchPane.getCanvasSize()
+      let boardSize = storyboarderSketchPane.getCanvasSize()
       let outputWidth = 700
       let targetOutputHeight = (outputWidth/boardSize.width)*boardSize.height
 
@@ -2318,7 +2331,7 @@ const savePosterFrame = async (board, forceReadFromFiles = false) => {
 
   // composite from memory
   } else {
-    // grab fill-size image from current sketchpane (in memory)
+    // grab full-size image from current sketchpane (in memory)
     let pixels = storyboarderSketchPane.sketchPane.extractThumbnailPixels(
       storyboarderSketchPane.sketchPane.width,
       storyboarderSketchPane.sketchPane.height,
@@ -3012,15 +3025,24 @@ let goNextBoard = async (direction, shouldPreserveSelections = false) => {
 }
 
 let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
-  // TODO
-  // if(isRecording && isRecordingStarted) {
-  //   // make sure we capture the last frame
-  //   canvasRecorder.capture([
-  //     storyboarderSketchPane.getLayerCanvas(0),
-  //     storyboarderSketchPane.getLayerCanvas(1),
-  //     storyboarderSketchPane.getLayerCanvas(3)
-  //   ], {force: true, duration: 500})
-  // }
+  if(isRecording && isRecordingStarted) {
+    // make sure we capture the last frame
+    // grab full-size image from current sketchpane (in memory)
+    let pixels = storyboarderSketchPane.sketchPane.extractThumbnailPixels(
+      storyboarderSketchPane.sketchPane.width,
+      storyboarderSketchPane.sketchPane.height,
+      storyboarderSketchPane.visibleLayersIndices
+    )
+    // un-premultiply
+    SketchPaneUtil.arrayPostDivide(pixels)
+    canvasRecorder.capture([
+      SketchPaneUtil.pixelsToCanvas(
+        pixels,
+        storyboarderSketchPane.sketchPane.width,
+        storyboarderSketchPane.sketchPane.height
+      )
+    ], {force: true, duration: 500})
+  }
 
   // toolbar.emit('cancelTransform')
   return new Promise((resolve, reject) => {
@@ -4376,37 +4398,6 @@ window.onkeydown = (e)=> {
       e.preventDefault()
       togglePlayback()
     }
-
-    // r
-    // case 82:
-    //   if(isRecording) {
-    //     let snapshotCanvases = [
-    //       storyboarderSketchPane.getLayerCanvas(0),
-    //       storyboarderSketchPane.getLayerCanvas(1),
-    //       storyboarderSketchPane.getLayerCanvas(3)
-    //     ]
-    //     // make sure we capture the last frame
-    //     canvasRecorder.capture(snapshotCanvases, {force: true})
-    //     canvasRecorder.stop()
-    //     isRecording = false
-    //     isRecordingStarted = false
-    //   } else {
-    //     isRecording = true
-
-    //     let outputStrategy = "CanvasBufferOutputGifStrategy"
-    //     if (e.metaKey || e.ctrlKey) {
-    //       outputStrategy = "CanvasBufferOutputFileStrategy"
-    //     }
-    //     let exportsPath = exporterCommon.ensureExportsPathExists(boardFilename)
-    //     canvasRecorder = new CanvasRecorder({
-    //       exportsPath: exportsPath,
-    //       outputStrategy: outputStrategy,
-    //       recordingStrategy: "RecordingStrategyFrameRatio", //"RecordingStrategyTimeRatio",
-    //       recordingTime: 10,
-    //       outputTime: 1,
-    //     })
-    //     canvasRecorder.start()
-    //   }
   }
 
   if (!textInputMode || textInputAllowAdvance) {

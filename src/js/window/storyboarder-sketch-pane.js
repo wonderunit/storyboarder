@@ -361,9 +361,9 @@ class StoryboarderSketchPane extends EventEmitter {
   //
   // compatibility methods
   //
-  getLayerCanvas (index) {
-    return this.sketchPane.getLayerCanvas(index)
-  }
+  // getLayerCanvas (index) {
+  //   return this.sketchPane.getLayerCanvas(index)
+  // }
   clearLayer (index) {
     this.sketchPane.clearLayer(index)
   }
