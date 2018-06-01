@@ -20,8 +20,6 @@ const prefsModule = require('electron').remote.require('./prefs')
 // TODO enableBrushCursor see: https://github.com/wonderunit/storyboarder/issues/1102
 const enableBrushCursor = prefsModule.getPrefs('main')['enableBrushCursor']
 
-const enableStabilizer = prefsModule.getPrefs('main')['enableStabilizer']
-
 /**
  *  Wrap the SketchPane component with features Storyboarder needs
  *

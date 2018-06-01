@@ -22,7 +22,7 @@ const defaultPrefs = {
   importTargetLayer: "reference",
   enableCanvasPaintingOpacity: true, // DEPRECATED used by old SketchPane
   enableBrushCursor: true,
-  enableStabilizer: true,
+  enableStabilizer: true, // DEPRECATED used by old SketchPane
   enableAnalytics: true,
   enableAutoSave: true,
   enableForcePsdReloadOnFocus: true,
@@ -49,7 +49,7 @@ if(cpus.length <= 2 || cpu.speed <= 2000) {
   defaultPrefs.enableDrawingMelodySoundEffects = false
   defaultPrefs.enableUISoundEffects = false
   defaultPrefs.enableCanvasPaintingOpacity = false // DEPRECATED used by old SketchPane
-  defaultPrefs.enableStabilizer = false
+  defaultPrefs.enableStabilizer = false // DEPRECATED used by old SketchPane
 }
 
 let prefs
