@@ -11,17 +11,15 @@ const SketchPaneUtil = require('alchemancy').util
 const LineMileageCounter = require('./line-mileage-counter')
 
 const { createIsCommandPressed } = require('../utils/keytracker')
-const util = require('../utils')
-
 const observeStore = require('../shared/helpers/observeStore')
 
 const sfx = require('../wonderunit-sound')
 
 const prefsModule = require('electron').remote.require('./prefs')
-// TODO
+
 // TODO enableBrushCursor
-// TODO
 const enableBrushCursor = prefsModule.getPrefs('main')['enableBrushCursor']
+
 const enableStabilizer = prefsModule.getPrefs('main')['enableStabilizer']
 
 /**
@@ -45,9 +43,6 @@ class StoryboarderSketchPane extends EventEmitter {
 
     // this.prevTimeStamp = 0
     // this.frameLengthArray = []
-
-    // NOTE sets DrawingStrategy
-    // this.cancelTransform()
 
     // this.compositeIndex = 5 // composite
 
@@ -930,22 +925,6 @@ class StoryboarderSketchPane extends EventEmitter {
     // return this.sketchPane.isDrawing || this.sketchPane.isStabilizing
   }
 
-  // moveContents () {
-    // this.setStrategy(MovingStrategy)
-  // }
-  // scaleContents () {
-    // this.setStrategy(ScalingStrategy)
-  // }
-  // cancelTransform () {
-  //   if (this.strategy instanceof DrawingStrategy) return
-  // 
-  //   this.setStrategy(DrawingStrategy)
-  // 
-  //   if (this.toolbar) {
-  //     this.setBrushTool(this.toolbar.getBrushOptions().kind, this.toolbar.getBrushOptions())
-  //   }
-  // }
-
   //
   //
   // compatibility methods
@@ -1124,116 +1103,6 @@ class DrawingStrategy {
   }
 }
 
-  // canvasPointerDown (e) {
-  //   // prevent overlapping calls
-  //   if (this.container.getIsDrawingOrStabilizing()) return
-  // 
-  //   this.container.isPointerDown = true
-  // 
-  //   // via https://developer.mozilla.org/en-US/docs/Web/API/Pointer_events#Determining_button_states
-  //   if (e.buttons === 32 || e.buttons === 2) {
-  //     this.container.isEraseButtonActive = true
-  //   } else {
-  //     this.container.isEraseButtonActive = false
-  //   }
-  // 
-  //   // quick erase : on
-  //   this.container.setQuickEraseIfRequested()
-  // 
-  //   if (!this.container.toolbar.getIsQuickErasing() && this.container.sketchPane.getIsErasing()) { // MIGRATED
-  //     this.container.startMultiLayerOperation()
-  //     this.container.setCompositeLayerVisibility(true)
-  //   }
-  // 
-  //   this.container.lineMileageCounter.reset()
-  // 
-  //   // store snapshot on pointerdown?
-  //   // eraser : yes
-  //   // brushes: no
-  //   if (this.container.sketchPane.getIsErasing()) { // FKA paintingKnockout
-  //     if (this.isMultiLayerOperation) {
-  //       this.emit('addToUndoStack', this.visibleLayersIndices)
-  //     } else {
-  //       this.emit('addToUndoStack')
-  //     }
-  //   }
-  // 
-  //   this.container.sketchPane.down(e)
-  // 
-  //   document.addEventListener('pointermove', this.container.canvasPointerMove)
-  //   document.addEventListener('pointerup', this.container.canvasPointerUp)
-  // 
-  //   let pointerPosition = this.container.getRelativePosition(e.clientX, e.clientY)
-  //   this.container.emit('pointerdown', pointerPosition.x, pointerPosition.y, e.pointerType === "pen" ? e.pressure : 1, e.pointerType)
-  // }
-  // 
-  // canvasPointerUp (e) {
-  //   this.container.isPointerDown = false
-  // 
-  //   // via https://developer.mozilla.org/en-US/docs/Web/API/Pointer_events#Determining_button_states
-  //   if (e.buttons == 32 || e.buttons == 2) {
-  //     this.container.isEraseButtonActive = true
-  //   } else {
-  //     this.container.isEraseButtonActive = false
-  //   }
-  // 
-  //   // force render remaining move events early, before frame loop
-  //   this.container.renderEvents()
-  //   // clear both event queues
-  //   this.container.lastMoveEvent = null
-  //   this.container.lastCursorEvent = null
-  // 
-  //   // let pointerPosition = this.container.getRelativePosition(e.clientX, e.clientY)
-  // 
-  //   this.container.sketchPane.up(e)
-  // 
-  //   this.container.emit('lineMileage', this.container.lineMileageCounter.get())
-  //   document.removeEventListener('pointermove', this.container.canvasPointerMove)
-  //   document.removeEventListener('pointerup', this.container.canvasPointerUp)
-  // }
-  // 
-  // renderMoveEvent (moveEvent) {
-  //   this.container.sketchPane.move(moveEvent)
-  // }
-  // 
-  // startMultiLayerOperation () {
-  //   let compositeContext = this.container.sketchPane.getLayerContext(this.container.compositeIndex)
-  //   this.container.sketchPane.clearLayer(this.container.compositeIndex)
-  // 
-  //   this.container.drawComposite(this.container.visibleLayersIndices, compositeContext)
-  // 
-  //   // select that layer
-  //   this.container.sketchPane.selectLayer(this.container.compositeIndex)
-  // }
-  // 
-  // applyMultiLayerOperationByLayerIndex (index) {
-  //   // apply result of erase bitmap to layer
-  //   // code from SketchPane#drawPaintingCanvas
-  //   let context = this.container.sketchPane.getLayerContext(index)
-  //   let w = this.container.sketchPane.size.width
-  //   let h = this.container.sketchPane.size.height
-  //   context.save()
-  //   context.globalAlpha = 1
-  // 
-  //   // paint the erase bitmap onto the given layer
-  //   context.globalCompositeOperation = 'destination-out'
-  //   context.drawImage(this.container.sketchPane.paintingCanvas, 0, 0, w, h)
-  // 
-  //   context.restore()
-  // }
-  //
-  // dispose () {
-  //   this.container.isPointerDown = false
-  // 
-  //   this.container.stopMultiLayerOperation()
-  //   this.container.isMultiLayerOperation = false // ensure we reset the var
-  // 
-  //   // remove listeners
-  //   document.removeEventListener('pointermove', this.container.canvasPointerMove)
-  //   document.removeEventListener('pointerup', this.container.canvasPointerUp)
-  // }
-// }
-
 class MovingStrategy {
   constructor (context) {
     this.context = context
@@ -1351,164 +1220,6 @@ class MovingStrategy {
     this.state.stamped = true
   }
 }
-
-// class MovingStrategy {
-//   constructor (container) {
-//     this.container = container
-//     this.startAt = null
-//     this.pos = null
-//     this.offset = [0, 0]
-// 
-//     // store a composite of all the layers
-//     // TODO is storedContext properly disposed?
-//     let storedContext = this.container.createContext()
-//     this.storedComposite = storedContext.canvas
-//     this.container.drawComposite(this.container.visibleLayersIndices, storedContext)
-// 
-//     // store each of the layers individually
-//     this.storedLayers = {}
-//     for (let index of [0, 1, 3]) {// HACK hardcoded
-//       let layerContext = this.container.sketchPane.getLayerContext(index)
-//       let storedLayerContext = this.container.createContext()
-//       let storedLayerCanvas = storedLayerContext.canvas
-//       storedLayerContext.drawImage(layerContext.canvas, 0, 0)
-//       // TODO is this.storedLayers properly disposed?
-//       this.storedLayers[index] = {
-//         canvas: storedLayerCanvas,
-//         offset: [0, 0]
-//       }
-//     }
-// 
-//     this.container.cursorType = 'move'
-//     this.container.renderCursor()
-//   }
-// 
-//   canvasPointerDown (e) {
-//     // prevent overlapping calls
-//     if (this.container.getIsDrawingOrStabilizing()) return
-// 
-//     let pointerPosition = this.container.getRelativePosition(e.clientX, e.clientY)
-//     this.startAt = [pointerPosition.x, pointerPosition.y]
-//     this.pos = [0, 0]
-//     this.container.lineMileageCounter.reset()
-//     this.container.emit('addToUndoStack', [0, 1, 3]) // HACK hardcoded
-// 
-//     this.container.startMultiLayerOperation()
-//     this.container.setCompositeLayerVisibility(true)
-// 
-//     // if we previously were in erase mode, undo its effects,
-//     //   and ensure paintingCanvas is visible
-//     this.container.sketchPane.setIsErasing(false)
-// 
-//     // fake an initial move event
-//     this.container.canvasPointerMove(e)
-// 
-//     document.addEventListener('pointermove', this.container.canvasPointerMove)
-//     document.addEventListener('pointerup', this.container.canvasPointerUp)
-// 
-//     // NOTE can trigger sound events using this:
-//     // this.container.emit('pointerdown', pointerPosition.x, pointerPosition.y, e.pointerType === "pen" ? e.pressure : 1, e.pointerType)
-//   }
-// 
-//   canvasPointerUp (e) {
-//     // force render remaining move events early, before frame loop
-//     this.container.renderEvents()
-//     // clear both event queues
-//     this.container.lastMoveEvent = null
-//     this.container.lastCursorEvent = null
-// 
-//     // reset the painting layer
-//     let size = this.container.sketchPane.getCanvasSize()
-//     let paintingContext = this.container.sketchPane.paintingCanvas.getContext('2d')
-//     paintingContext.clearRect(0, 0, size.width, size.height)
-// 
-//     // let pointerPosition = this.container.getRelativePosition(e.clientX, e.clientY)
-//     this.container.stopMultiLayerOperation()
-//     this.startAt = null
-//     this.pos = null
-// 
-//     this.container.emit('markDirty', [0, 1, 3]) // HACK hardcoded
-//     this.container.isMultiLayerOperation = false
-// 
-//     document.removeEventListener('pointermove', this.container.canvasPointerMove)
-//     document.removeEventListener('pointerup', this.container.canvasPointerUp)
-//   }
-// 
-//   renderMoveEvent (moveEvent) {
-//     let compositeContext = this.storedComposite.getContext('2d')
-//     let paintingContext = this.container.sketchPane.paintingCanvas.getContext('2d')
-// 
-//     let w = this.container.sketchPane.size.width
-//     let h = this.container.sketchPane.size.height
-// 
-          // this.pos = [
-          //   moveEvent.x - this.startAt[0],
-          //   moveEvent.y - this.startAt[1]
-          // ].map(Math.floor)
-          // 
-          // if(moveEvent.shiftKey) {
-          //   if(Math.abs(this.pos[0]) > Math.abs(this.pos[1])) {
-          //     this.pos[1] = 0
-          //   } else {
-          //     this.pos[0] = 0
-          //   }
-          // }
-// 
-//     // re-draw composite to the painting layer
-//     paintingContext.clearRect(0, 0, w, h)
-//     paintingContext.drawImage(compositeContext.canvas, this.pos[0] + this.offset[0], this.pos[1] + this.offset[1])
-//   }
-// 
-//   startMultiLayerOperation () {
-//     let compositeContext = this.container.sketchPane.getLayerContext(this.container.compositeIndex)
-//     this.container.sketchPane.clearLayer(this.container.compositeIndex)
-// 
-//     // select that layer
-//     this.container.sketchPane.selectLayer(this.container.compositeIndex)
-//   }
-// 
-//   // actually move the layer content
-//   applyMultiLayerOperationByLayerIndex (index) {
-//     if (!this.pos) return
-// 
-//     let context = this.container.sketchPane.getLayerContext(index)
-//     let w = this.container.sketchPane.size.width
-//     let h = this.container.sketchPane.size.height
-// 
-//     this.storedLayers[index].offset[0] += this.pos[0]
-//     this.storedLayers[index].offset[1] += this.pos[1]
-// 
-//     // HACK this is set 3 times, once for each layer
-//     this.offset[0] = this.storedLayers[index].offset[0]
-//     this.offset[1] = this.storedLayers[index].offset[1]
-// 
-//     context.save()
-//     context.globalAlpha = 1
-// 
-//     context.clearRect(0, 0, w, h)
-//     context.drawImage(this.storedLayers[index].canvas, this.storedLayers[index].offset[0], this.storedLayers[index].offset[1])
-// 
-//     context.restore()
-//   }
-// 
-//   dispose () {
-//     // force stop
-//     this.container.stopMultiLayerOperation()
-// 
-//     this.container.updatePointer()
-// 
-//     this.container.cursorType = 'drawing'
-//     this.container.renderCursor()
-// 
-//     this.storedLayers = null
-// 
-//     // remove listeners
-//     document.removeEventListener('pointermove', this.container.canvasPointerMove)
-//     document.removeEventListener('pointerup', this.container.canvasPointerUp)
-//   }
-// }
-
-
 
 class ScalingStrategy {
   constructor (context) {
@@ -1635,146 +1346,6 @@ class ScalingStrategy {
   }
 }
 
-// class ScalingStrategy {
-//   constructor (container) {
-//     this.container = container
-// 
-//     this.startAt = null
-//     this.translate = [0, 0]
-//     this.scale = 1
-// 
-//     this.container.cursorType = 'ew-resize'
-//     this.container.renderCursor()
-//   }
-// 
-//   canvasPointerDown (e) {
-//     // prevent overlapping calls
-//     if (this.container.getIsDrawingOrStabilizing()) return
-// 
-//     let pointerPosition = this.container.getRelativePosition(e.clientX, e.clientY)
-//     this.startAt = [pointerPosition.x, pointerPosition.y]
-//     this.translate = [this.startAt[0], this.startAt[1]]
-//     this.scale = 1
-// 
-//     this.container.lineMileageCounter.reset()
-//     this.container.emit('addToUndoStack', [0, 1, 3]) // HACK hardcoded
-// 
-//     this.container.startMultiLayerOperation()
-//     this.container.setCompositeLayerVisibility(true)
-// 
-//     // if we previously were in erase mode, undo its effects,
-//     //   and ensure paintingCanvas is visible
-//     this.container.sketchPane.setIsErasing(false)
-// 
-//     // fake an initial move event
-//     this.container.canvasPointerMove(e)
-// 
-//     document.addEventListener('pointermove', this.container.canvasPointerMove)
-//     document.addEventListener('pointerup', this.container.canvasPointerUp)
-// 
-//     // NOTE can trigger sound events using this:
-//     // this.container.emit('pointerdown', pointerPosition.x, pointerPosition.y, e.pointerType === "pen" ? e.pressure : 1, e.pointerType)
-//   }
-// 
-//   canvasPointerUp (e) {
-//     // force render remaining move events early, before frame loop
-//     this.container.renderEvents()
-//     // clear both event queues
-//     this.container.lastMoveEvent = null
-//     this.container.lastCursorEvent = null
-// 
-//     // reset the painting layer
-//     let size = this.container.sketchPane.getCanvasSize()
-//     let paintingContext = this.container.sketchPane.paintingCanvas.getContext('2d')
-//     paintingContext.clearRect(0, 0, size.width, size.height)
-// 
-//     // let pointerPosition = this.container.getRelativePosition(e.clientX, e.clientY)
-//     this.container.stopMultiLayerOperation()
-// 
-//     this.startAt = null
-//     this.translate = [0, 0]
-//     this.scale = 1
-// 
-//     this.container.emit('markDirty', [0, 1, 3]) // HACK hardcoded
-//     this.container.isMultiLayerOperation = false
-// 
-//     document.removeEventListener('pointermove', this.container.canvasPointerMove)
-//     document.removeEventListener('pointerup', this.container.canvasPointerUp)
-//   }
-// 
-//   renderMoveEvent (moveEvent) {
-//     let compositeContext = this.container.sketchPane.getLayerContext(this.container.compositeIndex)
-//     let context = this.container.sketchPane.paintingCanvas.getContext('2d')
-// 
-//     let w = this.container.sketchPane.size.width
-//     let h = this.container.sketchPane.size.height
-// 
-//     let deltaX = moveEvent.x - this.startAt[0]
-// 
-//     this.scale = 1 + (deltaX / w)
-// 
-//     // re-draw composite to the painting layer
-//     context.save()
-//     context.clearRect(0, 0, w, h)
-//     context.translate(this.translate[0], this.translate[1])
-//     context.scale(this.scale, this.scale)
-//     context.translate(-this.translate[0], -this.translate[1])
-//     context.drawImage(compositeContext.canvas, 0, 0)
-//     context.restore()
-//   }
-// 
-//   startMultiLayerOperation () {
-//     let compositeContext = this.container.sketchPane.getLayerContext(this.container.compositeIndex)
-//     this.container.sketchPane.clearLayer(this.container.compositeIndex)
-// 
-//     this.container.drawComposite(this.container.visibleLayersIndices, compositeContext)
-// 
-//     // select that layer
-//     this.container.sketchPane.selectLayer(this.container.compositeIndex)
-//   }
-// 
-//   applyMultiLayerOperationByLayerIndex (index) {
-//     if (!this.startAt) return
-// 
-//     let context = this.container.sketchPane.getLayerContext(index)
-//     let w = this.container.sketchPane.size.width
-//     let h = this.container.sketchPane.size.height
-// 
-//     // store a copy
-// 
-//     let storedContext = this.container.createContext()
-//     storedContext.drawImage(context.canvas, 0, 0)
-// 
-//     context.save()
-//     context.globalAlpha = 1
-// 
-//     // clear the original
-//     context.clearRect(0, 0, w, h)
-// 
-//     // draw with scaling
-//     context.translate(this.translate[0], this.translate[1])
-//     context.scale(this.scale, this.scale)
-//     context.translate(-this.translate[0], -this.translate[1])
-//     context.drawImage(storedContext.canvas, 0, 0)
-// 
-//     context.restore()
-//   }
-// 
-//   dispose () {
-//     // force stop
-//     this.container.stopMultiLayerOperation()
-// 
-//     this.container.updatePointer()
-// 
-//     this.container.cursorType = 'drawing'
-//     this.container.renderCursor()
-// 
-//     // remove listeners
-//     document.removeEventListener('pointermove', this.container.canvasPointerMove)
-//     document.removeEventListener('pointerup', this.container.canvasPointerUp)
-//   }
-// }
-
 class LockedStrategy {
   constructor (context) {
     this.context = context
@@ -1837,35 +1408,5 @@ class LockedStrategy {
     this.context.emit('requestUnlock')
   }
 }
-
-// class LockedStrategy {
-//   constructor (container) {
-//     this.container = container
-// 
-//     this.container.cursorType = 'not-allowed'
-//     this.container.renderCursor()
-//   }
-// 
-//   canvasPointerDown (e) {
-//     this.container.isPointerDown = false
-//   }
-// 
-//   canvasPointerUp (e) {
-//   }
-// 
-//   renderMoveEvent (moveEvent) {
-//   }
-// 
-//   startMultiLayerOperation () {
-//   }
-// 
-//   applyMultiLayerOperationByLayerIndex (index) {
-//   }
-// 
-//   dispose () {
-//     this.container.cursorType = 'drawing'
-//     this.container.renderCursor()
-//   }
-// }
 
 module.exports = StoryboarderSketchPane
