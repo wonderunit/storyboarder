@@ -6321,7 +6321,9 @@ ipcRenderer.on('revealShotGenerator', value => {
 
 const log = opt => ipcRenderer.send('log', opt)
 
-new DiagnosticsView()
+if (prefsModule.getPrefs().enableDiagnostics) {
+  new DiagnosticsView()
+}
 
 if (isDev) {
   // HACK to support Cmd+R reloading

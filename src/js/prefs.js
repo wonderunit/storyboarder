@@ -27,6 +27,7 @@ const defaultPrefs = {
   enableAutoSave: true,
   enableForcePsdReloadOnFocus: true,
   absolutePathToImageEditor: undefined,
+  enableDiagnostics: false, // added in 1.6.x, FPS meter
   
   lastUsedFps: 24,
 
