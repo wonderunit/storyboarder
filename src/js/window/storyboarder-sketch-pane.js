@@ -41,58 +41,14 @@ class StoryboarderSketchPane extends EventEmitter {
   async load () {
     this.isCommandPressed = createIsCommandPressed(this.store)
 
-    // this.prevTimeStamp = 0
-    // this.frameLengthArray = []
-
-    // this.compositeIndex = 5 // composite
-
-    // this.canvasPointerUp = this.canvasPointerUp.bind(this)
-    // this.canvasPointerDown = this.canvasPointerDown.bind(this)
-    // this.canvasPointerMove = this.canvasPointerMove.bind(this)
-    // this.canvasPointerOver = this.canvasPointerOver.bind(this)
-    // this.canvasPointerOut = this.canvasPointerOut.bind(this)
-    // this.canvasCursorMove = this.canvasCursorMove.bind(this)
-    // this.stopMultiLayerOperation = this.stopMultiLayerOperation.bind(this)
-
     this.onKeyDown = this.onKeyDown.bind(this)
     this.onKeyUp = this.onKeyUp.bind(this)
 
-    // this.containerSize = null
-    // this.scaleFactor = null
-
-    // this.isPointerDown = false
-    // this.lastMoveEvent = null
-    // this.lastCursorEvent = null
-
     this.lineMileageCounter = new LineMileageCounter()
-
-    // this.isMultiLayerOperation = false
-    // this.isEraseButtonActive = false
-
-    // this.prevTool = null
-    // this.toolbar = null
-
-    // this.isLocked = false
 
     // container
     this.containerEl = document.createElement('div')
     this.containerEl.classList.add('container')
-
-    // brush pointer
-    // if (enableBrushCursor) {
-    //   this.brushPointerContainer = document.createElement('div')
-    //   this.brushPointerContainer.className = 'brush-pointer'
-    //   this.brushPointerContainer.style.position = 'absolute'
-    //   this.brushPointerContainer.style.pointerEvents = 'none'
-    //   document.body.appendChild(this.brushPointerContainer)
-    // }
-
-    // setup and render (if necessary) pointer cursor
-    // this.isCursorOnDrawingArea = false
-    // this.cursorType = 'drawing'
-    // the DOM query returns null unless we wait for the next tick.
-    // process.nextTick(() => this.renderCursor())
-
 
     // sketchpane
     this.sketchPane = new SketchPane({
@@ -107,16 +63,6 @@ class StoryboarderSketchPane extends EventEmitter {
     })
 
     this.sketchPaneDOMElement = this.sketchPane.getDOMElement()
-    // this.resize()
-
-    // measure and update cached size data
-    // this.updateContainerSize()
-
-    // adjust sizes
-    // this.renderContainerSize()
-
-    // this.sketchPane.on('onbeforeup', this.onSketchPaneBeforeUp.bind(this)) // MIGRATE
-    // this.sketchPane.on('onup', this.onSketchPaneOnUp.bind(this)) // MIGRATE
 
     // 0 = reference
     this.sketchPane.newLayer({ name: 'reference' })
@@ -197,29 +143,8 @@ class StoryboarderSketchPane extends EventEmitter {
     this.sketchPane.onStrokeAfter = strokeState =>
       this.emit('markDirty', strokeState.layerIndices)
 
-    // Proxy
-    this.sketchPane.setTool = () => { console.warn('SketchPane#setTool no impl') }
-    this.sketchPane.getCanvasWidth = () => { return this.sketchPane.width }
-    this.sketchPane.getCanvasHeight = () => { return this.sketchPane.height }
-
-
-    // MIGRATE TODO REMOVE 
-    // let stabilizeLevel = 0
-    // if(enableStabilizer) {
-    //   stabilizeLevel = 10
-    // }
-    // this.sketchPane.setToolStabilizeLevel(stabilizeLevel)
-    // this.sketchPane.setToolStabilizeWeight(0.2)
-
-    // this.el.addEventListener('pointerdown', this.canvasPointerDown)
-    // this.sketchPaneDOMElement.addEventListener('pointerover', this.canvasPointerOver)
-    // this.sketchPaneDOMElement.addEventListener('pointerout', this.canvasPointerOut)
-
     window.addEventListener('keydown', this.onKeyDown)
     window.addEventListener('keyup', this.onKeyUp)
-
-    // this.onFrame = this.onFrame.bind(this)
-    // requestAnimationFrame(this.onFrame)
 
     this.strategies = {
       drawing: new DrawingStrategy(this),
@@ -254,36 +179,8 @@ class StoryboarderSketchPane extends EventEmitter {
     this.strategy.startup()
   }
 
-  // setStrategy (Strategy) {
-  //   console.log('StoryboarderSketchPane#setStrategy')
-  //   return
-  //   if (this.strategy instanceof Strategy) return
-  // 
-  //   if (this.strategy instanceof LockedStrategy) {
-  //     // can't unlock if locked
-  //     if (this.isLocked) {
-  //       return
-  //     }
-  //   }
-  // 
-  // 
-  // 
-  //   // HACK
-  //   // force render remaining move events early, before frame loop
-  //   this.renderEvents()
-  //   // clear both event queues
-  //   this.lastMoveEvent = null
-  //   this.lastCursorEvent = null
-  // 
-  // 
-  // 
-  //   if (this.strategy) this.strategy.dispose()
-  // 
-  //   this.strategy = new Strategy(this)
-  // }
-
   setIsLocked (shouldLock) {
-    console.log('StoryboarderSketchPane#setIsLocked', shouldLock)
+    // console.log('StoryboarderSketchPane#setIsLocked', shouldLock)
     if (shouldLock) {
       this.store.dispatch({
         type: 'TOOLBAR_MODE_SET',
@@ -353,74 +250,6 @@ class StoryboarderSketchPane extends EventEmitter {
     )
   }
 
-  // renderCursor () {
-  //   return
-  //   if (this.isCursorOnDrawingArea) {
-  //     switch (this.cursorType) {
-  //       case 'not-allowed':
-  //         document.querySelector('#storyboarder-sketch-pane .container').style.cursor = 'not-allowed'
-  //         if (this.brushPointerContainer) this.brushPointerContainer.style.visibility = 'hidden'
-  //         break
-  // 
-  //       case 'move':
-  //         document.querySelector('#storyboarder-sketch-pane .container').style.cursor = 'move'
-  //         if (this.brushPointerContainer) this.brushPointerContainer.style.visibility = 'hidden'
-  //         break
-  // 
-  //       case 'ew-resize':
-  //         document.querySelector('#storyboarder-sketch-pane .container').style.cursor = 'ew-resize'
-  //         if (this.brushPointerContainer) this.brushPointerContainer.style.visibility = 'hidden'
-  //         break
-  // 
-  //       case 'drawing':
-  //       default:
-  //         if (this.brushPointerContainer) {
-  //           document.querySelector('#storyboarder-sketch-pane .container').style.cursor = 'none'
-  //           this.brushPointerContainer.style.visibility = 'visible'
-  //         } else {
-  //           document.querySelector('#storyboarder-sketch-pane .container').style.cursor = 'crosshair'
-  //         }
-  //         break
-  //     }
-  // 
-  //   } else {
-  //     document.querySelector('#storyboarder-sketch-pane .container').style.cursor = 'default'
-  //     if (this.brushPointerContainer) this.brushPointerContainer.style.visibility = 'hidden'
-  //   }
-  // }
-
-  // store snapshot before pointer up?
-  // eraser : no
-  // brushes: yes
-  // TODO
-  // TODO
-  // TODO
-  onSketchPaneBeforeUp () {
-    return
-    if (!this.sketchPane.getIsErasing()) {
-      this.emit('addToUndoStack')
-    }
-  }
-
-  // onSketchPaneOnUp (...args) {
-  //   return
-  //   // quick erase : off
-  //   this.unsetQuickErase()
-  // 
-  //   this.emit('onup', ...args)
-  // 
-  //   // store snapshot on up?
-  //   // eraser : yes
-  //   // brushes: yes
-  //   if (this.isMultiLayerOperation) {
-  //     // trigger a save to any layer possibly changed by the operation
-  //     this.emit('markDirty', this.visibleLayersIndices)
-  //     this.isMultiLayerOperation = false
-  //   } else {
-  //     this.emit('markDirty', [this.sketchPane.getCurrentLayerIndex()])
-  //   }
-  // }
-
   onKeyDown (e) {
     if (this.isCommandPressed('drawing:scale-mode')) {
       // switch to scale strategy
@@ -466,162 +295,6 @@ class StoryboarderSketchPane extends EventEmitter {
     }
   }
 
-  // canvasPointerDown (event) {
-  //   this.strategy.canvasPointerDown(event)
-  // }
-
-  // canvasPointerMove (e) {
-  //   let pointerPosition = this.getRelativePosition(e.clientX, e.clientY)
-  // 
-  //   this.lastMoveEvent = {
-  //     clientX: e.clientX,
-  //     clientY: e.clientY,
-  // 
-  //     x: pointerPosition.x,
-  //     y: pointerPosition.y,
-  //     pointerType: e.pointerType,
-  //     pressure: e.pressure,
-  //     shiftKey: e.shiftKey
-  //   }
-  // }
-
-  // canvasPointerUp (e) {
-  //   this.strategy.canvasPointerUp(event)
-
-
-  // TODO
-  // TODO
-  // TODO
-  // TODO
-  // TODO analytics
-  // TODO
-  //   if (this.frameLengthArray.length > 20) {
-  //     // get average frame duration
-  //     let sum = this.frameLengthArray.reduce(function(a, b) { return a + b; })
-  //     let avg = sum / this.frameLengthArray.length
-  //     // get longest
-  //     this.frameLengthArray.sort().pop()
-  //     let max = this.frameLengthArray.reverse()[0]
-  //     // send data
-  //     // 1 in 10 chance to send
-  //     if (Date.now() % 8 == 1) {
-  //       ipcRenderer.send('analyticsTiming', 'Performance', 'averageframe', avg)
-  //       ipcRenderer.send('analyticsTiming', 'Performance', 'maxframe', max)
-  //     }
-  //   }
-  //   this.frameLengthArray = []
-  // }
-
-  // TODO
-  // TODO
-  // TODO
-  // TODO
-  // isCursorOnDrawingArea
-
-  // canvasCursorMove (event) {
-  //   this.lastCursorEvent = { clientX: event.clientX, clientY: event.clientY }
-  // }
-  // 
-  // canvasPointerOver () {
-  //   this.sketchPaneDOMElement.addEventListener('pointermove', this.canvasCursorMove)
-  // 
-  //   this.isCursorOnDrawingArea = true
-  //   this.renderCursor()
-  // }
-
-  // canvasPointerOut () {
-  //   this.sketchPaneDOMElement.removeEventListener('pointermove', this.canvasCursorMove)
-  // 
-  //   this.isCursorOnDrawingArea = false
-  //   this.renderCursor()
-  // }
-
-  // onFrame (timestep) {
-  //   if (this.isPointerDown) {
-  //     this.frameLengthArray.push(timestep - this.prevTimeStamp)
-  //   }
-  //   this.prevTimeStamp = timestep
-  //   this.renderEvents()
-  //   requestAnimationFrame(this.onFrame)
-  // }
-
-  // renderEvents () {
-  //   let lastCursorEvent,
-  //       moveEvent
-  // 
-  //   // render the cursor
-  //   if (this.lastCursorEvent && this.brushPointerContainer && this.brushPointerContainer.style) {
-  //     // update the position of the cursor
-  //     this.brushPointerContainer.style.transform = 'translate(' + this.lastCursorEvent.clientX + 'px, ' + this.lastCursorEvent.clientY + 'px)'
-  //     this.lastCursorEvent = null
-  //   }
-  // 
-  //   // render movements
-  //   if (this.lastMoveEvent) {
-  //     this.strategy.renderMoveEvent(this.lastMoveEvent)
-  //     this.lineMileageCounter.add({ x: this.lastMoveEvent.y, y: this.lastMoveEvent.y })
-  // 
-  //     // report only the most recent event back to the app
-  //     this.emit('pointermove', this.lastMoveEvent.x, this.lastMoveEvent.y, this.lastMoveEvent.pointerType === "pen" ? this.lastMoveEvent.pressure : 1, this.lastMoveEvent.pointerType)
-  //   }
-  // }
-
-
-  // unsetQuickErase () {
-  //   if (this.toolbar.getIsQuickErasing()) {
-  //     this.toolbar.setIsQuickErasing(false)
-  //     if (this.prevTool) {
-  //       this.setBrushTool(this.prevTool.kind, this.prevTool)
-  //     }
-  //     this.prevTool = null
-  //   }
-  // }
-
-  // startMultiLayerOperation () {
-  //   // if (this.isMultiLayerOperation) return
-  //   this.isMultiLayerOperation = true
-  // 
-  //   this.strategy.startMultiLayerOperation()
-  // 
-  //   // listen to beforeup
-  //   this.sketchPane.on('onbeforeup', this.stopMultiLayerOperation)
-  // }
-
-  // TODO indices instead of names
-  // setCompositeLayerVisibility (value) {
-  //   // solo the composite layer
-  //   for (let index of this.visibleLayersIndices) {
-  //     this.sketchPane.setLayerVisible(!value, index)
-  //   }
-  //   this.sketchPane.setLayerVisible(value, this.compositeIndex)
-  // }
-  // 
-  // stopMultiLayerOperation () {
-  //   if (!this.isMultiLayerOperation) return
-  // 
-  //   for (let index of this.visibleLayersIndices) {
-  //     this.strategy.applyMultiLayerOperationByLayerIndex(index)
-  //   }
-  // 
-  //   // reset
-  //   this.setCompositeLayerVisibility(false)
-  // 
-  //   this.sketchPane.removeListener('onbeforeup', this.stopMultiLayerOperation)
-  // }
-
-  // draw composite from layers
-  // drawComposite (layerIndices, destinationContext) {
-  //   for (let index of layerIndices) {
-  //     let canvas = this.sketchPane.getLayerCanvas(index)
-  // 
-  //     destinationContext.save()
-  //     destinationContext.globalAlpha = this.getLayerOpacity(index)
-  //     destinationContext.drawImage(canvas, 0, 0)
-  //     destinationContext.restore()
-  //   }
-  //   return destinationContext
-  // }
-
   mergeLayers (sources, destination) {
     const dirty = [...new Set(sources.concat(destination))]
 
@@ -634,129 +307,8 @@ class StoryboarderSketchPane extends EventEmitter {
     this.emit('markDirty', dirty)
   }
 
-  // // given a clientX and clientY,
-  // //   calculate the equivalent point on the sketchPane
-  // //     considering position and scale of the sketchPane
-  // getRelativePosition (absoluteX, absoluteY) {
-  //   let rect = this.boundingClientRect
-  //   let rectOnCanvas = { x: absoluteX - rect.left, y: absoluteY - rect.top }
-  // 
-  //   let scaleFactorX = this.canvasSize[0] / rect.width
-  //   let scaleFactorY = this.canvasSize[1] / rect.height
-  // 
-  //   return {
-  //     x: rectOnCanvas.x * scaleFactorX,
-  //     y: rectOnCanvas.y * scaleFactorY
-  //   }
-  // }
-  // 
-  // fit (frameSize, imageSize) {
-  //   const frameAspectRatio = frameSize[0] / frameSize[1]
-  //   const imageAspectRatio = imageSize[0] / imageSize[1]
-  // 
-  //   return (frameAspectRatio > imageAspectRatio)
-  //     ? [imageSize[0] * frameSize[1] / imageSize[1], frameSize[1]]
-  //     : [frameSize[0], imageSize[1] * frameSize[0] / imageSize[0]]
-  // }
-
-  /**
-   * Given the dimensions of the wrapper element (this.el),
-   *   update the fixed size .container to fit, with padding applied
-   *   update the containerSize, cached for use by the renderer
-   *   update the scaleFactor, used by the pointer
-   */
-  // updateContainerSize () {
-  //   // this.sketchPaneDOMElement.style.display = 'none'
-  // 
-  //   let rect = this.el.getBoundingClientRect()
-  //   let size = [rect.width - this.containerPadding, rect.height - this.containerPadding]
-  // 
-  //   this.containerSize = this.fit(size, this.canvasSize).map(Math.floor)
-  //   this.scaleFactor = this.containerSize[1] / this.canvasSize[1] // based on height
-  // }
-
-  // TODO should this container scaling be a SketchPane feature?
-  /**
-   * Given the cached dimensions representing the available area (this.containerSize)
-   *   update the fixed size .container to fit, with padding applied
-   */
-  // renderContainerSize () {
-    // the container
-    // this.containerEl.style.width = this.containerSize[0] + 'px'
-    // this.containerEl.style.height = this.containerSize[1] + 'px'
-
-    //
-    // MIGRATE TODO
-    //
-    // // the sketchpane
-    // this.sketchPaneDOMElement.style.width = this.containerSize[0] + 'px'
-    // this.sketchPaneDOMElement.style.height = this.containerSize[1] + 'px'
-    // 
-    // // the painting canvas
-    // this.sketchPane.paintingCanvas.style.width = this.containerSize[0] + 'px'
-    // this.sketchPane.paintingCanvas.style.height = this.containerSize[1] + 'px'
-    // 
-    // // the dirtyRectDisplay
-    // this.sketchPane.dirtyRectDisplay.style.width = this.containerSize[0] + 'px'
-    // this.sketchPane.dirtyRectDisplay.style.height = this.containerSize[1] + 'px'
-    // 
-    // // each layer
-    // let layers = this.sketchPane.getLayers()
-    // for (let i = 0; i < layers.length; ++i) {
-    //   let canvas = this.sketchPane.getLayerCanvas(i)
-    //   canvas.style.width = this.containerSize[0] + 'px'
-    //   canvas.style.height = this.containerSize[1] + 'px'
-    // }
-
-    // cache the boundingClientRect
-    // this.boundingClientRect = this.sketchPaneDOMElement.getBoundingClientRect()
-  // }
-
-  // updatePointer () {
-  //   return // MIGRATING
-  // 
-  // 
-  // 
-  //   if(!enableBrushCursor) {
-  //     return
-  //   }
-  //   let image = null
-  //   let threshold = 0xff
-  //   // TODO why are we creating a new pointer every time?
-  //   let brushPointerCanvas = this.sketchPane.createBrushPointer(
-  //     image, 
-  //     Math.max(6, this.brush.getSize() * this.scaleFactor),
-  //     this.brush.getAngle(),
-  //     threshold,
-  //     true)
-  // 
-  //   let brushPointer = document.createElement('img')
-  //   brushPointer.src = brushPointerCanvas.toDataURL('image/png')
-  //   brushPointer.style.width = brushPointerCanvas.width
-  //   brushPointer.style.height = brushPointerCanvas.height
-  //   brushPointer.style.display = 'block'
-  //   brushPointer.style.setProperty('margin-left', '-' + (brushPointerCanvas.width * 0.5) + 'px')
-  //   brushPointer.style.setProperty('margin-top', '-' + (brushPointerCanvas.height * 0.5) + 'px')
-  // 
-  //   this.brushPointerContainer.innerHTML = ''
-  // 
-  //   this.brushPointerContainer.appendChild(brushPointer)
-  // }
-
   resize (width, height) {
-    // this.updateContainerSize()
-    // this.renderContainerSize()
-
-    // if (!(width || height)) {
-    //   let rect = this.containerEl.getBoundingClientRect()
-    //   width = rect.width
-    //   height = rect.height
-    // }
     this.sketchPane.resize(width, height)
-
-    // if (this.brush) {
-    //   this.updatePointer()
-    // }
   }
 
   //
@@ -800,111 +352,6 @@ class StoryboarderSketchPane extends EventEmitter {
     this.sketchPane.flipLayers(vertical)
     this.emit('markDirty', this.visibleLayersIndices)
   }
-  // setBrushTool (kind, options) {
-  //   return
-  // 
-  //   if (this.getIsDrawingOrStabilizing()) {
-  //     return false
-  //   }
-  // 
-  //   if (kind === 'eraser') {
-  //     this.sketchPane.setIsErasing(true)
-  //   } else {
-  //     this.sketchPane.setIsErasing(false)
-  //   }
-  // 
-  //   this.brush = new Brush()
-  //   this.brush.setSize(options.size)
-  //   this.brush.setColor(options.color.toCSS())
-  //   this.brush.setSpacing(options.spacing)
-  //   this.brush.setFlow(options.flow)
-  //   this.brush.setHardness(options.hardness)
-  // 
-  //   // if (!this.toolbar.getIsQuickErasing()) {
-  //   //   let selectedLayerIndex
-  //   //   switch (kind) {
-  //   //     case 'light-pencil':
-  //   //       selectedLayerIndex = 0 // HACK hardcoded
-  //   //       break
-  //   //     case 'note-pen':
-  //   //       selectedLayerIndex = 3 // HACK hardcoded
-  //   //       break
-  //   //     default:
-  //   //       selectedLayerIndex = 1 // HACK hardcoded
-  //   //       break
-  //   //   }
-  //   //   this.sketchPane.selectLayer(selectedLayerIndex)
-  //   // 
-  //   //   // fat eraser
-  //   //   if (kind === 'eraser') {
-  //   //     this.setCompositeLayerVisibility(false)
-  //   //     this.startMultiLayerOperation()
-  //   //   } else {
-  //   //     this.stopMultiLayerOperation() // force stop, in case we didn't get `onbeforeup` event
-  //   //     this.isMultiLayerOperation = false // ensure we reset the var
-  //   //   }
-  //   // }
-  // 
-  //   this.sketchPane.setTool(this.brush)
-  // 
-  //   // this.updatePointer()
-  // }
-
-  // setBrushSize (size) {
-  //   // this.brush.setSize(size)
-  //   // this.sketchPane.setTool(this.brush)
-  //   // this.updatePointer()
-  //   // this.sketchPane.brushSize = size
-  //   this.store.dispatch({ type: 'TOOLBAR_TOOL_SET', payload: { size } })
-  // }
-
-  // setBrushColor (color) {
-  //   // this.brush.setColor(color.toCSS())
-  //   // this.sketchPane.setTool(this.brush)
-  //   // this.updatePointer()
-  // 
-  //   // convert to number
-  //   color = utils.colorToNumber(color)
-  // 
-  //   this.store.dispatch({ type: 'TOOLBAR_TOOL_SET', payload: { color }, meta: { scope: 'local' } })
-  // }
-
-  // HACK copied from toolbar
-  // cloneOptions (opt) {
-  //   return {
-  //     kind: opt.kind,
-  //     size: opt.size,
-  //     spacing: opt.spacing,
-  //     flow: opt.flow,
-  //     hardness: opt.hardness,
-  //     opacity: opt.opacity,
-  //     color: opt.color.clone(),
-  //     palette: opt.palette.map(color => color.clone())
-  //   }
-  // }
-
-  // createContext () {
-  //   let size = [
-  //     this.sketchPane.width,
-  //     this.sketchPane.height
-  //   ]
-  //   let canvas = document.createElement('canvas')
-  //   let context = canvas.getContext('2d')
-  //   canvas.width = size[0]
-  //   canvas.height = size[1]
-  //   return context
-  // }
-
-  // FIXME DEPRECATED remove references in main-window if possible, use indices instead
-  // getLayerCanvasByName (name) {
-  //   return this.sketchPane.getLayerCanvas(LAYER_NAME_BY_INDEX.indexOf(name))
-  // }
-
-  // getSnapshotAsCanvas (index) {
-  //   const el = this.sketchPane.getLayerCanvas(index)
-  //   el.id = Math.floor(Math.random() * 16777215).toString(16) // for debugging
-  //   return el
-  // }
 
   // TODO rename to isDrawing, find/replace instances
   getIsDrawingOrStabilizing () {
