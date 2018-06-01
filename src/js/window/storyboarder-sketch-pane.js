@@ -17,7 +17,7 @@ const sfx = require('../wonderunit-sound')
 
 const prefsModule = require('electron').remote.require('./prefs')
 
-// TODO enableBrushCursor
+// TODO enableBrushCursor see: https://github.com/wonderunit/storyboarder/issues/1102
 const enableBrushCursor = prefsModule.getPrefs('main')['enableBrushCursor']
 
 const enableStabilizer = prefsModule.getPrefs('main')['enableStabilizer']
