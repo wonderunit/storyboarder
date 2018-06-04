@@ -181,6 +181,32 @@ describe('exporters/copyProject', () => {
     )
   })
 
+  describe('options', () => {
+    let srcFilePath = path.resolve(path.join(fixturesPath, 'ducks', 'ducks.storyboarder'))
+    let dstFolderPath = path.resolve(path.join(fixturesPath, 'new-single-scene'))
+
+    beforeEach(() => {
+      fs.ensureDirSync(dstFolderPath)
+    })
+
+    it('can optionally copy board url main image from scenes created before Storyboarder 1.6.x', () => {
+      // copies board url main image
+      exporterCopyProject.copyProject(srcFilePath, dstFolderPath, {
+        copyBoardUrlMainImages: true,
+        ignoreMissing: true
+      })
+
+      let scene = JSON.parse(fs.readFileSync(path.join(dstFolderPath, 'new-single-scene.storyboarder')))
+      assert(fs.existsSync(path.join(dstFolderPath, 'images', scene.boards[0].url)))
+    })
+    it('can optionally ignore missing files', () => {
+      // ignores missing posterframes
+      exporterCopyProject.copyProject(srcFilePath, dstFolderPath, {
+        ignoreMissing: true
+      })
+    })
+  })
+
   afterEach(function () {
     mockFs.restore()
   })
