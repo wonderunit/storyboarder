@@ -466,10 +466,51 @@ const commentOnLineMileage = (miles) => {
 
 // TODO this is really similar to verifyScene, but verifyScene requires the UI to be ready (for notifications)
 const migrateScene = () => {
-  console.log('migrateScene')
+  let boardImagesPath = path.join(boardPath, 'images')
+
+  // if at least one board.url file exists, consider this an old project
+  let needsMigration = false
+  for (let board of boardData.boards) {
+    if (fs.existsSync(path.join(boardImagesPath, board.url))) {
+      if (!(board.layers && board.layers.fill)) {
+        // needs to be migrated
+        needsMigration = true
+        break
+      }
+    }
+  }
+
+  if (!needsMigration) return false
+
+  // make a backup
+  let src = boardFilename
+  let dst = path.join(path.dirname(boardFilename), '..',
+    path.basename(boardFilename, path.extname(boardFilename)) + '-backup')
+  if (fs.existsSync(dst)) {
+    remote.dialog.showMessageBox({
+      type: 'error',
+      message: `Tried to migrate scene to new Storyboarder format but a backup already exists.\n\n${dst}\n\nPlease move or rename the backup folder and retry.`
+    })
+    window.close()
+    throw new Error('Could not migrate')
+    return false
+  }
+
+  fs.ensureDirSync(dst)
+  console.log('Preparing to migrate scene to new Storyboarder layers format')
+  console.log('Making a backup before migrating …')
+  exporterCopyProject.copyProject(
+    src,
+    dst,
+    {
+      // copy board url main images
+      copyBoardUrlMainImages: true,
+      // ignore missing files, like posterframes or thumbnails
+      ignoreMissing: true
+    })
+
   // upgrade to the 1.6 layers format
   // see: https://github.com/wonderunit/storyboarder/issues/1160
-  let boardImagesPath = path.join(boardPath, 'images')
   for (let board of boardData.boards) {
     // if a file exists for the board.url, we haven't migrated yet
     if (fs.existsSync(path.join(boardImagesPath, board.url))) {
