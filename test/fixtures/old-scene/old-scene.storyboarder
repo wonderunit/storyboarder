@@ -1,5 +1,5 @@
 {
-  "version": "1.6.0",
+  "version": "0.7.0",
   "aspectRatio": 1.7777777777777777,
   "fps": 24,
   "defaultBoardTiming": 2000,
@@ -11,14 +11,10 @@
       "lastEdited": 1499375725536,
       "layers": {
         "reference": {
-          "url": "board-1-UDRF3-reference.png",
-          "opacity": 0.75
+          "url": "board-1-UDRF3-reference.png"
         },
         "notes": {
           "url": "board-1-UDRF3-notes.png"
-        },
-        "fill": {
-          "url": "board-1-UDRF3-fill.png"
         }
       },
       "number": 1,
@@ -33,14 +29,10 @@
       "lastEdited": 1499375727809,
       "layers": {
         "reference": {
-          "url": "board-2-RRO6K-reference.png",
-          "opacity": 0.75
+          "url": "board-2-RRO6K-reference.png"
         },
         "notes": {
           "url": "board-2-RRO6K-notes.png"
-        },
-        "fill": {
-          "url": "board-2-RRO6K-fill.png"
         }
       },
       "number": 2,
@@ -55,14 +47,10 @@
       "lastEdited": 1499375731219,
       "layers": {
         "reference": {
-          "url": "board-3-DRAPP-reference.png",
-          "opacity": 0.75
+          "url": "board-3-DRAPP-reference.png"
         },
         "notes": {
           "url": "board-3-DRAPP-notes.png"
-        },
-        "fill": {
-          "url": "board-3-DRAPP-fill.png"
         }
       },
       "number": 3,
@@ -75,11 +63,7 @@
       "url": "board-4-TSIOW.png",
       "newShot": false,
       "lastEdited": 1499375734081,
-      "layers": {
-        "fill": {
-          "url": "board-4-TSIOW-fill.png"
-        }
-      },
+      "layers": {},
       "number": 4,
       "shot": "4A",
       "time": 6000
