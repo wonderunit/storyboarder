@@ -482,6 +482,20 @@ const migrateScene = () => {
 
   if (!needsMigration) return false
 
+  // is this scene itself a migrated backup?
+  let foldername = path.dirname(boardFilename)
+  // does the basename end with `-backup`?
+  let foldernameContainsStringBackup = foldername.match(/-backup$/i) != null
+  // is this scene folder alongside a 
+  let calculatedOriginalFilename = foldername.replace(/-backup$/i, '')
+  if (foldernameContainsStringBackup && fs.existsSync(calculatedOriginalFilename)) {
+    // we don't need to migrate
+    remote.dialog.showMessageBox({
+      message: "This appears to be a backup of a scene created with an older version of Storyboarder. It will not be migrated. Some layers won’t appear correctly in this version of Storyboarder."
+    })
+    return false
+  }
+
   // make a backup
   let src = boardFilename
   let dst = path.join(path.dirname(boardFilename), '..',
