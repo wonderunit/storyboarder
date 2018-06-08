@@ -264,6 +264,18 @@ const load = async (event, args) => {
 
     ipcRenderer.send('workspaceReady')
 
+    let win = remote.getCurrentWindow()
+    win.webContents.addListener('before-input-event', (event, input) => {
+      // if we're in text input mode, and have not pressed Control or Meta
+      if (textInputMode && !(input.control || input.meta)) {
+        // ignore any key that might trigger the menu
+        win.webContents.setIgnoreMenuShortcuts(true)
+      } else {
+        // otherwise, allow it through
+        win.webContents.setIgnoreMenuShortcuts(false)
+      }
+    })
+
   } catch (error) {
     console.error(error)
 
