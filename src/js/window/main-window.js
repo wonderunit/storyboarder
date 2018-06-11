@@ -38,7 +38,8 @@ const Sonifier = require('./sonifier/index')
 const LayersEditor = require('./layers-editor')
 const DiagnosticsView = require('./diagnostics-view')
 const sfx = require('../wonderunit-sound')
-const { createIsCommandPressed } = require('../utils/keytracker')
+const keytracker = require('../utils/keytracker')
+const createIsCommandPressed = keytracker.createIsCommandPressed
 const SceneTimelineView = require('./scene-timeline-view')
 
 const storyTips = new(require('./story-tips'))(sfx, notifications)
@@ -269,8 +270,36 @@ const load = async (event, args) => {
       // TODO need a different fix for dev tools, which doesn't have before-input-event
       // see: https://github.com/wonderunit/storyboarder/issues/1202
 
-      // TODO match menu:tools:* and hijack
-      // e.g.: '1'-'6', 'n', etc. shouldn't flash the menu
+      //
+      //
+      // intercept some key commands
+      //
+      // construct a unique set of keys including the one JUST intercepted
+      let pressedKeys = [...new Set([keytracker.pressed(), input.key])]
+      //
+      // intercept: New Board
+      if (input.type == 'keyDown') {
+        if (isCommandPressed('menu:boards:new-board', pressedKeys)) {
+          // don't pass through to the menu
+          win.webContents.setIgnoreMenuShortcuts(true)
+
+          // sanity check
+          if (!textInputMode) {
+            // manually construct a new board
+            newBoard()
+              .then(index => {
+                // go to the board
+                gotoBoard(index)
+                // report
+                ipcRenderer.send('analyticsEvent', 'Board', 'new')
+              })
+              .catch(err => console.error(err))
+          }
+          return
+        }
+      }
+      // TODO intercept: menu:tools:*
+      // e.g.: '1'-'6' shouldn't flash the menu
 
       // if we're in text input mode, and have not pressed Control or Meta
       if (textInputMode && !(input.control || input.meta)) {
