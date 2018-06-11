@@ -120,18 +120,18 @@ const _comboShouldTriggerReset = (keymap, pressedKeys) => {
 }
 
 const createIsCommandPressed = store => {
-  return cmd => {
+  return (cmd, pressedKeys = null) => {
     let keymap = store.getState().entities.keymap
 
     let result = findMatchingCommandsByKeys(
       keymap,
-      pressed()
+      pressedKeys || pressed()
     ).includes(cmd)
 
     // TODO should this only clear the combo we just matched?
     // automatically clear matching combos containing Meta
     // see https://github.com/coosto/ShortcutJS/issues/20
-    if (result && _comboShouldTriggerReset(keymap, pressed())) {
+    if (result && _comboShouldTriggerReset(keymap, pressedKeys || pressed())) {
       reset()
     }
 
