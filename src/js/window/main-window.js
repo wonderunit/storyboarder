@@ -4864,7 +4864,14 @@ ipcRenderer.on('redo', (e, arg) => {
   }
 })
 
-ipcRenderer.on('copy', () => {
+ipcRenderer.on('copy', event => {
+  if (remote.getCurrentWindow().webContents.isDevToolsFocused()) {
+    remote.getCurrentWindow().webContents.devToolsWebContents.executeJavaScript(
+      `document.execCommand('copy')`
+    )
+    return
+  }
+
   if (textInputMode) {
     // HACK because remote.getCurrentWindow().webContents returns the parent window
     for (let w of remote.getCurrentWindow().getChildWindows()) {
@@ -4887,6 +4894,13 @@ ipcRenderer.on('copy', () => {
 })
 
 ipcRenderer.on('paste', () => {
+  if (remote.getCurrentWindow().webContents.isDevToolsFocused()) {
+    remote.getCurrentWindow().webContents.devToolsWebContents.executeJavaScript(
+      `document.execCommand('paste')`
+    )
+    return
+  }
+
   if (textInputMode) {
     // HACK because remote.getCurrentWindow().webContents returns the parent window
     for (let w of remote.getCurrentWindow().getChildWindows()) {
