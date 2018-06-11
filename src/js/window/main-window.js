@@ -4929,26 +4929,31 @@ ipcRenderer.on('paste', () => {
 
 // import image from mobile server
 const importImage = async imageDataURL => {
-  console.log('main-window#importImage')
-
   // resize image if too big
-  const resizedImageDataUrl = await fitImageData(
-    [storyboarderSketchPane.sketchPane.width, storyboarderSketchPane.sketchPane.height],
-    imageDataURL
-  )
-  let image = await exporterCommon.getImage(resizedImageDataUrl)
+  let dim = [
+    storyboarderSketchPane.sketchPane.width,
+    storyboarderSketchPane.sketchPane.height
+  ]
+  const scaledImageData = await fitImageData(dim, imageDataURL)
+  let image = await exporterCommon.getImage(scaledImageData)
 
-  // TODO should we use storyboarderSketchPane.replaceLayers ?
-  storeUndoStateForImage(true, storyboarderSketchPane.sketchPane.layers.findByName('reference').index)
-  storyboarderSketchPane.sketchPane.layers[storyboarderSketchPane.sketchPane.layers.findByName('reference').index].replace(
-    image,
-    false
-  )
-  storeUndoStateForImage(false, storyboarderSketchPane.sketchPane.layers.findByName('reference').index)
+  let layer = storyboarderSketchPane.sketchPane.layers.findByName('reference')
 
-  markImageFileDirty([storyboarderSketchPane.sketchPane.layers.findByName('reference').index])
-  await saveImageFile()
-  renderThumbnailDrawer()
+  storeUndoStateForImage(true, [layer.index])
+  layer.replace(image, false)
+  storeUndoStateForImage(false, [layer.index])
+
+  markImageFileDirty([layer.index])
+
+  // save the posterframe
+  let board = boardData.boards[currentBoard]
+  await savePosterFrame(board)
+
+  // update the thumbnail
+  let index = await saveThumbnailFile(boardData.boards.indexOf(board))
+  await updateThumbnailDisplayFromFile(index)
+
+  // renderThumbnailDrawer()
 
   notifications.notify({
     message: `Image added on top of reference layer`,
