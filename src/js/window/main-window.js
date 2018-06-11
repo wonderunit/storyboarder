@@ -266,6 +266,12 @@ const load = async (event, args) => {
 
     let win = remote.getCurrentWindow()
     win.webContents.addListener('before-input-event', (event, input) => {
+      // TODO need a different fix for dev tools, which doesn't have before-input-event
+      // see: https://github.com/wonderunit/storyboarder/issues/1202
+
+      // TODO match menu:tools:* and hijack
+      // e.g.: '1'-'6', 'n', etc. shouldn't flash the menu
+
       // if we're in text input mode, and have not pressed Control or Meta
       if (textInputMode && !(input.control || input.meta)) {
         // ignore any key that might trigger the menu
