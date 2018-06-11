@@ -6325,6 +6325,7 @@ ipcRenderer.on('importNotification', (event, args) => {
   let hostname = os.hostname()
   let that = this
   dns.lookup(hostname, function (err, add, fam) {
+    add = add != null ? add : hostname
     let message =  "Did you know that you can import directly from your phone?\n\nOn your mobile phone, go to the web browser and type in: \n\n" + add + ":1888"
     notifications.notify({message: message, timing: 60})
   })
