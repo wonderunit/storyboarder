@@ -878,6 +878,7 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
     analytics.screenView('main')
   })
 
+  // TODO could move this to main-window code?
   if (isDev) {
     mainWindow.webContents.on('devtools-focused', event => { mainWindow.webContents.send('devtools-focused') })
     mainWindow.webContents.on('devtools-closed', event => { mainWindow.webContents.send('devtools-closed') })
