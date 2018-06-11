@@ -1994,6 +1994,11 @@ let insertNewBoardDataAtPosition = (position) => {
 }
 
 let newBoard = async (position, shouldAddToUndoStack = true) => {
+  if (storyboarderSketchPane.getIsDrawingOrStabilizing()) {
+    sfx.error()
+    return Promise.reject('not ready')
+  }
+
   if (isSavingImageFile) {
     // notifications.notify({ message: 'Could not create new board. Please wait until Storyboarder has saved all recent image edits.', timing: 5 })
     sfx.error()
