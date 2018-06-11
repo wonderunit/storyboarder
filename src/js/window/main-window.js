@@ -1478,20 +1478,23 @@ const loadBoardUI = async () => {
   //
   // Devtools
   //
-  // devtools-blur (faked)
-  const onDevToolsBlur = () => { textInputMode = false }
   // devtools-focused
   ipcRenderer.on('devtools-focused', () => {
     textInputMode = true
+
+    // listen for focus to change
     window.addEventListener('focus', onDevToolsBlur)
   })
   // devtools-closed
   ipcRenderer.on('devtools-closed', () => {
-    textInputMode = false
-    window.removeEventListener('focus', onDevToolsBlur)
+    onDevToolsBlur()
   })
+  // devtools-blur
+  const onDevToolsBlur = () => {
+    window.removeEventListener('focus', onDevToolsBlur)
 
-
+    textInputMode = false
+  }
 
   window.addEventListener('beforeunload', event => {
     console.log('Close requested! Saving ...')
