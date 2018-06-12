@@ -311,12 +311,12 @@ class Toolbar extends EventEmitter {
   onBrushSizePointerDown (event) {
     switch (event.target.dataset.direction) {
       case '+1':
-        this.store.dispatch({ type: 'TOOLBAR_BRUSH_SIZE_INC' })
+        this.store.dispatch({ type: 'TOOLBAR_BRUSH_SIZE_INC', payload: { fine: true } })
         // this.store.dispatch({ type: 'PLAY_SOUND', payload: 'brush-size-up' }) // TODO
         sfx.playEffect('brush-size-up')
         break
       case '-1':
-        this.store.dispatch({ type: 'TOOLBAR_BRUSH_SIZE_DEC' })
+        this.store.dispatch({ type: 'TOOLBAR_BRUSH_SIZE_DEC', payload: { fine: true } })
         // this.store.dispatch({ type: 'PLAY_SOUND', payload: 'brush-size-down' }) // TODO
         sfx.playEffect('brush-size-down')
         break

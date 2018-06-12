@@ -87,6 +87,23 @@ const initialState = {
   modeStatus: 'idle'
 }
 
+const updateBrushSize = (size, direction, fine = false) => {
+  let min = 1
+  let max = 256
+
+  if (fine) {
+    size += direction
+  } else {
+    if (size < 5) {
+      size += direction
+    } else {
+      size *= direction > 0 ? 1.2 : 0.8
+    }
+  }
+  
+  return Math.min(Math.max(size, min), max)
+}
+
 const toolbar = (state = initialState, action) => {
   switch (action.type) {
     // TODO prevent update if getIsDrawingOrStabilizing ?
@@ -150,27 +167,25 @@ const toolbar = (state = initialState, action) => {
       }
 
     case 'TOOLBAR_BRUSH_SIZE_INC':
-      const TOOLBAR_MAX_SIZE = 256
       return {
         ...state,
         tools: {
           ...state.tools,
           [state.activeTool]: {
             ...state.tools[state.activeTool],
-            size: Math.min(TOOLBAR_MAX_SIZE, state.tools[state.activeTool].size * 1.2)
+            size: updateBrushSize(state.tools[state.activeTool].size, +1, action.payload.fine)
           }
         }
       }
 
     case 'TOOLBAR_BRUSH_SIZE_DEC':
-      const TOOLBAR_MIN_SIZE = 1
       return {
         ...state,
         tools: {
           ...state.tools,
           [state.activeTool]: {
             ...state.tools[state.activeTool],
-            size: Math.max(TOOLBAR_MIN_SIZE, state.tools[state.activeTool].size * 0.8)
+            size: updateBrushSize(state.tools[state.activeTool].size, -1, action.payload.fine)
           }
         }
       }
