@@ -4803,10 +4803,6 @@ const renderViewMode = () => {
   )
 }
 
-// const toggleCaptions = () => {
-//   toolbar.toggleCaptions()
-// }
-
 const toggleTimeline = () => {
   shouldRenderThumbnailDrawer = !shouldRenderThumbnailDrawer
   // timelineModeControlView.update({

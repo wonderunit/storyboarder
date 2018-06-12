@@ -8,138 +8,9 @@ const util = require('../utils/index')
 const sfx = require('../wonderunit-sound')
 const observeStore = require('../shared/helpers/observeStore')
 
-// TODO why even have these constants if we don't use them consistently?
-// const BRUSH_PENCIL = 'pencil'
-// const BRUSH_LIGHT_PENCIL = 'light-pencil'
-// const BRUSH_PEN = 'pen'
-// const BRUSH_BRUSH = 'brush'
-// const BRUSH_NOTE_PEN = 'note-pen'
-// const BRUSH_ERASER = 'eraser'
-
-// const initialState = {
-//   transformMode: null,
-//   captions: false,
-// 
-//   brush: null,
-// 
-//   brushes: {
-//     [BRUSH_PENCIL]: {
-//       kind: BRUSH_PENCIL,
-//       size: 7,
-//       spacing: 0.25,
-//       flow: 0.4,
-//       hardness: 0.5,
-//       opacity: 0.4,
-//       color: Color('#121212'),
-//       palette: [
-//         Color('#373737'), Color('#223131'), Color('#121212')
-//       ]
-//     },
-//     [BRUSH_LIGHT_PENCIL]: {
-//       kind: BRUSH_LIGHT_PENCIL,
-//       size: 20,
-//       spacing: 0.12,
-//       flow: 0.4,
-//       hardness: 0.8,
-//       opacity: 0.3,
-//       color: Color('#90CBF9'),
-//       palette: [
-//         Color('#CFCFCF'), Color('#9FA8DA'), Color('#90CBF9')
-//       ]
-//     },
-//     [BRUSH_PEN]: {
-//       kind: BRUSH_PEN,
-//       size: 20,
-//       spacing: 0.02,
-//       flow: 1,
-//       hardness: 0.7,
-//       opacity: 0.9,
-//       color: Color('#000000'),
-//       palette: [
-//         Color('#373737'), Color('#223131'), Color('#000000')
-//       ]
-//     },
-//     [BRUSH_BRUSH]: {
-//       kind: BRUSH_BRUSH,
-//       size: 100,
-//       spacing: 0.03,
-//       flow: 0.7,
-//       hardness: 1,
-//       opacity: 0.2,
-//       color: Color('#9E9E9E'),
-//       palette: [
-//         Color('#4DABF5'), Color('#607D8B'), Color('#9E9E9E')
-//       ]
-//     },
-//     [BRUSH_NOTE_PEN]: {
-//       kind: BRUSH_NOTE_PEN,
-//       size: 10,
-//       color: '#f00',
-//       spacing: 0.02,
-//       flow: 0.9,
-//       hardness: 0.9,
-//       opacity: 0.8,
-//       color: Color('#F44336'),
-//       palette: [
-//         Color('#4CAF50'), Color('#FF9800'), Color('#F44336')
-//       ]
-//     },
-//     [BRUSH_ERASER]: {
-//       kind: BRUSH_ERASER,
-//       size: 30,
-// 
-//       spacing: 0.05,
-//       flow: 6.0,
-//       hardness: 0.9,
-//       opacity: 1.0,
-// 
-//       color: Color('#ffffff'),
-//       palette: [
-//         Color('#ffffff'), Color('#ffffff'), Color('#ffffff')
-//       ]
-//     }
-//   },
-// 
-//   grid: false,
-//   center: false,
-//   thirds: false,
-//   perspective: false,
-// 
-//   onion: false
-// }
-
 class Toolbar extends EventEmitter {
   constructor (store, el) {
     super()
-
-    // // TODO PREFS ARE JANK AS FUCK. NEED TO REDO THIS
-    // let prefState
-    // prefState = util.stringifyClone(prefsModule.getPrefs('toolbar'))
-    // 
-    // if (prefState  && prefState.toolbarState) {
-    //   for (var key in prefState.toolbarState.brushes) {
-    //     let paletteValue = prefState.toolbarState.brushes[key].color
-    //     let color = new Color({red: paletteValue.red, green: paletteValue.green, blue: paletteValue.blue, alpha: paletteValue.alpha})
-    //     prefState.toolbarState.brushes[key].color = color
-    //     let newPalette = []
-    //     for (var i = 0; i < prefState.toolbarState.brushes[key].palette.length; i++) {
-    //       paletteValue = prefState.toolbarState.brushes[key].palette[i]
-    //       color = new Color({red: paletteValue.red, green: paletteValue.green, blue: paletteValue.blue, alpha: paletteValue.alpha})
-    //       newPalette.push(color)
-    //     }
-    //     prefState.toolbarState.brushes[key].palette = newPalette
-    //   }
-    //   this.state = prefState.toolbarState
-    //   this.state.grid   = false
-    //   this.state.center = false
-    //   this.state.thirds = false
-    //   this.state.perspective = false
-    //   this.state.onion = false
-    //   //this.state.captions   = false
-    // } else {
-    //   this.state = initialState
-    // }
-    // this.state = this.store.getState().toolbar
 
     this.store = store
     this.el = el
@@ -158,56 +29,6 @@ class Toolbar extends EventEmitter {
     // listen for changes to the toolbar state
     observeStore(this.store, state => state.toolbar, this.render.bind(this), true)
   }
-
-  // setState (newState) {
-  //   console.warn('Toolbar#setState is deprecated')
-  //   // this.state = Object.assign(this.state, newState)
-  //   // if (newState.brush) {
-  //   //   // the brush changed
-  //   //   this.emit('brush', this.state.brush, this.getBrushOptions())
-  //   //   this.store.dispatch({ type: 'TOOLBAR_TOOL_CHANGE', payload: this.state.brush, meta: { scope: 'local' } })
-  //   // }
-  //   // this.render()
-  // }
-
-  // changeBrushSize (direction, fine = false) {
-  //   console.warn('Toolbar#changeBrushSize is deprecated')
-  //   // let min = 1
-  //   // let max = 256
-  //   // let currSize = this.state.brushes[this.state.brush].size
-  //   // 
-  //   // if (fine) {
-  //   //   currSize += direction
-  //   // } else {
-  //   //   if (currSize < 5) {
-  //   //     currSize += direction
-  //   //   } else {
-  //   //     currSize *= direction > 0 ? 1.2 : 0.8
-  //   //   }
-  //   // }
-  //   // 
-  //   // if (currSize < min) currSize = min
-  //   // if (currSize > max) currSize = max
-  //   // 
-  //   // this.state.brushes[this.state.brush].size = currSize
-  //   // 
-  //   // this.emit('brush:size', this.getBrushOptions().size)
-  //   // this.render()
-  // }
-
-  // changeCurrentColor (color) {
-  //   this.state.brushes[this.state.brush].color = color
-  //   this.emit('brush:color', this.getBrushOptions().color)
-  //   this.render()
-  // }
-
-  // changePaletteColor (brush, index, color) {
-  //   console.warn('Toolbar#changePaletteColor is deprecated')
-  //   // NOTE ignores passed brush and uses current brush,
-  //   //      in case we changed since we invoked the color picker
-  //   // this.state.brushes[this.state.brush].palette[index] = color
-  //   // this.render()
-  // }
 
   attachedCallback () {
     const immediateButtons = [...this.el.querySelectorAll('.button:not([id^="toolbar-palette-color"])')]
@@ -249,24 +70,6 @@ class Toolbar extends EventEmitter {
     return target.id.replace(/^toolbar-/, '')
   }
 
-  // cloneOptions (opt) {
-  //   return {
-  //     kind: opt.kind,
-  //     size: opt.size,
-  //     spacing: opt.spacing,
-  //     flow: opt.flow,
-  //     hardness: opt.hardness,
-  //     opacity: opt.opacity,
-  //     color: opt.color.clone(),
-  //     palette: opt.palette.map(color => color.clone())
-  //   }
-  // }
-
-  // getBrushOptions (brushName) {
-  //   brushName = brushName || this.state.brush
-  //   return this.cloneOptions(this.state.brushes[brushName])
-  // }
-
   onButtonDown (event) {
     let selection = this.getEventTargetSelection(event.target)
 
@@ -282,7 +85,6 @@ class Toolbar extends EventEmitter {
       case 'note-pen':
       case 'eraser':
         if (state.toolbar.activeTool !== selection) {
-          // if (this.state.transformMode) this.emit('cancelTransform') // TODO
           this.store.dispatch({ type: 'TOOLBAR_TOOL_CHANGE', payload: selection, meta: { scope: 'local' } })
           sfx.playEffect('tool-' + selection)
         }
@@ -359,7 +161,6 @@ class Toolbar extends EventEmitter {
         sfx.playEffect('metal')
         break
       case 'captions':
-        // this.toggleCaptions()
         this.store.dispatch({ type: 'TOOLBAR_CAPTIONS_TOGGLE' })
         sfx.playEffect('metal')
         break
@@ -433,11 +234,6 @@ class Toolbar extends EventEmitter {
       }
     }
   }
-
-  // getCurrentPalette () {
-  //   // TODO
-  //   return this.state.brushes[this.state.brush].palette
-  // }
 
   getState () {
     return this.state
@@ -527,13 +323,7 @@ class Toolbar extends EventEmitter {
     }
   }
 
-  // toggleCaptions () {
-  //   this.setState({ captions: !this.state.captions })
-  //   this.emit('captions')
-  // }
-
   onButtonOver (event) {
-    // console.log('onButtonOver', event)
     sfx.rollover()
   }
 
