@@ -274,14 +274,13 @@ const load = async (event, args) => {
       //
       // intercept some key commands
       //
-      // construct a unique set of keys including the one JUST intercepted
-      let pressedKeys = [...new Set([keytracker.pressed(), input.key])]
-      //
-      // intercept: New Board
-      //
       // TODO avoid key doubling where Menu still tries to send the command
       // see: https://github.com/wonderunit/storyboarder/issues/1206
       //
+      // construct a unique set of keys including the one JUST intercepted
+      let pressedKeys = [...new Set([keytracker.pressed(), input.key])]
+      //
+      // intercept: New Board (IPC: newBoard)
       if (isCommandPressed('menu:boards:new-board', pressedKeys)) {
         // keyDown triggers newBoard
         if (input.type == 'keyDown') {
@@ -303,6 +302,34 @@ const load = async (event, args) => {
         win.webContents.setIgnoreMenuShortcuts(true)
         event.preventDefault()
         return
+      }
+
+      // intercept: Change Tool (IPC: setTool)
+      for (let [command, toolName] of [
+        ['menu:tools:light-pencil', 'light-pencil'],
+        ['menu:tools:brush', 'brush'],
+        ['menu:tools:tone', 'tone'],
+        ['menu:tools:pencil', 'pencil'],
+        ['menu:tools:pen', 'pen'],
+        ['menu:tools:note-pen', 'note-pen'],
+        ['menu:tools:eraser', 'eraser']
+      ]) {
+        if (isCommandPressed(command, pressedKeys)) {
+          if (input.type == 'keyDown' &&
+              !textInputMode &&
+              !storyboarderSketchPane.getIsDrawingOrStabilizing()
+          ) {
+            store.dispatch({
+              type: 'TOOLBAR_TOOL_CHANGE',
+              payload: toolName,
+              meta: { scope: 'local' }
+            })
+          }
+
+          win.webContents.setIgnoreMenuShortcuts(true)
+          event.preventDefault()
+          return
+        }
       }
 
       // TODO intercept: menu:tools:*
