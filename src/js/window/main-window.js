@@ -2959,6 +2959,8 @@ let deleteSingleBoard = (index) => {
 }
 
 let deleteBoards = (args)=> {
+  let numDeleted = 0
+
   if (boardData.boards.length > 1) {
     if (selections.size) {
       storeUndoStateForScene(true)
@@ -2980,24 +2982,26 @@ let deleteBoards = (args)=> {
       selections.clear()
       renderThumbnailDrawer()
       storeUndoStateForScene()
-      if (arr.length > 1) {
-        notifications.notify({message: "Deleted " + arr.length + " boards.", timing: 5})
-      } else {
-        notifications.notify({message: "Deleted board.", timing: 5})
-      }
+      numDeleted = arr.length
+      // if (arr.length > 1) {
+      //   // notifications.notify({message: "Deleted " + arr.length + " boards.", timing: 5})
+      // } else {
+      //   // notifications.notify({message: "Deleted board.", timing: 5})
+      // }
 
     } else {
       // delete a single board
       storeUndoStateForScene(true)
       deleteSingleBoard(currentBoard)
       storeUndoStateForScene()
-      notifications.notify({message: "Deleted board", timing: 5})
+      // notifications.notify({message: "Deleted board.", timing: 5})
 
       // if not requested to move forward
       // we take action to move intentionally backward
       if (!args) {
         currentBoard--
       }
+      numDeleted = 1
     }
     gotoBoard(currentBoard)
     sfx.playEffect('trash')
@@ -3005,7 +3009,10 @@ let deleteBoards = (args)=> {
   } else {
     // sfx.error()
     // notifications.notify({message: "Cannot delete. You have to have at least one board, silly.", timing: 8})
+    numDeleted = 0
   }
+
+  return numDeleted
 }
 
 /**
@@ -3132,8 +3139,14 @@ const clearLayers = shouldEraseCurrentLayer => {
     notifications.notify({ message: 'Cleared current layer.', timing: 5 })
   } else {
     if (storyboarderSketchPane.isEmpty()) {
-      deleteBoards()
-      notifications.notify({ message: 'Deleted board.', timing: 5 })
+      let numDeleted = deleteBoards()
+      if (numDeleted > 0) {
+        let noun = `board${numDeleted > 1 ? 's' : ''}`
+        notifications.notify({
+          message: `Deleted ${numDeleted} ${noun}.`,
+          timing: 5
+        })
+      }
     } else {
       storyboarderSketchPane.clearLayers()
       saveImageFile()
@@ -3866,7 +3879,14 @@ let renderThumbnailDrawer = () => {
       }).catch(err => console.error(err))
     })
     contextMenu.on('delete', () => {
-      deleteBoards()
+      let numDeleted = deleteBoards()
+      if (numDeleted > 0) {
+        let noun = `board${numDeleted > 1 ? 's' : ''}`
+        notifications.notify({
+          message: `Deleted ${numDeleted} ${noun}.`,
+          timing: 5
+        })
+      }
     })
     contextMenu.on('duplicate', () => {
       duplicateBoard()
@@ -6186,7 +6206,14 @@ ipcRenderer.on('flipBoard', (e, arg)=> {
 
 ipcRenderer.on('deleteBoards', (event, args)=>{
   if (!textInputMode) {
-    deleteBoards(args)
+    let numDeleted = deleteBoards(args)
+    if (numDeleted > 0) {
+      let noun = `board${numDeleted > 1 ? 's' : ''}`
+      notifications.notify({
+        message: `Deleted ${numDeleted} ${noun}.`,
+        timing: 5
+      })
+    }
   }
 })
 
