@@ -278,11 +278,13 @@ const load = async (event, args) => {
       let pressedKeys = [...new Set([keytracker.pressed(), input.key])]
       //
       // intercept: New Board
-      if (input.type == 'keyDown') {
-        if (isCommandPressed('menu:boards:new-board', pressedKeys)) {
-          // don't pass through to the menu
-          win.webContents.setIgnoreMenuShortcuts(true)
-
+      //
+      // TODO avoid key doubling where Menu still tries to send the command
+      // see: https://github.com/wonderunit/storyboarder/issues/1206
+      //
+      if (isCommandPressed('menu:boards:new-board', pressedKeys)) {
+        // keyDown triggers newBoard
+        if (input.type == 'keyDown') {
           // sanity check
           if (!textInputMode) {
             // manually construct a new board
@@ -295,9 +297,14 @@ const load = async (event, args) => {
               })
               .catch(err => console.error(err))
           }
-          return
         }
+
+        // keyUp AND keyDown cause menu to be ignored and key to be trapped
+        win.webContents.setIgnoreMenuShortcuts(true)
+        event.preventDefault()
+        return
       }
+
       // TODO intercept: menu:tools:*
       // e.g.: '1'-'6' shouldn't flash the menu
 
@@ -4811,6 +4818,7 @@ const toggleTimeline = () => {
 }
 
 ipcRenderer.on('newBoard', (event, args)=>{
+  // TODO fix doubling bug https://github.com/wonderunit/storyboarder/issues/1206
   if (!textInputMode) {
     if (args > 0) {
       // insert after
