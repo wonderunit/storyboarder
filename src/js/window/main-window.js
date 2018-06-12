@@ -931,13 +931,16 @@ const loadBoardUI = async () => {
   })
 
   // toggle scroll-indicator visibility based on scroll position
-  document.querySelector('.board-metadata-container').addEventListener('scroll', e => {
-    if (e.target.offsetHeight + e.target.scrollTop === e.target.scrollHeight) {
-      document.querySelector('#board-metadata .scroll-indicator').style.opacity = 0
+  const renderScrollIndicator = () => {
+    let target = document.querySelector('.board-metadata-container')
+    let el = document.querySelector('#board-metadata .scroll-indicator')
+    if (target.offsetHeight + target.scrollTop === target.scrollHeight) {
+      el.style.opacity = 0
     } else {
-      document.querySelector('#board-metadata .scroll-indicator').style.opacity = 1.0
+      el.style.opacity = 1.0
     }
-  })
+  }
+  document.querySelector('.board-metadata-container').addEventListener('scroll', () => renderScrollIndicator())
   document.querySelector('#board-metadata .scroll-indicator').addEventListener('click', e => {
     let el = document.querySelector('.board-metadata-container')
     el.scrollTo({
@@ -945,6 +948,8 @@ const loadBoardUI = async () => {
       behavior: 'smooth'
     })
   })
+  window.addEventListener('resize', () => renderScrollIndicator())
+  renderScrollIndicator() // initialize
 
   for (var item of document.querySelectorAll('.board-metadata-container input, .board-metadata-container textarea')) {
     item.addEventListener('pointerdown', (e)=>{
