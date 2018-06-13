@@ -1078,66 +1078,10 @@ const loadBoardUI = async () => {
     }
   })
 
-  // TODO
   toolbar = new Toolbar(store, document.getElementById('toolbar'))
-  // TODO
-  // toolbar.on('brush', (kind, options) => {
-  //   toolbar.emit('cancelTransform')
-  //   storyboarderSketchPane.setBrushTool(kind, options)
-  //   sfx.playEffect('tool-' + kind)
-  // })
-  // toolbar.on('brush:size', size => {
-  //   toolbar.emit('cancelTransform')
-  //   storyboarderSketchPane.setBrushSize(size)
-  // })
-  // toolbar.on('brush:color', color => {
-  //   toolbar.emit('cancelTransform')
-  //   sfx.playEffect('metal')
-  //   storyboarderSketchPane.setBrushColor(color)
-  // })
   toolbar.on('trash', () => {
     clearLayers()
   })
-
-
-          // toolbar.on('move', () => {
-          //   if (storyboarderSketchPane.isPointerDown) return
-          //     sfx.playEffect('metal')
-          //   toolbar.setState({ transformMode: 'move' })
-          //   storyboarderSketchPane.moveContents()
-          // })
-          // toolbar.on('scale', () => {
-          //   if (storyboarderSketchPane.isPointerDown) return
-          //     sfx.playEffect('metal')
-          //   toolbar.setState({ transformMode: 'scale' })
-          //   storyboarderSketchPane.scaleContents()
-          // })
-          // toolbar.on('cancelTransform', () => {
-          //   // FIXME prevent this case from happening
-          //   if (storyboarderSketchPane.isPointerDown) {
-          //     console.warn('pointer is already down')
-          //     return
-          //   }
-          // 
-          //   toolbar.setState({ transformMode: null })
-          //   storyboarderSketchPane.cancelTransform()
-          // })
-
-  // sketchPane.on('moveMode', enabled => {
-  //   if (enabled) {
-  //     toolbar.setState({ transformMode: 'move' })
-  //   }
-  // })
-  // sketchPane.on('scaleMode', enabled => {
-  //   if (enabled) {
-  //     toolbar.setState({ transformMode: 'scale' })
-  //   }
-  // })
-  // sketchPane.on('cancelTransform', () => {
-  //   toolbar.setState({ transformMode: null })
-  // })
-
-
   toolbar.on('undo', () => {
     if (storyboarderSketchPane.preventIfLocked()) return
 
@@ -1162,34 +1106,11 @@ const loadBoardUI = async () => {
     }
     sfx.playEffect('metal')
   })
-
-  // toolbar.on('grid', value => {
-  //   guides.setState({ grid: value })
-  //   sfx.playEffect('metal')
-  // })
-  // toolbar.on('center', value => {
-  //   guides.setState({ center: value })
-  //   sfx.playEffect('metal')
-  // })
-  // toolbar.on('thirds', value => {
-  //   guides.setState({ thirds: value })
-  //   sfx.playEffect('metal')
-  // })
-  // toolbar.on('perspective', value => {
-  //   guides.setState({ perspective: value })
-  //   sfx.playEffect('metal')
-  // })
-
   toolbar.on('open-in-editor', () => {
     openInEditor()
   })
 
-  // storyboarderSketchPane.toolbar = toolbar
-
-  // HACK force initialize
-  // sfx.setMute(true)
-  // toolbar.setState({ brush: 'light-pencil' })
-  // sfx.setMute(false)
+  // initialize
   store.dispatch({ type: 'TOOLBAR_TOOL_CHANGE', payload: 'light-pencil' })
 
 
