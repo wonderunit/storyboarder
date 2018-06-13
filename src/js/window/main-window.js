@@ -6076,37 +6076,6 @@ ipcRenderer.on('brushSize', (e, direction) => {
     }
   }
 })
-    // // TODO move this code into the toolbar
-    // // HACK to support changing eraser size during quick erase
-    // window.addEventListener('keydown', e => {
-    //   if (!toolbar) return
-    // 
-    //   // when alt key is held down during Quick Erase mode,
-    //   // menu won't trigger the '[' and ']' accelerators
-    //   // so we need to detect the combination
-    //   // and call changeBrushSize ourselves
-    //   const changeEraserSizeDuringQuickErase = direction => {
-    //     // remember the actual brush we're on
-    //     let prior = toolbar.state.brush
-    //     // switch to eraser long enough to change the brush size
-    //     toolbar.state.brush = 'eraser'
-    //     // change the brush size, which will re-render the cursor
-    //     toolbar.changeBrushSize(direction)
-    //     // re-render the toolbar to reflect prior brush
-    //     toolbar.state.brush = prior
-    //     toolbar.render()
-    //   }
-    //   if (toolbar.getIsQuickErasing()) {
-    //     if (isCommandPressed('drawing:quick-erase-size:inc')) {
-    //       changeEraserSizeDuringQuickErase(1)
-    //       sfx.playEffect('brush-size-up')
-    //     } else if (isCommandPressed('drawing:quick-erase-size:dec')) {
-    //       changeEraserSizeDuringQuickErase(-1)
-    //       sfx.playEffect('brush-size-down')
-    //     }
-    //   }
-    // })
-
 
 ipcRenderer.on('flipBoard', (e, arg)=> {
   if (storyboarderSketchPane.preventIfLocked()) return
