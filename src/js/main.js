@@ -738,6 +738,7 @@ const createAndLoadScene = aspectRatio =>
     dialog.showSaveDialog({
       title: "New Storyboard",
       buttonLabel: "Create",
+      defaultPath: app.getPath('documents'),
     },
     async filename => {
       if (filename) {
@@ -842,7 +843,7 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
     backgroundColor: '#333333',
     show: false,
     frame: false,
-    resizable: false
+    resizable: isDev ? true : false
   })
   loadingStatusWindow.loadURL(`file://${__dirname}/../loading-status.html?name=${encodeURIComponent(projectName)}`)
   loadingStatusWindow.once('ready-to-show', () => {
@@ -877,6 +878,7 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
     analytics.screenView('main')
   })
 
+  // TODO could move this to main-window code?
   if (isDev) {
     mainWindow.webContents.on('devtools-focused', event => { mainWindow.webContents.send('devtools-focused') })
     mainWindow.webContents.on('devtools-closed', event => { mainWindow.webContents.send('devtools-closed') })
@@ -1035,9 +1037,8 @@ ipcMain.on('redo', (e, arg)=> {
   mainWindow.webContents.send('redo')
 })
 
-ipcMain.on('setTool', (e, arg)=> {
-  mainWindow.webContents.send('setTool', arg)
-})
+ipcMain.on('setTool', (e, arg) =>
+  mainWindow.webContents.send('setTool', arg))
 
 ipcMain.on('useColor', (e, arg)=> {
   mainWindow.webContents.send('useColor', arg)
@@ -1163,6 +1164,9 @@ ipcMain.on('preferences', (event, arg) => {
 ipcMain.on('toggleGuide', (event, arg) => {
   mainWindow.webContents.send('toggleGuide', arg)
 })
+
+ipcMain.on('toggleOnionSkin', event =>
+  mainWindow.webContents.send('toggleOnionSkin'))
 
 ipcMain.on('toggleNewShot', (event, arg) => {
   mainWindow.webContents.send('toggleNewShot', arg)

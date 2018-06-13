@@ -1,131 +1,169 @@
+const CAF = require('caf')
 const fs = require('fs')
 const path = require('path')
 
+const exporterCommon = require('../exporters/common')
+const boardModel = require('../models/board')
+
 class OnionSkin {
-  constructor (storyboarderSketchPane, boardPath) {
-    this.storyboarderSketchPane = storyboarderSketchPane
-    this.enabled = false
-    this.isLoaded = false
-    this.boardPath = boardPath
+  constructor ({ width, height, onSetEnabled, onRender }) {
+    this.width = width
+    this.height = height
+    this.onSetEnabled = onSetEnabled
+    this.onRender = onRender
 
-    this.setEnabled(false)
+    this.cancelable = undefined
+
+    this.state = {
+      status: 'NotAsked',
+      enabled: false,
+      currBoard: undefined,
+      prevBoard: undefined,
+      nextBoard: undefined,
+      shouldLoad: false
+    }
+
+    this.canvas = document.createElement('canvas')
+    this.canvas.width = this.width
+    this.canvas.height = this.height
+    this.context = this.canvas.getContext('2d')
+
+    this.tintCanvas = document.createElement('canvas')
+    this.tintCanvas.width = this.width
+    this.tintCanvas.height = this.height
+    this.tintContext = this.tintCanvas.getContext('2d')
+
+    this.onSetEnabled(this.state.enabled)
   }
 
-  setEnabled (value) {
-    this.enabled = value
-    this.storyboarderSketchPane.sketchPane.setLayerOpacity(this.enabled ? 1 : 0, 2) // HACK hardcoded
+  setState ({ pathToImages, currBoard, prevBoard, nextBoard, enabled }) {
+    const currBoardChanged = currBoard && ((this.state.currBoard == null) || (currBoard.uid != this.state.currBoard.uid))
+    const prevBoardChanged = prevBoard && ((this.state.prevBoard == null) || (prevBoard.uid != this.state.prevBoard.uid))
+    const nextBoardChanged = nextBoard && ((this.state.nextBoard == null) || (nextBoard.uid != this.state.nextBoard.uid))
+    const anyBoardChanged = currBoardChanged || prevBoardChanged || nextBoardChanged
+
+    const enabledChanged = enabled != this.state.enabled
+
+    this.state.pathToImages = pathToImages || this.state.pathToImages
+    this.state.currBoard = currBoard || this.state.currBoard
+    this.state.prevBoard = prevBoard || this.state.prevBoard
+    this.state.nextBoard = nextBoard || this.state.nextBoard
+
+    if (enabledChanged) {
+      this.state.enabled = enabled
+      this.onSetEnabled(this.state.enabled)
+    }
+
+    this.state.shouldLoad = (this.state.enabled && (anyBoardChanged || enabledChanged))
   }
 
-  getEnabled () {
-    return this.enabled
+  // TODO should we use SketchPane's LayerCollection to setup and render these composites for us?
+  // TODO cache images for re-use?
+  async load (token = undefined) {
+    if (!this.state.shouldLoad) return
+
+    console.log('%conion load', 'color:purple')
+    console.log('onion this.cancelable', this.cancelable)
+
+    const { pathToImages, currBoard, prevBoard, nextBoard } = this.state
+
+    // cancel any in-progress loading
+    if (this.cancelable && // token exists
+        this.cancelable !== token && // token is old
+        !this.cancelable.signal.aborted // token has not been aborted
+    ) {
+      console.log('%conion cancel existing', 'color:purple')
+      this.cancelable.abort('cancel')
+      this.cancelable = undefined
+    }
+
+    this.cancelable = token || new CAF.cancelToken()
+
+    console.log(`%conion cancelable ${this.cancelable}`, 'color:purple')
+
+    // reset
+    this.context.clearRect(0, 0, this.width, this.height)
+    this.onRender(this.canvas)
+
+    // start a new loading process
+    try {
+      let fn = CAF(this._load.bind(this))
+      await fn(this.cancelable, { pathToImages, currBoard, prevBoard, nextBoard })
+      console.log('%conion skin ok', 'color:green')
+    } catch (err) {
+      console.log('%conion skin failed', 'color:orange')
+      console.error(err)
+      this.state.status = 'Failed'
+      throw err
+    }
   }
 
-  reset () {
-    this.isLoaded = false
-  }
+  * _load(signal, { pathToImages, currBoard, prevBoard, nextBoard }) {
+    console.log(`%c[OnionSkin#_load]`, "color:blue")
+    this.state.status = 'Loading'
 
-  setBoardPath (path) {
-    this.boardPath = path
-  }
+    // this.context.clearRect(0, 0, this.width, this.height)
 
-  load (currBoard, prevBoard, nextBoard) {
-    this.isLoaded = false
-    return new Promise((resolve, reject) => {
-      let context = this.storyboarderSketchPane.sketchPane.getLayerContext(2) // HACK hardcoded
-      let size = this.storyboarderSketchPane.sketchPane.getCanvasSize()
+    this.context.fillStyle = '#fff'
+    this.context.fillRect(0, 0, this.width, this.height)
 
-      let layersData = []
-      let loaders = []
+    for (let board of [prevBoard, nextBoard]) {
+      if (!board) continue
 
-      for (let board of [prevBoard, nextBoard]) {
-        if (!board) continue
+      let color = board === prevBoard ? '#00f' : '#f00'
+      console.log(`%c[OnionSkin#_load] start board:${board.index}`, `color:${color}`)
 
-        let color = board === prevBoard ? '#00f' : '#f00'
+      try {
 
-        if (board.layers) {
-          if (board.layers.reference && board.layers.reference.url) {
-            layersData.push([0, board.layers.reference.url, color]) // HACK hardcoded index
-          }
+        let filename = boardModel.boardFilenameForPosterFrame(board)
+        let filepath = path.join(pathToImages, filename)
+
+        let lastModified
+        try {
+          // file exists, cache based on mtime
+          lastModified = fs.statSync(filepath).mtimeMs
+        } catch (err) {
+          // file not found, cache buster based on current time
+          lastModified = Date.now()
         }
 
-        // always load the main layer
-        layersData.push([1, board.url, color]) // HACK hardcoded index
+        // load the posterframe
+        let image = yield exporterCommon.getImage(filepath + '?' + lastModified)
 
-        if (board.layers) {
-          if (board.layers.notes && board.layers.notes.url) {
-            layersData.push([3, board.layers.notes.url, color]) // HACK hardcoded index
-          }
-        }
+        // tint
+        this.tintContext.save()
+        this.tintContext.clearRect(0, 0, this.width, this.height)
+        this.tintContext.globalCompositeOperation = 'normal'
+        // white box as a base
+        this.tintContext.fillStyle = '#fff'
+        this.tintContext.fillRect(0, 0, this.width, this.height)
+        // draw the image
+        this.tintContext.drawImage(image, 0, 0)
+        // draw the screened color on top
+        this.tintContext.globalCompositeOperation = 'screen'
+        this.tintContext.fillStyle = color
+        this.tintContext.fillRect(0, 0, this.width, this.height)
+        this.tintContext.restore()
 
-        for (let [index, filename] of layersData) {
-          loaders.push(new Promise((resolve, reject) => {
-            let imageFilePath = path.join(this.boardPath, 'images', filename)
-            try {
-              if (fs.existsSync(imageFilePath)) {
-                let image = new Image()
-                image.onload = () => {
-                  // resolve
-                  resolve([filename, image])
-                }
-                image.onerror = () => {
-                  // clear
-                  console.warn('could not load image', filename)
-                  resolve([filename, null])
-                }
-                image.src = imageFilePath + '?' + Math.random()
-              } else {
-                // clear
-                resolve([filename, null])
-              }
-            } catch (err) {
-              // clear
-              resolve([filename, null])
-            }
-          }))
-        }
+        // draw tinted canvas to main context
+        this.context.save()
+        this.context.globalAlpha = 0.35
+        this.context.globalCompositeOperation = 'multiply'
+        this.context.drawImage(this.tintContext.canvas, 0, 0)
+        this.context.restore()
+
+        this.state.status = 'Success'
+        this.onRender(this.canvas)
+      } catch (err) {
+        // couldn't load onion skin art
+        console.log('could not load onion skin art')
+        console.warn(err)
+        this.state.status = 'Failed'
+        // throw err
       }
+    }
 
-      // via https://stackoverflow.com/a/4231508
-      Promise.all(loaders).then(result => {
-        // key map for easier lookup
-        let imagesByFilename = {}
-        for (let [filename, image] of result) {
-          if (image) imagesByFilename[filename] = image
-        }
-
-        let tmpCtx = this.storyboarderSketchPane.createContext()
-        context.clearRect(0, 0, size.width, size.height)
-
-        for (let [index, filename, color] of layersData) {
-          // do we have an image for this particular layer index?
-          let image = imagesByFilename[filename]
-          if (image) {
-            // console.log('OnionSkin :: rendering layer index:', index, filename, color)
-            tmpCtx.save()
-            tmpCtx.fillStyle = color
-            tmpCtx.fillRect(0, 0, size.width, size.height)
-            // draw image to offscreen (with tint)
-            tmpCtx.globalCompositeOperation = 'destination-atop'
-            tmpCtx.drawImage(image, 0, 0)
-            tmpCtx.restore()
-
-            // draw image to onion layer
-            context.save()
-            context.globalAlpha = 0.01
-            context.drawImage(image, 0, 0)
-            // draw offscreen (with tint) to onion layer
-            context.globalAlpha = 0.2 // strength of tint
-            context.drawImage(tmpCtx.canvas, 0, 0)
-            context.restore()
-          } else {
-            // console.log('OnionSkin :: missing image for layer index:', index, filename, color)
-          }
-        }
-
-        this.isLoaded = true
-        resolve()
-      })
-    })
+    console.log(`%c[OnionSkin#_load] complete`, `color:green`)
   }
 }
 

@@ -20,13 +20,14 @@ const defaultPrefs = {
   defaultBoardTiming: 2000,
   pomodoroTimerMinutes: 25,
   importTargetLayer: "reference",
-  enableCanvasPaintingOpacity: true,
+  enableCanvasPaintingOpacity: true, // DEPRECATED used by old SketchPane
   enableBrushCursor: true,
-  enableStabilizer: true,
+  enableStabilizer: true, // DEPRECATED used by old SketchPane
   enableAnalytics: true,
   enableAutoSave: true,
   enableForcePsdReloadOnFocus: true,
   absolutePathToImageEditor: undefined,
+  enableDiagnostics: false, // added in 1.6.x, FPS meter
   
   lastUsedFps: 24,
 
@@ -48,8 +49,8 @@ if(cpus.length <= 2 || cpu.speed <= 2000) {
   defaultPrefs.enableDrawingSoundEffects = false
   defaultPrefs.enableDrawingMelodySoundEffects = false
   defaultPrefs.enableUISoundEffects = false
-  defaultPrefs.enableCanvasPaintingOpacity = false
-  defaultPrefs.enableStabilizer = false
+  defaultPrefs.enableCanvasPaintingOpacity = false // DEPRECATED used by old SketchPane
+  defaultPrefs.enableStabilizer = false // DEPRECATED used by old SketchPane
 }
 
 let prefs

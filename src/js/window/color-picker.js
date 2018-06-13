@@ -48,7 +48,11 @@ class ColorPicker extends EventEmitter {
     let colorRow 
     colorRow = []
     for (var i = 0; i < this.primaryColors.length; i++) {
-      colorRow.push(['Faint ' + this.primaryColors[i][0],Color(this.primaryColors[i][1]).blend(Color("#fff"),.50).toCSS()])
+      if (this.primaryColors.length-1 == i) {
+        colorRow.push(['White',Color("#fff").toCSS()])
+      } else {
+        colorRow.push(['Faint ' + this.primaryColors[i][0],Color(this.primaryColors[i][1]).blend(Color("#fff"),.50).toCSS()])
+      }
     }
     colorRows.push(colorRow)
     colorRow = []
@@ -129,7 +133,7 @@ class ColorPicker extends EventEmitter {
 
     swatches.forEach((e)=>{
       e.addEventListener('pointerdown', (e)=>{
-        console.log('click!', e.target.dataset)
+        // console.log('click!', e.target.dataset)
         // request a color change from sketchPane
         this.emit('color', Color(e.target.dataset.color))
       })

@@ -55,50 +55,92 @@ window.addEventListener('keyup', keyup, false)
 window.addEventListener('blur', reset, false)
 document.addEventListener('visibilitychange', reset, false)
 
-// convert a key for easier matching
-// e.g. 'Meta' and 'Control' become 'CommandOrControl'
-const _normalizeMatchableKey = key => 
-  key === 'Meta' || key === 'Control' ? 'CommandOrControl' : key
-
 // NOTE: order does not matter. e.g.: CommandOrControl+Alt == Alt+CommandOrControl
 const findMatchingCommandsByKeys = (keymap, pressedKeys) => {
   if (!pressedKeys) return []
-
-  let normalizedPressedKeys = pressedKeys.map(_normalizeMatchableKey)
-
+  
+  // set of matching commands
   let matches = new Set()
-  for (let command of Object.keys(keymap)) {
-    let keystroke = keymap[command].split('+')
-
-    // matches non-normalized?
-    let matchesPressed = true
-    for (let k of keystroke) {
-      if (!pressedKeys.includes(k))
-        matchesPressed = false
+  
+  // for all the commands we know of
+  for (let command in keymap) {
+    let match = true
+  
+    // get the individual keys that make up the command
+    let keys = keymap[command].split('+')
+  
+    // for each key in the command's combo
+    for (let key of keys) {
+      if (key === 'CommandOrControl') {
+        // 'Control' and 'Meta' keys are considered a match for 'CommandOrControl'
+        // but if neither are found, this is not a match
+        if (!(pressedKeys.includes('Ctrl') || pressedKeys.includes('Meta'))) {
+          match = false
+          break
+        }
+      } else if (!pressedKeys.includes(key)) {
+        match = false
+        break
+      }
     }
-    if (matchesPressed)
+  
+    if (match) {
       matches.add(command)
-
-    // matches normalized?
-    let matchesNormalized = true
-    for (let k of keystroke) {
-      if (!normalizedPressedKeys.includes(k))
-        matchesNormalized = false
-    }
-    if (matchesNormalized)
-      matches.add(command)
+    }  
   }
   return [...matches]
 }
 
+// HACK very convoluted :/
+// determine if, given a match, we should also reset the combo
+// see https://github.com/coosto/ShortcutJS/issues/20
+const _comboShouldTriggerReset = (keymap, pressedKeys) => {
+  if (!pressedKeys) return false
+  
+  // for all the commands we know of
+  for (let command in keymap) {  
+    // get the individual keys that make up the command
+    let keys = keymap[command].split('+')
+  
+    // for each key in the command's combo
+    for (let key of keys) {
+      if (key === 'CommandOrControl') {
+        // if the command requires Meta and the user is pressing Meta and at least one other key
+        if (
+          pressedKeys.includes('Meta') &&
+          pressedKeys.length > 1
+         ) {
+          // then this is a candidate for reset
+          return true
+        }
+      }
+    }
+  }
+  return false
+}
 
-const createIsCommandPressed = store =>
-  cmd => findMatchingCommandsByKeys(
-      store.getState().entities.keymap,
-      pressed()
+const createIsCommandPressed = store => {
+  return (cmd, pressedKeys = null) => {
+    let keymap = store.getState().entities.keymap
+
+    let result = findMatchingCommandsByKeys(
+      keymap,
+      pressedKeys || pressed()
     ).includes(cmd)
 
+    // TODO should this only clear the combo we just matched?
+    // automatically clear matching combos containing Meta
+    // see https://github.com/coosto/ShortcutJS/issues/20
+    if (result && _comboShouldTriggerReset(keymap, pressedKeys || pressed())) {
+      reset()
+    }
+
+    return result
+  }
+}
+
 // HACK will only match for single, exact key:command mapping (not multiple keys)
+// only used by STS Sidebar
 const createIsEventMatchForCommand = store =>
   (event, cmd) => store.getState().entities.keymap[cmd] === normalizeKeyForEvent(event)
 
@@ -106,6 +148,5 @@ module.exports = {
   pressed,
   findMatchingCommandsByKeys,
   createIsCommandPressed,
-  createIsEventMatchForCommand,
-  normalizeKeyForEvent
+  createIsEventMatchForCommand
 }

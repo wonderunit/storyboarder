@@ -32,14 +32,12 @@ class UndoList {
   }
 
   getCanUndo () {
-    console.log('canUndo')
-    console.log(this.state)
+    console.log('can undo?', this.state.past.length > 0)
     return this.state.past.length > 0
   }
 
   getCanRedo () {
-    console.log('canRedo')
-    console.log(this.state)
+    console.log('can redo?', this.state.future.length > 0)
     return this.state.future.length > 0
   }
 
@@ -67,7 +65,7 @@ class UndoList {
 
     if (this.debugMode) this.print()
   }
-  
+
   redo () {
     const { past, present, future } = this.state
 
@@ -134,11 +132,13 @@ class UndoList {
       document.body.appendChild(this.debugEl)
     }
 
-    let clear = () =>
+    let clear = () => {
       this.debugEl.innerHTML = ''
+    }
 
-    let trace = (...args) =>
+    let trace = (...args) => {
       this.debugEl.innerHTML += '<div>' + args.join(' ') + '</div>'
+    }
 
     let boardIndexes = arr =>
       arr.map(b => parseInt(b.url.replace('board-', ''), 10)).join(', ')
@@ -147,16 +147,16 @@ class UndoList {
       util.isUndefined(value) ? 'n/a' : value
 
     let describe = state => {
-      if (state.type == 'image') {
+      if (state.type === 'image') {
         let layersDesc = state.layers.map(layerData =>
-          `index: ${layerData.index} id:${layerData.source.id}`)
+          `index: ${layerData.index} pixels:${layerData.source.pixels.length}`)
         let desc = `
           scene: ${stringOf(state.sceneId)} 
           board: ${stringOf(state.boardIndex)} 
           layers: [ ${layersDesc.join(', ')} ]
         `
         return [state.type, desc.replace(/\s+/g, ' ')]
-      } else if (state.type == 'scene') {
+      } else if (state.type === 'scene') {
         return [state.type, boardIndexes(state.sceneData.boards)].join(' ')
       }
     }
@@ -180,20 +180,25 @@ let undoList = new UndoList()
 // determine if image state A is equal to state B
 const imageStateContextsEqual = (a, b) => {
   if (
-    a && b &&                                               // are both states present?
+    // are both states present?
+    a && b &&
 
-    a.type == 'image' &&                                    // are they both image states?
-    b.type == 'image' &&
+    // are they both image states?
+    a.type === 'image' &&
+    b.type === 'image' &&
 
-    a.sceneId == b.sceneId &&                               // are they for the same board on the same scene?
-    a.boardIndex == b.boardIndex &&
+    // are they for the same board on the same scene?
+    a.sceneId === b.sceneId &&
+    a.boardIndex === b.boardIndex &&
 
-    a.layers.length == b.layers.length                      // do they have the same number of layers?
+    // do they have the same number of layers?
+    a.layers.length === b.layers.length
   ) {
     // are the layers the same?
     for (let n = 0; n < a.layers.length; n++) {
       if (
-        a.layers[n].index !== b.layers[n].index             // skip if their indices differ
+        // skip if their indices differ
+        a.layers[n].index !== b.layers[n].index
       ) {
         return false
       }
@@ -217,7 +222,7 @@ const imageStateContextsEqual = (a, b) => {
 //                boardIndex, i,
 //                layers: [         // NOTE for proper comparison, must be in the same order each time
 //                  index,
-//                  source          // reference to an HTMLCanvas to be stored
+//                  source          // reference to { pixels, premultiplied } to be stored
 //                ]
 //              }
 //
@@ -238,8 +243,8 @@ const addImageData = (isBefore, newState) => {
 
 const sceneStateContextsEqual = (a, b) =>
   a && b &&
-  a.type == 'scene' && b.type == 'scene' &&
-  a.sceneId == b.sceneId
+  a.type === 'scene' && b.type === 'scene' &&
+  a.sceneId === b.sceneId
 
 const addSceneData = (isBefore, state) => {
   const newState = {
@@ -260,35 +265,24 @@ const addSceneData = (isBefore, state) => {
   undoList.insert(newState)
 }
 
-const cloneState = originalState => {
-  //
-  // TODO do we still need this conversion from reference to value?
-  //
-  let newState = util.stringifyClone(originalState)
-
-  // re-insert the references to source (HTMLCanvas)
-  if (originalState.type === 'image') {
-    for (let n = 0; n < newState.layers.length; n++) {
-      newState.layers[n].source = originalState.layers[n].source
-    }
-  }
-
-  return newState
-}
+const cloneState = state =>
+  state.type === 'scene'
+    // TODO do we still need this conversion from reference to value?
+    //      could we stringifyClone in applyUndoStateForScene instead?
+    ? util.stringifyClone(state)
+    : state
 
 const undo = () => {
   undoList.undo()
   if (undoList.state.present) {
-    let state = cloneState(undoList.state.present)
-    module.exports.emit('undo', state)
+    module.exports.emit('undo', cloneState(undoList.state.present))
   }
 }
 
 const redo = () => {
   undoList.redo()
   if (undoList.state.present) {
-    let state = cloneState(undoList.state.present)
-    module.exports.emit('redo', state)
+    module.exports.emit('redo', cloneState(undoList.state.present))
   }
 }
 

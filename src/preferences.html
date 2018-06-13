@@ -115,7 +115,20 @@
             the Keymap JSON file in a source code editor like Atom or VS Code.
           </div>
         </div>
-        
+
+        <div class="preferences-input">
+          <input
+            type="checkbox"
+            name="enableDiagnostics"
+            id="enableDiagnostics" />
+
+          <label for="enableDiagnostics">
+            <span></span>Show Diagnostics
+          </label>
+          <div class="preferences-hint">
+            Displays how fast Storyboarder is able to run in frames-per-second over time. Useful for troubleshooting.
+          </div>
+        </div>
       </div>
 
       <div class="preferences-fieldset">
@@ -200,6 +213,8 @@
         <div class="preferences-hint" style="margin: 0 0 24px">
             Disable these if drawing feels slow.
           </div>
+
+        <!--
         <div class="preferences-input">
           <input
             type="checkbox"
@@ -210,6 +225,7 @@
             <span></span>Enable Brush Opacity While Drawing
           </label>
         </div>
+        -->
 
         <div class="preferences-input">
           <input
@@ -225,6 +241,8 @@
           </div>
         </div>
 
+        <!-- DEPRECATED used by old SketchPane -->
+        <!--
         <div class="preferences-input">
           <input
             type="checkbox"
@@ -235,7 +253,7 @@
             <span></span>Enable Line Smoothing
           </label>
         </div>
-        
+        -->
       </div>
 
       <div id="storyboardersAccount" class="preferences-fieldset">

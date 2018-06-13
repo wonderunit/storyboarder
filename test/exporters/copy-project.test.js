@@ -47,7 +47,8 @@ describe('exporters/copyProject', () => {
                 'images': {
                   'board-1-E3XMX-reference.png':  new Buffer([8, 6, 7, 5, 3, 0, 9]),
                   'board-1-E3XMX.png':            new Buffer([8, 6, 7, 5, 3, 0, 9]),
-                  'board-1-E3XMX-thumbnail.png':  new Buffer([8, 6, 7, 5, 3, 0, 9])
+                  'board-1-E3XMX-thumbnail.png':  new Buffer([8, 6, 7, 5, 3, 0, 9]),
+                  'board-1-E3XMX-posterframe.jpg':  new Buffer([8, 6, 7, 5, 3, 0, 9])
                 }
               },
               'Scene-2-INT-A-PLACE-DAY-2-FA5K7': {
@@ -55,7 +56,8 @@ describe('exporters/copyProject', () => {
                 'images': {
                   'board-1-35FBF-reference.png':  new Buffer([8, 6, 7, 5, 3, 0, 9]),
                   'board-1-35FBF.png':            new Buffer([8, 6, 7, 5, 3, 0, 9]),
-                  'board-1-35FBF-thumbnail.png':  new Buffer([8, 6, 7, 5, 3, 0, 9])
+                  'board-1-35FBF-thumbnail.png':  new Buffer([8, 6, 7, 5, 3, 0, 9]),
+                  'board-1-35FBF-posterframe.jpg':  new Buffer([8, 6, 7, 5, 3, 0, 9])
                 }
               },
               'Scene-3-EXT-HOUSE-DAY-3-T5KRK': {
@@ -63,7 +65,8 @@ describe('exporters/copyProject', () => {
                 'images': {
                   'board-1-MMN03-reference.png':  new Buffer([8, 6, 7, 5, 3, 0, 9]),
                   'board-1-MMN03.png':            new Buffer([8, 6, 7, 5, 3, 0, 9]),
-                  'board-1-MMN03-thumbnail.png':  new Buffer([8, 6, 7, 5, 3, 0, 9])
+                  'board-1-MMN03-thumbnail.png':  new Buffer([8, 6, 7, 5, 3, 0, 9]),
+                  'board-1-MMN03-posterframe.jpg':  new Buffer([8, 6, 7, 5, 3, 0, 9])
                 }
               }
             }
@@ -77,28 +80,33 @@ describe('exporters/copyProject', () => {
             'board-2-42VR9-reference.png':        new Buffer([8, 6, 7, 5, 3, 0, 9]),
             'board-2-42VR9-notes.png':            new Buffer([8, 6, 7, 5, 3, 0, 9]),
             'board-2-42VR9-thumbnail.png':        new Buffer([8, 6, 7, 5, 3, 0, 9]),
+            'board-2-42VR9-posterframe.jpg':      new Buffer([8, 6, 7, 5, 3, 0, 9]),
             'board-2-42VR9.psd':                  new Buffer([8, 6, 7, 5, 3, 0, 9]),
             'audio.wav':                          new Buffer([8, 6, 7, 5, 3, 0, 9]),
 
             'board-2-J74F5.png':                  new Buffer([8, 6, 7, 5, 3, 0, 9]),
             'board-2-J74F5-reference.png':        new Buffer([8, 6, 7, 5, 3, 0, 9]),
             'board-2-J74F5-thumbnail.png':        new Buffer([8, 6, 7, 5, 3, 0, 9]),
+            'board-2-J74F5-posterframe.jpg':      new Buffer([8, 6, 7, 5, 3, 0, 9]),
 
             'board-0-P2FLS.png':                  new Buffer([8, 6, 7, 5, 3, 0, 9]),
             'board-0-P2FLS-reference.png':        new Buffer([8, 6, 7, 5, 3, 0, 9]),
             'board-0-P2FLS-notes.png':            new Buffer([8, 6, 7, 5, 3, 0, 9]),
             'board-0-P2FLS-thumbnail.png':        new Buffer([8, 6, 7, 5, 3, 0, 9]),
             'board-0-P2FLS.psd':                  new Buffer([8, 6, 7, 5, 3, 0, 9]),
+            'board-0-P2FLS-posterframe.jpg':      new Buffer([8, 6, 7, 5, 3, 0, 9]),
 
             'board-1-WEBM4.png':                  new Buffer([8, 6, 7, 5, 3, 0, 9]),
             'board-1-WEBM4-reference.png':        new Buffer([8, 6, 7, 5, 3, 0, 9]),
             'board-1-WEBM4-notes.png':            new Buffer([8, 6, 7, 5, 3, 0, 9]),
             'board-1-WEBM4-thumbnail.png':        new Buffer([8, 6, 7, 5, 3, 0, 9]),
+            'board-1-WEBM4-posterframe.jpg':      new Buffer([8, 6, 7, 5, 3, 0, 9]),
 
             'board-98-PQKJM.png':                 new Buffer([8, 6, 7, 5, 3, 0, 9]),
             'board-98-PQKJM-reference.png':       new Buffer([8, 6, 7, 5, 3, 0, 9]),
             'board-98-PQKJM-notes.png':           new Buffer([8, 6, 7, 5, 3, 0, 9]),
-            'board-98-PQKJM-thumbnail.png':       new Buffer([8, 6, 7, 5, 3, 0, 9])
+            'board-98-PQKJM-thumbnail.png':       new Buffer([8, 6, 7, 5, 3, 0, 9]),
+            'board-98-PQKJM-posterframe.jpg':     new Buffer([8, 6, 7, 5, 3, 0, 9])
           }
         }
       }
@@ -155,7 +163,6 @@ describe('exporters/copyProject', () => {
     let srcFilePath = path.resolve(path.join(fixturesPath, 'projects', 'multi-scene', 'multi-scene.fdx'))
     let dstFolderPath = path.resolve(path.join(fixturesPath, 'projects', 'new-multi-scene'))
     assert.equal(exporterCopyProject.getFilesUsedByProject(srcFilePath).length, 13) // files, excluding .fdx
-
     fs.mkdirSync(dstFolderPath)
     exporterCopyProject.copyProject(srcFilePath, dstFolderPath)
 
@@ -172,6 +179,32 @@ describe('exporters/copyProject', () => {
       },
       /ENOENT/
     )
+  })
+
+  describe('options', () => {
+    let srcFilePath = path.resolve(path.join(fixturesPath, 'ducks', 'ducks.storyboarder'))
+    let dstFolderPath = path.resolve(path.join(fixturesPath, 'new-single-scene'))
+
+    beforeEach(() => {
+      fs.ensureDirSync(dstFolderPath)
+    })
+
+    it('can optionally copy board url main image from scenes created before Storyboarder 1.6.x', () => {
+      // copies board url main image
+      exporterCopyProject.copyProject(srcFilePath, dstFolderPath, {
+        copyBoardUrlMainImages: true,
+        ignoreMissing: true
+      })
+
+      let scene = JSON.parse(fs.readFileSync(path.join(dstFolderPath, 'new-single-scene.storyboarder')))
+      assert(fs.existsSync(path.join(dstFolderPath, 'images', scene.boards[0].url)))
+    })
+    it('can optionally ignore missing files', () => {
+      // ignores missing posterframes
+      exporterCopyProject.copyProject(srcFilePath, dstFolderPath, {
+        ignoreMissing: true
+      })
+    })
   })
 
   afterEach(function () {

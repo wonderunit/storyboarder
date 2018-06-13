@@ -30,38 +30,45 @@
               data-tooltip-position="bottom center">
               <div class="icon icon-toolbar-tool icon-toolbar-tool_light-pencil"></div>
             </div>
+            <div id="toolbar-brush" data-group="brushes" class="button" data-tooltip
+              data-tooltip-title="Fill Brush Pen"
+              data-tooltip-description="Paint and fill with this tool. The brush pen is a steady stream of ink. This tool draws on the fill layer."
+              data-tooltip-keys="2"
+              data-tooltip-position="bottom center">
+              <div class="icon icon-toolbar-tool icon-toolbar-tool_brush"></div>
+            </div>
+            <div id="toolbar-tone" data-group="brushes" class="button" data-tooltip
+              data-tooltip-title="Tone Pastel"
+              data-tooltip-description="Tone and shade with this tool. This tool draws on the tone layer."
+              data-tooltip-keys="3"
+              data-tooltip-position="bottom center">
+              <div class="icon icon-toolbar-tool icon-toolbar-tool_tone"></div>
+            </div>
             <div id="toolbar-pencil" data-group="brushes" class="button" data-tooltip
               data-tooltip-title="Pencil"
-              data-tooltip-description="Draw and shade details with this tool. It's lighter and softer than the pen."
-              data-tooltip-keys="2"
+              data-tooltip-description="Draw and shade details with this tool. It's lighter and softer than the pen. This tool draws on the pencil layer."
+              data-tooltip-keys="4"
               data-tooltip-position="bottom center">
               <div class="icon icon-toolbar-tool icon-toolbar-tool_pencil"></div>
             </div>
             <div id="toolbar-pen" data-group="brushes" class="button" data-tooltip
-              data-tooltip-title="Pen"
-              data-tooltip-description="This tool is for hard thicker lines. Use this tool for final inking and outlining."
-              data-tooltip-keys="3"
+              data-tooltip-title="Ink Marker"
+              data-tooltip-description="This tool is for hard thicker lines. Use this tool for final inking and outlining. This tool draws on the ink layer."
+              data-tooltip-keys="5"
               data-tooltip-position="bottom center">
               <div class="icon icon-toolbar-tool icon-toolbar-tool_pen"></div>
             </div>
-            <div id="toolbar-brush" data-group="brushes" class="button" data-tooltip
-              data-tooltip-title="Brush"
-              data-tooltip-description="Paint shade and tone in the board with this tool. The brush is a watery, soft, light tool perfect for adding shadows and color accents."
-              data-tooltip-keys="4"
-              data-tooltip-position="bottom center">
-              <div class="icon icon-toolbar-tool icon-toolbar-tool_brush"></div>
-            </div>
             <div id="toolbar-note-pen" data-group="brushes" class="button" data-tooltip
               data-tooltip-title="Note Pen"
-              data-tooltip-description="Revise boards with this tool. Have a note? Draw right on top of the board. This tool draws on the notes layer, so it is easy to erase."
-              data-tooltip-keys="5"
+              data-tooltip-description="Revise boards with this tool. Have a note? Draw right on top of the board. This tool draws on the notes layer, so it is easy to erase. This tool draws on the notes layer."
+              data-tooltip-keys="6"
               data-tooltip-position="bottom center">
               <div class="icon icon-toolbar-tool icon-toolbar-tool_note-pen"></div>
             </div>
             <div id="toolbar-eraser" data-group="brushes" class="button" data-tooltip
               data-tooltip-title="Eraser"
               data-tooltip-description="Made a mistake? Use the eraser. When holding option (or alt), it will only erase the tool’s layer you’re on. Otherwise, will erase all layers."
-              data-tooltip-keys="6|Option"
+              data-tooltip-keys="7|Option"
               data-tooltip-position="bottom center">
               <div class="icon icon-toolbar-tool icon-toolbar-tool_eraser"></div>
             </div>
@@ -267,7 +274,11 @@
               </div>
             </div>
             <div class="row">
-              <div><svg class="smallicon"><use xlink:href="./img/symbol-defs.svg#icon-dialogue"></use></svg>Dialogue <span id="suggested-dialogue-duration"></span></div>
+              <div><svg class="smallicon"><use xlink:href="./img/symbol-defs.svg#icon-dialogue"></use></svg>Dialogue <span id="suggested-dialogue-duration" data-tooltip
+              data-tooltip-title="Suggested board duration"
+              data-tooltip-description="Click to set the duration based on the dialogue text."
+              data-tooltip-keys=""
+              data-tooltip-position="left middle"></span></div>
               <textarea name="dialogue" data-tooltip
               data-tooltip-title="Dialogue for board"
               data-tooltip-description="Write some really sweet dialogue, like, ''As you know, I am your father.'' It will show up as a caption if you have it toggled on."
@@ -359,16 +370,16 @@
               data-tooltip-position="left middle"> <svg class="smallericon"><use xlink:href="./img/symbol-defs.svg#icon-trash"></use></svg>Clear</div>
               <div>
                 <div class="col">
-                  <div class="layers-ui-main-merge flatbutton" data-tooltip
-                  data-tooltip-title="Merge the main drawing down to the light layer"
-                  data-tooltip-description="This is useful if you want to take your existing drawing and redraw for cleanup. This will combine both layers to the light layer. The main layer will be blank."
+                  <div class="layers-ui-fill-merge flatbutton" data-tooltip
+                  data-tooltip-title="Merge the fill layer down to the light layer"
+                  data-tooltip-description="This is useful if you want to take your existing fill layer and redraw for cleanup. This will combine both layers to the light layer. The fill layer will be blank."
                   data-tooltip-keys=""
                   data-tooltip-position="left middle"><svg class="smallicon"><use xlink:href="./img/symbol-defs.svg#icon-mergedown"></use></svg>Merge Down</div>
                 </div>
                 <div class="col">
                   <div class="layers-ui-reference-merge flatbutton" data-tooltip
-                  data-tooltip-title="Merge the light layer up to the main layer"
-                  data-tooltip-description="This is useful if you draw on the light layer and you want to keep it in you main drawing. This will combine both layers to the main layer. The light layer will be blank."
+                  data-tooltip-title="Merge the light layer up to the fill layer"
+                  data-tooltip-description="This is useful if you draw on the light layer and you want to keep it in your drawing. This will combine both layers to the fill layer. The light layer will be blank."
                   data-tooltip-keys=""
                   data-tooltip-position="left middle"><svg class="smallicon"><use xlink:href="./img/symbol-defs.svg#icon-mergeup"></use></svg>Merge Up</div>
                 </div>

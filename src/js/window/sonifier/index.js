@@ -74,7 +74,10 @@ const setSize = dimensions => {
   size = [dimensions.width, dimensions.height]
 }
 
-const start = (x, y, pressure, pointerType) => {
+const start = ({ x, y, pressure, pointerType }) => {
+  // hardcode pressure to 1 for non-pointer
+  pressure = pointerType === 'pen' ? pressure : 1
+
   model = createModel()
   model.pointerType = pointerType
   prev = null
@@ -87,7 +90,7 @@ const start = (x, y, pressure, pointerType) => {
   if (enableDrawingSoundEffects) instrument.noteOn()
   if (enableDrawingMelodySoundEffects) melodies.start()
 
-  trigger(x, y, pressure, pointerType)
+  trigger({ x, y, pressure, pointerType })
   renderDirectionChange(x, y, 0)
 }
 
@@ -100,7 +103,10 @@ const stop = () => {
 }
 
 // NOTE curently c<x,y> are always absolute to canvas w/h (e.g.; 900 x 900 * aspectRatio)
-const trigger = (x, y, pressure, pointerType) => {
+const trigger = ({ x, y, pressure, pointerType }) => {
+  // hardcode pressure to 1 for non-pointer
+  pressure = pointerType === 'pen' ? pressure : 1
+
   curr = [x, y]
   model.pressure = pressure
 

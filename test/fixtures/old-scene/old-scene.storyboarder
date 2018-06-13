@@ -1,0 +1,72 @@
+{
+  "version": "0.7.0",
+  "aspectRatio": 1.7777777777777777,
+  "fps": 24,
+  "defaultBoardTiming": 2000,
+  "boards": [
+    {
+      "uid": "UDRF3",
+      "url": "board-1-UDRF3.png",
+      "newShot": false,
+      "lastEdited": 1499375725536,
+      "layers": {
+        "reference": {
+          "url": "board-1-UDRF3-reference.png"
+        },
+        "notes": {
+          "url": "board-1-UDRF3-notes.png"
+        }
+      },
+      "number": 1,
+      "shot": "1A",
+      "time": 0,
+      "lineMileage": 821.5682133251058
+    },
+    {
+      "uid": "RRO6K",
+      "url": "board-2-RRO6K.png",
+      "newShot": false,
+      "lastEdited": 1499375727809,
+      "layers": {
+        "reference": {
+          "url": "board-2-RRO6K-reference.png"
+        },
+        "notes": {
+          "url": "board-2-RRO6K-notes.png"
+        }
+      },
+      "number": 2,
+      "shot": "2A",
+      "time": 2000,
+      "lineMileage": 3196.879420762458
+    },
+    {
+      "uid": "DRAPP",
+      "url": "board-3-DRAPP.png",
+      "newShot": false,
+      "lastEdited": 1499375731219,
+      "layers": {
+        "reference": {
+          "url": "board-3-DRAPP-reference.png"
+        },
+        "notes": {
+          "url": "board-3-DRAPP-notes.png"
+        }
+      },
+      "number": 3,
+      "shot": "3A",
+      "time": 4000,
+      "lineMileage": 1981.554421258221
+    },
+    {
+      "uid": "TSIOW",
+      "url": "board-4-TSIOW.png",
+      "newShot": false,
+      "lastEdited": 1499375734081,
+      "layers": {},
+      "number": 4,
+      "shot": "4A",
+      "time": 6000
+    }
+  ]
+}

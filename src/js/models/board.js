@@ -14,28 +14,35 @@ const boardFilenameForThumbnail = board =>
 
 const boardFilenameForLink = board =>
   board.url.replace('.png', '.psd')
+  // alternatively, could calculate link filename from url filename, preserving link extension:
+  // return path.basename(board.url, path.extname(board.url)) + path.extname(board.link)
 
+const boardFilenameForLayer = (board, layerKey) =>
+  board.url.replace('.png', `-${layerKey}.png`)
+
+const boardFilenameForPosterFrame = (board) =>
+  board.url.replace('.png', `-posterframe.jpg`)
+
+// TODO review usage
 // array of fixed size, ordered positions
 const boardOrderedLayerFilenames = board => {
   let indices = []
   let filenames = []
 
-  // reference
-  if (board.layers && board.layers.reference &&
-      board.layers.reference.url && board.layers.reference.url.length) { // silently ignore blank urls
-    indices.push(0)
-    filenames.push(board.layers.reference.url)
-  }
-
-  // main
-  indices.push(1)
-  filenames.push(board.url)
-
-  // notes
-  if (board.layers && board.layers.notes &&
-      board.layers.notes.url && board.layers.notes.url.length) { // silently ignore blank urls
-    indices.push(3)
-    filenames.push(board.layers.notes.url)
+  // HACK hardcoded
+  // see StoryboarderSketchPane#visibleLayersIndices
+  for (let [index, name] of [
+    [0, 'reference'],
+    [1, 'fill'],
+    [2, 'tone'],
+    [3, 'pencil'],
+    [4, 'ink'],
+    [6, 'notes']
+  ]) {
+    if (board.layers && board.layers[name]) {
+      indices.push(index)
+      filenames.push(board.layers[name].url)
+    }
   }
   
   return { indices, filenames }
@@ -69,22 +76,47 @@ const setup = board => {
 }
 
 const updateUrlsFromIndex = (board, index) => {
+  // TODO base on board number instead of external index information
   board.url = 'board-' + (index + 1) + '-' + board.uid + '.png'
 
-  if (board.layers.reference) {
-    board.layers.reference.url = board.url.replace('.png', '-reference.png')
-  }
-
-  if (board.layers.notes) {
-    board.layers.notes.url = board.url.replace('.png', '-notes.png')
+  for (let name of Object.keys(board.layers)) {
+    board.layers[name].url = boardFilenameForLayer(board, name)
   }
 
   return board
 }
 
-// calculate link filename from url filename, preserving link extension
-const getUpdatedLinkFilename = board => {
-  return path.basename(board.url, path.extname(board.url)) + path.extname(board.link)
+const getMediaDescription = board => {
+  return {
+    // does board layers exist and is it not an empty object?
+    layers: (board.layers && Object.keys(board.layers).length)
+      // return all the layer filenames
+      ? Object.entries(board.layers).reduce((coll, [name, layer]) => {
+        return {
+          ...coll,
+          [name]: layer.url
+        }
+      }, {})
+      : {},
+    thumbnail: boardFilenameForThumbnail(board),
+    posterframe: boardFilenameForPosterFrame(board),
+    link: board.link == null ? undefined : board.link,
+    audio: board.audio == null ? undefined : board.audio.filename
+  }
+}
+
+const getMediaFilenames = board => {
+  let media = getMediaDescription(board)
+  return [
+    ...Object.values(media.layers),
+    media.thumbnail,
+    media.posterframe,
+    media.link,
+    media.audio
+  ].reduce((coll, value) => {
+    if (value) coll.push(value)
+    return coll
+  }, [])
 }
 
 module.exports = {
@@ -92,13 +124,16 @@ module.exports = {
   boardFilenameForExport,
   boardFilenameForThumbnail,
   boardFilenameForLink,
+  boardFilenameForLayer,
+  boardFilenameForPosterFrame,
   boardOrderedLayerFilenames,
   boardDuration,
   boardDurationWithAudio,
 
-  getUpdatedLinkFilename,
-
   assignUid,
   setup,
-  updateUrlsFromIndex
+  updateUrlsFromIndex,
+
+  getMediaDescription,
+  getMediaFilenames
 }

@@ -16,7 +16,7 @@ document.querySelector('#new-script').addEventListener("mouseover", () =>{
   ipcRenderer.send('playsfx', 'rollover')
 })
 
-document.querySelector('#new-script').addEventListener("mousedown", () => {
+document.querySelector('#new-script').addEventListener("pointerdown", () => {
   ipcRenderer.send('playsfx', 'down')
 })
 
@@ -31,7 +31,7 @@ document.querySelector('#new-blank').addEventListener("mouseover", () => {
   ipcRenderer.send('playsfx', 'rollover')
 })
 
-document.querySelector('#new-blank').addEventListener("mousedown", () => {
+document.querySelector('#new-blank').addEventListener("pointerdown", () => {
   ipcRenderer.send('playsfx', 'down')
 })
 

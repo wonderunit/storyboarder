@@ -5,35 +5,37 @@ const R = require('ramda')
 const boardModel = require('../models/board')
 const util = require('../utils')
 
-const withFromToPaths = (filename, src, dst) => ({
-  from: path.join(src, filename),
-  to: path.join(dst, filename)
-})
+const getRelativeMediaPathsUsedByScene = (scene, options = { copyBoardUrlMainImages: false}) =>
+  R.flatten(scene.boards.map(boardModel.getMediaFilenames))
 
-const getMediaFilesUsedByBoard = board => ([
-  ...boardModel.boardOrderedLayerFilenames(board).filenames,  // all PNG files
-  boardModel.boardFilenameForThumbnail(board),                // thumbnail
-  ...(board.link ? [board.link] : []),                        // any linked PSD
-  ...(board.audio ? [board.audio.filename] : [])              // any audio
-])
-
-const getRelativeImagePathsUsedByScene = scene =>
-  R.flatten(scene.boards.map(getMediaFilesUsedByBoard))
-
-const getAllAbsoluteFilePathsUsedByScene = srcFilePath => {
+const getAllAbsoluteFilePathsUsedByScene = (srcFilePath, options = { copyBoardUrlMainImages: false }) => {
   let srcFolderPath = path.dirname(srcFilePath)
   // read the scene
   let scene = JSON.parse(fs.readFileSync(srcFilePath))
   // find all the files used in the scene
-  let usedFiles = getRelativeImagePathsUsedByScene(scene)
+  let usedFiles = getRelativeMediaPathsUsedByScene(scene)
+
+  // for compatibility with old scenes prior to Storyboarder 1.6.x
+  // can optionally copy board.url "main layer" images
+  let boardUrlMainImages = []
+  if (options.copyBoardUrlMainImages) {
+    for (let board of scene.boards) {
+      let filename = path.join(srcFolderPath, 'images', board.url)
+      if (fs.existsSync(filename)) {
+        boardUrlMainImages.push(filename)
+      }
+    }
+  }
+
   return [
     // srcFilePath,
-    ...usedFiles.map(f => path.join(srcFolderPath, 'images', f))
+    ...usedFiles.map(f => path.join(srcFolderPath, 'images', f)),
+    ...boardUrlMainImages
   ]
 }
 
 // srcFilePath: absolute path to project file (.storyboarder or .fountain/.fdx)
-const getFilesUsedByProject = srcFilePath => {
+const getFilesUsedByProject = (srcFilePath, options = { copyBoardUrlMainImages: false }) => {
   // for convenience
   let srcFolderPath = path.dirname(srcFilePath)
 
@@ -67,7 +69,7 @@ const getFilesUsedByProject = srcFilePath => {
 
       if (storyboarderFilename) {
         let storyboarderFilePath = path.join(parentPath, storyboarderFilename)
-        files.push(storyboarderFilePath, ...getAllAbsoluteFilePathsUsedByScene(storyboarderFilePath))
+        files.push(storyboarderFilePath, ...getAllAbsoluteFilePathsUsedByScene(storyboarderFilePath, options))
       } else {
         // can't find a .storyboarder file
         console.warn(`Missing expected .storyboarder file in ${parentPath}`)
@@ -76,7 +78,7 @@ const getFilesUsedByProject = srcFilePath => {
 
     return files
   } else {
-    return getAllAbsoluteFilePathsUsedByScene(srcFilePath)
+    return getAllAbsoluteFilePathsUsedByScene(srcFilePath, options)
   }
 }
 
@@ -94,12 +96,22 @@ const getFilesUsedByProject = srcFilePath => {
 // dstFolderPath: absolute path to destination folder
 //                basename will be used to rename the destination project file
 //
-const copyProject = (srcFilePath, dstFolderPath) => {
+// options:
+// copyBoardUrlMainImages: if true, copy `.url` main layer image filenames used in boards prior to 1.6. (default: false)
+//
+const copyProject = (
+  srcFilePath,
+  dstFolderPath,
+  options = {
+    copyBoardUrlMainImages: false,
+    ignoreMissing: false
+  }
+) => {
   let srcFolderPath = path.dirname(srcFilePath)
 
   // console.log('Copying project', srcFilePath, 'to folder', dstFolderPath)
 
-  let files = getFilesUsedByProject(srcFilePath)
+  let files = getFilesUsedByProject(srcFilePath, options)
 
   let dstBasename = path.basename(dstFolderPath)
   let dstExt = path.extname(srcFilePath)
@@ -123,7 +135,9 @@ const copyProject = (srcFilePath, dstFolderPath) => {
     if (fs.existsSync(from)) {
       fs.copySync(from, to)
     } else {
-      throw new Error(`ENOENT: could not find source file ${from}`)
+      if (!options.ignoreMissing) {
+        throw new Error(`ENOENT: could not find source file ${from}`)
+      }
     }
   })
 }

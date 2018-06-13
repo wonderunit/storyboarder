@@ -1,4 +1,3 @@
-const EventEmitter = require('events').EventEmitter
 const fs = require('fs-extra')
 const path = require('path')
 const GIFEncoder = require('gifencoder')
@@ -24,11 +23,7 @@ const exporterCleanup = require('../exporters/cleanup')
 const exporterFfmpeg = require('../exporters/ffmpeg')
 const util = require('../utils/index')
 
-class Exporter extends EventEmitter {
-  constructor () {
-    super()
-  }
-  
+class Exporter {
   exportCleanup (boardData, projectFileAbsolutePath) {
     return new Promise((resolve, reject) => {
       dialog.showMessageBox(
@@ -183,14 +178,16 @@ class Exporter extends EventEmitter {
     })
   }
 
-  exportAnimatedGif (boards, boardSize, destWidth, boardPath, mark, boardData) {
-    let canvases = []
+  async exportAnimatedGif (boards, boardSize, destWidth, projectFileAbsolutePath, mark, boardData) {
     let aspect = boardSize.height / boardSize.width
-    let destSize = {width: destWidth, height: Math.floor(destWidth*aspect)}
-    let fragmentText = (ctx, text, maxWidth) => {
-      let words = text.split(' '),
-        lines = [],
-        line = ""
+    let destSize = {
+      width: destWidth,
+      height: Math.floor(destWidth * aspect)
+    }
+    const fragmentText = (ctx, text, maxWidth) => {
+      let words = text.split(' ')
+      let lines = []
+      let line = ''
       if (ctx.measureText(text).width < maxWidth) {
         return [text]
       }
@@ -205,10 +202,10 @@ class Exporter extends EventEmitter {
           }
         }
         if (ctx.measureText(line + words[0]).width < maxWidth) {
-          line += words.shift() + " "
+          line += words.shift() + ' '
         } else {
           lines.push(line)
-          line = ""
+          line = ''
         }
         if (words.length === 0) {
           lines.push(line)
@@ -216,94 +213,101 @@ class Exporter extends EventEmitter {
       }
       return lines
     }
-    getImage('./img/watermark.png').then( (watermarkImage) => {
-      boards.forEach((board)=> {
-        let canvas = flattenBoardToCanvas(board, null, [destSize.width, destSize.height], path.join(boardPath, 't.storyboarder'))
-        canvases.push(canvas)
-      })
-      Promise.all(canvases).then((values) => {
-        let encoder = new GIFEncoder(destSize.width, destSize.height)
-        // save in the boards directory
-        let filename = boardPath.split(path.sep)
-        filename = filename[filename.length-1]
-        if (!fs.existsSync(path.join(boardPath, 'exports'))) {
-          fs.mkdirSync(path.join(boardPath, 'exports'))
-        }
-        let filepath = path.join(boardPath, 'exports', filename + ' ' + moment().format('YYYY-MM-DD hh.mm.ss') + '.gif')
-        encoder.createReadStream().pipe(fs.createWriteStream(filepath))
-        encoder.start()
-        encoder.setRepeat(0)   // 0 for repeat, -1 for no-repeat
-        encoder.setDelay(boardData.defaultBoardTiming)  // frame delay in ms
-        encoder.setQuality(10) // image quality. 10 is default.
-        for (var i = 0; i < boards.length; i++) {
-          let canvas = values[i]
-          let context = canvas.getContext('2d')
-          if (mark) {
-            context.drawImage(watermarkImage,destSize.width-watermarkImage.width,destSize.height-watermarkImage.height)
-          }
-          if (boards[i].dialogue) {
-            let text = boards[i].dialogue
-            let fontSize = 22
-            context.font = "300 " + fontSize + "px wonderunitsans";
-            context.textAlign = "center";
-            context.fillStyle = "white"
-            context.miterLimit = 1
-            context.lineJoin = "round"
-            context.lineWidth = 4
-            let lines = fragmentText(context, text, 450)
 
-            let outlinecanvas = document.createElement('canvas')
-            let outlinecontext = outlinecanvas.getContext('2d')
-            outlinecanvas.width = destSize.width
-            outlinecanvas.height = destSize.height
+    const watermarkImage = await getImage('./img/watermark.png')
 
-            lines.forEach((line, i)=> {
-              let xOffset = (i + 1) * (fontSize + 6) + (destSize.height - ((lines.length+1) * (fontSize + 6)))-20
-              let textWidth = context.measureText(line).width/2
-              outlinecontext.lineWidth = 15
-              outlinecontext.lineCap = "square"
-              outlinecontext.lineJoin = "round"
-              outlinecontext.strokeStyle = "rgba(0,0,0,1)"
-              let padding = 35
-              outlinecontext.fillRect((destWidth/2)-textWidth-(padding/2), xOffset-(6)-(padding/2), textWidth*2+padding, padding)
-              outlinecontext.strokeRect((destWidth/2)-textWidth-(padding/2), xOffset-(6)-(padding/2), textWidth*2+padding, padding)
+    const canvases = await Promise.all(
+      boards.map(async (board) =>
+        // returns a Promise
+        flattenBoardToCanvas(
+          board,
+          null,
+          [destSize.width, destSize.height],
+          projectFileAbsolutePath
+        )
+      )
+    )
 
+    let encoder = new GIFEncoder(destSize.width, destSize.height)
 
-              // outlinecontext.beginPath()
-              // outlinecontext.moveTo((destWidth/2)-textWidth, xOffset-(6))
-              // outlinecontext.lineTo((destWidth/2)+textWidth, xOffset-(6))
-              // outlinecontext.stroke()
-            })
+    // save in the exports directory
+    let exportsPath = ensureExportsPathExists(projectFileAbsolutePath)
+    let basename = path.basename(projectFileAbsolutePath, path.extname(projectFileAbsolutePath))
+    let filepath = path.join(
+      exportsPath,
+      basename + ' ' + moment().format('YYYY-MM-DD hh.mm.ss') + '.gif'
+    )
 
-            context.globalAlpha = 0.5
-            context.drawImage(outlinecanvas, 0, 0)
-            context.globalAlpha = 1
+    encoder.createReadStream().pipe(fs.createWriteStream(filepath))
+    encoder.start()
+    encoder.setRepeat(0) // 0 for repeat, -1 for no-repeat
+    encoder.setDelay(boardData.defaultBoardTiming) // frame delay in ms
+    encoder.setQuality(10) // image quality. 10 is default.
+    for (var i = 0; i < boards.length; i++) {
+      let canvas = canvases[i]
+      let context = canvas.getContext('2d')
+      if (mark) {
+        context.drawImage(watermarkImage, destSize.width - watermarkImage.width, destSize.height - watermarkImage.height)
+      }
+      if (boards[i].dialogue) {
+        let text = boards[i].dialogue
+        let fontSize = 22
+        context.font = '300 ' + fontSize + 'px wonderunitsans'
+        context.textAlign = 'center'
+        context.fillStyle = 'white'
+        context.miterLimit = 1
+        context.lineJoin = 'round'
+        context.lineWidth = 4
+        let lines = fragmentText(context, text, 450)
 
-            lines.forEach((line, i)=> {
-              let xOffset = (i + 1) * (fontSize + 6) + (destSize.height - ((lines.length+1) * (fontSize + 6)))-20
-              context.lineWidth = 4
-              context.strokeStyle = "rgba(0,0,0,0.8)"
-              context.strokeText(line.trim(), destWidth/2, xOffset)
-              context.strokeStyle = "rgba(0,0,0,0.2)"
-              context.strokeText(line.trim(), destWidth/2, xOffset+2)
-              context.fillText(line.trim(), destWidth/2,xOffset)
-            })
-          }
-          let duration
-          if (boards[i].duration) {
-            duration = boards[i].duration
-          } else {
-            duration = boardData.defaultBoardTiming
-          }
-          encoder.setDelay(duration)
-         encoder.addFrame(context)
-        }
-        encoder.finish()
-        // emit a finish event!
-        this.emit('complete', filepath)
+        let outlinecanvas = document.createElement('canvas')
+        let outlinecontext = outlinecanvas.getContext('2d')
+        outlinecanvas.width = destSize.width
+        outlinecanvas.height = destSize.height
 
-      })      
-    })
+        lines.forEach((line, i) => {
+          let xOffset = (i + 1) * (fontSize + 6) + (destSize.height - ((lines.length + 1) * (fontSize + 6))) - 20
+          let textWidth = context.measureText(line).width / 2
+          outlinecontext.lineWidth = 15
+          outlinecontext.lineCap = 'square'
+          outlinecontext.lineJoin = 'round'
+          outlinecontext.strokeStyle = 'rgba(0,0,0,1)'
+          let padding = 35
+          outlinecontext.fillRect((destWidth / 2) - textWidth - (padding / 2), xOffset - (6) - (padding / 2), textWidth * 2 + padding, padding)
+          outlinecontext.strokeRect((destWidth / 2) - textWidth - (padding / 2), xOffset - (6) - (padding / 2), textWidth * 2 + padding, padding)
+
+          // outlinecontext.beginPath()
+          // outlinecontext.moveTo((destWidth/2)-textWidth, xOffset-(6))
+          // outlinecontext.lineTo((destWidth/2)+textWidth, xOffset-(6))
+          // outlinecontext.stroke()
+        })
+
+        context.globalAlpha = 0.5
+        context.drawImage(outlinecanvas, 0, 0)
+        context.globalAlpha = 1
+
+        lines.forEach((line, i) => {
+          let xOffset = (i + 1) * (fontSize + 6) + (destSize.height - ((lines.length + 1) * (fontSize + 6))) - 20
+          context.lineWidth = 4
+          context.strokeStyle = 'rgba(0,0,0,0.8)'
+          context.strokeText(line.trim(), destWidth / 2, xOffset)
+          context.strokeStyle = 'rgba(0,0,0,0.2)'
+          context.strokeText(line.trim(), destWidth / 2, xOffset + 2)
+          context.fillText(line.trim(), destWidth / 2, xOffset)
+        })
+      }
+      let duration
+      if (boards[i].duration) {
+        duration = boards[i].duration
+      } else {
+        duration = boardData.defaultBoardTiming
+      }
+      encoder.setDelay(duration)
+      encoder.addFrame(context)
+    }
+    encoder.finish()
+
+    return filepath
   }
 
   async exportVideo (scene, sceneFilePath, opts) {
