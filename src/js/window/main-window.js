@@ -1144,8 +1144,6 @@ const loadBoardUI = async () => {
   colorPicker = new ColorPicker()
   const setCurrentColor = color => {
     store.dispatch({ type: 'TOOLBAR_TOOL_SET', payload: { color: util.colorToNumber(color) } })
-    // storyboarderSketchPane.setBrushColor(color)
-    // toolbar.changeCurrentColor(color)
     colorPicker.setState({ color: color.toCSS() })
     sfx.playEffect('metal')
   }
@@ -1158,7 +1156,6 @@ const loadBoardUI = async () => {
       }
     })
 
-    // toolbar.changePaletteColor(brush, index, color)
     colorPicker.setState({ color: color.toCSS() })
   }
   toolbar.on('current-color-picker', () => {
@@ -1192,10 +1189,6 @@ const loadBoardUI = async () => {
 
     colorPicker.addListener('color', setPaletteColor.bind(this, state.toolbar.activeTool, index))
   })
-  // toolbar.on('current-set-color', color => {
-    // storyboarderSketchPane.setBrushColor(color)
-    // toolbar.changeCurrentColor(color)
-  // })
 
   guides = new Guides({
     width: storyboarderSketchPane.sketchPane.width,
