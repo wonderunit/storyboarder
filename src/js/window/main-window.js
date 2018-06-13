@@ -4928,6 +4928,8 @@ ipcRenderer.on('paste', () => {
 
 // import image from mobile server
 const importImage = async imageDataURL => {
+  let board = boardData.boards[currentBoard]
+
   // resize image if too big
   let dim = [
     storyboarderSketchPane.sketchPane.width,
@@ -4938,14 +4940,29 @@ const importImage = async imageDataURL => {
 
   let layer = storyboarderSketchPane.sketchPane.layers.findByName('reference')
 
+  // update the board data
+  storeUndoStateForScene(true)
+  layersEditor.setReferenceOpacity(1.0)
+  board.layers = {
+    ...board.layers,
+    reference: {
+      ...board.layers.reference,
+      url: boardModel.boardFilenameForLayer(board, layer.name),
+      opacity: 1.0 // alternatively: exporterCommon.DEFAULT_REFERENCE_LAYER_OPACITY
+    }
+  }
+  storeUndoStateForScene()
+  // mark new board data
+  markBoardFileDirty()
+
+  // update the image
   storeUndoStateForImage(true, [layer.index])
   layer.replace(image, false)
   storeUndoStateForImage(false, [layer.index])
-
+  // mark new image
   markImageFileDirty([layer.index])
 
   // save the posterframe
-  let board = boardData.boards[currentBoard]
   await savePosterFrame(board)
 
   // update the thumbnail
