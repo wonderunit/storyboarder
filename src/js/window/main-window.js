@@ -1253,8 +1253,12 @@ const loadBoardUI = async () => {
   }, true)
 
   layersEditor = new LayersEditor(storyboarderSketchPane, sfx, notifications)
-  layersEditor.on('opacity', params => {
+  layersEditor.on('opacity', async params => {
     let board = boardData.boards[currentBoard]
+
+    // always update the sketchpane
+    let layer = storyboarderSketchPane.sketchPane.layers.findByName('reference')
+    storyboarderSketchPane.setLayerOpacity(layer.index, params.value)
 
     // if board has a reference layer ...
     if (board.layers && board.layers.reference) {
@@ -1264,6 +1268,18 @@ const loadBoardUI = async () => {
         board.layers.reference.opacity = params.value
         // ... and save the board file
         markBoardFileDirty()
+
+        // update posterframe and thumbnail
+        markImageFileDirty([layer.index])
+
+        // alternately, to immediately update ONLY posterframe and thumbnail:
+        /*
+        // update the posterframe
+        await savePosterFrame(board, false)
+        // update the thumbnail
+        let index = await saveThumbnailFile(boardData.boards.indexOf(board))
+        await updateThumbnailDisplayFromFile(index)
+        */
       }
     }
   })

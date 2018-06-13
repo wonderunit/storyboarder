@@ -132,7 +132,6 @@ class LayersEditor extends EventEmitter {
     let index = this.storyboarderSketchPane.sketchPane.layers.findByName('reference').index
     let value = model.layers[index].opacity
     document.querySelector('.layers-ui-reference-opacity').value = value * 100
-    this.storyboarderSketchPane.setLayerOpacity(index, value)
   }
 }
 
