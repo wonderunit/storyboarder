@@ -305,6 +305,7 @@ const load = async (event, args) => {
       }
 
       // intercept: Change Tool (IPC: setTool)
+      // e.g.: '1'-'6' shouldn't flash the menu
       for (let [command, toolName] of [
         ['menu:tools:light-pencil', 'light-pencil'],
         ['menu:tools:brush', 'brush'],
@@ -331,9 +332,6 @@ const load = async (event, args) => {
           return
         }
       }
-
-      // TODO intercept: menu:tools:*
-      // e.g.: '1'-'6' shouldn't flash the menu
 
       // if we're in text input mode, and have not pressed Control or Meta
       if (textInputMode && !(input.control || input.meta)) {
