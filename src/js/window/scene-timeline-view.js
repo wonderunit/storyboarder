@@ -166,7 +166,8 @@ class ScaleControlView {
     this.ro = new window.ResizeObserver(entries => {
       for (let entry of entries) {
         if (entry.target === this.refs.container) {
-          this.onElementResize(entry.contentRect, true)
+          // see: https://github.com/wonderunit/storyboarder/issues/1218
+          this.onElementResize({ width: entry.target.offsetWidth }, true)
         }
       }
     })
@@ -853,7 +854,8 @@ class TimelineView {
     this.ro = new window.ResizeObserver(entries => {
       for (let entry of entries) {
         if (entry.target === this.element) {
-          this.onElementResize(entry.contentRect, true)
+          // see: https://github.com/wonderunit/storyboarder/issues/1218
+          this.onElementResize({ width: entry.target.offsetWidth }, true)
         }
       }
     })

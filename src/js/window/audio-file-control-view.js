@@ -38,8 +38,11 @@ class AudioFileControlView {
       for (let entry of entries) {
         if (entry.target === recordVisualization) {
           // re-size
-          context.canvas.width = entry.contentRect.width
-          context.canvas.height = entry.contentRect.height
+
+          // see: https://github.com/wonderunit/storyboarder/issues/1218
+          context.canvas.width = entry.target.offsetWidth
+          context.canvas.height = entry.target.offsetHeight
+
           // trigger a re-render
           this.setState(this.state)
         }

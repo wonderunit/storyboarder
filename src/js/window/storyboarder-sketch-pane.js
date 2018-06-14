@@ -172,8 +172,8 @@ class StoryboarderSketchPane extends EventEmitter {
       // TODO try this in future versions of Chromium
       // this.resize(entries[0].contentRect.width, entries[0].contentRect.height)
 
-      // use offsetWidth / offsetHeight, which are more reliable
-      this.resize(this.containerEl.offsetWidth, this.containerEl.offsetHeight)
+      // use offsetWidth / offsetHeight, which return expected pixel values
+      this.resize(entries[0].target.offsetWidth, entries[0].target.offsetHeight)
     )
     this.ro.observe(this.containerEl)
 
