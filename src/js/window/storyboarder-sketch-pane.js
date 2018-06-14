@@ -463,8 +463,6 @@ class DrawingStrategy {
     // configure the tool for drawing
 
     // stroke options
-    // via https://developer.mozilla.org/en-US/docs/Web/API/Pointer_events#Determining_button_states
-    // is the user requesting to erase?
     let options = {}
 
     let toolbarState = this.context.store.getState().toolbar
@@ -474,7 +472,9 @@ class DrawingStrategy {
       // regular eraser
       options.erase = this.context.visibleLayersIndices
     } else {
-      options = (e.buttons === 32 || this.context.isCommandPressed('drawing:quick-erase-modifier'))
+      // via https://developer.mozilla.org/en-US/docs/Web/API/Pointer_events#Determining_button_states
+      // is the user requesting to erase?
+      options = (e.buttons === 32 || e.buttons === 2 || this.context.isCommandPressed('drawing:quick-erase-modifier'))
         // is the shift key down?
         ? e.shiftKey
           // ... then, erase multiple layers
@@ -541,7 +541,7 @@ class DrawingStrategy {
     // if we're not drawing
     if (!this.context.sketchPane.isDrawing()) {
       // and erase is not being requested
-      if (!(e.buttons === 32 || e.altKey)) {
+      if (!(e.buttons === 32 || e.buttons === 2 || this.context.isCommandPressed('drawing:quick-erase-modifier'))) {
         // ... but we have a prevTool,
         if (this.context.store.getState().toolbar.prevTool) {
           // then switch out of quick-erase mode back to previous tool
