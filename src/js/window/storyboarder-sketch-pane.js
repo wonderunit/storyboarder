@@ -154,7 +154,26 @@ class StoryboarderSketchPane extends EventEmitter {
     this.store.dispatch({ type: 'TOOLBAR_MODE_SET', payload: 'drawing', meta: { scope: 'local' } })
 
     this.ro = new window.ResizeObserver(entries =>
-      this.resize(entries[0].contentRect.width, entries[0].contentRect.height)
+      // see: https://github.com/wonderunit/storyboarder/issues/1218
+      //
+      // The clientRect emitted from ResizeObserver returns
+      // native pixels instead of device independent pixels
+      // which means that the width and height will end up
+      // being 2x the expected size when running in
+      // 200% DPI scaling on Windows
+      //
+      // Apparently, getClientBoundingRect won't work because of zooming.
+      //
+      // offsetWidth/offsetHeight are our best bet.
+      //
+      // https://bugs.chromium.org/p/chromium/issues/detail?id=724971
+      // https://github.com/desktop/desktop/issues/2480#issuecomment-337554750
+      //
+      // TODO try this in future versions of Chromium
+      // this.resize(entries[0].contentRect.width, entries[0].contentRect.height)
+
+      // use offsetWidth / offsetHeight, which are more reliable
+      this.resize(this.containerEl.offsetWidth, this.containerEl.offsetHeight)
     )
     this.ro.observe(this.containerEl)
 
