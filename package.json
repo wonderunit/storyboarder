@@ -76,7 +76,8 @@
       }
     ],
     "nsis": {
-      "perMachine": true
+      "perMachine": true,
+      "createDesktopShortcut": "always"
     }
   },
   "devDependencies": {
