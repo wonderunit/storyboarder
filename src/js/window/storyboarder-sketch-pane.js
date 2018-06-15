@@ -453,7 +453,18 @@ class DrawingStrategy {
   }
 
   _onPointerOut (e) {
-    this.context.sketchPane.cursor.setEnabled(false)
+    let point = this.context.sketchPane.localizePoint(e)
+
+    // only hide the cursor if actually out-of-bounds
+    let inBounds = (
+      point.x >= 0 &&
+      point.y >= 0 &&
+      point.x <= this.context.sketchPane.width &&
+      point.y <= this.context.sketchPane.height
+    )
+    if (!inBounds) {
+      this.context.sketchPane.cursor.setEnabled(false)
+    }
   }
 
   // TODO could store multiErase status / erase layer array in a reducer?
@@ -504,12 +515,24 @@ class DrawingStrategy {
   }
 
   _onPointerMove (e) {
+    let point = this.context.sketchPane.localizePoint(e)
+
+    // always re-enable if in bounds
+    let inBounds = (
+      point.x >= 0 &&
+      point.y >= 0 &&
+      point.x <= this.context.sketchPane.width &&
+      point.y <= this.context.sketchPane.height
+    )
+    if (inBounds) {
+      this.context.sketchPane.cursor.setEnabled(true)
+    }
+
     // always update the cursor
     this.context.sketchPane.move(e)
 
     if (this.context.sketchPane.isDrawing()) {
       // track X/Y on the full-size texture
-      const point = this.context.sketchPane.localizePoint(e)
       this.context.lineMileageCounter.add(point)
 
       // audible event for Sonifier
