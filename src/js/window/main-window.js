@@ -1958,7 +1958,8 @@ let insertNewBoardDataAtPosition = (position) => {
 }
 
 let newBoard = async (position, shouldAddToUndoStack = true) => {
-  if (storyboarderSketchPane.getIsDrawingOrStabilizing()) {
+  // NOTE when loading a script, storyboarderSketchPane will not be initialized yet #1235
+  if (storyboarderSketchPane && storyboarderSketchPane.getIsDrawingOrStabilizing()) {
     sfx.error()
     return Promise.reject('not ready')
   }
@@ -1981,8 +1982,12 @@ let newBoard = async (position, shouldAddToUndoStack = true) => {
 
   markBoardFileDirty() // board data is dirty
 
-  // create blank posterframe
-  await savePosterFrame(board, true)
+  // NOTE when loading a script, sketchPane is not initialized yet #1235
+  //      posterframe will be created by loadSketchPaneLayers instead
+  if (typeof sketchPane != 'undefined') {
+    // create blank posterframe
+    await savePosterFrame(board, true)
+  }
   // create blank thumbnail
   await saveThumbnailFile(position, { forceReadFromFiles: true })
 
@@ -4637,7 +4642,9 @@ let cycleViewMode = async (direction = +1) => {
         if (sceneTimelineView) {
           await sceneTimelineView.update({ show: !shouldRenderThumbnailDrawer })
         }
-        timelineModeControlView.update({ show: true })
+        if (timelineModeControlView) {
+          timelineModeControlView.update({ show: true })
+        }
         break
       case 1:
         document.querySelector('#scenes').style.display = 'none'
@@ -4650,7 +4657,9 @@ let cycleViewMode = async (direction = +1) => {
         if (sceneTimelineView) {
           await sceneTimelineView.update({ show: !shouldRenderThumbnailDrawer })
         }
-        timelineModeControlView.update({ show: true })
+        if (timelineModeControlView) {
+          timelineModeControlView.update({ show: true })
+        }
         break
       case 2:
         document.querySelector('#scenes').style.display = 'none'
@@ -4663,7 +4672,9 @@ let cycleViewMode = async (direction = +1) => {
         if (sceneTimelineView) {
           await sceneTimelineView.update({ show: !shouldRenderThumbnailDrawer })
         }
-        timelineModeControlView.update({ show: true })
+        if (timelineModeControlView) {
+          timelineModeControlView.update({ show: true })
+        }
         break
       case 3:
         document.querySelector('#scenes').style.display = 'none'
@@ -4676,7 +4687,9 @@ let cycleViewMode = async (direction = +1) => {
         if (sceneTimelineView) {
           await sceneTimelineView.update({ show: !shouldRenderThumbnailDrawer })
         }
-        timelineModeControlView.update({ show: true })
+        if (timelineModeControlView) {
+          timelineModeControlView.update({ show: true })
+        }
         break
       case 4:
         document.querySelector('#scenes').style.display = 'none'
@@ -4689,7 +4702,9 @@ let cycleViewMode = async (direction = +1) => {
         if (sceneTimelineView) {
           await sceneTimelineView.update({ show: !shouldRenderThumbnailDrawer })
         }
-        timelineModeControlView.update({ show: true })
+        if (timelineModeControlView) {
+          timelineModeControlView.update({ show: true })
+        }
         break
       case 5:
         document.querySelector('#scenes').style.display = 'none'
@@ -4702,7 +4717,9 @@ let cycleViewMode = async (direction = +1) => {
         if (sceneTimelineView) {
           await sceneTimelineView.update({ show: false })
         }
-        timelineModeControlView.update({ show: false })
+        if (timelineModeControlView) {
+          timelineModeControlView.update({ show: false })
+        }
         break
     }
   } else {
@@ -4720,7 +4737,9 @@ let cycleViewMode = async (direction = +1) => {
         if (sceneTimelineView) {
           await sceneTimelineView.update({ show: !shouldRenderThumbnailDrawer })
         }
-        timelineModeControlView.update({ show: true })
+        if (timelineModeControlView) {
+          timelineModeControlView.update({ show: true })
+        }
         break
       case 1:
         document.querySelector('#scenes').style.display = 'none'
@@ -4733,7 +4752,9 @@ let cycleViewMode = async (direction = +1) => {
         if (sceneTimelineView) {
           await sceneTimelineView.update({ show: !shouldRenderThumbnailDrawer })
         }
-        timelineModeControlView.update({ show: true })
+        if (timelineModeControlView) {
+          timelineModeControlView.update({ show: true })
+        }
         break
       case 2:
         document.querySelector('#scenes').style.display = 'none'
@@ -4746,7 +4767,9 @@ let cycleViewMode = async (direction = +1) => {
         if (sceneTimelineView) {
           await sceneTimelineView.update({ show: !shouldRenderThumbnailDrawer })
         }
-        timelineModeControlView.update({ show: true })
+        if (timelineModeControlView) {
+          timelineModeControlView.update({ show: true })
+        }
         break
       case 3:
         document.querySelector('#scenes').style.display = 'none'
@@ -4760,7 +4783,9 @@ let cycleViewMode = async (direction = +1) => {
         if (sceneTimelineView) {
           await sceneTimelineView.update({ show: false })
         }
-        timelineModeControlView.update({ show: false })
+        if (timelineModeControlView) {
+          timelineModeControlView.update({ show: false })
+        }
         break
     }
   }
