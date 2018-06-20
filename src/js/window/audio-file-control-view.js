@@ -286,6 +286,18 @@ const WavEncoder = require("wav-encoder")
 // states: initializing, stopped, recording, finalizing
 class Recorder {
   async initialize () {
+    // FOR TROUBLESHOOTING AUDIO ISSUES
+    // list out the audio devices to the console
+    // throw a more helpful error if 'default' audio device cannot be found
+    // NOTE inefficient, as `Tone.UserMedia.enumerateDevices` is also called again later by userMedia.open
+    let devices = await Tone.UserMedia.enumerateDevices()
+    console.log('Tone.UserMedia.enumerateDevices:', devices)
+    if (!devices.find(d => d.deviceId === 'default')) {
+      throw new Error(
+        'Could not find default audio device in the list of available devices:\n' +
+        devices.map(d => `- ${d.label} [${d.deviceId.slice(0, 7)}]`).join('\n'))
+    }
+
     this.userMedia = new Tone.UserMedia()
     this.analyser = new Tone.Analyser({ type: 'waveform', size: 1024 })
     this.meter = new Tone.Meter()
