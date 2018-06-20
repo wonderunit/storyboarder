@@ -21,7 +21,8 @@ class LayersEditor extends EventEmitter {
     document
       .querySelector('.layers-ui-notes-clear')
       .addEventListener('click', () => {
-        this.clearLayer(3)
+        event.preventDefault()
+        this.clearLayer('notes')
         sfx.down(-1, 2)
         sfx.playEffect('trash')
         notifications.notify({ message: 'Cleared notes layer.', timing: 5 })
@@ -30,7 +31,7 @@ class LayersEditor extends EventEmitter {
       .querySelector('.layers-ui-reference-clear')
       .addEventListener('click', event => {
         event.preventDefault()
-        this.clearLayer(0)
+        this.clearLayer('reference')
         sfx.down(-1, 0)
         sfx.playEffect('trash')
         notifications.notify({ message: 'Cleared light layer.', timing: 5 })
@@ -78,10 +79,12 @@ class LayersEditor extends EventEmitter {
   //   this.present({ opacity: { index: this.storyboarderSketchPane.sketchPane.layers.findByName('reference').index, toggle: true })
   // }
 
-  clearLayer (index) {
+  clearLayer (name) {
     if (this.storyboarderSketchPane.preventIfLocked()) return
 
-    this.storyboarderSketchPane.clearLayers([index])
+    this.storyboarderSketchPane.clearLayers([
+      this.storyboarderSketchPane.sketchPane.layers.findByName(name).index
+    ])
   }
 
   // merge `fill` and `reference` and draw to `reference`
