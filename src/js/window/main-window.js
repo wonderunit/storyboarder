@@ -2696,32 +2696,40 @@ const refreshLinkedBoardByFilename = async filename => {
   if (isCurrentBoard) {
     // write to SketchPane layers and mark dirty
 
+    let dirty = []
+
+    // for every possible layer ...
     for (let index of storyboarderSketchPane.visibleLayersIndices) {
       let layer = storyboarderSketchPane.sketchPane.layers[index]
       let layerName = layer.name
       let canvas = canvases[layerName]
       if (canvas) {
         // layer is in the PSD, so use it
-        // TODO could avoid dirtying the layer if canvas is blank?
         console.log('\treplacing contents of', layerName)
+        // TODO could avoid replacing/dirtying the layer if canvas is blank?
         layer.replace(canvas)
+        dirty.push(layer.index)
       } else {
         // layer was NOT in the PSD, so clear it
         console.log('\tclearing unused', layerName)
+        // TODO if already empty, could avoid clear?
         layer.clear()
+        // NOTE we DO NOT save to PNG, since we're about to remove the layer data
 
-        // and delete the layer from data
+        // have we been tracking this layer? ...
         if (board.layers[layerName]) {
+          // ... then delete the layer from data entirely
           console.log('\tdeleting layer data for', layerName)
-          // delete the layer
           delete board.layers[layerName]
-          // TODO should we delete the layer file too?
+          // NOTE we DO NOT delete the PNG file from the file system
         }
       }
     }
 
+    // store undo state for every single layer
     storeUndoStateForImage(false, storyboarderSketchPane.visibleLayersIndices)
-    markImageFileDirty(storyboarderSketchPane.visibleLayersIndices)
+    // mark the layers that actually changed
+    markImageFileDirty(dirty)
 
     // uncomment to save ALL layer images immediately
     // save image and update thumbnail
@@ -2738,9 +2746,10 @@ const refreshLinkedBoardByFilename = async filename => {
   
     // NOTE HACK assumes current boards visibleLayersIndices matches
     // the other board's layers organization!
-    // for every possible layer
+
+    // for every possible layer ...
     for (let index of storyboarderSketchPane.visibleLayersIndices) {
-      // get the name of the layer
+      // ... get the name of the layer
       let layer = storyboarderSketchPane.sketchPane.layers[index]
       let layerName = layer.name
 
@@ -2770,7 +2779,7 @@ const refreshLinkedBoardByFilename = async filename => {
           // delete the layer
           console.log('\tdeleting layer data for', layerName)
           delete board.layers[layerName]
-          // TODO should we delete the layer file too?
+          // NOTE we DO NOT delete the PNG file from the file system
         }
       }
     }
