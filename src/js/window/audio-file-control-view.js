@@ -291,11 +291,20 @@ class Recorder {
     // throw a more helpful error if 'default' audio device cannot be found
     // NOTE inefficient, as `Tone.UserMedia.enumerateDevices` is also called again later by userMedia.open
     let devices = await Tone.UserMedia.enumerateDevices()
-    console.log('Tone.UserMedia.enumerateDevices:', devices)
+    console.log(`Tone.UserMedia found ${devices.length} audio devices:`)
+    devices.forEach(d => 
+      console.log(
+        '-',
+        `${d.label} [${d.deviceId.length && d.deviceId.slice(0, 7)}]`,
+        'kind:', d.kind,
+        'groupId:', (d.groupId.length && d.groupId.slice(0, 7)),
+        d
+      )
+    )
     if (!devices.find(d => d.deviceId === 'default')) {
       throw new Error(
         'Could not find default audio device in the list of available devices:\n' +
-        devices.map(d => `- ${d.label} [${d.deviceId.slice(0, 7)}]`).join('\n'))
+        devices.map(d => `- ${d.label} [${d.deviceId.length && d.deviceId.slice(0, 7)}]`).join('\n'))
     }
 
     this.userMedia = new Tone.UserMedia()
