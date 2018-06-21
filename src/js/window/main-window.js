@@ -2691,39 +2691,97 @@ const refreshLinkedBoardByFilename = async filename => {
     return
   }
 
-  console.log('\tisCurrentBoard', isCurrentBoard)
+  console.log('\t*** updating from PSD ***', isCurrentBoard)
+  console.log('\tisCurrentBoard?', isCurrentBoard)
   if (isCurrentBoard) {
     // write to SketchPane layers and mark dirty
+
     let dirty = []
 
-    // TODO could check and only push if PSD canvas is not blank?
-
-    for (let name in canvases) {
-      let layer = storyboarderSketchPane.sketchPane.layers.findByName(name)
-      if (layer) {
-        layer.replace(canvases[name])
+    // for every possible layer ...
+    for (let index of storyboarderSketchPane.visibleLayersIndices) {
+      let layer = storyboarderSketchPane.sketchPane.layers[index]
+      let layerName = layer.name
+      let canvas = canvases[layerName]
+      if (canvas) {
+        // layer is in the PSD, so use it
+        console.log('\treplacing contents of', layerName)
+        // TODO could avoid replacing/dirtying the layer if canvas is blank?
+        layer.replace(canvas)
         dirty.push(layer.index)
+      } else {
+        // layer was NOT in the PSD, so clear it
+        console.log('\tclearing unused', layerName)
+        // TODO if already empty, could avoid clear?
+        layer.clear()
+        // NOTE we DO NOT save to PNG, since we're about to remove the layer data
+
+        // have we been tracking this layer? ...
+        if (board.layers[layerName]) {
+          // ... then delete the layer from data entirely
+          console.log('\tdeleting layer data for', layerName)
+          delete board.layers[layerName]
+          // NOTE we DO NOT delete the PNG file from the file system
+        }
       }
     }
 
-    if (dirty.length) {
-      storeUndoStateForImage(false, dirty)
-      markImageFileDirty(dirty)
+    // store undo state for every single layer
+    storeUndoStateForImage(false, storyboarderSketchPane.visibleLayersIndices)
+    // mark the layers that actually changed
+    markImageFileDirty(dirty)
 
-      // uncomment to save ALL layer images immediately
-      // save image and update thumbnail
-      // await saveImageFile()
+    // uncomment to save ALL layer images immediately
+    // save image and update thumbnail
+    // await saveImageFile()
 
-      // just update thumbnail immediately
-      let index = await saveThumbnailFile(boardData.boards.indexOf(board))
-      await updateThumbnailDisplayFromFile(index)
+    // just update thumbnail immediately
+    let index = await saveThumbnailFile(boardData.boards.indexOf(board))
+    await updateThumbnailDisplayFromFile(index)
 
-      renderThumbnailDrawer()
-    }
+    renderThumbnailDrawer()
   } else {
-    // write to files
-    for (let name in canvases) {
-      saveDataURLtoFile(canvases[name].toDataURL(), boardModel.boardFilenameForLayer(board, name))
+    // clear contents of layer PNGs that aren't in the PSD
+    // TODO this will break when we add user-managed layers
+  
+    // NOTE HACK assumes current boards visibleLayersIndices matches
+    // the other board's layers organization!
+
+    // for every possible layer ...
+    for (let index of storyboarderSketchPane.visibleLayersIndices) {
+      // ... get the name of the layer
+      let layer = storyboarderSketchPane.sketchPane.layers[index]
+      let layerName = layer.name
+
+      let canvas = canvases[layerName]
+      let filename = boardModel.boardFilenameForLayer(board, layerName)
+
+      // did the PSD contain a canvas by this layer's name?
+      if (canvas) {
+        // add the layer to the board data (if it does not already exist)
+        if (!board.layers[layerName]) {
+          console.log('\tadding layer data for', layerName)
+          board.layers[layerName] = {
+            url: filename,
+            opacity: layerName === 'reference'
+              ? 1.0
+              : undefined // alternatively: exporterCommon.DEFAULT_REFERENCE_LAYER_OPACITY
+          }
+          markBoardFileDirty()
+        }
+
+        // save the PSD canvas over the existing file
+        console.log('\tsaving layer', layerName, 'to', filename)
+        saveDataURLtoFile(canvas.toDataURL(), filename)
+      } else {
+        // is there a layer?
+        if (board.layers[layerName]) {
+          // delete the layer
+          console.log('\tdeleting layer data for', layerName)
+          delete board.layers[layerName]
+          // NOTE we DO NOT delete the PNG file from the file system
+        }
+      }
     }
 
     // update the thumbnail
