@@ -853,6 +853,7 @@ const loadBoardUI = async () => {
         case 'muteBoard':
           boardData.boards[currentBoard].muted = e.target.checked
           sfx.playEffect(e.target.checked ? 'on' : 'off')
+          renderMetaDataShotNumber()
           markBoardFileDirty()
           textInputMode = false
           break
@@ -3351,6 +3352,7 @@ let renderMetaData = () => {
   if (boardData.boards[currentBoard].muted) {
     document.querySelector('input[name="muteBoard"]').checked = true
   }
+  renderMetaDataShotNumber()
 
   if (boardData.boards[currentBoard].duration) {
     if (selections.size == 1) {
@@ -3418,6 +3420,18 @@ let renderMetaData = () => {
   audioFileControlView.setState({
     boardAudio: boardData.boards[currentBoard].audio
   })
+}
+
+const renderMetaDataShotNumber = () => {
+  let board = boardData.boards[currentBoard]
+  let shotString = board.shot
+  
+  if (board.muted){
+      shotString += ' (Muted)'
+  }
+
+  document.querySelector('#board-metadata #shot').innerHTML = 'Shot: ' + shotString
+
 }
 
 const renderCaption = () => {
@@ -3748,30 +3762,35 @@ const updateSceneTiming = () => {
   let currentTime = 0
 
   for (let board of boardData.boards) {
-    if (hasShots) {
-      if (board.newShot || (currentShot === 0)) {
-        currentShot++
-        subShot = 0
-      } else {
-        subShot++
-      }
+      
+    if (!board.muted){
+        if (hasShots) {
+          if (board.newShot || (currentShot === 0)) {
+            currentShot++
+            subShot = 0
+          } else {
+            subShot++
+          }
 
-      let substr = String.fromCharCode(97 + (subShot % 26)).toUpperCase()
-      if ((Math.ceil(subShot / 25) - 1) > 0) {
-        substr += (Math.ceil(subShot / 25))
-      }
+          let substr = String.fromCharCode(97 + (subShot % 26)).toUpperCase()
+          if ((Math.ceil(subShot / 25) - 1) > 0) {
+            substr += (Math.ceil(subShot / 25))
+          }
 
-      board.shot = currentShot + substr
-      board.number = boardNumber
-    } else {
-      board.number = boardNumber
-      board.shot = (boardNumber) + 'A'
+          board.shot = currentShot + substr
+          board.number = boardNumber
+        } else {
+          board.number = boardNumber
+          board.shot = (boardNumber) + 'A'
+        }
+        boardNumber++
+
+        board.time = currentTime
+
+        currentTime += boardModel.boardDuration(boardData, board)
     }
-    boardNumber++
+      
 
-    board.time = currentTime
-
-    currentTime += boardModel.boardDuration(boardData, board)
   }
 }
 
