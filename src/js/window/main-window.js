@@ -3336,7 +3336,8 @@ let renderMarkerPosition = () => {
   
   if (curr.muted) return
   
-  let notMutedBoards = boardData.boards.filter(function(board){ return !board.muted });
+  
+  let notMutedBoards = filterNotMutedBoards(boardData.boards);
   let last = notMutedBoards[notMutedBoards.length - 1]
 
   let percentage
@@ -4106,7 +4107,7 @@ let renderTimeline = () => {
   let markerLeft = getMarkerEl() ? getMarkerEl().style.left : '0px'
 
   let html = []
-  let notMutedBoards = boardData.boards.filter(function(board){ return !board.muted });
+  let notMutedBoards = filterNotMutedBoards(boardData.boards);
 
   html.push('<div class="marker-holder"><div class="marker"></div></div>')
 
@@ -5252,6 +5253,10 @@ let copyBoards = async () => {
   }
 }
 
+const filterNotMutedBoards = (boards) => {
+  return boards.filter(function(board){ return !board.muted });
+}
+
 const exportAnimatedGif = async () => {
   console.log('main-window#exportAnimatedGif', selections)
   if (selections.has(currentBoard)) {
@@ -5268,16 +5273,18 @@ const exportAnimatedGif = async () => {
     )
   }
   let boardSize = storyboarderSketchPane.getCanvasSize()
+  
+  let exportBoards = filterNotMutedBoards(boards)
 
   notifications.notify({
-    message: 'Exporting ' + boards.length + ' boards. Please wait...',
+    message: 'Exporting ' + exportBoards.length + ' boards. Please wait...',
     timing: 5
   })
 
   sfx.down()
 
   try {
-    let path = await exporter.exportAnimatedGif(boards, boardSize, 888, boardFilename, true, boardData)
+    let path = await exporter.exportAnimatedGif(exportBoards, boardSize, 888, boardFilename, true, boardData)
     notifications.notify({
       message: 'I exported your board selection as a GIF. Share it with your friends! Post it to your twitter thing or your slack dingus.',
       timing: 20
@@ -5293,7 +5300,8 @@ const exportAnimatedGif = async () => {
 
 
 const exportFcp = () => {
-  notifications.notify({message: "Exporting " + boardData.boards.length + " boards to FCP and Premiere. Please wait...", timing: 5})
+  exportBoards = filterNotMutedBoards(boardData.boards)
+  notifications.notify({message: "Exporting " + exportBoards.length + " boards to FCP and Premiere. Please wait...", timing: 5})
   sfx.down()
   setTimeout(()=>{
     exporter.exportFcp(boardData, boardFilename).then(outputPath => {
@@ -5309,7 +5317,8 @@ const exportFcp = () => {
 }
 
 const exportImages = () => {
-  notifications.notify({message: "Exporting " + boardData.boards.length + " to a folder. Please wait...", timing: 5})
+  exportBoards = filterNotMutedBoards(boardData.boards)
+  notifications.notify({message: "Exporting " + exportBoards.length + " to a folder. Please wait...", timing: 5})
   sfx.down()
   setTimeout(()=>{
     exporter.exportImages(boardData, boardFilename).then(outputPath => {
@@ -5337,7 +5346,8 @@ const exportCleanup = () => {
 }
 
 const exportVideo = async () => {
-  notifications.notify({ message: "Exporting " + boardData.boards.length + " boards to video. For long scenes this could take a few minutes. Please wait...", timing: 30 })
+  exportBoards = filterNotMutedBoards(boardData.boards)
+  notifications.notify({ message: "Exporting " + exportBoards.length + " boards to video. For long scenes this could take a few minutes. Please wait...", timing: 30 })
 
   let scene = boardData
   let sceneFilePath = boardFilename
