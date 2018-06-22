@@ -104,10 +104,35 @@ app.on('ready', async () => {
   // attempt to merge it in with defaults
   try {
     console.log('Reading', keymapPath)
+
+    let payload = JSON.parse(fs.readFileSync(keymapPath, { encoding: 'utf8' }))
+
+    // detect Storyboarder 1.5.x keymap
+    let shouldOverwrite
+    if (
+      payload["menu:tools:pencil"] === "2" &&
+      payload["menu:tools:pen"] === "3" &&
+      payload["menu:tools:brush"] === "4" &&
+      payload["menu:tools:note-pen"] === "5" &&
+      payload["menu:tools:eraser"] === "6"
+    ) {
+      console.log('Detected a Storyboarder 1.5.x keymap. Forcing update for tools.')
+      payload["menu:tools:pencil"] = "4"
+      payload["menu:tools:pen"] = "5"
+      payload["menu:tools:brush"] = "2"
+      payload["menu:tools:note-pen"] = "6"
+      payload["menu:tools:eraser"] = "7"
+      shouldOverwrite = true
+    }
+
     store.dispatch({
       type: 'SET_KEYMAP',
-      payload: JSON.parse(fs.readFileSync(keymapPath, { encoding: 'utf8' }))
+      payload
     })
+
+    if (shouldOverwrite) {
+      fs.writeFileSync(keymapPath, JSON.stringify(store.getState().entities.keymap, null, 2) + '\n')
+    }
   } catch (err) {
     console.error(err)
     dialog.showMessageBox({
