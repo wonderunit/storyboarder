@@ -362,6 +362,16 @@ const load = async (event, args) => {
 }
 ipcRenderer.on('load', load)
 
+let toggleMuteBoard = () => {
+  storeUndoStateForScene(true)
+  boardData.boards[currentBoard].muted = !boardData.boards[currentBoard].muted
+  sfx.playEffect(boardData.boards[currentBoard].muted ? 'on' : 'off')
+  document.querySelector('input[name="muteBoard"]').checked = boardData.boards[currentBoard].muted
+  markBoardFileDirty()
+  renderThumbnailDrawer()
+  storeUndoStateForScene()
+}
+
 let toggleNewShot = () => {
   storeUndoStateForScene(true)
   boardData.boards[currentBoard].newShot = !boardData.boards[currentBoard].newShot
@@ -836,6 +846,12 @@ const loadBoardUI = async () => {
       switch (e.target.name) {
         case 'newShot':
           boardData.boards[currentBoard].newShot = e.target.checked
+          sfx.playEffect(e.target.checked ? 'on' : 'off')
+          markBoardFileDirty()
+          textInputMode = false
+          break
+        case 'muteBoard':
+          boardData.boards[currentBoard].muted = e.target.checked
           sfx.playEffect(e.target.checked ? 'on' : 'off')
           markBoardFileDirty()
           textInputMode = false
@@ -1948,6 +1964,7 @@ let insertNewBoardDataAtPosition = (position) => {
     uid: uid,
     url: `board-${position + 1}-${uid}.png`,
     newShot: false,
+    muted: false,
     lastEdited: Date.now(),
     layers: {}
   }
@@ -3032,6 +3049,7 @@ let duplicateBoard = async () => {
 
   boardDst.audio = null
   boardDst.newShot = false
+  boardDst.muted = false
   boardDst.dialogue = ''
   boardDst.action = ''
   boardDst.notes = ''
@@ -3328,6 +3346,10 @@ let renderMetaData = () => {
 
   if (boardData.boards[currentBoard].newShot) {
     document.querySelector('input[name="newShot"]').checked = true
+  }
+    
+  if (boardData.boards[currentBoard].muted) {
+    document.querySelector('input[name="muteBoard"]').checked = true
   }
 
   if (boardData.boards[currentBoard].duration) {
@@ -3712,6 +3734,7 @@ let renderThumbnailDrawerSelections = () => {
 
     thumb.classList.toggle('active', currentBoard == i)
     thumb.classList.toggle('selected', selections.has(i))
+    thumb.classList.toggle('muted', boardData.boards[i].muted)
     thumb.classList.toggle('editing', isEditMode)
   }
 }
@@ -5511,6 +5534,7 @@ const importFromWorksheet = async (imageArray) => {
       }
     }
     board.newShot = false
+    board.muted = false
     board.lastEdited = Date.now()
 
     boards.push(board)
@@ -6286,6 +6310,12 @@ ipcRenderer.on('toggleOnionSkin', (event, arg) => {
     store.dispatch({ type: 'TOOLBAR_ONION_TOGGLE' })
     // this.store.dispatch({ type: 'PLAY_SOUND', payload: 'metal' }) // TODO
     sfx.playEffect('metal')
+  }
+})
+
+ipcRenderer.on('toggleMuteBoard', (event, args) => {
+  if (!textInputMode) {
+    toggleMuteBoard()
   }
 })
 

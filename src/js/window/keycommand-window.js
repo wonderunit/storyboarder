@@ -138,6 +138,7 @@ let commands = [
       ['<strong>Duplicate Board</strong>', keystrokeFor("menu:boards:duplicate")],
       ['Reorder Left', keystrokeFor("menu:boards:reorder-left")],
       ['Reorder Right', keystrokeFor("menu:boards:reorder-right")],
+      ['Toggle mute Board', keystrokeFor("menu:boards:toggle-mute-board")],
       ['Toggle Board as New Shot', keystrokeFor("menu:boards:toggle-new-shot")],
     ]
   ],

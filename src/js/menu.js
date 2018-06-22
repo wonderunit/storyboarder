@@ -391,6 +391,13 @@ AppMenu.Boards = () => ({
       }
     },
     {
+      accelerator: keystrokeFor("menu:boards:toggle-mute-board"),
+      label: 'Toggle mute Board',
+      click (item, focusedWindow, event) {
+        ipcRenderer.send('toggleMuteBoard')
+      }
+    },
+    {
       accelerator: keystrokeFor("menu:boards:toggle-new-shot"),
       label: 'Toggle Board as New Shot',
       click (item, focusedWindow, event) {
