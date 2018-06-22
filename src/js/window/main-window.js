@@ -3178,14 +3178,37 @@ const clearLayers = shouldEraseCurrentLayer => {
 // TODO handle re-ordering?
 let goNextBoard = async (direction, shouldPreserveSelections = false) => {
   let index
+  let boardIndexes = []
+  let backwards = (direction && direction < 0) ? true : false
+  let step = (direction) ? Math.abs(direction) : 1
+  
+  //get all boards indexes
+  for (let i = 0; i < boardData.boards.length; i++) {
+      boardIndexes.push(i)
+  }
 
-  index = direction
-    ? currentBoard + direction
-    : currentBoard + 1
+  //depending on the current position and direction, select next indexes
+  if (backwards){
+      boardIndexes = boardIndexes.slice(0,currentBoard)
+      boardIndexes.reverse()
 
-  index = Math.min(Math.max(index, 0), boardData.boards.length - 1)
+  }else{
+      boardIndexes = boardIndexes.slice(currentBoard + 1)
+  }
+    
+  //remove muted boards
+  for (let i = 0; i < boardIndexes.length; i++) {
+      let boardIndex = boardIndexes[i]
+      if (boardData.boards[boardIndex].muted){
+          boardIndexes.splice(i, 1);
+      }
+      
+  }
+    
+  //select index
+  index = boardIndexes[step - 1]
 
-  if (index !== currentBoard) {
+  if ( (typeof index !== 'undefined') && (index !== currentBoard)  ) {
     console.log(index, '!==', currentBoard)
     await saveImageFile()
     currentBoard = index
