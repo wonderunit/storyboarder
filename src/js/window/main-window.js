@@ -370,6 +370,8 @@ let toggleMuteBoard = () => {
   markBoardFileDirty()
   renderThumbnailDrawer()
   storeUndoStateForScene()
+  
+  
 }
 
 let toggleNewShot = () => {
@@ -3303,11 +3305,16 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
 }
 
 let renderMarkerPosition = () => {
+
   // let shouldRenderThumbnailDrawer = false
   if (!shouldRenderThumbnailDrawer) return
 
   let curr = boardData.boards[currentBoard]
-  let last = boardData.boards[boardData.boards.length - 1]
+  
+  if (curr.muted) return
+  
+  let notMutedBoards = boardData.boards.filter(function(board){ return !board.muted });
+  let last = notMutedBoards[notMutedBoards.length - 1]
 
   let percentage
   if (last.duration) {
@@ -4015,6 +4022,7 @@ let renderThumbnailDrawer = () => {
 
   renderThumbnailButtons()
   renderTimeline()
+  renderMarkerPosition() //because it must be updated if we have muted some boards
 
   // gotoBoard(currentBoard)
 }
@@ -4070,10 +4078,11 @@ let renderTimeline = () => {
   let markerLeft = getMarkerEl() ? getMarkerEl().style.left : '0px'
 
   let html = []
+  let notMutedBoards = boardData.boards.filter(function(board){ return !board.muted });
 
   html.push('<div class="marker-holder"><div class="marker"></div></div>')
 
-  boardData.boards.forEach((board, i) => {
+  notMutedBoards.forEach((board, i) => {
     // if board duration is undefined or 0, use the default,
     // otherwise use the value given
     let duration = (util.isUndefined(board.duration) || board.duration === 0)
@@ -4099,6 +4108,7 @@ let renderTimeline = () => {
 
   // HACK restore original position of marker
   if (getMarkerEl()) getMarkerEl().style.left = markerLeft
+
 }
 
 let renderScenes = () => {
