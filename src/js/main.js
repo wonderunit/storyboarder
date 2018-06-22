@@ -112,8 +112,7 @@ app.on('ready', async () => {
     console.error(err)
     dialog.showMessageBox({
       type: 'error',
-      message: `Whoops! An error ocurred while trying to read keymap.json.
-                Using default keymap instead.\n\n${err}`
+      message: `Whoops! An error ocurred while trying to read keymap.json.\nUsing default keymap instead.\n\n${err}`
     })
   }
 
