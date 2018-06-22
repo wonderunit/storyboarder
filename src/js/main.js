@@ -108,7 +108,7 @@ app.on('ready', async () => {
     let payload = JSON.parse(fs.readFileSync(keymapPath, { encoding: 'utf8' }))
 
     // detect Storyboarder 1.5.x keymap
-    let shouldOverwrite
+    let shouldOverwrite = false
     if (
       payload["menu:tools:pencil"] === "2" &&
       payload["menu:tools:pen"] === "3" &&
