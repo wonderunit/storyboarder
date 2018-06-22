@@ -96,7 +96,7 @@ app.on('ready', async () => {
 
 
 
-  // try to load key map
+  // load key map
   const keymapPath = path.join(app.getPath('userData'), 'keymap.json')
   let payload = {}
   let shouldOverwrite = false
