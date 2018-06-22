@@ -117,11 +117,12 @@ app.on('ready', async () => {
       payload["menu:tools:eraser"] === "6"
     ) {
       console.log('Detected a Storyboarder 1.5.x keymap. Forcing update for tools.')
-      payload["menu:tools:pencil"] = "4"
-      payload["menu:tools:pen"] = "5"
-      payload["menu:tools:brush"] = "2"
-      payload["menu:tools:note-pen"] = "6"
-      payload["menu:tools:eraser"] = "7"
+      // force defaults override
+      delete payload["menu:tools:pencil"]
+      delete payload["menu:tools:pen"]
+      delete payload["menu:tools:brush"]
+      delete payload["menu:tools:note-pen"]
+      delete payload["menu:tools:eraser"]
       shouldOverwrite = true
     }
 
