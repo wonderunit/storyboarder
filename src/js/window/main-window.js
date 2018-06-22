@@ -3835,9 +3835,14 @@ let renderThumbnailDrawer = () => {
 
   let hasShots = boardData.boards.find(board => board.newShot) != null
 
+
   let html = []
   let i = 0
   for (let board of boardData.boards) {
+      
+    shotString = board.shot
+    if (board.muted) shotString += ' (Muted)'
+      
     html.push('<div data-thumbnail="' + i + '" class="thumbnail')
     if (hasShots) {
       if (board.newShot || (i === 0)) {
@@ -3872,7 +3877,7 @@ let renderThumbnailDrawer = () => {
       console.error(err)
     }
     html.push('<div class="info">')
-    html.push('<div class="number">' + board.shot + '</div>')
+    html.push('<div class="number">' + shotString + '</div>')
     if (board.audio && board.audio.filename.length) {
       html.push(`
         <div class="audio">
