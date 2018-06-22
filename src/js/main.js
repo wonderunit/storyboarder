@@ -94,28 +94,60 @@ app.on('ready', async () => {
   let ffmpegVersion = await exporterFfmpeg.checkVersion()
   console.log('ffmpeg version', ffmpegVersion)
 
-  // try to load key map
+
+
+  // load key map
   const keymapPath = path.join(app.getPath('userData'), 'keymap.json')
-  // ensure keymap.json exists
-  if (!fs.existsSync(keymapPath)) {
-    console.log('Creating', keymapPath)
-    fs.writeFileSync(keymapPath, JSON.stringify(defaultKeyMap, null, 2) + '\n')
-  }
-  // attempt to merge it in with defaults
-  try {
+  let payload = {}
+  let shouldOverwrite = false
+
+  if (fs.existsSync(keymapPath)) {
     console.log('Reading', keymapPath)
-    store.dispatch({
-      type: 'SET_KEYMAP',
-      payload: JSON.parse(fs.readFileSync(keymapPath, { encoding: 'utf8' }))
-    })
-  } catch (err) {
-    console.error(err)
-    dialog.showMessageBox({
-      type: 'error',
-      message: `Whoops! An error ocurred while trying to read keymap.json.
-                Using default keymap instead.\n\n${err}`
-    })
+    try {
+      payload = JSON.parse(fs.readFileSync(keymapPath, { encoding: 'utf8' }))
+
+      // detect and migrate Storyboarder 1.5.x keymap
+      if (
+        payload["menu:tools:pencil"] === "2" &&
+        payload["menu:tools:pen"] === "3" &&
+        payload["menu:tools:brush"] === "4" &&
+        payload["menu:tools:note-pen"] === "5" &&
+        payload["menu:tools:eraser"] === "6"
+      ) {
+        console.log('Detected a Storyboarder 1.5.x keymap. Forcing update to menu:tools:*.')
+        // force defaults override
+        delete payload["menu:tools:pencil"]
+        delete payload["menu:tools:pen"]
+        delete payload["menu:tools:brush"]
+        delete payload["menu:tools:note-pen"]
+        delete payload["menu:tools:eraser"]
+        shouldOverwrite = true
+      }
+    } catch (err) {
+      // show error, but don't overwrite the keymap file
+      console.error(err)
+      dialog.showMessageBox({
+        type: 'error',
+        message: `Whoops! An error ocurred while trying to read ${keymapPath}.\nUsing default keymap instead.\n\n${err}`
+      })
+    }
+  } else {
+    // create new keymap.json
+    shouldOverwrite = true
   }
+
+  // merge with defaults
+  store.dispatch({
+    type: 'SET_KEYMAP',
+    payload
+  })
+
+  if (shouldOverwrite) {
+    console.log('Writing', keymapPath)
+    fs.writeFileSync(keymapPath, JSON.stringify(store.getState().entities.keymap, null, 2) + '\n')
+  }
+
+
 
   if (os.platform() === 'darwin') {
     if (!isDev && !app.isInApplicationsFolder()) {
