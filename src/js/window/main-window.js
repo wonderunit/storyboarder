@@ -3179,6 +3179,7 @@ const clearLayers = shouldEraseCurrentLayer => {
 let goNextBoard = async (direction, shouldPreserveSelections = false) => {
   let index
   let boardIndexes = []
+  let boardIndexesFiltered = []
   let backwards = (direction && direction < 0) ? true : false
   let step = (direction) ? Math.abs(direction) : 1
   
@@ -3191,22 +3192,23 @@ let goNextBoard = async (direction, shouldPreserveSelections = false) => {
   if (backwards){
       boardIndexes = boardIndexes.slice(0,currentBoard)
       boardIndexes.reverse()
-
   }else{
       boardIndexes = boardIndexes.slice(currentBoard + 1)
   }
-    
-  //remove muted boards
-  for (let i = 0; i < boardIndexes.length; i++) {
-      let boardIndex = boardIndexes[i]
-      if (boardData.boards[boardIndex].muted){
-          boardIndexes.splice(i, 1);
+
+  //filter not muted boards
+  for (let boardIndex of boardIndexes) {
+      if (!boardData.boards[boardIndex].muted){
+          boardIndexesFiltered.push(boardIndex)
       }
       
   }
     
   //select index
-  index = boardIndexes[step - 1]
+  index = boardIndexesFiltered[step - 1]
+  
+  console.log("goNextBoard")
+  console.log({from:currentBoard,backwards:backwards,step:step,nexts:boardIndexes,filtered:boardIndexesFiltered,choosen:index})
 
   if ( (typeof index !== 'undefined') && (index !== currentBoard)  ) {
     console.log(index, '!==', currentBoard)
