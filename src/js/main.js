@@ -1168,6 +1168,10 @@ ipcMain.on('toggleGuide', (event, arg) => {
 ipcMain.on('toggleOnionSkin', event =>
   mainWindow.webContents.send('toggleOnionSkin'))
 
+ipcMain.on('toggleMuteBoard', (event, arg) => {
+  mainWindow.webContents.send('toggleMuteBoard', arg)
+})
+
 ipcMain.on('toggleNewShot', (event, arg) => {
   mainWindow.webContents.send('toggleNewShot', arg)
 })
