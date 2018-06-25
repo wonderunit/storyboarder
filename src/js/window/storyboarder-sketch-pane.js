@@ -65,9 +65,10 @@ class StoryboarderSketchPane extends EventEmitter {
         brushImagePath: path.join(__dirname, '..', '..', 'data', 'brushes')
       })
     } catch (err) {
+      console.error(err)
       remote.dialog.showMessageBox({
         type: 'error',
-        message: 'Could not load brushes.\n\n' + err
+        message: 'Could not load brushes.\n\nError: ' + err.message
       })
       throw err
     }
