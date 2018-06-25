@@ -86,5 +86,19 @@
     "tiltSize": 1,
     "tiltOpacity": 1,
     "movement": 0.5
+  },
+  {
+    "name": "efficient",
+    "descriptiveName": "Efficient Pencil",
+    "brushImage": "brushefficient",
+    "grainImage": "brushefficient",
+    "pressureOpacity": 0.7,
+    "pressureSize": 0.8,
+    "scale": 0.8,
+    "tiltOpacity": 0.3,
+    "tiltSize": 1,
+    "movement": 1,
+    "pressureBleed": 1,
+    "spacing": 0.05
   }
 ]

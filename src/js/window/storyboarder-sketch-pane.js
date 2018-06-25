@@ -20,6 +20,8 @@ const prefsModule = require('electron').remote.require('./prefs')
 // TODO enableBrushCursor see: https://github.com/wonderunit/storyboarder/issues/1102
 const enableBrushCursor = prefsModule.getPrefs('main')['enableBrushCursor']
 
+const enableHighQualityDrawingEngine = prefsModule.getPrefs()['enableHighQualityDrawingEngine']
+
 /**
  *  Wrap the SketchPane component with features Storyboarder needs
  *
@@ -54,6 +56,8 @@ class StoryboarderSketchPane extends EventEmitter {
       imageHeight: this.canvasSize[1],
       backgroundColor: 0x333333
     })
+
+    this.sketchPane.efficiencyMode = !enableHighQualityDrawingEngine
 
     try {
       await this.sketchPane.loadBrushes({
