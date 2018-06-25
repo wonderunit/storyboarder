@@ -51,6 +51,9 @@ describe('prefs (main)', () => {
   
       // should write missing `lastUsedFps`
       assert.equal(prefsModule.getPrefs().lastUsedFps, 24)
+
+      // should write missing `lastUsedFps`
+      assert.equal(prefsModule.getPrefs().enableHighQualityDrawingEngine, true)
     })
   
     // if the version of Storyboarder currently running
