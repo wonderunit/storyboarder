@@ -431,6 +431,7 @@ class DrawingStrategy {
     this._onPointerMove = this._onPointerMove.bind(this)
     this._onPointerUp = this._onPointerUp.bind(this)
     this._onKeyUp = this._onKeyUp.bind(this)
+    this.fpsMeter = new FPSMeter()
   }
 
   startup () {
@@ -459,6 +460,8 @@ class DrawingStrategy {
     window.removeEventListener('keyup', this._onKeyUp)
 
     this.context.sketchPane.app.view.style.cursor = 'auto'
+
+    this.fpsMeter.stop()
   }
 
   _onPointerOver (e) {
@@ -512,6 +515,8 @@ class DrawingStrategy {
         // switch to quick-erase mode
         this.context.store.dispatch({ type: 'TOOLBAR_TOOL_QUICK_PUSH', payload: 'eraser', meta: { scope: 'local' } })
       }
+
+      this.fpsMeter.start()
     }
 
     // sync sketchPane to the current toolbar state
@@ -567,6 +572,7 @@ class DrawingStrategy {
       // audible event for Sonifier
       this.context.emit('pointerup', this.context.sketchPane.localizePoint(e))
     }
+    this.fpsMeter.stop()
   }
 
   _onKeyUp (e) {
@@ -891,6 +897,36 @@ class LockedStrategy {
 
   _onDblClick (event) {
     this.context.emit('requestUnlock')
+  }
+}
+
+class FPSMeter {
+  constructor () {
+    this.onFrame = this.onFrame.bind(this)
+  }
+  start () {
+    this.times = []
+    this.fps = 0
+    this.running = true
+    this.startTime = window.performance.now()
+    this.frames = 0
+
+    this.onFrame()
+  }
+  onFrame () {
+    if (this.running) {
+      this.frames = this.frames + 1
+      window.requestAnimationFrame(this.onFrame)
+    }
+  }
+
+  stop () {
+    if (this.running) {
+      this.running = false
+      let seconds = (window.performance.now() - this.startTime) / 1000
+      this.fps = Math.round(this.frames / seconds)
+      console.log('Avg FPS.', this.fps)
+    }
   }
 }
 
