@@ -55,10 +55,18 @@ class StoryboarderSketchPane extends EventEmitter {
       backgroundColor: 0x333333
     })
 
-    await this.sketchPane.loadBrushes({
-      brushes: JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', 'data', 'brushes', 'brushes.json'))),
-      brushImagePath: path.join(__dirname, '..', '..', 'data', 'brushes')
-    })
+    try {
+      await this.sketchPane.loadBrushes({
+        brushes: JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', 'data', 'brushes', 'brushes.json'))),
+        brushImagePath: path.join(__dirname, '..', '..', 'data', 'brushes')
+      })
+    } catch (err) {
+      remote.dialog.showMessageBox({
+        type: 'error',
+        message: 'Could not load brushes.\n\n' + err
+      })
+      throw err
+    }
 
     this.sketchPaneDOMElement = this.sketchPane.getDOMElement()
 
