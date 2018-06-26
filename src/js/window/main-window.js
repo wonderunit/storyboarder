@@ -1548,11 +1548,19 @@ const loadBoardUI = async () => {
     // otherwise, allow direct text input again
     textInputMode = false
   })
-  ipcRenderer.on('prefs:change', (event, newPrefs) => {
-    if (boardData && boardData.defaultBoardTiming != newPrefs.defaultBoardTiming) {
-      boardData.defaultBoardTiming = newPrefs.defaultBoardTiming
-      saveBoardFile()
-      renderMetaData()
+  // changedPrefs is an object with only the top-level primitive prefs that have actually changed (it does not track objects or arrays nested in prefs)
+  ipcRenderer.on('prefs:change', (event, changedPrefs) => {
+    if (Object.keys(changedPrefs).length) {
+      if (boardData && changedPrefs.defaultBoardTiming != null && boardData.defaultBoardTiming != changedPrefs.defaultBoardTiming) {
+        boardData.defaultBoardTiming = changedPrefs.defaultBoardTiming
+        saveBoardFile()
+        renderMetaData()
+      }
+
+      notifications.notify({
+        message: `Storyboarder preferences have changed. Please close and re-open this project window for new preferences to take effect`,
+        timing: 30
+      })
     }
   })
 
