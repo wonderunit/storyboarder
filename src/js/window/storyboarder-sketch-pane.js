@@ -20,6 +20,8 @@ const prefsModule = require('electron').remote.require('./prefs')
 // TODO enableBrushCursor see: https://github.com/wonderunit/storyboarder/issues/1102
 const enableBrushCursor = prefsModule.getPrefs('main')['enableBrushCursor']
 
+const enableHighQualityDrawingEngine = prefsModule.getPrefs()['enableHighQualityDrawingEngine']
+
 /**
  *  Wrap the SketchPane component with features Storyboarder needs
  *
@@ -44,6 +46,9 @@ class StoryboarderSketchPane extends EventEmitter {
 
     this.lineMileageCounter = new LineMileageCounter()
 
+    // FPS Meter used by DrawingStrategy
+    this.fpsMeter = new FPSMeter()
+
     // container
     this.containerEl = document.createElement('div')
     this.containerEl.classList.add('container')
@@ -55,15 +60,18 @@ class StoryboarderSketchPane extends EventEmitter {
       backgroundColor: 0x333333
     })
 
+    this.sketchPane.efficiencyMode = !enableHighQualityDrawingEngine
+
     try {
       await this.sketchPane.loadBrushes({
         brushes: JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', 'data', 'brushes', 'brushes.json'))),
         brushImagePath: path.join(__dirname, '..', '..', 'data', 'brushes')
       })
     } catch (err) {
+      console.error(err)
       remote.dialog.showMessageBox({
         type: 'error',
-        message: 'Could not load brushes.\n\n' + err
+        message: 'Could not load brushes.\n\nError: ' + err
       })
       throw err
     }
@@ -413,6 +421,13 @@ class StoryboarderSketchPane extends EventEmitter {
   clearLayerDirty (index) {
     this.sketchPane.clearLayerDirty(index)
   }
+
+  shouldWarnAboutFps () {
+    return (
+      this.fpsMeter.hadLowFps() &&
+      !this.sketchPane.efficiencyMode
+    )
+  }
 }
 
 class DrawingStrategy {
@@ -454,6 +469,8 @@ class DrawingStrategy {
     window.removeEventListener('keyup', this._onKeyUp)
 
     this.context.sketchPane.app.view.style.cursor = 'auto'
+
+    this.context.fpsMeter.stop()
   }
 
   _onPointerOver (e) {
@@ -507,6 +524,8 @@ class DrawingStrategy {
         // switch to quick-erase mode
         this.context.store.dispatch({ type: 'TOOLBAR_TOOL_QUICK_PUSH', payload: 'eraser', meta: { scope: 'local' } })
       }
+
+      this.context.fpsMeter.start()
     }
 
     // sync sketchPane to the current toolbar state
@@ -562,6 +581,7 @@ class DrawingStrategy {
       // audible event for Sonifier
       this.context.emit('pointerup', this.context.sketchPane.localizePoint(e))
     }
+    this.context.fpsMeter.stop()
   }
 
   _onKeyUp (e) {
@@ -886,6 +906,41 @@ class LockedStrategy {
 
   _onDblClick (event) {
     this.context.emit('requestUnlock')
+  }
+}
+
+class FPSMeter {
+  constructor () {
+    this.onFrame = this.onFrame.bind(this)
+    this.fpsList = []
+    this.numToAvg = 10
+  }
+  start () {
+    this.running = true
+    this.startTime = window.performance.now()
+    this.frames = 0
+
+    this.onFrame()
+  }
+  onFrame () {
+    if (this.running) {
+      this.frames = this.frames + 1
+      window.requestAnimationFrame(this.onFrame)
+    }
+  }
+  stop () {
+    if (this.running) {
+      this.running = false
+      let seconds = (window.performance.now() - this.startTime) / 1000
+      this.fpsList.unshift(Math.round(this.frames / seconds))
+      if (this.fpsList.length > this.numToAvg) { this.fpsList = this.fpsList.slice(0, this.numToAvg) }
+    }
+  }
+  avg () {
+    return this.fpsList.reduce((a, b) => a + b) / this.fpsList.length
+  }
+  hadLowFps (threshold = 20) {
+    return this.fpsList.length === this.numToAvg && this.avg() <= threshold
   }
 }
 

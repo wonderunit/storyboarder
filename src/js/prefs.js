@@ -39,7 +39,8 @@ const defaultPrefs = {
     skipBlankBoards: true
   },
 
-  enableBoardAudition: true
+  enableBoardAudition: true,
+  enableHighQualityDrawingEngine: true,
 }
 
 // For slow computers, override the defaults here.

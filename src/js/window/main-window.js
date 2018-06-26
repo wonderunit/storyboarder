@@ -197,6 +197,8 @@ let shouldRenderThumbnailDrawer = true
 
 //  analytics.event('Application', 'open', filename)
 
+// flag set after we've warned about FPS at least once since this window opened
+let hasWarnedOnceAboutFps = false
 
 remote.getCurrentWindow().on('focus', () => {
   menu.setMenu()
@@ -2193,6 +2195,16 @@ const onDrawIdle = () => {
 
   // update the thumbnail
   updateThumbnailDisplayFromMemory()
+
+  // notification
+  if (!hasWarnedOnceAboutFps && storyboarderSketchPane.shouldWarnAboutFps()) {
+    hasWarnedOnceAboutFps = true
+    notifications.notify({
+      message:  'Hmm, looks like Storyboarder is running a little slow. ' +
+                'For a speed boost, try disabling the “High Quality Drawing Engine” in Preferences.',
+      timing: 30
+    })
+  }
 }
 
 let saveDataURLtoFile = (dataURL, filename) => {
