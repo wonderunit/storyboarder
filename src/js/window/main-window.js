@@ -1558,7 +1558,7 @@ const loadBoardUI = async () => {
       }
 
       notifications.notify({
-        message: `Storyboarder preferences have changed. Please close and re-open this project window for new preferences to take effect`,
+        message: `Storyboarder preferences have changed. Please close and re-open this project window for new preferences to take effect.`,
         timing: 30
       })
     }
