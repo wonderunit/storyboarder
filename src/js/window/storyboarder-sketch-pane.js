@@ -913,7 +913,7 @@ class FPSMeter {
   constructor () {
     this.onFrame = this.onFrame.bind(this)
     this.fpsList = []
-    this.numToAvg = 10
+    this.numToAvg = 7
   }
   start () {
     this.running = true
