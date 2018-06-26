@@ -2655,7 +2655,7 @@ const onLinkedFileChange = async (eventType, filepath, stats) => {
 }
 
 const refreshLinkedBoardByFilename = async filename => {
-  console.log('refreshLinkedBoardByFilename')
+  console.log('refreshLinkedBoardByFilename', filename)
 
   // find the board by link filename
   let board
