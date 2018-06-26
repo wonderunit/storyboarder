@@ -46,6 +46,9 @@ class StoryboarderSketchPane extends EventEmitter {
 
     this.lineMileageCounter = new LineMileageCounter()
 
+    // FPS Meter used by DrawingStrategy
+    this.fpsMeter = new FPSMeter()
+
     // container
     this.containerEl = document.createElement('div')
     this.containerEl.classList.add('container')
@@ -418,6 +421,13 @@ class StoryboarderSketchPane extends EventEmitter {
   clearLayerDirty (index) {
     this.sketchPane.clearLayerDirty(index)
   }
+
+  shouldWarnAboutFps () {
+    return (
+      this.fpsMeter.hadLowFps() &&
+      !this.sketchPane.efficiencyMode
+    )
+  }
 }
 
 class DrawingStrategy {
@@ -431,7 +441,6 @@ class DrawingStrategy {
     this._onPointerMove = this._onPointerMove.bind(this)
     this._onPointerUp = this._onPointerUp.bind(this)
     this._onKeyUp = this._onKeyUp.bind(this)
-    this.fpsMeter = new FPSMeter()
   }
 
   startup () {
@@ -461,7 +470,7 @@ class DrawingStrategy {
 
     this.context.sketchPane.app.view.style.cursor = 'auto'
 
-    this.fpsMeter.stop()
+    this.context.fpsMeter.stop()
   }
 
   _onPointerOver (e) {
@@ -516,7 +525,7 @@ class DrawingStrategy {
         this.context.store.dispatch({ type: 'TOOLBAR_TOOL_QUICK_PUSH', payload: 'eraser', meta: { scope: 'local' } })
       }
 
-      this.fpsMeter.start()
+      this.context.fpsMeter.start()
     }
 
     // sync sketchPane to the current toolbar state
@@ -572,7 +581,7 @@ class DrawingStrategy {
       // audible event for Sonifier
       this.context.emit('pointerup', this.context.sketchPane.localizePoint(e))
     }
-    this.fpsMeter.stop()
+    this.context.fpsMeter.stop()
   }
 
   _onKeyUp (e) {
@@ -903,10 +912,10 @@ class LockedStrategy {
 class FPSMeter {
   constructor () {
     this.onFrame = this.onFrame.bind(this)
+    this.fpsList = []
+    this.numToAvg = 10
   }
   start () {
-    this.times = []
-    this.fps = 0
     this.running = true
     this.startTime = window.performance.now()
     this.frames = 0
@@ -919,14 +928,19 @@ class FPSMeter {
       window.requestAnimationFrame(this.onFrame)
     }
   }
-
   stop () {
     if (this.running) {
       this.running = false
       let seconds = (window.performance.now() - this.startTime) / 1000
-      this.fps = Math.round(this.frames / seconds)
-      console.log('Avg FPS.', this.fps)
+      this.fpsList.unshift(Math.round(this.frames / seconds))
+      if (this.fpsList.length > this.numToAvg) { this.fpsList = this.fpsList.slice(0, this.numToAvg) }
     }
+  }
+  avg () {
+    return this.fpsList.reduce((a, b) => a + b) / this.fpsList.length
+  }
+  hadLowFps (threshold = 20) {
+    return this.fpsList.length === this.numToAvg && this.avg() <= threshold
   }
 }
 
