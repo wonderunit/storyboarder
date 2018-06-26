@@ -13,7 +13,14 @@ let prefs,
 
 const onChange = (name, event) => {
   let el = event.target
-  if (el.type == 'checkbox') {
+
+  if (name === 'defaultBoardTiming') {
+    if (el.value === '') {
+      prefsModule.set(name, 2000, true)
+    } else {
+      prefsModule.set(name, el.value, true)
+    }
+  } else if (el.type == 'checkbox') {
     prefsModule.set(name, el.checked, true)
   } else if (el.type == 'number') {
     prefsModule.set(name, el.value, true)
