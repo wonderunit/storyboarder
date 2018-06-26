@@ -11,6 +11,9 @@ let prefs,
     imgEditorInput,
     revealKeyMapFileEl
 
+let hasChanged
+let originalPrefs
+
 const onChange = (name, event) => {
   let el = event.target
 
@@ -65,12 +68,6 @@ const render = () => {
       el.checked = prefs[el.name]
     } else if (el.type == 'number') {
       el.value = prefs[el.name]
-
-      // HACK notify when this pref changes
-      if (el.name == 'defaultBoardTiming') {
-        ipcRenderer.send('prefs:change', { defaultBoardTiming: el.value })
-      }
-
     }
   }
 
@@ -92,9 +89,26 @@ const render = () => {
     storyboardersAccountEl.style.display = 'none'
     storyboardersAccountEl.querySelector('.preferences-hint').innerHTML = ''
   }
+
+  // track if anything has changed
+  hasChanged = false
+  for (let key in originalPrefs) {
+    if (
+      originalPrefs[key].constructor === Object ||
+      originalPrefs[key].constructor === Array
+    ) continue
+
+    if (originalPrefs[key] !== prefs[key]) {
+      hasChanged = true
+      break
+    }
+  }
 }
 
 const init = () => {
+  hasChanged = false
+  originalPrefs = util.stringifyClone(prefsModule.getPrefs())
+
   prefs = prefsModule.getPrefs('prefs window')
 
   inputs = document.querySelectorAll('input[type="checkbox"], input[type="number"]')
@@ -119,6 +133,23 @@ const init = () => {
   window.ondragleave = () => { return false }
   window.ondragend = () => { return false }
   window.ondrop = () => { return false }
+
+  window.onbeforeunload = (e) => {
+    if (hasChanged) {
+      let changedPrefs = {}
+      for (let key in originalPrefs) {
+        if (
+          originalPrefs[key].constructor === Object ||
+          originalPrefs[key].constructor === Array
+        ) continue
+
+        if (originalPrefs[key] !== prefs[key]) {
+          changedPrefs[key] = prefs[key]
+        }
+      }
+      ipcRenderer.send('prefs:change', changedPrefs)
+    }
+  }
 
   render()
 }
