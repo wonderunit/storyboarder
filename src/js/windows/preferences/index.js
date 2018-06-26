@@ -20,7 +20,7 @@ module.exports = () => {
         devTools: true
       }
     })
-    win.on('closed', () => {
+    win.once('closed', () => {
       win = null
     })
     win.loadURL(`file://${__dirname}/../../../preferences.html`)
