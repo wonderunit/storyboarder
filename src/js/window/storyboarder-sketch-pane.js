@@ -71,7 +71,7 @@ class StoryboarderSketchPane extends EventEmitter {
       console.error(err)
       remote.dialog.showMessageBox({
         type: 'error',
-        message: 'Could not load brushes.\n\nError: ' + err.message
+        message: 'Could not load brushes.\n\nError: ' + err
       })
       throw err
     }
