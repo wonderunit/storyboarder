@@ -11,10 +11,10 @@
     "tiltSize": 1,
     "movement": 1,
     "pressureBleed": 1,
-    "spacing": 0.05,
+    "spacing": 0.1,
 
     "efficiencyBrushImage": "brushefficiency",
-    "efficiencySpacing": 0.05
+    "efficiencySpacing": 0.1
   },
   {
     "name": "brush",
@@ -26,9 +26,10 @@
     "tiltSize": 1,
     "tiltOpacity": 1,
     "movement": 0.5,
+    "spacing": 0.1,
 
     "efficiencyBrushImage": "brushefficiency",
-    "efficiencySpacing": 0.05
+    "efficiencySpacing": 0.1
   },
   {
     "name": "tone",
@@ -40,11 +41,11 @@
     "scale": 0.7,
     "tiltOpacity": 0.4,
     "tiltSize": 1,
-    "spacing": 0.05,
+    "spacing": 0.2,
     "pressureBleed": 0.5,
 
     "efficiencyBrushImage": "brushefficiency",
-    "efficiencySpacing": 0.05
+    "efficiencySpacing": 0.1
   },
   {
     "name": "pencil",
@@ -58,10 +59,10 @@
     "tiltSize": 1,
     "movement": 1,
     "pressureBleed": 1,
-    "spacing": 0.05,
+    "spacing": 0.1,
 
     "efficiencyBrushImage": "brushefficiency",
-    "efficiencySpacing": 0.05
+    "efficiencySpacing": 0.1
   },
   {
     "name": "pen",
@@ -75,10 +76,10 @@
     "tiltSize": 3.8,
     "tiltOpacity": 1,
     "movement": 0.9,
-    "spacing": 0.05,
+    "spacing": 0.1,
 
     "efficiencyBrushImage": "brushefficiency",
-    "efficiencySpacing": 0.05
+    "efficiencySpacing": 0.1
   },
   {
     "name": "note-pen",
@@ -92,7 +93,7 @@
     "movement": 0.5,
 
     "efficiencyBrushImage": "brushefficiency",
-    "efficiencySpacing": 0.05
+    "efficiencySpacing": 0.1
   },
   {
     "name": "eraser",
@@ -106,6 +107,6 @@
     "movement": 0.5,
 
     "efficiencyBrushImage": "brushefficiency",
-    "efficiencySpacing": 0.05
+    "efficiencySpacing": 0.1
   }
 ]
