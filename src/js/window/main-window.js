@@ -2639,9 +2639,20 @@ let openInEditor = async () => {
     for (let board of selectedBoards) {
       console.log('\twatcher add', path.join(boardPath, 'images', board.link))
       watcher.add(path.join(boardPath, 'images', board.link))
-      console.log('\twatching', JSON.stringify(watcher.getWatched(), null, 2))
     }
     ipcRenderer.send('analyticsEvent', 'Board', 'edit in photoshop')
+
+    // HACK because this is async, with no callback, we just check back in 100 msecs :/
+    // see: https://github.com/paulmillr/chokidar/issues/542#issuecomment-255496275
+    //
+    // a more reliable approach would be to create a new watcher instance each time,
+    // which would always fire a 'ready' event
+    // https://github.com/paulmillr/chokidar/issues/487#issuecomment-222714731
+    //
+    setTimeout(
+      () => console.log('\twatching', JSON.stringify(watcher.getWatched(), null, 2)),
+      100
+    )
 
   } catch (error) {
     notifications.notify({ message: '[WARNING] Error opening files in editor.' })
