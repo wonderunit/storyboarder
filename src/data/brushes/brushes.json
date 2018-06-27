@@ -45,7 +45,7 @@
     "pressureBleed": 0.5,
 
     "efficiencyBrushImage": "brushefficiency",
-    "efficiencySpacing": 0.1
+    "efficiencySpacing": 0.05
   },
   {
     "name": "pencil",
