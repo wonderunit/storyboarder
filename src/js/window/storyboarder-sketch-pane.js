@@ -120,9 +120,9 @@ class StoryboarderSketchPane extends EventEmitter {
         this.sketchPane.brush = this.sketchPane.brushes[tool.name]
         this.sketchPane.brushColor = tool.color
         this.sketchPane.brushSize = tool.size
-        this.sketchPane.brushOpacity = tool.opacity
-        this.sketchPane.nodeOpacityScale = 1
-        this.sketchPane.strokeOpacityScale = 1
+
+        this.sketchPane.nodeOpacityScale = tool.nodeOpacity
+        this.sketchPane.strokeOpacityScale = tool.strokeOpacity
 
         // TODO move to a reducer?
         // if we're not erasing ...

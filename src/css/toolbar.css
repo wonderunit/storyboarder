@@ -357,7 +357,8 @@
   justify-content: space-between;
   -webkit-app-region: no-drag;
 }
-.toolbar-brush-modifier-controls_size {
+.toolbar-brush-modifier-controls_size,
+.toolbar-brush-modifier-controls_stroke-opacity {
   position: relative;
   padding: 8px;
   font-size: 16px;

@@ -23,6 +23,8 @@ class Toolbar extends EventEmitter {
     this.onSwatchUp = this.onSwatchUp.bind(this)
     this.onSwatchDown = this.onSwatchDown.bind(this)
 
+    this.draggables = []
+
     this.attachedCallback(this.el)
 
     // listen for changes to the toolbar state
@@ -50,18 +52,39 @@ class Toolbar extends EventEmitter {
       el.addEventListener('pointerenter', this.onButtonOver)
     }
 
-    new DraggableText(
-      // el
-      this.el.querySelector('.toolbar-brush-modifier-controls_size'),
-      // getValue
-      () => {
-        let state = this.store.getState()
-        return state.toolbar.tools[state.toolbar.activeTool].size
-      },
-      // setValue
-      payload => {
-        this.store.dispatch({ type: 'TOOLBAR_BRUSH_SIZE_SET', payload })
-      }
+    this.draggables.push(
+      new DraggableText({
+        el: this.el.querySelector('.toolbar-brush-modifier-controls_size'),
+        getValue: () => {
+          let state = this.store.getState()
+          return state.toolbar.tools[state.toolbar.activeTool].size
+        },
+        setValue: (pos, curr) => {
+          let payload = curr + (pos * 64)
+          this.store.dispatch({ type: 'TOOLBAR_BRUSH_SIZE_SET', payload })
+          // TODO sound, throttled
+        },
+        formatValueForDisplay: value => {
+          return Math.round(value)
+        }
+      })
+    )
+
+    this.draggables.push(
+      new DraggableText({
+        el: this.el.querySelector('.toolbar-brush-modifier-controls_stroke-opacity'),
+        getValue: () => {
+          let state = this.store.getState()
+          return state.toolbar.tools[state.toolbar.activeTool].strokeOpacity
+        },
+        setValue: (pos, curr) => {
+          let payload = curr + (pos * 10)
+          this.store.dispatch({ type: 'TOOLBAR_BRUSH_STROKE_OPACITY_SET', payload })
+        },
+        formatValueForDisplay: value => {
+          return Math.round(value * 100)
+        }
+      })
     )
   }
 
@@ -305,8 +328,11 @@ class Toolbar extends EventEmitter {
     }
 
     if (state.toolbar.activeTool) {
-      const brushSizeEl = this.el.querySelector('.toolbar-brush-modifier-controls_size')
-      brushSizeEl.innerHTML = Math.round(state.toolbar.tools[state.toolbar.activeTool].size)
+      for (let draggable of this.draggables) {
+        draggable.render()
+      }
+      // const brushSizeEl = this.el.querySelector('.toolbar-brush-modifier-controls_size')
+      // brushSizeEl.innerHTML = Math.round(state.toolbar.tools[state.toolbar.activeTool].size)
     }
 
     // prevent perspective guide when WebGL is not available
@@ -363,7 +389,7 @@ class Toolbar extends EventEmitter {
 }
 
 class DraggableText {
-    constructor (el, getValue, setValue) {
+    constructor ({ el, getValue, setValue, formatValueForDisplay }) {
       // this.onPointerDown = this.onPointerDown.bind(this)
       this.onPointerMove = this.onPointerMove.bind(this)
       // this.onPointerUp = this.onPointerUp.bind(this)
@@ -374,6 +400,7 @@ class DraggableText {
       this.el = el
       this.getValue = getValue.bind(this)
       this.setValue = setValue.bind(this)
+      this.formatValueForDisplay = formatValueForDisplay.bind(this)
 
       this.anchorX = null
       this.anchorValue = null
@@ -399,11 +426,10 @@ class DraggableText {
       // })
     }
     onPointerMove (event) {
-      let pos = (event.clientX - this.anchorX) / document.body.offsetWidth
-
-      this.setValue(this.anchorValue + (pos * 64))
-
-      // TODO sound, throttled
+      this.setValue((event.clientX - this.anchorX) / document.body.offsetWidth, this.anchorValue)
+    }
+    render () {
+      this.el.innerHTML = this.formatValueForDisplay(this.getValue())
     }
 }
 

@@ -6,8 +6,8 @@ const initialState = {
       name: 'light-pencil',
       color: 0x90CBF9,
       size: 20,
-      opacity: 0.25,
-
+      nodeOpacity: 0.25,
+      strokeOpacity: 1.0,
       palette: [0xCFCFCF, 0x9FA8DA, 0x90CBF9],
 
       defaultLayerName: 'reference'
@@ -16,7 +16,8 @@ const initialState = {
       name: 'brush',
       color: 0x90CBF9,
       size: 26,
-      opacity: 0.7,
+      nodeOpacity: 0.7,
+      strokeOpacity: 1.0,
       palette: [0x4DABF5, 0x607D8B, 0x9E9E9E],
 
       defaultLayerName: 'fill'
@@ -25,7 +26,8 @@ const initialState = {
       name: 'tone',
       color: 0x162A3F,
       size: 50,
-      opacity: 0.15,
+      nodeOpacity: 0.15,
+      strokeOpacity: 1.0,
       palette: [0x162A3F, 0x162A3F, 0x162A3F],
 
       defaultLayerName: 'tone'
@@ -34,7 +36,8 @@ const initialState = {
       name: 'pencil',
       color: 0x121212,
       size: 4,
-      opacity: 0.45,
+      nodeOpacity: 0.45,
+      strokeOpacity: 1.0,
       palette: [0x373737, 0x223131, 0x121212],
 
       defaultLayerName: 'pencil'
@@ -43,7 +46,8 @@ const initialState = {
       name: 'pen',
       color: 0x000000,
       size: 2,
-      opacity: 0.9,
+      nodeOpacity: 0.9,
+      strokeOpacity: 1.0,
       palette: [0x373737, 0x223131, 0x000000],
 
       defaultLayerName: 'ink'
@@ -52,7 +56,8 @@ const initialState = {
       name: 'note-pen',
       color: 0xF44336,
       size: 8,
-      opacity: 0.9,
+      nodeOpacity: 0.9,
+      strokeOpacity: 1.0,
       palette: [0x4CAF50, 0xFF9800, 0xF44336],
 
       defaultLayerName: 'notes'
@@ -61,7 +66,8 @@ const initialState = {
       name: 'eraser',
       color: 0xffffff,
       size: 26,
-      opacity: 1.0,
+      nodeOpacity: 1.0,
+      strokeOpacity: 1.0,
       palette: [0xffffff, 0xffffff, 0xffffff],
 
       defaultLayerName: undefined
@@ -144,10 +150,13 @@ const toolbar = (state = initialState, action) => {
               ...state.tools[state.activeTool],
               size: action.payload.size != null ? action.payload.size : state.tools[state.activeTool].size,
               color: action.payload.color != null ? action.payload.color : state.tools[state.activeTool].color,
-              opacity: action.payload.opacity != null ? action.payload.opacity : state.tools[state.activeTool].opacity
+              nodeOpacity: action.payload.nodeOpacity != null ? action.payload.nodeOpacity : state.tools[state.activeTool].nodeOpacity,
+              strokeOpacity: action.payload.strokeOpacity != null ? action.payload.strokeOpacity : state.tools[state.activeTool].strokeOpacity
             }
           }
         }
+
+    // TODO setting, saving to prefs
     case 'TOOLBAR_TOOL_PALETTE_SET':
       return {
         ...state,
@@ -203,6 +212,18 @@ const toolbar = (state = initialState, action) => {
           [state.activeTool]: {
             ...state.tools[state.activeTool],
             size: setBrushSize(action.payload)
+          }
+        }
+      }
+
+    case 'TOOLBAR_BRUSH_STROKE_OPACITY_SET':
+      return {
+        ...state,
+        tools: {
+          ...state.tools,
+          [state.activeTool]: {
+            ...state.tools[state.activeTool],
+            strokeOpacity: Math.min(Math.max(action.payload, 0), 1)
           }
         }
       }
