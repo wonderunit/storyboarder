@@ -60,8 +60,8 @@ class Toolbar extends EventEmitter {
           return state.toolbar.tools[state.toolbar.activeTool].size
         },
         setValue: (pos, curr) => {
-          let payload = curr + (pos * 64)
-          this.store.dispatch({ type: 'TOOLBAR_BRUSH_SIZE_SET', payload })
+          let payload = curr + (pos * 256)
+          this.store.dispatch({ type: 'TOOLBAR_BRUSH_SIZE_SET', payload, meta: { scope: 'local' } })
           // TODO sound, throttled
         },
         formatValueForDisplay: value => {
@@ -79,7 +79,7 @@ class Toolbar extends EventEmitter {
         },
         setValue: (pos, curr) => {
           let payload = curr + (pos * 10)
-          this.store.dispatch({ type: 'TOOLBAR_BRUSH_STROKE_OPACITY_SET', payload })
+          this.store.dispatch({ type: 'TOOLBAR_BRUSH_STROKE_OPACITY_SET', payload, meta: { scope: 'local' } })
         },
         formatValueForDisplay: value => {
           return Math.round(value * 100) + '%'
