@@ -331,8 +331,6 @@ class Toolbar extends EventEmitter {
       for (let draggable of this.draggables) {
         draggable.render()
       }
-      // const brushSizeEl = this.el.querySelector('.toolbar-brush-modifier-controls_size')
-      // brushSizeEl.innerHTML = Math.round(state.toolbar.tools[state.toolbar.activeTool].size)
     }
 
     // prevent perspective guide when WebGL is not available
@@ -340,21 +338,6 @@ class Toolbar extends EventEmitter {
       perspectiveEl.style.display = 'none'
     }
   }
-
-  // onBrushSizePointerDown (event) {
-  //   switch (event.target.dataset.direction) {
-  //     case '+1':
-  //       this.store.dispatch({ type: 'TOOLBAR_BRUSH_SIZE_INC', payload: { fine: true } })
-  //       // this.store.dispatch({ type: 'PLAY_SOUND', payload: 'brush-size-up' }) // TODO
-  //       sfx.playEffect('brush-size-up')
-  //       break
-  //     case '-1':
-  //       this.store.dispatch({ type: 'TOOLBAR_BRUSH_SIZE_DEC', payload: { fine: true } })
-  //       // this.store.dispatch({ type: 'PLAY_SOUND', payload: 'brush-size-down' }) // TODO
-  //       sfx.playEffect('brush-size-down')
-  //       break
-  //   }
-  // }
 
   onButtonOver (event) {
     sfx.rollover()
@@ -390,14 +373,10 @@ class Toolbar extends EventEmitter {
 
 class DraggableText {
     constructor ({ el, getValue, setValue, formatValueForDisplay }) {
-      // this.onPointerDown = this.onPointerDown.bind(this)
       this.onPointerMove = this.onPointerMove.bind(this)
-      // this.onPointerUp = this.onPointerUp.bind(this)
-      // this.onPointerLeave = this.onPointerLeave.bind(this)
-      // this.onFocusBlur = this.onFocusBlur.bind(this)
-      // 
 
       this.el = el
+
       this.getValue = getValue.bind(this)
       this.setValue = setValue.bind(this)
       this.formatValueForDisplay = formatValueForDisplay.bind(this)
@@ -415,12 +394,10 @@ class DraggableText {
         document.removeEventListener('pointermove', this.onPointerMove)
       })
 
-      // // TODO
       // document.addEventListener('pointerleave', event => {
       //   document.removeEventListener('pointermove', this.onPointerMove)
       // })
       // 
-      // // TODO
       // document.addEventListener('blur', event => {
       //   document.removeEventListener('pointermove', this.onPointerMove)
       // })
