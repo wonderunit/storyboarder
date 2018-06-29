@@ -82,7 +82,7 @@ class Toolbar extends EventEmitter {
           this.store.dispatch({ type: 'TOOLBAR_BRUSH_STROKE_OPACITY_SET', payload })
         },
         formatValueForDisplay: value => {
-          return Math.round(value * 100)
+          return Math.round(value * 100) + '%'
         }
       })
     )
