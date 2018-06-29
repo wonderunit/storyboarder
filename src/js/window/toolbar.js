@@ -22,7 +22,6 @@ class Toolbar extends EventEmitter {
     this.onButtonOver = this.onButtonOver.bind(this)
     this.onSwatchUp = this.onSwatchUp.bind(this)
     this.onSwatchDown = this.onSwatchDown.bind(this)
-    this.onBrushSizePointerDown = this.onBrushSizePointerDown.bind(this)
 
     this.attachedCallback(this.el)
 
@@ -33,16 +32,10 @@ class Toolbar extends EventEmitter {
   attachedCallback () {
     const immediateButtons = [...this.el.querySelectorAll('.button:not([id^="toolbar-palette-color"])')]
     const swatchButtons = [...this.el.querySelectorAll('.button[id^="toolbar-palette-color"]')]
-    const brushSizeButtons = [...this.el.querySelectorAll('.toolbar-brush-size-controls_inc, .toolbar-brush-size-controls_dec')]
     const overableControls = [].concat(
       immediateButtons,
-      swatchButtons,
-      brushSizeButtons
+      swatchButtons
     )
-
-    for (let brushSizeButtonEl of brushSizeButtons) {
-      brushSizeButtonEl.addEventListener('pointerdown', this.onBrushSizePointerDown)
-    }
 
     for (let buttonEl of immediateButtons) {
       buttonEl.addEventListener('pointerdown', this.onButtonDown)
@@ -56,6 +49,20 @@ class Toolbar extends EventEmitter {
     for (let el of overableControls) {
       el.addEventListener('pointerenter', this.onButtonOver)
     }
+
+    new DraggableText(
+      // el
+      this.el.querySelector('.toolbar-brush-modifier-controls_size'),
+      // getValue
+      () => {
+        let state = this.store.getState()
+        return state.toolbar.tools[state.toolbar.activeTool].size
+      },
+      // setValue
+      payload => {
+        this.store.dispatch({ type: 'TOOLBAR_BRUSH_SIZE_SET', payload })
+      }
+    )
   }
 
   // TODO cleanup, remove listeners
@@ -298,7 +305,7 @@ class Toolbar extends EventEmitter {
     }
 
     if (state.toolbar.activeTool) {
-      const brushSizeEl = this.el.querySelector('.toolbar-brush-size-controls_val')
+      const brushSizeEl = this.el.querySelector('.toolbar-brush-modifier-controls_size')
       brushSizeEl.innerHTML = Math.round(state.toolbar.tools[state.toolbar.activeTool].size)
     }
 
@@ -308,20 +315,20 @@ class Toolbar extends EventEmitter {
     }
   }
 
-  onBrushSizePointerDown (event) {
-    switch (event.target.dataset.direction) {
-      case '+1':
-        this.store.dispatch({ type: 'TOOLBAR_BRUSH_SIZE_INC', payload: { fine: true } })
-        // this.store.dispatch({ type: 'PLAY_SOUND', payload: 'brush-size-up' }) // TODO
-        sfx.playEffect('brush-size-up')
-        break
-      case '-1':
-        this.store.dispatch({ type: 'TOOLBAR_BRUSH_SIZE_DEC', payload: { fine: true } })
-        // this.store.dispatch({ type: 'PLAY_SOUND', payload: 'brush-size-down' }) // TODO
-        sfx.playEffect('brush-size-down')
-        break
-    }
-  }
+  // onBrushSizePointerDown (event) {
+  //   switch (event.target.dataset.direction) {
+  //     case '+1':
+  //       this.store.dispatch({ type: 'TOOLBAR_BRUSH_SIZE_INC', payload: { fine: true } })
+  //       // this.store.dispatch({ type: 'PLAY_SOUND', payload: 'brush-size-up' }) // TODO
+  //       sfx.playEffect('brush-size-up')
+  //       break
+  //     case '-1':
+  //       this.store.dispatch({ type: 'TOOLBAR_BRUSH_SIZE_DEC', payload: { fine: true } })
+  //       // this.store.dispatch({ type: 'PLAY_SOUND', payload: 'brush-size-down' }) // TODO
+  //       sfx.playEffect('brush-size-down')
+  //       break
+  //   }
+  // }
 
   onButtonOver (event) {
     sfx.rollover()
@@ -353,6 +360,51 @@ class Toolbar extends EventEmitter {
         elRunning.style.display = 'none'
     }
   }
+}
+
+class DraggableText {
+    constructor (el, getValue, setValue) {
+      // this.onPointerDown = this.onPointerDown.bind(this)
+      this.onPointerMove = this.onPointerMove.bind(this)
+      // this.onPointerUp = this.onPointerUp.bind(this)
+      // this.onPointerLeave = this.onPointerLeave.bind(this)
+      // this.onFocusBlur = this.onFocusBlur.bind(this)
+      // 
+
+      this.el = el
+      this.getValue = getValue.bind(this)
+      this.setValue = setValue.bind(this)
+
+      this.anchorX = null
+      this.anchorValue = null
+
+      this.el.addEventListener('pointerdown', event => {
+        this.anchorX = event.clientX
+        this.anchorValue = getValue()
+        document.addEventListener('pointermove', this.onPointerMove)
+      })
+
+      document.addEventListener('pointerup', event => {
+        document.removeEventListener('pointermove', this.onPointerMove)
+      })
+
+      // // TODO
+      // document.addEventListener('pointerleave', event => {
+      //   document.removeEventListener('pointermove', this.onPointerMove)
+      // })
+      // 
+      // // TODO
+      // document.addEventListener('blur', event => {
+      //   document.removeEventListener('pointermove', this.onPointerMove)
+      // })
+    }
+    onPointerMove (event) {
+      let pos = (event.clientX - this.anchorX) / document.body.offsetWidth
+
+      this.setValue(this.anchorValue + (pos * 64))
+
+      // TODO sound, throttled
+    }
 }
 
 module.exports = Toolbar

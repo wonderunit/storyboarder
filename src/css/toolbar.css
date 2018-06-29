@@ -348,34 +348,28 @@
 /*
  * brush size controls
  */
-.toolbar-brush-size-controls {
+.toolbar-brush-modifier-controls {
   position: absolute;
-  margin-top: 48px;
+  margin-top: 52px;
   margin-left: -8px;
   width: 60px;
   display: flex;
   justify-content: space-between;
+  -webkit-app-region: no-drag;
 }
-.toolbar-brush-size-controls_dec,
-.toolbar-brush-size-controls_val,
-.toolbar-brush-size-controls_inc {
+.toolbar-brush-modifier-controls_size {
   position: relative;
-  padding: 8px 0 0 0;
+  padding: 8px;
   font-size: 16px;
   line-height: 1;
-  height: 22px;
   color: #666;
   text-align: center;
   width: auto;
+  cursor: ew-resize;
 }
-
-.toolbar-brush-size-controls_dec,
-.toolbar-brush-size-controls_inc {
-  line-height: 16px;
-  font-size: 12px;
-  width: 16px;
-  color: #444;
-  cursor: pointer;
+#toolbar.with-workspace-small .toolbar-brush-modifier-controls {
+  margin-top: 36px;
+  margin-left: 0;
 }
 
 .toolbar-pomodoro-rest {
@@ -396,12 +390,6 @@
   color: #666;
   margin-left: 7px;
 }
-
-#toolbar.with-workspace-small .toolbar-brush-size-controls {
-  margin-top: 36px;
-  margin-left: -12px;
-}
-
 
 
 /* uncomment for a helpful spacing debugger */

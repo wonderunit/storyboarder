@@ -103,6 +103,11 @@ const updateBrushSize = (size, direction, fine = false) => {
   
   return Math.min(Math.max(size, min), max)
 }
+const setBrushSize = size => {
+  let min = 1
+  let max = 256
+  return Math.min(Math.max(size, min), max)
+}
 
 const toolbar = (state = initialState, action) => {
   switch (action.type) {
@@ -186,6 +191,18 @@ const toolbar = (state = initialState, action) => {
           [state.activeTool]: {
             ...state.tools[state.activeTool],
             size: updateBrushSize(state.tools[state.activeTool].size, -1, action.payload.fine)
+          }
+        }
+      }
+
+    case 'TOOLBAR_BRUSH_SIZE_SET':
+      return {
+        ...state,
+        tools: {
+          ...state.tools,
+          [state.activeTool]: {
+            ...state.tools[state.activeTool],
+            size: setBrushSize(action.payload)
           }
         }
       }
