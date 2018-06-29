@@ -180,7 +180,7 @@ class StoryboarderSketchPane extends EventEmitter {
       // being 2x the expected size when running in
       // 200% DPI scaling on Windows
       //
-      // Apparently, getClientBoundingRect won't work because of zooming.
+      // Apparently, getBoundingClientRect won't work because of zooming.
       //
       // offsetWidth/offsetHeight are our best bet.
       //
