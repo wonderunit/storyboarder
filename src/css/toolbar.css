@@ -351,17 +351,19 @@
 .toolbar-brush-modifier-controls {
   position: absolute;
   margin-top: 52px;
-  margin-left: -8px;
-  width: 60px;
   display: flex;
+
+  width: 66px;
+  margin-left: -11px;
   justify-content: space-between;
+
   -webkit-app-region: no-drag;
 }
 .toolbar-brush-modifier-controls_size,
 .toolbar-brush-modifier-controls_stroke-opacity {
   position: relative;
-  padding: 8px;
-  font-size: 16px;
+  padding: 8px 4px;
+  font-size: 14px;
   line-height: 1;
   color: #666;
   text-align: center;
@@ -371,7 +373,16 @@
 #toolbar.with-workspace-small .toolbar-brush-modifier-controls {
   margin-top: 36px;
   margin-left: 0;
+  width: 80px;
+  justify-content: flex-start;
 }
+#toolbar.with-workspace-small .toolbar-brush-modifier-controls_size {
+  width: 25px;
+}
+#toolbar.with-workspace-small .toolbar-brush-modifier-controls_stroke-opacity {
+  padding: 8px;
+}
+
 
 .toolbar-pomodoro-rest {
   width: 85px;
