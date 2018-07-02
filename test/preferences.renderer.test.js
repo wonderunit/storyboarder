@@ -34,6 +34,9 @@ describe('toolbar preferences (renderer)', () => {
     // pencil size same
     assert.equal(toolbarState.tools.pencil.size, 4)
 
+    // defaults to 1
+    assert.equal(toolbarState.tools.pencil.strokeOpacity, 1)
+
     // toolbar eraser should have a default color
     assert.equal(toolbarState.tools.eraser.color, 0xffffff)
 
@@ -53,7 +56,13 @@ describe('toolbar preferences (renderer)', () => {
     assert.notEqual(toolbarState.tools['pencil'].color, 0xff0000)
 
     // change its color to red
-    toolbarState = toolbarReducer(toolbarState, { type: 'TOOLBAR_TOOL_SET', payload: { color: 0xff0000 } })
+    toolbarState = toolbarReducer(toolbarState, {
+      type: 'TOOLBAR_TOOL_SET',
+      payload: {
+        color: 0xff0000,
+        strokeOpacity: 0.5
+      }
+    })
 
     // set captions to true
     toolbarState = toolbarReducer(toolbarState, { type: 'TOOLBAR_CAPTIONS_TOGGLE' })
@@ -71,6 +80,9 @@ describe('toolbar preferences (renderer)', () => {
 
     // preferences should now have a red pencil
     assert.equal(preferencesState.toolbar.tools['pencil'].color, 0xff0000)
+
+    // preferences store strokeOpacity
+    assert.equal(preferencesState.toolbar.tools['pencil'].strokeOpacity, 0.5)
 
     // preferences should now have captions enabled
     assert.equal(preferencesState.toolbar.captions, true)

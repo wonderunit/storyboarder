@@ -120,7 +120,9 @@ class StoryboarderSketchPane extends EventEmitter {
         this.sketchPane.brush = this.sketchPane.brushes[tool.name]
         this.sketchPane.brushColor = tool.color
         this.sketchPane.brushSize = tool.size
-        this.sketchPane.brushOpacity = tool.opacity
+
+        this.sketchPane.nodeOpacityScale = tool.nodeOpacity
+        this.sketchPane.strokeOpacityScale = tool.strokeOpacity
 
         // TODO move to a reducer?
         // if we're not erasing ...
@@ -178,7 +180,7 @@ class StoryboarderSketchPane extends EventEmitter {
       // being 2x the expected size when running in
       // 200% DPI scaling on Windows
       //
-      // Apparently, getClientBoundingRect won't work because of zooming.
+      // Apparently, getBoundingClientRect won't work because of zooming.
       //
       // offsetWidth/offsetHeight are our best bet.
       //

@@ -203,12 +203,12 @@
   }
   60% {
     opacity: 1;
-    transform: scale(1.05,1.05);
+    transform: scale(1.1,1.1);
   }
-  /* 85% {
+  85% {
     opacity: 1;
-    transform: scale(0.98,0.98);
-  } */
+    transform: scale(0.9,0.9);
+  }
   100% {
     opacity: 1;
     transform: scale(1,1);
