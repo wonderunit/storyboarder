@@ -280,7 +280,7 @@ const load = async (event, args) => {
       // see: https://github.com/wonderunit/storyboarder/issues/1206
       //
       // construct a unique set of keys including the one JUST intercepted
-      let pressedKeys = [...new Set([keytracker.pressed(), input.key])]
+      let pressedKeys = [...new Set([...keytracker.pressed(), input.key])]
       //
       // intercept: New Board (IPC: newBoard)
       if (isCommandPressed('menu:boards:new-board', pressedKeys)) {
