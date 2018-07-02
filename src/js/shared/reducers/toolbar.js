@@ -223,7 +223,7 @@ const toolbar = (state = initialState, action) => {
           ...state.tools,
           [state.activeTool]: {
             ...state.tools[state.activeTool],
-            strokeOpacity: Math.min(Math.max(action.payload, 0), 1)
+            strokeOpacity: Math.min(Math.max(action.payload, 0.05), 1)
           }
         }
       }
