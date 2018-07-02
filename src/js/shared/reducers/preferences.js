@@ -3,31 +3,38 @@ const initialState = {
     tools: {
       'light-pencil': {
         color: undefined,
-        palette: undefined
+        palette: undefined,
+        strokeOpacity: undefined
       },
       'brush': {
         color: undefined,
-        palette: undefined
+        palette: undefined,
+        strokeOpacity: undefined
       },
       'tone': {
         color: undefined,
-        palette: undefined
+        palette: undefined,
+        strokeOpacity: undefined
       },
       'pencil': {
         color: undefined,
-        palette: undefined
+        palette: undefined,
+        strokeOpacity: undefined
       },
       'pen': {
         color: undefined,
-        palette: undefined
+        palette: undefined,
+        strokeOpacity: undefined
       },
       'note-pen': {
         color: undefined,
-        palette: undefined
+        palette: undefined,
+        strokeOpacity: undefined
       },
       'eraser': {
         color: undefined,
-        palette: undefined
+        palette: undefined,
+        strokeOpacity: undefined
       }
     },
     // guides: {
@@ -49,14 +56,20 @@ const preferences = (state = initialState, action) => {
       for (let name of Object.keys(initialState.toolbar.tools)) {
         // if we were given new values
         if (action.payload.tools[name]) {
-          // copy the color and palette only
+          // copy only the color, palette, and strokeOpacity
           tools[name] = {
+
             color: action.payload.tools[name].color != null
               ? action.payload.tools[name].color
               : initialState.toolbar.tools[name].color,
+
             palette: action.payload.tools[name].palette != null
               ? action.payload.tools[name].palette
-              : initialState.toolbar.tools[name].palette
+              : initialState.toolbar.tools[name].palette,
+
+            strokeOpacity: action.payload.tools[name].strokeOpacity != null
+              ? action.payload.tools[name].strokeOpacity
+              : initialState.toolbar.tools[name].strokeOpacity
           }
         } else {
           // otherwise, use the old value
