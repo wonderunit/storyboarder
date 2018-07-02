@@ -66,6 +66,10 @@ const defaultKeyMap = {
   "menu:view:toggle-full-screen": "F11",
   "menu:view:toggle-developer-tools": "Alt+Command+i",
 
+  "menu:view:zoom-reset": "CommandOrControl+0",
+  "menu:view:zoom-in": "CommandOrControl+Plus",
+  "menu:view:zoom-out": "CommandOrControl+-",
+
   "menu:window:minimize": "CommandOrControl+m",
   "menu:window:close": "CommandOrControl+w",
   
