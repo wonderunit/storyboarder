@@ -423,6 +423,34 @@ class StoryboarderSketchPane extends EventEmitter {
   clearLayerDirty (index) {
     this.sketchPane.clearLayerDirty(index)
   }
+  zoomDelta (delta) {
+    this.sketchPane.anchor = new PIXI.Point(
+      this.sketchPane.cursor.lastPointer.x - this.sketchPane.viewClientRect.left,
+      this.sketchPane.cursor.lastPointer.y - this.sketchPane.viewClientRect.top
+    )
+    this.sketchPane.zoom = Math.min(Math.max(this.sketchPane.zoom + delta, 0.75), 16)
+    this.sketchPane.resize(
+      this.sketchPane.app.renderer.width,
+      this.sketchPane.app.renderer.height
+    )
+  }
+  zoomCenter (value) {
+    // this.sketchPane.anchor = new PIXI.Point(
+    //   this.sketchPane.app.renderer.width / 2,
+    //   this.sketchPane.app.renderer.height / 2
+    // )
+    this.sketchPane.anchor = null
+    this.sketchPane.zoom = value
+    this.sketchPane.resize(
+      this.sketchPane.app.renderer.width,
+      this.sketchPane.app.renderer.height
+    )
+    // re-center
+    // this.sketchPane.sketchPaneContainer.pivot = new PIXI.Point(
+    //   this.sketchPane.width / 2,
+    //   this.sketchPane.height / 2
+    // )
+  }
 
   shouldWarnAboutFps () {
     return (

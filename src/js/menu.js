@@ -626,15 +626,24 @@ AppMenu.View = () => ({
     },
     {
       label: 'Actual Size',
-      accelerator: keystrokeFor("menu:view:zoom-reset")
+      accelerator: keystrokeFor("menu:view:zoom-reset"),
+      click (item, focusedWindow, event) {
+        ipcRenderer.send('zoomReset')
+      }
     },
     {
       label: 'Zoom In',
-      accelerator: keystrokeFor("menu:view:zoom-in")
+      accelerator: keystrokeFor("menu:view:zoom-in"),
+      click (item, focusedWindow, event) {
+        ipcRenderer.send('zoomIn')
+      }
     },
     {
       label: 'Zoom Out',
-      accelerator: keystrokeFor("menu:view:zoom-out")
+      accelerator: keystrokeFor("menu:view:zoom-out"),
+      click (item, focusedWindow, event) {
+        ipcRenderer.send('zoomOut')
+      }
     }
   ]
 })

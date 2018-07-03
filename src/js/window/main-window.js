@@ -6555,6 +6555,16 @@ ipcRenderer.on('revealShotGenerator', value => {
   })
 })
 
+ipcRenderer.on('zoomReset', value => {
+  storyboarderSketchPane.zoomCenter(1)
+})
+ipcRenderer.on('zoomIn', value => {
+  storyboarderSketchPane.zoomDelta(+0.25)
+})
+ipcRenderer.on('zoomOut', value => {
+  storyboarderSketchPane.zoomDelta(-0.25)
+})
+
 const log = opt => ipcRenderer.send('log', opt)
 
 if (prefsModule.getPrefs().enableDiagnostics) {

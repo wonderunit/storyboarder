@@ -1317,3 +1317,10 @@ ipcMain.on('signInSuccess', (event, response) => {
 
 ipcMain.on('revealShotGenerator',
   event => mainWindow.webContents.send('revealShotGenerator'))
+
+ipcMain.on('zoomReset',
+  event => mainWindow.webContents.send('zoomReset'))
+ipcMain.on('zoomIn',
+  event => mainWindow.webContents.send('zoomIn'))
+ipcMain.on('zoomOut',
+  event => mainWindow.webContents.send('zoomOut'))
