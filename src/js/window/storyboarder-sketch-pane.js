@@ -614,7 +614,7 @@ class DrawingStrategy {
   }
 
   _onWheel (e) {
-    if (!e.shiftKey) {
+    if (e.shiftKey) {
       // zoom
       let delta = e.deltaY / 100
 
