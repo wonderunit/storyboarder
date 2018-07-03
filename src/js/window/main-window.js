@@ -335,26 +335,31 @@ const load = async (event, args) => {
         }
       }
 
-      if (isCommandPressed('menu:view:zoom-reset', pressedKeys)) {
-        console.log('zoom reset')
-        win.webContents.setIgnoreMenuShortcuts(true)
-        event.preventDefault()
-        return
-      }
-
-      if (isCommandPressed('menu:view:zoom-in', pressedKeys)) {
-        console.log('zoom in')
-        win.webContents.setIgnoreMenuShortcuts(true)
-        event.preventDefault()
-        return
-      }
-
-      if (isCommandPressed('menu:view:zoom-out', pressedKeys)) {
-        console.log('zoom out')
-        win.webContents.setIgnoreMenuShortcuts(true)
-        event.preventDefault()
-        return
-      }
+      // commented out. was double-triggering :/
+      //
+      // if (isCommandPressed('menu:view:zoom-reset', pressedKeys)) {
+      //   storyboarderSketchPane.zoomCenter(1)
+      // 
+      //   win.webContents.setIgnoreMenuShortcuts(true)
+      //   event.preventDefault()
+      //   return
+      // }
+      // 
+      // if (isCommandPressed('menu:view:zoom-in', pressedKeys)) {
+      //   storyboarderSketchPane.zoomDelta(+0.25)
+      // 
+      //   win.webContents.setIgnoreMenuShortcuts(true)
+      //   event.preventDefault()
+      //   return
+      // }
+      // 
+      // if (isCommandPressed('menu:view:zoom-out', pressedKeys)) {
+      //   storyboarderSketchPane.zoomDelta(-0.25)
+      // 
+      //   win.webContents.setIgnoreMenuShortcuts(true)
+      //   event.preventDefault()
+      //   return
+      // }
 
       // if we're in text input mode, and have not pressed Control or Meta
       if (textInputMode && !(input.control || input.meta)) {
