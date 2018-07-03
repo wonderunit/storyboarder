@@ -462,6 +462,7 @@ class DrawingStrategy {
     this._onPointerMove = this._onPointerMove.bind(this)
     this._onPointerUp = this._onPointerUp.bind(this)
     this._onKeyUp = this._onKeyUp.bind(this)
+    this._onWheel = this._onWheel.bind(this)
   }
 
   startup () {
@@ -472,8 +473,9 @@ class DrawingStrategy {
     document.addEventListener('pointermove', this._onPointerMove)
     document.addEventListener('pointerup', this._onPointerUp)
     window.addEventListener('keyup', this._onKeyUp)
-  }
 
+    this.context.sketchPaneDOMElement.addEventListener('wheel', this._onWheel)
+  }
   shutdown () {
     // if we ever needed to shutdown DURING drawing, this would be useful
     // if (this.context.sketchPane.isDrawing()) {
@@ -488,6 +490,8 @@ class DrawingStrategy {
     document.removeEventListener('pointermove', this._onPointerMove)
     document.removeEventListener('pointerup', this._onPointerUp)
     window.removeEventListener('keyup', this._onKeyUp)
+
+    this.context.sketchPaneDOMElement.removeEventListener('wheel', this._onWheel)
 
     this.context.sketchPane.app.view.style.cursor = 'auto'
 
@@ -607,6 +611,37 @@ class DrawingStrategy {
 
   _onKeyUp (e) {
     this._updateQuickErase(e)
+  }
+
+  _onWheel (e) {
+    if (!e.shiftKey) {
+      // zoom
+      let delta = e.deltaY / 100
+
+      this.context.sketchPane.anchor = new PIXI.Point(
+        e.x - this.context.sketchPane.viewClientRect.left,
+        e.y - this.context.sketchPane.viewClientRect.top
+      )
+      this.context.sketchPane.zoom = Math.min(Math.max(this.context.sketchPane.zoom + delta, 0.75), 16)
+      this.context.sketchPane.cursor.renderCursor(e)
+      this.context.sketchPane.resize(this.context.sketchPane.app.renderer.width, this.context.sketchPane.app.renderer.height)
+    } else {
+      // pan
+      if (!this.context.sketchPane.anchor) {
+        this.context.sketchPane.anchor = new PIXI.Point(
+          this.context.sketchPane.sketchPaneContainer.x,
+          this.context.sketchPane.sketchPaneContainer.y
+        )
+      }
+      this.context.sketchPane.anchor.x -= e.deltaX
+      this.context.sketchPane.anchor.y -= e.deltaY
+
+      this.context.sketchPane.sketchPaneContainer.position.set(
+        this.context.sketchPane.anchor.x,
+        this.context.sketchPane.anchor.y
+      )
+      this.context.sketchPane.cursor.renderCursor(e)
+    }
   }
 
   _updateQuickErase (e) {
