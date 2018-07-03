@@ -435,21 +435,12 @@ class StoryboarderSketchPane extends EventEmitter {
     )
   }
   zoomCenter (value) {
-    // this.sketchPane.anchor = new PIXI.Point(
-    //   this.sketchPane.app.renderer.width / 2,
-    //   this.sketchPane.app.renderer.height / 2
-    // )
     this.sketchPane.anchor = null
     this.sketchPane.zoom = value
     this.sketchPane.resize(
       this.sketchPane.app.renderer.width,
       this.sketchPane.app.renderer.height
     )
-    // re-center
-    // this.sketchPane.sketchPaneContainer.pivot = new PIXI.Point(
-    //   this.sketchPane.width / 2,
-    //   this.sketchPane.height / 2
-    // )
   }
 
   shouldWarnAboutFps () {
