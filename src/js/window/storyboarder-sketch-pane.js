@@ -166,7 +166,8 @@ class StoryboarderSketchPane extends EventEmitter {
       drawing: new DrawingStrategy(this),
       moving: new MovingStrategy(this),
       scaling: new ScalingStrategy(this),
-      locked: new LockedStrategy(this)
+      locked: new LockedStrategy(this),
+      panning: new PanningStrategy(this)
     }
 
     this.store.dispatch({ type: 'TOOLBAR_MODE_SET', payload: 'drawing', meta: { scope: 'local' } })
@@ -311,6 +312,12 @@ class StoryboarderSketchPane extends EventEmitter {
       if (this.store.getState().toolbar.mode === 'moving') {
         sfx.playEffect('metal')
       }
+    } else if (e.shiftKey) {
+      this.store.dispatch({
+        type: 'TOOLBAR_MODE_SET',
+        payload: 'panning',
+        meta: { scope: 'local' }
+      })
     }
   }
 
@@ -626,22 +633,6 @@ class DrawingStrategy {
     let delta = e.deltaY / 100
     let scale = Math.min(Math.max(this.context.sketchPane.zoom + delta, 0.25), 5)
     this.context.zoomAt(e, scale)
-
-    // // pan
-    // if (!this.context.sketchPane.anchor) {
-    //   this.context.sketchPane.anchor = new PIXI.Point(
-    //     this.context.sketchPane.sketchPaneContainer.x,
-    //     this.context.sketchPane.sketchPaneContainer.y
-    //   )
-    // }
-    // this.context.sketchPane.anchor.x -= e.deltaX
-    // this.context.sketchPane.anchor.y -= e.deltaY
-    // 
-    // this.context.sketchPane.sketchPaneContainer.position.set(
-    //   this.context.sketchPane.anchor.x,
-    //   this.context.sketchPane.anchor.y
-    // )
-    // this.context.sketchPane.cursor.renderCursor(e)
   }
 
   _updateQuickErase (e) {
@@ -962,6 +953,102 @@ class LockedStrategy {
 
   _onDblClick (event) {
     this.context.emit('requestUnlock')
+  }
+}
+
+class PanningStrategy {
+  constructor (context) {
+    this.context = context
+    this.name = 'Panning'
+
+    this._onPointerDown = this._onPointerDown.bind(this)
+    this._onPointerMove = this._onPointerMove.bind(this)
+    this._onPointerUp = this._onPointerUp.bind(this)
+
+    this._onWindowBlur = this._onWindowBlur.bind(this)
+  }
+
+  startup () {
+    this.state = {
+      // down coords
+      starting: { x: null, y: null },
+      // move coords
+      position: { x: null, y: null },
+      // dest
+      dest: { x: null, y: null },
+      // dirty?
+      moved: false
+    }
+
+    this.context.sketchPaneDOMElement.addEventListener('pointerdown', this._onPointerDown)
+    this.context.sketchPaneDOMElement.addEventListener('pointerup', this._onPointerUp)
+
+    window.addEventListener('blur', this._onWindowBlur)
+
+    this.context.sketchPane.app.view.style.cursor = 'auto'
+    this.context.sketchPane.cursor.setEnabled(false)
+  }
+
+  shutdown () {
+    this.context.sketchPaneDOMElement.removeEventListener('pointerdown', this._onPointerDown)
+    this.context.sketchPaneDOMElement.removeEventListener('pointermove', this._onPointerMove)
+    this.context.sketchPaneDOMElement.removeEventListener('pointerup', this._onPointerUp)
+
+    window.removeEventListener('blur', this._onWindowBlur)
+
+    this.context.sketchPane.app.view.style.cursor = 'auto'
+    this.context.sketchPane.cursor.setEnabled(true)
+  }
+
+  _onPointerDown (e) {
+    this.state.dest.x = this.context.sketchPane.sketchPaneContainer.x
+    this.state.dest.y = this.context.sketchPane.sketchPaneContainer.y
+    this.state.starting = this.context.sketchPane.localizePoint(e)
+    this.state.moved = false
+    this.context.sketchPaneDOMElement.addEventListener('pointermove', this._onPointerMove)
+  }
+
+  _onPointerMove (e) {
+    this.state.position = this.context.sketchPane.localizePoint(e)
+
+    this.state.dest.x += this.state.position.x - this.state.starting.x,
+    this.state.dest.y += this.state.position.y - this.state.starting.y
+
+    this.state.moved = true
+
+    // render change
+    this._render()
+
+    this.context.sketchPane.cursor.renderCursor(e)
+
+    // be sure to takeover the cursor again
+    this.context.sketchPane.app.view.style.cursor = 'auto'
+  }
+
+  _onPointerUp (e) {
+    this.context.sketchPaneDOMElement.removeEventListener('pointermove', this._onPointerMove)
+  }
+
+  _onWindowBlur () {
+    // attempt to gracefully transition back to drawing
+    this.context.store.dispatch({ type: 'TOOLBAR_MODE_SET', payload: 'drawing', meta: { scope: 'local' } })
+  }
+
+  _render () {
+    // pan
+    if (!this.context.sketchPane.anchor) {
+      this.context.sketchPane.anchor = new PIXI.Point(
+        this.context.sketchPane.sketchPaneContainer.x,
+        this.context.sketchPane.sketchPaneContainer.y
+      )
+    }
+    this.context.sketchPane.anchor.x = this.state.dest.x
+    this.context.sketchPane.anchor.y = this.state.dest.y
+    
+    this.context.sketchPane.sketchPaneContainer.position.set(
+      this.context.sketchPane.anchor.x,
+      this.context.sketchPane.anchor.y
+    )
   }
 }
 
