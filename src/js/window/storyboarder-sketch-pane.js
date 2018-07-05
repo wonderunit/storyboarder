@@ -312,7 +312,7 @@ class StoryboarderSketchPane extends EventEmitter {
       if (this.store.getState().toolbar.mode === 'moving') {
         sfx.playEffect('metal')
       }
-    } else if (e.shiftKey) {
+    } else if (this.isCommandPressed('drawing:pan-mode')) {
       this.store.dispatch({
         type: 'TOOLBAR_MODE_SET',
         payload: 'panning',

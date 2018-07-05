@@ -8,6 +8,7 @@ const defaultKeyMap = {
   "drawing:move-mode": "CommandOrControl",
   "drawing:quick-erase-modifier": "Alt",
   "drawing:exit-current-mode": "Escape",
+  "drawing:pan-mode": "Shift",
 
   "menu:file:open": "CommandOrControl+o",
   "menu:file:save": "CommandOrControl+s",
