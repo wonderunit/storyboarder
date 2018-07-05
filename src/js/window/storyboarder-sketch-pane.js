@@ -614,34 +614,32 @@ class DrawingStrategy {
   }
 
   _onWheel (e) {
-    if (e.shiftKey) {
-      // zoom
-      let delta = e.deltaY / 100
+    // zoom
+    let delta = e.deltaY / 100
 
-      this.context.sketchPane.anchor = new PIXI.Point(
-        e.x - this.context.sketchPane.viewClientRect.left,
-        e.y - this.context.sketchPane.viewClientRect.top
-      )
-      this.context.sketchPane.zoom = Math.min(Math.max(this.context.sketchPane.zoom + delta, 0.75), 16)
-      this.context.sketchPane.cursor.renderCursor(e)
-      this.context.sketchPane.resize(this.context.sketchPane.app.renderer.width, this.context.sketchPane.app.renderer.height)
-    } else {
-      // pan
-      if (!this.context.sketchPane.anchor) {
-        this.context.sketchPane.anchor = new PIXI.Point(
-          this.context.sketchPane.sketchPaneContainer.x,
-          this.context.sketchPane.sketchPaneContainer.y
-        )
-      }
-      this.context.sketchPane.anchor.x -= e.deltaX
-      this.context.sketchPane.anchor.y -= e.deltaY
+    this.context.sketchPane.anchor = new PIXI.Point(
+      e.x - this.context.sketchPane.viewClientRect.left,
+      e.y - this.context.sketchPane.viewClientRect.top
+    )
+    this.context.sketchPane.zoom = Math.min(Math.max(this.context.sketchPane.zoom + delta, 0.75), 16)
+    this.context.sketchPane.cursor.renderCursor(e)
+    this.context.sketchPane.resize(this.context.sketchPane.app.renderer.width, this.context.sketchPane.app.renderer.height)
 
-      this.context.sketchPane.sketchPaneContainer.position.set(
-        this.context.sketchPane.anchor.x,
-        this.context.sketchPane.anchor.y
-      )
-      this.context.sketchPane.cursor.renderCursor(e)
-    }
+    // // pan
+    // if (!this.context.sketchPane.anchor) {
+    //   this.context.sketchPane.anchor = new PIXI.Point(
+    //     this.context.sketchPane.sketchPaneContainer.x,
+    //     this.context.sketchPane.sketchPaneContainer.y
+    //   )
+    // }
+    // this.context.sketchPane.anchor.x -= e.deltaX
+    // this.context.sketchPane.anchor.y -= e.deltaY
+    // 
+    // this.context.sketchPane.sketchPaneContainer.position.set(
+    //   this.context.sketchPane.anchor.x,
+    //   this.context.sketchPane.anchor.y
+    // )
+    // this.context.sketchPane.cursor.renderCursor(e)
   }
 
   _updateQuickErase (e) {
