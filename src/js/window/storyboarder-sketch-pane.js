@@ -1035,6 +1035,8 @@ class PanningStrategy {
   }
 
   _render () {
+    if (this.context.sketchPane.zoom <= 1) return
+
     // pan
     if (!this.context.sketchPane.anchor) {
       this.context.sketchPane.anchor = new PIXI.Point(
