@@ -3630,6 +3630,9 @@ function * loadSketchPaneLayers (signal, board, indexToLoad) {
   // show the poster frame
   let hasPosterFrame = yield loadPosterFrame(board)
 
+  // reset zoom/pan
+  storyboarderSketchPane.zoomCenter(1)
+
   if (!hasPosterFrame) renderFakePosterFrame()
 
   // HACK yield to get key input and cancel if necessary
