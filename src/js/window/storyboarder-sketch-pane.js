@@ -489,7 +489,7 @@ class DrawingStrategy {
     document.addEventListener('pointerup', this._onPointerUp)
     window.addEventListener('keyup', this._onKeyUp)
 
-    this.context.sketchPaneDOMElement.addEventListener('wheel', this._onWheel)
+    this.context.sketchPaneDOMElement.addEventListener('wheel', this._onWheel, { passive: true })
   }
   shutdown () {
     // if we ever needed to shutdown DURING drawing, this would be useful
