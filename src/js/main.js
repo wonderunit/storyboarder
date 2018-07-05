@@ -142,6 +142,17 @@ app.on('ready', async () => {
     payload
   })
 
+  // what changed?
+  let a = payload
+  let b = store.getState().entities.keymap
+  let keys = new Set([...Object.keys(a), ...Object.keys(b)])
+  for (let key of keys) {
+    if (a[key] !== b[key]) {
+      console.log(key, 'changed from', a[key], 'to', b[key])
+      shouldOverwrite = true
+    }
+  }
+
   if (shouldOverwrite) {
     console.log('Writing', keymapPath)
     fs.writeFileSync(keymapPath, JSON.stringify(store.getState().entities.keymap, null, 2) + '\n')
