@@ -423,16 +423,20 @@ class StoryboarderSketchPane extends EventEmitter {
   clearLayerDirty (index) {
     this.sketchPane.clearLayerDirty(index)
   }
-  zoomDelta (delta) {
+  zoomAtCursor (scale) {
+    this.zoomAt(this.sketchPane.cursor.lastPointer, scale)
+  }
+  zoomAt (point, scale) {
     this.sketchPane.anchor = new PIXI.Point(
-      this.sketchPane.cursor.lastPointer.x - this.sketchPane.viewClientRect.left,
-      this.sketchPane.cursor.lastPointer.y - this.sketchPane.viewClientRect.top
+      point.x - this.sketchPane.viewClientRect.left,
+      point.y - this.sketchPane.viewClientRect.top
     )
-    this.sketchPane.zoom = Math.min(Math.max(this.sketchPane.zoom + delta, 0.75), 16)
+    this.sketchPane.zoom = scale
     this.sketchPane.resize(
       this.sketchPane.app.renderer.width,
       this.sketchPane.app.renderer.height
     )
+    this.sketchPane.cursor.renderCursor(this.sketchPane.cursor.lastPointer)
   }
   zoomCenter (value) {
     this.sketchPane.anchor = null
@@ -616,14 +620,8 @@ class DrawingStrategy {
   _onWheel (e) {
     // zoom
     let delta = e.deltaY / 100
-
-    this.context.sketchPane.anchor = new PIXI.Point(
-      e.x - this.context.sketchPane.viewClientRect.left,
-      e.y - this.context.sketchPane.viewClientRect.top
-    )
-    this.context.sketchPane.zoom = Math.min(Math.max(this.context.sketchPane.zoom + delta, 0.75), 16)
-    this.context.sketchPane.cursor.renderCursor(e)
-    this.context.sketchPane.resize(this.context.sketchPane.app.renderer.width, this.context.sketchPane.app.renderer.height)
+    let scale = Math.min(Math.max(this.context.sketchPane.zoom + delta, 0.25), 5)
+    this.context.zoomAt(e, scale)
 
     // // pan
     // if (!this.context.sketchPane.anchor) {
