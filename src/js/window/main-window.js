@@ -280,7 +280,7 @@ const load = async (event, args) => {
       // see: https://github.com/wonderunit/storyboarder/issues/1206
       //
       // construct a unique set of keys including the one JUST intercepted
-      let pressedKeys = [...new Set([keytracker.pressed(), input.key])]
+      let pressedKeys = [...new Set([...keytracker.pressed(), input.key])]
       //
       // intercept: New Board (IPC: newBoard)
       if (isCommandPressed('menu:boards:new-board', pressedKeys)) {
@@ -3630,6 +3630,10 @@ function * loadSketchPaneLayers (signal, board, indexToLoad) {
   // show the poster frame
   let hasPosterFrame = yield loadPosterFrame(board)
 
+  // reset zoom/pan
+  zoomIndex = ZOOM_CENTER
+  storyboarderSketchPane.zoomCenter(ZOOM_LEVELS[zoomIndex])
+
   if (!hasPosterFrame) renderFakePosterFrame()
 
   // HACK yield to get key input and cancel if necessary
@@ -6527,6 +6531,51 @@ ipcRenderer.on('revealShotGenerator', value => {
   document.querySelector('#shot-generator-container').scrollIntoView({
     behavior: 'smooth'
   })
+})
+
+const ZOOM_LEVELS = [
+  .25,
+  .33,
+  .50,
+  .60,
+  1.00,
+  2.00,
+  3.00,
+  4.00,
+  5.00,
+  6.00,
+  7.00,
+  8.00
+]
+const ZOOM_CENTER = 4
+let zoomIndex = ZOOM_CENTER
+// via https://stackoverflow.com/a/25087661
+const closest = (arr, target) => {
+   for (let i = 1; i < arr.length; i++) {
+    // found larger
+    if (arr[i] > target) {
+      let p = arr[i - 1]
+      let c = arr[i]
+      // return closest of prev and curr
+      return Math.abs( p - target ) < Math.abs( c - target ) ? p : c
+    }
+  }
+  // none larger
+  return arr[arr.length - 1]
+}
+ipcRenderer.on('zoomReset', value => {
+  zoomIndex = ZOOM_CENTER
+  storyboarderSketchPane.zoomCenter(ZOOM_LEVELS[zoomIndex])
+})
+ipcRenderer.on('zoomIn', value => {
+  let zoomIndex = ZOOM_LEVELS.indexOf(closest(ZOOM_LEVELS, storyboarderSketchPane.sketchPane.zoom))
+  zoomIndex = Math.min(ZOOM_LEVELS.length - 1, zoomIndex + 1)
+  storyboarderSketchPane.zoomAtCursor(ZOOM_LEVELS[zoomIndex])
+})
+ipcRenderer.on('zoomOut', value => {
+  let zoomIndex = ZOOM_LEVELS.indexOf(closest(ZOOM_LEVELS, storyboarderSketchPane.sketchPane.zoom))
+  zoomIndex = Math.max(0, zoomIndex - 1)
+  storyboarderSketchPane.zoomAtCursor(ZOOM_LEVELS[zoomIndex])
 })
 
 const log = opt => ipcRenderer.send('log', opt)

@@ -78,6 +78,14 @@ const findMatchingCommandsByKeys = (keymap, pressedKeys) => {
           match = false
           break
         }
+      } else if (key === 'Plus') {
+        // accept '=' or '+' for 'Plus'
+        // but if neither found, this is not match
+        if ( ! (pressedKeys.includes('=') || pressedKeys.includes('+')) ) {
+          match = false
+          break
+        }
+
       } else if (!pressedKeys.includes(key)) {
         match = false
         break
