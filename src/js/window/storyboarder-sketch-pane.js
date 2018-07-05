@@ -427,10 +427,14 @@ class StoryboarderSketchPane extends EventEmitter {
     this.zoomAt(this.sketchPane.cursor.lastPointer, scale)
   }
   zoomAt (point, scale) {
-    this.sketchPane.anchor = new PIXI.Point(
-      point.x - this.sketchPane.viewClientRect.left,
-      point.y - this.sketchPane.viewClientRect.top
-    )
+    if (scale > 1) {
+      this.sketchPane.anchor = new PIXI.Point(
+        point.x - this.sketchPane.viewClientRect.left,
+        point.y - this.sketchPane.viewClientRect.top
+      )
+    } else {
+      this.sketchPane.anchor = null
+    }
     this.sketchPane.zoom = scale
     this.sketchPane.resize(
       this.sketchPane.app.renderer.width,
