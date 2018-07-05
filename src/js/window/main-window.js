@@ -6543,6 +6543,9 @@ const ZOOM_LEVELS = [
   3.00,
   4.00,
   5.00,
+  6.00,
+  7.00,
+  8.00
 ]
 const ZOOM_CENTER = 4
 let zoomIndex = ZOOM_CENTER
