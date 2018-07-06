@@ -5461,7 +5461,7 @@ let pasteBoards = async () => {
 
     } catch (err) {
       console.error(err)
-      console.log(error.stack)
+      console.log(err.stack)
       console.log(new Error().stack)
       notifications.notify({ message: `Whoops. Could not paste boards. ${err.message}`, timing: 8 })
       throw err
