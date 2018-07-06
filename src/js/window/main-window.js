@@ -5105,6 +5105,7 @@ const importImage = async imageDataURL => {
 
   // update the image
   storeUndoStateForImage(true, [layer.index])
+  layer.clear()
   layer.replace(image, false)
   storeUndoStateForImage(false, [layer.index])
   // mark new image
@@ -5120,7 +5121,7 @@ const importImage = async imageDataURL => {
   // renderThumbnailDrawer()
 
   notifications.notify({
-    message: `Image added on top of reference layer`,
+    message: `Image added as reference layer.`,
     timing: 10
   })
   sfx.positive()
