@@ -167,7 +167,7 @@ AppMenu.File = () => ({
       label: 'Import Images…',
       accelerator: keystrokeFor("menu:file:import-images"),
       click (item, focusedWindow, event) {
-        ipcRenderer.send('importImagesDialogue')
+        ipcRenderer.send('importImagesDialogue', false)
       }
     },
     {
