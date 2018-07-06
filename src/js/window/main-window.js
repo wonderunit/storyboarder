@@ -6447,6 +6447,24 @@ ipcRenderer.on('importImage', (event, fileData) => {
   // console.log('mobile image import fileData:', fileData)
   importImage(fileData)
 })
+ipcRenderer.on('importImageAndReplace', (sender, filepathsRecursive) => {
+  let filepath = filepathsRecursive[0]
+  let type = path.extname(filepath).slice(1)
+
+  if (type === 'psd') {
+    notifications.notify({ message: 'Sorry, PSD is not supported for this command yet.' })
+    sfx.error()
+    return
+  }
+
+  let data = fs.readFileSync(filepath).toString('base64')
+  let fileData = `data:image/${type};base64,${data}`
+
+  importImage(fileData).catch(err => {
+    notifications.notify({ message: err.toString() })
+    sfx.error()
+  })
+})
 
 ipcRenderer.on('toggleGuide', (event, arg) => {
   console.log('toggleGuide', arg)
@@ -6588,7 +6606,7 @@ ipcRenderer.on('importFromWorksheet', (event, args) => {
   importFromWorksheet(args)
 })
 
-ipcRenderer.on('importNotification', (event, args) => {
+ipcRenderer.on('importNotification', () => {
   let hostname = os.hostname()
   let that = this
   dns.lookup(hostname, function (err, add, fam) {

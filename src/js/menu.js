@@ -170,6 +170,13 @@ AppMenu.File = () => ({
         ipcRenderer.send('importImagesDialogue')
       }
     },
+    {
+      label: 'Import and Replace Current…',
+      accelerator: keystrokeFor("menu:file:import-image-replace"),
+      click (item, focusedWindow, event) {
+        ipcRenderer.send('importImagesDialogue', true)
+      }
+    }
   ]
 })
 AppMenu.Edit = () => ({
