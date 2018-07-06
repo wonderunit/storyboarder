@@ -98,10 +98,10 @@ const updateBrushSize = (size, direction) => {
   let max = 256
 
   if (
-    size === 2 && direction === -1 ||
-    size === 1 && direction === +1
+    (size >= 1 && size < 2) ||
+    (size === 2 && direction === -1)
   ) {
-    return 1.5
+    return size + (direction * 0.25)
   }
 
   if (size < 5) {

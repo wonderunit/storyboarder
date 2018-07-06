@@ -61,8 +61,12 @@ class Toolbar extends EventEmitter {
         },
         setValue: (pos, curr) => {
           let payload = curr + (pos * 256)
-          if (payload > 1 && payload < 2) {
+          if (payload > 1 && payload <= 1.25) {
+            payload = 1.25
+          } else if (payload > 1.25 && payload < 1.75) {
             payload = 1.5
+          } else if (payload >= 1.75 && payload < 2) {
+            payload = 1.75
           } else {
             payload = Math.floor(payload)
           }
