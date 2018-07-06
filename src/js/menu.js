@@ -212,6 +212,13 @@ AppMenu.Edit = () => ({
       }
     },
     {
+      label: 'Paste and Replace Current (Image Only)',
+      accelerator: keystrokeFor('menu:edit:paste-image-only'),
+      click (item, focusedWindow, event) {
+        ipcRenderer.send('paste-image-only')
+      }
+    },
+    {
       label: 'Select All',
       accelerator: keystrokeFor('menu:edit:select-all'),
       role: 'selectall'

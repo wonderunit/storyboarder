@@ -1070,6 +1070,10 @@ ipcMain.on('paste', (e, arg)=> {
   mainWindow.webContents.send('paste')
 })
 
+ipcMain.on('paste-image-only', () => {
+  mainWindow.webContents.send('paste-image-only')
+})
+
 /// TOOLS
 
 ipcMain.on('undo', (e, arg)=> {
