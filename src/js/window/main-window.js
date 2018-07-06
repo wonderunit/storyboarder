@@ -6217,11 +6217,11 @@ ipcRenderer.on('clear', (e, arg) => {
 ipcRenderer.on('brushSize', (e, direction) => {
   if (!textInputMode) {
     if (direction > 0) {
-      store.dispatch({ type: 'TOOLBAR_BRUSH_SIZE_INC', payload: { fine: false } })
+      store.dispatch({ type: 'TOOLBAR_BRUSH_SIZE_INC' })
       // store.dispatch({ type: 'PLAY_SOUND', payload: 'brush-size-up' }) // TODO
       sfx.playEffect('brush-size-up')
     } else {
-      store.dispatch({ type: 'TOOLBAR_BRUSH_SIZE_DEC', payload: { fine: false } })
+      store.dispatch({ type: 'TOOLBAR_BRUSH_SIZE_DEC' })
       // store.dispatch({ type: 'PLAY_SOUND', payload: 'brush-size-down' }) // TODO
       sfx.playEffect('brush-size-down')
     }

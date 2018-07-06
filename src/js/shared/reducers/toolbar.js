@@ -93,18 +93,21 @@ const initialState = {
   modeStatus: 'idle'
 }
 
-const updateBrushSize = (size, direction, fine = false) => {
+const updateBrushSize = (size, direction) => {
   let min = 1
   let max = 256
 
-  if (fine) {
-    size += direction
+  if (
+    size === 2 && direction === -1 ||
+    size === 1 && direction === +1
+  ) {
+    return 1.5
+  }
+
+  if (size < 5) {
+    size = Math.floor(size + direction)
   } else {
-    if (size < 5) {
-      size += direction
-    } else {
-      size *= direction > 0 ? 1.2 : 0.8
-    }
+    size *= direction > 0 ? 1.2 : 0.8
   }
   
   return Math.min(Math.max(size, min), max)
@@ -187,7 +190,7 @@ const toolbar = (state = initialState, action) => {
           ...state.tools,
           [state.activeTool]: {
             ...state.tools[state.activeTool],
-            size: updateBrushSize(state.tools[state.activeTool].size, +1, action.payload.fine)
+            size: updateBrushSize(state.tools[state.activeTool].size, +1)
           }
         }
       }
@@ -199,7 +202,7 @@ const toolbar = (state = initialState, action) => {
           ...state.tools,
           [state.activeTool]: {
             ...state.tools[state.activeTool],
-            size: updateBrushSize(state.tools[state.activeTool].size, -1, action.payload.fine)
+            size: updateBrushSize(state.tools[state.activeTool].size, -1)
           }
         }
       }

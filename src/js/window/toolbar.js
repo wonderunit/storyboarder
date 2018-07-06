@@ -61,11 +61,20 @@ class Toolbar extends EventEmitter {
         },
         setValue: (pos, curr) => {
           let payload = curr + (pos * 256)
+          if (payload > 1 && payload < 2) {
+            payload = 1.5
+          } else {
+            payload = Math.floor(payload)
+          }
           this.store.dispatch({ type: 'TOOLBAR_BRUSH_SIZE_SET', payload, meta: { scope: 'local' } })
           // TODO sound, throttled
         },
         formatValueForDisplay: value => {
-          return Math.round(value)
+          if (value > 1 && value < 2) {
+            return value
+          } else {
+            return Math.round(value)
+          }
         }
       })
     )
