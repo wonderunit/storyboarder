@@ -164,14 +164,14 @@ AppMenu.File = () => ({
       type: 'separator'
     },
     {
-      label: 'Import Images…',
+      label: 'Import Images to New Boards…',
       accelerator: keystrokeFor("menu:file:import-images"),
       click (item, focusedWindow, event) {
         ipcRenderer.send('importImagesDialogue', false)
       }
     },
     {
-      label: 'Import and Replace Current…',
+      label: 'Import Image To Current Reference Layer…',
       accelerator: keystrokeFor("menu:file:import-image-replace"),
       click (item, focusedWindow, event) {
         ipcRenderer.send('importImagesDialogue', true)
