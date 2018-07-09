@@ -4,12 +4,22 @@
   <head>
     <meta charset="utf-8">
     <title>Key Tracker Test</title>
+    <style>
+      body {
+        padding: 7px 28px;
+        font-size: 14px;
+        font-family: monospace;
+        line-height: 1.5;
+      }
+    </style>
   </head>
   <body>
     
     <script>
       const keytracker = require('../../../src/js/utils/keytracker')
       const defaultKeyMap = require('../../../src/js/shared/helpers/defaultKeyMap')
+
+      const vkey = require('../../../src/js/utils/vkey')
 
       const keymap = defaultKeyMap
 
@@ -18,7 +28,7 @@
         let matches = keytracker.findMatchingCommandsByKeys(keymap, pressedKeys)
 
         document.body.innerHTML = `
-          <div style="padding: 7px 28px; font-size: 14px; font-family: monospace; line-height: 1.5;">
+          <div>
             <div>
               <h1>Key Tracker Test</h1>
               <p style="width: 30em;">Press key or combination of keys to see how they would be recognized by Storyboarder.</p>
@@ -35,6 +45,17 @@
 
       window.addEventListener('keydown', event => {
         render()
+        document.body.innerHTML += `
+          <div>
+            <strong>keyCode:</strong> <span>${event.keyCode}</span>
+          </div>
+          <div>
+            <strong>key:</strong> <span>${event.key}</span>
+          </div>
+          <div>
+            <strong>vkey:</strong> <span>${vkey[event.keyCode].replace('<', '&lt').replace('>', '&gt')}</span>
+          </div>
+        `
         event.preventDefault()
       })
 
