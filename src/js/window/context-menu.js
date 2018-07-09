@@ -72,11 +72,13 @@ class ContextMenu extends EventEmitter {
   
   fadeIn () {
     this.emit('shown')
+    this.el.classList.add('is-visible')
     this.innerEl.classList.add('appear-anim')
   }
 
   fadeOut () {
     this.innerEl.classList.remove('appear-anim')
+    this.el.classList.remove('is-visible')
   }
   
   hasChild (child) {

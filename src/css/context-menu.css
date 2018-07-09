@@ -1,6 +1,12 @@
 .popup-container {
   position: absolute;
 }
+.popup-container {
+  visibility: hidden;
+}
+.popup-container.is-visible {
+  visibility: visible;
+}
 
 /**/
 

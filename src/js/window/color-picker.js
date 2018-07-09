@@ -171,6 +171,7 @@ class ColorPicker extends EventEmitter {
   }
   
   fadeIn () {
+    this.el.classList.add('is-visible')
     this.innerEl.classList.add('appear-anim')
 
     tooltips.closeAll()
@@ -179,6 +180,7 @@ class ColorPicker extends EventEmitter {
 
   fadeOut () {
     this.innerEl.classList.remove('appear-anim')
+    this.el.classList.remove('is-visible')
     tooltips.setIgnore(document.querySelector('#toolbar-current-color'), false)
   }
   

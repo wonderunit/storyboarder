@@ -268,6 +268,7 @@ class PomodorTimerView extends EventEmitter {
   }
 
   fadeIn () {
+    this.el.classList.add('is-visible')
     this.innerEl.classList.add('appear-anim')
 
     tooltips.closeAll()
@@ -276,6 +277,7 @@ class PomodorTimerView extends EventEmitter {
 
   fadeOut () {
     this.innerEl.classList.remove('appear-anim')
+    this.el.classList.remove('is-visible')
     tooltips.setIgnore(document.querySelector('#toolbar-pomodoro-rest'), false)
   }
 
