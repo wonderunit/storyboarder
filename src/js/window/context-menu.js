@@ -17,7 +17,7 @@ class ContextMenu extends EventEmitter {
   }
 
   template () {
-    return `<div class="context-menu-container">
+    return `<div class="context-menu-container popup-container">
       <div id="context-menu" class="bottom-nub">
         <div class="item" data-action="add">Add New <div class="key-command">${acceleratorAsHtml('n', { animated: false }) }</div></div>
         <div class="item" data-action="duplicate">Duplicate <div class="key-command">${acceleratorAsHtml('d', { animated: false })}</div></div>
