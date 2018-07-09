@@ -219,10 +219,10 @@ AppMenu.Edit = () => ({
       }
     },
     {
-      label: 'Paste and Replace Current (Image Only)',
-      accelerator: keystrokeFor('menu:edit:paste-image-only'),
+      label: 'Paste and Replace Board Art',
+      accelerator: keystrokeFor('menu:edit:paste-replace'),
       click (item, focusedWindow, event) {
-        ipcRenderer.send('paste-image-only')
+        ipcRenderer.send('paste-replace')
       }
     },
     {

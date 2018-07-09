@@ -5060,9 +5060,9 @@ ipcRenderer.on('paste', () => {
   }
 })
 
-ipcRenderer.on('paste-image-only', () => {
+ipcRenderer.on('paste-replace', () => {
   notifications.notify({ message: `Pasting …` })
-  pasteImageIntoBoard()
+  pasteAndReplace()
     .then(() => {
       notifications.notify({ message: `Paste complete.` })
       sfx.positive()
@@ -5489,7 +5489,7 @@ let pasteBoards = async () => {
 }
 
 // paste to current board
-const pasteImageIntoBoard = async () => {
+const pasteAndReplace = async () => {
   if (textInputMode) return
 
   let board = boardData.boards[currentBoard]

@@ -1074,8 +1074,8 @@ ipcMain.on('paste', (e, arg)=> {
   mainWindow.webContents.send('paste')
 })
 
-ipcMain.on('paste-image-only', () => {
-  mainWindow.webContents.send('paste-image-only')
+ipcMain.on('paste-replace', () => {
+  mainWindow.webContents.send('paste-replace')
 })
 
 /// TOOLS
