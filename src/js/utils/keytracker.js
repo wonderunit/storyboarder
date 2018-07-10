@@ -72,9 +72,15 @@ const findMatchingCommandsByKeys = (keymap, pressedKeys) => {
     // for each key in the command's combo
     for (let key of keys) {
       if (key === 'CommandOrControl') {
-        // 'Control' and 'Meta' keys are considered a match for 'CommandOrControl'
-        // but if neither are found, this is not a match
-        if (!(pressedKeys.includes('Ctrl') || pressedKeys.includes('Meta'))) {
+        // 'Control' (Windows/Linux) and 'Meta' (macOS) keys
+        // are considered a match for 'CommandOrControl'
+        // if neither are found, this is not a match
+        if (
+          // if macOS, but Meta is not pressed ...
+          (process.platform === 'darwin' && pressedKeys.includes('Meta') !== true) ||
+          // ... or not macOS (i.e.: Windows or Linux), but Control is not pressed
+          (process.platform !== 'darwin' && pressedKeys.includes('Control') !== true)
+        ) {
           match = false
           break
         }

@@ -86,7 +86,7 @@
     "electron-builder": "20.18.0",
     "electron-mocha": "4.0.0",
     "electron-osx-sign": "^0.4.8",
-    "floss": "2.1.4",
+    "floss": "2.1.5",
     "mocha": "3.5.0",
     "mock-fs": "4.4.1"
   },
