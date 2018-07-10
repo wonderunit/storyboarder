@@ -6048,6 +6048,7 @@ const applyUndoStateForScene = async (state) => {
     renderScript()
   }
   boardData = state.sceneData
+  markBoardFileDirty()
   renderScene()
 }
 
