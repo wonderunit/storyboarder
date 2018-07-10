@@ -164,12 +164,19 @@ AppMenu.File = () => ({
       type: 'separator'
     },
     {
-      label: 'Import Images…',
+      label: 'Import Images to New Boards…',
       accelerator: keystrokeFor("menu:file:import-images"),
       click (item, focusedWindow, event) {
-        ipcRenderer.send('importImagesDialogue')
+        ipcRenderer.send('importImagesDialogue', false)
       }
     },
+    {
+      label: 'Import Image and Replace…',
+      accelerator: keystrokeFor("menu:file:import-image-replace"),
+      click (item, focusedWindow, event) {
+        ipcRenderer.send('importImagesDialogue', true)
+      }
+    }
   ]
 })
 AppMenu.Edit = () => ({
@@ -209,6 +216,13 @@ AppMenu.Edit = () => ({
       accelerator: keystrokeFor('menu:edit:paste'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('paste')
+      }
+    },
+    {
+      label: 'Paste and Replace',
+      accelerator: keystrokeFor('menu:edit:paste-replace'),
+      click (item, focusedWindow, event) {
+        ipcRenderer.send('paste-replace')
       }
     },
     {

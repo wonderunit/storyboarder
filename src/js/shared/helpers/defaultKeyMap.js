@@ -24,6 +24,7 @@ const defaultKeyMap = {
   "menu:edit:cut": "CommandOrControl+x",
   "menu:edit:copy": "CommandOrControl+c",
   "menu:edit:paste": "CommandOrControl+v",
+  "menu:edit:paste-replace": "CommandOrControl+Shift+v",
   "menu:edit:select-all": "CommandOrControl+a",
 
   "menu:navigation:play": "Space",

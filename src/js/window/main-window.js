@@ -5060,6 +5060,20 @@ ipcRenderer.on('paste', () => {
   }
 })
 
+ipcRenderer.on('paste-replace', () => {
+  notifications.notify({ message: `Pasting …` })
+  pasteAndReplace()
+    .then(() => {
+      notifications.notify({ message: `Paste complete.` })
+      sfx.positive()
+    })
+    .catch(err => {
+      console.error(err)
+      notifications.notify({ message: err.toString() })
+      sfx.error()
+    })
+})
+
 // import image from mobile server
 const importImage = async imageDataURL => {
   let board = boardData.boards[currentBoard]
@@ -5091,6 +5105,7 @@ const importImage = async imageDataURL => {
 
   // update the image
   storeUndoStateForImage(true, [layer.index])
+  layer.clear()
   layer.replace(image, false)
   storeUndoStateForImage(false, [layer.index])
   // mark new image
@@ -5106,7 +5121,7 @@ const importImage = async imageDataURL => {
   // renderThumbnailDrawer()
 
   notifications.notify({
-    message: `Image added on top of reference layer`,
+    message: `Image added as reference layer.`,
     timing: 10
   })
   sfx.positive()
@@ -5461,7 +5476,7 @@ let pasteBoards = async () => {
 
     } catch (err) {
       console.error(err)
-      console.log(error.stack)
+      console.log(err.stack)
       console.log(new Error().stack)
       notifications.notify({ message: `Whoops. Could not paste boards. ${err.message}`, timing: 8 })
       throw err
@@ -5470,6 +5485,132 @@ let pasteBoards = async () => {
     notifications.notify({ message: "There's nothing in the clipboard that I can paste. Are you sure you copied it right?", timing: 8 })
     sfx.error()
     throw new Error('empty clipboard')
+  }  
+}
+
+// paste to current board
+const pasteAndReplace = async () => {
+  if (textInputMode) return
+
+  let board = boardData.boards[currentBoard]
+
+  // save the current image to disk
+  await saveImageFile()
+
+  let pasted
+
+  // is paste a valid object from Storyboarder?
+  let text = clipboard.readText()
+  if (text !== '') {
+    try {
+      pasted = JSON.parse(clipboard.readText())
+      if (!pasted.boards.length || pasted.boards.length < 1) throw new Error('no boards')
+      if (!pasted.layerDataByBoardIndex.length || pasted.layerDataByBoardIndex.length < 1) throw new Error('no layer data')
+    } catch (err) {
+      console.log('could not read clipboard data')
+      console.log(err)
+    }
+  }
+
+  // paste is probably from an external source
+  if (!pasted) {
+    // can we at least grab the image?
+    let image = clipboard.readImage()
+    if (!image.isEmpty()) {
+      pasted = {
+        boards: [
+          // HACK trigger to construct a minimum board
+          {
+            layers: {
+              reference: {
+                url: null
+              }
+            }
+          }
+        ],
+        layerDataByBoardIndex: [
+          {
+            reference: image.toDataURL()
+          }
+        ]
+      }
+    } else {
+      console.log('could not read clipboard image')
+    }
+  }
+
+  if (pasted && pasted.boards && pasted.boards.length) {
+    if (pasted.boards.length > 1) {
+      throw new Error("Can't paste. Expected one image, but found multiple.")
+    }
+
+    try {
+      // store the "before" state
+      storeUndoStateForScene(true)
+      storeUndoStateForImage(true, storyboarderSketchPane.visibleLayersIndices)
+
+      // NOTE: audio is not copied
+      // NOTE: linked PSD is not copied
+
+      let imageData = pasted.layerDataByBoardIndex[0]
+
+      // scale layer images and write to layers
+      let size = [
+        storyboarderSketchPane.sketchPane.width,
+        storyboarderSketchPane.sketchPane.height
+      ]
+
+      board.layers = {}
+
+      // for every named layer
+      for (let index of storyboarderSketchPane.visibleLayersIndices) {
+        let layer = storyboarderSketchPane.sketchPane.layers[index]
+        if (imageData[layer.name]) {
+          let image = await exporterCommon.getImage(imageData[layer.name])
+          // paste the layer
+
+          // if ratio matches,
+          // don't bother drawing,
+          // just return original image data
+          if (
+            image.width === size[0] &&
+            image.height === size[1]
+          ) {
+            // full size
+            // console.log('\tpasting full size', layer.name)
+            storyboarderSketchPane.sketchPane.replaceLayer(index, image)
+            markImageFileDirty([index])
+          } else {
+            // resized
+            // console.log('\tpasting resized', layer.name)
+            let context = createSizedContext(size)
+            let canvas = context.canvas
+            context.drawImage(image, ...util.fitToDst(canvas, image).map(Math.round))
+            storyboarderSketchPane.sketchPane.replaceLayer(index, canvas)
+            markImageFileDirty([index])
+          }
+        } else {
+          // clear the layer
+          // console.log('\tclearing', layer.name)
+          storyboarderSketchPane.clearLayer(index)
+        }
+      }
+
+      storeUndoStateForScene()
+      storeUndoStateForImage(false, storyboarderSketchPane.visibleLayersIndices)
+
+      markBoardFileDirty()
+      renderThumbnailDrawer()
+
+      console.log('paste complete')
+    } catch (err) {
+      console.error(err)
+      console.log(err.stack)
+      console.log(new Error().stack)
+      throw new Error(`Whoops. Could not paste image. ${err.message}`)
+    }
+  } else {
+    throw new Error("There's nothing in the clipboard that I can paste. Are you sure you copied it correctly?")
   }  
 }
 
@@ -6306,6 +6447,24 @@ ipcRenderer.on('importImage', (event, fileData) => {
   // console.log('mobile image import fileData:', fileData)
   importImage(fileData)
 })
+ipcRenderer.on('importImageAndReplace', (sender, filepathsRecursive) => {
+  let filepath = filepathsRecursive[0]
+  let type = path.extname(filepath).slice(1)
+
+  if (type === 'psd') {
+    notifications.notify({ message: 'Sorry, PSD is not supported for this command yet.' })
+    sfx.error()
+    return
+  }
+
+  let data = fs.readFileSync(filepath).toString('base64')
+  let fileData = `data:image/${type};base64,${data}`
+
+  importImage(fileData).catch(err => {
+    notifications.notify({ message: err.toString() })
+    sfx.error()
+  })
+})
 
 ipcRenderer.on('toggleGuide', (event, arg) => {
   console.log('toggleGuide', arg)
@@ -6447,7 +6606,7 @@ ipcRenderer.on('importFromWorksheet', (event, args) => {
   importFromWorksheet(args)
 })
 
-ipcRenderer.on('importNotification', (event, args) => {
+ipcRenderer.on('importNotification', () => {
   let hostname = os.hostname()
   let that = this
   dns.lookup(hostname, function (err, add, fam) {

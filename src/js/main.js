@@ -487,7 +487,7 @@ let openDialogue = () => {
   })
 }
 
-let importImagesDialogue = () => {
+let importImagesDialogue = (shouldReplace = false) => {
   dialog.showOpenDialog(
     {
       title:"Import Boards", 
@@ -526,7 +526,11 @@ let importImagesDialogue = () => {
           }
         }
         
-        mainWindow.webContents.send('insertNewBoardsWithFiles', filepathsRecursive)
+        if (shouldReplace) {
+          mainWindow.webContents.send('importImageAndReplace', filepathsRecursive)
+        } else {
+          mainWindow.webContents.send('insertNewBoardsWithFiles', filepathsRecursive)
+        }
       }
     }
   )
@@ -1070,6 +1074,10 @@ ipcMain.on('paste', (e, arg)=> {
   mainWindow.webContents.send('paste')
 })
 
+ipcMain.on('paste-replace', () => {
+  mainWindow.webContents.send('paste-replace')
+})
+
 /// TOOLS
 
 ipcMain.on('undo', (e, arg)=> {
@@ -1125,8 +1133,8 @@ ipcMain.on('openDialogue', (e, arg) => {
   openDialogue()
 })
 
-ipcMain.on('importImagesDialogue', (e, arg)=> {
-  importImagesDialogue()
+ipcMain.on('importImagesDialogue', (e, arg) => {
+  importImagesDialogue(arg)
   mainWindow.webContents.send('importNotification', arg)
 })
 
