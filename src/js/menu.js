@@ -171,7 +171,7 @@ AppMenu.File = () => ({
       }
     },
     {
-      label: 'Import Image and Replace Reference Layer…',
+      label: 'Import Image and Replace…',
       accelerator: keystrokeFor("menu:file:import-image-replace"),
       click (item, focusedWindow, event) {
         ipcRenderer.send('importImagesDialogue', true)
@@ -219,7 +219,7 @@ AppMenu.Edit = () => ({
       }
     },
     {
-      label: 'Paste and Replace Board Art',
+      label: 'Paste and Replace',
       accelerator: keystrokeFor('menu:edit:paste-replace'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('paste-replace')
