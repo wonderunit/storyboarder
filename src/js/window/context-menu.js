@@ -17,7 +17,7 @@ class ContextMenu extends EventEmitter {
   }
 
   template () {
-    return `<div class="context-menu-container">
+    return `<div class="context-menu-container popup-container">
       <div id="context-menu" class="bottom-nub">
         <div class="item" data-action="add">Add New <div class="key-command">${acceleratorAsHtml('n', { animated: false }) }</div></div>
         <div class="item" data-action="duplicate">Duplicate <div class="key-command">${acceleratorAsHtml('d', { animated: false })}</div></div>
@@ -72,11 +72,13 @@ class ContextMenu extends EventEmitter {
   
   fadeIn () {
     this.emit('shown')
+    this.el.classList.add('is-visible')
     this.innerEl.classList.add('appear-anim')
   }
 
   fadeOut () {
     this.innerEl.classList.remove('appear-anim')
+    this.el.classList.remove('is-visible')
   }
   
   hasChild (child) {
