@@ -1612,9 +1612,10 @@ const loadBoardUI = async () => {
     getAudioFilePath: (filename) => path.join(boardPath, 'images', filename)
   })
   audioFileControlView = new AudioFileControlView({
+    // onSelectFile = via drop
     onSelectFile: async function (filepath) {
-      if (audioFileControlView.state.mode !== 'stopped') {
-        notifications.notify({ message: `Can't add an audio file while ${audioFileControlView.state.mode}.`, timing: 5 })
+      if ( ! audioFileControlView.isIdle() ) {
+        notifications.notify({ message: `Can’t add an audio file while recorder is active. Recorder mode is: ${audioFileControlView.state.mode}.`, timing: 5 })
         return
       }
 
@@ -1665,11 +1666,12 @@ const loadBoardUI = async () => {
     onSelectFileCancel: function () {
       // NOOP
     },
+    // onRequestFile = via dialog
     onRequestFile: function (event) {
       if (event) event.preventDefault()
 
-      if (audioFileControlView.state.mode !== 'stopped') {
-        notifications.notify({ message: `Can't add an audio file while ${audioFileControlView.state.mode}.`, timing: 5 })
+      if ( ! audioFileControlView.isIdle() ) {
+        notifications.notify({ message: `Can’t add an audio file while recorder is active. Recorder mode is: ${audioFileControlView.state.mode}.`, timing: 5 })
         return
       }
 
