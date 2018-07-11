@@ -2876,12 +2876,16 @@ const renderThumbnailToNewCanvas = (index, options = { forceReadFromFiles: false
 
   if (!options.forceReadFromFiles && index === currentBoard) {
     // grab from current sketchpane (in memory)
+    let pixels = storyboarderSketchPane.sketchPane.extractThumbnailPixels(
+      size[0],
+      size[1],
+      storyboarderSketchPane.visibleLayersIndices
+    )
+
+    SketchPaneUtil.arrayPostDivide(pixels)
+
     let canvas = SketchPaneUtil.pixelsToCanvas(
-      storyboarderSketchPane.sketchPane.extractThumbnailPixels(
-        size[0],
-        size[1],
-        storyboarderSketchPane.visibleLayersIndices
-      ),
+      pixels,
       size[0],
       size[1]
     )
