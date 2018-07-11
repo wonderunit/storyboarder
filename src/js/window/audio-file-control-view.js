@@ -59,13 +59,17 @@ class AudioFileControlView {
       this.setState({ mode: 'stopped' })
     }).catch(err => {
       console.error(err)
-      this.onNotify({ message: 'An error prevented the audio recorder from initializing' })
-      this.onNotify({ message: err.toString() })
+      // this.onNotify({ message: 'An error prevented the audio recorder from initializing' })
+      // this.onNotify({ message: err.toString() })
       this.setState({ mode: 'failed' })
     })
   }
 
   onRecordMouseEvent (event) {
+    if (this.state.mode === 'failed') {
+      this.onNotify({ message: 'Sorry, there doesn’t seem to be a microphone or line input connected. Can’t record :(' })
+    }
+
     // prevent during countdown and finalizing
     if (event.type === 'click' && this.state.mode === 'stopped') {
       this.recordButtonEl.removeEventListener('click', this.onRecordMouseEvent)
