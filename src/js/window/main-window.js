@@ -5192,21 +5192,26 @@ let copyBoards = async () => {
       layerDataByBoardIndex.push(layerData)
     }
 
-    let image = multiple
+    let image
+    if (multiple) {
       // multiple doesn't include the image
-      ? undefined
+      image = undefined
+    } else {
       // a single flattened PNG image (for pasting to external apps)
       // NOTE assumes that, in the UI, single selection always === current board
-      : nativeImage.createFromDataURL(
-          SketchPaneUtil.pixelsToCanvas(
-            storyboarderSketchPane.sketchPane.extractThumbnailPixels(
-              storyboarderSketchPane.sketchPane.width,
-              storyboarderSketchPane.sketchPane.height,
-              storyboarderSketchPane.visibleLayersIndices
-            ),
-            storyboarderSketchPane.sketchPane.width,
-            storyboarderSketchPane.sketchPane.height
-          ).toDataURL())
+      let pixels = storyboarderSketchPane.sketchPane.extractThumbnailPixels(
+        storyboarderSketchPane.sketchPane.width,
+        storyboarderSketchPane.sketchPane.height,
+        storyboarderSketchPane.visibleLayersIndices
+      )
+      SketchPaneUtil.arrayPostDivide(pixels)
+      image = nativeImage.createFromDataURL(
+        SketchPaneUtil.pixelsToCanvas(
+          pixels,
+          storyboarderSketchPane.sketchPane.width,
+          storyboarderSketchPane.sketchPane.height
+        ).toDataURL())
+    }
 
     let payload = {
       // if not multiple, we'll have an image for one board (the current board)
