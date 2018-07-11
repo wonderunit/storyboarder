@@ -67,7 +67,7 @@ class AudioFileControlView {
 
   onRecordMouseEvent (event) {
     if (this.state.mode === 'failed') {
-      this.onNotify({ message: 'Sorry, there doesn’t seem to be a microphone or line input connected. Can’t record :(' })
+      this.onNotify({ message: 'Sorry, there doesn’t seem to be a microphone or line input connected. To retry, connect a recording device to your computer and re-open this window.' })
     }
 
     // prevent during countdown and finalizing
