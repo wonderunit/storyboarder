@@ -231,8 +231,8 @@ AppMenu.Edit = () => ({
       role: 'selectall'
     },
 
-    // add Edit > Preferences on Windows
-    ...process.platform == 'win32'
+    // add Edit > Preferences on Windows and Linux
+    ...(process.platform !== 'darwin')
     ? [
         {
           type: 'separator'
