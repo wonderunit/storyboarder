@@ -7,13 +7,12 @@ const { machineIdSync } = require('node-machine-id')
 const assert = require('assert')
 const nock = require('nock')
 const nodeFetch = require('node-fetch') // because nock doesn’t work with fetch in electron-mocha
-const R = require('ramda')
 
 const { VERIFICATION_URL, checkLicense } = require('../../src/js/models/license')
 
 // use node-fetch as the fetcher in our tests so that we can use nock
 let modified = {
-  checkLicense: R.partialRight(checkLicense, [{ fetcher: nodeFetch }])
+  checkLicense: (license, options) => checkLicense(license, { ...options, fetcher: nodeFetch })
 }
 
 describe('license', () => {
