@@ -31,7 +31,8 @@ async function checkLicense (
   let defaultOptions = {
     verificationUri: VERIFICATION_URL.toString(),
     userAgent: `Storyboarder/${pkg.version}`,
-    timeoutInMsecs: 10000
+    timeoutInMsecs: 10000,
+    fetcher: window.fetch
   }
   options = { ...defaultOptions, ...options }
   try {
