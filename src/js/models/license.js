@@ -1,5 +1,6 @@
 const { machineIdSync } = require('node-machine-id')
 
+const fetchWithTimeout = require('../../../src/js/utils/fetchWithTimeout')
 const pkg = require('../../../package.json')
 
 const VERIFICATION_URL = new URL('http://example.com/licenses/verify')
@@ -11,39 +12,6 @@ const VERIFICATION_URL = new URL('http://example.com/licenses/verify')
 //   pathname: '/licenses/verify'
 // }
 // VERIFICATION_URL.toString = () => `${VERIFICATION_URL.origin}${VERIFICATION_URL.pathname}`
-
-// via https://davidwalsh.name/fetch-timeout
-function fetchWithTimeout(input, init = {}, timeoutInMsecs = 10000, fetcher) {
-  return new Promise(function (resolve, reject) {
-    let elapsed = false
-
-    const timeout = setTimeout(
-      function () {
-        elapsed = true
-        reject(new Error('Request timed out'))
-      },
-      timeoutInMsecs
-    )
-
-    fetcher(input, init)
-      .then(function (response) {
-        // cleanup the timeout
-        clearTimeout(timeout)
-
-        // if setTimeout hasn't rejected yet
-        if ( !elapsed ) {
-          resolve(response)
-        }
-      })
-      .catch(function (err) {
-        // if setTimeout already rejected
-        if (elapsed) return
-
-        // otherwise, reject with error
-        reject(err)
-      })
-    })
-}
 
 // checkLicense
 //
