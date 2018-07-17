@@ -1,5 +1,5 @@
 // via https://davidwalsh.name/fetch-timeout
-function fetchWithTimeout (input, init = {}, timeoutInMsecs = 10000, fetcher) {
+function fetchWithTimeout (input, init = {}, timeoutInMsecs = 10000, fetcher = window.fetch) {
   return new Promise(function (resolve, reject) {
     let elapsed = false
 
