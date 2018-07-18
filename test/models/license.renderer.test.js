@@ -69,10 +69,10 @@ describe('license', () => {
   describe('server checks', () => {
     let scope
 
-    it('if server can be reached, fails without server approval', async () => {
+    it('assuming server can be reached, fails if server does not approve', async () => {
       let scope = nock(VERIFICATION_URL.origin)
         .post(VERIFICATION_URL.pathname)
-        .reply(406)
+        .reply(422)
       assert.equal(false, await modified.checkLicense(validLicense))
       scope.done()
     })
