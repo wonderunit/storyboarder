@@ -1,6 +1,6 @@
 /* global describe it */
 
-// USAGE npx electron-mocha --renderer test/license.renderer.test.js
+// USAGE npx electron-mocha --renderer test/models/license.renderer.test.js
 
 const { machineIdSync } = require('node-machine-id')
 
