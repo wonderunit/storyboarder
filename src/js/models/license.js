@@ -32,7 +32,7 @@ async function checkLicense (
     verificationUri: VERIFICATION_URL.toString(),
     userAgent: `Storyboarder/${pkg.version}`,
     timeoutInMsecs: 10000,
-    fetcher: window.fetch
+    fetcher: global.fetch
   }
   options = { ...defaultOptions, ...options }
   try {
