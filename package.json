@@ -11,7 +11,8 @@
     "dist:linux": "build -l",
     "dist": "build -mwl",
     "test": "mocha $(find test -name '*[!renderer].test.js') && electron-mocha --renderer test/*.renderer.test.js test/**/*.renderer.test.js && electron-mocha test/**/*.main.test.js",
-    "clean:fixtures": "git checkout test/fixtures && git clean test/fixtures -f"
+    "clean:fixtures": "git checkout test/fixtures && git clean test/fixtures -f",
+    "reveal:data": "open ~/Library/Application\\ Support/Storyboarder"
   },
   "repository": {
     "type": "git",
