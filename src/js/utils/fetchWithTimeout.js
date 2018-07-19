@@ -1,5 +1,7 @@
 // via https://davidwalsh.name/fetch-timeout
-function fetchWithTimeout (input, init = {}, timeoutInMsecs = 10000, fetcher = window.fetch) {
+function fetchWithTimeout (input, init = {}, timeoutInMsecs = 10000, fetcher = global.fetch) {
+  if (fetcher == null) return Promise.reject(new Error('fetch is undefined'))
+
   return new Promise(function (resolve, reject) {
     let elapsed = false
 
