@@ -3,15 +3,16 @@ const { machineIdSync } = require('node-machine-id')
 const fetchWithTimeout = require('../../../src/js/utils/fetchWithTimeout')
 const pkg = require('../../../package.json')
 
-const VERIFICATION_URL = new URL('http://example.com/licenses/verify')
-// node doesn't have `URL`
-// so, to run in `main` instead of `renderer`:
-//
-// let VERIFICATION_URL = {
-//   origin: 'http://example.com',
-//   pathname: '/licenses/verify'
-// }
-// VERIFICATION_URL.toString = () => `${VERIFICATION_URL.origin}${VERIFICATION_URL.pathname}`
+// renderer has `URL`, but main (node) does not
+// so we fake it
+// const VERIFICATION_URL = new URL('http://localhost:8080/api/check_license')
+const VERIFICATION_URL = {
+  origin: 'http://localhost:8080',
+  pathname: '/api/check_license',
+  toString() {
+    return `${this.origin}${this.pathname}`
+  }
+}
 
 // checkLicense
 //
