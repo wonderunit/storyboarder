@@ -37,14 +37,15 @@ async function checkLicense (
   }
   options = { ...defaultOptions, ...options }
   try {
-    // get expectedMachineId
-    let expectedMachineId = machineIdSync({
-      // compare original values (not SHA-256'd)
-      original: true
-    })
 
     // is there a license object?
     if (license) {
+      // get expectedMachineId
+      let expectedMachineId = machineIdSync({
+        // compare original values (not SHA-256'd)
+        original: true
+      })
+
       // does the license machineId match the expected machineId?
       if (
         // machineId is a string
