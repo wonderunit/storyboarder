@@ -26,7 +26,7 @@ const VERIFICATION_URL = {
 // }
 //
 async function checkLicense (
-  license,
+  token,
   options = {}
 ) {
   let defaultOptions = {
@@ -70,7 +70,7 @@ async function checkLicense (
                   'User-Agent': options.userAgent,
                   'Content-Type': 'application/json; charset=utf-8',
                 },
-                body: JSON.stringify(license)
+                body: JSON.stringify({ token })
               },
               options.timeoutInMsecs,
               options.fetcher
