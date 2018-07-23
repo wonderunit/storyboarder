@@ -1052,6 +1052,8 @@ let attemptLicenseVerification = async () => {
       dialog.showMessageBox({
         message: 'License key is no longer valid.'
       })
+      console.log('Removing invalid license key at', licenseKeyPath)
+      await trash(licenseKeyPath)
     }
   } catch (err) {
     console.error(err)
