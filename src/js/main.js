@@ -216,6 +216,8 @@ app.on('ready', async () => {
     }
   })
 
+  await attemptLicenseVerification()
+
   // open the welcome window when the app loads up first
   openWelcomeWindow()
 
@@ -1012,6 +1014,44 @@ let addToRecentDocs = (filename, metadata) => {
   recentDocuments.unshift(recentDocument)
   // save
   prefModule.set('recentDocuments', recentDocuments)
+}
+
+let attemptLicenseVerification = async () => {
+  const nodeFetch = require('node-fetch')
+  const { VERIFICATION_URL, checkLicense } = require('./models/license')
+
+  let token
+  let license
+  let licenseKeyPath = path.join(app.getPath('userData'), 'license.key')
+
+  try {
+    token = fs.readFileSync(licenseKeyPath, { encoding: 'utf8' })
+  } catch (err) {
+    if (err.code === 'ENOENT') {
+      console.log('No license key found')
+      return
+    } else {
+      console.error('Could not load license.key')
+      console.error(err)
+      return
+    }
+  }
+
+  try {
+    if (await checkLicense(token, { fetcher: nodeFetch })) {
+      console.log('license accepted')
+    } else {
+      dialog.showMessageBox({
+        message: 'License key is no longer valid.'
+      })
+    }
+  } catch (err) {
+    console.error(err)
+    dialog.showMessageBox({
+      type: 'error',
+      message: `An error occurred while checking the license key.\n\n${err}`
+    })
+  }
 }
 
 ////////////////////////////////////////////////////////////
