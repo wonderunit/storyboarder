@@ -8,6 +8,8 @@ const assert = require('assert')
 const nock = require('nock')
 const nodeFetch = require('node-fetch') // because nock doesn’t work with fetch in electron-mocha
 
+const JWT = require('jsonwebtoken')
+
 const { VERIFICATION_URL, checkLicense } = require('../../src/js/models/license')
 
 // use node-fetch as the fetcher in our tests so that we can use nock
@@ -18,15 +20,15 @@ let modified = {
 describe('license', () => {
   let testMachineId = machineIdSync({ original: true })
   let now = () => Date.now().valueOf() / 1000
-  let validLicense
+  let validLicenseToken
 
   beforeEach(() => {
     nock.disableNetConnect()
 
-    validLicense = {
+    validLicenseToken = JWT.sign({
       licenseExpiration: now() + 1000,
       machineId: testMachineId
-    }
+    }, 'test-secret')
   })
 
   afterEach(() => {
@@ -44,7 +46,7 @@ describe('license', () => {
     })
 
     it('can be checked', async () => {
-      assert.equal(true, await modified.checkLicense(validLicense))
+      assert.equal(true, await modified.checkLicense(validLicenseToken))
     }).timeout(0)
 
     it('requires a license object', async () => {
@@ -53,14 +55,14 @@ describe('license', () => {
 
     it('requires a matching machine id', async () => {
       assert.equal(false, await modified.checkLicense({
-        ...validLicense,
+        ...validLicenseToken,
         machineId: 'fake id',
       }))
     })
 
     it('requires a fresh expiration date', async () => {
       assert.equal(false, await modified.checkLicense({
-        ...validLicense,
+        ...validLicenseToken,
         licenseExpiration: now() - 10000,
       }))
     })
@@ -73,7 +75,7 @@ describe('license', () => {
       let scope = nock(VERIFICATION_URL.origin)
         .post(VERIFICATION_URL.pathname)
         .reply(422)
-      assert.equal(false, await modified.checkLicense(validLicense))
+      assert.equal(false, await modified.checkLicense(validLicenseToken))
       scope.done()
     })
 
@@ -83,7 +85,7 @@ describe('license', () => {
         .delay(30000)
         .reply(500)
     
-      assert(await modified.checkLicense(validLicense, { timeoutInMsecs: 250 }))
+      assert(await modified.checkLicense(validLicenseToken, { timeoutInMsecs: 250 }))
     }).timeout(0)
 
     it('passes anyway if server is inaccessible', async () => {
@@ -95,7 +97,7 @@ describe('license', () => {
         console.error(err)
         assert(err.code === 'ENETUNREACH')
       }
-      assert(await modified.checkLicense(validLicense))
+      assert(await modified.checkLicense(validLicenseToken))
     }).timeout(0)
   })
 })
