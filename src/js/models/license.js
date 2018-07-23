@@ -79,21 +79,28 @@ async function checkLicense (
             }
 
           } catch (err) {
-            console.log('license check: server error')
-            console.log(err.stack)
-            console.log('code:', err.code)
-            console.log('message', err.message)
-            // TODO why does electron-mocha not print an error string here?
-            // to see error: npx floss -d -p test/models/license.renderer.test.js
-            console.error(err)
-
-            if (err.code === 'ENETUNREACH') {
+            if (
+              err.code === 'ECONNREFUSED' ||
+              err.code === 'ENETUNREACH'
+            ) {
               console.log('license check: server unreachable')
               return true
+
             } else if (err.message === 'Request timed out') {
               console.log('license check: request timed out')
               return true
+
             } else {
+              console.log('license check: server error')
+
+              console.log(err.stack)
+              console.log('code:', err.code)
+              console.log('message', err.message)
+
+              // TODO why does electron-mocha not print an error string here?
+              // to see error: npx floss -d -p test/models/license.renderer.test.js
+              console.error(err)
+
               return true
             }
           }
