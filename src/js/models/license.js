@@ -3,6 +3,8 @@ const { machineIdSync } = require('node-machine-id')
 const fetchWithTimeout = require('../../../src/js/utils/fetchWithTimeout')
 const pkg = require('../../../package.json')
 
+const JWT = require('jsonwebtoken')
+
 // renderer has `URL`, but main (node) does not
 // so we fake it
 // const VERIFICATION_URL = new URL('http://localhost:8080/api/check_license')
@@ -26,6 +28,7 @@ async function checkLicense (
   }
   options = { ...defaultOptions, ...options }
   try {
+    let license = JWT.decode(token)
 
     // is there a license object?
     if (license) {
@@ -46,6 +49,7 @@ async function checkLicense (
       ) {
         // is the token still fresh?
         if (
+          license.licenseExpiration == null ||
           license.licenseExpiration >= Date.now().valueOf() / 1000
         ) {
           // try checking the server
