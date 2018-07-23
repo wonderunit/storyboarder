@@ -14,17 +14,6 @@ const VERIFICATION_URL = {
   }
 }
 
-// checkLicense
-//
-// e.g.:
-//
-// if (checkLicense(license)) {
-//   // unlock features
-// } else {
-//   // delete token file (if exists)
-//   // notify user they are not licensed
-// }
-//
 async function checkLicense (
   token,
   options = {}
