@@ -74,6 +74,7 @@ async function checkLicense (
               return true
             } else {
               console.log('license check failed: invalidated by server')
+              console.log(await response.text())
               return false
             }
 
