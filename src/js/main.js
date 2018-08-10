@@ -28,6 +28,7 @@ const xml2js = require('xml2js')
 const MobileServer = require('./express-app/app')
 
 const preferencesUI = require('./windows/preferences')()
+const registration = require('./windows/registration/main')
 const JWT = require('jsonwebtoken')
 
 const pkg = require('../../package.json')
@@ -1393,3 +1394,5 @@ ipcMain.on('zoomIn',
   event => mainWindow.webContents.send('zoomIn'))
 ipcMain.on('zoomOut',
   event => mainWindow.webContents.send('zoomOut'))
+
+ipcMain.on('registration:open', event => registration.show())
