@@ -49,7 +49,9 @@ const auth = (state = {}, action) => {
       return Object.assign(
         {},
         state,
-        action.payload
+        {
+          [action.payload.service]: action.payload
+        }
       )
 
     case 'CLEAR_AUTH':
