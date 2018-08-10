@@ -1,4 +1,4 @@
-const {app, ipcMain, BrowserWindow, globalShortcut, dialog, powerSaveBlocker} = electron = require('electron')
+const {app, ipcMain, BrowserWindow, dialog, powerSaveBlocker} = electron = require('electron')
 
 const fs = require('fs-extra')
 const path = require('path')
