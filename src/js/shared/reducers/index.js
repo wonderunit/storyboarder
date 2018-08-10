@@ -29,11 +29,26 @@ const sceneFilePath = (state = null, action) => {
 
 const toolbar = require('./toolbar')
 
+const license = (state = {}, action) => {
+  switch (action.type) {
+    case 'SET_LICENSE':
+      return Object.assign(
+        {},
+        state,
+        action.payload
+      )
+
+    default:
+      return state
+  }
+}
+
 module.exports = combineReducers({
   entities: combineReducers({
     keymap
   }),
   preferences,
   sceneFilePath,
-  toolbar
+  toolbar,
+  license,
 })

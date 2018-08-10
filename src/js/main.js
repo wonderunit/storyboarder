@@ -28,6 +28,7 @@ const xml2js = require('xml2js')
 const MobileServer = require('./express-app/app')
 
 const preferencesUI = require('./windows/preferences')()
+const JWT = require('jsonwebtoken')
 
 const pkg = require('../../package.json')
 const util = require('./utils/index')
@@ -1047,7 +1048,14 @@ let attemptLicenseVerification = async () => {
 
   try {
     if (await checkLicense(token, { fetcher: nodeFetch })) {
+
       console.log('license accepted')
+
+      store.dispatch({
+        type: 'SET_LICENSE',
+        payload: JWT.decode(token)
+      })
+
     } else {
       dialog.showMessageBox({
         message: 'License key is no longer valid.'
