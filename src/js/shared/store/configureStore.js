@@ -3,8 +3,10 @@ const { createStore, applyMiddleware } = require('redux')
 const { forwardToMain, forwardToRenderer, replayActionMain, replayActionRenderer, triggerAlias } = require('electron-redux')
 const thunk = require('redux-thunk').default
 const promise = require('redux-promise')
+const throttle = require('lodash.throttle')
 
 const reducers = require('../reducers')
+const authStorage = require('./authStorage')
 
 const configureStore = (initialState, scope = 'main') => {
   let middleware = [
@@ -27,9 +29,10 @@ const configureStore = (initialState, scope = 'main') => {
     ]
   }
 
+  const persistedState = authStorage.loadState()
   const store = createStore(
     reducers,
-    initialState,
+    { ...persistedState, ...initialState },
     applyMiddleware(...middleware)
   )
 
@@ -38,6 +41,13 @@ const configureStore = (initialState, scope = 'main') => {
   } else {
     replayActionRenderer(store)
   }
+
+  store.subscribe(
+    throttle(
+      () => authStorage.saveState({ auth: store.getState().auth }),
+      5000
+    )
+  )
 
   return store
 }
