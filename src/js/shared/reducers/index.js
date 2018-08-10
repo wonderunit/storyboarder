@@ -43,6 +43,23 @@ const license = (state = {}, action) => {
   }
 }
 
+const auth = (state = {}, action) => {
+  switch (action.type) {
+    case 'SET_AUTH':
+      return Object.assign(
+        {},
+        state,
+        action.payload
+      )
+
+    case 'CLEAR_AUTH':
+      return {}
+
+    default:
+      return state
+  }
+}
+
 module.exports = combineReducers({
   entities: combineReducers({
     keymap
@@ -51,4 +68,5 @@ module.exports = combineReducers({
   sceneFilePath,
   toolbar,
   license,
+  auth
 })
