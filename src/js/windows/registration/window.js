@@ -20,9 +20,10 @@ let view
 
 const licenseKeyPath = path.join(app.getPath('userData'), 'license.key')
 
+const authSelector = state => state.auth['app.wonderunit.com'] || {}
 const hasValidAuthToken = () => {
-  if (store.getState().auth.token == null) return false
-  return JWT.decode(store.getState().auth.token).exp > Date.now() / 1000
+  if (authSelector(store.getState()).token == null) return false
+  return JWT.decode(authSelector(store.getState()).token).exp > Date.now() / 1000
 }
 
 const init = () => {
@@ -191,7 +192,7 @@ class HomeView {
       subscriptions = await (await fetchWithTimeout(`${API_ROOT}/subscriptions`, {
         headers: new Headers({
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${store.getState().auth.token}`
+          'Authorization': `Bearer ${authSelector(store.getState()).token}`
         })
       }, 5000)).json()
     } catch (err) {
@@ -278,7 +279,7 @@ class HomeView {
         let productsResponse = await fetchWithTimeout(`${API_ROOT}/products`, {
           headers: new Headers({
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${store.getState().auth.token}`
+            'Authorization': `Bearer ${authSelector(store.getState()).token}`
           })
         }, 5000)
         let productsJson = await productsResponse.json()
@@ -326,11 +327,11 @@ class HomeView {
                   method: 'POST',
                   headers: new Headers({
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${store.getState().auth.token}`
+                    'Authorization': `Bearer ${authSelector(store.getState()).token}`
                   }),
                   body: JSON.stringify({
                     stripeToken: token.id,
-                    user_id: JWT.decode(store.getState().auth.token).user_id,
+                    user_id: JWT.decode(authSelector(store.getState()).token).user_id,
                     product_id: form.product.product_id,
                     plan_id: form.plan.plan_id
                   })
@@ -430,10 +431,10 @@ class LicenseInstallView {
         method: 'POST',
         headers: new Headers({
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${store.getState().auth.token}`
+          'Authorization': `Bearer ${authSelector(store.getState()).token}`
         }),
         body: JSON.stringify({
-          user_id: JWT.decode(store.getState().auth.token).user_id,
+          user_id: JWT.decode(authSelector(store.getState()).token).user_id,
           machine_id: this.machineId,
           subscription_id: this.subscriptionId
         })
@@ -452,7 +453,7 @@ class LicenseInstallView {
         method: 'GET',
         headers: new Headers({
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${store.getState().auth.token}`
+          'Authorization': `Bearer ${authSelector(store.getState()).token}`
         })
       }, 5000)
 
