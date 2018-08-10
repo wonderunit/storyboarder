@@ -745,6 +745,10 @@ AppMenu.about = (options = { includePreferences: false }) => {
         },
         ...optionalPreferences,
         {
+          label: 'Registration…',
+          click: () => ipcRenderer.send('registration:open')
+        },
+        {
           type: 'separator'
         },
         {
