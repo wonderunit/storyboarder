@@ -10,7 +10,7 @@ const JWT = require('jsonwebtoken')
 // const VERIFICATION_URL = new URL('http://localhost:8080/api/check_license')
 const VERIFICATION_URL = {
   origin: 'http://localhost:8080',
-  pathname: '/api/check_license',
+  pathname: '/api/licenses/verify',
   toString() {
     return `${this.origin}${this.pathname}`
   }
