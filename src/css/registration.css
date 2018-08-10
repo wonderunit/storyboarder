@@ -93,7 +93,6 @@
   text-decoration: none;
 }
 
-
 .registration-window__hint {
   margin-top: 0.5rem;
   opacity: 0.5;
@@ -112,6 +111,11 @@
 button.registration-window__button {
   border: none;
   cursor: pointer;
+}
+.registration-window .registration-window__button[disabled] {
+  cursor: auto;
+  background-color: #eee;
+  color: #ccc;
 }
 
 .registration-window__topbar {
