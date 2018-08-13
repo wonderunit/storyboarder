@@ -201,6 +201,9 @@ class HomeView {
       return
     }
 
+    // ignore canceled subscriptions
+    subscriptions = subscriptions.filter(s => s.stripe_status !== 'canceled')
+
     if (subscriptions.length) {
       let t = document.querySelector('#home-subscriptions-template')
       let clone = document.importNode(t.content, true)
