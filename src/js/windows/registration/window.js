@@ -57,13 +57,18 @@ const init = () => {
     view.render(document.body)
   }
 
+  let onPaymentApproved = ({ subscriptionId }) => {
+    onInstallRequested({ subscriptionId })
+  }
+
   if (view) view.dispose()
 
   if (hasValidAuthToken()) {
     view = new HomeView({
       store,
       onSignOut,
-      onInstallRequested
+      onInstallRequested,
+      onPaymentApproved
     })
     view.render(document.body)
   } else {
@@ -178,11 +183,12 @@ class SignInView {
 // TODO split into SubscriberView vs NonSubscriberView
 // TODO split SubscriberView into LicensedView vs UnLicensedView
 class HomeView {
-  constructor ({ store, onSignOut, onInstallRequested }) {
+  constructor ({ store, onSignOut, onInstallRequested, onPaymentApproved }) {
     this.store = store
     this.parentEl = undefined
     this.onSignOut = onSignOut
     this.onInstallRequested = onInstallRequested
+    this.onPaymentApproved = onPaymentApproved
   }
   async render (parentEl) {
     this.parentEl = parentEl
@@ -321,7 +327,7 @@ class HomeView {
             key: form.stripePublishableKey,
             image: form.image,
             locale: 'auto',
-            token: async function (token) {
+            token: async (token) => {
               formEl.disabled = true
               document.body.style.cursor = 'wait'
 
@@ -348,7 +354,10 @@ class HomeView {
 
                 document.body.style.cursor = ''
                 formEl.disabled = false
-                init()
+
+                this.onPaymentApproved({
+                  subscriptionId: paymentJson.subscription_id
+                })
 
               } catch (err) {
                 window.alert('Whoops! An error occurred.\n' + err.message)
