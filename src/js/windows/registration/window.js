@@ -26,6 +26,14 @@ const hasValidAuthToken = () => {
   return JWT.decode(authSelector(store.getState()).token).exp > Date.now() / 1000
 }
 
+const handleError = err => {
+  console.error(err)
+  if (err.message === 'Failed to fetch') {
+    window.alert('Whoops! Couldn’t connect to the server. Please check your network connection and try again.\nError: ' + err.message)
+  } else {
+    window.alert('Whoops! An error occurred.\n' + err.message)
+  }
+}
 const init = () => {
   // document.addEventListener('keydown', event => {
   //   if (event.key === 'Escape') {
@@ -169,8 +177,7 @@ class SignInView {
         throw new Error(`Server returned HTTP status code ${req.status}`)
       }
     } catch (err) {
-      window.alert('Whoops! An error occurred.\n' + err.message)
-      console.error(err)
+      handleError(err)
       this.unlock(event)
     }
   }
@@ -202,8 +209,7 @@ class HomeView {
         })
       }, 5000)).json()
     } catch (err) {
-      window.alert('Whoops! An error occurred.\n' + err.message)
-      console.error(err)
+      handleError(err)
       return
     }
 
@@ -360,8 +366,7 @@ class HomeView {
                 })
 
               } catch (err) {
-                window.alert('Whoops! An error occurred.\n' + err.message)
-                console.error(err)
+                handleError(err)
 
                 document.body.style.cursor = ''
                 formEl.disabled = false
@@ -385,8 +390,7 @@ class HomeView {
         }
 
       } catch (err) {
-        console.error(err)
-        window.alert('Whoops! An error occurred.\n' + err.message)
+        handleError(err)
         return
       }
     }
@@ -494,8 +498,7 @@ class LicenseInstallView {
       }
 
     } catch (err) {
-      window.alert('Whoops! An error occurred.\n' + err.message)
-      console.error(err)
+      handleError(err)
       output.innerHTML += 'Server Error :(<br/>'
       return
     }
