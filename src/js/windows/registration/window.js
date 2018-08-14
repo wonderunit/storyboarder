@@ -509,4 +509,6 @@ class LicenseInstallView {
   }
 }
 
-init()
+setTimeout(() => {
+  init()
+}, 250)
