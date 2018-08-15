@@ -319,7 +319,8 @@ class Exporter {
         outputPath,
         sceneFilePath,
         scene,
-        progressCallback: opts.progressCallback
+        progressCallback: opts.progressCallback,
+        shouldWatermark: opts.shouldWatermark
       }
     )
   }
