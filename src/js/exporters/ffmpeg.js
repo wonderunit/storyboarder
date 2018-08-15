@@ -96,7 +96,7 @@ const convertToVideo = async opts => {
   let tmpDir = tmp.dirSync()
   let outputFilePath
   try {
-		let shouldWatermark = true
+		let shouldWatermark = opts.shouldWatermark
 
     // copy the watermark
     console.log('copying required resources …')
