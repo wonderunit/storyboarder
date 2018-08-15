@@ -42,14 +42,14 @@ const init = () => {
   //   }
   // })
 
-  // let win = remote.getCurrentWindow()
-  // win.webContents.on('before-input-event', (event, input) => {
-  //   // if we are focused on an input
-  //   if (document.activeElement && document.activeElement.tagName === 'INPUT') {
-  //     // only enable application menu keyboard shortcuts when Ctrl / Cmd are down.
-  //     win.webContents.setIgnoreMenuShortcuts(!input.control && !input.meta)
-  //   }
-  // })
+  let win = remote.getCurrentWindow()
+  win.webContents.on('before-input-event', (event, input) => {
+    // if we are focused on an input
+    if (document.activeElement && document.activeElement.tagName === 'INPUT') {
+      // only enable application menu keyboard shortcuts when Ctrl / Cmd are down.
+      win.webContents.setIgnoreMenuShortcuts(!input.control && !input.meta)
+    }
+  })
 
   let onSignOut = () => {
     init()
