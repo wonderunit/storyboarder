@@ -96,6 +96,8 @@ const convertToVideo = async opts => {
   let tmpDir = tmp.dirSync()
   let outputFilePath
   try {
+		let shouldWatermark = true
+
     // copy the watermark
     console.log('copying required resources …')
     fs.copySync(
@@ -116,7 +118,10 @@ const convertToVideo = async opts => {
     )
     await Promise.all(writers)
 
-    const STREAM_OFFSET = 2 // video + watermark
+    let streamOffset = shouldWatermark
+			? 2 // video + watermark
+			: 1 // video only
+
     const FADE_OUT_IN_SECONDS = 0.25
 
     let audioFilterComplex
@@ -139,7 +144,7 @@ const convertToVideo = async opts => {
           : `${fadeout}`
 
         // stream index
-        let n = audioStreamIndex + STREAM_OFFSET
+        let n = audioStreamIndex + streamOffset
         audioFilters.push(`[${n}]${filter}[s${n}]`)
 
         audioStreamIndex++
@@ -149,7 +154,7 @@ const convertToVideo = async opts => {
     if (audioFileArgs.length) {
       let mixout = ';'
       for (let i = 0; i < audioFilters.length; i++) {
-        mixout += `[s${i + STREAM_OFFSET}]`
+        mixout += `[s${i + streamOffset}]`
       }
       mixout += `amix=${audioFilters.length}[mix]`
 
@@ -190,7 +195,7 @@ const convertToVideo = async opts => {
       '-i', path.join(tmpDir.name, 'video.ffconcat'),
 
       // Input #1
-      '-i', path.join(tmpDir.name, 'watermark.png')
+      ...(shouldWatermark ? ['-i', path.join(tmpDir.name, 'watermark.png')] : [])
     ]
 
     args = args.concat(audioFileArgs)
@@ -199,21 +204,29 @@ const convertToVideo = async opts => {
 
     args = args.concat([
       '-filter_complex',
+			[
                           // via https://stackoverflow.com/a/20848224
                           // fixes "width not divisible by 2"
-                          '[0]scale=-2:900[frame];' +
+                          '[0]scale=-2:900[frame]',
 
-                          // pass overlay through untouched
-                          '[1]null[watermark];' +
-
-                          // overlay watermark w/ shorthand positioning
-                          '[frame][watermark]overlay=W-w:H-h[vid]' +
+													...(shouldWatermark
+                          	? [
+																// input #1 = watermark
+																'[1]null[watermark]',
+																// overlay watermark w/ shorthand positioning
+																'[frame][watermark]overlay=W-w:H-h[vid]'
+															]
+														: [
+																// frame = vid
+																'[frame]null[vid]'
+															]
+													),
 
                           // use audio (if present) or route silence to mix
-                          (audioFilterComplex
-                            ? ';' + audioFilterComplex
-                            : ''),
-
+                          ...(audioFilterComplex
+                            ? [audioFilterComplex]
+                            : [])
+			].join(';'),
       '-map', '[vid]:v'
     ])
 
