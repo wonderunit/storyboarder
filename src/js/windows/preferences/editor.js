@@ -5,6 +5,10 @@ const path = require('path')
 const util = require('./js/utils')
 const prefsModule = require('electron').remote.require('./prefs')
 
+const { getInitialStateRenderer } = require('electron-redux')
+const configureStore = require('./js/shared/store/configureStore')
+const store = configureStore(getInitialStateRenderer(), 'renderer')
+
 let prefs,
     inputs,
     imgEditorEl,
@@ -133,6 +137,12 @@ const init = () => {
   originalPrefs = util.stringifyClone(prefsModule.getPrefs())
 
   prefs = prefsModule.getPrefs('prefs window')
+
+  if (store.getState().license.iss) {
+    let t = document.querySelector('#licensed-template')
+    let clone = document.importNode(t.content, true)
+    document.querySelector('#licensed-container').appendChild(clone)
+  }
 
   inputs = document.querySelectorAll('input[type="checkbox"], input[type="number"], input[type="range"]')
 
