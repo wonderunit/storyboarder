@@ -42,7 +42,8 @@ const defaultPrefs = {
   enableBoardAudition: true,
   enableHighQualityDrawingEngine: true,
 
-  straightLineDelayInMsecs: 650
+  straightLineDelayInMsecs: 650,
+  enableWonderunitWatermark: true
 }
 
 // For slow computers, override the defaults here.
