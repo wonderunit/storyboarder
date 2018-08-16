@@ -41,6 +41,8 @@ const defaultPrefs = {
 
   enableBoardAudition: true,
   enableHighQualityDrawingEngine: true,
+
+  enableWonderunitWatermark: true
 }
 
 // For slow computers, override the defaults here.
