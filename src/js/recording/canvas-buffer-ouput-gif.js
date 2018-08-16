@@ -7,6 +7,7 @@ class CanvasBufferOutputGifStrategy {
     this.filepath = options.filepath || ""
     this.width = options.width || 400
     this.height = options.height || 225
+    this.shouldWatermark = options.shouldWatermark
   }
 
   flush(buffer, pool) {
@@ -26,8 +27,8 @@ class CanvasBufferOutputGifStrategy {
         let bufferData = buffer.splice(0, 1)[0]
         context.fillRect(0, 0, this.width, this.height)
         context.drawImage(bufferData.canvas, 0, 0, this.width, this.height)
-        if(watermarkImage) {
-          context.drawImage(watermarkImage, this.width-watermarkImage.width, this.height-watermarkImage.height)
+        if (watermarkImage) {
+          context.drawImage(watermarkImage, this.width - watermarkImage.width, this.height - watermarkImage.height)
         }
         if(bufferData.metaData.duration) {
           encoder.setDelay(bufferData.metaData.duration)
@@ -55,17 +56,17 @@ class CanvasBufferOutputGifStrategy {
       })
     }
 
-    return new Promise((fulfill, reject)=>{
+    return new Promise((resolve, reject) => {
       getImage('./img/watermark.png')
-        .then( (watermarkImage) => {
-          writeGif(watermarkImage)
-            .then(() => fulfill([this.filepath]))
+        .then(watermarkImage => {
+          writeGif(this.shouldWatermark ? watermarkImage : null)
+            .then(() => resolve([this.filepath]))
             .catch(error => reject(error))
         })
-        .catch( error => { 
-          console.error(error) 
-          writeGif(watermarkImage)
-            .then(() => fulfill([this.filepath]))
+        .catch(error => {
+          console.error(error)
+          writeGif(null)
+            .then(() => resolve([this.filepath]))
             .catch(error => reject(error))
         })
     })

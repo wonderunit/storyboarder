@@ -1453,7 +1453,8 @@ const loadBoardUI = async () => {
         outputWidth: outputWidth,
         outputHeight: targetOutputHeight,
         recordingStrategy: "RecordingStrategyTimeRatio",
-        recordingTime: data.duration
+        recordingTime: data.duration,
+        shouldWatermark: prefsModule.getPrefs().enableWonderunitWatermark
       })
 
       canvasRecorder.on('recording-ready', (filepaths)=> {
