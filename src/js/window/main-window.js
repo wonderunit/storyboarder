@@ -5378,6 +5378,7 @@ const exportVideo = async () => {
       scene,
       sceneFilePath,
       {
+        shouldWatermark: prefsModule.getPrefs().enableWonderunitWatermark,
         progressCallback: progress => {}
           // notifications.notify({message: `${Math.round(progress * 100)}% complete`, timing: 1})
       }
