@@ -5302,7 +5302,8 @@ const exportAnimatedGif = async () => {
   sfx.down()
 
   try {
-    let path = await exporter.exportAnimatedGif(boards, boardSize, 888, boardFilename, true, boardData)
+    let shouldWatermark = prefsModule.getPrefs().enableWonderunitWatermark
+    let path = await exporter.exportAnimatedGif(boards, boardSize, 888, boardFilename, shouldWatermark, boardData)
     notifications.notify({
       message: 'I exported your board selection as a GIF. Share it with your friends! Post it to your twitter thing or your slack dingus.',
       timing: 20
