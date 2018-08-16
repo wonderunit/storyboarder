@@ -744,10 +744,10 @@ AppMenu.about = (options = { includePreferences: false }) => {
           role: 'about',
         },
         ...optionalPreferences,
-        {
-          label: 'Registration…',
-          click: () => ipcRenderer.send('registration:open')
-        },
+        // {
+        //   label: 'Registration…',
+        //   click: () => ipcRenderer.send('registration:open')
+        // },
         {
           type: 'separator'
         },

@@ -90,7 +90,9 @@ const defaultKeyMap = {
 
   "input:cancel": "Escape",
   "input:commit:single-line": "Enter",
-  "input:commit:multi-line": "CommandOrControl+Enter"
+  "input:commit:multi-line": "CommandOrControl+Enter",
+
+  "registration:open": "Alt+Shift+4"
 }
 
 module.exports = defaultKeyMap

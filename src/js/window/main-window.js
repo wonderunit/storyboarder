@@ -4534,7 +4534,14 @@ const resize = () => {
   toolbarEl.classList.toggle('with-workspace-small', workspaceWidth <= breakpointWorkspace)
 }
 
-window.onkeydown = (e)=> {
+window.onkeydown = (e) => {
+  // TEMPORARY
+  // key command to trigger registration window during early testing
+  if (isCommandPressed('registration:open')) {
+    e.preventDefault()
+    ipcRenderer.send('registration:open')
+  }
+
   if (textInputMode) {
     // keyboard control over focus in text fields
     switch (e.target.name) {
