@@ -82,8 +82,8 @@
     }
   },
   "devDependencies": {
-    "electron": "2.0.4",
-    "electron-builder": "20.18.0",
+    "electron": "2.0.7",
+    "electron-builder": "20.28.1",
     "electron-mocha": "4.0.0",
     "electron-osx-sign": "^0.4.8",
     "floss": "2.1.5",
