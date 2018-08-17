@@ -494,6 +494,9 @@ class DrawingStrategy {
     this._onPointerUp = this._onPointerUp.bind(this)
     this._onKeyUp = this._onKeyUp.bind(this)
     this._onWheel = this._onWheel.bind(this)
+
+    this._onIdle = this._onIdle.bind(this)
+    this._idleTimer = new IdleTimer(this._onIdle, 500)
   }
 
   startup () {
@@ -527,6 +530,8 @@ class DrawingStrategy {
     this.context.sketchPane.app.view.style.cursor = 'auto'
 
     this.context.fpsMeter.stop()
+
+    this._idleTimer.clear()
   }
 
   _onPointerOver (e) {
@@ -550,6 +555,8 @@ class DrawingStrategy {
 
   // TODO could store multiErase status / erase layer array in a reducer?
   _onPointerDown (e) {
+    this._idleTimer.reset()
+
     this.context.store.dispatch({ type: 'TOOLBAR_MODE_STATUS_SET', payload: 'busy', meta: { scope: 'local' } })
 
     // configure the tool for drawing
@@ -598,6 +605,8 @@ class DrawingStrategy {
   }
 
   _onPointerMove (e) {
+    this._idleTimer.reset()
+
     let point = this.context.sketchPane.localizePoint(e)
 
     // always re-enable if in bounds
@@ -649,6 +658,10 @@ class DrawingStrategy {
     let delta = e.deltaY / 100
     let scale = Math.min(Math.max(this.context.sketchPane.zoom + delta, 0.25), 5)
     this.context.zoomAt(e, scale)
+  }
+
+  _onIdle () {
+    this.context.sketchPane.setIsStraightLine(true)
   }
 
   _updateQuickErase (e) {
@@ -1104,6 +1117,22 @@ class FPSMeter {
   }
   hadLowFps (threshold = 20) {
     return this.fpsList.length === this.numToAvg && this.avg() <= threshold
+  }
+}
+
+class IdleTimer {
+  constructor (callback, delay = 500) {
+    this.callback = callback
+    this.delay = delay
+
+    this.timer = null
+  }
+  reset () {
+    clearTimeout(this.timer)
+    this.timer = setTimeout(this.callback, this.delay)
+  }
+  clear () {
+    clearTimeout(this.timer)
   }
 }
 
