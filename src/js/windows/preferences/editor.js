@@ -27,6 +27,17 @@ const onChange = (name, event) => {
     prefsModule.set(name, el.checked, true)
   } else if (el.type == 'number') {
     prefsModule.set(name, el.value, true)
+  } else if (el.type == 'range') {
+    prefsModule.set(name, parseInt(el.value, 10), true)
+  }
+  render()
+}
+
+const onInput = (name, event) => {
+  let el = event.target
+
+  if (el.type == 'range') {
+    prefsModule.set(name, parseInt(el.value, 10), true)
   }
   render()
 }
@@ -68,6 +79,8 @@ const render = () => {
       el.checked = prefs[el.name]
     } else if (el.type == 'number') {
       el.value = prefs[el.name]
+    } else if (el.type == 'range') {
+      el.value = prefs[el.name]
     }
   }
 
@@ -88,6 +101,16 @@ const render = () => {
   } else {
     storyboardersAccountEl.style.display = 'none'
     storyboardersAccountEl.querySelector('.preferences-hint').innerHTML = ''
+  }
+
+  for (let el of document.querySelectorAll('input[type="range"]')) {
+    let outEl = document.querySelector(`span[data-value="${el.id}"]`)
+
+    if (el.value < 10) el.value = 0
+
+    outEl.textContent = el.value >= 10
+      ? el.value + ' msecs'
+      : 'disabled'
   }
 
   // track if anything has changed
@@ -111,7 +134,7 @@ const init = () => {
 
   prefs = prefsModule.getPrefs('prefs window')
 
-  inputs = document.querySelectorAll('input[type="checkbox"], input[type="number"]')
+  inputs = document.querySelectorAll('input[type="checkbox"], input[type="number"], input[type="range"]')
 
   imgEditorEl = document.querySelector('#absolutePathToImageEditor_filename')
   imgEditorInput = document.querySelector('#absolutePathToImageEditor')
@@ -121,6 +144,10 @@ const init = () => {
   // bind
   for (let el of inputs) {
     el.addEventListener('change', onChange.bind(this, el.name))
+  }
+
+  for (let el of document.querySelectorAll('input[type="range"]')) {
+    el.addEventListener('input', onInput.bind(this, el.name))
   }
 
   imgEditorEl.addEventListener('click', onFilenameClick.bind(this))

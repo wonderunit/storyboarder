@@ -495,8 +495,11 @@ class DrawingStrategy {
     this._onKeyUp = this._onKeyUp.bind(this)
     this._onWheel = this._onWheel.bind(this)
 
-    this._onIdle = this._onIdle.bind(this)
-    this._idleTimer = new IdleTimer(this._onIdle, 500)
+    let delay = prefsModule.getPrefs().straightLineDelayInMsecs
+    if (delay) {
+      this._onIdle = this._onIdle.bind(this)
+      this._idleTimer = new IdleTimer(this._onIdle, delay)
+    }
   }
 
   startup () {
@@ -531,7 +534,7 @@ class DrawingStrategy {
 
     this.context.fpsMeter.stop()
 
-    this._idleTimer.clear()
+    this._idleTimer && this._idleTimer.clear()
   }
 
   _onPointerOver (e) {
@@ -555,7 +558,7 @@ class DrawingStrategy {
 
   // TODO could store multiErase status / erase layer array in a reducer?
   _onPointerDown (e) {
-    this._idleTimer.reset()
+    this._idleTimer && this._idleTimer.reset()
 
     this.context.store.dispatch({ type: 'TOOLBAR_MODE_STATUS_SET', payload: 'busy', meta: { scope: 'local' } })
 
@@ -605,7 +608,7 @@ class DrawingStrategy {
   }
 
   _onPointerMove (e) {
-    this._idleTimer.reset()
+    this._idleTimer && this._idleTimer.reset()
 
     let point = this.context.sketchPane.localizePoint(e)
 

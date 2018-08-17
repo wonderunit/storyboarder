@@ -129,6 +129,30 @@
             Displays how fast Storyboarder is able to run in frames-per-second over time. Useful for troubleshooting.
           </div>
         </div>
+
+        <div class="preferences-input">
+          <label for="straightLineDelayInMsecs">
+            Straight Line Delay
+          </label>
+
+          <input
+            type="range"
+            min="0"
+            max="1500"
+            step="10"
+            name="straightLineDelayInMsecs"
+            id="straightLineDelayInMsecs"
+            />
+          <span data-value="straightLineDelayInMsecs" style="font-size: 87.5%;">
+            ---
+          </span>
+
+          <div class="preferences-hint">
+            Pause for this long while drawing to switch to straight line mode.<br/>
+            Hold <kbd>Shift</kbd> while drawing to start a straight line immediately.<br/>
+            Hold <kbd>Space</kbd> while drawing a straight line to snap it to 45 degree angles.
+          </div>
+        </div>
       </div>
 
       <div class="preferences-fieldset">
