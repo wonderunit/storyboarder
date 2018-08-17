@@ -4593,9 +4593,11 @@ window.onkeydown = (e)=> {
       audioPlayback.stopAllSounds()
     }
 
-    if (isCommandPressed('menu:navigation:play')) {
-      e.preventDefault()
-      togglePlayback()
+    if (!storyboarderSketchPane.getIsDrawingOrStabilizing()) {
+      if (isCommandPressed('menu:navigation:play')) {
+        e.preventDefault()
+        togglePlayback()
+      }
     }
   }
 
