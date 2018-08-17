@@ -319,6 +319,13 @@ class StoryboarderSketchPane extends EventEmitter {
         meta: { scope: 'local' }
       })
     }
+
+    if (this.isCommandPressed('drawing:straight-line')) {
+      this.sketchPane.setIsStraightLine(true)
+      if (this.isCommandPressed('drawing:straight-line-snap')) {
+        this.sketchPane.setShouldSnap(true)
+      }
+    }
   }
 
   onKeyUp (e) {
@@ -333,6 +340,13 @@ class StoryboarderSketchPane extends EventEmitter {
       // play a sound if it worked
       if (this.store.getState().toolbar.mode === 'drawing') {
         sfx.playEffect('metal')
+      }
+    }
+
+    if (!this.isCommandPressed('drawing:straight-line')) {
+      // this.sketchPane.setIsStraightLine(false)
+      if (!this.isCommandPressed('drawing:straight-line-snap')) {
+        this.sketchPane.setShouldSnap(false)
       }
     }
   }
