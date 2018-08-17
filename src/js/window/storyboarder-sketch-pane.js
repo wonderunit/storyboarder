@@ -320,8 +320,10 @@ class StoryboarderSketchPane extends EventEmitter {
       })
     }
 
-    if (this.isCommandPressed('drawing:straight-line')) {
-      this.sketchPane.setIsStraightLine(true)
+    if (this.getIsDrawingOrStabilizing()) {
+      if (this.isCommandPressed('drawing:straight-line')) {
+        this.sketchPane.setIsStraightLine(true)
+      }
       if (this.isCommandPressed('drawing:straight-line-snap')) {
         this.sketchPane.setShouldSnap(true)
       }
@@ -345,9 +347,9 @@ class StoryboarderSketchPane extends EventEmitter {
 
     if (!this.isCommandPressed('drawing:straight-line')) {
       // this.sketchPane.setIsStraightLine(false)
-      if (!this.isCommandPressed('drawing:straight-line-snap')) {
-        this.sketchPane.setShouldSnap(false)
-      }
+    }
+    if (!this.isCommandPressed('drawing:straight-line-snap')) {
+      this.sketchPane.setShouldSnap(false)
     }
   }
 
