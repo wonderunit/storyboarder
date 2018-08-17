@@ -1277,7 +1277,7 @@ ipcMain.on('saveAs', (event, arg) => {
 })
 
 ipcMain.on('prefs:change', (event, arg) => {
-  mainWindow.webContents.send('prefs:change', arg)
+  !mainWindow.isDestroyed() && mainWindow.webContents.send('prefs:change', arg)
 })
 
 ipcMain.on('showKeyCommands', (event, arg) => {
