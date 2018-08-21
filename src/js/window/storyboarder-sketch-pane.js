@@ -610,13 +610,18 @@ class DrawingStrategy {
   _onPointerMove (e) {
     let point = this.context.sketchPane.localizePoint(e)
 
-    // if in straight line mode
-    if (this.context.sketchPane.getIsStraightLine()) {
+    if (
+      // drawing
+      this.context.sketchPane.isDrawing() &&
+      // but not in straight line mode yet
+      !this.context.sketchPane.getIsStraightLine()
+    ) {
       let points = this.context.sketchPane.strokeState.points
       let prev = points[points.length - 1]
       if (prev) {
         // is there a 1px difference in either direction since the last recorded point?
         if (Math.abs(prev.x - point.x) > 1 || Math.abs(prev.y - point.y) > 1) {
+          // reset the timer
           this._idleTimer && this._idleTimer.reset()
         }
       }
