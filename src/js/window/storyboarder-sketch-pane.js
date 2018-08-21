@@ -596,6 +596,12 @@ class DrawingStrategy {
       this.context.fpsMeter.start()
     }
 
+    if (!options.erase) {
+      if (this.context.isCommandPressed('drawing:straight-line')) {
+        options.isStraightLine = true
+      }
+    }
+
     // sync sketchPane to the current toolbar state
     // syncSketchPaneState(this.store.getState().toolbar)
 
