@@ -10,7 +10,7 @@ const defaultKeyMap = {
   "drawing:exit-current-mode": "Escape",
   "drawing:pan-mode": "Space",
   "drawing:straight-line": "Shift",
-  "drawing:straight-line-snap": "Space",
+  "drawing:straight-line-snap": "Alt",
 
   "menu:file:open": "CommandOrControl+o",
   "menu:file:save": "CommandOrControl+s",
