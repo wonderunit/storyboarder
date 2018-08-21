@@ -66,7 +66,7 @@ const defaultKeyMap = {
   "menu:view:cycle-view-mode-reverse": "Shift+Tab",
   "menu:view:onion-skin": "o",
   "menu:view:toggle-captions": "c",
-  "menu:view:toggle-timeline": "CommandOrControl+Option+t",
+  "menu:view:toggle-timeline": "CommandOrControl+Alt+t",
   "menu:view:toggle-full-screen": "F11",
   "menu:view:toggle-developer-tools": "Alt+Command+i",
 
