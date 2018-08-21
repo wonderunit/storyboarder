@@ -8,7 +8,7 @@ const defaultKeyMap = {
   "drawing:move-mode": "CommandOrControl",
   "drawing:quick-erase-modifier": "Alt",
   "drawing:exit-current-mode": "Escape",
-  "drawing:pan-mode": "Shift",
+  "drawing:pan-mode": "Space",
   "drawing:straight-line": "Shift",
   "drawing:straight-line-snap": "Space",
 
