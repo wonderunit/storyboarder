@@ -4594,9 +4594,11 @@ window.onkeydown = (e)=> {
     }
 
     if (!storyboarderSketchPane.getIsDrawingOrStabilizing()) {
-      if (isCommandPressed('menu:navigation:play')) {
-        e.preventDefault()
-        togglePlayback()
+      if (storyboarderSketchPane.sketchPane.zoom === 1) {
+        if (isCommandPressed('menu:navigation:play')) {
+          e.preventDefault()
+          togglePlayback()
+        }
       }
     }
   }

@@ -313,11 +313,13 @@ class StoryboarderSketchPane extends EventEmitter {
         sfx.playEffect('metal')
       }
     } else if (this.isCommandPressed('drawing:pan-mode')) {
-      this.store.dispatch({
-        type: 'TOOLBAR_MODE_SET',
-        payload: 'panning',
-        meta: { scope: 'local' }
-      })
+      if (this.store.getState().toolbar.mode !== 'panning') {
+        this.store.dispatch({
+          type: 'TOOLBAR_MODE_SET',
+          payload: 'panning',
+          meta: { scope: 'local' }
+        })
+      }
     }
 
     if (this.getIsDrawingOrStabilizing()) {
