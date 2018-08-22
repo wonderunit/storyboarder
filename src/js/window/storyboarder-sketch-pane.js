@@ -167,7 +167,8 @@ class StoryboarderSketchPane extends EventEmitter {
       moving: new MovingStrategy(this),
       scaling: new ScalingStrategy(this),
       locked: new LockedStrategy(this),
-      panning: new PanningStrategy(this)
+      panning: new PanningStrategy(this),
+      lineDrawing: new LineDrawingStrategy(this)
     }
 
     this.store.dispatch({ type: 'TOOLBAR_MODE_SET', payload: 'drawing', meta: { scope: 'local' } })
@@ -329,6 +330,10 @@ class StoryboarderSketchPane extends EventEmitter {
       if (this.isCommandPressed('drawing:straight-line-snap')) {
         this.sketchPane.setShouldSnap(true)
       }
+    } else {
+      if (this.isCommandPressed('drawing:straight-line')) {
+        this.store.dispatch({ type: 'TOOLBAR_MODE_SET', payload: 'lineDrawing', meta: { scope: 'local' } })
+      }
     }
   }
 
@@ -481,6 +486,140 @@ class StoryboarderSketchPane extends EventEmitter {
       this.fpsMeter.hadLowFps() &&
       !this.sketchPane.efficiencyMode
     )
+  }
+}
+
+class LineDrawingStrategy {
+  constructor (context) {
+    this.context = context
+    this.name = 'lineDrawing'
+
+    this._onPointerOver = this._onPointerOver.bind(this)
+    this._onPointerOut = this._onPointerOut.bind(this)
+    this._onPointerDown = this._onPointerDown.bind(this)
+    this._onPointerMove = this._onPointerMove.bind(this)
+    this._onPointerUp = this._onPointerUp.bind(this)
+
+    this._onKeyUp = this._onKeyUp.bind(this)
+  }
+
+  startup () {
+    this.context.sketchPaneDOMElement.addEventListener('pointerover', this._onPointerOver)
+    this.context.sketchPaneDOMElement.addEventListener('pointerout', this._onPointerOut)
+
+    this.context.sketchPaneDOMElement.addEventListener('pointerdown', this._onPointerDown)
+    document.addEventListener('pointermove', this._onPointerMove)
+    document.addEventListener('pointerup', this._onPointerUp)
+    window.addEventListener('keyup', this._onKeyUp)
+
+    this.context.fpsMeter.start()
+    this.context.store.dispatch({ type: 'TOOLBAR_MODE_STATUS_SET', payload: 'busy', meta: { scope: 'local' } })
+
+    this.state = {
+      started: false
+    }
+  }
+  shutdown () {
+    this.context.sketchPaneDOMElement.removeEventListener('pointerover', this._onPointerOver)
+    this.context.sketchPaneDOMElement.removeEventListener('pointerout', this._onPointerOut)
+
+    this.context.sketchPaneDOMElement.removeEventListener('pointerdown', this._onPointerDown)
+    document.removeEventListener('pointermove', this._onPointerMove)
+    document.removeEventListener('pointerup', this._onPointerUp)
+    window.removeEventListener('keyup', this._onKeyUp)
+
+    this.context.sketchPane.app.view.style.cursor = 'auto'
+
+    this.context.fpsMeter.stop()
+  }
+
+  _onPointerOver (e) {
+    this.context.sketchPane.cursor.setEnabled(true)
+  }
+
+  _onPointerOut (e) {
+    let point = this.context.sketchPane.localizePoint(e)
+
+    // only hide the cursor if actually out-of-bounds
+    if (!this._inBounds(point)) {
+      this.context.sketchPane.cursor.setEnabled(false)
+    }
+  }
+
+  _inBounds (point) {
+    return (
+      point.x >= 0 &&
+      point.y >= 0 &&
+      point.x <= this.context.sketchPane.width &&
+      point.y <= this.context.sketchPane.height
+    )
+  }
+
+  _onPointerDown (e) {
+    if (this.state.started) {
+      // line has been in-progress, so stop current line
+      let wasDrawing = this.context.sketchPane.isDrawing()
+
+      this.context.sketchPane.up(e)
+
+      if (wasDrawing) {
+        this.context.emit('lineMileage', this.context.lineMileageCounter.get())
+
+        // audible event for Sonifier
+        // this.context.emit('pointerup', this.context.sketchPane.localizePoint(e))
+      }
+    } else {
+      // starting a new line
+      this.state.started = true
+    }
+
+    let options = {
+      isStraightLine: true
+    }
+
+    this.context.sketchPane.down(e, options)
+
+    this.context.lineMileageCounter.reset()
+
+    // audible event for Sonifier
+    this.context.emit('pointerdown', this.context.sketchPane.localizePoint(e))
+
+    // just triggers layer opacity check
+    this.context.emit('requestPointerDown')
+  }
+
+  _onPointerMove (e) {
+    let point = this.context.sketchPane.localizePoint(e)
+
+    // always re-enable if in bounds
+    if (this._inBounds(point)) {
+      this.context.sketchPane.cursor.setEnabled(true)
+    }
+
+    // always update the cursor
+    this.context.sketchPane.move(e)
+
+    if (this.context.sketchPane.isDrawing()) {
+      // track X/Y on the full-size texture
+      this.context.lineMileageCounter.add(point)
+
+      // audible event for Sonifier
+      this.context.emit('pointermove', point)
+    }
+  }
+
+  _onPointerUp (e) {
+    
+  }
+
+  _onKeyUp (e) {
+    if (!this.context.isCommandPressed('drawing:straight-line')) {
+      if (this.context.sketchPane.isDrawing()) {
+        this.context.sketchPane.stopDrawing()
+      }
+      this.context.store.dispatch({ type: 'TOOLBAR_MODE_STATUS_SET', payload: 'idle', meta: { scope: 'local' } })
+      this.context.store.dispatch({ type: 'TOOLBAR_MODE_SET', payload: 'drawing', meta: { scope: 'local' } })
+    }
   }
 }
 
