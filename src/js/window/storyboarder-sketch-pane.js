@@ -499,7 +499,6 @@ class LineDrawingStrategy {
     this._onPointerOut = this._onPointerOut.bind(this)
     this._onPointerDown = this._onPointerDown.bind(this)
     this._onPointerMove = this._onPointerMove.bind(this)
-    this._onPointerUp = this._onPointerUp.bind(this)
 
     this._onKeyUp = this._onKeyUp.bind(this)
   }
@@ -607,10 +606,6 @@ class LineDrawingStrategy {
       // audible event for Sonifier
       this.context.emit('pointermove', point)
     }
-  }
-
-  _onPointerUp (e) {
-    
   }
 
   _onKeyUp (e) {
