@@ -489,6 +489,7 @@ class StoryboarderSketchPane extends EventEmitter {
   }
 }
 
+// poly lines
 class LineDrawingStrategy {
   constructor (context) {
     this.context = context
