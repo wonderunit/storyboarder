@@ -575,7 +575,8 @@ class LineDrawingStrategy {
 
     let options = {
       isStraightLine: true,
-      shouldSnap: this.context.isCommandPressed('drawing:straight-line-snap')
+      shouldSnap: this.context.isCommandPressed('drawing:straight-line-snap'),
+      straightLinePressure: 0.5
     }
 
     this.context.sketchPane.down(e, options)
