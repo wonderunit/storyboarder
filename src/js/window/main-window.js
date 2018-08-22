@@ -364,6 +364,18 @@ const load = async (event, args) => {
 }
 ipcRenderer.on('load', load)
 
+let toggleMuteBoard = () => {
+  storeUndoStateForScene(true)
+  boardData.boards[currentBoard].muted = !boardData.boards[currentBoard].muted
+  sfx.playEffect(boardData.boards[currentBoard].muted ? 'on' : 'off')
+  document.querySelector('input[name="muteBoard"]').checked = boardData.boards[currentBoard].muted
+  markBoardFileDirty()
+  renderThumbnailDrawer()
+  storeUndoStateForScene()
+  
+  
+}
+
 let toggleNewShot = () => {
   storeUndoStateForScene(true)
   boardData.boards[currentBoard].newShot = !boardData.boards[currentBoard].newShot
@@ -839,6 +851,13 @@ const loadBoardUI = async () => {
         case 'newShot':
           boardData.boards[currentBoard].newShot = e.target.checked
           sfx.playEffect(e.target.checked ? 'on' : 'off')
+          markBoardFileDirty()
+          textInputMode = false
+          break
+        case 'muteBoard':
+          boardData.boards[currentBoard].muted = e.target.checked
+          sfx.playEffect(e.target.checked ? 'on' : 'off')
+          renderMetaDataShotNumber()
           markBoardFileDirty()
           textInputMode = false
           break
@@ -1960,6 +1979,7 @@ let insertNewBoardDataAtPosition = (position) => {
     uid: uid,
     url: `board-${position + 1}-${uid}.png`,
     newShot: false,
+    muted: false,
     lastEdited: Date.now(),
     layers: {}
   }
@@ -3069,6 +3089,7 @@ let duplicateBoard = async () => {
 
   boardDst.audio = null
   boardDst.newShot = false
+  boardDst.muted = false
   boardDst.dialogue = ''
   boardDst.action = ''
   boardDst.notes = ''
@@ -3194,14 +3215,39 @@ const clearLayers = shouldEraseCurrentLayer => {
 // TODO handle re-ordering?
 let goNextBoard = async (direction, shouldPreserveSelections = false) => {
   let index
+  let boardIndexes = []
+  let boardIndexesFiltered = []
+  let backwards = (direction && direction < 0) ? true : false
+  let step = (direction) ? Math.abs(direction) : 1
+  
+  //get all boards indexes
+  for (let i = 0; i < boardData.boards.length; i++) {
+      boardIndexes.push(i)
+  }
 
-  index = direction
-    ? currentBoard + direction
-    : currentBoard + 1
+  //depending on the current position and direction, select next indexes
+  if (backwards){
+      boardIndexes = boardIndexes.slice(0,currentBoard)
+      boardIndexes.reverse()
+  }else{
+      boardIndexes = boardIndexes.slice(currentBoard + 1)
+  }
 
-  index = Math.min(Math.max(index, 0), boardData.boards.length - 1)
+  //filter not muted boards
+  for (let boardIndex of boardIndexes) {
+      if (!boardData.boards[boardIndex].muted){
+          boardIndexesFiltered.push(boardIndex)
+      }
+      
+  }
+    
+  //select index
+  index = boardIndexesFiltered[step - 1]
+  
+  console.log("goNextBoard")
+  console.log({from:currentBoard,backwards:backwards,step:step,nexts:boardIndexes,filtered:boardIndexesFiltered,choosen:index})
 
-  if (index !== currentBoard) {
+  if ( (typeof index !== 'undefined') && (index !== currentBoard)  ) {
     console.log(index, '!==', currentBoard)
     await saveImageFile()
     currentBoard = index
@@ -3321,11 +3367,17 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
 }
 
 let renderMarkerPosition = () => {
+
   // let shouldRenderThumbnailDrawer = false
   if (!shouldRenderThumbnailDrawer) return
 
   let curr = boardData.boards[currentBoard]
-  let last = boardData.boards[boardData.boards.length - 1]
+  
+  if (curr.muted) return
+  
+  
+  let notMutedBoards = filterNotMutedBoards(boardData.boards);
+  let last = notMutedBoards[notMutedBoards.length - 1]
 
   let percentage
   if (last.duration) {
@@ -3366,6 +3418,11 @@ let renderMetaData = () => {
   if (boardData.boards[currentBoard].newShot) {
     document.querySelector('input[name="newShot"]').checked = true
   }
+    
+  if (boardData.boards[currentBoard].muted) {
+    document.querySelector('input[name="muteBoard"]').checked = true
+  }
+  renderMetaDataShotNumber()
 
   if (boardData.boards[currentBoard].duration) {
     if (selections.size == 1) {
@@ -3433,6 +3490,18 @@ let renderMetaData = () => {
   audioFileControlView.setState({
     boardAudio: boardData.boards[currentBoard].audio
   })
+}
+
+const renderMetaDataShotNumber = () => {
+  let board = boardData.boards[currentBoard]
+  let shotString = board.shot
+  
+  if (board.muted){
+      shotString += ' (Muted)'
+  }
+
+  document.querySelector('#board-metadata #shot').innerHTML = 'Shot: ' + shotString
+
 }
 
 const renderCaption = () => {
@@ -3753,6 +3822,7 @@ let renderThumbnailDrawerSelections = () => {
 
     thumb.classList.toggle('active', currentBoard == i)
     thumb.classList.toggle('selected', selections.has(i))
+    thumb.classList.toggle('muted', boardData.boards[i].muted)
     thumb.classList.toggle('editing', isEditMode)
   }
 }
@@ -3766,30 +3836,35 @@ const updateSceneTiming = () => {
   let currentTime = 0
 
   for (let board of boardData.boards) {
-    if (hasShots) {
-      if (board.newShot || (currentShot === 0)) {
-        currentShot++
-        subShot = 0
-      } else {
-        subShot++
-      }
+      
+    if (!board.muted){
+        if (hasShots) {
+          if (board.newShot || (currentShot === 0)) {
+            currentShot++
+            subShot = 0
+          } else {
+            subShot++
+          }
 
-      let substr = String.fromCharCode(97 + (subShot % 26)).toUpperCase()
-      if ((Math.ceil(subShot / 25) - 1) > 0) {
-        substr += (Math.ceil(subShot / 25))
-      }
+          let substr = String.fromCharCode(97 + (subShot % 26)).toUpperCase()
+          if ((Math.ceil(subShot / 25) - 1) > 0) {
+            substr += (Math.ceil(subShot / 25))
+          }
 
-      board.shot = currentShot + substr
-      board.number = boardNumber
-    } else {
-      board.number = boardNumber
-      board.shot = (boardNumber) + 'A'
+          board.shot = currentShot + substr
+          board.number = boardNumber
+        } else {
+          board.number = boardNumber
+          board.shot = (boardNumber) + 'A'
+        }
+        boardNumber++
+
+        board.time = currentTime
+
+        currentTime += boardModel.boardDuration(boardData, board)
     }
-    boardNumber++
+      
 
-    board.time = currentTime
-
-    currentTime += boardModel.boardDuration(boardData, board)
   }
 }
 
@@ -3827,9 +3902,14 @@ let renderThumbnailDrawer = () => {
 
   let hasShots = boardData.boards.find(board => board.newShot) != null
 
+
   let html = []
   let i = 0
   for (let board of boardData.boards) {
+      
+    shotString = board.shot
+    if (board.muted) shotString += ' (Muted)'
+      
     html.push('<div data-thumbnail="' + i + '" class="thumbnail')
     if (hasShots) {
       if (board.newShot || (i === 0)) {
@@ -3864,7 +3944,7 @@ let renderThumbnailDrawer = () => {
       console.error(err)
     }
     html.push('<div class="info">')
-    html.push('<div class="number">' + board.shot + '</div>')
+    html.push('<div class="number">' + shotString + '</div>')
     if (board.audio && board.audio.filename.length) {
       html.push(`
         <div class="audio">
@@ -4014,6 +4094,7 @@ let renderThumbnailDrawer = () => {
 
   renderThumbnailButtons()
   renderTimeline()
+  renderMarkerPosition() //because it must be updated if we have muted some boards
 
   // gotoBoard(currentBoard)
 }
@@ -4069,10 +4150,11 @@ let renderTimeline = () => {
   let markerLeft = getMarkerEl() ? getMarkerEl().style.left : '0px'
 
   let html = []
+  let notMutedBoards = filterNotMutedBoards(boardData.boards);
 
   html.push('<div class="marker-holder"><div class="marker"></div></div>')
 
-  boardData.boards.forEach((board, i) => {
+  notMutedBoards.forEach((board, i) => {
     // if board duration is undefined or 0, use the default,
     // otherwise use the value given
     let duration = (util.isUndefined(board.duration) || board.duration === 0)
@@ -4098,6 +4180,7 @@ let renderTimeline = () => {
 
   // HACK restore original position of marker
   if (getMarkerEl()) getMarkerEl().style.left = markerLeft
+
 }
 
 let renderScenes = () => {
@@ -5233,6 +5316,10 @@ let copyBoards = async () => {
   }
 }
 
+const filterNotMutedBoards = (boards) => {
+  return boards.filter(function(board){ return !board.muted });
+}
+
 const exportAnimatedGif = async () => {
   console.log('main-window#exportAnimatedGif', selections)
   if (selections.has(currentBoard)) {
@@ -5249,16 +5336,18 @@ const exportAnimatedGif = async () => {
     )
   }
   let boardSize = storyboarderSketchPane.getCanvasSize()
+  
+  let exportBoards = filterNotMutedBoards(boards)
 
   notifications.notify({
-    message: 'Exporting ' + boards.length + ' boards. Please wait...',
+    message: 'Exporting ' + exportBoards.length + ' boards. Please wait...',
     timing: 5
   })
 
   sfx.down()
 
   try {
-    let path = await exporter.exportAnimatedGif(boards, boardSize, 888, boardFilename, true, boardData)
+    let path = await exporter.exportAnimatedGif(exportBoards, boardSize, 888, boardFilename, true, boardData)
     notifications.notify({
       message: 'I exported your board selection as a GIF. Share it with your friends! Post it to your twitter thing or your slack dingus.',
       timing: 20
@@ -5274,7 +5363,8 @@ const exportAnimatedGif = async () => {
 
 
 const exportFcp = () => {
-  notifications.notify({message: "Exporting " + boardData.boards.length + " boards to FCP and Premiere. Please wait...", timing: 5})
+  exportBoards = filterNotMutedBoards(boardData.boards)
+  notifications.notify({message: "Exporting " + exportBoards.length + " boards to FCP and Premiere. Please wait...", timing: 5})
   sfx.down()
   setTimeout(()=>{
     exporter.exportFcp(boardData, boardFilename).then(outputPath => {
@@ -5290,7 +5380,8 @@ const exportFcp = () => {
 }
 
 const exportImages = () => {
-  notifications.notify({message: "Exporting " + boardData.boards.length + " to a folder. Please wait...", timing: 5})
+  exportBoards = filterNotMutedBoards(boardData.boards)
+  notifications.notify({message: "Exporting " + exportBoards.length + " to a folder. Please wait...", timing: 5})
   sfx.down()
   setTimeout(()=>{
     exporter.exportImages(boardData, boardFilename).then(outputPath => {
@@ -5318,7 +5409,8 @@ const exportCleanup = () => {
 }
 
 const exportVideo = async () => {
-  notifications.notify({ message: "Exporting " + boardData.boards.length + " boards to video. For long scenes this could take a few minutes. Please wait...", timing: 30 })
+  exportBoards = filterNotMutedBoards(boardData.boards)
+  notifications.notify({ message: "Exporting " + exportBoards.length + " boards to video. For long scenes this could take a few minutes. Please wait...", timing: 30 })
 
   let scene = boardData
   let sceneFilePath = boardFilename
@@ -5698,6 +5790,7 @@ const importFromWorksheet = async (imageArray) => {
       }
     }
     board.newShot = false
+    board.muted = false
     board.lastEdited = Date.now()
 
     boards.push(board)
@@ -6492,6 +6585,12 @@ ipcRenderer.on('toggleOnionSkin', (event, arg) => {
     store.dispatch({ type: 'TOOLBAR_ONION_TOGGLE' })
     // this.store.dispatch({ type: 'PLAY_SOUND', payload: 'metal' }) // TODO
     sfx.playEffect('metal')
+  }
+})
+
+ipcRenderer.on('toggleMuteBoard', (event, args) => {
+  if (!textInputMode) {
+    toggleMuteBoard()
   }
 })
 

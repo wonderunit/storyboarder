@@ -16,6 +16,10 @@ const {
   flattenBoardToCanvas
 } = require('../exporters/common')
 
+const filterNotMutedBoards = (boards) => {
+  return boards.filter(function(board){ return !board.muted });
+}
+
 const exporterFcpX = require('../exporters/final-cut-pro-x')
 const exporterFcp = require('../exporters/final-cut-pro')
 const exporterPDF = require('../exporters/pdf')
@@ -24,6 +28,7 @@ const exporterFfmpeg = require('../exporters/ffmpeg')
 const util = require('../utils/index')
 
 class Exporter {
+
   exportCleanup (boardData, projectFileAbsolutePath) {
     return new Promise((resolve, reject) => {
       dialog.showMessageBox(
@@ -50,6 +55,7 @@ class Exporter {
   }
 
   async exportFcp (boardData, projectFileAbsolutePath) {
+    let exportBoards = filterNotMutedBoards(boardData.boards)
     let exportsPath = ensureExportsPathExists(projectFileAbsolutePath)
 
     let basename = path.basename(projectFileAbsolutePath)
@@ -71,7 +77,7 @@ class Exporter {
 
     // export ALL layers of each one of the boards
     let basenameWithoutExt = path.basename(projectFileAbsolutePath, path.extname(projectFileAbsolutePath))
-    let writers = boardData.boards.map(async (board, index) => {
+    let writers = exportBoards.map(async (board, index) => {
       let filenameForExport = util.dashed(boardFilenameForExport(board, index, basenameWithoutExt))
 
       await exportFlattenedBoard(
@@ -85,7 +91,7 @@ class Exporter {
     await Promise.all(writers)
 
     // export ALL audio
-    boardData.boards.forEach((board, index) => {
+    exportBoards.forEach((board, index) => {
       if (board.audio && board.audio.filename && board.audio.filename.length) {
         fs.copySync(
           path.join(path.dirname(projectFileAbsolutePath), 'images', board.audio.filename),
@@ -98,13 +104,14 @@ class Exporter {
   }
  
   exportPDF (boardData, projectFileAbsolutePath, _paperSize, _paperOrientation, _rows, _cols, _spacing, _filepath) {
+    let exportBoards = filterNotMutedBoards(boardData.boards)
     return new Promise(resolve => {
       let outputPath = app.getPath('temp')
 
       let index = 0
       let writers = []
       let basenameWithoutExt = path.basename(projectFileAbsolutePath, path.extname(projectFileAbsolutePath))
-      for (let board of boardData.boards) {
+      for (let board of exportBoards) {
         writers.push(new Promise(resolve => {
           let filenameForExport = `board-` + index + '.jpg'
           exportFlattenedBoard(
@@ -137,6 +144,7 @@ class Exporter {
   }
 
   exportImages (boardData, projectFileAbsolutePath, outputPath = null) {
+    let exportBoards = filterNotMutedBoards(boardData.boards)
     return new Promise(resolve => {
       let exportsPath = ensureExportsPathExists(projectFileAbsolutePath)
       let basename = path.basename(projectFileAbsolutePath)
@@ -155,7 +163,7 @@ class Exporter {
       let index = 0
       let writers = []
       let basenameWithoutExt = path.basename(projectFileAbsolutePath, path.extname(projectFileAbsolutePath))
-      for (let board of boardData.boards) {
+      for (let board of exportBoards) {
         writers.push(new Promise(resolve => {
           let filenameForExport = boardFilenameForExport(board, index, basenameWithoutExt)
           exportFlattenedBoard(
@@ -179,6 +187,7 @@ class Exporter {
   }
 
   async exportAnimatedGif (boards, boardSize, destWidth, projectFileAbsolutePath, mark, boardData) {
+      
     let aspect = boardSize.height / boardSize.width
     let destSize = {
       width: destWidth,

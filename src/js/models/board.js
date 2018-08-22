@@ -70,6 +70,7 @@ const setup = board => {
 
   // set some basic data for the new board
   board.newShot = board.newShot || false
+  board.muted = board.muted || false
   board.lastEdited = Date.now()
 
   return board

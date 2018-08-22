@@ -254,6 +254,10 @@ body::-webkit-scrollbar {
   transition: all 0s ease-out;
 }
 
+#thumbnail-drawer .thumbnail.muted {
+    opacity:.25;
+}
+
 #thumbnail-drawer .thumbnail.selected {
   background: #699EF2;
   color: #000;
