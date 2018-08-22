@@ -678,6 +678,15 @@ class DrawingStrategy {
     this._idleTimer && this._idleTimer.clear()
   }
 
+  _inBounds (point) {
+    return (
+      point.x >= 0 &&
+      point.y >= 0 &&
+      point.x <= this.context.sketchPane.width &&
+      point.y <= this.context.sketchPane.height
+    )
+  }
+
   _onPointerOver (e) {
     this.context.sketchPane.cursor.setEnabled(true)
   }
@@ -686,13 +695,7 @@ class DrawingStrategy {
     let point = this.context.sketchPane.localizePoint(e)
 
     // only hide the cursor if actually out-of-bounds
-    let inBounds = (
-      point.x >= 0 &&
-      point.y >= 0 &&
-      point.x <= this.context.sketchPane.width &&
-      point.y <= this.context.sketchPane.height
-    )
-    if (!inBounds) {
+    if (!this._inBounds(point)) {
       this.context.sketchPane.cursor.setEnabled(false)
     }
   }
@@ -775,13 +778,7 @@ class DrawingStrategy {
     }
 
     // always re-enable if in bounds
-    let inBounds = (
-      point.x >= 0 &&
-      point.y >= 0 &&
-      point.x <= this.context.sketchPane.width &&
-      point.y <= this.context.sketchPane.height
-    )
-    if (inBounds) {
+    if (this._inBounds(point)) {
       this.context.sketchPane.cursor.setEnabled(true)
     }
 
