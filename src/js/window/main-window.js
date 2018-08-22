@@ -3164,7 +3164,7 @@ const clearLayers = shouldEraseCurrentLayer => {
   if (store.getState().toolbar.activeTool !== 'eraser' &&
       (isCommandPressed('drawing:clear-current-layer-modifier') || shouldEraseCurrentLayer)) {
     storyboarderSketchPane.clearLayers([storyboarderSketchPane.sketchPane.getCurrentLayerIndex()])
-    saveImageFile()
+    // saveImageFile()
     sfx.playEffect('trash')
     notifications.notify({ message: 'Cleared current layer.', timing: 5 })
   } else {
@@ -3179,7 +3179,7 @@ const clearLayers = shouldEraseCurrentLayer => {
       }
     } else {
       storyboarderSketchPane.clearLayers()
-      saveImageFile()
+      // saveImageFile()
       sfx.playEffect('trash')
       notifications.notify({ message: 'Cleared all layers.', timing: 5 })
     }
