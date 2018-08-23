@@ -802,6 +802,9 @@ class DrawingStrategy {
     this._updateQuickErase(e)
     this.context.store.dispatch({ type: 'TOOLBAR_MODE_STATUS_SET', payload: 'idle', meta: { scope: 'local' } })
 
+    // clear the timer
+    this._idleTimer && this._idleTimer.clear()
+
     if (wasDrawing) {
       this.context.emit('lineMileage', this.context.lineMileageCounter.get())
 
