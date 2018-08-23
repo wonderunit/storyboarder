@@ -167,7 +167,8 @@ class StoryboarderSketchPane extends EventEmitter {
       moving: new MovingStrategy(this),
       scaling: new ScalingStrategy(this),
       locked: new LockedStrategy(this),
-      panning: new PanningStrategy(this)
+      panning: new PanningStrategy(this),
+      lineDrawing: new LineDrawingStrategy(this)
     }
 
     this.store.dispatch({ type: 'TOOLBAR_MODE_SET', payload: 'drawing', meta: { scope: 'local' } })
@@ -313,11 +314,28 @@ class StoryboarderSketchPane extends EventEmitter {
         sfx.playEffect('metal')
       }
     } else if (this.isCommandPressed('drawing:pan-mode')) {
-      this.store.dispatch({
-        type: 'TOOLBAR_MODE_SET',
-        payload: 'panning',
-        meta: { scope: 'local' }
-      })
+      if (this.store.getState().toolbar.mode !== 'panning') {
+        if (this.sketchPane.zoom > 1) {
+          this.store.dispatch({
+            type: 'TOOLBAR_MODE_SET',
+            payload: 'panning',
+            meta: { scope: 'local' }
+          })
+        }
+      }
+    }
+
+    if (this.getIsDrawingOrStabilizing()) {
+      if (this.isCommandPressed('drawing:straight-line')) {
+        this.sketchPane.setIsStraightLine(true)
+      }
+      if (this.isCommandPressed('drawing:straight-line-snap')) {
+        this.sketchPane.setShouldSnap(true)
+      }
+    } else {
+      if (this.isCommandPressed('drawing:straight-line')) {
+        this.store.dispatch({ type: 'TOOLBAR_MODE_SET', payload: 'lineDrawing', meta: { scope: 'local' } })
+      }
     }
   }
 
@@ -334,6 +352,13 @@ class StoryboarderSketchPane extends EventEmitter {
       if (this.store.getState().toolbar.mode === 'drawing') {
         sfx.playEffect('metal')
       }
+    }
+
+    if (!this.isCommandPressed('drawing:straight-line')) {
+      // this.sketchPane.setIsStraightLine(false)
+    }
+    if (!this.isCommandPressed('drawing:straight-line-snap')) {
+      this.sketchPane.setShouldSnap(false)
     }
   }
 
@@ -466,6 +491,163 @@ class StoryboarderSketchPane extends EventEmitter {
   }
 }
 
+// poly lines
+class LineDrawingStrategy {
+  constructor (context) {
+    this.context = context
+    this.name = 'lineDrawing'
+
+    this._onPointerOver = this._onPointerOver.bind(this)
+    this._onPointerOut = this._onPointerOut.bind(this)
+    this._onPointerDown = this._onPointerDown.bind(this)
+    this._onPointerMove = this._onPointerMove.bind(this)
+
+    this._onKeyUp = this._onKeyUp.bind(this)
+  }
+
+  startup () {
+    this.context.sketchPaneDOMElement.addEventListener('pointerover', this._onPointerOver)
+    this.context.sketchPaneDOMElement.addEventListener('pointerout', this._onPointerOut)
+
+    this.context.sketchPaneDOMElement.addEventListener('pointerdown', this._onPointerDown)
+    document.addEventListener('pointermove', this._onPointerMove)
+    document.addEventListener('pointerup', this._onPointerUp)
+    window.addEventListener('keyup', this._onKeyUp)
+
+    this.context.fpsMeter.start()
+    this.context.store.dispatch({ type: 'TOOLBAR_MODE_STATUS_SET', payload: 'busy', meta: { scope: 'local' } })
+
+    this.state = {
+      started: false
+    }
+
+    this.context.sketchPane.app.view.style.cursor = 'none'
+  }
+  shutdown () {
+    this.context.sketchPaneDOMElement.removeEventListener('pointerover', this._onPointerOver)
+    this.context.sketchPaneDOMElement.removeEventListener('pointerout', this._onPointerOut)
+
+    this.context.sketchPaneDOMElement.removeEventListener('pointerdown', this._onPointerDown)
+    document.removeEventListener('pointermove', this._onPointerMove)
+    document.removeEventListener('pointerup', this._onPointerUp)
+    window.removeEventListener('keyup', this._onKeyUp)
+
+    this.context.fpsMeter.stop()
+  }
+
+  _onPointerOver (e) {
+    this.context.sketchPane.cursor.setEnabled(true)
+  }
+
+  _onPointerOut (e) {
+    let point = this.context.sketchPane.localizePoint(e)
+
+    // only hide the cursor if actually out-of-bounds
+    if (!this._inBounds(point)) {
+      this.context.sketchPane.cursor.setEnabled(false)
+    }
+  }
+
+  _inBounds (point) {
+    return (
+      point.x >= 0 &&
+      point.y >= 0 &&
+      point.x <= this.context.sketchPane.width &&
+      point.y <= this.context.sketchPane.height
+    )
+  }
+
+  _normalizePoint (e) {
+    // clone the event with a few changes
+    e = {
+      x: e.x,
+      y: e.y,
+
+      // override pressure
+      // (although not used currently
+      //  because straightLinePressure handles this for us)
+      pressure: 0.5,
+
+      // pretend its a mouse so SketchPane will ignore tilt
+      pointerType: 'mouse',
+
+      // alternately, we could override these,
+      // and use the event's pointerType
+      //
+      // pointerType: e.pointerType,
+      tiltX: e.tiltX,
+      tiltY: e.tiltY
+    }
+    return e
+  }
+
+  _onPointerDown (e) {
+    if (this.state.started) {
+      // line has been in-progress, so stop current line
+      let wasDrawing = this.context.sketchPane.isDrawing()
+
+      this.context.sketchPane.up(e)
+
+      if (wasDrawing) {
+        this.context.emit('lineMileage', this.context.lineMileageCounter.get())
+
+        // audible event for Sonifier
+        // this.context.emit('pointerup', this.context.sketchPane.localizePoint(e))
+      }
+    } else {
+      // starting a new line
+      this.state.started = true
+    }
+
+    let options = {
+      isStraightLine: true,
+      shouldSnap: this.context.isCommandPressed('drawing:straight-line-snap'),
+       // TODO could we remove this and handle pressure override logic at the event level?
+      straightLinePressure: 0.5
+    }
+
+    this.context.sketchPane.down(this._normalizePoint(e), options)
+
+    this.context.lineMileageCounter.reset()
+
+    // audible event for Sonifier
+    this.context.emit('pointerdown', this.context.sketchPane.localizePoint(this._normalizePoint(e)))
+
+    // just triggers layer opacity check
+    this.context.emit('requestPointerDown')
+  }
+
+  _onPointerMove (e) {
+    let point = this.context.sketchPane.localizePoint(e)
+
+    // always re-enable if in bounds
+    if (this._inBounds(point)) {
+      this.context.sketchPane.cursor.setEnabled(true)
+    }
+
+    // always update the cursor
+    this.context.sketchPane.move(this._normalizePoint(e))
+
+    if (this.context.sketchPane.isDrawing()) {
+      // track X/Y on the full-size texture
+      this.context.lineMileageCounter.add(point)
+
+      // audible event for Sonifier
+      this.context.emit('pointermove', point)
+    }
+  }
+
+  _onKeyUp (e) {
+    if (!this.context.isCommandPressed('drawing:straight-line')) {
+      if (this.context.sketchPane.isDrawing()) {
+        this.context.sketchPane.stopDrawing({ cancel: true })
+      }
+      this.context.store.dispatch({ type: 'TOOLBAR_MODE_STATUS_SET', payload: 'idle', meta: { scope: 'local' } })
+      this.context.store.dispatch({ type: 'TOOLBAR_MODE_SET', payload: 'drawing', meta: { scope: 'local' } })
+    }
+  }
+}
+
 class DrawingStrategy {
   constructor (context) {
     this.context = context
@@ -478,6 +660,12 @@ class DrawingStrategy {
     this._onPointerUp = this._onPointerUp.bind(this)
     this._onKeyUp = this._onKeyUp.bind(this)
     this._onWheel = this._onWheel.bind(this)
+
+    let delay = prefsModule.getPrefs().straightLineDelayInMsecs
+    if (delay) {
+      this._onIdle = this._onIdle.bind(this)
+      this._idleTimer = new IdleTimer(this._onIdle, delay)
+    }
   }
 
   startup () {
@@ -511,6 +699,17 @@ class DrawingStrategy {
     this.context.sketchPane.app.view.style.cursor = 'auto'
 
     this.context.fpsMeter.stop()
+
+    this._idleTimer && this._idleTimer.clear()
+  }
+
+  _inBounds (point) {
+    return (
+      point.x >= 0 &&
+      point.y >= 0 &&
+      point.x <= this.context.sketchPane.width &&
+      point.y <= this.context.sketchPane.height
+    )
   }
 
   _onPointerOver (e) {
@@ -521,19 +720,15 @@ class DrawingStrategy {
     let point = this.context.sketchPane.localizePoint(e)
 
     // only hide the cursor if actually out-of-bounds
-    let inBounds = (
-      point.x >= 0 &&
-      point.y >= 0 &&
-      point.x <= this.context.sketchPane.width &&
-      point.y <= this.context.sketchPane.height
-    )
-    if (!inBounds) {
+    if (!this._inBounds(point)) {
       this.context.sketchPane.cursor.setEnabled(false)
     }
   }
 
   // TODO could store multiErase status / erase layer array in a reducer?
   _onPointerDown (e) {
+    this._idleTimer && this._idleTimer.reset()
+
     this.context.store.dispatch({ type: 'TOOLBAR_MODE_STATUS_SET', payload: 'busy', meta: { scope: 'local' } })
 
     // configure the tool for drawing
@@ -568,6 +763,12 @@ class DrawingStrategy {
       this.context.fpsMeter.start()
     }
 
+    if (!options.erase) {
+      if (this.context.isCommandPressed('drawing:straight-line')) {
+        options.isStraightLine = true
+      }
+    }
+
     // sync sketchPane to the current toolbar state
     // syncSketchPaneState(this.store.getState().toolbar)
 
@@ -584,14 +785,25 @@ class DrawingStrategy {
   _onPointerMove (e) {
     let point = this.context.sketchPane.localizePoint(e)
 
+    if (
+      // drawing
+      this.context.sketchPane.isDrawing() &&
+      // but not in straight line mode yet
+      !this.context.sketchPane.getIsStraightLine()
+    ) {
+      let points = this.context.sketchPane.strokeState.points
+      let prev = points[points.length - 1]
+      if (prev) {
+        // is there a 1px difference in either direction since the last recorded point?
+        if (Math.abs(prev.x - point.x) > 1 || Math.abs(prev.y - point.y) > 1) {
+          // reset the timer
+          this._idleTimer && this._idleTimer.reset()
+        }
+      }
+    }
+
     // always re-enable if in bounds
-    let inBounds = (
-      point.x >= 0 &&
-      point.y >= 0 &&
-      point.x <= this.context.sketchPane.width &&
-      point.y <= this.context.sketchPane.height
-    )
-    if (inBounds) {
+    if (this._inBounds(point)) {
       this.context.sketchPane.cursor.setEnabled(true)
     }
 
@@ -615,6 +827,9 @@ class DrawingStrategy {
     this._updateQuickErase(e)
     this.context.store.dispatch({ type: 'TOOLBAR_MODE_STATUS_SET', payload: 'idle', meta: { scope: 'local' } })
 
+    // clear the timer
+    this._idleTimer && this._idleTimer.clear()
+
     if (wasDrawing) {
       this.context.emit('lineMileage', this.context.lineMileageCounter.get())
 
@@ -633,6 +848,10 @@ class DrawingStrategy {
     let delta = e.deltaY / 100
     let scale = Math.min(Math.max(this.context.sketchPane.zoom + delta, 0.25), 5)
     this.context.zoomAt(e, scale)
+  }
+
+  _onIdle () {
+    this.context.sketchPane.setIsStraightLine(true)
   }
 
   _updateQuickErase (e) {
@@ -698,8 +917,8 @@ class MovingStrategy {
 
     window.removeEventListener('blur', this._onWindowBlur)
 
-    this.context.sketchPane.app.view.style.cursor = 'auto'
     this.context.sketchPane.cursor.setEnabled(true)
+    this.context.sketchPane.app.view.style.cursor = 'auto'
   }
 
   _onPointerDown (e) {
@@ -977,7 +1196,9 @@ class PanningStrategy {
       // dest
       dest: { x: null, y: null },
       // dirty?
-      moved: false
+      moved: false,
+      // down?
+      down: false
     }
 
     this.context.sketchPaneDOMElement.addEventListener('pointerdown', this._onPointerDown)
@@ -985,8 +1206,8 @@ class PanningStrategy {
 
     window.addEventListener('blur', this._onWindowBlur)
 
-    this.context.sketchPane.app.view.style.cursor = 'auto'
     this.context.sketchPane.cursor.setEnabled(false)
+    this.context.sketchPane.app.view.style.cursor = '-webkit-grab'
   }
 
   shutdown () {
@@ -1005,7 +1226,9 @@ class PanningStrategy {
     this.state.dest.y = this.context.sketchPane.sketchPaneContainer.y
     this.state.starting = this.context.sketchPane.localizePoint(e)
     this.state.moved = false
+    this.state.down = true
     this.context.sketchPaneDOMElement.addEventListener('pointermove', this._onPointerMove)
+    this._updateCursor(e)
   }
 
   _onPointerMove (e) {
@@ -1021,14 +1244,22 @@ class PanningStrategy {
     // render change
     this._render()
 
-    this.context.sketchPane.cursor.renderCursor(e)
-
-    // be sure to takeover the cursor again
-    this.context.sketchPane.app.view.style.cursor = 'auto'
+    this._updateCursor(e)
   }
 
   _onPointerUp (e) {
+    this.state.down = false
     this.context.sketchPaneDOMElement.removeEventListener('pointermove', this._onPointerMove)
+    this._updateCursor(e)
+  }
+
+  _updateCursor (e) {
+    this.context.sketchPane.cursor.renderCursor(e)
+
+    // be sure to takeover the cursor again
+    this.context.sketchPane.app.view.style.cursor = this.state.down
+      ? '-webkit-grabbing'
+      : '-webkit-grab'
   }
 
   _onWindowBlur () {
@@ -1088,6 +1319,22 @@ class FPSMeter {
   }
   hadLowFps (threshold = 20) {
     return this.fpsList.length === this.numToAvg && this.avg() <= threshold
+  }
+}
+
+class IdleTimer {
+  constructor (callback, delay = 500) {
+    this.callback = callback
+    this.delay = delay
+
+    this.timer = null
+  }
+  reset () {
+    clearTimeout(this.timer)
+    this.timer = setTimeout(this.callback, this.delay)
+  }
+  clear () {
+    clearTimeout(this.timer)
   }
 }
 

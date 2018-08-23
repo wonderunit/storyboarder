@@ -123,6 +123,14 @@ app.on('ready', async () => {
         delete payload["menu:tools:eraser"]
         shouldOverwrite = true
       }
+
+      // re-map 1.7.1's Shift to Space
+      if (payload["drawing:pan-mode"] === "Shift") {
+        console.log('[keymap] re-mapping drawing:pan-mode to space')
+        payload["drawing:pan-mode"] = "Space"
+      }
+      shouldOverwrite = true
+
     } catch (err) {
       // show error, but don't overwrite the keymap file
       console.error(err)
@@ -1277,7 +1285,7 @@ ipcMain.on('saveAs', (event, arg) => {
 })
 
 ipcMain.on('prefs:change', (event, arg) => {
-  mainWindow.webContents.send('prefs:change', arg)
+  !mainWindow.isDestroyed() && mainWindow.webContents.send('prefs:change', arg)
 })
 
 ipcMain.on('showKeyCommands', (event, arg) => {

@@ -129,3 +129,21 @@ a.button:hover {
   line-height: 25px;
   padding: 4px 10px 2px 8px;
 }
+
+.preferences-window kbd {
+  display: inline-block;
+  font-family: 'wonderunitsans';
+  font-size: 12px;  
+  background: rgba(255,255,255,0.3);
+  padding: 2px 5px 0;
+  border: 1px solid #999;
+  border-radius: 2px;
+  color: #333333;
+  font-weight: 700;
+  position: relative;
+  top: 0;
+  min-width: 8px;
+  text-align: center;
+  margin: 0 2px;
+  line-height: 1;
+}

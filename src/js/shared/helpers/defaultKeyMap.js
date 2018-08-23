@@ -8,7 +8,9 @@ const defaultKeyMap = {
   "drawing:move-mode": "CommandOrControl",
   "drawing:quick-erase-modifier": "Alt",
   "drawing:exit-current-mode": "Escape",
-  "drawing:pan-mode": "Shift",
+  "drawing:pan-mode": "Space",
+  "drawing:straight-line": "Shift",
+  "drawing:straight-line-snap": "Alt",
 
   "menu:file:open": "CommandOrControl+o",
   "menu:file:save": "CommandOrControl+s",
@@ -64,7 +66,7 @@ const defaultKeyMap = {
   "menu:view:cycle-view-mode-reverse": "Shift+Tab",
   "menu:view:onion-skin": "o",
   "menu:view:toggle-captions": "c",
-  "menu:view:toggle-timeline": "CommandOrControl+Option+t",
+  "menu:view:toggle-timeline": "CommandOrControl+Alt+t",
   "menu:view:toggle-full-screen": "F11",
   "menu:view:toggle-developer-tools": "Alt+Command+i",
 
