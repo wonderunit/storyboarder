@@ -640,7 +640,7 @@ class LineDrawingStrategy {
   _onKeyUp (e) {
     if (!this.context.isCommandPressed('drawing:straight-line')) {
       if (this.context.sketchPane.isDrawing()) {
-        this.context.sketchPane.stopDrawing()
+        this.context.sketchPane.stopDrawing({ cancel: true })
       }
       this.context.store.dispatch({ type: 'TOOLBAR_MODE_STATUS_SET', payload: 'idle', meta: { scope: 'local' } })
       this.context.store.dispatch({ type: 'TOOLBAR_MODE_SET', payload: 'drawing', meta: { scope: 'local' } })
