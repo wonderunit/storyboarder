@@ -93,7 +93,7 @@
   "dependencies": {
     "@ffmpeg-installer/ffmpeg": "1.0.13",
     "ag-psd": "^1.2.0",
-    "alchemancy": "github:wonderunit/alchemancy#v1.4.1",
+    "alchemancy": "github:wonderunit/alchemancy#v1.4.2",
     "archiver": "2.0.3",
     "caf": "7.0.4",
     "chokidar": "2.0.3",
