@@ -889,8 +889,8 @@ class MovingStrategy {
 
     window.removeEventListener('blur', this._onWindowBlur)
 
-    this.context.sketchPane.app.view.style.cursor = 'auto'
     this.context.sketchPane.cursor.setEnabled(true)
+    this.context.sketchPane.app.view.style.cursor = 'auto'
   }
 
   _onPointerDown (e) {
@@ -1168,7 +1168,9 @@ class PanningStrategy {
       // dest
       dest: { x: null, y: null },
       // dirty?
-      moved: false
+      moved: false,
+      // down?
+      down: false
     }
 
     this.context.sketchPaneDOMElement.addEventListener('pointerdown', this._onPointerDown)
@@ -1176,8 +1178,8 @@ class PanningStrategy {
 
     window.addEventListener('blur', this._onWindowBlur)
 
-    this.context.sketchPane.app.view.style.cursor = 'auto'
     this.context.sketchPane.cursor.setEnabled(false)
+    this.context.sketchPane.app.view.style.cursor = '-webkit-grab'
   }
 
   shutdown () {
@@ -1196,7 +1198,9 @@ class PanningStrategy {
     this.state.dest.y = this.context.sketchPane.sketchPaneContainer.y
     this.state.starting = this.context.sketchPane.localizePoint(e)
     this.state.moved = false
+    this.state.down = true
     this.context.sketchPaneDOMElement.addEventListener('pointermove', this._onPointerMove)
+    this._updateCursor(e)
   }
 
   _onPointerMove (e) {
@@ -1212,14 +1216,22 @@ class PanningStrategy {
     // render change
     this._render()
 
-    this.context.sketchPane.cursor.renderCursor(e)
-
-    // be sure to takeover the cursor again
-    this.context.sketchPane.app.view.style.cursor = 'auto'
+    this._updateCursor(e)
   }
 
   _onPointerUp (e) {
+    this.state.down = false
     this.context.sketchPaneDOMElement.removeEventListener('pointermove', this._onPointerMove)
+    this._updateCursor(e)
+  }
+
+  _updateCursor (e) {
+    this.context.sketchPane.cursor.renderCursor(e)
+
+    // be sure to takeover the cursor again
+    this.context.sketchPane.app.view.style.cursor = this.state.down
+      ? '-webkit-grabbing'
+      : '-webkit-grab'
   }
 
   _onWindowBlur () {
