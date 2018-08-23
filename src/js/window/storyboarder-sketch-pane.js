@@ -518,6 +518,8 @@ class LineDrawingStrategy {
     this.state = {
       started: false
     }
+
+    this.context.sketchPane.app.view.style.cursor = 'none'
   }
   shutdown () {
     this.context.sketchPaneDOMElement.removeEventListener('pointerover', this._onPointerOver)
@@ -527,8 +529,6 @@ class LineDrawingStrategy {
     document.removeEventListener('pointermove', this._onPointerMove)
     document.removeEventListener('pointerup', this._onPointerUp)
     window.removeEventListener('keyup', this._onKeyUp)
-
-    this.context.sketchPane.app.view.style.cursor = 'auto'
 
     this.context.fpsMeter.stop()
   }
