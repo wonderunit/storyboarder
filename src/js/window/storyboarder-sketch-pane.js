@@ -557,6 +557,30 @@ class LineDrawingStrategy {
     )
   }
 
+  _normalizePoint (e) {
+    // clone the event with a few changes
+    e = {
+      x: e.x,
+      y: e.y,
+
+      // override pressure
+      // (although not used currently
+      //  because straightLinePressure handles this for us)
+      pressure: 0.5,
+
+      // pretend its a mouse so SketchPane will ignore tilt
+      pointerType: 'mouse',
+
+      // alternately, we could override these,
+      // and use the event's pointerType
+      //
+      // pointerType: e.pointerType,
+      tiltX: e.tiltX,
+      tiltY: e.tiltY
+    }
+    return e
+  }
+
   _onPointerDown (e) {
     if (this.state.started) {
       // line has been in-progress, so stop current line
@@ -578,15 +602,16 @@ class LineDrawingStrategy {
     let options = {
       isStraightLine: true,
       shouldSnap: this.context.isCommandPressed('drawing:straight-line-snap'),
+       // TODO could we remove this and handle pressure override logic at the event level?
       straightLinePressure: 0.5
     }
 
-    this.context.sketchPane.down(e, options)
+    this.context.sketchPane.down(this._normalizePoint(e), options)
 
     this.context.lineMileageCounter.reset()
 
     // audible event for Sonifier
-    this.context.emit('pointerdown', this.context.sketchPane.localizePoint(e))
+    this.context.emit('pointerdown', this.context.sketchPane.localizePoint(this._normalizePoint(e)))
 
     // just triggers layer opacity check
     this.context.emit('requestPointerDown')
@@ -601,7 +626,7 @@ class LineDrawingStrategy {
     }
 
     // always update the cursor
-    this.context.sketchPane.move(e)
+    this.context.sketchPane.move(this._normalizePoint(e))
 
     if (this.context.sketchPane.isDrawing()) {
       // track X/Y on the full-size texture
