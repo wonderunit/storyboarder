@@ -616,11 +616,16 @@ class LineDrawingStrategy {
       nextEvent = this._normalizeEvent(e)
     }
 
+    let toolbarState = this.context.store.getState().toolbar
+
     let options = {
       isStraightLine: true,
       shouldSnap: this.context.isCommandPressed('drawing:straight-line-snap'),
        // TODO could we remove this and handle pressure override logic at the event level?
-      straightLinePressure: 0.5
+      straightLinePressure: 0.5,
+      erase: toolbarState.activeTool === 'eraser'
+        ? this.context.visibleLayersIndices
+        : false
     }
 
     this.context.sketchPane.down(nextEvent, options)
