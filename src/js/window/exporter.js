@@ -7,7 +7,8 @@ const { dialog } = require('electron').remote
 
 const {
   boardFileImageSize,
-  boardFilenameForExport
+  boardFilenameForExport,
+  boardFilenameForPosterFrame
 } = require('../models/board')
 const {
   getImage,
@@ -98,28 +99,24 @@ class Exporter {
   }
  
   exportPDF (boardData, projectFileAbsolutePath, _paperSize, _paperOrientation, _rows, _cols, _spacing, _filepath) {
-    return new Promise(resolve => {
+    return new Promise((resolve, reject) => {
       let outputPath = app.getPath('temp')
 
-      let index = 0
-      let writers = []
       let basenameWithoutExt = path.basename(projectFileAbsolutePath, path.extname(projectFileAbsolutePath))
-      for (let board of boardData.boards) {
-        writers.push(new Promise(resolve => {
-          let filenameForExport = `board-` + index + '.jpg'
-          exportFlattenedBoard(
-            board,
-            filenameForExport,
-            boardFileImageSize(boardData),
-            projectFileAbsolutePath,
-            outputPath,
-            0.4
-          ).then(() => resolve()).catch(err => console.error(err))
-        }))
-        index++
-      }
-      
-      Promise.all(writers).then(() => {
+
+      boardData.boards.forEach((board, index) => {
+        let from = path.join(path.dirname(projectFileAbsolutePath), 'images', boardFilenameForPosterFrame(board))
+        let to = path.join(outputPath, `board-` + index + '.jpg')
+        try {
+          if (!fs.existsSync(from)) throw new Error('Missing posterframe ' + from)
+
+          fs.copySync(from, to)
+        } catch (err) {
+          reject(err)
+        }
+      })
+
+      try {
         let exportsPath = ensureExportsPathExists(projectFileAbsolutePath)
         let filepath = _filepath ? _filepath : path.join(exportsPath, basenameWithoutExt + ' ' + moment().format('YYYY-MM-DD hh.mm.ss') + '.pdf')
         let paperSize = _paperSize ? _paperSize : 'LTR'
@@ -129,10 +126,9 @@ class Exporter {
         let spacing = _spacing ? _spacing : 10
         exporterPDF.generatePDF(paperSize, paperOrientation, rows, cols, spacing, boardData, basenameWithoutExt, filepath)
         resolve(filepath)
-      }).catch(err => {
-        console.log(err)
-      })
-
+      } catch(err) {
+        reject(err)
+      }
     })
   }
 
