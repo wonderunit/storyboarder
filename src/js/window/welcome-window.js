@@ -85,8 +85,9 @@ document.querySelector('iframe').onload = ()=>{
 }
 document.querySelector('iframe').src = "https://wonderunit.com/ads/storyboarder?" + Math.round(Date.now() / 1000 / 60 / 6)
 
-document.querySelector('#getting-started').onclick = ()=> {
-  //shell.openExternal("https://wonderunit.com")
+document.querySelector('#getting-started').onclick = event => {
+  event.preventDefault()
+  shell.openExternal("https://wonderunit.com/storyboarder/faq/#How-do-I-get-started")
 }
 
 document.querySelector('#open-storyboard').onclick = ()=> {
