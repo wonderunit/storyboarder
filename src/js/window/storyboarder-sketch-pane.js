@@ -557,7 +557,7 @@ class LineDrawingStrategy {
     )
   }
 
-  _normalizePoint (e) {
+  _normalizeEvent (e) {
     // clone the event with a few changes
     e = {
       x: e.x,
@@ -582,11 +582,27 @@ class LineDrawingStrategy {
   }
 
   _onPointerDown (e) {
+    let nextEvent
+
     if (this.state.started) {
       // line has been in-progress, so stop current line
       let wasDrawing = this.context.sketchPane.isDrawing()
 
       this.context.sketchPane.up(e)
+
+      // start where we left off
+      let lastPoint = this.context.sketchPane.globalizePoint(
+        this.context.sketchPane.strokeState.points[
+          this.context.sketchPane.strokeState.points.length - 1
+        ]
+      )
+      nextEvent = this._normalizeEvent({
+        x: lastPoint.x,
+        y: lastPoint.y,
+        pressure: e.pressure,
+        tiltX: e.tiltX,
+        tiltY: e.tiltY
+      })
 
       if (wasDrawing) {
         this.context.emit('lineMileage', this.context.lineMileageCounter.get())
@@ -597,6 +613,7 @@ class LineDrawingStrategy {
     } else {
       // starting a new line
       this.state.started = true
+      nextEvent = this._normalizeEvent(e)
     }
 
     let options = {
@@ -606,12 +623,12 @@ class LineDrawingStrategy {
       straightLinePressure: 0.5
     }
 
-    this.context.sketchPane.down(this._normalizePoint(e), options)
+    this.context.sketchPane.down(nextEvent, options)
 
     this.context.lineMileageCounter.reset()
 
     // audible event for Sonifier
-    this.context.emit('pointerdown', this.context.sketchPane.localizePoint(this._normalizePoint(e)))
+    this.context.emit('pointerdown', this.context.sketchPane.localizePoint(nextEvent))
 
     // just triggers layer opacity check
     this.context.emit('requestPointerDown')
@@ -626,7 +643,7 @@ class LineDrawingStrategy {
     }
 
     // always update the cursor
-    this.context.sketchPane.move(this._normalizePoint(e))
+    this.context.sketchPane.move(this._normalizeEvent(e))
 
     if (this.context.sketchPane.isDrawing()) {
       // track X/Y on the full-size texture
