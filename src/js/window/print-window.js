@@ -306,14 +306,26 @@ const generateWorksheet = () => {
 
 const exportPDF = () => {
   displaySpinner(true)
-
-
-  setTimeout(()=>{
-    exporter.exportPDF(boardData, boardFilename, paperSize, paperOrientation, rows, cols, spacing, path.join(app.getPath('temp'), 'boardoutput.pdf')).then(outputPath => {
-      reloadPDFDocument(outputPath)
-    })
+  setTimeout(() => {
+    exporter
+      .exportPDF(
+        boardData,
+        boardFilename,
+        paperSize,
+        paperOrientation,
+        rows,
+        cols,
+        spacing,
+        path.join(app.getPath('temp'), 'boardoutput.pdf')
+      )
+      .then(outputPath => {
+        reloadPDFDocument(outputPath)
+      })
+      .catch(err => {
+        console.error(err)
+        alert(err)
+      })
   }, 500)
-  
 }
 
 loadWindow()
