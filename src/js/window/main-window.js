@@ -2436,17 +2436,20 @@ const savePosterFrame = async (board, forceReadFromFiles = false) => {
   // composite from files
   if (forceReadFromFiles) {
     canvas = document.createElement('canvas')
+
     canvas.width = storyboarderSketchPane.sketchPane.width
     canvas.height = storyboarderSketchPane.sketchPane.height
+
+    // draw a white matte background first
+    let context = canvas.getContext('2d')
+    context.fillStyle = '#ffffff'
+    context.fillRect(0, 0, canvas.width, canvas.height)
+
     await exporterCommon.flattenBoardToCanvas(
       board,
       canvas,
-      [
-        canvas.width,
-        canvas.height
-      ],
-      boardFilename
-    )
+      [ canvas.width, canvas.height ],
+      boardFilename)
 
   // composite from memory
   } else {
@@ -2464,13 +2467,14 @@ const savePosterFrame = async (board, forceReadFromFiles = false) => {
       storyboarderSketchPane.sketchPane.width,
       storyboarderSketchPane.sketchPane.height
     )
-  }
 
-  // draw a white matte background behind the transparent art
-  let context = canvas.getContext('2d')
-  context.globalCompositeOperation = 'destination-over'
-  context.fillStyle = '#ffffff'
-  context.fillRect(0, 0, canvas.width, canvas.height)
+    // draw a white matte background behind the transparent art
+    // using destination-over
+    let context = canvas.getContext('2d')
+    context.globalCompositeOperation = 'destination-over'
+    context.fillStyle = '#ffffff'
+    context.fillRect(0, 0, canvas.width, canvas.height)
+  }
 
   // save to a file
   fs.writeFileSync(
