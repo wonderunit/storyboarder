@@ -2183,9 +2183,20 @@ let saveBoardFile = (opt = { force: false }) => {
     clearTimeout(boardFileDirtyTimer)
     boardData.version = pkg.version
     if (opt.force || prefsModule.getPrefs()['enableAutoSave']) {
-      fs.writeFileSync(boardFilename, JSON.stringify(boardData, null, 2))
-      boardFileDirty = false
-      console.log('saved board file:', boardFilename)
+
+      try {
+        // save to backup file
+        let backupFilePath = boardFilename + '.backup-' + Date.now()
+        fs.writeFileSync(backupFilePath, JSON.stringify(boardData, null, 2))
+        // swap backup file for actual file
+        fs.moveSync(backupFilePath, boardFilename, { overwrite: true })
+
+        boardFileDirty = false
+        console.log('saved board file:', boardFilename)
+      } catch (err) {
+        console.error(err)
+        alert('Could not save project.\n' + err)
+      }
     }
   }
 }
