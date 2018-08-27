@@ -5297,10 +5297,16 @@ const exportImages = () => {
   notifications.notify({message: "Exporting " + boardData.boards.length + " to a folder. Please wait...", timing: 5})
   sfx.down()
   setTimeout(()=>{
-    exporter.exportImages(boardData, boardFilename).then(outputPath => {
+    exporter.exportImages(boardData, boardFilename)
+    .then(outputPath => {
       notifications.notify({message: "Your scene has been exported as images.", timing: 20})
       sfx.positive()
       shell.showItemInFolder(outputPath)
+    })
+    .catch(err => {
+      console.error(err)
+      notifications.notify({ message: 'Could not export. An error occurred.' })
+      notifications.notify({ message: err.toString() })
     })
   }, 1000)
 }

@@ -133,13 +133,13 @@ class Exporter {
   }
 
   exportImages (boardData, projectFileAbsolutePath, outputPath = null) {
-    return new Promise(resolve => {
+    return new Promise((resolve, reject) => {
       let exportsPath = ensureExportsPathExists(projectFileAbsolutePath)
       let basename = path.basename(projectFileAbsolutePath)
       if (!outputPath) {
         outputPath = path.join(
           exportsPath,
-         basename + ' Images ' + moment().format('YYYY-MM-DD hh.mm.ss')
+          basename + ' Images ' + moment().format('YYYY-MM-DD hh.mm.ss')
         )
       }
 
@@ -148,28 +148,29 @@ class Exporter {
       }
 
       // export ALL layers of each one of the boards
-      let index = 0
       let writers = []
       let basenameWithoutExt = path.basename(projectFileAbsolutePath, path.extname(projectFileAbsolutePath))
-      for (let board of boardData.boards) {
-        writers.push(new Promise(resolve => {
-          let filenameForExport = boardFilenameForExport(board, index, basenameWithoutExt)
-          exportFlattenedBoard(
-            board,
-            filenameForExport,
-            boardFileImageSize(boardData),
-            projectFileAbsolutePath,
-            outputPath
-          ).then(() => resolve()).catch(err => console.error(err))
-        }))
-
-        index++
-      }
+      boardData.boards.forEach((board, index) => {
+        writers.push(
+          new Promise((resolve, reject) => {
+            let filenameForExport = boardFilenameForExport(board, index, basenameWithoutExt)
+            exportFlattenedBoard(
+              board,
+              filenameForExport,
+              boardFileImageSize(boardData),
+              projectFileAbsolutePath,
+              outputPath
+            )
+            .then(() => resolve())
+            .catch(err => reject(err))
+          })
+        )
+      })
 
       Promise.all(writers).then(() => {
         resolve(outputPath)
       }).catch(err => {
-        console.log(err)
+        reject(err)
       })
     })
   }
