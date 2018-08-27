@@ -1928,11 +1928,16 @@ const renderScene = async () => {
           return srcByUid[uid]
         } else {
           let board = boardData.boards.find(b => b.uid === uid)
-          return path.join(
-            path.dirname(boardFilename),
-            'images',
-            boardModel.boardFilenameForThumbnail(board)
-          )
+          if (board) {
+            return path.join(
+              path.dirname(boardFilename),
+              'images',
+              boardModel.boardFilenameForThumbnail(board)
+            )
+          } else {
+            console.warn('getSrcByUid failed', uid)
+            return undefined
+          }
         }
       }
     })
