@@ -257,7 +257,7 @@ const load = async (event, args) => {
     await loadBoardUI()
     await updateBoardUI()
 
-    verifyScene()
+    await verifyScene()
 
     log({ type: 'progress', message: 'Preparing to display' })
 
@@ -636,7 +636,7 @@ const migrateScene = () => {
 }
 
 // NOTE we assume that all resources (board data and images) are saved BEFORE calling verifyScene
-const verifyScene = () => {
+const verifyScene = async () => {
   // find all used files
   const flatten = arr => Array.prototype.concat(...arr)
   const pngFiles = flatten(boardData.boards.map(board => ([
@@ -689,6 +689,23 @@ const verifyScene = () => {
         markBoardFileDirty()
       }
     }
+  }
+
+  let boardsWithMissingPosterFrames = []
+  for (let board of boardData.boards) {
+    if (!fs.existsSync(path.join(boardPath, 'images', boardModel.boardFilenameForPosterFrame(board)))) {
+      if (boardsWithMissingPosterFrames.length == 0) {
+        notifications.notify({ message: 'Generating missing posterframes. Please wait …', timing: 60 })
+      }
+      boardsWithMissingPosterFrames.push(board)
+    }
+  }
+  if (boardsWithMissingPosterFrames.length) {
+    // wait 500 msecs for notification to show, then save all the poster frames
+    await new Promise(resolve => setTimeout(resolve, 500))
+
+    boardsWithMissingPosterFrames.forEach(board => savePosterFrame(board, true))
+    notifications.notify({ message: `Done. Added ${boardsWithMissingPosterFrames.length} posterframes.`, timing: 60 })
   }
 }
 
@@ -2424,17 +2441,20 @@ const savePosterFrame = async (board, forceReadFromFiles = false) => {
   // composite from files
   if (forceReadFromFiles) {
     canvas = document.createElement('canvas')
+
     canvas.width = storyboarderSketchPane.sketchPane.width
     canvas.height = storyboarderSketchPane.sketchPane.height
+
+    // draw a white matte background first
+    let context = canvas.getContext('2d')
+    context.fillStyle = '#ffffff'
+    context.fillRect(0, 0, canvas.width, canvas.height)
+
     await exporterCommon.flattenBoardToCanvas(
       board,
       canvas,
-      [
-        canvas.width,
-        canvas.height
-      ],
-      boardFilename
-    )
+      [ canvas.width, canvas.height ],
+      boardFilename)
 
   // composite from memory
   } else {
@@ -2452,13 +2472,14 @@ const savePosterFrame = async (board, forceReadFromFiles = false) => {
       storyboarderSketchPane.sketchPane.width,
       storyboarderSketchPane.sketchPane.height
     )
-  }
 
-  // draw a white matte background behind the transparent art
-  let context = canvas.getContext('2d')
-  context.globalCompositeOperation = 'destination-over'
-  context.fillStyle = '#ffffff'
-  context.fillRect(0, 0, canvas.width, canvas.height)
+    // draw a white matte background behind the transparent art
+    // using destination-over
+    let context = canvas.getContext('2d')
+    context.globalCompositeOperation = 'destination-over'
+    context.fillStyle = '#ffffff'
+    context.fillRect(0, 0, canvas.width, canvas.height)
+  }
 
   // save to a file
   fs.writeFileSync(
@@ -3538,9 +3559,10 @@ let nextScene = ()=> {
       currentScene++
       loadScene(currentScene).then(() => {
         migrateScene()
-        verifyScene()
-        renderScript()
-        renderScene()
+        verifyScene().then(() => {
+          renderScript()
+          renderScene()
+        })
       })
     }
   } else {
@@ -3565,9 +3587,10 @@ let previousScene = ()=> {
       currentScene = Math.max(0, currentScene)
       loadScene(currentScene).then(() => {
         migrateScene()
-        verifyScene()
-        renderScript()
-        renderScene()
+        verifyScene().then(() => {
+          renderScript()
+          renderScene()
+        })
       })
     }
   } else {
@@ -4146,9 +4169,10 @@ let renderScenes = () => {
         currentScene = Number(e.target.dataset.node)
         loadScene(currentScene).then(() => {
           migrateScene()
-          verifyScene()
-          renderScript()
-          renderScene()
+          verifyScene().then(() => {
+            renderScript()
+            renderScene()
+          })
         })
       }
     }, true, true)
@@ -6070,7 +6094,7 @@ const applyUndoStateForScene = async (state) => {
     currentScene = getSceneNumberBySceneId(state.sceneId)
     await loadScene(currentScene)
     // migrateScene() // not required here
-    verifyScene()
+    await verifyScene()
     renderScript()
   }
   boardData = state.sceneData
@@ -6108,7 +6132,7 @@ const applyUndoStateForImage = async (state) => {
     currentScene = getSceneNumberBySceneId(state.sceneId)
     await loadScene(currentScene)
     // migrateScene() // not required here
-    verifyScene()
+    await verifyScene()
     renderScript()
   }
 
