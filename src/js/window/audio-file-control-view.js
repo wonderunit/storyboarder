@@ -425,7 +425,7 @@ class Recorder {
             symmetric: false // compatibility with Chrome
           })
 
-          this.onAudioCompleteCallback(new Buffer(arrayBuffer))
+          this.onAudioCompleteCallback(Buffer.from(arrayBuffer))
           this.chunks = []
         },
         err => {
