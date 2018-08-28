@@ -2007,12 +2007,23 @@ let newBoard = async (position, shouldAddToUndoStack = true) => {
   if (typeof position == "undefined") position = currentBoard + 1
 
   if (shouldAddToUndoStack) {
-    await saveImageFile() // force-save any current work
     await storeUndoStateForScene(true)
   }
 
   // create array entry
   let board = insertNewBoardDataAtPosition(position)
+  renderThumbnailDrawer()
+
+  if (shouldAddToUndoStack) {
+    await saveImageFile() // force-save any current work
+
+    // TODO saveImageFile might change boardData,
+    //      in which case, the undo state stored will be incomplete
+    if (boardFileDirty) {
+      // TODO
+      console.log('a layer has changed since we last stored an undo state')
+    }
+  }
 
   markBoardFileDirty() // board data is dirty
 
@@ -2031,7 +2042,6 @@ let newBoard = async (position, shouldAddToUndoStack = true) => {
   await saveThumbnailFile(position, { forceReadFromFiles: true })
   */
 
-  renderThumbnailDrawer()
   storeUndoStateForScene()
 
   // play a sound effect (unless this is for a brand new project)
