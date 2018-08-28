@@ -1256,7 +1256,8 @@ class PanningStrategy {
   _onPointerMove (e) {
     this.state.position = this.context.sketchPane.localizePoint(e)
 
-    let z = this.context.sketchPane.zoom
+    // let z = this.context.sketchPane.zoom
+    let z = this.context.sketchPane.sketchPaneContainer.scale.x
 
     this.state.dest.x += (this.state.position.x - this.state.starting.x) * z,
     this.state.dest.y += (this.state.position.y - this.state.starting.y) * z
