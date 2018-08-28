@@ -6234,6 +6234,8 @@ const saveAsFolder = async () => {
 
     let dstFilePath = path.join(dstFolderPath, path.basename(dstFolderPath) + path.extname(srcFilePath))
 
+    notifications.notify({ message: `Done! Reloading …`})
+
     // reload the project
     ipcRenderer.send('openFile', dstFilePath)
   } catch (error) {
@@ -6242,6 +6244,7 @@ const saveAsFolder = async () => {
       type: 'error',
       message: error.message
     })
+    notifications.notify({ message: `"Save As" failed.`})
   }
 }
 
