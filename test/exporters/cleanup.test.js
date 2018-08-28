@@ -1,7 +1,7 @@
 //
 // USAGE:
 //
-// electron-mocha --renderer test/exporters/cleanup.test.js
+// npx electron-mocha --renderer test/exporters/cleanup.test.js
 //
 
 'use strict';
@@ -32,43 +32,43 @@ describe('exporters/cleanup', function () {
         'ducks': {
           'ducks.storyboarder': actualJsonAsString,
           'images': {
-            'board-2-42VR9.png':                  new Buffer([8, 6, 7, 5, 3, 0, 9]),
-            'board-2-42VR9-reference.png':        new Buffer([8, 6, 7, 5, 3, 0, 9]),
-            'board-2-42VR9-notes.png':            new Buffer([8, 6, 7, 5, 3, 0, 9]),
-            'board-2-42VR9-thumbnail.png':        new Buffer([8, 6, 7, 5, 3, 0, 9]),
+            'board-2-42VR9.png':                  Buffer.from([8, 6, 7, 5, 3, 0, 9]),
+            'board-2-42VR9-reference.png':        Buffer.from([8, 6, 7, 5, 3, 0, 9]),
+            'board-2-42VR9-notes.png':            Buffer.from([8, 6, 7, 5, 3, 0, 9]),
+            'board-2-42VR9-thumbnail.png':        Buffer.from([8, 6, 7, 5, 3, 0, 9]),
             // linked PSD
-            'board-2-42VR9.psd':                  new Buffer([8, 6, 7, 5, 3, 0, 9]),
+            'board-2-42VR9.psd':                  Buffer.from([8, 6, 7, 5, 3, 0, 9]),
             // an existing audio file
-            'audio.wav':                          new Buffer([8, 6, 7, 5, 3, 0, 9]),
+            'audio.wav':                          Buffer.from([8, 6, 7, 5, 3, 0, 9]),
             // a posterframe
-            'board-2-42VR9-posterframe.jpg':      new Buffer([8, 6, 7, 5, 3, 0, 9]),
+            'board-2-42VR9-posterframe.jpg':      Buffer.from([8, 6, 7, 5, 3, 0, 9]),
 
-            'board-2-J74F5.png':                  new Buffer([8, 6, 7, 5, 3, 0, 9]),
-            'board-2-J74F5-reference.png':        new Buffer([8, 6, 7, 5, 3, 0, 9]),
-            'board-2-J74F5-thumbnail.png':        new Buffer([8, 6, 7, 5, 3, 0, 9]),
+            'board-2-J74F5.png':                  Buffer.from([8, 6, 7, 5, 3, 0, 9]),
+            'board-2-J74F5-reference.png':        Buffer.from([8, 6, 7, 5, 3, 0, 9]),
+            'board-2-J74F5-thumbnail.png':        Buffer.from([8, 6, 7, 5, 3, 0, 9]),
 
-            'board-0-P2FLS.png':                  new Buffer([8, 6, 7, 5, 3, 0, 9]),
-            'board-0-P2FLS-reference.png':        new Buffer([8, 6, 7, 5, 3, 0, 9]),
-            'board-0-P2FLS-notes.png':            new Buffer([8, 6, 7, 5, 3, 0, 9]),
-            'board-0-P2FLS-thumbnail.png':        new Buffer([8, 6, 7, 5, 3, 0, 9]),
+            'board-0-P2FLS.png':                  Buffer.from([8, 6, 7, 5, 3, 0, 9]),
+            'board-0-P2FLS-reference.png':        Buffer.from([8, 6, 7, 5, 3, 0, 9]),
+            'board-0-P2FLS-notes.png':            Buffer.from([8, 6, 7, 5, 3, 0, 9]),
+            'board-0-P2FLS-thumbnail.png':        Buffer.from([8, 6, 7, 5, 3, 0, 9]),
             // board-0-P2FLS.psd
 
-            'board-1-WEBM4.png':                  new Buffer([8, 6, 7, 5, 3, 0, 9]),
-            'board-1-WEBM4-reference.png':        new Buffer([8, 6, 7, 5, 3, 0, 9]),
-            'board-1-WEBM4-notes.png':            new Buffer([8, 6, 7, 5, 3, 0, 9]),
-            'board-1-WEBM4-thumbnail.png':        new Buffer([8, 6, 7, 5, 3, 0, 9]),
+            'board-1-WEBM4.png':                  Buffer.from([8, 6, 7, 5, 3, 0, 9]),
+            'board-1-WEBM4-reference.png':        Buffer.from([8, 6, 7, 5, 3, 0, 9]),
+            'board-1-WEBM4-notes.png':            Buffer.from([8, 6, 7, 5, 3, 0, 9]),
+            'board-1-WEBM4-thumbnail.png':        Buffer.from([8, 6, 7, 5, 3, 0, 9]),
 
-            'board-98-PQKJM.png':                 new Buffer([8, 6, 7, 5, 3, 0, 9]),
-            'board-98-PQKJM-reference.png':       new Buffer([8, 6, 7, 5, 3, 0, 9]),
-            'board-98-PQKJM-notes.png':           new Buffer([8, 6, 7, 5, 3, 0, 9]),
-            'board-98-PQKJM-thumbnail.png':       new Buffer([8, 6, 7, 5, 3, 0, 9]),
+            'board-98-PQKJM.png':                 Buffer.from([8, 6, 7, 5, 3, 0, 9]),
+            'board-98-PQKJM-reference.png':       Buffer.from([8, 6, 7, 5, 3, 0, 9]),
+            'board-98-PQKJM-notes.png':           Buffer.from([8, 6, 7, 5, 3, 0, 9]),
+            'board-98-PQKJM-thumbnail.png':       Buffer.from([8, 6, 7, 5, 3, 0, 9]),
             // unlinked PSD
-            'board-98-PQKJM.psd':                 new Buffer([8, 6, 7, 5, 3, 0, 9]),
+            'board-98-PQKJM.psd':                 Buffer.from([8, 6, 7, 5, 3, 0, 9]),
             // a not used
-            'unused.wav':                         new Buffer([8, 6, 7, 5, 3, 0, 9]),
+            'unused.wav':                         Buffer.from([8, 6, 7, 5, 3, 0, 9]),
 
-            'unused.png':                         new Buffer([8, 6, 7, 5, 3, 0, 9]),
-            'unused.psd':                         new Buffer([8, 6, 7, 5, 3, 0, 9])
+            'unused.png':                         Buffer.from([8, 6, 7, 5, 3, 0, 9]),
+            'unused.psd':                         Buffer.from([8, 6, 7, 5, 3, 0, 9])
           }
         }
       }
