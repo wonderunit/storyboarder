@@ -2016,6 +2016,11 @@ let newBoard = async (position, shouldAddToUndoStack = true) => {
 
   markBoardFileDirty() // board data is dirty
 
+  //
+  //
+  // for better performance we currently SKIP the following (posterframe and thumbnail generation)
+  //
+  /*
   // NOTE when loading a script, sketchPane is not initialized yet #1235
   //      posterframe will be created by loadSketchPaneLayers instead
   if (typeof sketchPane != 'undefined') {
@@ -2024,6 +2029,7 @@ let newBoard = async (position, shouldAddToUndoStack = true) => {
   }
   // create blank thumbnail
   await saveThumbnailFile(position, { forceReadFromFiles: true })
+  */
 
   renderThumbnailDrawer()
   storeUndoStateForScene()
@@ -2329,8 +2335,9 @@ let saveImageFile = async () => {
   // TODO if posterframe does not exist should we create? like we do with thumbnails?
   // save the poster frame first
   // if at least one layer is dirty, save a poster frame JPG
-  if (total > 0) {
-    await savePosterFrame(board, indexToSave !== currentBoard)
+  let posterFrameExists = fs.existsSync(path.join(boardPath, 'images', boardModel.boardFilenameForPosterFrame(board)))
+  if (total > 0 || !posterFrameExists) {
+    await savePosterFrame(board, false)
   }
 
   // export layers to PNG
@@ -2355,7 +2362,8 @@ let saveImageFile = async () => {
   }
 
   // create/update the thumbnail image file if necessary
-  if (complete > 0) {
+  let thumbnailExists = fs.existsSync(path.join(boardPath, 'images', boardModel.boardFilenameForThumbnail(board)))
+  if (complete > 0 || !thumbnailExists) {
     // TODO can this be synchronous?
     await saveThumbnailFile(indexToSave)
     await updateThumbnailDisplayFromFile(indexToSave)
@@ -3728,11 +3736,14 @@ function * loadSketchPaneLayers (signal, board, indexToLoad) {
 
   clearPosterFrame()
 
+  // for better performance we currently SKIP posterframe save here
+  /*
   // no poster frame was found earlier
   if (!hasPosterFrame) {
     // force a posterframe save
     yield savePosterFrame(board, indexToLoad !== currentBoard)
   }
+  */
 }
 
 const updateSketchPaneBoard = async () => {
