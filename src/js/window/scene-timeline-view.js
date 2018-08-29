@@ -426,19 +426,48 @@ class BoardView {
           },
           [
             kind === 'board'
-              ? $.img({
-                style: `display: block;
-                        border: none;
-                        pointer-events: none;
-                        padding: 0;
-                        border-radius: 3px;
-                        margin: 0;`,
-                attributes: {
-                  width: `${Math.round(imageHeight * this.scene.aspectRatio)}px`,
-                  height: `${imageHeight}px`
-                },
-                src: this.src
-              })
+              ? [
+                  $.img({
+                    style: `display: block;
+                            border: none;
+                            pointer-events: none;
+                            padding: 0;
+                            border-radius: 3px;
+                            margin: 0;`,
+                    attributes: {
+                      width: `${Math.round(imageHeight * this.scene.aspectRatio)}px`,
+                      height: `${imageHeight}px`
+                    },
+                    src: this.src,
+                    onload: event => {
+                      let img = event.target
+                      // show loaded image
+                      img.style.display = 'block'
+                      // hide blank white placeholder
+                      img.nextSibling.style.display = 'none'
+                    },
+                    onerror: event => {
+                      let img = event.target
+                      // hide broken image
+                      img.style.display = 'none'
+                      // show black white placeholder
+                      img.nextSibling.style.display = 'block'
+                    }
+                  }),
+
+                  // placeholder
+                  $.div({
+                    style: `display: none;
+                            border: none;
+                            pointer-events: none;
+                            padding: 0;
+                            border-radius: 3px;
+                            margin: 0;
+                            width: ${Math.round(imageHeight * this.scene.aspectRatio)}px;
+                            height: ${imageHeight}px;
+                            background-color: white`
+                  })
+                ]
               : null,
             kind === 'board'
             ? $.div(
