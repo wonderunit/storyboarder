@@ -3687,8 +3687,9 @@ function * loadSketchPaneLayers (signal, board, indexToLoad) {
 
   if (!hasPosterFrame) renderFakePosterFrame()
 
+  // commented out for performance reasons
   // HACK yield to get key input and cancel if necessary
-  yield CAF.delay(signal, 1)
+  // yield CAF.delay(signal, 1)
 
   // queue up image files for load
   let loadables = []
