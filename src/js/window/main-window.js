@@ -159,6 +159,7 @@ let sceneTimelineView
 let timelineModeControlView
 
 let storyboarderSketchPane
+let fakePosterFrameCanvas
 
 let exportWebWindow
 
