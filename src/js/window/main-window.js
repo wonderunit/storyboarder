@@ -159,6 +159,7 @@ let sceneTimelineView
 let timelineModeControlView
 
 let storyboarderSketchPane
+let fakePosterFrameCanvas
 
 let exportWebWindow
 
@@ -3628,6 +3629,12 @@ const loadPosterFrame = async board => {
   let lastModified
   let filename = boardModel.boardFilenameForPosterFrame(board)
   let imageFilePath = path.join(boardPath, 'images', filename)
+
+  if (!fs.existsSync(imageFilePath)) {
+    console.log('loadPosterFrame failed')
+    return false
+  }
+
   imageFilePath = imageFilePath + '?' + cacheKey(imageFilePath)
 
   try {
@@ -3653,22 +3660,30 @@ const clearPosterFrame = () => {
 // HACK draw a fake poster frame to occlude the view
 // TODO we could instead hide/show the layers via PIXI.Sprite#visible?
 const renderFakePosterFrame = () => {
-  let canvas = document.createElement('canvas')
-  let context = canvas.getContext('2d')
+  if (
+    !fakePosterFrameCanvas ||
+    fakePosterFrameCanvas.width != storyboarderSketchPane.sketchPane.width ||
+    fakePosterFrameCanvas.height != storyboarderSketchPane.sketchPane.height
+  ) {
+    let canvas = document.createElement('canvas')
+    let context = canvas.getContext('2d')
 
-  canvas.width = storyboarderSketchPane.sketchPane.width
-  canvas.height = storyboarderSketchPane.sketchPane.height
+    canvas.width = storyboarderSketchPane.sketchPane.width
+    canvas.height = storyboarderSketchPane.sketchPane.height
 
-  context.fillStyle = '#ffffff'
-  context.fillRect(0, 0, canvas.width, canvas.height)
+    context.fillStyle = '#ffffff'
+    context.fillRect(0, 0, canvas.width, canvas.height)
 
-  // context.fillStyle = '#000000'
-  // context.font = '24px serif'
-  // context.fillText('Loading …', (canvas.width - 50) / 2, canvas.height / 2)
-  // context.globalAlpha = 0.5
+    // context.fillStyle = '#000000'
+    // context.font = '24px serif'
+    // context.fillText('Loading …', (canvas.width - 50) / 2, canvas.height / 2)
+    // context.globalAlpha = 0.5
+
+    fakePosterFrameCanvas = canvas
+  }
 
   let layer = storyboarderSketchPane.sketchPane.layers.findByName('composite')
-  layer.replaceTextureFromCanvas(canvas)
+  layer.replaceTextureFromCanvas(fakePosterFrameCanvas)
   // TODO remove the canvas from PIXI cache?
 
   console.log('loadPosterFrame rendered white canvas')
@@ -3689,8 +3704,9 @@ function * loadSketchPaneLayers (signal, board, indexToLoad) {
 
   if (!hasPosterFrame) renderFakePosterFrame()
 
+  // commented out for performance reasons
   // HACK yield to get key input and cancel if necessary
-  yield CAF.delay(signal, 1)
+  // yield CAF.delay(signal, 1)
 
   // queue up image files for load
   let loadables = []
