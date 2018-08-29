@@ -3620,6 +3620,12 @@ const loadPosterFrame = async board => {
   let lastModified
   let filename = boardModel.boardFilenameForPosterFrame(board)
   let imageFilePath = path.join(boardPath, 'images', filename)
+
+  if (!fs.existsSync(imageFilePath)) {
+    console.log('loadPosterFrame failed')
+    return false
+  }
+
   imageFilePath = imageFilePath + '?' + cacheKey(imageFilePath)
 
   try {
