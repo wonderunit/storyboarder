@@ -84,7 +84,7 @@ const onWatermarkFileClick = event => {
       if (filenames) {
         try {
           fs.copySync(filenames[0], path.join(remote.app.getPath('userData'), 'watermark.png'))
-          prefsModule.set('userWatermark', filenames[0], true)
+          prefsModule.set('userWatermark', true, true)
         } catch (err) {
           console.error(err)
           alert(err)
