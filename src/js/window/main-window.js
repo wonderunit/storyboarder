@@ -4151,11 +4151,12 @@ let renderTimeline = () => {
 
   html.push('<div class="marker-holder"><div class="marker"></div></div>')
 
+  let defaultBoardTiming = prefsModule.getPrefs().defaultBoardTiming
   boardData.boards.forEach((board, i) => {
     // if board duration is undefined or 0, use the default,
     // otherwise use the value given
     let duration = (util.isUndefined(board.duration) || board.duration === 0)
-      ? prefsModule.getPrefs().defaultBoardTiming
+      ? defaultBoardTiming
       : board.duration
 
     html.push(
