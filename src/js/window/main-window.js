@@ -5311,6 +5311,10 @@ const exportAnimatedGif = async () => {
 
   try {
     let shouldWatermark = prefsModule.getPrefs().enableWatermark
+    let watermarkSrc = prefsModule.getPrefs().userWatermark
+      ? path.join(app.getPath('userData'), 'watermark.png')
+      : './img/watermark.png'
+
     let path = await exporter.exportAnimatedGif(boards, boardSize, 888, boardFilename, shouldWatermark, boardData)
     notifications.notify({
       message: 'I exported your board selection as a GIF. Share it with your friends! Post it to your twitter thing or your slack dingus.',
