@@ -2017,20 +2017,18 @@ let newBoard = async (position, shouldAddToUndoStack = true) => {
 
   markBoardFileDirty() // board data is dirty
 
-  //
-  //
-  // for better performance we currently SKIP the following (posterframe and thumbnail generation)
-  //
-  /*
   // NOTE when loading a script, sketchPane is not initialized yet #1235
   //      posterframe will be created by loadSketchPaneLayers instead
-  if (typeof sketchPane != 'undefined') {
+  if (typeof storyboarderSketchPane != 'undefined') {
     // create blank posterframe
-    await savePosterFrame(board, true)
+    await savePosterFrame(
+      board,
+      true, // read from files
+      true // blank
+    )
   }
   // create blank thumbnail
-  await saveThumbnailFile(position, { forceReadFromFiles: true })
-  */
+  await saveThumbnailFile(position, { forceReadFromFiles: true, blank: true })
 
   renderThumbnailDrawer()
   storeUndoStateForScene()
@@ -2333,11 +2331,9 @@ let saveImageFile = async () => {
   // note in the board file all the layers we intend to save now
   saveBoardFile()
 
-  // TODO if posterframe does not exist should we create? like we do with thumbnails?
   // save the poster frame first
   // if at least one layer is dirty, save a poster frame JPG
-  let posterFrameExists = fs.existsSync(path.join(boardPath, 'images', boardModel.boardFilenameForPosterFrame(board)))
-  if (total > 0 || !posterFrameExists) {
+  if (total > 0) {
     await savePosterFrame(board, false)
   }
 
@@ -2363,8 +2359,7 @@ let saveImageFile = async () => {
   }
 
   // create/update the thumbnail image file if necessary
-  let thumbnailExists = fs.existsSync(path.join(boardPath, 'images', boardModel.boardFilenameForThumbnail(board)))
-  if (complete > 0 || !thumbnailExists) {
+  if (complete > 0) {
     // TODO can this be synchronous?
     await saveThumbnailFile(indexToSave)
     await updateThumbnailDisplayFromFile(indexToSave)
@@ -2449,7 +2444,7 @@ let saveImageFile = async () => {
 }
 
 // TODO performance
-const savePosterFrame = async (board, forceReadFromFiles = false) => {
+const savePosterFrame = async (board, forceReadFromFiles = false, blank = false) => {
   const imageFilePath = path.join(
     boardPath,
     'images',
@@ -2470,28 +2465,37 @@ const savePosterFrame = async (board, forceReadFromFiles = false) => {
     context.fillStyle = '#ffffff'
     context.fillRect(0, 0, canvas.width, canvas.height)
 
-    await exporterCommon.flattenBoardToCanvas(
-      board,
-      canvas,
-      [ canvas.width, canvas.height ],
-      boardFilename)
+    if (!blank) {
+      await exporterCommon.flattenBoardToCanvas(
+        board,
+        canvas,
+        [ canvas.width, canvas.height ],
+        boardFilename)
+    }
 
   // composite from memory
   } else {
-    // grab full-size image from current sketchpane (in memory)
-    let pixels = storyboarderSketchPane.sketchPane.extractThumbnailPixels(
-      storyboarderSketchPane.sketchPane.width,
-      storyboarderSketchPane.sketchPane.height,
-      storyboarderSketchPane.visibleLayersIndices
-    )
+    if (!blank) {
+      // grab full-size image from current sketchpane (in memory)
+      let pixels = storyboarderSketchPane.sketchPane.extractThumbnailPixels(
+        storyboarderSketchPane.sketchPane.width,
+        storyboarderSketchPane.sketchPane.height,
+        storyboarderSketchPane.visibleLayersIndices
+      )
 
-    SketchPaneUtil.arrayPostDivide(pixels)
+      SketchPaneUtil.arrayPostDivide(pixels)
 
-    canvas = SketchPaneUtil.pixelsToCanvas(
-      pixels,
-      storyboarderSketchPane.sketchPane.width,
-      storyboarderSketchPane.sketchPane.height
-    )
+      canvas = SketchPaneUtil.pixelsToCanvas(
+        pixels,
+        storyboarderSketchPane.sketchPane.width,
+        storyboarderSketchPane.sketchPane.height
+      )
+    } else {
+      canvas = document.createElement('canvas')
+
+      canvas.width = storyboarderSketchPane.sketchPane.width
+      canvas.height = storyboarderSketchPane.sketchPane.height
+    }
 
     // draw a white matte background behind the transparent art
     // using destination-over
@@ -2960,10 +2964,19 @@ const renderThumbnailToNewCanvas = (index, options = { forceReadFromFiles: false
   }
 }
 
-const saveThumbnailFile = async (index, options = { forceReadFromFiles: false }) => {
+const saveThumbnailFile = async (index, options = { forceReadFromFiles: false, blank: false }) => {
   let imageFilePath = path.join(boardPath, 'images', boardModel.boardFilenameForThumbnail(boardData.boards[index]))
 
-  let canvas = await renderThumbnailToNewCanvas(index, options)
+  let canvas
+
+  if (options.blank) {
+    let size = getThumbnailSize(boardData)
+    let context = createSizedContext(size)
+    fillContext(context, 'white')
+    canvas = context.canvas
+  } else {
+    canvas = await renderThumbnailToNewCanvas(index, options)
+  }
 
   // explicitly indicate to renderer that the file has changed
   setEtag(imageFilePath)
