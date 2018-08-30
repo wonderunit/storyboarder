@@ -84,7 +84,7 @@ const onWatermarkFileClick = event => {
       if (filenames) {
         try {
           fs.copySync(filenames[0], path.join(remote.app.getPath('userData'), 'watermark.png'))
-          prefsModule.set('userWatermark', true, true)
+          prefsModule.set('userWatermark', path.basename(filenames[0]), true)
         } catch (err) {
           console.error(err)
           alert(err)
@@ -156,7 +156,7 @@ const render = () => {
   if (licensedEl) {
     let watermarkLabelEl = document.querySelector('#watermarkFile_filename')
     watermarkLabelEl.innerHTML = prefs.userWatermark && fs.existsSync(path.join(remote.app.getPath('userData'), 'watermark.png'))
-      ? '(custom)'
+      ? prefs.userWatermark
       : '(default)'
   }
 
