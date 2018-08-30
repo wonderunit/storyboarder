@@ -315,21 +315,42 @@
     </div>
 
     <template id="licensed-template">
-      <div id="licensed" class="preferences-fieldset">
-        <h2 class="preferences-subhead">Thank you for supporting Storyboarder!</h2>
-        <p>Here are some additional features for supporters.</p>
+      <div id="licensed">
+        <h2 class="preferences-title" style="font-size: 32px">Thanks for supporting Storyboarder!</h2>
+        <div class="preferences-hint" style="margin-bottom: 2rem">
+          <p>Here are some additional features for supporters.</p>
+        </div>
 
-        <div class="preferences-input">
+        <div class="preferences-fieldset">
+          <div class="preferences-input">
             <input
               type="checkbox"
               name="enableWatermark"
               id="enableWatermark" />
 
-          </label>
-        </div>
             <label for="enableWatermark">
               <span></span>Add watermark to exported images and video.
+            </label>
+          </div>
 
+          <div class="preferences-input">
+            <div class="preferences-hint" style="margin-bottom: 0.25rem">
+              Use a custom watermark image, or leave blank for the default.
+            </div>
+
+            <div style="padding: 0.25rem 0; ">
+              <input
+                type="file"
+                name="watermarkImage"
+                id="watermarkImage" />
+            </div>
+
+            <div class="preferences-hint">
+              Format: PNG, 125 × 58 px
+            </div>
+          </div>
+
+        </div>
       </div>
     </template>
 
