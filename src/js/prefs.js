@@ -60,11 +60,23 @@ if(cpus.length <= 2 || cpu.speed <= 2000) {
 
 let prefs
 
+const verify = data => {
+  if (data.userWatermark) {
+    if (fs.existsSync(path.join(app.getPath('userData'), 'watermark.png'))) {
+      console.log('found watermark file')
+    } else {
+      console.log('could not find custom watermark file. reverting to default.')
+      data.userWatermark = undefined
+    }
+  }
+  return data
+}
+
 const load = () => {
   try {
     // load existing prefs
     // console.log("READING FROM DISK")
-    prefs = JSON.parse(fs.readFileSync(prefFile))
+    prefs = verify(JSON.parse(fs.readFileSync(prefFile)))
   } catch (e) {
     console.error('Could not read prefs. Loading defaults.')
     console.error(e)
