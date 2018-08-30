@@ -5315,13 +5315,13 @@ const exportAnimatedGif = async () => {
       ? path.join(app.getPath('userData'), 'watermark.png')
       : './img/watermark.png'
 
-    let path = await exporter.exportAnimatedGif(boards, boardSize, 888, boardFilename, shouldWatermark, boardData)
+    let exportPath = await exporter.exportAnimatedGif(boards, boardSize, 888, boardFilename, shouldWatermark, boardData, watermarkSrc)
     notifications.notify({
       message: 'I exported your board selection as a GIF. Share it with your friends! Post it to your twitter thing or your slack dingus.',
       timing: 20
     })
     sfx.positive()
-    shell.showItemInFolder(path)
+    shell.showItemInFolder(exportPath)
   } catch (err) {
     console.error(err)
     notifications.notify({ message: 'Could not export. An error occurred.' })
