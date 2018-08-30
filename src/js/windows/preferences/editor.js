@@ -1,6 +1,7 @@
 const { remote, ipcRenderer, shell } = require('electron')
 const jwt = require('jsonwebtoken')
 const path = require('path')
+const fs = require('fs-extra')
 
 const util = require('./js/utils')
 const prefsModule = require('electron').remote.require('./prefs')
@@ -66,11 +67,28 @@ const onFilenameClick = event => {
 const onWatermarkFileClick = event => {
   event.target.style.pointerEvents = 'none'
   remote.dialog.showOpenDialog(
-    { title: 'Import Watermark Image File' },
+    {
+      title: 'Import Watermark Image File',
+      properties: ['openFile'],
+      filters: [
+        {
+          name: 'Watermark Image (PNG)',
+          extensions: [
+            'png'
+          ]
+        }
+      ]
+    },
     filenames => {
       event.target.style.pointerEvents = 'auto'
       if (filenames) {
-        prefsModule.set('userWatermark', filenames[0], true)
+        try {
+          fs.copySync(filenames[0], path.join(remote.app.getPath('userData'), 'watermark.png'))
+          prefsModule.set('userWatermark', filenames[0], true)
+        } catch (err) {
+          console.error(err)
+          alert(err)
+        }
         render()
       } else {
         prefsModule.set('userWatermark', undefined, true)
@@ -137,8 +155,8 @@ const render = () => {
   let licensedEl = document.querySelector('#licensed-container')
   if (licensedEl) {
     let watermarkLabelEl = document.querySelector('#watermarkFile_filename')
-    watermarkLabelEl.innerHTML = prefs.userWatermark
-      ? 'custom'
+    watermarkLabelEl.innerHTML = prefs.userWatermark && fs.existsSync(path.join(remote.app.getPath('userData'), 'watermark.png'))
+      ? '(custom)'
       : '(default)'
   }
 
