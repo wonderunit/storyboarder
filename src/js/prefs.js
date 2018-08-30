@@ -67,6 +67,7 @@ const load = () => {
     prefs = JSON.parse(fs.readFileSync(prefFile))
   } catch (e) {
     console.error('Could not read prefs. Loading defaults.')
+    console.error(e)
     prefs = defaultPrefs
     try {
       savePrefs(prefs)
