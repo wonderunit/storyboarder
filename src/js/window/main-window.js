@@ -1471,7 +1471,7 @@ const loadBoardUI = async () => {
         outputHeight: targetOutputHeight,
         recordingStrategy: "RecordingStrategyTimeRatio",
         recordingTime: data.duration,
-        shouldWatermark: prefsModule.getPrefs().enableWonderunitWatermark
+        shouldWatermark: prefsModule.getPrefs().enableWatermark
       })
 
       canvasRecorder.on('recording-ready', (filepaths)=> {
@@ -5310,7 +5310,7 @@ const exportAnimatedGif = async () => {
   sfx.down()
 
   try {
-    let shouldWatermark = prefsModule.getPrefs().enableWonderunitWatermark
+    let shouldWatermark = prefsModule.getPrefs().enableWatermark
     let path = await exporter.exportAnimatedGif(boards, boardSize, 888, boardFilename, shouldWatermark, boardData)
     notifications.notify({
       message: 'I exported your board selection as a GIF. Share it with your friends! Post it to your twitter thing or your slack dingus.',
@@ -5387,7 +5387,7 @@ const exportVideo = async () => {
       scene,
       sceneFilePath,
       {
-        shouldWatermark: prefsModule.getPrefs().enableWonderunitWatermark,
+        shouldWatermark: prefsModule.getPrefs().enableWatermark,
         progressCallback: progress => {}
           // notifications.notify({message: `${Math.round(progress * 100)}% complete`, timing: 1})
       }
