@@ -63,6 +63,23 @@ const onFilenameClick = event => {
   )
 }
 
+const onWatermarkFileClick = event => {
+  event.target.style.pointerEvents = 'none'
+  remote.dialog.showOpenDialog(
+    { title: 'Import Watermark Image File' },
+    filenames => {
+      event.target.style.pointerEvents = 'auto'
+      if (filenames) {
+        prefsModule.set('userWatermark', filenames[0], true)
+        render()
+      } else {
+        prefsModule.set('userWatermark', undefined, true)
+        render()
+      }
+    }
+  )
+}
+
 const onRevealKeyMapFileClick = event => {
   event.preventDefault()
   let keymapPath = path.join(remote.app.getPath('userData'), 'keymap.json')
@@ -117,6 +134,14 @@ const render = () => {
       : 'disabled'
   }
 
+  let licensedEl = document.querySelector('#licensed-container')
+  if (licensedEl) {
+    let watermarkLabelEl = document.querySelector('#watermarkFile_filename')
+    watermarkLabelEl.innerHTML = prefs.userWatermark
+      ? 'custom'
+      : '(default)'
+  }
+
   // track if anything has changed
   hasChanged = false
   for (let key in originalPrefs) {
@@ -142,6 +167,8 @@ const init = () => {
     let t = document.querySelector('#licensed-template')
     let clone = document.importNode(t.content, true)
     document.querySelector('#licensed-container').appendChild(clone)
+
+    document.querySelector('#watermarkFile_filename').addEventListener('click', onWatermarkFileClick.bind(this))
   }
 
   inputs = document.querySelectorAll('input[type="checkbox"], input[type="number"], input[type="range"]')

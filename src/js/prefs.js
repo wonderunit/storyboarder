@@ -43,7 +43,8 @@ const defaultPrefs = {
   enableHighQualityDrawingEngine: true,
 
   straightLineDelayInMsecs: 650,
-  enableWatermark: true
+  enableWatermark: true,
+  userWatermark: undefined
 }
 
 // For slow computers, override the defaults here.

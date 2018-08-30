@@ -334,15 +334,20 @@
           </div>
 
           <div class="preferences-input">
-            <div class="preferences-hint" style="margin-bottom: 0.25rem">
-              Use a custom watermark image, or leave blank for the default.
-            </div>
-
-            <div style="padding: 0.25rem 0; ">
-              <input
-                type="file"
-                name="watermarkImage"
-                id="watermarkImage" />
+            <div style="display:flex">
+              <div>
+                <a href="#" id="watermarkFile_filename" class="button"></a>
+                <input
+                  hidden="true"
+                  type="text"
+                  name="watermarkFile"
+                  id="watermarkFile" />
+              </div>
+              <div>
+                <label for="watermarkFile" class="label-filename">
+                  Custom watermark image (leave blank for default)
+                </label>
+              </div>
             </div>
 
             <div class="preferences-hint">
