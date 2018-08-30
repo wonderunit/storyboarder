@@ -175,7 +175,7 @@ class Exporter {
     })
   }
 
-  async exportAnimatedGif (boards, boardSize, destWidth, projectFileAbsolutePath, mark, boardData) {
+  async exportAnimatedGif (boards, boardSize, destWidth, projectFileAbsolutePath, mark, boardData, watermarkSrc = './img/watermark.png') {
     let aspect = boardSize.height / boardSize.width
     let destSize = {
       width: destWidth,
@@ -211,7 +211,7 @@ class Exporter {
       return lines
     }
 
-    const watermarkImage = await getImage('./img/watermark.png')
+    const watermarkImage = await getImage(watermarkSrc)
 
     const canvases = await Promise.all(
       boards.map(async (board) =>
