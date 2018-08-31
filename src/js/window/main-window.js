@@ -5391,6 +5391,7 @@ const exportVideo = async () => {
       sceneFilePath,
       {
         shouldWatermark: prefsModule.getPrefs().enableWatermark,
+        watermarkImagePath: watermarkModel.watermarkImagePath(prefsModule.getPrefs(), app.getPath('userData')),
         progressCallback: progress => {}
           // notifications.notify({message: `${Math.round(progress * 100)}% complete`, timing: 1})
       }

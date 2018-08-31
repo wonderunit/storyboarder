@@ -43,6 +43,10 @@ describe('exporters/ffmpeg', () => {
         outputPath,
         sceneFilePath,
         scene,
+
+        shouldWatermark: true,
+        watermarkImagePath: path.join(__dirname, '..', '..', 'test', 'fixtures', 'images', 'watermarks', 'watermark_1600x900.png'),
+
         // FIXME
         progressCallback: progress => {}
       }

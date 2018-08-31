@@ -328,7 +328,6 @@ class Exporter {
   }
 
   async exportVideo (scene, sceneFilePath, opts) {
-
     let outputPath = ensureExportsPathExists(sceneFilePath)
 
     return await exporterFfmpeg.convertToVideo(
@@ -337,7 +336,8 @@ class Exporter {
         sceneFilePath,
         scene,
         progressCallback: opts.progressCallback,
-        shouldWatermark: opts.shouldWatermark
+        shouldWatermark: opts.shouldWatermark,
+        watermarkImagePath: opts.watermarkImagePath
       }
     )
   }

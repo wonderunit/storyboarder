@@ -101,7 +101,7 @@ const convertToVideo = async opts => {
     // copy the watermark
     console.log('copying required resources …')
     fs.copySync(
-      path.join(__dirname, '..', '..', 'img', 'watermark.png'),
+      opts.watermarkImagePath,
       path.join(tmpDir.name, 'watermark.png')
     )
 
