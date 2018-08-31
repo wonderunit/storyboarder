@@ -41,7 +41,8 @@ class Recorder extends EventEmitter {
           filepath: options.filepath,
           width: targetOutputWidth,
           height: targetOutputHeight,
-          shouldWatermark: options.shouldWatermark
+          shouldWatermark: options.shouldWatermark,
+          watermarkImagePath: options.watermarkImagePath
         })
         break
       case "CanvasBufferOutputFileStrategy":

@@ -1472,7 +1472,8 @@ const loadBoardUI = async () => {
         outputHeight: targetOutputHeight,
         recordingStrategy: "RecordingStrategyTimeRatio",
         recordingTime: data.duration,
-        shouldWatermark: prefsModule.getPrefs().enableWatermark
+        shouldWatermark: prefsModule.getPrefs().enableWatermark,
+        watermarkImagePath: watermarkModel.watermarkImagePath(prefsModule.getPrefs(), app.getPath('userData'))
       })
 
       canvasRecorder.on('recording-ready', (filepaths)=> {
