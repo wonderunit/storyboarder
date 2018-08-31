@@ -212,7 +212,10 @@ const convertToVideo = async opts => {
 													...(shouldWatermark
                           	? [
 																// input #1 = watermark
-																'[1]null[watermark]',
+																// scaled to 1/8th, don't re-scale below 255 px
+																// see: https://superuser.com/a/567934
+																// see: https://trac.ffmpeg.org/wiki/Scaling#AvoidingUpscaling
+																`[1]scale=-2:'min(225,ih)':force_original_aspect_ratio=decrease[watermark]`,
 																// overlay watermark w/ shorthand positioning
 																'[frame][watermark]overlay=W-w:H-h[vid]'
 															]
