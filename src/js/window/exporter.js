@@ -244,7 +244,27 @@ class Exporter {
       let canvas = canvases[i]
       let context = canvas.getContext('2d')
       if (mark) {
-        context.drawImage(watermarkImage, destSize.width - watermarkImage.width, destSize.height - watermarkImage.height)
+        let dst = { width: Math.floor(destSize.width / 4), height: Math.floor(destSize.height / 4) }
+        let src = { width: watermarkImage.width, height: watermarkImage.height }
+        let [x, y, w, h] = util.fitToDst(dst, src)
+        if (
+          src.width <= dst.width &&
+          src.height <= dst.height
+        ) {
+          context.drawImage(
+            watermarkImage,
+            destSize.width - watermarkImage.width,
+            destSize.height - watermarkImage.height
+          )
+        } else {
+          context.drawImage(
+            watermarkImage,
+            destSize.width - w,
+            destSize.height - h,
+            w,
+            h
+          )
+        }
       }
       if (boards[i].dialogue) {
         let text = boards[i].dialogue
