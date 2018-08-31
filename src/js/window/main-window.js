@@ -55,6 +55,7 @@ const importerPsd = require('../importers/psd')
 const sceneSettingsView = require('./scene-settings-view')
 
 const boardModel = require('../models/board')
+const watermarkModel = require('../models/watermark')
 
 const FileHelper = require('../files/file-helper')
 
@@ -5311,9 +5312,7 @@ const exportAnimatedGif = async () => {
 
   try {
     let shouldWatermark = prefsModule.getPrefs().enableWatermark
-    let watermarkSrc = prefsModule.getPrefs().userWatermark
-      ? path.join(app.getPath('userData'), 'watermark.png')
-      : './img/watermark.png'
+    let watermarkSrc = watermarkModel.watermarkImagePath(prefsModule.getPrefs(), app.getPath('userData'))
 
     let exportPath = await exporter.exportAnimatedGif(boards, boardSize, 888, boardFilename, shouldWatermark, boardData, watermarkSrc)
     notifications.notify({
