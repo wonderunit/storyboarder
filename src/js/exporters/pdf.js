@@ -266,7 +266,7 @@ const generatePDF = (paperSize, layout='landscape', rows, cols, spacing, boardDa
       if (watermarkImagePath) {
 
         let dst = {
-          width: doc.page.width,
+          width: Math.floor(doc.page.width / 4),
           height: margin[3]
         }
         let src = { width: watermarkDimensions[0], height: watermarkDimensions[1] }
@@ -274,7 +274,7 @@ const generatePDF = (paperSize, layout='landscape', rows, cols, spacing, boardDa
         
         doc.image(
           watermarkImagePath,
-          doc.page.width - w,
+          doc.page.width - w - margin[2],
           doc.page.height - h,
           {
             width: w,
