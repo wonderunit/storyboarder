@@ -16,7 +16,7 @@ const app = require('electron').remote.app
 */
 
 
-const generatePDF = (paperSize, layout='landscape', rows, cols, spacing, boardData, basenameWithoutExt, filepath) => {
+const generatePDF = (paperSize, layout='landscape', rows, cols, spacing, boardData, basenameWithoutExt, filepath, shouldWatermark = false, watermarkImagePath = undefined, watermarkDimensions = []) => {
 
   let stringContainsForeign = (testString) => {
     let regexForeign = /[^AÁĂÂÄÀĀĄÅÃÆBCĆČÇĊDÐĎĐEÉĚÊËĖÈĒĘFGĞĢĠHĦIÍÎÏİÌĪĮJKĶLĹĽĻŁMNŃŇŅŊÑOÓÔÖÒŐŌØÕŒPÞQRŔŘŖSŚŠŞȘTŦŤŢȚUÚÛÜÙŰŪŲŮVWẂŴẄẀXYÝŶŸỲZŹŽŻaáăâäàāąåãæbcćčçċdðďđeéěêëėèēęfgğģġhħiıíîïìīįjkķlĺľļłmnńňņŋñoóôöòőōøõœpþqrŕřŗsśšşșßtŧťţțuúûüùűūųůvwẃŵẅẁxyýŷÿỳzźžż0123456789.,\/#!$%\^&\*;:{}=\-_`~()\s\?¿—–-€₪¢₡¤$ƒ₣₤₧₨£¥⋅+−×÷=≠><≥≤±≈~¬∞∫Ω∆∏∑√µ∂%‰⊳⊲↑→↓←●◊■▲▼★☐♦✓@&¶§©®℗™°|¦†ℓ‡№℮^⌘\'\"„“”‘‛’´˘ˇ¸ˆ¨˙`˝¯˛˚˜]/;
@@ -262,20 +262,44 @@ const generatePDF = (paperSize, layout='landscape', rows, cols, spacing, boardDa
     doc.restore()
 */
 
-    doc.fontSize(10)
-    doc.font('thin')
-    let logoWidth = doc.widthOfString('')
-    doc.fontSize(5)
-    let wuWidth = doc.widthOfString(' WONDER UNIT', {characterSpacing: 1})
-    doc.fontSize(6)
-    let sbWidth = doc.widthOfString('   |   Storyboarder')
+    if (shouldWatermark) {
+      if (watermarkImagePath) {
 
-    doc.fontSize(10)
-    doc.text('', doc.page.width-margin[2]-logoWidth-wuWidth-sbWidth-1.25, doc.page.height-margin[3]-1.25, {lineBreak: false})
-    doc.fontSize(5)
-    doc.text(' WONDER UNIT', doc.page.width-margin[2]-wuWidth-sbWidth, doc.page.height-margin[3]+0.5, {lineBreak: false, characterSpacing: 1})
-    doc.fontSize(6)
-    doc.text('   |   Storyboarder', doc.page.width-margin[2]-sbWidth, doc.page.height-margin[3], {lineBreak: false})
+        let dst = {
+          width: doc.page.width,
+          height: margin[3]
+        }
+        let src = { width: watermarkDimensions[0], height: watermarkDimensions[1] }
+        let [x, y, w, h] = util.fitToDst(dst, src)        
+        
+        doc.image(
+          watermarkImagePath,
+          doc.page.width - w,
+          doc.page.height - h,
+          {
+            width: w,
+            height: h
+          }
+        )
+
+      } else {
+        // wonderunit mark
+        doc.fontSize(10)
+        doc.font('thin')
+        let logoWidth = doc.widthOfString('')
+        doc.fontSize(5)
+        let wuWidth = doc.widthOfString(' WONDER UNIT', {characterSpacing: 1})
+        doc.fontSize(6)
+        let sbWidth = doc.widthOfString('   |   Storyboarder')
+
+        doc.fontSize(10)
+        doc.text('', doc.page.width-margin[2]-logoWidth-wuWidth-sbWidth-1.25, doc.page.height-margin[3]-1.25, {lineBreak: false})
+        doc.fontSize(5)
+        doc.text(' WONDER UNIT', doc.page.width-margin[2]-wuWidth-sbWidth, doc.page.height-margin[3]+0.5, {lineBreak: false, characterSpacing: 1})
+        doc.fontSize(6)
+        doc.text('   |   Storyboarder', doc.page.width-margin[2]-sbWidth, doc.page.height-margin[3], {lineBreak: false})
+      }
+    }
   }
   doc.end()
 }

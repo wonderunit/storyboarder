@@ -98,7 +98,7 @@ class Exporter {
     return outputPath
   }
  
-  exportPDF (boardData, projectFileAbsolutePath, _paperSize, _paperOrientation, _rows, _cols, _spacing, _filepath) {
+  exportPDF (boardData, projectFileAbsolutePath, _paperSize, _paperOrientation, _rows, _cols, _spacing, _filepath, shouldWatermark = false, watermarkImagePath = undefined, watermarkDimensions = []) {
     return new Promise((resolve, reject) => {
       let outputPath = app.getPath('temp')
 
@@ -124,7 +124,19 @@ class Exporter {
         let rows = _rows ? _rows : 3
         let cols = _cols ? _cols : 3
         let spacing = _spacing ? _spacing : 10
-        exporterPDF.generatePDF(paperSize, paperOrientation, rows, cols, spacing, boardData, basenameWithoutExt, filepath)
+        exporterPDF.generatePDF(
+          paperSize,
+          paperOrientation,
+          rows,
+          cols,
+          spacing,
+          boardData,
+          basenameWithoutExt,
+          filepath,
+          shouldWatermark,
+          watermarkImagePath,
+          watermarkDimensions
+        )
         resolve(filepath)
       } catch(err) {
         reject(err)
