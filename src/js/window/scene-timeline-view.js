@@ -35,6 +35,8 @@ const drawBuffer = (width, height, context, data) => {
 
 class ScaleControlView {
   constructor (props) {
+    this.show = props.show
+
     this.style = props.style
     this.onDrag = props.onDrag
 
@@ -59,6 +61,8 @@ class ScaleControlView {
     etch.initialize(this)
   }
   update (props = {}) {
+    if (props.show != null) this.show = props.show
+
     if (props.containerWidth != null) this.containerWidth = props.containerWidth
     if (props.clientRect != null) this.clientRect = props.clientRect
 
@@ -77,6 +81,15 @@ class ScaleControlView {
     etch.update(this)
   }
   render () {
+    if (!this.show) return $.div({
+      ref: 'container',
+      style: `position: absolute;
+              top: 0;
+              left: 0;
+              bottom: 0;
+              right: 0;`
+    })
+
     let handleWidth = this.constructor.HANDLE_WIDTH
 
     let handleStyle = `background-color: #777;
@@ -426,19 +439,48 @@ class BoardView {
           },
           [
             kind === 'board'
-              ? $.img({
-                style: `display: block;
-                        border: none;
-                        pointer-events: none;
-                        padding: 0;
-                        border-radius: 3px;
-                        margin: 0;`,
-                attributes: {
-                  width: `${Math.round(imageHeight * this.scene.aspectRatio)}px`,
-                  height: `${imageHeight}px`
-                },
-                src: this.src
-              })
+              ? [
+                  $.img({
+                    style: `display: block;
+                            border: none;
+                            pointer-events: none;
+                            padding: 0;
+                            border-radius: 3px;
+                            margin: 0;`,
+                    attributes: {
+                      width: `${Math.round(imageHeight * this.scene.aspectRatio)}px`,
+                      height: `${imageHeight}px`
+                    },
+                    src: this.src,
+                    onload: event => {
+                      let img = event.target
+                      // show loaded image
+                      img.style.display = 'block'
+                      // hide blank white placeholder
+                      img.nextSibling.style.display = 'none'
+                    },
+                    onerror: event => {
+                      let img = event.target
+                      // hide broken image
+                      img.style.display = 'none'
+                      // show black white placeholder
+                      img.nextSibling.style.display = 'block'
+                    }
+                  }),
+
+                  // placeholder
+                  $.div({
+                    style: `display: none;
+                            border: none;
+                            pointer-events: none;
+                            padding: 0;
+                            border-radius: 3px;
+                            margin: 0;
+                            width: ${Math.round(imageHeight * this.scene.aspectRatio)}px;
+                            height: ${imageHeight}px;
+                            background-color: white`
+                  })
+                ]
               : null,
             kind === 'board'
             ? $.div(
@@ -646,6 +688,8 @@ class TimelineView {
     this.onModifyBoardDurationByIndex = props.onModifyBoardDurationByIndex
     this.onScroll = props.onScroll
 
+    this.show = props.show
+
     this.state = {
       resizableBoardView: undefined,
       resizableBoardOriginalDuration: undefined,
@@ -668,8 +712,28 @@ class TimelineView {
   // the component's associated DOM element. Babel is instructed to call the
   // `etch.dom` helper in compiled JSX expressions by the `@jsx` pragma.
   render () {
-
-    //console.log("RENDER IS BEING CALLED EVERY MOUSE UP. WTFFFFFF.")
+    if (!this.show) return $.div({ style: 'position: relative;' }, [
+          $.div(
+            {
+              ref: 'timelineScrollable',
+              class: 'timeline-scrollable',
+              on: {
+                wheel: this.onWheel
+              },
+              style: `position: relative;
+                      overflow: scroll;`
+            },
+            $.div(
+              {
+                // lanes container
+                style: `position: relative;
+                        ${this.mini ? `background-color: #444;` : ``}`
+              },
+              [
+              ]
+            )
+          )
+        ])
 
     let boardsViews = this.scene.boards.map((board, index) =>
         etch.dom(BoardView, {
@@ -812,6 +876,8 @@ class TimelineView {
 
   // Required: Update the component with new properties and children.
   update (props, children) {
+    if (props.show != null) this.show = props.show
+
     if (props.scene) this.scene = props.scene
 
     if (props.scale != null) this.scale = props.scale
@@ -1035,6 +1101,7 @@ class SceneTimelineView {
         $.div({ style: `margin: 0 15px;` },
           $(TimelineView, {
             ref: 'timelineView',
+            show: this.show,
 
             scene: this.scene,
 
@@ -1070,6 +1137,7 @@ class SceneTimelineView {
               [
                 $(TimelineView, {
                   ref: 'miniTimelineView',
+                  show: this.show,
 
                   scene: this.scene,
 
@@ -1084,6 +1152,7 @@ class SceneTimelineView {
 
                 $(ScaleControlView, {
                   ref: 'scaleControlView',
+                  show: this.show,
 
                   position: this.position,
                   scale: this.scale,

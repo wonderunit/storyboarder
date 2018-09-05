@@ -160,6 +160,7 @@ let sceneTimelineView
 let timelineModeControlView
 
 let storyboarderSketchPane
+let fakePosterFrameCanvas
 
 let exportWebWindow
 
@@ -2021,12 +2022,16 @@ let newBoard = async (position, shouldAddToUndoStack = true) => {
 
   // NOTE when loading a script, sketchPane is not initialized yet #1235
   //      posterframe will be created by loadSketchPaneLayers instead
-  if (typeof sketchPane != 'undefined') {
+  if (typeof storyboarderSketchPane != 'undefined') {
     // create blank posterframe
-    await savePosterFrame(board, true)
+    await savePosterFrame(
+      board,
+      true, // read from files
+      true // blank
+    )
   }
   // create blank thumbnail
-  await saveThumbnailFile(position, { forceReadFromFiles: true })
+  await saveThumbnailFile(position, { forceReadFromFiles: true, blank: true })
 
   renderThumbnailDrawer()
   storeUndoStateForScene()
@@ -2329,11 +2334,10 @@ let saveImageFile = async () => {
   // note in the board file all the layers we intend to save now
   saveBoardFile()
 
-  // TODO if posterframe does not exist should we create? like we do with thumbnails?
   // save the poster frame first
   // if at least one layer is dirty, save a poster frame JPG
   if (total > 0) {
-    await savePosterFrame(board, indexToSave !== currentBoard)
+    await savePosterFrame(board, false)
   }
 
   // export layers to PNG
@@ -2443,7 +2447,7 @@ let saveImageFile = async () => {
 }
 
 // TODO performance
-const savePosterFrame = async (board, forceReadFromFiles = false) => {
+const savePosterFrame = async (board, forceReadFromFiles = false, blank = false) => {
   const imageFilePath = path.join(
     boardPath,
     'images',
@@ -2464,28 +2468,37 @@ const savePosterFrame = async (board, forceReadFromFiles = false) => {
     context.fillStyle = '#ffffff'
     context.fillRect(0, 0, canvas.width, canvas.height)
 
-    await exporterCommon.flattenBoardToCanvas(
-      board,
-      canvas,
-      [ canvas.width, canvas.height ],
-      boardFilename)
+    if (!blank) {
+      await exporterCommon.flattenBoardToCanvas(
+        board,
+        canvas,
+        [ canvas.width, canvas.height ],
+        boardFilename)
+    }
 
   // composite from memory
   } else {
-    // grab full-size image from current sketchpane (in memory)
-    let pixels = storyboarderSketchPane.sketchPane.extractThumbnailPixels(
-      storyboarderSketchPane.sketchPane.width,
-      storyboarderSketchPane.sketchPane.height,
-      storyboarderSketchPane.visibleLayersIndices
-    )
+    if (!blank) {
+      // grab full-size image from current sketchpane (in memory)
+      let pixels = storyboarderSketchPane.sketchPane.extractThumbnailPixels(
+        storyboarderSketchPane.sketchPane.width,
+        storyboarderSketchPane.sketchPane.height,
+        storyboarderSketchPane.visibleLayersIndices
+      )
 
-    SketchPaneUtil.arrayPostDivide(pixels)
+      SketchPaneUtil.arrayPostDivide(pixels)
 
-    canvas = SketchPaneUtil.pixelsToCanvas(
-      pixels,
-      storyboarderSketchPane.sketchPane.width,
-      storyboarderSketchPane.sketchPane.height
-    )
+      canvas = SketchPaneUtil.pixelsToCanvas(
+        pixels,
+        storyboarderSketchPane.sketchPane.width,
+        storyboarderSketchPane.sketchPane.height
+      )
+    } else {
+      canvas = document.createElement('canvas')
+
+      canvas.width = storyboarderSketchPane.sketchPane.width
+      canvas.height = storyboarderSketchPane.sketchPane.height
+    }
 
     // draw a white matte background behind the transparent art
     // using destination-over
@@ -2954,10 +2967,19 @@ const renderThumbnailToNewCanvas = (index, options = { forceReadFromFiles: false
   }
 }
 
-const saveThumbnailFile = async (index, options = { forceReadFromFiles: false }) => {
+const saveThumbnailFile = async (index, options = { forceReadFromFiles: false, blank: false }) => {
   let imageFilePath = path.join(boardPath, 'images', boardModel.boardFilenameForThumbnail(boardData.boards[index]))
 
-  let canvas = await renderThumbnailToNewCanvas(index, options)
+  let canvas
+
+  if (options.blank) {
+    let size = getThumbnailSize(boardData)
+    let context = createSizedContext(size)
+    fillContext(context, 'white')
+    canvas = context.canvas
+  } else {
+    canvas = await renderThumbnailToNewCanvas(index, options)
+  }
 
   // explicitly indicate to renderer that the file has changed
   setEtag(imageFilePath)
@@ -3623,6 +3645,12 @@ const loadPosterFrame = async board => {
   let lastModified
   let filename = boardModel.boardFilenameForPosterFrame(board)
   let imageFilePath = path.join(boardPath, 'images', filename)
+
+  if (!fs.existsSync(imageFilePath)) {
+    console.log('loadPosterFrame failed')
+    return false
+  }
+
   imageFilePath = imageFilePath + '?' + cacheKey(imageFilePath)
 
   try {
@@ -3648,22 +3676,30 @@ const clearPosterFrame = () => {
 // HACK draw a fake poster frame to occlude the view
 // TODO we could instead hide/show the layers via PIXI.Sprite#visible?
 const renderFakePosterFrame = () => {
-  let canvas = document.createElement('canvas')
-  let context = canvas.getContext('2d')
+  if (
+    !fakePosterFrameCanvas ||
+    fakePosterFrameCanvas.width != storyboarderSketchPane.sketchPane.width ||
+    fakePosterFrameCanvas.height != storyboarderSketchPane.sketchPane.height
+  ) {
+    let canvas = document.createElement('canvas')
+    let context = canvas.getContext('2d')
 
-  canvas.width = storyboarderSketchPane.sketchPane.width
-  canvas.height = storyboarderSketchPane.sketchPane.height
+    canvas.width = storyboarderSketchPane.sketchPane.width
+    canvas.height = storyboarderSketchPane.sketchPane.height
 
-  context.fillStyle = '#ffffff'
-  context.fillRect(0, 0, canvas.width, canvas.height)
+    context.fillStyle = '#ffffff'
+    context.fillRect(0, 0, canvas.width, canvas.height)
 
-  // context.fillStyle = '#000000'
-  // context.font = '24px serif'
-  // context.fillText('Loading …', (canvas.width - 50) / 2, canvas.height / 2)
-  // context.globalAlpha = 0.5
+    // context.fillStyle = '#000000'
+    // context.font = '24px serif'
+    // context.fillText('Loading …', (canvas.width - 50) / 2, canvas.height / 2)
+    // context.globalAlpha = 0.5
+
+    fakePosterFrameCanvas = canvas
+  }
 
   let layer = storyboarderSketchPane.sketchPane.layers.findByName('composite')
-  layer.replaceTextureFromCanvas(canvas)
+  layer.replaceTextureFromCanvas(fakePosterFrameCanvas)
   // TODO remove the canvas from PIXI cache?
 
   console.log('loadPosterFrame rendered white canvas')
@@ -3684,8 +3720,9 @@ function * loadSketchPaneLayers (signal, board, indexToLoad) {
 
   if (!hasPosterFrame) renderFakePosterFrame()
 
+  // commented out for performance reasons
   // HACK yield to get key input and cancel if necessary
-  yield CAF.delay(signal, 1)
+  // yield CAF.delay(signal, 1)
 
   // queue up image files for load
   let loadables = []
@@ -3731,11 +3768,14 @@ function * loadSketchPaneLayers (signal, board, indexToLoad) {
 
   clearPosterFrame()
 
+  // for better performance we currently SKIP posterframe save here
+  /*
   // no poster frame was found earlier
   if (!hasPosterFrame) {
     // force a posterframe save
     yield savePosterFrame(board, indexToLoad !== currentBoard)
   }
+  */
 }
 
 const updateSketchPaneBoard = async () => {
@@ -4114,11 +4154,12 @@ let renderTimeline = () => {
 
   html.push('<div class="marker-holder"><div class="marker"></div></div>')
 
+  let defaultBoardTiming = prefsModule.getPrefs().defaultBoardTiming
   boardData.boards.forEach((board, i) => {
     // if board duration is undefined or 0, use the default,
     // otherwise use the value given
     let duration = (util.isUndefined(board.duration) || board.duration === 0)
-      ? prefsModule.getPrefs().defaultBoardTiming
+      ? defaultBoardTiming
       : board.duration
 
     html.push(
