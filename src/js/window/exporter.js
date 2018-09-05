@@ -98,7 +98,7 @@ class Exporter {
     return outputPath
   }
  
-  exportPDF (boardData, projectFileAbsolutePath, _paperSize, _paperOrientation, _rows, _cols, _spacing, _filepath) {
+  exportPDF (boardData, projectFileAbsolutePath, _paperSize, _paperOrientation, _rows, _cols, _spacing, _filepath, shouldWatermark = false, watermarkImagePath = undefined, watermarkDimensions = []) {
     return new Promise((resolve, reject) => {
       let outputPath = app.getPath('temp')
 
@@ -124,7 +124,19 @@ class Exporter {
         let rows = _rows ? _rows : 3
         let cols = _cols ? _cols : 3
         let spacing = _spacing ? _spacing : 10
-        exporterPDF.generatePDF(paperSize, paperOrientation, rows, cols, spacing, boardData, basenameWithoutExt, filepath)
+        exporterPDF.generatePDF(
+          paperSize,
+          paperOrientation,
+          rows,
+          cols,
+          spacing,
+          boardData,
+          basenameWithoutExt,
+          filepath,
+          shouldWatermark,
+          watermarkImagePath,
+          watermarkDimensions
+        )
         resolve(filepath)
       } catch(err) {
         reject(err)
@@ -175,7 +187,7 @@ class Exporter {
     })
   }
 
-  async exportAnimatedGif (boards, boardSize, destWidth, projectFileAbsolutePath, mark, boardData) {
+  async exportAnimatedGif (boards, boardSize, destWidth, projectFileAbsolutePath, mark, boardData, watermarkSrc = './img/watermark.png') {
     let aspect = boardSize.height / boardSize.width
     let destSize = {
       width: destWidth,
@@ -211,7 +223,7 @@ class Exporter {
       return lines
     }
 
-    const watermarkImage = await getImage('./img/watermark.png')
+    const watermarkImage = await getImage(watermarkSrc)
 
     const canvases = await Promise.all(
       boards.map(async (board) =>
@@ -244,7 +256,27 @@ class Exporter {
       let canvas = canvases[i]
       let context = canvas.getContext('2d')
       if (mark) {
-        context.drawImage(watermarkImage, destSize.width - watermarkImage.width, destSize.height - watermarkImage.height)
+        let dst = { width: Math.floor(destSize.width / 4), height: Math.floor(destSize.height / 4) }
+        let src = { width: watermarkImage.width, height: watermarkImage.height }
+        let [x, y, w, h] = util.fitToDst(dst, src)
+        if (
+          src.width <= dst.width &&
+          src.height <= dst.height
+        ) {
+          context.drawImage(
+            watermarkImage,
+            destSize.width - watermarkImage.width,
+            destSize.height - watermarkImage.height
+          )
+        } else {
+          context.drawImage(
+            watermarkImage,
+            destSize.width - w,
+            destSize.height - h,
+            w,
+            h
+          )
+        }
       }
       if (boards[i].dialogue) {
         let text = boards[i].dialogue
@@ -308,7 +340,6 @@ class Exporter {
   }
 
   async exportVideo (scene, sceneFilePath, opts) {
-
     let outputPath = ensureExportsPathExists(sceneFilePath)
 
     return await exporterFfmpeg.convertToVideo(
@@ -316,7 +347,9 @@ class Exporter {
         outputPath,
         sceneFilePath,
         scene,
-        progressCallback: opts.progressCallback
+        progressCallback: opts.progressCallback,
+        shouldWatermark: opts.shouldWatermark,
+        watermarkImagePath: opts.watermarkImagePath
       }
     )
   }

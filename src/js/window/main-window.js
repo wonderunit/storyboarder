@@ -55,6 +55,7 @@ const importerPsd = require('../importers/psd')
 const sceneSettingsView = require('./scene-settings-view')
 
 const boardModel = require('../models/board')
+const watermarkModel = require('../models/watermark')
 
 const FileHelper = require('../files/file-helper')
 
@@ -1470,7 +1471,9 @@ const loadBoardUI = async () => {
         outputWidth: outputWidth,
         outputHeight: targetOutputHeight,
         recordingStrategy: "RecordingStrategyTimeRatio",
-        recordingTime: data.duration
+        recordingTime: data.duration,
+        shouldWatermark: prefsModule.getPrefs().enableWatermark,
+        watermarkImagePath: watermarkModel.watermarkImagePath(prefsModule.getPrefs(), app.getPath('userData'))
       })
 
       canvasRecorder.on('recording-ready', (filepaths)=> {
@@ -4533,7 +4536,14 @@ const resize = () => {
   toolbarEl.classList.toggle('with-workspace-small', workspaceWidth <= breakpointWorkspace)
 }
 
-window.onkeydown = (e)=> {
+window.onkeydown = (e) => {
+  // TEMPORARY
+  // key command to trigger registration window during early testing
+  if (isCommandPressed('registration:open')) {
+    e.preventDefault()
+    ipcRenderer.send('registration:open')
+  }
+
   if (textInputMode) {
     // keyboard control over focus in text fields
     switch (e.target.name) {
@@ -5011,16 +5021,7 @@ ipcRenderer.on('nextScene', (event, args)=>{
 // tools
 
 ipcRenderer.on('undo', (e, arg) => {
-  if (textInputMode) {
-    // HACK because remote.getCurrentWindow().webContents returns the parent window
-    for (let w of remote.getCurrentWindow().getChildWindows()) {
-      if (w.isFocused()) {
-        w.webContents.undo()
-        return
-      }
-    }
-    remote.getCurrentWindow().webContents.undo()
-  } else {
+  if (!textInputMode && remote.getCurrentWindow().isFocused()) {
     if (storyboarderSketchPane.preventIfLocked()) return
 
     if (undoStack.getCanUndo()) {
@@ -5030,20 +5031,20 @@ ipcRenderer.on('undo', (e, arg) => {
       sfx.error()
       notifications.notify({message: 'Nothing more to undo!', timing: 5})
     }
+  } else {
+    // find the focused window (which may be main-window)
+    for (let w of remote.BrowserWindow.getAllWindows()) {
+      if (w.isFocused()) {
+        // console.log('undo on window', w.id)
+        w.webContents.undo()
+        return
+      }
+    }
   }
 })
 
 ipcRenderer.on('redo', (e, arg) => {
-  if (textInputMode) {
-    // HACK because remote.getCurrentWindow().webContents returns the parent window
-    for (let w of remote.getCurrentWindow().getChildWindows()) {
-      if (w.isFocused()) {
-        w.webContents.redo()
-        return
-      }
-    }
-    remote.getCurrentWindow().webContents.redo()
-  } else {
+  if (!textInputMode && remote.getCurrentWindow().isFocused()) {
     if (storyboarderSketchPane.preventIfLocked()) return
 
     if (undoStack.getCanRedo()) {
@@ -5052,6 +5053,15 @@ ipcRenderer.on('redo', (e, arg) => {
     } else {
       sfx.error()
       notifications.notify({message: 'Nothing left to redo!', timing: 5})
+    }
+  } else {
+    // find the focused window (which may be main-window)
+    for (let w of remote.BrowserWindow.getAllWindows()) {
+      if (w.isFocused()) {
+        // console.log('redo on window', w.id)
+        w.webContents.redo()
+        return
+      }
     }
   }
 })
@@ -5064,24 +5074,24 @@ ipcRenderer.on('copy', event => {
     return
   }
 
-  if (textInputMode) {
-    // HACK because remote.getCurrentWindow().webContents returns the parent window
-    for (let w of remote.getCurrentWindow().getChildWindows()) {
-      if (w.isFocused()) {
-        // console.log('copying from child', w)
-        w.webContents.copy()
-        return
-      }
-    }
-
-    // console.log('copying from parent')
-    remote.getCurrentWindow().webContents.copy()
-  } else {
+  if (!textInputMode && remote.getCurrentWindow().isFocused()) {
+    // console.log('copy boards')
     copyBoards()
       .then(() => notifications.notify({
         message: 'Copied board(s) to clipboard.', timing: 5
       }))
-      .catch(err => {})
+      .catch(err => {
+        console.error(err)
+      })
+  } else {
+    // find the focused window (which may be main-window)
+    for (let w of remote.BrowserWindow.getAllWindows()) {
+      if (w.isFocused()) {
+        // console.log('copy to clipboard from window', w.id)
+        w.webContents.copy()
+        return
+      }
+    }
   }
 })
 
@@ -5093,20 +5103,20 @@ ipcRenderer.on('paste', () => {
     return
   }
 
-  if (textInputMode) {
-    // HACK because remote.getCurrentWindow().webContents returns the parent window
-    for (let w of remote.getCurrentWindow().getChildWindows()) {
+  if (!textInputMode && remote.getCurrentWindow().isFocused()) {
+    // console.log('pasting boards')
+    pasteBoards().catch(err => {
+      console.error(err)
+    })
+  } else {
+    // find the focused window (which may be main-window)
+    for (let w of remote.BrowserWindow.getAllWindows()) {
       if (w.isFocused()) {
-        // console.log('pasting to child', w)
+        // console.log('pasting clipboard to window', w.id)
         w.webContents.paste()
         return
       }
     }
-
-    // console.log('pasting to parent')
-    remote.getCurrentWindow().webContents.paste()
-  } else {
-    pasteBoards().catch(err => {})
   }
 })
 
@@ -5302,13 +5312,16 @@ const exportAnimatedGif = async () => {
   sfx.down()
 
   try {
-    let path = await exporter.exportAnimatedGif(boards, boardSize, 888, boardFilename, true, boardData)
+    let shouldWatermark = prefsModule.getPrefs().enableWatermark
+    let watermarkSrc = watermarkModel.watermarkImagePath(prefsModule.getPrefs(), app.getPath('userData'))
+
+    let exportPath = await exporter.exportAnimatedGif(boards, boardSize, 888, boardFilename, shouldWatermark, boardData, watermarkSrc)
     notifications.notify({
       message: 'I exported your board selection as a GIF. Share it with your friends! Post it to your twitter thing or your slack dingus.',
       timing: 20
     })
     sfx.positive()
-    shell.showItemInFolder(path)
+    shell.showItemInFolder(exportPath)
   } catch (err) {
     console.error(err)
     notifications.notify({ message: 'Could not export. An error occurred.' })
@@ -5378,6 +5391,8 @@ const exportVideo = async () => {
       scene,
       sceneFilePath,
       {
+        shouldWatermark: prefsModule.getPrefs().enableWatermark,
+        watermarkImagePath: watermarkModel.watermarkImagePath(prefsModule.getPrefs(), app.getPath('userData')),
         progressCallback: progress => {}
           // notifications.notify({message: `${Math.round(progress * 100)}% complete`, timing: 1})
       }

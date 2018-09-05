@@ -37,7 +37,13 @@ class Recorder extends EventEmitter {
     this.exportsPath = options.exportsPath
     switch(options.outputStrategy) {
       case "CanvasBufferOutputGifStrategy":
-        outputStrategy = new CanvasBufferOutputGifStrategy({filepath: options.filepath, width: targetOutputWidth, height: targetOutputHeight})
+        outputStrategy = new CanvasBufferOutputGifStrategy({
+          filepath: options.filepath,
+          width: targetOutputWidth,
+          height: targetOutputHeight,
+          shouldWatermark: options.shouldWatermark,
+          watermarkImagePath: options.watermarkImagePath
+        })
         break
       case "CanvasBufferOutputFileStrategy":
       default:

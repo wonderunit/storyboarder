@@ -9,6 +9,8 @@ const app = remote.app
 const os = require('os')
 const path = require('path')
 
+const exporterCommon = require('../exporters/common')
+
 let paperSize
 let paperOrientation
 let rows
@@ -304,7 +306,16 @@ const generateWorksheet = () => {
   }, 500)
 }
 
-const exportPDF = () => {
+const prefsModule = require('electron').remote.require('./prefs')
+const watermarkModel = require('../models/watermark')
+
+const exportPDF = async () => {
+  let shouldWatermark = prefsModule.getPrefs().enableWatermark
+  let watermarkImagePath = watermarkModel.watermarkImagePath(prefsModule.getPrefs(), app.getPath('userData'))
+
+  let image = await exporterCommon.getImage(watermarkImagePath)
+  let watermarkDimensions = [image.width, image.height]
+
   displaySpinner(true)
   setTimeout(() => {
     exporter
@@ -316,7 +327,10 @@ const exportPDF = () => {
         rows,
         cols,
         spacing,
-        path.join(app.getPath('temp'), 'boardoutput.pdf')
+        path.join(app.getPath('temp'), 'boardoutput.pdf'),
+        shouldWatermark,
+        watermarkImagePath,
+        watermarkDimensions
       )
       .then(outputPath => {
         reloadPDFDocument(outputPath)

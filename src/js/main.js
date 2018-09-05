@@ -1,4 +1,4 @@
-const {app, ipcMain, BrowserWindow, globalShortcut, dialog, powerSaveBlocker} = electron = require('electron')
+const {app, ipcMain, BrowserWindow, dialog, powerSaveBlocker} = electron = require('electron')
 
 const fs = require('fs-extra')
 const path = require('path')
@@ -28,6 +28,8 @@ const xml2js = require('xml2js')
 const MobileServer = require('./express-app/app')
 
 const preferencesUI = require('./windows/preferences')()
+const registration = require('./windows/registration/main')
+const JWT = require('jsonwebtoken')
 
 const pkg = require('../../package.json')
 const util = require('./utils/index')
@@ -128,8 +130,8 @@ app.on('ready', async () => {
       if (payload["drawing:pan-mode"] === "Shift") {
         console.log('[keymap] re-mapping drawing:pan-mode to space')
         payload["drawing:pan-mode"] = "Space"
+        shouldOverwrite = true
       }
-      shouldOverwrite = true
 
     } catch (err) {
       // show error, but don't overwrite the keymap file
@@ -223,6 +225,8 @@ app.on('ready', async () => {
       })
     }
   })
+
+  await attemptLicenseVerification()
 
   // open the welcome window when the app loads up first
   openWelcomeWindow()
@@ -1022,6 +1026,54 @@ let addToRecentDocs = (filename, metadata) => {
   prefModule.set('recentDocuments', recentDocuments)
 }
 
+let attemptLicenseVerification = async () => {
+  const nodeFetch = require('node-fetch')
+  const { VERIFICATION_URL, checkLicense } = require('./models/license')
+
+  let token
+  let license
+  let licenseKeyPath = path.join(app.getPath('userData'), 'license.key')
+
+  try {
+    token = fs.readFileSync(licenseKeyPath, { encoding: 'utf8' })
+  } catch (err) {
+    if (err.code === 'ENOENT') {
+      console.log('No license key found')
+      return
+    } else {
+      console.error('Could not load license.key')
+      console.error(err)
+      return
+    }
+  }
+
+  try {
+    if (await checkLicense(token, { fetcher: nodeFetch })) {
+
+      console.log('license accepted')
+
+      store.dispatch({
+        type: 'SET_LICENSE',
+        payload: JWT.decode(token)
+      })
+
+    } else {
+      dialog.showMessageBox({
+        message: 'License key is no longer valid.'
+      })
+      console.log('Removing invalid license key at', licenseKeyPath)
+      prefModule.revokeLicense()
+      await trash(licenseKeyPath)
+    }
+  } catch (err) {
+    console.error(err)
+    dialog.showMessageBox({
+      type: 'error',
+      message: `An error occurred while checking the license key.\n\n${err}`
+    })
+  }
+}
+
 ////////////////////////////////////////////////////////////
 // ipc passthrough
 ////////////////////////////////////////////////////////////
@@ -1351,3 +1403,5 @@ ipcMain.on('zoomIn',
   event => mainWindow.webContents.send('zoomIn'))
 ipcMain.on('zoomOut',
   event => mainWindow.webContents.send('zoomOut'))
+
+ipcMain.on('registration:open', event => registration.show())

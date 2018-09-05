@@ -43,6 +43,10 @@ describe('exporters/ffmpeg', () => {
         outputPath,
         sceneFilePath,
         scene,
+
+        shouldWatermark: true,
+        watermarkImagePath: path.join(__dirname, '..', '..', 'test', 'fixtures', 'images', 'watermarks', 'watermark_1600x900.png'),
+
         // FIXME
         progressCallback: progress => {}
       }
@@ -51,14 +55,17 @@ describe('exporters/ffmpeg', () => {
     // for debugging
     //  uncomment to copy the example movie to test/results for inspection
     //
-    // let src = result
-    // let dst = path.join(__dirname, '..', 'results', 'out.mp4')
-    // console.log('\n\n')
-    // console.log('copying', src, 'to', dst, 'for review')
-    // fs.copySync(src, dst)
-    // console.log('\n')
-    // console.log('open', path.dirname(dst))
-    // console.log('\n\n')
+    // let saveResults = true
+    // if (saveResults) {
+    //   let src = result
+    //   let dst = path.join(__dirname, '..', 'results', 'out.mp4')
+    //   console.log('\n\n')
+    //   console.log('copying', src, 'to', dst, 'for review')
+    //   fs.copySync(src, dst)
+    //   console.log('\n')
+    //   console.log('open', path.dirname(dst))
+    //   console.log('\n\n')
+    // }
 
     assert(result.includes('audio'))
     assert(result.includes('Exported'))

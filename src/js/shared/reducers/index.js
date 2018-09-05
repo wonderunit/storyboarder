@@ -29,11 +29,46 @@ const sceneFilePath = (state = null, action) => {
 
 const toolbar = require('./toolbar')
 
+const license = (state = {}, action) => {
+  switch (action.type) {
+    case 'SET_LICENSE':
+      return Object.assign(
+        {},
+        state,
+        action.payload
+      )
+
+    default:
+      return state
+  }
+}
+
+const auth = (state = {}, action) => {
+  switch (action.type) {
+    case 'SET_AUTH':
+      return Object.assign(
+        {},
+        state,
+        {
+          [action.payload.service]: action.payload
+        }
+      )
+
+    case 'CLEAR_AUTH':
+      return {}
+
+    default:
+      return state
+  }
+}
+
 module.exports = combineReducers({
   entities: combineReducers({
     keymap
   }),
   preferences,
   sceneFilePath,
-  toolbar
+  toolbar,
+  license,
+  auth
 })

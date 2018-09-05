@@ -42,7 +42,11 @@ const defaultPrefs = {
   enableBoardAudition: true,
   enableHighQualityDrawingEngine: true,
 
-  straightLineDelayInMsecs: 650
+  straightLineDelayInMsecs: 650,
+
+  // licensed
+  enableWatermark: true,
+  userWatermark: undefined
 }
 
 // For slow computers, override the defaults here.
@@ -58,13 +62,26 @@ if(cpus.length <= 2 || cpu.speed <= 2000) {
 
 let prefs
 
+const verify = data => {
+  if (data.userWatermark) {
+    if (fs.existsSync(path.join(app.getPath('userData'), 'watermark.png'))) {
+      console.log('found watermark file')
+    } else {
+      console.log('could not find custom watermark file. reverting to default.')
+      data.userWatermark = undefined
+    }
+  }
+  return data
+}
+
 const load = () => {
   try {
     // load existing prefs
     // console.log("READING FROM DISK")
-    prefs = JSON.parse(fs.readFileSync(prefFile))
+    prefs = verify(JSON.parse(fs.readFileSync(prefFile)))
   } catch (e) {
     console.error('Could not read prefs. Loading defaults.')
+    console.error(e)
     prefs = defaultPrefs
     try {
       savePrefs(prefs)
@@ -163,11 +180,18 @@ const init = _prefFile => {
   }
 }
 
+const revokeLicense = () => {
+  set('enableWatermark', defaultPrefs.enableWatermark, true)
+  set('userWatermark', defaultPrefs.userWatermark, true)
+}
+
 module.exports = {
   savePrefs,
   getPrefs,
   set,
 
   init,
-  versionCanBeMigrated
+  versionCanBeMigrated,
+
+  revokeLicense
 }

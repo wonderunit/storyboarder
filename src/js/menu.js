@@ -744,6 +744,10 @@ AppMenu.about = (options = { includePreferences: false }) => {
           role: 'about',
         },
         ...optionalPreferences,
+        // {
+        //   label: 'Registration…',
+        //   click: () => ipcRenderer.send('registration:open')
+        // },
         {
           type: 'separator'
         },
@@ -804,12 +808,15 @@ const welcomeTemplate = [
   {
     label: 'Edit',
     submenu: [
-      {
-        role: 'copy'
-      },
-      {
-        role: 'paste'
-      }
+      // {role: 'undo'},
+      // {role: 'redo'},
+      // {type: 'separator'},
+      {role: 'cut'},
+      {role: 'copy'},
+      {role: 'paste'},
+      // {role: 'pasteandmatchstyle'},
+      {role: 'delete'},
+      {role: 'selectall'}
     ]
   },
   {

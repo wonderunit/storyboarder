@@ -81,7 +81,6 @@
         </div>
 
         <div class="preferences-input" style="margin-top: 2rem; margin-bottom: 1rem">
-
           <div style="display:flex">
             <div>
               <a href="#" id="absolutePathToImageEditor_filename" class="button"></a>
@@ -298,6 +297,8 @@
         -->
       </div>
 
+      <div id="licensed-container"></div>
+
       <div id="storyboardersAccount" class="preferences-fieldset">
         <div class="preferences-input">
           <a id="signOut" class="button" href="#">
@@ -312,6 +313,52 @@
       </div>
 
     </div>
+
+    <template id="licensed-template">
+      <div id="licensed">
+        <h2 class="preferences-title" style="font-size: 32px">Thanks for supporting Storyboarder!</h2>
+        <div class="preferences-hint" style="margin-bottom: 2rem">
+          <p>Here are some additional features for supporters.</p>
+        </div>
+
+        <div class="preferences-fieldset">
+          <div class="preferences-input">
+            <input
+              type="checkbox"
+              name="enableWatermark"
+              id="enableWatermark" />
+
+            <label for="enableWatermark">
+              <span></span>Add watermark to exported images and video.
+            </label>
+          </div>
+
+          <div class="preferences-input">
+            <div style="display:flex">
+              <div>
+                <a href="#" id="watermarkFile_filename" class="button"></a>
+                <input
+                  hidden="true"
+                  type="text"
+                  name="watermarkFile"
+                  id="watermarkFile" />
+              </div>
+              <div>
+                <label for="watermarkFile" class="label-filename">
+                  Custom watermark image (leave blank for default)
+                </label>
+              </div>
+            </div>
+
+            <div class="preferences-hint">
+              Format: PNG, 500 × 232 px
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </template>
+
     <script src="./js/windows/preferences/editor.js"></script>
   </body>
 </html>

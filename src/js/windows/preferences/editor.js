@@ -1,9 +1,14 @@
 const { remote, ipcRenderer, shell } = require('electron')
 const jwt = require('jsonwebtoken')
 const path = require('path')
+const fs = require('fs-extra')
 
 const util = require('./js/utils')
 const prefsModule = require('electron').remote.require('./prefs')
+
+const { getInitialStateRenderer } = require('electron-redux')
+const configureStore = require('./js/shared/store/configureStore')
+const store = configureStore(getInitialStateRenderer(), 'renderer')
 
 let prefs,
     inputs,
@@ -53,6 +58,40 @@ const onFilenameClick = event => {
         render()
       } else {
         prefsModule.set('absolutePathToImageEditor', undefined, true)
+        render()
+      }
+    }
+  )
+}
+
+const onWatermarkFileClick = event => {
+  event.target.style.pointerEvents = 'none'
+  remote.dialog.showOpenDialog(
+    {
+      title: 'Import Watermark Image File',
+      properties: ['openFile'],
+      filters: [
+        {
+          name: 'Watermark Image (PNG)',
+          extensions: [
+            'png'
+          ]
+        }
+      ]
+    },
+    filenames => {
+      event.target.style.pointerEvents = 'auto'
+      if (filenames) {
+        try {
+          fs.copySync(filenames[0], path.join(remote.app.getPath('userData'), 'watermark.png'))
+          prefsModule.set('userWatermark', path.basename(filenames[0]), true)
+        } catch (err) {
+          console.error(err)
+          alert(err)
+        }
+        render()
+      } else {
+        prefsModule.set('userWatermark', undefined, true)
         render()
       }
     }
@@ -113,6 +152,14 @@ const render = () => {
       : 'disabled'
   }
 
+  let licensedEl = document.querySelector('#licensed-container')
+  if (licensedEl) {
+    let watermarkLabelEl = document.querySelector('#watermarkFile_filename')
+    watermarkLabelEl.innerHTML = prefs.userWatermark && fs.existsSync(path.join(remote.app.getPath('userData'), 'watermark.png'))
+      ? prefs.userWatermark
+      : '(default)'
+  }
+
   // track if anything has changed
   hasChanged = false
   for (let key in originalPrefs) {
@@ -133,6 +180,14 @@ const init = () => {
   originalPrefs = util.stringifyClone(prefsModule.getPrefs())
 
   prefs = prefsModule.getPrefs('prefs window')
+
+  if (store.getState().license.iss) {
+    let t = document.querySelector('#licensed-template')
+    let clone = document.importNode(t.content, true)
+    document.querySelector('#licensed-container').appendChild(clone)
+
+    document.querySelector('#watermarkFile_filename').addEventListener('click', onWatermarkFileClick.bind(this))
+  }
 
   inputs = document.querySelectorAll('input[type="checkbox"], input[type="number"], input[type="range"]')
 
