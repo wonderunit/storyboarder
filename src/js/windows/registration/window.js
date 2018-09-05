@@ -8,7 +8,8 @@ const path = require('path')
 const trash = require('trash')
 
 const { getInitialStateRenderer } = require('electron-redux')
-const configureStore = require('./js/shared/store/configureStore')
+const configureStore = require('../src/js/shared/store/configureStore')
+
 const store = configureStore(getInitialStateRenderer(), 'renderer')
 
 const fetchWithTimeout = require('../src/js/utils/fetchWithTimeout')
