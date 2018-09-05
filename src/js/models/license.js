@@ -5,11 +5,14 @@ const pkg = require('../../../package.json')
 
 const JWT = require('jsonwebtoken')
 
+const API_HOSTNAME = 'https://app.wonderunit.com'
+const API_ROOT = `${API_HOSTNAME}/api`
+
 // renderer has `URL`, but main (node) does not
 // so we fake it
 // const VERIFICATION_URL = new URL('http://localhost:8080/api/check_license')
 const VERIFICATION_URL = {
-  origin: 'http://localhost:8080',
+  origin: API_HOSTNAME,
   pathname: '/api/licenses/verify',
   toString() {
     return `${this.origin}${this.pathname}`
@@ -125,6 +128,8 @@ async function checkLicense (
 }
 
 module.exports = {
+  API_ROOT,
+
   VERIFICATION_URL,
   checkLicense
 }

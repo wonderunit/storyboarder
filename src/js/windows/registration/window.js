@@ -13,8 +13,9 @@ const store = configureStore(getInitialStateRenderer(), 'renderer')
 
 const fetchWithTimeout = require('../src/js/utils/fetchWithTimeout')
 
-const API_ROOT = 'http://localhost:8080/api'
-const SIGN_UP_URI = 'https://localhost:8080/signup"'
+const { API_ROOT } = require('../src/js/models/license')
+const SIGN_UP_URI = 'https://app.wonderunit.com/signup'
+
 
 let view
 
