@@ -85,7 +85,7 @@
   },
   "devDependencies": {
     "electron": "2.0.7",
-    "electron-builder": "20.28.1",
+    "electron-builder": "20.28.4",
     "electron-mocha": "4.0.0",
     "electron-osx-sign": "^0.4.8",
     "floss": "2.1.5",
@@ -105,7 +105,7 @@
     "electron-google-analytics": "0.0.16",
     "electron-is-dev": "0.3.0",
     "electron-redux": "1.3.1",
-    "electron-updater": "2.18.2",
+    "electron-updater": "3.1.2",
     "electron-util": "0.4.1",
     "etch": "0.12.8",
     "execa": "0.8.0",
