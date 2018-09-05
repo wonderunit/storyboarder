@@ -43,6 +43,8 @@ const defaultPrefs = {
   enableHighQualityDrawingEngine: true,
 
   straightLineDelayInMsecs: 650,
+
+  // licensed
   enableWatermark: true,
   userWatermark: undefined
 }
