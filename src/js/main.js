@@ -1062,6 +1062,7 @@ let attemptLicenseVerification = async () => {
         message: 'License key is no longer valid.'
       })
       console.log('Removing invalid license key at', licenseKeyPath)
+      prefModule.revokeLicense()
       await trash(licenseKeyPath)
     }
   } catch (err) {

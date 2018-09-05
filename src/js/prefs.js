@@ -180,11 +180,18 @@ const init = _prefFile => {
   }
 }
 
+const revokeLicense = () => {
+  set('enableWatermark', defaultPrefs.enableWatermark, true)
+  set('userWatermark', defaultPrefs.userWatermark, true)
+}
+
 module.exports = {
   savePrefs,
   getPrefs,
   set,
 
   init,
-  versionCanBeMigrated
+  versionCanBeMigrated,
+
+  revokeLicense
 }
