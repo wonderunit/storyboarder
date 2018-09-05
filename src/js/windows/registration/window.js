@@ -256,7 +256,7 @@ class HomeView {
               <p>This machine has a Storyboarder license registered to:</p>
               <p><strong>${license.registeredTo}</strong></p>
               <p>Thank you for your support!</p>
-              <p>Expires: ${license.licenseExpiration}</p>
+              <p>Expires: ${license.licenseExpiration == null ? 'Never' : license.licenseExpiration}</p>
               <p>
                 <a href="#" data-js="uninstall">Remove license from this machine</a>
                 <br/><br/>
