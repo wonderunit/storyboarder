@@ -130,8 +130,8 @@ app.on('ready', async () => {
       if (payload["drawing:pan-mode"] === "Shift") {
         console.log('[keymap] re-mapping drawing:pan-mode to space')
         payload["drawing:pan-mode"] = "Space"
+        shouldOverwrite = true
       }
-      shouldOverwrite = true
 
     } catch (err) {
       // show error, but don't overwrite the keymap file
