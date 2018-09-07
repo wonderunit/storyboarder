@@ -84,7 +84,7 @@
     }
   },
   "devDependencies": {
-    "electron": "2.0.7",
+    "electron": "2.0.8",
     "electron-builder": "20.28.4",
     "electron-mocha": "4.0.0",
     "electron-osx-sign": "^0.4.8",
@@ -120,7 +120,7 @@
     "moment": "2.19.3",
     "node-fetch": "2.1.2",
     "node-machine-id": "1.1.10",
-    "pdfjs-dist": "1.9.426",
+    "pdfjs-dist": "2.0.550",
     "pdfkit": "^0.8.3",
     "plist": "2.1.0",
     "promise-cancelable": "2.1.1",

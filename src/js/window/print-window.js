@@ -183,14 +183,14 @@ let pdfDoc = null,
     ctx = canvas.getContext('2d')
 
 const reloadPDFDocument = (path) => {
-  PDFJS.workerSrc = '../node_modules/pdfjs-dist/build/pdf.worker.js'
+  pdf.GlobalWorkerOptions.workerSrc = '../node_modules/pdfjs-dist/build/pdf.worker.js'
 
   let retry = 0
 
   /**
    * Asynchronously downloads PDF.
    */
-  PDFJS.getDocument(path).then(function(pdfDoc_) {
+  pdf.getDocument(path).then(function(pdfDoc_) {
     pdfDoc = pdfDoc_;
     document.querySelector('#page_count').textContent = pdfDoc.numPages;
 
