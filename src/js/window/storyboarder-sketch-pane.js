@@ -1338,7 +1338,8 @@ class MarqueeSelectionStrategy {
     this.state = {
       started: false,
       complete: false,
-      selectionPath: new paper.Path()
+      selectionPath: new paper.Path(),
+      lastDrawingSegmentIndex: null
     }
 
     // this.context.sketchPaneDOMElement.addEventListener('pointerover', this._onPointerOver)
@@ -1370,6 +1371,7 @@ class MarqueeSelectionStrategy {
     this.state.started = true
     this.state.complete = false
     this.state.selectionPath = new paper.Path()
+    this.state.lastDrawingSegmentIndex = null
     this._addPointFromEvent(event)
     this._render()
   }
@@ -1393,7 +1395,6 @@ class MarqueeSelectionStrategy {
 
   _addPointFromEvent (event) {
     let point = this.context.sketchPane.localizePoint(event)
-    console.log('adding point', point)
     this.state.selectionPath.add(new paper.Point(point.x, point.y))
   }
 
@@ -1401,24 +1402,35 @@ class MarqueeSelectionStrategy {
     // attempt to gracefully transition back to drawing
     this.context.store.dispatch({ type: 'TOOLBAR_MODE_SET', payload: 'drawing', meta: { scope: 'local' } })
   }
-
+  
   _render () {
     let ctx = this.offscreenContext
 
+    // reset on first call
+    if (this.state.lastDrawingSegmentIndex == null) {
+      ctx.clearRect(0, 0, this.context.sketchPane.width, this.context.sketchPane.height)
+      ctx.globalAlpha = 1.0
+      this.state.lastDrawingSegmentIndex = 0
+      return
+    }
+
     ctx.save()
-    ctx.clearRect(0, 0, this.context.sketchPane.width, this.context.sketchPane.height)
-    ctx.globalAlpha = 1.0
     ctx.strokeStyle = '#f00'
     ctx.beginPath()
-    ctx.moveTo(this.state.selectionPath.segments[0].x, this.state.selectionPath.segments[0].y)
-    for (let segment of this.state.selectionPath.segments) {
-      ctx.lineTo(segment.point.x, segment.point.y)
-    }
+
+    let segmentA = this.state.selectionPath.segments[this.state.lastDrawingSegmentIndex]
+    let segmentB = this.state.selectionPath.segments[this.state.lastDrawingSegmentIndex + 1]
+
+    ctx.moveTo(segmentA.point.x, segmentA.point.y)
+    ctx.lineTo(segmentB.point.x, segmentB.point.y)
+
     ctx.stroke()
     ctx.closePath()
     ctx.restore()
 
     this.layer.replaceTextureFromCanvas(this.offscreenCanvas)
+
+    this.state.lastDrawingSegmentIndex += 1
   }
 }
 
