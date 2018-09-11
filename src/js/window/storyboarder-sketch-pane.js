@@ -171,7 +171,8 @@ class StoryboarderSketchPane extends EventEmitter {
       locked: new LockedStrategy(this),
       panning: new PanningStrategy(this),
       lineDrawing: new LineDrawingStrategy(this),
-      marqueeSelection: new MarqueeSelectionStrategy(this)
+      marqueeSelection: new MarqueeSelectionStrategy(this),
+      marqueeMode: new MarqueeModeStrategy(this)
     }
 
     this.store.dispatch({ type: 'TOOLBAR_MODE_SET', payload: 'marqueeSelection', meta: { scope: 'local' } })
@@ -1339,7 +1340,7 @@ class MarqueeSelectionStrategy {
       started: false,
       complete: false,
       selectionPath: new paper.Path(),
-      lastDrawingSegmentIndex: null
+      lastDrawnSegmentIndex: null
     }
 
     // this.context.sketchPaneDOMElement.addEventListener('pointerover', this._onPointerOver)
@@ -1371,7 +1372,7 @@ class MarqueeSelectionStrategy {
     this.state.started = true
     this.state.complete = false
     this.state.selectionPath = new paper.Path()
-    this.state.lastDrawingSegmentIndex = null
+    this.state.lastDrawnSegmentIndex = null
     this._addPointFromEvent(event)
     this._render()
   }
@@ -1389,8 +1390,21 @@ class MarqueeSelectionStrategy {
     this.state.started = false
     this.state.complete = true
     this._addPointFromEvent(event)
-    // TODO close path
+
+    // close the path
+    this.state.selectionPath.add(this.state.selectionPath.segments[0].point.clone())
+    // this.state.selectionPath.closePath()
+
     this._render()
+
+    this.context.marqueePath = this.state.selectionPath.clone()
+
+    this.context.store.dispatch({
+      type: 'TOOLBAR_MODE_STATUS_SET', payload: 'idle', meta: { scope: 'local' }
+    })
+    this.context.store.dispatch({
+      type: 'TOOLBAR_MODE_SET', payload: 'marqueeMode', meta: { scope: 'local' }
+    })
   }
 
   _addPointFromEvent (event) {
@@ -1407,10 +1421,10 @@ class MarqueeSelectionStrategy {
     let ctx = this.offscreenContext
 
     // reset on first call
-    if (this.state.lastDrawingSegmentIndex == null) {
+    if (this.state.lastDrawnSegmentIndex == null) {
       ctx.clearRect(0, 0, this.context.sketchPane.width, this.context.sketchPane.height)
       ctx.globalAlpha = 1.0
-      this.state.lastDrawingSegmentIndex = 0
+      this.state.lastDrawnSegmentIndex = 0
       return
     }
 
@@ -1418,11 +1432,14 @@ class MarqueeSelectionStrategy {
     ctx.strokeStyle = '#f00'
     ctx.beginPath()
 
-    let segmentA = this.state.selectionPath.segments[this.state.lastDrawingSegmentIndex]
-    let segmentB = this.state.selectionPath.segments[this.state.lastDrawingSegmentIndex + 1]
+    let i
+    for (i = this.state.lastDrawnSegmentIndex; i < this.state.selectionPath.segments.length - 1; i++) {
+      let segmentA = this.state.selectionPath.segments[i]
+      let segmentB = this.state.selectionPath.segments[i + 1]
 
-    ctx.moveTo(segmentA.point.x, segmentA.point.y)
-    ctx.lineTo(segmentB.point.x, segmentB.point.y)
+      ctx.moveTo(segmentA.point.x, segmentA.point.y)
+      ctx.lineTo(segmentB.point.x, segmentB.point.y)
+    }
 
     ctx.stroke()
     ctx.closePath()
@@ -1430,9 +1447,33 @@ class MarqueeSelectionStrategy {
 
     this.layer.replaceTextureFromCanvas(this.offscreenCanvas)
 
-    this.state.lastDrawingSegmentIndex += 1
+    this.state.lastDrawnSegmentIndex = i
   }
 }
+
+class MarqueeModeStrategy {
+  constructor (context) {
+    this.context = context
+    this.name = 'marqueeMode'
+
+    this.layer = this.context.sketchPane.layers.findByName('composite')
+  }
+
+  startup () {
+    console.log('MarqueeModeStrategy#startup')
+
+    this.context.store.dispatch({ type: 'TOOLBAR_MODE_STATUS_SET', payload: 'busy', meta: { scope: 'local' } })
+
+
+    this.state = {
+      
+    }
+  }
+
+  shutdown () {
+  }
+}
+
 
 class FPSMeter {
   constructor () {
