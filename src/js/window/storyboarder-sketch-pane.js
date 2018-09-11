@@ -1,3 +1,5 @@
+const paper = require('paper')
+
 const EventEmitter = require('events').EventEmitter
 
 const { ipcRenderer, remote } = require('electron')
@@ -168,10 +170,11 @@ class StoryboarderSketchPane extends EventEmitter {
       scaling: new ScalingStrategy(this),
       locked: new LockedStrategy(this),
       panning: new PanningStrategy(this),
-      lineDrawing: new LineDrawingStrategy(this)
+      lineDrawing: new LineDrawingStrategy(this),
+      marqueeSelection: new MarqueeSelectionStrategy(this)
     }
 
-    this.store.dispatch({ type: 'TOOLBAR_MODE_SET', payload: 'drawing', meta: { scope: 'local' } })
+    this.store.dispatch({ type: 'TOOLBAR_MODE_SET', payload: 'marqueeSelection', meta: { scope: 'local' } })
 
     this.ro = new window.ResizeObserver(entries =>
       // see: https://github.com/wonderunit/storyboarder/issues/1218
@@ -1307,6 +1310,115 @@ class PanningStrategy {
       this.context.sketchPane.anchor.x,
       this.context.sketchPane.anchor.y
     )
+  }
+}
+
+class MarqueeSelectionStrategy {
+  constructor (context) {
+    this.context = context
+    this.name = 'marqueeSelection'
+
+    this._onPointerDown = this._onPointerDown.bind(this)
+    this._onPointerMove = this._onPointerMove.bind(this)
+    this._onPointerUp = this._onPointerUp.bind(this)
+
+    this._onWindowBlur = this._onWindowBlur.bind(this)
+
+    this.offscreenCanvas = document.createElement('canvas')
+    this.offscreenContext = this.offscreenCanvas.getContext('2d')
+    this.offscreenCanvas.width = this.context.sketchPane.width
+    this.offscreenCanvas.height = this.context.sketchPane.height
+
+    this.layer = this.context.sketchPane.layers.findByName('composite')
+  }
+
+  startup () {
+    this.context.store.dispatch({ type: 'TOOLBAR_MODE_STATUS_SET', payload: 'busy', meta: { scope: 'local' } })
+
+    this.state = {
+      started: false,
+      complete: false,
+      selectionPath: new paper.Path()
+    }
+
+    // this.context.sketchPaneDOMElement.addEventListener('pointerover', this._onPointerOver)
+    // this.context.sketchPaneDOMElement.addEventListener('pointerout', this._onPointerOut)
+    this.context.sketchPaneDOMElement.addEventListener('pointerdown', this._onPointerDown)
+    document.addEventListener('pointermove', this._onPointerMove)
+    document.addEventListener('pointerup', this._onPointerUp)
+    // window.addEventListener('keyup', this._onKeyUp)
+
+    window.addEventListener('blur', this._onWindowBlur)
+
+    this.context.sketchPane.cursor.setEnabled(false)
+    this.context.sketchPane.app.view.style.cursor = 'crosshair'
+  }
+
+  shutdown () {
+    // this.context.sketchPaneDOMElement.removeEventListener('pointerover', this._onPointerOver)
+    // this.context.sketchPaneDOMElement.removeEventListener('pointerout', this._onPointerOut)
+    this.context.sketchPaneDOMElement.removeEventListener('pointerdown', this._onPointerDown)
+    document.removeEventListener('pointermove', this._onPointerMove)
+    document.removeEventListener('pointerup', this._onPointerUp)
+
+    window.removeEventListener('blur', this._onWindowBlur)
+    this.context.sketchPane.app.view.style.cursor = 'auto'
+    this.context.sketchPane.cursor.setEnabled(true)
+  }
+
+  _onPointerDown (event) {
+    this.state.started = true
+    this.state.complete = false
+    this.state.selectionPath = new paper.Path()
+    this._addPointFromEvent(event)
+    this._render()
+  }
+
+  _onPointerMove (event) {
+    if (!this.state.started) return
+
+    this._addPointFromEvent(event)
+    this._render()
+  }
+
+  _onPointerUp (event) {
+    if (!this.state.started) return
+
+    this.state.started = false
+    this.state.complete = true
+    this._addPointFromEvent(event)
+    // TODO close path
+    this._render()
+  }
+
+  _addPointFromEvent (event) {
+    let point = this.context.sketchPane.localizePoint(event)
+    console.log('adding point', point)
+    this.state.selectionPath.add(new paper.Point(point.x, point.y))
+  }
+
+  _onWindowBlur () {
+    // attempt to gracefully transition back to drawing
+    this.context.store.dispatch({ type: 'TOOLBAR_MODE_SET', payload: 'drawing', meta: { scope: 'local' } })
+  }
+
+  _render () {
+    let ctx = this.offscreenContext
+
+    ctx.save()
+    ctx.clearRect(0, 0, this.context.sketchPane.width, this.context.sketchPane.height)
+    ctx.globalAlpha = 1.0
+    ctx.strokeStyle = '#f00'
+    ctx.beginPath()
+    ctx.moveTo(this.state.selectionPath.segments[0].x, this.state.selectionPath.segments[0].y)
+    for (let segment of this.state.selectionPath.segments) {
+      ctx.lineTo(segment.point.x, segment.point.y)
+    }
+    ctx.stroke()
+    ctx.closePath()
+    ctx.restore()
+
+    this.layer.replaceTextureFromCanvas(this.offscreenCanvas)
   }
 }
 
