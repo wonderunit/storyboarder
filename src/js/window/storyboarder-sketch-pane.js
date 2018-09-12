@@ -172,7 +172,7 @@ class StoryboarderSketchPane extends EventEmitter {
       panning: new PanningStrategy(this),
       lineDrawing: new LineDrawingStrategy(this),
       marqueeSelection: new MarqueeSelectionStrategy(this),
-      marqueeMode: new MarqueeModeStrategy(this)
+      marqueeOperation: new MarqueeOperationStrategy(this)
     }
 
     this.store.dispatch({ type: 'TOOLBAR_MODE_SET', payload: 'marqueeSelection', meta: { scope: 'local' } })
@@ -1403,7 +1403,7 @@ class MarqueeSelectionStrategy {
       type: 'TOOLBAR_MODE_STATUS_SET', payload: 'idle', meta: { scope: 'local' }
     })
     this.context.store.dispatch({
-      type: 'TOOLBAR_MODE_SET', payload: 'marqueeMode', meta: { scope: 'local' }
+      type: 'TOOLBAR_MODE_SET', payload: 'marqueeOperation', meta: { scope: 'local' }
     })
   }
 
@@ -1451,16 +1451,16 @@ class MarqueeSelectionStrategy {
   }
 }
 
-class MarqueeModeStrategy {
+class MarqueeOperationStrategy {
   constructor (context) {
     this.context = context
-    this.name = 'marqueeMode'
+    this.name = 'marqueeOperation'
 
     this.layer = this.context.sketchPane.layers.findByName('composite')
   }
 
   startup () {
-    console.log('MarqueeModeStrategy#startup')
+    console.log('MarqueeOperationStrategy#startup')
 
     this.context.store.dispatch({ type: 'TOOLBAR_MODE_STATUS_SET', payload: 'busy', meta: { scope: 'local' } })
 
