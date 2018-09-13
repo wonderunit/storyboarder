@@ -1325,6 +1325,9 @@ class MarqueeSelectionStrategy {
 
     this._onWindowBlur = this._onWindowBlur.bind(this)
 
+    this._onKeyDown = this._onKeyDown.bind(this)
+    this._onKeyUp = this._onKeyUp.bind(this)
+
     this.offscreenCanvas = document.createElement('canvas')
     this.offscreenContext = this.offscreenCanvas.getContext('2d')
     this.offscreenCanvas.width = this.context.sketchPane.width
@@ -1348,7 +1351,9 @@ class MarqueeSelectionStrategy {
     this.context.sketchPaneDOMElement.addEventListener('pointerdown', this._onPointerDown)
     document.addEventListener('pointermove', this._onPointerMove)
     document.addEventListener('pointerup', this._onPointerUp)
-    // window.addEventListener('keyup', this._onKeyUp)
+
+    window.addEventListener('keydown', this._onKeyDown)
+    window.addEventListener('keyup', this._onKeyUp)
 
     window.addEventListener('blur', this._onWindowBlur)
 
@@ -1363,7 +1368,11 @@ class MarqueeSelectionStrategy {
     document.removeEventListener('pointermove', this._onPointerMove)
     document.removeEventListener('pointerup', this._onPointerUp)
 
+    window.removeEventListener('keydown', this._onKeyDown)
+    window.removeEventListener('keyup', this._onKeyUp)
+
     window.removeEventListener('blur', this._onWindowBlur)
+
     this.context.sketchPane.app.view.style.cursor = 'auto'
     this.context.sketchPane.cursor.setEnabled(true)
   }
@@ -1415,6 +1424,18 @@ class MarqueeSelectionStrategy {
   _onWindowBlur () {
     // attempt to gracefully transition back to drawing
     this.context.store.dispatch({ type: 'TOOLBAR_MODE_SET', payload: 'drawing', meta: { scope: 'local' } })
+  }
+
+  _onKeyDown (event) {
+    if (this.context.isCommandPressed('drawing:marquee:straight-line')) {
+      console.log('straight line mode on')
+    }
+  }
+
+  _onKeyUp (event) {
+    if (!this.context.isCommandPressed('drawing:marquee:straight-line')) {
+      console.log('straight line mode off')
+    }
   }
   
   _render () {
