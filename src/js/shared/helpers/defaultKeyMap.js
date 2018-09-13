@@ -12,6 +12,8 @@ const defaultKeyMap = {
   "drawing:straight-line": "Shift",
   "drawing:straight-line-snap": "Alt",
 
+  "drawing:marquee:straight-line": "Alt",
+
   "menu:file:open": "CommandOrControl+o",
   "menu:file:save": "CommandOrControl+s",
   "menu:file:save-as": "CommandOrControl+Shift+s",
