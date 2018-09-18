@@ -27,6 +27,7 @@ class MarqueeOperationStrategy {
 
     this.outlineSprite = this.context.sketchPane.selectedArea.asOutlineSprite()
     this.cutSprite = this.context.sketchPane.selectedArea.asSprite(this.context.visibleLayersIndices)
+    this.context.sketchPane.selectedArea.clearLayers(this.context.visibleLayersIndices)
     // draw the outline
     this.layer.sprite.addChild(this.outlineSprite)
     // draw the cut sprite
