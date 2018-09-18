@@ -15,6 +15,8 @@ class MarqueeSelectionStrategy {
 
     this.offscreenCanvas = document.createElement('canvas')
     this.offscreenContext = this.offscreenCanvas.getContext('2d')
+
+    this.paperScope = paper.setup(this.offscreenCanvas)
   }
 
   startup () {
@@ -53,6 +55,8 @@ class MarqueeSelectionStrategy {
     window.removeEventListener('keydown', this._onKeyDown)
     window.removeEventListener('keyup', this._onKeyUp)
     window.removeEventListener('blur', this._onWindowBlur)
+
+    this.layer.clear()
 
     this.context.sketchPane.app.view.style.cursor = 'auto'
     this.context.sketchPane.cursor.setEnabled(true)
@@ -148,12 +152,12 @@ class MarqueeSelectionStrategy {
 
     this.context.marqueePath = this.state.selectionPath.clone()
 
-    // this.context.store.dispatch({
-    //   type: 'TOOLBAR_MODE_STATUS_SET', payload: 'idle', meta: { scope: 'local' }
-    // })
-    // this.context.store.dispatch({
-    //   type: 'TOOLBAR_MODE_SET', payload: 'marqueeOperation', meta: { scope: 'local' }
-    // })
+    this.context.store.dispatch({
+      type: 'TOOLBAR_MODE_STATUS_SET', payload: 'idle', meta: { scope: 'local' }
+    })
+    this.context.store.dispatch({
+      type: 'TOOLBAR_MODE_SET', payload: 'marqueeOperation', meta: { scope: 'local' }
+    })
   }
 
   _addPointFromEvent (event) {
