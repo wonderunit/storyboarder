@@ -1,3 +1,5 @@
+const SketchPaneUtil = require('alchemancy').util
+
 class MarqueeOperationStrategy {
   constructor (context) {
     this.context = context
@@ -26,15 +28,41 @@ class MarqueeOperationStrategy {
       y: this.state.marqueePath.bounds.y
     }
 
+    // delete ALL cached canvas textures to ensure canvas is re-rendered
+    PIXI.utils.clearTextureCache()
+
     this.outlineSprite = this.context.sketchPane.selectedArea.asOutlineSprite()
     this.cutSprite = this.context.sketchPane.selectedArea.asSprite(this.context.visibleLayersIndices)
-    this.context.sketchPane.selectedArea.clearLayers(this.context.visibleLayersIndices)
+
+    // TODO should this move to a SelectedArea setup/prepare method?
+
+    // solid background
+    let graphics = new PIXI.Graphics()
+    graphics.beginFill(0xffffff)
+    // draw a rectangle
+    graphics.drawRect(0, 0, this.context.sketchPane.width, this.context.sketchPane.height)
+    this.layer.sprite.addChild(graphics)
+    let maskSprite = this.context.sketchPane.selectedArea.asMaskSprite(true)
+    let flattenedLayerSprite = new PIXI.Sprite(
+      PIXI.Texture.fromCanvas(
+        this.context.sketchPane.layers.asFlattenedCanvas(
+          this.context.sketchPane.width,
+          this.context.sketchPane.height,
+          this.context.visibleLayersIndices
+        )
+      )
+    )
+    flattenedLayerSprite.addChild(maskSprite)
+    flattenedLayerSprite.mask = maskSprite
+
+    this.layer.sprite.addChild(flattenedLayerSprite)
+
     // draw the outline
     this.layer.sprite.addChild(this.outlineSprite)
     // draw the cut sprite
     this.layer.sprite.addChild(this.cutSprite)
     this.draw()
-
+    
     this.context.sketchPaneDOMElement.addEventListener('pointerdown', this._onPointerDown)
     document.addEventListener('pointermove', this._onPointerMove)
     document.addEventListener('pointerup', this._onPointerUp)
