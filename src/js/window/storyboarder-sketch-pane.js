@@ -11,6 +11,7 @@ const { SketchPane } = require('alchemancy')
 const SketchPaneUtil = require('alchemancy').util
 
 const MarqueeSelectionStrategy = require('./storyboarder-sketch-pane/marquee-selection-strategy')
+const MarqueeOperationStrategy = require('./storyboarder-sketch-pane/marquee-operation-strategy')
 
 const LineMileageCounter = require('./line-mileage-counter')
 
@@ -1315,30 +1316,6 @@ class PanningStrategy {
     )
   }
 }
-
-class MarqueeOperationStrategy {
-  constructor (context) {
-    this.context = context
-    this.name = 'marqueeOperation'
-
-    this.layer = this.context.sketchPane.layers.findByName('composite')
-  }
-
-  startup () {
-    console.log('MarqueeOperationStrategy#startup')
-
-    this.context.store.dispatch({ type: 'TOOLBAR_MODE_STATUS_SET', payload: 'busy', meta: { scope: 'local' } })
-
-
-    this.state = {
-      
-    }
-  }
-
-  shutdown () {
-  }
-}
-
 
 class FPSMeter {
   constructor () {
