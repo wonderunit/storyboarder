@@ -77,18 +77,20 @@ class MarqueeOperationStrategy {
   }
 
   _onPointerDown (event) {
+    let point = this.context.sketchPane.localizePoint(event)
     this.state = {
       down: true,
-      origin: this.context.sketchPane.localizePoint(event),
-      position: this.context.sketchPane.localizePoint(event)
+      spriteOrigin: { x: this.cutSprite.x, y: this.cutSprite.y },
+      origin: { x: point.x, y: point.y },
+      position: { x: point.x, y: point.y }
     }
   }
 
   _onPointerMove (event) {
     if (this.state.down) {
       this.state.position = this.context.sketchPane.localizePoint(event)
-      this.context.sketchPane.selectedArea.target.x = this.state.position.x - this.state.origin.x
-      this.context.sketchPane.selectedArea.target.y = this.state.position.y - this.state.origin.y
+      this.context.sketchPane.selectedArea.target.x = this.state.spriteOrigin.x + (this.state.position.x - this.state.origin.x)
+      this.context.sketchPane.selectedArea.target.y = this.state.spriteOrigin.y + (this.state.position.y - this.state.origin.y)
       this.draw()
     }
   }
