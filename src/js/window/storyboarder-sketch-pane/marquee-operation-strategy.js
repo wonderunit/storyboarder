@@ -37,13 +37,14 @@ class MarqueeOperationStrategy {
     // TODO should this move to a SelectedArea setup/prepare method?
 
     // solid background
-    let graphics = new PIXI.Graphics()
-    graphics.beginFill(0xffffff)
+    this.bgGraphics = new PIXI.Graphics()
+    this.bgGraphics.beginFill(0xffffff)
     // draw a rectangle
-    graphics.drawRect(0, 0, this.context.sketchPane.width, this.context.sketchPane.height)
-    this.layer.sprite.addChild(graphics)
+    this.bgGraphics.drawRect(0, 0, this.context.sketchPane.width, this.context.sketchPane.height)
+    this.layer.sprite.addChild(this.bgGraphics)
+
     let maskSprite = this.context.sketchPane.selectedArea.asMaskSprite(true)
-    let flattenedLayerSprite = new PIXI.Sprite(
+    this.flattenedLayerSprite = new PIXI.Sprite(
       PIXI.Texture.fromCanvas(
         this.context.sketchPane.layers.asFlattenedCanvas(
           this.context.sketchPane.width,
@@ -52,15 +53,18 @@ class MarqueeOperationStrategy {
         )
       )
     )
-    flattenedLayerSprite.addChild(maskSprite)
-    flattenedLayerSprite.mask = maskSprite
+    this.flattenedLayerSprite.addChild(maskSprite)
+    this.flattenedLayerSprite.mask = maskSprite
 
-    this.layer.sprite.addChild(flattenedLayerSprite)
+    this.layer.sprite.addChild(this.flattenedLayerSprite)
+
+    // draw the cut sprite
+    this.layer.sprite.addChild(this.cutSprite)
 
     // draw the outline
     this.layer.sprite.addChild(this.outlineSprite)
-    // draw the cut sprite
-    this.layer.sprite.addChild(this.cutSprite)
+
+    // positioning
     this.draw()
     
     this.context.sketchPaneDOMElement.addEventListener('pointerdown', this._onPointerDown)
@@ -100,9 +104,31 @@ class MarqueeOperationStrategy {
   }
 
   _onKeyUp (event) {
-    // TODO cancel via escape key
-    // TODO commit via enter key
     console.log('key', event)
+
+    // TODO key map
+    if (event.key === 'Escape') {
+      this.cancel()
+    }
+
+    // TODO commit via enter key
+  }
+
+  cancel () {
+    this.layer.sprite.removeChild(this.bgGraphics)
+    this.layer.sprite.removeChild(this.flattenedLayerSprite)
+    this.layer.sprite.removeChild(this.outlineSprite)
+    this.layer.sprite.removeChild(this.cutSprite)
+    this.layer.clear()
+
+    this.context.marqueePath = null
+
+    this.context.store.dispatch({
+      type: 'TOOLBAR_MODE_STATUS_SET', payload: 'idle', meta: { scope: 'local' }
+    })
+    this.context.store.dispatch({
+      type: 'TOOLBAR_MODE_SET', payload: 'marqueeOperation', meta: { scope: 'local' }
+    })
   }
 
   draw () {
