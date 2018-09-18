@@ -66,9 +66,11 @@ class MarqueeOperationStrategy {
   }
 
   draw () {
-    this.context.sketchPane.selectedArea.draw(
-      this.layer.sprite, this.outlineSprite, this.cutSprite
-    )
+    this.outlineSprite.x = this.context.sketchPane.selectedArea.target.x
+    this.outlineSprite.y = this.context.sketchPane.selectedArea.target.y
+
+    this.cutSprite.x = this.context.sketchPane.selectedArea.target.x
+    this.cutSprite.y = this.context.sketchPane.selectedArea.target.y
   }
 }
 
