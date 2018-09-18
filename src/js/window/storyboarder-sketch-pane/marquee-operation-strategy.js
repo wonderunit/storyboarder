@@ -8,6 +8,7 @@ class MarqueeOperationStrategy {
     this._onPointerDown = this._onPointerDown.bind(this)
     this._onPointerMove = this._onPointerMove.bind(this)
     this._onPointerUp = this._onPointerUp.bind(this)
+    this._onKeyUp = this._onKeyUp.bind(this)
   }
 
   startup () {
@@ -37,12 +38,14 @@ class MarqueeOperationStrategy {
     this.context.sketchPaneDOMElement.addEventListener('pointerdown', this._onPointerDown)
     document.addEventListener('pointermove', this._onPointerMove)
     document.addEventListener('pointerup', this._onPointerUp)
+    window.addEventListener('keyup', this._onKeyUp)
   }
 
   shutdown () {
     this.context.sketchPaneDOMElement.removeEventListener('pointerdown', this._onPointerDown)
     document.removeEventListener('pointermove', this._onPointerMove)
     document.removeEventListener('pointerup', this._onPointerUp)
+    window.removeEventListener('keyup', this._onKeyUp)
   }
 
   _onPointerDown (event) {
@@ -64,6 +67,12 @@ class MarqueeOperationStrategy {
 
   _onPointerUp (event) {
     this.state.down = false
+  }
+
+  _onKeyUp (event) {
+    // TODO cancel via escape key
+    // TODO commit via enter key
+    console.log('key', event)
   }
 
   draw () {
