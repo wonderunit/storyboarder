@@ -104,17 +104,18 @@ class MarqueeOperationStrategy {
   }
 
   _onKeyUp (event) {
-    console.log('key', event)
-
     // TODO key map
     if (event.key === 'Escape') {
       this.cancel()
     }
 
-    // TODO commit via enter key
+    // TODO key map
+    if (event.key === 'Enter') {
+      this.commit()
+    }
   }
 
-  cancel () {
+  complete () {
     this.layer.sprite.removeChild(this.bgGraphics)
     this.layer.sprite.removeChild(this.flattenedLayerSprite)
     this.layer.sprite.removeChild(this.outlineSprite)
@@ -129,6 +130,32 @@ class MarqueeOperationStrategy {
     this.context.store.dispatch({
       type: 'TOOLBAR_MODE_SET', payload: 'marqueeOperation', meta: { scope: 'local' }
     })
+  }
+
+  cancel () {
+    this.complete()
+  }
+
+  commit () {
+    // cut + paste each layer
+    let inverseMask = this.context.sketchPane.selectedArea.asMaskSprite(true)
+    for (let i of this.context.visibleLayersIndices) {
+      // TODO this results in two rewrites, can it be simplified?
+
+      let layer = this.context.sketchPane.layers[i]
+
+      // cut & rewrite
+      layer.applyMask(inverseMask)
+
+      // paste & rewrite
+      layer.sprite.addChild(this.cutSprite)
+      layer.rewrite()
+      layer.sprite.removeChild(this.cutSprite)
+
+      layer.setDirty(true)
+    }
+
+    this.complete()
   }
 
   draw () {
