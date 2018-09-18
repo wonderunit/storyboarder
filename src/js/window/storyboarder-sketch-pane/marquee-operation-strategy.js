@@ -144,13 +144,17 @@ class MarqueeOperationStrategy {
 
       let layer = this.context.sketchPane.layers[i]
 
+      let layerCutSprite = this.context.sketchPane.selectedArea.asSprite([i])
+      layerCutSprite.x = this.context.sketchPane.selectedArea.target.x
+      layerCutSprite.y = this.context.sketchPane.selectedArea.target.y
+
       // cut & rewrite
       layer.applyMask(inverseMask)
 
       // paste & rewrite
-      layer.sprite.addChild(this.cutSprite)
+      layer.sprite.addChild(layerCutSprite)
       layer.rewrite()
-      layer.sprite.removeChild(this.cutSprite)
+      layer.sprite.removeChild(layerCutSprite)
 
       layer.setDirty(true)
     }
