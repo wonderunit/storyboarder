@@ -194,15 +194,33 @@ class MarqueeSelectionStrategy {
     }
 
     ctx.save()
-    ctx.strokeStyle = '#f00'
-    ctx.beginPath()
+
+    // white
+    ctx.lineWidth = 9
+    ctx.strokeStyle = '#fff'
+    ctx.setLineDash([])
     ctx.moveTo(pointsToDraw[0].x, pointsToDraw[0].y)
+    ctx.beginPath()
     for (let i = 1; i < pointsToDraw.length; i++) {
       let point = pointsToDraw[i]
       ctx.lineTo(point.x, point.y)
     }
     ctx.closePath()
     ctx.stroke()
+
+    // purple
+    ctx.lineWidth = 3
+    ctx.strokeStyle = '#6A4DE7'
+    ctx.setLineDash([5, 15])
+    ctx.moveTo(pointsToDraw[0].x, pointsToDraw[0].y)
+    ctx.beginPath()
+    for (let i = 1; i < pointsToDraw.length; i++) {
+      let point = pointsToDraw[i]
+      ctx.lineTo(point.x, point.y)
+    }
+    ctx.closePath()
+    ctx.stroke()
+
     ctx.restore()
 
     // diagnostic circles:
