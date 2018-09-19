@@ -37,7 +37,7 @@ class MarqueeSelectionStrategy {
       stateName: 'freeform' // freeform or line
     }
 
-    this.context.sketchPaneDOMElement.addEventListener('pointerdown', this._onPointerDown)
+    document.addEventListener('pointerdown', this._onPointerDown)
     document.addEventListener('pointermove', this._onPointerMove)
     document.addEventListener('pointerup', this._onPointerUp)
     window.addEventListener('keydown', this._onKeyDown)
@@ -49,7 +49,7 @@ class MarqueeSelectionStrategy {
   }
 
   shutdown () {
-    this.context.sketchPaneDOMElement.removeEventListener('pointerdown', this._onPointerDown)
+    document.removeEventListener('pointerdown', this._onPointerDown)
     document.removeEventListener('pointermove', this._onPointerMove)
     document.removeEventListener('pointerup', this._onPointerUp)
     window.removeEventListener('keydown', this._onKeyDown)
@@ -67,6 +67,11 @@ class MarqueeSelectionStrategy {
   }
 
   _onPointerDown (event) {
+    if (event.target !== this.context.sketchPaneDOMElement) {
+      this.cancel()
+      return
+    }
+
     // if this is a new path
     if (!this.state.started) {
 
@@ -166,20 +171,29 @@ class MarqueeSelectionStrategy {
   }
 
   _onWindowBlur () {
-    // attempt to gracefully transition back to drawing
-    this.context.store.dispatch({ type: 'TOOLBAR_MODE_SET', payload: 'drawing', meta: { scope: 'local' } })
+    // this.cancel()
   }
 
   _onKeyDown (event) {
-    //
+    event.preventDefault()
   }
 
   _onKeyUp (event) {
+    event.preventDefault()
+
     if (!this._isLineKeyPressed()) {
       if (this.state.started && this.state.stateName == 'line' && !this.state.isPointerDown) {
         this._complete()
       }
     }
+  }
+
+  cancel () {
+    // attempt to gracefully transition back to drawing
+    this.context.store.dispatch({
+      type: 'TOOLBAR_MODE_STATUS_SET', payload: 'idle', meta: { scope: 'local' }
+    })
+    this.context.store.dispatch({ type: 'TOOLBAR_MODE_SET', payload: 'drawing', meta: { scope: 'local' } })
   }
 
   _draw () {

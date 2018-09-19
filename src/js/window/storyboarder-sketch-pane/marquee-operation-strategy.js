@@ -11,6 +11,7 @@ class MarqueeOperationStrategy {
     this._onPointerMove = this._onPointerMove.bind(this)
     this._onPointerUp = this._onPointerUp.bind(this)
     this._onKeyDown = this._onKeyDown.bind(this)
+    this._onKeyUp = this._onKeyUp.bind(this)
   }
 
   startup () {
@@ -68,10 +69,11 @@ class MarqueeOperationStrategy {
     // positioning
     this.draw()
     
-    this.context.sketchPaneDOMElement.addEventListener('pointerdown', this._onPointerDown)
+    document.addEventListener('pointerdown', this._onPointerDown)
     document.addEventListener('pointermove', this._onPointerMove)
     document.addEventListener('pointerup', this._onPointerUp)
     window.addEventListener('keydown', this._onKeyDown)
+    window.addEventListener('keyup', this._onKeyUp)
   }
 
   shutdown () {
@@ -80,13 +82,19 @@ class MarqueeOperationStrategy {
       this.state.done = true
     }
 
-    this.context.sketchPaneDOMElement.removeEventListener('pointerdown', this._onPointerDown)
+    document.removeEventListener('pointerdown', this._onPointerDown)
     document.removeEventListener('pointermove', this._onPointerMove)
     document.removeEventListener('pointerup', this._onPointerUp)
     window.removeEventListener('keydown', this._onKeyDown)
+    window.removeEventListener('keyup', this._onKeyUp)
   }
 
   _onPointerDown (event) {
+    if (event.target !== this.context.sketchPaneDOMElement) {
+      this.cancel()
+      return
+    }
+
     let point = this.context.sketchPane.localizePoint(event)
     this.state = {
       down: true,
@@ -110,12 +118,18 @@ class MarqueeOperationStrategy {
   }
 
   _onKeyDown (event) {
+    event.preventDefault()
+
     if (this.context.isCommandPressed('drawing:marquee:cancel')) {
       this.cancel()
     }
     if (this.context.isCommandPressed('drawing:marquee:commit')) {
       this.commit()
     }
+  }
+
+  _onKeyUp (event) {
+    event.preventDefault()
   }
 
   cleanup () {
