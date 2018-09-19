@@ -19,7 +19,8 @@ class MarqueeOperationStrategy {
     this.context.store.dispatch({ type: 'TOOLBAR_MODE_STATUS_SET', payload: 'busy', meta: { scope: 'local' } })
 
     this.state = {
-      marqueePath: this.context.marqueePath.clone()
+      marqueePath: this.context.marqueePath.clone(),
+      done: false
     }
 
     this.context.sketchPane.selectedArea.set(this.state.marqueePath)
@@ -74,6 +75,11 @@ class MarqueeOperationStrategy {
   }
 
   shutdown () {
+    if (!this.state.done) {
+      this.cleanup()
+      this.state.done = true
+    }
+
     this.context.sketchPaneDOMElement.removeEventListener('pointerdown', this._onPointerDown)
     document.removeEventListener('pointermove', this._onPointerMove)
     document.removeEventListener('pointerup', this._onPointerUp)
@@ -112,7 +118,7 @@ class MarqueeOperationStrategy {
     }
   }
 
-  complete () {
+  cleanup () {
     this.layer.sprite.removeChild(this.bgGraphics)
     this.layer.sprite.removeChild(this.flattenedLayerSprite)
     this.layer.sprite.removeChild(this.outlineSprite)
@@ -120,6 +126,10 @@ class MarqueeOperationStrategy {
     this.layer.clear()
 
     this.context.marqueePath = null
+  }
+
+  complete () {
+    this.cleanup()
 
     this.context.store.dispatch({
       type: 'TOOLBAR_MODE_STATUS_SET', payload: 'idle', meta: { scope: 'local' }
@@ -130,10 +140,14 @@ class MarqueeOperationStrategy {
   }
 
   cancel () {
+    this.state.done = true
     this.complete()
   }
 
   commit () {
+    this.context.emit('addToUndoStack', this.context.visibleLayersIndices)
+
+    this.state.done = true
     // cut + paste each layer
     let inverseMask = this.context.sketchPane.selectedArea.asMaskSprite(true)
     for (let i of this.context.visibleLayersIndices) {
@@ -152,9 +166,9 @@ class MarqueeOperationStrategy {
       layer.sprite.addChild(layerCutSprite)
       layer.rewrite()
       layer.sprite.removeChild(layerCutSprite)
-
-      layer.setDirty(true)
     }
+
+    this.context.emit('markDirty', this.context.visibleLayersIndices)
 
     this.complete()
   }
