@@ -13,6 +13,8 @@ const defaultKeyMap = {
   "drawing:straight-line-snap": "Alt",
 
   "drawing:marquee:straight-line": "Alt",
+  "drawing:marquee:cancel": "Escape",
+  "drawing:marquee:commit": "Enter",
 
   "menu:file:open": "CommandOrControl+o",
   "menu:file:save": "CommandOrControl+s",
