@@ -178,7 +178,7 @@ class StoryboarderSketchPane extends EventEmitter {
       marqueeOperation: new MarqueeOperationStrategy(this)
     }
 
-    this.store.dispatch({ type: 'TOOLBAR_MODE_SET', payload: 'marqueeSelection', meta: { scope: 'local' } })
+    this.store.dispatch({ type: 'TOOLBAR_MODE_SET', payload: 'drawing', meta: { scope: 'local' } })
 
     this.ro = new window.ResizeObserver(entries =>
       // see: https://github.com/wonderunit/storyboarder/issues/1218
@@ -329,6 +329,18 @@ class StoryboarderSketchPane extends EventEmitter {
             meta: { scope: 'local' }
           })
         }
+      }
+    } else if (this.isCommandPressed('drawing:marquee-mode')) {
+      if (this.store.getState().toolbar.mode !== 'marqueeSelection' &&
+          this.store.getState().toolbar.mode !== 'marqueeOperation') {
+          this.store.dispatch({
+            type: 'TOOLBAR_MODE_SET',
+            payload: 'marqueeSelection',
+            meta: { scope: 'local' }
+          })
+          if (this.store.getState().toolbar.mode === 'marqueeSelection') {
+            sfx.playEffect('metal')
+          }
       }
     }
 

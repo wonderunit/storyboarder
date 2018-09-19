@@ -67,6 +67,8 @@ class MarqueeSelectionStrategy {
   }
 
   _onPointerDown (event) {
+    if (event.target.id === 'toolbar-marquee') return
+
     if (event.target !== this.context.sketchPaneDOMElement) {
       this.cancel()
       return

@@ -165,6 +165,22 @@ class Toolbar extends EventEmitter {
         }
         break
 
+      case 'marquee':
+        // attempt change
+        this.store.dispatch({
+          type: 'TOOLBAR_MODE_SET',
+          payload: this.store.getState().toolbar.mode === 'marqueeSelection' || 
+                   this.store.getState().toolbar.mode === 'marqueeOperation'
+            ? 'drawing'
+            : 'marqueeSelection',
+          meta: { scope: 'local' }
+        })
+        // play a sound if it worked
+        if (this.store.getState().toolbar.mode === 'marqueeSelection') {
+          sfx.playEffect('metal')
+        }
+        break
+
       // undo/redo
       case 'undo':
         this.emit('undo')
@@ -291,19 +307,29 @@ class Toolbar extends EventEmitter {
 
     let btnMove = this.el.querySelector('#toolbar-move')
     let btnScale = this.el.querySelector('#toolbar-scale')
+    let btnMarquee = this.el.querySelector('#toolbar-marquee')
 
     switch (state.toolbar.mode) {
       case 'moving':
         btnMove.classList.add('active')
         btnScale.classList.remove('active')
+        btnMarquee.classList.remove('active')
         break
       case 'scaling':
         btnScale.classList.add('active')
         btnMove.classList.remove('active')
+        btnMarquee.classList.remove('active')
+        break
+      case 'marqueeSelection':
+      case 'marqueeOperation':
+        btnScale.classList.remove('active')
+        btnMove.classList.remove('active')
+        btnMarquee.classList.add('active')
         break
       default:
         btnScale.classList.remove('active')
         btnMove.classList.remove('active')
+        btnMarquee.classList.remove('active')
         break
     }
 
