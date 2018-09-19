@@ -176,6 +176,10 @@ class MarqueeSelectionStrategy {
 
   _onKeyDown (event) {
     event.preventDefault()
+
+    if (this.context.isCommandPressed('drawing:marquee:cancel')) {
+      this.cancel()
+    }
   }
 
   _onKeyUp (event) {
