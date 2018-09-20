@@ -74,6 +74,17 @@ class MarqueeSelectionStrategy {
       return
     }
 
+    if (
+      // has already drawn a marquee
+      this.state.complete &&
+      // pointerdown anywhere on the canvas
+      event.target === this.context.sketchPaneDOMElement)
+    {
+      // transition to operating on the selection
+      this.context.marqueeTransitionEvent = event
+      this._transitionNext()
+    }
+
     // if this is a new path
     if (!this.state.started) {
 
@@ -139,11 +150,11 @@ class MarqueeSelectionStrategy {
     } else {
       this._addPointFromEvent(event)
 
-      this._complete()
+      this._endDrawnPath()
     }
   }
 
-  _complete () {
+  _endDrawnPath () {
     this.state.started = false
     this.state.complete = true
 
@@ -158,7 +169,9 @@ class MarqueeSelectionStrategy {
     this._draw()
 
     this.context.marqueePath = this.state.selectionPath.clone()
+  }
 
+  _transitionNext () {
     this.context.store.dispatch({
       type: 'TOOLBAR_MODE_STATUS_SET', payload: 'idle', meta: { scope: 'local' }
     })
@@ -189,7 +202,7 @@ class MarqueeSelectionStrategy {
 
     if (!this._isLineKeyPressed()) {
       if (this.state.started && this.state.stateName == 'line' && !this.state.isPointerDown) {
-        this._complete()
+        this._endDrawnPath()
       }
     }
   }

@@ -41,6 +41,9 @@ class StoryboarderSketchPane extends EventEmitter {
     this.el = el
     this.canvasSize = canvasSize
     this.store = store
+
+    this.marqueePath = null
+    this.marqueeTransitionEvent = null
   }
 
   async load () {
