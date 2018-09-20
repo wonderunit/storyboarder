@@ -74,6 +74,9 @@ class MarqueeOperationStrategy {
     document.addEventListener('pointerup', this._onPointerUp)
     window.addEventListener('keydown', this._onKeyDown)
     window.addEventListener('keyup', this._onKeyUp)
+
+    // HACK force the first pointer down
+    this._onPointerDown(this.context.marqueeTransitionEvent)
   }
 
   shutdown () {
