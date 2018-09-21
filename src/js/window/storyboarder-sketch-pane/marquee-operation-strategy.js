@@ -162,30 +162,15 @@ class MarqueeOperationStrategy {
   }
 
   commit () {
-    this.context.emit('addToUndoStack', this.context.visibleLayersIndices)
-
     this.state.done = true
-    // cut + paste each layer
-    let inverseMask = this.context.sketchPane.selectedArea.asMaskSprite(true)
-    for (let i of this.context.visibleLayersIndices) {
-      // TODO this results in two rewrites, can it be simplified?
 
-      let layer = this.context.sketchPane.layers[i]
+    let indices = this.context.visibleLayersIndices
 
-      let layerCutSprite = this.context.sketchPane.selectedArea.asSprite([i])
-      layerCutSprite.x = this.context.sketchPane.selectedArea.target.x
-      layerCutSprite.y = this.context.sketchPane.selectedArea.target.y
-
-      // cut & rewrite
-      layer.applyMask(inverseMask)
-
-      // paste & rewrite
-      layer.sprite.addChild(layerCutSprite)
-      layer.rewrite()
-      layer.sprite.removeChild(layerCutSprite)
-    }
-
-    this.context.emit('markDirty', this.context.visibleLayersIndices)
+    this.context.emit('addToUndoStack', indices)
+    let sprites = this.context.sketchPane.selectedArea.copy(indices)
+    this.context.sketchPane.selectedArea.erase(indices)
+    this.context.sketchPane.selectedArea.paste(indices, sprites)
+    this.context.emit('markDirty', indices)
 
     this.complete()
   }
