@@ -18,6 +18,7 @@ const defaultKeyMap = {
   "drawing:marquee:commit": "Enter",
   "drawing:marquee:add": "Shift",
   "drawing:marquee:subtract": "Alt",
+  "drawing:marquee:erase": "Backspace",
 
   "menu:file:open": "CommandOrControl+o",
   "menu:file:save": "CommandOrControl+s",
