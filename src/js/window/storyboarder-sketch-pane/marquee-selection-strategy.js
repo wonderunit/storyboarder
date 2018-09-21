@@ -267,6 +267,18 @@ class MarqueeSelectionStrategy {
     if (this.context.isCommandPressed('drawing:marquee:cancel')) {
       this.cancel()
     }
+
+    if (this.context.isCommandPressed('drawing:marquee:erase')) {
+      if (this.state.complete && this.context.marqueePath) {
+        let indices = this.context.visibleLayersIndices
+        this.context.emit('addToUndoStack', indices)
+        this.context.sketchPane.selectedArea.set(this.context.marqueePath)
+        this.context.sketchPane.selectedArea.erase(indices)
+        this.context.sketchPane.selectedArea.unset()
+        this.context.emit('markDirty', indices)
+        this.cancel()
+      }
+    }
   }
 
   _onKeyUp (event) {
