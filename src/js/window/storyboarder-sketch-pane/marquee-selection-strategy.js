@@ -254,11 +254,11 @@ class MarqueeSelectionStrategy {
     event.preventDefault()
 
     if (this.state.complete) {
-      if (event.key === 'Alt') {
+      if (this.context.isCommandPressed('drawing:marquee:add')) {
         this.state.stateName = 'add'
         // this.context.sketchPane.app.view.style.cursor = 'zoom-in'
       }
-      if (event.key === 'Shift') {
+      if (this.context.isCommandPressed('drawing:marquee:subtract')) {
         this.state.stateName = 'subtract'
         // this.context.sketchPane.app.view.style.cursor = 'zoom-out'
       }
@@ -273,11 +273,11 @@ class MarqueeSelectionStrategy {
     event.preventDefault()
 
     if (this.state.complete) {
-      if (event.key === 'Alt' && this.state.stateName === 'subtract') {
+      if (this.state.stateName === 'add' && !this.context.isCommandPressed('drawing:marquee:add')) {
         this.state.stateName = 'freeform'
         this.context.sketchPane.app.view.style.cursor = 'crosshair'
       }
-      if (event.key === 'Shift' && this.state.stateName === 'add') {
+      if (this.state.stateName === 'subtract' && !this.context.isCommandPressed('drawing:marquee:subtract')) {
         this.state.stateName = 'freeform'
         this.context.sketchPane.app.view.style.cursor = 'crosshair'
       }
