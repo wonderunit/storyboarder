@@ -29,12 +29,13 @@ class MarqueeSelectionStrategy {
     this.state = {
       started: false,
       complete: false,
-      selectionPath: new paper.Path(),
+      selectionPath: null,
+      selectionSubPath: null,
       draftPoint: null,
       straightLinePressed: false,
       isPointerDown: false,
 
-      stateName: 'freeform' // freeform or line
+      stateName: 'idle' // idle, freeform, line, add, subtract
     }
 
     document.addEventListener('pointerdown', this._onPointerDown)
@@ -75,6 +76,8 @@ class MarqueeSelectionStrategy {
     }
 
     if (
+      // not freeform/line/add/subtract
+      this.state.stateName === 'idle' &&
       // has already drawn a marquee
       this.state.complete &&
       // pointerdown anywhere on the canvas
@@ -88,69 +91,97 @@ class MarqueeSelectionStrategy {
     // if this is a new path
     if (!this.state.started) {
 
-      // reset
-      this.state.selectionPath = new paper.Path()
+      if (this.state.stateName === 'add') {
+        this.state.selectionSubPath = new paper.Path()
+        this.state.isPointerDown = true
+        this._addPointFromEvent(event)
+        this._draw()
 
-      // if the line key is pressed
-      if (this._isLineKeyPressed()) {
-        this.state.stateName = 'line'
+      } else if (this.state.stateName === 'subtract') {
+        this.state.selectionSubPath = new paper.Path()
+        this.state.isPointerDown = true
+        this._addPointFromEvent(event)
+        this._draw()
+
       } else {
-        this.state.stateName = 'freeform'
+        // reset
+        this.state.selectionPath = new paper.Path()
+
+        // if the line key is pressed
+        if (this._isLineKeyPressed()) {
+          this.state.stateName = 'line'
+        } else {
+          this.state.stateName = 'freeform'
+        }
+
+        this.state = {
+          ...this.state,
+          started: true,
+          complete: false,
+          isPointerDown: true
+        }
+
+        this._addPointFromEvent(event)
+        this._draw()
+
+        if (this.state.stateName == 'line') {
+          this.state.draftPoint = this.context.sketchPane.localizePoint(event)
+        } else {
+          this.state.draftPoint = null
+        }
       }
-    }
-
-    this.state = {
-      ...this.state,
-      started: true,
-      complete: false,
-      isPointerDown: true
-    }
-
-    this._addPointFromEvent(event)
-    this._draw()
-
-    if (this.state.stateName == 'line') {
-      this.state.draftPoint = this.context.sketchPane.localizePoint(event)
-    } else {
-      this.state.draftPoint = null
     }
   }
 
   _onPointerMove (event) {
-    if (!this.state.started) return
+    if (this.state.stateName === 'add' || this.state.stateName === 'subtract') {
+      if (this.state.isPointerDown) {
+        this._addPointFromEvent(event)
+        this._draw()
+      }
 
-    if (!this._isLineKeyPressed() && this.state.isPointerDown) {
-      this.state.stateName = 'freeform'
+    } else {      
+      if (!this.state.started) return
+
+      if (!this._isLineKeyPressed() && this.state.isPointerDown) {
+        this.state.stateName = 'freeform'
+      }
+
+      if (this.state.stateName == 'line') {
+        this.state.draftPoint = this.context.sketchPane.localizePoint(event)
+      } else {
+        this.state.draftPoint = null
+        this._addPointFromEvent(event)
+      }
+
+      this._draw()
     }
-
-    if (this.state.stateName == 'line') {
-      this.state.draftPoint = this.context.sketchPane.localizePoint(event)
-    } else {
-      this.state.draftPoint = null
-      this._addPointFromEvent(event)
-    }
-
-    this._draw()
   }
 
   _onPointerUp (event) {
     this.state.isPointerDown = false
 
-    if (!this.state.started) return
-
-    if (this._isLineKeyPressed()) {
-      this.state.stateName = 'line'
-    } else {
-      this.state.stateName = 'freeform'
-    }
-
-    if (this.state.stateName == 'line') {
+    if (this.state.stateName === 'add' || this.state.stateName === 'subtract') {
       this._addPointFromEvent(event)
-      this._draw()
-    } else {
-      this._addPointFromEvent(event)
-
       this._endDrawnPath()
+
+    } else {
+      if (!this.state.started) return
+
+      if (this._isLineKeyPressed()) {
+        this.state.stateName = 'line'
+      } else {
+        this.state.stateName = 'freeform'
+      }
+
+      if (this.state.stateName == 'line') {
+        this._addPointFromEvent(event)
+        this._draw()
+      } else {
+        this._addPointFromEvent(event)
+
+        this._endDrawnPath()
+      }
     }
   }
 
@@ -160,15 +191,23 @@ class MarqueeSelectionStrategy {
 
     this.state.draftPoint = null
 
-    // close the path
-    this.state.selectionPath.add(this.state.selectionPath.segments[0].point.clone())
+    // close the active path
+    let activePath = this._getActivePath()
+    activePath.add(activePath.segments[0].point.clone())
+
+    // selectionPath is now the combined path
+    this.state.selectionPath = this._getCombinedPath()
+    // clear the sub path
+    this.state.selectionSubPath = null
+
     // avoid self-intersections
-    // this.state.selectionPath = this.state.selectionPath.unite(this.state.selectionPath)
-    // this.state.selectionPath.closePath()
+    this.state.selectionPath = this.state.selectionPath.unite(this.state.selectionPath)
+    this.state.selectionPath.closePath()
 
     this._draw()
 
     this.context.marqueePath = this.state.selectionPath.clone()
+    this.state.stateName = 'idle'
   }
 
   _transitionNext () {
@@ -182,7 +221,29 @@ class MarqueeSelectionStrategy {
 
   _addPointFromEvent (event) {
     let point = this.context.sketchPane.localizePoint(event)
-    this.state.selectionPath.add(new paper.Point(point.x, point.y))
+
+    this._getActivePath().add(new paper.Point(point.x, point.y))
+  }
+
+  _getActivePath () {
+    return (this.state.stateName === 'add' || this.state.stateName === 'subtract')
+      ? this.state.selectionSubPath
+      : this.state.selectionPath
+  }
+
+  _getCombinedPath () {
+    let result
+    if (this.state.stateName === 'add') {
+      result = this.state.selectionPath.clone().unite(this.state.selectionSubPath, { insert: false })
+
+    } else if (this.state.stateName === 'subtract') {
+      result = this.state.selectionPath.clone().subtract(this.state.selectionSubPath, { insert: false })
+
+    } else {
+      result = this.state.selectionPath.clone()
+
+    }
+    return result
   }
 
   _onWindowBlur () {
@@ -192,6 +253,17 @@ class MarqueeSelectionStrategy {
   _onKeyDown (event) {
     event.preventDefault()
 
+    if (this.state.complete) {
+      if (event.key === 'Alt') {
+        this.state.stateName = 'add'
+        // this.context.sketchPane.app.view.style.cursor = 'zoom-in'
+      }
+      if (event.key === 'Shift') {
+        this.state.stateName = 'subtract'
+        // this.context.sketchPane.app.view.style.cursor = 'zoom-out'
+      }
+    }
+
     if (this.context.isCommandPressed('drawing:marquee:cancel')) {
       this.cancel()
     }
@@ -199,6 +271,17 @@ class MarqueeSelectionStrategy {
 
   _onKeyUp (event) {
     event.preventDefault()
+
+    if (this.state.complete) {
+      if (event.key === 'Alt' && this.state.stateName === 'subtract') {
+        this.state.stateName = 'freeform'
+        this.context.sketchPane.app.view.style.cursor = 'crosshair'
+      }
+      if (event.key === 'Shift' && this.state.stateName === 'add') {
+        this.state.stateName = 'freeform'
+        this.context.sketchPane.app.view.style.cursor = 'crosshair'
+      }
+    }
 
     if (!this._isLineKeyPressed()) {
       if (this.state.started && this.state.stateName == 'line' && !this.state.isPointerDown) {
@@ -221,50 +304,62 @@ class MarqueeSelectionStrategy {
     ctx.clearRect(0, 0, this.context.sketchPane.width, this.context.sketchPane.height)
     ctx.globalAlpha = 1.0
 
-    let pointsToDraw = this.state.selectionPath.segments.map(segment => ({ x: segment.point.x, y: segment.point.y }))
-    if (this.state.draftPoint != null) {
-      pointsToDraw.push(this.state.draftPoint)
+    let pathToDraw = this._getCombinedPath()
+
+    let children = pathToDraw.children || [pathToDraw]
+
+    for (let n = 0; n < children.length; n++) {
+      let child = children[n]
+
+      let pointsToDraw = child.segments.map(segment => ({ x: segment.point.x, y: segment.point.y }))
+
+      // draft point added to last child
+      if (this.state.draftPoint != null) {
+        if (n === children.length - 1) {
+          pointsToDraw.push(this.state.draftPoint)
+        }
+      }
+
+      ctx.save()
+
+      // white
+      ctx.lineWidth = 9
+      ctx.strokeStyle = '#fff'
+      ctx.setLineDash([])
+      ctx.moveTo(pointsToDraw[0].x, pointsToDraw[0].y)
+      ctx.beginPath()
+      for (let i = 1; i < pointsToDraw.length; i++) {
+        let point = pointsToDraw[i]
+        ctx.lineTo(point.x, point.y)
+      }
+      ctx.closePath()
+      ctx.stroke()
+
+      // purple
+      ctx.lineWidth = 3
+      ctx.strokeStyle = '#6A4DE7'
+      ctx.setLineDash([5, 15])
+      ctx.moveTo(pointsToDraw[0].x, pointsToDraw[0].y)
+      ctx.beginPath()
+      for (let i = 1; i < pointsToDraw.length; i++) {
+        let point = pointsToDraw[i]
+        ctx.lineTo(point.x, point.y)
+      }
+      ctx.closePath()
+      ctx.stroke()
+
+      ctx.restore()
+
+      // diagnostic circles:
+      //
+      // for (let j = 0; j < pointsToDraw.length; j++) {
+      //   let point = pointsToDraw[j]
+      //   ctx.beginPath()
+      //   ctx.arc(point.x, point.y, 10, 0, Math.PI * 2)
+      //   ctx.fillStyle = '#f00'
+      //   ctx.fill()
+      // }
     }
-
-    ctx.save()
-
-    // white
-    ctx.lineWidth = 9
-    ctx.strokeStyle = '#fff'
-    ctx.setLineDash([])
-    ctx.moveTo(pointsToDraw[0].x, pointsToDraw[0].y)
-    ctx.beginPath()
-    for (let i = 1; i < pointsToDraw.length; i++) {
-      let point = pointsToDraw[i]
-      ctx.lineTo(point.x, point.y)
-    }
-    ctx.closePath()
-    ctx.stroke()
-
-    // purple
-    ctx.lineWidth = 3
-    ctx.strokeStyle = '#6A4DE7'
-    ctx.setLineDash([5, 15])
-    ctx.moveTo(pointsToDraw[0].x, pointsToDraw[0].y)
-    ctx.beginPath()
-    for (let i = 1; i < pointsToDraw.length; i++) {
-      let point = pointsToDraw[i]
-      ctx.lineTo(point.x, point.y)
-    }
-    ctx.closePath()
-    ctx.stroke()
-
-    ctx.restore()
-
-    // diagnostic circles:
-    //
-    // for (let j = 0; j < pointsToDraw.length; j++) {
-    //   let point = pointsToDraw[j]
-    //   ctx.beginPath()
-    //   ctx.arc(point.x, point.y, 10, 0, Math.PI * 2)
-    //   ctx.fillStyle = '#f00'
-    //   ctx.fill()
-    // }
 
     this.layer.replaceTextureFromCanvas(this.offscreenCanvas)
   }
