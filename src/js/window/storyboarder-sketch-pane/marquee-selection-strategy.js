@@ -320,45 +320,47 @@ class MarqueeSelectionStrategy {
         }
       }
 
-      ctx.save()
+      if (pointsToDraw.length) {
+        ctx.save()
 
-      // white
-      ctx.lineWidth = 9
-      ctx.strokeStyle = '#fff'
-      ctx.setLineDash([])
-      ctx.moveTo(pointsToDraw[0].x, pointsToDraw[0].y)
-      ctx.beginPath()
-      for (let i = 1; i < pointsToDraw.length; i++) {
-        let point = pointsToDraw[i]
-        ctx.lineTo(point.x, point.y)
+        // white
+        ctx.lineWidth = 9
+        ctx.strokeStyle = '#fff'
+        ctx.setLineDash([])
+        ctx.moveTo(pointsToDraw[0].x, pointsToDraw[0].y)
+        ctx.beginPath()
+        for (let i = 1; i < pointsToDraw.length; i++) {
+          let point = pointsToDraw[i]
+          ctx.lineTo(point.x, point.y)
+        }
+        ctx.closePath()
+        ctx.stroke()
+
+        // purple
+        ctx.lineWidth = 3
+        ctx.strokeStyle = '#6A4DE7'
+        ctx.setLineDash([5, 15])
+        ctx.moveTo(pointsToDraw[0].x, pointsToDraw[0].y)
+        ctx.beginPath()
+        for (let i = 1; i < pointsToDraw.length; i++) {
+          let point = pointsToDraw[i]
+          ctx.lineTo(point.x, point.y)
+        }
+        ctx.closePath()
+        ctx.stroke()
+
+        ctx.restore()
+
+        // diagnostic circles:
+        //
+        // for (let j = 0; j < pointsToDraw.length; j++) {
+        //   let point = pointsToDraw[j]
+        //   ctx.beginPath()
+        //   ctx.arc(point.x, point.y, 10, 0, Math.PI * 2)
+        //   ctx.fillStyle = '#f00'
+        //   ctx.fill()
+        // }
       }
-      ctx.closePath()
-      ctx.stroke()
-
-      // purple
-      ctx.lineWidth = 3
-      ctx.strokeStyle = '#6A4DE7'
-      ctx.setLineDash([5, 15])
-      ctx.moveTo(pointsToDraw[0].x, pointsToDraw[0].y)
-      ctx.beginPath()
-      for (let i = 1; i < pointsToDraw.length; i++) {
-        let point = pointsToDraw[i]
-        ctx.lineTo(point.x, point.y)
-      }
-      ctx.closePath()
-      ctx.stroke()
-
-      ctx.restore()
-
-      // diagnostic circles:
-      //
-      // for (let j = 0; j < pointsToDraw.length; j++) {
-      //   let point = pointsToDraw[j]
-      //   ctx.beginPath()
-      //   ctx.arc(point.x, point.y, 10, 0, Math.PI * 2)
-      //   ctx.fillStyle = '#f00'
-      //   ctx.fill()
-      // }
     }
 
     this.layer.replaceTextureFromCanvas(this.offscreenCanvas)
