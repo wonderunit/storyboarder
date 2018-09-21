@@ -249,6 +249,11 @@ class MarqueeSelectionStrategy {
   _onWindowBlur () {
     // this.cancel()
   }
+  
+  getFillColor () {
+    let state = this.context.store.getState()
+    return state.toolbar.tools[state.toolbar.activeTool].color
+  }
 
   _onKeyDown (event) {
     event.preventDefault()
@@ -274,6 +279,19 @@ class MarqueeSelectionStrategy {
         this.context.emit('addToUndoStack', indices)
         this.context.sketchPane.selectedArea.set(this.context.marqueePath)
         this.context.sketchPane.selectedArea.erase(indices)
+        this.context.sketchPane.selectedArea.unset()
+        this.context.emit('markDirty', indices)
+        this.cancel()
+      }
+    }
+
+    if (this.context.isCommandPressed('drawing:marquee:fill')) {
+      if (this.state.complete && this.context.marqueePath) {
+        let indices = this.context.visibleLayersIndices
+        let color = this.getFillColor()
+        this.context.emit('addToUndoStack', indices)
+        this.context.sketchPane.selectedArea.set(this.context.marqueePath)
+        this.context.sketchPane.selectedArea.fill(indices, color)
         this.context.sketchPane.selectedArea.unset()
         this.context.emit('markDirty', indices)
         this.cancel()
