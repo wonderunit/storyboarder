@@ -12,6 +12,8 @@ class MarqueeOperationStrategy {
     this._onPointerUp = this._onPointerUp.bind(this)
     this._onKeyDown = this._onKeyDown.bind(this)
     this._onKeyUp = this._onKeyUp.bind(this)
+
+    this.backgroundMatte = null
   }
 
   startup () {
@@ -39,11 +41,11 @@ class MarqueeOperationStrategy {
     // TODO should this move to a SelectedArea setup/prepare method?
 
     // solid background
-    this.bgGraphics = new PIXI.Graphics()
-    this.bgGraphics.beginFill(0xffffff)
+    this.backgroundMatte = new PIXI.Graphics()
+    this.backgroundMatte.beginFill(0xffffff)
     // draw a rectangle
-    this.bgGraphics.drawRect(0, 0, this.context.sketchPane.width, this.context.sketchPane.height)
-    this.layer.sprite.addChild(this.bgGraphics)
+    this.backgroundMatte.drawRect(0, 0, this.context.sketchPane.width, this.context.sketchPane.height)
+    this.layer.sprite.addChild(this.backgroundMatte)
 
     let maskSprite = this.context.sketchPane.selectedArea.asMaskSprite(true)
     this.flattenedLayerSprite = new PIXI.Sprite(
@@ -136,7 +138,7 @@ class MarqueeOperationStrategy {
   }
 
   cleanup () {
-    this.layer.sprite.removeChild(this.bgGraphics)
+    this.layer.sprite.removeChild(this.backgroundMatte)
     this.layer.sprite.removeChild(this.flattenedLayerSprite)
     this.layer.sprite.removeChild(this.outlineSprite)
     this.layer.sprite.removeChild(this.cutSprite)
