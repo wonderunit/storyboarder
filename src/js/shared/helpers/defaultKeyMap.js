@@ -19,6 +19,7 @@ const defaultKeyMap = {
   "drawing:marquee:add": "Shift",
   "drawing:marquee:subtract": "Alt",
   "drawing:marquee:erase": "Backspace",
+  "drawing:marquee:fill": "f",
 
   "menu:file:open": "CommandOrControl+o",
   "menu:file:save": "CommandOrControl+s",
