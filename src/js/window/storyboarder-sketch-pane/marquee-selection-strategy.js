@@ -186,23 +186,25 @@ class MarqueeSelectionStrategy {
   }
 
   _endDrawnPath () {
-    this.state.started = false
-    this.state.complete = true
-
-    this.state.draftPoint = null
-
     // close the active path
     let activePath = this._getActivePath()
     activePath.add(activePath.segments[0].point.clone())
+
+    // avoid self-intersections
+    activePath = activePath.unite(this.state.selectionPath)
+    if (!activePath.children) {
+      activePath.add(activePath.segments[0].point.clone())
+    }
+    activePath.closePath()
 
     // selectionPath is now the combined path
     this.state.selectionPath = this._getCombinedPath()
     // clear the sub path
     this.state.selectionSubPath = null
 
-    // avoid self-intersections
-    this.state.selectionPath = this.state.selectionPath.unite(this.state.selectionPath)
-    this.state.selectionPath.closePath()
+    this.state.started = false
+    this.state.complete = true
+    this.state.draftPoint = null
 
     this._draw()
 
