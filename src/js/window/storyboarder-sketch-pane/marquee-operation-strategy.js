@@ -154,7 +154,7 @@ class MarqueeOperationStrategy {
       type: 'TOOLBAR_MODE_STATUS_SET', payload: 'idle', meta: { scope: 'local' }
     })
     this.context.store.dispatch({
-      type: 'TOOLBAR_MODE_SET', payload: 'drawing', meta: { scope: 'local' }
+      type: 'TOOLBAR_MODE_SET', payload: 'marqueeSelection', meta: { scope: 'local' }
     })
   }
 
