@@ -37,6 +37,7 @@ class MarqueeOperationStrategy {
 
     this.outlineSprite = this.context.sketchPane.selectedArea.asOutlineSprite()
     this.cutSprite = this.context.sketchPane.selectedArea.asSprite(this.context.visibleLayersIndices)
+    this.areaPolygons = this.context.sketchPane.selectedArea.asPolygons(false)
 
     // TODO should this move to a SelectedArea setup/prepare method?
 
@@ -99,6 +100,14 @@ class MarqueeOperationStrategy {
     this.context.sketchPane.app.view.style.cursor = 'auto'
     this.context.sketchPane.cursor.setEnabled(true)
   }
+
+  hit (polygons, point) {
+    for (let polygon of polygons) {
+      if (polygon.contains(point.x, point.y)) {
+        return true
+      }
+    }
+    return false
   }
 
   _onPointerDown (event) {
@@ -109,24 +118,45 @@ class MarqueeOperationStrategy {
 
     let point = this.context.sketchPane.localizePoint(event)
     this.state = {
+      hitAreaPolygons: this.areaPolygons.map(polygon => polygon.clone())
+    }
+
+    // was it outside?
+    if (!this.hit(this.state.hitAreaPolygons, point)) {
+      this.commit()
+      return
+    }
+
+    this.state = {
+      ...this.state,
       down: true,
       spriteOrigin: { x: this.cutSprite.x, y: this.cutSprite.y },
       origin: { x: point.x, y: point.y },
       position: { x: point.x, y: point.y }
     }
+
+    this.updateCursor(event)
   }
 
   _onPointerMove (event) {
+    let point = this.context.sketchPane.localizePoint(event)
+
     if (this.state.down) {
-      this.state.position = this.context.sketchPane.localizePoint(event)
+      this.state.position = point
       this.context.sketchPane.selectedArea.target.x = this.state.spriteOrigin.x + (this.state.position.x - this.state.origin.x)
       this.context.sketchPane.selectedArea.target.y = this.state.spriteOrigin.y + (this.state.position.y - this.state.origin.y)
+
       this.draw()
     }
+    this.updateCursor(event)
   }
 
   _onPointerUp (event) {
     this.state.down = false
+
+    this.areaPolygons = this.state.hitAreaPolygons.map(polygon => polygon.clone())
+
+    this.updateCursor(event)
   }
 
   _onKeyDown (event) {
@@ -190,6 +220,32 @@ class MarqueeOperationStrategy {
 
     this.cutSprite.x = this.context.sketchPane.selectedArea.target.x
     this.cutSprite.y = this.context.sketchPane.selectedArea.target.y
+
+    if (this.state.hitAreaPolygons) {
+      // translate area polygons
+      for (let i = 0; i < this.state.hitAreaPolygons.length; i++) {
+        for (let j = 0; j < this.state.hitAreaPolygons[i].points.length; j += 2) {
+          let offsetX = this.context.sketchPane.selectedArea.target.x - this.state.spriteOrigin.x
+          let offsetY = this.context.sketchPane.selectedArea.target.y - this.state.spriteOrigin.y
+          this.state.hitAreaPolygons[i].points[j + 0] = this.areaPolygons[i].points[j + 0] + offsetX
+          this.state.hitAreaPolygons[i].points[j + 1] = this.areaPolygons[i].points[j + 1] + offsetY
+        }
+      }
+    }
+  }
+
+  updateCursor (event) {
+    let point = this.context.sketchPane.localizePoint(event)
+    // set cursor
+    if (this.state.hitAreaPolygons && this.hit(this.state.hitAreaPolygons, point)) {
+      if (this.state.down) {
+        this.context.sketchPane.app.view.style.cursor = '-webkit-grabbing'
+      } else {
+        this.context.sketchPane.app.view.style.cursor = '-webkit-grab'
+      }
+    } else {
+      this.context.sketchPane.app.view.style.cursor = 'auto'
+    }
   }
 }
 
