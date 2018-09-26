@@ -79,6 +79,9 @@ class MarqueeOperationStrategy {
 
     // HACK force the first pointer down
     this._onPointerDown(this.context.marqueeTransitionEvent)
+
+    this.context.sketchPane.cursor.setEnabled(false)
+    this.context.sketchPane.app.view.style.cursor = 'auto'
   }
 
   shutdown () {
@@ -92,6 +95,10 @@ class MarqueeOperationStrategy {
     document.removeEventListener('pointerup', this._onPointerUp)
     window.removeEventListener('keydown', this._onKeyDown)
     window.removeEventListener('keyup', this._onKeyUp)
+
+    this.context.sketchPane.app.view.style.cursor = 'auto'
+    this.context.sketchPane.cursor.setEnabled(true)
+  }
   }
 
   _onPointerDown (event) {
