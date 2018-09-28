@@ -137,6 +137,8 @@ class MarqueeSelectionStrategy {
           this.state.draftPoint = null
         }
       }
+      this.context.sketchPane.cursor.setEnabled(false)
+      this.context.sketchPane.app.view.style.cursor = 'crosshair'
     }
   }
 
