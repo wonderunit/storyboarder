@@ -47,9 +47,16 @@ class MarqueeSelectionStrategy {
 
     this.context.sketchPane.cursor.setEnabled(false)
     this.context.sketchPane.app.view.style.cursor = 'crosshair'
+
+    this.boundingRect = new paper.Path.Rectangle(
+      new paper.Point(0, 0),
+      new paper.Point(this.context.sketchPane.width, this.context.sketchPane.height)
+    )
   }
 
   shutdown () {
+    this.boundingRect = null
+
     document.removeEventListener('pointerdown', this._onPointerDown)
     document.removeEventListener('pointermove', this._onPointerMove)
     document.removeEventListener('pointerup', this._onPointerUp)
@@ -245,6 +252,10 @@ class MarqueeSelectionStrategy {
       result = this.state.selectionPath.clone()
 
     }
+
+    // constrain to texture area rect
+    result = result.intersect(this.boundingRect, { insert: false })
+
     return result
   }
 
