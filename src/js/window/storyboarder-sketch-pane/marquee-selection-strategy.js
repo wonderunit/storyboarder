@@ -372,7 +372,7 @@ class MarqueeSelectionStrategy {
         ctx.setLineDash([])
         ctx.moveTo(pointsToDraw[0].x, pointsToDraw[0].y)
         ctx.beginPath()
-        for (let i = 1; i < pointsToDraw.length; i++) {
+        for (let i = 0; i < pointsToDraw.length; i++) {
           let point = pointsToDraw[i]
           ctx.lineTo(point.x, point.y)
         }
@@ -385,7 +385,7 @@ class MarqueeSelectionStrategy {
         ctx.setLineDash([2, 5])
         ctx.moveTo(pointsToDraw[0].x, pointsToDraw[0].y)
         ctx.beginPath()
-        for (let i = 1; i < pointsToDraw.length; i++) {
+        for (let i = 0; i < pointsToDraw.length; i++) {
           let point = pointsToDraw[i]
           ctx.lineTo(point.x, point.y)
         }
