@@ -367,7 +367,7 @@ class MarqueeSelectionStrategy {
         ctx.save()
 
         // white
-        ctx.lineWidth = 9
+        ctx.lineWidth = 1
         ctx.strokeStyle = '#fff'
         ctx.setLineDash([])
         ctx.moveTo(pointsToDraw[0].x, pointsToDraw[0].y)
@@ -380,9 +380,9 @@ class MarqueeSelectionStrategy {
         ctx.stroke()
 
         // purple
-        ctx.lineWidth = 3
+        ctx.lineWidth = 1
         ctx.strokeStyle = '#6A4DE7'
-        ctx.setLineDash([5, 15])
+        ctx.setLineDash([2, 5])
         ctx.moveTo(pointsToDraw[0].x, pointsToDraw[0].y)
         ctx.beginPath()
         for (let i = 1; i < pointsToDraw.length; i++) {
