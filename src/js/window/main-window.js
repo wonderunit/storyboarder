@@ -6329,7 +6329,14 @@ const showSignInWindow = () => {
     parent: remote.getCurrentWindow(),
     resizable: true,
     frame: false,
-    modal: true
+    modal: true,
+    webPreferences: {
+      webgl: true,
+      experimentalFeatures: true,
+      experimentalCanvasFeatures: true,
+      devTools: true,
+      plugins: true
+    } 
   })
   exportWebWindow.loadURL(`file://${__dirname}/../../upload.html`)
   exportWebWindow.once('ready-to-show', () => {
