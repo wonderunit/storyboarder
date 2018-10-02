@@ -118,6 +118,8 @@ class MarqueeOperationStrategy {
 
     let point = this.context.sketchPane.localizePoint(event)
     this.state = {
+      ...this.state,
+      done: false,
       hitAreaPolygons: this.areaPolygons.map(polygon => polygon.clone())
     }
 
