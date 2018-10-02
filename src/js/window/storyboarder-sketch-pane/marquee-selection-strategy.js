@@ -300,7 +300,7 @@ class MarqueeSelectionStrategy {
         this.context.sketchPane.selectedArea.erase(indices)
         this.context.sketchPane.selectedArea.unset()
         this.context.emit('markDirty', indices)
-        this.cancel()
+        this.deselect()
       }
     }
 
@@ -313,7 +313,7 @@ class MarqueeSelectionStrategy {
         this.context.sketchPane.selectedArea.fill(indices, color)
         this.context.sketchPane.selectedArea.unset()
         this.context.emit('markDirty', indices)
-        this.cancel()
+        this.deselect()
       }
     }
   }
@@ -345,6 +345,23 @@ class MarqueeSelectionStrategy {
       type: 'TOOLBAR_MODE_STATUS_SET', payload: 'idle', meta: { scope: 'local' }
     })
     this.context.store.dispatch({ type: 'TOOLBAR_MODE_SET', payload: 'drawing', meta: { scope: 'local' } })
+  }
+
+  deselect () {
+    this.layer.clear()
+
+    this.context.marqueePath = null
+    this.state.stateName = 'idle'
+
+    this.state.selectionPath = new paper.Path()
+    this.state.selectionSubPath = null
+
+    this.state.started = false
+    this.state.complete = false
+    this.state.draftPoint = null
+    this.state.isPointerDown = false
+
+    this._draw()
   }
 
   _draw () {
