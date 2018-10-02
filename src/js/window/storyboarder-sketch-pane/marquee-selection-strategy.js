@@ -197,12 +197,16 @@ class MarqueeSelectionStrategy {
   _endDrawnPath () {
     // close the active path
     let activePath = this._getActivePath()
-    activePath.add(activePath.segments[0].point.clone())
+    if (activePath.segments.length) {
+      activePath.add(activePath.segments[0].point.clone())
+    }
 
     // avoid self-intersections
     activePath = activePath.unite(this.state.selectionPath)
     if (!activePath.children) {
-      activePath.add(activePath.segments[0].point.clone())
+      if (activePath.segments.length) {
+        activePath.add(activePath.segments[0].point.clone())
+      }
     }
     activePath.closePath()
 
