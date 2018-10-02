@@ -23,14 +23,15 @@ class MarqueeOperationStrategy {
 
     this.state = {
       marqueePath: this.context.marqueePath.clone(),
+      moved: false,
       done: false
     }
-
-    this.context.sketchPane.selectedArea.set(this.state.marqueePath)
-    this.context.sketchPane.selectedArea.target = {
+    this.state.target = {
       x: this.state.marqueePath.bounds.x,
       y: this.state.marqueePath.bounds.y
     }
+
+    this.context.sketchPane.selectedArea.set(this.state.marqueePath)
 
     // delete ALL cached canvas textures to ensure canvas is re-rendered
     PIXI.utils.clearTextureCache()
@@ -145,8 +146,13 @@ class MarqueeOperationStrategy {
 
     if (this.state.down) {
       this.state.position = point
-      this.context.sketchPane.selectedArea.target.x = this.state.spriteOrigin.x + (this.state.position.x - this.state.origin.x)
-      this.context.sketchPane.selectedArea.target.y = this.state.spriteOrigin.y + (this.state.position.y - this.state.origin.y)
+      this.state.target.x = this.state.spriteOrigin.x + (this.state.position.x - this.state.origin.x)
+      this.state.target.y = this.state.spriteOrigin.y + (this.state.position.y - this.state.origin.y)
+
+      this.state.moved = (
+        this.state.target.x != this.state.marqueePath.bounds.x ||
+        this.state.target.x != this.state.marqueePath.bounds.y
+      )
 
       this.draw()
     }
@@ -205,30 +211,36 @@ class MarqueeOperationStrategy {
   commit () {
     this.state.done = true
 
-    let indices = this.context.visibleLayersIndices
+    if (this.state.moved) {
+      let indices = this.context.visibleLayersIndices
 
-    this.context.emit('addToUndoStack', indices)
-    let sprites = this.context.sketchPane.selectedArea.copy(indices)
-    this.context.sketchPane.selectedArea.erase(indices)
-    this.context.sketchPane.selectedArea.paste(indices, sprites)
-    this.context.emit('markDirty', indices)
+      this.context.emit('addToUndoStack', indices)
+      let sprites = this.context.sketchPane.selectedArea.copy(indices)
+      sprites.forEach(sprite => {
+        sprite.x = this.state.target.x
+        sprite.y = this.state.target.y
+      })
+      this.context.sketchPane.selectedArea.erase(indices)
+      this.context.sketchPane.selectedArea.paste(indices, sprites)
+      this.context.emit('markDirty', indices)
+    }
 
     this.complete()
   }
 
   draw () {
-    this.outlineSprite.x = this.context.sketchPane.selectedArea.target.x
-    this.outlineSprite.y = this.context.sketchPane.selectedArea.target.y
+    this.outlineSprite.x = this.state.target.x
+    this.outlineSprite.y = this.state.target.y
 
-    this.cutSprite.x = this.context.sketchPane.selectedArea.target.x
-    this.cutSprite.y = this.context.sketchPane.selectedArea.target.y
+    this.cutSprite.x = this.state.target.x
+    this.cutSprite.y = this.state.target.y
 
     if (this.state.hitAreaPolygons) {
       // translate area polygons
       for (let i = 0; i < this.state.hitAreaPolygons.length; i++) {
         for (let j = 0; j < this.state.hitAreaPolygons[i].points.length; j += 2) {
-          let offsetX = this.context.sketchPane.selectedArea.target.x - this.state.spriteOrigin.x
-          let offsetY = this.context.sketchPane.selectedArea.target.y - this.state.spriteOrigin.y
+          let offsetX = this.state.target.x - this.state.spriteOrigin.x
+          let offsetY = this.state.target.y - this.state.spriteOrigin.y
           this.state.hitAreaPolygons[i].points[j + 0] = this.areaPolygons[i].points[j + 0] + offsetX
           this.state.hitAreaPolygons[i].points[j + 1] = this.areaPolygons[i].points[j + 1] + offsetY
         }
