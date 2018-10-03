@@ -444,7 +444,7 @@ class StoryboarderSketchPane extends EventEmitter {
 
   // TODO rename to isDrawing, find/replace instances
   getIsDrawingOrStabilizing () {
-    return this.sketchPane.isDrawing()
+    return this.sketchPane.isDrawing() || this.store.getState().toolbar.modeStatus === 'busy'
     // return this.sketchPane.isDrawing || this.sketchPane.isStabilizing
   }
 
