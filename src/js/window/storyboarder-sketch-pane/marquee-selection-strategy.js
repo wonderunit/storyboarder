@@ -20,8 +20,6 @@ class MarqueeSelectionStrategy {
   }
 
   startup () {
-    this.context.store.dispatch({ type: 'TOOLBAR_MODE_STATUS_SET', payload: 'busy', meta: { scope: 'local' } })
-
     this.offscreenCanvas.width = this.context.sketchPane.width
     this.offscreenCanvas.height = this.context.sketchPane.height
     this.layer = this.context.sketchPane.layers.findByName('composite')
@@ -97,6 +95,7 @@ class MarqueeSelectionStrategy {
 
     // if this is a new path
     if (!this.state.started) {
+      this.context.store.dispatch({ type: 'TOOLBAR_MODE_STATUS_SET', payload: 'busy', meta: { scope: 'local' } })
 
       if (this.state.stateName === 'add') {
         this.state.selectionSubPath = new paper.Path()
@@ -137,6 +136,7 @@ class MarqueeSelectionStrategy {
           this.state.draftPoint = null
         }
       }
+
       this.context.sketchPane.cursor.setEnabled(false)
       this.context.sketchPane.app.view.style.cursor = 'crosshair'
     }
@@ -348,6 +348,8 @@ class MarqueeSelectionStrategy {
   }
 
   deselect () {
+    this.context.store.dispatch({ type: 'TOOLBAR_MODE_STATUS_SET', payload: 'idle', meta: { scope: 'local' } })
+
     this.layer.clear()
 
     this.context.marqueePath = null
