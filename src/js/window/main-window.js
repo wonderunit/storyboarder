@@ -4577,6 +4577,8 @@ const resize = () => {
 }
 
 window.onkeydown = (e) => {
+  if (store.getState().toolbar.modeStatus === 'busy') return
+
   // TEMPORARY
   // key command to trigger registration window during early testing
   if (isCommandPressed('registration:open')) {
