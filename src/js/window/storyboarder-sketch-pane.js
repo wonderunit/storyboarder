@@ -362,6 +362,11 @@ class StoryboarderSketchPane extends EventEmitter {
   }
 
   onKeyUp (e) {
+    // HACK ignore any key up while in marquee selection mode
+    if (this.store.getState().toolbar.mode === 'marqueeSelection') {
+      return
+    }
+
     if ( !(this.isCommandPressed('drawing:scale-mode') || this.isCommandPressed('drawing:move-mode')) ) {
       // switch to default strategy (drawing)
       // attempt change
