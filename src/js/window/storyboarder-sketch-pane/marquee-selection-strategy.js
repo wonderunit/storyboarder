@@ -91,8 +91,8 @@ class MarqueeSelectionStrategy {
       this.state.stateName === 'idle' &&
       // has already drawn a marquee
       this.state.complete &&
-      // pointerdown anywhere on the canvas
-      event.target === this.context.sketchPaneDOMElement)
+      // pointerdown inside the marquee'd path(s)
+      this._hit(event))
     {
       // transition to operating on the selection
       this.context.marqueeTransitionEvent = event
@@ -238,6 +238,13 @@ class MarqueeSelectionStrategy {
 
     this.context.marqueePath = this.state.selectionPath.clone()
     this.state.stateName = 'idle'
+  }
+
+  _hit (event) {
+    if (!this.state.selectionPath) return false
+
+    let point = this.context.sketchPane.localizePoint(event)
+    return this._getCombinedPath().contains(point)
   }
 
   _transitionNext () {
