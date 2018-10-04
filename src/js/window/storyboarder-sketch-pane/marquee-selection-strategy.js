@@ -1,5 +1,11 @@
 const paper = require('paper')
 
+constrainPoint = (point, rectangle) => {
+  point = paper.Point.max(point, rectangle.topLeft)
+  point = paper.Point.min(point, rectangle.bottomRight)
+  return point
+}
+
 class MarqueeSelectionStrategy {
   constructor (context) {
     this.context = context
@@ -199,14 +205,22 @@ class MarqueeSelectionStrategy {
     // close the active path
     let activePath = this._getActivePath()
     if (activePath.segments.length) {
-      activePath.add(activePath.segments[0].point.clone())
+      activePath.add(
+        constrainPoint(
+          activePath.segments[0].point.clone(),
+          this.boundingRect
+        )
+      )
     }
 
     // avoid self-intersections
     activePath = activePath.unite(this.state.selectionPath)
     if (!activePath.children) {
       if (activePath.segments.length) {
-        activePath.add(activePath.segments[0].point.clone())
+        constrainPoint(
+          activePath.add(activePath.segments[0].point.clone()),
+          this.boundingRect
+        )
       }
     }
     activePath.closePath()
@@ -238,7 +252,9 @@ class MarqueeSelectionStrategy {
   _addPointFromEvent (event) {
     let point = this.context.sketchPane.localizePoint(event)
 
-    this._getActivePath().add(new paper.Point(point.x, point.y))
+    this._getActivePath().add(
+      constrainPoint(new paper.Point(point.x, point.y), this.boundingRect)
+    )
   }
 
   _getActivePath () {
@@ -259,9 +275,6 @@ class MarqueeSelectionStrategy {
       result = this.state.selectionPath.clone()
 
     }
-
-    // constrain to texture area rect
-    result = result.intersect(this.boundingRect, { insert: false })
 
     return result
   }
