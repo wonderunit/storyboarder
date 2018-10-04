@@ -91,6 +91,7 @@ class MarqueeSelectionStrategy {
       // transition to operating on the selection
       this.context.marqueeTransitionEvent = event
       this._transitionNext()
+      return
     }
 
     // if this is a new path
