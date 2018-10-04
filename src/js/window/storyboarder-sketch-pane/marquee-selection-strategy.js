@@ -150,19 +150,21 @@ class MarqueeSelectionStrategy {
   }
 
   _onPointerMove (event) {
-    if (this._hit(event) && !this.state.isPointerDown && this.state.selectionPath) {
-      this.context.sketchPane.app.view.style.cursor = '-webkit-grab'
-    } else {
-      this.context.sketchPane.app.view.style.cursor = 'crosshair'
-    }
-
     if (this.state.stateName === 'add' || this.state.stateName === 'subtract') {
+      this.context.sketchPane.app.view.style.cursor = 'crosshair'
+
       if (this.state.isPointerDown) {
         this._addPointFromEvent(event)
         this._draw()
       }
 
-    } else {      
+    } else {
+      if (this._hit(event) && !this.state.isPointerDown && this.state.selectionPath) {
+        this.context.sketchPane.app.view.style.cursor = '-webkit-grab'
+      } else {
+        this.context.sketchPane.app.view.style.cursor = 'crosshair'
+      }
+
       if (!this.state.started) return
 
       if (!this._isLineKeyPressed() && this.state.isPointerDown) {
