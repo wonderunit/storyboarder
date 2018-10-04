@@ -46,7 +46,7 @@ class MarqueeSelectionStrategy {
     this.context.sketchPane.cursor.setEnabled(false)
     this.context.sketchPane.app.view.style.cursor = 'crosshair'
 
-    this.boundingRect = new paper.Path.Rectangle(
+    this.boundingRect = new paper.Rectangle(
       new paper.Point(0, 0),
       new paper.Point(this.context.sketchPane.width, this.context.sketchPane.height)
     )
