@@ -685,6 +685,8 @@ class OperationStrategy {
     }
 
     if (this.context.isCommandPressed('drawing:marquee:erase')) {
+      // we'll be doing an erase
+      this.state.commitOperation = 'erase'
       // erase the cutout contents
       this.cutSprite.texture.destroy()
       this.cutSprite.texture = this.context.sketchPane.selectedArea.asFilledTexture(0xffffff, 0.0)
@@ -736,9 +738,9 @@ class OperationStrategy {
     this.state.done = true
 
     if (this.state.moved) {
-      if (this.state.commitOperation === 'move') {
-        let indices = this.context.visibleLayersIndices
+      let indices = this.context.visibleLayersIndices
 
+      if (this.state.commitOperation === 'move') {
         this.context.emit('addToUndoStack', indices)
         let sprites = this.context.sketchPane.selectedArea.copy(indices)
         sprites.forEach(sprite => {
@@ -749,9 +751,12 @@ class OperationStrategy {
         this.context.sketchPane.selectedArea.paste(indices, sprites)
         this.context.emit('markDirty', indices)
 
-      } else if (this.state.commitOperation === 'fill') {
-        let indices = this.context.visibleLayersIndices
+      } else if (this.state.commitOperation === 'erase') {
+        this.context.emit('addToUndoStack', indices)
+        this.context.sketchPane.selectedArea.erase(indices)
+        this.context.emit('markDirty', indices)
 
+      } else if (this.state.commitOperation === 'fill') {
         let color = getFillColor(this.context.store.getState())
         let texture = this.context.sketchPane.selectedArea.asFilledTexture(color, 1.0)
 
@@ -768,6 +773,7 @@ class OperationStrategy {
         this.context.sketchPane.selectedArea.erase(indices)
         this.context.sketchPane.selectedArea.paste(indices, sprites)
         this.context.emit('markDirty', indices)
+
       }
     }
 
