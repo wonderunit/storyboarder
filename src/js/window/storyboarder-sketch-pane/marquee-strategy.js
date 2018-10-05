@@ -7,6 +7,8 @@ const constrainPoint = (point, rectangle) => {
   return point
 }
 
+const getFillColor = state => state.toolbar.tools[state.toolbar.activeTool].color
+
 class MarqueeStrategy {
   constructor (context) {
     this.context = context
@@ -35,11 +37,6 @@ class MarqueeStrategy {
     if (this.strategy) this.strategy.shutdown()
     this.strategy = this.strategies[strategy]
     this.strategy.startup()
-  }
-
-  getFillColor () {
-    let state = this.context.store.getState()
-    return state.toolbar.tools[state.toolbar.activeTool].color
   }
 }
 
@@ -367,7 +364,7 @@ class SelectionStrategy {
     if (this.context.isCommandPressed('drawing:marquee:fill')) {
       if (this.state.complete && this.parent.marqueePath) {
         let indices = this.context.visibleLayersIndices
-        let color = this.parent.getFillColor()
+        let color = getFillColor(this.context.store.getState())
         this.context.emit('addToUndoStack', indices)
         this.context.sketchPane.selectedArea.set(this.parent.marqueePath)
         this.context.sketchPane.selectedArea.fill(indices, color)
