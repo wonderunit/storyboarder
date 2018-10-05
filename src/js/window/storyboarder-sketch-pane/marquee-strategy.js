@@ -16,15 +16,14 @@ class MarqueeStrategy {
       selection: new SelectionStrategy(this.context, this),
       operation: new OperationStrategy(this.context, this)
     }
+
+    this.marqueeTransitionEvent = null
+    this.marqueePath = null
   }
 
   startup () {
     console.log('MarqueeStrategy#startup')
-
-    this.state = {
-      strategy: 'selection'
-    }
-    this.setStrategy(this.state.strategy)
+    this.setStrategy('selection')
   }
 
   shutdown () {
@@ -127,7 +126,7 @@ class SelectionStrategy {
       this._hit(event))
     {
       // transition to operating on the selection
-      this.context.marqueeTransitionEvent = event
+      this.parent.marqueeTransitionEvent = event
       this._transitionNext()
       return
     }
@@ -276,7 +275,7 @@ class SelectionStrategy {
 
     this._draw()
 
-    this.context.marqueePath = this.state.selectionPath.clone()
+    this.parent.marqueePath = this.state.selectionPath.clone()
     this.state.stateName = 'idle'
   }
 
@@ -353,10 +352,10 @@ class SelectionStrategy {
     }
 
     if (this.context.isCommandPressed('drawing:marquee:erase')) {
-      if (this.state.complete && this.context.marqueePath) {
+      if (this.state.complete && this.parent.marqueePath) {
         let indices = this.context.visibleLayersIndices
         this.context.emit('addToUndoStack', indices)
-        this.context.sketchPane.selectedArea.set(this.context.marqueePath)
+        this.context.sketchPane.selectedArea.set(this.parent.marqueePath)
         this.context.sketchPane.selectedArea.erase(indices)
         this.context.sketchPane.selectedArea.unset()
         this.context.emit('markDirty', indices)
@@ -365,11 +364,11 @@ class SelectionStrategy {
     }
 
     if (this.context.isCommandPressed('drawing:marquee:fill')) {
-      if (this.state.complete && this.context.marqueePath) {
+      if (this.state.complete && this.parent.marqueePath) {
         let indices = this.context.visibleLayersIndices
         let color = this.getFillColor()
         this.context.emit('addToUndoStack', indices)
-        this.context.sketchPane.selectedArea.set(this.context.marqueePath)
+        this.context.sketchPane.selectedArea.set(this.parent.marqueePath)
         this.context.sketchPane.selectedArea.fill(indices, color)
         this.context.sketchPane.selectedArea.unset()
         this.context.emit('markDirty', indices)
@@ -412,7 +411,7 @@ class SelectionStrategy {
 
     this.layer.clear()
 
-    this.context.marqueePath = null
+    this.parent.marqueePath = null
     this.state.stateName = 'idle'
 
     this.state.selectionPath = new paper.Path()
@@ -516,7 +515,7 @@ class OperationStrategy {
     this.context.store.dispatch({ type: 'TOOLBAR_MODE_STATUS_SET', payload: 'busy', meta: { scope: 'local' } })
 
     this.state = {
-      marqueePath: this.context.marqueePath.clone(),
+      marqueePath: this.parent.marqueePath.clone(),
       moved: false,
       done: false
     }
@@ -574,7 +573,7 @@ class OperationStrategy {
     window.addEventListener('keyup', this._onKeyUp)
 
     // HACK force the first pointer down
-    this._onPointerDown(this.context.marqueeTransitionEvent)
+    this._onPointerDown(this.parent.marqueeTransitionEvent)
 
     this.context.sketchPane.cursor.setEnabled(false)
     this.context.sketchPane.app.view.style.cursor = 'auto'
@@ -683,7 +682,7 @@ class OperationStrategy {
     this.layer.sprite.removeChild(this.cutSprite)
     this.layer.clear()
 
-    this.context.marqueePath = null
+    this.parent.marqueePath = null
   }
 
   complete () {
