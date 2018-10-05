@@ -515,7 +515,8 @@ class OperationStrategy {
     this.state = {
       marqueePath: this.parent.marqueePath.clone(),
       moved: false,
-      done: false
+      done: false,
+      commitOperation: 'move' // move, fill
     }
     this.state.target = {
       x: this.state.marqueePath.bounds.x,
@@ -671,6 +672,22 @@ class OperationStrategy {
       return
     }
 
+    if (this.context.isCommandPressed('drawing:marquee:erase')) {
+      // erase the cutout contents
+      this.cutSprite.texture.destroy()
+      this.cutSprite.texture = this.context.sketchPane.selectedArea.asFilledTexture(0xffffff, 0.0)
+      return
+    }
+
+    if (this.context.isCommandPressed('drawing:marquee:fill')) {
+      // we'll be doing a fill
+      this.state.commitOperation = 'fill'
+      // live preview
+      // fill the cutout contents with color
+      let color = getFillColor(this.context.store.getState())
+      this.cutSprite.texture.destroy()
+      this.cutSprite.texture = this.context.sketchPane.selectedArea.asFilledTexture(color, 1.0)
+      return
     }
   }
 
@@ -707,17 +724,39 @@ class OperationStrategy {
     this.state.done = true
 
     if (this.state.moved) {
-      let indices = this.context.visibleLayersIndices
+      if (this.state.commitOperation === 'move') {
+        let indices = this.context.visibleLayersIndices
 
-      this.context.emit('addToUndoStack', indices)
-      let sprites = this.context.sketchPane.selectedArea.copy(indices)
-      sprites.forEach(sprite => {
+        this.context.emit('addToUndoStack', indices)
+        let sprites = this.context.sketchPane.selectedArea.copy(indices)
+        sprites.forEach(sprite => {
+          sprite.x = this.state.target.x
+          sprite.y = this.state.target.y
+        })
+        this.context.sketchPane.selectedArea.erase(indices)
+        this.context.sketchPane.selectedArea.paste(indices, sprites)
+        this.context.emit('markDirty', indices)
+
+      } else if (this.state.commitOperation === 'fill') {
+        let indices = this.context.visibleLayersIndices
+
+        let color = getFillColor(this.context.store.getState())
+        let texture = this.context.sketchPane.selectedArea.asFilledTexture(color, 1.0)
+
+        let sprite = new PIXI.Sprite(texture)
         sprite.x = this.state.target.x
         sprite.y = this.state.target.y
-      })
-      this.context.sketchPane.selectedArea.erase(indices)
-      this.context.sketchPane.selectedArea.paste(indices, sprites)
-      this.context.emit('markDirty', indices)
+
+        let sprites = indices.reduce((prev, curr, n) => {
+          prev[curr] = sprite
+          return prev
+        }, {})
+
+        this.context.emit('addToUndoStack', indices)
+        this.context.sketchPane.selectedArea.erase(indices)
+        this.context.sketchPane.selectedArea.paste(indices, sprites)
+        this.context.emit('markDirty', indices)
+      }
     }
 
     this.complete()
