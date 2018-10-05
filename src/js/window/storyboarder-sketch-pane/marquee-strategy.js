@@ -663,9 +663,14 @@ class OperationStrategy {
 
     if (this.context.isCommandPressed('drawing:marquee:cancel')) {
       this.cancel()
+      return
     }
+
     if (this.context.isCommandPressed('drawing:marquee:commit')) {
       this.commit()
+      return
+    }
+
     }
   }
 
