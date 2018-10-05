@@ -28,6 +28,7 @@ class MarqueeStrategy {
 
   shutdown () {
     console.log('MarqueeStrategy#shutdown')
+    if (this.strategy) this.strategy.shutdown()
   }
 
   setStrategy (strategy) {
