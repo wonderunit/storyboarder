@@ -30,13 +30,22 @@ class MarqueeStrategy {
 
   shutdown () {
     console.log('MarqueeStrategy#shutdown')
-    if (this.strategy) this.strategy.shutdown()
+    if (this.strategy) {
+      this.strategy.shutdown()
+      this.strategy = null
+    }
   }
 
   setStrategy (strategy) {
     if (this.strategy) this.strategy.shutdown()
     this.strategy = this.strategies[strategy]
     this.strategy.startup()
+  }
+
+  fakePointerDown (event) {
+    if (this.strategy) {
+      this.strategy._onPointerDown(event)
+    }
   }
 }
 
@@ -619,6 +628,9 @@ class OperationStrategy {
     // was it outside?
     if (!this.hit(this.state.hitAreaPolygons, point)) {
       this.commit()
+
+      // NOTE this works because OperationStrategy instance stays in memory after shutdown
+      this.parent.fakePointerDown(event)
       return
     }
 
