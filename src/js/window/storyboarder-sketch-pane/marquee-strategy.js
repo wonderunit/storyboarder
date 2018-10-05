@@ -8,6 +8,7 @@ const constrainPoint = (point, rectangle) => {
 }
 
 const getFillColor = state => state.toolbar.tools[state.toolbar.activeTool].color
+const getFillAlpha = state => state.toolbar.tools[state.toolbar.activeTool].strokeOpacity
 
 class MarqueeStrategy {
   constructor (context) {
@@ -373,10 +374,12 @@ class SelectionStrategy {
     if (this.context.isCommandPressed('drawing:marquee:fill')) {
       if (this.state.complete && this.parent.marqueePath) {
         let indices = this.context.visibleLayersIndices
-        let color = getFillColor(this.context.store.getState())
+        let state = this.context.store.getState()
+        let color = getFillColor(state)
+        let alpha = getFillAlpha(state)
         this.context.emit('addToUndoStack', indices)
         this.context.sketchPane.selectedArea.set(this.parent.marqueePath)
-        this.context.sketchPane.selectedArea.fill(indices, color)
+        this.context.sketchPane.selectedArea.fill(indices, color, alpha)
         this.context.sketchPane.selectedArea.unset()
         this.context.emit('markDirty', indices)
         this.deselect()
@@ -690,6 +693,7 @@ class OperationStrategy {
       // erase the cutout contents
       this.cutSprite.texture.destroy()
       this.cutSprite.texture = this.context.sketchPane.selectedArea.asFilledTexture(0xffffff, 0.0)
+      this.cutSprite.alpha = 1.0
       return
     }
 
@@ -698,9 +702,12 @@ class OperationStrategy {
       this.state.commitOperation = 'fill'
       // live preview
       // fill the cutout contents with color
-      let color = getFillColor(this.context.store.getState())
+      let state = this.context.store.getState()
+      let color = getFillColor(state)
+      let alpha = getFillAlpha(state)
       this.cutSprite.texture.destroy()
       this.cutSprite.texture = this.context.sketchPane.selectedArea.asFilledTexture(color, 1.0)
+      this.cutSprite.alpha = alpha // TODO fix alpha, lighter than actual
       return
     }
   }
@@ -757,8 +764,10 @@ class OperationStrategy {
         this.context.emit('markDirty', indices)
 
       } else if (this.state.commitOperation === 'fill') {
-        let color = getFillColor(this.context.store.getState())
-        let texture = this.context.sketchPane.selectedArea.asFilledTexture(color, 1.0)
+        let state = this.context.store.getState()
+        let color = getFillColor(state)
+        let alpha = getFillAlpha(state)
+        let texture = this.context.sketchPane.selectedArea.asFilledTexture(color, alpha)
 
         let sprite = new PIXI.Sprite(texture)
         sprite.x = this.state.target.x
