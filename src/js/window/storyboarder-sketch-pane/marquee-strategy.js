@@ -804,7 +804,11 @@ class OperationStrategy {
         this.context.sketchPane.app.view.style.cursor = '-webkit-grab'
       }
     } else {
-      this.context.sketchPane.app.view.style.cursor = 'auto'
+      if (event.target == this.context.sketchPaneDOMElement) {
+        this.context.sketchPane.app.view.style.cursor = 'crosshair'
+      } else {
+        this.context.sketchPane.app.view.style.cursor = 'auto'
+      }
     }
   }
 }
