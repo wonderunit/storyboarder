@@ -1,6 +1,6 @@
 const paper = require('paper')
 
-constrainPoint = (point, rectangle) => {
+const constrainPoint = (point, rectangle) => {
   point = paper.Point.max(point, rectangle.topLeft)
   point = paper.Point.min(point, rectangle.bottomRight)
   return point
