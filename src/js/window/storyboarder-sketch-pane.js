@@ -10,8 +10,7 @@ const path = require('path')
 const { SketchPane } = require('alchemancy')
 const SketchPaneUtil = require('alchemancy').util
 
-const MarqueeSelectionStrategy = require('./storyboarder-sketch-pane/marquee-selection-strategy')
-const MarqueeOperationStrategy = require('./storyboarder-sketch-pane/marquee-operation-strategy')
+const MarqueeStrategy = require('./storyboarder-sketch-pane/marquee-strategy')
 
 const LineMileageCounter = require('./line-mileage-counter')
 
@@ -177,8 +176,7 @@ class StoryboarderSketchPane extends EventEmitter {
       locked: new LockedStrategy(this),
       panning: new PanningStrategy(this),
       lineDrawing: new LineDrawingStrategy(this),
-      marqueeSelection: new MarqueeSelectionStrategy(this),
-      marqueeOperation: new MarqueeOperationStrategy(this)
+      marquee: new MarqueeStrategy(this)
     }
 
     this.store.dispatch({ type: 'TOOLBAR_MODE_SET', payload: 'drawing', meta: { scope: 'local' } })
@@ -334,14 +332,13 @@ class StoryboarderSketchPane extends EventEmitter {
         }
       }
     } else if (this.isCommandPressed('drawing:marquee-mode')) {
-      if (this.store.getState().toolbar.mode !== 'marqueeSelection' &&
-          this.store.getState().toolbar.mode !== 'marqueeOperation') {
+      if (this.store.getState().toolbar.mode !== 'marquee') {
           this.store.dispatch({
             type: 'TOOLBAR_MODE_SET',
-            payload: 'marqueeSelection',
+            payload: 'marquee',
             meta: { scope: 'local' }
           })
-          if (this.store.getState().toolbar.mode === 'marqueeSelection') {
+          if (this.store.getState().toolbar.mode === 'marquee') {
             sfx.playEffect('metal')
           }
       }
@@ -363,7 +360,7 @@ class StoryboarderSketchPane extends EventEmitter {
 
   onKeyUp (e) {
     // HACK ignore any key up while in marquee selection mode
-    if (this.store.getState().toolbar.mode === 'marqueeSelection') {
+    if (this.store.getState().toolbar.mode === 'marquee') {
       return
     }
 

@@ -166,17 +166,16 @@ class Toolbar extends EventEmitter {
         break
 
       case 'marquee':
-        // attempt change
+        // attempt toggle
         this.store.dispatch({
           type: 'TOOLBAR_MODE_SET',
-          payload: this.store.getState().toolbar.mode === 'marqueeSelection' || 
-                   this.store.getState().toolbar.mode === 'marqueeOperation'
+          payload: this.store.getState().toolbar.mode === 'marquee'
             ? 'drawing'
-            : 'marqueeSelection',
+            : 'marquee',
           meta: { scope: 'local' }
         })
         // play a sound if it worked
-        if (this.store.getState().toolbar.mode === 'marqueeSelection') {
+        if (this.store.getState().toolbar.mode === 'marquee') {
           sfx.playEffect('metal')
         }
         break
@@ -320,8 +319,7 @@ class Toolbar extends EventEmitter {
         btnMove.classList.remove('active')
         btnMarquee.classList.remove('active')
         break
-      case 'marqueeSelection':
-      case 'marqueeOperation':
+      case 'marquee':
         btnScale.classList.remove('active')
         btnMove.classList.remove('active')
         btnMarquee.classList.add('active')
