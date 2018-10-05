@@ -6,10 +6,10 @@ const constrainPoint = (point, rectangle) => {
   return point
 }
 
-class MarqueeSelectionStrategy {
+class MarqueeStrategy {
   constructor (context) {
     this.context = context
-    this.name = 'marqueeSelection'
+    this.name = 'marquee'
 
     this._onPointerDown = this._onPointerDown.bind(this)
     this._onPointerMove = this._onPointerMove.bind(this)
@@ -259,8 +259,9 @@ class MarqueeSelectionStrategy {
     this.context.store.dispatch({
       type: 'TOOLBAR_MODE_STATUS_SET', payload: 'idle', meta: { scope: 'local' }
     })
+    // TODO switch to Marquee Operation
     this.context.store.dispatch({
-      type: 'TOOLBAR_MODE_SET', payload: 'marqueeOperation', meta: { scope: 'local' }
+      type: 'TOOLBAR_MODE_SET', payload: 'marquee', meta: { scope: 'local' }
     })
   }
 
@@ -464,4 +465,4 @@ class MarqueeSelectionStrategy {
   }
 }
 
-module.exports = MarqueeSelectionStrategy
+module.exports = MarqueeStrategy
