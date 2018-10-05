@@ -36,6 +36,11 @@ class MarqueeStrategy {
     this.strategy = this.strategies[strategy]
     this.strategy.startup()
   }
+
+  getFillColor () {
+    let state = this.context.store.getState()
+    return state.toolbar.tools[state.toolbar.activeTool].color
+  }
 }
 
 class SelectionStrategy {
@@ -328,11 +333,6 @@ class SelectionStrategy {
   _onWindowBlur () {
     // this.cancel()
   }
-  
-  getFillColor () {
-    let state = this.context.store.getState()
-    return state.toolbar.tools[state.toolbar.activeTool].color
-  }
 
   _onKeyDown (event) {
     event.preventDefault()
@@ -367,7 +367,7 @@ class SelectionStrategy {
     if (this.context.isCommandPressed('drawing:marquee:fill')) {
       if (this.state.complete && this.parent.marqueePath) {
         let indices = this.context.visibleLayersIndices
-        let color = this.getFillColor()
+        let color = this.parent.getFillColor()
         this.context.emit('addToUndoStack', indices)
         this.context.sketchPane.selectedArea.set(this.parent.marqueePath)
         this.context.sketchPane.selectedArea.fill(indices, color)
