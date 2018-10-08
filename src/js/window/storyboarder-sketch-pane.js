@@ -64,7 +64,8 @@ class StoryboarderSketchPane extends EventEmitter {
     this.sketchPane = new SketchPane({
       imageWidth: this.canvasSize[0],
       imageHeight: this.canvasSize[1],
-      backgroundColor: 0x333333
+      backgroundColor: 0x333333,
+      onWebGLContextLost: this.onWebGLContextLost
     })
 
     this.sketchPane.efficiencyMode = !enableHighQualityDrawingEngine
