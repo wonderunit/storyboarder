@@ -733,7 +733,7 @@ const loadBoardUI = async () => {
     store
   )
   storyboarderSketchPane.onWebGLContextLost = () => {
-    alert('An unexpected WebGL error ocurred and Storyboarder could not continue.')
+    alert('An unexpected WebGL error occurred and Storyboarder could not continue.')
     window.close()
   }
   await storyboarderSketchPane.load()
