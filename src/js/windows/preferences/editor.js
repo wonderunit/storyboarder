@@ -155,9 +155,11 @@ const render = () => {
   let licensedEl = document.querySelector('#licensed-container')
   if (licensedEl) {
     let watermarkLabelEl = document.querySelector('#watermarkFile_filename')
-    watermarkLabelEl.innerHTML = prefs.userWatermark && fs.existsSync(path.join(remote.app.getPath('userData'), 'watermark.png'))
-      ? prefs.userWatermark
-      : '(default)'
+    if (watermarkLabelEl) {
+      watermarkLabelEl.innerHTML = prefs.userWatermark && fs.existsSync(path.join(remote.app.getPath('userData'), 'watermark.png'))
+        ? prefs.userWatermark
+        : '(default)'
+    }
   }
 
   // track if anything has changed
