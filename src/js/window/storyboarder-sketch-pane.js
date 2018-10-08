@@ -1,3 +1,5 @@
+const paper = require('paper')
+
 const EventEmitter = require('events').EventEmitter
 
 const { ipcRenderer, remote } = require('electron')
@@ -7,6 +9,8 @@ const path = require('path')
 
 const { SketchPane } = require('alchemancy')
 const SketchPaneUtil = require('alchemancy').util
+
+const MarqueeStrategy = require('./storyboarder-sketch-pane/marquee-strategy')
 
 const LineMileageCounter = require('./line-mileage-counter')
 
@@ -36,6 +40,9 @@ class StoryboarderSketchPane extends EventEmitter {
     this.el = el
     this.canvasSize = canvasSize
     this.store = store
+
+    this.marqueePath = null
+    this.marqueeTransitionEvent = null
   }
 
   async load () {
@@ -168,7 +175,8 @@ class StoryboarderSketchPane extends EventEmitter {
       scaling: new ScalingStrategy(this),
       locked: new LockedStrategy(this),
       panning: new PanningStrategy(this),
-      lineDrawing: new LineDrawingStrategy(this)
+      lineDrawing: new LineDrawingStrategy(this),
+      marquee: new MarqueeStrategy(this)
     }
 
     this.store.dispatch({ type: 'TOOLBAR_MODE_SET', payload: 'drawing', meta: { scope: 'local' } })
@@ -323,6 +331,17 @@ class StoryboarderSketchPane extends EventEmitter {
           })
         }
       }
+    } else if (this.isCommandPressed('drawing:marquee-mode')) {
+      if (this.store.getState().toolbar.mode !== 'marquee') {
+          this.store.dispatch({
+            type: 'TOOLBAR_MODE_SET',
+            payload: 'marquee',
+            meta: { scope: 'local' }
+          })
+          if (this.store.getState().toolbar.mode === 'marquee') {
+            sfx.playEffect('metal')
+          }
+      }
     }
 
     if (this.getIsDrawingOrStabilizing()) {
@@ -340,6 +359,11 @@ class StoryboarderSketchPane extends EventEmitter {
   }
 
   onKeyUp (e) {
+    // HACK ignore any key up while in marquee selection mode
+    if (this.store.getState().toolbar.mode === 'marquee') {
+      return
+    }
+
     if ( !(this.isCommandPressed('drawing:scale-mode') || this.isCommandPressed('drawing:move-mode')) ) {
       // switch to default strategy (drawing)
       // attempt change
@@ -422,7 +446,7 @@ class StoryboarderSketchPane extends EventEmitter {
 
   // TODO rename to isDrawing, find/replace instances
   getIsDrawingOrStabilizing () {
-    return this.sketchPane.isDrawing()
+    return this.sketchPane.isDrawing() || this.store.getState().toolbar.modeStatus === 'busy'
     // return this.sketchPane.isDrawing || this.sketchPane.isStabilizing
   }
 

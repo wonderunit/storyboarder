@@ -12,6 +12,15 @@ const defaultKeyMap = {
   "drawing:straight-line": "Shift",
   "drawing:straight-line-snap": "Alt",
 
+  "drawing:marquee-mode": "l",
+  "drawing:marquee:straight-line": "Alt",
+  "drawing:marquee:cancel": "Escape",
+  "drawing:marquee:commit": "Enter",
+  "drawing:marquee:add": "Shift",
+  "drawing:marquee:subtract": "Alt",
+  "drawing:marquee:erase": "Backspace",
+  "drawing:marquee:fill": "f",
+
   "menu:file:open": "CommandOrControl+o",
   "menu:file:save": "CommandOrControl+s",
   "menu:file:save-as": "CommandOrControl+Shift+s",

@@ -1,7 +1,7 @@
 {
   "name": "storyboarder",
   "productName": "Storyboarder",
-  "version": "1.8.0",
+  "version": "1.8.1",
   "description": "The fastest way to storyboard.",
   "main": "src/js/main.js",
   "scripts": {
@@ -84,7 +84,7 @@
     }
   },
   "devDependencies": {
-    "electron": "2.0.8",
+    "electron": "3.0.2",
     "electron-builder": "20.28.4",
     "electron-mocha": "4.0.0",
     "electron-osx-sign": "^0.4.8",
@@ -96,7 +96,7 @@
   "dependencies": {
     "@ffmpeg-installer/ffmpeg": "1.0.13",
     "ag-psd": "^1.2.0",
-    "alchemancy": "github:wonderunit/alchemancy#v1.4.3",
+    "alchemancy": "github:wonderunit/alchemancy#v1.5.0",
     "archiver": "2.0.3",
     "caf": "7.0.4",
     "chokidar": "2.0.3",
@@ -120,6 +120,7 @@
     "moment": "2.19.3",
     "node-fetch": "2.1.2",
     "node-machine-id": "1.1.10",
+    "paper": "0.11.5",
     "pdfjs-dist": "2.0.550",
     "pdfkit": "^0.8.3",
     "plist": "2.1.0",

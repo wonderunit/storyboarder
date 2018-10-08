@@ -4577,6 +4577,8 @@ const resize = () => {
 }
 
 window.onkeydown = (e) => {
+  if (store.getState().toolbar.modeStatus === 'busy') return
+
   // TEMPORARY
   // key command to trigger registration window during early testing
   if (isCommandPressed('registration:open')) {
@@ -6329,7 +6331,14 @@ const showSignInWindow = () => {
     parent: remote.getCurrentWindow(),
     resizable: true,
     frame: false,
-    modal: true
+    modal: true,
+    webPreferences: {
+      webgl: true,
+      experimentalFeatures: true,
+      experimentalCanvasFeatures: true,
+      devTools: true,
+      plugins: true
+    } 
   })
   exportWebWindow.loadURL(`file://${__dirname}/../../upload.html`)
   exportWebWindow.once('ready-to-show', () => {
