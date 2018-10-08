@@ -12,7 +12,7 @@ const defaultKeyMap = {
   "drawing:straight-line": "Shift",
   "drawing:straight-line-snap": "Alt",
 
-  "drawing:marquee-mode": "m",
+  "drawing:marquee-mode": "l",
   "drawing:marquee:straight-line": "Alt",
   "drawing:marquee:cancel": "Escape",
   "drawing:marquee:commit": "Enter",
