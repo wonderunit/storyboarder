@@ -769,25 +769,32 @@ class OperationStrategy {
         this.context.emit('markDirty', indices)
 
       } else if (this.state.commitOperation === 'fill') {
+        let fillLayer = this.parent.findLayerByName('fill')
+
+        // all layer indexes _except_ for the fill layer
+        let filtered = indices.filter(n => n != fillLayer.index)
+        // associative array of layer index -> Sprite cutout
+        let sprites = this.context.sketchPane.selectedArea.copy(filtered)
+
+        // `fill` layer cutout sprite
         let state = this.context.store.getState()
         let color = getFillColor(state)
         let alpha = getFillAlpha(state)
         let texture = this.context.sketchPane.selectedArea.asFilledTexture(color, alpha)
-
         let sprite = new PIXI.Sprite(texture)
-        sprite.x = this.state.target.x
-        sprite.y = this.state.target.y
+        // add the `fill` layer cutout sprite back in
+        sprites[fillLayer.index] = sprite
 
-        let sprites = indices.reduce((prev, curr, n) => {
-          prev[curr] = sprite
-          return prev
-        }, {})
+        // set the position of all cutout sprites
+        sprites.forEach(sprite => {
+          sprite.x = this.state.target.x
+          sprite.y = this.state.target.y
+        })
 
         this.context.emit('addToUndoStack', indices)
         this.context.sketchPane.selectedArea.erase(indices)
         this.context.sketchPane.selectedArea.paste(indices, sprites)
         this.context.emit('markDirty', indices)
-
       }
     }
 
