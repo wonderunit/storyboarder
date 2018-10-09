@@ -703,17 +703,35 @@ class OperationStrategy {
     }
 
     if (this.context.isCommandPressed('drawing:marquee:fill')) {
-      // we'll be doing a fill
+      // setup a live preview of the fill
+
+      // we'll be doing a fill when we commit
       this.state.commitOperation = 'fill'
-      // live preview
-      // fill the cutout contents with color
+
+      // clear existing cut sprite
+      this.cutSprite.texture.destroy()
+
+      let fillLayer = this.parent.findLayerByName('fill')
+
+      let indices = this.context.visibleLayersIndices
+
+      // all layer indexes _except_ for the fill layer
+      let filtered = indices.filter(n => n != fillLayer.index)
+      // associative array of layer index -> Sprite cutout
+      let sprites = this.context.sketchPane.selectedArea.copy(filtered)
+
+      // `fill` layer cutout sprite
       let state = this.context.store.getState()
       let color = getFillColor(state)
       let alpha = getFillAlpha(state)
-      this.cutSprite.texture.destroy()
-      this.cutSprite.texture = this.context.sketchPane.selectedArea.asFilledTexture(color, 1.0)
-      this.cutSprite.alpha = alpha // TODO fix alpha, lighter than actual
-      return
+      let texture = this.context.sketchPane.selectedArea.asFilledTexture(color, alpha)
+      let sprite = new PIXI.Sprite(texture)
+      // add the `fill` layer cutout sprite back in
+      sprites[fillLayer.index] = sprite
+
+      for (let index of indices) {
+        this.cutSprite.addChild(sprites[index])
+      }
     }
   }
 
@@ -725,6 +743,7 @@ class OperationStrategy {
     this.layer.sprite.removeChild(this.backgroundMatte)
     this.layer.sprite.removeChild(this.flattenedLayerSprite)
     this.layer.sprite.removeChild(this.outlineSprite)
+    this.cutSprite.removeChildren()
     this.layer.sprite.removeChild(this.cutSprite)
     this.layer.clear()
 
