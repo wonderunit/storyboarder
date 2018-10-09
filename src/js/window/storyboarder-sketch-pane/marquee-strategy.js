@@ -48,6 +48,10 @@ class MarqueeStrategy {
       this.strategy._onPointerDown(event)
     }
   }
+
+  findLayerByName (name) {
+    return this.context.sketchPane.layers.findByName(name)
+  }
 }
 
 class SelectionStrategy {
@@ -373,7 +377,8 @@ class SelectionStrategy {
 
     if (this.context.isCommandPressed('drawing:marquee:fill')) {
       if (this.state.complete && this.parent.marqueePath) {
-        let indices = this.context.visibleLayersIndices
+        // let indices = this.context.visibleLayersIndices
+        let indices = [this.parent.findLayerByName('fill').index]
         let state = this.context.store.getState()
         let color = getFillColor(state)
         let alpha = getFillAlpha(state)
