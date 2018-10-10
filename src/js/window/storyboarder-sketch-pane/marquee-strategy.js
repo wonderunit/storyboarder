@@ -72,6 +72,7 @@ class SelectionStrategy {
 
     this.paperScope = paper.setup(this.offscreenCanvas)
     this.paperScope.view.setAutoUpdate(false)
+    this.paperScope.view.remove()
   }
 
   startup () {
