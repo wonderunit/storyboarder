@@ -41,7 +41,8 @@
       "icon": "build/icon.icns"
     },
     "win": {
-      "icon": "build/icon.ico"
+      "icon": "build/icon.ico",
+      "timeStampServer": "http://timestamp.comodoca.com/authenticode"
     },
     "dmg": {
       "background": "build/background.png",
