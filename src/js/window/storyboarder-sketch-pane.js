@@ -332,17 +332,6 @@ class StoryboarderSketchPane extends EventEmitter {
           })
         }
       }
-    } else if (this.isCommandPressed('drawing:marquee-mode')) {
-      if (this.store.getState().toolbar.mode !== 'marquee') {
-          this.store.dispatch({
-            type: 'TOOLBAR_MODE_SET',
-            payload: 'marquee',
-            meta: { scope: 'local' }
-          })
-          if (this.store.getState().toolbar.mode === 'marquee') {
-            sfx.playEffect('metal')
-          }
-      }
     }
 
     if (this.getIsDrawingOrStabilizing()) {

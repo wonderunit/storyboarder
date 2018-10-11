@@ -4615,6 +4615,19 @@ window.onkeydown = (e) => {
   if (!textInputMode) {
     // console.log('window.onkeydown', e)
 
+    if (isCommandPressed('drawing:marquee-mode')) {
+      if (store.getState().toolbar.mode !== 'marquee') {
+          store.dispatch({
+            type: 'TOOLBAR_MODE_SET',
+            payload: 'marquee',
+            meta: { scope: 'local' }
+          })
+          if (store.getState().toolbar.mode === 'marquee') {
+            sfx.playEffect('metal')
+          }
+      }
+    }
+
     if (isCommandPressed('menu:edit:copy')) {
       e.preventDefault()
       copyBoards()
