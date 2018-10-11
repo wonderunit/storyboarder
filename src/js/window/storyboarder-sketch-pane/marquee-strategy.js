@@ -711,7 +711,9 @@ class OperationStrategy {
       this.state.commitOperation = 'fill'
 
       // clear existing cut sprite
+      this.cutSprite.removeChildren()
       this.cutSprite.texture.destroy()
+      this.cutSprite.texture = this.context.sketchPane.selectedArea.asFilledTexture(0xffffff, 0.0)
 
       let fillLayer = this.parent.findLayerByName('fill')
 
