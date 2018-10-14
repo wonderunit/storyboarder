@@ -1,7 +1,7 @@
 {
   "name": "storyboarder",
   "productName": "Storyboarder",
-  "version": "1.9.0",
+  "version": "1.9.1",
   "description": "The fastest way to storyboard.",
   "main": "src/js/main.js",
   "scripts": {
@@ -85,7 +85,7 @@
     }
   },
   "devDependencies": {
-    "electron": "3.0.2",
+    "electron": "2.0.11",
     "electron-builder": "20.28.4",
     "electron-mocha": "4.0.0",
     "electron-osx-sign": "^0.4.8",
