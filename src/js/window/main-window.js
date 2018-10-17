@@ -743,6 +743,13 @@ const loadBoardUI = async () => {
     // storyboarderSketchPane.resize()
   })
 
+  // fix to prevent pen touch events from being interpreted as scroll commands
+  // see: https://github.com/wonderunit/storyboarder/issues/1405
+  window.addEventListener('touchstart', event => event.preventDefault(), { passive: false })
+  window.addEventListener('touchmove', event => event.preventDefault(), { passive: false })
+  window.addEventListener('touchend', event => event.preventDefault(), { passive: false })
+  window.addEventListener('touchcancel', event => event.preventDefault(), { passive: false })
+
   window.ondragover = () => { return false }
   window.ondragleave = () => { return false }
   window.ondragend = () => { return false }
