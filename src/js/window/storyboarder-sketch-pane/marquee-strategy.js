@@ -713,7 +713,7 @@ class OperationStrategy {
       // clear existing cut sprite
       this.cutSprite.removeChildren()
       this.cutSprite.texture.destroy()
-      this.cutSprite.texture = this.context.sketchPane.selectedArea.asFilledTexture(0xffffff, 0.0)
+      this.cutSprite.texture = PIXI.Texture.EMPTY
 
       let fillLayer = this.parent.findLayerByName('fill')
 
