@@ -1,5 +1,6 @@
 const paper = require('paper')
 const SketchPaneUtil = require('alchemancy').util
+const { clipboard } = require('electron')
 
 const constrainPoint = (point, rectangle) => {
   // if paper.Point (and not paper.Segment)
@@ -53,6 +54,44 @@ class MarqueeStrategy {
 
   findLayerByName (name) {
     return this.context.sketchPane.layers.findByName(name)
+  }
+
+  copyToClipboard (marqueePath, spritesByLayerId) {
+    // flattened image of marquee art
+    let image
+
+    // marquee data, including path and bounds
+    let marquee = {
+      path: JSON.parse(marqueePath.exportJSON()),
+    }
+
+    // data for each marquee layer
+    let width = marqueePath.bounds.width
+    let height = marqueePath.bounds.height
+
+    let imageDataByLayerId = spritesByLayerId.reduce(
+      (coll, sprite, index) => {
+        let pixels = this.context.sketchPane.app.renderer.plugins.extract.pixels(sprite.texture)
+        SketchPaneUtil.arrayPostDivide(pixels)
+        let canvas = SketchPaneUtil.pixelsToCanvas(pixels, width, height)
+        coll[this.context.sketchPane.layers[index].name] = canvas.toDataURL()
+        return coll
+      },
+      {}
+    )
+
+    clipboard.clear()
+    clipboard.write({
+      image,
+      text: JSON.stringify(
+        {
+          marquee,
+          imageDataByLayerId
+        },
+        null,
+        2
+      )
+    })
   }
 }
 
