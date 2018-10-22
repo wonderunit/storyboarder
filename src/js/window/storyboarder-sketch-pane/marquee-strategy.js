@@ -1,6 +1,7 @@
 const paper = require('paper')
 const SketchPaneUtil = require('alchemancy').util
 const { clipboard } = require('electron')
+const notifications = require('../notifications')
 
 const constrainPoint = (point, rectangle) => {
   // if paper.Point (and not paper.Segment)
@@ -92,11 +93,14 @@ class MarqueeStrategy {
         2
       )
     })
+
+    notifications.notify({ message: 'Copied selection' })
   }
 
   pasteFromClipboard (contents) {
     this.setStrategy('operation')
     this.strategy.fromClipboard(contents)
+    notifications.notify({ message: 'Pasted selection' })
   }
 
 }
