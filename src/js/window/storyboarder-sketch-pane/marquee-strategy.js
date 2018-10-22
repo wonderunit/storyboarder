@@ -29,12 +29,10 @@ class MarqueeStrategy {
   }
 
   startup () {
-    console.log('MarqueeStrategy#startup')
     this.setStrategy('selection')
   }
 
   shutdown () {
-    console.log('MarqueeStrategy#shutdown')
     if (this.strategy) {
       this.strategy.shutdown()
       this.strategy = null
@@ -102,7 +100,6 @@ class MarqueeStrategy {
     this.strategy.fromClipboard(contents)
     notifications.notify({ message: 'Pasted selection' })
   }
-
 }
 
 class SelectionStrategy {
@@ -588,8 +585,6 @@ class OperationStrategy {
   }
 
   startup () {
-    console.log('OperationStrategy#startup')
-
     document.addEventListener('pointerdown', this._onPointerDown)
     document.addEventListener('pointermove', this._onPointerMove)
     document.addEventListener('pointerup', this._onPointerUp)
