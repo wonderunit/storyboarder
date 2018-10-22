@@ -59,7 +59,7 @@ const init = () => {
           })
 
           // fail gracelessly if we can't update properly
-          autoUpdater.on('error', (ev, err) => {
+          autoUpdater.on('error', (err) => {
             console.error(err)
             dialog.showMessageBox(null, { message: 'Update failed. Quitting.\n' + err })
             win.close()
@@ -75,9 +75,9 @@ const init = () => {
   // autoUpdater.on('update-not-available', (ev, info) => {
   //   dialog.showMessageBox(null, { message: 'Update not available.' })
   // })
-  autoUpdater.on('error', (ev, err) => {
-    console.error('Error in auto-updater.')
-    // dialog.showMessageBox(null, { message: 'Error in auto-updater.' })
+  autoUpdater.on('error', (err) => {
+    console.error(err)
+    // dialog.showMessageBox(null, { message: 'Error in auto-updater.\n' + err })
   })
 
   autoUpdater.autoDownload = false
