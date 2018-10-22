@@ -93,6 +93,10 @@ class MarqueeStrategy {
       )
     })
   }
+
+  pasteFromClipboard (contents) {
+  }
+
 }
 
 class SelectionStrategy {

@@ -296,6 +296,12 @@ class StoryboarderSketchPane extends EventEmitter {
     )
   }
 
+  pasteFromClipboard (clipboardContents) {
+    if (this.strategy.pasteFromClipboard) {
+      this.strategy.pasteFromClipboard(clipboardContents)
+    }
+  }
+
   onKeyDown (e) {
     if (this.isCommandPressed('drawing:scale-mode')) {
       // switch to scale strategy
