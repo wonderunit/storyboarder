@@ -95,6 +95,8 @@ class MarqueeStrategy {
   }
 
   pasteFromClipboard (contents) {
+    this.setStrategy('operation')
+    this.strategy.fromClipboard(contents)
   }
 
 }
@@ -356,6 +358,7 @@ class SelectionStrategy {
     })
 
     this.parent.setStrategy('operation')
+    this.parent.strategy.fromSelection()
   }
 
   _addPointFromEvent (event) {
@@ -583,16 +586,76 @@ class OperationStrategy {
   startup () {
     console.log('OperationStrategy#startup')
 
+    document.addEventListener('pointerdown', this._onPointerDown)
+    document.addEventListener('pointermove', this._onPointerMove)
+    document.addEventListener('pointerup', this._onPointerUp)
+    window.addEventListener('keydown', this._onKeyDown)
+    window.addEventListener('keyup', this._onKeyUp)
+
     this.layer = this.context.sketchPane.layers.findByName('composite')
     this.backgroundMatte = null
 
     this.context.store.dispatch({ type: 'TOOLBAR_MODE_STATUS_SET', payload: 'busy', meta: { scope: 'local' } })
+  }
 
+  fromClipboard (contents) {
+    try {
+      this.parent.marqueePath = new paper.Path().importJSON(contents.marquee.path)
+  
+      this.state = {
+        marqueePath: this.parent.marqueePath.clone(),
+        moved: false,
+        done: false,
+        commitOperation: 'paste'
+      }
+      this.state.target = {
+        x: this.state.marqueePath.bounds.x,
+        y: this.state.marqueePath.bounds.y
+      }
+      this.context.sketchPane.selectedArea.set(this.state.marqueePath)
+      // delete ALL cached canvas textures to ensure canvas is re-rendered
+      PIXI.utils.clearTextureCache()
+  
+      this.cutSprite = new PIXI.Sprite(PIXI.Texture.EMPTY)
+  
+      Promise.all(
+        Object.entries(contents.imageDataByLayerId).map(([name, data]) =>
+          new Promise((resolve, reject) => {
+            let texture = PIXI.Texture.fromImage(data)
+            texture.baseTexture.once('loaded', () => {
+              resolve({ name, texture })
+            })
+            // TODO does this need to be cleaned up?
+            texture.baseTexture.once('error', () => {
+              reject(err)
+            })
+          })
+        )
+      ).then(pairs => {
+        this.cutSprite = new PIXI.Sprite(PIXI.Texture.EMPTY)
+        for (let { name, texture } of pairs) {
+          let sprite = new PIXI.Sprite(texture)
+          sprite.name = name
+          this.cutSprite.addChild(sprite)
+        }
+  
+        this.setupOperation()
+      }).catch(err => {
+        console.error(err)
+        throw err
+      })
+    } catch (err) {
+      console.error(err)
+      alert('Whoops! Couldn’t paste.')
+    }
+  }
+
+  fromSelection () {
     this.state = {
       marqueePath: this.parent.marqueePath.clone(),
       moved: false,
       done: false,
-      commitOperation: 'move' // move, fill
+      commitOperation: 'move' // move, fill, paste
     }
     this.state.target = {
       x: this.state.marqueePath.bounds.x,
@@ -604,8 +667,20 @@ class OperationStrategy {
     // delete ALL cached canvas textures to ensure canvas is re-rendered
     PIXI.utils.clearTextureCache()
 
-    this.outlineSprite = this.context.sketchPane.selectedArea.asOutlineSprite()
     this.cutSprite = this.context.sketchPane.selectedArea.asSprite(this.context.visibleLayersIndices)
+
+    this.setupOperation()
+
+    let maskSprite = this.context.sketchPane.selectedArea.asMaskSprite(true)
+    this.flattenedLayerSprite.addChild(maskSprite)
+    this.flattenedLayerSprite.mask = maskSprite
+
+    // HACK force the first pointer down
+    this._onPointerDown(this.parent.marqueeTransitionEvent)
+  }
+
+  setupOperation () {
+    this.outlineSprite = this.context.sketchPane.selectedArea.asOutlineSprite()
     this.areaPolygons = this.context.sketchPane.selectedArea.asPolygons(false)
 
     // TODO should this move to a SelectedArea setup/prepare method?
@@ -617,7 +692,6 @@ class OperationStrategy {
     this.backgroundMatte.drawRect(0, 0, this.context.sketchPane.width, this.context.sketchPane.height)
     this.layer.sprite.addChild(this.backgroundMatte)
 
-    let maskSprite = this.context.sketchPane.selectedArea.asMaskSprite(true)
     this.flattenedLayerSprite = new PIXI.Sprite(
       PIXI.Texture.fromCanvas(
         this.context.sketchPane.layers.asFlattenedCanvas(
@@ -627,8 +701,6 @@ class OperationStrategy {
         )
       )
     )
-    this.flattenedLayerSprite.addChild(maskSprite)
-    this.flattenedLayerSprite.mask = maskSprite
 
     this.layer.sprite.addChild(this.flattenedLayerSprite)
 
@@ -640,15 +712,6 @@ class OperationStrategy {
 
     // positioning
     this.draw()
-    
-    document.addEventListener('pointerdown', this._onPointerDown)
-    document.addEventListener('pointermove', this._onPointerMove)
-    document.addEventListener('pointerup', this._onPointerUp)
-    window.addEventListener('keydown', this._onKeyDown)
-    window.addEventListener('keyup', this._onKeyUp)
-
-    // HACK force the first pointer down
-    this._onPointerDown(this.parent.marqueeTransitionEvent)
 
     this.context.sketchPane.cursor.setEnabled(false)
     this.context.sketchPane.app.view.style.cursor = 'auto'
@@ -840,6 +903,31 @@ class OperationStrategy {
           sprite.y = this.state.target.y
         })
         this.context.sketchPane.selectedArea.erase(indices)
+        this.context.sketchPane.selectedArea.paste(indices, sprites)
+        this.context.emit('markDirty', indices)
+
+      } else if (this.state.commitOperation === 'paste') {
+        this.context.emit('addToUndoStack', indices)
+
+        // look for layers in the clipboard that match layers we have by id
+        // add any matches to the paste-able sprites list
+        let indexes = []
+        let sprites = []
+        for (let sprite of this.cutSprite.children) {
+          let layer = this.context.sketchPane.layers.findByName(sprite.name)
+          if (layer) {
+            indexes.push(layer.index)
+            sprites[layer.index] = sprite
+          } else {
+            console.log('ignoring layer with name', sprite.name)
+          }
+        }
+        // move the sprites
+        sprites.forEach(sprite => {
+          sprite.x = this.state.target.x
+          sprite.y = this.state.target.y
+        })
+
         this.context.sketchPane.selectedArea.paste(indices, sprites)
         this.context.emit('markDirty', indices)
 
