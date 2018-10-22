@@ -660,8 +660,8 @@ class OperationStrategy {
 
     if (this.state.down) {
       this.state.position = point
-      this.state.target.x = this.state.spriteOrigin.x + (this.state.position.x - this.state.origin.x)
-      this.state.target.y = this.state.spriteOrigin.y + (this.state.position.y - this.state.origin.y)
+      this.state.target.x = Math.round(this.state.spriteOrigin.x + (this.state.position.x - this.state.origin.x))
+      this.state.target.y = Math.round(this.state.spriteOrigin.y + (this.state.position.y - this.state.origin.y))
 
       this.state.moved = (
         this.state.target.x != this.state.marqueePath.bounds.x ||
