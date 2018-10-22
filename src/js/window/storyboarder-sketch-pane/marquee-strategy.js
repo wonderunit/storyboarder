@@ -2,6 +2,8 @@ const paper = require('paper')
 const SketchPaneUtil = require('alchemancy').util
 
 const constrainPoint = (point, rectangle) => {
+  // if paper.Point (and not paper.Segment)
+  if (point.round) point = point.round()
   point = paper.Point.max(point, rectangle.topLeft)
   point = paper.Point.min(point, rectangle.bottomRight)
   return point
