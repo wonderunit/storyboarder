@@ -433,6 +433,18 @@ class SelectionStrategy {
         this.deselect()
       }
     }
+
+    // if (this.context.isCommandPressed('drawing:marquee:copy')) {
+    if (event.key === 'c') {
+      if (this.parent.marqueePath) {
+        this.context.sketchPane.selectedArea.set(this.parent.marqueePath)
+        this.parent.copyToClipboard(
+          this.parent.marqueePath,
+          this.context.sketchPane.selectedArea.copy(this.context.visibleLayersIndices)
+        )
+      }
+      return
+    }
   }
 
   _onKeyUp (event) {
