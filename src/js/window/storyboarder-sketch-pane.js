@@ -297,7 +297,7 @@ class StoryboarderSketchPane extends EventEmitter {
   }
 
   pasteFromClipboard (clipboardContents) {
-    if (this.strategy.pasteFromClipboard) {
+    if (this.strategy instanceof MarqueeStrategy && this.strategy.pasteFromClipboard) {
       this.strategy.pasteFromClipboard(clipboardContents)
     }
   }

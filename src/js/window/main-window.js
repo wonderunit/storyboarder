@@ -5634,13 +5634,11 @@ let pasteBoards = async () => {
           payload: 'marquee',
           meta: { scope: 'local' }
         })
-
         if (store.getState().toolbar.mode === 'marquee') {
           sfx.playEffect('metal')
-
-          storyboarderSketchPane.pasteFromClipboard(pasted)
         }
     }
+    storyboarderSketchPane.pasteFromClipboard(pasted)
 
   } else {
     notifications.notify({ message: "There's nothing in the clipboard that I can paste. Are you sure you copied it right?", timing: 8 })
