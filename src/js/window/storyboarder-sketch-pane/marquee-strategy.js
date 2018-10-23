@@ -396,7 +396,14 @@ class SelectionStrategy {
 
   _onKeyDown (event) {
     // TODO key bindings
+    //      will require re-working the keyboard command interpreter for macOS
+    //      due to the cmd key bug
+    // e.g.: if (this.context.isCommandPressed('drawing:marquee:copy')) {
+    //
+    // HACK hardcodes key handler
     if (
+      // cut
+      (event.key === 'x' && (event.metaKey || event.ctrlKey)) ||
       // copy
       (event.key === 'c' && (event.metaKey || event.ctrlKey)) ||
       // paste
@@ -449,27 +456,6 @@ class SelectionStrategy {
         this.context.emit('markDirty', indices)
         this.deselect()
       }
-    }
-
-    // TODO key bindings
-    // TODO make this assignable to 'drawing:marquee:copy'
-    //      will require re-working the keyboard command interpreter for macOS
-    //      due to the cmd key bug
-    // if (this.context.isCommandPressed('drawing:marquee:copy')) {
-    //
-    // HACK hardcodes key handler to accept either Cmd+C or Ctrl+C
-    //
-    if (event.key === 'x' && (event.metaKey || event.ctrlKey)) {
-      if (this.parent.marqueePath) {
-        this.context.sketchPane.selectedArea.set(this.parent.marqueePath)
-        this.parent.copyToClipboard(
-          this.parent.marqueePath,
-          this.context.sketchPane.selectedArea.copy(this.context.visibleLayersIndices)
-        )
-        this.context.sketchPane.selectedArea.erase(this.context.visibleLayersIndices)
-        notifications.notify({ message: 'Cut selection', timing: 5 })
-      }
-      return
     }
   }
 
