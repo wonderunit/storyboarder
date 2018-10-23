@@ -397,7 +397,13 @@ class SelectionStrategy {
   }
 
   _onKeyDown (event) {
-    event.preventDefault()
+    // TODO key bindings
+    if (event.key === 'v' && (event.metaKey || event.ctrlKey)) {
+      // allow paste command through
+      return
+    } else {
+      event.preventDefault()
+    }
 
     if (this.state.complete) {
       if (this.context.isCommandPressed('drawing:marquee:add')) {
@@ -442,6 +448,7 @@ class SelectionStrategy {
       }
     }
 
+    // TODO key bindings
     // TODO make this assignable to 'drawing:marquee:copy'
     //      will require re-working the keyboard command interpreter for macOS
     //      due to the cmd key bug
@@ -807,7 +814,15 @@ class OperationStrategy {
   }
 
   _onKeyDown (event) {
-    event.preventDefault()
+    // TODO key bindings
+    if (event.key === 'v' && (event.metaKey || event.ctrlKey)) {
+      // commit first
+      this.commit()
+      // allow paste command through
+      return
+    } else {
+      event.preventDefault()
+    }
 
     if (this.context.isCommandPressed('drawing:marquee:cancel')) {
       this.cancel()
