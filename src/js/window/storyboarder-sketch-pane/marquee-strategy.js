@@ -442,8 +442,14 @@ class SelectionStrategy {
       }
     }
 
+    // TODO make this assignable to 'drawing:marquee:copy'
+    //      will require re-working the keyboard command interpreter for macOS
+    //      due to the cmd key bug
     // if (this.context.isCommandPressed('drawing:marquee:copy')) {
-    if (event.key === 'c') {
+    //
+    // HACK hardcodes key handler to accept either Cmd+C or Ctrl+C
+    //
+    if (event.key === 'c' && (event.metaKey || event.ctrlKey)) {
       if (this.parent.marqueePath) {
         this.context.sketchPane.selectedArea.set(this.parent.marqueePath)
         this.parent.copyToClipboard(
