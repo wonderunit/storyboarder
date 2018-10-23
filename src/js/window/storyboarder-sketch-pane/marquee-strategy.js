@@ -91,8 +91,6 @@ class MarqueeStrategy {
         2
       )
     })
-
-    notifications.notify({ message: 'Copied selection', timing: 5 })
   }
 
   pasteFromClipboard (contents) {
@@ -463,6 +461,19 @@ class SelectionStrategy {
           this.parent.marqueePath,
           this.context.sketchPane.selectedArea.copy(this.context.visibleLayersIndices)
         )
+        notifications.notify({ message: 'Copied selection', timing: 5 })
+      }
+      return
+    }
+    if (event.key === 'x' && (event.metaKey || event.ctrlKey)) {
+      if (this.parent.marqueePath) {
+        this.context.sketchPane.selectedArea.set(this.parent.marqueePath)
+        this.parent.copyToClipboard(
+          this.parent.marqueePath,
+          this.context.sketchPane.selectedArea.copy(this.context.visibleLayersIndices)
+        )
+        this.context.sketchPane.selectedArea.erase(this.context.visibleLayersIndices)
+        notifications.notify({ message: 'Cut selection', timing: 5 })
       }
       return
     }
