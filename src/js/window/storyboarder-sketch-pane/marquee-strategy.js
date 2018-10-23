@@ -903,7 +903,12 @@ class OperationStrategy {
   commit () {
     this.state.done = true
 
-    if (this.state.moved) {
+    if (
+      // have we moved the artwork at all?
+      this.state.moved ||
+      // or, was it pasted, so we have to operate even if not moved?
+      this.state.commitOperation === 'paste'
+    ) {
       let indices = this.context.visibleLayersIndices
 
       if (this.state.commitOperation === 'move') {
