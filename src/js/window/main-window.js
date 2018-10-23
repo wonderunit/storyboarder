@@ -4647,13 +4647,21 @@ window.onkeydown = (e) => {
         }))
         .catch(err => {})
 
-    } else if (isCommandPressed('menu:edit:cut')) {
-      e.preventDefault()
-      copyBoards()
-        .then(() => {
-          deleteBoards()
-          notifications.notify({ message: 'Cut board(s) to clipboard.', timing: 5 })
-        }).catch(err => {})
+    // } else if (isCommandPressed('menu:edit:cut')) {
+    //   e.preventDefault()
+    // 
+    //   cutBoards()
+    //     .then(() => {
+    //       notifications.notify({
+    //         message: `Cut ${
+    //           store.getState().toolbar.mode === 'marquee' ? 'selection' : 'boards(s)'
+    //         } to clipboard.`,
+    //         timing: 5
+    //       })
+    //     })
+    //     .catch(err => {
+    //       console.warn(err)
+    //     })
 
     } else if (isCommandPressed('menu:edit:paste')) {
       e.preventDefault()
@@ -5136,6 +5144,39 @@ ipcRenderer.on('redo', (e, arg) => {
   }
 })
 
+ipcRenderer.on('cut', event => {
+  if (remote.getCurrentWindow().webContents.isDevToolsFocused()) {
+    remote.getCurrentWindow().webContents.devToolsWebContents.executeJavaScript(
+      `document.execCommand('cut')`
+    )
+    return
+  }
+
+  if (!textInputMode && remote.getCurrentWindow().isFocused()) {
+    cutBoards()
+      .then(() => {
+        notifications.notify({
+          message: `Cut ${
+            store.getState().toolbar.mode === 'marquee' ? 'selection' : 'boards(s)'
+          } to clipboard.`,
+          timing: 5
+        })
+      })
+      .catch(err => {
+        console.warn(err)
+      })
+  } else {
+    // find the focused window (which may be main-window)
+    for (let w of remote.BrowserWindow.getAllWindows()) {
+      if (w.isFocused()) {
+        // console.log('copy to clipboard from window', w.id)
+        w.webContents.cut()
+        return
+      }
+    }
+  }
+})
+
 ipcRenderer.on('copy', event => {
   if (remote.getCurrentWindow().webContents.isDevToolsFocused()) {
     remote.getCurrentWindow().webContents.devToolsWebContents.executeJavaScript(
@@ -5281,6 +5322,15 @@ const importImage = async imageDataURL => {
  * of all visible layers as an 'image' to the clipboard.
  *
  */
+
+const cutBoards = async () => {
+  if (store.getState().toolbar.mode === 'marquee') {
+    storyboarderSketchPane.cutToClipboard()
+  } else {
+    await copyBoards()
+    await deleteBoards()
+  }
+}
  
 // TODO cancel token
 let copyBoards = async () => {
