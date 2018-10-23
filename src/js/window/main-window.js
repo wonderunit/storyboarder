@@ -4025,7 +4025,9 @@ let renderThumbnailDrawer = () => {
     contextMenu.on('copy', () => {
       copyBoards()
         .then(() => notifications.notify({
-          message: 'Copied board(s) to clipboard.', timing: 5
+          message: `Copied ${
+            store.getState().toolbar.mode === 'marquee' ? 'selection' : 'boards(s)'
+          } to clipboard.`, timing: 5
         }))
         .catch(err => {})
     })
@@ -4639,7 +4641,9 @@ window.onkeydown = (e) => {
       e.preventDefault()
       copyBoards()
         .then(() => notifications.notify({
-          message: 'Copied board(s) to clipboard.', timing: 5
+          message: `Copied ${
+            store.getState().toolbar.mode === 'marquee' ? 'selection' : 'boards(s)'
+          } to clipboard.`, timing: 5
         }))
         .catch(err => {})
 
@@ -5144,7 +5148,9 @@ ipcRenderer.on('copy', event => {
     // console.log('copy boards')
     copyBoards()
       .then(() => notifications.notify({
-        message: 'Copied board(s) to clipboard.', timing: 5
+        message: `Copied ${
+          store.getState().toolbar.mode === 'marquee' ? 'selection' : 'boards(s)'
+        } to clipboard.`, timing: 5
       }))
       .catch(err => {
         console.error(err)
@@ -5279,6 +5285,11 @@ const importImage = async imageDataURL => {
 // TODO cancel token
 let copyBoards = async () => {
   if (textInputMode) return // ignore copy command in text input mode
+
+  if (store.getState().toolbar.mode === 'marquee') {
+    storyboarderSketchPane.copyToClipboard()
+    return
+  }
 
   try {
     // list the boards, using a copy of the selection indices set to determine order

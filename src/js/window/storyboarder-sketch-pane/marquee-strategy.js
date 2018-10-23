@@ -396,8 +396,13 @@ class SelectionStrategy {
 
   _onKeyDown (event) {
     // TODO key bindings
-    if (event.key === 'v' && (event.metaKey || event.ctrlKey)) {
-      // allow paste command through
+    if (
+      // copy
+      (event.key === 'c' && (event.metaKey || event.ctrlKey)) ||
+      // paste
+      (event.key === 'v' && (event.metaKey || event.ctrlKey))
+    ) {
+      // allow command through
       return
     } else {
       event.preventDefault()
@@ -454,17 +459,6 @@ class SelectionStrategy {
     //
     // HACK hardcodes key handler to accept either Cmd+C or Ctrl+C
     //
-    if (event.key === 'c' && (event.metaKey || event.ctrlKey)) {
-      if (this.parent.marqueePath) {
-        this.context.sketchPane.selectedArea.set(this.parent.marqueePath)
-        this.parent.copyToClipboard(
-          this.parent.marqueePath,
-          this.context.sketchPane.selectedArea.copy(this.context.visibleLayersIndices)
-        )
-        notifications.notify({ message: 'Copied selection', timing: 5 })
-      }
-      return
-    }
     if (event.key === 'x' && (event.metaKey || event.ctrlKey)) {
       if (this.parent.marqueePath) {
         this.context.sketchPane.selectedArea.set(this.parent.marqueePath)

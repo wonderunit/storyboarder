@@ -296,6 +296,15 @@ class StoryboarderSketchPane extends EventEmitter {
     )
   }
 
+  copyToClipboard () {
+    if (this.strategy instanceof MarqueeStrategy && this.strategy.marqueePath) {
+      this.sketchPane.selectedArea.set(this.strategy.marqueePath)
+      this.strategy.copyToClipboard(
+        this.strategy.marqueePath,
+        this.sketchPane.selectedArea.copy(this.visibleLayersIndices)
+      )
+    }
+  }
   pasteFromClipboard (clipboardContents) {
     if (this.strategy instanceof MarqueeStrategy && this.strategy.pasteFromClipboard) {
       this.strategy.pasteFromClipboard(clipboardContents)
