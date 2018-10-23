@@ -92,13 +92,13 @@ class MarqueeStrategy {
       )
     })
 
-    notifications.notify({ message: 'Copied selection' })
+    notifications.notify({ message: 'Copied selection', timing: 5 })
   }
 
   pasteFromClipboard (contents) {
     this.setStrategy('operation')
     this.strategy.fromClipboard(contents)
-    notifications.notify({ message: 'Pasted selection' })
+    notifications.notify({ message: 'Pasted selection', timing: 5 })
   }
 }
 
