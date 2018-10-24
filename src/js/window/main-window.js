@@ -5169,7 +5169,7 @@ ipcRenderer.on('cut', event => {
     // find the focused window (which may be main-window)
     for (let w of remote.BrowserWindow.getAllWindows()) {
       if (w.isFocused()) {
-        // console.log('copy to clipboard from window', w.id)
+        // console.log('cut to clipboard from window', w.id)
         w.webContents.cut()
         return
       }
