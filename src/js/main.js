@@ -508,6 +508,13 @@ let importImagesDialogue = (shouldReplace = false) => {
       ],
       properties: [
         "openFile",
+        ...(
+          os.platform() === 'darwin'
+            // macOS can select a folder
+            ? ["openDirectory"]
+            // ... Windows and Linux can’t
+            : []
+        ),
         "multiSelections"
       ]
     },
