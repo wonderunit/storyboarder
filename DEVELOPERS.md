@@ -92,7 +92,18 @@ repo: storyboarder
 provider: github
 ```
 
-... then decrement the current version in `package.json`. You will be notified that the app is out-of-date (although in dev mode, when unsigned, Squirrel.Mac will throw `Error: Could not get code signature for running application`)
+... then change any `isDev` guards around `autoUpdater` in `main.js`, like so:
+
+```diff
+- if (!isDev) autoUpdater.init()
++ autoUpdater.init()
+```
+
+... and finally, decrement the current version in `package.json`.
+
+When you run the app, you will be notified that the app is out-of-date (although in dev mode, when unsigned, Squirrel.Mac will throw `Error: Could not get code signature for running application`)
+
+Don’t commit the above changes, they're for testing only.
 
 ## Publishing
 
