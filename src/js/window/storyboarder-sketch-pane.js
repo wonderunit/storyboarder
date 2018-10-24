@@ -297,7 +297,7 @@ class StoryboarderSketchPane extends EventEmitter {
   }
 
   cutToClipboard () {
-    if (this.strategy.marqueePath) {
+    if (this.strategy instanceof MarqueeStrategy && this.strategy.marqueePath) {
       this.copyToClipboard()
       this.sketchPane.selectedArea.erase(this.visibleLayersIndices)
     }
