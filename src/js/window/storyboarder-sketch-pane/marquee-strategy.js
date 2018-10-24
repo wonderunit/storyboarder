@@ -55,10 +55,7 @@ class MarqueeStrategy {
     return this.context.sketchPane.layers.findByName(name)
   }
 
-  copyToClipboard (marqueePath, spritesByLayerId) {
-    // flattened image of marquee art
-    let image
-
+  copyToClipboard (marqueePath, image, spritesByLayerId) {
     // marquee data, including path and bounds
     let marquee = {
       path: JSON.parse(marqueePath.exportJSON()),

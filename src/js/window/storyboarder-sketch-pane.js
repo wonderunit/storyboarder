@@ -2,7 +2,7 @@ const paper = require('paper')
 
 const EventEmitter = require('events').EventEmitter
 
-const { ipcRenderer, remote } = require('electron')
+const { ipcRenderer, remote, nativeImage } = require('electron')
 
 const fs = require('fs')
 const path = require('path')
@@ -305,9 +305,24 @@ class StoryboarderSketchPane extends EventEmitter {
   copyToClipboard () {
     if (this.strategy instanceof MarqueeStrategy && this.strategy.marqueePath) {
       this.sketchPane.selectedArea.set(this.strategy.marqueePath)
+
+      let spritesByLayerId = this.sketchPane.selectedArea.copy(this.visibleLayersIndices)
+
+      // flattened image of marquee selected art
+      let sprite = this.sketchPane.selectedArea.asSprite(this.visibleLayersIndices, false)
+      let pixels = this.sketchPane.app.renderer.plugins.extract.pixels(sprite)
+      SketchPaneUtil.arrayPostDivide(pixels)
+      let image = nativeImage.createFromDataURL(
+        SketchPaneUtil.pixelsToCanvas(
+          pixels,
+          sprite.width,
+          sprite.height
+        ).toDataURL())
+
       this.strategy.copyToClipboard(
         this.strategy.marqueePath,
-        this.sketchPane.selectedArea.copy(this.visibleLayersIndices)
+        image,
+        spritesByLayerId
       )
     }
   }
