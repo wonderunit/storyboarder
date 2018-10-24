@@ -508,7 +508,6 @@ let importImagesDialogue = (shouldReplace = false) => {
       ],
       properties: [
         "openFile",
-        "openDirectory",
         "multiSelections"
       ]
     },
