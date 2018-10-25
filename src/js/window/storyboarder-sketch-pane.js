@@ -1360,6 +1360,8 @@ class EyedropperStrategy {
     this.context.sketchPane.cursor.setEnabled(true)
 
     this.state = {}
+
+    this.context.store.dispatch({ type: 'TOOLBAR_MODE_STATUS_SET', payload: 'idle', meta: { scope: 'local' } })
   }
 
   _snapshot () {
