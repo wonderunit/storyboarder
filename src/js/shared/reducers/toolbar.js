@@ -86,7 +86,7 @@ const initialState = {
   prevTool: undefined,
   activeTool: undefined,
 
-  // drawing, moving, scaling, locked, panning, lineDrawing, marquee
+  // drawing, moving, scaling, locked, panning, lineDrawing, marquee, eyedropper
   mode: undefined,
 
   // busy, idle
