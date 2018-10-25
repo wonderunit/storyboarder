@@ -11,6 +11,7 @@ const { SketchPane } = require('alchemancy')
 const SketchPaneUtil = require('alchemancy').util
 
 const MarqueeStrategy = require('./storyboarder-sketch-pane/marquee-strategy')
+const EyedropperStrategy = require('./storyboarder-sketch-pane/eyedropper-strategy')
 
 const LineMileageCounter = require('./line-mileage-counter')
 
@@ -1322,114 +1323,6 @@ class PanningStrategy {
       this.context.sketchPane.anchor.x,
       this.context.sketchPane.anchor.y
     )
-  }
-}
-
-class EyedropperStrategy {
-  constructor (context) {
-    this.context = context
-    this.name = 'eyedropper'
-
-    this._onPointerDown = this._onPointerDown.bind(this)
-    this._onPointerMove = this._onPointerMove.bind(this)
-    this._onPointerUp = this._onPointerUp.bind(this)
-
-    this.state = {}
-  }
-
-  startup () {
-    this.context.store.dispatch({ type: 'TOOLBAR_MODE_STATUS_SET', payload: 'busy', meta: { scope: 'local' } })
-
-    this.context.sketchPaneDOMElement.addEventListener('pointerdown', this._onPointerDown)
-    document.addEventListener('pointermove', this._onPointerMove)
-    document.addEventListener('pointerup', this._onPointerUp)
-
-    this.context.sketchPane.app.view.style.cursor = 'crosshair'
-    this.context.sketchPane.cursor.setEnabled(false)
-
-    this.state = {}
-    this._snapshot()
-  }
-
-  shutdown () {
-    this.context.sketchPaneDOMElement.removeEventListener('pointerdown', this._onPointerDown)
-    document.removeEventListener('pointermove', this._onPointerMove)
-    document.removeEventListener('pointerup', this._onPointerUp)
-
-    this.context.sketchPane.app.view.style.cursor = 'auto'
-    this.context.sketchPane.cursor.setEnabled(true)
-
-    this.state = {}
-
-    this.context.store.dispatch({ type: 'TOOLBAR_MODE_STATUS_SET', payload: 'idle', meta: { scope: 'local' } })
-  }
-
-  _snapshot () {
-    let rt = this.context.sketchPane.layers.generateCompositeTexture(
-      this.context.sketchPane.width,
-      this.context.sketchPane.height,
-      this.context.visibleLayersIndices,
-      PIXI.RenderTexture.create(this.context.sketchPane.width, this.context.sketchPane.height)
-    )
-    let sprite = new PIXI.Sprite(PIXI.Texture.EMPTY)
-    let matte = new PIXI.Graphics()
-    matte.beginFill(0xffffff)
-    matte.drawRect(0, 0, this.context.sketchPane.width, this.context.sketchPane.height)
-    sprite.addChild(matte)
-    sprite.addChild(new PIXI.Sprite(rt))
-    let pixels = this.context.sketchPane.app.renderer.plugins.extract.pixels(sprite)
-
-    // SketchPaneUtil.arrayPostDivide(pixels)
-
-    this.state.sprite = sprite
-    this.state.pixels = pixels
-  }
-
-  _onPointerDown (event) {
-    this.state.down = true
-    this._commit()
-  }
-
-  _onPointerMove (event) {
-    let point = this.context.sketchPane.localizePoint(event)
-
-    let index = (Math.floor(point.x) + Math.floor(point.y) * this.context.sketchPane.width) * 4
-
-    let pixels = this.state.pixels
-    if (index > 0 && index < pixels.length) {
-      let r = pixels[index]
-      let g = pixels[index + 1]
-      let b = pixels[index + 2]
-      let a = pixels[index + 3]
-      let color = (r << 16) + (g << 8) + b
-      let alpha = a / 255
-
-      this.state.color = color
-      this.state.alpha = alpha
-    }
-
-    // to change color only on drag
-    // if (this.state.down) this._commit()
-
-    // change color on every mouse move
-    this._commit()
-  }
-
-  _onPointerUp (event) {
-    this.state.down = false
-  }
-
-  _commit () {
-    if (this.state.color !== null && this.state.alpha !== null) {
-      let state = this.context.store.getState()
-      this.context.store.dispatch({
-         type: 'TOOLBAR_TOOL_SET',
-         payload: {
-           color: this.state.color,
-           strokeOpacity: this.state.alpha
-         }
-       })
-    }
   }
 }
 
