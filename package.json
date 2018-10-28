@@ -47,15 +47,19 @@
     "dmg": {
       "background": "build/background.png",
       "icon": "build/icon.icns",
-      "iconSize": 140,
+      "iconSize": 160,
+      "window": {
+        "width": 675,
+        "height": 500
+      },
       "contents": [
         {
-          "x": 120,
-          "y": 250
+          "x": 177,
+          "y": 335
         },
         {
-          "x": 420,
-          "y": 250,
+          "x": 505,
+          "y": 335,
           "type": "link",
           "path": "/Applications"
         }
@@ -85,7 +89,7 @@
     }
   },
   "devDependencies": {
-    "electron": "4.0.0-beta.3",
+    "electron": "3.0.4",
     "electron-builder": "20.28.4",
     "electron-mocha": "4.0.0",
     "electron-osx-sign": "^0.4.8",
