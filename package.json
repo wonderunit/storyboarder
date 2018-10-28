@@ -89,14 +89,15 @@
     }
   },
   "devDependencies": {
-    "electron": "3.0.4",
-    "electron-builder": "20.28.4",
+    "electron": "4.0.0-beta.5",
+    "electron-builder": "20.29.1",
     "electron-mocha": "4.0.0",
     "electron-osx-sign": "^0.4.8",
     "floss": "2.1.5",
     "mocha": "3.5.0",
     "mock-fs": "4.4.1",
-    "nock": "9.4.2"
+    "nock": "9.4.2",
+    "webpack": "4.23.1"
   },
   "dependencies": {
     "@ffmpeg-installer/ffmpeg": "1.0.13",
