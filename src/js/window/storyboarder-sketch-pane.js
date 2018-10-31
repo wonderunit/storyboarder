@@ -258,6 +258,10 @@ class StoryboarderSketchPane extends EventEmitter {
     }
   }
 
+  getIsLocked () {
+    return this.strategy instanceof LockedStrategy
+  }
+
   preventIfLocked () {
     if (this.strategy instanceof LockedStrategy) {
       remote.dialog.showMessageBox({

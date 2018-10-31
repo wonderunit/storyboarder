@@ -4588,7 +4588,15 @@ const resize = () => {
 }
 
 window.onkeydown = (e) => {
-  if (store.getState().toolbar.modeStatus === 'busy') return
+  // if this is not a locked board
+  if (!storyboarderSketchPane.getIsLocked()) {
+    // but we're busy (e.g.: marquee, straight line drawing)
+    if (store.getState().toolbar.modeStatus === 'busy') {
+      // ignore key input
+      return
+    }
+  } 
+
 
   // TEMPORARY
   // key command to trigger registration window during early testing
