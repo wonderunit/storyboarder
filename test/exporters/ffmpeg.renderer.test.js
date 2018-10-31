@@ -20,7 +20,7 @@ describe('exporters/ffmpeg', () => {
 
   it('can invoke ffmpeg', async () => {
     let version = await exporterFfmpeg.checkVersion()
-    assert.equal(version, 'N-87313-g73bf0f4-tessus')
+    assert(version.includes('N-'));
   })
   it('can generate an MP4 video for a scene', async () => {
     // uncomment to test a video with no audio track
