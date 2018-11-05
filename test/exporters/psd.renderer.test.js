@@ -42,6 +42,6 @@ describe('exporters/psd', function () {
     ]
 
     let buffer = await exporterPsd.toPsdBuffer(imagesMeta)
-    assert(buffer.length === 198554)
+    assert(buffer.length === 198554 || buffer.length === 198546)
   })
 })
