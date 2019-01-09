@@ -16,6 +16,7 @@ const defaultPrefs = {
   enableUISoundEffects: false,
   enableHighQualityAudio: false,
   enableTooltips: true,
+  enableQuotes: false,
   enableAspirationalMessages: true,
   defaultBoardTiming: 2000,
   pomodoroTimerMinutes: 25,
