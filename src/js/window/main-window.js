@@ -5488,7 +5488,9 @@ let save = () => {
 
   if (prefsModule.getPrefs()['enableAutoSave']) {
     notifications.notify({message: "Saving is automatic. I already saved before you pressed this, so you don't really need to save at all. \n\nBut I did want you to know, that I think you're special - and I like you just the way you are.\n\nHere's a story tip..." , timing: 15})
-    setTimeout(()=>{storyTips.show()}, 1000)
+    if (prefsModule.getPrefs()['enableQuotes']) {
+      setTimeout(()=>{storyTips.show()}, 1000)
+    }
   } else {
     notifications.notify({ message: "Saved." })
   }
