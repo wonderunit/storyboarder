@@ -35,7 +35,7 @@ Works with Pens on any tablet or Cintiq or even a Microsoft Surface. Also works 
 * Works with Fountain
 * Open in Photoshop
 * Measure Line Mileage
-* 5 Different Guides Types to Help Drawing
+* 5 Different Guide Types to Help Drawing
 * Reference Layer
 * Onion Skin
 * Lasso Tool for Partial Drawing Edits
@@ -49,7 +49,7 @@ Works with Pens on any tablet or Cintiq or even a Microsoft Surface. Also works 
 
 ## We have 6 brush types which are all you need to draw fast:
 
-* **Light pencil** for roughing
+* **Light Pencil** for rough sketching
 * **Fill Brush** for painting and filling
 * **Tone Pastel** for tone and shading
 * **Pencil** for drawing and shading details
@@ -58,7 +58,7 @@ Works with Pens on any tablet or Cintiq or even a Microsoft Surface. Also works 
 
 Each brush has it's own 4 color pallete. You can set all the colors as you like.
 
-You can change the brush size using a simple range slider or hotkeys. Make it tiny for fine details or huge feel like finger painting.
+You can change the brush size using a simple range slider or hotkeys. Make it tiny for fine details or huge to feel like finger painting.
 
 There are no layers. Again, you're boarding story ideas. Managing layers creates so much uneeded complexity and ui mess. A board artist that uses layers probably voted for Trump - or paid way too much for "Pro" storyboard software.
 
