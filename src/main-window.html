@@ -271,6 +271,28 @@
 
             <div class="hardrule"></div>
 
+            <div class="row" id="shot-generator-container">
+              <div class="inline">
+                <svg class="smallicon">
+                  <use xlink:href="./img/symbol-defs.svg#icon-camera"></use>
+                </svg>
+                Shot Generator
+              </div>
+              <div class="flatbutton small"
+                data-tooltip
+                data-tooltip-title="Open"
+                data-tooltip-description="Open Shot Generator"
+                data-tooltip-keys=""
+                data-tooltip-position="left middle">
+                  <svg class="smallericon">
+                    <use xlink:href="./img/symbol-defs.svg#icon-mergeup"></use>
+                  </svg>
+                  Open
+                </div>
+            </div>
+
+            <div class="hardrule"></div>
+
             <div class="row" data-tooltip
               data-tooltip-title="Is this board a new shot?"
               data-tooltip-description="Check this box if the board is a new shot. You can have multiple boards per shot. This way you can animate or make a transition in a shot."
@@ -416,7 +438,8 @@
                   data-tooltip-position="left middle" type="range" min="0" max="100" step="25" value="100">
               </div>
             </div>
-            <div class="row" id="shot-generator-container">
+
+            <div class="row" id="shot-generator-container" style="display:none">
               <div class="inline"><svg class="smallicon"><use xlink:href="./img/symbol-defs.svg#icon-camera"></use></svg>Shot Generator</div>
               <div id="sts-random" class="flatbutton small" data-tooltip
               data-tooltip-title="Generate Random Shot Image"

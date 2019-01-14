@@ -136,6 +136,16 @@ const onRandom = event => {
 /* exports */
 
 const init = (_shotTemplateSystem, _aspectRatio, _store) => {
+
+  document.querySelector("#shot-generator-container .flatbutton").addEventListener('click', event => {
+    event.preventDefault()
+    alert('Clicked Shot Generator')
+  })
+  return
+
+
+
+
   shotTemplateSystem = window.shotTemplateSystem = _shotTemplateSystem
   aspectRatio = _aspectRatio
   store = _store
