@@ -63,3 +63,9 @@ const show = () => {
 module.exports = {
   show
 }
+
+// are we testing locally?
+// npx electron src/js/windows/shot-generator/main.js
+if (module.parent.filename === path.join(__dirname, '..', '..', '..', '..', 'node_modules/electron/dist/Electron.app/Contents/Resources/default_app.asar/main.js')) {
+  app.on('ready', show)
+}
