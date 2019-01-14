@@ -257,7 +257,7 @@ let shotProperties = {
     squatting: {
       weight: 0
     },
-    indian_style: {
+    cross_legged: {
       weight: 0
     },
     on_back: {
