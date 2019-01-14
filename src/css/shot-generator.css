@@ -53,7 +53,7 @@ body {
    width: 21px;
    height: 45px;
    z-index: 1000;
-   background-image: url(../images/white_cursor.png);
+   background-image: url(../img/shot-generator/white_cursor.png);
    background-repeat: no-repeat;
    background-size: contain;
 }
