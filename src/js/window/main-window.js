@@ -59,8 +59,8 @@ const watermarkModel = require('../models/watermark')
 
 const FileHelper = require('../files/file-helper')
 
-const ShotTemplateSystem = require('../shot-template-system')
-const StsSidebar = require('./sts-sidebar')
+// const ShotTemplateSystem = require('../shot-template-system')
+// const StsSidebar = require('./sts-sidebar')
 
 const AudioPlayback = require('./audio-playback')
 const AudioFileControlView = require('./audio-file-control-view')
@@ -153,7 +153,7 @@ let guides
 let onionSkin
 let layersEditor
 let pomodoroTimerView
-let shotTemplateSystem
+// let shotTemplateSystem
 let audioPlayback
 let audioFileControlView
 let sceneTimelineView
@@ -716,7 +716,7 @@ const loadBoardUI = async () => {
 
   let size = boardModel.boardFileImageSize(boardData)
 
-  shotTemplateSystem = new ShotTemplateSystem({ width: size[0], height: size[1] })
+  // shotTemplateSystem = new ShotTemplateSystem({ width: size[0], height: size[1] })
 
   if (!SketchPane.canInitialize()) {
     remote.dialog.showMessageBox({
@@ -1225,7 +1225,7 @@ const loadBoardUI = async () => {
   guides = new Guides({
     width: storyboarderSketchPane.sketchPane.width,
     height: storyboarderSketchPane.sketchPane.height,
-    perspectiveGridFn: shotTemplateSystem.requestGrid.bind(shotTemplateSystem),
+    perspectiveGridFn: () => {}, // shotTemplateSystem.requestGrid.bind(shotTemplateSystem),
     onRender: guideCanvas => {
       storyboarderSketchPane.sketchPane.layers[
         storyboarderSketchPane.sketchPane.layers.findByName('guides').index
@@ -1596,39 +1596,39 @@ const loadBoardUI = async () => {
     }
   })
 
-  if (shotTemplateSystem.isEnabled()) {
-    StsSidebar.init(shotTemplateSystem, size[0] / size[1], store)
-    StsSidebar.on('change', () => {
-      // HACK reset any open tooltips
-      tooltips.closeAll()
-    })
-    StsSidebar.on('select', (img, params, camera) => {
-      if (storyboarderSketchPane.preventIfLocked()) return
-
-      let board = boardData.boards[currentBoard]
-
-      board.sts = {
-        params,
-        camera
-      }
-      markBoardFileDirty()
-      guides && guides.setPerspectiveParams({
-        cameraParams: board.sts && board.sts.camera,
-        rotation: 0
-      })
-
-      if (!img) return
-
-      storyboarderSketchPane.replaceLayer(storyboarderSketchPane.sketchPane.layers.findByName('reference').index, img)
-
-      // force a file save and thumbnail update
-      markImageFileDirty([storyboarderSketchPane.sketchPane.layers.findByName('reference').index])
-      saveImageFile()
-    })
-  } else {
-    notifications.notify({ message: 'For better performance on your machine, Shot Generator and Perspective Guide have been disabled.' })
-    StsSidebar.setEnabled(false)
-  }
+  // if (shotTemplateSystem.isEnabled()) {
+  //   StsSidebar.init(shotTemplateSystem, size[0] / size[1], store)
+  //   StsSidebar.on('change', () => {
+  //     // HACK reset any open tooltips
+  //     tooltips.closeAll()
+  //   })
+  //   StsSidebar.on('select', (img, params, camera) => {
+  //     if (storyboarderSketchPane.preventIfLocked()) return
+  // 
+  //     let board = boardData.boards[currentBoard]
+  // 
+  //     board.sts = {
+  //       params,
+  //       camera
+  //     }
+  //     markBoardFileDirty()
+  //     guides && guides.setPerspectiveParams({
+  //       cameraParams: board.sts && board.sts.camera,
+  //       rotation: 0
+  //     })
+  // 
+  //     if (!img) return
+  // 
+  //     storyboarderSketchPane.replaceLayer(storyboarderSketchPane.sketchPane.layers.findByName('reference').index, img)
+  // 
+  //     // force a file save and thumbnail update
+  //     markImageFileDirty([storyboarderSketchPane.sketchPane.layers.findByName('reference').index])
+  //     saveImageFile()
+  //   })
+  // } else {
+  //   notifications.notify({ message: 'For better performance on your machine, Shot Generator and Perspective Guide have been disabled.' })
+  //   StsSidebar.setEnabled(false)
+  // }
 
   sceneSettingsView.init({ fps: boardData.fps })
   sceneSettingsView.on('fps', fps => {
@@ -3378,9 +3378,9 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
 
     let board = boardData.boards[currentBoard]
 
-    if (shotTemplateSystem.isEnabled()) {
-      StsSidebar.reset(board.sts)
-    }
+    // if (shotTemplateSystem.isEnabled()) {
+    //   StsSidebar.reset(board.sts)
+    // }
 
     guides && guides.setPerspectiveParams({
       cameraParams: board.sts && board.sts.camera,
