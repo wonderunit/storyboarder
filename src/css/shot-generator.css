@@ -1,0 +1,310 @@
+body {
+  margin: 0;
+  padding: 0;
+  color: black;
+  font-family: 'wonderunitsans';
+  font-weight: 300;
+  background: #ccc;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor:default;
+  min-height: 100vh;
+  overflow: hidden;
+
+  border: 0;
+  height: 100vh;
+  width: 100vw;
+
+  display: flex;
+  flex-direction: column;
+  /*-webkit-app-region: drag;*/
+}
+
+.row {
+  display: flex;
+  flex-direction: row;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+}
+
+.column.fill {
+  flex: 5;
+}
+
+#main {
+  display: flex;
+  flex: 1;
+  width: 100%;
+}
+
+#phoneCursor {
+  width: 100vw;
+  height: 100vh;
+  background: rgba(1, 1, 1, 0.0);
+  position: absolute;
+  /* display: none; */
+}
+
+#testCursor {
+   position: absolute;
+   width: 21px;
+   height: 45px;
+   z-index: 1000;
+   background-image: url(../images/white_cursor.png);
+   background-repeat: no-repeat;
+   background-size: contain;
+}
+
+#toolbar {
+  background: pink;
+  height: 50px;
+  display: flex;
+  padding-left: 100px; /* for fps meter */
+  width: 100%;
+}
+
+#toolbar .add {
+  margin: 0 12px 0 0;
+  padding: 6px 12px;
+  border-radius: 6px;
+  justify-content: center;
+  align-items: center;
+  display: flex;
+}
+
+#elements {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+  /* color: white; */
+  position: relative;
+}
+
+.element {
+  box-sizing: border-box;
+  padding: 6px 16px 6px 8px;
+  display: flex;
+  flex-direction: row;
+  background-color: #444;
+  font-size: 14px;
+  letter-spacing: 0.05rem;
+}
+.element:not(:last-child) {
+  border-bottom: 1px solid black;
+}
+.element.selected {
+  background-color: #555;
+}
+.element.selected span.type {
+  opacity: 0.8;
+}
+.element.selected span.id {
+  opacity: 0.4;
+}
+.element a.title {
+  flex: 1;
+  display: flex;
+  color: white;
+
+  padding: 6px 0 4px 0;
+  border-radius: 6px;
+
+  text-decoration: none;
+  align-items: center;
+}
+.element span.type {
+  opacity: 0.5;
+  text-transform: capitalize;
+  padding-right: 6px;
+}
+.element span.name {
+  padding-right: 6px;
+}
+.element span.id {
+  opacity: 0.3;
+  padding-right: 6px;
+  font-style: italic;
+  font-size: 12px;
+}
+.element a.delete {
+  margin-left: 6px;
+  display: flex;
+  width: 30px;
+  color: red;
+  background-color: black;
+  padding: 6px 0 4px 0;
+  border-radius: 6px;
+  font-size: 87.5%;
+  text-decoration: none;
+  justify-content: center;
+  align-items: center;
+  line-height: 1;
+}
+
+#listing {
+  height: 200px;
+  box-sizing: border-box;
+}
+#inspector {
+  flex: 1;
+  overflow: scroll;
+  padding: 6px;
+  background-color: #aaa;
+  color: #111;
+}
+#remoteInputView {
+  padding-top: 12px;
+  color: black;
+  font-size: 80%;
+}
+
+#topdown {
+  display: flex;
+  align-items: center;
+}
+
+#camera-view {
+  height: 0;
+  position: relative;
+  overflow: hidden;
+  background: #111;
+  display: flex;
+  justify-content: center;
+}
+#camera-canvas {
+  top: 0;
+  position: absolute;
+}
+#camera-canvas:focus {
+  outline: none;
+}
+#top-down-canvas:focus {
+  outline: none;
+}
+#camera-inspector {
+  flex: 1;
+}
+
+input, select, label {
+  -webkit-app-region: no-drag;
+}
+
+button {
+  -webkit-app-region: no-drag;
+  outline: 0;
+  border: 0;
+  border-radius: 8px;
+  background: #1E88E5;
+  color: white;
+  font-size: 20px;
+  font-weight: 300;
+  line-height: 1.2;
+  white-space: nowrap;
+  text-decoration: none;
+  padding: 20px 20px;
+  margin-right: 10px;
+}
+
+button:last-child {
+  margin-right: 0;
+}
+
+button:hover {
+  background: #249aea;
+}
+
+button:active {
+  background: #1E88E5;
+}
+
+button:disabled {
+  background: gray;
+}
+
+input[type=checkbox] {
+  display: none;
+}
+
+input[type="checkbox"] + label {
+  cursor: pointer;
+  position: relative;
+}
+
+input[type="checkbox"] + label span {
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  /* margin: -2px 10px 0 0; */
+  vertical-align: middle;
+  background: #444;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+input[type=checkbox]:checked + label:before {
+  content:'\2716';
+  padding-left: 5px;
+  padding-top: 4px;
+  text-shadow: 0px 1px 1px rgba(0, 0, 0, .2);
+  font-size: 15px;
+  text-align: center;
+  line-height: 1;
+  position: absolute;
+  color: white;
+}
+
+select {
+  color: #fff;
+  background-color: #444;
+  outline: 0;
+  display: block;
+  width: 100%;
+  padding: 5px 10px;
+  font-size: 16px;
+  border: 0;
+  height: 34px;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background: #444;
+  margin-bottom: 10px;
+}
+select:focus {
+  background: yellow;
+  color: black;
+}
+
+#inspector select {
+  width: auto;
+  font-size: 13px;
+  color: #eee;
+  letter-spacing: 0.025rem;
+  font-weight: 100;
+}
+#inspector select:focus {
+  color: black;
+}
+#inspector .button_add {
+  display: flex;
+  width: 30px;
+  color: white;
+  background-color: black;
+  padding: 6px 0 4px 0;
+  border-radius: 6px;
+  font-size: 87.5%;
+  text-decoration: none;
+  justify-content: center;
+  align-items: center;
+  line-height: 1;
+}
+
+.row select+select {
+  margin-left: 6px;
+}
+
+#presets ul { margin: 0; padding: 0; }
+#presets ul li { margin: 0; padding: 6px; }
+#presets a:not(.delete) { color: white; }
