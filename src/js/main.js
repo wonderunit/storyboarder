@@ -1414,7 +1414,6 @@ ipcMain.on('zoomOut',
 ipcMain.on('registration:open', event => registration.show())
 
 ipcMain.on('shot-generator:open', (event, arg) => {
-  console.log('got shot-generator:open', shotGeneratorWindow)
   shotGeneratorWindow.show()
 
   // TODO analytics?
