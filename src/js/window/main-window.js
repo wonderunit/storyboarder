@@ -1889,6 +1889,14 @@ const loadBoardUI = async () => {
   document.getElementById('timeline-mode-control-view').appendChild(timelineModeControlView.element)
 
 
+
+  document.querySelector("#shot-generator-container .flatbutton").addEventListener('click', event => {
+    event.preventDefault()
+    ipcRenderer.send('shot-generator:open')
+  })
+
+
+
   // for debugging:
   //
   // remote.getCurrentWebContents().openDevTools()

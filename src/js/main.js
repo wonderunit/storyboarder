@@ -29,6 +29,7 @@ const MobileServer = require('./express-app/app')
 
 const preferencesUI = require('./windows/preferences')()
 const registration = require('./windows/registration/main')
+const shotGeneratorWindow = require('./windows/shot-generator/main')
 const JWT = require('jsonwebtoken')
 
 const pkg = require('../../package.json')
@@ -1411,3 +1412,12 @@ ipcMain.on('zoomOut',
   event => mainWindow.webContents.send('zoomOut'))
 
 ipcMain.on('registration:open', event => registration.show())
+
+ipcMain.on('shot-generator:open', (event, arg) => {
+  console.log('got shot-generator:open', shotGeneratorWindow)
+  shotGeneratorWindow.show()
+
+  // TODO analytics?
+  //
+  // analytics.screenView('shot-generator')
+})
