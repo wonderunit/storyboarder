@@ -94,6 +94,7 @@
     "electron-mocha": "4.0.0",
     "electron-osx-sign": "^0.4.8",
     "floss": "2.1.5",
+    "immer": "1.7.4",
     "mocha": "3.5.0",
     "mock-fs": "^4.7.0",
     "nock": "9.4.2",
@@ -110,6 +111,7 @@
     "eases": "1.0.8",
     "electron-google-analytics": "0.0.16",
     "electron-is-dev": "0.3.0",
+    "electron-prompt": "1.3.0",
     "electron-redux": "1.3.1",
     "electron-updater": "3.1.2",
     "electron-util": "0.4.1",
@@ -122,6 +124,7 @@
     "gl-vec2": "^1.0.0",
     "jsfeat": "0.0.8",
     "jsonwebtoken": "8.1.1",
+    "lodash.debounce": "4.0.8",
     "lodash.throttle": "4.1.1",
     "moment": "2.19.3",
     "node-fetch": "2.1.2",
@@ -143,11 +146,14 @@
     "stats.js": "0.17.0",
     "tether": "1.4.0",
     "tether-tooltip": "1.2.0",
+    "three": "0.100.0",
+    "three-rounded-box": "0.1.1",
     "tmp": "0.0.33",
     "tonal": "0.69.9",
     "tone": "0.12.0",
     "trash": "4.0.1",
     "wav-encoder": "1.3.0",
-    "xml2js": "0.4.19"
+    "xml2js": "0.4.19",
+    "xstate": "4.1.1"
   }
 }
