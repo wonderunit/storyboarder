@@ -6911,7 +6911,7 @@ ipcRenderer.on('saveShot', async (event, { data, images }) => {
 
   console.log('main-window#saveShot', data, images)
   boardData.boards[currentBoard].sts = {
-    version: '2.0.0', // TODO
+    version: pkg.version,
     data
   }
   markBoardFileDirty()
