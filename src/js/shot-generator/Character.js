@@ -41,6 +41,8 @@ const Character = React.memo(({ scene, id, type, remoteInput, characterModels, i
   let startingObjectRotation = useRef(null)
   let startingGlobalRotation = useRef(null)
 
+  let currentBoneSelected = useRef(null)
+
   const cloneAnimated = ( source ) => {
 
     var cloneLookup = new Map()
@@ -96,10 +98,13 @@ const Character = React.memo(({ scene, id, type, remoteInput, characterModels, i
 
     let cloned = cloneAnimated(characterModels[props.model])
     //let cloned = characterModels[props.model]
-    object.current = cloned
-    object.current.originalHeight = characterModels[props.model].originalHeight
+
     let mat = cloned.children[0].material ? cloned.children[0].material.clone() : cloned.children[1].material.clone()
-    object.current.material = mat
+
+    object.current = cloned
+    let skel = (object.current.children[0] instanceof THREE.Mesh) ? object.current.children[0] : object.current.children[1]
+    skel.material = mat.clone()
+    object.current.originalHeight = characterModels[props.model].originalHeight
 
     //   MULTI MATERIALS
     // object.current.material = object.current.material.map(material => material.clone())
@@ -225,7 +230,6 @@ const Character = React.memo(({ scene, id, type, remoteInput, characterModels, i
   useEffect(() => {
     // handle selection/unselection
     let skel = (object.current.children[0] instanceof THREE.Mesh) ? object.current.children[0] : object.current.children[1]
-
     if ( skel.material.length > 0 ) {
       skel.material.forEach(material => {
         material.userData.outlineParameters =
@@ -252,6 +256,31 @@ const Character = React.memo(({ scene, id, type, remoteInput, characterModels, i
          }
     }
   }, [props.model, isSelected])
+
+  useEffect(() => {
+    if (selectedBone === undefined) return
+    let skel = (object.current.children[0] instanceof THREE.Mesh) ? object.current.children[0] : object.current.children[1]
+    let realBone = skel.skeleton.bones.find(bone => bone.uuid == selectedBone)
+
+    if (currentBoneSelected.current === realBone) return
+
+    if (selectedBone === null) {
+      if (currentBoneSelected.current) {
+        currentBoneSelected.current.connectedBone.material.color = new THREE.Color( 0x006eb8 )
+        currentBoneSelected.current = null
+      }
+      return
+    }
+
+    if (currentBoneSelected.current !== null) {
+      currentBoneSelected.current.connectedBone.material.color = new THREE.Color( 0x006eb8 )
+    }
+    if (realBone === null || realBone === undefined) return
+    //console.log('real bone: ', realBone, selectedBone)
+    realBone.connectedBone.material.color = new THREE.Color( 0xed0000 )
+    currentBoneSelected.current = realBone
+
+  }, [selectedBone])
 
   useEffect(() => {
     if (!isSelected) return

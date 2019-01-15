@@ -14,11 +14,14 @@ const reveal = () => {
     hasRendered = true
     // wait for the DOM to render
     setTimeout(() => {
+
       win.show()
       win.focus()
     }, 125)
   }
 }
+
+
 
 const show = () => {
   if (win) {
@@ -27,10 +30,10 @@ const show = () => {
   }
 
   win = new BrowserWindow({
-    width: 1500, 
-    height: 900, 
-    minWidth: 1200, 
-    minHeight: 715, 
+    width: 1500,
+    height: 900,
+    minWidth: 1200,
+    minHeight: 715,
     // x: 0,
     // y: 0,
     show: false,
@@ -47,6 +50,7 @@ const show = () => {
       backgroundThrottling: true,
     }
   })
+
   win.once('closed', () => {
     win = null
   })
@@ -66,6 +70,8 @@ module.exports = {
 
 // are we testing locally?
 // npx electron src/js/windows/shot-generator/main.js
-if (module.parent.filename === path.join(__dirname, '..', '..', '..', '..', 'node_modules/electron/dist/Electron.app/Contents/Resources/default_app.asar/main.js')) {
+//if (module.parent.filename === path.join(__dirname, '..', '..', '..', '..', 'node_modules/electron/dist/resources/default_app.asar/main.js')) {  // on windows 10
+if (module.parent.filename === path.join(__dirname, '..', '..', '..', '..', 'node_modules/electron/dist/Electron.app/Contents/Resources/default_app.asar/main.js')) { //on osx
+  console.log('testing locally!')
   app.on('ready', show)
 }

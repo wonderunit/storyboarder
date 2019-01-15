@@ -12,8 +12,11 @@ const Stats = require('stats.js')
 const { VariableSizeList } = require('react-window')
 const prompt = require('electron-prompt')
 
+//const h = require('../h')
+//const useComponentSize = require('../use-component-size')
 const h = require('../utils/h')
 const useComponentSize = require('../hooks/use-component-size')
+
 const {
   selectObject,
   createObject,
@@ -42,9 +45,11 @@ const {
   updateWorld,
   updateWorldRoom,
   updateWorldEnvironment
+//} = require('../state')
 } = require('../shared/reducers/shot-generator')
 
 const { Machine } = require('xstate')
+//const useMachine = require('../useMachine')
 const useMachine = require('../hooks/use-machine')
 
 const CameraControls = require('./CameraControls')
@@ -58,6 +63,7 @@ const BoundingBoxHelper = require('./BoundingBoxHelper')
 const ModelLoader = require('../services/model-loader')
 
 const presetsStorage = require('../shared/store/presetsStorage')
+//const presetsStorage = require('../presetsStorage')
 
 const WorldObject = require('./World')
 
