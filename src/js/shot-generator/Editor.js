@@ -2291,6 +2291,10 @@ const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, set
     saveToBoard()
   }
 
+  const onInsertNewBoardClick = event => {
+    ipcRenderer.send('insertShot')
+  }
+
   return h(
     ['div#toolbar', { key: 'toolbar' },
       ['a.add[href=#]', { onClick: preventDefault(onCreateCameraClick) }, '+ Camera'],
@@ -2305,6 +2309,8 @@ const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, set
       ['a.add[href=#]', { onClick: preventDefault(onSaveClick) }, 'Save'],
 
       ['a.add[href=#]', { onClick: preventDefault(onSaveToBoardClick) }, 'Save to Board'],
+      ['a.add[href=#]', { onClick: preventDefault(onInsertNewBoardClick) }, 'Insert New Board']
+
     ]
   )
 }

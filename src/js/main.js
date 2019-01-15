@@ -1414,6 +1414,9 @@ ipcMain.on('zoomOut',
 ipcMain.on('saveShot',
   (event, data) => mainWindow.webContents.send('saveShot', data))
 
+ipcMain.on('insertShot',
+  (event, data) => mainWindow.webContents.send('insertShot', data))
+
 ipcMain.on('registration:open', event => registration.show())
 
 ipcMain.on('shot-generator:open', (event, { shot, aspectRatio }) => {

@@ -6935,6 +6935,14 @@ ipcRenderer.on('saveShot', async (event, { data, images }) => {
   // force a file save and thumbnail update
   markImageFileDirty([layerIndex])
 })
+ipcRenderer.on('insertShot', async () => {
+  let index = await newBoard()
+  gotoBoard(index)
+  ipcRenderer.send('shot-generator:open', {
+    shot: boardData.boards[currentBoard].sts,
+    aspectRatio: parseFloat(boardData.aspectRatio)
+  })
+})
 
 const log = opt => ipcRenderer.send('log', opt)
 
