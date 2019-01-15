@@ -8,7 +8,7 @@ const React = require('react')
 const { useState, useEffect, useRef, useContext } = React
 const { Provider, connect } = require('react-redux')
 const ReactDOM = require('react-dom')
-const Stats = require('stats.js')
+// const Stats = require('stats.js')
 const { VariableSizeList } = require('react-window')
 const prompt = require('electron-prompt')
 
@@ -77,9 +77,9 @@ window.THREE = THREE
 const draggables = (sceneObjects, scene) =>
   scene.children.filter(o => o.userData.type === 'object' || o instanceof BoundingBoxHelper)
 
-const stats = new Stats()
-stats.showPanel(0)
-document.body.appendChild( stats.dom )
+// const stats = new Stats()
+// stats.showPanel(0)
+// document.body.appendChild( stats.dom )
 
 const animatedUpdate = (fn) => (dispatch, getState) => fn(dispatch, getState())
 
@@ -335,7 +335,7 @@ const SceneManager = connect(
         scene.add(cameraHelper.current)
 
         animator.current = () => {
-          stats.begin()
+          // stats.begin()
           if (scene && camera) {
 
             animatedUpdate((dispatch, state) => {
@@ -403,7 +403,7 @@ const SceneManager = connect(
               smallRenderer.current.render(scene, cameraForSmall)
             })
           }
-          stats.end()
+          // stats.end()
           animatorId.current = requestAnimationFrame(animator.current)
         }
         animatorId.current = requestAnimationFrame(animator.current)

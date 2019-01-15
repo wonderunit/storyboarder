@@ -62,7 +62,7 @@ body {
   background: pink;
   height: 50px;
   display: flex;
-  padding-left: 100px; /* for fps meter */
+  padding-left: 300px;
   width: 100%;
 }
 
