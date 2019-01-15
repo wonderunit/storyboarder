@@ -1,5 +1,5 @@
 {
-  "version": "1.6.0",
+  "version": "1.9.2",
   "aspectRatio": 1.7777777777777777,
   "fps": 24,
   "defaultBoardTiming": 2000,
@@ -25,99 +25,106 @@
       "shot": "1A",
       "time": 0,
       "lineMileage": 821.5682133251058,
-      "shot": {
+      "sts": {
         "version": "2.0.0",
         "data": {
-          "world": {
-            "ground": false,
-            "room": {
-              "visible": true,
-              "width": 30,
-              "length": 40,
-              "height": 30
-            },
-            "environment": {
-              "x": 0,
-              "y": 0,
-              "z": 0,
-              "rotation": 0,
-              "scale": 1,
-              "visible": true
-            }
-          },
+          "activeCamera": "6BC46A44-7965-43B5-B290-E3D2B9D15EEE",
           "sceneObjects": {
-            "C2062AFC-D710-4C7D-942D-A3BAF8A76D5C": {
-              "id": "C2062AFC-D710-4C7D-942D-A3BAF8A76D5C",
-              "type": "object",
-              "model": "box",
-              "width": 1,
-              "height": 1,
-              "depth": 1,
-              "x": 0,
-              "y": 0,
-              "z": 0,
-              "rotation": 0,
-              "visible": true
-            },
-            "D8B95127-6C04-40A9-B592-8870EEAF43A8": {
-              "id": "D8B95127-6C04-40A9-B592-8870EEAF43A8",
-              "type": "object",
-              "model": "chair",
-              "width": 1,
-              "height": 1,
-              "depth": 1,
-              "x": 2,
-              "y": 0.5,
-              "z": 0,
-              "rotation": 0,
-              "visible": true
-            },
-            "94FA0F9D-E1E8-436B-8041-D831BD06CB33": {
-              "id": "94FA0F9D-E1E8-436B-8041-D831BD06CB33",
-              "type": "object",
-              "model": "box",
-              "width": 0.5,
-              "height": 0.5,
-              "depth": 0.5,
-              "x": -2,
-              "y": -2,
-              "z": 0,
-              "rotation": 2,
-              "visible": true
-            },
-            "A1A35319-82D1-4A24-98FE-136836750A61": {
-              "id": "A1A35319-82D1-4A24-98FE-136836750A61",
-              "type": "character",
-              "x": 1,
-              "y": 0,
-              "z": 0,
-              "rotation": 0,
-              "visible": true,
-              "characterPresetId": "7C694D0F-9D45-4B74-BA70-38479E520091",
-              "height": 1.6256,
-              "model": "adult-female",
-              "headScale": 1,
-              "morphTargets": {
-                "mesomorphic": 0,
-                "ectomorphic": 0,
-                "endomorphic": 0
-              },
-              "posePresetId": "AE56DD1E-3F6F-4A74-B247-C8A6E3EB8FC0",
-              "skeleton": {}
-            },
             "6BC46A44-7965-43B5-B290-E3D2B9D15EEE": {
-              "id": "6BC46A44-7965-43B5-B290-E3D2B9D15EEE",
-              "type": "camera",
               "fov": 22.25,
+              "id": "6BC46A44-7965-43B5-B290-E3D2B9D15EEE",
+              "roll": 0,
+              "rotation": -0.16885546875000002,
+              "tilt": -0.03286328125,
+              "type": "camera",
               "x": 0,
               "y": 6,
-              "z": 1,
+              "z": 1
+            },
+            "94FA0F9D-E1E8-436B-8041-D831BD06CB33": {
+              "depth": 0.5,
+              "height": 0.5,
+              "id": "94FA0F9D-E1E8-436B-8041-D831BD06CB33",
+              "model": "box",
+              "rotation": 2,
+              "type": "object",
+              "visible": true,
+              "width": 0.5,
+              "x": -2,
+              "y": -2,
+              "z": 0
+            },
+            "A1A35319-82D1-4A24-98FE-136836750A61": {
+              "characterPresetId": "7C694D0F-9D45-4B74-BA70-38479E520091",
+              "headScale": 1,
+              "height": 1.6256,
+              "id": "A1A35319-82D1-4A24-98FE-136836750A61",
+              "model": "adult-female",
+              "morphTargets": {
+                "ectomorphic": 0,
+                "endomorphic": 0,
+                "mesomorphic": 0
+              },
+              "rotation": -1.12159265358979,
+              "skeleton": {
+                "mixamorigLeftArm": {
+                  "rotation": {
+                    "x": 1.00840734641021,
+                    "y": 0.008407346410207,
+                    "z": 0.108407346410207
+                  }
+                }
+              },
+              "type": "character",
+              "visible": true,
+              "x": 2.873390491124793,
+              "y": 0.3267191493630248,
+              "z": 0
+            },
+            "C2062AFC-D710-4C7D-942D-A3BAF8A76D5C": {
+              "depth": 1,
+              "height": 1,
+              "id": "C2062AFC-D710-4C7D-942D-A3BAF8A76D5C",
+              "model": "box",
               "rotation": 0,
-              "tilt": 0,
-              "roll": 0
+              "type": "object",
+              "visible": true,
+              "width": 1,
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "D8B95127-6C04-40A9-B592-8870EEAF43A8": {
+              "depth": 1,
+              "height": 1,
+              "id": "D8B95127-6C04-40A9-B592-8870EEAF43A8",
+              "model": "chair",
+              "rotation": 0,
+              "type": "object",
+              "visible": true,
+              "width": 1,
+              "x": 2,
+              "y": 0.5,
+              "z": 0
             }
           },
-          "activeCamera": "6BC46A44-7965-43B5-B290-E3D2B9D15EEE"
+          "world": {
+            "environment": {
+              "rotation": 0,
+              "scale": 1,
+              "visible": true,
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ground": false,
+            "room": {
+              "height": 30,
+              "length": 40,
+              "visible": true,
+              "width": 30
+            }
+          }
         }
       }
     },
