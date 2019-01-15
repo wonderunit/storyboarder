@@ -6906,13 +6906,31 @@ ipcRenderer.on('zoomOut', value => {
   storyboarderSketchPane.zoomAtCursor(ZOOM_LEVELS[zoomIndex])
 })
 
-ipcRenderer.on('saveShot', (event, data) => {
-  console.log('saving shot')
+ipcRenderer.on('saveShot', async (event, { data, images }) => {
+  // TODO undo step?
+
+  console.log('main-window#saveShot', data, images)
   boardData.boards[currentBoard].sts = {
     version: '2.0.0', // TODO
     data
   }
   markBoardFileDirty()
+
+
+  // resize
+  let size = [
+    storyboarderSketchPane.sketchPane.width,
+    storyboarderSketchPane.sketchPane.height
+  ]
+  let image = await exporterCommon.getImage(images.camera)
+  let context = createSizedContext(size)
+  let canvas = context.canvas
+  context.drawImage(image, ...util.fitToDst(canvas, image).map(Math.round))
+  // replace
+  let layerIndex = storyboarderSketchPane.sketchPane.layers.findByName('reference').index
+  storyboarderSketchPane.replaceLayer(layerIndex, canvas)
+  // force a file save and thumbnail update
+  markImageFileDirty([layerIndex])
 })
 
 const log = opt => ipcRenderer.send('log', opt)

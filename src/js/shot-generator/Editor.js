@@ -2578,10 +2578,25 @@ const Editor = connect(
 
     saveToBoard: () => (dispatch, getState) => {
       let state = getState()
-      ipcRenderer.send('saveShot', {
-        world: state.world,
-        sceneObjects: state.sceneObjects,
-        activeCamera: state.activeCamera
+
+      requestAnimationFrame(() => {
+
+        // HACK FIXME don't hardcode these
+        let cameraImage = document.querySelector('#camera-canvas').toDataURL()
+        let topDownImage = document.querySelector('#top-down-canvas').toDataURL()
+
+        ipcRenderer.send('saveShot', {
+          data: {
+            world: state.world,
+            sceneObjects: state.sceneObjects,
+            activeCamera: state.activeCamera
+          },
+          images: {
+            'camera': cameraImage,
+            'topdown': topDownImage
+          }
+        })
+
       })
     }
   }
