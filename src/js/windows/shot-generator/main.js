@@ -23,13 +23,7 @@ const reveal = (onComplete) => {
   }
 }
 
-<<<<<<< HEAD
-
-
-const show = () => {
-=======
 const show = (onComplete) => {
->>>>>>> load from board and save to board
   if (win) {
     reveal(onComplete)
     return
