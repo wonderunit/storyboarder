@@ -51,10 +51,12 @@ const store = configureStore({
 
 
 ipcRenderer.on('loadShot', (event, shot) => {
-  store.dispatch({
-    type: 'LOAD_SCENE',
-    payload: shot.data
-  })
+  if (shot) {
+    store.dispatch({
+      type: 'LOAD_SCENE',
+      payload: shot.data
+    })
+  }
 })
 
 
