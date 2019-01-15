@@ -6,10 +6,11 @@ const url = require('url')
 let win
 let hasRendered = false
 
-const reveal = () => {
+const reveal = (onComplete) => {
   if (hasRendered) {
     win.show()
     win.focus()
+    onComplete(win)
   } else {
     hasRendered = true
     // wait for the DOM to render
@@ -17,15 +18,20 @@ const reveal = () => {
 
       win.show()
       win.focus()
+      onComplete(win)
     }, 125)
   }
 }
 
+<<<<<<< HEAD
 
 
 const show = () => {
+=======
+const show = (onComplete) => {
+>>>>>>> load from board and save to board
   if (win) {
-    reveal()
+    reveal(onComplete)
     return
   }
 
@@ -60,7 +66,7 @@ const show = () => {
     slashes: true
   }))
   win.once('ready-to-show', () => {
-    reveal()
+    reveal(onComplete)
   })
 }
 
@@ -71,7 +77,23 @@ module.exports = {
 // are we testing locally?
 // npx electron src/js/windows/shot-generator/main.js
 //if (module.parent.filename === path.join(__dirname, '..', '..', '..', '..', 'node_modules/electron/dist/resources/default_app.asar/main.js')) {  // on windows 10
-if (module.parent.filename === path.join(__dirname, '..', '..', '..', '..', 'node_modules/electron/dist/Electron.app/Contents/Resources/default_app.asar/main.js')) { //on osx
+if (module.parent.filename === path.join(__dirname, '..', '..', '..', '..', 'node_modules/electron/dist/Electron.app/Contents/Resources/default_app.asar/main.js')) { // macOS
   console.log('testing locally!')
-  app.on('ready', show)
+  app.on('ready', () => {
+    console.log('loading shot from example.storyboarder')
+
+    const fs = require('fs')
+    const path = require('path')
+    let file = JSON.parse(
+      fs.readFileSync(
+        path.join(
+          __dirname, '..', '..', '..', '..', 'test', 'fixtures', 'example', 'example.storyboarder'
+        )
+      )
+    )
+
+    show(win => {
+      win.webContents.send('loadShot', file.boards[0].sts)
+    })
+  })
 }

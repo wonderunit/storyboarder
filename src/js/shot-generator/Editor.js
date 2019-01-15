@@ -1,5 +1,6 @@
 const THREE = require('three')
 
+const { ipcRenderer } = require('electron')
 const { dialog } = require('electron').remote
 const fs = require('fs')
 const path = require('path')
@@ -2126,7 +2127,7 @@ const PhoneCursor = ({ remoteInput, camera, largeCanvasRef, selectObject, select
   )
 }
 
-const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, setActiveCamera, resetScene }) => {
+const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, setActiveCamera, resetScene, saveToBoard }) => {
   const onCreateCameraClick = () => {
     let id = THREE.Math.generateUUID()
     createObject({
@@ -2286,6 +2287,10 @@ const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, set
     }
   }
 
+  const onSaveToBoardClick = event => {
+    saveToBoard()
+  }
+
   return h(
     ['div#toolbar', { key: 'toolbar' },
       ['a.add[href=#]', { onClick: preventDefault(onCreateCameraClick) }, '+ Camera'],
@@ -2297,7 +2302,9 @@ const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, set
       ['a.add[href=#]', { onClick: preventDefault(onClearClick) }, 'Clear'],
 
       ['a.add[href=#]', { onClick: preventDefault(onLoadClick) }, 'Load'],
-      ['a.add[href=#]', { onClick: preventDefault(onSaveClick) }, 'Save']
+      ['a.add[href=#]', { onClick: preventDefault(onSaveClick) }, 'Save'],
+
+      ['a.add[href=#]', { onClick: preventDefault(onSaveToBoardClick) }, 'Save to Board'],
     ]
   )
 }
@@ -2567,11 +2574,20 @@ const Editor = connect(
       dialog.showMessageBox(null, { message: 'Saved!' })
     },
     setActiveCamera,
-    resetScene
+    resetScene,
+
+    saveToBoard: () => (dispatch, getState) => {
+      let state = getState()
+      ipcRenderer.send('saveShot', {
+        world: state.world,
+        sceneObjects: state.sceneObjects,
+        activeCamera: state.activeCamera
+      })
+    }
   }
 )(
 
-  ({ mainViewCamera, createObject, selectObject, setModels, loadScene, saveScene, activeCamera, setActiveCamera, resetScene, remoteInput, aspectRatio }) => {
+  ({ mainViewCamera, createObject, selectObject, setModels, loadScene, saveScene, activeCamera, setActiveCamera, resetScene, remoteInput, aspectRatio, saveToBoard }) => {
     const largeCanvasRef = useRef(null)
     const smallCanvasRef = useRef(null)
     const [ready, setReady] = useState(false)
@@ -2619,7 +2635,7 @@ const Editor = connect(
       { value: { scene: scene.current }},
       h(
         ['div.column', { style: { width: '100%' } }, [
-          [Toolbar, { createObject, selectObject, loadScene, saveScene, camera, setActiveCamera, resetScene }],
+          [Toolbar, { createObject, selectObject, loadScene, saveScene, camera, setActiveCamera, resetScene, saveToBoard }],
 
           ['div.row', { style: { flex: 1 }},
             ['div.column', { style: { width: '300px', background: '#111'} },

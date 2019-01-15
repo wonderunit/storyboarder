@@ -1411,10 +1411,15 @@ ipcMain.on('zoomIn',
 ipcMain.on('zoomOut',
   event => mainWindow.webContents.send('zoomOut'))
 
+ipcMain.on('saveShot',
+  (event, data) => mainWindow.webContents.send('saveShot', data))
+
 ipcMain.on('registration:open', event => registration.show())
 
-ipcMain.on('shot-generator:open', (event, arg) => {
-  shotGeneratorWindow.show()
+ipcMain.on('shot-generator:open', (event, shot) => {
+  shotGeneratorWindow.show(win => {
+    win.webContents.send('loadShot', shot)
+  })
 
   // TODO analytics?
   //

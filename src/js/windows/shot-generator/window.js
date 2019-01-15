@@ -48,6 +48,17 @@ const store = configureStore({
   },
 })
 
+
+
+ipcRenderer.on('loadShot', (event, shot) => {
+  store.dispatch({
+    type: 'LOAD_SCENE',
+    payload: shot.data
+  })
+})
+
+
+
 window.$r = { store }
 
 // disabled for now so we can reload the window easily during development

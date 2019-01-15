@@ -1892,7 +1892,7 @@ const loadBoardUI = async () => {
 
   document.querySelector("#shot-generator-container .flatbutton").addEventListener('click', event => {
     event.preventDefault()
-    ipcRenderer.send('shot-generator:open')
+    ipcRenderer.send('shot-generator:open', boardData.boards[currentBoard].sts)
   })
 
 
@@ -6904,6 +6904,15 @@ ipcRenderer.on('zoomOut', value => {
   let zoomIndex = ZOOM_LEVELS.indexOf(closest(ZOOM_LEVELS, storyboarderSketchPane.sketchPane.zoom))
   zoomIndex = Math.max(0, zoomIndex - 1)
   storyboarderSketchPane.zoomAtCursor(ZOOM_LEVELS[zoomIndex])
+})
+
+ipcRenderer.on('saveShot', (event, data) => {
+  console.log('saving shot')
+  boardData.boards[currentBoard].sts = {
+    version: '2.0.0', // TODO
+    data
+  }
+  markBoardFileDirty()
 })
 
 const log = opt => ipcRenderer.send('log', opt)
