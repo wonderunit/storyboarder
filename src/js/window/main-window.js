@@ -1892,7 +1892,10 @@ const loadBoardUI = async () => {
 
   document.querySelector("#shot-generator-container .flatbutton").addEventListener('click', event => {
     event.preventDefault()
-    ipcRenderer.send('shot-generator:open', boardData.boards[currentBoard].sts)
+    ipcRenderer.send('shot-generator:open', {
+      shot: boardData.boards[currentBoard].sts,
+      aspectRatio: parseFloat(boardData.aspectRatio)
+    })
   })
 
 

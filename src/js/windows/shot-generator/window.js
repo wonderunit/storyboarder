@@ -50,6 +50,12 @@ const store = configureStore({
 
 
 
+ipcRenderer.on('setup', (event, { aspectRatio }) => {
+  store.dispatch({
+    type: 'SET_ASPECT_RATIO',
+    payload: aspectRatio
+  })
+})
 ipcRenderer.on('loadShot', (event, shot) => {
   if (shot) {
     store.dispatch({

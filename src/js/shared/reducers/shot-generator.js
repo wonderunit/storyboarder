@@ -400,6 +400,10 @@ module.exports = {
           draft.models = action.payload
           return
 
+        case 'SET_ASPECT_RATIO':
+          draft.aspectRatio = action.payload
+          return
+
         case 'SELECT_BONE':
           //console.log('trying to get bone with id: ', action.payload)
           draft.selectedBone = action.payload
