@@ -33,7 +33,6 @@ class DragControls extends THREE.EventDispatcher {
     this._downTarget = null
 
     this.enabled = true
-    this.lastSelectedBone = null
 
     this.activate()
   }
@@ -156,34 +155,8 @@ class DragControls extends THREE.EventDispatcher {
         if (this._camera.isPerspectiveCamera) {
           if (bone) {
 
-            // HANDLE BONE SELECTION IN A DIFFERENT CLASS
-
-            if (this.lastSelectedBone && this.lastSelectedBone !== bone)
-            {
-              this.lastSelectedBone.connectedBone.material.color = {
-                r: 0,
-                g: 0.6,
-                b: 0.9
-              }
-            }
-            bone.connectedBone.material.color = {
-              r: 1,
-              g: 0,
-              b: 0
-            }
-
             this.onSelectBone( bone.uuid )
-            this.lastSelectedBone = bone
           } else {
-            if (this.lastSelectedBone)
-            {
-              this.lastSelectedBone.connectedBone.material.color = {
-                r: 0,
-                g: 0.6,
-                b: 0.9
-              }
-            }
-            this.lastSelectedBone = null
             this.onSelectBone( null )
           }
         }
