@@ -206,6 +206,7 @@ const World = ({ world, scene }) => {
       )
       // shift slightly to allow for OutlineEffect
       room.current.position.y = -0.03
+      room.current.visible = world.room.visible
       scene.add(room.current)
     }).catch(err => console.error(err))
 
