@@ -150,6 +150,16 @@ module.exports = function ({
         event.stopPropagation();
       })
 
+    document.getElementById("mouseButtonClick").addEventListener('touchend', event => {
+      event.preventDefault();
+      //document.getElementById("debugger").innerHTML += "<br>Mouse click: "+mouseModeClick;
+      mouseModeClick = false;
+      report({
+        mouseModeClick: mouseModeClick
+       })
+      //event.stopPropagation();
+    })
+
       if(window.DeviceMotionEvent){
         window.addEventListener("devicemotion", motion, false);
       }else{
