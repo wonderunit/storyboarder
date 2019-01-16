@@ -6936,6 +6936,10 @@ const saveToBoardFromShotGenerator = async ({ data, images }) => {
 ipcRenderer.on('saveShot', async (event, { data, images }) => {
   // TODO undo step?
   console.log('main-window#saveShot', data, images)
+
+  // force 100% opacity
+  layersEditor.setReferenceOpacity(1)
+
   await saveToBoardFromShotGenerator({ data, images })
 })
 ipcRenderer.on('insertShot', async (event, { data, images }) => {
@@ -6943,6 +6947,9 @@ ipcRenderer.on('insertShot', async (event, { data, images }) => {
 
   let index = await newBoard()
   await gotoBoard(index)
+
+  // force 100% opacity
+  layersEditor.setReferenceOpacity(1)
 
   await saveToBoardFromShotGenerator({ data, images })
 
