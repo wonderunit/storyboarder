@@ -2589,6 +2589,8 @@ const Editor = connect(
 
     // TODO DRY
     saveToBoard: () => (dispatch, getState) => {
+      dispatch(selectObject(null))
+
       let state = getState()
 
       requestAnimationFrame(() => {
@@ -2614,6 +2616,8 @@ const Editor = connect(
 
     // TODO DRY
     insertAsNewBoard: () => (dispatch, getState) => {
+      dispatch(selectObject(null))
+
       let state = getState()
 
       requestAnimationFrame(() => {
