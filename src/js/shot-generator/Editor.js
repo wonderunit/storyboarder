@@ -2132,7 +2132,7 @@ const PhoneCursor = ({ remoteInput, camera, largeCanvasRef, selectObject, select
   )
 }
 
-const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, setActiveCamera, resetScene, saveToBoard }) => {
+const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, setActiveCamera, resetScene, saveToBoard, insertAsNewBoard }) => {
   const onCreateCameraClick = () => {
     let id = THREE.Math.generateUUID()
     createObject({
@@ -2297,7 +2297,7 @@ const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, set
   }
 
   const onInsertNewBoardClick = event => {
-    ipcRenderer.send('insertShot')
+    insertAsNewBoard()
   }
 
   return h(
@@ -2314,7 +2314,7 @@ const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, set
       ['a.add[href=#]', { onClick: preventDefault(onSaveClick) }, 'Save'],
 
       ['a.add[href=#]', { onClick: preventDefault(onSaveToBoardClick) }, 'Save to Board'],
-      ['a.add[href=#]', { onClick: preventDefault(onInsertNewBoardClick) }, 'Insert New Board']
+      ['a.add[href=#]', { onClick: preventDefault(onInsertNewBoardClick) }, 'Insert As New Board']
 
     ]
   )
@@ -2587,6 +2587,7 @@ const Editor = connect(
     setActiveCamera,
     resetScene,
 
+    // TODO DRY
     saveToBoard: () => (dispatch, getState) => {
       let state = getState()
 
@@ -2609,11 +2610,36 @@ const Editor = connect(
         })
 
       })
+    },
+
+    // TODO DRY
+    insertAsNewBoard: () => (dispatch, getState) => {
+      let state = getState()
+
+      requestAnimationFrame(() => {
+
+        // HACK FIXME don't hardcode these
+        let cameraImage = document.querySelector('#camera-canvas').toDataURL()
+        let topDownImage = document.querySelector('#top-down-canvas').toDataURL()
+
+        ipcRenderer.send('insertShot', {
+          data: {
+            world: state.world,
+            sceneObjects: state.sceneObjects,
+            activeCamera: state.activeCamera
+          },
+          images: {
+            'camera': cameraImage,
+            'topdown': topDownImage
+          }
+        })
+
+      })
     }
   }
 )(
 
-  ({ mainViewCamera, createObject, selectObject, setModels, loadScene, saveScene, activeCamera, setActiveCamera, resetScene, remoteInput, aspectRatio, saveToBoard }) => {
+  ({ mainViewCamera, createObject, selectObject, setModels, loadScene, saveScene, activeCamera, setActiveCamera, resetScene, remoteInput, aspectRatio, saveToBoard, insertAsNewBoard }) => {
     const largeCanvasRef = useRef(null)
     const smallCanvasRef = useRef(null)
     const [ready, setReady] = useState(false)
@@ -2661,7 +2687,7 @@ const Editor = connect(
       { value: { scene: scene.current }},
       h(
         ['div.column', { style: { width: '100%' } }, [
-          [Toolbar, { createObject, selectObject, loadScene, saveScene, camera, setActiveCamera, resetScene, saveToBoard }],
+          [Toolbar, { createObject, selectObject, loadScene, saveScene, camera, setActiveCamera, resetScene, saveToBoard, insertAsNewBoard }],
 
           ['div.row', { style: { flex: 1 }},
             ['div.column', { style: { width: '300px', background: '#111'} },
