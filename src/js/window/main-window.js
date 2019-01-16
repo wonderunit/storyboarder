@@ -6928,6 +6928,7 @@ ipcRenderer.on('saveShot', async (event, { data, images }) => {
   let image = await exporterCommon.getImage(images.camera)
   let context = createSizedContext(size)
   let canvas = context.canvas
+  // fit to destination (until we fix the shot generator render size)
   context.drawImage(image, ...util.fitToDst(canvas, image).map(Math.round))
   // replace
   let layerIndex = storyboarderSketchPane.sketchPane.layers.findByName('reference').index
