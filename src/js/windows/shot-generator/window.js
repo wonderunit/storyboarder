@@ -29,7 +29,7 @@ const Editor = require('../../shot-generator/Editor')
 const presetsStorage = require('../../shared/store/presetsStorage')
 const { initialState, loadScene, resetScene } = require('../../shared/reducers/shot-generator')
 
-const createServer = require('../services/createServer')
+const createServer = require('../../services/createServer')
 
 const store = configureStore({
   ...initialState,
