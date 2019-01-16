@@ -356,7 +356,9 @@ module.exports = {
           }
           if (action.payload.model != null) {
             draft.sceneObjects[action.payload.id].model = action.payload.model
-            draft.sceneObjects[action.payload.id].height = initialState.defaultCharacterHeights[action.payload.model]
+            if (draft.sceneObjects[action.payload.id].type === 'character') {
+              draft.sceneObjects[action.payload.id].height = initialState.defaultCharacterHeights[action.payload.model]
+            }
           }
 
           if (action.payload.width != null) {
