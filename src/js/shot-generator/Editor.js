@@ -2292,6 +2292,10 @@ const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, set
     saveToBoard()
   }
 
+  const onInsertNewBoardClick = event => {
+    ipcRenderer.send('insertShot')
+  }
+
   return h(
     ['div#toolbar', { key: 'toolbar' },
       ['a.add[href=#]', { onClick: preventDefault(onCreateCameraClick) }, '+ Camera'],
@@ -2306,6 +2310,8 @@ const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, set
       ['a.add[href=#]', { onClick: preventDefault(onSaveClick) }, 'Save'],
 
       ['a.add[href=#]', { onClick: preventDefault(onSaveToBoardClick) }, 'Save to Board'],
+      ['a.add[href=#]', { onClick: preventDefault(onInsertNewBoardClick) }, 'Insert New Board']
+
     ]
   )
 }
@@ -2579,10 +2585,25 @@ const Editor = connect(
 
     saveToBoard: () => (dispatch, getState) => {
       let state = getState()
-      ipcRenderer.send('saveShot', {
-        world: state.world,
-        sceneObjects: state.sceneObjects,
-        activeCamera: state.activeCamera
+
+      requestAnimationFrame(() => {
+
+        // HACK FIXME don't hardcode these
+        let cameraImage = document.querySelector('#camera-canvas').toDataURL()
+        let topDownImage = document.querySelector('#top-down-canvas').toDataURL()
+
+        ipcRenderer.send('saveShot', {
+          data: {
+            world: state.world,
+            sceneObjects: state.sceneObjects,
+            activeCamera: state.activeCamera
+          },
+          images: {
+            'camera': cameraImage,
+            'topdown': topDownImage
+          }
+        })
+
       })
     }
   }

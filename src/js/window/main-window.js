@@ -1892,7 +1892,10 @@ const loadBoardUI = async () => {
 
   document.querySelector("#shot-generator-container .flatbutton").addEventListener('click', event => {
     event.preventDefault()
-    ipcRenderer.send('shot-generator:open', boardData.boards[currentBoard].sts)
+    ipcRenderer.send('shot-generator:open', {
+      shot: boardData.boards[currentBoard].sts,
+      aspectRatio: parseFloat(boardData.aspectRatio)
+    })
   })
 
 
@@ -6906,13 +6909,40 @@ ipcRenderer.on('zoomOut', value => {
   storyboarderSketchPane.zoomAtCursor(ZOOM_LEVELS[zoomIndex])
 })
 
-ipcRenderer.on('saveShot', (event, data) => {
-  console.log('saving shot')
+ipcRenderer.on('saveShot', async (event, { data, images }) => {
+  // TODO undo step?
+
+  console.log('main-window#saveShot', data, images)
   boardData.boards[currentBoard].sts = {
-    version: '2.0.0', // TODO
+    version: pkg.version,
     data
   }
   markBoardFileDirty()
+
+
+  // resize
+  let size = [
+    storyboarderSketchPane.sketchPane.width,
+    storyboarderSketchPane.sketchPane.height
+  ]
+  let image = await exporterCommon.getImage(images.camera)
+  let context = createSizedContext(size)
+  let canvas = context.canvas
+  // fit to destination (until we fix the shot generator render size)
+  context.drawImage(image, ...util.fitToDst(canvas, image).map(Math.round))
+  // replace
+  let layerIndex = storyboarderSketchPane.sketchPane.layers.findByName('reference').index
+  storyboarderSketchPane.replaceLayer(layerIndex, canvas)
+  // force a file save and thumbnail update
+  markImageFileDirty([layerIndex])
+})
+ipcRenderer.on('insertShot', async () => {
+  let index = await newBoard()
+  gotoBoard(index)
+  ipcRenderer.send('shot-generator:open', {
+    shot: boardData.boards[currentBoard].sts,
+    aspectRatio: parseFloat(boardData.aspectRatio)
+  })
 })
 
 const log = opt => ipcRenderer.send('log', opt)

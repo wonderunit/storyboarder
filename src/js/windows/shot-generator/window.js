@@ -27,7 +27,7 @@ const h = require('../../utils/h')
 const Editor = require('../../shot-generator/Editor')
 
 const presetsStorage = require('../../shared/store/presetsStorage')
-const { initialState } = require('../../shared/reducers/shot-generator')
+const { initialState, loadScene, resetScene } = require('../../shared/reducers/shot-generator')
 
 const store = configureStore({
   ...initialState,
@@ -50,11 +50,18 @@ const store = configureStore({
 
 
 
-ipcRenderer.on('loadShot', (event, shot) => {
+ipcRenderer.on('setup', (event, { aspectRatio }) => {
   store.dispatch({
-    type: 'LOAD_SCENE',
-    payload: shot.data
+    type: 'SET_ASPECT_RATIO',
+    payload: aspectRatio
   })
+})
+ipcRenderer.on('loadShot', (event, shot) => {
+  if (shot) {
+    store.dispatch(loadScene(shot.data))
+  } else {
+    store.dispatch(resetScene())
+  }
 })
 
 

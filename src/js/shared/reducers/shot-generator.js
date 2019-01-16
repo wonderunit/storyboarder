@@ -116,13 +116,49 @@ const defaultScenePreset = {
   activeCamera: '6BC46A44-7965-43B5-B290-E3D2B9D15EEE',
 }
 
+const initialScene = {
+  world: {
+    ground: true,
+    room: {
+      visible: false,
+      width: 30,
+      length: 40,
+      height: 30
+    },
+    environment: {
+      file: undefined,
+      x: 0,
+      y: 0,
+      z: 0,
+      rotation: 0,
+      scale: 1,
+      visible: true
+    }
+  },
+  sceneObjects: {
+    '6BC46A44-7965-43B5-B290-E3D2B9D15EEE': {
+      id: '6BC46A44-7965-43B5-B290-E3D2B9D15EEE',
+      type: 'camera',
+      fov: 22.25,
+      x: 0,
+      y: 6,
+      z: 1,
+      rotation: 0,
+      tilt: 0,
+      roll: 0.0,
+      name: undefined
+    }
+  },
+  activeCamera: '6BC46A44-7965-43B5-B290-E3D2B9D15EEE',
+}
+
 // TODO sg key
 const initialState = {
   models: {},
 
   aspectRatio: 2.35,
 
-  ...defaultScenePreset,
+  ...initialScene,
 
   selection: undefined,
   selectedBone: undefined,
@@ -320,7 +356,9 @@ module.exports = {
           }
           if (action.payload.model != null) {
             draft.sceneObjects[action.payload.id].model = action.payload.model
-            draft.sceneObjects[action.payload.id].height = initialState.defaultCharacterHeights[action.payload.model]
+            if (draft.sceneObjects[action.payload.id].type === 'character') {
+              draft.sceneObjects[action.payload.id].height = initialState.defaultCharacterHeights[action.payload.model]
+            }
           }
 
           if (action.payload.width != null) {
@@ -398,6 +436,10 @@ module.exports = {
 
         case 'SET_MODELS':
           draft.models = action.payload
+          return
+
+        case 'SET_ASPECT_RATIO':
+          draft.aspectRatio = action.payload
           return
 
         case 'SELECT_BONE':
