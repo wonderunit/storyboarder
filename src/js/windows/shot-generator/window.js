@@ -27,7 +27,7 @@ const h = require('../../utils/h')
 const Editor = require('../../shot-generator/Editor')
 
 const presetsStorage = require('../../shared/store/presetsStorage')
-const { initialState, loadScene, resetScene } = require('../../shared/reducers/shot-generator')
+const { initialState, loadScene, resetScene, updateDevice } = require('../../shared/reducers/shot-generator')
 
 const createServer = require('../../services/createServer')
 const createDualShockController = require('../../shot-generator/DualshockController')
@@ -88,7 +88,17 @@ ReactDOM.render(
 
 const throttle = require('lodash.throttle')
 const updater = (values, changed) => {
-  console.log('dualshock', values, changed)
+  updateDevice(
+    0,
+    {
+      motion: {
+        ...values.motion
+      },
+      digital: {
+        ...values.digital
+      }
+    }
+  )
 }
 createDualShockController(throttle(updater, 16, { leading: true }))
 
