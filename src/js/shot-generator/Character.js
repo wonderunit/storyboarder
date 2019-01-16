@@ -99,11 +99,20 @@ const Character = React.memo(({ scene, id, type, remoteInput, characterModels, i
     let cloned = cloneAnimated(characterModels[props.model])
     //let cloned = characterModels[props.model]
 
+
+    if (cloned instanceof THREE.SkinnedMesh)
+    {
+      let clo = cloneAnimated(characterModels[props.model])
+      cloned = new THREE.Object3D()
+      cloned.add(clo)
+    }
+    console.log('get scale from : ', characterModels[props.model])
     let mat = cloned.children[0].material ? cloned.children[0].material.clone() : cloned.children[1].material.clone()
 
     object.current = cloned
     let skel = (object.current.children[0] instanceof THREE.Mesh) ? object.current.children[0] : object.current.children[1]
     skel.material = mat.clone()
+    skel.skeleton.pose()
     object.current.originalHeight = characterModels[props.model].originalHeight
 
     //   MULTI MATERIALS
@@ -111,12 +120,9 @@ const Character = React.memo(({ scene, id, type, remoteInput, characterModels, i
 
     object.current.userData.id = id
     object.current.userData.type = type
-
     object.current.scale.set( characterModels[props.model].scale.x, characterModels[props.model].scale.y, characterModels[props.model].scale.z )
     object.current.rotation.set( characterModels[props.model].rotation.x, characterModels[props.model].rotation.y, characterModels[props.model].rotation.z )
-
     scene.add( object.current )
-
     // initialize the bounding box helper
     aabb.current = new THREE.Box3()
     let geometry = new THREE.BoxGeometry( 1, 1, 1 )
@@ -124,12 +130,19 @@ const Character = React.memo(({ scene, id, type, remoteInput, characterModels, i
     material.visible = false
     aabbHelper.current = new BoundingBoxHelper( object.current, geometry, material )
 
-    scene.add( aabbHelper.current )
 
-    requestAnimationFrame(() => {
-      boundingBoxUpdater.current( object.current, aabb.current, aabbHelper.current )
-
-    })
+    //skel
+    object.current.bonesHelper = new BonesHelper(skel.skeleton.bones[0], object.current)
+    //object.current.bonesHelper.
+    //object.current.add(object.current.bonesHelper)
+    //console.log(' current object: ', object.current)
+    scene.add(object.current.bonesHelper)
+    // scene.add( aabbHelper.current )
+    //
+    // requestAnimationFrame(() => {
+    //   boundingBoxUpdater.current( object.current, aabb.current, aabbHelper.current )
+    //
+    // })
 
     return function cleanup () {
       console.log(type, id, 'remove')
@@ -189,7 +202,7 @@ const Character = React.memo(({ scene, id, type, remoteInput, characterModels, i
     if (object.current) {
       // FIXME hardcoded
       // let bbox = new THREE.Box3().setFromObject( object.current )
-
+      console.log('set new current scale 1: ', object.current.scale)
       height = object.current.originalHeight
       let scale = props.height / height
 
@@ -229,6 +242,14 @@ const Character = React.memo(({ scene, id, type, remoteInput, characterModels, i
 
   useEffect(() => {
     // handle selection/unselection
+    if (isSelected)
+    {
+      for (var cone of object.current.bonesHelper.cones)
+        object.current.bonesHelper.add(cone)
+    } else {
+      for (var cone of object.current.bonesHelper.cones)
+        object.current.bonesHelper.remove(cone)
+    }
     let skel = (object.current.children[0] instanceof THREE.Mesh) ? object.current.children[0] : object.current.children[1]
     if ( skel.material.length > 0 ) {
       skel.material.forEach(material => {

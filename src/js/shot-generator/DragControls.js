@@ -104,6 +104,12 @@ class DragControls extends THREE.EventDispatcher {
   }
 
   getObjectAndBone ( intersect ) {
+    if (intersect.object instanceof THREE.Mesh && intersect.object.userData.type === 'hitter' )
+    {
+      let obj = intersect.object.parent.object3D
+      return [obj, null]
+    }
+
     if (intersect.object instanceof BoundingBoxHelper) {
       return [intersect.object.object, null]
     }
@@ -128,9 +134,21 @@ class DragControls extends THREE.EventDispatcher {
     this._raycaster.setFromCamera( this._mouse, this._camera )
 
     let shouldReportSelection = false
-    let intersects = this._raycaster.intersectObjects( this._objects )
+    let checkIntersectionsWithMeshes = []
+    for (var o of this._objects)
+    {
+      if (o instanceof THREE.Mesh) checkIntersectionsWithMeshes.push(o)
+      if (o instanceof THREE.Object3D && o.userData.type === 'character')
+      {
+        checkIntersectionsWithMeshes = checkIntersectionsWithMeshes.concat(o.bonesHelper.hit_meshes)
+      }
+    }
+    let intersects = this._raycaster.intersectObjects( checkIntersectionsWithMeshes )
+    //console.log('intersects with: ', checkIntersectionsWithMeshes)
+    console.log('hots: ', intersects)
     if ( intersects.length > 0 ) {
       let object = this.getObjectAndBone( intersects[ 0 ] )[0]
+      console.log('got object: ', object)
       if (
         // is the camera is orthographic (which means, start dragging on the first click)
         this._camera.isOrthographicCamera
@@ -210,7 +228,17 @@ class DragControls extends THREE.EventDispatcher {
     event.preventDefault()
 
     this._raycaster.setFromCamera( this._mouse, this._camera )
-    let intersects = this._raycaster.intersectObjects( this._objects )
+
+    let checkIntersectionsWithMeshes = []
+    for (var o of this._objects)
+    {
+      if (o instanceof THREE.Mesh) checkIntersectionsWithMeshes.push(o)
+      if (o instanceof THREE.Object3D && o.userData.type === 'character')
+      {
+        checkIntersectionsWithMeshes = checkIntersectionsWithMeshes.concat(o.bonesHelper.hit_meshes)
+      }
+    }
+    let intersects = this._raycaster.intersectObjects( checkIntersectionsWithMeshes )
 
     let object
     let bone

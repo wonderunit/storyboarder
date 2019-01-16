@@ -70,8 +70,8 @@ module.exports = {
 
 // are we testing locally?
 // npx electron src/js/windows/shot-generator/main.js
-//if (module.parent.filename === path.join(__dirname, '..', '..', '..', '..', 'node_modules/electron/dist/resources/default_app.asar/main.js')) {  // on windows 10
-if (module.parent.filename === path.join(__dirname, '..', '..', '..', '..', 'node_modules/electron/dist/Electron.app/Contents/Resources/default_app.asar/main.js')) { // macOS
+if (module.parent.filename === path.join(__dirname, '..', '..', '..', '..', 'node_modules/electron/dist/resources/default_app.asar/main.js')) {  // on windows 10
+//if (module.parent.filename === path.join(__dirname, '..', '..', '..', '..', 'node_modules/electron/dist/Electron.app/Contents/Resources/default_app.asar/main.js')) { // macOS
   console.log('testing locally!')
   app.on('ready', () => {
     console.log('loading shot from example.storyboarder')

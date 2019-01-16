@@ -76,7 +76,8 @@ const RoundedBoxGeometry = require('three-rounded-box')(THREE)
 window.THREE = THREE
 
 const draggables = (sceneObjects, scene) =>
-  scene.children.filter(o => o.userData.type === 'object' || o instanceof BoundingBoxHelper)
+  //scene.children.filter(o => o.userData.type === 'object' || o instanceof BoundingBoxHelper)
+  scene.children.filter(o => o.userData.type === 'object' || o.userData.type === 'character')
 
 // const stats = new Stats()
 // stats.showPanel(0)
@@ -448,7 +449,8 @@ const SceneManager = connect(
             bonesHelper.current.root !== skel.skeleton.bones[0]
           ) {
             //console.log('do we need a new bone structure? : ', (skel))
-            bonesHelper.current = new BonesHelper(skel.skeleton.bones[0])
+            //bonesHelper.current = new BonesHelper(skel.skeleton.bones[0])
+            bonesHelper.current = child.bonesHelper
             //console.log('creating a new bone structure: ', bonesHelper.current)
           }
         } else {
@@ -683,7 +685,6 @@ const Camera = React.memo(({ scene, id, type, setCamera, ...props }) => {
 
     // camera.current.fov = props.fov
     // camera.current.updateProjectionMatrix()
-
     scene.add(camera.current)
     // setCamera(camera.current)
 
@@ -2611,6 +2612,9 @@ const Editor = connect(
         let characterModelDataById = Object.entries(characterModels).reduce(
           (coll, [key, model]) => {
             let model1 = (model.children[0] instanceof THREE.Mesh) ? model.children[0] : model.children[1]
+            if (model1 === undefined) model1 = model
+            console.log('model1: ', model1, ' model: ', model)
+
             coll[key] = {
               model: model1.toJSON(),
               bones: JSON.parse(JSON.stringify(model1.skeleton.bones)),
