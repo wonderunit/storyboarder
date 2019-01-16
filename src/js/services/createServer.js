@@ -136,14 +136,13 @@ module.exports = function ({
 
       document.getElementById("mouseButton").addEventListener('touchstart', event => {
         event.preventDefault();
-
         mouseOn = !mouseOn;
-        //document.getElementById("debugger").innerHTML += "<br>Mouse mode on touch: "+mouseOn;
         if (mouseOn) {
-          document.getElementById("mouseButton").innerHTML = "3D ACTION"
+          document.getElementById("mouseButton").innerHTML = "3D rotation"
         } else {
-          document.getElementById("mouseButton").innerHTML = "MOUSE ACTION"
-        }
+          document.getElementById("mouseButton").innerHTML = "Cursor mode"
+         }
+        //document.getElementById("debugger").innerHTML += "<br>Mouse mode on touch: "+mouseOn;
         report({
           mouseMode: mouseOn
         })
