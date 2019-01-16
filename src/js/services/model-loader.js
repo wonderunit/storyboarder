@@ -218,7 +218,21 @@ const loadModels = () => {
         var scale = 8// targetHeight / height
         mesh.scale.set(scale, scale, scale)
         mesh.updateMatrix()
-        mesh.material.map = textures.chair
+
+        let material = new THREE.MeshToonMaterial({
+          color: 0xffffff,
+          emissive: 0x0,
+          specular: 0x0,
+          skinning: true,
+          shininess: 0,
+          flatShading: false,
+          morphNormals: true,
+          morphTargets: true,
+          map: textures.chair
+        })
+
+        mesh.material = material
+        //mesh.material.map = textures.chair
         objModels.chair = mesh
       }
     })
