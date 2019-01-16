@@ -274,9 +274,12 @@ module.exports = function ({
       <div id="debugger" style="top: 0px;width: 100vw;height: 50vh;position:absolute;z-index:15;">
       </div>
       <div id="container" style="width: 100vw;height: 100%;background-color: #EEEEEE;position: absolute;padding: 0;margin:  0;">
-        <div id="footer" style="position:absolute; bottom: 0px; height: 100px; width: 100%;">
-          <div id="mouseButton" style="padding: 20px;margin: 20px;width: 160px;text-align: center;margin-left: auto;margin-right: auto;margin-bottom: 20px;font-size: 16px;position: relative;top: auto;bottom:10px; background-color: #404040;color: #ffffff;">
-            MOUSE ACTION!
+        <div id="footer" style="position:absolute; bottom: 0px; height: 220px; width: 100%;">
+          <div id="mouseButtonClick" style="padding: 20px;margin: 20px;width: 160px;text-align: center;margin-left: auto;margin-right: auto;font-size: 16px;position: relative;top: auto;margin-bottom:30px; background-color: #404040;color: #ffffff;cursor: pointer;">
+            Click!
+          </div>
+          <div id="mouseButton" style="padding: 20px;margin: 20px;width: 160px;text-align: center;margin-left: auto;margin-right: auto;margin-bottom: 20px;font-size: 16px;position: relative;top: auto;bottom:10px; background-color: #404040;color: #ffffff;cursor: pointer;">
+            Cursor mode
           </div>
         </div>
       </div>
