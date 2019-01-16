@@ -34,6 +34,10 @@ module.exports = function ({
       if (values.mouseMode != null) {
         setInputMouseMode(values.mouseMode)
       }
+      
+      if (req.body.mouseModeClick != null) {
+        setInputPhoneClick(values.mouseModeClick)
+      }
     })
   })
 
