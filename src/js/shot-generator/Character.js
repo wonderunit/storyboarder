@@ -106,7 +106,7 @@ const Character = React.memo(({ scene, id, type, remoteInput, characterModels, i
       cloned = new THREE.Object3D()
       cloned.add(clo)
     }
-    console.log('get scale from : ', characterModels[props.model])
+    //console.log('get scale from : ', characterModels[props.model])
     let mat = cloned.children[0].material ? cloned.children[0].material.clone() : cloned.children[1].material.clone()
 
     object.current = cloned
@@ -202,7 +202,7 @@ const Character = React.memo(({ scene, id, type, remoteInput, characterModels, i
     if (object.current) {
       // FIXME hardcoded
       // let bbox = new THREE.Box3().setFromObject( object.current )
-      console.log('set new current scale 1: ', object.current.scale)
+      //console.log('set new current scale 1: ', object.current.scale)
       height = object.current.originalHeight
       let scale = props.height / height
 

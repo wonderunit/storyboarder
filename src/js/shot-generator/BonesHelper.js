@@ -64,7 +64,6 @@ function BonesHelper( object, object3D ) {
   let skeletonHelper = new THREE.SkeletonHelper( bones[0] )
   skeletonHelper.material.linewidth = 5
   //this.add(skeletonHelper)
-  console.log('bones: ', bones)
   let traversedBones = []
   for (var ii = 0; ii< bones.length; ii++) {
     var bone = bones[ii]
@@ -79,101 +78,121 @@ function BonesHelper( object, object3D ) {
     while (bone.children && bone.children[jj] && bone.children[jj].isBone  )
     {
       if (traversedBones.includes(bone)) {
-        console.log('double!')
-      } else {
+
+        let currentCreated = traversedBones[traversedBones.indexOf(bone)]
+        //console.log('double!: ', currentCreated)
+        this.remove(currentCreated)
+        this.remove(currentCreated.hitBone)
+        traversedBones[traversedBones.indexOf(bone)] = bone
+      }
+      else {
         traversedBones.push(bone)
+      }
 
-        posA.setFromMatrixPosition(boneMatrix.multiplyMatrices(matrixWorldInv, bone.matrixWorld))
-        posB.setFromMatrixPosition(boneMatrix.multiplyMatrices(matrixWorldInv, bone.children[jj].matrixWorld))
+      let boneIndex = traversedBones.indexOf(bone)
+
+      posA.setFromMatrixPosition(boneMatrix.multiplyMatrices(matrixWorldInv, bone.matrixWorld))
+      posB.setFromMatrixPosition(boneMatrix.multiplyMatrices(matrixWorldInv, bone.children[jj].matrixWorld))
+
+      scaleA.setFromMatrixScale(boneMatrix)
+      scaleB.setFromMatrixScale(matrixWorldInv)
+      scaleC.setFromMatrixScale(object.matrixWorld)
+      let boneLength = posA.distanceTo(posB) * scaleC.y //* scaleB.y
+      let boneWidth = boneLength > 0.15 ? boneLength : 0.15   //restrict minimum width
+      if (boneWidth > 0.35) boneWidth = 0.35  //also maximum..
+      let s_geometry = new THREE.SphereGeometry(boneWidth/18, 8, 8)
+      let s_material = new THREE.MeshBasicMaterial({
+        color: 0x006eb8,
+        depthTest: false,
+        depthWrite: false,
+        transparent: true,
+        opacity: 0.9,
+        flatShading: true,
+      })
+
+      let s_sphere = new THREE.Mesh(s_geometry, s_material)
+
+      let geometry = new THREE.CylinderBufferGeometry(boneWidth / 25, boneWidth /15 , boneLength - boneWidth/20, 4 )//, heightSegments : Integer, openEnded : Boolean, thetaStart : Float, thetaLength : Float)
+      //let geometry = new THREE.CylinderBufferGeometry(boneWidth / 25, boneWidth /15 , boneLength , 4 )//, heightSegments : Integer, openEnded : Boolean, thetaStart : Float, thetaLength : Float)
 
 
-        scaleA.setFromMatrixScale(boneMatrix)
-        scaleB.setFromMatrixScale(matrixWorldInv)
-        scaleC.setFromMatrixScale(object.matrixWorld)
-        let boneLength = posA.distanceTo(posB) * scaleC.y //* scaleB.y
-        let boneWidth = boneLength > 0.15 ? boneLength : 0.15   //restrict minimum width
-        if (boneWidth > 0.35) boneWidth = 0.35  //also maximum..
-        let s_geometry = new THREE.SphereGeometry(boneWidth/18, 8, 8)
-        let s_material = new THREE.MeshBasicMaterial({
-          color: 0x006eb8,
-          depthTest: false,
-          depthWrite: false,
-          transparent: true,
-          opacity: 0.9,
-          flatShading: true,
-        })
+      //secondary geometry used for hit testing
+      //console.log('this is: ', bone.name.indexOf('Spine'))
+      // if it's mixamo rig all spine bones contain the SPine string, set that to wider
+      let hit_bone_width = ((bone.name.indexOf('Spine')>0)||(bone.name.indexOf('Hips')>0)) ? boneWidth : boneWidth / 4
+      let hit_geometry = new THREE.CylinderBufferGeometry(hit_bone_width, hit_bone_width, boneLength, 4)
+      let hit_material = new THREE.MeshBasicMaterial({
+        color: 0x00ff00,
+        depthTest: false,
+        depthWrite: false,
+        transparent: true,
+        opacity: 0.5,
+        flatShading: true
+      })
 
-        let s_sphere = new THREE.Mesh(s_geometry, s_material)
+      this.cones[boneIndex]= new THREE.Mesh()
 
-        let geometry = new THREE.CylinderBufferGeometry(boneWidth / 25, boneWidth /15 , boneLength - boneWidth/20, 4 )//, heightSegments : Integer, openEnded : Boolean, thetaStart : Float, thetaLength : Float)
+      //this.cones[traversedBones.indexOf(bone)]
 
-        //secondary geometry used for hit testing
-        //console.log('this is: ', bone.name.indexOf('Spine'))
-        // if it's mixamo rig all spine bones contain the SPine string, set that to wider
-        let hit_bone_width = (bone.name.indexOf('Spine')>0) ? boneWidth : boneWidth / 4
-        let hit_geometry = new THREE.CylinderBufferGeometry(hit_bone_width, hit_bone_width, boneLength, 4)
-        let hit_material = new THREE.MeshBasicMaterial({
-          color: 0x00ff00,
-          depthTest: false,
-          depthWrite: false,
-          transparent: true,
-          opacity: 0.5,
-          flatShading: true
-        })
+      let coneGeom = new THREE.Mesh( geometry.clone(), s_material.clone() )
+      let hitMesh = new THREE.Mesh(hit_geometry, hit_material)
 
-        this.cones[boneCounter]= new THREE.Mesh()
-        let coneGeom = new THREE.Mesh( geometry.clone(), s_material.clone() )
-        let hitMesh = new THREE.Mesh(hit_geometry, hit_material)
+      coneGeom.position.y = boneLength / 2 + boneWidth / 60
+      this.cones[boneIndex].add( coneGeom )
+      this.cones[boneIndex] = new THREE.Mesh( geometry.clone(), s_material.clone() )
 
-        coneGeom.position.y = boneLength / 2 + boneWidth / 60
-        this.cones[boneCounter].add( coneGeom )
-        this.hit_meshes.push( hitMesh )
-        hitMesh.name = 'main raycast mesh '+bone.name
-        hitMesh.userData.type = 'hitter'
-        this.cones[boneCounter] = new THREE.Mesh( geometry.clone(), s_material.clone() )
+      this.cones[boneIndex].geometry.applyMatrix(new Matrix4().makeTranslation(0, boneLength/2+boneWidth/60, 0))
+      hitMesh.geometry.applyMatrix(new Matrix4().makeTranslation(0, boneLength/2, 0))
+      this.hit_meshes[boneIndex] = ( hitMesh )
 
-        this.cones[boneCounter].geometry.applyMatrix(new Matrix4().makeTranslation(0, boneLength/2+boneWidth/60, 0))
-        hitMesh.geometry.applyMatrix(new Matrix4().makeTranslation(0, boneLength/2, 0))
+      // set visible here to see the hit mesh 
+      hitMesh.material.visible = false
+      hitMesh.name = 'main raycast mesh '+bone.name
+      hitMesh.userData.type = 'hitter'
 
-        // Add the axis helper if needed
-        //this.cones[boneCounter].add(new THREE.AxesHelper(boneLength / 2))
+      // Add the axis helper if needed
+      //this.cones[boneCounter].add(new THREE.AxesHelper(boneLength / 2))
 
-        this.cones[boneCounter].userData.name = bone.name
-        this.cones[boneCounter].userData.type = 'bone'
-        this.cones[boneCounter].userData.bone = bone.uuid
-        this.cones[boneCounter].userData.segment = 0
-        //this.cones[boneCounter].add(s_sphere)
-        if (boneLength>0)
+      this.cones[boneIndex].userData.name = bone.name
+      this.cones[boneIndex].userData.type = 'bone'
+      this.cones[boneIndex].userData.bone = bone.uuid
+      this.cones[boneIndex].userData.segment = 0
+      //this.cones[boneCounter].add(s_sphere)
+      if (boneLength>0)
+      {
+        if ( ( bone.name.indexOf('LeftHand')>0 && ( bone.name.charAt(bone.name.indexOf('LeftHand')+8)) !== "" )
+          || ( bone.name.indexOf('RightHand')>0 && ( bone.name.charAt(bone.name.indexOf('RightHand')+9)) !== "" ) )
         {
-          //removed, adding only when selected
-          console.log('char at: ', ( bone.name.charAt(bone.name.indexOf('LeftHand')+8)) === "" )
-          // if ( ( bone.name.indexOf('LeftHand')>0 && ( bone.name.charAt(bone.name.indexOf('LeftHand')+8)) !== "" )
-          //   || ( bone.name.indexOf('RightHand')>0 && ( bone.name.charAt(bone.name.indexOf('RightHand')+9)) !== "" ) )
-          // {
-          //   console.log('bone name: ', bone.name)
-          // } else {
-          //   this.add(hitMesh)
-          //
-          // }
-          this.add(hitMesh)
-          if ( bone.name.indexOf('Hips')>0 && ( bone.name.charAt(bone.name.indexOf('Hips')+4)) === "" )
+          //console.log('not adding hitter for bone: ', bone.name)
+        } else {
+          if ( ( bone.name.indexOf('LeftHand')>0 && ( bone.name.charAt(bone.name.indexOf('LeftHand')+8)) === "" )
+            || ( bone.name.indexOf('RightHand')>0 && ( bone.name.charAt(bone.name.indexOf('RightHand')+9)) === "" ) )
           {
-            hitMesh.geometry.applyMatrix(new Matrix4().makeTranslation(0, -boneLength/2, 0))
+            hitMesh.geometry.applyMatrix(new Matrix4().makeScale(1, 1.8, 1))
+            //hitMesh.geometry.applyMatrix(new Matrix4().makeTranslation(0, boneLength, 0))
           }
-          //if (bone.name.)
-          //this.add(this.cones[boneCounter])
-          bone.hitBone = hitMesh
-          bone.connectedBone = this.cones[boneCounter]
+          this.add(hitMesh)
 
-          boneCounter++
         }
+        if ( bone.name.indexOf('Hips')>0 && ( bone.name.charAt(bone.name.indexOf('Hips')+4)) === "" )
+        {
+          hitMesh.geometry.applyMatrix(new Matrix4().makeScale(1, 1.8, 1))
+          hitMesh.geometry.applyMatrix(new Matrix4().makeTranslation(0, -boneLength, 0))
+        }
+        //removed, adding only when selected
+        //this.add(this.cones[boneCounter])
+        bone.hitBone = hitMesh
+        bone.connectedBone = this.cones[boneIndex]
+
+        boneCounter++
+
       }
 
       jj++
 
     }
   }
-  console.log('traversed bomnes: ', traversedBones)
+  //console.log('traversed bomnes: ', traversedBones)
 
   this.root = object
   this.object3D = object3D

@@ -2612,9 +2612,7 @@ const Editor = connect(
         let characterModelDataById = Object.entries(characterModels).reduce(
           (coll, [key, model]) => {
             let model1 = (model.children[0] instanceof THREE.Mesh) ? model.children[0] : model.children[1]
-            if (model1 === undefined) model1 = model
-            console.log('model1: ', model1, ' model: ', model)
-
+            if (model1 === undefined) model1 = model //fix for temp loading FBX
             coll[key] = {
               model: model1.toJSON(),
               bones: JSON.parse(JSON.stringify(model1.skeleton.bones)),

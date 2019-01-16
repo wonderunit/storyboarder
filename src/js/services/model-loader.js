@@ -265,7 +265,6 @@ const loadModels = () => {
     characterModels['teen-male'] = values[1]
     characterModels['teen-female'] = values[2]
     characterModels['adult-female'] = values[3]
-    console.log('scale on out: ', characterModels['adult-female'])
     return new Promise(resolve => {
       resolve(characterModels) } )
   });

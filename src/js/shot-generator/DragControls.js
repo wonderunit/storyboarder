@@ -145,10 +145,11 @@ class DragControls extends THREE.EventDispatcher {
     }
     let intersects = this._raycaster.intersectObjects( checkIntersectionsWithMeshes )
     //console.log('intersects with: ', checkIntersectionsWithMeshes)
-    console.log('hots: ', intersects)
+    //console.log('hits: ', intersects)
     if ( intersects.length > 0 ) {
+
       let object = this.getObjectAndBone( intersects[ 0 ] )[0]
-      console.log('got object: ', object)
+      //console.log('got object: ', object)
       if (
         // is the camera is orthographic (which means, start dragging on the first click)
         this._camera.isOrthographicCamera
