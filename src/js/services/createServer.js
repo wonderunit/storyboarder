@@ -43,30 +43,6 @@ module.exports = function ({
 
   web.use(express.json())
 
-  // web.post('/data', (req, res) => {
-  //   // console.log('got data', JSON.stringify(req.body))
-  //
-  //   if (req.body.accel) {
-  //     setInputAccel(req.body.accel)
-  //   }
-  //   if (req.body.mag) {
-  //     setInputMag(req.body.mag)
-  //   }
-  //   // TODO is this even used?
-  //   if (req.body.sensor) {
-  //     setInputSensor(req.body.sensor)
-  //   }
-  //   if (req.body.down != null) {
-  //     setInputDown(req.body.down)
-  //   }
-  //
-  //   if (req.body.mouseMode != null) {
-  //     setInputMouseMode(req.body.mouseMode)
-  //   }
-  //
-  //   res.send(req.body)
-  // })
-
   web.get('/', (req, res) => res.send(`
     <html>
     <head>
