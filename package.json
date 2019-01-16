@@ -14,7 +14,8 @@
     "shot-generator": "npx electron src/js/windows/shot-generator/main.js",
     "clean:fixtures": "git checkout test/fixtures && git clean test/fixtures -f",
     "prefs": "echo ~/Library/Application\\\\ Support/Storyboarder/pref.json",
-    "prefs:reveal": "open ~/Library/Application\\ Support/Storyboarder"
+    "prefs:reveal": "open ~/Library/Application\\ Support/Storyboarder",
+    "postinstall": "electron-rebuild --force"
   },
   "repository": {
     "type": "git",
@@ -109,10 +110,12 @@
     "caf": "7.0.4",
     "chokidar": "2.0.3",
     "color-js": "^1.0.4",
+    "dualshock": "3.1.1",
     "eases": "1.0.8",
     "electron-google-analytics": "0.0.16",
     "electron-is-dev": "0.3.0",
     "electron-prompt": "1.3.0",
+    "electron-rebuild": "1.8.2",
     "electron-redux": "1.3.1",
     "electron-updater": "3.1.2",
     "electron-util": "0.10.2",
@@ -149,7 +152,7 @@
     "request": "2.83.0",
     "request-promise-native": "1.0.5",
     "seview": "0.10.0",
-    "socket.io": "^2.0.3",
+    "socket.io": "2.2.0",
     "stats.js": "0.17.0",
     "tether": "1.4.0",
     "tether-tooltip": "1.2.0",

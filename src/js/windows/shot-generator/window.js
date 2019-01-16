@@ -30,6 +30,7 @@ const presetsStorage = require('../../shared/store/presetsStorage')
 const { initialState, loadScene, resetScene } = require('../../shared/reducers/shot-generator')
 
 const createServer = require('../../services/createServer')
+const createDualShockController = require('../../shot-generator/DualshockController')
 
 const store = configureStore({
   ...initialState,
@@ -85,19 +86,11 @@ ReactDOM.render(
   document.getElementById('main')
 )
 
-// const throttle = require('lodash.throttle')
-// const updater = (values, changed) => {
-//   store.dispatch({ type: 'UPDATE_DEVICE', payload: {
-//     id: 0,
-//     motion: {
-//       ...values.motion
-//     },
-//     digital: {
-//       ...values.digital
-//     }
-//   }})
-// }
-// createDualShockController(throttle(updater, 16, { leading: true }))
+const throttle = require('lodash.throttle')
+const updater = (values, changed) => {
+  console.log('dualshock', values, changed)
+}
+createDualShockController(throttle(updater, 16, { leading: true }))
 
 createServer({
   setInputAccel: payload => store.dispatch({ type: 'SET_INPUT_ACCEL', payload }),
