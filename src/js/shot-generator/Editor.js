@@ -1178,7 +1178,12 @@ const NumberSlider = React.memo(({ label, value, onSetValue, min, max, step, for
     : value => value.toFixed(2)
 
   useEffect(() => {
-    const onKeyDown = event => setFine(event.altKey)
+    const onKeyDown = event => {
+      setFine(event.altKey)
+      if (event.key === 'Escape') {
+        document.activeElement.blur()
+      }
+    }
     window.addEventListener('keydown', onKeyDown)
     window.addEventListener('keyup', onKeyDown)
     return function cleanup () {
