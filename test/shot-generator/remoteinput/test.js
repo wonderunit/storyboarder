@@ -221,8 +221,8 @@ const createControls = ({ store }) => {
 const createSuzanne = () => {
   var loader = new THREE.ObjectLoader()
   let { geometry } = loader.parse(Suzanne)
-  geometry.applyMatrix( new THREE.Matrix4().makeRotationX(Math.PI / 2) )
-  geometry.applyMatrix( new THREE.Matrix4().makeScale(0.5, 0.5, 0.5) )
+  // geometry.applyMatrix( new THREE.Matrix4().makeRotationX(Math.PI / 2) )
+  // geometry.applyMatrix( new THREE.Matrix4().makeScale(0.5, 0.5, 0.5) )
   material = new THREE.MeshNormalMaterial()
   let mesh = new THREE.Mesh( geometry, material )
   return mesh
