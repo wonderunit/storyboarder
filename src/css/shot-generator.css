@@ -308,3 +308,14 @@ select:focus {
 #presets ul { margin: 0; padding: 0; }
 #presets ul li { margin: 0; padding: 6px; }
 #presets a:not(.delete) { color: white; }
+
+/* via http://danielstern.ca/range.css */
+.number-slider input[type=range]:focus {
+  outline: none;
+}
+.number-slider input[type=range]::-webkit-slider-runnable-track {
+  background: #888;
+}
+.number-slider input[type=range]:focus::-webkit-slider-runnable-track {
+  background: #fe0;
+}
