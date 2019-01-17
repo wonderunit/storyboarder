@@ -367,40 +367,13 @@ const SceneManager = connect(
                 }
 
                 // step
-                cameraControlsView.current.update( clock.current.getDelta() )
+                cameraControlsView.current.update( clock.current.getDelta(), state )
 
                 // TODO only call updateObject if camera object props we care about actually changed
                 //
                 // update object state with the latest values
                 let cameraId = camera.userData.id
                 let { x, y, z, rotation, tilt } = cameraControlsView.current.object
-
-
-
-                // DualshockController
-                let deadzone = 0.1
-                let lspeed = state.devices[0].digital.l3 ? 1/25 : 1/100
-                let rspeed = state.devices[0].digital.r3 ? 1/50 : 1/100
-                // position
-                let lStickX = (state.devices[0].analog.lStickX/127) - 1
-                let lStickY = (state.devices[0].analog.lStickY/127) - 1
-                if (Math.abs(lStickX) > deadzone) {
-                  x += lStickX * lspeed
-                }
-                if (Math.abs(lStickY) > deadzone) {
-                  y += lStickY * lspeed
-                }
-                // rotation
-                let rStickX = (state.devices[0].analog.rStickX/127) - 1
-                let rStickY = (state.devices[0].analog.rStickY/127) - 1
-                if (Math.abs(rStickX) > deadzone) {
-                  rotation -= rStickX * rspeed
-                }
-                if (Math.abs(rStickY) > deadzone) {
-                  tilt -= rStickY * rspeed
-                }
-
-
 
                 updateObject(cameraId, {
                   x,
