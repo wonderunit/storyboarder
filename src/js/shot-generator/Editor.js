@@ -374,6 +374,32 @@ const SceneManager = connect(
                 // update object state with the latest values
                 let cameraId = camera.userData.id
                 let { x, y, z, rotation, tilt } = cameraControlsView.current.object
+
+
+
+                // DualshockController
+                let deadzone = 0.1
+                // position
+                let lStickX = (state.devices[0].analog.lStickX/127) - 1
+                let lStickY = (state.devices[0].analog.lStickY/127) - 1
+                if (Math.abs(lStickX) > deadzone) {
+                  x += lStickX / 100
+                }
+                if (Math.abs(lStickY) > deadzone) {
+                  y += lStickY / 100
+                }
+                // rotation
+                let rStickX = (state.devices[0].analog.rStickX/127) - 1
+                let rStickY = (state.devices[0].analog.rStickY/127) - 1
+                if (Math.abs(rStickX) > deadzone) {
+                  rotation -= rStickX / 100
+                }
+                if (Math.abs(rStickY) > deadzone) {
+                  tilt -= rStickY / 100
+                }
+
+
+
                 updateObject(cameraId, {
                   x,
                   y,
