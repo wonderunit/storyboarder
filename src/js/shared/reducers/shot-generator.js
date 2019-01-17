@@ -173,6 +173,12 @@ const initialState = {
   },
   devices: {
     0: {
+      analog: {
+        lStickX: 127,
+        lStickY: 127,
+        rStickX: 127,
+        rStickY: 127
+      },
       motion: {
         gryoPitch: 0,
         gyroRoll: 0,
