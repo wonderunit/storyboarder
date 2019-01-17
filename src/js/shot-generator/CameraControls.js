@@ -12,14 +12,6 @@ class CameraControls {
     this.movementSpeed = .001
     this.maxSpeed = 0.05
 
-    this.controller = {
-      moveForward : false,
-      moveLeft : false,
-      moveBackward : false,
-      moveRight : false,
-      moveUp : false,
-      moveDown : false
-    }
     this.mouse = {
       moveForward : false,
       moveLeft : false,
@@ -140,34 +132,16 @@ class CameraControls {
 
     // DualshockController
     let deadzone = 0.1
-    // let lspeed = state.devices[0].digital.l3 ? 1/25 : 1/100
-    let rspeed = state.devices[0].digital.r3 ? 1/50 : 1/100
+
     // position
     let lStickX = (state.devices[0].analog.lStickX/127) - 1
     let lStickY = (state.devices[0].analog.lStickY/127) - 1
+
     if (Math.abs(lStickX) > deadzone || Math.abs(lStickY) > deadzone) {
       this.moveAnalogue = true
     } else {
       this.moveAnalogue = false
     }
-
-
-
-    // FIXME reset movementSpeed on change
-    if (this.controller.moveForward && this.controller.moveForward != this.moveForward) this.movementSpeed = .0001
-    if (this.controller.moveLeft && this.controller.moveLeft != this.moveLeft) this.movementSpeed = .0001
-    if (this.controller.moveBackward && this.controller.moveBackward != this.moveBackward) this.movementSpeed = .0001
-    if (this.controller.moveRight && this.controller.moveRight != this.moveRight) this.movementSpeed = .0001
-
-    this.moveForward = this.mouse.moveForward || this.controller.moveForward
-    this.moveLeft = this.mouse.moveLeft || this.controller.moveLeft
-    this.moveBackward = this.mouse.moveBackward || this.controller.moveBackward
-    this.moveRight = this.mouse.moveRight || this.controller.moveRight
-    this.moveUp = this.mouse.moveUp || this.controller.moveUp
-    this.moveDown = this.mouse.moveDown || this.controller.moveDown
-    let speedAddition = state.devices[0].digital.l3
-      ? 0.0015 // when controller button is pressed
-      : 0.0005 // default for no button press OR keyboard
 
     if (this.mouseDragOn) {
       let rotation = this.initialRotation - (this.mouseX - this.initialMouseX)*0.001
@@ -179,6 +153,7 @@ class CameraControls {
     // rotation
     let rStickX = (state.devices[0].analog.rStickX/127) - 1
     let rStickY = (state.devices[0].analog.rStickY/127) - 1
+
     if (Math.abs(rStickX) > deadzone || Math.abs(rStickY) > deadzone) {
       this.object.rotation -= (rStickX * 0.03) * Math.abs(Math.pow(rStickX, 2))
       this.object.tilt -= (rStickY * 0.02) * Math.abs(Math.pow(rStickY, 2))
@@ -198,9 +173,10 @@ class CameraControls {
     }
 
     if ( this.moveForward || this.moveBackward || this.moveLeft || this.moveRight || this.moveUp || this.moveDown) {
-      this.movementSpeed += speedAddition
+      this.movementSpeed += 0.0005
       this.movementSpeed = Math.min(this.movementSpeed, this.maxSpeed)
     }
+
 
     if ( this.moveForward ) {
       let loc = new THREE.Vector2(this.object.x, this.object.y)
