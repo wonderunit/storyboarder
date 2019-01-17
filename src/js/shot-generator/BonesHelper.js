@@ -145,9 +145,9 @@ function BonesHelper( object, object3D ) {
       hitMesh.geometry.applyMatrix(new Matrix4().makeTranslation(0, boneLength/2, 0))
       this.hit_meshes[boneIndex] = ( hitMesh )
 
-      // set visible here to see the hit mesh 
+      // set visible here to see the hit mesh
       hitMesh.material.visible = false
-      hitMesh.name = 'main raycast mesh '+bone.name
+      hitMesh.name = 'hitter_'+bone.name
       hitMesh.userData.type = 'hitter'
 
       // Add the axis helper if needed
@@ -198,7 +198,6 @@ function BonesHelper( object, object3D ) {
   this.object3D = object3D
   this.bones = bones
 
-  //object.parent.bonesHelper = this
   this.matrix = object.matrixWorld
   this.matrixAutoUpdate = false
 }
@@ -220,7 +219,7 @@ BonesHelper.prototype.updateMatrixWorld = function () {
     for ( var ii = 0; ii < bones.length; ii++ )
     {
       var bone = bones [ii]
-      boneMatrix.multiplyMatrices( matrixWorldInv, bone.matrixWorld )   // changed to parent position, as thet's the length calculated
+      boneMatrix.multiplyMatrices( matrixWorldInv, bone.matrixWorld )   // changed to parent position, as that's the length calculated
       if (bone.connectedBone === undefined) continue
 
       bone.connectedBone.position.setFromMatrixPosition( boneMatrix )

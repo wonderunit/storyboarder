@@ -268,7 +268,6 @@ const loadModels = () => {
 
   // return new Promise(resolve => {
   //   loader.manager.onLoad = () => {
-  //     console.log('loaded 1!')
   //     resolve(characterModels)
   //   }
   // })

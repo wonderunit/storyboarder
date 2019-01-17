@@ -59,7 +59,6 @@ const DragControls = require('./DragControls')
 const Character = require('./Character')
 
 const BonesHelper = require('./BonesHelper')
-const BoundingBoxHelper = require('./BoundingBoxHelper')
 
 const ModelLoader = require('../services/model-loader')
 
@@ -219,7 +218,7 @@ const SceneManager = connect(
       let bbox = new THREE.Box3()
       for (child of scene.children) {
         if (
-          child instanceof BoundingBoxHelper ||
+          //child instanceof BoundingBoxHelper ||
           child instanceof THREE.SkinnedMesh ||
           child instanceof THREE.Mesh
         ) {
@@ -2065,26 +2064,27 @@ const PhoneCursor = ({ remoteInput, camera, largeCanvasRef, selectObject, select
     raycaster.setFromCamera( phoneMouse, camera )
     const sceneObj = scene.children
 
-    var noIntersect = true;
+    var noIntersect = true
   	var intersects = raycaster.intersectObjects( sceneObj )
-
+    console.log(' intersect: ', intersects)
     for ( var i = 0; i < intersects.length; i++ ) {
-      //console.log('intersection [', i ,']=' , intersects[ i ].object.userData.type)
+      console.log('intersection [', i ,']=' , intersects[ i ].object.userData.type)
       if (intersects[i].object.userData.type === 'object' || intersects[i].object.userData.type==='character')
       {
-        noIntersect = false;
+        noIntersect = false
         let object = getObjectAndBone( intersects[ i ] )
         let hits
         let bone
+        //console.log('object[0]: ', object[0])
         if (object[0] && object[0].skeleton) {
           if (bonesHelper.current)
           {
-
+            //console.log(' its already here ')
           } else {
             scene.remove(bonesHelper.current)
-            bonesHelper.current = new BonesHelper(object[0].skeleton.bones[0])
-            selectObject(object[0].userData.id)
-            scene.add(bonesHelper.current)
+            //bonesHelper.current = object.current.bonesHelper
+            //selectObject(object[0].userData.id)
+            //scene.add(bonesHelper.current)
           }
         } else {
           scene.remove(bonesHelper.current)

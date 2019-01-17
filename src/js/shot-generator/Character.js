@@ -14,27 +14,8 @@ const debounce = require('lodash.debounce')
 // scene needs:
 //   activeBonesHelper (for active character)
 
-const updateBoundingBoxHelper = ( aabb, aabbHelper ) => {
-  aabb.getCenter( aabbHelper.position )
-  aabb.getSize( aabbHelper.scale )
-}
-
-let updateBoundingBox = (object, aabb, aabbHelper) => {
-  // as currently written, updateAABB can't get the information it needs until
-  // after the new bone position (or animation) has been rendered once.
-  // so we wait a single frame ...
-  requestAnimationFrame(() => {
-    // ... and then calculate the bounding box and update in place
-    updateAABB( object, aabb )
-    updateBoundingBoxHelper( aabb, aabbHelper )
-  })
-}
-
 const Character = React.memo(({ scene, id, type, remoteInput, characterModels, isSelected, selectedBone, camera, updateCharacterSkeleton, updateObject, ...props }) => {
   let object = useRef(null)
-  let aabb = useRef(null)
-  let aabbHelper = useRef(null)
-  let boundingBoxUpdater = useRef(debounce(updateBoundingBox, 250, { leading: true }))
 
   let isRotating = useRef(false)
   let startingDeviceRotation = useRef(null)
@@ -97,16 +78,13 @@ const Character = React.memo(({ scene, id, type, remoteInput, characterModels, i
     //console.log('\tusing model', characterModels[props.model])
 
     let cloned = cloneAnimated(characterModels[props.model])
-    //let cloned = characterModels[props.model]
 
-
-    if (cloned instanceof THREE.SkinnedMesh)
+    if (cloned instanceof THREE.SkinnedMesh)  // if FBX is loaded we get a SkinnedMesh
     {
       let clo = cloneAnimated(characterModels[props.model])
       cloned = new THREE.Object3D()
       cloned.add(clo)
     }
-    //console.log('get scale from : ', characterModels[props.model])
     let mat = cloned.children[0].material ? cloned.children[0].material.clone() : cloned.children[1].material.clone()
 
     object.current = cloned
@@ -123,26 +101,10 @@ const Character = React.memo(({ scene, id, type, remoteInput, characterModels, i
     object.current.scale.set( characterModels[props.model].scale.x, characterModels[props.model].scale.y, characterModels[props.model].scale.z )
     object.current.rotation.set( characterModels[props.model].rotation.x, characterModels[props.model].rotation.y, characterModels[props.model].rotation.z )
     scene.add( object.current )
-    // initialize the bounding box helper
-    aabb.current = new THREE.Box3()
-    let geometry = new THREE.BoxGeometry( 1, 1, 1 )
-    let material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } )
-    material.visible = false
-    aabbHelper.current = new BoundingBoxHelper( object.current, geometry, material )
 
-
-    //skel
+    //adding the bone structure here on each character added to the scene
     object.current.bonesHelper = new BonesHelper(skel.skeleton.bones[0], object.current)
-    //object.current.bonesHelper.
-    //object.current.add(object.current.bonesHelper)
-    //console.log(' current object: ', object.current)
     scene.add(object.current.bonesHelper)
-    // scene.add( aabbHelper.current )
-    //
-    // requestAnimationFrame(() => {
-    //   boundingBoxUpdater.current( object.current, aabb.current, aabbHelper.current )
-    //
-    // })
 
     return function cleanup () {
       console.log(type, id, 'remove')
@@ -150,10 +112,6 @@ const Character = React.memo(({ scene, id, type, remoteInput, characterModels, i
         //scene.remove(object.current.bonesHelper)
         scene.remove(object.current)
         object.current = null
-        scene.remove(aabbHelper.current)
-        aabbHelper.current = null
-
-        aabb.current = null
       }
     }
   }, [props.model])
@@ -169,45 +127,34 @@ const Character = React.memo(({ scene, id, type, remoteInput, characterModels, i
       object.current.position.x = props.x
       object.current.position.z = props.y
       object.current.position.y = props.z
-      boundingBoxUpdater.current( object.current, aabb.current, aabbHelper.current )
     }
   }, [props.model, props.x, props.y, props.z])
 
   useEffect(() => {
     if (object.current) {
       object.current.visible = props.visible
-      if (props.visible) {
-        boundingBoxUpdater.current( object.current, aabb.current, aabbHelper.current )
-        aabbHelper.current.visible = true
-      } else {
-        aabbHelper.current.visible = false
-      }
     }
   }, [props.model, props.visible])
 
   useEffect(() => {
     if (object.current) {
       object.current.rotation.y = props.rotation
-      boundingBoxUpdater.current( object.current, aabb.current, aabbHelper.current )
     }
   }, [props.model, props.rotation])
 
   useEffect(() => {
     console.log(type, id, 'skeleton')
     updateSkeleton()
-    boundingBoxUpdater.current( object.current, aabb.current, aabbHelper.current )
   }, [props.model, props.skeleton])
 
   useEffect(() => {
     if (object.current) {
       // FIXME hardcoded
       // let bbox = new THREE.Box3().setFromObject( object.current )
-      //console.log('set new current scale 1: ', object.current.scale)
       height = object.current.originalHeight
       let scale = props.height / height
 
       object.current.scale.set( scale, scale, scale )
-      boundingBoxUpdater.current( object.current, aabb.current, aabbHelper.current )
     }
   }, [props.model, props.height, props.skeleton])
 
@@ -224,7 +171,6 @@ const Character = React.memo(({ scene, id, type, remoteInput, characterModels, i
       //head bone
       headBone.scale.setScalar( baseHeadScale )
       headBone.scale.setScalar( props.headScale )
-      boundingBoxUpdater.current( object.current, aabb.current, aabbHelper.current )
     }
   }, [props.model, props.headScale, props.skeleton])
 
@@ -388,7 +334,7 @@ const Character = React.memo(({ scene, id, type, remoteInput, characterModels, i
           //deviceDifference.multiply ( parentWorldQuaternion.clone().inverse() )
           //tempQ.multiply( parentWorldQuaternion.clone() )
           tempQ.multiply( deviceDifference )
-          tempQ.multiply( parentWorldQuaternion.clone().inverse() )
+          //tempQ.multiply( parentWorldQuaternion.clone().inverse() )
 
           target.quaternion.copy(tempQ)
 
@@ -430,68 +376,6 @@ const Character = React.memo(({ scene, id, type, remoteInput, characterModels, i
 
 // via https://discourse.threejs.org/t/object-bounds-not-updated-with-animation/3749/12
 // see also: https://gamedev.stackexchange.com/a/43996
-const updateAABB = function ( ) {
-  return function updateAABB( skinnedMesh, aabb ) {
-
-    let vertex = new THREE.Vector3()
-    let temp = new THREE.Vector3()
-    let skinned = new THREE.Vector3()
-    let skinIndices = new THREE.Vector4()
-    let skinWeights = new THREE.Vector4()
-    let boneMatrix = new THREE.Matrix4()
-
-    let skel = (skinnedMesh.children[0] instanceof THREE.Mesh) ? skinnedMesh.children[0] : skinnedMesh.children[1]
-
-    var skeleton = skel.skeleton
-    var boneMatrices = skeleton.boneMatrices
-    var geometry = skel.geometry
-
-    var index = geometry.index
-    var position = geometry.attributes.position
-    var skinIndex = geometry.attributes.skinIndex
-    var skinWeight = geometry.attributes.skinWeight
-
-    var bindMatrix = skel.bindMatrix
-    var bindMatrixInverse = skel.bindMatrixInverse
-
-    var i, j, si, sw
-
-    aabb.makeEmpty()
-
-    for ( i = 0; i < position.count; i ++ ) {
-
-      vertex.fromBufferAttribute( position, i )
-      skinIndices.fromBufferAttribute( skinIndex, i )
-      skinWeights.fromBufferAttribute( skinWeight, i )
-
-      // the following code section is normally implemented in the vertex shader
-
-      vertex.applyMatrix4( bindMatrix ) // transform to bind space
-      skinned.set( 0, 0, 0 )
-
-      for ( j = 0; j < 4; j ++ ) {
-
-        si = skinIndices.getComponent( j )
-        sw = skinWeights.getComponent( j )
-        boneMatrix.fromArray( boneMatrices, si * 16 )
-
-        // weighted vertex transformation
-
-        temp.copy( vertex ).applyMatrix4( boneMatrix ).multiplyScalar( sw )
-        skinned.add( temp )
-
-      }
-
-      skinned.applyMatrix4( bindMatrixInverse ) // back to local space
-
-      // expand aabb
-
-      aabb.expandByPoint( skinned )
-
-    }
-    aabb.applyMatrix4( skinnedMesh.matrixWorld )
-  }
-}()
 
 
 module.exports = Character
