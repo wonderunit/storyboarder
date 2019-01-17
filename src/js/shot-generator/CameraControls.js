@@ -7,6 +7,8 @@ class CameraControls {
     this.domElement = domElement
     this.enabled = true
 
+    this.moveAnalogue = false
+
     this.movementSpeed = .001
     this.maxSpeed = 0.05
 
@@ -130,6 +132,7 @@ class CameraControls {
     this.moveRight = false
     this.moveUp = false
     this.moveDown = false
+    this.moveAnalogue = false
   }
 
   update ( delta, state ) {
@@ -142,39 +145,13 @@ class CameraControls {
     // position
     let lStickX = (state.devices[0].analog.lStickX/127) - 1
     let lStickY = (state.devices[0].analog.lStickY/127) - 1
-    if (Math.abs(lStickX) > deadzone) {
-      if (lStickX > 0) {
-        this.controller.moveLeft = false
-        this.controller.moveRight = true
-      } else {
-        this.controller.moveLeft = true
-        this.controller.moveRight = false
-      }
+    if (Math.abs(lStickX) > deadzone || Math.abs(lStickY) > deadzone) {
+      this.moveAnalogue = true
     } else {
-      this.controller.moveLeft = false
-      this.controller.moveRight = false
+      this.moveAnalogue = false
     }
-    if (Math.abs(lStickY) > deadzone) {
-      if (lStickY > 0) {
-        this.controller.moveForward = false
-        this.controller.moveBackward = true
-      } else {
-        this.controller.moveForward = true
-        this.controller.moveBackward = false
-      }
-    } else {
-      this.controller.moveForward = false
-      this.controller.moveBackward = false
-    }
-    // rotation
-    let rStickX = (state.devices[0].analog.rStickX/127) - 1
-    let rStickY = (state.devices[0].analog.rStickY/127) - 1
-    if (Math.abs(rStickX) > deadzone) {
-      this.object.rotation -= rStickX * rspeed
-    }
-    if (Math.abs(rStickY) > deadzone) {
-      this.object.tilt -= rStickY * rspeed
-    }
+
+
 
     // FIXME reset movementSpeed on change
     if (this.controller.moveForward && this.controller.moveForward != this.moveForward) this.movementSpeed = .0001
@@ -192,8 +169,6 @@ class CameraControls {
       ? 0.0015 // when controller button is pressed
       : 0.0005 // default for no button press OR keyboard
 
-    console.log('speedAddition', speedAddition, 'movementSpeed', this.movementSpeed)
-
     if (this.mouseDragOn) {
       let rotation = this.initialRotation - (this.mouseX - this.initialMouseX)*0.001
       this.object.rotation = rotation
@@ -201,11 +176,31 @@ class CameraControls {
       this.object.tilt = Math.max(Math.min(tilt, Math.PI / 2), -Math.PI / 2)
     }
 
+    // rotation
+    let rStickX = (state.devices[0].analog.rStickX/127) - 1
+    let rStickY = (state.devices[0].analog.rStickY/127) - 1
+    if (Math.abs(rStickX) > deadzone || Math.abs(rStickY) > deadzone) {
+      this.object.rotation -= (rStickX * 0.03) * Math.abs(Math.pow(rStickX, 2))
+      this.object.tilt -= (rStickY * 0.02) * Math.abs(Math.pow(rStickY, 2))
+      this.object.tilt = Math.max(Math.min(this.object.tilt, Math.PI / 2), -Math.PI / 2)
+    }
+
+    if (this.moveAnalogue) {
+      let loc = new THREE.Vector2(this.object.x, this.object.y)
+      let magX = (lStickX*0.07) * (Math.abs(Math.pow(lStickX, 2)))
+      let magY = (lStickY*0.1) * (Math.abs(Math.pow(lStickY, 2)))
+      if (state.devices[0].digital.l3) {
+        magY *= 4.0
+      }
+      let result = new THREE.Vector2(magX+loc.x, magY+loc.y).rotateAround(loc,-this.object.rotation)
+      this.object.x = result.x
+      this.object.y = result.y
+    }
+
     if ( this.moveForward || this.moveBackward || this.moveLeft || this.moveRight || this.moveUp || this.moveDown) {
       this.movementSpeed += speedAddition
       this.movementSpeed = Math.min(this.movementSpeed, this.maxSpeed)
     }
-
 
     if ( this.moveForward ) {
       let loc = new THREE.Vector2(this.object.x, this.object.y)
