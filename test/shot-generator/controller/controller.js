@@ -11,7 +11,7 @@ const TestUI = props => {
 
   return h([
     'div', [
-      ['h3', 'Dualshock Controller'],
+      ['h3', 'DualShock Controller'],
 
       ['div', { style: { display: 'flex' }}, [
         ['div', { style: { margin: '0 20px 0 0' }}, [
