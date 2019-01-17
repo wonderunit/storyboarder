@@ -2331,7 +2331,6 @@ const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, set
 const CameraInspector = connect(
   state => ({
     mainViewCamera: state.mainViewCamera,
-    remoteInput: state.input,
     sceneObjects: state.sceneObjects,
     activeCamera: state.activeCamera
   }),
@@ -2340,7 +2339,7 @@ const CameraInspector = connect(
     setActiveCamera
   }
 )(
-  React.memo(({ remoteInput, sceneObjects, mainViewCamera, setMainViewCamera, activeCamera, setActiveCamera }) => {
+  React.memo(({ sceneObjects, mainViewCamera, setMainViewCamera, activeCamera, setActiveCamera }) => {
     const { scene } = useContext(SceneContext)
 
     let camera = scene.children.find(child => child.userData.id === activeCamera)
@@ -2415,7 +2414,7 @@ const CameraInspector = connect(
             ]
           ]
         ],
-        [RemoteInputView, { remoteInput }]
+        // [RemoteInputView, { remoteInput }]
       ]
     )
   }
