@@ -13,6 +13,8 @@ const ReactDOM = require('react-dom')
 const { VariableSizeList } = require('react-window')
 const prompt = require('electron-prompt')
 
+const { createSelector } = require('reselect')
+
 //const h = require('../h')
 //const useComponentSize = require('../use-component-size')
 const h = require('../utils/h')
@@ -2444,14 +2446,20 @@ const editorMachine = Machine({
   }
 })
 
+// memoized selectors
+const getSceneObjects = state => state.sceneObjects
+const getCameraSceneObjects = createSelector(
+  [state => state.sceneObjects],
+  (sceneObjects) => Object.values(sceneObjects).filter(o => o.type === 'camera')
+)
+
 const KeyHandler = connect(
   state => ({
     mainViewCamera: state.mainViewCamera,
     activeCamera: state.activeCamera,
     selection: state.selection,
 
-    // TODO memoized selector
-    _cameras: Object.values(state.sceneObjects).filter(o => o.type === 'camera')
+    _cameras: getCameraSceneObjects(state)
   }),
   {
     setMainViewCamera,
