@@ -137,7 +137,7 @@ class CameraControls {
 
     // DualshockController
     let deadzone = 0.1
-    let lspeed = state.devices[0].digital.l3 ? 1/25 : 1/100
+    // let lspeed = state.devices[0].digital.l3 ? 1/25 : 1/100
     let rspeed = state.devices[0].digital.r3 ? 1/50 : 1/100
     // position
     let lStickX = (state.devices[0].analog.lStickX/127) - 1
@@ -176,12 +176,23 @@ class CameraControls {
       this.object.tilt -= rStickY * rspeed
     }
 
+    // FIXME reset movementSpeed on change
+    if (this.controller.moveForward && this.controller.moveForward != this.moveForward) this.movementSpeed = .0001
+    if (this.controller.moveLeft && this.controller.moveLeft != this.moveLeft) this.movementSpeed = .0001
+    if (this.controller.moveBackward && this.controller.moveBackward != this.moveBackward) this.movementSpeed = .0001
+    if (this.controller.moveRight && this.controller.moveRight != this.moveRight) this.movementSpeed = .0001
+
     this.moveForward = this.mouse.moveForward || this.controller.moveForward
     this.moveLeft = this.mouse.moveLeft || this.controller.moveLeft
     this.moveBackward = this.mouse.moveBackward || this.controller.moveBackward
     this.moveRight = this.mouse.moveRight || this.controller.moveRight
     this.moveUp = this.mouse.moveUp || this.controller.moveUp
     this.moveDown = this.mouse.moveDown || this.controller.moveDown
+    let speedAddition = state.devices[0].digital.l3
+      ? 0.0015 // when controller button is pressed
+      : 0.0005 // default for no button press OR keyboard
+
+    console.log('speedAddition', speedAddition, 'movementSpeed', this.movementSpeed)
 
     if (this.mouseDragOn) {
       let rotation = this.initialRotation - (this.mouseX - this.initialMouseX)*0.001
@@ -191,7 +202,7 @@ class CameraControls {
     }
 
     if ( this.moveForward || this.moveBackward || this.moveLeft || this.moveRight || this.moveUp || this.moveDown) {
-      this.movementSpeed += 0.0005
+      this.movementSpeed += speedAddition
       this.movementSpeed = Math.min(this.movementSpeed, this.maxSpeed)
     }
 
