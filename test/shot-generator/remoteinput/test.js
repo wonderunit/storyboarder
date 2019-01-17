@@ -1133,6 +1133,9 @@ const updater = (values, changed) => {
   store.dispatch(updateDevice(
     0,
     {
+      analog: {
+        ...values.analog
+      },
       motion: {
         ...values.motion
       },
