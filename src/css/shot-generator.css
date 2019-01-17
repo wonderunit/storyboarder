@@ -319,3 +319,90 @@ select:focus {
 .number-slider input[type=range]:focus::-webkit-slider-runnable-track {
   background: #fe0;
 }
+/*
+.number-slider input[type=range] {
+  -webkit-appearance: none;
+  width: 100%;
+  margin: 0.7px 0;
+}
+.number-slider input[type=range]:focus {
+  outline: none;
+}
+.number-slider input[type=range]::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 25.6px;
+  cursor: pointer;
+  box-shadow: 1px 1px 1px #000000, 0px 0px 1px #0d0d0d;
+  background: #484d4d;
+  border-radius: 0px;
+  border: 0px solid #010101;
+}
+.number-slider input[type=range]::-webkit-slider-thumb {
+  box-shadow: 0px 0px 1px #670000, 0px 0px 0px #810000;
+  border: 0px solid #ff1e00;
+  height: 27px;
+  width: 18px;
+  border-radius: 0px;
+  background: rgba(238, 238, 238, 0.93);
+  cursor: pointer;
+  -webkit-appearance: none;
+  margin-top: -0.7px;
+}
+.number-slider input[type=range]:focus::-webkit-slider-runnable-track {
+  background: #545a5a;
+}
+.number-slider input[type=range]::-moz-range-track {
+  width: 100%;
+  height: 25.6px;
+  cursor: pointer;
+  box-shadow: 1px 1px 1px #000000, 0px 0px 1px #0d0d0d;
+  background: #484d4d;
+  border-radius: 0px;
+  border: 0px solid #010101;
+}
+.number-slider input[type=range]::-moz-range-thumb {
+  box-shadow: 0px 0px 1px #670000, 0px 0px 0px #810000;
+  border: 0px solid #ff1e00;
+  height: 27px;
+  width: 18px;
+  border-radius: 0px;
+  background: rgba(238, 238, 238, 0.93);
+  cursor: pointer;
+}
+.number-slider input[type=range]::-ms-track {
+  width: 100%;
+  height: 25.6px;
+  cursor: pointer;
+  background: transparent;
+  border-color: transparent;
+  color: transparent;
+}
+.number-slider input[type=range]::-ms-fill-lower {
+  background: #3c4040;
+  border: 0px solid #010101;
+  border-radius: 0px;
+  box-shadow: 1px 1px 1px #000000, 0px 0px 1px #0d0d0d;
+}
+.number-slider input[type=range]::-ms-fill-upper {
+  background: #484d4d;
+  border: 0px solid #010101;
+  border-radius: 0px;
+  box-shadow: 1px 1px 1px #000000, 0px 0px 1px #0d0d0d;
+}
+.number-slider input[type=range]::-ms-thumb {
+  box-shadow: 0px 0px 1px #670000, 0px 0px 0px #810000;
+  border: 0px solid #ff1e00;
+  height: 27px;
+  width: 18px;
+  border-radius: 0px;
+  background: rgba(238, 238, 238, 0.93);
+  cursor: pointer;
+  height: 25.6px;
+}
+.number-slider input[type=range]:focus::-ms-fill-lower {
+  background: #484d4d;
+}
+.number-slider input[type=range]:focus::-ms-fill-upper {
+  background: #545a5a;
+}
+*/
