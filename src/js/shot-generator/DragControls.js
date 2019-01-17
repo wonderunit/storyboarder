@@ -125,6 +125,8 @@ class DragControls extends THREE.EventDispatcher {
 
   onPointerDown ( event ) {
     event.preventDefault()
+    this.dispatchEvent( { type: 'pointerdown' } )
+
     this._raycaster.setFromCamera( this._mouse, this._camera )
 
     let shouldReportSelection = false
