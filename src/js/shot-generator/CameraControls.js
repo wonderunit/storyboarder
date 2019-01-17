@@ -7,25 +7,10 @@ class CameraControls {
     this.domElement = domElement
     this.enabled = true
 
+    this.moveAnalogue = false
+
     this.movementSpeed = .001
     this.maxSpeed = 0.05
-
-    this.controller = {
-      moveForward : false,
-      moveLeft : false,
-      moveBackward : false,
-      moveRight : false,
-      moveUp : false,
-      moveDown : false
-    }
-    this.mouse = {
-      moveForward : false,
-      moveLeft : false,
-      moveBackward : false,
-      moveRight : false,
-      moveUp : false,
-      moveDown : false
-    }
 
     this.onPointerMove = this.onPointerMove.bind(this)
     this.onPointerDown = this.onPointerDown.bind(this)
@@ -87,7 +72,7 @@ class CameraControls {
       case 68: /*D*/
       case 82: /*R*/
       case 70: /*F*/
-        if ( this.mouse.moveForward || this.mouse.moveBackward || this.mouse.moveLeft || this.mouse.moveRight || this.mouse.moveUp || this.mouse.moveDown) {
+        if ( this.moveForward || this.moveBackward || this.moveLeft || this.moveRight || this.moveUp || this.moveDown) {
         } else {
           this.movementSpeed = .0001
         }
@@ -96,30 +81,30 @@ class CameraControls {
 
     switch ( event.keyCode ) {
       case 38: /*up*/
-      case 87: /*W*/ this.mouse.moveForward = true; break
+      case 87: /*W*/ this.moveForward = true; break
       case 37: /*left*/
-      case 65: /*A*/ this.mouse.moveLeft = true; break
+      case 65: /*A*/ this.moveLeft = true; break
       case 40: /*down*/
-      case 83: /*S*/ this.mouse.moveBackward = true; break
+      case 83: /*S*/ this.moveBackward = true; break
       case 39: /*right*/
-      case 68: /*D*/ this.mouse.moveRight = true; break
-      case 82: /*R*/ this.mouse.moveUp = true; break
-      case 70: /*F*/ this.mouse.moveDown = true; break
+      case 68: /*D*/ this.moveRight = true; break
+      case 82: /*R*/ this.moveUp = true; break
+      case 70: /*F*/ this.moveDown = true; break
     }
   }
 
   onKeyUp ( event ) {
     switch ( event.keyCode ) {
       case 38: /*up*/
-      case 87: /*W*/ this.mouse.moveForward = false; break;
+      case 87: /*W*/ this.moveForward = false; break;
       case 37: /*left*/
-      case 65: /*A*/ this.mouse.moveLeft = false; break;
+      case 65: /*A*/ this.moveLeft = false; break;
       case 40: /*down*/
-      case 83: /*S*/ this.mouse.moveBackward = false; break;
+      case 83: /*S*/ this.moveBackward = false; break;
       case 39: /*right*/
-      case 68: /*D*/ this.mouse.moveRight = false; break;
-      case 82: /*R*/ this.mouse.moveUp = false; break;
-      case 70: /*F*/ this.mouse.moveDown = false; break;
+      case 68: /*D*/ this.moveRight = false; break;
+      case 82: /*R*/ this.moveUp = false; break;
+      case 70: /*F*/ this.moveDown = false; break;
     }
   }
 
@@ -130,6 +115,7 @@ class CameraControls {
     this.moveRight = false
     this.moveUp = false
     this.moveDown = false
+    this.moveAnalogue = false
   }
 
   update ( delta, state ) {
@@ -137,57 +123,44 @@ class CameraControls {
 
     // DualshockController
     let deadzone = 0.1
-    let lspeed = state.devices[0].digital.l3 ? 1/25 : 1/100
-    let rspeed = state.devices[0].digital.r3 ? 1/50 : 1/100
+
     // position
     let lStickX = (state.devices[0].analog.lStickX/127) - 1
     let lStickY = (state.devices[0].analog.lStickY/127) - 1
-    if (Math.abs(lStickX) > deadzone) {
-      if (lStickX > 0) {
-        this.controller.moveLeft = false
-        this.controller.moveRight = true
-      } else {
-        this.controller.moveLeft = true
-        this.controller.moveRight = false
-      }
-    } else {
-      this.controller.moveLeft = false
-      this.controller.moveRight = false
-    }
-    if (Math.abs(lStickY) > deadzone) {
-      if (lStickY > 0) {
-        this.controller.moveForward = false
-        this.controller.moveBackward = true
-      } else {
-        this.controller.moveForward = true
-        this.controller.moveBackward = false
-      }
-    } else {
-      this.controller.moveForward = false
-      this.controller.moveBackward = false
-    }
-    // rotation
-    let rStickX = (state.devices[0].analog.rStickX/127) - 1
-    let rStickY = (state.devices[0].analog.rStickY/127) - 1
-    if (Math.abs(rStickX) > deadzone) {
-      this.object.rotation -= rStickX * rspeed
-    }
-    if (Math.abs(rStickY) > deadzone) {
-      this.object.tilt -= rStickY * rspeed
-    }
 
-    this.moveForward = this.mouse.moveForward || this.controller.moveForward
-    this.moveLeft = this.mouse.moveLeft || this.controller.moveLeft
-    this.moveBackward = this.mouse.moveBackward || this.controller.moveBackward
-    this.moveRight = this.mouse.moveRight || this.controller.moveRight
-    this.moveUp = this.mouse.moveUp || this.controller.moveUp
-    this.moveDown = this.mouse.moveDown || this.controller.moveDown
+    if (Math.abs(lStickX) > deadzone || Math.abs(lStickY) > deadzone) {
+      this.moveAnalogue = true
+    } else {
+      this.moveAnalogue = false
+    }
 
     if (this.mouseDragOn) {
       let rotation = this.initialRotation - (this.mouseX - this.initialMouseX)*0.001
       this.object.rotation = rotation
       let tilt = this.initialTilt - (this.mouseY - this.initialMouseY)*0.001
       this.object.tilt = Math.max(Math.min(tilt, Math.PI / 2), -Math.PI / 2)
+    }
+
+    // rotation
+    let rStickX = (state.devices[0].analog.rStickX/127) - 1
+    let rStickY = (state.devices[0].analog.rStickY/127) - 1
+
+    if (Math.abs(rStickX) > deadzone || Math.abs(rStickY) > deadzone) {
+      this.object.rotation -= (rStickX * 0.03) * Math.abs(Math.pow(rStickX, 2))
+      this.object.tilt -= (rStickY * 0.02) * Math.abs(Math.pow(rStickY, 2))
+      this.object.tilt = Math.max(Math.min(this.object.tilt, Math.PI / 2), -Math.PI / 2)
+    }
+
+    if (this.moveAnalogue) {
+      let loc = new THREE.Vector2(this.object.x, this.object.y)
+      let magX = (lStickX*0.07) * (Math.abs(Math.pow(lStickX, 2)))
+      let magY = (lStickY*0.1) * (Math.abs(Math.pow(lStickY, 2)))
+      if (state.devices[0].digital.l3) {
+        magY *= 4.0
+      }
+      let result = new THREE.Vector2(magX+loc.x, magY+loc.y).rotateAround(loc,-this.object.rotation)
+      this.object.x = result.x
+      this.object.y = result.y
     }
 
     if ( this.moveForward || this.moveBackward || this.moveLeft || this.moveRight || this.moveUp || this.moveDown) {
