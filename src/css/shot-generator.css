@@ -4,7 +4,7 @@ body {
   color: black;
   font-family: 'wonderunitsans';
   font-weight: 300;
-  background: #ccc;
+  background: #333;
   user-select: none;
   -webkit-user-select: none;
   cursor:default;
@@ -59,7 +59,7 @@ body {
 }
 
 #toolbar {
-  background: #262626;
+  background: #333;
   height: 40px;
   display: flex;
   margin-left: 300px;
@@ -68,7 +68,7 @@ body {
   font-size: 13px;
 }
 #toolbar a {
-  color: #eee;
+  color: #e0e0e0;
   text-decoration: none;
 
   margin: 0 12px 0 0;
