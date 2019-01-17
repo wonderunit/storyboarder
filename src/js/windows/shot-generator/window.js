@@ -88,7 +88,7 @@ ReactDOM.render(
 
 const throttle = require('lodash.throttle')
 const updater = (values, changed) => {
-  updateDevice(
+  store.dispatch(updateDevice(
     0,
     {
       motion: {
@@ -98,7 +98,7 @@ const updater = (values, changed) => {
         ...values.digital
       }
     }
-  )
+  ))
 }
 createDualShockController(throttle(updater, 16, { leading: true }))
 
