@@ -5,6 +5,7 @@ body {
   font-family: 'wonderunitsans';
   font-weight: 300;
   background: #333;
+  color: #777;
   user-select: none;
   -webkit-user-select: none;
   cursor:default;
@@ -19,6 +20,47 @@ body {
   flex-direction: column;
   /*-webkit-app-region: drag;*/
 }
+
+a {
+  color: #777;
+  text-decoration: none;
+}
+
+a.button {
+  display: inline-block;
+  color: #eee;
+  background-color: #444;
+  padding: 9px 9px;
+  border-radius: 6px;
+  font-size: 87.5%;
+  line-height: 1;
+}
+a.button:hover {
+  color: white;
+  background-color: #555;
+}
+
+/* kbd, .key {
+  display: inline-block;
+  position: relative;
+  padding: 0.5rem;
+  font-family: 'wonderunitsans';
+  font-weight: 700;
+  text-align: center;
+  text-decoration: none;
+  border-radius: 4px;
+  cursor: default;
+  user-select: none;
+  margin-right: 3px;
+  margin-left: 3px;
+  min-width: 1rem;
+}
+kbd {
+  background: rgb(150, 150, 150);
+  color: rgb(30, 30, 30);
+  box-shadow: 0 4px 0px rgb(100, 100, 100),0 4px 0px 3px rgb(0, 0, 0), 0 4px 0px 7px rgba(200, 200, 200, 0.1);
+} */
+
 
 .row {
   display: flex;

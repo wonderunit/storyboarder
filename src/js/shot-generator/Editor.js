@@ -2393,22 +2393,16 @@ const CameraInspector = connect(
               ],
               [
                 'span',
-                ['small', { style: { letterSpacing: '0.1rem' }}, ' (t)'],
                 [
-                  'a[href=#]',
+                  'a.button[href=#]',
                   {
                     onClick: event => {
                       event.preventDefault()
                       setMainViewCamera(mainViewCamera === 'ortho' ? 'live' : 'ortho')
                     },
-                    style: {
-
-                    }
                   },
-                  [
-                    'small',
-                    'Toggle Large/Small'
-                  ]
+                  ['span', { style: { letterSpacing: '0.1rem' }}, ' (T)'],
+                  ['span', 'oggle Large/Small']
                 ]
               ]
             ]
