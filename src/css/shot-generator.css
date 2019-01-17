@@ -59,20 +59,28 @@ body {
 }
 
 #toolbar {
-  background: pink;
-  height: 50px;
+  background: #262626;
+  height: 40px;
   display: flex;
-  padding-left: 300px;
-  width: 100%;
+  margin-left: 300px;
+  justify-content: space-between;
+  color: #eee;
+  font-size: 13px;
 }
+#toolbar a {
+  color: #eee;
+  text-decoration: none;
 
-#toolbar .add {
   margin: 0 12px 0 0;
   padding: 6px 12px;
-  border-radius: 6px;
+  /* border-radius: 6px; */
   justify-content: center;
   align-items: center;
   display: flex;
+}
+#toolbar a:hover {
+  background-color: #444;
+  color: white;
 }
 
 #elements {

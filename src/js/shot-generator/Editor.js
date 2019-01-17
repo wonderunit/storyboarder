@@ -2308,20 +2308,22 @@ const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, set
 
   return h(
     ['div#toolbar', { key: 'toolbar' },
-      ['a.add[href=#]', { onClick: preventDefault(onCreateCameraClick) }, '+ Camera'],
-      ['a.add[href=#]', { onClick: preventDefault(onCreateObjectClick) }, '+ Object'],
-      ['a.add[href=#]', { onClick: preventDefault(onCreateCharacterClick) }, '+ Character'],
-      ['a.add[href=#]', { onClick: preventDefault(onCreateLightClick) }, '+ Light'],
-      ['a.add[href=#]', { onClick: preventDefault(onCreateStressClick) }, '+ STRESS'],
+      ['div.row', [
+        ['a[href=#]', { onClick: preventDefault(onCreateCameraClick) }, '+ Camera'],
+        ['a[href=#]', { onClick: preventDefault(onCreateObjectClick) }, '+ Object'],
+        ['a[href=#]', { onClick: preventDefault(onCreateCharacterClick) }, '+ Character'],
+        ['a[href=#]', { onClick: preventDefault(onCreateLightClick) }, '+ Light'],
+      ]],
+      // ['a[href=#]', { onClick: preventDefault(onCreateStressClick) }, '+ STRESS'],
 
-      ['a.add[href=#]', { onClick: preventDefault(onClearClick) }, 'Clear'],
+      // ['a[href=#]', { onClick: preventDefault(onClearClick) }, 'Clear'],
+      // ['a[href=#]', { onClick: preventDefault(onLoadClick) }, 'Load'],
+      // ['a[href=#]', { onClick: preventDefault(onSaveClick) }, 'Save'],
 
-      ['a.add[href=#]', { onClick: preventDefault(onLoadClick) }, 'Load'],
-      ['a.add[href=#]', { onClick: preventDefault(onSaveClick) }, 'Save'],
-
-      ['a.add[href=#]', { onClick: preventDefault(onSaveToBoardClick) }, 'Save to Board'],
-      ['a.add[href=#]', { onClick: preventDefault(onInsertNewBoardClick) }, 'Insert As New Board']
-
+      ['div.row', [
+        ['a[href=#]', { onClick: preventDefault(onSaveToBoardClick) }, 'Save to Board'],
+        ['a[href=#]', { onClick: preventDefault(onInsertNewBoardClick) }, 'Insert As New Board']
+      ]]
     ]
   )
 }
