@@ -304,6 +304,9 @@ const SceneManager = connect(
             updateObject,
             selectBone
           )
+          dragControlsView.current.addEventListener('pointerdown', event => {
+            transition('TYPING_EXIT')
+          })
           dragControlsView.current.addEventListener(
             'dragstart',
             function ( event ) {
@@ -2659,6 +2662,9 @@ const Editor = connect(
     const onCanvasPointerDown = event => {
       event.preventDefault()
       event.target.focus()
+      // force ortho controls
+      // note: dragcontroller grabs pointerdown so this will not fire on perspective camera click
+      transition('TYPING_EXIT')
     }
 
     useEffect(() => {
