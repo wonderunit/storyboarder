@@ -149,6 +149,7 @@ const World = ({ world, scene }) => {
               material.opacity = 1
       
               ground.current = new THREE.Mesh( geometry, material )
+              ground.current.userData.type = "ground"
               // ground.current.renderOrder = 0.7
               ground.current.rotation.x = -Math.PI / 2
               // shift slightly to allow for OutlineEffect

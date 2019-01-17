@@ -222,7 +222,9 @@ const SceneManager = connect(
           child instanceof THREE.SkinnedMesh ||
           child instanceof THREE.Mesh
         ) {
-          bbox.expandByObject(child)
+          if (child.userData.type !== 'ground') {
+            bbox.expandByObject(child)
+          }
         } else if (
           child instanceof THREE.Camera
         ) {
