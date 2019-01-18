@@ -187,6 +187,7 @@ kbd {
 .element span.id {
   opacity: 0.3;
   padding-right: 6px;
+  font-style: italic;
   font-size: 12px;
   margin-bottom: 10px;
 }
@@ -248,7 +249,14 @@ kbd {
 }
 #camera-inspector {
   flex: 1;
+  font-size: 14px;
 }
+
+#camera-inspector .row div:first-child {
+  font-size: 24px;
+  color: #888;
+}
+
 
 input, select, label {
   -webkit-app-region: no-drag;
