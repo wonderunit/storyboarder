@@ -217,7 +217,10 @@ const SceneManager = connect(
       let height = Math.ceil(width / aspectRatio)
 
       // determine the bounding box containging all scene objects
-      let bbox = new THREE.Box3()
+      let bbox = new THREE.Box3(
+        new THREE.Vector3(-1, -1, -1),
+        new THREE.Vector3(1, 1, 1),
+      )
       for (child of scene.children) {
         if (
           child instanceof BoundingBoxHelper ||
