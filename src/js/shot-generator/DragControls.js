@@ -107,7 +107,7 @@ class DragControls extends THREE.EventDispatcher {
 
   update ( delta, state ) {
 
-    console.log('update')
+    // console.log('update')
 
     let deltaPos = {x: 0, y: 0}
 
