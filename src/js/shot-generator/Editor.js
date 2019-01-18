@@ -2407,8 +2407,9 @@ const CameraInspector = connect(
 
     let cameraState = sceneObjects[activeCamera]
 
-    let cameras = Object.values(sceneObjects).filter(o => o.type === 'camera').map(o => ([
-      `camera id:${shortId(o.id)}`, o.id
+    // calculated value
+    let cameras = Object.values(sceneObjects).filter(o => o.type === 'camera').map((o, n) => ([
+      `Camera ${n + 1}`, o.id
     ]))
 
     fakeCamera = camera.clone() // TODO reuse a single object
