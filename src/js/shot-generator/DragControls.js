@@ -34,6 +34,8 @@ class DragControls extends THREE.EventDispatcher {
 
     this.enabled = true
 
+    this.currentMoveSpeed = 0.001
+
     this.activate()
   }
 
@@ -102,6 +104,44 @@ class DragControls extends THREE.EventDispatcher {
     //   }
     // }
   }
+
+  update ( delta, state ) {
+
+    console.log('update')
+
+    let deltaPos = {x: 0, y: 0}
+
+    if (state.devices[0].digital.left) {
+      deltaPos.x = -this.currentMoveSpeed
+    }
+
+    if (state.devices[0].digital.right) {
+      deltaPos.x = +this.currentMoveSpeed
+    }
+
+    if (state.devices[0].digital.up) {
+      deltaPos.y = -this.currentMoveSpeed
+    }
+
+    if (state.devices[0].digital.down) {
+      deltaPos.y = +this.currentMoveSpeed
+    }
+
+    if (state.devices[0].digital.left || state.devices[0].digital.right || state.devices[0].digital.up || state.devices[0].digital.down) {
+      this.currentMoveSpeed += 0.0005
+
+      if (this._selected) {
+        let pos = new THREE.Vector2(this._selected.position.x + deltaPos.x, this._selected.position.z + deltaPos.y).rotateAround(new THREE.Vector2(this._selected.position.x, this._selected.position.z),-this._camera.rotation.y)
+        this.onUpdateObject(this._selected.userData.id, { x: pos.x, y: pos.y})
+        }
+    } else {
+      this.currentMoveSpeed = 0.0001
+    }
+
+
+
+  }
+
 
   getObjectAndBone ( intersect ) {
     if (intersect.object instanceof BoundingBoxHelper) {
