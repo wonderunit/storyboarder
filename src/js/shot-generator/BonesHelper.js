@@ -113,11 +113,8 @@ function BonesHelper( object, object3D ) {
       let s_sphere = new THREE.Mesh(s_geometry, s_material)
 
       let geometry = new THREE.CylinderBufferGeometry(boneWidth / 25, boneWidth /15 , boneLength - boneWidth/20, 4 )//, heightSegments : Integer, openEnded : Boolean, thetaStart : Float, thetaLength : Float)
-      //let geometry = new THREE.CylinderBufferGeometry(boneWidth / 25, boneWidth /15 , boneLength , 4 )//, heightSegments : Integer, openEnded : Boolean, thetaStart : Float, thetaLength : Float)
-
 
       //secondary geometry used for hit testing
-      //console.log('this is: ', bone.name.indexOf('Spine'))
       // if it's mixamo rig all spine bones contain the SPine string, set that to wider
       let hit_bone_width = ((bone.name.indexOf('Spine')>0)||(bone.name.indexOf('Hips')>0)) ? boneWidth : boneWidth / 4
       let hit_geometry = new THREE.CylinderBufferGeometry(hit_bone_width, hit_bone_width, boneLength, 4)
@@ -131,8 +128,6 @@ function BonesHelper( object, object3D ) {
       })
 
       this.cones[boneIndex]= new THREE.Mesh()
-
-      //this.cones[traversedBones.indexOf(bone)]
 
       let coneGeom = new THREE.Mesh( geometry.clone(), s_material.clone() )
       let hitMesh = new THREE.Mesh(hit_geometry, hit_material)
@@ -192,7 +187,6 @@ function BonesHelper( object, object3D ) {
 
     }
   }
-  //console.log('traversed bomnes: ', traversedBones)
 
   this.root = object
   this.object3D = object3D
@@ -208,37 +202,36 @@ BonesHelper.prototype.constructor = BonesHelper
 BonesHelper.prototype.updateMatrixWorld = function () {
   var boneMatrix = new Matrix4()
   var matrixWorldInv = new Matrix4()
+  var object3dMatrix = new Matrix4()
 
   return function updateMatrixWorld( force ) {
     var bones = this.bones
 
     matrixWorldInv.getInverse( this.root.matrixWorld )
-    let rootScale = new Vector3().setFromMatrixScale( this.root.matrixWorld )
+
+    console.log('this root: ', this.object3D)
+    let rootScale = new Vector3().setFromMatrixScale( this.object3D.matrixWorld )
     let rootScaleInversed = new Vector3().setFromMatrixScale( matrixWorldInv )
     let boneCounter = 0
     for ( var ii = 0; ii < bones.length; ii++ )
     {
       var bone = bones [ii]
       boneMatrix.multiplyMatrices( matrixWorldInv, bone.matrixWorld )   // changed to parent position, as that's the length calculated
+      //boneMatrix.scale(rootScale * 100)
+
+
       if (bone.connectedBone === undefined) continue
 
       bone.connectedBone.position.setFromMatrixPosition( boneMatrix )
       bone.connectedBone.quaternion.setFromRotationMatrix( boneMatrix )
       bone.connectedBone.scale.setFromMatrixScale( boneMatrix )
-
+      //console.log('current scle: ', bone.connectedBone.scale)
       if (bone.hitBone) {
         bone.hitBone.position.setFromMatrixPosition( boneMatrix )
         bone.hitBone.quaternion.setFromRotationMatrix( boneMatrix )
         bone.hitBone.scale.setFromMatrixScale( boneMatrix )
       }
 
-      //bone.connectedBone.scale.setFromMatrixScale( matrixWorldInv )
-      if (bone.name.indexOf("Foot")>=0)
-      {
-        // FIX REQUIRED HERE FOR BONES THAT DON'T HAVE CORRECT ROTATIONS
-
-      }
-      //boneMatrix.multiplyMatrices( matrixWorldInv, bone.parent.matrixWorld )
     }
 
     Object3D.prototype.updateMatrixWorld.call( this, force )
@@ -250,7 +243,6 @@ BonesHelper.prototype.raycast = function ( raycaster, intersects ) {
   let results = raycaster.intersectObjects(this.cones)
   for (let result of results) {
     // add a .bone key to the Intersection object referencing the cone's bone
-    //console.log('intersecting bones: ', result.object)
     result.bone = this.bones.find(bone => bone.uuid === result.object.userData.bone)
     intersects.push(result)
   }

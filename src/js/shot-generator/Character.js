@@ -9,10 +9,9 @@ const BonesHelper = require('./BonesHelper')
 const debounce = require('lodash.debounce')
 
 // character needs:
-//   mesh
-//   boundingBoxHelper (boundary box)
-// scene needs:
-//   activeBonesHelper (for active character)
+//   mesh - SkinnedMesh
+//   bone structure - ideally Mixamo standard bones
+//
 
 const Character = React.memo(({ scene, id, type, remoteInput, characterModels, isSelected, selectedBone, camera, updateCharacterSkeleton, updateObject, ...props }) => {
   let object = useRef(null)
@@ -120,8 +119,8 @@ const Character = React.memo(({ scene, id, type, remoteInput, characterModels, i
   // updaters
   //
   // FIXME frame delay between redux update and react render here
-  // FIXME use a faster AABB calculation method
   //
+
   useEffect(() => {
     if (object.current) {
       object.current.position.x = props.x
@@ -155,6 +154,7 @@ const Character = React.memo(({ scene, id, type, remoteInput, characterModels, i
       let scale = props.height / height
 
       object.current.scale.set( scale, scale, scale )
+      object.current.bonesHelper.updateMatrixWorld()
     }
   }, [props.model, props.height, props.skeleton])
 
@@ -243,7 +243,6 @@ const Character = React.memo(({ scene, id, type, remoteInput, characterModels, i
       currentBoneSelected.current.connectedBone.material.color = new THREE.Color( 0x006eb8 )
     }
     if (realBone === null || realBone === undefined) return
-    //console.log('real bone: ', realBone, selectedBone)
     realBone.connectedBone.material.color = new THREE.Color( 0xed0000 )
     currentBoneSelected.current = realBone
 
@@ -253,8 +252,6 @@ const Character = React.memo(({ scene, id, type, remoteInput, characterModels, i
     if (!isSelected) return
 
     if (remoteInput.mouseMode) return
-
-    // console.log('**** Character camera is', camera)
 
     let realTarget
     if (selectedBone) {
@@ -373,9 +370,5 @@ const Character = React.memo(({ scene, id, type, remoteInput, characterModels, i
 
   return null
 })
-
-// via https://discourse.threejs.org/t/object-bounds-not-updated-with-animation/3749/12
-// see also: https://gamedev.stackexchange.com/a/43996
-
 
 module.exports = Character

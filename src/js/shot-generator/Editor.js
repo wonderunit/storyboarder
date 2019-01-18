@@ -2097,16 +2097,16 @@ const PhoneCursor = ({ remoteInput, camera, largeCanvasRef, selectObject, select
 
     var noIntersect = true
   	var intersects = raycaster.intersectObjects( sceneObj )
-    console.log(' intersect: ', intersects)
     for ( var i = 0; i < intersects.length; i++ ) {
-      console.log('intersection [', i ,']=' , intersects[ i ].object.userData.type)
+      selectBone( null )
+      //console.log('intersection [', i ,']=' , intersects[ i ].object.userData.type)
       if (intersects[i].object.userData.type === 'object' || intersects[i].object.userData.type==='character')
       {
         noIntersect = false
+
         let object = getObjectAndBone( intersects[ i ] )
         let hits
         let bone
-        //console.log('object[0]: ', object[0])
         if (object[0] && object[0].skeleton) {
           if (bonesHelper.current)
           {
@@ -2139,7 +2139,7 @@ const PhoneCursor = ({ remoteInput, camera, largeCanvasRef, selectObject, select
     if (noIntersect) {
       if (bonesHelper.current)
       {
-        //selectBone( null )
+        selectBone( null )
         scene.remove(bonesHelper.current)
         selectObject( null )
         bonesHelper.current = null

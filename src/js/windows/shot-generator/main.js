@@ -39,7 +39,10 @@ const show = (onComplete) => {
     show: false,
     center: true,
     frame: true,
-    titleBarStyle: 'default', //'hiddenInset',
+
+    backgroundColor: '#333333',
+    titleBarStyle: 'hiddenInset',
+
     acceptFirstMouse: true,
     simpleFullscreen: true,
     webPreferences: {
