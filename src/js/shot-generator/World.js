@@ -221,6 +221,13 @@ const World = ({ world, scene }) => {
     if (room.current) room.current.visible = world.room.visible
   }, [world.room.visible])
 
+  useEffect(() => {
+    scene.background
+      ? scene.background.set(world.backgroundColor)
+      : scene.background = new THREE.Color(world.backgroundColor)
+
+  }, [world.backgroundColor])
+
   return null
 }
 

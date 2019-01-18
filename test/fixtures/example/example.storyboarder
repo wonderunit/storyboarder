@@ -118,6 +118,7 @@
               "z": 0
             },
             "ground": false,
+            "backgroundColor": 8355711,
             "room": {
               "height": 30,
               "length": 40,

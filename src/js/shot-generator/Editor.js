@@ -175,7 +175,7 @@ const SceneManager = connect(
     useEffect(() => {
       console.log('new SceneManager')
 
-      scene.background = new THREE.Color(0xFFFFFF)
+      scene.background = new THREE.Color(world.backgroundColor)
       scene.add(new THREE.AmbientLight(0x161616, 1))
 
       let directionalLight = new THREE.DirectionalLight(0xFFFFFF, 1)
@@ -864,6 +864,7 @@ const InspectedWorld = ({ world, transition, updateWorld, updateWorldRoom, updat
     event.preventDefault()
     updateWorld({ ground: !world.ground })
   }
+
   return h([
     'div',
     ['h4', { style: { margin: 0 } }, 'Scene'],
@@ -891,6 +892,22 @@ const InspectedWorld = ({ world, transition, updateWorld, updateWorldRoom, updat
             'span'
           ]]
         ]
+      ],
+
+      [NumberSlider,
+        {
+          label: 'bg color',
+          value: world.backgroundColor / 0xFFFFFF,
+          min: 0,
+          max: 1,
+          onSetValue: value => {
+            // value is 0..1, scale to component value of 0x00...0xFF (0...255)
+            let c = 0xFF * value
+            // monochrome
+            let backgroundColor = (c << 16) | (c << 8) | c
+            updateWorld({ backgroundColor })
+          }
+        }
       ],
 
     ],

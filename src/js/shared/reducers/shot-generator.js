@@ -22,6 +22,7 @@ const defaultCharacterPreset = {
 const defaultScenePreset = {
   world: {
     ground: false,
+    backgroundColor: 0xFFFFFF,
     room: {
       visible: true,
       width: 30,
@@ -119,6 +120,7 @@ const defaultScenePreset = {
 const initialScene = {
   world: {
     ground: true,
+    backgroundColor: 0xFFFFFF,
     room: {
       visible: false,
       width: 30,
@@ -514,6 +516,9 @@ module.exports = {
         case 'UPDATE_WORLD':
           if (action.payload.hasOwnProperty('ground')) {
             draft.world.ground = action.payload.ground
+          }
+          if (action.payload.hasOwnProperty('backgroundColor')) {
+            draft.world.backgroundColor = action.payload.backgroundColor
           }
           return
 
