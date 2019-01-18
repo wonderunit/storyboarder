@@ -209,7 +209,6 @@ BonesHelper.prototype.updateMatrixWorld = function () {
 
     matrixWorldInv.getInverse( this.root.matrixWorld )
 
-    console.log('this root: ', this.object3D)
     let rootScale = new Vector3().setFromMatrixScale( this.object3D.matrixWorld )
     let rootScaleInversed = new Vector3().setFromMatrixScale( matrixWorldInv )
     let boneCounter = 0
