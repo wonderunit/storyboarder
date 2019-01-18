@@ -377,6 +377,7 @@ const SceneManager = connect(
 
                 // step
                 cameraControlsView.current.update( clock.current.getDelta(), state )
+                dragControlsView.current.update( clock.current.getDelta(), state )
 
                 // TODO only call updateObject if camera object props we care about actually changed
                 //
