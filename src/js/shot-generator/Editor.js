@@ -11,6 +11,7 @@ const { Provider, connect } = require('react-redux')
 const ReactDOM = require('react-dom')
 // const Stats = require('stats.js')
 const { VariableSizeList } = require('react-window')
+const classNames = require('classnames')
 const prompt = require('electron-prompt')
 
 const { createSelector } = require('reselect')
@@ -739,13 +740,18 @@ const Camera = React.memo(({ scene, id, type, setCamera, ...props }) => {
   return null
 })
 
-const WorldElement = React.memo(({ world, isSelected, selectObject, style = {} }) => {
+const WorldElement = React.memo(({ index, world, isSelected, selectObject, style = {} }) => {
   const onClick = () => {
     selectObject(null)
   }
 
+  let className = classNames({
+    'selected': isSelected,
+    'zebra': index % 2
+  })
+
   return h([
-    'div.element', { className: isSelected ? 'selected' : null, style: { height: ELEMENT_HEIGHT, ...style } }, [
+    'div.element', { className, style: { height: ELEMENT_HEIGHT, ...style } }, [
       [
         'a.title[href=#]',
         { onClick },
@@ -768,6 +774,7 @@ const ListItem = ({ index, style, isScrolling, data }) => {
     isWorld
     ? [
       WorldElement, {
+        index,
         world: items[0],
         isSelected: selection == null,
         selectObject
@@ -775,6 +782,7 @@ const ListItem = ({ index, style, isScrolling, data }) => {
     ]
     : [
         Element, {
+          index,
           style,
           sceneObject,
           isSelected: sceneObject.id === selection,
@@ -1832,7 +1840,7 @@ const BoneEditor = ({ sceneObject, bone, updateCharacterSkeleton }) => {
 }
 
 const ELEMENT_HEIGHT = 40
-const Element = React.memo(({ style, sceneObject, isSelected, isActive, onSelectObject, onUpdateObject, deleteObject, setActiveCamera, machineState, transition, allowDelete }) => {
+const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, onSelectObject, onUpdateObject, deleteObject, setActiveCamera, machineState, transition, allowDelete }) => {
   const onClick = event => {
     event.preventDefault()
     onSelectObject(sceneObject.id)
@@ -1860,8 +1868,13 @@ const Element = React.memo(({ style, sceneObject, isSelected, isActive, onSelect
     'object': 'OBJ'
   }
 
+  let className = classNames({
+    'selected': isSelected,
+    'zebra': index % 2
+  })
+
   return h([
-    'div.element', { className: isSelected ? 'selected' : null, style: { height: ELEMENT_HEIGHT, ...style } }, [
+    'div.element', { className, style: { height: ELEMENT_HEIGHT, ...style } }, [
       [
         'a.title[href=#]',
         { onClick },

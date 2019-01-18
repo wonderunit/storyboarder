@@ -109,6 +109,7 @@
     "archiver": "2.0.3",
     "caf": "7.0.4",
     "chokidar": "2.0.3",
+    "classnames": "2.2.6",
     "color-js": "^1.0.4",
     "dualshock": "3.1.1",
     "eases": "1.0.8",
