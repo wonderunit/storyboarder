@@ -48,11 +48,21 @@ console.log("dual shock controller class")
 // this package allows for cheap polling of usb connections
 const usbDetect = require('usb-detection')
 const ds = require('dualshock')
+const robot = require("robotjs")
 
 let controllerConnected = false
 let checkTimeout
 
 let gamepad
+
+let mouseMode = false
+let startX
+let xCountdown = 1
+let startY
+let YCountdown = 1
+let mousePos
+let virtualMousePos
+let padDown = false
 
 module.exports = function ( updater ) {
   usbDetect.startMonitoring()
@@ -102,11 +112,71 @@ module.exports = function ( updater ) {
         // gamepad.rumble(0, 0)
         gamepad.setLed(0,0,0)
       }
+
+      if (button == 'pad' && value && !padDown) {
+        padDown = true
+        console.log('click')
+        robot.mouseClick()
+      }
+
+      if (button == 'pad' && !value) {
+        padDown = false
+        //console.log('click')
+      }
+
+
+      if (button == 't1' && value && !mouseMode) {
+        startX = null
+        startY = null
+        mouseMode = true
+        yCountdown = 3
+        mousePos = robot.getMousePos()
+        robot.setMouseDelay(0)
+        virtualMousePos = {x: mousePos.x, y: mousePos.y}
+      }
+
+      if (button == 't1' && !value) {
+        startX = null
+        startY = null
+        mouseMode = false
+        yCountdown = 3
+        mousePos = robot.getMousePos()
+        virtualMousePos = {x: mousePos.x, y: mousePos.y}
+      }
+
     }
 
     gamepad.onanalog = (axis, value) => {
-  		// console.log("ANALOG '"+axis+"' = "+value);
-  		//rumbleScript(axis, value, 'a', this);
+  	//	 console.log("ANALOG '"+axis+"' = "+value);
+      //rumbleScript(axis, value, 'a', this);
+      if (axis == 't1Y'){
+        if (!mouseMode) {
+          startY = null
+          yCountdown = 3
+        } else {
+          yCountdown--
+          if (!startY && yCountdown < 0) { startY = value}
+          if (yCountdown < 0) {
+            virtualMousePos.y = mousePos.y - ((startY - value)/2.0)
+            robot.moveMouse(virtualMousePos.x, virtualMousePos.y)
+          }
+        }
+      }
+
+      if (axis == 't1X'){
+        if (!mouseMode) {
+          startX = null
+          xCountdown = 3
+        } else {
+          xCountdown--
+          if (!startX && xCountdown < 0) { startX = value}
+          if (xCountdown < 0) {
+            virtualMousePos.x = mousePos.x - ((startX - value)/2.0)
+            robot.moveMouse(virtualMousePos.x, virtualMousePos.y)
+          }
+        }
+      }
+
   	}
 
     gamepad.onmotion = (axis, value) => {
@@ -114,7 +184,8 @@ module.exports = function ( updater ) {
       if (axis === 'gyroYaw') {
         // console.log(axis, value)
       }
-  		//rumbleScript(axis, value, 'a', this);
+      //rumbleScript(axis, value, 'a', this);
+      //console.log(mouseMode, startY)
   	}
 
     // gamepad.onmotion = true;
