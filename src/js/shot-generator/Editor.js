@@ -2470,18 +2470,33 @@ const editorMachine = Machine({
   }
 })
 
+// TODO move selector logic into reducers/shot-generator?
 // memoized selectors
 const getSceneObjects = state => state.sceneObjects
+const getSelection = state => state.selection
 const getCameraSceneObjects = createSelector(
-  [state => state.sceneObjects],
+  [getSceneObjects],
   (sceneObjects) => Object.values(sceneObjects).filter(o => o.type === 'camera')
 )
+const getSelectedSceneObject = createSelector(
+  [getSceneObjects, getSelection],
+  (sceneObjects, selection) => Object.values(sceneObjects).find(o => o.id === selection)
+)
+const canDelete = (sceneObject, activeCamera) =>
+  // allow objects
+  sceneObject.type === 'object' ||
+  // allow characters
+  sceneObject.type === 'character' ||
+  // allow cameras which are not the active camera
+  (sceneObject.type === 'camera' && sceneObject.id !== activeCamera)
 
 const KeyHandler = connect(
   state => ({
     mainViewCamera: state.mainViewCamera,
     activeCamera: state.activeCamera,
     selection: state.selection,
+
+    _selectedSceneObject: getSelectedSceneObject(state),
 
     _cameras: getCameraSceneObjects(state)
   }),
@@ -2498,6 +2513,7 @@ const KeyHandler = connect(
     mainViewCamera,
     activeCamera,
     selection,
+    _selectedSceneObject,
     _cameras,
     setMainViewCamera,
     selectObject,
@@ -2511,12 +2527,11 @@ const KeyHandler = connect(
     useEffect(() => {
       const onKeyDown = event => {
         if (event.key === 'Backspace') {
-          if (selection) {
+          if (selection && canDelete(_selectedSceneObject, activeCamera)) {
             let choice = dialog.showMessageBox(null, {
               type: 'question',
               buttons: ['Yes', 'No'],
-              message: 'Are you sure?',
-              defaultId: 1 // default to No
+              message: 'Are you sure?'
             })
             if (choice === 0) {
               deleteObject(selection)
@@ -2585,7 +2600,7 @@ const KeyHandler = connect(
       return function cleanup () {
         window.removeEventListener('keydown', onKeyDown)
       }
-    }, [mainViewCamera, _cameras, selection])
+    }, [mainViewCamera, _cameras, selection, _selectedSceneObject, activeCamera])
 
     return null
   }
