@@ -182,7 +182,7 @@ const SceneManager = connect(
       directionalLight.position.set(0, 1, 3)
       scene.add(directionalLight)
 
-      orthoCamera.current.position.y = 100
+      orthoCamera.current.position.y = 900
       orthoCamera.current.rotation.x = -Math.PI / 2
     }, [])
 
@@ -216,61 +216,60 @@ const SceneManager = connect(
       // assign a target height, based on scene aspect ratio
       let height = Math.ceil(width / aspectRatio)
 
-      // determine the bounding box containging all scene objects
-      let bbox = new THREE.Box3(
-        new THREE.Vector3(-1, -1, -1),
-        new THREE.Vector3(1, 1, 1),
-      )
+      let minMax = [9999,-9999,9999,-9999]
 
-      console.log('\n\n\n')
-      console.log('BOUNDING BOX')
-
+      // go through all appropriate opbjects and get the min max
       for (child of scene.children) {
         if (
           child.userData &&
           child.userData.type === 'object' ||
-          child.userData.type === 'character'
+          child.userData.type === 'character' ||
+          child instanceof THREE.PerspectiveCamera
         ) {
-          console.log('\t', 'adding', child.userData.type, shortId(child.userData.id))
-          bbox.expandByObject(child)
-        } else if (
-          child instanceof THREE.Camera
-        ) {
-          bbox.expandByPoint(child.position)
+          minMax[0] = Math.min(child.position.x, minMax[0])
+          minMax[1] = Math.max(child.position.x, minMax[1])
+          minMax[2] = Math.min(child.position.z, minMax[2])
+          minMax[3] = Math.max(child.position.z, minMax[3])
         }
       }
 
-      console.log('\t', 'bounds', bbox.min, 'to', bbox.max)
-      console.log('\n\n\n')
+      // add some padding
+      minMax[0] -= 2
+      minMax[1] += 2
+      minMax[2] -= 2
+      minMax[3] += 2
 
-      let wi = (bbox.max.x - bbox.min.x)
-      let hi = (bbox.max.z - bbox.min.z)
-      let ri = wi / hi
-
+      // get the aspect ratio of the container window
       // target aspect ratio
       let rs = (mainViewCamera === 'live')
         ? 1
-        : aspectRatio // 2.35
+        : aspectRatio
 
-      let [w, h] = rs > ri
-        ? [hi * rs, hi]
-        : [wi, wi / rs]
+      // make sure the min max box fits in the aspect ratio
+      let mWidth = minMax[1]-minMax[0]
+      let mHeight = minMax[3]-minMax[2]
+      let mAspectRatio = (mWidth/mHeight)
 
-      orthoCamera.current.left = -w
-      orthoCamera.current.right = w
-      orthoCamera.current.top = h
-      orthoCamera.current.bottom = -h
+      if (mAspectRatio>rs) {
+        let padding = (mWidth / (1/rs))-mHeight
+        minMax[2] -= padding/2
+        minMax[3] += padding/2
+      } else {
+        let padding = (mHeight / (1/rs))-mWidth
+        minMax[0] -= padding/2
+        minMax[1] += padding/2
+      }
+
+      orthoCamera.current.position.x = minMax[0]+((minMax[1]-minMax[0])/2)
+      orthoCamera.current.position.z = minMax[2]+((minMax[3]-minMax[2])/2)
+      orthoCamera.current.left = -(minMax[1]-minMax[0])/2
+      orthoCamera.current.right = (minMax[1]-minMax[0])/2
+      orthoCamera.current.top = (minMax[3]-minMax[2])/2
+      orthoCamera.current.bottom = -(minMax[3]-minMax[2])/2
+      orthoCamera.current.near = -1000
+      orthoCamera.current.far = 1000
 
       orthoCamera.current.updateProjectionMatrix()
-
-      // console.log(
-      //   'bounds  w', wi.toFixed(3),
-      //   'bounds  h', hi.toFixed(3),
-      //   'bounds ar', ri.toFixed(3),
-      //   'view   ar', rs.toFixed(3),
-      //   'w', w.toFixed(3),
-      //   'h', h.toFixed(3)
-      // )
 
       // resize the renderers
       if (mainViewCamera === 'live') {
