@@ -374,6 +374,32 @@ const SceneManager = connect(
                 // update object state with the latest values
                 let cameraId = camera.userData.id
                 let { x, y, z, rotation, tilt } = cameraControlsView.current.object
+
+
+
+                // DualshockController
+                let deadzone = 0.1
+                // position
+                let lStickX = (state.devices[0].analog.lStickX/127) - 1
+                let lStickY = (state.devices[0].analog.lStickY/127) - 1
+                if (Math.abs(lStickX) > deadzone) {
+                  x += lStickX / 100
+                }
+                if (Math.abs(lStickY) > deadzone) {
+                  y += lStickY / 100
+                }
+                // rotation
+                let rStickX = (state.devices[0].analog.rStickX/127) - 1
+                let rStickY = (state.devices[0].analog.rStickY/127) - 1
+                if (Math.abs(rStickX) > deadzone) {
+                  rotation -= rStickX / 100
+                }
+                if (Math.abs(rStickY) > deadzone) {
+                  tilt -= rStickY / 100
+                }
+
+
+
                 updateObject(cameraId, {
                   x,
                   y,
@@ -1178,7 +1204,12 @@ const NumberSlider = React.memo(({ label, value, onSetValue, min, max, step, for
     : value => value.toFixed(2)
 
   useEffect(() => {
-    const onKeyDown = event => setFine(event.altKey)
+    const onKeyDown = event => {
+      setFine(event.altKey)
+      if (event.key === 'Escape') {
+        document.activeElement.blur()
+      }
+    }
     window.addEventListener('keydown', onKeyDown)
     window.addEventListener('keyup', onKeyDown)
     return function cleanup () {
@@ -2128,7 +2159,7 @@ const PhoneCursor = ({ remoteInput, camera, largeCanvasRef, selectObject, select
   )
 }
 
-const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, setActiveCamera, resetScene, saveToBoard }) => {
+const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, setActiveCamera, resetScene, saveToBoard, insertAsNewBoard }) => {
   const onCreateCameraClick = () => {
     let id = THREE.Math.generateUUID()
     createObject({
@@ -2293,7 +2324,7 @@ const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, set
   }
 
   const onInsertNewBoardClick = event => {
-    ipcRenderer.send('insertShot')
+    insertAsNewBoard()
   }
 
   return h(
@@ -2310,7 +2341,7 @@ const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, set
       ['a.add[href=#]', { onClick: preventDefault(onSaveClick) }, 'Save'],
 
       ['a.add[href=#]', { onClick: preventDefault(onSaveToBoardClick) }, 'Save to Board'],
-      ['a.add[href=#]', { onClick: preventDefault(onInsertNewBoardClick) }, 'Insert New Board']
+      ['a.add[href=#]', { onClick: preventDefault(onInsertNewBoardClick) }, 'Insert As New Board']
 
     ]
   )
@@ -2583,7 +2614,10 @@ const Editor = connect(
     setActiveCamera,
     resetScene,
 
+    // TODO DRY
     saveToBoard: () => (dispatch, getState) => {
+      dispatch(selectObject(null))
+
       let state = getState()
 
       requestAnimationFrame(() => {
@@ -2605,11 +2639,38 @@ const Editor = connect(
         })
 
       })
+    },
+
+    // TODO DRY
+    insertAsNewBoard: () => (dispatch, getState) => {
+      dispatch(selectObject(null))
+
+      let state = getState()
+
+      requestAnimationFrame(() => {
+
+        // HACK FIXME don't hardcode these
+        let cameraImage = document.querySelector('#camera-canvas').toDataURL()
+        let topDownImage = document.querySelector('#top-down-canvas').toDataURL()
+
+        ipcRenderer.send('insertShot', {
+          data: {
+            world: state.world,
+            sceneObjects: state.sceneObjects,
+            activeCamera: state.activeCamera
+          },
+          images: {
+            'camera': cameraImage,
+            'topdown': topDownImage
+          }
+        })
+
+      })
     }
   }
 )(
 
-  ({ mainViewCamera, createObject, selectObject, setModels, loadScene, saveScene, activeCamera, setActiveCamera, resetScene, remoteInput, aspectRatio, saveToBoard }) => {
+  ({ mainViewCamera, createObject, selectObject, setModels, loadScene, saveScene, activeCamera, setActiveCamera, resetScene, remoteInput, aspectRatio, saveToBoard, insertAsNewBoard }) => {
     const largeCanvasRef = useRef(null)
     const smallCanvasRef = useRef(null)
     const [ready, setReady] = useState(false)
@@ -2658,7 +2719,7 @@ const Editor = connect(
       { value: { scene: scene.current }},
       h(
         ['div.column', { style: { width: '100%' } }, [
-          [Toolbar, { createObject, selectObject, loadScene, saveScene, camera, setActiveCamera, resetScene, saveToBoard }],
+          [Toolbar, { createObject, selectObject, loadScene, saveScene, camera, setActiveCamera, resetScene, saveToBoard, insertAsNewBoard }],
 
           ['div.row', { style: { flex: 1 }},
             ['div.column', { style: { width: '300px', background: '#111'} },

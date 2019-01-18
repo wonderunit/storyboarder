@@ -6909,10 +6909,7 @@ ipcRenderer.on('zoomOut', value => {
   storyboarderSketchPane.zoomAtCursor(ZOOM_LEVELS[zoomIndex])
 })
 
-ipcRenderer.on('saveShot', async (event, { data, images }) => {
-  // TODO undo step?
-
-  console.log('main-window#saveShot', data, images)
+const saveToBoardFromShotGenerator = async ({ data, images }) => {
   boardData.boards[currentBoard].sts = {
     version: pkg.version,
     data
@@ -6935,14 +6932,31 @@ ipcRenderer.on('saveShot', async (event, { data, images }) => {
   storyboarderSketchPane.replaceLayer(layerIndex, canvas)
   // force a file save and thumbnail update
   markImageFileDirty([layerIndex])
+}
+ipcRenderer.on('saveShot', async (event, { data, images }) => {
+  // TODO undo step?
+  console.log('main-window#saveShot', data, images)
+
+  // force 100% opacity
+  layersEditor.setReferenceOpacity(1)
+
+  await saveToBoardFromShotGenerator({ data, images })
 })
-ipcRenderer.on('insertShot', async () => {
+ipcRenderer.on('insertShot', async (event, { data, images }) => {
+  console.log('main-window#insertShot', data, images)
+
   let index = await newBoard()
-  gotoBoard(index)
-  ipcRenderer.send('shot-generator:open', {
-    shot: boardData.boards[currentBoard].sts,
-    aspectRatio: parseFloat(boardData.aspectRatio)
-  })
+  await gotoBoard(index)
+
+  // force 100% opacity
+  layersEditor.setReferenceOpacity(1)
+
+  await saveToBoardFromShotGenerator({ data, images })
+
+  // ipcRenderer.send('shot-generator:open', {
+  //   shot: boardData.boards[currentBoard].sts,
+  //   aspectRatio: parseFloat(boardData.aspectRatio)
+  // })
 })
 
 const log = opt => ipcRenderer.send('log', opt)

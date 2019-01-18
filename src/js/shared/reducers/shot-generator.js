@@ -171,6 +171,24 @@ const initialState = {
     mouseMode: false,
     mouseModeClick: false
   },
+  devices: {
+    0: {
+      analog: {
+        lStickX: 127,
+        lStickY: 127,
+        rStickX: 127,
+        rStickY: 127
+      },
+      motion: {
+        gryoPitch: 0,
+        gyroRoll: 0,
+        gyroYaw: 0
+      },
+      digital: {
+        circle: false
+      }
+    }
+  },
   presets: {
     scenes: {
       'C181CF19-AF44-4348-8BCB-FB3EE582FC5D': {
@@ -470,6 +488,9 @@ module.exports = {
           }
           return
 
+        case 'UPDATE_DEVICE':
+          draft.devices[action.payload.id] = action.payload
+          return
 
         case 'CREATE_CHARACTER_PRESET':
           draft.presets.characters[action.payload.id] = action.payload
@@ -585,5 +606,7 @@ module.exports = {
 
   updateWorld: payload => ({ type: 'UPDATE_WORLD', payload }),
   updateWorldRoom: payload => ({ type: 'UPDATE_WORLD_ROOM', payload }),
-  updateWorldEnvironment: payload => ({ type: 'UPDATE_WORLD_ENVIRONMENT', payload })
+  updateWorldEnvironment: payload => ({ type: 'UPDATE_WORLD_ENVIRONMENT', payload }),
+
+  updateDevice: (id, values) => ({ type: 'UPDATE_DEVICE', payload: { id, ...values } })
 }
