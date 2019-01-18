@@ -2582,7 +2582,7 @@ const KeyHandler = connect(
       return function cleanup () {
         window.removeEventListener('keydown', onKeyDown)
       }
-    }, [mainViewCamera, _cameras])
+    }, [mainViewCamera, _cameras, selection])
 
     return null
   }
