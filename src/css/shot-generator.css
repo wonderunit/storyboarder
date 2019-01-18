@@ -19,6 +19,7 @@ body {
   display: flex;
   flex-direction: column;
   /*-webkit-app-region: drag;*/
+
 }
 
 a {
@@ -102,12 +103,16 @@ kbd {
 
 #toolbar {
   background: #333;
-  height: 40px;
+  height: 50px;
   display: flex;
-  margin-left: 300px;
+  padding-left: 100px;
+  padding-top: 6px;
+  padding-bottom: 6px;
   justify-content: space-between;
   color: #eee;
   font-size: 14px;
+  -webkit-app-region: drag;
+
 }
 #toolbar a {
   color: #e0e0e0;
@@ -115,10 +120,11 @@ kbd {
 
   margin: 0 12px 0 0;
   padding: 6px 12px;
-  /* border-radius: 6px; */
+  border-radius: 6px;
   justify-content: center;
   align-items: center;
   display: flex;
+
 }
 #toolbar a:hover {
   background-color: #444;
@@ -131,19 +137,24 @@ kbd {
   overflow: hidden;
   /* color: white; */
   position: relative;
+  background-color: #333;
 }
 
 .element {
   box-sizing: border-box;
-  padding: 6px 16px 6px 8px;
+  /* padding: 6px 16px 6px 8px; */
   display: flex;
   flex-direction: row;
-  background-color: #444;
+  background-color: #333;
   font-size: 14px;
   letter-spacing: 0.05rem;
 }
+
+.element:nth-child(2n) {
+  background-color: rgb(55, 55, 55);
+}
 .element:not(:last-child) {
-  border-bottom: 1px solid black;
+  /* border-bottom: 1px solid black; */
 }
 .element.selected {
   background-color: #555;
@@ -159,7 +170,7 @@ kbd {
   display: flex;
   color: white;
 
-  padding: 6px 0 4px 0;
+  padding: 8px 0 4px 8px;
   border-radius: 6px;
 
   text-decoration: none;
@@ -176,15 +187,15 @@ kbd {
 .element span.id {
   opacity: 0.3;
   padding-right: 6px;
-  font-style: italic;
   font-size: 12px;
+  margin-bottom: 10px;
 }
 .element a.delete {
-  margin-left: 6px;
+  margin: 6px 6px 6px 6px;
   display: flex;
   width: 30px;
-  color: red;
-  background-color: black;
+  color: #777;
+  background-color: #333;
   padding: 6px 0 4px 0;
   border-radius: 6px;
   font-size: 87.5%;
@@ -202,8 +213,9 @@ kbd {
   flex: 1;
   overflow: scroll;
   padding: 6px;
-  background-color: #aaa;
-  color: #111;
+  background-color: #333;
+  color: #999;
+  text-transform: capitalize;
 }
 #remoteInputView {
   padding-top: 12px;
@@ -340,8 +352,8 @@ select:focus {
 #inspector .button_add {
   display: flex;
   width: 30px;
-  color: white;
-  background-color: black;
+  color: rgb(152, 152, 152);
+  background-color: rgba(93, 93, 93, 0.199);
   padding: 6px 0 4px 0;
   border-radius: 6px;
   font-size: 87.5%;
@@ -363,12 +375,55 @@ select:focus {
 .number-slider input[type=range]:focus {
   outline: none;
 }
-.number-slider input[type=range]::-webkit-slider-runnable-track {
-  background: #888;
-}
 .number-slider input[type=range]:focus::-webkit-slider-runnable-track {
-  background: #fe0;
+  /* background: #fe0; */
 }
+
+.number-slider {
+  margin-bottom: 4px;
+  font-size: 12px;
+}
+
+.number-slider div {
+  padding-top: 7px;
+}
+
+.number-slider div:last-child {
+  padding-left: 7px;
+}
+
+input[type=range] {
+  -webkit-appearance: none;
+  width: 100%;
+  margin: 3.1px 0;
+  background: #333;
+}
+input[type=range]:focus {
+  outline: none;
+}
+input[type=range]::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 18px;
+  cursor: pointer;
+  background: rgba(134, 134, 134, 0.114);
+  border-radius: 3px;
+  border: 0px;
+}
+input[type=range]::-webkit-slider-thumb {
+  border: 0px;
+  height: 24px;
+  width: 37px;
+  border-radius: 5px;
+  background: #545454;
+  cursor: pointer;
+  -webkit-appearance: none;
+  margin-top: -3.1px;
+}
+input[type=range]:focus::-webkit-slider-runnable-track {
+  /* background: rgba(69, 69, 69, 0.12); */
+}
+
+
 /*
 .number-slider input[type=range] {
   -webkit-appearance: none;
