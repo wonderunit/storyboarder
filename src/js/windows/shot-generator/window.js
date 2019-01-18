@@ -113,3 +113,21 @@ createServer({
   setInputMouseMode: payload => store.dispatch({ type: 'SET_INPUT_MOUSEMODE', payload }),
   setInputPhoneClick: payload => store.dispatch({ type: 'SET_INPUT_PHONE_CLICK', payload })
 })
+
+// are we testing locally?
+// SHOT_GENERATOR_STANDALONE=true npx electron src/js/windows/shot-generator/main.js
+if (process.env.SHOT_GENERATOR_STANDALONE) {
+  console.log('loading shot from example.storyboarder')
+
+  const fs = require('fs')
+  const path = require('path')
+  let file = JSON.parse(
+    fs.readFileSync(
+      path.join(
+        __dirname, '..', '..', '..', '..', 'test', 'fixtures', 'example', 'example.storyboarder'
+      )
+    )
+  )
+
+  store.dispatch(loadScene(file.boards[0].sts.data))
+}

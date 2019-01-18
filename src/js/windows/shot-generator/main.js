@@ -72,25 +72,10 @@ module.exports = {
 }
 
 // are we testing locally?
-// npx electron src/js/windows/shot-generator/main.js
-//if (module.parent.filename === path.join(__dirname, '..', '..', '..', '..', 'node_modules/electron/dist/resources/default_app.asar/main.js')) {  // on windows 10
-if (module.parent.filename === path.join(__dirname, '..', '..', '..', '..', 'node_modules/electron/dist/Electron.app/Contents/Resources/default_app.asar/main.js')) { // macOS
+// SHOT_GENERATOR_STANDALONE=true npx electron src/js/windows/shot-generator/main.js
+if (process.env.SHOT_GENERATOR_STANDALONE) {
   console.log('testing locally!')
   app.on('ready', () => {
-    console.log('loading shot from example.storyboarder')
-
-    const fs = require('fs')
-    const path = require('path')
-    let file = JSON.parse(
-      fs.readFileSync(
-        path.join(
-          __dirname, '..', '..', '..', '..', 'test', 'fixtures', 'example', 'example.storyboarder'
-        )
-      )
-    )
-
-    show(win => {
-      win.webContents.send('loadShot', file.boards[0].sts)
-    })
+    show(win => {})
   })
 }
