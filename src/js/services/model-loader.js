@@ -257,7 +257,7 @@ const loadModels = () => {
   })
 
   // FBX loading trials
-  const female2 = loadModelFBXPromise("data/shot-generator/dummies/female-adult-test.fbx", textures.femaleAdultBody, textures.maleHead, characterHeights['adult-female'])
+  //const female2 = loadModelFBXPromise("data/shot-generator/dummies/female-adult-test.fbx", textures.femaleAdultBody, textures.maleHead, characterHeights['adult-female'])
   //const male2 = loadModelFBXPromise("data/shot-generator/dummies/male-adult.fbx", textures.maleAdultBody, textures.maleHead, characterHeights.maleAdult)
   //const male_youth2 = loadModelFBXPromise("data/shot-generator/dummies/male-youth.fbx", textures.maleYouthBody, textures.maleHead, characterHeights.maleYouth )
 

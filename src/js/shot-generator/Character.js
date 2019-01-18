@@ -108,7 +108,7 @@ const Character = React.memo(({ scene, id, type, remoteInput, characterModels, i
     return function cleanup () {
       console.log(type, id, 'remove')
       if (object.current) {
-        //scene.remove(object.current.bonesHelper)
+        scene.remove(object.current.bonesHelper)
         scene.remove(object.current)
         object.current = null
       }

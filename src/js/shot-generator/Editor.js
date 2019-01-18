@@ -412,16 +412,12 @@ const SceneManager = connect(
               cameraHelper.current.visible = state.mainViewCamera === 'live'
                 ? false
                 : true
-              if (bonesHelper.current) { scene.add(bonesHelper.current) }
 
               if (state.mainViewCamera === 'live') {
                 largeRendererEffect.current.render(scene, cameraForLarge)
               } else {
                 largeRenderer.current.render(scene, cameraForLarge)
               }
-
-
-              if (bonesHelper.current) { scene.remove(bonesHelper.current) }
 
               cameraHelper.current.update()
               cameraHelper.current.visible = state.mainViewCamera === 'live'
@@ -473,10 +469,7 @@ const SceneManager = connect(
             // or, there is a BonesHelper instance pointing to the wrong object
             bonesHelper.current.root !== skel.skeleton.bones[0]
           ) {
-            //console.log('do we need a new bone structure? : ', (skel))
-            //bonesHelper.current = new BonesHelper(skel.skeleton.bones[0])
             bonesHelper.current = child.bonesHelper
-            //console.log('creating a new bone structure: ', bonesHelper.current)
           }
         } else {
           bonesHelper.current = null
@@ -2112,14 +2105,14 @@ const PhoneCursor = ({ remoteInput, camera, largeCanvasRef, selectObject, select
           {
             //console.log(' its already here ')
           } else {
-            scene.remove(bonesHelper.current)
+            //scene.remove(bonesHelper.current)
             //bonesHelper.current = object.current.bonesHelper
             //selectObject(object[0].userData.id)
             //scene.add(bonesHelper.current)
           }
         } else {
-          scene.remove(bonesHelper.current)
-          bonesHelper.current = null
+          //scene.remove(bonesHelper.current)
+          //bonesHelper.current = null
         }
         if (bonesHelper.current) {
           hits = raycaster.intersectObject( bonesHelper.current )
@@ -2140,7 +2133,7 @@ const PhoneCursor = ({ remoteInput, camera, largeCanvasRef, selectObject, select
       if (bonesHelper.current)
       {
         selectBone( null )
-        scene.remove(bonesHelper.current)
+        //scene.remove(bonesHelper.current)
         selectObject( null )
         bonesHelper.current = null
       }
