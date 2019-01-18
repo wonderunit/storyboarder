@@ -31,9 +31,9 @@ const show = (onComplete) => {
 
   win = new BrowserWindow({
     width: 1500,
-    height: 900,
+    height: 1080,
     minWidth: 1200,
-    minHeight: 715,
+    minHeight: 800,
     // x: 0,
     // y: 0,
     show: false,
