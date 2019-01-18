@@ -61,7 +61,6 @@ const DragControls = require('./DragControls')
 const Character = require('./Character')
 
 const BonesHelper = require('./BonesHelper')
-const BoundingBoxHelper = require('./BoundingBoxHelper')
 
 const ModelLoader = require('../services/model-loader')
 
@@ -78,7 +77,8 @@ const RoundedBoxGeometry = require('three-rounded-box')(THREE)
 window.THREE = THREE
 
 const draggables = (sceneObjects, scene) =>
-  scene.children.filter(o => o.userData.type === 'object' || o instanceof BoundingBoxHelper)
+  //scene.children.filter(o => o.userData.type === 'object' || o instanceof BoundingBoxHelper)
+  scene.children.filter(o => o.userData.type === 'object' || o.userData.type === 'character')
 
 // const stats = new Stats()
 // stats.showPanel(0)
@@ -223,7 +223,7 @@ const SceneManager = connect(
       )
       for (child of scene.children) {
         if (
-          child instanceof BoundingBoxHelper ||
+          //child instanceof BoundingBoxHelper ||
           child instanceof THREE.SkinnedMesh ||
           child instanceof THREE.Mesh
         ) {
@@ -401,16 +401,12 @@ const SceneManager = connect(
               cameraHelper.current.visible = state.mainViewCamera === 'live'
                 ? false
                 : true
-              if (bonesHelper.current) { scene.add(bonesHelper.current) }
 
               if (state.mainViewCamera === 'live') {
                 largeRendererEffect.current.render(scene, cameraForLarge)
               } else {
                 largeRenderer.current.render(scene, cameraForLarge)
               }
-
-
-              if (bonesHelper.current) { scene.remove(bonesHelper.current) }
 
               cameraHelper.current.update()
               cameraHelper.current.visible = state.mainViewCamera === 'live'
@@ -462,9 +458,7 @@ const SceneManager = connect(
             // or, there is a BonesHelper instance pointing to the wrong object
             bonesHelper.current.root !== skel.skeleton.bones[0]
           ) {
-            //console.log('do we need a new bone structure? : ', (skel))
-            bonesHelper.current = new BonesHelper(skel.skeleton.bones[0])
-            //console.log('creating a new bone structure: ', bonesHelper.current)
+            bonesHelper.current = child.bonesHelper
           }
         } else {
           bonesHelper.current = null
@@ -698,7 +692,6 @@ const Camera = React.memo(({ scene, id, type, setCamera, ...props }) => {
 
     // camera.current.fov = props.fov
     // camera.current.updateProjectionMatrix()
-
     scene.add(camera.current)
     // setCamera(camera.current)
 
@@ -2101,30 +2094,31 @@ const PhoneCursor = ({ remoteInput, camera, largeCanvasRef, selectObject, select
     raycaster.setFromCamera( phoneMouse, camera )
     const sceneObj = scene.children
 
-    var noIntersect = true;
+    var noIntersect = true
   	var intersects = raycaster.intersectObjects( sceneObj )
-
     for ( var i = 0; i < intersects.length; i++ ) {
+      selectBone( null )
       //console.log('intersection [', i ,']=' , intersects[ i ].object.userData.type)
       if (intersects[i].object.userData.type === 'object' || intersects[i].object.userData.type==='character')
       {
-        noIntersect = false;
+        noIntersect = false
+
         let object = getObjectAndBone( intersects[ i ] )
         let hits
         let bone
         if (object[0] && object[0].skeleton) {
           if (bonesHelper.current)
           {
-
+            //console.log(' its already here ')
           } else {
-            scene.remove(bonesHelper.current)
-            bonesHelper.current = new BonesHelper(object[0].skeleton.bones[0])
-            selectObject(object[0].userData.id)
-            scene.add(bonesHelper.current)
+            //scene.remove(bonesHelper.current)
+            //bonesHelper.current = object.current.bonesHelper
+            //selectObject(object[0].userData.id)
+            //scene.add(bonesHelper.current)
           }
         } else {
-          scene.remove(bonesHelper.current)
-          bonesHelper.current = null
+          //scene.remove(bonesHelper.current)
+          //bonesHelper.current = null
         }
         if (bonesHelper.current) {
           hits = raycaster.intersectObject( bonesHelper.current )
@@ -2144,8 +2138,8 @@ const PhoneCursor = ({ remoteInput, camera, largeCanvasRef, selectObject, select
     if (noIntersect) {
       if (bonesHelper.current)
       {
-        //selectBone( null )
-        scene.remove(bonesHelper.current)
+        selectBone( null )
+        //scene.remove(bonesHelper.current)
         selectObject( null )
         bonesHelper.current = null
       }
@@ -2695,6 +2689,7 @@ const Editor = connect(
         let characterModelDataById = Object.entries(characterModels).reduce(
           (coll, [key, model]) => {
             let model1 = (model.children[0] instanceof THREE.Mesh) ? model.children[0] : model.children[1]
+            if (model1 === undefined) model1 = model //fix for temp loading FBX
             coll[key] = {
               model: model1.toJSON(),
               bones: JSON.parse(JSON.stringify(model1.skeleton.bones)),

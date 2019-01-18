@@ -45,10 +45,12 @@ function getBoneList( object ) {
 
 }
 
-function BonesHelper( object ) {
+function BonesHelper( object, object3D ) {
   Object3D.call( this )
   let bones = getBoneList( object );
   this.cones = []
+
+  this.hit_meshes = []
 
   let boneMatrix = new Matrix4()
   let matrixWorldInv = new Matrix4()
@@ -62,7 +64,7 @@ function BonesHelper( object ) {
   let skeletonHelper = new THREE.SkeletonHelper( bones[0] )
   skeletonHelper.material.linewidth = 5
   //this.add(skeletonHelper)
-
+  let traversedBones = []
   for (var ii = 0; ii< bones.length; ii++) {
     var bone = bones[ii]
     var jj = 0
@@ -72,11 +74,25 @@ function BonesHelper( object ) {
     let scaleB = new Vector3()
     let scaleC = new Vector3()
 
+
     while (bone.children && bone.children[jj] && bone.children[jj].isBone  )
     {
+      if (traversedBones.includes(bone)) {
+
+        let currentCreated = traversedBones[traversedBones.indexOf(bone)]
+        //console.log('double!: ', currentCreated)
+        this.remove(currentCreated)
+        this.remove(currentCreated.hitBone)
+        traversedBones[traversedBones.indexOf(bone)] = bone
+      }
+      else {
+        traversedBones.push(bone)
+      }
+
+      let boneIndex = traversedBones.indexOf(bone)
+
       posA.setFromMatrixPosition(boneMatrix.multiplyMatrices(matrixWorldInv, bone.matrixWorld))
       posB.setFromMatrixPosition(boneMatrix.multiplyMatrices(matrixWorldInv, bone.children[jj].matrixWorld))
-
 
       scaleA.setFromMatrixScale(boneMatrix)
       scaleB.setFromMatrixScale(matrixWorldInv)
@@ -98,40 +114,73 @@ function BonesHelper( object ) {
 
       let geometry = new THREE.CylinderBufferGeometry(boneWidth / 25, boneWidth /15 , boneLength - boneWidth/20, 4 )//, heightSegments : Integer, openEnded : Boolean, thetaStart : Float, thetaLength : Float)
 
-      // old material
-      // let material = new THREE.MeshStandardMaterial( {
-      //   color: 0x006eb8,
-      //   emissive: 0x003254,
-      //   wireframe: false,
-      //   depthTest: false,
-      //   depthWrite: false,
-      //   transparent: true,
-      //   opacity: 0.9,
-      //   flatShading: true,
-      // })
+      //secondary geometry used for hit testing
+      // if it's mixamo rig all spine bones contain the SPine string, set that to wider
+      let hit_bone_width = ((bone.name.indexOf('Spine')>0)||(bone.name.indexOf('Hips')>0)) ? boneWidth : boneWidth / 4
+      let hit_geometry = new THREE.CylinderBufferGeometry(hit_bone_width, hit_bone_width, boneLength, 4)
+      let hit_material = new THREE.MeshBasicMaterial({
+        color: 0x00ff00,
+        depthTest: false,
+        depthWrite: false,
+        transparent: true,
+        opacity: 0.5,
+        flatShading: true
+      })
 
-      this.cones[boneCounter]= new THREE.Mesh()
+      this.cones[boneIndex]= new THREE.Mesh()
+
       let coneGeom = new THREE.Mesh( geometry.clone(), s_material.clone() )
+      let hitMesh = new THREE.Mesh(hit_geometry, hit_material)
+
       coneGeom.position.y = boneLength / 2 + boneWidth / 60
-      this.cones[boneCounter].add( coneGeom )
+      this.cones[boneIndex].add( coneGeom )
+      this.cones[boneIndex] = new THREE.Mesh( geometry.clone(), s_material.clone() )
 
-      this.cones[boneCounter] = new THREE.Mesh( geometry.clone(), s_material.clone() )
+      this.cones[boneIndex].geometry.applyMatrix(new Matrix4().makeTranslation(0, boneLength/2+boneWidth/60, 0))
+      hitMesh.geometry.applyMatrix(new Matrix4().makeTranslation(0, boneLength/2, 0))
+      this.hit_meshes[boneIndex] = ( hitMesh )
 
-      this.cones[boneCounter].geometry.applyMatrix(new Matrix4().makeTranslation(0, boneLength/2+boneWidth/60, 0))
+      // set visible here to see the hit mesh
+      hitMesh.material.visible = false
+      hitMesh.name = 'hitter_'+bone.name
+      hitMesh.userData.type = 'hitter'
 
       // Add the axis helper if needed
       //this.cones[boneCounter].add(new THREE.AxesHelper(boneLength / 2))
-      this.cones[boneCounter].userData.name = bone.name
-      this.cones[boneCounter].userData.type = 'bone'
-      this.cones[boneCounter].userData.bone = bone.uuid
-      this.cones[boneCounter].userData.segment = 0
 
+      this.cones[boneIndex].userData.name = bone.name
+      this.cones[boneIndex].userData.type = 'bone'
+      this.cones[boneIndex].userData.bone = bone.uuid
+      this.cones[boneIndex].userData.segment = 0
       //this.cones[boneCounter].add(s_sphere)
       if (boneLength>0)
       {
-        this.add(this.cones[boneCounter])
-        bone.connectedBone = this.cones[boneCounter]
+        if ( ( bone.name.indexOf('LeftHand')>0 && ( bone.name.charAt(bone.name.indexOf('LeftHand')+8)) !== "" )
+          || ( bone.name.indexOf('RightHand')>0 && ( bone.name.charAt(bone.name.indexOf('RightHand')+9)) !== "" ) )
+        {
+          //console.log('not adding hitter for bone: ', bone.name)
+        } else {
+          if ( ( bone.name.indexOf('LeftHand')>0 && ( bone.name.charAt(bone.name.indexOf('LeftHand')+8)) === "" )
+            || ( bone.name.indexOf('RightHand')>0 && ( bone.name.charAt(bone.name.indexOf('RightHand')+9)) === "" ) )
+          {
+            hitMesh.geometry.applyMatrix(new Matrix4().makeScale(1, 1.8, 1))
+            //hitMesh.geometry.applyMatrix(new Matrix4().makeTranslation(0, boneLength, 0))
+          }
+          this.add(hitMesh)
+
+        }
+        if ( bone.name.indexOf('Hips')>0 && ( bone.name.charAt(bone.name.indexOf('Hips')+4)) === "" )
+        {
+          hitMesh.geometry.applyMatrix(new Matrix4().makeScale(1, 1.8, 1))
+          hitMesh.geometry.applyMatrix(new Matrix4().makeTranslation(0, -boneLength, 0))
+        }
+        //removed, adding only when selected
+        //this.add(this.cones[boneCounter])
+        bone.hitBone = hitMesh
+        bone.connectedBone = this.cones[boneIndex]
+
         boneCounter++
+
       }
 
       jj++
@@ -140,9 +189,9 @@ function BonesHelper( object ) {
   }
 
   this.root = object
+  this.object3D = object3D
   this.bones = bones
 
-  object.parent.bonesHelper = this
   this.matrix = object.matrixWorld
   this.matrixAutoUpdate = false
 }
@@ -153,30 +202,35 @@ BonesHelper.prototype.constructor = BonesHelper
 BonesHelper.prototype.updateMatrixWorld = function () {
   var boneMatrix = new Matrix4()
   var matrixWorldInv = new Matrix4()
+  var object3dMatrix = new Matrix4()
 
   return function updateMatrixWorld( force ) {
     var bones = this.bones
 
     matrixWorldInv.getInverse( this.root.matrixWorld )
-    let rootScale = new Vector3().setFromMatrixScale( this.root.matrixWorld )
+
+    let rootScale = new Vector3().setFromMatrixScale( this.object3D.matrixWorld )
     let rootScaleInversed = new Vector3().setFromMatrixScale( matrixWorldInv )
     let boneCounter = 0
     for ( var ii = 0; ii < bones.length; ii++ )
     {
       var bone = bones [ii]
-      boneMatrix.multiplyMatrices( matrixWorldInv, bone.matrixWorld )   // changed to parent position, as thet's the length calculated
+      boneMatrix.multiplyMatrices( matrixWorldInv, bone.matrixWorld )   // changed to parent position, as that's the length calculated
+      //boneMatrix.scale(rootScale * 100)
+
+
       if (bone.connectedBone === undefined) continue
 
       bone.connectedBone.position.setFromMatrixPosition( boneMatrix )
       bone.connectedBone.quaternion.setFromRotationMatrix( boneMatrix )
       bone.connectedBone.scale.setFromMatrixScale( boneMatrix )
-      //bone.connectedBone.scale.setFromMatrixScale( matrixWorldInv )
-      if (bone.name.indexOf("Foot")>=0)
-      {
-        // FIX REQUIRED HERE FOR BONES THAT DON'T HAVE CORRECT ROTATIONS
-
+      //console.log('current scle: ', bone.connectedBone.scale)
+      if (bone.hitBone) {
+        bone.hitBone.position.setFromMatrixPosition( boneMatrix )
+        bone.hitBone.quaternion.setFromRotationMatrix( boneMatrix )
+        bone.hitBone.scale.setFromMatrixScale( boneMatrix )
       }
-      //boneMatrix.multiplyMatrices( matrixWorldInv, bone.parent.matrixWorld )
+
     }
 
     Object3D.prototype.updateMatrixWorld.call( this, force )
@@ -184,10 +238,10 @@ BonesHelper.prototype.updateMatrixWorld = function () {
 }()
 
 BonesHelper.prototype.raycast = function ( raycaster, intersects ) {
-  let results = raycaster.intersectObjects(this.children)
+  //let results = raycaster.intersectObjects(this.children)
+  let results = raycaster.intersectObjects(this.cones)
   for (let result of results) {
     // add a .bone key to the Intersection object referencing the cone's bone
-    //console.log('intersecting bones: ', result.object)
     result.bone = this.bones.find(bone => bone.uuid === result.object.userData.bone)
     intersects.push(result)
   }

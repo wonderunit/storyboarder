@@ -91,6 +91,9 @@ const loadModelFBXPromise = ( file, textureBody, textureHead, meshHeight ) => {
     fbxLoader.load( file, (object) => {
       let mesh = null
       let armature = null
+      let obj = new THREE.Object3D()
+
+
       object.traverse( function ( child ) {
         if ( child instanceof THREE.Mesh ) {
           mesh = child
@@ -98,8 +101,8 @@ const loadModelFBXPromise = ( file, textureBody, textureHead, meshHeight ) => {
           if (child instanceof THREE.Group) armature = child
         }
       })
-      mesh.add(armature.children[0])
-      mesh.originalObject = object;
+      let bone = mesh.children[0].children[0];
+      obj = obj.add(object.children[0])
 
       let material = new THREE.MeshToonMaterial({
         color: 0xffffff,
@@ -121,15 +124,19 @@ const loadModelFBXPromise = ( file, textureBody, textureHead, meshHeight ) => {
       height = heightX
 
       mesh.material = material //[material2, material]
-      mesh.rotation.set(0, Math.PI/2, 0)
+      mesh.rotation.set(0, 0, 0)
       let targetHeight = meshHeight
+      //height = height * 100
       let scale = targetHeight / height
-      mesh.scale.set(scale, scale, scale)
+      obj.originalHeight = height
+      mesh.scale.set(1,1,1)
+      //console.log('setting scale: : ', scale)
+      obj.scale.set(scale, scale, scale)
 
       mesh.updateMatrix()
       mesh.renderOrder = 1.0
 
-      resolve (mesh)
+      resolve (obj)
     })
   })
 }
@@ -211,7 +218,21 @@ const loadModels = () => {
         var scale = 8// targetHeight / height
         mesh.scale.set(scale, scale, scale)
         mesh.updateMatrix()
-        mesh.material.map = textures.chair
+
+        let material = new THREE.MeshToonMaterial({
+          color: 0xffffff,
+          emissive: 0x0,
+          specular: 0x0,
+          skinning: true,
+          shininess: 0,
+          flatShading: false,
+          morphNormals: true,
+          morphTargets: true,
+          map: textures.chair
+        })
+
+        mesh.material = material
+        //mesh.material.map = textures.chair
         objModels.chair = mesh
       }
     })
@@ -236,7 +257,7 @@ const loadModels = () => {
   })
 
   // FBX loading trials
-  //const female2 = loadModelFBXPromise("data/shot-generator/dummies/female-adult.fbx", textures.femaleAdultBody, textures.maleHead, characterHeights.femaleAdult)
+  //const female2 = loadModelFBXPromise("data/shot-generator/dummies/female-adult-test.fbx", textures.femaleAdultBody, textures.maleHead, characterHeights['adult-female'])
   //const male2 = loadModelFBXPromise("data/shot-generator/dummies/male-adult.fbx", textures.maleAdultBody, textures.maleHead, characterHeights.maleAdult)
   //const male_youth2 = loadModelFBXPromise("data/shot-generator/dummies/male-youth.fbx", textures.maleYouthBody, textures.maleHead, characterHeights.maleYouth )
 
@@ -247,7 +268,6 @@ const loadModels = () => {
 
   // return new Promise(resolve => {
   //   loader.manager.onLoad = () => {
-  //     console.log('loaded 1!')
   //     resolve(characterModels)
   //   }
   // })
