@@ -221,21 +221,28 @@ const SceneManager = connect(
         new THREE.Vector3(-1, -1, -1),
         new THREE.Vector3(1, 1, 1),
       )
+
+      console.log('\n\n\n')
+      console.log('BOUNDING BOX')
+
       for (child of scene.children) {
         if (
-          //child instanceof BoundingBoxHelper ||
-          child instanceof THREE.SkinnedMesh ||
-          child instanceof THREE.Mesh
+          child.userData &&
+          child.userData.type === 'object' ||
+          child.userData.type === 'character'
         ) {
-          if (child.userData.type !== 'ground') {
-            bbox.expandByObject(child)
-          }
+          console.log('\t', 'adding', child.userData.type, shortId(child.userData.id))
+          bbox.expandByObject(child)
         } else if (
           child instanceof THREE.Camera
         ) {
           bbox.expandByPoint(child.position)
         }
       }
+
+      console.log('\t', 'bounds', bbox.min, 'to', bbox.max)
+      console.log('\n\n\n')
+
       let wi = (bbox.max.x - bbox.min.x)
       let hi = (bbox.max.z - bbox.min.z)
       let ri = wi / hi
