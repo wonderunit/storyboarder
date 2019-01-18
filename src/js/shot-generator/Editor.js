@@ -770,6 +770,11 @@ const ListItem = ({ index, style, isScrolling, data }) => {
     ? items[0]
     : items[index]
 
+  // HACK this should be based directly on state.sceneObjects, or cached in the sceneObject data
+  const number = items.filter(o => o.type === sceneObject.type).indexOf(sceneObject) + 1
+  const capitalize = string => string.charAt(0).toUpperCase() + string.slice(1)
+  const calculatedName = capitalize(`${sceneObject.type} ${number}`)
+
   return h(
     isWorld
     ? [
@@ -785,6 +790,7 @@ const ListItem = ({ index, style, isScrolling, data }) => {
           index,
           style,
           sceneObject,
+          calculatedName,
           isSelected: sceneObject.id === selection,
           isActive: sceneObject.type === 'camera' && sceneObject.id === activeCamera,
           allowDelete: (
@@ -1840,7 +1846,7 @@ const BoneEditor = ({ sceneObject, bone, updateCharacterSkeleton }) => {
 }
 
 const ELEMENT_HEIGHT = 40
-const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, onSelectObject, onUpdateObject, deleteObject, setActiveCamera, machineState, transition, allowDelete }) => {
+const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, onSelectObject, onUpdateObject, deleteObject, setActiveCamera, machineState, transition, allowDelete, calculatedName }) => {
   const onClick = event => {
     event.preventDefault()
     onSelectObject(sceneObject.id)
@@ -1885,7 +1891,7 @@ const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, o
                 ['span.name', sceneObject.name]
               ]
             : [
-                ['span.id', shortId(sceneObject.id)]
+                ['span.id', calculatedName]
               ]
           ),
           // isActive && ['span.active', '👀'],
