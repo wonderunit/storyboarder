@@ -816,7 +816,8 @@ const Inspector = ({
   updateCharacterSkeleton,
   updateWorld,
   updateWorldRoom,
-  updateWorldEnvironment
+  updateWorldEnvironment,
+  calculatedName
 }) => {
   const { scene } = useContext(SceneContext)
 
@@ -858,7 +859,9 @@ const Inspector = ({
             machineState,
             transition,
             selectBone,
-            updateCharacterSkeleton
+            updateCharacterSkeleton,
+            
+            calculatedName
           }
         ]
       : [
@@ -1169,6 +1172,15 @@ const ElementsPanel = connect(
     let kind = sceneObjects[selection] && sceneObjects[selection].type
     let data = sceneObjects[selection]
 
+    // HACK this should be based directly on state.sceneObjects, or cached in the sceneObject data
+    let calculatedName
+    let sceneObject = sceneObjects[selection]
+    if (sceneObject) {
+      const number = Object.values(sceneObjects).filter(o => o.type === sceneObject.type).indexOf(sceneObject) + 1
+      const capitalize = string => string.charAt(0).toUpperCase() + string.slice(1)
+      calculatedName = capitalize(`${sceneObject.type} ${number}`)
+    }
+
     return React.createElement(
       'div', { style: { flex: 1, display: 'flex', flexDirection: 'column' }},
         React.createElement(
@@ -1194,7 +1206,9 @@ const ElementsPanel = connect(
 
             updateWorld,
             updateWorldRoom,
-            updateWorldEnvironment
+            updateWorldEnvironment,
+
+            calculatedName
           }]
         )
       )
@@ -1542,7 +1556,7 @@ const MORPH_TARGET_LABELS = {
   'ectomorphic': 'ecto',
   'endomorphic': 'obese',
 }
-const InspectedElement = ({ sceneObject, modelData, updateObject, selectedBone, machineState, transition, selectBone, updateCharacterSkeleton }) => {
+const InspectedElement = ({ sceneObject, modelData, updateObject, selectedBone, machineState, transition, selectBone, updateCharacterSkeleton, calculatedName }) => {
   const createOnSetValue = (id, name) => value => updateObject(id, { [name]: value })
 
   let positionSliders = [
@@ -1569,7 +1583,7 @@ const InspectedElement = ({ sceneObject, modelData, updateObject, selectedBone, 
           key: sceneObject.id,
           label: sceneObject.name != null
             ? sceneObject.name
-            : `${sceneObject.type} ${shortId(sceneObject.id)}`,
+            : calculatedName,
           onFocus,
           onBlur,
           setLabel: name => {
