@@ -2630,11 +2630,7 @@ const Editor = connect(
         let topDownImage = document.querySelector('#top-down-canvas').toDataURL()
 
         ipcRenderer.send('saveShot', {
-          data: {
-            world: state.world,
-            sceneObjects: state.sceneObjects,
-            activeCamera: state.activeCamera
-          },
+          data: serializeState(state),
           images: {
             'camera': cameraImage,
             'topdown': topDownImage
@@ -2657,11 +2653,7 @@ const Editor = connect(
         let topDownImage = document.querySelector('#top-down-canvas').toDataURL()
 
         ipcRenderer.send('insertShot', {
-          data: {
-            world: state.world,
-            sceneObjects: state.sceneObjects,
-            activeCamera: state.activeCamera
-          },
+          data: serializeState(state),
           images: {
             'camera': cameraImage,
             'topdown': topDownImage
