@@ -1,8 +1,6 @@
 const THREE = require('three')
 const { produce } = require('immer')
 
-const capitalize = string => string.charAt(0).toUpperCase() + string.slice(1)
-
 const defaultPosePreset = {
   skeleton: {}
 }
@@ -148,7 +146,7 @@ const initialScene = {
       rotation: 0,
       tilt: 0,
       roll: 0.0,
-      name: 'Camera 1'
+      name: undefined
     }
   },
   activeCamera: '6BC46A44-7965-43B5-B290-E3D2B9D15EEE',
@@ -331,15 +329,8 @@ module.exports = {
           let id = action.payload.id != null
             ? action.payload.id
             : THREE.Math.generateUUID()
-
-          let number = Object.values(draft.sceneObjects).filter(o => o.type === action.payload.type).length + 1
-
-          let name = `${capitalize(action.payload.type)} ${number}`
-
           draft.sceneObjects[id] = {
-            ...action.payload,
-            id,
-            name
+            ...action.payload, id
           }
           return
 
