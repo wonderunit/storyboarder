@@ -1856,8 +1856,8 @@ const Element = React.memo(({ style, sceneObject, isSelected, isActive, onSelect
                 ['span.id', shortId(sceneObject.id)]
               ]
           ),
-          isActive && ['span.active', '👀'],
-          sceneObject.visible && ['span.visibility', '👁']
+          // isActive && ['span.active', '👀'],
+          // sceneObject.visible && ['span.visibility', '👁']
         ]
       ],
       allowDelete && ['a.delete[href=#]', { onClick: onDeleteClick }, 'X']
