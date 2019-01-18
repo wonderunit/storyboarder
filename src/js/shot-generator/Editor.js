@@ -291,6 +291,7 @@ const SceneManager = connect(
         let cameraState = Object.values(sceneObjects).find(o => o.id === camera.userData.id)
 
         if (!cameraControlsView.current) {
+          //console.log(cameraState)
           console.log('new CameraControls')
           cameraControlsView.current = new CameraControls(
             {},
@@ -370,7 +371,8 @@ const SceneManager = connect(
                   y: cameraState.y,
                   z: cameraState.z,
                   rotation: cameraState.rotation,
-                  tilt: cameraState.tilt
+                  tilt: cameraState.tilt,
+                  fov: cameraState.fov
                 }
 
                 // step
@@ -380,14 +382,15 @@ const SceneManager = connect(
                 //
                 // update object state with the latest values
                 let cameraId = camera.userData.id
-                let { x, y, z, rotation, tilt } = cameraControlsView.current.object
+                let { x, y, z, rotation, tilt, fov } = cameraControlsView.current.object
 
                 updateObject(cameraId, {
                   x,
                   y,
                   z,
                   rotation,
-                  tilt
+                  tilt,
+                  fov
                 })
               }
 

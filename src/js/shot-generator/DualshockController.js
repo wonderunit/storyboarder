@@ -23,13 +23,13 @@ trackpad:
 d-pad:
   move selected object
 
-button 1:
+button 1 square:
   zoom in
-button 2:
+button 2 triangle:
   zoom out
-button 3:
+button 3 circle:
   rotate object
-button 4:
+button 4 x:
   add object/menu
 
 l bumper:
@@ -135,7 +135,7 @@ module.exports = function ( updater ) {
     //   //console.log(this.analog);
     //   max = Math.max(max, this.motion.gyroPitch)
     //   min = Math.min(min, this.motion.gyroPitch)
-    // 
+    //
     //   const {
     //     accelX,
     //     accelY,
@@ -144,10 +144,10 @@ module.exports = function ( updater ) {
     //     gyroRoll,
     //     gyroYaw
     //   } = this.motion
-    // 
+    //
     //   updater({
     //     circle: this.digital.circle,
-    // 
+    //
     //     accelX,
     //     accelY,
     //     accelZ,

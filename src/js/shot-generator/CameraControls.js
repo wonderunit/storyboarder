@@ -11,6 +11,7 @@ class CameraControls {
 
     this.movementSpeed = .001
     this.maxSpeed = 0.05
+    this.zoomSpeed = .001
 
     this.onPointerMove = this.onPointerMove.bind(this)
     this.onPointerDown = this.onPointerDown.bind(this)
@@ -121,6 +122,10 @@ class CameraControls {
   update ( delta, state ) {
     if ( this.enabled === false ) return
 
+
+
+    console.log(state.devices[0], this.object)
+
     // DualshockController
     let deadzone = 0.1
 
@@ -205,11 +210,38 @@ class CameraControls {
       this.object.z += this.movementSpeed
     }
 
+
+    if (state.devices[0].analog.r2) {
+      this.object.z -= ((state.devices[0].analog.r2/127.0)*0.002)*(Math.pow((state.devices[0].analog.r2/127.0),2))
+      this.object.z = Math.max(0, this.object.z)
+    }
+
     if ( this.moveDown ) {
       this.object.z -= this.movementSpeed
       this.object.z = Math.max(0, this.object.z)
     }
 
+    if (state.devices[0].analog.l2) {
+      this.object.z += ((state.devices[0].analog.l2/127.0)*0.002)*(Math.pow((state.devices[0].analog.l2/127.0),2))
+    }
+
+    if (state.devices[0].digital.r1 || state.devices[0].digital.l1) {
+      this.zoomSpeed += 0.002
+      this.zoomSpeed = Math.min(this.zoomSpeed, 0.1)
+
+    } else {
+      this.zoomSpeed = 0.001
+    }
+
+
+    if (state.devices[0].digital.r1) {
+      this.object.fov -= this.zoomSpeed
+      this.object.fov = Math.max(3, this.object.fov)
+    }
+    if (state.devices[0].digital.l1) {
+      this.object.fov += this.zoomSpeed
+      this.object.fov = Math.min(71, this.object.fov)
+    }
     // this.object.updateProperties()
   }
 
