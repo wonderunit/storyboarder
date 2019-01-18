@@ -122,10 +122,6 @@ class CameraControls {
   update ( delta, state ) {
     if ( this.enabled === false ) return
 
-
-
-    console.log(state.devices[0], this.object)
-
     // DualshockController
     let deadzone = 0.1
 
