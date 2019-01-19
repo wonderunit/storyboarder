@@ -80,6 +80,8 @@ const draggables = (sceneObjects, scene) =>
   //scene.children.filter(o => o.userData.type === 'object' || o instanceof BoundingBoxHelper)
   scene.children.filter(o => o.userData.type === 'object' || o.userData.type === 'character')
 
+const characters = ( scene ) =>
+  scene.children.filter(o => o.userData.type === 'character')
 // const stats = new Stats()
 // stats.showPanel(0)
 // document.body.appendChild( stats.dom )
@@ -480,8 +482,10 @@ const SceneManager = connect(
     useEffect(() => {
       if (dragControlsView.current) {
         // TODO read-only version?
-        // console.log('scene objects changed, updating controls')
-
+        //console.log('scene objects changed, updating controls')
+        // calculate distance to characters, get the closest
+        //let closest = getClosestCharacterInView (characters(scene), camera)
+        //console.log ('closest: ', closest)
         dragControlsView.current.setObjects(draggables(sceneObjects, scene))
 
         // TODO update if there are changes to the camera(s) in the scene
@@ -513,8 +517,6 @@ const SceneManager = connect(
         }
       }
     }, [machineState.value, camera, cameraControlsView.current, mainViewCamera])
-
-    // console.log('SceneManager render', sceneObjects)
 
     const characterModels = ModelLoader.getCharacterModels()
     const objModels = ModelLoader.getObjModels()
@@ -2364,6 +2366,12 @@ const CameraInspector = connect(
 
     let camera = scene.children.find(child => child.userData.id === activeCamera)
 
+    let closest = useRef(
+      {
+        object: null,
+        distance: 0
+      })
+
     if (!camera) return h(['div#camera-inspector', { style: { padding: 12, lineHeight: 1.25 } }])
 
     let cameraState = sceneObjects[activeCamera]
@@ -2381,6 +2389,66 @@ const CameraInspector = connect(
 
     let [heightFeet, heightInches] = metersAsFeetAndInches(cameraState.z)
 
+    useEffect(() => {
+      camera = scene.children.find(child => child.userData.id === activeCamera)
+      // calculate distance to characters, get the closest
+
+      closest.current = getClosestCharacterInView (characters(scene), camera)
+
+    }, [sceneObjects, activeCamera])
+
+    const getClosestCharacterInView = (objects, camera) => {
+      let obj = null
+      let dist = 1000000
+      let allDistances = []
+
+      for (var char of objects)
+      {
+        let d = camera.position.distanceTo (new THREE.Vector3(char.position.x, camera.position.y, char.position.z))
+        allDistances.push({
+          object: char,
+          distance: d
+        })
+      }
+
+      let compare = (a,b) => {
+        if (a.distance < b.distance)
+          return -1;
+        if (a.distance > b.distance)
+          return 1;
+        return 0;
+      }
+
+      allDistances.sort(compare)
+      for (var i = 0; i< allDistances.length; i++)
+      {
+        if (checkIfCharacterInCameraView(allDistances[i].object, camera))
+          return allDistances[i]
+      }
+
+      return {
+        object: obj,
+        distance: dist !== 1000000 ? dist : 0
+      }
+    }
+
+    const checkIfCharacterInCameraView = (character, camera) => {
+      camera.updateMatrix();
+      camera.updateMatrixWorld();
+      var frustum = new THREE.Frustum();
+      frustum.setFromMatrix(new THREE.Matrix4().multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse));
+      for (var hitter of character.bonesHelper.hit_meshes)
+      {
+        if (frustum.intersectsBox(new THREE.Box3().setFromObject( hitter ))) {
+          return true
+        }
+      }
+      return false
+    }
+
+    closest.current = getClosestCharacterInView (characters(scene), camera)
+    let [distFeet, distInches] = metersAsFeetAndInches(closest.current.distance)
+
     return h(
       ['div#camera-inspector', { style: { padding: 12, lineHeight: 1.25 } },
 
@@ -2391,6 +2459,8 @@ const CameraInspector = connect(
             `Camera 1, ${Math.round(focalLength)}mm, f/1.4`,
             ['br'],
             `Height: ${feetAndInchesAsString(heightFeet, heightInches)} Tilt: ${tiltInDegrees}°`,
+            ['br'],
+            closest.current.object ? `Closest character: ${closest.current.object ? shortId(closest.current.object.userData.id) : ''}, distance: ${feetAndInchesAsString(distFeet, distInches)} (${parseFloat(Math.round(closest.current.distance * 100) / 100).toFixed(2)}m)` : ''
           ],
           [
             'div.column',
