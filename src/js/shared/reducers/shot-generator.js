@@ -339,6 +339,14 @@ module.exports = {
         case 'DELETE_OBJECT':
           if (draft.sceneObjects[action.payload.id] == null) return
           delete draft.sceneObjects[action.payload.id]
+
+          // was the current selection just removed?
+          if (draft.selection === action.payload.id) {
+            // set selection to null
+            draft.selection = null
+            // de-select any currently selected bone
+            draft.selectedBone = undefined
+          }
           return
 
         case 'UPDATE_OBJECT':
