@@ -11,6 +11,7 @@ const { Provider, connect } = require('react-redux')
 const ReactDOM = require('react-dom')
 // const Stats = require('stats.js')
 const { VariableSizeList } = require('react-window')
+const classNames = require('classnames')
 const prompt = require('electron-prompt')
 
 const { createSelector } = require('reselect')
@@ -184,7 +185,7 @@ const SceneManager = connect(
       directionalLight.position.set(0, 1, 3)
       scene.add(directionalLight)
 
-      orthoCamera.current.position.y = 100
+      orthoCamera.current.position.y = 900
       orthoCamera.current.rotation.x = -Math.PI / 2
     }, [])
 
@@ -218,54 +219,60 @@ const SceneManager = connect(
       // assign a target height, based on scene aspect ratio
       let height = Math.ceil(width / aspectRatio)
 
-      // determine the bounding box containging all scene objects
-      let bbox = new THREE.Box3(
-        new THREE.Vector3(-1, -1, -1),
-        new THREE.Vector3(1, 1, 1),
-      )
+      let minMax = [9999,-9999,9999,-9999]
+
+      // go through all appropriate opbjects and get the min max
       for (child of scene.children) {
         if (
-          //child instanceof BoundingBoxHelper ||
-          child instanceof THREE.SkinnedMesh ||
-          child instanceof THREE.Mesh
+          child.userData &&
+          child.userData.type === 'object' ||
+          child.userData.type === 'character' ||
+          child instanceof THREE.PerspectiveCamera
         ) {
-          if (child.userData.type !== 'ground') {
-            bbox.expandByObject(child)
-          }
-        } else if (
-          child instanceof THREE.Camera
-        ) {
-          bbox.expandByPoint(child.position)
+          minMax[0] = Math.min(child.position.x, minMax[0])
+          minMax[1] = Math.max(child.position.x, minMax[1])
+          minMax[2] = Math.min(child.position.z, minMax[2])
+          minMax[3] = Math.max(child.position.z, minMax[3])
         }
       }
-      let wi = (bbox.max.x - bbox.min.x)
-      let hi = (bbox.max.z - bbox.min.z)
-      let ri = wi / hi
 
+      // add some padding
+      minMax[0] -= 2
+      minMax[1] += 2
+      minMax[2] -= 2
+      minMax[3] += 2
+
+      // get the aspect ratio of the container window
       // target aspect ratio
       let rs = (mainViewCamera === 'live')
         ? 1
-        : aspectRatio // 2.35
+        : aspectRatio
 
-      let [w, h] = rs > ri
-        ? [hi * rs, hi]
-        : [wi, wi / rs]
+      // make sure the min max box fits in the aspect ratio
+      let mWidth = minMax[1]-minMax[0]
+      let mHeight = minMax[3]-minMax[2]
+      let mAspectRatio = (mWidth/mHeight)
 
-      orthoCamera.current.left = -w
-      orthoCamera.current.right = w
-      orthoCamera.current.top = h
-      orthoCamera.current.bottom = -h
+      if (mAspectRatio>rs) {
+        let padding = (mWidth / (1/rs))-mHeight
+        minMax[2] -= padding/2
+        minMax[3] += padding/2
+      } else {
+        let padding = (mHeight / (1/rs))-mWidth
+        minMax[0] -= padding/2
+        minMax[1] += padding/2
+      }
+
+      orthoCamera.current.position.x = minMax[0]+((minMax[1]-minMax[0])/2)
+      orthoCamera.current.position.z = minMax[2]+((minMax[3]-minMax[2])/2)
+      orthoCamera.current.left = -(minMax[1]-minMax[0])/2
+      orthoCamera.current.right = (minMax[1]-minMax[0])/2
+      orthoCamera.current.top = (minMax[3]-minMax[2])/2
+      orthoCamera.current.bottom = -(minMax[3]-minMax[2])/2
+      orthoCamera.current.near = -1000
+      orthoCamera.current.far = 1000
 
       orthoCamera.current.updateProjectionMatrix()
-
-      // console.log(
-      //   'bounds  w', wi.toFixed(3),
-      //   'bounds  h', hi.toFixed(3),
-      //   'bounds ar', ri.toFixed(3),
-      //   'view   ar', rs.toFixed(3),
-      //   'w', w.toFixed(3),
-      //   'h', h.toFixed(3)
-      // )
 
       // resize the renderers
       if (mainViewCamera === 'live') {
@@ -735,13 +742,18 @@ const Camera = React.memo(({ scene, id, type, setCamera, ...props }) => {
   return null
 })
 
-const WorldElement = React.memo(({ world, isSelected, selectObject, style = {} }) => {
+const WorldElement = React.memo(({ index, world, isSelected, selectObject, style = {} }) => {
   const onClick = () => {
     selectObject(null)
   }
 
+  let className = classNames({
+    'selected': isSelected,
+    'zebra': index % 2
+  })
+
   return h([
-    'div.element', { className: isSelected ? 'selected' : null, style: { height: ELEMENT_HEIGHT, ...style } }, [
+    'div.element', { className, style: { height: ELEMENT_HEIGHT, ...style } }, [
       [
         'a.title[href=#]',
         { onClick },
@@ -760,10 +772,16 @@ const ListItem = ({ index, style, isScrolling, data }) => {
     ? items[0]
     : items[index]
 
+  // HACK this should be based directly on state.sceneObjects, or cached in the sceneObject data
+  const number = items.filter(o => o.type === sceneObject.type).indexOf(sceneObject) + 1
+  const capitalize = string => string.charAt(0).toUpperCase() + string.slice(1)
+  const calculatedName = capitalize(`${sceneObject.type} ${number}`)
+
   return h(
     isWorld
     ? [
       WorldElement, {
+        index,
         world: items[0],
         isSelected: selection == null,
         selectObject
@@ -771,8 +789,10 @@ const ListItem = ({ index, style, isScrolling, data }) => {
     ]
     : [
         Element, {
+          index,
           style,
           sceneObject,
+          calculatedName,
           isSelected: sceneObject.id === selection,
           isActive: sceneObject.type === 'camera' && sceneObject.id === activeCamera,
           allowDelete: (
@@ -798,7 +818,8 @@ const Inspector = ({
   updateCharacterSkeleton,
   updateWorld,
   updateWorldRoom,
-  updateWorldEnvironment
+  updateWorldEnvironment,
+  calculatedName
 }) => {
   const { scene } = useContext(SceneContext)
 
@@ -840,7 +861,9 @@ const Inspector = ({
             machineState,
             transition,
             selectBone,
-            updateCharacterSkeleton
+            updateCharacterSkeleton,
+            
+            calculatedName
           }
         ]
       : [
@@ -1151,6 +1174,15 @@ const ElementsPanel = connect(
     let kind = sceneObjects[selection] && sceneObjects[selection].type
     let data = sceneObjects[selection]
 
+    // HACK this should be based directly on state.sceneObjects, or cached in the sceneObject data
+    let calculatedName
+    let sceneObject = sceneObjects[selection]
+    if (sceneObject) {
+      const number = Object.values(sceneObjects).filter(o => o.type === sceneObject.type).indexOf(sceneObject) + 1
+      const capitalize = string => string.charAt(0).toUpperCase() + string.slice(1)
+      calculatedName = capitalize(`${sceneObject.type} ${number}`)
+    }
+
     return React.createElement(
       'div', { style: { flex: 1, display: 'flex', flexDirection: 'column' }},
         React.createElement(
@@ -1176,7 +1208,9 @@ const ElementsPanel = connect(
 
             updateWorld,
             updateWorldRoom,
-            updateWorldEnvironment
+            updateWorldEnvironment,
+
+            calculatedName
           }]
         )
       )
@@ -1524,7 +1558,7 @@ const MORPH_TARGET_LABELS = {
   'ectomorphic': 'ecto',
   'endomorphic': 'obese',
 }
-const InspectedElement = ({ sceneObject, modelData, updateObject, selectedBone, machineState, transition, selectBone, updateCharacterSkeleton }) => {
+const InspectedElement = ({ sceneObject, modelData, updateObject, selectedBone, machineState, transition, selectBone, updateCharacterSkeleton, calculatedName }) => {
   const createOnSetValue = (id, name) => value => updateObject(id, { [name]: value })
 
   let positionSliders = [
@@ -1551,7 +1585,7 @@ const InspectedElement = ({ sceneObject, modelData, updateObject, selectedBone, 
           key: sceneObject.id,
           label: sceneObject.name != null
             ? sceneObject.name
-            : `${sceneObject.type} ${shortId(sceneObject.id)}`,
+            : calculatedName,
           onFocus,
           onBlur,
           setLabel: name => {
@@ -1828,7 +1862,7 @@ const BoneEditor = ({ sceneObject, bone, updateCharacterSkeleton }) => {
 }
 
 const ELEMENT_HEIGHT = 40
-const Element = React.memo(({ style, sceneObject, isSelected, isActive, onSelectObject, onUpdateObject, deleteObject, setActiveCamera, machineState, transition, allowDelete }) => {
+const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, onSelectObject, onUpdateObject, deleteObject, setActiveCamera, machineState, transition, allowDelete, calculatedName }) => {
   const onClick = event => {
     event.preventDefault()
     onSelectObject(sceneObject.id)
@@ -1856,8 +1890,13 @@ const Element = React.memo(({ style, sceneObject, isSelected, isActive, onSelect
     'object': 'OBJ'
   }
 
+  let className = classNames({
+    'selected': isSelected,
+    'zebra': index % 2
+  })
+
   return h([
-    'div.element', { className: isSelected ? 'selected' : null, style: { height: ELEMENT_HEIGHT, ...style } }, [
+    'div.element', { className, style: { height: ELEMENT_HEIGHT, ...style } }, [
       [
         'a.title[href=#]',
         { onClick },
@@ -1868,7 +1907,7 @@ const Element = React.memo(({ style, sceneObject, isSelected, isActive, onSelect
                 ['span.name', sceneObject.name]
               ]
             : [
-                ['span.id', shortId(sceneObject.id)]
+                ['span.id', calculatedName]
               ]
           ),
           // isActive && ['span.active', '👀'],
@@ -2376,8 +2415,9 @@ const CameraInspector = connect(
 
     let cameraState = sceneObjects[activeCamera]
 
-    let cameras = Object.values(sceneObjects).filter(o => o.type === 'camera').map(o => ([
-      `camera id:${shortId(o.id)}`, o.id
+    // calculated value
+    let cameras = Object.values(sceneObjects).filter(o => o.type === 'camera').map((o, n) => ([
+      `Camera ${n + 1}`, o.id
     ]))
 
     fakeCamera = camera.clone() // TODO reuse a single object
@@ -2534,18 +2574,33 @@ const editorMachine = Machine({
   }
 })
 
+// TODO move selector logic into reducers/shot-generator?
 // memoized selectors
 const getSceneObjects = state => state.sceneObjects
+const getSelection = state => state.selection
 const getCameraSceneObjects = createSelector(
-  [state => state.sceneObjects],
+  [getSceneObjects],
   (sceneObjects) => Object.values(sceneObjects).filter(o => o.type === 'camera')
 )
+const getSelectedSceneObject = createSelector(
+  [getSceneObjects, getSelection],
+  (sceneObjects, selection) => Object.values(sceneObjects).find(o => o.id === selection)
+)
+const canDelete = (sceneObject, activeCamera) =>
+  // allow objects
+  sceneObject.type === 'object' ||
+  // allow characters
+  sceneObject.type === 'character' ||
+  // allow cameras which are not the active camera
+  (sceneObject.type === 'camera' && sceneObject.id !== activeCamera)
 
 const KeyHandler = connect(
   state => ({
     mainViewCamera: state.mainViewCamera,
     activeCamera: state.activeCamera,
     selection: state.selection,
+
+    _selectedSceneObject: getSelectedSceneObject(state),
 
     _cameras: getCameraSceneObjects(state)
   }),
@@ -2562,6 +2617,7 @@ const KeyHandler = connect(
     mainViewCamera,
     activeCamera,
     selection,
+    _selectedSceneObject,
     _cameras,
     setMainViewCamera,
     selectObject,
@@ -2575,12 +2631,11 @@ const KeyHandler = connect(
     useEffect(() => {
       const onKeyDown = event => {
         if (event.key === 'Backspace') {
-          if (selection) {
+          if (selection && canDelete(_selectedSceneObject, activeCamera)) {
             let choice = dialog.showMessageBox(null, {
               type: 'question',
               buttons: ['Yes', 'No'],
-              message: 'Are you sure?',
-              defaultId: 1 // default to No
+              message: 'Are you sure?'
             })
             if (choice === 0) {
               deleteObject(selection)
@@ -2649,7 +2704,7 @@ const KeyHandler = connect(
       return function cleanup () {
         window.removeEventListener('keydown', onKeyDown)
       }
-    }, [mainViewCamera, _cameras, selection])
+    }, [mainViewCamera, _cameras, selection, _selectedSceneObject, activeCamera])
 
     return null
   }

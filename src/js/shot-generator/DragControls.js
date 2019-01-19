@@ -106,9 +106,6 @@ class DragControls extends THREE.EventDispatcher {
   }
 
   update ( delta, state ) {
-
-    // console.log('update')
-
     let deltaPos = {x: 0, y: 0}
 
     if (state.devices[0].digital.left) {
@@ -137,9 +134,6 @@ class DragControls extends THREE.EventDispatcher {
     } else {
       this.currentMoveSpeed = 0.0001
     }
-
-
-
   }
 
 

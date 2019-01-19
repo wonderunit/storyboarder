@@ -150,7 +150,7 @@ kbd {
   letter-spacing: 0.05rem;
 }
 
-.element:nth-child(2n) {
+.element.zebra {
   background-color: rgb(55, 55, 55);
 }
 .element:not(:last-child) {
@@ -189,7 +189,6 @@ kbd {
   padding-right: 6px;
   font-style: italic;
   font-size: 12px;
-  margin-bottom: 10px;
 }
 .element a.delete {
   margin: 6px 6px 6px 6px;
