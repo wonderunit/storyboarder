@@ -11,7 +11,7 @@
     "dist:linux": "build -l",
     "dist": "build -mwl",
     "test": "mocha $(find test -name '*[!renderer].test.js') && electron-mocha --renderer test/*.renderer.test.js test/**/*.renderer.test.js && electron-mocha test/**/*.main.test.js",
-    "shot-generator": "SHOT_GENERATOR_STANDALONE=true npx electron src/js/windows/shot-generator/main.js",
+    "shot-generator": "cross-env SHOT_GENERATOR_STANDALONE=true npx electron src/js/windows/shot-generator/main.js",
     "clean:fixtures": "git checkout test/fixtures && git clean test/fixtures -f",
     "prefs": "echo ~/Library/Application\\\\ Support/Storyboarder/pref.json",
     "prefs:reveal": "open ~/Library/Application\\ Support/Storyboarder",
@@ -91,6 +91,7 @@
     }
   },
   "devDependencies": {
+    "cross-env": "^5.2.0",
     "electron": "4.0.0-beta.5",
     "electron-builder": "20.29.1",
     "electron-mocha": "4.0.0",
