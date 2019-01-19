@@ -483,9 +483,6 @@ const SceneManager = connect(
       if (dragControlsView.current) {
         // TODO read-only version?
         //console.log('scene objects changed, updating controls')
-        // calculate distance to characters, get the closest
-        //let closest = getClosestCharacterInView (characters(scene), camera)
-        //console.log ('closest: ', closest)
         dragControlsView.current.setObjects(draggables(sceneObjects, scene))
 
         // TODO update if there are changes to the camera(s) in the scene
@@ -2366,11 +2363,7 @@ const CameraInspector = connect(
 
     let camera = scene.children.find(child => child.userData.id === activeCamera)
 
-    let closest = useRef(
-      {
-        object: null,
-        distance: 0
-      })
+    let closest = null
 
     if (!camera) return h(['div#camera-inspector', { style: { padding: 12, lineHeight: 1.25 } }])
 
@@ -2392,8 +2385,10 @@ const CameraInspector = connect(
     useEffect(() => {
       camera = scene.children.find(child => child.userData.id === activeCamera)
       // calculate distance to characters, get the closest
+        closest = getClosestCharacterInView (characters(scene), camera)
+        // console.log('closest: ', closest)
+      //we have to wait for them to be added to the stage
 
-      closest.current = getClosestCharacterInView (characters(scene), camera)
 
     }, [sceneObjects, activeCamera])
 
@@ -2446,8 +2441,9 @@ const CameraInspector = connect(
       return false
     }
 
-    closest.current = getClosestCharacterInView (characters(scene), camera)
-    let [distFeet, distInches] = metersAsFeetAndInches(closest.current.distance)
+    closest = getClosestCharacterInView (characters(scene), camera)
+
+    let [distFeet, distInches] = metersAsFeetAndInches(closest.distance)
 
     return h(
       ['div#camera-inspector', { style: { padding: 12, lineHeight: 1.25 } },
@@ -2460,7 +2456,7 @@ const CameraInspector = connect(
             ['br'],
             `Height: ${feetAndInchesAsString(heightFeet, heightInches)} Tilt: ${tiltInDegrees}°`,
             ['br'],
-            closest.current.object ? `Closest character: ${closest.current.object ? shortId(closest.current.object.userData.id) : ''}, distance: ${feetAndInchesAsString(distFeet, distInches)} (${parseFloat(Math.round(closest.current.distance * 100) / 100).toFixed(2)}m)` : ''
+            closest.object ? `Closest character: ${closest.object ? shortId(closest.object.userData.id) : ''}, distance: ${feetAndInchesAsString(distFeet, distInches)} (${parseFloat(Math.round(closest.distance * 100) / 100).toFixed(2)}m)` : ''
           ],
           [
             'div.column',
