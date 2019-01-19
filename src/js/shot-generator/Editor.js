@@ -2381,14 +2381,19 @@ const CameraInspector = connect(
     let tiltInDegrees = Math.round(cameraState.tilt * THREE.Math.RAD2DEG)
 
     let [heightFeet, heightInches] = metersAsFeetAndInches(cameraState.z)
-
+    console.log(this)
+    let scope = this
     useEffect(() => {
       camera = scene.children.find(child => child.userData.id === activeCamera)
       // calculate distance to characters, get the closest
-        closest = getClosestCharacterInView (characters(scene), camera)
-        // console.log('closest: ', closest)
-      //we have to wait for them to be added to the stage
+      requestAnimationFrame(() => {
 
+        closest = getClosestCharacterInView (characters(scene), camera)
+        console.log('closest: ', closest)
+        scope.forceUpdate()
+        //scope.setState({})
+      })
+      //we have to wait for them to be added to the stage
 
     }, [sceneObjects, activeCamera])
 
