@@ -1,7 +1,7 @@
 const THREE = require('three')
 
-const { ipcRenderer } = require('electron')
-const { dialog } = require('electron').remote
+const { ipcRenderer, remote } = require('electron')
+const { dialog } = remote
 const fs = require('fs')
 const path = require('path')
 
