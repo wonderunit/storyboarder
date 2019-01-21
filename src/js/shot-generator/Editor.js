@@ -9,7 +9,7 @@ const React = require('react')
 const { useState, useEffect, useRef, useContext } = React
 const { Provider, connect } = require('react-redux')
 const ReactDOM = require('react-dom')
-// const Stats = require('stats.js')
+const Stats = require('stats.js')
 const { VariableSizeList } = require('react-window')
 const classNames = require('classnames')
 const prompt = require('electron-prompt')
@@ -83,10 +83,6 @@ const draggables = (sceneObjects, scene) =>
 
 const characters = ( scene ) =>
   scene.children.filter(o => o.userData.type === 'character')
-  
-// const stats = new Stats()
-// stats.showPanel(0)
-// document.body.appendChild( stats.dom )
 
 const animatedUpdate = (fn) => (dispatch, getState) => fn(dispatch, getState())
 
@@ -357,7 +353,7 @@ const SceneManager = connect(
         scene.add(cameraHelper.current)
 
         animator.current = () => {
-          // stats.begin()
+          if (stats) { stats.begin() }
           if (scene && camera) {
 
             animatedUpdate((dispatch, state) => {
@@ -425,7 +421,7 @@ const SceneManager = connect(
               smallRenderer.current.render(scene, cameraForSmall)
             })
           }
-          // stats.end()
+          if (stats) { stats.end() }
           animatorId.current = requestAnimationFrame(animator.current)
         }
         animatorId.current = requestAnimationFrame(animator.current)
@@ -3031,6 +3027,21 @@ const PresetsEditor = connect(
       ['button', { style: { marginTop: 20, padding: '9px 12px', fontSize: 16 }, onClick: onSaveClick }, '+ Preset'],
     ]
   ])
+})
+
+let stats
+ipcRenderer.on('shot-generator:menu:view:fps-meter', (event, value) => {
+  console.log('shot-generator:menu:view:fps-meter', event, value)
+  if (!stats) {
+    stats = new Stats()
+    stats.showPanel(0)
+    document.body.appendChild( stats.dom )
+    stats.dom.style.top = '7px'
+    stats.dom.style.left = '460px'
+  } else {
+    document.body.removeChild( stats.dom )
+    stats = undefined
+  }
 })
 
 // setInterval(() => {
