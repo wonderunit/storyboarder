@@ -839,6 +839,54 @@ const welcomeTemplate = [
   }
 ]
 
+const shotGeneratorMenu = [
+  ...AppMenu.about({ includePreferences: false }),
+  {
+    label: 'File',
+    submenu: [
+      {
+        label: 'Open…',
+        accelerator: keystrokeFor('menu:file:open'),
+        click (item, focusedWindow, event) {
+          ipcRenderer.send('openDialogue')
+        }
+      }
+    ]
+  },
+  {
+    label: 'Edit',
+    submenu: [
+      // {role: 'undo'},
+      // {role: 'redo'},
+      // {type: 'separator'},
+      {role: 'cut'},
+      {role: 'copy'},
+      {role: 'paste'},
+      // {role: 'pasteandmatchstyle'},
+      {role: 'delete'},
+      {role: 'selectall'}
+    ]
+  },
+  {
+    label: 'View',
+    submenu: [
+      ...SubMenuFragments.View
+    ]
+  },
+  {
+    role: 'window',
+    submenu: [
+      ...SubMenuFragments.windowing
+    ]
+  },
+  {
+    role: 'help',
+    submenu: [
+      ...SubMenuFragments.help
+    ]
+  }
+]
+
 const setWelcomeMenu = () => {
   let welcomeMenuInstance = Menu.buildFromTemplate(welcomeTemplate)
   Menu.setApplicationMenu(welcomeMenuInstance)
@@ -849,6 +897,10 @@ const setMenu = () => {
   Menu.setApplicationMenu(menuInstance)
 }
 
+const setShotGeneratorMenu = () => {
+  Menu.setApplicationMenu(Menu.buildFromTemplate(shotGeneratorMenu))
+}
+
 const setEnableAudition = value =>
   Menu
     .getApplicationMenu().items.find(n => n.label === 'Navigation')
@@ -857,6 +909,7 @@ const setEnableAudition = value =>
 
 module.exports = {
   setWelcomeMenu,
+  setShotGeneratorMenu,
   setMenu,
 
   setEnableAudition
