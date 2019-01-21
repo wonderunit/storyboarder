@@ -1942,7 +1942,6 @@ const PhoneCursor = connect(
         x: rect.left,
         y: rect.top
       }
-      //console.log('canvasPosition: ', rect)
       let oldxy = useRef({x:viewportwidth/2,y:viewportheight/2})
       const isButtonClicked = useRef(false)
       const { scene } = useContext(SceneContext)
@@ -1963,12 +1962,10 @@ const PhoneCursor = connect(
         camera.getWorldDirection( direction )
         obj.position.set(camera.x, camera.y, camera.z)
         //obj.quaternion.copy(camera.quaternion)
-        //console.log(camera.quaternion)
       }
 
       const findIntersection = ( origin, ph_direction, obj ) =>
       {
-        //console.log('origin: ', origin, ' direction: ', ph_direction, 'obj: ', obj)
         var raycaster = new THREE.Raycaster(origin, ph_direction)
         var intersection = raycaster.intersectObject(obj, true)
         return intersection
@@ -2021,7 +2018,7 @@ const PhoneCursor = connect(
               new THREE.MeshBasicMaterial( {color: 0xffff00, side: THREE.DoubleSide} ))
             setPlanePosition(intersectionPlane.current)
             //setCylinderOrientation(intersectionPlane.current)
-            //scene.current.add(intersectionPlane.current)
+            //scene.current.add(intersectionPlane.current)  //
             intersectionPlane.current.updateMatrix()  // required for correct first pass
           }
 
@@ -2043,13 +2040,13 @@ const PhoneCursor = connect(
             scene.current.add(tester.current)
           }
         }
-        // habdling phone rotation to screen position here
+
+        // handling phone rotation to screen position here
         if (remoteInput.mouseMode)
         {
           let last_xy = {x:0,y:0}
           if (remoteInput.down && !remoteInput.mouseModeClick)
           {
-            //console.log('got down!')
             let [ alpha, beta, gamma ] = remoteInput.mag.map(THREE.Math.degToRad)
             if (!isRotating.current) {
               isRotating.current = true
@@ -2075,9 +2072,8 @@ const PhoneCursor = connect(
             deviceQuaternion.multiply(camera.quaternion)
             let deviceDifference = startingDeviceQuaternion.clone().inverse().multiply(deviceQuaternion)
             let startingObjectQuaternion = new THREE.Quaternion().setFromEuler(new THREE.Euler(startingObjectRotation.current.x,startingObjectRotation.current.y,startingObjectRotation.current.z))
-            //deviceDifference.multiply(camera.quaternion)
+
             startingObjectQuaternion.multiply(deviceDifference)
-            //console.log('deviceDifference: ', deviceDifference)
             tester.current.quaternion.copy(startingObjectQuaternion)
             let dir = new THREE.Vector3()
             tester.current.updateMatrixWorld()
@@ -2087,15 +2083,9 @@ const PhoneCursor = connect(
             if (intersect.length>0)
             {
               let xy_coords = toScreenXY( intersect[0].point, camera )
-              xy_coords.x = xy_coords.x * viewportwidth/4 + viewportwidth/2 - (viewportwidth/2 - oldxy.current.x)
-              xy_coords.y = xy_coords.y * viewportheight/4 + viewportheight/2 - (viewportheight/2- oldxy.current.y)
-              //last_xy = { x: xy_coords.x, y: xy_coords.y }
-              //xy_coords.x = (xy_coords.x-lastxy.current.x) * 100 + viewportwidth/2 - (viewportwidth/2 - oldxy.current.x)
-              //xy_coords.y = (xy_coords.y-lastxy.current.y) * 100 + viewportheight/2 - (viewportheight/2- oldxy.current.y)
+              xy_coords.x = xy_coords.x * 100 + viewportwidth/2 - (viewportwidth/2 - oldxy.current.x)
+              xy_coords.y = xy_coords.y * 100 + viewportheight/2 - (viewportheight/2- oldxy.current.y)
 
-              //console.log('oldxy brfore: ', intersect[0].point )
-              //xy_coords.x = oldxy.current.x + xy_coords.x * 50// viewportwidth/4
-              //xy_coords.y = oldxy.current.y + xy_coords.y * 50// viewportheight/4
 
               xy_coords.x = xy_coords.x > 0 ? xy_coords.x : 0
               xy_coords.y = xy_coords.y > 0 ? xy_coords.y : 0
@@ -2119,8 +2109,6 @@ const PhoneCursor = connect(
                   y: xy.current.y
 
                 }
-                //lastxy.current = last_xy
-                //console.log('setting old to: ', oldxy.current)
               }
             }
           }
@@ -2172,8 +2160,7 @@ const PhoneCursor = connect(
         var noIntersect = true
       	var intersects = raycaster.intersectObjects( checkIntersectionsWithMeshes )
         for ( var i = 0; i < intersects.length; i++ ) {
-          selectBone( null )
-          //console.log('intersection [', i ,']=' , intersects[ i ].object)
+
           if (intersects[i].object.userData.type === 'object' || intersects[i].object.userData.type==='hitter')
           {
             noIntersect = false
@@ -2197,20 +2184,14 @@ const PhoneCursor = connect(
               }
             } else {
               // select the object
-              console.log('select the object?')
+              selectBone( null )
               selectObject(obj.userData.id)
             }
           }
         }
         if (noIntersect) {
-          //if (bonesHelper.current)
-          //{
-            console.log('no intersection')
-            selectBone( null )
-            //scene.remove(bonesHelper.current)
-            selectObject( null )
-            //bonesHelper.current = null
-          //}
+          selectBone( null )
+          selectObject( null )
         }
       }, [remoteInput])
 
@@ -2457,11 +2438,7 @@ const CameraInspector = connect(
       camera = scene.children.find(child => child.userData.id === activeCamera)
       // calculate distance to characters, get the closest
       requestAnimationFrame(() => {
-
         closest = getClosestCharacterInView (characters(scene), camera)
-        //console.log('closest: ', closest)
-        //scope.forceUpdate()
-        //scope.setState({})
       })
       //we have to wait for them to be added to the stage
 
@@ -2926,7 +2903,7 @@ const Editor = connect(
         ready && [SceneManager, { mainViewCamera, largeCanvasRef, smallCanvasRef, machineState, transition, largeCanvasSize }],
 
         !machineState.matches('typing') && [KeyHandler],
-        
+
         [MenuManager]
       ]
     )
