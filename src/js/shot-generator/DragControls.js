@@ -9,8 +9,6 @@ class DragControls extends THREE.EventDispatcher {
   constructor ( objects, camera, domElement, onSelectObject, onUpdateObject, onSelectBone ) {
     super()
 
-    console.log('i am a drag controller')
-
     this.onSelectObject = onSelectObject
     this.onUpdateObject = onUpdateObject
     this.onSelectBone = onSelectBone
@@ -66,20 +64,11 @@ class DragControls extends THREE.EventDispatcher {
     this._raycaster.setFromCamera( this._mouse, this._camera )
 
     if ( this._dragTarget && this.enabled ) {
-      //console.log('this._dragTarget', this._dragTarget, 'this.enabled', this.enabled)
-      // console.log("selected")
       if ( this._raycaster.ray.intersectPlane( this._plane, this._intersection ) ) {
-
-        // console.log(this._offset)
         let pos = this._intersection.sub( this._offset )
         pos.y = 0
-        //console.log(this._intersection.sub( this._offset ))
-        // this._selected.position.copy( pos )
-
-        console.log('updating')
         this.onUpdateObject(this._dragTarget.userData.id, { x: pos.x, y: pos.z /*, z: pos.y*/ })
       }
-
       this.dispatchEvent( { type: 'drag', object: this._dragTarget } )
       return
     }
@@ -180,7 +169,6 @@ class DragControls extends THREE.EventDispatcher {
       }
     }
     let intersects = this._raycaster.intersectObjects( checkIntersectionsWithMeshes )
-    //console.log('hits: ', intersects)
     if ( intersects.length > 0 ) {
       this.onSelectBone( null )  // deselect bone is any selected
       let object = this.getObjectAndBone( intersects[ 0 ] )[0]
@@ -283,7 +271,6 @@ class DragControls extends THREE.EventDispatcher {
 
     // if we're dragging
     if (this._dragTarget) {
-      //console.log('drag end!')
       this.dispatchEvent( { type: 'dragend', object: this._dragTarget } )
       this._dragTarget = null
 

@@ -81,6 +81,9 @@ const draggables = (sceneObjects, scene) =>
   //scene.children.filter(o => o.userData.type === 'object' || o instanceof BoundingBoxHelper)
   scene.children.filter(o => o.userData.type === 'object' || o.userData.type === 'character')
 
+const characters = ( scene ) =>
+  scene.children.filter(o => o.userData.type === 'character')
+  
 // const stats = new Stats()
 // stats.showPanel(0)
 // document.body.appendChild( stats.dom )
@@ -858,7 +861,7 @@ const Inspector = ({
             transition,
             selectBone,
             updateCharacterSkeleton,
-            
+
             calculatedName
           }
         ]

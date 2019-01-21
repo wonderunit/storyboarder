@@ -45,6 +45,23 @@ function getBoneList( object ) {
 
 }
 
+function filter_array(test_array) {
+    let index = -1
+    const arr_length = test_array ? test_array.length : 0
+    let resIndex = -1
+    const result = []
+
+    while (++index < arr_length) {
+        const value = test_array[index]
+
+        if (value) {
+            result[++resIndex] = value
+        }
+    }
+
+    return result
+}
+
 function BonesHelper( object, object3D ) {
   Object3D.call( this )
   let bones = getBoneList( object );
@@ -138,7 +155,6 @@ function BonesHelper( object, object3D ) {
 
       this.cones[boneIndex].geometry.applyMatrix(new Matrix4().makeTranslation(0, boneLength/2+boneWidth/60, 0))
       hitMesh.geometry.applyMatrix(new Matrix4().makeTranslation(0, boneLength/2, 0))
-      this.hit_meshes[boneIndex] = ( hitMesh )
 
       // set visible here to see the hit mesh
       hitMesh.material.visible = false
@@ -166,6 +182,7 @@ function BonesHelper( object, object3D ) {
             hitMesh.geometry.applyMatrix(new Matrix4().makeScale(1, 1.8, 1))
             //hitMesh.geometry.applyMatrix(new Matrix4().makeTranslation(0, boneLength, 0))
           }
+          this.hit_meshes[boneIndex] = ( hitMesh )
           this.add(hitMesh)
 
         }
@@ -188,6 +205,7 @@ function BonesHelper( object, object3D ) {
     }
   }
 
+  this.hit_meshes = filter_array(this.hit_meshes)
   this.root = object
   this.object3D = object3D
   this.bones = bones

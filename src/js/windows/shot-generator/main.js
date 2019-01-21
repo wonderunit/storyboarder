@@ -6,6 +6,8 @@ const url = require('url')
 let win
 let hasRendered = false
 
+process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = true
+
 const reveal = (onComplete) => {
   if (hasRendered) {
     win.show()
