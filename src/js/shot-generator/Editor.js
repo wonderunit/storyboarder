@@ -1937,6 +1937,42 @@ const PhoneCursor = ({ remoteInput, camera, largeCanvasRef, selectObject, select
   const { scene } = useContext(SceneContext)
   let bonesHelper = useRef(null)
 
+  if (camera !== undefined && camera !== null && remoteInput.mouseMode)
+  {
+    if (camera.parent) scene.current = camera.parent
+    if (intersectionPlane.current)
+    {
+      // intersection plane exists
+    } else {
+      intersectionPlane.current = new THREE.Mesh(
+        //new THREE.CylinderGeometry(1, 1, 40, 16, 2),
+
+        new THREE.PlaneGeometry(50, 30, 2),
+        new THREE.MeshBasicMaterial( {color: 0xffff00, side: THREE.DoubleSide} ))
+      setPlanePosition(intersectionPlane.current)
+      //setCylinderOrientation(intersectionPlane.current)
+      //scene.current.add(intersectionPlane.current)
+    }
+
+    if (tester.current) {
+      //console.log('tester exists')
+    }
+    else {
+      tester.current = new THREE.Object3D()
+      let m = new THREE.Mesh(
+        new THREE.BoxGeometry(0.01, 0.01, 0.01),
+        new THREE.MeshBasicMaterial({color: '#123123' })
+      )
+      m.position.z = -0.005
+      tester.current.position.set(camera.position.x, camera.position.y, camera.position.z)
+      tester.current.position.y -= 0.05;
+      tester.current.quaternion.copy(camera.quaternion)
+      tester.current.add(new THREE.AxesHelper(1))
+      tester.current.add(m)
+      scene.current.add(tester.current)
+    }
+  }
+
   const setPlanePosition = (obj) => {
     let direction = new THREE.Vector3() // create once and reuse it!
     camera.getWorldDirection( direction )
@@ -1993,44 +2029,44 @@ const PhoneCursor = ({ remoteInput, camera, largeCanvasRef, selectObject, select
     return [object, bone]
   }
 
-  useEffect(() => {
-
-    if (camera !== undefined && camera !== null && remoteInput.mouseMode)
-    {
-      if (camera.parent) scene.current = camera.parent
-      if (intersectionPlane.current)
-      {
-        // intersection plane exists
-      } else {
-        intersectionPlane.current = new THREE.Mesh(
-          //new THREE.CylinderGeometry(1, 1, 40, 16, 2),
-
-          new THREE.PlaneGeometry(50, 30, 2),
-          new THREE.MeshBasicMaterial( {color: 0xffff00, side: THREE.DoubleSide} ))
-        setPlanePosition(intersectionPlane.current)
-        //setCylinderOrientation(intersectionPlane.current)
-        //scene.current.add(intersectionPlane.current)
-      }
-
-      if (tester.current) {
-        //console.log('tester exists')
-      }
-      else {
-        tester.current = new THREE.Object3D()
-        let m = new THREE.Mesh(
-          new THREE.BoxGeometry(0.01, 0.01, 0.01),
-          new THREE.MeshBasicMaterial({color: '#123123' })
-        )
-        m.position.z = -0.005
-        tester.current.position.set(camera.position.x, camera.position.y, camera.position.z)
-        tester.current.position.y -= 0.05;
-        tester.current.quaternion.copy(camera.quaternion)
-        tester.current.add(new THREE.AxesHelper(1))
-        tester.current.add(m)
-        scene.current.add(tester.current)
-      }
-    }
-  })
+  // useEffect(() => {
+  //
+  //   if (camera !== undefined && camera !== null && remoteInput.mouseMode)
+  //   {
+  //     if (camera.parent) scene.current = camera.parent
+  //     if (intersectionPlane.current)
+  //     {
+  //       // intersection plane exists
+  //     } else {
+  //       intersectionPlane.current = new THREE.Mesh(
+  //         //new THREE.CylinderGeometry(1, 1, 40, 16, 2),
+  //
+  //         new THREE.PlaneGeometry(50, 30, 2),
+  //         new THREE.MeshBasicMaterial( {color: 0xffff00, side: THREE.DoubleSide} ))
+  //       setPlanePosition(intersectionPlane.current)
+  //       //setCylinderOrientation(intersectionPlane.current)
+  //       //scene.current.add(intersectionPlane.current)
+  //     }
+  //
+  //     if (tester.current) {
+  //       //console.log('tester exists')
+  //     }
+  //     else {
+  //       tester.current = new THREE.Object3D()
+  //       let m = new THREE.Mesh(
+  //         new THREE.BoxGeometry(0.01, 0.01, 0.01),
+  //         new THREE.MeshBasicMaterial({color: '#123123' })
+  //       )
+  //       m.position.z = -0.005
+  //       tester.current.position.set(camera.position.x, camera.position.y, camera.position.z)
+  //       tester.current.position.y -= 0.05;
+  //       tester.current.quaternion.copy(camera.quaternion)
+  //       tester.current.add(new THREE.AxesHelper(1))
+  //       tester.current.add(m)
+  //       scene.current.add(tester.current)
+  //     }
+  //   }
+  // })
 
   useEffect(() => {
     // habdling phone rotation to screen position here
@@ -2432,7 +2468,7 @@ const CameraInspector = connect(
     let tiltInDegrees = Math.round(cameraState.tilt * THREE.Math.RAD2DEG)
 
     let [heightFeet, heightInches] = metersAsFeetAndInches(cameraState.z)
-    console.log(this)
+    //console.log(this)
     let scope = this
     useEffect(() => {
       camera = scene.children.find(child => child.userData.id === activeCamera)
