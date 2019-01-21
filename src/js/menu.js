@@ -880,7 +880,7 @@ const shotGeneratorMenu = [
   {
     label: 'View',
     submenu: [
-      ...SubMenuFragments.View
+      ...SubMenuFragments.View,
     ]
   },
   {
