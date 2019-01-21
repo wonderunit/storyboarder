@@ -106,9 +106,6 @@ class DragControls extends THREE.EventDispatcher {
   }
 
   update ( delta, state ) {
-
-    // console.log('update')
-
     let deltaPos = {x: 0, y: 0}
 
     if (state.devices[0].digital.left) {
@@ -137,9 +134,6 @@ class DragControls extends THREE.EventDispatcher {
     } else {
       this.currentMoveSpeed = 0.0001
     }
-
-
-
   }
 
 
@@ -185,8 +179,8 @@ class DragControls extends THREE.EventDispatcher {
         checkIntersectionsWithMeshes = checkIntersectionsWithMeshes.concat(o.bonesHelper.hit_meshes)
       }
     }
-
     let intersects = this._raycaster.intersectObjects( checkIntersectionsWithMeshes )
+    //console.log('hits: ', intersects)
     if ( intersects.length > 0 ) {
       this.onSelectBone( null )  // deselect bone is any selected
       let object = this.getObjectAndBone( intersects[ 0 ] )[0]
