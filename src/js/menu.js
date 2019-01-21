@@ -3,14 +3,24 @@ const { ipcRenderer, shell } = require('electron')
 const isDev = require('electron-is-dev')
 const { getInitialStateRenderer } = require('electron-redux')
 
-const configureStore = require('./shared/store/configureStore')
-const observeStore = require('./shared/helpers/observeStore')
+// HACK to allow Shot Generator Standalone w/o main redux store loaded
+let keystrokeFor
+if (process.env.SHOT_GENERATOR_STANDALONE) {
+  // don't require store for Shot Generator standalone testing
+  // use default keymap instead of the one loaded from the file system
+  const defaultKeyMap = require('./shared/helpers/defaultKeyMap')
+  keystrokeFor = command => defaultKeyMap[command]
+} else {
+  // TODO subscribe to store, update menu when keymap changes
+  const configureStore = require('./shared/store/configureStore')
+  const store = configureStore(getInitialStateRenderer(), 'renderer')
+  keystrokeFor = command => store.getState().entities.keymap[command]
+}
 
-const store = configureStore(getInitialStateRenderer(), 'renderer')
 
-// TODO subscribe to store, update menu when keymap changes
+// TODO remove unused
+// const observeStore = require('./shared/helpers/observeStore')
 
-let keystrokeFor = command => store.getState().entities.keymap[command]
 
 let SubMenuFragments = {}
 SubMenuFragments.View = [
@@ -839,6 +849,54 @@ const welcomeTemplate = [
   }
 ]
 
+const shotGeneratorMenu = [
+  ...AppMenu.about({ includePreferences: false }),
+  {
+    label: 'File',
+    submenu: [
+      {
+        label: 'Open…',
+        accelerator: keystrokeFor('menu:file:open'),
+        click (item, focusedWindow, event) {
+          ipcRenderer.send('openDialogue')
+        }
+      }
+    ]
+  },
+  {
+    label: 'Edit',
+    submenu: [
+      // {role: 'undo'},
+      // {role: 'redo'},
+      // {type: 'separator'},
+      {role: 'cut'},
+      {role: 'copy'},
+      {role: 'paste'},
+      // {role: 'pasteandmatchstyle'},
+      {role: 'delete'},
+      {role: 'selectall'}
+    ]
+  },
+  {
+    label: 'View',
+    submenu: [
+      ...SubMenuFragments.View
+    ]
+  },
+  {
+    role: 'window',
+    submenu: [
+      ...SubMenuFragments.windowing
+    ]
+  },
+  {
+    role: 'help',
+    submenu: [
+      ...SubMenuFragments.help
+    ]
+  }
+]
+
 const setWelcomeMenu = () => {
   let welcomeMenuInstance = Menu.buildFromTemplate(welcomeTemplate)
   Menu.setApplicationMenu(welcomeMenuInstance)
@@ -849,6 +907,10 @@ const setMenu = () => {
   Menu.setApplicationMenu(menuInstance)
 }
 
+const setShotGeneratorMenu = () => {
+  Menu.setApplicationMenu(Menu.buildFromTemplate(shotGeneratorMenu))
+}
+
 const setEnableAudition = value =>
   Menu
     .getApplicationMenu().items.find(n => n.label === 'Navigation')
@@ -857,6 +919,7 @@ const setEnableAudition = value =>
 
 module.exports = {
   setWelcomeMenu,
+  setShotGeneratorMenu,
   setMenu,
 
   setEnableAudition

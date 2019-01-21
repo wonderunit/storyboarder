@@ -6937,10 +6937,12 @@ ipcRenderer.on('saveShot', async (event, { data, images }) => {
   // TODO undo step?
   console.log('main-window#saveShot', data, images)
 
+  storeUndoStateForScene(true)
   // force 100% opacity
   layersEditor.setReferenceOpacity(1)
-
   await saveToBoardFromShotGenerator({ data, images })
+  // renderThumbnailDrawer()
+  storeUndoStateForScene()
 })
 ipcRenderer.on('insertShot', async (event, { data, images }) => {
   console.log('main-window#insertShot', data, images)
@@ -6948,10 +6950,12 @@ ipcRenderer.on('insertShot', async (event, { data, images }) => {
   let index = await newBoard()
   await gotoBoard(index)
 
+  storeUndoStateForScene(true)
   // force 100% opacity
   layersEditor.setReferenceOpacity(1)
-
   await saveToBoardFromShotGenerator({ data, images })
+  // renderThumbnailDrawer()
+  storeUndoStateForScene()
 
   // ipcRenderer.send('shot-generator:open', {
   //   shot: boardData.boards[currentBoard].sts,

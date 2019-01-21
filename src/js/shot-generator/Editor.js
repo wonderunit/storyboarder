@@ -1,7 +1,7 @@
 const THREE = require('three')
 
-const { ipcRenderer } = require('electron')
-const { dialog } = require('electron').remote
+const { ipcRenderer, remote } = require('electron')
+const { dialog } = remote
 const fs = require('fs')
 const path = require('path')
 
@@ -2625,6 +2625,23 @@ const canDelete = (sceneObject, activeCamera) =>
   // allow cameras which are not the active camera
   (sceneObject.type === 'camera' && sceneObject.id !== activeCamera)
 
+const menu = require('../menu')
+const onMenuFocus = () => {
+  menu.setShotGeneratorMenu()
+}
+const MenuManager = ({ }) => {
+  useEffect(() => {
+    let win = remote.getCurrentWindow()
+    win.on('focus', onMenuFocus)
+    onMenuFocus()
+
+    return function cleanup () {
+      win.off('focus', onMenuFocus)
+    }
+  }, [])
+  return null
+}
+
 const KeyHandler = connect(
   state => ({
     mainViewCamera: state.mainViewCamera,
@@ -2908,7 +2925,9 @@ const Editor = connect(
 
         ready && [SceneManager, { mainViewCamera, largeCanvasRef, smallCanvasRef, machineState, transition, largeCanvasSize }],
 
-        !machineState.matches('typing') && [KeyHandler]
+        !machineState.matches('typing') && [KeyHandler],
+        
+        [MenuManager]
       ]
     )
   )
