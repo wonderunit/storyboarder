@@ -83,7 +83,7 @@ const draggables = (sceneObjects, scene) =>
 
 const characters = ( scene ) =>
   scene.children.filter(o => o.userData.type === 'character')
-  
+
 // const stats = new Stats()
 // stats.showPanel(0)
 // document.body.appendChild( stats.dom )
@@ -2132,10 +2132,19 @@ const PhoneCursor = ({ remoteInput, camera, largeCanvasRef, selectObject, select
 	  phoneMouse.y = - ( (oldxy.current.y ) / viewportheight ) * 2 + 1
 
     raycaster.setFromCamera( phoneMouse, camera )
-    const sceneObj = scene.children
+
+    let checkIntersectionsWithMeshes = []
+    for (var o of this._objects)
+    {
+      if (o instanceof THREE.Mesh) checkIntersectionsWithMeshes.push(o)
+      if (o instanceof THREE.Object3D && o.userData.type === 'character')
+      {
+        checkIntersectionsWithMeshes = checkIntersectionsWithMeshes.concat(o.bonesHelper.hit_meshes)
+      }
+    }
 
     var noIntersect = true
-  	var intersects = raycaster.intersectObjects( sceneObj )
+  	var intersects = raycaster.intersectObjects( checkIntersectionsWithMeshes )
     for ( var i = 0; i < intersects.length; i++ ) {
       selectBone( null )
       //console.log('intersection [', i ,']=' , intersects[ i ].object.userData.type)
@@ -2146,20 +2155,20 @@ const PhoneCursor = ({ remoteInput, camera, largeCanvasRef, selectObject, select
         let object = getObjectAndBone( intersects[ i ] )
         let hits
         let bone
-        if (object[0] && object[0].skeleton) {
-          if (bonesHelper.current)
-          {
-            //console.log(' its already here ')
-          } else {
-            //scene.remove(bonesHelper.current)
-            //bonesHelper.current = object.current.bonesHelper
-            //selectObject(object[0].userData.id)
-            //scene.add(bonesHelper.current)
-          }
-        } else {
-          //scene.remove(bonesHelper.current)
-          //bonesHelper.current = null
-        }
+        // if (object[0] && object[0].skeleton) {
+        //   if (bonesHelper.current)
+        //   {
+        //     //console.log(' its already here ')
+        //   } else {
+        //     //scene.remove(bonesHelper.current)
+        //     //bonesHelper.current = object.current.bonesHelper
+        //     //selectObject(object[0].userData.id)
+        //     //scene.add(bonesHelper.current)
+        //   }
+        // } else {
+        //   //scene.remove(bonesHelper.current)
+        //   //bonesHelper.current = null
+        // }
         if (bonesHelper.current) {
           hits = raycaster.intersectObject( bonesHelper.current )
           bone = hits.length && getObjectAndBone( hits[ 0 ] )[1]
@@ -2431,8 +2440,8 @@ const CameraInspector = connect(
       requestAnimationFrame(() => {
 
         closest = getClosestCharacterInView (characters(scene), camera)
-        console.log('closest: ', closest)
-        scope.forceUpdate()
+        //console.log('closest: ', closest)
+        //scope.forceUpdate()
         //scope.setState({})
       })
       //we have to wait for them to be added to the stage
