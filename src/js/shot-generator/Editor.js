@@ -2503,6 +2503,9 @@ const CameraInspector = connect(
       calculatedName = sceneObject.name || capitalize(`${sceneObject.type} ${number}`)
     }
 
+    let cameraNumber = Object.values(sceneObjects).filter(o => o.type === 'camera').indexOf(cameraState) + 1
+    let cameraName = `Camera ${cameraNumber}`
+
 
     return h(
       ['div#camera-inspector', { style: { padding: 12, lineHeight: 1.25 } },
@@ -2511,7 +2514,7 @@ const CameraInspector = connect(
           { style: { justifyContent: 'space-between' } },
           [
             'div',
-            `Camera 1, ${Math.round(focalLength)}mm, f/1.4`,
+            `${cameraName}, ${Math.round(focalLength)}mm, f/1.4`,
             ['br'],
             `Height: ${feetAndInchesAsString(heightFeet, heightInches)} Tilt: ${tiltInDegrees}°`,
             ['br'],
