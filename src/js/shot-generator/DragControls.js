@@ -133,10 +133,6 @@ class DragControls extends THREE.EventDispatcher {
       return [obj, null]
     }
 
-    if (intersect.object instanceof BoundingBoxHelper) {
-      return [intersect.object.object, null]
-    }
-
     let isBone = intersect.object.parent instanceof BonesHelper
 
     let object = isBone
@@ -195,7 +191,6 @@ class DragControls extends THREE.EventDispatcher {
         // ... select bone (if any) ...
         if (this._camera.isPerspectiveCamera) {
           if (bone) {
-
             this.onSelectBone( bone.uuid )
           } else {
             this.onSelectBone( null )

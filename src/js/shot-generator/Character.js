@@ -254,10 +254,8 @@ const Character = React.memo(({ scene, id, type, remoteInput, characterModels, i
     if (remoteInput.mouseMode) return
 
     let realTarget
+    let skel = (object.current.children[0] instanceof THREE.Mesh) ? object.current.children[0] : object.current.children[1]
     if (selectedBone) {
-      // target = object.current.skeleton.getBoneByName(selectedBone)
-      let skel = (object.current.children[0] instanceof THREE.Mesh) ? object.current.children[0] : object.current.children[1]
-
       realTarget = skel.skeleton.bones.find(bone => bone.uuid == selectedBone) || object.current
     } else {
       realTarget = object.current
@@ -287,8 +285,10 @@ const Character = React.memo(({ scene, id, type, remoteInput, characterModels, i
             gamma: gamma
           }
 
+          let sgr = new THREE.Quaternion()
+          realTarget.getWorldQuaternion(sgr)
           startingGlobalRotation.current = {
-            quaternion: realTarget.getWorldQuaternion()
+            quaternion: sgr
           }
         }
 
@@ -303,23 +303,24 @@ const Character = React.memo(({ scene, id, type, remoteInput, characterModels, i
           //   x = -0.5,
           //   y = -0.5,
           //   z = -0.5
-          let w = 0,
+          let w = 1,
               x = 0,
               y = 0,
-              z = 1
+              z = 0
           startingDeviceQuaternion = new THREE.Quaternion().setFromEuler(new THREE.Euler(startingDeviceRotation.current.beta, startingDeviceRotation.current.alpha, -startingDeviceRotation.current.gamma, 'YXZ')).multiply(new THREE.Quaternion(w, x, y, z))
           deviceQuaternion = new THREE.Quaternion().setFromEuler(new THREE.Euler(beta, alpha, -gamma, 'YXZ')).multiply(new THREE.Quaternion(w, x, y, z))
         }
 
         //let inversedRotation = new THREE.Quaternion(w, x, y, z)
-        var parentWorldQuaternion = realTarget.parent.getWorldQuaternion(parentWorldQuaternion).clone()
+        let parentWorldQuaternion = new THREE.Quaternion()
+        realTarget.parent.getWorldQuaternion(parentWorldQuaternion).clone()
         let startingObjectQuaternion = new THREE.Quaternion().setFromEuler(new THREE.Euler(startingObjectRotation.current.x,startingObjectRotation.current.y,startingObjectRotation.current.z))
 
         startingDeviceQuaternion.multiply(cameraQuaternion.clone())
         deviceQuaternion.multiply(cameraQuaternion.clone())
 
-        // startingDeviceQuaternion.multiply( parentWorldQuaternion.clone() )
-        // deviceQuaternion.multiply( parentWorldQuaternion.clone() )
+        startingDeviceQuaternion.multiply( parentWorldQuaternion.clone() )
+        deviceQuaternion.multiply( parentWorldQuaternion.clone() )
 
         let deviceDifference = startingDeviceQuaternion.clone().inverse().multiply(deviceQuaternion)
 
@@ -328,19 +329,16 @@ const Character = React.memo(({ scene, id, type, remoteInput, characterModels, i
           t = new THREE.Vector3()
           q = new THREE.Quaternion()
           s = new THREE.Vector3()
-          //deviceDifference.multiply ( parentWorldQuaternion.clone().inverse() )
-          //tempQ.multiply( parentWorldQuaternion.clone() )
+          //deviceDifference.multiply ( parentWorldQuaternion.clone() )
           tempQ.multiply( deviceDifference )
-          //tempQ.multiply( parentWorldQuaternion.clone().inverse() )
+          tempQ.multiply( parentWorldQuaternion.clone())
 
           target.quaternion.copy(tempQ)
-
+          target.updateMatrix()
+        } else {
+          tempQ.multiply(deviceDifference)
+          target.quaternion.copy(tempQ)
         }
-        cameraQuaternion = camera.quaternion.clone();
-
-        let q1 = startingDeviceQuaternion.clone().normalize()//.multiply(camera.quaternion);
-        let q2 = deviceQuaternion.clone().normalize()//.multiply(camera.quaternion);
-        let r = q2.multiply(q1.clone().inverse())//.multiply(helperObj.quaternion);
 
         // OLD ROTATION ON AXIS
         // let deviceDifference = startingDeviceQuaternion.clone().inverse().multiply(deviceQuaternion)
@@ -365,6 +363,10 @@ const Character = React.memo(({ scene, id, type, remoteInput, characterModels, i
       }
     } else {
       isRotating.current = false
+      startingObjectRotation.current = null
+      startingDeviceRotation.current = null
+      startingGlobalRotation.current = null
+
     }
   }, [remoteInput])
 

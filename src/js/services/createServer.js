@@ -11,7 +11,8 @@ module.exports = function ({
   setInputMag,
   setInputSensor, // TODO do we need this?
   setInputDown,
-  setInputMouseMode
+  setInputMouseMode,
+  setInputPhoneClick
 }) {
   wss.on('connection', function connection (ws) {
     console.log('got connection')
@@ -34,7 +35,7 @@ module.exports = function ({
       if (values.mouseMode != null) {
         setInputMouseMode(values.mouseMode)
       }
-      
+
       if (values.mouseModeClick != null) {
         setInputPhoneClick(values.mouseModeClick)
       }
@@ -82,6 +83,7 @@ module.exports = function ({
       let beta
       let gamma
       let mouseMode = false
+      let mouseModeClick = false
 
       function log (string) {
         document.body.innerHTML += string + "<br/>"
@@ -146,16 +148,21 @@ module.exports = function ({
         report({
           mouseMode: mouseOn
         })
-        event.stopPropagation();
+        //event.stopPropagation();
       })
 
-    document.getElementById("mouseButtonClick").addEventListener('touchend', event => {
+    document.getElementById("mouseButtonClick").addEventListener('touchstart', event => {
       event.preventDefault();
+      mouseModeClick = true;
       //document.getElementById("debugger").innerHTML += "<br>Mouse click: "+mouseModeClick;
-      mouseModeClick = false;
+
       report({
         mouseModeClick: mouseModeClick
        })
+       mouseModeClick = false;
+       report({
+         mouseModeClick: mouseModeClick
+        })
       //event.stopPropagation();
     })
 
@@ -191,7 +198,7 @@ module.exports = function ({
         beta = event.beta
         gamma = event.gamma
 
-        if (down) {
+        if (down && !mouseModeClick) {
           report({
             mag: [event.alpha, event.beta, event.gamma]
           })

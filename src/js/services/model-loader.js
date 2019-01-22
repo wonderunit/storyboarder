@@ -32,6 +32,18 @@ const characterHeights = {
   'adult-female': 1.65,
   'teen-female': 1.6
 }
+
+const toonMaterial = new THREE.MeshToonMaterial({
+  color: 0xffffff,
+  emissive: 0x0,
+  specular: 0x0,
+  skinning: true,
+  shininess: 0,
+  flatShading: false,
+  morphNormals: true,
+  morphTargets: true,
+})
+
 const Zlib = require("../../../node_modules/three/examples/js/libs/inflate.min")
 
 window.Zlib = Zlib.Zlib
@@ -219,20 +231,11 @@ const loadModels = () => {
         mesh.scale.set(scale, scale, scale)
         mesh.updateMatrix()
 
-        let material = new THREE.MeshToonMaterial({
-          color: 0xffffff,
-          emissive: 0x0,
-          specular: 0x0,
-          skinning: true,
-          shininess: 0,
-          flatShading: false,
-          morphNormals: true,
-          morphTargets: true,
-          map: textures.chair
-        })
+        let material = toonMaterial.clone()
+        material.map = textures.chair
 
         mesh.material = material
-        //mesh.material.map = textures.chair
+        mesh.material.map = textures.chair
         objModels.chair = mesh
       }
     })
@@ -249,8 +252,10 @@ const loadModels = () => {
         var scale = targetHeight / height
         mesh.scale.set(scale, scale, scale)
         mesh.updateMatrix()
-        mesh.material.map = textures.tree
-        //mesh.material.color = 0xffffff
+
+        let material = toonMaterial.clone()
+        material.map = textures.tree
+        mesh.material = material
         objModels.tree = mesh
       }
     })
@@ -265,12 +270,6 @@ const loadModels = () => {
   const male = loadModelGLTFPromise("data/shot-generator/dummies/gltf/male-adult.glb", textures.maleAdultBody, textures.maleHead, characterHeights['adult-male'] )
   const male_youth = loadModelGLTFPromise("data/shot-generator/dummies/gltf/male-youth.glb", textures.maleYouthBody, textures.maleHead, characterHeights['teen-male'] )
   const female_youth = loadModelGLTFPromise("data/shot-generator/dummies/gltf/female-youth.glb", textures.femaleYouthBody, textures.maleHead, characterHeights['teen-female'] )
-
-  // return new Promise(resolve => {
-  //   loader.manager.onLoad = () => {
-  //     resolve(characterModels)
-  //   }
-  // })
 
   return Promise.all([ male, male_youth, female_youth, female ]).then( (values) => {
     // GLTF models are loaded async so we're waiting for all of them to get resolved
