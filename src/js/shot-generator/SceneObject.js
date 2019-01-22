@@ -18,8 +18,26 @@ objLoader.setLogging(false, false)
 const boxRadius = .005
 const boxRadiusSegments = 5
 
+// return a group which can report intersections
+const groupFactory = () => {
+  let group = new THREE.Group()
+  group.raycast = function ( raycaster, intersects ) {
+    let results = raycaster.intersectObjects(this.children)
+    if (results.length) {
+      // distance – distance between the origin of the ray and the intersection
+      // point – point of intersection, in world coordinates
+      // face – intersected face
+      // faceIndex – index of the intersected face
+      // object – the intersected object
+      // uv - U,V coordinates at point of intersection
+      intersects.push({ object: this })
+    }
+  }
+  return group
+}
+
 const SceneObject = React.memo(({ scene, id, type, objModels, isSelected, ...object }) => {
-  let container = useRef(new THREE.Group())
+  let container = useRef(groupFactory())
 
   const update = () => {
     container.current.userData.id = id
