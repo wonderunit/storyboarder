@@ -1506,8 +1506,52 @@ const InspectedElement = ({ sceneObject, modelData, updateObject, selectedBone, 
         }
       ],
 
-      sceneObject.type == 'object' && [
-        'div', path.basename(sceneObject.model)
+      sceneObject.type == 'object' &&
+        ['div.row', [
+          ['div', { style: { width: 50 } }, 'model'],
+          ['div.row', [
+            
+            [
+              'select', {
+                value: sceneObject.model,
+                onChange: event => {
+                  event.preventDefault()
+                  updateObject(sceneObject.id, { model: event.target.value })
+                }
+              }, [
+                [['box', 'box'], ['tree', 'tree'], ['chair', 'chair']].map(([name, value]) =>
+                  ['option', { value }, name]
+                )
+              ]
+            ],
+
+            ['span', 'or'],
+
+            [
+              'a[href=#]',
+              {
+                onClick: event => {
+                  let filepaths = dialog.showOpenDialog(null, {})
+                  if (filepaths) {
+                    let filepath = filepaths[0]
+                    updateObject(sceneObject.id, { model: filepath })
+                  } else {
+                    // updateObject(sceneObject.id, { model: undefined })
+                  }
+                  // automatically blur to return keyboard control
+                  document.activeElement.blur()
+                  transition('TYPING_EXIT')
+                },
+                style: {
+                  fontStyle: 'italic',
+                  textDecoration: 'none',
+                  borderBottomWidth: '1px',
+                  borderBottomStyle: 'dashed'
+                }
+              },
+              path.isAbsolute(sceneObject.model) ? path.basename(sceneObject.model) : sceneObject.model
+          ]
+        ]]]
       ],
 
       // sceneObject.type == 'object' && [
