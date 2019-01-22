@@ -1507,7 +1507,7 @@ const InspectedElement = ({ sceneObject, modelData, updateObject, selectedBone, 
       ],
 
       sceneObject.type == 'object' && [
-        'div', sceneObject.model
+        'div', path.basename(sceneObject.model)
       ],
 
       // sceneObject.type == 'object' && [
