@@ -2,6 +2,7 @@ const THREE = require('three')
 window.THREE = window.THREE || THREE
 const RoundedBoxGeometry = require('three-rounded-box')(THREE)
 
+const path = require('path')
 const React = require('react')
 const { useRef, useEffect } = React
 
@@ -14,6 +15,7 @@ const objLoader = new THREE.OBJLoader2(loadingManager)
 const gltfLoader = new THREE.GLTFLoader(loadingManager)
 const imageLoader = new THREE.ImageLoader(loadingManager)
 objLoader.setLogging(false, false)
+THREE.Cache.enabled = true
 
 const boxRadius = .005
 const boxRadiusSegments = 5
@@ -35,6 +37,17 @@ const groupFactory = () => {
   }
   return group
 }
+
+const SceneObjectMaterial = new THREE.MeshToonMaterial({
+  color: 0xffffff,
+  emissive: 0x0,
+  specular: 0x0,
+  skinning: true,
+  shininess: 0,
+  flatShading: false
+})
+
+const materialFactory = () => SceneObjectMaterial
 
 const SceneObject = React.memo(({ scene, id, type, objModels, isSelected, ...object }) => {
   let container = useRef(groupFactory())
@@ -71,7 +84,39 @@ const SceneObject = React.memo(({ scene, id, type, objModels, isSelected, ...obj
 
       default:
         container.remove(...container.children)
-        container.add(objModels[model].clone())
+
+        let filepath
+        if (path.isAbsolute(model)) {
+          filepath = model
+          console.log('loading a model from the file system', filepath)
+        } else {
+
+          // FIXME doesn't return the correct value when run from `npm run shot-generator`
+          // https://github.com/electron-userland/electron-webpack/issues/243
+          // const { app } = require('electron').remote
+          // filepath = path.join(app.getAppPath(), 'src', 'data', 'shot-generator', 'objects', model + '.obj')
+
+          filepath = path.join(__dirname, '..', '..', '..', 'src', 'data', 'shot-generator', 'objects', model + '.obj')
+          console.log('loading from app', filepath)
+        }
+
+        switch (path.extname(filepath)) {
+          case '.obj':
+            objLoader.load(filepath, event => {
+              const object = event.detail.loaderRootNode
+
+              object.traverse( function ( child ) {
+                if ( child instanceof THREE.Mesh ) {
+                  let m = child.clone()
+                  m.material = materialFactory()
+                  container.add(m)
+                }
+              })
+
+              console.log('loaded', filepath)
+            })
+            break
+        }
         break
     }
   }
@@ -105,6 +150,9 @@ const SceneObject = React.memo(({ scene, id, type, objModels, isSelected, ...obj
   ])
 
   useEffect(() => {
+    if (!container.current.children[0]) return
+    if (!container.current.children[0].material) return
+
     container.current.children[0].material.userData.outlineParameters =
       isSelected
         ? {
