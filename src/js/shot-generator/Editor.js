@@ -469,7 +469,7 @@ const SceneManager = connect(
       if (selection != null) {
         child = scene.children.find(o => o.userData.id === selection)
         sceneObject = sceneObjects[selection]
-        if (child && child.children[0] && (child.children[0].skeleton || child.children[1].skeleton) && sceneObject.visible) {
+        if (child && child.userData.type === 'character' && child.children[0] && (child.children[0].skeleton || child.children[1].skeleton) && sceneObject.visible) {
           //console.log('child: ', child)
           let skel = (child.children[0] instanceof THREE.Mesh) ? child.children[0] : child.children[1]
 
