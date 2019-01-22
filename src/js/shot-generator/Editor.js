@@ -1466,11 +1466,24 @@ const InspectedElement = ({ sceneObject, modelData, updateObject, selectedBone, 
     [NumberSlider, { label: 'z', value: sceneObject.z, min: -30, max: 30, onSetValue: createOnSetValue(sceneObject.id, 'z') } ],
   ]
 
-  let volumeSliders = [
-    [NumberSlider, { label: 'width', value: sceneObject.width, min: 0.025, max: 5, onSetValue: createOnSetValue(sceneObject.id, 'width') } ],
-    [NumberSlider, { label: 'height', value: sceneObject.height, min: 0.025, max: 5, onSetValue: createOnSetValue(sceneObject.id, 'height') } ],
-    [NumberSlider, { label: 'depth', value: sceneObject.depth, min: 0.025, max: 5, onSetValue: createOnSetValue(sceneObject.id, 'depth') } ],
-  ]
+  let volumeSliders = sceneObject.model === 'box'
+    ? [
+        [NumberSlider, { label: 'width', value: sceneObject.width, min: 0.025, max: 5, onSetValue: createOnSetValue(sceneObject.id, 'width') } ],
+        [NumberSlider, { label: 'height', value: sceneObject.height, min: 0.025, max: 5, onSetValue: createOnSetValue(sceneObject.id, 'height') } ],
+        [NumberSlider, { label: 'depth', value: sceneObject.depth, min: 0.025, max: 5, onSetValue: createOnSetValue(sceneObject.id, 'depth') } ]
+      ]
+    : [
+        NumberSlider, {
+          label: 'size',
+          value: sceneObject.depth,
+          min: 0.025,
+          max: 5,
+          onSetValue: value => updateObject(
+            sceneObject.id,
+            { width: value, height: value, depth: value }
+          )
+        }
+      ]
 
   const onFocus = event => transition('TYPING_ENTER')
   const onBlur = event => transition('TYPING_EXIT')
