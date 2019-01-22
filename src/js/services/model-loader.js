@@ -257,7 +257,6 @@ const loadModels = () => {
         material.map = textures.tree
         mesh.material = material
         objModels.tree = mesh
-        console.log('objModels: ', objModels)
       }
     })
   })

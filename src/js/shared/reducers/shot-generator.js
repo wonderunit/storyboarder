@@ -560,7 +560,7 @@ module.exports = {
             draft.world.environment.z = action.payload.z
           }
           return
-        
+
         case 'DUPLICATE_OBJECT':
           let source = draft.sceneObjects[action.payload.id]
           if (source) {
