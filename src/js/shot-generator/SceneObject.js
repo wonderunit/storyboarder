@@ -116,6 +116,24 @@ const SceneObject = React.memo(({ scene, id, type, objModels, isSelected, ...obj
               console.log('loaded', filepath)
             })
             break
+        
+          case '.gltf':
+          case '.glb':
+            gltfLoader.load(
+              filepath,
+              data => {
+                data.scene.children.forEach(child => {
+                  if ( child instanceof THREE.Mesh ) {
+                    let m = child.clone()
+                    m.material = materialFactory()
+                    container.add(m)
+                  }
+                })
+
+                console.log('loaded', filepath)
+              }
+            )
+            break
         }
         break
     }
