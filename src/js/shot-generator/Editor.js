@@ -2493,6 +2493,17 @@ const CameraInspector = connect(
 
     let [distFeet, distInches] = metersAsFeetAndInches(closest.distance)
 
+    // HACK this should be based directly on state.sceneObjects, or cached in the sceneObject data
+    let calculatedName
+    let sceneObject = closest.object ? sceneObjects[closest.object.userData.id] : undefined
+    if (sceneObject) {
+      // TODO DRY
+      const number = Object.values(sceneObjects).filter(o => o.type === sceneObject.type).indexOf(sceneObject) + 1
+      const capitalize = string => string.charAt(0).toUpperCase() + string.slice(1)
+      calculatedName = sceneObject.name || capitalize(`${sceneObject.type} ${number}`)
+    }
+
+
     return h(
       ['div#camera-inspector', { style: { padding: 12, lineHeight: 1.25 } },
 
@@ -2504,7 +2515,7 @@ const CameraInspector = connect(
             ['br'],
             `Height: ${feetAndInchesAsString(heightFeet, heightInches)} Tilt: ${tiltInDegrees}°`,
             ['br'],
-            closest.object ? `Closest character: ${closest.object ? shortId(closest.object.userData.id) : ''}, distance: ${feetAndInchesAsString(distFeet, distInches)} (${parseFloat(Math.round(closest.distance * 100) / 100).toFixed(2)}m)` : ''
+            closest.object ? `${feetAndInchesAsString(distFeet, distInches)} (${parseFloat(Math.round(closest.distance * 100) / 100).toFixed(2)}m) from ${calculatedName}` : ''
           ],
           [
             'div.column',
