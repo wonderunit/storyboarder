@@ -61,10 +61,10 @@ const SceneObject = React.memo(({ scene, id, type, objModels, isSelected, ...obj
   const load = async (model, object, container) => {
     switch (model) {
       case 'box':
-        geometry = new RoundedBoxGeometry( object.width, object.height, object.depth, boxRadius, boxRadiusSegments )
+        geometry = new RoundedBoxGeometry( 1, 1, 1, boxRadius, boxRadiusSegments )
         let material = new THREE.MeshBasicMaterial( { color: 0xcccccc, side: THREE.DoubleSide } )
         let mesh = new THREE.Mesh( geometry, material )
-        geometry.translate( 0, object.height / 2, 0 )
+        geometry.translate( 0, 1 / 2, 0 )
         container.remove(...container.children)
         container.add(mesh)
         break
