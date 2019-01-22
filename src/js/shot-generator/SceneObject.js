@@ -38,7 +38,7 @@ const groupFactory = () => {
   return group
 }
 
-const SceneObjectMaterial = new THREE.MeshToonMaterial({
+const materialFactory = () => new THREE.MeshToonMaterial({
   color: 0xffffff,
   emissive: 0x0,
   specular: 0x0,
@@ -46,8 +46,6 @@ const SceneObjectMaterial = new THREE.MeshToonMaterial({
   shininess: 0,
   flatShading: false
 })
-
-const materialFactory = () => SceneObjectMaterial
 
 const SceneObject = React.memo(({ scene, id, type, objModels, isSelected, ...object }) => {
   let container = useRef(groupFactory())
