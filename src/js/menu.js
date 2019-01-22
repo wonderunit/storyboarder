@@ -880,7 +880,14 @@ const shotGeneratorMenu = [
   {
     label: 'View',
     submenu: [
-      ...SubMenuFragments.View
+      ...SubMenuFragments.View,
+      {
+        label: 'Enable FPS Meter',
+        type: 'checkbox',
+        click (item, focusedWindow, event) {
+          ipcRenderer.send('shot-generator:menu:view:fps-meter')
+        }
+      }
     ]
   },
   {
