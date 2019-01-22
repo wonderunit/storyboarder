@@ -88,7 +88,6 @@ const NumberSliderFormatter = {
 }
 
 require('../vendor/OutlineEffect.js')
-const RoundedBoxGeometry = require('three-rounded-box')(THREE)
 
 
 window.THREE = THREE
