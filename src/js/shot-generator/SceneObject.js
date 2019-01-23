@@ -6,6 +6,8 @@ const path = require('path')
 const React = require('react')
 const { useRef, useEffect } = React
 
+const ModelLoader = require('../services/model-loader')
+
 // TODO use functions of ModelLoader?
 require('../../../node_modules/three/examples/js/loaders/LoaderSupport')
 require('../../../node_modules/three/examples/js/loaders/GLTFLoader')
@@ -84,7 +86,7 @@ const SceneObject = React.memo(({ scene, id, type, objModels, isSelected, ...obj
         container.remove(...container.children)
 
         let filepath
-        if (path.isAbsolute(model)) {
+        if (ModelLoader.isCustomModel(model)) {
           filepath = model
           console.log('loading a model from the file system', filepath)
         } else {

@@ -1536,7 +1536,7 @@ const InspectedElement = ({ sceneObject, modelData, updateObject, selectedBone, 
                 }
               }, [
                 ['optgroup', { label: 'Custom' }, [
-                  path.isAbsolute(sceneObject.model)
+                  ModelLoader.isCustomModel(sceneObject.model)
                     ? ['option', { value: sceneObject.model, disabled: true }, path.basename(sceneObject.model)]
                     : []
                   ,
