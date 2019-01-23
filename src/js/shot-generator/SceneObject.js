@@ -133,7 +133,6 @@ const SceneObject = React.memo(({ scene, id, type, objModels, isSelected, ...obj
         
           case '.gltf':
           case '.glb':
-            // TODOO reject
             await new Promise(resolve => {
               gltfLoader.load(
                 filepath,
