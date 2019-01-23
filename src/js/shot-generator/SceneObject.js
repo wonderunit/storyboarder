@@ -122,7 +122,8 @@ const SceneObject = React.memo(({ scene, id, type, objModels, isSelected, ...obj
             gltfLoader.load(
               filepath,
               data => {
-                data.scene.children.forEach(child => {
+                // add every single mesh we find
+                data.scene.traverse(child => {
                   if ( child instanceof THREE.Mesh ) {
                     let m = child.clone()
                     m.material = materialFactory()
