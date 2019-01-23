@@ -106,40 +106,46 @@ const SceneObject = React.memo(({ scene, id, type, objModels, isSelected, ...obj
 
         switch (path.extname(filepath)) {
           case '.obj':
-            objLoader.load(filepath, event => {
-              const object = event.detail.loaderRootNode
+            // TODOO reject
+            await new Promise(resolve => {
+              objLoader.load(filepath, event => {
+                const object = event.detail.loaderRootNode
 
-              object.traverse( function ( child ) {
-                if ( child instanceof THREE.Mesh ) {
-                  let m = child.clone()
-                  m.material = materialFactory()
-                  container.add(m)
-                }
-              })
-
-              console.log('loaded', filepath)
-              setLoaded(true)
-            })
-            break
-        
-          case '.gltf':
-          case '.glb':
-            gltfLoader.load(
-              filepath,
-              data => {
-                // add every single mesh we find
-                data.scene.traverse(child => {
+                object.traverse( function ( child ) {
                   if ( child instanceof THREE.Mesh ) {
                     let m = child.clone()
                     m.material = materialFactory()
                     container.add(m)
                   }
                 })
-
-                console.log('loaded', filepath)
-                setLoaded(true)
-              }
-            )
+                resolve()
+              })
+            })
+            console.log('loaded', filepath)
+            setLoaded(true)
+            break
+        
+          case '.gltf':
+          case '.glb':
+            // TODOO reject
+            await new Promise(resolve => {
+              gltfLoader.load(
+                filepath,
+                data => {
+                  // add every single mesh we find
+                  data.scene.traverse(child => {
+                    if ( child instanceof THREE.Mesh ) {
+                      let m = child.clone()
+                      m.material = materialFactory()
+                      container.add(m)
+                    }
+                  })
+                  resolve()
+                }
+              )
+            })
+            console.log('loaded', filepath)
+            setLoaded(true)
             break
         }
         break
