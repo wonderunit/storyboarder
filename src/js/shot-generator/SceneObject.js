@@ -83,6 +83,7 @@ const SceneObject = React.memo(({ scene, id, type, objModels, isSelected, ...obj
         geometry.translate( 0, 1 / 2, 0 )
         container.remove(...container.children)
         container.add(mesh)
+        setLoaded(true)
         break
 
       default:
