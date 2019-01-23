@@ -1488,6 +1488,13 @@ const InspectedElement = ({ sceneObject, modelData, updateObject, selectedBone, 
   const onFocus = event => transition('TYPING_ENTER')
   const onBlur = event => transition('TYPING_EXIT')
 
+  const modelOptions = [
+    ['box', 'box'],
+    ['tree', 'tree'],
+    ['chair', 'chair'],
+    ['car', 'car']
+  ]
+
   return h([
     'div',
 
@@ -1549,7 +1556,7 @@ const InspectedElement = ({ sceneObject, modelData, updateObject, selectedBone, 
                   }, 'Select a file …']
                 ]],
                 ['optgroup', { label: 'Built-in' }, [
-                  [['box', 'box'], ['tree', 'tree'], ['chair', 'chair']].map(([name, value]) =>
+                  modelOptions.map(([name, value]) =>
                     ['option', { value }, name]
                   )
                 ]]
