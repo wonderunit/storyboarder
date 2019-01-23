@@ -4,7 +4,7 @@ const RoundedBoxGeometry = require('three-rounded-box')(THREE)
 
 const path = require('path')
 const React = require('react')
-const { useRef, useEffect } = React
+const { useRef, useEffect, useState } = React
 
 const ModelLoader = require('../services/model-loader')
 
@@ -50,7 +50,8 @@ const materialFactory = () => new THREE.MeshToonMaterial({
 })
 
 const SceneObject = React.memo(({ scene, id, type, objModels, isSelected, ...object }) => {
-  let container = useRef(groupFactory())
+  const [loaded, setLoaded] = useState(false)
+  const container = useRef(groupFactory())
 
   const update = () => {
     container.current.userData.id = id
@@ -72,6 +73,8 @@ const SceneObject = React.memo(({ scene, id, type, objModels, isSelected, ...obj
   }
   
   const load = async (model, object, container) => {
+    setLoaded(false)
+
     switch (model) {
       case 'box':
         geometry = new RoundedBoxGeometry( 1, 1, 1, boxRadius, boxRadiusSegments )
@@ -114,6 +117,7 @@ const SceneObject = React.memo(({ scene, id, type, objModels, isSelected, ...obj
               })
 
               console.log('loaded', filepath)
+              setLoaded(true)
             })
             break
         
@@ -132,6 +136,7 @@ const SceneObject = React.memo(({ scene, id, type, objModels, isSelected, ...obj
                 })
 
                 console.log('loaded', filepath)
+                setLoaded(true)
               }
             )
             break
@@ -182,7 +187,7 @@ const SceneObject = React.memo(({ scene, id, type, objModels, isSelected, ...obj
          thickness: 0.008,
          color: [ 0, 0, 0 ],
        }
-  }, [isSelected])
+  }, [isSelected, loaded])
 
   return null
 })
