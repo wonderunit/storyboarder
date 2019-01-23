@@ -104,7 +104,7 @@ const Character = React.memo(({ scene, id, type, remoteInput, characterModels, i
     //adding the bone structure here on each character added to the scene
     object.current.bonesHelper = new BonesHelper(skel.skeleton.bones[0], object.current)
     scene.add(object.current.bonesHelper)
-
+    console.log('current bones helper: ', object.current.bonesHelper)
     return function cleanup () {
       console.log(type, id, 'remove')
       if (object.current) {

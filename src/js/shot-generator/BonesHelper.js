@@ -90,7 +90,7 @@ function BonesHelper( object, object3D ) {
     let scaleA = new Vector3()
     let scaleB = new Vector3()
     let scaleC = new Vector3()
-
+    let spineNumber = 0
 
     while (bone.children && bone.children[jj] && bone.children[jj].isBone  )
     {
@@ -133,8 +133,10 @@ function BonesHelper( object, object3D ) {
 
       //secondary geometry used for hit testing
       // if it's mixamo rig all spine bones contain the SPine string, set that to wider
-      let hit_bone_width = ((bone.name.indexOf('Spine')>0)||(bone.name.indexOf('Hips')>0)) ? boneWidth : boneWidth / 4
-      let hit_geometry = new THREE.CylinderBufferGeometry(hit_bone_width, hit_bone_width, boneLength, 4)
+      let hit_bone_width = ((bone.name.indexOf('Spine')>0)||(bone.name.indexOf('Hips')>0)) ? boneWidth*1.3 : boneWidth / 4
+      //let hit_geometry = new THREE.CylinderBufferGeometry(hit_bone_width, hit_bone_width, boneLength, 4)
+      //let hit_geometry = new THREE.BoxBufferGeometry(hit_bone_width, hit_bone_width, boneLength)
+      let hit_geometry = new THREE.BoxBufferGeometry(hit_bone_width, boneLength, hit_bone_width )
       let hit_material = new THREE.MeshBasicMaterial({
         color: 0x00ff00,
         depthTest: false,
@@ -157,7 +159,7 @@ function BonesHelper( object, object3D ) {
       hitMesh.geometry.applyMatrix(new Matrix4().makeTranslation(0, boneLength/2, 0))
 
       // set visible here to see the hit mesh
-      hitMesh.material.visible = false
+      //hitMesh.material.visible = false
       hitMesh.name = 'hitter_'+bone.name
       hitMesh.userData.type = 'hitter'
 
@@ -171,16 +173,23 @@ function BonesHelper( object, object3D ) {
       //this.cones[boneCounter].add(s_sphere)
       if (boneLength>0)
       {
+        // don't add mesh hitters for hand fingers and shoulders
         if ( ( bone.name.indexOf('LeftHand')>0 && ( bone.name.charAt(bone.name.indexOf('LeftHand')+8)) !== "" )
-          || ( bone.name.indexOf('RightHand')>0 && ( bone.name.charAt(bone.name.indexOf('RightHand')+9)) !== "" ) )
+          || ( bone.name.indexOf('RightHand')>0 && ( bone.name.charAt(bone.name.indexOf('RightHand')+9)) !== "" )
+          || ( bone.name.indexOf('Shoulder')>0 ) )
         {
           //console.log('not adding hitter for bone: ', bone.name)
         } else {
+          // make the hand hitters longer to cover fingers
           if ( ( bone.name.indexOf('LeftHand')>0 && ( bone.name.charAt(bone.name.indexOf('LeftHand')+8)) === "" )
             || ( bone.name.indexOf('RightHand')>0 && ( bone.name.charAt(bone.name.indexOf('RightHand')+9)) === "" ) )
           {
             hitMesh.geometry.applyMatrix(new Matrix4().makeScale(1, 1.8, 1))
-            //hitMesh.geometry.applyMatrix(new Matrix4().makeTranslation(0, boneLength, 0))
+          }
+          if ( bone.name.indexOf('LeftArm')>0 || bone.name.indexOf('RightArm')>0 )
+          {
+            hitMesh.geometry.applyMatrix(new Matrix4().makeScale(1, 1.2, 1))
+            hitMesh.geometry.applyMatrix(new Matrix4().makeTranslation(0, -boneLength/8, 0))
           }
           this.hit_meshes[boneIndex] = ( hitMesh )
           this.add(hitMesh)
@@ -190,6 +199,12 @@ function BonesHelper( object, object3D ) {
         {
           hitMesh.geometry.applyMatrix(new Matrix4().makeScale(1, 1.8, 1))
           hitMesh.geometry.applyMatrix(new Matrix4().makeTranslation(0, -boneLength, 0))
+        }
+        if ( (bone.name.indexOf('Spine')>0) )
+        {
+          //align the spine hit meshes better (the bones are slightly to the back of the mesh)
+          hitMesh.geometry.applyMatrix(new Matrix4().makeTranslation(0, 0, boneLength/3 - spineNumber * boneLength/10))
+          spineNumber++
         }
         //removed, adding only when selected
         //this.add(this.cones[boneCounter])
