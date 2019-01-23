@@ -1493,7 +1493,8 @@ const InspectedElement = ({ sceneObject, modelData, updateObject, selectedBone, 
     ['tree', 'tree'],
     ['chair', 'chair'],
     ['car', 'car'],
-    ['door', 'door']
+    ['door', 'door'],
+    ['building (1)', 'building_one_storey']
   ]
 
   return h([
