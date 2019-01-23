@@ -106,20 +106,23 @@ const SceneObject = React.memo(({ scene, id, type, objModels, isSelected, ...obj
 
         switch (path.extname(filepath)) {
           case '.obj':
-            // TODOO reject
-            await new Promise(resolve => {
-              objLoader.load(filepath, event => {
-                const object = event.detail.loaderRootNode
+            await new Promise((resolve, reject) => {
+              objLoader.load(
+                filepath, event => {
+                  const object = event.detail.loaderRootNode
 
-                object.traverse( function ( child ) {
-                  if ( child instanceof THREE.Mesh ) {
-                    let m = child.clone()
-                    m.material = materialFactory()
-                    container.add(m)
-                  }
-                })
-                resolve()
-              })
+                  object.traverse( function ( child ) {
+                    if ( child instanceof THREE.Mesh ) {
+                      let m = child.clone()
+                      m.material = materialFactory()
+                      container.add(m)
+                    }
+                  })
+                  resolve()
+                },
+                null,
+                error => reject(error)
+              )
             })
             console.log('loaded', filepath)
             setLoaded(true)
@@ -141,6 +144,10 @@ const SceneObject = React.memo(({ scene, id, type, objModels, isSelected, ...obj
                     }
                   })
                   resolve()
+                },
+                null,
+                error => {
+                  reject(error)
                 }
               )
             })
