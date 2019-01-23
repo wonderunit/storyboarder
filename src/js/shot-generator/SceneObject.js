@@ -100,7 +100,10 @@ const SceneObject = React.memo(({ scene, id, type, objModels, isSelected, ...obj
           // const { app } = require('electron').remote
           // filepath = path.join(app.getAppPath(), 'src', 'data', 'shot-generator', 'objects', model + '.obj')
 
-          filepath = path.join(__dirname, '..', '..', '..', 'src', 'data', 'shot-generator', 'objects', model + '.obj')
+          filepath = path.join(
+            __dirname, '..', '..', '..', 'src', 'data', 'shot-generator', 'objects',
+            `${model}.glb`
+          )
           console.log('loading from app', filepath)
         }
 
