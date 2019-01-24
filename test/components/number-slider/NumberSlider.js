@@ -101,9 +101,14 @@ const NumberSlider = ({
     }
   }, [textInput])
 
+  const onNudge = delta => event => {
+    onSetValue(transform(value, delta, { min, max, step, fine: altKey }))
+  }
+
   return h([
     'div.number-slider', [
       ['div.number-slider__label', label],
+      ['div.number-slider__nudge.number-slider__nudge--left', { onClick: onNudge(-1) }],
       textInput
         ? ['input.number-slider__input.number-slider__input--text', {
             ref: inputRef,
@@ -139,7 +144,8 @@ const NumberSlider = ({
               setTextInputValue(value)
               setTextInput(true)
             }
-          }]
+          }],
+      ['div.number-slider__nudge.number-slider__nudge--right', { onClick: onNudge(1) } ],
     ]
   ])
 }

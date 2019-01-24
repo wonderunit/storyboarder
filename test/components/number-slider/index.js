@@ -40,12 +40,22 @@ style.appendChild(document.createTextNode(`
     border: 0;
     outline: 0;
     padding: 6px;
+    background-color: #eee;
   }
   .number-slider__input--text {
     background-color: yellow;
   }
   .number-slider__input--move {
-    background-color: #eee;
+  }
+  .number-slider__nudge {
+    width: 1rem;
+    background-color: #aaa;
+  }
+  .number-slider__nudge {
+    opacity: 0;
+  }
+  .number-slider:hover .number-slider__nudge {
+    opacity: 1;
   }
 `))
 document.head.appendChild(style)
