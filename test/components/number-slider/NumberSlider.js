@@ -109,7 +109,9 @@ const NumberSlider = ({
     'div.number-slider', [
       ['div.number-slider__label', label],
       ['div.number-slider__control', [
-        ['div.number-slider__nudge.number-slider__nudge--left', { onClick: onNudge(-1) }],
+        ['div.number-slider__nudge.number-slider__nudge--left', { onClick: onNudge(-1) },
+          ['.number-slider__arrow.number-slider__arrow--left']
+        ],
         textInput
           ? ['input.number-slider__input.number-slider__input--text', {
               ref: inputRef,
@@ -146,7 +148,9 @@ const NumberSlider = ({
                 setTextInput(true)
               }
             }],
-        ['div.number-slider__nudge.number-slider__nudge--right', { onClick: onNudge(1) } ]
+        ['div.number-slider__nudge.number-slider__nudge--right', { onClick: onNudge(1) },
+          ['.number-slider__arrow.number-slider__arrow--right']
+        ]
       ]]
     ]
   ])

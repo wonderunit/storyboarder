@@ -20,6 +20,7 @@ style.appendChild(document.createTextNode(`
     width: 300px;
   }
   .number-slider {
+    position: relative;
     margin-bottom: 0.5rem;
     display: flex;
     flex-direction: row;
@@ -53,8 +54,17 @@ style.appendChild(document.createTextNode(`
   .number-slider__input--move {
   }
   .number-slider__nudge {
+    position: absolute;
+    display: block;
     width: 1.5rem;
+    height: 100%;
     background-color: #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .number-slider__nudge--right {
+    right: 0;
   }
   .number-slider__nudge {
     opacity: 0;
@@ -62,6 +72,23 @@ style.appendChild(document.createTextNode(`
   }
   .number-slider:hover .number-slider__nudge {
     opacity: 1;
+  }
+  .number-slider__arrow {
+    width: 0;
+    height: 0;
+    position: relative;
+  }
+  .number-slider__arrow--left {
+    border-top: 0.31rem solid transparent;
+    border-bottom: 0.31rem solid transparent;
+    border-right: 0.31rem solid black;
+    left: -1px; /* optical */
+  }
+  .number-slider__arrow--right {
+    border-top: 0.31rem solid transparent;
+    border-bottom: 0.31rem solid transparent;
+    border-left: 0.31rem solid black;
+    left: 1px; /* optical */
   }
 `))
 document.head.appendChild(style)
