@@ -111,7 +111,11 @@ const defaultScenePreset = {
       rotation: 10,
       tilt: 10,
       intensity: 0.7,
-      visible: true
+      visible: true,
+      angle: 1.04,
+      distance: 3,
+      penumbra: 0,
+      decay: 1,
     },
 
     '6BC46A44-7965-43B5-B290-E3D2B9D15EEE': {
@@ -434,6 +438,22 @@ module.exports = {
 
           if (action.payload.intensity != null) {
             draft.sceneObjects[action.payload.id].intensity = action.payload.intensity
+          }
+
+          if (action.payload.angle != null) {
+            draft.sceneObjects[action.payload.id].angle = action.payload.angle
+          }
+
+          if (action.payload.penumbra != null) {
+            draft.sceneObjects[action.payload.id].penumbra = action.payload.penumbra
+          }
+
+          if (action.payload.decay != null) {
+            draft.sceneObjects[action.payload.id].decay = action.payload.decay
+          }
+
+          if (action.payload.distance != null) {
+            draft.sceneObjects[action.payload.id].distance = action.payload.distance
           }
 
           if (action.payload.hasOwnProperty('characterPresetId')) {

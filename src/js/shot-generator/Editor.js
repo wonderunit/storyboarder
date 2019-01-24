@@ -1621,7 +1621,32 @@ const InspectedElement = ({ sceneObject, modelData, updateObject, selectedBone, 
         [
           'div.column',
           [NumberSlider, { label: 'intensity', value: sceneObject.intensity, min: 0.025, max: 1, onSetValue: createOnSetValue(sceneObject.id, 'intensity') } ],
-        ]
+        ],
+        [
+          'div.column',
+          [NumberSlider, {
+            label: 'angle',
+            value: sceneObject.angle,
+            min: 0.025,
+            max: Math.PI/2,
+            onSetValue: createOnSetValue(sceneObject.id, 'angle'),
+            step: Math.PI/180,
+            transform: NumberSliderTransform.radians,
+            formatter: NumberSliderFormatter.radToDeg
+           }]
+        ],
+        [
+          'div.column',
+          [NumberSlider, { label: 'distance', value: sceneObject.distance, min: 0.025, max: 100, onSetValue: createOnSetValue(sceneObject.id, 'distance') } ],
+        ],
+        [
+          'div.column',
+          [NumberSlider, { label: 'penumbra', value: sceneObject.penumbra, min: 0, max: 1, onSetValue: createOnSetValue(sceneObject.id, 'penumbra') } ],
+        ],
+        [
+          'div.column',
+          [NumberSlider, { label: 'decay', value: sceneObject.decay, min: 1, max: 2, onSetValue: createOnSetValue(sceneObject.id, 'decay') } ],
+        ],
       ],
 
       ['div',
@@ -2275,7 +2300,11 @@ const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, set
       rotation: 0,
       tilt: 0,
       intensity: 0.1,
-      visible: true
+      visible: true,
+      angle: 1.04,
+      distance: 3,
+      penumbra: 0,
+      decay: 1,
     })
     selectObject(id)
   }
