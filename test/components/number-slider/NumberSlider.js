@@ -1,6 +1,8 @@
 // https://developer.mozilla.org/en-US/docs/Web/API/Pointer_Lock_API
 
 const { useState, useEffect, useRef } = React = require('react')
+const infixToPostfix = require('infix-to-postfix')
+const postfixCalculator = require('postfix-calculator')
 const h = require('../../../src/js/utils/h')
 
 const defaultOnSetValue = value => {}
@@ -112,7 +114,8 @@ const NumberSlider = ({
             onKeyDown: event => {
               if (event.key === 'Enter') {
                 setTextInput(false)
-                onSetValue(parseFloat(event.target.value))
+                // TODO validation
+                onSetValue(postfixCalculator(infixToPostfix(event.target.value)))
               }
             }
           }]
@@ -124,6 +127,8 @@ const NumberSlider = ({
             onChange: event => onSetValue(parseFloat(event.target.value)),
             onPointerDown,
             onDoubleClick: () => {
+              // TODO normalize
+              // e.g.: for degrees, normalize 735d to 15d
               setTextInputValue(value)
               setTextInput(true)
             }
