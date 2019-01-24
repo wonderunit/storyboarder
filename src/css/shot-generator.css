@@ -394,6 +394,7 @@ select:focus {
   cursor: default;
   padding: 0 0.5rem 0 0;
   margin-top: -1px; /* optical */
+  font-size: 87.5%;
 }
 .number-slider__control {
   display: flex;
