@@ -397,7 +397,7 @@ select:focus {
 .number-slider__control {
   display: flex;
   flex-direction: row;
-  background-color: #eee;
+  background-color: #222;
 }
 .number-slider__input {
   flex: 1;
@@ -406,9 +406,11 @@ select:focus {
   border: 0;
   outline: 0;
   padding: 6px;
-  background-color: #eee;
+  background-color: #222;
+  color: #999;
 }
 .number-slider__input--text {
+  color: black;
   background-color: yellow;
 }
 .number-slider__input--move {
@@ -418,7 +420,7 @@ select:focus {
   display: block;
   width: 1.5rem;
   height: 100%;
-  background-color: #ddd;
+  background-color: #111;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -441,12 +443,12 @@ select:focus {
 .number-slider__arrow--left {
   border-top: 0.31rem solid transparent;
   border-bottom: 0.31rem solid transparent;
-  border-right: 0.31rem solid black;
+  border-right: 0.31rem solid #999;
   left: -1px; /* optical */
 }
 .number-slider__arrow--right {
   border-top: 0.31rem solid transparent;
   border-bottom: 0.31rem solid transparent;
-  border-left: 0.31rem solid black;
+  border-left: 0.31rem solid #999;
   left: 1px; /* optical */
 }
