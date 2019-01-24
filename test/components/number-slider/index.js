@@ -84,12 +84,8 @@ const NumberSliderTest = () => {
         // inc/dec
         let value = prev + delta * step
         // mod
-        if (value > 180) {
-          return value - 360
-        }
-        if (value < -180) {
-          return value + 360
-        }
+        if (value > 180) { return value - 360 }
+        if (value < -180) { return value + 360 }
         return value
       }
     }),
