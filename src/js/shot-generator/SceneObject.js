@@ -34,7 +34,9 @@ const SceneObject = React.memo(({ scene, id, type, objModels, isSelected, ...obj
 
     } else {
       geometry = new RoundedBoxGeometry( object.width, object.height, object.depth, boxRadius, boxRadiusSegments )
-      let material = new THREE.MeshBasicMaterial( { color: 0xcccccc, side: THREE.DoubleSide } )
+      //let material = new THREE.MeshBasicMaterial( { color: 0xcccccc, side: THREE.DoubleSide } )
+      let material = new THREE.MeshToonMaterial( { color: 0xcccccc, side: THREE.DoubleSide } )
+
       mesh.current = new THREE.Mesh( geometry, material )
       geometry.translate( 0, object.height / 2, 0 )
     }

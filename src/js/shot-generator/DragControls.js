@@ -127,6 +127,12 @@ class DragControls extends THREE.EventDispatcher {
 
 
   getObjectAndBone ( intersect ) {
+    if (intersect.object.userData.type === 'hitter_light')
+    {
+      let obj = intersect.object.parent
+      return [obj, null]
+    }
+
     if (intersect.object instanceof THREE.Mesh && intersect.object.userData.type === 'hitter' )
     {
       let obj = intersect.object.parent.object3D
@@ -148,6 +154,22 @@ class DragControls extends THREE.EventDispatcher {
     return [object, bone]
   }
 
+  getIntersectionObjects (objects) {
+    let allIntersectionMeshes = []
+    for (var o of objects)
+    {
+      if (o instanceof THREE.Mesh) allIntersectionMeshes.push(o)
+      if (o instanceof THREE.Object3D && o.userData.type === 'light'){
+        allIntersectionMeshes.push(o.hitter)
+      }
+      if (o instanceof THREE.Object3D && o.userData.type === 'character')
+      {
+        allIntersectionMeshes = allIntersectionMeshes.concat(o.bonesHelper.hit_meshes)
+      }
+    }
+    return allIntersectionMeshes
+  }
+
   onPointerDown ( event ) {
     event.preventDefault()
     this.dispatchEvent( { type: 'pointerdown' } )
@@ -155,15 +177,8 @@ class DragControls extends THREE.EventDispatcher {
     this._raycaster.setFromCamera( this._mouse, this._camera )
 
     let shouldReportSelection = false
-    let checkIntersectionsWithMeshes = []
-    for (var o of this._objects)
-    {
-      if (o instanceof THREE.Mesh) checkIntersectionsWithMeshes.push(o)
-      if (o instanceof THREE.Object3D && o.userData.type === 'character')
-      {
-        checkIntersectionsWithMeshes = checkIntersectionsWithMeshes.concat(o.bonesHelper.hit_meshes)
-      }
-    }
+    let checkIntersectionsWithMeshes = this.getIntersectionObjects(this._objects)
+
     let intersects = this._raycaster.intersectObjects( checkIntersectionsWithMeshes )
     if ( intersects.length > 0 ) {
       this.onSelectBone( null )  // deselect bone is any selected
@@ -247,15 +262,7 @@ class DragControls extends THREE.EventDispatcher {
 
     this._raycaster.setFromCamera( this._mouse, this._camera )
 
-    let checkIntersectionsWithMeshes = []
-    for (var o of this._objects)
-    {
-      if (o instanceof THREE.Mesh) checkIntersectionsWithMeshes.push(o)
-      if (o instanceof THREE.Object3D && o.userData.type === 'character')
-      {
-        checkIntersectionsWithMeshes = checkIntersectionsWithMeshes.concat(o.bonesHelper.hit_meshes)
-      }
-    }
+    let checkIntersectionsWithMeshes = this.getIntersectionObjects(this._objects)
     let intersects = this._raycaster.intersectObjects( checkIntersectionsWithMeshes )
 
     let object

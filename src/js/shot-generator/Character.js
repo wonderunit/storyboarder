@@ -104,7 +104,6 @@ const Character = React.memo(({ scene, id, type, remoteInput, characterModels, i
     //adding the bone structure here on each character added to the scene
     object.current.bonesHelper = new BonesHelper(skel.skeleton.bones[0], object.current)
     scene.add(object.current.bonesHelper)
-    console.log('current bones helper: ', object.current.bonesHelper)
     return function cleanup () {
       console.log(type, id, 'remove')
       if (object.current) {
@@ -290,6 +289,9 @@ const Character = React.memo(({ scene, id, type, remoteInput, characterModels, i
           startingGlobalRotation.current = {
             quaternion: sgr
           }
+
+          //console log continue investigating here!!
+          //console.log('setting staring quaternion: ', startingGlobalRotation.current)
         }
 
         let startingDeviceQuaternion = new THREE.Quaternion().setFromEuler(new THREE.Euler(startingDeviceRotation.current.beta, startingDeviceRotation.current.alpha, -startingDeviceRotation.current.gamma, 'YXZ')).multiply(new THREE.Quaternion(-Math.sqrt(0.5), 0, 0, Math.sqrt(0.5)))
@@ -334,7 +336,7 @@ const Character = React.memo(({ scene, id, type, remoteInput, characterModels, i
           tempQ.multiply( parentWorldQuaternion.clone())
 
           target.quaternion.copy(tempQ)
-          target.updateMatrix()
+          //target.updateMatrix()
         } else {
           tempQ.multiply(deviceDifference)
           target.quaternion.copy(tempQ)

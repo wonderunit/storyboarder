@@ -60,6 +60,8 @@ const CameraControls = require('./CameraControls')
 const DragControls = require('./DragControls')
 
 const Character = require('./Character')
+const Light = require('./Light')
+
 const SceneObject = require('./SceneObject')
 
 const BonesHelper = require('./BonesHelper')
@@ -80,7 +82,7 @@ window.THREE = THREE
 
 const draggables = (sceneObjects, scene) =>
   //scene.children.filter(o => o.userData.type === 'object' || o instanceof BoundingBoxHelper)
-  scene.children.filter(o => o.userData.type === 'object' || o.userData.type === 'character')
+  scene.children.filter(o => o.userData.type === 'object' || o.userData.type === 'character' || o.userData.type === 'light' )
 
 const characters = ( scene ) =>
   scene.children.filter(o => o.userData.type === 'character')
@@ -166,6 +168,7 @@ const SceneManager = connect(
     let dragControlsView = useRef(null)
     let orthoDragControlsView = useRef(null)
     let bonesHelper = useRef(null)
+    let lightHelper = useRef(null)
 
     let clock = useRef(new THREE.Clock())
 
@@ -177,11 +180,11 @@ const SceneManager = connect(
       console.log('new SceneManager')
 
       scene.background = new THREE.Color(world.backgroundColor)
-      scene.add(new THREE.AmbientLight(0x161616, 1))
+      //scene.add(new THREE.AmbientLight(0x161616, 1))
 
-      let directionalLight = new THREE.DirectionalLight(0xFFFFFF, 1)
-      directionalLight.position.set(0, 1, 3)
-      scene.add(directionalLight)
+      // let directionalLight = new THREE.DirectionalLight(0xFFFFFF, 1)
+      // directionalLight.position.set(0, 1, 3)
+      // scene.add(directionalLight)
 
       orthoCamera.current.position.y = 900
       orthoCamera.current.rotation.x = -Math.PI / 2
@@ -455,6 +458,24 @@ const SceneManager = connect(
       if (selection != null) {
         child = scene.children.find(o => o.userData.id === selection)
         sceneObject = sceneObjects[selection]
+
+        //if light - add helper
+        if (sceneObject.type === 'light') {
+          if (lightHelper.current !== child)
+          {
+            scene.remove(lightHelper.current)
+            lightHelper.current = child.helper
+            scene.add(lightHelper.current)
+          }
+        } else {
+          if (lightHelper.current)
+          {
+            scene.remove(lightHelper.current)
+            lightHelper.current = null
+          }
+        }
+
+        //if character
         if (child && child.children[0] && (child.children[0].skeleton || child.children[1].skeleton) && sceneObject.visible) {
           //console.log('child: ', child)
           let skel = (child.children[0] instanceof THREE.Mesh) ? child.children[0] : child.children[1]
@@ -471,8 +492,12 @@ const SceneManager = connect(
           bonesHelper.current = null
         }
       } else {
+
+        //if nothing selected
         bonesHelper.current = null
       }
+
+
 
       if (dragControlsView.current) {
         dragControlsView.current.setBones(bonesHelper.current)
@@ -576,6 +601,18 @@ const SceneManager = connect(
                 ...props
               }
             ]
+
+            case 'light':
+              return [
+                Light, {
+                  key: props.id,
+                  scene,
+
+              //    setLight,
+
+                  ...props
+                }
+              ]
         }
     })
 
@@ -600,6 +637,8 @@ const SceneManager = connect(
 //
 //   return null
 // })
+
+
 
 const Camera = React.memo(({ scene, id, type, setCamera, ...props }) => {
   let camera = useRef(
@@ -1054,10 +1093,12 @@ const ElementsPanel = connect(
        o[v.type][k.toString()] = v
        return o
     }, {})
+
     let sceneObjectsSorted = {
       ...types.camera,
       ...types.character,
-      ...types.object
+      ...types.object,
+      ...types.light
     }
 
     let items = [
@@ -1488,7 +1529,6 @@ const MORPH_TARGET_LABELS = {
 }
 const InspectedElement = ({ sceneObject, modelData, updateObject, selectedBone, machineState, transition, selectBone, updateCharacterSkeleton, calculatedName }) => {
   const createOnSetValue = (id, name) => value => updateObject(id, { [name]: value })
-
   let positionSliders = [
     [NumberSlider, { label: 'x', value: sceneObject.x, min: -30, max: 30, onSetValue: createOnSetValue(sceneObject.id, 'x') } ],
     [NumberSlider, { label: 'y', value: sceneObject.y, min: -30, max: 30, onSetValue: createOnSetValue(sceneObject.id, 'y') } ],
@@ -1606,6 +1646,13 @@ const InspectedElement = ({ sceneObject, modelData, updateObject, selectedBone, 
         ],
       ],
 
+      sceneObject.type == 'light' && [
+        [
+          'div.column',
+          [NumberSlider, { label: 'intensity', value: sceneObject.intensity, min: 0.025, max: 1, onSetValue: createOnSetValue(sceneObject.id, 'intensity') } ],
+        ]
+      ],
+
       ['div',
         [NumberSlider, {
           label: 'rotation',
@@ -1613,6 +1660,17 @@ const InspectedElement = ({ sceneObject, modelData, updateObject, selectedBone, 
           max: Math.PI,
           value: sceneObject.rotation,
           onSetValue: createOnSetValue(sceneObject.id, 'rotation'),
+          formatter: value => Math.round(value * THREE.Math.RAD2DEG).toString() + '°'
+        }]
+      ],
+
+      ['div',
+        [NumberSlider, {
+          label: 'tilt',
+          min: -Math.PI,
+          max: Math.PI,
+          value: sceneObject.tilt,
+          onSetValue: createOnSetValue(sceneObject.id, 'tilt'),
           formatter: value => Math.round(value * THREE.Math.RAD2DEG).toString() + '°'
         }]
       ],
@@ -1815,7 +1873,8 @@ const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, o
   let typeLabels = {
     'camera': 'CAM',
     'character': 'CHR',
-    'object': 'OBJ'
+    'object': 'OBJ',
+    'light': 'LGT'
   }
 
   let className = classNames({
@@ -2227,7 +2286,20 @@ const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, set
   }
 
   const onCreateLightClick = () => {
-    alert('not implemented')
+    let id = THREE.Math.generateUUID()
+
+    createObject({
+      id,
+      type: 'light',
+      x: 0,
+      y: 0,
+      z: 2,
+      rotation: 0,
+      tilt: 0,
+      intensity: 0.1,
+      visible: true
+    })
+    selectObject(id)
   }
 
   const onCreateStressClick = () => {

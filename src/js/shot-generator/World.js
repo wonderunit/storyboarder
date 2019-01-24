@@ -141,13 +141,13 @@ const World = ({ world, scene }) => {
             image => {
               texture.image = image
               texture.needsUpdate = true
-      
+
               let geometry = new THREE.PlaneGeometry( 135 / 3, 135 / 3, 32 )
-              let material = new THREE.MeshBasicMaterial( {map: texture, side: THREE.FrontSide} )
+              let material = new THREE.MeshToonMaterial( {map: texture, side: THREE.FrontSide} )
               material.transparent = true
               material.blending = THREE.MultiplyBlending
               material.opacity = 1
-      
+
               ground.current = new THREE.Mesh( geometry, material )
               ground.current.userData.type = "ground"
               // ground.current.renderOrder = 0.7

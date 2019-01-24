@@ -41,6 +41,17 @@
               "y": 6,
               "z": 1
             },
+            "4F0FF9B8-BBB4-4D83-9E87-6EFE16A01D6F": {
+              "id": "4F0FF9B8-BBB4-4D83-9E87-6EFE16A01D6F",
+              "type": "light",
+              "x": 3.5,
+              "y": 0.5,
+              "z": 1,
+              "rotation": -2.8,
+              "tilt": -1.04,
+              "intensity": 0.7,
+              "visible": true
+            },
             "94FA0F9D-E1E8-436B-8041-D831BD06CB33": {
               "depth": 0.5,
               "height": 0.5,

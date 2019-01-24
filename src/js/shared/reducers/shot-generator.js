@@ -101,6 +101,19 @@ const defaultScenePreset = {
 
       skeleton: defaultPosePreset.skeleton
     },
+
+    '4F0FF9B8-BBB4-4D83-9E87-6EFE16A01D6F': {
+      id: '4F0FF9B8-BBB4-4D83-9E87-6EFE16A01D6F',
+      type: 'light',
+      x: 1,
+      y: 1.5,
+      z: 2,
+      rotation: 10,
+      tilt: 10,
+      intensity: 0.7,
+      visible: true
+    },
+
     '6BC46A44-7965-43B5-B290-E3D2B9D15EEE': {
       id: '6BC46A44-7965-43B5-B290-E3D2B9D15EEE',
       type: 'camera',
@@ -149,7 +162,8 @@ const initialScene = {
       tilt: 0,
       roll: 0.0,
       name: undefined
-    }
+    },
+
   },
   activeCamera: '6BC46A44-7965-43B5-B290-E3D2B9D15EEE',
 }
@@ -309,7 +323,7 @@ module.exports = {
           draft.world = action.payload.world
           draft.sceneObjects = action.payload.sceneObjects
           draft.activeCamera = action.payload.activeCamera
-
+          console.log('loading objects: ', draft.sceneObjects)
           // clear selections
           draft.selection = undefined
           draft.selectedBone = undefined
@@ -416,6 +430,10 @@ module.exports = {
 
           if (action.payload.visible != null) {
             draft.sceneObjects[action.payload.id].visible = action.payload.visible
+          }
+
+          if (action.payload.intensity != null) {
+            draft.sceneObjects[action.payload.id].intensity = action.payload.intensity
           }
 
           if (action.payload.hasOwnProperty('characterPresetId')) {
