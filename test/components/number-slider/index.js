@@ -20,9 +20,9 @@ style.appendChild(document.createTextNode(`
     width: 300px;
   }
   .number-slider {
+    margin-bottom: 0.5rem;
     display: flex;
     flex-direction: row;
-    margin-bottom: 0.5rem;
   }
   .number-slider__label {
     flex: 1;
@@ -32,6 +32,11 @@ style.appendChild(document.createTextNode(`
     cursor: default;
     padding: 0 0.5rem 0 0;
     margin-top: -1px; /* optical */
+  }
+  .number-slider__control {
+    display: flex;
+    flex-direction: row;
+    background-color: #eee;
   }
   .number-slider__input {
     flex: 1;
@@ -48,11 +53,12 @@ style.appendChild(document.createTextNode(`
   .number-slider__input--move {
   }
   .number-slider__nudge {
-    width: 1rem;
-    background-color: #aaa;
+    width: 1.5rem;
+    background-color: #ddd;
   }
   .number-slider__nudge {
     opacity: 0;
+    transition: opacity 0.125s ease-out;
   }
   .number-slider:hover .number-slider__nudge {
     opacity: 1;

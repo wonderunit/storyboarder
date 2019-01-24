@@ -108,44 +108,46 @@ const NumberSlider = ({
   return h([
     'div.number-slider', [
       ['div.number-slider__label', label],
-      ['div.number-slider__nudge.number-slider__nudge--left', { onClick: onNudge(-1) }],
-      textInput
-        ? ['input.number-slider__input.number-slider__input--text', {
-            ref: inputRef,
-            type: 'text',
-            value: textInputValue,
-            onChange: event => {
-              event.preventDefault()
-              setTextInputValue(event.target.value)
-            },
-            onKeyDown: event => {
-              if (event.key === 'Escape') {
-                // reset
-                onSetValue(value)
-                setTextInput(false)
+      ['div.number-slider__control', [
+        ['div.number-slider__nudge.number-slider__nudge--left', { onClick: onNudge(-1) }],
+        textInput
+          ? ['input.number-slider__input.number-slider__input--text', {
+              ref: inputRef,
+              type: 'text',
+              value: textInputValue,
+              onChange: event => {
+                event.preventDefault()
+                setTextInputValue(event.target.value)
+              },
+              onKeyDown: event => {
+                if (event.key === 'Escape') {
+                  // reset
+                  onSetValue(value)
+                  setTextInput(false)
+                }
+                if (event.key === 'Enter') {
+                  // TODO validation, error handling
+                  onSetValue(postfixCalculator(infixToPostfix(event.target.value)))
+                  setTextInput(false)
+                }
               }
-              if (event.key === 'Enter') {
-                // TODO validation, error handling
-                onSetValue(postfixCalculator(infixToPostfix(event.target.value)))
-                setTextInput(false)
+            }]
+          : ['input.number-slider__input.number-slider__input--move', {
+              ref: inputRef,
+              type: 'text',
+              value: formatter(value),
+              readOnly: true,
+              onChange: event => onSetValue(parseFloat(event.target.value)),
+              onPointerDown,
+              onDoubleClick: () => {
+                // TODO normalize
+                // e.g.: for degrees, normalize 735d to 15d
+                setTextInputValue(value)
+                setTextInput(true)
               }
-            }
-          }]
-        : ['input.number-slider__input.number-slider__input--move', {
-            ref: inputRef,
-            type: 'text',
-            value: formatter(value),
-            readOnly: true,
-            onChange: event => onSetValue(parseFloat(event.target.value)),
-            onPointerDown,
-            onDoubleClick: () => {
-              // TODO normalize
-              // e.g.: for degrees, normalize 735d to 15d
-              setTextInputValue(value)
-              setTextInput(true)
-            }
-          }],
-      ['div.number-slider__nudge.number-slider__nudge--right', { onClick: onNudge(1) } ],
+            }],
+        ['div.number-slider__nudge.number-slider__nudge--right', { onClick: onNudge(1) } ]
+      ]]
     ]
   ])
 }
