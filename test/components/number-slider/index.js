@@ -51,6 +51,7 @@ style.appendChild(document.createTextNode(`
 document.head.appendChild(style)
 
 const formatters = {
+  p3: value => value.toFixed(3),
   degrees: value => value.toFixed(0) + '°',
   // formatter: value => feetAndInchesAsString(...metersAsFeetAndInches(sceneObject.height))
   percent: value => Math.round(value * 100).toString() + '%'
@@ -61,6 +62,7 @@ const NumberSliderTest = () => {
   const [number, setNumber] = useState(0)
   const [degree, setDegree] = useState(0)
   const [percent, setPercent] = useState(0)
+  const [precise, setPrecise] = useState(0)
 
   return React.createElement('div', null, [
     React.createElement(NumberSlider, {
@@ -100,6 +102,16 @@ const NumberSliderTest = () => {
       step: 1/100,
       onSetValue: setPercent,
       formatter: formatters.percent
+    }),
+    React.createElement(NumberSlider, {
+      key: 3,
+      label: 'Precise',
+      value: precise,
+      min: 0,
+      max: 1,
+      step: 1/100,
+      onSetValue: setPrecise,
+      formatter: formatters.p3
     })
   ])
 }
