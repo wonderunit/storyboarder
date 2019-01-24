@@ -1,34 +1,87 @@
 const { useState, useEffect, useRef } = React = require('react')
-const h = require('../utils/h')
+const infixToPostfix = require('infix-to-postfix')
+const postfixCalculator = require('postfix-calculator')
+const h = require('../../../src/js/utils/h')
 
-const NumberSlider = React.memo(({ label, value, onSetValue, min, max, step, formatter }) => {
-  const [fine, setFine] = useState(false)
+const defaultOnSetValue = value => {}
 
-  min = min == null ? -10 : min
-  max = max == null ? 10 : max
-  step = step == null ? 0.01 : step
+const defaultFormatter = value => value.toFixed(2)
 
-  const onChange = event => {
-    event.preventDefault()
-    if (fine) {
-      let change = parseFloat(event.target.value) - value
-      onSetValue(value + (change / 1000))
-    } else {
-      onSetValue(parseFloat(event.target.value))
+const defaultTransform = (prev, delta, { min, max, step, fine }) => {
+  // inc/dec
+  let val = prev + delta * (step * (fine ? 0.01 : 1))
+  // clamp
+  val = val < min ? min : (val > max ? max : val)
+  return val
+}
+
+const NumberSlider = ({
+  label,
+  value = 0,
+  min = -10,
+  max = 10,
+  step = 0.1,
+  onSetValue = defaultOnSetValue,
+  formatter = defaultFormatter,
+  transform = defaultTransform
+}) => {
+  const [moving, setMoving] = useState(false)
+  const [textInput, setTextInput] = useState(false)
+  const inputRef = useRef(null)
+  const [textInputValue, setTextInputValue] = useState(null)
+  const [altKey, setAltKey] = useState(false)
+
+  const onKeyDown = event => {
+    if (event.key === 'Escape') {
+      document.activeElement.blur()
     }
+    setAltKey(event.altKey)
   }
 
-  formatter = formatter != null
-    ? formatter
-    : value => value.toFixed(2)
+  function lockChangeAlert () {
+    // console.log(document.pointerLockElement)
+
+    // if (document.pointerLockElement === ref)
+    //   console.log('The pointer lock status is now locked');
+    //   document.addEventListener("mousemove", updatePosition, false);
+    // } else {
+    //   console.log('The pointer lock status is now unlocked');
+    //   document.removeEventListener("mousemove", updatePosition, false);
+    // }
+  }
+
+  const onPointerDown = event => {
+    event.preventDefault()
+    document.addEventListener('pointerup', onPointerUp)
+    event.target.requestPointerLock()
+    document.addEventListener('pointerlockchange', lockChangeAlert, false)
+    setMoving(true)
+  }
 
   useEffect(() => {
-    const onKeyDown = event => {
-      setFine(event.altKey)
-      if (event.key === 'Escape') {
-        document.activeElement.blur()
-      }
+    if (moving) {
+      document.addEventListener('pointermove', onPointerMove)
     }
+    return function cleanup () {
+      document.removeEventListener('pointermove', onPointerMove)
+    }
+  }, [moving, value, altKey]) // rebind if values change that we care about
+  
+  // [textInput]
+
+  const onPointerMove = event => {
+    onSetValue(transform(value, event.movementX, { min, max, step, fine: altKey }))
+    event.preventDefault()
+  }
+
+  const onPointerUp = event => {
+    setMoving(false)
+    event.preventDefault()
+    document.removeEventListener('pointerup', onPointerUp)
+    document.exitPointerLock()
+  }
+
+  useEffect(() => {
     window.addEventListener('keydown', onKeyDown)
     window.addEventListener('keyup', onKeyDown)
     return function cleanup () {
@@ -37,13 +90,68 @@ const NumberSlider = React.memo(({ label, value, onSetValue, min, max, step, for
     }
   }, [])
 
+  useEffect(() => {
+    if (textInput) {
+      inputRef.current.focus()
+      setImmediate(() => {
+        inputRef.current.select()
+      })
+    }
+  }, [textInput])
+
+  const onNudge = delta => event => {
+    onSetValue(transform(value, delta, { min, max, step, fine: altKey }))
+  }
+
   return h([
-    'div.number-slider', { style: { display: 'flex', flexDirection: 'row' } }, [
-      ['div', { style: { width: 50 } }, label],
-      ['input', { style: { flex: 1 }, type: 'range', onChange, min, max, step, value }],
-      ['div', { style: { width: 40 } }, formatter(value)]
+    'div.number-slider', [
+      ['div.number-slider__label', label],
+      ['div.number-slider__control', [
+        ['div.number-slider__nudge.number-slider__nudge--left', { onClick: onNudge(-1) },
+          ['.number-slider__arrow.number-slider__arrow--left']
+        ],
+        textInput
+          ? ['input.number-slider__input.number-slider__input--text', {
+              ref: inputRef,
+              type: 'text',
+              value: textInputValue,
+              onChange: event => {
+                event.preventDefault()
+                setTextInputValue(event.target.value)
+              },
+              onKeyDown: event => {
+                if (event.key === 'Escape') {
+                  // reset
+                  onSetValue(value)
+                  setTextInput(false)
+                }
+                if (event.key === 'Enter') {
+                  // TODO validation, error handling
+                  onSetValue(postfixCalculator(infixToPostfix(event.target.value)))
+                  setTextInput(false)
+                }
+              }
+            }]
+          : ['input.number-slider__input.number-slider__input--move', {
+              ref: inputRef,
+              type: 'text',
+              value: formatter(value),
+              readOnly: true,
+              onChange: event => onSetValue(parseFloat(event.target.value)),
+              onPointerDown,
+              onDoubleClick: () => {
+                // TODO normalize
+                // e.g.: for degrees, normalize 735d to 15d
+                setTextInputValue(value)
+                setTextInput(true)
+              }
+            }],
+        ['div.number-slider__nudge.number-slider__nudge--right', { onClick: onNudge(1) },
+          ['.number-slider__arrow.number-slider__arrow--right']
+        ]
+      ]]
     ]
   ])
-})
+}
 
 module.exports = NumberSlider
