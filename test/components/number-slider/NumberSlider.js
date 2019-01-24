@@ -7,6 +7,14 @@ const defaultOnSetValue = value => {}
 
 const defaultFormatter = value => value.toFixed(2)
 
+const defaultTransform = (prev, delta, { min, max, step }) => {
+  // inc/dec
+  let val = prev + delta * step
+  // clamp
+  val = val < min ? min : (val > max ? max : val)
+  return val
+}
+
 const NumberSlider = ({
   label,
   value = 0,
@@ -14,7 +22,8 @@ const NumberSlider = ({
   max = 10,
   step = 0.1,
   onSetValue = defaultOnSetValue,
-  formatter = defaultFormatter
+  formatter = defaultFormatter,
+  transform = defaultTransform
 }) => {
   const [moving, setMoving] = useState(false)
   const [textInput, setTextInput] = useState(false)
@@ -59,13 +68,7 @@ const NumberSlider = ({
   // [textInput]
 
   const onPointerMove = event => {
-    let val = value + event.movementX * step
-
-    // clamp
-    val = val < min ? min : (val > max ? max : val)
-
-    onSetValue(val)
-
+    onSetValue(transform(value, event.movementX, { min, max, step }))
     event.preventDefault()
   }
 
