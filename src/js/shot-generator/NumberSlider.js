@@ -24,7 +24,7 @@ const NumberSlider = ({
   onSetValue = defaultOnSetValue,
   formatter = defaultFormatter,
   transform = defaultTransform
-}) => {
+} = {}) => {
   const [moving, setMoving] = useState(false)
   const [textInput, setTextInput] = useState(false)
   const inputRef = useRef(null)

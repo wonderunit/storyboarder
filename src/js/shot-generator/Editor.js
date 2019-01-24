@@ -72,6 +72,19 @@ const presetsStorage = require('../shared/store/presetsStorage')
 const WorldObject = require('./World')
 
 const NumberSlider = require('./NumberSlider')
+const NumberSliderTransform = {
+  radians: (prev, delta, { min, max, step, fine }) => {
+    // inc/dec
+    let value = prev + (delta * (step * (fine ? 0.01 : 1)))
+    // mod
+    if (value > Math.PI) { return value - Math.PI * 2 }
+    if (value < -Math.PI) { return value + Math.PI * 2 }
+    return value
+  }
+}
+const NumberSliderFormatter = {
+  radToDeg: value => Math.round(value * THREE.Math.RAD2DEG).toString() + '°'
+}
 
 require('../vendor/OutlineEffect.js')
 const RoundedBoxGeometry = require('three-rounded-box')(THREE)
@@ -983,11 +996,13 @@ const InspectedWorld = ({ world, transition, updateWorld, updateWorldRoom, updat
             label: 'rotation',
             min: -Math.PI,
             max: Math.PI,
+            step: Math.PI/180,
             value: world.environment.rotation,
             onSetValue: rotation => {
               updateWorldEnvironment({ rotation })
             },
-            formatter: value => Math.round(value * THREE.Math.RAD2DEG).toString() + '°'
+            transform: NumberSliderTransform.radians,
+            formatter: NumberSliderFormatter.radToDeg
           }]
         ]
 
@@ -1567,9 +1582,11 @@ const InspectedElement = ({ sceneObject, modelData, updateObject, selectedBone, 
           label: 'rotation',
           min: -Math.PI,
           max: Math.PI,
+          step: Math.PI/180,
           value: sceneObject.rotation,
           onSetValue: createOnSetValue(sceneObject.id, 'rotation'),
-          formatter: value => Math.round(value * THREE.Math.RAD2DEG).toString() + '°'
+          transform: NumberSliderTransform.radians,
+          formatter: NumberSliderFormatter.radToDeg
         }]
       ],
 
@@ -1579,9 +1596,11 @@ const InspectedElement = ({ sceneObject, modelData, updateObject, selectedBone, 
             label: 'roll',
             min: -45 * THREE.Math.DEG2RAD,
             max: 45 * THREE.Math.DEG2RAD,
+            step: Math.PI/180,
             value: sceneObject.roll,
             onSetValue: createOnSetValue(sceneObject.id, 'roll'),
-            formatter: value => Math.round(value * THREE.Math.RAD2DEG).toString() + '°'
+            transform: NumberSliderTransform.radians,
+            formatter: NumberSliderFormatter.radToDeg
           }]
         ],
 
@@ -1712,10 +1731,11 @@ const BoneEditor = ({ sceneObject, bone, updateCharacterSkeleton }) => {
             label: 'x',
             min: -Math.PI,
             max: Math.PI,
-            step: 0.01,
+            step: Math.PI/180,
             value: bone.rotation.x,
             onSetValue: createOnSetValue('x'),
-            formatter: value => Math.round(value * THREE.Math.RAD2DEG).toString() + '°'
+            transform: NumberSliderTransform.radians,
+            formatter: NumberSliderFormatter.radToDeg
           }
         ],
         [NumberSlider,
@@ -1723,10 +1743,11 @@ const BoneEditor = ({ sceneObject, bone, updateCharacterSkeleton }) => {
             label: 'y',
             min: -Math.PI,
             max: Math.PI,
-            step: 0.01,
+            step: Math.PI/180,
             value: bone.rotation.y,
             onSetValue: createOnSetValue('y'),
-            formatter: value => Math.round(value * THREE.Math.RAD2DEG).toString() + '°'
+            transform: NumberSliderTransform.radians,
+            formatter: NumberSliderFormatter.radToDeg
           }
         ],
         [NumberSlider,
@@ -1734,10 +1755,11 @@ const BoneEditor = ({ sceneObject, bone, updateCharacterSkeleton }) => {
             label: 'z',
             min: -Math.PI,
             max: Math.PI,
-            step: 0.01,
+            step: Math.PI/180,
             value: bone.rotation.z,
             onSetValue: createOnSetValue('z'),
-            formatter: value => Math.round(value * THREE.Math.RAD2DEG).toString() + '°'
+            transform: NumberSliderTransform.radians,
+            formatter: NumberSliderFormatter.radToDeg
           }
         ]
       ]]

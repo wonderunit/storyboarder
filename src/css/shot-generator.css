@@ -383,6 +383,7 @@ select:focus {
   margin-bottom: 0.5rem;
   display: flex;
   flex-direction: row;
+  width: 100%;
 }
 .number-slider__label {
   flex: 1;
