@@ -9,9 +9,9 @@ const defaultOnSetValue = value => {}
 
 const defaultFormatter = value => value.toFixed(2)
 
-const defaultTransform = (prev, delta, { min, max, step }) => {
+const defaultTransform = (prev, delta, { min, max, step, fine }) => {
   // inc/dec
-  let val = prev + delta * step
+  let val = prev + delta * (step * (fine ? 0.01 : 1))
   // clamp
   val = val < min ? min : (val > max ? max : val)
   return val
@@ -31,11 +31,13 @@ const NumberSlider = ({
   const [textInput, setTextInput] = useState(false)
   const inputRef = useRef(null)
   const [textInputValue, setTextInputValue] = useState(null)
+  const [altKey, setAltKey] = useState(false)
 
   const onKeyDown = event => {
     if (event.key === 'Escape') {
       document.activeElement.blur()
     }
+    setAltKey(event.altKey)
   }
 
   function lockChangeAlert () {
@@ -65,12 +67,12 @@ const NumberSlider = ({
     return function cleanup () {
       document.removeEventListener('pointermove', onPointerMove)
     }
-  }, [moving, value])
+  }, [moving, value, altKey]) // rebind if values change that we care about
   
   // [textInput]
 
   const onPointerMove = event => {
-    onSetValue(transform(value, event.movementX, { min, max, step }))
+    onSetValue(transform(value, event.movementX, { min, max, step, fine: altKey }))
     event.preventDefault()
   }
 
