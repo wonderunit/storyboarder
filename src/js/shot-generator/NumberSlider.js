@@ -67,7 +67,11 @@ const NumberSlider = ({
     }
   }, [moving, value, altKey]) // rebind if values change that we care about
   
-  // [textInput]
+  useEffect(() => {
+    if (!moving && !textInput) {
+      document.activeElement.blur()
+    }
+  }, [moving, textInput])
 
   const onPointerMove = event => {
     onSetValue(transform(value, event.movementX, { min, max, step, fine: altKey }))
