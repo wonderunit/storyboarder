@@ -71,6 +71,20 @@ const presetsStorage = require('../shared/store/presetsStorage')
 
 const WorldObject = require('./World')
 
+const NumberSlider = require('./NumberSlider')
+const NumberSliderTransform = {
+  radians: (prev, delta, { min, max, step, fine }) => {
+    // inc/dec
+    let value = prev + (delta * (step * (fine ? 0.01 : 1)))
+    // mod
+    if (value > Math.PI) { return value - Math.PI * 2 }
+    if (value < -Math.PI) { return value + Math.PI * 2 }
+    return value
+  }
+}
+const NumberSliderFormatter = {
+  radToDeg: value => Math.round(value * THREE.Math.RAD2DEG).toString() + '°'
+}
 
 require('../vendor/OutlineEffect.js')
 const RoundedBoxGeometry = require('three-rounded-box')(THREE)
@@ -982,11 +996,13 @@ const InspectedWorld = ({ world, transition, updateWorld, updateWorldRoom, updat
             label: 'rotation',
             min: -Math.PI,
             max: Math.PI,
+            step: Math.PI/180,
             value: world.environment.rotation,
             onSetValue: rotation => {
               updateWorldEnvironment({ rotation })
             },
-            formatter: value => Math.round(value * THREE.Math.RAD2DEG).toString() + '°'
+            transform: NumberSliderTransform.radians,
+            formatter: NumberSliderFormatter.radToDeg
           }]
         ]
 
@@ -1144,51 +1160,6 @@ const ElementsPanel = connect(
       )
   }
 ))
-
-const NumberSlider = React.memo(({ label, value, onSetValue, min, max, step, formatter }) => {
-  const [fine, setFine] = useState(false)
-
-  min = min == null ? -10 : min
-  max = max == null ? 10 : max
-  step = step == null ? 0.01 : step
-
-  const onChange = event => {
-    event.preventDefault()
-    if (fine) {
-      let change = parseFloat(event.target.value) - value
-      onSetValue(value + (change / 1000))
-    } else {
-      onSetValue(parseFloat(event.target.value))
-    }
-  }
-
-  formatter = formatter != null
-    ? formatter
-    : value => value.toFixed(2)
-
-  useEffect(() => {
-    const onKeyDown = event => {
-      setFine(event.altKey)
-      if (event.key === 'Escape') {
-        document.activeElement.blur()
-      }
-    }
-    window.addEventListener('keydown', onKeyDown)
-    window.addEventListener('keyup', onKeyDown)
-    return function cleanup () {
-      window.removeEventListener('keydown', onKeyDown)
-      window.removeEventListener('keyup', onKeyDown)
-    }
-  }, [])
-
-  return h([
-    'div.number-slider', { style: { display: 'flex', flexDirection: 'row' } }, [
-      ['div', { style: { width: 50 } }, label],
-      ['input', { style: { flex: 1 }, type: 'range', onChange, min, max, step, value }],
-      ['div', { style: { width: 40 } }, formatter(value)]
-    ]
-  ])
-})
 
 const LabelInput = ({ label, setLabel, onFocus, onBlur }) => {
   const [editing, setEditing] = useState(false)
@@ -1611,9 +1582,11 @@ const InspectedElement = ({ sceneObject, modelData, updateObject, selectedBone, 
           label: 'rotation',
           min: -Math.PI,
           max: Math.PI,
+          step: Math.PI/180,
           value: sceneObject.rotation,
           onSetValue: createOnSetValue(sceneObject.id, 'rotation'),
-          formatter: value => Math.round(value * THREE.Math.RAD2DEG).toString() + '°'
+          transform: NumberSliderTransform.radians,
+          formatter: NumberSliderFormatter.radToDeg
         }]
       ],
 
@@ -1623,9 +1596,11 @@ const InspectedElement = ({ sceneObject, modelData, updateObject, selectedBone, 
             label: 'roll',
             min: -45 * THREE.Math.DEG2RAD,
             max: 45 * THREE.Math.DEG2RAD,
+            step: Math.PI/180,
             value: sceneObject.roll,
             onSetValue: createOnSetValue(sceneObject.id, 'roll'),
-            formatter: value => Math.round(value * THREE.Math.RAD2DEG).toString() + '°'
+            transform: NumberSliderTransform.radians,
+            formatter: NumberSliderFormatter.radToDeg
           }]
         ],
 
@@ -1756,10 +1731,11 @@ const BoneEditor = ({ sceneObject, bone, updateCharacterSkeleton }) => {
             label: 'x',
             min: -Math.PI,
             max: Math.PI,
-            step: 0.01,
+            step: Math.PI/180,
             value: bone.rotation.x,
             onSetValue: createOnSetValue('x'),
-            formatter: value => Math.round(value * THREE.Math.RAD2DEG).toString() + '°'
+            transform: NumberSliderTransform.radians,
+            formatter: NumberSliderFormatter.radToDeg
           }
         ],
         [NumberSlider,
@@ -1767,10 +1743,11 @@ const BoneEditor = ({ sceneObject, bone, updateCharacterSkeleton }) => {
             label: 'y',
             min: -Math.PI,
             max: Math.PI,
-            step: 0.01,
+            step: Math.PI/180,
             value: bone.rotation.y,
             onSetValue: createOnSetValue('y'),
-            formatter: value => Math.round(value * THREE.Math.RAD2DEG).toString() + '°'
+            transform: NumberSliderTransform.radians,
+            formatter: NumberSliderFormatter.radToDeg
           }
         ],
         [NumberSlider,
@@ -1778,10 +1755,11 @@ const BoneEditor = ({ sceneObject, bone, updateCharacterSkeleton }) => {
             label: 'z',
             min: -Math.PI,
             max: Math.PI,
-            step: 0.01,
+            step: Math.PI/180,
             value: bone.rotation.z,
             onSetValue: createOnSetValue('z'),
-            formatter: value => Math.round(value * THREE.Math.RAD2DEG).toString() + '°'
+            transform: NumberSliderTransform.radians,
+            formatter: NumberSliderFormatter.radToDeg
           }
         ]
       ]]
