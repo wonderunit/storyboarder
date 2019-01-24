@@ -73,11 +73,23 @@ const NumberSliderTest = () => {
       key: 1,
       label: 'Degrees',
       value: degree,
-      min: -360,
-      max: 360,
+      min: -180,
+      max: 180,
       step: 1,
       onSetValue: setDegree,
-      formatter: formatters.degrees
+      formatter: formatters.degrees,
+      transform: (prev, delta, { min, max, step }) => {
+        // inc/dec
+        let value = prev + delta * step
+        // mod
+        if (value > 180) {
+          return value - 360
+        }
+        if (value < -180) {
+          return value + 360
+        }
+        return value
+      }
     }),
     React.createElement(NumberSlider, {
       key: 2,
