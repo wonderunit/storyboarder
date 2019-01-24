@@ -159,7 +159,7 @@ function BonesHelper( object, object3D ) {
       hitMesh.geometry.applyMatrix(new Matrix4().makeTranslation(0, boneLength/2, 0))
 
       // set visible here to see the hit mesh
-      //hitMesh.material.visible = false
+      hitMesh.material.visible = false
       hitMesh.name = 'hitter_'+bone.name
       hitMesh.userData.type = 'hitter'
 
