@@ -112,10 +112,15 @@ const NumberSlider = ({
               setTextInputValue(event.target.value)
             },
             onKeyDown: event => {
-              if (event.key === 'Enter') {
+              if (event.key === 'Escape') {
+                // reset
+                onSetValue(value)
                 setTextInput(false)
-                // TODO validation
+              }
+              if (event.key === 'Enter') {
+                // TODO validation, error handling
                 onSetValue(postfixCalculator(infixToPostfix(event.target.value)))
+                setTextInput(false)
               }
             }
           }]
