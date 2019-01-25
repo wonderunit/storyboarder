@@ -203,7 +203,7 @@ function BonesHelper( object, object3D ) {
   }
   let skeletonHelper = new THREE.SkeletonHelper( bones[0] )
   skeletonHelper.material.linewidth = 5
-  this.add(skeletonHelper)
+  //this.add(skeletonHelper)
 
   this.hit_meshes = filter_array(this.hit_meshes)
   this.root = object
@@ -224,31 +224,23 @@ BonesHelper.prototype.updateMatrixWorld = function () {
 
   return function updateMatrixWorld( force ) {
     var bones = this.bones
-
     matrixWorldInv.getInverse( this.root.matrixWorld )
 
-    let rootScale = new Vector3().setFromMatrixScale( this.object3D.matrixWorld )
-    let rootScaleInversed = new Vector3().setFromMatrixScale( matrixWorldInv )
-    let boneCounter = 0
     for ( var ii = 0; ii < bones.length; ii++ )
     {
       var bone = bones [ii]
       boneMatrix.multiplyMatrices( matrixWorldInv, bone.matrixWorld )   // changed to parent position, as that's the length calculated
-      //boneMatrix.scale(rootScale * 100)
-
 
       if (bone.connectedBone === undefined) continue
 
       bone.connectedBone.position.setFromMatrixPosition( boneMatrix )
       bone.connectedBone.quaternion.setFromRotationMatrix( boneMatrix )
       bone.connectedBone.scale.setFromMatrixScale( boneMatrix )
-      //console.log('current scle: ', bone.connectedBone.scale)
       if (bone.hitBone) {
         bone.hitBone.position.setFromMatrixPosition( boneMatrix )
         bone.hitBone.quaternion.setFromRotationMatrix( boneMatrix )
         bone.hitBone.scale.setFromMatrixScale( boneMatrix )
       }
-
     }
 
     Object3D.prototype.updateMatrixWorld.call( this, force )
