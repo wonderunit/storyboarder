@@ -142,11 +142,6 @@
             },
             "ambient": {
               "intensity": 0.1
-            },
-            "directional": {
-              "intensity": 0.3,
-              "rotation": 2.26,
-              "tilt": -0.43
             }
           }
         }
