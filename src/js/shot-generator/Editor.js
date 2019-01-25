@@ -1605,6 +1605,19 @@ const InspectedElement = ({ sceneObject, modelData, updateObject, selectedBone, 
         ],
 
       sceneObject.type == 'camera' &&
+        ['div',
+          [NumberSlider, {
+            label: 'tilt',
+            min: -90,
+            max: 90,
+            step: 1,
+            value: THREE.Math.radToDeg(sceneObject.tilt),
+            onSetValue: value => updateObject(sceneObject.id, { tilt: THREE.Math.degToRad(value) }),
+            formatter: NumberSliderFormatter.degrees
+          }]
+        ],
+
+      sceneObject.type == 'camera' &&
         [
           NumberSlider, {
             label: 'F.O.V.',
