@@ -404,7 +404,7 @@ module.exports = {
           if (action.payload.model != null) {
             draft.sceneObjects[action.payload.id].model = action.payload.model
             if (draft.sceneObjects[action.payload.id].type === 'character') {
-              draft.sceneObjects[action.payload.id].height = initialState.models[action.payload.model].baseHeight
+              draft.sceneObjects[action.payload.id].height = initialState.models[action.payload.model].height
             }
           }
 

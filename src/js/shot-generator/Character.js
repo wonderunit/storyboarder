@@ -163,7 +163,7 @@ const Character = React.memo(({ scene, id, type, remoteInput, isSelected, select
       //mesh.rotation.set(0, Math.PI/2, 0)
 
       // FIXME
-      let targetHeight = initialState.models[props.model].baseHeight
+      let targetHeight = initialState.models[props.model].height
 
       let scale = targetHeight / height
       obj.scale.set(scale, scale, scale)
