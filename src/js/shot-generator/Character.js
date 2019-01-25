@@ -12,6 +12,8 @@ const BonesHelper = require('./BonesHelper')
 
 const { initialState } = require('../shared/reducers/shot-generator')
 
+const ModelLoader = require('../services/model-loader')
+
 // character needs:
 //   mesh - SkinnedMesh
 //   bone structure - ideally Mixamo standard bones
@@ -109,10 +111,23 @@ const Character = React.memo(({ scene, id, type, remoteInput, isSelected, select
 
     setLoaded(false)
 
-    const filepath = path.join(
-      __dirname, '..', '..', '..', 'src', 'data', 'shot-generator', 'dummies', 'gltf',
-      `${props.model}.glb`
-    )
+    let filepath
+    if (ModelLoader.isCustomModel(props.model)) {
+      filepath = props.model
+      console.log('loading a custom character model from the file system', filepath)
+    } else {
+
+      // FIXME doesn't return the correct value when run from `npm run shot-generator`
+      // https://github.com/electron-userland/electron-webpack/issues/243
+      // const { app } = require('electron').remote
+      // filepath = path.join(app.getAppPath(), 'src', 'data', 'shot-generator', 'objects', model + '.obj')
+
+      filepath = path.join(
+        __dirname, '..', '..', '..', 'src', 'data', 'shot-generator', 'dummies', 'gltf',
+        `${props.model}.glb`
+      )
+      console.log('loading a built-in character model from the app', filepath)
+    }
 
     load(filepath).then(data => {
       let material = new THREE.MeshToonMaterial({
@@ -162,8 +177,10 @@ const Character = React.memo(({ scene, id, type, remoteInput, isSelected, select
       mesh.material = material
       //mesh.rotation.set(0, Math.PI/2, 0)
 
-      // FIXME
-      let targetHeight = initialState.models[props.model].height
+      // FIXME use actual getState()
+      let targetHeight = initialState.models[props.model]
+        ? initialState.models[props.model].height
+        : 1.6
 
       let scale = targetHeight / height
       obj.scale.set(scale, scale, scale)

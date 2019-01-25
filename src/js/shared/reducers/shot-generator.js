@@ -440,8 +440,15 @@ module.exports = {
           }
           if (action.payload.model != null) {
             draft.sceneObjects[action.payload.id].model = action.payload.model
+            
+            // if a character's model is changing
             if (draft.sceneObjects[action.payload.id].type === 'character') {
-              draft.sceneObjects[action.payload.id].height = initialState.models[action.payload.model].height
+              // reset the height ...
+              draft.sceneObjects[action.payload.id].height = state.models[action.payload.model]
+                // ... to default (if known) ...
+                ? state.models[action.payload.model].height
+                // ... otherwise, a reasonable value
+                : 1.6
             }
           }
 

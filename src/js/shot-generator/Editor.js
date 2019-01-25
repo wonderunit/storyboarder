@@ -64,8 +64,6 @@ const SceneObject = require('./SceneObject')
 
 const BonesHelper = require('./BonesHelper')
 
-const ModelLoader = require('../services/model-loader')
-
 const presetsStorage = require('../shared/store/presetsStorage')
 //const presetsStorage = require('../presetsStorage')
 
@@ -86,6 +84,8 @@ const NumberSliderFormatter = {
   degrees: value => Math.round(value).toString() + '°',
   percent: value => Math.round(value).toString() + '%',
 }
+
+const ModelSelect = require('./ModelSelect')
 
 require('../vendor/OutlineEffect.js')
 
@@ -1480,12 +1480,15 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
 
   // TODO selector?
   const modelValues = Object.values(models)
-  const sceneObjectModelOptions = modelValues
-    .filter(model => model.type === 'object')
-    .map(model => ({ name: model.name, value: model.id }))
-  const characterModelOptions = modelValues
-    .filter(model => model.type === 'character')
-    .map(model => ({ name: model.name, value: model.id }))
+  const modelOptions = {
+    object: modelValues
+      .filter(model => model.type === 'object')
+      .map(model => ({ name: model.name, value: model.id })),
+
+    character: modelValues
+      .filter(model => model.type === 'character')
+      .map(model => ({ name: model.name, value: model.id }))
+  }
 
   return h([
     'div',
@@ -1505,56 +1508,18 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
         }
       ],
 
-      sceneObject.type == 'object' &&
-        ['div.row', [
-          ['div', { style: { width: 50 } }, 'model'],
-          ['div.row', [
+      // character preset
+      sceneObject.type == 'character' && [
+        [CharacterPresetsEditor, { sceneObject }],
+      ],
 
-            [
-              'select', {
-                value: sceneObject.model,
-                onChange: event => {
-                  event.preventDefault()
-                  let selected = event.target.selectedOptions[0]
-
-                  if (selected)
-                    if (selected.dataset.selector) {
-                      let filepaths = dialog.showOpenDialog(null, {})
-                      if (filepaths) {
-                        let filepath = filepaths[0]
-                        updateObject(sceneObject.id, { model: filepath })
-                      }
-                      // automatically blur to return keyboard control
-                      document.activeElement.blur()
-                      transition('TYPING_EXIT')
-
-                    } else {
-                      updateObject(sceneObject.id, { model: event.target.value })
-
-                    }
-                }
-              }, [
-                ['optgroup', { label: 'Custom' }, [
-                  ModelLoader.isCustomModel(sceneObject.model)
-                    ? ['option', { value: sceneObject.model, disabled: true }, path.basename(sceneObject.model)]
-                    : []
-                  ,
-                  ['option', {
-                    'data-selector': true,
-                    onClick: event => { 
-                      event.preventDefault()
-
-                    }
-                  }, 'Select a file …']
-                ]],
-                ['optgroup', { label: 'Built-in' }, [
-                  sceneObjectModelOptions.map(({ name, value }) =>
-                    ['option', { value }, name]
-                  )
-                ]]
-              ]
-            ],
-        ]]]
+      (sceneObject.type == 'object' || sceneObject.type == 'character') && [
+        ModelSelect, {
+          sceneObject,
+          options: modelOptions[sceneObject.type],
+          updateObject,
+          transition
+        }
       ],
 
       // sceneObject.type == 'object' && [
@@ -1570,33 +1535,6 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
       //     )
       //   ]
       // ],
-
-      sceneObject.type == 'character' && [
-
-        // character preset
-        [CharacterPresetsEditor, { sceneObject }],
-
-        ['div.row', { style: { margin: '9px 0 6px 0', paddingRight: 9 } },
-          ['div', { style: { width: 50, display: 'flex', alignSelf: 'center' } }, 'model'],
-          [
-            'select', {
-              value: sceneObject.model,
-              onChange: event => {
-                event.preventDefault()
-                updateObject(sceneObject.id, { model: event.target.value })
-              },
-              style: {
-                marginBottom: 0
-              }
-            }, [
-              characterModelOptions.map(({ name, value }) =>
-                ['option', { value }, name]
-              )
-            ]
-          ],
-        ]
-
-      ],
 
       sceneObject.type != 'camera' &&
         [
