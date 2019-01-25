@@ -8,12 +8,16 @@ const BonesHelper = require('./BonesHelper')
 
 const debounce = require('lodash.debounce')
 
+const ModelLoader = require('../services/model-loader')
+
 // character needs:
 //   mesh - SkinnedMesh
 //   bone structure - ideally Mixamo standard bones
 //
 
-const Character = React.memo(({ scene, id, type, remoteInput, characterModels, isSelected, selectedBone, camera, updateCharacterSkeleton, updateObject, ...props }) => {
+const Character = React.memo(({ scene, id, type, remoteInput, isSelected, selectedBone, camera, updateCharacterSkeleton, updateObject, ...props }) => {
+  const [loaded, setLoaded] = useState(false)
+
   let object = useRef(null)
 
   let isRotating = useRef(false)
@@ -72,40 +76,56 @@ const Character = React.memo(({ scene, id, type, remoteInput, characterModels, i
     }
   }
 
+  const load = () => {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        let source = ModelLoader.getCharacterModels()[props.model]
+        resolve(source)
+      }, 500)
+    })
+  }
+
   useEffect(() => {
     console.log(type, id, 'add')
-    //console.log('\tusing model', characterModels[props.model])
 
-    let cloned = cloneAnimated(characterModels[props.model])
+    setLoaded(false)
+    load().then(source => {
+      let cloned = cloneAnimated(source)
 
-    if (cloned instanceof THREE.SkinnedMesh)  // if FBX is loaded we get a SkinnedMesh
-    {
-      let clo = cloneAnimated(characterModels[props.model])
-      cloned = new THREE.Object3D()
-      cloned.add(clo)
-    }
-    let mat = cloned.children[0].material ? cloned.children[0].material.clone() : cloned.children[1].material.clone()
+      if (cloned instanceof THREE.SkinnedMesh)  // if FBX is loaded we get a SkinnedMesh
+      {
+        let clo = cloneAnimated(source)
+        cloned = new THREE.Object3D()
+        cloned.add(clo)
+      }
+      let mat = cloned.children[0].material ? cloned.children[0].material.clone() : cloned.children[1].material.clone()
 
-    object.current = cloned
-    let skel = (object.current.children[0] instanceof THREE.Mesh) ? object.current.children[0] : object.current.children[1]
-    skel.material = mat.clone()
-    skel.skeleton.pose()
-    object.current.originalHeight = characterModels[props.model].originalHeight
+      object.current = cloned
+      let skel = (object.current.children[0] instanceof THREE.Mesh) ? object.current.children[0] : object.current.children[1]
+      skel.material = mat.clone()
+      skel.skeleton.pose()
+      object.current.originalHeight = source.originalHeight
 
-    //   MULTI MATERIALS
-    // object.current.material = object.current.material.map(material => material.clone())
+      //   MULTI MATERIALS
+      // object.current.material = object.current.material.map(material => material.clone())
 
-    object.current.userData.id = id
-    object.current.userData.type = type
-    object.current.scale.set( characterModels[props.model].scale.x, characterModels[props.model].scale.y, characterModels[props.model].scale.z )
-    object.current.rotation.set( characterModels[props.model].rotation.x, characterModels[props.model].rotation.y, characterModels[props.model].rotation.z )
-    scene.add( object.current )
+      object.current.userData.id = id
+      object.current.userData.type = type
+      object.current.scale.set( source.scale.x, source.scale.y, source.scale.z )
+      object.current.rotation.set( source.rotation.x, source.rotation.y, source.rotation.z )
+      scene.add( object.current )
 
-    //adding the bone structure here on each character added to the scene
-    object.current.bonesHelper = new BonesHelper(skel.skeleton.bones[0], object.current)
-    scene.add(object.current.bonesHelper)
+      //adding the bone structure here on each character added to the scene
+      object.current.bonesHelper = new BonesHelper(skel.skeleton.bones[0], object.current)
+      scene.add(object.current.bonesHelper)
+
+      setLoaded(true)
+    }).catch(err => {
+      console.error(err)
+    })
 
     return function cleanup () {
+      // TODO cancel loading if in-progress
       console.log(type, id, 'remove')
       if (object.current) {
         scene.remove(object.current.bonesHelper)
@@ -127,24 +147,26 @@ const Character = React.memo(({ scene, id, type, remoteInput, characterModels, i
       object.current.position.z = props.y
       object.current.position.y = props.z
     }
-  }, [props.model, props.x, props.y, props.z])
+  }, [props.model, props.x, props.y, props.z, loaded])
 
   useEffect(() => {
     if (object.current) {
       object.current.visible = props.visible
     }
-  }, [props.model, props.visible])
+  }, [props.model, props.visible, loaded])
 
   useEffect(() => {
     if (object.current) {
       object.current.rotation.y = props.rotation
     }
-  }, [props.model, props.rotation])
+  }, [props.model, props.rotation, loaded])
 
   useEffect(() => {
+    if (!loaded) return
+
     console.log(type, id, 'skeleton')
     updateSkeleton()
-  }, [props.model, props.skeleton])
+  }, [props.model, props.skeleton, loaded])
 
   useEffect(() => {
     if (object.current) {
@@ -156,9 +178,11 @@ const Character = React.memo(({ scene, id, type, remoteInput, characterModels, i
       object.current.scale.set( scale, scale, scale )
       object.current.bonesHelper.updateMatrixWorld()
     }
-  }, [props.model, props.height, props.skeleton])
+  }, [props.model, props.height, props.skeleton, loaded])
 
   useEffect(() => {
+    if (!loaded) return
+
     if (object.current) {
       // adjust head proportionally
       let skel = (object.current.children[0] instanceof THREE.Mesh) ? object.current.children[0] : object.current.children[1]
@@ -172,9 +196,11 @@ const Character = React.memo(({ scene, id, type, remoteInput, characterModels, i
       headBone.scale.setScalar( baseHeadScale )
       headBone.scale.setScalar( props.headScale )
     }
-  }, [props.model, props.headScale, props.skeleton])
+  }, [props.model, props.headScale, props.skeleton, loaded])
 
   useEffect(() => {
+    if (!loaded) return
+
     // Morphs are changing
     let skel = (object.current.children[0] instanceof THREE.Mesh) ? object.current.children[0] : object.current.children[1]
 
@@ -184,9 +210,11 @@ const Character = React.memo(({ scene, id, type, remoteInput, characterModels, i
     skel.morphTargetInfluences[ 1 ] = props.morphTargets.ectomorphic
     skel.morphTargetInfluences[ 2 ] = props.morphTargets.endomorphic
 
-  }, [props.model, props.morphTargets])
+  }, [props.model, props.morphTargets, loaded])
 
   useEffect(() => {
+    if (!loaded) return
+
     // handle selection/unselection
     if (isSelected)
     {
@@ -222,9 +250,11 @@ const Character = React.memo(({ scene, id, type, remoteInput, characterModels, i
            color: [ 0, 0, 0 ],
          }
     }
-  }, [props.model, isSelected])
+  }, [props.model, isSelected, loaded])
 
   useEffect(() => {
+    if (!loaded) return
+
     if (selectedBone === undefined) return
     let skel = (object.current.children[0] instanceof THREE.Mesh) ? object.current.children[0] : object.current.children[1]
     let realBone = skel.skeleton.bones.find(bone => bone.uuid == selectedBone)
@@ -246,7 +276,7 @@ const Character = React.memo(({ scene, id, type, remoteInput, characterModels, i
     realBone.connectedBone.material.color = new THREE.Color( 0xed0000 )
     currentBoneSelected.current = realBone
 
-  }, [selectedBone])
+  }, [selectedBone, loaded])
 
   useEffect(() => {
     if (!isSelected) return
