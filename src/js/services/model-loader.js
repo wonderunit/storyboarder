@@ -224,10 +224,10 @@ const loadModels = () => {
   //const male2 = loadModelFBXPromise("data/shot-generator/dummies/male-adult.fbx", textures.maleAdultBody, textures.maleHead, characterHeights.maleAdult)
   //const male_youth2 = loadModelFBXPromise("data/shot-generator/dummies/male-youth.fbx", textures.maleYouthBody, textures.maleHead, characterHeights.maleYouth )
 
-  const female = loadModelGLTFPromise("data/shot-generator/dummies/gltf/female-adult.glb", textures.femaleAdultBody, textures.maleHead, characterHeights['adult-female'] )
-  const male = loadModelGLTFPromise("data/shot-generator/dummies/gltf/male-adult.glb", textures.maleAdultBody, textures.maleHead, characterHeights['adult-male'] )
-  const male_youth = loadModelGLTFPromise("data/shot-generator/dummies/gltf/male-youth.glb", textures.maleYouthBody, textures.maleHead, characterHeights['teen-male'] )
-  const female_youth = loadModelGLTFPromise("data/shot-generator/dummies/gltf/female-youth.glb", textures.femaleYouthBody, textures.maleHead, characterHeights['teen-female'] )
+  const female = loadModelGLTFPromise("data/shot-generator/dummies/gltf/adult-female.glb", textures.femaleAdultBody, textures.maleHead, characterHeights['adult-female'] )
+  const male = loadModelGLTFPromise("data/shot-generator/dummies/gltf/adult-male.glb", textures.maleAdultBody, textures.maleHead, characterHeights['adult-male'] )
+  const male_youth = loadModelGLTFPromise("data/shot-generator/dummies/gltf/youth-male.glb", textures.maleYouthBody, textures.maleHead, characterHeights['teen-male'] )
+  const female_youth = loadModelGLTFPromise("data/shot-generator/dummies/gltf/youth-female.glb", textures.femaleYouthBody, textures.maleHead, characterHeights['teen-female'] )
 
   return Promise.all([ male, male_youth, female_youth, female ]).then( (values) => {
     // GLTF models are loaded async so we're waiting for all of them to get resolved
