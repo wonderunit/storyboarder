@@ -17,9 +17,8 @@ const SpotLight = React.memo(({ scene, id, type, setLight, ...props }) => {
 
     let box_light_mesh = new THREE.Mesh(box_light_geom, box_light_material)
     let light_spot = new THREE.SpotLight(0xffffff, props.intensity)
-
+    light_spot.position.set(0,0,0)
     light_spot.target.position.set( 0, 0, props.intensity );
-    light_spot.position.set( 0, 0, 0 );
     light_spot.add( light_spot.target );
     light_spot.rotation.set(Math.PI/2, 0, 0)
     light_spot.angle = props.angle
