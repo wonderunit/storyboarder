@@ -49,7 +49,7 @@ const materialFactory = () => new THREE.MeshToonMaterial({
   flatShading: false
 })
 
-const SceneObject = React.memo(({ scene, id, type, objModels, isSelected, ...object }) => {
+const SceneObject = React.memo(({ scene, id, type, isSelected, ...object }) => {
   const [loaded, setLoaded] = useState(false)
   const container = useRef(groupFactory())
 

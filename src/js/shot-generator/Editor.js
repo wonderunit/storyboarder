@@ -536,10 +536,9 @@ const SceneManager = connect(
     // console.log('SceneManager render', sceneObjects)
 
     const characterModels = ModelLoader.getCharacterModels()
-    const objModels = ModelLoader.getObjModels()
 
     // HACK very basic check
-    const hasModels = Object.values(objModels).length && Object.values(characterModels).length
+    const hasModels = Object.values(characterModels).length
 
     const components = Object.values(sceneObjects).map(props => {
         switch (props.type) {
@@ -548,8 +547,6 @@ const SceneManager = connect(
               SceneObject, {
                 key: props.id,
                 scene,
-
-                objModels,
 
                 isSelected: props.id === selection,
 

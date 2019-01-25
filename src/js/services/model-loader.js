@@ -58,7 +58,6 @@ gltfLoader.setDRACOLoader(new THREE.DRACOLoader())
 objLoader.setLogging(false, false)
 let textures = {}
 let characterModels = {}
-let objModels = {}
 
 const loadTextures = () => {
   let imageLoader = new THREE.ImageLoader(loadingManager)
@@ -220,49 +219,6 @@ const loadModelGLTFPromise = (file, textureBody, textureHead, meshHeight) => {
 }
 
 const loadModels = () => {
-
-  objLoader.load( 'data/shot-generator/objects/chair.obj', event => {
-    let object = event.detail.loaderRootNode
-    object.traverse( function ( child ) {
-      if ( child instanceof THREE.Mesh ) {
-        var mesh = child
-        var bbox = new THREE.Box3().setFromObject(mesh);
-        var height = bbox.max.y - bbox.min.y
-        var targetHeight = 0.8
-        var scale = 8// targetHeight / height
-        mesh.scale.set(scale, scale, scale)
-        mesh.updateMatrix()
-
-        let material = toonMaterial.clone()
-        material.map = textures.chair
-
-        mesh.material = material
-        mesh.material.map = textures.chair
-        objModels.chair = mesh
-      }
-    })
-  })
-
-  objLoader.load( 'data/shot-generator/objects/tree.obj', event => {
-    let object = event.detail.loaderRootNode
-    object.traverse( function ( child ) {
-      if ( child instanceof THREE.Mesh ) {
-        var mesh = child
-        var bbox = new THREE.Box3().setFromObject(mesh);
-        var height = bbox.max.y - bbox.min.y
-        var targetHeight = 8
-        var scale = targetHeight / height
-        mesh.scale.set(scale, scale, scale)
-        mesh.updateMatrix()
-
-        let material = toonMaterial.clone()
-        material.map = textures.tree
-        mesh.material = material
-        objModels.tree = mesh
-      }
-    })
-  })
-
   // FBX loading trials
   //const female2 = loadModelFBXPromise("data/shot-generator/dummies/female-adult-test.fbx", textures.femaleAdultBody, textures.maleHead, characterHeights['adult-female'])
   //const male2 = loadModelFBXPromise("data/shot-generator/dummies/male-adult.fbx", textures.maleAdultBody, textures.maleHead, characterHeights.maleAdult)
@@ -294,10 +250,6 @@ function getCharacterModels () {
   return characterModels
 }
 
-function getObjModels () {
-  return objModels
-}
-
 const isCustomModel = string => {
   const { root, dir, base, ext, name } = path.parse(string)
   if (dir && dir !== '') {
@@ -322,7 +274,6 @@ const isCustomModel = string => {
 module.exports = {
   init,
   getCharacterModels,
-  getObjModels,
 
   isCustomModel
 }
