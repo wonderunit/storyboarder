@@ -762,7 +762,6 @@ const Inspector = ({
   const onBlur = event => transition('TYPING_EXIT')
 
   let sceneObject = data
-  let modelData = sceneObject && sceneObject.model && models[sceneObject.model]
 
   // try to exit typing if there is nothing to inspect
   useEffect(() => {
@@ -788,7 +787,7 @@ const Inspector = ({
       ? [
           InspectedElement, {
             sceneObject,
-            modelData,
+            models,
             updateObject,
             selectedBone: scene.getObjectByProperty('uuid', selectedBone),
             machineState,
@@ -1236,7 +1235,7 @@ const saveCharacterPresets = state => presetsStorage.saveCharacterPresets({ char
 const CharacterPresetsEditor = connect(
   state => ({
     characterPresets: state.presets.characters,
-    defaultCharacterHeights: state.defaultCharacterHeights
+    models: state.models
   }),
   {
     updateObject,
@@ -1248,7 +1247,7 @@ const CharacterPresetsEditor = connect(
 
         // apply preset values to character model
         height: preset.state.height,
-        //height: state.defaultCharacterHeights[preset.state.model].originalHeight,
+        //height: state.models[preset.state.model].baseHeight,
         model: preset.state.model,
         // gender: 'female',
         // age: 'adult'
@@ -1448,7 +1447,7 @@ const MORPH_TARGET_LABELS = {
   'ectomorphic': 'ecto',
   'endomorphic': 'obese',
 }
-const InspectedElement = ({ sceneObject, modelData, updateObject, selectedBone, machineState, transition, selectBone, updateCharacterSkeleton, calculatedName }) => {
+const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, machineState, transition, selectBone, updateCharacterSkeleton, calculatedName }) => {
   const createOnSetValue = (id, name, transform = value => value) => value => updateObject(id, { [name]: transform(value) })
 
   let positionSliders = [
@@ -1590,12 +1589,10 @@ const InspectedElement = ({ sceneObject, modelData, updateObject, selectedBone, 
                 marginBottom: 0
               }
             }, [
-              [
-                { name: 'Adult Male', value: 'adult-male' },
-                { name: 'Adult Female', value: 'adult-female' },
-                { name: 'Teen Male', value: 'teen-male' },
-                { name: 'Teen Female', value: 'teen-female' },
-              ].map(({ name, value }) =>
+              Object.values(models).map(model => ({
+                name: model.name,
+                value: model.id
+              })).map(({ name, value }) =>
                 ['option', { value }, name]
               )
             ]
@@ -2765,7 +2762,7 @@ const Editor = connect(
   {
     createObject,
     selectObject,
-    setModels: characterModelDataById => ({ type: 'SET_MODELS', payload: characterModelDataById }),
+    setModels: payload => ({ type: 'SET_MODELS', payload }),
     loadScene,
     saveScene: filepath => (dispatch, getState) => {
       let state = getState()

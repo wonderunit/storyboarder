@@ -156,7 +156,32 @@ const initialScene = {
 
 // TODO sg key
 const initialState = {
-  models: {},
+  models: {
+    'adult-female': {
+      id: 'adult-female',
+      name: 'Adult Female',
+      type: 'character',
+      height: 1.65
+    },
+    'adult-male': {
+      id: 'adult-male',
+      name: 'Adult Male',
+      type: 'character',
+      height: 1.8
+    },
+    'teen-female': {
+      id: 'teen-female',
+      name: 'Teen Female',
+      type: 'character',
+      height: 1.6
+    },
+    'teen-male': {
+      id: 'teen-male',
+      name: 'Teen Male',
+      type: 'character',
+      height: 1.6
+    }
+  },
 
   aspectRatio: 2.35,
 
@@ -215,12 +240,6 @@ const initialState = {
         state: defaultPosePreset
       }
     }
-  },
-  defaultCharacterHeights: {
-    'adult-male': 1.8,
-    'teen-male': 1.6,
-    'adult-female': 1.65,
-    'teen-female': 1.6
   }
 }
 
@@ -385,7 +404,7 @@ module.exports = {
           if (action.payload.model != null) {
             draft.sceneObjects[action.payload.id].model = action.payload.model
             if (draft.sceneObjects[action.payload.id].type === 'character') {
-              draft.sceneObjects[action.payload.id].height = initialState.defaultCharacterHeights[action.payload.model]
+              draft.sceneObjects[action.payload.id].height = initialState.models[action.payload.model].baseHeight
             }
           }
 
@@ -463,7 +482,10 @@ module.exports = {
           return
 
         case 'SET_MODELS':
-          draft.models = action.payload
+          draft.models = {
+            ...state.models,
+            ...action.payload
+          }
           return
 
         case 'SET_ASPECT_RATIO':

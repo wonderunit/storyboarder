@@ -10,6 +10,8 @@ const debounce = require('lodash.debounce')
 const BoundingBoxHelper = require('./BoundingBoxHelper')
 const BonesHelper = require('./BonesHelper')
 
+const { initialState } = require('../shared/reducers/shot-generator')
+
 // character needs:
 //   mesh - SkinnedMesh
 //   bone structure - ideally Mixamo standard bones
@@ -161,8 +163,7 @@ const Character = React.memo(({ scene, id, type, remoteInput, isSelected, select
       //mesh.rotation.set(0, Math.PI/2, 0)
 
       // FIXME
-      // let targetHeight = meshHeight
-      let targetHeight = 1.6
+      let targetHeight = initialState.models[props.model].baseHeight
 
       let scale = targetHeight / height
       obj.scale.set(scale, scale, scale)
