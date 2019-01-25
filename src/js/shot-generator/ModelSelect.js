@@ -6,12 +6,14 @@ const h = require('../utils/h')
 
 const ModelSelect = ({ sceneObject, options, updateObject, transition }) => {
   return h(
-    ['div.row', [
+    ['div.row', { style: { alignItems: 'center', marginBottom: 10 } }, [
       ['div', { style: { width: 50 } }, 'model'],
       ['div.row', [
-
         [
           'select', {
+            style: {
+              marginBottom: 0
+            },
             value: sceneObject.model,
             onChange: event => {
               event.preventDefault()
