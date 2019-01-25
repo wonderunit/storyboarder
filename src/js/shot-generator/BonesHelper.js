@@ -78,9 +78,6 @@ function BonesHelper( object, object3D ) {
   let boneCounter = 0
   matrixWorldInv.getInverse( object.matrixWorld )
 
-  let skeletonHelper = new THREE.SkeletonHelper( bones[0] )
-  skeletonHelper.material.linewidth = 5
-  //this.add(skeletonHelper)
   let traversedBones = []
   for (var ii = 0; ii< bones.length; ii++) {
     var bone = bones[ii]
@@ -204,6 +201,9 @@ function BonesHelper( object, object3D ) {
 
     }
   }
+  let skeletonHelper = new THREE.SkeletonHelper( bones[0] )
+  skeletonHelper.material.linewidth = 5
+  this.add(skeletonHelper)
 
   this.hit_meshes = filter_array(this.hit_meshes)
   this.root = object

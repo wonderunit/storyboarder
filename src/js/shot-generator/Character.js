@@ -17,6 +17,11 @@ const Character = React.memo(({ scene, id, type, remoteInput, characterModels, i
   let object = useRef(null)
 
   let isRotating = useRef(false)
+
+  let startingObjectQuaternion = useRef(null)
+  let startingDeviceOffset = useRef(null)
+  let startingObjectOffset = useRef(null)
+
   let startingDeviceRotation = useRef(null)
   let startingObjectRotation = useRef(null)
   let startingGlobalRotation = useRef(null)
@@ -58,8 +63,7 @@ const Character = React.memo(({ scene, id, type, remoteInput, characterModels, i
 
   const updateSkeleton = () => {
     let skel = (object.current.children[0] instanceof THREE.Mesh) ? object.current.children[0] : object.current.children[1]
-    skel.skeleton.pose()
-
+    //skel.skeleton.pose()
     if (props.skeleton) {
       for (let name in props.skeleton) {
         let bone = skel.skeleton.getBoneByName(name)
@@ -142,7 +146,7 @@ const Character = React.memo(({ scene, id, type, remoteInput, characterModels, i
   }, [props.model, props.rotation])
 
   useEffect(() => {
-    console.log(type, id, 'skeleton')
+    //console.log(type, id, 'skeleton', props.skeleton)
     updateSkeleton()
   }, [props.model, props.skeleton])
 
@@ -154,9 +158,9 @@ const Character = React.memo(({ scene, id, type, remoteInput, characterModels, i
       let scale = props.height / height
 
       object.current.scale.set( scale, scale, scale )
-      object.current.bonesHelper.updateMatrixWorld()
+      //object.current.bonesHelper.updateMatrixWorld()
     }
-  }, [props.model, props.height, props.skeleton])
+  }, [props.model, props.height])
 
   useEffect(() => {
     if (object.current) {
@@ -172,7 +176,7 @@ const Character = React.memo(({ scene, id, type, remoteInput, characterModels, i
       headBone.scale.setScalar( baseHeadScale )
       headBone.scale.setScalar( props.headScale )
     }
-  }, [props.model, props.headScale, props.skeleton])
+  }, [props.model, props.headScale])
 
   useEffect(() => {
     // Morphs are changing
@@ -260,91 +264,64 @@ const Character = React.memo(({ scene, id, type, remoteInput, characterModels, i
     } else {
       realTarget = object.current
     }
-    let target = new THREE.Object3D()
-    target.rotation.copy(realTarget.rotation)
-    target.isBone = realTarget.isBone
-    target.parent = realTarget.parent
-    target.name = realTarget.name
-    target.userData = realTarget.userData
 
     if (remoteInput.down) {
-      if (target) {
+      if (realTarget) {
+        let target = realTarget.clone()
         let [ alpha, beta, gamma ] = remoteInput.mag.map(THREE.Math.degToRad)
+        let magValues = remoteInput.mag
+        let deviceQuaternion
+        if (!isRotating.current)
+        {
+          // The first time rotation starts, get the starting device rotation and starting target object rotation
 
-        if (!isRotating.current) {
           isRotating.current = true
-          startingObjectRotation.current ={
-            x: target.rotation.x,
-            y: target.rotation.y,
-            z: target.rotation.z
-          }
+          offset = 0-magValues[0]
+          deviceQuaternion = new THREE.Quaternion().setFromEuler(new THREE.Euler(beta, alpha + (offset*(Math.PI/180)),-gamma, 'YXZ')).multiply(new THREE.Quaternion().setFromAxisAngle( new THREE.Vector3( 1, 0, 0 ), -Math.PI / 2 ))
+          startingDeviceOffset.current =  new THREE.Quaternion().clone().inverse().multiply(deviceQuaternion).normalize().inverse()
 
-          startingDeviceRotation.current = {
-            alpha: alpha,
-            beta: beta,
-            gamma: gamma
-          }
-
-          let sgr = new THREE.Quaternion()
-          realTarget.getWorldQuaternion(sgr)
-          startingGlobalRotation.current = {
-            quaternion: sgr
-          }
+          startingObjectQuaternion.current = realTarget.quaternion.clone()
+          startingObjectOffset.current =  new THREE.Quaternion().clone().inverse().multiply(startingObjectQuaternion.current)
         }
 
-        let startingDeviceQuaternion = new THREE.Quaternion().setFromEuler(new THREE.Euler(startingDeviceRotation.current.beta, startingDeviceRotation.current.alpha, -startingDeviceRotation.current.gamma, 'YXZ')).multiply(new THREE.Quaternion(-Math.sqrt(0.5), 0, 0, Math.sqrt(0.5)))
-        let tempQ = startingGlobalRotation.current.quaternion.clone()
-        let cameraQuaternion = camera.quaternion.clone();
-        let currentMainRotation = object.current.quaternion.clone()
-        let deviceQuaternion = new THREE.Quaternion().setFromEuler(new THREE.Euler(beta, alpha, -gamma, 'YXZ')).multiply(new THREE.Quaternion(-Math.sqrt(0.5), 0, 0, Math.sqrt(0.5)))
-        if (target.isBone)
-        {
-          // let w = 0.5,
-          //   x = -0.5,
-          //   y = -0.5,
-          //   z = -0.5
-          let w = 1,
-              x = 0,
-              y = 0,
-              z = 0
-          startingDeviceQuaternion = new THREE.Quaternion().setFromEuler(new THREE.Euler(startingDeviceRotation.current.beta, startingDeviceRotation.current.alpha, -startingDeviceRotation.current.gamma, 'YXZ')).multiply(new THREE.Quaternion(w, x, y, z))
-          deviceQuaternion = new THREE.Quaternion().setFromEuler(new THREE.Euler(beta, alpha, -gamma, 'YXZ')).multiply(new THREE.Quaternion(w, x, y, z))
-        }
+        // While rotating, perform the rotations
 
-        //let inversedRotation = new THREE.Quaternion(w, x, y, z)
-        let parentWorldQuaternion = new THREE.Quaternion()
-        realTarget.parent.getWorldQuaternion(parentWorldQuaternion).clone()
-        let startingObjectQuaternion = new THREE.Quaternion().setFromEuler(new THREE.Euler(startingObjectRotation.current.x,startingObjectRotation.current.y,startingObjectRotation.current.z))
+        // get device's offset
+        deviceQuaternion = new THREE.Quaternion().setFromEuler(new THREE.Euler(beta, alpha + (offset*(Math.PI/180)),-gamma, 'YXZ')).multiply(new THREE.Quaternion().setFromAxisAngle( new THREE.Vector3( 1, 0, 0 ), -Math.PI / 2 ))
+        let deviceDifference = new THREE.Quaternion().inverse().multiply(deviceQuaternion).multiply(startingDeviceOffset.current).normalize()
+        // get camera's offset
+        let cameraOffset = new THREE.Quaternion().clone().inverse().multiply(camera.quaternion.clone())
+        // get parent's offset
+        let parentOffset = new THREE.Quaternion().clone().inverse().multiply(realTarget.parent.quaternion.clone())
+        realTarget.parent.getWorldQuaternion(parentOffset)
 
-        startingDeviceQuaternion.multiply(cameraQuaternion.clone())
-        deviceQuaternion.multiply(cameraQuaternion.clone())
+        // START WITH THE INVERSE OF THE STARTING OBJECT ROTATION
+        let objectQuaternion = startingObjectQuaternion.current.clone().inverse()
 
-        startingDeviceQuaternion.multiply( parentWorldQuaternion.clone() )
-        deviceQuaternion.multiply( parentWorldQuaternion.clone() )
+        // ZERO OUT (ORDER IS IMPORTANT)
+        // offset
+        objectQuaternion.multiply(startingObjectOffset.current)
+        // parent's rotation
+        objectQuaternion.multiply(parentOffset.inverse())
+        // camera
+        objectQuaternion.multiply(cameraOffset)
 
-        let deviceDifference = startingDeviceQuaternion.clone().inverse().multiply(deviceQuaternion)
+        // APPLY THE DEVICE DIFFERENCE, THIS IS THE MAJOR OPERATION
+        objectQuaternion.multiply(deviceDifference)
 
-        if (target.isBone)
-        {
-          t = new THREE.Vector3()
-          q = new THREE.Quaternion()
-          s = new THREE.Vector3()
-          //deviceDifference.multiply ( parentWorldQuaternion.clone() )
-          tempQ.multiply( deviceDifference )
-          tempQ.multiply( parentWorldQuaternion.clone())
+        // ROTATE THE ZEROS BACK INTO PLACE (REVERSE ORDER)
+        // camera
+        objectQuaternion.multiply(cameraOffset.inverse())
+        // parent's rotation
+        objectQuaternion.multiply(parentOffset.inverse())
+        // offset
+        objectQuaternion.multiply(startingObjectOffset.current)
 
-          target.quaternion.copy(tempQ)
-          target.updateMatrix()
-        } else {
-          tempQ.multiply(deviceDifference)
-          target.quaternion.copy(tempQ)
-        }
-
-        // OLD ROTATION ON AXIS
-        // let deviceDifference = startingDeviceQuaternion.clone().inverse().multiply(deviceQuaternion)
-        // startingObjectQuaternion.multiply(deviceDifference)
-        // target.quaternion.copy(startingObjectQuaternion)
-
+        // APPLY THE ROTATION TO THE TARGET OBJECT
+        //targetobject.quaternion.copy(objectQuaternion.normalize())
+        target.quaternion.copy(objectQuaternion.normalize())
+        //target.updateMatrix()
+        //console.log('target rotation: ', target.rotation)
         if (selectedBone) {
           updateCharacterSkeleton({
             id,
@@ -362,13 +339,136 @@ const Character = React.memo(({ scene, id, type, remoteInput, characterModels, i
         }
       }
     } else {
+      // not pressed anymore, reset
       isRotating.current = false
-      startingObjectRotation.current = null
-      startingDeviceRotation.current = null
-      startingGlobalRotation.current = null
 
+      startingDeviceOffset.current = null
+      startingObjectQuaternion.current = null
+      startingObjectOffset.current = null
     }
   }, [remoteInput])
+
+  // useEffect(() => {
+  //   if (!isSelected) return
+  //
+  //   if (remoteInput.mouseMode) return
+  //
+  //   let realTarget
+  //   let skel = (object.current.children[0] instanceof THREE.Mesh) ? object.current.children[0] : object.current.children[1]
+  //   if (selectedBone) {
+  //     realTarget = skel.skeleton.bones.find(bone => bone.uuid == selectedBone) || object.current
+  //   } else {
+  //     realTarget = object.current
+  //   }
+  //   let target = new THREE.Object3D()
+  //   target.rotation.copy(realTarget.rotation)
+  //   target.isBone = realTarget.isBone
+  //   target.parent = realTarget.parent
+  //   target.name = realTarget.name
+  //   target.userData = realTarget.userData
+  //
+  //   if (remoteInput.down) {
+  //     if (target) {
+  //       let [ alpha, beta, gamma ] = remoteInput.mag.map(THREE.Math.degToRad)
+  //
+  //       if (!isRotating.current) {
+  //         isRotating.current = true
+  //         startingObjectRotation.current ={
+  //           x: target.rotation.x,
+  //           y: target.rotation.y,
+  //           z: target.rotation.z
+  //         }
+  //
+  //         startingDeviceRotation.current = {
+  //           alpha: alpha,
+  //           beta: beta,
+  //           gamma: gamma
+  //         }
+  //
+  //         let sgr = new THREE.Quaternion()
+  //         realTarget.getWorldQuaternion(sgr)
+  //         startingGlobalRotation.current = {
+  //           quaternion: sgr
+  //         }
+  //       }
+  //
+  //       let startingDeviceQuaternion = new THREE.Quaternion().setFromEuler(new THREE.Euler(startingDeviceRotation.current.beta, startingDeviceRotation.current.alpha, -startingDeviceRotation.current.gamma, 'YXZ')).multiply(new THREE.Quaternion(-Math.sqrt(0.5), 0, 0, Math.sqrt(0.5)))
+  //       let tempQ = startingGlobalRotation.current.quaternion.clone()
+  //       let cameraQuaternion = camera.quaternion.clone();
+  //       let currentMainRotation = object.current.quaternion.clone()
+  //       let deviceQuaternion = new THREE.Quaternion().setFromEuler(new THREE.Euler(beta, alpha, -gamma, 'YXZ')).multiply(new THREE.Quaternion(-Math.sqrt(0.5), 0, 0, Math.sqrt(0.5)))
+  //       if (target.isBone)
+  //       {
+  //         // let w = 0.5,
+  //         //   x = -0.5,
+  //         //   y = -0.5,
+  //         //   z = -0.5
+  //         let w = 1,
+  //             x = 0,
+  //             y = 0,
+  //             z = 0
+  //         startingDeviceQuaternion = new THREE.Quaternion().setFromEuler(new THREE.Euler(startingDeviceRotation.current.beta, startingDeviceRotation.current.alpha, -startingDeviceRotation.current.gamma, 'YXZ')).multiply(new THREE.Quaternion(w, x, y, z))
+  //         deviceQuaternion = new THREE.Quaternion().setFromEuler(new THREE.Euler(beta, alpha, -gamma, 'YXZ')).multiply(new THREE.Quaternion(w, x, y, z))
+  //       }
+  //
+  //       //let inversedRotation = new THREE.Quaternion(w, x, y, z)
+  //       let parentWorldQuaternion = new THREE.Quaternion()
+  //       realTarget.parent.getWorldQuaternion(parentWorldQuaternion).clone()
+  //       let startingObjectQuaternion = new THREE.Quaternion().setFromEuler(new THREE.Euler(startingObjectRotation.current.x,startingObjectRotation.current.y,startingObjectRotation.current.z))
+  //
+  //       startingDeviceQuaternion.multiply(cameraQuaternion.clone())
+  //       deviceQuaternion.multiply(cameraQuaternion.clone())
+  //
+  //       startingDeviceQuaternion.multiply( parentWorldQuaternion.clone() )
+  //       deviceQuaternion.multiply( parentWorldQuaternion.clone() )
+  //
+  //       let deviceDifference = startingDeviceQuaternion.clone().inverse().multiply(deviceQuaternion)
+  //
+  //       if (target.isBone)
+  //       {
+  //         t = new THREE.Vector3()
+  //         q = new THREE.Quaternion()
+  //         s = new THREE.Vector3()
+  //         //deviceDifference.multiply ( parentWorldQuaternion.clone() )
+  //         tempQ.multiply( deviceDifference )
+  //         tempQ.multiply( parentWorldQuaternion.clone())
+  //
+  //         target.quaternion.copy(tempQ)
+  //         target.updateMatrix()
+  //       } else {
+  //         tempQ.multiply(deviceDifference)
+  //         target.quaternion.copy(tempQ)
+  //       }
+  //
+  //       // OLD ROTATION ON AXIS
+  //       // let deviceDifference = startingDeviceQuaternion.clone().inverse().multiply(deviceQuaternion)
+  //       // startingObjectQuaternion.multiply(deviceDifference)
+  //       // target.quaternion.copy(startingObjectQuaternion)
+  //
+  //       if (selectedBone) {
+  //         updateCharacterSkeleton({
+  //           id,
+  //           name: target.name,
+  //           rotation: {
+  //             x: target.rotation.x,
+  //             y: target.rotation.y,
+  //             z: target.rotation.z
+  //           }
+  //         })
+  //       } else {
+  //         updateObject(target.userData.id, {
+  //           rotation: target.rotation.y
+  //         })
+  //       }
+  //     }
+  //   } else {
+  //     isRotating.current = false
+  //     startingObjectRotation.current = null
+  //     startingDeviceRotation.current = null
+  //     startingGlobalRotation.current = null
+  //
+  //   }
+  // }, [remoteInput])
 
   return null
 })
