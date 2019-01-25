@@ -213,6 +213,7 @@ const Character = React.memo(({ scene, id, type, remoteInput, isSelected, select
       if (object.current) {
         scene.remove(object.current.bonesHelper)
         scene.remove(object.current)
+        object.current.bonesHelper = null
         object.current = null
       }
     }
