@@ -18,6 +18,7 @@ objLoader.setLogging(false, false)
 
 const World = ({ world, scene }) => {
   const [group, setGroup] = useState(null)
+  const [roomLoaded, setRoomLoaded] = useState(false)
 
   useEffect(() => {
     if (!world.environment.file) {
@@ -172,6 +173,7 @@ const World = ({ world, scene }) => {
   const room = useRef(null)
   const roomTexture = useRef(null)
   useEffect(() => {
+    setRoomLoaded(false)
     // FIXME use a real texture cache
     const ensureTexture = roomTexture.current
       ? Promise.resolve(roomTexture.current)
@@ -207,19 +209,22 @@ const World = ({ world, scene }) => {
       )
       // shift slightly to allow for OutlineEffect
       room.current.position.y = -0.03
-      room.current.visible = world.room.visible
+      room.current.visible = false
       scene.add(room.current)
-    }).catch(err => console.error(err))
+      setRoomLoaded(true)
+    }).catch(err =>
+      console.error(err)
+    )
 
     return function cleanup () {
       scene.remove(room.current)
       room.current = null
     }
-  }, [world.room.width, world.room.length, world.room.height, world.room.visible])
+  }, [world.room.width, world.room.length, world.room.height])
 
   useEffect(() => {
     if (room.current) room.current.visible = world.room.visible
-  }, [world.room.visible])
+  }, [world.room.visible, roomLoaded])
 
   useEffect(() => {
     scene.background
