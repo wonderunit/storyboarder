@@ -246,6 +246,7 @@ const Character = React.memo(({ scene, id, type, remoteInput, isSelected, select
 
   useEffect(() => {
     if (!loaded) return
+    if (!object.current) return
 
     console.log(type, id, 'skeleton')
     updateSkeleton()
@@ -283,6 +284,7 @@ const Character = React.memo(({ scene, id, type, remoteInput, isSelected, select
 
   useEffect(() => {
     if (!loaded) return
+    if (!object.current) return
 
     // Morphs are changing
     let skel = (object.current.children[0] instanceof THREE.Mesh) ? object.current.children[0] : object.current.children[1]
@@ -297,6 +299,7 @@ const Character = React.memo(({ scene, id, type, remoteInput, isSelected, select
 
   useEffect(() => {
     if (!loaded) return
+    if (!object.current) return
 
     // handle selection/unselection
     if (isSelected)
@@ -337,6 +340,7 @@ const Character = React.memo(({ scene, id, type, remoteInput, isSelected, select
 
   useEffect(() => {
     if (!loaded) return
+    if (!object.current) return
 
     if (selectedBone === undefined) return
     let skel = (object.current.children[0] instanceof THREE.Mesh) ? object.current.children[0] : object.current.children[1]
