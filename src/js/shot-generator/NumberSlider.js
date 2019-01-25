@@ -52,10 +52,16 @@ const NumberSlider = ({
 
   const onPointerDown = event => {
     event.preventDefault()
-    document.addEventListener('pointerup', onPointerUp)
-    event.target.requestPointerLock()
-    document.addEventListener('pointerlockchange', lockChangeAlert, false)
-    setMoving(true)
+    if (event.shiftKey) {
+      // reset
+      // TODO validation
+      onSetValue(0)
+    } else {
+      document.addEventListener('pointerup', onPointerUp)
+      event.target.requestPointerLock()
+      document.addEventListener('pointerlockchange', lockChangeAlert, false)
+      setMoving(true)
+    }
   }
 
   useEffect(() => {
