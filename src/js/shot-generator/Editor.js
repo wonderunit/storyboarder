@@ -463,6 +463,8 @@ const SceneManager = connect(
     // useEffect(() => {}, [mainViewCamera])
 
     useEffect(() => {
+      // TODO update sceneObjects[character.id].loaded when loaded
+
       let sceneObject = null
       let child = null
 
@@ -544,6 +546,9 @@ const SceneManager = connect(
                 scene,
 
                 isSelected: props.id === selection,
+
+                loaded: props.loaded ? props.loaded : false,
+                updateObject,
 
                 ...props
               }
