@@ -272,8 +272,5 @@ const isCustomModel = string => {
 }
 
 module.exports = {
-  init,
-  getCharacterModels,
-
   isCustomModel
 }

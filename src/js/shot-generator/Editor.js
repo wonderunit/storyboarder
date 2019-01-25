@@ -535,11 +535,6 @@ const SceneManager = connect(
 
     // console.log('SceneManager render', sceneObjects)
 
-    const characterModels = ModelLoader.getCharacterModels()
-
-    // HACK very basic check
-    const hasModels = Object.values(characterModels).length
-
     const components = Object.values(sceneObjects).map(props => {
         switch (props.type) {
           case 'object':
@@ -561,7 +556,6 @@ const SceneManager = connect(
                 scene,
 
                 remoteInput,
-                characterModels,
                 isSelected: selection === props.id,
                 selectedBone,
 
@@ -593,9 +587,9 @@ const SceneManager = connect(
     const worldComponent = [WorldObject, { key: 'world', world, scene }]
 
     // TODO Scene parent object?
-    return hasModels
-      ? [[worldComponent, ...components].map(c => h(c))]
-      : null
+    return [
+      [worldComponent, ...components].map(c => h(c))
+    ]
   }
 )
 
@@ -2851,25 +2845,9 @@ const Editor = connect(
     }
 
     useEffect(() => {
-      ModelLoader.init().then(characterModels => {
-
-        //console.log('initing with : ', characterModels )
-        let characterModelDataById = Object.entries(characterModels).reduce(
-          (coll, [key, model]) => {
-            let model1 = (model.children[0] instanceof THREE.Mesh) ? model.children[0] : model.children[1]
-            if (model1 === undefined) model1 = model //fix for temp loading FBX
-            coll[key] = {
-              model: model1.toJSON(),
-              bones: JSON.parse(JSON.stringify(model1.skeleton.bones)),
-              animationIds:model.original ? model1.original.animations.map(animation => animation.name) : null
-            }
-
-            return coll
-          }, {}
-        )
-        setModels(characterModelDataById)
-        setReady(true)
-      })
+      // TODO introspect models
+      setModels({})
+      setReady(true)
     }, [])
 
     // render Toolbar with updated camera when scene is ready, or when activeCamera changes
