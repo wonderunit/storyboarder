@@ -1,6 +1,8 @@
 const THREE = require('three')
+window.THREE = window.THREE || THREE
 
-window.THREE = THREE
+const path = require('path')
+
 const JDLoader = require('../vendor/JDLoader.min.js')
 
 require('../../../node_modules/three/examples/js/loaders/LoaderSupport')
@@ -56,7 +58,6 @@ gltfLoader.setDRACOLoader(new THREE.DRACOLoader())
 objLoader.setLogging(false, false)
 let textures = {}
 let characterModels = {}
-let objModels = {}
 
 const loadTextures = () => {
   let imageLoader = new THREE.ImageLoader(loadingManager)
@@ -218,58 +219,15 @@ const loadModelGLTFPromise = (file, textureBody, textureHead, meshHeight) => {
 }
 
 const loadModels = () => {
-
-  objLoader.load( 'data/shot-generator/objects/chair.obj', event => {
-    let object = event.detail.loaderRootNode
-    object.traverse( function ( child ) {
-      if ( child instanceof THREE.Mesh ) {
-        var mesh = child
-        var bbox = new THREE.Box3().setFromObject(mesh);
-        var height = bbox.max.y - bbox.min.y
-        var targetHeight = 0.8
-        var scale = 8// targetHeight / height
-        mesh.scale.set(scale, scale, scale)
-        mesh.updateMatrix()
-
-        let material = toonMaterial.clone()
-        material.map = textures.chair
-
-        mesh.material = material
-        mesh.material.map = textures.chair
-        objModels.chair = mesh
-      }
-    })
-  })
-
-  objLoader.load( 'data/shot-generator/objects/tree.obj', event => {
-    let object = event.detail.loaderRootNode
-    object.traverse( function ( child ) {
-      if ( child instanceof THREE.Mesh ) {
-        var mesh = child
-        var bbox = new THREE.Box3().setFromObject(mesh);
-        var height = bbox.max.y - bbox.min.y
-        var targetHeight = 8
-        var scale = targetHeight / height
-        mesh.scale.set(scale, scale, scale)
-        mesh.updateMatrix()
-
-        let material = toonMaterial.clone()
-        material.map = textures.tree
-        mesh.material = material
-        objModels.tree = mesh
-      }
-    })
-  })
-
   // FBX loading trials
   //const female2 = loadModelFBXPromise("data/shot-generator/dummies/female-adult-test.fbx", textures.femaleAdultBody, textures.maleHead, characterHeights['adult-female'])
   //const male2 = loadModelFBXPromise("data/shot-generator/dummies/male-adult.fbx", textures.maleAdultBody, textures.maleHead, characterHeights.maleAdult)
   //const male_youth2 = loadModelFBXPromise("data/shot-generator/dummies/male-youth.fbx", textures.maleYouthBody, textures.maleHead, characterHeights.maleYouth )
 
-  const female = loadModelGLTFPromise("data/shot-generator/dummies/gltf/female-adult.glb", textures.femaleAdultBody, textures.maleHead, characterHeights['adult-female'] )
-  const male = loadModelGLTFPromise("data/shot-generator/dummies/gltf/male-adult.glb", textures.maleAdultBody, textures.maleHead, characterHeights['adult-male'] )
-  const male_youth = loadModelGLTFPromise("data/shot-generator/dummies/gltf/male-youth.glb", textures.maleYouthBody, textures.maleHead, characterHeights['teen-male'] )
-  const female_youth = loadModelGLTFPromise("data/shot-generator/dummies/gltf/female-youth.glb", textures.femaleYouthBody, textures.maleHead, characterHeights['teen-female'] )
+  const female = loadModelGLTFPromise("data/shot-generator/dummies/gltf/adult-female.glb", textures.femaleAdultBody, textures.maleHead, characterHeights['adult-female'] )
+  const male = loadModelGLTFPromise("data/shot-generator/dummies/gltf/adult-male.glb", textures.maleAdultBody, textures.maleHead, characterHeights['adult-male'] )
+  const male_youth = loadModelGLTFPromise("data/shot-generator/dummies/gltf/youth-male.glb", textures.maleYouthBody, textures.maleHead, characterHeights['teen-male'] )
+  const female_youth = loadModelGLTFPromise("data/shot-generator/dummies/gltf/youth-female.glb", textures.femaleYouthBody, textures.maleHead, characterHeights['teen-female'] )
 
   return Promise.all([ male, male_youth, female_youth, female ]).then( (values) => {
     // GLTF models are loaded async so we're waiting for all of them to get resolved
@@ -292,12 +250,27 @@ function getCharacterModels () {
   return characterModels
 }
 
-function getObjModels () {
-  return objModels
+const isCustomModel = string => {
+  const { root, dir, base, ext, name } = path.parse(string)
+  if (dir && dir !== '') {
+    if (ext && ext !== '') {
+      // { model: '/path/to/custom/model.glb' } // absolute path and extension; load directly
+      return true
+    } else {
+      // { model: '/path/to/custom/model' } // absolute path and no extension -- fail, shouldn't be allowed
+      throw new Error('invalid model file path')
+    }
+  } else {
+    if (ext && ext !== '') {
+      // { model: 'model.glb' } // no path and extension; load from `images/` folder
+      throw new Error('unsupported')
+    } else {
+      // { model: 'box' } // no path and no extension; use built-in model
+      return false
+    }
+  }
 }
 
 module.exports = {
-  init,
-  getCharacterModels,
-  getObjModels
+  isCustomModel
 }

@@ -64,8 +64,6 @@ const SceneObject = require('./SceneObject')
 
 const BonesHelper = require('./BonesHelper')
 
-const ModelLoader = require('../services/model-loader')
-
 const presetsStorage = require('../shared/store/presetsStorage')
 //const presetsStorage = require('../presetsStorage')
 
@@ -87,8 +85,9 @@ const NumberSliderFormatter = {
   percent: value => Math.round(value).toString() + '%',
 }
 
+const ModelSelect = require('./ModelSelect')
+
 require('../vendor/OutlineEffect.js')
-const RoundedBoxGeometry = require('three-rounded-box')(THREE)
 
 
 window.THREE = THREE
@@ -464,13 +463,15 @@ const SceneManager = connect(
     // useEffect(() => {}, [mainViewCamera])
 
     useEffect(() => {
+      // TODO update sceneObjects[character.id].loaded when loaded
+
       let sceneObject = null
       let child = null
 
       if (selection != null) {
         child = scene.children.find(o => o.userData.id === selection)
         sceneObject = sceneObjects[selection]
-        if (child && child.children[0] && (child.children[0].skeleton || child.children[1].skeleton) && sceneObject.visible) {
+        if (child && child.userData.type === 'character' && child.children[0] && (child.children[0].skeleton || child.children[1].skeleton) && sceneObject.visible) {
           //console.log('child: ', child)
           let skel = (child.children[0] instanceof THREE.Mesh) ? child.children[0] : child.children[1]
 
@@ -536,12 +537,6 @@ const SceneManager = connect(
 
     // console.log('SceneManager render', sceneObjects)
 
-    const characterModels = ModelLoader.getCharacterModels()
-    const objModels = ModelLoader.getObjModels()
-
-    // HACK very basic check
-    const hasModels = Object.values(objModels).length && Object.values(characterModels).length
-
     const components = Object.values(sceneObjects).map(props => {
         switch (props.type) {
           case 'object':
@@ -550,9 +545,10 @@ const SceneManager = connect(
                 key: props.id,
                 scene,
 
-                objModels,
-
                 isSelected: props.id === selection,
+
+                loaded: props.loaded ? props.loaded : false,
+                updateObject,
 
                 ...props
               }
@@ -565,7 +561,6 @@ const SceneManager = connect(
                 scene,
 
                 remoteInput,
-                characterModels,
                 isSelected: selection === props.id,
                 selectedBone,
 
@@ -573,6 +568,8 @@ const SceneManager = connect(
 
                 updateCharacterSkeleton,
                 updateObject,
+
+                loaded: props.loaded ? props.loaded : false,
 
                 ...props
               }
@@ -597,9 +594,9 @@ const SceneManager = connect(
     const worldComponent = [WorldObject, { key: 'world', world, scene }]
 
     // TODO Scene parent object?
-    return hasModels
-      ? [[worldComponent, ...components].map(c => h(c))]
-      : null
+    return [
+      [worldComponent, ...components].map(c => h(c))
+    ]
   }
 )
 
@@ -772,7 +769,6 @@ const Inspector = ({
   const onBlur = event => transition('TYPING_EXIT')
 
   let sceneObject = data
-  let modelData = sceneObject && sceneObject.model && models[sceneObject.model]
 
   // try to exit typing if there is nothing to inspect
   useEffect(() => {
@@ -798,7 +794,7 @@ const Inspector = ({
       ? [
           InspectedElement, {
             sceneObject,
-            modelData,
+            models,
             updateObject,
             selectedBone: scene.getObjectByProperty('uuid', selectedBone),
             machineState,
@@ -1246,7 +1242,7 @@ const saveCharacterPresets = state => presetsStorage.saveCharacterPresets({ char
 const CharacterPresetsEditor = connect(
   state => ({
     characterPresets: state.presets.characters,
-    defaultCharacterHeights: state.defaultCharacterHeights
+    models: state.models
   }),
   {
     updateObject,
@@ -1258,7 +1254,7 @@ const CharacterPresetsEditor = connect(
 
         // apply preset values to character model
         height: preset.state.height,
-        //height: state.defaultCharacterHeights[preset.state.model].originalHeight,
+        //height: state.models[preset.state.model].baseHeight,
         model: preset.state.model,
         // gender: 'female',
         // age: 'adult'
@@ -1458,7 +1454,7 @@ const MORPH_TARGET_LABELS = {
   'ectomorphic': 'ecto',
   'endomorphic': 'obese',
 }
-const InspectedElement = ({ sceneObject, modelData, updateObject, selectedBone, machineState, transition, selectBone, updateCharacterSkeleton, calculatedName }) => {
+const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, machineState, transition, selectBone, updateCharacterSkeleton, calculatedName }) => {
   const createOnSetValue = (id, name, transform = value => value) => value => updateObject(id, { [name]: transform(value) })
 
   let positionSliders = [
@@ -1467,14 +1463,39 @@ const InspectedElement = ({ sceneObject, modelData, updateObject, selectedBone, 
     [NumberSlider, { label: 'z', value: sceneObject.z, min: -30, max: 30, onSetValue: createOnSetValue(sceneObject.id, 'z') } ],
   ]
 
-  let volumeSliders = [
-    [NumberSlider, { label: 'width', value: sceneObject.width, min: 0.025, max: 5, onSetValue: createOnSetValue(sceneObject.id, 'width') } ],
-    [NumberSlider, { label: 'height', value: sceneObject.height, min: 0.025, max: 5, onSetValue: createOnSetValue(sceneObject.id, 'height') } ],
-    [NumberSlider, { label: 'depth', value: sceneObject.depth, min: 0.025, max: 5, onSetValue: createOnSetValue(sceneObject.id, 'depth') } ],
-  ]
+  let volumeSliders = sceneObject.model === 'box'
+    ? [
+        [NumberSlider, { label: 'width', value: sceneObject.width, min: 0.025, max: 5, onSetValue: createOnSetValue(sceneObject.id, 'width') } ],
+        [NumberSlider, { label: 'height', value: sceneObject.height, min: 0.025, max: 5, onSetValue: createOnSetValue(sceneObject.id, 'height') } ],
+        [NumberSlider, { label: 'depth', value: sceneObject.depth, min: 0.025, max: 5, onSetValue: createOnSetValue(sceneObject.id, 'depth') } ]
+      ]
+    : [
+        NumberSlider, {
+          label: 'size',
+          value: sceneObject.depth,
+          min: 0.025,
+          max: 5,
+          onSetValue: value => updateObject(
+            sceneObject.id,
+            { width: value, height: value, depth: value }
+          )
+        }
+      ]
 
   const onFocus = event => transition('TYPING_ENTER')
   const onBlur = event => transition('TYPING_EXIT')
+
+  // TODO selector?
+  const modelValues = Object.values(models)
+  const modelOptions = {
+    object: modelValues
+      .filter(model => model.type === 'object')
+      .map(model => ({ name: model.name, value: model.id })),
+
+    character: modelValues
+      .filter(model => model.type === 'character')
+      .map(model => ({ name: model.name, value: model.id }))
+  }
 
   return h([
     'div',
@@ -1494,51 +1515,33 @@ const InspectedElement = ({ sceneObject, modelData, updateObject, selectedBone, 
         }
       ],
 
-      sceneObject.type == 'object' && [
-        'select', {
-          value: sceneObject.model,
-          onChange: event => {
-            event.preventDefault()
-            updateObject(sceneObject.id, { model: event.target.value })
-          }
-        }, [
-          [['box', 'box'], ['tree', 'tree'], ['chair', 'chair']].map(([name, value]) =>
-            ['option', { value }, name]
-          )
-        ]
-      ],
-
+      // character preset
       sceneObject.type == 'character' && [
-
-        // character preset
         [CharacterPresetsEditor, { sceneObject }],
-
-        ['div.row', { style: { margin: '9px 0 6px 0', paddingRight: 9 } },
-          ['div', { style: { width: 50, display: 'flex', alignSelf: 'center' } }, 'model'],
-          [
-            'select', {
-              value: sceneObject.model,
-              onChange: event => {
-                event.preventDefault()
-                updateObject(sceneObject.id, { model: event.target.value })
-              },
-              style: {
-                marginBottom: 0
-              }
-            }, [
-              [
-                { name: 'Adult Male', value: 'adult-male' },
-                { name: 'Adult Female', value: 'adult-female' },
-                { name: 'Teen Male', value: 'teen-male' },
-                { name: 'Teen Female', value: 'teen-female' },
-              ].map(({ name, value }) =>
-                ['option', { value }, name]
-              )
-            ]
-          ],
-        ]
-
       ],
+
+      (sceneObject.type == 'object' || sceneObject.type == 'character') && [
+        ModelSelect, {
+          sceneObject,
+          options: modelOptions[sceneObject.type],
+          updateObject,
+          transition
+        }
+      ],
+
+      // sceneObject.type == 'object' && [
+      //   'select', {
+      //     value: sceneObject.model,
+      //     onChange: event => {
+      //       event.preventDefault()
+      //       updateObject(sceneObject.id, { model: event.target.value })
+      //     }
+      //   }, [
+      //     [['box', 'box'], ['tree', 'tree'], ['chair', 'chair']].map(([name, value]) =>
+      //       ['option', { value }, name]
+      //     )
+      //   ]
+      // ],
 
       sceneObject.type != 'camera' &&
         [
@@ -2701,7 +2704,7 @@ const Editor = connect(
   {
     createObject,
     selectObject,
-    setModels: characterModelDataById => ({ type: 'SET_MODELS', payload: characterModelDataById }),
+    updateModels: payload => ({ type: 'UPDATE_MODELS', payload }),
     loadScene,
     saveScene: filepath => (dispatch, getState) => {
       let state = getState()
@@ -2760,7 +2763,7 @@ const Editor = connect(
   }
 )(
 
-  ({ mainViewCamera, createObject, selectObject, setModels, loadScene, saveScene, activeCamera, setActiveCamera, resetScene, remoteInput, aspectRatio, saveToBoard, insertAsNewBoard, sceneObjects, selection }) => {
+  ({ mainViewCamera, createObject, selectObject, updateModels, loadScene, saveScene, activeCamera, setActiveCamera, resetScene, remoteInput, aspectRatio, saveToBoard, insertAsNewBoard, sceneObjects, selection }) => {
     const largeCanvasRef = useRef(null)
     const smallCanvasRef = useRef(null)
     const [ready, setReady] = useState(false)
@@ -2781,25 +2784,9 @@ const Editor = connect(
     }
 
     useEffect(() => {
-      ModelLoader.init().then(characterModels => {
-
-        //console.log('initing with : ', characterModels )
-        let characterModelDataById = Object.entries(characterModels).reduce(
-          (coll, [key, model]) => {
-            let model1 = (model.children[0] instanceof THREE.Mesh) ? model.children[0] : model.children[1]
-            if (model1 === undefined) model1 = model //fix for temp loading FBX
-            coll[key] = {
-              model: model1.toJSON(),
-              bones: JSON.parse(JSON.stringify(model1.skeleton.bones)),
-              animationIds:model.original ? model1.original.animations.map(animation => animation.name) : null
-            }
-
-            return coll
-          }, {}
-        )
-        setModels(characterModelDataById)
-        setReady(true)
-      })
+      // TODO introspect models
+      updateModels({})
+      setReady(true)
     }, [])
 
     // render Toolbar with updated camera when scene is ready, or when activeCamera changes

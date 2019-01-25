@@ -158,7 +158,7 @@ class DragControls extends THREE.EventDispatcher {
     let checkIntersectionsWithMeshes = []
     for (var o of this._objects)
     {
-      if (o instanceof THREE.Mesh) checkIntersectionsWithMeshes.push(o)
+      if (o instanceof THREE.Group && o.userData.type === 'object') checkIntersectionsWithMeshes.push(o)
       if (o instanceof THREE.Object3D && o.userData.type === 'character')
       {
         checkIntersectionsWithMeshes = checkIntersectionsWithMeshes.concat(o.bonesHelper.hit_meshes)
@@ -168,6 +168,7 @@ class DragControls extends THREE.EventDispatcher {
     if ( intersects.length > 0 ) {
       this.onSelectBone( null )  // deselect bone is any selected
       let object = this.getObjectAndBone( intersects[ 0 ] )[0]
+
       if (
         // is the camera is orthographic (which means, start dragging on the first click)
         this._camera.isOrthographicCamera
@@ -250,7 +251,7 @@ class DragControls extends THREE.EventDispatcher {
     let checkIntersectionsWithMeshes = []
     for (var o of this._objects)
     {
-      if (o instanceof THREE.Mesh) checkIntersectionsWithMeshes.push(o)
+      if (o instanceof THREE.Group && o.userData.type === 'object') checkIntersectionsWithMeshes.push(o)
       if (o instanceof THREE.Object3D && o.userData.type === 'character')
       {
         checkIntersectionsWithMeshes = checkIntersectionsWithMeshes.concat(o.bonesHelper.hit_meshes)

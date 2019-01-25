@@ -215,7 +215,7 @@ const World = ({ world, scene }) => {
       scene.remove(room.current)
       room.current = null
     }
-  }, [world.room.width, world.room.length, world.room.height])
+  }, [world.room.width, world.room.length, world.room.height, world.room.visible])
 
   useEffect(() => {
     if (room.current) room.current.visible = world.room.visible
