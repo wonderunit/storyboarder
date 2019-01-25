@@ -73,17 +73,17 @@ const WorldObject = require('./World')
 
 const NumberSlider = require('./NumberSlider')
 const NumberSliderTransform = {
-  radians: (prev, delta, { min, max, step, fine }) => {
+  degrees: (prev, delta, { min, max, step, fine }) => {
     // inc/dec
     let value = prev + (delta * (step * (fine ? 0.01 : 1)))
     // mod
-    if (value > Math.PI) { return value - Math.PI * 2 }
-    if (value < -Math.PI) { return value + Math.PI * 2 }
+    if (value > 180) { return value - 360 }
+    if (value < -180) { return value + 360 }
     return value
   }
 }
 const NumberSliderFormatter = {
-  radToDeg: value => Math.round(value * THREE.Math.RAD2DEG).toString() + '°'
+  degrees: value => Math.round(value).toString() + '°',
 }
 
 require('../vendor/OutlineEffect.js')
@@ -994,15 +994,15 @@ const InspectedWorld = ({ world, transition, updateWorld, updateWorldRoom, updat
         ['div',
           [NumberSlider, {
             label: 'rotation',
-            min: -Math.PI,
-            max: Math.PI,
-            step: Math.PI/180,
-            value: world.environment.rotation,
+            min: -180,
+            max: 180,
+            step: 1,
+            value: THREE.Math.radToDeg(world.environment.rotation),
             onSetValue: rotation => {
-              updateWorldEnvironment({ rotation })
+              updateWorldEnvironment({ rotation: THREE.Math.degToRad(rotation) })
             },
-            transform: NumberSliderTransform.radians,
-            formatter: NumberSliderFormatter.radToDeg
+            transform: NumberSliderTransform.degrees,
+            formatter: NumberSliderFormatter.degrees
           }]
         ]
 
@@ -1580,13 +1580,13 @@ const InspectedElement = ({ sceneObject, modelData, updateObject, selectedBone, 
       ['div',
         [NumberSlider, {
           label: 'rotation',
-          min: -Math.PI,
-          max: Math.PI,
-          step: Math.PI/180,
-          value: sceneObject.rotation,
-          onSetValue: createOnSetValue(sceneObject.id, 'rotation'),
-          transform: NumberSliderTransform.radians,
-          formatter: NumberSliderFormatter.radToDeg
+          min: -180,
+          max: 180,
+          step: 1,
+          value: THREE.Math.radToDeg(sceneObject.rotation),
+          onSetValue: value => updateObject(sceneObject.id, { rotation: THREE.Math.degToRad(value) }),
+          transform: NumberSliderTransform.degrees,
+          formatter: NumberSliderFormatter.degrees
         }]
       ],
 
@@ -1594,13 +1594,13 @@ const InspectedElement = ({ sceneObject, modelData, updateObject, selectedBone, 
         ['div',
           [NumberSlider, {
             label: 'roll',
-            min: -45 * THREE.Math.DEG2RAD,
-            max: 45 * THREE.Math.DEG2RAD,
-            step: Math.PI/180,
-            value: sceneObject.roll,
-            onSetValue: createOnSetValue(sceneObject.id, 'roll'),
-            transform: NumberSliderTransform.radians,
-            formatter: NumberSliderFormatter.radToDeg
+            min: -45,
+            max: 45,
+            step: 1,
+            value: THREE.Math.radToDeg(sceneObject.roll),
+            onSetValue: value => updateObject(sceneObject.id, { roll: THREE.Math.degToRad(value) }),
+            transform: NumberSliderTransform.degrees,
+            formatter: NumberSliderFormatter.degrees
           }]
         ],
 
@@ -1703,7 +1703,7 @@ const BoneEditor = ({ sceneObject, bone, updateCharacterSkeleton }) => {
       rotation: getDefaultRotationForBone(skeleton, bone)
     }
 
-  const createOnSetValue = key => value => {
+  const createOnSetValue = (key, transform = value => value) => value => {
     updateCharacterSkeleton({
       id: sceneObject.id,
       name: bone.name,
@@ -1711,7 +1711,7 @@ const BoneEditor = ({ sceneObject, bone, updateCharacterSkeleton }) => {
         x: bone.rotation.x,
         y: bone.rotation.y,
         z: bone.rotation.z,
-        [key]: value
+        [key]: transform(value)
       }
     })
   }
@@ -1733,9 +1733,9 @@ const BoneEditor = ({ sceneObject, bone, updateCharacterSkeleton }) => {
             max: Math.PI,
             step: Math.PI/180,
             value: bone.rotation.x,
-            onSetValue: createOnSetValue('x'),
-            transform: NumberSliderTransform.radians,
-            formatter: NumberSliderFormatter.radToDeg
+            onSetValue: createOnSetValue('x', THREE.Math.degToRad),
+            transform: NumberSliderTransform.degrees,
+            formatter: NumberSliderFormatter.degrees
           }
         ],
         [NumberSlider,
@@ -1745,9 +1745,9 @@ const BoneEditor = ({ sceneObject, bone, updateCharacterSkeleton }) => {
             max: Math.PI,
             step: Math.PI/180,
             value: bone.rotation.y,
-            onSetValue: createOnSetValue('y'),
-            transform: NumberSliderTransform.radians,
-            formatter: NumberSliderFormatter.radToDeg
+            onSetValue: createOnSetValue('y', THREE.Math.degToRad),
+            transform: NumberSliderTransform.degrees,
+            formatter: NumberSliderFormatter.degrees
           }
         ],
         [NumberSlider,
@@ -1757,9 +1757,9 @@ const BoneEditor = ({ sceneObject, bone, updateCharacterSkeleton }) => {
             max: Math.PI,
             step: Math.PI/180,
             value: bone.rotation.z,
-            onSetValue: createOnSetValue('z'),
-            transform: NumberSliderTransform.radians,
-            formatter: NumberSliderFormatter.radToDeg
+            onSetValue: createOnSetValue('z', THREE.Math.degToRad),
+            transform: NumberSliderTransform.degrees,
+            formatter: NumberSliderFormatter.degrees
           }
         ]
       ]]
