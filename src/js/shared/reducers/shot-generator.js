@@ -180,6 +180,43 @@ const initialState = {
       name: 'Teen Male',
       type: 'character',
       height: 1.6
+    },
+
+    'box': {
+      id: 'box',
+      name: 'box',
+      type: 'object',
+      height: 1
+    },
+    'tree': {
+      id: 'tree',
+      name: 'tree',
+      type: 'object',
+      height: 1
+    },
+    'chair': {
+      id: 'chair',
+      name: 'chair',
+      type: 'object',
+      height: 1
+    },
+    'car': {
+      id: 'car',
+      name: 'car',
+      type: 'object',
+      height: 1
+    },
+    'door': {
+      id: 'door',
+      name: 'door',
+      type: 'object',
+      height: 1
+    },
+    'building': {
+      id: 'building_one_storey',
+      name:  'building (1)',
+      type: 'object',
+      height: 1
     }
   },
 

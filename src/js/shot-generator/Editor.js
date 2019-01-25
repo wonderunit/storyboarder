@@ -1478,14 +1478,14 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
   const onFocus = event => transition('TYPING_ENTER')
   const onBlur = event => transition('TYPING_EXIT')
 
-  const modelOptions = [
-    ['box', 'box'],
-    ['tree', 'tree'],
-    ['chair', 'chair'],
-    ['car', 'car'],
-    ['door', 'door'],
-    ['building (1)', 'building_one_storey']
-  ]
+  // TODO selector?
+  const modelValues = Object.values(models)
+  const sceneObjectModelOptions = modelValues
+    .filter(model => model.type === 'object')
+    .map(model => ({ name: model.name, value: model.id }))
+  const characterModelOptions = modelValues
+    .filter(model => model.type === 'character')
+    .map(model => ({ name: model.name, value: model.id }))
 
   return h([
     'div',
@@ -1548,7 +1548,7 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
                   }, 'Select a file …']
                 ]],
                 ['optgroup', { label: 'Built-in' }, [
-                  modelOptions.map(([name, value]) =>
+                  sceneObjectModelOptions.map(({ name, value }) =>
                     ['option', { value }, name]
                   )
                 ]]
@@ -1589,10 +1589,7 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
                 marginBottom: 0
               }
             }, [
-              Object.values(models).map(model => ({
-                name: model.name,
-                value: model.id
-              })).map(({ name, value }) =>
+              characterModelOptions.map(({ name, value }) =>
                 ['option', { value }, name]
               )
             ]
