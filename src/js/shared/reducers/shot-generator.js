@@ -481,7 +481,7 @@ module.exports = {
           draft.input.mouseModeClick = action.payload
           return
 
-        case 'SET_MODELS':
+        case 'UPDATE_MODELS':
           draft.models = {
             ...state.models,
             ...action.payload

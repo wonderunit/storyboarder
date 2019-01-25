@@ -2762,7 +2762,7 @@ const Editor = connect(
   {
     createObject,
     selectObject,
-    setModels: payload => ({ type: 'SET_MODELS', payload }),
+    updateModels: payload => ({ type: 'UPDATE_MODELS', payload }),
     loadScene,
     saveScene: filepath => (dispatch, getState) => {
       let state = getState()
@@ -2821,7 +2821,7 @@ const Editor = connect(
   }
 )(
 
-  ({ mainViewCamera, createObject, selectObject, setModels, loadScene, saveScene, activeCamera, setActiveCamera, resetScene, remoteInput, aspectRatio, saveToBoard, insertAsNewBoard, sceneObjects, selection }) => {
+  ({ mainViewCamera, createObject, selectObject, updateModels, loadScene, saveScene, activeCamera, setActiveCamera, resetScene, remoteInput, aspectRatio, saveToBoard, insertAsNewBoard, sceneObjects, selection }) => {
     const largeCanvasRef = useRef(null)
     const smallCanvasRef = useRef(null)
     const [ready, setReady] = useState(false)
@@ -2843,7 +2843,7 @@ const Editor = connect(
 
     useEffect(() => {
       // TODO introspect models
-      setModels({})
+      updateModels({})
       setReady(true)
     }, [])
 
