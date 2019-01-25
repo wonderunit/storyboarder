@@ -202,6 +202,12 @@ const Character = React.memo(({ scene, id, type, remoteInput, isSelected, select
       object.current.bonesHelper = new BonesHelper(skel.skeleton.bones[0], object.current)
       scene.add(object.current.bonesHelper)
 
+      // TODO could avoid the jump by making the entire character a positioned Group with children
+      //      OR could run all the updaters here to set position correctly immediately after load?
+      //
+      // hide until ready
+      object.current.visible = false
+
       setLoaded(true)
     }).catch(err => {
       console.error(err)
