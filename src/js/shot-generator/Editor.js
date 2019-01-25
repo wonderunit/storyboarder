@@ -84,6 +84,7 @@ const NumberSliderTransform = {
 }
 const NumberSliderFormatter = {
   degrees: value => Math.round(value).toString() + '°',
+  percent: value => Math.round(value).toString() + '%',
 }
 
 require('../vendor/OutlineEffect.js')
@@ -1458,7 +1459,7 @@ const MORPH_TARGET_LABELS = {
   'endomorphic': 'obese',
 }
 const InspectedElement = ({ sceneObject, modelData, updateObject, selectedBone, machineState, transition, selectBone, updateCharacterSkeleton, calculatedName }) => {
-  const createOnSetValue = (id, name) => value => updateObject(id, { [name]: value })
+  const createOnSetValue = (id, name, transform = value => value) => value => updateObject(id, { [name]: transform(value) })
 
   let positionSliders = [
     [NumberSlider, { label: 'x', value: sceneObject.x, min: -30, max: 30, onSetValue: createOnSetValue(sceneObject.id, 'x') } ],
@@ -1636,8 +1637,16 @@ const InspectedElement = ({ sceneObject, modelData, updateObject, selectedBone, 
           [NumberSlider, { label: 'height', min: 1.4732, max: 2.1336, step: 0.0254, value: sceneObject.height, onSetValue: createOnSetValue(sceneObject.id, 'height'),
             formatter: value => feetAndInchesAsString(...metersAsFeetAndInches(sceneObject.height))
           } ],
-          [NumberSlider, { label: 'head', min: 0.8, max: 1.2, step: 0.01, value: sceneObject.headScale, onSetValue: createOnSetValue(sceneObject.id, 'headScale'),
-            formatter: value => Math.round(value * 100).toString() + '%'
+          [
+            NumberSlider,
+            {
+              label: 'head',
+              min: 80,
+              max: 120,
+              step: 1,
+              value: sceneObject.headScale * 100,
+              onSetValue: createOnSetValue(sceneObject.id, 'headScale', value => value / 100),
+              formatter: value => Math.round(value).toString() + '%'
           } ],
         ]],
 
@@ -1650,10 +1659,14 @@ const InspectedElement = ({ sceneObject, modelData, updateObject, selectedBone, 
               {
                 label: MORPH_TARGET_LABELS[key],
                 min: 0,
-                max: 1,
-                step: 0.01,
-                value: value,
-                onSetValue: value => updateObject(sceneObject.id, { morphTargets: { [key]: value } })
+                max: 100,
+                step: 1,
+                value: value * 100,
+                onSetValue: value => updateObject(
+                  sceneObject.id,
+                  { morphTargets: { [key]: value / 100 }
+                }),
+                formatter: NumberSliderFormatter.percent
               }
             ]
           )
