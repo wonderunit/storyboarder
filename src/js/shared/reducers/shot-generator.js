@@ -158,7 +158,13 @@ const initialScene = {
     },
     ambient: {
       intensity: 0.1
+    },
+    directional: {
+      intensity: 0.3,
+      rotation: 2.26,
+      tilt: -0.43
     }
+
   },
   sceneObjects: {
     '6BC46A44-7965-43B5-B290-E3D2B9D15EEE': {
@@ -605,6 +611,15 @@ module.exports = {
           if (action.payload.intensity != null) {
             draft.world.ambient.intensity = action.payload.intensity
           }
+          if (action.payload.intensityDirectional != null) {
+            draft.world.directional.intensity = action.payload.intensityDirectional
+          }
+          if (action.payload.rotationDirectional != null) {
+            draft.world.directional.rotation = action.payload.rotationDirectional
+          }
+          if (action.payload.tiltDirectional != null) {
+            draft.world.directional.tilt = action.payload.tiltDirectional
+          }          
           return
 
         case 'DUPLICATE_OBJECT':

@@ -1059,9 +1059,46 @@ const InspectedWorld = ({ world, transition, updateWorld, updateWorldRoom, updat
     [
       'div', { style: { marginBottom: 12 }},
       [
-        ['h5', { style: { margin: 0 } }, 'Ambient'],
+        ['h5', { style: { margin: 0 } }, 'Ambient light'],
 
         [NumberSlider, { label: 'intensity', value: world.ambient.intensity, min: 0, max: 1, onSetValue: value => updateWorldEnvironment({ intensity: value }) } ],
+      ]
+    ],
+
+    [
+      'div', { style: { marginBottom: 12 }},
+      [
+        ['h5', { style: { margin: 0 } }, 'Directional light'],
+
+        [NumberSlider, { label: 'intensity', value: world.directional.intensity, min: 0, max: 1, onSetValue: value => updateWorldEnvironment({ intensityDirectional: value }) } ],
+        ['div',
+          [NumberSlider, {
+            label: 'rotation',
+            min: -Math.PI,
+            max: Math.PI,
+            step: Math.PI/180,
+            value: world.directional.rotation,
+            onSetValue: rotationDirectional => {
+              updateWorldEnvironment({ rotationDirectional })
+            },
+            transform: NumberSliderTransform.radians,
+            formatter: NumberSliderFormatter.radToDeg
+          }]
+        ],
+        ['div',
+          [NumberSlider, {
+            label: 'tilt',
+            min: -Math.PI,
+            max: Math.PI,
+            step: Math.PI/180,
+            value: world.directional.tilt,
+            onSetValue: tiltDirectional => {
+              updateWorldEnvironment({ tiltDirectional })
+            },
+            transform: NumberSliderTransform.radians,
+            formatter: NumberSliderFormatter.radToDeg
+          }]
+        ]
       ]
     ]
   ])
