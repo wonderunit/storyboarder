@@ -134,6 +134,9 @@ const NumberSlider = ({
                   onSetValue(postfixCalculator(infixToPostfix(event.target.value)))
                   setTextInput(false)
                 }
+              },
+              onBlur: event => {
+                setTextInput(false)
               }
             }]
           : ['input.number-slider__input.number-slider__input--move', {
