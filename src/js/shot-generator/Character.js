@@ -361,6 +361,7 @@ const Character = React.memo(({ scene, id, type, remoteInput, isSelected, select
   }, [selectedBone, loaded])
 
   useEffect(() => {
+    if (!object.current) return
     if (!isSelected) return
 
     if (remoteInput.mouseMode) return
