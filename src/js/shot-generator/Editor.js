@@ -1716,7 +1716,7 @@ const BoneEditor = ({ sceneObject, bone, updateCharacterSkeleton }) => {
       rotation: getDefaultRotationForBone(skeleton, bone)
     }
 
-  const createOnSetValue = (key, transform = value => value) => value => {
+  const createOnSetValue = (key, transform) => value => {
     updateCharacterSkeleton({
       id: sceneObject.id,
       name: bone.name,
@@ -1742,10 +1742,10 @@ const BoneEditor = ({ sceneObject, bone, updateCharacterSkeleton }) => {
         [NumberSlider,
           {
             label: 'x',
-            min: -Math.PI,
-            max: Math.PI,
-            step: Math.PI/180,
-            value: bone.rotation.x,
+            min: -180,
+            max: 180,
+            step: 1,
+            value: THREE.Math.radToDeg(bone.rotation.x),
             onSetValue: createOnSetValue('x', THREE.Math.degToRad),
             transform: NumberSliderTransform.degrees,
             formatter: NumberSliderFormatter.degrees
@@ -1754,10 +1754,10 @@ const BoneEditor = ({ sceneObject, bone, updateCharacterSkeleton }) => {
         [NumberSlider,
           {
             label: 'y',
-            min: -Math.PI,
-            max: Math.PI,
-            step: Math.PI/180,
-            value: bone.rotation.y,
+            min: -180,
+            max: 180,
+            step: 1,
+            value: THREE.Math.radToDeg(bone.rotation.y),
             onSetValue: createOnSetValue('y', THREE.Math.degToRad),
             transform: NumberSliderTransform.degrees,
             formatter: NumberSliderFormatter.degrees
@@ -1766,10 +1766,10 @@ const BoneEditor = ({ sceneObject, bone, updateCharacterSkeleton }) => {
         [NumberSlider,
           {
             label: 'z',
-            min: -Math.PI,
-            max: Math.PI,
-            step: Math.PI/180,
-            value: bone.rotation.z,
+            min: -180,
+            max: 180,
+            step: 1,
+            value: THREE.Math.radToDeg(bone.rotation.z),
             onSetValue: createOnSetValue('z', THREE.Math.degToRad),
             transform: NumberSliderTransform.degrees,
             formatter: NumberSliderFormatter.degrees
