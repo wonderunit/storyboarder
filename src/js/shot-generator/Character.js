@@ -30,8 +30,8 @@ const imageLoader = new THREE.ImageLoader(loadingManager)
 objLoader.setLogging(false, false)
 THREE.Cache.enabled = true
 
-const Character = React.memo(({ scene, id, type, remoteInput, isSelected, selectedBone, camera, updateCharacterSkeleton, updateObject, ...props }) => {
-  const [loaded, setLoaded] = useState(false)
+const Character = React.memo(({ scene, id, type, remoteInput, isSelected, selectedBone, camera, updateCharacterSkeleton, updateObject, loaded, ...props }) => {
+  const setLoaded = loaded => updateObject(id, { loaded })
 
   let object = useRef(null)
 

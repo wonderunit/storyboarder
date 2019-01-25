@@ -564,6 +564,8 @@ const SceneManager = connect(
                 updateCharacterSkeleton,
                 updateObject,
 
+                loaded: props.loaded ? props.loaded : false,
+
                 ...props
               }
             ]
