@@ -139,6 +139,9 @@
               "length": 40,
               "visible": true,
               "width": 30
+            },
+            "ambient": {
+              "intensity": 0.1
             }
           }
         }

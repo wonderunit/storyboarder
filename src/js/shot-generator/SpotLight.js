@@ -3,7 +3,7 @@ const THREE = require('three')
 const React = require('react')
 const { useRef, useEffect, useState } = React
 
-const Light = React.memo(({ scene, id, type, setLight, ...props }) => {
+const SpotLight = React.memo(({ scene, id, type, setLight, ...props }) => {
   let light = useRef(null)
 
   if (light.current)
@@ -37,6 +37,7 @@ const Light = React.memo(({ scene, id, type, setLight, ...props }) => {
     lightContainer.hitter = box_light_mesh
 
     var helper = new THREE.SpotLightHelper( light_spot, 0.14 );
+
     lightContainer.helper = helper
 
     light.current = lightContainer
@@ -102,4 +103,4 @@ const Light = React.memo(({ scene, id, type, setLight, ...props }) => {
   return null
 })
 
-module.exports = Light
+module.exports = SpotLight

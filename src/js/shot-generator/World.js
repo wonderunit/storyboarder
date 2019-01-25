@@ -14,6 +14,7 @@ const loadingManager = new THREE.LoadingManager()
 const objLoader = new THREE.OBJLoader2(loadingManager)
 const gltfLoader = new THREE.GLTFLoader(loadingManager)
 const imageLoader = new THREE.ImageLoader(loadingManager)
+
 objLoader.setLogging(false, false)
 
 const World = ({ world, scene }) => {
@@ -227,6 +228,21 @@ const World = ({ world, scene }) => {
       : scene.background = new THREE.Color(world.backgroundColor)
 
   }, [world.backgroundColor])
+
+  const ambientLight = useRef(null)
+
+  useEffect(() => {
+    if (ambientLight.current)
+    {
+      ambientLight.current.intensity = world.ambient.intensity
+      console.log('ambientLight: ', ambientLight.current)
+    } else {
+      ambientLight.current = new THREE.AmbientLight(0xffffff, world.ambient.intensity)
+      scene.add(ambientLight.current)
+      console.log('ambientLight: ', ambientLight.current)
+    }
+  }, [world.ambient.intensity])
+
 
   return null
 }

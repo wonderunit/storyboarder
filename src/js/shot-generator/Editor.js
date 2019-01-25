@@ -60,7 +60,7 @@ const CameraControls = require('./CameraControls')
 const DragControls = require('./DragControls')
 
 const Character = require('./Character')
-const Light = require('./Light')
+const SpotLight = require('./SpotLight')
 
 const SceneObject = require('./SceneObject')
 
@@ -618,15 +618,23 @@ const SceneManager = connect(
 
             case 'light':
               return [
-                Light, {
+                SpotLight, {
                   key: props.id,
                   scene,
-
-              //    setLight,
 
                   ...props
                 }
               ]
+
+              // case 'ambientlight':
+              //   return [
+              //     AmbientLight, {
+              //       key: props.id,
+              //       scene,
+              //
+              //       ...props
+              //     }
+              //   ]
         }
     })
 
@@ -1045,6 +1053,15 @@ const InspectedWorld = ({ world, transition, updateWorld, updateWorldRoom, updat
           }]
         ]
 
+      ]
+    ],
+
+    [
+      'div', { style: { marginBottom: 12 }},
+      [
+        ['h5', { style: { margin: 0 } }, 'Ambient'],
+
+        [NumberSlider, { label: 'intensity', value: world.ambient.intensity, min: 0, max: 1, onSetValue: value => updateWorldEnvironment({ intensity: value }) } ],
       ]
     ]
   ])

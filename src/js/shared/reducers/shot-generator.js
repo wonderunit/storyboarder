@@ -37,6 +37,9 @@ const defaultScenePreset = {
       rotation: 0,
       scale: 1,
       visible: true
+    },
+    ambient: {
+      intensity: 0.1
     }
   },
   sceneObjects: {
@@ -152,6 +155,9 @@ const initialScene = {
       rotation: 0,
       scale: 1,
       visible: true
+    },
+    ambient: {
+      intensity: 0.1
     }
   },
   sceneObjects: {
@@ -327,7 +333,6 @@ module.exports = {
           draft.world = action.payload.world
           draft.sceneObjects = action.payload.sceneObjects
           draft.activeCamera = action.payload.activeCamera
-          console.log('loading objects: ', draft.sceneObjects)
           // clear selections
           draft.selection = undefined
           draft.selectedBone = undefined
@@ -596,6 +601,9 @@ module.exports = {
           }
           if (action.payload.z != null) {
             draft.world.environment.z = action.payload.z
+          }
+          if (action.payload.intensity != null) {
+            draft.world.ambient.intensity = action.payload.intensity
           }
           return
 
