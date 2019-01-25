@@ -1,19 +1,30 @@
 const THREE = require('three')
+window.THREE = window.THREE || THREE
 
 const React = require('react')
 const { useRef, useEffect, useState } = React
 
-const BoundingBoxHelper = require('./BoundingBoxHelper')
-const BonesHelper = require('./BonesHelper')
-
+const path = require('path')
 const debounce = require('lodash.debounce')
 
-const ModelLoader = require('../services/model-loader')
+const BoundingBoxHelper = require('./BoundingBoxHelper')
+const BonesHelper = require('./BonesHelper')
 
 // character needs:
 //   mesh - SkinnedMesh
 //   bone structure - ideally Mixamo standard bones
 //
+
+// TODO use functions of ModelLoader?
+require('../../../node_modules/three/examples/js/loaders/LoaderSupport')
+require('../../../node_modules/three/examples/js/loaders/GLTFLoader')
+require('../../../node_modules/three/examples/js/loaders/OBJLoader2')
+const loadingManager = new THREE.LoadingManager()
+const objLoader = new THREE.OBJLoader2(loadingManager)
+const gltfLoader = new THREE.GLTFLoader(loadingManager)
+const imageLoader = new THREE.ImageLoader(loadingManager)
+objLoader.setLogging(false, false)
+THREE.Cache.enabled = true
 
 const Character = React.memo(({ scene, id, type, remoteInput, isSelected, selectedBone, camera, updateCharacterSkeleton, updateObject, ...props }) => {
   const [loaded, setLoaded] = useState(false)
@@ -76,12 +87,18 @@ const Character = React.memo(({ scene, id, type, remoteInput, isSelected, select
     }
   }
 
-  const load = () => {
+  const load = filepath => {
     return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        let source = ModelLoader.getCharacterModels()[props.model]
-        resolve(source)
-      }, 500)
+      gltfLoader.load(
+        filepath,
+        data => {
+          resolve(data)
+        },
+        null,
+        error => {
+          reject(error)
+        }
+      )
     })
   }
 
@@ -89,7 +106,72 @@ const Character = React.memo(({ scene, id, type, remoteInput, isSelected, select
     console.log(type, id, 'add')
 
     setLoaded(false)
-    load().then(source => {
+
+    const filepath = path.join(
+      __dirname, '..', '..', '..', 'src', 'data', 'shot-generator', 'dummies', 'gltf',
+      `${props.model}.glb`
+    )
+
+    load(filepath).then(data => {
+      let material = new THREE.MeshToonMaterial({
+        color: 0xffffff,
+        emissive: 0x0,
+        specular: 0x0,
+        skinning: true,
+        shininess: 0,
+        flatShading: false,
+        morphNormals: true,
+        morphTargets: true
+      })
+      let mesh = null
+      let armature = null
+      let obj = new THREE.Object3D()
+      obj = data.scene.children[0]
+
+      // first type of GLTF structure, where Skinned Mesh and the bone structure are inside the object3D
+      for (var i in data.scene.children[0].children) {
+        let child = data.scene.children[0].children[i]
+        if ( child instanceof THREE.Mesh ) {
+          mesh = child.clone()
+        } else {
+          if (child instanceof THREE.Object3D && armature === null) armature = child //new THREE.Skeleton(child)
+        }
+      }
+
+      if (mesh === null)
+      {
+        //try loading second type of GLTF structure, mesh is outside the Object3D that contains the armature
+        for (var i in data.scene.children)
+        {
+          let child = data.scene.children[i]
+          if ( child instanceof THREE.Mesh ) {
+            mesh = child
+            obj.add(mesh)
+          }
+        }
+      }
+      material.map = mesh.material.map//.clone()
+      // material.map.image = textureBody.image
+      material.map.needsUpdate = true
+      let bbox = new THREE.Box3().setFromObject(mesh)
+
+      let height = bbox.max.y - bbox.min.y
+      obj.originalHeight = height
+      mesh.material = material
+      //mesh.rotation.set(0, Math.PI/2, 0)
+
+      // FIXME
+      // let targetHeight = meshHeight
+      let targetHeight = 1.6
+
+      let scale = targetHeight / height
+      obj.scale.set(scale, scale, scale)
+      //mesh.geometry.translate(0, targetHeight/2, 0)
+      mesh.renderOrder = 1.0
+      mesh.original = data
+
+      source = obj
+
       let cloned = cloneAnimated(source)
 
       if (cloned instanceof THREE.SkinnedMesh)  // if FBX is loaded we get a SkinnedMesh
