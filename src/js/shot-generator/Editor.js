@@ -60,6 +60,8 @@ const CameraControls = require('./CameraControls')
 const DragControls = require('./DragControls')
 
 const Character = require('./Character')
+const SpotLight = require('./SpotLight')
+
 const SceneObject = require('./SceneObject')
 
 const BonesHelper = require('./BonesHelper')
@@ -94,7 +96,7 @@ window.THREE = THREE
 
 const draggables = (sceneObjects, scene) =>
   //scene.children.filter(o => o.userData.type === 'object' || o instanceof BoundingBoxHelper)
-  scene.children.filter(o => o.userData.type === 'object' || o.userData.type === 'character')
+  scene.children.filter(o => o.userData.type === 'object' || o.userData.type === 'character' || o.userData.type === 'light' )
 
 const characters = ( scene ) =>
   scene.children.filter(o => o.userData.type === 'character')
@@ -180,6 +182,7 @@ const SceneManager = connect(
     let dragControlsView = useRef(null)
     let orthoDragControlsView = useRef(null)
     let bonesHelper = useRef(null)
+    let lightHelper = useRef(null)
 
     let clock = useRef(new THREE.Clock())
 
@@ -191,11 +194,11 @@ const SceneManager = connect(
       console.log('new SceneManager')
 
       scene.background = new THREE.Color(world.backgroundColor)
-      scene.add(new THREE.AmbientLight(0x161616, 1))
+      //scene.add(new THREE.AmbientLight(0x161616, 1))
 
-      let directionalLight = new THREE.DirectionalLight(0xFFFFFF, 1)
-      directionalLight.position.set(0, 1, 3)
-      scene.add(directionalLight)
+      // let directionalLight = new THREE.DirectionalLight(0xFFFFFF, 1)
+      // directionalLight.position.set(0, 1, 3)
+      // scene.add(directionalLight)
 
       orthoCamera.current.position.y = 900
       orthoCamera.current.rotation.x = -Math.PI / 2
@@ -471,7 +474,24 @@ const SceneManager = connect(
       if (selection != null) {
         child = scene.children.find(o => o.userData.id === selection)
         sceneObject = sceneObjects[selection]
-        if (child && child.userData.type === 'character' && child.children[0] && (child.children[0].skeleton || child.children[1].skeleton) && sceneObject.visible) {
+        //if light - add helper
+        if (sceneObject.type === 'light') {
+          if (lightHelper.current !== child)
+          {
+            scene.remove(lightHelper.current)
+            lightHelper.current = child.helper
+            scene.add(lightHelper.current)
+          }
+        } else {
+          if (lightHelper.current)
+          {
+            scene.remove(lightHelper.current)
+            lightHelper.current = null
+          }
+        }
+
+        //if character
+        if (child && ((child.children[0] && child.children[0].skeleton) || (child.children[1] && child.children[1].skeleton)) && sceneObject.visible) {
           //console.log('child: ', child)
           let skel = (child.children[0] instanceof THREE.Mesh) ? child.children[0] : child.children[1]
 
@@ -487,8 +507,12 @@ const SceneManager = connect(
           bonesHelper.current = null
         }
       } else {
+
+        //if nothing selected
         bonesHelper.current = null
       }
+
+
 
       if (dragControlsView.current) {
         dragControlsView.current.setBones(bonesHelper.current)
@@ -588,6 +612,17 @@ const SceneManager = connect(
                 ...props
               }
             ]
+
+            case 'light':
+              return [
+                SpotLight, {
+                  key: props.id,
+                  scene,
+
+                  ...props
+                }
+              ]
+
         }
     })
 
@@ -613,6 +648,8 @@ const SceneManager = connect(
 //   return null
 // })
 
+
+
 const Camera = React.memo(({ scene, id, type, setCamera, ...props }) => {
   let camera = useRef(
     new THREE.PerspectiveCamera(
@@ -627,7 +664,7 @@ const Camera = React.memo(({ scene, id, type, setCamera, ...props }) => {
   useEffect(() => {
     console.log(type, id, 'added')
 
-    // TODO do we ever need these?
+    // TODO do we ever need these?  - we do at least some (aspectRatio breaks)
     // camera.current.position.x = props.x
     // camera.current.position.y = props.z
     // camera.current.position.z = props.y
@@ -638,6 +675,7 @@ const Camera = React.memo(({ scene, id, type, setCamera, ...props }) => {
     // camera.current.rotateZ(props.roll)
     // camera.current.userData.type = type
     // camera.current.userData.id = id
+    camera.current.aspect = props.aspectRatio
 
     // camera.current.fov = props.fov
     // camera.current.updateProjectionMatrix()
@@ -1005,6 +1043,52 @@ const InspectedWorld = ({ world, transition, updateWorld, updateWorldRoom, updat
         ]
 
       ]
+    ],
+
+    [
+      'div', { style: { marginBottom: 12 }},
+      [
+        ['h5', { style: { margin: 0 } }, 'Ambient light'],
+
+        [NumberSlider, { label: 'intensity', value: world.ambient.intensity, min: 0, max: 1, onSetValue: value => updateWorldEnvironment({ intensity: value }) } ],
+      ]
+    ],
+
+    [
+      'div', { style: { marginBottom: 12 }},
+      [
+        ['h5', { style: { margin: 0 } }, 'Directional light'],
+
+        [NumberSlider, { label: 'intensity', value: world.directional.intensity, min: 0, max: 1, onSetValue: value => updateWorldEnvironment({ intensityDirectional: value }) } ],
+        ['div',
+          [NumberSlider, {
+            label: 'rotation',
+            min: -Math.PI,
+            max: Math.PI,
+            step: Math.PI/180,
+            value: world.directional.rotation,
+            onSetValue: rotationDirectional => {
+              updateWorldEnvironment({ rotationDirectional })
+            },
+            transform: NumberSliderTransform.radians,
+            formatter: NumberSliderFormatter.radToDeg
+          }]
+        ],
+        ['div',
+          [NumberSlider, {
+            label: 'tilt',
+            min: -Math.PI,
+            max: Math.PI,
+            step: Math.PI/180,
+            value: world.directional.tilt,
+            onSetValue: tiltDirectional => {
+              updateWorldEnvironment({ tiltDirectional })
+            },
+            transform: NumberSliderTransform.radians,
+            formatter: NumberSliderFormatter.radToDeg
+          }]
+        ]
+      ]
     ]
   ])
 }
@@ -1068,10 +1152,12 @@ const ElementsPanel = connect(
        o[v.type][k.toString()] = v
        return o
     }, {})
+
     let sceneObjectsSorted = {
       ...types.camera,
       ...types.character,
-      ...types.object
+      ...types.object,
+      ...types.light
     }
 
     let items = [
@@ -1582,6 +1668,38 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
         ],
       ],
 
+      sceneObject.type == 'light' && [
+        [
+          'div.column',
+          [NumberSlider, { label: 'intensity', value: sceneObject.intensity, min: 0.025, max: 1, onSetValue: createOnSetValue(sceneObject.id, 'intensity') } ],
+        ],
+        [
+          'div.column',
+          [NumberSlider, {
+            label: 'angle',
+            value: sceneObject.angle,
+            min: 0.025,
+            max: Math.PI/2,
+            onSetValue: createOnSetValue(sceneObject.id, 'angle'),
+            step: Math.PI/180,
+            transform: NumberSliderTransform.radians,
+            formatter: NumberSliderFormatter.radToDeg
+           }]
+        ],
+        [
+          'div.column',
+          [NumberSlider, { label: 'distance', value: sceneObject.distance, min: 0.025, max: 100, onSetValue: createOnSetValue(sceneObject.id, 'distance') } ],
+        ],
+        [
+          'div.column',
+          [NumberSlider, { label: 'penumbra', value: sceneObject.penumbra, min: 0, max: 1, onSetValue: createOnSetValue(sceneObject.id, 'penumbra') } ],
+        ],
+        [
+          'div.column',
+          [NumberSlider, { label: 'decay', value: sceneObject.decay, min: 1, max: 2, onSetValue: createOnSetValue(sceneObject.id, 'decay') } ],
+        ],
+      ],
+
       ['div',
         [NumberSlider, {
           label: 'rotation',
@@ -1592,6 +1710,17 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
           onSetValue: value => updateObject(sceneObject.id, { rotation: THREE.Math.degToRad(value) }),
           transform: NumberSliderTransform.degrees,
           formatter: NumberSliderFormatter.degrees
+        }]
+      ],
+
+      ['div',
+        [NumberSlider, {
+          label: 'tilt',
+          min: -Math.PI,
+          max: Math.PI,
+          value: sceneObject.tilt,
+          onSetValue: createOnSetValue(sceneObject.id, 'tilt'),
+          formatter: value => Math.round(value * THREE.Math.RAD2DEG).toString() + '°'
         }]
       ],
 
@@ -1823,7 +1952,8 @@ const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, o
   let typeLabels = {
     'camera': 'CAM',
     'character': 'CHR',
-    'object': 'OBJ'
+    'object': 'OBJ',
+    'light': 'LGT'
   }
 
   let className = classNames({
@@ -2235,7 +2365,24 @@ const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, set
   }
 
   const onCreateLightClick = () => {
-    alert('not implemented')
+    let id = THREE.Math.generateUUID()
+
+    createObject({
+      id,
+      type: 'light',
+      x: 0,
+      y: 0,
+      z: 2,
+      rotation: 0,
+      tilt: 0,
+      intensity: 0.1,
+      visible: true,
+      angle: 1.04,
+      distance: 3,
+      penumbra: 0,
+      decay: 1,
+    })
+    selectObject(id)
   }
 
   const onCreateStressClick = () => {

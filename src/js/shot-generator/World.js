@@ -14,6 +14,7 @@ const loadingManager = new THREE.LoadingManager()
 const objLoader = new THREE.OBJLoader2(loadingManager)
 const gltfLoader = new THREE.GLTFLoader(loadingManager)
 const imageLoader = new THREE.ImageLoader(loadingManager)
+
 objLoader.setLogging(false, false)
 
 const World = ({ world, scene }) => {
@@ -142,13 +143,13 @@ const World = ({ world, scene }) => {
             image => {
               texture.image = image
               texture.needsUpdate = true
-      
+
               let geometry = new THREE.PlaneGeometry( 135 / 3, 135 / 3, 32 )
-              let material = new THREE.MeshBasicMaterial( {map: texture, side: THREE.FrontSide} )
+              let material = new THREE.MeshToonMaterial( {map: texture, side: THREE.FrontSide} )
               material.transparent = true
               material.blending = THREE.MultiplyBlending
               material.opacity = 1
-      
+
               ground.current = new THREE.Mesh( geometry, material )
               ground.current.userData.type = "ground"
               // ground.current.renderOrder = 0.7
@@ -232,6 +233,49 @@ const World = ({ world, scene }) => {
       : scene.background = new THREE.Color(world.backgroundColor)
 
   }, [world.backgroundColor])
+
+  const ambientLight = useRef(null)
+  const directionalLight = useRef(null)
+
+  useEffect(() => {
+    if (ambientLight.current)
+    {
+      ambientLight.current.intensity = world.ambient.intensity
+    } else {
+      ambientLight.current = new THREE.AmbientLight(0xffffff, world.ambient.intensity)
+      scene.add(ambientLight.current)
+    }
+  }, [world.ambient.intensity])
+
+  useEffect(() => {
+    if (directionalLight.current)
+    {
+      directionalLight.current.intensity = world.directional.intensity
+      directionalLight.current.rotation.x = 0
+      directionalLight.current.rotation.z = 0
+      directionalLight.current.rotation.y = world.directional.rotation
+      directionalLight.current.rotateX(world.directional.tilt+Math.PI/2)
+      
+      //scene.remove(directionalLight.current.helper)
+      // var helper = new THREE.DirectionalLightHelper( directionalLight.current, 0.14 );
+      // scene.add(helper)
+      //directionalLight.current.helper = helper
+    } else {
+      let dirLight = new THREE.DirectionalLight(0xffffff, world.directional.intensity)
+      dirLight.position.set(0,1.5,0)
+      dirLight.target.position.set(0,0,0.4)
+      dirLight.add(dirLight.target)
+      dirLight.intensity = world.directional.intensity
+      dirLight.rotation.y = world.directional.rotation
+      dirLight.rotateX(world.directional.tilt+Math.PI/2)
+      //dirLight.rotation.x = world.directional.tilt+Math.PI/2
+      directionalLight.current = dirLight
+      // var helper = new THREE.DirectionalLightHelper( dirLight, 0.14 );
+      // scene.add(helper)
+      // directionalLight.current.helper = helper
+      scene.add(directionalLight.current)
+    }
+  }, [world.directional.intensity, world.directional.rotation, world.directional.tilt])
 
   return null
 }

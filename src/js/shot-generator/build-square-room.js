@@ -191,13 +191,13 @@ const buildSquareRoom = (w, l, h, { textures }) => {
     uvGenerator: BoundingUVGenerator
   }
 
-  var materialWall = new THREE.MeshBasicMaterial({map: textures.wall, side: THREE.FrontSide})
+  var materialWall = new THREE.MeshToonMaterial({map: textures.wall, side: THREE.FrontSide})
   materialWall.depthTest = true
   materialWall.transparent = true
   // materialWall.blending = THREE.MultiplyBlending
   materialWall.opacity = 0.1
 
-  var materialCeil = new THREE.MeshBasicMaterial({map: textures.wall, side: THREE.FrontSide})
+  var materialCeil = new THREE.MeshToonMaterial({map: textures.wall, side: THREE.FrontSide})
   materialCeil.depthTest = true
   materialCeil.transparent = true
   // materialWall.blending = THREE.MultiplyBlending

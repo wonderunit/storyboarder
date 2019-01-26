@@ -41,6 +41,21 @@
               "y": 6,
               "z": 1
             },
+            "4F0FF9B8-BBB4-4D83-9E87-6EFE16A01D6F": {
+              "id": "4F0FF9B8-BBB4-4D83-9E87-6EFE16A01D6F",
+              "type": "light",
+              "x": 3.4,
+              "y": 0.9,
+              "z": 1.3,
+              "rotation": -2.35,
+              "tilt": -1.53,
+              "intensity": 0.7,
+              "visible": true,
+              "angle": 0.47,
+              "distance": 30,
+              "penumbra": 0,
+              "decay": 1
+            },
             "94FA0F9D-E1E8-436B-8041-D831BD06CB33": {
               "depth": 0.5,
               "height": 0.5,
@@ -124,6 +139,14 @@
               "length": 40,
               "visible": true,
               "width": 30
+            },
+            "ambient": {
+              "intensity": 0.1
+            },
+            "directional": {
+              "intensity": 0.3,
+              "rotation": 2.26,
+              "tilt": -0.43
             }
           }
         }

@@ -37,6 +37,9 @@ const defaultScenePreset = {
       rotation: 0,
       scale: 1,
       visible: true
+    },
+    ambient: {
+      intensity: 0.1
     }
   },
   sceneObjects: {
@@ -101,6 +104,23 @@ const defaultScenePreset = {
 
       skeleton: defaultPosePreset.skeleton
     },
+
+    '4F0FF9B8-BBB4-4D83-9E87-6EFE16A01D6F': {
+      id: '4F0FF9B8-BBB4-4D83-9E87-6EFE16A01D6F',
+      type: 'light',
+      x: 1,
+      y: 1.5,
+      z: 2,
+      rotation: 10,
+      tilt: 10,
+      intensity: 0.7,
+      visible: true,
+      angle: 1.04,
+      distance: 3,
+      penumbra: 0,
+      decay: 1,
+    },
+
     '6BC46A44-7965-43B5-B290-E3D2B9D15EEE': {
       id: '6BC46A44-7965-43B5-B290-E3D2B9D15EEE',
       type: 'camera',
@@ -135,7 +155,16 @@ const initialScene = {
       rotation: 0,
       scale: 1,
       visible: true
+    },
+    ambient: {
+      intensity: 0.1
+    },
+    directional: {
+      intensity: 0.3,
+      rotation: 2.26,
+      tilt: -0.43
     }
+
   },
   sceneObjects: {
     '6BC46A44-7965-43B5-B290-E3D2B9D15EEE': {
@@ -149,7 +178,8 @@ const initialScene = {
       tilt: 0,
       roll: 0.0,
       name: undefined
-    }
+    },
+
   },
   activeCamera: '6BC46A44-7965-43B5-B290-E3D2B9D15EEE',
 }
@@ -363,9 +393,10 @@ module.exports = {
       switch (action.type) {
         case 'LOAD_SCENE':
           draft.world = action.payload.world
+          if (!action.payload.world.ambient) draft.world.ambient = initialScene.world.ambient
+          if (!action.payload.world.directional) draft.world.directional = initialScene.world.directional
           draft.sceneObjects = action.payload.sceneObjects
           draft.activeCamera = action.payload.activeCamera
-
           // clear selections
           draft.selection = undefined
           draft.selectedBone = undefined
@@ -479,6 +510,26 @@ module.exports = {
 
           if (action.payload.visible != null) {
             draft.sceneObjects[action.payload.id].visible = action.payload.visible
+          }
+
+          if (action.payload.intensity != null) {
+            draft.sceneObjects[action.payload.id].intensity = action.payload.intensity
+          }
+
+          if (action.payload.angle != null) {
+            draft.sceneObjects[action.payload.id].angle = action.payload.angle
+          }
+
+          if (action.payload.penumbra != null) {
+            draft.sceneObjects[action.payload.id].penumbra = action.payload.penumbra
+          }
+
+          if (action.payload.decay != null) {
+            draft.sceneObjects[action.payload.id].decay = action.payload.decay
+          }
+
+          if (action.payload.distance != null) {
+            draft.sceneObjects[action.payload.id].distance = action.payload.distance
           }
 
           if (action.payload.hasOwnProperty('characterPresetId')) {
@@ -628,6 +679,18 @@ module.exports = {
           }
           if (action.payload.z != null) {
             draft.world.environment.z = action.payload.z
+          }
+          if (action.payload.intensity != null) {
+            draft.world.ambient.intensity = action.payload.intensity
+          }
+          if (action.payload.intensityDirectional != null) {
+            draft.world.directional.intensity = action.payload.intensityDirectional
+          }
+          if (action.payload.rotationDirectional != null) {
+            draft.world.directional.rotation = action.payload.rotationDirectional
+          }
+          if (action.payload.tiltDirectional != null) {
+            draft.world.directional.tilt = action.payload.tiltDirectional
           }
           return
 

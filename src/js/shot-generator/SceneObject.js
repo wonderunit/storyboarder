@@ -72,7 +72,7 @@ const SceneObject = React.memo(({ scene, id, type, isSelected, loaded, updateObj
 
     container.current.visible = object.visible
   }
-  
+
   const load = async (model, object, container) => {
     setLoaded(false)
 
@@ -131,7 +131,7 @@ const SceneObject = React.memo(({ scene, id, type, isSelected, loaded, updateObj
             console.log('loaded', filepath)
             setLoaded(true)
             break
-        
+
           case '.gltf':
           case '.glb':
             await new Promise(resolve => {
