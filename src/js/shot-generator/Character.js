@@ -322,21 +322,23 @@ const Character = React.memo(({ scene, id, type, remoteInput, characterModels, i
         target.quaternion.copy(objectQuaternion.normalize())
         //target.updateMatrix()
         //console.log('target rotation: ', target.rotation)
-        if (selectedBone) {
-          updateCharacterSkeleton({
-            id,
-            name: target.name,
-            rotation: {
-              x: target.rotation.x,
-              y: target.rotation.y,
-              z: target.rotation.z
-            }
-          })
-        } else {
-          updateObject(target.userData.id, {
-            rotation: target.rotation.y
-          })
-        }
+        requestAnimationFrame(() => {
+          if (selectedBone) {
+            updateCharacterSkeleton({
+              id,
+              name: target.name,
+              rotation: {
+                x: target.rotation.x,
+                y: target.rotation.y,
+                z: target.rotation.z
+              }
+            })
+          } else {
+            updateObject(target.userData.id, {
+              rotation: target.rotation.y
+            })
+          }
+        })
       }
     } else {
       // not pressed anymore, reset
