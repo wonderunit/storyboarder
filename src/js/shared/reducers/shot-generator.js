@@ -186,7 +186,69 @@ const initialScene = {
 
 // TODO sg key
 const initialState = {
-  models: {},
+  models: {
+    'adult-female': {
+      id: 'adult-female',
+      name: 'Adult Female',
+      type: 'character',
+      height: 1.65
+    },
+    'adult-male': {
+      id: 'adult-male',
+      name: 'Adult Male',
+      type: 'character',
+      height: 1.8
+    },
+    'teen-female': {
+      id: 'teen-female',
+      name: 'Teen Female',
+      type: 'character',
+      height: 1.6
+    },
+    'teen-male': {
+      id: 'teen-male',
+      name: 'Teen Male',
+      type: 'character',
+      height: 1.6
+    },
+
+    'box': {
+      id: 'box',
+      name: 'box',
+      type: 'object',
+      height: 1
+    },
+    'tree': {
+      id: 'tree',
+      name: 'tree',
+      type: 'object',
+      height: 1
+    },
+    'chair': {
+      id: 'chair',
+      name: 'chair',
+      type: 'object',
+      height: 1
+    },
+    'car': {
+      id: 'car',
+      name: 'car',
+      type: 'object',
+      height: 1
+    },
+    'door': {
+      id: 'door',
+      name: 'door',
+      type: 'object',
+      height: 1
+    },
+    'building': {
+      id: 'building_one_storey',
+      name:  'building (1)',
+      type: 'object',
+      height: 1
+    }
+  },
 
   aspectRatio: 2.35,
 
@@ -245,12 +307,6 @@ const initialState = {
         state: defaultPosePreset
       }
     }
-  },
-  defaultCharacterHeights: {
-    'adult-male': 1.8,
-    'teen-male': 1.6,
-    'adult-female': 1.65,
-    'teen-female': 1.6
   }
 }
 
@@ -415,8 +471,15 @@ module.exports = {
           }
           if (action.payload.model != null) {
             draft.sceneObjects[action.payload.id].model = action.payload.model
+            
+            // if a character's model is changing
             if (draft.sceneObjects[action.payload.id].type === 'character') {
-              draft.sceneObjects[action.payload.id].height = initialState.defaultCharacterHeights[action.payload.model]
+              // reset the height ...
+              draft.sceneObjects[action.payload.id].height = state.models[action.payload.model]
+                // ... to default (if known) ...
+                ? state.models[action.payload.model].height
+                // ... otherwise, a reasonable value
+                : 1.6
             }
           }
 
@@ -477,6 +540,10 @@ module.exports = {
             draft.sceneObjects[action.payload.id].posePresetId = action.payload.posePresetId
           }
 
+          if (action.payload.hasOwnProperty('loaded')) {
+            draft.sceneObjects[action.payload.id].loaded = action.payload.loaded
+          }
+
           checkForCharacterChanges(state, draft, action)
           checkForSkeletonChanges(state, draft, action)
           return
@@ -513,8 +580,11 @@ module.exports = {
           draft.input.mouseModeClick = action.payload
           return
 
-        case 'SET_MODELS':
-          draft.models = action.payload
+        case 'UPDATE_MODELS':
+          draft.models = {
+            ...state.models,
+            ...action.payload
+          }
           return
 
         case 'SET_ASPECT_RATIO':

@@ -52,10 +52,16 @@ const NumberSlider = ({
 
   const onPointerDown = event => {
     event.preventDefault()
-    document.addEventListener('pointerup', onPointerUp)
-    event.target.requestPointerLock()
-    document.addEventListener('pointerlockchange', lockChangeAlert, false)
-    setMoving(true)
+    if (event.shiftKey) {
+      // reset
+      // TODO validation
+      onSetValue(0)
+    } else {
+      document.addEventListener('pointerup', onPointerUp)
+      event.target.requestPointerLock()
+      document.addEventListener('pointerlockchange', lockChangeAlert, false)
+      setMoving(true)
+    }
   }
 
   useEffect(() => {
@@ -134,6 +140,9 @@ const NumberSlider = ({
                   onSetValue(postfixCalculator(infixToPostfix(event.target.value)))
                   setTextInput(false)
                 }
+              },
+              onBlur: event => {
+                setTextInput(false)
               }
             }]
           : ['input.number-slider__input.number-slider__input--move', {
