@@ -491,7 +491,7 @@ const SceneManager = connect(
         }
 
         //if character
-        if (child && child.children[0] && (child.children[0].skeleton || child.children[1].skeleton) && sceneObject.visible) {
+        if (child && ((child.children[0] && child.children[0].skeleton) || (child.children[1] && child.children[1].skeleton)) && sceneObject.visible) {
           //console.log('child: ', child)
           let skel = (child.children[0] instanceof THREE.Mesh) ? child.children[0] : child.children[1]
 
@@ -664,7 +664,7 @@ const Camera = React.memo(({ scene, id, type, setCamera, ...props }) => {
   useEffect(() => {
     console.log(type, id, 'added')
 
-    // TODO do we ever need these?
+    // TODO do we ever need these?  - we do at least some (aspectRatio breaks)
     // camera.current.position.x = props.x
     // camera.current.position.y = props.z
     // camera.current.position.z = props.y
@@ -675,6 +675,7 @@ const Camera = React.memo(({ scene, id, type, setCamera, ...props }) => {
     // camera.current.rotateZ(props.roll)
     // camera.current.userData.type = type
     // camera.current.userData.id = id
+    camera.current.aspect = props.aspectRatio
 
     // camera.current.fov = props.fov
     // camera.current.updateProjectionMatrix()
