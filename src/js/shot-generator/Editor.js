@@ -675,6 +675,7 @@ const Camera = React.memo(({ scene, id, type, setCamera, ...props }) => {
   camera.current.rotateZ(props.roll)
   camera.current.userData.type = type
   camera.current.userData.id = id
+  camera.current.aspect = props.aspectRatio
 
   camera.current.fov = props.fov
   camera.current.updateProjectionMatrix()
