@@ -626,15 +626,6 @@ const SceneManager = connect(
                 }
               ]
 
-              // case 'ambientlight':
-              //   return [
-              //     AmbientLight, {
-              //       key: props.id,
-              //       scene,
-              //
-              //       ...props
-              //     }
-              //   ]
         }
     })
 

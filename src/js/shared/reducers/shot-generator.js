@@ -337,6 +337,8 @@ module.exports = {
       switch (action.type) {
         case 'LOAD_SCENE':
           draft.world = action.payload.world
+          if (!action.payload.world.ambient) draft.world.ambient = initialScene.world.ambient
+          if (!action.payload.world.directional) draft.world.directional = initialScene.world.directional
           draft.sceneObjects = action.payload.sceneObjects
           draft.activeCamera = action.payload.activeCamera
           // clear selections
@@ -619,7 +621,7 @@ module.exports = {
           }
           if (action.payload.tiltDirectional != null) {
             draft.world.directional.tilt = action.payload.tiltDirectional
-          }          
+          }
           return
 
         case 'DUPLICATE_OBJECT':

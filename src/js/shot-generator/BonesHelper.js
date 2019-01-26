@@ -117,17 +117,6 @@ function BonesHelper( object, object3D ) {
       let boneLength = posA.distanceTo(posB) * scaleC.y //* scaleB.y
       let boneWidth = boneLength > 0.15 ? boneLength : 0.15   //restrict minimum width
       if (boneWidth > 0.35) boneWidth = 0.35  //also maximum..
-      let s_geometry = new THREE.SphereGeometry(boneWidth/18, 8, 8)
-      let s_material = new THREE.MeshBasicMaterial({
-        color: 0x006eb8,
-        depthTest: false,
-        depthWrite: false,
-        transparent: true,
-        opacity: 0.9,
-        flatShading: true,
-      })
-
-      let s_sphere = new THREE.Mesh(s_geometry, s_material)
 
       let geometry = new THREE.CylinderBufferGeometry(boneWidth / 25, boneWidth /15 , boneLength - boneWidth/20, 4 )//, heightSegments : Integer, openEnded : Boolean, thetaStart : Float, thetaLength : Float)
 
@@ -251,13 +240,11 @@ BonesHelper.prototype.updateMatrixWorld = function () {
       boneMatrix.multiplyMatrices( matrixWorldInv, bone.matrixWorld )   // changed to parent position, as that's the length calculated
       //boneMatrix.scale(rootScale * 100)
 
-
       if (bone.connectedBone === undefined) continue
 
       bone.connectedBone.position.setFromMatrixPosition( boneMatrix )
       bone.connectedBone.quaternion.setFromRotationMatrix( boneMatrix )
       bone.connectedBone.scale.setFromMatrixScale( boneMatrix )
-      //console.log('current scle: ', bone.connectedBone.scale)
       if (bone.hitBone) {
         bone.hitBone.position.setFromMatrixPosition( boneMatrix )
         bone.hitBone.quaternion.setFromRotationMatrix( boneMatrix )
@@ -271,7 +258,6 @@ BonesHelper.prototype.updateMatrixWorld = function () {
 }()
 
 BonesHelper.prototype.raycast = function ( raycaster, intersects ) {
-  //let results = raycaster.intersectObjects(this.children)
   let results = raycaster.intersectObjects(this.cones)
   for (let result of results) {
     // add a .bone key to the Intersection object referencing the cone's bone
