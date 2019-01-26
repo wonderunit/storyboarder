@@ -139,6 +139,12 @@ class DragControls extends THREE.EventDispatcher {
       return [obj, null]
     }
 
+    if (intersect.object.parent instanceof THREE.Group)
+    {
+      let obj = intersect.object.parent
+      return [obj, null]
+    }
+
     let isBone = intersect.object.parent instanceof BonesHelper
 
     let object = isBone
@@ -159,6 +165,11 @@ class DragControls extends THREE.EventDispatcher {
     for (var o of objects)
     {
       if (o instanceof THREE.Mesh) allIntersectionMeshes.push(o)
+      if (o instanceof THREE.Group && o.children[0] instanceof THREE.Mesh) 
+      {
+        allIntersectionMeshes.push(o.children[0])
+      }
+      
       if (o instanceof THREE.Object3D && o.userData.type === 'light'){
         allIntersectionMeshes.push(o.hitter)
       }
