@@ -135,6 +135,15 @@ function BonesHelper( object, object3D ) {
         flatShading: true
       })
 
+      let s_material = new THREE.MeshBasicMaterial({
+        color: 0x006eb8,
+        depthTest: false,
+        depthWrite: false,
+        transparent: true,
+        opacity: 0.9,
+        flatShading: true,
+      })
+
       this.cones[boneIndex]= new THREE.Mesh()
 
       let coneGeom = new THREE.Mesh( geometry.clone(), s_material.clone() )
