@@ -157,12 +157,12 @@ const initialScene = {
       visible: true
     },
     ambient: {
-      intensity: 0.1
+      intensity: 0.5
     },
     directional: {
-      intensity: 0.3,
-      rotation: 2.26,
-      tilt: -0.43
+      intensity: 0.5,
+      rotation: -0.9,
+      tilt: 0.75
     }
 
   },
@@ -471,7 +471,7 @@ module.exports = {
           }
           if (action.payload.model != null) {
             draft.sceneObjects[action.payload.id].model = action.payload.model
-            
+
             // if a character's model is changing
             if (draft.sceneObjects[action.payload.id].type === 'character') {
               // reset the height ...

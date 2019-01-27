@@ -2375,11 +2375,11 @@ const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, set
       z: 2,
       rotation: 0,
       tilt: 0,
-      intensity: 0.1,
+      intensity: 0.8,
       visible: true,
       angle: 1.04,
-      distance: 3,
-      penumbra: 0,
+      distance: 5,
+      penumbra: 1.0,
       decay: 1,
     })
     selectObject(id)
