@@ -195,13 +195,13 @@ const buildSquareRoom = (w, l, h, { textures }) => {
   materialWall.depthTest = true
   materialWall.transparent = true
   // materialWall.blending = THREE.MultiplyBlending
-  materialWall.opacity = 0.1
+  materialWall.opacity = 0.5
 
   var materialCeil = new THREE.MeshToonMaterial({map: textures.wall, side: THREE.FrontSide})
   materialCeil.depthTest = true
   materialCeil.transparent = true
   // materialWall.blending = THREE.MultiplyBlending
-  materialCeil.opacity = 0.1
+  materialCeil.opacity = 0.5
 
   // var materialFloor = new THREE.MeshBasicMaterial({
   //   color: 0x00ff00,

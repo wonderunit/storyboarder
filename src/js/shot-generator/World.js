@@ -146,8 +146,8 @@ const World = ({ world, scene }) => {
 
               let geometry = new THREE.PlaneGeometry( 135 / 3, 135 / 3, 32 )
               let material = new THREE.MeshToonMaterial( {map: texture, side: THREE.FrontSide} )
-              material.transparent = true
-              material.blending = THREE.MultiplyBlending
+              //material.transparent = true
+              //material.blending = THREE.MultiplyBlending
               material.opacity = 1
 
               ground.current = new THREE.Mesh( geometry, material )
@@ -255,7 +255,7 @@ const World = ({ world, scene }) => {
       directionalLight.current.rotation.z = 0
       directionalLight.current.rotation.y = world.directional.rotation
       directionalLight.current.rotateX(world.directional.tilt+Math.PI/2)
-      
+
       //scene.remove(directionalLight.current.helper)
       // var helper = new THREE.DirectionalLightHelper( directionalLight.current, 0.14 );
       // scene.add(helper)
