@@ -9,7 +9,7 @@ const defaultFormatter = value => value.toFixed(2)
 
 const defaultTransform = (prev, delta, { min, max, step, fine }) => {
   // inc/dec
-  let val = prev + delta * (step * (fine ? 0.01 : 1))
+  let val = prev + delta * (step * (fine ? 0.01 : 0.25))
   // clamp
   val = val < min ? min : (val > max ? max : val)
   return val
@@ -72,7 +72,7 @@ const NumberSlider = ({
       document.removeEventListener('pointermove', onPointerMove)
     }
   }, [moving, value, altKey]) // rebind if values change that we care about
-  
+
   useEffect(() => {
     if (!moving && !textInput) {
       document.activeElement.blur()
