@@ -179,7 +179,7 @@ function BonesHelper( object, object3D ) {
           if ( ( bone.name.indexOf('LeftHand')>0 && ( bone.name.charAt(bone.name.indexOf('LeftHand')+8)) === "" )
             || ( bone.name.indexOf('RightHand')>0 && ( bone.name.charAt(bone.name.indexOf('RightHand')+9)) === "" ) )
           {
-            hitMesh.geometry.applyMatrix(new Matrix4().makeScale(1, 1.8, 1))
+            hitMesh.geometry.applyMatrix(new Matrix4().makeScale(4, 2, 4))
           }
           if ( bone.name.indexOf('LeftArm')>0 || bone.name.indexOf('RightArm')>0 )
           {
@@ -190,14 +190,31 @@ function BonesHelper( object, object3D ) {
           this.add(hitMesh)
 
         }
+        if ( bone.name.indexOf('Neck')>0 )
+        {
+          hitMesh.geometry.applyMatrix(new Matrix4().makeScale(3, 1, 3))
+          //hitMesh.geometry.applyMatrix(new Matrix4().makeTranslation(0, -boneLength, 0))
+        }
+        if ( bone.name.indexOf('Leg')>0 )
+        {
+          hitMesh.geometry.applyMatrix(new Matrix4().makeScale(1.5, 1, 1.5))
+          //hitMesh.geometry.applyMatrix(new Matrix4().makeTranslation(0, -boneLength, 0))
+        }
+        if ( bone.name.indexOf('Foot')>0 )
+        {
+          hitMesh.geometry.applyMatrix(new Matrix4().makeScale(1.5, 1, 1.5))
+          //hitMesh.geometry.applyMatrix(new Matrix4().makeTranslation(0, -boneLength, 0))
+        }
         if ( bone.name.indexOf('Hips')>0 && ( bone.name.charAt(bone.name.indexOf('Hips')+4)) === "" )
         {
-          hitMesh.geometry.applyMatrix(new Matrix4().makeScale(1, 1.8, 1))
+          hitMesh.geometry.applyMatrix(new Matrix4().makeScale(1.6, 1.8, 1))
           hitMesh.geometry.applyMatrix(new Matrix4().makeTranslation(0, -boneLength, 0))
         }
         if ( (bone.name.indexOf('Spine')>0) )
         {
           //align the spine hit meshes better (the bones are slightly to the back of the mesh)
+          hitMesh.geometry.applyMatrix(new Matrix4().makeScale(1.5, 1, 1))
+
           hitMesh.geometry.applyMatrix(new Matrix4().makeTranslation(0, 0, boneLength/3 - spineNumber * boneLength/10))
           spineNumber++
         }
