@@ -30,23 +30,33 @@ const imageLoader = new THREE.ImageLoader(loadingManager)
 objLoader.setLogging(false, false)
 THREE.Cache.enabled = true
 
-const Character = React.memo(({ scene, id, type, remoteInput, isSelected, selectedBone, camera, updateCharacterSkeleton, updateObject, loaded, ...props }) => {
+const remap = (x, a, b, c, d) => (x - a) * (d - c) / (b - a) + c
+const adjusted = value => remap(value, -16385, 16384, -Math.PI, Math.PI)
+
+const Character = React.memo(({ scene, id, type, remoteInput, isSelected, selectedBone, camera, updateCharacterSkeleton, updateObject, loaded, devices, ...props }) => {
   const setLoaded = loaded => updateObject(id, { loaded })
 
   let object = useRef(null)
-
   let isRotating = useRef(false)
+  let isControllerRotatingCurrent = useRef(false)
 
   let startingObjectQuaternion = useRef(null)
   let startingDeviceOffset = useRef(null)
   let startingObjectOffset = useRef(null)
+
+  let virtual = useRef({
+    roll: 0,
+    pitch: 0,
+    yaw: 0
+  })
+   
+  let circlePressed = useRef(false)
 
   let startingDeviceRotation = useRef(null)
   let startingObjectRotation = useRef(null)
   let startingGlobalRotation = useRef(null)
 
   let currentBoneSelected = useRef(null)
-
   const cloneAnimated = ( source ) => {
 
     var cloneLookup = new Map()
@@ -93,6 +103,48 @@ const Character = React.memo(({ scene, id, type, remoteInput, isSelected, select
         }
       }
     }
+  }
+
+  const getCurrentControllerRotation = (device, virtual) => {
+      
+    let virtualPitch = virtual.pitch,
+      virtualRoll = virtual.roll,
+      virtualYaw = virtual.yaw      
+      
+    let { accelX, accelY, accelZ, gyroPitch, gyroRoll, gyroYaw } = device.motion
+    virtualYaw = virtualYaw + ((0 - virtualYaw)*0.003)
+    virtualRoll = virtualRoll + ((adjusted(gyroRoll) - virtualRoll)*0.003)
+      
+    if (adjusted(gyroPitch)) {
+      virtualPitch = virtualPitch + (((-adjusted(gyroPitch)) - virtualPitch)*0.003)
+    }
+    if (adjusted(accelY)) {
+      virtualYaw += adjusted(accelY)/10.0
+    }
+
+    if (adjusted(accelX)) {
+      virtualPitch += adjusted(accelX)/10.0
+    }
+
+    if (adjusted(accelZ)) {
+      virtualRoll += adjusted(accelZ)/10.0
+    }
+
+    let q = new THREE.Quaternion()
+      .setFromEuler(
+        new THREE.Euler(
+          virtualPitch,
+          virtualYaw,
+          virtualRoll
+        )
+      )
+    
+      return {
+        quaternion:q,
+        virtualPitch,
+        virtualRoll,
+        virtualYaw
+      }
   }
 
   const load = filepath => {
@@ -392,6 +444,109 @@ const Character = React.memo(({ scene, id, type, remoteInput, isSelected, select
     currentBoneSelected.current = realBone
 
   }, [selectedBone, loaded])
+
+  useEffect(() => {
+    if (!object.current) return
+    if (!isSelected) return
+    if ( devices[0] && devices[0].digital.circle ) //if pressed
+    {
+      // zero out controller rotation and start rotating bone
+
+      let realTarget
+      let skel = (object.current.children[0] instanceof THREE.Mesh) ? object.current.children[0] : object.current.children[1]
+      if (selectedBone) {
+        realTarget = skel.skeleton.bones.find(bone => bone.uuid == selectedBone) || object.current
+      } else {
+        realTarget = object.current
+      }
+      let target = realTarget.clone()
+      let deviceQuaternion
+      if (isControllerRotatingCurrent.current === false)
+      {
+        isControllerRotatingCurrent.current = true
+        let startValues = getCurrentControllerRotation(devices[0], virtual.current)    
+        startingDeviceRotation.current = startValues.quaternion
+        
+        startingDeviceOffset.current =  new THREE.Quaternion().clone().inverse().multiply(startingDeviceRotation.current).normalize().inverse()
+        startingObjectQuaternion.current = realTarget.quaternion.clone()
+        startingObjectOffset.current =  new THREE.Quaternion().clone().inverse().multiply(startingObjectQuaternion.current)
+        //console.log('starting rotation: ', startingDeviceRotation.current)
+      }
+      let midddleValues = getCurrentControllerRotation(devices[0], virtual.current) 
+      deviceQuaternion = midddleValues.quaternion
+      virtual.current = {
+        roll: midddleValues.virtualRoll,
+        pitch: midddleValues.virtualPitch,
+        yaw: midddleValues.virtualYaw
+      }
+      let deviceDifference = new THREE.Quaternion().inverse().multiply(deviceQuaternion).multiply(startingDeviceOffset.current).normalize()
+      //console.log('continuous rotation: ', deviceQuaternion)
+      // get camera's offset
+      let cameraOffset = new THREE.Quaternion().clone().inverse().multiply(camera.quaternion.clone())
+      // get parent's offset
+      let parentOffset = new THREE.Quaternion().clone().inverse().multiply(realTarget.parent.quaternion.clone())
+      realTarget.parent.getWorldQuaternion(parentOffset)
+
+      // START WITH THE INVERSE OF THE STARTING OBJECT ROTATION
+      let objectQuaternion = startingObjectQuaternion.current.clone().inverse()
+
+      // ZERO OUT (ORDER IS IMPORTANT)
+      // offset
+      objectQuaternion.multiply(startingObjectOffset.current)
+      // parent's rotation
+      objectQuaternion.multiply(parentOffset.inverse())
+      // camera
+      objectQuaternion.multiply(cameraOffset)
+
+      // APPLY THE DEVICE DIFFERENCE, THIS IS THE MAJOR OPERATION
+      objectQuaternion.multiply(deviceDifference)
+
+      // ROTATE THE ZEROS BACK INTO PLACE (REVERSE ORDER)
+      // camera
+      objectQuaternion.multiply(cameraOffset.inverse())
+      // parent's rotation
+      objectQuaternion.multiply(parentOffset.inverse())
+      // offset
+      objectQuaternion.multiply(startingObjectOffset.current)
+
+      // APPLY THE ROTATION TO THE TARGET OBJECT
+      //targetobject.quaternion.copy(objectQuaternion.normalize())
+      //realTarget.quaternion.copy(objectQuaternion.normalize())
+      target.quaternion.copy(objectQuaternion.normalize())
+        //target.updateMatrix()
+        //console.log('target rotation: ', target.rotation)
+        requestAnimationFrame(() => {
+          if (selectedBone) {
+            updateCharacterSkeleton({
+              id,
+              name: target.name,
+              rotation: {
+                x: target.rotation.x,
+                y: target.rotation.y,
+                z: target.rotation.z
+              }
+            })
+          } else {
+            updateObject(target.userData.id, {
+              rotation: target.rotation.y
+            })
+          }
+        })
+    } else {
+      if (devices[0] && devices[0].digital.circle === false && isControllerRotatingCurrent.current)
+      {
+        //console.log(' CIRCLE button up ')
+        isControllerRotatingCurrent.current = false
+        virtual.current = {
+          roll: 0,
+          pitch: 0,
+          yaw: 0
+        }
+      }
+      
+      // do something on button up?
+    }
+  }, [devices])
 
   useEffect(() => {
     if (!object.current) return

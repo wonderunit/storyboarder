@@ -158,7 +158,8 @@ const SceneManager = connect(
     selectedBone: state.selectedBone,
     mainViewCamera: state.mainViewCamera,
     activeCamera: state.activeCamera,
-    aspectRatio: state.aspectRatio
+    aspectRatio: state.aspectRatio,
+    devices:state.devices
   }),
   {
     updateObject,
@@ -168,7 +169,7 @@ const SceneManager = connect(
     updateCharacterSkeleton
   }
 )(
-  ({ world, sceneObjects, updateObject, selectObject, remoteInput, largeCanvasRef, smallCanvasRef, selection, selectedBone, machineState, transition, animatedUpdate, selectBone, mainViewCamera, updateCharacterSkeleton, largeCanvasSize, activeCamera, aspectRatio }) => {
+  ({ world, sceneObjects, updateObject, selectObject, remoteInput, largeCanvasRef, smallCanvasRef, selection, selectedBone, machineState, transition, animatedUpdate, selectBone, mainViewCamera, updateCharacterSkeleton, largeCanvasSize, activeCamera, aspectRatio, devices }) => {
     const { scene } = useContext(SceneContext)
     let [camera, setCamera] = useState(null)
 
@@ -595,7 +596,7 @@ const SceneManager = connect(
                 updateObject,
 
                 loaded: props.loaded ? props.loaded : false,
-
+                devices, 
                 ...props
               }
             ]
