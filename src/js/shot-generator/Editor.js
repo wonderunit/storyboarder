@@ -1714,17 +1714,6 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
         }]
       ],
 
-      ['div',
-        [NumberSlider, {
-          label: 'tilt',
-          min: -Math.PI,
-          max: Math.PI,
-          value: sceneObject.tilt,
-          onSetValue: createOnSetValue(sceneObject.id, 'tilt'),
-          formatter: value => Math.round(value * THREE.Math.RAD2DEG).toString() + '°'
-        }]
-      ],
-
       sceneObject.type == 'camera' &&
         ['div',
           [NumberSlider, {
