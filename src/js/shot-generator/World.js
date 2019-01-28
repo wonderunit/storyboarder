@@ -75,7 +75,7 @@ const useRoom = (world, scene) => {
   const wallTexture = useRef(null)
 
   const load = () => imageLoader.load(
-    'data/shot-generator/grid_wall.png',
+    'data/shot-generator/grid_wall2.png',
     image => {
       wallTexture.current = new THREE.Texture()
 
