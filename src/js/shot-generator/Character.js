@@ -344,8 +344,8 @@ const Character = React.memo(({ scene, id, type, remoteInput, isSelected, select
         material.userData.outlineParameters =
           isSelected
             ? {
-              thickness: 0.015,
-              color: [ 0.9, 0, 0 ]
+              thickness: 0.009,
+              color: [ 122/256.0, 114/256.0, 233/256.0 ]
             }
            : {
              thickness: 0.009,
@@ -356,8 +356,8 @@ const Character = React.memo(({ scene, id, type, remoteInput, isSelected, select
       skel.material.userData.outlineParameters =
         isSelected
           ? {
-            thickness: 0.015,
-            color: [ 0.9, 0, 0 ]
+            thickness: 0.009,
+            color: [ 122/256.0/2, 114/256.0/2, 233/256.0/2 ]
           }
          : {
            thickness: 0.009,
@@ -378,17 +378,17 @@ const Character = React.memo(({ scene, id, type, remoteInput, isSelected, select
 
     if (selectedBone === null) {
       if (currentBoneSelected.current) {
-        currentBoneSelected.current.connectedBone.material.color = new THREE.Color( 0x006eb8 )
+        currentBoneSelected.current.connectedBone.material.color = new THREE.Color( 0x7a72e9 )
         currentBoneSelected.current = null
       }
       return
     }
 
     if (currentBoneSelected.current !== null) {
-      currentBoneSelected.current.connectedBone.material.color = new THREE.Color( 0x006eb8 )
+      currentBoneSelected.current.connectedBone.material.color = new THREE.Color( 0x7a72e9 )
     }
     if (realBone === null || realBone === undefined) return
-    realBone.connectedBone.material.color = new THREE.Color( 0xed0000 )
+    realBone.connectedBone.material.color = new THREE.Color( 0x242246 )
     currentBoneSelected.current = realBone
 
   }, [selectedBone, loaded])
