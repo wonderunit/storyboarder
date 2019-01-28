@@ -537,6 +537,11 @@ const Character = React.memo(({ scene, id, type, remoteInput, isSelected, select
       {
         //console.log(' CIRCLE button up ')
         isControllerRotatingCurrent.current = false
+        virtual.current = {
+          roll: 0,
+          pitch: 0,
+          yaw: 0
+        }
       }
       
       // do something on button up?
