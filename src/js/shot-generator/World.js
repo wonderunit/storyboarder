@@ -26,8 +26,9 @@ const useGround = (world, scene) => {
   const load = () => imageLoader.load(
     'data/shot-generator/grid_floor.png',
     image => {
-      groundTexture.image = image
-      groundTexture.needsUpdate = true
+      groundTexture.current = new THREE.Texture()
+      groundTexture.current.image = image
+      groundTexture.current.needsUpdate = true
       setLoaded(true)
     }
   )
