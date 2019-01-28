@@ -62,20 +62,15 @@ module.exports = function ({
           -ms-user-select: none;
           user-select: none;
         }
+
+        #debugger {
+          pointer-events: none;
+        }
+
       </style>
     </head>
     <body>
       <script type="module">
-
-      screen.lockOrientationUniversal = screen.lockOrientation || screen.mozLockOrientation || screen.msLockOrientation
-      if (screen.lockOrientationUniversal) {
-        screen.lockOrientationUniversal("portrait")
-      }
-      if (screen.orientation) {
-        screen.orientation.lock()
-      }
-
-
 
       let mouseOn = false;
       let down = false
@@ -219,7 +214,21 @@ module.exports = function ({
       //   }, true)
       // }
 
+      console.log(document.getElementById("container"))
+
+      document.getElementById("container").addEventListener('touchend', event => {
+        document.documentElement.requestFullscreen()
+        screen.orientation.lock('portrait')
+      })
+
+      console.log('hi')
+
       window.addEventListener('touchstart', event => {
+        //fullscreen()
+
+
+
+
         down = true
         event.preventDefault()
         report({
