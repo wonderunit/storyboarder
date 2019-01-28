@@ -63,6 +63,10 @@ module.exports = function ({
           user-select: none;
         }
 
+        @viewport {
+          orientation: portrait;
+        }
+
         #debugger {
           pointer-events: none;
         }
@@ -217,8 +221,17 @@ module.exports = function ({
       console.log(document.getElementById("container"))
 
       document.getElementById("container").addEventListener('touchend', event => {
-        document.documentElement.requestFullscreen()
-        screen.orientation.lock('portrait')
+        //alert('hi')
+
+        var elem = document.documentElement
+        if (elem.requestFullScreen) {
+          elem.requestFullScreen();
+        } else if (elem.mozRequestFullScreen) {
+          elem.mozRequestFullScreen();
+        } else if (elem.webkitRequestFullScreen) {
+          elem.webkitRequestFullScreen();
+        }
+        screen.orientation.lock('portrait-primary')
       })
 
       console.log('hi')
