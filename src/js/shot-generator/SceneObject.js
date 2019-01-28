@@ -41,10 +41,9 @@ const groupFactory = () => {
 }
 
 const materialFactory = () => new THREE.MeshToonMaterial({
-  color: 0xffffff,
+  color: 0xcccccc,
   emissive: 0x0,
   specular: 0x0,
-  skinning: true,
   shininess: 0,
   flatShading: false
 })
@@ -79,7 +78,7 @@ const SceneObject = React.memo(({ scene, id, type, isSelected, loaded, updateObj
     switch (model) {
       case 'box':
         geometry = new RoundedBoxGeometry( 1, 1, 1, boxRadius, boxRadiusSegments )
-        let material = new THREE.MeshBasicMaterial( { color: 0xcccccc, side: THREE.DoubleSide } )
+        let material = materialFactory()
         let mesh = new THREE.Mesh( geometry, material )
         geometry.translate( 0, 1 / 2, 0 )
         container.remove(...container.children)
