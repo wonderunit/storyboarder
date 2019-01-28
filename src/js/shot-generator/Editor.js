@@ -1713,6 +1713,7 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
           formatter: NumberSliderFormatter.degrees
         }]
       ],
+   
 
       sceneObject.type == 'camera' &&
         ['div',
@@ -1728,7 +1729,7 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
           }]
         ],
 
-      sceneObject.type == 'camera' &&
+      (sceneObject.type == 'camera' || sceneObject.type == 'light') &&
         ['div',
           [NumberSlider, {
             label: 'tilt',
