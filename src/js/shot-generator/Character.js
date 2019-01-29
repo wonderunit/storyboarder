@@ -302,17 +302,19 @@ const Character = React.memo(({
       let skeleton = object.current.userData.skeleton
 
       let headBone = skeleton.getBoneByName('mixamorigHead')
+      
+      if (headBone) {
+        // FIXME get current .models from getState()
+        let modelSettings = initialState.models[props.model]
+        let baseHeight = modelSettings
+          ? modelSettings.height
+          : 1.6
+        let baseHeadScale = baseHeight / props.height
 
-      // FIXME get current .models from getState()
-      let modelSettings = initialState.models[props.model]
-      let baseHeight = modelSettings
-        ? modelSettings.height
-        : 1.6
-      let baseHeadScale = baseHeight / props.height
-
-      //head bone
-      headBone.scale.setScalar( baseHeadScale )
-      headBone.scale.setScalar( props.headScale )
+        //head bone
+        headBone.scale.setScalar( baseHeadScale )
+        headBone.scale.setScalar( props.headScale )
+      }
     }
   }, [props.model, props.headScale, props.skeleton, modelData])
 
