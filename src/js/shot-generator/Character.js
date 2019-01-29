@@ -322,15 +322,14 @@ const Character = React.memo(({
     if (!modelData) return
     if (!object.current) return
 
-    // Morphs are changing
     let mesh = object.current.userData.mesh
 
-    //console.log( '\tmorphTargetDictionary', skel.morphTargetDictionary )
+    if (!mesh.morphTargetDictionary) return
+    if (Object.values(mesh.morphTargetDictionary).length != 3) return
 
     mesh.morphTargetInfluences[ 0 ] = props.morphTargets.mesomorphic
     mesh.morphTargetInfluences[ 1 ] = props.morphTargets.ectomorphic
     mesh.morphTargetInfluences[ 2 ] = props.morphTargets.endomorphic
-
   }, [props.model, props.morphTargets, modelData])
 
   useEffect(() => {
