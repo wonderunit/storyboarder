@@ -2,6 +2,9 @@ const express = require('express')
 const WebSocket = require('ws')
 const path = require('path')
 
+const os = require('os')
+const dns = require('dns')
+
 const web = express()
 const port = 8001
 
@@ -53,5 +56,15 @@ module.exports = function ({
     res.sendFile(path.join(__dirname, '..', 'shot-generator', 'server', 'public', 'index.html'))
   })
 
-  web.listen(port, () => console.log(`Example app listening on port ${port}!`))
+  web.listen(port, () => {
+    let hostname = os.hostname()
+    dns.lookup(hostname, function (err, addr, fam) {
+      if (err) {
+        console.error(err)
+        console.log("shot-generator web client at http://" + hostname + ":" + port)
+        return
+      }
+      console.log("shot-generator web client at http://" + addr + ":" + port)
+    })
+  })
 }
