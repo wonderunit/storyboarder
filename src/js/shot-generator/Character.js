@@ -52,41 +52,7 @@ const pathToCharacterModelFile = (model) =>
     // relative path to a model in the app
     : path.join(modelsPath, `${model}.glb`)
 
-// const cloneAnimated = ( source ) => {
-//   var cloneLookup = new Map()
-//   var clone = source.clone()
-// 
-//   parallelTraverse( source, clone, function ( sourceNode, clonedNode ) {
-//     cloneLookup.set( sourceNode, clonedNode )
-//   } )
-// 
-//   source.traverse( function ( sourceMesh ) {
-//     if ( ! sourceMesh.isSkinnedMesh ) return
-//     var sourceBones = sourceMesh.skeleton.bones
-//     var clonedMesh = cloneLookup.get( sourceMesh )
-//     clonedMesh.skeleton = sourceMesh.skeleton.clone()
-//     clonedMesh.skeleton.bones = sourceBones.map( function ( sourceBone ) {
-//       if ( ! cloneLookup.has( sourceBone ) ) {
-//         throw new Error( 'THREE.AnimationUtils: Required bones are not descendants of the given object.' )
-//       }
-//       return cloneLookup.get( sourceBone )
-//     } )
-//     clonedMesh.bind( clonedMesh.skeleton, sourceMesh.bindMatrix )
-//   } )
-// 
-//   return clone
-// }
-// 
-// const parallelTraverse = ( a, b, callback ) => {
-//   callback( a, b )
-//   for ( var i = 0; i < a.children.length; i ++ ) {
-//     parallelTraverse( a.children[ i ], b.children[ i ], callback )
-//   }
-// }
-
-const characterFactory = ({ id, type, data, props }) => {
-  console.log('\n\n\ncharacterFactory')
-
+const characterFactory = data => {
   let material = new THREE.MeshToonMaterial({
     color: 0xffffff,
     emissive: 0x0,
@@ -116,31 +82,9 @@ const characterFactory = ({ id, type, data, props }) => {
   mesh.material = material
   mesh.renderOrder = 1.0
 
-  // let cloned = cloneAnimated(obj)
-  // // if FBX is loaded we get a SkinnedMesh
-  // if (cloned instanceof THREE.SkinnedMesh) {
-  //   let clo = cloneAnimated(obj)
-  //   cloned = new THREE.Object3D()
-  //   cloned.add(clo)
-  // }
-
   let bbox = new THREE.Box3().setFromObject(mesh)
   let originalHeight = bbox.max.y - bbox.min.y
 
-  // // FIXME get current .models from getState()
-  // let modelSettings = initialState.models[props.model]
-  // let targetHeight = modelSettings
-  //   ? modelSettings.height
-  //   : 1.6
-
-  // let scale = targetHeight / originalHeight
-  // obj.scale.set(scale, scale, scale)
-  // obj.originalHeight = originalHeight
-
-  // let mat = cloned.children[0].material
-  //   ? cloned.children[0].material.clone()
-  //   : cloned.children[1].material.clone()
-  // skel.material = mat.clone()
   skeleton.pose()
   
   return { mesh, skeleton, armature, originalHeight }
@@ -203,7 +147,7 @@ const Character = React.memo(({
     if (modelData) {
       console.log(type, id, 'add')
 
-      const { mesh, skeleton, armature, originalHeight } = characterFactory({ id, type, data: modelData, props })
+      const { mesh, skeleton, armature, originalHeight } = characterFactory(modelData)
 
       object.current = new THREE.Object3D()
       object.current.userData.id = id
