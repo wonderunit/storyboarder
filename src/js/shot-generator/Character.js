@@ -285,7 +285,7 @@ const Character = React.memo(({
 
   const updateSkeleton = () => {
     let skel = (object.current.children[0] instanceof THREE.Mesh) ? object.current.children[0] : object.current.children[1]
-    //skel.skeleton.pose()
+    skel.skeleton.pose()
     if (props.skeleton) {
       for (let name in props.skeleton) {
         let bone = skel.skeleton.getBoneByName(name)
