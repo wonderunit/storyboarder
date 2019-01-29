@@ -97,81 +97,80 @@ const characterFactory = ({ scene, id, type, data, props }) => {
     morphNormals: true,
     morphTargets: true
   })
+
   let mesh = null
   let armature = null
-  let obj = new THREE.Object3D()
-  obj = data.scene.children[0]
 
-  // first type of GLTF structure, where Skinned Mesh and the bone structure are inside the object3D
-  for (var i in data.scene.children[0].children) {
-    let child = data.scene.children[0].children[i]
+  let obj = data.scene.children[0]
+
+  // GLTF structure A
+  // SkinnedMesh and bone structure are inside one Object3D
+  for (let child of data.scene.children[0].children) {
     if ( child instanceof THREE.Mesh ) {
       mesh = child
     } else {
-      if (child instanceof THREE.Object3D && armature === null) armature = child //new THREE.Skeleton(child)
+      if (child instanceof THREE.Object3D && armature === null) {
+        armature = child
+      }
     }
   }
 
-  if (mesh === null)
-  {
-    //try loading second type of GLTF structure, mesh is outside the Object3D that contains the armature
-    for (var i in data.scene.children)
-    {
-      let child = data.scene.children[i]
+  // GLTF structure B
+  // mesh is outside the Object3D that contains the armature
+  if (mesh === null) {
+    for (let child of data.scene.children) {
       if ( child instanceof THREE.Mesh ) {
         mesh = child
         obj.add(mesh)
       }
     }
   }
-  material.map = mesh.material.map//.clone()
-  // material.map.image = textureBody.image
+
+  material.map = mesh.material.map
   material.map.needsUpdate = true
-  let bbox = new THREE.Box3().setFromObject(mesh)
-
-  let height = bbox.max.y - bbox.min.y
-  obj.originalHeight = height
   mesh.material = material
-  //mesh.rotation.set(0, Math.PI/2, 0)
-
-  // FIXME use actual getState()
-  let targetHeight = initialState.models[props.model]
-    ? initialState.models[props.model].height
-    : 1.6
-
-  let scale = targetHeight / height
-  obj.scale.set(scale, scale, scale)
-  //mesh.geometry.translate(0, targetHeight/2, 0)
   mesh.renderOrder = 1.0
 
-  source = obj
+  // let cloned = cloneAnimated(obj)
+  // // if FBX is loaded we get a SkinnedMesh
+  // if (cloned instanceof THREE.SkinnedMesh) {
+  //   let clo = cloneAnimated(obj)
+  //   cloned = new THREE.Object3D()
+  //   cloned.add(clo)
+  // }
 
-  let cloned = cloneAnimated(source)
+  newObject = obj
 
-  if (cloned instanceof THREE.SkinnedMesh)  // if FBX is loaded we get a SkinnedMesh
-  {
-    let clo = cloneAnimated(source)
-    cloned = new THREE.Object3D()
-    cloned.add(clo)
-  }
-  let mat = cloned.children[0].material ? cloned.children[0].material.clone() : cloned.children[1].material.clone()
+  let bbox = new THREE.Box3().setFromObject(mesh)
+  let originalHeight = bbox.max.y - bbox.min.y
 
-  newObject = cloned
-  let skel = (newObject.children[0] instanceof THREE.Mesh) ? newObject.children[0] : newObject.children[1]
-  skel.material = mat.clone()
+  // FIXME get current .models from getState()
+  let modelSettings = initialState.models[props.model]
+  let targetHeight = modelSettings
+    ? modelSettings.height
+    : 1.6
+
+  let scale = targetHeight / originalHeight
+  obj.scale.set(scale, scale, scale)
+  obj.originalHeight = originalHeight
+
+  let skel = (newObject.children[0] instanceof THREE.Mesh)
+    ? newObject.children[0]
+    : newObject.children[1]
+
+  // let mat = cloned.children[0].material
+  //   ? cloned.children[0].material.clone()
+  //   : cloned.children[1].material.clone()
+  // skel.material = mat.clone()
   skel.skeleton.pose()
-  newObject.originalHeight = source.originalHeight
-
-  //   MULTI MATERIALS
-  // newObject.material = newObject.material.map(material => material.clone())
 
   newObject.userData.id = id
   newObject.userData.type = type
-  newObject.scale.set( source.scale.x, source.scale.y, source.scale.z )
-  newObject.rotation.set( source.rotation.x, source.rotation.y, source.rotation.z )
 
-  //adding the bone structure here on each character added to the scene
   let bonesHelper = new BonesHelper(skel.skeleton.bones[0], newObject)
+
+  console.log('\n\n\n\ncharacterFactory')
+  console.log(newObject, bonesHelper)
   
   return [newObject, bonesHelper]
 }
@@ -234,13 +233,6 @@ const Character = React.memo(({
       console.log(type, id, 'add')
 
       const [newObject, bonesHelper] = characterFactory({ scene, id, type, data: modelData, props })
-
-      // TODO could avoid the jump by making the entire character a positioned Group with children
-      //      OR could run all the updaters here to set position correctly immediately after load?
-      //
-      // hide until ready
-      newObject.visible = false
-      bonesHelper.visible = false
 
       object.current = newObject
       scene.add(object.current)
@@ -369,10 +361,8 @@ const Character = React.memo(({
 
   useEffect(() => {
     if (object.current) {
-      // FIXME hardcoded
-      // let bbox = new THREE.Box3().setFromObject( object.current )
-      height = object.current.originalHeight
-      let scale = props.height / height
+      let originalHeight = object.current.originalHeight
+      let scale = props.height / originalHeight
 
       object.current.scale.set( scale, scale, scale )
       //object.current.bonesHelper.updateMatrixWorld()
