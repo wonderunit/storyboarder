@@ -84,7 +84,9 @@ const parallelTraverse = ( a, b, callback ) => {
   }
 }
 
-const characterFactory = ({ scene, id, type, data, props }) => {
+const characterFactory = ({ id, type, data, props }) => {
+  console.log('\n\n\ncharacterFactory')
+
   let newObject
 
   let material = new THREE.MeshToonMaterial({
@@ -232,7 +234,7 @@ const Character = React.memo(({
     if (modelData) {
       console.log(type, id, 'add')
 
-      const [newObject, bonesHelper] = characterFactory({ scene, id, type, data: modelData, props })
+      const [newObject, bonesHelper] = characterFactory({ id, type, data: modelData, props })
 
       object.current = newObject
       scene.add(object.current)
