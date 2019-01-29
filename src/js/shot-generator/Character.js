@@ -52,42 +52,40 @@ const pathToCharacterModelFile = (model) =>
     // relative path to a model in the app
     : path.join(modelsPath, `${model}.glb`)
 
-const cloneAnimated = ( source ) => {
-  var cloneLookup = new Map()
-  var clone = source.clone()
-
-  parallelTraverse( source, clone, function ( sourceNode, clonedNode ) {
-    cloneLookup.set( sourceNode, clonedNode )
-  } )
-
-  source.traverse( function ( sourceMesh ) {
-    if ( ! sourceMesh.isSkinnedMesh ) return
-    var sourceBones = sourceMesh.skeleton.bones
-    var clonedMesh = cloneLookup.get( sourceMesh )
-    clonedMesh.skeleton = sourceMesh.skeleton.clone()
-    clonedMesh.skeleton.bones = sourceBones.map( function ( sourceBone ) {
-      if ( ! cloneLookup.has( sourceBone ) ) {
-        throw new Error( 'THREE.AnimationUtils: Required bones are not descendants of the given object.' )
-      }
-      return cloneLookup.get( sourceBone )
-    } )
-    clonedMesh.bind( clonedMesh.skeleton, sourceMesh.bindMatrix )
-  } )
-
-  return clone
-}
-
-const parallelTraverse = ( a, b, callback ) => {
-  callback( a, b )
-  for ( var i = 0; i < a.children.length; i ++ ) {
-    parallelTraverse( a.children[ i ], b.children[ i ], callback )
-  }
-}
+// const cloneAnimated = ( source ) => {
+//   var cloneLookup = new Map()
+//   var clone = source.clone()
+// 
+//   parallelTraverse( source, clone, function ( sourceNode, clonedNode ) {
+//     cloneLookup.set( sourceNode, clonedNode )
+//   } )
+// 
+//   source.traverse( function ( sourceMesh ) {
+//     if ( ! sourceMesh.isSkinnedMesh ) return
+//     var sourceBones = sourceMesh.skeleton.bones
+//     var clonedMesh = cloneLookup.get( sourceMesh )
+//     clonedMesh.skeleton = sourceMesh.skeleton.clone()
+//     clonedMesh.skeleton.bones = sourceBones.map( function ( sourceBone ) {
+//       if ( ! cloneLookup.has( sourceBone ) ) {
+//         throw new Error( 'THREE.AnimationUtils: Required bones are not descendants of the given object.' )
+//       }
+//       return cloneLookup.get( sourceBone )
+//     } )
+//     clonedMesh.bind( clonedMesh.skeleton, sourceMesh.bindMatrix )
+//   } )
+// 
+//   return clone
+// }
+// 
+// const parallelTraverse = ( a, b, callback ) => {
+//   callback( a, b )
+//   for ( var i = 0; i < a.children.length; i ++ ) {
+//     parallelTraverse( a.children[ i ], b.children[ i ], callback )
+//   }
+// }
 
 const characterFactory = ({ id, type, data, props }) => {
   console.log('\n\n\ncharacterFactory')
-
-  let newObject
 
   let material = new THREE.MeshToonMaterial({
     color: 0xffffff,
@@ -100,44 +98,21 @@ const characterFactory = ({ id, type, data, props }) => {
     morphTargets: true
   })
 
-  let mesh = null
-  let armature = null
+  let mesh
+  let skeleton
+  let armature
 
-  let obj = data.scene.children[0]
+  mesh = data.scene.children.find(child => child instanceof THREE.SkinnedMesh) ||
+         data.scene.children[0].children.find(child => child instanceof THREE.SkinnedMesh)
 
-  // GLTF structure A
-  // SkinnedMesh and bone structure are inside one Object3D
-  for (let child of data.scene.children[0].children) {
-    if ( child instanceof THREE.Mesh ) {
-      mesh = child
-    } else {
-      if (child instanceof THREE.Bone && armature === null) {
-        armature = child
-      }
-    }
+  armature = data.scene.children[0].children.find(child => child instanceof THREE.Bone)
+
+  skeleton = mesh.skeleton
+
+  if (mesh.material.map) {
+    material.map = mesh.material.map
+    material.map.needsUpdate = true
   }
-
-  // GLTF structure B
-  // mesh is outside the Object3D that contains the armature
-  if (mesh === null) {
-    for (let child of data.scene.children) {
-      if ( child instanceof THREE.Mesh ) {
-        mesh = child
-        obj.add(mesh)
-      }
-    }
-  }
-
-  let skel = (obj.children[0] instanceof THREE.Mesh)
-    ? obj.children[0]
-    : obj.children[1]
-
-  console.log('in', {
-    mesh, armature, skel
-  })
-
-  material.map = mesh.material.map
-  material.map.needsUpdate = true
   mesh.material = material
   mesh.renderOrder = 1.0
 
@@ -149,36 +124,26 @@ const characterFactory = ({ id, type, data, props }) => {
   //   cloned.add(clo)
   // }
 
-  newObject = obj
-
   let bbox = new THREE.Box3().setFromObject(mesh)
   let originalHeight = bbox.max.y - bbox.min.y
 
-  // FIXME get current .models from getState()
-  let modelSettings = initialState.models[props.model]
-  let targetHeight = modelSettings
-    ? modelSettings.height
-    : 1.6
+  // // FIXME get current .models from getState()
+  // let modelSettings = initialState.models[props.model]
+  // let targetHeight = modelSettings
+  //   ? modelSettings.height
+  //   : 1.6
 
-  let scale = targetHeight / originalHeight
-  obj.scale.set(scale, scale, scale)
-  obj.originalHeight = originalHeight
+  // let scale = targetHeight / originalHeight
+  // obj.scale.set(scale, scale, scale)
+  // obj.originalHeight = originalHeight
 
   // let mat = cloned.children[0].material
   //   ? cloned.children[0].material.clone()
   //   : cloned.children[1].material.clone()
   // skel.material = mat.clone()
-  skel.skeleton.pose()
-
-  newObject.userData.id = id
-  newObject.userData.type = type
-
-  let bonesHelper = new BonesHelper(skel.skeleton.bones[0], newObject)
-
-  console.log('out', { newObject, bonesHelper })
-  console.log('\n\n\n\n')
+  skeleton.pose()
   
-  return [newObject, bonesHelper]
+  return { mesh, skeleton, armature, originalHeight }
 }
 
 const remap = (x, a, b, c, d) => (x - a) * (d - c) / (b - a) + c
@@ -238,10 +203,18 @@ const Character = React.memo(({
     if (modelData) {
       console.log(type, id, 'add')
 
-      const [newObject, bonesHelper] = characterFactory({ id, type, data: modelData, props })
+      const { mesh, skeleton, armature, originalHeight } = characterFactory({ id, type, data: modelData, props })
 
-      object.current = newObject
+      object.current = new THREE.Object3D()
+      object.current.userData.id = id
+      object.current.userData.type = type
+      object.current.originalHeight = originalHeight
+      object.current.add(armature)
+      object.current.add(mesh)
+
       scene.add(object.current)
+
+      let bonesHelper = new BonesHelper(skeleton.bones[0], object.current)
       object.current.bonesHelper = bonesHelper
       scene.add(object.current.bonesHelper)
     }
