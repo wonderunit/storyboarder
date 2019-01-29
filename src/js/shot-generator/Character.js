@@ -152,14 +152,16 @@ const Character = React.memo(({
       object.current = new THREE.Object3D()
       object.current.userData.id = id
       object.current.userData.type = type
-      object.current.originalHeight = originalHeight
+      object.current.userData.originalHeight = originalHeight
       object.current.add(armature)
       object.current.add(mesh)
+      object.current.userData.mesh = mesh
 
       scene.add(object.current)
 
       let bonesHelper = new BonesHelper(skeleton.bones[0], object.current)
       object.current.bonesHelper = bonesHelper
+      object.current.userData.skeleton = skeleton
       scene.add(object.current.bonesHelper)
     }
 
@@ -198,11 +200,11 @@ const Character = React.memo(({
   let currentBoneSelected = useRef(null)
 
   const updateSkeleton = () => {
-    let skel = (object.current.children[0] instanceof THREE.Mesh) ? object.current.children[0] : object.current.children[1]
-    skel.skeleton.pose()
+    let skeleton = object.current.userData.skeleton
+    skeleton.pose()
     if (props.skeleton) {
       for (let name in props.skeleton) {
-        let bone = skel.skeleton.getBoneByName(name)
+        let bone = skeleton.getBoneByName(name)
         if (bone) {
           bone.rotation.x = props.skeleton[name].rotation.x
           bone.rotation.y = props.skeleton[name].rotation.y
@@ -284,7 +286,7 @@ const Character = React.memo(({
 
   useEffect(() => {
     if (object.current) {
-      let originalHeight = object.current.originalHeight
+      let originalHeight = object.current.userData.originalHeight
       let scale = props.height / originalHeight
 
       object.current.scale.set( scale, scale, scale )
@@ -297,9 +299,9 @@ const Character = React.memo(({
 
     if (object.current) {
       // adjust head proportionally
-      let skel = (object.current.children[0] instanceof THREE.Mesh) ? object.current.children[0] : object.current.children[1]
+      let skeleton = object.current.userData.skeleton
 
-      let headBone = skel.skeleton.getBoneByName('mixamorigHead')
+      let headBone = skeleton.getBoneByName('mixamorigHead')
 
       // FIXME get current .models from getState()
       let modelSettings = initialState.models[props.model]
@@ -319,13 +321,13 @@ const Character = React.memo(({
     if (!object.current) return
 
     // Morphs are changing
-    let skel = (object.current.children[0] instanceof THREE.Mesh) ? object.current.children[0] : object.current.children[1]
+    let mesh = object.current.userData.mesh
 
     //console.log( '\tmorphTargetDictionary', skel.morphTargetDictionary )
 
-    skel.morphTargetInfluences[ 0 ] = props.morphTargets.mesomorphic
-    skel.morphTargetInfluences[ 1 ] = props.morphTargets.ectomorphic
-    skel.morphTargetInfluences[ 2 ] = props.morphTargets.endomorphic
+    mesh.morphTargetInfluences[ 0 ] = props.morphTargets.mesomorphic
+    mesh.morphTargetInfluences[ 1 ] = props.morphTargets.ectomorphic
+    mesh.morphTargetInfluences[ 2 ] = props.morphTargets.endomorphic
 
   }, [props.model, props.morphTargets, modelData])
 
@@ -343,9 +345,9 @@ const Character = React.memo(({
       for (var cone of object.current.bonesHelper.cones)
         object.current.bonesHelper.remove(cone)
     }
-    let skel = (object.current.children[0] instanceof THREE.Mesh) ? object.current.children[0] : object.current.children[1]
-    if ( skel.material.length > 0 ) {
-      skel.material.forEach(material => {
+    let mesh = object.current.userData.mesh
+    if ( mesh.material.length > 0 ) {
+      mesh.material.forEach(material => {
         material.userData.outlineParameters =
           isSelected
             ? {
@@ -358,7 +360,7 @@ const Character = React.memo(({
            }
       })
     } else {
-      skel.material.userData.outlineParameters =
+      mesh.material.userData.outlineParameters =
         isSelected
           ? {
             thickness: 0.009,
@@ -376,8 +378,8 @@ const Character = React.memo(({
     if (!object.current) return
 
     if (selectedBone === undefined) return
-    let skel = (object.current.children[0] instanceof THREE.Mesh) ? object.current.children[0] : object.current.children[1]
-    let realBone = skel.skeleton.bones.find(bone => bone.uuid == selectedBone)
+    let skeleton = object.current.userData.skeleton
+    let realBone = skeleton.bones.find(bone => bone.uuid == selectedBone)
 
     if (currentBoneSelected.current === realBone) return
 
@@ -406,9 +408,9 @@ const Character = React.memo(({
       // zero out controller rotation and start rotating bone
 
       let realTarget
-      let skel = (object.current.children[0] instanceof THREE.Mesh) ? object.current.children[0] : object.current.children[1]
+      let skeleton = object.current.userData.skeleton
       if (selectedBone) {
-        realTarget = skel.skeleton.bones.find(bone => bone.uuid == selectedBone) || object.current
+        realTarget = skeleton.bones.find(bone => bone.uuid == selectedBone) || object.current
       } else {
         realTarget = object.current
       }
@@ -508,9 +510,9 @@ const Character = React.memo(({
     if (remoteInput.mouseMode) return
 
     let realTarget
-    let skel = (object.current.children[0] instanceof THREE.Mesh) ? object.current.children[0] : object.current.children[1]
+    let skeleton = object.current.userData.skeleton
     if (selectedBone) {
-      realTarget = skel.skeleton.bones.find(bone => bone.uuid == selectedBone) || object.current
+      realTarget = skeleton.bones.find(bone => bone.uuid == selectedBone) || object.current
     } else {
       realTarget = object.current
     }
