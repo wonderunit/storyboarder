@@ -143,7 +143,6 @@ const characterFactory = ({ scene, id, type, data, props }) => {
   obj.scale.set(scale, scale, scale)
   //mesh.geometry.translate(0, targetHeight/2, 0)
   mesh.renderOrder = 1.0
-  mesh.original = data
 
   source = obj
 
