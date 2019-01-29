@@ -109,7 +109,7 @@ const characterFactory = ({ scene, id, type, data, props }) => {
     if ( child instanceof THREE.Mesh ) {
       mesh = child
     } else {
-      if (child instanceof THREE.Object3D && armature === null) {
+      if (child instanceof THREE.Bone && armature === null) {
         armature = child
       }
     }
