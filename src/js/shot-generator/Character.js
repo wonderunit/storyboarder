@@ -106,7 +106,7 @@ const characterFactory = ({ scene, id, type, data, props }) => {
   for (var i in data.scene.children[0].children) {
     let child = data.scene.children[0].children[i]
     if ( child instanceof THREE.Mesh ) {
-      mesh = child.clone()
+      mesh = child
     } else {
       if (child instanceof THREE.Object3D && armature === null) armature = child //new THREE.Skeleton(child)
     }
