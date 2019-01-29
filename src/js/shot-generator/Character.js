@@ -126,6 +126,10 @@ const characterFactory = ({ scene, id, type, data, props }) => {
     }
   }
 
+  let skel = (obj.children[0] instanceof THREE.Mesh)
+    ? obj.children[0]
+    : obj.children[1]
+
   material.map = mesh.material.map
   material.map.needsUpdate = true
   mesh.material = material
@@ -153,10 +157,6 @@ const characterFactory = ({ scene, id, type, data, props }) => {
   let scale = targetHeight / originalHeight
   obj.scale.set(scale, scale, scale)
   obj.originalHeight = originalHeight
-
-  let skel = (newObject.children[0] instanceof THREE.Mesh)
-    ? newObject.children[0]
-    : newObject.children[1]
 
   // let mat = cloned.children[0].material
   //   ? cloned.children[0].material.clone()
