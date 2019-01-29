@@ -377,8 +377,12 @@ const Character = React.memo(({
       let skel = (object.current.children[0] instanceof THREE.Mesh) ? object.current.children[0] : object.current.children[1]
 
       let headBone = skel.skeleton.getBoneByName('mixamorigHead')
-      // FIXME hardcoded
-      let baseHeight = 1.6256
+
+      // FIXME get current .models from getState()
+      let modelSettings = initialState.models[props.model]
+      let baseHeight = modelSettings
+        ? modelSettings.height
+        : 1.6
       let baseHeadScale = baseHeight / props.height
 
       //head bone
