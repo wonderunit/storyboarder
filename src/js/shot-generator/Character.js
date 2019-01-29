@@ -132,6 +132,10 @@ const characterFactory = ({ id, type, data, props }) => {
     ? obj.children[0]
     : obj.children[1]
 
+  console.log('in', {
+    mesh, armature, skel
+  })
+
   material.map = mesh.material.map
   material.map.needsUpdate = true
   mesh.material = material
@@ -171,8 +175,8 @@ const characterFactory = ({ id, type, data, props }) => {
 
   let bonesHelper = new BonesHelper(skel.skeleton.bones[0], newObject)
 
-  console.log('\n\n\n\ncharacterFactory')
-  console.log(newObject, bonesHelper)
+  console.log('out', { newObject, bonesHelper })
+  console.log('\n\n\n\n')
   
   return [newObject, bonesHelper]
 }
