@@ -714,7 +714,7 @@ module.exports = {
 
         case 'UPDATE_SERVER':
           console.log('%cshot-generator web client at', 'color:blue', action.payload.uri)
-          draft.server = { ...draft.server, payload: action.payload }
+          draft.server = { ...draft.server, ...action.payload }
           return
           
       }
