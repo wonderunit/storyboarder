@@ -457,3 +457,12 @@ select:focus {
   border-left: 0.31rem solid #B5B5B5;
   left: 1px; /* optical */
 }
+
+.server-inspector {
+  animation: server-inspector-fadein 0.3s ease-out;
+}
+
+@keyframes server-inspector-fadein {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
