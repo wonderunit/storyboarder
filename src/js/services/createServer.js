@@ -16,7 +16,9 @@ module.exports = function ({
   setInputSensor, // TODO do we need this?
   setInputDown,
   setInputMouseMode,
-  setInputPhoneClick
+  setInputPhoneClick,
+
+  updateServer = () => {}
 }) {
   wss.on('connection', function connection (ws) {
     console.log('got connection')
@@ -58,13 +60,40 @@ module.exports = function ({
 
   web.listen(port, () => {
     let hostname = os.hostname()
+
     dns.lookup(hostname, function (err, addr, fam) {
       if (err) {
-        console.error(err)
-        console.log("shot-generator web client at http://" + hostname + ":" + port)
+        // use IP address instead of .local
+        let ip
+        if (hostname.match(/\.local$/)) {
+          ip = Object.values(os.networkInterfaces()).reduce(
+            (r, list) =>
+              r.concat(
+                list.reduce(
+                  (rr, i) =>
+                    rr.concat((i.family === "IPv4" && !i.internal && i.address) || []),
+                  []
+                )
+              ),
+            []
+          )
+        }
+        if (ip) {
+          updateServer({
+            uri: `http://${ip}:${port}`
+          })
+        } else {
+          console.error(err)
+          updateServer({
+            uri: `http://${hostname}:${port}`
+          })
+        }
         return
       }
-      console.log("shot-generator web client at http://" + addr + ":" + port)
+
+      updateServer({
+        uri: `http://${addr}:${port}`
+      })
     })
   })
 }

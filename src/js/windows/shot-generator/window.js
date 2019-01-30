@@ -27,7 +27,7 @@ const h = require('../../utils/h')
 const Editor = require('../../shot-generator/Editor')
 
 const presetsStorage = require('../../shared/store/presetsStorage')
-const { initialState, loadScene, resetScene, updateDevice } = require('../../shared/reducers/shot-generator')
+const { initialState, loadScene, resetScene, updateDevice, updateServer } = require('../../shared/reducers/shot-generator')
 
 const createServer = require('../../services/createServer')
 const createDualShockController = require('../../shot-generator/DualshockController')
@@ -111,7 +111,9 @@ createServer({
   setInputSensor: payload => store.dispatch({ type: 'SET_INPUT_SENSOR', payload }),
   setInputDown: payload => store.dispatch({ type: 'SET_INPUT_DOWN', payload }),
   setInputMouseMode: payload => store.dispatch({ type: 'SET_INPUT_MOUSEMODE', payload }),
-  setInputPhoneClick: payload => store.dispatch({ type: 'SET_INPUT_PHONE_CLICK', payload })
+  setInputPhoneClick: payload => store.dispatch({ type: 'SET_INPUT_PHONE_CLICK', payload }),
+  
+  updateServer: payload => store.dispatch(updateServer(payload))
 })
 
 // are we testing locally?

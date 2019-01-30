@@ -307,6 +307,9 @@ const initialState = {
         state: defaultPosePreset
       }
     }
+  },
+  server: {
+    uri: undefined
   }
 }
 
@@ -707,6 +710,13 @@ module.exports = {
             }
             draft.sceneObjects[action.payload.destinationId] = object
           }
+          return
+
+        case 'UPDATE_SERVER':
+          console.log('%cshot-generator web client at', 'color:blue', action.payload.uri)
+          draft.server = { ...draft.server, payload: action.payload }
+          return
+          
       }
     })
   },
@@ -754,5 +764,7 @@ module.exports = {
   updateWorldRoom: payload => ({ type: 'UPDATE_WORLD_ROOM', payload }),
   updateWorldEnvironment: payload => ({ type: 'UPDATE_WORLD_ENVIRONMENT', payload }),
 
-  updateDevice: (id, values) => ({ type: 'UPDATE_DEVICE', payload: { id, ...values } })
+  updateDevice: (id, values) => ({ type: 'UPDATE_DEVICE', payload: { id, ...values } }),
+
+  updateServer: payload => ({ type: 'UPDATE_SERVER', payload })
 }
