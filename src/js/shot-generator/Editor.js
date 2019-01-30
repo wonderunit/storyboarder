@@ -90,6 +90,7 @@ const NumberSliderFormatter = {
 }
 
 const ModelSelect = require('./ModelSelect')
+const ServerInspector = require('./ServerInspector')
 
 require('../vendor/OutlineEffect.js')
 
@@ -2994,7 +2995,8 @@ const Editor = connect(
                 // camera canvas
                 ['canvas', { key: 'camera-canvas', tabIndex: 1, ref: largeCanvasRef, id: 'camera-canvas', onPointerDown: onCanvasPointerDown }]
               ],
-              [CameraInspector]
+              [CameraInspector],
+              [ServerInspector]
             ],
 
             //
