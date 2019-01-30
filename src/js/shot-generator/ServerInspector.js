@@ -11,15 +11,17 @@ const ServerInspector = connect(
 )(({ server }) => {
   const buffer = useMemo(() =>
     server.uri
-      ? qr.imageSync(server.uri, { ec_level: 'H', type: 'png', size: 3, margin: 3, parse_url: true })
+      ? qr.imageSync(server.uri, { ec_level: 'H', type: 'png', size: 4, margin: 3, parse_url: true })
       : null,
     [server.uri])
 
   return buffer
     ? h(
-        ['div.server-inspector', { style: { display: 'flex', justifyContent: 'flex-end', padding: 24 }}, [
-          ['div', { style: { width: '6rem', textAlign: 'right', paddingRight: 18 }}, 'Use your phone to direct the scene:'],
-          ['img', { src: `data:image/png;base64,` + buffer.toString('base64') }]
+        ['div.server-inspector', [
+          ['div.server-inspector__label', 'Use your phone to direct the scene:'],
+          ['div.server-inspector__value', [
+            ['img', { src: `data:image/png;base64,` + buffer.toString('base64') }]
+          ]]
         ]]
       )
     : null

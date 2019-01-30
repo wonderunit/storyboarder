@@ -868,7 +868,8 @@ const Inspector = ({
           updateWorldRoom,
           updateWorldEnvironment
         }
-      ]
+      ],
+      [ServerInspector]
   ])
 }
 
@@ -2995,8 +2996,7 @@ const Editor = connect(
                 // camera canvas
                 ['canvas', { key: 'camera-canvas', tabIndex: 1, ref: largeCanvasRef, id: 'camera-canvas', onPointerDown: onCanvasPointerDown }]
               ],
-              [CameraInspector],
-              [ServerInspector]
+              [CameraInspector]
             ],
 
             //
