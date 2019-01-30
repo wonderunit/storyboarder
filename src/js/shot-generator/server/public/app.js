@@ -57,36 +57,6 @@ function report (values) {
 
 }
 
-document.getElementById("mouseButton").addEventListener('touchstart', event => {
-  event.preventDefault();
-  mouseOn = !mouseOn;
-  if (mouseOn) {
-    document.getElementById("mouseButton").innerHTML = "3D rotation"
-  } else {
-    document.getElementById("mouseButton").innerHTML = "Cursor mode"
-   }
-  //document.getElementById("debugger").innerHTML += "<br>Mouse mode on touch: "+mouseOn;
-  report({
-    mouseMode: mouseOn
-  })
-  //event.stopPropagation();
-})
-
-document.getElementById("mouseButtonClick").addEventListener('touchstart', event => {
-event.preventDefault();
-mouseModeClick = true;
-//document.getElementById("debugger").innerHTML += "<br>Mouse click: "+mouseModeClick;
-
-report({
-  mouseModeClick: mouseModeClick
- })
- mouseModeClick = false;
- report({
-   mouseModeClick: mouseModeClick
-  })
-//event.stopPropagation();
-})
-
 if(window.DeviceMotionEvent){
   window.addEventListener("devicemotion", motion, false);
 }else{
@@ -140,7 +110,6 @@ function orientation(event){
 //   }, true)
 // }
 
-console.log(document.getElementById("container"))
 
 document.getElementById("container").addEventListener('touchend', event => {
   //alert('hi')
@@ -156,13 +125,8 @@ document.getElementById("container").addEventListener('touchend', event => {
   screen.orientation.lock('portrait-primary')
 })
 
-console.log('hi')
-
-window.addEventListener('touchstart', event => {
+document.getElementById("container").addEventListener('touchstart', event => {
   //fullscreen()
-
-
-
 
   down = true
   event.preventDefault()
@@ -182,11 +146,11 @@ window.addEventListener('touchstart', event => {
   })
 })
 
-window.addEventListener('touchmove', event => {
+document.getElementById("container").addEventListener('touchmove', event => {
   event.preventDefault()
 })
 
-window.addEventListener('touchend', event => {
+document.getElementById("container").addEventListener('touchend', event => {
   down = false
   event.preventDefault()
   report({
@@ -194,7 +158,7 @@ window.addEventListener('touchend', event => {
   })
 })
 
-window.addEventListener('touchcancel', event => {
+document.getElementById("container").addEventListener('touchcancel', event => {
   down = false
   event.preventDefault()
   report({
@@ -202,6 +166,55 @@ window.addEventListener('touchcancel', event => {
   })
 })
 
+document.getElementById("phoneSelect").addEventListener('touchstart', event => {
+  event.preventDefault();
+  mouseOn = !mouseOn;
+  
+  report({
+    down: true
+  })
+  report({
+    mag: [alpha, beta, gamma]
+  })
+  report({
+    mouseMode: mouseOn
+  })
+})
 
+document.getElementById("phoneSelect").addEventListener('touchend', event => {
+  down = false
+  mouseOn = !mouseOn;
+  event.preventDefault()
+  report({
+    down: false
+  })
+  report({
+    mouseModeClick: true
+  })
+  report({
+    mouseModeClick: false
+    })
+})
 
-//log('Ready')
+document.getElementById("phoneSelect").addEventListener('touchcancel', event => {
+  down = false
+  mouseOn = !mouseOn;
+  event.preventDefault()
+  report({
+    down: false
+  })
+})
+
+document.getElementById("mouseButtonClick").addEventListener('touchstart', event => {
+  event.preventDefault();
+  mouseModeClick = true;
+
+  report({
+    mouseModeClick: mouseModeClick
+  })
+  mouseModeClick = false;
+  report({
+    mouseModeClick: mouseModeClick
+    })
+})
+
