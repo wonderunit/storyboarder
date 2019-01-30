@@ -20,8 +20,9 @@ module.exports = function ({
 
   updateServer = () => {}
 }) {
-  wss.on('connection', function connection (ws) {
-    console.log('got connection')
+  wss.on('connection', function connection (ws, req) {
+    updateServer({ client: req.connection.remoteAddress })
+
     ws.on('message', function incoming (message) {
       let values = JSON.parse(message)
       if (values.accel) {
@@ -45,6 +46,10 @@ module.exports = function ({
       if (values.mouseModeClick != null) {
         setInputPhoneClick(values.mouseModeClick)
       }
+    })
+
+    ws.on('close', function () {
+      updateServer({ client: undefined })
     })
   })
 

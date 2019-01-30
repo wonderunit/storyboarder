@@ -309,7 +309,8 @@ const initialState = {
     }
   },
   server: {
-    uri: undefined
+    uri: undefined,
+    client: false
   }
 }
 

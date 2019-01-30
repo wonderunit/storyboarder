@@ -15,16 +15,28 @@ const ServerInspector = connect(
       : null,
     [server.uri])
 
-  return buffer
+  return server.client
     ? h(
         ['div.server-inspector', [
           ['div.server-inspector__label', 'Use your phone to direct the scene:'],
-          ['div.server-inspector__value', [
-            ['img', { src: `data:image/png;base64,` + buffer.toString('base64') }]
-          ]]
+          ['div.server-inspector__value', { style: { display: 'flex', alignItems: 'center', paddingLeft: 6 }}, 'Connected']
         ]]
       )
-    : null
+    : buffer
+      ? h(
+          ['div.server-inspector', [
+            ['div.server-inspector__label', 'Use your phone to direct the scene:'],
+            ['div.server-inspector__value', [
+              ['img', { src: `data:image/png;base64,` + buffer.toString('base64') }]
+            ]]
+          ]]
+        )
+      : h(
+          ['div.server-inspector', [
+            ['div.server-inspector__label', 'Use your phone to direct the scene:'],
+            ['div.server-inspector__value', { style: { display: 'flex', alignItems: 'center', paddingLeft: 6 }}, 'Starting server …']
+          ]]
+        )
 })
 
 module.exports = ServerInspector
