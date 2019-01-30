@@ -90,6 +90,7 @@ const NumberSliderFormatter = {
 }
 
 const ModelSelect = require('./ModelSelect')
+const ServerInspector = require('./ServerInspector')
 
 require('../vendor/OutlineEffect.js')
 
@@ -867,7 +868,8 @@ const Inspector = ({
           updateWorldRoom,
           updateWorldEnvironment
         }
-      ]
+      ],
+      [ServerInspector]
   ])
 }
 

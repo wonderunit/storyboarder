@@ -457,3 +457,38 @@ select:focus {
   border-left: 0.31rem solid #B5B5B5;
   left: 1px; /* optical */
 }
+
+.server-inspector {
+  display: flex;
+  flex-direction: row;
+
+  margin-bottom: 0.5rem;
+
+  animation: server-inspector-fadein 0.3s ease-out;
+}
+.server-inspector__label {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  cursor: default;
+  padding: 0 0.5rem 0 0;
+  margin-top: -1px; /* optical */
+  font-size: 87.5%;
+
+  line-height: 1.25;
+  text-align: right;
+}
+.server-inspector__value {
+  width: 136px;
+  height: 136px;
+}
+.server-inspector__value img {
+  max-width: 100%;
+  display: block;
+}
+
+@keyframes server-inspector-fadein {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
