@@ -71,6 +71,8 @@ const presetsStorage = require('../shared/store/presetsStorage')
 
 const WorldObject = require('./World')
 
+const ModelLoader = require('../services/model-loader')
+
 const NumberSlider = require('./NumberSlider')
 const NumberSliderTransform = {
   degrees: (prev, delta, { min, max, step, fine }) => {
@@ -1756,47 +1758,75 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
           }
         ],
 
-      sceneObject.type == 'character' && [
-
-        ['div', { style: { flex: 1, paddingBottom: 6 } }, [
-          [NumberSlider, { label: 'height', min: 1.4732, max: 2.1336, step: 0.0254, value: sceneObject.height, onSetValue: createOnSetValue(sceneObject.id, 'height'),
-            formatter: value => feetAndInchesAsString(...metersAsFeetAndInches(sceneObject.height))
-          } ],
-          [
-            NumberSlider,
-            {
-              label: 'head',
-              min: 80,
-              max: 120,
-              step: 1,
-              value: sceneObject.headScale * 100,
-              onSetValue: createOnSetValue(sceneObject.id, 'headScale', value => value / 100),
-              formatter: value => Math.round(value).toString() + '%'
-          } ],
-        ]],
-
-        ['div', { style: { margin: '6px 0 3px 0', fontStyle: 'italic' } }, 'morphs'],
-
-        ['div', { style: { flex: 1 } },
-          Object.entries(sceneObject.morphTargets).map(([ key, value ]) =>
-            [
-              NumberSlider,
-              {
-                label: MORPH_TARGET_LABELS[key],
-                min: 0,
-                max: 100,
-                step: 1,
-                value: value * 100,
-                onSetValue: value => updateObject(
-                  sceneObject.id,
-                  { morphTargets: { [key]: value / 100 }
-                }),
-                formatter: NumberSliderFormatter.percent
-              }
+      sceneObject.type == 'character' && (
+        ModelLoader.isCustomModel(sceneObject.model)
+          ? [
+            ['div', { style: { flex: 1, paddingBottom: 6 } }, [
+              [NumberSlider, {
+                label: 'height',
+                min: 0.3,
+                max: 3.05,
+                step: 0.0254,
+                value: sceneObject.height,
+                onSetValue: createOnSetValue(sceneObject.id, 'height'),
+              }]]
             ]
-          )
-        ],
+          ]
+          : [
+            ['div', { style: { flex: 1, paddingBottom: 6 } }, [
+              [NumberSlider, {
+                label: 'height',
+                min: 1.4732,
+                max: 2.1336,
+                step: 0.0254,
+                value: sceneObject.height,
+                onSetValue: createOnSetValue(sceneObject.id, 'height'),
+                formatter: value => feetAndInchesAsString(
+                  ...metersAsFeetAndInches(
+                    sceneObject.height
+                  )
+                )
+              }],
 
+              [
+                NumberSlider,
+                {
+                  label: 'head',
+                  min: 80,
+                  max: 120,
+                  step: 1,
+                  value: sceneObject.headScale * 100,
+                  onSetValue: createOnSetValue(sceneObject.id, 'headScale', value => value / 100),
+                  formatter: value => Math.round(value).toString() + '%'
+                }
+              ],
+            ]],
+
+            ['div', { style: { margin: '6px 0 3px 0', fontStyle: 'italic' } }, 'morphs'],
+
+            ['div', { style: { flex: 1 } },
+              Object.entries(sceneObject.morphTargets).map(([ key, value ]) =>
+                [
+                  NumberSlider,
+                  {
+                    label: MORPH_TARGET_LABELS[key],
+                    min: 0,
+                    max: 100,
+                    step: 1,
+                    value: value * 100,
+                    onSetValue: value => updateObject(
+                      sceneObject.id,
+                      { morphTargets: { [key]: value / 100 }
+                    }),
+                    formatter: NumberSliderFormatter.percent
+                  }
+                ]
+              )
+            ]
+          ]
+      ),
+
+      sceneObject.type == 'character' && [
         // pose preset
         [PosePresetsEditor, { sceneObject }],
 

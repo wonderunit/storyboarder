@@ -296,7 +296,7 @@ const Character = React.memo(({
 
         object.current.scale.set( scale, scale, scale )
       } else {
-        object.current.scale.set( 1, 1, 1 )
+        object.current.scale.setScalar( props.height )
       }
       //object.current.bonesHelper.updateMatrixWorld()
     }
