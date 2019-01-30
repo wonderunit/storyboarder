@@ -368,7 +368,7 @@ class BoardView {
                   background-color: ${
                     kind === 'board'
                       ? this.active
-                        ? '#699EF2'
+                        ? '#7a72e9'
                         : index % 2 === 0 ? '#777' : '#555'
                       : '#7c7'
                   };
@@ -413,7 +413,7 @@ class BoardView {
                     background-color: ${
                       kind === 'board'
                         ? this.active
-                          ? '#699EF2'
+                          ? '#7a72e9'
                           : '#444'
                         : '#3f503f'
                     };
@@ -833,7 +833,7 @@ class TimelineView {
                     left: -${5 + 5}px;
                     border-left: 5px solid transparent;
                     border-right: 5px solid transparent;
-    
+
                     border-top: 5px solid #999;`
           }
         )

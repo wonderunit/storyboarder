@@ -249,13 +249,13 @@ body::-webkit-scrollbar {
 }
 
 #thumbnail-drawer .thumbnail.active {
-  background: #699EF2;
+  background: #7a72e9;
   color: #000;
   transition: all 0s ease-out;
 }
 
 #thumbnail-drawer .thumbnail.selected {
-  background: #699EF2;
+  background: #7a72e9;
   color: #000;
   top: 0px;
   position: relative;

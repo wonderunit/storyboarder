@@ -6926,7 +6926,11 @@ const saveToBoardFromShotGenerator = async ({ data, images }) => {
   let context = createSizedContext(size)
   let canvas = context.canvas
   // fit to destination (until we fix the shot generator render size)
-  context.drawImage(image, ...util.fitToDst(canvas, image).map(Math.round))
+  let dim = util.fitToDst(canvas, image).map(Math.ceil)
+  dim[2] = dim[2] + 1
+  dim[3] = dim[3] + 1
+  console.log('*****drawImage dim', dim)
+  context.drawImage(image, ...dim)
   // replace
   let layerIndex = storyboarderSketchPane.sketchPane.layers.findByName('reference').index
   storyboarderSketchPane.replaceLayer(layerIndex, canvas)

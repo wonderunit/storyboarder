@@ -201,7 +201,7 @@ class AudioFileControlView {
           context,
           this.state.mode === 'countdown'
             ? 'silver'
-            : '#699EF2',
+            : '#7a72e9',
           lastAudioData
         )
       }
@@ -210,7 +210,7 @@ class AudioFileControlView {
           context,
           this.state.mode === 'countdown'
             ? 'silver'
-            : '#699EF2',
+            : '#7a72e9',
           Tone.dbToGain(lastMeter) // scale to 0…1
         )
       }
@@ -222,17 +222,17 @@ class AudioFileControlView {
       // context.arc(0, 0, 5, 0, Math.PI * 2)
       // context.closePath()
       // context.fill()
-      // 
+      //
       // context.beginPath()
       // context.arc(context.canvas.width, 0, 5, 0, Math.PI * 2)
       // context.closePath()
       // context.fill()
-      // 
+      //
       // context.beginPath()
       // context.arc(context.canvas.width, context.canvas.height, 5, 0, Math.PI * 2)
       // context.closePath()
       // context.fill()
-      // 
+      //
       // context.beginPath()
       // context.arc(0, context.canvas.height, 5, 0, Math.PI * 2)
       // context.closePath()
@@ -269,7 +269,7 @@ class AudioFileControlView {
 
       // audiofileTextEl.innerHTML = util.truncateMiddle(boardAudio.filename)
       audiofileTextEl.innerHTML = '<span>' +
-                                    // '<span class="paren">(</span>' + 
+                                    // '<span class="paren">(</span>' +
                                     'Audio' + // : 3s 44.1khz 16bit
                                     // '<span class="paren">)</span>' +
                                   '</span>'
@@ -284,7 +284,7 @@ class AudioFileControlView {
       // mute
       audiofileInputEl.value = ''
       audiofileTextEl.innerHTML = '<span class="muted">' +
-                                    // '<span class="paren">(</span>' + 
+                                    // '<span class="paren">(</span>' +
                                     'Select Audio File' +
                                     // '<span class="paren">)</span>' +
                                   '</span>'
@@ -310,7 +310,7 @@ class Recorder {
     // NOTE inefficient, as `Tone.UserMedia.enumerateDevices` is also called again later by userMedia.open
     let devices = await Tone.UserMedia.enumerateDevices()
     console.log(`Tone.UserMedia found ${devices.length} audio devices:`)
-    devices.forEach(d => 
+    devices.forEach(d =>
       console.log(
         '-',
         `${d.label} [${d.deviceId.length && d.deviceId.slice(0, 7)}]`,
@@ -415,7 +415,7 @@ class Recorder {
           for (let i = 0; i < audioBuffer.numberOfChannels; i++) {
             channelData.push(audioBuffer.getChannelData(i))
           }
-          
+
           let arrayBuffer = WavEncoder.encode.sync({
             sampleRate,
             channelData

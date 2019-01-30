@@ -133,7 +133,7 @@ function BonesHelper( object, object3D ) {
       })
 
       let s_material = new THREE.MeshBasicMaterial({
-        color: 0x006eb8,
+        color:0x7a72e9,
         depthTest: false,
         depthWrite: false,
         transparent: true,

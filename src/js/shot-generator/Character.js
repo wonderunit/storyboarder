@@ -30,14 +30,239 @@ const imageLoader = new THREE.ImageLoader(loadingManager)
 objLoader.setLogging(false, false)
 THREE.Cache.enabled = true
 
+const loadGltf = filepath =>
+  new Promise((resolve, reject) =>
+    gltfLoader.load(
+      filepath,
+      data => resolve(data),
+      null,
+      error => reject(error)
+    ))
+
+// FIXME doesn't return the correct value when run from `npm run shot-generator`
+// https://github.com/electron-userland/electron-webpack/issues/243
+// const { app } = require('electron').remote
+// const modelsPath = path.join(app.getAppPath(), 'src', 'data', 'shot-generator', 'dummies', 'gltf')
+const modelsPath = path.join(__dirname, '..', '..', '..', 'src', 'data', 'shot-generator', 'dummies', 'gltf')
+
+const pathToCharacterModelFile = (model) =>
+  ModelLoader.isCustomModel(model)
+    // absolute path to a model on the filesystem
+    ? model
+    // relative path to a model in the app
+    : path.join(modelsPath, `${model}.glb`)
+
+const cloneAnimated = ( source ) => {
+  var cloneLookup = new Map()
+  var clone = source.clone()
+
+  parallelTraverse( source, clone, function ( sourceNode, clonedNode ) {
+    cloneLookup.set( sourceNode, clonedNode )
+  } )
+
+  source.traverse( function ( sourceMesh ) {
+    if ( ! sourceMesh.isSkinnedMesh ) return
+    var sourceBones = sourceMesh.skeleton.bones
+    var clonedMesh = cloneLookup.get( sourceMesh )
+    clonedMesh.skeleton = sourceMesh.skeleton.clone()
+    clonedMesh.skeleton.bones = sourceBones.map( function ( sourceBone ) {
+      if ( ! cloneLookup.has( sourceBone ) ) {
+        throw new Error( 'THREE.AnimationUtils: Required bones are not descendants of the given object.' )
+      }
+      return cloneLookup.get( sourceBone )
+    } )
+    clonedMesh.bind( clonedMesh.skeleton, sourceMesh.bindMatrix )
+  } )
+
+  return clone
+}
+
+const parallelTraverse = ( a, b, callback ) => {
+  callback( a, b )
+  for ( var i = 0; i < a.children.length; i ++ ) {
+    parallelTraverse( a.children[ i ], b.children[ i ], callback )
+  }
+}
+
+const characterFactory = ({ scene, id, type, data, props }) => {
+  let newObject
+
+  let material = new THREE.MeshToonMaterial({
+    color: 0xffffff,
+    emissive: 0x0,
+    specular: 0x0,
+    skinning: true,
+    shininess: 0,
+    flatShading: false,
+    morphNormals: true,
+    morphTargets: true
+  })
+  let mesh = null
+  let armature = null
+  let obj = new THREE.Object3D()
+  obj = data.scene.children[0]
+
+  // first type of GLTF structure, where Skinned Mesh and the bone structure are inside the object3D
+  for (var i in data.scene.children[0].children) {
+    let child = data.scene.children[0].children[i]
+    if ( child instanceof THREE.Mesh ) {
+      mesh = child
+    } else {
+      if (child instanceof THREE.Object3D && armature === null) armature = child //new THREE.Skeleton(child)
+    }
+  }
+
+  if (mesh === null)
+  {
+    //try loading second type of GLTF structure, mesh is outside the Object3D that contains the armature
+    for (var i in data.scene.children)
+    {
+      let child = data.scene.children[i]
+      if ( child instanceof THREE.Mesh ) {
+        mesh = child
+        obj.add(mesh)
+      }
+    }
+  }
+  material.map = mesh.material.map//.clone()
+  // material.map.image = textureBody.image
+  material.map.needsUpdate = true
+  let bbox = new THREE.Box3().setFromObject(mesh)
+
+  let height = bbox.max.y - bbox.min.y
+  obj.originalHeight = height
+  mesh.material = material
+  //mesh.rotation.set(0, Math.PI/2, 0)
+
+  // FIXME use actual getState()
+  let targetHeight = initialState.models[props.model]
+    ? initialState.models[props.model].height
+    : 1.6
+
+  let scale = targetHeight / height
+  obj.scale.set(scale, scale, scale)
+  //mesh.geometry.translate(0, targetHeight/2, 0)
+  mesh.renderOrder = 1.0
+  mesh.original = data
+
+  source = obj
+
+  let cloned = cloneAnimated(source)
+
+  if (cloned instanceof THREE.SkinnedMesh)  // if FBX is loaded we get a SkinnedMesh
+  {
+    let clo = cloneAnimated(source)
+    cloned = new THREE.Object3D()
+    cloned.add(clo)
+  }
+  let mat = cloned.children[0].material ? cloned.children[0].material.clone() : cloned.children[1].material.clone()
+
+  newObject = cloned
+  let skel = (newObject.children[0] instanceof THREE.Mesh) ? newObject.children[0] : newObject.children[1]
+  skel.material = mat.clone()
+  skel.skeleton.pose()
+  newObject.originalHeight = source.originalHeight
+
+  //   MULTI MATERIALS
+  // newObject.material = newObject.material.map(material => material.clone())
+
+  newObject.userData.id = id
+  newObject.userData.type = type
+  newObject.scale.set( source.scale.x, source.scale.y, source.scale.z )
+  newObject.rotation.set( source.rotation.x, source.rotation.y, source.rotation.z )
+
+  //adding the bone structure here on each character added to the scene
+  let bonesHelper = new BonesHelper(skel.skeleton.bones[0], newObject)
+  
+  return [newObject, bonesHelper]
+}
+
 const remap = (x, a, b, c, d) => (x - a) * (d - c) / (b - a) + c
 const adjusted = value => remap(value, -16385, 16384, -Math.PI, Math.PI)
 
-const Character = React.memo(({ scene, id, type, remoteInput, isSelected, selectedBone, camera, updateCharacterSkeleton, updateObject, loaded, devices, ...props }) => {
+const Character = React.memo(({
+  scene,
+  id,
+  type,
+  remoteInput,
+  isSelected,
+  selectedBone,
+  camera,
+  updateCharacterSkeleton,
+  updateObject,
+  loaded,
+  devices,
+  ...props
+}) => {
+  // setting loaded = true forces an update to sceneObjects,
+  // which is what Editor listens for to attach the BonesHelper
   const setLoaded = loaded => updateObject(id, { loaded })
 
-  let object = useRef(null)
+  const object = useRef(null)
+
+  const [modelData, setModelData] = useState(null)
+
+  const doCleanup = () => {
+    if (object.current) {
+      console.log(type, id, 'remove')
+      scene.remove(object.current.bonesHelper)
+      scene.remove(object.current)
+      object.current.bonesHelper = null
+      object.current = null
+      setLoaded(false)
+    }
+  }
+
+  // if the model has changed
+  useEffect(() => {
+    console.log(type, id, 'model change', props.model)
+    setLoaded(false)
+    setModelData(false)
+
+    loadGltf(pathToCharacterModelFile(props.model))
+      .then(data => setModelData(data))
+      .catch(error => console.error(error))
+
+    return function cleanup () {
+      console.log(type, id, 'model change cleanup')
+      doCleanup()
+    }
+  }, [props.model])
+
+  // if the model’s data has changed
+  useEffect(() => {
+    if (modelData) {
+      console.log(type, id, 'add')
+
+      const [newObject, bonesHelper] = characterFactory({ scene, id, type, data: modelData, props })
+
+      // TODO could avoid the jump by making the entire character a positioned Group with children
+      //      OR could run all the updaters here to set position correctly immediately after load?
+      //
+      // hide until ready
+      newObject.visible = false
+      bonesHelper.visible = false
+
+      object.current = newObject
+      scene.add(object.current)
+      object.current.bonesHelper = bonesHelper
+      scene.add(object.current.bonesHelper)
+    }
+
+    return function cleanup () {
+      console.log('modelData cleanup')
+    }
+  }, [modelData])
+  
+  useEffect(() => {
+    return function cleanup () {
+      console.log('component cleanup')
+      doCleanup()
+    }
+  }, [])
+
   let isRotating = useRef(false)
+
   let isControllerRotatingCurrent = useRef(false)
 
   let startingObjectQuaternion = useRef(null)
@@ -57,42 +282,10 @@ const Character = React.memo(({ scene, id, type, remoteInput, isSelected, select
   let startingGlobalRotation = useRef(null)
 
   let currentBoneSelected = useRef(null)
-  const cloneAnimated = ( source ) => {
-
-    var cloneLookup = new Map()
-    var clone = source.clone()
-
-    parallelTraverse( source, clone, function ( sourceNode, clonedNode ) {
-      cloneLookup.set( sourceNode, clonedNode )
-    } )
-
-    source.traverse( function ( sourceMesh ) {
-      if ( ! sourceMesh.isSkinnedMesh ) return
-      var sourceBones = sourceMesh.skeleton.bones
-      var clonedMesh = cloneLookup.get( sourceMesh )
-      clonedMesh.skeleton = sourceMesh.skeleton.clone()
-      clonedMesh.skeleton.bones = sourceBones.map( function ( sourceBone ) {
-        if ( ! cloneLookup.has( sourceBone ) ) {
-          throw new Error( 'THREE.AnimationUtils: Required bones are not descendants of the given object.' )
-        }
-        return cloneLookup.get( sourceBone )
-      } )
-      clonedMesh.bind( clonedMesh.skeleton, sourceMesh.bindMatrix )
-    } )
-
-    return clone
-  }
-
-  const parallelTraverse = ( a, b, callback ) => {
-    callback( a, b )
-    for ( var i = 0; i < a.children.length; i ++ ) {
-      parallelTraverse( a.children[ i ], b.children[ i ], callback )
-    }
-  }
 
   const updateSkeleton = () => {
     let skel = (object.current.children[0] instanceof THREE.Mesh) ? object.current.children[0] : object.current.children[1]
-    //skel.skeleton.pose()
+    skel.skeleton.pose()
     if (props.skeleton) {
       for (let name in props.skeleton) {
         let bone = skel.skeleton.getBoneByName(name)
@@ -147,157 +340,6 @@ const Character = React.memo(({ scene, id, type, remoteInput, isSelected, select
       }
   }
 
-  const load = filepath => {
-    return new Promise((resolve, reject) => {
-      gltfLoader.load(
-        filepath,
-        data => {
-          resolve(data)
-        },
-        null,
-        error => {
-          reject(error)
-        }
-      )
-    })
-  }
-
-  useEffect(() => {
-    console.log(type, id, 'add')
-
-    setLoaded(false)
-
-    let filepath
-    if (ModelLoader.isCustomModel(props.model)) {
-      filepath = props.model
-      console.log('loading a custom character model from the file system', filepath)
-    } else {
-
-      // FIXME doesn't return the correct value when run from `npm run shot-generator`
-      // https://github.com/electron-userland/electron-webpack/issues/243
-      // const { app } = require('electron').remote
-      // filepath = path.join(app.getAppPath(), 'src', 'data', 'shot-generator', 'objects', model + '.obj')
-
-      filepath = path.join(
-        __dirname, '..', '..', '..', 'src', 'data', 'shot-generator', 'dummies', 'gltf',
-        `${props.model}.glb`
-      )
-      console.log('loading a built-in character model from the app', filepath)
-    }
-
-    load(filepath).then(data => {
-      let material = new THREE.MeshToonMaterial({
-        color: 0xffffff,
-        emissive: 0x0,
-        specular: 0x0,
-        skinning: true,
-        shininess: 0,
-        flatShading: false,
-        morphNormals: true,
-        morphTargets: true
-      })
-      let mesh = null
-      let armature = null
-      let obj = new THREE.Object3D()
-      obj = data.scene.children[0]
-
-      // first type of GLTF structure, where Skinned Mesh and the bone structure are inside the object3D
-      for (var i in data.scene.children[0].children) {
-        let child = data.scene.children[0].children[i]
-        if ( child instanceof THREE.Mesh ) {
-          mesh = child.clone()
-        } else {
-          if (child instanceof THREE.Object3D && armature === null) armature = child //new THREE.Skeleton(child)
-        }
-      }
-
-      if (mesh === null)
-      {
-        //try loading second type of GLTF structure, mesh is outside the Object3D that contains the armature
-        for (var i in data.scene.children)
-        {
-          let child = data.scene.children[i]
-          if ( child instanceof THREE.Mesh ) {
-            mesh = child
-            obj.add(mesh)
-          }
-        }
-      }
-      material.map = mesh.material.map//.clone()
-      // material.map.image = textureBody.image
-      material.map.needsUpdate = true
-      let bbox = new THREE.Box3().setFromObject(mesh)
-
-      let height = bbox.max.y - bbox.min.y
-      obj.originalHeight = height
-      mesh.material = material
-      //mesh.rotation.set(0, Math.PI/2, 0)
-
-      // FIXME use actual getState()
-      let targetHeight = initialState.models[props.model]
-        ? initialState.models[props.model].height
-        : 1.6
-
-      let scale = targetHeight / height
-      obj.scale.set(scale, scale, scale)
-      //mesh.geometry.translate(0, targetHeight/2, 0)
-      mesh.renderOrder = 1.0
-      mesh.original = data
-
-      source = obj
-
-      let cloned = cloneAnimated(source)
-
-      if (cloned instanceof THREE.SkinnedMesh)  // if FBX is loaded we get a SkinnedMesh
-      {
-        let clo = cloneAnimated(source)
-        cloned = new THREE.Object3D()
-        cloned.add(clo)
-      }
-      let mat = cloned.children[0].material ? cloned.children[0].material.clone() : cloned.children[1].material.clone()
-
-      object.current = cloned
-      let skel = (object.current.children[0] instanceof THREE.Mesh) ? object.current.children[0] : object.current.children[1]
-      skel.material = mat.clone()
-      skel.skeleton.pose()
-      object.current.originalHeight = source.originalHeight
-
-      //   MULTI MATERIALS
-      // object.current.material = object.current.material.map(material => material.clone())
-
-      object.current.userData.id = id
-      object.current.userData.type = type
-      object.current.scale.set( source.scale.x, source.scale.y, source.scale.z )
-      object.current.rotation.set( source.rotation.x, source.rotation.y, source.rotation.z )
-      scene.add( object.current )
-
-      //adding the bone structure here on each character added to the scene
-      object.current.bonesHelper = new BonesHelper(skel.skeleton.bones[0], object.current)
-      scene.add(object.current.bonesHelper)
-
-      // TODO could avoid the jump by making the entire character a positioned Group with children
-      //      OR could run all the updaters here to set position correctly immediately after load?
-      //
-      // hide until ready
-      object.current.visible = false
-
-      setLoaded(true)
-    }).catch(err => {
-      console.error(err)
-    })
-
-    return function cleanup () {
-      // TODO cancel loading if in-progress
-      console.log(type, id, 'remove')
-      if (object.current) {
-        scene.remove(object.current.bonesHelper)
-        scene.remove(object.current)
-        object.current.bonesHelper = null
-        object.current = null
-      }
-    }
-  }, [props.model])
-
   //
   // updaters
   //
@@ -310,27 +352,21 @@ const Character = React.memo(({ scene, id, type, remoteInput, isSelected, select
       object.current.position.z = props.y
       object.current.position.y = props.z
     }
-  }, [props.model, props.x, props.y, props.z, loaded])
-
-  useEffect(() => {
-    if (object.current) {
-      object.current.visible = props.visible
-    }
-  }, [props.model, props.visible, loaded])
+  }, [props.model, props.x, props.y, props.z, modelData])
 
   useEffect(() => {
     if (object.current) {
       object.current.rotation.y = props.rotation
     }
-  }, [props.model, props.rotation, loaded])
+  }, [props.model, props.rotation, modelData])
 
   useEffect(() => {
-    if (!loaded) return
+    if (!modelData) return
     if (!object.current) return
 
     console.log(type, id, 'skeleton')
     updateSkeleton()
-  }, [props.model, props.skeleton, loaded])
+  }, [props.model, props.skeleton, modelData])
 
   useEffect(() => {
     if (object.current) {
@@ -342,10 +378,10 @@ const Character = React.memo(({ scene, id, type, remoteInput, isSelected, select
       object.current.scale.set( scale, scale, scale )
       //object.current.bonesHelper.updateMatrixWorld()
     }
-  }, [props.model, props.height, props.skeleton, loaded])
+  }, [props.model, props.height, props.skeleton, modelData])
 
   useEffect(() => {
-    if (!loaded) return
+    if (!modelData) return
 
     if (object.current) {
       // adjust head proportionally
@@ -360,10 +396,10 @@ const Character = React.memo(({ scene, id, type, remoteInput, isSelected, select
       headBone.scale.setScalar( baseHeadScale )
       headBone.scale.setScalar( props.headScale )
     }
-  }, [props.model, props.headScale, props.skeleton, loaded])
+  }, [props.model, props.headScale, props.skeleton, modelData])
 
   useEffect(() => {
-    if (!loaded) return
+    if (!modelData) return
     if (!object.current) return
 
     // Morphs are changing
@@ -375,10 +411,11 @@ const Character = React.memo(({ scene, id, type, remoteInput, isSelected, select
     skel.morphTargetInfluences[ 1 ] = props.morphTargets.ectomorphic
     skel.morphTargetInfluences[ 2 ] = props.morphTargets.endomorphic
 
-  }, [props.model, props.morphTargets, loaded])
+  }, [props.model, props.morphTargets, modelData])
 
   useEffect(() => {
-    if (!loaded) return
+    console.log(type, id, 'isSelected', isSelected)
+    if (!modelData) return
     if (!object.current) return
 
     // handle selection/unselection
@@ -396,8 +433,8 @@ const Character = React.memo(({ scene, id, type, remoteInput, isSelected, select
         material.userData.outlineParameters =
           isSelected
             ? {
-              thickness: 0.015,
-              color: [ 0.9, 0, 0 ]
+              thickness: 0.009,
+              color: [ 122/256.0, 114/256.0, 233/256.0 ]
             }
            : {
              thickness: 0.009,
@@ -408,18 +445,18 @@ const Character = React.memo(({ scene, id, type, remoteInput, isSelected, select
       skel.material.userData.outlineParameters =
         isSelected
           ? {
-            thickness: 0.015,
-            color: [ 0.9, 0, 0 ]
+            thickness: 0.009,
+            color: [ 122/256.0/2, 114/256.0/2, 233/256.0/2 ]
           }
          : {
            thickness: 0.009,
            color: [ 0, 0, 0 ],
          }
     }
-  }, [props.model, isSelected, loaded])
+  }, [props.model, isSelected, modelData])
 
   useEffect(() => {
-    if (!loaded) return
+    if (!modelData) return
     if (!object.current) return
 
     if (selectedBone === undefined) return
@@ -430,20 +467,20 @@ const Character = React.memo(({ scene, id, type, remoteInput, isSelected, select
 
     if (selectedBone === null) {
       if (currentBoneSelected.current) {
-        currentBoneSelected.current.connectedBone.material.color = new THREE.Color( 0x006eb8 )
+        currentBoneSelected.current.connectedBone.material.color = new THREE.Color( 0x7a72e9 )
         currentBoneSelected.current = null
       }
       return
     }
 
     if (currentBoneSelected.current !== null) {
-      currentBoneSelected.current.connectedBone.material.color = new THREE.Color( 0x006eb8 )
+      currentBoneSelected.current.connectedBone.material.color = new THREE.Color( 0x7a72e9 )
     }
     if (realBone === null || realBone === undefined) return
-    realBone.connectedBone.material.color = new THREE.Color( 0xed0000 )
+    realBone.connectedBone.material.color = new THREE.Color( 0x242246 )
     currentBoneSelected.current = realBone
 
-  }, [selectedBone, loaded])
+  }, [selectedBone, modelData])
 
   useEffect(() => {
     if (!object.current) return
@@ -765,6 +802,22 @@ const Character = React.memo(({ scene, id, type, remoteInput, isSelected, select
   //
   //   }
   // }, [remoteInput])
+
+  useEffect(() => {
+    if (!loaded) return
+
+    if (object.current) {
+      object.current.visible = props.visible
+      object.current.bonesHelper.visible = props.visible
+    }
+  }, [props.visible, loaded])
+
+  useEffect(() => {
+    if (modelData) {
+      console.log(type, id, 'setLoaded:true')
+      setLoaded(true)
+    }
+  }, [modelData])
 
   return null
 })

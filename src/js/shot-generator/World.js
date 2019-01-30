@@ -17,9 +17,119 @@ const imageLoader = new THREE.ImageLoader(loadingManager)
 
 objLoader.setLogging(false, false)
 
+const useGround = (world, scene) => {
+  const [loaded, setLoaded] = useState(false)
+
+  const object = useRef(null)
+  const groundTexture = useRef(null)
+
+  const load = () => imageLoader.load(
+    'data/shot-generator/grid_floor.png',
+    image => {
+      groundTexture.current = new THREE.Texture()
+      groundTexture.current.image = image
+      groundTexture.current.needsUpdate = true
+      setLoaded(true)
+    }
+  )
+
+  const groundFactory = ({ texture }) => {
+    let material = new THREE.MeshToonMaterial({ map: texture, side: THREE.FrontSide })
+    // material.transparent = true
+    // material.blending = THREE.MultiplyBlending
+    material.opacity = 1
+
+    let geometry = new THREE.PlaneGeometry( 135 / 3, 135 / 3, 32 )
+    let object = new THREE.Mesh( geometry, material )
+    object.userData.type = 'ground'
+    object.rotation.x = -Math.PI / 2
+    // shift slightly to allow for OutlineEffect
+    object.position.y = -0.03
+    // object.renderOrder = 0.7
+    return object
+  }
+
+  useEffect(() => {
+    if (world.ground) {
+      if (!loaded) {
+        load()
+      } else {
+        object.current = groundFactory({ texture: groundTexture.current })
+        object.current.visible = world.ground
+        scene.add(object.current)
+      }
+    }
+
+    return function cleanup () {
+      scene.remove(object.current)
+    }
+  }, [world.ground, loaded])
+
+  return object.current
+}
+
+const useRoom = (world, scene) => {
+  const [loaded, setLoaded] = useState(false)
+
+  const object = useRef(null)
+  const wallTexture = useRef(null)
+
+  const load = () => imageLoader.load(
+    'data/shot-generator/grid_wall2.png',
+    image => {
+      wallTexture.current = new THREE.Texture()
+
+      wallTexture.current.image = image
+      wallTexture.current.wrapS = wallTexture.current.wrapT = THREE.RepeatWrapping
+      wallTexture.current.offset.set( 0, 0 )
+      wallTexture.current.repeat.set( 4.5, 4.5 )
+      wallTexture.current.needsUpdate = true
+
+      setLoaded(true)
+    }
+  )
+
+  const roomFactory = ({ width, length, height, texture }) => {
+    let object = buildSquareRoom(
+      width,
+      length,
+      height,
+      { textures: { wall: texture } }
+    )
+    // shift slightly to allow for OutlineEffect
+    object.position.y = -0.03
+    return object
+  }
+
+  useEffect(() => {
+    if (world.room.visible) {
+      if (!loaded) {
+        load()
+      } else {
+        object.current = roomFactory({
+          width: world.room.width,
+          length: world.room.length,
+          height: world.room.height,
+          texture: wallTexture.current
+        })
+        object.current.visible = world.room.visible
+        scene.add(object.current)
+      }
+    }
+
+    return function cleanup () {
+      scene.remove(object.current)
+    }
+  }, [world.room, loaded])
+
+  return object.current
+}
+
 const World = ({ world, scene }) => {
   const [group, setGroup] = useState(null)
-  const [roomLoaded, setRoomLoaded] = useState(false)
+
+  const ground = useGround(world, scene)
+  const room = useRoom(world, scene)
 
   useEffect(() => {
     if (!world.environment.file) {
@@ -129,103 +239,6 @@ const World = ({ world, scene }) => {
       scene.remove(group)
     }
   }, [group])
-
-  const ground = useRef(null)
-  useEffect(() => {
-    if (world.ground) {
-      let texture = new THREE.Texture()
-
-      // FIXME use a real texture cache
-      const ensureGround = ground.current
-        ? Promise.resolve(ground.current)
-        : new Promise(
-          (resolve, reject) => imageLoader.load('data/shot-generator/grid_floor.png',
-            image => {
-              texture.image = image
-              texture.needsUpdate = true
-
-              let geometry = new THREE.PlaneGeometry( 135 / 3, 135 / 3, 32 )
-              let material = new THREE.MeshToonMaterial( {map: texture, side: THREE.FrontSide} )
-              //material.transparent = true
-              //material.blending = THREE.MultiplyBlending
-              material.opacity = 1
-
-              ground.current = new THREE.Mesh( geometry, material )
-              ground.current.userData.type = "ground"
-              // ground.current.renderOrder = 0.7
-              ground.current.rotation.x = -Math.PI / 2
-              // shift slightly to allow for OutlineEffect
-              ground.current.position.y = -0.03
-              resolve(ground.current)
-            },
-            undefined,
-            reject
-          )
-        )
-
-      ensureGround.then(() => scene.add(ground.current))
-    }
-
-    return function cleanup () {
-      if (ground.current) { scene.remove(ground.current) }
-    }
-  }, [world.ground])
-
-  const room = useRef(null)
-  const roomTexture = useRef(null)
-  useEffect(() => {
-    setRoomLoaded(false)
-    // FIXME use a real texture cache
-    const ensureTexture = roomTexture.current
-      ? Promise.resolve(roomTexture.current)
-      : new Promise(
-        (resolve, reject) => imageLoader.load('data/shot-generator/grid_wall.png',
-          image => {
-            let texture = new THREE.Texture()
-
-            texture.image = image
-            texture.wrapS = texture.wrapT = THREE.RepeatWrapping
-            texture.offset.set( 0, 0 )
-            texture.repeat.set( 4.5, 4.5 )
-            texture.needsUpdate = true
-
-            roomTexture.current = texture
-            resolve(roomTexture.current)
-          },
-          undefined,
-          reject
-        )
-      )
-
-    ensureTexture.then(texture => {
-      room.current = buildSquareRoom(
-        world.room.width,
-        world.room.length,
-        world.room.height,
-        {
-          textures: {
-            wall: texture
-          }
-        }
-      )
-      // shift slightly to allow for OutlineEffect
-      room.current.position.y = -0.03
-      room.current.visible = false
-      scene.add(room.current)
-      setRoomLoaded(true)
-    }).catch(err =>
-      console.error(err)
-    )
-
-    return function cleanup () {
-      scene.remove(room.current)
-      room.current = null
-    }
-  }, [world.room.width, world.room.length, world.room.height])
-
-  useEffect(() => {
-    if (room.current) room.current.visible = world.room.visible
-  }, [world.room.visible, roomLoaded])
 
   useEffect(() => {
     scene.background
