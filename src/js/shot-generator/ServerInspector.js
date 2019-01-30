@@ -11,7 +11,7 @@ const ServerInspector = connect(
 )(({ server }) => {
   const buffer = useMemo(() =>
     server.uri
-      ? qr.imageSync(server.uri, { ec_level: 'H', type: 'png', size: 6, margin: 0, parse_url: true })
+      ? qr.imageSync(server.uri, { ec_level: 'H', type: 'png', size: 3, margin: 3, parse_url: true })
       : null,
     [server.uri])
 
