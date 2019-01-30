@@ -510,28 +510,25 @@ const Character = React.memo(({ scene, id, type, remoteInput, isSelected, select
       objectQuaternion.multiply(startingObjectOffset.current)
 
       // APPLY THE ROTATION TO THE TARGET OBJECT
-      //targetobject.quaternion.copy(objectQuaternion.normalize())
-      //realTarget.quaternion.copy(objectQuaternion.normalize())
+      // realTarget.quaternion.copy(objectQuaternion.normalize())
       target.quaternion.copy(objectQuaternion.normalize())
-        //target.updateMatrix()
-        //console.log('target rotation: ', target.rotation)
-        requestAnimationFrame(() => {
-          if (selectedBone) {
-            updateCharacterSkeleton({
-              id,
-              name: target.name,
-              rotation: {
-                x: target.rotation.x,
-                y: target.rotation.y,
-                z: target.rotation.z
-              }
-            })
-          } else {
-            updateObject(target.userData.id, {
-              rotation: target.rotation.y
-            })
-          }
-        })
+      requestAnimationFrame(() => {
+        if (selectedBone) {
+          updateCharacterSkeleton({
+            id,
+            name: target.name,
+            rotation: {
+              x: target.rotation.x,
+              y: target.rotation.y,
+              z: target.rotation.z
+            }
+          })
+        } else {
+          updateObject(target.userData.id, {
+            rotation: target.rotation.y
+          })
+        }
+      })
     } else {
       if (devices[0] && devices[0].digital.circle === false && isControllerRotatingCurrent.current)
       {

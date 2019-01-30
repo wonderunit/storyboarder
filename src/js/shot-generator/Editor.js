@@ -1734,8 +1734,8 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
         ['div',
           [NumberSlider, {
             label: 'tilt',
-            min: -90,
-            max: 90,
+            min: sceneObject.type == 'light' ? -180 : -90,
+            max: sceneObject.type == 'light' ? 180 : 90,
             step: 1,
             value: THREE.Math.radToDeg(sceneObject.tilt),
             onSetValue: value => updateObject(sceneObject.id, { tilt: THREE.Math.degToRad(value) }),
