@@ -52,41 +52,7 @@ const pathToCharacterModelFile = (model) =>
     // relative path to a model in the app
     : path.join(modelsPath, `${model}.glb`)
 
-const cloneAnimated = ( source ) => {
-  var cloneLookup = new Map()
-  var clone = source.clone()
-
-  parallelTraverse( source, clone, function ( sourceNode, clonedNode ) {
-    cloneLookup.set( sourceNode, clonedNode )
-  } )
-
-  source.traverse( function ( sourceMesh ) {
-    if ( ! sourceMesh.isSkinnedMesh ) return
-    var sourceBones = sourceMesh.skeleton.bones
-    var clonedMesh = cloneLookup.get( sourceMesh )
-    clonedMesh.skeleton = sourceMesh.skeleton.clone()
-    clonedMesh.skeleton.bones = sourceBones.map( function ( sourceBone ) {
-      if ( ! cloneLookup.has( sourceBone ) ) {
-        throw new Error( 'THREE.AnimationUtils: Required bones are not descendants of the given object.' )
-      }
-      return cloneLookup.get( sourceBone )
-    } )
-    clonedMesh.bind( clonedMesh.skeleton, sourceMesh.bindMatrix )
-  } )
-
-  return clone
-}
-
-const parallelTraverse = ( a, b, callback ) => {
-  callback( a, b )
-  for ( var i = 0; i < a.children.length; i ++ ) {
-    parallelTraverse( a.children[ i ], b.children[ i ], callback )
-  }
-}
-
-const characterFactory = ({ scene, id, type, data, props }) => {
-  let newObject
-
+const characterFactory = data => {
   let material = new THREE.MeshToonMaterial({
     color: 0xffffff,
     emissive: 0x0,
@@ -97,84 +63,31 @@ const characterFactory = ({ scene, id, type, data, props }) => {
     morphNormals: true,
     morphTargets: true
   })
-  let mesh = null
-  let armature = null
-  let obj = new THREE.Object3D()
-  obj = data.scene.children[0]
 
-  // first type of GLTF structure, where Skinned Mesh and the bone structure are inside the object3D
-  for (var i in data.scene.children[0].children) {
-    let child = data.scene.children[0].children[i]
-    if ( child instanceof THREE.Mesh ) {
-      mesh = child
-    } else {
-      if (child instanceof THREE.Object3D && armature === null) armature = child //new THREE.Skeleton(child)
-    }
+  let mesh
+  let skeleton
+  let armature
+
+  mesh = data.scene.children.find(child => child instanceof THREE.SkinnedMesh) ||
+         data.scene.children[0].children.find(child => child instanceof THREE.SkinnedMesh)
+
+  armature = data.scene.children[0].children.find(child => child instanceof THREE.Bone)
+
+  skeleton = mesh.skeleton
+
+  if (mesh.material.map) {
+    material.map = mesh.material.map
+    material.map.needsUpdate = true
   }
-
-  if (mesh === null)
-  {
-    //try loading second type of GLTF structure, mesh is outside the Object3D that contains the armature
-    for (var i in data.scene.children)
-    {
-      let child = data.scene.children[i]
-      if ( child instanceof THREE.Mesh ) {
-        mesh = child
-        obj.add(mesh)
-      }
-    }
-  }
-  material.map = mesh.material.map//.clone()
-  // material.map.image = textureBody.image
-  material.map.needsUpdate = true
-  let bbox = new THREE.Box3().setFromObject(mesh)
-
-  let height = bbox.max.y - bbox.min.y
-  obj.originalHeight = height
   mesh.material = material
-  //mesh.rotation.set(0, Math.PI/2, 0)
-
-  // FIXME use actual getState()
-  let targetHeight = initialState.models[props.model]
-    ? initialState.models[props.model].height
-    : 1.6
-
-  let scale = targetHeight / height
-  obj.scale.set(scale, scale, scale)
-  //mesh.geometry.translate(0, targetHeight/2, 0)
   mesh.renderOrder = 1.0
-  mesh.original = data
 
-  source = obj
+  let bbox = new THREE.Box3().setFromObject(mesh)
+  let originalHeight = bbox.max.y - bbox.min.y
 
-  let cloned = cloneAnimated(source)
-
-  if (cloned instanceof THREE.SkinnedMesh)  // if FBX is loaded we get a SkinnedMesh
-  {
-    let clo = cloneAnimated(source)
-    cloned = new THREE.Object3D()
-    cloned.add(clo)
-  }
-  let mat = cloned.children[0].material ? cloned.children[0].material.clone() : cloned.children[1].material.clone()
-
-  newObject = cloned
-  let skel = (newObject.children[0] instanceof THREE.Mesh) ? newObject.children[0] : newObject.children[1]
-  skel.material = mat.clone()
-  skel.skeleton.pose()
-  newObject.originalHeight = source.originalHeight
-
-  //   MULTI MATERIALS
-  // newObject.material = newObject.material.map(material => material.clone())
-
-  newObject.userData.id = id
-  newObject.userData.type = type
-  newObject.scale.set( source.scale.x, source.scale.y, source.scale.z )
-  newObject.rotation.set( source.rotation.x, source.rotation.y, source.rotation.z )
-
-  //adding the bone structure here on each character added to the scene
-  let bonesHelper = new BonesHelper(skel.skeleton.bones[0], newObject)
+  skeleton.pose()
   
-  return [newObject, bonesHelper]
+  return { mesh, skeleton, armature, originalHeight }
 }
 
 const remap = (x, a, b, c, d) => (x - a) * (d - c) / (b - a) + c
@@ -234,18 +147,25 @@ const Character = React.memo(({
     if (modelData) {
       console.log(type, id, 'add')
 
-      const [newObject, bonesHelper] = characterFactory({ scene, id, type, data: modelData, props })
+      const { mesh, skeleton, armature, originalHeight } = characterFactory(modelData)
 
-      // TODO could avoid the jump by making the entire character a positioned Group with children
-      //      OR could run all the updaters here to set position correctly immediately after load?
-      //
-      // hide until ready
-      newObject.visible = false
-      bonesHelper.visible = false
+      object.current = new THREE.Object3D()
+      object.current.userData.id = id
+      object.current.userData.type = type
+      object.current.userData.originalHeight = originalHeight
 
-      object.current = newObject
+      // FIXME get current .models from getState()
+      object.current.userData.modelSettings = initialState.models[props.model] || {}
+
+      object.current.add(armature)
+      object.current.add(mesh)
+      object.current.userData.mesh = mesh
+
       scene.add(object.current)
+
+      let bonesHelper = new BonesHelper(skeleton.bones[0], object.current)
       object.current.bonesHelper = bonesHelper
+      object.current.userData.skeleton = skeleton
       scene.add(object.current.bonesHelper)
     }
 
@@ -284,11 +204,11 @@ const Character = React.memo(({
   let currentBoneSelected = useRef(null)
 
   const updateSkeleton = () => {
-    let skel = (object.current.children[0] instanceof THREE.Mesh) ? object.current.children[0] : object.current.children[1]
-    skel.skeleton.pose()
+    let skeleton = object.current.userData.skeleton
+    skeleton.pose()
     if (props.skeleton) {
       for (let name in props.skeleton) {
-        let bone = skel.skeleton.getBoneByName(name)
+        let bone = skeleton.getBoneByName(name)
         if (bone) {
           bone.rotation.x = props.skeleton[name].rotation.x
           bone.rotation.y = props.skeleton[name].rotation.y
@@ -370,12 +290,14 @@ const Character = React.memo(({
 
   useEffect(() => {
     if (object.current) {
-      // FIXME hardcoded
-      // let bbox = new THREE.Box3().setFromObject( object.current )
-      height = object.current.originalHeight
-      let scale = props.height / height
+      if (object.current.userData.modelSettings.height) {
+        let originalHeight = object.current.userData.originalHeight
+        let scale = props.height / originalHeight
 
-      object.current.scale.set( scale, scale, scale )
+        object.current.scale.set( scale, scale, scale )
+      } else {
+        object.current.scale.setScalar( props.height )
+      }
       //object.current.bonesHelper.updateMatrixWorld()
     }
   }, [props.model, props.height, props.skeleton, modelData])
@@ -385,16 +307,17 @@ const Character = React.memo(({
 
     if (object.current) {
       // adjust head proportionally
-      let skel = (object.current.children[0] instanceof THREE.Mesh) ? object.current.children[0] : object.current.children[1]
+      let skeleton = object.current.userData.skeleton
 
-      let headBone = skel.skeleton.getBoneByName('mixamorigHead')
-      // FIXME hardcoded
-      let baseHeight = 1.6256
-      let baseHeadScale = baseHeight / props.height
+      let headBone = skeleton.getBoneByName('mixamorigHead')
+      
+      if (headBone && object.current.userData.modelSettings.height) {
+        let baseHeadScale = object.current.userData.modelSettings.height / props.height
 
-      //head bone
-      headBone.scale.setScalar( baseHeadScale )
-      headBone.scale.setScalar( props.headScale )
+        //head bone
+        headBone.scale.setScalar( baseHeadScale )
+        headBone.scale.setScalar( props.headScale )
+      }
     }
   }, [props.model, props.headScale, props.skeleton, modelData])
 
@@ -402,15 +325,14 @@ const Character = React.memo(({
     if (!modelData) return
     if (!object.current) return
 
-    // Morphs are changing
-    let skel = (object.current.children[0] instanceof THREE.Mesh) ? object.current.children[0] : object.current.children[1]
+    let mesh = object.current.userData.mesh
 
-    //console.log( '\tmorphTargetDictionary', skel.morphTargetDictionary )
+    if (!mesh.morphTargetDictionary) return
+    if (Object.values(mesh.morphTargetDictionary).length != 3) return
 
-    skel.morphTargetInfluences[ 0 ] = props.morphTargets.mesomorphic
-    skel.morphTargetInfluences[ 1 ] = props.morphTargets.ectomorphic
-    skel.morphTargetInfluences[ 2 ] = props.morphTargets.endomorphic
-
+    mesh.morphTargetInfluences[ 0 ] = props.morphTargets.mesomorphic
+    mesh.morphTargetInfluences[ 1 ] = props.morphTargets.ectomorphic
+    mesh.morphTargetInfluences[ 2 ] = props.morphTargets.endomorphic
   }, [props.model, props.morphTargets, modelData])
 
   useEffect(() => {
@@ -427,9 +349,9 @@ const Character = React.memo(({
       for (var cone of object.current.bonesHelper.cones)
         object.current.bonesHelper.remove(cone)
     }
-    let skel = (object.current.children[0] instanceof THREE.Mesh) ? object.current.children[0] : object.current.children[1]
-    if ( skel.material.length > 0 ) {
-      skel.material.forEach(material => {
+    let mesh = object.current.userData.mesh
+    if ( mesh.material.length > 0 ) {
+      mesh.material.forEach(material => {
         material.userData.outlineParameters =
           isSelected
             ? {
@@ -442,7 +364,7 @@ const Character = React.memo(({
            }
       })
     } else {
-      skel.material.userData.outlineParameters =
+      mesh.material.userData.outlineParameters =
         isSelected
           ? {
             thickness: 0.009,
@@ -460,8 +382,8 @@ const Character = React.memo(({
     if (!object.current) return
 
     if (selectedBone === undefined) return
-    let skel = (object.current.children[0] instanceof THREE.Mesh) ? object.current.children[0] : object.current.children[1]
-    let realBone = skel.skeleton.bones.find(bone => bone.uuid == selectedBone)
+    let skeleton = object.current.userData.skeleton
+    let realBone = skeleton.bones.find(bone => bone.uuid == selectedBone)
 
     if (currentBoneSelected.current === realBone) return
 
@@ -490,9 +412,9 @@ const Character = React.memo(({
       // zero out controller rotation and start rotating bone
 
       let realTarget
-      let skel = (object.current.children[0] instanceof THREE.Mesh) ? object.current.children[0] : object.current.children[1]
+      let skeleton = object.current.userData.skeleton
       if (selectedBone) {
-        realTarget = skel.skeleton.bones.find(bone => bone.uuid == selectedBone) || object.current
+        realTarget = skeleton.bones.find(bone => bone.uuid == selectedBone) || object.current
       } else {
         realTarget = object.current
       }
@@ -592,9 +514,9 @@ const Character = React.memo(({
     if (remoteInput.mouseMode) return
 
     let realTarget
-    let skel = (object.current.children[0] instanceof THREE.Mesh) ? object.current.children[0] : object.current.children[1]
+    let skeleton = object.current.userData.skeleton
     if (selectedBone) {
-      realTarget = skel.skeleton.bones.find(bone => bone.uuid == selectedBone) || object.current
+      realTarget = skeleton.bones.find(bone => bone.uuid == selectedBone) || object.current
     } else {
       realTarget = object.current
     }
