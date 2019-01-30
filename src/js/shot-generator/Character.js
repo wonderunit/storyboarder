@@ -153,6 +153,10 @@ const Character = React.memo(({
       object.current.userData.id = id
       object.current.userData.type = type
       object.current.userData.originalHeight = originalHeight
+
+      // FIXME get current .models from getState()
+      object.current.userData.modelSettings = initialState.models[props.model] || {}
+
       object.current.add(armature)
       object.current.add(mesh)
       object.current.userData.mesh = mesh
@@ -286,10 +290,14 @@ const Character = React.memo(({
 
   useEffect(() => {
     if (object.current) {
-      let originalHeight = object.current.userData.originalHeight
-      let scale = props.height / originalHeight
+      if (object.current.userData.modelSettings.height) {
+        let originalHeight = object.current.userData.originalHeight
+        let scale = props.height / originalHeight
 
-      object.current.scale.set( scale, scale, scale )
+        object.current.scale.set( scale, scale, scale )
+      } else {
+        object.current.scale.set( 1, 1, 1 )
+      }
       //object.current.bonesHelper.updateMatrixWorld()
     }
   }, [props.model, props.height, props.skeleton, modelData])
@@ -303,13 +311,8 @@ const Character = React.memo(({
 
       let headBone = skeleton.getBoneByName('mixamorigHead')
       
-      if (headBone) {
-        // FIXME get current .models from getState()
-        let modelSettings = initialState.models[props.model]
-        let baseHeight = modelSettings
-          ? modelSettings.height
-          : 1.6
-        let baseHeadScale = baseHeight / props.height
+      if (headBone && object.current.userData.modelSettings.height) {
+        let baseHeadScale = object.current.userData.modelSettings.height / props.height
 
         //head bone
         headBone.scale.setScalar( baseHeadScale )
