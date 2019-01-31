@@ -20,9 +20,9 @@ const ModelLoader = require('../services/model-loader')
 //
 
 // TODO use functions of ModelLoader?
-require('../../../node_modules/three/examples/js/loaders/LoaderSupport')
-require('../../../node_modules/three/examples/js/loaders/GLTFLoader')
-require('../../../node_modules/three/examples/js/loaders/OBJLoader2')
+require('../vendor/three/examples/js/loaders/LoaderSupport')
+require('../vendor/three/examples/js/loaders/GLTFLoader')
+require('../vendor/three/examples/js/loaders/OBJLoader2')
 const loadingManager = new THREE.LoadingManager()
 const objLoader = new THREE.OBJLoader2(loadingManager)
 const gltfLoader = new THREE.GLTFLoader(loadingManager)

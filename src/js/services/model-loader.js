@@ -5,17 +5,17 @@ const path = require('path')
 
 const JDLoader = require('../vendor/JDLoader.min.js')
 
-require('../../../node_modules/three/examples/js/loaders/LoaderSupport')
-require('../../../node_modules/three/examples/js/loaders/OBJLoader2')
-require('../../../node_modules/three/examples/js/loaders/GLTFLoader')
-require('../../../node_modules/three/examples/js/loaders/DRACOLoader')
-require('../../../node_modules/three/examples/js/loaders/DDSLoader')
-require('../../../node_modules/three/examples/js/libs/jszip.min')
-require('../../../node_modules/three/examples/js/libs/inflate.min')
-require('../../../node_modules/three/examples/js/loaders/FBXLoader')
+require('../vendor/three/examples/js/loaders/LoaderSupport')
+require('../vendor/three/examples/js/loaders/OBJLoader2')
+require('../vendor/three/examples/js/loaders/GLTFLoader')
+require('../vendor/three/examples/js/loaders/DRACOLoader')
+require('../vendor/three/examples/js/loaders/DDSLoader')
+require('../vendor/three/examples/js/libs/jszip.min')
+require('../vendor/three/examples/js/libs/inflate.min')
+require('../vendor/three/examples/js/loaders/FBXLoader')
 
 
-THREE.DRACOLoader.setDecoderPath( '../../../node_modules/three/examples/js/libs/draco/' )
+THREE.DRACOLoader.setDecoderPath( '../vendor/three/examples/js/libs/draco/' )
 
 const MAP_NAMES = [
   'map',
@@ -46,7 +46,7 @@ const toonMaterial = new THREE.MeshToonMaterial({
   morphTargets: true,
 })
 
-const Zlib = require("../../../node_modules/three/examples/js/libs/inflate.min")
+const Zlib = require("../vendor/three/examples/js/libs/inflate.min")
 
 window.Zlib = Zlib.Zlib
 let loadingManager = new THREE.LoadingManager()
