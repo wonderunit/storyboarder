@@ -30,6 +30,7 @@
   "build": {
     "asar": true,
     "appId": "com.wonderunit.storyboarder",
+    "buildDependenciesFromSource": true,
     "compression": "maximum",
     "files": [
       "**/*",
