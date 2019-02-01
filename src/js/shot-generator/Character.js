@@ -462,14 +462,14 @@ const Character = React.memo(({
     {
       // zero out controller rotation and start rotating bone
 
-      let realTarget
+      let target
       let skeleton = object.current.userData.skeleton
       if (selectedBone) {
-        realTarget = skeleton.bones.find(bone => bone.uuid == selectedBone) || object.current
+        target = skeleton.bones.find(bone => bone.uuid == selectedBone) || object.current
       } else {
-        realTarget = object.current
+        target = object.current
       }
-      let target = realTarget.clone()
+
       let deviceQuaternion
       if (isControllerRotatingCurrent.current === false)
       {
@@ -478,7 +478,7 @@ const Character = React.memo(({
         startingDeviceRotation.current = startValues.quaternion
 
         startingDeviceOffset.current =  new THREE.Quaternion().clone().inverse().multiply(startingDeviceRotation.current).normalize().inverse()
-        startingObjectQuaternion.current = realTarget.quaternion.clone()
+        startingObjectQuaternion.current = target.quaternion.clone()
         startingObjectOffset.current =  new THREE.Quaternion().clone().inverse().multiply(startingObjectQuaternion.current)
         //console.log('starting rotation: ', startingDeviceRotation.current)
       }
@@ -491,7 +491,7 @@ const Character = React.memo(({
       }
 
       let objectQuaternion = applyDeviceQuaternion({
-        parent: realTarget.parent,
+        parent: target.parent,
         startingDeviceOffset: startingDeviceOffset.current,
         startingObjectOffset: startingObjectOffset.current,
         startingObjectQuaternion: startingObjectQuaternion.current,
