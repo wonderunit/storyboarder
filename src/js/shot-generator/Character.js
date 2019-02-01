@@ -163,7 +163,7 @@ const Character = React.memo(({
 
       scene.add(object.current)
 
-      let bonesHelper = new BonesHelper(skeleton.bones[0], object.current)
+      let bonesHelper = new BonesHelper(skeleton.bones[0].parent, object.current)
       object.current.bonesHelper = bonesHelper
       object.current.userData.skeleton = skeleton
       scene.add(object.current.bonesHelper)
@@ -209,6 +209,7 @@ const Character = React.memo(({
     if (props.skeleton) {
       for (let name in props.skeleton) {
         let bone = skeleton.getBoneByName(name)
+        //console.log('wanted rotation: ',name, props.skeleton[name].rotation)
         if (bone) {
           bone.rotation.x = props.skeleton[name].rotation.x
           bone.rotation.y = props.skeleton[name].rotation.y

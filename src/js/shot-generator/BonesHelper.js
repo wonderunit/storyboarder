@@ -190,7 +190,6 @@ const getPointInBetweenByPerc = (pointA, pointB, percentage) => {
 
 
 function getBoneList( object ) {
-
   var boneList = []
 
   if ( object && object.isBone ) {
@@ -200,7 +199,6 @@ function getBoneList( object ) {
   }
 
   for ( var i = 0; i < object.children.length; i ++ ) {
-
     boneList.push.apply( boneList, getBoneList( object.children[ i ] ) )
 
   }
@@ -230,18 +228,21 @@ function BonesHelper( object, object3D ) {
   Object3D.call( this )
   //console.log('object: ', object3D)
   //ModelLoader.isCustomModel(model)
-  let skeleton = object3D.children[1].skeleton
+  let sknMesh = object3D.children.find(child => child instanceof THREE.SkinnedMesh) ||
+    object3D.children[0].children.find(child => child instanceof THREE.SkinnedMesh)
+
+  let skeleton = sknMesh.skeleton
   skeleton.pose()
 
-  let skinIndex = object3D.children[1].geometry.attributes.skinIndex
-  let vertexPositions = object3D.children[1].geometry.attributes.position
-  let skinWeights = object3D.children[1].geometry.attributes.skinWeight
+  let skinIndex = sknMesh.geometry.attributes.skinIndex
+  let vertexPositions = sknMesh.geometry.attributes.position
+  let skinWeights = sknMesh.geometry.attributes.skinWeight
 
   let vertexDistanceMyltiplyFactor = 1
   var bbox = new THREE.Box3().setFromObject(object3D);
   let height = bbox.max.y - bbox.min.y
   if (height>2) vertexDistanceMyltiplyFactor = height * 2
-
+  //console.log('who tf is object: ', object)
   let bones = getBoneList( object );
   this.cones = []
 
