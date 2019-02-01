@@ -43,7 +43,7 @@ function connect() {
 connect()
 
 setInterval(()=>{
-  if (socket.readyState !== 0 || socket.readyState !== 1) {
+  if (socket.readyState !== 0 && socket.readyState !== 1) {
     socket.close()
   }
 },1000)
