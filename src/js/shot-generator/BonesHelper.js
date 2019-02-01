@@ -41,7 +41,7 @@ const getVertexForBones = ( bufferPositions, bufferSkinIndices, bufferSkinWeight
     boneIndex.fromBufferAttribute( bufferSkinIndices, i )
     vertWeight.fromBufferAttribute( bufferSkinWeights, i )
     
-    if (vertWeight.x > 0.01) {
+    if (vertWeight.x > 0.01 ) {
       if (bonesInfluenceVertices[boneIndex.x] ) {
         bonesInfluenceVertices[boneIndex.x].push( vertex )
       } else {
@@ -79,7 +79,7 @@ const getVertexForBones = ( bufferPositions, bufferSkinIndices, bufferSkinWeight
 
 let once = true
 
-const calcMedianDistance = (fixedposition, allverts, object, inverdsedMatrix, bone) => {
+const calcMedianDistance = (fixedposition, allverts, object, inverdsedMatrix, bone, multiply) => {
   let allDistances = []
   let median = 0
   let maxDist = 0
@@ -131,7 +131,7 @@ const calcMedianDistance = (fixedposition, allverts, object, inverdsedMatrix, bo
 
     var helper = new THREE.PlaneHelper( plane, 1, 0xffff00 );
     helper.updateMatrix()
-    if (once) tempObj.add( helper )
+    //if (once) tempObj.add( helper )
     //if (once) tempObj.add(test)
     if (once) tempObj.add(testPoint)
   //}
@@ -143,7 +143,7 @@ const calcMedianDistance = (fixedposition, allverts, object, inverdsedMatrix, bo
     plane.projectPoint(vect2, vect3)
     vect3.addVectors(vect3, difference)
     let distanceFromOriginal = vect3.distanceTo(vect2)
-    if (distanceFromOriginal<0.01)
+    if (distanceFromOriginal<0.01 * multiply)
     {
       //console.log('difference from original: ',vect3.distanceTo(vect2))
       //console.log('dif: ', difference)
@@ -236,7 +236,12 @@ function BonesHelper( object, object3D ) {
   let skinIndex = object3D.children[1].geometry.attributes.skinIndex
   let vertexPositions = object3D.children[1].geometry.attributes.position
   let skinWeights = object3D.children[1].geometry.attributes.skinWeight
-  //console.log('obj: ', vertexPositions)
+
+  let vertexDistanceMyltiplyFactor = 1
+  var bbox = new THREE.Box3().setFromObject(object3D);
+  let height = bbox.max.y - bbox.min.y
+  if (height>2) vertexDistanceMyltiplyFactor = height * 2
+  console.log('bounding box: ', height)
 
   let bones = getBoneList( object );
   this.cones = []
@@ -248,7 +253,7 @@ function BonesHelper( object, object3D ) {
   let boneCounter = 0
   matrixWorldInv.getInverse( object.matrixWorld )
   
-  let bonesContainingVerts = getVertexForBones(vertexPositions, skinIndex, skinWeights)
+  let bonesContainingVerts = getVertexForBones(vertexPositions, skinIndex, skinWeights, vertexDistanceMyltiplyFactor)
   let traversedBones = []
 
   for (var ii = 0; ii< bones.length; ii++) {
@@ -292,7 +297,7 @@ function BonesHelper( object, object3D ) {
       if (bonesContainingVerts[ii])
       {
         let relativePos = getPointInBetweenByPerc(posA, posB, 0.5)
-        let med = calcMedianDistance(relativePos, bonesContainingVerts[ii], this, matrixWorldInv, bone)
+        let med = calcMedianDistance(relativePos, bonesContainingVerts[ii], this, matrixWorldInv, bone, vertexDistanceMyltiplyFactor)
         distanceToVerts = med.median !== 0 ? med.median : 0.1
         createdHelper = med.object        
       }
@@ -308,10 +313,7 @@ function BonesHelper( object, object3D ) {
       let hit_bone_width = distanceToVerts*1.5
       let geometry = new THREE.CylinderBufferGeometry(boneWidth / 25, boneWidth /15 , boneLength - boneWidth/20, 4 )//, heightSegments : Integer, openEnded : Boolean, thetaStart : Float, thetaLength : Float)
       // secondary geometry used for hit testing
-      // if it's mixamo rig all spine bones contain the SPine string, set that to wider
       //let hit_bone_width = ((bone.name.indexOf('Spine')>0)||(bone.name.indexOf('Hips')>0)) ? boneWidth2 / 4 : boneWidth2 / 4// boneWidth*1.3 : boneWidth / 4
-      //let hit_geometry = new THREE.CylinderBufferGeometry(hit_bone_width, hit_bone_width, boneLength, 4)
-      //let hit_geometry = new THREE.BoxBufferGeometry(hit_bone_width, hit_bone_width, boneLength)
       
       let hit_geometry = new THREE.BoxBufferGeometry(hit_bone_width, boneLength, hit_bone_width )
       let hit_material = new THREE.MeshBasicMaterial({
