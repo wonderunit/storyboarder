@@ -368,7 +368,7 @@ class BoardView {
                   background-color: ${
                     kind === 'board'
                       ? this.active
-                        ? '#7a72e9'
+                        ? '#8d89cf'
                         : index % 2 === 0 ? '#777' : '#555'
                       : '#7c7'
                   };
@@ -413,7 +413,7 @@ class BoardView {
                     background-color: ${
                       kind === 'board'
                         ? this.active
-                          ? '#7a72e9'
+                          ? '#8d89cf'
                           : '#444'
                         : '#3f503f'
                     };

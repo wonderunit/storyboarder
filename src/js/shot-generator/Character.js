@@ -20,9 +20,9 @@ const ModelLoader = require('../services/model-loader')
 //
 
 // TODO use functions of ModelLoader?
-require('../../../node_modules/three/examples/js/loaders/LoaderSupport')
-require('../../../node_modules/three/examples/js/loaders/GLTFLoader')
-require('../../../node_modules/three/examples/js/loaders/OBJLoader2')
+require('../vendor/three/examples/js/loaders/LoaderSupport')
+require('../vendor/three/examples/js/loaders/GLTFLoader')
+require('../vendor/three/examples/js/loaders/OBJLoader2')
 const loadingManager = new THREE.LoadingManager()
 const objLoader = new THREE.OBJLoader2(loadingManager)
 const gltfLoader = new THREE.GLTFLoader(loadingManager)
@@ -86,7 +86,7 @@ const characterFactory = data => {
   let originalHeight = bbox.max.y - bbox.min.y
 
   skeleton.pose()
-  
+
   return { mesh, skeleton, armature, originalHeight }
 }
 
@@ -173,7 +173,7 @@ const Character = React.memo(({
       console.log('modelData cleanup')
     }
   }, [modelData])
-  
+
   useEffect(() => {
     return function cleanup () {
       console.log('component cleanup')
@@ -194,7 +194,7 @@ const Character = React.memo(({
     pitch: 0,
     yaw: 0
   })
-   
+
   let circlePressed = useRef(false)
 
   let startingDeviceRotation = useRef(null)
@@ -219,15 +219,15 @@ const Character = React.memo(({
   }
 
   const getCurrentControllerRotation = (device, virtual) => {
-      
+
     let virtualPitch = virtual.pitch,
       virtualRoll = virtual.roll,
-      virtualYaw = virtual.yaw      
-      
+      virtualYaw = virtual.yaw
+
     let { accelX, accelY, accelZ, gyroPitch, gyroRoll, gyroYaw } = device.motion
     virtualYaw = virtualYaw + ((0 - virtualYaw)*0.003)
     virtualRoll = virtualRoll + ((adjusted(gyroRoll) - virtualRoll)*0.003)
-      
+
     if (adjusted(gyroPitch)) {
       virtualPitch = virtualPitch + (((-adjusted(gyroPitch)) - virtualPitch)*0.003)
     }
@@ -251,7 +251,7 @@ const Character = React.memo(({
           virtualRoll
         )
       )
-    
+
       return {
         quaternion:q,
         virtualPitch,
@@ -284,6 +284,17 @@ const Character = React.memo(({
     if (!modelData) return
     if (!object.current) return
 
+    if (props.posePresetId) {
+      console.log(type, id, 'changed pose preset')
+      let skeleton = object.current.userData.skeleton
+      skeleton.pose()
+    }
+  }, [props.posePresetId])
+
+  useEffect(() => {
+    if (!modelData) return
+    if (!object.current) return
+
     console.log(type, id, 'skeleton')
     updateSkeleton()
   }, [props.model, props.skeleton, modelData])
@@ -310,7 +321,7 @@ const Character = React.memo(({
       let skeleton = object.current.userData.skeleton
 
       let headBone = skeleton.getBoneByName('mixamorigHead')
-      
+
       if (headBone && object.current.userData.modelSettings.height) {
         let baseHeadScale = object.current.userData.modelSettings.height / props.height
 
@@ -423,15 +434,15 @@ const Character = React.memo(({
       if (isControllerRotatingCurrent.current === false)
       {
         isControllerRotatingCurrent.current = true
-        let startValues = getCurrentControllerRotation(devices[0], virtual.current)    
+        let startValues = getCurrentControllerRotation(devices[0], virtual.current)
         startingDeviceRotation.current = startValues.quaternion
-        
+
         startingDeviceOffset.current =  new THREE.Quaternion().clone().inverse().multiply(startingDeviceRotation.current).normalize().inverse()
         startingObjectQuaternion.current = realTarget.quaternion.clone()
         startingObjectOffset.current =  new THREE.Quaternion().clone().inverse().multiply(startingObjectQuaternion.current)
         //console.log('starting rotation: ', startingDeviceRotation.current)
       }
-      let midddleValues = getCurrentControllerRotation(devices[0], virtual.current) 
+      let midddleValues = getCurrentControllerRotation(devices[0], virtual.current)
       deviceQuaternion = midddleValues.quaternion
       virtual.current = {
         roll: midddleValues.virtualRoll,
@@ -502,7 +513,7 @@ const Character = React.memo(({
           yaw: 0
         }
       }
-      
+
       // do something on button up?
     }
   }, [devices])

@@ -9,9 +9,9 @@ const { useRef, useEffect, useState } = React
 const ModelLoader = require('../services/model-loader')
 
 // TODO use functions of ModelLoader?
-require('../../../node_modules/three/examples/js/loaders/LoaderSupport')
-require('../../../node_modules/three/examples/js/loaders/GLTFLoader')
-require('../../../node_modules/three/examples/js/loaders/OBJLoader2')
+require('../vendor/three/examples/js/loaders/LoaderSupport')
+require('../vendor/three/examples/js/loaders/GLTFLoader')
+require('../vendor/three/examples/js/loaders/OBJLoader2')
 const loadingManager = new THREE.LoadingManager()
 const objLoader = new THREE.OBJLoader2(loadingManager)
 const gltfLoader = new THREE.GLTFLoader(loadingManager)
@@ -47,6 +47,25 @@ const materialFactory = () => new THREE.MeshToonMaterial({
   shininess: 0,
   flatShading: false
 })
+
+const meshFactory = originalMesh => {
+  let mesh = originalMesh.clone()
+
+  // create a skeleton if one is not provided
+  if (mesh instanceof THREE.SkinnedMesh && !mesh.skeleton) {
+    mesh.skeleton = new THREE.Skeleton()
+  }
+
+  let material = materialFactory()
+
+  if (mesh.material.map) {
+    material.map = mesh.material.map
+    material.map.needsUpdate = true
+  }
+  mesh.material = material
+
+  return mesh
+}
 
 const SceneObject = React.memo(({ scene, id, type, isSelected, loaded, updateObject, ...object }) => {
   const setLoaded = loaded => updateObject(id, { loaded })
@@ -116,9 +135,7 @@ const SceneObject = React.memo(({ scene, id, type, isSelected, loaded, updateObj
 
                   object.traverse( function ( child ) {
                     if ( child instanceof THREE.Mesh ) {
-                      let m = child.clone()
-                      m.material = materialFactory()
-                      container.add(m)
+                      container.add(meshFactory(child))
                     }
                   })
                   resolve()
@@ -140,9 +157,7 @@ const SceneObject = React.memo(({ scene, id, type, isSelected, loaded, updateObj
                   // add every single mesh we find
                   data.scene.traverse(child => {
                     if ( child instanceof THREE.Mesh ) {
-                      let m = child.clone()
-                      m.material = materialFactory()
-                      container.add(m)
+                      container.add(meshFactory(child))
                     }
                   })
                   resolve()
