@@ -71,7 +71,7 @@ const characterFactory = data => {
   mesh = data.scene.children.find(child => child instanceof THREE.SkinnedMesh) ||
          data.scene.children[0].children.find(child => child instanceof THREE.SkinnedMesh)
 
-  armature = data.scene.children[0].children.find(child => child instanceof THREE.Bone)
+  armatures = data.scene.children[0].children.filter(child => child instanceof THREE.Bone)
 
   skeleton = mesh.skeleton
 
@@ -87,7 +87,7 @@ const characterFactory = data => {
 
   skeleton.pose()
 
-  return { mesh, skeleton, armature, originalHeight }
+  return { mesh, skeleton, armatures, originalHeight }
 }
 
 const remap = (x, a, b, c, d) => (x - a) * (d - c) / (b - a) + c
@@ -147,7 +147,7 @@ const Character = React.memo(({
     if (modelData) {
       console.log(type, id, 'add')
 
-      const { mesh, skeleton, armature, originalHeight } = characterFactory(modelData)
+      const { mesh, skeleton, armatures, originalHeight } = characterFactory(modelData)
 
       object.current = new THREE.Object3D()
       object.current.userData.id = id
@@ -157,7 +157,7 @@ const Character = React.memo(({
       // FIXME get current .models from getState()
       object.current.userData.modelSettings = initialState.models[props.model] || {}
 
-      object.current.add(armature)
+      object.current.add(...armatures)
       object.current.add(mesh)
       object.current.userData.mesh = mesh
 
