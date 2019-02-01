@@ -31,7 +31,7 @@ function connect() {
     console.log('Socket is closed. Reconnect will be attempted in 1 second.', e.reason)
     setTimeout(function() {
       connect()
-    }, 1000)
+    }, 500)
   }
 
   socket.onerror = function(err) {
@@ -41,6 +41,13 @@ function connect() {
 }
 
 connect()
+
+setInterval(()=>{
+  if (socket.readyState !== 0 || socket.readyState !== 1) {
+    socket.close()
+  }
+},1000)
+
 
 function report (values) {
   socket.send(JSON.stringify(values))
