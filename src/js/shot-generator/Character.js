@@ -284,6 +284,17 @@ const Character = React.memo(({
     if (!modelData) return
     if (!object.current) return
 
+    if (props.posePresetId) {
+      console.log(type, id, 'changed pose preset')
+      let skeleton = object.current.userData.skeleton
+      skeleton.pose()
+    }
+  }, [props.posePresetId])
+
+  useEffect(() => {
+    if (!modelData) return
+    if (!object.current) return
+
     console.log(type, id, 'skeleton')
     updateSkeleton()
   }, [props.model, props.skeleton, modelData])
