@@ -205,7 +205,7 @@ const Character = React.memo(({
 
   const updateSkeleton = () => {
     let skeleton = object.current.userData.skeleton
-    skeleton.pose()
+    //skeleton.pose()
     if (props.skeleton) {
       for (let name in props.skeleton) {
         let bone = skeleton.getBoneByName(name)

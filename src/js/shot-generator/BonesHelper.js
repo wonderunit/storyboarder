@@ -116,7 +116,7 @@ const calcMedianDistance = (fixedposition, allverts, object, inverdsedMatrix, bo
     plane.projectPoint(fixedposition, boneProjection)
     let difference = new Vector3().subVectors(fixedposition, boneProjection)
     let testPoint = new THREE.Mesh(
-      new THREE.BoxBufferGeometry(0.02,0.02,0.02),
+      new THREE.BoxBufferGeometry(0.01,0.01,0.01),
       new THREE.MeshBasicMaterial({
         color: 0x4400ff,
         depthTest: false,
@@ -241,7 +241,6 @@ function BonesHelper( object, object3D ) {
   var bbox = new THREE.Box3().setFromObject(object3D);
   let height = bbox.max.y - bbox.min.y
   if (height>2) vertexDistanceMyltiplyFactor = height * 2
-  console.log('bounding box: ', height)
 
   let bones = getBoneList( object );
   this.cones = []
@@ -352,7 +351,10 @@ function BonesHelper( object, object3D ) {
       hitMesh.userData.type = 'hitter'
 
       // Add the axis helper if needed
-      //this.cones[boneCounter].add(new THREE.AxesHelper(boneLength / 2))
+      let axisHelper = new THREE.AxesHelper(0.2)
+      axisHelper.position.y -= boneLength/2
+      //this.cones[boneIndex].add(axisHelper)
+      
 
       this.cones[boneIndex].userData.name = bone.name
       this.cones[boneIndex].userData.type = 'bone'
