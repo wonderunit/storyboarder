@@ -540,17 +540,20 @@ const Character = React.memo(({
 
     if (remoteInput.mouseMode) return
 
-    let realTarget
+    // FIND THE TARGET
+    // note that we don't want to mutate anything in the scene directly here
+    // (e.g.: we don't want to make any direct changes to `target`)
+    // instead we dispatch an event describing how we want the system to update
+    let target
     let skeleton = object.current.userData.skeleton
     if (selectedBone) {
-      realTarget = skeleton.bones.find(bone => bone.uuid == selectedBone) || object.current
+      target = skeleton.bones.find(bone => bone.uuid == selectedBone) || object.current
     } else {
-      realTarget = object.current
+      target = object.current
     }
 
     if (remoteInput.down) {
-      if (realTarget) {
-        let target = realTarget
+      if (target) {
         let [ alpha, beta, gamma ] = remoteInput.mag.map(THREE.Math.degToRad)
         let magValues = remoteInput.mag
         let deviceQuaternion
@@ -562,7 +565,7 @@ const Character = React.memo(({
           deviceQuaternion = new THREE.Quaternion().setFromEuler(new THREE.Euler(beta, alpha + (offset*(Math.PI/180)),-gamma, 'YXZ')).multiply(new THREE.Quaternion().setFromAxisAngle( new THREE.Vector3( 1, 0, 0 ), -Math.PI / 2 ))
           startingDeviceOffset.current =  new THREE.Quaternion().clone().inverse().multiply(deviceQuaternion).normalize().inverse()
 
-          startingObjectQuaternion.current = realTarget.quaternion.clone()
+          startingObjectQuaternion.current = target.quaternion.clone()
           startingObjectOffset.current =  new THREE.Quaternion().clone().inverse().multiply(startingObjectQuaternion.current)
         }
 
@@ -572,7 +575,7 @@ const Character = React.memo(({
         deviceQuaternion = new THREE.Quaternion().setFromEuler(new THREE.Euler(beta, alpha + (offset*(Math.PI/180)),-gamma, 'YXZ')).multiply(new THREE.Quaternion().setFromAxisAngle( new THREE.Vector3( 1, 0, 0 ), -Math.PI / 2 ))
 
         let objectQuaternion = applyDeviceQuaternion({
-          parent: realTarget.parent,
+          parent: target.parent,
           startingDeviceOffset: startingDeviceOffset.current,
           startingObjectOffset: startingObjectOffset.current,
           startingObjectQuaternion: startingObjectQuaternion.current,
