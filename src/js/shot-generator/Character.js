@@ -5,9 +5,7 @@ const React = require('react')
 const { useRef, useEffect, useState } = React
 
 const path = require('path')
-const debounce = require('lodash.debounce')
 
-const BoundingBoxHelper = require('./BoundingBoxHelper')
 const BonesHelper = require('./BonesHelper')
 
 const { initialState } = require('../shared/reducers/shot-generator')
@@ -26,7 +24,6 @@ require('../vendor/three/examples/js/loaders/OBJLoader2')
 const loadingManager = new THREE.LoadingManager()
 const objLoader = new THREE.OBJLoader2(loadingManager)
 const gltfLoader = new THREE.GLTFLoader(loadingManager)
-const imageLoader = new THREE.ImageLoader(loadingManager)
 objLoader.setLogging(false, false)
 THREE.Cache.enabled = true
 
@@ -235,11 +232,7 @@ const Character = React.memo(({
     yaw: 0
   })
 
-  let circlePressed = useRef(false)
-
   let startingDeviceRotation = useRef(null)
-  let startingObjectRotation = useRef(null)
-  let startingGlobalRotation = useRef(null)
 
   let currentBoneSelected = useRef(null)
 
