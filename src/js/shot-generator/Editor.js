@@ -411,20 +411,29 @@ const SceneManager = connect(
                 cameraControlsView.current.update( clock.current.getDelta(), state )
                 dragControlsView.current.update( clock.current.getDelta(), state )
 
-                // TODO only call updateObject if camera object props we care about actually changed
-                //
                 // update object state with the latest values
                 let cameraId = camera.userData.id
                 let { x, y, z, rotation, tilt, fov } = cameraControlsView.current.object
 
-                updateObject(cameraId, {
-                  x,
-                  y,
-                  z,
-                  rotation,
-                  tilt,
-                  fov
-                })
+                // if props changed
+                if (
+                  cameraState.x != x ||
+                  cameraState.y != y ||
+                  cameraState.z != z ||
+                  cameraState.rotation != rotation ||
+                  cameraState.tilt != tilt ||
+                  cameraState.fov != fov
+                ) {
+                  // update the camera state
+                  updateObject(cameraId, {
+                    x,
+                    y,
+                    z,
+                    rotation,
+                    tilt,
+                    fov
+                  })
+                }
               }
 
               cameraHelper.current.visible = state.mainViewCamera === 'live'
