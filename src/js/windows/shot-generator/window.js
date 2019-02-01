@@ -126,7 +126,7 @@ if (process.env.SHOT_GENERATOR_STANDALONE) {
   let file = JSON.parse(
     fs.readFileSync(
       path.join(
-        __dirname, '..', '..', '..', '..', 'test', 'fixtures', 'example', 'example.storyboarder'
+        __dirname, '..', '..', '..', '..', 'test', 'fixtures', 'shot-generator', 'shot-generator.storyboarder'
       )
     )
   )
