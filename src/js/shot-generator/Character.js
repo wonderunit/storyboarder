@@ -550,7 +550,7 @@ const Character = React.memo(({
 
     if (remoteInput.down) {
       if (realTarget) {
-        let target = realTarget.clone()
+        let target = realTarget
         let [ alpha, beta, gamma ] = remoteInput.mag.map(THREE.Math.degToRad)
         let magValues = remoteInput.mag
         let deviceQuaternion
@@ -580,26 +580,25 @@ const Character = React.memo(({
           camera
         })
 
-        // APPLY THE ROTATION TO THE TARGET OBJECT
-        target.quaternion.copy(objectQuaternion.normalize())
+        // GET THE DESIRED ROTATION FOR THE TARGET OBJECT
+        let rotation = new THREE.Euler()
+          .setFromQuaternion( objectQuaternion, /*eulerOrder*/ )
 
-        requestAnimationFrame(() => {
-          if (selectedBone) {
-            updateCharacterSkeleton({
-              id,
-              name: target.name,
-              rotation: {
-                x: target.rotation.x,
-                y: target.rotation.y,
-                z: target.rotation.z
-              }
-            })
-          } else {
-            updateObject(target.userData.id, {
-              rotation: target.rotation.y
-            })
-          }
-        })
+        if (selectedBone) {
+          updateCharacterSkeleton({
+            id,
+            name: target.name,
+            rotation: {
+              x: rotation.x,
+              y: rotation.y,
+              z: rotation.z
+            }
+          })
+        } else {
+          updateObject(target.userData.id, {
+            rotation: rotation.y
+          })
+        }
       }
     } else {
       // not pressed anymore, reset
