@@ -238,17 +238,21 @@ const SceneObject = React.memo(({ scene, id, type, isSelected, loaded, updateObj
 
     if (remoteInput.down) {
       let [ alpha, beta, gamma ] = remoteInput.mag.map(THREE.Math.degToRad)
-      let magValues = remoteInput.mag
-      let deviceQuaternion
+      // let [ alphaDegrees ] = remoteInput.mag
 
       //
       //
       //
       // FIXME
       //
-      let offset = 0 - magValues[0]
-      deviceQuaternion = new THREE.Quaternion()
-        .setFromEuler(new THREE.Euler(beta, alpha + (offset*(Math.PI/180)),-gamma, 'YXZ'))
+      // let offset = !isRotating.current
+      //   ? 0
+      //   : THREE.Math.degToRad(0 - alphaDegrees)
+      // console.log({ beta, alpha, gamma, offset })
+
+      let offset = 0
+      let deviceQuaternion = new THREE.Quaternion()
+        .setFromEuler(new THREE.Euler(beta, alpha + offset, -gamma, 'YXZ'))
         .multiply(
           new THREE.Quaternion()
             .setFromAxisAngle( new THREE.Vector3( 1, 0, 0 ), -Math.PI / 2 )
