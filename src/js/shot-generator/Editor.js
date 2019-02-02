@@ -583,10 +583,14 @@ const SceneManager = connect(
                 key: props.id,
                 scene,
 
+                remoteInput,
                 isSelected: props.id === selection,
 
-                loaded: props.loaded ? props.loaded : false,
+                camera,
+
                 updateObject,
+
+                loaded: props.loaded ? props.loaded : false,
 
                 ...props
               }

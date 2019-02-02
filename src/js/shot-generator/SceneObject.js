@@ -8,6 +8,8 @@ const { useRef, useEffect, useState } = React
 
 const ModelLoader = require('../services/model-loader')
 
+const applyDeviceQuaternion = require('./apply-device-quaternion')
+
 // TODO use functions of ModelLoader?
 require('../vendor/three/examples/js/loaders/LoaderSupport')
 require('../vendor/three/examples/js/loaders/GLTFLoader')
@@ -67,7 +69,7 @@ const meshFactory = originalMesh => {
   return mesh
 }
 
-const SceneObject = React.memo(({ scene, id, type, isSelected, loaded, updateObject, ...object }) => {
+const SceneObject = React.memo(({ scene, id, type, isSelected, loaded, updateObject, remoteInput, camera, ...object }) => {
   const setLoaded = loaded => updateObject(id, { loaded })
 
   const container = useRef(groupFactory())
@@ -219,6 +221,85 @@ const SceneObject = React.memo(({ scene, id, type, isSelected, loaded, updateObj
          color: [ 0, 0, 0 ],
        }
   }, [isSelected, loaded])
+
+  const isRotating = useRef(null)
+  const startingObjectQuaternion = useRef(null)
+  const startingDeviceOffset = useRef(null)
+  const startingObjectOffset = useRef(null)
+  useEffect(() => {
+    if (!container.current) return
+    if (!isSelected) return
+
+    if (remoteInput.mouseMode) return
+
+    let target = container.current
+
+    if (remoteInput.down) {
+      let [ alpha, beta, gamma ] = remoteInput.mag.map(THREE.Math.degToRad)
+      let magValues = remoteInput.mag
+      let deviceQuaternion
+
+      //
+      //
+      //
+      // FIXME
+      //
+      let offset = 0 - magValues[0]
+      deviceQuaternion = new THREE.Quaternion()
+        .setFromEuler(new THREE.Euler(beta, alpha + (offset*(Math.PI/180)),-gamma, 'YXZ'))
+        .multiply(
+          new THREE.Quaternion()
+            .setFromAxisAngle( new THREE.Vector3( 1, 0, 0 ), -Math.PI / 2 )
+        )
+
+      if (!isRotating.current) {
+        // new rotation
+        isRotating.current = true
+
+        console.log('new rotation!')
+
+        // get the starting device rotation and starting target object rotation
+        startingDeviceOffset.current = new THREE.Quaternion()
+          .clone()
+          .inverse()
+          .multiply(deviceQuaternion)
+          .normalize()
+          .inverse()
+
+        startingObjectQuaternion.current = target.quaternion.clone()
+
+        startingObjectOffset.current = new THREE.Quaternion()
+          .clone()
+          .inverse()
+          .multiply(startingObjectQuaternion.current)
+      }
+
+      let objectQuaternion = applyDeviceQuaternion({
+        parent: target.parent,
+        startingDeviceOffset: startingDeviceOffset.current,
+        startingObjectOffset: startingObjectOffset.current,
+        startingObjectQuaternion: startingObjectQuaternion.current,
+        deviceQuaternion,
+        camera
+      })
+
+      // GET THE DESIRED ROTATION FOR THE TARGET OBJECT
+      let rotation = new THREE.Euler()
+        .setFromQuaternion( objectQuaternion.normalize(), /*eulerOrder*/ )
+
+      updateObject(target.userData.id, {
+        rotation: rotation.y
+      })
+
+    } else {
+      // not pressed anymore, reset
+      isRotating.current = false
+
+      startingDeviceOffset.current = null
+      startingObjectQuaternion.current = null
+      startingObjectOffset.current = null
+    }
+  }, [remoteInput])
 
   return null
 })
