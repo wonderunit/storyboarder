@@ -1719,19 +1719,57 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
         ],
       ],
 
-      ['div',
-        [NumberSlider, {
-          label: 'rotation',
-          min: -180,
-          max: 180,
-          step: 1,
-          value: THREE.Math.radToDeg(sceneObject.rotation),
-          onSetValue: value => updateObject(sceneObject.id, { rotation: THREE.Math.degToRad(value) }),
-          transform: NumberSliderTransform.degrees,
-          formatter: NumberSliderFormatter.degrees
-        }]
-      ],
-   
+      sceneObject.type == 'object'
+        ? [
+            ['div',
+              [NumberSlider, {
+                label: 'rotate x',
+                min: -180,
+                max: 180,
+                step: 1,
+                value: THREE.Math.radToDeg(sceneObject.rotation.x),
+                onSetValue: value => updateObject(sceneObject.id, { rotation: { x: THREE.Math.degToRad(value) } }),
+                transform: NumberSliderTransform.degrees,
+                formatter: NumberSliderFormatter.degrees
+              }]
+            ],
+            ['div',
+              [NumberSlider, {
+                label: 'rotate y',
+                min: -180,
+                max: 180,
+                step: 1,
+                value: THREE.Math.radToDeg(sceneObject.rotation.y),
+                onSetValue: value => updateObject(sceneObject.id, { rotation: { y: THREE.Math.degToRad(value) } }),
+                transform: NumberSliderTransform.degrees,
+                formatter: NumberSliderFormatter.degrees
+              }]
+            ],
+            ['div',
+              [NumberSlider, {
+                label: 'rotate z',
+                min: -180,
+                max: 180,
+                step: 1,
+                value: THREE.Math.radToDeg(sceneObject.rotation.z),
+                onSetValue: value => updateObject(sceneObject.id, { rotation: { z: THREE.Math.degToRad(value) } }),
+                transform: NumberSliderTransform.degrees,
+                formatter: NumberSliderFormatter.degrees
+              }]
+            ]
+          ]
+        : ['div',
+            [NumberSlider, {
+              label: 'rotation',
+              min: -180,
+              max: 180,
+              step: 1,
+              value: THREE.Math.radToDeg(sceneObject.rotation),
+              onSetValue: value => updateObject(sceneObject.id, { rotation: THREE.Math.degToRad(value) }),
+              transform: NumberSliderTransform.degrees,
+              formatter: NumberSliderFormatter.degrees
+            }]
+          ],
 
       sceneObject.type == 'camera' &&
         ['div',
@@ -2345,7 +2383,7 @@ const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, set
       x: newPoz.x,
       y: newPoz.y,
       z: newPoz.z,
-      rotation: 0, //Math.random() * Math.PI * 2,
+      rotation: { x: 0, y: 0, z: 0 }, //Math.random() * Math.PI * 2,
 
       visible: true
     })

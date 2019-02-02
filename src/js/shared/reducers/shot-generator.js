@@ -53,7 +53,7 @@ const defaultScenePreset = {
       x: 0,
       y: 0,
       z: 0,
-      rotation: 0,
+      rotation: { x: 0, y: 0, z: 0 },
       name: undefined,
       visible: true
     },
@@ -67,7 +67,7 @@ const defaultScenePreset = {
       x: 2,
       y: 0.5,
       z: 0,
-      rotation: 0,
+      rotation: { x: 0, y: 0, z: 0 },
       name: undefined,
       visible: true
     },
@@ -81,7 +81,7 @@ const defaultScenePreset = {
       x: -2,
       y: -2,
       z: 0,
-      rotation: 2,
+      rotation: { x: 0, y: 2, z: 0 },
       name: undefined,
       visible: true
     },
@@ -465,7 +465,15 @@ module.exports = {
             draft.sceneObjects[action.payload.id].fov = action.payload.fov
           }
           if (action.payload.rotation != null) {
-            draft.sceneObjects[action.payload.id].rotation = action.payload.rotation
+            if (draft.sceneObjects[action.payload.id].type === 'object') {
+              // MERGE
+              draft.sceneObjects[action.payload.id].rotation = {
+                ...state.sceneObjects[action.payload.id].rotation,
+                ...action.payload.rotation
+              }
+            } else {
+              draft.sceneObjects[action.payload.id].rotation = action.payload.rotation
+            }
           }
           if (action.payload.tilt != null) {
             draft.sceneObjects[action.payload.id].tilt = action.payload.tilt

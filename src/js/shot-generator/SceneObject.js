@@ -82,7 +82,9 @@ const SceneObject = React.memo(({ scene, id, type, isSelected, loaded, updateObj
     container.current.position.z = object.y
     container.current.position.y = object.z
 
-    container.current.rotation.y = object.rotation
+    container.current.rotation.x = object.rotation.x
+    container.current.rotation.y = object.rotation.y
+    container.current.rotation.z = object.rotation.z
 
     container.current.scale.set(
       object.width,
@@ -288,7 +290,7 @@ const SceneObject = React.memo(({ scene, id, type, isSelected, loaded, updateObj
         .setFromQuaternion( objectQuaternion.normalize(), /*eulerOrder*/ )
 
       updateObject(target.userData.id, {
-        rotation: rotation.y
+        rotation: { x: rotation.x, y: rotation.y, z: rotation.z }
       })
 
     } else {
