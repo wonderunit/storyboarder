@@ -1166,7 +1166,7 @@ const loadBoardUI = async () => {
     nextScene()
   })
 
-  notifications.init(document.getElementById('notifications'))
+  notifications.init(document.getElementById('notifications'), prefsModule.getPrefs()['enableNotifications'])
   setupRandomizedNotifications()
 
   //
