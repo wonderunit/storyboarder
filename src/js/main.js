@@ -1419,10 +1419,9 @@ ipcMain.on('insertShot',
 
 ipcMain.on('registration:open', event => registration.show())
 
-ipcMain.on('shot-generator:open', (event, { shot, aspectRatio }) => {
+ipcMain.on('shot-generator:open', (event, { board, boardData }) => {  
   shotGeneratorWindow.show(win => {
-    win.webContents.send('setup', { aspectRatio })
-    win.webContents.send('loadShot', shot)
+    win.webContents.send('loadBoard', { boardData, board })
   })
 
   // TODO analytics?

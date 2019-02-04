@@ -53,13 +53,17 @@ const store = configureStore({
 
 
 
-ipcRenderer.on('setup', (event, { aspectRatio }) => {
+ipcRenderer.on('loadBoard', (event, { boardData, board }) => {
+  // TODO for backwards compatibility, use board.shotgen or board.sg instead?
+  let shot = board.sts
+
+  let aspectRatio = parseFloat(boardData.aspectRatio)
+
   store.dispatch({
     type: 'SET_ASPECT_RATIO',
     payload: aspectRatio
   })
-})
-ipcRenderer.on('loadShot', (event, shot) => {
+
   if (shot) {
     store.dispatch(loadScene(shot.data))
   } else {
