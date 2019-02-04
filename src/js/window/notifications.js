@@ -84,14 +84,20 @@ const formatMessageData = (data) => {
 const onPointerDown = event =>
   removeNotification(event.target.dataset.index)
 
-const init = (el) => {
+let enabled
+
+const init = (el, enableNotifications) => {
   container = el
-  
+  enabled = enableNotifications
+
   container.addEventListener('pointerdown', onPointerDown)
 }
 
-let notify = (data) =>
-  addNotification(formatMessageData(data))
+let notify = (data) => {
+  if (enabled) {
+    return addNotification(formatMessageData(data))
+  }
+}
 
 module.exports = {
   init,
