@@ -208,7 +208,7 @@ const calcMedianDistance = (fixedposition, allverts, object, inverdsedMatrix, bo
 
 
     let distanceFromOriginal = vect3.distanceTo(vect2)
-    if (distanceFromOriginal<0.01 * multiply )
+    if ( distanceFromOriginal<0.02 * multiply )
     {
       //console.log('difference from original: ',vect3.distanceTo(vect2))
       //console.log('dif: ', difference)
