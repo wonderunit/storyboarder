@@ -296,8 +296,15 @@ function BonesHelper( object, object3D, createPosePreset ) {
   let sknMesh = object3D.children.find(child => child instanceof THREE.SkinnedMesh) ||
     object3D.children[0].children.find(child => child instanceof THREE.SkinnedMesh)
   
+
+  let skeleton_clone = cloneSkinned( object3D )
+  let clonedSkinnedMesh = skeleton_clone.children.find(child => child instanceof THREE.SkinnedMesh) ||
+    skeleton_clone.children[0].children.find(child => child instanceof THREE.SkinnedMesh)
+  
+  clonedSkinnedMesh.skeleton.pose()
+
   sknMesh.savePose(createPosePreset)
-  sknMesh.skeleton.pose()
+  clonedSkinnedMesh.skeleton.pose()
   
   let skinIndex = sknMesh.geometry.attributes.skinIndex
   let vertexPositions = sknMesh.geometry.attributes.position
@@ -357,14 +364,20 @@ function BonesHelper( object, object3D, createPosePreset ) {
 
       let absoluteBonePosA = new Vector3
       let absoluteBonePosB = new Vector3
-      absoluteBonePosA.setFromMatrixPosition(bone.matrixWorld)
-      absoluteBonePosB.setFromMatrixPosition(bone.children[jj].matrixWorld)
+      //absoluteBonePosA.setFromMatrixPosition(bone.matrixWorld)
+      //absoluteBonePosB.setFromMatrixPosition(bone.children[jj].matrixWorld)
+      let boneEquiv = clonedSkinnedMesh.skeleton.bones.filter(bone_current => bone_current.name === bone.name)[0]
+      console.log('bone ind: ', boneEquiv)
+      absoluteBonePosA.setFromMatrixPosition(boneEquiv.matrixWorld)
+      absoluteBonePosB.setFromMatrixPosition(boneEquiv.children[jj].matrixWorld)
+
+      
 
       if (bonesContainingVerts[ii])
       {
-        let relativePos = getPointInBetweenByPerc(posA, posB, 0.5)
+        //let relativePos = getPointInBetweenByPerc(posA, posB, 0.5)
         relativePos = getPointInBetweenByPerc(absoluteBonePosA, absoluteBonePosB, 0.5)
-        let med = calcMedianDistance(relativePos, bonesContainingVerts[ii], this, matrixWorldInv, bone, vertexDistanceMyltiplyFactor, ii, sknMesh)
+        let med = calcMedianDistance(relativePos, bonesContainingVerts[ii], this, matrixWorldInv, boneEquiv, vertexDistanceMyltiplyFactor, ii, sknMesh)
         distanceToVerts = med.median !== 0 ? med.median : 0.1
         createdHelper = med.object        
       }
@@ -641,22 +654,26 @@ SkinnedMesh.prototype.savePose = function(createPosePreset) {
       y: defaultRotation.y - zeroRotation.y,
       z: defaultRotation.z - zeroRotation.z
     }
-    if ( rotDiff.x > -0.0001 && rotDiff.x < 0.0001 ||
-      rotDiff.y > -0.0001 && rotDiff.y < 0.0001 ||
-      rotDiff.z > -0.0001 && rotDiff.z < 0.0001 )
+    //console.log(' rot diff: ', rotDiff)
+    if ( rotDiff.x < -0.0001 || rotDiff.x > 0.0001 ||
+      rotDiff.y < -0.0001 || rotDiff.y > 0.0001 ||
+      rotDiff.z < -0.0001 || rotDiff.z > 0.0001 )
       {
+        this.needsRepose = true
         poseSkeleton[this.skeleton.bones[i].name] = {
           rotation: {
             x: defaultRotation.x,
             y: defaultRotation.y,
             z: defaultRotation.z
           }          
-        }
-        this.needsRepose = true
+        }        
       }
   }
 
-  if ( this.needsRepose ) this.userData.initialSkeleton = poseSkeleton
+  if ( this.needsRepose ) {
+    this.userData.initialSkeleton = poseSkeleton
+    //console.log('needs repose!')
+  }
   let preset = {
     id: this.parent.userData.id,
     name: this.name,
@@ -664,16 +681,19 @@ SkinnedMesh.prototype.savePose = function(createPosePreset) {
       skeleton: poseSkeleton || {}
     }
   }
-  console.log('saving: ', preset)
+  //console.log('saving: ', preset)
   createPosePreset(preset)
 }
 
 SkinnedMesh.prototype.repose = function() {
+  //console.log('reposing ', this.skeleton.bones, ' to: ', this.userData.initialSkeleton)
   for (var i = 0; i< this.skeleton.bones.length; i++)
   {    
-    if (this.userData.initialSkeleton[this.skeleton.bones[i].name])
+    if (this.userData.initialSkeleton[this.skeleton.bones[i]])
     {
-      this.skeleton.bones[i].rotation = this.userData.initialSkeleton[this.skeleton.bones[i].name]
+      this.skeleton.bones[i].rotation.x = this.userData.initialSkeleton[this.skeleton.bones[i].name].x
+      this.skeleton.bones[i].rotation.y = this.userData.initialSkeleton[this.skeleton.bones[i].name].y
+      this.skeleton.bones[i].rotation.z = this.userData.initialSkeleton[this.skeleton.bones[i].name].z
       //console.log('this.skeleton.bones[i].rotation: ', this.skeleton.bones[i].rotation === this.userData.initialSkeleton[this.skeleton.bones[i].name])
     }
     // for (let j in this.userData.initialSkeleton)
@@ -682,7 +702,7 @@ SkinnedMesh.prototype.repose = function() {
     //   console.log('j: ', j)
     // }
   }
-  console.log('this initial skel: ', this.userData.initialSkeleton)
+  
 }
 
 module.exports = BonesHelper
