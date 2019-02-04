@@ -1847,62 +1847,22 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
   )
 }
 
-// TODO is there a simpler way to get the default rotation of a bone?
-// via THREE.Skeleton#pose()
-const getDefaultRotationForBone = (skeleton, bone) => {
-  let dummy = new THREE.Object3D()
-  dummy.matrixWorld.getInverse( skeleton.boneInverses[ skeleton.bones.indexOf(bone) ] )
-
-  if ( bone.parent && bone.parent.isBone ) {
-    dummy.matrix.getInverse( bone.parent.matrixWorld )
-    dummy.matrix.multiply( dummy.matrixWorld )
-  } else {
-    dummy.matrix.copy( dummy.matrixWorld )
-  }
-
-  var p = new THREE.Vector3()
-  var q = new THREE.Quaternion();
-  var s = new THREE.Vector3()
-  dummy.matrix.decompose( p, q, s )
-
-  let e = new THREE.Euler()
-  e.setFromQuaternion( q )
-
-  return { x: e.x, y: e.y, z: e.z }
-}
-
 const BoneEditor = ({ sceneObject, bone, updateCharacterSkeleton }) => {
-  const { scene } = useContext(SceneContext)
-
-  let sceneObj = scene.children.find(o => o.userData.id === sceneObject.id)
-  let skeleton = (sceneObj.children[0] instanceof THREE.Mesh) ? sceneObj.children[0].skeleton : sceneObj.children[1].skeleton
-
   // has the user modified the skeleton?
-  bone = sceneObject.skeleton[bone.name]
+  let rotation = sceneObject.skeleton[bone.name]
     // use the modified skeleton data
-    ? {
-      type: 'modified',
-      name: bone.name,
-      rotation: sceneObject.skeleton[bone.name].rotation
-    }
-    // otherwise, use the default rotation of the bone
-    //
-    // the scene is not guaranteed to be updated at this point
-    // so we have to actually calculate the default rotation
-    : {
-      type: 'default',
-      name: bone.name,
-      rotation: getDefaultRotationForBone(skeleton, bone)
-    }
+    ? sceneObject.skeleton[bone.name].rotation
+    // otherwise, use the initial rotation of the bone
+    : { x: bone.rotation.x, y: bone.rotation.y, z: bone.rotation.z }
 
   const createOnSetValue = (key, transform) => value => {
     updateCharacterSkeleton({
       id: sceneObject.id,
       name: bone.name,
       rotation: {
-        x: bone.rotation.x,
-        y: bone.rotation.y,
-        z: bone.rotation.z,
+        x: rotation.x,
+        y: rotation.y,
+        z: rotation.z,
         [key]: transform(value)
       }
     })
@@ -1924,7 +1884,7 @@ const BoneEditor = ({ sceneObject, bone, updateCharacterSkeleton }) => {
             min: -180,
             max: 180,
             step: 1,
-            value: THREE.Math.radToDeg(bone.rotation.x),
+            value: THREE.Math.radToDeg(rotation.x),
             onSetValue: createOnSetValue('x', THREE.Math.degToRad),
             transform: NumberSliderTransform.degrees,
             formatter: NumberSliderFormatter.degrees
@@ -1936,7 +1896,7 @@ const BoneEditor = ({ sceneObject, bone, updateCharacterSkeleton }) => {
             min: -180,
             max: 180,
             step: 1,
-            value: THREE.Math.radToDeg(bone.rotation.y),
+            value: THREE.Math.radToDeg(rotation.y),
             onSetValue: createOnSetValue('y', THREE.Math.degToRad),
             transform: NumberSliderTransform.degrees,
             formatter: NumberSliderFormatter.degrees
@@ -1948,7 +1908,7 @@ const BoneEditor = ({ sceneObject, bone, updateCharacterSkeleton }) => {
             min: -180,
             max: 180,
             step: 1,
-            value: THREE.Math.radToDeg(bone.rotation.z),
+            value: THREE.Math.radToDeg(rotation.z),
             onSetValue: createOnSetValue('z', THREE.Math.degToRad),
             transform: NumberSliderTransform.degrees,
             formatter: NumberSliderFormatter.degrees
