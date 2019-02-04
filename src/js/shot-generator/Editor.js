@@ -1848,6 +1848,8 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
 }
 
 const BoneEditor = ({ sceneObject, bone, updateCharacterSkeleton }) => {
+  const [render, setRender] = useState(false)
+
   // has the user modified the skeleton?
   let rotation = sceneObject.skeleton[bone.name]
     // use the modified skeleton data
@@ -1867,6 +1869,17 @@ const BoneEditor = ({ sceneObject, bone, updateCharacterSkeleton }) => {
       }
     })
   }
+
+  // the posePresetId and skeleton will change synchronously
+  // but the three scene will not have updated bones until SceneManager renders
+  // so for now, just wait until that has probably happened :/
+  useEffect(() => {
+    setRender(false)
+
+    setTimeout(() => {
+      setRender(true)
+    }, 1)
+  }, [sceneObject.posePresetId])
 
   return h(
     ['div.column', { style: { } }, [
