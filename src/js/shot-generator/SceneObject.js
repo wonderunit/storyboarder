@@ -74,27 +74,6 @@ const SceneObject = React.memo(({ scene, id, type, isSelected, loaded, updateObj
 
   const container = useRef(groupFactory())
 
-  const update = () => {
-    container.current.userData.id = id
-    container.current.userData.type = type
-
-    container.current.position.x = object.x
-    container.current.position.z = object.y
-    container.current.position.y = object.z
-
-    container.current.rotation.x = object.rotation.x
-    container.current.rotation.y = object.rotation.y
-    container.current.rotation.z = object.rotation.z
-
-    container.current.scale.set(
-      object.width,
-      object.height,
-      object.depth
-    )
-
-    container.current.visible = object.visible
-  }
-
   const load = async (model, object, container) => {
     setLoaded(false)
 
@@ -183,7 +162,9 @@ const SceneObject = React.memo(({ scene, id, type, isSelected, loaded, updateObj
   useEffect(() => {
     console.log(type, id, 'model changed', container.current, 'to', object.model)
     load(object.model, object, container.current)
-    update()
+
+    container.current.userData.id = id
+    container.current.userData.type = type
 
     console.log(type, id, 'added to scene')
     scene.add(container.current)
@@ -195,16 +176,40 @@ const SceneObject = React.memo(({ scene, id, type, isSelected, loaded, updateObj
   }, [object.model])
 
   useEffect(() => {
-    console.log(type, id, 'update')
-    update()
+    container.current.position.x = object.x
+    container.current.position.z = object.y
+    container.current.position.y = object.z
   }, [
     object.x,
     object.y,
-    object.z,
-    object.rotation,
+    object.z
+  ])
+
+  useEffect(() => {
+    container.current.rotation.x = object.rotation.x
+    container.current.rotation.y = object.rotation.y
+    container.current.rotation.z = object.rotation.z
+  }, [
+    object.rotation.x,
+    object.rotation.y,
+    object.rotation.z
+  ])
+
+  useEffect(() => {
+    container.current.scale.set(
+      object.width,
+      object.height,
+      object.depth
+    )
+  }, [
     object.width,
     object.height,
-    object.depth,
+    object.depth
+  ])
+
+  useEffect(() => {
+    container.current.visible = object.visible
+  }, [
     object.visible
   ])
 
