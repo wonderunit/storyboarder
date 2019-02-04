@@ -7,7 +7,6 @@ const { useRef, useEffect, useState } = React
 const path = require('path')
 const debounce = require('lodash.debounce')
 
-const BoundingBoxHelper = require('./BoundingBoxHelper')
 const BonesHelper = require('./BonesHelper')
 
 const { initialState } = require('../shared/reducers/shot-generator')
@@ -85,7 +84,7 @@ const characterFactory = data => {
   let bbox = new THREE.Box3().setFromObject(mesh)
   let originalHeight = bbox.max.y - bbox.min.y
 
-  skeleton.pose()
+  //skeleton.pose()
 
   return { mesh, skeleton, armatures, originalHeight }
 }
@@ -103,14 +102,14 @@ const Character = React.memo(({
   camera,
   updateCharacterSkeleton,
   updateObject,
+  createPosePreset,
   loaded,
-  devices,
+  devices,  
   ...props
 }) => {
   // setting loaded = true forces an update to sceneObjects,
   // which is what Editor listens for to attach the BonesHelper
   const setLoaded = loaded => updateObject(id, { loaded })
-
   const object = useRef(null)
 
   const [modelData, setModelData] = useState(null)
@@ -159,11 +158,12 @@ const Character = React.memo(({
 
       object.current.add(...armatures)
       object.current.add(mesh)
+      console.log('object with armatures: ', object.current)
       object.current.userData.mesh = mesh
 
       scene.add(object.current)
-
-      let bonesHelper = new BonesHelper(skeleton.bones[0].parent, object.current)
+      
+      let bonesHelper = new BonesHelper(skeleton.bones[0].parent, object.current, createPosePreset)
       object.current.bonesHelper = bonesHelper
       object.current.userData.skeleton = skeleton
       scene.add(object.current.bonesHelper)

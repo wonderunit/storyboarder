@@ -17,6 +17,12 @@ const THREE = require('three')
 
 const ModelLoader = require('../services/model-loader')
 
+// const {
+  
+//   createPosePreset,
+  
+// } = require('../shared/reducers/shot-generator')
+
 const { LineSegments } = THREE
 const { Matrix4 } = THREE
 const { VertexColors } = THREE
@@ -28,10 +34,12 @@ const { Quaternion } = THREE
 const { BufferGeometry } = THREE
 const { Float32BufferAttribute } = THREE
 const { Object3D } = THREE
+const { SkinnedMesh } = THREE
 
 const getVertexForBones = ( bufferPositions, bufferSkinIndices, bufferSkinWeights ) => {
     
   let bonesInfluenceVertices = []
+  
   for ( var i = 0; i < bufferSkinIndices.count; i++ ) {
     let boneIndex = new Vector4()
     let vertex = new Vector3()
@@ -43,33 +51,58 @@ const getVertexForBones = ( bufferPositions, bufferSkinIndices, bufferSkinWeight
     
     if (vertWeight.x > 0.01 ) {
       if (bonesInfluenceVertices[boneIndex.x] ) {
-        bonesInfluenceVertices[boneIndex.x].push( vertex )
+        bonesInfluenceVertices[boneIndex.x].push( 
+          {
+            vertex,
+            weight: vertWeight.x     
+          })
       } else {
-        bonesInfluenceVertices[boneIndex.x] = [vertex]      
+        bonesInfluenceVertices[boneIndex.x] = [{
+          vertex,
+          weight: vertWeight.x     
+        }]
       }
     }
 
     if (vertWeight.y > 0.01) {
       if (bonesInfluenceVertices[boneIndex.y]) {
-        bonesInfluenceVertices[boneIndex.y].push( vertex )
+        bonesInfluenceVertices[boneIndex.y].push( {
+          vertex,
+          weight: vertWeight.y     
+        } )
       } else {
-        bonesInfluenceVertices[boneIndex.y] = [vertex]      
+        bonesInfluenceVertices[boneIndex.y] = [{
+          vertex,
+          weight: vertWeight.x     
+        }]      
       }
     }
 
     if (vertWeight.z > 0.01) {
       if (bonesInfluenceVertices[boneIndex.z]) {
-        bonesInfluenceVertices[boneIndex.z].push( vertex )
+        bonesInfluenceVertices[boneIndex.z].push( {
+          vertex,
+          weight: vertWeight.z     
+        } )
       } else {
-        bonesInfluenceVertices[boneIndex.z] = [vertex]      
+        bonesInfluenceVertices[boneIndex.z] = [{
+          vertex,
+          weight: vertWeight.z     
+        }]      
       }
     }
 
     if (vertWeight.w > 0.01) {
       if (bonesInfluenceVertices[boneIndex.w]) {
-        bonesInfluenceVertices[boneIndex.w].push( vertex )
+        bonesInfluenceVertices[boneIndex.w].push( {
+          vertex,
+          weight: vertWeight.w     
+        } )
       } else {
-        bonesInfluenceVertices[boneIndex.w] = [vertex]      
+        bonesInfluenceVertices[boneIndex.w] = [{
+          vertex,
+          weight: vertWeight.w     
+        }]      
       }
     }
 
@@ -79,13 +112,16 @@ const getVertexForBones = ( bufferPositions, bufferSkinIndices, bufferSkinWeight
 
 let once = true
 
-const calcMedianDistance = (fixedposition, allverts, object, inverdsedMatrix, bone, multiply) => {
+const calcMedianDistance = (fixedposition, allverts, object, inverdsedMatrix, bone, multiply, boneIndex, skinnedMesh) => {
   let allDistances = []
   let median = 0
   let maxDist = 0
   let minDist = 10000000;
   let tempObj = new THREE.Object3D()
   let plane
+
+  var temp = new THREE.Vector3(), tempMatrix = new THREE.Matrix4()
+
   //if (once) {
     let test = new THREE.Mesh(
       new THREE.PlaneGeometry(0.2,0.2),
@@ -102,21 +138,34 @@ const calcMedianDistance = (fixedposition, allverts, object, inverdsedMatrix, bo
     test.position.set(fixedposition.x, fixedposition.y, fixedposition.z)
     test.quaternion.copy(bone.quaternion)
     test.quaternion.setFromRotationMatrix( bone.matrixWorld )
-    //test.quaternion.multiply(new Quaternion(-Math.sqrt(0.5), 0 , 0, -Math.sqrt(0.5)))
+    test.quaternion.multiply(new Quaternion(-Math.sqrt(0.5), 0 , 0, -Math.sqrt(0.5)))
     test.updateMatrixWorld()
     test.updateMatrix()
     plane = new THREE.Plane(fixedposition.clone().applyMatrix4(inverdsedMatrix), 1)
     plane.applyMatrix4(test.matrix)
-    plane.normalize()
     //plane.applyMatrix4(test.matrixWorld)
+    plane.normalize()
+
+    plane = new THREE.Plane();
+    var dir = new THREE.Vector3(0,1,0);
+    var centroid = new Vector3( 0, 0, -1 ).applyQuaternion( test.quaternion )
+    //centroid.applyQuaternion(inverdsedMatrix.quaternion)
+    //centroid.applyMatrix4(inverdsedMatrix)
+    plane.setFromNormalAndCoplanarPoint(centroid, dir).normalize();
+    //var direction = new Vector3( 0, 0, -1 ).applyQuaternion( bone.quaternion )
+
+
+    
+    
     //plane.quaternion.copy(test.quaternion)
     //test.quaternion.multiplyQuaternions()
 
     let boneProjection = new Vector3()
     plane.projectPoint(fixedposition, boneProjection)
     let difference = new Vector3().subVectors(fixedposition, boneProjection)
+    //console.log('bone difference: ', difference)
     let testPoint = new THREE.Mesh(
-      new THREE.BoxBufferGeometry(0.01,0.01,0.01),
+      new THREE.BoxBufferGeometry(0.05,0.05,0.05),
       new THREE.MeshBasicMaterial({
         color: 0x4400ff,
         depthTest: false,
@@ -128,22 +177,38 @@ const calcMedianDistance = (fixedposition, allverts, object, inverdsedMatrix, bo
       })
     )
     testPoint.position.set(fixedposition.x, fixedposition.y, fixedposition.z)
-
+    testPoint.position.set(0, 0, 0)
+    //testPoint.position.set(boneProjection.x, boneProjection.y, boneProjection.z)
+    //test.quaternion.multiply(new Quaternion(-Math.sqrt(0.5), 0 , 0, -Math.sqrt(0.5)))
     var helper = new THREE.PlaneHelper( plane, 1, 0xffff00 );
     helper.updateMatrix()
     //if (once) tempObj.add( helper )
-    //if (once) tempObj.add(test)
+    if (once) tempObj.add(test)
     if (once) tempObj.add(testPoint)
   //}
 
   for (let vect of allverts)
   {
-    let vect2 = vect.clone().applyMatrix4(inverdsedMatrix)
+    let parentWorld = new Matrix4
+    //parentWorld.getInverse(bone.parent.matrixWorld)
+
+    let vect2 = vect.vertex.clone().applyMatrix4(inverdsedMatrix)
+    
+    // let result = new THREE.Vector3()
+    // var clone = vect.vertex.clone().applyMatrix4( skinnedMesh.bindMatrix );
+    // tempMatrix.multiplyMatrices( bone.matrixWorld, skinnedMesh.skeleton.boneInverses[ boneIndex ] );
+		// result.add( temp.copy( clone ).applyMatrix4( tempMatrix ).multiplyScalar( vect.weight ) );
+    
     let vect3 = new Vector3()
     plane.projectPoint(vect2, vect3)
     vect3.addVectors(vect3, difference)
+
+    //vect3 = result
+    //difference = new Vector3()
+
+
     let distanceFromOriginal = vect3.distanceTo(vect2)
-    if (distanceFromOriginal<0.01 * multiply)
+    if (distanceFromOriginal<0.01 * multiply )
     {
       //console.log('difference from original: ',vect3.distanceTo(vect2))
       //console.log('dif: ', difference)
@@ -224,16 +289,16 @@ function filter_array(test_array) {
     return result
 }
 
-function BonesHelper( object, object3D ) {
+function BonesHelper( object, object3D, createPosePreset ) {
   Object3D.call( this )
-  //console.log('object: ', object3D)
+  //console.log('object: ', createPosePreset)
   //ModelLoader.isCustomModel(model)
   let sknMesh = object3D.children.find(child => child instanceof THREE.SkinnedMesh) ||
     object3D.children[0].children.find(child => child instanceof THREE.SkinnedMesh)
-
-  let skeleton = sknMesh.skeleton
-  skeleton.pose()
-
+  
+  sknMesh.savePose(createPosePreset)
+  sknMesh.skeleton.pose()
+  
   let skinIndex = sknMesh.geometry.attributes.skinIndex
   let vertexPositions = sknMesh.geometry.attributes.position
   let skinWeights = sknMesh.geometry.attributes.skinWeight
@@ -241,8 +306,7 @@ function BonesHelper( object, object3D ) {
   let vertexDistanceMyltiplyFactor = 1
   var bbox = new THREE.Box3().setFromObject(object3D);
   let height = bbox.max.y - bbox.min.y
-  if (height>2) vertexDistanceMyltiplyFactor = height * 2
-  //console.log('who tf is object: ', object)
+  if (height>2) vertexDistanceMyltiplyFactor = height * 10
   let bones = getBoneList( object );
   this.cones = []
 
@@ -258,17 +322,13 @@ function BonesHelper( object, object3D ) {
 
   for (var ii = 0; ii< bones.length; ii++) {
     var bone = bones[ii]
-    //console.log('skeleton: ', skeleton.skeleton)
-    //console.log('is it the same bone? : ', skeleton.skeleton.bones[ii] == bones[ii])
+
     var jj = 0
     let posA = new Vector3()
     let posB = new Vector3()
     let scaleA = new Vector3()
     let scaleB = new Vector3()
     let scaleC = new Vector3()
-    let spineNumber = 0
-
-    //console.log(object3D.children[1].geometry)
 
     while (bone.children && bone.children[jj] && bone.children[jj].isBone  )
     {
@@ -289,15 +349,22 @@ function BonesHelper( object, object3D ) {
       posA.setFromMatrixPosition(boneMatrix.multiplyMatrices(matrixWorldInv, bone.matrixWorld))
       posB.setFromMatrixPosition(boneMatrix.multiplyMatrices(matrixWorldInv, bone.children[jj].matrixWorld))
       once = ii > 10 && ii < 20 ? true : false
-      //once = true
+      once = true
       //if (once) console.log('median distance for bone',bone.name)//bone.name)//,': ', distanceToVerts)
-      once = false
+      //once = false
       let distanceToVerts = 0.1 
       let createdHelper = new Object3D()
+
+      let absoluteBonePosA = new Vector3
+      let absoluteBonePosB = new Vector3
+      absoluteBonePosA.setFromMatrixPosition(bone.matrixWorld)
+      absoluteBonePosB.setFromMatrixPosition(bone.children[jj].matrixWorld)
+
       if (bonesContainingVerts[ii])
       {
         let relativePos = getPointInBetweenByPerc(posA, posB, 0.5)
-        let med = calcMedianDistance(relativePos, bonesContainingVerts[ii], this, matrixWorldInv, bone, vertexDistanceMyltiplyFactor)
+        relativePos = getPointInBetweenByPerc(absoluteBonePosA, absoluteBonePosB, 0.5)
+        let med = calcMedianDistance(relativePos, bonesContainingVerts[ii], this, matrixWorldInv, bone, vertexDistanceMyltiplyFactor, ii, sknMesh)
         distanceToVerts = med.median !== 0 ? med.median : 0.1
         createdHelper = med.object        
       }
@@ -449,7 +516,7 @@ function BonesHelper( object, object3D ) {
   this.root = object
   this.object3D = object3D
   this.bones = bones
-
+  if (sknMesh.needsRepose) sknMesh.repose()
   this.matrix = object.matrixWorld
   this.matrixAutoUpdate = false
 }
@@ -494,6 +561,128 @@ BonesHelper.prototype.raycast = function ( raycaster, intersects ) {
     result.bone = this.bones.find(bone => bone.uuid === result.object.userData.bone)
     intersects.push(result)
   }
+}
+
+const cloneSkinned = ( source ) => {
+
+  var cloneLookup = new Map()
+  var clone = source.clone()
+
+  parallelTraverse( source, clone, function ( sourceNode, clonedNode ) {
+    cloneLookup.set( sourceNode, clonedNode )
+  } )
+  source.traverse( function ( sourceMesh ) {
+    if ( ! sourceMesh.isSkinnedMesh ) return
+    var sourceBones = sourceMesh.skeleton.bones
+    var clonedMesh = cloneLookup.get( sourceMesh )
+    clonedMesh.skeleton = sourceMesh.skeleton.clone()
+    clonedMesh.skeleton.bones = sourceBones.map( function ( sourceBone ) {
+      if ( ! cloneLookup.has( sourceBone ) ) {
+        throw new Error( 'THREE.AnimationUtils: Required bones are not descendants of the given object.' )
+      }
+      return cloneLookup.get( sourceBone )
+    } )
+    clonedMesh.bind( clonedMesh.skeleton, sourceMesh.bindMatrix )
+  } )
+
+  return clone
+}
+
+const parallelTraverse = ( a, b, callback ) => {
+  callback( a, b )
+  for ( var i = 0; i < a.children.length; i ++ ) {
+    parallelTraverse( a.children[ i ], b.children[ i ], callback )
+  }
+}
+
+const getDefaultRotationForBone = (skeleton, bone) => {
+  return { x: bone.rotation.x, y: bone.rotation.y, z: bone.rotation.z}
+  
+  // let dummy = new THREE.Object3D()
+  // //dummy.matrixWorld.getInverse( skeleton.boneInverses[ skeleton.bones.indexOf(bone) ] )
+
+  // if ( bone.parent && bone.parent.isBone ) {
+  //   dummy.matrix.getInverse( bone.parent.matrixWorld )
+  //   dummy.matrix.multiply( dummy.matrixWorld )
+  // } else {
+  //   dummy.matrix.copy( dummy.matrixWorld )
+  // }
+  // dummy.matrix.copy (bone.matrix)
+
+  // var p = new THREE.Vector3()
+  // var q = new THREE.Quaternion();
+  // var s = new THREE.Vector3()
+  // dummy.matrix.decompose( p, q, s )
+
+  // let e = new THREE.Euler()
+  // e.setFromQuaternion( q )
+
+  // return { x: e.x, y: e.y, z: e.z }
+}
+
+SkinnedMesh.prototype.savePose = function(createPosePreset) {
+  let skeleton_clone = cloneSkinned(this.parent)
+  let poseSkeleton = {}
+  let sknMesh = skeleton_clone.children.find(child => child instanceof THREE.SkinnedMesh) ||
+    skeleton_clone.children[0].children.find(child => child instanceof THREE.SkinnedMesh)
+  this.needsRepose = false
+  sknMesh.skeleton.pose()
+
+  for (var i = 0; i< this.skeleton.bones.length; i++)
+  { 
+    this.skeleton.bones[i].updateMatrix()
+    sknMesh.skeleton.bones[i].updateMatrix()
+    let defaultRotation = getDefaultRotationForBone(this.skeleton, this.skeleton.bones[i])
+    let zeroRotation = getDefaultRotationForBone(sknMesh.skeleton, sknMesh.skeleton.bones[i])
+    
+    //calculating initial rotation vs default rotation difference
+    let rotDiff = {
+      x: defaultRotation.x - zeroRotation.x,
+      y: defaultRotation.y - zeroRotation.y,
+      z: defaultRotation.z - zeroRotation.z
+    }
+    if ( rotDiff.x > -0.0001 && rotDiff.x < 0.0001 ||
+      rotDiff.y > -0.0001 && rotDiff.y < 0.0001 ||
+      rotDiff.z > -0.0001 && rotDiff.z < 0.0001 )
+      {
+        poseSkeleton[this.skeleton.bones[i].name] = {
+          rotation: {
+            x: defaultRotation.x,
+            y: defaultRotation.y,
+            z: defaultRotation.z
+          }          
+        }
+        this.needsRepose = true
+      }
+  }
+
+  if ( this.needsRepose ) this.userData.initialSkeleton = poseSkeleton
+  let preset = {
+    id: this.parent.userData.id,
+    name: this.name,
+    state: {
+      skeleton: poseSkeleton || {}
+    }
+  }
+  console.log('saving: ', preset)
+  createPosePreset(preset)
+}
+
+SkinnedMesh.prototype.repose = function() {
+  for (var i = 0; i< this.skeleton.bones.length; i++)
+  {    
+    if (this.userData.initialSkeleton[this.skeleton.bones[i].name])
+    {
+      this.skeleton.bones[i].rotation = this.userData.initialSkeleton[this.skeleton.bones[i].name]
+      //console.log('this.skeleton.bones[i].rotation: ', this.skeleton.bones[i].rotation === this.userData.initialSkeleton[this.skeleton.bones[i].name])
+    }
+    // for (let j in this.userData.initialSkeleton)
+    // {
+    //   if (this.skeleton.bones[i].name == )
+    //   console.log('j: ', j)
+    // }
+  }
+  console.log('this initial skel: ', this.userData.initialSkeleton)
 }
 
 module.exports = BonesHelper

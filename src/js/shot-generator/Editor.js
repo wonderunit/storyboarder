@@ -169,7 +169,8 @@ const SceneManager = connect(
     selectObject,
     animatedUpdate,
     selectBone,
-    updateCharacterSkeleton
+    updateCharacterSkeleton,
+    createPosePreset
   }
 )(
   ({ world, sceneObjects, updateObject, selectObject, remoteInput, largeCanvasRef, smallCanvasRef, selection, selectedBone, machineState, transition, animatedUpdate, selectBone, mainViewCamera, updateCharacterSkeleton, largeCanvasSize, activeCamera, aspectRatio, devices }) => {
@@ -193,6 +194,24 @@ const SceneManager = connect(
     let orthoCamera = useRef(new THREE.OrthographicCamera( -4, 4, 4, -4, 0, 1000 ))
 
     let cameraHelper = useRef(null)
+
+    const createPosePresetFromBones = (preset) =>  {
+      console.log('dispatching save')
+      let id = THREE.Math.generateUUID()
+      let objId = preset.id
+      preset.id = id
+      preset.name = preset.name+shortId(id)
+      
+      $r.store.dispatch(createPosePreset(preset))
+      //createPosePreset(preset)
+      // save the presets file
+      savePosePresets($r.store.getState())
+      console.log('store: ', $r.store.getState())
+      // select the preset in the list
+      $r.store.dispatch(
+        updateObject(objId, { posePresetId: preset.id })
+       )
+    }
 
     useEffect(() => {
       console.log('new SceneManager')
@@ -574,7 +593,6 @@ const SceneManager = connect(
     }, [machineState.value, camera, cameraControlsView.current, mainViewCamera])
 
     // console.log('SceneManager render', sceneObjects)
-
     const components = Object.values(sceneObjects).map(props => {
         switch (props.type) {
           case 'object':
@@ -606,6 +624,7 @@ const SceneManager = connect(
 
                 updateCharacterSkeleton,
                 updateObject,
+                createPosePreset: createPosePresetFromBones,
 
                 loaded: props.loaded ? props.loaded : false,
                 devices, 
@@ -1485,6 +1504,7 @@ const PosePresetsEditor = connect(
           skeleton: sceneObject.skeleton || {}
         }
       }
+      console.log('sceneObject.skeleton: ', sceneObject)
       // create it
       dispatch(createPosePreset(preset))
 
@@ -1523,6 +1543,7 @@ const PosePresetsEditor = connect(
     const onSelectPosePreset = event => {
       let posePresetId = event.target.value
       let preset = posePresets[posePresetId]
+      console.log('selecting pose: ', sceneObject.id, posePresetId, preset)
       selectPosePreset(sceneObject.id, posePresetId, preset)
     }
 
@@ -1859,6 +1880,7 @@ const getDefaultRotationForBone = (skeleton, bone) => {
   } else {
     dummy.matrix.copy( dummy.matrixWorld )
   }
+  dummy.matrix.copy (bone.matrix)
 
   var p = new THREE.Vector3()
   var q = new THREE.Quaternion();
@@ -1867,7 +1889,6 @@ const getDefaultRotationForBone = (skeleton, bone) => {
 
   let e = new THREE.Euler()
   e.setFromQuaternion( q )
-
   return { x: e.x, y: e.y, z: e.z }
 }
 
