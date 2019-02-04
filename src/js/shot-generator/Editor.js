@@ -206,7 +206,6 @@ const SceneManager = connect(
       //createPosePreset(preset)
       // save the presets file
       savePosePresets($r.store.getState())
-      console.log('store: ', $r.store.getState())
       // select the preset in the list
       $r.store.dispatch(
         updateObject(objId, { posePresetId: preset.id })
@@ -524,10 +523,10 @@ const SceneManager = connect(
         }
 
         //if character
-        if (child && ((child.children[0] && child.children[0].skeleton) || (child.children[1] && child.children[1].skeleton)) && sceneObject.visible) {
-          //console.log('child: ', child)
-          let skel = (child.children[0] instanceof THREE.Mesh) ? child.children[0] : child.children[1]
-
+        if (child && ((child.children[0] && child.children[0].skeleton) || (child.children[1] && child.children[1].skeleton) || (child.children[1] && child.children[2].skeleton)) && sceneObject.visible) {
+          let skel = child.children.find(cld => cld instanceof THREE.SkinnedMesh) ||
+            child.children[0].children.find(cld => cld instanceof THREE.SkinnedMesh)
+  
           if (
             // there is not a BonesHelper instance
             !bonesHelper.current ||
@@ -545,9 +544,8 @@ const SceneManager = connect(
         bonesHelper.current = null
       }
 
-
-
       if (dragControlsView.current) {
+        //console.log('bones helper current: ', bonesHelper.current)
         dragControlsView.current.setBones(bonesHelper.current)
         dragControlsView.current.setSelected(child)
       }
@@ -1896,7 +1894,9 @@ const BoneEditor = ({ sceneObject, bone, updateCharacterSkeleton }) => {
   const { scene } = useContext(SceneContext)
 
   let sceneObj = scene.children.find(o => o.userData.id === sceneObject.id)
-  let skeleton = (sceneObj.children[0] instanceof THREE.Mesh) ? sceneObj.children[0].skeleton : sceneObj.children[1].skeleton
+
+  let skeleton = sceneObj.children.find(child => child instanceof THREE.SkinnedMesh).skeleton ||
+    sceneObj.children[0].children.find(child => child instanceof THREE.SkinnedMesh).skeleton
 
   // has the user modified the skeleton?
   bone = sceneObject.skeleton[bone.name]

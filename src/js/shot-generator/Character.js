@@ -158,7 +158,7 @@ const Character = React.memo(({
 
       object.current.add(...armatures)
       object.current.add(mesh)
-      console.log('object with armatures: ', object.current)
+      //console.log('object with armatures: ', object.current)
       object.current.userData.mesh = mesh
 
       scene.add(object.current)

@@ -356,9 +356,9 @@ function BonesHelper( object, object3D, createPosePreset ) {
       posA.setFromMatrixPosition(boneMatrix.multiplyMatrices(matrixWorldInv, bone.matrixWorld))
       posB.setFromMatrixPosition(boneMatrix.multiplyMatrices(matrixWorldInv, bone.children[jj].matrixWorld))
       once = ii > 10 && ii < 20 ? true : false
-      once = true
+      //once = true
       //if (once) console.log('median distance for bone',bone.name)//bone.name)//,': ', distanceToVerts)
-      //once = false
+      once = false
       let distanceToVerts = 0.1 
       let createdHelper = new Object3D()
 
@@ -367,7 +367,6 @@ function BonesHelper( object, object3D, createPosePreset ) {
       //absoluteBonePosA.setFromMatrixPosition(bone.matrixWorld)
       //absoluteBonePosB.setFromMatrixPosition(bone.children[jj].matrixWorld)
       let boneEquiv = clonedSkinnedMesh.skeleton.bones.filter(bone_current => bone_current.name === bone.name)[0]
-      console.log('bone ind: ', boneEquiv)
       absoluteBonePosA.setFromMatrixPosition(boneEquiv.matrixWorld)
       absoluteBonePosB.setFromMatrixPosition(boneEquiv.children[jj].matrixWorld)
 
@@ -427,7 +426,7 @@ function BonesHelper( object, object3D, createPosePreset ) {
       hitMesh.geometry.applyMatrix(new Matrix4().makeTranslation(0, boneLength/2, 0))
 
       // set visible here to see the hit mesh
-      //hitMesh.material.visible = false
+      hitMesh.material.visible = false
       hitMesh.name = 'hitter_'+bone.name
       hitMesh.userData.type = 'hitter'
 
@@ -521,6 +520,8 @@ function BonesHelper( object, object3D, createPosePreset ) {
     }
   }
 
+  clonedSkinnedMesh = null
+
   let skeletonHelper = new THREE.SkeletonHelper( bones[0] )
   skeletonHelper.material.linewidth = 5
   //this.add(skeletonHelper)
@@ -529,7 +530,7 @@ function BonesHelper( object, object3D, createPosePreset ) {
   this.root = object
   this.object3D = object3D
   this.bones = bones
-  if (sknMesh.needsRepose) sknMesh.repose()
+  //if (sknMesh.needsRepose) sknMesh.repose()
   this.matrix = object.matrixWorld
   this.matrixAutoUpdate = false
 }
@@ -572,6 +573,7 @@ BonesHelper.prototype.raycast = function ( raycaster, intersects ) {
   for (let result of results) {
     // add a .bone key to the Intersection object referencing the cone's bone
     result.bone = this.bones.find(bone => bone.uuid === result.object.userData.bone)
+    //console.log(' checking in ', results)
     intersects.push(result)
   }
 }
