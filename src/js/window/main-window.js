@@ -6937,7 +6937,7 @@ const saveToBoardFromShotGenerator = async ({ uid, data, images }) => {
       ...board.layers,
       reference: {
         // merge with existing, if available
-        ...(board.layers && board.layers.reference || {}),
+        ...((board.layers && board.layers.reference) || {}),
         // ensure url is present
         url: boardModel.boardFilenameForLayer(board, 'reference'),
         // ensure opacity is 1.0
