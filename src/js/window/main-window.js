@@ -6912,46 +6912,94 @@ ipcRenderer.on('zoomOut', value => {
   storyboarderSketchPane.zoomAtCursor(ZOOM_LEVELS[zoomIndex])
 })
 
-const saveToBoardFromShotGenerator = async ({ data, images }) => {
-  boardData.boards[currentBoard].sts = {
-    version: pkg.version,
-    data
+const saveToBoardFromShotGenerator = async ({ uid, data, images }) => {
+  // find the board by id
+  let board = boardData.boards.find(b => b.uid === uid)
+
+  if (!board) {
+    console.error(`board with uid ${uid} does not exist`)
+    alert('Could not save shot: missing board.')
+    return
+  }
+
+  let index = boardData.boards.indexOf(board)
+
+  console.log('index', index)
+
+  if (index === currentBoard) {
+    console.log('updating current board')
+  } else {
+    console.log('updating non-visible board')
+  }
+
+  console.info('board data was', board)
+
+  // update the board data
+  board = {
+    ...board,
+    layers: {
+      ...board.layers,
+      reference: {
+        // merge with existing, if available
+        ...(board.layers && board.layers.reference || {}),
+        // ensure url is present
+        url: boardModel.boardFilenameForLayer(board, 'reference'),
+        // ensure opacity is 1.0
+        opacity: 1.0
+      }
+    }
   }
   markBoardFileDirty()
 
+  console.info('board data is', board)
 
   // resize
-  let size = [
-    storyboarderSketchPane.sketchPane.width,
-    storyboarderSketchPane.sketchPane.height
-  ]
+  let { width, height } = storyboarderSketchPane.sketchPane
   let image = await exporterCommon.getImage(images.camera)
-  let context = createSizedContext(size)
-  let canvas = context.canvas
+  let context = createSizedContext([width, height])
+
   // fit to destination (until we fix the shot generator render size)
-  let dim = util.fitToDst(canvas, image).map(Math.ceil)
-  dim[0] = 0
-  dim[1] = 0
-  dim[2] = dim[2] + 3
-  dim[3] = dim[3] + 3
-  console.log('*****drawImage dim', dim)
-  context.drawImage(image, ...dim)
-  // replace
-  let layerIndex = storyboarderSketchPane.sketchPane.layers.findByName('reference').index
-  storyboarderSketchPane.replaceLayer(layerIndex, canvas)
-  // force a file save and thumbnail update
-  markImageFileDirty([layerIndex])
+  let [x, y, w, h] = util.fitToDst(context.canvas, image).map(Math.ceil)
+  // FIXME can we fix the bug to avoid having to add padding?
+  // add some padding to solve for the white line bug
+  w += 3
+  w += 3
+  context.drawImage(image, 0, 0, w + 3, h + 3)
+
+  saveDataURLtoFile(context.canvas.toDataURL(), board.layers.reference.url)
+
+  console.log('saveThumbnailFile')
+  await saveThumbnailFile(index, { forceReadFromFiles: true })
+  console.log('updateThumbnailDisplayFromFile')
+  await updateThumbnailDisplayFromFile(index)
+
+  // save a posterframe
+  console.log('savePosterFrame')
+  await savePosterFrame(board, /*forceReadFromFiles:*/ true)
+
+  if (index === currentBoard) {
+    // update opacity
+    layersEditor.setReferenceOpacity(1)
+  }
+
+  // FIXME known issue: onion skin does not reload to reflect the changed file
+  //       see: https://github.com/wonderunit/storyboarder/issues/1185
 }
-ipcRenderer.on('saveShot', async (event, { data, images }) => {
-  // TODO undo step?
-  console.log('main-window#saveShot', data, images)
+ipcRenderer.on('saveShot', async (event, { uid, data, images }) => {
+  console.log('main-window#saveShot', 'uid', uid, 'data', data, 'images', images)
+
+  if (uid === boardData.boards[currentBoard].uid) {
+    console.log('updating current board')
+  } else {
+    console.log('updating non-visible board')
+  }
 
   storeUndoStateForScene(true)
+  await saveToBoardFromShotGenerator({ uid, data, images })
+  storeUndoStateForScene()
+
   // force 100% opacity
   layersEditor.setReferenceOpacity(1)
-  await saveToBoardFromShotGenerator({ data, images })
-  // renderThumbnailDrawer()
-  storeUndoStateForScene()
 })
 ipcRenderer.on('insertShot', async (event, { data, images }) => {
   console.log('main-window#insertShot', data, images)
