@@ -6999,14 +6999,20 @@ ipcRenderer.on('insertShot', async (event, { data, images }) => {
   await saveToBoardFromShotGenerator({ uid, data, images })
   storeUndoStateForScene()
 
-  // TODO update the shot-generator so it knows the new uid
-  // ipcRenderer.send('shot-generator:open', {
-  //   boardData: {
-  //     version: boardData.version,
-  //     aspectRatio: boardData.aspectRatio
-  //   },
-  //   board: boardData.boards[currentBoard]
-  // })
+  // FIXME this is excessive
+  //       better solution would be to send an update with just the new uid
+  //       e.g.: send('shot-generator:update')
+  //       or have insertShot return the uid on the ipc bus?
+  //
+  // update the shot-generator so it knows the new uid
+  //
+  ipcRenderer.send('shot-generator:open', {
+    boardData: {
+      version: boardData.version,
+      aspectRatio: boardData.aspectRatio
+    },
+    board: boardData.boards[index]
+  })
 })
 
 const log = opt => ipcRenderer.send('log', opt)
