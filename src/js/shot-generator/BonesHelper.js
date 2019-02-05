@@ -298,13 +298,14 @@ function BonesHelper( object, object3D, createPosePreset ) {
   
 
   let skeleton_clone = cloneSkinned( object3D )
-  let clonedSkinnedMesh = skeleton_clone.children.find(child => child instanceof THREE.SkinnedMesh) ||
+  let zeroedSkinnedMesh = skeleton_clone.children.find(child => child instanceof THREE.SkinnedMesh) ||
     skeleton_clone.children[0].children.find(child => child instanceof THREE.SkinnedMesh)
   
-  clonedSkinnedMesh.skeleton.pose()
+  zeroedSkinnedMesh.skeleton.pose()
 
-  sknMesh.savePose(createPosePreset)
-  clonedSkinnedMesh.skeleton.pose()
+  //sknMesh.savePose(createPosePreset)
+  sknMesh.savePose(zeroedSkinnedMesh)
+  //clonedSkinnedMesh.skeleton.pose()
   
   let skinIndex = sknMesh.geometry.attributes.skinIndex
   let vertexPositions = sknMesh.geometry.attributes.position
@@ -366,7 +367,7 @@ function BonesHelper( object, object3D, createPosePreset ) {
       let absoluteBonePosB = new Vector3
       //absoluteBonePosA.setFromMatrixPosition(bone.matrixWorld)
       //absoluteBonePosB.setFromMatrixPosition(bone.children[jj].matrixWorld)
-      let boneEquiv = clonedSkinnedMesh.skeleton.bones.filter(bone_current => bone_current.name === bone.name)[0]
+      let boneEquiv = zeroedSkinnedMesh.skeleton.bones.filter(bone_current => bone_current.name === bone.name)[0]
       absoluteBonePosA.setFromMatrixPosition(boneEquiv.matrixWorld)
       absoluteBonePosB.setFromMatrixPosition(boneEquiv.children[jj].matrixWorld)
 
@@ -520,7 +521,7 @@ function BonesHelper( object, object3D, createPosePreset ) {
     }
   }
 
-  clonedSkinnedMesh = null
+  zeroedSkinnedMesh = null
 
   let skeletonHelper = new THREE.SkeletonHelper( bones[0] )
   skeletonHelper.material.linewidth = 5
@@ -635,13 +636,13 @@ const getDefaultRotationForBone = (skeleton, bone) => {
   // return { x: e.x, y: e.y, z: e.z }
 }
 
-SkinnedMesh.prototype.savePose = function(createPosePreset) {
+SkinnedMesh.prototype.savePose = function(sknMesh) {
   let skeleton_clone = cloneSkinned(this.parent)
   let poseSkeleton = {}
-  let sknMesh = skeleton_clone.children.find(child => child instanceof THREE.SkinnedMesh) ||
-    skeleton_clone.children[0].children.find(child => child instanceof THREE.SkinnedMesh)
+  // let sknMesh = skeleton_clone.children.find(child => child instanceof THREE.SkinnedMesh) ||
+  //   skeleton_clone.children[0].children.find(child => child instanceof THREE.SkinnedMesh)
+  // sknMesh.skeleton.pose()
   this.needsRepose = false
-  sknMesh.skeleton.pose()
 
   for (var i = 0; i< this.skeleton.bones.length; i++)
   { 
@@ -674,35 +675,30 @@ SkinnedMesh.prototype.savePose = function(createPosePreset) {
 
   if ( this.needsRepose ) {
     this.userData.initialSkeleton = poseSkeleton
-    //console.log('needs repose!')
   }
-  let preset = {
-    id: this.parent.userData.id,
-    name: this.name,
-    state: {
-      skeleton: poseSkeleton || {}
-    }
-  }
-  //console.log('saving: ', preset)
-  createPosePreset(preset)
+  //REMOVED SAVING
+
+  // let preset = {
+  //   id: this.parent.userData.id,
+  //   name: this.name,
+  //   state: {
+  //     skeleton: poseSkeleton || {}
+  //   }
+  // }
+  // //console.log('saving: ', preset)
+  // createPosePreset(preset)
 }
 
 SkinnedMesh.prototype.repose = function() {
   //console.log('reposing ', this.skeleton.bones, ' to: ', this.userData.initialSkeleton)
   for (var i = 0; i< this.skeleton.bones.length; i++)
   {    
-    if (this.userData.initialSkeleton[this.skeleton.bones[i]])
+    if (this.userData.initialSkeleton[this.skeleton.bones[i].name])
     {
-      this.skeleton.bones[i].rotation.x = this.userData.initialSkeleton[this.skeleton.bones[i].name].x
-      this.skeleton.bones[i].rotation.y = this.userData.initialSkeleton[this.skeleton.bones[i].name].y
-      this.skeleton.bones[i].rotation.z = this.userData.initialSkeleton[this.skeleton.bones[i].name].z
-      //console.log('this.skeleton.bones[i].rotation: ', this.skeleton.bones[i].rotation === this.userData.initialSkeleton[this.skeleton.bones[i].name])
-    }
-    // for (let j in this.userData.initialSkeleton)
-    // {
-    //   if (this.skeleton.bones[i].name == )
-    //   console.log('j: ', j)
-    // }
+      this.skeleton.bones[i].rotation.x = this.userData.initialSkeleton[this.skeleton.bones[i].name].rotation.x
+      this.skeleton.bones[i].rotation.y = this.userData.initialSkeleton[this.skeleton.bones[i].name].rotation.y
+      this.skeleton.bones[i].rotation.z = this.userData.initialSkeleton[this.skeleton.bones[i].name].rotation.z
+    }   
   }
   
 }
