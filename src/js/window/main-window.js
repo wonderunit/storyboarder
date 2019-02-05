@@ -6966,8 +6966,8 @@ const saveToBoardFromShotGenerator = async ({ uid, data, images }) => {
   // FIXME can we fix the bug to avoid having to add padding?
   // add some padding to solve for the white line bug
   w += 3
-  w += 3
-  context.drawImage(image, 0, 0, w + 3, h + 3)
+  h += 3
+  context.drawImage(image, 0, 0, w, h)
 
   saveDataURLtoFile(context.canvas.toDataURL(), board.layers.reference.url)
 
