@@ -6924,17 +6924,10 @@ const saveToBoardFromShotGenerator = async ({ uid, data, images }) => {
 
   let index = boardData.boards.indexOf(board)
 
-  console.log('index', index)
-
   if (index === currentBoard) {
-    console.log('updating current board')
-  } else {
-    console.log('updating non-visible board')
     // update opacity
     layersEditor.setReferenceOpacity(1)
   }
-
-  console.info('board data was', board)
 
   // update the board data
   board = {
@@ -6953,8 +6946,6 @@ const saveToBoardFromShotGenerator = async ({ uid, data, images }) => {
   }
   markBoardFileDirty()
 
-  console.info('board data is', board)
-
   // resize
   let { width, height } = storyboarderSketchPane.sketchPane
   let image = await exporterCommon.getImage(images.camera)
@@ -6970,13 +6961,9 @@ const saveToBoardFromShotGenerator = async ({ uid, data, images }) => {
 
   saveDataURLtoFile(context.canvas.toDataURL(), board.layers.reference.url)
 
-  console.log('saveThumbnailFile')
   await saveThumbnailFile(index, { forceReadFromFiles: true })
-  console.log('updateThumbnailDisplayFromFile')
   await updateThumbnailDisplayFromFile(index)
 
-  // save a posterframe
-  console.log('savePosterFrame')
   await savePosterFrame(board, /*forceReadFromFiles:*/ true)
 
   if (index === currentBoard) {
