@@ -51,6 +51,12 @@ const pathToCharacterModelFile = (model) =>
     // relative path to a model in the app
     : path.join(modelsPath, `${model}.glb`)
 
+const isValidSkinnedMesh = data => {
+  let mesh = data.scene.children.find(child => child instanceof THREE.SkinnedMesh) ||
+            data.scene.children[0].children.find(child => child instanceof THREE.SkinnedMesh)
+  return (mesh != null)
+}
+
 const characterFactory = data => {
   let material = new THREE.MeshToonMaterial({
     color: 0xffffff,
@@ -65,14 +71,24 @@ const characterFactory = data => {
 
   let mesh
   let skeleton
-  let armature
+  let armatures
 
   mesh = data.scene.children.find(child => child instanceof THREE.SkinnedMesh) ||
          data.scene.children[0].children.find(child => child instanceof THREE.SkinnedMesh)
 
   armatures = data.scene.children[0].children.filter(child => child instanceof THREE.Bone)
 
+  if (mesh == null) {
+    mesh = new THREE.Mesh()
+    skeleton = null
+    armatures = null
+    let originalHeight = 0
+    //console.log('mesh: ', mesh)
+    return { mesh, skeleton, armatures, originalHeight }
+  }
+
   skeleton = mesh.skeleton
+  
 
   if (mesh.material.map) {
     material.map = mesh.material.map
@@ -132,13 +148,23 @@ const Character = React.memo(({
     setModelData(false)
 
     loadGltf(pathToCharacterModelFile(props.model))
-      .then(data => setModelData(data))
+      .then(data => {
+        if (isValidSkinnedMesh(data))
+        {
+          console.log(type, id, 'model change cleanup, then add')
+          doCleanup()
+          setModelData(data)
+        } else {
+          // the file doesn't contain a skinned mesh, let the user know
+          alert("This model doesn't contain a Skinned Mesh. Please load it as a normal object insted of a character.")
+
+        }
+      })
       .catch(error => console.error(error))
 
-    return function cleanup () {
-      console.log(type, id, 'model change cleanup')
-      doCleanup()
-    }
+    // return function cleanup () {
+      
+    // }
   }, [props.model])
 
   // if the model’s data has changed
@@ -147,6 +173,11 @@ const Character = React.memo(({
       console.log(type, id, 'add')
 
       const { mesh, skeleton, armatures, originalHeight } = characterFactory(modelData)
+      
+      if (!(mesh instanceof THREE.SkinnedMesh)) {
+        throw('not a rigged object!')
+        //return
+      }
 
       object.current = new THREE.Object3D()
       object.current.userData.id = id
