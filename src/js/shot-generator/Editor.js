@@ -2882,6 +2882,7 @@ const Editor = connect(
         let topDownImage = document.querySelector('#top-down-canvas').toDataURL()
 
         ipcRenderer.send('saveShot', {
+          uid: state.board.uid,
           data: serializeState(state),
           images: {
             'camera': cameraImage,

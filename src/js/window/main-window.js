@@ -1893,8 +1893,11 @@ const loadBoardUI = async () => {
   document.querySelector("#shot-generator-container .flatbutton").addEventListener('click', event => {
     event.preventDefault()
     ipcRenderer.send('shot-generator:open', {
-      shot: boardData.boards[currentBoard].sts,
-      aspectRatio: parseFloat(boardData.aspectRatio)
+      boardData: {
+        version: boardData.version,
+        aspectRatio: boardData.aspectRatio
+      },
+      board: boardData.boards[currentBoard]
     })
   })
 
@@ -6909,64 +6912,105 @@ ipcRenderer.on('zoomOut', value => {
   storyboarderSketchPane.zoomAtCursor(ZOOM_LEVELS[zoomIndex])
 })
 
-const saveToBoardFromShotGenerator = async ({ data, images }) => {
-  boardData.boards[currentBoard].sts = {
-    version: pkg.version,
-    data
+const saveToBoardFromShotGenerator = async ({ uid, data, images }) => {
+  // find the board by id
+  let index = boardData.boards.findIndex(b => b.uid === uid)
+
+  if (index === -1) {
+    console.error(`board with uid ${uid} does not exist`)
+    alert('Could not save shot: missing board.')
+    return
   }
+
+  if (index === currentBoard) {
+    // update opacity
+    layersEditor.setReferenceOpacity(1)
+  }
+
+  // make a reference
+  let board = boardData.boards[index]
+
+  // update the board data in place
+  boardData.boards[index] = {
+    ...board,
+    layers: {
+      ...board.layers,
+      reference: {
+        // merge with existing, if available
+        ...((board.layers && board.layers.reference) || {}),
+        // ensure url is present
+        url: boardModel.boardFilenameForLayer(board, 'reference'),
+        // ensure opacity is 1.0
+        opacity: 1.0
+      },
+    },
+    // TODO should we use a different key than .sts? (like .shotgen? or .sg?)
+    sts: {
+      version: pkg.version,
+      data
+    }
+  }
+
+  // update the reference
+  board = boardData.boards[index]
+
   markBoardFileDirty()
 
-
   // resize
-  let size = [
-    storyboarderSketchPane.sketchPane.width,
-    storyboarderSketchPane.sketchPane.height
-  ]
+  let { width, height } = storyboarderSketchPane.sketchPane
   let image = await exporterCommon.getImage(images.camera)
-  let context = createSizedContext(size)
-  let canvas = context.canvas
-  // fit to destination (until we fix the shot generator render size)
-  let dim = util.fitToDst(canvas, image).map(Math.ceil)
-  dim[0] = 0
-  dim[1] = 0
-  dim[2] = dim[2] + 3
-  dim[3] = dim[3] + 3
-  console.log('*****drawImage dim', dim)
-  context.drawImage(image, ...dim)
-  // replace
-  let layerIndex = storyboarderSketchPane.sketchPane.layers.findByName('reference').index
-  storyboarderSketchPane.replaceLayer(layerIndex, canvas)
-  // force a file save and thumbnail update
-  markImageFileDirty([layerIndex])
-}
-ipcRenderer.on('saveShot', async (event, { data, images }) => {
-  // TODO undo step?
-  console.log('main-window#saveShot', data, images)
+  let context = createSizedContext([width, height])
 
+  // fit to destination (until we fix the shot generator render size)
+  let [x, y, w, h] = util.fitToDst(context.canvas, image).map(Math.ceil)
+  // FIXME can we fix the bug to avoid having to add padding?
+  // add some padding to solve for the white line bug
+  w += 3
+  h += 3
+  context.drawImage(image, 0, 0, w, h)
+
+  saveDataURLtoFile(context.canvas.toDataURL(), board.layers.reference.url)
+
+  await saveThumbnailFile(index, { forceReadFromFiles: true })
+  await updateThumbnailDisplayFromFile(index)
+
+  await savePosterFrame(board, /*forceReadFromFiles:*/ true)
+
+  if (index === currentBoard) {
+    // FIXME known issue: onion skin does not reload to reflect the changed file
+    //       see: https://github.com/wonderunit/storyboarder/issues/1185
+    await updateSketchPaneBoard()
+  }
+}
+ipcRenderer.on('saveShot', async (event, { uid, data, images }) => {
   storeUndoStateForScene(true)
-  // force 100% opacity
-  layersEditor.setReferenceOpacity(1)
-  await saveToBoardFromShotGenerator({ data, images })
-  // renderThumbnailDrawer()
+  await saveToBoardFromShotGenerator({ uid, data, images })
   storeUndoStateForScene()
 })
 ipcRenderer.on('insertShot', async (event, { data, images }) => {
-  console.log('main-window#insertShot', data, images)
-
   let index = await newBoard()
   await gotoBoard(index)
 
+  let uid = boardData.boards[index].uid
+
   storeUndoStateForScene(true)
-  // force 100% opacity
-  layersEditor.setReferenceOpacity(1)
-  await saveToBoardFromShotGenerator({ data, images })
-  // renderThumbnailDrawer()
+  await saveToBoardFromShotGenerator({ uid, data, images })
   storeUndoStateForScene()
 
-  // ipcRenderer.send('shot-generator:open', {
-  //   shot: boardData.boards[currentBoard].sts,
-  //   aspectRatio: parseFloat(boardData.aspectRatio)
-  // })
+  // FIXME this is excessive
+  //       better solution would be to send an update with just the new uid
+  //       e.g.: send('shot-generator:update')
+  //       or have insertShot return the uid on the ipc bus?
+  //
+  // update the shot-generator so it knows the new uid
+  //
+  ipcRenderer.send('shot-generator:open', {
+    boardData: {
+      version: boardData.version,
+      aspectRatio: boardData.aspectRatio
+    },
+    board: boardData.boards[index]
+  })
 })
 
 const log = opt => ipcRenderer.send('log', opt)
