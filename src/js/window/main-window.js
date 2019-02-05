@@ -6988,8 +6988,6 @@ ipcRenderer.on('saveShot', async (event, { uid, data, images }) => {
   storeUndoStateForScene()
 })
 ipcRenderer.on('insertShot', async (event, { data, images }) => {
-  console.log('main-window#insertShot', data, images)
-
   let index = await newBoard()
   await gotoBoard(index)
 
