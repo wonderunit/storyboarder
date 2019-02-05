@@ -6930,6 +6930,8 @@ const saveToBoardFromShotGenerator = async ({ uid, data, images }) => {
     console.log('updating current board')
   } else {
     console.log('updating non-visible board')
+    // update opacity
+    layersEditor.setReferenceOpacity(1)
   }
 
   console.info('board data was', board)
@@ -6978,8 +6980,6 @@ const saveToBoardFromShotGenerator = async ({ uid, data, images }) => {
   await savePosterFrame(board, /*forceReadFromFiles:*/ true)
 
   if (index === currentBoard) {
-    // update opacity
-    layersEditor.setReferenceOpacity(1)
   }
 
   // FIXME known issue: onion skin does not reload to reflect the changed file
