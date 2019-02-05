@@ -6967,10 +6967,10 @@ const saveToBoardFromShotGenerator = async ({ uid, data, images }) => {
   await savePosterFrame(board, /*forceReadFromFiles:*/ true)
 
   if (index === currentBoard) {
+    // FIXME known issue: onion skin does not reload to reflect the changed file
+    //       see: https://github.com/wonderunit/storyboarder/issues/1185
+    await updateSketchPaneBoard()
   }
-
-  // FIXME known issue: onion skin does not reload to reflect the changed file
-  //       see: https://github.com/wonderunit/storyboarder/issues/1185
 }
 ipcRenderer.on('saveShot', async (event, { uid, data, images }) => {
   console.log('main-window#saveShot', 'uid', uid, 'data', data, 'images', images)
