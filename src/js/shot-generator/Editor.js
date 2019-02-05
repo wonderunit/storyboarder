@@ -523,7 +523,8 @@ const SceneManager = connect(
         }
 
         //if character
-        if (child && ((child.children[0] && child.children[0].skeleton) || (child.children[1] && child.children[1].skeleton) || (child.children[1] && child.children[2].skeleton)) && sceneObject.visible) {
+        //if (child && ((child.children[0] && child.children[0].skeleton) || (child.children[1] && child.children[1].skeleton) || (child.children[2] && child.children[2].skeleton)) && sceneObject.visible) {
+        if (child && child.userData.type === 'character') {
           let skel = child.children.find(cld => cld instanceof THREE.SkinnedMesh) ||
             child.children[0].children.find(cld => cld instanceof THREE.SkinnedMesh)
   

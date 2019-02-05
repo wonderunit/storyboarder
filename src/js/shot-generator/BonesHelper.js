@@ -427,7 +427,7 @@ function BonesHelper( object, object3D, createPosePreset ) {
       hitMesh.geometry.applyMatrix(new Matrix4().makeTranslation(0, boneLength/2, 0))
 
       // set visible here to see the hit mesh
-      //hitMesh.material.visible = false
+      // hitMesh.material.visible = false
       hitMesh.name = 'hitter_'+bone.name
       hitMesh.userData.type = 'hitter'
 
@@ -522,10 +522,6 @@ function BonesHelper( object, object3D, createPosePreset ) {
   }
 
   zeroedSkinnedMesh = null
-
-  let skeletonHelper = new THREE.SkeletonHelper( bones[0] )
-  skeletonHelper.material.linewidth = 5
-  //this.add(skeletonHelper)
 
   this.hit_meshes = filter_array(this.hit_meshes)
   this.root = object
