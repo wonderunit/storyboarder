@@ -6973,20 +6973,9 @@ const saveToBoardFromShotGenerator = async ({ uid, data, images }) => {
   }
 }
 ipcRenderer.on('saveShot', async (event, { uid, data, images }) => {
-  console.log('main-window#saveShot', 'uid', uid, 'data', data, 'images', images)
-
-  if (uid === boardData.boards[currentBoard].uid) {
-    console.log('updating current board')
-  } else {
-    console.log('updating non-visible board')
-  }
-
   storeUndoStateForScene(true)
   await saveToBoardFromShotGenerator({ uid, data, images })
   storeUndoStateForScene()
-
-  // force 100% opacity
-  layersEditor.setReferenceOpacity(1)
 })
 ipcRenderer.on('insertShot', async (event, { data, images }) => {
   console.log('main-window#insertShot', data, images)
