@@ -6914,23 +6914,24 @@ ipcRenderer.on('zoomOut', value => {
 
 const saveToBoardFromShotGenerator = async ({ uid, data, images }) => {
   // find the board by id
-  let board = boardData.boards.find(b => b.uid === uid)
+  let index = boardData.boards.findIndex(b => b.uid === uid)
 
-  if (!board) {
+  if (index === -1) {
     console.error(`board with uid ${uid} does not exist`)
     alert('Could not save shot: missing board.')
     return
   }
-
-  let index = boardData.boards.indexOf(board)
 
   if (index === currentBoard) {
     // update opacity
     layersEditor.setReferenceOpacity(1)
   }
 
-  // update the board data
-  board = {
+  // make a reference
+  let board = boardData.boards[index]
+
+  // update the board data in place
+  boardData.boards[index] = {
     ...board,
     layers: {
       ...board.layers,
@@ -6944,6 +6945,10 @@ const saveToBoardFromShotGenerator = async ({ uid, data, images }) => {
       }
     }
   }
+
+  // update the reference
+  board = boardData.boards[index]
+
   markBoardFileDirty()
 
   // resize
