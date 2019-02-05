@@ -2280,7 +2280,7 @@ const PhoneCursor = connect(
       )
     })
 
-const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, setActiveCamera, resetScene, saveToBoard, insertAsNewBoard }) => {
+const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, setActiveCamera, resetScene, saveToBoard, insertAsNewBoard, board }) => {
   const onCreateCameraClick = () => {
     let id = THREE.Math.generateUUID()
     createObject({
@@ -2467,7 +2467,12 @@ const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, set
 
   return h(
     ['div#toolbar', { key: 'toolbar' },
-      ['div.row', [
+      ['div.toolbar__board-info.row', board.uid && [
+        ['span', `Board #${board.number}`],
+        ['small', `uid:${board.uid}`]
+      ]],
+
+      ['div.toolbar__insert.row', [
         ['a[href=#]', { onClick: preventDefault(onCreateCameraClick) }, '+ Camera'],
         ['a[href=#]', { onClick: preventDefault(onCreateObjectClick) }, '+ Object'],
         ['a[href=#]', { onClick: preventDefault(onCreateCharacterClick) }, '+ Character'],
@@ -2854,6 +2859,7 @@ const Editor = connect(
     remoteInput: state.input,
     aspectRatio: state.aspectRatio,
     sceneObjects: state.sceneObjects,
+    board: state.board
   }),
   {
     createObject,
@@ -2918,7 +2924,7 @@ const Editor = connect(
   }
 )(
 
-  ({ mainViewCamera, createObject, selectObject, updateModels, loadScene, saveScene, activeCamera, setActiveCamera, resetScene, remoteInput, aspectRatio, saveToBoard, insertAsNewBoard, sceneObjects, selection }) => {
+  ({ mainViewCamera, createObject, selectObject, updateModels, loadScene, saveScene, activeCamera, setActiveCamera, resetScene, remoteInput, aspectRatio, saveToBoard, insertAsNewBoard, sceneObjects, selection, board }) => {
     const largeCanvasRef = useRef(null)
     const smallCanvasRef = useRef(null)
     const [ready, setReady] = useState(false)
@@ -2954,7 +2960,7 @@ const Editor = connect(
       { value: { scene: scene.current }},
       h(
         ['div.column', { style: { width: '100%' } }, [
-          [Toolbar, { createObject, selectObject, loadScene, saveScene, camera, setActiveCamera, resetScene, saveToBoard, insertAsNewBoard }],
+          [Toolbar, { createObject, selectObject, loadScene, saveScene, camera, setActiveCamera, resetScene, saveToBoard, insertAsNewBoard, board }],
 
           ['div.row', { style: { flex: 1 }},
             ['div.column', { style: { width: '300px', background: '#111'} },
