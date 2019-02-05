@@ -1428,3 +1428,9 @@ ipcMain.on('shot-generator:open', (event, { board, boardData }) => {
   //
   // analytics.screenView('shot-generator')
 })
+ipcMain.on('shot-generator:update', (event, { board }) => {
+  let win = shotGeneratorWindow.getWindow()
+  if (win) {
+    win.webContents.send('update', { board })
+  }
+})
