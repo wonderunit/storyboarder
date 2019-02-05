@@ -60,7 +60,7 @@ ipcRenderer.on('loadBoard', (event, { boardData, board }) => {
   let aspectRatio = parseFloat(boardData.aspectRatio)
   store.dispatch({ type: 'SET_ASPECT_RATIO', payload: aspectRatio })
 
-  store.dispatch(setBoard({ number: board.number, uid: board.uid }))
+  store.dispatch(setBoard({ number: board.number, uid: board.uid, shot: board.shot }))
 
   if (shot) {
     store.dispatch(loadScene(shot.data))
@@ -69,7 +69,7 @@ ipcRenderer.on('loadBoard', (event, { boardData, board }) => {
   }
 })
 ipcRenderer.on('update', (event, { board }) => {
-  store.dispatch(setBoard({ number: board.number, uid: board.uid }))
+  store.dispatch(setBoard({ number: board.number, uid: board.uid, shot: board.shot }))
 })
 
 

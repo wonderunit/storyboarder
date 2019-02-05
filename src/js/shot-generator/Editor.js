@@ -2468,7 +2468,7 @@ const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, set
   return h(
     ['div#toolbar', { key: 'toolbar' },
       ['div.toolbar__board-info.row', board.uid && [
-        ['span', `Board #${board.number}`]
+        ['span', `Shot ${board.shot}`]
         // ['small', `uid:${board.uid}`]
       ]],
 
