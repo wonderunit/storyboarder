@@ -2468,8 +2468,8 @@ const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, set
   return h(
     ['div#toolbar', { key: 'toolbar' },
       ['div.toolbar__board-info.row', board.uid && [
-        ['span', `Board #${board.number}`],
-        ['small', `uid:${board.uid}`]
+        ['span', `Board #${board.number}`]
+        // ['small', `uid:${board.uid}`]
       ]],
 
       ['div.toolbar__insert.row', [
