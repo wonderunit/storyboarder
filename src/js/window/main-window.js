@@ -6988,16 +6988,19 @@ ipcRenderer.on('insertShot', async (event, { data, images }) => {
   let index = await newBoard()
   await gotoBoard(index)
 
+  let uid = boardData.boards[index].uid
+
   storeUndoStateForScene(true)
-  // force 100% opacity
-  layersEditor.setReferenceOpacity(1)
-  await saveToBoardFromShotGenerator({ data, images })
-  // renderThumbnailDrawer()
+  await saveToBoardFromShotGenerator({ uid, data, images })
   storeUndoStateForScene()
 
+  // TODO update the shot-generator so it knows the new uid
   // ipcRenderer.send('shot-generator:open', {
-  //   shot: boardData.boards[currentBoard].sts,
-  //   aspectRatio: parseFloat(boardData.aspectRatio)
+  //   boardData: {
+  //     version: boardData.version,
+  //     aspectRatio: boardData.aspectRatio
+  //   },
+  //   board: boardData.boards[currentBoard]
   // })
 })
 
