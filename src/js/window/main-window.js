@@ -6942,7 +6942,12 @@ const saveToBoardFromShotGenerator = async ({ uid, data, images }) => {
         url: boardModel.boardFilenameForLayer(board, 'reference'),
         // ensure opacity is 1.0
         opacity: 1.0
-      }
+      },
+    },
+    // TODO should we use a different key than .sts? (like .shotgen? or .sg?)
+    sts: {
+      version: pkg.version,
+      data
     }
   }
 
