@@ -233,6 +233,8 @@ const SceneObject = React.memo(({ scene, id, type, isSelected, loaded, updateObj
   const startingObjectQuaternion = useRef(null)
   const startingDeviceOffset = useRef(null)
   const startingObjectOffset = useRef(null)
+  const offset = useRef(0)
+
   useEffect(() => {
     if (!container.current) return
     if (!isSelected) return
@@ -243,32 +245,18 @@ const SceneObject = React.memo(({ scene, id, type, isSelected, loaded, updateObj
 
     if (remoteInput.down) {
       let [ alpha, beta, gamma ] = remoteInput.mag.map(THREE.Math.degToRad)
-      // let [ alphaDegrees ] = remoteInput.mag
-
-      //
-      //
-      //
-      // FIXME
-      //
-      // let offset = !isRotating.current
-      //   ? 0
-      //   : THREE.Math.degToRad(0 - alphaDegrees)
-      // console.log({ beta, alpha, gamma, offset })
-
-      let offset = 0
+      let magValues = remoteInput.mag
+    
       let deviceQuaternion = new THREE.Quaternion()
-        .setFromEuler(new THREE.Euler(beta, alpha + offset, -gamma, 'YXZ'))
-        .multiply(
-          new THREE.Quaternion()
-            .setFromAxisAngle( new THREE.Vector3( 1, 0, 0 ), -Math.PI / 2 )
-        )
 
       if (!isRotating.current) {
         // new rotation
         isRotating.current = true
 
+        offset.current = 0-magValues[0]
         console.log('new rotation!')
 
+        deviceQuaternion = new THREE.Quaternion().setFromEuler(new THREE.Euler(beta, alpha + (offset.current*(Math.PI/180)),-gamma, 'YXZ')).multiply(new THREE.Quaternion().setFromAxisAngle( new THREE.Vector3( 1, 0, 0 ), -Math.PI / 2 ))
         // get the starting device rotation and starting target object rotation
         startingDeviceOffset.current = new THREE.Quaternion()
           .clone()
@@ -283,7 +271,10 @@ const SceneObject = React.memo(({ scene, id, type, isSelected, loaded, updateObj
           .clone()
           .inverse()
           .multiply(startingObjectQuaternion.current)
+      } else {
+        deviceQuaternion = new THREE.Quaternion().setFromEuler(new THREE.Euler(beta, alpha + (offset.current*(Math.PI/180)),-gamma, 'YXZ')).multiply(new THREE.Quaternion().setFromAxisAngle( new THREE.Vector3( 1, 0, 0 ), -Math.PI / 2 ))
       }
+      //console.log('rotation with offset: ', offset.current)
 
       let objectQuaternion = applyDeviceQuaternion({
         parent: target.parent,
