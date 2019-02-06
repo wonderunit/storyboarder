@@ -279,7 +279,7 @@ const Character = React.memo(({
       } else {
         object.current.rotation.y = props.rotation
       }
-      
+
     }
   }, [props.model, props.rotation, modelData])
 
@@ -523,7 +523,7 @@ const Character = React.memo(({
         let deviceQuaternion
         if (!isRotating.current) {
           // The first time rotation starts, get the starting device rotation and starting target object rotation
-          
+
           isRotating.current = true
           offset.current = 0-magValues[0]
           deviceQuaternion = new THREE.Quaternion().setFromEuler(new THREE.Euler(beta, alpha + (offset.current*(Math.PI/180)),-gamma, 'YXZ')).multiply(new THREE.Quaternion().setFromAxisAngle( new THREE.Vector3( 1, 0, 0 ), -Math.PI / 2 ))
@@ -538,7 +538,7 @@ const Character = React.memo(({
         // While rotating, perform the rotations
 
         // get device's offset
-        
+
 
         let objectQuaternion = applyDeviceQuaternion({
           parent: target.parent,
@@ -550,9 +550,9 @@ const Character = React.memo(({
         })
 
         // GET THE DESIRED ROTATION FOR THE TARGET OBJECT
-        
+
         let rotation = new THREE.Euler()
-        
+
         if (selectedBone) {
           rotation.setFromQuaternion( objectQuaternion.normalize(), "YXZ" )
           updateCharacterSkeleton({
@@ -567,7 +567,7 @@ const Character = React.memo(({
         } else {
           rotation.setFromQuaternion( objectQuaternion.normalize(), /*euloerOrder*/ )
           updateObject(target.userData.id, {
-            rotation: rotation.y            
+            rotation: rotation.y
           })
         }
       }

@@ -389,6 +389,23 @@ const checkForSkeletonChanges = (state, draft, action) => {
   }
 }
 
+// migrate SceneObjects from older beta builds of Shot Generator 2.0
+const migrateRotations = sceneObjects =>
+  Object.entries(sceneObjects)
+    .reduce((o, [ k, v ]) => {
+      let value = v.rotation
+      if (v.type === 'object' && typeof value === 'number') {
+        // console.log('migrating rotation for', v)
+        v.rotation = {
+          x: 0,
+          y: value,
+          z: 0
+        }
+      }
+      o[k] = v
+      return o
+    }, {})
+
 module.exports = {
   initialState,
 
@@ -399,7 +416,7 @@ module.exports = {
           draft.world = action.payload.world
           if (!action.payload.world.ambient) draft.world.ambient = initialScene.world.ambient
           if (!action.payload.world.directional) draft.world.directional = initialScene.world.directional
-          draft.sceneObjects = action.payload.sceneObjects
+          draft.sceneObjects = migrateRotations(action.payload.sceneObjects)
           draft.activeCamera = action.payload.activeCamera
           // clear selections
           draft.selection = undefined
@@ -471,22 +488,6 @@ module.exports = {
                 ...state.sceneObjects[action.payload.id].rotation,
                 ...action.payload.rotation
               }
-              if (action.payload.rotation.x) {
-                draft.sceneObjects[action.payload.id].rotation.x = action.payload.rotation.x
-              } 
-              if (action.payload.rotation.y) {
-                draft.sceneObjects[action.payload.id].rotation.y = action.payload.rotation.y
-              }
-              if (action.payload.rotation.z) {
-                draft.sceneObjects[action.payload.id].rotation.z = action.payload.rotation.z
-              }
-
-              if (!draft.sceneObjects[action.payload.id].rotation.x) draft.sceneObjects[action.payload.id].rotation.x = 0
-              if (!draft.sceneObjects[action.payload.id].rotation.y) draft.sceneObjects[action.payload.id].rotation.y = 0
-              if (!draft.sceneObjects[action.payload.id].rotation.z) draft.sceneObjects[action.payload.id].rotation.z = 0
-
-              console.log('set this one: ', draft.sceneObjects[action.payload.id].rotation)
-              
             } else {
               draft.sceneObjects[action.payload.id].rotation = action.payload.rotation
             }
