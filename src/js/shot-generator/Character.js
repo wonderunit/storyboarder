@@ -149,8 +149,9 @@ const Character = React.memo(({
 
     loadGltf(pathToCharacterModelFile(props.model))
       .then(data => {
+        // Checking if the loaded model contains a SkinnedMesh so we can load it as a Character
         if (isValidSkinnedMesh(data))
-        {
+        {          
           console.log(type, id, 'model change cleanup, then add')
           doCleanup()
           setModelData(data)
@@ -173,12 +174,7 @@ const Character = React.memo(({
       console.log(type, id, 'add')
 
       const { mesh, skeleton, armatures, originalHeight } = characterFactory(modelData)
-      
-      if (!(mesh instanceof THREE.SkinnedMesh)) {
-        throw('not a rigged object!')
-        //return
-      }
-
+     
       object.current = new THREE.Object3D()
       object.current.userData.id = id
       object.current.userData.type = type
@@ -189,7 +185,6 @@ const Character = React.memo(({
 
       object.current.add(...armatures)
       object.current.add(mesh)
-      //console.log('object with armatures: ', object.current)
       object.current.userData.mesh = mesh
 
       scene.add(object.current)
@@ -383,7 +378,7 @@ const Character = React.memo(({
     if (!modelData) return
     if (!object.current) return
 
-    // handle selection/unselection
+    // handle selection/deselection - add/remove the bone stucture 
     if (isSelected)
     {
       for (var cone of object.current.bonesHelper.cones)
@@ -392,6 +387,7 @@ const Character = React.memo(({
       for (var cone of object.current.bonesHelper.cones)
         object.current.bonesHelper.remove(cone)
     }
+
     let mesh = object.current.userData.mesh
     if ( mesh.material.length > 0 ) {
       mesh.material.forEach(material => {
