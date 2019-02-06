@@ -186,14 +186,9 @@ const SceneObject = React.memo(({ scene, id, type, isSelected, loaded, updateObj
   ])
 
   useEffect(() => {
-    if (object.rotation.x || object.rotation.x === 0) 
-    {
-      container.current.rotation.x = object.rotation.x
-      container.current.rotation.y = object.rotation.y
-      container.current.rotation.z = object.rotation.z
-    } else {
-      container.current.rotation.y = object.rotation
-    }
+    container.current.rotation.x = object.rotation.x
+    container.current.rotation.y = object.rotation.y
+    container.current.rotation.z = object.rotation.z
   }, [
     object.rotation.x,
     object.rotation.y,
