@@ -287,8 +287,9 @@ const SceneObject = React.memo(({ scene, id, type, isSelected, loaded, updateObj
 
       // GET THE DESIRED ROTATION FOR THE TARGET OBJECT
       let rotation = new THREE.Euler()
-        .setFromQuaternion( objectQuaternion.normalize(), /*eulerOrder*/ )
+        .setFromQuaternion( objectQuaternion.normalize(), "YXZ" )
 
+      
       updateObject(target.userData.id, {
         rotation: { x: rotation.x, y: rotation.y, z: rotation.z }
       })
