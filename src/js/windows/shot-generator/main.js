@@ -1,4 +1,4 @@
-const { BrowserWindow, ipcMain, app } = electron = require('electron')
+const { BrowserWindow, ipcMain, app, dialog } = electron = require('electron')
 
 const path = require('path')
 const url = require('url')
@@ -53,6 +53,27 @@ const show = (onComplete) => {
       allowRunningInsecureContent: true,
       experimentalFeatures: true,
       backgroundThrottling: true,
+    }
+  })
+
+  // via https://github.com/electron/electron/blob/master/docs/api/web-contents.md#event-will-prevent-unload
+  //     https://github.com/electron/electron/pull/9331
+  //
+  // if beforeunload is telling us to prevent unload ...
+  win.webContents.on('will-prevent-unload', event => {
+    const choice = dialog.showMessageBox({
+      type: 'question',
+      buttons: ['Yes', 'No'],
+      title: 'Confirm',
+      message: 'Your scene is not saved. Are you sure you want to close Shot Generator?'
+    })
+
+    const leave = (choice === 0)
+
+    if (leave) {
+      // ignore the default behavior of preventing unload
+      // ... which means we'll actually ... _allow_ unload :)
+      event.preventDefault()
     }
   })
 
