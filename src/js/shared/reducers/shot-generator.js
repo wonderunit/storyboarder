@@ -389,6 +389,23 @@ const checkForSkeletonChanges = (state, draft, action) => {
   }
 }
 
+// migrate SceneObjects from older beta builds of Shot Generator 2.0
+const migrateRotations = sceneObjects =>
+  Object.entries(sceneObjects)
+    .reduce((o, [ k, v ]) => {
+      let value = v.rotation
+      if (v.type === 'object' && typeof value === 'number') {
+        // console.log('migrating rotation for', v)
+        v.rotation = {
+          x: 0,
+          y: value,
+          z: 0
+        }
+      }
+      o[k] = v
+      return o
+    }, {})
+
 module.exports = {
   initialState,
 
@@ -399,7 +416,7 @@ module.exports = {
           draft.world = action.payload.world
           if (!action.payload.world.ambient) draft.world.ambient = initialScene.world.ambient
           if (!action.payload.world.directional) draft.world.directional = initialScene.world.directional
-          draft.sceneObjects = action.payload.sceneObjects
+          draft.sceneObjects = migrateRotations(action.payload.sceneObjects)
           draft.activeCamera = action.payload.activeCamera
           // clear selections
           draft.selection = undefined
