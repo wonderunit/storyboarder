@@ -101,9 +101,6 @@ const draggables = (sceneObjects, scene) =>
   //scene.children.filter(o => o.userData.type === 'object' || o instanceof BoundingBoxHelper)
   scene.children.filter(o => o.userData.type === 'object' || o.userData.type === 'character' || o.userData.type === 'light' )
 
-const characters = ( scene ) =>
-  scene.children.filter(o => o.userData.type === 'character')
-
 const animatedUpdate = (fn) => (dispatch, getState) => fn(dispatch, getState())
 
 const metersAsFeetAndInches = meters => {
@@ -2492,6 +2489,96 @@ const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, set
   )
 }
 
+const getClosestCharacterInView = (objects, camera) => {
+  let obj = null
+  let dist = 1000000
+  let allDistances = []
+
+  for (var char of objects) {
+    let d = camera.position.distanceTo(
+      new THREE.Vector3(char.position.x, camera.position.y, char.position.z))
+
+    allDistances.push({
+      object: char,
+      distance: d
+    })
+  }
+
+  let compare = (a, b) => {
+    if (a.distance < b.distance)
+      return -1;
+    if (a.distance > b.distance)
+      return 1;
+    return 0;
+  }
+
+  allDistances.sort(compare)
+
+  for (var i = 0; i< allDistances.length; i++) {
+    if (checkIfCharacterInCameraView(allDistances[i].object, camera))
+      return allDistances[i]
+  }
+
+  return {
+    object: obj,
+    distance: dist !== 1000000 ? dist : 0
+  }
+}
+
+const checkIfCharacterInCameraView = (character, camera) => {
+  camera.updateMatrix()
+  camera.updateMatrixWorld()
+  var frustum = new THREE.Frustum()
+  frustum.setFromMatrix(
+    new THREE.Matrix4()
+      .multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse))
+
+  for (var hitter of character.bonesHelper.hit_meshes) {
+    if (frustum.intersectsBox(new THREE.Box3().setFromObject( hitter ))) {
+      return true
+    }
+  }
+  return false
+}
+
+const ClosestObjectInspector = ({ camera, sceneObjects, characters }) => {
+  const [result, setResult] = useState('')
+
+  useEffect(() => {
+    // HACK
+    // we're delaying 1 frame until scene is guaranteed to be updated
+    // wrap in a try/catch because the scene might not have the same characters
+    // by the time we actually render
+    // if we get an error in hit testing against empty objects, just ignore it
+    requestAnimationFrame(() => {
+      try {
+        let closest = getClosestCharacterInView(characters, camera)
+
+        let [distFeet, distInches] = metersAsFeetAndInches(closest.distance)
+
+        // HACK this should be based directly on state.sceneObjects,
+        //      or cached in the sceneObject data
+        let calculatedName
+        let sceneObject = closest.object ? sceneObjects[closest.object.userData.id] : undefined
+        if (sceneObject) {
+          // TODO DRY
+          const number = Object.values(sceneObjects).filter(o => o.type === sceneObject.type).indexOf(sceneObject) + 1
+          const capitalize = string => string.charAt(0).toUpperCase() + string.slice(1)
+          calculatedName = sceneObject.name || capitalize(`${sceneObject.type} ${number}`)
+        }
+
+        setResult(closest.object
+          ? `${feetAndInchesAsString(distFeet, distInches)} (${parseFloat(Math.round(closest.distance * 100) / 100).toFixed(2)}m) from ${calculatedName}`
+          : '')
+        } catch (err) {
+          setResult('')
+        }
+    })
+  }, [camera, sceneObjects, characters])
+
+  return result
+}
+
 const CameraInspector = connect(
   state => ({
     mainViewCamera: state.mainViewCamera,
@@ -2507,104 +2594,29 @@ const CameraInspector = connect(
     const { scene } = useContext(SceneContext)
 
     let camera = scene.children.find(child => child.userData.id === activeCamera)
-
-    let closest = null
-
     if (!camera) return h(['div#camera-inspector', { style: { padding: 12, lineHeight: 1.25 } }])
 
     let cameraState = sceneObjects[activeCamera]
 
     // calculated value
-    let cameras = Object.values(sceneObjects).filter(o => o.type === 'camera').map((o, n) => ([
-      `Camera ${n + 1}`, o.id
-    ]))
-
-    fakeCamera = camera.clone() // TODO reuse a single object
-    fakeCamera.fov = cameraState.fov
-    let focalLength = fakeCamera.getFocalLength()
-    fakeCamera = null
+    let cameras = Object.values(sceneObjects)
+      .filter(o => o.type === 'camera')
+      .map((o, n) => ([ `Camera ${n + 1}`, o.id ]))
 
     let tiltInDegrees = Math.round(cameraState.tilt * THREE.Math.RAD2DEG)
 
     let [heightFeet, heightInches] = metersAsFeetAndInches(cameraState.z)
-    //console.log(this)
-    let scope = this
-    useEffect(() => {
-      camera = scene.children.find(child => child.userData.id === activeCamera)
-      // calculate distance to characters, get the closest
-      requestAnimationFrame(() => {
-        closest = getClosestCharacterInView (characters(scene), camera)
-      })
-      //we have to wait for them to be added to the stage
 
-    }, [sceneObjects, activeCamera])
+    let cameraNumber = Object.values(sceneObjects)
+                        .filter(o => o.type === 'camera')
+                        .indexOf(cameraState) + 1
 
-    const getClosestCharacterInView = (objects, camera) => {
-      let obj = null
-      let dist = 1000000
-      let allDistances = []
-
-      for (var char of objects)
-      {
-        let d = camera.position.distanceTo (new THREE.Vector3(char.position.x, camera.position.y, char.position.z))
-        allDistances.push({
-          object: char,
-          distance: d
-        })
-      }
-
-      let compare = (a,b) => {
-        if (a.distance < b.distance)
-          return -1;
-        if (a.distance > b.distance)
-          return 1;
-        return 0;
-      }
-
-      allDistances.sort(compare)
-      for (var i = 0; i< allDistances.length; i++)
-      {
-        if (checkIfCharacterInCameraView(allDistances[i].object, camera))
-          return allDistances[i]
-      }
-
-      return {
-        object: obj,
-        distance: dist !== 1000000 ? dist : 0
-      }
-    }
-
-    const checkIfCharacterInCameraView = (character, camera) => {
-      camera.updateMatrix();
-      camera.updateMatrixWorld();
-      var frustum = new THREE.Frustum();
-      frustum.setFromMatrix(new THREE.Matrix4().multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse));
-      for (var hitter of character.bonesHelper.hit_meshes)
-      {
-        if (frustum.intersectsBox(new THREE.Box3().setFromObject( hitter ))) {
-          return true
-        }
-      }
-      return false
-    }
-
-    closest = getClosestCharacterInView (characters(scene), camera)
-
-    let [distFeet, distInches] = metersAsFeetAndInches(closest.distance)
-
-    // HACK this should be based directly on state.sceneObjects, or cached in the sceneObject data
-    let calculatedName
-    let sceneObject = closest.object ? sceneObjects[closest.object.userData.id] : undefined
-    if (sceneObject) {
-      // TODO DRY
-      const number = Object.values(sceneObjects).filter(o => o.type === sceneObject.type).indexOf(sceneObject) + 1
-      const capitalize = string => string.charAt(0).toUpperCase() + string.slice(1)
-      calculatedName = sceneObject.name || capitalize(`${sceneObject.type} ${number}`)
-    }
-
-    let cameraNumber = Object.values(sceneObjects).filter(o => o.type === 'camera').indexOf(cameraState) + 1
     let cameraName = `Camera ${cameraNumber}`
 
+    let fakeCamera = camera.clone() // TODO reuse a single object
+    fakeCamera.fov = cameraState.fov
+    let focalLength = fakeCamera.getFocalLength()
+    fakeCamera = null
 
     return h(
       ['div#camera-inspector', { style: { padding: 12, lineHeight: 1.25 } },
@@ -2617,7 +2629,11 @@ const CameraInspector = connect(
             ['br'],
             `Height: ${feetAndInchesAsString(heightFeet, heightInches)} Tilt: ${tiltInDegrees}°`,
             ['br'],
-            closest.object ? `${feetAndInchesAsString(distFeet, distInches)} (${parseFloat(Math.round(closest.distance * 100) / 100).toFixed(2)}m) from ${calculatedName}` : ''
+            [ClosestObjectInspector, {
+              camera,
+              sceneObjects,
+              characters: scene.children.filter(o => o.userData.type === 'character')
+            }]
           ],
           [
             'div.column',
