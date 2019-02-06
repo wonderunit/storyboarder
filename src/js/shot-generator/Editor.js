@@ -2934,6 +2934,8 @@ const Editor = connect(
         let cameraImage = document.querySelector('#camera-canvas').toDataURL()
         let topDownImage = document.querySelector('#top-down-canvas').toDataURL()
 
+        dispatch(markSaved())
+
         ipcRenderer.send('insertShot', {
           data: getSerializedState(state),
           images: {
