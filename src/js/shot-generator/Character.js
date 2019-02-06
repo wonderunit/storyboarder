@@ -565,7 +565,6 @@ const Character = React.memo(({
             }
           })
         } else {
-          console.log('rotation: ', rotation)
           updateObject(target.userData.id, {
             rotation: rotation.y            
           })

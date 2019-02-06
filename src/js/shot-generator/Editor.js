@@ -1727,7 +1727,7 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
                 min: -180,
                 max: 180,
                 step: 1,
-                value: THREE.Math.radToDeg(sceneObject.rotation.x),
+                value: sceneObject.rotation.x ? THREE.Math.radToDeg(sceneObject.rotation.x) : 0,
                 onSetValue: value => updateObject(sceneObject.id, { rotation: { x: THREE.Math.degToRad(value) } }),
                 transform: NumberSliderTransform.degrees,
                 formatter: NumberSliderFormatter.degrees
@@ -1739,7 +1739,7 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
                 min: -180,
                 max: 180,
                 step: 1,
-                value: THREE.Math.radToDeg(sceneObject.rotation.z),
+                value: sceneObject.rotation.z ? THREE.Math.radToDeg(sceneObject.rotation.z) : 0,
                 onSetValue: value => updateObject(sceneObject.id, { rotation: { z: THREE.Math.degToRad(value) } }),
                 transform: NumberSliderTransform.degrees,
                 formatter: NumberSliderFormatter.degrees
@@ -1751,7 +1751,7 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
                 min: -180,
                 max: 180,
                 step: 1,
-                value: THREE.Math.radToDeg(sceneObject.rotation.y),
+                value: sceneObject.rotation.y ? THREE.Math.radToDeg(sceneObject.rotation.y) : 0,
                 onSetValue: value => updateObject(sceneObject.id, { rotation: { y: THREE.Math.degToRad(value) } }),
                 transform: NumberSliderTransform.degrees,
                 formatter: NumberSliderFormatter.degrees
