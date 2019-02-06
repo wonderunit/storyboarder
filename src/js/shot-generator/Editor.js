@@ -1966,10 +1966,10 @@ const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, o
   }
 
   let typeLabels = {
-    'camera': 'CAM',
-    'character': 'CHR',
-    'object': 'OBJ',
-    'light': 'LGT'
+    'camera': [Icon, { src: 'icon-item-camera' }],
+    'character': [Icon, { src: 'icon-item-character' }],
+    'object': [Icon, { src: 'icon-item-object' }],
+    'light': [Icon, { src: 'icon-item-light' }]
   }
 
   let className = classNames({
