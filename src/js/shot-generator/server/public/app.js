@@ -125,8 +125,7 @@ document.getElementById("container").addEventListener('touchend', event => {
   screen.orientation.lock('portrait-primary')
 })
 
-document.getElementById("container").addEventListener('touchstart', event => {
-  //fullscreen()
+document.getElementById("rotate3d").addEventListener('touchstart', event => {
 
   down = true
   event.preventDefault()
@@ -141,16 +140,16 @@ document.getElementById("container").addEventListener('touchstart', event => {
     mag: [alpha, beta, gamma]
   })
   //document.getElementById("debugger").innerHTML += "<br>Mouse mode: "+mouseOn;
-  report({
-    mouseMode: mouseOn
-  })
+  // report({
+  //   mouseMode: mouseOn
+  // })
 })
 
-document.getElementById("container").addEventListener('touchmove', event => {
+document.getElementById("rotate3d").addEventListener('touchmove', event => {
   event.preventDefault()
 })
 
-document.getElementById("container").addEventListener('touchend', event => {
+document.getElementById("rotate3d").addEventListener('touchend', event => {
   down = false
   event.preventDefault()
   report({
@@ -158,7 +157,7 @@ document.getElementById("container").addEventListener('touchend', event => {
   })
 })
 
-document.getElementById("container").addEventListener('touchcancel', event => {
+document.getElementById("rotate3d").addEventListener('touchcancel', event => {
   down = false
   event.preventDefault()
   report({
@@ -167,54 +166,56 @@ document.getElementById("container").addEventListener('touchcancel', event => {
 })
 
 document.getElementById("phoneSelect").addEventListener('touchstart', event => {
+
+  down = true
   event.preventDefault();
-  mouseOn = !mouseOn;
+  mouseOn = true
   
+  report({
+    mag: [alpha, beta, gamma]
+  })
+  report({
+    mouseMode: true
+  })
   report({
     down: true
   })
   report({
     mag: [alpha, beta, gamma]
-  })
-  report({
-    mouseMode: mouseOn
-  })
+  })  
+})
+
+document.getElementById("phoneSelect").addEventListener('touchmove', event => {
+  event.preventDefault()
 })
 
 document.getElementById("phoneSelect").addEventListener('touchend', event => {
   down = false
-  mouseOn = !mouseOn;
+  mouseOn = false;
   event.preventDefault()
-  report({
-    down: false
-  })
+  
   report({
     mouseModeClick: true
   })
   report({
     mouseModeClick: false
-    })
+  })
+  report({
+    down: false
+  })
+  report({
+    mouseMode: false
+  })
 })
 
 document.getElementById("phoneSelect").addEventListener('touchcancel', event => {
   down = false
-  mouseOn = !mouseOn;
+  mouseOn = false;
   event.preventDefault()
   report({
     down: false
   })
-})
-
-document.getElementById("mouseButtonClick").addEventListener('touchstart', event => {
-  event.preventDefault();
-  mouseModeClick = true;
-
   report({
-    mouseModeClick: mouseModeClick
+    mouseMode: false
   })
-  mouseModeClick = false;
-  report({
-    mouseModeClick: mouseModeClick
-    })
 })
-
