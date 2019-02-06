@@ -195,23 +195,6 @@ const SceneManager = connect(
 
     let cameraHelper = useRef(null)
 
-    const createPosePresetFromBones = (preset) =>  {
-      console.log('dispatching save')
-      let id = THREE.Math.generateUUID()
-      let objId = preset.id
-      preset.id = id
-      preset.name = preset.name+shortId(id)
-
-      $r.store.dispatch(createPosePreset(preset))
-      //createPosePreset(preset)
-      // save the presets file
-      savePosePresets($r.store.getState())
-      // select the preset in the list
-      $r.store.dispatch(
-        updateObject(objId, { posePresetId: preset.id })
-       )
-    }
-
     useEffect(() => {
       console.log('new SceneManager')
 
@@ -623,7 +606,6 @@ const SceneManager = connect(
 
                 updateCharacterSkeleton,
                 updateObject,
-                createPosePreset: createPosePresetFromBones,
 
                 loaded: props.loaded ? props.loaded : false,
                 devices,

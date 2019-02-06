@@ -118,7 +118,6 @@ const Character = React.memo(({
   camera,
   updateCharacterSkeleton,
   updateObject,
-  createPosePreset,
   loaded,
   devices,  
   ...props
@@ -157,7 +156,7 @@ const Character = React.memo(({
           setModelData(data)
         } else {
           // the file doesn't contain a skinned mesh, let the user know
-          alert("This model doesn't contain a Skinned Mesh. Please load it as a normal object insted of a character.")
+          alert("This model doesn't contain a Skinned Mesh. Please load it as a normal object instead of a character.")
 
         }
       })
