@@ -120,102 +120,72 @@ const calcMedianDistance = (fixedposition, allverts, object, inverdsedMatrix, bo
   let tempObj = new THREE.Object3D()
   let plane
 
-  var temp = new THREE.Vector3(), tempMatrix = new THREE.Matrix4()
+  let midPlane = new THREE.Mesh(
+    new THREE.PlaneGeometry(0.2,0.2),
+    new THREE.MeshBasicMaterial({
+      color: 0x4400ff,
+      depthTest: false,
+      depthWrite: false,
+      transparent: true,
+      opacity: 0.5,
+      flatShading: true,
+      side: THREE.DoubleSide
+    })
+  )
+  midPlane.position.set(fixedposition.x, fixedposition.y, fixedposition.z)
+  midPlane.quaternion.copy(bone.quaternion)
+  midPlane.quaternion.setFromRotationMatrix( bone.matrixWorld )
+  midPlane.quaternion.multiply(new Quaternion(-Math.sqrt(0.5), 0 , 0, -Math.sqrt(0.5)))
+  midPlane.updateMatrix()
 
-  //if (once) {
-    let test = new THREE.Mesh(
-      new THREE.PlaneGeometry(0.2,0.2),
-      new THREE.MeshBasicMaterial({
-        color: 0x4400ff,
-        depthTest: false,
-        depthWrite: false,
-        transparent: true,
-        opacity: 0.5,
-        flatShading: true,
-        side: THREE.DoubleSide
-      })
-    )
-    test.position.set(fixedposition.x, fixedposition.y, fixedposition.z)
-    test.quaternion.copy(bone.quaternion)
-    test.quaternion.setFromRotationMatrix( bone.matrixWorld )
-    test.quaternion.multiply(new Quaternion(-Math.sqrt(0.5), 0 , 0, -Math.sqrt(0.5)))
-    test.updateMatrixWorld()
-    test.updateMatrix()
-    plane = new THREE.Plane(fixedposition.clone().applyMatrix4(inverdsedMatrix), 1)
-    plane.applyMatrix4(test.matrix)
-    //plane.applyMatrix4(test.matrixWorld)
-    plane.normalize()
+  plane = new THREE.Plane();
+  var dir = new THREE.Vector3(0,1,0);
+  var centroid = new Vector3( 0, 0, -1 ).applyQuaternion( midPlane.quaternion )
+  //centroid.applyQuaternion(inverdsedMatrix.quaternion)
+  //centroid.applyMatrix4(inverdsedMatrix)
+  plane.setFromNormalAndCoplanarPoint(centroid, dir).normalize();
 
-    plane = new THREE.Plane();
-    var dir = new THREE.Vector3(0,1,0);
-    var centroid = new Vector3( 0, 0, -1 ).applyQuaternion( test.quaternion )
-    //centroid.applyQuaternion(inverdsedMatrix.quaternion)
-    //centroid.applyMatrix4(inverdsedMatrix)
-    plane.setFromNormalAndCoplanarPoint(centroid, dir).normalize();
-    //var direction = new Vector3( 0, 0, -1 ).applyQuaternion( bone.quaternion )
-
-
-    
-    
-    //plane.quaternion.copy(test.quaternion)
-    //test.quaternion.multiplyQuaternions()
-
-    let boneProjection = new Vector3()
-    plane.projectPoint(fixedposition, boneProjection)
-    let difference = new Vector3().subVectors(fixedposition, boneProjection)
-    //console.log('bone difference: ', difference)
-    let testPoint = new THREE.Mesh(
-      new THREE.BoxBufferGeometry(0.05,0.05,0.05),
-      new THREE.MeshBasicMaterial({
-        color: 0x4400ff,
-        depthTest: false,
-        depthWrite: false,
-        transparent: true,
-        opacity: 0.5,
-        flatShading: true,
-        side: THREE.DoubleSide
-      })
-    )
-    testPoint.position.set(fixedposition.x, fixedposition.y, fixedposition.z)
-    testPoint.position.set(0, 0, 0)
-    //testPoint.position.set(boneProjection.x, boneProjection.y, boneProjection.z)
-    //test.quaternion.multiply(new Quaternion(-Math.sqrt(0.5), 0 , 0, -Math.sqrt(0.5)))
-    var helper = new THREE.PlaneHelper( plane, 1, 0xffff00 );
-    helper.updateMatrix()
-    //if (once) tempObj.add( helper )
-    if (once) tempObj.add(test)
-    if (once) tempObj.add(testPoint)
-  //}
+  let boneProjection = new Vector3()
+  plane.projectPoint(fixedposition, boneProjection)
+  // Getting the difference from mid point to where the points are projected (the normalized plane)
+  let difference = new Vector3().subVectors(fixedposition, boneProjection)
+  
+  let midPoint = new THREE.Mesh(
+    new THREE.BoxBufferGeometry(0.05,0.05,0.05),
+    new THREE.MeshBasicMaterial({
+      color: 0x4400ff,
+      depthTest: false,
+      depthWrite: false,
+      transparent: true,
+      opacity: 0.5,
+      flatShading: true,
+      side: THREE.DoubleSide
+    })
+  )
+  midPoint.position.set(fixedposition.x, fixedposition.y, fixedposition.z)
+  
+  //var helper = new THREE.PlaneHelper( plane, 1, 0xffff00 );
+  //helper.updateMatrix()
+  //if (once) tempObj.add( helper )
+  if (once) tempObj.add(midPlane)
+  if (once) tempObj.add(midPoint)
 
   for (let vect of allverts)
   {
-    let parentWorld = new Matrix4
-    //parentWorld.getInverse(bone.parent.matrixWorld)
-
     let vect2 = vect.vertex.clone().applyMatrix4(inverdsedMatrix)
-    
-    // let result = new THREE.Vector3()
-    // var clone = vect.vertex.clone().applyMatrix4( skinnedMesh.bindMatrix );
-    // tempMatrix.multiplyMatrices( bone.matrixWorld, skinnedMesh.skeleton.boneInverses[ boneIndex ] );
-		// result.add( temp.copy( clone ).applyMatrix4( tempMatrix ).multiplyScalar( vect.weight ) );
-    
     let vect3 = new Vector3()
+    
+    // Getting the projections and adding the difference
     plane.projectPoint(vect2, vect3)
     vect3.addVectors(vect3, difference)
-
-    //vect3 = result
-    //difference = new Vector3()
-
-
+    
     let distanceFromOriginal = vect3.distanceTo(vect2)
     if ( distanceFromOriginal<0.02 * multiply )
     {
-      //console.log('difference from original: ',vect3.distanceTo(vect2))
-      //console.log('dif: ', difference)
       allDistances.push(fixedposition.distanceTo(vect3))
 
-      if (once) {
-        let test = new THREE.Mesh(
+      if (once) {  // add a small cube when debugging to see which vertexes are used for calculations
+        let vert = new THREE.Mesh(
           new THREE.BoxBufferGeometry(0.01,0.01,0.01),
           new THREE.MeshBasicMaterial({
             color: 0xff0044,
@@ -226,19 +196,15 @@ const calcMedianDistance = (fixedposition, allverts, object, inverdsedMatrix, bo
             flatShading: true
           })
         )
-        test.position.set(vect3.x, vect3.y, vect3.z)
-        tempObj.add(test)
+        vert.position.set(vect3.x, vect3.y, vect3.z)
+        tempObj.add(vert)
       }
       median += allDistances[allDistances.length-1]
       if (allDistances[allDistances.length-1] > maxDist) maxDist = allDistances[allDistances.length-1] 
       if (allDistances[allDistances.length-1] < minDist) minDist = allDistances[allDistances.length-1] 
     }
+  }
 
-   
-  }
-  if (once) {
-    once = false
-  }
   median = median / allDistances.length
   return {
     median: maxDist,
@@ -258,18 +224,14 @@ function getBoneList( object ) {
   var boneList = []
 
   if ( object && object.isBone ) {
-
     boneList.push( object )
-
   }
 
   for ( var i = 0; i < object.children.length; i ++ ) {
     boneList.push.apply( boneList, getBoneList( object.children[ i ] ) )
-
   }
 
   return boneList
-
 }
 
 function filter_array(test_array) {
@@ -289,9 +251,8 @@ function filter_array(test_array) {
     return result
 }
 
-function BonesHelper( object, object3D, createPosePreset ) {
+function BonesHelper( object, object3D ) {
   Object3D.call( this )
-  //console.log('object: ', createPosePreset)
   //ModelLoader.isCustomModel(model)
   let sknMesh = object3D.children.find(child => child instanceof THREE.SkinnedMesh) ||
     object3D.children[0].children.find(child => child instanceof THREE.SkinnedMesh)
@@ -305,7 +266,6 @@ function BonesHelper( object, object3D, createPosePreset ) {
 
   //sknMesh.savePose(createPosePreset)
   sknMesh.savePose(zeroedSkinnedMesh)
-  //clonedSkinnedMesh.skeleton.pose()
   
   let skinIndex = sknMesh.geometry.attributes.skinIndex
   let vertexPositions = sknMesh.geometry.attributes.position
@@ -356,7 +316,8 @@ function BonesHelper( object, object3D, createPosePreset ) {
 
       posA.setFromMatrixPosition(boneMatrix.multiplyMatrices(matrixWorldInv, bone.matrixWorld))
       posB.setFromMatrixPosition(boneMatrix.multiplyMatrices(matrixWorldInv, bone.children[jj].matrixWorld))
-      once = ii > 10 && ii < 20 ? true : false
+      //once = ii > 10 && ii < 20 ? true : false
+      // set to true and remove false to add the intersection verts (debugging)
       //once = true
       //if (once) console.log('median distance for bone',bone.name)//bone.name)//,': ', distanceToVerts)
       once = false
@@ -365,8 +326,8 @@ function BonesHelper( object, object3D, createPosePreset ) {
 
       let absoluteBonePosA = new Vector3
       let absoluteBonePosB = new Vector3
-      //absoluteBonePosA.setFromMatrixPosition(bone.matrixWorld)
-      //absoluteBonePosB.setFromMatrixPosition(bone.children[jj].matrixWorld)
+
+      //get position from the zeroed bones
       let boneEquiv = zeroedSkinnedMesh.skeleton.bones.filter(bone_current => bone_current.name === bone.name)[0]
       absoluteBonePosA.setFromMatrixPosition(boneEquiv.matrixWorld)
       absoluteBonePosB.setFromMatrixPosition(boneEquiv.children[jj].matrixWorld)
@@ -381,7 +342,6 @@ function BonesHelper( object, object3D, createPosePreset ) {
         distanceToVerts = med.median !== 0 ? med.median : 0.1
         createdHelper = med.object        
       }
-      //console.log('median distance for bone',bone.name,': ', distanceToVerts)
 
       scaleA.setFromMatrixScale(boneMatrix)
       scaleB.setFromMatrixScale(matrixWorldInv)
@@ -392,9 +352,8 @@ function BonesHelper( object, object3D, createPosePreset ) {
 
       let hit_bone_width = distanceToVerts*1.5
       let geometry = new THREE.CylinderBufferGeometry(boneWidth / 25, boneWidth /15 , boneLength - boneWidth/20, 4 )//, heightSegments : Integer, openEnded : Boolean, thetaStart : Float, thetaLength : Float)
+
       // secondary geometry used for hit testing
-      //let hit_bone_width = ((bone.name.indexOf('Spine')>0)||(bone.name.indexOf('Hips')>0)) ? boneWidth2 / 4 : boneWidth2 / 4// boneWidth*1.3 : boneWidth / 4
-      
       let hit_geometry = new THREE.BoxBufferGeometry(hit_bone_width, boneLength, hit_bone_width )
       let hit_material = new THREE.MeshBasicMaterial({
         color: 0x00ff00,
@@ -427,7 +386,7 @@ function BonesHelper( object, object3D, createPosePreset ) {
       hitMesh.geometry.applyMatrix(new Matrix4().makeTranslation(0, boneLength/2, 0))
 
       // set visible here to see the hit mesh
-      // hitMesh.material.visible = false
+      hitMesh.material.visible = false
       hitMesh.name = 'hitter_'+bone.name
       hitMesh.userData.type = 'hitter'
 
@@ -501,14 +460,12 @@ function BonesHelper( object, object3D, createPosePreset ) {
           spineNumber++
         }
         */
-        //removed, adding only when selected
 
         this.hit_meshes[boneIndex] = ( hitMesh )
         this.add(hitMesh)
         this.add(createdHelper)
 
         bone.helper = createdHelper
-        //this.add(this.cones[boneCounter])
         bone.hitBone = hitMesh
         bone.connectedBone = this.cones[boneIndex]
 
@@ -570,7 +527,6 @@ BonesHelper.prototype.raycast = function ( raycaster, intersects ) {
   for (let result of results) {
     // add a .bone key to the Intersection object referencing the cone's bone
     result.bone = this.bones.find(bone => bone.uuid === result.object.userData.bone)
-    //console.log(' checking in ', results)
     intersects.push(result)
   }
 }
@@ -608,35 +564,12 @@ const parallelTraverse = ( a, b, callback ) => {
 }
 
 const getDefaultRotationForBone = (skeleton, bone) => {
-  return { x: bone.rotation.x, y: bone.rotation.y, z: bone.rotation.z}
-  
-  // let dummy = new THREE.Object3D()
-  // //dummy.matrixWorld.getInverse( skeleton.boneInverses[ skeleton.bones.indexOf(bone) ] )
-
-  // if ( bone.parent && bone.parent.isBone ) {
-  //   dummy.matrix.getInverse( bone.parent.matrixWorld )
-  //   dummy.matrix.multiply( dummy.matrixWorld )
-  // } else {
-  //   dummy.matrix.copy( dummy.matrixWorld )
-  // }
-  // dummy.matrix.copy (bone.matrix)
-
-  // var p = new THREE.Vector3()
-  // var q = new THREE.Quaternion();
-  // var s = new THREE.Vector3()
-  // dummy.matrix.decompose( p, q, s )
-
-  // let e = new THREE.Euler()
-  // e.setFromQuaternion( q )
-
-  // return { x: e.x, y: e.y, z: e.z }
+  return { x: bone.rotation.x, y: bone.rotation.y, z: bone.rotation.z}  
 }
 
 SkinnedMesh.prototype.savePose = function(sknMesh) {
-  let skeleton_clone = cloneSkinned(this.parent)
   let poseSkeleton = {}
-  // let sknMesh = skeleton_clone.children.find(child => child instanceof THREE.SkinnedMesh) ||
-  //   skeleton_clone.children[0].children.find(child => child instanceof THREE.SkinnedMesh)
+  
   // sknMesh.skeleton.pose()
   this.needsRepose = false
 
@@ -653,7 +586,7 @@ SkinnedMesh.prototype.savePose = function(sknMesh) {
       y: defaultRotation.y - zeroRotation.y,
       z: defaultRotation.z - zeroRotation.z
     }
-    //console.log(' rot diff: ', rotDiff)
+
     if ( rotDiff.x < -0.0001 || rotDiff.x > 0.0001 ||
       rotDiff.y < -0.0001 || rotDiff.y > 0.0001 ||
       rotDiff.z < -0.0001 || rotDiff.z > 0.0001 )
@@ -672,7 +605,7 @@ SkinnedMesh.prototype.savePose = function(sknMesh) {
   if ( this.needsRepose ) {
     this.userData.initialSkeleton = poseSkeleton
   }
-  //REMOVED SAVING
+  //REMOVED SAVING 
 
   // let preset = {
   //   id: this.parent.userData.id,

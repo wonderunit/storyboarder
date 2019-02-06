@@ -194,7 +194,7 @@ const Character = React.memo(({
 
       scene.add(object.current)
       
-      let bonesHelper = new BonesHelper(skeleton.bones[0].parent, object.current, createPosePreset)
+      let bonesHelper = new BonesHelper(skeleton.bones[0].parent, object.current )
       object.current.bonesHelper = bonesHelper
       object.current.userData.skeleton = skeleton
       scene.add(object.current.bonesHelper)
