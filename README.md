@@ -35,31 +35,38 @@ Works with Pens on any tablet or Cintiq or even a Microsoft Surface. Also works 
 * Works with Fountain
 * Open in Photoshop
 * Measure Line Mileage
-* Guides to Help Drawing
+* 5 Different Guide Types to Help Drawing
 * Reference Layer
 * Onion Skin
+* Lasso Tool for Partial Drawing Edits
 * Track changes
 * Collaborate on Github
 * Export to various Formats
+* Shot Generator
+* Audio Import and/or Recording
+* Captions / Dialogue Overlay
+* Board Re-ordering
 
-## We have 4 brush types which are all you need to draw fast:
+## We have 6 brush types which are all you need to draw fast:
 
-* **Light pencil** for roughing
-* **Pencil** for fast sketching
-* **Pen** for inking strong lines
-* **Brush** for filling in some shading
+* **Light Pencil** for rough sketching
+* **Fill Brush** for painting and filling
+* **Tone Pastel** for tone and shading
+* **Pencil** for drawing and shading details
+* **Ink Marker** for hard thicker lines
+* **Note Pen** for notation/comments (easily erased with one click)
 
-You can also specificy 3 brush sizes for each type.
+Each brush has it's own 4 color pallete. You can set all the colors as you like.
 
-Each brush has it's own 5 color pallete. You can set all the colors as you like.
+You can change the brush size using a simple range slider or hotkeys. Make it tiny for fine details or huge to feel like finger painting.
 
 There are no layers. Again, you're boarding story ideas. Managing layers creates so much uneeded complexity and ui mess. A board artist that uses layers probably voted for Trump - or paid way too much for "Pro" storyboard software.
 
-Made a mistake? You can erase that shit.
+**Made a mistake? You can erase that shit.**
 
 You can undo and redo.
 
-Made a big mistake? You can clear the whole thing.
+Made a big mistake? You can clear a single layer or even the entire board canvas.
 
 If it's off center or too big or too small, you can shift your drawing around or scale it.
 
@@ -70,16 +77,18 @@ Need a straight line? Hold shift while you're drawing and you got straight lines
 *  Grid
 *  Center Marks
 *  Thirds
-*  Angles
+*  Angles / 1 point Perspective
 *  Onion skin (previous and next board in shot)
 
 ## We got mad simple key commands:
 
 * Light Pencil: <kbd>1</kbd>
-* Pencil: <kbd>2</kbd>
-* Pen: <kbd>3</kbd>
-* Brush: <kbd>4</kbd>
-* Eraser: <kbd>5</kbd>
+* Brush: <kbd>2</kbd>
+* Tone: <kbd>3</kbd>
+* Pencil: <kbd>4</kbd>
+* Marker: <kbd>5</kbd>
+* Note Pen: <kbd>6</kbd>
+* Eraser: <kbd>7</kbd>
 * Clear: <kbd>Delete</kbd> or <kbd>Backspace</kbd>
 * Undo: <kbd>Cmd</kbd>+<kbd>z</kbd>
 * Redo: <kbd>Cmd</kbd>+<kbd>y</kbd>
