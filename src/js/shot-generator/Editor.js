@@ -22,6 +22,10 @@ const h = require('../utils/h')
 const useComponentSize = require('../hooks/use-component-size')
 
 const {
+  //
+  //
+  // action creators
+  //
   selectObject,
   createObject,
   updateObject,
@@ -48,7 +52,16 @@ const {
 
   updateWorld,
   updateWorldRoom,
-  updateWorldEnvironment
+  updateWorldEnvironment,
+  
+  markSaved,
+
+  //
+  //
+  // selectors
+  //
+  getSerializedState,
+  getIsSceneDirty
 //} = require('../state')
 } = require('../shared/reducers/shot-generator')
 
@@ -2860,14 +2873,6 @@ const KeyHandler = connect(
   }
 )
 
-const serializeState = state => {
-  return {
-    world: state.world,
-    sceneObjects: state.sceneObjects,
-    activeCamera: state.activeCamera
-  }
-}
-
 const Editor = connect(
   state => ({
     mainViewCamera: state.mainViewCamera,
@@ -2884,9 +2889,10 @@ const Editor = connect(
     loadScene,
     saveScene: filepath => (dispatch, getState) => {
       let state = getState()
-      let contents = serializeState(state)
+      let contents = getSerializedState(state)
       fs.writeFileSync(filepath, JSON.stringify(contents, null, 2))
       dialog.showMessageBox(null, { message: 'Saved!' })
+      // dispatch(markSaved())
     },
     setActiveCamera,
     resetScene,
@@ -2905,13 +2911,14 @@ const Editor = connect(
 
         ipcRenderer.send('saveShot', {
           uid: state.board.uid,
-          data: serializeState(state),
+          data: getSerializedState(state),
           images: {
             'camera': cameraImage,
             'topdown': topDownImage
           }
         })
 
+        dispatch(markSaved())
       })
     },
 
@@ -2927,8 +2934,10 @@ const Editor = connect(
         let cameraImage = document.querySelector('#camera-canvas').toDataURL()
         let topDownImage = document.querySelector('#top-down-canvas').toDataURL()
 
+        dispatch(markSaved())
+
         ipcRenderer.send('insertShot', {
-          data: serializeState(state),
+          data: getSerializedState(state),
           images: {
             'camera': cameraImage,
             'topdown': topDownImage
@@ -2936,11 +2945,20 @@ const Editor = connect(
         })
 
       })
+    },
+
+    onBeforeUnload: event => (dispatch, getState) => {
+      if (getIsSceneDirty(getState())) {
+        // pass electron-specific flag
+        // to trigger `will-prevent-unload` on BrowserWindow
+        event.returnValue = false
+      }
     }
+
   }
 )(
 
-  ({ mainViewCamera, createObject, selectObject, updateModels, loadScene, saveScene, activeCamera, setActiveCamera, resetScene, remoteInput, aspectRatio, saveToBoard, insertAsNewBoard, sceneObjects, selection, board }) => {
+  ({ mainViewCamera, createObject, selectObject, updateModels, loadScene, saveScene, activeCamera, setActiveCamera, resetScene, remoteInput, aspectRatio, saveToBoard, insertAsNewBoard, sceneObjects, selection, board, onBeforeUnload }) => {
     const largeCanvasRef = useRef(null)
     const smallCanvasRef = useRef(null)
     const [ready, setReady] = useState(false)
@@ -2970,6 +2988,13 @@ const Editor = connect(
     useEffect(() => {
       setCamera(scene.current.children.find(o => o.userData.id === activeCamera))
     }, [ready, activeCamera])
+
+    useEffect(() => {
+      window.addEventListener('beforeunload', onBeforeUnload)
+      return function cleanup () {
+        window.removeEventListener('beforeunload', onBeforeUnload)
+      }
+    }, [onBeforeUnload])
 
     return React.createElement(
       SceneContext.Provider,
