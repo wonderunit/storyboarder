@@ -439,7 +439,6 @@ module.exports = {
   initialState,
 
   reducer: (state = initialState, action) => {
-    console.log('%c%s', 'color:purple', action.type, action.payload)
     return produce(state, draft => {
       switch (action.type) {
         case 'LOAD_SCENE':
