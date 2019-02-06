@@ -1529,6 +1529,16 @@ const loadBoardUI = async () => {
     saveImageFile() // NOTE image is saved first, which ensures layers are present in data
     saveBoardFile() // ... then project data can be saved
 
+    // try to close the Shot Generator based on its URL
+    //
+    // HACK find the Shot Generator window manually
+    const shotGeneratorWindow = remote.BrowserWindow.getAllWindows()
+      .find(w => w.webContents.getURL().match(/shot\-generator\.html/))
+    // try to close it
+    if (shotGeneratorWindow && !shotGeneratorWindow.isDestroyed()) {
+      shotGeneratorWindow.close()
+    }
+
     // still dirty?
     if (boardFileDirty) {
       // pass the electron-specific flag
