@@ -144,8 +144,16 @@ kbd {
   opacity: 0.6;
   letter-spacing: 0.05em;
 }
-#toolbar .toolbar__insert {
+#toolbar .toolbar__addition {
   flex: 1;
+}
+#toolbar a img {
+  display: flex;
+  padding-right: 0.5rem;
+}
+.icon {
+  width: 32px;
+  height: 32px;
 }
 
 #elements {

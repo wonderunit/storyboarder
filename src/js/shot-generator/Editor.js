@@ -2290,6 +2290,16 @@ const PhoneCursor = connect(
       )
     })
 
+const Icon = ({ src }) => h(
+  [
+    'img.icon', {
+      width: 32,
+      height: 32,
+      src: `./img/shot-generator/${src}.svg`
+    }
+  ]
+)
+
 const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, setActiveCamera, resetScene, saveToBoard, insertAsNewBoard, board }) => {
   const onCreateCameraClick = () => {
     let id = THREE.Math.generateUUID()
@@ -2482,11 +2492,11 @@ const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, set
         // ['small', `uid:${board.uid}`]
       ]],
 
-      ['div.toolbar__insert.row', [
-        ['a[href=#]', { onClick: preventDefault(onCreateCameraClick) }, '+ Camera'],
-        ['a[href=#]', { onClick: preventDefault(onCreateObjectClick) }, '+ Object'],
-        ['a[href=#]', { onClick: preventDefault(onCreateCharacterClick) }, '+ Character'],
-        ['a[href=#]', { onClick: preventDefault(onCreateLightClick) }, '+ Light'],
+      ['div.toolbar__addition.row', [
+        ['a[href=#]', { onClick: preventDefault(onCreateCameraClick) }, [[Icon, { src: 'icon-toolbar-camera' }], 'Camera']],
+        ['a[href=#]', { onClick: preventDefault(onCreateObjectClick) }, [[Icon, { src: 'icon-toolbar-object' }], 'Object']],
+        ['a[href=#]', { onClick: preventDefault(onCreateCharacterClick) }, [[Icon, { src: 'icon-toolbar-character' }], 'Character']],
+        ['a[href=#]', { onClick: preventDefault(onCreateLightClick) }, [[Icon, { src: 'icon-toolbar-light' }], 'Light']],
       ]],
       // ['a[href=#]', { onClick: preventDefault(onCreateStressClick) }, '+ STRESS'],
 
@@ -2494,9 +2504,9 @@ const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, set
       // ['a[href=#]', { onClick: preventDefault(onLoadClick) }, 'Load'],
       // ['a[href=#]', { onClick: preventDefault(onSaveClick) }, 'Save'],
 
-      ['div.row', [
-        ['a[href=#]', { onClick: preventDefault(onSaveToBoardClick) }, 'Save to Board'],
-        ['a[href=#]', { onClick: preventDefault(onInsertNewBoardClick) }, 'Insert As New Board']
+      ['div.toolbar__board-actions.row', [
+        ['a[href=#]', { onClick: preventDefault(onSaveToBoardClick) }, [[Icon, { src: 'icon-toolbar-save-to-board' }], 'Save to Board']],
+        ['a[href=#]', { onClick: preventDefault(onInsertNewBoardClick) }, [[Icon, { src: 'icon-toolbar-insert-as-new-board' }], 'Insert As New Board']],
       ]]
     ]
   )
