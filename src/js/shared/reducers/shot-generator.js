@@ -252,6 +252,8 @@ const initialState = {
 
   aspectRatio: 2.35,
 
+  board: {},
+
   ...initialScene,
 
   selection: undefined,
@@ -717,7 +719,10 @@ module.exports = {
           console.log('%cshot-generator web client at', 'color:blue', action.payload.uri)
           draft.server = { ...draft.server, ...action.payload }
           return
-          
+
+        case 'SET_BOARD':
+          draft.board = action.payload
+          return
       }
     })
   },
@@ -767,5 +772,7 @@ module.exports = {
 
   updateDevice: (id, values) => ({ type: 'UPDATE_DEVICE', payload: { id, ...values } }),
 
-  updateServer: payload => ({ type: 'UPDATE_SERVER', payload })
+  updateServer: payload => ({ type: 'UPDATE_SERVER', payload }),
+
+  setBoard: payload => ({ type: 'SET_BOARD', payload })
 }

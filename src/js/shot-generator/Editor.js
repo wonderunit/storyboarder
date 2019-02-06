@@ -201,7 +201,7 @@ const SceneManager = connect(
       let objId = preset.id
       preset.id = id
       preset.name = preset.name+shortId(id)
-      
+
       $r.store.dispatch(createPosePreset(preset))
       //createPosePreset(preset)
       // save the presets file
@@ -527,7 +527,7 @@ const SceneManager = connect(
         if (child && child.userData.type === 'character') {
           let skel = child.children.find(cld => cld instanceof THREE.SkinnedMesh) ||
             child.children[0].children.find(cld => cld instanceof THREE.SkinnedMesh)
-  
+
           if (
             // there is not a BonesHelper instance
             !bonesHelper.current ||
@@ -626,7 +626,7 @@ const SceneManager = connect(
                 createPosePreset: createPosePresetFromBones,
 
                 loaded: props.loaded ? props.loaded : false,
-                devices, 
+                devices,
                 ...props
               }
             ]
@@ -1747,7 +1747,7 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
           formatter: NumberSliderFormatter.degrees
         }]
       ],
-   
+
 
       sceneObject.type == 'camera' &&
         ['div',
@@ -1867,68 +1867,39 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
   )
 }
 
-// TODO is there a simpler way to get the default rotation of a bone?
-// via THREE.Skeleton#pose()
-const getDefaultRotationForBone = (skeleton, bone) => {
-  let dummy = new THREE.Object3D()
-  dummy.matrixWorld.getInverse( skeleton.boneInverses[ skeleton.bones.indexOf(bone) ] )
-
-  if ( bone.parent && bone.parent.isBone ) {
-    dummy.matrix.getInverse( bone.parent.matrixWorld )
-    dummy.matrix.multiply( dummy.matrixWorld )
-  } else {
-    dummy.matrix.copy( dummy.matrixWorld )
-  }
-  dummy.matrix.copy (bone.matrix)
-
-  var p = new THREE.Vector3()
-  var q = new THREE.Quaternion();
-  var s = new THREE.Vector3()
-  dummy.matrix.decompose( p, q, s )
-
-  let e = new THREE.Euler()
-  e.setFromQuaternion( q )
-  return { x: e.x, y: e.y, z: e.z }
-}
-
 const BoneEditor = ({ sceneObject, bone, updateCharacterSkeleton }) => {
-  const { scene } = useContext(SceneContext)
-
-  let sceneObj = scene.children.find(o => o.userData.id === sceneObject.id)
-
-  let skeleton = sceneObj.children.find(child => child instanceof THREE.SkinnedMesh).skeleton ||
-    sceneObj.children[0].children.find(child => child instanceof THREE.SkinnedMesh).skeleton
+  const [render, setRender] = useState(false)
 
   // has the user modified the skeleton?
-  bone = sceneObject.skeleton[bone.name]
+  let rotation = sceneObject.skeleton[bone.name]
     // use the modified skeleton data
-    ? {
-      type: 'modified',
-      name: bone.name,
-      rotation: sceneObject.skeleton[bone.name].rotation
-    }
-    // otherwise, use the default rotation of the bone
-    //
-    // the scene is not guaranteed to be updated at this point
-    // so we have to actually calculate the default rotation
-    : {
-      type: 'default',
-      name: bone.name,
-      rotation: getDefaultRotationForBone(skeleton, bone)
-    }
+    ? sceneObject.skeleton[bone.name].rotation
+    // otherwise, use the initial rotation of the bone
+    : { x: bone.rotation.x, y: bone.rotation.y, z: bone.rotation.z }
 
   const createOnSetValue = (key, transform) => value => {
     updateCharacterSkeleton({
       id: sceneObject.id,
       name: bone.name,
       rotation: {
-        x: bone.rotation.x,
-        y: bone.rotation.y,
-        z: bone.rotation.z,
+        x: rotation.x,
+        y: rotation.y,
+        z: rotation.z,
         [key]: transform(value)
       }
     })
   }
+
+  // the posePresetId and skeleton will change synchronously
+  // but the three scene will not have updated bones until SceneManager renders
+  // so for now, just wait until that has probably happened :/
+  useEffect(() => {
+    setRender(false)
+
+    setTimeout(() => {
+      setRender(true)
+    }, 1)
+  }, [sceneObject.posePresetId])
 
   return h(
     ['div.column', { style: { } }, [
@@ -1946,7 +1917,7 @@ const BoneEditor = ({ sceneObject, bone, updateCharacterSkeleton }) => {
             min: -180,
             max: 180,
             step: 1,
-            value: THREE.Math.radToDeg(bone.rotation.x),
+            value: THREE.Math.radToDeg(rotation.x),
             onSetValue: createOnSetValue('x', THREE.Math.degToRad),
             transform: NumberSliderTransform.degrees,
             formatter: NumberSliderFormatter.degrees
@@ -1958,7 +1929,7 @@ const BoneEditor = ({ sceneObject, bone, updateCharacterSkeleton }) => {
             min: -180,
             max: 180,
             step: 1,
-            value: THREE.Math.radToDeg(bone.rotation.y),
+            value: THREE.Math.radToDeg(rotation.y),
             onSetValue: createOnSetValue('y', THREE.Math.degToRad),
             transform: NumberSliderTransform.degrees,
             formatter: NumberSliderFormatter.degrees
@@ -1970,7 +1941,7 @@ const BoneEditor = ({ sceneObject, bone, updateCharacterSkeleton }) => {
             min: -180,
             max: 180,
             step: 1,
-            value: THREE.Math.radToDeg(bone.rotation.z),
+            value: THREE.Math.radToDeg(rotation.z),
             onSetValue: createOnSetValue('z', THREE.Math.degToRad),
             transform: NumberSliderTransform.degrees,
             formatter: NumberSliderFormatter.degrees
@@ -2329,7 +2300,7 @@ const PhoneCursor = connect(
       )
     })
 
-const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, setActiveCamera, resetScene, saveToBoard, insertAsNewBoard }) => {
+const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, setActiveCamera, resetScene, saveToBoard, insertAsNewBoard, board }) => {
   const onCreateCameraClick = () => {
     let id = THREE.Math.generateUUID()
     createObject({
@@ -2516,7 +2487,12 @@ const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, set
 
   return h(
     ['div#toolbar', { key: 'toolbar' },
-      ['div.row', [
+      ['div.toolbar__board-info.row', board.uid && [
+        ['span', `Shot ${board.shot}`]
+        // ['small', `uid:${board.uid}`]
+      ]],
+
+      ['div.toolbar__insert.row', [
         ['a[href=#]', { onClick: preventDefault(onCreateCameraClick) }, '+ Camera'],
         ['a[href=#]', { onClick: preventDefault(onCreateObjectClick) }, '+ Object'],
         ['a[href=#]', { onClick: preventDefault(onCreateCharacterClick) }, '+ Character'],
@@ -2903,6 +2879,7 @@ const Editor = connect(
     remoteInput: state.input,
     aspectRatio: state.aspectRatio,
     sceneObjects: state.sceneObjects,
+    board: state.board
   }),
   {
     createObject,
@@ -2931,6 +2908,7 @@ const Editor = connect(
         let topDownImage = document.querySelector('#top-down-canvas').toDataURL()
 
         ipcRenderer.send('saveShot', {
+          uid: state.board.uid,
           data: serializeState(state),
           images: {
             'camera': cameraImage,
@@ -2966,7 +2944,7 @@ const Editor = connect(
   }
 )(
 
-  ({ mainViewCamera, createObject, selectObject, updateModels, loadScene, saveScene, activeCamera, setActiveCamera, resetScene, remoteInput, aspectRatio, saveToBoard, insertAsNewBoard, sceneObjects, selection }) => {
+  ({ mainViewCamera, createObject, selectObject, updateModels, loadScene, saveScene, activeCamera, setActiveCamera, resetScene, remoteInput, aspectRatio, saveToBoard, insertAsNewBoard, sceneObjects, selection, board }) => {
     const largeCanvasRef = useRef(null)
     const smallCanvasRef = useRef(null)
     const [ready, setReady] = useState(false)
@@ -3002,7 +2980,7 @@ const Editor = connect(
       { value: { scene: scene.current }},
       h(
         ['div.column', { style: { width: '100%' } }, [
-          [Toolbar, { createObject, selectObject, loadScene, saveScene, camera, setActiveCamera, resetScene, saveToBoard, insertAsNewBoard }],
+          [Toolbar, { createObject, selectObject, loadScene, saveScene, camera, setActiveCamera, resetScene, saveToBoard, insertAsNewBoard, board }],
 
           ['div.row', { style: { flex: 1 }},
             ['div.column', { style: { width: '300px', background: '#111'} },

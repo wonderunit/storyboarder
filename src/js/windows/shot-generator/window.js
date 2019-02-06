@@ -27,7 +27,7 @@ const h = require('../../utils/h')
 const Editor = require('../../shot-generator/Editor')
 
 const presetsStorage = require('../../shared/store/presetsStorage')
-const { initialState, loadScene, resetScene, updateDevice, updateServer } = require('../../shared/reducers/shot-generator')
+const { initialState, loadScene, resetScene, updateDevice, updateServer, setBoard } = require('../../shared/reducers/shot-generator')
 
 const createServer = require('../../services/createServer')
 const createDualShockController = require('../../shot-generator/DualshockController')
@@ -53,18 +53,23 @@ const store = configureStore({
 
 
 
-ipcRenderer.on('setup', (event, { aspectRatio }) => {
-  store.dispatch({
-    type: 'SET_ASPECT_RATIO',
-    payload: aspectRatio
-  })
-})
-ipcRenderer.on('loadShot', (event, shot) => {
+ipcRenderer.on('loadBoard', (event, { boardData, board }) => {
+  // TODO for backwards compatibility, use board.shotgen or board.sg instead?
+  let shot = board.sts
+
+  let aspectRatio = parseFloat(boardData.aspectRatio)
+  store.dispatch({ type: 'SET_ASPECT_RATIO', payload: aspectRatio })
+
+  store.dispatch(setBoard({ number: board.number, uid: board.uid, shot: board.shot }))
+
   if (shot) {
     store.dispatch(loadScene(shot.data))
   } else {
     store.dispatch(resetScene())
   }
+})
+ipcRenderer.on('update', (event, { board }) => {
+  store.dispatch(setBoard({ number: board.number, uid: board.uid, shot: board.shot }))
 })
 
 

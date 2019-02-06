@@ -33,6 +33,7 @@ const defaultPrefs = {
 
   // notifications
   allowNotificationsForLineMileage: true,
+  enableNotifications: true,
 
   import: {
     offset: [0, 0],

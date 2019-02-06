@@ -83,5 +83,6 @@ if (process.env.SHOT_GENERATOR_STANDALONE) {
 }
 
 module.exports = {
-  show
+  show,
+  getWindow: () => win
 }
