@@ -552,9 +552,9 @@ const Character = React.memo(({
         // GET THE DESIRED ROTATION FOR THE TARGET OBJECT
         
         let rotation = new THREE.Euler()
-          .setFromQuaternion( objectQuaternion.normalize(), "YXZ" )
-                
+        
         if (selectedBone) {
+          rotation.setFromQuaternion( objectQuaternion.normalize(), "YXZ" )
           updateCharacterSkeleton({
             id,
             name: target.name,
@@ -565,6 +565,7 @@ const Character = React.memo(({
             }
           })
         } else {
+          rotation.setFromQuaternion( objectQuaternion.normalize(), /*euloerOrder*/ )
           updateObject(target.userData.id, {
             rotation: rotation.y            
           })
