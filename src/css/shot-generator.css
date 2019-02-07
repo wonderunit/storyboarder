@@ -303,17 +303,13 @@ kbd {
   line-height: 1.25;
 
   color: #888;
-
-  position: relative;
 }
 .camera-inspector {
-  width: 33%;
 }
 .camera-inspector__nearest-character {
   margin-top: 1rem;
 }
 .board-inspector {
-  width: 33%;
 }
 .board-inspector__shot {
   font-weight: bold;
@@ -321,25 +317,6 @@ kbd {
 .guides-inspector {
 }
 .cameras-inspector {
-}
-.cameras-inspector__label {
-  display: flex;
-  align-items: center;
-
-  margin-right: 1rem;
-  height: 32px;
-}
-.zebra-buttons {
-  display: flex;
-  flex-direction: row;
-}
-.zebra-buttons a {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  background-color: #eee;
 }
 
 input, select, label {
