@@ -2689,12 +2689,12 @@ const BoardInspector = connect(
   // let durationString = `// about ${suggestedDurationInSeconds} seconds`
 
   return h(
-    ['div.board-inspector', [
+    ['div.column.board-inspector', [
       ['div.board-inspector__shot', 'Shot ' + board.shot],
 
-      present(board.dialogue) && ['div.board-inspector__dialogue', 'DIALOGUE: ' + board.dialogue],
-      present(board.action) && ['div.board-inspector__action', 'ACTION: ' + board.action],
-      present(board.notes) && ['div.board-inspector__notes', 'NOTES: ' + board.notes]
+      present(board.dialogue) && ['p.board-inspector__dialogue', 'DIALOGUE: ' + board.dialogue],
+      present(board.action) && ['p.board-inspector__action', 'ACTION: ' + board.action],
+      present(board.notes) && ['p.board-inspector__notes', 'NOTES: ' + board.notes]
     ]]
   )
 })
