@@ -3031,7 +3031,18 @@ const Editor = connect(
             ['div.column', { style: { width: '300px', background: '#111'} },
               ['div#topdown', { style: { height: '300px' } },
                 // top-down-canvas
-                ['canvas', { key: 'top-down-canvas', tabIndex: 0, ref: smallCanvasRef, id: 'top-down-canvas', style: { width: '100%' }, onPointerDown: onCanvasPointerDown }]
+                ['canvas', { key: 'top-down-canvas', tabIndex: 0, ref: smallCanvasRef, id: 'top-down-canvas', style: { width: '100%' }, onPointerDown: onCanvasPointerDown }],
+                // controls
+                ['div.topdown__controls', [
+                  ['div.row', [
+                    ['a[href=#]', { onClick: preventDefault() }, [[Icon, { src: 'icon-camera-view-autofit' }]]],
+                    ['a[href=#]', { onClick: preventDefault() }, [[Icon, { src: 'icon-camera-view-zoom-in' }]]],
+                    ['a[href=#]', { onClick: preventDefault() }, [[Icon, { src: 'icon-camera-view-zoom-out' }]]],
+                  ]],
+                  ['div.row', [
+                    ['a[href=#]', { onClick: preventDefault() }, [[Icon, { src: 'icon-camera-view-expand' }]]],
+                  ]]
+                ]]
               ],
               ['div#elements', [ElementsPanel, { machineState, transition }]]
             ],

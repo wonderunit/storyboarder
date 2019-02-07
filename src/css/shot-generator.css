@@ -256,6 +256,20 @@ kbd {
 #topdown {
   display: flex;
   align-items: center;
+  position: relative;
+}
+.topdown__controls {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+.topdown__controls a {
+  display: flex;
 }
 
 #camera-view {
