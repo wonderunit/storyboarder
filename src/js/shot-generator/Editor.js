@@ -1999,9 +1999,13 @@ const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, o
             ? ['span.active', [Icon, { src: 'icon-item-active' }]]
             : [],
 
-          (sceneObject.visible && isSelected)
-            ? ['span.visibility', [Icon, { src: 'icon-item-visible' }]]
-            : [],
+          sceneObject.type === 'camera'
+            ? []
+            : sceneObject.visible
+              ? isSelected
+                ? ['span.visibility', [Icon, { src: 'icon-item-visible' }]]
+                : []
+              : ['span.visibility', [Icon, { src: 'icon-item-hidden' }]],
 
           allowDelete
             ? ['a.delete[href=#]', { onClick: onDeleteClick }, 'X']
