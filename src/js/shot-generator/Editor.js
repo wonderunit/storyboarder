@@ -2642,7 +2642,7 @@ const CameraInspector = connect(
                         .filter(o => o.type === 'camera')
                         .indexOf(cameraState) + 1
 
-    let cameraName = `Camera ${cameraNumber}`
+    let cameraName = cameraState.name || `Camera ${cameraNumber}`
 
     let fakeCamera = camera.clone() // TODO reuse a single object
     fakeCamera.fov = cameraState.fov
