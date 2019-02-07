@@ -3093,8 +3093,8 @@ const Editor = connect(
                 // camera canvas
                 ['canvas', { key: 'camera-canvas', tabIndex: 1, ref: largeCanvasRef, id: 'camera-canvas', onPointerDown: onCanvasPointerDown }]
               ],
-              ['div.row.inspectors', [
                 [CameraInspector],
+              ['div.inspectors', [
                 [BoardInspector],
                 // [GuidesInspector],
                 [CamerasInspector]

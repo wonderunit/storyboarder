@@ -296,39 +296,52 @@ kbd {
 }
 
 .inspectors {
-  align-items: baseline;
-  justify-content: space-between;
-  padding: 12px;
+  display: flex;
+  flex-direction: row;
 
+  width: 100%;
+
+  font-size: 16px;
   line-height: 1.25;
 
   color: #888;
 
   position: relative;
+  overflow: hidden;
+}
+.inspectors .camera-inspector,
+.inspectors .board-inspector,
+.inspectors .guides-inspector,
+.inspectors .cameras-inspector {
+  padding: 1rem;
 }
 .camera-inspector {
-  width: 30%;
+  display: flex;
+  width: 33%;
 }
 .camera-inspector__nearest-character {
   margin-top: 1rem;
 }
 .board-inspector {
-  min-width: 15%;
+  display: flex;
+  flex: 1;
 }
 .board-inspector__shot {
   font-weight: bold;
 }
 .guides-inspector {
-  /* min-width: 15%; */
+  display: flex;
+  width: 15%;
 }
 .cameras-inspector {
-  /* min-width: 15%; */
+  display: flex;
+  min-width: 15%;
 }
 .cameras-inspector__label {
   display: flex;
   align-items: center;
 
-  margin-right: 1rem;
+  margin-right: 0.5rem;
   height: 32px;
 }
 .round-buttons-panel {
