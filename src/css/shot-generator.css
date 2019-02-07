@@ -341,7 +341,22 @@ kbd {
   justify-content: center;
   width: 32px;
   height: 32px;
-  background-color: #eee;
+}
+.zebra-buttons a:first-child {
+  border-top-left-radius: 6px;
+  border-bottom-left-radius: 6px;
+}
+.zebra-buttons a:last-child {
+  border-top-right-radius: 6px;
+  border-bottom-right-radius: 6px;
+}
+.zebra-buttons a:nth-child(odd) {
+  background-color: #424242;
+  color: #808080;
+}
+.zebra-buttons a:nth-child(even) {
+  background-color: #717171;
+  color: #A5A5A5;
 }
 
 input, select, label {
