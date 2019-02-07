@@ -269,6 +269,9 @@ kbd {
   align-items: flex-end;
   justify-content: space-between;
 }
+.topdown__controls .row {
+  pointer-events: auto;
+}
 .topdown__controls a {
   display: flex;
 }

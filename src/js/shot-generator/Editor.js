@@ -2980,12 +2980,13 @@ const Editor = connect(
         // to trigger `will-prevent-unload` on BrowserWindow
         event.returnValue = false
       }
-    }
+    },
 
+    setMainViewCamera
   }
 )(
 
-  ({ mainViewCamera, createObject, selectObject, updateModels, loadScene, saveScene, activeCamera, setActiveCamera, resetScene, remoteInput, aspectRatio, saveToBoard, insertAsNewBoard, sceneObjects, selection, board, onBeforeUnload }) => {
+  ({ mainViewCamera, createObject, selectObject, updateModels, loadScene, saveScene, activeCamera, setActiveCamera, resetScene, remoteInput, aspectRatio, saveToBoard, insertAsNewBoard, sceneObjects, selection, board, onBeforeUnload, setMainViewCamera }) => {
     const largeCanvasRef = useRef(null)
     const smallCanvasRef = useRef(null)
     const [ready, setReady] = useState(false)
@@ -3004,6 +3005,10 @@ const Editor = connect(
       // note: dragcontroller grabs pointerdown so this will not fire on perspective camera click
       transition('TYPING_EXIT')
     }
+
+    const onSwapCameraViewsClick = preventDefault(() => {
+      setMainViewCamera(mainViewCamera === 'ortho' ? 'live' : 'ortho')
+    })
 
     useEffect(() => {
       // TODO introspect models
@@ -3043,7 +3048,7 @@ const Editor = connect(
                     ['a[href=#]', { onClick: preventDefault() }, [[Icon, { src: 'icon-camera-view-zoom-out' }]]],
                   ]],
                   ['div.row', [
-                    ['a[href=#]', { onClick: preventDefault() }, [[Icon, { src: 'icon-camera-view-expand' }]]],
+                    ['a[href=#]', { onClick: onSwapCameraViewsClick }, [[Icon, { src: 'icon-camera-view-expand' }]]],
                   ]]
                 ]]
               ],
