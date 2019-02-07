@@ -315,6 +315,9 @@ kbd {
 .inspectors .cameras-inspector {
   padding: 1rem;
 }
+.inspectors > div:last-child {
+  justify-content: flex-end;
+}
 .camera-inspector {
   display: flex;
   width: 33%;
