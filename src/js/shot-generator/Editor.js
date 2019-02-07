@@ -1999,7 +1999,7 @@ const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, o
             ? ['span.active', [Icon, { src: 'icon-item-active' }]]
             : [],
 
-          sceneObject.visible
+          (sceneObject.visible && isSelected)
             ? ['span.visibility', [Icon, { src: 'icon-item-visible' }]]
             : [],
 
