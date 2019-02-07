@@ -2605,9 +2605,10 @@ const ClosestObjectInspector = ({ camera, sceneObjects, characters }) => {
         setResult(closest.object
           ? `Distance to ${calculatedName}: ${feetAndInchesAsString(distFeet, distInches)} (${parseFloat(Math.round(closest.distance * 100) / 100).toFixed(2)}m)`
           : '')
-        } catch (err) {
-          setResult('')
-        }
+
+      } catch (err) {
+        setResult('')
+      }
     })
   }, [camera, sceneObjects, characters])
 
