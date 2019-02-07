@@ -2012,7 +2012,7 @@ const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, s
 
           allowDelete
             ? ['a.delete[href=#]', { onClick: onDeleteClick }, 'X']
-            : ['a.delete', 'Ⅲ']
+            : ['div', { style: { width: 42 }}]
       ]]
     ]
   ])
