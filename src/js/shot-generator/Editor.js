@@ -802,8 +802,8 @@ const ListItem = ({ index, style, isScrolling, data }) => {
             sceneObject.type != 'camera' ||
             sceneObject.type == 'camera' && activeCamera !== sceneObject.id
           ),
-          onSelectObject: selectObject,
-          onUpdateObject: updateObject,
+          selectObject,
+          updateObject,
           deleteObject,
           setActiveCamera
         }
@@ -1943,17 +1943,16 @@ const BoneEditor = ({ sceneObject, bone, updateCharacterSkeleton }) => {
 }
 
 const ELEMENT_HEIGHT = 40
-const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, onSelectObject, onUpdateObject, deleteObject, setActiveCamera, machineState, transition, allowDelete, calculatedName }) => {
-  const onClick = event => {
-    event.preventDefault()
-    onSelectObject(sceneObject.id)
+const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, selectObject, updateObject, deleteObject, setActiveCamera, machineState, transition, allowDelete, calculatedName }) => {
+  const onClick = preventDefault(event => {
+    selectObject(sceneObject.id)
+
     if (sceneObject.type === 'camera') {
       setActiveCamera(sceneObject.id)
     }
-  }
+  })
 
-  const onDeleteClick = event => {
-    event.preventDefault()
+  const onDeleteClick = preventDefault(event => {
     let choice = dialog.showMessageBox(null, {
       type: 'question',
       buttons: ['Yes', 'No'],
@@ -1963,7 +1962,11 @@ const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, o
     if (choice === 0) {
       deleteObject(sceneObject.id)
     }
-  }
+  })
+
+  const onToggleVisibleClick = preventDefault(event => {
+    updateObject(sceneObject.id, { visible: !sceneObject.visible })
+  })
 
   let typeLabels = {
     'camera': [Icon, { src: 'icon-item-camera' }],
@@ -2003,9 +2006,9 @@ const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, o
             ? []
             : sceneObject.visible
               ? isSelected
-                ? ['span.visibility', [Icon, { src: 'icon-item-visible' }]]
+                ? ['a.visibility[href=#]', { onClick: onToggleVisibleClick }, [Icon, { src: 'icon-item-visible' }]]
                 : []
-              : ['span.visibility', [Icon, { src: 'icon-item-hidden' }]],
+              : ['a.visibility[href=#]', { onClick: onToggleVisibleClick }, [Icon, { src: 'icon-item-hidden' }]],
 
           allowDelete
             ? ['a.delete[href=#]', { onClick: onDeleteClick }, 'X']
