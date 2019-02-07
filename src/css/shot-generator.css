@@ -105,7 +105,7 @@ kbd {
   background: #333;
   height: 50px;
   display: flex;
-  padding-left: 100px;
+  padding-left: 300px;
   padding-top: 6px;
   padding-bottom: 6px;
   justify-content: space-between;
@@ -130,22 +130,16 @@ kbd {
   background-color: #444;
   color: white;
 }
-#toolbar .toolbar__board-info {
-  width: 200px;
-  color: #e0e0e0;
-  margin: 0;
-  padding: 0;
-  justify-content: flex-start;
-  align-items: center;
-  display: flex;
-}
-#toolbar .toolbar__board-info small {
-  padding-left: 1em;
-  opacity: 0.6;
-  letter-spacing: 0.05em;
-}
-#toolbar .toolbar__insert {
+#toolbar .toolbar__addition {
   flex: 1;
+}
+#toolbar a img {
+  display: flex;
+  padding-right: 0.5rem;
+}
+.icon {
+  width: 32px;
+  height: 32px;
 }
 
 #elements {
@@ -165,6 +159,7 @@ kbd {
   background-color: #333;
   font-size: 14px;
   letter-spacing: 0.05rem;
+  max-width: 300px;
 }
 
 .element.zebra {
@@ -174,7 +169,7 @@ kbd {
   /* border-bottom: 1px solid black; */
 }
 .element.selected {
-  background-color: #555;
+  background-color: #53537c;
 }
 .element.selected span.type {
   opacity: 0.8;
@@ -211,8 +206,12 @@ kbd {
   margin: 6px 6px 6px 6px;
   display: flex;
   width: 30px;
-  color: #777;
-  background-color: #333;
+  height: 20px;
+
+  font-weight: bold;
+  color: #9696AF;
+  opacity: 0.3;
+
   padding: 6px 0 4px 0;
   border-radius: 6px;
   font-size: 87.5%;
@@ -220,6 +219,9 @@ kbd {
   justify-content: center;
   align-items: center;
   line-height: 1;
+}
+.element .row {
+  align-items: center;
 }
 
 #listing {
@@ -243,6 +245,24 @@ kbd {
 #topdown {
   display: flex;
   align-items: center;
+  position: relative;
+}
+.topdown__controls {
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+.topdown__controls .row {
+  pointer-events: auto;
+}
+.topdown__controls a {
+  display: flex;
 }
 
 #camera-view {
@@ -263,16 +283,90 @@ kbd {
 #top-down-canvas:focus {
   outline: none;
 }
-#camera-inspector {
-  flex: 1;
-  font-size: 14px;
-}
 
-#camera-inspector .row div:first-child {
-  font-size: 24px;
+.inspectors {
+  display: flex;
+  flex-direction: row;
+
+  width: 100%;
+
+  font-size: 16px;
+  line-height: 1.25;
+
   color: #888;
-}
 
+  position: relative;
+  overflow: hidden;
+}
+.inspectors .camera-inspector,
+.inspectors .board-inspector,
+.inspectors .guides-inspector,
+.inspectors .cameras-inspector {
+  padding: 1rem;
+}
+.inspectors > div:last-child {
+  justify-content: flex-end;
+}
+.camera-inspector {
+  display: flex;
+  width: 30%;
+}
+.camera-inspector__nearest-character {
+  margin-top: 1rem;
+}
+.board-inspector {
+  display: flex;
+  flex: 1;
+}
+.board-inspector__shot {
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+.board-inspector p {
+  margin: 0 0 0.25rem 0;
+}
+.guides-inspector {
+  display: flex;
+  width: 15%;
+}
+.cameras-inspector {
+  display: flex;
+  min-width: 15%;
+}
+.cameras-inspector__label {
+  display: flex;
+  align-items: center;
+
+  margin-right: 0.5rem;
+  height: 32px;
+}
+.round-buttons-panel {
+  display: flex;
+  flex-direction: row;
+}
+.round-buttons-panel a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+}
+.round-buttons-panel a:first-child {
+  border-top-left-radius: 6px;
+  border-bottom-left-radius: 6px;
+}
+.round-buttons-panel a:last-child {
+  border-top-right-radius: 6px;
+  border-bottom-right-radius: 6px;
+}
+.round-buttons-panel a {
+  background-color: #424242;
+  color: #808080;
+}
+.round-buttons-panel a.active {
+  background-color: #717171;
+  color: #A5A5A5;
+}
 
 input, select, label {
   -webkit-app-region: no-drag;
@@ -359,7 +453,7 @@ select {
   margin-bottom: 10px;
 }
 select:focus {
-  background: yellow;
+  background: #53537c;
   color: black;
 }
 
@@ -433,7 +527,7 @@ select:focus {
 }
 .number-slider__input--text {
   color: black;
-  background-color: yellow;
+  background-color: #53537c;
 }
 .number-slider__input--move {
 }
@@ -503,6 +597,7 @@ select:focus {
 .server-inspector__value img {
   max-width: 100%;
   display: block;
+  opacity: 0.5;
 }
 
 @keyframes server-inspector-fadein {

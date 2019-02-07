@@ -1,5 +1,5 @@
-const { ipcRenderer, shell } = require('electron')
-const { app } = require('electron').remote
+const { ipcRenderer, shell } = electron = require('electron')
+const { app } = electron.remote
 const electronUtil = require('electron-util')
 
 const React = require('react')
@@ -60,7 +60,7 @@ ipcRenderer.on('loadBoard', (event, { boardData, board }) => {
   let aspectRatio = parseFloat(boardData.aspectRatio)
   store.dispatch({ type: 'SET_ASPECT_RATIO', payload: aspectRatio })
 
-  store.dispatch(setBoard({ number: board.number, uid: board.uid, shot: board.shot }))
+  store.dispatch(setBoard( board ))
 
   if (shot) {
     store.dispatch(loadScene(shot.data))
@@ -69,7 +69,7 @@ ipcRenderer.on('loadBoard', (event, { boardData, board }) => {
   }
 })
 ipcRenderer.on('update', (event, { board }) => {
-  store.dispatch(setBoard({ number: board.number, uid: board.uid, shot: board.shot }))
+  store.dispatch(setBoard( board ))
 })
 
 
@@ -136,5 +136,8 @@ if (process.env.SHOT_GENERATOR_STANDALONE) {
     )
   )
 
-  store.dispatch(loadScene(file.boards[0].sts.data))
+  let win = electron.remote.BrowserWindow.getAllWindows()
+    .find(w => w.webContents.getURL() === window.location.toString())
+
+  win.webContents.send('loadBoard', { boardData: file, board: file.boards[0] })
 }

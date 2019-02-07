@@ -802,8 +802,8 @@ const ListItem = ({ index, style, isScrolling, data }) => {
             sceneObject.type != 'camera' ||
             sceneObject.type == 'camera' && activeCamera !== sceneObject.id
           ),
-          onSelectObject: selectObject,
-          onUpdateObject: updateObject,
+          selectObject,
+          updateObject,
           deleteObject,
           setActiveCamera
         }
@@ -1943,17 +1943,16 @@ const BoneEditor = ({ sceneObject, bone, updateCharacterSkeleton }) => {
 }
 
 const ELEMENT_HEIGHT = 40
-const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, onSelectObject, onUpdateObject, deleteObject, setActiveCamera, machineState, transition, allowDelete, calculatedName }) => {
-  const onClick = event => {
-    event.preventDefault()
-    onSelectObject(sceneObject.id)
+const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, selectObject, updateObject, deleteObject, setActiveCamera, machineState, transition, allowDelete, calculatedName }) => {
+  const onClick = preventDefault(event => {
+    selectObject(sceneObject.id)
+
     if (sceneObject.type === 'camera') {
       setActiveCamera(sceneObject.id)
     }
-  }
+  })
 
-  const onDeleteClick = event => {
-    event.preventDefault()
+  const onDeleteClick = preventDefault(event => {
     let choice = dialog.showMessageBox(null, {
       type: 'question',
       buttons: ['Yes', 'No'],
@@ -1963,13 +1962,17 @@ const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, o
     if (choice === 0) {
       deleteObject(sceneObject.id)
     }
-  }
+  })
+
+  const onToggleVisibleClick = preventDefault(event => {
+    updateObject(sceneObject.id, { visible: !sceneObject.visible })
+  })
 
   let typeLabels = {
-    'camera': 'CAM',
-    'character': 'CHR',
-    'object': 'OBJ',
-    'light': 'LGT'
+    'camera': [Icon, { src: 'icon-item-camera' }],
+    'character': [Icon, { src: 'icon-item-character' }],
+    'object': [Icon, { src: 'icon-item-object' }],
+    'light': [Icon, { src: 'icon-item-light' }]
   }
 
   let className = classNames({
@@ -1992,11 +1995,25 @@ const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, o
                 ['span.id', calculatedName]
               ]
           ),
-          // isActive && ['span.active', '👀'],
-          // sceneObject.visible && ['span.visibility', '👁']
-        ]
+        ],
       ],
-      allowDelete && ['a.delete[href=#]', { onClick: onDeleteClick }, 'X']
+      ['div.row', [
+          isActive
+            ? ['span.active', [Icon, { src: 'icon-item-active' }]]
+            : [],
+
+          sceneObject.type === 'camera'
+            ? []
+            : sceneObject.visible
+              ? isSelected
+                ? ['a.visibility[href=#]', { onClick: onToggleVisibleClick }, [Icon, { src: 'icon-item-visible' }]]
+                : []
+              : ['a.visibility[href=#]', { onClick: onToggleVisibleClick }, [Icon, { src: 'icon-item-hidden' }]],
+
+          allowDelete
+            ? ['a.delete[href=#]', { onClick: onDeleteClick }, 'X']
+            : ['div', { style: { width: 42 }}]
+      ]]
     ]
   ])
 })
@@ -2290,7 +2307,17 @@ const PhoneCursor = connect(
       )
     })
 
-const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, setActiveCamera, resetScene, saveToBoard, insertAsNewBoard, board }) => {
+const Icon = ({ src }) => h(
+  [
+    'img.icon', {
+      width: 32,
+      height: 32,
+      src: `./img/shot-generator/${src}.svg`
+    }
+  ]
+)
+
+const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, setActiveCamera, resetScene, saveToBoard, insertAsNewBoard }) => {
   const onCreateCameraClick = () => {
     let id = THREE.Math.generateUUID()
     createObject({
@@ -2477,16 +2504,11 @@ const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, set
 
   return h(
     ['div#toolbar', { key: 'toolbar' },
-      ['div.toolbar__board-info.row', board.uid && [
-        ['span', `Shot ${board.shot}`]
-        // ['small', `uid:${board.uid}`]
-      ]],
-
-      ['div.toolbar__insert.row', [
-        ['a[href=#]', { onClick: preventDefault(onCreateCameraClick) }, '+ Camera'],
-        ['a[href=#]', { onClick: preventDefault(onCreateObjectClick) }, '+ Object'],
-        ['a[href=#]', { onClick: preventDefault(onCreateCharacterClick) }, '+ Character'],
-        ['a[href=#]', { onClick: preventDefault(onCreateLightClick) }, '+ Light'],
+      ['div.toolbar__addition.row', [
+        ['a[href=#]', { onClick: preventDefault(onCreateCameraClick) }, [[Icon, { src: 'icon-toolbar-camera' }], 'Camera']],
+        ['a[href=#]', { onClick: preventDefault(onCreateObjectClick) }, [[Icon, { src: 'icon-toolbar-object' }], 'Object']],
+        ['a[href=#]', { onClick: preventDefault(onCreateCharacterClick) }, [[Icon, { src: 'icon-toolbar-character' }], 'Character']],
+        ['a[href=#]', { onClick: preventDefault(onCreateLightClick) }, [[Icon, { src: 'icon-toolbar-light' }], 'Light']],
       ]],
       // ['a[href=#]', { onClick: preventDefault(onCreateStressClick) }, '+ STRESS'],
 
@@ -2494,9 +2516,9 @@ const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, set
       // ['a[href=#]', { onClick: preventDefault(onLoadClick) }, 'Load'],
       // ['a[href=#]', { onClick: preventDefault(onSaveClick) }, 'Save'],
 
-      ['div.row', [
-        ['a[href=#]', { onClick: preventDefault(onSaveToBoardClick) }, 'Save to Board'],
-        ['a[href=#]', { onClick: preventDefault(onInsertNewBoardClick) }, 'Insert As New Board']
+      ['div.toolbar__board-actions.row', [
+        ['a[href=#]', { onClick: preventDefault(onSaveToBoardClick) }, [[Icon, { src: 'icon-toolbar-save-to-board' }], 'Save to Board']],
+        ['a[href=#]', { onClick: preventDefault(onInsertNewBoardClick) }, [[Icon, { src: 'icon-toolbar-insert-as-new-board' }], 'Insert As New Board']],
       ]]
     ]
   )
@@ -2581,40 +2603,28 @@ const ClosestObjectInspector = ({ camera, sceneObjects, characters }) => {
         }
 
         setResult(closest.object
-          ? `${feetAndInchesAsString(distFeet, distInches)} (${parseFloat(Math.round(closest.distance * 100) / 100).toFixed(2)}m) from ${calculatedName}`
+          ? `Distance to ${calculatedName}: ${feetAndInchesAsString(distFeet, distInches)} (${parseFloat(Math.round(closest.distance * 100) / 100).toFixed(2)}m)`
           : '')
-        } catch (err) {
-          setResult('')
-        }
+
+      } catch (err) {
+        setResult('')
+      }
     })
   }, [camera, sceneObjects, characters])
 
-  return result
+  return h(['div.camera-inspector__nearest-character', result])
 }
 
 const CameraInspector = connect(
   state => ({
-    mainViewCamera: state.mainViewCamera,
     sceneObjects: state.sceneObjects,
     activeCamera: state.activeCamera
-  }),
-  {
-    setMainViewCamera,
-    setActiveCamera
-  }
+  })
 )(
-  React.memo(({ sceneObjects, mainViewCamera, setMainViewCamera, activeCamera, setActiveCamera }) => {
-    const { scene } = useContext(SceneContext)
-
-    let camera = scene.children.find(child => child.userData.id === activeCamera)
-    if (!camera) return h(['div#camera-inspector', { style: { padding: 12, lineHeight: 1.25 } }])
+  React.memo(({ camera, sceneObjects, activeCamera }) => {
+    if (!camera) return h(['div.camera-inspector'])
 
     let cameraState = sceneObjects[activeCamera]
-
-    // calculated value
-    let cameras = Object.values(sceneObjects)
-      .filter(o => o.type === 'camera')
-      .map((o, n) => ([ `Camera ${n + 1}`, o.id ]))
 
     let tiltInDegrees = Math.round(cameraState.tilt * THREE.Math.RAD2DEG)
 
@@ -2624,15 +2634,17 @@ const CameraInspector = connect(
                         .filter(o => o.type === 'camera')
                         .indexOf(cameraState) + 1
 
-    let cameraName = `Camera ${cameraNumber}`
+    let cameraName = cameraState.name || `Camera ${cameraNumber}`
 
     let fakeCamera = camera.clone() // TODO reuse a single object
     fakeCamera.fov = cameraState.fov
     let focalLength = fakeCamera.getFocalLength()
     fakeCamera = null
 
+    const { scene } = useContext(SceneContext)
+
     return h(
-      ['div#camera-inspector', { style: { padding: 12, lineHeight: 1.25 } },
+      ['div.camera-inspector',
 
         ['div.row',
           { style: { justifyContent: 'space-between' } },
@@ -2647,48 +2659,84 @@ const CameraInspector = connect(
               sceneObjects,
               characters: scene.children.filter(o => o.userData.type === 'character')
             }]
-          ],
-          [
-            'div.column',
-            {
-              style: { alignItems: 'flex-end' }
-            },
-            [
-              [
-                'select', {
-                  value: activeCamera,
-                  onChange: event => {
-                    event.preventDefault()
-                    setActiveCamera(event.target.value)
-                  },
-                  style: {
-                    width: 'auto'
-                  }
-                },
-                cameras.map(([name, value]) => ['option', { value }, name])
-              ],
-              [
-                'span',
-                [
-                  'a.button[href=#]',
-                  {
-                    onClick: event => {
-                      event.preventDefault()
-                      setMainViewCamera(mainViewCamera === 'ortho' ? 'live' : 'ortho')
-                    },
-                  },
-                  ['span', { style: { letterSpacing: '0.1rem' }}, ' (T)'],
-                  ['span', 'oggle Large/Small']
-                ]
-              ]
-            ]
           ]
-        ],
+        ]
         // [RemoteInputView, { remoteInput }]
       ]
     )
   }
 ))
+
+// const { durationOfWords } = require('../utils')
+const BoardInspector = connect(
+  state => ({
+    board: state.board
+  })
+)(
+({ board }) => {
+  const present = value => value && value.length > 1
+
+  // let suggestedDuration = durationOfWords(dialogue, 300) + 300
+  // let suggestedDurationInSeconds = suggestedDuration / 1000
+  // let durationString = `// about ${suggestedDurationInSeconds} seconds`
+
+  return h(
+    ['div.column.board-inspector', [
+      ['div.board-inspector__shot', 'Shot ' + board.shot],
+
+      present(board.dialogue) && ['p.board-inspector__dialogue', 'DIALOGUE: ' + board.dialogue],
+      present(board.action) && ['p.board-inspector__action', 'ACTION: ' + board.action],
+      present(board.notes) && ['p.board-inspector__notes', 'NOTES: ' + board.notes]
+    ]]
+  )
+})
+
+const GuidesInspector = ({ }) => h(['div.guides-inspector', 'Guides'])
+
+const CamerasInspector = connect(
+  state => ({
+    activeCamera: state.activeCamera,
+    _cameras: getCameraSceneObjects(state)
+  }),
+  {
+    setActiveCamera
+  }
+)(
+({
+  // props
+  activeCamera,
+
+  // via selectors
+  _cameras,
+
+  // action creators
+  setActiveCamera
+}) => {
+
+  const onClick = (camera, event) => {
+    event.preventDefault()
+    setActiveCamera(camera.id)
+  }
+
+  return h(['div.cameras-inspector', [
+    'div.row',
+      ['div.cameras-inspector__label', 'Camera'],
+      ['div.round-buttons-panel',
+        _cameras.map(
+          (camera, n) =>
+            [
+              'a[href=#]',
+              {
+                className: classNames({ active: activeCamera === camera.id }),
+                onClick: onClick.bind(this, camera)
+              },
+              n + 1
+            ]
+        )
+      ]
+  ]])
+})
+
 
 const editorMachine = Machine({
   id: 'editor',
@@ -2879,8 +2927,7 @@ const Editor = connect(
     activeCamera: state.activeCamera,
     remoteInput: state.input,
     aspectRatio: state.aspectRatio,
-    sceneObjects: state.sceneObjects,
-    board: state.board
+    sceneObjects: state.sceneObjects
   }),
   {
     createObject,
@@ -2953,12 +3000,13 @@ const Editor = connect(
         // to trigger `will-prevent-unload` on BrowserWindow
         event.returnValue = false
       }
-    }
+    },
 
+    setMainViewCamera
   }
 )(
 
-  ({ mainViewCamera, createObject, selectObject, updateModels, loadScene, saveScene, activeCamera, setActiveCamera, resetScene, remoteInput, aspectRatio, saveToBoard, insertAsNewBoard, sceneObjects, selection, board, onBeforeUnload }) => {
+  ({ mainViewCamera, createObject, selectObject, updateModels, loadScene, saveScene, activeCamera, setActiveCamera, resetScene, remoteInput, aspectRatio, saveToBoard, insertAsNewBoard, sceneObjects, selection, onBeforeUnload, setMainViewCamera }) => {
     const largeCanvasRef = useRef(null)
     const smallCanvasRef = useRef(null)
     const [ready, setReady] = useState(false)
@@ -2977,6 +3025,13 @@ const Editor = connect(
       // note: dragcontroller grabs pointerdown so this will not fire on perspective camera click
       transition('TYPING_EXIT')
     }
+
+    const onSwapCameraViewsClick = preventDefault(() =>
+      setMainViewCamera(mainViewCamera === 'ortho' ? 'live' : 'ortho'))
+
+    const onAutoFitClick = preventDefault(() => { alert('TODO autofit (not implemented yet)') })
+    const onZoomInClick = preventDefault(() => { alert('TODO zoom in (not implemented yet)') })
+    const onZoomOutClick = preventDefault(() => { alert('TODO zoom out (not implemented yet)') })
 
     useEffect(() => {
       // TODO introspect models
@@ -3001,13 +3056,24 @@ const Editor = connect(
       { value: { scene: scene.current }},
       h(
         ['div.column', { style: { width: '100%' } }, [
-          [Toolbar, { createObject, selectObject, loadScene, saveScene, camera, setActiveCamera, resetScene, saveToBoard, insertAsNewBoard, board }],
+          [Toolbar, { createObject, selectObject, loadScene, saveScene, camera, setActiveCamera, resetScene, saveToBoard, insertAsNewBoard }],
 
           ['div.row', { style: { flex: 1 }},
             ['div.column', { style: { width: '300px', background: '#111'} },
               ['div#topdown', { style: { height: '300px' } },
                 // top-down-canvas
-                ['canvas', { key: 'top-down-canvas', tabIndex: 0, ref: smallCanvasRef, id: 'top-down-canvas', style: { width: '100%' }, onPointerDown: onCanvasPointerDown }]
+                ['canvas', { key: 'top-down-canvas', tabIndex: 0, ref: smallCanvasRef, id: 'top-down-canvas', style: { width: '100%' }, onPointerDown: onCanvasPointerDown }],
+                // controls
+                ['div.topdown__controls', [
+                  ['div.row', [
+                    // ['a[href=#]', { onClick: onAutoFitClick }, [[Icon, { src: 'icon-camera-view-autofit' }]]],
+                    // ['a[href=#]', { onClick: onZoomInClick }, [[Icon, { src: 'icon-camera-view-zoom-in' }]]],
+                    // ['a[href=#]', { onClick: onZoomOutClick }, [[Icon, { src: 'icon-camera-view-zoom-out' }]]],
+                  ]],
+                  ['div.row', [
+                    ['a[href=#]', { onClick: onSwapCameraViewsClick }, [[Icon, { src: 'icon-camera-view-expand' }]]],
+                  ]]
+                ]]
               ],
               ['div#elements', [ElementsPanel, { machineState, transition }]]
             ],
@@ -3017,7 +3083,12 @@ const Editor = connect(
                 // camera canvas
                 ['canvas', { key: 'camera-canvas', tabIndex: 1, ref: largeCanvasRef, id: 'camera-canvas', onPointerDown: onCanvasPointerDown }]
               ],
-              [CameraInspector]
+              ['div.inspectors', [
+                [CameraInspector, { camera }],
+                [BoardInspector],
+                // [GuidesInspector],
+                [CamerasInspector]
+              ]]
             ],
 
             //
