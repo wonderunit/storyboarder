@@ -129,24 +129,16 @@ const SceneObject = React.memo(({ scene, id, type, isSelected, loaded, updateObj
         }
 
         if (!fs.existsSync(filepath)) {
-          let locatedFilepath = await ModelLoader.promptToLocateModelPath({
-            title: 'Model file not found',
-            message: `Could not find model file at ${filepath}. Try to find it?`
-          })
-
-          if (!locatedFilepath) {
+          try {
+            filepath = await ModelLoader.ensureModelFileExists(filepath)
+            updateObject(id, { model: filepath })
+          } catch (err) {
             dialog.showMessageBox({
               title: 'Failed to load',
               message: `Failed to load object with internal id ${id}`
             })
             setLoaded(false)
             return
-          }
-
-          if (locatedFilepath != null && locatedFilepath !== filepath) {
-            console.log('filepath has changed', 'from', filepath, 'to', locatedFilepath)
-            updateObject(id, { model: locatedFilepath })
-            filepath = locatedFilepath
           }
         }
 

@@ -310,7 +310,22 @@ const promptToLocateModelPath = ({ title, message }) => {
   })
 }
 
+const ensureModelFileExists = filepath => {
+  return new Promise(async (resolve, reject) => {
+    let locatedFilepath = await promptToLocateModelPath({
+      title: 'Model file not found',
+      message: `Could not find model file at ${filepath}. Try to find it?`
+    })
+
+    if (locatedFilepath == null) {
+      reject(new Error('File not found'))
+    }
+
+    resolve(locatedFilepath)
+  })
+}
+
 module.exports = {
   isCustomModel,
-  promptToLocateModelPath
+  ensureModelFileExists
 }
