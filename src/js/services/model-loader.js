@@ -3,6 +3,9 @@ window.THREE = window.THREE || THREE
 
 const path = require('path')
 
+const fs = require('fs')
+const { dialog } = require('electron').remote
+
 const JDLoader = require('../vendor/JDLoader.min.js')
 
 require('../vendor/three/examples/js/loaders/LoaderSupport')
@@ -271,6 +274,48 @@ const isCustomModel = string => {
   }
 }
 
+const ensureModelFileExists = filepath => {
+  if (fs.existsSync(filepath)) {
+    return Promise.resolve(filepath)
+  }
+
+  return new Promise(resolve => {
+    const choice = dialog.showMessageBox({
+      type: 'question',
+      buttons: ['Yes', 'No'],
+      title: 'Model file not found',
+      message: `Could not find model file at ${filepath}. Try to find it?`
+    })
+
+    const shouldRelocate = (choice === 0)
+
+    if (!shouldRelocate) {
+      resolve(undefined)
+      return
+    }
+
+    dialog.showOpenDialog(
+      {
+        title: 'Locate model file',
+        filters: [
+          {
+            name: 'Model',
+            extensions: ['gltf', 'glb']
+          }
+        ]
+      },
+      filenames => {
+        if (filenames) {
+          resolve(filenames[0])
+        } else {
+          resolve(undefined)
+        }
+      }
+    )
+  })
+}
+
 module.exports = {
-  isCustomModel
+  isCustomModel,
+  ensureModelFileExists
 }
