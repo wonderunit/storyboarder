@@ -3006,9 +3006,8 @@ const Editor = connect(
       transition('TYPING_EXIT')
     }
 
-    const onSwapCameraViewsClick = preventDefault(() => {
-      setMainViewCamera(mainViewCamera === 'ortho' ? 'live' : 'ortho')
-    })
+    const onSwapCameraViewsClick = preventDefault(() =>
+      setMainViewCamera(mainViewCamera === 'ortho' ? 'live' : 'ortho'))
 
     useEffect(() => {
       // TODO introspect models
