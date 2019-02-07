@@ -2608,7 +2608,7 @@ const ClosestObjectInspector = ({ camera, sceneObjects, characters }) => {
         }
 
         setResult(closest.object
-          ? `${feetAndInchesAsString(distFeet, distInches)} (${parseFloat(Math.round(closest.distance * 100) / 100).toFixed(2)}m) from ${calculatedName}`
+          ? `Distance to ${calculatedName}: ${feetAndInchesAsString(distFeet, distInches)} (${parseFloat(Math.round(closest.distance * 100) / 100).toFixed(2)}m)`
           : '')
         } catch (err) {
           setResult('')
@@ -2616,7 +2616,7 @@ const ClosestObjectInspector = ({ camera, sceneObjects, characters }) => {
     })
   }, [camera, sceneObjects, characters])
 
-  return result
+  return h(['div.camera-inspector__nearest-character', result])
 }
 
 const CameraInspector = connect(
@@ -2634,7 +2634,7 @@ const CameraInspector = connect(
     const { scene } = useContext(SceneContext)
 
     let camera = scene.children.find(child => child.userData.id === activeCamera)
-    if (!camera) return h(['div#camera-inspector', { style: { padding: 12, lineHeight: 1.25 } }])
+    if (!camera) return h(['div.camera-inspector', { style: { padding: 12, lineHeight: 1.25 } }])
 
     let cameraState = sceneObjects[activeCamera]
 
@@ -2659,7 +2659,7 @@ const CameraInspector = connect(
     fakeCamera = null
 
     return h(
-      ['div#camera-inspector', { style: { padding: 12, lineHeight: 1.25 } },
+      ['div.camera-inspector',
 
         ['div.row',
           { style: { justifyContent: 'space-between' } },
@@ -2716,6 +2716,35 @@ const CameraInspector = connect(
     )
   }
 ))
+
+// const { durationOfWords } = require('../utils')
+const BoardInspector = connect(
+  state => ({
+    board: state.board
+  })
+)(
+({ board }) => {
+  const present = value => value && value.length > 1
+
+  // let suggestedDuration = durationOfWords(dialogue, 300) + 300
+  // let suggestedDurationInSeconds = suggestedDuration / 1000
+  // let durationString = `// about ${suggestedDurationInSeconds} seconds`
+
+  return h(
+    ['div.board-inspector', [
+      ['div.board-inspector__shot', 'Shot ' + board.shot],
+
+      present(board.dialogue) && ['div.board-inspector__dialogue', 'DIALOGUE: ' + board.dialogue],
+      present(board.action) && ['div.board-inspector__action', 'ACTION: ' + board.action],
+      present(board.notes) && ['div.board-inspector__notes', 'NOTES: ' + board.notes]
+    ]]
+  )
+})
+
+const GuidesInspector = ({ }) => h(['div.guides-inspector', 'guides'])
+
+const CamerasInspector = ({ }) => h(['div.cameras-inspector', 'cameras'])
+
 
 const editorMachine = Machine({
   id: 'editor',
@@ -3063,7 +3092,12 @@ const Editor = connect(
                 // camera canvas
                 ['canvas', { key: 'camera-canvas', tabIndex: 1, ref: largeCanvasRef, id: 'camera-canvas', onPointerDown: onCanvasPointerDown }]
               ],
-              [CameraInspector]
+              ['div.row.inspectors', [
+                [CameraInspector],
+                [BoardInspector],
+                [GuidesInspector],
+                [CamerasInspector]
+              ]]
             ],
 
             //

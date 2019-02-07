@@ -294,16 +294,30 @@ kbd {
 #top-down-canvas:focus {
   outline: none;
 }
-#camera-inspector {
-  flex: 1;
-  font-size: 14px;
-}
 
-#camera-inspector .row div:first-child {
-  font-size: 24px;
+.inspectors {
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 12px;
+
+  line-height: 1.25;
+
   color: #888;
 }
-
+.camera-inspector {
+}
+.camera-inspector__nearest-character {
+  margin-top: 1rem;
+}
+.board-inspector {
+}
+.board-inspector__shot {
+  font-weight: bold;
+}
+.guides-inspector {
+}
+.cameras-inspector {
+}
 
 input, select, label {
   -webkit-app-region: no-drag;
