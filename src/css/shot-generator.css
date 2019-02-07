@@ -307,20 +307,22 @@ kbd {
   position: relative;
 }
 .camera-inspector {
-  width: 33%;
+  width: 30%;
 }
 .camera-inspector__nearest-character {
   margin-top: 1rem;
 }
 .board-inspector {
-  width: 33%;
+  min-width: 15%;
 }
 .board-inspector__shot {
   font-weight: bold;
 }
 .guides-inspector {
+  /* min-width: 15%; */
 }
 .cameras-inspector {
+  /* min-width: 15%; */
 }
 .cameras-inspector__label {
   display: flex;

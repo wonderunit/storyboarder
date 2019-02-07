@@ -2696,7 +2696,7 @@ const BoardInspector = connect(
   )
 })
 
-const GuidesInspector = ({ }) => h(['div.guides-inspector', 'guides'])
+const GuidesInspector = ({ }) => h(['div.guides-inspector', 'Guides'])
 
 const CamerasInspector = connect(
   state => ({
