@@ -331,30 +331,30 @@ kbd {
   margin-right: 1rem;
   height: 32px;
 }
-.zebra-buttons {
+.round-buttons-panel {
   display: flex;
   flex-direction: row;
 }
-.zebra-buttons a {
+.round-buttons-panel a {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 32px;
   height: 32px;
 }
-.zebra-buttons a:first-child {
+.round-buttons-panel a:first-child {
   border-top-left-radius: 6px;
   border-bottom-left-radius: 6px;
 }
-.zebra-buttons a:last-child {
+.round-buttons-panel a:last-child {
   border-top-right-radius: 6px;
   border-bottom-right-radius: 6px;
 }
-.zebra-buttons a:nth-child(odd) {
+.round-buttons-panel a {
   background-color: #424242;
   color: #808080;
 }
-.zebra-buttons a:nth-child(even) {
+.round-buttons-panel a.active {
   background-color: #717171;
   color: #A5A5A5;
 }

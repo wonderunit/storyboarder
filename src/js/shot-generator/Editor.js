@@ -2726,10 +2726,17 @@ const CamerasInspector = connect(
   return h(['div.cameras-inspector', [
     'div.row',
       ['div.cameras-inspector__label', 'Camera'],
-      ['div.zebra-buttons',
+      ['div.round-buttons-panel',
         _cameras.map(
           (camera, n) =>
-            ['a[href=#]', { onClick: onClick.bind(this, camera) }, n + 1]
+            [
+              'a[href=#]',
+              {
+                className: classNames({ active: activeCamera === camera.id }),
+                onClick: onClick.bind(this, camera)
+              },
+              n + 1
+            ]
         )
       ]
   ]])
