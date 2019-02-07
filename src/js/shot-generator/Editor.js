@@ -3009,6 +3009,10 @@ const Editor = connect(
     const onSwapCameraViewsClick = preventDefault(() =>
       setMainViewCamera(mainViewCamera === 'ortho' ? 'live' : 'ortho'))
 
+    const onAutoFitClick = preventDefault(() => { alert('TODO autofit (not implemented yet)') })
+    const onZoomInClick = preventDefault(() => { alert('TODO zoom in (not implemented yet)') })
+    const onZoomOutClick = preventDefault(() => { alert('TODO zoom out (not implemented yet)') })
+
     useEffect(() => {
       // TODO introspect models
       updateModels({})
@@ -3042,9 +3046,9 @@ const Editor = connect(
                 // controls
                 ['div.topdown__controls', [
                   ['div.row', [
-                    ['a[href=#]', { onClick: preventDefault() }, [[Icon, { src: 'icon-camera-view-autofit' }]]],
-                    ['a[href=#]', { onClick: preventDefault() }, [[Icon, { src: 'icon-camera-view-zoom-in' }]]],
-                    ['a[href=#]', { onClick: preventDefault() }, [[Icon, { src: 'icon-camera-view-zoom-out' }]]],
+                    ['a[href=#]', { onClick: onAutoFitClick }, [[Icon, { src: 'icon-camera-view-autofit' }]]],
+                    ['a[href=#]', { onClick: onZoomInClick }, [[Icon, { src: 'icon-camera-view-zoom-in' }]]],
+                    ['a[href=#]', { onClick: onZoomOutClick }, [[Icon, { src: 'icon-camera-view-zoom-out' }]]],
                   ]],
                   ['div.row', [
                     ['a[href=#]', { onClick: onSwapCameraViewsClick }, [[Icon, { src: 'icon-camera-view-expand' }]]],
