@@ -136,5 +136,8 @@ if (process.env.SHOT_GENERATOR_STANDALONE) {
     )
   )
 
-  store.dispatch(loadScene(file.boards[0].sts.data))
+  let win = electron.remote.BrowserWindow.getAllWindows()
+    .find(w => w.webContents.getURL() === window.location.toString())
+
+  win.webContents.send('loadBoard', { boardData: file, board: file.boards[0] })
 }
