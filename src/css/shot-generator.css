@@ -207,8 +207,11 @@ kbd {
   display: flex;
   width: 30px;
   height: 20px;
-  color: #777;
-  background-color: #333;
+
+  font-weight: bold;
+  color: #9696AF;
+  opacity: 0.3;
+
   padding: 6px 0 4px 0;
   border-radius: 6px;
   font-size: 87.5%;
