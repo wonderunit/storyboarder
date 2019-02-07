@@ -7,6 +7,7 @@ const React = require('react')
 const { useRef, useEffect, useState } = React
 
 const { dialog } = require('electron').remote
+const fs = require('fs')
 const ModelLoader = require('../services/model-loader')
 
 // TODO use functions of ModelLoader?
@@ -127,22 +128,27 @@ const SceneObject = React.memo(({ scene, id, type, isSelected, loaded, updateObj
           console.log('loading from app', filepath)
         }
 
-        let confirmedFilepath = await ModelLoader.ensureModelFileExists(filepath)
-
-        if (!confirmedFilepath) {
-          dialog.showMessageBox({
-            title: 'Failed to load',
-            message: `Failed to load object with internal id ${id}`
+        if (!fs.existsSync(filepath)) {
+          let locatedFilepath = await ModelLoader.promptToLocateModelPath({
+            title: 'Model file not found',
+            message: `Could not find model file at ${filepath}. Try to find it?`
           })
-          setLoaded(false)
-          return
-        }
 
-        if (confirmedFilepath != null && confirmedFilepath !== filepath) {
-          console.log('filepath has changed', 'from', filepath, 'to', confirmedFilepath)
-          updateObject(id, { model: confirmedFilepath })
+          if (!locatedFilepath) {
+            dialog.showMessageBox({
+              title: 'Failed to load',
+              message: `Failed to load object with internal id ${id}`
+            })
+            setLoaded(false)
+            return
+          }
+
+          if (locatedFilepath != null && locatedFilepath !== filepath) {
+            console.log('filepath has changed', 'from', filepath, 'to', locatedFilepath)
+            updateObject(id, { model: locatedFilepath })
+            filepath = locatedFilepath
+          }
         }
-        filepath = confirmedFilepath
 
         switch (path.extname(filepath)) {
           case '.obj':
