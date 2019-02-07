@@ -2317,7 +2317,7 @@ const Icon = ({ src }) => h(
   ]
 )
 
-const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, setActiveCamera, resetScene, saveToBoard, insertAsNewBoard, board }) => {
+const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, setActiveCamera, resetScene, saveToBoard, insertAsNewBoard }) => {
   const onCreateCameraClick = () => {
     let id = THREE.Math.generateUUID()
     createObject({
@@ -2504,11 +2504,6 @@ const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, set
 
   return h(
     ['div#toolbar', { key: 'toolbar' },
-      ['div.toolbar__board-info.row', board.uid && [
-        ['span', `Shot ${board.shot}`]
-        // ['small', `uid:${board.uid}`]
-      ]],
-
       ['div.toolbar__addition.row', [
         ['a[href=#]', { onClick: preventDefault(onCreateCameraClick) }, [[Icon, { src: 'icon-toolbar-camera' }], 'Camera']],
         ['a[href=#]', { onClick: preventDefault(onCreateObjectClick) }, [[Icon, { src: 'icon-toolbar-object' }], 'Object']],
@@ -2935,8 +2930,7 @@ const Editor = connect(
     activeCamera: state.activeCamera,
     remoteInput: state.input,
     aspectRatio: state.aspectRatio,
-    sceneObjects: state.sceneObjects,
-    board: state.board
+    sceneObjects: state.sceneObjects
   }),
   {
     createObject,
@@ -3015,7 +3009,7 @@ const Editor = connect(
   }
 )(
 
-  ({ mainViewCamera, createObject, selectObject, updateModels, loadScene, saveScene, activeCamera, setActiveCamera, resetScene, remoteInput, aspectRatio, saveToBoard, insertAsNewBoard, sceneObjects, selection, board, onBeforeUnload, setMainViewCamera }) => {
+  ({ mainViewCamera, createObject, selectObject, updateModels, loadScene, saveScene, activeCamera, setActiveCamera, resetScene, remoteInput, aspectRatio, saveToBoard, insertAsNewBoard, sceneObjects, selection, onBeforeUnload, setMainViewCamera }) => {
     const largeCanvasRef = useRef(null)
     const smallCanvasRef = useRef(null)
     const [ready, setReady] = useState(false)
@@ -3065,7 +3059,7 @@ const Editor = connect(
       { value: { scene: scene.current }},
       h(
         ['div.column', { style: { width: '100%' } }, [
-          [Toolbar, { createObject, selectObject, loadScene, saveScene, camera, setActiveCamera, resetScene, saveToBoard, insertAsNewBoard, board }],
+          [Toolbar, { createObject, selectObject, loadScene, saveScene, camera, setActiveCamera, resetScene, saveToBoard, insertAsNewBoard }],
 
           ['div.row', { style: { flex: 1 }},
             ['div.column', { style: { width: '300px', background: '#111'} },

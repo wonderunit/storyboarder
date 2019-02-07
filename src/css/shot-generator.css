@@ -105,7 +105,7 @@ kbd {
   background: #333;
   height: 50px;
   display: flex;
-  padding-left: 100px;
+  padding-left: 300px;
   padding-top: 6px;
   padding-bottom: 6px;
   justify-content: space-between;
@@ -129,20 +129,6 @@ kbd {
 #toolbar a:hover {
   background-color: #444;
   color: white;
-}
-#toolbar .toolbar__board-info {
-  width: 200px;
-  color: #e0e0e0;
-  margin: 0;
-  padding: 0;
-  justify-content: flex-start;
-  align-items: center;
-  display: flex;
-}
-#toolbar .toolbar__board-info small {
-  padding-left: 1em;
-  opacity: 0.6;
-  letter-spacing: 0.05em;
 }
 #toolbar .toolbar__addition {
   flex: 1;
