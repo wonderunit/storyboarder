@@ -2010,9 +2010,9 @@ const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, s
                 : []
               : ['a.visibility[href=#]', { onClick: onToggleVisibleClick }, [Icon, { src: 'icon-item-hidden' }]],
 
-          allowDelete
-            ? ['a.delete[href=#]', { onClick: onDeleteClick }, 'X']
-            : ['div', { style: { width: 42 }}]
+              allowDelete
+                ? ['a.delete[href=#]', { onClick: onDeleteClick }, 'X']
+                : ['a.delete', { style: { opacity: 0.1 } }, 'X']
       ]]
     ]
   ])
