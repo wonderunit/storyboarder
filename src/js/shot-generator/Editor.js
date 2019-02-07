@@ -2621,27 +2621,17 @@ const ClosestObjectInspector = ({ camera, sceneObjects, characters }) => {
 
 const CameraInspector = connect(
   state => ({
-    mainViewCamera: state.mainViewCamera,
     sceneObjects: state.sceneObjects,
     activeCamera: state.activeCamera
-  }),
-  {
-    setMainViewCamera,
-    setActiveCamera
-  }
+  })
 )(
-  React.memo(({ sceneObjects, mainViewCamera, setMainViewCamera, activeCamera, setActiveCamera }) => {
+  React.memo(({ sceneObjects, activeCamera }) => {
     const { scene } = useContext(SceneContext)
 
     let camera = scene.children.find(child => child.userData.id === activeCamera)
     if (!camera) return h(['div.camera-inspector', { style: { padding: 12, lineHeight: 1.25 } }])
 
     let cameraState = sceneObjects[activeCamera]
-
-    // calculated value
-    let cameras = Object.values(sceneObjects)
-      .filter(o => o.type === 'camera')
-      .map((o, n) => ([ `Camera ${n + 1}`, o.id ]))
 
     let tiltInDegrees = Math.round(cameraState.tilt * THREE.Math.RAD2DEG)
 
@@ -2674,43 +2664,8 @@ const CameraInspector = connect(
               sceneObjects,
               characters: scene.children.filter(o => o.userData.type === 'character')
             }]
-          ],
-          [
-            'div.column',
-            {
-              style: { alignItems: 'flex-end' }
-            },
-            [
-              [
-                'select', {
-                  value: activeCamera,
-                  onChange: event => {
-                    event.preventDefault()
-                    setActiveCamera(event.target.value)
-                  },
-                  style: {
-                    width: 'auto'
-                  }
-                },
-                cameras.map(([name, value]) => ['option', { value }, name])
-              ],
-              [
-                'span',
-                [
-                  'a.button[href=#]',
-                  {
-                    onClick: event => {
-                      event.preventDefault()
-                      setMainViewCamera(mainViewCamera === 'ortho' ? 'live' : 'ortho')
-                    },
-                  },
-                  ['span', { style: { letterSpacing: '0.1rem' }}, ' (T)'],
-                  ['span', 'oggle Large/Small']
-                ]
-              ]
-            ]
           ]
-        ],
+        ]
         // [RemoteInputView, { remoteInput }]
       ]
     )
@@ -2743,7 +2698,42 @@ const BoardInspector = connect(
 
 const GuidesInspector = ({ }) => h(['div.guides-inspector', 'guides'])
 
-const CamerasInspector = ({ }) => h(['div.cameras-inspector', 'cameras'])
+const CamerasInspector = connect(
+  state => ({
+    activeCamera: state.activeCamera,
+    _cameras: getCameraSceneObjects(state)
+  }),
+  {
+    setActiveCamera
+  }
+)(
+({
+  // props
+  activeCamera,
+
+  // via selectors
+  _cameras,
+
+  // action creators
+  setActiveCamera
+}) => {
+
+  const onClick = (camera, event) => {
+    event.preventDefault()
+    setActiveCamera(camera.id)
+  }
+
+  return h(['div.cameras-inspector', [
+    'div.row',
+      ['div.cameras-inspector__label', 'Camera'],
+      ['div.zebra-buttons',
+        _cameras.map(
+          (camera, n) =>
+            ['a[href=#]', { onClick: onClick.bind(this, camera) }, n + 1]
+        )
+      ]
+  ]])
+})
 
 
 const editorMachine = Machine({
