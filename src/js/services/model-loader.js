@@ -273,7 +273,7 @@ const isCustomModel = string => {
   }
 }
 
-const promptToLocateModelPath = ({ title, message }) => {
+const promptToLocateModelPath = ({ title, message, defaultPath }) => {
   return new Promise(resolve => {
     const choice = dialog.showMessageBox({
       type: 'question',
@@ -292,6 +292,7 @@ const promptToLocateModelPath = ({ title, message }) => {
     dialog.showOpenDialog(
       {
         title: 'Locate model file',
+        defaultPath,
         filters: [
           {
             name: 'Model',
@@ -314,7 +315,8 @@ const ensureModelFileExists = filepath => {
   return new Promise(async (resolve, reject) => {
     let locatedFilepath = await promptToLocateModelPath({
       title: 'Model file not found',
-      message: `Could not find model file at ${filepath}. Try to find it?`
+      message: `Could not find model file at ${filepath}. Try to find it?`,
+      defaultPath: path.dirname(filepath)
     })
 
     if (locatedFilepath == null) {
