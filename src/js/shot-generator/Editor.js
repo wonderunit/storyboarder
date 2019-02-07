@@ -2629,11 +2629,8 @@ const CameraInspector = connect(
     activeCamera: state.activeCamera
   })
 )(
-  React.memo(({ sceneObjects, activeCamera }) => {
-    const { scene } = useContext(SceneContext)
-
-    let camera = scene.children.find(child => child.userData.id === activeCamera)
-    if (!camera) return h(['div.camera-inspector', { style: { padding: 12, lineHeight: 1.25 } }])
+  React.memo(({ camera, sceneObjects, activeCamera }) => {
+    if (!camera) return h(['div.camera-inspector'])
 
     let cameraState = sceneObjects[activeCamera]
 
@@ -2651,6 +2648,8 @@ const CameraInspector = connect(
     fakeCamera.fov = cameraState.fov
     let focalLength = fakeCamera.getFocalLength()
     fakeCamera = null
+
+    const { scene } = useContext(SceneContext)
 
     return h(
       ['div.camera-inspector',
@@ -3093,8 +3092,8 @@ const Editor = connect(
                 // camera canvas
                 ['canvas', { key: 'camera-canvas', tabIndex: 1, ref: largeCanvasRef, id: 'camera-canvas', onPointerDown: onCanvasPointerDown }]
               ],
-                [CameraInspector],
               ['div.inspectors', [
+                [CameraInspector, { camera }],
                 [BoardInspector],
                 // [GuidesInspector],
                 [CamerasInspector]
