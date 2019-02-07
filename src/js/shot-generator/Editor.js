@@ -2579,40 +2579,36 @@ const checkIfCharacterInCameraView = (character, camera) => {
 const ClosestObjectInspector = ({ camera, sceneObjects, characters }) => {
   const [result, setResult] = useState('')
 
-  const doSetResult = () => {
-  try {
-    let closest = getClosestCharacterInView(characters, camera)
-
-    let [distFeet, distInches] = metersAsFeetAndInches(closest.distance)
-
-    // HACK this should be based directly on state.sceneObjects,
-    //      or cached in the sceneObject data
-    let calculatedName
-    let sceneObject = closest.object ? sceneObjects[closest.object.userData.id] : undefined
-    if (sceneObject) {
-      // TODO DRY
-      const number = Object.values(sceneObjects).filter(o => o.type === sceneObject.type).indexOf(sceneObject) + 1
-      const capitalize = string => string.charAt(0).toUpperCase() + string.slice(1)
-      calculatedName = sceneObject.name || capitalize(`${sceneObject.type} ${number}`)
-    }
-
-    setResult(closest.object
-      ? `Distance to ${calculatedName}: ${feetAndInchesAsString(distFeet, distInches)} (${parseFloat(Math.round(closest.distance * 100) / 100).toFixed(2)}m)`
-      : '')
-    } catch (err) {
-      setResult('')
-    }
-  }
-
   useEffect(() => {
-    doSetResult()
-
     // HACK
     // we're delaying 1 frame until scene is guaranteed to be updated
     // wrap in a try/catch because the scene might not have the same characters
     // by the time we actually render
     // if we get an error in hit testing against empty objects, just ignore it
-    requestAnimationFrame(doSetResult)
+    requestAnimationFrame(() => {
+      try {
+        let closest = getClosestCharacterInView(characters, camera)
+
+        let [distFeet, distInches] = metersAsFeetAndInches(closest.distance)
+
+        // HACK this should be based directly on state.sceneObjects,
+        //      or cached in the sceneObject data
+        let calculatedName
+        let sceneObject = closest.object ? sceneObjects[closest.object.userData.id] : undefined
+        if (sceneObject) {
+          // TODO DRY
+          const number = Object.values(sceneObjects).filter(o => o.type === sceneObject.type).indexOf(sceneObject) + 1
+          const capitalize = string => string.charAt(0).toUpperCase() + string.slice(1)
+          calculatedName = sceneObject.name || capitalize(`${sceneObject.type} ${number}`)
+        }
+
+        setResult(closest.object
+          ? `Distance to ${calculatedName}: ${feetAndInchesAsString(distFeet, distInches)} (${parseFloat(Math.round(closest.distance * 100) / 100).toFixed(2)}m)`
+          : '')
+        } catch (err) {
+          setResult('')
+        }
+    })
   }, [camera, sceneObjects, characters])
 
   return h(['div.camera-inspector__nearest-character', result])
