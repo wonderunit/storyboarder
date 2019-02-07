@@ -1,5 +1,5 @@
-const { ipcRenderer, shell } = require('electron')
-const { app } = require('electron').remote
+const { ipcRenderer, shell } = electron = require('electron')
+const { app } = electron.remote
 const electronUtil = require('electron-util')
 
 const React = require('react')
