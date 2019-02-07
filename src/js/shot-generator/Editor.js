@@ -1892,15 +1892,14 @@ const BoneEditor = ({ sceneObject, bone, updateCharacterSkeleton }) => {
   }, [sceneObject.posePresetId])
 
   return h(
-    ['div.column', { style: { } }, [
+    ['div.column', [
 
-      ['div.row', { style: { margin: '9px 0 6px 0', paddingRight: 9 } }, [
-        ['div', { style: { width: 50 }}, 'bone'],
-        ['div', { style: { flex: 1 }}, bone.name],
-        ['div', { style: { width: 40 }}]
+      ['div.column', { style: { marginBottom: 3 } }, [
+        ['div', { style: { flex: 1, margin: '6px 0 3px 0' } }, 'Bone'],
+        ['small', { style: { display: 'flex', flex: 1, marginLeft: 1, fontStyle: 'italic', opacity: 0.8 } }, bone.name]
       ]],
 
-      ['div.column', { style: { margin: '9px 0 6px 0', paddingRight: 9 } }, [
+      ['div.column', [
         [NumberSlider,
           {
             label: 'x',
