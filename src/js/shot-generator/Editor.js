@@ -3096,7 +3096,7 @@ const Editor = connect(
               ['div.row.inspectors', [
                 [CameraInspector],
                 [BoardInspector],
-                [GuidesInspector],
+                // [GuidesInspector],
                 [CamerasInspector]
               ]]
             ],
