@@ -160,6 +160,8 @@ kbd {
   font-size: 14px;
   letter-spacing: 0.05rem;
   max-width: 300px;
+  height: 40px;
+  overflow: hidden;
 }
 
 .element.zebra {
