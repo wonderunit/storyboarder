@@ -166,7 +166,7 @@ const SceneObject = React.memo(({ scene, id, type, isSelected, loaded, updateObj
 
           case '.gltf':
           case '.glb':
-            await new Promise(resolve => {
+            await new Promise((resolve, reject) => {
               gltfLoader.load(
                 filepath,
                 data => {
