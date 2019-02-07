@@ -1,11 +1,1 @@
-<svg
-  width="32px"
-  height="32px"
-  viewBox="0 0 32 32"
-  version="1.1"
-  xmlns="http://www.w3.org/2000/svg"
-  xmlns:xlink="http://www.w3.org/1999/xlink">
-  <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-    <circle style="fill: var(--color1, #ffffff)" cx="16" cy="16" r="16"></circle>
-  </g>
-</svg>
+<svg id="Layer_3" data-name="Layer 3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><title>Artboard 1</title><polygon points="2.355 10.57 2.355 21.758 12.044 27.352 21.733 21.758 21.733 10.57 12.044 4.977 2.355 10.57" style="fill:#fff;opacity:0.39"/><polygon points="32 15.067 29.733 15.067 29.733 12.801 27.686 12.801 27.686 15.067 25.419 15.067 25.419 17.115 27.686 17.115 27.686 19.382 29.733 19.382 29.733 17.115 32 17.115 32 15.067" style="fill:#fff;opacity:0.39"/></svg>

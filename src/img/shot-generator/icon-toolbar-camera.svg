@@ -1,11 +1,1 @@
-<svg
-  width="32px"
-  height="32px"
-  viewBox="0 0 32 32"
-  version="1.1"
-  xmlns="http://www.w3.org/2000/svg"
-  xmlns:xlink="http://www.w3.org/1999/xlink">
-  <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-    <circle style="fill: var(--color1, #ffffff)" cx="16" cy="16" r="16"></circle>
-  </g>
-</svg>
+<svg id="Layer_8" data-name="Layer 8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><title>Artboard 1</title><path d="M22.736,10.614l-5.344,3.328V11.094a3.013,3.013,0,0,0-3-3H3a3.012,3.012,0,0,0-3,3v9.994a3.011,3.011,0,0,0,3,3H14.389a3.012,3.012,0,0,0,3-3V18.133l5.362,3.447a.3.3,0,0,0,.456-.262V10.864A.3.3,0,0,0,22.736,10.614Z" style="fill:#fff;opacity:0.39"/><polygon points="32 15.067 29.733 15.067 29.733 12.801 27.686 12.801 27.686 15.067 25.419 15.067 25.419 17.115 27.686 17.115 27.686 19.382 29.733 19.382 29.733 17.115 32 17.115 32 15.067" style="fill:#fff;opacity:0.39"/></svg>

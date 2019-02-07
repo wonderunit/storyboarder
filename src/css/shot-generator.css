@@ -173,6 +173,7 @@ kbd {
   background-color: #333;
   font-size: 14px;
   letter-spacing: 0.05rem;
+  max-width: 300px;
 }
 
 .element.zebra {
@@ -182,7 +183,7 @@ kbd {
   /* border-bottom: 1px solid black; */
 }
 .element.selected {
-  background-color: #555;
+  background-color: #53537c;
 }
 .element.selected span.type {
   opacity: 0.8;
@@ -371,7 +372,7 @@ select {
   margin-bottom: 10px;
 }
 select:focus {
-  background: yellow;
+  background: #53537c;
   color: black;
 }
 
@@ -445,7 +446,7 @@ select:focus {
 }
 .number-slider__input--text {
   color: black;
-  background-color: yellow;
+  background-color: #53537c;
 }
 .number-slider__input--move {
 }
@@ -515,6 +516,7 @@ select:focus {
 .server-inspector__value img {
   max-width: 100%;
   display: block;
+  opacity: 0.5;
 }
 
 @keyframes server-inspector-fadein {
