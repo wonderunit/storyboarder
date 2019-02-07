@@ -306,7 +306,7 @@ kbd {
 }
 .camera-inspector {
   display: flex;
-  width: 33%;
+  width: 30%;
 }
 .camera-inspector__nearest-character {
   margin-top: 1rem;
