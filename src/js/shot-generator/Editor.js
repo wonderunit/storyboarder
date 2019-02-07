@@ -3069,9 +3069,9 @@ const Editor = connect(
                 // controls
                 ['div.topdown__controls', [
                   ['div.row', [
-                    ['a[href=#]', { onClick: onAutoFitClick }, [[Icon, { src: 'icon-camera-view-autofit' }]]],
-                    ['a[href=#]', { onClick: onZoomInClick }, [[Icon, { src: 'icon-camera-view-zoom-in' }]]],
-                    ['a[href=#]', { onClick: onZoomOutClick }, [[Icon, { src: 'icon-camera-view-zoom-out' }]]],
+                    // ['a[href=#]', { onClick: onAutoFitClick }, [[Icon, { src: 'icon-camera-view-autofit' }]]],
+                    // ['a[href=#]', { onClick: onZoomInClick }, [[Icon, { src: 'icon-camera-view-zoom-in' }]]],
+                    // ['a[href=#]', { onClick: onZoomOutClick }, [[Icon, { src: 'icon-camera-view-zoom-out' }]]],
                   ]],
                   ['div.row', [
                     ['a[href=#]', { onClick: onSwapCameraViewsClick }, [[Icon, { src: 'icon-camera-view-expand' }]]],
