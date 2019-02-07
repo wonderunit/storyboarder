@@ -219,6 +219,7 @@ kbd {
   margin: 6px 6px 6px 6px;
   display: flex;
   width: 30px;
+  height: 20px;
   color: #777;
   background-color: #333;
   padding: 6px 0 4px 0;
@@ -228,6 +229,9 @@ kbd {
   justify-content: center;
   align-items: center;
   line-height: 1;
+}
+.element .row {
+  align-items: center;
 }
 
 #listing {

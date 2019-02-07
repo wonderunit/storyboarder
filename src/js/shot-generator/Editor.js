@@ -1992,11 +1992,21 @@ const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, o
                 ['span.id', calculatedName]
               ]
           ),
-          // isActive && ['span.active', '👀'],
-          // sceneObject.visible && ['span.visibility', '👁']
-        ]
+        ],
       ],
-      allowDelete && ['a.delete[href=#]', { onClick: onDeleteClick }, 'X']
+      ['div.row', [
+          isActive
+            ? ['span.active', [Icon, { src: 'icon-item-active' }]]
+            : [],
+
+          sceneObject.visible
+            ? ['span.visibility', [Icon, { src: 'icon-item-visible' }]]
+            : [],
+
+          allowDelete
+            ? ['a.delete[href=#]', { onClick: onDeleteClick }, 'X']
+            : ['a.delete', 'Ⅲ']
+      ]]
     ]
   ])
 })
