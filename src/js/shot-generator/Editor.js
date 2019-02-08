@@ -179,7 +179,8 @@ const SceneManager = connect(
     selectObject,
     animatedUpdate,
     selectBone,
-    updateCharacterSkeleton
+    updateCharacterSkeleton,
+    createPosePreset
   }
 )(
   ({ world, sceneObjects, updateObject, selectObject, remoteInput, largeCanvasRef, smallCanvasRef, selection, selectedBone, machineState, transition, animatedUpdate, selectBone, mainViewCamera, updateCharacterSkeleton, largeCanvasSize, activeCamera, aspectRatio, devices }) => {
@@ -515,9 +516,10 @@ const SceneManager = connect(
         }
 
         //if character
-        if (child && ((child.children[0] && child.children[0].skeleton) || (child.children[1] && child.children[1].skeleton)) && sceneObject.visible) {
-          //console.log('child: ', child)
-          let skel = (child.children[0] instanceof THREE.Mesh) ? child.children[0] : child.children[1]
+        //if (child && ((child.children[0] && child.children[0].skeleton) || (child.children[1] && child.children[1].skeleton) || (child.children[2] && child.children[2].skeleton)) && sceneObject.visible) {
+        if (child && child.userData.type === 'character') {
+          let skel = child.children.find(cld => cld instanceof THREE.SkinnedMesh) ||
+            child.children[0].children.find(cld => cld instanceof THREE.SkinnedMesh)
 
           if (
             // there is not a BonesHelper instance
@@ -536,9 +538,8 @@ const SceneManager = connect(
         bonesHelper.current = null
       }
 
-
-
       if (dragControlsView.current) {
+        //console.log('bones helper current: ', bonesHelper.current)
         dragControlsView.current.setBones(bonesHelper.current)
         dragControlsView.current.setSelected(child)
       }
@@ -584,7 +585,6 @@ const SceneManager = connect(
     }, [machineState.value, camera, cameraControlsView.current, mainViewCamera])
 
     // console.log('SceneManager render', sceneObjects)
-
     const components = Object.values(sceneObjects).map(props => {
         switch (props.type) {
           case 'object':
@@ -618,7 +618,7 @@ const SceneManager = connect(
                 updateObject,
 
                 loaded: props.loaded ? props.loaded : false,
-                devices, 
+                devices,
                 ...props
               }
             ]
@@ -1495,6 +1495,7 @@ const PosePresetsEditor = connect(
           skeleton: sceneObject.skeleton || {}
         }
       }
+      console.log('sceneObject.skeleton: ', sceneObject)
       // create it
       dispatch(createPosePreset(preset))
 
@@ -1533,6 +1534,7 @@ const PosePresetsEditor = connect(
     const onSelectPosePreset = event => {
       let posePresetId = event.target.value
       let preset = posePresets[posePresetId]
+      console.log('selecting pose: ', sceneObject.id, posePresetId, preset)
       selectPosePreset(sceneObject.id, posePresetId, preset)
     }
 
@@ -1737,7 +1739,7 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
           formatter: NumberSliderFormatter.degrees
         }]
       ],
-   
+
 
       sceneObject.type == 'camera' &&
         ['div',
