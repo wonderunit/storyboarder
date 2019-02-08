@@ -16,7 +16,7 @@ module.exports = function ({
   setInputSensor, // TODO do we need this?
   setInputDown,
   setInputMouseMode,
-  setInputPhoneClick
+  setInputOrbitMode
 }) {
   wss.on('connection', function connection (ws) {
     console.log('got connection')
@@ -40,8 +40,8 @@ module.exports = function ({
         setInputMouseMode(values.mouseMode)
       }
 
-      if (values.mouseModeClick != null) {
-        setInputPhoneClick(values.mouseModeClick)
+      if (values.orbitMode != null) {        
+        setInputOrbitMode(values.orbitMode)
       }
     })
   })

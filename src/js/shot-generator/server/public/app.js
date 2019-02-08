@@ -4,7 +4,7 @@ let alpha
 let beta
 let gamma
 let mouseMode = false
-let mouseModeClick = false
+let cameraMode = false
 
 function log (string) {
   document.body.innerHTML += string + "<br/>"
@@ -89,7 +89,7 @@ function orientation(event){
   beta = event.beta
   gamma = event.gamma
 
-  if (down && !mouseModeClick) {
+  if (down) {
     report({
       mag: [event.alpha, event.beta, event.gamma]
     })
@@ -193,18 +193,16 @@ document.getElementById("phoneSelect").addEventListener('touchend', event => {
   down = false
   mouseOn = false;
   event.preventDefault()
+
   
   report({
-    mouseModeClick: true
-  })
-  report({
-    mouseModeClick: false
-  })
-  report({
     down: false
-  })
+  })  
   report({
     mouseMode: false
+  })
+  report({
+    mag: [alpha, beta, gamma]
   })
 })
 
@@ -212,10 +210,79 @@ document.getElementById("phoneSelect").addEventListener('touchcancel', event => 
   down = false
   mouseOn = false;
   event.preventDefault()
+  
+  report({
+    down: false
+  })  
+  report({
+    mouseMode: false
+  })
+  report({
+    mag: [alpha, beta, gamma]
+  })
+})
+
+document.getElementById("cameraOrbit").addEventListener('touchstart', event => {
+
+  down = true
+  event.preventDefault();
+  mouseOn = true
+  report({
+    mag: [alpha, beta, gamma]
+  })
+  report({
+    mouseMode: true
+  })
+  report({
+    orbitMode: true
+  })
+  report({
+    down: true
+  })
+  report({
+    mag: [alpha, beta, gamma]
+  })  
+})
+
+document.getElementById("cameraOrbit").addEventListener('touchmove', event => {
+  event.preventDefault()
+})
+
+document.getElementById("cameraOrbit").addEventListener('touchend', event => {
+  down = false
+  mouseOn = false;
+  event.preventDefault()
+  
+  report({
+    orbitMode: false
+  })
   report({
     down: false
   })
   report({
     mouseMode: false
+  })
+  report({
+    mag: [alpha, beta, gamma]
+  })
+  
+})
+
+document.getElementById("cameraOrbit").addEventListener('touchcancel', event => {
+  down = false
+  mouseOn = false;
+  event.preventDefault()
+  
+  report({
+    orbitMode: false
+  })
+  report({
+    down: false
+  })  
+  report({
+    mouseMode: false
+  })
+  report({
+    mag: [alpha, beta, gamma]
   })
 })

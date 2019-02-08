@@ -263,7 +263,7 @@ const initialState = {
     sensor: [0, 0, 0, 0],
     down: false,
     mouseMode: false,
-    mouseModeClick: false
+    orbitMode: false
   },
   devices: {
     0: {
@@ -576,8 +576,9 @@ module.exports = {
           draft.input.mouseMode = action.payload
           return
 
-        case 'SET_INPUT_PHONE_CLICK':
-          draft.input.mouseModeClick = action.payload
+        case 'SET_INPUT_ORBITMODE':          
+          draft.input.orbitMode = action.payload
+          console.log('setting orbit mode to: ', action.payload)
           return
 
         case 'UPDATE_MODELS':

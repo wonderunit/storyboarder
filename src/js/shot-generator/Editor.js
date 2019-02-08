@@ -20,6 +20,8 @@ const { createSelector } = require('reselect')
 //const useComponentSize = require('../use-component-size')
 const h = require('../utils/h')
 const useComponentSize = require('../hooks/use-component-size')
+const robot = require("robotjs")
+
 
 const {
   selectObject,
@@ -1992,7 +1994,10 @@ const PhoneCursor = connect(
       let tester = useRef(null)
       let isRotating = useRef(false)
       let intersectionPlane = useRef(null)
+      let mousePosition = useRef(null)
+      let virtualMouse = useRef(null)
       let xy = useRef({x:0, y:0})
+      let startPosition = useRef(null)
       let lastxy = useRef({x:0, y:0})
       let viewportwidth = largeCanvasRef.current.clientWidth,
           viewportheight = largeCanvasRef.current.clientHeight
@@ -2004,13 +2009,12 @@ const PhoneCursor = connect(
       let oldxy = useRef({x:viewportwidth/2,y:viewportheight/2})
       const isButtonClicked = useRef(false)
       const { scene } = useContext(SceneContext)
-      let bonesHelper = useRef(null)
-
+      
       const setPlanePosition = (obj) => {
-        let direction = new THREE.Vector3() // create once and reuse it!
+        let direction = new THREE.Vector3() 
         camera.getWorldDirection( direction )
         let newPos = new THREE.Vector3()
-        let dist = 3
+        let dist = 5
         newPos.addVectors ( camera.position, direction.multiplyScalar( dist ) )
         obj.position.set(newPos.x, newPos.y, newPos.z)
         obj.lookAt(camera.position)
@@ -2063,6 +2067,8 @@ const PhoneCursor = connect(
       }
 
       useEffect(() => {
+        
+        //console.log('whats going on here: ', camera, remoteInput.mouseMode)
         if (camera !== undefined && camera !== null && remoteInput.mouseMode)
         {
           if (camera.parent) scene.current = camera.parent
@@ -2073,7 +2079,7 @@ const PhoneCursor = connect(
           } else {
             intersectionPlane.current = new THREE.Mesh(
               //new THREE.CylinderGeometry(1, 1, 40, 16, 2),
-              new THREE.PlaneGeometry(50, 30, 2),
+              new THREE.PlaneGeometry(100, 100, 2),
               new THREE.MeshBasicMaterial( {color: 0xffff00, side: THREE.DoubleSide} ))
             setPlanePosition(intersectionPlane.current)
             //setCylinderOrientation(intersectionPlane.current)
@@ -2087,28 +2093,30 @@ const PhoneCursor = connect(
           else {
             tester.current = new THREE.Object3D()
             let m = new THREE.Mesh(
-              new THREE.BoxGeometry(0.01, 0.01, 0.01),
+              new THREE.BoxGeometry(0.01, 0.01, 0.1),
               new THREE.MeshBasicMaterial({color: '#123123' })
             )
             m.position.z = -0.005
             tester.current.position.set(camera.position.x, camera.position.y, camera.position.z)
-            tester.current.position.y -= 0.05;
+            tester.current.position.y += 0.05;
             tester.current.quaternion.copy(camera.quaternion)
-            //tester.current.add(new THREE.AxesHelper(1))
+            tester.current.add(new THREE.AxesHelper(1))
             tester.current.add(m)
-            scene.current.add(tester.current)
+            //scene.current.add(tester.current)
           }
         }
 
         // handling phone rotation to screen position here
         if (remoteInput.mouseMode)
         {
-          let last_xy = {x:0,y:0}
-          if (remoteInput.down && !remoteInput.mouseModeClick)
+          if (remoteInput.down)
           {
             let [ alpha, beta, gamma ] = remoteInput.mag.map(THREE.Math.degToRad)
+            let firstRun = false
             if (!isRotating.current) {
-              isRotating.current = true
+              //starting rotation
+              //isRotating.current = true
+              //firstRun = true
               let target = tester.current
               startingObjectRotation.current ={
                 x: target.rotation.x,
@@ -2120,6 +2128,12 @@ const PhoneCursor = connect(
                 beta: beta,
                 gamma: gamma
               }
+              mousePosition.current = robot.getMousePos()
+              virtualMouse.current = {
+                x: mousePosition.x,
+                y: mousePosition.y
+              }              
+              //
             }
             let w = 0,
               x = 0,
@@ -2127,8 +2141,8 @@ const PhoneCursor = connect(
               z = 1
             let startingDeviceQuaternion = new THREE.Quaternion().setFromEuler(new THREE.Euler(startingDeviceRotation.current.beta, startingDeviceRotation.current.alpha, -startingDeviceRotation.current.gamma, 'YXZ')).multiply(new THREE.Quaternion(w, x, y, z))
             let deviceQuaternion = new THREE.Quaternion().setFromEuler(new THREE.Euler(beta, alpha, -gamma, 'YXZ')).multiply(new THREE.Quaternion(w, x, y, z))
-            startingDeviceQuaternion.multiply(camera.quaternion)
-            deviceQuaternion.multiply(camera.quaternion)
+            //startingDeviceQuaternion.multiply(camera.quaternion)
+            //deviceQuaternion.multiply(camera.quaternion)
             let deviceDifference = startingDeviceQuaternion.clone().inverse().multiply(deviceQuaternion)
             let startingObjectQuaternion = new THREE.Quaternion().setFromEuler(new THREE.Euler(startingObjectRotation.current.x,startingObjectRotation.current.y,startingObjectRotation.current.z))
 
@@ -2141,45 +2155,61 @@ const PhoneCursor = connect(
             let intersect = findIntersection(camera.position, dir, intersectionPlane.current)
             if (intersect.length>0)
             {
+              // let point = new THREE.Mesh(
+              //   new THREE.SphereGeometry(0.05),
+              //   new THREE.MeshBasicMaterial({color: "#ff0000"})
+              // )
+              // point.position.copy(intersect[0].point)
+              // scene.add(point)
+              
               let xy_coords = toScreenXY( intersect[0].point, camera )
-              xy_coords.x = xy_coords.x * 100 + viewportwidth/2 - (viewportwidth/2 - oldxy.current.x)
-              xy_coords.y = xy_coords.y * 100 + viewportheight/2 - (viewportheight/2- oldxy.current.y)
+              if (!isRotating.current) 
+              {
+                isRotating.current = true
+                firstRun = false
+                startPosition.current = {
+                  x: xy_coords.x * 300, // * viewportwidth/4,
+                  y: xy_coords.y * 300 //* viewportheight/4
+                }
+              } 
 
-
-              xy_coords.x = xy_coords.x > 0 ? xy_coords.x : 0
-              xy_coords.y = xy_coords.y > 0 ? xy_coords.y : 0
-              xy.current = {
-                x: xy_coords.x < viewportwidth - 10 ? xy_coords.x + canvasPosition.x : viewportwidth  - 10 + canvasPosition.x,
-                y: xy_coords.y < viewportheight - 10 ? xy_coords.y  : viewportheight - 10 //+ canvasPosition.y
+              //virtualMouse.current.x = mousePosition.current.x - ((startPosition.current.x - xy_coords.x * viewportwidth/4)/2)
+              //virtualMouse.current.y = mousePosition.current.y - ((startPosition.current.y - xy_coords.y * viewportheight/4)/2)
+              //console.log('which is bad? ', mousePosition.current, startPosition.current, xy_coords)
+              virtualMouse.current.x = mousePosition.current.x - ((startPosition.current.x - xy_coords.x * 300)/2)
+              virtualMouse.current.y = mousePosition.current.y - ((startPosition.current.y - xy_coords.y * 300)/2)
+              //console.log('remote orbit: ', remoteInput.orbitMode)
+              if (remoteInput.orbitMode)
+              {
+                //robot.mouseClick()
+                robot.mouseToggle("down");
+                robot.dragMouse(virtualMouse.current.x+100, virtualMouse.current.y+100)
+                robot.mouseToggle("up");
+                //console.log('orbiting!')
+              } else {
+                robot.moveMouse(virtualMouse.current.x, virtualMouse.current.y)
               }
+              
+
             }
           } else {
             if (scene.current && tester.current!=null)
             {
               isRotating.current = false
+              robot.mouseClick()
+              console.log('clicked!')
               scene.current.remove(tester.current)
               scene.current.remove(intersectionPlane.current)
               tester.current = null
-              intersectionPlane.current = null
-              if (xy.current.x !== 0 && xy.current.y !== 0 )
-              {
-                oldxy.current = {
-                  x: xy.current.x - canvasPosition.x,
-                  y: xy.current.y
-
-                }
-              }
+              intersectionPlane.current = null              
             }
           }
         } else {
-          // not in mouse mode
-          oldxy.current = {
-            x: viewportwidth/2,
-            y: viewportheight/2
-          }
+          // not in mouse mode         
           if (scene.current && tester.current!=null)
           {
             isRotating.current = false
+            robot.mouseClick()
             scene.current.remove(tester.current)
             scene.current.remove(intersectionPlane.current)
             tester.current = null
@@ -2189,78 +2219,9 @@ const PhoneCursor = connect(
 
       }, [remoteInput, selection])
 
-      useEffect(() => {
-        //handling button click on phone
-        if (!remoteInput.mouseModeClick) {
-          if (isButtonClicked.current) isButtonClicked.current = false
-          return
-        }
-        if (isButtonClicked.current) return
-        isButtonClicked.current = true
-
-        var raycaster = new THREE.Raycaster()
-        var phoneMouse = new THREE.Vector2()
-
-        phoneMouse.x = ( (oldxy.current.x ) / viewportwidth ) * 2 - 1
-    	  phoneMouse.y = - ( (oldxy.current.y ) / viewportheight ) * 2 + 1
-
-        raycaster.setFromCamera( phoneMouse, camera )
-
-        let checkIntersectionsWithMeshes = []
-        for (var o of draggables(sceneObjects, scene))
-        {
-          if (o instanceof THREE.Mesh) checkIntersectionsWithMeshes.push(o)
-          if (o instanceof THREE.Object3D && o.userData.type === 'character')
-          {
-            checkIntersectionsWithMeshes = checkIntersectionsWithMeshes.concat(o.bonesHelper.hit_meshes)
-          }
-        }
-
-        var noIntersect = true
-      	var intersects = raycaster.intersectObjects( checkIntersectionsWithMeshes )
-        for ( var i = 0; i < intersects.length; i++ ) {
-
-          if (intersects[i].object.userData.type === 'object' || intersects[i].object.userData.type==='hitter')
-          {
-            noIntersect = false
-
-            let obj = getObjectAndBone( intersects[ i ] ) [0]
-            let currentSelected = scene.children.find(child => child.userData.id === selection)
-            if (currentSelected === obj) {
-
-              let hits
-              let bone
-
-              if (currentSelected.bonesHelper) {
-                hits = raycaster.intersectObject( currentSelected.bonesHelper )
-                bone = hits.length && getObjectAndBone( hits[ 0 ] )[1]
-              }
-            // ... select bone (if any) ...
-              if (bone) {
-                selectBone( bone.uuid )
-              } else {
-                selectBone( null )
-              }
-            } else {
-              // select the object
-              selectBone( null )
-              selectObject(obj.userData.id)
-            }
-          }
-        }
-        if (noIntersect) {
-          selectBone( null )
-          selectObject( null )
-        }
-      }, [remoteInput])
-
       return h(
         ['div#phoneCursor', { key: 'cursor' } ,
-          [
-            ['div#testCursor]', { key: 'testcursor', style: {
-              top: xy.current ? xy.current.y : 0,
-              left: xy.current ? xy.current.x : 0
-            } }],
+          [            
           ]
         ]
       )
