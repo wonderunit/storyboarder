@@ -185,6 +185,7 @@ const SceneManager = connect(
 )(
   ({ world, sceneObjects, updateObject, selectObject, remoteInput, largeCanvasRef, smallCanvasRef, selection, selectedBone, machineState, transition, animatedUpdate, selectBone, mainViewCamera, updateCharacterSkeleton, largeCanvasSize, activeCamera, aspectRatio, devices }) => {
     const { scene } = useContext(SceneContext)
+
     let [camera, setCamera] = useState(null)
 
     let largeRenderer = useRef(null)
@@ -305,6 +306,8 @@ const SceneManager = connect(
 
       orthoCamera.current.updateProjectionMatrix()
 
+      orthoCamera.current.layers.enable(2)
+
       // resize the renderers
       if (mainViewCamera === 'live') {
         // perspective camera is large
@@ -384,6 +387,8 @@ const SceneManager = connect(
         }
 
         cameraHelper.current = new THREE.CameraHelper(camera)
+        cameraHelper.current.layers.disable(0)
+        cameraHelper.current.layers.enable(2)
         scene.add(cameraHelper.current)
 
         animator.current = () => {
@@ -741,6 +746,8 @@ const Camera = React.memo(({ scene, id, type, setCamera, ...props }) => {
 
   camera.current.fov = props.fov
   camera.current.updateProjectionMatrix()
+
+  camera.current.layers.enable(1)
 
   return null
 })
