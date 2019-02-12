@@ -201,7 +201,7 @@ class AudioFileControlView {
           context,
           this.state.mode === 'countdown'
             ? 'silver'
-            : '#7a72e9',
+            : '#8d89cf',
           lastAudioData
         )
       }
@@ -210,7 +210,7 @@ class AudioFileControlView {
           context,
           this.state.mode === 'countdown'
             ? 'silver'
-            : '#7a72e9',
+            : '#8d89cf',
           Tone.dbToGain(lastMeter) // scale to 0…1
         )
       }

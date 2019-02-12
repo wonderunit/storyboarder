@@ -24,6 +24,10 @@ const robot = require("robotjs")
 
 
 const {
+  //
+  //
+  // action creators
+  //
   selectObject,
   createObject,
   updateObject,
@@ -50,7 +54,16 @@ const {
 
   updateWorld,
   updateWorldRoom,
-  updateWorldEnvironment
+  updateWorldEnvironment,
+  
+  markSaved,
+
+  //
+  //
+  // selectors
+  //
+  getSerializedState,
+  getIsSceneDirty
 //} = require('../state')
 } = require('../shared/reducers/shot-generator')
 
@@ -73,6 +86,8 @@ const presetsStorage = require('../shared/store/presetsStorage')
 
 const WorldObject = require('./World')
 
+const ModelLoader = require('../services/model-loader')
+
 const NumberSlider = require('./NumberSlider')
 const NumberSliderTransform = {
   degrees: (prev, delta, { min, max, step, fine }) => {
@@ -90,6 +105,7 @@ const NumberSliderFormatter = {
 }
 
 const ModelSelect = require('./ModelSelect')
+const ServerInspector = require('./ServerInspector')
 
 require('../vendor/OutlineEffect.js')
 
@@ -99,9 +115,6 @@ window.THREE = THREE
 const draggables = (sceneObjects, scene) =>
   //scene.children.filter(o => o.userData.type === 'object' || o instanceof BoundingBoxHelper)
   scene.children.filter(o => o.userData.type === 'object' || o.userData.type === 'character' || o.userData.type === 'light' )
-
-const characters = ( scene ) =>
-  scene.children.filter(o => o.userData.type === 'character')
 
 const animatedUpdate = (fn) => (dispatch, getState) => fn(dispatch, getState())
 
@@ -168,7 +181,8 @@ const SceneManager = connect(
     selectObject,
     animatedUpdate,
     selectBone,
-    updateCharacterSkeleton
+    updateCharacterSkeleton,
+    createPosePreset
   }
 )(
   ({ world, sceneObjects, updateObject, selectObject, remoteInput, largeCanvasRef, smallCanvasRef, selection, selectedBone, machineState, transition, animatedUpdate, selectBone, mainViewCamera, updateCharacterSkeleton, largeCanvasSize, activeCamera, aspectRatio, devices }) => {
@@ -406,23 +420,23 @@ const SceneManager = connect(
                 }
 
                 // step
-                //console.log('orbit: ', remoteInput.orbitMode)
-                if (false)
-                {                  
-                  
-                } else {
-                  cameraControlsView.current.enabled = true
-                  dragControlsView.current.enabled = true
-                  cameraControlsView.current.update( clock.current.getDelta(), state )
-                  dragControlsView.current.update( clock.current.getDelta(), state )
+                cameraControlsView.current.update( clock.current.getDelta(), state )
+                dragControlsView.current.update( clock.current.getDelta(), state )
 
+                // update object state with the latest values
+                let cameraId = camera.userData.id
+                let { x, y, z, rotation, tilt, fov } = cameraControlsView.current.object
 
-                  // TODO only call updateObject if camera object props we care about actually changed
-                  //
-                  // update object state with the latest values
-                  let cameraId = camera.userData.id
-                  let { x, y, z, rotation, tilt, fov } = cameraControlsView.current.object
-
+                // if props changed
+                if (
+                  cameraState.x != x ||
+                  cameraState.y != y ||
+                  cameraState.z != z ||
+                  cameraState.rotation != rotation ||
+                  cameraState.tilt != tilt ||
+                  cameraState.fov != fov
+                ) {
+                  // update the camera state
                   updateObject(cameraId, {
                     x,
                     y,
@@ -503,9 +517,10 @@ const SceneManager = connect(
         }
 
         //if character
-        if (child && ((child.children[0] && child.children[0].skeleton) || (child.children[1] && child.children[1].skeleton)) && sceneObject.visible) {
-          //console.log('child: ', child)
-          let skel = (child.children[0] instanceof THREE.Mesh) ? child.children[0] : child.children[1]
+        //if (child && ((child.children[0] && child.children[0].skeleton) || (child.children[1] && child.children[1].skeleton) || (child.children[2] && child.children[2].skeleton)) && sceneObject.visible) {
+        if (child && child.userData.type === 'character') {
+          let skel = child.children.find(cld => cld instanceof THREE.SkinnedMesh) ||
+            child.children[0].children.find(cld => cld instanceof THREE.SkinnedMesh)
 
           if (
             // there is not a BonesHelper instance
@@ -524,9 +539,8 @@ const SceneManager = connect(
         bonesHelper.current = null
       }
 
-
-
       if (dragControlsView.current) {
+        //console.log('bones helper current: ', bonesHelper.current)
         dragControlsView.current.setBones(bonesHelper.current)
         dragControlsView.current.setSelected(child)
       }
@@ -572,7 +586,6 @@ const SceneManager = connect(
     }, [machineState.value, camera, cameraControlsView.current, mainViewCamera])
 
     // console.log('SceneManager render', sceneObjects)
-
     const components = Object.values(sceneObjects).map(props => {
         switch (props.type) {
           case 'object':
@@ -606,7 +619,7 @@ const SceneManager = connect(
                 updateObject,
 
                 loaded: props.loaded ? props.loaded : false,
-                devices, 
+                devices,
                 ...props
               }
             ]
@@ -790,8 +803,8 @@ const ListItem = ({ index, style, isScrolling, data }) => {
             sceneObject.type != 'camera' ||
             sceneObject.type == 'camera' && activeCamera !== sceneObject.id
           ),
-          onSelectObject: selectObject,
-          onUpdateObject: updateObject,
+          selectObject,
+          updateObject,
           deleteObject,
           setActiveCamera
         }
@@ -866,7 +879,8 @@ const Inspector = ({
           updateWorldRoom,
           updateWorldEnvironment
         }
-      ]
+      ],
+      [ServerInspector]
   ])
 }
 
@@ -1482,6 +1496,7 @@ const PosePresetsEditor = connect(
           skeleton: sceneObject.skeleton || {}
         }
       }
+      console.log('sceneObject.skeleton: ', sceneObject)
       // create it
       dispatch(createPosePreset(preset))
 
@@ -1520,6 +1535,7 @@ const PosePresetsEditor = connect(
     const onSelectPosePreset = event => {
       let posePresetId = event.target.value
       let preset = posePresets[posePresetId]
+      console.log('selecting pose: ', sceneObject.id, posePresetId, preset)
       selectPosePreset(sceneObject.id, posePresetId, preset)
     }
 
@@ -1724,7 +1740,7 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
           formatter: NumberSliderFormatter.degrees
         }]
       ],
-   
+
 
       sceneObject.type == 'camera' &&
         ['div',
@@ -1766,47 +1782,75 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
           }
         ],
 
-      sceneObject.type == 'character' && [
-
-        ['div', { style: { flex: 1, paddingBottom: 6 } }, [
-          [NumberSlider, { label: 'height', min: 1.4732, max: 2.1336, step: 0.0254, value: sceneObject.height, onSetValue: createOnSetValue(sceneObject.id, 'height'),
-            formatter: value => feetAndInchesAsString(...metersAsFeetAndInches(sceneObject.height))
-          } ],
-          [
-            NumberSlider,
-            {
-              label: 'head',
-              min: 80,
-              max: 120,
-              step: 1,
-              value: sceneObject.headScale * 100,
-              onSetValue: createOnSetValue(sceneObject.id, 'headScale', value => value / 100),
-              formatter: value => Math.round(value).toString() + '%'
-          } ],
-        ]],
-
-        ['div', { style: { margin: '6px 0 3px 0', fontStyle: 'italic' } }, 'morphs'],
-
-        ['div', { style: { flex: 1 } },
-          Object.entries(sceneObject.morphTargets).map(([ key, value ]) =>
-            [
-              NumberSlider,
-              {
-                label: MORPH_TARGET_LABELS[key],
-                min: 0,
-                max: 100,
-                step: 1,
-                value: value * 100,
-                onSetValue: value => updateObject(
-                  sceneObject.id,
-                  { morphTargets: { [key]: value / 100 }
-                }),
-                formatter: NumberSliderFormatter.percent
-              }
+      sceneObject.type == 'character' && (
+        ModelLoader.isCustomModel(sceneObject.model)
+          ? [
+            ['div', { style: { flex: 1, paddingBottom: 6 } }, [
+              [NumberSlider, {
+                label: 'height',
+                min: 0.3,
+                max: 3.05,
+                step: 0.0254,
+                value: sceneObject.height,
+                onSetValue: createOnSetValue(sceneObject.id, 'height'),
+              }]]
             ]
-          )
-        ],
+          ]
+          : [
+            ['div', { style: { flex: 1, paddingBottom: 6 } }, [
+              [NumberSlider, {
+                label: 'height',
+                min: 1.4732,
+                max: 2.1336,
+                step: 0.0254,
+                value: sceneObject.height,
+                onSetValue: createOnSetValue(sceneObject.id, 'height'),
+                formatter: value => feetAndInchesAsString(
+                  ...metersAsFeetAndInches(
+                    sceneObject.height
+                  )
+                )
+              }],
 
+              [
+                NumberSlider,
+                {
+                  label: 'head',
+                  min: 80,
+                  max: 120,
+                  step: 1,
+                  value: sceneObject.headScale * 100,
+                  onSetValue: createOnSetValue(sceneObject.id, 'headScale', value => value / 100),
+                  formatter: value => Math.round(value).toString() + '%'
+                }
+              ],
+            ]],
+
+            ['div', { style: { margin: '6px 0 3px 0', fontStyle: 'italic' } }, 'morphs'],
+
+            ['div', { style: { flex: 1 } },
+              Object.entries(sceneObject.morphTargets).map(([ key, value ]) =>
+                [
+                  NumberSlider,
+                  {
+                    label: MORPH_TARGET_LABELS[key],
+                    min: 0,
+                    max: 100,
+                    step: 1,
+                    value: value * 100,
+                    onSetValue: value => updateObject(
+                      sceneObject.id,
+                      { morphTargets: { [key]: value / 100 }
+                    }),
+                    formatter: NumberSliderFormatter.percent
+                  }
+                ]
+              )
+            ]
+          ]
+      ),
+
+      sceneObject.type == 'character' && [
         // pose preset
         [PosePresetsEditor, { sceneObject }],
 
@@ -1816,84 +1860,56 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
   )
 }
 
-// TODO is there a simpler way to get the default rotation of a bone?
-// via THREE.Skeleton#pose()
-const getDefaultRotationForBone = (skeleton, bone) => {
-  let dummy = new THREE.Object3D()
-  dummy.matrixWorld.getInverse( skeleton.boneInverses[ skeleton.bones.indexOf(bone) ] )
-
-  if ( bone.parent && bone.parent.isBone ) {
-    dummy.matrix.getInverse( bone.parent.matrixWorld )
-    dummy.matrix.multiply( dummy.matrixWorld )
-  } else {
-    dummy.matrix.copy( dummy.matrixWorld )
-  }
-
-  var p = new THREE.Vector3()
-  var q = new THREE.Quaternion();
-  var s = new THREE.Vector3()
-  dummy.matrix.decompose( p, q, s )
-
-  let e = new THREE.Euler()
-  e.setFromQuaternion( q )
-
-  return { x: e.x, y: e.y, z: e.z }
-}
-
 const BoneEditor = ({ sceneObject, bone, updateCharacterSkeleton }) => {
-  const { scene } = useContext(SceneContext)
-
-  let sceneObj = scene.children.find(o => o.userData.id === sceneObject.id)
-  let skeleton = (sceneObj.children[0] instanceof THREE.Mesh) ? sceneObj.children[0].skeleton : sceneObj.children[1].skeleton
+  const [render, setRender] = useState(false)
 
   // has the user modified the skeleton?
-  bone = sceneObject.skeleton[bone.name]
+  let rotation = sceneObject.skeleton[bone.name]
     // use the modified skeleton data
-    ? {
-      type: 'modified',
-      name: bone.name,
-      rotation: sceneObject.skeleton[bone.name].rotation
-    }
-    // otherwise, use the default rotation of the bone
-    //
-    // the scene is not guaranteed to be updated at this point
-    // so we have to actually calculate the default rotation
-    : {
-      type: 'default',
-      name: bone.name,
-      rotation: getDefaultRotationForBone(skeleton, bone)
-    }
+    ? sceneObject.skeleton[bone.name].rotation
+    // otherwise, use the initial rotation of the bone
+    : { x: bone.rotation.x, y: bone.rotation.y, z: bone.rotation.z }
 
   const createOnSetValue = (key, transform) => value => {
     updateCharacterSkeleton({
       id: sceneObject.id,
       name: bone.name,
       rotation: {
-        x: bone.rotation.x,
-        y: bone.rotation.y,
-        z: bone.rotation.z,
+        x: rotation.x,
+        y: rotation.y,
+        z: rotation.z,
         [key]: transform(value)
       }
     })
   }
 
-  return h(
-    ['div.column', { style: { } }, [
+  // the posePresetId and skeleton will change synchronously
+  // but the three scene will not have updated bones until SceneManager renders
+  // so for now, just wait until that has probably happened :/
+  useEffect(() => {
+    setRender(false)
 
-      ['div.row', { style: { margin: '9px 0 6px 0', paddingRight: 9 } }, [
-        ['div', { style: { width: 50 }}, 'bone'],
-        ['div', { style: { flex: 1 }}, bone.name],
-        ['div', { style: { width: 40 }}]
+    setTimeout(() => {
+      setRender(true)
+    }, 1)
+  }, [sceneObject.posePresetId])
+
+  return h(
+    ['div.column', [
+
+      ['div.column', { style: { marginBottom: 3 } }, [
+        ['div', { style: { flex: 1, margin: '6px 0 3px 0' } }, 'Bone'],
+        ['small', { style: { display: 'flex', flex: 1, marginLeft: 1, fontStyle: 'italic', opacity: 0.8 } }, bone.name]
       ]],
 
-      ['div.column', { style: { margin: '9px 0 6px 0', paddingRight: 9 } }, [
+      ['div.column', [
         [NumberSlider,
           {
             label: 'x',
             min: -180,
             max: 180,
             step: 1,
-            value: THREE.Math.radToDeg(bone.rotation.x),
+            value: THREE.Math.radToDeg(rotation.x),
             onSetValue: createOnSetValue('x', THREE.Math.degToRad),
             transform: NumberSliderTransform.degrees,
             formatter: NumberSliderFormatter.degrees
@@ -1905,7 +1921,7 @@ const BoneEditor = ({ sceneObject, bone, updateCharacterSkeleton }) => {
             min: -180,
             max: 180,
             step: 1,
-            value: THREE.Math.radToDeg(bone.rotation.y),
+            value: THREE.Math.radToDeg(rotation.y),
             onSetValue: createOnSetValue('y', THREE.Math.degToRad),
             transform: NumberSliderTransform.degrees,
             formatter: NumberSliderFormatter.degrees
@@ -1917,7 +1933,7 @@ const BoneEditor = ({ sceneObject, bone, updateCharacterSkeleton }) => {
             min: -180,
             max: 180,
             step: 1,
-            value: THREE.Math.radToDeg(bone.rotation.z),
+            value: THREE.Math.radToDeg(rotation.z),
             onSetValue: createOnSetValue('z', THREE.Math.degToRad),
             transform: NumberSliderTransform.degrees,
             formatter: NumberSliderFormatter.degrees
@@ -1929,17 +1945,16 @@ const BoneEditor = ({ sceneObject, bone, updateCharacterSkeleton }) => {
 }
 
 const ELEMENT_HEIGHT = 40
-const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, onSelectObject, onUpdateObject, deleteObject, setActiveCamera, machineState, transition, allowDelete, calculatedName }) => {
-  const onClick = event => {
-    event.preventDefault()
-    onSelectObject(sceneObject.id)
+const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, selectObject, updateObject, deleteObject, setActiveCamera, machineState, transition, allowDelete, calculatedName }) => {
+  const onClick = preventDefault(event => {
+    selectObject(sceneObject.id)
+
     if (sceneObject.type === 'camera') {
       setActiveCamera(sceneObject.id)
     }
-  }
+  })
 
-  const onDeleteClick = event => {
-    event.preventDefault()
+  const onDeleteClick = preventDefault(event => {
     let choice = dialog.showMessageBox(null, {
       type: 'question',
       buttons: ['Yes', 'No'],
@@ -1949,13 +1964,17 @@ const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, o
     if (choice === 0) {
       deleteObject(sceneObject.id)
     }
-  }
+  })
+
+  const onToggleVisibleClick = preventDefault(event => {
+    updateObject(sceneObject.id, { visible: !sceneObject.visible })
+  })
 
   let typeLabels = {
-    'camera': 'CAM',
-    'character': 'CHR',
-    'object': 'OBJ',
-    'light': 'LGT'
+    'camera': [Icon, { src: 'icon-item-camera' }],
+    'character': [Icon, { src: 'icon-item-character' }],
+    'object': [Icon, { src: 'icon-item-object' }],
+    'light': [Icon, { src: 'icon-item-light' }]
   }
 
   let className = classNames({
@@ -1978,11 +1997,25 @@ const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, o
                 ['span.id', calculatedName]
               ]
           ),
-          // isActive && ['span.active', '👀'],
-          // sceneObject.visible && ['span.visibility', '👁']
-        ]
+        ],
       ],
-      allowDelete && ['a.delete[href=#]', { onClick: onDeleteClick }, 'X']
+      ['div.row', [
+          isActive
+            ? ['span.active', [Icon, { src: 'icon-item-active' }]]
+            : [],
+
+          sceneObject.type === 'camera'
+            ? []
+            : sceneObject.visible
+              ? isSelected
+                ? ['a.visibility[href=#]', { onClick: onToggleVisibleClick }, [Icon, { src: 'icon-item-visible' }]]
+                : []
+              : ['a.visibility[href=#]', { onClick: onToggleVisibleClick }, [Icon, { src: 'icon-item-hidden' }]],
+
+              allowDelete
+                ? ['a.delete[href=#]', { onClick: onDeleteClick }, 'X']
+                : ['a.delete', { style: { opacity: 0.1 } }, 'X']
+      ]]
     ]
   ])
 })
@@ -2399,6 +2432,16 @@ const PhoneCursor = connect(
       )
     })
 
+const Icon = ({ src }) => h(
+  [
+    'img.icon', {
+      width: 32,
+      height: 32,
+      src: `./img/shot-generator/${src}.svg`
+    }
+  ]
+)
+
 const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, setActiveCamera, resetScene, saveToBoard, insertAsNewBoard }) => {
   const onCreateCameraClick = () => {
     let id = THREE.Math.generateUUID()
@@ -2586,11 +2629,11 @@ const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, set
 
   return h(
     ['div#toolbar', { key: 'toolbar' },
-      ['div.row', [
-        ['a[href=#]', { onClick: preventDefault(onCreateCameraClick) }, '+ Camera'],
-        ['a[href=#]', { onClick: preventDefault(onCreateObjectClick) }, '+ Object'],
-        ['a[href=#]', { onClick: preventDefault(onCreateCharacterClick) }, '+ Character'],
-        ['a[href=#]', { onClick: preventDefault(onCreateLightClick) }, '+ Light'],
+      ['div.toolbar__addition.row', [
+        ['a[href=#]', { onClick: preventDefault(onCreateCameraClick) }, [[Icon, { src: 'icon-toolbar-camera' }], 'Camera']],
+        ['a[href=#]', { onClick: preventDefault(onCreateObjectClick) }, [[Icon, { src: 'icon-toolbar-object' }], 'Object']],
+        ['a[href=#]', { onClick: preventDefault(onCreateCharacterClick) }, [[Icon, { src: 'icon-toolbar-character' }], 'Character']],
+        ['a[href=#]', { onClick: preventDefault(onCreateLightClick) }, [[Icon, { src: 'icon-toolbar-light' }], 'Light']],
       ]],
       // ['a[href=#]', { onClick: preventDefault(onCreateStressClick) }, '+ STRESS'],
 
@@ -2598,130 +2641,135 @@ const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, set
       // ['a[href=#]', { onClick: preventDefault(onLoadClick) }, 'Load'],
       // ['a[href=#]', { onClick: preventDefault(onSaveClick) }, 'Save'],
 
-      ['div.row', [
-        ['a[href=#]', { onClick: preventDefault(onSaveToBoardClick) }, 'Save to Board'],
-        ['a[href=#]', { onClick: preventDefault(onInsertNewBoardClick) }, 'Insert As New Board']
+      ['div.toolbar__board-actions.row', [
+        ['a[href=#]', { onClick: preventDefault(onSaveToBoardClick) }, [[Icon, { src: 'icon-toolbar-save-to-board' }], 'Save to Board']],
+        ['a[href=#]', { onClick: preventDefault(onInsertNewBoardClick) }, [[Icon, { src: 'icon-toolbar-insert-as-new-board' }], 'Insert As New Board']],
       ]]
     ]
   )
 }
 
+const getClosestCharacterInView = (objects, camera) => {
+  let obj = null
+  let dist = 1000000
+  let allDistances = []
+
+  for (var char of objects) {
+    let d = camera.position.distanceTo(
+      new THREE.Vector3(char.position.x, camera.position.y, char.position.z))
+
+    allDistances.push({
+      object: char,
+      distance: d
+    })
+  }
+
+  let compare = (a, b) => {
+    if (a.distance < b.distance)
+      return -1;
+    if (a.distance > b.distance)
+      return 1;
+    return 0;
+  }
+
+  allDistances.sort(compare)
+
+  for (var i = 0; i< allDistances.length; i++) {
+    if (checkIfCharacterInCameraView(allDistances[i].object, camera))
+      return allDistances[i]
+  }
+
+  return {
+    object: obj,
+    distance: dist !== 1000000 ? dist : 0
+  }
+}
+
+const checkIfCharacterInCameraView = (character, camera) => {
+  camera.updateMatrix()
+  camera.updateMatrixWorld()
+  var frustum = new THREE.Frustum()
+  frustum.setFromMatrix(
+    new THREE.Matrix4()
+      .multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse))
+
+  for (var hitter of character.bonesHelper.hit_meshes) {
+    if (frustum.intersectsBox(new THREE.Box3().setFromObject( hitter ))) {
+      return true
+    }
+  }
+  return false
+}
+
+const ClosestObjectInspector = ({ camera, sceneObjects, characters }) => {
+  const [result, setResult] = useState('')
+
+  useEffect(() => {
+    // HACK
+    // we're delaying 1 frame until scene is guaranteed to be updated
+    // wrap in a try/catch because the scene might not have the same characters
+    // by the time we actually render
+    // if we get an error in hit testing against empty objects, just ignore it
+    requestAnimationFrame(() => {
+      try {
+        let closest = getClosestCharacterInView(characters, camera)
+
+        let [distFeet, distInches] = metersAsFeetAndInches(closest.distance)
+
+        // HACK this should be based directly on state.sceneObjects,
+        //      or cached in the sceneObject data
+        let calculatedName
+        let sceneObject = closest.object ? sceneObjects[closest.object.userData.id] : undefined
+        if (sceneObject) {
+          // TODO DRY
+          const number = Object.values(sceneObjects).filter(o => o.type === sceneObject.type).indexOf(sceneObject) + 1
+          const capitalize = string => string.charAt(0).toUpperCase() + string.slice(1)
+          calculatedName = sceneObject.name || capitalize(`${sceneObject.type} ${number}`)
+        }
+
+        setResult(closest.object
+          ? `Distance to ${calculatedName}: ${feetAndInchesAsString(distFeet, distInches)} (${parseFloat(Math.round(closest.distance * 100) / 100).toFixed(2)}m)`
+          : '')
+
+      } catch (err) {
+        setResult('')
+      }
+    })
+  }, [camera, sceneObjects, characters])
+
+  return h(['div.camera-inspector__nearest-character', result])
+}
+
 const CameraInspector = connect(
   state => ({
-    mainViewCamera: state.mainViewCamera,
     sceneObjects: state.sceneObjects,
     activeCamera: state.activeCamera
-  }),
-  {
-    setMainViewCamera,
-    setActiveCamera
-  }
+  })
 )(
-  React.memo(({ sceneObjects, mainViewCamera, setMainViewCamera, activeCamera, setActiveCamera }) => {
-    const { scene } = useContext(SceneContext)
-
-    let camera = scene.children.find(child => child.userData.id === activeCamera)
-
-    let closest = null
-
-    if (!camera) return h(['div#camera-inspector', { style: { padding: 12, lineHeight: 1.25 } }])
+  React.memo(({ camera, sceneObjects, activeCamera }) => {
+    if (!camera) return h(['div.camera-inspector'])
 
     let cameraState = sceneObjects[activeCamera]
-
-    // calculated value
-    let cameras = Object.values(sceneObjects).filter(o => o.type === 'camera').map((o, n) => ([
-      `Camera ${n + 1}`, o.id
-    ]))
-
-    fakeCamera = camera.clone() // TODO reuse a single object
-    fakeCamera.fov = cameraState.fov
-    let focalLength = fakeCamera.getFocalLength()
-    fakeCamera = null
 
     let tiltInDegrees = Math.round(cameraState.tilt * THREE.Math.RAD2DEG)
 
     let [heightFeet, heightInches] = metersAsFeetAndInches(cameraState.z)
-    //console.log(this)
-    let scope = this
-    useEffect(() => {
-      camera = scene.children.find(child => child.userData.id === activeCamera)
-      // calculate distance to characters, get the closest
-      requestAnimationFrame(() => {
-        closest = getClosestCharacterInView (characters(scene), camera)
-      })
-      //we have to wait for them to be added to the stage
 
-    }, [sceneObjects, activeCamera])
+    let cameraNumber = Object.values(sceneObjects)
+                        .filter(o => o.type === 'camera')
+                        .indexOf(cameraState) + 1
 
-    const getClosestCharacterInView = (objects, camera) => {
-      let obj = null
-      let dist = 1000000
-      let allDistances = []
+    let cameraName = cameraState.name || `Camera ${cameraNumber}`
 
-      for (var char of objects)
-      {
-        let d = camera.position.distanceTo (new THREE.Vector3(char.position.x, camera.position.y, char.position.z))
-        allDistances.push({
-          object: char,
-          distance: d
-        })
-      }
+    let fakeCamera = camera.clone() // TODO reuse a single object
+    fakeCamera.fov = cameraState.fov
+    let focalLength = fakeCamera.getFocalLength()
+    fakeCamera = null
 
-      let compare = (a,b) => {
-        if (a.distance < b.distance)
-          return -1;
-        if (a.distance > b.distance)
-          return 1;
-        return 0;
-      }
-
-      allDistances.sort(compare)
-      for (var i = 0; i< allDistances.length; i++)
-      {
-        if (checkIfCharacterInCameraView(allDistances[i].object, camera))
-          return allDistances[i]
-      }
-
-      return {
-        object: obj,
-        distance: dist !== 1000000 ? dist : 0
-      }
-    }
-
-    const checkIfCharacterInCameraView = (character, camera) => {
-      camera.updateMatrix();
-      camera.updateMatrixWorld();
-      var frustum = new THREE.Frustum();
-      frustum.setFromMatrix(new THREE.Matrix4().multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse));
-      for (var hitter of character.bonesHelper.hit_meshes)
-      {
-        if (frustum.intersectsBox(new THREE.Box3().setFromObject( hitter ))) {
-          return true
-        }
-      }
-      return false
-    }
-
-    closest = getClosestCharacterInView (characters(scene), camera)
-
-    let [distFeet, distInches] = metersAsFeetAndInches(closest.distance)
-
-    // HACK this should be based directly on state.sceneObjects, or cached in the sceneObject data
-    let calculatedName
-    let sceneObject = closest.object ? sceneObjects[closest.object.userData.id] : undefined
-    if (sceneObject) {
-      // TODO DRY
-      const number = Object.values(sceneObjects).filter(o => o.type === sceneObject.type).indexOf(sceneObject) + 1
-      const capitalize = string => string.charAt(0).toUpperCase() + string.slice(1)
-      calculatedName = sceneObject.name || capitalize(`${sceneObject.type} ${number}`)
-    }
-
-    let cameraNumber = Object.values(sceneObjects).filter(o => o.type === 'camera').indexOf(cameraState) + 1
-    let cameraName = `Camera ${cameraNumber}`
-
+    const { scene } = useContext(SceneContext)
 
     return h(
-      ['div#camera-inspector', { style: { padding: 12, lineHeight: 1.25 } },
+      ['div.camera-inspector',
 
         ['div.row',
           { style: { justifyContent: 'space-between' } },
@@ -2731,49 +2779,89 @@ const CameraInspector = connect(
             ['br'],
             `Height: ${feetAndInchesAsString(heightFeet, heightInches)} Tilt: ${tiltInDegrees}°`,
             ['br'],
-            closest.object ? `${feetAndInchesAsString(distFeet, distInches)} (${parseFloat(Math.round(closest.distance * 100) / 100).toFixed(2)}m) from ${calculatedName}` : ''
-          ],
-          [
-            'div.column',
-            {
-              style: { alignItems: 'flex-end' }
-            },
-            [
-              [
-                'select', {
-                  value: activeCamera,
-                  onChange: event => {
-                    event.preventDefault()
-                    setActiveCamera(event.target.value)
-                  },
-                  style: {
-                    width: 'auto'
-                  }
-                },
-                cameras.map(([name, value]) => ['option', { value }, name])
-              ],
-              [
-                'span',
-                [
-                  'a.button[href=#]',
-                  {
-                    onClick: event => {
-                      event.preventDefault()
-                      setMainViewCamera(mainViewCamera === 'ortho' ? 'live' : 'ortho')
-                    },
-                  },
-                  ['span', { style: { letterSpacing: '0.1rem' }}, ' (T)'],
-                  ['span', 'oggle Large/Small']
-                ]
-              ]
-            ]
+            [ClosestObjectInspector, {
+              camera,
+              sceneObjects,
+              characters: scene.children.filter(o => o.userData.type === 'character')
+            }]
           ]
-        ],
+        ]
         // [RemoteInputView, { remoteInput }]
       ]
     )
   }
 ))
+
+// const { durationOfWords } = require('../utils')
+const BoardInspector = connect(
+  state => ({
+    board: state.board
+  })
+)(
+({ board }) => {
+  const present = value => value && value.length > 1
+
+  // let suggestedDuration = durationOfWords(dialogue, 300) + 300
+  // let suggestedDurationInSeconds = suggestedDuration / 1000
+  // let durationString = `// about ${suggestedDurationInSeconds} seconds`
+
+  return h(
+    ['div.column.board-inspector', [
+      ['div.board-inspector__shot', 'Shot ' + board.shot],
+
+      present(board.dialogue) && ['p.board-inspector__dialogue', 'DIALOGUE: ' + board.dialogue],
+      present(board.action) && ['p.board-inspector__action', 'ACTION: ' + board.action],
+      present(board.notes) && ['p.board-inspector__notes', 'NOTES: ' + board.notes]
+    ]]
+  )
+})
+
+const GuidesInspector = ({ }) => h(['div.guides-inspector', 'Guides'])
+
+const CamerasInspector = connect(
+  state => ({
+    activeCamera: state.activeCamera,
+    _cameras: getCameraSceneObjects(state)
+  }),
+  {
+    setActiveCamera
+  }
+)(
+({
+  // props
+  activeCamera,
+
+  // via selectors
+  _cameras,
+
+  // action creators
+  setActiveCamera
+}) => {
+
+  const onClick = (camera, event) => {
+    event.preventDefault()
+    setActiveCamera(camera.id)
+  }
+
+  return h(['div.cameras-inspector', [
+    'div.row',
+      ['div.cameras-inspector__label', 'Camera'],
+      ['div.round-buttons-panel',
+        _cameras.map(
+          (camera, n) =>
+            [
+              'a[href=#]',
+              {
+                className: classNames({ active: activeCamera === camera.id }),
+                onClick: onClick.bind(this, camera)
+              },
+              n + 1
+            ]
+        )
+      ]
+  ]])
+})
+
 
 const editorMachine = Machine({
   id: 'editor',
@@ -2958,14 +3046,6 @@ const KeyHandler = connect(
   }
 )
 
-const serializeState = state => {
-  return {
-    world: state.world,
-    sceneObjects: state.sceneObjects,
-    activeCamera: state.activeCamera
-  }
-}
-
 const Editor = connect(
   state => ({
     mainViewCamera: state.mainViewCamera,
@@ -2982,9 +3062,10 @@ const Editor = connect(
     loadScene,
     saveScene: filepath => (dispatch, getState) => {
       let state = getState()
-      let contents = serializeState(state)
+      let contents = getSerializedState(state)
       fs.writeFileSync(filepath, JSON.stringify(contents, null, 2))
       dialog.showMessageBox(null, { message: 'Saved!' })
+      // dispatch(markSaved())
     },
     setActiveCamera,
     resetScene,
@@ -3002,13 +3083,15 @@ const Editor = connect(
         let topDownImage = document.querySelector('#top-down-canvas').toDataURL()
 
         ipcRenderer.send('saveShot', {
-          data: serializeState(state),
+          uid: state.board.uid,
+          data: getSerializedState(state),
           images: {
             'camera': cameraImage,
             'topdown': topDownImage
           }
         })
 
+        dispatch(markSaved())
       })
     },
 
@@ -3024,8 +3107,10 @@ const Editor = connect(
         let cameraImage = document.querySelector('#camera-canvas').toDataURL()
         let topDownImage = document.querySelector('#top-down-canvas').toDataURL()
 
+        dispatch(markSaved())
+
         ipcRenderer.send('insertShot', {
-          data: serializeState(state),
+          data: getSerializedState(state),
           images: {
             'camera': cameraImage,
             'topdown': topDownImage
@@ -3033,11 +3118,21 @@ const Editor = connect(
         })
 
       })
-    }
+    },
+
+    onBeforeUnload: event => (dispatch, getState) => {
+      if (getIsSceneDirty(getState())) {
+        // pass electron-specific flag
+        // to trigger `will-prevent-unload` on BrowserWindow
+        event.returnValue = false
+      }
+    },
+
+    setMainViewCamera
   }
 )(
+  ({ mainViewCamera, createObject, selectObject, updateModels, loadScene, saveScene, activeCamera, setActiveCamera, resetScene, remoteInput, aspectRatio, saveToBoard, insertAsNewBoard, sceneObjects, selection, selectedBone, onBeforeUnload, setMainViewCamera }) => {
 
-  ({ mainViewCamera, createObject, selectObject, updateModels, loadScene, saveScene, activeCamera, setActiveCamera, resetScene, remoteInput, aspectRatio, saveToBoard, insertAsNewBoard, sceneObjects, selection, selectedBone }) => {
     const largeCanvasRef = useRef(null)
     const smallCanvasRef = useRef(null)
     const [ready, setReady] = useState(false)
@@ -3057,6 +3152,13 @@ const Editor = connect(
       transition('TYPING_EXIT')
     }
 
+    const onSwapCameraViewsClick = preventDefault(() =>
+      setMainViewCamera(mainViewCamera === 'ortho' ? 'live' : 'ortho'))
+
+    const onAutoFitClick = preventDefault(() => { alert('TODO autofit (not implemented yet)') })
+    const onZoomInClick = preventDefault(() => { alert('TODO zoom in (not implemented yet)') })
+    const onZoomOutClick = preventDefault(() => { alert('TODO zoom out (not implemented yet)') })
+
     useEffect(() => {
       // TODO introspect models
       updateModels({})
@@ -3067,6 +3169,13 @@ const Editor = connect(
     useEffect(() => {
       setCamera(scene.current.children.find(o => o.userData.id === activeCamera))
     }, [ready, activeCamera])
+
+    useEffect(() => {
+      window.addEventListener('beforeunload', onBeforeUnload)
+      return function cleanup () {
+        window.removeEventListener('beforeunload', onBeforeUnload)
+      }
+    }, [onBeforeUnload])
 
     return React.createElement(
       SceneContext.Provider,
@@ -3079,7 +3188,18 @@ const Editor = connect(
             ['div.column', { style: { width: '300px', background: '#111'} },
               ['div#topdown', { style: { height: '300px' } },
                 // top-down-canvas
-                ['canvas', { key: 'top-down-canvas', tabIndex: 0, ref: smallCanvasRef, id: 'top-down-canvas', style: { width: '100%' }, onPointerDown: onCanvasPointerDown }]
+                ['canvas', { key: 'top-down-canvas', tabIndex: 0, ref: smallCanvasRef, id: 'top-down-canvas', style: { width: '100%' }, onPointerDown: onCanvasPointerDown }],
+                // controls
+                ['div.topdown__controls', [
+                  ['div.row', [
+                    // ['a[href=#]', { onClick: onAutoFitClick }, [[Icon, { src: 'icon-camera-view-autofit' }]]],
+                    // ['a[href=#]', { onClick: onZoomInClick }, [[Icon, { src: 'icon-camera-view-zoom-in' }]]],
+                    // ['a[href=#]', { onClick: onZoomOutClick }, [[Icon, { src: 'icon-camera-view-zoom-out' }]]],
+                  ]],
+                  ['div.row', [
+                    ['a[href=#]', { onClick: onSwapCameraViewsClick }, [[Icon, { src: 'icon-camera-view-expand' }]]],
+                  ]]
+                ]]
               ],
               ['div#elements', [ElementsPanel, { machineState, transition }]]
             ],
@@ -3089,7 +3209,12 @@ const Editor = connect(
                 // camera canvas
                 ['canvas', { key: 'camera-canvas', tabIndex: 1, ref: largeCanvasRef, id: 'camera-canvas', onPointerDown: onCanvasPointerDown }]
               ],
-              [CameraInspector]
+              ['div.inspectors', [
+                [CameraInspector, { camera }],
+                [BoardInspector],
+                // [GuidesInspector],
+                [CamerasInspector]
+              ]]
             ],
 
             //

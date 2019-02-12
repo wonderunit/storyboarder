@@ -1,5 +1,8 @@
 const THREE = require('three')
 const { produce } = require('immer')
+const crypto = require('crypto')
+
+const hashify = string => crypto.createHash('sha1').update(string).digest('base64')
 
 const defaultPosePreset = {
   skeleton: {}
@@ -252,6 +255,12 @@ const initialState = {
 
   aspectRatio: 2.35,
 
+  board: {},
+
+  meta: {
+    lastSavedHash: undefined
+  },
+
   ...initialScene,
 
   selection: undefined,
@@ -307,9 +316,46 @@ const initialState = {
         state: defaultPosePreset
       }
     }
+  },
+  server: {
+    uri: undefined,
+    client: false
   }
 }
 
+//
+//
+// selectors
+//
+const getIsSceneDirty = state => {
+  let current = hashify(JSON.stringify(getSerializedState(state)))
+  return current !== state.meta.lastSavedHash
+}
+// return only the stuff we want to save to JSON
+const getSerializedState = state => {
+  let sceneObjects = Object.entries(state.sceneObjects)
+    .reduce((o, [ k, v ]) => {
+      let {
+        // ignore 'loaded'
+        loaded: _,
+        // but allow serialization of the rest
+        ...serializable
+      } = v
+      o[k] = serializable
+      return o
+    }, {})
+
+  return {
+    world: state.world,
+    sceneObjects,
+    activeCamera: state.activeCamera
+  }
+}
+
+//
+//
+// state helper functions
+//
 const checkForCharacterChanges = (state, draft, action) => {
   // if characterPresetId wasn't just set
   if (!action.payload.hasOwnProperty('characterPresetId')) {
@@ -385,6 +431,10 @@ const checkForSkeletonChanges = (state, draft, action) => {
   }
 }
 
+const updateMeta = state => {
+  state.meta.lastSavedHash = hashify(JSON.stringify(getSerializedState(state)))
+}
+
 module.exports = {
   initialState,
 
@@ -401,6 +451,7 @@ module.exports = {
           draft.selection = undefined
           draft.selectedBone = undefined
           draft.mainViewCamera = 'live'
+          updateMeta(draft)
           return
 
         case 'SELECT_OBJECT':
@@ -707,10 +758,28 @@ module.exports = {
             }
             draft.sceneObjects[action.payload.destinationId] = object
           }
+          return
+
+        case 'UPDATE_SERVER':
+          console.log('%cshot-generator web client at', 'color:blue', action.payload.uri)
+          draft.server = { ...draft.server, ...action.payload }
+          return
+
+        case 'SET_BOARD':
+          draft.board = action.payload
+          return
+
+        case 'MARK_SAVED':
+          updateMeta(draft)
+          return
       }
     })
   },
 
+  //
+  //
+  // action creators
+  //
   selectObject: id => ({ type: 'SELECT_OBJECT', payload: id }),
   selectBone: id => ({ type: 'SELECT_BONE', payload: id }),
 
@@ -754,5 +823,18 @@ module.exports = {
   updateWorldRoom: payload => ({ type: 'UPDATE_WORLD_ROOM', payload }),
   updateWorldEnvironment: payload => ({ type: 'UPDATE_WORLD_ENVIRONMENT', payload }),
 
-  updateDevice: (id, values) => ({ type: 'UPDATE_DEVICE', payload: { id, ...values } })
+  updateDevice: (id, values) => ({ type: 'UPDATE_DEVICE', payload: { id, ...values } }),
+
+  updateServer: payload => ({ type: 'UPDATE_SERVER', payload }),
+
+  setBoard: payload => ({ type: 'SET_BOARD', payload }),
+  
+  markSaved: payload => ({ type: 'MARK_SAVED' }),
+
+  //
+  //
+  // selectors
+  //
+  getSerializedState,
+  getIsSceneDirty
 }

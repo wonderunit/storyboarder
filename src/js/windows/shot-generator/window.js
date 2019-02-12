@@ -1,5 +1,5 @@
-const { ipcRenderer, shell } = require('electron')
-const { app } = require('electron').remote
+const { ipcRenderer, shell } = electron = require('electron')
+const { app } = electron.remote
 const electronUtil = require('electron-util')
 
 const React = require('react')
@@ -27,7 +27,7 @@ const h = require('../../utils/h')
 const Editor = require('../../shot-generator/Editor')
 
 const presetsStorage = require('../../shared/store/presetsStorage')
-const { initialState, loadScene, resetScene, updateDevice } = require('../../shared/reducers/shot-generator')
+const { initialState, loadScene, resetScene, updateDevice, updateServer, setBoard } = require('../../shared/reducers/shot-generator')
 
 const createServer = require('../../services/createServer')
 const createDualShockController = require('../../shot-generator/DualshockController')
@@ -53,18 +53,23 @@ const store = configureStore({
 
 
 
-ipcRenderer.on('setup', (event, { aspectRatio }) => {
-  store.dispatch({
-    type: 'SET_ASPECT_RATIO',
-    payload: aspectRatio
-  })
-})
-ipcRenderer.on('loadShot', (event, shot) => {
+ipcRenderer.on('loadBoard', (event, { boardData, board }) => {
+  // TODO for backwards compatibility, use board.shotgen or board.sg instead?
+  let shot = board.sts
+
+  let aspectRatio = parseFloat(boardData.aspectRatio)
+  store.dispatch({ type: 'SET_ASPECT_RATIO', payload: aspectRatio })
+
+  store.dispatch(setBoard( board ))
+
   if (shot) {
     store.dispatch(loadScene(shot.data))
   } else {
     store.dispatch(resetScene())
   }
+})
+ipcRenderer.on('update', (event, { board }) => {
+  store.dispatch(setBoard( board ))
 })
 
 
@@ -111,7 +116,9 @@ createServer({
   setInputSensor: payload => store.dispatch({ type: 'SET_INPUT_SENSOR', payload }),
   setInputDown: payload => store.dispatch({ type: 'SET_INPUT_DOWN', payload }),
   setInputMouseMode: payload => store.dispatch({ type: 'SET_INPUT_MOUSEMODE', payload }),
-  setInputOrbitMode: payload => store.dispatch({ type: 'SET_INPUT_ORBITMODE', payload })
+  setInputOrbitMode: payload => store.dispatch({ type: 'SET_INPUT_ORBITMODE', payload }),
+  
+  updateServer: payload => store.dispatch(updateServer(payload))
 })
 
 // are we testing locally?
@@ -129,5 +136,8 @@ if (process.env.SHOT_GENERATOR_STANDALONE) {
     )
   )
 
-  store.dispatch(loadScene(file.boards[0].sts.data))
+  let win = electron.remote.BrowserWindow.getAllWindows()
+    .find(w => w.webContents.getURL() === window.location.toString())
+
+  win.webContents.send('loadBoard', { boardData: file, board: file.boards[0] })
 }
