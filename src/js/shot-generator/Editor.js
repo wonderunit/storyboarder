@@ -2994,7 +2994,9 @@ const Editor = connect(
 
     const renderImagesForBoard = () => {
       if (!imageRenderer.current) {
-        imageRenderer.current = new THREE.WebGLRenderer({ antialias: true })
+        imageRenderer.current = new THREE.OutlineEffect(
+          new THREE.WebGLRenderer({ antialias: true })
+        )
       }
 
       let imageRenderCamera = camera.clone()
