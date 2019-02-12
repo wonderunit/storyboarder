@@ -452,10 +452,6 @@ const SceneManager = connect(
                 }
               }
 
-              cameraHelper.current.visible = state.mainViewCamera === 'live'
-                ? false
-                : true
-
               if (state.mainViewCamera === 'live') {
                 largeRendererEffect.current.render(scene, cameraForLarge)
               } else {
@@ -463,9 +459,6 @@ const SceneManager = connect(
               }
 
               cameraHelper.current.update()
-              cameraHelper.current.visible = state.mainViewCamera === 'live'
-                ? true
-                : false
               smallRenderer.current.render(scene, cameraForSmall)
             })
           }
