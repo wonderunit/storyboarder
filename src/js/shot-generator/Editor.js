@@ -426,7 +426,10 @@ const SceneManager = connect(
                 // update object state with the latest values
                 let cameraId = camera.userData.id
                 let { x, y, z, rotation, tilt, fov } = cameraControlsView.current.object
-
+                if (remoteInput.orbitMode)
+                {
+                 // console.log('camera moving? : ', camera.position)
+                }
                 // if props changed
                 if (
                   cameraState.x != x ||
@@ -2028,8 +2031,9 @@ const PhoneCursor = connect(
   {
     selectObject,
     selectBone,
+    updateObject
   })(
-    ({ remoteInput, camera, largeCanvasRef, selectObject, selectBone, sceneObjects, selection, selectedBone }) => {
+    ({ remoteInput, camera, largeCanvasRef, selectObject, selectBone, sceneObjects, selection, selectedBone, updateObject }) => {
       let startingDeviceRotation = useRef(null)
       let startingObjectRotation = useRef(null)
       let startingCameraPosition = useRef(null)
@@ -2318,8 +2322,7 @@ const PhoneCursor = connect(
             camera.getWorldDirection( direction )
             
             let objInScene = scene.children.find(o => o.userData.id === selection)
-            if (selectBone && sceneObjects[selection] && sceneObjects[selection].type == 'character') 
-            console.log('selected bone: ', objInScene)
+            
             let newPos = new THREE.Vector3()
             let getDistanceToPosition = new THREE.Vector3()
             if (sceneObjects[selection] && (sceneObjects[selection].type === 'object' || sceneObjects[selection].type === 'character')) 
@@ -2349,50 +2352,44 @@ const PhoneCursor = connect(
               deltaPhi = radPerPixel * rot.y,
               deltaTheta = -radPerPixel * rot.x,
               campos = new THREE.Vector3(startingCameraPosition.current.x, startingCameraPosition.current.y, startingCameraPosition.current.z),
-              pos = camera.position.sub(center),
+              pos = camera.position.clone().sub(center),
               radius = dist,
-              theta = Math.acos(camera.position.y / radius),
-              phi = Math.atan2(camera.position.z, camera.position.x)
+              theta = Math.acos(pos.y / radius),
+              phi = Math.atan2(pos.z, pos.x)
 
             theta = Math.min(Math.max(theta - deltaTheta, 0), Math.PI)
             phi -= deltaPhi
-            
+            //console.log('cloned pos: ', pos)
             pos.x = radius * Math.sin(theta) * Math.cos(phi);
             pos.z = radius * Math.sin(theta) * Math.sin(phi);
             pos.y = radius * Math.cos(theta)
-
-            camera.position.add(center)
+           // console.log('position: ', pos)
+            pos.add(center)
+            //camera.position.add(center)
+            camera.position.copy(pos)
             camera.lookAt( startingCameraOffset.current )
+            //camera.updateMatrix()
 
             let cam = {
-              x: camera.position.x,
-              y: camera.position.y,
-              z: camera.position.z,
+              x: pos.x,
+              y: pos.y,
+              z: pos.z,
             }
+            let testCam = new THREE.PerspectiveCamera()
+            testCam.position.copy(cam)
+            testCam.lookAt(startingCameraOffset.current)
+            //testCam.updateMatrix()
             
-            let point = new THREE.Mesh(
-                new THREE.SphereGeometry(0.05),
-                new THREE.MeshBasicMaterial({color: "#ff0000"})
-              )
-              let point2 = new THREE.Mesh(
-                new THREE.SphereGeometry(0.15),
-                new THREE.MeshBasicMaterial({color: "#0000ff"})
-              )
-            point.position.copy(newPos)
-            point2.position.copy(cam)
-            //scene.add(point)
-            //scene.add(point2)
-
-            let cameraId = camera.userData.id
+            let cameraId = camera.userData.id   
+            console.log('camera id: ', cameraId)       
             
-            camera.updateMatrix()
             updateObject(cameraId, {
               x: cam.x,
-              y: cam.y,
-              z: cam.z,
-              //rotation: camera.rotation.y,
-              //tilt: camera.rotation.z,
-              //roll: camera.rotation.x
+              y: cam.z,
+              z: cam.y,
+              rotation: camera.rotation.y,
+              tilt: camera.rotation.x,
+              // roll: camera.rotation.z
             })
 
             
