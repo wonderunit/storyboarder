@@ -2366,8 +2366,8 @@ const PhoneCursor = connect(
            // console.log('position: ', pos)
             pos.add(center)
             //camera.position.add(center)
-            camera.position.copy(pos)
-            camera.lookAt( startingCameraOffset.current )
+            //camera.position.copy(pos)
+            //camera.lookAt( startingCameraOffset.current )
             //camera.updateMatrix()
 
             let cam = {
@@ -2382,13 +2382,14 @@ const PhoneCursor = connect(
             
             let cameraId = camera.userData.id   
             console.log('camera id: ', cameraId)       
-            
+            let euler = new THREE.Euler()
+            euler.setFromQuaternion( testCam.quaternion.clone().normalize(), "YXZ" )
             updateObject(cameraId, {
               x: cam.x,
               y: cam.z,
               z: cam.y,
-              rotation: camera.rotation.y,
-              tilt: camera.rotation.x,
+              rotation: euler.y,
+              tilt: euler.x,
               // roll: camera.rotation.z
             })
 
