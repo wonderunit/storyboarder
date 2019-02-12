@@ -2324,16 +2324,19 @@ const PhoneCursor = connect(
             let getDistanceToPosition = new THREE.Vector3()
             if (sceneObjects[selection] && (sceneObjects[selection].type === 'object' || sceneObjects[selection].type === 'character')) 
             {
-              getDistanceToPosition = objInScene.position
+              getDistanceToPosition = objInScene.position.clone()
               if (selectedBone)
               {
                 console.log('object: ', objInScene)
-                // let skel = objInScene.userData.skeleton// (objInScene.children[0] instanceof THREE.Mesh) ? object.current.children[0] : object.current.children[1]
-                // let realBone = skel.bones.find(bone => bone.uuid == selectedBone)
+                let skel = objInScene.userData.skeleton// (objInScene.children[0] instanceof THREE.Mesh) ? object.current.children[0] : object.current.children[1]
+                let realBone = skel.bones.find(bone => bone.uuid == selectedBone)
+                let bonePosition = new THREE.Vector3()
+                realBone.getWorldPosition( bonePosition )
+                getDistanceToPosition = bonePosition.clone()
                 //console.log('rael bone: ', realBone)
               }
             }
-            let dist = (sceneObjects[selection] && (sceneObjects[selection].type === 'object' || sceneObjects[selection].type === 'character')) ? startingCameraPosition.current.distanceTo(objInScene.position) : 3
+            let dist = (sceneObjects[selection] && (sceneObjects[selection].type === 'object' || sceneObjects[selection].type === 'character')) ? startingCameraPosition.current.distanceTo(getDistanceToPosition) : 3
             newPos.addVectors ( startingCameraPosition.current, direction.multiplyScalar( dist ) )
             if (firstRun)
             {
@@ -2359,7 +2362,8 @@ const PhoneCursor = connect(
             pos.y = radius * Math.cos(theta)
 
             camera.position.add(center)
-                       
+            camera.lookAt( startingCameraOffset.current )
+
             let cam = {
               x: camera.position.x,
               y: camera.position.y,
@@ -2378,10 +2382,9 @@ const PhoneCursor = connect(
             point2.position.copy(cam)
             //scene.add(point)
             //scene.add(point2)
-            let originalX = camera.position.x 
 
             let cameraId = camera.userData.id
-            camera.lookAt( startingCameraOffset.current )
+            
             camera.updateMatrix()
             updateObject(cameraId, {
               x: cam.x,
