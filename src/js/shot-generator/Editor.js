@@ -2987,31 +2987,38 @@ const Editor = connect(
     const onZoomInClick = preventDefault(() => { alert('TODO zoom in (not implemented yet)') })
     const onZoomOutClick = preventDefault(() => { alert('TODO zoom out (not implemented yet)') })
 
+
+
+    // used by onToolbarSaveToBoard and onToolbarInsertAsNewBoard
     const imageRenderer = useRef()
-    // TODO do we need to getState first? use an updateWithState wrapper?
+
+    const renderImagesForBoard = () => {
+      if (!imageRenderer.current) {
+        imageRenderer.current = new THREE.WebGLRenderer({ antialias: true })
+      }
+
+      let imageRenderCamera = camera.clone()
+      imageRenderCamera.layers.set(0)
+
+      imageRenderer.current.setSize(Math.ceil(900 * aspectRatio), 900)
+      imageRenderer.current.render(scene.current, imageRenderCamera)
+      let cameraImage = imageRenderer.current.domElement.toDataURL()
+
+      // TODO
+      // if (topDownCamera) {
+      //   imageRenderer.clear()
+      //   imageRenderer.setSize(900, 900)
+      //   imageRenderer.render(scene, topDownCamera)
+      //   let topDownImage = imageRenderer.domElement.toDataURL()
+      // }
+      let topDownImage = undefined
+
+      return { cameraImage, topDownImage }
+    }
+
     const onToolbarSaveToBoard = () => {
       withState((dispatch, state) => {
-        let aspectRatio = state.aspectRatio
-
-        let cameraImage
-        let imageRenderCamera = camera.clone()
-        imageRenderCamera.layers.set(0)
-
-        if (!imageRenderer.current) {
-          imageRenderer.current = new THREE.WebGLRenderer({ antialias: true })
-        }
-
-        imageRenderer.current.setSize(Math.ceil(900 * aspectRatio), 900)
-        imageRenderer.current.render(scene.current, imageRenderCamera)
-        cameraImage = imageRenderer.current.domElement.toDataURL()
-
-        // TODO
-        // if (topDownCamera) {
-        //   imageRenderer.clear()
-        //   imageRenderer.setSize(900, 900)
-        //   imageRenderer.render(scene, topDownCamera)
-        //   topDownImage = imageRenderer.domElement.toDataURL()
-        // }
+        let { cameraImage } = renderImagesForBoard()
 
         ipcRenderer.send('saveShot', {
           uid: state.board.uid,
@@ -3027,36 +3034,24 @@ const Editor = connect(
         dispatch(markSaved())
       })
     }
-    // TODO do we need to getState first? use an updateWithState wrapper?
     const onToolbarInsertAsNewBoard = () => {
-      // TODO
-      // TODO DRY
-      // insertAsNewBoard: ({ scene, liveCamera }) => (dispatch, getState) => {
-      //   let state = getState()
-      // 
-      //   // TODO DRY
-      //   let cameraImage
-      //   let camera = liveCamera.clone()
-      //   camera.layers.set(0)
-      //   let imageRenderer = new THREE.WebGLRenderer({ antialias: true })
-      //   imageRenderer.setSize(Math.ceil(900 * aspectRatio), 900)
-      //   imageRenderer.render(scene, camera)
-      //   cameraImage = imageRenderer.domElement.toDataURL()
-      // 
-      //   dispatch(markSaved())
-      // 
-      //   ipcRenderer.send('insertShot', {
-      //     data: getSerializedState(state),
-      //     images: {
-      //       'camera': cameraImage,
-      // 
-      //       // TODO
-      //       'topdown': undefined
-      //     }
-      //   })
-      // },
-    }
+      withState((dispatch, state) => {
+        let { cameraImage } = renderImagesForBoard()
 
+        // NOTE we do this first, since we get new data on insertShot complete
+        dispatch(markSaved())
+
+        ipcRenderer.send('insertShot', {
+          data: getSerializedState(state),
+          images: {
+            'camera': cameraImage,
+      
+            // TODO
+            'topdown': undefined
+          }
+        })
+      })
+    }
 
 
 
