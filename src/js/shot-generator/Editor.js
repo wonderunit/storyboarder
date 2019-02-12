@@ -2319,6 +2319,9 @@ const Icon = ({ src }) => h(
 )
 
 const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, setActiveCamera, resetScene, saveToBoard, insertAsNewBoard }) => {
+  // used by saveToBoard, insertAsNewBoard
+  const { scene } = useContext(SceneContext)
+
   const onCreateCameraClick = () => {
     let id = THREE.Math.generateUUID()
     createObject({
@@ -2496,11 +2499,13 @@ const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, set
   }
 
   const onSaveToBoardClick = event => {
-    saveToBoard()
+    // TODO pass reference to orthoCamera.current
+    // saveToBoard({ scene, liveCamera: camera, topDownCamera: orthoCamera.current })
+    saveToBoard({ scene, liveCamera: camera })
   }
 
   const onInsertNewBoardClick = event => {
-    insertAsNewBoard()
+    insertAsNewBoard({ scene, liveCamera: camera })
   }
 
   return h(
@@ -2946,52 +2951,65 @@ const Editor = connect(
     resetScene,
 
     // TODO DRY
-    saveToBoard: () => (dispatch, getState) => {
-      dispatch(selectObject(null))
-
+    // TODO pass in topDownCamera
+    saveToBoard: ({ scene, liveCamera }) => (dispatch, getState) => {
       let state = getState()
+      let aspectRatio = state.aspectRatio
 
-      requestAnimationFrame(() => {
+      // TODO DRY
+      let cameraImage
+      let camera = liveCamera.clone()
+      camera.layers.set(0)
+      let imageRenderer = new THREE.WebGLRenderer({ antialias: true })
+      imageRenderer.setSize(Math.ceil(900 * aspectRatio), 900)
+      imageRenderer.render(scene, camera)
+      cameraImage = imageRenderer.domElement.toDataURL()
 
-        // HACK FIXME don't hardcode these
-        let cameraImage = document.querySelector('#camera-canvas').toDataURL()
-        let topDownImage = document.querySelector('#top-down-canvas').toDataURL()
+      // TODO
+      // if (topDownCamera) {
+      //   imageRenderer.clear()
+      //   imageRenderer.setSize(900, 900)
+      //   imageRenderer.render(scene, topDownCamera)
+      //   topDownImage = imageRenderer.domElement.toDataURL()
+      // }
 
         ipcRenderer.send('saveShot', {
           uid: state.board.uid,
           data: getSerializedState(state),
           images: {
             'camera': cameraImage,
-            'topdown': topDownImage
+
+            // TODO
+            'topdown': undefined
           }
         })
 
-        dispatch(markSaved())
-      })
+      dispatch(markSaved())
     },
 
     // TODO DRY
-    insertAsNewBoard: () => (dispatch, getState) => {
-      dispatch(selectObject(null))
-
+    insertAsNewBoard: ({ scene, liveCamera }) => (dispatch, getState) => {
       let state = getState()
 
-      requestAnimationFrame(() => {
+      // TODO DRY
+      let cameraImage
+      let camera = liveCamera.clone()
+      camera.layers.set(0)
+      let imageRenderer = new THREE.WebGLRenderer({ antialias: true })
+      imageRenderer.setSize(Math.ceil(900 * aspectRatio), 900)
+      imageRenderer.render(scene, camera)
+      cameraImage = imageRenderer.domElement.toDataURL()
 
-        // HACK FIXME don't hardcode these
-        let cameraImage = document.querySelector('#camera-canvas').toDataURL()
-        let topDownImage = document.querySelector('#top-down-canvas').toDataURL()
+      dispatch(markSaved())
 
-        dispatch(markSaved())
-
-        ipcRenderer.send('insertShot', {
-          data: getSerializedState(state),
-          images: {
-            'camera': cameraImage,
-            'topdown': topDownImage
-          }
-        })
-
+      ipcRenderer.send('insertShot', {
+        data: getSerializedState(state),
+        images: {
+          'camera': cameraImage,
+          
+          // TODO
+          'topdown': undefined
+        }
       })
     },
 
