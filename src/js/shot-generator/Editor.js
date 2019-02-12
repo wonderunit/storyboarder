@@ -2319,9 +2319,6 @@ const Icon = ({ src }) => h(
 )
 
 const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, setActiveCamera, resetScene, saveToBoard, insertAsNewBoard }) => {
-  // used by saveToBoard, insertAsNewBoard
-  const { scene } = useContext(SceneContext)
-
   const onCreateCameraClick = () => {
     let id = THREE.Math.generateUUID()
     createObject({
@@ -2499,13 +2496,11 @@ const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, set
   }
 
   const onSaveToBoardClick = event => {
-    // TODO pass reference to orthoCamera.current
-    // saveToBoard({ scene, liveCamera: camera, topDownCamera: orthoCamera.current })
-    saveToBoard({ scene, liveCamera: camera })
+    saveToBoard()
   }
 
   const onInsertNewBoardClick = event => {
-    insertAsNewBoard({ scene, liveCamera: camera })
+    insertAsNewBoard()
   }
 
   return h(
@@ -2950,69 +2945,6 @@ const Editor = connect(
     setActiveCamera,
     resetScene,
 
-    // TODO DRY
-    // TODO pass in topDownCamera
-    saveToBoard: ({ scene, liveCamera }) => (dispatch, getState) => {
-      let state = getState()
-      let aspectRatio = state.aspectRatio
-
-      // TODO DRY
-      let cameraImage
-      let camera = liveCamera.clone()
-      camera.layers.set(0)
-      let imageRenderer = new THREE.WebGLRenderer({ antialias: true })
-      imageRenderer.setSize(Math.ceil(900 * aspectRatio), 900)
-      imageRenderer.render(scene, camera)
-      cameraImage = imageRenderer.domElement.toDataURL()
-
-      // TODO
-      // if (topDownCamera) {
-      //   imageRenderer.clear()
-      //   imageRenderer.setSize(900, 900)
-      //   imageRenderer.render(scene, topDownCamera)
-      //   topDownImage = imageRenderer.domElement.toDataURL()
-      // }
-
-        ipcRenderer.send('saveShot', {
-          uid: state.board.uid,
-          data: getSerializedState(state),
-          images: {
-            'camera': cameraImage,
-
-            // TODO
-            'topdown': undefined
-          }
-        })
-
-      dispatch(markSaved())
-    },
-
-    // TODO DRY
-    insertAsNewBoard: ({ scene, liveCamera }) => (dispatch, getState) => {
-      let state = getState()
-
-      // TODO DRY
-      let cameraImage
-      let camera = liveCamera.clone()
-      camera.layers.set(0)
-      let imageRenderer = new THREE.WebGLRenderer({ antialias: true })
-      imageRenderer.setSize(Math.ceil(900 * aspectRatio), 900)
-      imageRenderer.render(scene, camera)
-      cameraImage = imageRenderer.domElement.toDataURL()
-
-      dispatch(markSaved())
-
-      ipcRenderer.send('insertShot', {
-        data: getSerializedState(state),
-        images: {
-          'camera': cameraImage,
-          
-          // TODO
-          'topdown': undefined
-        }
-      })
-    },
-
     onBeforeUnload: event => (dispatch, getState) => {
       if (getIsSceneDirty(getState())) {
         // pass electron-specific flag
@@ -3021,11 +2953,14 @@ const Editor = connect(
       }
     },
 
-    setMainViewCamera
+    setMainViewCamera,
+    markSaved,
+
+    withState: (fn) => (dispatch, getState) => fn(dispatch, getState())
   }
 )(
 
-  ({ mainViewCamera, createObject, selectObject, updateModels, loadScene, saveScene, activeCamera, setActiveCamera, resetScene, remoteInput, aspectRatio, saveToBoard, insertAsNewBoard, sceneObjects, selection, onBeforeUnload, setMainViewCamera }) => {
+  ({ mainViewCamera, createObject, selectObject, updateModels, loadScene, saveScene, activeCamera, setActiveCamera, resetScene, remoteInput, aspectRatio, sceneObjects, selection, onBeforeUnload, setMainViewCamera, withState }) => {
     const largeCanvasRef = useRef(null)
     const smallCanvasRef = useRef(null)
     const [ready, setReady] = useState(false)
@@ -3052,6 +2987,79 @@ const Editor = connect(
     const onZoomInClick = preventDefault(() => { alert('TODO zoom in (not implemented yet)') })
     const onZoomOutClick = preventDefault(() => { alert('TODO zoom out (not implemented yet)') })
 
+    const imageRenderer = useRef()
+    // TODO do we need to getState first? use an updateWithState wrapper?
+    const onToolbarSaveToBoard = () => {
+      withState((dispatch, state) => {
+        let aspectRatio = state.aspectRatio
+
+        let cameraImage
+        let imageRenderCamera = camera.clone()
+        imageRenderCamera.layers.set(0)
+
+        if (!imageRenderer.current) {
+          imageRenderer.current = new THREE.WebGLRenderer({ antialias: true })
+        }
+
+        imageRenderer.current.setSize(Math.ceil(900 * aspectRatio), 900)
+        imageRenderer.current.render(scene.current, imageRenderCamera)
+        cameraImage = imageRenderer.current.domElement.toDataURL()
+
+        // TODO
+        // if (topDownCamera) {
+        //   imageRenderer.clear()
+        //   imageRenderer.setSize(900, 900)
+        //   imageRenderer.render(scene, topDownCamera)
+        //   topDownImage = imageRenderer.domElement.toDataURL()
+        // }
+
+        ipcRenderer.send('saveShot', {
+          uid: state.board.uid,
+          data: getSerializedState(state),
+          images: {
+            'camera': cameraImage,
+
+            // TODO
+            'topdown': undefined
+          }
+        })
+
+        dispatch(markSaved())
+      })
+    }
+    // TODO do we need to getState first? use an updateWithState wrapper?
+    const onToolbarInsertAsNewBoard = () => {
+      // TODO
+      // TODO DRY
+      // insertAsNewBoard: ({ scene, liveCamera }) => (dispatch, getState) => {
+      //   let state = getState()
+      // 
+      //   // TODO DRY
+      //   let cameraImage
+      //   let camera = liveCamera.clone()
+      //   camera.layers.set(0)
+      //   let imageRenderer = new THREE.WebGLRenderer({ antialias: true })
+      //   imageRenderer.setSize(Math.ceil(900 * aspectRatio), 900)
+      //   imageRenderer.render(scene, camera)
+      //   cameraImage = imageRenderer.domElement.toDataURL()
+      // 
+      //   dispatch(markSaved())
+      // 
+      //   ipcRenderer.send('insertShot', {
+      //     data: getSerializedState(state),
+      //     images: {
+      //       'camera': cameraImage,
+      // 
+      //       // TODO
+      //       'topdown': undefined
+      //     }
+      //   })
+      // },
+    }
+
+
+
+
     useEffect(() => {
       // TODO introspect models
       updateModels({})
@@ -3075,7 +3083,7 @@ const Editor = connect(
       { value: { scene: scene.current }},
       h(
         ['div.column', { style: { width: '100%' } }, [
-          [Toolbar, { createObject, selectObject, loadScene, saveScene, camera, setActiveCamera, resetScene, saveToBoard, insertAsNewBoard }],
+          [Toolbar, { createObject, selectObject, loadScene, saveScene, camera, setActiveCamera, resetScene, saveToBoard: onToolbarSaveToBoard, insertAsNewBoard: onToolbarInsertAsNewBoard }],
 
           ['div.row', { style: { flex: 1 }},
             ['div.column', { style: { width: '300px', background: '#111'} },
