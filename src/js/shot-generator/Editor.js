@@ -426,10 +426,7 @@ const SceneManager = connect(
                 // update object state with the latest values
                 let cameraId = camera.userData.id
                 let { x, y, z, rotation, tilt, fov } = cameraControlsView.current.object
-                if (remoteInput.orbitMode)
-                {
-                 // console.log('camera moving? : ', camera.position)
-                }
+                
                 // if props changed
                 if (
                   cameraState.x != x ||
@@ -489,7 +486,7 @@ const SceneManager = connect(
           cameraControlsView.current = null
         }        
       }
-    }, [camera, remoteInput])
+    }, [camera])
 
     // see code in rAF
     // useEffect(() => {}, [mainViewCamera])
