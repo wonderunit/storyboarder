@@ -578,7 +578,6 @@ module.exports = {
 
         case 'SET_INPUT_ORBITMODE':          
           draft.input.orbitMode = action.payload
-          console.log('setting orbit mode to: ', action.payload)
           return
 
         case 'UPDATE_MODELS':

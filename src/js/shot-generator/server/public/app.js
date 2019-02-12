@@ -231,14 +231,18 @@ document.getElementById("cameraOrbit").addEventListener('touchstart', event => {
     mag: [alpha, beta, gamma]
   })
   report({
-    mouseMode: true
+    orbitMode: true
   })
   report({
-    orbitMode: true
+    mouseMode: true
   })
   report({
     down: true
   })
+  
+  
+  
+  
   report({
     mag: [alpha, beta, gamma]
   })  
@@ -254,11 +258,12 @@ document.getElementById("cameraOrbit").addEventListener('touchend', event => {
   event.preventDefault()
   
   report({
-    orbitMode: false
-  })
-  report({
     down: false
   })
+  report({
+    orbitMode: false
+  })
+  
   report({
     mouseMode: false
   })

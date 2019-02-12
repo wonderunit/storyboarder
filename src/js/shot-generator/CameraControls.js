@@ -24,6 +24,8 @@ class CameraControls {
     window.addEventListener( 'pointerup', this.onPointerUp, false )
     window.addEventListener( 'keydown', this.onKeyDown, false )
     window.addEventListener( 'keyup', this.onKeyUp, false )
+
+    this.domElement.addEventListener('mousedown', this.onPointerDown, false )
   }
 
   dispose () {
@@ -37,9 +39,11 @@ class CameraControls {
   onPointerMove ( event ) {
     this.mouseX = event.pageX
     this.mouseY = event.pageY
+    //console.log('pointer move?', event.pageX, event.pageY)
   }
 
   onPointerDown ( event ) {
+    console.log('pointer down?')
     event.preventDefault()
     event.stopPropagation()
 
@@ -56,6 +60,7 @@ class CameraControls {
   }
 
   onPointerUp ( event ) {
+    console.log('getting up')
     event.preventDefault()
     event.stopPropagation()
     this.mouseDragOn = false
@@ -136,6 +141,7 @@ class CameraControls {
     }
 
     if (this.mouseDragOn) {
+      console.log('drag?')
       let rotation = this.initialRotation - (this.mouseX - this.initialMouseX)*0.001
       this.object.rotation = rotation
       let tilt = this.initialTilt - (this.mouseY - this.initialMouseY)*0.001
