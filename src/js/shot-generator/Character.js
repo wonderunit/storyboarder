@@ -201,12 +201,26 @@ const Character = React.memo(({
 
       object.current.add(...armatures)
       object.current.add(mesh)
-      //object.current.scale.set(100,100,100)
       object.current.userData.mesh = mesh
-      //console.log('object: ', object)
       scene.add(object.current)
-      //console.log('weird: ', weirdFBThingie)
       let bonesHelper = new BonesHelper( skeleton.bones[0].parent, object.current, { boneLengthScale } )
+      
+      bonesHelper.traverse(child => {
+        child.layers.disable(0)
+        child.layers.enable(1)
+        child.layers.enable(2)
+      })
+      bonesHelper.hit_meshes.forEach(h => {
+        h.layers.disable(0)
+        h.layers.enable(1)
+        h.layers.enable(2)
+      })
+      bonesHelper.cones.forEach(c => {
+        c.layers.disable(0)
+        c.layers.enable(1)
+        c.layers.enable(2)
+      })
+
       object.current.bonesHelper = bonesHelper
       object.current.userData.skeleton = skeleton
       object.current.userData.boneLengthScale = boneLengthScale
