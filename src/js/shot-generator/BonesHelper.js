@@ -391,8 +391,8 @@ function BonesHelper( object, object3D ) {
       hitMesh.userData.type = 'hitter'
 
       // Add the axis helper if needed
-      let axisHelper = new THREE.AxesHelper(0.2)
-      axisHelper.position.y -= boneLength/2
+      // let axisHelper = new THREE.AxesHelper(0.2)
+      // axisHelper.position.y -= boneLength/2
       //this.cones[boneIndex].add(axisHelper)
       
 
