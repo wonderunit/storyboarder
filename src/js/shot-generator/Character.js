@@ -140,6 +140,8 @@ const Character = React.memo(({
   updateObject,
   loaded,
   devices,
+  storyboarderFilePath,
+
   ...props
 }) => {
   // setting loaded = true forces an update to sceneObjects,

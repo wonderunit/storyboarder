@@ -174,7 +174,8 @@ const SceneManager = connect(
     mainViewCamera: state.mainViewCamera,
     activeCamera: state.activeCamera,
     aspectRatio: state.aspectRatio,
-    devices:state.devices
+    devices: state.devices,
+    meta: state.meta
   }),
   {
     updateObject,
@@ -185,7 +186,7 @@ const SceneManager = connect(
     createPosePreset
   }
 )(
-  ({ world, sceneObjects, updateObject, selectObject, remoteInput, largeCanvasRef, smallCanvasRef, selection, selectedBone, machineState, transition, animatedUpdate, selectBone, mainViewCamera, updateCharacterSkeleton, largeCanvasSize, activeCamera, aspectRatio, devices }) => {
+  ({ world, sceneObjects, updateObject, selectObject, remoteInput, largeCanvasRef, smallCanvasRef, selection, selectedBone, machineState, transition, animatedUpdate, selectBone, mainViewCamera, updateCharacterSkeleton, largeCanvasSize, activeCamera, aspectRatio, devices, meta }) => {
     const { scene } = useContext(SceneContext)
 
     let [camera, setCamera] = useState(null)
@@ -650,6 +651,9 @@ const SceneManager = connect(
 
                 loaded: props.loaded ? props.loaded : false,
                 devices,
+
+                storyboarderFilePath: meta.storyboarderFilePath,
+
                 ...props
               }
             ]
