@@ -2992,7 +2992,7 @@ const Editor = connect(
     // used by onToolbarSaveToBoard and onToolbarInsertAsNewBoard
     const imageRenderer = useRef()
 
-    const renderImagesForBoard = () => {
+    const renderImagesForBoard = state => {
       if (!imageRenderer.current) {
         imageRenderer.current = new THREE.OutlineEffect(
           new THREE.WebGLRenderer({ antialias: true })
@@ -3002,9 +3002,24 @@ const Editor = connect(
       let imageRenderCamera = camera.clone()
       imageRenderCamera.layers.set(0)
 
-      imageRenderer.current.setSize(Math.ceil(900 * aspectRatio), 900)
+      // Prepare for rendering as an image
+      //
+      // remove selection outline effect color from Character material
+      let originalColor
+      let selected = state.selection && scene.current.children.find(child => child.userData.id === state.selection)
+      if (selected) {
+        originalColor = selected.userData.mesh.material.userData.outlineParameters.color
+        selected.userData.mesh.material.userData.outlineParameters.color = [0, 0, 0]
+      }
+
+      imageRenderer.current.setSize(Math.ceil(900 * state.aspectRatio), 900)
       imageRenderer.current.render(scene.current, imageRenderCamera)
       let cameraImage = imageRenderer.current.domElement.toDataURL()
+
+      // restore selection outline effect color from Character material
+      if (selected) {
+        selected.userData.mesh.material.userData.outlineParameters.color = originalColor
+      }
 
       // TODO
       // if (topDownCamera) {
@@ -3020,7 +3035,7 @@ const Editor = connect(
 
     const onToolbarSaveToBoard = () => {
       withState((dispatch, state) => {
-        let { cameraImage } = renderImagesForBoard()
+        let { cameraImage } = renderImagesForBoard(state)
 
         ipcRenderer.send('saveShot', {
           uid: state.board.uid,
@@ -3038,7 +3053,7 @@ const Editor = connect(
     }
     const onToolbarInsertAsNewBoard = () => {
       withState((dispatch, state) => {
-        let { cameraImage } = renderImagesForBoard()
+        let { cameraImage } = renderImagesForBoard(state)
 
         // NOTE we do this first, since we get new data on insertShot complete
         dispatch(markSaved())
