@@ -11,7 +11,7 @@ const BonesHelper = require('./BonesHelper')
 const { initialState } = require('../shared/reducers/shot-generator')
 
 const { dialog } = require('electron').remote
-const fs = require('fs')
+const fs = require('fs-extra')
 const ModelLoader = require('../services/model-loader')
 
 const applyDeviceQuaternion = require('./apply-device-quaternion')
