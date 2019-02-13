@@ -187,6 +187,7 @@ const SceneManager = connect(
     const { scene } = useContext(SceneContext)
 
     let [camera, setCamera] = useState(null)
+    const [shouldRaf, setShouldRaf] = useState(true)
 
     let largeRenderer = useRef(null)
     let largeRendererEffect = useRef(null)
@@ -218,6 +219,37 @@ const SceneManager = connect(
 
       orthoCamera.current.position.y = 900
       orthoCamera.current.rotation.x = -Math.PI / 2
+    }, [])
+
+    useEffect(() => {
+      const onVisibilityChange = event => {
+        // console.log('SceneManager onVisibilityChange', document.hidden, event)
+        if (document.hidden) {
+          setShouldRaf(false)
+        } else {
+          setShouldRaf(true)
+        }
+      }
+
+      const onBlur = event => {
+        // console.log('SceneManager onBlur')
+        setShouldRaf(false)
+      }
+
+      const onFocus = event => {
+        // console.log('SceneManager onFocus')
+        setShouldRaf(true)
+      }
+
+      document.addEventListener('visibilitychange', onVisibilityChange)
+      window.addEventListener('blur', onBlur)
+      window.addEventListener('focus', onFocus)
+
+      return function cleanup () {
+        document.removeEventListener('visibilitychange', onVisibilityChange)
+        window.removeEventListener('blur', onBlur)
+        window.removeEventListener('focus', onFocus)
+      }
     }, [])
 
     useEffect(() => {
@@ -465,7 +497,10 @@ const SceneManager = connect(
           if (stats) { stats.end() }
           animatorId.current = requestAnimationFrame(animator.current)
         }
-        animatorId.current = requestAnimationFrame(animator.current)
+
+        if (shouldRaf) {
+          animatorId.current = requestAnimationFrame(animator.current)
+        }
       }
 
       return function cleanup () {
@@ -473,6 +508,7 @@ const SceneManager = connect(
 
         cancelAnimationFrame(animatorId.current)
         animator.current = () => {}
+        animatorId.current = null
 
         scene.remove(cameraHelper.current)
         cameraHelper.current = null
@@ -483,7 +519,7 @@ const SceneManager = connect(
           cameraControlsView.current = null
         }
       }
-    }, [camera])
+    }, [camera, shouldRaf])
 
     // see code in rAF
     // useEffect(() => {}, [mainViewCamera])
