@@ -162,7 +162,61 @@ const Character = React.memo(({
   }
 
   const load = async (model, props) => {
-    let filepath = pathToCharacterModelFile(model)
+    console.log('Character load', { storyboarderFilePath })
+
+    let resourcePath = path.join(path.dirname(storyboarderFilePath), 'images')
+    let filepath = model
+
+    if (
+      // if there's a path (e.g.: it’s custom)
+      path.dirname(model) !== '.' &&
+      // but it's not the images folder
+      path.dirname(model) !== resourcePath
+    ) {
+      console.log('model file path does not appear to be part of the project resources folder')
+
+      if (!fs.existsSync(resourcePath)) {
+        alert('Error copying model file. Could not access images folder.')
+        return
+      }
+
+      let src = model
+      let dst = path.join(resourcePath, path.basename(model))
+
+      console.log({ src, dst })
+
+      try {
+        if (fs.existsSync(dst)) {
+          let choice = dialog.showMessageBox(null, {
+            type: 'question',
+            buttons: ['Yes', 'No'],
+            message: 'Model file already exists. Overwrite?'
+          })
+          if (choice !== 0) {
+            console.log('cancelled model file copy')
+            throw new Error('User said no')
+            return
+          }
+        }
+
+        console.log(`copying model file from ${src} to ${dst}`)
+        fs.copySync(src, dst, { overwrite: false, errorOnExist: true })
+
+        // TODO convert to relative path?
+
+        // update
+        filepath = dst
+        updateObject(id, { model: filepath })
+
+        console.log(`model file path is now ${filepath}`)
+      } catch (err) {
+        console.error(err)
+        alert(`Error copying model file from ${src} to ${dst}\n${err}`)
+        return
+      }
+    }
+
+    filepath = pathToCharacterModelFile(filepath)
 
     if (!fs.existsSync(filepath)) {
       try {
