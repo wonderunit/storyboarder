@@ -24,8 +24,6 @@ class CameraControls {
     window.addEventListener( 'pointerup', this.onPointerUp, false )
     window.addEventListener( 'keydown', this.onKeyDown, false )
     window.addEventListener( 'keyup', this.onKeyUp, false )
-
-    this.domElement.addEventListener('mousedown', this.onPointerDown, false )
   }
 
   dispose () {

@@ -59,7 +59,7 @@ const isValidSkinnedMesh = data => {
 
 const characterFactory = data => {
   //console.log('factory got data: ', data)
-  let weirdFBThingie = false
+  let boneLengthScale = 1
   let material = new THREE.MeshToonMaterial({
     color: 0xffffff,
     emissive: 0x0,
@@ -81,37 +81,26 @@ const characterFactory = data => {
 
   armatures = data.scene.children[0].children.filter(child => child instanceof THREE.Bone)
   if (armatures.length === 0 ) {  // facebook export is different
-    //console.log('searching in: ',data.scene.children[0].children[0].children)
     armatures = data.scene.children[0].children[0].children.filter(child => child instanceof THREE.Bone)
     for (var bone of armatures)
     {
-      //console.log('this scale: ', data.scene.children[0].children[0])
-      //bone.scale.multiply(data.scene.children[0].children[0].scale)
       bone.scale.set(1,1,1)
       bone.quaternion.multiply(data.scene.children[0].children[0].quaternion)
-      //bone.position.multiply(data.scene.children[0].children[0].scale)
-      bone.position.set(bone.position.x,bone.position.z,bone.position.y)
-      parentPosition = bone.position.clone()
-           
+      bone.position.set(bone.position.x,bone.position.z,bone.position.y)              
     }
     mesh.scale.set(1,1,1)
     parentRotation = data.scene.children[0].children[0].quaternion.clone()
-    weirdFBThingie = true 
-    //mesh.quaternion.multiply(data.scene.children[0].children[0].quaternion.clone().inverse()).normalize()
-    //console.log('mesh q1: ', mesh.quaternion)
-    //mesh.quaternion.copy(armatures[0].quaternion)
-    //console.log('mesh q2: ', mesh.quaternion)
-    //mesh.rotation.y = (Math.PI/2)
+    parentPosition = armatures[0].position.clone()
+    boneLengthScale = 100 
   }
-  console.log('parent rotation: ', parentRotation)
-  //console.log('arm: ', armatures)
+
   if (mesh == null) {
     mesh = new THREE.Mesh()
     skeleton = null
     armatures = null
     let originalHeight = 0
     
-    return { mesh, skeleton, armatures, originalHeight, weirdFBThingie, parentRotation, parentPosition }
+    return { mesh, skeleton, armatures, originalHeight, boneLengthScale, parentRotation, parentPosition }
   }
 
   skeleton = mesh.skeleton
@@ -129,7 +118,7 @@ const characterFactory = data => {
   
   //skeleton.pose()
 
-  return { mesh, skeleton, armatures, originalHeight, weirdFBThingie, parentRotation, parentPosition }
+  return { mesh, skeleton, armatures, originalHeight, boneLengthScale, parentRotation, parentPosition }
 }
 
 const remap = (x, a, b, c, d) => (x - a) * (d - c) / (b - a) + c
@@ -199,7 +188,7 @@ const Character = React.memo(({
     if (modelData) {
       console.log(type, id, 'add')
 
-      const { mesh, skeleton, armatures, originalHeight, weirdFBThingie, parentRotation, parentPosition } = characterFactory(modelData)
+      const { mesh, skeleton, armatures, originalHeight, boneLengthScale, parentRotation, parentPosition } = characterFactory(modelData)
      
       object.current = new THREE.Object3D()
       object.current.userData.id = id
@@ -217,10 +206,10 @@ const Character = React.memo(({
       //console.log('object: ', object)
       scene.add(object.current)
       //console.log('weird: ', weirdFBThingie)
-      let bonesHelper = new BonesHelper( skeleton.bones[0].parent, object.current, weirdFBThingie )
+      let bonesHelper = new BonesHelper( skeleton.bones[0].parent, object.current, { boneLengthScale } )
       object.current.bonesHelper = bonesHelper
       object.current.userData.skeleton = skeleton
-      object.current.userData.weirdFBThingie = weirdFBThingie
+      object.current.userData.boneLengthScale = boneLengthScale
       object.current.userData.parentRotation = parentRotation
       object.current.userData.parentPosition = parentPosition
       scene.add(object.current.bonesHelper)
@@ -346,8 +335,9 @@ const Character = React.memo(({
       console.log(type, id, 'changed pose preset', )
       let skeleton = object.current.userData.skeleton
       skeleton.pose()
-      if (object.current.userData.weirdFBThingie)
-      {console.log('parent rotation: ', object.current.userData)
+      if (object.current.userData.boneLengthScale === 100)  // fb converter scaled object
+      {
+        // console.log('parent rotation: ', object.current.userData)
         skeleton.bones[0].quaternion.multiply(object.current.userData.parentRotation)
         skeleton.bones[0].position.copy(object.current.userData.parentPosition)
       }
@@ -383,7 +373,7 @@ const Character = React.memo(({
       // adjust head proportionally
       let skeleton = object.current.userData.skeleton
 
-      let headBone = skeleton.getBoneByName('mixamorigHead')
+      let headBone = skeleton.getBoneByName('Head')
 
       if (headBone && object.current.userData.modelSettings.height) {
         let baseHeadScale = object.current.userData.modelSettings.height / props.height

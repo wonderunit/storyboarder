@@ -251,7 +251,7 @@ function filter_array(test_array) {
     return result
 }
 
-function BonesHelper( object, object3D, weirdoFBMesh ) {
+function BonesHelper( object, object3D, { boneLengthScale = 1 } ) {
   Object3D.call( this )
   //ModelLoader.isCustomModel(model)
   let sknMesh = object3D.children.find(child => child instanceof THREE.SkinnedMesh) ||
@@ -339,35 +339,19 @@ function BonesHelper( object, object3D, weirdoFBMesh ) {
       
       if (bonesContainingVerts[ii])
       {
-        //let relativePos = getPointInBetweenByPerc(posA, posB, 0.5)
         relativePos = getPointInBetweenByPerc(absoluteBonePosA, absoluteBonePosB, 0.5)
         let med = calcMedianDistance(relativePos, bonesContainingVerts[ii], this, matrixWorldInv, boneEquiv, vertexDistanceMyltiplyFactor, ii, sknMesh)
         distanceToVerts = med.median !== 0 ? med.median : 0.1
         createdHelper = med.object        
       }
 
-      
       let boneLength = posA.distanceTo(posB) * scaleC.y// / scaleA.y
-      //console.log('scaleA: ', scaleC, scaleA, scaleB)
       let boneWidth
-      //console.log('weirdo mesh: ', weirdoFBMesh)
-      if (weirdoFBMesh)
-      {
-        boneWidth = boneLength*100 > 0.15 ? boneLength : 0.15 /100  //restrict minimum width
-        if (boneLength*100 > 0.35) boneWidth = 0.35 /100 //also maximum..
-      } else {
-        boneWidth = boneLength > 0.15 ? boneLength : 0.15   //restrict minimum width
-        if (boneLength > 0.35) boneWidth = 0.35 //also maximum..
-      }
-      
-      //conso
-     // boneLength = boneLength / scaleA.y / scaleA.y
-      //boneWidth = boneLength
-      //console.log('boneWidth: ', boneWidth)
-      //boneWidth = boneWidth / 100
-      let hit_bone_width = distanceToVerts*1.5 // / scaleA.y
 
-      //console.log('git width: ', hit_bone_width)
+      boneWidth = boneLength * boneLengthScale > 0.15 ? boneLength : 0.15 / boneLengthScale   //restrict minimum width
+      if (boneLength * boneLengthScale > 0.35) boneWidth = 0.35 / boneLengthScale //also maximum..
+      
+      let hit_bone_width = distanceToVerts*1.5 // / scaleA.y
       let geometry = new THREE.CylinderBufferGeometry(boneWidth / 25, boneWidth /15 , boneLength - boneWidth/20, 4 )//, heightSegments : Integer, openEnded : Boolean, thetaStart : Float, thetaLength : Float)
 
       // secondary geometry used for hit testing
@@ -393,7 +377,6 @@ function BonesHelper( object, object3D, weirdoFBMesh ) {
       this.cones[boneIndex]= new THREE.Mesh()
 
       let coneGeom = new THREE.Mesh( geometry.clone(), s_material.clone() )
-      //coneGeom.scale.set(0.01,0.01,0.01)
       let hitMesh = new THREE.Mesh(hit_geometry, hit_material)
 
       coneGeom.position.y = boneLength / 2 + boneWidth / 60
