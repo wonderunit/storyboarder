@@ -263,6 +263,7 @@ const initialState = {
   board: {},
 
   meta: {
+    storyboarderFilePath: undefined,
     lastSavedHash: undefined
   },
 
@@ -807,6 +808,10 @@ module.exports = {
 
         case 'MARK_SAVED':
           updateMeta(draft)
+          return
+        
+        case 'SET_META_STORYBOARDER_FILE_PATH':
+          draft.meta.storyboarderFilePath = action.payload
           return
       }
     })

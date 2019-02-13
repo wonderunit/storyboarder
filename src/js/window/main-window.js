@@ -1903,6 +1903,7 @@ const loadBoardUI = async () => {
   document.querySelector("#shot-generator-container .flatbutton").addEventListener('click', event => {
     event.preventDefault()
     ipcRenderer.send('shot-generator:open', {
+      storyboarderFilePath: boardFilename,
       boardData: {
         version: boardData.version,
         aspectRatio: boardData.aspectRatio
