@@ -58,6 +58,8 @@ const isValidSkinnedMesh = data => {
 }
 
 const characterFactory = data => {
+  //console.log('factory got data: ', data)
+  let weirdFBThingie = false
   let material = new THREE.MeshToonMaterial({
     color: 0xffffff,
     emissive: 0x0,
@@ -72,37 +74,58 @@ const characterFactory = data => {
   let mesh
   let skeleton
   let armatures
-
+  
   mesh = data.scene.children.find(child => child instanceof THREE.SkinnedMesh) ||
          data.scene.children[0].children.find(child => child instanceof THREE.SkinnedMesh)
 
   armatures = data.scene.children[0].children.filter(child => child instanceof THREE.Bone)
+  if (armatures.length === 0 ) {  // facebook export is different
+    //console.log('searching in: ',data.scene.children[0].children[0].children)
+    armatures = data.scene.children[0].children[0].children.filter(child => child instanceof THREE.Bone)
+    for (var bone of armatures)
+    {
+      //console.log('this scale: ', data.scene.children[0].children[0])
+      bone.scale.multiply(data.scene.children[0].children[0].scale)
+      bone.scale.set(1,1,1)
+      bone.quaternion.multiply(data.scene.children[0].children[0].quaternion)
+      //bone.position.multiply(data.scene.children[0].children[0].scale)
+      bone.position.set(bone.position.x,bone.position.z,bone.position.y)
+      weirdFBThingie = true
+    }
+    mesh.scale.set(1,1,1)
+    //mesh.quaternion.multiply(data.scene.children[0].children[0].quaternion.clone().inverse()).normalize()
+    //console.log('mesh q1: ', mesh.quaternion)
+    //mesh.quaternion.copy(armatures[0].quaternion)
+    //console.log('mesh q2: ', mesh.quaternion)
+    //mesh.rotation.y = (Math.PI/2)
+  }
 
+  //console.log('arm: ', armatures)
   if (mesh == null) {
     mesh = new THREE.Mesh()
     skeleton = null
     armatures = null
     let originalHeight = 0
-    //console.log('mesh: ', mesh)
-    return { mesh, skeleton, armatures, originalHeight }
+    
+    return { mesh, skeleton, armatures, originalHeight, weirdFBThingie }
   }
 
   skeleton = mesh.skeleton
   
-
   if (mesh.material.map) {
     material.map = mesh.material.map
     material.map.needsUpdate = true
   }
+    
   mesh.material = material
   mesh.renderOrder = 1.0
 
   let bbox = new THREE.Box3().setFromObject(mesh)
   let originalHeight = bbox.max.y - bbox.min.y
-
+  
   //skeleton.pose()
 
-  return { mesh, skeleton, armatures, originalHeight }
+  return { mesh, skeleton, armatures, originalHeight, weirdFBThingie }
 }
 
 const remap = (x, a, b, c, d) => (x - a) * (d - c) / (b - a) + c
@@ -172,7 +195,7 @@ const Character = React.memo(({
     if (modelData) {
       console.log(type, id, 'add')
 
-      const { mesh, skeleton, armatures, originalHeight } = characterFactory(modelData)
+      const { mesh, skeleton, armatures, originalHeight, weirdFBThingie } = characterFactory(modelData)
      
       object.current = new THREE.Object3D()
       object.current.userData.id = id
@@ -182,13 +205,15 @@ const Character = React.memo(({
       // FIXME get current .models from getState()
       object.current.userData.modelSettings = initialState.models[props.model] || {}
 
+
       object.current.add(...armatures)
       object.current.add(mesh)
+      //object.current.scale.set(100,100,100)
       object.current.userData.mesh = mesh
-
+      //console.log('object: ', object)
       scene.add(object.current)
-      
-      let bonesHelper = new BonesHelper(skeleton.bones[0].parent, object.current )
+      //console.log('weird: ', weirdFBThingie)
+      let bonesHelper = new BonesHelper(skeleton.bones[0].parent, object.current, weirdFBThingie )
       object.current.bonesHelper = bonesHelper
       object.current.userData.skeleton = skeleton
       scene.add(object.current.bonesHelper)

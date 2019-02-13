@@ -251,7 +251,7 @@ function filter_array(test_array) {
     return result
 }
 
-function BonesHelper( object, object3D ) {
+function BonesHelper( object, object3D, weirdoFBMesh ) {
   Object3D.call( this )
   //ModelLoader.isCustomModel(model)
   let sknMesh = object3D.children.find(child => child instanceof THREE.SkinnedMesh) ||
@@ -259,6 +259,7 @@ function BonesHelper( object, object3D ) {
   
 
   let skeleton_clone = cloneSkinned( object3D )
+
   let zeroedSkinnedMesh = skeleton_clone.children.find(child => child instanceof THREE.SkinnedMesh) ||
     skeleton_clone.children[0].children.find(child => child instanceof THREE.SkinnedMesh)
   
@@ -314,14 +315,18 @@ function BonesHelper( object, object3D ) {
 
       let boneIndex = traversedBones.indexOf(bone)
 
-      posA.setFromMatrixPosition(boneMatrix.multiplyMatrices(matrixWorldInv, bone.matrixWorld))
-      posB.setFromMatrixPosition(boneMatrix.multiplyMatrices(matrixWorldInv, bone.children[jj].matrixWorld))
+      scaleA.setFromMatrixScale(boneMatrix)
+      scaleB.setFromMatrixScale(matrixWorldInv)
+      scaleC.setFromMatrixScale(object.matrixWorld)
+
+      posA.setFromMatrixPosition(boneMatrix.multiplyMatrices(matrixWorldInv, bone.matrixWorld))//.multiplyScalar(1/scaleA.x)
+      posB.setFromMatrixPosition(boneMatrix.multiplyMatrices(matrixWorldInv, bone.children[jj].matrixWorld))//.multiplyScalar(1/scaleA.x)
       //once = ii > 10 && ii < 20 ? true : false
       // set to true and remove false to add the intersection verts (debugging)
       //once = true
       //if (once) console.log('median distance for bone',bone.name)//bone.name)//,': ', distanceToVerts)
       once = false
-      let distanceToVerts = 0.1 
+      let distanceToVerts = 0.1
       let createdHelper = new Object3D()
 
       let absoluteBonePosA = new Vector3
@@ -331,9 +336,7 @@ function BonesHelper( object, object3D ) {
       let boneEquiv = zeroedSkinnedMesh.skeleton.bones.filter(bone_current => bone_current.name === bone.name)[0]
       absoluteBonePosA.setFromMatrixPosition(boneEquiv.matrixWorld)
       absoluteBonePosB.setFromMatrixPosition(boneEquiv.children[jj].matrixWorld)
-
       
-
       if (bonesContainingVerts[ii])
       {
         //let relativePos = getPointInBetweenByPerc(posA, posB, 0.5)
@@ -343,14 +346,28 @@ function BonesHelper( object, object3D ) {
         createdHelper = med.object        
       }
 
-      scaleA.setFromMatrixScale(boneMatrix)
-      scaleB.setFromMatrixScale(matrixWorldInv)
-      scaleC.setFromMatrixScale(object.matrixWorld)
-      let boneLength = posA.distanceTo(posB) * scaleC.y //* scaleB.y
-      let boneWidth = boneLength > 0.15 ? boneLength : 0.15   //restrict minimum width
-      if (boneWidth > 0.35) boneWidth = 0.35  //also maximum..
+      
+      let boneLength = posA.distanceTo(posB) * scaleC.y// / scaleA.y
+      //console.log('scaleA: ', scaleC, scaleA, scaleB)
+      let boneWidth
+      //console.log('weirdo mesh: ', weirdoFBMesh)
+      if (weirdoFBMesh)
+      {
+        boneWidth = boneLength*100 > 0.15 ? boneLength : 0.15 /100  //restrict minimum width
+        if (boneLength*100 > 0.35) boneWidth = 0.35 /100 //also maximum..
+      } else {
+        boneWidth = boneLength > 0.15 ? boneLength : 0.15   //restrict minimum width
+        if (boneLength > 0.35) boneWidth = 0.35 //also maximum..
+      }
+      
+      //conso
+     // boneLength = boneLength / scaleA.y / scaleA.y
+      //boneWidth = boneLength
+      //console.log('boneWidth: ', boneWidth)
+      //boneWidth = boneWidth / 100
+      let hit_bone_width = distanceToVerts*1.5 // / scaleA.y
 
-      let hit_bone_width = distanceToVerts*1.5
+      //console.log('git width: ', hit_bone_width)
       let geometry = new THREE.CylinderBufferGeometry(boneWidth / 25, boneWidth /15 , boneLength - boneWidth/20, 4 )//, heightSegments : Integer, openEnded : Boolean, thetaStart : Float, thetaLength : Float)
 
       // secondary geometry used for hit testing
@@ -376,6 +393,7 @@ function BonesHelper( object, object3D ) {
       this.cones[boneIndex]= new THREE.Mesh()
 
       let coneGeom = new THREE.Mesh( geometry.clone(), s_material.clone() )
+      //coneGeom.scale.set(0.01,0.01,0.01)
       let hitMesh = new THREE.Mesh(hit_geometry, hit_material)
 
       coneGeom.position.y = boneLength / 2 + boneWidth / 60
@@ -384,7 +402,7 @@ function BonesHelper( object, object3D ) {
 
       this.cones[boneIndex].geometry.applyMatrix(new Matrix4().makeTranslation(0, boneLength/2+boneWidth/60, 0))
       hitMesh.geometry.applyMatrix(new Matrix4().makeTranslation(0, boneLength/2, 0))
-
+      
       // set visible here to see the hit mesh
       hitMesh.material.visible = false
       hitMesh.name = 'hitter_'+bone.name
@@ -544,6 +562,7 @@ const cloneSkinned = ( source ) => {
     var sourceBones = sourceMesh.skeleton.bones
     var clonedMesh = cloneLookup.get( sourceMesh )
     clonedMesh.skeleton = sourceMesh.skeleton.clone()
+    //console.log('cloned mesh: ', clonedMesh)
     clonedMesh.skeleton.bones = sourceBones.map( function ( sourceBone ) {
       if ( ! cloneLookup.has( sourceBone ) ) {
         throw new Error( 'THREE.AnimationUtils: Required bones are not descendants of the given object.' )
