@@ -205,9 +205,6 @@ const Character = React.memo(({
         c.layers.enable(2)
       })
 
-      if (!window.bonesHelpers) window.bonesHelpers = []
-      window.bonesHelpers.push(bonesHelper)
-
       object.current.bonesHelper = bonesHelper
       object.current.userData.skeleton = skeleton
       scene.add(object.current.bonesHelper)
