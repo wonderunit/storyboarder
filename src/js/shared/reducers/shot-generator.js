@@ -489,7 +489,7 @@ module.exports = {
 
         case 'UPDATE_OBJECT':
           if (draft.sceneObjects[action.payload.id] == null) return
-          console.log('updating now? ', action.payload.id)
+          
           // TODO is there a simpler way to merge only non-null values?
 
           // update skeleton first

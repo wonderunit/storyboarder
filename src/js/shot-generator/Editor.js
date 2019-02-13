@@ -1496,7 +1496,7 @@ const PosePresetsEditor = connect(
           skeleton: sceneObject.skeleton || {}
         }
       }
-      console.log('sceneObject.skeleton: ', sceneObject)
+      //console.log('sceneObject.skeleton: ', sceneObject)
       // create it
       dispatch(createPosePreset(preset))
 

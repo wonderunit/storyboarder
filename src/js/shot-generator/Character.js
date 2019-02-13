@@ -74,7 +74,8 @@ const characterFactory = data => {
   let mesh
   let skeleton
   let armatures
-  
+  let parentRotation = new THREE.Quaternion()
+  let parentPosition = new THREE.Quaternion()
   mesh = data.scene.children.find(child => child instanceof THREE.SkinnedMesh) ||
          data.scene.children[0].children.find(child => child instanceof THREE.SkinnedMesh)
 
@@ -85,21 +86,24 @@ const characterFactory = data => {
     for (var bone of armatures)
     {
       //console.log('this scale: ', data.scene.children[0].children[0])
-      bone.scale.multiply(data.scene.children[0].children[0].scale)
+      //bone.scale.multiply(data.scene.children[0].children[0].scale)
       bone.scale.set(1,1,1)
       bone.quaternion.multiply(data.scene.children[0].children[0].quaternion)
       //bone.position.multiply(data.scene.children[0].children[0].scale)
       bone.position.set(bone.position.x,bone.position.z,bone.position.y)
-      weirdFBThingie = true
+      parentPosition = bone.position.clone()
+           
     }
     mesh.scale.set(1,1,1)
+    parentRotation = data.scene.children[0].children[0].quaternion.clone()
+    weirdFBThingie = true 
     //mesh.quaternion.multiply(data.scene.children[0].children[0].quaternion.clone().inverse()).normalize()
     //console.log('mesh q1: ', mesh.quaternion)
     //mesh.quaternion.copy(armatures[0].quaternion)
     //console.log('mesh q2: ', mesh.quaternion)
     //mesh.rotation.y = (Math.PI/2)
   }
-
+  console.log('parent rotation: ', parentRotation)
   //console.log('arm: ', armatures)
   if (mesh == null) {
     mesh = new THREE.Mesh()
@@ -107,7 +111,7 @@ const characterFactory = data => {
     armatures = null
     let originalHeight = 0
     
-    return { mesh, skeleton, armatures, originalHeight, weirdFBThingie }
+    return { mesh, skeleton, armatures, originalHeight, weirdFBThingie, parentRotation, parentPosition }
   }
 
   skeleton = mesh.skeleton
@@ -125,7 +129,7 @@ const characterFactory = data => {
   
   //skeleton.pose()
 
-  return { mesh, skeleton, armatures, originalHeight, weirdFBThingie }
+  return { mesh, skeleton, armatures, originalHeight, weirdFBThingie, parentRotation, parentPosition }
 }
 
 const remap = (x, a, b, c, d) => (x - a) * (d - c) / (b - a) + c
@@ -195,7 +199,7 @@ const Character = React.memo(({
     if (modelData) {
       console.log(type, id, 'add')
 
-      const { mesh, skeleton, armatures, originalHeight, weirdFBThingie } = characterFactory(modelData)
+      const { mesh, skeleton, armatures, originalHeight, weirdFBThingie, parentRotation, parentPosition } = characterFactory(modelData)
      
       object.current = new THREE.Object3D()
       object.current.userData.id = id
@@ -213,9 +217,12 @@ const Character = React.memo(({
       //console.log('object: ', object)
       scene.add(object.current)
       //console.log('weird: ', weirdFBThingie)
-      let bonesHelper = new BonesHelper(skeleton.bones[0].parent, object.current, weirdFBThingie )
+      let bonesHelper = new BonesHelper( skeleton.bones[0].parent, object.current, weirdFBThingie )
       object.current.bonesHelper = bonesHelper
       object.current.userData.skeleton = skeleton
+      object.current.userData.weirdFBThingie = weirdFBThingie
+      object.current.userData.parentRotation = parentRotation
+      object.current.userData.parentPosition = parentPosition
       scene.add(object.current.bonesHelper)
     }
 
@@ -336,9 +343,14 @@ const Character = React.memo(({
     if (!object.current) return
 
     if (props.posePresetId) {
-      console.log(type, id, 'changed pose preset')
+      console.log(type, id, 'changed pose preset', )
       let skeleton = object.current.userData.skeleton
       skeleton.pose()
+      if (object.current.userData.weirdFBThingie)
+      {console.log('parent rotation: ', object.current.userData)
+        skeleton.bones[0].quaternion.multiply(object.current.userData.parentRotation)
+        skeleton.bones[0].position.copy(object.current.userData.parentPosition)
+      }
     }
   }, [props.posePresetId])
 
