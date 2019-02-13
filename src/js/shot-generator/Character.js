@@ -565,7 +565,7 @@ const Character = React.memo(({
             }
           })
         } else {
-          rotation.setFromQuaternion( objectQuaternion.normalize(), /*euloerOrder*/ )
+          rotation.setFromQuaternion( objectQuaternion.normalize(), "YXZ" )
           updateObject(target.userData.id, {
             rotation: rotation.y
           })
