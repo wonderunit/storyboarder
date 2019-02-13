@@ -11,6 +11,8 @@ const BonesHelper = require('./BonesHelper')
 
 const { initialState } = require('../shared/reducers/shot-generator')
 
+const { dialog } = require('electron').remote
+const fs = require('fs')
 const ModelLoader = require('../services/model-loader')
 
 // character needs:
@@ -136,35 +138,46 @@ const Character = React.memo(({
       scene.remove(object.current)
       object.current.bonesHelper = null
       object.current = null
-      setLoaded(false)
+    }
+  }
+
+  const load = async (model, props) => {
+    let filepath = pathToCharacterModelFile(model)
+
+    if (!fs.existsSync(filepath)) {
+      try {
+        filepath = await ModelLoader.ensureModelFileExists(filepath)
+        console.log(type, id, 'model is now', filepath)
+        updateObject(id, { model: filepath })
+        return
+      } catch (error) {
+        dialog.showMessageBox({
+          title: 'Failed to load',
+          message: `Failed to load character with internal id ${props.id}`
+        })
+        return
+      }
+    }
+
+    let data = await loadGltf(filepath)
+
+    if (isValidSkinnedMesh(data)) {
+      console.log(type, id, 'valid model loaded. cleaning up old one.')
+      doCleanup()
+
+      setModelData(data)
+      setLoaded(true)
+    } else {
+      alert('This model doesn’t contain a Skinned Mesh. Please load it as an Object, not a Character.')
     }
   }
 
   // if the model has changed
   useEffect(() => {
-    console.log(type, id, 'model change', props.model)
     setLoaded(false)
-    setModelData(false)
+    load(props.model, { id, ...props })
 
-    loadGltf(pathToCharacterModelFile(props.model))
-      .then(data => {
-        // Checking if the loaded model contains a SkinnedMesh so we can load it as a Character
-        if (isValidSkinnedMesh(data))
-        {          
-          console.log(type, id, 'model change cleanup, then add')
-          doCleanup()
-          setModelData(data)
-        } else {
-          // the file doesn't contain a skinned mesh, let the user know
-          alert("This model doesn't contain a Skinned Mesh. Please load it as a normal object instead of a character.")
-
-        }
-      })
-      .catch(error => console.error(error))
-
-    // return function cleanup () {
-      
-    // }
+    // return function cleanup () { }
   }, [props.model])
 
   // if the model’s data has changed
@@ -219,6 +232,7 @@ const Character = React.memo(({
     return function cleanup () {
       console.log('component cleanup')
       doCleanup()
+      setLoaded(false)
     }
   }, [])
 
@@ -670,12 +684,12 @@ const Character = React.memo(({
     }
   }, [props.visible, loaded])
 
-  useEffect(() => {
-    if (modelData) {
-      console.log(type, id, 'setLoaded:true')
-      setLoaded(true)
-    }
-  }, [modelData])
+  // useEffect(() => {
+  //   if (modelData) {
+  //     console.log(type, id, 'setLoaded:true')
+  //     setLoaded(true)
+  //   }
+  // }, [modelData])
 
   return null
 })
