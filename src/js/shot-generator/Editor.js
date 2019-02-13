@@ -185,6 +185,7 @@ const SceneManager = connect(
 )(
   ({ world, sceneObjects, updateObject, selectObject, remoteInput, largeCanvasRef, smallCanvasRef, selection, selectedBone, machineState, transition, animatedUpdate, selectBone, mainViewCamera, updateCharacterSkeleton, largeCanvasSize, activeCamera, aspectRatio, devices }) => {
     const { scene } = useContext(SceneContext)
+
     let [camera, setCamera] = useState(null)
 
     let largeRenderer = useRef(null)
@@ -305,6 +306,8 @@ const SceneManager = connect(
 
       orthoCamera.current.updateProjectionMatrix()
 
+      orthoCamera.current.layers.enable(2)
+
       // resize the renderers
       if (mainViewCamera === 'live') {
         // perspective camera is large
@@ -384,6 +387,8 @@ const SceneManager = connect(
         }
 
         cameraHelper.current = new THREE.CameraHelper(camera)
+        cameraHelper.current.layers.disable(0)
+        cameraHelper.current.layers.enable(2)
         scene.add(cameraHelper.current)
 
         animator.current = () => {
@@ -447,10 +452,6 @@ const SceneManager = connect(
                 }
               }
 
-              cameraHelper.current.visible = state.mainViewCamera === 'live'
-                ? false
-                : true
-
               if (state.mainViewCamera === 'live') {
                 largeRendererEffect.current.render(scene, cameraForLarge)
               } else {
@@ -458,9 +459,6 @@ const SceneManager = connect(
               }
 
               cameraHelper.current.update()
-              cameraHelper.current.visible = state.mainViewCamera === 'live'
-                ? true
-                : false
               smallRenderer.current.render(scene, cameraForSmall)
             })
           }
@@ -741,6 +739,8 @@ const Camera = React.memo(({ scene, id, type, setCamera, ...props }) => {
 
   camera.current.fov = props.fov
   camera.current.updateProjectionMatrix()
+
+  camera.current.layers.enable(1)
 
   return null
 })
@@ -2945,56 +2945,6 @@ const Editor = connect(
     setActiveCamera,
     resetScene,
 
-    // TODO DRY
-    saveToBoard: () => (dispatch, getState) => {
-      dispatch(selectObject(null))
-
-      let state = getState()
-
-      requestAnimationFrame(() => {
-
-        // HACK FIXME don't hardcode these
-        let cameraImage = document.querySelector('#camera-canvas').toDataURL()
-        let topDownImage = document.querySelector('#top-down-canvas').toDataURL()
-
-        ipcRenderer.send('saveShot', {
-          uid: state.board.uid,
-          data: getSerializedState(state),
-          images: {
-            'camera': cameraImage,
-            'topdown': topDownImage
-          }
-        })
-
-        dispatch(markSaved())
-      })
-    },
-
-    // TODO DRY
-    insertAsNewBoard: () => (dispatch, getState) => {
-      dispatch(selectObject(null))
-
-      let state = getState()
-
-      requestAnimationFrame(() => {
-
-        // HACK FIXME don't hardcode these
-        let cameraImage = document.querySelector('#camera-canvas').toDataURL()
-        let topDownImage = document.querySelector('#top-down-canvas').toDataURL()
-
-        dispatch(markSaved())
-
-        ipcRenderer.send('insertShot', {
-          data: getSerializedState(state),
-          images: {
-            'camera': cameraImage,
-            'topdown': topDownImage
-          }
-        })
-
-      })
-    },
-
     onBeforeUnload: event => (dispatch, getState) => {
       if (getIsSceneDirty(getState())) {
         // pass electron-specific flag
@@ -3003,11 +2953,14 @@ const Editor = connect(
       }
     },
 
-    setMainViewCamera
+    setMainViewCamera,
+    markSaved,
+
+    withState: (fn) => (dispatch, getState) => fn(dispatch, getState())
   }
 )(
 
-  ({ mainViewCamera, createObject, selectObject, updateModels, loadScene, saveScene, activeCamera, setActiveCamera, resetScene, remoteInput, aspectRatio, saveToBoard, insertAsNewBoard, sceneObjects, selection, onBeforeUnload, setMainViewCamera }) => {
+  ({ mainViewCamera, createObject, selectObject, updateModels, loadScene, saveScene, activeCamera, setActiveCamera, resetScene, remoteInput, aspectRatio, sceneObjects, selection, onBeforeUnload, setMainViewCamera, withState }) => {
     const largeCanvasRef = useRef(null)
     const smallCanvasRef = useRef(null)
     const [ready, setReady] = useState(false)
@@ -3034,6 +2987,76 @@ const Editor = connect(
     const onZoomInClick = preventDefault(() => { alert('TODO zoom in (not implemented yet)') })
     const onZoomOutClick = preventDefault(() => { alert('TODO zoom out (not implemented yet)') })
 
+
+
+    // used by onToolbarSaveToBoard and onToolbarInsertAsNewBoard
+    const imageRenderer = useRef()
+
+    const renderImagesForBoard = () => {
+      if (!imageRenderer.current) {
+        imageRenderer.current = new THREE.OutlineEffect(
+          new THREE.WebGLRenderer({ antialias: true })
+        )
+      }
+
+      let imageRenderCamera = camera.clone()
+      imageRenderCamera.layers.set(0)
+
+      imageRenderer.current.setSize(Math.ceil(900 * aspectRatio), 900)
+      imageRenderer.current.render(scene.current, imageRenderCamera)
+      let cameraImage = imageRenderer.current.domElement.toDataURL()
+
+      // TODO
+      // if (topDownCamera) {
+      //   imageRenderer.clear()
+      //   imageRenderer.setSize(900, 900)
+      //   imageRenderer.render(scene, topDownCamera)
+      //   let topDownImage = imageRenderer.domElement.toDataURL()
+      // }
+      let topDownImage = undefined
+
+      return { cameraImage, topDownImage }
+    }
+
+    const onToolbarSaveToBoard = () => {
+      withState((dispatch, state) => {
+        let { cameraImage } = renderImagesForBoard()
+
+        ipcRenderer.send('saveShot', {
+          uid: state.board.uid,
+          data: getSerializedState(state),
+          images: {
+            'camera': cameraImage,
+
+            // TODO
+            'topdown': undefined
+          }
+        })
+
+        dispatch(markSaved())
+      })
+    }
+    const onToolbarInsertAsNewBoard = () => {
+      withState((dispatch, state) => {
+        let { cameraImage } = renderImagesForBoard()
+
+        // NOTE we do this first, since we get new data on insertShot complete
+        dispatch(markSaved())
+
+        ipcRenderer.send('insertShot', {
+          data: getSerializedState(state),
+          images: {
+            'camera': cameraImage,
+      
+            // TODO
+            'topdown': undefined
+          }
+        })
+      })
+    }
+
+
+
     useEffect(() => {
       // TODO introspect models
       updateModels({})
@@ -3057,7 +3080,7 @@ const Editor = connect(
       { value: { scene: scene.current }},
       h(
         ['div.column', { style: { width: '100%' } }, [
-          [Toolbar, { createObject, selectObject, loadScene, saveScene, camera, setActiveCamera, resetScene, saveToBoard, insertAsNewBoard }],
+          [Toolbar, { createObject, selectObject, loadScene, saveScene, camera, setActiveCamera, resetScene, saveToBoard: onToolbarSaveToBoard, insertAsNewBoard: onToolbarInsertAsNewBoard }],
 
           ['div.row', { style: { flex: 1 }},
             ['div.column', { style: { width: '300px', background: '#111'} },
