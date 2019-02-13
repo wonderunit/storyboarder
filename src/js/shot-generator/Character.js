@@ -75,13 +75,17 @@ const characterFactory = data => {
   let skeleton
   let armatures
   let parentRotation = new THREE.Quaternion()
-  let parentPosition = new THREE.Quaternion()
+  let parentPosition = new THREE.Vector3()
   mesh = data.scene.children.find(child => child instanceof THREE.SkinnedMesh) ||
-         data.scene.children[0].children.find(child => child instanceof THREE.SkinnedMesh)
+         data.scene.children[0].children.find(child => child instanceof THREE.SkinnedMesh) 
 
   armatures = data.scene.children[0].children.filter(child => child instanceof THREE.Bone)
-  if (armatures.length === 0 ) {  // facebook export is different
+  if (armatures.length === 0 ) {  // facebook export is different - bone structure is inside another object3D
     armatures = data.scene.children[0].children[0].children.filter(child => child instanceof THREE.Bone)
+
+    if (armatures.length === 0) {  //specifically adult-female - bone structure is inside the skinned mesh
+      armatures = mesh.children[0].children.filter(child => child instanceof THREE.Bone)
+    }
     for (var bone of armatures)
     {
       bone.scale.set(1,1,1)
@@ -116,8 +120,6 @@ const characterFactory = data => {
   let bbox = new THREE.Box3().setFromObject(mesh)
   let originalHeight = bbox.max.y - bbox.min.y
   
-  //skeleton.pose()
-
   return { mesh, skeleton, armatures, originalHeight, boneLengthScale, parentRotation, parentPosition }
 }
 
@@ -255,21 +257,14 @@ const Character = React.memo(({
     yaw: 0
   })
 
-  let circlePressed = useRef(false)
-
   let startingDeviceRotation = useRef(null)
-  let startingObjectRotation = useRef(null)
-  let startingGlobalRotation = useRef(null)
-
   let currentBoneSelected = useRef(null)
 
   const updateSkeleton = () => {
     let skeleton = object.current.userData.skeleton
-    //skeleton.pose()
     if (props.skeleton) {
       for (let name in props.skeleton) {
         let bone = skeleton.getBoneByName(name)
-        //console.log('wanted rotation: ',name, props.skeleton[name].rotation)
         if (bone) {
           bone.rotation.x = props.skeleton[name].rotation.x
           bone.rotation.y = props.skeleton[name].rotation.y
@@ -348,10 +343,12 @@ const Character = React.memo(({
     if (props.posePresetId) {
       console.log(type, id, 'changed pose preset', )
       let skeleton = object.current.userData.skeleton
+      
       skeleton.pose()
+      updateSkeleton()
+
       if (object.current.userData.boneLengthScale === 100)  // fb converter scaled object
       {
-        // console.log('parent rotation: ', object.current.userData)
         skeleton.bones[0].quaternion.multiply(object.current.userData.parentRotation)
         skeleton.bones[0].position.copy(object.current.userData.parentPosition)
       }
@@ -518,7 +515,6 @@ const Character = React.memo(({
         yaw: midddleValues.virtualYaw
       }
       let deviceDifference = new THREE.Quaternion().inverse().multiply(deviceQuaternion).multiply(startingDeviceOffset.current).normalize()
-      //console.log('continuous rotation: ', deviceQuaternion)
       // get camera's offset
       let cameraOffset = new THREE.Quaternion().clone().inverse().multiply(camera.quaternion.clone())
       // get parent's offset
@@ -652,8 +648,6 @@ const Character = React.memo(({
         // APPLY THE ROTATION TO THE TARGET OBJECT
         //targetobject.quaternion.copy(objectQuaternion.normalize())
         target.quaternion.copy(objectQuaternion.normalize())
-        //target.updateMatrix()
-        //console.log('target rotation: ', target.rotation)
         requestAnimationFrame(() => {
           if (selectedBone) {
             updateCharacterSkeleton({
