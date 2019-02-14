@@ -3145,24 +3145,53 @@ const Editor = connect(
       let imageRenderCamera = camera.clone()
       imageRenderCamera.layers.set(0)
 
+      //
+      //
       // Prepare for rendering as an image
       //
-      // remove selection outline effect color from Character material
-      let originalColor
-      let selected = state.selection && scene.current.children.find(child => child.userData.id === state.selection)
-      if (selected) {
-        originalColor = selected.userData.mesh.material.userData.outlineParameters.color
-        selected.userData.mesh.material.userData.outlineParameters.color = [0, 0, 0]
+
+      const getSelected = ({ state, scene }) =>
+        // find it in the scene
+        scene.current.children.find(child => child.userData.id === state.selection)
+
+      const getOutlinedMaterial = object =>
+        (object.userData.type === 'character')
+          ? object.userData.mesh.material
+          // TODO support multiple child Object3D’s in a Group
+          : object.children[0].material
+
+      const saveToMemento = ({ state, scene }) => {
+        return {
+          color: getOutlinedMaterial(getSelected({ state, scene}))
+            .userData.outlineParameters.color
+        }
       }
 
+      const overrideOutlineColor = ({ state, scene }) => {
+        if (state.selection) {
+          getOutlinedMaterial(getSelected({ state, scene}))
+            .userData.outlineParameters.color = [0, 0, 0]
+        }
+      }
+
+      const restoreFromMemento = ({ state, scene }, memento) => {
+        getOutlinedMaterial(getSelected({ state, scene}))
+          .userData.outlineParameters.color = memento.color
+      }
+
+      // save memento
+      let memento = saveToMemento({ state, scene })
+
+      // override selection outline effect color from selected Object3D’s material
+      overrideOutlineColor({ state, scene })
+
+      // render the image
       imageRenderer.current.setSize(Math.ceil(900 * state.aspectRatio), 900)
       imageRenderer.current.render(scene.current, imageRenderCamera)
       let cameraImage = imageRenderer.current.domElement.toDataURL()
 
-      // restore selection outline effect color from Character material
-      if (selected) {
-        selected.userData.mesh.material.userData.outlineParameters.color = originalColor
-      }
+      // restore from memento
+      restoreFromMemento({ state, scene }, memento)
 
       // TODO
       // if (topDownCamera) {
