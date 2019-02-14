@@ -2215,8 +2215,6 @@ const PhoneCursor = connect(
             let [ alpha, beta, gamma ] = remoteInput.mag.map(THREE.Math.degToRad)
             if (!isRotating.current) {
               //starting rotation
-              //isRotating.current = true
-              //firstRun = true
               let target = tester.current
               startingObjectRotation.current ={
                 x: target.rotation.x,
@@ -2250,7 +2248,6 @@ const PhoneCursor = connect(
             let dir = new THREE.Vector3()
             tester.current.updateMatrixWorld()
             tester.current.children[0].getWorldDirection(dir).negate()
-            //tester.current.updateMatrix()
             let intersect = findIntersection(camera.position, dir, intersectionPlane.current)
             if (intersect.length>0)
             {
@@ -2284,7 +2281,6 @@ const PhoneCursor = connect(
               {
                 isRotating.current = false
                 robot.mouseClick()
-                console.log('clicked! 1')
               }              
               
               scene.current.remove(tester.current)
@@ -2301,7 +2297,6 @@ const PhoneCursor = connect(
             {
               isRotating.current = false
               robot.mouseClick()
-              console.log('clicked! 2')
             }
             
             scene.current.remove(tester.current)

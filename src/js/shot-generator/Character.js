@@ -387,7 +387,6 @@ const Character = React.memo(({
 
   useEffect(() => {
     if (object.current) {
-      console.log('4')
       if (object.current.userData.modelSettings.height) {
         let originalHeight = object.current.userData.originalHeight
         let scale = props.height / originalHeight
@@ -406,7 +405,6 @@ const Character = React.memo(({
     if (object.current) {
       // adjust head proportionally
       let skeleton = object.current.userData.skeleton
-      console.log('3')
       let headBone = skeleton.getBoneByName('Head')
 
       if (headBone && object.current.userData.modelSettings.height) {
@@ -422,7 +420,6 @@ const Character = React.memo(({
   useEffect(() => {
     if (!modelData) return
     if (!object.current) return
-    console.log('2')
     let mesh = object.current.userData.mesh
 
     if (!mesh.morphTargetDictionary) return
@@ -481,8 +478,6 @@ const Character = React.memo(({
     if (!object.current) return
 
     if (selectedBone === undefined) return
-
-    console.log('1')
 
     let skeleton = object.current.userData.skeleton
     let realBone = skeleton.bones.find(bone => bone.uuid == selectedBone)
