@@ -463,15 +463,11 @@ module.exports = {
     return produce(state, draft => {
       switch (action.type) {
         case 'LOAD_SCENE':
-          draft.world = action.payload.world
-          draft.world.ambient = {}
-          console.log('ambient: ', action.payload.world.ambient)
-          if (!action.payload.world.ambient || action.payload.world.ambient === undefined) {
-            draft.world.ambient = {
-              intensity: initialScene.world.ambient.intensity
-            }
-            console.log('setting ambient: ', draft.world.ambient)
+          draft.world = {
+            ...action.payload.world
           }
+          // migrate older scenes which were missing ambient and directional light settings
+          if (!action.payload.world.ambient) draft.world.ambient = initialScene.world.ambient
           if (!action.payload.world.directional) draft.world.directional = initialScene.world.directional
           draft.sceneObjects = migrateRotations(action.payload.sceneObjects)
           draft.activeCamera = action.payload.activeCamera
