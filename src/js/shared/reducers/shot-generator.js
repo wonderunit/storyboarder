@@ -440,18 +440,20 @@ const checkForSkeletonChanges = (state, draft, action) => {
 const migrateRotations = sceneObjects =>
   Object.entries(sceneObjects)
     .reduce((o, [ k, v ]) => {
-      let value = v.rotation
-      if (v.type === 'object' && typeof value === 'number') {
-        // console.log('migrating rotation for', v)
-        v.rotation = {
-          x: 0,
-          y: value,
-          z: 0
+      if (v.type === 'object' && typeof v.rotation === 'number') {
+        v = {
+          ...v,
+          rotation: {
+            x: 0,
+            y: v.rotation,
+            z: 0
+          }
         }
       }
       o[k] = v
       return o
     }, {})
+
 const updateMeta = state => {
   state.meta.lastSavedHash = hashify(JSON.stringify(getSerializedState(state)))
 }
