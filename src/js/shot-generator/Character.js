@@ -79,7 +79,7 @@ const characterFactory = data => {
   let parentRotation = new THREE.Quaternion()
   let parentPosition = new THREE.Vector3()
   mesh = data.scene.children.find(child => child instanceof THREE.SkinnedMesh) ||
-         data.scene.children[0].children.find(child => child instanceof THREE.SkinnedMesh) 
+         data.scene.children[0].children.find(child => child instanceof THREE.SkinnedMesh)
 
   armatures = data.scene.children[0].children.filter(child => child instanceof THREE.Bone)
   if (armatures.length === 0 ) {  // facebook export is different - bone structure is inside another object3D
@@ -92,12 +92,12 @@ const characterFactory = data => {
     {
       bone.scale.set(1,1,1)
       bone.quaternion.multiply(data.scene.children[0].children[0].quaternion)
-      bone.position.set(bone.position.x,bone.position.z,bone.position.y)              
+      bone.position.set(bone.position.x,bone.position.z,bone.position.y)
     }
     mesh.scale.set(1,1,1)
     parentRotation = data.scene.children[0].children[0].quaternion.clone()
     parentPosition = armatures[0].position.clone()
-    boneLengthScale = 100 
+    boneLengthScale = 100
   }
 
   if (mesh == null) {
@@ -105,23 +105,23 @@ const characterFactory = data => {
     skeleton = null
     armatures = null
     let originalHeight = 0
-    
+
     return { mesh, skeleton, armatures, originalHeight, boneLengthScale, parentRotation, parentPosition }
   }
 
   skeleton = mesh.skeleton
-  
+
   if (mesh.material.map) {
     material.map = mesh.material.map
     material.map.needsUpdate = true
   }
-    
+
   mesh.material = material
   mesh.renderOrder = 1.0
 
   let bbox = new THREE.Box3().setFromObject(mesh)
   let originalHeight = bbox.max.y - bbox.min.y
-  
+
   return { mesh, skeleton, armatures, originalHeight, boneLengthScale, parentRotation, parentPosition }
 }
 
@@ -139,7 +139,7 @@ const Character = React.memo(({
   updateCharacterSkeleton,
   updateObject,
   loaded,
-  devices,  
+  devices,
   ...props
 }) => {
   // setting loaded = true forces an update to sceneObjects,
@@ -204,7 +204,7 @@ const Character = React.memo(({
       console.log(type, id, 'add')
 
       const { mesh, skeleton, armatures, originalHeight, boneLengthScale, parentRotation, parentPosition } = characterFactory(modelData)
-     
+
       object.current = new THREE.Object3D()
       object.current.userData.id = id
       object.current.userData.type = type
@@ -219,7 +219,7 @@ const Character = React.memo(({
       object.current.userData.mesh = mesh
       scene.add(object.current)
       let bonesHelper = new BonesHelper( skeleton.bones[0].parent, object.current, { boneLengthScale } )
-      
+
       bonesHelper.traverse(child => {
         child.layers.disable(0)
         child.layers.enable(1)
@@ -365,7 +365,7 @@ const Character = React.memo(({
     if (props.posePresetId) {
       console.log(type, id, 'changed pose preset', )
       let skeleton = object.current.userData.skeleton
-      
+
       skeleton.pose()
       updateSkeleton()
 
@@ -435,7 +435,7 @@ const Character = React.memo(({
     if (!modelData) return
     if (!object.current) return
 
-    // handle selection/deselection - add/remove the bone stucture 
+    // handle selection/deselection - add/remove the bone stucture
     if (isSelected)
     {
       for (var cone of object.current.bonesHelper.cones)
@@ -638,7 +638,7 @@ const Character = React.memo(({
         let rotation = new THREE.Euler()
 
         if (selectedBone) {
-          rotation.setFromQuaternion( objectQuaternion.normalize(), "YXZ" )
+          rotation.setFromQuaternion( objectQuaternion.normalize() )
           updateCharacterSkeleton({
             id,
             name: target.name,
