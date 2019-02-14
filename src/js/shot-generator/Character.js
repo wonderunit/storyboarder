@@ -10,6 +10,8 @@ const BonesHelper = require('./BonesHelper')
 
 const { initialState } = require('../shared/reducers/shot-generator')
 
+const { dialog } = require('electron').remote
+const fs = require('fs')
 const ModelLoader = require('../services/model-loader')
 
 const applyDeviceQuaternion = require('./apply-device-quaternion')
@@ -51,6 +53,12 @@ const pathToCharacterModelFile = (model) =>
     // relative path to a model in the app
     : path.join(modelsPath, `${model}.glb`)
 
+const isValidSkinnedMesh = data => {
+  let mesh = data.scene.children.find(child => child instanceof THREE.SkinnedMesh) ||
+            data.scene.children[0].children.find(child => child instanceof THREE.SkinnedMesh)
+  return (mesh != null)
+}
+
 const characterFactory = data => {
   let material = new THREE.MeshToonMaterial({
     color: 0xffffff,
@@ -65,14 +73,24 @@ const characterFactory = data => {
 
   let mesh
   let skeleton
-  let armature
+  let armatures
 
   mesh = data.scene.children.find(child => child instanceof THREE.SkinnedMesh) ||
          data.scene.children[0].children.find(child => child instanceof THREE.SkinnedMesh)
 
-  armature = data.scene.children[0].children.find(child => child instanceof THREE.Bone)
+  armatures = data.scene.children[0].children.filter(child => child instanceof THREE.Bone)
+
+  if (mesh == null) {
+    mesh = new THREE.Mesh()
+    skeleton = null
+    armatures = null
+    let originalHeight = 0
+    //console.log('mesh: ', mesh)
+    return { mesh, skeleton, armatures, originalHeight }
+  }
 
   skeleton = mesh.skeleton
+  
 
   if (mesh.material.map) {
     material.map = mesh.material.map
@@ -84,9 +102,9 @@ const characterFactory = data => {
   let bbox = new THREE.Box3().setFromObject(mesh)
   let originalHeight = bbox.max.y - bbox.min.y
 
-  skeleton.pose()
+  //skeleton.pose()
 
-  return { mesh, skeleton, armature, originalHeight }
+  return { mesh, skeleton, armatures, originalHeight }
 }
 
 const remap = (x, a, b, c, d) => (x - a) * (d - c) / (b - a) + c
@@ -103,13 +121,12 @@ const Character = React.memo(({
   updateCharacterSkeleton,
   updateObject,
   loaded,
-  devices,
+  devices,  
   ...props
 }) => {
   // setting loaded = true forces an update to sceneObjects,
   // which is what Editor listens for to attach the BonesHelper
   const setLoaded = loaded => updateObject(id, { loaded })
-
   const object = useRef(null)
 
   const [modelData, setModelData] = useState(null)
@@ -121,24 +138,46 @@ const Character = React.memo(({
       scene.remove(object.current)
       object.current.bonesHelper = null
       object.current = null
-      setLoaded(false)
+    }
+  }
+
+  const load = async (model, props) => {
+    let filepath = pathToCharacterModelFile(model)
+
+    if (!fs.existsSync(filepath)) {
+      try {
+        filepath = await ModelLoader.ensureModelFileExists(filepath)
+        console.log(type, id, 'model is now', filepath)
+        updateObject(id, { model: filepath })
+        return
+      } catch (error) {
+        dialog.showMessageBox({
+          title: 'Failed to load',
+          message: `Failed to load character with internal id ${props.id}`
+        })
+        return
+      }
+    }
+
+    let data = await loadGltf(filepath)
+
+    if (isValidSkinnedMesh(data)) {
+      console.log(type, id, 'valid model loaded. cleaning up old one.')
+      doCleanup()
+
+      setModelData(data)
+      setLoaded(true)
+    } else {
+      alert('This model doesn’t contain a Skinned Mesh. Please load it as an Object, not a Character.')
     }
   }
 
   // if the model has changed
   useEffect(() => {
-    console.log(type, id, 'model change', props.model)
     setLoaded(false)
-    setModelData(false)
+    load(props.model, { id, ...props })
 
-    loadGltf(pathToCharacterModelFile(props.model))
-      .then(data => setModelData(data))
-      .catch(error => console.error(error))
-
-    return function cleanup () {
-      console.log(type, id, 'model change cleanup')
-      doCleanup()
-    }
+    // return function cleanup () { }
   }, [props.model])
 
   // if the model’s data has changed
@@ -146,8 +185,8 @@ const Character = React.memo(({
     if (modelData) {
       console.log(type, id, 'add')
 
-      const { mesh, skeleton, armature, originalHeight } = characterFactory(modelData)
-
+      const { mesh, skeleton, armatures, originalHeight } = characterFactory(modelData)
+     
       object.current = new THREE.Object3D()
       object.current.userData.id = id
       object.current.userData.type = type
@@ -156,13 +195,29 @@ const Character = React.memo(({
       // FIXME get current .models from getState()
       object.current.userData.modelSettings = initialState.models[props.model] || {}
 
-      object.current.add(armature)
+      object.current.add(...armatures)
       object.current.add(mesh)
       object.current.userData.mesh = mesh
 
       scene.add(object.current)
+      
+      let bonesHelper = new BonesHelper( skeleton.bones[0].parent, object.current )
+      bonesHelper.traverse(child => {
+        child.layers.disable(0)
+        child.layers.enable(1)
+        child.layers.enable(2)
+      })
+      bonesHelper.hit_meshes.forEach(h => {
+        h.layers.disable(0)
+        h.layers.enable(1)
+        h.layers.enable(2)
+      })
+      bonesHelper.cones.forEach(c => {
+        c.layers.disable(0)
+        c.layers.enable(1)
+        c.layers.enable(2)
+      })
 
-      let bonesHelper = new BonesHelper(skeleton.bones[0], object.current)
       object.current.bonesHelper = bonesHelper
       object.current.userData.skeleton = skeleton
       scene.add(object.current.bonesHelper)
@@ -177,6 +232,7 @@ const Character = React.memo(({
     return function cleanup () {
       console.log('component cleanup')
       doCleanup()
+      setLoaded(false)
     }
   }, [])
 
@@ -205,6 +261,7 @@ const Character = React.memo(({
     if (props.skeleton) {
       for (let name in props.skeleton) {
         let bone = skeleton.getBoneByName(name)
+        //console.log('wanted rotation: ',name, props.skeleton[name].rotation)
         if (bone) {
           bone.rotation.x = props.skeleton[name].rotation.x
           bone.rotation.y = props.skeleton[name].rotation.y
@@ -354,7 +411,7 @@ const Character = React.memo(({
     if (!modelData) return
     if (!object.current) return
 
-    // handle selection/unselection
+    // handle selection/deselection - add/remove the bone stucture 
     if (isSelected)
     {
       for (var cone of object.current.bonesHelper.cones)
@@ -363,6 +420,7 @@ const Character = React.memo(({
       for (var cone of object.current.bonesHelper.cones)
         object.current.bonesHelper.remove(cone)
     }
+
     let mesh = object.current.userData.mesh
     if ( mesh.material.length > 0 ) {
       mesh.material.forEach(material => {
@@ -589,15 +647,16 @@ const Character = React.memo(({
     if (object.current) {
       object.current.visible = props.visible
       object.current.bonesHelper.visible = props.visible
+      object.current.bonesHelper.hit_meshes.map(hit => hit.visible = props.visible)
     }
   }, [props.visible, loaded])
 
-  useEffect(() => {
-    if (modelData) {
-      console.log(type, id, 'setLoaded:true')
-      setLoaded(true)
-    }
-  }, [modelData])
+  // useEffect(() => {
+  //   if (modelData) {
+  //     console.log(type, id, 'setLoaded:true')
+  //     setLoaded(true)
+  //   }
+  // }, [modelData])
 
   return null
 })

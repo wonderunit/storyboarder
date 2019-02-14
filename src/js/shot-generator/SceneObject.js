@@ -6,6 +6,8 @@ const path = require('path')
 const React = require('react')
 const { useRef, useEffect, useState } = React
 
+const { dialog } = require('electron').remote
+const fs = require('fs')
 const ModelLoader = require('../services/model-loader')
 
 const applyDeviceQuaternion = require('./apply-device-quaternion')
@@ -109,6 +111,20 @@ const SceneObject = React.memo(({ scene, id, type, isSelected, loaded, updateObj
           console.log('loading from app', filepath)
         }
 
+        if (!fs.existsSync(filepath)) {
+          try {
+            filepath = await ModelLoader.ensureModelFileExists(filepath)
+            updateObject(id, { model: filepath })
+          } catch (err) {
+            dialog.showMessageBox({
+              title: 'Failed to load',
+              message: `Failed to load object with internal id ${id}`
+            })
+            setLoaded(false)
+            return
+          }
+        }
+
         switch (path.extname(filepath)) {
           case '.obj':
             await new Promise((resolve, reject) => {
@@ -133,7 +149,7 @@ const SceneObject = React.memo(({ scene, id, type, isSelected, loaded, updateObj
 
           case '.gltf':
           case '.glb':
-            await new Promise(resolve => {
+            await new Promise((resolve, reject) => {
               gltfLoader.load(
                 filepath,
                 data => {

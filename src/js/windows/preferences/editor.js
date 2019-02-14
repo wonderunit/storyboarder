@@ -162,6 +162,16 @@ const render = () => {
     }
   }
 
+  let enableNotificationsEl = document.querySelector('#enableNotifications')
+  if (enableNotificationsEl) {
+    for (let child of [document.querySelector('#enableAspirationalMessages'), document.querySelector('#allowNotificationsForLineMileage')]) {
+      child.disabled = !enableNotificationsEl.checked
+      child.parentNode.style.opacity = enableNotificationsEl.checked
+        ? 1
+        : 0.5
+    }
+  }
+
   // track if anything has changed
   hasChanged = false
   for (let key in originalPrefs) {

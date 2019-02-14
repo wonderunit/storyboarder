@@ -43,6 +43,9 @@ class StoryboarderSketchPane extends EventEmitter {
 
     this.marqueePath = null
     this.marqueeTransitionEvent = null
+
+    this.onWindowBlurForApp = this.onWindowBlurForApp.bind(this)
+    this.onWindowFocusForApp = this.onWindowFocusForApp.bind(this)
   }
 
   async load () {
@@ -211,6 +214,9 @@ class StoryboarderSketchPane extends EventEmitter {
 
     // add container to element
     this.el.appendChild(this.containerEl)
+
+    window.addEventListener('blur', this.onWindowBlurForApp)
+    window.addEventListener('focus', this.onWindowFocusForApp)
   }
 
   // for compatibility with older sketchpane code
@@ -378,6 +384,13 @@ class StoryboarderSketchPane extends EventEmitter {
     if (!this.isCommandPressed('drawing:straight-line-snap')) {
       this.sketchPane.setShouldSnap(false)
     }
+  }
+
+  onWindowBlurForApp () {
+    this.sketchPane.app.stop()
+  }
+  onWindowFocusForApp () {
+    this.sketchPane.app.start()
   }
 
   mergeLayers (sources, destination) {
