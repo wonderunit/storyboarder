@@ -466,9 +466,11 @@ module.exports = {
           draft.world = {
             ...action.payload.world
           }
+
           // migrate older scenes which were missing ambient and directional light settings
           if (!action.payload.world.ambient) draft.world.ambient = initialScene.world.ambient
           if (!action.payload.world.directional) draft.world.directional = initialScene.world.directional
+
           draft.sceneObjects = migrateRotations(action.payload.sceneObjects)
           draft.activeCamera = action.payload.activeCamera
           // clear selections
@@ -477,8 +479,6 @@ module.exports = {
           draft.mainViewCamera = 'live'
           updateMeta(draft)
           return
-
-          //return
 
         case 'SELECT_OBJECT':
           // if the selection has changed
