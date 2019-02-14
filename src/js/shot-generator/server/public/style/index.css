@@ -1,0 +1,99 @@
+html{
+    margin: 0;
+    height: 100%;
+}
+
+body {
+    /* color: #ffffff; */
+    font-family: Lato,sans-serif;
+    font-size: 12px;
+    background-color: #464646;
+    background: #464646;
+    margin: 0px;
+    padding: 0px;
+    width: 100%;
+    overflow: hidden;
+    position:fixed; top:0; bottom:0; right:0; left:0;
+    -moz-user-select: none;
+    -khtml-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+@viewport {
+    orientation: portrait;
+}
+
+#debugger {
+    pointer-events: none;
+}
+
+#container {
+    width: 75%;
+    height: 55%;
+    left: 12.5%;
+    bottom: 12.5vw;
+    border-radius: 7vw;
+    background-color: #e4e4e4;
+    position: absolute;
+    padding: 0;
+    margin:  0;
+}
+
+#rotate3d {
+    position: relative;
+    width: 100%;
+    padding-top: 100%;    
+    border-top-left-radius: 7vw;
+    border-top-right-radius: 7vw;
+    /* width: 33px;
+    height: 33px; */
+    background-size: 70px;
+    
+    background-color: #676767;
+    background-image: url(../img/rotate3d.png);
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+#lower {
+    white-space: nowrap;
+    background-color: #5d5d5d;
+    height: calc(100% - 75vw);
+    border-bottom-left-radius: 7vw;
+    border-bottom-right-radius: 7vw;
+
+}
+
+#cameraOrbit {
+    height: 100%;
+    width: 50%;
+    display: inline-block;
+
+    background-size: 30px;
+    
+    background-image: url(../img/videocamera.png);
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+#phoneSelect {
+    height: 100%;
+    width: 49%;
+    display: inline-block;
+    background-color: #595959;
+
+    background-size: 20px;
+    
+    background-image: url(../img/cursor.png);
+    background-repeat: no-repeat;
+    background-position: center;
+    border-bottom-right-radius: 7vw;
+}
+
+.mouseButton{
+    margin: 0;
+    padding: 0;
+    border: 0;
+}

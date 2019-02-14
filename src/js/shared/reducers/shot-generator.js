@@ -43,6 +43,11 @@ const defaultScenePreset = {
     },
     ambient: {
       intensity: 0.1
+    },
+    directional: {
+      intensity: 0.5,
+      rotation: -0.9,
+      tilt: 0.75
     }
   },
   sceneObjects: {
@@ -272,7 +277,7 @@ const initialState = {
     sensor: [0, 0, 0, 0],
     down: false,
     mouseMode: false,
-    mouseModeClick: false
+    orbitMode: false
   },
   devices: {
     0: {
@@ -435,18 +440,20 @@ const checkForSkeletonChanges = (state, draft, action) => {
 const migrateRotations = sceneObjects =>
   Object.entries(sceneObjects)
     .reduce((o, [ k, v ]) => {
-      let value = v.rotation
-      if (v.type === 'object' && typeof value === 'number') {
-        // console.log('migrating rotation for', v)
-        v.rotation = {
-          x: 0,
-          y: value,
-          z: 0
+      if (v.type === 'object' && typeof v.rotation === 'number') {
+        v = {
+          ...v,
+          rotation: {
+            x: 0,
+            y: v.rotation,
+            z: 0
+          }
         }
       }
       o[k] = v
       return o
     }, {})
+
 const updateMeta = state => {
   state.meta.lastSavedHash = hashify(JSON.stringify(getSerializedState(state)))
 }
@@ -458,9 +465,14 @@ module.exports = {
     return produce(state, draft => {
       switch (action.type) {
         case 'LOAD_SCENE':
-          draft.world = action.payload.world
+          draft.world = {
+            ...action.payload.world
+          }
+
+          // migrate older scenes which were missing ambient and directional light settings
           if (!action.payload.world.ambient) draft.world.ambient = initialScene.world.ambient
           if (!action.payload.world.directional) draft.world.directional = initialScene.world.directional
+
           draft.sceneObjects = migrateRotations(action.payload.sceneObjects)
           draft.activeCamera = action.payload.activeCamera
           // clear selections
@@ -505,7 +517,7 @@ module.exports = {
 
         case 'UPDATE_OBJECT':
           if (draft.sceneObjects[action.payload.id] == null) return
-
+          
           // TODO is there a simpler way to merge only non-null values?
 
           // update skeleton first
@@ -651,8 +663,8 @@ module.exports = {
           draft.input.mouseMode = action.payload
           return
 
-        case 'SET_INPUT_PHONE_CLICK':
-          draft.input.mouseModeClick = action.payload
+        case 'SET_INPUT_ORBITMODE':          
+          draft.input.orbitMode = action.payload
           return
 
         case 'UPDATE_MODELS':

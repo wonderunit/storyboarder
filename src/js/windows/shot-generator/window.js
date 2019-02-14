@@ -116,7 +116,7 @@ createServer({
   setInputSensor: payload => store.dispatch({ type: 'SET_INPUT_SENSOR', payload }),
   setInputDown: payload => store.dispatch({ type: 'SET_INPUT_DOWN', payload }),
   setInputMouseMode: payload => store.dispatch({ type: 'SET_INPUT_MOUSEMODE', payload }),
-  setInputPhoneClick: payload => store.dispatch({ type: 'SET_INPUT_PHONE_CLICK', payload }),
+  setInputOrbitMode: payload => store.dispatch({ type: 'SET_INPUT_ORBITMODE', payload }),
   
   updateServer: payload => store.dispatch(updateServer(payload))
 })

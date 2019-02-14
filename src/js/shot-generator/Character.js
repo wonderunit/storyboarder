@@ -60,6 +60,8 @@ const isValidSkinnedMesh = data => {
 }
 
 const characterFactory = data => {
+  //console.log('factory got data: ', data)
+  let boneLengthScale = 1
   let material = new THREE.MeshToonMaterial({
     color: 0xffffff,
     emissive: 0x0,
@@ -74,37 +76,53 @@ const characterFactory = data => {
   let mesh
   let skeleton
   let armatures
-
+  let parentRotation = new THREE.Quaternion()
+  let parentPosition = new THREE.Vector3()
   mesh = data.scene.children.find(child => child instanceof THREE.SkinnedMesh) ||
-         data.scene.children[0].children.find(child => child instanceof THREE.SkinnedMesh)
+         data.scene.children[0].children.find(child => child instanceof THREE.SkinnedMesh) 
 
   armatures = data.scene.children[0].children.filter(child => child instanceof THREE.Bone)
+  if (armatures.length === 0 ) {  // facebook export is different - bone structure is inside another object3D
+    armatures = data.scene.children[0].children[0].children.filter(child => child instanceof THREE.Bone)
+
+    if (armatures.length === 0) {  //specifically adult-female - bone structure is inside the skinned mesh
+      armatures = mesh.children[0].children.filter(child => child instanceof THREE.Bone)
+    }
+    for (var bone of armatures)
+    {
+      bone.scale.set(1,1,1)
+      bone.quaternion.multiply(data.scene.children[0].children[0].quaternion)
+      bone.position.set(bone.position.x,bone.position.z,bone.position.y)              
+    }
+    mesh.scale.set(1,1,1)
+    parentRotation = data.scene.children[0].children[0].quaternion.clone()
+    parentPosition = armatures[0].position.clone()
+    boneLengthScale = 100 
+  }
 
   if (mesh == null) {
     mesh = new THREE.Mesh()
     skeleton = null
     armatures = null
     let originalHeight = 0
-    //console.log('mesh: ', mesh)
-    return { mesh, skeleton, armatures, originalHeight }
+    
+    return { mesh, skeleton, armatures, originalHeight, boneLengthScale, parentRotation, parentPosition }
   }
 
   skeleton = mesh.skeleton
   
-
   if (mesh.material.map) {
     material.map = mesh.material.map
     material.map.needsUpdate = true
   }
+    
   mesh.material = material
   mesh.renderOrder = 1.0
 
   let bbox = new THREE.Box3().setFromObject(mesh)
   let originalHeight = bbox.max.y - bbox.min.y
-
-  //skeleton.pose()
-
-  return { mesh, skeleton, armatures, originalHeight }
+  
+  return { mesh, skeleton, armatures, originalHeight, boneLengthScale, parentRotation, parentPosition }
 }
 
 const remap = (x, a, b, c, d) => (x - a) * (d - c) / (b - a) + c
@@ -185,7 +203,7 @@ const Character = React.memo(({
     if (modelData) {
       console.log(type, id, 'add')
 
-      const { mesh, skeleton, armatures, originalHeight } = characterFactory(modelData)
+      const { mesh, skeleton, armatures, originalHeight, boneLengthScale, parentRotation, parentPosition } = characterFactory(modelData)
      
       object.current = new THREE.Object3D()
       object.current.userData.id = id
@@ -195,13 +213,13 @@ const Character = React.memo(({
       // FIXME get current .models from getState()
       object.current.userData.modelSettings = initialState.models[props.model] || {}
 
+
       object.current.add(...armatures)
       object.current.add(mesh)
       object.current.userData.mesh = mesh
-
       scene.add(object.current)
+      let bonesHelper = new BonesHelper( skeleton.bones[0].parent, object.current, { boneLengthScale } )
       
-      let bonesHelper = new BonesHelper( skeleton.bones[0].parent, object.current )
       bonesHelper.traverse(child => {
         child.layers.disable(0)
         child.layers.enable(1)
@@ -220,6 +238,9 @@ const Character = React.memo(({
 
       object.current.bonesHelper = bonesHelper
       object.current.userData.skeleton = skeleton
+      object.current.userData.boneLengthScale = boneLengthScale
+      object.current.userData.parentRotation = parentRotation
+      object.current.userData.parentPosition = parentPosition
       scene.add(object.current.bonesHelper)
     }
 
@@ -252,16 +273,13 @@ const Character = React.memo(({
   })
 
   let startingDeviceRotation = useRef(null)
-
   let currentBoneSelected = useRef(null)
 
   const updateSkeleton = () => {
     let skeleton = object.current.userData.skeleton
-    //skeleton.pose()
     if (props.skeleton) {
       for (let name in props.skeleton) {
         let bone = skeleton.getBoneByName(name)
-        //console.log('wanted rotation: ',name, props.skeleton[name].rotation)
         if (bone) {
           bone.rotation.x = props.skeleton[name].rotation.x
           bone.rotation.y = props.skeleton[name].rotation.y
@@ -345,9 +363,17 @@ const Character = React.memo(({
     if (!object.current) return
 
     if (props.posePresetId) {
-      console.log(type, id, 'changed pose preset')
+      console.log(type, id, 'changed pose preset', )
       let skeleton = object.current.userData.skeleton
+      
       skeleton.pose()
+      updateSkeleton()
+
+      if (object.current.userData.boneLengthScale === 100)  // fb converter scaled object
+      {
+        skeleton.bones[0].quaternion.multiply(object.current.userData.parentRotation)
+        skeleton.bones[0].position.copy(object.current.userData.parentPosition)
+      }
     }
   }, [props.posePresetId])
 
@@ -379,8 +405,7 @@ const Character = React.memo(({
     if (object.current) {
       // adjust head proportionally
       let skeleton = object.current.userData.skeleton
-
-      let headBone = skeleton.getBoneByName('mixamorigHead')
+      let headBone = skeleton.getBoneByName('Head')
 
       if (headBone && object.current.userData.modelSettings.height) {
         let baseHeadScale = object.current.userData.modelSettings.height / props.height
@@ -395,7 +420,6 @@ const Character = React.memo(({
   useEffect(() => {
     if (!modelData) return
     if (!object.current) return
-
     let mesh = object.current.userData.mesh
 
     if (!mesh.morphTargetDictionary) return
@@ -454,6 +478,7 @@ const Character = React.memo(({
     if (!object.current) return
 
     if (selectedBone === undefined) return
+
     let skeleton = object.current.userData.skeleton
     let realBone = skeleton.bones.find(bone => bone.uuid == selectedBone)
 
@@ -562,7 +587,7 @@ const Character = React.memo(({
     if (!object.current) return
     if (!isSelected) return
 
-    if (remoteInput.mouseMode) return
+    if (remoteInput.mouseMode || remoteInput.orbitMode) return
 
     // FIND THE TARGET
     // note that we don't want to mutate anything in the scene directly here
@@ -598,7 +623,6 @@ const Character = React.memo(({
         // While rotating, perform the rotations
 
         // get device's offset
-
 
         let objectQuaternion = applyDeviceQuaternion({
           parent: target.parent,

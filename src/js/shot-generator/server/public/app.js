@@ -1,10 +1,9 @@
-let mouseOn = false;
 let down = false
 let alpha
 let beta
 let gamma
 let mouseMode = false
-let mouseModeClick = false
+let cameraMode = false
 
 function log (string) {
   document.body.innerHTML += string + "<br/>"
@@ -64,36 +63,6 @@ function report (values) {
 
 }
 
-document.getElementById("mouseButton").addEventListener('touchstart', event => {
-  event.preventDefault();
-  mouseOn = !mouseOn;
-  if (mouseOn) {
-    document.getElementById("mouseButton").innerHTML = "3D rotation"
-  } else {
-    document.getElementById("mouseButton").innerHTML = "Cursor mode"
-   }
-  //document.getElementById("debugger").innerHTML += "<br>Mouse mode on touch: "+mouseOn;
-  report({
-    mouseMode: mouseOn
-  })
-  //event.stopPropagation();
-})
-
-document.getElementById("mouseButtonClick").addEventListener('touchstart', event => {
-event.preventDefault();
-mouseModeClick = true;
-//document.getElementById("debugger").innerHTML += "<br>Mouse click: "+mouseModeClick;
-
-report({
-  mouseModeClick: mouseModeClick
- })
- mouseModeClick = false;
- report({
-   mouseModeClick: mouseModeClick
-  })
-//event.stopPropagation();
-})
-
 if(window.DeviceMotionEvent){
   window.addEventListener("devicemotion", motion, false);
 }else{
@@ -126,7 +95,8 @@ function orientation(event){
   beta = event.beta
   gamma = event.gamma
 
-  if (down && !mouseModeClick) {
+  if (down ) {
+    
     report({
       mag: [event.alpha, event.beta, event.gamma]
     })
@@ -147,7 +117,6 @@ function orientation(event){
 //   }, true)
 // }
 
-console.log(document.getElementById("container"))
 
 document.getElementById("container").addEventListener('touchend', event => {
   //alert('hi')
@@ -163,13 +132,7 @@ document.getElementById("container").addEventListener('touchend', event => {
   screen.orientation.lock('portrait-primary')
 })
 
-console.log('hi')
-
-window.addEventListener('touchstart', event => {
-  //fullscreen()
-
-
-
+document.getElementById("rotate3d").addEventListener('touchstart', event => {
 
   down = true
   event.preventDefault()
@@ -184,16 +147,14 @@ window.addEventListener('touchstart', event => {
     mag: [alpha, beta, gamma]
   })
   //document.getElementById("debugger").innerHTML += "<br>Mouse mode: "+mouseOn;
-  report({
-    mouseMode: mouseOn
-  })
+
 })
 
-window.addEventListener('touchmove', event => {
+document.getElementById("rotate3d").addEventListener('touchmove', event => {
   event.preventDefault()
 })
 
-window.addEventListener('touchend', event => {
+document.getElementById("rotate3d").addEventListener('touchend', event => {
   down = false
   event.preventDefault()
   report({
@@ -201,7 +162,7 @@ window.addEventListener('touchend', event => {
   })
 })
 
-window.addEventListener('touchcancel', event => {
+document.getElementById("rotate3d").addEventListener('touchcancel', event => {
   down = false
   event.preventDefault()
   report({
@@ -209,6 +170,105 @@ window.addEventListener('touchcancel', event => {
   })
 })
 
+document.getElementById("phoneSelect").addEventListener('touchstart', event => {
 
+  down = true
+  event.preventDefault();
+  
+  report({
+    mag: [alpha, beta, gamma]
+  })
+  report({
+    mouseMode: true
+  })
+  report({
+    down: true
+  })
+  report({
+    mag: [alpha, beta, gamma]
+  })  
+})
 
-//log('Ready')
+document.getElementById("phoneSelect").addEventListener('touchmove', event => {
+  event.preventDefault()
+})
+
+document.getElementById("phoneSelect").addEventListener('touchend', event => {
+  down = false
+  event.preventDefault()
+  
+  report({
+    down: false
+  })  
+  report({
+    mouseMode: false
+  })
+  report({
+    mag: [alpha, beta, gamma]
+  })
+})
+
+document.getElementById("phoneSelect").addEventListener('touchcancel', event => {
+  down = false
+  event.preventDefault()
+  
+  report({
+    down: false
+  })  
+  report({
+    mouseMode: false
+  })
+  report({
+    mag: [alpha, beta, gamma]
+  })
+})
+
+document.getElementById("cameraOrbit").addEventListener('touchstart', event => {
+
+  down = true
+  event.preventDefault();
+  
+  report({
+    orbitMode: true
+  })  
+      
+  report({
+    mag: [alpha, beta, gamma]
+  })  
+})
+
+document.getElementById("cameraOrbit").addEventListener('touchmove', event => {
+  event.preventDefault()
+})
+
+document.getElementById("cameraOrbit").addEventListener('touchend', event => {
+  down = false
+  event.preventDefault()
+    
+  report({
+    orbitMode: false
+  })
+    
+  report({
+    mag: [alpha, beta, gamma]
+  })
+  
+})
+
+document.getElementById("cameraOrbit").addEventListener('touchcancel', event => {
+  down = false
+  event.preventDefault()
+  
+  report({
+    orbitMode: false
+  })
+  report({
+    down: false
+  })  
+  report({
+    mouseMode: false
+  })
+  report({
+    mag: [alpha, beta, gamma]
+  })
+})

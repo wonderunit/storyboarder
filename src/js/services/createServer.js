@@ -16,7 +16,7 @@ module.exports = function ({
   setInputSensor, // TODO do we need this?
   setInputDown,
   setInputMouseMode,
-  setInputPhoneClick,
+  setInputOrbitMode,
 
   updateServer = () => {}
 }) {
@@ -43,8 +43,8 @@ module.exports = function ({
         setInputMouseMode(values.mouseMode)
       }
 
-      if (values.mouseModeClick != null) {
-        setInputPhoneClick(values.mouseModeClick)
+      if (values.orbitMode != null) {        
+        setInputOrbitMode(values.orbitMode)
       }
     })
 
