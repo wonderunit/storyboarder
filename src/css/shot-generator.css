@@ -84,8 +84,8 @@ kbd {
 }
 
 #phoneCursor {
-  width: 100vw;
-  height: 100vh;
+  /* width: 100vw;
+  height: 100vh; */
   background: rgba(1, 1, 1, 0.0);
   position: absolute;
   /* display: none; */

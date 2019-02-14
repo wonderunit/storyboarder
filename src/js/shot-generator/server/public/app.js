@@ -244,17 +244,11 @@ document.getElementById("cameraOrbit").addEventListener('touchmove', event => {
 document.getElementById("cameraOrbit").addEventListener('touchend', event => {
   down = false
   event.preventDefault()
-  
-  report({
-    down: false
-  })
+    
   report({
     orbitMode: false
   })
-  
-  report({
-    mouseMode: false
-  })
+    
   report({
     mag: [alpha, beta, gamma]
   })

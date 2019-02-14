@@ -925,7 +925,7 @@ const InspectedWorld = ({ world, transition, updateWorld, updateWorldRoom, updat
     event.preventDefault()
     updateWorld({ ground: !world.ground })
   }
-  console.log('world: ', world)
+  
   return h([
     'div',
     ['h4', { style: { margin: 0 } }, 'Scene'],
@@ -3248,7 +3248,7 @@ const Editor = connect(
             //   [PresetsEditor, { transition }]
             // ]],
 
-            ready && [PhoneCursor, { remoteInput, camera, largeCanvasRef, selectObject, selectBone, sceneObjects, selection, selectedBone }],
+            ready && (remoteInput.mouseMode || remoteInput.orbitMode) && [PhoneCursor, { remoteInput, camera, largeCanvasRef, selectObject, selectBone, sceneObjects, selection, selectedBone }],
           ]
         ],
 
