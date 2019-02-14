@@ -475,9 +475,8 @@ module.exports = {
           draft.selection = undefined
           draft.selectedBone = undefined
           draft.mainViewCamera = 'live'
-          console.log('updating...: ', draft.world)
+          updateMeta(draft)
           return
-          //updateMeta(draft)
 
           //return
 
