@@ -56,7 +56,7 @@ const defaultScenePreset = {
       x: 0,
       y: 0,
       z: 0,
-      rotation: 0,
+      rotation: { x: 0, y: 0, z: 0 },
       name: undefined,
       visible: true
     },
@@ -70,7 +70,7 @@ const defaultScenePreset = {
       x: 2,
       y: 0.5,
       z: 0,
-      rotation: 0,
+      rotation: { x: 0, y: 0, z: 0 },
       name: undefined,
       visible: true
     },
@@ -84,7 +84,7 @@ const defaultScenePreset = {
       x: -2,
       y: -2,
       z: 0,
-      rotation: 2,
+      rotation: { x: 0, y: 2, z: 0 },
       name: undefined,
       visible: true
     },
@@ -431,6 +431,22 @@ const checkForSkeletonChanges = (state, draft, action) => {
   }
 }
 
+// migrate SceneObjects from older beta builds of Shot Generator 2.0
+const migrateRotations = sceneObjects =>
+  Object.entries(sceneObjects)
+    .reduce((o, [ k, v ]) => {
+      let value = v.rotation
+      if (v.type === 'object' && typeof value === 'number') {
+        // console.log('migrating rotation for', v)
+        v.rotation = {
+          x: 0,
+          y: value,
+          z: 0
+        }
+      }
+      o[k] = v
+      return o
+    }, {})
 const updateMeta = state => {
   state.meta.lastSavedHash = hashify(JSON.stringify(getSerializedState(state)))
 }
@@ -445,7 +461,7 @@ module.exports = {
           draft.world = action.payload.world
           if (!action.payload.world.ambient) draft.world.ambient = initialScene.world.ambient
           if (!action.payload.world.directional) draft.world.directional = initialScene.world.directional
-          draft.sceneObjects = action.payload.sceneObjects
+          draft.sceneObjects = migrateRotations(action.payload.sceneObjects)
           draft.activeCamera = action.payload.activeCamera
           // clear selections
           draft.selection = undefined
@@ -512,7 +528,15 @@ module.exports = {
             draft.sceneObjects[action.payload.id].fov = action.payload.fov
           }
           if (action.payload.rotation != null) {
-            draft.sceneObjects[action.payload.id].rotation = action.payload.rotation
+            if (draft.sceneObjects[action.payload.id].type === 'object') {
+              // MERGE
+              draft.sceneObjects[action.payload.id].rotation = {
+                ...state.sceneObjects[action.payload.id].rotation,
+                ...action.payload.rotation
+              }
+            } else {
+              draft.sceneObjects[action.payload.id].rotation = action.payload.rotation
+            }
           }
           if (action.payload.tilt != null) {
             draft.sceneObjects[action.payload.id].tilt = action.payload.tilt

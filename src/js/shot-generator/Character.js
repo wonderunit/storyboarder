@@ -5,7 +5,6 @@ const React = require('react')
 const { useRef, useEffect, useState } = React
 
 const path = require('path')
-const debounce = require('lodash.debounce')
 
 const BonesHelper = require('./BonesHelper')
 
@@ -14,6 +13,8 @@ const { initialState } = require('../shared/reducers/shot-generator')
 const { dialog } = require('electron').remote
 const fs = require('fs')
 const ModelLoader = require('../services/model-loader')
+
+const applyDeviceQuaternion = require('./apply-device-quaternion')
 
 // character needs:
 //   mesh - SkinnedMesh
@@ -27,7 +28,6 @@ require('../vendor/three/examples/js/loaders/OBJLoader2')
 const loadingManager = new THREE.LoadingManager()
 const objLoader = new THREE.OBJLoader2(loadingManager)
 const gltfLoader = new THREE.GLTFLoader(loadingManager)
-const imageLoader = new THREE.ImageLoader(loadingManager)
 objLoader.setLogging(false, false)
 THREE.Cache.enabled = true
 
@@ -243,6 +243,7 @@ const Character = React.memo(({
   let startingObjectQuaternion = useRef(null)
   let startingDeviceOffset = useRef(null)
   let startingObjectOffset = useRef(null)
+  let offset = useRef(null)
 
   let virtual = useRef({
     roll: 0,
@@ -250,11 +251,7 @@ const Character = React.memo(({
     yaw: 0
   })
 
-  let circlePressed = useRef(false)
-
   let startingDeviceRotation = useRef(null)
-  let startingObjectRotation = useRef(null)
-  let startingGlobalRotation = useRef(null)
 
   let currentBoneSelected = useRef(null)
 
@@ -332,7 +329,14 @@ const Character = React.memo(({
 
   useEffect(() => {
     if (object.current) {
-      object.current.rotation.y = props.rotation
+      if (props.rotation.y || props.rotation.y==0) {
+        object.current.rotation.y = props.rotation.y
+        //object.current.rotation.x = props.rotation.x
+        //object.current.rotation.z = props.rotation.z
+      } else {
+        object.current.rotation.y = props.rotation
+      }
+
     }
   }, [props.model, props.rotation, modelData])
 
@@ -479,23 +483,24 @@ const Character = React.memo(({
     {
       // zero out controller rotation and start rotating bone
 
-      let realTarget
+      let target
       let skeleton = object.current.userData.skeleton
       if (selectedBone) {
-        realTarget = skeleton.bones.find(bone => bone.uuid == selectedBone) || object.current
+        target = skeleton.bones.find(bone => bone.uuid == selectedBone) || object.current
       } else {
-        realTarget = object.current
+        target = object.current
       }
-      let target = realTarget.clone()
+
       let deviceQuaternion
-      if (isControllerRotatingCurrent.current === false)
+      if (!isControllerRotatingCurrent.current)
       {
+        //new rotation
         isControllerRotatingCurrent.current = true
         let startValues = getCurrentControllerRotation(devices[0], virtual.current)
         startingDeviceRotation.current = startValues.quaternion
 
         startingDeviceOffset.current =  new THREE.Quaternion().clone().inverse().multiply(startingDeviceRotation.current).normalize().inverse()
-        startingObjectQuaternion.current = realTarget.quaternion.clone()
+        startingObjectQuaternion.current = target.quaternion.clone()
         startingObjectOffset.current =  new THREE.Quaternion().clone().inverse().multiply(startingObjectQuaternion.current)
         //console.log('starting rotation: ', startingDeviceRotation.current)
       }
@@ -506,59 +511,37 @@ const Character = React.memo(({
         pitch: midddleValues.virtualPitch,
         yaw: midddleValues.virtualYaw
       }
-      let deviceDifference = new THREE.Quaternion().inverse().multiply(deviceQuaternion).multiply(startingDeviceOffset.current).normalize()
-      //console.log('continuous rotation: ', deviceQuaternion)
-      // get camera's offset
-      let cameraOffset = new THREE.Quaternion().clone().inverse().multiply(camera.quaternion.clone())
-      // get parent's offset
-      let parentOffset = new THREE.Quaternion().clone().inverse().multiply(realTarget.parent.quaternion.clone())
-      realTarget.parent.getWorldQuaternion(parentOffset)
 
-      // START WITH THE INVERSE OF THE STARTING OBJECT ROTATION
-      let objectQuaternion = startingObjectQuaternion.current.clone().inverse()
-
-      // ZERO OUT (ORDER IS IMPORTANT)
-      // offset
-      objectQuaternion.multiply(startingObjectOffset.current)
-      // parent's rotation
-      objectQuaternion.multiply(parentOffset.inverse())
-      // camera
-      objectQuaternion.multiply(cameraOffset)
-
-      // APPLY THE DEVICE DIFFERENCE, THIS IS THE MAJOR OPERATION
-      objectQuaternion.multiply(deviceDifference)
-
-      // ROTATE THE ZEROS BACK INTO PLACE (REVERSE ORDER)
-      // camera
-      objectQuaternion.multiply(cameraOffset.inverse())
-      // parent's rotation
-      objectQuaternion.multiply(parentOffset.inverse())
-      // offset
-      objectQuaternion.multiply(startingObjectOffset.current)
+      let objectQuaternion = applyDeviceQuaternion({
+        parent: target.parent,
+        startingDeviceOffset: startingDeviceOffset.current,
+        startingObjectOffset: startingObjectOffset.current,
+        startingObjectQuaternion: startingObjectQuaternion.current,
+        deviceQuaternion,
+        camera
+      })
 
       // APPLY THE ROTATION TO THE TARGET OBJECT
-      //targetobject.quaternion.copy(objectQuaternion.normalize())
-      //realTarget.quaternion.copy(objectQuaternion.normalize())
       target.quaternion.copy(objectQuaternion.normalize())
-        //target.updateMatrix()
-        //console.log('target rotation: ', target.rotation)
-        requestAnimationFrame(() => {
-          if (selectedBone) {
-            updateCharacterSkeleton({
-              id,
-              name: target.name,
-              rotation: {
-                x: target.rotation.x,
-                y: target.rotation.y,
-                z: target.rotation.z
-              }
-            })
-          } else {
-            updateObject(target.userData.id, {
-              rotation: target.rotation.y
-            })
+      let rotation = new THREE.Euler()
+      if (selectedBone) {
+        rotation.setFromQuaternion( objectQuaternion.normalize(), "YXZ" )
+        updateCharacterSkeleton({
+          id,
+          name: target.name,
+          rotation: {
+            x: target.rotation.x,
+            y: target.rotation.y,
+            z: target.rotation.z
           }
         })
+      } else {
+        rotation.setFromQuaternion( objectQuaternion.normalize(), "YXZ" )
+        updateObject(target.userData.id, {
+          rotation: target.rotation.y
+        })
+      }
+
     } else {
       if (devices[0] && devices[0].digital.circle === false && isControllerRotatingCurrent.current)
       {
@@ -581,88 +564,72 @@ const Character = React.memo(({
 
     if (remoteInput.mouseMode) return
 
-    let realTarget
+    // FIND THE TARGET
+    // note that we don't want to mutate anything in the scene directly here
+    // (e.g.: we don't want to make any direct changes to `target`)
+    // instead we dispatch an event describing how we want the system to update
+    let target
     let skeleton = object.current.userData.skeleton
     if (selectedBone) {
-      realTarget = skeleton.bones.find(bone => bone.uuid == selectedBone) || object.current
+      target = skeleton.bones.find(bone => bone.uuid == selectedBone) || object.current
     } else {
-      realTarget = object.current
+      target = object.current
     }
 
     if (remoteInput.down) {
-      if (realTarget) {
-        let target = realTarget.clone()
+      if (target) {
         let [ alpha, beta, gamma ] = remoteInput.mag.map(THREE.Math.degToRad)
         let magValues = remoteInput.mag
         let deviceQuaternion
-        if (!isRotating.current)
-        {
+        if (!isRotating.current) {
           // The first time rotation starts, get the starting device rotation and starting target object rotation
 
           isRotating.current = true
-          offset = 0-magValues[0]
-          deviceQuaternion = new THREE.Quaternion().setFromEuler(new THREE.Euler(beta, alpha + (offset*(Math.PI/180)),-gamma, 'YXZ')).multiply(new THREE.Quaternion().setFromAxisAngle( new THREE.Vector3( 1, 0, 0 ), -Math.PI / 2 ))
+          offset.current = 0-magValues[0]
+          deviceQuaternion = new THREE.Quaternion().setFromEuler(new THREE.Euler(beta, alpha + (offset.current*(Math.PI/180)),-gamma, 'YXZ')).multiply(new THREE.Quaternion().setFromAxisAngle( new THREE.Vector3( 1, 0, 0 ), -Math.PI / 2 ))
           startingDeviceOffset.current =  new THREE.Quaternion().clone().inverse().multiply(deviceQuaternion).normalize().inverse()
 
-          startingObjectQuaternion.current = realTarget.quaternion.clone()
+          startingObjectQuaternion.current = target.quaternion.clone()
           startingObjectOffset.current =  new THREE.Quaternion().clone().inverse().multiply(startingObjectQuaternion.current)
+        } else {
+          deviceQuaternion = new THREE.Quaternion().setFromEuler(new THREE.Euler(beta, alpha + (offset.current*(Math.PI/180)),-gamma, 'YXZ')).multiply(new THREE.Quaternion().setFromAxisAngle( new THREE.Vector3( 1, 0, 0 ), -Math.PI / 2 ))
         }
 
         // While rotating, perform the rotations
 
         // get device's offset
-        deviceQuaternion = new THREE.Quaternion().setFromEuler(new THREE.Euler(beta, alpha + (offset*(Math.PI/180)),-gamma, 'YXZ')).multiply(new THREE.Quaternion().setFromAxisAngle( new THREE.Vector3( 1, 0, 0 ), -Math.PI / 2 ))
-        let deviceDifference = new THREE.Quaternion().inverse().multiply(deviceQuaternion).multiply(startingDeviceOffset.current).normalize()
-        // get camera's offset
-        let cameraOffset = new THREE.Quaternion().clone().inverse().multiply(camera.quaternion.clone())
-        // get parent's offset
-        let parentOffset = new THREE.Quaternion().clone().inverse().multiply(realTarget.parent.quaternion.clone())
-        realTarget.parent.getWorldQuaternion(parentOffset)
 
-        // START WITH THE INVERSE OF THE STARTING OBJECT ROTATION
-        let objectQuaternion = startingObjectQuaternion.current.clone().inverse()
 
-        // ZERO OUT (ORDER IS IMPORTANT)
-        // offset
-        objectQuaternion.multiply(startingObjectOffset.current)
-        // parent's rotation
-        objectQuaternion.multiply(parentOffset.inverse())
-        // camera
-        objectQuaternion.multiply(cameraOffset)
-
-        // APPLY THE DEVICE DIFFERENCE, THIS IS THE MAJOR OPERATION
-        objectQuaternion.multiply(deviceDifference)
-
-        // ROTATE THE ZEROS BACK INTO PLACE (REVERSE ORDER)
-        // camera
-        objectQuaternion.multiply(cameraOffset.inverse())
-        // parent's rotation
-        objectQuaternion.multiply(parentOffset.inverse())
-        // offset
-        objectQuaternion.multiply(startingObjectOffset.current)
-
-        // APPLY THE ROTATION TO THE TARGET OBJECT
-        //targetobject.quaternion.copy(objectQuaternion.normalize())
-        target.quaternion.copy(objectQuaternion.normalize())
-        //target.updateMatrix()
-        //console.log('target rotation: ', target.rotation)
-        requestAnimationFrame(() => {
-          if (selectedBone) {
-            updateCharacterSkeleton({
-              id,
-              name: target.name,
-              rotation: {
-                x: target.rotation.x,
-                y: target.rotation.y,
-                z: target.rotation.z
-              }
-            })
-          } else {
-            updateObject(target.userData.id, {
-              rotation: target.rotation.y
-            })
-          }
+        let objectQuaternion = applyDeviceQuaternion({
+          parent: target.parent,
+          startingDeviceOffset: startingDeviceOffset.current,
+          startingObjectOffset: startingObjectOffset.current,
+          startingObjectQuaternion: startingObjectQuaternion.current,
+          deviceQuaternion,
+          camera
         })
+
+        // GET THE DESIRED ROTATION FOR THE TARGET OBJECT
+
+        let rotation = new THREE.Euler()
+
+        if (selectedBone) {
+          rotation.setFromQuaternion( objectQuaternion.normalize(), "YXZ" )
+          updateCharacterSkeleton({
+            id,
+            name: target.name,
+            rotation: {
+              x: rotation.x,
+              y: rotation.y,
+              z: rotation.z
+            }
+          })
+        } else {
+          rotation.setFromQuaternion( objectQuaternion.normalize(), "YXZ" )
+          updateObject(target.userData.id, {
+            rotation: rotation.y
+          })
+        }
       }
     } else {
       // not pressed anymore, reset
@@ -673,7 +640,7 @@ const Character = React.memo(({
       startingObjectOffset.current = null
     }
   }, [remoteInput])
-  
+
   useEffect(() => {
     if (!loaded) return
 
