@@ -925,7 +925,7 @@ const InspectedWorld = ({ world, transition, updateWorld, updateWorldRoom, updat
     event.preventDefault()
     updateWorld({ ground: !world.ground })
   }
-
+  console.log('world: ', world)
   return h([
     'div',
     ['h4', { style: { margin: 0 } }, 'Scene'],
@@ -2080,16 +2080,10 @@ const PhoneCursor = connect(
       let virtualMouse = useRef(null)
       let xy = useRef({x:0, y:0})
       let startPosition = useRef(null)
-      let lastxy = useRef({x:0, y:0})
       let viewportwidth = largeCanvasRef.current.clientWidth,
           viewportheight = largeCanvasRef.current.clientHeight
       const rect = largeCanvasRef.current.getBoundingClientRect();
-      const canvasPosition = {
-        x: rect.left,
-        y: rect.top
-      }
-      let oldxy = useRef({x:viewportwidth/2,y:viewportheight/2})
-      const isButtonClicked = useRef(false)
+      
       const { scene } = useContext(SceneContext)
       
       const setPlanePosition = (obj) => {
@@ -2126,30 +2120,9 @@ const PhoneCursor = connect(
              y: ( - pos.y )}
       }
 
-      const getObjectAndBone = ( intersect ) => {
-        if (intersect.object instanceof THREE.Mesh && intersect.object.userData.type === 'hitter' )
-        {
-          let obj = intersect.object.parent.object3D
-          return [obj, null]
-        }
-
-        let isBone = intersect.object.parent instanceof BonesHelper
-
-        let object = isBone
-          ? intersect.object.parent.root.parent
-          : intersect.object
-
-        let bone = isBone
-          // object.parent.root.parent.skeleton.bones
-          //   .find(b => b.uuid === o.object.userData.bone)
-          ? intersect.bone
-          : null
-
-        return [object, bone]
-      }
-
       useEffect(() => {
-        
+        // move mouse here
+
         if (remoteInput.orbitMode) return
         else {
           if (isDragging.current) {
@@ -2300,6 +2273,7 @@ const PhoneCursor = connect(
 
 
       useEffect(() => {
+        // handling phone rotation to camera orbit
         if (!remoteInput.orbitMode)
         {
           if (isDragging.current) {
@@ -2309,140 +2283,114 @@ const PhoneCursor = connect(
           }  
           return
         }
-        if (camera !== undefined && camera !== null && remoteInput.mouseMode)
+        if ( camera !== undefined && camera !== null )
         {
           if (camera.parent) scene.current = camera.parent          
         }
-
-        // handling phone rotation to screen position here
+        
         if (remoteInput.orbitMode)
         {
-          if (remoteInput.down)
-          {
-            let firstRun = false
-            let [ alpha, beta, gamma ] = remoteInput.mag.map(THREE.Math.degToRad)
-            if (!isDragging.current) {
-              //starting rotation 
-              firstRun = true
-              isDragging.current = true
-              startingCameraPosition.current = camera.position.clone()
-              startingDirection.current = new THREE.Vector3()
-              camera.getWorldDirection(startingDirection.current)
-              startingDeviceRotation.current = {
-                alpha: alpha,
-                beta: beta,
-                gamma: gamma
-              }
-              mousePosition.current = robot.getMousePos()
-              virtualMouse.current = {
-                x: mousePosition.x,
-                y: mousePosition.y
-              }
-                       
+          let firstRun = false
+          let [ alpha, beta, gamma ] = remoteInput.mag.map(THREE.Math.degToRad)
+          if (!isDragging.current) {
+            //starting rotation 
+            firstRun = true
+            isDragging.current = true
+            startingCameraPosition.current = camera.position.clone()
+            startingDirection.current = new THREE.Vector3()
+            camera.getWorldDirection(startingDirection.current)
+            startingDeviceRotation.current = {
+              alpha: alpha,
+              beta: beta,
+              gamma: gamma
             }
-            let w = 0,
-              x = 0,
-              y = 0,
-              z = 1
-            let startingDeviceQuaternion = new THREE.Quaternion().setFromEuler(new THREE.Euler(startingDeviceRotation.current.beta, startingDeviceRotation.current.alpha, -startingDeviceRotation.current.gamma, 'YXZ')).multiply(new THREE.Quaternion(w, x, y, z))
-            let deviceQuaternion = new THREE.Quaternion().setFromEuler(new THREE.Euler(beta, alpha, -gamma, 'YXZ')).multiply(new THREE.Quaternion(w, x, y, z))
-            
-            let deviceDifference = startingDeviceQuaternion.clone().inverse().multiply(deviceQuaternion)
+            mousePosition.current = robot.getMousePos()
+            virtualMouse.current = {
+              x: mousePosition.x,
+              y: mousePosition.y
+            }
                       
-            let rot = new THREE.Euler().setFromQuaternion(deviceDifference)
+          }
+          let w = 0,
+            x = 0,
+            y = 0,
+            z = 1
+          let startingDeviceQuaternion = new THREE.Quaternion().setFromEuler(new THREE.Euler(startingDeviceRotation.current.beta, startingDeviceRotation.current.alpha, -startingDeviceRotation.current.gamma, 'YXZ')).multiply(new THREE.Quaternion(w, x, y, z))
+          let deviceQuaternion = new THREE.Quaternion().setFromEuler(new THREE.Euler(beta, alpha, -gamma, 'YXZ')).multiply(new THREE.Quaternion(w, x, y, z))
+          
+          let deviceDifference = startingDeviceQuaternion.clone().inverse().multiply(deviceQuaternion)
+                    
+          let rot = new THREE.Euler().setFromQuaternion(deviceDifference)
 
-            let direction = new THREE.Vector3() 
-            camera.getWorldDirection( direction )
-            
-            let objInScene = scene.children.find(o => o.userData.id === selection)
-            
-            let newPos = new THREE.Vector3()
-            let getDistanceToPosition = new THREE.Vector3()
-            if (sceneObjects[selection] && (sceneObjects[selection].type === 'object' || sceneObjects[selection].type === 'character')) 
+          let direction = new THREE.Vector3() 
+          camera.getWorldDirection( direction )
+          
+          let objInScene = scene.children.find(o => o.userData.id === selection)
+          
+          let newPos = new THREE.Vector3()
+          let getDistanceToPosition = new THREE.Vector3()
+          if (sceneObjects[selection] && (sceneObjects[selection].type === 'object' || sceneObjects[selection].type === 'character')) 
+          {
+            getDistanceToPosition = objInScene.position.clone()
+            if (selectedBone)
             {
-              getDistanceToPosition = objInScene.position.clone()
-              if (selectedBone)
-              {
-                console.log('object: ', objInScene)
-                let skel = objInScene.userData.skeleton// (objInScene.children[0] instanceof THREE.Mesh) ? object.current.children[0] : object.current.children[1]
-                let realBone = skel.bones.find(bone => bone.uuid == selectedBone)
-                let bonePosition = new THREE.Vector3()
-                realBone.getWorldPosition( bonePosition )
-                getDistanceToPosition = bonePosition.clone()
-                //console.log('rael bone: ', realBone)
-              }
-            }
-            let dist = (sceneObjects[selection] && (sceneObjects[selection].type === 'object' || sceneObjects[selection].type === 'character')) ? startingCameraPosition.current.distanceTo(getDistanceToPosition) : 3
-            newPos.addVectors ( startingCameraPosition.current, direction.multiplyScalar( dist ) )
-            if (firstRun)
-            {
-              firtRun = false
-              startingCameraOffset.current = newPos              
-            }
-            
-            let radPerPixel = (Math.PI / 30),
-              center = startingCameraOffset.current
-              deltaPhi = radPerPixel * rot.y,
-              deltaTheta = -radPerPixel * rot.x,
-              campos = new THREE.Vector3(startingCameraPosition.current.x, startingCameraPosition.current.y, startingCameraPosition.current.z),
-              pos = camera.position.clone().sub(center),
-              radius = dist,
-              theta = Math.acos(pos.y / radius),
-              phi = Math.atan2(pos.z, pos.x)
-
-            theta = Math.min(Math.max(theta - deltaTheta, 0), Math.PI)
-            phi -= deltaPhi
-            //console.log('cloned pos: ', pos)
-            pos.x = radius * Math.sin(theta) * Math.cos(phi);
-            pos.z = radius * Math.sin(theta) * Math.sin(phi);
-            pos.y = radius * Math.cos(theta)
-           // console.log('position: ', pos)
-            pos.add(center)
-            //camera.position.add(center)
-            //camera.position.copy(pos)
-            //camera.lookAt( startingCameraOffset.current )
-            //camera.updateMatrix()
-
-            let cam = {
-              x: pos.x,
-              y: pos.y,
-              z: pos.z,
-            }
-            let testCam = new THREE.PerspectiveCamera()
-            testCam.position.copy(cam)
-            testCam.lookAt(startingCameraOffset.current)
-            //testCam.updateMatrix()
-            
-            let cameraId = camera.userData.id   
-            console.log('camera id: ', cameraId)       
-            let euler = new THREE.Euler()
-            euler.setFromQuaternion( testCam.quaternion.clone().normalize(), "YXZ" )
-            updateObject(cameraId, {
-              x: cam.x,
-              y: cam.z,
-              z: cam.y,
-              rotation: euler.y,
-              tilt: euler.x,
-              // roll: camera.rotation.z
-            })
-
-            
-          } else {
-            // not .down
-            if (scene.current && tester.current!=null)
-            {
-              if (isDragging.current)
-              {
-                isDragging.current = false
-              }                       
-              scene.current.remove(tester.current)
-              scene.current.remove(intersectionPlane.current)
-              tester.current = null
-              intersectionPlane.current = null              
+              let skel = objInScene.userData.skeleton// (objInScene.children[0] instanceof THREE.Mesh) ? object.current.children[0] : object.current.children[1]
+              let realBone = skel.bones.find(bone => bone.uuid == selectedBone)
+              let bonePosition = new THREE.Vector3()
+              realBone.getWorldPosition( bonePosition )
+              getDistanceToPosition = bonePosition.clone()
             }
           }
+          let dist = (sceneObjects[selection] && (sceneObjects[selection].type === 'object' || sceneObjects[selection].type === 'character')) ? startingCameraPosition.current.distanceTo(getDistanceToPosition) : 3
+          newPos.addVectors ( startingCameraPosition.current, direction.multiplyScalar( dist ) )
+          if (firstRun)
+          {
+            firtRun = false
+            startingCameraOffset.current = newPos              
+          }
+          
+          let radPerPixel = (Math.PI / 30),
+            center = startingCameraOffset.current
+            deltaPhi = radPerPixel * rot.y,
+            deltaTheta = -radPerPixel * rot.x,
+            campos = new THREE.Vector3(startingCameraPosition.current.x, startingCameraPosition.current.y, startingCameraPosition.current.z),
+            pos = camera.position.clone().sub(center),
+            radius = dist,
+            theta = Math.acos(pos.y / radius),
+            phi = Math.atan2(pos.z, pos.x)
+
+          theta = Math.min(Math.max(theta - deltaTheta, 0), Math.PI)
+          phi -= deltaPhi
+          pos.x = radius * Math.sin(theta) * Math.cos(phi);
+          pos.z = radius * Math.sin(theta) * Math.sin(phi);
+          pos.y = radius * Math.cos(theta)
+
+          //TODO limit y position to 0 (ground level)
+          pos.add(center)
+          
+          let cam = {
+            x: pos.x,
+            y: pos.y,
+            z: pos.z,
+          }
+          let testCam = new THREE.PerspectiveCamera()
+          testCam.position.copy(cam)
+          testCam.lookAt(startingCameraOffset.current)
+          
+          let cameraId = camera.userData.id   
+          let euler = new THREE.Euler()
+          euler.setFromQuaternion( testCam.quaternion.clone().normalize(), "YXZ" )
+          updateObject(cameraId, {
+            x: cam.x,
+            y: cam.z,
+            z: cam.y,
+            rotation: euler.y,
+            tilt: euler.x,
+            // roll: camera.rotation.z
+          })
+
         } else {
-          // not in mouse mode         
+          // not in orbit mouse mode         
           if (scene.current && tester.current!=null)
           {
             if (isDragging.current)
@@ -2456,7 +2404,6 @@ const PhoneCursor = connect(
           }
         }
       }, [remoteInput])
-
       
       return h(
         ['div#phoneCursor', { key: 'cursor' } ,
@@ -3301,7 +3248,7 @@ const Editor = connect(
             //   [PresetsEditor, { transition }]
             // ]],
 
-            remoteInput.mouseMode && [PhoneCursor, { remoteInput, camera, largeCanvasRef, selectObject, selectBone, sceneObjects, selection, selectedBone }],
+            ready && [PhoneCursor, { remoteInput, camera, largeCanvasRef, selectObject, selectBone, sceneObjects, selection, selectedBone }],
           ]
         ],
 

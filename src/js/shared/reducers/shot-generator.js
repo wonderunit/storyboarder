@@ -43,6 +43,11 @@ const defaultScenePreset = {
     },
     ambient: {
       intensity: 0.1
+    },
+    directional: {
+      intensity: 0.5,
+      rotation: -0.9,
+      tilt: 0.75
     }
   },
   sceneObjects: {
@@ -443,7 +448,14 @@ module.exports = {
       switch (action.type) {
         case 'LOAD_SCENE':
           draft.world = action.payload.world
-          if (!action.payload.world.ambient) draft.world.ambient = initialScene.world.ambient
+          draft.world.ambient = {}
+          console.log('ambient: ', action.payload.world.ambient)
+          if (!action.payload.world.ambient || action.payload.world.ambient === undefined) {
+            draft.world.ambient = {
+              intensity: initialScene.world.ambient.intensity
+            }
+            console.log('setting ambient: ', draft.world.ambient)
+          }
           if (!action.payload.world.directional) draft.world.directional = initialScene.world.directional
           draft.sceneObjects = action.payload.sceneObjects
           draft.activeCamera = action.payload.activeCamera
@@ -451,8 +463,11 @@ module.exports = {
           draft.selection = undefined
           draft.selectedBone = undefined
           draft.mainViewCamera = 'live'
-          updateMeta(draft)
+          console.log('updating...: ', draft.world)
           return
+          //updateMeta(draft)
+
+          //return
 
         case 'SELECT_OBJECT':
           // if the selection has changed

@@ -1,4 +1,3 @@
-let mouseOn = false;
 let down = false
 let alpha
 let beta
@@ -96,7 +95,8 @@ function orientation(event){
   beta = event.beta
   gamma = event.gamma
 
-  if (down) {
+  if (down ) {
+    
     report({
       mag: [event.alpha, event.beta, event.gamma]
     })
@@ -147,9 +147,7 @@ document.getElementById("rotate3d").addEventListener('touchstart', event => {
     mag: [alpha, beta, gamma]
   })
   //document.getElementById("debugger").innerHTML += "<br>Mouse mode: "+mouseOn;
-  // report({
-  //   mouseMode: mouseOn
-  // })
+
 })
 
 document.getElementById("rotate3d").addEventListener('touchmove', event => {
@@ -176,7 +174,6 @@ document.getElementById("phoneSelect").addEventListener('touchstart', event => {
 
   down = true
   event.preventDefault();
-  mouseOn = true
   
   report({
     mag: [alpha, beta, gamma]
@@ -198,9 +195,7 @@ document.getElementById("phoneSelect").addEventListener('touchmove', event => {
 
 document.getElementById("phoneSelect").addEventListener('touchend', event => {
   down = false
-  mouseOn = false;
   event.preventDefault()
-
   
   report({
     down: false
@@ -215,7 +210,6 @@ document.getElementById("phoneSelect").addEventListener('touchend', event => {
 
 document.getElementById("phoneSelect").addEventListener('touchcancel', event => {
   down = false
-  mouseOn = false;
   event.preventDefault()
   
   report({
@@ -233,23 +227,11 @@ document.getElementById("cameraOrbit").addEventListener('touchstart', event => {
 
   down = true
   event.preventDefault();
-  mouseOn = true
-  report({
-    mag: [alpha, beta, gamma]
-  })
+  
   report({
     orbitMode: true
-  })
-  report({
-    mouseMode: true
-  })
-  report({
-    down: true
-  })
-  
-  
-  
-  
+  })  
+      
   report({
     mag: [alpha, beta, gamma]
   })  
@@ -261,7 +243,6 @@ document.getElementById("cameraOrbit").addEventListener('touchmove', event => {
 
 document.getElementById("cameraOrbit").addEventListener('touchend', event => {
   down = false
-  mouseOn = false;
   event.preventDefault()
   
   report({
@@ -282,7 +263,6 @@ document.getElementById("cameraOrbit").addEventListener('touchend', event => {
 
 document.getElementById("cameraOrbit").addEventListener('touchcancel', event => {
   down = false
-  mouseOn = false;
   event.preventDefault()
   
   report({
