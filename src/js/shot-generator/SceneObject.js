@@ -6,7 +6,11 @@ const path = require('path')
 const React = require('react')
 const { useRef, useEffect, useState } = React
 
+const { dialog } = require('electron').remote
+const fs = require('fs')
 const ModelLoader = require('../services/model-loader')
+
+const applyDeviceQuaternion = require('./apply-device-quaternion')
 
 // TODO use functions of ModelLoader?
 require('../vendor/three/examples/js/loaders/LoaderSupport')
@@ -67,29 +71,10 @@ const meshFactory = originalMesh => {
   return mesh
 }
 
-const SceneObject = React.memo(({ scene, id, type, isSelected, loaded, updateObject, ...object }) => {
+const SceneObject = React.memo(({ scene, id, type, isSelected, loaded, updateObject, remoteInput, camera, ...object }) => {
   const setLoaded = loaded => updateObject(id, { loaded })
 
   const container = useRef(groupFactory())
-
-  const update = () => {
-    container.current.userData.id = id
-    container.current.userData.type = type
-
-    container.current.position.x = object.x
-    container.current.position.z = object.y
-    container.current.position.y = object.z
-
-    container.current.rotation.y = object.rotation
-
-    container.current.scale.set(
-      object.width,
-      object.height,
-      object.depth
-    )
-
-    container.current.visible = object.visible
-  }
 
   const load = async (model, object, container) => {
     setLoaded(false)
@@ -126,6 +111,20 @@ const SceneObject = React.memo(({ scene, id, type, isSelected, loaded, updateObj
           console.log('loading from app', filepath)
         }
 
+        if (!fs.existsSync(filepath)) {
+          try {
+            filepath = await ModelLoader.ensureModelFileExists(filepath)
+            updateObject(id, { model: filepath })
+          } catch (err) {
+            dialog.showMessageBox({
+              title: 'Failed to load',
+              message: `Failed to load object with internal id ${id}`
+            })
+            setLoaded(false)
+            return
+          }
+        }
+
         switch (path.extname(filepath)) {
           case '.obj':
             await new Promise((resolve, reject) => {
@@ -150,7 +149,7 @@ const SceneObject = React.memo(({ scene, id, type, isSelected, loaded, updateObj
 
           case '.gltf':
           case '.glb':
-            await new Promise(resolve => {
+            await new Promise((resolve, reject) => {
               gltfLoader.load(
                 filepath,
                 data => {
@@ -179,7 +178,9 @@ const SceneObject = React.memo(({ scene, id, type, isSelected, loaded, updateObj
   useEffect(() => {
     console.log(type, id, 'model changed', container.current, 'to', object.model)
     load(object.model, object, container.current)
-    update()
+
+    container.current.userData.id = id
+    container.current.userData.type = type
 
     console.log(type, id, 'added to scene')
     scene.add(container.current)
@@ -191,16 +192,40 @@ const SceneObject = React.memo(({ scene, id, type, isSelected, loaded, updateObj
   }, [object.model])
 
   useEffect(() => {
-    console.log(type, id, 'update')
-    update()
+    container.current.position.x = object.x
+    container.current.position.z = object.y
+    container.current.position.y = object.z
   }, [
     object.x,
     object.y,
-    object.z,
-    object.rotation,
+    object.z
+  ])
+
+  useEffect(() => {
+    container.current.rotation.x = object.rotation.x
+    container.current.rotation.y = object.rotation.y
+    container.current.rotation.z = object.rotation.z
+  }, [
+    object.rotation.x,
+    object.rotation.y,
+    object.rotation.z
+  ])
+
+  useEffect(() => {
+    container.current.scale.set(
+      object.width,
+      object.height,
+      object.depth
+    )
+  }, [
     object.width,
     object.height,
-    object.depth,
+    object.depth
+  ])
+
+  useEffect(() => {
+    container.current.visible = object.visible
+  }, [
     object.visible
   ])
 
@@ -219,6 +244,81 @@ const SceneObject = React.memo(({ scene, id, type, isSelected, loaded, updateObj
          color: [ 0, 0, 0 ],
        }
   }, [isSelected, loaded])
+
+  const isRotating = useRef(null)
+  const startingObjectQuaternion = useRef(null)
+  const startingDeviceOffset = useRef(null)
+  const startingObjectOffset = useRef(null)
+  const offset = useRef(0)
+
+  useEffect(() => {
+    if (!container.current) return
+    if (!isSelected) return
+
+    if (remoteInput.mouseMode) return
+
+    let target = container.current
+
+    if (remoteInput.down) {
+      let [ alpha, beta, gamma ] = remoteInput.mag.map(THREE.Math.degToRad)
+      let magValues = remoteInput.mag
+    
+      let deviceQuaternion = new THREE.Quaternion()
+
+      if (!isRotating.current) {
+        // new rotation
+        isRotating.current = true
+
+        offset.current = 0-magValues[0]
+        console.log('new rotation!')
+
+        deviceQuaternion = new THREE.Quaternion().setFromEuler(new THREE.Euler(beta, alpha + (offset.current*(Math.PI/180)),-gamma, 'YXZ')).multiply(new THREE.Quaternion().setFromAxisAngle( new THREE.Vector3( 1, 0, 0 ), -Math.PI / 2 ))
+        // get the starting device rotation and starting target object rotation
+        startingDeviceOffset.current = new THREE.Quaternion()
+          .clone()
+          .inverse()
+          .multiply(deviceQuaternion)
+          .normalize()
+          .inverse()
+
+        startingObjectQuaternion.current = target.quaternion.clone()
+
+        startingObjectOffset.current = new THREE.Quaternion()
+          .clone()
+          .inverse()
+          .multiply(startingObjectQuaternion.current)
+      } else {
+        deviceQuaternion = new THREE.Quaternion().setFromEuler(new THREE.Euler(beta, alpha + (offset.current*(Math.PI/180)),-gamma, 'YXZ')).multiply(new THREE.Quaternion().setFromAxisAngle( new THREE.Vector3( 1, 0, 0 ), -Math.PI / 2 ))
+      }
+      //console.log('rotation with offset: ', offset.current)
+
+      let objectQuaternion = applyDeviceQuaternion({
+        parent: target.parent,
+        startingDeviceOffset: startingDeviceOffset.current,
+        startingObjectOffset: startingObjectOffset.current,
+        startingObjectQuaternion: startingObjectQuaternion.current,
+        deviceQuaternion,
+        camera
+      })
+
+      // GET THE DESIRED ROTATION FOR THE TARGET OBJECT
+      let rotation = new THREE.Euler()
+        .setFromQuaternion( objectQuaternion.normalize(), "YXZ" )
+
+      
+      updateObject(target.userData.id, {
+        rotation: { x: rotation.x, y: rotation.y, z: rotation.z }
+      })
+
+    } else {
+      // not pressed anymore, reset
+      isRotating.current = false
+
+      startingDeviceOffset.current = null
+      startingObjectQuaternion.current = null
+      startingObjectOffset.current = null
+    }
+  }, [remoteInput])
 
   return null
 })

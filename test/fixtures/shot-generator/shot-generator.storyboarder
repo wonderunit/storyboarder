@@ -1,0 +1,104 @@
+{
+  "version": "1.9.2",
+  "aspectRatio": 2.35,
+  "fps": 24,
+  "defaultBoardTiming": 2000,
+  "boards": [
+    {
+      "uid": "UDRF3",
+      "url": "board-1-UDRF3.png",
+      "newShot": false,
+      "lastEdited": 1499375725536,
+      "layers": {
+        "reference": {
+          "url": "board-1-UDRF3-reference.png",
+          "opacity": 1
+        }
+      },
+      "number": 1,
+      "shot": "1A",
+      "time": 0,
+      "lineMileage": 821.5682133251058,
+      "sts": {
+        "version": "1.9.2",
+        "data": {
+          "activeCamera": "6BC46A44-7965-43B5-B290-E3D2B9D15EEE",
+          "sceneObjects": {
+            "26332F12-28FE-444C-B73F-B3F90B8C62A2": {
+              "headScale": 1,
+              "height": 1.8,
+              "id": "26332F12-28FE-444C-B73F-B3F90B8C62A2",
+              "loaded": true,
+              "model": "adult-male",
+              "morphTargets": {
+                "ectomorphic": 0,
+                "endomorphic": 0,
+                "mesomorphic": 0
+              },
+              "rotation": 0,
+              "skeleton": {},
+              "type": "character",
+              "visible": true,
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "4F0FF9B8-BBB4-4D83-9E87-6EFE16A01D6F": {
+              "angle": 0.9019689898685954,
+              "decay": 1,
+              "distance": 6.649999999999978,
+              "id": "4F0FF9B8-BBB4-4D83-9E87-6EFE16A01D6F",
+              "intensity": 0.5499999999999998,
+              "penumbra": 0.7249999999999998,
+              "rotation": -3.141592653589793,
+              "tilt": -0.46251225177849803,
+              "type": "light",
+              "visible": true,
+              "x": 0,
+              "y": -0.549999999999999,
+              "z": 4
+            },
+            "6BC46A44-7965-43B5-B290-E3D2B9D15EEE": {
+              "fov": 34.47652810249724,
+              "id": "6BC46A44-7965-43B5-B290-E3D2B9D15EEE",
+              "name": "Main Camera",
+              "roll": 0,
+              "rotation": 0,
+              "tilt": 0,
+              "type": "camera",
+              "x": 0,
+              "y": 4,
+              "z": 1
+            }
+          },
+          "world": {
+            "ambient": {
+              "intensity": 0.1
+            },
+            "backgroundColor": 8355711,
+            "directional": {
+              "intensity": 0.3,
+              "rotation": 2.26,
+              "tilt": -0.43
+            },
+            "environment": {
+              "rotation": 0,
+              "scale": 1,
+              "visible": true,
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ground": false,
+            "room": {
+              "height": 30,
+              "length": 40,
+              "visible": true,
+              "width": 30
+            }
+          }
+        }
+      }
+    }
+  ]
+}

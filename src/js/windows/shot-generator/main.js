@@ -1,4 +1,5 @@
 const { BrowserWindow, ipcMain, app, dialog } = electron = require('electron')
+const isDev = require('electron-is-dev')
 
 const path = require('path')
 const url = require('url')
@@ -34,8 +35,8 @@ const show = (onComplete) => {
   win = new BrowserWindow({
     width: 1500,
     height: 1080,
-    minWidth: 1200,
-    minHeight: 800,
+    minWidth: isDev ? undefined : 1200,
+    minHeight: isDev ? undefined : 800,
     // x: 0,
     // y: 0,
     show: false,
