@@ -256,16 +256,16 @@ const isCustomModel = string => {
   const { root, dir, base, ext, name } = path.parse(string)
   if (dir && dir !== '') {
     if (ext && ext !== '') {
-      // { model: '/path/to/custom/model.glb' } // absolute path and extension; load directly
+      // { model: '/path/to/custom/model.glb' } // path and extension; load directly
       return true
     } else {
-      // { model: '/path/to/custom/model' } // absolute path and no extension -- fail, shouldn't be allowed
-      throw new Error('invalid model file path')
+      // { model: '/path/to/custom/model' } // path and no extension -- fail, shouldn't be allowed
+      throw new Error('invalid model file path for file without extension')
     }
   } else {
     if (ext && ext !== '') {
-      // { model: 'model.glb' } // no path and extension; load from `images/` folder
-      throw new Error('unsupported')
+      // { model: 'model.glb' } // no path and extension
+      throw new Error('invalid model file without path')
     } else {
       // { model: 'box' } // no path and no extension; use built-in model
       return false

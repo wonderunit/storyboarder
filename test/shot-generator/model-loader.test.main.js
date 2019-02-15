@@ -14,11 +14,18 @@ describe('ModelLoader', () => {
     it('knows if a model is built-in', () => {
       assert.equal(false, ModelLoader.isCustomModel('adult-male'))
     })
-    it('throws an error for unexpected input', () => {
+    it('throws an error for unexpected built-in model input', () => {
       assert.throws(
         // no extension, which would be expected for a built-in model
         // but with a path, which is only supposed to be for custom models
         () => ModelLoader.isCustomModel('models/character/adult-male')
+      )
+    })
+    it('throws an error for unexpected custom model input', () => {
+      assert.throws(
+        // extension, which would be custom
+        // but no relative or absolute path, which is unexpected
+        () => ModelLoader.isCustomModel('adult-male.glb')
       )
     })
   })
