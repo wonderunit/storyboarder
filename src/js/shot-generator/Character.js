@@ -46,13 +46,6 @@ const loadGltf = filepath =>
 // const modelsPath = path.join(app.getAppPath(), 'src', 'data', 'shot-generator', 'dummies', 'gltf')
 const modelsPath = path.join(__dirname, '..', '..', '..', 'src', 'data', 'shot-generator', 'dummies', 'gltf')
 
-const pathToCharacterModelFile = (model) =>
-  ModelLoader.isCustomModel(model)
-    // absolute path to a model on the filesystem
-    ? model
-    // relative path to a model in the app
-    : path.join(modelsPath, `${model}.glb`)
-
 const isValidSkinnedMesh = data => {
   let mesh = data.scene.children.find(child => child instanceof THREE.SkinnedMesh) ||
             data.scene.children[0].children.find(child => child instanceof THREE.SkinnedMesh)
@@ -162,30 +155,83 @@ const Character = React.memo(({
   }
 
   const load = async (model, props) => {
-    console.log('Character load', { storyboarderFilePath })
+    console.log('Character load', { storyboarderFilePath, model })
 
-    let resourcePath = path.join(path.dirname(storyboarderFilePath), 'images')
-    let filepath = model
+    let resourceType = 'characters'
+    let resourcePath = path.join(path.dirname(storyboarderFilePath), 'models', resourceType)
 
-    if (
-      // if there's a path (e.g.: it’s custom)
-      path.dirname(model) !== '.' &&
-      // but it's not the images folder
-      path.dirname(model) !== resourcePath
+    let filepath
+    let needsCopy = false
+
+    // is the model built-in?
+    if (!ModelLoader.isCustomModel(model)) {
+      // easy, just load it from the models folder
+      filepath = path.join(modelsPath, `${model}.glb`)
+      needsCopy = false
+    
+    // is the model custom?
+    } else {
+      // the model _is_ the filepath
+      filepath = model
+
+      // does it have an absolute path? (e.g.: from an old save file we need to migrate)
+      if (path.isAbsolute(filepath)) {
+        // ... then we need to copy it to the models/* folder and change its path
+        needsCopy = true
+
+      // is it a relative path, and the file is in the models/* folder already?
+    } else if (
+      // the folder name of the model file ...
+      path.normalize(path.dirname(filepath)) ===
+      // ... is the same as the folder name where we expect models ...
+      path.normalize(path.join('models', resourceType))
     ) {
-      console.log('model file path does not appear to be part of the project resources folder')
+        // ... then we can load it as-is
+        needsCopy = false
+        // but the actual filepath we look for needs to be absolute
+        filepath = path.join(path.dirname(storyboarderFilePath), filepath)
 
-      if (!fs.existsSync(resourcePath)) {
-        alert('Error copying model file. Could not access images folder.')
+      } else {
+        throw new Error('Could not find model file')
+      }
+    }
+
+    console.log({
+      model,
+      needsCopy,
+      filepath
+    })
+
+    // so we know the filepath, but what if it doesn’t exist?
+    if (!fs.existsSync(filepath)) {
+      // ... ask the artist to locate it
+      try {
+        filepath = await ModelLoader.ensureModelFileExists(filepath)
+        console.log(`filepath is now ${filepath}`)
+        needsCopy = true
+
+      } catch (error) {
+        // cancellation by user
+        dialog.showMessageBox({
+          title: 'Failed to load',
+          message: `Failed to load character with internal id ${props.id} with model ${model}`
+        })
         return
       }
+    }
 
-      let src = model
-      let dst = path.join(resourcePath, path.basename(model))
-
-      console.log({ src, dst })
-
+    if (needsCopy) {
       try {
+        // copy model file to models/* folder and change model path
+        console.log('copying model file into models/')
+        
+        // make sure the characters path exists
+        fs.ensureDirSync(resourcePath)
+
+        let src = filepath
+        let dst = path.join(resourcePath, path.basename(filepath))
+
+        // prompt before overwrite
         if (fs.existsSync(dst)) {
           let choice = dialog.showMessageBox(null, {
             type: 'question',
@@ -195,44 +241,25 @@ const Character = React.memo(({
           if (choice !== 0) {
             console.log('cancelled model file copy')
             throw new Error('User said no')
-            return
           }
         }
 
         console.log(`copying model file from ${src} to ${dst}`)
-        fs.copySync(src, dst, { overwrite: false, errorOnExist: true })
+        fs.copySync(src, dst, { overwrite: true, errorOnExist: false })
 
-        // TODO convert to relative path?
+        // update it in the data
+        model = path.join('models', resourceType, path.basename(dst))
+        console.log(`setting character’s model prop to ${model}`)
+        updateObject(id, { model })
 
-        // update
-        filepath = dst
-        updateObject(id, { model: filepath })
-
-        console.log(`model file path is now ${filepath}`)
       } catch (err) {
         console.error(err)
-        alert(`Error copying model file from ${src} to ${dst}\n${err}`)
+        alert(err)
         return
       }
     }
 
-    filepath = pathToCharacterModelFile(filepath)
-
-    if (!fs.existsSync(filepath)) {
-      try {
-        filepath = await ModelLoader.ensureModelFileExists(filepath)
-        console.log(type, id, 'model is now', filepath)
-        updateObject(id, { model: filepath })
-        return
-      } catch (error) {
-        dialog.showMessageBox({
-          title: 'Failed to load',
-          message: `Failed to load character with internal id ${props.id}`
-        })
-        return
-      }
-    }
-
+    console.log('loading character from', filepath)
     let data = await loadGltf(filepath)
 
     if (isValidSkinnedMesh(data)) {
