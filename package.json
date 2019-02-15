@@ -50,6 +50,7 @@
     "dmg": {
       "background": "build/background.png",
       "icon": "build/icon.icns",
+      "license": "build/license_en.txt",
       "iconSize": 160,
       "window": {
         "width": 675,
@@ -88,7 +89,11 @@
     "nsis": {
       "perMachine": true,
       "createDesktopShortcut": true,
-      "createStartMenuShortcut": true
+      "createStartMenuShortcut": true,
+      "license": "build/license_en.txt"
+    },
+    "AppImage": {
+      "license": "build/license_en.txt"
     }
   },
   "devDependencies": {

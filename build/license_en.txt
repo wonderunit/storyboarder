@@ -1,0 +1,129 @@
+End User License Agreement for Wonder Unit Software
+
+Please read this End User License Agreement (“EULA”) before download and use the Software.
+
+By downloading and using the Software, You agree, without reservation, to be bound by the terms of this EULA. If You do not agree with the terms of this EULA, please do not download and use the Software.
+
+If You accept the terms and conditions in this EULA on behalf of a company or other legal entity, You warrant that You have full legal authority to accept the terms and conditions in this EULA on behalf of such company or other legal entity, and to legally bind such company or other legal entity.
+
+You may not accept this EULA if You are not of legal age to form a binding contract with Wonder Unit.
+
+1. Definitions
+
+In this EULA, the expressions below shall have the meaning assigned to them in this clause, unless the context requires otherwise:
+
+“Activate” turning the Free version into the Upgraded version of the same application with the License Key provided by Wonder Unit;
+
+“Wonder Unit” Wonder Unit, Inc., 2 River Terrace #3E New York, New York, United States of America.;
+
+“Documentation” the detailed information about the Software, its features and the system requirements as made available on the website of Wonder Unit, as amended from time to time;
+
+“License Key” a unique code provided by Wonder Unit, which enables You to activate the Upgraded version by entering the code into the Software and to subsequently use the Software during the applicable license term;
+
+“Upgraded version” the license for the Software for the term specified on the webpage of the store where You purchase the license, or in any applicable agreement concerning the purchase of the license (as stand-alone product or as part of a subscription) to Use the Software;
+
+“Open Source Software” any software that requires as a condition of use, copying, modification and/or distribution of such software that such software or other software incorporated into, derived from or distributed with such software (a) be disclosed or distributed in source code form, and (b) be licensed for the purpose of making and/or distributing derivative works, and (c) be redistributable at no charge;
+
+“Software” any software application and/or all of the contents of the files and/or other media, including software setup files, licensed to You by Wonder Unit, including any Updates;
+
+“Free version” the license for the Software to Use the Software which does not contain functionality of the Upgraded Version;
+
+“Updates” any modified versions and updates of, and additions to the Software (excluding upgrades of the Software);
+
+“Use” the access, download, install, copy or get benefit from using the Software in accordance with the documentation.
+
+“You” you, the final and ultimate user of the Software or the authorized representative of a company or other legal entity that will be the final and ultimate user of the Software, and the company or other legal entity that will be the final and ultimate user of the Software, if applicable.
+
+2. General
+
+This EULA applies to any licenses granted to You by Wonder Unit for the use of the Software.
+
+By purchasing a License Key for the Software and/or downloading and using the Software, You enter into this EULA with Wonder Unit.
+
+This EULA may be modified from time to time. Wonder Unit will notify you of such modifications on its website or otherwise, e.g. by using the email address used for the provision of the License Key. Any modifications to this EULA shall only apply upon acceptance by You.
+
+3. License
+
+Wonder Unit grants You a non-exclusive, non-transferable, limited, revocable license to Use the Software in accordance with this EULA. Wonder Unit reserves all rights not expressly granted to You.
+
+Wonder Unit is and remains the owner of any intellectual property rights with respect to the Software. You shall not acquire any ownership to the Software as result of Your purchase of the License Key or Your Use of the Software.
+
+4. Permitted use and restrictions
+
+In order to be able to install the Software and receive Updates and upgrades, Your computer shall have access to the Internet and shall meet the system requirements described in the Documentation that can be found on the webpage: https://wonderunit.com/.
+
+You may Use the Free version of the Software on as many computers as You are able. However, You may Use the Upgraded version on as many as 3 computers, unless You have purchased (a) a volume license or (b) more than one Upgraded version or Free version. In the event You have purchased a volume license or more than one Upgraded version or Free version, the number of computers You may Use the Software on shall not exceed the number of the Upgraded version or Free version purchased. If You exceed the limit, Wonder Unit may block the License Key.
+
+You shall Use the Upgraded version or Free version in accordance with applicable laws and shall not:
+
+rent, lease, lend, sell, redistribute, sublicense or otherwise commercially exploit the License Key, the Upgraded version or the Free version;
+
+assign the License Key, the Upgraded version or the Free version without prior written approval of Wonder Unit;
+
+Use the Upgraded version or Free version for any unlawful or illegal activity, or to facilitate an unlawful or illegal activity;
+
+delete or alter any disclaimers, warnings, copyright or other proprietary notices accompanying the Software; or
+
+modify the code for the purpose of enabling features of the Upgraded Version without a License Key, except to the extent permitted by applicable law.
+
+Wonder Unit may modify the Software at any time at its sole discretion and without notice to You, for example to comply with applicable law or a court order, to avoid a third party infringement claim or to provide Updates and upgrades.
+
+Certain components of the Software are Open Source Software and licensed under the terms of the applicable license(s) of the Open Source Software. You shall adhere to these terms and conditions, which can be found via the webpage: https://wonderunit.com/acknowledgements/.
+
+5. Maintenance and support
+
+Wonder Unit will notify You of any available Updates and upgrades.
+
+You will be entitled to receive Updates free of charge during a period of twelve (12) months upon purchasing the License Key for the Upgraded version. In order to receive Updates after this twelve months’ period, You may need to renew your License Key for the Upgraded version.
+
+You may need to pay an additional fee in order to be able to download an upgrade.
+
+Any maintenance and support provided by Wonder Unit, including the provision of Updates and upgrades, will be provided in an adequate way on an “as is” basis without any warranty, as soon as reasonably practicable, subject to availability of personnel.
+
+6. Use of data
+
+Wonder Unit and its subsidiaries may periodically collect and use technical and related data concerning the Software You have licensed, including about the version number of the Software You have installed and about the system You have installed the Software on. Wonder Unit will use such data to facilitate maintenance and support with respect to the Software, to improve its products and to provide further services or technologies to You.
+
+Wonder Unit may process personal data with respect to You, if and to the extent necessary to provide the License Key, to provide maintenance and support to You with respect to the Software and to comply with its obligations under this EULA. To the extent Wonder Unit will process personal data, it will comply with its obligations under applicable data protection law. Please see our privacy statement for more details on the processing of Your personal data that Wonder Unit has collected and received through its website.
+
+7. License to Wonder Unit
+
+In the Software, User Data Settings that you set may be transferred to Wonder Unit. Subject to the terms and conditions of this Agreement, You hereby grant Wonder Unit a limited, worldwide, non-exclusive, royalty-free license to use, reproduce, electronically distribute, transmit, have transmitted, perform, display, store, archive, and make derivative works of the User Data Settings. This includes but is not limited to custom pose presets for the shot generator so that the community/other users can benefit from Your custom poses.
+
+8. Disclaimer
+
+You Use the Software at Your own risk and the entire risk as to satisfactory quality, performance and accuracy is with You.
+
+The Software and accompanying documentation are provided on an “as is” and “as available” basis without warranty - express or implied- of any kind, and Wonder Unit specifically disclaims the warranty of fitness for a particular purpose. No oral or written advice given by Wonder Unit, its dealers, distributors, agents or employees shall create a warranty or in any way increase the scope of this warranty and You may not rely upon such information or advice.
+
+9. Liability limitation
+
+YOU EXPRESSLY UNDERSTAND AND AGREE THAT THE RELEASED PARTIES WILL NOT BE LIABLE TO YOU FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR EXEMPLARY DAMAGES, INCLUDING, BUT NOT LIMITED TO, DAMAGES FOR LOSS OF PROFITS, GOODWILL, USE, DATA OR OTHER INTANGIBLE LOSSES (EVEN IF LUA HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES), RESULTING FROM: (i) YOUR USE OR INABILITY TO USE THE SOFTWARE OR SERVICE; (ii) YOUR RELIANCE ON CONTENT MADE AVAILABLE ON THE SOFTWARE OR SERVICE; OR (iii) ANY OTHER MATTER RELATING TO THE SOFTWARE OR SERVICE. SOME JURISDICTIONS DO NOT ALLOW THE EXCLUSION OF CERTAIN WARRANTIES OR THE LIMITATION OR EXCLUSION OF LIABILITY FOR INCIDENTAL OR CONSEQUENTIAL DAMAGES. ACCORDINGLY, SOME OF THE ABOVE LIMITATIONS IN THIS PARAGRAPH MAY NOT APPLY TO YOU.
+
+TO THE FULLEST EXTENT POSSIBLE BY LAW, THE RELEASED PARTIES’ MAXIMUM LIABILITY ARISING OUT OF OR IN CONNECTION WITH THE SOFTWARE, REGARDLESS OF THE CAUSE OF ACTION (WHETHER IN CONTRACT, TORT, BREACH OF WARRANTY, OR OTHERWISE), WILL NOT EXCEED $100.
+
+You agree to defend, indemnify, and hold harmless the Released Parties from and against any claims, actions, or demands, including without limitation reasonable legal and accounting fees, alleging or resulting from (i) your use of or reliance on the Service, (ii) your use of or reliance on any Wonder Unit Software, or (iii) your breach of this EULA. We will provide notice to you promptly of any such claim, suit, or proceeding.
+
+10. Termination
+
+This EULA will continue to be in force until the expiry or termination of the Upgraded version or Free version.
+
+The Upgraded version or Free version will terminate automatically at the end of the applicable license term, unless renewed or Activated prior to the end of the applicable license term.
+
+Wonder Unit is entitled to terminate the Upgraded version or Free version by blocking the License Key during the license term with immediate effect and without prior notice in the event You fail to comply with the terms in this EULA, in the event You fail to pay Your (subscription) fee for the License Key within the applicable payment term, or in the event Wonder Unit is required to do so by law or an order of an applicable court.
+
+Upon termination of the Upgraded version or Free version, You shall cease all use of the Software and shall destroy all copies thereof.
+
+You acknowledge that the provisions of this EULA, which by their nature are intended to survive termination, will remain in effect after termination of this EULA.
+
+11. Governing law and disputes
+
+This EULA and the relationship between you and Wonder Unit shall be governed by the laws of the State of New York without regard to its conflict of law provisions. You and Wonder Unit agree to submit to arbitration any disputes relating to your use of the Service under the rules of the American Arbitration Association. Any such arbitration, to the extent necessary, shall be conducted in New York County in the State of New York. You covenant not to sue Wonder Unit in any other forum.
+
+You also acknowledge and understand that, with respect to any dispute with the Released Parties arising out of or relating to your use of the Service or this EULA:
+
+YOU ARE GIVING UP YOUR RIGHT TO HAVE A TRIAL BY JURY;
+
+YOU ARE GIVING UP YOUR RIGHT TO SERVE AS A REPRESENTATIVE, AS A PRIVATE ATTORNEY GENERAL, OR IN ANY OTHER REPRESENTATIVE CAPACITY, OR TO PARTICIPATE AS A MEMBER OF A CLASS OF CLAIMANTS, IN ANY LAWSUIT INVOLVING ANY SUCH DISPUTE; AND
+
+YOU MUST FILE ANY CLAIM WITHIN ONE (1) YEAR AFTER SUCH CLAIM AROSE OR IT IS FOREVER BARRED.
