@@ -105,7 +105,6 @@ const SceneObject = React.memo(({ scene, id, type, isSelected, loaded, updateObj
         })
 
         if (!filepath) {
-          alert('Could not load.')
           return
         }
 

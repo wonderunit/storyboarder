@@ -159,7 +159,6 @@ const Character = React.memo(({
     })
 
     if (!filepath) {
-      alert('Could not load.')
       return
     }
 
