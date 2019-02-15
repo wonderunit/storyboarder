@@ -77,7 +77,6 @@ const getCanvasImageSourcesDataForBoard = (board, projectFileAbsolutePath) => {
 
     let getImageFilePath = (filename) => path.join(path.dirname(projectFileAbsolutePath), 'images', filename)
 
-    let loaders = filenames.map(filename => getImage(getImageFilePath(filename)))
     let loaders = filenames.map(filename => getImage(getImageFilePath(filename + '?' + Math.random())))
 
     Promise.all(loaders).then(images => {
