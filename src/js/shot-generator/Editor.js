@@ -630,6 +630,8 @@ const SceneManager = connect(
 
                 loaded: props.loaded ? props.loaded : false,
 
+                storyboarderFilePath: meta.storyboarderFilePath,
+
                 ...props
               }
             ]
