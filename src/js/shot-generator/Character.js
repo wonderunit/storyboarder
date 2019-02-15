@@ -251,6 +251,7 @@ const Character = React.memo(({
         model = path.join('models', resourceType, path.basename(dst))
         console.log(`setting character’s model prop to ${model}`)
         updateObject(id, { model })
+        return
 
       } catch (err) {
         console.error(err)
