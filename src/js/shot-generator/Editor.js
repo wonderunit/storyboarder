@@ -55,7 +55,7 @@ const {
   updateWorld,
   updateWorldRoom,
   updateWorldEnvironment,
-  
+
   markSaved,
 
   //
@@ -377,7 +377,7 @@ const SceneManager = connect(
             largeCanvasRef.current
           )
         }
-       
+
         if (!dragControlsView.current) {
           console.log('new DragControls')
           dragControlsView.current = new DragControls(
@@ -463,7 +463,7 @@ const SceneManager = connect(
                 // update object state with the latest values
                 let cameraId = camera.userData.id
                 let { x, y, z, rotation, tilt, fov } = cameraControlsView.current.object
-                
+
                 // if props changed
                 if (
                   cameraState.x != x ||
@@ -518,7 +518,7 @@ const SceneManager = connect(
           // remove camera controls event listeners and null the reference
           cameraControlsView.current.dispose()
           cameraControlsView.current = null
-        }        
+        }
       }
     }, [camera, shouldRaf])
 
@@ -929,7 +929,7 @@ const InspectedWorld = ({ world, transition, updateWorld, updateWorldRoom, updat
     event.preventDefault()
     updateWorld({ ground: !world.ground })
   }
-  
+
   return h([
     'div',
     ['h4', { style: { margin: 0 } }, 'Scene'],
@@ -2125,11 +2125,11 @@ const PhoneCursor = connect(
       let viewportwidth = largeCanvasRef.current.clientWidth,
           viewportheight = largeCanvasRef.current.clientHeight
       const rect = largeCanvasRef.current.getBoundingClientRect();
-      
+
       const { scene } = useContext(SceneContext)
-      
+
       const setPlanePosition = (obj) => {
-        let direction = new THREE.Vector3() 
+        let direction = new THREE.Vector3()
         camera.getWorldDirection( direction )
         let newPos = new THREE.Vector3()
         let dist = 5
@@ -2230,7 +2230,7 @@ const PhoneCursor = connect(
               virtualMouse.current = {
                 x: mousePosition.x,
                 y: mousePosition.y
-              }              
+              }
               //
             }
             let w = 0,
@@ -2257,9 +2257,9 @@ const PhoneCursor = connect(
               // )
               // point.position.copy(intersect[0].point)
               // scene.add(point)
-              
+
               let xy_coords = toScreenXY( intersect[0].point, camera )
-              if (!isRotating.current) 
+              if (!isRotating.current)
               {
                 isRotating.current = true
                 firstRun = false
@@ -2267,7 +2267,7 @@ const PhoneCursor = connect(
                   x: xy_coords.x * 300, // * viewportwidth/4,
                   y: xy_coords.y * 300 //* viewportheight/4
                 }
-              } 
+              }
               //virtualMouse.current.x = mousePosition.current.x - ((startPosition.current.x - xy_coords.x * viewportwidth/4)/2)
               //virtualMouse.current.y = mousePosition.current.y - ((startPosition.current.y - xy_coords.y * viewportheight/4)/2)
               virtualMouse.current.x = mousePosition.current.x - ((startPosition.current.x - xy_coords.x * 300)/2)
@@ -2281,16 +2281,16 @@ const PhoneCursor = connect(
               {
                 isRotating.current = false
                 robot.mouseClick()
-              }              
-              
+              }
+
               scene.current.remove(tester.current)
               scene.current.remove(intersectionPlane.current)
               tester.current = null
-              intersectionPlane.current = null              
+              intersectionPlane.current = null
             }
           }
         } else {
-          // not in mouse mode         
+          // not in mouse mode
           if (scene.current && tester.current!=null)
           {
             if (isRotating.current)
@@ -2298,7 +2298,7 @@ const PhoneCursor = connect(
               isRotating.current = false
               robot.mouseClick()
             }
-            
+
             scene.current.remove(tester.current)
             scene.current.remove(intersectionPlane.current)
             tester.current = null
@@ -2317,20 +2317,20 @@ const PhoneCursor = connect(
             //robot.mouseToggle("up", "left")
             isDragging.current = false
             isRotating.current = false
-          }  
+          }
           return
         }
         if ( camera !== undefined && camera !== null )
         {
-          if (camera.parent) scene.current = camera.parent          
+          if (camera.parent) scene.current = camera.parent
         }
-        
+
         if (remoteInput.orbitMode)
         {
           let firstRun = false
           let [ alpha, beta, gamma ] = remoteInput.mag.map(THREE.Math.degToRad)
           if (!isDragging.current) {
-            //starting rotation 
+            //starting rotation
             firstRun = true
             isDragging.current = true
             startingCameraPosition.current = camera.position.clone()
@@ -2346,7 +2346,7 @@ const PhoneCursor = connect(
               x: mousePosition.x,
               y: mousePosition.y
             }
-                      
+
           }
           let w = 0,
             x = 0,
@@ -2354,19 +2354,19 @@ const PhoneCursor = connect(
             z = 1
           let startingDeviceQuaternion = new THREE.Quaternion().setFromEuler(new THREE.Euler(startingDeviceRotation.current.beta, startingDeviceRotation.current.alpha, -startingDeviceRotation.current.gamma, 'YXZ')).multiply(new THREE.Quaternion(w, x, y, z))
           let deviceQuaternion = new THREE.Quaternion().setFromEuler(new THREE.Euler(beta, alpha, -gamma, 'YXZ')).multiply(new THREE.Quaternion(w, x, y, z))
-          
+
           let deviceDifference = startingDeviceQuaternion.clone().inverse().multiply(deviceQuaternion)
-                    
+
           let rot = new THREE.Euler().setFromQuaternion(deviceDifference)
 
-          let direction = new THREE.Vector3() 
+          let direction = new THREE.Vector3()
           camera.getWorldDirection( direction )
-          
+
           let objInScene = scene.children.find(o => o.userData.id === selection)
-          
+
           let newPos = new THREE.Vector3()
           let getDistanceToPosition = new THREE.Vector3()
-          if (sceneObjects[selection] && (sceneObjects[selection].type === 'object' || sceneObjects[selection].type === 'character')) 
+          if (sceneObjects[selection] && (sceneObjects[selection].type === 'object' || sceneObjects[selection].type === 'character'))
           {
             getDistanceToPosition = objInScene.position.clone()
             if (selectedBone)
@@ -2383,9 +2383,9 @@ const PhoneCursor = connect(
           if (firstRun)
           {
             firtRun = false
-            startingCameraOffset.current = newPos              
+            startingCameraOffset.current = newPos
           }
-          
+
           let radPerPixel = (Math.PI / 30),
             center = startingCameraOffset.current
             deltaPhi = radPerPixel * rot.y,
@@ -2404,7 +2404,7 @@ const PhoneCursor = connect(
 
           //TODO limit y position to 0 (ground level)
           pos.add(center)
-          
+
           let cam = {
             x: pos.x,
             y: pos.y,
@@ -2413,10 +2413,14 @@ const PhoneCursor = connect(
           let testCam = new THREE.PerspectiveCamera()
           testCam.position.copy(cam)
           testCam.lookAt(startingCameraOffset.current)
-          
-          let cameraId = camera.userData.id   
+
+          let cameraId = camera.userData.id
           let euler = new THREE.Euler()
           euler.setFromQuaternion( testCam.quaternion.clone().normalize(), "YXZ" )
+
+          if (cam.y < 0) cam.y = 0
+          cam.y = cam.y > startingCameraOffset.current.y + radius - radius/20 ? startingCameraOffset.current.y + radius - radius/20 : cam.y
+
           updateObject(cameraId, {
             x: cam.x,
             y: cam.z,
@@ -2427,13 +2431,13 @@ const PhoneCursor = connect(
           })
 
         } else {
-          // not in orbit mouse mode         
+          // not in orbit mouse mode
           if (scene.current && tester.current!=null)
           {
             if (isDragging.current)
             {
               isDragging.current = false
-            }            
+            }
             scene.current.remove(tester.current)
             scene.current.remove(intersectionPlane.current)
             tester.current = null
@@ -2441,10 +2445,10 @@ const PhoneCursor = connect(
           }
         }
       }, [remoteInput])
-      
+
       return h(
         ['div#phoneCursor', { key: 'cursor' } ,
-          [            
+          [
           ]
         ]
       )
@@ -3234,7 +3238,7 @@ const Editor = connect(
           data: getSerializedState(state),
           images: {
             'camera': cameraImage,
-      
+
             // TODO
             'topdown': undefined
           }

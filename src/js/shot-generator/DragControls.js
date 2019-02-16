@@ -164,12 +164,15 @@ class DragControls extends THREE.EventDispatcher {
     let allIntersectionMeshes = []
     for (var o of objects)
     {
-      if (o instanceof THREE.Mesh) allIntersectionMeshes.push(o)
-      if (o instanceof THREE.Group && o.children[0] instanceof THREE.Mesh) 
-      {
-        allIntersectionMeshes.push(o.children[0])
+      if (o instanceof THREE.Mesh) {
+        if (o.visible) allIntersectionMeshes.push(o)
       }
-      
+
+      if (o instanceof THREE.Group && o.children[0] instanceof THREE.Mesh)
+      {
+        if (o.visible) allIntersectionMeshes.push(o.children[0])
+      }
+
       if (o instanceof THREE.Object3D && o.userData.type === 'light'){
         allIntersectionMeshes.push(o.hitter)
       }
