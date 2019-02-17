@@ -86,88 +86,6 @@ let createLineMesh = (pointsArray, material) => {
   return mesh
 }
 
-let createLineCube = (subdivisions) => {
-  let lineCube = new THREE.Group()
-
-  // let material = new MeshLineMaterial({
-  //   useMap: false,
-  //   color: new THREE.Color(0x0),
-  //   opacity: 1.0,
-  //   lineWidth: 0.015,
-  //   sizeAttenuation: false,
-  //   near: 0.1,
-  //   far: 1000,
-  //   transparent: false,
-  //   side: THREE.DoubleSide
-  // })
-
-  // let material2 = new MeshLineMaterial({
-  //   useMap: false,
-  //   color: new THREE.Color(0x0),
-  //   opacity: 1.0,
-  //   lineWidth: 0.01,
-  //   sizeAttenuation: false,
-  //   near: 0.1,
-  //   far: 1000,
-  //   transparent: true,
-  //   side: THREE.DoubleSide
-  // })
-
-  // let squareDef = [[0, 0, 0], [1, 0, 0], [1, 0, 1], [0, 0, 1], [0, 0, 0], [0, 1, 0], [1, 1, 0], [1, 1, 1], [0, 1, 1], [0, 1, 0]]
-  // let mesh = createLineMesh(squareDef, material)
-  // lineCube.add(mesh)
-
-  // mesh = createLineMesh([[0, 0, 1], [0, 1, 1]], material)
-  // lineCube.add(mesh)
-
-  // mesh = createLineMesh([[1, 0, 1], [1, 1, 1]], material)
-  // lineCube.add(mesh)
-
-  // mesh = createLineMesh([[1, 0, 0], [1, 1, 0]], material)
-  // lineCube.add(mesh)
-
-  // for (var i = 0; i < subdivisions; i++) {
-  //   let val = (1 + i) / (subdivisions + 1)
-
-  //   squareDef = [[0, val, 0], [1, val, 0], [1, val, 1], [0, val, 1], [0, val, 0]]
-  //   mesh = createLineMesh(squareDef, material2)
-  //   lineCube.add(mesh)
-
-  //   mesh = createLineMesh([[val, 0, 1], [val, 1, 1]], material2)
-  //   lineCube.add(mesh)
-
-  //   mesh = createLineMesh([[0, 0, val], [0, 1, val]], material2)
-  //   lineCube.add(mesh)
-
-  //   mesh = createLineMesh([[val, 0, 0], [val, 1, 0]], material2)
-  //   lineCube.add(mesh)
-
-  //   mesh = createLineMesh([[1, 0, val], [1, 1, val]], material2)
-  //   lineCube.add(mesh)
-
-  //   mesh = createLineMesh([[val, 0, val], [val, 1, val]], material2)
-  //   lineCube.add(mesh)
-
-  //   // X
-  //   mesh = createLineMesh([[0, 0, val], [1, 0, val]], material2)
-  //   lineCube.add(mesh)
-  //   mesh = createLineMesh([[val, 0, 0], [val, 0, 1]], material2)
-  //   lineCube.add(mesh)
-
-  //   mesh = createLineMesh([[0, val, val], [1, val, val]], material2)
-  //   lineCube.add(mesh)
-  //   mesh = createLineMesh([[val, val, 0], [val, val, 1]], material2)
-  //   lineCube.add(mesh)
-
-  //   mesh = createLineMesh([[0, 1, val], [1, 1, val]], material2)
-  //   lineCube.add(mesh)
-  //   mesh = createLineMesh([[val, 1, 0], [val, 1, 1]], material2)
-  //   lineCube.add(mesh)
-  // }
-
-  return lineCube
-}
-
 const buildSquareRoom = (w, l, h, { textures }) => {
   w = w * METERS_PER_FEET
   l = l * METERS_PER_FEET
@@ -194,12 +112,16 @@ const buildSquareRoom = (w, l, h, { textures }) => {
   var materialWall = new THREE.MeshToonMaterial({map: textures.wall, side: THREE.FrontSide})
   materialWall.depthTest = true
   materialWall.transparent = false
+  materialWall.userData.outlineParameters = { thickness: 0, alpha: 0.0 }
+
   // materialWall.blending = THREE.MultiplyBlending
   materialWall.opacity = 1
 
   var materialCeil = new THREE.MeshToonMaterial({map: textures.wall, side: THREE.FrontSide})
   materialCeil.depthTest = true
   materialCeil.transparent = false
+  materialCeil.userData.outlineParameters = { thickness: 0, alpha: 0.0 }
+
   // materialWall.blending = THREE.MultiplyBlending
   materialCeil.opacity = 1
 
@@ -243,10 +165,6 @@ const buildSquareRoom = (w, l, h, { textures }) => {
 
   var room = new THREE.Group()
   room.add(mesh)
-
-  let cube = createLineCube(0)
-  cube.scale.set(w, h, l)
-  room.add(cube)
 
   return room
 }
