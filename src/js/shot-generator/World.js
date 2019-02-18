@@ -5,6 +5,8 @@ const { useRef, useEffect, useState } = React
 
 const path = require('path')
 
+const prepareFilepathForModel = require('./prepare-filepath-for-model')
+
 const buildSquareRoom = require('./build-square-room')
 
 // TODO use functions of ModelLoader?
@@ -125,21 +127,33 @@ const useRoom = (world, scene) => {
   return object.current
 }
 
-const World = ({ world, scene }) => {
+const World = ({ world, scene, storyboarderFilePath, updateWorldEnvironment }) => {
   const [group, setGroup] = useState(null)
 
   const ground = useGround(world, scene)
   const room = useRoom(world, scene)
 
-  useEffect(() => {
-    if (!world.environment.file) {
+  let load = async file => {
+    let filepath = await prepareFilepathForModel({
+      model: file,
+      type: 'environment',
+
+      storyboarderFilePath,
+
+      onFilePathChange: filepath => {
+        // new relative path
+        updateWorldEnvironment({ file: filepath })
+      }
+    })
+
+    if (!filepath) {
       setGroup(null)
       return
     }
 
-    switch (path.extname(world.environment.file)) {
+    switch (path.extname(filepath)) {
       case '.obj':
-        objLoader.load(world.environment.file, event => {
+        objLoader.load(filepath, event => {
           console.log('loaded', event)
           const object = event.detail.loaderRootNode
 
@@ -171,8 +185,9 @@ const World = ({ world, scene }) => {
         break
 
       case '.gltf':
+      case '.glb':
         gltfLoader.load(
-          world.environment.file,
+          filepath,
           data => {
             const g = new THREE.Group()
 
@@ -199,6 +214,17 @@ const World = ({ world, scene }) => {
         )
         break
 
+    }
+  }
+
+  // deferring to load, which runs async
+  // see: https://stackoverflow.com/questions/53332321
+  useEffect(() => {
+    if (world.environment.file) {
+      load(world.environment.file)
+    } else {
+      setGroup(null)
+      return
     }
   }, [world.environment.file])
 

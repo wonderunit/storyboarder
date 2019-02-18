@@ -101,7 +101,10 @@ const SceneObject = React.memo(({ scene, id, type, isSelected, loaded, updateObj
 
           storyboarderFilePath,
 
-          updateObject
+          onFilePathChange: filepath => {
+            // new relative path
+            updateObject(id, { model: filepath })
+          }
         })
 
         if (!filepath) {

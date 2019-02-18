@@ -149,13 +149,15 @@ const Character = React.memo(({
     console.log('Character load', { storyboarderFilePath, model })
 
     let filepath = await prepareFilepathForModel({
-      id,
       model,
       type,
 
       storyboarderFilePath,
 
-      updateObject
+      onFilePathChange: filepath => {
+        // new relative path
+        updateObject(id, { model: filepath })
+      }
     })
 
     if (!filepath) {
