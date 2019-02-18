@@ -321,7 +321,7 @@ THREE.OutlineEffect = function ( renderer, parameters ) {
 	}
 
 	function updateUniforms( material, originalMaterial ) {
-
+		console.log('updating material: ', material)
 		var outlineParameters = originalMaterial.outlineParameters;
 
 		material.uniforms.outlineAlpha.value = originalMaterial.opacity;

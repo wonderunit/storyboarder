@@ -73,7 +73,7 @@ const useMachine = require('../hooks/use-machine')
 
 const CameraControls = require('./CameraControls')
 const DragControls = require('./DragControls')
-
+const IconTextures = require('./IconTexures')
 const Character = require('./Character')
 const SpotLight = require('./SpotLight')
 
@@ -128,6 +128,8 @@ const metersAsFeetAndInches = meters => {
 const feetAndInchesAsString = (feet, inches) => `${feet}′${inches}″`
 
 const shortId = id => id.toString().substr(0, 7).toLowerCase()
+
+const icons = IconTextures.init()
 
 const preventDefault = (fn, ...args) => e => {
   e.preventDefault()
@@ -610,7 +612,6 @@ const SceneManager = connect(
         }
       }
     }, [machineState.value, camera, cameraControlsView.current, mainViewCamera])
-
     // console.log('SceneManager render', sceneObjects)
     const components = Object.values(sceneObjects).map(props => {
         switch (props.type) {
@@ -650,6 +651,7 @@ const SceneManager = connect(
 
                 loaded: props.loaded ? props.loaded : false,
                 devices,
+                icon: icons.character,
                 ...props
               }
             ]

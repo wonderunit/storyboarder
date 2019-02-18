@@ -138,8 +138,9 @@ const Character = React.memo(({
   camera,
   updateCharacterSkeleton,
   updateObject,
-  loaded,
+  loaded,  
   devices,
+  icon,
   ...props
 }) => {
   // setting loaded = true forces an update to sceneObjects,
@@ -213,12 +214,16 @@ const Character = React.memo(({
       // FIXME get current .models from getState()
       object.current.userData.modelSettings = initialState.models[props.model] || {}
 
+      object.current.sprite = new THREE.Sprite( icon )
+      object.current.sprite.scale.set(0.1,0.1,0.1)
 
       object.current.add(...armatures)
       object.current.add(mesh)
+      object.current.add(new THREE.Sprite( icon ))
       object.current.userData.mesh = mesh
       scene.add(object.current)
       let bonesHelper = new BonesHelper( skeleton.bones[0].parent, object.current, { boneLengthScale } )
+      //bonesHelper.add(object.current.sprite)
 
       bonesHelper.traverse(child => {
         child.layers.disable(0)
