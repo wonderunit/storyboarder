@@ -2778,6 +2778,8 @@ const CameraInspector = connect(
   })
 )(
   React.memo(({ camera, sceneObjects, activeCamera }) => {
+    const { scene } = useContext(SceneContext)
+
     if (!camera) return h(['div.camera-inspector'])
 
     let cameraState = sceneObjects[activeCamera]
@@ -2796,8 +2798,6 @@ const CameraInspector = connect(
     fakeCamera.fov = cameraState.fov
     let focalLength = fakeCamera.getFocalLength()
     fakeCamera = null
-
-    const { scene } = useContext(SceneContext)
 
     return h(
       ['div.camera-inspector',
