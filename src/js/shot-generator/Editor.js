@@ -370,10 +370,9 @@ const SceneManager = connect(
         // state of the active camera
         let cameraState = Object.values(sceneObjects).find(o => o.id === camera.userData.id)
         if (!cameraControlsView.current) {
-          //console.log(cameraState)
-          console.log('new CameraControls')
+          console.log('new CameraControls', cameraState)
           cameraControlsView.current = new CameraControls(
-            {},
+            CameraControls.objectFromCameraState(cameraState),
             largeCanvasRef.current
           )
         }
@@ -447,14 +446,7 @@ const SceneManager = connect(
                   return
                 }
 
-                cameraControlsView.current.object = {
-                  x: cameraState.x,
-                  y: cameraState.y,
-                  z: cameraState.z,
-                  rotation: cameraState.rotation,
-                  tilt: cameraState.tilt,
-                  fov: cameraState.fov
-                }
+                cameraControlsView.current.object = CameraControls.objectFromCameraState(cameraState)
 
                 // step
                 cameraControlsView.current.update( clock.current.getDelta(), state )

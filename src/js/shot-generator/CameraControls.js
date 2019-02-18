@@ -246,4 +246,15 @@ class CameraControls {
 
 }
 
+CameraControls.objectFromCameraState = cameraState =>
+  ({
+    x: cameraState.x,
+    y: cameraState.y,
+    z: cameraState.z,
+    rotation: cameraState.rotation,
+    tilt: cameraState.tilt,
+    fov: cameraState.fov
+  })
+
+
 module.exports = CameraControls
