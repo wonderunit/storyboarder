@@ -1572,6 +1572,21 @@ const PosePresetsEditor = connect(
       selectPosePreset(sceneObject.id, posePresetId, preset)
     }
 
+    const comparePresetNames = (a, b) => {
+      var nameA = a.name.toUpperCase()
+      var nameB = b.name.toUpperCase()
+
+      if (nameA < nameB) {
+        return -1
+      }
+      if (nameA > nameB) {
+        return 1
+      }
+      return 0
+    }
+
+    const sortedPosePresets = Object.values(posePresets).sort(comparePresetNames)
+
     return h(
       ['div.row', { style: { margin: '9px 0 6px 0', paddingRight: 0 } }, [
         ['div', { style: { width: 50, display: 'flex', alignSelf: 'center' } }, 'pose'],
@@ -1587,7 +1602,7 @@ const PosePresetsEditor = connect(
             }
           }, [
               ['option', { value: '', disabled: true }, '---'],
-              Object.values(posePresets).map(preset =>
+              sortedPosePresets.map(preset =>
                 ['option', { value: preset.id }, preset.name]
               )
             ]
