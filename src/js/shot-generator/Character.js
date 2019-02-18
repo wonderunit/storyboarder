@@ -363,7 +363,7 @@ const Character = React.memo(({
     if (!object.current) return
 
     if (props.posePresetId) {
-      console.log(type, id, 'changed pose preset', )
+      console.log(type, id, 'changed pose preset' )
       let skeleton = object.current.userData.skeleton
 
       skeleton.pose()
@@ -386,7 +386,19 @@ const Character = React.memo(({
     if (!object.current) return
 
     console.log(type, id, 'skeleton')
+    let skeleton = object.current.userData.skeleton
+    skeleton.pose()
     updateSkeleton()
+    if (object.current.userData.boneLengthScale === 100)  // fb converter scaled object
+    {
+      if (props.skeleton['Hips'])
+      {
+        // we already have correct values, don't multiply the root bone
+      } else 
+        skeleton.bones[0].quaternion.multiply(object.current.userData.parentRotation)
+      skeleton.bones[0].position.copy(object.current.userData.parentPosition)
+    }
+
   }, [props.model, props.skeleton, modelData])
 
   useEffect(() => {
