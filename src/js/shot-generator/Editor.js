@@ -1479,7 +1479,7 @@ const CharacterPresetsEditor = connect(
     }
 
     return h(
-      ['div.row', { style: { margin: '9px 0 6px 0', paddingRight: 9 } }, [
+      ['div.row', { style: { margin: '9px 0 6px 0', paddingRight: 0 } }, [
         ['div', { style: { width: 50, display: 'flex', alignSelf: 'center' } }, 'preset'],
         [
           'select', {
@@ -1488,7 +1488,8 @@ const CharacterPresetsEditor = connect(
             onChange: preventDefault(onSelectCharacterPreset),
             style: {
               flex: 1,
-              marginBottom: 0
+              marginBottom: 0,
+              maxWidth: 192
             }
           }, [
               ['option', { value: '', disabled: true }, '---'],
@@ -1572,7 +1573,7 @@ const PosePresetsEditor = connect(
     }
 
     return h(
-      ['div.row', { style: { margin: '9px 0 6px 0', paddingRight: 9 } }, [
+      ['div.row', { style: { margin: '9px 0 6px 0', paddingRight: 0 } }, [
         ['div', { style: { width: 50, display: 'flex', alignSelf: 'center' } }, 'pose'],
         [
           'select', {
@@ -1581,7 +1582,8 @@ const PosePresetsEditor = connect(
             onChange: preventDefault(onSelectPosePreset),
             style: {
               flex: 1,
-              marginBottom: 0
+              marginBottom: 0,
+              maxWidth: 192
             }
           }, [
               ['option', { value: '', disabled: true }, '---'],
