@@ -129,7 +129,7 @@
     "execa": "0.8.0",
     "express": "^4.15.4",
     "fraction.js": "4.0.3",
-    "fs-extra": "4.0.2",
+    "fs-extra": "7.0.1",
     "gifencoder": "^1.1.0",
     "gl-vec2": "^1.0.0",
     "immer": "1.7.4",
