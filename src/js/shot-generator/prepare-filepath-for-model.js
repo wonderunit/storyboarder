@@ -23,13 +23,12 @@ const pathToBuiltInModels = {
 } 
 
 const prepareFilepathForModel = async ({
-  id,
   model,
   type,
 
   storyboarderFilePath,
 
-  updateObject
+  onFilePathChange
 }) => {
   let resourceType = type + 's'
   let resourcePath = path.join(path.dirname(storyboarderFilePath), 'models', resourceType)
@@ -89,7 +88,7 @@ const prepareFilepathForModel = async ({
         // but we should update the model path to be relative
         model = path.join('models', resourceType, path.basename(filepath))
         console.log(`setting model from absolute to relative model:${model} filepath:${filepath}`)
-        updateObject(id, { model })
+        onFilePathChange(model)
         return
 
       } else {
@@ -137,7 +136,7 @@ const prepareFilepathForModel = async ({
       // update it in the data
       model = path.join('models', resourceType, path.basename(dst))
       console.log(`setting model prop to ${model}`)
-      updateObject(id, { model })
+      onFilePathChange(model)
       return
 
     } catch (err) {
