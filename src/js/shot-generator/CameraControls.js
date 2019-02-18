@@ -43,7 +43,7 @@ class CameraControls {
     event.preventDefault()
     event.stopPropagation()
 
-   this.domElement.focus()
+    this.domElement.focus()
 
     this.initialRotation = this.object.rotation
     this.initialTilt = this.object.tilt
