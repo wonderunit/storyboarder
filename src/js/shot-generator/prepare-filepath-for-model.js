@@ -1,5 +1,18 @@
 // TODO should this be part of ModelLoader?
 
+// TODO what if they select a replacement CHARACTER thats in models/object?
+// or vice versa, a replacement OBJECT thats in models/characters?
+  // it SHOULD copy to the right place
+  // make sure it does that
+
+// BUG
+// when models: models/objects/fake.glb doesn't exist
+// relocating fails
+
+// BUG
+// when relocating to a model that's already in the models/objects/* folder
+// fails
+
 const { dialog } = require('electron').remote
 const fs = require('fs-extra')
 const path = require('path')
@@ -114,14 +127,6 @@ const prepareFilepathForModel = async ({
       
       // make sure the path exists
       fs.ensureDirSync(resourcePath)
-
-      // BUG
-      // when models: models/objects/fake.glb doesn't exist
-      // relocating fails
-
-      // BUG
-      // when relocating to a model that's already in the models/objects/* folder
-      // fails
 
       let src = filepath
       let dst = path.join(resourcePath, path.basename(filepath))
