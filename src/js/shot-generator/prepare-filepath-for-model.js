@@ -8,14 +8,12 @@ const ModelLoader = require('../services/model-loader')
 
 // FIXME 
 //
-// could determine automatically instead
-// but in dev mode, doesn't return the correct value when run from `npm run shot-generator`
+// could use app.getAppPath(), which works for `npm start`
+// but it won't work for `npm run shot-generator`
 // see: https://github.com/electron-userland/electron-webpack/issues/243
 //
 // const { app } = require('electron').remote
-// path.join(app.getAppPath(), 'src', 'data', 'shot-generator', 'dummies', 'gltf')
-// path.join(app.getAppPath(), 'src', 'data', 'shot-generator', 'objects')
-
+// path.join(app.getAppPath(), 'src', 'data', 'shot-generator')
 const pathToShotGeneratorData =
   path.join(__dirname, '..', '..', '..', 'src', 'data', 'shot-generator')
 
