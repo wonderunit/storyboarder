@@ -79,6 +79,7 @@ const prepareFilepathForModel = async ({
       needsCopy = true
 
     } catch (error) {
+      console.error(error)
       // cancellation by user
       dialog.showMessageBox({
         title: 'Failed to load',
