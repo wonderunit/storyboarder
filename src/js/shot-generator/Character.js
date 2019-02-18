@@ -371,7 +371,11 @@ const Character = React.memo(({
 
       if (object.current.userData.boneLengthScale === 100)  // fb converter scaled object
       {
-        skeleton.bones[0].quaternion.multiply(object.current.userData.parentRotation)
+        if (props.skeleton['Hips'])
+        {
+          // we already have correct values, don't multiply the root bone
+        } else 
+          skeleton.bones[0].quaternion.multiply(object.current.userData.parentRotation)
         skeleton.bones[0].position.copy(object.current.userData.parentPosition)
       }
     }
