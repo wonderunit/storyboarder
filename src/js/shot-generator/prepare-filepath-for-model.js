@@ -19,7 +19,7 @@ const pathToShotGeneratorData =
 
 const pathToBuiltInModels = {
   character: path.join(pathToShotGeneratorData, 'dummies', 'gltf'),
-  object: path.join(pathToShotGeneratorData, 'objects')
+     object: path.join(pathToShotGeneratorData, 'objects')
 } 
 
 const prepareFilepathForModel = async ({
@@ -40,43 +40,61 @@ const prepareFilepathForModel = async ({
   // is the model built-in?
   if (!ModelLoader.isCustomModel(model)) {
     // easy, just load it from the models folder
-    filepath = path.join(pathToBuiltInModels[type], `${model}.glb`)
     needsCopy = false
+    filepath = path.join(pathToBuiltInModels[type], `${model}.glb`)
 
   // is the model custom?
   } else {
-    // the model _is_ the filepath
-    filepath = model
-
     // does it have an absolute path? (e.g.: from an old save file we need to migrate)
-    if (path.isAbsolute(filepath)) {
+    if (path.isAbsolute(model)) {
       // ... then we need to copy it to the models/* folder and change its path
       needsCopy = true
+      filepath = model
 
     // is it a relative path, and the file is in the models/* folder already?
-  } else if (
-    // the folder name of the model file ...
-    path.normalize(path.dirname(filepath)) ===
-    // ... is the same as the folder name where we expect models ...
-    path.normalize(path.join('models', resourceType))
-  ) {
+    } else if (
+      // the relative folder name of the model file ...
+      path.normalize(path.dirname(model)) ===
+      // ... is the same as the relative folder name where we expect models ...
+      path.normalize(path.join('models', resourceType))
+    ) {
       // ... then we can load it as-is
       needsCopy = false
+
       // but the actual filepath we look for needs to be absolute
-      filepath = path.join(path.dirname(storyboarderFilePath), filepath)
+      filepath = path.join(path.dirname(storyboarderFilePath), model)
 
     } else {
       throw new Error('Could not find model file')
     }
   }
 
-  // so we know the filepath, but what if it doesn’t exist?
+  // so we know the absolute filepath, but what if it doesn’t exist?
   if (!fs.existsSync(filepath)) {
     // ... ask the artist to locate it
     try {
       filepath = await ModelLoader.ensureModelFileExists(filepath)
-      console.log(`filepath is now ${filepath}`)
-      needsCopy = true
+
+      // handle case where user relocated the file to the models/* folder
+      if (
+        // the absolute folder name of the model file ...
+        path.resolve(path.normalize(path.dirname(filepath))) ===
+        // ... is the same as the absolute folder name where we expect models of this type ...
+        path.resolve(path.normalize(resourcePath))
+      ) {
+        // we don't need to copy it
+        needsCopy = false
+
+        // TODO DRY
+        // but we should update the model path to be relative
+        model = path.join('models', resourceType, path.basename(filepath))
+        console.log(`setting model from absolute to relative model:${model} filepath:${filepath}`)
+        updateObject(id, { model })
+        return
+
+      } else {
+        needsCopy = true
+      }
 
     } catch (error) {
       console.error(error)
