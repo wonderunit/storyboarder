@@ -126,7 +126,7 @@ const prepareFilepathForModel = async ({
         })
         if (choice !== 0) {
           console.log('cancelled model file copy')
-          throw new Error('User said no')
+          throw new Error('Skipped')
         }
       }
 
