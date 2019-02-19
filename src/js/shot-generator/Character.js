@@ -10,11 +10,8 @@ const BonesHelper = require('./BonesHelper')
 
 const { initialState } = require('../shared/reducers/shot-generator')
 
-const { dialog } = require('electron').remote
-const fs = require('fs')
-const ModelLoader = require('../services/model-loader')
-
 const applyDeviceQuaternion = require('./apply-device-quaternion')
+const prepareFilepathForModel = require('./prepare-filepath-for-model')
 
 // character needs:
 //   mesh - SkinnedMesh
@@ -39,19 +36,6 @@ const loadGltf = filepath =>
       null,
       error => reject(error)
     ))
-
-// FIXME doesn't return the correct value when run from `npm run shot-generator`
-// https://github.com/electron-userland/electron-webpack/issues/243
-// const { app } = require('electron').remote
-// const modelsPath = path.join(app.getAppPath(), 'src', 'data', 'shot-generator', 'dummies', 'gltf')
-const modelsPath = path.join(__dirname, '..', '..', '..', 'src', 'data', 'shot-generator', 'dummies', 'gltf')
-
-const pathToCharacterModelFile = (model) =>
-  ModelLoader.isCustomModel(model)
-    // absolute path to a model on the filesystem
-    ? model
-    // relative path to a model in the app
-    : path.join(modelsPath, `${model}.glb`)
 
 const isValidSkinnedMesh = data => {
   let mesh = data.scene.children.find(child => child instanceof THREE.SkinnedMesh) ||
@@ -140,6 +124,8 @@ const Character = React.memo(({
   updateObject,
   loaded,
   devices,
+  storyboarderFilePath,
+
   ...props
 }) => {
   // setting loaded = true forces an update to sceneObjects,
@@ -160,23 +146,25 @@ const Character = React.memo(({
   }
 
   const load = async (model, props) => {
-    let filepath = pathToCharacterModelFile(model)
+    console.log('Character load', { storyboarderFilePath, model })
 
-    if (!fs.existsSync(filepath)) {
-      try {
-        filepath = await ModelLoader.ensureModelFileExists(filepath)
-        console.log(type, id, 'model is now', filepath)
+    let filepath = await prepareFilepathForModel({
+      model,
+      type,
+
+      storyboarderFilePath,
+
+      onFilePathChange: filepath => {
+        // new relative path
         updateObject(id, { model: filepath })
-        return
-      } catch (error) {
-        dialog.showMessageBox({
-          title: 'Failed to load',
-          message: `Failed to load character with internal id ${props.id}`
-        })
-        return
       }
+    })
+
+    if (!filepath) {
+      return
     }
 
+    console.log('loading character from', filepath)
     let data = await loadGltf(filepath)
 
     if (isValidSkinnedMesh(data)) {

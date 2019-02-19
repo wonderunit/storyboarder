@@ -179,7 +179,8 @@ const SceneManager = connect(
     mainViewCamera: state.mainViewCamera,
     activeCamera: state.activeCamera,
     aspectRatio: state.aspectRatio,
-    devices:state.devices
+    devices: state.devices,
+    meta: state.meta
   }),
   {
     updateObject,
@@ -187,10 +188,11 @@ const SceneManager = connect(
     animatedUpdate,
     selectBone,
     updateCharacterSkeleton,
-    createPosePreset
+    createPosePreset,
+    updateWorldEnvironment
   }
 )(
-  ({ world, sceneObjects, updateObject, selectObject, remoteInput, largeCanvasRef, smallCanvasRef, selection, selectedBone, machineState, transition, animatedUpdate, selectBone, mainViewCamera, updateCharacterSkeleton, largeCanvasSize, activeCamera, aspectRatio, devices }) => {
+  ({ world, sceneObjects, updateObject, selectObject, remoteInput, largeCanvasRef, smallCanvasRef, selection, selectedBone, machineState, transition, animatedUpdate, selectBone, mainViewCamera, updateCharacterSkeleton, largeCanvasSize, activeCamera, aspectRatio, devices, meta, updateWorldEnvironment }) => {
     const { scene } = useContext(SceneContext)
 
     let [camera, setCamera] = useState(null)
@@ -634,6 +636,8 @@ const SceneManager = connect(
 
                 loaded: props.loaded ? props.loaded : false,
 
+                storyboarderFilePath: meta.storyboarderFilePath,
+
                 ...props
               }
             ]
@@ -655,6 +659,9 @@ const SceneManager = connect(
 
                 loaded: props.loaded ? props.loaded : false,
                 devices,
+
+                storyboarderFilePath: meta.storyboarderFilePath,
+
                 ...props
               }
             ]
@@ -686,7 +693,7 @@ const SceneManager = connect(
         }
     })
 
-    const worldComponent = [WorldObject, { key: 'world', world, scene }]
+    const worldComponent = [WorldObject, { key: 'world', world, scene, storyboarderFilePath: meta.storyboarderFilePath, updateWorldEnvironment }]
 
     // TODO Scene parent object?
     return [
