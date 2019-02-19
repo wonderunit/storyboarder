@@ -4,9 +4,11 @@ const crypto = require('crypto')
 
 const hashify = string => crypto.createHash('sha1').update(string).digest('base64')
 
-const defaultPosePreset = {
-  skeleton: {}
-}
+// load up the default poses
+const defaultPosePresets = require('./shot-generator-presets/poses.json')
+
+// reference AE56DD1E-3F6F-4A74-B247-C8A6E3EB8FC0 as our Default Pose
+const defaultPosePreset = defaultPosePresets['AE56DD1E-3F6F-4A74-B247-C8A6E3EB8FC0']
 
 const defaultCharacterPreset = {
   height: 1.6256,
@@ -108,8 +110,7 @@ const defaultScenePreset = {
       ...defaultCharacterPreset,
 
       // pose preset properties
-      posePresetId: 'AE56DD1E-3F6F-4A74-B247-C8A6E3EB8FC0',
-
+      posePresetId: defaultPosePreset.id,
       skeleton: defaultPosePreset.skeleton
     },
 
@@ -314,13 +315,7 @@ const initialState = {
       }
     },
 
-    poses: {
-      'AE56DD1E-3F6F-4A74-B247-C8A6E3EB8FC0': {
-        id: 'AE56DD1E-3F6F-4A74-B247-C8A6E3EB8FC0',
-        name: 'Default Pose',
-        state: defaultPosePreset
-      }
-    }
+    poses: defaultPosePresets
   },
   server: {
     uri: undefined,
