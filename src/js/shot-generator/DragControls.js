@@ -125,6 +125,13 @@ class DragControls extends THREE.EventDispatcher {
     }
   }
 
+  getFromSprite ( intersect ) {
+    if (intersect.object instanceof THREE.Sprite)
+    {
+      let obj = intersect.object.parent
+      return [obj, null]
+    }
+  }
 
   getObjectAndBone ( intersect ) {
     if (intersect.object.userData.type === 'hitter_light')
@@ -160,6 +167,32 @@ class DragControls extends THREE.EventDispatcher {
     return [object, bone]
   }
 
+  getIntersectionSprites ( objects ) {
+    let allIntersectors = []
+    for (var o of objects)
+    {
+      if (o instanceof THREE.Mesh)
+      {
+        //set mesh intersector
+      }
+      if (o instanceof THREE.Group && o.children[0] instanceof THREE.Mesh)
+      {
+        //who is group?
+        console.log('this is group: ', o)
+      }
+      if (o instanceof THREE.Object3D && o.userData.type === 'light'){
+        // light
+        allIntersectors.push( o.icon )
+      }
+      if (o instanceof THREE.Object3D && o.userData.type === 'character')
+      {
+        //character
+        allIntersectors.push( o.icon )        
+      }
+    }
+    return allIntersectors
+  }
+
   getIntersectionObjects (objects, camera) {
     let allIntersectionMeshes = []
     let ortho = (camera instanceof THREE.OrthographicCamera)
@@ -183,24 +216,26 @@ class DragControls extends THREE.EventDispatcher {
         else allIntersectionMeshes = allIntersectionMeshes.concat(o.bonesHelper.hit_meshes)
       }
     }
-    console.log('hitting against: ', allIntersectionMeshes)
+    //console.log('hitting against: ', allIntersectionMeshes)
     return allIntersectionMeshes
   }
 
   onPointerDown ( event ) {
     event.preventDefault()
     this.dispatchEvent( { type: 'pointerdown' } )
-    console.log('got pointer down from camera: ', this._camera)
+        
     this._raycaster.setFromCamera( this._mouse, this._camera )
 
     let shouldReportSelection = false
-    let checkIntersectionsWithMeshes = this.getIntersectionObjects(this._objects, this._camera)
+    let ortho = this._camera instanceof THREE.OrthographicCamera
+    let checkIntersectionsWithMeshes = ortho ? this.getIntersectionSprites( this._objects ) : this.getIntersectionObjects(this._objects)
 
     let intersects = this._raycaster.intersectObjects( checkIntersectionsWithMeshes )
     if ( intersects.length > 0 ) {
+      
       this.onSelectBone( null )  // deselect bone is any selected
-      let object = this.getObjectAndBone( intersects[ 0 ] )[0]
-
+      let object = ortho ? this.getFromSprite(intersects[0])[0] : this.getObjectAndBone( intersects[ 0 ] )[0]
+      console.log('obj: ', object)
       if (
         // is the camera is orthographic (which means, start dragging on the first click)
         this._camera.isOrthographicCamera
@@ -280,9 +315,10 @@ class DragControls extends THREE.EventDispatcher {
 
     this._raycaster.setFromCamera( this._mouse, this._camera )
 
-    let checkIntersectionsWithMeshes = this.getIntersectionObjects( this._objects, this._camera )
+    let ortho = this._camera instanceof THREE.OrthographicCamera
+    let checkIntersectionsWithMeshes = ortho ? this.getIntersectionSprites( this._objects ) : this.getIntersectionObjects(this._objects)
+
     let intersects = this._raycaster.intersectObjects( checkIntersectionsWithMeshes )
-    console.log('intersects: ', intersects)
     let object
     let bone
     if ( intersects.length > 0 ) {
@@ -299,7 +335,8 @@ class DragControls extends THREE.EventDispatcher {
     // otherwise, if we match the object from mousedown
   } else if ( object && this._downTarget === object ) {
       this._selected = this._downTarget
-      this.onSelectObject( this._selected.userData.id )
+      if (ortho) this.onSelectObject (  )
+      else this.onSelectObject( this._selected.userData.id )
     }
   }
 
