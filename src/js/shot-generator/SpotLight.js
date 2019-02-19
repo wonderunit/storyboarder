@@ -30,7 +30,7 @@ const SpotLight = React.memo(({ scene, id, type, setLight, icon, ...props }) => 
     let objIcon = icon.clone()
     objIcon.material = icon.material.clone()
     objIcon.scale.set(icon.scale.x , icon.scale.y , 1 )      
-    
+    objIcon.position.y = 2
     if (icon.clones) icon.clones.push(objIcon)
     else icon.clones = [objIcon]
     

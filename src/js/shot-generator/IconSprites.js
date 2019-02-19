@@ -19,7 +19,6 @@ const loadIconPromise = (file, sprite, compensatescaling) => {
         let img = new Image
         img.crossOrigin = 'anonymous'
         img.onload = () => {
-            console.log('img: ', img.width)
             let w = img.width,
                 h = img.height,
                 //svgBox = img.getBBox()

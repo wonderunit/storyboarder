@@ -784,6 +784,7 @@ const Camera = React.memo(({ scene, id, type, setCamera, icon, ...props }) => {
   {
     camera.current.icon = icon.clone()
     camera.current.icon.material = icon.material.clone()
+    camera.current.icon.position.y = 2
     if (sprites.camera.clones) {
       sprites.camera.clones.push( camera.current.icon )
     } else {

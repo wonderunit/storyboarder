@@ -219,6 +219,7 @@ const Character = React.memo(({
       let objIcon = icon.clone()
       objIcon.material = icon.material.clone()
       objIcon.scale.set(icon.scale.x / boneLengthScale, icon.scale.y / boneLengthScale, 1 )      
+      objIcon.position.y = 2
       object.current.add(objIcon)
       if (icon.clones) icon.clones.push(objIcon)
       else icon.clones = [objIcon]
