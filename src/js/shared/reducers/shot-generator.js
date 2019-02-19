@@ -406,6 +406,14 @@ const checkForSkeletonChanges = (state, draft, action) => {
     let posePresetId = draft.sceneObjects[action.payload.id].posePresetId
     if (posePresetId) {
       let statePreset = state.presets.poses[posePresetId]
+
+      // preset does not exist anymore
+      if (!statePreset) {
+        // so don't reference it
+        draft.sceneObjects[action.payload.id].posePresetId = undefined
+        return true
+      }
+
       let stateSkeleton = state.sceneObjects[action.payload.id].skeleton
 
       let preset = statePreset.state.skeleton
