@@ -215,15 +215,23 @@ const Character = React.memo(({
       object.current.userData.modelSettings = initialState.models[props.model] || {}
 
       object.current.sprite = new THREE.Sprite( icon )
-      object.current.sprite.scale.set(0.1,0.1,0.1)
+      object.current.sprite.scale.set(0.01,0.01,0.01)
+      object.current.sprite.layers.disable(0)
+      object.current.sprite.layers.disable(1)
+      object.current.sprite.layers.enable(2)
+      //object.current.sprite.layers.enable(3)
+      console.log('current sprite: ', object.current.sprite)
 
       object.current.add(...armatures)
       object.current.add(mesh)
-      object.current.add(new THREE.Sprite( icon ))
+      object.current.add(object.current.sprite)
       object.current.userData.mesh = mesh
       scene.add(object.current)
       let bonesHelper = new BonesHelper( skeleton.bones[0].parent, object.current, { boneLengthScale } )
       //bonesHelper.add(object.current.sprite)
+      mesh.layers.disable(0)
+      mesh.layers.enable(1)
+      mesh.layers.disable(2)
 
       bonesHelper.traverse(child => {
         child.layers.disable(0)
@@ -238,9 +246,10 @@ const Character = React.memo(({
       bonesHelper.cones.forEach(c => {
         c.layers.disable(0)
         c.layers.enable(1)
-        c.layers.enable(2)
+        c.layers.disable(2)
       })
-
+      console.log('current sprite: ', object.current.sprite)
+      console.log('cones: ', bonesHelper.cones)
       object.current.bonesHelper = bonesHelper
       object.current.userData.skeleton = skeleton
       object.current.userData.boneLengthScale = boneLengthScale
