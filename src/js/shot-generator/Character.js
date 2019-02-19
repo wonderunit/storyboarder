@@ -213,22 +213,19 @@ const Character = React.memo(({
 
       // FIXME get current .models from getState()
       object.current.userData.modelSettings = initialState.models[props.model] || {}
-
-      object.current.sprite = new THREE.Sprite( icon )
-      object.current.sprite.scale.set(0.01,0.01,0.01)
-      object.current.sprite.layers.disable(0)
-      object.current.sprite.layers.disable(1)
-      object.current.sprite.layers.enable(2)
-      //object.current.sprite.layers.enable(3)
-      console.log('current sprite: ', object.current.sprite)
-
+      
       object.current.add(...armatures)
       object.current.add(mesh)
-      object.current.add(object.current.sprite)
+      let objIcon = icon.clone()
+      objIcon.material = icon.material.clone()
+      objIcon.scale.set(icon.scale.x / boneLengthScale, icon.scale.y / boneLengthScale, 1 )      
+      object.current.add(objIcon)
+      if (icon.clones) icon.clones.push(objIcon)
+      else icon.clones = [objIcon]
+      object.current.icon = objIcon
       object.current.userData.mesh = mesh
       scene.add(object.current)
       let bonesHelper = new BonesHelper( skeleton.bones[0].parent, object.current, { boneLengthScale } )
-      //bonesHelper.add(object.current.sprite)
       mesh.layers.disable(0)
       mesh.layers.enable(1)
       mesh.layers.disable(2)
@@ -248,8 +245,7 @@ const Character = React.memo(({
         c.layers.enable(1)
         c.layers.disable(2)
       })
-      console.log('current sprite: ', object.current.sprite)
-      console.log('cones: ', bonesHelper.cones)
+
       object.current.bonesHelper = bonesHelper
       object.current.userData.skeleton = skeleton
       object.current.userData.boneLengthScale = boneLengthScale
@@ -363,10 +359,12 @@ const Character = React.memo(({
     if (object.current) {
       if (props.rotation.y || props.rotation.y==0) {
         object.current.rotation.y = props.rotation.y
+        object.current.icon.material.rotation = -props.rotation.y
         //object.current.rotation.x = props.rotation.x
         //object.current.rotation.z = props.rotation.z
       } else {
         object.current.rotation.y = props.rotation
+        object.current.icon.material.rotation = -props.rotation
       }
 
     }

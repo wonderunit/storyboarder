@@ -3,7 +3,7 @@ const THREE = require('three')
 const React = require('react')
 const { useRef, useEffect, useState } = React
 
-const SpotLight = React.memo(({ scene, id, type, setLight, ...props }) => {
+const SpotLight = React.memo(({ scene, id, type, setLight, icon, ...props }) => {
   let light = useRef(null)
 
   if (light.current)
@@ -27,6 +27,13 @@ const SpotLight = React.memo(({ scene, id, type, setLight, ...props }) => {
     light_spot.penumbra = props.penumbra
     light_spot.decay = props.decay
 
+    let objIcon = icon.clone()
+    objIcon.material = icon.material.clone()
+    objIcon.scale.set(icon.scale.x , icon.scale.y , 1 )      
+    
+    if (icon.clones) icon.clones.push(objIcon)
+    else icon.clones = [objIcon]
+    
     let lightContainer = new THREE.Object3D()
     lightContainer.add(light_spot)
     lightContainer.add(box_light_mesh)
@@ -51,6 +58,9 @@ const SpotLight = React.memo(({ scene, id, type, setLight, ...props }) => {
     light.current.rotation.z = 0
     light.current.rotation.y = props.rotation
     light.current.rotation.x = (props.tilt)
+
+    light.current.icon = objIcon
+    light.current.add(objIcon)
 
     light.current.light.updateMatrixWorld()
   }
@@ -79,6 +89,8 @@ const SpotLight = React.memo(({ scene, id, type, setLight, ...props }) => {
       light.current.rotation.y = props.rotation
       light.current.rotateX(props.tilt)
       light.current.visible = props.visible
+
+      light.current.icon.material.rotation = props.rotation
     }
   }, [props.x, props.y, props.z, props.rotation, props.tilt, props.visible])
 

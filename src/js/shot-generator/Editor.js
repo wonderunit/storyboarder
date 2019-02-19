@@ -73,7 +73,7 @@ const useMachine = require('../hooks/use-machine')
 
 const CameraControls = require('./CameraControls')
 const DragControls = require('./DragControls')
-const IconTextures = require('./IconTexures')
+const IconSprites = require('./IconSprites')
 const Character = require('./Character')
 const SpotLight = require('./SpotLight')
 
@@ -129,7 +129,7 @@ const feetAndInchesAsString = (feet, inches) => `${feet}′${inches}″`
 
 const shortId = id => id.toString().substr(0, 7).toLowerCase()
 
-const icons = IconTextures.init()
+const sprites = IconSprites.init()
 
 const preventDefault = (fn, ...args) => e => {
   e.preventDefault()
@@ -651,7 +651,7 @@ const SceneManager = connect(
 
                 loaded: props.loaded ? props.loaded : false,
                 devices,
-                icon: icons.character,
+                icon: sprites.character,
                 ...props
               }
             ]
@@ -665,7 +665,7 @@ const SceneManager = connect(
                 setCamera,
 
                 aspectRatio,
-
+                icon: sprites.camera,
                 ...props
               }
             ]
@@ -675,7 +675,7 @@ const SceneManager = connect(
                 SpotLight, {
                   key: props.id,
                   scene,
-
+                  icon: sprites.light,
                   ...props
                 }
               ]
@@ -707,7 +707,7 @@ const SceneManager = connect(
 
 
 
-const Camera = React.memo(({ scene, id, type, setCamera, ...props }) => {
+const Camera = React.memo(({ scene, id, type, setCamera, icon, ...props }) => {
   let camera = useRef(
     new THREE.PerspectiveCamera(
     props.fov,
@@ -759,7 +759,7 @@ const Camera = React.memo(({ scene, id, type, setCamera, ...props }) => {
     }
   }, [])
 
-  // console.log('updating camera from props')
+   console.log('updating camera from props')
   camera.current.position.x = props.x
   camera.current.position.y = props.z
   camera.current.position.z = props.y
@@ -774,7 +774,21 @@ const Camera = React.memo(({ scene, id, type, setCamera, ...props }) => {
 
   camera.current.fov = props.fov
   camera.current.updateProjectionMatrix()
+  if (!camera.current.icon)
+  {
+    camera.current.icon = icon.clone()
+    camera.current.icon.material = icon.material.clone()
+    if (sprites.camera.clones) {
+      sprites.camera.clones.push( camera.current.icon )
+    } else {
+      sprites.camera.clones = [ camera.current.icon ]
+    }
 
+    camera.current.add(camera.current.icon)    
+  }  
+  camera.current.icon.scale.set(sprites.camera.scale.x,sprites.camera.scale.y,1)
+  camera.current.icon.material.rotation = Math.PI + props.rotation
+  
   camera.current.layers.enable(1)
 
   return null

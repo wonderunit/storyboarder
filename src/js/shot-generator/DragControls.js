@@ -160,8 +160,9 @@ class DragControls extends THREE.EventDispatcher {
     return [object, bone]
   }
 
-  getIntersectionObjects (objects) {
+  getIntersectionObjects (objects, camera) {
     let allIntersectionMeshes = []
+    let ortho = (camera instanceof THREE.OrthographicCamera)
     for (var o of objects)
     {
       if (o instanceof THREE.Mesh) {
@@ -178,20 +179,22 @@ class DragControls extends THREE.EventDispatcher {
       }
       if (o instanceof THREE.Object3D && o.userData.type === 'character')
       {
-        allIntersectionMeshes = allIntersectionMeshes.concat(o.bonesHelper.hit_meshes)
+        if ( ortho ) allIntersectionMeshes.push( o.icon )
+        else allIntersectionMeshes = allIntersectionMeshes.concat(o.bonesHelper.hit_meshes)
       }
     }
+    console.log('hitting against: ', allIntersectionMeshes)
     return allIntersectionMeshes
   }
 
   onPointerDown ( event ) {
     event.preventDefault()
     this.dispatchEvent( { type: 'pointerdown' } )
-
+    console.log('got pointer down from camera: ', this._camera)
     this._raycaster.setFromCamera( this._mouse, this._camera )
 
     let shouldReportSelection = false
-    let checkIntersectionsWithMeshes = this.getIntersectionObjects(this._objects)
+    let checkIntersectionsWithMeshes = this.getIntersectionObjects(this._objects, this._camera)
 
     let intersects = this._raycaster.intersectObjects( checkIntersectionsWithMeshes )
     if ( intersects.length > 0 ) {
@@ -277,9 +280,9 @@ class DragControls extends THREE.EventDispatcher {
 
     this._raycaster.setFromCamera( this._mouse, this._camera )
 
-    let checkIntersectionsWithMeshes = this.getIntersectionObjects(this._objects)
+    let checkIntersectionsWithMeshes = this.getIntersectionObjects( this._objects, this._camera )
     let intersects = this._raycaster.intersectObjects( checkIntersectionsWithMeshes )
-
+    console.log('intersects: ', intersects)
     let object
     let bone
     if ( intersects.length > 0 ) {
