@@ -229,6 +229,7 @@ const Character = React.memo(({
       mesh.layers.disable(0)
       mesh.layers.enable(1)
       mesh.layers.disable(2)
+      mesh.layers.enable(3)
 
       bonesHelper.traverse(child => {
         child.layers.disable(0)

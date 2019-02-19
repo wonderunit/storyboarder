@@ -3162,6 +3162,7 @@ const Editor = connect(
 
       let imageRenderCamera = camera.clone()
       imageRenderCamera.layers.set(0)
+      imageRenderCamera.layers.enable(3)
 
 
 
