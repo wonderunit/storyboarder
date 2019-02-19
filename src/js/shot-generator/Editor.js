@@ -3134,7 +3134,7 @@ const Editor = connect(
     const smallCanvasRef = useRef(null)
     const [ready, setReady] = useState(false)
 
-    const scene = useRef(new THREE.Scene())
+    const scene = useRef()
     let [camera, setCamera ] = useState(null)
     const [ machineState, transition ] = useMachine(editorMachine, { log: false })
 
@@ -3271,9 +3271,15 @@ const Editor = connect(
 
 
     useEffect(() => {
+      scene.current = new THREE.Scene()
+
       // TODO introspect models
       updateModels({})
       setReady(true)
+
+      return function cleanup () {
+        scene.current = null
+      }
     }, [])
 
     // render Toolbar with updated camera when scene is ready, or when activeCamera changes
