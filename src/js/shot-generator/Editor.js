@@ -116,6 +116,9 @@ const draggables = (sceneObjects, scene) =>
   //scene.children.filter(o => o.userData.type === 'object' || o instanceof BoundingBoxHelper)
   scene.children.filter(o => o.userData.type === 'object' || o.userData.type === 'character' || o.userData.type === 'light' )
 
+const cameras = ( scene ) => 
+  scene.children.filter(o => o instanceof THREE.PerspectiveCamera)
+
 const animatedUpdate = (fn) => (dispatch, getState) => fn(dispatch, getState())
 
 const metersAsFeetAndInches = meters => {
@@ -383,6 +386,7 @@ const SceneManager = connect(
           console.log('new DragControls')
           dragControlsView.current = new DragControls(
             draggables(sceneObjects, scene),
+            cameras(scene),
             camera,
             largeCanvasRef.current,
             selectObject,
@@ -406,6 +410,7 @@ const SceneManager = connect(
         if (!orthoDragControlsView.current) {
           orthoDragControlsView.current = new DragControls(
             draggables(sceneObjects, scene),
+            cameras(scene),
             orthoCamera.current,
             smallCanvasRef.current,
             selectObject,
@@ -582,7 +587,7 @@ const SceneManager = connect(
       if (dragControlsView.current) {
         // TODO read-only version?
         dragControlsView.current.setObjects(draggables(sceneObjects, scene))
-
+        
         // TODO update if there are changes to the camera(s) in the scene
         //
         // let cameraState = Object.values(sceneObjects).find(o => o.type === 'camera')
@@ -593,6 +598,7 @@ const SceneManager = connect(
     useEffect(() => {
       if (orthoDragControlsView.current) {
         orthoDragControlsView.current.setObjects(draggables(sceneObjects, scene))
+        orthoDragControlsView.current.setCameras(cameras(scene))
       }
     }, [sceneObjects, orthoCamera])
 

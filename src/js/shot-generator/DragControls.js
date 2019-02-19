@@ -6,7 +6,7 @@ const BoundingBoxHelper = require('./BoundingBoxHelper')
 
 class DragControls extends THREE.EventDispatcher {
 
-  constructor ( objects, camera, domElement, onSelectObject, onUpdateObject, onSelectBone ) {
+  constructor ( objects, cameras, camera, domElement, onSelectObject, onUpdateObject, onSelectBone ) {
     super()
 
     this.onSelectObject = onSelectObject
@@ -15,6 +15,7 @@ class DragControls extends THREE.EventDispatcher {
 
     // this._editor = editor
     this._objects = objects
+    this._cameras = cameras
     this._bonesHelper = null
     this._camera = camera
     this._domElement = domElement
@@ -131,6 +132,11 @@ class DragControls extends THREE.EventDispatcher {
       let obj = intersect.object.parent
       return [obj, null]
     }
+    if (intersect.object.parent instanceof THREE.Group)
+    {
+      let obj = intersect.object.parent
+      return [obj, null]
+    }
   }
 
   getObjectAndBone ( intersect ) {
@@ -167,18 +173,14 @@ class DragControls extends THREE.EventDispatcher {
     return [object, bone]
   }
 
-  getIntersectionSprites ( objects ) {
+  getIntersectionSprites ( objects, cameras ) {
     let allIntersectors = []
     for (var o of objects)
-    {
-      if (o instanceof THREE.Mesh)
-      {
-        //set mesh intersector
-      }
+    {      
       if (o instanceof THREE.Group && o.children[0] instanceof THREE.Mesh)
       {
-        //who is group?
-        console.log('this is group: ', o)
+        //box is group
+        if (o.visible) allIntersectors.push(o.children[0])
       }
       if (o instanceof THREE.Object3D && o.userData.type === 'light'){
         // light
@@ -189,6 +191,10 @@ class DragControls extends THREE.EventDispatcher {
         //character
         allIntersectors.push( o.icon )        
       }
+    }
+    for ( o of cameras ) // cameras
+    {
+      allIntersectors.push ( o.icon )
     }
     return allIntersectors
   }
@@ -216,7 +222,6 @@ class DragControls extends THREE.EventDispatcher {
         else allIntersectionMeshes = allIntersectionMeshes.concat(o.bonesHelper.hit_meshes)
       }
     }
-    //console.log('hitting against: ', allIntersectionMeshes)
     return allIntersectionMeshes
   }
 
@@ -228,7 +233,7 @@ class DragControls extends THREE.EventDispatcher {
 
     let shouldReportSelection = false
     let ortho = this._camera instanceof THREE.OrthographicCamera
-    let checkIntersectionsWithMeshes = ortho ? this.getIntersectionSprites( this._objects ) : this.getIntersectionObjects(this._objects)
+    let checkIntersectionsWithMeshes = ortho ? this.getIntersectionSprites( this._objects, this._cameras ) : this.getIntersectionObjects(this._objects)
 
     let intersects = this._raycaster.intersectObjects( checkIntersectionsWithMeshes )
     if ( intersects.length > 0 ) {
@@ -316,7 +321,7 @@ class DragControls extends THREE.EventDispatcher {
     this._raycaster.setFromCamera( this._mouse, this._camera )
 
     let ortho = this._camera instanceof THREE.OrthographicCamera
-    let checkIntersectionsWithMeshes = ortho ? this.getIntersectionSprites( this._objects ) : this.getIntersectionObjects(this._objects)
+    let checkIntersectionsWithMeshes = ortho ? this.getIntersectionSprites( this._objects, this._cameras ) : this.getIntersectionObjects(this._objects)
 
     let intersects = this._raycaster.intersectObjects( checkIntersectionsWithMeshes )
     let object
@@ -354,6 +359,10 @@ class DragControls extends THREE.EventDispatcher {
 
   setSelected ( object ) {
     this._selected = object
+  }
+
+  setCameras ( cameras ) {
+    this._cameras = cameras
   }
 }
 

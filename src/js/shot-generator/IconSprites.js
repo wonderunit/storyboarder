@@ -24,7 +24,7 @@ const loadIconPromise = (file, sprite, compensatescaling) => {
                 h = img.height,
                 //svgBox = img.getBBox()
                 ratio = w/h,
-                wantedWidthScale = 1000 * compensatescaling,
+                wantedWidthScale = 2500 * compensatescaling,
                 computedWidthScale = 100 * wantedWidthScale / w            
                 computedHeightScale = computedWidthScale * ratio
             let tex = new THREE.Texture(img)
