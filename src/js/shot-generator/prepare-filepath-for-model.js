@@ -119,18 +119,21 @@ const prepareFilepathForModel = async ({
 
       // as long as they are different files, we need to copy them
       if (src !== dst) {
+
         // prompt before overwrite
-        if (fs.existsSync(dst)) {
-          let choice = dialog.showMessageBox(null, {
-            type: 'question',
-            buttons: ['Yes', 'No'],
-            message: 'Model file already exists. Overwrite?'
-          })
-          if (choice !== 0) {
-            console.log('cancelled model file copy')
-            throw new Error('Skipped')
-          }
-        }
+        // (commented out for now because it's annoying in practice)
+        //
+        // if (fs.existsSync(dst)) {
+        //   let choice = dialog.showMessageBox(null, {
+        //     type: 'question',
+        //     buttons: ['Yes', 'No'],
+        //     message: 'Model file already exists. Overwrite?'
+        //   })
+        //   if (choice !== 0) {
+        //     console.log('cancelled model file copy')
+        //     throw new Error('Skipped')
+        //   }
+        // }
 
         console.log(`copying model file from ${src} to ${dst}`)
         fs.copySync(src, dst, { overwrite: true, errorOnExist: false })
