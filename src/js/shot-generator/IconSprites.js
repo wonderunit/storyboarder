@@ -62,11 +62,12 @@ const loadIcons = () => {
 
 function init()
 {
-    const keys = Object.keys(allSprites)
     for (let o in allSprites) {
         allSprites[o].layers.disable(0)
         allSprites[o].layers.disable(1)
         allSprites[o].layers.enable(2)
+
+        allSprites[o].material.depthTest = false
     }
     loadIcons().then(() => {
         console.log('sprites updated')

@@ -375,7 +375,7 @@ const SceneManager = connect(
         // state of the active camera
         let cameraState = Object.values(sceneObjects).find(o => o.id === camera.userData.id)
         if (!cameraControlsView.current) {
-          console.log('new CameraControls', cameraState)
+          console.log('new CameraControls')
           cameraControlsView.current = new CameraControls(
             CameraControls.objectFromCameraState(cameraState),
             largeCanvasRef.current
@@ -765,7 +765,6 @@ const Camera = React.memo(({ scene, id, type, setCamera, icon, ...props }) => {
     }
   }, [])
 
-   console.log('updating camera from props')
   camera.current.position.x = props.x
   camera.current.position.y = props.z
   camera.current.position.z = props.y
@@ -784,7 +783,6 @@ const Camera = React.memo(({ scene, id, type, setCamera, icon, ...props }) => {
   {
     camera.current.icon = icon.clone()
     camera.current.icon.material = icon.material.clone()
-    camera.current.icon.position.y = 2
     if (sprites.camera.clones) {
       sprites.camera.clones.push( camera.current.icon )
     } else {

@@ -126,7 +126,19 @@ class DragControls extends THREE.EventDispatcher {
     }
   }
 
-  getFromSprite ( intersect ) {
+  getFromSprite ( intersects ) {
+    let intersect = intersects[0],
+      i = 0
+
+    while (intersects[i])
+    {
+      //selecting char if there are more intersection results
+      if (intersects[i].object.parent.userData.type === "character") {
+        intersect = intersects[i]
+        break
+      }
+      i++
+    }
     if (intersect.object instanceof THREE.Sprite)
     {
       let obj = intersect.object.parent
@@ -239,8 +251,8 @@ class DragControls extends THREE.EventDispatcher {
     if ( intersects.length > 0 ) {
       
       this.onSelectBone( null )  // deselect bone is any selected
-      let object = ortho ? this.getFromSprite(intersects[0])[0] : this.getObjectAndBone( intersects[ 0 ] )[0]
-      console.log('obj: ', object)
+      let object = ortho ? this.getFromSprite(intersects)[0] : this.getObjectAndBone( intersects[ 0 ] )[0]
+
       if (
         // is the camera is orthographic (which means, start dragging on the first click)
         this._camera.isOrthographicCamera
@@ -327,7 +339,10 @@ class DragControls extends THREE.EventDispatcher {
     let object
     let bone
     if ( intersects.length > 0 ) {
-      [object, bone] = this.getObjectAndBone( intersects[ 0 ] )
+      if (ortho)
+        [object, bone] = this.getFromSprite( intersects )
+      else
+        [object, bone] = this.getObjectAndBone( intersects[ 0 ] )
     }
 
     // if we're dragging
