@@ -106,6 +106,7 @@ const NumberSliderFormatter = {
 
 const ModelSelect = require('./ModelSelect')
 const ServerInspector = require('./ServerInspector')
+const GuidesView = require('./GuidesView')
 
 require('../vendor/OutlineEffect.js')
 
@@ -3330,7 +3331,8 @@ const Editor = connect(
             ['div.column.fill',
               ['div#camera-view', { ref: mainViewContainerRef, style: { paddingTop: `${(1 / aspectRatio) * 100}%` } },
                 // camera canvas
-                ['canvas', { key: 'camera-canvas', tabIndex: 1, ref: largeCanvasRef, id: 'camera-canvas', onPointerDown: onCanvasPointerDown }]
+                ['canvas', { key: 'camera-canvas', tabIndex: 1, ref: largeCanvasRef, id: 'camera-canvas', onPointerDown: onCanvasPointerDown }],
+                [GuidesView, { dimensions: largeCanvasSize, visible: mainViewCamera === 'live' }]
               ],
               ['div.inspectors', [
                 [CameraInspector, { camera }],
