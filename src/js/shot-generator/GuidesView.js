@@ -9,10 +9,11 @@ const GuidesView = connect(
   state => ({
     visible: state.mainViewCamera === 'live',
     center: state.workspace.guides.center,
-    thirds: state.workspace.guides.thirds
+    thirds: state.workspace.guides.thirds,
+    eyeline: state.workspace.guides.eyeline
   })
 )
-(({ dimensions, visible, center, thirds }) => {
+(({ dimensions, visible, center, thirds, eyeline }) => {
   const guidesCanvasRef = useRef()
   const guides = useMemo(
     () => {
@@ -34,8 +35,8 @@ const GuidesView = connect(
   useEffect(() => {
     if (!guides) return
   
-    guides.setState({ center, thirds })
-  }, [guides, center, thirds])
+    guides.setState({ center, thirds, eyeline })
+  }, [guides, center, thirds, eyeline])
 
   return h([
     'canvas',

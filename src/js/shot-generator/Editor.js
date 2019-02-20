@@ -2872,14 +2872,15 @@ const BoardInspector = connect(
 const GuidesInspector = connect(
   state => ({
     center: state.workspace.guides.center,
-    thirds: state.workspace.guides.thirds
+    thirds: state.workspace.guides.thirds,
+    eyeline: state.workspace.guides.eyeline
   }),
   {
     toggleWorkspaceGuide
   }
 )(
 (({
-  center, thirds,
+  center, thirds, eyeline,
   toggleWorkspaceGuide
 }) =>
   h(['div.guides-inspector', [
@@ -2901,6 +2902,14 @@ const GuidesInspector = connect(
               onClick: preventDefault(() => toggleWorkspaceGuide('thirds'))
             },
             [[Icon, { src: 'icon-guides-thirds' }]]
+          ],
+          [
+            'a[href=#]',
+            {
+              className: classNames({ active: eyeline }),
+              onClick: preventDefault(() => toggleWorkspaceGuide('eyeline'))
+            },
+            '👁'
           ]
         ]]
       ]]
