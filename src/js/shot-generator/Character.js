@@ -126,6 +126,8 @@ const Character = React.memo(({
   devices,
   storyboarderFilePath,
 
+  boardUid,
+
   ...props
 }) => {
   // setting loaded = true forces an update to sceneObjects,
@@ -346,28 +348,39 @@ const Character = React.memo(({
     }
   }, [props.model, props.rotation, modelData])
 
-  useEffect(() => {
-    if (!modelData) return
+  const resetPose = () => {
     if (!object.current) return
 
-    if (props.posePresetId) {
-      console.log(type, id, 'changed pose preset', )
-      let skeleton = object.current.userData.skeleton
-
-      skeleton.pose()
-      updateSkeleton()
-
-      if (object.current.userData.boneLengthScale === 100)  // fb converter scaled object
-      {
-        if (props.skeleton['Hips'])
-        {
-          // we already have correct values, don't multiply the root bone
-        } else 
-          skeleton.bones[0].quaternion.multiply(object.current.userData.parentRotation)
-        skeleton.bones[0].position.copy(object.current.userData.parentPosition)
+    let skeleton = object.current.userData.skeleton
+    skeleton.pose()
+    updateSkeleton()
+    // fb converter scaled object
+    if (object.current.userData.boneLengthScale === 100) {
+      if (props.skeleton['Hips']) {
+        // we already have correct values, don't multiply the root bone
+      } else {
+        skeleton.bones[0].quaternion.multiply(object.current.userData.parentRotation)
       }
+      skeleton.bones[0].position.copy(object.current.userData.parentPosition)
     }
+  }
+
+  useEffect(() => {
+    if (!modelData) return
+    if (!props.posePresetId) return
+
+    console.log(type, id, 'changed pose preset')
+    resetPose()
   }, [props.posePresetId])
+
+  // HACK force reset skeleton pose on Board UUID change
+  useEffect(() => {
+    if (!modelData) return
+    if (!boardUid) return
+
+    console.log(type, id, 'changed boards')
+    resetPose()
+  }, [boardUid])
 
   useEffect(() => {
     if (!modelData) return

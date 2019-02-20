@@ -180,7 +180,10 @@ const SceneManager = connect(
     activeCamera: state.activeCamera,
     aspectRatio: state.aspectRatio,
     devices: state.devices,
-    meta: state.meta
+    meta: state.meta,
+
+    // HACK force reset skeleton pose on Board UUID change
+    _boardUid: state.board.uid
   }),
   {
     updateObject,
@@ -192,7 +195,7 @@ const SceneManager = connect(
     updateWorldEnvironment
   }
 )(
-  ({ world, sceneObjects, updateObject, selectObject, remoteInput, largeCanvasRef, smallCanvasRef, selection, selectedBone, machineState, transition, animatedUpdate, selectBone, mainViewCamera, updateCharacterSkeleton, largeCanvasSize, activeCamera, aspectRatio, devices, meta, updateWorldEnvironment }) => {
+  ({ world, sceneObjects, updateObject, selectObject, remoteInput, largeCanvasRef, smallCanvasRef, selection, selectedBone, machineState, transition, animatedUpdate, selectBone, mainViewCamera, updateCharacterSkeleton, largeCanvasSize, activeCamera, aspectRatio, devices, meta, _boardUid, updateWorldEnvironment }) => {
     const { scene } = useContext(SceneContext)
 
     let [camera, setCamera] = useState(null)
@@ -661,6 +664,9 @@ const SceneManager = connect(
                 devices,
 
                 storyboarderFilePath: meta.storyboarderFilePath,
+
+                // HACK force reset skeleton pose on Board UUID change
+                boardUid: _boardUid,
 
                 ...props
               }
