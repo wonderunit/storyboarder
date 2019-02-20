@@ -270,8 +270,8 @@ const initialState = {
 
   workspace: {
     guides: {
-      center: true,
-      thirds: true
+      center: false,
+      thirds: false
     }
   },
 
