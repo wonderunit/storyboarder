@@ -45,11 +45,6 @@ const GuidesView = connect(
       width: dimensions.width,
       height: dimensions.height,
       style: {
-        position: 'absolute',
-        top: 0,
-        right: 0,
-        bottom: 0,
-        left: 0,
         width: dimensions.width,
         height: dimensions.height,
         visibility: visible ? 'visible' : 'hidden'
