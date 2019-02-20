@@ -365,6 +365,14 @@ const checkForCharacterChanges = (state, draft, action) => {
     let characterPresetId = draft.sceneObjects[action.payload.id].characterPresetId
     if (characterPresetId) {
       let statePreset = state.presets.characters[characterPresetId]
+
+      // preset does not exist anymore
+      if (!statePreset) {
+        // so don't reference it
+        draft.sceneObjects[action.payload.id].characterPresetId = undefined
+        return true
+      }
+
       let stateCharacter = draft.sceneObjects[action.payload.id]
 
       // for every top-level prop in the preset
