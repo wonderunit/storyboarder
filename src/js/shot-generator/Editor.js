@@ -165,6 +165,11 @@ const indexOfGreaterThan = (array, item) => {
   return ((item - array[i]) < (array[j] - item)) ? i : j
 }
 
+// all pose presets (so we can use `stand` for new characters)
+const defaultPosePresets = require('../shared/reducers/shot-generator-presets/poses.json')
+// id of the pose preset used for new characters
+const DEFAULT_POSE_PRESET_ID = '79BBBD0D-6BA2-4D84-9B71-EE661AB6E5AE'
+
 const SceneContext = React.createContext()
 
 const SceneManager = connect(
@@ -177,7 +182,11 @@ const SceneManager = connect(
     mainViewCamera: state.mainViewCamera,
     activeCamera: state.activeCamera,
     aspectRatio: state.aspectRatio,
-    devices:state.devices
+    devices: state.devices,
+    meta: state.meta,
+
+    // HACK force reset skeleton pose on Board UUID change
+    _boardUid: state.board.uid
   }),
   {
     updateObject,
@@ -185,10 +194,11 @@ const SceneManager = connect(
     animatedUpdate,
     selectBone,
     updateCharacterSkeleton,
-    createPosePreset
+    createPosePreset,
+    updateWorldEnvironment
   }
 )(
-  ({ world, sceneObjects, updateObject, selectObject, remoteInput, largeCanvasRef, smallCanvasRef, selection, selectedBone, machineState, transition, animatedUpdate, selectBone, mainViewCamera, updateCharacterSkeleton, largeCanvasSize, activeCamera, aspectRatio, devices }) => {
+  ({ world, sceneObjects, updateObject, selectObject, remoteInput, largeCanvasRef, smallCanvasRef, selection, selectedBone, machineState, transition, animatedUpdate, selectBone, mainViewCamera, updateCharacterSkeleton, largeCanvasSize, activeCamera, aspectRatio, devices, meta, _boardUid, updateWorldEnvironment }) => {
     const { scene } = useContext(SceneContext)
 
     let [camera, setCamera] = useState(null)
@@ -660,6 +670,8 @@ const SceneManager = connect(
 
                 loaded: props.loaded ? props.loaded : false,
 
+                storyboarderFilePath: meta.storyboarderFilePath,
+
                 ...props
               }
             ]
@@ -681,7 +693,14 @@ const SceneManager = connect(
 
                 loaded: props.loaded ? props.loaded : false,
                 devices,
+
                 text: calculatedName,
+
+                storyboarderFilePath: meta.storyboarderFilePath,
+
+                // HACK force reset skeleton pose on Board UUID change
+                boardUid: _boardUid,
+
                 ...props
               }
             ]
@@ -713,7 +732,7 @@ const SceneManager = connect(
         }
     })
 
-    const worldComponent = [WorldObject, { key: 'world', world, scene }]
+    const worldComponent = [WorldObject, { key: 'world', world, scene, storyboarderFilePath: meta.storyboarderFilePath, updateWorldEnvironment }]
 
     // TODO Scene parent object?
     return [
@@ -1523,7 +1542,7 @@ const CharacterPresetsEditor = connect(
     }
 
     return h(
-      ['div.row', { style: { margin: '9px 0 6px 0', paddingRight: 9 } }, [
+      ['div.row', { style: { margin: '9px 0 6px 0', paddingRight: 0 } }, [
         ['div', { style: { width: 50, display: 'flex', alignSelf: 'center' } }, 'preset'],
         [
           'select', {
@@ -1532,7 +1551,8 @@ const CharacterPresetsEditor = connect(
             onChange: preventDefault(onSelectCharacterPreset),
             style: {
               flex: 1,
-              marginBottom: 0
+              marginBottom: 0,
+              maxWidth: 192
             }
           }, [
               ['option', { value: '', disabled: true }, '---'],
@@ -1615,8 +1635,23 @@ const PosePresetsEditor = connect(
       selectPosePreset(sceneObject.id, posePresetId, preset)
     }
 
+    const comparePresetNames = (a, b) => {
+      var nameA = a.name.toUpperCase()
+      var nameB = b.name.toUpperCase()
+
+      if (nameA < nameB) {
+        return -1
+      }
+      if (nameA > nameB) {
+        return 1
+      }
+      return 0
+    }
+
+    const sortedPosePresets = Object.values(posePresets).sort(comparePresetNames)
+
     return h(
-      ['div.row', { style: { margin: '9px 0 6px 0', paddingRight: 9 } }, [
+      ['div.row', { style: { margin: '9px 0 6px 0', paddingRight: 0 } }, [
         ['div', { style: { width: 50, display: 'flex', alignSelf: 'center' } }, 'pose'],
         [
           'select', {
@@ -1625,11 +1660,12 @@ const PosePresetsEditor = connect(
             onChange: preventDefault(onSelectPosePreset),
             style: {
               flex: 1,
-              marginBottom: 0
+              marginBottom: 0,
+              maxWidth: 192
             }
           }, [
               ['option', { value: '', disabled: true }, '---'],
-              Object.values(posePresets).map(preset =>
+              sortedPosePresets.map(preset =>
                 ['option', { value: preset.id }, preset.name]
               )
             ]
@@ -2583,7 +2619,8 @@ const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, set
         endomorphic: 0
       },
 
-      skeleton: {},
+      posePresetId: DEFAULT_POSE_PRESET_ID,
+      skeleton: defaultPosePresets[DEFAULT_POSE_PRESET_ID].state.skeleton,
 
       visible: true
     })
@@ -2805,6 +2842,8 @@ const CameraInspector = connect(
   })
 )(
   React.memo(({ camera, sceneObjects, activeCamera }) => {
+    const { scene } = useContext(SceneContext)
+
     if (!camera) return h(['div.camera-inspector'])
 
     let cameraState = sceneObjects[activeCamera]
@@ -2823,8 +2862,6 @@ const CameraInspector = connect(
     fakeCamera.fov = cameraState.fov
     let focalLength = fakeCamera.getFocalLength()
     fakeCamera = null
-
-    const { scene } = useContext(SceneContext)
 
     return h(
       ['div.camera-inspector',
@@ -3148,7 +3185,7 @@ const Editor = connect(
     const smallCanvasRef = useRef(null)
     const [ready, setReady] = useState(false)
 
-    const scene = useRef(new THREE.Scene())
+    const scene = useRef()
     let [camera, setCamera ] = useState(null)
     const [ machineState, transition ] = useMachine(editorMachine, { log: false })
 
@@ -3286,9 +3323,15 @@ const Editor = connect(
 
 
     useEffect(() => {
+      scene.current = new THREE.Scene()
+
       // TODO introspect models
       updateModels({})
       setReady(true)
+
+      return function cleanup () {
+        scene.current = null
+      }
     }, [])
 
     // render Toolbar with updated camera when scene is ready, or when activeCamera changes

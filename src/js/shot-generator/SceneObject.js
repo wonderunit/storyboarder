@@ -11,6 +11,7 @@ const fs = require('fs')
 const ModelLoader = require('../services/model-loader')
 
 const applyDeviceQuaternion = require('./apply-device-quaternion')
+const prepareFilepathForModel = require('./prepare-filepath-for-model')
 
 // TODO use functions of ModelLoader?
 require('../vendor/three/examples/js/loaders/LoaderSupport')
@@ -71,7 +72,7 @@ const meshFactory = originalMesh => {
   return mesh
 }
 
-const SceneObject = React.memo(({ scene, id, type, isSelected, loaded, updateObject, remoteInput, camera, ...object }) => {
+const SceneObject = React.memo(({ scene, id, type, isSelected, loaded, updateObject, remoteInput, camera, storyboarderFilePath, ...object }) => {
   const setLoaded = loaded => updateObject(id, { loaded })
 
   const container = useRef(groupFactory())
@@ -93,36 +94,21 @@ const SceneObject = React.memo(({ scene, id, type, isSelected, loaded, updateObj
       default:
         container.remove(...container.children)
 
-        let filepath
-        if (ModelLoader.isCustomModel(model)) {
-          filepath = model
-          console.log('loading a model from the file system', filepath)
-        } else {
+        let filepath = await prepareFilepathForModel({
+          id,
+          model,
+          type,
 
-          // FIXME doesn't return the correct value when run from `npm run shot-generator`
-          // https://github.com/electron-userland/electron-webpack/issues/243
-          // const { app } = require('electron').remote
-          // filepath = path.join(app.getAppPath(), 'src', 'data', 'shot-generator', 'objects', model + '.obj')
+          storyboarderFilePath,
 
-          filepath = path.join(
-            __dirname, '..', '..', '..', 'src', 'data', 'shot-generator', 'objects',
-            `${model}.glb`
-          )
-          console.log('loading from app', filepath)
-        }
-
-        if (!fs.existsSync(filepath)) {
-          try {
-            filepath = await ModelLoader.ensureModelFileExists(filepath)
+          onFilePathChange: filepath => {
+            // new relative path
             updateObject(id, { model: filepath })
-          } catch (err) {
-            dialog.showMessageBox({
-              title: 'Failed to load',
-              message: `Failed to load object with internal id ${id}`
-            })
-            setLoaded(false)
-            return
           }
+        })
+
+        if (!filepath) {
+          return
         }
 
         switch (path.extname(filepath)) {

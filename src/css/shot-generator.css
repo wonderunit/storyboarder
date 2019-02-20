@@ -229,6 +229,7 @@ kbd {
 #listing {
   height: 200px;
   box-sizing: border-box;
+  max-width: 300px;
 }
 #inspector {
   flex: 1;
@@ -237,6 +238,7 @@ kbd {
   background-color: #333;
   color: #999;
   text-transform: capitalize;
+  max-width: 288px;
 }
 #remoteInputView {
   padding-top: 12px;

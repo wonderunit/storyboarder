@@ -1,7 +1,7 @@
 {
   "name": "storyboarder",
   "productName": "Storyboarder",
-  "version": "1.9.2",
+  "version": "1.9.3",
   "description": "The fastest way to storyboard.",
   "main": "src/js/main.js",
   "scripts": {
@@ -50,7 +50,6 @@
     "dmg": {
       "background": "build/background.png",
       "icon": "build/icon.icns",
-      "license": "build/license_en.txt",
       "iconSize": 160,
       "window": {
         "width": 675,
@@ -92,17 +91,18 @@
       "createStartMenuShortcut": true,
       "license": "build/license_en.txt"
     },
-    "AppImage": {
+    "appImage": {
       "license": "build/license_en.txt"
     }
   },
   "devDependencies": {
     "cross-env": "^5.2.0",
-    "electron": "4.0.0-beta.5",
-    "electron-builder": "20.29.1",
+    "electron": "4.0.5",
+    "electron-builder": "20.38.5",
     "electron-mocha": "4.0.0",
     "electron-osx-sign": "^0.4.8",
-    "floss": "2.1.5",
+    "electron-rebuild": "^1.8.4",
+    "floss": "^2.2.0",
     "mocha": "3.5.0",
     "mock-fs": "^4.7.0",
     "nock": "9.4.2",
@@ -123,13 +123,13 @@
     "electron-is-dev": "0.3.0",
     "electron-prompt": "1.3.0",
     "electron-redux": "1.3.1",
-    "electron-updater": "3.1.2",
+    "electron-updater": "4.0.6",
     "electron-util": "0.10.2",
     "etch": "0.12.8",
     "execa": "0.8.0",
     "express": "^4.15.4",
     "fraction.js": "4.0.3",
-    "fs-extra": "4.0.2",
+    "fs-extra": "7.0.1",
     "gifencoder": "^1.1.0",
     "gl-vec2": "^1.0.0",
     "immer": "1.7.4",
@@ -144,7 +144,7 @@
     "node-machine-id": "1.1.10",
     "paper": "0.11.5",
     "pdfjs-dist": "2.0.550",
-    "pdfkit": "^0.8.3",
+    "pdfkit": "^0.9.0",
     "plist": "2.1.0",
     "postfix-calculator": "0.0.2",
     "promise-cancelable": "2.1.1",

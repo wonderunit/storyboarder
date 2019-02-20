@@ -5,7 +5,25 @@ const { useRef, useEffect, useState } = React
 
 const IconSprites = require('./IconSprites')
 
+const lightHelperFactory = light => {
+  let helper = new THREE.SpotLightHelper( light )
+  let child = helper.children[0]
+
+  // don’t show automatically in rendered image
+  helper.layers.disable(0)
+   child.layers.disable(0)
+  // shows in live view
+  helper.layers.enable(1)
+   child.layers.enable(1)
+  // shows in top-down view
+  helper.layers.enable(2)
+   child.layers.enable(2)
+
+  return helper
+}
+
 const SpotLight = React.memo(({ scene, id, type, setLight, icon, text, ...props }) => {
+  
   let light = useRef(null)
 
   if (light.current)
@@ -38,8 +56,7 @@ const SpotLight = React.memo(({ scene, id, type, setLight, icon, text, ...props 
     lightContainer.light = light_spot
     lightContainer.hitter = box_light_mesh
 
-    var helper = new THREE.SpotLightHelper( light_spot, 0.14 )
-
+    var helper = lightHelperFactory(light_spot)
     lightContainer.helper = helper
 
     light.current = lightContainer
@@ -96,7 +113,7 @@ const SpotLight = React.memo(({ scene, id, type, setLight, icon, text, ...props 
       light.current.light.angle = props.angle
       light.current.light.distance = props.distance
       //light.current.light.target.updateMatrix()
-      light.current.helper = new THREE.SpotLightHelper( light.current.light );
+      light.current.helper = lightHelperFactory(light.current.light)
       light.current.light.intensity = props.intensity
     }
   }, [props.intensity, props.angle, props.distance])

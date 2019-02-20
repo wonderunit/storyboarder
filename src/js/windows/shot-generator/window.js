@@ -53,9 +53,11 @@ const store = configureStore({
 
 
 
-ipcRenderer.on('loadBoard', (event, { boardData, board }) => {
+ipcRenderer.on('loadBoard', (event, { storyboarderFilePath, boardData, board }) => {
   // TODO for backwards compatibility, use board.shotgen or board.sg instead?
   let shot = board.sts
+
+  store.dispatch({ type: 'SET_META_STORYBOARDER_FILE_PATH', payload: storyboarderFilePath })
 
   let aspectRatio = parseFloat(boardData.aspectRatio)
   store.dispatch({ type: 'SET_ASPECT_RATIO', payload: aspectRatio })
@@ -128,16 +130,15 @@ if (process.env.SHOT_GENERATOR_STANDALONE) {
 
   const fs = require('fs')
   const path = require('path')
-  let file = JSON.parse(
-    fs.readFileSync(
-      path.join(
-        __dirname, '..', '..', '..', '..', 'test', 'fixtures', 'shot-generator', 'shot-generator.storyboarder'
-      )
-    )
+
+  let storyboarderFilePath = path.join(
+    __dirname, '..', '..', '..', '..', 'test', 'fixtures', 'shot-generator', 'shot-generator.storyboarder'
   )
+
+  let file = JSON.parse(fs.readFileSync(storyboarderFilePath))
 
   let win = electron.remote.BrowserWindow.getAllWindows()
     .find(w => w.webContents.getURL() === window.location.toString())
 
-  win.webContents.send('loadBoard', { boardData: file, board: file.boards[0] })
+  win.webContents.send('loadBoard', { storyboarderFilePath, boardData: file, board: file.boards[0] })
 }
