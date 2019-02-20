@@ -123,6 +123,10 @@ createServer({
   updateServer: payload => store.dispatch(updateServer(payload))
 })
 
+window.addEventListener('load', () => {
+  ipcRenderer.send('shot-generator:window:loaded')
+})
+
 // are we testing locally?
 // SHOT_GENERATOR_STANDALONE=true npx electron src/js/windows/shot-generator/main.js
 if (process.env.SHOT_GENERATOR_STANDALONE) {
