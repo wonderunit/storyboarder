@@ -132,8 +132,6 @@ const feetAndInchesAsString = (feet, inches) => `${feet}′${inches}″`
 
 const shortId = id => id.toString().substr(0, 7).toLowerCase()
 
-const sprites = IconSprites.init()
-
 const preventDefault = (fn, ...args) => e => {
   e.preventDefault()
   fn(e, ...args)
@@ -213,7 +211,7 @@ const SceneManager = connect(
     let orthoCamera = useRef(new THREE.OrthographicCamera( -4, 4, 4, -4, 0, 1000 ))
 
     let cameraHelper = useRef(null)
-
+    
     useEffect(() => {
       console.log('new SceneManager')
 
@@ -619,8 +617,34 @@ const SceneManager = connect(
       }
     }, [machineState.value, camera, cameraControlsView.current, mainViewCamera])
     // console.log('SceneManager render', sceneObjects)
+    
     const components = Object.values(sceneObjects).map(props => {
-        switch (props.type) {
+      
+      let types = Object
+      .entries(sceneObjects)
+      .reduce((o, [ k, v ]) => {
+        o[v.type] = o[v.type] || {}
+        o[v.type][k.toString()] = v
+        return o
+      }, {})
+
+      let sceneObjectsSorted = {
+        ...types.camera,
+        ...types.character,
+        ...types.object,
+        ...types.light
+      }
+
+      let items = [
+        world,
+        ...Object.values(sceneObjectsSorted)
+      ]
+
+      const number = items.filter(o => o.type === props.type).indexOf(props) + 1
+      const capitalize = string => string.charAt(0).toUpperCase() + string.slice(1)
+      const calculatedName = capitalize(`${props.type} ${number}`)
+      
+      switch (props.type) {
           case 'object':
             return [
               SceneObject, {
@@ -657,7 +681,7 @@ const SceneManager = connect(
 
                 loaded: props.loaded ? props.loaded : false,
                 devices,
-                icon: sprites.character,
+                text: calculatedName,
                 ...props
               }
             ]
@@ -671,7 +695,7 @@ const SceneManager = connect(
                 setCamera,
 
                 aspectRatio,
-                icon: sprites.camera,
+                text: calculatedName,
                 ...props
               }
             ]
@@ -681,7 +705,7 @@ const SceneManager = connect(
                 SpotLight, {
                   key: props.id,
                   scene,
-                  icon: sprites.light,
+                  text: calculatedName,
                   ...props
                 }
               ]
@@ -713,7 +737,7 @@ const SceneManager = connect(
 
 
 
-const Camera = React.memo(({ scene, id, type, setCamera, icon, ...props }) => {
+const Camera = React.memo(({ scene, id, type, setCamera, icon, text, ...props }) => {
   let camera = useRef(
     new THREE.PerspectiveCamera(
     props.fov,
@@ -739,6 +763,15 @@ const Camera = React.memo(({ scene, id, type, setCamera, icon, ...props }) => {
     // camera.current.userData.type = type
     // camera.current.userData.id = id
     camera.current.aspect = props.aspectRatio
+    camera.current.orthoIcon = new IconSprites( type, text, camera.current )
+    camera.current.orthoIcon.position.copy(camera.current.position)
+    camera.current.orthoIcon.icon.material.rotation = camera.current.rotation.y
+    scene.add(camera.current.orthoIcon)
+     
+    //camera.current.iconText = IconSprites.IconText(text)
+    //camera.current.iconText.scale.set(6, 0.36, 1)
+    //camera.current.iconText.position.set(2.5, 0, 0)
+    //camera.current.add(camera.current.iconText)
 
     // camera.current.fov = props.fov
     // camera.current.updateProjectionMatrix()
@@ -779,21 +812,11 @@ const Camera = React.memo(({ scene, id, type, setCamera, icon, ...props }) => {
 
   camera.current.fov = props.fov
   camera.current.updateProjectionMatrix()
-  if (!camera.current.icon)
-  {
-    camera.current.icon = icon.clone()
-    camera.current.icon.material = icon.material.clone()
-    if (sprites.camera.clones) {
-      sprites.camera.clones.push( camera.current.icon )
-    } else {
-      sprites.camera.clones = [ camera.current.icon ]
-    }
-
-    camera.current.add(camera.current.icon)    
-  }  
-  camera.current.icon.scale.set(sprites.camera.scale.x,sprites.camera.scale.y,1)
-  camera.current.icon.material.rotation = Math.PI + props.rotation
-  
+  if (camera.current.orthoIcon) {
+    camera.current.orthoIcon.position.copy(camera.current.position)
+    let rotation = new THREE.Euler().setFromQuaternion( camera.current.quaternion, "YXZ" )   //always "YXZ" when we gat strange rotations
+    camera.current.orthoIcon.icon.material.rotation = rotation.y
+  }
   camera.current.layers.enable(1)
 
   return null

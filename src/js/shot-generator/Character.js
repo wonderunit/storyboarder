@@ -7,6 +7,7 @@ const { useRef, useEffect, useState } = React
 const path = require('path')
 
 const BonesHelper = require('./BonesHelper')
+const IconSprites = require('./IconSprites')
 
 const { initialState } = require('../shared/reducers/shot-generator')
 
@@ -141,6 +142,7 @@ const Character = React.memo(({
   loaded,  
   devices,
   icon,
+  text,
   ...props
 }) => {
   // setting loaded = true forces an update to sceneObjects,
@@ -216,13 +218,10 @@ const Character = React.memo(({
       
       object.current.add(...armatures)
       object.current.add(mesh)
-      let objIcon = icon.clone()
-      objIcon.material = icon.material.clone()
-      objIcon.scale.set(icon.scale.x / boneLengthScale, icon.scale.y / boneLengthScale, 1 )      
-      object.current.add(objIcon)
-      if (icon.clones) icon.clones.push(objIcon)
-      else icon.clones = [objIcon]
-      object.current.icon = objIcon
+      
+      object.current.orthoIcon = new IconSprites( type, text, object.current )
+      scene.add(object.current.orthoIcon)
+      
       object.current.userData.mesh = mesh
       scene.add(object.current)
       let bonesHelper = new BonesHelper( skeleton.bones[0].parent, object.current, { boneLengthScale } )
@@ -353,6 +352,8 @@ const Character = React.memo(({
       object.current.position.x = props.x
       object.current.position.z = props.y
       object.current.position.y = props.z
+
+      object.current.orthoIcon.position.copy(object.current.position)
     }
   }, [props.model, props.x, props.y, props.z, modelData])
 
@@ -365,7 +366,8 @@ const Character = React.memo(({
         //object.current.rotation.z = props.rotation.z
       } else {
         object.current.rotation.y = props.rotation
-        object.current.icon.material.rotation = -props.rotation
+        console.log('current icon: ',object.current.orthoIcon)
+        object.current.orthoIcon.icon.material.rotation = props.rotation + Math.PI
       }
 
     }

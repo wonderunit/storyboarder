@@ -133,7 +133,7 @@ class DragControls extends THREE.EventDispatcher {
     while (intersects[i])
     {
       //selecting char if there are more intersection results
-      if (intersects[i].object.parent.userData.type === "character") {
+      if (intersects[i].object.parent.linkedTo && intersects[i].object.parent.linkedTo.userData.type === "character") {
         intersect = intersects[i]
         break
       }
@@ -141,7 +141,7 @@ class DragControls extends THREE.EventDispatcher {
     }
     if (intersect.object instanceof THREE.Sprite)
     {
-      let obj = intersect.object.parent
+      let obj = intersect.object.parent.linkedTo
       return [obj, null]
     }
     if (intersect.object.parent instanceof THREE.Group)
@@ -196,17 +196,17 @@ class DragControls extends THREE.EventDispatcher {
       }
       if (o instanceof THREE.Object3D && o.userData.type === 'light'){
         // light
-        allIntersectors.push( o.icon )
+        allIntersectors.push( o.orthoIcon.icon )
       }
       if (o instanceof THREE.Object3D && o.userData.type === 'character')
       {
         //character
-        allIntersectors.push( o.icon )        
+        allIntersectors.push( o.orthoIcon.icon )        
       }
     }
     for ( o of cameras ) // cameras
     {
-      allIntersectors.push ( o.icon )
+      allIntersectors.push ( o.orthoIcon.icon )
     }
     return allIntersectors
   }
@@ -246,10 +246,8 @@ class DragControls extends THREE.EventDispatcher {
     let shouldReportSelection = false
     let ortho = this._camera instanceof THREE.OrthographicCamera
     let checkIntersectionsWithMeshes = ortho ? this.getIntersectionSprites( this._objects, this._cameras ) : this.getIntersectionObjects(this._objects)
-
     let intersects = this._raycaster.intersectObjects( checkIntersectionsWithMeshes )
     if ( intersects.length > 0 ) {
-      
       this.onSelectBone( null )  // deselect bone is any selected
       let object = ortho ? this.getFromSprite(intersects)[0] : this.getObjectAndBone( intersects[ 0 ] )[0]
 

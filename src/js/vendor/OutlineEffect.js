@@ -301,9 +301,10 @@ THREE.OutlineEffect = function ( renderer, parameters ) {
 
 	function updateUniforms( material, originalMaterial ) {
 
+		//if (material instanceof THREE.ShaderMaterial) return
 		var outlineParameters = originalMaterial.userData.outlineParameters;
-
-		material.uniforms.outlineAlpha.value = originalMaterial.opacity;
+		if (material.uniforms.outlineAlpha)
+			material.uniforms.outlineAlpha.value = originalMaterial.opacity;
 
 		if ( outlineParameters !== undefined ) {
 

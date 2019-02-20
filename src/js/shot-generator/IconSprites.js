@@ -1,7 +1,12 @@
 const THREE = require('three')
+const React = require('react')
+const { Object3D } = THREE
+const { Sprite } = THREE
+
+const { useRef, useEffect, useState } = React
 
 const allIcons = {
-    character: new THREE.SpriteMaterial( { color: 0xffffff } ),
+    character: new THREE.SpriteMaterial( { color: 0xffffff, opacity: 1, outline: 0, map:null } ),
     camera: new THREE.SpriteMaterial( { color: 0x00ffff } ),
     light: new THREE.SpriteMaterial( { color: 0xff00ff } ),
     object: new THREE.SpriteMaterial( { color: 0xffff00 } )
@@ -12,6 +17,85 @@ const allSprites = {
     camera: new THREE.Sprite( allIcons.camera ),
     light: new THREE.Sprite( allIcons.light ),
     object: new THREE.Sprite( allIcons.object )
+}
+
+function IconSprites ( type, text, parent, secondaryText ) {
+    Object3D.call ( this )
+
+    let icon
+    let spriteText
+
+    switch (type) {
+        case 'character':
+            icon = allSprites.character
+            break
+        case 'camera':
+            icon = allSprites.camera
+            break
+        case 'light':
+            icon = allSprites.light
+            break
+    }
+    
+    spriteText = iconText(text, secondaryText)
+    spriteText.scale.set(7, 0.7, 1)
+    spriteText.position.x = 4.1
+    spriteText.position.z = 0.1
+    
+    
+    this.linkedTo = parent
+    this.icon = icon.clone()
+    this.iconText = spriteText
+    this.add(this.iconText)
+    this.add(this.icon)
+    
+}
+
+IconSprites.prototype = Object.create( Object3D.prototype )
+IconSprites.prototype.constructor = IconSprites
+
+Sprite.prototype.clone = function ( recursive ) {
+    
+    let result = new this.constructor().copy (this, recursive)
+    result.material = this.material.clone()
+    result.material.map = this.material.map
+    if (this.clones) this.clones.push(result)
+    else this.clones = [result]
+    return result
+}
+
+
+const iconText = ( text, secondText ) => {
+    let textsCanvas = document.createElement('canvas')
+    textsCanvas.width = 800
+    textsCanvas.height = 80
+    let textContext = textsCanvas.getContext('2d')
+    textContext.font = '600 52px wonderunitsans'
+    textContext.fillStyle = '#000000'
+    textContext.clearRect(0,0,800,80)
+    textContext.textAlign = "left"
+
+    var metrics = textContext.measureText( text );
+	var textWidth = metrics.width;
+    textContext.fillText(text, 10, 50)
+    textContext.fillRect(0, 0, 1, 1)
+
+    let textTexture = new THREE.CanvasTexture(textsCanvas)
+  
+    let textMaterial = new THREE.SpriteMaterial({
+        color:"#550055",
+        map:textTexture,
+        useScreenCoordinates: false, 
+    })
+    textMaterial.needsUpdate = true
+    textTexture.needsUpdate = true
+    textMaterial.depthTest = false
+        
+    let textSprite = new THREE.Sprite(textMaterial)
+    textSprite.layers.disable(0)
+    textSprite.layers.disable(1)
+    textSprite.layers.enable(2)
+    return textSprite
 }
 
 const loadIconPromise = (file, sprite, compensatescaling) => {
@@ -47,9 +131,9 @@ const loadIconPromise = (file, sprite, compensatescaling) => {
 }
 
 const loadIcons = () => {
-    const character = loadIconPromise("data/shot-generator/icons/character-icon.svg", allSprites.character, 0.2)
-    const camera = loadIconPromise("data/shot-generator/icons/video-camera-02.svg", allSprites.camera, 0.07)
-    const light = loadIconPromise("data/shot-generator/icons/light-icon.svg", allSprites.light, 0.08)
+    const character = loadIconPromise("data/shot-generator/icons/character.svg", allSprites.character, 0.07)
+    const camera = loadIconPromise("data/shot-generator/icons/camera.svg", allSprites.camera, 0.07)
+    const light = loadIconPromise("data/shot-generator/icons/light.svg", allSprites.light, 0.07)
     const object = loadIconPromise("data/shot-generator/icons/video-camera-02.svg", allSprites.object, 1)
 
     return Promise.all( [ character, camera, light, object ] ).then(( values ) => {
@@ -74,7 +158,6 @@ function init()
     })
     return allSprites
 }
+init()
 
-module.exports = {
-    init
-}
+module.exports = IconSprites
