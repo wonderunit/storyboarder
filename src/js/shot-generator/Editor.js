@@ -58,6 +58,8 @@ const {
 
   markSaved,
 
+  toggleWorkspaceGuide,
+
   //
   //
   // selectors
@@ -2867,7 +2869,34 @@ const BoardInspector = connect(
   )
 })
 
-const GuidesInspector = ({ }) => h(['div.guides-inspector', 'Guides'])
+const GuidesInspector = connect(
+  state => ({
+    center: state.workspace.guides.center,
+    thirds: state.workspace.guides.thirds
+  }),
+  {
+    toggleWorkspaceGuide
+  }
+)(
+(({
+  center, thirds,
+  toggleWorkspaceGuide
+}) =>
+  h(['div.guides-inspector', [
+    'div.row',
+      ['div.guides-inspector__label', 'Guides'],
+        ['div.round-buttons-panel', [
+          [
+            'a[href=#]',
+            {
+              className: classNames({ active: center }),
+              onClick: preventDefault(() => toggleWorkspaceGuide('center'))
+            },
+            'Center'
+          ]]
+        ]
+      ]]
+)))
 
 const CamerasInspector = connect(
   state => ({
@@ -3332,12 +3361,12 @@ const Editor = connect(
               ['div#camera-view', { ref: mainViewContainerRef, style: { paddingTop: `${(1 / aspectRatio) * 100}%` } },
                 // camera canvas
                 ['canvas', { key: 'camera-canvas', tabIndex: 1, ref: largeCanvasRef, id: 'camera-canvas', onPointerDown: onCanvasPointerDown }],
-                [GuidesView, { dimensions: largeCanvasSize, visible: mainViewCamera === 'live' }]
+                [GuidesView, { dimensions: largeCanvasSize }]
               ],
               ['div.inspectors', [
                 [CameraInspector, { camera }],
                 [BoardInspector],
-                // [GuidesInspector],
+                [GuidesInspector],
                 [CamerasInspector]
               ]]
             ],

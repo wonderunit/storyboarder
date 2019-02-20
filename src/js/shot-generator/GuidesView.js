@@ -1,10 +1,18 @@
 const { useMemo, useEffect, useRef } = React = require('react')
+const { connect } = require('react-redux')
 
 const h = require('../utils/h')
 
 const Guides = require('../window/guides')
 
-const GuidesView = ({ dimensions, visible }) => {
+const GuidesView = connect(
+  state => ({
+    visible: state.mainViewCamera === 'live',
+    center: state.workspace.guides.center,
+    thirds: state.workspace.guides.thirds
+  })
+)
+(({ dimensions, visible, center, thirds }) => {
   const guidesCanvasRef = useRef()
   const guides = useMemo(
     () => {
@@ -26,8 +34,8 @@ const GuidesView = ({ dimensions, visible }) => {
   useEffect(() => {
     if (!guides) return
   
-    guides.setState({ center: true, thirds: true })
-  }, [guides])
+    guides.setState({ center, thirds })
+  }, [guides, center, thirds])
 
   return h([
     'canvas',
@@ -48,6 +56,6 @@ const GuidesView = ({ dimensions, visible }) => {
       }
     }
   ])
-}
+})
 
 module.exports = GuidesView
