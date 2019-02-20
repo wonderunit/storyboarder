@@ -32,6 +32,10 @@ const { initialState, loadScene, resetScene, updateDevice, updateServer, setBoar
 const createServer = require('../../services/createServer')
 const createDualShockController = require('../../shot-generator/DualshockController')
 
+window.addEventListener('load', () => {
+  ipcRenderer.send('shot-generator:window:loaded')
+})
+
 const store = configureStore({
   ...initialState,
   presets: {
@@ -121,10 +125,6 @@ createServer({
   setInputOrbitMode: payload => store.dispatch({ type: 'SET_INPUT_ORBITMODE', payload }),
   
   updateServer: payload => store.dispatch(updateServer(payload))
-})
-
-window.addEventListener('load', () => {
-  ipcRenderer.send('shot-generator:window:loaded')
 })
 
 // are we testing locally?
