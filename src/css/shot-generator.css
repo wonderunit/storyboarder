@@ -287,6 +287,9 @@ kbd {
 #top-down-canvas:focus {
   outline: none;
 }
+#guides-canvas {
+  pointer-events: none;
+}
 
 .inspectors {
   display: flex;
