@@ -337,6 +337,7 @@ kbd {
   display: flex;
   min-width: 15%;
 }
+.guides-inspector__label,
 .cameras-inspector__label {
   display: flex;
   align-items: center;
@@ -370,6 +371,10 @@ kbd {
 .round-buttons-panel a.active {
   background-color: #717171;
   color: #A5A5A5;
+}
+.round-buttons-panel a img {
+  /* --color1: #000; */
+  /* --color2: #717171; */
 }
 
 input, select, label {

@@ -2892,9 +2892,17 @@ const GuidesInspector = connect(
               className: classNames({ active: center }),
               onClick: preventDefault(() => toggleWorkspaceGuide('center'))
             },
-            'Center'
-          ]]
-        ]
+            [[Icon, { src: 'icon-guides-center' }]]
+          ],
+          [
+            'a[href=#]',
+            {
+              className: classNames({ active: thirds }),
+              onClick: preventDefault(() => toggleWorkspaceGuide('thirds'))
+            },
+            [[Icon, { src: 'icon-guides-thirds' }]]
+          ]
+        ]]
       ]]
 )))
 
