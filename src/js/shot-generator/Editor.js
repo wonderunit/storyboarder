@@ -812,6 +812,7 @@ const Camera = React.memo(({ scene, id, type, setCamera, icon, text, ...props })
 
     return function cleanup () {
       console.log(type, id, 'removed')
+      scene.remove(camera.current.orthoIcon)
       scene.remove(camera.current)
       // setCamera(null)
     }

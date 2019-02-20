@@ -22,6 +22,7 @@ const allSprites = {
 function IconSprites ( type, text, parent, secondaryText ) {
     Object3D.call ( this )
 
+    let scope = this
     let icon
     let spriteText
 
@@ -37,16 +38,21 @@ function IconSprites ( type, text, parent, secondaryText ) {
             break
     }
     
-    spriteText = iconText(text, secondaryText)
-    spriteText.scale.set(7, 0.7, 1)
-    spriteText.position.x = 4.1
-    spriteText.position.z = 0.1
+    spriteText = iconText(text, secondaryText).then((sprite) => {
+        sprite.scale.set(7, 0.7, 1)
+        sprite.position.x = 4.1
+        sprite.position.z = 0.1
+        scope.add(sprite)
+    })
+    
     
     
     this.linkedTo = parent
     this.icon = icon.clone()
     this.iconText = spriteText
-    this.add(this.iconText)
+        
+    //this.add(test)
+    //this.add(this.iconText)
     this.add(this.icon)
     
 }
@@ -66,36 +72,41 @@ Sprite.prototype.clone = function ( recursive ) {
 
 
 const iconText = ( text, secondText ) => {
-    let textsCanvas = document.createElement('canvas')
-    textsCanvas.width = 800
-    textsCanvas.height = 80
-    let textContext = textsCanvas.getContext('2d')
-    textContext.font = '600 52px wonderunitsans'
-    textContext.fillStyle = '#000000'
-    textContext.clearRect(0,0,800,80)
-    textContext.textAlign = "left"
+    return new Promise((resolve, reject) => {
+        document.fonts.load('600 52px wonderunitsans').then(result => {
+            let textsCanvas = document.createElement('canvas')
+            textsCanvas.width = 800
+            textsCanvas.height = 80
+            let textContext = textsCanvas.getContext('2d')
+            textContext.font = '600 52px wonderunitsans'
+            textContext.fillStyle = '#000000'
+            textContext.clearRect(0,0,800,80)
+            textContext.textAlign = "left"
 
-    var metrics = textContext.measureText( text );
-	var textWidth = metrics.width;
-    textContext.fillText(text, 10, 50)
-    textContext.fillRect(0, 0, 1, 1)
+            var metrics = textContext.measureText( text );
+            var textWidth = metrics.width;
+            textContext.fillText(text, 10, 50)
+            textContext.fillRect(0, 0, 1, 1)
 
-    let textTexture = new THREE.CanvasTexture(textsCanvas)
-  
-    let textMaterial = new THREE.SpriteMaterial({
-        color:"#550055",
-        map:textTexture,
-        useScreenCoordinates: false, 
-    })
-    textMaterial.needsUpdate = true
-    textTexture.needsUpdate = true
-    textMaterial.depthTest = false
+            let textTexture = new THREE.CanvasTexture(textsCanvas)
         
-    let textSprite = new THREE.Sprite(textMaterial)
-    textSprite.layers.disable(0)
-    textSprite.layers.disable(1)
-    textSprite.layers.enable(2)
-    return textSprite
+            let textMaterial = new THREE.SpriteMaterial({
+                color:"#550055",
+                map:textTexture,
+                useScreenCoordinates: false, 
+            })
+            textMaterial.needsUpdate = true
+            textTexture.needsUpdate = true
+            textMaterial.depthTest = false
+                
+            let textSprite = new THREE.Sprite(textMaterial)
+            textSprite.layers.disable(0)
+            textSprite.layers.disable(1)
+            textSprite.layers.enable(2)
+            
+            resolve(textSprite)
+        })
+    }) 
 }
 
 const loadIconPromise = (file, sprite, compensatescaling) => {
@@ -134,7 +145,7 @@ const loadIcons = () => {
     const character = loadIconPromise("data/shot-generator/icons/character.svg", allSprites.character, 0.07)
     const camera = loadIconPromise("data/shot-generator/icons/camera.svg", allSprites.camera, 0.07)
     const light = loadIconPromise("data/shot-generator/icons/light.svg", allSprites.light, 0.07)
-    const object = loadIconPromise("data/shot-generator/icons/video-camera-02.svg", allSprites.object, 1)
+    const object = loadIconPromise("data/shot-generator/icons/camera.svg", allSprites.object, 1)
 
     return Promise.all( [ character, camera, light, object ] ).then(( values ) => {
         

@@ -143,6 +143,7 @@ const Character = React.memo(({
     if (object.current) {
       console.log(type, id, 'remove')
       scene.remove(object.current.bonesHelper)
+      scene.remove(object.current.orthoIcon)
       scene.remove(object.current)
       object.current.bonesHelper = null
       object.current = null
@@ -355,7 +356,6 @@ const Character = React.memo(({
         //object.current.rotation.z = props.rotation.z
       } else {
         object.current.rotation.y = props.rotation
-        console.log('current icon: ',object.current.orthoIcon)
         object.current.orthoIcon.icon.material.rotation = props.rotation + Math.PI
       }
 

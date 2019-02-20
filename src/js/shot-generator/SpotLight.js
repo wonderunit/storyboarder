@@ -85,6 +85,7 @@ const SpotLight = React.memo(({ scene, id, type, setLight, icon, text, ...props 
     return function cleanup () {
       console.log(type, id, 'removed')
       scene.remove(light.current.helper)
+      scene.remove(light.current.orthoIcon)
       scene.remove(light.current)
       // setCamera(null)
     }
