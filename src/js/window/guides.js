@@ -215,7 +215,6 @@ class Guides {
     context.save()
 
     if (camera) {
-      console.log('Grid#drawPerspective', { camera })
       let distance = (point1, point2) => {
         let a = point2.x-point1.x
         let b = point2.y-point1.y
