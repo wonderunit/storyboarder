@@ -1,5 +1,7 @@
 const rgba = (r, g, b, a) => `rgba(${r}, ${g}, ${b}, ${parseFloat(a)})`
 
+const THREE = require('THREE')
+
 class Guides {
   constructor (opt) {
     this.width = opt.width
@@ -21,11 +23,7 @@ class Guides {
     this.offscreenCanvas = null
     this.offscreenContext = null
 
-    this.perspectiveGridFn = opt.perspectiveGridFn
-    this.perspectiveParams = {
-      cameraParams: {},
-      rotation: 0
-    }
+    this.perspectiveParams = {}
 
     this.offscreenCanvas = document.createElement('canvas')
     this.offscreenContext = this.offscreenCanvas.getContext('2d')
@@ -104,7 +102,7 @@ class Guides {
     // perspective
     if (this.state.perspective) {
       this.offscreenContext.clearRect(0, 0, this.width, this.height)
-      this.drawPerspective(this.offscreenContext, this.width, this.height)
+      this.drawPerspective(this.offscreenContext, this.width, this.height, this.perspectiveParams)
 
       this.context.globalAlpha = lineColorStrong.slice(-1)[0]
       this.context.drawImage(this.offscreenCanvas, 0, 0, this.width, this.height)
@@ -190,11 +188,129 @@ class Guides {
     context.translate(-this.translateShift, -this.translateShift)
   }
 
-  drawPerspective (context, width, height) {
-    let canvas = this.perspectiveGridFn(
-      this.perspectiveParams.cameraParams,
-      this.perspectiveParams.rotation
-    )
+  drawPerspective (
+    context,
+    width,
+    height,
+    { camera }
+  ) {
+    // default perspective camera for boards without shot generator data
+    if (!camera) {
+      camera = {
+        fov: 50,
+        x: 0.1,
+        y: 1.7,
+        z: 1,
+        rotation: -0.232
+      }
+    }
+
+    // via shot-template-system/index.js#requestGrid
+    let cameraParams = camera
+    let dimensions = [width, height]
+
+    let canvas = document.createElement('canvas')
+    canvas.width  = dimensions[0]
+    canvas.height = dimensions[1]  
+    let ctx = canvas.getContext('2d')
+
+    if (camera) {
+      console.log('Grid#drawPerspective', { camera })
+      let distance = (point1, point2) => {
+        let a = point2.x-point1.x
+        let b = point2.y-point1.y
+        return Math.sqrt(a*a+b*b)
+      }
+
+      let toScreenPosition = (obj, camera) => {
+        let vector = new THREE.Vector3()
+        let widthHalf = 0.5 * dimensions[0]
+        let heightHalf = 0.5 * dimensions[1]
+
+        obj.updateMatrixWorld()
+        vector.setFromMatrixPosition(obj.matrixWorld)
+
+        vector.project(camera)
+
+        vector.x = ( vector.x * widthHalf ) + widthHalf
+        vector.y = - ( vector.y * heightHalf ) + heightHalf
+
+        return { x: vector.x, y: vector.y }
+      }
+
+      let gridCamera = new THREE.PerspectiveCamera(
+        cameraParams.fov,
+        dimensions[0] / dimensions[1],
+        .01,
+        1000
+      )
+      gridCamera.position.x = cameraParams.x
+      gridCamera.position.y = cameraParams.y
+      gridCamera.position.z = cameraParams.z
+
+      gridCamera.rotation.x = 0
+      gridCamera.rotation.y = cameraParams.rotation
+      gridCamera.rotation.z = 0
+
+      gridCamera.updateProjectionMatrix()
+      gridCamera.updateMatrixWorld( true )
+
+      let prop = ['x','y','z']
+      let color = ['rgb(0,0,100)', 'rgb(100,100,0)','rgb(0,100,0)']
+      let perspectivePoint = []
+      let extreme = 150
+
+      for (var i = 0; i < 3; i++) {
+        let divObjA = new THREE.Object3D()
+        divObjA.position[prop[i]] = extreme
+        let pointA = toScreenPosition(divObjA,gridCamera)
+        console.log(pointA)
+        let divObjB = new THREE.Object3D()
+        divObjB.position[prop[i]] = -(extreme)
+        let pointB = toScreenPosition(divObjB,gridCamera)
+        console.log(pointB)
+        if (distance(pointA, {x: dimensions[0]/2, y: dimensions[1]/2}) < distance(pointB, {x: dimensions[0]/2, y: dimensions[1]/2})) {
+          perspectivePoint[i] = pointA
+        } else {
+          perspectivePoint[i] = pointB
+        }
+      }
+
+      for (var i = 0; i < 3; i++) {
+        let dist = distance(perspectivePoint[i], {x: dimensions[0]/2, y: dimensions[1]/2})
+        let amt = Math.max(dist/1.5,360)
+        for (var j = 0; j < (amt-1); j++) {
+          ctx.beginPath()
+          ctx.moveTo(perspectivePoint[i].x, perspectivePoint[i].y)
+          let angle = (j*(360/(amt))) * Math.PI / 180
+          let x = (perspectivePoint[i].x+100000) * Math.cos(angle) - (perspectivePoint[i].y) * Math.sin(angle)
+          let y = (perspectivePoint[i].y) * Math.cos(angle) - (perspectivePoint[i].x+100000) * Math.sin(angle)
+          if (j % 5 == 0) {
+            ctx.lineWidth = 0.6
+          } else {
+            ctx.lineWidth = .2
+          }
+          ctx.strokeStyle = color[i]
+          ctx.lineTo(x,y)
+          ctx.stroke()
+        }
+      }
+
+      // TODO draw horizon line
+      let horizonAngle = Math.atan2(perspectivePoint[2].y - perspectivePoint[0].y, perspectivePoint[2].x - perspectivePoint[0].x)
+      let x = Math.cos(horizonAngle) * (10000) - Math.sin(horizonAngle) * (0) + perspectivePoint[2].x
+      let y = Math.sin(horizonAngle) * (10000) - Math.cos(horizonAngle) * (0) + perspectivePoint[2].y
+      ctx.beginPath()
+      ctx.setLineDash([10, 4])
+      ctx.moveTo(x, y)
+      let x2 = Math.cos(horizonAngle) * (-20000) - Math.sin(horizonAngle) * (0) + x 
+      let y2 = Math.sin(horizonAngle) * (-20000) - Math.cos(horizonAngle) * (0) + y
+      ctx.lineWidth = 1
+      ctx.strokeStyle = "black"
+      ctx.lineTo(x2,y2)
+      ctx.stroke()
+    }
+
     context.save()
     context.translate(0, 0)
     context.moveTo(0, 0)
@@ -204,8 +320,7 @@ class Guides {
 
   setPerspectiveParams (opt = {}) {
     this.perspectiveParams = {
-      cameraParams: opt.cameraParams,
-      rotation: opt.rotation
+      ...opt
     }
     this.render()
   }

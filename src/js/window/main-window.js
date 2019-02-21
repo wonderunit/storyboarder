@@ -1225,7 +1225,6 @@ const loadBoardUI = async () => {
   guides = new Guides({
     width: storyboarderSketchPane.sketchPane.width,
     height: storyboarderSketchPane.sketchPane.height,
-    perspectiveGridFn: () => {}, // shotTemplateSystem.requestGrid.bind(shotTemplateSystem),
     onRender: guideCanvas => {
       storyboarderSketchPane.sketchPane.layers[
         storyboarderSketchPane.sketchPane.layers.findByName('guides').index
@@ -3399,10 +3398,16 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
     //   StsSidebar.reset(board.sts)
     // }
 
-    guides && guides.setPerspectiveParams({
-      cameraParams: board.sts && board.sts.camera,
-      rotation: 0
-    })
+    try {
+      guides && guides.setPerspectiveParams({
+        camera: board.sts
+          ? board.sts.data.sceneObjects[board.sts.data.activeCamera]
+          : undefined
+      })
+    } catch (err) {
+      console.error('could not read camera data from board’s shot generator data')
+      guides && guides.setPerspectiveParams({ camera: undefined })
+    }
 
     ipcRenderer.send('analyticsEvent', 'Board', 'go to board', null, currentBoard)
 
