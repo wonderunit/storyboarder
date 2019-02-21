@@ -46,11 +46,9 @@ const GuidesView = connect(
     { key: 'guides-canvas',
       ref: guidesCanvasRef,
       id: 'guides-canvas',
-      width: dimensions.width,
-      height: dimensions.height,
+      ...dimensions,
       style: {
-        width: dimensions.width,
-        height: dimensions.height,
+        ...dimensions,
         visibility: visible ? 'visible' : 'hidden'
       }
     }
