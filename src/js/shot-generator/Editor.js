@@ -448,6 +448,7 @@ const SceneManager = connect(
 
               dragControlsView.current.setCamera(cameraForLarge)
               orthoDragControlsView.current.setCamera(cameraForSmall)
+              //orthoDragControlsView.current.setCameras(cameras(scene))
 
               if (cameraControlsView.current && cameraControlsView.current.enabled) {
                 let cameraState = Object.values(state.sceneObjects).find(o => o.id === camera.userData.id)
@@ -584,10 +585,12 @@ const SceneManager = connect(
         //console.log('bones helper current: ', bonesHelper.current)
         dragControlsView.current.setBones(bonesHelper.current)
         dragControlsView.current.setSelected(child)
+        dragControlsView.current.setCameras(cameras(scene))
       }
       if (orthoDragControlsView.current) {
         orthoDragControlsView.current.setBones(bonesHelper.current)
         orthoDragControlsView.current.setSelected(child)
+        orthoDragControlsView.current.setCameras(cameras(scene))
       }
     }, [selection, sceneObjects])
 

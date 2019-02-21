@@ -203,7 +203,7 @@ class DragControls extends THREE.EventDispatcher {
         //character
         allIntersectors.push( o.orthoIcon.icon )        
       }
-    }
+    }    
     for ( o of cameras ) // cameras
     {
       allIntersectors.push ( o.orthoIcon.icon )
@@ -259,7 +259,6 @@ class DragControls extends THREE.EventDispatcher {
         this._downTarget = object
         shouldReportSelection = true
       }
-
         // if we already have a selection and this object matches it ("double-click")
       if (this._selected === object) {
 
@@ -294,8 +293,6 @@ class DragControls extends THREE.EventDispatcher {
         if ( this._raycaster.ray.intersectPlane( this._plane, this._intersection ) ) {
           this._offset.copy( this._intersection ).sub( this._selected.position )
         }
-
-        //console.log( 'drag start!', this._dragTarget )
 
         if (shouldReportSelection) {
           this.onSelectObject( this._selected.userData.id )
@@ -358,7 +355,7 @@ class DragControls extends THREE.EventDispatcher {
     }
   }
 
-  setCamera ( camera ) {
+  setCamera ( camera ) {    
     this._camera = camera
   }
 
@@ -374,7 +371,7 @@ class DragControls extends THREE.EventDispatcher {
     this._selected = object
   }
 
-  setCameras ( cameras ) {
+  setCameras ( cameras ) {    
     this._cameras = cameras
   }
 }
