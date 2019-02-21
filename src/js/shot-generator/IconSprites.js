@@ -42,6 +42,8 @@ function IconSprites ( type, text, parent, secondaryText ) {
         sprite.scale.set(7, 0.7, 1)
         sprite.position.x = 4.1
         sprite.position.z = 0.1
+        sprite.position.y = 10
+        sprite.material.renderOrder = 5
         scope.add(sprite)
     })
     
@@ -51,8 +53,6 @@ function IconSprites ( type, text, parent, secondaryText ) {
     this.icon = icon.clone()
     this.iconText = spriteText
         
-    //this.add(test)
-    //this.add(this.iconText)
     this.add(this.icon)
     
 }
@@ -83,17 +83,15 @@ const iconText = ( text, secondText ) => {
             textContext.clearRect(0,0,800,80)
             textContext.textAlign = "left"
 
-            var metrics = textContext.measureText( text );
-            var textWidth = metrics.width;
             textContext.fillText(text, 10, 50)
             textContext.fillRect(0, 0, 1, 1)
 
             let textTexture = new THREE.CanvasTexture(textsCanvas)
-        
             let textMaterial = new THREE.SpriteMaterial({
                 color:"#550055",
                 map:textTexture,
                 useScreenCoordinates: false, 
+                depthTest: false
             })
             textMaterial.needsUpdate = true
             textTexture.needsUpdate = true
@@ -162,6 +160,7 @@ function init()
         allSprites[o].layers.disable(1)
         allSprites[o].layers.enable(2)
 
+        allSprites[o].material.renderOrder = 10
         allSprites[o].material.depthTest = false
     }
     loadIcons().then(() => {
