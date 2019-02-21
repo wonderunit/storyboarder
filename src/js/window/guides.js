@@ -253,6 +253,9 @@ class Guides {
       gridCamera.rotation.x = 0
       gridCamera.rotation.y = cameraParams.rotation
       gridCamera.rotation.z = 0
+      gridCamera.rotation.y = cameraParams.rotation
+      gridCamera.rotateX(cameraParams.tilt)
+      gridCamera.rotateZ(cameraParams.roll)
 
       gridCamera.updateProjectionMatrix()
       gridCamera.updateMatrixWorld( true )
