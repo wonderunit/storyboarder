@@ -42,6 +42,14 @@ const GuidesView = connect(
     guides.current.offscreenCanvas.height = guides.current.height
   
     guides.current.setState({ center, thirds, eyeline })
+
+    // DEBUG to test perspective guide in real-time
+    // let state = $r.store.getState()
+    // guides.current.setPerspectiveParams({
+    //   camera: state.sceneObjects[state.activeCamera],
+    //   aspectRatio
+    // })
+    // guides.current.setState({ center, thirds, eyeline, perspective: true })
   }, [dimensions, center, thirds, eyeline])
 
   return h([
