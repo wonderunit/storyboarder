@@ -268,6 +268,13 @@ const initialState = {
     lastSavedHash: undefined
   },
 
+  workspace: {
+    guides: {
+      center: false,
+      thirds: false
+    }
+  },
+
   ...initialScene,
 
   selection: undefined,
@@ -824,6 +831,10 @@ module.exports = {
         case 'SET_META_STORYBOARDER_FILE_PATH':
           draft.meta.storyboarderFilePath = action.payload
           return
+
+        case 'TOGGLE_WORKSPACE_GUIDE':
+          draft.workspace.guides[action.payload] = !draft.workspace.guides[action.payload]
+          return
       }
     })
   },
@@ -881,7 +892,9 @@ module.exports = {
 
   setBoard: payload => ({ type: 'SET_BOARD', payload }),
   
-  markSaved: payload => ({ type: 'MARK_SAVED' }),
+  markSaved: () => ({ type: 'MARK_SAVED' }),
+
+  toggleWorkspaceGuide: payload => ({ type: 'TOGGLE_WORKSPACE_GUIDE', payload }),
 
   //
   //

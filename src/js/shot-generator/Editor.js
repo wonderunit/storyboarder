@@ -58,6 +58,8 @@ const {
 
   markSaved,
 
+  toggleWorkspaceGuide,
+
   //
   //
   // selectors
@@ -106,6 +108,7 @@ const NumberSliderFormatter = {
 
 const ModelSelect = require('./ModelSelect')
 const ServerInspector = require('./ServerInspector')
+const GuidesView = require('./GuidesView')
 
 require('../vendor/OutlineEffect.js')
 
@@ -2866,7 +2869,51 @@ const BoardInspector = connect(
   )
 })
 
-const GuidesInspector = ({ }) => h(['div.guides-inspector', 'Guides'])
+const GuidesInspector = connect(
+  state => ({
+    center: state.workspace.guides.center,
+    thirds: state.workspace.guides.thirds,
+    eyeline: state.workspace.guides.eyeline
+  }),
+  {
+    toggleWorkspaceGuide
+  }
+)(
+(({
+  center, thirds, eyeline,
+  toggleWorkspaceGuide
+}) =>
+  h(['div.guides-inspector', [
+    'div.row',
+      ['div.guides-inspector__label', 'Guides'],
+        ['div.round-buttons-panel', [
+          [
+            'a[href=#]',
+            {
+              className: classNames({ active: center }),
+              onClick: preventDefault(() => toggleWorkspaceGuide('center'))
+            },
+            [[Icon, { src: 'icon-guides-center' }]]
+          ],
+          [
+            'a[href=#]',
+            {
+              className: classNames({ active: thirds }),
+              onClick: preventDefault(() => toggleWorkspaceGuide('thirds'))
+            },
+            [[Icon, { src: 'icon-guides-thirds' }]]
+          ],
+          [
+            'a[href=#]',
+            {
+              className: classNames({ active: eyeline }),
+              onClick: preventDefault(() => toggleWorkspaceGuide('eyeline'))
+            },
+            '👁'
+          ]
+        ]]
+      ]]
+)))
 
 const CamerasInspector = connect(
   state => ({
@@ -3330,12 +3377,18 @@ const Editor = connect(
             ['div.column.fill',
               ['div#camera-view', { ref: mainViewContainerRef, style: { paddingTop: `${(1 / aspectRatio) * 100}%` } },
                 // camera canvas
-                ['canvas', { key: 'camera-canvas', tabIndex: 1, ref: largeCanvasRef, id: 'camera-canvas', onPointerDown: onCanvasPointerDown }]
+                ['canvas', { key: 'camera-canvas', tabIndex: 1, ref: largeCanvasRef, id: 'camera-canvas', onPointerDown: onCanvasPointerDown }],
+                largeCanvasSize.width && [GuidesView, {
+                  dimensions: {
+                    width: Math.ceil(largeCanvasSize.width),
+                    height: Math.ceil(largeCanvasSize.width / aspectRatio)
+                  }
+                }]
               ],
               ['div.inspectors', [
                 [CameraInspector, { camera }],
                 [BoardInspector],
-                // [GuidesInspector],
+                [GuidesInspector],
                 [CamerasInspector]
               ]]
             ],
