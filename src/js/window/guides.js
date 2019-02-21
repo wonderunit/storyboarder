@@ -327,7 +327,7 @@ class Guides {
 
     let between = (a, b) => a + (b - a) / 2
 
-    let DIM = 0.4
+    let DIM = 0.5
 
     let ys = [
       // mark at 1/4
