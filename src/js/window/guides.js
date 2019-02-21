@@ -251,7 +251,6 @@ class Guides {
       gridCamera.position.z = cameraParams.z
 
       gridCamera.rotation.x = 0
-      gridCamera.rotation.y = cameraParams.rotation
       gridCamera.rotation.z = 0
       gridCamera.rotation.y = cameraParams.rotation
       gridCamera.rotateX(cameraParams.tilt)
