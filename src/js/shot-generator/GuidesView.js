@@ -1,4 +1,4 @@
-const { useMemo, useEffect, useRef } = React = require('react')
+const { useEffect, useRef } = React = require('react')
 const { connect } = require('react-redux')
 
 const h = require('../utils/h')
@@ -15,28 +15,31 @@ const GuidesView = connect(
 )
 (({ dimensions, visible, center, thirds, eyeline }) => {
   const guidesCanvasRef = useRef()
-  const guides = useMemo(
-    () => {
-      if (!dimensions.width) return
-      if (!guidesCanvasRef.current) return
+  const guides = useRef()
+
+  useEffect(() => {
+    if (!dimensions.width) return
   
-      let g = new Guides({
+    if (!guides.current) {
+      guides.current = new Guides({
         width: dimensions.width,
         height: dimensions.height,
         onRender: () => {}
       })
-      g.canvas = guidesCanvasRef.current
-      g.context = guidesCanvasRef.current.getContext('2d')
-      return g
-    },
-    [guidesCanvasRef, dimensions]
-  )
+    }
 
-  useEffect(() => {
-    if (!guides) return
+    guides.current.canvas = guidesCanvasRef.current
+    guides.current.context = guidesCanvasRef.current.getContext('2d')
   
-    guides.setState({ center, thirds, eyeline })
-  }, [guides, center, thirds, eyeline])
+    guides.current.width = dimensions.width
+    guides.current.height = dimensions.height
+    guides.current.canvas.width = guides.current.width
+    guides.current.canvas.height = guides.current.height
+    guides.current.offscreenCanvas.width = guides.current.width
+    guides.current.offscreenCanvas.height = guides.current.height
+  
+    guides.current.setState({ center, thirds, eyeline })
+  }, [dimensions, center, thirds, eyeline])
 
   return h([
     'canvas',
