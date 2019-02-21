@@ -201,7 +201,9 @@ class Guides {
         x: 0.1,
         y: 1.7,
         z: 1,
-        rotation: -0.232
+        rotation: -0.232,
+        tilt: 0,
+        roll: 0
       }
     }
 
