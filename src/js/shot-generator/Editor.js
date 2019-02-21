@@ -2909,7 +2909,7 @@ const GuidesInspector = connect(
               className: classNames({ active: eyeline }),
               onClick: preventDefault(() => toggleWorkspaceGuide('eyeline'))
             },
-            '👁'
+            [[Icon, { src: 'icon-item-visible' }]]
           ]
         ]]
       ]]
