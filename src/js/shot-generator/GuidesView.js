@@ -7,13 +7,17 @@ const Guides = require('../window/guides')
 
 const GuidesView = connect(
   state => ({
+    aspectRatio: state.aspectRatio,
     visible: state.mainViewCamera === 'live',
     center: state.workspace.guides.center,
     thirds: state.workspace.guides.thirds,
     eyeline: state.workspace.guides.eyeline
   })
 )
-(({ dimensions, visible, center, thirds, eyeline }) => {
+(({
+  dimensions,
+  aspectRatio, visible, center, thirds, eyeline
+}) => {
   const guidesCanvasRef = useRef()
   const guides = useRef()
 

@@ -3402,7 +3402,8 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
       guides && guides.setPerspectiveParams({
         camera: board.sts
           ? board.sts.data.sceneObjects[board.sts.data.activeCamera]
-          : undefined
+          : undefined,
+        aspectRatio: boardData.aspectRatio
       })
     } catch (err) {
       console.error('could not read camera data from board’s shot generator data')

@@ -192,7 +192,7 @@ class Guides {
     context,
     width,
     height,
-    { camera }
+    { camera, aspectRatio }
   ) {
     // default perspective camera for boards without shot generator data
     if (!camera) {
@@ -240,7 +240,7 @@ class Guides {
 
       let gridCamera = new THREE.PerspectiveCamera(
         cameraParams.fov,
-        dimensions[0] / dimensions[1],
+        aspectRatio,
         .01,
         1000
       )
