@@ -380,10 +380,6 @@ kbd {
   background-color: #717171;
   color: #A5A5A5;
 }
-.round-buttons-panel a img {
-  /* --color1: #000; */
-  /* --color2: #717171; */
-}
 
 input, select, label {
   -webkit-app-region: no-drag;
