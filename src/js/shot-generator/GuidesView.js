@@ -23,8 +23,7 @@ const GuidesView = connect(
     if (!guides.current) {
       guides.current = new Guides({
         width: dimensions.width,
-        height: dimensions.height,
-        onRender: () => {}
+        height: dimensions.height
       })
     }
 
