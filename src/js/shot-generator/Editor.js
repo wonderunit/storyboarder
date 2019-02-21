@@ -3378,7 +3378,7 @@ const Editor = connect(
               ['div#camera-view', { ref: mainViewContainerRef, style: { paddingTop: `${(1 / aspectRatio) * 100}%` } },
                 // camera canvas
                 ['canvas', { key: 'camera-canvas', tabIndex: 1, ref: largeCanvasRef, id: 'camera-canvas', onPointerDown: onCanvasPointerDown }],
-                [GuidesView, {
+                largeCanvasSize.width && [GuidesView, {
                   dimensions: {
                     width: Math.ceil(largeCanvasSize.width),
                     height: Math.ceil(largeCanvasSize.width / aspectRatio)
