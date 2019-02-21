@@ -209,10 +209,12 @@ class Guides {
     let cameraParams = camera
     let dimensions = [width, height]
 
-    let canvas = document.createElement('canvas')
-    canvas.width  = dimensions[0]
-    canvas.height = dimensions[1]  
-    let ctx = canvas.getContext('2d')
+    // let canvas = document.createElement('canvas')
+    // canvas.width  = dimensions[0]
+    // canvas.height = dimensions[1]  
+    // let ctx = canvas.getContext('2d')
+    let ctx = context
+    context.save()
 
     if (camera) {
       console.log('Grid#drawPerspective', { camera })
@@ -311,10 +313,6 @@ class Guides {
       ctx.stroke()
     }
 
-    context.save()
-    context.translate(0, 0)
-    context.moveTo(0, 0)
-    context.drawImage(canvas, 0, 0)
     context.restore()
   }
 
