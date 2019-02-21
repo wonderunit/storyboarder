@@ -299,18 +299,18 @@ class Guides {
       }
 
       // TODO draw horizon line
-      let horizonAngle = Math.atan2(perspectivePoint[2].y - perspectivePoint[0].y, perspectivePoint[2].x - perspectivePoint[0].x)
-      let x = Math.cos(horizonAngle) * (10000) - Math.sin(horizonAngle) * (0) + perspectivePoint[2].x
-      let y = Math.sin(horizonAngle) * (10000) - Math.cos(horizonAngle) * (0) + perspectivePoint[2].y
-      ctx.beginPath()
-      ctx.setLineDash([10, 4])
-      ctx.moveTo(x, y)
-      let x2 = Math.cos(horizonAngle) * (-20000) - Math.sin(horizonAngle) * (0) + x 
-      let y2 = Math.sin(horizonAngle) * (-20000) - Math.cos(horizonAngle) * (0) + y
-      ctx.lineWidth = 1
-      ctx.strokeStyle = "black"
-      ctx.lineTo(x2,y2)
-      ctx.stroke()
+      // let horizonAngle = Math.atan2(perspectivePoint[2].y - perspectivePoint[0].y, perspectivePoint[2].x - perspectivePoint[0].x)
+      // let x = Math.cos(horizonAngle) * (10000) - Math.sin(horizonAngle) * (0) + perspectivePoint[2].x
+      // let y = Math.sin(horizonAngle) * (10000) - Math.cos(horizonAngle) * (0) + perspectivePoint[2].y
+      // ctx.beginPath()
+      // ctx.setLineDash([10, 4])
+      // ctx.moveTo(x, y)
+      // let x2 = Math.cos(horizonAngle) * (-20000) - Math.sin(horizonAngle) * (0) + x 
+      // let y2 = Math.sin(horizonAngle) * (-20000) - Math.cos(horizonAngle) * (0) + y
+      // ctx.lineWidth = 1
+      // ctx.strokeStyle = "black"
+      // ctx.lineTo(x2,y2)
+      // ctx.stroke()
     }
 
     context.restore()
