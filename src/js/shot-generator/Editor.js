@@ -3379,10 +3379,8 @@ const Editor = connect(
                 // camera canvas
                 ['canvas', { key: 'camera-canvas', tabIndex: 1, ref: largeCanvasRef, id: 'camera-canvas', onPointerDown: onCanvasPointerDown }],
                 largeCanvasSize.width && [GuidesView, {
-                  dimensions: {
-                    width: Math.ceil(largeCanvasSize.width),
-                    height: Math.ceil(largeCanvasSize.width / aspectRatio)
-                  }
+                  width: Math.ceil(largeCanvasSize.width),
+                  height: Math.ceil(largeCanvasSize.width / aspectRatio)
                 }]
               ],
               ['div.inspectors', [
