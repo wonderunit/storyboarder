@@ -211,10 +211,6 @@ class Guides {
     let cameraParams = camera
     let dimensions = [width, height]
 
-    // let canvas = document.createElement('canvas')
-    // canvas.width  = dimensions[0]
-    // canvas.height = dimensions[1]  
-    // let ctx = canvas.getContext('2d')
     let ctx = context
     context.save()
 
