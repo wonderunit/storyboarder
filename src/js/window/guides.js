@@ -113,7 +113,7 @@ class Guides {
 
     this.context.globalAlpha = 1.0
 
-    this.onRender(this.context.canvas)
+    this.onRender && this.onRender(this.context.canvas)
   }
 
   drawGrid (context, width, height, color, lineWidth) {
