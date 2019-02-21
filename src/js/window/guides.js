@@ -209,26 +209,38 @@ class Guides {
     }
     this.render()
   }
+
   drawEyeline (context, width, height, color, lineWidth) {
     context.translate(this.translateShift, this.translateShift)
 
+    let between = (a, b) => a + (b - a) / 2
+
+    let DIM = 0.4
+
     let ys = [
       // mark at 1/4
-      Math.floor(height * 1/4),
+      [Math.floor(height * 1/4), 1],
+      // dim mark between 1/4 and 1/3
+      [Math.floor(height * between(1/4, 1/3)), DIM],
       // mark at 1/3
-      Math.floor(height * 1/3),
-      // mark in between
-      Math.floor(height * (1/4 + (1/3 - 1/4) / 2)),
+      [Math.floor(height * 1/3), 1],
+
+      // dim mark between 1/3 and 1/2
+      [Math.floor(height * between(1/3, 1/2)), DIM],
+      // mark at 1/2
+      [Math.floor(height * 1/2), 1]
     ]
 
-    context.lineWidth = lineWidth
-    context.strokeStyle = color
+    for (let [y, alpha] of ys) {
+      context.lineWidth = lineWidth
+      context.strokeStyle = color
 
-    for (let y of ys) {
+      context.globalAlpha = alpha
       context.beginPath()
       context.moveTo(0, y)
       context.lineTo(width, y)
       context.stroke()
+      context.globalAlpha = 1.0
     }
 
     context.translate(-this.translateShift, -this.translateShift)
