@@ -58,6 +58,9 @@ const useGround = (world, scene) => {
       } else {
         object.current = groundFactory({ texture: groundTexture.current })
         object.current.visible = world.ground
+        object.current.layers.disable(0)
+        object.current.layers.enable(1)
+        object.current.layers.disable(2)
         scene.add(object.current)
       }
     }

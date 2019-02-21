@@ -207,6 +207,7 @@ const SceneManager = connect(
     let largeRenderer = useRef(null)
     let largeRendererEffect = useRef(null)
     let smallRenderer = useRef(null)
+    let smallRendererEffect = useRef(null)
     let animator = useRef(null)
     let animatorId = useRef(null)
 
@@ -218,7 +219,7 @@ const SceneManager = connect(
 
     let clock = useRef(new THREE.Clock())
 
-    let orthoCamera = useRef(new THREE.OrthographicCamera( -4, 4, 4, -4, 0, 1000 ))
+    let orthoCamera = useRef(new THREE.OrthographicCamera( -4, 4, 4, -4, 1, 10000 ))
 
     let cameraHelper = useRef(null)
     
@@ -277,8 +278,8 @@ const SceneManager = connect(
       //   largeCanvasSize.height
       // )
 
-      largeRendererEffect.current = new THREE.OutlineEffect( largeRenderer.current )
-
+      largeRendererEffect.current = new THREE.OutlineEffect( largeRenderer.current, {defaultThickness:0.008} )
+      
       smallRenderer.current = new THREE.WebGLRenderer({
         canvas: smallCanvasRef.current,
         antialias: true
@@ -287,6 +288,7 @@ const SceneManager = connect(
         300,
         300,
       )
+      smallRendererEffect.current = new THREE.OutlineEffect( smallRenderer.current, {defaultThickness:0.02, defaultAlpha:0.5, defaultColor: [ 0.4, 0.4, 0.4 ], ignoreMaterial: true} )
     }, [])
 
     // resize the renderers (large and small)
@@ -359,16 +361,37 @@ const SceneManager = connect(
       if (mainViewCamera === 'live') {
         // perspective camera is large
         largeRenderer.current.setSize(width, height)
+
+        largeRendererEffect.current.setParams({
+          defaultThickness:0.008,
+          ignoreMaterial: false,
+          defaultColor: [0, 0, 0]
+        })
         // ortho camera is small
         smallRenderer.current.setSize(300, 300)
+        smallRendererEffect.current.setParams({
+          defaultThickness:0.02,
+          ignoreMaterial: true,
+          defaultColor: [ 0.4, 0.4, 0.4 ]
+        })
       } else {
         // ortho camera is large
         largeRenderer.current.setSize(width, height)
+        largeRendererEffect.current.setParams({
+          defaultThickness:0.025,
+          ignoreMaterial: true,
+          defaultColor: [ 0.4, 0.4, 0.4 ]
+        })
         // perspective camera is small
         smallRenderer.current.setSize(
           Math.floor(300),
           Math.floor(300 / aspectRatio)
         )
+        smallRendererEffect.current.setParams({
+          defaultThickness:0.008,
+          ignoreMaterial: false,
+          defaultColor: [0, 0, 0]
+        })
       }
     }, [sceneObjects, largeCanvasSize, mainViewCamera, aspectRatio])
 
@@ -495,12 +518,14 @@ const SceneManager = connect(
 
               if (state.mainViewCamera === 'live') {
                 largeRendererEffect.current.render(scene, cameraForLarge)
-              } else {
-                largeRenderer.current.render(scene, cameraForLarge)
+              } else {                
+                largeRendererEffect.current.render(scene, cameraForLarge)
+                //largeRenderer.current.render(scene, cameraForLarge)
               }
 
               cameraHelper.current.update()
-              smallRenderer.current.render(scene, cameraForSmall)
+              smallRendererEffect.current.render( scene, cameraForSmall)
+              //smallRenderer.current.render(scene, cameraForSmall)
             })
           }
           if (stats) { stats.end() }
@@ -3204,8 +3229,11 @@ const Editor = connect(
       transition('TYPING_EXIT')
     }
 
-    const onSwapCameraViewsClick = preventDefault(() =>
-      setMainViewCamera(mainViewCamera === 'ortho' ? 'live' : 'ortho'))
+    const onSwapCameraViewsClick = preventDefault(() => {
+      
+      setMainViewCamera(mainViewCamera === 'ortho' ? 'live' : 'ortho')
+
+    })
 
     const onAutoFitClick = preventDefault(() => { alert('TODO autofit (not implemented yet)') })
     const onZoomInClick = preventDefault(() => { alert('TODO zoom in (not implemented yet)') })
@@ -3219,14 +3247,13 @@ const Editor = connect(
     const renderImagesForBoard = state => {
       if (!imageRenderer.current) {
         imageRenderer.current = new THREE.OutlineEffect(
-          new THREE.WebGLRenderer({ antialias: true })
+          new THREE.WebGLRenderer({ antialias: true }), { defaultThickness:0.008 }
         )
       }
 
       let imageRenderCamera = camera.clone()
       imageRenderCamera.layers.set(0)
       imageRenderCamera.layers.enable(3)
-
 
 
       //

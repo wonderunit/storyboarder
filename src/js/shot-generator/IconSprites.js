@@ -6,7 +6,7 @@ const { Sprite } = THREE
 const { useRef, useEffect, useState } = React
 
 const allIcons = {
-    character: new THREE.SpriteMaterial( { color: 0xffffff, opacity: 1, outline: 0, map:null } ),
+    character: new THREE.SpriteMaterial( { color: 0xffffff } ),
     camera: new THREE.SpriteMaterial( { color: 0x00ffff } ),
     light: new THREE.SpriteMaterial( { color: 0xff00ff } ),
     object: new THREE.SpriteMaterial( { color: 0xffff00 } )
@@ -35,6 +35,9 @@ function IconSprites ( type, text, parent, secondaryText ) {
             break
         case 'light':
             icon = allSprites.light
+            break
+        case 'object':
+            icon = allSprites.object
             break
     }
     
@@ -107,6 +110,36 @@ const iconText = ( text, secondText ) => {
     }) 
 }
 
+const generateSprite = ( color, sprite ) => {
+    return new Promise((resolve, reject) => {
+        let blancCanvas = document.createElement('canvas')
+        blancCanvas.width = 300
+        blancCanvas.height = 300
+        let blancContext = blancCanvas.getContext('2d')
+        blancContext.clearRect(0,0,300,300)
+        blancContext.fillRect(0, 0, 300, 300)
+
+        spriteTexture = new THREE.CanvasTexture(blancContext)
+        let spriteMaterial = new THREE.SpriteMaterial({
+            color,
+            useScreenCoordinates: false, 
+            depthTest: true
+        })
+        spriteMaterial.needsUpdate = true
+        spriteTexture.needsUpdate = true
+        spriteMaterial.depthTest = true
+        
+        sprite.scale.set(1,1,1)
+        sprite.material = spriteMaterial
+        //sprite.material.needsUpdate = true
+        sprite.layers.disable(0)
+        sprite.layers.disable(1)
+        sprite.layers.enable(2)
+        
+        resolve(sprite)
+    })
+}
+
 const loadIconPromise = (file, sprite, compensatescaling) => {
     return new Promise((resolve, reject) => {
         let img = new Image
@@ -143,7 +176,7 @@ const loadIcons = () => {
     const character = loadIconPromise("data/shot-generator/icons/character.svg", allSprites.character, 0.07)
     const camera = loadIconPromise("data/shot-generator/icons/camera.svg", allSprites.camera, 0.07)
     const light = loadIconPromise("data/shot-generator/icons/light.svg", allSprites.light, 0.07)
-    const object = loadIconPromise("data/shot-generator/icons/camera.svg", allSprites.object, 1)
+    const object = generateSprite("#999999", allSprites.object)
 
     return Promise.all( [ character, camera, light, object ] ).then(( values ) => {
         
