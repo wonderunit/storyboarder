@@ -75,9 +75,14 @@ const show = (onComplete) => {
     slashes: true
   }))
 
-  ipcMain.on('shot-generator:window:loaded', event => {
-    reveal(onComplete)
-  })
+  // use this to wait until the window has completely loaded
+  // ipcMain.on('shot-generator:window:loaded', () => { })
+  
+  // use this to show sooner
+  // win.once('ready-to-show', () => { })
+
+  // use this to show right away
+  reveal(onComplete)
 }
 
 ipcMain.on('shot-generator:menu:view:fps-meter', (event, value) => {
