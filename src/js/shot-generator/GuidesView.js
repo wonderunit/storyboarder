@@ -6,11 +6,14 @@ const h = require('../utils/h')
 const Guides = require('../window/guides')
 
 const mapStateToProps = state => ({
-  aspectRatio: state.aspectRatio,
   visible: state.mainViewCamera === 'live',
   center: state.workspace.guides.center,
   thirds: state.workspace.guides.thirds,
-  eyeline: state.workspace.guides.eyeline
+  eyeline: state.workspace.guides.eyeline,
+
+  // DEBUG uncomment these to debug the perspective guide in realtime
+  // camera: state.sceneObjects[state.activeCamera],
+  // aspectRatio: state.aspectRatio
 })
 
 const GuidesView = ({
@@ -18,7 +21,11 @@ const GuidesView = ({
   width, height,
 
   // from state
-  aspectRatio, visible, center, thirds, eyeline
+  visible, center, thirds, eyeline,
+
+  // DEBUG uncomment these to debug the perspective guide in realtime
+  // camera,
+  // aspectRatio
 }) => {
   const guidesCanvasRef = useRef()
   const guides = useRef()
@@ -46,15 +53,17 @@ const GuidesView = ({
     guides.current.offscreenCanvas.height = guides.current.height
 
     guides.current.setState({ center, thirds, eyeline })
-
-    // DEBUG to test perspective guide in real-time
-    // let state = $r.store.getState()
-    // guides.current.perspectiveParams = {
-    //   camera: state.sceneObjects[state.activeCamera],
-    //   aspectRatio
-    // }
-    // guides.current.setState({ center, thirds, eyeline, perspective: true })
   }, [dimensions, center, thirds, eyeline])
+
+  // DEBUG uncomment to test perspective guide in real-time
+  // try {
+  //   if (guides.current) {
+  //     guides.current.perspectiveParams = { camera, aspectRatio }
+  //     guides.current.setState({ center, thirds, eyeline, perspective: true })
+  //   }
+  // } catch (err) {
+  //   console.warn(err)
+  // }
 
   return h([
     'canvas',
