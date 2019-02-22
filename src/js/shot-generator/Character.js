@@ -177,6 +177,9 @@ const Character = React.memo(({
       setLoaded(true)
     } else {
       alert('This model doesn’t contain a Skinned Mesh. Please load it as an Object, not a Character.')
+
+      // HACK undefined means an error state
+      setLoaded(undefined)
     }
   }
 

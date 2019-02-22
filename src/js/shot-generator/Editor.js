@@ -3429,9 +3429,9 @@ const Editor = connect(
 const LoadingStatus = connect(
   state => ({
     // TODO use selectors for better performance
-    total: Object.values(state.sceneObjects).filter(curr => (curr.type === 'character' || curr.type === 'object')).length,
+    total: Object.values(state.sceneObjects).filter(curr => (curr.type === 'character' || curr.type === 'object') && curr.loaded != null).length,
     remaining: Object.values(state.sceneObjects).reduce((value, curr) => {
-      if ((curr.type === 'character' || curr.type === 'object') && !curr.loaded) {
+      if ((curr.type === 'character' || curr.type === 'object') && curr.loaded != null && !curr.loaded) {
         value = value + 1
       }
       return value
