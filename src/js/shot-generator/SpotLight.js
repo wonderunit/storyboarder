@@ -109,6 +109,7 @@ const SpotLight = React.memo(({ scene, id, type, setLight, icon, text, ...props 
       let addRotation = props.tilt>=0 ? 0 : Math.PI
       light.current.orthoIcon.position.copy(light.current.position)
       light.current.orthoIcon.icon.material.rotation = props.rotation + addRotation
+      light.current.orthoIcon.visible = props.visible
     }
   }, [props.x, props.y, props.z, props.rotation, props.tilt, props.visible])
 

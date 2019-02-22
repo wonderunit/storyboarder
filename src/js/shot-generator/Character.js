@@ -689,6 +689,7 @@ const Character = React.memo(({
 
     if (object.current) {
       object.current.visible = props.visible
+      object.current.orthoIcon.visible = props.visible
       object.current.bonesHelper.visible = props.visible
       object.current.bonesHelper.hit_meshes.map(hit => hit.visible = props.visible)
     }
