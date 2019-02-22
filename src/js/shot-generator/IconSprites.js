@@ -25,6 +25,7 @@ function IconSprites ( type, text, parent, secondaryText ) {
     let scope = this
     let icon
     let spriteText
+    let secondSpriteText
 
     switch (type) {
         case 'character':
@@ -41,20 +42,31 @@ function IconSprites ( type, text, parent, secondaryText ) {
             break
     }
     
-    spriteText = iconText(text, secondaryText).then((sprite) => {
+    spriteText = iconText(text).then((sprite) => {
         sprite.scale.set(7, 0.7, 1)
         sprite.position.x = 4.1
-        sprite.position.z = 0.1
-        sprite.position.y = 10
+        sprite.position.z = secondaryText ? -0.1 : 0.1
         sprite.material.renderOrder = 5
         scope.add(sprite)
     })
+
+    if (secondaryText) {
+        secondSpriteText = iconText(secondaryText).then((sprite) => {
+            sprite.scale.set(7, 0.7, 1)
+            sprite.position.x = 4.1
+            sprite.position.z = 0.3
+            sprite.material.renderOrder = 5
+            
+            scope.add(sprite)
+        })
+    }
     
     
     
     this.linkedTo = parent
     this.icon = icon.clone()
     this.iconText = spriteText
+    this.iconSeconText = secondSpriteText
         
     this.add(this.icon)
     
@@ -74,7 +86,7 @@ Sprite.prototype.clone = function ( recursive ) {
 }
 
 
-const iconText = ( text, secondText ) => {
+const iconText = ( text ) => {
     return new Promise((resolve, reject) => {
         document.fonts.load('600 52px wonderunitsans').then(result => {
             let textsCanvas = document.createElement('canvas')

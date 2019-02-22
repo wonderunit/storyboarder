@@ -811,8 +811,10 @@ const Camera = React.memo(({ scene, id, type, setCamera, icon, text, ...props })
     // camera.current.userData.type = type
     // camera.current.userData.id = id
     camera.current.fov = props.fov
+    let focal = camera.current.getFocalLength()
+    let [camFeet, camInches] = metersAsFeetAndInches(props.z)
     camera.current.aspect = props.aspectRatio
-    camera.current.orthoIcon = new IconSprites( type, text, camera.current )
+    camera.current.orthoIcon = new IconSprites( type, text, camera.current, Math.round(focal)+"mm, "+feetAndInchesAsString(camFeet, camInches) )
     camera.current.orthoIcon.position.copy(camera.current.position)
     camera.current.orthoIcon.icon.material.rotation = camera.current.rotation.y
     scene.add(camera.current.orthoIcon)
