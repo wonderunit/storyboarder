@@ -3328,7 +3328,12 @@ const Editor = connect(
 
       // TODO introspect models
       updateModels({})
-      setReady(true)
+
+      // do any other pre-loading stuff here
+      document.fonts.ready.then(() => {
+        // let the app know we're ready to render
+        setReady(true)
+      })
 
       return function cleanup () {
         scene.current = null
@@ -3406,20 +3411,59 @@ const Editor = connect(
             // ]],
 
             ready && (remoteInput.mouseMode || remoteInput.orbitMode) && [PhoneCursor, { remoteInput, camera, largeCanvasRef, selectObject, selectBone, sceneObjects, selection, selectedBone }],
-          ]
+          ],
+
+          [LoadingStatus, { ready }]
         ],
 
         ready && [SceneManager, { mainViewCamera, largeCanvasRef, smallCanvasRef, machineState, transition, largeCanvasSize }],
 
         !machineState.matches('typing') && [KeyHandler],
 
-        [MenuManager]
+        [MenuManager],
       ]
     )
   )
 })
 
+const LoadingStatus = connect(
+  state => ({
+    // TODO use selectors for better performance
+    total: Object.values(state.sceneObjects).filter(curr => (curr.type === 'character' || curr.type === 'object')).length,
+    remaining: Object.values(state.sceneObjects).reduce((value, curr) => {
+      if ((curr.type === 'character' || curr.type === 'object') && !curr.loaded) {
+        value = value + 1
+      }
+      return value
+    }, 0)
+  })
+)(React.memo(({ ready, total, remaining }) => {
+  let message
+  
+  if (!ready) {
+    message = 'Initializing Shot Generator …'
+  } else {
+    if (!total) {
+      message = 'Loading scene …'
+    } else if (remaining) {
+      message = `Loading model ${remaining} of ${total} …`
+    }
+  }
 
+  if (!message) return null
+
+  return h(
+    ['div.modal-overlay', [
+      ['div.modal', [
+        ['div.modal__content', [
+          ['div.title', 'Loading'],
+          ['div.message', message]
+        ]]
+      ]]
+    ]]
+  )
+
+}))
 
 const saveScenePresets = state => presetsStorage.saveScenePresets({ scenes: state.presets.scenes })
 const PresetsEditor = connect(
