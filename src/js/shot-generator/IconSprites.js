@@ -5,6 +5,11 @@ const { Sprite } = THREE
 
 const { useRef, useEffect, useState } = React
 
+const createGeometry = require('three-bmfont-text')
+const loadFont = require('load-bmfont')
+
+const SDFShader = require("./shaders/sdf-shader")
+
 const allIcons = {
     character: new THREE.SpriteMaterial( { color: 0xffffff } ),
     camera: new THREE.SpriteMaterial( { color: 0x00ffff } ),
@@ -26,6 +31,7 @@ function IconSprites ( type, text, parent, secondaryText ) {
     let icon
     let spriteText
     let secondSpriteText
+    let betterSpriteText
 
     switch (type) {
         case 'character':
@@ -42,13 +48,13 @@ function IconSprites ( type, text, parent, secondaryText ) {
             break
     }
     
-    spriteText = iconText(text).then((sprite) => {
-        sprite.scale.set(7, 0.7, 1)
-        sprite.position.x = 4.1
-        sprite.position.z = secondaryText ? -0.1 : 0.1
-        sprite.material.renderOrder = 5
-        scope.add(sprite)
-    })
+    // spriteText = iconText(text).then((sprite) => {
+    //     sprite.scale.set(7, 0.7, 1)
+    //     sprite.position.x = 4.1
+    //     sprite.position.z = secondaryText ? -0.1 : 0.1
+    //     sprite.material.renderOrder = 5
+    //     scope.add(sprite)
+    // })
 
     if (secondaryText) {
         secondSpriteText = iconText(secondaryText).then((sprite) => {
@@ -61,15 +67,23 @@ function IconSprites ( type, text, parent, secondaryText ) {
         })
     }
     
+    betterSpriteText = iconTextBetter(text).then((mesh) => {
+        mesh.scale.set(0.006,0.006,0.006)
+        mesh.rotation.z = Math.PI
+        mesh.rotation.y = Math.PI
+        mesh.rotation.x = -Math.PI/2
+        mesh.position.x = 0.7
+        scope.add(mesh)
+    })
     
     
     this.linkedTo = parent
     this.icon = icon.clone()
-    this.iconText = spriteText
+    //this.iconText = spriteText
     this.iconSeconText = secondSpriteText
-        
+    this.iconBetterText = betterSpriteText
     this.add(this.icon)
-    
+    console.log('this: ', this)
 }
 
 IconSprites.prototype = Object.create( Object3D.prototype )
@@ -85,6 +99,72 @@ Sprite.prototype.clone = function ( recursive ) {
     return result
 }
 
+const iconTextBetter = ( text ) => {
+    return new Promise((resolve, reject) => {
+        loadFont('src/fonts/wonder-unit-bmfont/wonderunit-b.fnt', (err, font) => {
+            console.log('err: ', err)
+            
+            // create a geometry of packed bitmap glyphs, 
+            // word wrapped to 300px and right-aligned
+            var geometry = createGeometry({
+                width: 1000,
+                align: 'left',
+                font: font,
+                color: '#000',
+                threshold:0.1
+            })
+            
+            // change text and other options as desired
+            // the options sepcified in constructor will
+            // be used as defaults
+            geometry.update(text)
+  
+            // the resulting layout has metrics and bounds
+            console.log(geometry.layout.height)
+            console.log(geometry.layout.descender)
+    
+            // the texture atlas containing our glyphs
+            let textureLoader = new THREE.TextureLoader();
+            textureLoader.load('fonts/wonder-unit-bmfont/wonderunit-b.png', function (texture) {
+            // we can use a simple ThreeJS material
+                console.log('got texture: ', texture)
+                texture.minFilter = THREE.LinearMipMapLinearFilter
+                texture.magFilter = THREE.LinearFilter
+                texture.generateMipmaps = true
+                //texture.anisotropy = 4//renderer.getMaxAnisotropy()
+                
+                var material = new THREE.ShaderMaterial({
+                    uniforms: THREE.UniformsUtils.clone( SDFShader.uniforms ),
+                    fragmentShader: SDFShader.fragmentShader,
+                    vertexShader: SDFShader.vertexShader,
+                    side: THREE.DoubleSide,
+                    transparent: true,
+                    depthTest: false
+                })
+                
+                material.uniforms.map.value = texture;
+                material.uniforms.color.value = new THREE.Color( '#000000' );
+                                
+                // let material = new THREE.MeshBasicMaterial({
+                //     map: texture,
+                //     transparent: true,
+                //     color: 0x000000
+                // })
+                material.needsUpdate = true
+
+                //material.uniforms.smoothing = 0.32
+                //material.uniforms.threshold = 0.4
+                // now do something with our mesh!
+                let mesh = new THREE.Mesh(geometry, material)
+                mesh.textGeometry = geometry
+                mesh.layers.disable(0)
+                mesh.layers.disable(1)
+                mesh.layers.enable(2)
+                resolve(mesh)
+            })
+        })
+    })
+}
 
 const iconText = ( text ) => {
     return new Promise((resolve, reject) => {
