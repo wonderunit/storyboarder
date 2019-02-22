@@ -16,8 +16,8 @@ const lightHelperFactory = light => {
   helper.layers.enable(1)
    child.layers.enable(1)
   // shows in top-down view
-  helper.layers.enable(2)
-   child.layers.enable(2)
+  helper.layers.disable(2)
+   child.layers.disable(2)
 
   return helper
 }
@@ -58,6 +58,10 @@ const SpotLight = React.memo(({ scene, id, type, setLight, icon, text, ...props 
 
     var helper = lightHelperFactory(light_spot)
     lightContainer.helper = helper
+
+    box_light_mesh.layers.disable(0)
+    box_light_mesh.layers.enable(1)
+    box_light_mesh.layers.disable(2)
 
     light.current = lightContainer
     light.current.userData.id = id

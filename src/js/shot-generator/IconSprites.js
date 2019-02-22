@@ -113,22 +113,23 @@ const iconText = ( text, secondText ) => {
 const generateSprite = ( color, sprite ) => {
     return new Promise((resolve, reject) => {
         let blancCanvas = document.createElement('canvas')
-        blancCanvas.width = 300
-        blancCanvas.height = 300
+        blancCanvas.width = 100
+        blancCanvas.height = 100
         let blancContext = blancCanvas.getContext('2d')
-        blancContext.clearRect(0,0,300,300)
-        blancContext.fillRect(0, 0, 300, 300)
+        blancContext.clearRect(0,0,100,100)
+        blancContext.fillRect(0, 0, 100, 100)
 
         spriteTexture = new THREE.CanvasTexture(blancContext)
         let spriteMaterial = new THREE.SpriteMaterial({
             color,
             useScreenCoordinates: false, 
-            depthTest: true
+            depthTest: false
         })
+        
         spriteMaterial.needsUpdate = true
         spriteTexture.needsUpdate = true
-        spriteMaterial.depthTest = true
-        
+        spriteMaterial.depthTest = false
+        sprite.renderOrder = 10
         sprite.scale.set(1,1,1)
         sprite.material = spriteMaterial
         //sprite.material.needsUpdate = true
@@ -160,9 +161,13 @@ const loadIconPromise = (file, sprite, compensatescaling) => {
                 s.scale.copy(sprite.scale)
                 s.material.map = tex
                 s.material.needsUpdate = true
+                s.material.depthTest = false
+                s.material.renderOrder = 4
             }
             sprite.material.map = tex
             sprite.material.needsUpdate = true
+            sprite.material.depthTest = false
+            sprite.material.renderOrder = 4
             resolve(sprite)          
         }
         img.onerror = (e) => {
@@ -176,7 +181,7 @@ const loadIcons = () => {
     const character = loadIconPromise("data/shot-generator/icons/character.svg", allSprites.character, 0.07)
     const camera = loadIconPromise("data/shot-generator/icons/camera.svg", allSprites.camera, 0.07)
     const light = loadIconPromise("data/shot-generator/icons/light.svg", allSprites.light, 0.07)
-    const object = generateSprite("#999999", allSprites.object)
+    const object = generateSprite("#000000", allSprites.object)
 
     return Promise.all( [ character, camera, light, object ] ).then(( values ) => {
         

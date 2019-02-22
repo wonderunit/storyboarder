@@ -378,7 +378,7 @@ const SceneManager = connect(
         // ortho camera is large
         largeRenderer.current.setSize(width, height)
         largeRendererEffect.current.setParams({
-          defaultThickness:0.025,
+          defaultThickness:0.013,
           ignoreMaterial: true,
           defaultColor: [ 0.4, 0.4, 0.4 ]
         })
@@ -456,10 +456,10 @@ const SceneManager = connect(
           }.bind(this) )
         }
 
-        cameraHelper.current = new THREE.CameraHelper(camera)
-        cameraHelper.current.layers.disable(0)
-        cameraHelper.current.layers.enable(2)
-        scene.add(cameraHelper.current)
+        // cameraHelper.current = new THREE.CameraHelper(camera)
+        // cameraHelper.current.layers.disable(0)
+        // cameraHelper.current.layers.enable(2)
+        // scene.add(cameraHelper.current)
 
         animator.current = () => {
           if (stats) { stats.begin() }
@@ -523,7 +523,7 @@ const SceneManager = connect(
                 //largeRenderer.current.render(scene, cameraForLarge)
               }
 
-              cameraHelper.current.update()
+              //cameraHelper.current.update()
               smallRendererEffect.current.render( scene, cameraForSmall)
               //smallRenderer.current.render(scene, cameraForSmall)
             })
@@ -544,8 +544,8 @@ const SceneManager = connect(
         animator.current = () => {}
         animatorId.current = null
 
-        scene.remove(cameraHelper.current)
-        cameraHelper.current = null
+        //scene.remove(cameraHelper.current)
+        //cameraHelper.current = null
 
         if (cameraControlsView.current) {
           // remove camera controls event listeners and null the reference
@@ -568,20 +568,21 @@ const SceneManager = connect(
         child = scene.children.find(o => o.userData.id === selection)
         sceneObject = sceneObjects[selection]
         //if light - add helper
-        if (sceneObject.type === 'light') {
-          if (lightHelper.current !== child)
-          {
-            scene.remove(lightHelper.current)
-            lightHelper.current = child.helper
-            scene.add(lightHelper.current)
-          }
-        } else {
-          if (lightHelper.current)
-          {
-            scene.remove(lightHelper.current)
-            lightHelper.current = null
-          }
-        }
+
+        // if (sceneObject.type === 'light') {
+        //   if (lightHelper.current !== child)
+        //   {
+        //     scene.remove(lightHelper.current)
+        //     lightHelper.current = child.helper
+        //     scene.add(lightHelper.current)
+        //   }
+        // } else {
+        //   if (lightHelper.current)
+        //   {
+        //     scene.remove(lightHelper.current)
+        //     lightHelper.current = null
+        //   }
+        // }
 
         //if character
         //if (child && ((child.children[0] && child.children[0].skeleton) || (child.children[1] && child.children[1].skeleton) || (child.children[2] && child.children[2].skeleton)) && sceneObject.visible) {
@@ -809,19 +810,31 @@ const Camera = React.memo(({ scene, id, type, setCamera, icon, text, ...props })
     // camera.current.rotateZ(props.roll)
     // camera.current.userData.type = type
     // camera.current.userData.id = id
+    camera.current.fov = props.fov
     camera.current.aspect = props.aspectRatio
     camera.current.orthoIcon = new IconSprites( type, text, camera.current )
     camera.current.orthoIcon.position.copy(camera.current.position)
     camera.current.orthoIcon.icon.material.rotation = camera.current.rotation.y
     scene.add(camera.current.orthoIcon)
-     
-    //camera.current.iconText = IconSprites.IconText(text)
-    //camera.current.iconText.scale.set(6, 0.36, 1)
-    //camera.current.iconText.position.set(2.5, 0, 0)
-    //camera.current.add(camera.current.iconText)
+    
+    let frustumIcons = new THREE.Object3D()
 
-    // camera.current.fov = props.fov
-    // camera.current.updateProjectionMatrix()
+    frustumIcons.left = new IconSprites( 'object', '', camera.current )
+    frustumIcons.right = new IconSprites( 'object', '', camera.current )
+    frustumIcons.left.scale.set(0.06, 2.5, 1)
+    frustumIcons.right.scale.set(0.06, 2.5, 1)
+    //frustumIcons.left.icon.position.z = -0.3
+    frustumIcons.left.icon.center = new THREE.Vector2(0.5, -0.2)
+    frustumIcons.right.icon.center = new THREE.Vector2(0.5, -0.2)
+    let hFOV = 2 * Math.atan( Math.tan( camera.current.fov * Math.PI / 180 / 2 ) * camera.current.aspect ) 
+    frustumIcons.left.icon.material.rotation = hFOV/2 + camera.current.rotation.y
+    frustumIcons.right.icon.material.rotation = -hFOV/2 + camera.current.rotation.y
+   
+    camera.current.orthoIcon.frustumIcons = frustumIcons
+    frustumIcons.add(frustumIcons.left)
+    frustumIcons.add(frustumIcons.right)
+    camera.current.orthoIcon.add(frustumIcons)
+
     scene.add(camera.current)
     // setCamera(camera.current)
 
@@ -864,6 +877,12 @@ const Camera = React.memo(({ scene, id, type, setCamera, icon, text, ...props })
     camera.current.orthoIcon.position.copy(camera.current.position)
     let rotation = new THREE.Euler().setFromQuaternion( camera.current.quaternion, "YXZ" )   //always "YXZ" when we gat strange rotations
     camera.current.orthoIcon.icon.material.rotation = rotation.y
+
+    let hFOV = 2 * Math.atan( Math.tan( camera.current.fov * Math.PI / 180 / 2 ) * camera.current.aspect ) 
+    camera.current.orthoIcon.frustumIcons.left.icon.material.rotation = hFOV/2 + rotation.y
+    camera.current.orthoIcon.frustumIcons.right.icon.material.rotation = -hFOV/2 + rotation.y
+   
+    //camera.current.orthoIcon.frustumIcons = frustumIcons
   }
   camera.current.layers.enable(1)
 
