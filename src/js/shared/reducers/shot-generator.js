@@ -477,6 +477,24 @@ const updateMeta = state => {
   state.meta.lastSavedHash = hashify(JSON.stringify(getSerializedState(state)))
 }
 
+// `loaded` status is not serialized
+// when we load a new file, we need to initialize it
+// so it can be read to determine loading progress
+const resetLoadingStatus = sceneObjects => {
+  for (let key in sceneObjects) {
+    if (
+      sceneObjects[key].type === 'character' ||
+      sceneObjects[key].type === 'object'
+    ) {
+      sceneObjects[key] = {
+        ...sceneObjects[key],
+        loaded: false
+      }
+    }
+  }
+  return sceneObjects
+}
+
 module.exports = {
   initialState,
 
@@ -492,7 +510,7 @@ module.exports = {
           if (!action.payload.world.ambient) draft.world.ambient = initialScene.world.ambient
           if (!action.payload.world.directional) draft.world.directional = initialScene.world.directional
 
-          draft.sceneObjects = migrateRotations(action.payload.sceneObjects)
+          draft.sceneObjects = resetLoadingStatus(migrateRotations(action.payload.sceneObjects))
           draft.activeCamera = action.payload.activeCamera
           // clear selections
           draft.selection = undefined
