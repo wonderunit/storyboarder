@@ -129,6 +129,7 @@ const metersAsFeetAndInches = meters => {
 }
 
 const feetAndInchesAsString = (feet, inches) => `${feet}′${inches}″`
+const feetAndInchesAsString2nd = (feet, inches) => `${feet}'${inches}"`  //need these because sdf font doesn't have these glyphs
 
 const shortId = id => id.toString().substr(0, 7).toLowerCase()
 
@@ -814,7 +815,7 @@ const Camera = React.memo(({ scene, id, type, setCamera, icon, text, ...props })
     let focal = camera.current.getFocalLength()
     let [camFeet, camInches] = metersAsFeetAndInches(props.z)
     camera.current.aspect = props.aspectRatio
-    camera.current.orthoIcon = new IconSprites( type, text, camera.current, Math.round(focal)+"mm, "+feetAndInchesAsString(camFeet, camInches) )
+    camera.current.orthoIcon = new IconSprites( type, text, camera.current, Math.round(focal)+"mm, "+feetAndInchesAsString2nd(camFeet, camInches) )
     camera.current.orthoIcon.position.copy(camera.current.position)
     camera.current.orthoIcon.icon.material.rotation = camera.current.rotation.y
     scene.add(camera.current.orthoIcon)
@@ -883,7 +884,16 @@ const Camera = React.memo(({ scene, id, type, setCamera, icon, text, ...props })
     let hFOV = 2 * Math.atan( Math.tan( camera.current.fov * Math.PI / 180 / 2 ) * camera.current.aspect ) 
     camera.current.orthoIcon.frustumIcons.left.icon.material.rotation = hFOV/2 + rotation.y
     camera.current.orthoIcon.frustumIcons.right.icon.material.rotation = -hFOV/2 + rotation.y
-   
+    
+    
+    //calculatedName = camera.current.name || capitalize(`${camera.current.type} ${number}`)
+    //if (camera.current.orthoIcon.iconText)
+      //camera.current.orthoIcon.iconText.textGeometry.update( calculatedName )
+    
+    let focal = camera.current.getFocalLength()
+    let [camFeet, camInches] = metersAsFeetAndInches(props.z)
+    if (camera.current.orthoIcon.iconSecondText)
+      camera.current.orthoIcon.iconSecondText.textGeometry.update( Math.round(focal)+"mm, "+feetAndInchesAsString2nd(camFeet, camInches) )
     //camera.current.orthoIcon.frustumIcons = frustumIcons
   }
   camera.current.layers.enable(1)

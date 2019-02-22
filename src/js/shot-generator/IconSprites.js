@@ -29,9 +29,7 @@ function IconSprites ( type, text, parent, secondaryText ) {
 
     let scope = this
     let icon
-    let spriteText
-    let secondSpriteText
-    let betterSpriteText
+    let betterSpriteText, betterSpriteSecondaryText
 
     switch (type) {
         case 'character':
@@ -47,43 +45,36 @@ function IconSprites ( type, text, parent, secondaryText ) {
             icon = allSprites.object
             break
     }
-    
-    // spriteText = iconText(text).then((sprite) => {
-    //     sprite.scale.set(7, 0.7, 1)
-    //     sprite.position.x = 4.1
-    //     sprite.position.z = secondaryText ? -0.1 : 0.1
-    //     sprite.material.renderOrder = 5
-    //     scope.add(sprite)
-    // })
-
-    if (secondaryText) {
-        secondSpriteText = iconText(secondaryText).then((sprite) => {
-            sprite.scale.set(7, 0.7, 1)
-            sprite.position.x = 4.1
-            sprite.position.z = 0.3
-            sprite.material.renderOrder = 5
-            
-            scope.add(sprite)
-        })
-    }
-    
+  
     betterSpriteText = iconTextBetter(text).then((mesh) => {
         mesh.scale.set(0.006,0.006,0.006)
         mesh.rotation.z = Math.PI
         mesh.rotation.y = Math.PI
         mesh.rotation.x = -Math.PI/2
-        mesh.position.x = 0.7
+        mesh.position.z = secondaryText ? 0 : 0.15
+        mesh.position.x = 0.7 
+        scope.iconText = mesh
         scope.add(mesh)
     })
+
+    if (secondaryText) {
+        betterSpriteSecondaryText = iconTextBetter(secondaryText).then((mesh) => {
+            mesh.scale.set(0.0055,0.0055,0.0055)
+            mesh.rotation.z = Math.PI
+            mesh.rotation.y = Math.PI
+            mesh.rotation.x = -Math.PI/2
+            mesh.position.x = 0.7
+            mesh.position.z = 0.39
+            scope.iconSecondText = mesh
+            scope.add(mesh)
+        })
+    }
     
     
     this.linkedTo = parent
     this.icon = icon.clone()
-    //this.iconText = spriteText
-    this.iconSeconText = secondSpriteText
-    this.iconBetterText = betterSpriteText
+    
     this.add(this.icon)
-    console.log('this: ', this)
 }
 
 IconSprites.prototype = Object.create( Object3D.prototype )
@@ -102,7 +93,6 @@ Sprite.prototype.clone = function ( recursive ) {
 const iconTextBetter = ( text ) => {
     return new Promise((resolve, reject) => {
         loadFont('src/fonts/wonder-unit-bmfont/wonderunit-b.fnt', (err, font) => {
-            console.log('err: ', err)
             
             // create a geometry of packed bitmap glyphs, 
             // word wrapped to 300px and right-aligned
@@ -127,7 +117,6 @@ const iconTextBetter = ( text ) => {
             let textureLoader = new THREE.TextureLoader();
             textureLoader.load('fonts/wonder-unit-bmfont/wonderunit-b.png', function (texture) {
             // we can use a simple ThreeJS material
-                console.log('got texture: ', texture)
                 texture.minFilter = THREE.LinearMipMapLinearFilter
                 texture.magFilter = THREE.LinearFilter
                 texture.generateMipmaps = true
