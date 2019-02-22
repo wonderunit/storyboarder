@@ -3407,7 +3407,10 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
       })
     } catch (err) {
       console.error('could not read camera data from board’s shot generator data')
-      guides && guides.setPerspectiveParams({ camera: undefined })
+      guides && guides.setPerspectiveParams({
+        camera: undefined,
+        aspectRatio: boardData.aspectRatio
+      })
     }
 
     ipcRenderer.send('analyticsEvent', 'Board', 'go to board', null, currentBoard)
