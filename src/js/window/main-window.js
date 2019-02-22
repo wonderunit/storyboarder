@@ -6998,6 +6998,22 @@ const saveToBoardFromShotGenerator = async ({ uid, data, images }) => {
     //       see: https://github.com/wonderunit/storyboarder/issues/1185
     await updateSketchPaneBoard()
   }
+
+  // update the perspective guide
+  try {
+    guides && guides.setPerspectiveParams({
+      camera: board.sts
+        ? board.sts.data.sceneObjects[board.sts.data.activeCamera]
+        : undefined,
+      aspectRatio: boardData.aspectRatio
+    })
+  } catch (err) {
+    console.error('could not read camera data from board’s shot generator data')
+    guides && guides.setPerspectiveParams({
+      camera: undefined,
+      aspectRatio: boardData.aspectRatio
+    })
+  }
 }
 ipcRenderer.on('saveShot', async (event, { uid, data, images }) => {
   storeUndoStateForScene(true)
