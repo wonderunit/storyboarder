@@ -3442,12 +3442,8 @@ const LoadingStatus = connect(
   
   if (!ready) {
     message = 'Initializing Shot Generator …'
-  } else {
-    if (!total) {
-      message = 'Loading scene …'
-    } else if (remaining) {
-      message = `Loading model ${remaining} of ${total} …`
-    }
+  } else if (remaining) {
+    message = `Loading models …`
   }
 
   if (!message) return null
