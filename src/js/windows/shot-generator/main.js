@@ -79,10 +79,9 @@ const show = (onComplete) => {
   // ipcMain.on('shot-generator:window:loaded', () => { })
   
   // use this to show sooner
-  // win.once('ready-to-show', () => { })
-
-  // use this to show right away
-  reveal(onComplete)
+  win.once('ready-to-show', () => {
+    reveal(onComplete)
+  })
 }
 
 ipcMain.on('shot-generator:menu:view:fps-meter', (event, value) => {
