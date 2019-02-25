@@ -163,7 +163,9 @@ const resetLoadingStatus = sceneObjects => {
     ) {
       sceneObjects[key] = {
         ...sceneObjects[key],
-        loaded: false
+        loaded: sceneObjects[key] == null
+          ? false
+          : sceneObjects[key]
       }
     }
   }
