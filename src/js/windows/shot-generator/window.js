@@ -32,6 +32,15 @@ const { initialState, loadScene, resetScene, updateDevice, updateServer, setBoar
 const createServer = require('../../services/createServer')
 const createDualShockController = require('../../shot-generator/DualshockController')
 
+window.addEventListener('load', () => {
+  ipcRenderer.send('shot-generator:window:loaded')
+})
+
+// TODO better error handling for user
+// window.onerror = (message, source, lineno, colno, error) => {
+//   alert(`An error occurred\n\n${message}\n\nin ${source}:${lineno}`)
+// }
+
 const store = configureStore({
   ...initialState,
   presets: {

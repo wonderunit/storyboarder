@@ -5,25 +5,13 @@ const path = require('path')
 const url = require('url')
 
 let win
-let hasRendered = false
 
 process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = true
 
-const reveal = (onComplete) => {
-  if (hasRendered) {
-    win.show()
-    win.focus()
-    onComplete(win)
-  } else {
-    hasRendered = true
-    // wait for the DOM to render
-    setTimeout(() => {
-
-      win.show()
-      win.focus()
-      onComplete(win)
-    }, 125)
-  }
+const reveal = onComplete => {
+  win.show()
+  win.focus()
+  onComplete(win)
 }
 
 const show = (onComplete) => {
@@ -86,6 +74,11 @@ const show = (onComplete) => {
     protocol: 'file:',
     slashes: true
   }))
+
+  // use this to wait until the window has completely loaded
+  // ipcMain.on('shot-generator:window:loaded', () => { })
+  
+  // use this to show sooner
   win.once('ready-to-show', () => {
     reveal(onComplete)
   })

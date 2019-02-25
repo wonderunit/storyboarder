@@ -58,6 +58,8 @@ const {
 
   markSaved,
 
+  toggleWorkspaceGuide,
+
   //
   //
   // selectors
@@ -106,6 +108,7 @@ const NumberSliderFormatter = {
 
 const ModelSelect = require('./ModelSelect')
 const ServerInspector = require('./ServerInspector')
+const GuidesView = require('./GuidesView')
 
 require('../vendor/OutlineEffect.js')
 
@@ -931,11 +934,6 @@ const ListItem = ({ index, style, isScrolling, data }) => {
     ? items[0]
     : items[index]
 
-  // HACK this should be based directly on state.sceneObjects, or cached in the sceneObject data
-  const number = items.filter(o => o.type === sceneObject.type).indexOf(sceneObject) + 1
-  const capitalize = string => string.charAt(0).toUpperCase() + string.slice(1)
-  const calculatedName = capitalize(`${sceneObject.type} ${number}`)
-
   return h(
     isWorld
     ? [
@@ -951,7 +949,6 @@ const ListItem = ({ index, style, isScrolling, data }) => {
           index,
           style,
           sceneObject,
-          calculatedName,
           isSelected: sceneObject.id === selection,
           isActive: sceneObject.type === 'camera' && sceneObject.id === activeCamera,
           allowDelete: (
@@ -977,8 +974,7 @@ const Inspector = ({
   updateCharacterSkeleton,
   updateWorld,
   updateWorldRoom,
-  updateWorldEnvironment,
-  calculatedName
+  updateWorldEnvironment
 }) => {
   const { scene } = useContext(SceneContext)
 
@@ -1019,9 +1015,7 @@ const Inspector = ({
             machineState,
             transition,
             selectBone,
-            updateCharacterSkeleton,
-
-            calculatedName
+            updateCharacterSkeleton
           }
         ]
       : [
@@ -1383,15 +1377,6 @@ const ElementsPanel = connect(
     let kind = sceneObjects[selection] && sceneObjects[selection].type
     let data = sceneObjects[selection]
 
-    // HACK this should be based directly on state.sceneObjects, or cached in the sceneObject data
-    let calculatedName
-    let sceneObject = sceneObjects[selection]
-    if (sceneObject) {
-      const number = Object.values(sceneObjects).filter(o => o.type === sceneObject.type).indexOf(sceneObject) + 1
-      const capitalize = string => string.charAt(0).toUpperCase() + string.slice(1)
-      calculatedName = capitalize(`${sceneObject.type} ${number}`)
-    }
-
     return React.createElement(
       'div', { style: { flex: 1, display: 'flex', flexDirection: 'column' }},
         React.createElement(
@@ -1417,9 +1402,7 @@ const ElementsPanel = connect(
 
             updateWorld,
             updateWorldRoom,
-            updateWorldEnvironment,
-
-            calculatedName
+            updateWorldEnvironment
           }]
         )
       )
@@ -1741,7 +1724,7 @@ const MORPH_TARGET_LABELS = {
   'ectomorphic': 'ecto',
   'endomorphic': 'obese',
 }
-const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, machineState, transition, selectBone, updateCharacterSkeleton, calculatedName }) => {
+const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, machineState, transition, selectBone, updateCharacterSkeleton }) => {
   const createOnSetValue = (id, name, transform = value => value) => value => updateObject(id, { [name]: transform(value) })
 
   let positionSliders = [
@@ -1793,7 +1776,7 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
           key: sceneObject.id,
           label: sceneObject.name != null
             ? sceneObject.name
-            : calculatedName,
+            : sceneObject.displayName,
           onFocus,
           onBlur,
           setLabel: name => {
@@ -2155,7 +2138,7 @@ const BoneEditor = ({ sceneObject, bone, updateCharacterSkeleton }) => {
 }
 
 const ELEMENT_HEIGHT = 40
-const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, selectObject, updateObject, deleteObject, setActiveCamera, machineState, transition, allowDelete, calculatedName }) => {
+const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, selectObject, updateObject, deleteObject, setActiveCamera, machineState, transition, allowDelete }) => {
   const onClick = preventDefault(event => {
     selectObject(sceneObject.id)
 
@@ -2204,7 +2187,7 @@ const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, s
                 ['span.name', sceneObject.name]
               ]
             : [
-                ['span.id', calculatedName]
+                ['span.id', sceneObject.displayName]
               ]
           ),
         ],
@@ -2871,19 +2854,10 @@ const ClosestObjectInspector = ({ camera, sceneObjects, characters }) => {
 
         let [distFeet, distInches] = metersAsFeetAndInches(closest.distance)
 
-        // HACK this should be based directly on state.sceneObjects,
-        //      or cached in the sceneObject data
-        let calculatedName
         let sceneObject = closest.object ? sceneObjects[closest.object.userData.id] : undefined
-        if (sceneObject) {
-          // TODO DRY
-          const number = Object.values(sceneObjects).filter(o => o.type === sceneObject.type).indexOf(sceneObject) + 1
-          const capitalize = string => string.charAt(0).toUpperCase() + string.slice(1)
-          calculatedName = sceneObject.name || capitalize(`${sceneObject.type} ${number}`)
-        }
 
-        setResult(closest.object
-          ? `Distance to ${calculatedName}: ${feetAndInchesAsString(distFeet, distInches)} (${parseFloat(Math.round(closest.distance * 100) / 100).toFixed(2)}m)`
+        setResult(sceneObject
+          ? `Distance to ${sceneObject.name || sceneObject.displayName}: ${feetAndInchesAsString(distFeet, distInches)} (${parseFloat(Math.round(closest.distance * 100) / 100).toFixed(2)}m)`
           : '')
 
       } catch (err) {
@@ -2971,7 +2945,51 @@ const BoardInspector = connect(
   )
 })
 
-const GuidesInspector = ({ }) => h(['div.guides-inspector', 'Guides'])
+const GuidesInspector = connect(
+  state => ({
+    center: state.workspace.guides.center,
+    thirds: state.workspace.guides.thirds,
+    eyeline: state.workspace.guides.eyeline
+  }),
+  {
+    toggleWorkspaceGuide
+  }
+)(
+(({
+  center, thirds, eyeline,
+  toggleWorkspaceGuide
+}) =>
+  h(['div.guides-inspector', [
+    'div.row',
+      ['div.guides-inspector__label', 'Guides'],
+        ['div.round-buttons-panel', [
+          [
+            'a[href=#]',
+            {
+              className: classNames({ active: center }),
+              onClick: preventDefault(() => toggleWorkspaceGuide('center'))
+            },
+            [[Icon, { src: 'icon-guides-center' }]]
+          ],
+          [
+            'a[href=#]',
+            {
+              className: classNames({ active: thirds }),
+              onClick: preventDefault(() => toggleWorkspaceGuide('thirds'))
+            },
+            [[Icon, { src: 'icon-guides-thirds' }]]
+          ],
+          [
+            'a[href=#]',
+            {
+              className: classNames({ active: eyeline }),
+              onClick: preventDefault(() => toggleWorkspaceGuide('eyeline'))
+            },
+            '👁'
+          ]
+        ]]
+      ]]
+)))
 
 const CamerasInspector = connect(
   state => ({
@@ -3389,7 +3407,12 @@ const Editor = connect(
 
       // TODO introspect models
       updateModels({})
-      setReady(true)
+
+      // do any other pre-loading stuff here
+      document.fonts.ready.then(() => {
+        // let the app know we're ready to render
+        setReady(true)
+      })
 
       return function cleanup () {
         scene.current = null
@@ -3438,12 +3461,18 @@ const Editor = connect(
             ['div.column.fill',
               ['div#camera-view', { ref: mainViewContainerRef, style: { paddingTop: `${(1 / aspectRatio) * 100}%` } },
                 // camera canvas
-                ['canvas', { key: 'camera-canvas', tabIndex: 1, ref: largeCanvasRef, id: 'camera-canvas', onPointerDown: onCanvasPointerDown }]
+                ['canvas', { key: 'camera-canvas', tabIndex: 1, ref: largeCanvasRef, id: 'camera-canvas', onPointerDown: onCanvasPointerDown }],
+                largeCanvasSize.width && [GuidesView, {
+                  dimensions: {
+                    width: Math.ceil(largeCanvasSize.width),
+                    height: Math.ceil(largeCanvasSize.width / aspectRatio)
+                  }
+                }]
               ],
               ['div.inspectors', [
                 [CameraInspector, { camera }],
                 [BoardInspector],
-                // [GuidesInspector],
+                [GuidesInspector],
                 [CamerasInspector]
               ]]
             ],
@@ -3461,7 +3490,9 @@ const Editor = connect(
             // ]],
 
             ready && (remoteInput.mouseMode || remoteInput.orbitMode) && [PhoneCursor, { remoteInput, camera, largeCanvasRef, selectObject, selectBone, sceneObjects, selection, selectedBone }],
-          ]
+          ],
+
+          [LoadingStatus, { ready }]
         ],
 
         ready && [SceneManager, { mainViewCamera, largeCanvasRef, smallCanvasRef, machineState, transition, largeCanvasSize }],
@@ -3474,7 +3505,48 @@ const Editor = connect(
   )
 })
 
+// TODO move to selectors file
+const getLoadableSceneObjects = createSelector(
+  [getSceneObjects],
+  sceneObjects => Object.values(sceneObjects)
+    .filter(sceneObject =>
+      (sceneObject.type === 'character' || sceneObject.type === 'object') &&
+      sceneObject.loaded != null
+    )
+)
+const getLoadableSceneObjectsRemaining = createSelector(
+  [getLoadableSceneObjects],
+  loadableSceneObjects => loadableSceneObjects.filter(sceneObject => sceneObject.loaded === false)
+)
 
+const LoadingStatus = connect(
+  state => ({
+    // total: getLoadableSceneObjects(state).length,
+    remaining: getLoadableSceneObjectsRemaining(state).length
+  })
+)(React.memo(({ ready, remaining }) => {
+  let message
+  
+  if (!ready) {
+    message = 'Initializing Shot Generator …'
+  } else if (remaining) {
+    message = 'Loading models …'
+  }
+
+  if (!message) return null
+
+  return h(
+    ['div.modal-overlay', [
+      ['div.modal', [
+        ['div.modal__content', [
+          ['div.title', 'Loading'],
+          ['div.message', message]
+        ]]
+      ]]
+    ]]
+  )
+
+}))
 
 const saveScenePresets = state => presetsStorage.saveScenePresets({ scenes: state.presets.scenes })
 const PresetsEditor = connect(

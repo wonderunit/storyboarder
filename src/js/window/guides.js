@@ -10,7 +10,8 @@ class Guides {
       grid: false,
       center: false,
       thirds: false,
-      perspective: false
+      perspective: false,
+      eyeline: false
     }
 
     // for crisp lines
@@ -43,7 +44,8 @@ class Guides {
     let hasChanged = newState.grid !== this.state.grid ||
                      newState.center !== this.state.center ||
                      newState.thirds !== this.state.thirds ||
-                     newState.perspective !== this.state.perspective
+                     newState.perspective !== this.state.perspective ||
+                     newState.eyeline !== this.state.eyeline
     if (hasChanged) {
       this.state = Object.assign(this.state, newState)
       this.render()
@@ -65,6 +67,7 @@ class Guides {
     if (this.state.grid) this.drawGrid(this.offscreenContext, this.width, this.height, rgba(...lineColorWhite.slice(0, 3), 1.0), 3)
     if (this.state.center) this.drawCenter(this.offscreenContext, this.width, this.height, rgba(...lineColorWhite.slice(0, 3), 1.0), 3)
     if (this.state.thirds) this.drawThirds(this.offscreenContext, this.width, this.height, rgba(...lineColorWhite.slice(0, 3), 1.0), 3)
+    if (this.state.eyeline) this.drawEyeline(this.offscreenContext, this.width, this.height, rgba(...lineColorWhite.slice(0, 3), 1.0), 3)
 
     this.context.globalAlpha = lineColorWhite.slice(-1)[0]
     this.context.drawImage(this.offscreenCanvas, 0, 0, this.width, this.height)
@@ -92,6 +95,12 @@ class Guides {
     this.context.globalAlpha = lineColorStrong.slice(-1)[0]
     this.context.drawImage(this.offscreenCanvas, 0, 0, this.width, this.height)
 
+    // eyeline
+    this.offscreenContext.clearRect(0, 0, this.width, this.height)
+    if (this.state.eyeline) this.drawEyeline(this.offscreenContext, this.width, this.height, rgba(...lineColorStrong.slice(0, 3), 1.0), 1)
+    this.context.globalAlpha = lineColorStrong.slice(-1)[0]
+    this.context.drawImage(this.offscreenCanvas, 0, 0, this.width, this.height)
+
     // perspective
     if (this.state.perspective) {
       this.offscreenContext.clearRect(0, 0, this.width, this.height)
@@ -104,7 +113,7 @@ class Guides {
 
     this.context.globalAlpha = 1.0
 
-    this.onRender(this.context.canvas)
+    this.onRender && this.onRender(this.context.canvas)
   }
 
   drawGrid (context, width, height, color, lineWidth) {
@@ -199,6 +208,42 @@ class Guides {
       rotation: opt.rotation
     }
     this.render()
+  }
+
+  drawEyeline (context, width, height, color, lineWidth) {
+    context.translate(this.translateShift, this.translateShift)
+
+    let between = (a, b) => a + (b - a) / 2
+
+    let DIM = 0.4
+
+    let ys = [
+      // mark at 1/4
+      [Math.floor(height * 1/4), 1],
+      // dim mark between 1/4 and 1/3
+      [Math.floor(height * between(1/4, 1/3)), DIM],
+      // mark at 1/3
+      [Math.floor(height * 1/3), 1],
+
+      // dim mark between 1/3 and 1/2
+      [Math.floor(height * between(1/3, 1/2)), DIM],
+      // mark at 1/2
+      [Math.floor(height * 1/2), 1]
+    ]
+
+    for (let [y, alpha] of ys) {
+      context.lineWidth = lineWidth
+      context.strokeStyle = color
+
+      context.globalAlpha = alpha
+      context.beginPath()
+      context.moveTo(0, y)
+      context.lineTo(width, y)
+      context.stroke()
+      context.globalAlpha = 1.0
+    }
+
+    context.translate(-this.translateShift, -this.translateShift)
   }
 }
 

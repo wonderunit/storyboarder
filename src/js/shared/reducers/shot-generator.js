@@ -4,6 +4,200 @@ const crypto = require('crypto')
 
 const hashify = string => crypto.createHash('sha1').update(string).digest('base64')
 
+const capitalize = string => string.charAt(0).toUpperCase() + string.slice(1)
+
+//
+//
+// selectors
+//
+const getIsSceneDirty = state => {
+  let current = hashify(JSON.stringify(getSerializedState(state)))
+  return current !== state.meta.lastSavedHash
+}
+// return only the stuff we want to save to JSON
+const getSerializedState = state => {
+  let sceneObjects = Object.entries(state.sceneObjects)
+    .reduce((o, [ k, v ]) => {
+      let {
+        // ignore 'loaded'
+        loaded: _,
+        // but allow serialization of the rest
+        ...serializable
+      } = v
+      o[k] = serializable
+      return o
+    }, {})
+
+  return {
+    world: state.world,
+    sceneObjects,
+    activeCamera: state.activeCamera
+  }
+}
+
+//
+//
+// state helper functions
+//
+const checkForCharacterChanges = (state, draft, action) => {
+  // if characterPresetId wasn't just set
+  if (!action.payload.hasOwnProperty('characterPresetId')) {
+    // check to see if character has changed from preset
+    // and invalidate if so
+    let characterPresetId = draft.sceneObjects[action.payload.id].characterPresetId
+    if (characterPresetId) {
+      let statePreset = state.presets.characters[characterPresetId]
+
+      // preset does not exist anymore
+      if (!statePreset) {
+        // so don't reference it
+        draft.sceneObjects[action.payload.id].characterPresetId = undefined
+        return true
+      }
+
+      let stateCharacter = draft.sceneObjects[action.payload.id]
+
+      // for every top-level prop in the preset
+      for (let prop in statePreset.state) {
+        // if the prop is a number or a string
+        if (
+          typeof statePreset.state[prop] === 'number' ||
+          typeof statePreset.state[prop] === 'string' ||
+          typeof statePreset.state[prop] === 'undefined'
+        ) {
+          // if it differs
+
+          if (stateCharacter[prop] != statePreset.state[prop]) {
+            // changed, no longer matches preset
+            draft.sceneObjects[action.payload.id].characterPresetId = undefined
+            return true
+          }
+        }
+      }
+
+      // hardcode check of second-level props
+      if (
+        stateCharacter.morphTargets.mesomorphic != statePreset.state.morphTargets.mesomorphic ||
+        stateCharacter.morphTargets.ectomorphic != statePreset.state.morphTargets.ectomorphic ||
+        stateCharacter.morphTargets.endomorphic != statePreset.state.morphTargets.endomorphic
+      ) {
+        // changed, no longer matches preset
+        draft.sceneObjects[action.payload.id].characterPresetId = undefined
+        return true
+      }
+    }
+  }}
+
+const checkForSkeletonChanges = (state, draft, action) => {
+  // if posePresetId wasn't just set
+  if (!action.payload.hasOwnProperty('posePresetId')) {
+    // check to see if pose has changed from preset
+    // and invalidate if so
+    let posePresetId = draft.sceneObjects[action.payload.id].posePresetId
+    if (posePresetId) {
+      let statePreset = state.presets.poses[posePresetId]
+
+      // preset does not exist anymore
+      if (!statePreset) {
+        // so don't reference it
+        draft.sceneObjects[action.payload.id].posePresetId = undefined
+        return true
+      }
+
+      let stateSkeleton = state.sceneObjects[action.payload.id].skeleton
+
+      let preset = statePreset.state.skeleton
+      let curr = stateSkeleton
+
+      if (Object.values(curr).length != Object.values(preset).length) {
+        // changed, no longer matches preset
+        draft.sceneObjects[action.payload.id].posePresetId = undefined
+        return true
+      }
+
+      for (name in preset) {
+        if (
+          preset[name].rotation.x !== curr[name].rotation.x ||
+          preset[name].rotation.y !== curr[name].rotation.y ||
+          preset[name].rotation.z !== curr[name].rotation.z
+        ) {
+          // changed, no longer matches preset
+          draft.sceneObjects[action.payload.id].posePresetId = undefined
+          return true
+        }
+      }
+    }
+  }
+}
+
+// migrate SceneObjects from older beta builds of Shot Generator 2.0
+const migrateRotations = sceneObjects =>
+  Object.entries(sceneObjects)
+    .reduce((o, [ k, v ]) => {
+      if (v.type === 'object' && typeof v.rotation === 'number') {
+        v = {
+          ...v,
+          rotation: {
+            x: 0,
+            y: v.rotation,
+            z: 0
+          }
+        }
+      }
+      o[k] = v
+      return o
+    }, {})
+
+const updateMeta = state => {
+  state.meta.lastSavedHash = hashify(JSON.stringify(getSerializedState(state)))
+}
+
+// `loaded` status is not serialized
+// when we load a new file, we need to initialize it
+// so it can be read to determine loading progress
+const resetLoadingStatus = sceneObjects => {
+  for (let key in sceneObjects) {
+    if (
+      sceneObjects[key].type === 'character' ||
+      sceneObjects[key].type === 'object'
+    ) {
+      sceneObjects[key] = {
+        ...sceneObjects[key],
+        loaded: sceneObjects[key] == null
+          ? false
+          : sceneObjects[key]
+      }
+    }
+  }
+  return sceneObjects
+}
+
+// decorate each SceneObject with a calculated displayName
+const withDisplayNames = sceneObjects => {
+  let countByType = {}
+
+  for (let id in sceneObjects) {
+    let sceneObject = sceneObjects[id]
+
+    countByType[sceneObject.type] = countByType[sceneObject.type]
+      ? countByType[sceneObject.type] + 1
+      : 1
+
+    let number = countByType[sceneObject.type]
+    let displayName = capitalize(`${sceneObject.type} ${number}`)
+
+    if (sceneObjects[id].displayName !== displayName) {
+      // mutate
+      sceneObjects[id] = {
+        ...sceneObjects[id],
+        displayName
+      }
+    }
+  }
+
+  return sceneObjects
+}
+
 // load up the default poses
 const defaultPosePresets = require('./shot-generator-presets/poses.json')
 
@@ -268,7 +462,17 @@ const initialState = {
     lastSavedHash: undefined
   },
 
-  ...initialScene,
+  workspace: {
+    guides: {
+      center: false,
+      thirds: false
+    }
+  },
+
+  ...{
+    ...initialScene,
+    sceneObjects: withDisplayNames(initialScene.sceneObjects)
+  },
 
   selection: undefined,
   selectedBone: undefined,
@@ -324,144 +528,6 @@ const initialState = {
   }
 }
 
-//
-//
-// selectors
-//
-const getIsSceneDirty = state => {
-  let current = hashify(JSON.stringify(getSerializedState(state)))
-  return current !== state.meta.lastSavedHash
-}
-// return only the stuff we want to save to JSON
-const getSerializedState = state => {
-  let sceneObjects = Object.entries(state.sceneObjects)
-    .reduce((o, [ k, v ]) => {
-      let {
-        // ignore 'loaded'
-        loaded: _,
-        // but allow serialization of the rest
-        ...serializable
-      } = v
-      o[k] = serializable
-      return o
-    }, {})
-
-  return {
-    world: state.world,
-    sceneObjects,
-    activeCamera: state.activeCamera
-  }
-}
-
-//
-//
-// state helper functions
-//
-const checkForCharacterChanges = (state, draft, action) => {
-  // if characterPresetId wasn't just set
-  if (!action.payload.hasOwnProperty('characterPresetId')) {
-    // check to see if character has changed from preset
-    // and invalidate if so
-    let characterPresetId = draft.sceneObjects[action.payload.id].characterPresetId
-    if (characterPresetId) {
-      let statePreset = state.presets.characters[characterPresetId]
-      let stateCharacter = draft.sceneObjects[action.payload.id]
-
-      // for every top-level prop in the preset
-      for (let prop in statePreset.state) {
-        // if the prop is a number or a string
-        if (
-          typeof statePreset.state[prop] === 'number' ||
-          typeof statePreset.state[prop] === 'string' ||
-          typeof statePreset.state[prop] === 'undefined'
-        ) {
-          // if it differs
-
-          if (stateCharacter[prop] != statePreset.state[prop]) {
-            // changed, no longer matches preset
-            draft.sceneObjects[action.payload.id].characterPresetId = undefined
-            return true
-          }
-        }
-      }
-
-      // hardcode check of second-level props
-      if (
-        stateCharacter.morphTargets.mesomorphic != statePreset.state.morphTargets.mesomorphic ||
-        stateCharacter.morphTargets.ectomorphic != statePreset.state.morphTargets.ectomorphic ||
-        stateCharacter.morphTargets.endomorphic != statePreset.state.morphTargets.endomorphic
-      ) {
-        // changed, no longer matches preset
-        draft.sceneObjects[action.payload.id].characterPresetId = undefined
-        return true
-      }
-    }
-  }}
-
-const checkForSkeletonChanges = (state, draft, action) => {
-  // if posePresetId wasn't just set
-  if (!action.payload.hasOwnProperty('posePresetId')) {
-    // check to see if pose has changed from preset
-    // and invalidate if so
-    let posePresetId = draft.sceneObjects[action.payload.id].posePresetId
-    if (posePresetId) {
-      let statePreset = state.presets.poses[posePresetId]
-
-      // preset does not exist anymore
-      if (!statePreset) {
-        // so don't reference it
-        draft.sceneObjects[action.payload.id].posePresetId = undefined
-        return true
-      }
-
-      let stateSkeleton = state.sceneObjects[action.payload.id].skeleton
-
-      let preset = statePreset.state.skeleton
-      let curr = stateSkeleton
-
-      if (Object.values(curr).length != Object.values(preset).length) {
-        // changed, no longer matches preset
-        draft.sceneObjects[action.payload.id].posePresetId = undefined
-        return true
-      }
-
-      for (name in preset) {
-        if (
-          preset[name].rotation.x !== curr[name].rotation.x ||
-          preset[name].rotation.y !== curr[name].rotation.y ||
-          preset[name].rotation.z !== curr[name].rotation.z
-        ) {
-          // changed, no longer matches preset
-          draft.sceneObjects[action.payload.id].posePresetId = undefined
-          return true
-        }
-      }
-    }
-  }
-}
-
-// migrate SceneObjects from older beta builds of Shot Generator 2.0
-const migrateRotations = sceneObjects =>
-  Object.entries(sceneObjects)
-    .reduce((o, [ k, v ]) => {
-      if (v.type === 'object' && typeof v.rotation === 'number') {
-        v = {
-          ...v,
-          rotation: {
-            x: 0,
-            y: v.rotation,
-            z: 0
-          }
-        }
-      }
-      o[k] = v
-      return o
-    }, {})
-
-const updateMeta = state => {
-  state.meta.lastSavedHash = hashify(JSON.stringify(getSerializedState(state)))
-}
-
 module.exports = {
   initialState,
 
@@ -477,7 +543,7 @@ module.exports = {
           if (!action.payload.world.ambient) draft.world.ambient = initialScene.world.ambient
           if (!action.payload.world.directional) draft.world.directional = initialScene.world.directional
 
-          draft.sceneObjects = migrateRotations(action.payload.sceneObjects)
+          draft.sceneObjects = withDisplayNames(resetLoadingStatus(migrateRotations(action.payload.sceneObjects)))
           draft.activeCamera = action.payload.activeCamera
           // clear selections
           draft.selection = undefined
@@ -504,6 +570,7 @@ module.exports = {
           draft.sceneObjects[id] = {
             ...action.payload, id
           }
+          draft.sceneObjects = withDisplayNames(draft.sceneObjects)
           return
 
         case 'DELETE_OBJECT':
@@ -517,6 +584,7 @@ module.exports = {
             // de-select any currently selected bone
             draft.selectedBone = undefined
           }
+          draft.sceneObjects = withDisplayNames(draft.sceneObjects)
           return
 
         case 'UPDATE_OBJECT':
@@ -637,6 +705,22 @@ module.exports = {
 
           checkForCharacterChanges(state, draft, action)
           checkForSkeletonChanges(state, draft, action)
+          return
+
+        case 'DUPLICATE_OBJECT':
+          let source = draft.sceneObjects[action.payload.id]
+          if (source) {
+            let object = {
+              ...source,
+              name: source.name == null ? null : source.name + ' copy',
+              x: source.x + (Math.random() * 2 - 1),
+              y: source.y + (Math.random() * 2 - 1),
+              z: source.z,
+              id: action.payload.destinationId
+            }
+            draft.sceneObjects[action.payload.destinationId] = object
+            draft.sceneObjects = withDisplayNames(draft.sceneObjects)
+          }
           return
 
         case 'UPDATE_CHARACTER_SKELETON':
@@ -785,21 +869,6 @@ module.exports = {
           }
           return
 
-        case 'DUPLICATE_OBJECT':
-          let source = draft.sceneObjects[action.payload.id]
-          if (source) {
-            let object = {
-              ...source,
-              name: source.name == null ? null : source.name + ' copy',
-              x: source.x + (Math.random() * 2 - 1),
-              y: source.y + (Math.random() * 2 - 1),
-              z: source.z,
-              id: action.payload.destinationId
-            }
-            draft.sceneObjects[action.payload.destinationId] = object
-          }
-          return
-
         case 'UPDATE_SERVER':
           console.log('%cshot-generator web client at', 'color:blue', action.payload.uri)
           draft.server = { ...draft.server, ...action.payload }
@@ -815,6 +884,10 @@ module.exports = {
 
         case 'SET_META_STORYBOARDER_FILE_PATH':
           draft.meta.storyboarderFilePath = action.payload
+          return
+
+        case 'TOGGLE_WORKSPACE_GUIDE':
+          draft.workspace.guides[action.payload] = !draft.workspace.guides[action.payload]
           return
       }
     })
@@ -873,7 +946,9 @@ module.exports = {
 
   setBoard: payload => ({ type: 'SET_BOARD', payload }),
   
-  markSaved: payload => ({ type: 'MARK_SAVED' }),
+  markSaved: () => ({ type: 'MARK_SAVED' }),
+
+  toggleWorkspaceGuide: payload => ({ type: 'TOGGLE_WORKSPACE_GUIDE', payload }),
 
   //
   //
