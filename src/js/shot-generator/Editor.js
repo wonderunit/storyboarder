@@ -3426,24 +3426,32 @@ const Editor = connect(
   )
 })
 
+// TODO move to selectors file
+const getLoadableSceneObjects = createSelector(
+  [getSceneObjects],
+  sceneObjects => Object.values(sceneObjects)
+    .filter(sceneObject =>
+      (sceneObject.type === 'character' || sceneObject.type === 'object') &&
+      sceneObject.loaded != null
+    )
+)
+const getLoadableSceneObjectsRemaining = createSelector(
+  [getLoadableSceneObjects],
+  loadableSceneObjects => loadableSceneObjects.filter(sceneObject => sceneObject.loaded === false)
+)
+
 const LoadingStatus = connect(
   state => ({
-    // TODO use selectors for better performance
-    total: Object.values(state.sceneObjects).filter(curr => (curr.type === 'character' || curr.type === 'object') && curr.loaded != null).length,
-    remaining: Object.values(state.sceneObjects).reduce((value, curr) => {
-      if ((curr.type === 'character' || curr.type === 'object') && curr.loaded != null && !curr.loaded) {
-        value = value + 1
-      }
-      return value
-    }, 0)
+    // total: getLoadableSceneObjects(state).length,
+    remaining: getLoadableSceneObjectsRemaining(state).length
   })
-)(React.memo(({ ready, total, remaining }) => {
+)(React.memo(({ ready, remaining }) => {
   let message
   
   if (!ready) {
     message = 'Initializing Shot Generator …'
   } else if (remaining) {
-    message = `Loading models …`
+    message = 'Loading models …'
   }
 
   if (!message) return null
