@@ -182,10 +182,14 @@ const withDisplayNames = sceneObjects => {
       : 1
 
     let number = countByType[sceneObject.type]
+    let displayName = capitalize(`${sceneObject.type} ${number}`)
 
-    sceneObjects[id] = {
-      ...sceneObjects[id],
-      displayName: capitalize(`${sceneObject.type} ${number}`)
+    if (sceneObjects[id].displayName !== displayName) {
+      // mutate
+      sceneObjects[id] = {
+        ...sceneObjects[id],
+        displayName
+      }
     }
   }
 
