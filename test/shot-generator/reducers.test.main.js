@@ -28,7 +28,7 @@ describe('reducer', () => {
       let state = store.getState()
 
       for (let id in state.sceneObjects) {
-        assert(state.sceneObjects[id] != null)
+        assert(state.sceneObjects[id].displayName != null)
       }
 
       assert.equal(state.sceneObjects['6BC46A44-7965-43B5-B290-E3D2B9D15EEE'].displayName, 'Camera 1')
