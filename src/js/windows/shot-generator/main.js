@@ -4,9 +4,10 @@ const isDev = require('electron-is-dev')
 const path = require('path')
 const url = require('url')
 
+process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = true
+
 let win
 
-process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = true
 
 const reveal = onComplete => {
   win.show()
