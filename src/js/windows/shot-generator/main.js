@@ -75,7 +75,11 @@ const show = (onComplete) => {
     slashes: true
   }))
 
-  ipcMain.on('shot-generator:window:loaded', event => {
+  // use this to wait until the window has completely loaded
+  // ipcMain.on('shot-generator:window:loaded', () => { })
+  
+  // use this to show sooner
+  win.once('ready-to-show', () => {
     reveal(onComplete)
   })
 }

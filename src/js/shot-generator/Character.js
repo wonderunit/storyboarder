@@ -167,7 +167,16 @@ const Character = React.memo(({
     }
 
     console.log('loading character from', filepath)
-    let data = await loadGltf(filepath)
+    let data
+    try {
+      data = await loadGltf(filepath)
+    } catch (err) {
+      alert('Could not load model file')
+
+      // HACK undefined means an error state
+      setLoaded(undefined)
+      return
+    }
 
     if (isValidSkinnedMesh(data)) {
       console.log(type, id, 'valid model loaded. cleaning up old one.')
@@ -177,6 +186,9 @@ const Character = React.memo(({
       setLoaded(true)
     } else {
       alert('This model doesn’t contain a Skinned Mesh. Please load it as an Object, not a Character.')
+
+      // HACK undefined means an error state
+      setLoaded(undefined)
     }
   }
 

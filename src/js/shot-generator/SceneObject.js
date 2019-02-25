@@ -129,8 +129,15 @@ const SceneObject = React.memo(({ scene, id, type, isSelected, loaded, updateObj
                 error => reject(error)
               )
             })
-            console.log('loaded', filepath)
-            setLoaded(true)
+            .then(() => {
+              console.log('loaded', filepath)
+              setLoaded(true)
+            })
+            .catch((err) => {
+              console.error(err)
+              // HACK undefined == error
+              setLoaded(undefined)
+            })
             break
 
           case '.gltf':
@@ -153,9 +160,20 @@ const SceneObject = React.memo(({ scene, id, type, isSelected, loaded, updateObj
                 }
               )
             })
-            console.log('loaded', filepath)
-            setLoaded(true)
+            .then(() => {
+              console.log('loaded', filepath)
+              setLoaded(true)
+            })
+            .catch((err) => {
+              console.error(err)
+              // HACK undefined == error
+              setLoaded(undefined)
+            })
             break
+
+          default:
+            alert('Could not load file.')
+            setLoaded(undefined)
         }
         break
     }

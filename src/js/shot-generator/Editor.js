@@ -3328,7 +3328,12 @@ const Editor = connect(
 
       // TODO introspect models
       updateModels({})
-      setReady(true)
+
+      // do any other pre-loading stuff here
+      document.fonts.ready.then(() => {
+        // let the app know we're ready to render
+        setReady(true)
+      })
 
       return function cleanup () {
         scene.current = null
@@ -3406,7 +3411,9 @@ const Editor = connect(
             // ]],
 
             ready && (remoteInput.mouseMode || remoteInput.orbitMode) && [PhoneCursor, { remoteInput, camera, largeCanvasRef, selectObject, selectBone, sceneObjects, selection, selectedBone }],
-          ]
+          ],
+
+          [LoadingStatus, { ready }]
         ],
 
         ready && [SceneManager, { mainViewCamera, largeCanvasRef, smallCanvasRef, machineState, transition, largeCanvasSize }],
@@ -3419,7 +3426,48 @@ const Editor = connect(
   )
 })
 
+// TODO move to selectors file
+const getLoadableSceneObjects = createSelector(
+  [getSceneObjects],
+  sceneObjects => Object.values(sceneObjects)
+    .filter(sceneObject =>
+      (sceneObject.type === 'character' || sceneObject.type === 'object') &&
+      sceneObject.loaded != null
+    )
+)
+const getLoadableSceneObjectsRemaining = createSelector(
+  [getLoadableSceneObjects],
+  loadableSceneObjects => loadableSceneObjects.filter(sceneObject => sceneObject.loaded === false)
+)
 
+const LoadingStatus = connect(
+  state => ({
+    // total: getLoadableSceneObjects(state).length,
+    remaining: getLoadableSceneObjectsRemaining(state).length
+  })
+)(React.memo(({ ready, remaining }) => {
+  let message
+  
+  if (!ready) {
+    message = 'Initializing Shot Generator …'
+  } else if (remaining) {
+    message = 'Loading models …'
+  }
+
+  if (!message) return null
+
+  return h(
+    ['div.modal-overlay', [
+      ['div.modal', [
+        ['div.modal__content', [
+          ['div.title', 'Loading'],
+          ['div.message', message]
+        ]]
+      ]]
+    ]]
+  )
+
+}))
 
 const saveScenePresets = state => presetsStorage.saveScenePresets({ scenes: state.presets.scenes })
 const PresetsEditor = connect(
