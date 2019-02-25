@@ -829,11 +829,6 @@ const ListItem = ({ index, style, isScrolling, data }) => {
     ? items[0]
     : items[index]
 
-  // HACK this should be based directly on state.sceneObjects, or cached in the sceneObject data
-  const number = items.filter(o => o.type === sceneObject.type).indexOf(sceneObject) + 1
-  const capitalize = string => string.charAt(0).toUpperCase() + string.slice(1)
-  const calculatedName = capitalize(`${sceneObject.type} ${number}`)
-
   return h(
     isWorld
     ? [
@@ -849,7 +844,6 @@ const ListItem = ({ index, style, isScrolling, data }) => {
           index,
           style,
           sceneObject,
-          calculatedName,
           isSelected: sceneObject.id === selection,
           isActive: sceneObject.type === 'camera' && sceneObject.id === activeCamera,
           allowDelete: (
@@ -875,8 +869,7 @@ const Inspector = ({
   updateCharacterSkeleton,
   updateWorld,
   updateWorldRoom,
-  updateWorldEnvironment,
-  calculatedName
+  updateWorldEnvironment
 }) => {
   const { scene } = useContext(SceneContext)
 
@@ -917,9 +910,7 @@ const Inspector = ({
             machineState,
             transition,
             selectBone,
-            updateCharacterSkeleton,
-
-            calculatedName
+            updateCharacterSkeleton
           }
         ]
       : [
@@ -1281,15 +1272,6 @@ const ElementsPanel = connect(
     let kind = sceneObjects[selection] && sceneObjects[selection].type
     let data = sceneObjects[selection]
 
-    // HACK this should be based directly on state.sceneObjects, or cached in the sceneObject data
-    let calculatedName
-    let sceneObject = sceneObjects[selection]
-    if (sceneObject) {
-      const number = Object.values(sceneObjects).filter(o => o.type === sceneObject.type).indexOf(sceneObject) + 1
-      const capitalize = string => string.charAt(0).toUpperCase() + string.slice(1)
-      calculatedName = capitalize(`${sceneObject.type} ${number}`)
-    }
-
     return React.createElement(
       'div', { style: { flex: 1, display: 'flex', flexDirection: 'column' }},
         React.createElement(
@@ -1315,9 +1297,7 @@ const ElementsPanel = connect(
 
             updateWorld,
             updateWorldRoom,
-            updateWorldEnvironment,
-
-            calculatedName
+            updateWorldEnvironment
           }]
         )
       )
@@ -1639,7 +1619,7 @@ const MORPH_TARGET_LABELS = {
   'ectomorphic': 'ecto',
   'endomorphic': 'obese',
 }
-const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, machineState, transition, selectBone, updateCharacterSkeleton, calculatedName }) => {
+const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, machineState, transition, selectBone, updateCharacterSkeleton }) => {
   const createOnSetValue = (id, name, transform = value => value) => value => updateObject(id, { [name]: transform(value) })
 
   let positionSliders = [
@@ -1691,7 +1671,7 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
           key: sceneObject.id,
           label: sceneObject.name != null
             ? sceneObject.name
-            : calculatedName,
+            : sceneObject.displayName,
           onFocus,
           onBlur,
           setLabel: name => {
@@ -2053,7 +2033,7 @@ const BoneEditor = ({ sceneObject, bone, updateCharacterSkeleton }) => {
 }
 
 const ELEMENT_HEIGHT = 40
-const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, selectObject, updateObject, deleteObject, setActiveCamera, machineState, transition, allowDelete, calculatedName }) => {
+const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, selectObject, updateObject, deleteObject, setActiveCamera, machineState, transition, allowDelete }) => {
   const onClick = preventDefault(event => {
     selectObject(sceneObject.id)
 
@@ -2102,7 +2082,7 @@ const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, s
                 ['span.name', sceneObject.name]
               ]
             : [
-                ['span.id', calculatedName]
+                ['span.id', sceneObject.displayName]
               ]
           ),
         ],
@@ -2769,19 +2749,10 @@ const ClosestObjectInspector = ({ camera, sceneObjects, characters }) => {
 
         let [distFeet, distInches] = metersAsFeetAndInches(closest.distance)
 
-        // HACK this should be based directly on state.sceneObjects,
-        //      or cached in the sceneObject data
-        let calculatedName
         let sceneObject = closest.object ? sceneObjects[closest.object.userData.id] : undefined
-        if (sceneObject) {
-          // TODO DRY
-          const number = Object.values(sceneObjects).filter(o => o.type === sceneObject.type).indexOf(sceneObject) + 1
-          const capitalize = string => string.charAt(0).toUpperCase() + string.slice(1)
-          calculatedName = sceneObject.name || capitalize(`${sceneObject.type} ${number}`)
-        }
 
-        setResult(closest.object
-          ? `Distance to ${calculatedName}: ${feetAndInchesAsString(distFeet, distInches)} (${parseFloat(Math.round(closest.distance * 100) / 100).toFixed(2)}m)`
+        setResult(sceneObject
+          ? `Distance to ${sceneObject.name || sceneObject.displayName}: ${feetAndInchesAsString(distFeet, distInches)} (${parseFloat(Math.round(closest.distance * 100) / 100).toFixed(2)}m)`
           : '')
 
       } catch (err) {
