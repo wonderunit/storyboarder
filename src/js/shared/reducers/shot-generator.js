@@ -701,6 +701,21 @@ module.exports = {
           checkForSkeletonChanges(state, draft, action)
           return
 
+        case 'DUPLICATE_OBJECT':
+          let source = draft.sceneObjects[action.payload.id]
+          if (source) {
+            let object = {
+              ...source,
+              name: source.name == null ? null : source.name + ' copy',
+              x: source.x + (Math.random() * 2 - 1),
+              y: source.y + (Math.random() * 2 - 1),
+              z: source.z,
+              id: action.payload.destinationId
+            }
+            draft.sceneObjects[action.payload.destinationId] = object
+          }
+          return
+
         case 'UPDATE_CHARACTER_SKELETON':
           draft.sceneObjects[action.payload.id].skeleton = draft.sceneObjects[action.payload.id].skeleton || {}
           draft.sceneObjects[action.payload.id].skeleton[action.payload.name] = {
@@ -844,21 +859,6 @@ module.exports = {
           }
           if (action.payload.tiltDirectional != null) {
             draft.world.directional.tilt = action.payload.tiltDirectional
-          }
-          return
-
-        case 'DUPLICATE_OBJECT':
-          let source = draft.sceneObjects[action.payload.id]
-          if (source) {
-            let object = {
-              ...source,
-              name: source.name == null ? null : source.name + ' copy',
-              x: source.x + (Math.random() * 2 - 1),
-              y: source.y + (Math.random() * 2 - 1),
-              z: source.z,
-              id: action.payload.destinationId
-            }
-            draft.sceneObjects[action.payload.destinationId] = object
           }
           return
 
