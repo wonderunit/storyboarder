@@ -77,6 +77,9 @@ const show = (onComplete) => {
     }
   })
 
+  win.on('resize', () => memento = win.getBounds())
+  win.on('move', () => memento = win.getBounds())
+
   win.once('closed', () => {
     win = null
   })
