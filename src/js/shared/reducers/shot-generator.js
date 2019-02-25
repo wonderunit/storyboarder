@@ -713,6 +713,7 @@ module.exports = {
               id: action.payload.destinationId
             }
             draft.sceneObjects[action.payload.destinationId] = object
+            draft.sceneObjects = withDisplayNames(draft.sceneObjects)
           }
           return
 
