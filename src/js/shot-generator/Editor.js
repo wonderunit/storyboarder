@@ -78,6 +78,7 @@ const DragControls = require('./DragControls')
 
 const Character = require('./Character')
 const SpotLight = require('./SpotLight')
+const Volumetric = require('./Volumetric')
 
 const SceneObject = require('./SceneObject')
 
@@ -688,6 +689,20 @@ const SceneManager = connect(
                 ...props
               }
             ]
+
+            case 'volumetric':
+              return [
+                Volumetric, {
+                  key: props.id,
+                  scene,
+                  isSelected: selection === props.id,
+                  camera,
+                  updateObject,
+                  numberOfLayers,
+                  distanceBetweenLayers,
+                  ...props
+                }
+              ]
 
             case 'light':
               return [
@@ -2082,7 +2097,8 @@ const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, s
     'camera': [Icon, { src: 'icon-item-camera' }],
     'character': [Icon, { src: 'icon-item-character' }],
     'object': [Icon, { src: 'icon-item-object' }],
-    'light': [Icon, { src: 'icon-item-light' }]
+    'light': [Icon, { src: 'icon-item-light' }],
+    'volume': [Icon, { src: 'icon-item-light' }]
   }
 
   let className = classNames({
@@ -2606,6 +2622,21 @@ const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, set
     selectObject(id)
   }
 
+  const onCreateVolumeClick = () => {
+    let id = THREE.Math.generateUUID()
+    createObject({
+      id,
+      type: 'volume',
+      x: 0,
+      y:0,
+      z: 2,
+      rotation: 0,
+      visible: true,
+      numberOfLayers: 10,
+      distanceBetweenLayers: 1
+    })
+  }
+
   const onCreateStressClick = () => {
     for (let i = 0; i < 500; i++) {
       onCreateObjectClick()
@@ -2687,6 +2718,7 @@ const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, set
         ['a[href=#]', { onClick: preventDefault(onCreateObjectClick) }, [[Icon, { src: 'icon-toolbar-object' }], 'Object']],
         ['a[href=#]', { onClick: preventDefault(onCreateCharacterClick) }, [[Icon, { src: 'icon-toolbar-character' }], 'Character']],
         ['a[href=#]', { onClick: preventDefault(onCreateLightClick) }, [[Icon, { src: 'icon-toolbar-light' }], 'Light']],
+        ['a[href=#]', { onClick: preventDefault(onCreateVolumeClick) }, [[Icon, { src: 'icon-toolbar-light' }], 'Volume']],
       ]],
       // ['a[href=#]', { onClick: preventDefault(onCreateStressClick) }, '+ STRESS'],
 
