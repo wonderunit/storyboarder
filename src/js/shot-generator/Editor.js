@@ -3420,7 +3420,7 @@ const Editor = connect(
 
         !machineState.matches('typing') && [KeyHandler],
 
-        [MenuManager],
+        [MenuManager]
       ]
     )
   )
