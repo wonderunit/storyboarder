@@ -4,9 +4,16 @@ const isDev = require('electron-is-dev')
 const path = require('path')
 const url = require('url')
 
+process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = true
+
 let win
 
-process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = true
+let memento = {
+  x: undefined,
+  y: undefined,
+  width: 1500,
+  height: 1080
+}
 
 const reveal = onComplete => {
   win.show()
@@ -20,13 +27,17 @@ const show = (onComplete) => {
     return
   }
 
+  let { x, y, width, height } = memento
+
   win = new BrowserWindow({
-    width: 1500,
-    height: 1080,
     minWidth: isDev ? undefined : 1200,
     minHeight: isDev ? undefined : 800,
-    // x: 0,
-    // y: 0,
+
+    x,
+    y,
+    width,
+    height,
+
     show: false,
     center: true,
     frame: true,
@@ -65,6 +76,9 @@ const show = (onComplete) => {
       event.preventDefault()
     }
   })
+
+  win.on('resize', () => memento = win.getBounds())
+  win.on('move', () => memento = win.getBounds())
 
   win.once('closed', () => {
     win = null
