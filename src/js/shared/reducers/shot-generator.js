@@ -4,6 +4,8 @@ const crypto = require('crypto')
 
 const hashify = string => crypto.createHash('sha1').update(string).digest('base64')
 
+const capitalize = string => string.charAt(0).toUpperCase() + string.slice(1)
+
 //
 //
 // selectors
@@ -165,6 +167,28 @@ const resetLoadingStatus = sceneObjects => {
       }
     }
   }
+  return sceneObjects
+}
+
+// decorate each SceneObject with a calculated displayName
+const withDisplayNames = sceneObjects => {
+  let countByType = {}
+
+  for (let id in sceneObjects) {
+    let sceneObject = sceneObjects[id]
+
+    countByType[sceneObject.type] = countByType[sceneObject.type]
+      ? countByType[sceneObject.type] + 1
+      : 1
+
+    let number = countByType[sceneObject.type]
+
+    sceneObjects[id] = {
+      ...sceneObjects[id],
+      displayName: capitalize(`${sceneObject.type} ${number}`)
+    }
+  }
+
   return sceneObjects
 }
 
@@ -439,7 +463,10 @@ const initialState = {
     }
   },
 
-  ...initialScene,
+  ...{
+    ...initialScene,
+    sceneObjects: withDisplayNames(initialScene.sceneObjects)
+  },
 
   selection: undefined,
   selectedBone: undefined,
@@ -510,7 +537,7 @@ module.exports = {
           if (!action.payload.world.ambient) draft.world.ambient = initialScene.world.ambient
           if (!action.payload.world.directional) draft.world.directional = initialScene.world.directional
 
-          draft.sceneObjects = resetLoadingStatus(migrateRotations(action.payload.sceneObjects))
+          draft.sceneObjects = withDisplayNames(resetLoadingStatus(migrateRotations(action.payload.sceneObjects)))
           draft.activeCamera = action.payload.activeCamera
           // clear selections
           draft.selection = undefined
@@ -537,6 +564,7 @@ module.exports = {
           draft.sceneObjects[id] = {
             ...action.payload, id
           }
+          draft.sceneObjects = withDisplayNames(draft.sceneObjects)
           return
 
         case 'DELETE_OBJECT':
@@ -550,6 +578,7 @@ module.exports = {
             // de-select any currently selected bone
             draft.selectedBone = undefined
           }
+          draft.sceneObjects = withDisplayNames(draft.sceneObjects)
           return
 
         case 'UPDATE_OBJECT':
