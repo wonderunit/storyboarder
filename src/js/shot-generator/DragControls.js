@@ -127,17 +127,23 @@ class DragControls extends THREE.EventDispatcher {
   }
 
   getFromSprite ( intersects ) {
+    let charsintersect = []
     let intersect = intersects[0],
       i = 0
 
     while (intersects[i])
     {
-      //selecting char if there are more intersection results
+      //selecting chars if there are more intersection results
       if (intersects[i].object.parent.linkedTo && intersects[i].object.parent.linkedTo.userData.type === "character") {
         intersect = intersects[i]
-        break
+        charsintersect.push(intersects[i])
+        //break
       }
       i++
+    }
+    if (charsintersect.length > 1)
+    {
+      intersect = this.getClosestToMouse( charsintersect )
     }
     if (intersect.object instanceof THREE.Sprite)
     {
@@ -149,6 +155,44 @@ class DragControls extends THREE.EventDispatcher {
       let obj = intersect.object.parent
       return [obj, null]
     }
+  }
+
+  putPoint ( coord, color )
+  {
+    let scene = this._cameras[0].parent
+
+    let po = new THREE.SphereBufferGeometry(0.1)
+    let ma = new THREE.MeshBasicMaterial({color:color})
+    let me = new THREE.Mesh(po, ma)
+    me.position.copy(coord)
+    scene.add(me)
+
+  }
+
+  getClosestToMouse( intersectionArray )
+  {
+    
+    let closest = intersectionArray[0],
+      linkedPosition = new THREE.Vector3()
+    linkedPosition = intersectionArray[0].object.parent.linkedTo.position.clone()
+    linkedPosition.y = 0
+
+    let closestDist = linkedPosition.distanceTo(intersectionArray[0].point)
+
+    
+    for (let intersector of intersectionArray)
+    {
+      linkedPosition = intersector.object.parent.linkedTo.position.clone()
+      linkedPosition.y = 0
+      //this.putPoint(linkedPosition, "#990000")
+      let newDist = linkedPosition.distanceTo(intersector.point)
+      //this.putPoint(intersector.point, "#009900")
+      if (newDist<closestDist){
+        closestDist = newDist
+        closest = intersector
+      }
+    }
+    return closest  
   }
 
   getObjectAndBone ( intersect ) {
@@ -240,7 +284,6 @@ class DragControls extends THREE.EventDispatcher {
   onPointerDown ( event ) {
     event.preventDefault()
     this.dispatchEvent( { type: 'pointerdown' } )
-        
     this._raycaster.setFromCamera( this._mouse, this._camera )
 
     let shouldReportSelection = false

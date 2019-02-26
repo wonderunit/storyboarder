@@ -75,7 +75,7 @@ const SpotLight = React.memo(({ scene, id, type, setLight, icon, text, ...props 
     light.current.rotation.y = props.rotation
     light.current.rotation.x = (props.tilt)
 
-    light.current.orthoIcon = new IconSprites( type, text, light.current, props.intensity*10+'K' )
+    light.current.orthoIcon = new IconSprites( type, text, light.current )
     scene.add( light.current.orthoIcon )
 
     light.current.light.updateMatrixWorld()
@@ -123,6 +123,12 @@ const SpotLight = React.memo(({ scene, id, type, setLight, icon, text, ...props 
       light.current.light.intensity = props.intensity
     }
   }, [props.intensity, props.angle, props.distance])
+
+  useEffect(() => {
+    if (light.current) {
+      light.current.orthoIcon.changeFirstText(props.name ? props.name : text)
+    }
+  }, [text, props.name])
 
   useEffect(() => {
     if (light.current) {

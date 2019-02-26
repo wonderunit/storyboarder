@@ -118,8 +118,8 @@ const iconTextBetter = ( text ) => {
             geometry.update(text)
   
             // the resulting layout has metrics and bounds
-            console.log(geometry.layout.height)
-            console.log(geometry.layout.descender)
+            // console.log(geometry.layout.height)
+            // console.log(geometry.layout.descender)
     
             // the texture atlas containing our glyphs
             let textureLoader = new THREE.TextureLoader();

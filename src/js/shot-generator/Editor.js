@@ -663,7 +663,6 @@ const SceneManager = connect(
     
     const components = Object.values(sceneObjects).map(props => {
       
-      console.log('props: ', props)
       let types = Object
       .entries(sceneObjects)
       .reduce((o, [ k, v ]) => {

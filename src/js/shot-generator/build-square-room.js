@@ -166,6 +166,10 @@ const buildSquareRoom = (w, l, h, { textures }) => {
   var room = new THREE.Group()
   room.add(mesh)
 
+  mesh.layers.disable(0)
+  mesh.layers.enable(1)
+  mesh.layers.disable(2)
+
   return room
 }
 
