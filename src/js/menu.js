@@ -862,6 +862,15 @@ const shotGeneratorMenu = [
       {role: 'cut'},
       {role: 'copy'},
       {role: 'paste'},
+      
+      {
+        accelerator: 'CommandOrControl+d',
+        label: 'Duplicate',
+        click () {
+          ipcRenderer.send('shot-generator:object:duplicate')
+        }
+      },
+      
       // {role: 'pasteandmatchstyle'},
       {role: 'delete'},
       {role: 'selectall'}

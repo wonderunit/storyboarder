@@ -3032,6 +3032,14 @@ const KeyHandler = connect(
   }) => {
     const { scene } = useContext(SceneContext)
 
+    const onCommandDuplicate = () => {
+      if (selection) {
+        let destinationId = THREE.Math.generateUUID()
+        duplicateObject(selection, destinationId)
+        selectObject(destinationId)
+      }
+    }
+
     useEffect(() => {
       const onKeyDown = event => {
         if (event.key === 'Backspace') {
@@ -3044,13 +3052,6 @@ const KeyHandler = connect(
             if (choice === 0) {
               deleteObject(selection)
             }
-          }
-        }
-        if (event.key === 'd' && event.ctrlKey) {
-          if (selection) {
-            let destinationId = THREE.Math.generateUUID()
-            duplicateObject(selection, destinationId)
-            selectObject(destinationId)
           }
         }
         if (event.key === 't') {
@@ -3104,9 +3105,11 @@ const KeyHandler = connect(
       }
 
       window.addEventListener('keydown', onKeyDown)
+      ipcRenderer.on('shot-generator:object:duplicate', onCommandDuplicate)
 
       return function cleanup () {
         window.removeEventListener('keydown', onKeyDown)
+        ipcRenderer.off('shot-generator:object:duplicate', onCommandDuplicate)
       }
     }, [mainViewCamera, _cameras, selection, _selectedSceneObject, activeCamera])
 

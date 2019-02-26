@@ -62,8 +62,8 @@ class CameraControls {
   }
 
   onKeyDown ( event ) {
-    // Ignore Cmd + R (reload)
-    if (event.metaKey && event.keyCode == 82) return
+    // Ignore Cmd + R (reload) and Cmd + D (duplicate)
+    if (event.metaKey) return
 
     switch ( event.keyCode ) {
       case 38: /*up*/
