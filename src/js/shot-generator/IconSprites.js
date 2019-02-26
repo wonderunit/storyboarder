@@ -260,7 +260,7 @@ const loadIconPromise = (file, sprite, compensatescaling) => {
             resolve(sprite)          
         }
         img.onerror = (e) => {
-            console.log(e)
+            reject(e)
         }
         img.src = file
     })
