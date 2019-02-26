@@ -3,6 +3,8 @@ const THREE = require('three')
 const React = require('react')
 const { useRef, useEffect, useState } = React
 
+const IconSprites = require('./IconSprites')
+
 const lightHelperFactory = light => {
   let helper = new THREE.SpotLightHelper( light )
   let child = helper.children[0]
@@ -14,13 +16,14 @@ const lightHelperFactory = light => {
   helper.layers.enable(1)
    child.layers.enable(1)
   // shows in top-down view
-  helper.layers.enable(2)
-   child.layers.enable(2)
+  helper.layers.disable(2)
+   child.layers.disable(2)
 
   return helper
 }
 
-const SpotLight = React.memo(({ scene, id, type, setLight, ...props }) => {
+const SpotLight = React.memo(({ scene, id, type, setLight, icon, ...props }) => {
+  
   let light = useRef(null)
 
   if (light.current)
@@ -43,7 +46,7 @@ const SpotLight = React.memo(({ scene, id, type, setLight, ...props }) => {
     light_spot.distance = props.distance
     light_spot.penumbra = props.penumbra
     light_spot.decay = props.decay
-
+        
     let lightContainer = new THREE.Object3D()
     lightContainer.add(light_spot)
     lightContainer.add(box_light_mesh)
@@ -55,6 +58,10 @@ const SpotLight = React.memo(({ scene, id, type, setLight, ...props }) => {
 
     var helper = lightHelperFactory(light_spot)
     lightContainer.helper = helper
+
+    box_light_mesh.layers.disable(0)
+    box_light_mesh.layers.enable(1)
+    box_light_mesh.layers.disable(2)
 
     light.current = lightContainer
     light.current.userData.id = id
@@ -68,6 +75,9 @@ const SpotLight = React.memo(({ scene, id, type, setLight, ...props }) => {
     light.current.rotation.y = props.rotation
     light.current.rotation.x = (props.tilt)
 
+    light.current.orthoIcon = new IconSprites( type, props.name ? props.name : props.displayName, light.current )
+    scene.add( light.current.orthoIcon )
+
     light.current.light.updateMatrixWorld()
   }
 
@@ -79,6 +89,7 @@ const SpotLight = React.memo(({ scene, id, type, setLight, ...props }) => {
     return function cleanup () {
       console.log(type, id, 'removed')
       scene.remove(light.current.helper)
+      scene.remove(light.current.orthoIcon)
       scene.remove(light.current)
       // setCamera(null)
     }
@@ -95,6 +106,10 @@ const SpotLight = React.memo(({ scene, id, type, setLight, ...props }) => {
       light.current.rotation.y = props.rotation
       light.current.rotateX(props.tilt)
       light.current.visible = props.visible
+      let addRotation = props.tilt>=0 ? 0 : Math.PI
+      light.current.orthoIcon.position.copy(light.current.position)
+      light.current.orthoIcon.icon.material.rotation = props.rotation + addRotation
+      light.current.orthoIcon.visible = props.visible
     }
   }, [props.x, props.y, props.z, props.rotation, props.tilt, props.visible])
 
@@ -108,6 +123,12 @@ const SpotLight = React.memo(({ scene, id, type, setLight, ...props }) => {
       light.current.light.intensity = props.intensity
     }
   }, [props.intensity, props.angle, props.distance])
+
+  useEffect(() => {
+    if (light.current) {
+      light.current.orthoIcon.changeFirstText(props.name ? props.name : props.displayName)
+    }
+  }, [props.displayName, props.name])
 
   useEffect(() => {
     if (light.current) {

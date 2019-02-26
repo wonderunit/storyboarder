@@ -34,7 +34,7 @@ THREE.OutlineEffect = function ( renderer, parameters ) {
 	var defaultColor = new THREE.Color().fromArray( parameters.defaultColor !== undefined ? parameters.defaultColor : [ 0, 0, 0 ] );
 	var defaultAlpha = parameters.defaultAlpha !== undefined ? parameters.defaultAlpha : 1.0;
 	var defaultKeepAlive = parameters.defaultKeepAlive !== undefined ? parameters.defaultKeepAlive : false;
-
+	var ignoreMaterial = parameters.ignoreMaterial !== undefined ? parameters.ignoreMaterial : false
 	// object.material.uuid -> outlineMaterial or
 	// object.material[ n ].uuid -> outlineMaterial
 	// save at the outline material creation and release
@@ -70,7 +70,6 @@ THREE.OutlineEffect = function ( renderer, parameters ) {
 		outlineColor: { type: "c", value: defaultColor },
 		outlineAlpha: { type: "f", value: defaultAlpha }
 	};
-
 	var vertexShaderChunk = [
 
 		"#include <fog_pars_vertex>",
@@ -174,9 +173,8 @@ THREE.OutlineEffect = function ( renderer, parameters ) {
 			return createInvisibleMaterial();
 
 		}
-
 		var uniforms = Object.assign( {}, originalUniforms, uniformsChunk );
-
+		
 		var vertexShader = originalVertexShader
 					// put vertexShaderChunk right before "void main() {...}"
 					.replace( /void\s+main\s*\(\s*\)/, vertexShaderChunk + '\nvoid main()' )
@@ -209,7 +207,6 @@ THREE.OutlineEffect = function ( renderer, parameters ) {
 	}
 
 	function getOutlineMaterialFromCache( originalMaterial ) {
-
 		var data = cache[ originalMaterial.uuid ];
 
 		if ( data === undefined ) {
@@ -226,7 +223,6 @@ THREE.OutlineEffect = function ( renderer, parameters ) {
 		}
 
 		data.used = true;
-
 		return data.material;
 
 	}
@@ -236,9 +232,8 @@ THREE.OutlineEffect = function ( renderer, parameters ) {
 		var outlineMaterial = getOutlineMaterialFromCache( originalMaterial );
 
 		originalMaterials[ outlineMaterial.uuid ] = originalMaterial;
-
+				
 		updateOutlineMaterial( outlineMaterial, originalMaterial );
-
 		return outlineMaterial;
 
 	}
@@ -258,7 +253,6 @@ THREE.OutlineEffect = function ( renderer, parameters ) {
 		} else {
 
 			object.material = getOutlineMaterial( object.material );
-
 		}
 
 		originalOnBeforeRenders[ object.uuid ] = object.onBeforeRender;
@@ -301,14 +295,20 @@ THREE.OutlineEffect = function ( renderer, parameters ) {
 
 	function updateUniforms( material, originalMaterial ) {
 
+		//if (material instanceof THREE.ShaderMaterial) return
 		var outlineParameters = originalMaterial.userData.outlineParameters;
-
-		material.uniforms.outlineAlpha.value = originalMaterial.opacity;
+		if (material.uniforms.outlineAlpha)
+			material.uniforms.outlineAlpha.value = originalMaterial.opacity;
 
 		if ( outlineParameters !== undefined ) {
 
 			if ( outlineParameters.thickness !== undefined ) material.uniforms.outlineThickness.value = outlineParameters.thickness;
-			if ( outlineParameters.color !== undefined ) material.uniforms.outlineColor.value.fromArray( outlineParameters.color );
+			if ( outlineParameters.color !== undefined ) {
+				if (ignoreMaterial) {
+					material.uniforms.outlineColor.value = defaultColor;
+				}
+				else material.uniforms.outlineColor.value.fromArray( outlineParameters.color );
+			} 
 			if ( outlineParameters.alpha !== undefined ) material.uniforms.outlineAlpha.value = outlineParameters.alpha;
 
 		}
@@ -514,5 +514,14 @@ THREE.OutlineEffect = function ( renderer, parameters ) {
 		renderer.setRenderTarget( renderTarget );
 
 	};
+
+	this.setParams = function (params) {
+		if (params.defaultColor) defaultColor = params.defaultColor
+		if (params.defaultThickness) {
+			defaultThickness = params.defaultThickness
+			uniformsChunk.outlineThickness.value = defaultThickness
+		}
+		if (params.ignoreMaterial) ignoreMaterial = params.ignoreMaterial
+	}
 
 };

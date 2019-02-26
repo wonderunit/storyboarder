@@ -7,6 +7,7 @@ const { useRef, useEffect, useState } = React
 const path = require('path')
 
 const BonesHelper = require('./BonesHelper')
+const IconSprites = require('./IconSprites')
 
 const { initialState } = require('../shared/reducers/shot-generator')
 
@@ -122,10 +123,10 @@ const Character = React.memo(({
   camera,
   updateCharacterSkeleton,
   updateObject,
-  loaded,
+  loaded,  
   devices,
+  icon,
   storyboarderFilePath,
-
   boardUid,
 
   ...props
@@ -141,6 +142,7 @@ const Character = React.memo(({
     if (object.current) {
       console.log(type, id, 'remove')
       scene.remove(object.current.bonesHelper)
+      scene.remove(object.current.orthoIcon)
       scene.remove(object.current)
       object.current.bonesHelper = null
       object.current = null
@@ -200,6 +202,12 @@ const Character = React.memo(({
     // return function cleanup () { }
   }, [props.model])
 
+  useEffect(() => {
+    if (object.current) {
+      object.current.orthoIcon.changeFirstText(props.name ? props.name : props.displayName)
+    }
+  }, [props.displayName, props.name])
+
   // if the model’s data has changed
   useEffect(() => {
     if (modelData) {
@@ -214,13 +222,20 @@ const Character = React.memo(({
 
       // FIXME get current .models from getState()
       object.current.userData.modelSettings = initialState.models[props.model] || {}
-
-
+      
       object.current.add(...armatures)
       object.current.add(mesh)
+      
+      object.current.orthoIcon = new IconSprites( type, props.name?props.name:props.displayName, object.current )
+      scene.add(object.current.orthoIcon)
+      
       object.current.userData.mesh = mesh
       scene.add(object.current)
       let bonesHelper = new BonesHelper( skeleton.bones[0].parent, object.current, { boneLengthScale } )
+      mesh.layers.disable(0)
+      mesh.layers.enable(1)
+      mesh.layers.disable(2)
+      mesh.layers.enable(3)
 
       bonesHelper.traverse(child => {
         child.layers.disable(0)
@@ -235,7 +250,7 @@ const Character = React.memo(({
       bonesHelper.cones.forEach(c => {
         c.layers.disable(0)
         c.layers.enable(1)
-        c.layers.enable(2)
+        c.layers.disable(2)
       })
 
       object.current.bonesHelper = bonesHelper
@@ -344,6 +359,8 @@ const Character = React.memo(({
       object.current.position.x = props.x
       object.current.position.z = props.y
       object.current.position.y = props.z
+
+      object.current.orthoIcon.position.copy(object.current.position)
     }
   }, [props.model, props.x, props.y, props.z, modelData])
 
@@ -351,10 +368,12 @@ const Character = React.memo(({
     if (object.current) {
       if (props.rotation.y || props.rotation.y==0) {
         object.current.rotation.y = props.rotation.y
+        object.current.icon.material.rotation = -props.rotation.y
         //object.current.rotation.x = props.rotation.x
         //object.current.rotation.z = props.rotation.z
       } else {
         object.current.rotation.y = props.rotation
+        object.current.orthoIcon.icon.material.rotation = props.rotation + Math.PI
       }
 
     }
@@ -687,6 +706,7 @@ const Character = React.memo(({
 
     if (object.current) {
       object.current.visible = props.visible
+      object.current.orthoIcon.visible = props.visible
       object.current.bonesHelper.visible = props.visible
       object.current.bonesHelper.hit_meshes.map(hit => hit.visible = props.visible)
     }
