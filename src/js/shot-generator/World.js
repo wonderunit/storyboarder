@@ -156,35 +156,18 @@ const World = ({ world, scene, storyboarderFilePath, updateWorldEnvironment }) =
 
     switch (path.extname(filepath)) {
       case '.obj':
-        objLoader.load(filepath, event => {
-          console.log('loaded', event)
-          const object = event.detail.loaderRootNode
-
-          object.traverse( function ( child ) {
-            if ( child instanceof THREE.Mesh ) {
-              const g = new THREE.Group()
-
-              let m = child.clone()
-
-              const material = new THREE.MeshToonMaterial({
-                color: 0xffffff,
-                emissive: 0x0,
-                specular: 0x0,
-                skinning: true,
-                shininess: 0,
-                flatShading: false
-              })
-              m.material = material
-
-              // const bbox = new THREE.Box3().setFromObject(m)
-              // const height = bbox.max.y - bbox.min.y
-
-              g.add(m)
-
-              setGroup(g)
-            }
-          })
-        })
+        objLoader.load(
+          filepath,
+          event => {
+          },
+          null,
+          error => {
+            console.error(error)
+            alert('Error loading environment model file:\n' + filepath)
+            updateWorldEnvironment({ file: undefined })
+            setGroup(null)
+          }
+        )
         break
 
       case '.gltf':
@@ -213,10 +196,22 @@ const World = ({ world, scene, storyboarderFilePath, updateWorldEnvironment }) =
             })
 
             setGroup(g)
+          },
+          null,
+          error => {
+            console.error(error)
+            alert('Error loading environment model file:\n' + filepath)
+            updateWorldEnvironment({ file: undefined })
+            setGroup(null)
           }
         )
         break
 
+      default:
+        alert('Error loading environment model file:\n' + filepath)
+        updateWorldEnvironment({ file: undefined })
+        setGroup(null)
+        break
     }
   }
 
