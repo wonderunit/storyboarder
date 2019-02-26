@@ -19,6 +19,7 @@ const Volumetric = React.memo(({
 
     ...props
 }) => {
+
     const volume = useRef(null)
 
     const doCleanup = () => {
@@ -29,8 +30,9 @@ const Volumetric = React.memo(({
         }
     }
 
-    if (volume.current !== null) {
+    if (volume.current === null) {
         //first time, creating
+        console.log('create!')
         let volumeContainer = new THREE.Object3D()
         for (var i = 0; i < numberOfLayers; i++) {
             let plane = new THREE.PlaneBufferGeometry(1, 1)

@@ -690,7 +690,7 @@ const SceneManager = connect(
               }
             ]
 
-            case 'volumetric':
+            case 'volume':
               return [
                 Volumetric, {
                   key: props.id,
@@ -698,8 +698,8 @@ const SceneManager = connect(
                   isSelected: selection === props.id,
                   camera,
                   updateObject,
-                  numberOfLayers,
-                  distanceBetweenLayers,
+                  numberOfLayers:props.numberOfLayers,
+                  distanceBetweenLayers: props.distanceBetweenLayers,
                   ...props
                 }
               ]
@@ -718,7 +718,6 @@ const SceneManager = connect(
     })
 
     const worldComponent = [WorldObject, { key: 'world', world, scene, storyboarderFilePath: meta.storyboarderFilePath, updateWorldEnvironment }]
-
     // TODO Scene parent object?
     return [
       [worldComponent, ...components].map(c => h(c))
@@ -2633,7 +2632,7 @@ const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, set
       rotation: 0,
       visible: true,
       numberOfLayers: 10,
-      distanceBetweenLayers: 1
+      distanceBetweenLayers: 0.2
     })
   }
 

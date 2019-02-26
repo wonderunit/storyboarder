@@ -638,6 +638,14 @@ module.exports = {
             draft.sceneObjects[action.payload.id].distance = action.payload.distance
           }
 
+          if (action.payload.numberOfLayers != null) {
+            draft.sceneObjects[action.payload.id].numberOfLayers = action.payload.numberOfLayers
+          }
+
+          if (action.payload.distanceBetweenLayers != null) {
+            draft.sceneObjects[action.payload.id].distanceBetweenLayers = action.payload.distanceBetweenLayers
+          }
+
           if (action.payload.hasOwnProperty('characterPresetId')) {
             draft.sceneObjects[action.payload.id].characterPresetId = action.payload.characterPresetId
           }
