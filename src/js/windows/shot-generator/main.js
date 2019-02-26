@@ -102,14 +102,6 @@ ipcMain.on('shot-generator:menu:view:fps-meter', (event, value) => {
   win && win.webContents.send('shot-generator:menu:view:fps-meter', value)
 })
 
-// are we testing locally?
-// SHOT_GENERATOR_STANDALONE=true npx electron src/js/windows/shot-generator/main.js
-if (process.env.SHOT_GENERATOR_STANDALONE) {
-  console.log('testing locally!')
-  app.on('ready', () => {
-    show(win => {})
-  })
-}
 
 module.exports = {
   show,

@@ -3,20 +3,10 @@ const { ipcRenderer, shell } = require('electron')
 const isDev = require('electron-is-dev')
 const { getInitialStateRenderer } = require('electron-redux')
 
-// HACK to allow Shot Generator Standalone w/o main redux store loaded
-let keystrokeFor
-if (process.env.SHOT_GENERATOR_STANDALONE) {
-  // don't require store for Shot Generator standalone testing
-  // use default keymap instead of the one loaded from the file system
-  const defaultKeyMap = require('./shared/helpers/defaultKeyMap')
-  keystrokeFor = command => defaultKeyMap[command]
-} else {
-  // TODO subscribe to store, update menu when keymap changes
-  const configureStore = require('./shared/store/configureStore')
-  const store = configureStore(getInitialStateRenderer(), 'renderer')
-  keystrokeFor = command => store.getState().entities.keymap[command]
-}
-
+// TODO subscribe to store, update menu when keymap changes
+const configureStore = require('./shared/store/configureStore')
+const store = configureStore(getInitialStateRenderer(), 'renderer')
+let keystrokeFor = command => store.getState().entities.keymap[command]
 
 // TODO remove unused
 // const observeStore = require('./shared/helpers/observeStore')
