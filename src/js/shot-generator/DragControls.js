@@ -286,7 +286,7 @@ class DragControls extends THREE.EventDispatcher {
     this._raycaster.setFromCamera( this._mouse, this._camera )
 
     let shouldReportSelection = false
-    let checkIntersectionsWithMeshes = this._camera.isOrthographicCamera ? this.getIntersectionSprites( this._objects, this._cameras ) : this.getIntersectionObjects(this._objects)
+    let checkIntersectionsWithMeshes = this._camera.isOrthographicCamera ? this.getIntersectionSprites( this._objects, this._cameras ) : this.getIntersectionObjects(this._objects, this._camera)
     let intersects = this._raycaster.intersectObjects( checkIntersectionsWithMeshes )
     if ( intersects.length > 0 ) {
       this.onSelectBone( null )  // deselect bone is any selected
@@ -368,7 +368,7 @@ class DragControls extends THREE.EventDispatcher {
 
     this._raycaster.setFromCamera( this._mouse, this._camera )
 
-    let checkIntersectionsWithMeshes = this._camera.isOrthographicCamera ? this.getIntersectionSprites( this._objects, this._cameras ) : this.getIntersectionObjects(this._objects)
+    let checkIntersectionsWithMeshes = this._camera.isOrthographicCamera ? this.getIntersectionSprites( this._objects, this._cameras ) : this.getIntersectionObjects(this._objects, this._camera)
 
     let intersects = this._raycaster.intersectObjects( checkIntersectionsWithMeshes )
     let object
