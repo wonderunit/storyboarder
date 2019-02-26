@@ -1305,7 +1305,6 @@ const ElementsPanel = connect(
        o[v.type][k.toString()] = v
        return o
     }, {})
-    console.log('types: ', types)
     let sceneObjectsSorted = {
       ...types.camera,
       ...types.character,
@@ -1712,7 +1711,7 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
     [NumberSlider, { label: 'z', value: sceneObject.z, min: -30, max: 30, onSetValue: createOnSetValue(sceneObject.id, 'z') } ],
   ]
 
-  let volumeSliders = sceneObject.model === 'box'
+  let volumeSliders = (sceneObject.model === 'box' || sceneObject.type === 'volume')
     ? [
         [NumberSlider, { label: 'width', value: sceneObject.width, min: 0.025, max: 5, onSetValue: createOnSetValue(sceneObject.id, 'width') } ],
         [NumberSlider, { label: 'height', value: sceneObject.height, min: 0.025, max: 5, onSetValue: createOnSetValue(sceneObject.id, 'height') } ],
@@ -1834,14 +1833,10 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
         ],
       ],
 
-      sceneObject.type == 'volume' && [
+      sceneObject.type == 'volume' && [        
         [
           'div.column',
-          [NumberSlider, { label: 'layer distance', value: sceneObject.distanceBetweenLayers, min: 0.5, max: 10, onSetValue: createOnSetValue(sceneObject.id, 'distanceBetweenLayers')}]
-        ],
-        [
-          'div.column',
-          [NumberSlider, { label: 'layers', value: sceneObject.numberOfLayers, min: 1, max: 10, onSetValue: createOnSetValue(sceneObject.id, 'numberOfLayers')}]
+          [NumberSlider, { label: 'layers', value: parseInt(sceneObject.numberOfLayers), min: 1, max: 10, step: 1, onSetValue: createOnSetValue(sceneObject.id, 'numberOfLayers')}]
         ],
         //[VolumePresetsEditor, { sceneObject }]
       ],
@@ -2693,8 +2688,11 @@ const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, set
       id,
       type: 'volume',
       x: 0,
-      y:0,
-      z: 2,
+      y:2,
+      z: 0,
+      width: 5,
+      height: 5,
+      depth:5,
       rotation: 0,
       visible: true,
       numberOfLayers: 4,
