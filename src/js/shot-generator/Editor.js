@@ -906,7 +906,6 @@ const WorldElement = React.memo(({ index, world, isSelected, selectObject, style
 
 const ListItem = ({ index, style, isScrolling, data }) => {
   const { items, models, selection, selectObject, updateObject, deleteObject, activeCamera, setActiveCamera } = data
-
   const isWorld = index === 0
 
   const sceneObject = index === 0
@@ -1306,12 +1305,13 @@ const ElementsPanel = connect(
        o[v.type][k.toString()] = v
        return o
     }, {})
-
+    console.log('types: ', types)
     let sceneObjectsSorted = {
       ...types.camera,
       ...types.character,
       ...types.object,
-      ...types.light
+      ...types.light,
+      ...types.volume
     }
 
     let items = [
@@ -1743,7 +1743,11 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
 
     character: modelValues
       .filter(model => model.type === 'character')
-      .map(model => ({ name: model.name, value: model.id }))
+      .map(model => ({ name: model.name, value: model.id })),
+
+    volume: modelValues
+      .filter(model => model.type === 'volume')
+      .map(model => ({ name: model.name, value: model.id}))
   }
 
   return h([
@@ -1823,11 +1827,23 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
         positionSliders
       ],
 
-      sceneObject.type == 'object' && [
+      (sceneObject.type == 'object' || sceneObject.type == 'volume') && [
         [
           'div.column',
           volumeSliders
         ],
+      ],
+
+      sceneObject.type == 'volume' && [
+        [
+          'div.column',
+          [NumberSlider, { label: 'layer distance', value: sceneObject.distanceBetweenLayers, min: 0.5, max: 10, onSetValue: createOnSetValue(sceneObject.id, 'distanceBetweenLayers')}]
+        ],
+        [
+          'div.column',
+          [NumberSlider, { label: 'layers', value: sceneObject.numberOfLayers, min: 1, max: 10, onSetValue: createOnSetValue(sceneObject.id, 'numberOfLayers')}]
+        ],
+        //[VolumePresetsEditor, { sceneObject }]
       ],
 
       sceneObject.type == 'light' && [
@@ -2681,8 +2697,8 @@ const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, set
       z: 2,
       rotation: 0,
       visible: true,
-      numberOfLayers: 10,
-      distanceBetweenLayers: 0.2
+      numberOfLayers: 4,
+      distanceBetweenLayers: 1.5
     })
   }
 
