@@ -224,8 +224,6 @@ const SceneManager = connect(
     let clock = useRef(new THREE.Clock())
 
     let orthoCamera = useRef(new THREE.OrthographicCamera( -4, 4, 4, -4, 1, 10000 ))
-
-    let cameraHelper = useRef(null)
     
     useEffect(() => {
       console.log('new SceneManager')
@@ -460,11 +458,6 @@ const SceneManager = connect(
           }.bind(this) )
         }
 
-        // cameraHelper.current = new THREE.CameraHelper(camera)
-        // cameraHelper.current.layers.disable(0)
-        // cameraHelper.current.layers.enable(2)
-        // scene.add(cameraHelper.current)
-
         animator.current = () => {
           if (stats) { stats.begin() }
           if (scene && camera) {
@@ -524,12 +517,9 @@ const SceneManager = connect(
                 largeRendererEffect.current.render(scene, cameraForLarge)
               } else {                
                 largeRendererEffect.current.render(scene, cameraForLarge)
-                //largeRenderer.current.render(scene, cameraForLarge)
               }
 
-              //cameraHelper.current.update()
               smallRendererEffect.current.render( scene, cameraForSmall)
-              //smallRenderer.current.render(scene, cameraForSmall)
             })
           }
           if (stats) { stats.end() }
@@ -547,9 +537,6 @@ const SceneManager = connect(
         cancelAnimationFrame(animatorId.current)
         animator.current = () => {}
         animatorId.current = null
-
-        //scene.remove(cameraHelper.current)
-        //cameraHelper.current = null
 
         if (cameraControlsView.current) {
           // remove camera controls event listeners and null the reference
@@ -662,27 +649,7 @@ const SceneManager = connect(
     // console.log('SceneManager render', sceneObjects)
     
     const components = Object.values(sceneObjects).map(props => {
-      
-      let types = Object
-      .entries(sceneObjects)
-      .reduce((o, [ k, v ]) => {
-        o[v.type] = o[v.type] || {}
-        o[v.type][k.toString()] = v
-        return o
-      }, {})
-
-      let sceneObjectsSorted = {
-        ...types.camera,
-        ...types.character,
-        ...types.object,
-        ...types.light
-      }
-
-      let items = [
-        world,
-        ...Object.values(sceneObjectsSorted)
-      ]
-
+    
       switch (props.type) {
           case 'object':
             return [
