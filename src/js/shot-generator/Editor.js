@@ -663,6 +663,7 @@ const SceneManager = connect(
     
     const components = Object.values(sceneObjects).map(props => {
       
+      console.log('props: ', props)
       let types = Object
       .entries(sceneObjects)
       .reduce((o, [ k, v ]) => {
@@ -727,7 +728,7 @@ const SceneManager = connect(
                 loaded: props.loaded ? props.loaded : false,
                 devices,
 
-                text: calculatedName,
+                text: props.displayName,
 
                 storyboarderFilePath: meta.storyboarderFilePath,
 
@@ -747,7 +748,7 @@ const SceneManager = connect(
                 setCamera,
 
                 aspectRatio,
-                text: calculatedName,
+                text: props.displayName,
                 ...props
               }
             ]
@@ -757,7 +758,7 @@ const SceneManager = connect(
                 SpotLight, {
                   key: props.id,
                   scene,
-                  text: calculatedName,
+                  text: props.displayName,
                   ...props
                 }
               ]
@@ -865,6 +866,13 @@ const Camera = React.memo(({ scene, id, type, setCamera, icon, text, ...props })
     }
   }, [])
 
+  useEffect(()=>{
+    console.log('text change?')
+    if (camera.current) {
+      camera.current.orthoIcon.changeFirstText(props.name ? props.name : text)
+    }
+  }, [text, props.name])
+
   camera.current.position.x = props.x
   camera.current.position.y = props.z
   camera.current.position.z = props.y
@@ -896,7 +904,7 @@ const Camera = React.memo(({ scene, id, type, setCamera, icon, text, ...props })
     let focal = camera.current.getFocalLength()
     let [camFeet, camInches] = metersAsFeetAndInches(props.z)
     if (camera.current.orthoIcon.iconSecondText)
-      camera.current.orthoIcon.iconSecondText.textGeometry.update( Math.round(focal)+"mm, "+feetAndInchesAsString2nd(camFeet, camInches) )
+      camera.current.orthoIcon.changeSecondText( Math.round(focal)+"mm, "+feetAndInchesAsString2nd(camFeet, camInches) )      
     //camera.current.orthoIcon.frustumIcons = frustumIcons
   }
   camera.current.layers.enable(1)

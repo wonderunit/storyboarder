@@ -46,7 +46,7 @@ function IconSprites ( type, text, parent, secondaryText ) {
             break
     }
   
-    betterSpriteText = iconTextBetter(text).then((mesh) => {
+    iconTextBetter(text).then((mesh) => {
         mesh.scale.set(0.006,0.006,0.006)
         mesh.rotation.z = Math.PI
         mesh.rotation.y = Math.PI
@@ -58,7 +58,7 @@ function IconSprites ( type, text, parent, secondaryText ) {
     })
 
     if (secondaryText) {
-        betterSpriteSecondaryText = iconTextBetter(secondaryText).then((mesh) => {
+        iconTextBetter(secondaryText).then((mesh) => {
             mesh.scale.set(0.0055,0.0055,0.0055)
             mesh.rotation.z = Math.PI
             mesh.rotation.y = Math.PI
@@ -79,6 +79,14 @@ function IconSprites ( type, text, parent, secondaryText ) {
 
 IconSprites.prototype = Object.create( Object3D.prototype )
 IconSprites.prototype.constructor = IconSprites
+
+IconSprites.prototype.changeFirstText = function ( text ) {
+    if (this.iconText) this.iconText.textGeometry.update(text)
+}
+
+IconSprites.prototype.changeSecondText = function ( text ) {
+    if (this.iconSecondText) this.iconSecondText.textGeometry.update(text)
+}
 
 Sprite.prototype.clone = function ( recursive ) {
     

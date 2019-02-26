@@ -203,6 +203,12 @@ const Character = React.memo(({
     // return function cleanup () { }
   }, [props.model])
 
+  useEffect(() => {
+    if (object.current) {
+      object.current.orthoIcon.changeFirstText(props.name ? props.name : text)
+    }
+  }, [text, props.name])
+
   // if the model’s data has changed
   useEffect(() => {
     if (modelData) {
