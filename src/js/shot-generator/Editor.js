@@ -75,7 +75,7 @@ const useMachine = require('../hooks/use-machine')
 
 const CameraControls = require('./CameraControls')
 const DragControls = require('./DragControls')
-
+const IconSprites = require('./IconSprites')
 const Character = require('./Character')
 const SpotLight = require('./SpotLight')
 const Volumetric = require('./Volumetric')
@@ -120,6 +120,9 @@ const draggables = (sceneObjects, scene) =>
   //scene.children.filter(o => o.userData.type === 'object' || o instanceof BoundingBoxHelper)
   scene.children.filter(o => o.userData.type === 'object' || o.userData.type === 'character' || o.userData.type === 'light' )
 
+const cameras = ( scene ) => 
+  scene.children.filter(o => o instanceof THREE.PerspectiveCamera)
+
 const animatedUpdate = (fn) => (dispatch, getState) => fn(dispatch, getState())
 
 const metersAsFeetAndInches = meters => {
@@ -130,6 +133,7 @@ const metersAsFeetAndInches = meters => {
 }
 
 const feetAndInchesAsString = (feet, inches) => `${feet}′${inches}″`
+const feetAndInchesAsString2nd = (feet, inches) => `${feet}'${inches}"`  //need these because sdf font doesn't have these glyphs
 
 const shortId = id => id.toString().substr(0, 7).toLowerCase()
 
@@ -208,6 +212,7 @@ const SceneManager = connect(
     let largeRenderer = useRef(null)
     let largeRendererEffect = useRef(null)
     let smallRenderer = useRef(null)
+    let smallRendererEffect = useRef(null)
     let animator = useRef(null)
     let animatorId = useRef(null)
 
@@ -219,10 +224,8 @@ const SceneManager = connect(
 
     let clock = useRef(new THREE.Clock())
 
-    let orthoCamera = useRef(new THREE.OrthographicCamera( -4, 4, 4, -4, 0, 1000 ))
-
-    let cameraHelper = useRef(null)
-
+    let orthoCamera = useRef(new THREE.OrthographicCamera( -4, 4, 4, -4, 1, 10000 ))
+    
     useEffect(() => {
       console.log('new SceneManager')
 
@@ -278,8 +281,8 @@ const SceneManager = connect(
       //   largeCanvasSize.height
       // )
 
-      largeRendererEffect.current = new THREE.OutlineEffect( largeRenderer.current )
-
+      largeRendererEffect.current = new THREE.OutlineEffect( largeRenderer.current, {defaultThickness:0.008} )
+      
       smallRenderer.current = new THREE.WebGLRenderer({
         canvas: smallCanvasRef.current,
         antialias: true
@@ -288,6 +291,7 @@ const SceneManager = connect(
         300,
         300,
       )
+      smallRendererEffect.current = new THREE.OutlineEffect( smallRenderer.current, {defaultThickness:0.02, defaultAlpha:0.5, defaultColor: [ 0.4, 0.4, 0.4 ], ignoreMaterial: true} )
     }, [])
 
     // resize the renderers (large and small)
@@ -360,16 +364,37 @@ const SceneManager = connect(
       if (mainViewCamera === 'live') {
         // perspective camera is large
         largeRenderer.current.setSize(width, height)
+
+        largeRendererEffect.current.setParams({
+          defaultThickness:0.008,
+          ignoreMaterial: false,
+          defaultColor: [0, 0, 0]
+        })
         // ortho camera is small
         smallRenderer.current.setSize(300, 300)
+        smallRendererEffect.current.setParams({
+          defaultThickness:0.02,
+          ignoreMaterial: true,
+          defaultColor: [ 0.4, 0.4, 0.4 ]
+        })
       } else {
         // ortho camera is large
         largeRenderer.current.setSize(width, height)
+        largeRendererEffect.current.setParams({
+          defaultThickness:0.013,
+          ignoreMaterial: true,
+          defaultColor: [ 0.4, 0.4, 0.4 ]
+        })
         // perspective camera is small
         smallRenderer.current.setSize(
           Math.floor(300),
           Math.floor(300 / aspectRatio)
         )
+        smallRendererEffect.current.setParams({
+          defaultThickness:0.008,
+          ignoreMaterial: false,
+          defaultColor: [0, 0, 0]
+        })
       }
     }, [sceneObjects, largeCanvasSize, mainViewCamera, aspectRatio])
 
@@ -384,7 +409,7 @@ const SceneManager = connect(
         // state of the active camera
         let cameraState = Object.values(sceneObjects).find(o => o.id === camera.userData.id)
         if (!cameraControlsView.current) {
-          console.log('new CameraControls', cameraState)
+          console.log('new CameraControls')
           cameraControlsView.current = new CameraControls(
             CameraControls.objectFromCameraState(cameraState),
             largeCanvasRef.current
@@ -395,6 +420,7 @@ const SceneManager = connect(
           console.log('new DragControls')
           dragControlsView.current = new DragControls(
             draggables(sceneObjects, scene),
+            cameras(scene),
             camera,
             largeCanvasRef.current,
             selectObject,
@@ -418,6 +444,7 @@ const SceneManager = connect(
         if (!orthoDragControlsView.current) {
           orthoDragControlsView.current = new DragControls(
             draggables(sceneObjects, scene),
+            cameras(scene),
             orthoCamera.current,
             smallCanvasRef.current,
             selectObject,
@@ -432,11 +459,6 @@ const SceneManager = connect(
           }.bind(this) )
         }
 
-        cameraHelper.current = new THREE.CameraHelper(camera)
-        cameraHelper.current.layers.disable(0)
-        cameraHelper.current.layers.enable(2)
-        scene.add(cameraHelper.current)
-
         animator.current = () => {
           if (stats) { stats.begin() }
           if (scene && camera) {
@@ -447,6 +469,7 @@ const SceneManager = connect(
 
               dragControlsView.current.setCamera(cameraForLarge)
               orthoDragControlsView.current.setCamera(cameraForSmall)
+              //orthoDragControlsView.current.setCameras(cameras(scene))
 
               if (cameraControlsView.current && cameraControlsView.current.enabled) {
                 let cameraState = Object.values(state.sceneObjects).find(o => o.id === camera.userData.id)
@@ -493,12 +516,11 @@ const SceneManager = connect(
 
               if (state.mainViewCamera === 'live') {
                 largeRendererEffect.current.render(scene, cameraForLarge)
-              } else {
-                largeRenderer.current.render(scene, cameraForLarge)
+              } else {                
+                largeRendererEffect.current.render(scene, cameraForLarge)
               }
 
-              cameraHelper.current.update()
-              smallRenderer.current.render(scene, cameraForSmall)
+              smallRendererEffect.current.render( scene, cameraForSmall)
             })
           }
           if (stats) { stats.end() }
@@ -516,9 +538,6 @@ const SceneManager = connect(
         cancelAnimationFrame(animatorId.current)
         animator.current = () => {}
         animatorId.current = null
-
-        scene.remove(cameraHelper.current)
-        cameraHelper.current = null
 
         if (cameraControlsView.current) {
           // remove camera controls event listeners and null the reference
@@ -541,20 +560,21 @@ const SceneManager = connect(
         child = scene.children.find(o => o.userData.id === selection)
         sceneObject = sceneObjects[selection]
         //if light - add helper
-        if (sceneObject.type === 'light') {
-          if (lightHelper.current !== child)
-          {
-            scene.remove(lightHelper.current)
-            lightHelper.current = child.helper
-            scene.add(lightHelper.current)
-          }
-        } else {
-          if (lightHelper.current)
-          {
-            scene.remove(lightHelper.current)
-            lightHelper.current = null
-          }
-        }
+
+        // if (sceneObject.type === 'light') {
+        //   if (lightHelper.current !== child)
+        //   {
+        //     scene.remove(lightHelper.current)
+        //     lightHelper.current = child.helper
+        //     scene.add(lightHelper.current)
+        //   }
+        // } else {
+        //   if (lightHelper.current)
+        //   {
+        //     scene.remove(lightHelper.current)
+        //     lightHelper.current = null
+        //   }
+        // }
 
         //if character
         //if (child && ((child.children[0] && child.children[0].skeleton) || (child.children[1] && child.children[1].skeleton) || (child.children[2] && child.children[2].skeleton)) && sceneObject.visible) {
@@ -583,10 +603,12 @@ const SceneManager = connect(
         //console.log('bones helper current: ', bonesHelper.current)
         dragControlsView.current.setBones(bonesHelper.current)
         dragControlsView.current.setSelected(child)
+        dragControlsView.current.setCameras(cameras(scene))
       }
       if (orthoDragControlsView.current) {
         orthoDragControlsView.current.setBones(bonesHelper.current)
         orthoDragControlsView.current.setSelected(child)
+        orthoDragControlsView.current.setCameras(cameras(scene))
       }
     }, [selection, sceneObjects])
 
@@ -594,7 +616,7 @@ const SceneManager = connect(
       if (dragControlsView.current) {
         // TODO read-only version?
         dragControlsView.current.setObjects(draggables(sceneObjects, scene))
-
+        
         // TODO update if there are changes to the camera(s) in the scene
         //
         // let cameraState = Object.values(sceneObjects).find(o => o.type === 'camera')
@@ -605,6 +627,7 @@ const SceneManager = connect(
     useEffect(() => {
       if (orthoDragControlsView.current) {
         orthoDragControlsView.current.setObjects(draggables(sceneObjects, scene))
+        orthoDragControlsView.current.setCameras(cameras(scene))
       }
     }, [sceneObjects, orthoCamera])
 
@@ -624,10 +647,11 @@ const SceneManager = connect(
         }
       }
     }, [machineState.value, camera, cameraControlsView.current, mainViewCamera])
-
     // console.log('SceneManager render', sceneObjects)
+    
     const components = Object.values(sceneObjects).map(props => {
-        switch (props.type) {
+    
+      switch (props.type) {
           case 'object':
             return [
               SceneObject, {
@@ -685,7 +709,6 @@ const SceneManager = connect(
                 setCamera,
 
                 aspectRatio,
-
                 ...props
               }
             ]
@@ -709,7 +732,6 @@ const SceneManager = connect(
                 SpotLight, {
                   key: props.id,
                   scene,
-
                   ...props
                 }
               ]
@@ -740,7 +762,7 @@ const SceneManager = connect(
 
 
 
-const Camera = React.memo(({ scene, id, type, setCamera, ...props }) => {
+const Camera = React.memo(({ scene, id, type, setCamera, icon, ...props }) => {
   let camera = useRef(
     new THREE.PerspectiveCamera(
     props.fov,
@@ -765,10 +787,33 @@ const Camera = React.memo(({ scene, id, type, setCamera, ...props }) => {
     // camera.current.rotateZ(props.roll)
     // camera.current.userData.type = type
     // camera.current.userData.id = id
+    camera.current.fov = props.fov
+    let focal = camera.current.getFocalLength()
+    let [camFeet, camInches] = metersAsFeetAndInches(props.z)
     camera.current.aspect = props.aspectRatio
+    camera.current.orthoIcon = new IconSprites( type, props.name ? props.name : props.displayName, camera.current, Math.round(focal)+"mm, "+feetAndInchesAsString2nd(camFeet, camInches) )
+    camera.current.orthoIcon.position.copy(camera.current.position)
+    camera.current.orthoIcon.icon.material.rotation = camera.current.rotation.y
+    scene.add(camera.current.orthoIcon)
+    
+    let frustumIcons = new THREE.Object3D()
 
-    // camera.current.fov = props.fov
-    // camera.current.updateProjectionMatrix()
+    frustumIcons.left = new IconSprites( 'object', '', camera.current )
+    frustumIcons.right = new IconSprites( 'object', '', camera.current )
+    frustumIcons.left.scale.set(0.06, 2.5, 1)
+    frustumIcons.right.scale.set(0.06, 2.5, 1)
+    //frustumIcons.left.icon.position.z = -0.3
+    frustumIcons.left.icon.center = new THREE.Vector2(0.5, -0.2)
+    frustumIcons.right.icon.center = new THREE.Vector2(0.5, -0.2)
+    let hFOV = 2 * Math.atan( Math.tan( camera.current.fov * Math.PI / 180 / 2 ) * camera.current.aspect ) 
+    frustumIcons.left.icon.material.rotation = hFOV/2 + camera.current.rotation.y
+    frustumIcons.right.icon.material.rotation = -hFOV/2 + camera.current.rotation.y
+   
+    camera.current.orthoIcon.frustumIcons = frustumIcons
+    frustumIcons.add(frustumIcons.left)
+    frustumIcons.add(frustumIcons.right)
+    camera.current.orthoIcon.add(frustumIcons)
+
     scene.add(camera.current)
     // setCamera(camera.current)
 
@@ -787,12 +832,18 @@ const Camera = React.memo(({ scene, id, type, setCamera, ...props }) => {
 
     return function cleanup () {
       console.log(type, id, 'removed')
+      scene.remove(camera.current.orthoIcon)
       scene.remove(camera.current)
       // setCamera(null)
     }
   }, [])
 
-  // console.log('updating camera from props')
+  useEffect(()=>{
+    if (camera.current) {
+      camera.current.orthoIcon.changeFirstText(props.name ? props.name : props.displayName)
+    }
+  }, [props.displayName, props.name])
+
   camera.current.position.x = props.x
   camera.current.position.y = props.z
   camera.current.position.z = props.y
@@ -807,7 +858,26 @@ const Camera = React.memo(({ scene, id, type, setCamera, ...props }) => {
 
   camera.current.fov = props.fov
   camera.current.updateProjectionMatrix()
+  if (camera.current.orthoIcon) {
+    camera.current.orthoIcon.position.copy(camera.current.position)
+    let rotation = new THREE.Euler().setFromQuaternion( camera.current.quaternion, "YXZ" )   //always "YXZ" when we gat strange rotations
+    camera.current.orthoIcon.icon.material.rotation = rotation.y
 
+    let hFOV = 2 * Math.atan( Math.tan( camera.current.fov * Math.PI / 180 / 2 ) * camera.current.aspect ) 
+    camera.current.orthoIcon.frustumIcons.left.icon.material.rotation = hFOV/2 + rotation.y
+    camera.current.orthoIcon.frustumIcons.right.icon.material.rotation = -hFOV/2 + rotation.y
+    
+    
+    //calculatedName = camera.current.name || capitalize(`${camera.current.type} ${number}`)
+    //if (camera.current.orthoIcon.iconText)
+      //camera.current.orthoIcon.iconText.textGeometry.update( calculatedName )
+    
+    let focal = camera.current.getFocalLength()
+    let [camFeet, camInches] = metersAsFeetAndInches(props.z)
+    if (camera.current.orthoIcon.iconSecondText)
+      camera.current.orthoIcon.changeSecondText( Math.round(focal)+"mm, "+feetAndInchesAsString2nd(camFeet, camInches) )      
+    //camera.current.orthoIcon.frustumIcons = frustumIcons
+  }
   camera.current.layers.enable(1)
 
   return null
@@ -843,11 +913,6 @@ const ListItem = ({ index, style, isScrolling, data }) => {
     ? items[0]
     : items[index]
 
-  // HACK this should be based directly on state.sceneObjects, or cached in the sceneObject data
-  const number = items.filter(o => o.type === sceneObject.type).indexOf(sceneObject) + 1
-  const capitalize = string => string.charAt(0).toUpperCase() + string.slice(1)
-  const calculatedName = capitalize(`${sceneObject.type} ${number}`)
-
   return h(
     isWorld
     ? [
@@ -863,7 +928,6 @@ const ListItem = ({ index, style, isScrolling, data }) => {
           index,
           style,
           sceneObject,
-          calculatedName,
           isSelected: sceneObject.id === selection,
           isActive: sceneObject.type === 'camera' && sceneObject.id === activeCamera,
           allowDelete: (
@@ -889,8 +953,7 @@ const Inspector = ({
   updateCharacterSkeleton,
   updateWorld,
   updateWorldRoom,
-  updateWorldEnvironment,
-  calculatedName
+  updateWorldEnvironment
 }) => {
   const { scene } = useContext(SceneContext)
 
@@ -931,9 +994,7 @@ const Inspector = ({
             machineState,
             transition,
             selectBone,
-            updateCharacterSkeleton,
-
-            calculatedName
+            updateCharacterSkeleton
           }
         ]
       : [
@@ -1295,15 +1356,6 @@ const ElementsPanel = connect(
     let kind = sceneObjects[selection] && sceneObjects[selection].type
     let data = sceneObjects[selection]
 
-    // HACK this should be based directly on state.sceneObjects, or cached in the sceneObject data
-    let calculatedName
-    let sceneObject = sceneObjects[selection]
-    if (sceneObject) {
-      const number = Object.values(sceneObjects).filter(o => o.type === sceneObject.type).indexOf(sceneObject) + 1
-      const capitalize = string => string.charAt(0).toUpperCase() + string.slice(1)
-      calculatedName = capitalize(`${sceneObject.type} ${number}`)
-    }
-
     return React.createElement(
       'div', { style: { flex: 1, display: 'flex', flexDirection: 'column' }},
         React.createElement(
@@ -1329,9 +1381,7 @@ const ElementsPanel = connect(
 
             updateWorld,
             updateWorldRoom,
-            updateWorldEnvironment,
-
-            calculatedName
+            updateWorldEnvironment
           }]
         )
       )
@@ -1653,7 +1703,7 @@ const MORPH_TARGET_LABELS = {
   'ectomorphic': 'ecto',
   'endomorphic': 'obese',
 }
-const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, machineState, transition, selectBone, updateCharacterSkeleton, calculatedName }) => {
+const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, machineState, transition, selectBone, updateCharacterSkeleton }) => {
   const createOnSetValue = (id, name, transform = value => value) => value => updateObject(id, { [name]: transform(value) })
 
   let positionSliders = [
@@ -1705,7 +1755,7 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
           key: sceneObject.id,
           label: sceneObject.name != null
             ? sceneObject.name
-            : calculatedName,
+            : sceneObject.displayName,
           onFocus,
           onBlur,
           setLabel: name => {
@@ -2067,7 +2117,7 @@ const BoneEditor = ({ sceneObject, bone, updateCharacterSkeleton }) => {
 }
 
 const ELEMENT_HEIGHT = 40
-const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, selectObject, updateObject, deleteObject, setActiveCamera, machineState, transition, allowDelete, calculatedName }) => {
+const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, selectObject, updateObject, deleteObject, setActiveCamera, machineState, transition, allowDelete }) => {
   const onClick = preventDefault(event => {
     selectObject(sceneObject.id)
 
@@ -2117,7 +2167,7 @@ const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, s
                 ['span.name', sceneObject.name]
               ]
             : [
-                ['span.id', calculatedName]
+                ['span.id', sceneObject.displayName]
               ]
           ),
         ],
@@ -2800,19 +2850,10 @@ const ClosestObjectInspector = ({ camera, sceneObjects, characters }) => {
 
         let [distFeet, distInches] = metersAsFeetAndInches(closest.distance)
 
-        // HACK this should be based directly on state.sceneObjects,
-        //      or cached in the sceneObject data
-        let calculatedName
         let sceneObject = closest.object ? sceneObjects[closest.object.userData.id] : undefined
-        if (sceneObject) {
-          // TODO DRY
-          const number = Object.values(sceneObjects).filter(o => o.type === sceneObject.type).indexOf(sceneObject) + 1
-          const capitalize = string => string.charAt(0).toUpperCase() + string.slice(1)
-          calculatedName = sceneObject.name || capitalize(`${sceneObject.type} ${number}`)
-        }
 
-        setResult(closest.object
-          ? `Distance to ${calculatedName}: ${feetAndInchesAsString(distFeet, distInches)} (${parseFloat(Math.round(closest.distance * 100) / 100).toFixed(2)}m)`
+        setResult(sceneObject
+          ? `Distance to ${sceneObject.name || sceneObject.displayName}: ${feetAndInchesAsString(distFeet, distInches)} (${parseFloat(Math.round(closest.distance * 100) / 100).toFixed(2)}m)`
           : '')
 
       } catch (err) {
@@ -3092,6 +3133,14 @@ const KeyHandler = connect(
   }) => {
     const { scene } = useContext(SceneContext)
 
+    const onCommandDuplicate = () => {
+      if (selection) {
+        let destinationId = THREE.Math.generateUUID()
+        duplicateObject(selection, destinationId)
+        selectObject(destinationId)
+      }
+    }
+
     useEffect(() => {
       const onKeyDown = event => {
         if (event.key === 'Backspace') {
@@ -3104,13 +3153,6 @@ const KeyHandler = connect(
             if (choice === 0) {
               deleteObject(selection)
             }
-          }
-        }
-        if (event.key === 'd' && event.ctrlKey) {
-          if (selection) {
-            let destinationId = THREE.Math.generateUUID()
-            duplicateObject(selection, destinationId)
-            selectObject(destinationId)
           }
         }
         if (event.key === 't') {
@@ -3164,9 +3206,11 @@ const KeyHandler = connect(
       }
 
       window.addEventListener('keydown', onKeyDown)
+      ipcRenderer.on('shot-generator:object:duplicate', onCommandDuplicate)
 
       return function cleanup () {
         window.removeEventListener('keydown', onKeyDown)
+        ipcRenderer.off('shot-generator:object:duplicate', onCommandDuplicate)
       }
     }, [mainViewCamera, _cameras, selection, _selectedSceneObject, activeCamera])
 
@@ -3233,8 +3277,11 @@ const Editor = connect(
       transition('TYPING_EXIT')
     }
 
-    const onSwapCameraViewsClick = preventDefault(() =>
-      setMainViewCamera(mainViewCamera === 'ortho' ? 'live' : 'ortho'))
+    const onSwapCameraViewsClick = preventDefault(() => {
+      
+      setMainViewCamera(mainViewCamera === 'ortho' ? 'live' : 'ortho')
+
+    })
 
     const onAutoFitClick = preventDefault(() => { alert('TODO autofit (not implemented yet)') })
     const onZoomInClick = preventDefault(() => { alert('TODO zoom in (not implemented yet)') })
@@ -3248,13 +3295,13 @@ const Editor = connect(
     const renderImagesForBoard = state => {
       if (!imageRenderer.current) {
         imageRenderer.current = new THREE.OutlineEffect(
-          new THREE.WebGLRenderer({ antialias: true })
+          new THREE.WebGLRenderer({ antialias: true }), { defaultThickness:0.008 }
         )
       }
 
       let imageRenderCamera = camera.clone()
       imageRenderCamera.layers.set(0)
-
+      imageRenderCamera.layers.enable(3)
 
 
       //
@@ -3359,7 +3406,12 @@ const Editor = connect(
 
       // TODO introspect models
       updateModels({})
-      setReady(true)
+
+      // do any other pre-loading stuff here
+      document.fonts.ready.then(() => {
+        // let the app know we're ready to render
+        setReady(true)
+      })
 
       return function cleanup () {
         scene.current = null
@@ -3437,7 +3489,9 @@ const Editor = connect(
             // ]],
 
             ready && (remoteInput.mouseMode || remoteInput.orbitMode) && [PhoneCursor, { remoteInput, camera, largeCanvasRef, selectObject, selectBone, sceneObjects, selection, selectedBone }],
-          ]
+          ],
+
+          [LoadingStatus, { ready }]
         ],
 
         ready && [SceneManager, { mainViewCamera, largeCanvasRef, smallCanvasRef, machineState, transition, largeCanvasSize }],
@@ -3450,7 +3504,48 @@ const Editor = connect(
   )
 })
 
+// TODO move to selectors file
+const getLoadableSceneObjects = createSelector(
+  [getSceneObjects],
+  sceneObjects => Object.values(sceneObjects)
+    .filter(sceneObject =>
+      (sceneObject.type === 'character' || sceneObject.type === 'object') &&
+      sceneObject.loaded != null
+    )
+)
+const getLoadableSceneObjectsRemaining = createSelector(
+  [getLoadableSceneObjects],
+  loadableSceneObjects => loadableSceneObjects.filter(sceneObject => sceneObject.loaded === false)
+)
 
+const LoadingStatus = connect(
+  state => ({
+    // total: getLoadableSceneObjects(state).length,
+    remaining: getLoadableSceneObjectsRemaining(state).length
+  })
+)(React.memo(({ ready, remaining }) => {
+  let message
+  
+  if (!ready) {
+    message = 'Initializing Shot Generator …'
+  } else if (remaining) {
+    message = 'Loading models …'
+  }
+
+  if (!message) return null
+
+  return h(
+    ['div.modal-overlay', [
+      ['div.modal', [
+        ['div.modal__content', [
+          ['div.title', 'Loading'],
+          ['div.message', message]
+        ]]
+      ]]
+    ]]
+  )
+
+}))
 
 const saveScenePresets = state => presetsStorage.saveScenePresets({ scenes: state.presets.scenes })
 const PresetsEditor = connect(

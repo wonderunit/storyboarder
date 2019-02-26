@@ -4,9 +4,16 @@ const isDev = require('electron-is-dev')
 const path = require('path')
 const url = require('url')
 
+process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = true
+
 let win
 
-process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = true
+let memento = {
+  x: undefined,
+  y: undefined,
+  width: 1500,
+  height: 1080
+}
 
 const reveal = onComplete => {
   win.show()
@@ -20,13 +27,17 @@ const show = (onComplete) => {
     return
   }
 
+  let { x, y, width, height } = memento
+
   win = new BrowserWindow({
-    width: 1500,
-    height: 1080,
     minWidth: isDev ? undefined : 1200,
     minHeight: isDev ? undefined : 800,
-    // x: 0,
-    // y: 0,
+
+    x,
+    y,
+    width,
+    height,
+
     show: false,
     center: true,
     frame: true,
@@ -66,6 +77,9 @@ const show = (onComplete) => {
     }
   })
 
+  win.on('resize', () => memento = win.getBounds())
+  win.on('move', () => memento = win.getBounds())
+
   win.once('closed', () => {
     win = null
   })
@@ -75,7 +89,11 @@ const show = (onComplete) => {
     slashes: true
   }))
 
-  ipcMain.on('shot-generator:window:loaded', event => {
+  // use this to wait until the window has completely loaded
+  // ipcMain.on('shot-generator:window:loaded', () => { })
+  
+  // use this to show sooner
+  win.once('ready-to-show', () => {
     reveal(onComplete)
   })
 }
@@ -84,14 +102,9 @@ ipcMain.on('shot-generator:menu:view:fps-meter', (event, value) => {
   win && win.webContents.send('shot-generator:menu:view:fps-meter', value)
 })
 
-// are we testing locally?
-// SHOT_GENERATOR_STANDALONE=true npx electron src/js/windows/shot-generator/main.js
-if (process.env.SHOT_GENERATOR_STANDALONE) {
-  console.log('testing locally!')
-  app.on('ready', () => {
-    show(win => {})
-  })
-}
+ipcMain.on('shot-generator:object:duplicate', () => {
+  win.webContents.send('shot-generator:object:duplicate')
+})
 
 module.exports = {
   show,

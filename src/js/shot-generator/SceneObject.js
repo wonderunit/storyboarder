@@ -12,6 +12,7 @@ const ModelLoader = require('../services/model-loader')
 
 const applyDeviceQuaternion = require('./apply-device-quaternion')
 const prepareFilepathForModel = require('./prepare-filepath-for-model')
+const IconSprites = require('./IconSprites')
 
 // TODO use functions of ModelLoader?
 require('../vendor/three/examples/js/loaders/LoaderSupport')
@@ -21,7 +22,10 @@ const loadingManager = new THREE.LoadingManager()
 const objLoader = new THREE.OBJLoader2(loadingManager)
 const gltfLoader = new THREE.GLTFLoader(loadingManager)
 const imageLoader = new THREE.ImageLoader(loadingManager)
+
+
 objLoader.setLogging(false, false)
+
 THREE.Cache.enabled = true
 
 const boxRadius = .005
@@ -129,8 +133,15 @@ const SceneObject = React.memo(({ scene, id, type, isSelected, loaded, updateObj
                 error => reject(error)
               )
             })
-            console.log('loaded', filepath)
-            setLoaded(true)
+            .then(() => {
+              console.log('loaded', filepath)
+              setLoaded(true)
+            })
+            .catch((err) => {
+              console.error(err)
+              // HACK undefined == error
+              setLoaded(undefined)
+            })
             break
 
           case '.gltf':
@@ -153,9 +164,20 @@ const SceneObject = React.memo(({ scene, id, type, isSelected, loaded, updateObj
                 }
               )
             })
-            console.log('loaded', filepath)
-            setLoaded(true)
+            .then(() => {
+              console.log('loaded', filepath)
+              setLoaded(true)
+            })
+            .catch((err) => {
+              console.error(err)
+              // HACK undefined == error
+              setLoaded(undefined)
+            })
             break
+
+          default:
+            alert('Could not load file.')
+            setLoaded(undefined)
         }
         break
     }
@@ -170,9 +192,13 @@ const SceneObject = React.memo(({ scene, id, type, isSelected, loaded, updateObj
 
     console.log(type, id, 'added to scene')
     scene.add(container.current)
+    
+    container.current.orthoIcon = new IconSprites( type, "", container.current )
+    //scene.add(container.current.orthoIcon)
 
     return function cleanup () {
       console.log(type, id, 'removed from scene')
+      scene.remove(container.current.orthoIcon)
       scene.remove(container.current)
     }
   }, [object.model])
@@ -181,6 +207,7 @@ const SceneObject = React.memo(({ scene, id, type, isSelected, loaded, updateObj
     container.current.position.x = object.x
     container.current.position.z = object.y
     container.current.position.y = object.z
+    container.current.orthoIcon.position.copy(container.current.position)
   }, [
     object.x,
     object.y,
@@ -191,6 +218,7 @@ const SceneObject = React.memo(({ scene, id, type, isSelected, loaded, updateObj
     container.current.rotation.x = object.rotation.x
     container.current.rotation.y = object.rotation.y
     container.current.rotation.z = object.rotation.z
+    container.current.orthoIcon.icon.rotation = object.rotation.y
   }, [
     object.rotation.x,
     object.rotation.y,
@@ -203,6 +231,7 @@ const SceneObject = React.memo(({ scene, id, type, isSelected, loaded, updateObj
       object.height,
       object.depth
     )
+    container.current.orthoIcon.scale.set(object.width+0.2, object.depth+0.2, 1)
   }, [
     object.width,
     object.height,
@@ -222,11 +251,11 @@ const SceneObject = React.memo(({ scene, id, type, isSelected, loaded, updateObj
     container.current.children[0].material.userData.outlineParameters =
       isSelected
         ? {
-          thickness: 0.008,
+          //thickness: 0.008,
           color: [ 122/256.0/2, 114/256.0/2, 233/256.0/2 ]
         }
        : {
-         thickness: 0.008,
+         //thickness: 0.008,
          color: [ 0, 0, 0 ],
        }
   }, [isSelected, loaded])

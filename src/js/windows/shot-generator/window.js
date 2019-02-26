@@ -133,7 +133,7 @@ createServer({
 })
 
 // are we testing locally?
-// SHOT_GENERATOR_STANDALONE=true npx electron src/js/windows/shot-generator/main.js
+// SHOT_GENERATOR_STANDALONE=true npm start
 if (process.env.SHOT_GENERATOR_STANDALONE) {
   console.log('loading shot from example.storyboarder')
 
