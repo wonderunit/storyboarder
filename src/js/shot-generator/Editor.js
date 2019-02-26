@@ -683,10 +683,6 @@ const SceneManager = connect(
         ...Object.values(sceneObjectsSorted)
       ]
 
-      const number = items.filter(o => o.type === props.type).indexOf(props) + 1
-      const capitalize = string => string.charAt(0).toUpperCase() + string.slice(1)
-      const calculatedName = capitalize(`${props.type} ${number}`)
-      
       switch (props.type) {
           case 'object':
             return [
@@ -727,8 +723,6 @@ const SceneManager = connect(
                 loaded: props.loaded ? props.loaded : false,
                 devices,
 
-                text: props.displayName,
-
                 storyboarderFilePath: meta.storyboarderFilePath,
 
                 // HACK force reset skeleton pose on Board UUID change
@@ -747,7 +741,6 @@ const SceneManager = connect(
                 setCamera,
 
                 aspectRatio,
-                text: props.displayName,
                 ...props
               }
             ]
@@ -757,7 +750,6 @@ const SceneManager = connect(
                 SpotLight, {
                   key: props.id,
                   scene,
-                  text: props.displayName,
                   ...props
                 }
               ]
@@ -789,7 +781,7 @@ const SceneManager = connect(
 
 
 
-const Camera = React.memo(({ scene, id, type, setCamera, icon, text, ...props }) => {
+const Camera = React.memo(({ scene, id, type, setCamera, icon, ...props }) => {
   let camera = useRef(
     new THREE.PerspectiveCamera(
     props.fov,
@@ -818,7 +810,7 @@ const Camera = React.memo(({ scene, id, type, setCamera, icon, text, ...props })
     let focal = camera.current.getFocalLength()
     let [camFeet, camInches] = metersAsFeetAndInches(props.z)
     camera.current.aspect = props.aspectRatio
-    camera.current.orthoIcon = new IconSprites( type, text, camera.current, Math.round(focal)+"mm, "+feetAndInchesAsString2nd(camFeet, camInches) )
+    camera.current.orthoIcon = new IconSprites( type, props.name ? props.name : props.displayName, camera.current, Math.round(focal)+"mm, "+feetAndInchesAsString2nd(camFeet, camInches) )
     camera.current.orthoIcon.position.copy(camera.current.position)
     camera.current.orthoIcon.icon.material.rotation = camera.current.rotation.y
     scene.add(camera.current.orthoIcon)
@@ -866,11 +858,10 @@ const Camera = React.memo(({ scene, id, type, setCamera, icon, text, ...props })
   }, [])
 
   useEffect(()=>{
-    console.log('text change?')
     if (camera.current) {
-      camera.current.orthoIcon.changeFirstText(props.name ? props.name : text)
+      camera.current.orthoIcon.changeFirstText(props.name ? props.name : props.displayName)
     }
-  }, [text, props.name])
+  }, [props.displayName, props.name])
 
   camera.current.position.x = props.x
   camera.current.position.y = props.z

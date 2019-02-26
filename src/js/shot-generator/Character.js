@@ -126,7 +126,6 @@ const Character = React.memo(({
   loaded,  
   devices,
   icon,
-  text,
   storyboarderFilePath,
   boardUid,
 
@@ -205,9 +204,9 @@ const Character = React.memo(({
 
   useEffect(() => {
     if (object.current) {
-      object.current.orthoIcon.changeFirstText(props.name ? props.name : text)
+      object.current.orthoIcon.changeFirstText(props.name ? props.name : props.displayName)
     }
-  }, [text, props.name])
+  }, [props.displayName, props.name])
 
   // if the model’s data has changed
   useEffect(() => {
@@ -227,7 +226,7 @@ const Character = React.memo(({
       object.current.add(...armatures)
       object.current.add(mesh)
       
-      object.current.orthoIcon = new IconSprites( type, text, object.current )
+      object.current.orthoIcon = new IconSprites( type, props.name?props.name:props.displayName, object.current )
       scene.add(object.current.orthoIcon)
       
       object.current.userData.mesh = mesh

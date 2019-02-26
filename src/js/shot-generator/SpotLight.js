@@ -22,7 +22,7 @@ const lightHelperFactory = light => {
   return helper
 }
 
-const SpotLight = React.memo(({ scene, id, type, setLight, icon, text, ...props }) => {
+const SpotLight = React.memo(({ scene, id, type, setLight, icon, ...props }) => {
   
   let light = useRef(null)
 
@@ -75,7 +75,7 @@ const SpotLight = React.memo(({ scene, id, type, setLight, icon, text, ...props 
     light.current.rotation.y = props.rotation
     light.current.rotation.x = (props.tilt)
 
-    light.current.orthoIcon = new IconSprites( type, text, light.current )
+    light.current.orthoIcon = new IconSprites( type, props.name ? props.name : props.displayName, light.current )
     scene.add( light.current.orthoIcon )
 
     light.current.light.updateMatrixWorld()
@@ -126,9 +126,9 @@ const SpotLight = React.memo(({ scene, id, type, setLight, icon, text, ...props 
 
   useEffect(() => {
     if (light.current) {
-      light.current.orthoIcon.changeFirstText(props.name ? props.name : text)
+      light.current.orthoIcon.changeFirstText(props.name ? props.name : props.displayName)
     }
-  }, [text, props.name])
+  }, [props.displayName, props.name])
 
   useEffect(() => {
     if (light.current) {
