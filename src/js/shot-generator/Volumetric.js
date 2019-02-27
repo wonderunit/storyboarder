@@ -7,6 +7,9 @@ const { useRef, useEffect, useState } = React
 const loadingManager = new THREE.LoadingManager()
 const textureLoader = new THREE.TextureLoader()
 
+const IconSprites = require('./IconSprites')
+
+
 const imgArray = [
     'img/shot-generator/volume-textures/rain2.jpg',
     'img/shot-generator/volume-textures/rain1.jpg',
@@ -77,6 +80,10 @@ const Volumetric = React.memo(({
             volumeContainer.position.set(props.x, props.z, props.y)
             volumeContainer.rotation.y = props.rotation
             volume.current = volumeContainer
+
+            volume.current.orthoIcon = new IconSprites( type, props.name ? props.name : props.displayName, volume.current )
+            scene.add( volume.current.orthoIcon )
+
             scene.add(volume.current)
         })
        

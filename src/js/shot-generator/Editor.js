@@ -2158,7 +2158,7 @@ const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, s
     'character': [Icon, { src: 'icon-item-character' }],
     'object': [Icon, { src: 'icon-item-object' }],
     'light': [Icon, { src: 'icon-item-light' }],
-    'volume': [Icon, { src: 'icon-item-light' }]
+    'volume': [Icon, { src: 'icon-item-volume' }]
   }
 
   let className = classNames({
@@ -2781,7 +2781,7 @@ const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, set
         ['a[href=#]', { onClick: preventDefault(onCreateObjectClick) }, [[Icon, { src: 'icon-toolbar-object' }], 'Object']],
         ['a[href=#]', { onClick: preventDefault(onCreateCharacterClick) }, [[Icon, { src: 'icon-toolbar-character' }], 'Character']],
         ['a[href=#]', { onClick: preventDefault(onCreateLightClick) }, [[Icon, { src: 'icon-toolbar-light' }], 'Light']],
-        ['a[href=#]', { onClick: preventDefault(onCreateVolumeClick) }, [[Icon, { src: 'icon-toolbar-light' }], 'Volume']],
+        ['a[href=#]', { onClick: preventDefault(onCreateVolumeClick) }, [[Icon, { src: 'icon-toolbar-volume' }], 'Volume']],
       ]],
       // ['a[href=#]', { onClick: preventDefault(onCreateStressClick) }, '+ STRESS'],
 
