@@ -516,14 +516,21 @@ const SceneManager = connect(
                   })
                 }
               }
-
+              let tempColor = scene.background.clone()
               if (state.mainViewCamera === 'live') {
                 largeRendererEffect.current.render(scene, cameraForLarge)
-              } else {                
+                scene.background.set(new THREE.Color( '#FFFFFF' ))
+                smallRendererEffect.current.render( scene, cameraForSmall)
+                scene.background.set(tempColor)
+
+              } else {
+                scene.background.set(new THREE.Color( '#FFFFFF' ))           
                 largeRendererEffect.current.render(scene, cameraForLarge)
+                scene.background.set(tempColor)
+                smallRendererEffect.current.render( scene, cameraForSmall)
               }
 
-              smallRendererEffect.current.render( scene, cameraForSmall)
+              
             })
           }
           if (stats) { stats.end() }
