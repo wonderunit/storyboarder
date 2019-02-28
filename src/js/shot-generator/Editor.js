@@ -1715,7 +1715,7 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
     [NumberSlider, { label: 'z', value: sceneObject.z, min: -30, max: 30, onSetValue: createOnSetValue(sceneObject.id, 'z') } ],
   ]
 
-  let volumeSliders = (sceneObject.model === 'box' || sceneObject.type === 'volume')
+  let volumeSliders = (sceneObject.model === 'box' )
     ? [
         [NumberSlider, { label: 'width', value: sceneObject.width, min: 0.025, max: 5, onSetValue: createOnSetValue(sceneObject.id, 'width') } ],
         [NumberSlider, { label: 'height', value: sceneObject.height, min: 0.025, max: 5, onSetValue: createOnSetValue(sceneObject.id, 'height') } ],
@@ -1830,7 +1830,7 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
         positionSliders
       ],
 
-      (sceneObject.type == 'object' || sceneObject.type == 'volume') && [
+      (sceneObject.type == 'object' ) && [
         [
           'div.column',
           volumeSliders
@@ -1840,6 +1840,9 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
       sceneObject.type == 'volume' && [        
         [
           'div.column',
+          [NumberSlider, { label: 'width', value: sceneObject.width, min: 0.1, max: 25, onSetValue: createOnSetValue(sceneObject.id, 'width') } ],
+          [NumberSlider, { label: 'height', value: sceneObject.height, min: 0.1, max: 25, onSetValue: createOnSetValue(sceneObject.id, 'height') } ],
+          [NumberSlider, { label: 'depth', value: sceneObject.depth, min: 0.1, max: 25, onSetValue: createOnSetValue(sceneObject.id, 'depth') } ], 
           [NumberSlider, { label: 'layers', value: parseInt(sceneObject.numberOfLayers), min: 1, max: 10, step: 1, onSetValue: createOnSetValue(sceneObject.id, 'numberOfLayers')}]
         ],
         //[VolumePresetsEditor, { sceneObject }]
