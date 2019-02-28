@@ -300,6 +300,9 @@ const SceneManager = connect(
     // resize the renderers (large and small)
     // FIXME this is running _after_ the animation frame, causing a visible jump
     useEffect(() => {
+
+      //seems this is called a bit often, see later about reducing hooks
+
       // how wide is the canvas which will render the large view?
       let width = Math.ceil(largeCanvasSize.width)
       // assign a target height, based on scene aspect ratio
@@ -314,6 +317,7 @@ const SceneManager = connect(
           child.userData.type === 'object' ||
           child.userData.type === 'character' ||
           child.userData.type === 'light' ||
+          child.userData.type === 'volume' ||
           child instanceof THREE.PerspectiveCamera
         ) {
           minMax[0] = Math.min(child.position.x, minMax[0])
@@ -365,6 +369,14 @@ const SceneManager = connect(
 
       // resize the renderers
       if (mainViewCamera === 'live') {
+        // ortho camera is small
+        smallRenderer.current.setSize(300, 300)
+        smallRendererEffect.current.setParams({
+          defaultThickness:0.02,
+          ignoreMaterial: true,
+          defaultColor: [ 0.4, 0.4, 0.4 ]
+        })
+
         // perspective camera is large
         largeRenderer.current.setSize(width, height)
 
@@ -373,13 +385,7 @@ const SceneManager = connect(
           ignoreMaterial: false,
           defaultColor: [0, 0, 0]
         })
-        // ortho camera is small
-        smallRenderer.current.setSize(300, 300)
-        smallRendererEffect.current.setParams({
-          defaultThickness:0.02,
-          ignoreMaterial: true,
-          defaultColor: [ 0.4, 0.4, 0.4 ]
-        })
+        
       } else {
         // ortho camera is large
         largeRenderer.current.setSize(width, height)

@@ -302,9 +302,11 @@ THREE.OutlineEffect = function ( renderer, parameters ) {
 
 		if ( outlineParameters !== undefined ) {
 
-			if ( outlineParameters.thickness !== undefined ) material.uniforms.outlineThickness.value = outlineParameters.thickness;
+			if ( outlineParameters.thickness !== undefined ) 
+				if ( ignoreMaterial )
+					material.uniforms.outlineThickness.value = defaultThickness;
 			if ( outlineParameters.color !== undefined ) {
-				if (ignoreMaterial) {
+				if ( ignoreMaterial ) {
 					material.uniforms.outlineColor.value = defaultColor;
 				}
 				else material.uniforms.outlineColor.value.fromArray( outlineParameters.color );
