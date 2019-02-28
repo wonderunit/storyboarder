@@ -55,6 +55,7 @@ const Volumetric = React.memo(({
     const doCleanup = () => {
         if (volume.current) {
             console.log(type, id, 'remove')
+            scene.remove(volume.current.orthoIcon)
             scene.remove(volume.current)
             volume.current = null
         }
@@ -83,7 +84,8 @@ const Volumetric = React.memo(({
 
             volume.current.orthoIcon = new IconSprites( type, props.name ? props.name : props.displayName, volume.current )
             scene.add( volume.current.orthoIcon )
-
+            volume.current.userData.id = id
+            volume.current.userData.type = type
             scene.add(volume.current)
         })
        
@@ -96,7 +98,7 @@ const Volumetric = React.memo(({
             volume.current.position.y = props.z
 
             volume.current.rotation.y = props.rotation
-            //volume.current.orthoIcon.position.copy(object.current.position)
+            volume.current.orthoIcon.position.copy(volume.current.position)
         }
     }, [props.x, props.y, props.z, props.rotation, props.scale])
 

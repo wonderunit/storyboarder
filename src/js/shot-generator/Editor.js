@@ -118,7 +118,10 @@ window.THREE = THREE
 
 const draggables = (sceneObjects, scene) =>
   //scene.children.filter(o => o.userData.type === 'object' || o instanceof BoundingBoxHelper)
-  scene.children.filter(o => o.userData.type === 'object' || o.userData.type === 'character' || o.userData.type === 'light' )
+  scene.children.filter(o => o.userData.type === 'object' || 
+                              o.userData.type === 'character' || 
+                              o.userData.type === 'light' || 
+                              o.userData.type === 'volume' )
 
 const cameras = ( scene ) => 
   scene.children.filter(o => o instanceof THREE.PerspectiveCamera)
@@ -615,6 +618,7 @@ const SceneManager = connect(
     useEffect(() => {
       if (dragControlsView.current) {
         // TODO read-only version?
+        
         dragControlsView.current.setObjects(draggables(sceneObjects, scene))
         
         // TODO update if there are changes to the camera(s) in the scene

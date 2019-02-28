@@ -247,6 +247,12 @@ class DragControls extends THREE.EventDispatcher {
         //character
         allIntersectors.push( o.orthoIcon.icon )        
       }
+
+      if (o instanceof THREE.Object3D && o.userData.type === 'volume')
+      {
+        //volume
+        allIntersectors.push( o.orthoIcon.icon )
+      }
     }    
     for ( o of cameras ) // cameras
     {
