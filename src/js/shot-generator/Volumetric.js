@@ -47,22 +47,23 @@ const Volumetric = React.memo(({
                     alphaMap: texture, 
                     side: THREE.DoubleSide
                 })
+                volumeMaterial.userData.outlineParameters = { thickness: 0, alpha: 0.0 }
                 resolve(volumeMaterial)
             })
         })
     }
 
-    const doCleanup = () => {
+    const cleanup = () => {
         if (volume.current) {
             console.log(type, id, 'remove')
+
             scene.remove(volume.current.orthoIcon)
             scene.remove(volume.current)
             volume.current = null
         }
     }
 
-    if (volume.current === null) {
-        //first time, creating
+    const create = () => {
         console.log('create!')
         let volumeContainer = new THREE.Object3D()
         volumeContainer.textureLayers = []
@@ -75,21 +76,33 @@ const Volumetric = React.memo(({
                 planeMesh.position.z = props.depth / numberOfLayers * (numberOfLayers - 2 * i) / 2 - props.depth / numberOfLayers/2
                 planeMesh.position.y = 1 / 2
                 volumeContainer.add(planeMesh)
-                volumeContainer.textureLayers.push(planeMesh)            
+                volumeContainer.textureLayers.push(planeMesh) 
+                
+                planeMesh.layers.disable(0)
+                planeMesh.layers.enable(1)
+                planeMesh.layers.disable(2)
+                planeMesh.layers.enable(3)
             }
             volumeContainer.scale.set(props.width, props.height, 1)
             volumeContainer.position.set(props.x, props.z, props.y)
             volumeContainer.rotation.y = props.rotation
             volume.current = volumeContainer
 
-            volume.current.orthoIcon = new IconSprites( type, props.name ? props.name : props.displayName, volume.current )
-            scene.add( volume.current.orthoIcon )
+            
+            
             volume.current.userData.id = id
             volume.current.userData.type = type
-            scene.add(volume.current)
+            volume.current.orthoIcon = new IconSprites( type, props.name ? props.name : props.displayName, volume.current )
+            scene.add( volume.current.orthoIcon )
+            scene.add( volume.current )
         })
-       
     }
+
+    useEffect(()=>{
+        create()
+
+        return cleanup
+    }, [])
 
     useEffect(()=>{
         if (volume.current !== null) {

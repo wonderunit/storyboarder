@@ -76,7 +76,7 @@ const SpotLight = React.memo(({ scene, id, type, setLight, icon, ...props }) => 
     light.current.rotation.x = (props.tilt)
 
     light.current.orthoIcon = new IconSprites( type, props.name ? props.name : props.displayName, light.current )
-    scene.add( light.current.orthoIcon )
+    
 
     light.current.light.updateMatrixWorld()
   }
@@ -85,6 +85,7 @@ const SpotLight = React.memo(({ scene, id, type, setLight, icon, ...props }) => 
 
     console.log(type, id, 'added')
     scene.add(light.current)
+    scene.add( light.current.orthoIcon )
 
     return function cleanup () {
       console.log(type, id, 'removed')

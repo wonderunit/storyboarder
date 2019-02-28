@@ -529,8 +529,6 @@ const SceneManager = connect(
                 scene.background.set(tempColor)
                 smallRendererEffect.current.render( scene, cameraForSmall)
               }
-
-              
             })
           }
           if (stats) { stats.end() }
