@@ -9,15 +9,6 @@ const textureLoader = new THREE.TextureLoader()
 
 const IconSprites = require('./IconSprites')
 
-
-const imgArray = [
-    
-    
-    
-    
-    
-]
-
 const Volumetric = React.memo(({
     scene,
     id,
@@ -62,20 +53,29 @@ const Volumetric = React.memo(({
 
     const create = () => {
         console.log('create!')
-        let volumeContainer = new THREE.Object3D()
-        volumeContainer.textureLayers = []
+        volume.current = new THREE.Object3D()
+        volume.current.textureLayers = []
+
+        volume.current.userData.id = id
+        volume.current.userData.type = type
+        volume.current.userData.effect = props.effect
+        volume.current.orthoIcon = new IconSprites( type, props.name ? props.name : props.displayName, volume.current )
+        volume.current.rotation.y = props.rotation
+        
+        scene.add( volume.current.orthoIcon )
+        scene.add( volume.current )
+
         let imgArray = volumePresets[props.effect]
         const promises = imgArray.map(link => loadMaterialPromise(link))
         Promise.all(promises).then((materials) => {
             for (var i = 0; i < numberOfLayers; i++) {
                 let plane = new THREE.PlaneBufferGeometry(1,1)
-                //let planeMesh = new THREE.Mesh(plane, materials[i % props.numberOfLayers])
                 let planeMesh = new THREE.Mesh(plane, materials[i % materials.length])
                 //planeMesh.rotation.z = -Math.PI
                 planeMesh.position.z = props.depth / numberOfLayers * (numberOfLayers - 2 * i) / 2 - props.depth / numberOfLayers/2
                 planeMesh.position.y = 1 / 2
-                volumeContainer.add(planeMesh)
-                volumeContainer.textureLayers.push(planeMesh) 
+                volume.current.add(planeMesh)
+                volume.current.textureLayers.push(planeMesh) 
                 
                 planeMesh.layers.disable(0)
                 planeMesh.layers.enable(1)
@@ -83,19 +83,12 @@ const Volumetric = React.memo(({
                 planeMesh.layers.enable(3)
             }
 
-            volumeContainer.scale.set(props.width, props.height, 1)
-            volumeContainer.position.set(props.x, props.z, props.y)
-            volumeContainer.rotation.y = props.rotation
-            volume.current = volumeContainer
+            volume.current.scale.set(props.width, props.height, 1)
+            volume.current.position.set(props.x, props.z, props.y)
+            volume.current.rotation.y = props.rotation
 
-            volume.current.loadedMaterials = materials
-            
-            volume.current.userData.id = id
-            volume.current.userData.type = type
-            volume.current.userData.effect = props.effect
-            volume.current.orthoIcon = new IconSprites( type, props.name ? props.name : props.displayName, volume.current )
-            scene.add( volume.current.orthoIcon )
-            scene.add( volume.current )
+            volume.current.loadedMaterials = materials           
+            volume.current.orthoIcon.position.copy(volume.current.position)
         })
     }
 
@@ -132,7 +125,7 @@ const Volumetric = React.memo(({
         if (numberOfLayers % 1 != 0) return
         let intLay = parseInt(numberOfLayers)
 
-        if (volume.current !== null) {
+        if (volume.current !== null && volume.current.children.length>0) {
             while (volume.current.children.length>0)
             {
                 volume.current.remove(volume.current.children[0])
