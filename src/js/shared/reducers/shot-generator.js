@@ -159,7 +159,8 @@ const resetLoadingStatus = sceneObjects => {
   for (let key in sceneObjects) {
     if (
       sceneObjects[key].type === 'character' ||
-      sceneObjects[key].type === 'object'
+      sceneObjects[key].type === 'object' ||
+      sceneObjects[key].type === 'volume'
     ) {
       sceneObjects[key] = {
         ...sceneObjects[key],
@@ -200,6 +201,21 @@ const withDisplayNames = sceneObjects => {
 
 // load up the default poses
 const defaultPosePresets = require('./shot-generator-presets/poses.json')
+
+const defaultVolumePresets = {
+  rain: [
+    'img/shot-generator/volume-textures/rain2.jpg',
+    'img/shot-generator/volume-textures/rain1.jpg',
+  ],
+  fog: [
+    'img/shot-generator/volume-textures/fog1.jpg',
+    'img/shot-generator/volume-textures/fog2.jpg',
+  ],
+  explosion: [
+    'img/shot-generator/volume-textures/debris.jpg',
+    'img/shot-generator/volume-textures/explosion.jpg',
+  ]
+}
 
 // reference AE56DD1E-3F6F-4A74-B247-C8A6E3EB8FC0 as our Default Pose
 const defaultPosePreset = defaultPosePresets['AE56DD1E-3F6F-4A74-B247-C8A6E3EB8FC0']
@@ -520,7 +536,8 @@ const initialState = {
       }
     },
 
-    poses: defaultPosePresets
+    poses: defaultPosePresets,
+    volumes: defaultVolumePresets,
   },
   server: {
     uri: undefined,
@@ -699,6 +716,10 @@ module.exports = {
             draft.sceneObjects[action.payload.id].distanceBetweenLayers = action.payload.distanceBetweenLayers
           }
 
+          if (action.payload.effect != null) {
+            draft.sceneObjects[action.payload.id].effect = action.payload.effect
+          }
+
           if (action.payload.hasOwnProperty('characterPresetId')) {
             draft.sceneObjects[action.payload.id].characterPresetId = action.payload.characterPresetId
           }
@@ -710,6 +731,7 @@ module.exports = {
           if (action.payload.hasOwnProperty('loaded')) {
             draft.sceneObjects[action.payload.id].loaded = action.payload.loaded
           }
+          
 
           checkForCharacterChanges(state, draft, action)
           checkForSkeletonChanges(state, draft, action)
@@ -823,7 +845,7 @@ module.exports = {
           if (action.payload.hasOwnProperty('name')) {
             draft.presets.poses[action.payload.id].name = action.payload.name
           }
-          return
+          return     
 
         case 'UPDATE_WORLD':
           if (action.payload.hasOwnProperty('ground')) {
@@ -910,6 +932,7 @@ module.exports = {
 
   createObject: values => ({ type: 'CREATE_OBJECT', payload: values }),
   updateObject: (id, values) => ({ type: 'UPDATE_OBJECT', payload: { id, ...values } }),
+  
   deleteObject: id => ({ type: 'DELETE_OBJECT', payload: { id } }),
 
   duplicateObject: (id, destinationId) => ({ type: 'DUPLICATE_OBJECT', payload: { id, destinationId } }),

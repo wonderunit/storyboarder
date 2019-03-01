@@ -100,11 +100,12 @@ const NumberSliderTransform = {
     if (value > 180) { return value - 360 }
     if (value < -180) { return value + 360 }
     return value
-  }
+  },
+  intNumber: value => {return parseInt(value)}
 }
 const NumberSliderFormatter = {
   degrees: value => Math.round(value).toString() + '°',
-  percent: value => Math.round(value).toString() + '%',
+  percent: value => Math.round(value).toString() + '%',  
 }
 
 const ModelSelect = require('./ModelSelect')
@@ -192,7 +193,7 @@ const SceneManager = connect(
     aspectRatio: state.aspectRatio,
     devices: state.devices,
     meta: state.meta,
-
+    volumePresets:state.presets.volumes,
     // HACK force reset skeleton pose on Board UUID change
     _boardUid: state.board.uid
   }),
@@ -203,10 +204,10 @@ const SceneManager = connect(
     selectBone,
     updateCharacterSkeleton,
     createPosePreset,
-    updateWorldEnvironment
+    updateWorldEnvironment,
   }
 )(
-  ({ world, sceneObjects, updateObject, selectObject, remoteInput, largeCanvasRef, smallCanvasRef, selection, selectedBone, machineState, transition, animatedUpdate, selectBone, mainViewCamera, updateCharacterSkeleton, largeCanvasSize, activeCamera, aspectRatio, devices, meta, _boardUid, updateWorldEnvironment }) => {
+  ({ world, sceneObjects, updateObject, selectObject, remoteInput, largeCanvasRef, smallCanvasRef, selection, selectedBone, machineState, transition, animatedUpdate, selectBone, mainViewCamera, updateCharacterSkeleton, largeCanvasSize, activeCamera, aspectRatio, devices, meta, _boardUid, updateWorldEnvironment, volumePresets }) => {
     const { scene } = useContext(SceneContext)
 
     let [camera, setCamera] = useState(null)
@@ -738,6 +739,7 @@ const SceneManager = connect(
                   updateObject,
                   numberOfLayers:props.numberOfLayers,
                   distanceBetweenLayers: props.distanceBetweenLayers,
+                  volumePresets,
                   ...props
                 }
               ]
@@ -1483,6 +1485,72 @@ const LabelInput = ({ label, setLabel, onFocus, onBlur }) => {
 }
 
 const saveCharacterPresets = state => presetsStorage.saveCharacterPresets({ characters: state.presets.characters })
+
+const VolumePresetsEditor = connect(
+  state => ({
+    volumePresets: state.presets.volumes,
+    updateObject
+  }),
+  {
+    updateObject,
+    selectVolumePreset: (id, volumePresetId, preset) => (dispatch, getState) => {
+      dispatch(updateObject(id, {
+        volumePresetId,
+        name: preset.state.name
+      }))
+    }
+  }
+)(
+  React.memo(({sceneObject, volumePresets, selectVolumePreset, updateObject }) => {
+    const onSelectVolumePreset = event => {
+      let volumePresetId = event.target.value
+      let preset = volumePresets['rain']//[volumePresetId]
+
+      selectVolumePreset(sceneObject.id, volumePresetId, preset)
+    }
+
+    let objKeys = []
+    Object.keys(volumePresets).map(key => {
+      objKeys.push(key)
+    })
+
+
+    return h(
+      ['div.row', { style: { alignItems: 'center', marginBottom: 10 } }, [
+        ['div', { style: { width: 50 } }, 'Effect'],
+        ['div.row', [
+          [
+            'select', {
+              style: {
+                marginBottom: 0
+              },
+              value: sceneObject.effect,
+              onChange: event => {
+                event.preventDefault()
+                let selected = event.target.selectedOptions[0]
+                
+                if(selected)
+                  if (selected.dataset.selector) {
+                    //we don't need this
+                  } else {
+                    console.log('updating: ', event.target.value)
+                    updateObject(sceneObject.id, {effect: event.target.value })
+                  }
+              }
+            }, [
+              Object.keys(volumePresets).map(key => [
+                'option', { value: key }, key
+              ])
+            ]
+          ]
+        ]]
+      ]
+
+      ]
+    )  
+  })
+)
+
 const CharacterPresetsEditor = connect(
   state => ({
     characterPresets: state.presets.characters,
@@ -1851,10 +1919,19 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
       sceneObject.type == 'volume' && [        
         [
           'div.column',
+          [VolumePresetsEditor, { sceneObject }],
           [NumberSlider, { label: 'width', value: sceneObject.width, min: 0.1, max: 25, onSetValue: createOnSetValue(sceneObject.id, 'width') } ],
           [NumberSlider, { label: 'height', value: sceneObject.height, min: 0.1, max: 25, onSetValue: createOnSetValue(sceneObject.id, 'height') } ],
           [NumberSlider, { label: 'depth', value: sceneObject.depth, min: 0.1, max: 25, onSetValue: createOnSetValue(sceneObject.id, 'depth') } ], 
-          [NumberSlider, { label: 'layers', value: parseInt(sceneObject.numberOfLayers), min: 1, max: 10, step: 1, onSetValue: createOnSetValue(sceneObject.id, 'numberOfLayers')}]
+          [NumberSlider, { 
+            label: 'layers', 
+            value: sceneObject.numberOfLayers, 
+            min: 1, 
+            max: 10, 
+            step: 1,
+            fine:true,
+            //transform: NumberSliderTransform.intNumber, 
+            onSetValue: createOnSetValue(sceneObject.id, 'numberOfLayers')}]
         ],
         //[VolumePresetsEditor, { sceneObject }]
       ],
@@ -2714,7 +2791,8 @@ const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, set
       rotation: 0,
       visible: true,
       numberOfLayers: 4,
-      distanceBetweenLayers: 1.5
+      distanceBetweenLayers: 1.5,
+      effect: 'rain'
     })
   }
 
