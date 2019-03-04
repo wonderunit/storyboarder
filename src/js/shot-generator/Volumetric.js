@@ -30,8 +30,8 @@ const Volumetric = React.memo(({
                 let volumeMaterial = new THREE.MeshBasicMaterial( { 
                     depthWrite: false, 
                     transparent: true, 
-                    color: 0xFFFFFF, 
-                    opacity: 0.5, 
+                    color: props.color / 0xFFFFFF,
+                    opacity: props.opacity, 
                     alphaMap: texture, 
                     side: THREE.DoubleSide
                 })
