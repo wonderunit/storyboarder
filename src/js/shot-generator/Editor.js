@@ -1930,11 +1930,19 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
             max: 10, 
             step: 1,
             fine:true,
-            //transform: NumberSliderTransform.intNumber, 
             onSetValue: createOnSetValue(sceneObject.id, 'numberOfLayers')}],
-            [NumberSlider, { label: 'opacity', value: sceneObject.depth, min: 0.1, max: 25, onSetValue: createOnSetValue(sceneObject.id, 'depth') } ], 
-            [NumberSlider, { label: 'depth', value: sceneObject.depth, min: 0.1, max: 25, onSetValue: createOnSetValue(sceneObject.id, 'depth') } ], 
-
+          [NumberSlider, { label: 'opacity', value: sceneObject.opacity, min: 0, max: 1, onSetValue: createOnSetValue(sceneObject.id, 'opacity') } ], 
+          [NumberSlider, { 
+            label: 'color', 
+            value: sceneObject.color/0xFFFFFF, 
+            min: 0.0, 
+            max: 1, 
+            onSetValue: value => {
+              let c = 0xFF * value
+              let color = (c << 16) | (c << 8) | c
+              updateObject(sceneObject.id, { color: color })
+            }
+          }]
         ],
         //[VolumePresetsEditor, { sceneObject }]
       ],
@@ -2793,8 +2801,8 @@ const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, set
       depth:5,
       rotation: 0,
       visible: true,
-      opacity: 1,
-      color: 0.5,
+      opacity: 0.3,
+      color: 0x777777,
       numberOfLayers: 4,
       distanceBetweenLayers: 1.5,
       effect: 'rain'

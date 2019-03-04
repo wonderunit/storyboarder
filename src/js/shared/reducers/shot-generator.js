@@ -720,6 +720,14 @@ module.exports = {
             draft.sceneObjects[action.payload.id].effect = action.payload.effect
           }
 
+          if (action.payload.opacity != null) {
+            draft.sceneObjects[action.payload.id].opacity = action.payload.opacity
+          }
+
+          if (action.payload.color != null) {
+            draft.sceneObjects[action.payload.id].color = action.payload.color
+          }
+
           if (action.payload.hasOwnProperty('characterPresetId')) {
             draft.sceneObjects[action.payload.id].characterPresetId = action.payload.characterPresetId
           }

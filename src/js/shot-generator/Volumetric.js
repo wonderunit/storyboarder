@@ -24,13 +24,46 @@ const Volumetric = React.memo(({
 
     const volume = useRef(null)
 
+    const loadVolume = (volum, imgArray) => {
+        const promises = imgArray.map(link => loadMaterialPromise(link))
+        return Promise.all(promises).then((materials) => {
+            for (var i = 0; i < numberOfLayers; i++) {
+                let plane = new THREE.PlaneBufferGeometry(1,1)
+                let planeMesh = new THREE.Mesh(plane, materials[i % materials.length])
+                planeMesh.material.opacity = props.opacity
+                planeMesh.position.z = props.depth / numberOfLayers * (numberOfLayers - 2 * i) / 2 - props.depth / numberOfLayers/2
+                planeMesh.position.y = 1 / 2
+                volum.add(planeMesh)
+                volum.textureLayers.push(planeMesh) 
+                
+                planeMesh.layers.disable(0)
+                planeMesh.layers.enable(1)
+                planeMesh.layers.disable(2)
+                planeMesh.layers.enable(3)
+            }
+
+            volum.scale.set(props.width, props.height, 1)
+            volum.position.set(props.x, props.z, props.y)
+            volum.rotation.y = props.rotation
+
+            volum.loadedMaterials = materials           
+            volum.orthoIcon.position.copy(volum.position)
+            
+            return new Promise(resolve => {
+                resolve(volum)
+            })
+        })
+    }
+
     const loadMaterialPromise = (link) => {
         return new Promise((resolve, reject) => {
             textureLoader.load(link, (texture) => {
+                let c = 0xFF * props.color / 0xFFFFFF
+                let color = (c << 16) | (c << 8) | c
                 let volumeMaterial = new THREE.MeshBasicMaterial( { 
                     depthWrite: false, 
                     transparent: true, 
-                    color: props.color / 0xFFFFFF,
+                    color: new THREE.Color(color),
                     opacity: props.opacity, 
                     alphaMap: texture, 
                     side: THREE.DoubleSide
@@ -51,8 +84,7 @@ const Volumetric = React.memo(({
         }
     }
 
-    const create = () => {
-        console.log('create!')
+    const create = () => {        
         volume.current = new THREE.Object3D()
         volume.current.textureLayers = []
 
@@ -65,31 +97,10 @@ const Volumetric = React.memo(({
         scene.add( volume.current.orthoIcon )
         scene.add( volume.current )
 
-        let imgArray = volumePresets[props.effect]
-        const promises = imgArray.map(link => loadMaterialPromise(link))
-        Promise.all(promises).then((materials) => {
-            for (var i = 0; i < numberOfLayers; i++) {
-                let plane = new THREE.PlaneBufferGeometry(1,1)
-                let planeMesh = new THREE.Mesh(plane, materials[i % materials.length])
-                //planeMesh.rotation.z = -Math.PI
-                planeMesh.position.z = props.depth / numberOfLayers * (numberOfLayers - 2 * i) / 2 - props.depth / numberOfLayers/2
-                planeMesh.position.y = 1 / 2
-                volume.current.add(planeMesh)
-                volume.current.textureLayers.push(planeMesh) 
-                
-                planeMesh.layers.disable(0)
-                planeMesh.layers.enable(1)
-                planeMesh.layers.disable(2)
-                planeMesh.layers.enable(3)
-            }
-
-            volume.current.scale.set(props.width, props.height, 1)
-            volume.current.position.set(props.x, props.z, props.y)
-            volume.current.rotation.y = props.rotation
-
-            volume.current.loadedMaterials = materials           
-            volume.current.orthoIcon.position.copy(volume.current.position)
-        })
+        let imgArray = volumePresets[props.effect]        
+        loadVolume(volume.current, imgArray).then((result) => {
+            volume.current = result
+        })        
     }
 
     useEffect(()=>{
@@ -148,6 +159,22 @@ const Volumetric = React.memo(({
         }
 
     }, [numberOfLayers])
+
+    useEffect(() => {
+        if (volume.current && volume.current.loadedMaterials)
+        {
+            let c = 0xFF * props.color / 0xFFFFFF
+            let color = (c << 16) | (c << 8) | c
+            for ( var i=0;i< volume.current.loadedMaterials.length;i++ )
+            {
+                //console.log(' changing material:  ', volume.current.loadedMaterials[i])
+                volume.current.loadedMaterials[i].opacity = props.opacity
+                //console.log('setting color: ', props.color)
+                volume.current.loadedMaterials[i].color = new THREE.Color( color )
+                volume.current.loadedMaterials[i].needsUpdate = true
+            }
+        }
+    }, [props.opacity, props.color])
 
     useEffect(()=>{
 
