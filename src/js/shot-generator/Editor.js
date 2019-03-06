@@ -79,6 +79,7 @@ const IconSprites = require('./IconSprites')
 const Character = require('./Character')
 const SpotLight = require('./SpotLight')
 const Volumetric = require('./Volumetric')
+const VolumePresetsEditor = require('./VolumePresetsEditor')
 
 const SceneObject = require('./SceneObject')
 
@@ -1486,7 +1487,7 @@ const LabelInput = ({ label, setLabel, onFocus, onBlur }) => {
 
 const saveCharacterPresets = state => presetsStorage.saveCharacterPresets({ characters: state.presets.characters })
 
-const VolumePresetsEditor = connect(
+const VolumePresetsEditor2 = connect(
   state => ({
     volumePresets: state.presets.volumes,
     updateObject
@@ -1533,7 +1534,6 @@ const VolumePresetsEditor = connect(
                   if (selected.dataset.selector) {
                     //we don't need this
                   } else {
-                    console.log('updating: ', event.target.value)
                     updateObject(sceneObject.id, {effect: event.target.value })
                   }
               }
@@ -1919,9 +1919,10 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
       sceneObject.type == 'volume' && [        
         [
           'div.column',
+          // [VolumePresetsEditor2, { sceneObject }],
           [VolumePresetsEditor, { sceneObject }],
           [NumberSlider, { label: 'width', value: sceneObject.width, min: 0.1, max: 25, onSetValue: createOnSetValue(sceneObject.id, 'width') } ],
-          [NumberSlider, { label: 'height', value: sceneObject.height, min: 0.1, max: 25, onSetValue: createOnSetValue(sceneObject.id, 'height') } ],
+          [NumberSlider, { label: 'height', value: sceneObject.height, min: -25, max: 25, onSetValue: createOnSetValue(sceneObject.id, 'height') } ],
           [NumberSlider, { label: 'depth', value: sceneObject.depth, min: 0.1, max: 25, onSetValue: createOnSetValue(sceneObject.id, 'depth') } ], 
           [NumberSlider, { 
             label: 'layers', 
@@ -1944,7 +1945,6 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
             }
           }]
         ],
-        //[VolumePresetsEditor, { sceneObject }]
       ],
 
       sceneObject.type == 'light' && [

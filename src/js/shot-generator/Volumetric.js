@@ -24,8 +24,10 @@ const Volumetric = React.memo(({
 
     const volume = useRef(null)
 
-    const loadVolume = (volum, imgArray) => {
+    const loadVolume = ( imgArray ) => {
         const promises = imgArray.map(link => loadMaterialPromise(link))
+        let volum = new THREE.Object3D()
+        volum.textureLayers = []
         return Promise.all(promises).then((materials) => {
             for (var i = 0; i < numberOfLayers; i++) {
                 let plane = new THREE.PlaneBufferGeometry(1,1)
@@ -41,13 +43,8 @@ const Volumetric = React.memo(({
                 planeMesh.layers.disable(2)
                 planeMesh.layers.enable(3)
             }
-
-            volum.scale.set(props.width, props.height, 1)
-            volum.position.set(props.x, props.z, props.y)
-            volum.rotation.y = props.rotation
-
             volum.loadedMaterials = materials           
-            volum.orthoIcon.position.copy(volum.position)
+            //volum.orthoIcon.position.copy(volum.position)
             
             return new Promise(resolve => {
                 resolve(volum)
@@ -98,8 +95,17 @@ const Volumetric = React.memo(({
         scene.add( volume.current )
 
         let imgArray = volumePresets[props.effect]        
-        loadVolume(volume.current, imgArray).then((result) => {
-            volume.current = result
+        loadVolume(imgArray).then((result) => {
+            volume.current.scale.set(props.width, props.height, 1)
+            volume.current.position.set(props.x, props.z, props.y)
+            volume.current.rotation.y = props.rotation
+            volume.current.loadedMaterials = result.loadedMaterials
+            volume.current.textureLayers = result.textureLayers
+            result.children.map( plane => {
+                volume.current.add(plane)
+            } )
+            volume.current.orthoIcon.position.copy(volume.current.position)
+            //console.log('result: ', volume.current)
         })        
     }
 
@@ -117,6 +123,7 @@ const Volumetric = React.memo(({
 
             volume.current.rotation.y = props.rotation
             volume.current.orthoIcon.position.copy(volume.current.position)
+
         }
     }, [props.x, props.y, props.z, props.rotation, props.scale])
 
@@ -177,13 +184,15 @@ const Volumetric = React.memo(({
     }, [props.opacity, props.color])
 
     useEffect(()=>{
-
+        console.log('effect change: ', props.effect)
         if (volume.current) {
             scene.remove(volume.current.orthoIcon)
             scene.remove(volume.current)
             volume.current = null
             
             create()
+
+            console.log('new volume: ', volume.current)
         }
         
     },[props.effect])
