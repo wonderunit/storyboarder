@@ -55,6 +55,7 @@ const VolumePresetsEditor = connect(
 
           let filepaths = dialog.showOpenDialog(null, { properties: ['openFile', 'multiSelections'] })
           if (filepaths) {
+            filepaths.sort()
             createVolumePreset({
               id,
               name,
@@ -66,12 +67,6 @@ const VolumePresetsEditor = connect(
       }).catch(err => {
         console.log(err)
       })
-    }
-
-    const onSelectVolumePreset = event => {
-      let volumePresetId = event.target.value
-      let preset = volumePresets[volumePresetId]
-      selectVolumePreset(sceneObject.id, volumePresetId, preset)
     }
 
     return h(

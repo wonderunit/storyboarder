@@ -96,7 +96,7 @@ const Volumetric = React.memo(({
       volume.current.position.set(props.x, props.z, props.y)
       volume.current.rotation.y = props.rotation
       volume.current.loadedMaterials = result.materials
-      volume.current.textureLayers = result.textureLayers
+      volume.current.textureLayers = result.volContainer
       result.volContainer.map(plane => {
         volume.current.add(plane)
       })
