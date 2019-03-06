@@ -1,0 +1,14 @@
+{
+    "rain": [
+      "img/shot-generator/volume-textures/rain2.jpg",
+      "img/shot-generator/volume-textures/rain1.jpg"
+    ],
+    "fog": [
+      "img/shot-generator/volume-textures/fog1.jpg",
+      "img/shot-generator/volume-textures/fog2.jpg"
+    ],
+    "explosion": [
+      "img/shot-generator/volume-textures/debris.jpg",
+      "img/shot-generator/volume-textures/explosion.jpg"
+    ]
+  }

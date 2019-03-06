@@ -202,21 +202,8 @@ const withDisplayNames = sceneObjects => {
 // load up the default poses
 const defaultPosePresets = require('./shot-generator-presets/poses.json')
 
-const defaultVolumePresets = {
-  rain: [
-    'img/shot-generator/volume-textures/rain2.jpg',
-    'img/shot-generator/volume-textures/rain1.jpg',
-  ],
-  fog: [
-    'img/shot-generator/volume-textures/fog1.jpg',
-    'img/shot-generator/volume-textures/fog2.jpg',
-  ],
-  explosion: [
-    'img/shot-generator/volume-textures/debris.jpg',
-    'img/shot-generator/volume-textures/explosion.jpg',
-  ]
-}
-
+const defaultVolumePresets = require('./shot-generator-presets/volumes.json')
+ 
 // reference AE56DD1E-3F6F-4A74-B247-C8A6E3EB8FC0 as our Default Pose
 const defaultPosePreset = defaultPosePresets['AE56DD1E-3F6F-4A74-B247-C8A6E3EB8FC0']
 
@@ -844,6 +831,10 @@ module.exports = {
           draft.presets.poses[action.payload.id] = action.payload
           return
 
+        case 'CREATE_VOLUME_PRESET':
+          draft.presets.volumes[action.payload.name] = action.payload.images
+          return
+
         case 'DELETE_POSE_PRESET':
           delete draft.presets.poses[action.payload.id]
           return
@@ -974,6 +965,8 @@ module.exports = {
   createPosePreset: payload => ({ type: 'CREATE_POSE_PRESET', payload }),
   updatePosePreset: (id, values) => ({ type: 'UPDATE_POSE_PRESET', payload: { id, ...values} }),
   deletePosePreset: id => ({ type: 'DELETE_POSE_PRESET', payload: { id } }),
+
+  createVolumePreset: payload => ({ type: 'CREATE_VOLUME_PRESET', payload }),
 
   updateWorld: payload => ({ type: 'UPDATE_WORLD', payload }),
   updateWorldRoom: payload => ({ type: 'UPDATE_WORLD_ROOM', payload }),
