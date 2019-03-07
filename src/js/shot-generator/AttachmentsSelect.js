@@ -5,7 +5,7 @@ const h = require('../utils/h')
 
 const AttachmentsSelect = ({ ids, options, multiple, onChange, onBlur }) => {
   // convert ids to value string
-  let value = ids.slice().sort()
+  let value = ids.slice().sort().join(',')
 
   // TODO
   let isCustom = false
