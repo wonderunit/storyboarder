@@ -78,6 +78,11 @@ const Volumetric = React.memo(({
   }
 
   const create = () => {
+    if (!volumePresets[props.effect]) {
+      alert('Effect was not saved!')
+      return
+    }
+
     volume.current = new THREE.Object3D()
     volume.current.textureLayers = []
 
@@ -90,7 +95,12 @@ const Volumetric = React.memo(({
     scene.add(volume.current.orthoIcon)
     scene.add(volume.current)
     console.log("trying preset: ", props.effect, " from ", volumePresets)
+    if (!volumePresets[props.effect]) {
+      alert('Effect was not saved!')
+      return
+    }
     let imgArray = volumePresets[props.effect].images
+    
     loadVolume(imgArray).then((result) => {
       volume.current.scale.set(props.width, props.height, 1)
       volume.current.position.set(props.x, props.z, props.y)
