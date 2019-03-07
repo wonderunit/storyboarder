@@ -704,8 +704,8 @@ module.exports = {
           if (action.payload.distanceBetweenLayers != null) {
             draft.sceneObjects[action.payload.id].distanceBetweenLayers = action.payload.distanceBetweenLayers
           }
-          if (action.payload.effect != null) {
-            draft.sceneObjects[action.payload.id].effect = action.payload.effect
+          if (action.payload.volumePresetId != null) {
+            draft.sceneObjects[action.payload.id].volumePresetId = action.payload.volumePresetId
           }
           if (action.payload.opacity != null) {
             draft.sceneObjects[action.payload.id].opacity = action.payload.opacity

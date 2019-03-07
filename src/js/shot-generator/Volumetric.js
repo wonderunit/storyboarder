@@ -78,8 +78,8 @@ const Volumetric = React.memo(({
   }
 
   const create = () => {
-    if (!volumePresets[props.effect]) {
-      console.log("trying preset: ", props.effect, " from ", volumePresets)
+    if (!volumePresets[props.volumePresetId]) {
+      console.log("trying preset: ", props.volumePresetId, " from ", volumePresets)
       alert('Effect was not saved!')
       return
     }
@@ -89,14 +89,14 @@ const Volumetric = React.memo(({
 
     volume.current.userData.id = id
     volume.current.userData.type = type
-    volume.current.userData.effect = props.effect
+    volume.current.userData.volumePresetId = props.volumePresetId
     volume.current.orthoIcon = new IconSprites(type, props.name ? props.name : props.displayName, volume.current)
     volume.current.rotation.y = props.rotation
 
     scene.add(volume.current.orthoIcon)
     scene.add(volume.current)
     
-    let imgArray = volumePresets[props.effect].images
+    let imgArray = volumePresets[props.volumePresetId].images
     
     loadVolume(imgArray).then((result) => {
       volume.current.scale.set(props.width, props.height, 1)
@@ -180,7 +180,7 @@ const Volumetric = React.memo(({
   }, [props.opacity, props.color])
 
   useEffect(() => {
-    //console.log('effect change: ', props.effect)
+    //console.log('effect change: ', props.volumePresetId)
     if (volume.current) {
       scene.remove(volume.current.orthoIcon)
       scene.remove(volume.current)
@@ -189,7 +189,7 @@ const Volumetric = React.memo(({
       create()
     }
 
-  }, [props.effect])
+  }, [props.volumePresetId])
 
   return null
 })

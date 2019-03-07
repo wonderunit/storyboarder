@@ -14,15 +14,24 @@ const { updateObject, createVolumePreset } = require('../shared/reducers/shot-ge
 
 const saveVolumePreset = state => presetsStorage.saveVolumePresets({ volumes: state.presets.volumes })
 
+const replaceAllBackSlash = (targetStr) => {
+  var index=targetStr.indexOf("\\")
+  while(index >= 0){
+      targetStr=targetStr.replace("\\","/")
+      index=targetStr.indexOf("\\")
+  }
+  return targetStr
+}
+
 const VolumePresetsEditor = connect(
   state => ({
     volumePresets: state.presets.volumes,
   }),
   {
     updateObject,
-    selectVolumePreset: (id, name) => (dispatch, getState) => {
+    selectVolumePreset: (id, volumeId) => (dispatch, getState) => {
       dispatch(updateObject(id, {
-        effect: name
+        volumePresetId: volumeId
       }))
     },
     createVolumePreset: ({ id, name, images, sceneObject, volumePresets }) => (dispatch, getState) => {
@@ -36,7 +45,7 @@ const VolumePresetsEditor = connect(
 
       saveVolumePreset(getState())
 
-      dispatch(updateObject( sceneObject.id, { effect: id }))
+      dispatch(updateObject( sceneObject.id, { volumePresetId: id }))
 
     }
   }
@@ -47,7 +56,7 @@ const VolumePresetsEditor = connect(
       let filepaths = dialog.showOpenDialog(null, { properties: ['openFile', 'multiSelections'] })
       if (filepaths) {
         filepaths.sort()
-        let name = filepaths[0].match(/([^\/]*)\/*$/)[1].replace(/\.[^/.]+$/, "").replace(/[0-9]/g, '')
+        let name = replaceAllBackSlash(filepaths[0]).match(/([^\/]*)\/*$/)[1].replace(/\.[^/.]+$/, "").replace(/[0-9]/g, '')
         createVolumePreset({
           id,
           name,
@@ -63,7 +72,7 @@ const VolumePresetsEditor = connect(
         ['div', { style: { width: 60, display: 'flex', alignSelf: 'center' } }, 'volume'],
         [
           'select', {
-            value: volumePresets[sceneObject.effect].id || '',
+            value: volumePresets[sceneObject.volumePresetId].id || '',
             onChange: event => {
               event.preventDefault()
               let selected = event.target.selectedOptions[0]
