@@ -832,7 +832,7 @@ module.exports = {
           return
 
         case 'CREATE_VOLUME_PRESET':
-          draft.presets.volumes[action.payload.name] = action.payload.images
+          draft.presets.volumes[action.payload.id] = action.payload
           return
 
         case 'DELETE_POSE_PRESET':

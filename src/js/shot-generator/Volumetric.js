@@ -89,8 +89,8 @@ const Volumetric = React.memo(({
 
     scene.add(volume.current.orthoIcon)
     scene.add(volume.current)
-
-    let imgArray = volumePresets[props.effect]
+    console.log("trying preset: ", props.effect, " from ", volumePresets)
+    let imgArray = volumePresets[props.effect].images
     loadVolume(imgArray).then((result) => {
       volume.current.scale.set(props.width, props.height, 1)
       volume.current.position.set(props.x, props.z, props.y)
@@ -183,7 +183,7 @@ const Volumetric = React.memo(({
 
       create()
 
-      console.log('new volume: ', volume.current)
+      //console.log('new volume: ', volume.current)
     }
 
   }, [props.effect])

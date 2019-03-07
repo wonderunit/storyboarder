@@ -2805,7 +2805,7 @@ const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, set
       color: 0x777777,
       numberOfLayers: 4,
       distanceBetweenLayers: 1.5,
-      effect: 'rain'
+      effect: '1EB17E27-AC0D-4F71-B916-CF07C911639C'
     })
   }
 
