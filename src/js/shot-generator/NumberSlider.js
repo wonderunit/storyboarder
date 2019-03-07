@@ -166,7 +166,7 @@ const NumberSlider = ({
                   setTextInput(false)
                 }
                 if (event.key === 'Enter') {
-                  // TODO validation, error handling
+                  // TODO validation, tranform, error handling
                   onSetValue(postfixCalculator(infixToPostfix(event.target.value)))
                   setTextInput(false)
                 }
