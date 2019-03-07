@@ -1487,70 +1487,6 @@ const LabelInput = ({ label, setLabel, onFocus, onBlur }) => {
 
 const saveCharacterPresets = state => presetsStorage.saveCharacterPresets({ characters: state.presets.characters })
 
-const VolumePresetsEditor2 = connect(
-  state => ({
-    volumePresets: state.presets.volumes,
-    updateObject
-  }),
-  {
-    updateObject,
-    selectVolumePreset: (id, volumePresetId, preset) => (dispatch, getState) => {
-      dispatch(updateObject(id, {
-        volumePresetId,
-        name: preset.state.name
-      }))
-    }
-  }
-)(
-  React.memo(({sceneObject, volumePresets, selectVolumePreset, updateObject }) => {
-    const onSelectVolumePreset = event => {
-      let volumePresetId = event.target.value
-      let preset = volumePresets['rain']//[volumePresetId]
-
-      selectVolumePreset(sceneObject.id, volumePresetId, preset)
-    }
-
-    let objKeys = []
-    Object.keys(volumePresets).map(key => {
-      objKeys.push(key)
-    })
-
-
-    return h(
-      ['div.row', { style: { alignItems: 'center', marginBottom: 10 } }, [
-        ['div', { style: { width: 50 } }, 'Effect'],
-        ['div.row', [
-          [
-            'select', {
-              style: {
-                marginBottom: 0
-              },
-              value: sceneObject.effect,
-              onChange: event => {
-                event.preventDefault()
-                let selected = event.target.selectedOptions[0]
-                
-                if(selected)
-                  if (selected.dataset.selector) {
-                    //we don't need this
-                  } else {
-                    updateObject(sceneObject.id, {effect: event.target.value })
-                  }
-              }
-            }, [
-              Object.keys(volumePresets).map(key => [
-                'option', { value: key }, key
-              ])
-            ]
-          ]
-        ]]
-      ]
-
-      ]
-    )  
-  })
-)
-
 const CharacterPresetsEditor = connect(
   state => ({
     characterPresets: state.presets.characters,
@@ -1919,7 +1855,6 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
       sceneObject.type == 'volume' && [        
         [
           'div.column',
-          // [VolumePresetsEditor2, { sceneObject }],
           [VolumePresetsEditor, { sceneObject }],
           [NumberSlider, { label: 'width', value: sceneObject.width, min: 0.1, max: 25, onSetValue: createOnSetValue(sceneObject.id, 'width') } ],
           [NumberSlider, { label: 'height', value: sceneObject.height, min: -25, max: 25, onSetValue: createOnSetValue(sceneObject.id, 'height') } ],

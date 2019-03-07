@@ -14,8 +14,6 @@ const { updateObject, createVolumePreset } = require('../shared/reducers/shot-ge
 
 const saveVolumePreset = state => presetsStorage.saveVolumePresets({ volumes: state.presets.volumes })
 
-const shortId = id => id.toString().substr(0, 7).toLowerCase()
-
 const VolumePresetsEditor = connect(
   state => ({
     volumePresets: state.presets.volumes,
@@ -34,12 +32,10 @@ const VolumePresetsEditor = connect(
         name,
         images: images
       }
-      console.log('volume presets: ', volumePresets)
       dispatch(createVolumePreset(preset))
 
       saveVolumePreset(getState())
 
-      //selectVolumePreset(updateObject( sceneObject.id, { effect: name }))
       dispatch(updateObject( sceneObject.id, { effect: id }))
 
     }
@@ -48,7 +44,6 @@ const VolumePresetsEditor = connect(
   React.memo(({ sceneObject, volumePresets, selectVolumePreset, createVolumePreset }) => {
     const onCreateVolumeClick = event => {
       let id = THREE.Math.generateUUID()
-      console.log('id: ', id)
       let filepaths = dialog.showOpenDialog(null, { properties: ['openFile', 'multiSelections'] })
       if (filepaths) {
         filepaths.sort()

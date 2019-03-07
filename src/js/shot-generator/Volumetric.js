@@ -79,6 +79,7 @@ const Volumetric = React.memo(({
 
   const create = () => {
     if (!volumePresets[props.effect]) {
+      console.log("trying preset: ", props.effect, " from ", volumePresets)
       alert('Effect was not saved!')
       return
     }
@@ -94,11 +95,7 @@ const Volumetric = React.memo(({
 
     scene.add(volume.current.orthoIcon)
     scene.add(volume.current)
-    console.log("trying preset: ", props.effect, " from ", volumePresets)
-    if (!volumePresets[props.effect]) {
-      alert('Effect was not saved!')
-      return
-    }
+    
     let imgArray = volumePresets[props.effect].images
     
     loadVolume(imgArray).then((result) => {
@@ -175,9 +172,7 @@ const Volumetric = React.memo(({
       let c = 0xFF * props.color / 0xFFFFFF
       let color = (c << 16) | (c << 8) | c
       for (var i = 0; i < volume.current.loadedMaterials.length; i++) {
-        //console.log(' changing material:  ', volume.current.loadedMaterials[i])
         volume.current.loadedMaterials[i].opacity = props.opacity
-        //console.log('setting color: ', props.color)
         volume.current.loadedMaterials[i].color = new THREE.Color(color)
         volume.current.loadedMaterials[i].needsUpdate = true
       }
@@ -185,15 +180,13 @@ const Volumetric = React.memo(({
   }, [props.opacity, props.color])
 
   useEffect(() => {
-    console.log('effect change: ', props.effect)
+    //console.log('effect change: ', props.effect)
     if (volume.current) {
       scene.remove(volume.current.orthoIcon)
       scene.remove(volume.current)
       volume.current = null
 
       create()
-
-      //console.log('new volume: ', volume.current)
     }
 
   }, [props.effect])
