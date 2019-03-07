@@ -41,6 +41,8 @@ const formatters = {
   // default
   toFixed2: value => value.toFixed(2),
 
+  identity: value => value,
+
   degrees: value => Math.round(value).toString() + '°',
   percent: value => Math.round(value).toString() + '%',  
 }

@@ -1853,6 +1853,7 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
             max: 10, 
             step: 1,
             transform: NumberSliderTransform.round,
+            formatter: NumberSliderFormatter.identity,
             onSetValue: createOnSetValue(sceneObject.id, 'numberOfLayers')}],
           [NumberSlider, { label: 'opacity', value: sceneObject.opacity, min: 0, max: 1, onSetValue: createOnSetValue(sceneObject.id, 'opacity') } ], 
           [NumberSlider, { 
