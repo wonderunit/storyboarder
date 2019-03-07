@@ -92,22 +92,9 @@ const WorldObject = require('./World')
 
 const ModelLoader = require('../services/model-loader')
 
-const NumberSlider = require('./NumberSlider')
-const NumberSliderTransform = {
-  degrees: (prev, delta, { min, max, step, fine }) => {
-    // inc/dec
-    let value = prev + (delta * (step * (fine ? 0.01 : 1)))
-    // mod
-    if (value > 180) { return value - 360 }
-    if (value < -180) { return value + 360 }
-    return value
-  },
-  intNumber: value => {return parseInt(value)}
-}
-const NumberSliderFormatter = {
-  degrees: value => Math.round(value).toString() + '°',
-  percent: value => Math.round(value).toString() + '%',  
-}
+const { NumberSlider } = require('./NumberSlider')
+const NumberSliderTransform = require('./NumberSlider').transforms
+const NumberSliderFormatter = require('./NumberSlider').formatters
 
 const ModelSelect = require('./ModelSelect')
 const ServerInspector = require('./ServerInspector')
