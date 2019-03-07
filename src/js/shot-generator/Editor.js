@@ -195,7 +195,7 @@ const SceneManager = connect(
     updateWorldEnvironment,
   }
 )(
-  ({ world, sceneObjects, updateObject, selectObject, remoteInput, largeCanvasRef, smallCanvasRef, selection, selectedBone, machineState, transition, animatedUpdate, selectBone, mainViewCamera, updateCharacterSkeleton, largeCanvasSize, activeCamera, aspectRatio, devices, meta, _boardUid, updateWorldEnvironment, volumePresets }) => {
+  ({ world, sceneObjects, updateObject, selectObject, remoteInput, largeCanvasRef, smallCanvasRef, selection, selectedBone, machineState, transition, animatedUpdate, selectBone, mainViewCamera, updateCharacterSkeleton, largeCanvasSize, activeCamera, aspectRatio, devices, meta, _boardUid, updateWorldEnvironment }) => {
     const { scene } = useContext(SceneContext)
 
     let [camera, setCamera] = useState(null)
@@ -725,9 +725,12 @@ const SceneManager = connect(
                   isSelected: selection === props.id,
                   camera,
                   updateObject,
-                  numberOfLayers:props.numberOfLayers,
+                  numberOfLayers: props.numberOfLayers,
                   distanceBetweenLayers: props.distanceBetweenLayers,
-                  volumePresets,
+
+                  storyboarderFilePath: meta.storyboarderFilePath,
+                  volumeImageAttachmentIds: props.volumeImageAttachmentIds,
+
                   ...props
                 }
               ]
@@ -1842,10 +1845,18 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
       sceneObject.type == 'volume' && [        
         [
           'div.column',
-          [VolumePresetsEditor, { sceneObject }],
+          // [VolumePresetsEditor, { sceneObject }],
+
           [NumberSlider, { label: 'width', value: sceneObject.width, min: 0.1, max: 25, onSetValue: createOnSetValue(sceneObject.id, 'width') } ],
           [NumberSlider, { label: 'height', value: sceneObject.height, min: -25, max: 25, onSetValue: createOnSetValue(sceneObject.id, 'height') } ],
           [NumberSlider, { label: 'depth', value: sceneObject.depth, min: 0.1, max: 25, onSetValue: createOnSetValue(sceneObject.id, 'depth') } ], 
+
+          ['div', [
+            ['div', 'Volumetric Images:',
+              sceneObject.volumeImageAttachmentIds.map(relpath => (['div', ['small', relpath]]))
+            ]
+          ]],
+
           [NumberSlider, { 
             label: 'layers', 
             value: sceneObject.numberOfLayers, 
@@ -2728,7 +2739,7 @@ const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, set
       color: 0x777777,
       numberOfLayers: 4,
       distanceBetweenLayers: 1.5,
-      volumePresetId: '1EB17E27-AC0D-4F71-B916-CF07C911639C'
+      volumeImageAttachmentIds: ['rain2', 'rain1']
     })
   }
 

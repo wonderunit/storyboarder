@@ -1,6 +1,8 @@
 const THREE = require('three')
 window.THREE = window.THREE || THREE
 
+const path = require('path')
+
 const React = require('react')
 const { useRef, useEffect, useState } = React
 
@@ -18,7 +20,10 @@ const Volumetric = React.memo(({
   updateObject,
   numberOfLayers,
   distanceBetweenLayers,
-  volumePresets,
+
+  storyboarderFilePath,
+  volumeImageAttachmentIds,
+
   ...props
 }) => {
 
@@ -35,13 +40,13 @@ const Volumetric = React.memo(({
         planeMesh.position.z = props.depth / numberOfLayers * (numberOfLayers - 2 * i) / 2 - props.depth / numberOfLayers / 2
         planeMesh.position.y = 1 / 2
         volContainer.push(planeMesh)
-
+  
         planeMesh.layers.disable(0)
         planeMesh.layers.enable(1)
         planeMesh.layers.disable(2)
         planeMesh.layers.enable(3)
       }
-
+  
       return new Promise(resolve => {
         resolve({volContainer, materials})
       })
@@ -78,26 +83,47 @@ const Volumetric = React.memo(({
   }
 
   const create = () => {
-    if (!volumePresets[props.volumePresetId]) {
-      console.log("trying preset: ", props.volumePresetId, " from ", volumePresets)
-      alert('Effect was not saved!')
-      return
-    }
-
     volume.current = new THREE.Object3D()
     volume.current.textureLayers = []
 
     volume.current.userData.id = id
     volume.current.userData.type = type
-    volume.current.userData.volumePresetId = props.volumePresetId
     volume.current.orthoIcon = new IconSprites(type, props.name ? props.name : props.displayName, volume.current)
     volume.current.rotation.y = props.rotation
 
     scene.add(volume.current.orthoIcon)
     scene.add(volume.current)
-    
-    let imgArray = volumePresets[props.volumePresetId].images
-    
+
+
+
+    const pathToShotGeneratorData = path.join(__dirname, '..', '..', '..', 'src', 'data', 'shot-generator')
+    const pathToBuiltInVolumeImages = path.join(pathToShotGeneratorData, 'volumes')
+    const isUserFile = string => {
+      const { dir, ext } = path.parse(string)
+      if (dir && dir !== '') {
+        if (ext && ext !== '') {
+          return true
+        } else {
+          throw new Error('invalid file path, missing extension ' + string)
+        }
+      } else {
+        if (ext && ext !== '') {
+          throw new Error('invalid file path ' + string)
+        } else {
+          return false
+        }
+      }
+    }
+    let imgArray = volumeImageAttachmentIds.map(relpath => {
+      if (isUserFile(relpath)) {
+        return path.join(path.dirname(storyboarderFilePath), relpath)
+      } else {
+        return path.join(pathToBuiltInVolumeImages, relpath + '.jpg')
+      }
+    })
+
+
+
     loadVolume(imgArray).then((result) => {
       volume.current.scale.set(props.width, props.height, 1)
       volume.current.position.set(props.x, props.z, props.y)
@@ -180,7 +206,6 @@ const Volumetric = React.memo(({
   }, [props.opacity, props.color])
 
   useEffect(() => {
-    //console.log('effect change: ', props.volumePresetId)
     if (volume.current) {
       scene.remove(volume.current.orthoIcon)
       scene.remove(volume.current)
@@ -189,7 +214,7 @@ const Volumetric = React.memo(({
       create()
     }
 
-  }, [props.volumePresetId])
+  }, [props.volumeImageAttachmentIds])
 
   return null
 })

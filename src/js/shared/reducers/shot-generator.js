@@ -713,6 +713,9 @@ module.exports = {
           if (action.payload.color != null) {
             draft.sceneObjects[action.payload.id].color = action.payload.color
           }
+          if (action.payload.volumeImageAttachmentIds != null) {
+            draft.sceneObjects[action.payload.id].volumeImageAttachmentIds = action.payload.volumeImageAttachmentIds
+          }
 
 
 
