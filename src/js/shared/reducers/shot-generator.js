@@ -695,25 +695,26 @@ module.exports = {
             draft.sceneObjects[action.payload.id].distance = action.payload.distance
           }
 
+
+
+          // for volumes
           if (action.payload.numberOfLayers != null) {
             draft.sceneObjects[action.payload.id].numberOfLayers = action.payload.numberOfLayers
           }
-
           if (action.payload.distanceBetweenLayers != null) {
             draft.sceneObjects[action.payload.id].distanceBetweenLayers = action.payload.distanceBetweenLayers
           }
-
           if (action.payload.effect != null) {
             draft.sceneObjects[action.payload.id].effect = action.payload.effect
           }
-
           if (action.payload.opacity != null) {
             draft.sceneObjects[action.payload.id].opacity = action.payload.opacity
           }
-
           if (action.payload.color != null) {
             draft.sceneObjects[action.payload.id].color = action.payload.color
           }
+
+
 
           if (action.payload.hasOwnProperty('characterPresetId')) {
             draft.sceneObjects[action.payload.id].characterPresetId = action.payload.characterPresetId
@@ -832,7 +833,7 @@ module.exports = {
           return
 
         case 'CREATE_VOLUME_PRESET':
-          draft.presets.volumes[action.payload.name] = action.payload.images
+          draft.presets.volumes[action.payload.id] = action.payload
           return
 
         case 'DELETE_POSE_PRESET':

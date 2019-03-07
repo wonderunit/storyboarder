@@ -92,22 +92,9 @@ const WorldObject = require('./World')
 
 const ModelLoader = require('../services/model-loader')
 
-const NumberSlider = require('./NumberSlider')
-const NumberSliderTransform = {
-  degrees: (prev, delta, { min, max, step, fine }) => {
-    // inc/dec
-    let value = prev + (delta * (step * (fine ? 0.01 : 1)))
-    // mod
-    if (value > 180) { return value - 360 }
-    if (value < -180) { return value + 360 }
-    return value
-  },
-  intNumber: value => {return parseInt(value)}
-}
-const NumberSliderFormatter = {
-  degrees: value => Math.round(value).toString() + '°',
-  percent: value => Math.round(value).toString() + '%',  
-}
+const { NumberSlider } = require('./NumberSlider')
+const NumberSliderTransform = require('./NumberSlider').transforms
+const NumberSliderFormatter = require('./NumberSlider').formatters
 
 const ModelSelect = require('./ModelSelect')
 const ServerInspector = require('./ServerInspector')
@@ -1487,70 +1474,6 @@ const LabelInput = ({ label, setLabel, onFocus, onBlur }) => {
 
 const saveCharacterPresets = state => presetsStorage.saveCharacterPresets({ characters: state.presets.characters })
 
-const VolumePresetsEditor2 = connect(
-  state => ({
-    volumePresets: state.presets.volumes,
-    updateObject
-  }),
-  {
-    updateObject,
-    selectVolumePreset: (id, volumePresetId, preset) => (dispatch, getState) => {
-      dispatch(updateObject(id, {
-        volumePresetId,
-        name: preset.state.name
-      }))
-    }
-  }
-)(
-  React.memo(({sceneObject, volumePresets, selectVolumePreset, updateObject }) => {
-    const onSelectVolumePreset = event => {
-      let volumePresetId = event.target.value
-      let preset = volumePresets['rain']//[volumePresetId]
-
-      selectVolumePreset(sceneObject.id, volumePresetId, preset)
-    }
-
-    let objKeys = []
-    Object.keys(volumePresets).map(key => {
-      objKeys.push(key)
-    })
-
-
-    return h(
-      ['div.row', { style: { alignItems: 'center', marginBottom: 10 } }, [
-        ['div', { style: { width: 50 } }, 'Effect'],
-        ['div.row', [
-          [
-            'select', {
-              style: {
-                marginBottom: 0
-              },
-              value: sceneObject.effect,
-              onChange: event => {
-                event.preventDefault()
-                let selected = event.target.selectedOptions[0]
-                
-                if(selected)
-                  if (selected.dataset.selector) {
-                    //we don't need this
-                  } else {
-                    updateObject(sceneObject.id, {effect: event.target.value })
-                  }
-              }
-            }, [
-              Object.keys(volumePresets).map(key => [
-                'option', { value: key }, key
-              ])
-            ]
-          ]
-        ]]
-      ]
-
-      ]
-    )  
-  })
-)
-
 const CharacterPresetsEditor = connect(
   state => ({
     characterPresets: state.presets.characters,
@@ -1919,7 +1842,6 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
       sceneObject.type == 'volume' && [        
         [
           'div.column',
-          // [VolumePresetsEditor2, { sceneObject }],
           [VolumePresetsEditor, { sceneObject }],
           [NumberSlider, { label: 'width', value: sceneObject.width, min: 0.1, max: 25, onSetValue: createOnSetValue(sceneObject.id, 'width') } ],
           [NumberSlider, { label: 'height', value: sceneObject.height, min: -25, max: 25, onSetValue: createOnSetValue(sceneObject.id, 'height') } ],
@@ -1930,7 +1852,8 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
             min: 1, 
             max: 10, 
             step: 1,
-            fine:true,
+            transform: NumberSliderTransform.round,
+            formatter: NumberSliderFormatter.identity,
             onSetValue: createOnSetValue(sceneObject.id, 'numberOfLayers')}],
           [NumberSlider, { label: 'opacity', value: sceneObject.opacity, min: 0, max: 1, onSetValue: createOnSetValue(sceneObject.id, 'opacity') } ], 
           [NumberSlider, { 
@@ -2805,7 +2728,7 @@ const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, set
       color: 0x777777,
       numberOfLayers: 4,
       distanceBetweenLayers: 1.5,
-      effect: 'rain'
+      effect: '1EB17E27-AC0D-4F71-B916-CF07C911639C'
     })
   }
 
