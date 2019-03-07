@@ -71,14 +71,15 @@ module.exports = {
     if (fs.existsSync(filepath)) {
       let string = fs.readFileSync(filepath)
       let data = JSON.parse(string)
-      return { volumes: data }      
+      return { volumes: data }
     } else {
-      return {volumes: null}
+      return { volumes: undefined }
     }
   },
 
   saveVolumePresets: ({ volumes }) => {
     if (!fs.existsSync(getPresetsFolderPath())) { fs.mkdirSync(getPresetsFolderPath()) }
+
     let string = JSON.stringify( volumes, null, 2 )
     fs.writeFileSync(getVolumePresetsFilePath(), string)
   }
