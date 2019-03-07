@@ -97,6 +97,7 @@ const NumberSliderTransform = require('./NumberSlider').transforms
 const NumberSliderFormatter = require('./NumberSlider').formatters
 
 const ModelSelect = require('./ModelSelect')
+const AttachmentsSelect = require('./AttachmentsSelect')
 const ServerInspector = require('./ServerInspector')
 const GuidesView = require('./GuidesView')
 
@@ -1850,6 +1851,25 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
           [NumberSlider, { label: 'width', value: sceneObject.width, min: 0.1, max: 25, onSetValue: createOnSetValue(sceneObject.id, 'width') } ],
           [NumberSlider, { label: 'height', value: sceneObject.height, min: -25, max: 25, onSetValue: createOnSetValue(sceneObject.id, 'height') } ],
           [NumberSlider, { label: 'depth', value: sceneObject.depth, min: 0.1, max: 25, onSetValue: createOnSetValue(sceneObject.id, 'depth') } ], 
+
+          ['div.row', { style: { alignItems: 'center', marginBottom: 10 } }, [
+            ['div', { style: { width: 50 } }, 'Files'],
+            ['div.row', [
+              AttachmentsSelect, {
+                ids: sceneObject.volumeImageAttachmentIds,
+                multiple: true,
+                options: [
+                  { name: 'rain', value: 'rain1,rain2' },
+                  { name: 'fog', value: 'fog1,fog2' },
+                  { name: 'explosion', value: 'debris,explosion' }
+                ],
+                onChange: volumeImageAttachmentIds => {
+                  updateObject(sceneObject.id, { volumeImageAttachmentIds })
+                },
+                onBlur: () => transition('TYPING_EXIT')
+              }
+            ]
+          ]]],
 
           ['div', [
             ['div', 'Volumetric Images:',

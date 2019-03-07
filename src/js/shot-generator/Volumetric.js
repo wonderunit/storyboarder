@@ -214,7 +214,7 @@ const Volumetric = React.memo(({
       create()
     }
 
-  }, [props.volumeImageAttachmentIds])
+  }, [volumeImageAttachmentIds])
 
   return null
 })
