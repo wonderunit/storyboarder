@@ -27,6 +27,13 @@ const transforms = {
     if (value > 180) { return value - 360 }
     if (value < -180) { return value + 360 }
     return value
+  },
+  round: (prev, delta, { min, max, step, fine }) => {
+    // inc/dec
+    let value = transform(prev, delta, { step, fine })
+    value = Math.round(value)
+    value = clamp(value, min, max)
+    return value
   }
 }
 
