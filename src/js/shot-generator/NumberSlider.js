@@ -5,14 +5,37 @@ const h = require('../../../src/js/utils/h')
 
 const defaultOnSetValue = value => {}
 
-const defaultFormatter = value => value.toFixed(2)
+const transform = (prev, delta, { step, fine }) =>
+  prev + delta * (step * (fine ? 0.01 : 1))
 
-const defaultTransform = (prev, delta, { min, max, step, fine }) => {
-  // inc/dec
-  let val = prev + delta * (step * (fine ? 0.01 : 1))
-  // clamp
-  val = val < min ? min : (val > max ? max : val)
-  return val
+const clamp = (val, min, max) => val < min ? min : (val > max ? max : val)
+
+const transforms = {
+  // default
+  clamp: (prev, delta, { min, max, step, fine }) => {
+    // inc/dec
+    let val = transform(prev, delta, { step, fine })
+    // clamp
+    val = clamp(val, min, max)
+    return val
+  },
+
+  degrees: (prev, delta, { step, fine }) => {
+    // inc/dec
+    let value = transform(prev, delta, { step, fine })
+    // mod
+    if (value > 180) { return value - 360 }
+    if (value < -180) { return value + 360 }
+    return value
+  }
+}
+
+const formatters = {
+  // default
+  toFixed2: value => value.toFixed(2),
+
+  degrees: value => Math.round(value).toString() + '°',
+  percent: value => Math.round(value).toString() + '%',  
 }
 
 const NumberSlider = ({
@@ -22,8 +45,8 @@ const NumberSlider = ({
   max = 10,
   step = 0.1,
   onSetValue = defaultOnSetValue,
-  formatter = defaultFormatter,
-  transform = defaultTransform
+  formatter = formatters.toFixed2,
+  transform = transforms.clamp
 } = {}) => {
   const [moving, setMoving] = useState(false)
   const [textInput, setTextInput] = useState(false)
@@ -167,4 +190,4 @@ const NumberSlider = ({
   ])
 }
 
-module.exports = NumberSlider
+module.exports = { NumberSlider, transforms, formatters }
