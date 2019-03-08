@@ -137,6 +137,7 @@ const SceneObject = React.memo(({ scene, id, type, isSelected, loaded, updateObj
               }
 
               let object = MODEL_CACHE[filepath]
+
               object.traverse( function ( child ) {
                 if ( child instanceof THREE.Mesh ) {
                   container.add(meshFactory(child))
@@ -145,8 +146,10 @@ const SceneObject = React.memo(({ scene, id, type, isSelected, loaded, updateObj
 
               console.log('loaded', filepath)
               setLoaded(true)
+
             } catch (err) {
               console.error(err)
+              // HACK undefined == error
               setLoaded(undefined)
             }
             break
