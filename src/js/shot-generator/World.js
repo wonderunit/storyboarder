@@ -61,6 +61,7 @@ const useGround = (world, scene) => {
         object.current.layers.disable(0)
         object.current.layers.enable(1)
         object.current.layers.disable(2)
+        object.current.layers.enable(3)
         scene.add(object.current)
       }
     }

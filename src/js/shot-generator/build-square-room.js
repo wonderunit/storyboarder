@@ -169,6 +169,7 @@ const buildSquareRoom = (w, l, h, { textures }) => {
   mesh.layers.disable(0)
   mesh.layers.enable(1)
   mesh.layers.disable(2)
+  mesh.layers.enable(3)
 
   return room
 }

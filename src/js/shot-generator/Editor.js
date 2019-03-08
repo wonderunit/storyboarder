@@ -2,7 +2,7 @@ const THREE = require('three')
 
 const { ipcRenderer, remote } = require('electron')
 const { dialog } = remote
-const fs = require('fs')
+const fs = require('fs-extra')
 const path = require('path')
 
 const React = require('react')
@@ -78,6 +78,7 @@ const DragControls = require('./DragControls')
 const IconSprites = require('./IconSprites')
 const Character = require('./Character')
 const SpotLight = require('./SpotLight')
+const Volumetric = require('./Volumetric')
 
 const SceneObject = require('./SceneObject')
 
@@ -95,6 +96,7 @@ const NumberSliderTransform = require('./NumberSlider').transforms
 const NumberSliderFormatter = require('./NumberSlider').formatters
 
 const ModelSelect = require('./ModelSelect')
+const AttachmentsSelect = require('./AttachmentsSelect')
 const ServerInspector = require('./ServerInspector')
 const GuidesView = require('./GuidesView')
 
@@ -105,7 +107,10 @@ window.THREE = THREE
 
 const draggables = (sceneObjects, scene) =>
   //scene.children.filter(o => o.userData.type === 'object' || o instanceof BoundingBoxHelper)
-  scene.children.filter(o => o.userData.type === 'object' || o.userData.type === 'character' || o.userData.type === 'light' )
+  scene.children.filter(o => o.userData.type === 'object' || 
+                              o.userData.type === 'character' || 
+                              o.userData.type === 'light' || 
+                              o.userData.type === 'volume' )
 
 const cameras = ( scene ) => 
   scene.children.filter(o => o instanceof THREE.PerspectiveCamera)
@@ -176,7 +181,6 @@ const SceneManager = connect(
     aspectRatio: state.aspectRatio,
     devices: state.devices,
     meta: state.meta,
-
     // HACK force reset skeleton pose on Board UUID change
     _boardUid: state.board.uid
   }),
@@ -187,7 +191,7 @@ const SceneManager = connect(
     selectBone,
     updateCharacterSkeleton,
     createPosePreset,
-    updateWorldEnvironment
+    updateWorldEnvironment,
   }
 )(
   ({ world, sceneObjects, updateObject, selectObject, remoteInput, largeCanvasRef, smallCanvasRef, selection, selectedBone, machineState, transition, animatedUpdate, selectBone, mainViewCamera, updateCharacterSkeleton, largeCanvasSize, activeCamera, aspectRatio, devices, meta, _boardUid, updateWorldEnvironment }) => {
@@ -284,6 +288,9 @@ const SceneManager = connect(
     // resize the renderers (large and small)
     // FIXME this is running _after_ the animation frame, causing a visible jump
     useEffect(() => {
+
+      //seems this is called a bit often, see later about reducing hooks
+
       // how wide is the canvas which will render the large view?
       let width = Math.ceil(largeCanvasSize.width)
       // assign a target height, based on scene aspect ratio
@@ -298,6 +305,7 @@ const SceneManager = connect(
           child.userData.type === 'object' ||
           child.userData.type === 'character' ||
           child.userData.type === 'light' ||
+          child.userData.type === 'volume' ||
           child instanceof THREE.PerspectiveCamera
         ) {
           minMax[0] = Math.min(child.position.x, minMax[0])
@@ -349,6 +357,14 @@ const SceneManager = connect(
 
       // resize the renderers
       if (mainViewCamera === 'live') {
+        // ortho camera is small
+        smallRenderer.current.setSize(300, 300)
+        smallRendererEffect.current.setParams({
+          defaultThickness:0.02,
+          ignoreMaterial: true,
+          defaultColor: [ 0.4, 0.4, 0.4 ]
+        })
+
         // perspective camera is large
         largeRenderer.current.setSize(width, height)
 
@@ -357,13 +373,7 @@ const SceneManager = connect(
           ignoreMaterial: false,
           defaultColor: [0, 0, 0]
         })
-        // ortho camera is small
-        smallRenderer.current.setSize(300, 300)
-        smallRendererEffect.current.setParams({
-          defaultThickness:0.02,
-          ignoreMaterial: true,
-          defaultColor: [ 0.4, 0.4, 0.4 ]
-        })
+        
       } else {
         // ortho camera is large
         largeRenderer.current.setSize(width, height)
@@ -500,14 +510,19 @@ const SceneManager = connect(
                   })
                 }
               }
-
+              let tempColor = scene.background.clone()
               if (state.mainViewCamera === 'live') {
                 largeRendererEffect.current.render(scene, cameraForLarge)
-              } else {                
-                largeRendererEffect.current.render(scene, cameraForLarge)
-              }
+                scene.background.set(new THREE.Color( '#FFFFFF' ))
+                smallRendererEffect.current.render( scene, cameraForSmall)
+                scene.background.set(tempColor)
 
-              smallRendererEffect.current.render( scene, cameraForSmall)
+              } else {
+                scene.background.set(new THREE.Color( '#FFFFFF' ))           
+                largeRendererEffect.current.render(scene, cameraForLarge)
+                scene.background.set(tempColor)
+                smallRendererEffect.current.render( scene, cameraForSmall)
+              }
             })
           }
           if (stats) { stats.end() }
@@ -602,6 +617,7 @@ const SceneManager = connect(
     useEffect(() => {
       if (dragControlsView.current) {
         // TODO read-only version?
+        
         dragControlsView.current.setObjects(draggables(sceneObjects, scene))
         
         // TODO update if there are changes to the camera(s) in the scene
@@ -700,6 +716,24 @@ const SceneManager = connect(
               }
             ]
 
+            case 'volume':
+              return [
+                Volumetric, {
+                  key: props.id,
+                  scene,
+                  isSelected: selection === props.id,
+                  camera,
+                  updateObject,
+                  numberOfLayers: props.numberOfLayers,
+                  distanceBetweenLayers: props.distanceBetweenLayers,
+
+                  storyboarderFilePath: meta.storyboarderFilePath,
+                  volumeImageAttachmentIds: props.volumeImageAttachmentIds,
+
+                  ...props
+                }
+              ]
+
             case 'light':
               return [
                 SpotLight, {
@@ -713,7 +747,6 @@ const SceneManager = connect(
     })
 
     const worldComponent = [WorldObject, { key: 'world', world, scene, storyboarderFilePath: meta.storyboarderFilePath, updateWorldEnvironment }]
-
     // TODO Scene parent object?
     return [
       [worldComponent, ...components].map(c => h(c))
@@ -880,7 +913,6 @@ const WorldElement = React.memo(({ index, world, isSelected, selectObject, style
 
 const ListItem = ({ index, style, isScrolling, data }) => {
   const { items, models, selection, selectObject, updateObject, deleteObject, activeCamera, setActiveCamera } = data
-
   const isWorld = index === 0
 
   const sceneObject = index === 0
@@ -927,7 +959,8 @@ const Inspector = ({
   updateCharacterSkeleton,
   updateWorld,
   updateWorldRoom,
-  updateWorldEnvironment
+  updateWorldEnvironment,
+  storyboarderFilePath
 }) => {
   const { scene } = useContext(SceneContext)
 
@@ -968,7 +1001,8 @@ const Inspector = ({
             machineState,
             transition,
             selectBone,
-            updateCharacterSkeleton
+            updateCharacterSkeleton,
+            storyboarderFilePath
           }
         ]
       : [
@@ -1250,7 +1284,9 @@ const ElementsPanel = connect(
     selection: state.selection,
     selectedBone: state.selectedBone,
     models: state.models,
-    activeCamera: state.activeCamera
+    activeCamera: state.activeCamera,
+
+    storyboarderFilePath: state.meta.storyboarderFilePath
   }),
   // what actions can we dispatch?
   {
@@ -1265,7 +1301,7 @@ const ElementsPanel = connect(
     updateWorldEnvironment
   }
 )(
-  React.memo(({ world, sceneObjects, models, selection, selectObject, updateObject, deleteObject, selectedBone, machineState, transition, activeCamera, setActiveCamera, selectBone, updateCharacterSkeleton, updateWorld, updateWorldRoom, updateWorldEnvironment }) => {
+  React.memo(({ world, sceneObjects, models, selection, selectObject, updateObject, deleteObject, selectedBone, machineState, transition, activeCamera, setActiveCamera, selectBone, updateCharacterSkeleton, updateWorld, updateWorldRoom, updateWorldEnvironment, storyboarderFilePath }) => {
     let ref = useRef(null)
     let size = useComponentSize(ref)
 
@@ -1280,12 +1316,12 @@ const ElementsPanel = connect(
        o[v.type][k.toString()] = v
        return o
     }, {})
-
     let sceneObjectsSorted = {
       ...types.camera,
       ...types.character,
       ...types.object,
-      ...types.light
+      ...types.light,
+      ...types.volume
     }
 
     let items = [
@@ -1355,7 +1391,9 @@ const ElementsPanel = connect(
 
             updateWorld,
             updateWorldRoom,
-            updateWorldEnvironment
+            updateWorldEnvironment,
+
+            storyboarderFilePath
           }]
         )
       )
@@ -1443,6 +1481,7 @@ const LabelInput = ({ label, setLabel, onFocus, onBlur }) => {
 }
 
 const saveCharacterPresets = state => presetsStorage.saveCharacterPresets({ characters: state.presets.characters })
+
 const CharacterPresetsEditor = connect(
   state => ({
     characterPresets: state.presets.characters,
@@ -1677,7 +1716,7 @@ const MORPH_TARGET_LABELS = {
   'ectomorphic': 'ecto',
   'endomorphic': 'obese',
 }
-const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, machineState, transition, selectBone, updateCharacterSkeleton }) => {
+const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, machineState, transition, selectBone, updateCharacterSkeleton, storyboarderFilePath }) => {
   const createOnSetValue = (id, name, transform = value => value) => value => updateObject(id, { [name]: transform(value) })
 
   let positionSliders = [
@@ -1686,7 +1725,7 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
     [NumberSlider, { label: 'z', value: sceneObject.z, min: -30, max: 30, onSetValue: createOnSetValue(sceneObject.id, 'z') } ],
   ]
 
-  let volumeSliders = sceneObject.model === 'box'
+  let volumeSliders = (sceneObject.model === 'box' )
     ? [
         [NumberSlider, { label: 'width', value: sceneObject.width, min: 0.025, max: 5, onSetValue: createOnSetValue(sceneObject.id, 'width') } ],
         [NumberSlider, { label: 'height', value: sceneObject.height, min: 0.025, max: 5, onSetValue: createOnSetValue(sceneObject.id, 'height') } ],
@@ -1797,10 +1836,85 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
         positionSliders
       ],
 
-      sceneObject.type == 'object' && [
+      (sceneObject.type == 'object' ) && [
         [
           'div.column',
           volumeSliders
+        ],
+      ],
+
+      sceneObject.type == 'volume' && [        
+        [
+          'div.column',
+
+          [NumberSlider, { label: 'width', value: sceneObject.width, min: 0.1, max: 25, onSetValue: createOnSetValue(sceneObject.id, 'width') } ],
+          [NumberSlider, { label: 'height', value: sceneObject.height, min: -25, max: 25, onSetValue: createOnSetValue(sceneObject.id, 'height') } ],
+          [NumberSlider, { label: 'depth', value: sceneObject.depth, min: 0.1, max: 25, onSetValue: createOnSetValue(sceneObject.id, 'depth') } ], 
+
+          ['div.number-slider', [
+            ['div.number-slider__label', 'Layer Image Files'],
+            ['div.number-slider__control', { style: { width: 137 }}, [
+              AttachmentsSelect, {
+                style: { flex: 1 },
+
+                ids: sceneObject.volumeImageAttachmentIds,
+                options: [
+                  { name: 'rain', value: 'rain1,rain2' },
+                  { name: 'fog', value: 'fog1,fog2' },
+                  { name: 'explosion', value: 'debris,explosion' }
+                ],
+                copyFiles: filepaths => {
+                  let projectDir = path.dirname(storyboarderFilePath)
+                  let assetsDir = path.join(projectDir, 'models', 'volumes')
+                  fs.ensureDirSync(assetsDir)
+
+                  let dsts = []
+                  for (let src of filepaths) {
+                    let dst = path.join(assetsDir, path.basename(src))
+                    console.log('copying from', src, 'to', dst)
+                    try {
+                      fs.copySync(src, dst)
+                      dsts.push(dst)
+                    } catch (err) {
+                      console.error('could not copy', src)
+                      alert('could not copy ' + src)
+                    }
+                  }
+
+                  let ids = dsts.map(filepath => path.relative(projectDir, filepath))
+                  console.log('setting attachment ids', ids)
+
+                  return ids
+                },
+                onChange: volumeImageAttachmentIds => {
+                  updateObject(sceneObject.id, { volumeImageAttachmentIds })
+                },
+                onBlur: () => transition('TYPING_EXIT')
+              }
+            ]
+          ]]],
+
+          [NumberSlider, { 
+            label: 'layers', 
+            value: sceneObject.numberOfLayers, 
+            min: 1, 
+            max: 10, 
+            step: 1,
+            transform: NumberSliderTransform.round,
+            formatter: NumberSliderFormatter.identity,
+            onSetValue: createOnSetValue(sceneObject.id, 'numberOfLayers')}],
+          [NumberSlider, { label: 'opacity', value: sceneObject.opacity, min: 0, max: 1, onSetValue: createOnSetValue(sceneObject.id, 'opacity') } ], 
+          [NumberSlider, { 
+            label: 'color', 
+            value: sceneObject.color/0xFFFFFF, 
+            min: 0.0, 
+            max: 1, 
+            onSetValue: value => {
+              let c = 0xFF * value
+              let color = (c << 16) | (c << 8) | c
+              updateObject(sceneObject.id, { color: color })
+            }
+          }]
         ],
       ],
 
@@ -2120,7 +2234,8 @@ const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, s
     'camera': [Icon, { src: 'icon-item-camera' }],
     'character': [Icon, { src: 'icon-item-character' }],
     'object': [Icon, { src: 'icon-item-object' }],
-    'light': [Icon, { src: 'icon-item-light' }]
+    'light': [Icon, { src: 'icon-item-light' }],
+    'volume': [Icon, { src: 'icon-item-volume' }]
   }
 
   let className = classNames({
@@ -2644,6 +2759,27 @@ const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, set
     selectObject(id)
   }
 
+  const onCreateVolumeClick = () => {
+    let id = THREE.Math.generateUUID()
+    createObject({
+      id,
+      type: 'volume',
+      x: 0,
+      y:2,
+      z: 0,
+      width: 5,
+      height: 5,
+      depth:5,
+      rotation: 0,
+      visible: true,
+      opacity: 0.3,
+      color: 0x777777,
+      numberOfLayers: 4,
+      distanceBetweenLayers: 1.5,
+      volumeImageAttachmentIds: ['rain2', 'rain1']
+    })
+  }
+
   const onCreateStressClick = () => {
     for (let i = 0; i < 500; i++) {
       onCreateObjectClick()
@@ -2725,6 +2861,7 @@ const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, set
         ['a[href=#]', { onClick: preventDefault(onCreateObjectClick) }, [[Icon, { src: 'icon-toolbar-object' }], 'Object']],
         ['a[href=#]', { onClick: preventDefault(onCreateCharacterClick) }, [[Icon, { src: 'icon-toolbar-character' }], 'Character']],
         ['a[href=#]', { onClick: preventDefault(onCreateLightClick) }, [[Icon, { src: 'icon-toolbar-light' }], 'Light']],
+        ['a[href=#]', { onClick: preventDefault(onCreateVolumeClick) }, [[Icon, { src: 'icon-toolbar-volume' }], 'Volume']],
       ]],
       // ['a[href=#]', { onClick: preventDefault(onCreateStressClick) }, '+ STRESS'],
 

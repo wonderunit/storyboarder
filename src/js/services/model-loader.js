@@ -327,7 +327,26 @@ const ensureModelFileExists = filepath => {
   })
 }
 
+const isUserFile = string => {
+  const { dir, ext } = path.parse(string)
+  if (dir && dir !== '') {
+    if (ext && ext !== '') {
+      return true
+    } else {
+      throw new Error('invalid file path, missing extension ' + string)
+    }
+  } else {
+    if (ext && ext !== '') {
+      throw new Error('invalid file path ' + string)
+    } else {
+      return false
+    }
+  }
+}
+
+
 module.exports = {
   isCustomModel,
-  ensureModelFileExists
+  ensureModelFileExists,
+  isUserFile
 }

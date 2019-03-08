@@ -68,6 +68,29 @@
               "x": 0,
               "y": 4,
               "z": 1
+            },
+            "97F2D438-4FDC-44FF-8570-54A54AF27F79": {
+              "id": "97F2D438-4FDC-44FF-8570-54A54AF27F79",
+              "type": "volume",
+              "x": 0,
+              "y": 2,
+              "z": 0,
+              "width": 5,
+              "height": 5,
+              "depth": 5,
+              "rotation": 0,
+              "visible": true,
+              "opacity": 0.3,
+              "color": 7829367,
+              "numberOfLayers": 4,
+              "distanceBetweenLayers": 1.5,
+
+              "volumeImageAttachmentIds": [
+                "rain2",
+                "rain1"
+              ],
+
+              "displayName": "Volume 1"
             }
           },
           "world": {

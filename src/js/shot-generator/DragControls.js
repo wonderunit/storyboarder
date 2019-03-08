@@ -247,6 +247,12 @@ class DragControls extends THREE.EventDispatcher {
         //character
         allIntersectors.push( o.orthoIcon.icon )        
       }
+
+      if (o instanceof THREE.Object3D && o.userData.type === 'volume')
+      {
+        //volume
+        allIntersectors.push( o.orthoIcon.icon )
+      }
     }    
     for ( o of cameras ) // cameras
     {
@@ -291,7 +297,6 @@ class DragControls extends THREE.EventDispatcher {
     if ( intersects.length > 0 ) {
       this.onSelectBone( null )  // deselect bone is any selected
       let object = this._camera.isOrthographicCamera ? this.getFromSprite(intersects)[0] : this.getObjectAndBone( intersects[ 0 ] )[0]
-
       if (
         // is the camera is orthographic (which means, start dragging on the first click)
         this._camera.isOrthographicCamera

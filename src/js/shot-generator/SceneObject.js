@@ -86,9 +86,14 @@ const SceneObject = React.memo(({ scene, id, type, isSelected, loaded, updateObj
 
     switch (model) {
       case 'box':
-        geometry = new RoundedBoxGeometry( 1, 1, 1, boxRadius, boxRadiusSegments )
+        let geometry = new RoundedBoxGeometry( 1, 1, 1, boxRadius, boxRadiusSegments )
         let material = materialFactory()
         let mesh = new THREE.Mesh( geometry, material )
+        mesh.renderOrder = 1.0
+        mesh.layers.disable(0)
+        mesh.layers.enable(1)
+        mesh.layers.enable(2)
+        mesh.layers.enable(3)
         geometry.translate( 0, 1 / 2, 0 )
         container.remove(...container.children)
         container.add(mesh)
@@ -251,11 +256,11 @@ const SceneObject = React.memo(({ scene, id, type, isSelected, loaded, updateObj
     container.current.children[0].material.userData.outlineParameters =
       isSelected
         ? {
-          //thickness: 0.008,
+          thickness: 0.008,
           color: [ 122/256.0/2, 114/256.0/2, 233/256.0/2 ]
         }
        : {
-         //thickness: 0.008,
+         thickness: 0.008,
          color: [ 0, 0, 0 ],
        }
   }, [isSelected, loaded])

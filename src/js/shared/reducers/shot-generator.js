@@ -159,7 +159,8 @@ const resetLoadingStatus = sceneObjects => {
   for (let key in sceneObjects) {
     if (
       sceneObjects[key].type === 'character' ||
-      sceneObjects[key].type === 'object'
+      sceneObjects[key].type === 'object' ||
+      sceneObjects[key].type === 'volume'
     ) {
       sceneObjects[key] = {
         ...sceneObjects[key],
@@ -200,7 +201,7 @@ const withDisplayNames = sceneObjects => {
 
 // load up the default poses
 const defaultPosePresets = require('./shot-generator-presets/poses.json')
-
+ 
 // reference AE56DD1E-3F6F-4A74-B247-C8A6E3EB8FC0 as our Default Pose
 const defaultPosePreset = defaultPosePresets['AE56DD1E-3F6F-4A74-B247-C8A6E3EB8FC0']
 
@@ -691,6 +692,27 @@ module.exports = {
             draft.sceneObjects[action.payload.id].distance = action.payload.distance
           }
 
+
+
+          // for volumes
+          if (action.payload.numberOfLayers != null) {
+            draft.sceneObjects[action.payload.id].numberOfLayers = action.payload.numberOfLayers
+          }
+          if (action.payload.distanceBetweenLayers != null) {
+            draft.sceneObjects[action.payload.id].distanceBetweenLayers = action.payload.distanceBetweenLayers
+          }
+          if (action.payload.opacity != null) {
+            draft.sceneObjects[action.payload.id].opacity = action.payload.opacity
+          }
+          if (action.payload.color != null) {
+            draft.sceneObjects[action.payload.id].color = action.payload.color
+          }
+          if (action.payload.volumeImageAttachmentIds != null) {
+            draft.sceneObjects[action.payload.id].volumeImageAttachmentIds = action.payload.volumeImageAttachmentIds
+          }
+
+
+
           if (action.payload.hasOwnProperty('characterPresetId')) {
             draft.sceneObjects[action.payload.id].characterPresetId = action.payload.characterPresetId
           }
@@ -702,6 +724,7 @@ module.exports = {
           if (action.payload.hasOwnProperty('loaded')) {
             draft.sceneObjects[action.payload.id].loaded = action.payload.loaded
           }
+          
 
           checkForCharacterChanges(state, draft, action)
           checkForSkeletonChanges(state, draft, action)
@@ -815,7 +838,7 @@ module.exports = {
           if (action.payload.hasOwnProperty('name')) {
             draft.presets.poses[action.payload.id].name = action.payload.name
           }
-          return
+          return     
 
         case 'UPDATE_WORLD':
           if (action.payload.hasOwnProperty('ground')) {
@@ -902,6 +925,7 @@ module.exports = {
 
   createObject: values => ({ type: 'CREATE_OBJECT', payload: values }),
   updateObject: (id, values) => ({ type: 'UPDATE_OBJECT', payload: { id, ...values } }),
+  
   deleteObject: id => ({ type: 'DELETE_OBJECT', payload: { id } }),
 
   duplicateObject: (id, destinationId) => ({ type: 'DUPLICATE_OBJECT', payload: { id, destinationId } }),

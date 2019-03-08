@@ -41,6 +41,8 @@ const formatters = {
   // default
   toFixed2: value => value.toFixed(2),
 
+  identity: value => value,
+
   degrees: value => Math.round(value).toString() + '°',
   percent: value => Math.round(value).toString() + '%',  
 }
@@ -166,7 +168,7 @@ const NumberSlider = ({
                   setTextInput(false)
                 }
                 if (event.key === 'Enter') {
-                  // TODO validation, error handling
+                  // TODO validation, tranform, error handling
                   onSetValue(postfixCalculator(infixToPostfix(event.target.value)))
                   setTextInput(false)
                 }
