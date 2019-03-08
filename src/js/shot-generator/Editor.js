@@ -2,7 +2,7 @@ const THREE = require('three')
 
 const { ipcRenderer, remote } = require('electron')
 const { dialog } = remote
-const fs = require('fs')
+const fs = require('fs-extra')
 const path = require('path')
 
 const React = require('react')
@@ -961,7 +961,8 @@ const Inspector = ({
   updateCharacterSkeleton,
   updateWorld,
   updateWorldRoom,
-  updateWorldEnvironment
+  updateWorldEnvironment,
+  storyboarderFilePath
 }) => {
   const { scene } = useContext(SceneContext)
 
@@ -1002,7 +1003,8 @@ const Inspector = ({
             machineState,
             transition,
             selectBone,
-            updateCharacterSkeleton
+            updateCharacterSkeleton,
+            storyboarderFilePath
           }
         ]
       : [
@@ -1284,7 +1286,9 @@ const ElementsPanel = connect(
     selection: state.selection,
     selectedBone: state.selectedBone,
     models: state.models,
-    activeCamera: state.activeCamera
+    activeCamera: state.activeCamera,
+
+    storyboarderFilePath: state.meta.storyboarderFilePath
   }),
   // what actions can we dispatch?
   {
@@ -1299,7 +1303,7 @@ const ElementsPanel = connect(
     updateWorldEnvironment
   }
 )(
-  React.memo(({ world, sceneObjects, models, selection, selectObject, updateObject, deleteObject, selectedBone, machineState, transition, activeCamera, setActiveCamera, selectBone, updateCharacterSkeleton, updateWorld, updateWorldRoom, updateWorldEnvironment }) => {
+  React.memo(({ world, sceneObjects, models, selection, selectObject, updateObject, deleteObject, selectedBone, machineState, transition, activeCamera, setActiveCamera, selectBone, updateCharacterSkeleton, updateWorld, updateWorldRoom, updateWorldEnvironment, storyboarderFilePath }) => {
     let ref = useRef(null)
     let size = useComponentSize(ref)
 
@@ -1389,7 +1393,9 @@ const ElementsPanel = connect(
 
             updateWorld,
             updateWorldRoom,
-            updateWorldEnvironment
+            updateWorldEnvironment,
+
+            storyboarderFilePath
           }]
         )
       )
@@ -1712,7 +1718,7 @@ const MORPH_TARGET_LABELS = {
   'ectomorphic': 'ecto',
   'endomorphic': 'obese',
 }
-const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, machineState, transition, selectBone, updateCharacterSkeleton }) => {
+const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, machineState, transition, selectBone, updateCharacterSkeleton, storyboarderFilePath }) => {
   const createOnSetValue = (id, name, transform = value => value) => value => updateObject(id, { [name]: transform(value) })
 
   let positionSliders = [
@@ -1857,12 +1863,34 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
             ['div.row', [
               AttachmentsSelect, {
                 ids: sceneObject.volumeImageAttachmentIds,
-                multiple: true,
                 options: [
                   { name: 'rain', value: 'rain1,rain2' },
                   { name: 'fog', value: 'fog1,fog2' },
                   { name: 'explosion', value: 'debris,explosion' }
                 ],
+                copyFiles: filepaths => {
+                  let projectDir = path.dirname(storyboarderFilePath)
+                  let assetsDir = path.join(projectDir, 'models', 'volumes')
+                  fs.ensureDirSync(assetsDir)
+
+                  let dsts = []
+                  for (let src of filepaths) {
+                    let dst = path.join(assetsDir, path.basename(src))
+                    console.log('copying from', src, 'to', dst)
+                    try {
+                      fs.copySync(src, dst)
+                      dsts.push(dst)
+                    } catch (err) {
+                      console.error('could not copy', src)
+                      alert('could not copy ' + src)
+                    }
+                  }
+
+                  let ids = dsts.map(filepath => path.relative(projectDir, filepath))
+                  console.log('setting attachment ids', ids)
+
+                  return ids
+                },
                 onChange: volumeImageAttachmentIds => {
                   updateObject(sceneObject.id, { volumeImageAttachmentIds })
                 },

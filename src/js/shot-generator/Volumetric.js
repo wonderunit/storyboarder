@@ -11,6 +11,10 @@ const textureLoader = new THREE.TextureLoader()
 
 const IconSprites = require('./IconSprites')
 
+const { isUserFile } = require('../services/model-loader')
+const pathToShotGeneratorData = path.join(__dirname, '..', '..', '..', 'src', 'data', 'shot-generator')
+const pathToBuiltInVolumeImages = path.join(pathToShotGeneratorData, 'volumes')
+
 const Volumetric = React.memo(({
   scene,
   id,
@@ -96,24 +100,7 @@ const Volumetric = React.memo(({
 
 
 
-    const pathToShotGeneratorData = path.join(__dirname, '..', '..', '..', 'src', 'data', 'shot-generator')
-    const pathToBuiltInVolumeImages = path.join(pathToShotGeneratorData, 'volumes')
-    const isUserFile = string => {
-      const { dir, ext } = path.parse(string)
-      if (dir && dir !== '') {
-        if (ext && ext !== '') {
-          return true
-        } else {
-          throw new Error('invalid file path, missing extension ' + string)
-        }
-      } else {
-        if (ext && ext !== '') {
-          throw new Error('invalid file path ' + string)
-        } else {
-          return false
-        }
-      }
-    }
+
     let imgArray = volumeImageAttachmentIds.map(relpath => {
       if (isUserFile(relpath)) {
         return path.join(path.dirname(storyboarderFilePath), relpath)

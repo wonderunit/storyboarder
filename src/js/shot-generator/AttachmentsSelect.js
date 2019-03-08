@@ -3,15 +3,14 @@ const path = require('path')
 
 const h = require('../utils/h')
 
-const AttachmentsSelect = ({ ids, options, multiple, onChange, onBlur }) => {
+const { isUserFile } = require('../services/model-loader')
+
+const AttachmentsSelect = ({ ids, options, copyFiles, onChange, onBlur }) => {
   // convert ids to value string
   let value = ids.slice().sort().join(',')
 
-  // TODO
-  let isCustom = false
-
-  // TODO
-  const displayName = value => value
+  let isCustom = ids.some(filepath => isUserFile(filepath))
+  let label = ids.map(id => path.basename(id)).join(',')
 
   return h(
     [
@@ -22,19 +21,19 @@ const AttachmentsSelect = ({ ids, options, multiple, onChange, onBlur }) => {
         value,
         onChange: event => {
           event.preventDefault()
+
           let selected = event.target.selectedOptions[0]
-          
-          if (selected)
+          if (selected) {
+
             if (selected.dataset.selector) {
-              // TODO see VolumePresetsEditor
-              // let filepaths = dialog.showOpenDialog(null, { properties: ['openFile', 'multiSelections'] })
-              let filepaths = dialog.showOpenDialog(null, {})
+              let filepaths = dialog.showOpenDialog(null, { properties: ['openFile', 'multiSelections'] })
+
               if (filepaths) {
-                let filepath = filepaths[0]
+                let ids = copyFiles(filepaths)
 
-                // TODO convert to ids array
-                // onChange( filepath )
-
+                if (ids.length) {
+                  onChange( ids )
+                }
               }
               // automatically blur to return keyboard control
               document.activeElement.blur()
@@ -45,28 +44,30 @@ const AttachmentsSelect = ({ ids, options, multiple, onChange, onBlur }) => {
               ids = event.target.value.split(',')
               onChange( ids )
             }
+
+          }
         }
       }, [
-        // ['optgroup', { label: 'Custom' }, [
-        //   isCustom
-        //     ? [
-        //       'option',
-        //       {
-        //         value,
-        //         disabled: true
-        //       },
-        //       displayName(value)
-        //     ]
-        //     : [],
-        //   [
-        //     'option',
-        //     {
-        //       'data-selector': true,
-        //       onClick: event => event.preventDefault()
-        //     },
-        //     'Select files …'
-        //   ]
-        // ]],
+        ['optgroup', { label: 'Custom' }, [
+          isCustom
+            ? [
+              'option',
+              {
+                value,
+                disabled: true
+              },
+              label
+            ]
+            : [],
+          [
+            'option',
+            {
+              'data-selector': true,
+              onClick: event => event.preventDefault()
+            },
+            'Select files …'
+          ]
+        ]],
         ['optgroup', { label: 'Built-in' }, [
           options.map(({ name, value }) =>
             ['option', { value }, name]
