@@ -1852,7 +1852,7 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
           [NumberSlider, { label: 'depth', value: sceneObject.depth, min: 0.1, max: 25, onSetValue: createOnSetValue(sceneObject.id, 'depth') } ], 
 
           ['div.number-slider', [
-            ['div.number-slider__label', 'Volumetric Images'],
+            ['div.number-slider__label', 'Layer Image Files'],
             ['div.number-slider__control', { style: { width: 137 }}, [
               AttachmentsSelect, {
                 style: { flex: 1 },
