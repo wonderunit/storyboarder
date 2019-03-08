@@ -1892,12 +1892,6 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
             ]
           ]]],
 
-          ['div', [
-            ['div', 'Volumetric Images:',
-              sceneObject.volumeImageAttachmentIds.map(relpath => (['div', ['small', relpath]]))
-            ]
-          ]],
-
           [NumberSlider, { 
             label: 'layers', 
             value: sceneObject.numberOfLayers, 
