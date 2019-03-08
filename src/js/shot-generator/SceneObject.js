@@ -28,6 +28,8 @@ objLoader.setLogging(false, false)
 
 THREE.Cache.enabled = true
 
+let MODEL_CACHE = {}
+
 const boxRadius = .005
 const boxRadiusSegments = 5
 
@@ -117,62 +119,64 @@ const SceneObject = React.memo(({ scene, id, type, isSelected, loaded, updateObj
 
         switch (path.extname(filepath)) {
           case '.obj':
-            await new Promise((resolve, reject) => {
-              objLoader.load(
-                filepath, event => {
-                  const object = event.detail.loaderRootNode
+            try {
+              if (!MODEL_CACHE[filepath]) {
+                MODEL_CACHE[filepath] = await new Promise((resolve, reject) => {
+                  objLoader.load(
+                    filepath,
+                    event => resolve(event.default.loaderRootNode),
+                    null,
+                    error => reject(error)
+                  )
+                })
+              }
 
-                  object.traverse( function ( child ) {
-                    if ( child instanceof THREE.Mesh ) {
-                      container.add(meshFactory(child))
-                    }
-                  })
-                  resolve()
-                },
-                null,
-                error => reject(error)
-              )
-            })
-            .then(() => {
+              let object = MODEL_CACHE[filepath]
+              object.traverse( function ( child ) {
+                if ( child instanceof THREE.Mesh ) {
+                  container.add(meshFactory(child))
+                }
+              })
+
               console.log('loaded', filepath)
               setLoaded(true)
-            })
-            .catch((err) => {
+            } catch (err) {
               console.error(err)
-              // HACK undefined == error
               setLoaded(undefined)
-            })
+            }
             break
 
           case '.gltf':
           case '.glb':
-            await new Promise((resolve, reject) => {
-              gltfLoader.load(
-                filepath,
-                data => {
-                  // add every single mesh we find
-                  data.scene.traverse(child => {
-                    if ( child instanceof THREE.Mesh ) {
-                      container.add(meshFactory(child))
-                    }
-                  })
-                  resolve()
-                },
-                null,
-                error => {
-                  reject(error)
+            try {
+              if (!MODEL_CACHE[filepath]) {
+                MODEL_CACHE[filepath] = await new Promise((resolve, reject) => {
+                  gltfLoader.load(
+                    filepath,
+                    data => resolve(data),
+                    null,
+                    error => reject(error)
+                  )
+                })
+              }
+
+              let data = MODEL_CACHE[filepath]
+
+              // add every single mesh we find
+              data.scene.traverse(child => {
+                if ( child instanceof THREE.Mesh ) {
+                  container.add(meshFactory(child))
                 }
-              )
-            })
-            .then(() => {
+              })
+
               console.log('loaded', filepath)
               setLoaded(true)
-            })
-            .catch((err) => {
+
+            } catch (err) {
               console.error(err)
               // HACK undefined == error
               setLoaded(undefined)
-            })
+            }
             break
 
           default:
