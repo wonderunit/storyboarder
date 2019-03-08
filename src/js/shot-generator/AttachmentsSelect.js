@@ -5,7 +5,7 @@ const h = require('../utils/h')
 
 const { isUserFile } = require('../services/model-loader')
 
-const AttachmentsSelect = ({ ids, options, copyFiles, onChange, onBlur }) => {
+const AttachmentsSelect = ({ style = {}, ids, options, copyFiles, onChange, onBlur }) => {
   // convert ids to value string
   let value = ids.slice().sort().join(',')
 
@@ -16,7 +16,8 @@ const AttachmentsSelect = ({ ids, options, copyFiles, onChange, onBlur }) => {
     [
       'select', {
         style: {
-          marginBottom: 0
+          marginBottom: 0,
+          ...style
         },
         value,
         onChange: event => {

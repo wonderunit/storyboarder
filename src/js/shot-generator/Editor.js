@@ -1851,10 +1851,12 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
           [NumberSlider, { label: 'height', value: sceneObject.height, min: -25, max: 25, onSetValue: createOnSetValue(sceneObject.id, 'height') } ],
           [NumberSlider, { label: 'depth', value: sceneObject.depth, min: 0.1, max: 25, onSetValue: createOnSetValue(sceneObject.id, 'depth') } ], 
 
-          ['div.row', { style: { alignItems: 'center', marginBottom: 10 } }, [
-            ['div', { style: { width: 50 } }, 'Files'],
-            ['div.row', [
+          ['div.number-slider', [
+            ['div.number-slider__label', 'Volumetric Images'],
+            ['div.number-slider__control', { style: { width: 137 }}, [
               AttachmentsSelect, {
+                style: { flex: 1 },
+
                 ids: sceneObject.volumeImageAttachmentIds,
                 options: [
                   { name: 'rain', value: 'rain1,rain2' },
