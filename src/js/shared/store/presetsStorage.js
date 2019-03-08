@@ -7,7 +7,6 @@ const getPresetsFolderPath = () => path.join(app.getPath('userData'), 'presets')
 const getScenePresetsFilePath = () => path.join(getPresetsFolderPath(), 'scenes.json')
 const getCharacterPresetsFilePath = () => path.join(getPresetsFolderPath(), 'characters.json')
 const getPosePresetsFilePath = () => path.join(getPresetsFolderPath(), 'poses.json')
-const getVolumePresetsFilePath = () => path.join(getPresetsFolderPath(), 'volumes.json')
 
 module.exports = {
   loadScenePresets: () => {
@@ -64,24 +63,5 @@ module.exports = {
 
     let string = JSON.stringify(poses, null, 2)
     fs.writeFileSync(getPosePresetsFilePath(), string)
-  },
-
-  loadVolumePresets: () => {
-    let filepath = getVolumePresetsFilePath()
-    if (fs.existsSync(filepath)) {
-      let string = fs.readFileSync(filepath)
-      let data = JSON.parse(string)
-      return { volumes: data }
-    } else {
-      return { volumes: undefined }
-    }
-  },
-
-  saveVolumePresets: ({ volumes }) => {
-    if (!fs.existsSync(getPresetsFolderPath())) { fs.mkdirSync(getPresetsFolderPath()) }
-
-    let string = JSON.stringify( volumes, null, 2 )
-    fs.writeFileSync(getVolumePresetsFilePath(), string)
   }
-  
 }

@@ -201,8 +201,6 @@ const withDisplayNames = sceneObjects => {
 
 // load up the default poses
 const defaultPosePresets = require('./shot-generator-presets/poses.json')
-
-const defaultVolumePresets = require('./shot-generator-presets/volumes.json')
  
 // reference AE56DD1E-3F6F-4A74-B247-C8A6E3EB8FC0 as our Default Pose
 const defaultPosePreset = defaultPosePresets['AE56DD1E-3F6F-4A74-B247-C8A6E3EB8FC0']
@@ -523,8 +521,7 @@ const initialState = {
       }
     },
 
-    poses: defaultPosePresets,
-    volumes: defaultVolumePresets,
+    poses: defaultPosePresets
   },
   server: {
     uri: undefined,
@@ -703,9 +700,6 @@ module.exports = {
           }
           if (action.payload.distanceBetweenLayers != null) {
             draft.sceneObjects[action.payload.id].distanceBetweenLayers = action.payload.distanceBetweenLayers
-          }
-          if (action.payload.volumePresetId != null) {
-            draft.sceneObjects[action.payload.id].volumePresetId = action.payload.volumePresetId
           }
           if (action.payload.opacity != null) {
             draft.sceneObjects[action.payload.id].opacity = action.payload.opacity
@@ -969,8 +963,6 @@ module.exports = {
   createPosePreset: payload => ({ type: 'CREATE_POSE_PRESET', payload }),
   updatePosePreset: (id, values) => ({ type: 'UPDATE_POSE_PRESET', payload: { id, ...values} }),
   deletePosePreset: id => ({ type: 'DELETE_POSE_PRESET', payload: { id } }),
-
-  createVolumePreset: payload => ({ type: 'CREATE_VOLUME_PRESET', payload }),
 
   updateWorld: payload => ({ type: 'UPDATE_WORLD', payload }),
   updateWorldRoom: payload => ({ type: 'UPDATE_WORLD_ROOM', payload }),

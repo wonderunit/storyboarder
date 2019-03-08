@@ -79,7 +79,6 @@ const IconSprites = require('./IconSprites')
 const Character = require('./Character')
 const SpotLight = require('./SpotLight')
 const Volumetric = require('./Volumetric')
-const VolumePresetsEditor = require('./VolumePresetsEditor')
 
 const SceneObject = require('./SceneObject')
 
@@ -182,7 +181,6 @@ const SceneManager = connect(
     aspectRatio: state.aspectRatio,
     devices: state.devices,
     meta: state.meta,
-    volumePresets:state.presets.volumes,
     // HACK force reset skeleton pose on Board UUID change
     _boardUid: state.board.uid
   }),
@@ -1852,7 +1850,6 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
       sceneObject.type == 'volume' && [        
         [
           'div.column',
-          // [VolumePresetsEditor, { sceneObject }],
 
           [NumberSlider, { label: 'width', value: sceneObject.width, min: 0.1, max: 25, onSetValue: createOnSetValue(sceneObject.id, 'width') } ],
           [NumberSlider, { label: 'height', value: sceneObject.height, min: -25, max: 25, onSetValue: createOnSetValue(sceneObject.id, 'height') } ],
