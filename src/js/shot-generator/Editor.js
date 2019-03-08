@@ -1756,11 +1756,7 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
 
     character: modelValues
       .filter(model => model.type === 'character')
-      .map(model => ({ name: model.name, value: model.id })),
-
-    volume: modelValues
-      .filter(model => model.type === 'volume')
-      .map(model => ({ name: model.name, value: model.id}))
+      .map(model => ({ name: model.name, value: model.id }))
   }
 
   return h([
