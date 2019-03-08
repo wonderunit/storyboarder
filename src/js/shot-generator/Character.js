@@ -173,6 +173,7 @@ const Character = React.memo(({
     try {
       data = await loadGltf(filepath)
     } catch (err) {
+      console.error(err)
       alert('Could not load model file')
 
       // HACK undefined means an error state
