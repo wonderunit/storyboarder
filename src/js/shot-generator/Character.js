@@ -117,6 +117,15 @@ const characterFactory = data => {
   mesh = data.scene.children.find(child => child instanceof THREE.SkinnedMesh) ||
          data.scene.children[0].children.find(child => child instanceof THREE.SkinnedMesh)
 
+  if (mesh == null) {
+    mesh = new THREE.Mesh()
+    skeleton = null
+    armatures = null
+    let originalHeight = 0
+
+    return { mesh, skeleton, armatures, originalHeight, boneLengthScale, parentRotation, parentPosition }
+  }
+
   armatures = data.scene.children[0].children.filter(child => child instanceof THREE.Bone)
   if (armatures.length === 0 ) {  // facebook export is different - bone structure is inside another object3D
     armatures = data.scene.children[0].children[0].children.filter(child => child instanceof THREE.Bone)
@@ -134,15 +143,6 @@ const characterFactory = data => {
     parentRotation = data.scene.children[0].children[0].quaternion.clone()
     parentPosition = armatures[0].position.clone()
     boneLengthScale = 100
-  }
-
-  if (mesh == null) {
-    mesh = new THREE.Mesh()
-    skeleton = null
-    armatures = null
-    let originalHeight = 0
-
-    return { mesh, skeleton, armatures, originalHeight, boneLengthScale, parentRotation, parentPosition }
   }
 
   skeleton = mesh.skeleton
