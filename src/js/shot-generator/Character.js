@@ -29,6 +29,8 @@ const gltfLoader = new THREE.GLTFLoader(loadingManager)
 objLoader.setLogging(false, false)
 THREE.Cache.enabled = true
 
+let MODEL_CACHE = {}
+
 const loadGltf = filepath => 
   new Promise((resolve, reject) =>
     gltfLoader.load(
@@ -42,6 +44,53 @@ const isValidSkinnedMesh = data => {
   let mesh = data.scene.children.find(child => child instanceof THREE.SkinnedMesh) ||
             data.scene.children[0].children.find(child => child instanceof THREE.SkinnedMesh)
   return (mesh != null)
+}
+
+const cloneGltf = (gltf) => {
+  const clone = {
+    animations: gltf.animations,
+    scene: gltf.scene.clone(true)
+  };
+
+  const skinnedMeshes = {};
+
+  gltf.scene.traverse(node => {
+    if (node.isSkinnedMesh) {
+      skinnedMeshes[node.name] = node;
+    }
+  });
+
+  const cloneBones = {};
+  const cloneSkinnedMeshes = {};
+
+  clone.scene.traverse(node => {
+    if (node.isBone) {
+      cloneBones[node.name] = node;
+    }
+
+    if (node.isSkinnedMesh) {
+      cloneSkinnedMeshes[node.name] = node;
+    }
+  });
+
+  for (let name in skinnedMeshes) {
+    const skinnedMesh = skinnedMeshes[name];
+    const skeleton = skinnedMesh.skeleton;
+    const cloneSkinnedMesh = cloneSkinnedMeshes[name];
+
+    const orderedCloneBones = [];
+
+    for (let i = 0; i < skeleton.bones.length; ++i) {
+      const cloneBone = cloneBones[skeleton.bones[i].name];
+      orderedCloneBones.push(cloneBone);
+    }
+
+    cloneSkinnedMesh.bind(
+        new THREE.Skeleton(orderedCloneBones, skeleton.boneInverses),
+        cloneSkinnedMesh.matrixWorld);
+  }
+
+  return clone;
 }
 
 const characterFactory = data => {
@@ -171,20 +220,10 @@ const Character = React.memo(({
     console.log('loading character from', filepath)
     let data
     try {
-
-      let existing = THREE.Cache.get(filepath)
-      data = existing
-        // re-parse existing data from the cache
-        ? await new Promise((resolve, reject) =>
-          gltfLoader.parse(
-            existing,
-            path.dirname(filepath),
-            resolve,
-            reject
-          ))
-        // load fresh data
-        : await loadGltf(filepath)
-
+      if (!MODEL_CACHE[filepath]) {
+        MODEL_CACHE[filepath] = await loadGltf(filepath)
+      }
+      data = cloneGltf(MODEL_CACHE[filepath])
     } catch (err) {
       console.error(err)
       alert('Could not load model file')
