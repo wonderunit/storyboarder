@@ -94,6 +94,8 @@ const cloneGltf = (gltf) => {
 }
 
 const characterFactory = data => {
+  data = cloneGltf(data)
+
   //console.log('factory got data: ', data)
   let boneLengthScale = 1
   let material = new THREE.MeshToonMaterial({
@@ -223,7 +225,7 @@ const Character = React.memo(({
       if (!MODEL_CACHE[filepath]) {
         MODEL_CACHE[filepath] = await loadGltf(filepath)
       }
-      data = cloneGltf(MODEL_CACHE[filepath])
+      data = MODEL_CACHE[filepath]
     } catch (err) {
       console.error(err)
       alert('Could not load model file')
