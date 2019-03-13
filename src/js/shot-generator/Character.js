@@ -231,7 +231,7 @@ const Character = React.memo(({
       
       object.current.userData.mesh = mesh
       scene.add(object.current)
-      let bonesHelper = new BonesHelper( skeleton.bones[0].parent, object.current, { boneLengthScale } )
+      let bonesHelper = new BonesHelper( skeleton.bones[0].parent, object.current, { boneLengthScale, cacheKey: props.model } )
       mesh.layers.disable(0)
       mesh.layers.enable(1)
       mesh.layers.disable(2)
