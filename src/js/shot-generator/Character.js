@@ -29,16 +29,16 @@ const gltfLoader = new THREE.GLTFLoader(loadingManager)
 objLoader.setLogging(false, false)
 THREE.Cache.enabled = true
 
-let MODEL_CACHE = {}
+// let MODEL_CACHE = {}
 
-const loadGltf = filepath => 
-  new Promise((resolve, reject) =>
-    gltfLoader.load(
-      filepath,
-      data => resolve(data),
-      null,
-      error => reject(error)
-    ))
+// const loadGltf = filepath => 
+//   new Promise((resolve, reject) =>
+//     gltfLoader.load(
+//       filepath,
+//       data => resolve(data),
+//       null,
+//       error => reject(error)
+//     ))
 
 const isValidSkinnedMesh = data => {
   let mesh = data.scene.children.find(child => child instanceof THREE.SkinnedMesh) ||
