@@ -6,7 +6,7 @@ const fs = require('fs-extra')
 const path = require('path')
 
 const React = require('react')
-const { useState, useEffect, useRef, useContext } = React
+const { useState, useEffect, useRef, useContext, useReducer } = React
 const { Provider, connect } = require('react-redux')
 const ReactDOM = require('react-dom')
 const Stats = require('stats.js')
@@ -22,6 +22,7 @@ const h = require('../utils/h')
 const useComponentSize = require('../hooks/use-component-size')
 const robot = require("robotjs")
 
+const prepareFilepathForModel = require('./prepare-filepath-for-model')
 
 const {
   //
@@ -168,6 +169,17 @@ const defaultPosePresets = require('../shared/reducers/shot-generator-presets/po
 const DEFAULT_POSE_PRESET_ID = '79BBBD0D-6BA2-4D84-9B71-EE661AB6E5AE'
 
 const SceneContext = React.createContext()
+
+
+
+require('../vendor/three/examples/js/loaders/LoaderSupport')
+require('../vendor/three/examples/js/loaders/GLTFLoader')
+require('../vendor/three/examples/js/loaders/OBJLoader2')
+const loadingManager = new THREE.LoadingManager()
+const objLoader = new THREE.OBJLoader2(loadingManager)
+const gltfLoader = new THREE.GLTFLoader(loadingManager)
+objLoader.setLogging(false, false)
+THREE.Cache.enabled = true
 
 const SceneManager = connect(
   state => ({
@@ -651,9 +663,124 @@ const SceneManager = connect(
       }
     }, [machineState.value, camera, cameraControlsView.current, mainViewCamera])
     // console.log('SceneManager render', sceneObjects)
-    
+
+    console.log('\n\n\n\n\nSceneManager#render')
+
+    const [modelCacheState, modelCacheDispatch] = useReducer((state, action) => {
+      switch (action.type) {
+        case 'PENDING':
+          return {
+            ...state,
+            [action.payload.key]: { status: 'NotAsked' }
+          }
+        case 'LOAD':
+          return {
+            ...state,
+            [action.payload.key]: { status: 'Loading' }
+          }
+        case 'SUCCESS':
+          return {
+            ...state,
+            [action.payload.key]: { status: 'Success', value: action.payload.value }
+          }
+        case 'ERROR':
+          return {
+            ...state,
+            [action.payload.key]: { status: 'Error', error: action.payload.error }
+          }
+        default:
+          throw new Error('not implemented')
+      }
+    }, {})
+
+    // when scene objects change ...
+    useEffect(() => {
+      // find all the unique character `model` entries
+      let uniq = arr => [...new Set(arr)]
+      let loadables = Object.values(sceneObjects)
+        .filter(o => o.type === 'character')
+      let models = uniq(loadables.map(o => o.model))
+      // queue up loading for each filepath
+      console.log({ models })
+      for (let model of models) {
+        console.log('getting filepath for', model)
+        let filepath = prepareFilepathForModel({
+          model,
+          type: 'character',
+
+          storyboarderFilePath: meta.storyboarderFilePath,
+
+          onFilePathChange: filepath => {
+            // FIXME assign new relative paths to all?
+            //
+            // updateObject(sceneObject.id, { model: filepath })
+            //
+          }
+        }).then(filepath => {
+          if (filepath && !modelCacheState[filepath]) {
+            console.log('queueing filepath for load', filepath)
+            modelCacheDispatch({ type: 'PENDING', payload: { key: filepath } })
+          }
+        })
+      }
+    }, [sceneObjects])
+
+    console.log({ modelCacheState })
+    for (let key in modelCacheState) {
+      let entry = modelCacheState[key]
+      if (entry.status === 'NotAsked') {
+        let filepath = key
+        console.log('cache: load character from', filepath)
+
+        modelCacheDispatch({ type: 'LOAD', payload: { key } })
+
+        gltfLoader.load(
+          filepath,
+          value => {
+            // FIXME check isValidSkinnedMesh first
+            console.log('cache: added', filepath)
+            modelCacheDispatch({ type: 'SUCCESS', payload: { key: filepath, value } })
+          },
+          null,
+          error => {
+            console.error('cache: error')
+            console.error(error)
+            modelCacheDispatch({ type: 'ERROR', payload: { key: filepath, error } })
+          }
+        )
+
+        //   let data
+        //   try {
+        //     if (!MODEL_CACHE[filepath]) {
+        //       MODEL_CACHE[filepath] = await loadGltf(filepath)
+        //     }
+        //     data = MODEL_CACHE[filepath]
+        //   } catch (err) {
+        //     console.error(err)
+        //     alert('Could not load model file')
+        // 
+        //     // HACK undefined means an error state
+        //     setLoaded(undefined)
+        //     return
+        //   }
+        // 
+        //   if (isValidSkinnedMesh(data)) {
+        //     console.log(type, id, 'valid model loaded. cleaning up old one.')
+        //     doCleanup()
+        // 
+        //     setModelData(data)
+        //     setLoaded(true)
+        //   } else {
+        //     alert('This model doesn’t contain a Skinned Mesh. Please load it as an Object, not a Character.')
+        // 
+        //     // HACK undefined means an error state
+        //     setLoaded(undefined)
+        //   }
+        // }
+      }
+    }
+
     const components = Object.values(sceneObjects).map(props => {
-    
       switch (props.type) {
           case 'object':
             return [
@@ -677,6 +804,11 @@ const SceneManager = connect(
             ]
 
           case 'character':
+            let modelCacheKey =
+              ModelLoader.getFilepathForCharacterModel({
+                storyboarderFilePath: meta.storyboarderFilePath,
+                model: props.model
+              })
             return [
               Character, {
                 key: props.id,
@@ -691,13 +823,15 @@ const SceneManager = connect(
                 updateCharacterSkeleton,
                 updateObject,
 
-                loaded: props.loaded ? props.loaded : false,
+                // loaded: props.loaded ? props.loaded : false,
                 devices,
 
                 storyboarderFilePath: meta.storyboarderFilePath,
 
                 // HACK force reset skeleton pose on Board UUID change
                 boardUid: _boardUid,
+
+                modelData: modelCacheState[modelCacheKey] && modelCacheState[modelCacheKey].value,
 
                 ...props
               }

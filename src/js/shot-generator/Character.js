@@ -174,20 +174,28 @@ const Character = React.memo(({
   camera,
   updateCharacterSkeleton,
   updateObject,
-  loaded,  
+  // loaded,  
   devices,
   icon,
   storyboarderFilePath,
   boardUid,
 
+  modelData,
+
   ...props
 }) => {
+  let loaded = false
+  if (!modelData && loaded) loaded = undefined
+  if (modelData && !loaded) loaded = true
+
+  console.log('Character render', { loaded, modelData })
+
   // setting loaded = true forces an update to sceneObjects,
   // which is what Editor listens for to attach the BonesHelper
   const setLoaded = loaded => updateObject(id, { loaded })
   const object = useRef(null)
 
-  const [modelData, setModelData] = useState(null)
+  // const [modelData, setModelData] = useState(null)
 
   const doCleanup = () => {
     if (object.current) {
@@ -200,62 +208,62 @@ const Character = React.memo(({
     }
   }
 
-  const load = async (model, props) => {
-    console.log('Character load', { storyboarderFilePath, model })
-
-    let filepath = await prepareFilepathForModel({
-      model,
-      type,
-
-      storyboarderFilePath,
-
-      onFilePathChange: filepath => {
-        // new relative path
-        updateObject(id, { model: filepath })
-      }
-    })
-
-    if (!filepath) {
-      return
-    }
-
-    console.log('loading character from', filepath)
-    let data
-    try {
-      if (!MODEL_CACHE[filepath]) {
-        MODEL_CACHE[filepath] = await loadGltf(filepath)
-      }
-      data = MODEL_CACHE[filepath]
-    } catch (err) {
-      console.error(err)
-      alert('Could not load model file')
-
-      // HACK undefined means an error state
-      setLoaded(undefined)
-      return
-    }
-
-    if (isValidSkinnedMesh(data)) {
-      console.log(type, id, 'valid model loaded. cleaning up old one.')
-      doCleanup()
-
-      setModelData(data)
-      setLoaded(true)
-    } else {
-      alert('This model doesn’t contain a Skinned Mesh. Please load it as an Object, not a Character.')
-
-      // HACK undefined means an error state
-      setLoaded(undefined)
-    }
-  }
+  // const load = async (model, props) => {
+  //   console.log('Character load', { storyboarderFilePath, model })
+  // 
+  //   let filepath = await prepareFilepathForModel({
+  //     model,
+  //     type,
+  // 
+  //     storyboarderFilePath,
+  // 
+  //     onFilePathChange: filepath => {
+  //       // new relative path
+  //       updateObject(id, { model: filepath })
+  //     }
+  //   })
+  // 
+  //   if (!filepath) {
+  //     return
+  //   }
+  // 
+  //   console.log('loading character from', filepath)
+  //   let data
+  //   try {
+  //     if (!MODEL_CACHE[filepath]) {
+  //       MODEL_CACHE[filepath] = await loadGltf(filepath)
+  //     }
+  //     data = MODEL_CACHE[filepath]
+  //   } catch (err) {
+  //     console.error(err)
+  //     alert('Could not load model file')
+  // 
+  //     // HACK undefined means an error state
+  //     setLoaded(undefined)
+  //     return
+  //   }
+  // 
+  //   if (isValidSkinnedMesh(data)) {
+  //     console.log(type, id, 'valid model loaded. cleaning up old one.')
+  //     doCleanup()
+  // 
+  //     setModelData(data)
+  //     setLoaded(true)
+  //   } else {
+  //     alert('This model doesn’t contain a Skinned Mesh. Please load it as an Object, not a Character.')
+  // 
+  //     // HACK undefined means an error state
+  //     setLoaded(undefined)
+  //   }
+  // }
 
   // if the model has changed
-  useEffect(() => {
-    setLoaded(false)
-    load(props.model, { id, ...props })
-
-    // return function cleanup () { }
-  }, [props.model])
+  // useEffect(() => {
+  //   setLoaded(false)
+  //   load(props.model, { id, ...props })
+  // 
+  //   // return function cleanup () { }
+  // }, [props.model])
 
   useEffect(() => {
     if (object.current) {
@@ -327,7 +335,7 @@ const Character = React.memo(({
     return function cleanup () {
       console.log('component cleanup')
       doCleanup()
-      setLoaded(false)
+      // setLoaded(false)
     }
   }, [])
 
