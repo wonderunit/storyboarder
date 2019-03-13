@@ -174,7 +174,7 @@ const Character = React.memo(({
   camera,
   updateCharacterSkeleton,
   updateObject,
-  // loaded,  
+  loaded,
   devices,
   icon,
   storyboarderFilePath,
@@ -184,12 +184,6 @@ const Character = React.memo(({
 
   ...props
 }) => {
-  let loaded = false
-  if (!modelData && loaded) loaded = undefined
-  if (modelData && !loaded) loaded = true
-
-  console.log('Character render', { loaded, modelData })
-
   // setting loaded = true forces an update to sceneObjects,
   // which is what Editor listens for to attach the BonesHelper
   const setLoaded = loaded => updateObject(id, { loaded })
@@ -335,7 +329,7 @@ const Character = React.memo(({
     return function cleanup () {
       console.log('component cleanup')
       doCleanup()
-      // setLoaded(false)
+      setLoaded(false)
     }
   }, [])
 
@@ -777,12 +771,13 @@ const Character = React.memo(({
     }
   }, [props.visible, loaded])
 
-  // useEffect(() => {
-  //   if (modelData) {
-  //     console.log(type, id, 'setLoaded:true')
-  //     setLoaded(true)
-  //   }
-  // }, [modelData])
+  useEffect(() => {
+    if (modelData) {
+      // TODO check isValidSkinnedMesh
+      console.log(type, id, 'valid model data')
+      setLoaded(true)
+    }
+  }, [modelData])
 
   return null
 })
