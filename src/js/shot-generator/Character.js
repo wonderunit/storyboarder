@@ -775,6 +775,8 @@ const Character = React.memo(({
     if (modelData) {
 
       if (isValidSkinnedMesh(modelData)) {
+        console.log(type, id, 'got valid mesh')
+
         setLoaded(true)
       } else {
         alert('This model doesn’t contain a Skinned Mesh. Please load it as an Object, not a Character.')
