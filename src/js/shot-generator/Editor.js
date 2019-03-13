@@ -823,7 +823,7 @@ const SceneManager = connect(
                 updateCharacterSkeleton,
                 updateObject,
 
-                // loaded: props.loaded ? props.loaded : false,
+                loaded: props.loaded ? props.loaded : false,
                 devices,
 
                 storyboarderFilePath: meta.storyboarderFilePath,

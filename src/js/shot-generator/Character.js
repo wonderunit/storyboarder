@@ -184,6 +184,7 @@ const Character = React.memo(({
 
   ...props
 }) => {
+  console.log('Character render', { loaded })
   // setting loaded = true forces an update to sceneObjects,
   // which is what Editor listens for to attach the BonesHelper
   const setLoaded = loaded => updateObject(id, { loaded })
@@ -267,7 +268,7 @@ const Character = React.memo(({
 
   // if the model’s data has changed
   useEffect(() => {
-    if (modelData) {
+    if (loaded) {
       console.log(type, id, 'add')
 
       const { mesh, skeleton, armatures, originalHeight, boneLengthScale, parentRotation, parentPosition } = characterFactory(modelData)
@@ -323,7 +324,7 @@ const Character = React.memo(({
     return function cleanup () {
       console.log('modelData cleanup')
     }
-  }, [modelData])
+  }, [loaded, modelData])
 
   useEffect(() => {
     return function cleanup () {
@@ -421,7 +422,7 @@ const Character = React.memo(({
 
       object.current.orthoIcon.position.copy(object.current.position)
     }
-  }, [props.model, props.x, props.y, props.z, modelData])
+  }, [props.model, props.x, props.y, props.z, loaded])
 
   useEffect(() => {
     if (object.current) {
@@ -436,7 +437,7 @@ const Character = React.memo(({
       }
 
     }
-  }, [props.model, props.rotation, modelData])
+  }, [props.model, props.rotation, loaded])
 
   const resetPose = () => {
     if (!object.current) return
@@ -456,7 +457,7 @@ const Character = React.memo(({
   }
 
   useEffect(() => {
-    if (!modelData) return
+    if (!loaded) return
     if (!props.posePresetId) return
 
     console.log(type, id, 'changed pose preset')
@@ -465,7 +466,7 @@ const Character = React.memo(({
 
   // HACK force reset skeleton pose on Board UUID change
   useEffect(() => {
-    if (!modelData) return
+    if (!loaded) return
     if (!boardUid) return
 
     console.log(type, id, 'changed boards')
@@ -473,12 +474,12 @@ const Character = React.memo(({
   }, [boardUid])
 
   useEffect(() => {
-    if (!modelData) return
+    if (!loaded) return
     if (!object.current) return
 
     console.log(type, id, 'skeleton')
     updateSkeleton()
-  }, [props.model, props.skeleton, modelData])
+  }, [props.model, props.skeleton, loaded])
 
   useEffect(() => {
     if (object.current) {
@@ -492,10 +493,10 @@ const Character = React.memo(({
       }
       //object.current.bonesHelper.updateMatrixWorld()
     }
-  }, [props.model, props.height, props.skeleton, modelData])
+  }, [props.model, props.height, props.skeleton, loaded])
 
   useEffect(() => {
-    if (!modelData) return
+    if (!loaded) return
 
     if (object.current) {
       // adjust head proportionally
@@ -510,10 +511,10 @@ const Character = React.memo(({
         headBone.scale.setScalar( props.headScale )
       }
     }
-  }, [props.model, props.headScale, props.skeleton, modelData])
+  }, [props.model, props.headScale, props.skeleton, loaded])
 
   useEffect(() => {
-    if (!modelData) return
+    if (!loaded) return
     if (!object.current) return
     let mesh = object.current.userData.mesh
 
@@ -523,11 +524,11 @@ const Character = React.memo(({
     mesh.morphTargetInfluences[ 0 ] = props.morphTargets.mesomorphic
     mesh.morphTargetInfluences[ 1 ] = props.morphTargets.ectomorphic
     mesh.morphTargetInfluences[ 2 ] = props.morphTargets.endomorphic
-  }, [props.model, props.morphTargets, modelData])
+  }, [props.model, props.morphTargets, loaded])
 
   useEffect(() => {
     console.log(type, id, 'isSelected', isSelected)
-    if (!modelData) return
+    if (!loaded) return
     if (!object.current) return
 
     // handle selection/deselection - add/remove the bone stucture
@@ -566,10 +567,10 @@ const Character = React.memo(({
            color: [ 0, 0, 0 ],
          }
     }
-  }, [props.model, isSelected, modelData])
+  }, [props.model, isSelected, loaded])
 
   useEffect(() => {
-    if (!modelData) return
+    if (!loaded) return
     if (!object.current) return
 
     if (selectedBone === undefined) return
@@ -594,7 +595,7 @@ const Character = React.memo(({
     realBone.connectedBone.material.color = new THREE.Color( 0x242246 )
     currentBoneSelected.current = realBone
 
-  }, [selectedBone, modelData])
+  }, [selectedBone, loaded])
 
   useEffect(() => {
     if (!object.current) return
@@ -773,9 +774,19 @@ const Character = React.memo(({
 
   useEffect(() => {
     if (modelData) {
-      // TODO check isValidSkinnedMesh
-      console.log(type, id, 'valid model data')
-      setLoaded(true)
+
+      if (isValidSkinnedMesh(modelData)) {
+        console.log(type, id, 'valid model loaded. cleaning up old one.')
+        doCleanup()
+
+        setLoaded(true)
+      } else {
+        alert('This model doesn’t contain a Skinned Mesh. Please load it as an Object, not a Character.')
+
+        // HACK undefined means an error state
+        setLoaded(undefined)
+      }
+
     }
   }, [modelData])
 
