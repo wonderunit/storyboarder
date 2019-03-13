@@ -322,9 +322,8 @@ const Character = React.memo(({
     }
 
     return function cleanup () {
-      console.log('modelData cleanup')
     }
-  }, [loaded, modelData])
+  }, [loaded])
 
   useEffect(() => {
     return function cleanup () {
