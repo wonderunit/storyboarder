@@ -216,22 +216,24 @@ const Character = React.memo(({
       const { mesh, skeleton, armatures, originalHeight, boneLengthScale, parentRotation, parentPosition } = characterFactory(modelData)
 
       object.current = new THREE.Object3D()
+      object.current.add(...armatures)
+      object.current.add(mesh)
+      let bonesHelper = new BonesHelper( skeleton.bones[0].parent, object.current, { boneLengthScale, cacheKey: props.model } )
+
       object.current.userData.id = id
       object.current.userData.type = type
       object.current.userData.originalHeight = originalHeight
 
       // FIXME get current .models from getState()
       object.current.userData.modelSettings = initialState.models[props.model] || {}
-      
-      object.current.add(...armatures)
-      object.current.add(mesh)
-      
+
       object.current.orthoIcon = new IconSprites( type, props.name?props.name:props.displayName, object.current )
-      scene.add(object.current.orthoIcon)
       
       object.current.userData.mesh = mesh
+
       scene.add(object.current)
-      let bonesHelper = new BonesHelper( skeleton.bones[0].parent, object.current, { boneLengthScale, cacheKey: props.model } )
+      scene.add(object.current.orthoIcon)
+
       mesh.layers.disable(0)
       mesh.layers.enable(1)
       mesh.layers.disable(2)
