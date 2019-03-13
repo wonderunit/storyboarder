@@ -776,9 +776,6 @@ const Character = React.memo(({
     if (modelData) {
 
       if (isValidSkinnedMesh(modelData)) {
-        console.log(type, id, 'valid model loaded. cleaning up old one.')
-        doCleanup()
-
         setLoaded(true)
       } else {
         alert('This model doesn’t contain a Skinned Mesh. Please load it as an Object, not a Character.')
@@ -787,6 +784,9 @@ const Character = React.memo(({
         setLoaded(undefined)
       }
 
+    } else {
+      doCleanup()
+      setLoaded(false)
     }
   }, [modelData])
 
