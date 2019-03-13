@@ -260,16 +260,13 @@ function BonesHelper( object, object3D, { boneLengthScale = 1, cacheKey } ) {
     object3D.children[0].children.find(child => child instanceof THREE.SkinnedMesh)
   
 
-  console.time('new BonesHelper')
-  console.log('new BonesHelper', 'cacheKey:', cacheKey)
+  // console.log('new BonesHelper', 'cacheKey:', cacheKey)
   let skeleton_clone
   if (!cache[cacheKey]) {
     console.log('adding to cache', cacheKey)
     cache[cacheKey] = cloneSkinned( object3D )
   }
   skeleton_clone = cache[cacheKey]
-  console.log('\n\n\n\n\n\n')
-  console.timeEnd('new BonesHelper')
 
   let zeroedSkinnedMesh = skeleton_clone.children.find(child => child instanceof THREE.SkinnedMesh) ||
     skeleton_clone.children[0].children.find(child => child instanceof THREE.SkinnedMesh)
