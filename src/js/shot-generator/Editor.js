@@ -695,18 +695,21 @@ const SceneManager = connect(
 
     // when scene objects change ...
     useEffect(() => {
+      let uniqueFilepaths = []
       // find all the unique character `model` entries
-      let uniq = arr => [...new Set(arr)]
       let loadables = Object.values(sceneObjects)
-        .filter(o => o.type === 'character')
-      let models = uniq(loadables.map(o => o.model))
+        .filter(o => o.model != null)
       // queue up loading for each filepath
-      console.log({ models })
-      for (let model of models) {
-        console.log('getting filepath for', model)
+      for (let loadable of loadables) {
+        // don't try to load the box
+        if (loadable.type === 'object' && loadable.model === 'box') {
+          continue
+        }
+
+        // FIXME will prompt for every occurrance, even for same model
         let filepath = prepareFilepathForModel({
-          model,
-          type: 'character',
+          model: loadable.model,
+          type: loadable.type,
 
           storyboarderFilePath: meta.storyboarderFilePath,
 
@@ -718,8 +721,11 @@ const SceneManager = connect(
           }
         }).then(filepath => {
           if (filepath && !modelCacheState[filepath]) {
-            console.log('queueing filepath for load', filepath)
-            modelCacheDispatch({ type: 'PENDING', payload: { key: filepath } })
+            if (!uniqueFilepaths.includes(filepath)) {
+              uniqueFilepaths.push(filepath)
+              console.log('queueing filepath for load', filepath)
+              modelCacheDispatch({ type: 'PENDING', payload: { key: filepath } })
+            }
           }
         })
       }
