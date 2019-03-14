@@ -14,22 +14,6 @@ const applyDeviceQuaternion = require('./apply-device-quaternion')
 const prepareFilepathForModel = require('./prepare-filepath-for-model')
 const IconSprites = require('./IconSprites')
 
-// TODO use functions of ModelLoader?
-require('../vendor/three/examples/js/loaders/LoaderSupport')
-require('../vendor/three/examples/js/loaders/GLTFLoader')
-require('../vendor/three/examples/js/loaders/OBJLoader2')
-const loadingManager = new THREE.LoadingManager()
-const objLoader = new THREE.OBJLoader2(loadingManager)
-const gltfLoader = new THREE.GLTFLoader(loadingManager)
-const imageLoader = new THREE.ImageLoader(loadingManager)
-
-
-objLoader.setLogging(false, false)
-
-THREE.Cache.enabled = true
-
-let MODEL_CACHE = {}
-
 const boxRadius = .005
 const boxRadiusSegments = 5
 
@@ -78,142 +62,213 @@ const meshFactory = originalMesh => {
   return mesh
 }
 
-const SceneObject = React.memo(({ scene, id, type, isSelected, loaded, updateObject, remoteInput, camera, storyboarderFilePath, ...object }) => {
+const SceneObject = React.memo(({ scene, id, type, isSelected, loaded, modelData, updateObject, remoteInput, camera, storyboarderFilePath, ...props }) => {
   const setLoaded = loaded => updateObject(id, { loaded })
 
-  const container = useRef(groupFactory())
+  const container = useRef()
 
-  const load = async (model, object, container) => {
-    setLoaded(false)
-
-    switch (model) {
-      case 'box':
-        let geometry = new RoundedBoxGeometry( 1, 1, 1, boxRadius, boxRadiusSegments )
-        let material = materialFactory()
-        let mesh = new THREE.Mesh( geometry, material )
-        mesh.renderOrder = 1.0
-        mesh.layers.disable(0)
-        mesh.layers.enable(1)
-        mesh.layers.enable(2)
-        mesh.layers.enable(3)
-        geometry.translate( 0, 1 / 2, 0 )
-        container.remove(...container.children)
-        container.add(mesh)
-        setLoaded(true)
-        break
-
-      default:
-        container.remove(...container.children)
-
-        let filepath = await prepareFilepathForModel({
-          id,
-          model,
-          type,
-
-          storyboarderFilePath,
-
-          onFilePathChange: filepath => {
-            // new relative path
-            updateObject(id, { model: filepath })
-          }
-        })
-
-        if (!filepath) {
-          return
-        }
-
-        switch (path.extname(filepath)) {
-          case '.obj':
-            try {
-              if (!MODEL_CACHE[filepath]) {
-                MODEL_CACHE[filepath] = await new Promise((resolve, reject) => {
-                  objLoader.load(
-                    filepath,
-                    event => resolve(event.default.loaderRootNode),
-                    null,
-                    error => reject(error)
-                  )
-                })
-              }
-
-              let object = MODEL_CACHE[filepath]
-
-              object.traverse( function ( child ) {
-                if ( child instanceof THREE.Mesh ) {
-                  container.add(meshFactory(child))
-                }
-              })
-
-              console.log('loaded', filepath)
-              setLoaded(true)
-
-            } catch (err) {
-              console.error(err)
-              // HACK undefined == error
-              setLoaded(undefined)
-            }
-            break
-
-          case '.gltf':
-          case '.glb':
-            try {
-              if (!MODEL_CACHE[filepath]) {
-                MODEL_CACHE[filepath] = await new Promise((resolve, reject) => {
-                  gltfLoader.load(
-                    filepath,
-                    data => resolve(data),
-                    null,
-                    error => reject(error)
-                  )
-                })
-              }
-
-              let data = MODEL_CACHE[filepath]
-
-              // add every single mesh we find
-              data.scene.traverse(child => {
-                if ( child instanceof THREE.Mesh ) {
-                  container.add(meshFactory(child))
-                }
-              })
-
-              console.log('loaded', filepath)
-              setLoaded(true)
-
-            } catch (err) {
-              console.error(err)
-              // HACK undefined == error
-              setLoaded(undefined)
-            }
-            break
-
-          default:
-            alert('Could not load file.')
-            setLoaded(undefined)
-        }
-        break
-    }
-  }
+  // const load = async (model, object, container) => {
+  //   setLoaded(false)
+  // 
+  //   switch (model) {
+  //     case 'box':
+  //       let geometry = new RoundedBoxGeometry( 1, 1, 1, boxRadius, boxRadiusSegments )
+  //       let material = materialFactory()
+  //       let mesh = new THREE.Mesh( geometry, material )
+  //       mesh.renderOrder = 1.0
+  //       mesh.layers.disable(0)
+  //       mesh.layers.enable(1)
+  //       mesh.layers.enable(2)
+  //       mesh.layers.enable(3)
+  //       geometry.translate( 0, 1 / 2, 0 )
+  //       container.remove(...container.children)
+  //       container.add(mesh)
+  //       setLoaded(true)
+  //       break
+  // 
+  //     default:
+  //       container.remove(...container.children)
+  // 
+  //       let filepath = await prepareFilepathForModel({
+  //         id,
+  //         model,
+  //         type,
+  // 
+  //         storyboarderFilePath,
+  // 
+  //         onFilePathChange: filepath => {
+  //           // new relative path
+  //           updateObject(id, { model: filepath })
+  //         }
+  //       })
+  // 
+  //       if (!filepath) {
+  //         return
+  //       }
+  // 
+  //       switch (path.extname(filepath)) {
+  //         case '.obj':
+  //           try {
+  //             if (!MODEL_CACHE[filepath]) {
+  //               MODEL_CACHE[filepath] = await new Promise((resolve, reject) => {
+  //                 objLoader.load(
+  //                   filepath,
+  //                   event => resolve(event.default.loaderRootNode),
+  //                   null,
+  //                   error => reject(error)
+  //                 )
+  //               })
+  //             }
+  // 
+  //             let object = MODEL_CACHE[filepath]
+  // 
+  //             object.traverse( function ( child ) {
+  //               if ( child instanceof THREE.Mesh ) {
+  //                 container.add(meshFactory(child))
+  //               }
+  //             })
+  // 
+  //             console.log('loaded', filepath)
+  //             setLoaded(true)
+  // 
+  //           } catch (err) {
+  //             console.error(err)
+  //             // HACK undefined == error
+  //             setLoaded(undefined)
+  //           }
+  //           break
+  // 
+  //         case '.gltf':
+  //         case '.glb':
+  //           try {
+  //             if (!MODEL_CACHE[filepath]) {
+  //               MODEL_CACHE[filepath] = await new Promise((resolve, reject) => {
+  //                 gltfLoader.load(
+  //                   filepath,
+  //                   data => resolve(data),
+  //                   null,
+  //                   error => reject(error)
+  //                 )
+  //               })
+  //             }
+  // 
+  //             let data = MODEL_CACHE[filepath]
+  // 
+  //             // add every single mesh we find
+  //             data.scene.traverse(child => {
+  //               if ( child instanceof THREE.Mesh ) {
+  //                 container.add(meshFactory(child))
+  //               }
+  //             })
+  // 
+  //             console.log('loaded', filepath)
+  //             setLoaded(true)
+  // 
+  //           } catch (err) {
+  //             console.error(err)
+  //             // HACK undefined == error
+  //             setLoaded(undefined)
+  //           }
+  //           break
+  // 
+  //         default:
+  //           alert('Could not load file.')
+  //           setLoaded(undefined)
+  //       }
+  //       break
+  //   }
+  // }
 
   useEffect(() => {
-    console.log(type, id, 'model changed', container.current, 'to', object.model)
-    load(object.model, object, container.current)
+    console.log(type, id, 'added')
 
+    container.current = groupFactory()
     container.current.userData.id = id
     container.current.userData.type = type
 
-    console.log(type, id, 'added to scene')
-    scene.add(container.current)
-    
     container.current.orthoIcon = new IconSprites( type, "", container.current )
     //scene.add(container.current.orthoIcon)
+
+    console.log(type, id, 'added to scene')
+    scene.add(container.current)
 
     return function cleanup () {
       console.log(type, id, 'removed from scene')
       scene.remove(container.current.orthoIcon)
       scene.remove(container.current)
     }
-  }, [object.model])
+  }, [])
+
+  useEffect(() => {
+    if (modelData) {
+      console.log(type, id, 'got modelData')
+
+      switch (props.model) {
+        case 'box':
+          let geometry = new RoundedBoxGeometry( 1, 1, 1, boxRadius, boxRadiusSegments )
+          let material = materialFactory()
+          let mesh = new THREE.Mesh( geometry, material )
+          mesh.renderOrder = 1.0
+          mesh.layers.disable(0)
+          mesh.layers.enable(1)
+          mesh.layers.enable(2)
+          mesh.layers.enable(3)
+          geometry.translate( 0, 1 / 2, 0 )
+          container.current.remove(...container.current.children)
+          container.current.add(mesh)
+          setLoaded(true)
+          break
+    
+        default:
+          container.current.remove(...container.current.children)
+    
+          console.log('scene object', path.extname(props.model))
+
+          switch (path.extname(props.model)) {
+            case '.obj':
+              try {
+                modelData.traverse( function ( child ) {
+                  if ( child instanceof THREE.Mesh ) {
+                    container.current.add(meshFactory(child.clone()))
+                  }
+                })
+    
+                console.log('loaded', props.model)
+                setLoaded(true)
+    
+              } catch (err) {
+                console.error(err)
+                // HACK undefined == error
+                setLoaded(undefined)
+              }
+              break
+    
+            case '.gltf':
+            case '.glb':
+            // for built-ins, which have no extension
+            default:
+              try {
+                // add every single mesh we find
+                modelData.scene.traverse(child => {
+                  if ( child instanceof THREE.Mesh ) {
+                    container.current.add(meshFactory(child.clone()))
+                  }
+                })
+
+                console.log('loaded', props.model)
+                setLoaded(true)
+    
+              } catch (err) {
+                console.error(err)
+                // HACK undefined == error
+                setLoaded(undefined)
+              }
+              break
+          }
+          break
+      }
+    }
+  }, [modelData])
 
   useEffect(() => {
     container.current.position.x = object.x
