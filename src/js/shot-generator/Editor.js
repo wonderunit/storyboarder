@@ -736,9 +736,17 @@ const SceneManager = connect(
       let entry = modelCacheState[key]
       if (entry.status === 'NotAsked') {
         let filepath = key
-        console.log('cache: load character from', filepath)
+        console.log('cache: load model file from', filepath)
 
         modelCacheDispatch({ type: 'LOAD', payload: { key } })
+
+        // TODO handle obj files
+        // objLoader.load(
+        //   filepath,
+        //   event => resolve(event.default.loaderRootNode),
+        //   null,
+        //   error => reject(error)
+        // )
 
         gltfLoader.load(
           filepath,
@@ -787,8 +795,14 @@ const SceneManager = connect(
     }
 
     const components = Object.values(sceneObjects).map(props => {
+      let modelCacheKey
+
       switch (props.type) {
           case 'object':
+            modelCacheKey = ModelLoader.getFilepathForSceneObjectModel({
+              storyboarderFilePath: meta.storyboarderFilePath,
+              model: props.model
+            })
             return [
               SceneObject, {
                 key: props.id,
@@ -801,16 +815,25 @@ const SceneManager = connect(
 
                 updateObject,
 
-                loaded: props.loaded ? props.loaded : false,
-
                 storyboarderFilePath: meta.storyboarderFilePath,
+
+                ...(props.model === 'box'
+                  ? {
+                    loaded: true,
+                    modelData: {}
+                  }
+                  : {
+                    loaded: props.loaded ? props.loaded : false,
+                    modelData: modelCacheState[modelCacheKey] && modelCacheState[modelCacheKey].value,
+                  }
+                ),
 
                 ...props
               }
             ]
 
           case 'character':
-            let modelCacheKey =
+            modelCacheKey =
               ModelLoader.getFilepathForCharacterModel({
                 storyboarderFilePath: meta.storyboarderFilePath,
                 model: props.model
@@ -829,14 +852,13 @@ const SceneManager = connect(
                 updateCharacterSkeleton,
                 updateObject,
 
-                loaded: props.loaded ? props.loaded : false,
                 devices,
-
-                storyboarderFilePath: meta.storyboarderFilePath,
 
                 // HACK force reset skeleton pose on Board UUID change
                 boardUid: _boardUid,
 
+                storyboarderFilePath: meta.storyboarderFilePath,
+                loaded: props.loaded ? props.loaded : false,
                 modelData: modelCacheState[modelCacheKey] && modelCacheState[modelCacheKey].value,
 
                 ...props
