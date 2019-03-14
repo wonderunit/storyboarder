@@ -322,6 +322,8 @@ const Character = React.memo(({
     }
 
     return function cleanup () {
+      doCleanup()
+      // setLoaded(false)
     }
   }, [loaded])
 
