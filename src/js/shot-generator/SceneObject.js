@@ -200,7 +200,7 @@ const SceneObject = React.memo(({ scene, id, type, isSelected, loaded, modelData
   }, [])
 
   useEffect(() => {
-    if (modelData) {
+    if (!loaded && modelData) {
       console.log(type, id, 'got modelData')
 
       switch (props.model) {
@@ -268,7 +268,7 @@ const SceneObject = React.memo(({ scene, id, type, isSelected, loaded, modelData
           break
       }
     }
-  }, [modelData])
+  }, [modelData, loaded])
 
   useEffect(() => {
     container.current.position.x = props.x

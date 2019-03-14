@@ -772,8 +772,7 @@ const Character = React.memo(({
   }, [props.visible, loaded])
 
   useEffect(() => {
-    if (modelData) {
-
+    if (!loaded && modelData) {
       if (isValidSkinnedMesh(modelData)) {
         console.log(type, id, 'got valid mesh')
 
@@ -784,12 +783,8 @@ const Character = React.memo(({
         // HACK undefined means an error state
         setLoaded(undefined)
       }
-
-    } else {
-      doCleanup()
-      setLoaded(false)
     }
-  }, [modelData])
+  }, [modelData, loaded])
 
   return null
 })
