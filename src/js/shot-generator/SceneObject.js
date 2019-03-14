@@ -271,44 +271,44 @@ const SceneObject = React.memo(({ scene, id, type, isSelected, loaded, modelData
   }, [modelData])
 
   useEffect(() => {
-    container.current.position.x = object.x
-    container.current.position.z = object.y
-    container.current.position.y = object.z
+    container.current.position.x = props.x
+    container.current.position.z = props.y
+    container.current.position.y = props.z
     container.current.orthoIcon.position.copy(container.current.position)
   }, [
-    object.x,
-    object.y,
-    object.z
+    props.x,
+    props.y,
+    props.z
   ])
 
   useEffect(() => {
-    container.current.rotation.x = object.rotation.x
-    container.current.rotation.y = object.rotation.y
-    container.current.rotation.z = object.rotation.z
-    container.current.orthoIcon.icon.rotation = object.rotation.y
+    container.current.rotation.x = props.rotation.x
+    container.current.rotation.y = props.rotation.y
+    container.current.rotation.z = props.rotation.z
+    container.current.orthoIcon.icon.rotation = props.rotation.y
   }, [
-    object.rotation.x,
-    object.rotation.y,
-    object.rotation.z
+    props.rotation.x,
+    props.rotation.y,
+    props.rotation.z
   ])
 
   useEffect(() => {
     container.current.scale.set(
-      object.width,
-      object.height,
-      object.depth
+      props.width,
+      props.height,
+      props.depth
     )
-    container.current.orthoIcon.scale.set(object.width+0.2, object.depth+0.2, 1)
+    container.current.orthoIcon.scale.set(props.width+0.2, props.depth+0.2, 1)
   }, [
-    object.width,
-    object.height,
-    object.depth
+    props.width,
+    props.height,
+    props.depth
   ])
 
   useEffect(() => {
-    container.current.visible = object.visible
+    container.current.visible = props.visible
   }, [
-    object.visible
+    props.visible
   ])
 
   useEffect(() => {
