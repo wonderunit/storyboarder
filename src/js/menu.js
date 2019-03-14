@@ -898,7 +898,16 @@ const shotGeneratorMenu = [
   {
     role: 'help',
     submenu: [
-      ...SubMenuFragments.help
+      ...SubMenuFragments.help,
+      {
+        type: 'separator'
+      },
+      {
+        label: 'Shot Generator Tutorial…',
+        click () {
+          ipcRenderer.send('shot-generator:menu:help:tutorial')
+        }
+      }
     ]
   }
 ]

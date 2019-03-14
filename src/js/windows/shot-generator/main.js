@@ -8,6 +8,8 @@ process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = true
 
 let win
 
+const tutorialMain = require('../shot-generator-tutorial/main')
+
 let memento = {
   x: undefined,
   y: undefined,
@@ -104,6 +106,10 @@ ipcMain.on('shot-generator:menu:view:fps-meter', (event, value) => {
 
 ipcMain.on('shot-generator:object:duplicate', () => {
   win.webContents.send('shot-generator:object:duplicate')
+})
+
+ipcMain.on('shot-generator:menu:help:tutorial', () => {
+  tutorialMain.show(() => {})
 })
 
 module.exports = {
