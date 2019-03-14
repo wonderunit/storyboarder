@@ -210,7 +210,9 @@ AppMenu.Edit = () => ({
     {
       label: 'Cut',
       accelerator: keystrokeFor('menu:edit:cut'),
-      role: 'cut'
+      click (item, focusedWindow, event) {
+        ipcRenderer.send('cut')
+      }
     },
     {
       label: 'Copy',

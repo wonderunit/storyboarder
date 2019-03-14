@@ -1132,6 +1132,10 @@ ipcMain.on('nextScene', (e, arg)=> {
   mainWindow.webContents.send('nextScene')
 })
 
+ipcMain.on('cut', () =>
+  mainWindow.webContents.send('cut')
+)
+
 ipcMain.on('copy', (e, arg)=> {
   mainWindow.webContents.send('copy')
 })

@@ -4025,7 +4025,9 @@ let renderThumbnailDrawer = () => {
     contextMenu.on('copy', () => {
       copyBoards()
         .then(() => notifications.notify({
-          message: 'Copied board(s) to clipboard.', timing: 5
+          message: `Copied ${
+            store.getState().toolbar.mode === 'marquee' ? 'selection' : 'boards(s)'
+          } to clipboard.`, timing: 5
         }))
         .catch(err => {})
     })
@@ -4647,17 +4649,27 @@ window.onkeydown = (e) => {
       e.preventDefault()
       copyBoards()
         .then(() => notifications.notify({
-          message: 'Copied board(s) to clipboard.', timing: 5
+          message: `Copied ${
+            store.getState().toolbar.mode === 'marquee' ? 'selection' : 'boards(s)'
+          } to clipboard.`, timing: 5
         }))
         .catch(err => {})
 
-    } else if (isCommandPressed('menu:edit:cut')) {
-      e.preventDefault()
-      copyBoards()
-        .then(() => {
-          deleteBoards()
-          notifications.notify({ message: 'Cut board(s) to clipboard.', timing: 5 })
-        }).catch(err => {})
+    // } else if (isCommandPressed('menu:edit:cut')) {
+    //   e.preventDefault()
+    // 
+    //   cutBoards()
+    //     .then(() => {
+    //       notifications.notify({
+    //         message: `Cut ${
+    //           store.getState().toolbar.mode === 'marquee' ? 'selection' : 'boards(s)'
+    //         } to clipboard.`,
+    //         timing: 5
+    //       })
+    //     })
+    //     .catch(err => {
+    //       console.warn(err)
+    //     })
 
     } else if (isCommandPressed('menu:edit:paste')) {
       e.preventDefault()
@@ -5140,6 +5152,39 @@ ipcRenderer.on('redo', (e, arg) => {
   }
 })
 
+ipcRenderer.on('cut', event => {
+  if (remote.getCurrentWindow().webContents.isDevToolsFocused()) {
+    remote.getCurrentWindow().webContents.devToolsWebContents.executeJavaScript(
+      `document.execCommand('cut')`
+    )
+    return
+  }
+
+  if (!textInputMode && remote.getCurrentWindow().isFocused()) {
+    cutBoards()
+      .then(() => {
+        notifications.notify({
+          message: `Cut ${
+            store.getState().toolbar.mode === 'marquee' ? 'selection' : 'boards(s)'
+          } to clipboard.`,
+          timing: 5
+        })
+      })
+      .catch(err => {
+        console.warn(err)
+      })
+  } else {
+    // find the focused window (which may be main-window)
+    for (let w of remote.BrowserWindow.getAllWindows()) {
+      if (w.isFocused()) {
+        // console.log('cut to clipboard from window', w.id)
+        w.webContents.cut()
+        return
+      }
+    }
+  }
+})
+
 ipcRenderer.on('copy', event => {
   if (remote.getCurrentWindow().webContents.isDevToolsFocused()) {
     remote.getCurrentWindow().webContents.devToolsWebContents.executeJavaScript(
@@ -5152,7 +5197,9 @@ ipcRenderer.on('copy', event => {
     // console.log('copy boards')
     copyBoards()
       .then(() => notifications.notify({
-        message: 'Copied board(s) to clipboard.', timing: 5
+        message: `Copied ${
+          store.getState().toolbar.mode === 'marquee' ? 'selection' : 'boards(s)'
+        } to clipboard.`, timing: 5
       }))
       .catch(err => {
         console.error(err)
@@ -5283,10 +5330,24 @@ const importImage = async imageDataURL => {
  * of all visible layers as an 'image' to the clipboard.
  *
  */
+
+const cutBoards = async () => {
+  if (store.getState().toolbar.mode === 'marquee') {
+    storyboarderSketchPane.cutToClipboard()
+  } else {
+    await copyBoards()
+    await deleteBoards()
+  }
+}
  
 // TODO cancel token
 let copyBoards = async () => {
   if (textInputMode) return // ignore copy command in text input mode
+
+  if (store.getState().toolbar.mode === 'marquee') {
+    storyboarderSketchPane.copyToClipboard()
+    return
+  }
 
   try {
     // list the boards, using a copy of the selection indices set to determine order
@@ -5518,8 +5579,12 @@ let pasteBoards = async () => {
   if (text !== "") {
     try {
       pasted = JSON.parse(clipboard.readText())
-      if (!pasted.boards.length || pasted.boards.length < 1) throw new Error('no boards')
-      if (!pasted.layerDataByBoardIndex.length || pasted.layerDataByBoardIndex.length < 1) throw new Error('no layer data')
+      if (pasted.marquee) {
+        // it's a marquee paste
+      } else {
+        if (!pasted.boards.length || pasted.boards.length < 1) throw new Error('no boards')
+        if (!pasted.layerDataByBoardIndex.length || pasted.layerDataByBoardIndex.length < 1) throw new Error('no layer data')
+      }
     } catch (err) {
       console.log('could not parse clipboard as text')
       console.log(err)
@@ -5631,6 +5696,19 @@ let pasteBoards = async () => {
       notifications.notify({ message: `Whoops. Could not paste boards. ${err.message}`, timing: 8 })
       throw err
     }
+  } else if (pasted.marquee) {
+    if (store.getState().toolbar.mode !== 'marquee') {
+        store.dispatch({
+          type: 'TOOLBAR_MODE_SET',
+          payload: 'marquee',
+          meta: { scope: 'local' }
+        })
+        if (store.getState().toolbar.mode === 'marquee') {
+          sfx.playEffect('metal')
+        }
+    }
+    storyboarderSketchPane.pasteFromClipboard(pasted)
+
   } else {
     notifications.notify({ message: "There's nothing in the clipboard that I can paste. Are you sure you copied it right?", timing: 8 })
     sfx.error()
