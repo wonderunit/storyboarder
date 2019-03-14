@@ -30,6 +30,8 @@ const MobileServer = require('./express-app/app')
 const preferencesUI = require('./windows/preferences')()
 const registration = require('./windows/registration/main')
 const shotGeneratorWindow = require('./windows/shot-generator/main')
+const tutorialMain = require('./windows/shot-generator-tutorial/main')
+
 const JWT = require('jsonwebtoken')
 
 const pkg = require('../../package.json')
@@ -1441,4 +1443,8 @@ ipcMain.on('shot-generator:update', (event, { board }) => {
   if (win) {
     win.webContents.send('update', { board })
   }
+})
+
+ipcMain.on('shot-generator:menu:help:tutorial', () => {
+  tutorialMain.show(() => {})
 })
