@@ -184,7 +184,6 @@ const Character = React.memo(({
 
   ...props
 }) => {
-  console.log('Character render', { loaded })
   // setting loaded = true forces an update to sceneObjects,
   // which is what Editor listens for to attach the BonesHelper
   const setLoaded = loaded => updateObject(id, { loaded })
