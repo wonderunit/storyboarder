@@ -719,7 +719,7 @@ const SceneManager = connect(
           if (filepath && !modelCacheState[filepath]) {
             if (!uniqueFilepaths.includes(filepath)) {
               uniqueFilepaths.push(filepath)
-              console.log('queueing', loadable.model, 'from', filepath)
+              console.log('cache: queue', loadable.model, 'from', filepath)
               modelCacheDispatch({ type: 'PENDING', payload: { key: filepath } })
             }
           }
@@ -748,7 +748,7 @@ const SceneManager = connect(
           filepath,
           value => {
             // FIXME check isValidSkinnedMesh first
-            console.log('cache: added', filepath)
+            console.log('cache: success', filepath)
             modelCacheDispatch({ type: 'SUCCESS', payload: { key: filepath, value } })
           },
           null,
