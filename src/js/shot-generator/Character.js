@@ -41,9 +41,14 @@ THREE.Cache.enabled = true
 //     ))
 
 const isValidSkinnedMesh = data => {
-  let mesh = data.scene.children.find(child => child instanceof THREE.SkinnedMesh) ||
-            data.scene.children[0].children.find(child => child instanceof THREE.SkinnedMesh)
-  return (mesh != null)
+  try {
+    let mesh = data.scene.children.find(child => child instanceof THREE.SkinnedMesh) ||
+              data.scene.children[0].children.find(child => child instanceof THREE.SkinnedMesh)
+    return (mesh != null)
+  } catch (err) {
+    console.error(err)
+    return false
+  }
 }
 
 const cloneGltf = (gltf) => {
