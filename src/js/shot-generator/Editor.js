@@ -818,7 +818,7 @@ const SceneManager = connect(
                 model: props.model
               })
             } catch (err) {
-              console.log('migrating from absolute path')
+              // console.log('migrating from absolute path')
             }
             return [
               SceneObject, {
@@ -857,7 +857,7 @@ const SceneManager = connect(
                   model: props.model
                 })
             } catch (err) {
-              console.log('migrating from absolute path')
+              // console.log('migrating from absolute path')
             }
             return [
               Character, {
