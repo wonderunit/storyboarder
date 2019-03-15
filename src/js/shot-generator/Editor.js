@@ -714,16 +714,13 @@ const SceneManager = connect(
           storyboarderFilePath: meta.storyboarderFilePath,
 
           onFilePathChange: filepath => {
-            // FIXME assign new relative paths to all?
-            //
-            // updateObject(sceneObject.id, { model: filepath })
-            //
+            updateObject(loadable.id, { model: filepath })
           }
         }).then(filepath => {
           if (filepath && !modelCacheState[filepath]) {
             if (!uniqueFilepaths.includes(filepath)) {
               uniqueFilepaths.push(filepath)
-              console.log('queueing filepath for load', filepath)
+              console.log('queueing', loadable.model, 'from', filepath)
               modelCacheDispatch({ type: 'PENDING', payload: { key: filepath } })
             }
           }
@@ -799,10 +796,14 @@ const SceneManager = connect(
 
       switch (props.type) {
           case 'object':
-            modelCacheKey = ModelLoader.getFilepathForSceneObjectModel({
-              storyboarderFilePath: meta.storyboarderFilePath,
-              model: props.model
-            })
+            try {
+              modelCacheKey = ModelLoader.getFilepathForSceneObjectModel({
+                storyboarderFilePath: meta.storyboarderFilePath,
+                model: props.model
+              })
+            } catch (err) {
+              console.log('migrating from absolute path')
+            }
             return [
               SceneObject, {
                 key: props.id,
@@ -833,11 +834,15 @@ const SceneManager = connect(
             ]
 
           case 'character':
-            modelCacheKey =
-              ModelLoader.getFilepathForCharacterModel({
-                storyboarderFilePath: meta.storyboarderFilePath,
-                model: props.model
-              })
+            try {
+              modelCacheKey =
+                ModelLoader.getFilepathForCharacterModel({
+                  storyboarderFilePath: meta.storyboarderFilePath,
+                  model: props.model
+                })
+            } catch (err) {
+              console.log('migrating from absolute path')
+            }
             return [
               Character, {
                 key: props.id,
