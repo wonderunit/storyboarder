@@ -662,9 +662,6 @@ const SceneManager = connect(
         }
       }
     }, [machineState.value, camera, cameraControlsView.current, mainViewCamera])
-    // console.log('SceneManager render', sceneObjects)
-
-    console.log('\n\n\n\n\nSceneManager#render')
 
     const [modelCacheState, modelCacheDispatch] = useReducer((state, action) => {
       switch (action.type) {
@@ -695,6 +692,7 @@ const SceneManager = connect(
 
     // when scene objects change ...
     useEffect(() => {
+      console.log('scene objects changed')
       let uniqueFilepaths = []
       // find all the unique character `model` entries
       let loadables = Object.values(sceneObjects)
@@ -706,6 +704,7 @@ const SceneManager = connect(
           continue
         }
 
+        console.log('found new loadable', loadable)
         // FIXME will prompt for every occurrance, even for same model
         let filepath = prepareFilepathForModel({
           model: loadable.model,
