@@ -736,29 +736,45 @@ const SceneManager = connect(
 
         modelCacheDispatch({ type: 'LOAD', payload: { key } })
 
-        // TODO handle obj files
-        // objLoader.load(
-        //   filepath,
-        //   event => resolve(event.default.loaderRootNode),
-        //   null,
-        //   error => reject(error)
-        // )
+        switch (path.extname(filepath)) {
+          case '.obj':
+            objLoader.load(
+              filepath,
+              event => {
+                console.log('got obj')
+                console.log({ event })
+                let value = { scene: event.detail.loaderRootNode }
+                console.log('cache: success', filepath)
+                modelCacheDispatch({ type: 'SUCCESS', payload: { key: filepath, value } })
+              },
+              null,
+              error => {
+                console.error('cache: error')
+                console.error(error)
+                alert(error)
+                modelCacheDispatch({ type: 'ERROR', payload: { key: filepath, error } })
+              }
+            )
+            break
 
-        gltfLoader.load(
-          filepath,
-          value => {
-            // FIXME check isValidSkinnedMesh first
-            console.log('cache: success', filepath)
-            modelCacheDispatch({ type: 'SUCCESS', payload: { key: filepath, value } })
-          },
-          null,
-          error => {
-            console.error('cache: error')
-            console.error(error)
-            alert(error)
-            modelCacheDispatch({ type: 'ERROR', payload: { key: filepath, error } })
-          }
-        )
+          case '.gltf':
+          case '.glb':
+            gltfLoader.load(
+              filepath,
+              value => {
+                console.log('cache: success', filepath)
+                modelCacheDispatch({ type: 'SUCCESS', payload: { key: filepath, value } })
+              },
+              null,
+              error => {
+                console.error('cache: error')
+                console.error(error)
+                alert(error)
+                modelCacheDispatch({ type: 'ERROR', payload: { key: filepath, error } })
+              }
+            )
+            break
+        }
 
         //   let data
         //   try {
