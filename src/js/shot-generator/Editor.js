@@ -731,7 +731,7 @@ const SceneManager = connect(
       }
     }, [sceneObjects])
 
-    console.log({ modelCacheState })
+
     for (let key in modelCacheState) {
       let entry = modelCacheState[key]
       if (entry.status === 'NotAsked') {
