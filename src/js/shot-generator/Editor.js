@@ -709,6 +709,19 @@ const SceneManager = connect(
 
         console.log('found loadable', loadable)
         // FIXME will prompt for every occurrance, even for same model
+
+        // what is the expected filepath for the model?
+        let expectedFilepath = {
+          'character': ModelLoader.getFilepathForCharacterModel,
+          'object': ModelLoader.getFilepathForSceneObjectModel
+          // TODO world
+        }[loadable.type]({
+          storyboarderFilePath: meta.storyboarderFilePath,
+          model: loadable.model
+        })
+
+        if (modelCacheState[expectedFilepath]) continue
+
         let filepath = prepareFilepathForModel({
           model: loadable.model,
           type: loadable.type,
@@ -719,9 +732,14 @@ const SceneManager = connect(
             updateObject(loadable.id, { model: filepath })
           }
         }).then(filepath => {
+          if (!filepath && !modelCacheState[filepath]) {
+            console.warn('MARKING ERROR FOR', loadable.model, 'expected at', expectedFilepath)
+            modelCacheDispatch({ type: 'ERROR', payload: { key: expectedFilepath, error: true } })
+          }
+
           if (filepath && !modelCacheState[filepath]) {
-              console.log('cache: queue', loadable.model, 'from', filepath)
-              modelCacheDispatch({ type: 'PENDING', payload: { key: filepath } })
+            console.log('cache: queue', loadable.model, 'from', filepath)
+            modelCacheDispatch({ type: 'PENDING', payload: { key: filepath } })
           }
         })
       }
