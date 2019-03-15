@@ -179,12 +179,12 @@ const Character = React.memo(({
   camera,
   updateCharacterSkeleton,
   updateObject,
-  loaded,
   devices,
   icon,
   storyboarderFilePath,
   boardUid,
 
+  loaded,
   modelData,
 
   ...props
