@@ -755,6 +755,7 @@ const SceneManager = connect(
           error => {
             console.error('cache: error')
             console.error(error)
+            alert(error)
             modelCacheDispatch({ type: 'ERROR', payload: { key: filepath, error } })
           }
         )
