@@ -697,6 +697,9 @@ const SceneManager = connect(
       // find all the unique character `model` entries
       let loadables = Object.values(sceneObjects)
         .filter(o => o.model != null)
+
+      loadables = loadables.filter(o => o.loaded !== true)
+
       // queue up loading for each filepath
       for (let loadable of loadables) {
         // don't try to load the box
@@ -704,7 +707,7 @@ const SceneManager = connect(
           continue
         }
 
-        console.log('found new loadable', loadable)
+        console.log('found loadable', loadable)
         // FIXME will prompt for every occurrance, even for same model
         let filepath = prepareFilepathForModel({
           model: loadable.model,
