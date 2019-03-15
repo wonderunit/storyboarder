@@ -199,6 +199,13 @@ const SceneObject = React.memo(({ scene, id, type, isSelected, loaded, modelData
     }
   }, [])
 
+  // if the model has changed
+  useEffect(() => {
+    setLoaded(false)
+
+    // return function cleanup () { }
+  }, [props.model])
+
   useEffect(() => {
     if (!loaded && modelData) {
       console.log(type, id, 'got modelData')
@@ -222,49 +229,65 @@ const SceneObject = React.memo(({ scene, id, type, isSelected, loaded, modelData
         default:
           container.current.remove(...container.current.children)
     
-          console.log('scene object', path.extname(props.model))
+          console.log('scene object', path.extname(props.model), modelData)
 
-          switch (path.extname(props.model)) {
-            case '.obj':
-              try {
-                modelData.traverse( function ( child ) {
-                  if ( child instanceof THREE.Mesh ) {
-                    container.current.add(meshFactory(child.clone()))
-                  }
-                })
-    
-                console.log('loaded', props.model)
-                setLoaded(true)
-    
-              } catch (err) {
-                console.error(err)
-                // HACK undefined == error
-                setLoaded(undefined)
+          try {
+            // add a clone of every single mesh we find
+            modelData.scene.traverse( function ( child ) {
+              if ( child instanceof THREE.Mesh ) {
+                container.current.add(meshFactory(child.clone()))
               }
-              break
-    
-            case '.gltf':
-            case '.glb':
-            // for built-ins, which have no extension
-            default:
-              try {
-                // add every single mesh we find
-                modelData.scene.traverse(child => {
-                  if ( child instanceof THREE.Mesh ) {
-                    container.current.add(meshFactory(child.clone()))
-                  }
-                })
+            })
+            console.log('loaded', props.model)
+            setLoaded(true)
+          } catch (err) {
+            console.error(err)
 
-                console.log('loaded', props.model)
-                setLoaded(true)
-    
-              } catch (err) {
-                console.error(err)
-                // HACK undefined == error
-                setLoaded(undefined)
-              }
-              break
+            // HACK `undefined` means error
+            setLoaded(undefined)
           }
+
+          // switch (path.extname(props.model)) {
+          //   case '.obj':
+          //     try {
+          //       modelData.traverse( function ( child ) {
+          //         if ( child instanceof THREE.Mesh ) {
+          //           container.current.add(meshFactory(child.clone()))
+          //         }
+          //       })
+          // 
+          //       console.log('loaded', props.model)
+          //       setLoaded(true)
+          // 
+          //     } catch (err) {
+          //       console.error(err)
+          //       // HACK undefined == error
+          //       setLoaded(undefined)
+          //     }
+          //     break
+          // 
+          //   case '.gltf':
+          //   case '.glb':
+          //   // for built-ins, which have no extension
+          //   default:
+          //     try {
+          //       // add every single mesh we find
+          //       modelData.scene.traverse(child => {
+          //         if ( child instanceof THREE.Mesh ) {
+          //           container.current.add(meshFactory(child.clone()))
+          //         }
+          //       })
+          // 
+          //       console.log('loaded', props.model)
+          //       setLoaded(true)
+          // 
+          //     } catch (err) {
+          //       console.error(err)
+          //       // HACK undefined == error
+          //       setLoaded(undefined)
+          //     }
+          //     break
+          // }
           break
       }
     }
