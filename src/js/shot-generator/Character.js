@@ -253,12 +253,11 @@ const Character = React.memo(({
   // }
 
   // if the model has changed
-  // useEffect(() => {
-  //   setLoaded(false)
-  //   load(props.model, { id, ...props })
-  // 
-  //   // return function cleanup () { }
-  // }, [props.model])
+  useEffect(() => {
+    setLoaded(false)
+
+    // return function cleanup () { }
+  }, [props.model])
 
   useEffect(() => {
     if (object.current) {
