@@ -693,7 +693,7 @@ const SceneManager = connect(
     // when scene objects change ...
     useEffect(() => {
       console.log('scene objects changed')
-      let uniqueFilepaths = []
+
       // find all the unique character `model` entries
       let loadables = Object.values(sceneObjects)
         .filter(o => o.model != null)
@@ -720,11 +720,8 @@ const SceneManager = connect(
           }
         }).then(filepath => {
           if (filepath && !modelCacheState[filepath]) {
-            if (!uniqueFilepaths.includes(filepath)) {
-              uniqueFilepaths.push(filepath)
               console.log('cache: queue', loadable.model, 'from', filepath)
               modelCacheDispatch({ type: 'PENDING', payload: { key: filepath } })
-            }
           }
         })
       }
