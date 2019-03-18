@@ -273,6 +273,23 @@ const isCustomModel = string => {
   }
 }
 
+const isUserFile = string => {
+  const { dir, ext } = path.parse(string)
+  if (dir && dir !== '') {
+    if (ext && ext !== '') {
+      return true
+    } else {
+      throw new Error('invalid file path, missing extension ' + string)
+    }
+  } else {
+    if (ext && ext !== '') {
+      throw new Error('invalid file path ' + string)
+    } else {
+      return false
+    }
+  }
+}
+
 const promptToLocateModelPath = ({ title, message, defaultPath }) => {
   return new Promise(resolve => {
     const choice = dialog.showMessageBox({
@@ -325,23 +342,6 @@ const ensureModelFileExists = filepath => {
 
     resolve(locatedFilepath)
   })
-}
-
-const isUserFile = string => {
-  const { dir, ext } = path.parse(string)
-  if (dir && dir !== '') {
-    if (ext && ext !== '') {
-      return true
-    } else {
-      throw new Error('invalid file path, missing extension ' + string)
-    }
-  } else {
-    if (ext && ext !== '') {
-      throw new Error('invalid file path ' + string)
-    } else {
-      return false
-    }
-  }
 }
 
 const pathToShotGeneratorData =
