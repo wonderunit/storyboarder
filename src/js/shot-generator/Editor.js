@@ -169,6 +169,7 @@ const defaultPosePresets = require('../shared/reducers/shot-generator-presets/po
 const DEFAULT_POSE_PRESET_ID = '79BBBD0D-6BA2-4D84-9B71-EE661AB6E5AE'
 
 const SceneContext = React.createContext()
+const CacheContext = React.createContext()
 
 
 
@@ -206,8 +207,9 @@ const SceneManager = connect(
     updateWorldEnvironment,
   }
 )(
-  ({ world, sceneObjects, updateObject, selectObject, remoteInput, largeCanvasRef, smallCanvasRef, selection, selectedBone, machineState, transition, animatedUpdate, selectBone, mainViewCamera, updateCharacterSkeleton, largeCanvasSize, activeCamera, aspectRatio, devices, meta, _boardUid, updateWorldEnvironment }) => {
+  ({ world, sceneObjects, updateObject, selectObject, remoteInput, largeCanvasRef, smallCanvasRef, selection, selectedBone, machineState, transition, animatedUpdate, selectBone, mainViewCamera, updateCharacterSkeleton, largeCanvasSize, activeCamera, aspectRatio, devices, meta, _boardUid, updateWorldEnvironment, modelCacheState }) => {
     const { scene } = useContext(SceneContext)
+    const modelCacheDispatch = useContext(CacheContext)
 
     let [camera, setCamera] = useState(null)
     const [shouldRaf, setShouldRaf] = useState(true)
@@ -663,167 +665,55 @@ const SceneManager = connect(
       }
     }, [machineState.value, camera, cameraControlsView.current, mainViewCamera])
 
-    const [modelCacheState, modelCacheDispatch] = useReducer((state, action) => {
-      switch (action.type) {
-        case 'PENDING':
-          return {
-            ...state,
-            [action.payload.key]: { status: 'NotAsked' }
-          }
-        case 'LOAD':
-          return {
-            ...state,
-            [action.payload.key]: { status: 'Loading' }
-          }
-        case 'SUCCESS':
-          return {
-            ...state,
-            [action.payload.key]: { status: 'Success', value: action.payload.value }
-          }
-        case 'ERROR':
-          return {
-            ...state,
-            [action.payload.key]: { status: 'Error', error: action.payload.error }
-          }
-        default:
-          throw new Error('not implemented')
-      }
-    }, {})
 
-    // when scene objects change ...
+    // TODO QUEUE_FROM_SCENE_OBJECTS
     useEffect(() => {
-      console.log('scene objects changed')
-
-      // find all the unique character `model` entries
-      let loadables = Object.values(sceneObjects)
+      const loadables = Object.values(sceneObjects)
+        // has a value for model
         .filter(o => o.model != null)
+        // loaded false or undefined or null
+        .filter(o => o.loaded !== true)
 
-      loadables = loadables.filter(o => o.loaded !== true)
-
-      // queue up loading for each filepath
       for (let loadable of loadables) {
         // don't try to load the box
         if (loadable.type === 'object' && loadable.model === 'box') {
           continue
         }
 
-        console.log('found loadable', loadable)
+        let filepathForModel = ModelLoader.getFilepathForModel(loadable, { storyboarderFilePath: meta.storyboarderFilePath })
+
+        // TODO world environment model
+
+        // if it's in the cache already, skip
+        if (modelCacheState[filepathForModel]) continue
+
         // FIXME will prompt for every occurrance, even for same model
-
-        // what is the expected filepath for the model?
-        let expectedFilepath = {
-          'character': ModelLoader.getFilepathForCharacterModel,
-          'object': ModelLoader.getFilepathForSceneObjectModel
-          // TODO world
-        }[loadable.type]({
-          storyboarderFilePath: meta.storyboarderFilePath,
-          model: loadable.model
-        })
-
-        if (modelCacheState[expectedFilepath]) continue
-
-        let filepath = prepareFilepathForModel({
+        prepareFilepathForModel({
           model: loadable.model,
           type: loadable.type,
 
           storyboarderFilePath: meta.storyboarderFilePath,
 
-          onFilePathChange: filepath => {
+          onFilePathChange: filepath =>
             updateObject(loadable.id, { model: filepath })
-          }
-        }).then(filepath => {
-          if (!filepath && !modelCacheState[filepath]) {
-            console.warn('MARKING ERROR FOR', loadable.model, 'expected at', expectedFilepath)
-            modelCacheDispatch({ type: 'ERROR', payload: { key: expectedFilepath, error: true } })
+
+        }).then(actualFilepath => {
+          if (!actualFilepath) {
+            console.warn('ERROR could not locate', loadable.model, 'expected at', filepathForModel)
+            modelCacheDispatch({ type: 'ERROR', payload: { key: filepathForModel, error: true } })
+            return
           }
 
-          if (filepath && !modelCacheState[filepath]) {
-            console.log('cache: queue', loadable.model, 'from', filepath)
-            modelCacheDispatch({ type: 'PENDING', payload: { key: filepath } })
-          }
+          // we have a filepath known to exist
+          console.log('cache: queue', loadable.model, 'from', actualFilepath)
+          modelCacheDispatch({ type: 'PENDING', payload: { key: actualFilepath } })
         })
       }
     }, [sceneObjects])
 
-
-    for (let key in modelCacheState) {
-      let entry = modelCacheState[key]
-      if (entry.status === 'NotAsked') {
-        let filepath = key
-        console.log('cache: load model file from', filepath)
-
-        modelCacheDispatch({ type: 'LOAD', payload: { key } })
-
-        switch (path.extname(filepath)) {
-          case '.obj':
-            objLoader.load(
-              filepath,
-              event => {
-                console.log('got obj')
-                console.log({ event })
-                let value = { scene: event.detail.loaderRootNode }
-                console.log('cache: success', filepath)
-                modelCacheDispatch({ type: 'SUCCESS', payload: { key: filepath, value } })
-              },
-              null,
-              error => {
-                console.error('cache: error')
-                console.error(error)
-                alert(error)
-                modelCacheDispatch({ type: 'ERROR', payload: { key: filepath, error } })
-              }
-            )
-            break
-
-          case '.gltf':
-          case '.glb':
-            gltfLoader.load(
-              filepath,
-              value => {
-                console.log('cache: success', filepath)
-                modelCacheDispatch({ type: 'SUCCESS', payload: { key: filepath, value } })
-              },
-              null,
-              error => {
-                console.error('cache: error')
-                console.error(error)
-                alert(error)
-                modelCacheDispatch({ type: 'ERROR', payload: { key: filepath, error } })
-              }
-            )
-            break
-        }
-
-        //   let data
-        //   try {
-        //     if (!MODEL_CACHE[filepath]) {
-        //       MODEL_CACHE[filepath] = await loadGltf(filepath)
-        //     }
-        //     data = MODEL_CACHE[filepath]
-        //   } catch (err) {
-        //     console.error(err)
-        //     alert('Could not load model file')
-        // 
-        //     // HACK undefined means an error state
-        //     setLoaded(undefined)
-        //     return
-        //   }
-        // 
-        //   if (isValidSkinnedMesh(data)) {
-        //     console.log(type, id, 'valid model loaded. cleaning up old one.')
-        //     doCleanup()
-        // 
-        //     setModelData(data)
-        //     setLoaded(true)
-        //   } else {
-        //     alert('This model doesn’t contain a Skinned Mesh. Please load it as an Object, not a Character.')
-        // 
-        //     // HACK undefined means an error state
-        //     setLoaded(undefined)
-        //   }
-        // }
-      }
-    }
+    // for (let m in modelCacheState) {
+    //   console.log(path.basename(m), modelCacheState[m].status)
+    // }
 
     const components = Object.values(sceneObjects).map(props => {
       let modelCacheKey
@@ -831,10 +721,7 @@ const SceneManager = connect(
       switch (props.type) {
           case 'object':
             try {
-              modelCacheKey = ModelLoader.getFilepathForSceneObjectModel({
-                storyboarderFilePath: meta.storyboarderFilePath,
-                model: props.model
-              })
+              modelCacheKey = ModelLoader.getFilepathForModel({ model: props.model, type: props.type }, { storyboarderFilePath: meta.storyboarderFilePath })
             } catch (err) {
               // console.log('migrating from absolute path')
             }
@@ -869,11 +756,7 @@ const SceneManager = connect(
 
           case 'character':
             try {
-              modelCacheKey =
-                ModelLoader.getFilepathForCharacterModel({
-                  storyboarderFilePath: meta.storyboarderFilePath,
-                  model: props.model
-                })
+              modelCacheKey = ModelLoader.getFilepathForModel({ model: props.model, type: props.type }, { storyboarderFilePath: meta.storyboarderFilePath })
             } catch (err) {
               // console.log('migrating from absolute path')
             }
@@ -948,7 +831,7 @@ const SceneManager = connect(
     })
 
     const worldComponent = [WorldObject, { key: 'world', world, scene, storyboarderFilePath: meta.storyboarderFilePath, updateWorldEnvironment }]
-    // TODO Scene parent object?
+    // TODO Scene parent object??
     return [
       [worldComponent, ...components].map(c => h(c))
     ]
@@ -3513,6 +3396,58 @@ const KeyHandler = connect(
   }
 )
 
+// via https://gist.github.com/astoilkov/013c513e33fe95fa8846348038d8fe42#solution-3
+const modelCacheDispatchMiddleware = dispatch => {
+  return (action) => {
+    switch (action.type) {
+      case 'PENDING':
+        let filepath = action.payload.key
+        switch (path.extname(filepath)) {
+          case '.obj':
+            objLoader.load(
+              filepath,
+              event => {
+                console.log('got obj')
+                console.log({ event })
+                let value = { scene: event.detail.loaderRootNode }
+                console.log('cache: success', filepath)
+                dispatch({ type: 'SUCCESS', payload: { key: filepath, value } })
+              },
+              null,
+              error => {
+                console.error('cache: error')
+                console.error(error)
+                alert(error)
+                dispatch({ type: 'ERROR', payload: { key: filepath, error } })
+              }
+            )
+            return dispatch({ type: 'LOAD', payload: { key: filepath } })
+
+          case '.gltf':
+          case '.glb':
+            gltfLoader.load(
+              filepath,
+              value => {
+                console.log('cache: success', filepath)
+                dispatch({ type: 'SUCCESS', payload: { key: filepath, value } })
+              },
+              null,
+              error => {
+                console.error('cache: error')
+                console.error(error)
+                alert(error)
+                dispatch({ type: 'ERROR', payload: { key: filepath, error } })
+              }
+            )
+            return dispatch({ type: 'LOAD', payload: { key: filepath } })
+        }
+
+      default:
+        return dispatch(action)
+    }
+  }
+}
+
 const Editor = connect(
   state => ({
     mainViewCamera: state.mainViewCamera,
@@ -3725,6 +3660,39 @@ const Editor = connect(
       }
     }, [onBeforeUnload])
 
+    //
+    //
+    // MODEL LOADING
+    //
+    const [modelCacheState, modelCacheDispatch] = useReducer((state, action) => {
+      let { key } = action.payload
+
+      switch (action.type) {
+        case 'PENDING':
+          return {
+            ...state,
+            [key]: { status: 'NotAsked' }
+          }
+        case 'LOAD':
+          return {
+            ...state,
+            [key]: { status: 'Loading' }
+          }
+        case 'SUCCESS':
+          return {
+            ...state,
+            [key]: { status: 'Success', value: action.payload.value }
+          }
+        case 'ERROR':
+          return {
+            ...state,
+            [key]: { status: 'Error', error: action.payload.error }
+          }
+        default:
+          throw new Error('not implemented')
+      }
+    }, {})
+
     return React.createElement(
       SceneContext.Provider,
       { value: { scene: scene.current }},
@@ -3786,10 +3754,22 @@ const Editor = connect(
             ready && (remoteInput.mouseMode || remoteInput.orbitMode) && [PhoneCursor, { remoteInput, camera, largeCanvasRef, selectObject, selectBone, sceneObjects, selection, selectedBone }],
           ],
 
-          [LoadingStatus, { ready }]
+          [LoadingStatus, { ready, modelCacheState }]
         ],
 
-        ready && [SceneManager, { mainViewCamera, largeCanvasRef, smallCanvasRef, machineState, transition, largeCanvasSize }],
+        [CacheContext.Provider, { value: modelCacheDispatchMiddleware(modelCacheDispatch) },
+          ready && [
+            SceneManager, {
+              mainViewCamera,
+              largeCanvasRef,
+              smallCanvasRef,
+              machineState,
+              transition,
+              largeCanvasSize,
+              modelCacheState
+            }
+          ]
+        ],
 
         !machineState.matches('typing') && [KeyHandler],
 
@@ -3815,15 +3795,26 @@ const getLoadableSceneObjectsRemaining = createSelector(
 
 const LoadingStatus = connect(
   state => ({
-    // total: getLoadableSceneObjects(state).length,
-    remaining: getLoadableSceneObjectsRemaining(state).length
+    storyboarderFilePath: state.meta.storyboarderFilePath,
+    remaining: getLoadableSceneObjectsRemaining(state)
   })
-)(React.memo(({ ready, remaining }) => {
+)(React.memo(({ ready, remaining, modelCacheState, storyboarderFilePath }) => {
   let message
-  
+
+  let inprogress = remaining.filter(loadable => {
+    let filepathForModel = ModelLoader.getFilepathForModel(loadable, { storyboarderFilePath })
+    if (modelCacheState[filepathForModel]) {
+      // in cache but in progress
+      return modelCacheState[filepathForModel].status === 'NotAsked' || modelCacheState[filepathForModel].status === 'Loading'
+    } else {
+      // not even in cache yet
+      return true
+    }
+  })
+
   if (!ready) {
     message = 'Initializing Shot Generator …'
-  } else if (remaining) {
+  } else if (inprogress.length) {
     message = 'Loading models …'
   }
 
