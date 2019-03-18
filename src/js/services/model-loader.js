@@ -346,49 +346,35 @@ const ensureModelFileExists = filepath => {
 
 const pathToShotGeneratorData =
   path.join(__dirname, '..', '..', '..', 'src', 'data', 'shot-generator')
-const getFilepathForCharacterModel = ({ storyboarderFilePath, model }) => {
+
+// calculate filepath
+const systemFolder = type => ({
+  'object': path.join(pathToShotGeneratorData, 'objects'),
+  'character': path.join(pathToShotGeneratorData, 'dummies', 'gltf')
+}[type])
+
+const projectFolder = type => ({
+  'object': path.join('models', 'objects'),
+  'character': path.join('models', 'characters')
+}[type])
+
+const getFilepathForModel = ({ model, type }, { storyboarderFilePath }) => {
   // is the model built-in?
   if (!isCustomModel(model)) {
-    return path.join(path.join(pathToShotGeneratorData, 'dummies', 'gltf'), `${model}.glb`)
+    return path.join(systemFolder(type), `${model}.glb`)
 
   // is the model custom?
   } else {
     // does it have an absolute path? (e.g.: from an old save file we need to migrate)
     if (path.isAbsolute(model)) {
-      throw new Error('failed attempting to parse from custom absolute paths')
+      return model
 
     // is it a relative path, and the file is in the models/* folder already?
     } else if (
       // the relative folder name of the model file ...
       path.normalize(path.dirname(model)) ===
       // ... is the same as the relative folder name where we expect models ...
-      path.normalize(path.join('models', 'characters'))
-    ) {
-      // but the actual filepath we look for needs to be absolute
-      return path.join(path.dirname(storyboarderFilePath), model)
-
-    } else {
-      throw new Error('Could not find model file')
-    }
-  }
-}
-const getFilepathForSceneObjectModel = ({ storyboarderFilePath, model }) => {
-  // is the model built-in?
-  if (!isCustomModel(model)) {
-    return path.join(path.join(pathToShotGeneratorData, 'objects'), `${model}.glb`)
-
-  // is the model custom?
-  } else {
-    // does it have an absolute path? (e.g.: from an old save file we need to migrate)
-    if (path.isAbsolute(model)) {
-      throw new Error('failed attempting to parse from custom absolute paths')
-
-    // is it a relative path, and the file is in the models/* folder already?
-    } else if (
-      // the relative folder name of the model file ...
-      path.normalize(path.dirname(model)) ===
-      // ... is the same as the relative folder name where we expect models ...
-      path.normalize(path.join('models', 'objects'))
+      path.normalize(projectFolder(type))
     ) {
       // but the actual filepath we look for needs to be absolute
       return path.join(path.dirname(storyboarderFilePath), model)
@@ -404,6 +390,5 @@ module.exports = {
   ensureModelFileExists,
   isUserFile,
 
-  getFilepathForCharacterModel,
-  getFilepathForSceneObjectModel
+  getFilepathForModel
 }
