@@ -169,7 +169,6 @@ const defaultPosePresets = require('../shared/reducers/shot-generator-presets/po
 const DEFAULT_POSE_PRESET_ID = '79BBBD0D-6BA2-4D84-9B71-EE661AB6E5AE'
 
 const SceneContext = React.createContext()
-const CacheContext = React.createContext()
 
 
 
@@ -207,9 +206,9 @@ const SceneManager = connect(
     updateWorldEnvironment,
   }
 )(
-  ({ world, sceneObjects, updateObject, selectObject, remoteInput, largeCanvasRef, smallCanvasRef, selection, selectedBone, machineState, transition, animatedUpdate, selectBone, mainViewCamera, updateCharacterSkeleton, largeCanvasSize, activeCamera, aspectRatio, devices, meta, _boardUid, updateWorldEnvironment, modelCacheState }) => {
+  ({ world, sceneObjects, updateObject, selectObject, remoteInput, largeCanvasRef, smallCanvasRef, selection, selectedBone, machineState, transition, animatedUpdate, selectBone, mainViewCamera, updateCharacterSkeleton, largeCanvasSize, activeCamera, aspectRatio, devices, meta, _boardUid, updateWorldEnvironment, attachments }) => {
     const { scene } = useContext(SceneContext)
-    const modelCacheDispatch = useContext(CacheContext)
+    // const modelCacheDispatch = useContext(CacheContext)
 
     let [camera, setCamera] = useState(null)
     const [shouldRaf, setShouldRaf] = useState(true)
@@ -665,56 +664,6 @@ const SceneManager = connect(
       }
     }, [machineState.value, camera, cameraControlsView.current, mainViewCamera])
 
-
-    // TODO QUEUE_FROM_SCENE_OBJECTS
-    useEffect(() => {
-      const loadables = Object.values(sceneObjects)
-        // has a value for model
-        .filter(o => o.model != null)
-        // loaded false or undefined or null
-        .filter(o => o.loaded !== true)
-
-      for (let loadable of loadables) {
-        // don't try to load the box
-        if (loadable.type === 'object' && loadable.model === 'box') {
-          continue
-        }
-
-        let filepathForModel = ModelLoader.getFilepathForModel(loadable, { storyboarderFilePath: meta.storyboarderFilePath })
-
-        // TODO world environment model
-
-        // if it's in the cache already, skip
-        if (modelCacheState[filepathForModel]) continue
-
-        // FIXME will prompt for every occurrance, even for same model
-        prepareFilepathForModel({
-          model: loadable.model,
-          type: loadable.type,
-
-          storyboarderFilePath: meta.storyboarderFilePath,
-
-          onFilePathChange: filepath =>
-            updateObject(loadable.id, { model: filepath })
-
-        }).then(actualFilepath => {
-          if (!actualFilepath) {
-            console.warn('ERROR could not locate', loadable.model, 'expected at', filepathForModel)
-            modelCacheDispatch({ type: 'ERROR', payload: { key: filepathForModel, error: true } })
-            return
-          }
-
-          // we have a filepath known to exist
-          console.log('cache: queue', loadable.model, 'from', actualFilepath)
-          modelCacheDispatch({ type: 'PENDING', payload: { key: actualFilepath } })
-        })
-      }
-    }, [sceneObjects])
-
-    // for (let m in modelCacheState) {
-    //   console.log(path.basename(m), modelCacheState[m].status)
-    // }
-
     const components = Object.values(sceneObjects).map(props => {
       let modelCacheKey
 
@@ -746,7 +695,7 @@ const SceneManager = connect(
                   }
                   : {
                     loaded: props.loaded ? props.loaded : false,
-                    modelData: modelCacheState[modelCacheKey] && modelCacheState[modelCacheKey].value,
+                    modelData: attachments[modelCacheKey] && attachments[modelCacheKey].value,
                   }
                 ),
 
@@ -781,7 +730,7 @@ const SceneManager = connect(
 
                 storyboarderFilePath: meta.storyboarderFilePath,
                 loaded: props.loaded ? props.loaded : false,
-                modelData: modelCacheState[modelCacheKey] && modelCacheState[modelCacheKey].value,
+                modelData: attachments[modelCacheKey] && attachments[modelCacheKey].value,
 
                 ...props
               }
@@ -3396,58 +3345,6 @@ const KeyHandler = connect(
   }
 )
 
-// via https://gist.github.com/astoilkov/013c513e33fe95fa8846348038d8fe42#solution-3
-const modelCacheDispatchMiddleware = dispatch => {
-  return (action) => {
-    switch (action.type) {
-      case 'PENDING':
-        let filepath = action.payload.key
-        switch (path.extname(filepath)) {
-          case '.obj':
-            objLoader.load(
-              filepath,
-              event => {
-                console.log('got obj')
-                console.log({ event })
-                let value = { scene: event.detail.loaderRootNode }
-                console.log('cache: success', filepath)
-                dispatch({ type: 'SUCCESS', payload: { key: filepath, value } })
-              },
-              null,
-              error => {
-                console.error('cache: error')
-                console.error(error)
-                alert(error)
-                dispatch({ type: 'ERROR', payload: { key: filepath, error } })
-              }
-            )
-            return dispatch({ type: 'LOAD', payload: { key: filepath } })
-
-          case '.gltf':
-          case '.glb':
-            gltfLoader.load(
-              filepath,
-              value => {
-                console.log('cache: success', filepath)
-                dispatch({ type: 'SUCCESS', payload: { key: filepath, value } })
-              },
-              null,
-              error => {
-                console.error('cache: error')
-                console.error(error)
-                alert(error)
-                dispatch({ type: 'ERROR', payload: { key: filepath, error } })
-              }
-            )
-            return dispatch({ type: 'LOAD', payload: { key: filepath } })
-        }
-
-      default:
-        return dispatch(action)
-    }
-  }
-}
-
 const Editor = connect(
   state => ({
     mainViewCamera: state.mainViewCamera,
@@ -3456,6 +3353,7 @@ const Editor = connect(
     aspectRatio: state.aspectRatio,
     sceneObjects: state.sceneObjects,
     selectedBone: state.selectedBone,
+    attachments: state.attachments
   }),
   {
     createObject,
@@ -3486,7 +3384,7 @@ const Editor = connect(
     withState: (fn) => (dispatch, getState) => fn(dispatch, getState())
   }
 )(
-  ({ mainViewCamera, createObject, selectObject, updateModels, loadScene, saveScene, activeCamera, setActiveCamera, resetScene, remoteInput, aspectRatio, sceneObjects, selection, selectedBone, onBeforeUnload, setMainViewCamera, withState }) => {
+  ({ mainViewCamera, createObject, selectObject, updateModels, loadScene, saveScene, activeCamera, setActiveCamera, resetScene, remoteInput, aspectRatio, sceneObjects, selection, selectedBone, onBeforeUnload, setMainViewCamera, withState, attachments }) => {
 
     const largeCanvasRef = useRef(null)
     const smallCanvasRef = useRef(null)
@@ -3660,38 +3558,105 @@ const Editor = connect(
       }
     }, [onBeforeUnload])
 
-    //
-    //
-    // MODEL LOADING
-    //
-    const [modelCacheState, modelCacheDispatch] = useReducer((state, action) => {
-      let { key } = action.payload
+    // TODO cancellation (e.g.: redux-saga)
+    const loadSceneObjects = async (dispatch, state) => {
+      let storyboarderFilePath = state.meta.storyboarderFilePath
 
-      switch (action.type) {
-        case 'PENDING':
-          return {
-            ...state,
-            [key]: { status: 'NotAsked' }
+      let processed = []
+
+      const loadables = Object.values(sceneObjects)
+        // has a value for model
+        .filter(o => o.model != null)
+        // loaded false or undefined or null
+        .filter(o => o.loaded !== true)
+
+      for (let loadable of loadables) {
+        // don't try to load the box
+        if (loadable.type === 'object' && loadable.model === 'box') {
+          continue
+        }
+
+        let originalFilepath = ModelLoader.getFilepathForModel(loadable, { storyboarderFilePath })
+
+        // grab the latest state
+        withState(async (dispatch, state) => {
+          // if it's in the cache already, skip
+          if (state.attachments[originalFilepath]) return
+
+          dispatch({ type: 'ATTACHMENTS_PENDING', payload: { id: originalFilepath } })
+
+          // FIXME will prompt for every occurrance, even for same model
+          let actualFilepath = await prepareFilepathForModel({
+            model: loadable.model,
+            type: loadable.type,
+
+            storyboarderFilePath,
+
+            onFilePathChange: filepath => {
+              dispatch({ type: 'ATTACHMENTS_ERROR', payload: { id: originalFilepath, error: `relocated to ${filepath}` } })
+              dispatch(updateObject(loadable.id, { model: filepath }))
+            }
+          })
+
+          if (!actualFilepath) {
+            console.warn('ERROR could not locate', loadable.model, 'expected at', originalFilepath)
+            dispatch({ type: 'ATTACHMENTS_ERROR', payload: { id: originalFilepath, error: 'could not locate' } })
+            return
           }
-        case 'LOAD':
-          return {
-            ...state,
-            [key]: { status: 'Loading' }
-          }
-        case 'SUCCESS':
-          return {
-            ...state,
-            [key]: { status: 'Success', value: action.payload.value }
-          }
-        case 'ERROR':
-          return {
-            ...state,
-            [key]: { status: 'Error', error: action.payload.error }
-          }
-        default:
-          throw new Error('not implemented')
+
+          // we have a filepath known to exist
+          console.log('cache: queue', loadable.model, 'from', actualFilepath)
+          dispatch({ type: 'ATTACHMENTS_PENDING', payload: { id: actualFilepath } })
+
+          withState(async (dispatch, state) => {
+            let filepath = actualFilepath
+            switch (path.extname(filepath)) {
+              case '.obj':
+                objLoader.load(
+                  filepath,
+                  event => {
+                    console.log('got obj')
+                    console.log({ event })
+                    let value = { scene: event.detail.loaderRootNode }
+                    console.log('cache: success', filepath)
+                    dispatch({ type: 'ATTACHMENTS_SUCCESS', payload: { id: filepath, value } })
+                  },
+                  null,
+                  error => {
+                    console.error('cache: error')
+                    console.error(error)
+                    alert(error)
+                    dispatch({ type: 'ATTACHMENTS_ERROR', payload: { id: filepath, error } })
+                  }
+                )
+                return dispatch({ type: 'ATTACHMENTS_LOAD', payload: { id: filepath } })
+          
+              case '.gltf':
+              case '.glb':
+                gltfLoader.load(
+                  filepath,
+                  value => {
+                    console.log('cache: success', filepath)
+                    dispatch({ type: 'ATTACHMENTS_SUCCESS', payload: { id: filepath, value } })
+                  },
+                  null,
+                  error => {
+                    console.error('cache: error')
+                    console.error(error)
+                    alert(error)
+                    dispatch({ type: 'ATTACHMENTS_ERROR', payload: { id: filepath, error } })
+                  }
+                )
+                return dispatch({ type: 'ATTACHMENTS_LOAD', payload: { id: filepath } })
+            }
+          })
+        })
       }
-    }, {})
+    }
+
+    useEffect(() => {
+      withState(loadSceneObjects)
+    }, [sceneObjects])
 
     return React.createElement(
       SceneContext.Provider,
@@ -3754,21 +3719,19 @@ const Editor = connect(
             ready && (remoteInput.mouseMode || remoteInput.orbitMode) && [PhoneCursor, { remoteInput, camera, largeCanvasRef, selectObject, selectBone, sceneObjects, selection, selectedBone }],
           ],
 
-          [LoadingStatus, { ready, modelCacheState }]
+          [LoadingStatus, { ready }]
         ],
 
-        [CacheContext.Provider, { value: modelCacheDispatchMiddleware(modelCacheDispatch) },
-          ready && [
-            SceneManager, {
-              mainViewCamera,
-              largeCanvasRef,
-              smallCanvasRef,
-              machineState,
-              transition,
-              largeCanvasSize,
-              modelCacheState
-            }
-          ]
+        ready && [
+          SceneManager, {
+            mainViewCamera,
+            largeCanvasRef,
+            smallCanvasRef,
+            machineState,
+            transition,
+            largeCanvasSize,
+            attachments
+          }
         ],
 
         !machineState.matches('typing') && [KeyHandler],
@@ -3796,16 +3759,17 @@ const getLoadableSceneObjectsRemaining = createSelector(
 const LoadingStatus = connect(
   state => ({
     storyboarderFilePath: state.meta.storyboarderFilePath,
-    remaining: getLoadableSceneObjectsRemaining(state)
+    remaining: getLoadableSceneObjectsRemaining(state),
+    attachments: state.attachments
   })
-)(React.memo(({ ready, remaining, modelCacheState, storyboarderFilePath }) => {
+)(React.memo(({ ready, remaining, attachments, storyboarderFilePath }) => {
   let message
 
   let inprogress = remaining.filter(loadable => {
     let filepathForModel = ModelLoader.getFilepathForModel(loadable, { storyboarderFilePath })
-    if (modelCacheState[filepathForModel]) {
+    if (attachments[filepathForModel]) {
       // in cache but in progress
-      return modelCacheState[filepathForModel].status === 'NotAsked' || modelCacheState[filepathForModel].status === 'Loading'
+      return attachments[filepathForModel].status === 'NotAsked' || attachments[filepathForModel].status === 'Loading'
     } else {
       // not even in cache yet
       return true
