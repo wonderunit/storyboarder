@@ -3713,11 +3713,18 @@ const Editor = connect(
             }
 
             // update it in the data
-            let updatedModel = path.join(ModelLoader.projectFolder(loadable.type), path.basename(dst))
+            let updatedModel = path.join(
+              ModelLoader.projectFolder(loadable.type),
+              path.basename(dst)
+            )
 
             dispatch(updateObject(loadable.id, { model: updatedModel }))
-            let id = ModelLoader.getFilepathForModel({ model: updatedModel, type: loadable.type }, { storyboarderFilePath })
-            dispatch({ type: 'ATTACHMENTS_DELETE', payload: { id } })
+
+            // let id = ModelLoader.getFilepathForModel({ model: updatedModel, type: loadable.type }, { storyboarderFilePath })
+            // dispatch({ type: 'ATTACHMENTS_DELETE', payload: { id} })
+
+            // remove the pending absolute path from attachments
+            dispatch({ type: 'ATTACHMENTS_DELETE', payload: { id: src } })
             return
           }
 
@@ -3832,7 +3839,7 @@ const Editor = connect(
             ready && (remoteInput.mouseMode || remoteInput.orbitMode) && [PhoneCursor, { remoteInput, camera, largeCanvasRef, selectObject, selectBone, sceneObjects, selection, selectedBone }],
           ],
 
-          [LoadingStatus, { ready }]
+          // [LoadingStatus, { ready }]
         ],
 
         ready && [
