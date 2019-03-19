@@ -24,6 +24,11 @@ const robot = require("robotjs")
 
 const prepareFilepathForModel = require('./prepare-filepath-for-model')
 
+// for pose harvesting (maybe abstract this later?)
+const { machineIdSync } = require('node-machine-id')
+const pkg = require('../../../package.json')
+const request = require('request')
+
 const {
   //
   //
@@ -108,12 +113,12 @@ window.THREE = THREE
 
 const draggables = (sceneObjects, scene) =>
   //scene.children.filter(o => o.userData.type === 'object' || o instanceof BoundingBoxHelper)
-  scene.children.filter(o => o.userData.type === 'object' || 
-                              o.userData.type === 'character' || 
-                              o.userData.type === 'light' || 
+  scene.children.filter(o => o.userData.type === 'object' ||
+                              o.userData.type === 'character' ||
+                              o.userData.type === 'light' ||
                               o.userData.type === 'volume' )
 
-const cameras = ( scene ) => 
+const cameras = ( scene ) =>
   scene.children.filter(o => o instanceof THREE.PerspectiveCamera)
 
 const animatedUpdate = (fn) => (dispatch, getState) => fn(dispatch, getState())
@@ -229,7 +234,7 @@ const SceneManager = connect(
     let clock = useRef(new THREE.Clock())
 
     let orthoCamera = useRef(new THREE.OrthographicCamera( -4, 4, 4, -4, 1, 10000 ))
-    
+
     useEffect(() => {
       console.log('new SceneManager')
 
@@ -286,7 +291,7 @@ const SceneManager = connect(
       // )
 
       largeRendererEffect.current = new THREE.OutlineEffect( largeRenderer.current, {defaultThickness:0.008} )
-      
+
       smallRenderer.current = new THREE.WebGLRenderer({
         canvas: smallCanvasRef.current,
         antialias: true
@@ -386,7 +391,7 @@ const SceneManager = connect(
           ignoreMaterial: false,
           defaultColor: [0, 0, 0]
         })
-        
+
       } else {
         // ortho camera is large
         largeRenderer.current.setSize(width, height)
@@ -531,7 +536,7 @@ const SceneManager = connect(
                 scene.background.set(tempColor)
 
               } else {
-                scene.background.set(new THREE.Color( '#FFFFFF' ))           
+                scene.background.set(new THREE.Color( '#FFFFFF' ))
                 largeRendererEffect.current.render(scene, cameraForLarge)
                 scene.background.set(tempColor)
                 smallRendererEffect.current.render( scene, cameraForSmall)
@@ -630,9 +635,9 @@ const SceneManager = connect(
     useEffect(() => {
       if (dragControlsView.current) {
         // TODO read-only version?
-        
+
         dragControlsView.current.setObjects(draggables(sceneObjects, scene))
-        
+
         // TODO update if there are changes to the camera(s) in the scene
         //
         // let cameraState = Object.values(sceneObjects).find(o => o.type === 'camera')
@@ -835,7 +840,7 @@ const Camera = React.memo(({ scene, id, type, setCamera, icon, ...props }) => {
     camera.current.orthoIcon.position.copy(camera.current.position)
     camera.current.orthoIcon.icon.material.rotation = camera.current.rotation.y
     scene.add(camera.current.orthoIcon)
-    
+
     let frustumIcons = new THREE.Object3D()
 
     frustumIcons.left = new IconSprites( 'object', '', camera.current )
@@ -845,10 +850,10 @@ const Camera = React.memo(({ scene, id, type, setCamera, icon, ...props }) => {
     //frustumIcons.left.icon.position.z = -0.3
     frustumIcons.left.icon.center = new THREE.Vector2(0.5, -0.2)
     frustumIcons.right.icon.center = new THREE.Vector2(0.5, -0.2)
-    let hFOV = 2 * Math.atan( Math.tan( camera.current.fov * Math.PI / 180 / 2 ) * camera.current.aspect ) 
+    let hFOV = 2 * Math.atan( Math.tan( camera.current.fov * Math.PI / 180 / 2 ) * camera.current.aspect )
     frustumIcons.left.icon.material.rotation = hFOV/2 + camera.current.rotation.y
     frustumIcons.right.icon.material.rotation = -hFOV/2 + camera.current.rotation.y
-   
+
     camera.current.orthoIcon.frustumIcons = frustumIcons
     frustumIcons.add(frustumIcons.left)
     frustumIcons.add(frustumIcons.right)
@@ -903,19 +908,19 @@ const Camera = React.memo(({ scene, id, type, setCamera, icon, ...props }) => {
     let rotation = new THREE.Euler().setFromQuaternion( camera.current.quaternion, "YXZ" )   //always "YXZ" when we gat strange rotations
     camera.current.orthoIcon.icon.material.rotation = rotation.y
 
-    let hFOV = 2 * Math.atan( Math.tan( camera.current.fov * Math.PI / 180 / 2 ) * camera.current.aspect ) 
+    let hFOV = 2 * Math.atan( Math.tan( camera.current.fov * Math.PI / 180 / 2 ) * camera.current.aspect )
     camera.current.orthoIcon.frustumIcons.left.icon.material.rotation = hFOV/2 + rotation.y
     camera.current.orthoIcon.frustumIcons.right.icon.material.rotation = -hFOV/2 + rotation.y
-    
-    
+
+
     //calculatedName = camera.current.name || capitalize(`${camera.current.type} ${number}`)
     //if (camera.current.orthoIcon.iconText)
       //camera.current.orthoIcon.iconText.textGeometry.update( calculatedName )
-    
+
     let focal = camera.current.getFocalLength()
     let [camFeet, camInches] = metersAsFeetAndInches(props.z)
     if (camera.current.orthoIcon.iconSecondText)
-      camera.current.orthoIcon.changeSecondText( Math.round(focal)+"mm, "+feetAndInchesAsString2nd(camFeet, camInches) )      
+      camera.current.orthoIcon.changeSecondText( Math.round(focal)+"mm, "+feetAndInchesAsString2nd(camFeet, camInches) )
     //camera.current.orthoIcon.frustumIcons = frustumIcons
   }
   camera.current.layers.enable(1)
@@ -1667,6 +1672,17 @@ const PosePresetsEditor = connect(
       // save the presets file
       savePosePresets(getState())
 
+      // save to server
+      // for pose harvesting (maybe abstract this later?)
+      request.post('https://storyboarders.com/api/create_pose', {form:{
+        name: name,
+        json: JSON.stringify(sceneObject.skeleton),
+        model_type: sceneObject.model,
+        storyboarder_version: pkg.version,
+        machine_id: machineIdSync()
+    }})
+
+
       // select the preset in the list
       dispatch(updateObject(sceneObject.id, { posePresetId: id }))
     },
@@ -1876,13 +1892,13 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
         ],
       ],
 
-      sceneObject.type == 'volume' && [        
+      sceneObject.type == 'volume' && [
         [
           'div.column',
 
           [NumberSlider, { label: 'width', value: sceneObject.width, min: 0.1, max: 25, onSetValue: createOnSetValue(sceneObject.id, 'width') } ],
           [NumberSlider, { label: 'height', value: sceneObject.height, min: -25, max: 25, onSetValue: createOnSetValue(sceneObject.id, 'height') } ],
-          [NumberSlider, { label: 'depth', value: sceneObject.depth, min: 0.1, max: 25, onSetValue: createOnSetValue(sceneObject.id, 'depth') } ], 
+          [NumberSlider, { label: 'depth', value: sceneObject.depth, min: 0.1, max: 25, onSetValue: createOnSetValue(sceneObject.id, 'depth') } ],
 
           ['div.number-slider', [
             ['div.number-slider__label', 'Layer Image Files'],
@@ -1927,21 +1943,21 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
             ]
           ]]],
 
-          [NumberSlider, { 
-            label: 'layers', 
-            value: sceneObject.numberOfLayers, 
-            min: 1, 
-            max: 10, 
+          [NumberSlider, {
+            label: 'layers',
+            value: sceneObject.numberOfLayers,
+            min: 1,
+            max: 10,
             step: 1,
             transform: NumberSliderTransform.round,
             formatter: NumberSliderFormatter.identity,
             onSetValue: createOnSetValue(sceneObject.id, 'numberOfLayers')}],
-          [NumberSlider, { label: 'opacity', value: sceneObject.opacity, min: 0, max: 1, onSetValue: createOnSetValue(sceneObject.id, 'opacity') } ], 
-          [NumberSlider, { 
-            label: 'color', 
-            value: sceneObject.color/0xFFFFFF, 
-            min: 0.0, 
-            max: 1, 
+          [NumberSlider, { label: 'opacity', value: sceneObject.opacity, min: 0, max: 1, onSetValue: createOnSetValue(sceneObject.id, 'opacity') } ],
+          [NumberSlider, {
+            label: 'color',
+            value: sceneObject.color/0xFFFFFF,
+            min: 0.0,
+            max: 1,
             onSetValue: value => {
               let c = 0xFF * value
               let color = (c << 16) | (c << 8) | c
@@ -3406,7 +3422,7 @@ const Editor = connect(
     }
 
     const onSwapCameraViewsClick = preventDefault(() => {
-      
+
       setMainViewCamera(mainViewCamera === 'ortho' ? 'live' : 'ortho')
 
     })
@@ -3727,7 +3743,7 @@ const Editor = connect(
                   }
                 )
                 return dispatch({ type: 'ATTACHMENTS_LOAD', payload: { id: filepath } })
-          
+
               case '.gltf':
               case '.glb':
                 gltfLoader.load(
