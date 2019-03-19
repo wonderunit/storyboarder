@@ -927,6 +927,10 @@ module.exports = {
         case 'ATTACHMENTS_ERROR':
           draft.attachments[action.payload.id] = { status: 'Error', error: action.payload.error }
           return
+
+        case 'ATTACHMENTS_DELETE':
+          delete draft.attachments[action.payload.id]
+          return
       }
     })
   },

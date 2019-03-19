@@ -3562,8 +3562,6 @@ const Editor = connect(
     const loadSceneObjects = async (dispatch, state) => {
       let storyboarderFilePath = state.meta.storyboarderFilePath
 
-      let processed = []
-
       const loadables = Object.values(sceneObjects)
         // has a value for model
         .filter(o => o.model != null)
@@ -3576,40 +3574,139 @@ const Editor = connect(
           continue
         }
 
-        let originalFilepath = ModelLoader.getFilepathForModel(loadable, { storyboarderFilePath })
+        let expectedFilepath = ModelLoader.getFilepathForModel(loadable, { storyboarderFilePath })
 
         // grab the latest state
         withState(async (dispatch, state) => {
           // if it's in the cache already, skip
-          if (state.attachments[originalFilepath]) return
+          if (state.attachments[expectedFilepath]) return
 
-          dispatch({ type: 'ATTACHMENTS_PENDING', payload: { id: originalFilepath } })
+          // prevent doubling up
+          dispatch({ type: 'ATTACHMENTS_PENDING', payload: { id: expectedFilepath } })
 
-          // FIXME will prompt for every occurrance, even for same model
-          let actualFilepath = await prepareFilepathForModel({
-            model: loadable.model,
-            type: loadable.type,
+          // if absolute filepath does not exist ...
+          if (!fs.existsSync(expectedFilepath)) {
+            // ... ask the artist to locate it
+            try {
 
-            storyboarderFilePath,
+              const choice = dialog.showMessageBox({
+                type: 'question',
+                buttons: ['Yes', 'No'],
+                title: 'Model file not found',
+                message: `Could not find model file at ${expectedFilepath}. Try to find it?`,
+              })
 
-            onFilePathChange: filepath => {
-              dispatch({ type: 'ATTACHMENTS_ERROR', payload: { id: originalFilepath, error: `relocated to ${filepath}` } })
-              dispatch(updateObject(loadable.id, { model: filepath }))
+              const shouldRelocate = (choice === 0)
+
+              if (!shouldRelocate) {
+                throw new Error('could not relocate missing file')
+              }
+
+              let updatedFilepath = await new Promise((resolve, reject) => {
+                dialog.showOpenDialog(
+                  {
+                    title: 'Locate model file',
+                    defaultPath: path.dirname(expectedFilepath),
+                    filters: [
+                      {
+                        name: 'Model',
+                        extensions: ['gltf', 'glb']
+                      }
+                    ]
+                  },
+                  filenames => {
+                    if (filenames) {
+                      resolve(filenames[0])
+                    } else {
+                      reject('no alternate filepath provided')
+                    }
+                  }
+                )
+              })
+
+              // TODO test:
+              // handle case where user relocated to a file in the models/* folder
+              //
+              //
+
+              // // handle case where user relocated to a file in the models/* folder
+              // if (
+              //   // the absolute folder name of the model file ...
+              //   path.resolve(path.normalize(path.dirname(updatedFilepath))) ===
+              //   // ... is the same as the absolute folder name where we expect models of this type ...
+              //   ModelLoader.projectFolder(updatedFilepath)
+              // ) {
+              //   // update the model path to relative path
+              //   console.log(`setting model from absolute to relative model:${model} filepath:${updatedFilepath}`)
+              //   let updatedModel = path.join('models', loadable.type, path.basename(updatedFilepath))
+              //   dispatch(updateObject(loadable.id, { model: updatedModel }))
+              //   return
+              // }
+
+              // update with absolute path to relocated model
+              dispatch(updateObject(loadable.id, { model: updatedFilepath }))
+              return
+            } catch (error) {
+              console.error(error)
+
+              // cancellation by user
+              // dialog.showMessageBox({
+              //   title: 'Failed to load',
+              //   message: `Failed to load model ${model}`
+              // })
+
+              dispatch({ type: 'ATTACHMENTS_ERROR', payload: { id: expectedFilepath, error: 'could not locate' } })
+              return
             }
-          })
+          }
 
-          if (!actualFilepath) {
-            console.warn('ERROR could not locate', loadable.model, 'expected at', originalFilepath)
-            dispatch({ type: 'ATTACHMENTS_ERROR', payload: { id: originalFilepath, error: 'could not locate' } })
+          if (ModelLoader.needsCopy(loadable)) {
+            let src = expectedFilepath
+
+            let dst = path.join(
+              path.dirname(storyboarderFilePath),
+              ModelLoader.projectFolder(loadable.type),
+              path.basename(expectedFilepath)
+            )
+
+            console.log('will copy from', src, 'to', dst)
+
+            // make sure the path exists
+            fs.ensureDirSync(path.dirname(dst))
+
+            // as long as they are different files, we need to copy them
+            if (src !== dst) {
+
+              // prompt before overwrite
+              // (commented out for now because it's annoying in practice)
+              //
+              // if (fs.existsSync(dst)) {
+              //   let choice = dialog.showMessageBox(null, {
+              //     type: 'question',
+              //     buttons: ['Yes', 'No'],
+              //     message: 'Model file already exists. Overwrite?'
+              //   })
+              //   if (choice !== 0) {
+              //     console.log('cancelled model file copy')
+              //     throw new Error('Skipped')
+              //   }
+              // }
+
+              console.log(`copying model file from ${src} to ${dst}`)
+              fs.copySync(src, dst, { overwrite: true, errorOnExist: false })
+            }
+
+            // update it in the data
+            let updatedModel = path.join(ModelLoader.projectFolder(loadable.type), path.basename(dst))
+
+            dispatch(updateObject(loadable.id, { model: updatedModel }))
+            let id = ModelLoader.getFilepathForModel({ model: updatedModel, type: loadable.type }, { storyboarderFilePath })
+            dispatch({ type: 'ATTACHMENTS_DELETE', payload: { id } })
             return
           }
 
-          // we have a filepath known to exist
-          console.log('cache: queue', loadable.model, 'from', actualFilepath)
-          dispatch({ type: 'ATTACHMENTS_PENDING', payload: { id: actualFilepath } })
-
           withState(async (dispatch, state) => {
-            let filepath = actualFilepath
+            let filepath = expectedFilepath
             switch (path.extname(filepath)) {
               case '.obj':
                 objLoader.load(

@@ -328,27 +328,11 @@ const promptToLocateModelPath = ({ title, message, defaultPath }) => {
   })
 }
 
-const ensureModelFileExists = filepath => {
-  return new Promise(async (resolve, reject) => {
-    let locatedFilepath = await promptToLocateModelPath({
-      title: 'Model file not found',
-      message: `Could not find model file at ${filepath}. Try to find it?`,
-      defaultPath: path.dirname(filepath)
-    })
-
-    if (locatedFilepath == null) {
-      reject(new Error('File not found'))
-    }
-
-    resolve(locatedFilepath)
-  })
-}
-
 const pathToShotGeneratorData =
   path.join(__dirname, '..', '..', '..', 'src', 'data', 'shot-generator')
 
 // calculate filepath
-const systemFolder = type => ({
+const builtInFolder = type => ({
   'object': path.join(pathToShotGeneratorData, 'objects'),
   'character': path.join(pathToShotGeneratorData, 'dummies', 'gltf')
 }[type])
@@ -358,10 +342,17 @@ const projectFolder = type => ({
   'character': path.join('models', 'characters')
 }[type])
 
+const modelIsInProjectFolder = ({ model, type }) =>
+  // the relative folder name of the model file ...
+  path.normalize(path.dirname(model)) ===
+  // ... is the same as the relative folder name where we expect models ...
+  path.normalize(projectFolder(type))
+
+
 const getFilepathForModel = ({ model, type }, { storyboarderFilePath }) => {
   // is the model built-in?
   if (!isCustomModel(model)) {
-    return path.join(systemFolder(type), `${model}.glb`)
+    return path.join(builtInFolder(type), `${model}.glb`)
 
   // is the model custom?
   } else {
@@ -370,25 +361,46 @@ const getFilepathForModel = ({ model, type }, { storyboarderFilePath }) => {
       return model
 
     // is it a relative path, and the file is in the models/* folder already?
-    } else if (
-      // the relative folder name of the model file ...
-      path.normalize(path.dirname(model)) ===
-      // ... is the same as the relative folder name where we expect models ...
-      path.normalize(projectFolder(type))
-    ) {
+    } else if (modelIsInProjectFolder({ model, type })) {
       // but the actual filepath we look for needs to be absolute
       return path.join(path.dirname(storyboarderFilePath), model)
 
     } else {
-      throw new Error('Could not find model file')
+      throw new Error('Could not find model file', { model, type })
+    }
+  }
+}
+
+const needsCopy = ({ model, type }) => {
+  // is it built-in?
+  if (!isCustomModel(model)) {
+    return false
+
+  } else {
+    // does it have an absolute path? (e.g.: from an old save file we need to migrate)
+    if (path.isAbsolute(model)) {
+      // ... then we need to copy it to the models/* folder and change its path
+      return true
+
+    // is it a relative path, and the file is in the models/* folder already?
+  } else if (modelIsInProjectFolder({ model, type })) {
+      // ... then we can load it as-is
+      return false
+
+    } else {
+      throw new Error('Could not find model file for copy', { model, type })
     }
   }
 }
 
 module.exports = {
   isCustomModel,
-  ensureModelFileExists,
-  isUserFile,
 
-  getFilepathForModel
+  isUserFile,
+  promptToLocateModelPath,
+
+  getFilepathForModel,
+  needsCopy,
+
+  projectFolder
 }
