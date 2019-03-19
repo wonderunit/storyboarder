@@ -3832,7 +3832,7 @@ const Editor = connect(
             ready && (remoteInput.mouseMode || remoteInput.orbitMode) && [PhoneCursor, { remoteInput, camera, largeCanvasRef, selectObject, selectBone, sceneObjects, selection, selectedBone }],
           ],
 
-          [LoadingStatus, { ready }]
+          // [LoadingStatus, { ready }]
         ],
 
         ready && [
