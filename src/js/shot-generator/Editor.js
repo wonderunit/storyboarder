@@ -3660,7 +3660,19 @@ const Editor = connect(
               // }
 
               // update with absolute path to relocated model
-              dispatch(updateObject(loadable.id, { model: updatedFilepath }))
+              // dispatch(updateObject(loadable.id, { model: updatedFilepath }))
+
+
+              // remove the pending absolute path from attachments
+              dispatch({ type: 'ATTACHMENTS_DELETE', payload: { id: expectedFilepath } })
+              // update ALL instances of the model with the new location
+              dispatch({
+                type: 'ATTACHMENTS_RELOCATE',
+                payload: {
+                  src: expectedFilepath,
+                  dst: updatedFilepath
+                }
+              })
               return
             } catch (error) {
               console.error(error)
@@ -3749,7 +3761,6 @@ const Editor = connect(
                     alert(error)
                     // dispatch({ type: 'ATTACHMENTS_ERROR', payload: { id: filepath, error } })
                     dispatch({ type: 'ATTACHMENTS_DELETE', payload: { id: filepath } })
-
                   }
                 )
                 return dispatch({ type: 'ATTACHMENTS_LOAD', payload: { id: filepath } })
@@ -3769,6 +3780,7 @@ const Editor = connect(
                     alert(error)
                     // dispatch({ type: 'ATTACHMENTS_ERROR', payload: { id: filepath, error } })
                     dispatch({ type: 'ATTACHMENTS_DELETE', payload: { id: filepath } })
+
                   }
                 )
                 return dispatch({ type: 'ATTACHMENTS_LOAD', payload: { id: filepath } })

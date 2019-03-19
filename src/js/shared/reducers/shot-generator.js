@@ -931,6 +931,17 @@ module.exports = {
         case 'ATTACHMENTS_DELETE':
           delete draft.attachments[action.payload.id]
           return
+
+        case 'ATTACHMENTS_RELOCATE':
+          let { src, dst } = action.payload
+          for (let id in draft.sceneObjects) {
+            let sceneObject = draft.sceneObjects[id]
+
+            if (sceneObject.model === src) {
+              sceneObject.model = dst
+            }
+          }
+          return
       }
     })
   },
