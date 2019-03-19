@@ -29,17 +29,6 @@ const gltfLoader = new THREE.GLTFLoader(loadingManager)
 objLoader.setLogging(false, false)
 THREE.Cache.enabled = true
 
-// let MODEL_CACHE = {}
-
-// const loadGltf = filepath => 
-//   new Promise((resolve, reject) =>
-//     gltfLoader.load(
-//       filepath,
-//       data => resolve(data),
-//       null,
-//       error => reject(error)
-//     ))
-
 const isValidSkinnedMesh = data => {
   try {
     let mesh = data.scene.children.find(child => child instanceof THREE.SkinnedMesh) ||
@@ -194,8 +183,6 @@ const Character = React.memo(({
   const setLoaded = loaded => updateObject(id, { loaded })
   const object = useRef(null)
 
-  // const [modelData, setModelData] = useState(null)
-
   const doCleanup = () => {
     if (object.current) {
       console.log(type, id, 'remove')
@@ -206,55 +193,6 @@ const Character = React.memo(({
       object.current = null
     }
   }
-
-  // const load = async (model, props) => {
-  //   console.log('Character load', { storyboarderFilePath, model })
-  // 
-  //   let filepath = await prepareFilepathForModel({
-  //     model,
-  //     type,
-  // 
-  //     storyboarderFilePath,
-  // 
-  //     onFilePathChange: filepath => {
-  //       // new relative path
-  //       updateObject(id, { model: filepath })
-  //     }
-  //   })
-  // 
-  //   if (!filepath) {
-  //     return
-  //   }
-  // 
-  //   console.log('loading character from', filepath)
-  //   let data
-  //   try {
-  //     if (!MODEL_CACHE[filepath]) {
-  //       MODEL_CACHE[filepath] = await loadGltf(filepath)
-  //     }
-  //     data = MODEL_CACHE[filepath]
-  //   } catch (err) {
-  //     console.error(err)
-  //     alert('Could not load model file')
-  // 
-  //     // HACK undefined means an error state
-  //     setLoaded(undefined)
-  //     return
-  //   }
-  // 
-  //   if (isValidSkinnedMesh(data)) {
-  //     console.log(type, id, 'valid model loaded. cleaning up old one.')
-  //     doCleanup()
-  // 
-  //     setModelData(data)
-  //     setLoaded(true)
-  //   } else {
-  //     alert('This model doesn’t contain a Skinned Mesh. Please load it as an Object, not a Character.')
-  // 
-  //     // HACK undefined means an error state
-  //     setLoaded(undefined)
-  //   }
-  // }
 
   // if the model has changed
   useEffect(() => {
