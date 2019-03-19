@@ -2146,27 +2146,6 @@ THREE.GLTFLoader = ( function () {
 
 		if ( source.bufferView !== undefined ) {
 
-			// ADDED BY WONDERUNIT
-			//
-			// to get a texture, GLTFLoader reads the bufferView and creates an Object URL from it
-			// but the Object URL has a different uuid each time (file://uuid)
-			// and each time is a cache miss
-			//
-			// so we added some code to use our own cache key for the actual resulting texture
-			//
-			// check for a cache key matching the embedded bufferView as a texture
-			//
-			// TODO cache key should include gltf/glb filename! need to pass that in somehow
-			//
-			var embeddedTextureCacheKey = this.options.path + '#' + source.name
-			var cachedTexture = THREE.Cache.get(embeddedTextureCacheKey)
-			if ( cachedTexture ) {
-				console.log('cache hit', embeddedTextureCacheKey, cachedTexture)
-				return Promise.resolve(cachedTexture)
-			} else {
-				console.log('cache miss', embeddedTextureCacheKey, cachedTexture)
-			}
-
 			// Load binary image data from bufferView, if provided.
 
 			sourceURI = parser.getDependency( 'bufferView', source.bufferView ).then( function ( bufferView ) {
@@ -2202,7 +2181,13 @@ THREE.GLTFLoader = ( function () {
 
 		} ).then( function ( texture ) {
 
-			// Configure Texture and clean up resources.
+			// Clean up resources and configure Texture.
+
+			if ( isObjectURL === true ) {
+
+				URL.revokeObjectURL( sourceURI );
+
+			}
 
 			texture.flipY = false;
 
@@ -2222,18 +2207,6 @@ THREE.GLTFLoader = ( function () {
 			texture.minFilter = WEBGL_FILTERS[ sampler.minFilter ] || THREE.LinearMipMapLinearFilter;
 			texture.wrapS = WEBGL_WRAPPINGS[ sampler.wrapS ] || THREE.RepeatWrapping;
 			texture.wrapT = WEBGL_WRAPPINGS[ sampler.wrapT ] || THREE.RepeatWrapping;
-
-			if ( isObjectURL === true ) {
-
-				URL.revokeObjectURL( sourceURI );
-
-				// ADDED BY WONDERUNIT
-				// remove the cache entry for the blob
-				THREE.Cache.remove( sourceURI );
-				// manually add a cache entry for the resulting texture cache key
-				THREE.Cache.add( embeddedTextureCacheKey, texture );
-
-			}
 
 			return texture;
 
