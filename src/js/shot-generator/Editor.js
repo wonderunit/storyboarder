@@ -3659,6 +3659,7 @@ const Editor = connect(
               //   return
               // }
 
+
               // update with absolute path to relocated model
               // dispatch(updateObject(loadable.id, { model: updatedFilepath }))
 
@@ -3674,6 +3675,7 @@ const Editor = connect(
                 }
               })
               return
+
             } catch (error) {
               console.error(error)
 
