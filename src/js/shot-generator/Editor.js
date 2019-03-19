@@ -3671,7 +3671,8 @@ const Editor = connect(
               //   message: `Failed to load model ${model}`
               // })
 
-              dispatch({ type: 'ATTACHMENTS_ERROR', payload: { id: expectedFilepath, error: 'could not locate' } })
+              // dispatch({ type: 'ATTACHMENTS_ERROR', payload: { id: expectedFilepath, error: 'could not locate' } })
+              dispatch({ type: 'ATTACHMENTS_DELETE', payload: { id: expectedFilepath } })
               return
             }
           }
@@ -3746,7 +3747,9 @@ const Editor = connect(
                     console.error('cache: error')
                     console.error(error)
                     alert(error)
-                    dispatch({ type: 'ATTACHMENTS_ERROR', payload: { id: filepath, error } })
+                    // dispatch({ type: 'ATTACHMENTS_ERROR', payload: { id: filepath, error } })
+                    dispatch({ type: 'ATTACHMENTS_DELETE', payload: { id: filepath } })
+
                   }
                 )
                 return dispatch({ type: 'ATTACHMENTS_LOAD', payload: { id: filepath } })
@@ -3764,7 +3767,8 @@ const Editor = connect(
                     console.error('cache: error')
                     console.error(error)
                     alert(error)
-                    dispatch({ type: 'ATTACHMENTS_ERROR', payload: { id: filepath, error } })
+                    // dispatch({ type: 'ATTACHMENTS_ERROR', payload: { id: filepath, error } })
+                    dispatch({ type: 'ATTACHMENTS_DELETE', payload: { id: filepath } })
                   }
                 )
                 return dispatch({ type: 'ATTACHMENTS_LOAD', payload: { id: filepath } })
