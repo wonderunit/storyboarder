@@ -251,14 +251,22 @@ function filter_array(test_array) {
     return result
 }
 
-function BonesHelper( object, object3D, { boneLengthScale = 1 } ) {
+let cache = {}
+
+function BonesHelper( object, object3D, { boneLengthScale = 1, cacheKey } ) {
   Object3D.call( this )
   //ModelLoader.isCustomModel(model)
   let sknMesh = object3D.children.find(child => child instanceof THREE.SkinnedMesh) ||
     object3D.children[0].children.find(child => child instanceof THREE.SkinnedMesh)
   
 
-  let skeleton_clone = cloneSkinned( object3D )
+  // console.log('new BonesHelper', 'cacheKey:', cacheKey)
+  let skeleton_clone
+  if (!cache[cacheKey]) {
+    console.log('adding to cache', cacheKey)
+    cache[cacheKey] = cloneSkinned( object3D )
+  }
+  skeleton_clone = cache[cacheKey]
 
   let zeroedSkinnedMesh = skeleton_clone.children.find(child => child instanceof THREE.SkinnedMesh) ||
     skeleton_clone.children[0].children.find(child => child instanceof THREE.SkinnedMesh)

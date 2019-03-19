@@ -5,22 +5,6 @@ const { useRef, useEffect, useState } = React
 
 const IconSprites = require('./IconSprites')
 
-const lightHelperFactory = light => {
-  let helper = new THREE.SpotLightHelper( light )
-  let child = helper.children[0]
-
-  // don’t show automatically in rendered image
-  helper.layers.disable(0)
-   child.layers.disable(0)
-  // shows in live view
-  helper.layers.enable(1)
-   child.layers.enable(1)
-  // shows in top-down view
-  helper.layers.disable(2)
-   child.layers.disable(2)
-
-  return helper
-}
 
 const SpotLight = React.memo(({ scene, id, type, setLight, icon, ...props }) => {
   
@@ -56,9 +40,6 @@ const SpotLight = React.memo(({ scene, id, type, setLight, icon, ...props }) => 
     lightContainer.light = light_spot
     lightContainer.hitter = box_light_mesh
 
-    var helper = lightHelperFactory(light_spot)
-    lightContainer.helper = helper
-
     box_light_mesh.layers.disable(0)
     box_light_mesh.layers.enable(1)
     box_light_mesh.layers.disable(2)
@@ -76,7 +57,7 @@ const SpotLight = React.memo(({ scene, id, type, setLight, icon, ...props }) => 
     light.current.rotation.x = (props.tilt)
 
     light.current.orthoIcon = new IconSprites( type, props.name ? props.name : props.displayName, light.current )
-    scene.add( light.current.orthoIcon )
+    
 
     light.current.light.updateMatrixWorld()
   }
@@ -85,10 +66,10 @@ const SpotLight = React.memo(({ scene, id, type, setLight, icon, ...props }) => 
 
     console.log(type, id, 'added')
     scene.add(light.current)
+    scene.add( light.current.orthoIcon )
 
     return function cleanup () {
       console.log(type, id, 'removed')
-      scene.remove(light.current.helper)
       scene.remove(light.current.orthoIcon)
       scene.remove(light.current)
       // setCamera(null)
@@ -118,8 +99,6 @@ const SpotLight = React.memo(({ scene, id, type, setLight, icon, ...props }) => 
       light.current.light.target.position.set(0,0,props.distance)
       light.current.light.angle = props.angle
       light.current.light.distance = props.distance
-      //light.current.light.target.updateMatrix()
-      light.current.helper = lightHelperFactory(light.current.light)
       light.current.light.intensity = props.intensity
     }
   }, [props.intensity, props.angle, props.distance])

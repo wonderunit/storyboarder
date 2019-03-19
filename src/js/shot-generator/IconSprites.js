@@ -14,14 +14,16 @@ const allIcons = {
     character: new THREE.SpriteMaterial( { color: 0xffffff } ),
     camera: new THREE.SpriteMaterial( { color: 0x00ffff } ),
     light: new THREE.SpriteMaterial( { color: 0xff00ff } ),
-    object: new THREE.SpriteMaterial( { color: 0xffff00 } )
+    object: new THREE.SpriteMaterial( { color: 0xffff00 } ),
+    volume: new THREE.SpriteMaterial( { color: 0xffff00 } )
 }
 
 const allSprites = {
     character: new THREE.Sprite( allIcons.character ),
     camera: new THREE.Sprite( allIcons.camera ),
     light: new THREE.Sprite( allIcons.light ),
-    object: new THREE.Sprite( allIcons.object )
+    object: new THREE.Sprite( allIcons.object ),
+    volume: new THREE.Sprite( allIcons.volume )
 }
 
 function IconSprites ( type, text, parent, secondaryText ) {
@@ -29,7 +31,6 @@ function IconSprites ( type, text, parent, secondaryText ) {
 
     let scope = this
     let icon
-    let betterSpriteText, betterSpriteSecondaryText
 
     switch (type) {
         case 'character':
@@ -44,18 +45,24 @@ function IconSprites ( type, text, parent, secondaryText ) {
         case 'object':
             icon = allSprites.object
             break
+        case 'volume':
+            icon = allSprites.volume
+            break
     }
-  
-    iconTextBetter(text).then((mesh) => {
-        mesh.scale.set(0.006,0.006,0.006)
-        mesh.rotation.z = Math.PI
-        mesh.rotation.y = Math.PI
-        mesh.rotation.x = -Math.PI/2
-        mesh.position.z = secondaryText ? 0 : 0.15
-        mesh.position.x = 0.7 
-        scope.iconText = mesh
-        scope.add(mesh)
-    })
+    
+    if (text != '')
+    {
+        iconTextBetter(text).then((mesh) => {
+            mesh.scale.set(0.006,0.006,0.006)
+            mesh.rotation.z = Math.PI
+            mesh.rotation.y = Math.PI
+            mesh.rotation.x = -Math.PI/2
+            mesh.position.z = secondaryText ? 0 : 0.15
+            mesh.position.x = 0.7 
+            scope.iconText = mesh
+            scope.add(mesh)
+        })
+    }
 
     if (secondaryText) {
         iconTextBetter(secondaryText).then((mesh) => {
@@ -271,6 +278,7 @@ const loadIcons = () => {
     const camera = loadIconPromise("data/shot-generator/icons/camera.svg", allSprites.camera, 0.07)
     const light = loadIconPromise("data/shot-generator/icons/light.svg", allSprites.light, 0.07)
     const object = generateSprite("#000000", allSprites.object)
+    const volume = loadIconPromise("data/shot-generator/icons/volume.svg", allSprites.volume, 0.07)
 
     return Promise.all( [ character, camera, light, object ] ).then(( values ) => {
         

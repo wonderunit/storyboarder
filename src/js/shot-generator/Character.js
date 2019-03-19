@@ -29,21 +29,62 @@ const gltfLoader = new THREE.GLTFLoader(loadingManager)
 objLoader.setLogging(false, false)
 THREE.Cache.enabled = true
 
-let MODEL_CACHE = {}
-
-const loadGltf = filepath => 
-  new Promise((resolve, reject) =>
-    gltfLoader.load(
-      filepath,
-      data => resolve(data),
-      null,
-      error => reject(error)
-    ))
-
 const isValidSkinnedMesh = data => {
-  let mesh = data.scene.children.find(child => child instanceof THREE.SkinnedMesh) ||
-            data.scene.children[0].children.find(child => child instanceof THREE.SkinnedMesh)
-  return (mesh != null)
+  try {
+    let mesh = data.scene.children.find(child => child instanceof THREE.SkinnedMesh) ||
+              data.scene.children[0].children.find(child => child instanceof THREE.SkinnedMesh)
+    return (mesh != null)
+  } catch (err) {
+    console.error(err)
+    return false
+  }
+}
+
+const cloneGltf = (gltf) => {
+  const clone = {
+    animations: gltf.animations,
+    scene: gltf.scene.clone(true)
+  };
+
+  const skinnedMeshes = {};
+
+  gltf.scene.traverse(node => {
+    if (node.isSkinnedMesh) {
+      skinnedMeshes[node.name] = node;
+    }
+  });
+
+  const cloneBones = {};
+  const cloneSkinnedMeshes = {};
+
+  clone.scene.traverse(node => {
+    if (node.isBone) {
+      cloneBones[node.name] = node;
+    }
+
+    if (node.isSkinnedMesh) {
+      cloneSkinnedMeshes[node.name] = node;
+    }
+  });
+
+  for (let name in skinnedMeshes) {
+    const skinnedMesh = skinnedMeshes[name];
+    const skeleton = skinnedMesh.skeleton;
+    const cloneSkinnedMesh = cloneSkinnedMeshes[name];
+
+    const orderedCloneBones = [];
+
+    for (let i = 0; i < skeleton.bones.length; ++i) {
+      const cloneBone = cloneBones[skeleton.bones[i].name];
+      orderedCloneBones.push(cloneBone);
+    }
+
+    cloneSkinnedMesh.bind(
+        new THREE.Skeleton(orderedCloneBones, skeleton.boneInverses),
+        cloneSkinnedMesh.matrixWorld);
+  }
+
+  return clone;
 }
 
 const cloneGltf = (gltf) => {
@@ -174,11 +215,13 @@ const Character = React.memo(({
   camera,
   updateCharacterSkeleton,
   updateObject,
-  loaded,  
   devices,
   icon,
   storyboarderFilePath,
   boardUid,
+
+  loaded,
+  modelData,
 
   ...props
 }) => {
@@ -186,8 +229,6 @@ const Character = React.memo(({
   // which is what Editor listens for to attach the BonesHelper
   const setLoaded = loaded => updateObject(id, { loaded })
   const object = useRef(null)
-
-  const [modelData, setModelData] = useState(null)
 
   const doCleanup = () => {
     if (object.current) {
@@ -200,59 +241,9 @@ const Character = React.memo(({
     }
   }
 
-  const load = async (model, props) => {
-    console.log('Character load', { storyboarderFilePath, model })
-
-    let filepath = await prepareFilepathForModel({
-      model,
-      type,
-
-      storyboarderFilePath,
-
-      onFilePathChange: filepath => {
-        // new relative path
-        updateObject(id, { model: filepath })
-      }
-    })
-
-    if (!filepath) {
-      return
-    }
-
-    console.log('loading character from', filepath)
-    let data
-    try {
-      if (!MODEL_CACHE[filepath]) {
-        MODEL_CACHE[filepath] = await loadGltf(filepath)
-      }
-      data = MODEL_CACHE[filepath]
-    } catch (err) {
-      console.error(err)
-      alert('Could not load model file')
-
-      // HACK undefined means an error state
-      setLoaded(undefined)
-      return
-    }
-
-    if (isValidSkinnedMesh(data)) {
-      console.log(type, id, 'valid model loaded. cleaning up old one.')
-      doCleanup()
-
-      setModelData(data)
-      setLoaded(true)
-    } else {
-      alert('This model doesn’t contain a Skinned Mesh. Please load it as an Object, not a Character.')
-
-      // HACK undefined means an error state
-      setLoaded(undefined)
-    }
-  }
-
   // if the model has changed
   useEffect(() => {
     setLoaded(false)
-    load(props.model, { id, ...props })
 
     // return function cleanup () { }
   }, [props.model])
@@ -265,28 +256,30 @@ const Character = React.memo(({
 
   // if the model’s data has changed
   useEffect(() => {
-    if (modelData) {
+    if (loaded) {
       console.log(type, id, 'add')
 
       const { mesh, skeleton, armatures, originalHeight, boneLengthScale, parentRotation, parentPosition } = characterFactory(modelData)
 
       object.current = new THREE.Object3D()
+      object.current.add(...armatures)
+      object.current.add(mesh)
+      let bonesHelper = new BonesHelper( skeleton.bones[0].parent, object.current, { boneLengthScale, cacheKey: props.model } )
+
       object.current.userData.id = id
       object.current.userData.type = type
       object.current.userData.originalHeight = originalHeight
 
       // FIXME get current .models from getState()
       object.current.userData.modelSettings = initialState.models[props.model] || {}
-      
-      object.current.add(...armatures)
-      object.current.add(mesh)
-      
+
       object.current.orthoIcon = new IconSprites( type, props.name?props.name:props.displayName, object.current )
-      scene.add(object.current.orthoIcon)
       
       object.current.userData.mesh = mesh
+
       scene.add(object.current)
-      let bonesHelper = new BonesHelper( skeleton.bones[0].parent, object.current, { boneLengthScale } )
+      scene.add(object.current.orthoIcon)
+
       mesh.layers.disable(0)
       mesh.layers.enable(1)
       mesh.layers.disable(2)
@@ -317,9 +310,10 @@ const Character = React.memo(({
     }
 
     return function cleanup () {
-      console.log('modelData cleanup')
+      doCleanup()
+      // setLoaded(false)
     }
-  }, [modelData])
+  }, [loaded])
 
   useEffect(() => {
     return function cleanup () {
@@ -417,7 +411,7 @@ const Character = React.memo(({
 
       object.current.orthoIcon.position.copy(object.current.position)
     }
-  }, [props.model, props.x, props.y, props.z, modelData])
+  }, [props.model, props.x, props.y, props.z, loaded])
 
   useEffect(() => {
     if (object.current) {
@@ -432,7 +426,7 @@ const Character = React.memo(({
       }
 
     }
-  }, [props.model, props.rotation, modelData])
+  }, [props.model, props.rotation, loaded])
 
   const resetPose = () => {
     if (!object.current) return
@@ -452,7 +446,7 @@ const Character = React.memo(({
   }
 
   useEffect(() => {
-    if (!modelData) return
+    if (!loaded) return
     if (!props.posePresetId) return
 
     console.log(type, id, 'changed pose preset')
@@ -461,7 +455,7 @@ const Character = React.memo(({
 
   // HACK force reset skeleton pose on Board UUID change
   useEffect(() => {
-    if (!modelData) return
+    if (!loaded) return
     if (!boardUid) return
 
     console.log(type, id, 'changed boards')
@@ -469,12 +463,12 @@ const Character = React.memo(({
   }, [boardUid])
 
   useEffect(() => {
-    if (!modelData) return
+    if (!loaded) return
     if (!object.current) return
 
     console.log(type, id, 'skeleton')
     updateSkeleton()
-  }, [props.model, props.skeleton, modelData])
+  }, [props.model, props.skeleton, loaded])
 
   useEffect(() => {
     if (object.current) {
@@ -488,10 +482,10 @@ const Character = React.memo(({
       }
       //object.current.bonesHelper.updateMatrixWorld()
     }
-  }, [props.model, props.height, props.skeleton, modelData])
+  }, [props.model, props.height, props.skeleton, loaded])
 
   useEffect(() => {
-    if (!modelData) return
+    if (!loaded) return
 
     if (object.current) {
       // adjust head proportionally
@@ -506,10 +500,10 @@ const Character = React.memo(({
         headBone.scale.setScalar( props.headScale )
       }
     }
-  }, [props.model, props.headScale, props.skeleton, modelData])
+  }, [props.model, props.headScale, props.skeleton, loaded])
 
   useEffect(() => {
-    if (!modelData) return
+    if (!loaded) return
     if (!object.current) return
     let mesh = object.current.userData.mesh
 
@@ -519,11 +513,11 @@ const Character = React.memo(({
     mesh.morphTargetInfluences[ 0 ] = props.morphTargets.mesomorphic
     mesh.morphTargetInfluences[ 1 ] = props.morphTargets.ectomorphic
     mesh.morphTargetInfluences[ 2 ] = props.morphTargets.endomorphic
-  }, [props.model, props.morphTargets, modelData])
+  }, [props.model, props.morphTargets, loaded])
 
   useEffect(() => {
     console.log(type, id, 'isSelected', isSelected)
-    if (!modelData) return
+    if (!loaded) return
     if (!object.current) return
 
     // handle selection/deselection - add/remove the bone stucture
@@ -562,10 +556,10 @@ const Character = React.memo(({
            color: [ 0, 0, 0 ],
          }
     }
-  }, [props.model, isSelected, modelData])
+  }, [props.model, isSelected, loaded])
 
   useEffect(() => {
-    if (!modelData) return
+    if (!loaded) return
     if (!object.current) return
 
     if (selectedBone === undefined) return
@@ -590,7 +584,7 @@ const Character = React.memo(({
     realBone.connectedBone.material.color = new THREE.Color( 0x242246 )
     currentBoneSelected.current = realBone
 
-  }, [selectedBone, modelData])
+  }, [selectedBone, loaded])
 
   useEffect(() => {
     if (!object.current) return
@@ -767,12 +761,20 @@ const Character = React.memo(({
     }
   }, [props.visible, loaded])
 
-  // useEffect(() => {
-  //   if (modelData) {
-  //     console.log(type, id, 'setLoaded:true')
-  //     setLoaded(true)
-  //   }
-  // }, [modelData])
+  useEffect(() => {
+    if (!loaded && modelData) {
+      if (isValidSkinnedMesh(modelData)) {
+        console.log(type, id, 'got valid mesh')
+
+        setLoaded(true)
+      } else {
+        alert('This model doesn’t contain a Skinned Mesh. Please load it as an Object, not a Character.')
+
+        // HACK undefined means an error state
+        setLoaded(undefined)
+      }
+    }
+  }, [modelData, loaded])
 
   return null
 })
