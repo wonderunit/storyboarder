@@ -454,6 +454,8 @@ const initialState = {
     }
   },
 
+  attachments: {},
+
   aspectRatio: 2.35,
 
   board: {},
@@ -911,6 +913,19 @@ module.exports = {
 
         case 'TOGGLE_WORKSPACE_GUIDE':
           draft.workspace.guides[action.payload] = !draft.workspace.guides[action.payload]
+          return
+
+        case 'ATTACHMENTS_PENDING':
+          draft.attachments[action.payload.id] = { status: 'NotAsked' }
+          return
+        case 'ATTACHMENTS_LOAD':
+          draft.attachments[action.payload.id] = { status: 'Loading' }
+          return
+        case 'ATTACHMENTS_SUCCESS':
+          draft.attachments[action.payload.id] = { status: 'Success', value: action.payload.value }
+          return
+        case 'ATTACHMENTS_ERROR':
+          draft.attachments[action.payload.id] = { status: 'Error', error: action.payload.error }
           return
       }
     })
