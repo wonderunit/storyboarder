@@ -164,9 +164,9 @@ const resetLoadingStatus = sceneObjects => {
     ) {
       sceneObjects[key] = {
         ...sceneObjects[key],
-        loaded: sceneObjects[key] == null
+        loaded: sceneObjects[key].loaded == null
           ? false
-          : sceneObjects[key]
+          : sceneObjects[key].loaded
       }
     }
   }
@@ -453,6 +453,8 @@ const initialState = {
       height: 1
     }
   },
+
+  attachments: {},
 
   aspectRatio: 2.35,
 
@@ -911,6 +913,34 @@ module.exports = {
 
         case 'TOGGLE_WORKSPACE_GUIDE':
           draft.workspace.guides[action.payload] = !draft.workspace.guides[action.payload]
+          return
+
+        case 'ATTACHMENTS_PENDING':
+          draft.attachments[action.payload.id] = { status: 'NotAsked' }
+          return
+        case 'ATTACHMENTS_LOAD':
+          draft.attachments[action.payload.id] = { status: 'Loading' }
+          return
+        case 'ATTACHMENTS_SUCCESS':
+          draft.attachments[action.payload.id] = { status: 'Success', value: action.payload.value }
+          return
+        case 'ATTACHMENTS_ERROR':
+          draft.attachments[action.payload.id] = { status: 'Error', error: action.payload.error }
+          return
+
+        case 'ATTACHMENTS_DELETE':
+          delete draft.attachments[action.payload.id]
+          return
+
+        case 'ATTACHMENTS_RELOCATE':
+          let { src, dst } = action.payload
+          for (let id in draft.sceneObjects) {
+            let sceneObject = draft.sceneObjects[id]
+
+            if (sceneObject.model === src) {
+              sceneObject.model = dst
+            }
+          }
           return
       }
     })

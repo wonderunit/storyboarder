@@ -6,7 +6,7 @@ const fs = require('fs-extra')
 const path = require('path')
 
 const React = require('react')
-const { useState, useEffect, useRef, useContext } = React
+const { useState, useEffect, useRef, useContext, useReducer } = React
 const { Provider, connect } = require('react-redux')
 const ReactDOM = require('react-dom')
 const Stats = require('stats.js')
@@ -22,6 +22,12 @@ const h = require('../utils/h')
 const useComponentSize = require('../hooks/use-component-size')
 const robot = require("robotjs")
 
+const prepareFilepathForModel = require('./prepare-filepath-for-model')
+
+// for pose harvesting (maybe abstract this later?)
+const { machineIdSync } = require('node-machine-id')
+const pkg = require('../../../package.json')
+const request = require('request')
 
 const {
   //
@@ -107,12 +113,12 @@ window.THREE = THREE
 
 const draggables = (sceneObjects, scene) =>
   //scene.children.filter(o => o.userData.type === 'object' || o instanceof BoundingBoxHelper)
-  scene.children.filter(o => o.userData.type === 'object' || 
-                              o.userData.type === 'character' || 
-                              o.userData.type === 'light' || 
+  scene.children.filter(o => o.userData.type === 'object' ||
+                              o.userData.type === 'character' ||
+                              o.userData.type === 'light' ||
                               o.userData.type === 'volume' )
 
-const cameras = ( scene ) => 
+const cameras = ( scene ) =>
   scene.children.filter(o => o instanceof THREE.PerspectiveCamera)
 
 const animatedUpdate = (fn) => (dispatch, getState) => fn(dispatch, getState())
@@ -169,6 +175,17 @@ const DEFAULT_POSE_PRESET_ID = '79BBBD0D-6BA2-4D84-9B71-EE661AB6E5AE'
 
 const SceneContext = React.createContext()
 
+
+
+require('../vendor/three/examples/js/loaders/LoaderSupport')
+require('../vendor/three/examples/js/loaders/GLTFLoader')
+require('../vendor/three/examples/js/loaders/OBJLoader2')
+const loadingManager = new THREE.LoadingManager()
+const objLoader = new THREE.OBJLoader2(loadingManager)
+const gltfLoader = new THREE.GLTFLoader(loadingManager)
+objLoader.setLogging(false, false)
+THREE.Cache.enabled = true
+
 const SceneManager = connect(
   state => ({
     world: state.world,
@@ -194,8 +211,9 @@ const SceneManager = connect(
     updateWorldEnvironment,
   }
 )(
-  ({ world, sceneObjects, updateObject, selectObject, remoteInput, largeCanvasRef, smallCanvasRef, selection, selectedBone, machineState, transition, animatedUpdate, selectBone, mainViewCamera, updateCharacterSkeleton, largeCanvasSize, activeCamera, aspectRatio, devices, meta, _boardUid, updateWorldEnvironment }) => {
+  ({ world, sceneObjects, updateObject, selectObject, remoteInput, largeCanvasRef, smallCanvasRef, selection, selectedBone, machineState, transition, animatedUpdate, selectBone, mainViewCamera, updateCharacterSkeleton, largeCanvasSize, activeCamera, aspectRatio, devices, meta, _boardUid, updateWorldEnvironment, attachments }) => {
     const { scene } = useContext(SceneContext)
+    // const modelCacheDispatch = useContext(CacheContext)
 
     let [camera, setCamera] = useState(null)
     const [shouldRaf, setShouldRaf] = useState(true)
@@ -216,7 +234,7 @@ const SceneManager = connect(
     let clock = useRef(new THREE.Clock())
 
     let orthoCamera = useRef(new THREE.OrthographicCamera( -4, 4, 4, -4, 1, 10000 ))
-    
+
     useEffect(() => {
       console.log('new SceneManager')
 
@@ -273,7 +291,7 @@ const SceneManager = connect(
       // )
 
       largeRendererEffect.current = new THREE.OutlineEffect( largeRenderer.current, {defaultThickness:0.008} )
-      
+
       smallRenderer.current = new THREE.WebGLRenderer({
         canvas: smallCanvasRef.current,
         antialias: true
@@ -373,7 +391,7 @@ const SceneManager = connect(
           ignoreMaterial: false,
           defaultColor: [0, 0, 0]
         })
-        
+
       } else {
         // ortho camera is large
         largeRenderer.current.setSize(width, height)
@@ -518,7 +536,7 @@ const SceneManager = connect(
                 scene.background.set(tempColor)
 
               } else {
-                scene.background.set(new THREE.Color( '#FFFFFF' ))           
+                scene.background.set(new THREE.Color( '#FFFFFF' ))
                 largeRendererEffect.current.render(scene, cameraForLarge)
                 scene.background.set(tempColor)
                 smallRendererEffect.current.render( scene, cameraForSmall)
@@ -617,9 +635,9 @@ const SceneManager = connect(
     useEffect(() => {
       if (dragControlsView.current) {
         // TODO read-only version?
-        
+
         dragControlsView.current.setObjects(draggables(sceneObjects, scene))
-        
+
         // TODO update if there are changes to the camera(s) in the scene
         //
         // let cameraState = Object.values(sceneObjects).find(o => o.type === 'camera')
@@ -650,12 +668,17 @@ const SceneManager = connect(
         }
       }
     }, [machineState.value, camera, cameraControlsView.current, mainViewCamera])
-    // console.log('SceneManager render', sceneObjects)
-    
+
     const components = Object.values(sceneObjects).map(props => {
-    
+      let modelCacheKey
+
       switch (props.type) {
           case 'object':
+            try {
+              modelCacheKey = ModelLoader.getFilepathForModel({ model: props.model, type: props.type }, { storyboarderFilePath: meta.storyboarderFilePath })
+            } catch (err) {
+              // console.log('migrating from absolute path')
+            }
             return [
               SceneObject, {
                 key: props.id,
@@ -668,15 +691,29 @@ const SceneManager = connect(
 
                 updateObject,
 
-                loaded: props.loaded ? props.loaded : false,
-
                 storyboarderFilePath: meta.storyboarderFilePath,
+
+                ...(props.model === 'box'
+                  ? {
+                    loaded: true,
+                    modelData: {}
+                  }
+                  : {
+                    loaded: props.loaded ? props.loaded : false,
+                    modelData: attachments[modelCacheKey] && attachments[modelCacheKey].value,
+                  }
+                ),
 
                 ...props
               }
             ]
 
           case 'character':
+            try {
+              modelCacheKey = ModelLoader.getFilepathForModel({ model: props.model, type: props.type }, { storyboarderFilePath: meta.storyboarderFilePath })
+            } catch (err) {
+              // console.log('migrating from absolute path')
+            }
             return [
               Character, {
                 key: props.id,
@@ -691,13 +728,14 @@ const SceneManager = connect(
                 updateCharacterSkeleton,
                 updateObject,
 
-                loaded: props.loaded ? props.loaded : false,
                 devices,
-
-                storyboarderFilePath: meta.storyboarderFilePath,
 
                 // HACK force reset skeleton pose on Board UUID change
                 boardUid: _boardUid,
+
+                storyboarderFilePath: meta.storyboarderFilePath,
+                loaded: props.loaded ? props.loaded : false,
+                modelData: attachments[modelCacheKey] && attachments[modelCacheKey].value,
 
                 ...props
               }
@@ -747,7 +785,7 @@ const SceneManager = connect(
     })
 
     const worldComponent = [WorldObject, { key: 'world', world, scene, storyboarderFilePath: meta.storyboarderFilePath, updateWorldEnvironment }]
-    // TODO Scene parent object?
+    // TODO Scene parent object??
     return [
       [worldComponent, ...components].map(c => h(c))
     ]
@@ -802,7 +840,7 @@ const Camera = React.memo(({ scene, id, type, setCamera, icon, ...props }) => {
     camera.current.orthoIcon.position.copy(camera.current.position)
     camera.current.orthoIcon.icon.material.rotation = camera.current.rotation.y
     scene.add(camera.current.orthoIcon)
-    
+
     let frustumIcons = new THREE.Object3D()
 
     frustumIcons.left = new IconSprites( 'object', '', camera.current )
@@ -812,10 +850,10 @@ const Camera = React.memo(({ scene, id, type, setCamera, icon, ...props }) => {
     //frustumIcons.left.icon.position.z = -0.3
     frustumIcons.left.icon.center = new THREE.Vector2(0.5, -0.2)
     frustumIcons.right.icon.center = new THREE.Vector2(0.5, -0.2)
-    let hFOV = 2 * Math.atan( Math.tan( camera.current.fov * Math.PI / 180 / 2 ) * camera.current.aspect ) 
+    let hFOV = 2 * Math.atan( Math.tan( camera.current.fov * Math.PI / 180 / 2 ) * camera.current.aspect )
     frustumIcons.left.icon.material.rotation = hFOV/2 + camera.current.rotation.y
     frustumIcons.right.icon.material.rotation = -hFOV/2 + camera.current.rotation.y
-   
+
     camera.current.orthoIcon.frustumIcons = frustumIcons
     frustumIcons.add(frustumIcons.left)
     frustumIcons.add(frustumIcons.right)
@@ -870,19 +908,19 @@ const Camera = React.memo(({ scene, id, type, setCamera, icon, ...props }) => {
     let rotation = new THREE.Euler().setFromQuaternion( camera.current.quaternion, "YXZ" )   //always "YXZ" when we gat strange rotations
     camera.current.orthoIcon.icon.material.rotation = rotation.y
 
-    let hFOV = 2 * Math.atan( Math.tan( camera.current.fov * Math.PI / 180 / 2 ) * camera.current.aspect ) 
+    let hFOV = 2 * Math.atan( Math.tan( camera.current.fov * Math.PI / 180 / 2 ) * camera.current.aspect )
     camera.current.orthoIcon.frustumIcons.left.icon.material.rotation = hFOV/2 + rotation.y
     camera.current.orthoIcon.frustumIcons.right.icon.material.rotation = -hFOV/2 + rotation.y
-    
-    
+
+
     //calculatedName = camera.current.name || capitalize(`${camera.current.type} ${number}`)
     //if (camera.current.orthoIcon.iconText)
       //camera.current.orthoIcon.iconText.textGeometry.update( calculatedName )
-    
+
     let focal = camera.current.getFocalLength()
     let [camFeet, camInches] = metersAsFeetAndInches(props.z)
     if (camera.current.orthoIcon.iconSecondText)
-      camera.current.orthoIcon.changeSecondText( Math.round(focal)+"mm, "+feetAndInchesAsString2nd(camFeet, camInches) )      
+      camera.current.orthoIcon.changeSecondText( Math.round(focal)+"mm, "+feetAndInchesAsString2nd(camFeet, camInches) )
     //camera.current.orthoIcon.frustumIcons = frustumIcons
   }
   camera.current.layers.enable(1)
@@ -1634,6 +1672,17 @@ const PosePresetsEditor = connect(
       // save the presets file
       savePosePresets(getState())
 
+      // save to server
+      // for pose harvesting (maybe abstract this later?)
+      request.post('https://storyboarders.com/api/create_pose', {form:{
+        name: name,
+        json: JSON.stringify(sceneObject.skeleton),
+        model_type: sceneObject.model,
+        storyboarder_version: pkg.version,
+        machine_id: machineIdSync()
+    }})
+
+
       // select the preset in the list
       dispatch(updateObject(sceneObject.id, { posePresetId: id }))
     },
@@ -1843,13 +1892,13 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
         ],
       ],
 
-      sceneObject.type == 'volume' && [        
+      sceneObject.type == 'volume' && [
         [
           'div.column',
 
           [NumberSlider, { label: 'width', value: sceneObject.width, min: 0.1, max: 25, onSetValue: createOnSetValue(sceneObject.id, 'width') } ],
           [NumberSlider, { label: 'height', value: sceneObject.height, min: -25, max: 25, onSetValue: createOnSetValue(sceneObject.id, 'height') } ],
-          [NumberSlider, { label: 'depth', value: sceneObject.depth, min: 0.1, max: 25, onSetValue: createOnSetValue(sceneObject.id, 'depth') } ], 
+          [NumberSlider, { label: 'depth', value: sceneObject.depth, min: 0.1, max: 25, onSetValue: createOnSetValue(sceneObject.id, 'depth') } ],
 
           ['div.number-slider', [
             ['div.number-slider__label', 'Layer Image Files'],
@@ -1894,21 +1943,21 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
             ]
           ]]],
 
-          [NumberSlider, { 
-            label: 'layers', 
-            value: sceneObject.numberOfLayers, 
-            min: 1, 
-            max: 10, 
+          [NumberSlider, {
+            label: 'layers',
+            value: sceneObject.numberOfLayers,
+            min: 1,
+            max: 10,
             step: 1,
             transform: NumberSliderTransform.round,
             formatter: NumberSliderFormatter.identity,
             onSetValue: createOnSetValue(sceneObject.id, 'numberOfLayers')}],
-          [NumberSlider, { label: 'opacity', value: sceneObject.opacity, min: 0, max: 1, onSetValue: createOnSetValue(sceneObject.id, 'opacity') } ], 
-          [NumberSlider, { 
-            label: 'color', 
-            value: sceneObject.color/0xFFFFFF, 
-            min: 0.0, 
-            max: 1, 
+          [NumberSlider, { label: 'opacity', value: sceneObject.opacity, min: 0, max: 1, onSetValue: createOnSetValue(sceneObject.id, 'opacity') } ],
+          [NumberSlider, {
+            label: 'color',
+            value: sceneObject.color/0xFFFFFF,
+            min: 0.0,
+            max: 1,
             onSetValue: value => {
               let c = 0xFF * value
               let color = (c << 16) | (c << 8) | c
@@ -3320,6 +3369,7 @@ const Editor = connect(
     aspectRatio: state.aspectRatio,
     sceneObjects: state.sceneObjects,
     selectedBone: state.selectedBone,
+    attachments: state.attachments
   }),
   {
     createObject,
@@ -3350,7 +3400,7 @@ const Editor = connect(
     withState: (fn) => (dispatch, getState) => fn(dispatch, getState())
   }
 )(
-  ({ mainViewCamera, createObject, selectObject, updateModels, loadScene, saveScene, activeCamera, setActiveCamera, resetScene, remoteInput, aspectRatio, sceneObjects, selection, selectedBone, onBeforeUnload, setMainViewCamera, withState }) => {
+  ({ mainViewCamera, createObject, selectObject, updateModels, loadScene, saveScene, activeCamera, setActiveCamera, resetScene, remoteInput, aspectRatio, sceneObjects, selection, selectedBone, onBeforeUnload, setMainViewCamera, withState, attachments }) => {
 
     const largeCanvasRef = useRef(null)
     const smallCanvasRef = useRef(null)
@@ -3372,7 +3422,7 @@ const Editor = connect(
     }
 
     const onSwapCameraViewsClick = preventDefault(() => {
-      
+
       setMainViewCamera(mainViewCamera === 'ortho' ? 'live' : 'ortho')
 
     })
@@ -3524,6 +3574,228 @@ const Editor = connect(
       }
     }, [onBeforeUnload])
 
+    // TODO cancellation (e.g.: redux-saga)
+    const loadSceneObjects = async (dispatch, state) => {
+      let storyboarderFilePath = state.meta.storyboarderFilePath
+
+      const loadables = Object.values(sceneObjects)
+        // has a value for model
+        .filter(o => o.model != null)
+        // loaded false or undefined or null
+        .filter(o => o.loaded !== true)
+
+      for (let loadable of loadables) {
+        // don't try to load the box
+        if (loadable.type === 'object' && loadable.model === 'box') {
+          continue
+        }
+
+        let expectedFilepath = ModelLoader.getFilepathForModel(loadable, { storyboarderFilePath })
+
+        // grab the latest state
+        withState(async (dispatch, state) => {
+          // if it's in the cache already, skip
+          if (state.attachments[expectedFilepath]) return
+
+          // prevent doubling up
+          dispatch({ type: 'ATTACHMENTS_PENDING', payload: { id: expectedFilepath } })
+
+          // if absolute filepath does not exist ...
+          if (!fs.existsSync(expectedFilepath)) {
+            // ... ask the artist to locate it
+            try {
+
+              const choice = dialog.showMessageBox({
+                type: 'question',
+                buttons: ['Yes', 'No'],
+                title: 'Model file not found',
+                message: `Could not find model file at ${expectedFilepath}. Try to find it?`,
+              })
+
+              const shouldRelocate = (choice === 0)
+
+              if (!shouldRelocate) {
+                throw new Error('could not relocate missing file')
+              }
+
+              let updatedFilepath = await new Promise((resolve, reject) => {
+                dialog.showOpenDialog(
+                  {
+                    title: 'Locate model file',
+                    defaultPath: path.dirname(expectedFilepath),
+                    filters: [
+                      {
+                        name: 'Model',
+                        extensions: ['gltf', 'glb']
+                      }
+                    ]
+                  },
+                  filenames => {
+                    if (filenames) {
+                      resolve(filenames[0])
+                    } else {
+                      reject('no alternate filepath provided')
+                    }
+                  }
+                )
+              })
+
+              // TODO test:
+              // handle case where user relocated to a file in the models/* folder
+              //
+              //
+
+              // // handle case where user relocated to a file in the models/* folder
+              // if (
+              //   // the absolute folder name of the model file ...
+              //   path.resolve(path.normalize(path.dirname(updatedFilepath))) ===
+              //   // ... is the same as the absolute folder name where we expect models of this type ...
+              //   ModelLoader.projectFolder(updatedFilepath)
+              // ) {
+              //   // update the model path to relative path
+              //   console.log(`setting model from absolute to relative model:${model} filepath:${updatedFilepath}`)
+              //   let updatedModel = path.join('models', loadable.type, path.basename(updatedFilepath))
+              //   dispatch(updateObject(loadable.id, { model: updatedModel }))
+              //   return
+              // }
+
+
+              // update with absolute path to relocated model
+              // dispatch(updateObject(loadable.id, { model: updatedFilepath }))
+
+
+              // remove the pending absolute path from attachments
+              dispatch({ type: 'ATTACHMENTS_DELETE', payload: { id: expectedFilepath } })
+              // update ALL instances of the model with the new location
+              dispatch({
+                type: 'ATTACHMENTS_RELOCATE',
+                payload: {
+                  src: expectedFilepath,
+                  dst: updatedFilepath
+                }
+              })
+              return
+
+            } catch (error) {
+              console.error(error)
+
+              // cancellation by user
+              // dialog.showMessageBox({
+              //   title: 'Failed to load',
+              //   message: `Failed to load model ${model}`
+              // })
+
+              // dispatch({ type: 'ATTACHMENTS_ERROR', payload: { id: expectedFilepath, error: 'could not locate' } })
+              dispatch({ type: 'ATTACHMENTS_DELETE', payload: { id: expectedFilepath } })
+              return
+            }
+          }
+
+          if (ModelLoader.needsCopy(loadable)) {
+            let src = expectedFilepath
+
+            let dst = path.join(
+              path.dirname(storyboarderFilePath),
+              ModelLoader.projectFolder(loadable.type),
+              path.basename(expectedFilepath)
+            )
+
+            console.log('will copy from', src, 'to', dst)
+
+            // make sure the path exists
+            fs.ensureDirSync(path.dirname(dst))
+
+            // as long as they are different files, we need to copy them
+            if (src !== dst) {
+
+              // prompt before overwrite
+              // (commented out for now because it's annoying in practice)
+              //
+              // if (fs.existsSync(dst)) {
+              //   let choice = dialog.showMessageBox(null, {
+              //     type: 'question',
+              //     buttons: ['Yes', 'No'],
+              //     message: 'Model file already exists. Overwrite?'
+              //   })
+              //   if (choice !== 0) {
+              //     console.log('cancelled model file copy')
+              //     throw new Error('Skipped')
+              //   }
+              // }
+
+              console.log(`copying model file from ${src} to ${dst}`)
+              fs.copySync(src, dst, { overwrite: true, errorOnExist: false })
+            }
+
+            // update it in the data
+            let updatedModel = path.join(
+              ModelLoader.projectFolder(loadable.type),
+              path.basename(dst)
+            )
+
+            dispatch(updateObject(loadable.id, { model: updatedModel }))
+
+            // let id = ModelLoader.getFilepathForModel({ model: updatedModel, type: loadable.type }, { storyboarderFilePath })
+            // dispatch({ type: 'ATTACHMENTS_DELETE', payload: { id} })
+
+            // remove the pending absolute path from attachments
+            dispatch({ type: 'ATTACHMENTS_DELETE', payload: { id: src } })
+            return
+          }
+
+          withState(async (dispatch, state) => {
+            let filepath = expectedFilepath
+            switch (path.extname(filepath)) {
+              case '.obj':
+                objLoader.load(
+                  filepath,
+                  event => {
+                    console.log('got obj')
+                    console.log({ event })
+                    let value = { scene: event.detail.loaderRootNode }
+                    console.log('cache: success', filepath)
+                    dispatch({ type: 'ATTACHMENTS_SUCCESS', payload: { id: filepath, value } })
+                  },
+                  null,
+                  error => {
+                    console.error('cache: error')
+                    console.error(error)
+                    alert(error)
+                    // dispatch({ type: 'ATTACHMENTS_ERROR', payload: { id: filepath, error } })
+                    dispatch({ type: 'ATTACHMENTS_DELETE', payload: { id: filepath } })
+                  }
+                )
+                return dispatch({ type: 'ATTACHMENTS_LOAD', payload: { id: filepath } })
+
+              case '.gltf':
+              case '.glb':
+                gltfLoader.load(
+                  filepath,
+                  value => {
+                    console.log('cache: success', filepath)
+                    dispatch({ type: 'ATTACHMENTS_SUCCESS', payload: { id: filepath, value } })
+                  },
+                  null,
+                  error => {
+                    console.error('cache: error')
+                    console.error(error)
+                    alert(error)
+                    // dispatch({ type: 'ATTACHMENTS_ERROR', payload: { id: filepath, error } })
+                    dispatch({ type: 'ATTACHMENTS_DELETE', payload: { id: filepath } })
+
+                  }
+                )
+                return dispatch({ type: 'ATTACHMENTS_LOAD', payload: { id: filepath } })
+            }
+          })
+        })
+      }
+    }
+
+    useEffect(() => {
+      withState(loadSceneObjects)
+    }, [sceneObjects])
+
     return React.createElement(
       SceneContext.Provider,
       { value: { scene: scene.current }},
@@ -3585,10 +3857,20 @@ const Editor = connect(
             ready && (remoteInput.mouseMode || remoteInput.orbitMode) && [PhoneCursor, { remoteInput, camera, largeCanvasRef, selectObject, selectBone, sceneObjects, selection, selectedBone }],
           ],
 
-          [LoadingStatus, { ready }]
+          // [LoadingStatus, { ready }]
         ],
 
-        ready && [SceneManager, { mainViewCamera, largeCanvasRef, smallCanvasRef, machineState, transition, largeCanvasSize }],
+        ready && [
+          SceneManager, {
+            mainViewCamera,
+            largeCanvasRef,
+            smallCanvasRef,
+            machineState,
+            transition,
+            largeCanvasSize,
+            attachments
+          }
+        ],
 
         !machineState.matches('typing') && [KeyHandler],
 
@@ -3614,15 +3896,27 @@ const getLoadableSceneObjectsRemaining = createSelector(
 
 const LoadingStatus = connect(
   state => ({
-    // total: getLoadableSceneObjects(state).length,
-    remaining: getLoadableSceneObjectsRemaining(state).length
+    storyboarderFilePath: state.meta.storyboarderFilePath,
+    remaining: getLoadableSceneObjectsRemaining(state),
+    attachments: state.attachments
   })
-)(React.memo(({ ready, remaining }) => {
+)(React.memo(({ ready, remaining, attachments, storyboarderFilePath }) => {
   let message
-  
+
+  let inprogress = remaining.filter(loadable => {
+    let filepathForModel = ModelLoader.getFilepathForModel(loadable, { storyboarderFilePath })
+    if (attachments[filepathForModel]) {
+      // in cache but in progress
+      return attachments[filepathForModel].status === 'NotAsked' || attachments[filepathForModel].status === 'Loading'
+    } else {
+      // not even in cache yet
+      return true
+    }
+  })
+
   if (!ready) {
     message = 'Initializing Shot Generator …'
-  } else if (remaining) {
+  } else if (inprogress.length) {
     message = 'Loading models …'
   }
 

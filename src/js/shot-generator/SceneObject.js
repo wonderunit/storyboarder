@@ -14,20 +14,6 @@ const applyDeviceQuaternion = require('./apply-device-quaternion')
 const prepareFilepathForModel = require('./prepare-filepath-for-model')
 const IconSprites = require('./IconSprites')
 
-// TODO use functions of ModelLoader?
-require('../vendor/three/examples/js/loaders/LoaderSupport')
-require('../vendor/three/examples/js/loaders/GLTFLoader')
-require('../vendor/three/examples/js/loaders/OBJLoader2')
-const loadingManager = new THREE.LoadingManager()
-const objLoader = new THREE.OBJLoader2(loadingManager)
-const gltfLoader = new THREE.GLTFLoader(loadingManager)
-const imageLoader = new THREE.ImageLoader(loadingManager)
-
-
-objLoader.setLogging(false, false)
-
-THREE.Cache.enabled = true
-
 const boxRadius = .005
 const boxRadiusSegments = 5
 
@@ -76,177 +62,122 @@ const meshFactory = originalMesh => {
   return mesh
 }
 
-const SceneObject = React.memo(({ scene, id, type, isSelected, loaded, updateObject, remoteInput, camera, storyboarderFilePath, ...object }) => {
+const SceneObject = React.memo(({ scene, id, type, isSelected, loaded, modelData, updateObject, remoteInput, camera, storyboarderFilePath, ...props }) => {
   const setLoaded = loaded => updateObject(id, { loaded })
 
-  const container = useRef(groupFactory())
-
-  const load = async (model, object, container) => {
-    setLoaded(false)
-
-    switch (model) {
-      case 'box':
-        let geometry = new RoundedBoxGeometry( 1, 1, 1, boxRadius, boxRadiusSegments )
-        let material = materialFactory()
-        let mesh = new THREE.Mesh( geometry, material )
-        mesh.renderOrder = 1.0
-        mesh.layers.disable(0)
-        mesh.layers.enable(1)
-        mesh.layers.enable(2)
-        mesh.layers.enable(3)
-        geometry.translate( 0, 1 / 2, 0 )
-        container.remove(...container.children)
-        container.add(mesh)
-        setLoaded(true)
-        break
-
-      default:
-        container.remove(...container.children)
-
-        let filepath = await prepareFilepathForModel({
-          id,
-          model,
-          type,
-
-          storyboarderFilePath,
-
-          onFilePathChange: filepath => {
-            // new relative path
-            updateObject(id, { model: filepath })
-          }
-        })
-
-        if (!filepath) {
-          return
-        }
-
-        switch (path.extname(filepath)) {
-          case '.obj':
-            await new Promise((resolve, reject) => {
-              objLoader.load(
-                filepath, event => {
-                  const object = event.detail.loaderRootNode
-
-                  object.traverse( function ( child ) {
-                    if ( child instanceof THREE.Mesh ) {
-                      container.add(meshFactory(child))
-                    }
-                  })
-                  resolve()
-                },
-                null,
-                error => reject(error)
-              )
-            })
-            .then(() => {
-              console.log('loaded', filepath)
-              setLoaded(true)
-            })
-            .catch((err) => {
-              console.error(err)
-              // HACK undefined == error
-              setLoaded(undefined)
-            })
-            break
-
-          case '.gltf':
-          case '.glb':
-            await new Promise((resolve, reject) => {
-              gltfLoader.load(
-                filepath,
-                data => {
-                  // add every single mesh we find
-                  data.scene.traverse(child => {
-                    if ( child instanceof THREE.Mesh ) {
-                      container.add(meshFactory(child))
-                    }
-                  })
-                  resolve()
-                },
-                null,
-                error => {
-                  reject(error)
-                }
-              )
-            })
-            .then(() => {
-              console.log('loaded', filepath)
-              setLoaded(true)
-            })
-            .catch((err) => {
-              console.error(err)
-              // HACK undefined == error
-              setLoaded(undefined)
-            })
-            break
-
-          default:
-            alert('Could not load file.')
-            setLoaded(undefined)
-        }
-        break
-    }
-  }
+  const container = useRef()
 
   useEffect(() => {
-    console.log(type, id, 'model changed', container.current, 'to', object.model)
-    load(object.model, object, container.current)
+    console.log(type, id, 'added')
 
+    container.current = groupFactory()
     container.current.userData.id = id
     container.current.userData.type = type
 
-    console.log(type, id, 'added to scene')
-    scene.add(container.current)
-    
     container.current.orthoIcon = new IconSprites( type, "", container.current )
     //scene.add(container.current.orthoIcon)
+
+    console.log(type, id, 'added to scene')
+    scene.add(container.current)
 
     return function cleanup () {
       console.log(type, id, 'removed from scene')
       scene.remove(container.current.orthoIcon)
       scene.remove(container.current)
     }
-  }, [object.model])
+  }, [])
+
+  // if the model has changed
+  useEffect(() => {
+    setLoaded(false)
+
+    // return function cleanup () { }
+  }, [props.model])
 
   useEffect(() => {
-    container.current.position.x = object.x
-    container.current.position.z = object.y
-    container.current.position.y = object.z
+    if (!loaded && modelData) {
+      console.log(type, id, 'got modelData')
+
+      switch (props.model) {
+        case 'box':
+          let geometry = new RoundedBoxGeometry( 1, 1, 1, boxRadius, boxRadiusSegments )
+          let material = materialFactory()
+          let mesh = new THREE.Mesh( geometry, material )
+          mesh.renderOrder = 1.0
+          mesh.layers.disable(0)
+          mesh.layers.enable(1)
+          mesh.layers.enable(2)
+          mesh.layers.enable(3)
+          geometry.translate( 0, 1 / 2, 0 )
+          container.current.remove(...container.current.children)
+          container.current.add(mesh)
+          setLoaded(true)
+          break
+    
+        default:
+          container.current.remove(...container.current.children)
+    
+          // console.log('scene object', path.extname(props.model), modelData)
+
+          try {
+            // add a clone of every single mesh we find
+            modelData.scene.traverse( function ( child ) {
+              if ( child instanceof THREE.Mesh ) {
+                container.current.add(meshFactory(child.clone()))
+              }
+            })
+            // console.log('loaded', props.model)
+            setLoaded(true)
+          } catch (err) {
+            console.error(err)
+
+            // HACK `undefined` means error
+            setLoaded(undefined)
+          }
+          break
+      }
+    }
+  }, [modelData, loaded])
+
+  useEffect(() => {
+    container.current.position.x = props.x
+    container.current.position.z = props.y
+    container.current.position.y = props.z
     container.current.orthoIcon.position.copy(container.current.position)
   }, [
-    object.x,
-    object.y,
-    object.z
+    props.x,
+    props.y,
+    props.z
   ])
 
   useEffect(() => {
-    container.current.rotation.x = object.rotation.x
-    container.current.rotation.y = object.rotation.y
-    container.current.rotation.z = object.rotation.z
-    container.current.orthoIcon.icon.rotation = object.rotation.y
+    container.current.rotation.x = props.rotation.x
+    container.current.rotation.y = props.rotation.y
+    container.current.rotation.z = props.rotation.z
+    container.current.orthoIcon.icon.rotation = props.rotation.y
   }, [
-    object.rotation.x,
-    object.rotation.y,
-    object.rotation.z
+    props.rotation.x,
+    props.rotation.y,
+    props.rotation.z
   ])
 
   useEffect(() => {
     container.current.scale.set(
-      object.width,
-      object.height,
-      object.depth
+      props.width,
+      props.height,
+      props.depth
     )
-    container.current.orthoIcon.scale.set(object.width+0.2, object.depth+0.2, 1)
+    container.current.orthoIcon.scale.set(props.width+0.2, props.depth+0.2, 1)
   }, [
-    object.width,
-    object.height,
-    object.depth
+    props.width,
+    props.height,
+    props.depth
   ])
 
   useEffect(() => {
-    container.current.visible = object.visible
+    container.current.visible = props.visible
   }, [
-    object.visible
+    props.visible
   ])
 
   useEffect(() => {

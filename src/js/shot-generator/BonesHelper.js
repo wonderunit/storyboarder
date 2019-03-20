@@ -251,7 +251,7 @@ function filter_array(test_array) {
     return result
 }
 
-const cache = {}
+let cache = {}
 
 function BonesHelper( object, object3D, { boneLengthScale = 1, cacheKey } ) {
   Object3D.call( this )
