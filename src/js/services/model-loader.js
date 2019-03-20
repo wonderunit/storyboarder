@@ -328,6 +328,11 @@ const promptToLocateModelPath = ({ title, message, defaultPath }) => {
   })
 }
 
+// TODO could use app.getAppPath() instead?
+//
+// const { app } = require('electron').remote
+// path.join(app.getAppPath(), 'src', 'data', 'shot-generator')
+
 const pathToShotGeneratorData =
   path.join(__dirname, '..', '..', '..', 'src', 'data', 'shot-generator')
 

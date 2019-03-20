@@ -5,8 +5,6 @@ const { useRef, useEffect, useState } = React
 
 const path = require('path')
 
-const prepareFilepathForModel = require('./prepare-filepath-for-model')
-
 const buildSquareRoom = require('./build-square-room')
 
 // TODO use functions of ModelLoader?
