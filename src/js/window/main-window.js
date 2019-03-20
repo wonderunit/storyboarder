@@ -1900,17 +1900,20 @@ const loadBoardUI = async () => {
 
 
 
-  document.querySelector("#shot-generator-container .flatbutton").addEventListener('click', event => {
-    event.preventDefault()
-    ipcRenderer.send('shot-generator:open', {
-      storyboarderFilePath: boardFilename,
-      boardData: {
-        version: boardData.version,
-        aspectRatio: boardData.aspectRatio
-      },
-      board: boardData.boards[currentBoard]
+  // Open Shot Generator button
+  document
+    .querySelector("#shot-generator-container .flatbutton")
+    .addEventListener('click', event => {
+      event.preventDefault()
+      ipcRenderer.send('shot-generator:open', {
+        storyboarderFilePath: boardFilename,
+        boardData: {
+          version: boardData.version,
+          aspectRatio: boardData.aspectRatio
+        },
+        board: boardData.boards[currentBoard]
+      })
     })
-  })
 
 
 
