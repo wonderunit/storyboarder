@@ -6,7 +6,7 @@ const fs = require('fs-extra')
 const path = require('path')
 
 const React = require('react')
-const { useState, useEffect, useRef, useContext, useReducer } = React
+const { useState, useEffect, useRef, useContext } = React
 const { Provider, connect } = require('react-redux')
 const ReactDOM = require('react-dom')
 const Stats = require('stats.js')
@@ -21,8 +21,6 @@ const { createSelector } = require('reselect')
 const h = require('../utils/h')
 const useComponentSize = require('../hooks/use-component-size')
 const robot = require("robotjs")
-
-const prepareFilepathForModel = require('./prepare-filepath-for-model')
 
 // for pose harvesting (maybe abstract this later?)
 const { machineIdSync } = require('node-machine-id')
@@ -784,7 +782,29 @@ const SceneManager = connect(
         }
     })
 
-    const worldComponent = [WorldObject, { key: 'world', world, scene, storyboarderFilePath: meta.storyboarderFilePath, updateWorldEnvironment }]
+    let worldEnvironmentFileCacheKey
+
+    if (world.environment.file) {
+      worldEnvironmentFileCacheKey = ModelLoader.getFilepathForModel(
+        { model: world.environment.file, type: 'environment' },
+        { storyboarderFilePath: meta.storyboarderFilePath }
+      )
+    }
+
+    const worldComponent = [
+      WorldObject,
+      {
+        key: 'world',
+        world,
+        scene,
+        storyboarderFilePath: meta.storyboarderFilePath,
+        updateWorldEnvironment,
+        modelData: (
+          attachments[worldEnvironmentFileCacheKey] &&
+          attachments[worldEnvironmentFileCacheKey].value
+        )
+      }
+    ]
     // TODO Scene parent object??
     return [
       [worldComponent, ...components].map(c => h(c))
@@ -3368,6 +3388,7 @@ const Editor = connect(
     remoteInput: state.input,
     aspectRatio: state.aspectRatio,
     sceneObjects: state.sceneObjects,
+    world: state.world,
     selectedBone: state.selectedBone,
     attachments: state.attachments
   }),
@@ -3400,7 +3421,7 @@ const Editor = connect(
     withState: (fn) => (dispatch, getState) => fn(dispatch, getState())
   }
 )(
-  ({ mainViewCamera, createObject, selectObject, updateModels, loadScene, saveScene, activeCamera, setActiveCamera, resetScene, remoteInput, aspectRatio, sceneObjects, selection, selectedBone, onBeforeUnload, setMainViewCamera, withState, attachments }) => {
+  ({ mainViewCamera, createObject, selectObject, updateModels, loadScene, saveScene, activeCamera, setActiveCamera, resetScene, remoteInput, aspectRatio, sceneObjects, world, selection, selectedBone, onBeforeUnload, setMainViewCamera, withState, attachments }) => {
 
     const largeCanvasRef = useRef(null)
     const smallCanvasRef = useRef(null)
@@ -3792,9 +3813,173 @@ const Editor = connect(
       }
     }
 
+    const loadWorldEnvironment = async (dispatch, state) => {
+      let storyboarderFilePath = state.meta.storyboarderFilePath
+
+      let expectedFilepath = ModelLoader.getFilepathForModel({
+        model: world.environment.file,
+        type: 'environment'
+      }, { storyboarderFilePath })
+
+        withState(async (dispatch, state) => {
+          if (state.attachments[expectedFilepath]) return
+
+          dispatch({ type: 'ATTACHMENTS_PENDING', payload: { id: expectedFilepath } })
+
+          if (!fs.existsSync(expectedFilepath)) {
+            try {
+
+              const choice = dialog.showMessageBox({
+                type: 'question',
+                buttons: ['Yes', 'No'],
+                title: 'Model file not found',
+                message: `Could not find model file at ${expectedFilepath}. Try to find it?`,
+              })
+
+              const shouldRelocate = (choice === 0)
+
+              if (!shouldRelocate) {
+                throw new Error('could not relocate missing file')
+              }
+
+              let updatedFilepath = await new Promise((resolve, reject) => {
+                dialog.showOpenDialog(
+                  {
+                    title: 'Locate model file',
+                    defaultPath: path.dirname(expectedFilepath),
+                    filters: [
+                      {
+                        name: 'Model',
+                        extensions: ['gltf', 'glb']
+                      }
+                    ]
+                  },
+                  filenames => {
+                    if (filenames) {
+                      resolve(filenames[0])
+                    } else {
+                      reject('no alternate filepath provided')
+                    }
+                  }
+                )
+              })
+
+              console.log('user selected updatedFilepath:', updatedFilepath)
+
+              // TODO test:
+              // handle case where user relocated to a file in the models/* folder
+              //
+
+              // remove the pending absolute path from attachments
+              dispatch({ type: 'ATTACHMENTS_DELETE', payload: { id: expectedFilepath } })
+              // update the instance
+              dispatch({
+                type: 'UPDATE_WORLD_ENVIRONMENT',
+                payload: {
+                  file: updatedFilepath
+                }
+              })
+              return
+
+            } catch (error) {
+              console.error(error)
+              dispatch({ type: 'ATTACHMENTS_DELETE', payload: { id: expectedFilepath } })
+              return
+            }
+          }
+
+          let loadable = {
+            model: world.environment.file,
+            type: 'environment'
+          }
+          if (ModelLoader.needsCopy(loadable)) {
+            let src = expectedFilepath
+
+            let dst = path.join(
+              path.dirname(storyboarderFilePath),
+              ModelLoader.projectFolder(loadable.type),
+              path.basename(expectedFilepath)
+            )
+
+            console.log('will copy from', src, 'to', dst)
+
+            fs.ensureDirSync(path.dirname(dst))
+
+            if (src !== dst) {
+              console.log(`copying model file from ${src} to ${dst}`)
+              fs.copySync(src, dst, { overwrite: true, errorOnExist: false })
+            }
+
+            let updatedModel = path.join(
+              ModelLoader.projectFolder(loadable.type),
+              path.basename(dst)
+            )
+
+            console.log('copied! updated model:', updatedModel)
+            dispatch({
+              type: 'UPDATE_WORLD_ENVIRONMENT',
+              payload: {
+                file: updatedModel
+              }
+            })
+            dispatch({ type: 'ATTACHMENTS_DELETE', payload: { id: src } })
+            return
+          }
+
+          withState(async (dispatch, state) => {
+            let filepath = expectedFilepath
+            switch (path.extname(filepath)) {
+              case '.obj':
+                objLoader.load(
+                  filepath,
+                  event => {
+                    console.log('cache: success', filepath)
+                    let value = { scene: event.detail.loaderRootNode }
+                    console.log('cache: success', filepath)
+                    dispatch({ type: 'ATTACHMENTS_SUCCESS', payload: { id: filepath, value } })
+                  },
+                  null,
+                  error => {
+                    console.error('cache: error')
+                    console.error(error)
+                    alert(error)
+                    dispatch({ type: 'ATTACHMENTS_DELETE', payload: { id: filepath } })
+                  }
+                )
+                return dispatch({ type: 'ATTACHMENTS_LOAD', payload: { id: filepath } })
+
+              case '.gltf':
+              case '.glb':
+                gltfLoader.load(
+                  filepath,
+                  value => {
+                    console.log('cache: success', filepath)
+                    dispatch({ type: 'ATTACHMENTS_SUCCESS', payload: { id: filepath, value } })
+                  },
+                  null,
+                  error => {
+                    console.error('cache: error')
+                    console.error(error)
+                    alert(error)
+                    dispatch({ type: 'ATTACHMENTS_DELETE', payload: { id: filepath } })
+
+                  }
+                )
+                return dispatch({ type: 'ATTACHMENTS_LOAD', payload: { id: filepath } })
+            }
+          })
+        })
+      }
+
     useEffect(() => {
       withState(loadSceneObjects)
     }, [sceneObjects])
+
+    useEffect(() => {
+      if (world.environment.file) {
+        withState(loadWorldEnvironment)
+      }
+    }, [world.environment.file])
 
     return React.createElement(
       SceneContext.Provider,
