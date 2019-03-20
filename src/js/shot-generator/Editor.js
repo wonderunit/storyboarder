@@ -3601,8 +3601,6 @@ const Editor = connect(
           objLoader.load(
             filepath,
             event => {
-              console.log('got obj')
-              console.log({ event })
               let value = { scene: event.detail.loaderRootNode }
               console.log('cache: success', filepath)
               dispatch({ type: 'ATTACHMENTS_SUCCESS', payload: { id: filepath, value } })
