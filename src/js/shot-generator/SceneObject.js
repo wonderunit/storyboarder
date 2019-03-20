@@ -11,7 +11,6 @@ const fs = require('fs')
 const ModelLoader = require('../services/model-loader')
 
 const applyDeviceQuaternion = require('./apply-device-quaternion')
-const prepareFilepathForModel = require('./prepare-filepath-for-model')
 const IconSprites = require('./IconSprites')
 
 const boxRadius = .005

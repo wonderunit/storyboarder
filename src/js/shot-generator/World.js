@@ -5,8 +5,6 @@ const { useRef, useEffect, useState } = React
 
 const path = require('path')
 
-const prepareFilepathForModel = require('./prepare-filepath-for-model')
-
 const buildSquareRoom = require('./build-square-room')
 
 // TODO use functions of ModelLoader?
@@ -131,101 +129,39 @@ const useRoom = (world, scene) => {
   return object.current
 }
 
-const World = ({ world, scene, storyboarderFilePath, updateWorldEnvironment }) => {
+const World = ({ world, scene, storyboarderFilePath, updateWorldEnvironment, modelData }) => {
   const [group, setGroup] = useState(null)
 
   const ground = useGround(world, scene)
   const room = useRoom(world, scene)
 
-  let load = async file => {
-    let filepath = await prepareFilepathForModel({
-      model: file,
-      type: 'environment',
-
-      storyboarderFilePath,
-
-      onFilePathChange: filepath => {
-        // new relative path
-        updateWorldEnvironment({ file: filepath })
-      }
-    })
-
-    if (!filepath) {
-      setGroup(null)
-      return
-    }
-
-    switch (path.extname(filepath)) {
-      case '.obj':
-        objLoader.load(
-          filepath,
-          event => {
-          },
-          null,
-          error => {
-            console.error(error)
-            alert('Error loading environment model file:\n' + filepath)
-            updateWorldEnvironment({ file: undefined })
-            setGroup(null)
-          }
-        )
-        break
-
-      case '.gltf':
-      case '.glb':
-        gltfLoader.load(
-          filepath,
-          data => {
-            const g = new THREE.Group()
-
-            data.scene.children.forEach(child => {
-              if (child.type === 'Mesh') {
-                let m = child.clone()
-
-                const material = new THREE.MeshToonMaterial({
-                  color: 0xffffff,
-                  emissive: 0x0,
-                  specular: 0x0,
-                  skinning: true,
-                  shininess: 0,
-                  flatShading: false
-                })
-                m.material = material
-
-                g.add(m)
-              }
-            })
-
-            setGroup(g)
-          },
-          null,
-          error => {
-            console.error(error)
-            alert('Error loading environment model file:\n' + filepath)
-            updateWorldEnvironment({ file: undefined })
-            setGroup(null)
-          }
-        )
-        break
-
-      default:
-        alert('Error loading environment model file:\n' + filepath)
-        updateWorldEnvironment({ file: undefined })
-        setGroup(null)
-        break
-    }
-  }
-
-  // deferring to load, which runs async
-  // see: https://stackoverflow.com/questions/53332321
   useEffect(() => {
-    if (world.environment.file) {
-      load(world.environment.file)
+    if (modelData) {
+      const g = new THREE.Group()
+
+      modelData.scene.children.forEach(child => {
+        if (child.type === 'Mesh') {
+          let m = child.clone()
+
+          const material = new THREE.MeshToonMaterial({
+            color: 0xffffff,
+            emissive: 0x0,
+            specular: 0x0,
+            skinning: true,
+            shininess: 0,
+            flatShading: false
+          })
+          m.material = material
+
+          g.add(m)
+        }
+      })
+
+      setGroup(g)
     } else {
       setGroup(null)
-      return
     }
-  }, [world.environment.file])
+  }, [modelData])
 
   useEffect(() => {
     if (!group) return
