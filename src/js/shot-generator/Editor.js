@@ -3595,6 +3595,51 @@ const Editor = connect(
       }
     }, [onBeforeUnload])
 
+    const loadAttachment = ({ filepath, dispatch }) => {
+      switch (path.extname(filepath)) {
+        case '.obj':
+          objLoader.load(
+            filepath,
+            event => {
+              console.log('got obj')
+              console.log({ event })
+              let value = { scene: event.detail.loaderRootNode }
+              console.log('cache: success', filepath)
+              dispatch({ type: 'ATTACHMENTS_SUCCESS', payload: { id: filepath, value } })
+            },
+            null,
+            error => {
+              console.error('cache: error')
+              console.error(error)
+              alert(error)
+              // dispatch({ type: 'ATTACHMENTS_ERROR', payload: { id: filepath, error } })
+              dispatch({ type: 'ATTACHMENTS_DELETE', payload: { id: filepath } })
+            }
+          )
+          return dispatch({ type: 'ATTACHMENTS_LOAD', payload: { id: filepath } })
+
+        case '.gltf':
+        case '.glb':
+          gltfLoader.load(
+            filepath,
+            value => {
+              console.log('cache: success', filepath)
+              dispatch({ type: 'ATTACHMENTS_SUCCESS', payload: { id: filepath, value } })
+            },
+            null,
+            error => {
+              console.error('cache: error')
+              console.error(error)
+              alert(error)
+              // dispatch({ type: 'ATTACHMENTS_ERROR', payload: { id: filepath, error } })
+              dispatch({ type: 'ATTACHMENTS_DELETE', payload: { id: filepath } })
+
+            }
+          )
+          return dispatch({ type: 'ATTACHMENTS_LOAD', payload: { id: filepath } })
+      }
+    }
+
     // TODO cancellation (e.g.: redux-saga)
     const loadSceneObjects = async (dispatch, state) => {
       let storyboarderFilePath = state.meta.storyboarderFilePath
@@ -3764,51 +3809,7 @@ const Editor = connect(
             return
           }
 
-          withState(async (dispatch, state) => {
-            let filepath = expectedFilepath
-            switch (path.extname(filepath)) {
-              case '.obj':
-                objLoader.load(
-                  filepath,
-                  event => {
-                    console.log('got obj')
-                    console.log({ event })
-                    let value = { scene: event.detail.loaderRootNode }
-                    console.log('cache: success', filepath)
-                    dispatch({ type: 'ATTACHMENTS_SUCCESS', payload: { id: filepath, value } })
-                  },
-                  null,
-                  error => {
-                    console.error('cache: error')
-                    console.error(error)
-                    alert(error)
-                    // dispatch({ type: 'ATTACHMENTS_ERROR', payload: { id: filepath, error } })
-                    dispatch({ type: 'ATTACHMENTS_DELETE', payload: { id: filepath } })
-                  }
-                )
-                return dispatch({ type: 'ATTACHMENTS_LOAD', payload: { id: filepath } })
-
-              case '.gltf':
-              case '.glb':
-                gltfLoader.load(
-                  filepath,
-                  value => {
-                    console.log('cache: success', filepath)
-                    dispatch({ type: 'ATTACHMENTS_SUCCESS', payload: { id: filepath, value } })
-                  },
-                  null,
-                  error => {
-                    console.error('cache: error')
-                    console.error(error)
-                    alert(error)
-                    // dispatch({ type: 'ATTACHMENTS_ERROR', payload: { id: filepath, error } })
-                    dispatch({ type: 'ATTACHMENTS_DELETE', payload: { id: filepath } })
-
-                  }
-                )
-                return dispatch({ type: 'ATTACHMENTS_LOAD', payload: { id: filepath } })
-            }
-          })
+          loadAttachment({ filepath: expectedFilepath, dispatch })
         })
       }
     }
@@ -3926,48 +3927,7 @@ const Editor = connect(
             return
           }
 
-          withState(async (dispatch, state) => {
-            let filepath = expectedFilepath
-            switch (path.extname(filepath)) {
-              case '.obj':
-                objLoader.load(
-                  filepath,
-                  event => {
-                    console.log('cache: success', filepath)
-                    let value = { scene: event.detail.loaderRootNode }
-                    console.log('cache: success', filepath)
-                    dispatch({ type: 'ATTACHMENTS_SUCCESS', payload: { id: filepath, value } })
-                  },
-                  null,
-                  error => {
-                    console.error('cache: error')
-                    console.error(error)
-                    alert(error)
-                    dispatch({ type: 'ATTACHMENTS_DELETE', payload: { id: filepath } })
-                  }
-                )
-                return dispatch({ type: 'ATTACHMENTS_LOAD', payload: { id: filepath } })
-
-              case '.gltf':
-              case '.glb':
-                gltfLoader.load(
-                  filepath,
-                  value => {
-                    console.log('cache: success', filepath)
-                    dispatch({ type: 'ATTACHMENTS_SUCCESS', payload: { id: filepath, value } })
-                  },
-                  null,
-                  error => {
-                    console.error('cache: error')
-                    console.error(error)
-                    alert(error)
-                    dispatch({ type: 'ATTACHMENTS_DELETE', payload: { id: filepath } })
-
-                  }
-                )
-                return dispatch({ type: 'ATTACHMENTS_LOAD', payload: { id: filepath } })
-            }
-          })
+          loadAttachment({ filepath: expectedFilepath, dispatch })
         })
       }
 
