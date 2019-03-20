@@ -135,8 +135,6 @@ const World = ({ world, scene, storyboarderFilePath, updateWorldEnvironment, mod
   const ground = useGround(world, scene)
   const room = useRoom(world, scene)
 
-  console.log('World', { modelData })
-
   useEffect(() => {
     if (modelData) {
       const g = new THREE.Group()
