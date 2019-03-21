@@ -63,8 +63,7 @@ const store = configureStore({
 
 
 ipcRenderer.on('loadBoard', (event, { storyboarderFilePath, boardData, board }) => {
-  // TODO for backwards compatibility, use board.shotgen or board.sg instead?
-  let shot = board.sts
+  let shot = board.sg
 
   store.dispatch({ type: 'SET_META_STORYBOARDER_FILE_PATH', payload: storyboarderFilePath })
 
