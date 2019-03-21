@@ -220,7 +220,7 @@ const getPointInBetweenByPerc = (pointA, pointB, percentage) => {
 }
 
 
-function getBoneList( object ) {
+const getBoneList = ( object ) => {
   var boneList = []
 
   if ( object && object.isBone ) {

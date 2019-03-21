@@ -1796,6 +1796,8 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
   const onFocus = event => transition('TYPING_ENTER')
   const onBlur = event => transition('TYPING_EXIT')
 
+  const { scene } = useContext(SceneContext)
+
   // TODO selector?
   const modelValues = Object.values(models)
   const modelOptions = {
@@ -1806,6 +1808,137 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
     character: modelValues
       .filter(model => model.type === 'character')
       .map(model => ({ name: model.name, value: model.id }))
+  }
+
+  const getBoneList = ( object ) => {
+    var boneList = []
+    if ( object && object.isBone ) boneList.push( object )
+    
+    for ( var i = 0; i < object.children.length; i ++ ) {
+      boneList.push.apply( boneList, getBoneList( object.children[ i ] ) )
+    }
+  
+    return boneList
+  }
+
+  const calcFloorDistance = (allverts, inverdsedMatrix) => {
+    let allDistances = []
+    let smallest = - 10000
+    for (let vect of allverts)
+    {
+      let vect2 = vect.vertex.clone().applyMatrix4(inverdsedMatrix)
+      let vect3 = new THREE.Vector3()
+
+      let dist = vect3.distanceTo(vect2)
+
+      let sph = new THREE.SphereBufferGeometry(1,1,1)
+      let spm = new THREE.MeshBasicMaterial({color:"#FF0000"})
+      let smesh = new THREE.Mesh(sph, spm)
+      let sobj = new THREE.Object3D().add(smesh)
+
+      scene.add(sobj)
+      if (dist > smallest) smallest = dist
+    }
+    return smallest
+  }
+
+  const dropObject = () => {
+    console.log('asking for lowest')
+    let lowest = getLowestPointInObject()
+    console.log('lowest: ', lowest)
+  }
+
+  const getLowestPointInObject = () => {
+
+    let currentObject
+    let lowest = 100000
+    
+    if (sceneObject.id != null) {
+      child = scene.children.find(o => o.userData.id === sceneObject.id)
+      currentObject = child
+    }
+
+    if ( sceneObject.type == 'character' )
+    {
+      let sknMesh = currentObject.children.find(child => child instanceof THREE.SkinnedMesh) ||
+      currentObject.children[0].children.find(child => child instanceof THREE.SkinnedMesh)
+      
+      let skinIndex = sknMesh.geometry.attributes.skinIndex
+      let vertexPositions = sknMesh.geometry.attributes.position
+      let skinWeights = sknMesh.geometry.attributes.skinWeight
+      let bonesInfluenceVertices = []
+      let bones = getBoneList( currentObject )
+      let matrixWorldInv = new THREE.Matrix4().getInverse( currentObject.matrixWorld )
+
+      for ( var i = 0; i < skinIndex.count; i++ )
+      {
+        let boneIndex = new THREE.Vector4()
+        let vertex = new THREE.Vector3()
+        let vertWeight = new THREE.Vector4()
+
+        vertex.fromBufferAttribute( vertexPositions, i )
+        boneIndex.fromBufferAttribute( skinIndex, i )
+        vertWeight.fromBufferAttribute( skinWeights, i )
+
+        if ( bonesInfluenceVertices[boneIndex.x] ) {
+          bonesInfluenceVertices[boneIndex.x].push({
+            vertex,
+            weight: vertWeight.x
+          })
+        } else {
+          bonesInfluenceVertices[boneIndex.x] = [{
+            vertex,
+            weight: vertWeight.x
+          }]
+        }
+
+        if ( bonesInfluenceVertices[boneIndex.y] ) {
+          bonesInfluenceVertices[boneIndex.y].push({
+            vertex,
+            weight: vertWeight.y
+          })
+        } else {
+          bonesInfluenceVertices[boneIndex.y] = [{
+            vertex,
+            weight: vertWeight.y
+          }]
+        }
+
+        if ( bonesInfluenceVertices[boneIndex.z] ) {
+          bonesInfluenceVertices[boneIndex.z].push({
+            vertex,
+            weight: vertWeight.z
+          })
+        } else {
+          bonesInfluenceVertices[boneIndex.z] = [{
+            vertex,
+            weight: vertWeight.z
+          }]
+        }
+
+        if ( bonesInfluenceVertices[boneIndex.w] ) {
+          bonesInfluenceVertices[boneIndex.w].push({
+            vertex,
+            weight: vertWeight.w
+          })
+        } else {
+          bonesInfluenceVertices[boneIndex.w] = [{
+            vertex,
+            weight: vertWeight.w
+          }]
+        }
+      }    
+
+      for (i = 0; i < bones.length; i++) {
+        if (bonesInfluenceVertices[i])
+        {
+          let floorDist = calcFloorDistance(bonesInfluenceVertices[i], matrixWorldInv)
+          if ( floorDist < lowest )
+            lowest = floorDist
+        }
+      }
+    }
+    return lowest
   }
 
   return h([
@@ -1838,6 +1971,14 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
           updateObject,
           transition
         }
+      ],
+
+      (sceneObject.type == 'object' || sceneObject.type == 'character') && [
+        [
+          ['a[href=#]', { onClick: event => {
+            dropObject()
+          }}, [[Icon, { src: 'icon-toolbar-object' }, { style: { width: '100%' } } ], ' Drop object']]
+        ],
       ],
 
       // sceneObject.type == 'object' && [
@@ -3802,7 +3943,7 @@ const Editor = connect(
       h(
         ['div.column', { style: { width: '100%' } }, [
           [Toolbar, { createObject, selectObject, loadScene, saveScene, camera, setActiveCamera, resetScene, saveToBoard: onToolbarSaveToBoard, insertAsNewBoard: onToolbarInsertAsNewBoard }],
-
+          
           ['div.row', { style: { flex: 1 }},
             ['div.column', { style: { width: '300px', background: '#111'} },
               ['div#topdown', { style: { height: '300px' } },
