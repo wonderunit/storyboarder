@@ -11,11 +11,11 @@ const loadFont = require('load-bmfont')
 const SDFShader = require("./shaders/sdf-shader")
 
 const allIcons = {
-    character: new THREE.SpriteMaterial( { color: 0xffffff } ),
-    camera: new THREE.SpriteMaterial( { color: 0x00ffff } ),
-    light: new THREE.SpriteMaterial( { color: 0xff00ff } ),
-    object: new THREE.SpriteMaterial( { color: 0xffff00 } ),
-    volume: new THREE.SpriteMaterial( { color: 0xffff00 } )
+    character: new THREE.SpriteMaterial( { color: 0xffffff } ),    
+    camera: new THREE.SpriteMaterial( { color: 0xffffff } ),
+    light: new THREE.SpriteMaterial( { color: 0xffffff } ),
+    object: new THREE.SpriteMaterial( { color: 0xffffff } ),
+    volume: new THREE.SpriteMaterial( { color: 0xffffff } )
 }
 
 const allSprites = {
