@@ -11,7 +11,7 @@ body {
   cursor:default;
   min-height: 100vh;
   overflow: hidden;
-
+  cursor: default;
   border: 0;
   height: 100vh;
   width: 100vw;
@@ -22,9 +22,12 @@ body {
 
 }
 
+img, a{ -webkit-user-select: none; /* Safari 3.1+ */ -moz-user-select: none; /* Firefox 2+ */ -ms-user-select: none; /* IE 10+ */ user-select: none; /* Standard syntax */ user-drag: none; -webkit-user-drag: none; }
+
 a {
   color: #777;
   text-decoration: none;
+  cursor: default;
 }
 
 a.button {
@@ -234,6 +237,11 @@ kbd {
   box-sizing: border-box;
   max-width: 300px;
 }
+
+#listing div::-webkit-scrollbar {
+  display: none;
+}
+
 #inspector {
   flex: 1;
   overflow: scroll;
@@ -242,6 +250,11 @@ kbd {
   color: #999;
   text-transform: capitalize;
   max-width: 288px;
+
+}
+
+#inspector::-webkit-scrollbar {
+  display: none;
 }
 #remoteInputView {
   padding-top: 12px;
@@ -425,7 +438,7 @@ input[type=checkbox] {
 }
 
 input[type="checkbox"] + label {
-  cursor: pointer;
+  cursor: default;
   position: relative;
 }
 
@@ -437,7 +450,7 @@ input[type="checkbox"] + label span {
   vertical-align: middle;
   background: #444;
   border-radius: 3px;
-  cursor: pointer;
+  cursor: default;
 }
 
 input[type=checkbox]:checked + label:before {
