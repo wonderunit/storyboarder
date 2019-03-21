@@ -97,7 +97,7 @@
   },
   "devDependencies": {
     "cross-env": "^5.2.0",
-    "electron": "4.0.5",
+    "electron": "4.1.1",
     "electron-builder": "20.38.5",
     "electron-mocha": "4.0.0",
     "electron-osx-sign": "^0.4.8",

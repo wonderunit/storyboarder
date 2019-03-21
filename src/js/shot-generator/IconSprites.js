@@ -1,3 +1,5 @@
+const path = require('path')
+
 const THREE = require('three')
 const React = require('react')
 const { Object3D } = THREE
@@ -107,7 +109,8 @@ Sprite.prototype.clone = function ( recursive ) {
 
 const iconTextBetter = ( text ) => {
     return new Promise((resolve, reject) => {
-        loadFont('src/fonts/wonder-unit-bmfont/wonderunit-b.fnt', (err, font) => {
+        let fontpath = path.join(__dirname, '..', '..', '..', 'src', 'fonts', 'wonder-unit-bmfont', 'wonderunit-b.fnt')
+        loadFont(fontpath, (err, font) => {
             
             // create a geometry of packed bitmap glyphs, 
             // word wrapped to 300px and right-aligned
