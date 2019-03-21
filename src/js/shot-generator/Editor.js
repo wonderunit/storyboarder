@@ -987,7 +987,7 @@ const WorldElement = React.memo(({ index, world, isSelected, selectObject, style
 })
 
 const ListItem = ({ index, style, isScrolling, data }) => {
-  const { items, models, selections, selectObject, updateObject, deleteObject, activeCamera, setActiveCamera } = data
+  const { items, models, selections, selectObject, selectObjectToggle, updateObject, deleteObject, activeCamera, setActiveCamera } = data
   const isWorld = index === 0
 
   const sceneObject = index === 0
@@ -1016,6 +1016,7 @@ const ListItem = ({ index, style, isScrolling, data }) => {
             sceneObject.type == 'camera' && activeCamera !== sceneObject.id
           ),
           selectObject,
+          selectObjectToggle,
           updateObject,
           deleteObject,
           setActiveCamera
@@ -1371,6 +1372,7 @@ const ElementsPanel = connect(
   // what actions can we dispatch?
   {
     selectObject,
+    selectObjectToggle,
     updateObject,
     deleteObject,
     setActiveCamera,
@@ -1381,7 +1383,7 @@ const ElementsPanel = connect(
     updateWorldEnvironment
   }
 )(
-  React.memo(({ world, sceneObjects, models, selections, selectObject, updateObject, deleteObject, selectedBone, machineState, transition, activeCamera, setActiveCamera, selectBone, updateCharacterSkeleton, updateWorld, updateWorldRoom, updateWorldEnvironment, storyboarderFilePath }) => {
+  React.memo(({ world, sceneObjects, models, selections, selectObject, selectObjectToggle, updateObject, deleteObject, selectedBone, machineState, transition, activeCamera, setActiveCamera, selectBone, updateCharacterSkeleton, updateWorld, updateWorldRoom, updateWorldEnvironment, storyboarderFilePath }) => {
     let ref = useRef(null)
     let size = useComponentSize(ref)
 
@@ -1423,6 +1425,7 @@ const ElementsPanel = connect(
           models,
           selections,
           selectObject,
+          selectObjectToggle,
           updateObject,
           deleteObject,
           activeCamera,
@@ -2298,12 +2301,19 @@ const BoneEditor = ({ sceneObject, bone, updateCharacterSkeleton }) => {
 }
 
 const ELEMENT_HEIGHT = 40
-const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, selectObject, updateObject, deleteObject, setActiveCamera, machineState, transition, allowDelete }) => {
+const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, selectObject, selectObjectToggle, updateObject, deleteObject, setActiveCamera, machineState, transition, allowDelete }) => {
   const onClick = preventDefault(event => {
-    selectObject(sceneObject.id)
+    const { shiftKey } = event
 
-    if (sceneObject.type === 'camera') {
-      setActiveCamera(sceneObject.id)
+    if (shiftKey) {
+      selectObjectToggle(sceneObject.id)
+
+    } else {
+      selectObject(sceneObject.id)
+
+      if (sceneObject.type === 'camera') {
+        setActiveCamera(sceneObject.id)
+      }
     }
   })
 

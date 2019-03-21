@@ -289,7 +289,7 @@ class DragControls extends THREE.EventDispatcher {
 
   onPointerDown ( event ) {
     event.preventDefault()
-    const { shiftKey } = event.shiftKey
+    const { shiftKey } = event
 
     this.dispatchEvent( { type: 'pointerdown' } )
     this._raycaster.setFromCamera( this._mouse, this._camera )
