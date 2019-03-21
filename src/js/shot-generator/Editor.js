@@ -315,6 +315,7 @@ const SceneManager = connect(
       let minMax = [9999,-9999,9999,-9999]
 
       // go through all appropriate opbjects and get the min max
+      let numVisible = 0
       for (child of scene.children) {
         if (
           child.userData &&
@@ -328,7 +329,17 @@ const SceneManager = connect(
           minMax[1] = Math.max(child.position.x, minMax[1])
           minMax[2] = Math.min(child.position.z, minMax[2])
           minMax[3] = Math.max(child.position.z, minMax[3])
+          numVisible++
         }
+      }
+
+      // if only one object is in the scene (a single camera)
+      if (numVisible === 1) {
+        // add some extra padding
+        minMax[0] -= 2
+        minMax[1] += 2
+        minMax[2] -= 2
+        minMax[3] += 2
       }
 
       // add some padding
