@@ -189,7 +189,7 @@ const SceneManager = connect(
     world: state.world,
     sceneObjects: state.sceneObjects,
     remoteInput: state.input,
-    selection: state.selection[0],
+    selections: state.selections,
     selectedBone: state.selectedBone,
     mainViewCamera: state.mainViewCamera,
     activeCamera: state.activeCamera,
@@ -209,7 +209,7 @@ const SceneManager = connect(
     updateWorldEnvironment,
   }
 )(
-  ({ world, sceneObjects, updateObject, selectObject, remoteInput, largeCanvasRef, smallCanvasRef, selection, selectedBone, machineState, transition, animatedUpdate, selectBone, mainViewCamera, updateCharacterSkeleton, largeCanvasSize, activeCamera, aspectRatio, devices, meta, _boardUid, updateWorldEnvironment, attachments }) => {
+  ({ world, sceneObjects, updateObject, selectObject, remoteInput, largeCanvasRef, smallCanvasRef, selections, selectedBone, machineState, transition, animatedUpdate, selectBone, mainViewCamera, updateCharacterSkeleton, largeCanvasSize, activeCamera, aspectRatio, devices, meta, _boardUid, updateWorldEnvironment, attachments }) => {
     const { scene } = useContext(SceneContext)
     // const modelCacheDispatch = useContext(CacheContext)
 
@@ -585,9 +585,9 @@ const SceneManager = connect(
       let sceneObject = null
       let child = null
 
-      if (selection != null) {
-        child = scene.children.find(o => o.userData.id === selection)
-        sceneObject = sceneObjects[selection]
+      if (selections.length === 1) {
+        child = scene.children.find(o => o.userData.id === selections[0])
+        sceneObject = sceneObjects[selections[0]]
         //if light - add helper
 
         // if (sceneObject.type === 'light') {
@@ -639,7 +639,7 @@ const SceneManager = connect(
         orthoDragControlsView.current.setSelected(child)
         orthoDragControlsView.current.setCameras(cameras(scene))
       }
-    }, [selection, sceneObjects])
+    }, [selections, sceneObjects])
 
     useEffect(() => {
       if (dragControlsView.current) {
@@ -694,7 +694,7 @@ const SceneManager = connect(
                 scene,
 
                 remoteInput,
-                isSelected: props.id === selection,
+                isSelected: props.id === selections[0],
 
                 camera,
 
@@ -729,7 +729,7 @@ const SceneManager = connect(
                 scene,
 
                 remoteInput,
-                isSelected: selection === props.id,
+                isSelected: selections[0] === props.id,
                 selectedBone,
 
                 camera,
@@ -768,7 +768,7 @@ const SceneManager = connect(
                 Volumetric, {
                   key: props.id,
                   scene,
-                  isSelected: selection === props.id,
+                  isSelected: selections[0] === props.id,
                   camera,
                   updateObject,
                   numberOfLayers: props.numberOfLayers,
@@ -981,7 +981,7 @@ const WorldElement = React.memo(({ index, world, isSelected, selectObject, style
 })
 
 const ListItem = ({ index, style, isScrolling, data }) => {
-  const { items, models, selection, selectObject, updateObject, deleteObject, activeCamera, setActiveCamera } = data
+  const { items, models, selections, selectObject, updateObject, deleteObject, activeCamera, setActiveCamera } = data
   const isWorld = index === 0
 
   const sceneObject = index === 0
@@ -994,7 +994,7 @@ const ListItem = ({ index, style, isScrolling, data }) => {
       WorldElement, {
         index,
         world: items[0],
-        isSelected: selection == null,
+        isSelected: selections[0] == null,
         selectObject
       }
     ]
@@ -1003,7 +1003,7 @@ const ListItem = ({ index, style, isScrolling, data }) => {
           index,
           style,
           sceneObject,
-          isSelected: sceneObject.id === selection,
+          isSelected: sceneObject.id === selections[0],
           isActive: sceneObject.type === 'camera' && sceneObject.id === activeCamera,
           allowDelete: (
             sceneObject.type != 'camera' ||
@@ -1350,7 +1350,7 @@ const ElementsPanel = connect(
   state => ({
     world: state.world,
     sceneObjects: state.sceneObjects,
-    selection: state.selection[0],
+    selections: state.selections,
     selectedBone: state.selectedBone,
     models: state.models,
     activeCamera: state.activeCamera,
@@ -1370,7 +1370,7 @@ const ElementsPanel = connect(
     updateWorldEnvironment
   }
 )(
-  React.memo(({ world, sceneObjects, models, selection, selectObject, updateObject, deleteObject, selectedBone, machineState, transition, activeCamera, setActiveCamera, selectBone, updateCharacterSkeleton, updateWorld, updateWorldRoom, updateWorldEnvironment, storyboarderFilePath }) => {
+  React.memo(({ world, sceneObjects, models, selections, selectObject, updateObject, deleteObject, selectedBone, machineState, transition, activeCamera, setActiveCamera, selectBone, updateCharacterSkeleton, updateWorld, updateWorldRoom, updateWorldEnvironment, storyboarderFilePath }) => {
     let ref = useRef(null)
     let size = useComponentSize(ref)
 
@@ -1410,7 +1410,7 @@ const ElementsPanel = connect(
           items,
 
           models,
-          selection,
+          selections,
           selectObject,
           updateObject,
           deleteObject,
@@ -1423,17 +1423,17 @@ const ElementsPanel = connect(
 
     useEffect(() => {
       let arr = Object.values(sceneObjectsSorted)
-      let selected = arr.find(o => o.id === selection)
+      let selected = arr.find(o => o.id === selections[0])
       let index = arr.indexOf(selected)
       if (index > -1) {
         // item 0 is always the world item
         // so add 1 to index for actual item
         listRef.current.scrollToItem(index + 1)
       }
-    }, [selection])
+    }, [selections])
 
-    let kind = sceneObjects[selection] && sceneObjects[selection].type
-    let data = sceneObjects[selection]
+    let kind = sceneObjects[selections[0]] && sceneObjects[selections].type
+    let data = sceneObjects[selections[0]]
 
     return React.createElement(
       'div', { style: { flex: 1, display: 'flex', flexDirection: 'column' }},
@@ -2363,7 +2363,7 @@ const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, s
 
 const PhoneCursor = connect(
   state => ({
-    selection: state.selection[0],
+    selections: state.selection,
     sceneObjects: state.sceneObjects,
   }),
   {
@@ -2371,7 +2371,7 @@ const PhoneCursor = connect(
     selectBone,
     updateObject
   })(
-    ({ remoteInput, camera, largeCanvasRef, selectObject, selectBone, sceneObjects, selection, selectedBone, updateObject }) => {
+    ({ remoteInput, camera, largeCanvasRef, selectObject, selectBone, sceneObjects, selections, selectedBone, updateObject }) => {
       let startingDeviceRotation = useRef(null)
       let startingObjectRotation = useRef(null)
       let startingCameraPosition = useRef(null)
@@ -2569,7 +2569,7 @@ const PhoneCursor = connect(
           }
         }
 
-      }, [remoteInput, selection])
+      }, [remoteInput, selections])
 
 
       useEffect(() => {
@@ -2625,11 +2625,11 @@ const PhoneCursor = connect(
           let direction = new THREE.Vector3()
           camera.getWorldDirection( direction )
 
-          let objInScene = scene.children.find(o => o.userData.id === selection)
+          let objInScene = scene.children.find(o => o.userData.id === selections[0])
 
           let newPos = new THREE.Vector3()
           let getDistanceToPosition = new THREE.Vector3()
-          if (sceneObjects[selection] && (sceneObjects[selection].type === 'object' || sceneObjects[selection].type === 'character'))
+          if (sceneObjects[selections[0]] && (sceneObjects[selections[0]].type === 'object' || sceneObjects[selections[0]].type === 'character'))
           {
             getDistanceToPosition = objInScene.position.clone()
             if (selectedBone)
@@ -2641,7 +2641,7 @@ const PhoneCursor = connect(
               getDistanceToPosition = bonePosition.clone()
             }
           }
-          let dist = (sceneObjects[selection] && (sceneObjects[selection].type === 'object' || sceneObjects[selection].type === 'character')) ? startingCameraPosition.current.distanceTo(getDistanceToPosition) : 3
+          let dist = (sceneObjects[selections[0]] && (sceneObjects[selections[0]].type === 'object' || sceneObjects[selections[0]].type === 'character')) ? startingCameraPosition.current.distanceTo(getDistanceToPosition) : 3
           newPos.addVectors ( startingCameraPosition.current, direction.multiplyScalar( dist ) )
           if (firstRun)
           {
@@ -3240,14 +3240,14 @@ const editorMachine = Machine({
 // TODO move selector logic into reducers/shot-generator?
 // memoized selectors
 const getSceneObjects = state => state.sceneObjects
-const getSelection = state => state.selection[0]
+const getSelections = state => state.selections
 const getCameraSceneObjects = createSelector(
   [getSceneObjects],
   (sceneObjects) => Object.values(sceneObjects).filter(o => o.type === 'camera')
 )
 const getSelectedSceneObject = createSelector(
-  [getSceneObjects, getSelection],
-  (sceneObjects, selection) => Object.values(sceneObjects).find(o => o.id === selection)
+  [getSceneObjects, getSelections],
+  (sceneObjects, selections) => Object.values(sceneObjects).find(o => o.id === selections[0])
 )
 const canDelete = (sceneObject, activeCamera) =>
   // allow objects
@@ -3278,7 +3278,7 @@ const KeyHandler = connect(
   state => ({
     mainViewCamera: state.mainViewCamera,
     activeCamera: state.activeCamera,
-    selection: state.selection[0],
+    selections: state.selections,
 
     _selectedSceneObject: getSelectedSceneObject(state),
 
@@ -3296,7 +3296,7 @@ const KeyHandler = connect(
   ({
     mainViewCamera,
     activeCamera,
-    selection,
+    selections,
     _selectedSceneObject,
     _cameras,
     setMainViewCamera,
@@ -3309,9 +3309,9 @@ const KeyHandler = connect(
     const { scene } = useContext(SceneContext)
 
     const onCommandDuplicate = () => {
-      if (selection) {
+      if (selections[0]) {
         let destinationId = THREE.Math.generateUUID()
-        duplicateObject(selection, destinationId)
+        duplicateObject(selections[0], destinationId)
         selectObject(destinationId)
       }
     }
@@ -3319,14 +3319,14 @@ const KeyHandler = connect(
     useEffect(() => {
       const onKeyDown = event => {
         if (event.key === 'Backspace') {
-          if (selection && canDelete(_selectedSceneObject, activeCamera)) {
+          if (selections[0] && canDelete(_selectedSceneObject, activeCamera)) {
             let choice = dialog.showMessageBox(null, {
               type: 'question',
               buttons: ['Yes', 'No'],
               message: 'Are you sure?'
             })
             if (choice === 0) {
-              deleteObject(selection)
+              deleteObject(selections[0])
             }
           }
         }
@@ -3387,7 +3387,7 @@ const KeyHandler = connect(
         window.removeEventListener('keydown', onKeyDown)
         ipcRenderer.off('shot-generator:object:duplicate', onCommandDuplicate)
       }
-    }, [mainViewCamera, _cameras, selection, _selectedSceneObject, activeCamera])
+    }, [mainViewCamera, _cameras, selections, _selectedSceneObject, activeCamera])
 
     return null
   }
@@ -3433,7 +3433,7 @@ const Editor = connect(
     withState: (fn) => (dispatch, getState) => fn(dispatch, getState())
   }
 )(
-  ({ mainViewCamera, createObject, selectObject, updateModels, loadScene, saveScene, activeCamera, setActiveCamera, resetScene, remoteInput, aspectRatio, sceneObjects, world, selection, selectedBone, onBeforeUnload, setMainViewCamera, withState, attachments }) => {
+  ({ mainViewCamera, createObject, selectObject, updateModels, loadScene, saveScene, activeCamera, setActiveCamera, resetScene, remoteInput, aspectRatio, sceneObjects, world, selections, selectedBone, onBeforeUnload, setMainViewCamera, withState, attachments }) => {
 
     const largeCanvasRef = useRef(null)
     const smallCanvasRef = useRef(null)
@@ -3491,7 +3491,7 @@ const Editor = connect(
             child.userData.type === 'character' ||
             child.userData.type === 'object'
           ) &&
-          child.userData.id === state.selection[0])
+          child.userData.id === state.selections[0])
 
       let material = selected &&
         ((selected.userData.type === 'character')
@@ -4009,7 +4009,7 @@ const Editor = connect(
             //   [PresetsEditor, { transition }]
             // ]],
 
-            ready && (remoteInput.mouseMode || remoteInput.orbitMode) && [PhoneCursor, { remoteInput, camera, largeCanvasRef, selectObject, selectBone, sceneObjects, selection, selectedBone }],
+            ready && (remoteInput.mouseMode || remoteInput.orbitMode) && [PhoneCursor, { remoteInput, camera, largeCanvasRef, selectObject, selectBone, sceneObjects, selections, selectedBone }],
           ],
 
           // [LoadingStatus, { ready }]
