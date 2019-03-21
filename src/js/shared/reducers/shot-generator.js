@@ -477,7 +477,7 @@ const initialState = {
     sceneObjects: withDisplayNames(initialScene.sceneObjects)
   },
 
-  selection: undefined,
+  selection: [],
   selectedBone: undefined,
   mainViewCamera: 'live', // 'ortho' or 'live'
   input: {
@@ -549,17 +549,18 @@ module.exports = {
           draft.sceneObjects = withDisplayNames(resetLoadingStatus(migrateRotations(action.payload.sceneObjects)))
           draft.activeCamera = action.payload.activeCamera
           // clear selections
-          draft.selection = undefined
+          draft.selection = []
           draft.selectedBone = undefined
           draft.mainViewCamera = 'live'
           updateMeta(draft)
           return
 
+        // select a single object
         case 'SELECT_OBJECT':
           // if the selection has changed
-          if (draft.selection != action.payload) {
+          if (draft.selection[0] != action.payload) {
             // make the selection
-            draft.selection = action.payload
+            draft.selection = [action.payload]
             // de-select any currently selected bone
             draft.selectedBone = undefined
           }

@@ -189,7 +189,7 @@ const SceneManager = connect(
     world: state.world,
     sceneObjects: state.sceneObjects,
     remoteInput: state.input,
-    selection: state.selection,
+    selection: state.selection[0],
     selectedBone: state.selectedBone,
     mainViewCamera: state.mainViewCamera,
     activeCamera: state.activeCamera,
@@ -1350,7 +1350,7 @@ const ElementsPanel = connect(
   state => ({
     world: state.world,
     sceneObjects: state.sceneObjects,
-    selection: state.selection,
+    selection: state.selection[0],
     selectedBone: state.selectedBone,
     models: state.models,
     activeCamera: state.activeCamera,
@@ -2363,7 +2363,7 @@ const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, s
 
 const PhoneCursor = connect(
   state => ({
-    selection: state.selection,
+    selection: state.selection[0],
     sceneObjects: state.sceneObjects,
   }),
   {
@@ -3240,7 +3240,7 @@ const editorMachine = Machine({
 // TODO move selector logic into reducers/shot-generator?
 // memoized selectors
 const getSceneObjects = state => state.sceneObjects
-const getSelection = state => state.selection
+const getSelection = state => state.selection[0]
 const getCameraSceneObjects = createSelector(
   [getSceneObjects],
   (sceneObjects) => Object.values(sceneObjects).filter(o => o.type === 'camera')
@@ -3278,7 +3278,7 @@ const KeyHandler = connect(
   state => ({
     mainViewCamera: state.mainViewCamera,
     activeCamera: state.activeCamera,
-    selection: state.selection,
+    selection: state.selection[0],
 
     _selectedSceneObject: getSelectedSceneObject(state),
 
@@ -3491,7 +3491,7 @@ const Editor = connect(
             child.userData.type === 'character' ||
             child.userData.type === 'object'
           ) &&
-          child.userData.id === state.selection)
+          child.userData.id === state.selection[0])
 
       let material = selected &&
         ((selected.userData.type === 'character')
