@@ -6958,8 +6958,8 @@ const saveToBoardFromShotGenerator = async ({ uid, data, images }) => {
         opacity: 1.0
       },
     },
-    // TODO should we use a different key than .sts? (like .shotgen? or .sg?)
-    sts: {
+    // shot generator
+    sg: {
       version: pkg.version,
       data
     }
