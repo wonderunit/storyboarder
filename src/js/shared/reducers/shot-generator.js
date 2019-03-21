@@ -152,6 +152,142 @@ const updateMeta = state => {
   state.meta.lastSavedHash = hashify(JSON.stringify(getSerializedState(state)))
 }
 
+const updateObject = (draft, state, props, { models }) => {
+  // TODO is there a simpler way to merge only non-null values?
+
+  // update skeleton first
+  // so that subsequent changes to height and headScale take effect
+  if (props.hasOwnProperty('skeleton')) {
+    draft.skeleton = props.skeleton
+  }
+
+  if (props.x != null) {
+    draft.x = props.x
+  }
+  if (props.y != null) {
+    draft.y = props.y
+  }
+  if (props.z != null) {
+    draft.z = props.z
+  }
+
+  if (props.fov != null) {
+    draft.fov = props.fov
+  }
+  if (props.rotation != null) {
+    if (draft.type === 'object') {
+      // MERGE
+      draft.rotation = {
+        ...state.rotation,
+        ...props.rotation
+      }
+    } else {
+      draft.rotation = props.rotation
+    }
+  }
+  if (props.tilt != null) {
+    draft.tilt = props.tilt
+  }
+  if (props.roll != null) {
+    draft.roll = props.roll
+  }
+  if (props.model != null) {
+    draft.model = props.model
+
+    // if a character's model is changing
+    if (draft.type === 'character') {
+      // reset the height ...
+      draft.height = models[props.model]
+        // ... to default (if known) ...
+        ? models[props.model].height
+        // ... otherwise, a reasonable value
+        : 1.6
+    }
+  }
+
+  if (props.width != null) {
+    draft.width = props.width
+  }
+  if (props.height != null) {
+    draft.height = props.height
+  }
+  if (props.depth != null) {
+    draft.depth = props.depth
+  }
+
+  if (props.headScale != null) {
+    draft.headScale = props.headScale
+  }
+
+  if (props.morphTargets != null) {
+    Object.entries(props.morphTargets).forEach(([key, value]) => {
+      draft.morphTargets[key] = value
+    })
+  }
+
+  // allow a null value for name
+  if (props.hasOwnProperty('name')) {
+    draft.name = props.name
+  }
+
+  if (props.visible != null) {
+    draft.visible = props.visible
+  }
+
+  if (props.intensity != null) {
+    draft.intensity = props.intensity
+  }
+
+  if (props.angle != null) {
+    draft.angle = props.angle
+  }
+
+  if (props.penumbra != null) {
+    draft.penumbra = props.penumbra
+  }
+
+  if (props.decay != null) {
+    draft.decay = props.decay
+  }
+
+  if (props.distance != null) {
+    draft.distance = props.distance
+  }
+
+
+
+  // for volumes
+  if (props.numberOfLayers != null) {
+    draft.numberOfLayers = props.numberOfLayers
+  }
+  if (props.distanceBetweenLayers != null) {
+    draft.distanceBetweenLayers = props.distanceBetweenLayers
+  }
+  if (props.opacity != null) {
+    draft.opacity = props.opacity
+  }
+  if (props.color != null) {
+    draft.color = props.color
+  }
+  if (props.volumeImageAttachmentIds != null) {
+    draft.volumeImageAttachmentIds = props.volumeImageAttachmentIds
+  }
+
+
+
+  if (props.hasOwnProperty('characterPresetId')) {
+    draft.characterPresetId = props.characterPresetId
+  }
+
+  if (props.hasOwnProperty('posePresetId')) {
+    draft.posePresetId = props.posePresetId
+  }
+
+  if (props.hasOwnProperty('loaded')) {
+    draft.loaded = props.loaded
+  }
+}
+
 // `loaded` status is not serialized
 // when we load a new file, we need to initialize it
 // so it can be read to determine loading progress
@@ -606,141 +742,13 @@ module.exports = {
 
         case 'UPDATE_OBJECT':
           if (draft.sceneObjects[action.payload.id] == null) return
-          
-          // TODO is there a simpler way to merge only non-null values?
 
-          // update skeleton first
-          // so that subsequent changes to height and headScale take effect
-          if (action.payload.hasOwnProperty('skeleton')) {
-            draft.sceneObjects[action.payload.id].skeleton = action.payload.skeleton
-          }
-
-          if (action.payload.x != null) {
-            draft.sceneObjects[action.payload.id].x = action.payload.x
-          }
-          if (action.payload.y != null) {
-            draft.sceneObjects[action.payload.id].y = action.payload.y
-          }
-          if (action.payload.z != null) {
-            draft.sceneObjects[action.payload.id].z = action.payload.z
-          }
-
-          if (action.payload.fov != null) {
-            draft.sceneObjects[action.payload.id].fov = action.payload.fov
-          }
-          if (action.payload.rotation != null) {
-            if (draft.sceneObjects[action.payload.id].type === 'object') {
-              // MERGE
-              draft.sceneObjects[action.payload.id].rotation = {
-                ...state.sceneObjects[action.payload.id].rotation,
-                ...action.payload.rotation
-              }
-            } else {
-              draft.sceneObjects[action.payload.id].rotation = action.payload.rotation
-            }
-          }
-          if (action.payload.tilt != null) {
-            draft.sceneObjects[action.payload.id].tilt = action.payload.tilt
-          }
-          if (action.payload.roll != null) {
-            draft.sceneObjects[action.payload.id].roll = action.payload.roll
-          }
-          if (action.payload.model != null) {
-            draft.sceneObjects[action.payload.id].model = action.payload.model
-
-            // if a character's model is changing
-            if (draft.sceneObjects[action.payload.id].type === 'character') {
-              // reset the height ...
-              draft.sceneObjects[action.payload.id].height = state.models[action.payload.model]
-                // ... to default (if known) ...
-                ? state.models[action.payload.model].height
-                // ... otherwise, a reasonable value
-                : 1.6
-            }
-          }
-
-          if (action.payload.width != null) {
-            draft.sceneObjects[action.payload.id].width = action.payload.width
-          }
-          if (action.payload.height != null) {
-            draft.sceneObjects[action.payload.id].height = action.payload.height
-          }
-          if (action.payload.depth != null) {
-            draft.sceneObjects[action.payload.id].depth = action.payload.depth
-          }
-
-          if (action.payload.headScale != null) {
-            draft.sceneObjects[action.payload.id].headScale = action.payload.headScale
-          }
-
-          if (action.payload.morphTargets != null) {
-            Object.entries(action.payload.morphTargets).forEach(([key, value]) => {
-              draft.sceneObjects[action.payload.id].morphTargets[key] = value
-            })
-          }
-
-          // allow a null value for name
-          if (action.payload.hasOwnProperty('name')) {
-            draft.sceneObjects[action.payload.id].name = action.payload.name
-          }
-
-          if (action.payload.visible != null) {
-            draft.sceneObjects[action.payload.id].visible = action.payload.visible
-          }
-
-          if (action.payload.intensity != null) {
-            draft.sceneObjects[action.payload.id].intensity = action.payload.intensity
-          }
-
-          if (action.payload.angle != null) {
-            draft.sceneObjects[action.payload.id].angle = action.payload.angle
-          }
-
-          if (action.payload.penumbra != null) {
-            draft.sceneObjects[action.payload.id].penumbra = action.payload.penumbra
-          }
-
-          if (action.payload.decay != null) {
-            draft.sceneObjects[action.payload.id].decay = action.payload.decay
-          }
-
-          if (action.payload.distance != null) {
-            draft.sceneObjects[action.payload.id].distance = action.payload.distance
-          }
-
-
-
-          // for volumes
-          if (action.payload.numberOfLayers != null) {
-            draft.sceneObjects[action.payload.id].numberOfLayers = action.payload.numberOfLayers
-          }
-          if (action.payload.distanceBetweenLayers != null) {
-            draft.sceneObjects[action.payload.id].distanceBetweenLayers = action.payload.distanceBetweenLayers
-          }
-          if (action.payload.opacity != null) {
-            draft.sceneObjects[action.payload.id].opacity = action.payload.opacity
-          }
-          if (action.payload.color != null) {
-            draft.sceneObjects[action.payload.id].color = action.payload.color
-          }
-          if (action.payload.volumeImageAttachmentIds != null) {
-            draft.sceneObjects[action.payload.id].volumeImageAttachmentIds = action.payload.volumeImageAttachmentIds
-          }
-
-
-
-          if (action.payload.hasOwnProperty('characterPresetId')) {
-            draft.sceneObjects[action.payload.id].characterPresetId = action.payload.characterPresetId
-          }
-
-          if (action.payload.hasOwnProperty('posePresetId')) {
-            draft.sceneObjects[action.payload.id].posePresetId = action.payload.posePresetId
-          }
-
-          if (action.payload.hasOwnProperty('loaded')) {
-            draft.sceneObjects[action.payload.id].loaded = action.payload.loaded
-          }
-          
+          updateObject(
+            draft.sceneObjects[action.payload.id],
+            state.sceneObjects[action.payload.id],
+            action.payload,
+            { models: state.models }
+          )
 
           checkForCharacterChanges(state, draft, action)
           checkForSkeletonChanges(state, draft, action)
