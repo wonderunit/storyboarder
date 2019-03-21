@@ -25,8 +25,8 @@
       "shot": "1A",
       "time": 0,
       "lineMileage": 821.5682133251058,
-      "sts": {
-        "version": "2.0.0",
+      "sg": {
+        "version": "1.9.4",
         "data": {
           "activeCamera": "6BC46A44-7965-43B5-B290-E3D2B9D15EEE",
           "sceneObjects": {
