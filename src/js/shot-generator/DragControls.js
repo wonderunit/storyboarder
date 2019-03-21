@@ -6,10 +6,11 @@ const BoundingBoxHelper = require('./BoundingBoxHelper')
 
 class DragControls extends THREE.EventDispatcher {
 
-  constructor ( objects, cameras, camera, domElement, onSelectObject, onUpdateObject, onSelectBone ) {
+  constructor ( objects, cameras, camera, domElement, onSelectObject, onToggleObject, onUpdateObject, onSelectBone ) {
     super()
 
     this.onSelectObject = onSelectObject
+    this.onToggleObject = onToggleObject
     this.onUpdateObject = onUpdateObject
     this.onSelectBone = onSelectBone
 
@@ -341,7 +342,13 @@ class DragControls extends THREE.EventDispatcher {
         }
 
         if (shouldReportSelection) {
-          this.onSelectObject( this._selected.userData.id )
+          // multi-select for ortho camera if shift key is down
+          if (this._camera.isOrthographicCamera && event.shiftKey) {
+            this.onToggleObject( this._selected.userData.id )
+          } else {
+            this.onSelectObject( this._selected.userData.id )
+          }
+
         }
         this.dispatchEvent( { type: 'dragstart', object: this._dragTarget } )
 
@@ -370,6 +377,7 @@ class DragControls extends THREE.EventDispatcher {
 
   onPointerUp ( event ) {
     event.preventDefault()
+    const { shiftKey } = event
 
     this._raycaster.setFromCamera( this._mouse, this._camera )
 
@@ -395,8 +403,15 @@ class DragControls extends THREE.EventDispatcher {
     // otherwise, if we match the object from mousedown
   } else if ( object && this._downTarget === object ) {
       this._selected = this._downTarget
-      if (this._camera.isOrthographicCamera) this.onSelectObject (  )
-      else this.onSelectObject( this._selected.userData.id )
+      if (this._camera.isOrthographicCamera) {
+        this.onSelectObject()
+      } else {
+        if (shiftKey) {
+          this.onToggleObject(this._selected.userData.id)
+        } else {
+          this.onSelectObject(this._selected.userData.id)
+        }
+      }
     }
   }
 

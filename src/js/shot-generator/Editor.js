@@ -33,6 +33,8 @@ const {
   // action creators
   //
   selectObject,
+  selectObjectToggle,
+
   createObject,
   updateObject,
   deleteObject,
@@ -102,6 +104,7 @@ const NumberSliderFormatter = require('./NumberSlider').formatters
 const ModelSelect = require('./ModelSelect')
 const AttachmentsSelect = require('./AttachmentsSelect')
 const ServerInspector = require('./ServerInspector')
+const MultiSelectionInspector = require('./MultiSelectionInspector')
 const GuidesView = require('./GuidesView')
 
 require('../vendor/OutlineEffect.js')
@@ -202,6 +205,7 @@ const SceneManager = connect(
   {
     updateObject,
     selectObject,
+    selectObjectToggle,
     animatedUpdate,
     selectBone,
     updateCharacterSkeleton,
@@ -209,7 +213,7 @@ const SceneManager = connect(
     updateWorldEnvironment,
   }
 )(
-  ({ world, sceneObjects, updateObject, selectObject, remoteInput, largeCanvasRef, smallCanvasRef, selections, selectedBone, machineState, transition, animatedUpdate, selectBone, mainViewCamera, updateCharacterSkeleton, largeCanvasSize, activeCamera, aspectRatio, devices, meta, _boardUid, updateWorldEnvironment, attachments }) => {
+  ({ world, sceneObjects, updateObject, selectObject, selectObjectToggle, remoteInput, largeCanvasRef, smallCanvasRef, selections, selectedBone, machineState, transition, animatedUpdate, selectBone, mainViewCamera, updateCharacterSkeleton, largeCanvasSize, activeCamera, aspectRatio, devices, meta, _boardUid, updateWorldEnvironment, attachments }) => {
     const { scene } = useContext(SceneContext)
     // const modelCacheDispatch = useContext(CacheContext)
 
@@ -448,6 +452,7 @@ const SceneManager = connect(
             camera,
             largeCanvasRef.current,
             selectObject,
+            selectObjectToggle,
             updateObject,
             selectBone
           )
@@ -472,6 +477,7 @@ const SceneManager = connect(
             orthoCamera.current,
             smallCanvasRef.current,
             selectObject,
+            selectObjectToggle,
             updateObject,
             selectBone
           )
@@ -694,7 +700,7 @@ const SceneManager = connect(
                 scene,
 
                 remoteInput,
-                isSelected: props.id === selections[0],
+                isSelected: selections.includes(props.id),
 
                 camera,
 
@@ -729,7 +735,7 @@ const SceneManager = connect(
                 scene,
 
                 remoteInput,
-                isSelected: selections[0] === props.id,
+                isSelected: selections.includes(props.id),
                 selectedBone,
 
                 camera,
@@ -768,7 +774,7 @@ const SceneManager = connect(
                 Volumetric, {
                   key: props.id,
                   scene,
-                  isSelected: selections[0] === props.id,
+                  isSelected: selections.includes(props.id),
                   camera,
                   updateObject,
                   numberOfLayers: props.numberOfLayers,
@@ -994,7 +1000,7 @@ const ListItem = ({ index, style, isScrolling, data }) => {
       WorldElement, {
         index,
         world: items[0],
-        isSelected: selections[0] == null,
+        isSelected: selections.length === 0,
         selectObject
       }
     ]
@@ -1003,7 +1009,7 @@ const ListItem = ({ index, style, isScrolling, data }) => {
           index,
           style,
           sceneObject,
-          isSelected: sceneObject.id === selections[0],
+          isSelected: selections.includes(sceneObject.id),
           isActive: sceneObject.type === 'camera' && sceneObject.id === activeCamera,
           allowDelete: (
             sceneObject.type != 'camera' ||
@@ -1029,7 +1035,8 @@ const Inspector = ({
   updateWorld,
   updateWorldRoom,
   updateWorldEnvironment,
-  storyboarderFilePath
+  storyboarderFilePath,
+  selections
 }) => {
   const { scene } = useContext(SceneContext)
 
@@ -1060,31 +1067,35 @@ const Inspector = ({
   return h([
     'div#inspector',
     { ref, onFocus, onBlur },
-    (kind && data)
+    selections.length > 1
       ? [
-          InspectedElement, {
-            sceneObject,
-            models,
-            updateObject,
-            selectedBone: scene.getObjectByProperty('uuid', selectedBone),
-            machineState,
-            transition,
-            selectBone,
-            updateCharacterSkeleton,
-            storyboarderFilePath
-          }
+          MultiSelectionInspector
         ]
-      : [
-        InspectedWorld, {
-          world,
+      : (kind && data)
+        ? [
+            InspectedElement, {
+              sceneObject,
+              models,
+              updateObject,
+              selectedBone: scene.getObjectByProperty('uuid', selectedBone),
+              machineState,
+              transition,
+              selectBone,
+              updateCharacterSkeleton,
+              storyboarderFilePath
+            }
+          ]
+        : [
+          InspectedWorld, {
+            world,
 
-          transition,
+            transition,
 
-          updateWorld,
-          updateWorldRoom,
-          updateWorldEnvironment
-        }
-      ],
+            updateWorld,
+            updateWorldRoom,
+            updateWorldEnvironment
+          }
+        ],
       [ServerInspector]
   ])
 }
@@ -1432,7 +1443,7 @@ const ElementsPanel = connect(
       }
     }, [selections])
 
-    let kind = sceneObjects[selections[0]] && sceneObjects[selections].type
+    let kind = sceneObjects[selections[0]] && sceneObjects[selections[0]].type
     let data = sceneObjects[selections[0]]
 
     return React.createElement(
@@ -1462,7 +1473,9 @@ const ElementsPanel = connect(
             updateWorldRoom,
             updateWorldEnvironment,
 
-            storyboarderFilePath
+            storyboarderFilePath,
+
+            selections
           }]
         )
       )
