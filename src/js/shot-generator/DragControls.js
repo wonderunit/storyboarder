@@ -289,6 +289,8 @@ class DragControls extends THREE.EventDispatcher {
 
   onPointerDown ( event ) {
     event.preventDefault()
+    const { shiftKey } = event.shiftKey
+
     this.dispatchEvent( { type: 'pointerdown' } )
     this._raycaster.setFromCamera( this._mouse, this._camera )
 
@@ -343,7 +345,7 @@ class DragControls extends THREE.EventDispatcher {
 
         if (shouldReportSelection) {
           // multi-select for ortho camera if shift key is down
-          if (this._camera.isOrthographicCamera && event.shiftKey) {
+          if (this._camera.isOrthographicCamera && shiftKey) {
             this.onToggleObject( this._selected.userData.id )
           } else {
             this.onSelectObject( this._selected.userData.id )
