@@ -46,9 +46,9 @@ r trigger:
 console.log("dual shock controller class")
 
 // this package allows for cheap polling of usb connections
-const usbDetect = require('usb-detection')
+//const usbDetect = require('usb-detection')
 const ds = require('dualshock')
-const robot = require("robotjs")
+//const robot = require("robotjs")
 
 let controllerConnected = false
 let checkTimeout
@@ -65,18 +65,18 @@ let virtualMousePos
 let padDown = false
 
 module.exports = function ( updater ) {
-  usbDetect.startMonitoring()
+  //usbDetect.startMonitoring()
 
   // Detect add/insert
-  usbDetect.on('add', function(device) {
-    // check for a controller
-    console.log('add', device)
+  // usbDetect.on('add', function(device) {
+  //   // check for a controller
+  //   console.log('add', device)
 
-    if (!controllerConnected) {
-      clearTimeout(checkTimeout)
-      checkTimeout = setTimeout(checkForController, 3000)
-    }
-  })
+  //   if (!controllerConnected) {
+  //     clearTimeout(checkTimeout)
+  //     checkTimeout = setTimeout(checkForController, 3000)
+  //   }
+  // })
 
   let checkForController = () => {
     //ds.reset()
@@ -116,7 +116,7 @@ module.exports = function ( updater ) {
       if (button == 'pad' && value && !padDown) {
         padDown = true
         console.log('click')
-        robot.mouseClick()
+        //robot.mouseClick()
       }
 
       if (button == 'pad' && !value) {
@@ -130,8 +130,8 @@ module.exports = function ( updater ) {
         startY = null
         mouseMode = true
         yCountdown = 3
-        mousePos = robot.getMousePos()
-        robot.setMouseDelay(0)
+        mousePos = {x: 0, y: 0} // robot.getMousePos()
+        //robot.setMouseDelay(0)
         virtualMousePos = {x: mousePos.x, y: mousePos.y}
       }
 
@@ -140,7 +140,7 @@ module.exports = function ( updater ) {
         startY = null
         mouseMode = false
         yCountdown = 3
-        mousePos = robot.getMousePos()
+        mousePos = {x: 0, y: 0} // robot.getMousePos()
         virtualMousePos = {x: mousePos.x, y: mousePos.y}
       }
 
@@ -158,7 +158,7 @@ module.exports = function ( updater ) {
           if (!startY && yCountdown < 0) { startY = value}
           if (yCountdown < 0) {
             virtualMousePos.y = mousePos.y - ((startY - value)/2.0)
-            robot.moveMouse(virtualMousePos.x, virtualMousePos.y)
+            //robot.moveMouse(virtualMousePos.x, virtualMousePos.y)
           }
         }
       }
@@ -172,7 +172,7 @@ module.exports = function ( updater ) {
           if (!startX && xCountdown < 0) { startX = value}
           if (xCountdown < 0) {
             virtualMousePos.x = mousePos.x - ((startX - value)/2.0)
-            robot.moveMouse(virtualMousePos.x, virtualMousePos.y)
+            //robot.moveMouse(virtualMousePos.x, virtualMousePos.y)
           }
         }
       }

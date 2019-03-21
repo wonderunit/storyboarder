@@ -20,7 +20,7 @@ const { createSelector } = require('reselect')
 //const useComponentSize = require('../use-component-size')
 const h = require('../utils/h')
 const useComponentSize = require('../hooks/use-component-size')
-const robot = require("robotjs")
+//const robot = require("robotjs")
 
 // for pose harvesting (maybe abstract this later?)
 const { machineIdSync } = require('node-machine-id')
@@ -2478,7 +2478,7 @@ const PhoneCursor = connect(
                 beta: beta,
                 gamma: gamma
               }
-              mousePosition.current = robot.getMousePos()
+              mousePosition.current = {x: 0, y: 0} //robot.getMousePos()
               virtualMouse.current = {
                 x: mousePosition.x,
                 y: mousePosition.y
@@ -2524,7 +2524,7 @@ const PhoneCursor = connect(
               //virtualMouse.current.y = mousePosition.current.y - ((startPosition.current.y - xy_coords.y * viewportheight/4)/2)
               virtualMouse.current.x = mousePosition.current.x - ((startPosition.current.x - xy_coords.x * 300)/2)
               virtualMouse.current.y = mousePosition.current.y - ((startPosition.current.y - xy_coords.y * 300)/2)
-              robot.moveMouse(virtualMouse.current.x, virtualMouse.current.y)
+              //robot.moveMouse(virtualMouse.current.x, virtualMouse.current.y)
             }
           } else {
             if (scene.current && tester.current!=null)
@@ -2532,7 +2532,7 @@ const PhoneCursor = connect(
               if (isRotating.current)
               {
                 isRotating.current = false
-                robot.mouseClick()
+                //robot.mouseClick()
               }
 
               scene.current.remove(tester.current)
@@ -2548,7 +2548,7 @@ const PhoneCursor = connect(
             if (isRotating.current)
             {
               isRotating.current = false
-              robot.mouseClick()
+              //robot.mouseClick()
             }
 
             scene.current.remove(tester.current)
@@ -2593,7 +2593,7 @@ const PhoneCursor = connect(
               beta: beta,
               gamma: gamma
             }
-            mousePosition.current = robot.getMousePos()
+            mousePosition.current = {x: 0, y: 0} //robot.getMousePos()
             virtualMouse.current = {
               x: mousePosition.x,
               y: mousePosition.y
