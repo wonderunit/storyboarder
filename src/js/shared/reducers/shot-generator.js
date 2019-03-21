@@ -557,10 +557,17 @@ module.exports = {
 
         // select a single object
         case 'SELECT_OBJECT':
-          // make the selection
-          draft.selections = [action.payload]
-          // de-select any currently selected bone
-          draft.selectedBone = undefined
+          if (action.payload == null) {
+            // empty the selection
+            draft.selections = []
+            // de-select any currently selected bone
+            draft.selectedBone = undefined
+          } else {
+            // make the selection
+            draft.selections = [action.payload]
+            // de-select any currently selected bone
+            draft.selectedBone = undefined
+          }
           return
 
         case 'SELECT_OBJECT_TOGGLE':
