@@ -563,6 +563,15 @@ module.exports = {
           draft.selectedBone = undefined
           return
 
+        case 'SELECT_OBJECT_TOGGLE':
+          let n = draft.selections.indexOf(action.payload)
+          if (n === -1) {
+            draft.selections.push(action.payload)
+          } else {
+            draft.selections.splice(n, 1)
+          }
+          return
+
         case 'CREATE_OBJECT':
           // let id = Object.values(draft.sceneObjects).length + 1
           let id = action.payload.id != null
@@ -949,6 +958,8 @@ module.exports = {
   // action creators
   //
   selectObject: id => ({ type: 'SELECT_OBJECT', payload: id }),
+  selectObjectToggle: id => ({ type: 'SELECT_OBJECT_TOGGLE', payload: id }),
+
   selectBone: id => ({ type: 'SELECT_BONE', payload: id }),
 
   createObject: values => ({ type: 'CREATE_OBJECT', payload: values }),
