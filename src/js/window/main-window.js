@@ -3402,10 +3402,10 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
     //   StsSidebar.reset(board.sts)
     // }
 
-    guides && guides.setPerspectiveParams({
-      cameraParams: board.sts && board.sts.camera,
-      rotation: 0
-    })
+    // guides && guides.setPerspectiveParams({
+    //   cameraParams: board.sts && board.sts.camera,
+    //   rotation: 0
+    // })
 
     ipcRenderer.send('analyticsEvent', 'Board', 'go to board', null, currentBoard)
 
