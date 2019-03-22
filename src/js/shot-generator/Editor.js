@@ -586,8 +586,6 @@ const SceneManager = connect(
     // useEffect(() => {}, [mainViewCamera])
 
     useEffect(() => {
-      // TODO update sceneObjects[character.id].loaded when loaded
-
       let sceneObject = null
       let child = null
 
