@@ -1215,7 +1215,7 @@ const InspectedWorld = ({ world, transition, updateWorld, updateWorldRoom, updat
           ['div', [
             'a[href=#]',
             {
-              onClick: event => {
+              onClick: preventDefault(event => {
                 let filepaths = dialog.showOpenDialog(null, {})
                 if (filepaths) {
                   let filepath = filepaths[0]
@@ -1226,7 +1226,7 @@ const InspectedWorld = ({ world, transition, updateWorld, updateWorldRoom, updat
                 // automatically blur to return keyboard control
                 document.activeElement.blur()
                 transition('TYPING_EXIT')
-              },
+              }),
               style: {
                 fontStyle: 'italic',
                 textDecoration: 'none',
