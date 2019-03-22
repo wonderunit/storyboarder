@@ -553,6 +553,7 @@ select:focus {
   padding: 6px;
   background-color: #595959;
   color: #E4E4E4;
+  font-variant-numeric: tabular-nums;
 }
 .number-slider__input--text {
   color: black;
