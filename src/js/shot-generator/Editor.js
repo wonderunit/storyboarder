@@ -960,9 +960,9 @@ const Camera = React.memo(({ scene, id, type, setCamera, icon, ...props }) => {
 })
 
 const WorldElement = React.memo(({ index, world, isSelected, selectObject, style = {} }) => {
-  const onClick = () => {
+  const onClick = preventDefault(() => {
     selectObject(null)
-  }
+  })
 
   let className = classNames({
     'selected': isSelected,
