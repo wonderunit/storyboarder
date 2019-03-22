@@ -1821,37 +1821,50 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
     return boneList
   }
 
-  const calcFloorDistance = (allverts, inverdsedMatrix) => {
+  const calcFloorDistance = ( allverts, inverdsedMatrix ) => {
     let allDistances = []
     let smallest = - 10000
+    let small
     for (let vect of allverts)
     {
-      let vect2 = vect.vertex.clone().applyMatrix4(inverdsedMatrix)
+      let vect2 = vect.vertex.clone()//.applyMatrix4(inverdsedMatrix)
       let vect3 = new THREE.Vector3()
 
       let dist = vect3.distanceTo(vect2)
 
-      let sph = new THREE.SphereBufferGeometry(1,1,1)
-      let spm = new THREE.MeshBasicMaterial({color:"#FF0000"})
-      let smesh = new THREE.Mesh(sph, spm)
-      let sobj = new THREE.Object3D().add(smesh)
-
-      scene.add(sobj)
-      if (dist > smallest) smallest = dist
+      
+      if (dist > smallest) {
+        smallest = dist
+        small = vect2
+      }
     }
-    return smallest
+
+    return {
+      smallest,
+      small
+    }
   }
 
   const dropObject = () => {
-    console.log('asking for lowest')
+    //console.log('asking for lowest')
     let lowest = getLowestPointInObject()
     console.log('lowest: ', lowest)
+
+    let sphge = new THREE.SphereBufferGeometry(0.1, 6, 6)
+    let sphma = new THREE.MeshStandardMaterial({color:"#FF0000"})
+    let sphme = new THREE.Mesh(sphge, sphma)
+    let sobj = new THREE.Object3D().add(sphme)
+    sobj.position.copy(lowest.lowestVert).multiplyScalar(-100)
+
+    console.log('position: ', sobj.position)
+    scene.add(sobj)
   }
 
   const getLowestPointInObject = () => {
 
     let currentObject
     let lowest = 100000
+    let lowestVert
     
     if (sceneObject.id != null) {
       child = scene.children.find(o => o.userData.id === sceneObject.id)
@@ -1868,6 +1881,14 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
       let skinWeights = sknMesh.geometry.attributes.skinWeight
       let bonesInfluenceVertices = []
       let bones = getBoneList( currentObject )
+      console.log('currect object: ', currentObject)
+      //let tempMatr = new THREE.Matrix4().setRotationFromMatrix( currentObject.matrixWorld )
+      let worldMat = currentObject.matrixWorld
+      let transition = THREE.Vector3()
+      let rotation = THREE.Quaternion()
+      let scale = THREE.Vector3()
+
+      //worldMat.decompose(transition, rotation, scale)
       let matrixWorldInv = new THREE.Matrix4().getInverse( currentObject.matrixWorld )
 
       for ( var i = 0; i < skinIndex.count; i++ )
@@ -1933,12 +1954,18 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
         if (bonesInfluenceVertices[i])
         {
           let floorDist = calcFloorDistance(bonesInfluenceVertices[i], matrixWorldInv)
-          if ( floorDist < lowest )
-            lowest = floorDist
+          
+          if ( floorDist.smallest < lowest ) {
+            lowest = floorDist.smallest
+            lowestVert = floorDist.small
+          }
         }
       }
     }
-    return lowest
+    return {
+      lowest,
+      lowestVert
+    }
   }
 
   return h([
@@ -1975,9 +2002,11 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
 
       (sceneObject.type == 'object' || sceneObject.type == 'character') && [
         [
-          ['a[href=#]', { onClick: event => {
-            dropObject()
-          }}, [[Icon, { src: 'icon-toolbar-object' }, { style: { width: '100%' } } ], ' Drop object']]
+          ['a[href=#]', { 
+            onClick: preventDefault(event => {
+              dropObject()
+            }),
+          }, [[Icon, { src: 'icon-toolbar-object' }, { style: { width: '100%' } } ], ' Drop object']]
         ],
       ],
 
