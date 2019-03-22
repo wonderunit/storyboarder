@@ -99,7 +99,7 @@ const Volumetric = React.memo(({
     scene.add(volume.current)
 
 
-
+    console.log(' creating volume:  ', props)
 
     let imgArray = volumeImageAttachmentIds.map(relpath => {
       if (isUserFile(relpath)) {

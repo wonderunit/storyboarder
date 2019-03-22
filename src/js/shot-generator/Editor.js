@@ -2772,7 +2772,7 @@ const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, set
     let direction = new THREE.Vector3() // create once and reuse it!
     camera.getWorldDirection( direction )
     let newPos = new THREE.Vector3()
-    let dist = (Math.random()) * 6 + 3
+    let dist = (Math.random()) * 6 + 4
     newPos.addVectors ( camera.position, direction.multiplyScalar( dist ) )
     let obj = new THREE.Object3D()
     newPos.x += (Math.random() * 4 - 2)
@@ -2858,6 +2858,7 @@ const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, set
       distanceBetweenLayers: 1.5,
       volumeImageAttachmentIds: ['rain2', 'rain1']
     })
+    selectObject(id)
   }
 
   const onCreateStressClick = () => {
