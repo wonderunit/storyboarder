@@ -100,7 +100,7 @@ const SelectionManager = connect(
     o.userData.type === 'character' ||
     o.userData.type === 'light' ||
     o.userData.type === 'volume' ||
-    o.isPerspectiveCamera
+    (useSprites && o.isPerspectiveCamera)
   )
 
   const mouse = event => {
