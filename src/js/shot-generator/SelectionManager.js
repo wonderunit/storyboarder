@@ -139,6 +139,10 @@ const SelectionManager = connect(
 
     if (intersects.length === 0) {
       setLastDownId(undefined)
+
+      if (selectOnPointerDown) {
+        selectObject(undefined)
+      }
       return
     }
 
