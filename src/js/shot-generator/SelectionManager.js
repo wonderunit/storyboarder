@@ -6,17 +6,24 @@ const {
   selectObjectToggle
 } = require('../shared/reducers/shot-generator')
 
-function getIntersectionsFromIcons ( objects ) {
+function getObjectsFromIcons ( objects ) {
   return objects
-    // visible objects
-    .filter(o => o.visible)
-    // with icons
-    .filter(o => o.orthoIcon && o.orthoIcon.icon)
-    // return the icons
-    .map(o => o.orthoIcon.icon)
+      // visible objects
+      .filter(o => o.visible)
+      // with icons
+      .filter(o => o.orthoIcon && o.orthoIcon.icon)
+      // return the icons
+      .map(o => o.orthoIcon.icon)
+      // and ...
+      .concat(
+        // ... add directly visible objects (like the box)
+        objects
+          .filter(o => o.type === 'Group' && o.children[0] && o.children[0].isMesh)
+          .map(o => o.children[0])
+      )
 }
 
-function getIntersectionsFromInCameraObjects (objects) {
+function getObjectsFromCameraView (objects) {
   let results = []
 
   for (let o of objects) {
@@ -119,8 +126,8 @@ const SelectionManager = connect(
     raycaster.setFromCamera({ x, y }, camera )
 
     let intersects = useIcons
-      ? raycaster.intersectObjects( getIntersectionsFromIcons(intersectables) )
-      : raycaster.intersectObjects( getIntersectionsFromInCameraObjects(intersectables) )
+      ? raycaster.intersectObjects( getObjectsFromIcons(intersectables) )
+      : raycaster.intersectObjects( getObjectsFromCameraView(intersectables) )
 
     return intersects
   }
