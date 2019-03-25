@@ -80,6 +80,7 @@ const { Machine } = require('xstate')
 const useMachine = require('../hooks/use-machine')
 
 const CameraControls = require('./CameraControls')
+const SelectionManager = require('./SelectionManager')
 const DragControls = require('./DragControls')
 const IconSprites = require('./IconSprites')
 const Character = require('./Character')
@@ -112,15 +113,15 @@ require('../vendor/OutlineEffect.js')
 
 window.THREE = THREE
 
-const draggables = (sceneObjects, scene) =>
-  //scene.children.filter(o => o.userData.type === 'object' || o instanceof BoundingBoxHelper)
-  scene.children.filter(o => o.userData.type === 'object' ||
-                              o.userData.type === 'character' ||
-                              o.userData.type === 'light' ||
-                              o.userData.type === 'volume' )
+// const draggables = (sceneObjects, scene) =>
+//   //scene.children.filter(o => o.userData.type === 'object' || o instanceof BoundingBoxHelper)
+//   scene.children.filter(o => o.userData.type === 'object' ||
+//                               o.userData.type === 'character' ||
+//                               o.userData.type === 'light' ||
+//                               o.userData.type === 'volume' )
 
-const cameras = ( scene ) =>
-  scene.children.filter(o => o instanceof THREE.PerspectiveCamera)
+// const cameras = ( scene ) =>
+//   scene.children.filter(o => o instanceof THREE.PerspectiveCamera)
 
 const animatedUpdate = (fn) => (dispatch, getState) => fn(dispatch, getState())
 
@@ -228,8 +229,8 @@ const SceneManager = connect(
     let animatorId = useRef(null)
 
     let cameraControlsView = useRef(null)
-    let dragControlsView = useRef(null)
-    let orthoDragControlsView = useRef(null)
+    // let dragControlsView = useRef(null)
+    // let orthoDragControlsView = useRef(null)
     let bonesHelper = useRef(null)
     let lightHelper = useRef(null)
 
@@ -444,50 +445,50 @@ const SceneManager = connect(
           )
         }
 
-        if (!dragControlsView.current) {
-          console.log('new DragControls')
-          dragControlsView.current = new DragControls(
-            draggables(sceneObjects, scene),
-            cameras(scene),
-            camera,
-            largeCanvasRef.current,
-            selectObject,
-            selectObjectToggle,
-            updateObject,
-            selectBone
-          )
-          dragControlsView.current.addEventListener('pointerdown', event => {
-            transition('TYPING_EXIT')
-          })
-          dragControlsView.current.addEventListener(
-            'dragstart',
-            function ( event ) {
-              transition('EDITING_ENTER')
-            }.bind(this)
-          )
-          dragControlsView.current.addEventListener( 'dragend', function ( event ) {
-            transition('EDITING_EXIT')
-          }.bind(this) )
-        }
+        // if (!dragControlsView.current) {
+        //   console.log('new DragControls')
+        //   dragControlsView.current = new DragControls(
+        //     draggables(sceneObjects, scene),
+        //     cameras(scene),
+        //     camera,
+        //     largeCanvasRef.current,
+        //     selectObject,
+        //     selectObjectToggle,
+        //     updateObject,
+        //     selectBone
+        //   )
+        //   dragControlsView.current.addEventListener('pointerdown', event => {
+        //     transition('TYPING_EXIT')
+        //   })
+        //   dragControlsView.current.addEventListener(
+        //     'dragstart',
+        //     function ( event ) {
+        //       transition('EDITING_ENTER')
+        //     }.bind(this)
+        //   )
+        //   dragControlsView.current.addEventListener( 'dragend', function ( event ) {
+        //     transition('EDITING_EXIT')
+        //   }.bind(this) )
+        // }
 
-        if (!orthoDragControlsView.current) {
-          orthoDragControlsView.current = new DragControls(
-            draggables(sceneObjects, scene),
-            cameras(scene),
-            orthoCamera.current,
-            smallCanvasRef.current,
-            selectObject,
-            selectObjectToggle,
-            updateObject,
-            selectBone
-          )
-          orthoDragControlsView.current.addEventListener( 'dragstart', function ( event ) {
-            transition('EDITING_ENTER')
-          }.bind(this) )
-          orthoDragControlsView.current.addEventListener( 'dragend', function ( event ) {
-            transition('EDITING_EXIT')
-          }.bind(this) )
-        }
+        // if (!orthoDragControlsView.current) {
+        //   orthoDragControlsView.current = new DragControls(
+        //     draggables(sceneObjects, scene),
+        //     cameras(scene),
+        //     orthoCamera.current,
+        //     smallCanvasRef.current,
+        //     selectObject,
+        //     selectObjectToggle,
+        //     updateObject,
+        //     selectBone
+        //   )
+        //   orthoDragControlsView.current.addEventListener( 'dragstart', function ( event ) {
+        //     transition('EDITING_ENTER')
+        //   }.bind(this) )
+        //   orthoDragControlsView.current.addEventListener( 'dragend', function ( event ) {
+        //     transition('EDITING_EXIT')
+        //   }.bind(this) )
+        // }
 
         animator.current = () => {
           if (stats) { stats.begin() }
@@ -497,9 +498,9 @@ const SceneManager = connect(
               let cameraForSmall = state.mainViewCamera === 'ortho' ? camera : orthoCamera.current
               let cameraForLarge = state.mainViewCamera === 'live' ? camera : orthoCamera.current
 
-              dragControlsView.current.setCamera(cameraForLarge)
-              orthoDragControlsView.current.setCamera(cameraForSmall)
-              //orthoDragControlsView.current.setCameras(cameras(scene))
+              // dragControlsView.current.setCamera(cameraForLarge)
+              // orthoDragControlsView.current.setCamera(cameraForSmall)
+                  //orthoDragControlsView.current.setCameras(cameras(scene))
 
               if (cameraControlsView.current && cameraControlsView.current.enabled) {
                 let cameraState = Object.values(state.sceneObjects).find(o => o.id === camera.userData.id)
@@ -517,7 +518,7 @@ const SceneManager = connect(
 
                 // step
                 cameraControlsView.current.update( clock.current.getDelta(), state )
-                dragControlsView.current.update( clock.current.getDelta(), state )
+                // dragControlsView.current.update( clock.current.getDelta(), state )
 
                 // update object state with the latest values
                 let cameraId = camera.userData.id
@@ -632,38 +633,38 @@ const SceneManager = connect(
         bonesHelper.current = null
       }
 
-      if (dragControlsView.current) {
-        //console.log('bones helper current: ', bonesHelper.current)
-        dragControlsView.current.setBones(bonesHelper.current)
-        dragControlsView.current.setSelected(child)
-        dragControlsView.current.setCameras(cameras(scene))
-      }
-      if (orthoDragControlsView.current) {
-        orthoDragControlsView.current.setBones(bonesHelper.current)
-        orthoDragControlsView.current.setSelected(child)
-        orthoDragControlsView.current.setCameras(cameras(scene))
-      }
+      // if (dragControlsView.current) {
+      //   //console.log('bones helper current: ', bonesHelper.current)
+      //   dragControlsView.current.setBones(bonesHelper.current)
+      //   dragControlsView.current.setSelected(child)
+      //   dragControlsView.current.setCameras(cameras(scene))
+      // }
+      // if (orthoDragControlsView.current) {
+      //   orthoDragControlsView.current.setBones(bonesHelper.current)
+      //   orthoDragControlsView.current.setSelected(child)
+      //   orthoDragControlsView.current.setCameras(cameras(scene))
+      // }
     }, [selections, sceneObjects])
 
-    useEffect(() => {
-      if (dragControlsView.current) {
-        // TODO read-only version?
+    // useEffect(() => {
+    //   if (dragControlsView.current) {
+    //     // TODO read-only version?
+    // 
+    //     dragControlsView.current.setObjects(draggables(sceneObjects, scene))
+    // 
+    //     // TODO update if there are changes to the camera(s) in the scene
+    //     //
+    //     // let cameraState = Object.values(sceneObjects).find(o => o.type === 'camera')
+    //     // cameraControlsView.current.object = JSON.parse(JSON.stringify(cameraState))
+    //   }
+    // }, [sceneObjects, camera])
 
-        dragControlsView.current.setObjects(draggables(sceneObjects, scene))
-
-        // TODO update if there are changes to the camera(s) in the scene
-        //
-        // let cameraState = Object.values(sceneObjects).find(o => o.type === 'camera')
-        // cameraControlsView.current.object = JSON.parse(JSON.stringify(cameraState))
-      }
-    }, [sceneObjects, camera])
-
-    useEffect(() => {
-      if (orthoDragControlsView.current) {
-        orthoDragControlsView.current.setObjects(draggables(sceneObjects, scene))
-        orthoDragControlsView.current.setCameras(cameras(scene))
-      }
-    }, [sceneObjects, orthoCamera])
+    // useEffect(() => {
+    //   if (orthoDragControlsView.current) {
+    //     orthoDragControlsView.current.setObjects(draggables(sceneObjects, scene))
+    //     orthoDragControlsView.current.setCameras(cameras(scene))
+    //   }
+    // }, [sceneObjects, orthoCamera])
 
     useEffect(() => {
       if (camera && cameraControlsView.current) {
@@ -822,7 +823,28 @@ const SceneManager = connect(
     ]
     // TODO Scene parent object??
     return [
-      [worldComponent, ...components].map(c => h(c))
+      [
+        [SelectionManager, {
+          key: 'selection-manager-large',
+          scene,
+          camera,
+          el: largeCanvasRef.current,
+          selectOnPointerDown: mainViewCamera !== 'live',
+          useSprites: mainViewCamera !== 'live'
+        }],
+
+        [SelectionManager, {
+          key: 'selection-manager-small',
+          scene,
+          camera: orthoCamera.current,
+          el: smallCanvasRef.current,
+          selectOnPointerDown: mainViewCamera === 'live',
+          useSprites: mainViewCamera === 'live'
+        }],
+
+        worldComponent,
+        ...components
+      ].map(c => h(c))
     ]
   }
 )
