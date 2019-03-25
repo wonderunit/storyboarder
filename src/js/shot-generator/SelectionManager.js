@@ -48,6 +48,10 @@ function getIntersectionObjects (objects) {
 }
 
 const getIntersectionTarget = intersect => {
+  if (intersect.object.type === 'Sprite') {
+    return intersect.object.parent.linkedTo
+  }
+
   // light
   if (intersect.object.userData.type === 'hitter_light') {
     return intersect.object.parent
