@@ -95,7 +95,8 @@ const SelectionManager = connect(
     o.userData.type === 'object' ||
     o.userData.type === 'character' ||
     o.userData.type === 'light' ||
-    o.userData.type === 'volume' 
+    o.userData.type === 'volume' ||
+    o.isPerspectiveCamera
   )
 
   const mouse = event => {
