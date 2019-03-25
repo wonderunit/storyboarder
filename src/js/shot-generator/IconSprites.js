@@ -7,6 +7,7 @@ const { Sprite } = THREE
 
 const { useRef, useEffect, useState } = React
 
+window.THREE = window.THREE || THREE
 const createGeometry = require('three-bmfont-text')
 const loadFont = require('load-bmfont')
 
