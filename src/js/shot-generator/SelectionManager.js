@@ -84,7 +84,7 @@ const SelectionManager = connect(
     el,
 
     selectOnPointerDown,
-    useSprites,
+    useIcons,
 
     selections,
     sceneObjects,
@@ -100,7 +100,7 @@ const SelectionManager = connect(
     o.userData.type === 'character' ||
     o.userData.type === 'light' ||
     o.userData.type === 'volume' ||
-    (useSprites && o.isPerspectiveCamera)
+    (useIcons && o.isPerspectiveCamera)
   )
 
   const mouse = event => {
@@ -115,7 +115,7 @@ const SelectionManager = connect(
     let raycaster = new THREE.Raycaster()
     raycaster.setFromCamera({ x, y }, camera )
 
-    let intersects = useSprites
+    let intersects = useIcons
       ? raycaster.intersectObjects( getSprites(intersectables) )
       : raycaster.intersectObjects( getIntersectionObjects(intersectables) )
 
