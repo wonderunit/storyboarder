@@ -111,7 +111,7 @@ const SelectionManager = connect(
     }
   }
 
-  const findTarget = ({ x, y }, camera) => {
+  const getIntersects = ({ x, y }, camera) => {
     let raycaster = new THREE.Raycaster()
     raycaster.setFromCamera({ x, y }, camera )
 
@@ -119,28 +119,29 @@ const SelectionManager = connect(
       ? raycaster.intersectObjects( getSprites(intersectables) )
       : raycaster.intersectObjects( getIntersectionObjects(intersectables) )
 
-    if (intersects.length) {
-      let intersect = intersects[0]
-      let target = getIntersectionTarget(intersect)
-      return target
-    }
-
-    return null
+    return intersects
   }
 
   const onPointerDown = event => {
     event.preventDefault()
 
-    let target = findTarget(mouse(event), camera)
+    let intersects = getIntersects(mouse(event), camera)
 
-    if (target) {
-      if (selectOnPointerDown) {
-        event.shiftKey
-          ? selectObjectToggle(target.userData.id)
-          : selectObject(target.userData.id)
-      } else {
-        setLastDownId(target.userData.id)
-      }
+    if (intersects.length === 0) {
+      setLastDownId(undefined)
+      return
+    }
+
+    // TODO use closest-to-camera of targets
+    let intersect = intersects[0]
+    let target = getIntersectionTarget(intersect)
+
+    if (selectOnPointerDown) {
+      event.shiftKey
+        ? selectObjectToggle(target.userData.id)
+        : selectObject(target.userData.id)
+    } else {
+      setLastDownId(target.userData.id)
     }
   }
 
@@ -149,16 +150,21 @@ const SelectionManager = connect(
 
     if (event.target === el) {
       if (!selectOnPointerDown) {
-        let target = findTarget(mouse(event), camera)
+        let intersects = getIntersects(mouse(event), camera)
 
-        if (target) {
-          if (target.userData.id === lastDownId) {
-            event.shiftKey
-              ? selectObjectToggle(target.userData.id)
-              : selectObject(target.userData.id)
-          }
-        } else {
+        if (intersects.length === 0) {
           selectObject(undefined)
+          return
+        }
+
+        // TODO use closest-to-camera of targets
+        let intersect = intersects[0]
+        let target = getIntersectionTarget(intersect)
+
+        if (target.userData.id === lastDownId) {
+          event.shiftKey
+            ? selectObjectToggle(target.userData.id)
+            : selectObject(target.userData.id)
         }
       }
     }
