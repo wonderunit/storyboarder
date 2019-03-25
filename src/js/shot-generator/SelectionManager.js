@@ -135,7 +135,9 @@ const SelectionManager = connect(
   const onPointerDown = event => {
     event.preventDefault()
 
-    let intersects = getIntersects(mouse(event), camera)
+    const { x, y } = mouse(event)
+
+    let intersects = getIntersects({ x, y }, camera)
 
     if (intersects.length === 0) {
       setLastDownId(undefined)
@@ -146,9 +148,10 @@ const SelectionManager = connect(
       return
     }
 
-    // TODO use closest-to-camera of targets
-    let intersect = intersects[0]
-    let target = getIntersectionTarget(intersect)
+    let targets = intersects.map(intersect => getIntersectionTarget(intersect))
+    // TODO
+    targets.sort((a, b) => a.position.distanceTo({ x, y }) - b.position.distanceTo({ x, y }))
+    let target = targets[0]
 
     if (selectOnPointerDown) {
       event.shiftKey
@@ -162,18 +165,21 @@ const SelectionManager = connect(
   const onPointerUp = event => {
     event.preventDefault()
 
+    const { x, y } = mouse(event)
+
     if (event.target === el) {
       if (!selectOnPointerDown) {
-        let intersects = getIntersects(mouse(event), camera)
+        let intersects = getIntersects({ x, y }, camera)
 
         if (intersects.length === 0) {
           selectObject(undefined)
           return
         }
 
-        // TODO use closest-to-camera of targets
-        let intersect = intersects[0]
-        let target = getIntersectionTarget(intersect)
+        let targets = intersects.map(intersect => getIntersectionTarget(intersect))
+        // TODO
+        targets.sort((a, b) => a.position.distanceTo({ x, y }) - b.position.distanceTo({ x, y }))
+        let target = targets[0]
 
         if (target.userData.id === lastDownId) {
           event.shiftKey
