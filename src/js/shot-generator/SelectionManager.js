@@ -3,7 +3,8 @@ const { connect } = require('react-redux')
 
 const {
   selectObject,
-  selectObjectToggle
+  selectObjectToggle,
+  selectBone
 } = require('../shared/reducers/shot-generator')
 
 function getObjectsFromIcons ( objects ) {
@@ -85,7 +86,8 @@ const SelectionManager = connect(
   }),
   {
     selectObject,
-    selectObjectToggle
+    selectObjectToggle,
+    selectBone
   }
 )(
   ({
@@ -100,7 +102,8 @@ const SelectionManager = connect(
     sceneObjects,
 
     selectObject,
-    selectObjectToggle
+    selectObjectToggle,
+    selectBone
   }) => {
 
   const [lastDownId, setLastDownId] = useState()
@@ -144,6 +147,7 @@ const SelectionManager = connect(
 
       if (selectOnPointerDown) {
         selectObject(undefined)
+        selectBone(undefined)
       }
       return
     }
@@ -152,6 +156,24 @@ const SelectionManager = connect(
     // TODO
     targets.sort((a, b) => a.position.distanceTo({ x, y }) - b.position.distanceTo({ x, y }))
     let target = targets[0]
+
+    if (selections.length) {
+      if (target.userData.type === 'character' && selections.includes(target.userData.id)) {
+        let raycaster = new THREE.Raycaster()
+        raycaster.setFromCamera({ x, y }, camera )
+        let hits = raycaster.intersectObject(target.bonesHelper)
+
+        if (hits.length) {
+          selectObject(target.userData.id)
+          setLastDownId(undefined)
+
+          selectBone(hits[0].bone.uuid)
+          return
+        }
+      }
+    }
+
+    selectBone(null)
 
     if (selectOnPointerDown) {
       event.shiftKey
@@ -173,6 +195,7 @@ const SelectionManager = connect(
 
         if (intersects.length === 0) {
           selectObject(undefined)
+          selectBone(null)
           return
         }
 
@@ -185,6 +208,7 @@ const SelectionManager = connect(
           event.shiftKey
             ? selectObjectToggle(target.userData.id)
             : selectObject(target.userData.id)
+          selectBone(null)
         }
       }
     }
