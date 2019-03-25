@@ -111,7 +111,7 @@ const SelectionManager = connect(
     }
   }
 
-  const checkIntersection = ({ x, y }, camera) => {
+  const findTarget = ({ x, y }, camera) => {
     let raycaster = new THREE.Raycaster()
     raycaster.setFromCamera({ x, y }, camera )
 
@@ -131,7 +131,7 @@ const SelectionManager = connect(
   const onPointerDown = event => {
     event.preventDefault()
 
-    let target = checkIntersection(mouse(event), camera)
+    let target = findTarget(mouse(event), camera)
 
     if (target) {
       if (selectOnPointerDown) {
@@ -149,7 +149,7 @@ const SelectionManager = connect(
 
     if (event.target === el) {
       if (!selectOnPointerDown) {
-        let target = checkIntersection(mouse(event), camera)
+        let target = findTarget(mouse(event), camera)
 
         if (target) {
           if (target.userData.id === lastDownId) {
