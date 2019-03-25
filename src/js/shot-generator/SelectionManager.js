@@ -6,7 +6,7 @@ const {
   selectObjectToggle
 } = require('../shared/reducers/shot-generator')
 
-function getSprites ( objects ) {
+function getIntersectionsFromIcons ( objects ) {
   return objects
     // visible objects
     .filter(o => o.visible)
@@ -16,7 +16,7 @@ function getSprites ( objects ) {
     .map(o => o.orthoIcon.icon)
 }
 
-function getIntersectionObjects (objects) {
+function getIntersectionsFromInCameraObjects (objects) {
   let results = []
 
   for (let o of objects) {
@@ -39,9 +39,12 @@ function getIntersectionObjects (objects) {
       results.push(o.hitter)
     }
 
-    if (o.userData.type === 'volume') {
-      // ignore, we'll use the sprite only
-    }
+    // if (o.userData.type === 'volume') {
+    // }
+
+    // TODO allow camera selection
+    // if (o.userData.type === 'camera') {
+    // }
   }
 
   return results
@@ -116,8 +119,8 @@ const SelectionManager = connect(
     raycaster.setFromCamera({ x, y }, camera )
 
     let intersects = useIcons
-      ? raycaster.intersectObjects( getSprites(intersectables) )
-      : raycaster.intersectObjects( getIntersectionObjects(intersectables) )
+      ? raycaster.intersectObjects( getIntersectionsFromIcons(intersectables) )
+      : raycaster.intersectObjects( getIntersectionsFromInCameraObjects(intersectables) )
 
     return intersects
   }
