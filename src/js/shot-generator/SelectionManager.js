@@ -143,8 +143,8 @@ const SelectionManager = connect(
   const onPointerUp = event => {
     event.preventDefault()
 
-    if (selectOnPointerDown) {
-      if (event.target === el) {
+    if (event.target === el) {
+      if (!selectOnPointerDown) {
         let target = checkIntersection(mouse(event), camera)
 
         if (target) {
