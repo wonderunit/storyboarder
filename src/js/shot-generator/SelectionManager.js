@@ -152,17 +152,44 @@ const SelectionManager = connect(
       return
     }
 
+    let target
+
+    // prefer the nearest character to the click
     if (useIcons) {
-      // sort intersects by their target positions distance from intersect point
-      intersects = intersects.sort((a, b) =>
-        a.object.parent.linkedTo.position.clone().setY(0).distanceTo(a.point) -
-        b.object.parent.linkedTo.position.clone().setY(0).distanceTo(a.point)
-      )
+      // how many characters intersections are there?
+      let charactersIntersects = intersects.filter(i => i.object.parent.linkedTo && i.object.parent.linkedTo.userData.type === 'character')
+
+      let intersect
+      // if there are many character intersections
+      if (charactersIntersects.length > 1) {
+        // find the character intersection closest to the intersection point
+        let closest = charactersIntersects[0]
+
+        let linkedPosition = charactersIntersects[0].object.parent.linkedTo.position.clone().setY(0)
+        let closestDist = linkedPosition.distanceTo(charactersIntersects[0].point)
+
+        for (let intersector of charactersIntersects) {
+          linkedPosition = intersector.object.parent.linkedTo.position.clone().setY(0)
+          let newDist = linkedPosition.distanceTo(intersector.point)
+          if (newDist < closestDist){
+            closestDist = newDist
+            closest = intersector
+          }
+        }
+
+        intersect = closest
+      } else if (charactersIntersects.length == 1) {
+        // if there is only one character intersection, prefer that
+        intersect = charactersIntersects[0]
+      } else {
+        // otherwise, grab the first intersection available
+        intersect = intersects[0]
+      }
+
+      target = getIntersectionTarget(intersect)
+    } else {
+      target = getIntersectionTarget(intersects[0])
     }
-
-    let targets = intersects.map(intersect => getIntersectionTarget(intersect))
-
-    let target = targets[0]
 
     if (selections.length) {
       if (target.userData.type === 'character' && selections.includes(target.userData.id)) {
@@ -206,8 +233,7 @@ const SelectionManager = connect(
           return
         }
 
-        let targets = intersects.map(intersect => getIntersectionTarget(intersect))
-        let target = targets[0]
+        let target = getIntersectionTarget(intersects[0])
 
         if (target.userData.id === lastDownId) {
           event.shiftKey
