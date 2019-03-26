@@ -1,4 +1,4 @@
-const { useState, useEffect } = React = require('react')
+const { useState, useEffect, useLayoutEffect } = React = require('react')
 const { connect } = require('react-redux')
 
 const {
@@ -248,7 +248,7 @@ const SelectionManager = connect(
     setLastDownId(undefined)
   }
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     el.addEventListener('pointerdown', onPointerDown)
     document.addEventListener('pointerup', onPointerUp)
 
