@@ -20,6 +20,7 @@ function getObjectsFromIcons ( objects ) {
         // ... add directly visible objects (like the box)
         objects
           .filter(o => o.type === 'Group' && o.children[0] && o.children[0].isMesh)
+          .filter(o => o.visible)
           .map(o => o.children[0])
       )
 }
