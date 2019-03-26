@@ -234,6 +234,7 @@ const SelectionManager = connect(
         if (intersects.length === 0) {
           selectObject(undefined)
           selectBone(null)
+          setLastDownId(undefined)
           return
         }
 
