@@ -152,9 +152,16 @@ const SelectionManager = connect(
       return
     }
 
+    if (useIcons) {
+      // sort intersects by their target positions distance from intersect point
+      intersects = intersects.sort((a, b) =>
+        a.object.parent.linkedTo.position.clone().setY(0).distanceTo(a.point) -
+        b.object.parent.linkedTo.position.clone().setY(0).distanceTo(a.point)
+      )
+    }
+
     let targets = intersects.map(intersect => getIntersectionTarget(intersect))
-    // TODO
-    targets.sort((a, b) => a.position.distanceTo({ x, y }) - b.position.distanceTo({ x, y }))
+
     let target = targets[0]
 
     if (selections.length) {
@@ -200,8 +207,6 @@ const SelectionManager = connect(
         }
 
         let targets = intersects.map(intersect => getIntersectionTarget(intersect))
-        // TODO
-        targets.sort((a, b) => a.position.distanceTo({ x, y }) - b.position.distanceTo({ x, y }))
         let target = targets[0]
 
         if (target.userData.id === lastDownId) {
