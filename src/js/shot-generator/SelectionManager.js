@@ -33,7 +33,7 @@ function getObjectsFromCameraView (objects) {
 
     if (o.userData.type === 'object') {
       if (o.type === 'Group' && o.children[0].isMesh) {
-        results.push(o.children[0])
+        if (o.visible) results.push(o.children[0])
       }
     }
 
