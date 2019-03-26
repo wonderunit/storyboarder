@@ -192,12 +192,15 @@ const SelectionManager = connect(
       target = getIntersectionTarget(intersects[0])
     }
 
+    // if there are 1 or more selections
     if (selections.length) {
+      // if there already is a character selected
       if (target.userData.type === 'character' && selections.includes(target.userData.id)) {
         let raycaster = new THREE.Raycaster()
         raycaster.setFromCamera({ x, y }, camera )
         let hits = raycaster.intersectObject(target.bonesHelper)
 
+        // select a bone
         if (hits.length) {
           selectObject(target.userData.id)
           setLastDownId(undefined)
