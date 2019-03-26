@@ -37,15 +37,15 @@ function getObjectsFromCameraView (objects) {
       }
     }
 
+    if (o.userData.type === 'light') {
+      results.push(o.hitter)
+    }
+
     if (o.userData.type === 'character') {
       // if the mesh has loaded
       if (o.bonesHelper) {
         results = results.concat(o.bonesHelper.hit_meshes)
       }
-    }
-
-    if (o.userData.type === 'light') {
-      results.push(o.hitter)
     }
 
     // if (o.userData.type === 'volume') {
