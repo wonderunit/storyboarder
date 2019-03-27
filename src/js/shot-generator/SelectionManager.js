@@ -4,7 +4,8 @@ const { connect } = require('react-redux')
 const {
   selectObject,
   selectObjectToggle,
-  selectBone
+  selectBone,
+  updateObject
 } = require('../shared/reducers/shot-generator')
 
 function getObjectsFromIcons ( objects ) {
@@ -88,7 +89,8 @@ const SelectionManager = connect(
   {
     selectObject,
     selectObjectToggle,
-    selectBone
+    selectBone,
+    updateObject
   }
 )(
   ({
@@ -105,6 +107,7 @@ const SelectionManager = connect(
     selectObject,
     selectObjectToggle,
     selectBone,
+    updateObject,
 
     transition
   }) => {
@@ -146,12 +149,17 @@ const SelectionManager = connect(
   const raycaster = useRef()
   const plane = useRef()
   const intersection = useRef()
-  const offset = useRef()
+  const offsets = useRef()
   const prepareDrag = (target, { x, y, useIcons }) => {
     if (!raycaster.current) raycaster.current = new THREE.Raycaster()
     if (!plane.current) plane.current = new THREE.Plane()
     if (!intersection.current) intersection.current = new THREE.Vector3()
-    if (!offset.current) offset.current = new THREE.Vector3()
+
+    offsets.current = []
+
+    console.log('PREPARE DRAG', { x, y, useIcons })
+
+    raycaster.current.setFromCamera({ x, y }, camera )
 
     if (useIcons) {
       plane.current.setFromNormalAndCoplanarPoint( camera.position.clone().normalize(), target.position )
@@ -159,19 +167,30 @@ const SelectionManager = connect(
       plane.current.setFromNormalAndCoplanarPoint( camera.getWorldDirection( plane.current.normal ), target.position )
     }
 
+    console.log('plane normal', plane.current.normal)
+
+    // remember the offsets of every selected object
     if ( raycaster.current.ray.intersectPlane( plane.current, intersection.current ) ) {
-      offset.current.copy( intersection.current ).sub( target.position )
+      for (let selection of selections) {
+        let child = scene.children.find(child => child.userData.id === selection)
+        offsets.current[selection] = new THREE.Vector3().copy( intersection.current ).sub( child.position )
+      }
+    } else {
+      for (let selection of selections) {
+        offsets.current[selection] = new THREE.Vector3()
+      }
     }
 
+    console.log('offsets', offsets.current)
   }
-  const drag = (target, { x, y }) => {
-    raycaster.current.setFromCamera({ x, y }, camera )
-
+  const drag = (target, mouse) => {
+    console.log('drag')
+    raycaster.current.setFromCamera( mouse, camera )
+    
     if ( raycaster.current.ray.intersectPlane( plane.current, intersection.current ) ) {
-      let { x, z } = intersection.current.sub( offset.current )
-      for (let selection of selections) {
-        console.log('update selection', selection, x, y)
-        // updateObjects(target.userData.id, { x, y })
+      for (selection of selections) {
+        let { x, z } = intersection.current.sub( offsets.current[selection] ).setY(0)
+        updateObject(selection, { x, y: z })
       }
     }
   }
