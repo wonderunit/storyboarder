@@ -238,22 +238,25 @@ const SelectionManager = connect(
 
       // if there are 1 or more selections
       if (selections.length) {
-        // if there already is a character selected
-        if (target.userData.type === 'character' && selections.includes(target.userData.id)) {
-          let raycaster = new THREE.Raycaster()
-          raycaster.setFromCamera({ x, y }, camera )
-          let hits = raycaster.intersectObject(target.bonesHelper)
+        // and we're not in icon mode
+        if (!useIcons) {
+          // if there already is a character selected
+          if (target.userData.type === 'character' && selections.includes(target.userData.id)) {
+            let raycaster = new THREE.Raycaster()
+            raycaster.setFromCamera({ x, y }, camera )
+            let hits = raycaster.intersectObject(target.bonesHelper)
 
-          // select a bone
-          if (hits.length) {
-            selectObject(target.userData.id)
-            setLastDownId(null)
+            // select a bone
+            if (hits.length) {
+              selectObject(target.userData.id)
+              setLastDownId(null)
 
-            selectBone(hits[0].bone.uuid)
+              selectBone(hits[0].bone.uuid)
 
-            prepareDrag(target, { x, y, useIcons })
-            setDragTarget(target)
-            return
+              prepareDrag(target, { x, y, useIcons })
+              setDragTarget(target)
+              return
+            }
           }
         }
 
