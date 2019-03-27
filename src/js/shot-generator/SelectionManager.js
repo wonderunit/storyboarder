@@ -84,7 +84,8 @@ const getIntersectionTarget = intersect => {
 const SelectionManager = connect(
   state => ({
     selections: state.selections,
-    sceneObjects: state.sceneObjects
+    sceneObjects: state.sceneObjects,
+    activeCamera: state.activeCamera
   }),
   {
     selectObject,
@@ -103,6 +104,7 @@ const SelectionManager = connect(
 
     selections,
     sceneObjects,
+    activeCamera,
 
     selectObject,
     selectObjectToggle,
@@ -214,8 +216,7 @@ const SelectionManager = connect(
       setDragTarget(null)
 
       setLastDownId(null)
-      selectObject(undefined)
-      selectObject(camera.userData.id)
+      selectObject(activeCamera)
       selectBone(null)
 
     } else {
