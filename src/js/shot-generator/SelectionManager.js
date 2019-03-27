@@ -189,7 +189,7 @@ const SelectionManager = connect(
     
     if ( raycaster.current.ray.intersectPlane( plane.current, intersection.current ) ) {
       for (selection of selections) {
-        let { x, z } = intersection.current.sub( offsets.current[selection] ).setY(0)
+        let { x, z } = intersection.current.clone().sub( offsets.current[selection] ).setY(0)
         updateObject(selection, { x, y: z })
       }
     }
