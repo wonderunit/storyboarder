@@ -310,9 +310,10 @@ const SelectionManager = connect(
             if (event.shiftKey) {
               selectObjectToggle(target.userData.id)
             } else {
-              if (selections.length === 0) {
-                selectObject(target.userData.id)
-              }
+
+              // FIXME should not de-select multi-selection after dragging
+
+              selectObject(target.userData.id)
             }
             selectBone(null)
           }
