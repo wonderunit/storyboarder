@@ -830,7 +830,8 @@ const SceneManager = connect(
           camera,
           el: largeCanvasRef.current,
           selectOnPointerDown: mainViewCamera !== 'live',
-          useIcons: mainViewCamera !== 'live'
+          useIcons: mainViewCamera !== 'live',
+          transition
         }],
 
         [SelectionManager, {
@@ -839,7 +840,8 @@ const SceneManager = connect(
           camera: orthoCamera.current,
           el: smallCanvasRef.current,
           selectOnPointerDown: mainViewCamera === 'live',
-          useIcons: mainViewCamera === 'live'
+          useIcons: mainViewCamera === 'live',
+          transition
         }],
 
         worldComponent,
