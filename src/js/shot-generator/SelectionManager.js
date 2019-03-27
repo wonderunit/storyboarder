@@ -194,6 +194,7 @@ const SelectionManager = connect(
 
       setLastDownId(null)
       selectObject(undefined)
+      selectObject(camera.userData.id)
       selectBone(null)
 
     } else {
