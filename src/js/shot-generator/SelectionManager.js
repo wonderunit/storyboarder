@@ -145,80 +145,77 @@ const SelectionManager = connect(
 
     if (intersects.length === 0) {
       setLastDownId(undefined)
+      selectObject(undefined)
+      selectBone(undefined)
 
-      if (selectOnPointerDown) {
-        selectObject(undefined)
-        selectBone(undefined)
+    } else {
+      let target
+
+      // prefer the nearest character to the click
+      if (useIcons) {
+        // how many characters intersections are there?
+        let charactersIntersects = intersects.filter(i => i.object.parent.linkedTo && i.object.parent.linkedTo.userData.type === 'character')
+
+        let intersect
+        // if there are many character intersections
+        if (charactersIntersects.length > 1) {
+          // find the character intersection closest to the intersection point
+          let closest = charactersIntersects[0]
+
+          let linkedPosition = charactersIntersects[0].object.parent.linkedTo.position.clone().setY(0)
+          let closestDist = linkedPosition.distanceTo(charactersIntersects[0].point)
+
+          for (let intersector of charactersIntersects) {
+            linkedPosition = intersector.object.parent.linkedTo.position.clone().setY(0)
+            let newDist = linkedPosition.distanceTo(intersector.point)
+            if (newDist < closestDist){
+              closestDist = newDist
+              closest = intersector
+            }
+          }
+
+          intersect = closest
+        } else if (charactersIntersects.length == 1) {
+          // if there is only one character intersection, prefer that
+          intersect = charactersIntersects[0]
+        } else {
+          // otherwise, grab the first intersection available
+          intersect = intersects[0]
+        }
+
+        target = getIntersectionTarget(intersect)
+      } else {
+        target = getIntersectionTarget(intersects[0])
       }
-      return
-    }
 
-    let target
+      // if there are 1 or more selections
+      if (selections.length) {
+        // if there already is a character selected
+        if (target.userData.type === 'character' && selections.includes(target.userData.id)) {
+          let raycaster = new THREE.Raycaster()
+          raycaster.setFromCamera({ x, y }, camera )
+          let hits = raycaster.intersectObject(target.bonesHelper)
 
-    // prefer the nearest character to the click
-    if (useIcons) {
-      // how many characters intersections are there?
-      let charactersIntersects = intersects.filter(i => i.object.parent.linkedTo && i.object.parent.linkedTo.userData.type === 'character')
+          // select a bone
+          if (hits.length) {
+            selectObject(target.userData.id)
+            setLastDownId(undefined)
 
-      let intersect
-      // if there are many character intersections
-      if (charactersIntersects.length > 1) {
-        // find the character intersection closest to the intersection point
-        let closest = charactersIntersects[0]
-
-        let linkedPosition = charactersIntersects[0].object.parent.linkedTo.position.clone().setY(0)
-        let closestDist = linkedPosition.distanceTo(charactersIntersects[0].point)
-
-        for (let intersector of charactersIntersects) {
-          linkedPosition = intersector.object.parent.linkedTo.position.clone().setY(0)
-          let newDist = linkedPosition.distanceTo(intersector.point)
-          if (newDist < closestDist){
-            closestDist = newDist
-            closest = intersector
+            selectBone(hits[0].bone.uuid)
+            return
           }
         }
+      }
 
-        intersect = closest
-      } else if (charactersIntersects.length == 1) {
-        // if there is only one character intersection, prefer that
-        intersect = charactersIntersects[0]
+      selectBone(null)
+
+      if (selectOnPointerDown) {
+        event.shiftKey
+          ? selectObjectToggle(target.userData.id)
+          : selectObject(target.userData.id)
       } else {
-        // otherwise, grab the first intersection available
-        intersect = intersects[0]
+        setLastDownId(target.userData.id)
       }
-
-      target = getIntersectionTarget(intersect)
-    } else {
-      target = getIntersectionTarget(intersects[0])
-    }
-
-    // if there are 1 or more selections
-    if (selections.length) {
-      // if there already is a character selected
-      if (target.userData.type === 'character' && selections.includes(target.userData.id)) {
-        let raycaster = new THREE.Raycaster()
-        raycaster.setFromCamera({ x, y }, camera )
-        let hits = raycaster.intersectObject(target.bonesHelper)
-
-        // select a bone
-        if (hits.length) {
-          selectObject(target.userData.id)
-          setLastDownId(undefined)
-
-          selectBone(hits[0].bone.uuid)
-          return
-        }
-      }
-    }
-
-    selectBone(null)
-
-    if (selectOnPointerDown) {
-      event.shiftKey
-        ? selectObjectToggle(target.userData.id)
-        : selectObject(target.userData.id)
-    } else {
-      setLastDownId(target.userData.id)
     }
   }
 
