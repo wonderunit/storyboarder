@@ -290,9 +290,16 @@ const SelectionManager = connect(
       selectBone(null)
 
       if (selectOnPointerDown) {
-        event.shiftKey
-          ? selectObjectToggle(target.userData.id)
-          : selectObject(target.userData.id)
+        if (event.shiftKey) {
+          // toggle the object in the multi-selection
+          selectObjectToggle(target.userData.id)
+        } else {
+          // if the pointerup'd target is not part of the multi-selection
+          if (!selections.includes(target.userData.id)) {
+            // clear the multi-selection and select just the target
+            selectObject(target.userData.id)
+          }
+        }
       } else {
         setLastDownId(target.userData.id)
       }
