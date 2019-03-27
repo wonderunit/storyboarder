@@ -288,8 +288,10 @@ const SelectionManager = connect(
 
     const { x, y } = mouse(event)
 
-    endDrag()
-    setDragTarget(null)
+    if (dragTarget) {
+      endDrag()
+      setDragTarget(null)
+    }
 
     if (event.target === el) {
       if (!selectOnPointerDown) {
