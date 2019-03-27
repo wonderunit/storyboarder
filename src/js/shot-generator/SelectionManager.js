@@ -108,6 +108,7 @@ const SelectionManager = connect(
   }) => {
 
   const [lastDownId, setLastDownId] = useState()
+  const [dragTarget, setDragTarget] = useState()
 
   const intersectables = scene.children.filter(o =>
     o.userData.type === 'object' ||
@@ -144,9 +145,11 @@ const SelectionManager = connect(
     let intersects = getIntersects({ x, y }, camera)
 
     if (intersects.length === 0) {
-      setLastDownId(undefined)
+      setDragTarget(null)
+
+      setLastDownId(null)
       selectObject(undefined)
-      selectBone(undefined)
+      selectBone(null)
 
     } else {
       let target
@@ -199,12 +202,16 @@ const SelectionManager = connect(
           // select a bone
           if (hits.length) {
             selectObject(target.userData.id)
-            setLastDownId(undefined)
+            setLastDownId(null)
 
             selectBone(hits[0].bone.uuid)
+
+            setDragTarget(target.userData.id)
             return
           }
         }
+
+        setDragTarget(target.userData.id)
       }
 
       selectBone(null)
@@ -219,10 +226,19 @@ const SelectionManager = connect(
     }
   }
 
+  const onPointerMove = event => {
+    event.preventDefault()
+    if (dragTarget) {
+      console.log({ dragTarget, selections })
+    }
+  }
+
   const onPointerUp = event => {
     event.preventDefault()
 
     const { x, y } = mouse(event)
+
+    setDragTarget(null)
 
     if (event.target === el) {
       if (!selectOnPointerDown) {
@@ -231,33 +247,48 @@ const SelectionManager = connect(
         if (intersects.length === 0) {
           selectObject(undefined)
           selectBone(null)
-          setLastDownId(undefined)
-          return
-        }
+          setLastDownId(null)
+          setDragTarget(null)
 
-        let target = getIntersectionTarget(intersects[0])
+        } else {
+          let target = getIntersectionTarget(intersects[0])
 
-        if (target.userData.id === lastDownId) {
-          event.shiftKey
-            ? selectObjectToggle(target.userData.id)
-            : selectObject(target.userData.id)
-          selectBone(null)
+          if (target.userData.id == lastDownId) {
+            if (event.shiftKey) {
+              selectObjectToggle(target.userData.id)
+            } else {
+              if (selections.length === 0) {
+                selectObject(target.userData.id)
+              }
+            }
+            selectBone(null)
+          }
         }
       }
     }
 
-    setLastDownId(undefined)
+    setLastDownId(null)
   }
 
   useLayoutEffect(() => {
     el.addEventListener('pointerdown', onPointerDown)
+    el.addEventListener('pointermove', onPointerMove)
     document.addEventListener('pointerup', onPointerUp)
 
     return function cleanup () {
       el.removeEventListener('pointerdown', onPointerDown)
+      el.removeEventListener('pointermove', onPointerMove)
       document.removeEventListener('pointerup', onPointerUp)
     }
-  }, [onPointerDown, onPointerUp])
+  }, [onPointerDown, onPointerUp, onPointerMove])
+
+  useLayoutEffect(() => {
+    if (dragTarget) {
+      el.style.cursor = 'move'
+    } else {
+      el.style.cursor = 'auto'
+    }
+  }, [dragTarget])
 
   return null
 })
