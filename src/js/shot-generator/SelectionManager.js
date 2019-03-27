@@ -302,12 +302,12 @@ const SelectionManager = connect(
         let intersects = getIntersects({ x, y }, camera)
 
         if (intersects.length === 0) {
-          selectObject(undefined)
-          selectBone(null)
+          // selectObject(undefined)
+          // selectBone(null)
           setLastDownId(null)
-
-          endDrag()
-          setDragTarget(null)
+          // 
+          // endDrag()
+          // setDragTarget(null)
 
         } else {
           let target = getIntersectionTarget(intersects[0])
