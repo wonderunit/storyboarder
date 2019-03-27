@@ -1,4 +1,4 @@
-const { useState, useEffect, useLayoutEffect } = React = require('react')
+const { useState, useEffect, useLayoutEffect, useRef } = React = require('react')
 const { connect } = require('react-redux')
 
 const {
@@ -139,6 +139,46 @@ const SelectionManager = connect(
     return intersects
   }
 
+  //
+  //
+  // drag behavior
+  //
+  const raycaster = useRef()
+  const plane = useRef()
+  const intersection = useRef()
+  const offset = useRef()
+  const prepareDrag = (target, { x, y, useIcons }) => {
+    if (!raycaster.current) raycaster.current = new THREE.Raycaster()
+    if (!plane.current) plane.current = new THREE.Plane()
+    if (!intersection.current) intersection.current = new THREE.Vector3()
+    if (!offset.current) offset.current = new THREE.Vector3()
+
+    if (useIcons) {
+      plane.current.setFromNormalAndCoplanarPoint( camera.position.clone().normalize(), target.position )
+    } else {
+      plane.current.setFromNormalAndCoplanarPoint( camera.getWorldDirection( plane.current.normal ), target.position )
+    }
+
+    if ( raycaster.current.ray.intersectPlane( plane.current, intersection.current ) ) {
+      offset.current.copy( intersection.current ).sub( target.position )
+    }
+
+  }
+  const drag = (target, { x, y }) => {
+    raycaster.current.setFromCamera({ x, y }, camera )
+
+    if ( raycaster.current.ray.intersectPlane( plane.current, intersection.current ) ) {
+      let { x, z } = intersection.current.sub( offset.current )
+      for (let selection of selections) {
+        console.log('update selection', selection, x, y)
+        // updateObjects(target.userData.id, { x, y })
+      }
+    }
+  }
+  const endDrag = () => {
+    
+  }
+
   const onPointerDown = event => {
     event.preventDefault()
 
@@ -149,6 +189,7 @@ const SelectionManager = connect(
     let intersects = getIntersects({ x, y }, camera)
 
     if (intersects.length === 0) {
+      endDrag()
       setDragTarget(null)
 
       setLastDownId(null)
@@ -210,12 +251,14 @@ const SelectionManager = connect(
 
             selectBone(hits[0].bone.uuid)
 
-            setDragTarget(target.userData.id)
+            prepareDrag(target, { x, y, useIcons })
+            setDragTarget(target)
             return
           }
         }
 
-        setDragTarget(target.userData.id)
+        prepareDrag(target, { x, y, useIcons })
+        setDragTarget(target)
       }
 
       selectBone(null)
@@ -232,8 +275,11 @@ const SelectionManager = connect(
 
   const onPointerMove = event => {
     event.preventDefault()
+
+    const { x, y } = mouse(event)
+
     if (dragTarget) {
-      console.log({ dragTarget, selections })
+      drag(dragTarget, { x, y })
     }
   }
 
@@ -242,6 +288,7 @@ const SelectionManager = connect(
 
     const { x, y } = mouse(event)
 
+    endDrag()
     setDragTarget(null)
 
     if (event.target === el) {
@@ -252,6 +299,8 @@ const SelectionManager = connect(
           selectObject(undefined)
           selectBone(null)
           setLastDownId(null)
+
+          endDrag()
           setDragTarget(null)
 
         } else {
