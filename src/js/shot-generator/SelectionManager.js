@@ -104,7 +104,9 @@ const SelectionManager = connect(
 
     selectObject,
     selectObjectToggle,
-    selectBone
+    selectBone,
+
+    transition
   }) => {
 
   const [lastDownId, setLastDownId] = useState()
@@ -139,6 +141,8 @@ const SelectionManager = connect(
 
   const onPointerDown = event => {
     event.preventDefault()
+
+    transition('TYPING_EXIT')
 
     const { x, y } = mouse(event)
 
@@ -285,8 +289,10 @@ const SelectionManager = connect(
   useLayoutEffect(() => {
     if (dragTarget) {
       el.style.cursor = 'move'
+      transition('EDITING_ENTER')
     } else {
       el.style.cursor = 'auto'
+      transition('EDITING_EXIT')
     }
   }, [dragTarget])
 
