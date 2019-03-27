@@ -754,6 +754,20 @@ module.exports = {
           checkForSkeletonChanges(state, draft, action)
           return
 
+        case 'UPDATE_OBJECTS':
+          console.log(action)
+          for (let [ key, value ] of Object.entries(action.payload)) {
+            if (draft.sceneObjects[key] == null) return
+
+            draft.sceneObjects[key].x = value.x
+            draft.sceneObjects[key].y = value.y
+          }
+
+          // TODO
+          // checkForCharacterChanges(state, draft, action)
+          // checkForSkeletonChanges(state, draft, action)
+          return
+
         case 'DUPLICATE_OBJECT':
           let source = draft.sceneObjects[action.payload.id]
           if (source) {
@@ -979,6 +993,9 @@ module.exports = {
 
   createObject: values => ({ type: 'CREATE_OBJECT', payload: values }),
   updateObject: (id, values) => ({ type: 'UPDATE_OBJECT', payload: { id, ...values } }),
+
+  // batch update
+  updateObjects: payload => ({ type: 'UPDATE_OBJECTS', payload }),
   
   deleteObject: id => ({ type: 'DELETE_OBJECT', payload: { id } }),
 

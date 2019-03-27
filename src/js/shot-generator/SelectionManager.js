@@ -5,7 +5,7 @@ const {
   selectObject,
   selectObjectToggle,
   selectBone,
-  updateObject
+  updateObjects
 } = require('../shared/reducers/shot-generator')
 
 function getObjectsFromIcons ( objects ) {
@@ -90,7 +90,7 @@ const SelectionManager = connect(
     selectObject,
     selectObjectToggle,
     selectBone,
-    updateObject
+    updateObjects
   }
 )(
   ({
@@ -107,7 +107,7 @@ const SelectionManager = connect(
     selectObject,
     selectObjectToggle,
     selectBone,
-    updateObject,
+    updateObjects,
 
     transition
   }) => {
@@ -188,10 +188,12 @@ const SelectionManager = connect(
     raycaster.current.setFromCamera( mouse, camera )
     
     if ( raycaster.current.ray.intersectPlane( plane.current, intersection.current ) ) {
+      let changes = {}
       for (selection of selections) {
         let { x, z } = intersection.current.clone().sub( offsets.current[selection] ).setY(0)
-        updateObject(selection, { x, y: z })
+        changes[selection] = { x, y: z }
       }
+      updateObjects(changes)
     }
   }
   const endDrag = () => {
