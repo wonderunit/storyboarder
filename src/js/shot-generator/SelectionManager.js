@@ -223,7 +223,10 @@ const SelectionManager = connect(
       setDragTarget(null)
 
       setLastDownId(null)
-      selectObject(activeCamera)
+
+      // select none (the scene becomes active)
+      selectObject(null)
+
       selectBone(null)
 
     } else {
