@@ -276,6 +276,7 @@ const SelectionManager = connect(
 
               selectBone(hits[0].bone.uuid)
 
+              // consider a bone selection the start of a drag
               prepareDrag(target, { x, y, useIcons })
               setDragTarget(target)
               return
