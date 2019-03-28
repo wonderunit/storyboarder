@@ -283,8 +283,14 @@ const SelectionManager = connect(
           }
         }
 
-        prepareDrag(target, { x, y, useIcons })
-        setDragTarget(target)
+        if (
+          // additional click is on an existing selected object
+          selections.includes(target.userData.id))
+        {
+          // we can start dragging
+          prepareDrag(target, { x, y, useIcons })
+          setDragTarget(target)
+        }
       }
 
       selectBone(null)
