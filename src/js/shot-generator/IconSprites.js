@@ -99,9 +99,10 @@ IconSprites.prototype.changeSecondText = function ( text ) {
 }
 
 IconSprites.prototype.setSelected = function ( value ) {
-  this.icon.material.opacity = value
-    ? 1.0
-    : 0.7
+  this.icon.material.color.set(value
+    ? 0xff00ff
+    : 0xffffff
+  )
 }
 
 Sprite.prototype.clone = function ( recursive ) {
