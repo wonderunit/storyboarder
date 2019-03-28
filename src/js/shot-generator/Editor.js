@@ -827,7 +827,7 @@ const SceneManager = connect(
         [SelectionManager, {
           key: 'selection-manager-large',
           scene,
-          camera,
+          camera: mainViewCamera === 'live' ? camera : orthoCamera.current,
           el: largeCanvasRef.current,
           selectOnPointerDown: mainViewCamera !== 'live',
           useIcons: mainViewCamera !== 'live',
@@ -837,7 +837,7 @@ const SceneManager = connect(
         [SelectionManager, {
           key: 'selection-manager-small',
           scene,
-          camera: orthoCamera.current,
+          camera: mainViewCamera === 'live' ? orthoCamera.current : camera,
           el: smallCanvasRef.current,
           selectOnPointerDown: mainViewCamera === 'live',
           useIcons: mainViewCamera === 'live',
