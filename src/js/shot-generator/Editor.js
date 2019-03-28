@@ -1823,19 +1823,21 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
 
   const calcFloorDistance = ( allverts, inverdsedMatrix ) => {
     let allDistances = []
-    let smallest = - 10000
+    let smallest = 10000
     let small
     for (let vect of allverts)
     {
-      let vect2 = vect.vertex.clone()//.applyMatrix4(inverdsedMatrix)
-      let vect3 = new THREE.Vector3()
-
+      let vect2 = vect.vertex.clone().applyMatrix4(inverdsedMatrix)
+      let vect3 = new THREE.Vector3().applyMatrix4(inverdsedMatrix)
+      vect3 = vect2.clone()
+      vect3.y = 0
       let dist = vect3.distanceTo(vect2)
 
       
-      if (dist > smallest) {
+      if (dist < smallest) {
+        console.log('smallest:', smallest, ' changing smallest dist:  ', dist)
         smallest = dist
-        small = vect2
+        small = vect2.clone()//.applyMatrix4(new THREE.Matrix4().getInverse(inverdsedMatrix))
       }
     }
 
@@ -1843,6 +1845,10 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
       smallest,
       small
     }
+  }
+
+  const putSphereHere = (coords) => {
+
   }
 
   const dropObject = () => {
@@ -1883,13 +1889,15 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
       let bones = getBoneList( currentObject )
       console.log('currect object: ', currentObject)
       //let tempMatr = new THREE.Matrix4().setRotationFromMatrix( currentObject.matrixWorld )
-      let worldMat = currentObject.matrixWorld
-      let transition = THREE.Vector3()
-      let rotation = THREE.Quaternion()
-      let scale = THREE.Vector3()
-
-      //worldMat.decompose(transition, rotation, scale)
-      let matrixWorldInv = new THREE.Matrix4().getInverse( currentObject.matrixWorld )
+      let worldMat = currentObject.matrixWorld.clone()
+      let transition = new THREE.Vector3()
+      let rotation = new THREE.Quaternion()
+      let scale = new THREE.Vector3()
+      
+      worldMat.decompose(transition, rotation, scale)
+      console.log('world scale: ', scale)
+      //worldMat.compose(transition, rotation, new THREE.Vector3(1,1,1))
+      let matrixWorldInv = new THREE.Matrix4().getInverse( worldMat  )
 
       for ( var i = 0; i < skinIndex.count; i++ )
       {
