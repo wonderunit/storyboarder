@@ -36,6 +36,7 @@ const Volumetric = React.memo(({
   const loadVolume = (imgArray) => {
     const promises = imgArray.map(link => loadMaterialPromise(link))
     let volContainer = []    
+    //console.log('got original: ', originalVolume )
     return Promise.all(promises).then((materials) => {
       for (var i = 0; i < numberOfLayers; i++) {
         let plane = new THREE.PlaneBufferGeometry(1, 1)
@@ -87,47 +88,51 @@ const Volumetric = React.memo(({
   }
 
   const create = () => {
-    volume.current = new THREE.Object3D()
-    volume.current.textureLayers = []
+    return new Promise((resolve, reject) => {
+    
+      volume.current = new THREE.Object3D()
+      volume.current.textureLayers = []
 
-    volume.current.userData.id = id
-    volume.current.userData.type = type
-    volume.current.orthoIcon = new IconSprites(type, props.name ? props.name : props.displayName, volume.current)
-    volume.current.rotation.y = props.rotation
-
-    scene.add(volume.current.orthoIcon)
-    scene.add(volume.current)
-
-
-    console.log(' creating volume:  ', props)
-
-    let imgArray = volumeImageAttachmentIds.map(relpath => {
-      if (isUserFile(relpath)) {
-        return path.join(path.dirname(storyboarderFilePath), relpath)
-      } else {
-        return path.join(pathToBuiltInVolumeImages, relpath + '.jpg')
-      }
-    })
-
-
-
-    loadVolume(imgArray).then((result) => {
-      volume.current.scale.set(props.width, props.height, 1)
-      volume.current.position.set(props.x, props.z, props.y)
+      volume.current.userData.id = id
+      volume.current.userData.type = type
+      volume.current.orthoIcon = new IconSprites(type, props.name ? props.name : props.displayName, volume.current)
       volume.current.rotation.y = props.rotation
-      volume.current.loadedMaterials = result.materials
-      volume.current.textureLayers = result.volContainer
-      result.volContainer.map(plane => {
-        volume.current.add(plane)
+
+      scene.add(volume.current.orthoIcon)
+      scene.add(volume.current)
+
+
+      console.log('creating volume:  ', props)
+
+      let imgArray = volumeImageAttachmentIds.map(relpath => {
+        if (isUserFile(relpath)) {
+          return path.join(path.dirname(storyboarderFilePath), relpath)
+        } else {
+          return path.join(pathToBuiltInVolumeImages, relpath + '.jpg')
+        }
       })
-      volume.current.orthoIcon.position.copy(volume.current.position)
+
+      loadVolume(imgArray).then((result) => {
+        volume.current.scale.set(props.width, props.height, 1)
+        volume.current.position.set(props.x, props.z, props.y)
+        volume.current.rotation.y = props.rotation
+        volume.current.loadedMaterials = result.materials
+        volume.current.textureLayers = result.volContainer
+        result.volContainer.map(plane => {
+          volume.current.add(plane)
+        })
+        volume.current.orthoIcon.position.copy(volume.current.position)
+        resolve(volume.current)
+      })
     })
   }
 
   useEffect(() => {
-    create()
+    create().then((result) => {
+      return cleanup
+    })
 
-    return cleanup
+    
   }, [])
 
   useEffect(() => {
@@ -198,6 +203,7 @@ const Volumetric = React.memo(({
       scene.remove(volume.current)
       volume.current = null
 
+      console.log('creating volume: ', volumeImageAttachmentIds)
       create()
     }
 
