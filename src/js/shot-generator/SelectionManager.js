@@ -1,4 +1,4 @@
-const { useState, useEffect, useLayoutEffect, useRef } = React = require('react')
+const { useState, useEffect, useLayoutEffect, useRef, useMemo } = React = require('react')
 const { connect } = require('react-redux')
 
 const {
@@ -201,6 +201,13 @@ const SelectionManager = connect(
   const endDrag = () => {
     
   }
+  useMemo(() => {
+    console.log('dragTarget changed')
+    if (dragTarget) {
+      let { target, x, y } = dragTarget
+      prepareDrag(target, { x, y, useIcons })
+    }
+  }, [dragTarget])
 
   const onPointerDown = event => {
     event.preventDefault()
@@ -220,6 +227,7 @@ const SelectionManager = connect(
       selectBone(null)
 
     } else {
+      let shouldDrag = false
       let target
 
       // prefer the nearest character to the click
@@ -277,8 +285,7 @@ const SelectionManager = connect(
               selectBone(hits[0].bone.uuid)
 
               // consider a bone selection the start of a drag
-              prepareDrag(target, { x, y, useIcons })
-              setDragTarget(target)
+              setDragTarget({ target, x, y })
               return
             }
           }
@@ -286,11 +293,9 @@ const SelectionManager = connect(
 
         if (
           // additional click is on an existing selected object
-          selections.includes(target.userData.id))
-        {
-          // we can start dragging
-          prepareDrag(target, { x, y, useIcons })
-          setDragTarget(target)
+          selections.includes(target.userData.id)
+        ) {
+          shouldDrag = true
         }
       }
 
@@ -307,8 +312,13 @@ const SelectionManager = connect(
             selectObject(target.userData.id)
           }
         }
+        shouldDrag = true
       } else {
         setLastDownId(target.userData.id)
+      }
+
+      if (shouldDrag) {
+        setDragTarget({ target, x, y })
       }
     }
   }
@@ -319,7 +329,7 @@ const SelectionManager = connect(
     const { x, y } = mouse(event)
 
     if (dragTarget) {
-      drag(dragTarget, { x, y })
+      drag(dragTarget.target, { x, y })
     }
   }
 
@@ -405,7 +415,7 @@ const SelectionManager = connect(
       }
     },
 `selections ${selections.map(n => n.slice(0, 3)).join(', ')}
-dragTarget ${dragTarget && dragTarget.userData.id.slice(0, 3)}
+dragTarget ${dragTarget && dragTarget.target.userData.id.slice(0, 3)}
 lastDownId ${lastDownId && lastDownId.slice(0, 3)}
 `)
 })
