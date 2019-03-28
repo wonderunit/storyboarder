@@ -98,6 +98,12 @@ IconSprites.prototype.changeSecondText = function ( text ) {
     if (this.iconSecondText) this.iconSecondText.textGeometry.update(text)
 }
 
+IconSprites.prototype.setSelected = function ( value ) {
+  this.icon.material.opacity = value
+    ? 1.0
+    : 0.7
+}
+
 Sprite.prototype.clone = function ( recursive ) {
     
     let result = new this.constructor().copy (this, recursive)

@@ -763,6 +763,8 @@ const SceneManager = connect(
 
                 setCamera,
 
+                isSelected: selections.includes(props.id),
+
                 aspectRatio,
                 ...props
               }
@@ -791,6 +793,7 @@ const SceneManager = connect(
                 SpotLight, {
                   key: props.id,
                   scene,
+                  isSelected: selections.includes(props.id),
                   ...props
                 }
               ]
@@ -947,6 +950,10 @@ const Camera = React.memo(({ scene, id, type, setCamera, icon, ...props }) => {
       camera.current.orthoIcon.changeFirstText(props.name ? props.name : props.displayName)
     }
   }, [props.displayName, props.name])
+
+  useEffect(() => {
+    camera.current.orthoIcon.setSelected(props.isSelected)
+  }, [props.isSelected])
 
   camera.current.position.x = props.x
   camera.current.position.y = props.z

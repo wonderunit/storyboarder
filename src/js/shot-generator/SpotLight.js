@@ -116,6 +116,10 @@ const SpotLight = React.memo(({ scene, id, type, setLight, icon, ...props }) => 
     }
   }, [props.penumbra, props.decay])
 
+  useEffect(() => {
+    light.current.orthoIcon.setSelected(props.isSelected)
+  }, [props.isSelected])
+
   return null
 })
 

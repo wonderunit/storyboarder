@@ -203,6 +203,10 @@ const Volumetric = React.memo(({
 
   }, [volumeImageAttachmentIds])
 
+  useEffect(() => {
+    volume.current.orthoIcon.setSelected(isSelected)
+  }, [isSelected])
+
   return null
 })
 

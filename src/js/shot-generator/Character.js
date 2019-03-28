@@ -511,6 +511,8 @@ const Character = React.memo(({
            color: [ 0, 0, 0 ],
          }
     }
+
+    object.current.orthoIcon.setSelected(isSelected)
   }, [props.model, isSelected, ready])
 
   useEffect(() => {
