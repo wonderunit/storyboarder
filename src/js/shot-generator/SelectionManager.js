@@ -133,7 +133,7 @@ const SelectionManager = connect(
     }
   }
 
-  const getIntersects = ({ x, y }, camera) => {
+  const getIntersects = ({ x, y }, camera, useIcons) => {
     let raycaster = new THREE.Raycaster()
     raycaster.setFromCamera({ x, y }, camera )
 
@@ -215,8 +215,8 @@ const SelectionManager = connect(
     transition('TYPING_EXIT')
 
     const { x, y } = mouse(event)
+    let intersects = getIntersects({ x, y }, camera, useIcons)
 
-    let intersects = getIntersects({ x, y }, camera)
 
     if (intersects.length === 0) {
       endDrag()
@@ -345,7 +345,7 @@ const SelectionManager = connect(
 
     if (event.target === el) {
       if (!selectOnPointerDown) {
-        let intersects = getIntersects({ x, y }, camera)
+        let intersects = getIntersects({ x, y }, camera, useIcons)
 
         if (intersects.length === 0) {
           // selectObject(undefined)
