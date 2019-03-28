@@ -383,7 +383,24 @@ const SelectionManager = connect(
     }
   }, [dragTarget])
 
-  return null
+  return useIcons
+    ? null
+    : React.createElement('div', {
+      className: 'output',
+      style: {
+        position: 'absolute',
+        top: 0,
+        right: 0,
+        padding: 10,
+        backgroundColor: 'black',
+        color: 'white',
+        whiteSpace: 'pre'
+      }
+    },
+`selections ${selections.map(n => n.slice(0, 3)).join(', ')}
+dragTarget ${dragTarget && dragTarget.userData.id.slice(0, 3)}
+lastDownId ${lastDownId && lastDownId.slice(0, 3)}
+`)
 })
 
 module.exports = SelectionManager
