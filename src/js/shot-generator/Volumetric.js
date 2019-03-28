@@ -36,7 +36,6 @@ const Volumetric = React.memo(({
   const loadVolume = (imgArray) => {
     const promises = imgArray.map(link => loadMaterialPromise(link))
     let volContainer = []    
-    //console.log('got original: ', originalVolume )
     return Promise.all(promises).then((materials) => {
       for (var i = 0; i < numberOfLayers; i++) {
         let plane = new THREE.PlaneBufferGeometry(1, 1)
@@ -101,9 +100,6 @@ const Volumetric = React.memo(({
       scene.add(volume.current.orthoIcon)
       scene.add(volume.current)
 
-
-      console.log('creating volume:  ', props)
-
       let imgArray = volumeImageAttachmentIds.map(relpath => {
         if (isUserFile(relpath)) {
           return path.join(path.dirname(storyboarderFilePath), relpath)
@@ -129,9 +125,10 @@ const Volumetric = React.memo(({
 
   useEffect(() => {
     create().then((result) => {
-      return cleanup
+      
     })
 
+    return cleanup
     
   }, [])
 
@@ -203,7 +200,6 @@ const Volumetric = React.memo(({
       scene.remove(volume.current)
       volume.current = null
 
-      console.log('creating volume: ', volumeImageAttachmentIds)
       create()
     }
 
