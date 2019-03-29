@@ -30,8 +30,6 @@ function getObjectsFromCameraView (objects) {
   let results = []
 
   for (let o of objects) {
-    // console.log('found', o.userData)
-
     if (o.userData.type === 'object') {
       if (o.type === 'Group' && o.children[0].isMesh) {
         if (o.visible) results.push(o.children[0])
@@ -49,12 +47,7 @@ function getObjectsFromCameraView (objects) {
       }
     }
 
-    // if (o.userData.type === 'volume') {
-    // }
-
-    // TODO allow camera selection
-    // if (o.userData.type === 'camera') {
-    // }
+    // don't allow selection of: camera, volume
   }
 
   return results
@@ -195,7 +188,6 @@ const SelectionManager = connect(
     
   }
   useMemo(() => {
-    console.log('dragTarget changed')
     if (dragTarget) {
       let { target, x, y } = dragTarget
       prepareDrag(target, { x, y, useIcons })
