@@ -100,10 +100,10 @@ const checkForSkeletonChanges = (state, draft, actionPayloadId) => {
       return true
     }
 
-    let stateSkeleton = state.sceneObjects[actionPayloadId].skeleton
+    let draftSkeleton = draft.sceneObjects[actionPayloadId].skeleton
 
     let preset = statePreset.state.skeleton
-    let curr = stateSkeleton
+    let curr = draftSkeleton
 
     if (Object.values(curr).length != Object.values(preset).length) {
       // changed, no longer matches preset
