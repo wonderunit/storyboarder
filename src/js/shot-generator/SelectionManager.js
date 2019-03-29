@@ -396,23 +396,7 @@ const SelectionManager = connect(
     }
   }, [dragTarget])
 
-  return React.createElement('div', {
-      className: 'output',
-      style: {
-        position: 'absolute',
-        top: camera && camera.isPerspectiveCamera ? 0 : 100,
-        right: 0,
-        padding: 10,
-        backgroundColor: 'black',
-        color: 'white',
-        whiteSpace: 'pre'
-      }
-    },
-`camera: ${camera && camera.isPerspectiveCamera ? 'perspective' : 'ortho'}
-selections ${selections.map(n => n.slice(0, 3)).join(', ')}
-dragTarget ${dragTarget && dragTarget.target.userData.id.slice(0, 3)}
-lastDownId ${lastDownId && lastDownId.slice(0, 3)}
-`)
+  return null
 })
 
 module.exports = SelectionManager
