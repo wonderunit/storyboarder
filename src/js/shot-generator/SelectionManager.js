@@ -159,8 +159,6 @@ const SelectionManager = connect(
 
     offsets.current = []
 
-    console.log('PREPARE DRAG', { x, y, useIcons })
-
     raycaster.current.setFromCamera({ x, y }, camera )
 
     if (useIcons) {
@@ -168,8 +166,6 @@ const SelectionManager = connect(
     } else {
       plane.current.setFromNormalAndCoplanarPoint( camera.getWorldDirection( plane.current.normal ), target.position )
     }
-
-    console.log('plane normal', plane.current.normal)
 
     // remember the offsets of every selected object
     if ( raycaster.current.ray.intersectPlane( plane.current, intersection.current ) ) {
@@ -182,11 +178,8 @@ const SelectionManager = connect(
         offsets.current[selection] = new THREE.Vector3()
       }
     }
-
-    console.log('offsets', offsets.current)
   }
   const drag = (target, mouse) => {
-    console.log('drag')
     raycaster.current.setFromCamera( mouse, camera )
     
     if ( raycaster.current.ray.intersectPlane( plane.current, intersection.current ) ) {
@@ -212,21 +205,29 @@ const SelectionManager = connect(
   const onPointerDown = event => {
     event.preventDefault()
 
+    // make sure we clear focus of any text fields
     transition('TYPING_EXIT')
 
+    // get the mouse coords
     const { x, y } = mouse(event)
+    // find all the objects that intersect the mouse coords
+    // (uses a different search method if useIcons is true)
     let intersects = getIntersects({ x, y }, camera, useIcons)
 
-
+    // if no objects intersected
     if (intersects.length === 0) {
+      // cancel any active dragging
       endDrag()
+      // clear the drag target
       setDragTarget(null)
 
+      // don't do anything on the next pointerup
       setLastDownId(null)
 
-      // select none (the scene becomes active)
+      // select none (the Scene becomes active)
       selectObject(null)
 
+      // don't select any bone
       selectBone(null)
 
     } else {
