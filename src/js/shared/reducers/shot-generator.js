@@ -1015,7 +1015,7 @@ module.exports = {
   
   deleteObjects: ids => ({ type: 'DELETE_OBJECTS', payload: { ids } }),
 
-  duplicateObject: (id, destinationId) => ({ type: 'DUPLICATE_OBJECT', payload: { id, destinationId } }),
+  duplicateObjects: (ids, newIds) => ({ type: 'DUPLICATE_OBJECTS', payload: { ids, newIds } }),
 
   setMainViewCamera: name => ({ type: 'SET_MAIN_VIEW_CAMERA', payload: name }),
 
