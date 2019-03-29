@@ -764,7 +764,6 @@ module.exports = {
           return
 
         case 'UPDATE_OBJECTS':
-          console.log(action)
           for (let [ key, value ] of Object.entries(action.payload)) {
             if (draft.sceneObjects[key] == null) return
 
