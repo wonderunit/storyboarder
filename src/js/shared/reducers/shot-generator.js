@@ -40,91 +40,87 @@ const getSerializedState = state => {
 // state helper functions
 //
 const checkForCharacterChanges = (state, draft, action) => {
-  // if characterPresetId wasn't just set
-  if (!action.payload.hasOwnProperty('characterPresetId')) {
-    // check to see if character has changed from preset
-    // and invalidate if so
-    let characterPresetId = draft.sceneObjects[action.payload.id].characterPresetId
-    if (characterPresetId) {
-      let statePreset = state.presets.characters[characterPresetId]
+const checkForCharacterChanges = (state, draft, actionPayloadId) => {
+  // check to see if character has changed from preset
+  // and invalidate if so
+  let characterPresetId = draft.sceneObjects[actionPayloadId].characterPresetId
+  if (characterPresetId) {
+    let statePreset = state.presets.characters[characterPresetId]
 
-      // preset does not exist anymore
-      if (!statePreset) {
-        // so don't reference it
-        draft.sceneObjects[action.payload.id].characterPresetId = undefined
-        return true
-      }
-
-      let stateCharacter = draft.sceneObjects[action.payload.id]
-
-      // for every top-level prop in the preset
-      for (let prop in statePreset.state) {
-        // if the prop is a number or a string
-        if (
-          typeof statePreset.state[prop] === 'number' ||
-          typeof statePreset.state[prop] === 'string' ||
-          typeof statePreset.state[prop] === 'undefined'
-        ) {
-          // if it differs
-
-          if (stateCharacter[prop] != statePreset.state[prop]) {
-            // changed, no longer matches preset
-            draft.sceneObjects[action.payload.id].characterPresetId = undefined
-            return true
-          }
-        }
-      }
-
-      // hardcode check of second-level props
-      if (
-        stateCharacter.morphTargets.mesomorphic != statePreset.state.morphTargets.mesomorphic ||
-        stateCharacter.morphTargets.ectomorphic != statePreset.state.morphTargets.ectomorphic ||
-        stateCharacter.morphTargets.endomorphic != statePreset.state.morphTargets.endomorphic
-      ) {
-        // changed, no longer matches preset
-        draft.sceneObjects[action.payload.id].characterPresetId = undefined
-        return true
-      }
+    // preset does not exist anymore
+    if (!statePreset) {
+      // so don't reference it
+      draft.sceneObjects[actionPayloadId].characterPresetId = undefined
+      return true
     }
-  }}
 
-const checkForSkeletonChanges = (state, draft, action) => {
-  // if posePresetId wasn't just set
-  if (!action.payload.hasOwnProperty('posePresetId')) {
-    // check to see if pose has changed from preset
-    // and invalidate if so
-    let posePresetId = draft.sceneObjects[action.payload.id].posePresetId
-    if (posePresetId) {
-      let statePreset = state.presets.poses[posePresetId]
+    let stateCharacter = draft.sceneObjects[actionPayloadId]
 
-      // preset does not exist anymore
-      if (!statePreset) {
-        // so don't reference it
-        draft.sceneObjects[action.payload.id].posePresetId = undefined
-        return true
-      }
+    // for every top-level prop in the preset
+    for (let prop in statePreset.state) {
+      // if the prop is a number or a string
+      if (
+        typeof statePreset.state[prop] === 'number' ||
+        typeof statePreset.state[prop] === 'string' ||
+        typeof statePreset.state[prop] === 'undefined'
+      ) {
+        // if it differs
 
-      let stateSkeleton = state.sceneObjects[action.payload.id].skeleton
-
-      let preset = statePreset.state.skeleton
-      let curr = stateSkeleton
-
-      if (Object.values(curr).length != Object.values(preset).length) {
-        // changed, no longer matches preset
-        draft.sceneObjects[action.payload.id].posePresetId = undefined
-        return true
-      }
-
-      for (name in preset) {
-        if (
-          preset[name].rotation.x !== curr[name].rotation.x ||
-          preset[name].rotation.y !== curr[name].rotation.y ||
-          preset[name].rotation.z !== curr[name].rotation.z
-        ) {
+        if (stateCharacter[prop] != statePreset.state[prop]) {
           // changed, no longer matches preset
-          draft.sceneObjects[action.payload.id].posePresetId = undefined
+          draft.sceneObjects[actionPayloadId].characterPresetId = undefined
           return true
         }
+      }
+    }
+
+    // hardcode check of second-level props
+    if (
+      stateCharacter.morphTargets.mesomorphic != statePreset.state.morphTargets.mesomorphic ||
+      stateCharacter.morphTargets.ectomorphic != statePreset.state.morphTargets.ectomorphic ||
+      stateCharacter.morphTargets.endomorphic != statePreset.state.morphTargets.endomorphic
+    ) {
+      // changed, no longer matches preset
+      draft.sceneObjects[actionPayloadId].characterPresetId = undefined
+      return true
+    }
+  }
+}
+
+const checkForSkeletonChanges = (state, draft, actionPayloadId) => {
+  // check to see if pose has changed from preset
+  // and invalidate if so
+  let posePresetId = draft.sceneObjects[actionPayloadId].posePresetId
+  if (posePresetId) {
+    let statePreset = state.presets.poses[posePresetId]
+
+    // preset does not exist anymore
+    if (!statePreset) {
+      // so don't reference it
+      draft.sceneObjects[actionPayloadId].posePresetId = undefined
+      return true
+    }
+
+    let stateSkeleton = state.sceneObjects[actionPayloadId].skeleton
+
+    let preset = statePreset.state.skeleton
+    let curr = stateSkeleton
+
+    if (Object.values(curr).length != Object.values(preset).length) {
+      // changed, no longer matches preset
+      draft.sceneObjects[actionPayloadId].posePresetId = undefined
+      return true
+    }
+
+    for (name in preset) {
+      if (
+        preset[name].rotation.x !== curr[name].rotation.x ||
+        preset[name].rotation.y !== curr[name].rotation.y ||
+        preset[name].rotation.z !== curr[name].rotation.z
+      ) {
+        // changed, no longer matches preset
+        draft.sceneObjects[actionPayloadId].posePresetId = undefined
+        return true
       }
     }
   }
@@ -759,8 +755,17 @@ module.exports = {
             { models: state.models }
           )
 
-          checkForCharacterChanges(state, draft, action)
-          checkForSkeletonChanges(state, draft, action)
+          // unless characterPresetId was just set ...
+          if (!action.payload.hasOwnProperty('characterPresetId')) {
+            // ... detect change between state and preset
+            checkForCharacterChanges(state, draft, action.payload.id)
+          }
+
+          // unless posePresetId was just set ...
+          if (!action.payload.hasOwnProperty('posePresetId')) {
+            // ... detect change between state and preset
+            checkForSkeletonChanges(state, draft, action.payload.id)
+          }
           return
 
         case 'UPDATE_OBJECTS':
@@ -769,11 +774,15 @@ module.exports = {
 
             draft.sceneObjects[key].x = value.x
             draft.sceneObjects[key].y = value.y
-          }
 
-          // TODO
-          // checkForCharacterChanges(state, draft, action)
-          // checkForSkeletonChanges(state, draft, action)
+            // if we ever allow UPDATE_OBJECTS to change more stuff,
+            // uncomment this:
+            // checkForCharacterChanges(state, draft, key)
+
+            // if we ever allow UPDATE_OBJECTS to change skeletons,
+            // uncomment this:
+            // checkForSkeletonChanges(state, draft, key)
+          }
           return
 
         case 'DUPLICATE_OBJECTS':
