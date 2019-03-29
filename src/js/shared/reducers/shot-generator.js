@@ -781,14 +781,17 @@ module.exports = {
             let srcId = action.payload.ids[n]
             let dstId = action.payload.newIds[n]
 
+            let offsetX = 0.5 // (Math.random() * 2 - 1)
+            let offsetY = 0.5 // (Math.random() * 2 - 1)
+
             if (draft.sceneObjects[srcId]) {
               let source = draft.sceneObjects[srcId]
 
               draft.sceneObjects[dstId] = {
                 ...source,
                 name: source.name == null ? null : source.name + ' copy',
-                x: source.x + (Math.random() * 2 - 1),
-                y: source.y + (Math.random() * 2 - 1),
+                x: source.x + offsetX,
+                y: source.y + offsetY,
                 z: source.z,
                 id: dstId
               }
