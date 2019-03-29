@@ -1047,6 +1047,7 @@ const ListItem = ({ index, style, isScrolling, data }) => {
           selectObject,
           selectObjectToggle,
           updateObject,
+          deleteObjects,
           setActiveCamera
         }
       ]
