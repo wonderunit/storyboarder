@@ -37,7 +37,7 @@ const {
 
   createObject,
   updateObject,
-  deleteObject,
+  deleteObjects,
 
   duplicateObject,
 
@@ -1016,7 +1016,7 @@ const WorldElement = React.memo(({ index, world, isSelected, selectObject, style
 })
 
 const ListItem = ({ index, style, isScrolling, data }) => {
-  const { items, models, selections, selectObject, selectObjectToggle, updateObject, deleteObject, activeCamera, setActiveCamera } = data
+  const { items, models, selections, selectObject, selectObjectToggle, updateObject, deleteObjects, activeCamera, setActiveCamera } = data
   const isWorld = index === 0
 
   const sceneObject = index === 0
@@ -1047,7 +1047,6 @@ const ListItem = ({ index, style, isScrolling, data }) => {
           selectObject,
           selectObjectToggle,
           updateObject,
-          deleteObject,
           setActiveCamera
         }
       ]
@@ -1057,7 +1056,7 @@ const ListItem = ({ index, style, isScrolling, data }) => {
 const Inspector = ({
   world,
   kind, data,
-  models, updateObject, deleteObject,
+  models, updateObject, deleteObjects,
   machineState, transition,
   selectedBone,
   selectBone,
@@ -1403,7 +1402,7 @@ const ElementsPanel = connect(
     selectObject,
     selectObjectToggle,
     updateObject,
-    deleteObject,
+    deleteObjects,
     setActiveCamera,
     selectBone,
     updateCharacterSkeleton,
@@ -1412,7 +1411,7 @@ const ElementsPanel = connect(
     updateWorldEnvironment
   }
 )(
-  React.memo(({ world, sceneObjects, models, selections, selectObject, selectObjectToggle, updateObject, deleteObject, selectedBone, machineState, transition, activeCamera, setActiveCamera, selectBone, updateCharacterSkeleton, updateWorld, updateWorldRoom, updateWorldEnvironment, storyboarderFilePath }) => {
+  React.memo(({ world, sceneObjects, models, selections, selectObject, selectObjectToggle, updateObject, deleteObjects, selectedBone, machineState, transition, activeCamera, setActiveCamera, selectBone, updateCharacterSkeleton, updateWorld, updateWorldRoom, updateWorldEnvironment, storyboarderFilePath }) => {
     let ref = useRef(null)
     let size = useComponentSize(ref)
 
@@ -1456,7 +1455,7 @@ const ElementsPanel = connect(
           selectObject,
           selectObjectToggle,
           updateObject,
-          deleteObject,
+          deleteObjects,
           activeCamera,
           setActiveCamera
         }
@@ -2330,7 +2329,7 @@ const BoneEditor = ({ sceneObject, bone, updateCharacterSkeleton }) => {
 }
 
 const ELEMENT_HEIGHT = 40
-const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, selectObject, selectObjectToggle, updateObject, deleteObject, setActiveCamera, machineState, transition, allowDelete }) => {
+const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, selectObject, selectObjectToggle, updateObject, deleteObjects, setActiveCamera, machineState, transition, allowDelete }) => {
   const onClick = preventDefault(event => {
     const { shiftKey } = event
 
@@ -2354,7 +2353,7 @@ const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, s
       defaultId: 1 // default to No
     })
     if (choice === 0) {
-      deleteObject(sceneObject.id)
+      deleteObjects([sceneObject.id])
     }
   })
 
@@ -3343,7 +3342,7 @@ const KeyHandler = connect(
     selectObject,
     setActiveCamera,
     duplicateObject,
-    deleteObject,
+    deleteObjects,
     updateObject
   }
 )(
@@ -3357,7 +3356,7 @@ const KeyHandler = connect(
     selectObject,
     setActiveCamera,
     duplicateObject,
-    deleteObject,
+    deleteObjects,
     updateObject
   }) => {
     const { scene } = useContext(SceneContext)
@@ -3373,14 +3372,14 @@ const KeyHandler = connect(
     useEffect(() => {
       const onKeyDown = event => {
         if (event.key === 'Backspace') {
-          if (selections[0] && canDelete(_selectedSceneObject, activeCamera)) {
+          if (selections.length && canDelete(_selectedSceneObject, activeCamera)) {
             let choice = dialog.showMessageBox(null, {
               type: 'question',
               buttons: ['Yes', 'No'],
-              message: 'Are you sure?'
+              message: `Deleting ${selections.length} item${selections.length > 1 ? 's' : ''}. Are you sure?`
             })
             if (choice === 0) {
-              deleteObject(selections[0])
+              deleteObjects(selections)
             }
           }
         }

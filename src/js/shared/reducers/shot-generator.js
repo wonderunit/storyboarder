@@ -726,17 +726,26 @@ module.exports = {
           draft.sceneObjects = withDisplayNames(draft.sceneObjects)
           return
 
-        case 'DELETE_OBJECT':
-          if (draft.sceneObjects[action.payload.id] == null) return
-          delete draft.sceneObjects[action.payload.id]
+        case 'DELETE_OBJECTS':
+          if (
+            action.payload.ids == null ||
+            action.payload.ids.length === 0
+          ) return
 
-          // was the current selection just removed?
-          if (draft.selections.includes(action.payload.id)) {
-            // empty selections
-            draft.selections = []
-            // de-select any currently selected bone
-            draft.selectedBone = undefined
+          for (let id of action.payload.ids) {
+            if (draft.sceneObjects[id] == null) continue
+
+            delete draft.sceneObjects[id]
+
+            // did we remove a selected id?
+            if (draft.selections.includes(id)) {
+              // delete it from the selections list
+              draft.selections.splice(draft.selections.indexOf(id), 1)
+              // de-select any currently selected bone
+              draft.selectedBone = undefined
+            }
           }
+
           draft.sceneObjects = withDisplayNames(draft.sceneObjects)
           return
 
@@ -997,7 +1006,7 @@ module.exports = {
   // batch update
   updateObjects: payload => ({ type: 'UPDATE_OBJECTS', payload }),
   
-  deleteObject: id => ({ type: 'DELETE_OBJECT', payload: { id } }),
+  deleteObjects: ids => ({ type: 'DELETE_OBJECTS', payload: { ids } }),
 
   duplicateObject: (id, destinationId) => ({ type: 'DUPLICATE_OBJECT', payload: { id, destinationId } }),
 
