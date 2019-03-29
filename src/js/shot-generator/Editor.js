@@ -39,7 +39,7 @@ const {
   updateObject,
   deleteObjects,
 
-  duplicateObject,
+  duplicateObjects,
 
   selectBone,
   setMainViewCamera,
@@ -3342,7 +3342,7 @@ const KeyHandler = connect(
     setMainViewCamera,
     selectObject,
     setActiveCamera,
-    duplicateObject,
+    duplicateObjects,
     deleteObjects,
     updateObject
   }
@@ -3356,17 +3356,21 @@ const KeyHandler = connect(
     setMainViewCamera,
     selectObject,
     setActiveCamera,
-    duplicateObject,
+    duplicateObjects,
     deleteObjects,
     updateObject
   }) => {
     const { scene } = useContext(SceneContext)
 
     const onCommandDuplicate = () => {
-      if (selections[0]) {
-        let destinationId = THREE.Math.generateUUID()
-        duplicateObject(selections[0], destinationId)
-        selectObject(destinationId)
+      if (selections) {
+        // NOTE: this will also select the new duplicates, replacing selection
+        duplicateObjects(
+          // ids to duplicate
+          selections,
+          // new ids
+          selections.map(THREE.Math.generateUUID)
+        )
       }
     }
 

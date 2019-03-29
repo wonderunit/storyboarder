@@ -776,19 +776,27 @@ module.exports = {
           // checkForSkeletonChanges(state, draft, action)
           return
 
-        case 'DUPLICATE_OBJECT':
-          let source = draft.sceneObjects[action.payload.id]
-          if (source) {
-            let object = {
-              ...source,
-              name: source.name == null ? null : source.name + ' copy',
-              x: source.x + (Math.random() * 2 - 1),
-              y: source.y + (Math.random() * 2 - 1),
-              z: source.z,
-              id: action.payload.destinationId
+        case 'DUPLICATE_OBJECTS':
+          for (let n in action.payload.ids) {
+            let srcId = action.payload.ids[n]
+            let dstId = action.payload.newIds[n]
+
+            if (draft.sceneObjects[srcId]) {
+              let source = draft.sceneObjects[srcId]
+
+              draft.sceneObjects[dstId] = {
+                ...source,
+                name: source.name == null ? null : source.name + ' copy',
+                x: source.x + (Math.random() * 2 - 1),
+                y: source.y + (Math.random() * 2 - 1),
+                z: source.z,
+                id: dstId
+              }
             }
-            draft.sceneObjects[action.payload.destinationId] = object
             draft.sceneObjects = withDisplayNames(draft.sceneObjects)
+
+            // select the new duplicates, replacing the selection list
+            draft.selections = action.payload.newIds
           }
           return
 
