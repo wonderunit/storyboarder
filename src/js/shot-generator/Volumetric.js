@@ -32,6 +32,8 @@ const Volumetric = React.memo(({
 }) => {
 
   const volume = useRef(null)
+  const loadingImageSet = useRef(false)
+  const discard = useRef(false)
 
   const loadVolume = (imgArray) => {
     const promises = imgArray.map(link => loadMaterialPromise(link))
@@ -52,7 +54,7 @@ const Volumetric = React.memo(({
       }
   
       return new Promise(resolve => {
-        resolve({volContainer, materials})
+        resolve({volContainer, materials, imgArray})
       })
     })
   }
@@ -97,8 +99,8 @@ const Volumetric = React.memo(({
       volume.current.orthoIcon = new IconSprites(type, props.name ? props.name : props.displayName, volume.current)
       volume.current.rotation.y = props.rotation
 
-      scene.add(volume.current.orthoIcon)
-      scene.add(volume.current)
+      // scene.add(volume.current.orthoIcon)
+      // scene.add(volume.current)
 
       let imgArray = volumeImageAttachmentIds.map(relpath => {
         if (isUserFile(relpath)) {
@@ -108,24 +110,39 @@ const Volumetric = React.memo(({
         }
       })
 
+      loadingImageSet.current = true
       loadVolume(imgArray).then((result) => {
-        volume.current.scale.set(props.width, props.height, 1)
-        volume.current.position.set(props.x, props.z, props.y)
-        volume.current.rotation.y = props.rotation
-        volume.current.loadedMaterials = result.materials
-        volume.current.textureLayers = result.volContainer
-        result.volContainer.map(plane => {
-          volume.current.add(plane)
-        })
-        volume.current.orthoIcon.position.copy(volume.current.position)
+        //console.log('oaded images: ', result.imgArray, 'current set: ', imgArray)
+        
+        //if (result.imgArray == imgArray )
+        if (discard.current) {
+          discard.current = false
+        } else 
+        {
+          //console.log('changing: ' )
+          volume.current.scale.set(props.width, props.height, 1)
+          volume.current.position.set(props.x, props.z, props.y)
+          volume.current.rotation.y = props.rotation
+          volume.current.loadedMaterials = result.materials
+          volume.current.textureLayers = result.volContainer
+          result.volContainer.map(plane => {
+            volume.current.add(plane)
+          })
+          loadingImageSet.current = false
+          scene.add(volume.current.orthoIcon)
+          scene.add(volume.current)
+          volume.current.orthoIcon.position.copy(volume.current.position)
+        }
+        
         resolve(volume.current)
+        
       })
     })
   }
 
   useEffect(() => {
     create().then((result) => {
-      
+      imagesLoaded.current = true
     })
 
     return cleanup
@@ -199,7 +216,7 @@ const Volumetric = React.memo(({
       scene.remove(volume.current.orthoIcon)
       scene.remove(volume.current)
       volume.current = null
-
+      if (loadingImageSet.current) discard.current = true
       create()
     }
 
