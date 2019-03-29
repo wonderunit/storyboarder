@@ -39,7 +39,6 @@ const getSerializedState = state => {
 //
 // state helper functions
 //
-const checkForCharacterChanges = (state, draft, action) => {
 const checkForCharacterChanges = (state, draft, actionPayloadId) => {
   // check to see if character has changed from preset
   // and invalidate if so
@@ -817,7 +816,7 @@ module.exports = {
           draft.sceneObjects[action.payload.id].skeleton[action.payload.name] = {
             rotation: action.payload.rotation
           }
-          checkForSkeletonChanges(state, draft, action)
+          checkForSkeletonChanges(state, draft, action.payload.id)
           return
 
         case 'SET_INPUT_ACCEL':
