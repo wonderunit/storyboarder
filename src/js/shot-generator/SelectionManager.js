@@ -267,13 +267,18 @@ const SelectionManager = connect(
       if (selections.length) {
         // and we're not in icon mode
         if (!useIcons) {
-          // if there already is a character selected
-          if (target.userData.type === 'character' && selections.includes(target.userData.id)) {
+          // if only one character is selected ...
+          if (target.userData.type === 'character' &&
+              selections.length === 1 &&
+              //  and its the one we pointerdown'd ...
+              selections[0] === target.userData.id
+            ) {
+            // see if we pointerdown'd a bone ...
             let raycaster = new THREE.Raycaster()
             raycaster.setFromCamera({ x, y }, camera )
             let hits = raycaster.intersectObject(target.bonesHelper)
 
-            // select a bone
+            // select the bone
             if (hits.length) {
               selectObject(target.userData.id)
               setLastDownId(null)
