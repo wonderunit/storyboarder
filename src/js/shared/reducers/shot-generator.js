@@ -793,11 +793,11 @@ module.exports = {
                 id: dstId
               }
             }
-            draft.sceneObjects = withDisplayNames(draft.sceneObjects)
-
-            // select the new duplicates, replacing the selection list
-            draft.selections = action.payload.newIds
           }
+          draft.sceneObjects = withDisplayNames(draft.sceneObjects)
+
+          // select the new duplicates, replacing the selection list
+          draft.selections = action.payload.newIds
           return
 
         case 'UPDATE_CHARACTER_SKELETON':
