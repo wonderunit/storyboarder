@@ -81,7 +81,6 @@ const useMachine = require('../hooks/use-machine')
 
 const CameraControls = require('./CameraControls')
 const SelectionManager = require('./SelectionManager')
-const DragControls = require('./DragControls')
 const IconSprites = require('./IconSprites')
 const Character = require('./Character')
 const SpotLight = require('./SpotLight')
@@ -229,8 +228,7 @@ const SceneManager = connect(
     let animatorId = useRef(null)
 
     let cameraControlsView = useRef(null)
-    // let dragControlsView = useRef(null)
-    // let orthoDragControlsView = useRef(null)
+
     let bonesHelper = useRef(null)
     let lightHelper = useRef(null)
 
@@ -445,51 +443,6 @@ const SceneManager = connect(
           )
         }
 
-        // if (!dragControlsView.current) {
-        //   console.log('new DragControls')
-        //   dragControlsView.current = new DragControls(
-        //     draggables(sceneObjects, scene),
-        //     cameras(scene),
-        //     camera,
-        //     largeCanvasRef.current,
-        //     selectObject,
-        //     selectObjectToggle,
-        //     updateObject,
-        //     selectBone
-        //   )
-        //   dragControlsView.current.addEventListener('pointerdown', event => {
-        //     transition('TYPING_EXIT')
-        //   })
-        //   dragControlsView.current.addEventListener(
-        //     'dragstart',
-        //     function ( event ) {
-        //       transition('EDITING_ENTER')
-        //     }.bind(this)
-        //   )
-        //   dragControlsView.current.addEventListener( 'dragend', function ( event ) {
-        //     transition('EDITING_EXIT')
-        //   }.bind(this) )
-        // }
-
-        // if (!orthoDragControlsView.current) {
-        //   orthoDragControlsView.current = new DragControls(
-        //     draggables(sceneObjects, scene),
-        //     cameras(scene),
-        //     orthoCamera.current,
-        //     smallCanvasRef.current,
-        //     selectObject,
-        //     selectObjectToggle,
-        //     updateObject,
-        //     selectBone
-        //   )
-        //   orthoDragControlsView.current.addEventListener( 'dragstart', function ( event ) {
-        //     transition('EDITING_ENTER')
-        //   }.bind(this) )
-        //   orthoDragControlsView.current.addEventListener( 'dragend', function ( event ) {
-        //     transition('EDITING_EXIT')
-        //   }.bind(this) )
-        // }
-
         animator.current = () => {
           if (stats) { stats.begin() }
           if (scene && camera) {
@@ -497,10 +450,6 @@ const SceneManager = connect(
             animatedUpdate((dispatch, state) => {
               let cameraForSmall = state.mainViewCamera === 'ortho' ? camera : orthoCamera.current
               let cameraForLarge = state.mainViewCamera === 'live' ? camera : orthoCamera.current
-
-              // dragControlsView.current.setCamera(cameraForLarge)
-              // orthoDragControlsView.current.setCamera(cameraForSmall)
-                  //orthoDragControlsView.current.setCameras(cameras(scene))
 
               if (cameraControlsView.current && cameraControlsView.current.enabled) {
                 let cameraState = Object.values(state.sceneObjects).find(o => o.id === camera.userData.id)
@@ -518,7 +467,6 @@ const SceneManager = connect(
 
                 // step
                 cameraControlsView.current.update( clock.current.getDelta(), state )
-                // dragControlsView.current.update( clock.current.getDelta(), state )
 
                 // update object state with the latest values
                 let cameraId = camera.userData.id
@@ -633,38 +581,7 @@ const SceneManager = connect(
         bonesHelper.current = null
       }
 
-      // if (dragControlsView.current) {
-      //   //console.log('bones helper current: ', bonesHelper.current)
-      //   dragControlsView.current.setBones(bonesHelper.current)
-      //   dragControlsView.current.setSelected(child)
-      //   dragControlsView.current.setCameras(cameras(scene))
-      // }
-      // if (orthoDragControlsView.current) {
-      //   orthoDragControlsView.current.setBones(bonesHelper.current)
-      //   orthoDragControlsView.current.setSelected(child)
-      //   orthoDragControlsView.current.setCameras(cameras(scene))
-      // }
     }, [selections, sceneObjects])
-
-    // useEffect(() => {
-    //   if (dragControlsView.current) {
-    //     // TODO read-only version?
-    // 
-    //     dragControlsView.current.setObjects(draggables(sceneObjects, scene))
-    // 
-    //     // TODO update if there are changes to the camera(s) in the scene
-    //     //
-    //     // let cameraState = Object.values(sceneObjects).find(o => o.type === 'camera')
-    //     // cameraControlsView.current.object = JSON.parse(JSON.stringify(cameraState))
-    //   }
-    // }, [sceneObjects, camera])
-
-    // useEffect(() => {
-    //   if (orthoDragControlsView.current) {
-    //     orthoDragControlsView.current.setObjects(draggables(sceneObjects, scene))
-    //     orthoDragControlsView.current.setCameras(cameras(scene))
-    //   }
-    // }, [sceneObjects, orthoCamera])
 
     useEffect(() => {
       if (camera && cameraControlsView.current) {
@@ -3508,7 +3425,7 @@ const Editor = connect(
       event.preventDefault()
       event.target.focus()
       // force ortho controls
-      // note: dragcontroller grabs pointerdown so this will not fire on perspective camera click
+      // note: selection manager grabs pointerdown so this will not fire on perspective camera click
       transition('TYPING_EXIT')
     }
 
