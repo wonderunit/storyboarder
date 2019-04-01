@@ -81,6 +81,7 @@ const useMachine = require('../hooks/use-machine')
 
 const CameraControls = require('./CameraControls')
 const SelectionManager = require('./SelectionManager')
+const SelectionsMover = require('./SelectionsMover')
 const IconSprites = require('./IconSprites')
 const Character = require('./Character')
 const SpotLight = require('./SpotLight')
@@ -762,6 +763,12 @@ const SceneManager = connect(
           selectOnPointerDown: mainViewCamera === 'live',
           useIcons: mainViewCamera === 'live',
           transition
+        }],
+
+        [SelectionsMover, {
+          key: 'selections-mover',
+          scene,
+          camera
         }],
 
         worldComponent,
