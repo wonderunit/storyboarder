@@ -39,92 +39,87 @@ const getSerializedState = state => {
 //
 // state helper functions
 //
-const checkForCharacterChanges = (state, draft, action) => {
-  // if characterPresetId wasn't just set
-  if (!action.payload.hasOwnProperty('characterPresetId')) {
-    // check to see if character has changed from preset
-    // and invalidate if so
-    let characterPresetId = draft.sceneObjects[action.payload.id].characterPresetId
-    if (characterPresetId) {
-      let statePreset = state.presets.characters[characterPresetId]
+const checkForCharacterChanges = (state, draft, actionPayloadId) => {
+  // check to see if character has changed from preset
+  // and invalidate if so
+  let characterPresetId = draft.sceneObjects[actionPayloadId].characterPresetId
+  if (characterPresetId) {
+    let statePreset = state.presets.characters[characterPresetId]
 
-      // preset does not exist anymore
-      if (!statePreset) {
-        // so don't reference it
-        draft.sceneObjects[action.payload.id].characterPresetId = undefined
-        return true
-      }
-
-      let stateCharacter = draft.sceneObjects[action.payload.id]
-
-      // for every top-level prop in the preset
-      for (let prop in statePreset.state) {
-        // if the prop is a number or a string
-        if (
-          typeof statePreset.state[prop] === 'number' ||
-          typeof statePreset.state[prop] === 'string' ||
-          typeof statePreset.state[prop] === 'undefined'
-        ) {
-          // if it differs
-
-          if (stateCharacter[prop] != statePreset.state[prop]) {
-            // changed, no longer matches preset
-            draft.sceneObjects[action.payload.id].characterPresetId = undefined
-            return true
-          }
-        }
-      }
-
-      // hardcode check of second-level props
-      if (
-        stateCharacter.morphTargets.mesomorphic != statePreset.state.morphTargets.mesomorphic ||
-        stateCharacter.morphTargets.ectomorphic != statePreset.state.morphTargets.ectomorphic ||
-        stateCharacter.morphTargets.endomorphic != statePreset.state.morphTargets.endomorphic
-      ) {
-        // changed, no longer matches preset
-        draft.sceneObjects[action.payload.id].characterPresetId = undefined
-        return true
-      }
+    // preset does not exist anymore
+    if (!statePreset) {
+      // so don't reference it
+      draft.sceneObjects[actionPayloadId].characterPresetId = undefined
+      return true
     }
-  }}
 
-const checkForSkeletonChanges = (state, draft, action) => {
-  // if posePresetId wasn't just set
-  if (!action.payload.hasOwnProperty('posePresetId')) {
-    // check to see if pose has changed from preset
-    // and invalidate if so
-    let posePresetId = draft.sceneObjects[action.payload.id].posePresetId
-    if (posePresetId) {
-      let statePreset = state.presets.poses[posePresetId]
+    let stateCharacter = draft.sceneObjects[actionPayloadId]
 
-      // preset does not exist anymore
-      if (!statePreset) {
-        // so don't reference it
-        draft.sceneObjects[action.payload.id].posePresetId = undefined
-        return true
-      }
+    // for every top-level prop in the preset
+    for (let prop in statePreset.state) {
+      // if the prop is a number or a string
+      if (
+        typeof statePreset.state[prop] === 'number' ||
+        typeof statePreset.state[prop] === 'string' ||
+        typeof statePreset.state[prop] === 'undefined'
+      ) {
+        // if it differs
 
-      let stateSkeleton = state.sceneObjects[action.payload.id].skeleton
-
-      let preset = statePreset.state.skeleton
-      let curr = stateSkeleton
-
-      if (Object.values(curr).length != Object.values(preset).length) {
-        // changed, no longer matches preset
-        draft.sceneObjects[action.payload.id].posePresetId = undefined
-        return true
-      }
-
-      for (name in preset) {
-        if (
-          preset[name].rotation.x !== curr[name].rotation.x ||
-          preset[name].rotation.y !== curr[name].rotation.y ||
-          preset[name].rotation.z !== curr[name].rotation.z
-        ) {
+        if (stateCharacter[prop] != statePreset.state[prop]) {
           // changed, no longer matches preset
-          draft.sceneObjects[action.payload.id].posePresetId = undefined
+          draft.sceneObjects[actionPayloadId].characterPresetId = undefined
           return true
         }
+      }
+    }
+
+    // hardcode check of second-level props
+    if (
+      stateCharacter.morphTargets.mesomorphic != statePreset.state.morphTargets.mesomorphic ||
+      stateCharacter.morphTargets.ectomorphic != statePreset.state.morphTargets.ectomorphic ||
+      stateCharacter.morphTargets.endomorphic != statePreset.state.morphTargets.endomorphic
+    ) {
+      // changed, no longer matches preset
+      draft.sceneObjects[actionPayloadId].characterPresetId = undefined
+      return true
+    }
+  }
+}
+
+const checkForSkeletonChanges = (state, draft, actionPayloadId) => {
+  // check to see if pose has changed from preset
+  // and invalidate if so
+  let posePresetId = draft.sceneObjects[actionPayloadId].posePresetId
+  if (posePresetId) {
+    let statePreset = state.presets.poses[posePresetId]
+
+    // preset does not exist anymore
+    if (!statePreset) {
+      // so don't reference it
+      draft.sceneObjects[actionPayloadId].posePresetId = undefined
+      return true
+    }
+
+    let draftSkeleton = draft.sceneObjects[actionPayloadId].skeleton
+
+    let preset = statePreset.state.skeleton
+    let curr = draftSkeleton
+
+    if (Object.values(curr).length != Object.values(preset).length) {
+      // changed, no longer matches preset
+      draft.sceneObjects[actionPayloadId].posePresetId = undefined
+      return true
+    }
+
+    for (name in preset) {
+      if (
+        preset[name].rotation.x !== curr[name].rotation.x ||
+        preset[name].rotation.y !== curr[name].rotation.y ||
+        preset[name].rotation.z !== curr[name].rotation.z
+      ) {
+        // changed, no longer matches preset
+        draft.sceneObjects[actionPayloadId].posePresetId = undefined
+        return true
       }
     }
   }
@@ -150,6 +145,142 @@ const migrateRotations = sceneObjects =>
 
 const updateMeta = state => {
   state.meta.lastSavedHash = hashify(JSON.stringify(getSerializedState(state)))
+}
+
+const updateObject = (draft, state, props, { models }) => {
+  // TODO is there a simpler way to merge only non-null values?
+
+  // update skeleton first
+  // so that subsequent changes to height and headScale take effect
+  if (props.hasOwnProperty('skeleton')) {
+    draft.skeleton = props.skeleton
+  }
+
+  if (props.x != null) {
+    draft.x = props.x
+  }
+  if (props.y != null) {
+    draft.y = props.y
+  }
+  if (props.z != null) {
+    draft.z = props.z
+  }
+
+  if (props.fov != null) {
+    draft.fov = props.fov
+  }
+  if (props.rotation != null) {
+    if (draft.type === 'object') {
+      // MERGE
+      draft.rotation = {
+        ...state.rotation,
+        ...props.rotation
+      }
+    } else {
+      draft.rotation = props.rotation
+    }
+  }
+  if (props.tilt != null) {
+    draft.tilt = props.tilt
+  }
+  if (props.roll != null) {
+    draft.roll = props.roll
+  }
+  if (props.model != null) {
+    draft.model = props.model
+
+    // if a character's model is changing
+    if (draft.type === 'character') {
+      // reset the height ...
+      draft.height = models[props.model]
+        // ... to default (if known) ...
+        ? models[props.model].height
+        // ... otherwise, a reasonable value
+        : 1.6
+    }
+  }
+
+  if (props.width != null) {
+    draft.width = props.width
+  }
+  if (props.height != null) {
+    draft.height = props.height
+  }
+  if (props.depth != null) {
+    draft.depth = props.depth
+  }
+
+  if (props.headScale != null) {
+    draft.headScale = props.headScale
+  }
+
+  if (props.morphTargets != null) {
+    Object.entries(props.morphTargets).forEach(([key, value]) => {
+      draft.morphTargets[key] = value
+    })
+  }
+
+  // allow a null value for name
+  if (props.hasOwnProperty('name')) {
+    draft.name = props.name
+  }
+
+  if (props.visible != null) {
+    draft.visible = props.visible
+  }
+
+  if (props.intensity != null) {
+    draft.intensity = props.intensity
+  }
+
+  if (props.angle != null) {
+    draft.angle = props.angle
+  }
+
+  if (props.penumbra != null) {
+    draft.penumbra = props.penumbra
+  }
+
+  if (props.decay != null) {
+    draft.decay = props.decay
+  }
+
+  if (props.distance != null) {
+    draft.distance = props.distance
+  }
+
+
+
+  // for volumes
+  if (props.numberOfLayers != null) {
+    draft.numberOfLayers = props.numberOfLayers
+  }
+  if (props.distanceBetweenLayers != null) {
+    draft.distanceBetweenLayers = props.distanceBetweenLayers
+  }
+  if (props.opacity != null) {
+    draft.opacity = props.opacity
+  }
+  if (props.color != null) {
+    draft.color = props.color
+  }
+  if (props.volumeImageAttachmentIds != null) {
+    draft.volumeImageAttachmentIds = props.volumeImageAttachmentIds
+  }
+
+
+
+  if (props.hasOwnProperty('characterPresetId')) {
+    draft.characterPresetId = props.characterPresetId
+  }
+
+  if (props.hasOwnProperty('posePresetId')) {
+    draft.posePresetId = props.posePresetId
+  }
+
+  if (props.hasOwnProperty('loaded')) {
+    draft.loaded = props.loaded
+  }
 }
 
 // `loaded` status is not serialized
@@ -477,7 +608,7 @@ const initialState = {
     sceneObjects: withDisplayNames(initialScene.sceneObjects)
   },
 
-  selection: undefined,
+  selections: [],
   selectedBone: undefined,
   mainViewCamera: 'live', // 'ortho' or 'live'
   input: {
@@ -549,19 +680,33 @@ module.exports = {
           draft.sceneObjects = withDisplayNames(resetLoadingStatus(migrateRotations(action.payload.sceneObjects)))
           draft.activeCamera = action.payload.activeCamera
           // clear selections
-          draft.selection = undefined
+          draft.selections = []
           draft.selectedBone = undefined
           draft.mainViewCamera = 'live'
           updateMeta(draft)
           return
 
+        // select a single object
         case 'SELECT_OBJECT':
-          // if the selection has changed
-          if (draft.selection != action.payload) {
-            // make the selection
-            draft.selection = action.payload
+          if (action.payload == null) {
+            // empty the selection
+            draft.selections = []
             // de-select any currently selected bone
             draft.selectedBone = undefined
+          } else {
+            // make the selection
+            draft.selections = [action.payload]
+            // de-select any currently selected bone
+            draft.selectedBone = undefined
+          }
+          return
+
+        case 'SELECT_OBJECT_TOGGLE':
+          let n = draft.selections.indexOf(action.payload)
+          if (n === -1) {
+            draft.selections.push(action.payload)
+          } else {
+            draft.selections.splice(n, 1)
           }
           return
 
@@ -576,176 +721,94 @@ module.exports = {
           draft.sceneObjects = withDisplayNames(draft.sceneObjects)
           return
 
-        case 'DELETE_OBJECT':
-          if (draft.sceneObjects[action.payload.id] == null) return
-          delete draft.sceneObjects[action.payload.id]
+        case 'DELETE_OBJECTS':
+          if (
+            action.payload.ids == null ||
+            action.payload.ids.length === 0
+          ) return
 
-          // was the current selection just removed?
-          if (draft.selection === action.payload.id) {
-            // set selection to null
-            draft.selection = null
-            // de-select any currently selected bone
-            draft.selectedBone = undefined
+          for (let id of action.payload.ids) {
+            if (draft.sceneObjects[id] == null) continue
+
+            delete draft.sceneObjects[id]
+
+            // did we remove a selected id?
+            if (draft.selections.includes(id)) {
+              // delete it from the selections list
+              draft.selections.splice(draft.selections.indexOf(id), 1)
+              // de-select any currently selected bone
+              draft.selectedBone = undefined
+            }
           }
+
           draft.sceneObjects = withDisplayNames(draft.sceneObjects)
           return
 
         case 'UPDATE_OBJECT':
           if (draft.sceneObjects[action.payload.id] == null) return
-          
-          // TODO is there a simpler way to merge only non-null values?
 
-          // update skeleton first
-          // so that subsequent changes to height and headScale take effect
-          if (action.payload.hasOwnProperty('skeleton')) {
-            draft.sceneObjects[action.payload.id].skeleton = action.payload.skeleton
-          }
+          updateObject(
+            draft.sceneObjects[action.payload.id],
+            state.sceneObjects[action.payload.id],
+            action.payload,
+            { models: state.models }
+          )
 
-          if (action.payload.x != null) {
-            draft.sceneObjects[action.payload.id].x = action.payload.x
-          }
-          if (action.payload.y != null) {
-            draft.sceneObjects[action.payload.id].y = action.payload.y
-          }
-          if (action.payload.z != null) {
-            draft.sceneObjects[action.payload.id].z = action.payload.z
+          // unless characterPresetId was just set ...
+          if (!action.payload.hasOwnProperty('characterPresetId')) {
+            // ... detect change between state and preset
+            checkForCharacterChanges(state, draft, action.payload.id)
           }
 
-          if (action.payload.fov != null) {
-            draft.sceneObjects[action.payload.id].fov = action.payload.fov
+          // unless posePresetId was just set ...
+          if (!action.payload.hasOwnProperty('posePresetId')) {
+            // ... detect change between state and preset
+            checkForSkeletonChanges(state, draft, action.payload.id)
           }
-          if (action.payload.rotation != null) {
-            if (draft.sceneObjects[action.payload.id].type === 'object') {
-              // MERGE
-              draft.sceneObjects[action.payload.id].rotation = {
-                ...state.sceneObjects[action.payload.id].rotation,
-                ...action.payload.rotation
-              }
-            } else {
-              draft.sceneObjects[action.payload.id].rotation = action.payload.rotation
-            }
-          }
-          if (action.payload.tilt != null) {
-            draft.sceneObjects[action.payload.id].tilt = action.payload.tilt
-          }
-          if (action.payload.roll != null) {
-            draft.sceneObjects[action.payload.id].roll = action.payload.roll
-          }
-          if (action.payload.model != null) {
-            draft.sceneObjects[action.payload.id].model = action.payload.model
-
-            // if a character's model is changing
-            if (draft.sceneObjects[action.payload.id].type === 'character') {
-              // reset the height ...
-              draft.sceneObjects[action.payload.id].height = state.models[action.payload.model]
-                // ... to default (if known) ...
-                ? state.models[action.payload.model].height
-                // ... otherwise, a reasonable value
-                : 1.6
-            }
-          }
-
-          if (action.payload.width != null) {
-            draft.sceneObjects[action.payload.id].width = action.payload.width
-          }
-          if (action.payload.height != null) {
-            draft.sceneObjects[action.payload.id].height = action.payload.height
-          }
-          if (action.payload.depth != null) {
-            draft.sceneObjects[action.payload.id].depth = action.payload.depth
-          }
-
-          if (action.payload.headScale != null) {
-            draft.sceneObjects[action.payload.id].headScale = action.payload.headScale
-          }
-
-          if (action.payload.morphTargets != null) {
-            Object.entries(action.payload.morphTargets).forEach(([key, value]) => {
-              draft.sceneObjects[action.payload.id].morphTargets[key] = value
-            })
-          }
-
-          // allow a null value for name
-          if (action.payload.hasOwnProperty('name')) {
-            draft.sceneObjects[action.payload.id].name = action.payload.name
-          }
-
-          if (action.payload.visible != null) {
-            draft.sceneObjects[action.payload.id].visible = action.payload.visible
-          }
-
-          if (action.payload.intensity != null) {
-            draft.sceneObjects[action.payload.id].intensity = action.payload.intensity
-          }
-
-          if (action.payload.angle != null) {
-            draft.sceneObjects[action.payload.id].angle = action.payload.angle
-          }
-
-          if (action.payload.penumbra != null) {
-            draft.sceneObjects[action.payload.id].penumbra = action.payload.penumbra
-          }
-
-          if (action.payload.decay != null) {
-            draft.sceneObjects[action.payload.id].decay = action.payload.decay
-          }
-
-          if (action.payload.distance != null) {
-            draft.sceneObjects[action.payload.id].distance = action.payload.distance
-          }
-
-
-
-          // for volumes
-          if (action.payload.numberOfLayers != null) {
-            draft.sceneObjects[action.payload.id].numberOfLayers = action.payload.numberOfLayers
-          }
-          if (action.payload.distanceBetweenLayers != null) {
-            draft.sceneObjects[action.payload.id].distanceBetweenLayers = action.payload.distanceBetweenLayers
-          }
-          if (action.payload.opacity != null) {
-            draft.sceneObjects[action.payload.id].opacity = action.payload.opacity
-          }
-          if (action.payload.color != null) {
-            draft.sceneObjects[action.payload.id].color = action.payload.color
-          }
-          if (action.payload.volumeImageAttachmentIds != null) {
-            draft.sceneObjects[action.payload.id].volumeImageAttachmentIds = action.payload.volumeImageAttachmentIds
-          }
-
-
-
-          if (action.payload.hasOwnProperty('characterPresetId')) {
-            draft.sceneObjects[action.payload.id].characterPresetId = action.payload.characterPresetId
-          }
-
-          if (action.payload.hasOwnProperty('posePresetId')) {
-            draft.sceneObjects[action.payload.id].posePresetId = action.payload.posePresetId
-          }
-
-          if (action.payload.hasOwnProperty('loaded')) {
-            draft.sceneObjects[action.payload.id].loaded = action.payload.loaded
-          }
-          
-
-          checkForCharacterChanges(state, draft, action)
-          checkForSkeletonChanges(state, draft, action)
           return
 
-        case 'DUPLICATE_OBJECT':
-          let source = draft.sceneObjects[action.payload.id]
-          if (source) {
-            let object = {
-              ...source,
-              name: source.name == null ? null : source.name + ' copy',
-              x: source.x + (Math.random() * 2 - 1),
-              y: source.y + (Math.random() * 2 - 1),
-              z: source.z,
-              id: action.payload.destinationId
-            }
-            draft.sceneObjects[action.payload.destinationId] = object
-            draft.sceneObjects = withDisplayNames(draft.sceneObjects)
+        case 'UPDATE_OBJECTS':
+          for (let [ key, value ] of Object.entries(action.payload)) {
+            if (draft.sceneObjects[key] == null) return
+
+            draft.sceneObjects[key].x = value.x
+            draft.sceneObjects[key].y = value.y
+
+            // if we ever allow UPDATE_OBJECTS to change more stuff,
+            // uncomment this:
+            // checkForCharacterChanges(state, draft, key)
+
+            // if we ever allow UPDATE_OBJECTS to change skeletons,
+            // uncomment this:
+            // checkForSkeletonChanges(state, draft, key)
           }
+          return
+
+        case 'DUPLICATE_OBJECTS':
+          for (let n in action.payload.ids) {
+            let srcId = action.payload.ids[n]
+            let dstId = action.payload.newIds[n]
+
+            let offsetX = 0.5 // (Math.random() * 2 - 1)
+            let offsetY = 0.5 // (Math.random() * 2 - 1)
+
+            if (draft.sceneObjects[srcId]) {
+              let source = draft.sceneObjects[srcId]
+
+              draft.sceneObjects[dstId] = {
+                ...source,
+                name: source.name == null ? null : source.name + ' copy',
+                x: source.x + offsetX,
+                y: source.y + offsetY,
+                z: source.z,
+                id: dstId
+              }
+            }
+          }
+          draft.sceneObjects = withDisplayNames(draft.sceneObjects)
+
+          // select the new duplicates, replacing the selection list
+          draft.selections = action.payload.newIds
           return
 
         case 'UPDATE_CHARACTER_SKELETON':
@@ -753,7 +816,7 @@ module.exports = {
           draft.sceneObjects[action.payload.id].skeleton[action.payload.name] = {
             rotation: action.payload.rotation
           }
-          checkForSkeletonChanges(state, draft, action)
+          checkForSkeletonChanges(state, draft, action.payload.id)
           return
 
         case 'SET_INPUT_ACCEL':
@@ -951,14 +1014,19 @@ module.exports = {
   // action creators
   //
   selectObject: id => ({ type: 'SELECT_OBJECT', payload: id }),
+  selectObjectToggle: id => ({ type: 'SELECT_OBJECT_TOGGLE', payload: id }),
+
   selectBone: id => ({ type: 'SELECT_BONE', payload: id }),
 
   createObject: values => ({ type: 'CREATE_OBJECT', payload: values }),
   updateObject: (id, values) => ({ type: 'UPDATE_OBJECT', payload: { id, ...values } }),
-  
-  deleteObject: id => ({ type: 'DELETE_OBJECT', payload: { id } }),
 
-  duplicateObject: (id, destinationId) => ({ type: 'DUPLICATE_OBJECT', payload: { id, destinationId } }),
+  // batch update
+  updateObjects: payload => ({ type: 'UPDATE_OBJECTS', payload }),
+  
+  deleteObjects: ids => ({ type: 'DELETE_OBJECTS', payload: { ids } }),
+
+  duplicateObjects: (ids, newIds) => ({ type: 'DUPLICATE_OBJECTS', payload: { ids, newIds } }),
 
   setMainViewCamera: name => ({ type: 'SET_MAIN_VIEW_CAMERA', payload: name }),
 

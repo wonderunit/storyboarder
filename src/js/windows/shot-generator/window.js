@@ -134,7 +134,7 @@ createServer({
 // are we testing locally?
 // SHOT_GENERATOR_STANDALONE=true npm start
 if (process.env.SHOT_GENERATOR_STANDALONE) {
-  console.log('loading shot from example.storyboarder')
+  console.log('loading shot from shot-generator.storyboarder')
 
   const fs = require('fs')
   const path = require('path')

@@ -865,6 +865,7 @@ const shotGeneratorMenu = [
       // {role: 'undo'},
       // {role: 'redo'},
       // {type: 'separator'},
+
       {role: 'cut'},
       {role: 'copy'},
       {role: 'paste'},
@@ -879,7 +880,7 @@ const shotGeneratorMenu = [
       
       // {role: 'pasteandmatchstyle'},
       {role: 'delete'},
-      {role: 'selectall'}
+      // {role: 'selectall'}
     ]
   },
   {

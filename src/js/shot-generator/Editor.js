@@ -33,11 +33,13 @@ const {
   // action creators
   //
   selectObject,
+  selectObjectToggle,
+
   createObject,
   updateObject,
-  deleteObject,
+  deleteObjects,
 
-  duplicateObject,
+  duplicateObjects,
 
   selectBone,
   setMainViewCamera,
@@ -78,7 +80,8 @@ const { Machine } = require('xstate')
 const useMachine = require('../hooks/use-machine')
 
 const CameraControls = require('./CameraControls')
-const DragControls = require('./DragControls')
+const SelectionManager = require('./SelectionManager')
+// const SelectionsMover = require('./SelectionsMover')
 const IconSprites = require('./IconSprites')
 const Character = require('./Character')
 const SpotLight = require('./SpotLight')
@@ -102,6 +105,7 @@ const NumberSliderFormatter = require('./NumberSlider').formatters
 const ModelSelect = require('./ModelSelect')
 const AttachmentsSelect = require('./AttachmentsSelect')
 const ServerInspector = require('./ServerInspector')
+const MultiSelectionInspector = require('./MultiSelectionInspector')
 const GuidesView = require('./GuidesView')
 
 require('../vendor/OutlineEffect.js')
@@ -109,15 +113,15 @@ require('../vendor/OutlineEffect.js')
 
 window.THREE = THREE
 
-const draggables = (sceneObjects, scene) =>
-  //scene.children.filter(o => o.userData.type === 'object' || o instanceof BoundingBoxHelper)
-  scene.children.filter(o => o.userData.type === 'object' ||
-                              o.userData.type === 'character' ||
-                              o.userData.type === 'light' ||
-                              o.userData.type === 'volume' )
+// const draggables = (sceneObjects, scene) =>
+//   //scene.children.filter(o => o.userData.type === 'object' || o instanceof BoundingBoxHelper)
+//   scene.children.filter(o => o.userData.type === 'object' ||
+//                               o.userData.type === 'character' ||
+//                               o.userData.type === 'light' ||
+//                               o.userData.type === 'volume' )
 
-const cameras = ( scene ) =>
-  scene.children.filter(o => o instanceof THREE.PerspectiveCamera)
+// const cameras = ( scene ) =>
+//   scene.children.filter(o => o instanceof THREE.PerspectiveCamera)
 
 const animatedUpdate = (fn) => (dispatch, getState) => fn(dispatch, getState())
 
@@ -189,7 +193,7 @@ const SceneManager = connect(
     world: state.world,
     sceneObjects: state.sceneObjects,
     remoteInput: state.input,
-    selection: state.selection,
+    selections: state.selections,
     selectedBone: state.selectedBone,
     mainViewCamera: state.mainViewCamera,
     activeCamera: state.activeCamera,
@@ -202,6 +206,7 @@ const SceneManager = connect(
   {
     updateObject,
     selectObject,
+    selectObjectToggle,
     animatedUpdate,
     selectBone,
     updateCharacterSkeleton,
@@ -209,7 +214,7 @@ const SceneManager = connect(
     updateWorldEnvironment,
   }
 )(
-  ({ world, sceneObjects, updateObject, selectObject, remoteInput, largeCanvasRef, smallCanvasRef, selection, selectedBone, machineState, transition, animatedUpdate, selectBone, mainViewCamera, updateCharacterSkeleton, largeCanvasSize, activeCamera, aspectRatio, devices, meta, _boardUid, updateWorldEnvironment, attachments }) => {
+  ({ world, sceneObjects, updateObject, selectObject, selectObjectToggle, remoteInput, largeCanvasRef, smallCanvasRef, selections, selectedBone, machineState, transition, animatedUpdate, selectBone, mainViewCamera, updateCharacterSkeleton, largeCanvasSize, activeCamera, aspectRatio, devices, meta, _boardUid, updateWorldEnvironment, attachments }) => {
     const { scene } = useContext(SceneContext)
     // const modelCacheDispatch = useContext(CacheContext)
 
@@ -224,8 +229,7 @@ const SceneManager = connect(
     let animatorId = useRef(null)
 
     let cameraControlsView = useRef(null)
-    let dragControlsView = useRef(null)
-    let orthoDragControlsView = useRef(null)
+
     let bonesHelper = useRef(null)
     let lightHelper = useRef(null)
 
@@ -440,49 +444,6 @@ const SceneManager = connect(
           )
         }
 
-        if (!dragControlsView.current) {
-          console.log('new DragControls')
-          dragControlsView.current = new DragControls(
-            draggables(sceneObjects, scene),
-            cameras(scene),
-            camera,
-            largeCanvasRef.current,
-            selectObject,
-            updateObject,
-            selectBone
-          )
-          dragControlsView.current.addEventListener('pointerdown', event => {
-            transition('TYPING_EXIT')
-          })
-          dragControlsView.current.addEventListener(
-            'dragstart',
-            function ( event ) {
-              transition('EDITING_ENTER')
-            }.bind(this)
-          )
-          dragControlsView.current.addEventListener( 'dragend', function ( event ) {
-            transition('EDITING_EXIT')
-          }.bind(this) )
-        }
-
-        if (!orthoDragControlsView.current) {
-          orthoDragControlsView.current = new DragControls(
-            draggables(sceneObjects, scene),
-            cameras(scene),
-            orthoCamera.current,
-            smallCanvasRef.current,
-            selectObject,
-            updateObject,
-            selectBone
-          )
-          orthoDragControlsView.current.addEventListener( 'dragstart', function ( event ) {
-            transition('EDITING_ENTER')
-          }.bind(this) )
-          orthoDragControlsView.current.addEventListener( 'dragend', function ( event ) {
-            transition('EDITING_EXIT')
-          }.bind(this) )
-        }
-
         animator.current = () => {
           if (stats) { stats.begin() }
           if (scene && camera) {
@@ -490,10 +451,6 @@ const SceneManager = connect(
             animatedUpdate((dispatch, state) => {
               let cameraForSmall = state.mainViewCamera === 'ortho' ? camera : orthoCamera.current
               let cameraForLarge = state.mainViewCamera === 'live' ? camera : orthoCamera.current
-
-              dragControlsView.current.setCamera(cameraForLarge)
-              orthoDragControlsView.current.setCamera(cameraForSmall)
-              //orthoDragControlsView.current.setCameras(cameras(scene))
 
               if (cameraControlsView.current && cameraControlsView.current.enabled) {
                 let cameraState = Object.values(state.sceneObjects).find(o => o.id === camera.userData.id)
@@ -511,7 +468,6 @@ const SceneManager = connect(
 
                 // step
                 cameraControlsView.current.update( clock.current.getDelta(), state )
-                dragControlsView.current.update( clock.current.getDelta(), state )
 
                 // update object state with the latest values
                 let cameraId = camera.userData.id
@@ -580,14 +536,12 @@ const SceneManager = connect(
     // useEffect(() => {}, [mainViewCamera])
 
     useEffect(() => {
-      // TODO update sceneObjects[character.id].loaded when loaded
-
       let sceneObject = null
       let child = null
 
-      if (selection != null) {
-        child = scene.children.find(o => o.userData.id === selection)
-        sceneObject = sceneObjects[selection]
+      if (selections.length === 1) {
+        child = scene.children.find(o => o.userData.id === selections[0])
+        sceneObject = sceneObjects[selections[0]]
         //if light - add helper
 
         // if (sceneObject.type === 'light') {
@@ -628,38 +582,7 @@ const SceneManager = connect(
         bonesHelper.current = null
       }
 
-      if (dragControlsView.current) {
-        //console.log('bones helper current: ', bonesHelper.current)
-        dragControlsView.current.setBones(bonesHelper.current)
-        dragControlsView.current.setSelected(child)
-        dragControlsView.current.setCameras(cameras(scene))
-      }
-      if (orthoDragControlsView.current) {
-        orthoDragControlsView.current.setBones(bonesHelper.current)
-        orthoDragControlsView.current.setSelected(child)
-        orthoDragControlsView.current.setCameras(cameras(scene))
-      }
-    }, [selection, sceneObjects])
-
-    useEffect(() => {
-      if (dragControlsView.current) {
-        // TODO read-only version?
-
-        dragControlsView.current.setObjects(draggables(sceneObjects, scene))
-
-        // TODO update if there are changes to the camera(s) in the scene
-        //
-        // let cameraState = Object.values(sceneObjects).find(o => o.type === 'camera')
-        // cameraControlsView.current.object = JSON.parse(JSON.stringify(cameraState))
-      }
-    }, [sceneObjects, camera])
-
-    useEffect(() => {
-      if (orthoDragControlsView.current) {
-        orthoDragControlsView.current.setObjects(draggables(sceneObjects, scene))
-        orthoDragControlsView.current.setCameras(cameras(scene))
-      }
-    }, [sceneObjects, orthoCamera])
+    }, [selections, sceneObjects])
 
     useEffect(() => {
       if (camera && cameraControlsView.current) {
@@ -694,7 +617,7 @@ const SceneManager = connect(
                 scene,
 
                 remoteInput,
-                isSelected: props.id === selection,
+                isSelected: selections.includes(props.id),
 
                 camera,
 
@@ -729,7 +652,7 @@ const SceneManager = connect(
                 scene,
 
                 remoteInput,
-                isSelected: selection === props.id,
+                isSelected: selections.includes(props.id),
                 selectedBone,
 
                 camera,
@@ -758,6 +681,8 @@ const SceneManager = connect(
 
                 setCamera,
 
+                isSelected: selections.includes(props.id),
+
                 aspectRatio,
                 ...props
               }
@@ -768,7 +693,7 @@ const SceneManager = connect(
                 Volumetric, {
                   key: props.id,
                   scene,
-                  isSelected: selection === props.id,
+                  isSelected: selections.includes(props.id),
                   camera,
                   updateObject,
                   numberOfLayers: props.numberOfLayers,
@@ -786,6 +711,7 @@ const SceneManager = connect(
                 SpotLight, {
                   key: props.id,
                   scene,
+                  isSelected: selections.includes(props.id),
                   ...props
                 }
               ]
@@ -818,7 +744,36 @@ const SceneManager = connect(
     ]
     // TODO Scene parent object??
     return [
-      [worldComponent, ...components].map(c => h(c))
+      [
+        [SelectionManager, {
+          key: 'selection-manager-large',
+          scene,
+          camera: mainViewCamera === 'live' ? camera : orthoCamera.current,
+          el: largeCanvasRef.current,
+          selectOnPointerDown: mainViewCamera !== 'live',
+          useIcons: mainViewCamera !== 'live',
+          transition
+        }],
+
+        [SelectionManager, {
+          key: 'selection-manager-small',
+          scene,
+          camera: mainViewCamera === 'live' ? orthoCamera.current : camera,
+          el: smallCanvasRef.current,
+          selectOnPointerDown: mainViewCamera === 'live',
+          useIcons: mainViewCamera === 'live',
+          transition
+        }],
+
+        // [SelectionsMover, {
+        //   key: 'selections-mover',
+        //   scene,
+        //   camera
+        // }],
+
+        worldComponent,
+        ...components
+      ].map(c => h(c))
     ]
   }
 )
@@ -920,6 +875,10 @@ const Camera = React.memo(({ scene, id, type, setCamera, icon, ...props }) => {
     }
   }, [props.displayName, props.name])
 
+  useEffect(() => {
+    camera.current.orthoIcon.setSelected(props.isSelected)
+  }, [props.isSelected])
+
   camera.current.position.x = props.x
   camera.current.position.y = props.z
   camera.current.position.z = props.y
@@ -981,7 +940,7 @@ const WorldElement = React.memo(({ index, world, isSelected, selectObject, style
 })
 
 const ListItem = ({ index, style, isScrolling, data }) => {
-  const { items, models, selection, selectObject, updateObject, deleteObject, activeCamera, setActiveCamera } = data
+  const { items, models, selections, selectObject, selectObjectToggle, updateObject, deleteObjects, activeCamera, setActiveCamera } = data
   const isWorld = index === 0
 
   const sceneObject = index === 0
@@ -994,7 +953,7 @@ const ListItem = ({ index, style, isScrolling, data }) => {
       WorldElement, {
         index,
         world: items[0],
-        isSelected: selection == null,
+        isSelected: selections.length === 0,
         selectObject
       }
     ]
@@ -1003,15 +962,16 @@ const ListItem = ({ index, style, isScrolling, data }) => {
           index,
           style,
           sceneObject,
-          isSelected: sceneObject.id === selection,
+          isSelected: selections.includes(sceneObject.id),
           isActive: sceneObject.type === 'camera' && sceneObject.id === activeCamera,
           allowDelete: (
             sceneObject.type != 'camera' ||
             sceneObject.type == 'camera' && activeCamera !== sceneObject.id
           ),
           selectObject,
+          selectObjectToggle,
           updateObject,
-          deleteObject,
+          deleteObjects,
           setActiveCamera
         }
       ]
@@ -1021,7 +981,7 @@ const ListItem = ({ index, style, isScrolling, data }) => {
 const Inspector = ({
   world,
   kind, data,
-  models, updateObject, deleteObject,
+  models, updateObject, deleteObjects,
   machineState, transition,
   selectedBone,
   selectBone,
@@ -1029,7 +989,8 @@ const Inspector = ({
   updateWorld,
   updateWorldRoom,
   updateWorldEnvironment,
-  storyboarderFilePath
+  storyboarderFilePath,
+  selections
 }) => {
   const { scene } = useContext(SceneContext)
 
@@ -1060,31 +1021,35 @@ const Inspector = ({
   return h([
     'div#inspector',
     { ref, onFocus, onBlur },
-    (kind && data)
+    selections.length > 1
       ? [
-          InspectedElement, {
-            sceneObject,
-            models,
-            updateObject,
-            selectedBone: scene.getObjectByProperty('uuid', selectedBone),
-            machineState,
-            transition,
-            selectBone,
-            updateCharacterSkeleton,
-            storyboarderFilePath
-          }
+          MultiSelectionInspector
         ]
-      : [
-        InspectedWorld, {
-          world,
+      : (kind && data)
+        ? [
+            InspectedElement, {
+              sceneObject,
+              models,
+              updateObject,
+              selectedBone: scene.getObjectByProperty('uuid', selectedBone),
+              machineState,
+              transition,
+              selectBone,
+              updateCharacterSkeleton,
+              storyboarderFilePath
+            }
+          ]
+        : [
+          InspectedWorld, {
+            world,
 
-          transition,
+            transition,
 
-          updateWorld,
-          updateWorldRoom,
-          updateWorldEnvironment
-        }
-      ],
+            updateWorld,
+            updateWorldRoom,
+            updateWorldEnvironment
+          }
+        ],
       [ServerInspector]
   ])
 }
@@ -1350,7 +1315,7 @@ const ElementsPanel = connect(
   state => ({
     world: state.world,
     sceneObjects: state.sceneObjects,
-    selection: state.selection,
+    selections: state.selections,
     selectedBone: state.selectedBone,
     models: state.models,
     activeCamera: state.activeCamera,
@@ -1360,8 +1325,9 @@ const ElementsPanel = connect(
   // what actions can we dispatch?
   {
     selectObject,
+    selectObjectToggle,
     updateObject,
-    deleteObject,
+    deleteObjects,
     setActiveCamera,
     selectBone,
     updateCharacterSkeleton,
@@ -1370,7 +1336,7 @@ const ElementsPanel = connect(
     updateWorldEnvironment
   }
 )(
-  React.memo(({ world, sceneObjects, models, selection, selectObject, updateObject, deleteObject, selectedBone, machineState, transition, activeCamera, setActiveCamera, selectBone, updateCharacterSkeleton, updateWorld, updateWorldRoom, updateWorldEnvironment, storyboarderFilePath }) => {
+  React.memo(({ world, sceneObjects, models, selections, selectObject, selectObjectToggle, updateObject, deleteObjects, selectedBone, machineState, transition, activeCamera, setActiveCamera, selectBone, updateCharacterSkeleton, updateWorld, updateWorldRoom, updateWorldEnvironment, storyboarderFilePath }) => {
     let ref = useRef(null)
     let size = useComponentSize(ref)
 
@@ -1410,10 +1376,11 @@ const ElementsPanel = connect(
           items,
 
           models,
-          selection,
+          selections,
           selectObject,
+          selectObjectToggle,
           updateObject,
-          deleteObject,
+          deleteObjects,
           activeCamera,
           setActiveCamera
         }
@@ -1423,17 +1390,17 @@ const ElementsPanel = connect(
 
     useEffect(() => {
       let arr = Object.values(sceneObjectsSorted)
-      let selected = arr.find(o => o.id === selection)
+      let selected = arr.find(o => o.id === selections[0])
       let index = arr.indexOf(selected)
       if (index > -1) {
         // item 0 is always the world item
         // so add 1 to index for actual item
         listRef.current.scrollToItem(index + 1)
       }
-    }, [selection])
+    }, [selections])
 
-    let kind = sceneObjects[selection] && sceneObjects[selection].type
-    let data = sceneObjects[selection]
+    let kind = sceneObjects[selections[0]] && sceneObjects[selections[0]].type
+    let data = sceneObjects[selections[0]]
 
     return React.createElement(
       'div', { style: { flex: 1, display: 'flex', flexDirection: 'column' }},
@@ -1462,7 +1429,9 @@ const ElementsPanel = connect(
             updateWorldRoom,
             updateWorldEnvironment,
 
-            storyboarderFilePath
+            storyboarderFilePath,
+
+            selections
           }]
         )
       )
@@ -2285,12 +2254,19 @@ const BoneEditor = ({ sceneObject, bone, updateCharacterSkeleton }) => {
 }
 
 const ELEMENT_HEIGHT = 40
-const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, selectObject, updateObject, deleteObject, setActiveCamera, machineState, transition, allowDelete }) => {
+const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, selectObject, selectObjectToggle, updateObject, deleteObjects, setActiveCamera, machineState, transition, allowDelete }) => {
   const onClick = preventDefault(event => {
-    selectObject(sceneObject.id)
+    const { shiftKey } = event
 
-    if (sceneObject.type === 'camera') {
-      setActiveCamera(sceneObject.id)
+    if (shiftKey) {
+      selectObjectToggle(sceneObject.id)
+
+    } else {
+      selectObject(sceneObject.id)
+
+      if (sceneObject.type === 'camera') {
+        setActiveCamera(sceneObject.id)
+      }
     }
   })
 
@@ -2302,7 +2278,7 @@ const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, s
       defaultId: 1 // default to No
     })
     if (choice === 0) {
-      deleteObject(sceneObject.id)
+      deleteObjects([sceneObject.id])
     }
   })
 
@@ -2363,7 +2339,7 @@ const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, s
 
 const PhoneCursor = connect(
   state => ({
-    selection: state.selection,
+    selections: state.selection,
     sceneObjects: state.sceneObjects,
   }),
   {
@@ -2371,7 +2347,7 @@ const PhoneCursor = connect(
     selectBone,
     updateObject
   })(
-    ({ remoteInput, camera, largeCanvasRef, selectObject, selectBone, sceneObjects, selection, selectedBone, updateObject }) => {
+    ({ remoteInput, camera, largeCanvasRef, selectObject, selectBone, sceneObjects, selections, selectedBone, updateObject }) => {
       let startingDeviceRotation = useRef(null)
       let startingObjectRotation = useRef(null)
       let startingCameraPosition = useRef(null)
@@ -2569,7 +2545,7 @@ const PhoneCursor = connect(
           }
         }
 
-      }, [remoteInput, selection])
+      }, [remoteInput, selections])
 
 
       useEffect(() => {
@@ -2625,11 +2601,11 @@ const PhoneCursor = connect(
           let direction = new THREE.Vector3()
           camera.getWorldDirection( direction )
 
-          let objInScene = scene.children.find(o => o.userData.id === selection)
+          let objInScene = scene.children.find(o => o.userData.id === selections[0])
 
           let newPos = new THREE.Vector3()
           let getDistanceToPosition = new THREE.Vector3()
-          if (sceneObjects[selection] && (sceneObjects[selection].type === 'object' || sceneObjects[selection].type === 'character'))
+          if (sceneObjects[selections[0]] && (sceneObjects[selections[0]].type === 'object' || sceneObjects[selections[0]].type === 'character'))
           {
             getDistanceToPosition = objInScene.position.clone()
             if (selectedBone)
@@ -2641,7 +2617,7 @@ const PhoneCursor = connect(
               getDistanceToPosition = bonePosition.clone()
             }
           }
-          let dist = (sceneObjects[selection] && (sceneObjects[selection].type === 'object' || sceneObjects[selection].type === 'character')) ? startingCameraPosition.current.distanceTo(getDistanceToPosition) : 3
+          let dist = (sceneObjects[selections[0]] && (sceneObjects[selections[0]].type === 'object' || sceneObjects[selections[0]].type === 'character')) ? startingCameraPosition.current.distanceTo(getDistanceToPosition) : 3
           newPos.addVectors ( startingCameraPosition.current, direction.multiplyScalar( dist ) )
           if (firstRun)
           {
@@ -3240,20 +3216,22 @@ const editorMachine = Machine({
 // TODO move selector logic into reducers/shot-generator?
 // memoized selectors
 const getSceneObjects = state => state.sceneObjects
-const getSelection = state => state.selection
+const getSelections = state => state.selections
 const getCameraSceneObjects = createSelector(
   [getSceneObjects],
   (sceneObjects) => Object.values(sceneObjects).filter(o => o.type === 'camera')
 )
 const getSelectedSceneObject = createSelector(
-  [getSceneObjects, getSelection],
-  (sceneObjects, selection) => Object.values(sceneObjects).find(o => o.id === selection)
+  [getSceneObjects, getSelections],
+  (sceneObjects, selections) => Object.values(sceneObjects).find(o => o.id === selections[0])
 )
 const canDelete = (sceneObject, activeCamera) =>
   // allow objects
   sceneObject.type === 'object' ||
   // allow characters
   sceneObject.type === 'character' ||
+  // allow volumes
+  sceneObject.type === 'volume' ||
   // allow cameras which are not the active camera
   (sceneObject.type === 'camera' && sceneObject.id !== activeCamera)
 
@@ -3278,7 +3256,7 @@ const KeyHandler = connect(
   state => ({
     mainViewCamera: state.mainViewCamera,
     activeCamera: state.activeCamera,
-    selection: state.selection,
+    selections: state.selections,
 
     _selectedSceneObject: getSelectedSceneObject(state),
 
@@ -3288,45 +3266,49 @@ const KeyHandler = connect(
     setMainViewCamera,
     selectObject,
     setActiveCamera,
-    duplicateObject,
-    deleteObject,
+    duplicateObjects,
+    deleteObjects,
     updateObject
   }
 )(
   ({
     mainViewCamera,
     activeCamera,
-    selection,
+    selections,
     _selectedSceneObject,
     _cameras,
     setMainViewCamera,
     selectObject,
     setActiveCamera,
-    duplicateObject,
-    deleteObject,
+    duplicateObjects,
+    deleteObjects,
     updateObject
   }) => {
     const { scene } = useContext(SceneContext)
 
     const onCommandDuplicate = () => {
-      if (selection) {
-        let destinationId = THREE.Math.generateUUID()
-        duplicateObject(selection, destinationId)
-        selectObject(destinationId)
+      if (selections) {
+        // NOTE: this will also select the new duplicates, replacing selection
+        duplicateObjects(
+          // ids to duplicate
+          selections,
+          // new ids
+          selections.map(THREE.Math.generateUUID)
+        )
       }
     }
 
     useEffect(() => {
       const onKeyDown = event => {
         if (event.key === 'Backspace') {
-          if (selection && canDelete(_selectedSceneObject, activeCamera)) {
+          if (selections.length && canDelete(_selectedSceneObject, activeCamera)) {
             let choice = dialog.showMessageBox(null, {
               type: 'question',
               buttons: ['Yes', 'No'],
-              message: 'Are you sure?'
+              message: `Deleting ${selections.length} item${selections.length > 1 ? 's' : ''}. Are you sure?`
             })
             if (choice === 0) {
-              deleteObject(selection)
+              deleteObjects(selections)
             }
           }
         }
@@ -3387,7 +3369,7 @@ const KeyHandler = connect(
         window.removeEventListener('keydown', onKeyDown)
         ipcRenderer.off('shot-generator:object:duplicate', onCommandDuplicate)
       }
-    }, [mainViewCamera, _cameras, selection, _selectedSceneObject, activeCamera])
+    }, [mainViewCamera, _cameras, selections, _selectedSceneObject, activeCamera])
 
     return null
   }
@@ -3433,7 +3415,7 @@ const Editor = connect(
     withState: (fn) => (dispatch, getState) => fn(dispatch, getState())
   }
 )(
-  ({ mainViewCamera, createObject, selectObject, updateModels, loadScene, saveScene, activeCamera, setActiveCamera, resetScene, remoteInput, aspectRatio, sceneObjects, world, selection, selectedBone, onBeforeUnload, setMainViewCamera, withState, attachments }) => {
+  ({ mainViewCamera, createObject, selectObject, updateModels, loadScene, saveScene, activeCamera, setActiveCamera, resetScene, remoteInput, aspectRatio, sceneObjects, world, selections, selectedBone, onBeforeUnload, setMainViewCamera, withState, attachments }) => {
 
     const largeCanvasRef = useRef(null)
     const smallCanvasRef = useRef(null)
@@ -3450,7 +3432,7 @@ const Editor = connect(
       event.preventDefault()
       event.target.focus()
       // force ortho controls
-      // note: dragcontroller grabs pointerdown so this will not fire on perspective camera click
+      // note: selection manager grabs pointerdown so this will not fire on perspective camera click
       transition('TYPING_EXIT')
     }
 
@@ -3491,7 +3473,7 @@ const Editor = connect(
             child.userData.type === 'character' ||
             child.userData.type === 'object'
           ) &&
-          child.userData.id === state.selection)
+          child.userData.id === state.selections[0])
 
       let material = selected &&
         ((selected.userData.type === 'character')
@@ -4009,7 +3991,7 @@ const Editor = connect(
             //   [PresetsEditor, { transition }]
             // ]],
 
-            ready && (remoteInput.mouseMode || remoteInput.orbitMode) && [PhoneCursor, { remoteInput, camera, largeCanvasRef, selectObject, selectBone, sceneObjects, selection, selectedBone }],
+            ready && (remoteInput.mouseMode || remoteInput.orbitMode) && [PhoneCursor, { remoteInput, camera, largeCanvasRef, selectObject, selectBone, sceneObjects, selections, selectedBone }],
           ],
 
           // [LoadingStatus, { ready }]

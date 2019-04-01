@@ -193,6 +193,8 @@ const SceneObject = React.memo(({ scene, id, type, isSelected, loaded, modelData
          thickness: 0.008,
          color: [ 0, 0, 0 ],
        }
+
+    container.current.orthoIcon.setSelected(isSelected)
   }, [isSelected, loaded])
 
   const isRotating = useRef(null)

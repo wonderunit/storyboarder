@@ -7,6 +7,7 @@ const { Sprite } = THREE
 
 const { useRef, useEffect, useState } = React
 
+window.THREE = window.THREE || THREE
 const createGeometry = require('three-bmfont-text')
 const loadFont = require('load-bmfont')
 
@@ -95,6 +96,13 @@ IconSprites.prototype.changeFirstText = function ( text ) {
 
 IconSprites.prototype.changeSecondText = function ( text ) {
     if (this.iconSecondText) this.iconSecondText.textGeometry.update(text)
+}
+
+IconSprites.prototype.setSelected = function ( value ) {
+  this.icon.material.color.set(value
+    ? 0xff00ff
+    : 0xffffff
+  )
 }
 
 Sprite.prototype.clone = function ( recursive ) {
