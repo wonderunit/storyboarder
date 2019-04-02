@@ -104,6 +104,7 @@ const NumberSliderFormatter = require('./NumberSlider').formatters
 
 const ModelSelect = require('./ModelSelect')
 const AttachmentsSelect = require('./AttachmentsSelect')
+const PosePresetsEditor = require('./PosePresetsEditor')
 const ServerInspector = require('./ServerInspector')
 const MultiSelectionInspector = require('./MultiSelectionInspector')
 const GuidesView = require('./GuidesView')
@@ -1641,124 +1642,6 @@ const CharacterPresetsEditor = connect(
   })
 )
 
-const savePosePresets = state => presetsStorage.savePosePresets({ poses: state.presets.poses })
-const PosePresetsEditor = connect(
-  state => ({
-    posePresets: state.presets.poses
-  }),
-  {
-    updateObject,
-    selectPosePreset: (id, posePresetId, preset) => (dispatch, getState) => {
-      dispatch(updateObject(id, {
-        // set posePresetId
-        posePresetId,
-        // apply preset values to skeleton data
-        skeleton: preset.state.skeleton
-      }))
-    },
-    createPosePreset: ({ id, name, sceneObject }) => (dispatch, getState) => {
-      // add the skeleton data to a named preset
-      let preset = {
-        id,
-        name,
-        state: {
-          skeleton: sceneObject.skeleton || {}
-        }
-      }
-      //console.log('sceneObject.skeleton: ', sceneObject)
-      // create it
-      dispatch(createPosePreset(preset))
-
-      // save the presets file
-      savePosePresets(getState())
-
-      // save to server
-      // for pose harvesting (maybe abstract this later?)
-      request.post('https://storyboarders.com/api/create_pose', {form:{
-        name: name,
-        json: JSON.stringify(sceneObject.skeleton),
-        model_type: sceneObject.model,
-        storyboarder_version: pkg.version,
-        machine_id: machineIdSync()
-    }})
-
-
-      // select the preset in the list
-      dispatch(updateObject(sceneObject.id, { posePresetId: id }))
-    },
-    // updatePosePreset,
-    // deletePosePreset
-  }
-)(
-  // TODO could optimize by only passing sceneObject properties we actually care about
-  React.memo(({ sceneObject, posePresets, selectPosePreset, createPosePreset }) => {
-    const onCreatePosePresetClick = event => {
-      // show a prompt to get the desired preset name
-      let id = THREE.Math.generateUUID()
-      prompt({
-        title: 'Preset Name',
-        label: 'Select a Preset Name',
-        value: `Pose ${shortId(id)}`
-      }, require('electron').remote.getCurrentWindow()).then(name => {
-        if (name != null && name != '' && name != ' ') {
-          createPosePreset({
-            id,
-            name,
-            sceneObject
-          })
-        }
-      }).catch(err => {
-        console.error(err)
-      })
-    }
-
-    const onSelectPosePreset = event => {
-      let posePresetId = event.target.value
-      let preset = posePresets[posePresetId]
-      console.log('selecting pose: ', sceneObject.id, posePresetId, preset)
-      selectPosePreset(sceneObject.id, posePresetId, preset)
-    }
-
-    const comparePresetNames = (a, b) => {
-      var nameA = a.name.toUpperCase()
-      var nameB = b.name.toUpperCase()
-
-      if (nameA < nameB) {
-        return -1
-      }
-      if (nameA > nameB) {
-        return 1
-      }
-      return 0
-    }
-
-    const sortedPosePresets = Object.values(posePresets).sort(comparePresetNames)
-
-    return h(
-      ['div.row', { style: { margin: '9px 0 6px 0', paddingRight: 0 } }, [
-        ['div', { style: { width: 50, display: 'flex', alignSelf: 'center' } }, 'pose'],
-        [
-          'select', {
-            required: true,
-            value: sceneObject.posePresetId || '',
-            onChange: preventDefault(onSelectPosePreset),
-            style: {
-              flex: 1,
-              marginBottom: 0,
-              maxWidth: 192
-            }
-          }, [
-              ['option', { value: '', disabled: true }, '---'],
-              sortedPosePresets.map(preset =>
-                ['option', { value: preset.id }, preset.name]
-              )
-            ]
-          ]
-        ],
-        ['a.button_add[href=#]', { style: { marginLeft: 6 }, onClick: preventDefault(onCreatePosePresetClick) }, '+']
-      ]
-    )
-  }))
 
 const MORPH_TARGET_LABELS = {
   'mesomorphic': 'meso',
