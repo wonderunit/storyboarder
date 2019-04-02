@@ -1506,14 +1506,14 @@ const LabelInput = ({ label, setLabel, onFocus, onBlur }) => {
             onClick: preventDefault(onStartEditingClick),
             style: {
               display: 'inline-block',
-              margin: '6px 0 9px 0',
-              fontStyle: 'italic',
+              margin: '9px 0 9px 0',
               textDecoration: 'none',
-              borderBottomWidth: '1px',
-              borderBottomStyle: 'dashed'
-            }
+              fontWeight: 700,
+              fontSize: '18px',
+              color: '#818293'
+          }
           },
-          label
+          label + ' Properties'
         ]
   )
 }
@@ -1859,13 +1859,13 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
           'div.row',
           { style: { alignItems: 'center' } }, [
 
-            ['div', { style: { width: 50 } }, 'visible'],
+            // ['div', { style: { width: 50 } }, 'visible'],
 
-            ['input', {
-              type: 'checkbox',
-              checked: sceneObject.visible,
-              readOnly: true
-            }],
+            // ['input', {
+            //   type: 'checkbox',
+            //   checked: sceneObject.visible,
+            //   readOnly: true
+            // }],
 
             ['label', {
               onClick: preventDefault(event => {
