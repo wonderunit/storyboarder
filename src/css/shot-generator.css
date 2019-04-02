@@ -679,3 +679,62 @@ select:focus {
   flex: 1;
   min-height: 32px;
 }
+
+.pose-presets-editor {
+  display: flex;
+  width: 288px;
+}
+.pose-presets-editor,
+.pose-presets-editor * {
+  box-sizing: border-box;
+}
+.pose-presets-editor input {
+  flex: 1;
+  padding: 12px 10px;
+  border: none;
+  background-color: #444;
+  color: #eee;
+  margin: 6px 0;
+  border-radius: 6px;
+  font-size: 14px;
+  border: 1px solid transparent;
+}
+.pose-presets-editor input:focus {
+  border: 1px solid #666;
+  outline: none;
+}
+.pose-presets-editor__list {
+  display: grid;
+  grid-template-columns: 68px 68px 68px 68px;
+  /* grid-auto-rows: 150px; */
+  grid-gap: 5px;
+}
+.pose-presets-editor__item {
+  cursor: pointer;
+}
+.pose-presets-editor__item figure {
+  height: 120px;
+  display: block;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+  background-color: #222;
+  position: relative;
+}
+.pose-presets-editor__item figure img {
+  max-width: 68px;
+  height: 120px;
+  opacity: 0.8;
+}
+.pose-presets-editor__item:hover figure img {
+  opacity: 1.0;
+}
+.pose-presets-editor__item a {
+  width: 100%;
+  display: block;
+  font-size: 13px;
+  padding: 3px 0 12px 0;
+}
+.pose-presets-editor__item:hover a {
+  color: #fff;
+}
