@@ -4,7 +4,7 @@ body {
   color: black;
   font-family: 'wonderunitsans';
   font-weight: 300;
-  background: #333;
+  background: #30323d;
   color: #777;
   user-select: none;
   -webkit-user-select: none;
@@ -105,7 +105,7 @@ kbd {
 }
 
 #toolbar {
-  background: #333;
+  background: #30323d;
   height: 50px;
   display: flex;
   padding-left: 300px;
@@ -151,7 +151,7 @@ kbd {
   overflow: hidden;
   /* color: white; */
   position: relative;
-  background-color: #333;
+  background-color: #2d2e39;
 }
 
 .element {
@@ -159,7 +159,7 @@ kbd {
   /* padding: 6px 16px 6px 8px; */
   display: flex;
   flex-direction: row;
-  background-color: #333;
+  background-color: #2d2e39;
   font-size: 14px;
   letter-spacing: 0.05rem;
   max-width: 300px;
@@ -168,7 +168,7 @@ kbd {
 }
 
 .element.zebra {
-  background-color: rgb(55, 55, 55);
+  background-color: rgba(255,255,255,0.05);
 }
 .element:not(:last-child) {
   /* border-bottom: 1px solid black; */
@@ -246,7 +246,7 @@ kbd {
   flex: 1;
   overflow: scroll;
   padding: 6px;
-  background-color: #333;
+  background-color: #2d2e39;
   color: #999;
   text-transform: capitalize;
   max-width: 288px;
@@ -524,7 +524,9 @@ select:focus {
   display: flex;
   flex-direction: row;
   width: 100%;
-  background-color: #383838;
+  background-color: rgba(255,255,255,0.05);
+  border-radius: 4px;
+  overflow: hidden;
 }
 .number-slider__label {
   flex: 1;
@@ -539,7 +541,9 @@ select:focus {
 .number-slider__control {
   display: flex;
   flex-direction: row;
-  background-color: #595959;
+  background-color: rgba(255,255,255,0.05);
+  border-radius: 4px;
+  overflow: hidden;
 }
 .number-slider__control:hover {
   background-color: #595959;
@@ -551,7 +555,8 @@ select:focus {
   border: 0;
   outline: 0;
   padding: 6px;
-  background-color: #595959;
+  /* background-color: rgba(255,255,255,0.05); */
+  background-color: #4d4e58;
   color: #E4E4E4;
   font-variant-numeric: tabular-nums;
 }
@@ -566,7 +571,7 @@ select:focus {
   display: block;
   width: 1.5rem;
   height: 100%;
-  background-color: #686868;
+  background-color: rgba(255,255,255,0.08);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -621,8 +626,10 @@ select:focus {
   text-align: right;
 }
 .server-inspector__value {
-  width: 136px;
-  height: 136px;
+  width: 137px;
+  height: 137px;
+  border-radius: 4px;
+  overflow: hidden;
 }
 .server-inspector__value img {
   max-width: 100%;
@@ -656,7 +663,7 @@ select:focus {
   height: 125px;
 
   padding: 0 40px;
-  background-color: #333;
+  background-color: #30323d;
   color: #aaa;
 
   display: flex;
