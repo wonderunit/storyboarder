@@ -880,7 +880,8 @@ const shotGeneratorMenu = [
       
       // {role: 'pasteandmatchstyle'},
       {role: 'delete'},
-      // {role: 'selectall'}
+
+      {role: 'selectall'}
     ]
   },
   {
