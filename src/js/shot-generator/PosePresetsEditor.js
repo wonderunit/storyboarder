@@ -10,6 +10,10 @@ const {
   updateObject
 } = require('../shared/reducers/shot-generator')
 
+const ModelLoader = require('../services/model-loader')
+
+require('../vendor/three/examples/js/utils/SkeletonUtils')
+
 const comparePresetNames = (a, b) => {
   var nameA = a.name.toUpperCase()
   var nameB = b.name.toUpperCase()
@@ -49,42 +53,37 @@ class PoseRenderer {
       1000
     )
 
-    let geometry = new THREE.BoxGeometry( 1, 1, 1 )
-    let material = new THREE.MeshToonMaterial({
-      color: 0xcccccc,
-      emissive: 0x0,
-      specular: 0x0,
-      shininess: 0,
-      flatShading: false
-    })
-    this.child = new THREE.Mesh( geometry, material )
-    this.scene.add(this.child)
-
     let light = new THREE.AmbientLight(0x333333, 1.0)
     this.scene.add(light)
+
+    this.group = new THREE.Group()
+    this.scene.add(this.group)
 
     let directionalLight = new THREE.DirectionalLight(0xFFFFFF, 1.0)
     directionalLight.position.set(0, 1, 3)
     this.scene.add(directionalLight)
 
-    this.camera.position.z = 3
+    this.camera.position.y = 1
+    this.camera.position.z = 2
     this.scene.add(this.camera)
-
-    console.log(this.scene)
   }
 
   setup ({ preset }) {
-    console.log('setting up', preset.state.skeleton)
-    this.child.rotation.set(
-      Math.random(),
-      Math.random(),
-      Math.random()
-    )
+    let state = preset.state.skeleton
+    let skeleton = this.child.children.find(c => c.isSkinnedMesh).skeleton
+
+    skeleton.pose()
+    for (let name in state) {
+      let bone = skeleton.getBoneByName(name)
+      if (bone) {
+        bone.rotation.x = state[name].rotation.x
+        bone.rotation.y = state[name].rotation.y
+        bone.rotation.z = state[name].rotation.z
+      }
+    }
   }
 
-  clear () {
-    console.log('shutting down')
-  }
+  clear () {}
 
   render () {
     this.renderer.setSize(68, 120)
@@ -94,11 +93,29 @@ class PoseRenderer {
   toDataURL (...args) {
     return this.renderer.domElement.toDataURL(...args)
   }
+
+  setModelData (modelData) {
+    if (!this.group.children.length) {
+      this.child = THREE.SkeletonUtils.clone(modelData.scene.children[0])
+      this.group.add(this.child)
+
+      // let geometry = new THREE.BoxGeometry( 1, 1, 1 )
+      // let material = new THREE.MeshToonMaterial({
+      //   color: 0xcccccc,
+      //   emissive: 0x0,
+      //   specular: 0x0,
+      //   shininess: 0,
+      //   flatShading: false
+      // })
+      // let box = new THREE.Mesh(geometry, material)
+      // this.group.add(box)
+    }
+  }
 }
 
 const poseRenderer = new PoseRenderer()
 
-const PosePresetsEditorItem = ({ preset }) => {
+const PosePresetsEditorItem = ({ preset, ready }) => {
   const [loaded, setLoaded] = useState(false)
 
   const src = path.join(remote.app.getPath('userData'), 'presets', 'poses', `${preset.id}.jpg`)
@@ -109,7 +126,11 @@ const PosePresetsEditorItem = ({ preset }) => {
   }
 
   useEffect(() => {
-    if (fs.existsSync(src)) {
+    if (!ready) return
+
+    let hasRendered = fs.existsSync(src)
+
+    if (hasRendered) {
       setLoaded(true)
     } else {
       poseRenderer.setup({ preset })
@@ -117,7 +138,7 @@ const PosePresetsEditorItem = ({ preset }) => {
       let dataURL = poseRenderer.toDataURL('image/jpg')
       poseRenderer.clear()
 
-      console.log('saving new image to', src)
+      console.log('\n\n\nsaving new image to', src)
 
       fs.ensureDirSync(path.dirname(src))
 
@@ -129,7 +150,7 @@ const PosePresetsEditorItem = ({ preset }) => {
 
       setLoaded(true)
     }
-  }, [])
+  }, [ready])
 
   return h(['div.pose-presets-editor__item', [
     ['figure', [
@@ -145,19 +166,39 @@ const PosePresetsEditorItem = ({ preset }) => {
 
 const PosePresetsEditor = connect(
   state => ({
-    posePresets: state.presets.poses
+    posePresets: state.presets.poses,
+    attachments: state.attachments
   }),
   {
-    updateObject
+    updateObject,
+    withState: (fn) => (dispatch, getState) => fn(dispatch, getState())
   }
 )(
 ({
   sceneObject,
 
   posePresets,
-  updateObject
+  attachments,
+
+  updateObject,
+  withState
 }) => {
+  const [ready, setReady] = useState(false)
   const [terms, setTerms] = useState(null)
+
+  const filepath = useMemo(() =>
+    ModelLoader.getFilepathForModel(
+      { model: 'adult-male', type: 'character' },
+      { storyboarderFilePath: null }
+    )
+  , [])
+
+  useEffect(() => {
+    if (attachments[filepath] && attachments[filepath].value) {
+      poseRenderer.setModelData(attachments[filepath].value)
+      setReady(true)
+    }
+  }, [attachments])
 
   const matchAll = terms == null || terms.length === 0
 
@@ -165,12 +206,45 @@ const PosePresetsEditor = connect(
     .sort(comparePresetNames)
     .filter(preset => matchAll ? true : preset.name.match(terms))
 
-  const listing = presets.map(preset => [PosePresetsEditorItem, { preset }])
+  const listing = presets.map(preset =>
+    [
+      PosePresetsEditorItem,
+      {
+        preset,
+        ready
+      }
+    ]
+  )
 
   const onChange = event => {
     event.preventDefault()
     setTerms(event.target.value)
   }
+
+  // preload the adult-male
+  // useEffect(() => {
+  //   if (!attachments[filepath]) {
+  //     dispatch({ type: 'ATTACHMENTS_PENDING', payload: { id: filepath } })
+  // 
+  //     gltfLoader.load(
+  //       filepath,
+  //       value => {
+  //         console.log('cache: success', filepath)
+  //         dispatch({ type: 'ATTACHMENTS_SUCCESS', payload: { id: filepath, value } })
+  //       },
+  //       null,
+  //       error => {
+  //         console.error('cache: error')
+  //         console.error(error)
+  //         alert(error)
+  //         // dispatch({ type: 'ATTACHMENTS_ERROR', payload: { id: filepath, error } })
+  //         dispatch({ type: 'ATTACHMENTS_DELETE', payload: { id: filepath } })
+  // 
+  //       }
+  //     )
+  //     return dispatch({ type: 'ATTACHMENTS_LOAD', payload: { id: filepath } })
+  //   }
+  // }, [])
 
   return h(
     ['div.pose-presets-editor.column', [
