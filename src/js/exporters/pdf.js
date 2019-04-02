@@ -12,7 +12,7 @@ const app = require('electron').remote.app
   find the longest string of dialogue and text
   how much vertical space I need for it?
   make thumb fit in that space
-  
+
 */
 
 
@@ -59,7 +59,7 @@ const generatePDF = (paperSize, layout='landscape', rows, cols, spacing, boardDa
   // this is the grid box size
   let boxSize = [(documentSize[docwidthIdx]-margin[0]-margin[2]-(spacing * (boxesDim[0]-1)))/boxesDim[0],
                  (documentSize[docheightIdx]-margin[1]-margin[3]-headerHeight-(spacing * (boxesDim[1])))/boxesDim[1] ]
-  
+
   // get the longest string in the boards
   // find how tall it is
   let longest = 0
@@ -69,6 +69,7 @@ const generatePDF = (paperSize, layout='landscape', rows, cols, spacing, boardDa
     let val = 0
     if( boardData.boards[i].dialogue ) { val += boardData.boards[i].dialogue.length }
     if( boardData.boards[i].action ) { val += boardData.boards[i].action.length }
+    if( boardData.boards[i].notes ) { val += boardData.boards[i].notes.length }
 
     if (val > longest) {
       longest = val
@@ -84,11 +85,16 @@ const generatePDF = (paperSize, layout='landscape', rows, cols, spacing, boardDa
       doc.font('bold')
       textHeight += doc.heightOfString(boardData.boards[index].dialogue, {width: boxSize[0], align: 'center'});
     }
-    if( boardData.boards[index].action ) { 
+    if( boardData.boards[index].action ) {
       doc.font('italic')
       textHeight += doc.heightOfString(boardData.boards[index].action, {width: boxSize[0], align: 'left'});
     }
-    textHeight += (boardData.boards[currentBoard].action) ? 17 : 10;
+    if( boardData.boards[index].notes ) {
+      textHeight += doc.heightOfString(boardData.boards[index].notes, {width: boxSize[0], align: 'right'});
+    }
+    textHeight = 10;
+    textHeight += boardData.boards[currentBoard].action ? 7 : 0;
+    textHeight += boardData.boards[currentBoard].notes ? 7 : 0;
   }
 
   // calculate imgSize
@@ -138,7 +144,7 @@ const generatePDF = (paperSize, layout='landscape', rows, cols, spacing, boardDa
     doc.font('thin')
     doc.fontSize(5)
     doc.text('DRAFT: ' + moment().format('LL').toUpperCase(), margin[0], margin[1]+13+5+2+2, {align: 'left'})
-  
+
     doc.fontSize(7)
     doc.text('Page: ' + (i+1) + ' / ' + pages, documentSize[docwidthIdx]-margin[2]-50, margin[1], {width: 50, align: 'right'})
 
@@ -179,7 +185,7 @@ const generatePDF = (paperSize, layout='landscape', rows, cols, spacing, boardDa
           doc.fontSize(4)
           doc.text(util.msToTime(boardData.boards[currentBoard].time), x+offset+imgSize[0]-40, y-6, {width: 40, align: 'right'})
 
-          let textOffset = ( boardData.boards[currentBoard].action || boardData.boards[currentBoard].dialogue ) ? 5 : 0
+          let textOffset = ( boardData.boards[currentBoard].action || boardData.boards[currentBoard].dialogue || boardData.boards[currentBoard].notes ) ? 5 : 0
           let imgAligned = false
 
           doc.fontSize(7)
@@ -196,7 +202,7 @@ const generatePDF = (paperSize, layout='landscape', rows, cols, spacing, boardDa
 
             if (shrinkedImg) {
               let metaHeight = doc.heightOfString(boardData.boards[currentBoard].dialogue, {width: imgSize[0], align: 'center'})
-              if( boardData.boards[currentBoard].action ) { 
+              if( boardData.boards[currentBoard].action ) {
 
                 if (stringContainsForeign(boardData.boards[currentBoard].action)) {
                   doc.font('fallback')
@@ -204,7 +210,7 @@ const generatePDF = (paperSize, layout='landscape', rows, cols, spacing, boardDa
                   doc.font('italic')
                 }
                 metaHeight += doc.heightOfString(boardData.boards[currentBoard].action, {width: imgSize[0], align: 'left'})
-                
+
                 if (stringContainsForeign(boardData.boards[currentBoard].dialogue)) {
                   doc.font('fallback')
                 } else {
@@ -215,11 +221,14 @@ const generatePDF = (paperSize, layout='landscape', rows, cols, spacing, boardDa
               imgAligned = textHeight >= metaHeight
             }
 
-            
+
             doc.text(boardData.boards[currentBoard].dialogue, x+(imgAligned ? offset : 0),y+imgSize[1]+textOffset, {width: imgAligned ? imgSize[0] : boxSize[0], align: 'center'})
             textOffset += doc.heightOfString(boardData.boards[currentBoard].dialogue, {width: imgAligned ? imgSize[0] : boxSize[0], align: 'center'})
 
             if( boardData.boards[currentBoard].action) {
+              textOffset += 7
+            }
+            if( boardData.boards[currentBoard].notes) {
               textOffset += 7
             }
           }
@@ -237,6 +246,16 @@ const generatePDF = (paperSize, layout='landscape', rows, cols, spacing, boardDa
 
             doc.text(boardData.boards[currentBoard].action, x+(imgAligned ? offset : 0),y+imgSize[1]+textOffset, {width: imgAligned ? imgSize[0] : boxSize[0], align: 'left'})
             textOffset += doc.heightOfString(boardData.boards[currentBoard].action, {width: imgAligned ? imgSize[0] : boxSize[0], align: 'left'})
+          }
+          if (boardData.boards[currentBoard].notes) {
+            doc.font('fallback')
+
+            if (shrinkedImg && !boardData.boards[currentBoard].dialogue) {
+              imgAligned = (textHeight > (doc.heightOfString(boardData.boards[currentBoard].notes, {width: imgSize[0], align: 'left'}) + 5))
+            }
+
+            doc.text(boardData.boards[currentBoard].notes, x+(imgAligned ? offset : 0),y+imgSize[1]+textOffset, {width: imgAligned ? imgSize[0] : boxSize[0], align: 'left'})
+            textOffset += doc.heightOfString(boardData.boards[currentBoard].notes, {width: imgAligned ? imgSize[0] : boxSize[0], align: 'left'})
           }
           currentBoard++
         }
@@ -270,8 +289,8 @@ const generatePDF = (paperSize, layout='landscape', rows, cols, spacing, boardDa
           height: margin[3] - 12
         }
         let src = { width: watermarkDimensions[0], height: watermarkDimensions[1] }
-        let [x, y, w, h] = util.fitToDst(dst, src)        
-        
+        let [x, y, w, h] = util.fitToDst(dst, src)
+
         doc.image(
           watermarkImagePath,
           doc.page.width - w - margin[2],
