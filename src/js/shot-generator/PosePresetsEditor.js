@@ -13,6 +13,7 @@ const {
 const ModelLoader = require('../services/model-loader')
 
 require('../vendor/three/examples/js/utils/SkeletonUtils')
+require('../vendor/OutlineEffect.js')
 
 const comparePresetNames = (a, b) => {
   var nameA = a.name.toUpperCase()
@@ -66,6 +67,15 @@ class PoseRenderer {
     this.camera.position.y = 1
     this.camera.position.z = 2
     this.scene.add(this.camera)
+
+    this.outlineEffect = new THREE.OutlineEffect(
+      this.renderer,
+      {
+        defaultThickness: 0.018, // 0.008, 0.009
+        ignoreMaterial: false,
+        defaultColor: [0, 0, 0]
+      }
+    )
   }
 
   setup ({ preset }) {
@@ -91,7 +101,7 @@ class PoseRenderer {
 
   render () {
     this.renderer.setSize(68, 120)
-    this.renderer.render(this.scene, this.camera)
+    this.outlineEffect.render(this.scene, this.camera)
   }
 
   toDataURL (...args) {
@@ -100,18 +110,38 @@ class PoseRenderer {
 
   setModelData (modelData) {
     if (!this.group.children.length) {
-      this.child = THREE.SkeletonUtils.clone(modelData.scene.children[0])
-      this.group.add(this.child)
+      let group = THREE.SkeletonUtils.clone(modelData.scene.children[0])
+      this.child = group.children[1]
 
-      // let geometry = new THREE.BoxGeometry( 1, 1, 1 )
-      // let material = new THREE.MeshToonMaterial({
-      //   color: 0xcccccc,
-      //   emissive: 0x0,
-      //   specular: 0x0,
-      //   shininess: 0,
-      //   flatShading: false
-      // })
-      // let box = new THREE.Mesh(geometry, material)
+      let material = new THREE.MeshToonMaterial({
+        color: 0xffffff,
+        emissive: 0x0,
+        specular: 0x0,
+        skinning: true,
+        shininess: 0,
+        flatShading: false,
+        morphNormals: true,
+        morphTargets: true
+      })
+      // if (this.child.material.map) {
+      //   material.map = this.child.material.map
+      //   material.map.needsUpdate = true
+      // }
+      this.child.material = material
+      this.group.add(group)
+
+      // uncomment to test a simple box
+      //
+      // let box = new THREE.Mesh(
+      //   new THREE.BoxGeometry( 1, 1, 1 ),
+      //   new THREE.MeshToonMaterial({
+      //     color: 0xcccccc,
+      //     emissive: 0x0,
+      //     specular: 0x0,
+      //     shininess: 0,
+      //     flatShading: false
+      //   })
+      // )
       // this.group.add(box)
     }
   }
