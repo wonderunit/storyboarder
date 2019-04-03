@@ -683,6 +683,7 @@ select:focus {
 .pose-presets-editor {
   display: flex;
   width: 288px;
+  position: relative;
 }
 .pose-presets-editor,
 .pose-presets-editor * {
@@ -709,7 +710,7 @@ select:focus {
   grid-gap: 5px;
 
   position: relative;
-  height: 423px;
+  max-height: 423px;
   overflow: scroll;
 }
 .pose-presets-editor__item {
