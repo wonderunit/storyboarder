@@ -5,6 +5,8 @@ const path = require('path')
 const fs = require('fs-extra')
 const classNames = require('classnames')
 const prompt = require('electron-prompt')
+const THREE = require('three')
+window.THREE = THREE
 
 const h = require('../utils/h')
 
@@ -35,8 +37,9 @@ const comparePresetNames = (a, b) => {
 
 const shortId = id => id.toString().substr(0, 7).toLowerCase()
 
-const THREE = require('three')
-window.THREE = THREE
+const ITEM_WIDTH = 68
+const ITEM_HEIGHT = 100
+
 class PoseRenderer {
   constructor () {
     this.renderer = new THREE.WebGLRenderer({
@@ -51,7 +54,7 @@ class PoseRenderer {
       // fov
       75,
       // aspect ratio
-      68/120,
+      ITEM_WIDTH/ITEM_HEIGHT,
 
       // near
       0.01,
@@ -106,7 +109,7 @@ class PoseRenderer {
   clear () {}
 
   render () {
-    this.renderer.setSize(68, 120)
+    this.renderer.setSize(ITEM_WIDTH, ITEM_HEIGHT)
     this.outlineEffect.render(this.scene, this.camera)
   }
 
@@ -173,7 +176,7 @@ const PosePresetsEditorItem = React.memo(({ sceneObject, preset, ready, updateOb
   useEffect(() => {
     if (!ready) return
 
-    let hasRendered = fs.existsSync(src)
+    let hasRendered = false // fs.existsSync(src)
 
     if (hasRendered) {
       setLoaded(true)
@@ -200,9 +203,9 @@ const PosePresetsEditorItem = React.memo(({ sceneObject, preset, ready, updateOb
   })
 
   return h(['div.pose-presets-editor__item', { className, onClick, 'data-id': preset.id }, [
-    ['figure', [
+    ['figure', { style: { height: ITEM_HEIGHT }}, [
       loaded
-        ? ['img', { src }]
+        ? ['img', { src, style: { width: ITEM_WIDTH, height: ITEM_HEIGHT} }]
         : ['div', { style: { fontSize: 12 } }, 'Loading …']
     ]],
     ['div.pose-presets-editor__name', preset.name]
