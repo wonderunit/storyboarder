@@ -69,16 +69,20 @@ class PoseRenderer {
   }
 
   setup ({ preset }) {
-    let state = preset.state.skeleton
-    let skeleton = this.child.children.find(c => c.isSkinnedMesh).skeleton
+    let pose = preset.state.skeleton
+    let skeleton = this.child.skeleton
 
     skeleton.pose()
-    for (let name in state) {
+    for (let name in pose) {
       let bone = skeleton.getBoneByName(name)
       if (bone) {
-        bone.rotation.x = state[name].rotation.x
-        bone.rotation.y = state[name].rotation.y
-        bone.rotation.z = state[name].rotation.z
+        bone.rotation.x = pose[name].rotation.x
+        bone.rotation.y = pose[name].rotation.y
+        bone.rotation.z = pose[name].rotation.z
+    
+        if (name === 'Hips') {
+          bone.rotation.x += Math.PI / 2.0
+        }
       }
     }
   }
