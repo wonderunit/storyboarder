@@ -3806,6 +3806,19 @@ const Editor = connect(
         })
       }
 
+    // HACK
+    // always pre-load the adult-male model
+    // because we use it for PosePresetsEditor thumbnail generation
+    useEffect(() => {
+      withState(dispatch => {
+        let filepath = ModelLoader.getFilepathForModel(
+          { model: 'adult-male', type: 'character' },
+          { storyboarderFilePath: null }
+        )
+        loadAttachment({ filepath, dispatch })
+      })
+    }, [])
+
     useEffect(() => {
       withState(loadSceneObjects)
     }, [sceneObjects])

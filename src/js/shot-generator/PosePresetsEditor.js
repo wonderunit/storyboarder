@@ -288,28 +288,32 @@ React.memo(({
     setTerms(event.target.value)
   }
 
-  // preload the adult-male
+  // // FIXME dry
+  // // preload the adult-male
   // useEffect(() => {
+  //   alert('loading the model ...' + filepath)
   //   if (!attachments[filepath]) {
-  //     dispatch({ type: 'ATTACHMENTS_PENDING', payload: { id: filepath } })
-  //
-  //     gltfLoader.load(
-  //       filepath,
-  //       value => {
-  //         console.log('cache: success', filepath)
-  //         dispatch({ type: 'ATTACHMENTS_SUCCESS', payload: { id: filepath, value } })
-  //       },
-  //       null,
-  //       error => {
-  //         console.error('cache: error')
-  //         console.error(error)
-  //         alert(error)
-  //         // dispatch({ type: 'ATTACHMENTS_ERROR', payload: { id: filepath, error } })
-  //         dispatch({ type: 'ATTACHMENTS_DELETE', payload: { id: filepath } })
-  //
-  //       }
-  //     )
-  //     return dispatch({ type: 'ATTACHMENTS_LOAD', payload: { id: filepath } })
+  //     withState(dispatch => {
+  //       dispatch({ type: 'ATTACHMENTS_PENDING', payload: { id: filepath } })
+  // 
+  //       gltfLoader.load(
+  //         filepath,
+  //         value => {
+  //           console.log('cache: success', filepath)
+  //           dispatch({ type: 'ATTACHMENTS_SUCCESS', payload: { id: filepath, value } })
+  //         },
+  //         null,
+  //         error => {
+  //           console.error('cache: error')
+  //           console.error(error)
+  //           alert(error)
+  //           // dispatch({ type: 'ATTACHMENTS_ERROR', payload: { id: filepath, error } })
+  //           dispatch({ type: 'ATTACHMENTS_DELETE', payload: { id: filepath } })
+  // 
+  //         }
+  //       )
+  //       dispatch({ type: 'ATTACHMENTS_LOAD', payload: { id: filepath } })
+  //     })
   //   }
   // }, [])
 
