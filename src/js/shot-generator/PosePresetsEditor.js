@@ -63,15 +63,20 @@ class PoseRenderer {
       1000
     )
 
-    let light = new THREE.AmbientLight(0x333333, 1.0)
+    let light = new THREE.AmbientLight(0xffffff, 0.3)
     this.scene.add(light)
 
     this.group = new THREE.Group()
     this.scene.add(this.group)
 
-    let directionalLight = new THREE.DirectionalLight(0xFFFFFF, 1.0)
-    directionalLight.position.set(0, 1, 3)
+    let directionalLight = new THREE.DirectionalLight(0xFFFFFF, 0.7)
+
     this.scene.add(directionalLight)
+    directionalLight.position.set(0, 5, 3)
+    directionalLight.rotation.z = Math.PI/6.0
+    directionalLight.rotation.y = Math.PI/6.0
+    directionalLight.rotation.x = Math.PI/6.0
+
 
     this.camera.position.y = 1
     this.camera.position.z = 2
@@ -98,7 +103,7 @@ class PoseRenderer {
         bone.rotation.x = pose[name].rotation.x
         bone.rotation.y = pose[name].rotation.y
         bone.rotation.z = pose[name].rotation.z
-    
+
         if (name === 'Hips') {
           bone.rotation.x += Math.PI / 2.0
         }
@@ -109,7 +114,7 @@ class PoseRenderer {
   clear () {}
 
   render () {
-    this.renderer.setSize(ITEM_WIDTH, ITEM_HEIGHT)
+    this.renderer.setSize(ITEM_WIDTH*2, ITEM_HEIGHT*2)
     this.outlineEffect.render(this.scene, this.camera)
   }
 
@@ -130,15 +135,18 @@ class PoseRenderer {
         shininess: 0,
         flatShading: false,
         morphNormals: true,
-        morphTargets: true
+        morphTargets: true,
+        map: modelData.scene.children[0].children[1].material.map
       })
+
+      // console.log(modelData.scene.children[0])
       // if (this.child.material.map) {
       //   material.map = this.child.material.map
-      //   material.map.needsUpdate = true
+        material.map.needsUpdate = true
       // }
       this.child.material = material
       this.group.add(group)
-
+      group.rotation.y = Math.PI/20
       // uncomment to test a simple box
       //
       // let box = new THREE.Mesh(
@@ -178,6 +186,7 @@ const PosePresetsEditorItem = React.memo(({ sceneObject, preset, ready, updateOb
 
     let hasRendered = fs.existsSync(src)
 
+    //hasRendered = false
     if (hasRendered) {
       setLoaded(true)
     } else {
@@ -206,7 +215,7 @@ const PosePresetsEditorItem = React.memo(({ sceneObject, preset, ready, updateOb
     ['figure', { style: { height: ITEM_HEIGHT }}, [
       loaded
         ? ['img', { src, style: { width: ITEM_WIDTH, height: ITEM_HEIGHT} }]
-        : ['div', { style: { fontSize: 12 } }, 'Loading …']
+        : ['div', { style: { fontSize: 12 } }, '']
     ]],
     ['div.pose-presets-editor__name', preset.name]
   ]])
@@ -283,7 +292,7 @@ const PosePresetsEditor = connect(
   // useEffect(() => {
   //   if (!attachments[filepath]) {
   //     dispatch({ type: 'ATTACHMENTS_PENDING', payload: { id: filepath } })
-  // 
+  //
   //     gltfLoader.load(
   //       filepath,
   //       value => {
@@ -297,7 +306,7 @@ const PosePresetsEditor = connect(
   //         alert(error)
   //         // dispatch({ type: 'ATTACHMENTS_ERROR', payload: { id: filepath, error } })
   //         dispatch({ type: 'ATTACHMENTS_DELETE', payload: { id: filepath } })
-  // 
+  //
   //       }
   //     )
   //     return dispatch({ type: 'ATTACHMENTS_LOAD', payload: { id: filepath } })
