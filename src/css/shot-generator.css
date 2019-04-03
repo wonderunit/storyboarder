@@ -710,7 +710,7 @@ select:focus {
   grid-gap: 5px;
 
   position: relative;
-  max-height: 423px;
+  height: 423px;
   overflow: scroll;
 }
 .pose-presets-editor__item {
