@@ -373,5 +373,3 @@ const PosePresetsEditor = connect(
 })
 
 module.exports = PosePresetsEditor
-
-module.exports = PosePresetsEditor
