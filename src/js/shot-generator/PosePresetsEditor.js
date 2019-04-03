@@ -4,17 +4,21 @@ const { connect } = require('react-redux')
 const path = require('path')
 const fs = require('fs-extra')
 const classNames = require('classnames')
+const prompt = require('electron-prompt')
 
 const h = require('../utils/h')
 
 const {
-  updateObject
+  updateObject,
+  createPosePreset
 } = require('../shared/reducers/shot-generator')
 
 const ModelLoader = require('../services/model-loader')
 
 require('../vendor/three/examples/js/utils/SkeletonUtils')
 require('../vendor/OutlineEffect.js')
+
+const presetsStorage = require('../shared/store/presetsStorage')
 
 const comparePresetNames = (a, b) => {
   var nameA = a.name.toUpperCase()
@@ -29,6 +33,7 @@ const comparePresetNames = (a, b) => {
   return 0
 }
 
+const shortId = id => id.toString().substr(0, 7).toLowerCase()
 
 const THREE = require('three')
 window.THREE = THREE
@@ -150,7 +155,7 @@ class PoseRenderer {
 
 const poseRenderer = new PoseRenderer()
 
-const PosePresetsEditorItem = ({ sceneObject, preset, ready, updateObject }) => {
+const PosePresetsEditorItem = React.memo(({ sceneObject, preset, ready, updateObject }) => {
   const [loaded, setLoaded] = useState(false)
 
   const src = path.join(remote.app.getPath('userData'), 'presets', 'poses', `${preset.id}.jpg`)
@@ -178,8 +183,6 @@ const PosePresetsEditorItem = ({ sceneObject, preset, ready, updateObject }) => 
       let dataURL = poseRenderer.toDataURL('image/jpg')
       poseRenderer.clear()
 
-      console.log('\n\n\nsaving new image to', src)
-
       fs.ensureDirSync(path.dirname(src))
 
       fs.writeFileSync(
@@ -204,7 +207,7 @@ const PosePresetsEditorItem = ({ sceneObject, preset, ready, updateObject }) => 
     ]],
     ['div.pose-presets-editor__name', preset.name]
   ]])
-}
+})
 
 const PosePresetsEditor = connect(
   state => ({
@@ -213,6 +216,7 @@ const PosePresetsEditor = connect(
   }),
   {
     updateObject,
+    createPosePreset,
     withState: (fn) => (dispatch, getState) => fn(dispatch, getState())
   }
 )(
@@ -223,6 +227,7 @@ const PosePresetsEditor = connect(
   attachments,
 
   updateObject,
+  createPosePreset,
   withState
 }) => {
   const [ready, setReady] = useState(false)
@@ -292,6 +297,49 @@ const PosePresetsEditor = connect(
 
   const onCreatePosePresetClick = event => {
     event.preventDefault()
+
+    // show a prompt to get the desired preset name
+    let win = remote.getCurrentWindow()
+    prompt({
+      title: 'Preset Name',
+      label: 'Select a Preset Name',
+      value: `Pose ${shortId(sceneObject.id)}`
+    }, win).then(name => {
+      if (name != null && name != '' && name != ' ') {
+        let newPreset = {
+          id: THREE.Math.generateUUID(),
+          name,
+          state: {
+            skeleton: sceneObject.skeleton || {}
+          }
+        }
+
+        createPosePreset(newPreset)
+
+        // save the presets file
+        withState((dispatch, state) => {
+          presetsStorage.savePosePresets({ poses: state.presets.poses })
+        })
+
+        // save to server
+        // for pose harvesting (maybe abstract this later?)
+        request.post('https://storyboarders.com/api/create_pose', {
+          form: {
+            name: name,
+            json: JSON.stringify(sceneObject.skeleton),
+            model_type: sceneObject.model,
+            storyboarder_version: pkg.version,
+            machine_id: machineIdSync()
+          }
+        })
+
+        // select the preset in the list
+        updateObject(sceneObject.id, { posePresetId: newPreset.id })
+
+      }
+    }).catch(err =>
+      console.error(err)
+    )
   }
 
   return h(
@@ -318,127 +366,5 @@ const PosePresetsEditor = connect(
 })
 
 module.exports = PosePresetsEditor
-// const presetsStorage = require('../shared/store/presetsStorage')
-// 
-// const savePosePresets = state => presetsStorage.savePosePresets({ poses: state.presets.poses })
-
-// const PosePresetsEditor = connect(
-//   state => ({
-//     posePresets: state.presets.poses
-//   }),
-//   {
-//     updateObject,
-// 
-//     selectPosePreset: (id, posePresetId, preset, updateObject) => dispatch => {
-//       dispatch(updateObject(id, {
-//         // set posePresetId
-//         posePresetId,
-//         // apply preset values to skeleton data
-//         skeleton: preset.state.skeleton
-//       }))
-//     },
-//     createPosePreset: ({ id, name, sceneObject }) => (dispatch, getState) => {
-//       // add the skeleton data to a named preset
-//       let preset = {
-//         id,
-//         name,
-//         state: {
-//           skeleton: sceneObject.skeleton || {}
-//         }
-//       }
-//       //console.log('sceneObject.skeleton: ', sceneObject)
-//       // create it
-//       dispatch(createPosePreset(preset))
-// 
-//       // save the presets file
-//       savePosePresets(getState())
-// 
-//       // save to server
-//       // for pose harvesting (maybe abstract this later?)
-//       request.post('https://storyboarders.com/api/create_pose', {form:{
-//         name: name,
-//         json: JSON.stringify(sceneObject.skeleton),
-//         model_type: sceneObject.model,
-//         storyboarder_version: pkg.version,
-//         machine_id: machineIdSync()
-//     }})
-// 
-// 
-//       // select the preset in the list
-//       dispatch(updateObject(sceneObject.id, { posePresetId: id }))
-//     },
-//     // updatePosePreset,
-//     // deletePosePreset
-//   }
-// )(
-//   // TODO could optimize by only passing sceneObject properties we actually care about
-//   React.memo(({ sceneObject, posePresets, selectPosePreset, createPosePreset, updateObject }) => {
-//     const onCreatePosePresetClick = () => {
-//       // show a prompt to get the desired preset name
-//       let id = THREE.Math.generateUUID()
-//       prompt({
-//         title: 'Preset Name',
-//         label: 'Select a Preset Name',
-//         value: `Pose ${shortId(id)}`
-//       }, require('electron').remote.getCurrentWindow()).then(name => {
-//         if (name != null && name != '' && name != ' ') {
-//           createPosePreset({
-//             id,
-//             name,
-//             sceneObject
-//           })
-//         }
-//       }).catch(err => {
-//         console.error(err)
-//       })
-//     }
-// 
-//     const onSelectPosePreset = event => {
-//       let posePresetId = event.target.value
-//       let preset = posePresets[posePresetId]
-//       console.log('selecting pose: ', sceneObject.id, posePresetId, preset)
-//       selectPosePreset(sceneObject.id, posePresetId, preset, updateObject)
-//     }
-// 
-//     const comparePresetNames = (a, b) => {
-//       var nameA = a.name.toUpperCase()
-//       var nameB = b.name.toUpperCase()
-// 
-//       if (nameA < nameB) {
-//         return -1
-//       }
-//       if (nameA > nameB) {
-//         return 1
-//       }
-//       return 0
-//     }
-// 
-//     const sortedPosePresets = Object.values(posePresets).sort(comparePresetNames)
-// 
-//     return h(
-//       ['div.row', { style: { margin: '9px 0 6px 0', paddingRight: 0 } }, [
-//         ['div', { style: { width: 50, display: 'flex', alignSelf: 'center' } }, 'pose'],
-//         [
-//           'select', {
-//             required: true,
-//             value: sceneObject.posePresetId || '',
-//             onChange: preventDefault(onSelectPosePreset),
-//             style: {
-//               flex: 1,
-//               marginBottom: 0,
-//               maxWidth: 192
-//             }
-//           }, [
-//               ['option', { value: '', disabled: true }, '---'],
-//               sortedPosePresets.map(preset =>
-//                 ['option', { value: preset.id }, preset.name]
-//               )
-//             ]
-//           ]
-//         ],
-//         ['a.button_add[href=#]', { style: { marginLeft: 6 }, onClick: preventDefault(onCreatePosePresetClick) }, '+']
-//       ]
-//     )
-//   }))
 
 module.exports = PosePresetsEditor
