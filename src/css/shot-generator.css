@@ -689,12 +689,11 @@ select:focus {
   box-sizing: border-box;
 }
 .pose-presets-editor input {
-  flex: 1;
-  padding: 12px 10px;
+  width: 100%;
+  padding: 8px 6px;
   border: none;
   background-color: #444;
   color: #eee;
-  margin: 6px 0;
   border-radius: 6px;
   font-size: 14px;
   border: 1px solid transparent;
@@ -711,6 +710,11 @@ select:focus {
 }
 .pose-presets-editor__item {
   cursor: pointer;
+  font-size: 13px;
+  color: #999;
+}
+.pose-presets-editor__item:hover .pose-presets-editor__name {
+  color: #fff;
 }
 .pose-presets-editor__item figure {
   height: 120px;
@@ -729,12 +733,8 @@ select:focus {
 .pose-presets-editor__item:hover figure img {
   opacity: 1.0;
 }
-.pose-presets-editor__item a {
+.pose-presets-editor__item div {
   width: 100%;
   display: block;
-  font-size: 13px;
   padding: 3px 0 12px 0;
-}
-.pose-presets-editor__item:hover a {
-  color: #fff;
 }

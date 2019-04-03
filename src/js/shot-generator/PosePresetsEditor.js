@@ -149,14 +149,19 @@ class PoseRenderer {
 
 const poseRenderer = new PoseRenderer()
 
-const PosePresetsEditorItem = ({ preset, ready }) => {
+const PosePresetsEditorItem = ({ id, preset, ready, updateObject }) => {
   const [loaded, setLoaded] = useState(false)
 
   const src = path.join(remote.app.getPath('userData'), 'presets', 'poses', `${preset.id}.jpg`)
 
   const onClick = event => {
     event.preventDefault()
-    console.log(event.target.dataset.id)
+
+    let posePresetId = preset.id
+    let skeleton = preset.state.skeleton
+
+    console.log('onClick', id, { posePresetId, skeleton }, updateObject)
+    updateObject(id, { posePresetId, skeleton })
   }
 
   useEffect(() => {
@@ -186,15 +191,13 @@ const PosePresetsEditorItem = ({ preset, ready }) => {
     }
   }, [ready])
 
-  return h(['div.pose-presets-editor__item', [
+  return h(['div.pose-presets-editor__item', { onClick, 'data-id': preset.id }, [
     ['figure', [
       loaded
         ? ['img', { src }]
         : ['div', { style: { fontSize: 12 } }, 'Loading …']
     ]],
-    ['a[href=#]', { onClick, 'data-id': preset.id },
-      preset.name
-    ]
+    ['div.pose-presets-editor__name', preset.name]
   ]])
 }
 
@@ -244,8 +247,10 @@ const PosePresetsEditor = connect(
     [
       PosePresetsEditorItem,
       {
+        id: sceneObject.id,
         preset,
-        ready
+        ready,
+        updateObject
       }
     ]
   )
@@ -280,13 +285,25 @@ const PosePresetsEditor = connect(
   //   }
   // }, [])
 
+  const onCreatePosePresetClick = event => {
+    event.preventDefault()
+  }
+
   return h(
     ['div.pose-presets-editor.column', [
-      ['div.row', [
-        ['input', {
-          placeholder: 'Search for a pose …',
-          onChange
-        }]
+      ['div.row', { style: { padding: '6px 0' } }, [
+        ['div.column', { style: { flex: 1 }}, [
+          ['input', {
+            placeholder: 'Search for a pose …',
+            onChange
+          }],
+        ]],
+        ['div.column', { style: { marginLeft: 5 }}, [
+          ['a.button_add[href=#]', {
+            style: { width: 30, height: 34 },
+            onClick: onCreatePosePresetClick
+          }, '+']
+        ]]
       ]],
       ['div.pose-presets-editor__list', [
         listing
