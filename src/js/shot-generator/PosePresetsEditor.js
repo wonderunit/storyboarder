@@ -251,7 +251,9 @@ const PosePresetsEditor = connect(
 
   const presets = Object.values(posePresets)
     .sort(comparePresetNames)
-    .filter(preset => matchAll ? true : preset.name.match(terms))
+    .filter(preset => matchAll
+        ? true
+        : preset.name.match(terms) || (preset.keywords && preset.keywords.match(terms)))
 
   const listing = presets.map(preset =>
     [
@@ -309,6 +311,7 @@ const PosePresetsEditor = connect(
         let newPreset = {
           id: THREE.Math.generateUUID(),
           name,
+          keywords: name, // TODO keyword editing
           state: {
             skeleton: sceneObject.skeleton || {}
           }
