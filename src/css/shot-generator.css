@@ -714,6 +714,10 @@ select:focus {
   color: #999;
 }
 .pose-presets-editor__item:hover .pose-presets-editor__name {
+  color: #ddd;
+}
+.pose-presets-editor__item.pose-presets-editor__item--selected .pose-presets-editor__name,
+.pose-presets-editor__item.pose-presets-editor__item--selected:hover .pose-presets-editor__name {
   color: #fff;
 }
 .pose-presets-editor__item figure {

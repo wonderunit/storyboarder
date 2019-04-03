@@ -3,6 +3,7 @@ const { useState, useEffect, useLayoutEffect, useRef, useMemo } = React = requir
 const { connect } = require('react-redux')
 const path = require('path')
 const fs = require('fs-extra')
+const classNames = require('classnames')
 
 const h = require('../utils/h')
 
@@ -149,7 +150,7 @@ class PoseRenderer {
 
 const poseRenderer = new PoseRenderer()
 
-const PosePresetsEditorItem = ({ id, preset, ready, updateObject }) => {
+const PosePresetsEditorItem = ({ sceneObject, preset, ready, updateObject }) => {
   const [loaded, setLoaded] = useState(false)
 
   const src = path.join(remote.app.getPath('userData'), 'presets', 'poses', `${preset.id}.jpg`)
@@ -157,10 +158,10 @@ const PosePresetsEditorItem = ({ id, preset, ready, updateObject }) => {
   const onClick = event => {
     event.preventDefault()
 
+    let id = sceneObject.id
     let posePresetId = preset.id
     let skeleton = preset.state.skeleton
 
-    console.log('onClick', id, { posePresetId, skeleton }, updateObject)
     updateObject(id, { posePresetId, skeleton })
   }
 
@@ -191,7 +192,11 @@ const PosePresetsEditorItem = ({ id, preset, ready, updateObject }) => {
     }
   }, [ready])
 
-  return h(['div.pose-presets-editor__item', { onClick, 'data-id': preset.id }, [
+  let className = classNames({
+    'pose-presets-editor__item--selected': sceneObject.posePresetId === preset.id
+  })
+
+  return h(['div.pose-presets-editor__item', { className, onClick, 'data-id': preset.id }, [
     ['figure', [
       loaded
         ? ['img', { src }]
@@ -247,7 +252,7 @@ const PosePresetsEditor = connect(
     [
       PosePresetsEditorItem,
       {
-        id: sceneObject.id,
+        sceneObject,
         preset,
         ready,
         updateObject
