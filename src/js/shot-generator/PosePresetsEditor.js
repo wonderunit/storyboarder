@@ -251,9 +251,13 @@ const PosePresetsEditor = connect(
 
   const presets = Object.values(posePresets)
     .sort(comparePresetNames)
-    .filter(preset => matchAll
-        ? true
-        : preset.name.match(terms) || (preset.keywords && preset.keywords.match(terms)))
+    .filter(preset => {
+      if (matchAll) return true
+
+      let termsRegex = new RegExp(terms, 'i')
+      return preset.name.match(termsRegex) ||
+              (preset.keywords && preset.keywords.match(termsRegex))
+    })
 
   const listing = presets.map(preset =>
     [
