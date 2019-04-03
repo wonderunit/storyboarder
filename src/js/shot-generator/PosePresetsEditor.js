@@ -166,7 +166,7 @@ class PoseRenderer {
 
 const poseRenderer = new PoseRenderer()
 
-const PosePresetsEditorItem = React.memo(({ sceneObject, preset, ready, updateObject }) => {
+const PosePresetsEditorItem = React.memo(({ id, posePresetId, preset, ready, updateObject }) => {
   const [loaded, setLoaded] = useState(false)
 
   const src = path.join(remote.app.getPath('userData'), 'presets', 'poses', `${preset.id}.jpg`)
@@ -174,7 +174,6 @@ const PosePresetsEditorItem = React.memo(({ sceneObject, preset, ready, updateOb
   const onClick = event => {
     event.preventDefault()
 
-    let id = sceneObject.id
     let posePresetId = preset.id
     let skeleton = preset.state.skeleton
 
@@ -208,7 +207,7 @@ const PosePresetsEditorItem = React.memo(({ sceneObject, preset, ready, updateOb
   }, [ready])
 
   let className = classNames({
-    'pose-presets-editor__item--selected': sceneObject.posePresetId === preset.id
+    'pose-presets-editor__item--selected': posePresetId === preset.id
   })
 
   return h(['div.pose-presets-editor__item', { className, onClick, 'data-id': preset.id }, [
@@ -232,7 +231,7 @@ const PosePresetsEditor = connect(
     withState: (fn) => (dispatch, getState) => fn(dispatch, getState())
   }
 )(
-({
+React.memo(({
   sceneObject,
 
   posePresets,
@@ -275,7 +274,8 @@ const PosePresetsEditor = connect(
     [
       PosePresetsEditorItem,
       {
-        sceneObject,
+        id: sceneObject.id,
+        posePresetId: sceneObject.posePresetId,
         preset,
         ready,
         updateObject
@@ -382,6 +382,6 @@ const PosePresetsEditor = connect(
       ]]
     ]]
   )
-})
+}))
 
 module.exports = PosePresetsEditor
