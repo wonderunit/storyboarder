@@ -176,7 +176,7 @@ const PosePresetsEditorItem = React.memo(({ sceneObject, preset, ready, updateOb
   useEffect(() => {
     if (!ready) return
 
-    let hasRendered = false // fs.existsSync(src)
+    let hasRendered = fs.existsSync(src)
 
     if (hasRendered) {
       setLoaded(true)
