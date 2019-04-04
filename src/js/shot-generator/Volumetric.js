@@ -89,61 +89,50 @@ const Volumetric = React.memo(({
   }
 
   const create = () => {
-    return new Promise((resolve, reject) => {
     
-      volume.current = new THREE.Object3D()
-      volume.current.textureLayers = []
+    volume.current = new THREE.Object3D()
+    volume.current.textureLayers = []
 
-      volume.current.userData.id = id
-      volume.current.userData.type = type
-      volume.current.orthoIcon = new IconSprites(type, props.name ? props.name : props.displayName, volume.current)
-      volume.current.rotation.y = props.rotation
+    volume.current.userData.id = id
+    volume.current.userData.type = type
+    volume.current.orthoIcon = new IconSprites(type, props.name ? props.name : props.displayName, volume.current)
+    volume.current.rotation.y = props.rotation
+    volume.current.position.set(props.x, props.z, props.y)
 
-      // scene.add(volume.current.orthoIcon)
-      // scene.add(volume.current)
+    scene.add(volume.current.orthoIcon)
+    volume.current.orthoIcon.position.set(props.x, props.z, props.y)
+    scene.add(volume.current)
 
-      let imgArray = volumeImageAttachmentIds.map(relpath => {
-        if (isUserFile(relpath)) {
-          return path.join(path.dirname(storyboarderFilePath), relpath)
-        } else {
-          return path.join(pathToBuiltInVolumeImages, relpath + '.jpg')
-        }
-      })
+    let imgArray = volumeImageAttachmentIds.map(relpath => {
+      if (isUserFile(relpath)) {
+        return path.join(path.dirname(storyboarderFilePath), relpath)
+      } else {
+        return path.join(pathToBuiltInVolumeImages, relpath + '.jpg')
+      }
+    })
 
-      loadingImageSet.current = true
-      loadVolume(imgArray).then((result) => {
-        //console.log('oaded images: ', result.imgArray, 'current set: ', imgArray)
-        
-        //if (result.imgArray == imgArray )
-        if (discard.current) {
-          discard.current = false
-        } else 
-        {
-          //console.log('changing: ' )
-          volume.current.scale.set(props.width, props.height, 1)
-          volume.current.position.set(props.x, props.z, props.y)
-          volume.current.rotation.y = props.rotation
-          volume.current.loadedMaterials = result.materials
-          volume.current.textureLayers = result.volContainer
-          result.volContainer.map(plane => {
-            volume.current.add(plane)
-          })
-          loadingImageSet.current = false
-          scene.add(volume.current.orthoIcon)
-          scene.add(volume.current)
-          volume.current.orthoIcon.position.copy(volume.current.position)
-        }
-        
-        resolve(volume.current)
-        
-      })
+    loadingImageSet.current = true
+    loadVolume(imgArray).then((result) => {
+      
+      if (discard.current) {
+        discard.current = false
+      } else 
+      {
+        volume.current.scale.set(props.width, props.height, 1)
+        volume.current.rotation.y = props.rotation
+        volume.current.loadedMaterials = result.materials
+        volume.current.textureLayers = result.volContainer
+        result.volContainer.map(plane => {
+          volume.current.add(plane)
+        })
+        loadingImageSet.current = false
+        volume.current.orthoIcon.position.copy(volume.current.position)
+      }               
     })
   }
 
   useEffect(() => {
-    create().then((result) => {
-      imagesLoaded.current = true
-    })
+    create()
 
     return cleanup
     
