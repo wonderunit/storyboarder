@@ -1693,7 +1693,6 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
 
   return h([
     'div',
-
       [
         LabelInput,
         {
@@ -2042,12 +2041,10 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
           ]
       ),
 
-      sceneObject.type == 'character' && [
-        // pose preset
-        [PosePresetsEditor, { sceneObject }],
+      sceneObject.type == 'character' && [PosePresetsEditor, { sceneObject }],
 
-        selectedBone && [BoneEditor, { sceneObject, bone: selectedBone, updateCharacterSkeleton }],
-      ]
+      sceneObject.type == 'character' &&
+        selectedBone && [BoneEditor, { sceneObject, bone: selectedBone, updateCharacterSkeleton }]
     ]
   )
 }

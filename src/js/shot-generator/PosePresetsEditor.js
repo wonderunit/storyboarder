@@ -8,6 +8,8 @@ const prompt = require('electron-prompt')
 const THREE = require('three')
 window.THREE = THREE
 
+const { FixedSizeGrid } = require('react-window')
+
 const h = require('../utils/h')
 
 const {
@@ -37,8 +39,12 @@ const comparePresetNames = (a, b) => {
 
 const shortId = id => id.toString().substr(0, 7).toLowerCase()
 
-const ITEM_WIDTH = 68
-const ITEM_HEIGHT = 100
+const GUTTER_SIZE = 5
+const ITEM_WIDTH = 67
+const ITEM_HEIGHT = 140
+
+const IMAGE_WIDTH = 67
+const IMAGE_HEIGHT = 100
 
 class PoseRenderer {
   constructor () {
@@ -54,7 +60,7 @@ class PoseRenderer {
       // fov
       75,
       // aspect ratio
-      ITEM_WIDTH/ITEM_HEIGHT,
+      IMAGE_WIDTH/IMAGE_HEIGHT,
 
       // near
       0.01,
@@ -114,7 +120,7 @@ class PoseRenderer {
   clear () {}
 
   render () {
-    this.renderer.setSize(ITEM_WIDTH*2, ITEM_HEIGHT*2)
+    this.renderer.setSize(IMAGE_WIDTH*2, IMAGE_HEIGHT*2)
     this.outlineEffect.render(this.scene, this.camera)
   }
 
@@ -166,29 +172,22 @@ class PoseRenderer {
 
 const poseRenderer = new PoseRenderer()
 
-const PosePresetsEditorItem = React.memo(({ id, posePresetId, preset, ready, updateObject }) => {
-  const [loaded, setLoaded] = useState(false)
-
+const PosePresetsEditorItem = React.memo(({ style, id, posePresetId, preset, updateObject }) => {
   const src = path.join(remote.app.getPath('userData'), 'presets', 'poses', `${preset.id}.jpg`)
 
   const onClick = event => {
     event.preventDefault()
-
+  
     let posePresetId = preset.id
     let skeleton = preset.state.skeleton
-
+  
     updateObject(id, { posePresetId, skeleton })
   }
 
-  useEffect(() => {
-    if (!ready) return
-
+  useMemo(() => {
     let hasRendered = fs.existsSync(src)
 
-    //hasRendered = false
-    if (hasRendered) {
-      setLoaded(true)
-    } else {
+    if (!hasRendered) {
       poseRenderer.setup({ preset })
       poseRenderer.render()
       let dataURL = poseRenderer.toDataURL('image/jpg')
@@ -201,28 +200,56 @@ const PosePresetsEditorItem = React.memo(({ id, posePresetId, preset, ready, upd
         dataURL.replace(/^data:image\/\w+;base64,/, ''),
         'base64'
       )
-
-      setLoaded(true)
     }
-  }, [ready])
+  }, [src])
 
   let className = classNames({
     'pose-presets-editor__item--selected': posePresetId === preset.id
   })
 
-  return h(['div.pose-presets-editor__item', { className, onClick, 'data-id': preset.id }, [
-    ['figure', { style: { height: ITEM_HEIGHT }}, [
-      loaded
-        ? ['img', { src, style: { width: ITEM_WIDTH, height: ITEM_HEIGHT} }]
-        : ['div', { style: { fontSize: 12 } }, '']
+  return h(['div.pose-presets-editor__item', {
+    style: {
+      ...style,
+      width: style.width - GUTTER_SIZE,
+      height: style.height - GUTTER_SIZE
+    },
+    className, onClick, 'data-id': preset.id
+  }, [
+    ['figure', { style: { width: IMAGE_WIDTH, height: IMAGE_HEIGHT }}, [
+      ['img', { src, style: { width: IMAGE_WIDTH, height: IMAGE_HEIGHT } }]
     ]],
-    ['div.pose-presets-editor__name', preset.name]
+    ['div.pose-presets-editor__name', { height: ITEM_HEIGHT - IMAGE_HEIGHT - GUTTER_SIZE }, preset.name]
   ]])
 })
 
+const ListItem = React.memo(({ data, columnIndex, rowIndex, style }) => {
+  let { id, posePresetId, updateObject} = data
+  let preset = data.presets[columnIndex + (rowIndex * 4)]
+
+  if (!preset) return h(['div', { style }])
+
+  return h([
+    PosePresetsEditorItem,
+    {
+      style,
+      id, posePresetId, updateObject,
+      preset
+    }
+  ])
+})
+
+
+const { createSelector } = require('reselect')
+
+const getSortedPosePresets = createSelector(
+  [state => state.presets.poses],
+  poses => Object.values(poses).sort(comparePresetNames)
+)
+
 const PosePresetsEditor = connect(
   state => ({
-    posePresets: state.presets.poses,
+    sortedPosePresets: getSortedPosePresets(state),
+
     attachments: state.attachments
   }),
   {
@@ -234,7 +261,7 @@ const PosePresetsEditor = connect(
 React.memo(({
   sceneObject,
 
-  posePresets,
+  sortedPosePresets,
   attachments,
 
   updateObject,
@@ -242,7 +269,7 @@ React.memo(({
   withState
 }) => {
   const [ready, setReady] = useState(false)
-  const [terms, setTerms] = useState(null)
+  const [presets, setPresets] = useState(sortedPosePresets)
 
   const filepath = useMemo(() =>
     ModelLoader.getFilepathForModel(
@@ -252,40 +279,34 @@ React.memo(({
   , [])
 
   useEffect(() => {
+    if (ready) return
+
     if (attachments[filepath] && attachments[filepath].value) {
       poseRenderer.setModelData(attachments[filepath].value)
-      setReady(true)
+      setTimeout(() => {
+        setReady(true)
+      }, 100) // slight delay for snappier character selection via click
     }
   }, [attachments])
 
-  const matchAll = terms == null || terms.length === 0
-
-  const presets = Object.values(posePresets)
-    .sort(comparePresetNames)
-    .filter(preset => {
-      if (matchAll) return true
-
-      let termsRegex = new RegExp(terms, 'i')
-      return preset.name.match(termsRegex) ||
-              (preset.keywords && preset.keywords.match(termsRegex))
-    })
-
-  const listing = presets.map(preset =>
-    [
-      PosePresetsEditorItem,
-      {
-        id: sceneObject.id,
-        posePresetId: sceneObject.posePresetId,
-        preset,
-        ready,
-        updateObject
-      }
-    ]
-  )
 
   const onChange = event => {
     event.preventDefault()
-    setTerms(event.target.value)
+
+    let terms = event.currentTarget.value
+
+    const matchAll = terms == null || terms.length === 0
+
+    setPresets(
+      sortedPosePresets
+      .filter(preset => {
+        if (matchAll) return true
+
+        let termsRegex = new RegExp(terms, 'i')
+        return preset.name.match(termsRegex) ||
+                (preset.keywords && preset.keywords.match(termsRegex))
+      })
+    )
   }
 
   const onCreatePosePresetClick = event => {
@@ -337,7 +358,7 @@ React.memo(({
   }
 
   return h(
-    ['div.pose-presets-editor.column', [
+    ['div.pose-presets-editor.column', ready && [
       ['div.row', { style: { padding: '6px 0' } }, [
         ['div.column', { style: { flex: 1 }}, [
           ['input', {
@@ -353,7 +374,26 @@ React.memo(({
         ]]
       ]],
       ['div.pose-presets-editor__list', [
-        listing
+        FixedSizeGrid,
+        {
+          columnCount: 4,
+          columnWidth: ITEM_WIDTH + GUTTER_SIZE,
+
+          rowCount: Math.ceil(presets.length / 4),
+          rowHeight: ITEM_HEIGHT + GUTTER_SIZE,
+
+          width: 288,
+          height: 423,
+
+          itemData: {
+            presets,
+
+            id: sceneObject.id,
+            posePresetId: sceneObject.posePresetId,
+            updateObject
+          },
+          children: ListItem
+        }
       ]]
     ]]
   )
