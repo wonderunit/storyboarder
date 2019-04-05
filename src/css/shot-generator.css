@@ -686,3 +686,69 @@ select:focus {
   flex: 1;
   min-height: 32px;
 }
+
+.pose-presets-editor {
+  width: 288px;
+  position: relative;
+}
+.pose-presets-editor,
+.pose-presets-editor * {
+  box-sizing: border-box;
+}
+.pose-presets-editor input {
+  width: 100%;
+  padding: 8px 6px;
+  border: none;
+  background-color: #444;
+  color: #eee;
+  border-radius: 6px;
+  font-size: 14px;
+  border: 1px solid transparent;
+}
+.pose-presets-editor input:focus {
+  border: 1px solid #666;
+  outline: none;
+}
+.pose-presets-editor__list {
+}
+.pose-presets-editor__item {
+  cursor: pointer;
+  font-size: 13px;
+  color: #999;
+}
+.pose-presets-editor__item:hover .pose-presets-editor__name {
+  color: #ddd;
+}
+.pose-presets-editor__item.pose-presets-editor__item--selected .pose-presets-editor__name,
+.pose-presets-editor__item.pose-presets-editor__item--selected:hover .pose-presets-editor__name {
+  color: #fff;
+}
+.pose-presets-editor__item figure {
+  margin: 0;
+  padding: 0;
+  background-color: #222;
+}
+.pose-presets-editor__item figure img {
+  opacity: 0.8;
+}
+.pose-presets-editor__item:hover figure img {
+  opacity: 1.0;
+}
+.pose-presets-editor__item .pose-presets-editor__name {
+  position: relative;
+  padding: 3px 0 0 0;
+  line-height: 1;
+  font-size: 13px;
+  overflow: hidden;
+}
+/* fade out overflow text */
+.pose-presets-editor__item .pose-presets-editor__name:after {
+  content: "";
+  text-align: right;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 70%;
+  height: 13px;
+  background: linear-gradient(to right, rgba(51, 51, 51, 0), rgba(51, 51, 51, 1) 50%);
+}
