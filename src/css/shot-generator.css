@@ -750,5 +750,5 @@ select:focus {
   right: 0;
   width: 70%;
   height: 13px;
-  background: linear-gradient(to right, rgba(51, 51, 51, 0), rgba(51, 51, 51, 1) 50%);
+  background: linear-gradient(to right, rgba(45, 46, 57, 0), rgba(45, 46, 57, 1) 50%);
 }
