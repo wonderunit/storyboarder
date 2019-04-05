@@ -681,7 +681,6 @@ select:focus {
 }
 
 .pose-presets-editor {
-  display: flex;
   width: 288px;
   position: relative;
 }
