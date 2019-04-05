@@ -22,11 +22,6 @@ const h = require('../utils/h')
 const useComponentSize = require('../hooks/use-component-size')
 //const robot = require("robotjs")
 
-// for pose harvesting (maybe abstract this later?)
-const { machineIdSync } = require('node-machine-id')
-const pkg = require('../../../package.json')
-const request = require('request')
-
 const {
   //
   //

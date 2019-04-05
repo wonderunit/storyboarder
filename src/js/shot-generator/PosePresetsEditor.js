@@ -8,6 +8,11 @@ const prompt = require('electron-prompt')
 const THREE = require('three')
 window.THREE = THREE
 
+// for pose harvesting (maybe abstract this later?)
+const { machineIdSync } = require('node-machine-id')
+const pkg = require('../../../package.json')
+const request = require('request')
+
 const { FixedSizeGrid } = require('react-window')
 
 const h = require('../utils/h')
