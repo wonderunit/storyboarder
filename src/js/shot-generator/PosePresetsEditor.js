@@ -14,6 +14,7 @@ const pkg = require('../../../package.json')
 const request = require('request')
 
 const { createSelector } = require('reselect')
+
 const { FixedSizeGrid } = require('react-window')
 
 const h = require('../utils/h')
@@ -244,9 +245,6 @@ const ListItem = React.memo(({ data, columnIndex, rowIndex, style }) => {
     }
   ])
 })
-
-
-const { createSelector } = require('reselect')
 
 const getSortedPosePresets = createSelector(
   [state => state.presets.poses],
