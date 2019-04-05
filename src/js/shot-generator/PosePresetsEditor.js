@@ -13,6 +13,7 @@ const { machineIdSync } = require('node-machine-id')
 const pkg = require('../../../package.json')
 const request = require('request')
 
+const { createSelector } = require('reselect')
 const { FixedSizeGrid } = require('react-window')
 
 const h = require('../utils/h')
