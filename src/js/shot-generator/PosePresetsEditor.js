@@ -1,5 +1,5 @@
 const { remote } = require('electron')
-const { useState, useEffect, useLayoutEffect, useRef, useMemo } = React = require('react')
+const { useState, useEffect, useLayoutEffect, useRef, useMemo, forwardRef } = React = require('react')
 const { connect } = require('react-redux')
 const path = require('path')
 const fs = require('fs-extra')
@@ -40,10 +40,10 @@ const comparePresetNames = (a, b) => {
 const shortId = id => id.toString().substr(0, 7).toLowerCase()
 
 const GUTTER_SIZE = 5
-const ITEM_WIDTH = 67
-const ITEM_HEIGHT = 140
+const ITEM_WIDTH = 68
+const ITEM_HEIGHT = 132
 
-const IMAGE_WIDTH = 67
+const IMAGE_WIDTH = ITEM_WIDTH
 const IMAGE_HEIGHT = 100
 
 class PoseRenderer {
@@ -208,17 +208,19 @@ const PosePresetsEditorItem = React.memo(({ style, id, posePresetId, preset, upd
   })
 
   return h(['div.pose-presets-editor__item', {
-    style: {
-      ...style,
-      width: style.width - GUTTER_SIZE,
-      height: style.height - GUTTER_SIZE
-    },
+    style,
     className, onClick, 'data-id': preset.id
   }, [
     ['figure', { style: { width: IMAGE_WIDTH, height: IMAGE_HEIGHT }}, [
       ['img', { src, style: { width: IMAGE_WIDTH, height: IMAGE_HEIGHT } }]
     ]],
-    ['div.pose-presets-editor__name', { height: ITEM_HEIGHT - IMAGE_HEIGHT - GUTTER_SIZE }, preset.name]
+    ['div.pose-presets-editor__name', {
+      style: {
+        width: ITEM_WIDTH,
+        height: ITEM_HEIGHT - IMAGE_HEIGHT - GUTTER_SIZE
+      },
+      title: preset.name,
+    }, preset.name]
   ]])
 })
 
@@ -357,6 +359,23 @@ React.memo(({
     )
   }
 
+  // via https://reactjs.org/docs/forwarding-refs.html
+  const innerElementType = forwardRef(({ style, ...rest }, ref) => {
+    return h([
+      'div',
+      {
+        ref,
+        style: {
+          ...style,
+          width: 288, // cut off the right side gutter
+          position: 'relative',
+          overflow: 'hidden'
+        },
+        ...rest
+      },
+    ])
+  })
+
   return h(
     ['div.pose-presets-editor.column', ready && [
       ['div.row', { style: { padding: '6px 0' } }, [
@@ -383,7 +402,9 @@ React.memo(({
           rowHeight: ITEM_HEIGHT + GUTTER_SIZE,
 
           width: 288,
-          height: 423,
+          height: 363,
+
+          innerElementType,
 
           itemData: {
             presets,
