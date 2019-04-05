@@ -275,7 +275,7 @@ React.memo(({
   withState
 }) => {
   const [ready, setReady] = useState(false)
-  const [presets, setPresets] = useState(sortedPosePresets)
+  const [terms, setTerms] = useState(null)
 
   const filepath = useMemo(() =>
     ModelLoader.getFilepathForModel(
@@ -283,6 +283,19 @@ React.memo(({
       { storyboarderFilePath: null }
     )
   , [])
+
+  const presets = useMemo(() => {
+    const matchAll = terms == null || terms.length === 0
+
+    return sortedPosePresets
+      .filter(preset => {
+        if (matchAll) return true
+
+        let termsRegex = new RegExp(terms, 'i')
+        return preset.name.match(termsRegex) ||
+                (preset.keywords && preset.keywords.match(termsRegex))
+      })
+  }, [sortedPosePresets, terms])
 
   useEffect(() => {
     if (ready) return
@@ -298,21 +311,7 @@ React.memo(({
 
   const onChange = event => {
     event.preventDefault()
-
-    let terms = event.currentTarget.value
-
-    const matchAll = terms == null || terms.length === 0
-
-    setPresets(
-      sortedPosePresets
-      .filter(preset => {
-        if (matchAll) return true
-
-        let termsRegex = new RegExp(terms, 'i')
-        return preset.name.match(termsRegex) ||
-                (preset.keywords && preset.keywords.match(termsRegex))
-      })
-    )
+    setTerms(event.currentTarget.value)
   }
 
   const onCreatePosePresetClick = event => {
@@ -356,7 +355,6 @@ React.memo(({
 
         // select the preset in the list
         updateObject(sceneObject.id, { posePresetId: newPreset.id })
-
       }
     }).catch(err =>
       console.error(err)
