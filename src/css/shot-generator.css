@@ -699,14 +699,14 @@ select:focus {
   width: 100%;
   padding: 8px 6px;
   border: none;
-  background-color: #444;
-  color: #eee;
+  background-color: #383943;
+  color: #999;
   border-radius: 6px;
   font-size: 14px;
   border: 1px solid transparent;
 }
 .pose-presets-editor input:focus {
-  border: 1px solid #666;
+  border: 1px solid #4D4E58;
   outline: none;
 }
 .pose-presets-editor__list {
