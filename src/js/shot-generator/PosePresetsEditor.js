@@ -209,7 +209,10 @@ const PosePresetsEditorItem = React.memo(({ style, id, posePresetId, preset, upd
 
   return h(['div.pose-presets-editor__item', {
     style,
-    className, onClick, 'data-id': preset.id
+    className,
+    onClick,
+    'data-id': preset.id,
+    title: preset.name
   }, [
     ['figure', { style: { width: IMAGE_WIDTH, height: IMAGE_HEIGHT }}, [
       ['img', { src, style: { width: IMAGE_WIDTH, height: IMAGE_HEIGHT } }]
@@ -219,7 +222,6 @@ const PosePresetsEditorItem = React.memo(({ style, id, posePresetId, preset, upd
         width: ITEM_WIDTH,
         height: ITEM_HEIGHT - IMAGE_HEIGHT - GUTTER_SIZE
       },
-      title: preset.name,
     }, preset.name]
   ]])
 })
