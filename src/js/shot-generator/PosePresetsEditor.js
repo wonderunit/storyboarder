@@ -144,15 +144,12 @@ class PoseRenderer {
         morphTargets: true,
         map: modelData.scene.children[0].children[1].material.map
       })
+      material.map.needsUpdate = true
 
-      // console.log(modelData.scene.children[0])
-      // if (this.child.material.map) {
-      //   material.map = this.child.material.map
-        material.map.needsUpdate = true
-      // }
       this.child.material = material
       this.group.add(group)
       group.rotation.y = Math.PI/20
+
       // uncomment to test a simple box
       //
       // let box = new THREE.Mesh(
