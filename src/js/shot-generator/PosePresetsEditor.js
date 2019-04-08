@@ -264,7 +264,10 @@ const PosePresetsEditor = connect(
   }
 )(
 React.memo(({
-  sceneObject,
+  id,
+  skeleton,
+  model,
+  posePresetId,
 
   sortedPosePresets,
   attachments,
@@ -321,7 +324,7 @@ React.memo(({
     prompt({
       title: 'Preset Name',
       label: 'Select a Preset Name',
-      value: `Pose ${shortId(sceneObject.id)}`
+      value: `Pose ${shortId(id)}`
     }, win).then(name => {
       if (name != null && name != '' && name != ' ') {
         let newPreset = {
@@ -329,7 +332,7 @@ React.memo(({
           name,
           keywords: name, // TODO keyword editing
           state: {
-            skeleton: sceneObject.skeleton || {}
+            skeleton: skeleton || {}
           }
         }
 
@@ -345,15 +348,15 @@ React.memo(({
         request.post('https://storyboarders.com/api/create_pose', {
           form: {
             name: name,
-            json: JSON.stringify(sceneObject.skeleton),
-            model_type: sceneObject.model,
+            json: JSON.stringify(skeleton),
+            model_type: model,
             storyboarder_version: pkg.version,
             machine_id: machineIdSync()
           }
         })
 
         // select the preset in the list
-        updateObject(sceneObject.id, { posePresetId: newPreset.id })
+        updateObject(id, { posePresetId: newPreset.id })
       }
     }).catch(err =>
       console.error(err)
@@ -410,8 +413,8 @@ React.memo(({
           itemData: {
             presets,
 
-            id: sceneObject.id,
-            posePresetId: sceneObject.posePresetId,
+            id: id,
+            posePresetId: posePresetId,
             updateObject
           },
           children: ListItem
