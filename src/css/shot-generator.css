@@ -4,7 +4,7 @@ body {
   color: black;
   font-family: 'wonderunitsans';
   font-weight: 300;
-  background: #30323d;
+  background: #333333;
   color: #777;
   user-select: none;
   -webkit-user-select: none;
@@ -105,7 +105,7 @@ kbd {
 }
 
 #toolbar {
-  background: #30323d;
+  background: #333333;
   height: 50px;
   display: flex;
   padding-left: 300px;
@@ -151,7 +151,7 @@ kbd {
   overflow: hidden;
   /* color: white; */
   position: relative;
-  background-color: #2d2e39;
+  background-color: #333333;
 }
 
 .element {
@@ -246,7 +246,7 @@ kbd {
   flex: 1;
   overflow: scroll;
   padding: 6px;
-  background-color: #2d2e39;
+  background-color: #333333;
   color: #999;
   text-transform: capitalize;
   max-width: 288px;
@@ -546,7 +546,7 @@ select:focus {
   overflow: hidden;
 }
 .number-slider__control:hover {
-  background-color: #595959;
+  background-color: #555555;
 }
 .number-slider__input {
   flex: 1;
@@ -556,7 +556,7 @@ select:focus {
   outline: 0;
   padding: 6px;
   /* background-color: rgba(255,255,255,0.05); */
-  background-color: #4d4e58;
+  background-color: #444444;
   color: #E4E4E4;
   font-variant-numeric: tabular-nums;
 }
@@ -699,14 +699,14 @@ select:focus {
   width: 100%;
   padding: 8px 6px;
   border: none;
-  background-color: #383943;
+  background-color: #444444;
   color: #999;
   border-radius: 6px;
   font-size: 14px;
   border: 1px solid transparent;
 }
 .pose-presets-editor input:focus {
-  border: 1px solid #4D4E58;
+  border: 1px solid #555555;
   outline: none;
 }
 .pose-presets-editor__list {
@@ -750,5 +750,5 @@ select:focus {
   right: 0;
   width: 70%;
   height: 13px;
-  background: linear-gradient(to right, rgba(45, 46, 57, 0), rgba(45, 46, 57, 1) 50%);
+  /* background: linear-gradient(to right, rgba(45, 46, 57, 0), rgba(45, 46, 57, 1) 50%); */
 }
