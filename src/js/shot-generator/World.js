@@ -69,6 +69,19 @@ const useGround = (world, scene) => {
     }
   }, [world.ground, loaded])
 
+  useEffect(() => {
+    // automatically hide ground if room is visible
+    if (object.current) {
+      if (world.room.visible) {
+        object.current.visible = false
+        object.current.material.visible = false
+      } else {
+        object.current.visible = world.ground
+        object.current.material.visible = world.ground
+      }
+    }
+  })
+
   return object.current
 }
 

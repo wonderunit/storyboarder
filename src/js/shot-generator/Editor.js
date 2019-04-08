@@ -1064,7 +1064,7 @@ const InspectedWorld = ({ world, transition, updateWorld, updateWorldRoom, updat
         'div.row',
         { style: { alignItems: 'center', margin: '6px 0 3px 0' } }, [
 
-          ['div', { style: { width: 50 } }, 'ground'],
+          ['div', { style: { width: 50, opacity: world.room.visible ? 0.5 : 1 } }, 'ground'],
 
           ['input', {
             type: 'checkbox',
