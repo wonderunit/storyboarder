@@ -216,8 +216,8 @@ const SelectionManager = connect(
       // don't do anything on the next pointerup
       setLastDownId(null)
 
-      // select none (the Scene becomes active)
-      selectObject(null)
+      // select the active camera
+      selectObject(activeCamera)
 
       // don't select any bone
       selectBone(null)
