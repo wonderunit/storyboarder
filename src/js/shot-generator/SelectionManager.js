@@ -304,8 +304,14 @@ const SelectionManager = connect(
 
       if (selectOnPointerDown) {
         if (event.shiftKey) {
-          // toggle the object in the multi-selection
-          selectObjectToggle(target.userData.id)
+          // if there is only one selection and it is the active camera
+          if (selections.length === 1 && selections[0] === activeCamera) {
+            // replace the selection with the object
+            selectObject(target.userData.id)
+          } else {
+            // toggle the object in the multi-selection
+            selectObjectToggle(target.userData.id)
+          }
         } else {
           // if the pointerup'd target is not part of the multi-selection
           if (!selections.includes(target.userData.id)) {
@@ -361,8 +367,14 @@ const SelectionManager = connect(
 
           if (target.userData.id == lastDownId) {
             if (event.shiftKey) {
-              // toggle the object in the multi-selection
-              selectObjectToggle(target.userData.id)
+              // if there is only one selection and it is the active camera
+              if (selections.length === 1 && selections[0] === activeCamera) {
+                // replace the selection with the object
+                selectObject(target.userData.id)
+              } else {
+                // toggle the object in the multi-selection
+                selectObjectToggle(target.userData.id)
+              }
             } else {
               // if the pointerup'd target is not part of the multi-selection
               if (!selections.includes(target.userData.id)) {
