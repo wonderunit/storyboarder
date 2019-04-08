@@ -201,7 +201,7 @@ const useEnvironmentModel = (world, scene, { modelData}) => {
   return group
 }
 
-const World = ({ world, scene, modelData }) => {
+const World = React.memo(({ world, scene, modelData }) => {
   const ground = useGround(world, scene)
   const room = useRoom(world, scene)
   const environmentModel = useEnvironmentModel(world, scene, { modelData })
@@ -257,6 +257,6 @@ const World = ({ world, scene, modelData }) => {
   }, [world.directional.intensity, world.directional.rotation, world.directional.tilt])
 
   return null
-}
+})
 
 module.exports = World
