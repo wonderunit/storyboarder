@@ -129,11 +129,8 @@ const useRoom = (world, scene) => {
   return object.current
 }
 
-const World = ({ world, scene, storyboarderFilePath, updateWorldEnvironment, modelData }) => {
+const useEnvironmentModel = (world, scene, { modelData}) => {
   const [group, setGroup] = useState(null)
-
-  const ground = useGround(world, scene)
-  const room = useRoom(world, scene)
 
   useEffect(() => {
     if (modelData) {
@@ -201,15 +198,23 @@ const World = ({ world, scene, storyboarderFilePath, updateWorldEnvironment, mod
     }
   }, [group])
 
+  return group
+}
+
+const World = ({ world, scene, modelData }) => {
+  const ground = useGround(world, scene)
+  const room = useRoom(world, scene)
+  const environmentModel = useEnvironmentModel(world, scene, { modelData })
+
+  const ambientLight = useRef(null)
+  const directionalLight = useRef(null)
+
   useEffect(() => {
     scene.background
       ? scene.background.set(world.backgroundColor)
       : scene.background = new THREE.Color(world.backgroundColor)
 
   }, [world.backgroundColor])
-
-  const ambientLight = useRef(null)
-  const directionalLight = useRef(null)
 
   useEffect(() => {
     if (ambientLight.current)

@@ -730,8 +730,6 @@ const SceneManager = connect(
         key: 'world',
         world,
         scene,
-        storyboarderFilePath: meta.storyboarderFilePath,
-        updateWorldEnvironment,
         modelData: (
           attachments[worldEnvironmentFileCacheKey] &&
           attachments[worldEnvironmentFileCacheKey].value
