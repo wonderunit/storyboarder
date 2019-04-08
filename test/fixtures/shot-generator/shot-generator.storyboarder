@@ -113,10 +113,10 @@
             },
             "ground": false,
             "room": {
-              "height": 30,
-              "length": 40,
+              "height": 9.14,
+              "length": 12.19,
               "visible": true,
-              "width": 30
+              "width": 9.14
             }
           }
         }

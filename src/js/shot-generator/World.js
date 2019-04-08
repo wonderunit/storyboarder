@@ -113,7 +113,7 @@ const useRoom = (world, scene) => {
       height,
       { textures: { wall: texture } }
     )
-    // shift slightly to allow for OutlineEffect
+    // shift slightly to allow for OutlineEffect of objects inside
     object.position.y = -0.03
     return object
   }
