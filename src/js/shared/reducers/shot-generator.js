@@ -356,9 +356,9 @@ const defaultScenePreset = {
     backgroundColor: 0xFFFFFF,
     room: {
       visible: true,
-      width: 30,
-      length: 40,
-      height: 30
+      width: 9.14,
+      length: 12.19,
+      height: 9.14
     },
     environment: {
       file: undefined,

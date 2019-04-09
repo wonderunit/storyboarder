@@ -730,8 +730,6 @@ const SceneManager = connect(
         key: 'world',
         world,
         scene,
-        storyboarderFilePath: meta.storyboarderFilePath,
-        updateWorldEnvironment,
         modelData: (
           attachments[worldEnvironmentFileCacheKey] &&
           attachments[worldEnvironmentFileCacheKey].value
@@ -1066,7 +1064,7 @@ const InspectedWorld = ({ world, transition, updateWorld, updateWorldRoom, updat
         'div.row',
         { style: { alignItems: 'center', margin: '6px 0 3px 0' } }, [
 
-          ['div', { style: { width: 50 } }, 'ground'],
+          ['div', { style: { width: 50, opacity: world.room.visible ? 0.5 : 1 } }, 'ground'],
 
           ['input', {
             type: 'checkbox',
@@ -1134,9 +1132,9 @@ const InspectedWorld = ({ world, transition, updateWorld, updateWorldRoom, updat
         ],
 
         ['div.column', [
-          [NumberSlider, { label: 'width', value: world.room.width, min: 12, max: 250, onSetValue: value => updateWorldRoom({ width: value }) } ],
-          [NumberSlider, { label: 'length', value: world.room.length, min: 10, max: 250, onSetValue: value => updateWorldRoom({ length: value }) } ],
-          [NumberSlider, { label: 'height', value: world.room.height, min: 8, max: 40, onSetValue: value => updateWorldRoom({ height: value }) } ],
+          [NumberSlider, { label: 'width', value: world.room.width, min: 1.83, max: 76.2, onSetValue: value => updateWorldRoom({ width: value }) } ],
+          [NumberSlider, { label: 'length', value: world.room.length, min: 1.83, max: 76.2, onSetValue: value => updateWorldRoom({ length: value }) } ],
+          [NumberSlider, { label: 'height', value: world.room.height, min: 1.83, max: 12.19, onSetValue: value => updateWorldRoom({ height: value }) } ],
         ]]
       ]
     ],
