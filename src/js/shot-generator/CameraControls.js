@@ -9,8 +9,8 @@ class CameraControls {
 
     this.moveAnalogue = false
 
-    this.movementSpeed = .001
-    this.maxSpeed = 0.05
+    this.movementSpeed = .0005
+    this.maxSpeed = 0.07
     this.zoomSpeed = .001
 
     this.onPointerMove = this.onPointerMove.bind(this)
@@ -19,11 +19,16 @@ class CameraControls {
     this.onKeyDown = this.onKeyDown.bind(this)
     this.onKeyUp = this.onKeyUp.bind(this)
 
+    this.onWheel = this.onWheel.bind(this)
+
+    this.runMode = false
+
     window.addEventListener( 'pointermove', this.onPointerMove, false )
     this.domElement.addEventListener( 'pointerdown', this.onPointerDown, false )
     window.addEventListener( 'pointerup', this.onPointerUp, false )
     window.addEventListener( 'keydown', this.onKeyDown, false )
     window.addEventListener( 'keyup', this.onKeyUp, false )
+    window.addEventListener("wheel", this.onWheel, false )
   }
 
   dispose () {
@@ -32,7 +37,8 @@ class CameraControls {
     window.removeEventListener( 'pointerup', this.onPointerUp )
     window.removeEventListener( 'keydown', this.onKeyDown )
     window.removeEventListener( 'keyup', this.onKeyUp )
-  }
+    window.removeEventListener("wheel", this.onWheel )
+   }
 
   onPointerMove ( event ) {
     this.mouseX = event.pageX
@@ -81,6 +87,9 @@ class CameraControls {
           this.movementSpeed = .0001
         }
         break
+      case 16:
+        this.runMode = true
+        break
     }
 
     switch ( event.keyCode ) {
@@ -109,8 +118,14 @@ class CameraControls {
       case 68: /*D*/ this.moveRight = false; break;
       case 82: /*R*/ this.moveUp = false; break;
       case 70: /*F*/ this.moveDown = false; break;
+      case 16: /* shift */ this.runMode = false; break;
     }
   }
+
+  onWheel ( event ) {
+    this.zoomSpeed += (event.deltaY * 0.005)
+  }
+
 
   reset () {
     this.moveForward = false
@@ -123,7 +138,14 @@ class CameraControls {
   }
 
   update ( delta, state ) {
+
     if ( this.enabled === false ) return
+
+    this.object.fov += this.zoomSpeed
+    this.object.fov = Math.max(3, this.object.fov)
+    this.object.fov = Math.min(71, this.object.fov)
+
+    this.zoomSpeed = this.zoomSpeed * 0.0001
 
     // DualshockController
     let deadzone = 0.1
@@ -168,8 +190,13 @@ class CameraControls {
     }
 
     if ( this.moveForward || this.moveBackward || this.moveLeft || this.moveRight || this.moveUp || this.moveDown) {
-      this.movementSpeed += 0.0005
-      this.movementSpeed = Math.min(this.movementSpeed, this.maxSpeed)
+      if (this.runMode) {
+        this.movementSpeed += (0.002/0.0166666)*delta
+        this.movementSpeed = Math.min(this.movementSpeed, ((this.maxSpeed*5)/0.0166666)*delta)
+      } else {
+        this.movementSpeed += (0.0007/0.0166666)*delta
+        this.movementSpeed = Math.min(this.movementSpeed, (this.maxSpeed/0.0166666)*delta)
+      }
     }
 
 
@@ -224,23 +251,23 @@ class CameraControls {
       this.object.z += ((state.devices[0].analog.l2/127.0)*0.002)*(Math.pow((state.devices[0].analog.l2/127.0),2))
     }
 
-    if (state.devices[0].digital.r1 || state.devices[0].digital.l1) {
-      this.zoomSpeed += 0.002
-      this.zoomSpeed = Math.min(this.zoomSpeed, 0.1)
+    // if (state.devices[0].digital.r1 || state.devices[0].digital.l1) {
+    //   this.zoomSpeed += 0.002
+    //   this.zoomSpeed = Math.min(this.zoomSpeed, 0.1)
 
-    } else {
-      this.zoomSpeed = 0.001
-    }
+    // } else {
+    //   this.zoomSpeed = 0.001
+    // }
 
 
-    if (state.devices[0].digital.r1) {
-      this.object.fov -= this.zoomSpeed
-      this.object.fov = Math.max(3, this.object.fov)
-    }
-    if (state.devices[0].digital.l1) {
-      this.object.fov += this.zoomSpeed
-      this.object.fov = Math.min(71, this.object.fov)
-    }
+    // if (state.devices[0].digital.r1) {
+    //   this.object.fov -= this.zoomSpeed
+    //   this.object.fov = Math.max(3, this.object.fov)
+    // }
+    // if (state.devices[0].digital.l1) {
+    //   this.object.fov += this.zoomSpeed
+    //   this.object.fov = Math.min(71, this.object.fov)
+    // }
     // this.object.updateProperties()
   }
 
