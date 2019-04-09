@@ -15,6 +15,7 @@ console.clear() // clear the annoying dev tools warning
 // configureStore:
 const { createStore, applyMiddleware } = require('redux')
 const thunkMiddleware = require('redux-thunk').default
+const undoable = require('redux-undo').default
 const { reducer } = require('../../shared/reducers/shot-generator')
 const configureStore = function configureStore (preloadedState) {
   const store = createStore(reducer, preloadedState, applyMiddleware(thunkMiddleware))

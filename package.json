@@ -159,6 +159,7 @@
     "redux": "4.0.1",
     "redux-promise": "0.5.3",
     "redux-thunk": "2.3.0",
+    "redux-undo": "1.0.0-beta9-9-7",
     "request": "2.83.0",
     "request-promise-native": "1.0.5",
     "reselect": "4.0.0",
