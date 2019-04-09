@@ -608,6 +608,7 @@ select:focus {
   display: flex;
   flex-direction: row;
 
+  margin-top: 0.5rem;
   margin-bottom: 0.5rem;
 
   animation: server-inspector-fadein 0.3s ease-out;
@@ -690,6 +691,7 @@ select:focus {
 .pose-presets-editor {
   width: 288px;
   position: relative;
+  margin-bottom: 10px;
 }
 .pose-presets-editor,
 .pose-presets-editor * {
