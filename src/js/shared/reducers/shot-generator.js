@@ -478,9 +478,9 @@ const initialScene = {
     backgroundColor: 0xFFFFFF,
     room: {
       visible: false,
-      width: 30,
-      length: 40,
-      height: 30
+      width: 4,
+      length: 4,
+      height: 3
     },
     environment: {
       file: undefined,
