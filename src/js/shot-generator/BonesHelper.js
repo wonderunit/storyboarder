@@ -112,7 +112,7 @@ const getVertexForBones = ( bufferPositions, bufferSkinIndices, bufferSkinWeight
 
 let once = true
 
-const calcMedianDistance = (fixedposition, allverts, object, inverdsedMatrix, bone, multiply, boneIndex, skinnedMesh) => {
+const calcMedianDistance = (fixedposition, allverts, inverdsedMatrix, bone, multiply, boneIndex, skinnedMesh) => {
   let allDistances = []
   let median = 0
   let maxDist = 0
@@ -348,7 +348,7 @@ function BonesHelper( object, object3D, { boneLengthScale = 1, cacheKey } ) {
       if (bonesContainingVerts[ii])
       {
         relativePos = getPointInBetweenByPerc(absoluteBonePosA, absoluteBonePosB, 0.5)
-        let med = calcMedianDistance(relativePos, bonesContainingVerts[ii], this, matrixWorldInv, boneEquiv, vertexDistanceMyltiplyFactor, ii, sknMesh)
+        let med = calcMedianDistance(relativePos, bonesContainingVerts[ii], matrixWorldInv, boneEquiv, vertexDistanceMyltiplyFactor, ii, sknMesh)
         distanceToVerts = med.median !== 0 ? med.median : 0.1
         createdHelper = med.object        
       }
