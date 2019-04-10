@@ -265,8 +265,6 @@ const PosePresetsEditor = connect(
 )(
 React.memo(({
   id,
-  skeleton,
-  model,
   posePresetId,
 
   sortedPosePresets,
@@ -324,39 +322,49 @@ React.memo(({
     prompt({
       title: 'Preset Name',
       label: 'Select a Preset Name',
-      value: `Pose ${shortId(id)}`
+      value: `Pose ${shortId(THREE.Math.generateUUID())}`
     }, win).then(name => {
       if (name != null && name != '' && name != ' ') {
-        let newPreset = {
-          id: THREE.Math.generateUUID(),
-          name,
-          keywords: name, // TODO keyword editing
-          state: {
-            skeleton: skeleton || {}
-          }
-        }
-
-        createPosePreset(newPreset)
-
-        // save the presets file
         withState((dispatch, state) => {
-          presetsStorage.savePosePresets({ poses: state.presets.poses })
-        })
+          // get the latest skeleton data
+          let sceneObject = state.sceneObjects[id]
+          let skeleton = sceneObject.skeleton
+          let model = sceneObject.model
 
-        // save to server
-        // for pose harvesting (maybe abstract this later?)
-        request.post('https://storyboarders.com/api/create_pose', {
-          form: {
-            name: name,
-            json: JSON.stringify(skeleton),
-            model_type: model,
-            storyboarder_version: pkg.version,
-            machine_id: machineIdSync()
+          // create a preset out of it
+          let newPreset = {
+            id: THREE.Math.generateUUID(),
+            name,
+            keywords: name, // TODO keyword editing
+            state: {
+              skeleton: skeleton || {}
+            }
           }
-        })
 
-        // select the preset in the list
-        updateObject(id, { posePresetId: newPreset.id })
+          // add it to state
+          createPosePreset(newPreset)
+
+          // save to server
+          // for pose harvesting (maybe abstract this later?)
+          request.post('https://storyboarders.com/api/create_pose', {
+            form: {
+              name: name,
+              json: JSON.stringify(skeleton),
+              model_type: model,
+              storyboarder_version: pkg.version,
+              machine_id: machineIdSync()
+            }
+          })
+
+          // select the preset in the list
+          updateObject(id, { posePresetId: newPreset.id })
+
+          // get updated state (with newly created pose preset)
+          withState((dispatch, state) => {
+            // ... and save it to the presets file
+            presetsStorage.savePosePresets({ poses: state.presets.poses })
+          })
+        })
       }
     }).catch(err =>
       console.error(err)
