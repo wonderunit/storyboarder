@@ -1821,65 +1821,6 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
     return boneList
   }
 
-  const transformedSkinVertex = function (skin, index) {
-    var skinIndices = (new THREE.Vector4 ()).fromAttribute (skin.geometry.getAttribute ('skinIndex'), index);
-    var skinWeights = (new THREE.Vector4 ()).fromAttribute (skin.geometry.getAttribute ('skinWeight'), index);
-    var skinVertex = (new THREE.Vector3 ()).fromAttribute (skin.geometry.getAttribute ('position'), index).applyMatrix4 (skin.bindMatrix);
-    var result = new THREE.Vector3 (), temp = new THREE.Vector3 (), tempMatrix = new THREE.Matrix4 (); properties = ['x', 'y', 'z', 'w'];
-    for (var i = 0; i < 4; i++) {
-        var boneIndex = skinIndices[properties[i]];
-        tempMatrix.multiplyMatrices (skin.skeleton.bones[boneIndex].matrixWorld, skin.skeleton.boneInverses[boneIndex]);
-        result.add (temp.copy (skinVertex).multiplyScalar (skinWeights[properties[i]]).applyMatrix4 (tempMatrix));
-    }
-    return result.applyMatrix4 (skin.bindMatrixInverse);
-};
-
-  const calcFloorDistance = ( allverts, inverdsedMatrix, currentObject ) => {
-    let allDistances = []
-    let smallest = 10000
-    let small
-
-    var result = new THREE.Vector3 (), temp = new THREE.Vector3 (), tempMatrix = new THREE.Matrix4 (); properties = ['x', 'y', 'z', 'w'];
-    // for (var i = 0; i < 4; i++) {
-    //     var boneIndex = skinIndices[properties[i]];
-    //     tempMatrix.multiplyMatrices (skin.skeleton.bones[boneIndex].matrixWorld, skin.skeleton.boneInverses[boneIndex]);
-    //     result.add (temp.copy (skinVertex).multiplyScalar (skinWeights[properties[i]]).applyMatrix4 (tempMatrix));
-    // }
-
-    for (let vect of allverts)
-    {
-      //result.add (temp.copy (skinVertex).applyMatrix4 (tempMatrix).multiplyScalar (skinWeights[properties[i]]));
-
-
-      //console.log('current vert: ', vect)
-      let vect2 = vect.vertex.clone()//.applyMatrix4(inverdsedMatrix)
-      let vect3 = new THREE.Vector3()//.applyMatrix4(inverdsedMatrix)
-      //vect3 = vect2.clone()
-      vect3.y = 0
-      let dist = vect3.distanceTo(vect2)
-
-      
-      if (dist < smallest) {
-        //console.log('smallest:', smallest, ' changing smallest dist:  ', dist)
-        smallest = dist
-        small = vect2.clone()//.applyMatrix4(new THREE.Matrix4().getInverse(inverdsedMatrix))
-      
-        let sphge = new THREE.SphereBufferGeometry(0.0005, 6, 6)
-        let sphma = new THREE.MeshStandardMaterial({color:"#0000FF"})
-        let sphme = new THREE.Mesh(sphge, sphma)
-        let sobj = new THREE.Object3D().add(sphme)
-        currentObject.add(sobj)
-        console.log('current: ',currentObject)
-        sobj.position.set(small.x, small.z, small.y)//.multiplyScalar(1)
-      }
-    }
-
-    return {
-      smallest,
-      small
-    }
-  }
-
   const putSphereHere = (coords, padre, color) => {
     let sphge = new THREE.SphereBufferGeometry(0.0001, 6, 6)
     let sphma = new THREE.MeshStandardMaterial({color: color})
@@ -1887,16 +1828,40 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
     let sobj = new THREE.Object3D().add(sphme)
     sobj.position.set(coords.x, coords.z, -coords.y)//.multiplyScalar(-100)
 
-    //console.log('position: ', sobj.position)
     padre.add(sobj)
   }
 
-  var vertex = new THREE.Vector3()
-  var temp = new THREE.Vector3()
-  var skinned = new THREE.Vector3()
-  var skinIndices = new THREE.Vector4()
-  var skinWeights = new THREE.Vector4()
-  var boneMatrix = new THREE.Matrix4()
+  let vertex = new THREE.Vector3()
+  let temp = new THREE.Vector3()
+  let skinned = new THREE.Vector3()
+  let skinIndices = new THREE.Vector4()
+  let skinWeights = new THREE.Vector4()
+  let boneMatrix = new THREE.Matrix4()
+
+  const clcLowestVertInObject = (geometry, padre) => {
+    let lowest = 100000
+    let lowestVert
+    let position = geometry.attributes.position
+    let i
+    let inversedMatrix = new THREE.Matrix4().getInverse(padre.matrixWorld.clone())
+    for (i = 0; i<=position.count; i++)
+    {
+      vertex.fromBufferAttribute(position, i)
+      vertex.applyMatrix4(inversedMatrix)
+
+      let zeroed = vertex.clone()
+      zeroed.z = 0;
+      if (vertex.distanceTo(zeroed) < lowest)
+      {
+        lowest = vertex.distanceTo(zeroed)
+        lowestVert = vertex.clone()
+      }
+    }
+    return {
+      lowestVert,
+      lowest:lowest/100
+    }
+  }
 
   const calcLowestVert = ( skinnedMesh, padre ) => {
     
@@ -1925,13 +1890,6 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
         skinIndices.fromBufferAttribute( skinIndex, i )
         skinWeights.fromBufferAttribute( skinWeigth, i )
 
-        
-        //vertex.fromBufferAttribute( position, index[ i ] )
-        //console.log('vertex: ', vertex)
-        //continue
-        //skinIndices.fromBufferAttribute( skinIndex, index[ i ] )
-        //skinWeights.fromBufferAttribute( skinWeigth, index[ i ] )
-        
         // the following code section is normally implemented in the vertex shader
   
         vertex.applyMatrix4( bindMatrix ) // transform to bind space
@@ -1944,7 +1902,6 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
           boneMatrix.fromArray( boneMatrices, si * 16 )
   
           // weighted vertex transformation
-          //console.log('temp: ', bindMatrix)
           temp.copy( vertex ).applyMatrix4( boneMatrix ).multiplyScalar( sw )
           skinned.add( temp )
   
@@ -1958,9 +1915,6 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
         {
           lowest = skinned.distanceTo(zeroed)
           lowestVert = skinned.clone()
-          //putSphereHere(lowestVert, padre, '#0000ff')
-          //putSphereHere(zeroed, padre, '#00ff00')
-          //console.log('skinned : ', skinned)
         }
       }
     
@@ -1993,11 +1947,18 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
         }
   
         skinned.applyMatrix4( bindMatrixInverse ); // back to local space
-        //console.log('skinned 2: ', skinned)
-                
+        
+        let zeroed = skinned.clone()
+        zeroed.z = 0;
+        if (skinned.distanceTo(zeroed) < lowest)
+        {
+          lowest = skinned.distanceTo(zeroed)
+          lowestVert = skinned.clone()
+        }                
       }
     
     }
+
     return {
       lowestVert,
       lowest
@@ -2005,192 +1966,41 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
   }
 
   const dropObject = () => {
-    //console.log('asking for lowest')
-    let lowest = getLowestPointInObject()
-    console.log('lowest: ', lowest)
-  }
-
-  const getLowestPointInObject = () => {
-
     let currentObject
-    let lowest = 100000
-    let lowestVert
-    
+
     if (sceneObject.id != null) {
       child = scene.children.find(o => o.userData.id === sceneObject.id)
       currentObject = child
     }
 
+    let lowest = getLowestPointInObject( currentObject )
+    console.log('lowest: ', lowest)
+    updateObject(sceneObject.id, { z : - lowest.lowest*100 } )
+    putSphereHere(lowest.lowestVert, currentObject, '#0000ff')
+  }
+
+  const getLowestPointInObject = (currentObject) => {
+
+    let low
+
     if ( sceneObject.type == 'character' )
     {
       let sknMesh = currentObject.children.find(child => child instanceof THREE.SkinnedMesh) ||
-      currentObject.children[0].children.find(child => child instanceof THREE.SkinnedMesh)
-      
-
-      let skinIndex = sknMesh.geometry.attributes.skinIndex
-      let vertexPositions = sknMesh.geometry.attributes.position
-      let skinWeights = sknMesh.geometry.attributes.skinWeight
-      let bonesInfluenceVertices = []
-      let bones = getBoneList( currentObject )
-      //console.log('currect object: ', currentObject)
-      //let tempMatr = new THREE.Matrix4().setRotationFromMatrix( currentObject.matrixWorld )
-      let worldMat = currentObject.matrixWorld.clone()
-      let transition = new THREE.Vector3()
-      let rotation = new THREE.Quaternion()
-      let scale = new THREE.Vector3()
-      
-      //worldMat.decompose(transition, rotation, scale)
-      //console.log('world scale: ', scale)
-      //worldMat.compose(transition, rotation, new THREE.Vector3(1,1,1))
-      let matrixWorldInv = new THREE.Matrix4().getInverse( worldMat  )
-
-      let low = calcLowestVert(sknMesh, currentObject)
-      console.log('got low: ', low )
-      putSphereHere(low.lowestVert, currentObject, '#0000ff')
-      /*
-      for ( var i = 0; i < skinIndex.count; i++ )
-      {
-        let boneIndex = new THREE.Vector4()
-        let vertex = new THREE.Vector3()
-        let vertWeight = new THREE.Vector4()
-
-        vertex.fromBufferAttribute( vertexPositions, i )
-        boneIndex.fromBufferAttribute( skinIndex, i )
-        vertWeight.fromBufferAttribute( skinWeights, i )
-
-        bone = []
-        bone[0] = boneIndex.x
-        bone[1] = boneIndex.y
-        bone[2] = boneIndex.z
-        bone[3] = boneIndex.w
-        // The weights of those four bones are stored as another Vector4 in the geometry
-        weight = []
-        weight[0] = vertWeight.x
-        weight[1] = vertWeight.y
-        weight[2] = vertWeight.z
-        weight[3] = vertWeight.w
-        // The inverse matrix transforms the static geometry into the local space of the bone
-        // These matrices are static and stored in the mesh
-        inverses = []
-        
-        inverses[0] = sknMesh.skeleton.boneInverses[ bone[0] ]
-        inverses[1] = sknMesh.skeleton.boneInverses[ bone[1] ]
-        inverses[2] = sknMesh.skeleton.boneInverses[ bone[2] ]
-        inverses[3] = sknMesh.skeleton.boneInverses[ bone[3] ]
-        // The skin matrix transforms from the local space of the bone to the global space
-        // These matrices are animated and stored in the mesh
-        skinMatrices = []
-        //console.log('sknMesh sknmat: ', sknMesh.skeleton.bones)
-        skinMatrices[0] = 1 // sknMesh.skeleton.bones[ bone[0] ].skinMatrix
-        skinMatrices[1] = 1 //sknMesh.skeleton.bones[ bone[1] ].skinMatrix
-        skinMatrices[2] = 1 //sknMesh.skeleton.bones[ bone[2] ].skinMatrix
-        skinMatrices[3] = 1 // sknMesh.skeleton.bones[ bone[3] ].skinMatrix
-        console.log('sknMesh sknmat: ', inverses)
-        // Finally, the skinning equation in pseudocode
-        // Note: the product of the skin matrix and inverse matrix is computed on the CPU
-        //       in SkinnedMesh.updateMatrixWorld
-        // Note: the actual skinning equation is implemented in a vertex shader
-        position = (0,0,0,0)
-        position += weight[0] * skinMatrices[0] * inverses[0]// * vertex
-        position += weight[1] * skinMatrices[1] * inverses[1]// * vertex
-        position += weight[2] * skinMatrices[2] * inverses[2]// * vertex
-        position += weight[3] * skinMatrices[3] * inverses[3]// * vertex
-      
-          //console.log('position: ', position)
-      }
-        /*
-
-
-        if ( bonesInfluenceVertices[boneIndex.x] ) {
-          bonesInfluenceVertices[boneIndex.x].push({
-            vertex,
-            weight: vertWeight.x
-          })
-        } else {
-          bonesInfluenceVertices[boneIndex.x] = [{
-            vertex,
-            weight: vertWeight.x
-          }]
-        }
-
-        if ( bonesInfluenceVertices[boneIndex.y] ) {
-          bonesInfluenceVertices[boneIndex.y].push({
-            vertex,
-            weight: vertWeight.y
-          })
-        } else {
-          bonesInfluenceVertices[boneIndex.y] = [{
-            vertex,
-            weight: vertWeight.y
-          }]
-        }
-
-        if ( bonesInfluenceVertices[boneIndex.z] ) {
-          bonesInfluenceVertices[boneIndex.z].push({
-            vertex,
-            weight: vertWeight.z
-          })
-        } else {
-          bonesInfluenceVertices[boneIndex.z] = [{
-            vertex,
-            weight: vertWeight.z
-          }]
-        }
-
-        if ( bonesInfluenceVertices[boneIndex.w] ) {
-          bonesInfluenceVertices[boneIndex.w].push({
-            vertex,
-            weight: vertWeight.w
-          })
-        } else {
-          bonesInfluenceVertices[boneIndex.w] = [{
-            vertex,
-            weight: vertWeight.w
-          }]
-        }
-      }  
-      
-      */
-
-      // if (position.disanceTo(new THREE.Vector3()) < lowest)
-      // {
-      //   lowest = position.disanceTo(new THREE.Vector3())
-      //   owestVert = position
-      //   let sphge = new THREE.SphereBufferGeometry(0.0005, 6, 6)
-      //   let sphma = new THREE.MeshStandardMaterial({color:"#0000FF"})
-      //   let sphme = new THREE.Mesh(sphge, sphma)
-      //   let sobj = new THREE.Object3D().add(sphme)
-      //   currentObject.add(sobj)
-      //   //console.log('current: ',currentObject)
-      //   sobj.position.set(position.x, position.z, position.y)
+      currentObject.children[0].children.find(child => child instanceof THREE.SkinnedMesh)  
+      low = calcLowestVert(sknMesh, currentObject)
+    } else {
+      console.log('sceneobj: ', sceneObject)
+      console.log('currentoj: ', currentObject)
+      let geom = currentObject.children[0].geometry
+      low = clcLowestVertInObject(geom, currentObject)
+      // low = {
+      //   lowest: 0,
+      //   lowestVert: new THREE.Vector3(currentObject.x, currentObject.z, 0)
       // }
-
-      /*
-      for (i = 0; i < bones.length; i++) {
-        if (bonesInfluenceVertices[i])
-        {
-          let bone = bones[i]
-          console.log('current object: ', currentObject)
-          let boneEquiv = currentObject.children[1].skeleton.bones.filter(bone_current => bone_current.name === bone.name)[0]
-          console.log('bone equiv: ', boneEquiv)
-          let floorDist = calcFloorDistance(bonesInfluenceVertices[i], matrixWorldInv, currentObject)
-          let vertPosition = transformedSkinVertex(currentObject.children[1], i)
-          console.log('vertPoz: ', vertPosition)
-
-          if ( floorDist.smallest < lowest ) {
-            lowest = floorDist.smallest
-            lowestVert = floorDist.small
-
-            
-          }
-        }
-      }
-      */
     }
-    return {
-      lowest,
-      lowestVert
-    }
+    
+
+    return low
   }
 
   return h([
