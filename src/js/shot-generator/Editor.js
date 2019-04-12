@@ -3200,7 +3200,13 @@ const KeyHandler = connect(
         if (event.key === '8') { if (_cameras[7]) { setActiveCamera(_cameras[7].id) }}
         if (event.key === '9') { if (_cameras[8]) { setActiveCamera(_cameras[8].id) }}
 
-        if (event.key === 'z' || event.key === 'x') {
+        if (
+          (event.key === 'z' || event.key === 'x') &&
+          !event.shiftKey &&
+          !event.metaKey &&
+          !event.ctrlKey &&
+          !event.altKey
+        ) {
           let cameraState = _cameras.find(camera => camera.id === activeCamera)
           let roll = {
             'z': Math.max(cameraState.roll - THREE.Math.DEG2RAD, -45 * THREE.Math.DEG2RAD),

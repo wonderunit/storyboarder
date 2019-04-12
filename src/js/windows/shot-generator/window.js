@@ -83,6 +83,12 @@ ipcRenderer.on('update', (event, { board }) => {
   store.dispatch(setBoard( board ))
 })
 
+ipcRenderer.on('shot-generator:edit:undo', () => {
+  console.log('menu undo')
+})
+ipcRenderer.on('shot-generator:edit:redo', () => {
+  console.log('menu redo')
+})
 
 
 window.$r = { store }
