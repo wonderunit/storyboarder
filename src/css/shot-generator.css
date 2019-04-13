@@ -4,7 +4,7 @@ body {
   color: black;
   font-family: 'wonderunitsans';
   font-weight: 300;
-  background: #333333;
+  background: #333639;
   color: #777;
   user-select: none;
   -webkit-user-select: none;
@@ -41,7 +41,7 @@ a.button {
 }
 a.button:hover {
   color: white;
-  background-color: #555;
+  background-color: rgba(255,255,255,0.14);
 }
 
 /* kbd, .key {
@@ -105,7 +105,7 @@ kbd {
 }
 
 #toolbar {
-  background: #333333;
+  background: #333639;
   height: 50px;
   display: flex;
   padding-left: 300px;
@@ -129,8 +129,13 @@ kbd {
   display: flex;
 
 }
+
+#toolbar a:last-child {
+  margin: 0 6px 0 0;
+}
+
 #toolbar a:hover {
-  background-color: #444;
+  background-color: rgba(255,255,255,0.10);
   color: white;
 }
 #toolbar .toolbar__addition {
@@ -151,7 +156,7 @@ kbd {
   overflow: hidden;
   /* color: white; */
   position: relative;
-  background-color: #333333;
+  background-color: #333639;
 }
 
 .element {
@@ -159,7 +164,7 @@ kbd {
   /* padding: 6px 16px 6px 8px; */
   display: flex;
   flex-direction: row;
-  background-color: #2d2e39;
+  background-color: rgba(255,255,255,0.01);
   font-size: 14px;
   letter-spacing: 0.05rem;
   max-width: 300px;
@@ -246,7 +251,7 @@ kbd {
   flex: 1;
   overflow: scroll;
   padding: 6px;
-  background-color: #333333;
+  background-color: #333639;
   color: #999;
   text-transform: capitalize;
   max-width: 288px;
@@ -367,7 +372,7 @@ kbd {
   align-items: center;
 
   margin-right: 0.5rem;
-  height: 32px;
+  height: 38px;
 }
 .round-buttons-panel {
   display: flex;
@@ -377,8 +382,9 @@ kbd {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
+  min-width: 32px;
   height: 32px;
+  padding: 3px 10px;
 }
 .round-buttons-panel a:first-child {
   border-top-left-radius: 6px;
@@ -388,12 +394,14 @@ kbd {
   border-top-right-radius: 6px;
   border-bottom-right-radius: 6px;
 }
+
 .round-buttons-panel a {
-  background-color: #424242;
+  background-color: rgba(255,255,255,0.1);
   color: #808080;
 }
+
 .round-buttons-panel a.active {
-  background-color: #717171;
+  background-color: rgba(255,255,255,0.2);
   color: #A5A5A5;
 }
 
@@ -448,7 +456,7 @@ input[type="checkbox"] + label span {
   height: 22px;
   /* margin: -2px 10px 0 0; */
   vertical-align: middle;
-  background: #444;
+  background: rgba(255,255,255,0.1);
   border-radius: 3px;
   cursor: default;
 }
@@ -462,12 +470,12 @@ input[type=checkbox]:checked + label:before {
   text-align: center;
   line-height: 1;
   position: absolute;
-  color: white;
+  color: rgba(255,255,255,0.5);
 }
 
 select {
   color: #fff;
-  background-color: #444;
+  background-color: rgba(255,255,255,0.1);
   outline: 0;
   display: block;
   width: 100%;
@@ -478,12 +486,7 @@ select {
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
-  background: #444;
   margin-bottom: 10px;
-}
-select:focus {
-  background: #53537c;
-  color: black;
 }
 
 #inspector select {
@@ -493,14 +496,12 @@ select:focus {
   letter-spacing: 0.025rem;
   font-weight: 100;
 }
-#inspector select:focus {
-  color: black;
-}
+
 #inspector .button_add {
   display: flex;
   width: 30px;
   color: rgb(152, 152, 152);
-  background-color: rgba(93, 93, 93, 0.199);
+  background-color: rgba(255,255,255,0.05);
   padding: 6px 0 4px 0;
   border-radius: 6px;
   font-size: 87.5%;
@@ -509,6 +510,11 @@ select:focus {
   align-items: center;
   line-height: 1;
 }
+
+#inspector .button_add:hover {
+  background-color: rgba(255,255,255,0.1);
+}
+
 
 .row select+select {
   margin-left: 6px;
@@ -546,7 +552,7 @@ select:focus {
   overflow: hidden;
 }
 .number-slider__control:hover {
-  background-color: #555555;
+  background-color: rgba(255,255,255,0.2);
 }
 .number-slider__input {
   flex: 1;
@@ -555,8 +561,7 @@ select:focus {
   border: 0;
   outline: 0;
   padding: 6px;
-  /* background-color: rgba(255,255,255,0.05); */
-  background-color: #444444;
+  background-color: rgba(255,255,255,0.05);
   color: #E4E4E4;
   font-variant-numeric: tabular-nums;
 }
@@ -701,14 +706,15 @@ select:focus {
   width: 100%;
   padding: 8px 6px;
   border: none;
-  background-color: #444444;
+  background-color: rgba(255,255,255,0.1);
   color: #999;
   border-radius: 6px;
   font-size: 14px;
   border: 1px solid transparent;
 }
 .pose-presets-editor input:focus {
-  border: 1px solid #555555;
+  background-color: rgba(255,255,255,0.15);
+  color: #999;
   outline: none;
 }
 .pose-presets-editor__list {
@@ -728,17 +734,21 @@ select:focus {
 .pose-presets-editor__item figure {
   margin: 0;
   padding: 0;
-  background-color: #222;
+  background-color: rgba(255,255,255,0.05);
+  border-radius: 3px;
+  overflow: hidden;
 }
 .pose-presets-editor__item figure img {
   opacity: 0.8;
+  border-radius: 3px;
+  overflow: hidden;
 }
 .pose-presets-editor__item:hover figure img {
   opacity: 1.0;
 }
 .pose-presets-editor__item .pose-presets-editor__name {
   position: relative;
-  padding: 3px 0 0 0;
+  padding: 2px 0 0 0;
   line-height: 1;
   font-size: 13px;
   overflow: hidden;
@@ -753,4 +763,13 @@ select:focus {
   width: 70%;
   height: 13px;
   /* background: linear-gradient(to right, rgba(45, 46, 57, 0), rgba(45, 46, 57, 1) 50%); */
+}
+
+.object-property-heading {
+  display: inline-block;
+  margin: 9px 0 9px 0;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 18px;
+  color: rgba(255,255,255,0.4);
 }

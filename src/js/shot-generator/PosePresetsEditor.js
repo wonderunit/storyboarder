@@ -59,7 +59,7 @@ class PoseRenderer {
       canvas: document.createElement('canvas'),
       antialias: true
     })
-    this.renderer.setClearColor( 0x464646, 1 )
+    this.renderer.setClearColor( 0x3e4043, 1 )
 
     this.scene = new THREE.Scene()
 
@@ -181,10 +181,10 @@ const PosePresetsEditorItem = React.memo(({ style, id, posePresetId, preset, upd
 
   const onClick = event => {
     event.preventDefault()
-  
+
     let posePresetId = preset.id
     let skeleton = preset.state.skeleton
-  
+
     updateObject(id, { posePresetId, skeleton })
   }
 
@@ -411,7 +411,7 @@ React.memo(({
           columnWidth: ITEM_WIDTH + GUTTER_SIZE,
 
           rowCount: Math.ceil(presets.length / 4),
-          rowHeight: ITEM_HEIGHT + GUTTER_SIZE,
+          rowHeight: ITEM_HEIGHT,
 
           width: 288,
           height: 363,

@@ -1495,17 +1495,9 @@ const LabelInput = ({ label, setLabel, onFocus, onBlur }) => {
           ]
         ]
       : [
-          'a[href=#]',
+          'a[href=#][className=object-property-heading]',
           {
-            onClick: preventDefault(onStartEditingClick),
-            style: {
-              display: 'inline-block',
-              margin: '9px 0 9px 0',
-              textDecoration: 'none',
-              fontWeight: 700,
-              fontSize: '18px',
-              color: '#818293'
-          }
+            onClick: preventDefault(onStartEditingClick)
           },
           label + ' Properties'
         ]
