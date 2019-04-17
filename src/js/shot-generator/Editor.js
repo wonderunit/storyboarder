@@ -2188,7 +2188,7 @@ const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, s
       ],
       ['div.row', [
           isActive
-            ? ['span.active', [Icon, { src: 'icon-item-active' }]]
+            ? ['span.active', { style: { display: 'flex' }},  [Icon, { src: 'icon-item-active' }]]
             : [],
 
           sceneObject.type === 'camera'
