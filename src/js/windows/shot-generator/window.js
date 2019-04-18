@@ -6,6 +6,7 @@ const React = require('react')
 const { useRef } = React
 const { Provider, connect } = require('react-redux')
 const ReactDOM = require('react-dom')
+const { ActionCreators } = require('redux-undo')
 console.clear() // clear the annoying dev tools warning
 
 
@@ -84,10 +85,10 @@ ipcRenderer.on('update', (event, { board }) => {
 })
 
 ipcRenderer.on('shot-generator:edit:undo', () => {
-  console.log('menu undo')
+  store.dispatch( ActionCreators.undo() )
 })
 ipcRenderer.on('shot-generator:edit:redo', () => {
-  console.log('menu redo')
+  store.dispatch( ActionCreators.redo() )
 })
 
 
