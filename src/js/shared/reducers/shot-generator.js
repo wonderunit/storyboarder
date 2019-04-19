@@ -1055,11 +1055,20 @@ const mainReducer = (state = {}, action) => {
   })
 }
 
+const filterSceneObjectHistory = (action, currentState, previousHistory) => {
+  // ignore `loaded` status updates
+  if (action.type === 'UPDATE_OBJECT' && Object.keys(action.payload).includes('loaded')) {
+    return false
+  }
+
+  return true
+}
+
 const rootReducer = (state = initialState, action) => {
   return {
     ...mainReducer(state, action),
     selections: undoable(selectionsReducer, { limit: 50, debug: true })(state.selections, action),
-    sceneObjects: undoable(sceneObjectsReducer, { limit: 50, debug: true })(state.sceneObjects, action),
+    sceneObjects: undoable(sceneObjectsReducer, { limit: 50, debug: true, filter: filterSceneObjectHistory })(state.sceneObjects, action),
 
     // must run last to keep an accurate lastSavedHash
     meta: metaReducer(state.meta, action, state)
