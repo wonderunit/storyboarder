@@ -65,6 +65,8 @@ const {
   //
   // selectors
   //
+  getSceneObjects,
+
   getSerializedState,
   getIsSceneDirty
 //} = require('../state')
@@ -187,7 +189,7 @@ THREE.Cache.enabled = true
 const SceneManager = connect(
   state => ({
     world: state.world,
-    sceneObjects: state.sceneObjects,
+    sceneObjects: getSceneObjects(state),
     remoteInput: state.input,
     selections: state.selections,
     selectedBone: state.selectedBone,
@@ -449,7 +451,7 @@ const SceneManager = connect(
               let cameraForLarge = state.mainViewCamera === 'live' ? camera : orthoCamera.current
 
               if (cameraControlsView.current && cameraControlsView.current.enabled) {
-                let cameraState = Object.values(state.sceneObjects).find(o => o.id === camera.userData.id)
+                let cameraState = Object.values(getSceneObjects(state)).find(o => o.id === camera.userData.id)
 
                 if (!cameraState) {
                   // FIXME
@@ -1308,7 +1310,7 @@ const ElementsPanel = connect(
   // what changes should we watch for to re-render?
   state => ({
     world: state.world,
-    sceneObjects: state.sceneObjects,
+    sceneObjects: getSceneObjects(state),
     selections: state.selections,
     selectedBone: state.selectedBone,
     models: state.models,
@@ -2212,7 +2214,7 @@ const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, s
 const PhoneCursor = connect(
   state => ({
     selections: state.selection,
-    sceneObjects: state.sceneObjects,
+    sceneObjects: getSceneObjects(state),
   }),
   {
     selectObject,
@@ -2717,7 +2719,7 @@ const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, set
       onCreateCharacterClick()
     }
     setTimeout(() => {
-      console.log(Object.values($r.store.getState().sceneObjects).length, 'scene objects')
+      console.log(Object.values(getSceneObjects($r.store.getState())).length, 'scene objects')
     }, 100)
   }
 
@@ -2890,7 +2892,7 @@ const ClosestObjectInspector = ({ camera, sceneObjects, characters }) => {
 
 const CameraInspector = connect(
   state => ({
-    sceneObjects: state.sceneObjects,
+    sceneObjects: getSceneObjects(state),
     activeCamera: state.activeCamera
   })
 )(
@@ -3087,7 +3089,6 @@ const editorMachine = Machine({
 
 // TODO move selector logic into reducers/shot-generator?
 // memoized selectors
-const getSceneObjects = state => state.sceneObjects
 const getSelections = state => state.selections
 const getCameraSceneObjects = createSelector(
   [getSceneObjects],
@@ -3259,7 +3260,7 @@ const Editor = connect(
     activeCamera: state.activeCamera,
     remoteInput: state.input,
     aspectRatio: state.aspectRatio,
-    sceneObjects: state.sceneObjects,
+    sceneObjects: getSceneObjects(state),
     world: state.world,
     selectedBone: state.selectedBone,
     attachments: state.attachments
