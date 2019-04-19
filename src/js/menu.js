@@ -863,14 +863,14 @@ const shotGeneratorMenu = [
     label: 'Edit',
     submenu: [
       {
-        label: 'undo',
+        label: 'Undo',
         accelerator: keystrokeFor('menu:edit:undo'),
         click () {
           ipcRenderer.send('shot-generator:edit:undo')
         }
       },
       {
-        label: 'redo',
+        label: 'Redo',
         accelerator: keystrokeFor('menu:edit:redo'),
         click () {
           ipcRenderer.send('shot-generator:edit:redo')
