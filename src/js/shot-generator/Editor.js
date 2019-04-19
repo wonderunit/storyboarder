@@ -66,6 +66,7 @@ const {
   // selectors
   //
   getSceneObjects,
+  getSelections,
 
   getSerializedState,
   getIsSceneDirty
@@ -191,7 +192,7 @@ const SceneManager = connect(
     world: state.world,
     sceneObjects: getSceneObjects(state),
     remoteInput: state.input,
-    selections: state.selections,
+    selections: getSelections(state),
     selectedBone: state.selectedBone,
     mainViewCamera: state.mainViewCamera,
     activeCamera: state.activeCamera,
@@ -1311,7 +1312,7 @@ const ElementsPanel = connect(
   state => ({
     world: state.world,
     sceneObjects: getSceneObjects(state),
-    selections: state.selections,
+    selections: getSelections(state),
     selectedBone: state.selectedBone,
     models: state.models,
     activeCamera: state.activeCamera,
@@ -3089,7 +3090,6 @@ const editorMachine = Machine({
 
 // TODO move selector logic into reducers/shot-generator?
 // memoized selectors
-const getSelections = state => state.selections
 const getCameraSceneObjects = createSelector(
   [getSceneObjects],
   (sceneObjects) => Object.values(sceneObjects).filter(o => o.type === 'camera')
@@ -3129,7 +3129,7 @@ const KeyHandler = connect(
   state => ({
     mainViewCamera: state.mainViewCamera,
     activeCamera: state.activeCamera,
-    selections: state.selections,
+    selections: getSelections(state),
 
     _selectedSceneObject: getSelectedSceneObject(state),
 
@@ -3352,7 +3352,7 @@ const Editor = connect(
             child.userData.type === 'character' ||
             child.userData.type === 'object'
           ) &&
-          child.userData.id === state.selections[0])
+          child.userData.id === getSelections(state)[0])
 
       let material = selected &&
         ((selected.userData.type === 'character')

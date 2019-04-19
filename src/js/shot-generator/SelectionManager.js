@@ -5,7 +5,8 @@ const {
   selectObject,
   selectObjectToggle,
   selectBone,
-  updateObjects
+  updateObjects,
+  getSelections
 } = require('../shared/reducers/shot-generator')
 
 function getObjectsFromIcons ( objects ) {
@@ -76,7 +77,7 @@ const getIntersectionTarget = intersect => {
 
 const SelectionManager = connect(
   state => ({
-    selections: state.selections,
+    selections: getSelections(state),
     sceneObjects: state.sceneObjects,
     activeCamera: state.activeCamera
   }),

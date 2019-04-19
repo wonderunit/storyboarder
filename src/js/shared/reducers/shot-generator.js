@@ -13,6 +13,8 @@ const capitalize = string => string.charAt(0).toUpperCase() + string.slice(1)
 //
 const getSceneObjects = state => state.sceneObjects.present
 
+const getSelections = state => state.selections.present
+
 const getIsSceneDirty = state => {
   let current = hashify(JSON.stringify(getSerializedState(state)))
   return current !== state.meta.lastSavedHash
@@ -145,10 +147,6 @@ const migrateRotations = sceneObjects =>
       o[k] = v
       return o
     }, {})
-
-const updateMeta = state => {
-  state.meta.lastSavedHash = hashify(JSON.stringify(getSerializedState(state)))
-}
 
 const updateObject = (draft, state, props, { models }) => {
   // TODO is there a simpler way to merge only non-null values?
@@ -663,6 +661,37 @@ const initialState = {
   }
 }
 
+const selectionsReducer = (state = [], action) => {
+  return produce(state, draft => {
+    switch (action.type) {
+      case 'LOAD_SCENE':
+        // clear selections
+        return []
+
+      // select a single object
+      case 'SELECT_OBJECT':
+        return (action.payload == null)
+          // empty the selection
+          ? []
+          // make the selection
+          : [action.payload]
+
+      case 'SELECT_OBJECT_TOGGLE':
+        let n = draft.indexOf(action.payload)
+        if (n === -1) {
+          draft.push(action.payload)
+        } else {
+          draft.splice(n, 1)
+        }
+        return
+
+      case 'DUPLICATE_OBJECTS':
+        // select the new duplicates, replacing the selection list
+        return action.payload.newIds
+    }
+  })
+}
+
 const sceneObjectsReducer = (state = {}, action) => {
   return produce(state, draft => {
     switch (action.type) {
@@ -813,6 +842,24 @@ const sceneObjectsReducer = (state = {}, action) => {
   })
 }
 
+const metaReducer = (state = {}, action, appState) => {
+  return produce(state, draft => {
+    switch (action.type) {
+      case 'LOAD_SCENE':
+        draft.lastSavedHash = hashify(JSON.stringify(getSerializedState(appState)))
+        return
+
+      case 'MARK_SAVED':
+        draft.lastSavedHash = hashify(JSON.stringify(getSerializedState(appState)))
+        return
+
+      case 'SET_META_STORYBOARDER_FILE_PATH':
+        draft.storyboarderFilePath = action.payload
+        return
+    }
+  })
+}
+
 const mainReducer = (state = {}, action) => {
   return produce(state, draft => {
     switch (action.type) {
@@ -827,39 +874,14 @@ const mainReducer = (state = {}, action) => {
 
         draft.activeCamera = action.payload.activeCamera
         // clear selections
-        draft.selections = []
         draft.selectedBone = undefined
         draft.mainViewCamera = 'live'
-        updateMeta(draft)
         return
 
       // select a single object
       case 'SELECT_OBJECT':
-        if (action.payload == null) {
-          // empty the selection
-          draft.selections = []
-          // de-select any currently selected bone
-          draft.selectedBone = undefined
-        } else {
-          // make the selection
-          draft.selections = [action.payload]
-          // de-select any currently selected bone
-          draft.selectedBone = undefined
-        }
-        return
-
-      case 'SELECT_OBJECT_TOGGLE':
-        let n = draft.selections.indexOf(action.payload)
-        if (n === -1) {
-          draft.selections.push(action.payload)
-        } else {
-          draft.selections.splice(n, 1)
-        }
-        return
-
-      case 'DUPLICATE_OBJECTS':
-        // select the new duplicates, replacing the selection list
-        draft.selections = action.payload.newIds
+        // de-select any currently selected bone
+        draft.selectedBone = undefined
         return
 
       case 'SET_INPUT_ACCEL':
@@ -1009,14 +1031,6 @@ const mainReducer = (state = {}, action) => {
         draft.board = action.payload
         return
 
-      case 'MARK_SAVED':
-        updateMeta(draft)
-        return
-
-      case 'SET_META_STORYBOARDER_FILE_PATH':
-        draft.meta.storyboarderFilePath = action.payload
-        return
-
       case 'TOGGLE_WORKSPACE_GUIDE':
         draft.workspace.guides[action.payload] = !draft.workspace.guides[action.payload]
         return
@@ -1044,8 +1058,11 @@ const mainReducer = (state = {}, action) => {
 const rootReducer = (state = initialState, action) => {
   return {
     ...mainReducer(state, action),
-    // selections: undoable(selectionsReducer, { limit: 10 })(state.selections, action),
-    sceneObjects: undoable(sceneObjectsReducer, { limit: 50, debug: true })(state.sceneObjects, action)
+    selections: undoable(selectionsReducer, { limit: 50, debug: true })(state.selections, action),
+    sceneObjects: undoable(sceneObjectsReducer, { limit: 50, debug: true })(state.sceneObjects, action),
+
+    // must run last to keep an accurate lastSavedHash
+    meta: metaReducer(state.meta, action, state)
   }
 }
 
@@ -1123,6 +1140,7 @@ module.exports = {
   // selectors
   //
   getSceneObjects,
+  getSelections,
 
   getSerializedState,
   getIsSceneDirty
