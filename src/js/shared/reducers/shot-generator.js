@@ -18,8 +18,7 @@ const getIsSceneDirty = state => {
 }
 // return only the stuff we want to save to JSON
 const getSerializedState = state => {
-  // TODO
-  let sceneObjects = Object.entries(state.sceneObjects)
+  let sceneObjects = Object.entries(getSceneObjects(state))
     .reduce((o, [ k, v ]) => {
       let {
         // ignore 'loaded'
@@ -33,7 +32,7 @@ const getSerializedState = state => {
 
   return {
     world: state.world,
-    sceneObjects, // TODO
+    sceneObjects,
     activeCamera: state.activeCamera
   }
 }
