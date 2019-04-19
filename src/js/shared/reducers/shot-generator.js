@@ -1,5 +1,6 @@
 const THREE = require('three')
 const { produce } = require('immer')
+const undoable = require('redux-undo').default
 const crypto = require('crypto')
 
 const hashify = string => crypto.createHash('sha1').update(string).digest('base64')
@@ -666,23 +667,23 @@ const sceneObjectsReducer = (state = {}, action) => {
   return produce(state, draft => {
     switch (action.type) {
       case 'LOAD_SCENE':
-        draft.sceneObjects = withDisplayNames(
+        return withDisplayNames(
           resetLoadingStatus(
+            // TODO
             migrateRotations(action.payload.sceneObjects)
           )
         )
-        return
 
       case 'CREATE_OBJECT':
-        // let id = Object.values(draft.sceneObjects).length + 1
         let id = action.payload.id != null
           ? action.payload.id
           : THREE.Math.generateUUID()
-        draft.sceneObjects[id] = {
+
+        draft[id] = {
           ...action.payload, id
         }
-        draft.sceneObjects = withDisplayNames(draft.sceneObjects)
-        return
+
+        return withDisplayNames(draft)
 
       case 'DELETE_OBJECTS':
       // TODO must come first
@@ -693,9 +694,9 @@ const sceneObjectsReducer = (state = {}, action) => {
         ) return
 
         for (let id of action.payload.ids) {
-          if (draft.sceneObjects[id] == null) continue
+          if (draft[id] == null) continue
 
-          delete draft.sceneObjects[id]
+          delete draft[id]
 
           // TODO
           // TODO
@@ -711,15 +712,14 @@ const sceneObjectsReducer = (state = {}, action) => {
           */
         }
 
-        draft.sceneObjects = withDisplayNames(draft.sceneObjects)
-        return
+        return withDisplayNames(draft)
 
       case 'UPDATE_OBJECT':
-        if (draft.sceneObjects[action.payload.id] == null) return
+        if (draft[action.payload.id] == null) return
 
         updateObject(
-          draft.sceneObjects[action.payload.id],
-          state.sceneObjects[action.payload.id],
+          draft[action.payload.id],
+          state[action.payload.id],
           action.payload,
           { models: state.models }
         )
@@ -746,10 +746,10 @@ const sceneObjectsReducer = (state = {}, action) => {
 
       case 'UPDATE_OBJECTS':
         for (let [ key, value ] of Object.entries(action.payload)) {
-          if (draft.sceneObjects[key] == null) return
+          if (draft[key] == null) return
 
-          draft.sceneObjects[key].x = value.x
-          draft.sceneObjects[key].y = value.y
+          draft[key].x = value.x
+          draft[key].y = value.y
 
           // if we ever allow UPDATE_OBJECTS to change more stuff,
           // uncomment this:
@@ -769,10 +769,10 @@ const sceneObjectsReducer = (state = {}, action) => {
           let offsetX = 0.5 // (Math.random() * 2 - 1)
           let offsetY = 0.5 // (Math.random() * 2 - 1)
 
-          if (draft.sceneObjects[srcId]) {
-            let source = draft.sceneObjects[srcId]
+          if (draft[srcId]) {
+            let source = draft[srcId]
 
-            draft.sceneObjects[dstId] = {
+            draft[dstId] = {
               ...source,
               name: source.name == null ? null : source.name + ' copy',
               x: source.x + offsetX,
@@ -782,25 +782,24 @@ const sceneObjectsReducer = (state = {}, action) => {
             }
           }
         }
-        draft.sceneObjects = withDisplayNames(draft.sceneObjects)
-        return
+        return withDisplayNames(draft)
 
       case 'UPDATE_CHARACTER_SKELETON':
-        draft.sceneObjects[action.payload.id].skeleton = draft.sceneObjects[action.payload.id].skeleton || {}
-        draft.sceneObjects[action.payload.id].skeleton[action.payload.name] = {
+        draft[action.payload.id].skeleton = draft[action.payload.id].skeleton || {}
+        draft[action.payload.id].skeleton[action.payload.name] = {
           rotation: action.payload.rotation
         }
         // TODO review
         // TODO review
         // TODO review
         // TODO review
-        checkForSkeletonChanges(state, draft, action.payload.id)
+        // checkForSkeletonChanges(state, draft, action.payload.id)
         return
 
       case 'ATTACHMENTS_RELOCATE':
         let { src, dst } = action.payload
-        for (let id in draft.sceneObjects) {
-          let sceneObject = draft.sceneObjects[id]
+        for (let id in draft) {
+          let sceneObject = draft[id]
 
           if (sceneObject.model === src) {
             sceneObject.model = dst
@@ -1046,8 +1045,7 @@ const rootReducer = (state = initialState, action) => {
   return {
     ...mainReducer(state, action),
     // selections: undoable(selectionsReducer, { limit: 10 })(state.selections, action),
-    // sceneObjects: undoable(sceneObjectsReducer, { limit: 10 })(state, action).sceneObjects
-    sceneObjects: sceneObjectsReducer(state, action).sceneObjects
+    sceneObjects: undoable(sceneObjectsReducer, { limit: 50, debug: true })(state.sceneObjects, action)
   }
 }
 
