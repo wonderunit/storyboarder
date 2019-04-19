@@ -67,6 +67,7 @@ const {
   //
   getSceneObjects,
   getSelections,
+  getActiveCamera,
 
   getSerializedState,
   getIsSceneDirty
@@ -195,7 +196,7 @@ const SceneManager = connect(
     selections: getSelections(state),
     selectedBone: state.selectedBone,
     mainViewCamera: state.mainViewCamera,
-    activeCamera: state.activeCamera,
+    activeCamera: getActiveCamera(state),
     aspectRatio: state.aspectRatio,
     devices: state.devices,
     meta: state.meta,
@@ -1315,7 +1316,7 @@ const ElementsPanel = connect(
     selections: getSelections(state),
     selectedBone: state.selectedBone,
     models: state.models,
-    activeCamera: state.activeCamera,
+    activeCamera: getActiveCamera(state),
 
     storyboarderFilePath: state.meta.storyboarderFilePath
   }),
@@ -2894,7 +2895,7 @@ const ClosestObjectInspector = ({ camera, sceneObjects, characters }) => {
 const CameraInspector = connect(
   state => ({
     sceneObjects: getSceneObjects(state),
-    activeCamera: state.activeCamera
+    activeCamera: getActiveCamera(state)
   })
 )(
   React.memo(({ camera, sceneObjects, activeCamera }) => {
@@ -3015,7 +3016,7 @@ const GuidesInspector = connect(
 
 const CamerasInspector = connect(
   state => ({
-    activeCamera: state.activeCamera,
+    activeCamera: getActiveCamera(state),
     _cameras: getCameraSceneObjects(state)
   }),
   {
@@ -3128,7 +3129,7 @@ const MenuManager = ({ }) => {
 const KeyHandler = connect(
   state => ({
     mainViewCamera: state.mainViewCamera,
-    activeCamera: state.activeCamera,
+    activeCamera: getActiveCamera(state),
     selections: getSelections(state),
 
     _selectedSceneObject: getSelectedSceneObject(state),
@@ -3257,7 +3258,7 @@ const KeyHandler = connect(
 const Editor = connect(
   state => ({
     mainViewCamera: state.mainViewCamera,
-    activeCamera: state.activeCamera,
+    activeCamera: getActiveCamera(state),
     remoteInput: state.input,
     aspectRatio: state.aspectRatio,
     sceneObjects: getSceneObjects(state),
@@ -4002,9 +4003,10 @@ const PresetsEditor = connect(
             id,
             name,
             state: {
+              // TODO
               world: state.world,
-              sceneObjects: state.sceneObjects,
-              activeCamera: state.activeCamera
+              sceneObjects: getSceneObjects(state),
+              activeCamera: getActiveCamera(state)
             }
           }
           dispatch(createScenePreset(preset))

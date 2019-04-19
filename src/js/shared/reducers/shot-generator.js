@@ -15,6 +15,8 @@ const getSceneObjects = state => state.sceneObjects.present
 
 const getSelections = state => state.selections.present
 
+const getActiveCamera = state => state.activeCamera.present
+
 const getIsSceneDirty = state => {
   let current = hashify(JSON.stringify(getSerializedState(state)))
   return current !== state.meta.lastSavedHash
@@ -36,7 +38,7 @@ const getSerializedState = state => {
   return {
     world: state.world,
     sceneObjects,
-    activeCamera: state.activeCamera
+    activeCamera: getActiveCamera(state)
   }
 }
 
@@ -860,6 +862,18 @@ const metaReducer = (state = {}, action, appState) => {
   })
 }
 
+const activeCameraReducer = (state = initialScene.activeCamera, action) => {
+  return produce(state, draft => {
+    switch (action.type) {
+      case 'LOAD_SCENE':
+        return action.payload.activeCamera
+
+      case 'SET_ACTIVE_CAMERA':
+        return action.payload
+    }
+  })
+}
+
 const mainReducer = (state = {}, action) => {
   return produce(state, draft => {
     switch (action.type) {
@@ -872,7 +886,6 @@ const mainReducer = (state = {}, action) => {
         if (!action.payload.world.ambient) draft.world.ambient = initialScene.world.ambient
         if (!action.payload.world.directional) draft.world.directional = initialScene.world.directional
 
-        draft.activeCamera = action.payload.activeCamera
         // clear selections
         draft.selectedBone = undefined
         draft.mainViewCamera = 'live'
@@ -926,10 +939,6 @@ const mainReducer = (state = {}, action) => {
 
       case 'SET_MAIN_VIEW_CAMERA':
         draft.mainViewCamera = action.payload
-        return
-
-      case 'SET_ACTIVE_CAMERA':
-        draft.activeCamera = action.payload
         return
 
       case 'CREATE_SCENE_PRESET':
@@ -1069,6 +1078,7 @@ const rootReducer = (state = initialState, action) => {
     ...mainReducer(state, action),
     selections: undoable(selectionsReducer, { limit: 50, debug: true })(state.selections, action),
     sceneObjects: undoable(sceneObjectsReducer, { limit: 50, debug: true, filter: filterSceneObjectHistory })(state.sceneObjects, action),
+    activeCamera: undoable(activeCameraReducer, { limit: 50, debug: true })(state.activeCamera, action),
 
     // must run last to keep an accurate lastSavedHash
     meta: metaReducer(state.meta, action, state)
@@ -1150,6 +1160,7 @@ module.exports = {
   //
   getSceneObjects,
   getSelections,
+  getActiveCamera,
 
   getSerializedState,
   getIsSceneDirty
