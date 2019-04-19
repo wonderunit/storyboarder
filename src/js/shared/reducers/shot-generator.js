@@ -10,6 +10,8 @@ const capitalize = string => string.charAt(0).toUpperCase() + string.slice(1)
 //
 // selectors
 //
+const getSceneObjects = state => state.sceneObjects.present
+
 const getIsSceneDirty = state => {
   let current = hashify(JSON.stringify(getSerializedState(state)))
   return current !== state.meta.lastSavedHash
@@ -1123,6 +1125,8 @@ module.exports = {
   //
   // selectors
   //
+  getSceneObjects,
+
   getSerializedState,
   getIsSceneDirty
 }
