@@ -20,302 +20,298 @@ const imageLoader = new THREE.ImageLoader(loadingManager)
 objLoader.setLogging(false, false)
 
 const useGround = (world, scene) => {
-  const [loaded, setLoaded] = useState(false)
+    const [loaded, setLoaded] = useState(false)
 
-  const object = useRef(null)
-  const groundTexture = useRef(null)
+    const object = useRef(null)
+    const groundTexture = useRef(null)
 
-  const load = () => imageLoader.load(
-    'data/shot-generator/grid_floor.png',
-    image => {
-      groundTexture.current = new THREE.Texture()
-      groundTexture.current.image = image
-      groundTexture.current.needsUpdate = true
-      setLoaded(true)
-    }
-  )
+    const load = () => imageLoader.load(
+        'data/shot-generator/grid_floor.png',
+        image => {
+            groundTexture.current = new THREE.Texture()
+            groundTexture.current.image = image
+            groundTexture.current.needsUpdate = true
+            setLoaded(true)
+        }
+    )
 
-  const groundFactory = ({ texture }) => {
-    let material = new THREE.MeshToonMaterial({ map: texture, side: THREE.FrontSide })
-    // material.transparent = true
-    // material.blending = THREE.MultiplyBlending
-    material.opacity = 1
+    const groundFactory = ({ texture }) => {
+        let material = new THREE.MeshToonMaterial({ map: texture, side: THREE.FrontSide })
+            // material.transparent = true
+            // material.blending = THREE.MultiplyBlending
+        material.opacity = 1
 
-    let geometry = new THREE.PlaneGeometry( 135 / 3, 135 / 3, 32 )
-    let object = new THREE.Mesh( geometry, material )
-    object.userData.type = 'ground'
-    object.rotation.x = -Math.PI / 2
-    // shift slightly to allow for OutlineEffect
-    object.position.y = -0.03
-    // object.renderOrder = 0.7
-    return object
-  }
-
-  useEffect(() => {
-    if (world.ground) {
-      if (!loaded) {
-        load()
-      } else {
-        object.current = groundFactory({ texture: groundTexture.current })
-        object.current.visible = world.ground
-        object.current.layers.disable(0)
-        object.current.layers.enable(1)
-        object.current.layers.disable(2)
-        object.current.layers.enable(3)
-        scene.add(object.current)
-      }
+        let geometry = new THREE.PlaneGeometry(135 / 3, 135 / 3, 32)
+        let object = new THREE.Mesh(geometry, material)
+        object.userData.type = 'ground'
+        object.rotation.x = -Math.PI / 2
+            // shift slightly to allow for OutlineEffect
+        object.position.y = -0.03
+            // object.renderOrder = 0.7
+        return object
     }
 
-    return function cleanup () {
-      scene.remove(object.current)
-    }
-  }, [world.ground, loaded])
+    useEffect(() => {
+        if (world.ground) {
+            if (!loaded) {
+                load()
+            } else {
+                object.current = groundFactory({ texture: groundTexture.current })
+                object.current.visible = world.ground
+                object.current.layers.disable(0)
+                object.current.layers.enable(1)
+                object.current.layers.disable(2)
+                object.current.layers.enable(3)
+                scene.add(object.current)
+            }
+        }
 
-  return object.current
+        return function cleanup() {
+            scene.remove(object.current)
+        }
+    }, [world.ground, loaded])
+
+    return object.current
 }
 
 const useRoom = (world, scene) => {
-  const [loaded, setLoaded] = useState(false)
+    const [loaded, setLoaded] = useState(false)
 
-  const object = useRef(null)
-  const wallTexture = useRef(null)
+    const object = useRef(null)
+    const wallTexture = useRef(null)
 
-  const load = () => imageLoader.load(
-    'data/shot-generator/grid_wall2.png',
-    image => {
-      wallTexture.current = new THREE.Texture()
+    const load = () => imageLoader.load(
+        'data/shot-generator/grid_wall2.png',
+        image => {
+            wallTexture.current = new THREE.Texture()
 
-      wallTexture.current.image = image
-      wallTexture.current.wrapS = wallTexture.current.wrapT = THREE.RepeatWrapping
-      wallTexture.current.offset.set( 0, 0 )
-      wallTexture.current.repeat.set( 4.5, 4.5 )
-      wallTexture.current.needsUpdate = true
+            wallTexture.current.image = image
+            wallTexture.current.wrapS = wallTexture.current.wrapT = THREE.RepeatWrapping
+            wallTexture.current.offset.set(0, 0)
+            wallTexture.current.repeat.set(4.5, 4.5)
+            wallTexture.current.needsUpdate = true
 
-      setLoaded(true)
-    }
-  )
-
-  const roomFactory = ({ width, length, height, texture }) => {
-    let object = buildSquareRoom(
-      width,
-      length,
-      height,
-      { textures: { wall: texture } }
+            setLoaded(true)
+        }
     )
-    // shift slightly to allow for OutlineEffect
-    object.position.y = -0.03
-    return object
-  }
 
-  useEffect(() => {
-    if (world.room.visible) {
-      if (!loaded) {
-        load()
-      } else {
-        object.current = roomFactory({
-          width: world.room.width,
-          length: world.room.length,
-          height: world.room.height,
-          texture: wallTexture.current
-        })
-        object.current.visible = world.room.visible
-        scene.add(object.current)
-      }
+    const roomFactory = ({ width, length, height, texture }) => {
+        let object = buildSquareRoom(
+                width,
+                length,
+                height, { textures: { wall: texture } }
+            )
+            // shift slightly to allow for OutlineEffect
+        object.position.y = -0.03
+        return object
     }
 
-    return function cleanup () {
-      scene.remove(object.current)
-    }
-  }, [world.room, loaded])
+    useEffect(() => {
+        if (world.room.visible) {
+            if (!loaded) {
+                load()
+            } else {
+                object.current = roomFactory({
+                    width: world.room.width,
+                    length: world.room.length,
+                    height: world.room.height,
+                    texture: wallTexture.current
+                })
+                object.current.visible = world.room.visible
+                scene.add(object.current)
+            }
+        }
 
-  return object.current
+        return function cleanup() {
+            scene.remove(object.current)
+        }
+    }, [world.room, loaded])
+
+    return object.current
 }
 
 const World = ({ world, scene, storyboarderFilePath, updateWorldEnvironment }) => {
-  const [group, setGroup] = useState(null)
+    const [group, setGroup] = useState(null)
 
-  const ground = useGround(world, scene)
-  const room = useRoom(world, scene)
+    const ground = useGround(world, scene)
+    const room = useRoom(world, scene)
 
-  let load = async file => {
-    let filepath = await prepareFilepathForModel({
-      model: file,
-      type: 'environment',
+    let load = async file => {
+        let filepath = await prepareFilepathForModel({
+            model: file,
+            type: 'environment',
 
-      storyboarderFilePath,
+            storyboarderFilePath,
 
-      onFilePathChange: filepath => {
-        // new relative path
-        updateWorldEnvironment({ file: filepath })
-      }
-    })
+            onFilePathChange: filepath => {
+                // new relative path
+                updateWorldEnvironment({ file: filepath })
+            }
+        })
 
-    if (!filepath) {
-      setGroup(null)
-      return
-    }
-
-    switch (path.extname(filepath)) {
-      case '.obj':
-        objLoader.load(
-          filepath,
-          event => {
-          },
-          null,
-          error => {
-            console.error(error)
-            alert('Error loading environment model file:\n' + filepath)
-            updateWorldEnvironment({ file: undefined })
+        if (!filepath) {
             setGroup(null)
-          }
-        )
-        break
+            return
+        }
 
-      case '.gltf':
-      case '.glb':
-        gltfLoader.load(
-          filepath,
-          data => {
-            const g = new THREE.Group()
+        switch (path.extname(filepath)) {
+            case '.obj':
+                objLoader.load(
+                    filepath,
+                    event => {},
+                    null,
+                    error => {
+                        console.error(error)
+                        alert('Error loading environment model file:\n' + filepath)
+                        updateWorldEnvironment({ file: undefined })
+                        setGroup(null)
+                    }
+                )
+                break
 
-            data.scene.children.forEach(child => {
-              if (child.type === 'Mesh') {
-                let m = child.clone()
+            case '.gltf':
+            case '.glb':
+                gltfLoader.load(
+                    filepath,
+                    data => {
+                        const g = new THREE.Group()
 
-                const material = new THREE.MeshToonMaterial({
-                  color: 0xffffff,
-                  emissive: 0x0,
-                  specular: 0x0,
-                  skinning: true,
-                  shininess: 0,
-                  flatShading: false
-                })
-                m.material = material
+                        data.scene.children.forEach(child => {
+                            if (child.type === 'Mesh') {
+                                let m = child.clone()
 
-                g.add(m)
-              }
-            })
+                                const material = new THREE.MeshToonMaterial({
+                                    color: 0xffffff,
+                                    emissive: 0x0,
+                                    specular: 0x0,
+                                    skinning: true,
+                                    shininess: 0,
+                                    flatShading: false
+                                })
+                                m.material = material
 
-            setGroup(g)
-          },
-          null,
-          error => {
-            console.error(error)
-            alert('Error loading environment model file:\n' + filepath)
-            updateWorldEnvironment({ file: undefined })
+                                g.add(m)
+                            }
+                        })
+
+                        setGroup(g)
+                    },
+                    null,
+                    error => {
+                        console.error(error)
+                        alert('Error loading environment model file:\n' + filepath)
+                        updateWorldEnvironment({ file: undefined })
+                        setGroup(null)
+                    }
+                )
+                break
+
+            default:
+                alert('Error loading environment model file:\n' + filepath)
+                updateWorldEnvironment({ file: undefined })
+                setGroup(null)
+                break
+        }
+    }
+
+    // deferring to load, which runs async
+    // see: https://stackoverflow.com/questions/53332321
+    useEffect(() => {
+        if (world.environment.file) {
+            load(world.environment.file)
+        } else {
             setGroup(null)
-          }
-        )
-        break
+            return
+        }
+    }, [world.environment.file])
 
-      default:
-        alert('Error loading environment model file:\n' + filepath)
-        updateWorldEnvironment({ file: undefined })
-        setGroup(null)
-        break
-    }
-  }
+    useEffect(() => {
+        if (!group) return
 
-  // deferring to load, which runs async
-  // see: https://stackoverflow.com/questions/53332321
-  useEffect(() => {
-    if (world.environment.file) {
-      load(world.environment.file)
-    } else {
-      setGroup(null)
-      return
-    }
-  }, [world.environment.file])
+        let scale = world.environment.scale
+        group.scale.set(scale, scale, scale)
+        group.updateMatrix()
+    }, [group, world.environment.scale])
 
-  useEffect(() => {
-    if (!group) return
+    useEffect(() => {
+        if (group) {
+            group.visible = world.environment.visible
+        }
+    }, [group, world.environment.visible])
 
-    let scale = world.environment.scale
-    group.scale.set(scale, scale, scale)
-    group.updateMatrix()
-  }, [group, world.environment.scale])
+    useEffect(() => {
+        if (group) {
+            group.rotation.y = world.environment.rotation
+        }
+    }, [group, world.environment.rotation])
 
-  useEffect(() => {
-    if (group) {
-      group.visible = world.environment.visible
-    }
-  }, [group, world.environment.visible])
+    useEffect(() => {
+        if (group) {
+            group.position.x = world.environment.x
+            group.position.z = world.environment.y
+            group.position.y = world.environment.z
+        }
+    }, [group, world.environment.x, world.environment.y, world.environment.z])
 
-  useEffect(() => {
-    if (group) {
-      group.rotation.y = world.environment.rotation
-    }
-  }, [group, world.environment.rotation])
+    useEffect(() => {
+        if (!group) return
 
-  useEffect(() => {
-    if (group) {
-      group.position.x = world.environment.x
-      group.position.z = world.environment.y
-      group.position.y = world.environment.z
-    }
-  }, [group, world.environment.x, world.environment.y, world.environment.z])
+        scene.add(group)
 
-  useEffect(() => {
-    if (!group) return
+        return function cleanup() {
+            scene.remove(group)
+        }
+    }, [group])
 
-    scene.add(group)
+    useEffect(() => {
+        scene.background ?
+            scene.background.set(world.backgroundColor) :
+            scene.background = new THREE.Color(world.backgroundColor)
 
-    return function cleanup () {
-      scene.remove(group)
-    }
-  }, [group])
+    }, [world.backgroundColor])
 
-  useEffect(() => {
-    scene.background
-      ? scene.background.set(world.backgroundColor)
-      : scene.background = new THREE.Color(world.backgroundColor)
+    const ambientLight = useRef(null)
+    const directionalLight = useRef(null)
 
-  }, [world.backgroundColor])
+    useEffect(() => {
+        if (ambientLight.current) {
+            ambientLight.current.intensity = world.ambient.intensity
+        } else {
+            ambientLight.current = new THREE.AmbientLight(0xffffff, world.ambient.intensity)
+            scene.add(ambientLight.current)
+        }
+    }, [world.ambient.intensity])
 
-  const ambientLight = useRef(null)
-  const directionalLight = useRef(null)
+    useEffect(() => {
+        if (directionalLight.current) {
+            directionalLight.current.intensity = world.directional.intensity
+            directionalLight.current.rotation.x = 0
+            directionalLight.current.rotation.z = 0
+            directionalLight.current.rotation.y = world.directional.rotation
+            directionalLight.current.rotateX(world.directional.tilt + Math.PI / 2)
 
-  useEffect(() => {
-    if (ambientLight.current)
-    {
-      ambientLight.current.intensity = world.ambient.intensity
-    } else {
-      ambientLight.current = new THREE.AmbientLight(0xffffff, world.ambient.intensity)
-      scene.add(ambientLight.current)
-    }
-  }, [world.ambient.intensity])
+            //scene.remove(directionalLight.current.helper)
+            // var helper = new THREE.DirectionalLightHelper( directionalLight.current, 0.14 );
+            // scene.add(helper)
+            //directionalLight.current.helper = helper
+        } else {
+            let dirLight = new THREE.DirectionalLight(0xffffff, world.directional.intensity)
+            dirLight.position.set(0, 1.5, 0)
+            dirLight.target.position.set(0, 0, 0.4)
+            dirLight.add(dirLight.target)
+            dirLight.intensity = world.directional.intensity
+            dirLight.rotation.y = world.directional.rotation
+            dirLight.rotateX(world.directional.tilt + Math.PI / 2)
+                //dirLight.rotation.x = world.directional.tilt+Math.PI/2
+            directionalLight.current = dirLight
+                // var helper = new THREE.DirectionalLightHelper( dirLight, 0.14 );
+                // scene.add(helper)
+                // directionalLight.current.helper = helper
+            scene.add(directionalLight.current)
+        }
+    }, [world.directional.intensity, world.directional.rotation, world.directional.tilt])
 
-  useEffect(() => {
-    if (directionalLight.current)
-    {
-      directionalLight.current.intensity = world.directional.intensity
-      directionalLight.current.rotation.x = 0
-      directionalLight.current.rotation.z = 0
-      directionalLight.current.rotation.y = world.directional.rotation
-      directionalLight.current.rotateX(world.directional.tilt+Math.PI/2)
-
-      //scene.remove(directionalLight.current.helper)
-      // var helper = new THREE.DirectionalLightHelper( directionalLight.current, 0.14 );
-      // scene.add(helper)
-      //directionalLight.current.helper = helper
-    } else {
-      let dirLight = new THREE.DirectionalLight(0xffffff, world.directional.intensity)
-      dirLight.position.set(0,1.5,0)
-      dirLight.target.position.set(0,0,0.4)
-      dirLight.add(dirLight.target)
-      dirLight.intensity = world.directional.intensity
-      dirLight.rotation.y = world.directional.rotation
-      dirLight.rotateX(world.directional.tilt+Math.PI/2)
-      //dirLight.rotation.x = world.directional.tilt+Math.PI/2
-      directionalLight.current = dirLight
-      // var helper = new THREE.DirectionalLightHelper( dirLight, 0.14 );
-      // scene.add(helper)
-      // directionalLight.current.helper = helper
-      scene.add(directionalLight.current)
-    }
-  }, [world.directional.intensity, world.directional.rotation, world.directional.tilt])
-
-  return null
+    return null
 }
 
 module.exports = World
