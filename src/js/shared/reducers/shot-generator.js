@@ -690,6 +690,9 @@ const selectionsReducer = (state = [], action) => {
       case 'DUPLICATE_OBJECTS':
         // select the new duplicates, replacing the selection list
         return action.payload.newIds
+      
+      default:
+        return
     }
   })
 }
@@ -858,6 +861,9 @@ const metaReducer = (state = {}, action, appState) => {
       case 'SET_META_STORYBOARDER_FILE_PATH':
         draft.storyboarderFilePath = action.payload
         return
+
+      default:
+        return
     }
   })
 }
@@ -870,6 +876,9 @@ const activeCameraReducer = (state = initialScene.activeCamera, action) => {
 
       case 'SET_ACTIVE_CAMERA':
         return action.payload
+      
+      default:
+        return
     }
   })
 }
