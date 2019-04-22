@@ -17,6 +17,8 @@ const getSelections = state => state.selections.present
 
 const getActiveCamera = state => state.activeCamera.present
 
+const getSelectedBone = state => state.selectedBone.present
+
 const getIsSceneDirty = state => {
   let current = hashify(JSON.stringify(getSerializedState(state)))
   return current !== state.meta.lastSavedHash
@@ -883,6 +885,27 @@ const activeCameraReducer = (state = initialScene.activeCamera, action) => {
   })
 }
 
+const selectedBoneReducer = (state = undefined, action) => {
+  return produce(state, draft => {
+    switch (action.type) {
+      case 'LOAD_SCENE':
+        // clear selections
+        return undefined
+
+      // select a single object
+      case 'SELECT_OBJECT':
+        // de-select any currently selected bone
+        return undefined
+
+      case 'SELECT_BONE':
+        return action.payload
+
+      default:
+        return
+    }
+  })
+}
+
 const mainReducer = (state = {}, action) => {
   return produce(state, draft => {
     switch (action.type) {
@@ -895,15 +918,7 @@ const mainReducer = (state = {}, action) => {
         if (!action.payload.world.ambient) draft.world.ambient = initialScene.world.ambient
         if (!action.payload.world.directional) draft.world.directional = initialScene.world.directional
 
-        // clear selections
-        draft.selectedBone = undefined
         draft.mainViewCamera = 'live'
-        return
-
-      // select a single object
-      case 'SELECT_OBJECT':
-        // de-select any currently selected bone
-        draft.selectedBone = undefined
         return
 
       case 'SET_INPUT_ACCEL':
@@ -939,11 +954,6 @@ const mainReducer = (state = {}, action) => {
 
       case 'SET_ASPECT_RATIO':
         draft.aspectRatio = action.payload
-        return
-
-      case 'SELECT_BONE':
-        //console.log('trying to get bone with id: ', action.payload)
-        draft.selectedBone = action.payload
         return
 
       case 'SET_MAIN_VIEW_CAMERA':
@@ -1088,6 +1098,7 @@ const rootReducer = (state = initialState, action) => {
     selections: undoable(selectionsReducer, { limit: 50, debug: true })(state.selections, action),
     sceneObjects: undoable(sceneObjectsReducer, { limit: 50, debug: true, filter: filterSceneObjectHistory })(state.sceneObjects, action),
     activeCamera: undoable(activeCameraReducer, { limit: 50, debug: true })(state.activeCamera, action),
+    selectedBone: undoable(selectedBoneReducer, { limit: 50, debug: true })(state.selectedBone, action),
 
     // must run last to keep an accurate lastSavedHash
     meta: metaReducer(state.meta, action, state)
@@ -1170,6 +1181,7 @@ module.exports = {
   getSceneObjects,
   getSelections,
   getActiveCamera,
+  getSelectedBone,
 
   getSerializedState,
   getIsSceneDirty

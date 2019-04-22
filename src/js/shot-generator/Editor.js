@@ -68,6 +68,7 @@ const {
   getSceneObjects,
   getSelections,
   getActiveCamera,
+  getSelectedBone,
 
   getSerializedState,
   getIsSceneDirty
@@ -194,7 +195,7 @@ const SceneManager = connect(
     sceneObjects: getSceneObjects(state),
     remoteInput: state.input,
     selections: getSelections(state),
-    selectedBone: state.selectedBone,
+    selectedBone: getSelectedBone(state),
     mainViewCamera: state.mainViewCamera,
     activeCamera: getActiveCamera(state),
     aspectRatio: state.aspectRatio,
@@ -1314,7 +1315,7 @@ const ElementsPanel = connect(
     world: state.world,
     sceneObjects: getSceneObjects(state),
     selections: getSelections(state),
-    selectedBone: state.selectedBone,
+    selectedBone: getSelectedBone(state),
     models: state.models,
     activeCamera: getActiveCamera(state),
 
@@ -3263,7 +3264,7 @@ const Editor = connect(
     aspectRatio: state.aspectRatio,
     sceneObjects: getSceneObjects(state),
     world: state.world,
-    selectedBone: state.selectedBone,
+    selectedBone: getSelectedBone(state),
     attachments: state.attachments
   }),
   {
