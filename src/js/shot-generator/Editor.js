@@ -1,3 +1,4 @@
+const fs = require('fs-extra')
 const path = require('path')
 
 const { Provider, connect } = require('react-redux')
