@@ -131,6 +131,9 @@ createServer({
   updateServer: payload => store.dispatch(updateServer(payload))
 })
 
+const XRServer = require('../../express-xr/app')
+const xrServer = new XRServer({ store })
+
 // are we testing locally?
 // SHOT_GENERATOR_STANDALONE=true npm start
 if (process.env.SHOT_GENERATOR_STANDALONE) {

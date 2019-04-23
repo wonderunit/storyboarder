@@ -16,8 +16,6 @@ const prompt = require('electron-prompt')
 
 const { createSelector } = require('reselect')
 
-const XRServer = require("../express-xr/app")
-
 //const h = require('../h')
 //const useComponentSize = require('../use-component-size')
 const h = require('../utils/h')
@@ -2711,10 +2709,6 @@ const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, set
     selectObject(id)
   }
 
-  const onCreateXRServerClick = () => {
-    const appServer = new XRServer();
-  };
-
   const onCreateStressClick = () => {
     for (let i = 0; i < 500; i++) {
       onCreateObjectClick()
@@ -2796,8 +2790,7 @@ const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, set
         ['a[href=#]', { onClick: preventDefault(onCreateObjectClick) }, [[Icon, { src: 'icon-toolbar-object' }], 'Object']],
         ['a[href=#]', { onClick: preventDefault(onCreateCharacterClick) }, [[Icon, { src: 'icon-toolbar-character' }], 'Character']],
         ['a[href=#]', { onClick: preventDefault(onCreateLightClick) }, [[Icon, { src: 'icon-toolbar-light' }], 'Light']],
-        ['a[href=#]', { onClick: preventDefault(onCreateVolumeClick) }, [[Icon, { src: 'icon-toolbar-volume' }], 'Volume']],
-        ['a[href=#]', { onClick: preventDefault(onCreateXRServerClick) }, [[Icon, { src: 'icon-toolbar-object' }], 'XR Server']],
+        ['a[href=#]', { onClick: preventDefault(onCreateVolumeClick) }, [[Icon, { src: 'icon-toolbar-volume' }], 'Volume']]
       ]],
       // ['a[href=#]', { onClick: preventDefault(onCreateStressClick) }, '+ STRESS'],
 
