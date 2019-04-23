@@ -24,13 +24,11 @@ const Output = connect(
   })
 )(({ sceneObjects }) => {
 
-  let list = Object.values(sceneObjects).map(sceneObject => {
-    return ['div', sceneObject.id + ": " + sceneObject.type]
-  })
-
   return h(['div', [
     ['div', 'Scene:'],
-    list
+    Object.values(sceneObjects).map(sceneObject =>
+      ['div', `id: ${sceneObject.id} type: ${sceneObject.type}`]
+    )
   ]])
 })
 

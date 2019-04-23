@@ -7,23 +7,22 @@ const http = require('http').Server(app)
 
 const portNumber = 1234
 
-const Bundler = require('parcel-bundler')
-
 const { getSerializedState } = require('../shared/reducers/shot-generator')
 
 class XRServer {
   constructor ({ store }) {
 
+    app.use('/', express.static(
+      path.join(__dirname, 'dist'))
+    )
+
+    app.get('/', function(req, res) {
+      res.sendFile(path.join(__dirname, 'dist', 'index.html'))
+    })
+
     app.get('/state.json', (req, res) => {
       res.json(getSerializedState(store.getState()))
     })
-
-    const file = __dirname + '/src/index.html'
-    const bundler = new Bundler(file, {
-      hmr: false,
-      target: 'browser'
-    })
-    app.use(bundler.middleware())
 
     http.on('error', err => {
       that.emit('error', err)

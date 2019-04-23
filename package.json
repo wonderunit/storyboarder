@@ -15,7 +15,8 @@
     "clean:fixtures": "git checkout test/fixtures && git clean test/fixtures -f",
     "prefs": "echo ~/Library/Application\\\\ Support/Storyboarder/pref.json",
     "prefs:reveal": "open ~/Library/Application\\ Support/Storyboarder",
-    "postinstall": "electron-builder install-app-deps && npm explore deasync -- node-gyp rebuild"
+    "postinstall": "electron-builder install-app-deps",
+    "xr:watch": "parcel watch --no-hmr src/js/express-xr/src/index.html -d src/js/express-xr/dist"
   },
   "repository": {
     "type": "git",
