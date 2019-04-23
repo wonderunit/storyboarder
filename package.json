@@ -15,7 +15,7 @@
     "clean:fixtures": "git checkout test/fixtures && git clean test/fixtures -f",
     "prefs": "echo ~/Library/Application\\\\ Support/Storyboarder/pref.json",
     "prefs:reveal": "open ~/Library/Application\\ Support/Storyboarder",
-    "postinstall": "electron-builder install-app-deps"
+    "postinstall": "electron-builder install-app-deps && npm explore deasync -- node-gyp rebuild"
   },
   "repository": {
     "type": "git",
@@ -106,6 +106,7 @@
     "mocha": "3.5.0",
     "mock-fs": "^4.7.0",
     "nock": "9.4.2",
+    "parcel-bundler": "1.12.3",
     "webpack": "4.23.1"
   },
   "dependencies": {
