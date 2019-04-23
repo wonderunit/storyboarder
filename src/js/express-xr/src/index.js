@@ -14,23 +14,13 @@ const { reducer } = require('../../shared/reducers/shot-generator')
 
 const configureStore = preloadedState => {
   const store = createStore(reducer, preloadedState, applyMiddleware(thunkMiddleware))
+  window.$r = { store }
   return store
 }
 
-const Output = connect(
-  state => ({
-    world: state.world,
-    sceneObjects: state.sceneObjects
-  })
-)(({ sceneObjects }) => {
-
-  return h(['div', [
-    ['div', 'Scene:'],
-    Object.values(sceneObjects).map(sceneObject =>
-      ['div', `id: ${sceneObject.id} type: ${sceneObject.type}`]
-    )
-  ]])
-})
+const { createViewerXR } = require('./ViewerXR')
+const SceneContext = React.createContext(new THREE.Scene())
+const ViewerXR = createViewerXR({ SceneContext })
 
 fetch('/state.json')
   .then(response => response.json())
@@ -40,7 +30,7 @@ fetch('/state.json')
     ReactDOM.render(
       h([
         Provider, { store }, [
-          Output
+          ViewerXR
         ]
       ]),
       document.getElementById('main')
