@@ -1100,19 +1100,21 @@ const groupBySceneObjectHistory = (function() {
   return action => {
     let shouldGroup
 
-    if (
-      // there was an action before
-      lastAction &&
-      // it was, and still is, type 'UPDATE_OBJECT'
-      (action.type === 'UPDATE_OBJECT' && lastAction.type === 'UPDATE_OBJECT') &&
-      // and the id is the same
-      (action.payload.id === lastAction.payload.id)
-    ) {
-      let lastProps = Object.keys(lastAction.payload).sort()
-      let currProps = Object.keys(action.payload).sort()
+    if (action.type === 'UPDATE_OBJECT') {
+      // was there a matching action before?
+      if (lastAction && lastAction.type === 'UPDATE_OBJECT') {
+        // is id is the same?
+        if (action.payload.id === lastAction.payload.id) {
+          let lastProps = Object.keys(lastAction.payload).sort()
+          let currProps = Object.keys(action.payload).sort()
 
-      // are we still modifying the same properties?
-      if (equal(lastProps, currProps)) {
+          // are we still modifying the same properties?
+          if (equal(lastProps, currProps)) {
+            shouldGroup = true
+          }
+        }
+      } else {
+        // no lastAction, start a new group
         shouldGroup = true
       }
     }
@@ -1134,7 +1136,8 @@ const undoableSceneObjectsReducer = undoable(sceneObjectsReducer, {
   limit: 50,
   debug: false,
   filter: filterSceneObjectHistory,
-  groupBy: groupByActionTypes('UPDATE_OBJECT') // groupBySceneObjectHistory
+  // groupBy: groupByActionTypes('UPDATE_OBJECT')
+  groupBy: groupBySceneObjectHistory
 })
 const undoableSelectionsReducer = undoable(selectionsReducer, { limit: 50, debug: false })
 const undoableActiveCameraReducer = undoable(activeCameraReducer, { limit: 50, debug: false })
