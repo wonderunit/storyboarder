@@ -9,16 +9,20 @@ const h = require('../../utils/h')
 const ViewerXR = connect(
   state => ({
     aspectRatio: state.aspectRatio,
+
+    world: state.world,
     sceneObjects: state.sceneObjects,
-    world: state.world
+    activeCamera: state.activeCamera
   })
 )(
-  ({ aspectRatio, sceneObjects, world }) => {
+  ({ aspectRatio, world, sceneObjects, activeCamera }) => {
     return h(
       [SceneManagerXR, {
         aspectRatio,
+
+        world,
         sceneObjects,
-        world
+        activeCamera
       }]
     )
 })

@@ -1,26 +1,64 @@
 const THREE = require('three')
 window.THREE = window.THREE || THREE
-const { Canvas, useThree } = require('react-three-fiber')
+const { Canvas, useThree, useUpdate } = require('react-three-fiber')
 
 const { connect } = require('react-redux')
 const React = require('react')
-const { useEffect, useRef, useMemo } = React
+const { useEffect, useRef, useMemo, useLayoutEffect } = React
 
 const { WEBVR } = require('../../vendor/three/examples/js/vr/WebVR')
 
+const SGCamera = ({ i, aspectRatio, activeCamera, setDefaultCamera, ...props }) => {
+  const ref = useUpdate(
+    self => {
+      self.rotation.x = 0
+      self.rotation.z = 0
+      self.rotation.y = props.rotation
+      self.rotateX(props.tilt)
+      self.rotateZ(props.roll)
+    },
+    [props.rotation, props.tilt, props.roll]
+  )
+
+  useLayoutEffect(() => {
+    if (activeCamera === props.id) {
+      setDefaultCamera(ref.current)
+    }
+  }, [activeCamera])
+
+  return <perspectiveCamera
+    key={i}
+    ref={ref}
+    aspect={aspectRatio}
+    fov={props.fov}
+
+    userData={{
+      type: props.type,
+      id: props.id
+    }}
+    onUpdate={self => self.updateProjectionMatrix()}
+  />
+}
+
 const SceneManagerXR = connect(
-  state => ({}),
-  {}
-)(({ aspectRatio, sceneObjects, world }) => {
+  state => ({
+    
+  }),
+  {
+    
+  }
+)(({ aspectRatio, world, sceneObjects, activeCamera }) => {
   const groundTexture = useMemo(() => new THREE.TextureLoader().load('/data/system/grid_floor.png'), [])
 
+  const SGModel = ({}) => {
+    return null
+  }
+
   const SceneContent = () => {
-    const camera = useRef(null)
     const renderer = useRef(null)
     const xrOffset = useRef(null)
 
     const { gl, scene, setDefaultCamera } = useThree()
-    useEffect(() => void setDefaultCamera(camera.current), [])
 
     useEffect(() => {
       if (!renderer.current) {
@@ -50,44 +88,20 @@ const SceneManagerXR = connect(
       }
     })
 
-    useEffect(() => {
-      if (camera.current) {
-        const { userData } = camera.current
-        camera.current.rotation.x = 0
-        camera.current.rotation.z = 0
-        camera.current.rotation.y = userData.rotation
-        camera.current.rotateX(userData.tilt)
-        camera.current.rotateZ(userData.roll)
-      }
-    })
-
-    let components = Object.values(sceneObjects).map((props, i) => {
+    return Object.values(sceneObjects).map((props, i) => {
       switch (props.type) {
         case 'camera':
           return (
             <group key={i} ref={xrOffset} position={[props.x, props.z, props.y]}>
-              <perspectiveCamera
-                key={i}
-                ref={camera}
-                aspect={aspectRatio}
-                fov={props.fov}
-                userData={{
-                  type: props.type,
-                  id: props.id,
-                  rotation: props.rotation,
-                  tilt: props.tilt,
-                  roll: props.roll
-                }}
-                onUpdate={self => self.updateProjectionMatrix()}
-              />
+              <SGCamera {...{ i, aspectRatio, activeCamera, setDefaultCamera, ...props }} />
             </group>
           )
+        case 'object':
+          return <SGModel {...props} />
       }
-    })
+    }).filter(Boolean)
 
-    components = components.filter(Boolean)
-
-    return <>{components.map(c => c)}</>
+    return components
   }
 
   const WorldContent = ({ groundTexture }) => {
