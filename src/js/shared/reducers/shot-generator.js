@@ -1094,11 +1094,18 @@ const filterSceneObjectHistory = (action, currentState, previousHistory) => {
 }
 
   }
+const { groupByActionTypes } = require('redux-undo')
+
 const undoableReducers = combineReducers({
-  selections: undoable(selectionsReducer, { limit: 50, debug: true }),
-  sceneObjects: undoable(sceneObjectsReducer, { limit: 50, debug: true, filter: filterSceneObjectHistory }),
-  activeCamera: undoable(activeCameraReducer, { limit: 50, debug: true }),
-  selectedBone: undoable(selectedBoneReducer, { limit: 50, debug: true })
+  selections: undoable(selectionsReducer, { limit: 50, debug: false }),
+  sceneObjects: undoable(sceneObjectsReducer, {
+    limit: 50,
+    debug: false,
+    filter: filterSceneObjectHistory,
+    groupBy: groupByActionTypes('UPDATE_OBJECT'),
+  }),
+  activeCamera: undoable(activeCameraReducer, { limit: 50, debug: false }),
+  selectedBone: undoable(selectedBoneReducer, { limit: 50, debug: false })
 })
 
 const reduceReducers = require('reduce-reducers')
