@@ -7,6 +7,7 @@ const SGCamera = ({ i, aspectRatio, activeCamera, setDefaultCamera, ...props }) 
       self.rotation.x = 0
       self.rotation.z = 0
       self.rotation.y = props.rotation
+
       self.rotateX(props.tilt)
       self.rotateZ(props.roll)
     },
@@ -22,13 +23,19 @@ const SGCamera = ({ i, aspectRatio, activeCamera, setDefaultCamera, ...props }) 
   return <perspectiveCamera
     key={i}
     ref={ref}
-    aspect={aspectRatio}
-    fov={props.fov}
 
     userData={{
       type: props.type,
       id: props.id
     }}
+
+    aspect={aspectRatio}
+    fov={props.fov}
+    near={0.01}
+    far={1000}
+
+    position={[ props.x, props.z, props.y ]}
+
     onUpdate={self => self.updateProjectionMatrix()}
   />
 }
