@@ -1093,7 +1093,6 @@ const filterSceneObjectHistory = (action, currentState, previousHistory) => {
   return true
 }
 
-  }
 const { groupByActionTypes } = require('redux-undo')
 
 const undoableReducers = combineReducers({
