@@ -11,16 +11,19 @@ const { WEBVR } = require('../../vendor/three/examples/js/vr/WebVR')
 const SGCamera = require('./components/SGCamera')
 
 const SGCharacter = ({ i, aspectRatio, activeCamera, setDefaultCamera, ...props }) => {
-  console.log('SGCharacter', props)
   return <mesh
     visible
     key={i}
-    userData={{ test: 'hello' }}
-    position={new THREE.Vector3(props.rotation.x, props.rotation.y, props.rotation.z)}
+    userData={{ id: props.id }}
+    position={[ props.x, props.z, props.y ]}
     rotation={new THREE.Euler(0, 0, 0)}
     geometry={new THREE.SphereGeometry(0.5, 16, 16)}
     material={
-      new THREE.MeshStandardMaterial({ color: new THREE.Color('red'), transparent: true, side: THREE.DoubleSide })
+      new THREE.MeshStandardMaterial({
+        color: new THREE.Color('red'),
+        transparent: true,
+        side: THREE.DoubleSide
+      })
     }
   />
 }
