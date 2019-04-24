@@ -29,18 +29,7 @@ const createViewerXR = ({ SceneContext }) => {
 
       const scene = useContext(SceneContext)
 
-      // console.log({
-      //   aspectRatio, sceneObjects, world
-      // })
-
-      // Object.values(sceneObjects).map(sceneObject =>
-      //   ['div', `id: ${sceneObject.id} type: ${sceneObject.type}`]
-      // )
-
       return h(
-        // ['div#camera-view', { ref: cameraViewElRef },
-        //   ['canvas#camera-canvas', { ref: cameraCanvasElRef, tabIndex: 1 }]
-        // ],
         [SceneManagerXR, {
           aspectRatio,
           scene,
