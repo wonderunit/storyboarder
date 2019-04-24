@@ -4,39 +4,24 @@ const { Canvas, useThree, useUpdate } = require('react-three-fiber')
 
 const { connect } = require('react-redux')
 const React = require('react')
-const { useEffect, useRef, useMemo, useLayoutEffect } = React
+const { useEffect, useRef, useMemo } = React
 
 const { WEBVR } = require('../../vendor/three/examples/js/vr/WebVR')
 
-const SGCamera = ({ i, aspectRatio, activeCamera, setDefaultCamera, ...props }) => {
-  const ref = useUpdate(
-    self => {
-      self.rotation.x = 0
-      self.rotation.z = 0
-      self.rotation.y = props.rotation
-      self.rotateX(props.tilt)
-      self.rotateZ(props.roll)
-    },
-    [props.rotation, props.tilt, props.roll]
-  )
+const SGCamera = require('./components/SGCamera')
 
-  useLayoutEffect(() => {
-    if (activeCamera === props.id) {
-      setDefaultCamera(ref.current)
-    }
-  }, [activeCamera])
-
-  return <perspectiveCamera
+const SGCharacter = ({ i, aspectRatio, activeCamera, setDefaultCamera, ...props }) => {
+  console.log('SGCharacter', props)
+  return <mesh
+    visible
     key={i}
-    ref={ref}
-    aspect={aspectRatio}
-    fov={props.fov}
-
-    userData={{
-      type: props.type,
-      id: props.id
-    }}
-    onUpdate={self => self.updateProjectionMatrix()}
+    userData={{ test: 'hello' }}
+    position={new THREE.Vector3(props.rotation.x, props.rotation.y, props.rotation.z)}
+    rotation={new THREE.Euler(0, 0, 0)}
+    geometry={new THREE.SphereGeometry(0.5, 16, 16)}
+    material={
+      new THREE.MeshStandardMaterial({ color: new THREE.Color('red'), transparent: true, side: THREE.DoubleSide })
+    }
   />
 }
 
@@ -96,8 +81,8 @@ const SceneManagerXR = connect(
               <SGCamera {...{ i, aspectRatio, activeCamera, setDefaultCamera, ...props }} />
             </group>
           )
-        case 'object':
-          return <SGModel {...props} />
+        case 'character':
+          return <SGCharacter key={i} {...props} />
       }
     }).filter(Boolean)
 
@@ -150,16 +135,18 @@ const SceneManagerXR = connect(
     <Canvas style={{ background: `#${new THREE.Color(world.backgroundColor).getHexString()}` }}>
       <SceneContent />
       <WorldContent groundTexture={groundTexture} />
-      <mesh
-        visible
-        userData={{ test: 'hello' }}
-        position={new THREE.Vector3(0, 1.75 / 2, 0)}
-        rotation={new THREE.Euler(0, 0, 0)}
-        geometry={new THREE.SphereGeometry(0.5, 16, 16)}
-        material={
-          new THREE.MeshStandardMaterial({ color: new THREE.Color('white'), transparent: true, side: THREE.DoubleSide })
-        }
-      />
+      {
+      // <mesh
+      //   visible
+      //   userData={{ test: 'hello' }}
+      //   position={new THREE.Vector3(0, 1.75 / 2, 0)}
+      //   rotation={new THREE.Euler(0, 0, 0)}
+      //   geometry={new THREE.SphereGeometry(0.5, 16, 16)}
+      //   material={
+      //     new THREE.MeshStandardMaterial({ color: new THREE.Color('white'), transparent: true, side: THREE.DoubleSide })
+      //   }
+      // />
+      }
     </Canvas>
   )
 })
