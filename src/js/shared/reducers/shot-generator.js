@@ -1,6 +1,7 @@
 const THREE = require('three')
 const { produce } = require('immer')
 const undoable = require('redux-undo').default
+const { combineReducers } = require('redux')
 const crypto = require('crypto')
 
 const hashify = string => crypto.createHash('sha1').update(string).digest('base64')
@@ -906,7 +907,7 @@ const selectedBoneReducer = (state = undefined, action) => {
   })
 }
 
-const mainReducer = (state = {}, action) => {
+const mainReducer = (state = initialState, action) => {
   return produce(state, draft => {
     switch (action.type) {
       case 'LOAD_SCENE':
@@ -1092,18 +1093,35 @@ const filterSceneObjectHistory = (action, currentState, previousHistory) => {
   return true
 }
 
-const rootReducer = (state = initialState, action) => {
-  return {
-    ...mainReducer(state, action),
-    selections: undoable(selectionsReducer, { limit: 50, debug: true })(state.selections, action),
-    sceneObjects: undoable(sceneObjectsReducer, { limit: 50, debug: true, filter: filterSceneObjectHistory })(state.sceneObjects, action),
-    activeCamera: undoable(activeCameraReducer, { limit: 50, debug: true })(state.activeCamera, action),
-    selectedBone: undoable(selectedBoneReducer, { limit: 50, debug: true })(state.selectedBone, action),
-
-    // must run last to keep an accurate lastSavedHash
-    meta: metaReducer(state.meta, action, state)
   }
-}
+const undoableReducers = combineReducers({
+  selections: undoable(selectionsReducer, { limit: 50, debug: true }),
+  sceneObjects: undoable(sceneObjectsReducer, { limit: 50, debug: true, filter: filterSceneObjectHistory }),
+  activeCamera: undoable(activeCameraReducer, { limit: 50, debug: true }),
+  selectedBone: undoable(selectedBoneReducer, { limit: 50, debug: true })
+})
+
+const reduceReducers = require('reduce-reducers')
+
+const rootReducer = reduceReducers(
+  initialState,
+  mainReducer,
+
+  (state, action) => {
+    return {
+      ...state,
+      ...undoableReducers(state, action)
+    }
+  },
+
+  // `meta` must run last, to calculate lastSavedHash
+  (state, action) => {
+    return {
+      ...state,
+      meta: metaReducer(state.meta, action, state)
+    }
+  }
+)
 
 module.exports = {
   initialState,
