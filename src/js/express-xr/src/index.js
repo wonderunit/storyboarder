@@ -18,9 +18,7 @@ const configureStore = preloadedState => {
   return store
 }
 
-const { createViewerXR } = require('./ViewerXR')
-const SceneContext = React.createContext(new THREE.Scene())
-const ViewerXR = createViewerXR({ SceneContext })
+const ViewerXR = require('./ViewerXR')
 
 fetch('/state.json')
   .then(response => response.json())

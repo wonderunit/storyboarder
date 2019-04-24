@@ -2,14 +2,14 @@ const THREE = require('three')
 window.THREE = window.THREE || THREE
 const { Canvas, useThree } = require('react-three-fiber')
 
-const { Provider, connect } = require('react-redux')
+const { connect } = require('react-redux')
 const React = require('react')
-const { useState, useEffect, useRef, useContext } = React
+const { useEffect, useRef } = React
 
 const SceneManagerXR = connect(
   state => ({}),
   {}
-)(({ aspectRatio, scene, sceneObjects, world }) => {
+)(({ aspectRatio, sceneObjects, world }) => {
   const SceneContent = () => {
     const camera = useRef()
     const { setDefaultCamera } = useThree()
