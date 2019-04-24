@@ -24,25 +24,29 @@ const SceneManagerXR = connect(
 
     useEffect(() => {
       if (!renderer.current) {
-        renderer.current = gl
+        navigator.getVRDisplays().then(displays => {
+          if (displays.length) {
+            renderer.current = gl
 
-        gl.vr.enabled = true
-        document.body.appendChild(WEBVR.createButton(gl))
+            document.body.appendChild(WEBVR.createButton(gl))
+            gl.vr.enabled = true
 
-        // controllers
-        controller1 = renderer.current.vr.getController(0)
-        xrOffset.current.add(controller1)
+            // controllers
+            controller1 = renderer.current.vr.getController(0)
+            xrOffset.current.add(controller1)
 
-        controller2 = renderer.current.vr.getController(1)
-        xrOffset.current.add(controller2)
+            controller2 = renderer.current.vr.getController(1)
+            xrOffset.current.add(controller2)
 
-        const geometry = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, -1)])
+            const geometry = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, -1)])
 
-        const line = new THREE.Line(geometry)
-        line.name = 'line'
-        line.scale.z = 5
-        controller1.add(line.clone())
-        controller2.add(line.clone())
+            const line = new THREE.Line(geometry)
+            line.name = 'line'
+            line.scale.z = 5
+            controller1.add(line.clone())
+            controller2.add(line.clone())
+          }
+        })
       }
     })
 
