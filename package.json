@@ -157,6 +157,7 @@
     "react": "16.8.3",
     "react-dom": "16.8.3",
     "react-redux": "6.0.1",
+    "react-three-fiber": "^2.0.8",
     "react-window": "1.5.0",
     "redux": "4.0.1",
     "redux-promise": "0.5.3",

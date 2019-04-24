@@ -38,12 +38,13 @@ const createViewerXR = ({ SceneContext }) => {
       // )
 
       return h(
-        ['div#camera-view', { ref: cameraViewElRef },
-          ['canvas#camera-canvas', { ref: cameraCanvasElRef, tabIndex: 1 }]
-        ],
+        // ['div#camera-view', { ref: cameraViewElRef },
+        //   ['canvas#camera-canvas', { ref: cameraCanvasElRef, tabIndex: 1 }]
+        // ],
         [SceneManagerXR, {
+          aspectRatio,
           scene,
-          sceneObjects
+          sceneObjects,
         }]
       )
   })
