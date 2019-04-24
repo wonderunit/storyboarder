@@ -29,9 +29,9 @@ const createViewerXR = ({ SceneContext }) => {
 
       const scene = useContext(SceneContext)
 
-      console.log({
-        aspectRatio, sceneObjects, world
-      })
+      // console.log({
+      //   aspectRatio, sceneObjects, world
+      // })
 
       // Object.values(sceneObjects).map(sceneObject =>
       //   ['div', `id: ${sceneObject.id} type: ${sceneObject.type}`]
@@ -45,6 +45,7 @@ const createViewerXR = ({ SceneContext }) => {
           aspectRatio,
           scene,
           sceneObjects,
+          world
         }]
       )
   })
