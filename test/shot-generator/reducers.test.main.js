@@ -11,37 +11,39 @@ const { createStore } = require('redux')
 
 const { initialState, reducer, getSceneObjects } = require('../../src/js/shared/reducers/shot-generator')
 
+const store = createStore(reducer)
+
 describe('reducer', () => {
-  // describe('sceneObjects', () => {  
-  //   it('has a displayName when name is undefined', () => {
-  //     const store = createStore(reducer)
-  // 
-  //     let state = store.getState()
-  //     assert.equal(getSceneObjects(state)['6BC46A44-7965-43B5-B290-E3D2B9D15EEE'].displayName, 'Camera 1')
-  //   })
-  // 
-  //   it('updates displayName of scene objects when a file is loaded', () => {
-  //     const store = createStore(reducer)
-  // 
-  //     let json = fs.readFileSync(path.join(__dirname, '..', 'fixtures', 'shot-generator', 'shot-generator.storyboarder'))
-  //     let data = JSON.parse(json)
-  //     let payload = data.boards[0].sg.data
-  // 
-  //     store.dispatch({ type: 'LOAD_SCENE', payload })
-  //     let state = store.getState()
-  //     let sceneObjects = getSceneObjects(state)
-  // 
-  //     for (let id in sceneObjects) {
-  //       assert(sceneObjects[id].displayName != null)
-  //     }
-  // 
-  //     assert.equal(sceneObjects['6BC46A44-7965-43B5-B290-E3D2B9D15EEE'].displayName, 'Camera 1')
-  //   })
-  // })
-  // 
+  describe('sceneObjects', () => {  
+    it('has a displayName when name is undefined', () => {
+      store.dispatch({ type: '@@redux-undo/INIT' })
+
+      let state = store.getState()
+      assert.equal(getSceneObjects(state)['6BC46A44-7965-43B5-B290-E3D2B9D15EEE'].displayName, 'Camera 1')
+    })
+  
+    it('updates displayName of scene objects when a file is loaded', () => {
+      store.dispatch({ type: '@@redux-undo/INIT' })
+
+      let json = fs.readFileSync(path.join(__dirname, '..', 'fixtures', 'shot-generator', 'shot-generator.storyboarder'))
+      let data = JSON.parse(json)
+      let payload = data.boards[0].sg.data
+  
+      store.dispatch({ type: 'LOAD_SCENE', payload })
+      let state = store.getState()
+      let sceneObjects = getSceneObjects(state)
+  
+      for (let id in sceneObjects) {
+        assert(sceneObjects[id].displayName != null)
+      }
+  
+      assert.equal(sceneObjects['6BC46A44-7965-43B5-B290-E3D2B9D15EEE'].displayName, 'Camera 1')
+    })
+  })
+
   describe('redux-undo', () => {
     it('can use groupBy to batch undo-able actions', () => {
-      const store = createStore(reducer)
+      store.dispatch({ type: '@@redux-undo/INIT' })
 
       let json = fs.readFileSync(path.join(__dirname, '..', 'fixtures', 'shot-generator', 'shot-generator.storyboarder'))
       let data = JSON.parse(json)

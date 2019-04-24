@@ -1128,11 +1128,13 @@ const groupBySceneObjectHistory = (function() {
 
 const reduceReducers = require('reduce-reducers')
 
+const { groupByActionTypes } = require('redux-undo')
+
 const undoableSceneObjectsReducer = undoable(sceneObjectsReducer, {
   limit: 50,
   debug: false,
   filter: filterSceneObjectHistory,
-  groupBy: groupBySceneObjectHistory
+  groupBy: groupByActionTypes('UPDATE_OBJECT') // groupBySceneObjectHistory
 })
 const undoableSelectionsReducer = undoable(selectionsReducer, { limit: 50, debug: false })
 const undoableActiveCameraReducer = undoable(activeCameraReducer, { limit: 50, debug: false })
