@@ -1,7 +1,6 @@
 const THREE = require('three')
 const { produce } = require('immer')
 const undoable = require('redux-undo').default
-const { combineReducers } = require('redux')
 const crypto = require('crypto')
 
 const hashify = string => crypto.createHash('sha1').update(string).digest('base64')
@@ -1095,30 +1094,41 @@ const filterSceneObjectHistory = (action, currentState, previousHistory) => {
 
 const { groupByActionTypes } = require('redux-undo')
 
-const undoableReducers = combineReducers({
-  selections: undoable(selectionsReducer, { limit: 50, debug: false }),
-  sceneObjects: undoable(sceneObjectsReducer, {
-    limit: 50,
-    debug: false,
-    filter: filterSceneObjectHistory,
-    groupBy: groupByActionTypes('UPDATE_OBJECT'),
-  }),
-  activeCamera: undoable(activeCameraReducer, { limit: 50, debug: false }),
-  selectedBone: undoable(selectedBoneReducer, { limit: 50, debug: false })
-})
 
 const reduceReducers = require('reduce-reducers')
+
+const undoableSceneObjectsReducer = undoable(sceneObjectsReducer, {
+  limit: 50,
+  debug: false,
+  filter: filterSceneObjectHistory,
+})
+const undoableSelectionsReducer = undoable(selectionsReducer, { limit: 50, debug: false })
+const undoableActiveCameraReducer = undoable(activeCameraReducer, { limit: 50, debug: false })
+const undoableSelectedBoneReducer = undoable(selectedBoneReducer, { limit: 50, debug: false })
 
 const rootReducer = reduceReducers(
   initialState,
   mainReducer,
 
-  (state, action) => {
-    return {
-      ...state,
-      ...undoableReducers(state, action)
-    }
-  },
+  (state, action) => ({
+    ...state,
+    selections: undoableSelectionsReducer(state.selections, action)
+  }),
+
+  (state, action) => ({
+    ...state,
+    sceneObjects: undoableSceneObjectsReducer(state.sceneObjects, action)
+  }),
+
+  (state, action) => ({
+    ...state,
+    activeCamera: undoableActiveCameraReducer(state.activeCamera, action)
+  }),
+
+  (state, action) => ({
+    ...state,
+    selectedBone: undoableSelectedBoneReducer(state.selectedBone, action)
+  }),
 
   // `meta` must run last, to calculate lastSavedHash
   (state, action) => {
