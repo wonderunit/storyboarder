@@ -4,7 +4,7 @@ const { Canvas, useThree } = require('react-three-fiber')
 
 const { connect } = require('react-redux')
 const React = require('react')
-const { useEffect, useRef } = React
+const { useEffect, useRef, useMemo } = React
 
 const { WEBVR } = require('../../vendor/three/examples/js/vr/WebVR')
 
@@ -12,6 +12,8 @@ const SceneManagerXR = connect(
   state => ({}),
   {}
 )(({ aspectRatio, sceneObjects, world }) => {
+  const groundTexture = useMemo(() => new THREE.TextureLoader().load('/data/system/grid_floor.png'), [])
+
   const SceneContent = () => {
     const camera = useRef(null)
     const renderer = useRef(null)
@@ -84,7 +86,7 @@ const SceneManagerXR = connect(
     return <>{components.map(c => c)}</>
   }
 
-  const WorldContent = () => {
+  const WorldContent = ({ groundTexture }) => {
     const ambientLight = useRef(null)
     const directionalLight = useRef(null)
     const ground = useRef(null)
@@ -109,14 +111,18 @@ const SceneManagerXR = connect(
           intensity={world.directional.intensity}
           position={[0, 1.5, 0]}
         />
-        <mesh
+      texture.image && <mesh
           ref={ground}
           visible={!world.room.visible}
           userData={{ type: 'ground' }}
           position={new THREE.Vector3(0, -0.03, 0)}
           rotation={new THREE.Euler(-Math.PI / 2, 0, 0)}
           geometry={new THREE.PlaneGeometry(135 / 3, 135 / 3, 32)}
-          material={new THREE.MeshToonMaterial({ side: THREE.FrontSide })}
+        >
+          <meshToonMaterial attach="material" side={THREE.FrontSide}>
+            <primitive attach="map" object={groundTexture} />
+          </meshToonMaterial>
+        </mesh>
         />
       </>
     )
@@ -125,7 +131,7 @@ const SceneManagerXR = connect(
   return (
     <Canvas style={{ background: `#${new THREE.Color(world.backgroundColor).getHexString()}` }}>
       <SceneContent />
-      <WorldContent />
+      <WorldContent groundTexture={groundTexture} />
       <mesh
         visible
         userData={{ test: 'hello' }}
