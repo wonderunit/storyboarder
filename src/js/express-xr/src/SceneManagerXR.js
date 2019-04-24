@@ -6,14 +6,43 @@ const { connect } = require('react-redux')
 const React = require('react')
 const { useEffect, useRef } = React
 
+const { WEBVR } = require('../../vendor/three/examples/js/vr/WebVR')
+
 const SceneManagerXR = connect(
   state => ({}),
   {}
 )(({ aspectRatio, sceneObjects, world }) => {
   const SceneContent = () => {
-    const camera = useRef()
-    const { setDefaultCamera } = useThree()
+    const camera = useRef(null)
+    const renderer = useRef(null)
+    const xrOffset = useRef(null)
+
+    const { gl, scene, setDefaultCamera } = useThree()
     useEffect(() => void setDefaultCamera(camera.current), [])
+
+    useEffect(() => {
+      if (!renderer.current) {
+        renderer.current = gl
+
+        gl.vr.enabled = true
+        document.body.appendChild(WEBVR.createButton(gl))
+
+        // controllers
+        controller1 = renderer.current.vr.getController(0)
+        xrOffset.current.add(controller1)
+
+        controller2 = renderer.current.vr.getController(1)
+        xrOffset.current.add(controller2)
+
+        const geometry = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, -1)])
+
+        const line = new THREE.Line(geometry)
+        line.name = 'line'
+        line.scale.z = 5
+        controller1.add(line.clone())
+        controller2.add(line.clone())
+      }
+    })
 
     useEffect(() => {
       if (camera.current) {
@@ -30,21 +59,22 @@ const SceneManagerXR = connect(
       switch (props.type) {
         case 'camera':
           return (
-            <perspectiveCamera
-              key={i}
-              ref={camera}
-              aspect={aspectRatio}
-              fov={props.fov}
-              userData={{
-                type: props.type,
-                id: props.id,
-                rotation: props.rotation,
-                tilt: props.tilt,
-                roll: props.roll
-              }}
-              position={[props.x, props.z, props.y]}
-              onUpdate={self => self.updateProjectionMatrix()}
-            />
+            <group key={i} ref={xrOffset} position={[props.x, props.z, props.y]}>
+              <perspectiveCamera
+                key={i}
+                ref={camera}
+                aspect={aspectRatio}
+                fov={props.fov}
+                userData={{
+                  type: props.type,
+                  id: props.id,
+                  rotation: props.rotation,
+                  tilt: props.tilt,
+                  roll: props.roll
+                }}
+                onUpdate={self => self.updateProjectionMatrix()}
+              />
+            </group>
           )
       }
     })
