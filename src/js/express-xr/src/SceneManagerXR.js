@@ -4,29 +4,50 @@ const { Canvas, useThree, useUpdate } = require('react-three-fiber')
 
 const { connect } = require('react-redux')
 const React = require('react')
-const { useEffect, useRef, useMemo } = React
+const { useEffect, useRef, useMemo, useState } = React
 
 const { WEBVR } = require('../../vendor/three/examples/js/vr/WebVR')
+require('../../vendor/three/examples/js/loaders/LoaderSupport')
+require('../../vendor/three/examples/js/loaders/GLTFLoader')
+require('../../vendor/three/examples/js/loaders/OBJLoader2')
 
 const SGCamera = require('./components/SGCamera')
 
-const SGCharacter = ({ i, aspectRatio, activeCamera, setDefaultCamera, ...props }) => {
-  return <mesh
-    visible
-    key={i}
-    userData={{ id: props.id }}
-    position={[ props.x, props.z, props.y ]}
-    rotation={new THREE.Euler(0, 0, 0)}
-    geometry={new THREE.SphereGeometry(0.5, 16, 16)}
-    material={
-      new THREE.MeshStandardMaterial({
-        color: new THREE.Color('red'),
-        transparent: true,
-        side: THREE.DoubleSide
-      })
-    }
-  />
+const SGCharacter = ({ i, aspectRatio, activeCamera, setDefaultCamera, modelData, ...props }) => {
+
+  const mesh = useMemo(() =>
+    modelData &&
+    (
+      modelData.scene.children.find(child => child instanceof THREE.SkinnedMesh) ||
+      modelData.scene.children[0].children.find(child => child instanceof THREE.SkinnedMesh)
+    ),
+    [modelData]
+  )
+
+  return mesh
+    ? <mesh
+      visible
+      key={i}
+      userData={{ id: props.id }}
+      position={[ props.x, props.z, props.y ]}
+      rotation={new THREE.Euler(0, 0, 0)}
+      geometry={new THREE.SphereGeometry(0.5, 16, 16)}
+      material={
+        new THREE.MeshStandardMaterial({
+          color: new THREE.Color('red'),
+          transparent: true,
+          side: THREE.DoubleSide
+        })
+      }
+    />
+  : null
 }
+
+const loadingManager = new THREE.LoadingManager()
+const objLoader = new THREE.OBJLoader2(loadingManager)
+const gltfLoader = new THREE.GLTFLoader(loadingManager)
+objLoader.setLogging(false, false)
+THREE.Cache.enabled = true
 
 const SceneManagerXR = connect(
   state => ({
@@ -37,6 +58,22 @@ const SceneManagerXR = connect(
   }
 )(({ aspectRatio, world, sceneObjects, activeCamera }) => {
   const groundTexture = useMemo(() => new THREE.TextureLoader().load('/data/system/grid_floor.png'), [])
+
+  const [modelData, setModelData] = useState()
+  useMemo(() =>
+    gltfLoader.load(
+      '/data/system/dummies/gltf/adult-male.glb',
+      value => {
+        console.log('loaded!', value)
+        setModelData(value)
+      },
+      null,
+      error => {
+        console.error(error)
+      }
+    ),
+    []
+  )
 
   const SGModel = ({}) => {
     return null
@@ -85,7 +122,7 @@ const SceneManagerXR = connect(
             </group>
           )
         case 'character':
-          return <SGCharacter key={i} {...props} />
+          return <SGCharacter key={i} {...{ modelData, ...props }} />
       }
     }).filter(Boolean)
 
@@ -119,7 +156,7 @@ const SceneManagerXR = connect(
         />
       texture.image && <mesh
           ref={ground}
-          visible={!world.room.visible}
+          visible={true /*!world.room.visible*/}
           userData={{ type: 'ground' }}
           position={new THREE.Vector3(0, -0.03, 0)}
           rotation={new THREE.Euler(-Math.PI / 2, 0, 0)}
