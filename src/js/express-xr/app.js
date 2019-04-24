@@ -13,8 +13,17 @@ class XRServer {
   constructor ({ store }) {
 
     app.use('/', express.static(
-      path.join(__dirname, 'dist'))
-    )
+      path.join(__dirname, 'dist')
+    ))
+
+    app.use('/data/system', express.static(
+      path.join(__dirname, '..', '..', 'data', 'shot-generator')
+    ))
+    // if (store.getState().meta.storyboarderFilePath) {
+    //   app.use('/data/user', express.static(
+    //     store.getState().meta.storyboarderFilePath
+    //   ))
+    // }
 
     app.get('/', function(req, res) {
       res.sendFile(path.join(__dirname, 'dist', 'index.html'))
