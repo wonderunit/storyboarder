@@ -1,9 +1,17 @@
 const { useEffect, useRef } = (React = require('react'))
+const buildSquareRoom = require('../../../shot-generator/build-square-room')
 
-const SGWorld = ({ groundTexture }) => {
+const SGWorld = ({ groundTexture, wallTexture, world }) => {
   const ambientLight = useRef(null)
   const directionalLight = useRef(null)
   const ground = useRef(null)
+  const room = useRef(null)
+
+  const roomMesh = buildSquareRoom(world.room.width, world.room.length, world.room.height, {
+    textures: { wall: wallTexture }
+  })
+  roomMesh.position.y = -0.03
+  roomMesh.children[0].layers.enable(0)
 
   useEffect(() => {
     if (directionalLight.current) {
@@ -28,7 +36,7 @@ const SGWorld = ({ groundTexture }) => {
       texture.image &&{' '}
       <mesh
         ref={ground}
-        visible={true /*!world.room.visible*/}
+        visible={!world.room.visible}
         userData={{ type: 'ground' }}
         position={new THREE.Vector3(0, -0.03, 0)}
         rotation={new THREE.Euler(-Math.PI / 2, 0, 0)}
@@ -38,6 +46,7 @@ const SGWorld = ({ groundTexture }) => {
           <primitive attach="map" object={groundTexture} />
         </meshToonMaterial>
       </mesh>
+      <primitive object={roomMesh} ref={room} />
       />
     </>
   )

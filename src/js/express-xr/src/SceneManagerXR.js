@@ -11,7 +11,7 @@ require('../../vendor/three/examples/js/loaders/LoaderSupport')
 require('../../vendor/three/examples/js/loaders/GLTFLoader')
 require('../../vendor/three/examples/js/loaders/OBJLoader2')
 
-const SGSWorld = require('./components/SGWorld')
+const SGWorld = require('./components/SGWorld')
 const SGSpotLight = require('./components/SGSpotLight')
 const SGCamera = require('./components/SGCamera')
 
@@ -60,6 +60,7 @@ const SceneManagerXR = connect(
   }
 )(({ aspectRatio, world, sceneObjects, activeCamera }) => {
   const groundTexture = useMemo(() => new THREE.TextureLoader().load('/data/system/grid_floor.png'), [])
+  const wallTexture = useMemo(() => new THREE.TextureLoader().load('/data/system/grid_wall2.png'), [])
 
   const [modelData, setModelData] = useState()
   useMemo(() =>
@@ -136,18 +137,18 @@ const SceneManagerXR = connect(
   return (
     <Canvas style={{ background: `#${new THREE.Color(world.backgroundColor).getHexString()}` }}>
       <SceneContent />
-      <SGWorld groundTexture={groundTexture} />
+      <SGWorld {...{ groundTexture, wallTexture, world }} />
       {
-      // <mesh
-      //   visible
-      //   userData={{ test: 'hello' }}
-      //   position={new THREE.Vector3(0, 1.75 / 2, 0)}
-      //   rotation={new THREE.Euler(0, 0, 0)}
-      //   geometry={new THREE.SphereGeometry(0.5, 16, 16)}
-      //   material={
-      //     new THREE.MeshStandardMaterial({ color: new THREE.Color('white'), transparent: true, side: THREE.DoubleSide })
-      //   }
-      // />
+        // <mesh
+        //   visible
+        //   userData={{ test: 'hello' }}
+        //   position={new THREE.Vector3(0, 1.75 / 2, 0)}
+        //   rotation={new THREE.Euler(0, 0, 0)}
+        //   geometry={new THREE.SphereGeometry(0.5, 16, 16)}
+        //   material={
+        //     new THREE.MeshStandardMaterial({ color: new THREE.Color('white'), transparent: true, side: THREE.DoubleSide })
+        //   }
+        // />
       }
     </Canvas>
   )
