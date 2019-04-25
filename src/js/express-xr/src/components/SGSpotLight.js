@@ -10,7 +10,7 @@ const SGSpotLight = ({ ...props }) => {
       self.target.position.set(0, 0, props.intensity)
       self.add(self.target)
     },
-    [props.position]
+    [props.intensity]
   )
 
   useEffect(() => {
