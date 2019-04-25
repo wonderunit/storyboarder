@@ -14,6 +14,7 @@ require('../../vendor/three/examples/js/loaders/OBJLoader2')
 const SGWorld = require('./components/SGWorld')
 const SGSpotLight = require('./components/SGSpotLight')
 const SGCamera = require('./components/SGCamera')
+const SGModel = require('./components/SGModel')
 
 const SGCharacter = ({ i, aspectRatio, activeCamera, setDefaultCamera, modelData, ...props }) => {
   const mesh = useMemo(() =>
@@ -159,11 +160,6 @@ const SceneManagerXR = connect(
   )
 
   const attachments = useAttachmentLoader(sceneObjects)
-
-  const SGModel = ({ modelData }) => {
-    // console.log('SGModel', modelData)
-    return null
-  }
 
   const SceneContent = () => {
     const renderer = useRef(null)
