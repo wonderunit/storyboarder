@@ -222,22 +222,7 @@ const SceneManagerXR = connect(
   }
   // Selection End
 
-  const [modelData, setModelData] = useState()
   const [isXR, setIsXR] = useState(false)
-  useMemo(() =>
-    gltfLoader.load(
-      '/data/system/dummies/gltf/adult-male.glb',
-      value => {
-        console.log('loaded!', value)
-        setModelData(value)
-      },
-      null,
-      error => {
-        console.error(error)
-      }
-    ),
-    []
-  )
 
   const SceneContent = () => {
     const renderer = useRef(null)
