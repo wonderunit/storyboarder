@@ -15,35 +15,7 @@ const SGWorld = require('./components/SGWorld')
 const SGSpotLight = require('./components/SGSpotLight')
 const SGCamera = require('./components/SGCamera')
 const SGModel = require('./components/SGModel')
-
-const SGCharacter = ({ i, aspectRatio, activeCamera, setDefaultCamera, modelData, ...props }) => {
-  const mesh = useMemo(() =>
-    modelData &&
-    (
-      modelData.scene.children.find(child => child instanceof THREE.SkinnedMesh) ||
-      modelData.scene.children[0].children.find(child => child instanceof THREE.SkinnedMesh)
-    ),
-    [modelData]
-  )
-
-  return mesh
-    ? <mesh
-      visible
-      key={i}
-      userData={{ id: props.id }}
-      position={[ props.x, props.z, props.y ]}
-      rotation={new THREE.Euler(0, 0, 0)}
-      geometry={new THREE.SphereGeometry(0.5, 16, 16)}
-      material={
-        new THREE.MeshStandardMaterial({
-          color: new THREE.Color('red'),
-          transparent: true,
-          side: THREE.DoubleSide
-        })
-      }
-    />
-  : null
-}
+const SGCharacter = require('./components/SGCharacter')
 
 const loadingManager = new THREE.LoadingManager()
 const objLoader = new THREE.OBJLoader2(loadingManager)
