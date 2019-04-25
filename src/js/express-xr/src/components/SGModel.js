@@ -9,6 +9,26 @@ const materialFactory = () => new THREE.MeshToonMaterial({
   shininess: 0,
   flatShading: false
 })
+
+const meshFactory = originalMesh => {
+  let mesh = originalMesh.clone()
+
+  // create a skeleton if one is not provided
+  if (mesh instanceof THREE.SkinnedMesh && !mesh.skeleton) {
+    mesh.skeleton = new THREE.Skeleton()
+  }
+
+  let material = materialFactory()
+
+  if (mesh.material.map) {
+    material.map = mesh.material.map
+    material.map.needsUpdate = true
+  }
+  mesh.material = material
+
+  return mesh
+}
+
 const boxRadius = .005
 const boxRadiusSegments = 5
 
@@ -19,13 +39,39 @@ const SGModel = ({ id, model, modelData, x, y, z, width, height, depth }) => {
     return geometry
   })
 
-  return <mesh
+  const children = useMemo(() => {
+    if (model === 'box') {
+      return [
+        <mesh
+          key={id}
+          geometry={boxGeometry}
+          material={materialFactory()}
+        />
+      ]
+    }
+
+    if (modelData) {
+      let children = []
+      modelData.scene.traverse( function ( child ) {
+        if ( child instanceof THREE.Mesh ) {
+          children.push(
+            <primitive key={id} object={meshFactory(child.clone())} />
+          )
+        }
+      })
+      return children
+    }
+
+    return []
+  }, [model, modelData])
+
+  return <group
     userData={{ id }}
     position={[ x, z, y ]}
     scale={[ width, height, depth ]}
-    geometry={boxGeometry}
-    material={materialFactory()}
-    />
+    >
+      {children}
+    </group>
 }
 
 module.exports = SGModel
