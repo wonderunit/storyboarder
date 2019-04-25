@@ -1,6 +1,6 @@
 const THREE = require('three')
 window.THREE = window.THREE || THREE
-const { Canvas, useThree, useUpdate } = require('react-three-fiber')
+const { Canvas, useThree, useUpdate, useRender } = require('react-three-fiber')
 
 const { connect } = require('react-redux')
 const React = require('react')
@@ -160,12 +160,112 @@ const SceneManagerXR = connect(
   )
 
   const attachments = useAttachmentLoader(sceneObjects)
+  // Selection Start
+  let controller1, controller2
+  const raycaster = new THREE.Raycaster()
+  const tempMatrix = new THREE.Matrix4()
+  const intersected = []
+  const intersectArray = [];
+
+  const onSelectStart = () => {
+    console.log('start')
+  }
+
+  const onSelectEnd = () => {
+    console.log('end')
+  }
+
+  const getIntersections = controller => {
+    tempMatrix.identity().extractRotation(controller.matrixWorld)
+    raycaster.ray.origin.setFromMatrixPosition(controller.matrixWorld)
+    raycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix)
+    return raycaster.intersectObjects(intersectArray)
+  }
+
+  const intersectObjects = controller => {
+    if (controller.userData.selected !== undefined) return
+    var line = controller.getObjectByName('line')
+    var intersections = getIntersections(controller)
+    if (intersections.length > 0) {
+      var intersection = intersections[0]
+      var object = intersection.object
+      var objMaterial = object.material
+
+      if (Array.isArray(objMaterial)) {
+        objMaterial.forEach(material => {
+          material.emissive.g = 0.25
+        })
+      } else {
+        objMaterial.emissive.g = 0.25
+      }
+
+      intersected.push(object)
+      line.scale.z = intersection.distance
+    } else {
+      line.scale.z = 5
+    }
+  }
+
+  const cleanIntersected = () => {
+    while (intersected.length) {
+      var object = intersected.pop()
+      var objMaterial = object.material
+
+      if (Array.isArray(objMaterial)) {
+        objMaterial.forEach(material => {
+          material.emissive.g = 0
+        })
+      } else {
+        objMaterial.emissive.g = 0
+      }
+    }
+  }
+  // Selection End
+
+  const [modelData, setModelData] = useState()
+  const [isXR, setIsXR] = useState(false)
+  useMemo(() =>
+    gltfLoader.load(
+      '/data/system/dummies/gltf/adult-male.glb',
+      value => {
+        console.log('loaded!', value)
+        setModelData(value)
+      },
+      null,
+      error => {
+        console.error(error)
+      }
+    ),
+    []
+  )
 
   const SceneContent = () => {
     const renderer = useRef(null)
     const xrOffset = useRef(null)
-
+    
     const { gl, scene, setDefaultCamera } = useThree()
+    useRender(() => {
+      if (isXR && controller1 && controller2) {
+        cleanIntersected()
+        intersectObjects(controller1)
+        intersectObjects(controller2)
+      }
+    })
+
+    useEffect(() => {
+      scene.background = new THREE.Color(world.backgroundColor)
+      navigator.getVRDisplays().then(displays => {
+        if (displays.length) {
+          setIsXR(true)
+        }
+      })
+
+      scene.traverse(child => {
+        if (child instanceof THREE.Mesh) {
+          intersectArray.push(child)
+        }
+      })
+    }, [])
 
     useEffect(() => {
       if (!renderer.current) {
@@ -178,14 +278,21 @@ const SceneManagerXR = connect(
 
             // controllers
             controller1 = renderer.current.vr.getController(0)
-            xrOffset.current.add(controller1)
+            controller1.addEventListener('selectstart', onSelectStart)
+            controller1.addEventListener('selectend', onSelectEnd)
+            if (xrOffset.current) xrOffset.current.add(controller1)
 
             controller2 = renderer.current.vr.getController(1)
-            xrOffset.current.add(controller2)
+            controller2.addEventListener('selectstart', onSelectStart)
+            controller2.addEventListener('selectend', onSelectEnd)
+            if (xrOffset.current) xrOffset.current.add(controller2)
 
             const geometry = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, -1)])
+            const material = new THREE.LineBasicMaterial({
+              color: 0x0000ff
+            })
 
-            const line = new THREE.Line(geometry)
+            const line = new THREE.Line(geometry, material)
             line.name = 'line'
             line.scale.z = 5
             controller1.add(line.clone())
@@ -216,12 +323,10 @@ const SceneManagerXR = connect(
           return <SGSpotLight key={i} {...{ ...sceneObject }} />
       }
     }).filter(Boolean)
-
-    return components
   }
 
   return (
-    <Canvas style={{ background: `#${new THREE.Color(world.backgroundColor).getHexString()}` }}>
+    <Canvas>
       <SceneContent />
       <SGWorld {...{ groundTexture, wallTexture, world }} />
       {
