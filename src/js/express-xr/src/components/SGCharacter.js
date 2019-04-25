@@ -3,11 +3,14 @@ const { useUpdate } = require('react-three-fiber')
 require('../../../vendor/three/examples/js/utils/SkeletonUtils')
 
 const materialFactory = () => new THREE.MeshToonMaterial({
-  color: 0xcccccc,
+  color: 0xffffff,
   emissive: 0x0,
   specular: 0x0,
+  // skinning: true,
   shininess: 0,
-  flatShading: false
+  flatShading: false,
+  morphNormals: true,
+  morphTargets: true
 })
 
 const SGCharacter = ({ id, model, modelData, x, y, z }) => {
@@ -18,20 +21,28 @@ const SGCharacter = ({ id, model, modelData, x, y, z }) => {
           modelData.scene.children.find(child => child instanceof THREE.SkinnedMesh) ||
           modelData.scene.children[0].children.find(child => child instanceof THREE.SkinnedMesh)
         )
-        return THREE.SkeletonUtils.clone(source)
+
+        let skinnedMesh =  THREE.SkeletonUtils.clone(source)
+
+        let material = materialFactory()
+        if (skinnedMesh.material.map) {
+          material.map = skinnedMesh.material.map
+          material.map.needsUpdate = true
+        }
+        skinnedMesh.material = material
+
+        return skinnedMesh
       }
     },
     [modelData]
   )
-
-  const material = useMemo(materialFactory)
 
   return skinnedMesh
     ? <group
       userData={{ id }}
       position={[ x, z, y ]}
       >
-        <primitive object={skinnedMesh} material={material} />
+        <primitive object={skinnedMesh} />
       </group>
     : null
 }
