@@ -11,6 +11,7 @@ require('../../vendor/three/examples/js/loaders/LoaderSupport')
 require('../../vendor/three/examples/js/loaders/GLTFLoader')
 require('../../vendor/three/examples/js/loaders/OBJLoader2')
 
+const SGSpotLight = require('./components/SGSpotLight')
 const SGCamera = require('./components/SGCamera')
 
 const SGCharacter = ({ i, aspectRatio, activeCamera, setDefaultCamera, modelData, ...props }) => {
@@ -123,6 +124,8 @@ const SceneManagerXR = connect(
           )
         case 'character':
           return <SGCharacter key={i} {...{ modelData, ...props }} />
+        case 'light':
+          return <SGSpotLight key={i} {...{ ...props }} />
       }
     }).filter(Boolean)
 
