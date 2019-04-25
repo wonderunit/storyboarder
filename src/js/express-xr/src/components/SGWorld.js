@@ -36,7 +36,7 @@ const SGWorld = ({ groundTexture, wallTexture, world }) => {
       texture.image &&{' '}
       <mesh
         ref={ground}
-        visible={!world.room.visible}
+        visible={!world.room.visible && world.ground}
         userData={{ type: 'ground' }}
         position={new THREE.Vector3(0, -0.03, 0)}
         rotation={new THREE.Euler(-Math.PI / 2, 0, 0)}
@@ -46,7 +46,7 @@ const SGWorld = ({ groundTexture, wallTexture, world }) => {
           <primitive attach="map" object={groundTexture} />
         </meshToonMaterial>
       </mesh>
-      <primitive object={roomMesh} ref={room} />
+      <primitive ref={room} object={roomMesh} visible={world.room.visible} />
       />
     </>
   )

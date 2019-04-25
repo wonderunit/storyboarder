@@ -41,7 +41,7 @@ const SGSpotLight = ({ ...props }) => {
       >
         <spotLight
           ref={light_spot}
-          color={0xffff66}
+          color={0xffffff}
           intensity={props.intensity}
           position={[0, 0, 0]}
           rotation={[Math.PI / 2, 0, 0]}

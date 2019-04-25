@@ -60,7 +60,15 @@ const SceneManagerXR = connect(
   }
 )(({ aspectRatio, world, sceneObjects, activeCamera }) => {
   const groundTexture = useMemo(() => new THREE.TextureLoader().load('/data/system/grid_floor.png'), [])
-  const wallTexture = useMemo(() => new THREE.TextureLoader().load('/data/system/grid_wall2.png'), [])
+  const wallTexture = useMemo(
+    () =>
+      new THREE.TextureLoader().load('/data/system/grid_wall2.png', texture => {
+        texture.wrapS = texture.wrapT = THREE.RepeatWrapping
+        texture.offset.set(0, 0)
+        texture.repeat.set(4.5, 4.5)
+      }),
+    []
+  )
 
   const [modelData, setModelData] = useState()
   useMemo(() =>
