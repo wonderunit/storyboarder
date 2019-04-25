@@ -116,7 +116,8 @@ const useAttachmentLoader = sceneObjects => {
       .filter(o => o.loaded !== true)
       // is not a box
       .filter(o => !(o.type === 'object' && o.model === 'box'))
-      .forEach(o =>
+
+      loadables.forEach(o =>
         dispatch({ type: 'PENDING', payload: { id: getFilepathForLoadable({ type: o.type, model: o.model }) } })
       )
   }, [sceneObjects])
@@ -159,7 +160,8 @@ const SceneManagerXR = connect(
 
   const attachments = useAttachmentLoader(sceneObjects)
 
-  const SGModel = ({}) => {
+  const SGModel = ({ modelData }) => {
+    // console.log('SGModel', modelData)
     return null
   }
 
@@ -197,18 +199,25 @@ const SceneManagerXR = connect(
       }
     })
 
-    return Object.values(sceneObjects).map((props, i) => {
-      switch (props.type) {
+    const getModelData = sceneObject => {
+      let key = getFilepathForLoadable(sceneObject)
+      return attachments[key] && attachments[key].value
+    }
+
+    return Object.values(sceneObjects).map((sceneObject, i) => {
+      switch (sceneObject.type) {
         case 'camera':
           return (
-            <group key={i} ref={xrOffset} position={[props.x, props.z, props.y]}>
-              <SGCamera {...{ i, aspectRatio, activeCamera, setDefaultCamera, ...props }} />
+            <group key={i} ref={xrOffset} position={[sceneObject.x, sceneObject.z, sceneObject.y]}>
+              <SGCamera {...{ i, aspectRatio, activeCamera, setDefaultCamera, ...sceneObject }} />
             </group>
           )
         case 'character':
-          return <SGCharacter key={i} {...{ modelData: attachments[getFilepathForLoadable({ type: props.type, model: props.model })].value, ...props }} />
+          return <SGCharacter key={i} {...{ modelData: getModelData(sceneObject), ...sceneObject }} />
+        case 'object':
+          return <SGModel key={i} {...{ modelData: getModelData(sceneObject), ...sceneObject }} />
         case 'light':
-          return <SGSpotLight key={i} {...{ ...props }} />
+          return <SGSpotLight key={i} {...{ ...sceneObject }} />
       }
     }).filter(Boolean)
 
