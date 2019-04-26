@@ -75,7 +75,7 @@ const SGCharacter = ({ id, model, modelData, x, y, z, skeleton, ...props }) => {
     <group
       ref={object}
       userData={{ id, type: props.type, modelSettings: {} }}
-      position={[ x, y, z ]}
+      position={[ x, z, y ]}
       rotation={[ 0, props.rotation, 0 ]}
       scale={[ scale, scale, scale ]}
     >
