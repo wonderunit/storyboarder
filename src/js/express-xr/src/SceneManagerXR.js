@@ -23,6 +23,14 @@ const gltfLoader = new THREE.GLTFLoader(loadingManager)
 objLoader.setLogging(false, false)
 THREE.Cache.enabled = true
 
+const camera = new THREE.PerspectiveCamera( 70, 4 / 3, 0.1, 10 )
+
+window.hackedRequestAnimationFrameTodo = [];
+window.requestAnimationFrame = function(fn) {
+  hackedRequestAnimationFrameTodo.push(fn);
+}
+
+
 const getFilepathForLoadable = ({ type, model }) => {
   switch (type) {
     case 'character':
@@ -114,10 +122,10 @@ const useAttachmentLoader = sceneObjects => {
 
 const SceneManagerXR = connect(
   state => ({
-    
+
   }),
   {
-    
+
   }
 )(({ aspectRatio, world, sceneObjects, activeCamera }) => {
   const groundTexture = useMemo(() => new THREE.TextureLoader().load('/data/system/grid_floor.png'), [])
@@ -199,7 +207,7 @@ const SceneManagerXR = connect(
   const SceneContent = () => {
     const renderer = useRef(null)
     const xrOffset = useRef(null)
-    
+
     const { gl, scene, setDefaultCamera } = useThree()
     useRender(() => {
       if (isXR && controller1 && controller2) {
@@ -228,6 +236,14 @@ const SceneManagerXR = connect(
       if (!renderer.current) {
         navigator.getVRDisplays().then(displays => {
           if (displays.length) {
+
+            renderer.setAnimationLoop(function() {
+              let todo = hackedRequestAnimationFrameTodo;
+              window.hackedRequestAnimationFrameTodo = [];
+              todo.forEach(fn => fn());
+              renderer.render(scene, camera);
+            })
+
             renderer.current = gl
 
             document.body.appendChild(WEBVR.createButton(gl))
