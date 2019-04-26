@@ -40,15 +40,6 @@ const SGCharacter = ({ id, model, modelData, x, y, z, skeleton, ...props }) => {
       skinnedMesh.add(skinnedMesh.skeleton.bones[0])
       skinnedMesh.bind(skinnedMesh.skeleton)
 
-      for (let name in skeleton) {
-        let bone = skinnedMesh.skeleton.getBoneByName(name)
-        if (bone) {
-          bone.rotation.x = skeleton[name].rotation.x
-          bone.rotation.y = skeleton[name].rotation.y
-          bone.rotation.z = skeleton[name].rotation.z
-        }
-      }
-
       return skinnedMesh
     }
   }, [modelData])
@@ -75,10 +66,13 @@ const SGCharacter = ({ id, model, modelData, x, y, z, skeleton, ...props }) => {
     for (let name in skeleton) {
       let bone = skinnedMesh.skeleton.getBoneByName(name)
       if (bone) {
-        // console.log(bone.name, { x, y, z } = skeleton[name].rotation)
         bone.rotation.x = skeleton[name].rotation.x
         bone.rotation.y = skeleton[name].rotation.y
         bone.rotation.z = skeleton[name].rotation.z
+
+        if (name === 'Hips') {
+          bone.rotation.x += Math.PI / 2.0
+        }
       }
     }
   }, [skinnedMesh, skeleton])
