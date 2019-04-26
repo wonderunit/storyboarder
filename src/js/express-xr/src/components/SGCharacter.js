@@ -33,9 +33,14 @@ const SGCharacter = ({ id, model, modelData, x, y, z, skeleton, ...props }) => {
       }
       skinnedMesh.material = material
 
-      skinnedMesh.morphTargetInfluences[0] = props.morphTargets.mesomorphic
-      skinnedMesh.morphTargetInfluences[1] = props.morphTargets.ectomorphic
-      skinnedMesh.morphTargetInfluences[2] = props.morphTargets.endomorphic
+      if (
+        skinnedMesh.morphTargetDictionary &&
+        Object.values(skinnedMesh.morphTargetDictionary).length === 3
+      ) {
+        skinnedMesh.morphTargetInfluences[0] = props.morphTargets.mesomorphic
+        skinnedMesh.morphTargetInfluences[1] = props.morphTargets.ectomorphic
+        skinnedMesh.morphTargetInfluences[2] = props.morphTargets.endomorphic
+      }
 
       skinnedMesh.add(skinnedMesh.skeleton.bones[0])
       skinnedMesh.bind(skinnedMesh.skeleton)
