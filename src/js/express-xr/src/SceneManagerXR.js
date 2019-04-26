@@ -6,6 +6,8 @@ const { connect } = require('react-redux')
 const React = require('react')
 const { useEffect, useRef, useMemo, useState, useReducer } = React
 
+const { updateObject } = require('../../shared/reducers/shot-generator')
+
 const { WEBVR } = require('../../vendor/three/examples/js/vr/WebVR')
 require('../../vendor/three/examples/js/loaders/LoaderSupport')
 require('../../vendor/three/examples/js/loaders/GLTFLoader')
@@ -138,12 +140,16 @@ const useAttachmentLoader = ({ sceneObjects, world }) => {
 
 const SceneManagerXR = connect(
   state => ({
+    aspectRatio: state.aspectRatio,
 
+    world: state.world,
+    sceneObjects: state.sceneObjects,
+    activeCamera: state.activeCamera
   }),
   {
-
+    updateObject
   }
-)(({ aspectRatio, world, sceneObjects, activeCamera }) => {
+)(({ aspectRatio, world, sceneObjects, activeCamera, updateObject }) => {
   const groundTexture = useMemo(() => new THREE.TextureLoader().load('/data/system/grid_floor.png'), [])
   const wallTexture = useMemo(
     () =>

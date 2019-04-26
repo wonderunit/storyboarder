@@ -17,13 +17,7 @@ const ViewerXR = connect(
 )(
   ({ aspectRatio, world, sceneObjects, activeCamera }) => {
     return h(
-      [SceneManagerXR, {
-        aspectRatio,
-
-        world,
-        sceneObjects,
-        activeCamera
-      }]
+      [SceneManagerXR]
     )
 })
 
