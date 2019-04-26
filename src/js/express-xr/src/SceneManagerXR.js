@@ -23,12 +23,6 @@ const gltfLoader = new THREE.GLTFLoader(loadingManager)
 objLoader.setLogging(false, false)
 THREE.Cache.enabled = true
 
-// window.hackedRequestAnimationFrameTodo = [];
-// window.requestAnimationFrame = function(fn) {
-//   hackedRequestAnimationFrameTodo.push(fn);
-// }
-
-
 const getFilepathForLoadable = ({ type, model }) => {
   switch (type) {
     case 'character':
@@ -234,21 +228,7 @@ const SceneManagerXR = connect(
       if (!renderer.current) {
         navigator.getVRDisplays().then(displays => {
           if (displays.length) {
-
-
-
             renderer.current = gl
-
-            // let camera = new THREE.PerspectiveCamera( 70, 4 / 3, 0.1, 10 )
-
-            gl.setAnimationLoop(() => {
-              // let todo = hackedRequestAnimationFrameTodo;
-              // window.hackedRequestAnimationFrameTodo = [];
-              // todo.forEach(fn => fn());
-              gl.render(scene, camera);
-            })
-
-
 
             document.body.appendChild(WEBVR.createButton(gl))
             gl.vr.enabled = true
@@ -279,6 +259,14 @@ const SceneManagerXR = connect(
       }
     })
 
+    useEffect(() => {
+      if (xrOffset.current && camera.position.y !== xrOffset.current.userData.z) {
+        xrOffset.current.position.x = xrOffset.current.userData.x
+        xrOffset.current.position.y = xrOffset.current.userData.z - 1.6
+        xrOffset.current.position.z = xrOffset.current.userData.y
+      }
+    })
+
     const getModelData = sceneObject => {
       let key = getFilepathForLoadable(sceneObject)
       return attachments[key] && attachments[key].value
@@ -288,7 +276,7 @@ const SceneManagerXR = connect(
       switch (sceneObject.type) {
         case 'camera':
           return (
-            <group key={i} ref={xrOffset} position={[sceneObject.x, sceneObject.z, sceneObject.y]}>
+            <group key={i} ref={xrOffset} userData={{x: sceneObject.x, z: sceneObject.z, y: sceneObject.y}}>
               <SGCamera {...{ i, aspectRatio, activeCamera, setDefaultCamera, ...sceneObject }} />
             </group>
           )
