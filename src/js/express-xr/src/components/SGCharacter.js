@@ -1,4 +1,4 @@
-const { useMemo, useState } = React
+const { useMemo, useState, useRef, useEffect } = React
 
 const materialFactory = () => new THREE.MeshToonMaterial({
   color: 0xffffff,
@@ -58,31 +58,43 @@ const cloneGltf = (gltf) => {
   return clone;
 }
 
-const SGCharacter = ({ id, model, modelData, x, y, z, skeleton }) => {
-  const skinnedMesh = useMemo(
-    () => {
-      if (modelData) {
-        let data = cloneGltf(modelData)
+const SGCharacter = ({ id, model, modelData, x, y, z, skeleton, ...props }) => {
+  const object = useRef(null)
 
-        let source = (
-          data.scene.children.find(child => child instanceof THREE.SkinnedMesh) ||
-          data.scene.children[0].children.find(child => child instanceof THREE.SkinnedMesh)
-        )
+  const skinnedMesh = useMemo(() => {
+    if (modelData) {
+      let data = cloneGltf(modelData)
 
-        let skinnedMesh = source
+      let source =
+        data.scene.children.find(child => child instanceof THREE.SkinnedMesh) ||
+        data.scene.children[0].children.find(child => child instanceof THREE.SkinnedMesh)
 
-        let material = materialFactory()
-        if (skinnedMesh.material.map) {
-          material.map = skinnedMesh.material.map
-          material.map.needsUpdate = true
-        }
-        skinnedMesh.material = material
+      let skinnedMesh = source
 
-        return skinnedMesh
+      let material = materialFactory()
+      if (skinnedMesh.material.map) {
+        material.map = skinnedMesh.material.map
+        material.map.needsUpdate = true
       }
-    },
-    [modelData]
-  )
+      skinnedMesh.material = material
+
+      // skinnedMesh.bind(skinnedMesh.skeleton)
+      skinnedMesh.morphTargetInfluences[0] = props.morphTargets.mesomorphic
+      skinnedMesh.morphTargetInfluences[1] = props.morphTargets.ectomorphic
+      skinnedMesh.morphTargetInfluences[2] = props.morphTargets.endomorphic
+
+      for (let name in skeleton) {
+        let bone = skinnedMesh.skeleton.getBoneByName(name)
+        if (bone) {
+          bone.rotation.x = skeleton[name].rotation.x
+          bone.rotation.y = skeleton[name].rotation.y
+          bone.rotation.z = skeleton[name].rotation.z
+        }
+      }
+
+      return skinnedMesh
+    }
+  }, [modelData])
 
   // const armature = useMemo(
   //   () => {
@@ -114,17 +126,47 @@ const SGCharacter = ({ id, model, modelData, x, y, z, skeleton }) => {
     }
   }, [skinnedMesh, skeleton])
 
-  return skinnedMesh
-    ? <group
-      userData={{ id }}
-      position={[ x, z, y ]}
-      >
-        <primitive object={skinnedMesh} />
-        {/*
+  useEffect(() => {
+    if (object.current) {
+      object.current.userData.skeleton = skinnedMesh.skeleton
+    }
+  }, [skinnedMesh, object])
+
+  useEffect(() => {
+    if (object.current) {
+      object.current.position.x = x
+      object.current.position.z = y
+      object.current.position.y = z
+    }
+  }, [x, y, z])
+
+  useEffect(() => {
+    if (object.current) {
+      if (props.rotation.y || props.rotation.y == 0) {
+        object.current.rotation.y = props.rotation.y
+      } else {
+        object.current.rotation.y = props.rotation
+      }
+    }
+  }, [props.rotation])
+
+  useEffect(() => {
+    if (object.current) {
+      let bbox = new THREE.Box3().setFromObject(object.current)
+      let originalHeight = bbox.max.y - bbox.min.y
+      let scale = props.height / originalHeight
+      object.current.scale.set(scale, scale, scale)
+    }
+  }, [props.height])
+
+  return skinnedMesh ? (
+    <group ref={object} userData={{ id, type: props.type, modelSettings: {} }}>
+      <primitive object={skinnedMesh} />
+      {/*
         <primitive object={armature} />
         */}
-      </group>
-    : null
+    </group>
+  ) : null
 }
 
 module.exports = SGCharacter

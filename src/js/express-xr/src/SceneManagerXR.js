@@ -23,10 +23,10 @@ const gltfLoader = new THREE.GLTFLoader(loadingManager)
 objLoader.setLogging(false, false)
 THREE.Cache.enabled = true
 
-window.hackedRequestAnimationFrameTodo = [];
-window.requestAnimationFrame = function(fn) {
-  hackedRequestAnimationFrameTodo.push(fn);
-}
+// window.hackedRequestAnimationFrameTodo = [];
+// window.requestAnimationFrame = function(fn) {
+//   hackedRequestAnimationFrameTodo.push(fn);
+// }
 
 
 const getFilepathForLoadable = ({ type, model }) => {
@@ -206,7 +206,7 @@ const SceneManagerXR = connect(
     const renderer = useRef(null)
     const xrOffset = useRef(null)
 
-    const { gl, scene, setDefaultCamera } = useThree()
+    const { gl, scene, camera, setDefaultCamera } = useThree()
     useRender(() => {
       if (isXR && controller1 && controller2) {
         cleanIntersected()
@@ -239,14 +239,16 @@ const SceneManagerXR = connect(
 
             renderer.current = gl
 
-            let camera = new THREE.PerspectiveCamera( 70, 4 / 3, 0.1, 10 )
+            // let camera = new THREE.PerspectiveCamera( 70, 4 / 3, 0.1, 10 )
 
-            gl.setAnimationLoop(function() {
-              let todo = hackedRequestAnimationFrameTodo;
-              window.hackedRequestAnimationFrameTodo = [];
-              todo.forEach(fn => fn());
+            gl.setAnimationLoop(() => {
+              // let todo = hackedRequestAnimationFrameTodo;
+              // window.hackedRequestAnimationFrameTodo = [];
+              // todo.forEach(fn => fn());
               gl.render(scene, camera);
             })
+
+
 
             document.body.appendChild(WEBVR.createButton(gl))
             gl.vr.enabled = true
