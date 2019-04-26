@@ -1,4 +1,4 @@
-const { useMemo, useState, useRef, useEffect } = React
+const { useMemo, useRef, useEffect } = React
 
 const cloneGltf = require('../lib/clone-gltf')
 
