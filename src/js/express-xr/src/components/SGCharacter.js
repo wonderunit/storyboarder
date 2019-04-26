@@ -85,14 +85,6 @@ const SGCharacter = ({ id, model, modelData, x, y, z, skeleton, ...props }) => {
 
   useEffect(() => {
     if (object.current) {
-      object.current.position.x = x
-      object.current.position.z = y
-      object.current.position.y = z
-    }
-  }, [x, y, z])
-
-  useEffect(() => {
-    if (object.current) {
       let bbox = new THREE.Box3().setFromObject(object.current)
       let originalHeight = bbox.max.y - bbox.min.y
       let scale = props.height / originalHeight
@@ -104,6 +96,7 @@ const SGCharacter = ({ id, model, modelData, x, y, z, skeleton, ...props }) => {
     <group
       ref={object}
       userData={{ id, type: props.type, modelSettings: {} }}
+      position={[ x, y, z ]}
       rotation={[ 0, props.rotation, 0 ]}
     >
       <primitive object={skinnedMesh} />
