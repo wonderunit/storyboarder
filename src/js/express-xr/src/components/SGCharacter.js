@@ -4,7 +4,7 @@ const materialFactory = () => new THREE.MeshToonMaterial({
   color: 0xffffff,
   emissive: 0x0,
   specular: 0x0,
-  // skinning: true,
+  skinning: true,
   shininess: 0,
   flatShading: false,
   morphNormals: true,
@@ -78,10 +78,12 @@ const SGCharacter = ({ id, model, modelData, x, y, z, skeleton, ...props }) => {
       }
       skinnedMesh.material = material
 
-      // skinnedMesh.bind(skinnedMesh.skeleton)
       skinnedMesh.morphTargetInfluences[0] = props.morphTargets.mesomorphic
       skinnedMesh.morphTargetInfluences[1] = props.morphTargets.ectomorphic
       skinnedMesh.morphTargetInfluences[2] = props.morphTargets.endomorphic
+
+      skinnedMesh.add(skinnedMesh.skeleton.bones[0])
+      skinnedMesh.bind(skinnedMesh.skeleton)
 
       for (let name in skeleton) {
         let bone = skinnedMesh.skeleton.getBoneByName(name)
