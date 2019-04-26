@@ -44,21 +44,6 @@ const SGCharacter = ({ id, model, modelData, x, y, z, skeleton, ...props }) => {
     }
   }, [modelData])
 
-  // const armature = useMemo(
-  //   () => {
-  //     if (modelData) {
-  //       let armature = modelData.scene
-  //         .children[0]
-  //         .children
-  //         .find(child => child instanceof THREE.Object3D)
-  //         .children
-  //         .find(child => child instanceof THREE.Bone)
-  //       return armature.clone()
-  //     }
-  //   },
-  //   [modelData]
-  // )
-
   useMemo(() => {
     if (!skinnedMesh) return
     if (!Object.keys(skeleton).length) return
@@ -76,12 +61,6 @@ const SGCharacter = ({ id, model, modelData, x, y, z, skeleton, ...props }) => {
       }
     }
   }, [skinnedMesh, skeleton])
-
-  useEffect(() => {
-    if (object.current) {
-      object.current.userData.skeleton = skinnedMesh.skeleton
-    }
-  }, [skinnedMesh, object])
 
   useEffect(() => {
     if (object.current) {
