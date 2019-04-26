@@ -23,8 +23,6 @@ const gltfLoader = new THREE.GLTFLoader(loadingManager)
 objLoader.setLogging(false, false)
 THREE.Cache.enabled = true
 
-const camera = new THREE.PerspectiveCamera( 70, 4 / 3, 0.1, 10 )
-
 window.hackedRequestAnimationFrameTodo = [];
 window.requestAnimationFrame = function(fn) {
   hackedRequestAnimationFrameTodo.push(fn);
@@ -237,14 +235,18 @@ const SceneManagerXR = connect(
         navigator.getVRDisplays().then(displays => {
           if (displays.length) {
 
-            renderer.setAnimationLoop(function() {
+
+
+            renderer.current = gl
+
+            let camera = new THREE.PerspectiveCamera( 70, 4 / 3, 0.1, 10 )
+
+            gl.setAnimationLoop(function() {
               let todo = hackedRequestAnimationFrameTodo;
               window.hackedRequestAnimationFrameTodo = [];
               todo.forEach(fn => fn());
-              renderer.render(scene, camera);
+              gl.render(scene, camera);
             })
-
-            renderer.current = gl
 
             document.body.appendChild(WEBVR.createButton(gl))
             gl.vr.enabled = true
