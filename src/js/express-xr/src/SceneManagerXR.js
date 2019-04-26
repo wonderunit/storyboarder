@@ -307,7 +307,7 @@ const SceneManagerXR = connect(
           groundTexture,
           wallTexture,
           world,
-          modelData: getModelData({
+          modelData: world.environment.file && getModelData({
             model: world.environment.file,
             type: 'environment'
           })
