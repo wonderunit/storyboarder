@@ -389,18 +389,6 @@ const SceneManagerXR = connect(
             type: 'environment'
           })
         }} />
-      {
-        // <mesh
-        //   visible
-        //   userData={{ test: 'hello' }}
-        //   position={new THREE.Vector3(0, 1.75 / 2, 0)}
-        //   rotation={new THREE.Euler(0, 0, 0)}
-        //   geometry={new THREE.SphereGeometry(0.5, 16, 16)}
-        //   material={
-        //     new THREE.MeshStandardMaterial({ color: new THREE.Color('white'), transparent: true, side: THREE.DoubleSide })
-        //   }
-        // />
-      }
     </Canvas>
   )
 })
