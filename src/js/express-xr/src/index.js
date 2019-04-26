@@ -10,7 +10,7 @@ const { Provider, connect } = require('react-redux')
 const thunkMiddleware = require('redux-thunk').default
 
 const h = require('../../utils/h')
-const { reducer } = require('../../shared/reducers/shot-generator')
+const { reducer, initialState } = require('../../shared/reducers/shot-generator')
 
 const configureStore = preloadedState => {
   const store = createStore(reducer, preloadedState, applyMiddleware(thunkMiddleware))
@@ -23,7 +23,10 @@ const ViewerXR = require('./ViewerXR')
 fetch('/state.json')
   .then(response => response.json())
   .then(result => {
-    const store = configureStore(result)
+    const store = configureStore({
+      ...result,
+      models: initialState.models
+    })
 
     ReactDOM.render(
       h([
