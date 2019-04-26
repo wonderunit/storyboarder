@@ -1,7 +1,7 @@
-const { useEffect, useRef } = (React = require('react'))
+const { useEffect, useRef, useMemo } = (React = require('react'))
 const buildSquareRoom = require('../../../shot-generator/build-square-room')
 
-const SGWorld = ({ groundTexture, wallTexture, world }) => {
+const SGWorld = ({ groundTexture, wallTexture, world, modelData }) => {
   const ambientLight = useRef(null)
   const directionalLight = useRef(null)
   const ground = useRef(null)
@@ -23,6 +23,33 @@ const SGWorld = ({ groundTexture, wallTexture, world }) => {
       directionalLight.current.rotateX(world.directional.tilt + Math.PI / 2)
     }
   })
+
+  const environmentRef = useRef()
+  const environmentObject = useMemo(() => {
+    if (!modelData) return null
+
+    const g = new THREE.Group()
+
+    modelData.scene.children.forEach(child => {
+      if (child.type === 'Mesh') {
+        let m = child.clone()
+    
+        const material = new THREE.MeshToonMaterial({
+          color: 0xffffff,
+          emissive: 0x0,
+          specular: 0x0,
+          skinning: true,
+          shininess: 0,
+          flatShading: false
+        })
+        m.material = material
+    
+        g.add(m)
+      }
+    })
+
+    return g
+  }, [modelData])
 
   return (
     <>
@@ -47,6 +74,16 @@ const SGWorld = ({ groundTexture, wallTexture, world }) => {
         </meshToonMaterial>
       </mesh>
       <primitive ref={room} object={roomMesh} visible={world.room.visible} />
+      {
+        environmentObject &&
+          <primitive
+            ref={environmentRef}
+            object={environmentObject}
+            scale={[ world.environment.scale, world.environment.scale, world.environment.scale ]}
+            rotation={[ 0, world.environment.rotation, 0 ]}
+            position={[ world.environment.x, world.environment.z, world.environment.y ]}
+            visible={world.environment.visible} />
+      }
       />
     </>
   )
