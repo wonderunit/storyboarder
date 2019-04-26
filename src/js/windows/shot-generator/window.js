@@ -131,9 +131,6 @@ createServer({
   updateServer: payload => store.dispatch(updateServer(payload))
 })
 
-const XRServer = require('../../express-xr/app')
-const xrServer = new XRServer({ store })
-
 // are we testing locally?
 // SHOT_GENERATOR_STANDALONE=true npm start
 if (process.env.SHOT_GENERATOR_STANDALONE) {
@@ -152,4 +149,10 @@ if (process.env.SHOT_GENERATOR_STANDALONE) {
     .find(w => w.webContents.getURL() === window.location.toString())
 
   win.webContents.send('loadBoard', { storyboarderFilePath, boardData: file, board: file.boards[0] })
+
+  // send storyboarderFilePath immediately so XRServer has access to it
+  store.dispatch({ type: 'SET_META_STORYBOARDER_FILE_PATH', payload: storyboarderFilePath })
 }
+
+const XRServer = require('../../express-xr/app')
+const xrServer = new XRServer({ store })

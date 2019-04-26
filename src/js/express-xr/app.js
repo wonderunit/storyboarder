@@ -19,11 +19,10 @@ class XRServer {
     app.use('/data/system', express.static(
       path.join(__dirname, '..', '..', 'data', 'shot-generator')
     ))
-    // if (store.getState().meta.storyboarderFilePath) {
-    //   app.use('/data/user', express.static(
-    //     store.getState().meta.storyboarderFilePath
-    //   ))
-    // }
+
+    app.use('/data/user', express.static(
+      path.join(path.dirname(store.getState().meta.storyboarderFilePath), 'models')
+    ))
 
     app.get('/', function(req, res) {
       res.sendFile(path.join(__dirname, 'dist', 'index.html'))
