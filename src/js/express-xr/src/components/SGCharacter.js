@@ -62,14 +62,14 @@ const SGCharacter = ({ id, model, modelData, x, y, z, skeleton, ...props }) => {
     }
   }, [skinnedMesh, skeleton])
 
-  useEffect(() => {
-    if (object.current) {
-      let bbox = new THREE.Box3().setFromObject(object.current)
-      let originalHeight = bbox.max.y - bbox.min.y
-      let scale = props.height / originalHeight
-      object.current.scale.set(scale, scale, scale)
-    }
-  }, [props.height])
+  const scale = useMemo(() => {
+    if (!skinnedMesh) return 1
+
+    let bbox = new THREE.Box3().setFromObject(skinnedMesh)
+    let originalHeight = bbox.max.y - bbox.min.y
+
+    return props.height / originalHeight
+  }, [skinnedMesh, props.height])
 
   return skinnedMesh ? (
     <group
@@ -77,6 +77,7 @@ const SGCharacter = ({ id, model, modelData, x, y, z, skeleton, ...props }) => {
       userData={{ id, type: props.type, modelSettings: {} }}
       position={[ x, y, z ]}
       rotation={[ 0, props.rotation, 0 ]}
+      scale={[ scale, scale, scale ]}
     >
       <primitive object={skinnedMesh} />
     </group>
