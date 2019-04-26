@@ -1,6 +1,6 @@
 const THREE = require('three')
 window.THREE = window.THREE || THREE
-const { Canvas, useThree, useUpdate, useRender } = require('react-three-fiber')
+const { Canvas, useThree, useUpdate, useRender } = require('./lib/react-three-fiber')
 
 const { connect } = require('react-redux')
 const React = require('react')

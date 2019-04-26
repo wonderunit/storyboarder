@@ -1,4 +1,4 @@
-const { useUpdate } = require('react-three-fiber')
+const { useUpdate } = require('../lib/react-three-fiber')
 const { useLayoutEffect } = React = require('react')
 
 const SGCamera = ({ i, aspectRatio, activeCamera, setDefaultCamera, ...props }) => {
