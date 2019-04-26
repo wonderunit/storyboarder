@@ -23,18 +23,24 @@ const gltfLoader = new THREE.GLTFLoader(loadingManager)
 objLoader.setLogging(false, false)
 THREE.Cache.enabled = true
 
+// TODO user vs system
 const getFilepathForLoadable = ({ type, model }) => {
   switch (type) {
     case 'character':
       return `/data/system/dummies/gltf/${model}.glb`
     case 'object':
       return `/data/system/objects/${model}.glb`
+    case 'environment':
+      // TODO windows file paths
+      const parts = model.split(/\//)
+      const filename = parts[parts.length - 1]
+      return `/data/user/environments/${filename}`
     default:
       return null
   }
 }
 
-const useAttachmentLoader = sceneObjects => {
+const useAttachmentLoader = ({ sceneObjects, world }) => {
   // TODO why do PENDING and SUCCESS get dispatched twice?
   const [attachments, dispatch] = useReducer((state, action) => {
     switch (action.type) {
@@ -82,7 +88,7 @@ const useAttachmentLoader = sceneObjects => {
     }, {})
 
   useMemo(() => {
-    const loadables = Object.values(sceneObjects)
+    let loadables = Object.values(sceneObjects)
       // has a value for model
       .filter(o => o.model != null)
       // has not loaded yet
@@ -90,9 +96,13 @@ const useAttachmentLoader = sceneObjects => {
       // is not a box
       .filter(o => !(o.type === 'object' && o.model === 'box'))
 
-      loadables.forEach(o =>
-        dispatch({ type: 'PENDING', payload: { id: getFilepathForLoadable({ type: o.type, model: o.model }) } })
-      )
+    world.environment.file && loadables.push(
+      { type: 'environment', model: world.environment.file }
+    )
+
+    loadables.forEach(o =>
+      dispatch({ type: 'PENDING', payload: { id: getFilepathForLoadable({ type: o.type, model: o.model }) } })
+    )
   }, [sceneObjects])
 
   useMemo(() => {
@@ -131,7 +141,7 @@ const SceneManagerXR = connect(
     []
   )
 
-  const attachments = useAttachmentLoader(sceneObjects)
+  const attachments = useAttachmentLoader({ sceneObjects, world })
   // Selection Start
   let controller1, controller2
   const raycaster = new THREE.Raycaster()
@@ -195,6 +205,11 @@ const SceneManagerXR = connect(
   // Selection End
 
   const [isXR, setIsXR] = useState(false)
+
+  const getModelData = sceneObject => {
+    let key = getFilepathForLoadable(sceneObject)
+    return attachments[key] && attachments[key].value
+  }
 
   const SceneContent = () => {
     const renderer = useRef(null)
@@ -267,11 +282,6 @@ const SceneManagerXR = connect(
       }
     })
 
-    const getModelData = sceneObject => {
-      let key = getFilepathForLoadable(sceneObject)
-      return attachments[key] && attachments[key].value
-    }
-
     return Object.values(sceneObjects).map((sceneObject, i) => {
       switch (sceneObject.type) {
         case 'camera':
@@ -293,7 +303,15 @@ const SceneManagerXR = connect(
   return (
     <Canvas>
       <SceneContent />
-      <SGWorld {...{ groundTexture, wallTexture, world }} />
+      <SGWorld {...{
+          groundTexture,
+          wallTexture,
+          world,
+          modelData: getModelData({
+            model: world.environment.file,
+            type: 'environment'
+          })
+        }} />
       {
         // <mesh
         //   visible
