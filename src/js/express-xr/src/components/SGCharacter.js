@@ -164,9 +164,6 @@ const SGCharacter = ({ id, model, modelData, x, y, z, skeleton, ...props }) => {
   return skinnedMesh ? (
     <group ref={object} userData={{ id, type: props.type, modelSettings: {} }}>
       <primitive object={skinnedMesh} />
-      {/*
-        <primitive object={armature} />
-        */}
     </group>
   ) : null
 }
