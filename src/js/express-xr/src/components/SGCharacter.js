@@ -76,6 +76,17 @@ const SGCharacter = ({ id, model, modelData, x, y, z, skeleton, ...props }) => {
     return props.height / originalHeight
   }, [skinnedMesh, props.height])
 
+  useMemo(() => {
+    if (!skinnedMesh) return
+  
+    let headBone = skinnedMesh.skeleton.getBoneByName('Head')
+
+    if (headBone) {
+      headBone.scale.setScalar( props.headScale )
+      // TODO scale proportionally to model height?
+    }
+  }, [model, props.headScale])
+
   return skinnedMesh ? (
     <group
       ref={object}
