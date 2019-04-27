@@ -27,6 +27,8 @@ const gltfLoader = new THREE.GLTFLoader(loadingManager)
 objLoader.setLogging(false, false)
 THREE.Cache.enabled = true
 
+let XRController1, XRController2
+
 const getFilepathForLoadable = ({ type, model }) => {
   // does the model name have a slash in it?
   // TODO support windows file delimiter
@@ -165,7 +167,6 @@ const SceneManagerXR = connect(
 
   const attachments = useAttachmentLoader({ sceneObjects, world })
 
-  let controller1, controller2
   const intersectArray = []
 
   const [isXR, setIsXR] = useState(false)
@@ -181,62 +182,57 @@ const SceneManagerXR = connect(
 
     const { gl, scene, camera, setDefaultCamera } = useThree()
     useRender(() => {
-      if (isXR && controller1 && controller2) {
+      if (isXR && XRController1 && XRController2) {
         cleanIntersected()
-        intersectObjects(controller1, intersectArray)
-        intersectObjects(controller2, intersectArray)
+        intersectObjects(XRController1, intersectArray)
+        intersectObjects(XRController2, intersectArray)
       }
     })
-
-    useEffect(() => {
-      scene.background = new THREE.Color(world.backgroundColor)
-      navigator.getVRDisplays().then(displays => {
-        if (displays.length) {
-          setIsXR(true)
-        }
-      })
-
-      scene.traverse(child => {
-        if (child instanceof THREE.Mesh) {
-          intersectArray.push(child)
-        }
-      })
-    }, [])
 
     useEffect(() => {
       if (!renderer.current) {
         navigator.getVRDisplays().then(displays => {
           if (displays.length) {
             renderer.current = gl
+            scene.background = new THREE.Color(world.backgroundColor)
+            setIsXR(true)
 
-            document.body.appendChild(WEBVR.createButton(gl))
-            gl.vr.enabled = true
+            if (!XRController1 && !XRController2) {
+              document.body.appendChild(WEBVR.createButton(gl))
+              gl.vr.enabled = true
 
-            // controllers
-            controller1 = renderer.current.vr.getController(0)
-            controller1.addEventListener('selectstart', onSelectStart)
-            controller1.addEventListener('selectend', onSelectEnd)
-            if (xrOffset.current) xrOffset.current.add(controller1)
+              XRController1 = renderer.current.vr.getController(0)
+              XRController1.addEventListener('selectstart', onSelectStart)
+              XRController1.addEventListener('selectend', onSelectEnd)
 
-            controller2 = renderer.current.vr.getController(1)
-            controller2.addEventListener('selectstart', onSelectStart)
-            controller2.addEventListener('selectend', onSelectEnd)
-            if (xrOffset.current) xrOffset.current.add(controller2)
+              XRController2 = renderer.current.vr.getController(1)
+              XRController2.addEventListener('selectstart', onSelectStart)
+              XRController2.addEventListener('selectend', onSelectEnd)
 
-            const geometry = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, -1)])
-            const material = new THREE.LineBasicMaterial({
-              color: 0x0000ff
+              const geometry = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, -1)])
+              const material = new THREE.LineBasicMaterial({
+                color: 0x0000ff
+              })
+              
+              const line = new THREE.Line(geometry, material)
+              line.name = 'line'
+              line.scale.z = 5
+              XRController1.add(line.clone())
+              XRController2.add(line.clone())
+            }
+            
+            if (xrOffset.current && XRController1) xrOffset.current.add(XRController1)
+            if (xrOffset.current && XRController2) xrOffset.current.add(XRController2)
+
+            scene.traverse(child => {
+              if (child instanceof THREE.Mesh) {
+                intersectArray.push(child)
+              }
             })
-
-            const line = new THREE.Line(geometry, material)
-            line.name = 'line'
-            line.scale.z = 5
-            controller1.add(line.clone())
-            controller2.add(line.clone())
           }
         })
       }
-    })
+    }, [])
 
     useEffect(() => {
       if (xrOffset.current && camera.position.y !== xrOffset.current.userData.z) {
