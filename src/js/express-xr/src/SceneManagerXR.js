@@ -173,6 +173,7 @@ const SceneManagerXR = connect(
   const intersectArray = []
 
   const [isXR, setIsXR] = useState(false)
+  const [camExtraRot, setCamExtraRot] = useState(0)
 
   const findParent = obj => {
     while (obj) {
@@ -259,13 +260,17 @@ const SceneManagerXR = connect(
       if (turnCamera) return 
     
       if (event.axes[0] > 0) {
-        console.log('Right')
         turnCamera = 'Right'
+        setCamExtraRot(oldRot => {
+          return oldRot - 1
+        })
       }
       
       if (event.axes[0] < 0) {
-        console.log('Left')
         turnCamera = 'Left'
+        setCamExtraRot(oldRot => {
+          return oldRot + 1
+        })
       }
     }
 
@@ -289,16 +294,16 @@ const SceneManagerXR = connect(
               XRController1 = new THREE.ViveController( 0 );
               XRController1.standingMatrix = gl.vr.getStandingMatrix()
 
-              XRController1.addEventListener('selectstart', onSelectStart)
-              XRController1.addEventListener('selectend', onSelectEnd)
+              XRController1.addEventListener('triggerdown', onSelectStart)
+              XRController1.addEventListener('triggerup', onSelectEnd)
               XRController1.addEventListener('axischanged', onAxisChanged)
 
               // XRController2 = renderer.current.vr.getController(1)
               XRController2 = new THREE.ViveController(1)
               XRController2.standingMatrix = gl.vr.getStandingMatrix()
 
-              XRController2.addEventListener('selectstart', onSelectStart)
-              XRController2.addEventListener('selectend', onSelectEnd)
+              XRController2.addEventListener('triggerdown', onSelectStart)
+              XRController2.addEventListener('triggerup', onSelectEnd)
               XRController2.addEventListener('axischanged', onAxisChanged)
 
               const geometry = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, -1)])
@@ -338,7 +343,7 @@ const SceneManagerXR = connect(
       switch (sceneObject.type) {
         case 'camera':
           return (
-            <group key={i} ref={xrOffset} userData={{x: sceneObject.x, z: sceneObject.z, y: sceneObject.y}}>
+            <group key={i} ref={xrOffset} rotation={[0, Math.PI / 2 * camExtraRot, 0]} userData={{x: sceneObject.x, z: sceneObject.z, y: sceneObject.y}}>
               <SGCamera {...{ i, aspectRatio, activeCamera, setDefaultCamera, ...sceneObject }} />
             </group>
           )
@@ -351,7 +356,7 @@ const SceneManagerXR = connect(
       }
     }).filter(Boolean)
   }
-
+  
   return (
     <Canvas>
       <SceneContent />
