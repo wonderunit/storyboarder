@@ -19,6 +19,8 @@ const SGCamera = require('./components/SGCamera')
 const SGModel = require('./components/SGModel')
 const SGCharacter = require('./components/SGCharacter')
 
+const { intersectObjects, cleanIntersected, onSelectStart, onSelectEnd } = require('./utils/xrControllerFuncs')
+
 const loadingManager = new THREE.LoadingManager()
 const objLoader = new THREE.OBJLoader2(loadingManager)
 const gltfLoader = new THREE.GLTFLoader(loadingManager)
@@ -162,67 +164,9 @@ const SceneManagerXR = connect(
   )
 
   const attachments = useAttachmentLoader({ sceneObjects, world })
-  // Selection Start
+
   let controller1, controller2
-  const raycaster = new THREE.Raycaster()
-  const tempMatrix = new THREE.Matrix4()
-  const intersected = []
-  const intersectArray = [];
-
-  const onSelectStart = () => {
-    console.log('start')
-  }
-
-  const onSelectEnd = () => {
-    console.log('end')
-  }
-
-  const getIntersections = controller => {
-    tempMatrix.identity().extractRotation(controller.matrixWorld)
-    raycaster.ray.origin.setFromMatrixPosition(controller.matrixWorld)
-    raycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix)
-    return raycaster.intersectObjects(intersectArray)
-  }
-
-  const intersectObjects = controller => {
-    if (controller.userData.selected !== undefined) return
-    var line = controller.getObjectByName('line')
-    var intersections = getIntersections(controller)
-    if (intersections.length > 0) {
-      var intersection = intersections[0]
-      var object = intersection.object
-      var objMaterial = object.material
-
-      if (Array.isArray(objMaterial)) {
-        objMaterial.forEach(material => {
-          material.emissive.g = 0.25
-        })
-      } else {
-        objMaterial.emissive.g = 0.25
-      }
-
-      intersected.push(object)
-      line.scale.z = intersection.distance
-    } else {
-      line.scale.z = 5
-    }
-  }
-
-  const cleanIntersected = () => {
-    while (intersected.length) {
-      var object = intersected.pop()
-      var objMaterial = object.material
-
-      if (Array.isArray(objMaterial)) {
-        objMaterial.forEach(material => {
-          material.emissive.g = 0
-        })
-      } else {
-        objMaterial.emissive.g = 0
-      }
-    }
-  }
-  // Selection End
+  const intersectArray = []
 
   const [isXR, setIsXR] = useState(false)
 
@@ -239,8 +183,8 @@ const SceneManagerXR = connect(
     useRender(() => {
       if (isXR && controller1 && controller2) {
         cleanIntersected()
-        intersectObjects(controller1)
-        intersectObjects(controller2)
+        intersectObjects(controller1, intersectArray)
+        intersectObjects(controller2, intersectArray)
       }
     })
 
