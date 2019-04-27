@@ -20,6 +20,7 @@ const SGModel = require('./components/SGModel')
 const SGCharacter = require('./components/SGCharacter')
 
 const { getIntersections, intersectObjects, cleanIntersected } = require('./utils/xrControllerFuncs')
+require('./lib/ViveController')
 
 const loadingManager = new THREE.LoadingManager()
 const objLoader = new THREE.OBJLoader2(loadingManager)
@@ -27,6 +28,7 @@ const gltfLoader = new THREE.GLTFLoader(loadingManager)
 objLoader.setLogging(false, false)
 THREE.Cache.enabled = true
 
+let turnCamera = null;
 let XRController1, XRController2
 const tempMatrix = new THREE.Matrix4()
 
@@ -198,53 +200,78 @@ const SceneManagerXR = connect(
         // cleanIntersected()
         // intersectObjects(XRController1, intersectArray)
         // intersectObjects(XRController2, intersectArray)
+
+				handleController(XRController1, 0)
+        handleController(XRController2, 1)
       }
     })
 
-  const onSelectStart = event => {
-    var controller = event.target
-    var intersections = getIntersections(controller, intersectArray)
-    if (intersections.length > 0) {
-      var intersection = intersections[0]
-      tempMatrix.getInverse(controller.matrixWorld)
-      var object = intersection.object
-      object.matrix.premultiply(tempMatrix)
-      object.matrix.decompose(object.position, object.quaternion, object.scale)
+    const onSelectStart = event => {
+      var controller = event.target
+      var intersections = getIntersections(controller, intersectArray)
+      if (intersections.length > 0) {
+        var intersection = intersections[0]
+        tempMatrix.getInverse(controller.matrixWorld)
+        var object = intersection.object
+        object.matrix.premultiply(tempMatrix)
+        object.matrix.decompose(object.position, object.quaternion, object.scale)
 
-      var objMaterial = object.material
-      if (Array.isArray(objMaterial)) {
-        objMaterial.forEach(material => {
-          material.emissive.b = 0.25
-        })
-      } else {
-        objMaterial.emissive.b = 0.25
+        var objMaterial = object.material
+        if (Array.isArray(objMaterial)) {
+          objMaterial.forEach(material => {
+            material.emissive.b = 0.25
+          })
+        } else {
+          objMaterial.emissive.b = 0.25
+        }
+
+        controller.add(object)
+        controller.userData.selected = object
       }
-
-      controller.add(object)
-      controller.userData.selected = object
     }
-  }
 
-  const onSelectEnd = event => {
-    var controller = event.target
-    if (controller.userData.selected !== undefined) {
-      var object = controller.userData.selected
-      object.matrix.premultiply(controller.matrixWorld)
-      object.matrix.decompose(object.position, object.quaternion, object.scale)
+    const onSelectEnd = event => {
+      var controller = event.target
+      if (controller.userData.selected !== undefined) {
+        var object = controller.userData.selected
+        object.matrix.premultiply(controller.matrixWorld)
+        object.matrix.decompose(object.position, object.quaternion, object.scale)
 
-      var objMaterial = object.material
-      if (Array.isArray(objMaterial)) {
-        objMaterial.forEach(material => {
-          material.emissive.b = 0
-        })
-      } else {
-        objMaterial.emissive.b = 0
+        var objMaterial = object.material
+        if (Array.isArray(objMaterial)) {
+          objMaterial.forEach(material => {
+            material.emissive.b = 0
+          })
+        } else {
+          objMaterial.emissive.b = 0
+        }
+
+        scene.add(object)
+        controller.userData.selected = undefined
       }
-
-      scene.add(object)
-      controller.userData.selected = undefined
     }
-  }
+
+    const onAxisChanged = event => {
+      if (event.axes[0] === 0) {
+        turnCamera = null
+      } 
+      
+      if (turnCamera) return 
+    
+      if (event.axes[0] > 0) {
+        console.log('Right')
+        turnCamera = 'Right'
+      }
+      
+      if (event.axes[0] < 0) {
+        console.log('Left')
+        turnCamera = 'Left'
+      }
+    }
+
+    const handleController = (controller, id) => {
+      controller.update()
+    }
 
     useEffect(() => {
       if (!renderer.current) {
@@ -258,13 +285,21 @@ const SceneManagerXR = connect(
               document.body.appendChild(WEBVR.createButton(gl))
               gl.vr.enabled = true
 
-              XRController1 = renderer.current.vr.getController(0)
+              // XRController1 = renderer.current.vr.getController(0)
+              XRController1 = new THREE.ViveController( 0 );
+              XRController1.standingMatrix = gl.vr.getStandingMatrix()
+
               XRController1.addEventListener('selectstart', onSelectStart)
               XRController1.addEventListener('selectend', onSelectEnd)
+              XRController1.addEventListener('axischanged', onAxisChanged)
 
-              XRController2 = renderer.current.vr.getController(1)
+              // XRController2 = renderer.current.vr.getController(1)
+              XRController2 = new THREE.ViveController(1)
+              XRController2.standingMatrix = gl.vr.getStandingMatrix()
+
               XRController2.addEventListener('selectstart', onSelectStart)
               XRController2.addEventListener('selectend', onSelectEnd)
+              XRController2.addEventListener('axischanged', onAxisChanged)
 
               const geometry = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, -1)])
               const material = new THREE.LineBasicMaterial({
