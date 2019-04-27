@@ -19,7 +19,7 @@ const SGCamera = require('./components/SGCamera')
 const SGModel = require('./components/SGModel')
 const SGCharacter = require('./components/SGCharacter')
 
-const { intersectObjects, cleanIntersected, onSelectStart, onSelectEnd } = require('./utils/xrControllerFuncs')
+const { getIntersections, intersectObjects, cleanIntersected } = require('./utils/xrControllerFuncs')
 
 const loadingManager = new THREE.LoadingManager()
 const objLoader = new THREE.OBJLoader2(loadingManager)
@@ -28,6 +28,7 @@ objLoader.setLogging(false, false)
 THREE.Cache.enabled = true
 
 let XRController1, XRController2
+const tempMatrix = new THREE.Matrix4()
 
 const getFilepathForLoadable = ({ type, model }) => {
   // does the model name have a slash in it?
@@ -171,6 +172,17 @@ const SceneManagerXR = connect(
 
   const [isXR, setIsXR] = useState(false)
 
+  const findParent = obj => {
+    while (obj) {
+      if (!obj.parent || obj.parent.type === 'Scene') {
+        return obj
+      }
+      obj = obj.parent
+    }
+
+    return null
+  }
+
   const getModelData = sceneObject => {
     let key = getFilepathForLoadable(sceneObject)
     return attachments[key] && attachments[key].value
@@ -183,11 +195,56 @@ const SceneManagerXR = connect(
     const { gl, scene, camera, setDefaultCamera } = useThree()
     useRender(() => {
       if (isXR && XRController1 && XRController2) {
-        cleanIntersected()
-        intersectObjects(XRController1, intersectArray)
-        intersectObjects(XRController2, intersectArray)
+        // cleanIntersected()
+        // intersectObjects(XRController1, intersectArray)
+        // intersectObjects(XRController2, intersectArray)
       }
     })
+
+  const onSelectStart = event => {
+    var controller = event.target
+    var intersections = getIntersections(controller, intersectArray)
+    if (intersections.length > 0) {
+      var intersection = intersections[0]
+      tempMatrix.getInverse(controller.matrixWorld)
+      var object = intersection.object
+      object.matrix.premultiply(tempMatrix)
+      object.matrix.decompose(object.position, object.quaternion, object.scale)
+
+      var objMaterial = object.material
+      if (Array.isArray(objMaterial)) {
+        objMaterial.forEach(material => {
+          material.emissive.b = 0.25
+        })
+      } else {
+        objMaterial.emissive.b = 0.25
+      }
+
+      controller.add(object)
+      controller.userData.selected = object
+    }
+  }
+
+  const onSelectEnd = event => {
+    var controller = event.target
+    if (controller.userData.selected !== undefined) {
+      var object = controller.userData.selected
+      object.matrix.premultiply(controller.matrixWorld)
+      object.matrix.decompose(object.position, object.quaternion, object.scale)
+
+      var objMaterial = object.material
+      if (Array.isArray(objMaterial)) {
+        objMaterial.forEach(material => {
+          material.emissive.b = 0
+        })
+      } else {
+        objMaterial.emissive.b = 0
+      }
+
+      scene.add(object)
+      controller.userData.selected = undefined
+    }
+  }
 
     useEffect(() => {
       if (!renderer.current) {
@@ -226,7 +283,7 @@ const SceneManagerXR = connect(
 
             scene.traverse(child => {
               if (child instanceof THREE.Mesh) {
-                intersectArray.push(child)
+                if (findParent(child).visible) intersectArray.push(child)
               }
             })
           }

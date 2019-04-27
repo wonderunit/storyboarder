@@ -19,15 +19,15 @@ const intersectObjects = (controller, intersectArray) => {
   if (intersections.length > 0) {
     var intersection = intersections[0]
     var object = intersection.object
-    var objMaterial = object.material
+    // var objMaterial = object.material
 
-    if (Array.isArray(objMaterial)) {
-      objMaterial.forEach(material => {
-        material.emissive.g = 0.25
-      })
-    } else {
-      objMaterial.emissive.g = 0.25
-    }
+    // if (Array.isArray(objMaterial)) {
+    //   objMaterial.forEach(material => {
+    //     material.emissive.g = 0.25
+    //   })
+    // } else {
+    //   objMaterial.emissive.g = 0.25
+    // }
 
     intersected.push(object)
     line.scale.z = intersection.distance
@@ -39,30 +39,20 @@ const intersectObjects = (controller, intersectArray) => {
 const cleanIntersected = () => {
   while (intersected.length) {
     var object = intersected.pop()
-    var objMaterial = object.material
+    // var objMaterial = object.material
 
-    if (Array.isArray(objMaterial)) {
-      objMaterial.forEach(material => {
-        material.emissive.g = 0
-      })
-    } else {
-      objMaterial.emissive.g = 0
-    }
+    // if (Array.isArray(objMaterial)) {
+    //   objMaterial.forEach(material => {
+    //     material.emissive.g = 0
+    //   })
+    // } else {
+    //   objMaterial.emissive.g = 0
+    // }
   }
-}
-
-const onSelectStart = () => {
-  console.log('start')
-}
-
-const onSelectEnd = () => {
-  console.log('end')
 }
 
 module.exports = {
   getIntersections,
   intersectObjects,
-  cleanIntersected,
-  onSelectStart,
-  onSelectEnd
+  cleanIntersected
 }
