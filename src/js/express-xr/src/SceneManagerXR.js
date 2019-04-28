@@ -171,9 +171,11 @@ const SceneManagerXR = connect(
   const attachments = useAttachmentLoader({ sceneObjects, world })
 
   const intersectArray = []
+  const teleportArray = []
 
   const [isXR, setIsXR] = useState(false)
   const [camExtraRot, setCamExtraRot] = useState(0)
+  const [teleportPos, setTeleportPos] = useState(null)
 
   const findParent = obj => {
     while (obj) {
@@ -199,13 +201,19 @@ const SceneManagerXR = connect(
     useRender(() => {
       if (isXR && XRController1 && XRController2) {
         // cleanIntersected()
-        // intersectObjects(XRController1, intersectArray)
-        // intersectObjects(XRController2, intersectArray)
-
 				handleController(XRController1, 0)
         handleController(XRController2, 1)
       }
     })
+
+    const onTeleport = event => {
+      var controller = event.target
+      const intersect = intersectObjects(controller, teleportArray)
+
+      if (intersect && intersect.distance < 10) {
+        setTeleportPos(intersect.point)
+      }
+    }
 
     const onSelectStart = event => {
       var controller = event.target
@@ -296,6 +304,7 @@ const SceneManagerXR = connect(
 
               XRController1.addEventListener('triggerdown', onSelectStart)
               XRController1.addEventListener('triggerup', onSelectEnd)
+              XRController1.addEventListener('gripsdown', onTeleport)
               XRController1.addEventListener('axischanged', onAxisChanged)
 
               // XRController2 = renderer.current.vr.getController(1)
@@ -304,6 +313,7 @@ const SceneManagerXR = connect(
 
               XRController2.addEventListener('triggerdown', onSelectStart)
               XRController2.addEventListener('triggerup', onSelectEnd)
+              XRController2.addEventListener('gripsdown', onTeleport)
               XRController2.addEventListener('axischanged', onAxisChanged)
 
               const geometry = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, -1)])
@@ -321,14 +331,20 @@ const SceneManagerXR = connect(
             if (xrOffset.current && XRController1) xrOffset.current.add(XRController1)
             if (xrOffset.current && XRController2) xrOffset.current.add(XRController2)
 
-            scene.traverse(child => {
-              if (child instanceof THREE.Mesh) {
-                if (findParent(child).visible) intersectArray.push(child)
+            scene.children.forEach(child => {
+              if (child instanceof THREE.Mesh || child instanceof THREE.Group) {
+                if (child.name === 'ground') return
+                intersectArray.push(child)
               }
             })
 
+            teleportArray.push(scene.children.find(child => child.name === 'ground'))
+
             const camPosZero = camera.position.length() === 0
-            if (xrOffset.current && !camPosZero && camera.position.y !== xrOffset.current.userData.z) {
+            if (xrOffset.current && teleportPos) {
+              xrOffset.current.position.x = teleportPos.x
+              xrOffset.current.position.z = teleportPos.z
+            } else if (xrOffset.current && !camPosZero && camera.position.y !== xrOffset.current.userData.z) {
               xrOffset.current.position.x = xrOffset.current.userData.x
               xrOffset.current.position.z = xrOffset.current.userData.y
             }
