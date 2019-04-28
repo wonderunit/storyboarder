@@ -340,11 +340,11 @@ const SceneManagerXR = connect(
     return Object.values(sceneObjects).map((sceneObject, i) => {
       switch (sceneObject.type) {
         case 'camera':
-          return (
+          return activeCamera === sceneObject.id ? (
             <group key={i} ref={xrOffset} rotation={[0, Math.PI / 4 * camExtraRot, 0]} userData={{x: sceneObject.x, y: sceneObject.y, z: sceneObject.z}}>
               <SGCamera {...{ i, aspectRatio, activeCamera, setDefaultCamera, ...sceneObject }} />
             </group>
-          )
+          ) : null
         case 'character':
           return <SGCharacter key={i} {...{ modelData: getModelData(sceneObject), ...sceneObject }} />
         case 'object':
