@@ -32,7 +32,7 @@ const meshFactory = originalMesh => {
 const boxRadius = .005
 const boxRadiusSegments = 5
 
-const SGModel = ({ id, model, modelData, x, y, z, width, height, depth, rotation }) => {
+const SGModel = ({ id, model, modelData, x, y, z, width, height, depth, rotation, visible }) => {
   const boxGeometry = useMemo(() => {
     const geometry = new RoundedBoxGeometry( 1, 1, 1, boxRadius, boxRadiusSegments )
     geometry.translate( 0, 1 / 2, 0 )
@@ -44,6 +44,7 @@ const SGModel = ({ id, model, modelData, x, y, z, width, height, depth, rotation
       return [
         <mesh
           key={id}
+          visible={visible}
           geometry={boxGeometry}
           material={materialFactory()}
         />
@@ -54,9 +55,7 @@ const SGModel = ({ id, model, modelData, x, y, z, width, height, depth, rotation
       let children = []
       modelData.scene.traverse( function ( child ) {
         if ( child instanceof THREE.Mesh ) {
-          children.push(
-            <primitive key={id} object={meshFactory(child.clone())} />
-          )
+          children.push(<primitive key={id} visible={visible} object={meshFactory(child.clone())} />)
         }
       })
       return children
