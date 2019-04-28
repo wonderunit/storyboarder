@@ -5,6 +5,8 @@ const { Provider, connect } = require('react-redux')
 const React = require('react')
 const { useState, useEffect, useRef, useContext } = React
 
+const { ipcRenderer, remote } = require('electron')
+
 const {
   SceneContext,
   Toolbar,
