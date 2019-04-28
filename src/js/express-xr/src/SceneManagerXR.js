@@ -259,14 +259,14 @@ const SceneManagerXR = connect(
       
       if (turnCamera) return 
     
-      if (event.axes[0] > 0) {
+      if (event.axes[0] > 0.075) {
         turnCamera = 'Right'
         setCamExtraRot(oldRot => {
           return oldRot - 1
         })
       }
       
-      if (event.axes[0] < 0) {
+      if (event.axes[0] < -0.075) {
         turnCamera = 'Left'
         setCamExtraRot(oldRot => {
           return oldRot + 1
@@ -326,24 +326,22 @@ const SceneManagerXR = connect(
                 if (findParent(child).visible) intersectArray.push(child)
               }
             })
+
+            const camPosZero = camera.position.length() === 0
+            if (xrOffset.current && !camPosZero && camera.position.y !== xrOffset.current.userData.z) {
+              xrOffset.current.position.x = xrOffset.current.userData.x
+              xrOffset.current.position.z = xrOffset.current.userData.y
+            }
           }
         })
       }
     }, [])
 
-    useEffect(() => {
-      if (xrOffset.current && camera.position.y !== xrOffset.current.userData.z) {
-        xrOffset.current.position.x = xrOffset.current.userData.x
-        xrOffset.current.position.y = xrOffset.current.userData.z - 1.6
-        xrOffset.current.position.z = xrOffset.current.userData.y
-      }
-    })
-
     return Object.values(sceneObjects).map((sceneObject, i) => {
       switch (sceneObject.type) {
         case 'camera':
           return (
-            <group key={i} ref={xrOffset} rotation={[0, Math.PI / 2 * camExtraRot, 0]} userData={{x: sceneObject.x, z: sceneObject.z, y: sceneObject.y}}>
+            <group key={i} ref={xrOffset} rotation={[0, Math.PI / 4 * camExtraRot, 0]} userData={{x: sceneObject.x, y: sceneObject.y, z: sceneObject.z}}>
               <SGCamera {...{ i, aspectRatio, activeCamera, setDefaultCamera, ...sceneObject }} />
             </group>
           )
@@ -358,7 +356,7 @@ const SceneManagerXR = connect(
   }
   
   return (
-    <Canvas>
+    <Canvas camera={{ position: [0, 0, 0]}}>
       <SceneContent />
       <SGWorld {...{
           groundTexture,
