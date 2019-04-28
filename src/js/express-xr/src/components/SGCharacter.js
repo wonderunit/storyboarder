@@ -90,10 +90,11 @@ const SGCharacter = ({ id, model, modelData, x, y, z, skeleton, ...props }) => {
   return skinnedMesh ? (
     <group
       ref={object}
+      visible={props.visible}
       userData={{ id, type: props.type, modelSettings: {} }}
-      position={[ x, z, y ]}
-      rotation={[ 0, props.rotation, 0 ]}
-      scale={[ scale, scale, scale ]}
+      position={[x, z, y]}
+      rotation={[0, props.rotation, 0]}
+      scale={[scale, scale, scale]}
     >
       <primitive object={skinnedMesh} />
     </group>

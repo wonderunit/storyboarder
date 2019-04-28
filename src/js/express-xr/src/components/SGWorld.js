@@ -63,27 +63,26 @@ const SGWorld = ({ groundTexture, wallTexture, world, modelData }) => {
       texture.image &&{' '}
       <mesh
         ref={ground}
-        visible={!world.room.visible && world.ground}
         userData={{ type: 'ground' }}
         position={new THREE.Vector3(0, -0.03, 0)}
         rotation={new THREE.Euler(-Math.PI / 2, 0, 0)}
         geometry={new THREE.PlaneGeometry(135 / 3, 135 / 3, 32)}
       >
-        <meshToonMaterial attach="material" side={THREE.FrontSide}>
+        <meshToonMaterial attach="material" side={THREE.FrontSide} visible={!world.room.visible && world.ground}>
           <primitive attach="map" object={groundTexture} />
         </meshToonMaterial>
       </mesh>
-      <primitive ref={room} object={roomMesh} visible={world.room.visible} />
-      {
-        environmentObject &&
-          <primitive
-            ref={environmentRef}
-            object={environmentObject}
-            scale={[ world.environment.scale, world.environment.scale, world.environment.scale ]}
-            rotation={[ 0, world.environment.rotation, 0 ]}
-            position={[ world.environment.x, world.environment.z, world.environment.y ]}
-            visible={world.environment.visible} />
-      }
+      <primitive ref={room} userData={{ type: 'room' }} object={roomMesh} visible={world.room.visible} />
+      {environmentObject && (
+        <primitive
+          ref={environmentRef}
+          object={environmentObject}
+          scale={[world.environment.scale, world.environment.scale, world.environment.scale]}
+          rotation={[0, world.environment.rotation, 0]}
+          position={[world.environment.x, world.environment.z, world.environment.y]}
+          visible={world.environment.visible}
+        />
+      )}
       />
     </>
   )

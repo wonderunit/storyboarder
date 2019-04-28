@@ -30,6 +30,8 @@ THREE.Cache.enabled = true
 
 let turnCamera = null;
 let XRController1, XRController2
+let intersectArray = []
+let teleportArray = []
 const tempMatrix = new THREE.Matrix4()
 
 const getFilepathForLoadable = ({ type, model }) => {
@@ -170,10 +172,10 @@ const SceneManagerXR = connect(
 
   const attachments = useAttachmentLoader({ sceneObjects, world })
 
-  const intersectArray = []
 
   const [isXR, setIsXR] = useState(false)
   const [camExtraRot, setCamExtraRot] = useState(0)
+  const [teleportPos, setTeleportPos] = useState(null)
 
   const findParent = obj => {
     while (obj) {
@@ -199,31 +201,39 @@ const SceneManagerXR = connect(
     useRender(() => {
       if (isXR && XRController1 && XRController2) {
         // cleanIntersected()
-        // intersectObjects(XRController1, intersectArray)
-        // intersectObjects(XRController2, intersectArray)
-
 				handleController(XRController1, 0)
         handleController(XRController2, 1)
       }
     })
 
+    const onTeleport = event => {
+      var controller = event.target
+      const intersect = intersectObjects(controller, teleportArray)
+
+      if (intersect && intersect.distance < 10) {
+        setTeleportPos(intersect.point)
+      }
+    }
+
     const onSelectStart = event => {
       var controller = event.target
       var intersections = getIntersections(controller, intersectArray)
+      
       if (intersections.length > 0) {
         var intersection = intersections[0]
         tempMatrix.getInverse(controller.matrixWorld)
-        var object = intersection.object
+        var object = findParent(intersection.object)
+
         object.matrix.premultiply(tempMatrix)
         object.matrix.decompose(object.position, object.quaternion, object.scale)
 
-        var objMaterial = object.material
+        var objMaterial = intersection.object.material
         if (Array.isArray(objMaterial)) {
           objMaterial.forEach(material => {
-            material.emissive.b = 0.25
+            material.emissive.b = 0.15
           })
         } else {
-          objMaterial.emissive.b = 0.25
+          objMaterial.emissive.b = 0.15
         }
 
         controller.add(object)
@@ -238,14 +248,18 @@ const SceneManagerXR = connect(
         object.matrix.premultiply(controller.matrixWorld)
         object.matrix.decompose(object.position, object.quaternion, object.scale)
 
-        var objMaterial = object.material
-        if (Array.isArray(objMaterial)) {
-          objMaterial.forEach(material => {
-            material.emissive.b = 0
-          })
-        } else {
-          objMaterial.emissive.b = 0
-        }
+        object.traverse(child => {
+          if (child instanceof THREE.Mesh) {
+            var objMaterial = child.material
+            if (Array.isArray(objMaterial)) {
+              objMaterial.forEach(material => {
+                material.emissive.b = 0
+              })
+            } else {
+              objMaterial.emissive.b = 0
+            }
+          }
+        })
 
         scene.add(object)
         controller.userData.selected = undefined
@@ -259,14 +273,14 @@ const SceneManagerXR = connect(
       
       if (turnCamera) return 
     
-      if (event.axes[0] > 0) {
+      if (event.axes[0] > 0.075) {
         turnCamera = 'Right'
         setCamExtraRot(oldRot => {
           return oldRot - 1
         })
       }
       
-      if (event.axes[0] < 0) {
+      if (event.axes[0] < -0.075) {
         turnCamera = 'Left'
         setCamExtraRot(oldRot => {
           return oldRot + 1
@@ -277,6 +291,15 @@ const SceneManagerXR = connect(
     const handleController = (controller, id) => {
       controller.update()
     }
+
+    useEffect(() => {
+      intersectArray = scene.children.filter(
+        child => (child instanceof THREE.Mesh || child instanceof THREE.Group) 
+        && (child.userData.type !== 'ground' && child.userData.type !== 'room' && child.userData.type !== 'camera')
+      )
+
+      teleportArray = scene.children.filter(child => child.userData.type === 'ground')
+    })
 
     useEffect(() => {
       if (!renderer.current) {
@@ -296,6 +319,7 @@ const SceneManagerXR = connect(
 
               XRController1.addEventListener('triggerdown', onSelectStart)
               XRController1.addEventListener('triggerup', onSelectEnd)
+              XRController1.addEventListener('gripsdown', onTeleport)
               XRController1.addEventListener('axischanged', onAxisChanged)
 
               // XRController2 = renderer.current.vr.getController(1)
@@ -304,6 +328,7 @@ const SceneManagerXR = connect(
 
               XRController2.addEventListener('triggerdown', onSelectStart)
               XRController2.addEventListener('triggerup', onSelectEnd)
+              XRController2.addEventListener('gripsdown', onTeleport)
               XRController2.addEventListener('axischanged', onAxisChanged)
 
               const geometry = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, -1)])
@@ -321,32 +346,27 @@ const SceneManagerXR = connect(
             if (xrOffset.current && XRController1) xrOffset.current.add(XRController1)
             if (xrOffset.current && XRController2) xrOffset.current.add(XRController2)
 
-            scene.traverse(child => {
-              if (child instanceof THREE.Mesh) {
-                if (findParent(child).visible) intersectArray.push(child)
-              }
-            })
+            const camPosZero = camera.position.length() === 0
+            if (xrOffset.current && teleportPos) {
+              xrOffset.current.position.x = teleportPos.x
+              xrOffset.current.position.z = teleportPos.z
+            } else if (xrOffset.current && !camPosZero && camera.position.y !== xrOffset.current.userData.z) {
+              xrOffset.current.position.x = xrOffset.current.userData.x
+              xrOffset.current.position.z = xrOffset.current.userData.y
+            }
           }
         })
       }
     }, [])
 
-    useEffect(() => {
-      if (xrOffset.current && camera.position.y !== xrOffset.current.userData.z) {
-        xrOffset.current.position.x = xrOffset.current.userData.x
-        xrOffset.current.position.y = xrOffset.current.userData.z - 1.6
-        xrOffset.current.position.z = xrOffset.current.userData.y
-      }
-    })
-
     return Object.values(sceneObjects).map((sceneObject, i) => {
       switch (sceneObject.type) {
         case 'camera':
-          return (
-            <group key={i} ref={xrOffset} rotation={[0, Math.PI / 2 * camExtraRot, 0]} userData={{x: sceneObject.x, z: sceneObject.z, y: sceneObject.y}}>
+          return activeCamera === sceneObject.id ? (
+            <group key={i} ref={xrOffset} rotation={[0, Math.PI / 4 * camExtraRot, 0]} userData={{x: sceneObject.x, y: sceneObject.y, z: sceneObject.z, type: sceneObject.type}}>
               <SGCamera {...{ i, aspectRatio, activeCamera, setDefaultCamera, ...sceneObject }} />
             </group>
-          )
+          ) : null
         case 'character':
           return <SGCharacter key={i} {...{ modelData: getModelData(sceneObject), ...sceneObject }} />
         case 'object':
@@ -358,7 +378,7 @@ const SceneManagerXR = connect(
   }
   
   return (
-    <Canvas>
+    <Canvas camera={{ position: [0, 0, 0]}}>
       <SceneContent />
       <SGWorld {...{
           groundTexture,
