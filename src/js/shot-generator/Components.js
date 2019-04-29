@@ -2179,7 +2179,7 @@ const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, set
   }
 
   const onOpenVR = event => {
-    let cmd = `"C:\Program Files\Mozilla Firefox\firefox.exe" "${xrServerUrl}"`
+    let cmd = `"C:\\Program Files\\Mozilla Firefox\\firefox.exe" "${xrServerUrl}"`
     console.log('running', cmd)
     child_process.exec(cmd, (error, stdout, stderr) => {
       if (error) console.error(error)
