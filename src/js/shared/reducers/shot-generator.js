@@ -4,6 +4,8 @@ const undoable = require('redux-undo').default
 const crypto = require('crypto')
 const reduceReducers = require('reduce-reducers')
 
+const batchGroupBy = require('./shot-generator/batchGroupBy')
+
 const hashify = string => crypto.createHash('sha1').update(string).digest('base64')
 
 const capitalize = string => string.charAt(0).toUpperCase() + string.slice(1)
@@ -1080,6 +1082,14 @@ const mainReducer = (state = initialState, action) => {
       case 'ATTACHMENTS_DELETE':
         delete draft.attachments[action.payload.id]
         return
+
+      case 'UNDO_GROUP_START':
+        batchGroupBy.start(action.payload)
+        return
+
+      case 'UNDO_GROUP_END':
+        batchGroupBy.end(action.payload)
+        return
     }
   })
 }
@@ -1136,8 +1146,7 @@ const undoableSceneObjectsReducer = undoable(sceneObjectsReducer, {
   limit: 50,
   debug: false,
   filter: filterSceneObjectHistory,
-  // groupBy: groupByActionTypes('UPDATE_OBJECT')
-  groupBy: groupBySceneObjectHistory
+  groupBy: batchGroupBy.init(['UPDATE_OBJECT', 'UPDATE_OBJECTS'])
 })
 const undoableSelectionsReducer = undoable(selectionsReducer, { limit: 50, debug: false })
 const undoableActiveCameraReducer = undoable(activeCameraReducer, { limit: 50, debug: false })
@@ -1244,6 +1253,9 @@ module.exports = {
   markSaved: () => ({ type: 'MARK_SAVED' }),
 
   toggleWorkspaceGuide: payload => ({ type: 'TOGGLE_WORKSPACE_GUIDE', payload }),
+
+  undoGroupStart: payload => ({ type: 'UNDO_GROUP_START', payload }),
+  undoGroupEnd: payload => ({ type: 'UNDO_GROUP_END', payload }),
 
   //
   //

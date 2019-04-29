@@ -6,6 +6,10 @@ const {
   selectObjectToggle,
   selectBone,
   updateObjects,
+
+  undoGroupStart,
+  undoGroupEnd,
+
   getSelections
 } = require('../shared/reducers/shot-generator')
 
@@ -85,7 +89,10 @@ const SelectionManager = connect(
     selectObject,
     selectObjectToggle,
     selectBone,
-    updateObjects
+    updateObjects,
+
+    undoGroupStart,
+    undoGroupEnd
   }
 )(
   ({
@@ -105,7 +112,10 @@ const SelectionManager = connect(
     selectBone,
     updateObjects,
 
-    transition
+    transition,
+    
+    undoGroupStart,
+    undoGroupEnd
   }) => {
 
   const [lastDownId, setLastDownId] = useState()
@@ -326,6 +336,7 @@ const SelectionManager = connect(
       }
 
       if (shouldDrag) {
+        undoGroupStart()
         setDragTarget({ target, x, y })
       }
     }
@@ -349,6 +360,8 @@ const SelectionManager = connect(
     if (dragTarget) {
       endDrag()
       setDragTarget(null)
+
+      undoGroupEnd()
     }
 
     if (event.target === el) {
