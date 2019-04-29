@@ -44,7 +44,6 @@ const SGModel = ({ id, model, modelData, x, y, z, width, height, depth, rotation
       return [
         <mesh
           key={id}
-          visible={visible}
           geometry={boxGeometry}
           material={materialFactory()}
         />
@@ -55,7 +54,7 @@ const SGModel = ({ id, model, modelData, x, y, z, width, height, depth, rotation
       let children = []
       modelData.scene.traverse( function ( child ) {
         if ( child instanceof THREE.Mesh ) {
-          children.push(<primitive key={id} visible={visible} object={meshFactory(child.clone())} />)
+          children.push(<primitive key={id} object={meshFactory(child.clone())} />)
         }
       })
       return children
@@ -66,6 +65,8 @@ const SGModel = ({ id, model, modelData, x, y, z, width, height, depth, rotation
 
   return <group
     userData={{ id }}
+
+    visible={visible}
     position={[ x, z, y ]}
     scale={[ width, height, depth ]}
     rotation={[ rotation.x, rotation.y, rotation.z ]}
