@@ -15,6 +15,8 @@ const prompt = require('electron-prompt')
 
 const { createSelector } = require('reselect')
 
+const child_process = require('child_process')
+
 const h = require('../utils/h')
 const useComponentSize = require('../hooks/use-component-size')
 
@@ -1968,7 +1970,7 @@ const Icon = ({ src }) => h(
   ]
 )
 
-const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, setActiveCamera, resetScene, saveToBoard, insertAsNewBoard }) => {
+const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, setActiveCamera, resetScene, saveToBoard, insertAsNewBoard, xrServerUrl }) => {
   const onCreateCameraClick = () => {
     let id = THREE.Math.generateUUID()
     createObject({
@@ -2176,6 +2178,14 @@ const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, set
     insertAsNewBoard()
   }
 
+  const onOpenVR = event => {
+    let cmd = `"C:\Program Files\Mozilla Firefox\firefox.exe" "${xrServerUrl}"`
+    console.log('running', cmd)
+    child_process.exec(cmd, (error, stdout, stderr) => {
+      if (error) console.error(error)
+    })
+  }
+
   return h(
     ['div#toolbar', { key: 'toolbar' },
       ['div.toolbar__addition.row', [
@@ -2192,6 +2202,7 @@ const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, set
       // ['a[href=#]', { onClick: preventDefault(onSaveClick) }, 'Save'],
 
       ['div.toolbar__board-actions.row', [
+        xrServerUrl ? ['a[href=#]', { onClick: preventDefault(onOpenVR) }, 'Open in VR'] : [],
         ['a[href=#]', { onClick: preventDefault(onSaveToBoardClick) }, [[Icon, { src: 'icon-toolbar-save-to-board' }], 'Save to Board']],
         ['a[href=#]', { onClick: preventDefault(onInsertNewBoardClick) }, [[Icon, { src: 'icon-toolbar-insert-as-new-board' }], 'Insert As New Board']],
       ]]

@@ -3,7 +3,7 @@ const path = require('path')
 
 const { Provider, connect } = require('react-redux')
 const React = require('react')
-const { useState, useEffect, useRef, useContext } = React
+const { useState, useEffect, useRef, useContext, useMemo } = React
 
 const { ipcRenderer, remote } = require('electron')
 
@@ -119,7 +119,8 @@ const Editor = connect(
     sceneObjects: state.sceneObjects,
     world: state.world,
     selectedBone: state.selectedBone,
-    attachments: state.attachments
+    attachments: state.attachments,
+    server: state.server
   }),
   {
     createObject,
@@ -150,7 +151,8 @@ const Editor = connect(
     withState: (fn) => (dispatch, getState) => fn(dispatch, getState())
   }
 )(
-  ({ mainViewCamera, createObject, selectObject, updateModels, loadScene, saveScene, activeCamera, setActiveCamera, resetScene, remoteInput, aspectRatio, sceneObjects, world, selections, selectedBone, onBeforeUnload, setMainViewCamera, withState, attachments }) => {
+  ({ mainViewCamera, createObject, selectObject, updateModels, loadScene, saveScene, activeCamera, setActiveCamera, resetScene, remoteInput, aspectRatio, sceneObjects, world, selections, selectedBone, onBeforeUnload, setMainViewCamera, withState, attachments, server }) => {
+    const xrServerUrl = useMemo(() => server.uri && server.uri.replace(/8001$/, '1234'), [server.uri])
 
     const largeCanvasRef = useRef(null)
     const smallCanvasRef = useRef(null)
@@ -686,7 +688,7 @@ const Editor = connect(
       { value: { scene: scene.current }},
       h(
         ['div.column', { style: { width: '100%' } }, [
-          [Toolbar, { createObject, selectObject, loadScene, saveScene, camera, setActiveCamera, resetScene, saveToBoard: onToolbarSaveToBoard, insertAsNewBoard: onToolbarInsertAsNewBoard }],
+          [Toolbar, { createObject, selectObject, loadScene, saveScene, camera, setActiveCamera, resetScene, saveToBoard: onToolbarSaveToBoard, insertAsNewBoard: onToolbarInsertAsNewBoard, xrServerUrl }],
 
           ['div.row', { style: { flex: 1 }},
             ['div.column', { style: { width: '300px', background: '#111'} },
