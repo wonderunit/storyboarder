@@ -2,6 +2,7 @@ const THREE = require('three')
 const { produce } = require('immer')
 const undoable = require('redux-undo').default
 const crypto = require('crypto')
+const reduceReducers = require('reduce-reducers')
 
 const hashify = string => crypto.createHash('sha1').update(string).digest('base64')
 
@@ -1128,7 +1129,6 @@ const groupBySceneObjectHistory = (function() {
   }
 }())
 
-const reduceReducers = require('reduce-reducers')
 
 const { groupByActionTypes } = require('redux-undo')
 
