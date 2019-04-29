@@ -1,4 +1,4 @@
-const THREE = require('three')
+const THREE = require('three-new')
 window.THREE = window.THREE || THREE
 const { Canvas, useThree, useUpdate, useRender } = require('./lib/react-three-fiber')
 

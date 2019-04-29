@@ -1,4 +1,4 @@
-const THREE = require('three')
+const THREE = require('three-new')
 window.THREE = THREE
 
 const React = require('react')

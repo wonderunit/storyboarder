@@ -172,6 +172,7 @@
     "tether-tooltip": "1.2.0",
     "three": "0.100.0",
     "three-bmfont-text": "^2.3.0",
+    "three-new": "npm:three@0.104.0",
     "three-rounded-box": "0.1.1",
     "tmp": "0.0.33",
     "tonal": "0.69.9",

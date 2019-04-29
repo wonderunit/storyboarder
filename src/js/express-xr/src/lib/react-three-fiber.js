@@ -1,7 +1,7 @@
 import _extends from '@babel/runtime/helpers/esm/extends';
 import _objectWithoutPropertiesLoose from '@babel/runtime/helpers/esm/objectWithoutPropertiesLoose';
-import * as THREE from 'three';
-import { Raycaster, Vector2, OrthographicCamera, PerspectiveCamera, WebGLRenderer, Scene, Vector3, Math as Math$1 } from 'three';
+import * as THREE from 'three-new';
+import { Raycaster, Vector2, OrthographicCamera, PerspectiveCamera, WebGLRenderer, Scene, Vector3, Math as Math$1 } from 'three-new';
 import React, { useRef, useState, useEffect, useCallback, useContext, useMemo } from 'react';
 import ResizeObserver from 'resize-observer-polyfill';
 import Reconciler from 'react-reconciler';
