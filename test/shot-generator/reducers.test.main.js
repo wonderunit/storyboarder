@@ -76,6 +76,7 @@ describe('reducer', () => {
       assert.equal(2, store.getState().sceneObjects.past.length)
   
       // five related changes
+      store.dispatch({ type: 'UNDO_GROUP_START' })
       store.dispatch({ type: 'UPDATE_OBJECT', payload: { id: '0', x: 1 } })
       store.dispatch({ type: 'UPDATE_OBJECT', payload: { id: '0', x: 2 } })
       store.dispatch({ type: 'UPDATE_OBJECT', payload: { id: '0', x: 3 } })
@@ -90,6 +91,8 @@ describe('reducer', () => {
       // still 3 past records if we make another change to the same object
       store.dispatch({ type: 'UPDATE_OBJECT', payload: { id: '0', x: 6 } })
       assert.equal(3, store.getState().sceneObjects.past.length)
+
+      store.dispatch({ type: 'UNDO_GROUP_END' })
 
       // now, we change a different object
       store.dispatch({ type: 'UPDATE_OBJECT', payload: { id: '26332F12-28FE-444C-B73F-B3F90B8C62A2', x: 99 } })
