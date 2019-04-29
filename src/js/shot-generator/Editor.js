@@ -61,6 +61,9 @@ const {
 
   toggleWorkspaceGuide,
 
+  undoGroupStart,
+  undoGroupEnd,
+
   //
   //
   // selectors
@@ -98,7 +101,11 @@ const WorldObject = require('./World')
 
 const ModelLoader = require('../services/model-loader')
 
-const { NumberSlider } = require('./NumberSlider')
+const NumberSliderComponent = require('./NumberSlider')
+const NumberSlider = connect(null, {
+  onDragStart: undoGroupStart,
+  onDragEnd: undoGroupEnd
+})(NumberSliderComponent.NumberSlider)
 const NumberSliderTransform = require('./NumberSlider').transforms
 const NumberSliderFormatter = require('./NumberSlider').formatters
 
