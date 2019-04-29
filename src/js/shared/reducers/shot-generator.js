@@ -1103,45 +1103,6 @@ const filterSceneObjectHistory = (action, currentState, previousHistory) => {
   return true
 }
 
-const groupBySceneObjectHistory = (function() {
-  let lastAction
-
-  const equal = (a, b) => a.length === b.length && a.every((v, n) => v === b[n])
-
-  return action => {
-    let shouldGroup
-
-    if (action.type === 'UPDATE_OBJECT') {
-      // was there a matching action before?
-      if (lastAction && lastAction.type === 'UPDATE_OBJECT') {
-        // is id is the same?
-        if (action.payload.id === lastAction.payload.id) {
-          let lastProps = Object.keys(lastAction.payload).sort()
-          let currProps = Object.keys(action.payload).sort()
-
-          // are we still modifying the same properties?
-          if (equal(lastProps, currProps)) {
-            shouldGroup = true
-          }
-        }
-      } else {
-        // no lastAction, start a new group
-        shouldGroup = true
-      }
-    }
-
-    // remember the action for the next time around
-    lastAction = JSON.parse(JSON.stringify(action))
-
-    // console.log('group by:', shouldGroup ? action.type : null)
-
-    return shouldGroup ? action.type : null
-  }
-}())
-
-
-const { groupByActionTypes } = require('redux-undo')
-
 const undoableSceneObjectsReducer = undoable(sceneObjectsReducer, {
   limit: 50,
   debug: false,
