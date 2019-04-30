@@ -32,7 +32,7 @@ const meshFactory = originalMesh => {
 const boxRadius = .005
 const boxRadiusSegments = 5
 
-const SGModel = ({ id, model, modelData, x, y, z, width, height, depth, rotation, visible }) => {
+const SGModel = ({ id, model, modelData, x, y, z, width, height, depth, rotation, visible, ...props }) => {
   const boxGeometry = useMemo(() => {
     const geometry = new RoundedBoxGeometry( 1, 1, 1, boxRadius, boxRadiusSegments )
     geometry.translate( 0, 1 / 2, 0 )
@@ -64,7 +64,7 @@ const SGModel = ({ id, model, modelData, x, y, z, width, height, depth, rotation
   }, [model, modelData])
 
   return <group
-    userData={{ id }}
+    userData={{ id, type: props.type }}
 
     visible={visible}
     position={[ x, z, y ]}

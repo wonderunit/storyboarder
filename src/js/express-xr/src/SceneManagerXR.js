@@ -261,6 +261,21 @@ const SceneManagerXR = connect(
           }
         })
 
+        if (object.userData.type === 'character' || object.userData.type === 'light') {
+          updateObject(object.userData.id, {
+            x: object.position.x,
+            y: object.position.z,
+            z: object.position.y
+          })
+        } else {
+          updateObject(object.userData.id, {
+            x: object.position.x,
+            y: object.position.z,
+            z: object.position.y,
+            rotation: { x: object.rotation.x, y: object.rotation.y, z: object.rotation.z }
+          })
+        }
+
         scene.add(object)
         controller.userData.selected = undefined
       }
