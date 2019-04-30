@@ -175,8 +175,9 @@ const SceneContent = ({
 
   const { gl, scene, camera, setDefaultCamera } = useThree()
 
+
   useRender(() => {
-    if (isXR && XRController1.current && XRController2.current) {
+    if (XRController1.current && XRController2.current) {
       // cleanIntersected()
       handleController(XRController1.current, 0)
       handleController(XRController2.current, 1)
@@ -187,7 +188,11 @@ const SceneContent = ({
     var controller = event.target
     const intersect = intersectObjects(controller, teleportArray.current)
 
+    console.log(intersect)
+    console.log(intersect.distance < 10)
+
     if (intersect && intersect.distance < 10) {
+      console.log('try to teleport')
       setTeleportPos(intersect.point)
     }
   }
@@ -206,6 +211,7 @@ const SceneContent = ({
       object.matrix.decompose(object.position, object.quaternion, object.scale)
 
       var objMaterial = intersection.object.material
+      console.log(intersection.object)
       if (Array.isArray(objMaterial)) {
         objMaterial.forEach(material => {
           material.emissive.b = 0.15
@@ -286,10 +292,13 @@ const SceneContent = ({
   }
 
   useEffect(() => {
+
+    
     intersectArray.current = scene.children.filter(
       child => (child instanceof THREE.Mesh || child instanceof THREE.Group) 
       && (child.userData.type !== 'ground' && child.userData.type !== 'room' && child.userData.type !== 'camera')
     )
+    console.log(intersectArray.current)
 
     teleportArray.current = scene.children.filter(child => child.userData.type === 'ground')
   })
@@ -297,11 +306,12 @@ const SceneContent = ({
   useEffect(() => {
     if (!renderer.current) {
       navigator.getVRDisplays().then(displays => {
+        console.log({ displays })
         if (displays.length) {
           renderer.current = gl
           scene.background = new THREE.Color(world.backgroundColor)
           setIsXR(true)
-
+          console.log('isXR is now', isXR)
           if (!XRController1.current && !XRController2.current) {
             document.body.appendChild(WEBVR.createButton(gl))
             gl.vr.enabled = true
@@ -335,16 +345,8 @@ const SceneContent = ({
             XRController1.current.add(line.clone())
             XRController2.current.add(line.clone())
           }
-          
+          console.log('controllers', XRController1.current, XRController2.current)
 
-          const camPosZero = camera.position.length() === 0
-          if (xrOffset.current && teleportPos) {
-            xrOffset.current.position.x = teleportPos.x
-            xrOffset.current.position.z = teleportPos.z
-          } else if (xrOffset.current && !camPosZero && camera.position.y !== xrOffset.current.userData.z) {
-            xrOffset.current.position.x = xrOffset.current.userData.x
-            xrOffset.current.position.z = xrOffset.current.userData.y
-          }
         }
       })
       .catch(err => console.error(err))
@@ -358,6 +360,17 @@ const SceneContent = ({
     console.log('camera: using Canvas camera')
   }
 
+  const camPosZero = camera.position.length() === 0
+  if (xrOffset.current && teleportPos) {
+    xrOffset.current.position.x = teleportPos.x
+    xrOffset.current.position.z = teleportPos.z
+  } else if (xrOffset.current && !camPosZero && camera.position.y !== xrOffset.current.userData.z) {
+    xrOffset.current.position.x = xrOffset.current.userData.x
+    xrOffset.current.position.z = xrOffset.current.userData.y
+  }
+
+
+
   let cameraState = sceneObjects[activeCamera]
 
   let activeCameraComponent =
@@ -367,6 +380,9 @@ const SceneContent = ({
       rotation={[0, Math.PI / 4 * camExtraRot, 0]}
       userData={{ x: cameraState.x, y: cameraState.y, z: cameraState.z, type: cameraState.type }}>
       <SGCamera {...{ aspectRatio, activeCamera, setDefaultCamera, ...cameraState }} />
+
+      {XRController1.current && <primitive object={XRController1.current}></primitive>}
+      {XRController2.current && <primitive object={XRController2.current}></primitive>}
     </group>
 
   let sceneObjectComponents = Object.values(sceneObjects).map((sceneObject, i) => {
@@ -412,12 +428,10 @@ const SceneContent = ({
 
   console.log('scene is', ready ? 'shown' : 'not shown')
 
-  return <group visible={ready}>
+  return <>
     {activeCameraComponent}
     {sceneObjectComponents.concat(worldComponent)}
-    {XRController1.current && <primitive object={XRController1.current}></primitive>}
-    {XRController2.current && <primitive object={XRController2.current}></primitive>}
-  </group>
+  </>
 }
 
 const SceneManagerXR = connect(
