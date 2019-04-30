@@ -18,7 +18,7 @@ const configureStore = preloadedState => {
   return store
 }
 
-const ViewerXR = require('./ViewerXR')
+const SceneManagerXR = require('./SceneManagerXR')
 
 fetch('/state.json')
   .then(response => response.json())
@@ -29,11 +29,9 @@ fetch('/state.json')
     })
 
     ReactDOM.render(
-      h([
-        Provider, { store }, [
-          ViewerXR
-        ]
-      ]),
+      <Provider store={store}>
+        <SceneManagerXR />
+      </Provider>,
       document.getElementById('main')
     )
   })
