@@ -336,8 +336,6 @@ const SceneContent = ({
             XRController2.current.add(line.clone())
           }
           
-          if (xrOffset.current && XRController1.current) xrOffset.current.add(XRController1.current)
-          if (xrOffset.current && XRController2.current) xrOffset.current.add(XRController2.current)
 
           const camPosZero = camera.position.length() === 0
           if (xrOffset.current && teleportPos) {
@@ -349,6 +347,7 @@ const SceneContent = ({
           }
         }
       })
+      .catch(err => console.error(err))
     }
   }, [])
 
@@ -416,6 +415,8 @@ const SceneContent = ({
   return <group visible={ready}>
     {activeCameraComponent}
     {sceneObjectComponents.concat(worldComponent)}
+    {XRController1.current && <primitive object={XRController1.current}></primitive>}
+    {XRController2.current && <primitive object={XRController2.current}></primitive>}
   </group>
 }
 
