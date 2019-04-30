@@ -174,6 +174,7 @@ const SceneContent = ({
   }
 
   const { gl, scene, camera, setDefaultCamera } = useThree()
+
   useRender(() => {
     if (isXR && XRController1.current && XRController2.current) {
       // cleanIntersected()
@@ -292,6 +293,7 @@ const SceneContent = ({
 
     teleportArray.current = scene.children.filter(child => child.userData.type === 'ground')
   })
+
   useEffect(() => {
     if (!renderer.current) {
       navigator.getVRDisplays().then(displays => {
@@ -350,14 +352,32 @@ const SceneContent = ({
     }
   }, [])
 
-  return Object.values(sceneObjects).map((sceneObject, i) => {
+  // if our camera is setup
+  if (activeCamera === camera.userData.id) {
+    console.log('camera: using user-defined camera')
+  } else {
+    console.log('camera: using Canvas camera')
+  }
+
+  let cameraState = sceneObjects[activeCamera]
+
+  let activeCameraComponent =
+    <group
+      key={'camera'}
+      ref={xrOffset}
+      rotation={[0, Math.PI / 4 * camExtraRot, 0]}
+      userData={{ x: cameraState.x, y: cameraState.y, z: cameraState.z, type: cameraState.type }}>
+      <SGCamera {...{ aspectRatio, activeCamera, setDefaultCamera, ...cameraState }} />
+    </group>
+
+  let sceneObjectComponents = Object.values(sceneObjects).map((sceneObject, i) => {
     switch (sceneObject.type) {
-      case 'camera':
-        return activeCamera === sceneObject.id ? (
-          <group key={i} ref={xrOffset} rotation={[0, Math.PI / 4 * camExtraRot, 0]} userData={{x: sceneObject.x, y: sceneObject.y, z: sceneObject.z, type: sceneObject.type}}>
-            <SGCamera {...{ i, aspectRatio, activeCamera, setDefaultCamera, ...sceneObject }} />
-          </group>
-        ) : null
+      // case 'camera':
+      //   return activeCamera === sceneObject.id ? (
+      //     <group key={i} ref={xrOffset} rotation={[0, Math.PI / 4 * camExtraRot, 0]} userData={{x: sceneObject.x, y: sceneObject.y, z: sceneObject.z, type: sceneObject.type}}>
+      //       <SGCamera {...{ i, aspectRatio, activeCamera, setDefaultCamera, ...sceneObject }} />
+      //     </group>
+      //   ) : null
       case 'character':
         return <SGCharacter key={i} {...{ modelData: getModelData(sceneObject), ...sceneObject }} />
       case 'object':
@@ -366,6 +386,37 @@ const SceneContent = ({
         return <SGSpotLight key={i} {...{ ...sceneObject }} />
     }
   }).filter(Boolean)
+
+  const groundTexture = useMemo(() => new THREE.TextureLoader().load('/data/system/grid_floor.png'), [])
+  const wallTexture = useMemo(
+    () =>
+      new THREE.TextureLoader().load('/data/system/grid_wall2.png', texture => {
+        texture.wrapS = texture.wrapT = THREE.RepeatWrapping
+        texture.offset.set(0, 0)
+        texture.repeat.set(4.5, 4.5)
+      }),
+    []
+  )
+  const worldComponent = <SGWorld {...{
+      key: world,
+      groundTexture,
+      wallTexture,
+      world,
+      modelData: world.environment.file && getModelData({
+        model: world.environment.file,
+        type: 'environment'
+      })
+    }} />
+
+  // wait until the camera is setup before showing the scene
+  const ready = !!xrOffset.current
+
+  console.log('scene is', ready ? 'shown' : 'not shown')
+
+  return <group visible={ready}>
+    {activeCameraComponent}
+    {sceneObjectComponents.concat(worldComponent)}
+  </group>
 }
 
 const SceneManagerXR = connect(
@@ -380,17 +431,6 @@ const SceneManagerXR = connect(
     updateObject
   }
 )(({ aspectRatio, world, sceneObjects, activeCamera, updateObject }) => {
-  const groundTexture = useMemo(() => new THREE.TextureLoader().load('/data/system/grid_floor.png'), [])
-  const wallTexture = useMemo(
-    () =>
-      new THREE.TextureLoader().load('/data/system/grid_wall2.png', texture => {
-        texture.wrapS = texture.wrapT = THREE.RepeatWrapping
-        texture.offset.set(0, 0)
-        texture.repeat.set(4.5, 4.5)
-      }),
-    []
-  )
-
   const attachments = useAttachmentLoader({ sceneObjects, world })
 
   const getModelData = sceneObject => {
@@ -399,7 +439,7 @@ const SceneManagerXR = connect(
   }
 
   return (
-    <Canvas camera={{ position: [0, 0, 0]}}>
+    <Canvas>
       <SceneContent {...{
           aspectRatio,
           sceneObjects,
@@ -407,15 +447,6 @@ const SceneManagerXR = connect(
           activeCamera,
           world,
           updateObject
-        }} />
-      <SGWorld {...{
-          groundTexture,
-          wallTexture,
-          world,
-          modelData: world.environment.file && getModelData({
-            model: world.environment.file,
-            type: 'environment'
-          })
         }} />
     </Canvas>
   )

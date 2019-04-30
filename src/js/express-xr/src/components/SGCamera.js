@@ -1,7 +1,7 @@
 const { useUpdate } = require('../lib/react-three-fiber')
-const { useLayoutEffect } = React = require('react')
+const { useEffect } = React = require('react')
 
-const SGCamera = ({ i, aspectRatio, activeCamera, setDefaultCamera, ...props }) => {
+const SGCamera = ({ aspectRatio, activeCamera, setDefaultCamera, ...props }) => {
   const ref = useUpdate(
     self => {
       self.rotation.x = 0
@@ -14,14 +14,16 @@ const SGCamera = ({ i, aspectRatio, activeCamera, setDefaultCamera, ...props }) 
     [props.rotation, props.tilt, props.roll]
   )
 
-  useLayoutEffect(() => {
-    if (activeCamera === props.id) {
-      setDefaultCamera(ref.current)
+  useEffect(() => {
+    if (ref.current) {
+      if (activeCamera === props.id) {
+        setDefaultCamera(ref.current)
+        console.log('SGCamera: setDefaultCamera to', props.id)
+      }
     }
-  }, [activeCamera])
+  }, [])
 
   return <perspectiveCamera
-    key={i}
     ref={ref}
 
     userData={{
