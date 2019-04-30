@@ -147,7 +147,7 @@ const useAttachmentLoader = ({ sceneObjects, world }) => {
   return attachments
 }
 
-const SceneContent = ({ aspectRatio, sceneObjects, getModelData, activeCamera, world }) => {
+const SceneContent = ({ aspectRatio, sceneObjects, getModelData, activeCamera, world, updateObject }) => {
   const renderer = useRef(null)
   const xrOffset = useRef(null)
 
@@ -392,7 +392,7 @@ const SceneManagerXR = connect(
 
   return (
     <Canvas camera={{ position: [0, 0, 0]}}>
-      <SceneContent {...{ aspectRatio, sceneObjects, getModelData, activeCamera, world }} />
+      <SceneContent {...{ aspectRatio, sceneObjects, getModelData, activeCamera, world, updateObject }} />
       <SGWorld {...{
           groundTexture,
           wallTexture,
