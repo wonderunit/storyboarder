@@ -28,12 +28,6 @@ const gltfLoader = new THREE.GLTFLoader(loadingManager)
 objLoader.setLogging(false, false)
 THREE.Cache.enabled = true
 
-let turnCamera = null;
-let XRController1, XRController2
-let intersectArray = []
-let teleportArray = []
-const tempMatrix = new THREE.Matrix4()
-
 const getFilepathForLoadable = ({ type, model }) => {
   // does the model name have a slash in it?
   // TODO support windows file delimiter
@@ -147,13 +141,26 @@ const useAttachmentLoader = ({ sceneObjects, world }) => {
   return attachments
 }
 
-const SceneContent = ({ aspectRatio, sceneObjects, getModelData, activeCamera, world, updateObject }) => {
+const SceneContent = ({
+  aspectRatio,
+  sceneObjects,
+  getModelData,
+  activeCamera,
+  world,
+  updateObject
+}) => {
   const renderer = useRef(null)
   const xrOffset = useRef(null)
 
   const [isXR, setIsXR] = useState(false)
   const [camExtraRot, setCamExtraRot] = useState(0)
   const [teleportPos, setTeleportPos] = useState(null)
+
+  const turnCamera = useRef(null)
+  const XRController1 = useRef(null)
+  const XRController2 = useRef(null)
+  const intersectArray = useRef([])
+  const teleportArray = useRef([])
 
   const findParent = obj => {
     while (obj) {
@@ -168,16 +175,16 @@ const SceneContent = ({ aspectRatio, sceneObjects, getModelData, activeCamera, w
 
   const { gl, scene, camera, setDefaultCamera } = useThree()
   useRender(() => {
-    if (isXR && XRController1 && XRController2) {
+    if (isXR && XRController1.current && XRController2.current) {
       // cleanIntersected()
-      handleController(XRController1, 0)
-      handleController(XRController2, 1)
+      handleController(XRController1.current, 0)
+      handleController(XRController2.current, 1)
     }
   })
 
   const onTeleport = event => {
     var controller = event.target
-    const intersect = intersectObjects(controller, teleportArray)
+    const intersect = intersectObjects(controller, teleportArray.current)
 
     if (intersect && intersect.distance < 10) {
       setTeleportPos(intersect.point)
@@ -186,10 +193,11 @@ const SceneContent = ({ aspectRatio, sceneObjects, getModelData, activeCamera, w
 
   const onSelectStart = event => {
     var controller = event.target
-    var intersections = getIntersections(controller, intersectArray)
+    var intersections = getIntersections(controller, intersectArray.current)
     
     if (intersections.length > 0) {
       var intersection = intersections[0]
+      const tempMatrix = new THREE.Matrix4()
       tempMatrix.getInverse(controller.matrixWorld)
       var object = findParent(intersection.object)
 
@@ -252,20 +260,20 @@ const SceneContent = ({ aspectRatio, sceneObjects, getModelData, activeCamera, w
 
   const onAxisChanged = event => {
     if (event.axes[0] === 0) {
-      turnCamera = null
+      turnCamera.current = null
     } 
     
-    if (turnCamera) return 
+    if (turnCamera.current) return 
   
     if (event.axes[0] > 0.075) {
-      turnCamera = 'Right'
+      turnCamera.current = 'Right'
       setCamExtraRot(oldRot => {
         return oldRot - 1
       })
     }
     
     if (event.axes[0] < -0.075) {
-      turnCamera = 'Left'
+      turnCamera.current = 'Left'
       setCamExtraRot(oldRot => {
         return oldRot + 1
       })
@@ -277,12 +285,12 @@ const SceneContent = ({ aspectRatio, sceneObjects, getModelData, activeCamera, w
   }
 
   useEffect(() => {
-    intersectArray = scene.children.filter(
+    intersectArray.current = scene.children.filter(
       child => (child instanceof THREE.Mesh || child instanceof THREE.Group) 
       && (child.userData.type !== 'ground' && child.userData.type !== 'room' && child.userData.type !== 'camera')
     )
 
-    teleportArray = scene.children.filter(child => child.userData.type === 'ground')
+    teleportArray.current = scene.children.filter(child => child.userData.type === 'ground')
   })
   useEffect(() => {
     if (!renderer.current) {
@@ -292,27 +300,27 @@ const SceneContent = ({ aspectRatio, sceneObjects, getModelData, activeCamera, w
           scene.background = new THREE.Color(world.backgroundColor)
           setIsXR(true)
 
-          if (!XRController1 && !XRController2) {
+          if (!XRController1.current && !XRController2.current) {
             document.body.appendChild(WEBVR.createButton(gl))
             gl.vr.enabled = true
 
             // XRController1 = renderer.current.vr.getController(0)
-            XRController1 = new THREE.ViveController( 0 );
-            XRController1.standingMatrix = gl.vr.getStandingMatrix()
+            XRController1.current = new THREE.ViveController( 0 );
+            XRController1.current.standingMatrix = gl.vr.getStandingMatrix()
 
-            XRController1.addEventListener('triggerdown', onSelectStart)
-            XRController1.addEventListener('triggerup', onSelectEnd)
-            XRController1.addEventListener('gripsdown', onTeleport)
-            XRController1.addEventListener('axischanged', onAxisChanged)
+            XRController1.current.addEventListener('triggerdown', onSelectStart)
+            XRController1.current.addEventListener('triggerup', onSelectEnd)
+            XRController1.current.addEventListener('gripsdown', onTeleport)
+            XRController1.current.addEventListener('axischanged', onAxisChanged)
 
-            // XRController2 = renderer.current.vr.getController(1)
-            XRController2 = new THREE.ViveController(1)
-            XRController2.standingMatrix = gl.vr.getStandingMatrix()
+            // XRController2.current = renderer.current.vr.getController(1)
+            XRController2.current = new THREE.ViveController(1)
+            XRController2.current.standingMatrix = gl.vr.getStandingMatrix()
 
-            XRController2.addEventListener('triggerdown', onSelectStart)
-            XRController2.addEventListener('triggerup', onSelectEnd)
-            XRController2.addEventListener('gripsdown', onTeleport)
-            XRController2.addEventListener('axischanged', onAxisChanged)
+            XRController2.current.addEventListener('triggerdown', onSelectStart)
+            XRController2.current.addEventListener('triggerup', onSelectEnd)
+            XRController2.current.addEventListener('gripsdown', onTeleport)
+            XRController2.current.addEventListener('axischanged', onAxisChanged)
 
             const geometry = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, -1)])
             const material = new THREE.LineBasicMaterial({
@@ -322,12 +330,12 @@ const SceneContent = ({ aspectRatio, sceneObjects, getModelData, activeCamera, w
             const line = new THREE.Line(geometry, material)
             line.name = 'line'
             line.scale.z = 5
-            XRController1.add(line.clone())
-            XRController2.add(line.clone())
+            XRController1.current.add(line.clone())
+            XRController2.current.add(line.clone())
           }
           
-          if (xrOffset.current && XRController1) xrOffset.current.add(XRController1)
-          if (xrOffset.current && XRController2) xrOffset.current.add(XRController2)
+          if (xrOffset.current && XRController1.current) xrOffset.current.add(XRController1.current)
+          if (xrOffset.current && XRController2.current) xrOffset.current.add(XRController2.current)
 
           const camPosZero = camera.position.length() === 0
           if (xrOffset.current && teleportPos) {
@@ -392,7 +400,14 @@ const SceneManagerXR = connect(
 
   return (
     <Canvas camera={{ position: [0, 0, 0]}}>
-      <SceneContent {...{ aspectRatio, sceneObjects, getModelData, activeCamera, world, updateObject }} />
+      <SceneContent {...{
+          aspectRatio,
+          sceneObjects,
+          getModelData,
+          activeCamera,
+          world,
+          updateObject
+        }} />
       <SGWorld {...{
           groundTexture,
           wallTexture,
