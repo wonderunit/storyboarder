@@ -188,9 +188,6 @@ const SceneContent = ({
     var controller = event.target
     const intersect = intersectObjects(controller, teleportArray.current)
 
-    console.log(intersect)
-    console.log(intersect.distance < 10)
-
     if (intersect && intersect.distance < 10) {
       console.log('try to teleport')
       setTeleportPos(intersect.point)
@@ -249,7 +246,8 @@ const SceneContent = ({
         updateObject(object.userData.id, {
           x: object.position.x,
           y: object.position.z,
-          z: object.position.y
+          z: object.position.y,
+          rotation: object.rotation.y
         })
       } else {
         updateObject(object.userData.id, {
