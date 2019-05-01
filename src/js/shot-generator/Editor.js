@@ -3973,138 +3973,138 @@ const LoadingStatus = connect(
 
 }))
 
-const saveScenePresets = state => presetsStorage.saveScenePresets({ scenes: state.presets.scenes })
-const PresetsEditor = connect(
-  state => ({
-    presets: state.presets
-  }),
-  {
-    loadScenePreset: id => (dispatch, getState) => {
-      let choice = dialog.showMessageBox(null, {
-        type: 'question',
-        buttons: ['Yes', 'No'],
-        message: 'Your existing scene will be cleared. Are you sure?',
-        defaultId: 1 // default to No
-      })
-      if (choice === 0) {
-        let state = getState()
-        let preset = state.presets.scenes[id]
-        dispatch(loadScene({
-          world: preset.state.world,
-          sceneObjects: preset.state.sceneObjects,
-          activeCamera: preset.state.activeCamera
-        }))
-      }
-    },
-
-    createScenePreset: () => (dispatch, getState) => {
-      // show a prompt to get the desired preset name
-      let id = THREE.Math.generateUUID()
-      prompt({
-        title: 'Preset Name',
-        label: 'Select a Preset Name',
-        value: `Scene ${shortId(id)}`
-      }, require('electron').remote.getCurrentWindow()).then(name => {
-        if (name != null && name != '' && name != ' ') {
-          let state = getState()
-          let preset = {
-            id,
-            name,
-            state: {
-              // TODO
-              world: state.world,
-              sceneObjects: getSceneObjects(state),
-              activeCamera: getActiveCamera(state)
-            }
-          }
-          dispatch(createScenePreset(preset))
-          saveScenePresets(getState())
-        }
-      }).catch(err => {
-        console.error(err)
-      })
-    },
-
-    updateScenePreset: (id, values) => (dispatch, getState) => {
-      dispatch(updateScenePreset(id, values))
-      saveScenePresets(getState())
-    },
-
-    deleteScenePreset: id => (dispatch, getState) => {
-      let choice = dialog.showMessageBox(null, {
-        type: 'question',
-        buttons: ['Yes', 'No'],
-        message: 'This scene preset will be deleted. Are you sure?',
-        defaultId: 1 // default to No
-      })
-      if (choice === 0) {
-        dispatch(deleteScenePreset(id))
-        saveScenePresets(getState())
-      }
-    }
-  }
-)(
-({ presets, loadScenePreset, createScenePreset, updateScenePreset, deleteScenePreset, transition }) => {
-  const onLoadClick = (preset, event) => {
-    event.preventDefault()
-    loadScenePreset(preset.id)
-  }
-
-  const onSaveClick = event => {
-    event.preventDefault()
-    createScenePreset()
-  }
-
-  const onDeleteClick = id => {
-    event.preventDefault()
-    deleteScenePreset(id)
-  }
-
-  const onEditClick = (preset, event) => {
-    event.preventDefault()
-    updateScenePreset(preset.id, { name: 'ok'})
-  }
-
-  const onFocus = event => transition('TYPING_ENTER')
-  const onBlur = event => transition('TYPING_EXIT')
-
-  return h([
-    'div', { style: { padding: 6 } }, [
-      ['h3', { style: { margin: '24px 0 12px 0' } }, 'Preset Scenes'],
-
-      ['ul', Object.values(presets.scenes).map(preset =>
-        ['li.element', { style: { display: 'flex', justifyContent: 'space-between' } },
-
-          ['a.select[href=#]', { style: { color: 'white', textDecoration: 'none', display: 'flex', alignSelf: 'center', top: -3, position: 'relative', width: '1.5rem' }, onClick: onLoadClick.bind(this, preset) }, '⇧'],
-
-          [
-            'span',
-            { style: { flex: 1 } },
-            [
-              LabelInput,
-              {
-                key: preset.id,
-                label: preset.name != null
-                  ? preset.name
-                  : `Preset ${shortId(preset.id)}`,
-                onFocus,
-                onBlur,
-                setLabel: name => {
-                  updateScenePreset(preset.id, { name })
-                }
-              }
-            ]
-          ],
-
-
-          ['a.delete[href=#]', { onClick: onDeleteClick.bind(this, preset.id) }, 'X']
-        ] )
-      ],
-
-      ['button', { style: { marginTop: 20, padding: '9px 12px', fontSize: 16 }, onClick: onSaveClick }, '+ Preset'],
-    ]
-  ])
-})
+// const saveScenePresets = state => presetsStorage.saveScenePresets({ scenes: state.presets.scenes })
+// const PresetsEditor = connect(
+//   state => ({
+//     presets: state.presets
+//   }),
+//   {
+//     loadScenePreset: id => (dispatch, getState) => {
+//       let choice = dialog.showMessageBox(null, {
+//         type: 'question',
+//         buttons: ['Yes', 'No'],
+//         message: 'Your existing scene will be cleared. Are you sure?',
+//         defaultId: 1 // default to No
+//       })
+//       if (choice === 0) {
+//         let state = getState()
+//         let preset = state.presets.scenes[id]
+//         dispatch(loadScene({
+//           world: preset.state.world,
+//           sceneObjects: preset.state.sceneObjects,
+//           activeCamera: preset.state.activeCamera
+//         }))
+//       }
+//     },
+// 
+//     createScenePreset: () => (dispatch, getState) => {
+//       // show a prompt to get the desired preset name
+//       let id = THREE.Math.generateUUID()
+//       prompt({
+//         title: 'Preset Name',
+//         label: 'Select a Preset Name',
+//         value: `Scene ${shortId(id)}`
+//       }, require('electron').remote.getCurrentWindow()).then(name => {
+//         if (name != null && name != '' && name != ' ') {
+//           let state = getState()
+//           let preset = {
+//             id,
+//             name,
+//             state: {
+//               // TODO
+//               world: state.world,
+//               sceneObjects: getSceneObjects(state),
+//               activeCamera: getActiveCamera(state)
+//             }
+//           }
+//           dispatch(createScenePreset(preset))
+//           saveScenePresets(getState())
+//         }
+//       }).catch(err => {
+//         console.error(err)
+//       })
+//     },
+// 
+//     updateScenePreset: (id, values) => (dispatch, getState) => {
+//       dispatch(updateScenePreset(id, values))
+//       saveScenePresets(getState())
+//     },
+// 
+//     deleteScenePreset: id => (dispatch, getState) => {
+//       let choice = dialog.showMessageBox(null, {
+//         type: 'question',
+//         buttons: ['Yes', 'No'],
+//         message: 'This scene preset will be deleted. Are you sure?',
+//         defaultId: 1 // default to No
+//       })
+//       if (choice === 0) {
+//         dispatch(deleteScenePreset(id))
+//         saveScenePresets(getState())
+//       }
+//     }
+//   }
+// )(
+// ({ presets, loadScenePreset, createScenePreset, updateScenePreset, deleteScenePreset, transition }) => {
+//   const onLoadClick = (preset, event) => {
+//     event.preventDefault()
+//     loadScenePreset(preset.id)
+//   }
+// 
+//   const onSaveClick = event => {
+//     event.preventDefault()
+//     createScenePreset()
+//   }
+// 
+//   const onDeleteClick = id => {
+//     event.preventDefault()
+//     deleteScenePreset(id)
+//   }
+// 
+//   const onEditClick = (preset, event) => {
+//     event.preventDefault()
+//     updateScenePreset(preset.id, { name: 'ok'})
+//   }
+// 
+//   const onFocus = event => transition('TYPING_ENTER')
+//   const onBlur = event => transition('TYPING_EXIT')
+// 
+//   return h([
+//     'div', { style: { padding: 6 } }, [
+//       ['h3', { style: { margin: '24px 0 12px 0' } }, 'Preset Scenes'],
+// 
+//       ['ul', Object.values(presets.scenes).map(preset =>
+//         ['li.element', { style: { display: 'flex', justifyContent: 'space-between' } },
+// 
+//           ['a.select[href=#]', { style: { color: 'white', textDecoration: 'none', display: 'flex', alignSelf: 'center', top: -3, position: 'relative', width: '1.5rem' }, onClick: onLoadClick.bind(this, preset) }, '⇧'],
+// 
+//           [
+//             'span',
+//             { style: { flex: 1 } },
+//             [
+//               LabelInput,
+//               {
+//                 key: preset.id,
+//                 label: preset.name != null
+//                   ? preset.name
+//                   : `Preset ${shortId(preset.id)}`,
+//                 onFocus,
+//                 onBlur,
+//                 setLabel: name => {
+//                   updateScenePreset(preset.id, { name })
+//                 }
+//               }
+//             ]
+//           ],
+// 
+// 
+//           ['a.delete[href=#]', { onClick: onDeleteClick.bind(this, preset.id) }, 'X']
+//         ] )
+//       ],
+// 
+//       ['button', { style: { marginTop: 20, padding: '9px 12px', fontSize: 16 }, onClick: onSaveClick }, '+ Preset'],
+//     ]
+//   ])
+// })
 
 let stats
 ipcRenderer.on('shot-generator:menu:view:fps-meter', (event, value) => {
