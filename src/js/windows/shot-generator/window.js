@@ -76,6 +76,7 @@ ipcRenderer.on('loadBoard', (event, { storyboarderFilePath, boardData, board }) 
 
   if (shot) {
     store.dispatch(loadScene(shot.data))
+    store.dispatch(ActionCreators.clearHistory())
   } else {
     store.dispatch(resetScene())
   }
