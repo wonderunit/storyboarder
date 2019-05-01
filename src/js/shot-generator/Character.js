@@ -298,7 +298,7 @@ const Character = React.memo(({
 
   const updateSkeleton = () => {
     let skeleton = object.current.userData.skeleton
-    if (props.skeleton) {
+    if (Object.values(props.skeleton).length) {
       for (let name in props.skeleton) {
         let bone = skeleton.getBoneByName(name)
         if (bone) {
@@ -307,6 +307,10 @@ const Character = React.memo(({
           bone.rotation.z = props.skeleton[name].rotation.z
         }
       }
+    } else {
+      let skeleton = object.current.userData.skeleton
+      skeleton.pose()
+      fixRootBone()
     }
   }
 
@@ -389,14 +393,21 @@ const Character = React.memo(({
     let skeleton = object.current.userData.skeleton
     skeleton.pose()
     updateSkeleton()
+    fixRootBone()
+  }
+
+  const fixRootBone = () => {
+    let { boneLengthScale, parentRotation, parentPosition } = object.current.userData
+    let skeleton = object.current.userData.skeleton
+
     // fb converter scaled object
-    if (object.current.userData.boneLengthScale === 100) {
+    if (boneLengthScale === 100) {
       if (props.skeleton['Hips']) {
         // we already have correct values, don't multiply the root bone
       } else {
-        skeleton.bones[0].quaternion.multiply(object.current.userData.parentRotation)
+        skeleton.bones[0].quaternion.multiply(parentRotation)
       }
-      skeleton.bones[0].position.copy(object.current.userData.parentPosition)
+      skeleton.bones[0].position.copy(parentPosition)
     }
   }
 
