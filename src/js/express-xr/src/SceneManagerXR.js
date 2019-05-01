@@ -201,6 +201,11 @@ const SceneContent = ({
     
     if (intersections.length > 0) {
       var intersection = intersections[0]
+
+      if (intersection.object.userData.type === 'view') {
+        intersection = intersections[1]
+      }
+
       const tempMatrix = new THREE.Matrix4()
       tempMatrix.getInverse(controller.matrixWorld)
       var object = findParent(intersection.object)
@@ -209,12 +214,13 @@ const SceneContent = ({
       object.matrix.decompose(object.position, object.quaternion, object.scale)
 
       var objMaterial = intersection.object.material
-      // console.log(intersection.object)
       if (Array.isArray(objMaterial)) {
         objMaterial.forEach(material => {
+          if (!material.emissive) return
           material.emissive.b = 0.15
         })
       } else {
+        if (!objMaterial.emissive) return
         objMaterial.emissive.b = 0.15
       }
 
@@ -235,9 +241,11 @@ const SceneContent = ({
           var objMaterial = child.material
           if (Array.isArray(objMaterial)) {
             objMaterial.forEach(material => {
+              if (!material.emissive) return
               material.emissive.b = 0
             })
           } else {
+            if (!objMaterial.emissive) return
             objMaterial.emissive.b = 0
           }
         }
@@ -249,6 +257,12 @@ const SceneContent = ({
           y: object.position.z,
           z: object.position.y,
           rotation: object.rotation.y
+        })
+      } else if (object.userData.type === 'virtual-camera') {
+        updateObject(object.userData.id, {
+          x: object.position.x,
+          y: object.position.z,
+          z: object.position.y
         })
       } else {
         updateObject(object.userData.id, {

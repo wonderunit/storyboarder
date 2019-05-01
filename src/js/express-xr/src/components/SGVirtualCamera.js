@@ -6,6 +6,7 @@ const SGVirtualCamera = ({ i, aspectRatio, ...props }) => {
   const virtualCamera = useRef(null)
   const renderTarget = useRef(null)
   const targetMesh = useRef(null)
+  const hideArray = useRef([])
 
   const size = 0.5
   const padding = 0.05
@@ -31,18 +32,37 @@ const SGVirtualCamera = ({ i, aspectRatio, ...props }) => {
     }
   }, [])
 
+  useEffect(() => {
+    hideArray.current = []
+    scene.traverse(child => {
+      if (child.type === 'Line' || child.userData.type === 'virtual-camera') {
+        hideArray.current.push(child)
+      }
+    })
+  })
+
   useRender(() => {
     if (virtualCamera.current && renderTarget.current) {
       gl.vr.enabled = false
+
+      hideArray.current.forEach(child => {
+        child.visible = false
+      })
+
       gl.render(scene, virtualCamera.current, renderTarget.current)
       gl.vr.enabled = true
+
+      hideArray.current.forEach(child => {
+        child.visible = true
+      })
     }
   })
 
   return (
-    <group userData={{ type: props.type, id: props.id }} position={[props.x, props.z, props.y]} ref={ref}>
+    <group userData={{ id: props.id, type: 'virtual-camera' }} position={[props.x, props.z, props.y]} ref={ref}>
       <mesh
         ref={targetMesh}
+        userData={{ type: 'view' }}
         geometry={new THREE.PlaneGeometry(size * aspectRatio, size)}
         material={
           new THREE.MeshBasicMaterial({
@@ -54,7 +74,7 @@ const SGVirtualCamera = ({ i, aspectRatio, ...props }) => {
       <mesh
         position={[0, 0, -0.0275]}
         geometry={new THREE.BoxGeometry(size * aspectRatio + padding, size + padding, 0.05)}
-        material={new THREE.MeshBasicMaterial({ color: new THREE.Color('black'), transparent: true })}
+        material={new THREE.MeshLambertMaterial({ color: new THREE.Color('gray'), transparent: true })}
       />
       <perspectiveCamera
         ref={virtualCamera}
