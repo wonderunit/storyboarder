@@ -25,7 +25,10 @@ fetch('/state.json')
   .then(result => {
     const store = configureStore({
       ...result,
-      models: initialState.models
+      models: initialState.models,
+      presets: {
+        poses: {}
+      }
     })
 
     ReactDOM.render(
