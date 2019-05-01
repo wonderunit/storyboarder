@@ -16,6 +16,7 @@ require('../../vendor/three/examples/js/loaders/OBJLoader2')
 const SGWorld = require('./components/SGWorld')
 const SGSpotLight = require('./components/SGSpotLight')
 const SGCamera = require('./components/SGCamera')
+const SGVirtualCamera = require('./components/SGVirtualCamera')
 const SGModel = require('./components/SGModel')
 const SGCharacter = require('./components/SGCharacter')
 
@@ -189,7 +190,7 @@ const SceneContent = ({
     const intersect = intersectObjects(controller, teleportArray.current)
 
     if (intersect && intersect.distance < 10) {
-      console.log('try to teleport')
+      // console.log('try to teleport')
       setTeleportPos(intersect.point)
     }
   }
@@ -208,7 +209,7 @@ const SceneContent = ({
       object.matrix.decompose(object.position, object.quaternion, object.scale)
 
       var objMaterial = intersection.object.material
-      console.log(intersection.object)
+      // console.log(intersection.object)
       if (Array.isArray(objMaterial)) {
         objMaterial.forEach(material => {
           material.emissive.b = 0.15
@@ -296,7 +297,7 @@ const SceneContent = ({
       child => (child instanceof THREE.Mesh || child instanceof THREE.Group) 
       && (child.userData.type !== 'ground' && child.userData.type !== 'room' && child.userData.type !== 'camera')
     )
-    console.log(intersectArray.current)
+    // console.log(intersectArray.current)
 
     teleportArray.current = scene.children.filter(child => child.userData.type === 'ground')
   })
@@ -304,12 +305,12 @@ const SceneContent = ({
   useEffect(() => {
     if (!renderer.current) {
       navigator.getVRDisplays().then(displays => {
-        console.log({ displays })
+        // console.log({ displays })
         if (displays.length) {
           renderer.current = gl
           scene.background = new THREE.Color(world.backgroundColor)
           setIsXR(true)
-          console.log('isXR is now', isXR)
+          // console.log('isXR is now', isXR)
           if (!XRController1.current && !XRController2.current) {
             document.body.appendChild(WEBVR.createButton(gl))
             gl.vr.enabled = true
@@ -343,7 +344,7 @@ const SceneContent = ({
             XRController1.current.add(line.clone())
             XRController2.current.add(line.clone())
           }
-          console.log('controllers', XRController1.current, XRController2.current)
+          // console.log('controllers', XRController1.current, XRController2.current)
 
         }
       })
@@ -352,11 +353,11 @@ const SceneContent = ({
   }, [])
 
   // if our camera is setup
-  if (activeCamera === camera.userData.id) {
-    console.log('camera: using user-defined camera')
-  } else {
-    console.log('camera: using Canvas camera')
-  }
+  // if (activeCamera === camera.userData.id) {
+  //   console.log('camera: using user-defined camera')
+  // } else {
+  //   console.log('camera: using Canvas camera')
+  // }
 
   const camPosZero = camera.position.length() === 0
   if (xrOffset.current && teleportPos) {
@@ -385,12 +386,8 @@ const SceneContent = ({
 
   let sceneObjectComponents = Object.values(sceneObjects).map((sceneObject, i) => {
     switch (sceneObject.type) {
-      // case 'camera':
-      //   return activeCamera === sceneObject.id ? (
-      //     <group key={i} ref={xrOffset} rotation={[0, Math.PI / 4 * camExtraRot, 0]} userData={{x: sceneObject.x, y: sceneObject.y, z: sceneObject.z, type: sceneObject.type}}>
-      //       <SGCamera {...{ i, aspectRatio, activeCamera, setDefaultCamera, ...sceneObject }} />
-      //     </group>
-      //   ) : null
+      case 'camera':
+        return <SGVirtualCamera key={i} {...{ aspectRatio, ...sceneObject }} />
       case 'character':
         return <SGCharacter key={i} {...{ modelData: getModelData(sceneObject), ...sceneObject }} />
       case 'object':
@@ -424,7 +421,7 @@ const SceneContent = ({
   // wait until the camera is setup before showing the scene
   const ready = !!xrOffset.current
 
-  console.log('scene is', ready ? 'shown' : 'not shown')
+  // console.log('scene is', ready ? 'shown' : 'not shown')
 
   return <>
     {activeCameraComponent}
