@@ -79,6 +79,7 @@ ipcRenderer.on('loadBoard', (event, { storyboarderFilePath, boardData, board }) 
     store.dispatch(ActionCreators.clearHistory())
   } else {
     store.dispatch(resetScene())
+    store.dispatch(ActionCreators.clearHistory())
   }
 })
 ipcRenderer.on('update', (event, { board }) => {
