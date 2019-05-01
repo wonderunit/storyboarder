@@ -11,6 +11,7 @@ const { getSerializedState } = require('../shared/reducers/shot-generator')
 
 class XRServer {
   constructor ({ store }) {
+    app.use(express.json())
 
     app.use('/', express.static(
       path.join(__dirname, 'dist')
@@ -37,6 +38,12 @@ class XRServer {
 
         aspectRatio
       })
+    })
+
+    app.post('/state.json', (req, res) => {
+      let payload = req.body
+      store.dispatch({ type: 'LOAD_SCENE', payload })
+      res.status(200).send({ ok: true })
     })
 
     http.on('error', err => {
