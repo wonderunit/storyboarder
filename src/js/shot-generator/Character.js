@@ -183,6 +183,8 @@ const Character = React.memo(({
   const setLoaded = loaded => updateObject(id, { loaded })
   const object = useRef(null)
 
+  const originalSkeleton = useRef(null)
+
   const doCleanup = () => {
     if (object.current) {
       console.log(type, id, 'remove')
@@ -214,6 +216,10 @@ const Character = React.memo(({
       console.log(type, id, 'add')
 
       const { mesh, skeleton, armatures, originalHeight, boneLengthScale, parentRotation, parentPosition } = characterFactory(modelData)
+
+      // make a clone of the initial skeleton pose, for comparison
+      originalSkeleton.current = skeleton.clone()
+      originalSkeleton.current.bones = originalSkeleton.current.bones.map(bone => bone.clone())
 
       object.current = new THREE.Object3D()
       object.current.add(...armatures)
@@ -299,13 +305,15 @@ const Character = React.memo(({
   const updateSkeleton = () => {
     let skeleton = object.current.userData.skeleton
     if (Object.values(props.skeleton).length) {
-      for (let name in props.skeleton) {
-        let bone = skeleton.getBoneByName(name)
-        if (bone) {
-          bone.rotation.x = props.skeleton[name].rotation.x
-          bone.rotation.y = props.skeleton[name].rotation.y
-          bone.rotation.z = props.skeleton[name].rotation.z
-        }
+      for (bone of skeleton.bones) {
+        let userState = props.skeleton[bone.name]
+        let systemState = originalSkeleton.current.getBoneByName(bone.name).clone()
+
+        let state = userState || systemState
+
+        bone.rotation.x = state.rotation.x
+        bone.rotation.y = state.rotation.y
+        bone.rotation.z = state.rotation.z
       }
     } else {
       let skeleton = object.current.userData.skeleton
