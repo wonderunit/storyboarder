@@ -133,7 +133,7 @@ describe('reducer', () => {
         assert.equal(4, store.getState().sceneObjects.past.length)
       })
 
-      it('will not group changes to posePresetId', () => {
+      it('changes to posePresetId get their own undo history', () => {
         assert.equal(2, store.getState().sceneObjects.past.length)
 
         // five undo-able pose preset changes
