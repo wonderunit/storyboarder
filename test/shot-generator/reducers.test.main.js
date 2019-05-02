@@ -11,7 +11,37 @@ const { createStore } = require('redux')
 
 const { initialState, reducer, getSceneObjects } = require('../../src/js/shared/reducers/shot-generator')
 
-const store = createStore(reducer)
+const store = createStore(reducer, {
+  ...initialState,
+  presets: {
+    poses: {
+      "0": {
+        "id": "0",
+        "name": "Default Pose",
+        "keywords": "Default Pose",
+        "state": {
+          "skeleton": {}
+        }
+      },
+      "1": {
+        "id": "1",
+        "name": "Alternate Pose",
+        "keywords": "Alternate Pose",
+        "state": {
+          "skeleton": {
+            "RightArm": {
+              "rotation": {
+                "x": 1,
+                "y": 0,
+                "z": 0
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+})
 
 describe('reducer', () => {
   describe('sceneObjects', () => {  
@@ -99,6 +129,20 @@ describe('reducer', () => {
         // should have another record in history
         assert.equal(4, store.getState().sceneObjects.past.length)
       })
+
+      it('will not group changes to posePresetId', () => {
+        assert.equal(2, store.getState().sceneObjects.past.length)
+
+        // five undo-able pose preset changes
+        store.dispatch({ type: 'UPDATE_OBJECT', payload: { id: '0', posePresetId: 0 } })
+        store.dispatch({ type: 'UPDATE_OBJECT', payload: { id: '0', posePresetId: 1 } })
+        store.dispatch({ type: 'UPDATE_OBJECT', payload: { id: '0', posePresetId: 2 } })
+        store.dispatch({ type: 'UPDATE_OBJECT', payload: { id: '0', posePresetId: 3 } })
+        store.dispatch({ type: 'UPDATE_OBJECT', payload: { id: '0', posePresetId: 4 } })
+
+        assert.equal(7, store.getState().sceneObjects.past.length)
+      })
+
     })
   })
 })
