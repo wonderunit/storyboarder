@@ -224,6 +224,9 @@ const SceneContent = ({
 
     if (intersect && intersect.distance < 10) {
       // console.log('try to teleport')
+      XRController1.current.dispatchEvent({ type: 'triggerup' })
+      XRController2.current.dispatchEvent({ type: 'triggerup' })
+
       setTeleportPos(intersect.point)
     }
   }
@@ -319,6 +322,9 @@ const SceneContent = ({
     if (turnCamera.current) return 
   
     if (event.axes[0] > 0.075) {
+      XRController1.current.dispatchEvent({ type: 'triggerup' })
+      XRController2.current.dispatchEvent({ type: 'triggerup' })
+
       turnCamera.current = 'Right'
       setCamExtraRot(oldRot => {
         return oldRot - 1
@@ -326,6 +332,9 @@ const SceneContent = ({
     }
     
     if (event.axes[0] < -0.075) {
+      XRController1.current.dispatchEvent({ type: 'triggerup' })
+      XRController2.current.dispatchEvent({ type: 'triggerup' })
+
       turnCamera.current = 'Left'
       setCamExtraRot(oldRot => {
         return oldRot + 1
