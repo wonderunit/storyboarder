@@ -177,13 +177,46 @@ const SceneContent = ({
   const { gl, scene, camera, setDefaultCamera } = useThree()
 
 
+
   useRender(() => {
     if (XRController1.current && XRController2.current) {
       // cleanIntersected()
       handleController(XRController1.current, 0)
       handleController(XRController2.current, 1)
+
+      if (XRController1.current.userData.selected) {
+        const object = XRController1.current.userData.selected
+        if (object.userData.type === 'character') {
+          constraintObjectRotation(XRController1.current)
+        }
+      }
+
+      if (XRController2.current.userData.selected) {
+        const object = XRController2.current.userData.selected
+          if (object.userData.type === 'character') {
+            constraintObjectRotation(XRController2.current)
+          }
+        }
     }
   })
+
+  const constraintObjectRotation = controller => {
+    const object = controller.userData.selected
+    const coords = {
+      pos: new THREE.Vector3(),
+      quat: new THREE.Quaternion(),
+      scale: new THREE.Vector3()
+    }
+
+    controller.matrixWorld.decompose(coords.pos, coords.quat, coords.scale)
+    const newMatrix = new THREE.Matrix4().compose(new THREE.Vector3(), coords.quat, new THREE.Vector3(1, 1, 1))
+    const invOriginal = new THREE.Matrix4().getInverse(newMatrix)
+    object.setRotationFromMatrix(invOriginal)
+
+    const rotVector = new THREE.Vector3(1, 0, 0).applyMatrix4(newMatrix)
+    const rotTheta = Math.atan2(rotVector.y, rotVector.x)
+    object.rotateY(rotTheta)
+  }
 
   const onTeleport = event => {
     var controller = event.target
