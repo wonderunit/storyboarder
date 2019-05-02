@@ -1107,7 +1107,11 @@ const undoableSceneObjectsReducer = undoable(sceneObjectsReducer, {
   limit: 50,
   debug: false,
   filter: filterSceneObjectHistory,
-  groupBy: batchGroupBy.init(['UPDATE_OBJECT', 'UPDATE_OBJECTS'])
+
+  // uncomment to automatically group any series of UPDATE_OBJECT or UPDATE_OBJECTS:
+  // groupBy: batchGroupBy.init(['UPDATE_OBJECT', 'UPDATE_OBJECTS'])
+
+  groupBy: batchGroupBy.init()
 })
 const undoableSelectionsReducer = undoable(selectionsReducer, { limit: 50, debug: false })
 const undoableActiveCameraReducer = undoable(activeCameraReducer, { limit: 50, debug: false })
