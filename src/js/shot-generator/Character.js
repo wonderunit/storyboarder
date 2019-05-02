@@ -538,14 +538,15 @@ const Character = React.memo(({
     if (!ready) return
     if (!object.current) return
 
+    // if there was a prior selected bone
+    if (currentBoneSelected.current) {
+      // reset it
+      currentBoneSelected.current.connectedBone.material.color = new THREE.Color( 0x7a72e9 )
+      currentBoneSelected.current = null
+    }
+
     // was a bone selected?
     if (selectedBone) {
-      // if there was a prior selection
-      if (currentBoneSelected.current) {
-        // reset its color
-        currentBoneSelected.current.connectedBone.material.color = new THREE.Color( 0x7a72e9 )
-      }
-
       // find the 3D Bone matching the selectedBone uuid
       let bone = object.current
         .userData
@@ -555,18 +556,8 @@ const Character = React.memo(({
       if (bone) {
         currentBoneSelected.current = bone
         currentBoneSelected.current.connectedBone.material.color = new THREE.Color( 0x242246 )
-      } else {
-        currentBoneSelected.current = null
       }
-    } else {
-      // if there was a prior selection
-      if (currentBoneSelected.current) {
-        // reset its color
-        currentBoneSelected.current.connectedBone.material.color = new THREE.Color( 0x7a72e9 )
-      }
-      currentBoneSelected.current = null
     }
-
   }, [selectedBone, ready])
 
   useEffect(() => {
