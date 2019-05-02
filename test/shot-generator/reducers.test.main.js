@@ -42,63 +42,63 @@ describe('reducer', () => {
   })
 
   describe('redux-undo', () => {
-    it('can use groupBy to batch undo-able actions', () => {
-      store.dispatch({ type: '@@redux-undo/INIT' })
+    describe('groupBy', () => {
+      beforeEach(() => {
+        store.dispatch({ type: '@@redux-undo/INIT' })
 
-      let json = fs.readFileSync(path.join(__dirname, '..', 'fixtures', 'shot-generator', 'shot-generator.storyboarder'))
-      let data = JSON.parse(json)
-      let payload = data.boards[0].sg.data
-  
-      store.dispatch({ type: 'LOAD_SCENE', payload })
-      let state = store.getState()
-  
-      assert(state.sceneObjects.present)
-      assert(Object.keys(state.attachments).length === 0)
-      assert(state.meta.lastSavedHash.length)
-      assert(state.activeCamera.present)
-      assert(Object.keys(state.models).includes('adult-male'))
-  
-      store.dispatch({ type: 'CREATE_OBJECT', payload: {
-        id: '0',
-        type: 'object',
-        model: 'box',
-        width: 1,
-        height: 1,
-        depth: 1,
-        x: 0,
-        y: 0,
-        z: 0,
-        rotation: { x: 0, y: 0, z: 0 },
-        visible: true
-        }
-      })
-  
-      assert.equal(2, store.getState().sceneObjects.past.length)
-  
-      // five related changes
-      store.dispatch({ type: 'UNDO_GROUP_START' })
-      store.dispatch({ type: 'UPDATE_OBJECT', payload: { id: '0', x: 1 } })
-      store.dispatch({ type: 'UPDATE_OBJECT', payload: { id: '0', x: 2 } })
-      store.dispatch({ type: 'UPDATE_OBJECT', payload: { id: '0', x: 3 } })
-      store.dispatch({ type: 'UPDATE_OBJECT', payload: { id: '0', x: 4 } })
-      store.dispatch({ type: 'UPDATE_OBJECT', payload: { id: '0', x: 5 } })
+        let json = fs.readFileSync(path.join(__dirname, '..', 'fixtures', 'shot-generator', 'shot-generator.storyboarder'))
+        let data = JSON.parse(json)
+        let payload = data.boards[0].sg.data
+    
+        store.dispatch({ type: 'LOAD_SCENE', payload })
+        let state = store.getState()
     
       assert(Object.values(store.getState().sceneObjects.past)[2]['0'].x === 0)
       assert(Object.values(store.getState().sceneObjects.present)['0'].x === 5)
     
-      assert.equal(3, store.getState().sceneObjects.past.length)
+        store.dispatch({ type: 'CREATE_OBJECT', payload: {
+          id: '0',
+          type: 'object',
+          model: 'box',
+          width: 1,
+          height: 1,
+          depth: 1,
+          x: 0,
+          y: 0,
+          z: 0,
+          rotation: { x: 0, y: 0, z: 0 },
+          visible: true
+          }
+        })
+    
+        assert.equal(2, store.getState().sceneObjects.past.length)
+      })
+      it('can batch related undo-able actions', () => {
+        // five related changes
+        store.dispatch({ type: 'UNDO_GROUP_START' })
+        store.dispatch({ type: 'UPDATE_OBJECT', payload: { id: '0', x: 1 } })
+        store.dispatch({ type: 'UPDATE_OBJECT', payload: { id: '0', x: 2 } })
+        store.dispatch({ type: 'UPDATE_OBJECT', payload: { id: '0', x: 3 } })
+        store.dispatch({ type: 'UPDATE_OBJECT', payload: { id: '0', x: 4 } })
+        store.dispatch({ type: 'UPDATE_OBJECT', payload: { id: '0', x: 5 } })
+      
+        assert(Object.values(store.getState().sceneObjects.past)[2]['0'].x === 0)
+        assert(Object.values(store.getState().sceneObjects.present)['0'].x === 5)
+      
+        assert.equal(3, store.getState().sceneObjects.past.length)
 
-      // still 3 past records if we make another change to the same object
-      store.dispatch({ type: 'UPDATE_OBJECT', payload: { id: '0', x: 6 } })
-      assert.equal(3, store.getState().sceneObjects.past.length)
+        // still 3 past records if we make another change to the same object
+        store.dispatch({ type: 'UPDATE_OBJECT', payload: { id: '0', x: 6 } })
+        assert.equal(3, store.getState().sceneObjects.past.length)
 
-      store.dispatch({ type: 'UNDO_GROUP_END' })
+        store.dispatch({ type: 'UNDO_GROUP_END' })
 
-      // now, we change a different object
-      store.dispatch({ type: 'UPDATE_OBJECT', payload: { id: '26332F12-28FE-444C-B73F-B3F90B8C62A2', x: 99 } })
-      assert(store.getState().sceneObjects.present['26332F12-28FE-444C-B73F-B3F90B8C62A2'].x == 99)
-      // should have another record in history
-      assert.equal(4, store.getState().sceneObjects.past.length)
+        // now, we change a different object
+        store.dispatch({ type: 'UPDATE_OBJECT', payload: { id: '26332F12-28FE-444C-B73F-B3F90B8C62A2', x: 99 } })
+        assert(store.getState().sceneObjects.present['26332F12-28FE-444C-B73F-B3F90B8C62A2'].x == 99)
+        // should have another record in history
+        assert.equal(4, store.getState().sceneObjects.past.length)
+      })
     })
   })
 })
