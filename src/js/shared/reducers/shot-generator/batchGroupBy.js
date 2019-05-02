@@ -13,13 +13,6 @@ module.exports = {
   },
   init (rawActions) {
     const defaultGroupBy = groupByActionTypes(rawActions)
-    return (action) => {
-      if (
-        action.type === 'UPDATE_OBJECT' &&
-        action.payload.hasOwnProperty('posePresetId')
-      ) return null
-
-      return this._group || defaultGroupBy(action)
-    }
+    return action => this._group || defaultGroupBy(action)
   }
 }
