@@ -11,37 +11,7 @@ const { createStore } = require('redux')
 
 const { initialState, reducer, getSceneObjects } = require('../../src/js/shared/reducers/shot-generator')
 
-const store = createStore(reducer, {
-  ...initialState,
-  presets: {
-    poses: {
-      "0": {
-        "id": "0",
-        "name": "Default Pose",
-        "keywords": "Default Pose",
-        "state": {
-          "skeleton": {}
-        }
-      },
-      "1": {
-        "id": "1",
-        "name": "Alternate Pose",
-        "keywords": "Alternate Pose",
-        "state": {
-          "skeleton": {
-            "RightArm": {
-              "rotation": {
-                "x": 1,
-                "y": 0,
-                "z": 0
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-})
+const store = createStore(reducer, initialState)
 
 describe('reducer', () => {
   describe('sceneObjects', () => {  
@@ -145,7 +115,6 @@ describe('reducer', () => {
 
         assert.equal(7, store.getState().sceneObjects.past.length)
       })
-
     })
   })
 })
