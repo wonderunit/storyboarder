@@ -82,10 +82,13 @@ describe('reducer', () => {
     
         store.dispatch({ type: 'LOAD_SCENE', payload })
         let state = store.getState()
-    
-      assert(Object.values(store.getState().sceneObjects.past)[2]['0'].x === 0)
-      assert(Object.values(store.getState().sceneObjects.present)['0'].x === 5)
-    
+
+        assert(state.sceneObjects.present)
+        assert(Object.keys(state.attachments).length === 0)
+        assert(state.meta.lastSavedHash.length)
+        assert(state.activeCamera.present)
+        assert(Object.keys(state.models).includes('adult-male'))
+
         store.dispatch({ type: 'CREATE_OBJECT', payload: {
           id: '0',
           type: 'object',
