@@ -70,7 +70,7 @@ describe('reducer', () => {
           visible: true
           }
         })
-    
+
         assert.equal(2, store.getState().sceneObjects.past.length)
       })
       it('can batch related undo-able actions', () => {
