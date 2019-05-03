@@ -440,7 +440,7 @@ const Character = React.memo(({
     if (!ready) return
     if (!object.current) return
 
-    console.log(type, id, 'skeleton')
+    // console.log(type, id, 'skeleton')
     updateSkeleton()
   }, [props.model, props.skeleton, ready])
 
