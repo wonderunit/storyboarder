@@ -72,6 +72,7 @@ const {
   getSelections,
   getActiveCamera,
   getSelectedBone,
+  getWorld,
 
   getSerializedState,
   getIsSceneDirty
