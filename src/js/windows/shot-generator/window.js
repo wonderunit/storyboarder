@@ -14,12 +14,32 @@ console.clear() // clear the annoying dev tools warning
 // TODO use the main Storyboarder store instead of a special one for Shot Generator
 //
 // configureStore:
-const { createStore, applyMiddleware } = require('redux')
+const { createStore, applyMiddleware, compose } = require('redux')
 const thunkMiddleware = require('redux-thunk').default
 const undoable = require('redux-undo').default
 const { reducer } = require('../../shared/reducers/shot-generator')
+
+const actionSanitizer = action => (
+  action.type === 'ATTACHMENTS_SUCCESS' && action.payload ?
+  { ...action, payload: { ...action.payload, value: '<<DATA>>' } } : action
+)
+const stateSanitizer = state => state.attachments ? { ...state, attachments: '<<ATTACHMENTS>>' } : state
+const reduxDevtoolsExtensionOptions = {
+  actionSanitizer,
+  stateSanitizer
+}
+const composeEnhancers = (
+    window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ &&
+    window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__(reduxDevtoolsExtensionOptions)
+  ) || compose
 const configureStore = function configureStore (preloadedState) {
-  const store = createStore(reducer, preloadedState, applyMiddleware(thunkMiddleware))
+  const store = createStore(
+    reducer,
+    preloadedState,
+    composeEnhancers(
+      applyMiddleware(thunkMiddleware)
+    )
+  )
   return store
 }
 
