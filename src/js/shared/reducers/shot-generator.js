@@ -14,15 +14,15 @@ const capitalize = string => string.charAt(0).toUpperCase() + string.slice(1)
 //
 // selectors
 //
-const getSceneObjects = state => state.sceneObjects.present
+const getSceneObjects = state => state.present.sceneObjects
 
-const getSelections = state => state.selections.present
+const getSelections = state => state.present.selections
 
-const getActiveCamera = state => state.activeCamera.present
+const getActiveCamera = state => state.present.activeCamera
 
-const getSelectedBone = state => state.selectedBone.present
+const getSelectedBone = state => state.present.selectedBone
 
-const getWorld = state => state.world.present
+const getWorld = state => state.present.world
 
 
 const getIsSceneDirty = state => {
@@ -1114,58 +1114,54 @@ const filterSceneObjectHistory = (action, currentState, previousHistory) => {
   return true
 }
 
-const undoableSceneObjectsReducer = undoable(sceneObjectsReducer, {
-  limit: 50,
-  debug: false,
-  filter: filterSceneObjectHistory,
-
-  // uncomment to automatically group any series of UPDATE_OBJECT or UPDATE_OBJECTS:
-  // groupBy: batchGroupBy.init(['UPDATE_OBJECT', 'UPDATE_OBJECTS'])
-
-  groupBy: batchGroupBy.init()
-})
-const undoableWorldReducer = undoable(worldReducer, { limit: 50, debug: false, groupBy: batchGroupBy.init() })
-const undoableSelectionsReducer = undoable(selectionsReducer, { limit: 50, debug: false })
-const undoableActiveCameraReducer = undoable(activeCameraReducer, { limit: 50, debug: false })
-const undoableSelectedBoneReducer = undoable(selectedBoneReducer, { limit: 50, debug: false })
-
-const rootReducer = reduceReducers(
+const allReducers = reduceReducers(
   initialState,
+
   mainReducer,
 
   (state, action) => ({
     ...state,
-    selections: undoableSelectionsReducer(state.selections, action)
+    selections: selectionsReducer(state.selections, action)
   }),
 
   (state, action) => ({
     ...state,
-    sceneObjects: undoableSceneObjectsReducer(state.sceneObjects, action)
+    sceneObjects: sceneObjectsReducer(state.sceneObjects, action)
   }),
 
   (state, action) => ({
     ...state,
-    activeCamera: undoableActiveCameraReducer(state.activeCamera, action)
+    activeCamera: activeCameraReducer(state.activeCamera, action)
   }),
 
   (state, action) => ({
     ...state,
-    world: undoableWorldReducer(state.world, action)
+    world: worldReducer(state.world, action)
   }),
 
   (state, action) => ({
     ...state,
-    selectedBone: undoableSelectedBoneReducer(state.selectedBone, action)
+    selectedBone: selectedBoneReducer(state.selectedBone, action)
   }),
 
   // `meta` must run last, to calculate lastSavedHash
   (state, action) => {
     return {
       ...state,
-      meta: metaReducer(state.meta, action, state)
+      meta: metaReducer(state.meta, action, { present: state })
     }
   }
 )
+
+const rootReducer = undoable(allReducers, {
+  limit: 50,
+
+  filter: filterSceneObjectHistory,
+
+  // uncomment to automatically group any series of UPDATE_OBJECT or UPDATE_OBJECTS:
+  // groupBy: batchGroupBy.init(['UPDATE_OBJECT', 'UPDATE_OBJECTS'])
+  groupBy: batchGroupBy.init()
+})
 
 module.exports = {
   initialState,
