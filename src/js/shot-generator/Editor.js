@@ -198,7 +198,7 @@ THREE.Cache.enabled = true
 
 const SceneManager = connect(
   state => ({
-    world: state.world,
+    world: getWorld(state),
     sceneObjects: getSceneObjects(state),
     remoteInput: state.input,
     selections: getSelections(state),
@@ -1319,7 +1319,7 @@ const RemoteInputView = ({ remoteInput }) => {
 const ElementsPanel = connect(
   // what changes should we watch for to re-render?
   state => ({
-    world: state.world,
+    world: getWorld(state),
     sceneObjects: getSceneObjects(state),
     selections: getSelections(state),
     selectedBone: getSelectedBone(state),
@@ -3270,7 +3270,7 @@ const Editor = connect(
     remoteInput: state.input,
     aspectRatio: state.aspectRatio,
     sceneObjects: getSceneObjects(state),
-    world: state.world,
+    world: getWorld(state),
     selectedBone: getSelectedBone(state),
     attachments: state.attachments
   }),

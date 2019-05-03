@@ -22,6 +22,9 @@ const getActiveCamera = state => state.activeCamera.present
 
 const getSelectedBone = state => state.selectedBone.present
 
+const getWorld = state => state.world.present
+
+
 const getIsSceneDirty = state => {
   let current = hashify(JSON.stringify(getSerializedState(state)))
   return current !== state.meta.lastSavedHash
@@ -41,7 +44,7 @@ const getSerializedState = state => {
     }, {})
 
   return {
-    world: state.world,
+    world: getWorld(state),
     sceneObjects,
     activeCamera: getActiveCamera(state)
   }
@@ -909,18 +912,78 @@ const selectedBoneReducer = (state = undefined, action) => {
   })
 }
 
+const worldReducer = (state = initialState.world, action) => {
+  return produce(state, draft => {
+    switch (action.type) {
+      case 'LOAD_SCENE':
+        let result = {
+          ...action.payload.world,
+
+          // migrate older scenes which were missing ambient and directional light settings
+          ambient: action.payload.world.ambient || initialScene.world.ambient,
+          directional: action.payload.world.directional || initialScene.world.directional
+        }
+        return result
+
+      case 'UPDATE_WORLD':
+        if (action.payload.hasOwnProperty('ground')) {
+          draft.ground = action.payload.ground
+        }
+        if (action.payload.hasOwnProperty('backgroundColor')) {
+          draft.backgroundColor = action.payload.backgroundColor
+        }
+        return
+
+      case 'UPDATE_WORLD_ROOM':
+        if (action.payload.hasOwnProperty('width')) { draft.room.width = action.payload.width }
+        if (action.payload.hasOwnProperty('length')) { draft.room.length = action.payload.length }
+        if (action.payload.hasOwnProperty('height')) { draft.room.height = action.payload.height }
+        if (action.payload.hasOwnProperty('visible')) { draft.room.visible = action.payload.visible }
+        return
+
+      case 'UPDATE_WORLD_ENVIRONMENT':
+        if (action.payload.hasOwnProperty('file')) {
+          draft.environment.file = action.payload.file
+        }
+        if (action.payload.scale != null) {
+          draft.environment.scale = action.payload.scale
+        }
+        if (action.payload.visible != null) {
+          draft.environment.visible = action.payload.visible
+        }
+        if (action.payload.rotation != null) {
+          draft.environment.rotation = action.payload.rotation
+        }
+        if (action.payload.x != null) {
+          draft.environment.x = action.payload.x
+        }
+        if (action.payload.y != null) {
+          draft.environment.y = action.payload.y
+        }
+        if (action.payload.z != null) {
+          draft.environment.z = action.payload.z
+        }
+        if (action.payload.intensity != null) {
+          draft.ambient.intensity = action.payload.intensity
+        }
+        if (action.payload.intensityDirectional != null) {
+          draft.directional.intensity = action.payload.intensityDirectional
+        }
+        if (action.payload.rotationDirectional != null) {
+          draft.directional.rotation = action.payload.rotationDirectional
+        }
+        if (action.payload.tiltDirectional != null) {
+          draft.directional.tilt = action.payload.tiltDirectional
+        }
+        return
+    }
+  })
+}
+
 const mainReducer = (state = initialState, action) => {
   return produce(state, draft => {
     switch (action.type) {
       case 'LOAD_SCENE':
-        draft.world = {
-          ...action.payload.world
-        }
-
-        // migrate older scenes which were missing ambient and directional light settings
-        if (!action.payload.world.ambient) draft.world.ambient = initialScene.world.ambient
-        if (!action.payload.world.directional) draft.world.directional = initialScene.world.directional
-
         draft.mainViewCamera = 'live'
         return
 
@@ -999,58 +1062,6 @@ const mainReducer = (state = initialState, action) => {
         if (action.payload.hasOwnProperty('name')) {
           draft.presets.poses[action.payload.id].name = action.payload.name
         }
-        return     
-
-      case 'UPDATE_WORLD':
-        if (action.payload.hasOwnProperty('ground')) {
-          draft.world.ground = action.payload.ground
-        }
-        if (action.payload.hasOwnProperty('backgroundColor')) {
-          draft.world.backgroundColor = action.payload.backgroundColor
-        }
-        return
-
-      case 'UPDATE_WORLD_ROOM':
-        if (action.payload.hasOwnProperty('width')) { draft.world.room.width = action.payload.width }
-        if (action.payload.hasOwnProperty('length')) { draft.world.room.length = action.payload.length }
-        if (action.payload.hasOwnProperty('height')) { draft.world.room.height = action.payload.height }
-        if (action.payload.hasOwnProperty('visible')) { draft.world.room.visible = action.payload.visible }
-        return
-
-      case 'UPDATE_WORLD_ENVIRONMENT':
-        if (action.payload.hasOwnProperty('file')) {
-          draft.world.environment.file = action.payload.file
-        }
-        if (action.payload.scale != null) {
-          draft.world.environment.scale = action.payload.scale
-        }
-        if (action.payload.visible != null) {
-          draft.world.environment.visible = action.payload.visible
-        }
-        if (action.payload.rotation != null) {
-          draft.world.environment.rotation = action.payload.rotation
-        }
-        if (action.payload.x != null) {
-          draft.world.environment.x = action.payload.x
-        }
-        if (action.payload.y != null) {
-          draft.world.environment.y = action.payload.y
-        }
-        if (action.payload.z != null) {
-          draft.world.environment.z = action.payload.z
-        }
-        if (action.payload.intensity != null) {
-          draft.world.ambient.intensity = action.payload.intensity
-        }
-        if (action.payload.intensityDirectional != null) {
-          draft.world.directional.intensity = action.payload.intensityDirectional
-        }
-        if (action.payload.rotationDirectional != null) {
-          draft.world.directional.rotation = action.payload.rotationDirectional
-        }
-        if (action.payload.tiltDirectional != null) {
-          draft.world.directional.tilt = action.payload.tiltDirectional
-        }
         return
 
       case 'UPDATE_SERVER':
@@ -1113,6 +1124,7 @@ const undoableSceneObjectsReducer = undoable(sceneObjectsReducer, {
 
   groupBy: batchGroupBy.init()
 })
+const undoableWorldReducer = undoable(worldReducer, { limit: 50, debug: false, groupBy: batchGroupBy.init() })
 const undoableSelectionsReducer = undoable(selectionsReducer, { limit: 50, debug: false })
 const undoableActiveCameraReducer = undoable(activeCameraReducer, { limit: 50, debug: false })
 const undoableSelectedBoneReducer = undoable(selectedBoneReducer, { limit: 50, debug: false })
@@ -1134,6 +1146,11 @@ const rootReducer = reduceReducers(
   (state, action) => ({
     ...state,
     activeCamera: undoableActiveCameraReducer(state.activeCamera, action)
+  }),
+
+  (state, action) => ({
+    ...state,
+    world: undoableWorldReducer(state.world, action)
   }),
 
   (state, action) => ({
@@ -1230,6 +1247,7 @@ module.exports = {
   getSelections,
   getActiveCamera,
   getSelectedBone,
+  getWorld,
 
   getSerializedState,
   getIsSceneDirty
