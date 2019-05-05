@@ -202,20 +202,23 @@ const SceneContent = ({
 
   const constraintObjectRotation = controller => {
     const object = controller.userData.selected
-    const coords = {
-      pos: new THREE.Vector3(),
-      quat: new THREE.Quaternion(),
-      scale: new THREE.Vector3()
-    }
 
-    controller.matrixWorld.decompose(coords.pos, coords.quat, coords.scale)
-    const newMatrix = new THREE.Matrix4().compose(new THREE.Vector3(), coords.quat, new THREE.Vector3(1, 1, 1))
-    const invOriginal = new THREE.Matrix4().getInverse(newMatrix)
-    object.setRotationFromMatrix(invOriginal)
+    const raycastDepth = controller.getObjectByName('raycast-depth')
+    const depthWorldPos = raycastDepth.getWorldPosition(new THREE.Vector3())
+    depthWorldPos.sub(controller.userData.posOffset)
+    object.position.copy(depthWorldPos)
+
+    const quaternion = new THREE.Quaternion()
+    controller.matrixWorld.decompose(new THREE.Vector3(), quaternion, new THREE.Vector3())
+    const newMatrix = new THREE.Matrix4().compose(
+      new THREE.Vector3(),
+      quaternion,
+      new THREE.Vector3(1, 1, 1)
+    )
 
     const rotVector = new THREE.Vector3(1, 0, 0).applyMatrix4(newMatrix)
     const rotTheta = Math.atan2(rotVector.y, rotVector.x)
-    object.rotateY(rotTheta)
+    object.rotation.y = -rotTheta + object.userData.modelSettings.rotation + controller.userData.rotOffset
   }
 
   const onTeleport = event => {
@@ -232,24 +235,48 @@ const SceneContent = ({
   }
 
   const onSelectStart = event => {
-    var controller = event.target
-    var intersections = getIntersections(controller, intersectArray.current)
+    const controller = event.target
+    const intersections = getIntersections(controller, intersectArray.current)
     
     if (intersections.length > 0) {
-      var intersection = intersections[0]
+      let intersection = intersections[0]
 
       if (intersection.object.userData.type === 'view') {
         intersection = intersections[1]
       }
 
-      const tempMatrix = new THREE.Matrix4()
-      tempMatrix.getInverse(controller.matrixWorld)
-      var object = findParent(intersection.object)
+      const object = findParent(intersection.object)
+      controller.userData.selected = object
 
-      object.matrix.premultiply(tempMatrix)
-      object.matrix.decompose(object.position, object.quaternion, object.scale)
+      if (object.userData.type === 'character') {
+        const raycastDepth = controller.getObjectByName('raycast-depth')
+        raycastDepth.position.z = -intersection.distance
 
-      var objMaterial = intersection.object.material
+        const objectWorldPos = intersection.object.getWorldPosition(new THREE.Vector3())
+        const posOffset = new THREE.Vector3().subVectors(intersection.point, objectWorldPos)
+        controller.userData.posOffset = posOffset
+
+        const quaternion = new THREE.Quaternion()
+        controller.matrixWorld.decompose(new THREE.Vector3(), quaternion, new THREE.Vector3())
+        const newMatrix = new THREE.Matrix4().compose(
+          new THREE.Vector3(),
+          quaternion,
+          new THREE.Vector3(1, 1, 1)
+        )
+
+        const rotVector = new THREE.Vector3(1, 0, 0).applyMatrix4(newMatrix)
+        const rotOffset = Math.atan2(rotVector.y, rotVector.x)
+        controller.userData.rotOffset = rotOffset
+      } else {
+        const tempMatrix = new THREE.Matrix4()
+        tempMatrix.getInverse(controller.matrixWorld)
+
+        object.matrix.premultiply(tempMatrix)
+        object.matrix.decompose(object.position, object.quaternion, object.scale)
+        controller.add(object)
+      }
+
+      const objMaterial = intersection.object.material
       if (Array.isArray(objMaterial)) {
         objMaterial.forEach(material => {
           if (!material.emissive) return
@@ -259,22 +286,25 @@ const SceneContent = ({
         if (!objMaterial.emissive) return
         objMaterial.emissive.b = 0.15
       }
-
-      controller.add(object)
-      controller.userData.selected = object
     }
   }
 
   const onSelectEnd = event => {
-    var controller = event.target
+    const controller = event.target
     if (controller.userData.selected !== undefined) {
-      var object = controller.userData.selected
-      object.matrix.premultiply(controller.matrixWorld)
-      object.matrix.decompose(object.position, object.quaternion, object.scale)
+      const object = controller.userData.selected
+
+      if (object.userData.type !== 'character') {
+        object.matrix.premultiply(controller.matrixWorld)
+        object.matrix.decompose(object.position, object.quaternion, object.scale)
+        scene.add(object)
+      }
+
+      controller.userData.selected = undefined
 
       object.traverse(child => {
         if (child instanceof THREE.Mesh) {
-          var objMaterial = child.material
+          const objMaterial = child.material
           if (Array.isArray(objMaterial)) {
             objMaterial.forEach(material => {
               if (!material.emissive) return
@@ -308,9 +338,6 @@ const SceneContent = ({
           rotation: { x: object.rotation.x, y: object.rotation.y, z: object.rotation.z }
         })
       }
-
-      scene.add(object)
-      controller.userData.selected = undefined
     }
   }
 
@@ -399,6 +426,13 @@ const SceneContent = ({
             line.scale.z = 5
             XRController1.current.add(line.clone())
             XRController2.current.add(line.clone())
+
+            const raycastDepth = new THREE.Mesh(new THREE.BoxGeometry(0.01, 0.01, 0.01), new THREE.MeshBasicMaterial())
+            raycastDepth.visible = false
+            raycastDepth.name = 'raycast-depth'
+
+            XRController1.current.add(raycastDepth.clone())
+            XRController2.current.add(raycastDepth.clone())
           }
           // console.log('controllers', XRController1.current, XRController2.current)
 
