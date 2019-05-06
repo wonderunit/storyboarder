@@ -1143,7 +1143,7 @@ const undoableReducer = undoable(
 )
 
 const rootReducer = reduceReducers(
-  {},
+  initialState,
 
   mainReducer,
 
