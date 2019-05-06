@@ -14,15 +14,15 @@ const capitalize = string => string.charAt(0).toUpperCase() + string.slice(1)
 //
 // selectors
 //
-const getSceneObjects = state => state.present.sceneObjects
+const getSceneObjects = state => state.undoables.present.sceneObjects
 
-const getSelections = state => state.present.selections
+const getSelections = state => state.undoables.present.selections
 
-const getActiveCamera = state => state.present.activeCamera
+const getActiveCamera = state => state.undoables.present.activeCamera
 
-const getSelectedBone = state => state.present.selectedBone
+const getSelectedBone = state => state.undoables.present.selectedBone
 
-const getWorld = state => state.present.world
+const getWorld = state => state.undoables.present.world
 
 
 const getIsSceneDirty = state => {
