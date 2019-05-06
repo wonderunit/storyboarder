@@ -3,6 +3,7 @@ const { produce } = require('immer')
 const undoable = require('redux-undo').default
 const crypto = require('crypto')
 const reduceReducers = require('reduce-reducers')
+const { combineReducers } = require('redux')
 
 const batchGroupBy = require('./shot-generator/batchGroupBy')
 
@@ -894,17 +895,17 @@ const activeCameraReducer = (state = initialScene.activeCamera, action) => {
   })
 }
 
-const selectedBoneReducer = (state = undefined, action) => {
+const selectedBoneReducer = (state = null, action) => {
   return produce(state, draft => {
     switch (action.type) {
       case 'LOAD_SCENE':
         // clear selections
-        return undefined
+        return null
 
       // select a single object
       case 'SELECT_OBJECT':
         // de-select any currently selected bone
-        return undefined
+        return null
 
       case 'SELECT_BONE':
         return action.payload
@@ -915,7 +916,7 @@ const selectedBoneReducer = (state = undefined, action) => {
   })
 }
 
-const worldReducer = (state/* = initialState.world*/, action) => {
+const worldReducer = (state = initialState.undoable.world, action) => {
   return produce(state, draft => {
     switch (action.type) {
       case 'LOAD_SCENE':
@@ -978,6 +979,9 @@ const worldReducer = (state/* = initialState.world*/, action) => {
         if (action.payload.tiltDirectional != null) {
           draft.directional.tilt = action.payload.tiltDirectional
         }
+        return
+
+      default:
         return
     }
   })
@@ -1117,8 +1121,15 @@ const filterHistory = (action, currentState, previousHistory) => {
   return true
 }
 
+const undoableReducers = combineReducers({
+  selections: selectionsReducer,
+  sceneObjects: sceneObjectsReducer,
+  activeCamera: activeCameraReducer,
+  world: worldReducer,
+  selectedBone: selectedBoneReducer
+})
+
 const rootReducer = reduceReducers(
-  /*initialState,*/
   {},
 
   mainReducer,
@@ -1126,42 +1137,7 @@ const rootReducer = reduceReducers(
   (state, action) => ({
     ...state,
     undoable: undoable(
-      reduceReducers(
-        {},
-
-        (state, action) => ({
-          ...state,
-          selections: selectionsReducer(state.selections, action)
-        }),
-
-        (state, action) => ({
-          ...state,
-          sceneObjects: sceneObjectsReducer(state.sceneObjects, action)
-        }),
-
-        (state, action) => ({
-          ...state,
-          activeCamera: activeCameraReducer(state.activeCamera, action)
-        }),
-
-        (state, action) => ({
-          ...state,
-          world: worldReducer(state.world, action)
-        }),
-
-        (state, action) => ({
-          ...state,
-          selectedBone: selectedBoneReducer(state.selectedBone, action)
-        }),
-
-        // `meta` must run last, to calculate lastSavedHash
-        (state, action) => {
-          return {
-            ...state,
-            meta: metaReducer(state.meta, action, { present: state })
-          }
-        }
-      ),
+      undoableReducers,
       {
         limit: 50,
 
@@ -1172,7 +1148,13 @@ const rootReducer = reduceReducers(
 
         // groupBy: batchGroupBy.init()
       }
-    )(state, action)
+    )(state.undoable, action)
+  }),
+
+  // `meta` must run last, to calculate lastSavedHash
+  (state, action) => ({
+    ...state,
+    meta: metaReducer(state.meta, action, state)
   })
 )
 
