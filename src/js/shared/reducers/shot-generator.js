@@ -1129,6 +1129,19 @@ const undoableReducers = combineReducers({
   selectedBone: selectedBoneReducer
 })
 
+const undoableReducer = undoable(
+  undoableReducers,
+  {
+    limit: 50,
+
+    filter: filterHistory,
+
+    // uncomment to automatically group any series of UPDATE_OBJECT or UPDATE_OBJECTS:
+    // groupBy: batchGroupBy.init(['UPDATE_OBJECT', 'UPDATE_OBJECTS'])
+    groupBy: batchGroupBy.init()
+  }
+)
+
 const rootReducer = reduceReducers(
   {},
 
@@ -1136,19 +1149,7 @@ const rootReducer = reduceReducers(
 
   (state, action) => ({
     ...state,
-    undoable: undoable(
-      undoableReducers,
-      {
-        limit: 50,
-
-        // filter: filterHistory,
-
-        // uncomment to automatically group any series of UPDATE_OBJECT or UPDATE_OBJECTS:
-        // groupBy: batchGroupBy.init(['UPDATE_OBJECT', 'UPDATE_OBJECTS'])
-
-        // groupBy: batchGroupBy.init()
-      }
-    )(state.undoable, action)
+    undoable: undoableReducer(state.undoable, action)
   }),
 
   // `meta` must run last, to calculate lastSavedHash
