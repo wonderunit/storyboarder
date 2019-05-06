@@ -602,18 +602,17 @@ const initialState = {
   board: {},
 
   undoable: {
-
     world: initialScene.world,
     activeCamera: initialScene.activeCamera,
     sceneObjects: withDisplayNames(initialScene.sceneObjects),
 
-    meta: {
-      storyboarderFilePath: undefined,
-      lastSavedHash: undefined
-    },
-
     selections: [],
     selectedBone: undefined,
+  },
+
+  meta: {
+    storyboarderFilePath: undefined,
+    lastSavedHash: undefined
   },
 
   workspace: {
