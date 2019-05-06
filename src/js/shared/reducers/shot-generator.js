@@ -601,9 +601,19 @@ const initialState = {
 
   board: {},
 
-  meta: {
-    storyboarderFilePath: undefined,
-    lastSavedHash: undefined
+  undoable: {
+
+    world: initialScene.world,
+    activeCamera: initialScene.activeCamera,
+    sceneObjects: withDisplayNames(initialScene.sceneObjects),
+
+    meta: {
+      storyboarderFilePath: undefined,
+      lastSavedHash: undefined
+    },
+
+    selections: [],
+    selectedBone: undefined,
   },
 
   workspace: {
@@ -613,12 +623,6 @@ const initialState = {
     }
   },
 
-  world: initialScene.world,
-  activeCamera: initialScene.activeCamera,
-  sceneObjects: withDisplayNames(initialScene.sceneObjects),
-
-  selections: [],
-  selectedBone: undefined,
   mainViewCamera: 'live', // 'ortho' or 'live'
   input: {
     accel: [0, 0, 0],
@@ -912,7 +916,7 @@ const selectedBoneReducer = (state = undefined, action) => {
   })
 }
 
-const worldReducer = (state = initialState.world, action) => {
+const worldReducer = (state/* = initialState.world*/, action) => {
   return produce(state, draft => {
     switch (action.type) {
       case 'LOAD_SCENE':
@@ -980,7 +984,7 @@ const worldReducer = (state = initialState.world, action) => {
   })
 }
 
-const mainReducer = (state = initialState, action) => {
+const mainReducer = (state/* = initialState*/, action) => {
   return produce(state, draft => {
     switch (action.type) {
       case 'LOAD_SCENE':
@@ -1105,7 +1109,7 @@ const mainReducer = (state = initialState, action) => {
   })
 }
 
-const filterSceneObjectHistory = (action, currentState, previousHistory) => {
+const filterHistory = (action, currentState, previousHistory) => {
   // ignore `loaded` status updates
   if (action.type === 'UPDATE_OBJECT' && Object.keys(action.payload).includes('loaded')) {
     return false
@@ -1114,54 +1118,64 @@ const filterSceneObjectHistory = (action, currentState, previousHistory) => {
   return true
 }
 
-const allReducers = reduceReducers(
-  initialState,
+const rootReducer = reduceReducers(
+  /*initialState,*/
+  {},
 
   mainReducer,
 
   (state, action) => ({
     ...state,
-    selections: selectionsReducer(state.selections, action)
-  }),
+    undoable: undoable(
+      reduceReducers(
+        {},
 
-  (state, action) => ({
-    ...state,
-    sceneObjects: sceneObjectsReducer(state.sceneObjects, action)
-  }),
+        (state, action) => ({
+          ...state,
+          selections: selectionsReducer(state.selections, action)
+        }),
 
-  (state, action) => ({
-    ...state,
-    activeCamera: activeCameraReducer(state.activeCamera, action)
-  }),
+        (state, action) => ({
+          ...state,
+          sceneObjects: sceneObjectsReducer(state.sceneObjects, action)
+        }),
 
-  (state, action) => ({
-    ...state,
-    world: worldReducer(state.world, action)
-  }),
+        (state, action) => ({
+          ...state,
+          activeCamera: activeCameraReducer(state.activeCamera, action)
+        }),
 
-  (state, action) => ({
-    ...state,
-    selectedBone: selectedBoneReducer(state.selectedBone, action)
-  }),
+        (state, action) => ({
+          ...state,
+          world: worldReducer(state.world, action)
+        }),
 
-  // `meta` must run last, to calculate lastSavedHash
-  (state, action) => {
-    return {
-      ...state,
-      meta: metaReducer(state.meta, action, { present: state })
-    }
-  }
+        (state, action) => ({
+          ...state,
+          selectedBone: selectedBoneReducer(state.selectedBone, action)
+        }),
+
+        // `meta` must run last, to calculate lastSavedHash
+        (state, action) => {
+          return {
+            ...state,
+            meta: metaReducer(state.meta, action, { present: state })
+          }
+        }
+      ),
+      {
+        limit: 50,
+
+        // filter: filterHistory,
+
+        // uncomment to automatically group any series of UPDATE_OBJECT or UPDATE_OBJECTS:
+        // groupBy: batchGroupBy.init(['UPDATE_OBJECT', 'UPDATE_OBJECTS'])
+
+        // groupBy: batchGroupBy.init()
+      }
+    )(state, action)
+  })
 )
-
-const rootReducer = undoable(allReducers, {
-  limit: 50,
-
-  filter: filterSceneObjectHistory,
-
-  // uncomment to automatically group any series of UPDATE_OBJECT or UPDATE_OBJECTS:
-  // groupBy: batchGroupBy.init(['UPDATE_OBJECT', 'UPDATE_OBJECTS'])
-  groupBy: batchGroupBy.init()
-})
 
 module.exports = {
   initialState,
