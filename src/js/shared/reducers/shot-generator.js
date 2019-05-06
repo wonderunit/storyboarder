@@ -608,7 +608,7 @@ const initialState = {
     sceneObjects: withDisplayNames(initialScene.sceneObjects),
 
     selections: [],
-    selectedBone: undefined,
+    selectedBone: null,
   },
 
   meta: {
