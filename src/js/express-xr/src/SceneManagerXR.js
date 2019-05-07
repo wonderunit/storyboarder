@@ -454,8 +454,16 @@ const SceneContent = ({
     xrOffset.current.position.x = teleportPos.x
     xrOffset.current.position.z = teleportPos.z
   } else if (xrOffset.current && !camPosZero && camera.position.y !== xrOffset.current.userData.z) {
-    xrOffset.current.position.x = xrOffset.current.userData.x
-    xrOffset.current.position.z = xrOffset.current.userData.y
+    const {x, y, rotation } = xrOffset.current.userData
+    // const moveBehindVirtualCam = new THREE.Vector3(x, y, 0).normalize()
+
+    const behindCam = {
+      x: Math.sin(rotation),
+      y: Math.cos(rotation)
+    }
+
+    xrOffset.current.position.x = x + behindCam.x
+    xrOffset.current.position.z = y + behindCam.y
   }
 
 
@@ -467,7 +475,7 @@ const SceneContent = ({
       key={'camera'}
       ref={xrOffset}
       rotation={[0, Math.PI / 4 * camExtraRot, 0]}
-      userData={{ x: cameraState.x, y: cameraState.y, z: cameraState.z, type: cameraState.type }}>
+      userData={{ x: cameraState.x, y: cameraState.y, z: cameraState.z, rotation: cameraState.rotation, type: cameraState.type }}>
       <SGCamera {...{ aspectRatio, activeCamera, setDefaultCamera, ...cameraState }} />
 
       {XRController1.current && <primitive object={XRController1.current}></primitive>}
