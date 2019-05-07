@@ -8,7 +8,7 @@ const SGVirtualCamera = ({ i, aspectRatio, ...props }) => {
   const targetMesh = useRef(null)
   const hideArray = useRef([])
 
-  const size = 0.5
+  const size = 1/3
   const padding = 0.05
   const resolution = 512
 

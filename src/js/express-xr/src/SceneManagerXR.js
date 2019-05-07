@@ -19,6 +19,7 @@ const SGCamera = require('./components/SGCamera')
 const SGVirtualCamera = require('./components/SGVirtualCamera')
 const SGModel = require('./components/SGModel')
 const SGCharacter = require('./components/SGCharacter')
+const GUI = require('./gui/GUI')
 
 const { getIntersections, intersectObjects, cleanIntersected } = require('./utils/xrControllerFuncs')
 require('./lib/ViveController')
@@ -28,6 +29,21 @@ const objLoader = new THREE.OBJLoader2(loadingManager)
 const gltfLoader = new THREE.GLTFLoader(loadingManager)
 objLoader.setLogging(false, false)
 THREE.Cache.enabled = true
+
+const controllerObjectSettings = {
+  id: 'controller',
+  model: 'controller-left',
+  displayName: 'Controller',
+  depth: 0.025,
+  height: 0.025,
+  width: 0.025,
+  rotation: { x: 0, y: 0, z: 0 },
+  type: 'object',
+  visible: true,
+  x: 0,
+  y: 0,
+  z: 0
+}
 
 const getFilepathForLoadable = ({ type, model }) => {
   // does the model name have a slash in it?
@@ -108,7 +124,9 @@ const useAttachmentLoader = ({ sceneObjects, world }) => {
     }, {})
 
   useMemo(() => {
-    let loadables = Object.values(sceneObjects)
+    const addSceneObjects = Object.assign({ controller: controllerObjectSettings }, sceneObjects)
+
+    let loadables = Object.values(addSceneObjects)
       // has a value for model
       .filter(o => o.model != null)
       // has not loaded yet
@@ -455,8 +473,6 @@ const SceneContent = ({
     xrOffset.current.position.z = teleportPos.z
   } else if (xrOffset.current && !camPosZero && camera.position.y !== xrOffset.current.userData.z) {
     const {x, y, rotation } = xrOffset.current.userData
-    // const moveBehindVirtualCam = new THREE.Vector3(x, y, 0).normalize()
-
     const behindCam = {
       x: Math.sin(rotation),
       y: Math.cos(rotation)
@@ -470,17 +486,35 @@ const SceneContent = ({
 
   let cameraState = sceneObjects[activeCamera]
 
-  let activeCameraComponent =
+  let activeCameraComponent = (
     <group
       key={'camera'}
       ref={xrOffset}
-      rotation={[0, Math.PI / 4 * camExtraRot, 0]}
-      userData={{ x: cameraState.x, y: cameraState.y, z: cameraState.z, rotation: cameraState.rotation, type: cameraState.type }}>
+      rotation={[0, (Math.PI / 4) * camExtraRot, 0]}
+      userData={{
+        x: cameraState.x,
+        y: cameraState.y,
+        z: cameraState.z,
+        rotation: cameraState.rotation,
+        type: cameraState.type
+      }}
+    >
       <SGCamera {...{ aspectRatio, activeCamera, setDefaultCamera, ...cameraState }} />
 
-      {XRController1.current && <primitive object={XRController1.current}></primitive>}
-      {XRController2.current && <primitive object={XRController2.current}></primitive>}
+      {XRController1.current && (
+        <primitive object={XRController1.current}>
+          <GUI {...{ aspectRatio }} />
+          <SGModel {...{ modelData: getModelData(controllerObjectSettings), ...controllerObjectSettings }} />
+        </primitive>
+      )}
+      {XRController2.current && (
+        <primitive object={XRController2.current}>
+          <GUI {...{ aspectRatio }} />
+          <SGModel {...{ modelData: getModelData(controllerObjectSettings), ...controllerObjectSettings }} />
+        </primitive>
+      )}
     </group>
+  )
 
   let sceneObjectComponents = Object.values(sceneObjects).map((sceneObject, i) => {
     switch (sceneObject.type) {
@@ -540,7 +574,7 @@ const SceneManagerXR = connect(
   }
 )(({ aspectRatio, world, sceneObjects, activeCamera, updateObject }) => {
   const attachments = useAttachmentLoader({ sceneObjects, world })
-
+  
   const getModelData = sceneObject => {
     let key = getFilepathForLoadable(sceneObject)
     return attachments[key] && attachments[key].value
