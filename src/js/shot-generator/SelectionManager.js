@@ -1,4 +1,4 @@
-const { useState, useEffect, useLayoutEffect, useRef, useMemo } = React = require('react')
+const { useState, useEffect, useLayoutEffect, useRef, useMemo, useContext } = React = require('react')
 const { connect } = require('react-redux')
 
 const {
@@ -96,7 +96,7 @@ const SelectionManager = connect(
   }
 )(
   ({
-    scene,
+    SceneContext,
     camera,
     el,
 
@@ -117,6 +117,8 @@ const SelectionManager = connect(
     undoGroupStart,
     undoGroupEnd
   }) => {
+
+  const { scene } = useContext(SceneContext)
 
   const [lastDownId, setLastDownId] = useState()
   const [dragTarget, setDragTarget] = useState()
