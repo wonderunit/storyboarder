@@ -37,7 +37,7 @@ const controllerObjectSettings = {
   depth: 0.025,
   height: 0.025,
   width: 0.025,
-  rotation: { x: 0, y: 0, z: 0 },
+  rotation: { x: -(Math.PI/180)*45, y: 0, z:  0 },
   type: 'object',
   visible: true,
   x: 0,
