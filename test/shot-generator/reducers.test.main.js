@@ -76,6 +76,62 @@ describe('reducer', () => {
       // and selections has been cleared
       assert.equal(store.getState().undoable.present.selections.length, 0)
     })
+
+    it('marks if character skeleton has changed from preset', () => {
+      store.dispatch({ type: '@@redux-undo/INIT' })
+
+      store.dispatch({
+        type: 'CREATE_OBJECT',
+        payload: {
+          id: 'CHARACTER',
+          type: 'character',
+          model: 'adult-male',
+          width: 1,
+          height: 1,
+          depth: 1,
+          x: 0,
+          y: 0,
+          z: 0,
+          rotation: 0,
+          visible: true,
+          posePresetId: '79BBBD0D-6BA2-4D84-9B71-EE661AB6E5AE',
+          skeleton: {
+            ...store.getState().presets.poses['79BBBD0D-6BA2-4D84-9B71-EE661AB6E5AE'].state.skeleton
+          }
+        }
+      })
+
+      // we're using a pose preset that exists in the presets list
+      assert(
+        store.getState().presets.poses[getSceneObjects(store.getState())['CHARACTER'].posePresetId] !== null
+      )
+
+      // if we dispatch an event which does not actually change rotation ...
+      store.dispatch({ type: 'UPDATE_CHARACTER_SKELETON', payload: {
+        id: 'CHARACTER',
+        name: 'RightArm',
+        rotation: getSceneObjects(store.getState())['CHARACTER'].skeleton.RightArm.rotation
+      }})
+      // ... we are still using the pose preset
+      assert.equal(getSceneObjects(store.getState())['CHARACTER'].posePresetId, '79BBBD0D-6BA2-4D84-9B71-EE661AB6E5AE')
+
+      // if we CHANGE the skeleton ...
+      store.dispatch({ type: 'UPDATE_CHARACTER_SKELETON', payload: {
+        id: 'CHARACTER',
+        name: 'RightArm',
+        rotation: {
+          x: 0,
+          y: 0,
+          z: 0
+        }
+      }})
+      // the pose preset is no longer a match, and clears out
+      assert.equal(getSceneObjects(store.getState())['CHARACTER'].posePresetId, null)
+    })
+  })
+
+  it('marks if character properties have changed from preset', () => {
+    assert.fail('TODO')
   })
 
   describe('redux-undo', () => {

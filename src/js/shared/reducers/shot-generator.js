@@ -58,18 +58,18 @@ const getSerializedState = state => {
 const checkForCharacterChanges = (state, draft, actionPayloadId) => {
   // check to see if character has changed from preset
   // and invalidate if so
-  let characterPresetId = draft.sceneObjects[actionPayloadId].characterPresetId
+  let characterPresetId = getSceneObjects(draft)[actionPayloadId].characterPresetId
   if (characterPresetId) {
     let statePreset = state.presets.characters[characterPresetId]
 
     // preset does not exist anymore
     if (!statePreset) {
       // so don't reference it
-      draft.sceneObjects[actionPayloadId].characterPresetId = undefined
+      getSceneObjects(draft)[actionPayloadId].characterPresetId = undefined
       return true
     }
 
-    let stateCharacter = draft.sceneObjects[actionPayloadId]
+    let stateCharacter = getSceneObjects(draft)[actionPayloadId]
 
     // for every top-level prop in the preset
     for (let prop in statePreset.state) {
@@ -83,7 +83,7 @@ const checkForCharacterChanges = (state, draft, actionPayloadId) => {
 
         if (stateCharacter[prop] != statePreset.state[prop]) {
           // changed, no longer matches preset
-          draft.sceneObjects[actionPayloadId].characterPresetId = undefined
+          getSceneObjects(draft)[actionPayloadId].characterPresetId = undefined
           return true
         }
       }
@@ -96,7 +96,7 @@ const checkForCharacterChanges = (state, draft, actionPayloadId) => {
       stateCharacter.morphTargets.endomorphic != statePreset.state.morphTargets.endomorphic
     ) {
       // changed, no longer matches preset
-      draft.sceneObjects[actionPayloadId].characterPresetId = undefined
+      getSceneObjects(draft)[actionPayloadId].characterPresetId = undefined
       return true
     }
   }
@@ -105,25 +105,25 @@ const checkForCharacterChanges = (state, draft, actionPayloadId) => {
 const checkForSkeletonChanges = (state, draft, actionPayloadId) => {
   // check to see if pose has changed from preset
   // and invalidate if so
-  let posePresetId = draft.sceneObjects[actionPayloadId].posePresetId
+  let posePresetId = getSceneObjects(draft)[actionPayloadId].posePresetId
   if (posePresetId) {
     let statePreset = state.presets.poses[posePresetId]
 
     // preset does not exist anymore
     if (!statePreset) {
       // so don't reference it
-      draft.sceneObjects[actionPayloadId].posePresetId = undefined
+      getSceneObjects(draft)[actionPayloadId].posePresetId = undefined
       return true
     }
 
-    let draftSkeleton = draft.sceneObjects[actionPayloadId].skeleton
+    let draftSkeleton = getSceneObjects(draft)[actionPayloadId].skeleton
 
     let preset = statePreset.state.skeleton
     let curr = draftSkeleton
 
     if (Object.values(curr).length != Object.values(preset).length) {
       // changed, no longer matches preset
-      draft.sceneObjects[actionPayloadId].posePresetId = undefined
+      getSceneObjects(draft)[actionPayloadId].posePresetId = undefined
       return true
     }
 
@@ -134,7 +134,7 @@ const checkForSkeletonChanges = (state, draft, actionPayloadId) => {
         preset[name].rotation.z !== curr[name].rotation.z
       ) {
         // changed, no longer matches preset
-        draft.sceneObjects[actionPayloadId].posePresetId = undefined
+        getSceneObjects(draft)[actionPayloadId].posePresetId = undefined
         return true
       }
     }
@@ -762,25 +762,6 @@ const sceneObjectsReducer = (state = {}, action) => {
           action.payload,
           { models: state.models }
         )
-
-        // TODO
-        // TODO
-        // TODO
-        // TODO
-        // TODO
-        /*
-        // unless characterPresetId was just set ...
-        if (!action.payload.hasOwnProperty('characterPresetId')) {
-          // ... detect change between state and preset
-          checkForCharacterChanges(state, draft, action.payload.id)
-        }
-
-        // unless posePresetId was just set ...
-        if (!action.payload.hasOwnProperty('posePresetId')) {
-          // ... detect change between state and preset
-          checkForSkeletonChanges(state, draft, action.payload.id)
-        }
-        */
         return
 
       case 'UPDATE_OBJECTS':
@@ -828,11 +809,6 @@ const sceneObjectsReducer = (state = {}, action) => {
         draft[action.payload.id].skeleton[action.payload.name] = {
           rotation: action.payload.rotation
         }
-        // TODO review
-        // TODO review
-        // TODO review
-        // TODO review
-        // checkForSkeletonChanges(state, draft, action.payload.id)
         return
 
       case 'ATTACHMENTS_RELOCATE':
@@ -1109,6 +1085,31 @@ const mainReducer = (state/* = initialState*/, action) => {
   })
 }
 
+const checksReducer = (state, action) => {
+  return produce(state, draft => {
+    switch (action.type) {
+      case 'UPDATE_OBJECT':
+        // unless characterPresetId was just set ...
+        if (!action.payload.hasOwnProperty('characterPresetId')) {
+          // ... detect change between state and preset
+          checkForCharacterChanges(state, draft, action.payload.id)
+        }
+  
+        // unless posePresetId was just set ...
+        if (!action.payload.hasOwnProperty('posePresetId')) {
+          // ... detect change between state and preset
+          checkForSkeletonChanges(state, draft, action.payload.id)
+        }
+        return
+  
+      case 'UPDATE_CHARACTER_SKELETON':
+        checkForSkeletonChanges(state, draft, action.payload.id)
+        return
+  
+    }
+  })
+}
+
 const filterHistory = (action, currentState, previousHistory) => {
   // ignore `loaded` status updates
   if (action.type === 'UPDATE_OBJECT' && Object.keys(action.payload).includes('loaded')) {
@@ -1148,6 +1149,8 @@ const rootReducer = reduceReducers(
     ...state,
     undoable: undoableReducer(state.undoable, action)
   }),
+
+  checksReducer,
 
   // `meta` must run last, to calculate lastSavedHash
   (state, action) => ({
