@@ -1116,8 +1116,10 @@ const checksReducer = (state, action) => {
       // so, we gotta run all the checks
       case '@@redux-undo/REDO':
         for (let sceneObject of Object.values(getSceneObjects(draft))) {
-          checkForCharacterChanges(state, draft, sceneObject.id)
-          checkForSkeletonChanges(state, draft, sceneObject.id)
+          if (sceneObject.type === 'character') {
+            checkForCharacterChanges(state, draft, sceneObject.id)
+            checkForSkeletonChanges(state, draft, sceneObject.id)
+          }
         }
         return
 
