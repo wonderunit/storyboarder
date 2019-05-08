@@ -41,6 +41,8 @@ describe('reducer', () => {
     })
 
     it('removes object from selection when object is deleted', () => {
+      store.dispatch({ type: '@@redux-undo/INIT' })
+
       // create three more objects
       for (let i = 0; i < 3; i++) {
         store.dispatch({ type: 'CREATE_OBJECT', payload: {
