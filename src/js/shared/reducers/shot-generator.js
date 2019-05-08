@@ -1081,6 +1081,9 @@ const checksReducer = (state, action) => {
   return produce(state, draft => {
     switch (action.type) {
       case 'UPDATE_OBJECT':
+        // ignore actions that are just changes to `loaded`
+        if (action.payload.hasOwnProperty('loaded')) return
+        
         // unless characterPresetId was just set ...
         if (!action.payload.hasOwnProperty('characterPresetId')) {
           // ... detect change between state and preset
@@ -1109,6 +1112,8 @@ const checksReducer = (state, action) => {
         checkForSkeletonChanges(state, draft, action.payload.id)
         return
   
+      default:
+        return
     }
   })
 }
@@ -1200,10 +1205,9 @@ module.exports = {
   resetScene: () => ({
     type: 'LOAD_SCENE',
     payload: {
-      world: initialState.world,
-      // TODO
-      sceneObjects: initialState.sceneObjects,
-      activeCamera: initialState.activeCamera
+      world: initialState.undoable.world,
+      sceneObjects: initialState.undoable.sceneObjects,
+      activeCamera: initialState.undoable.activeCamera
     }
   }),
 
