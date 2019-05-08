@@ -4,6 +4,9 @@ const tempMatrix = new THREE.Matrix4()
 
 const getIntersections = (controller, intersectArray) => {
   tempMatrix.identity().extractRotation(controller.matrixWorld)
+  const tiltControllerMatrix = new THREE.Matrix4().makeRotationX((Math.PI / 180) * -45)
+  tempMatrix.multiply(tiltControllerMatrix)
+
   raycaster.ray.origin.setFromMatrixPosition(controller.matrixWorld)
   raycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix)
   return raycaster.intersectObjects(intersectArray, true)

@@ -37,7 +37,7 @@ const controllerObjectSettings = {
   depth: 0.025,
   height: 0.025,
   width: 0.025,
-  rotation: { x: -(Math.PI/180)*45, y: 0, z:  0 },
+  rotation: { x: (Math.PI / 180) * -45, y: 0, z: 0 },
   type: 'object',
   visible: true,
   x: 0,
@@ -442,15 +442,20 @@ const SceneContent = ({
             const line = new THREE.Line(geometry, material)
             line.name = 'line'
             line.scale.z = 5
+            line.rotation.x = (Math.PI / 180) * -45
+
             XRController1.current.add(line.clone())
             XRController2.current.add(line.clone())
 
+            const raycastTiltGroup = new THREE.Group()
             const raycastDepth = new THREE.Mesh(new THREE.BoxGeometry(0.01, 0.01, 0.01), new THREE.MeshBasicMaterial())
             raycastDepth.visible = false
             raycastDepth.name = 'raycast-depth'
+            raycastTiltGroup.rotation.x = (Math.PI / 180) * -45
+            raycastTiltGroup.add(raycastDepth)
 
-            XRController1.current.add(raycastDepth.clone())
-            XRController2.current.add(raycastDepth.clone())
+            XRController1.current.add(raycastTiltGroup.clone())
+            XRController2.current.add(raycastTiltGroup.clone())
           }
           // console.log('controllers', XRController1.current, XRController2.current)
 
