@@ -30,6 +30,23 @@ const SGVirtualCamera = ({ i, aspectRatio, ...props }) => {
     if (!renderTarget.current) {
       renderTarget.current = new THREE.WebGLRenderTarget(resolution * aspectRatio, resolution)
     }
+
+    setInterval(() => {
+      if (virtualCamera.current && renderTarget.current) {
+        gl.vr.enabled = false
+
+        hideArray.current.forEach(child => {
+          child.visible = false
+        })
+
+        gl.render(scene, virtualCamera.current, renderTarget.current)
+        gl.vr.enabled = true
+
+        hideArray.current.forEach(child => {
+          child.visible = true
+        })
+      }
+    }, 50)
   }, [])
 
   useEffect(() => {
@@ -39,23 +56,6 @@ const SGVirtualCamera = ({ i, aspectRatio, ...props }) => {
         hideArray.current.push(child)
       }
     })
-  })
-
-  useRender(() => {
-    if (virtualCamera.current && renderTarget.current) {
-      gl.vr.enabled = false
-
-      hideArray.current.forEach(child => {
-        child.visible = false
-      })
-
-      gl.render(scene, virtualCamera.current, renderTarget.current)
-      gl.vr.enabled = true
-
-      hideArray.current.forEach(child => {
-        child.visible = true
-      })
-    }
   })
 
   return (
