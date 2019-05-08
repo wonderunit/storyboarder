@@ -362,7 +362,6 @@ const defaultCharacterPreset = {
   name: undefined
 }
 
-// TODO scene presets will be wrong because they have sceneObjects in them?
 const defaultScenePreset = {
   world: {
     ground: false,
