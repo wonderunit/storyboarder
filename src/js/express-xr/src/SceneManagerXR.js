@@ -122,7 +122,7 @@ const useAttachmentLoader = ({ sceneObjects, world }) => {
         return state
       }
     }, {})
-console.log({ attachments })
+
   useMemo(() => {
     let loadables = Object.values(sceneObjects)
       // has a value for model
