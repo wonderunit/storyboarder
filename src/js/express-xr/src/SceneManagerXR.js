@@ -122,11 +122,9 @@ const useAttachmentLoader = ({ sceneObjects, world }) => {
         return state
       }
     }, {})
-
+console.log({ attachments })
   useMemo(() => {
-    const addSceneObjects = Object.assign({ controller: controllerObjectSettings }, sceneObjects)
-
-    let loadables = Object.values(addSceneObjects)
+    let loadables = Object.values(sceneObjects)
       // has a value for model
       .filter(o => o.model != null)
       // has not loaded yet
@@ -137,6 +135,8 @@ const useAttachmentLoader = ({ sceneObjects, world }) => {
     world.environment.file && loadables.push(
       { type: 'environment', model: world.environment.file }
     )
+
+    loadables.push(controllerObjectSettings)
 
     loadables.forEach(o =>
       dispatch({ type: 'PENDING', payload: { id: getFilepathForLoadable({ type: o.type, model: o.model }) } })
