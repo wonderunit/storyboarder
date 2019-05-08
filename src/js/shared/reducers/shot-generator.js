@@ -760,7 +760,7 @@ const sceneObjectsReducer = (state = {}, action) => {
           draft[action.payload.id],
           state[action.payload.id],
           action.payload,
-          { models: state.models }
+          { models: initialState.models }
         )
         return
 

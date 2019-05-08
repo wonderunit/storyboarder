@@ -1527,7 +1527,7 @@ const CharacterPresetsEditor = connect(
   {
     updateObject,
     selectCharacterPreset: (id, characterPresetId, preset) => (dispatch, getState) => {
-      let state = getState()
+
       dispatch(updateObject(id, {
         // set characterPresetId
         characterPresetId,
