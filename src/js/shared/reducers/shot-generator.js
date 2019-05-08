@@ -770,14 +770,6 @@ const sceneObjectsReducer = (state = {}, action) => {
 
           draft[key].x = value.x
           draft[key].y = value.y
-
-          // if we ever allow UPDATE_OBJECTS to change more stuff,
-          // uncomment this:
-          // checkForCharacterChanges(state, draft, key)
-
-          // if we ever allow UPDATE_OBJECTS to change skeletons,
-          // uncomment this:
-          // checkForSkeletonChanges(state, draft, key)
         }
         return
 
@@ -1101,7 +1093,18 @@ const checksReducer = (state, action) => {
           checkForSkeletonChanges(state, draft, action.payload.id)
         }
         return
-  
+
+      // if we ever allow UPDATE_OBJECTS to change more stuff:
+      // case 'UPDATE_OBJECTS':
+        // if we ever allow UPDATE_OBJECTS to change character properties,
+        // uncomment this:
+        // checkForCharacterChanges(state, draft, key)
+
+        // if we ever allow UPDATE_OBJECTS to change skeletons,
+        // uncomment this:
+        // checkForSkeletonChanges(state, draft, key)
+        // return
+
       case 'UPDATE_CHARACTER_SKELETON':
         checkForSkeletonChanges(state, draft, action.payload.id)
         return
