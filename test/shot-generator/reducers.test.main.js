@@ -39,6 +39,41 @@ describe('reducer', () => {
   
       assert.equal(sceneObjects['6BC46A44-7965-43B5-B290-E3D2B9D15EEE'].displayName, 'Camera 1')
     })
+
+    it('removes object from selection when object is deleted', () => {
+      // create three more objects
+      for (let i = 0; i < 3; i++) {
+        store.dispatch({ type: 'CREATE_OBJECT', payload: {
+          id: i.toString(),
+          type: 'object',
+          model: 'box',
+          width: 1,
+          height: 1,
+          depth: 1,
+          x: 0,
+          y: 0,
+          z: 0,
+          rotation: { x: 0, y: 0, z: 0 },
+          visible: true
+          }
+        })
+      }
+
+      // select one of the objects
+      store.dispatch({ type: 'SELECT_OBJECT', payload: '0' })
+      // now we have selections
+      assert.equal(store.getState().undoable.present.selections.length, 1)
+      assert.equal(store.getState().undoable.present.selections[0], '0')
+      assert.equal(Object.values(getSceneObjects(store.getState())).length, 4)
+
+      // if we delete two objects
+      store.dispatch({ type: 'DELETE_OBJECTS', payload: { ids: ['0', '1'] }})
+
+      // we have the original plus one we created
+      assert.equal(Object.values(getSceneObjects(store.getState())).length, 2)
+      // and selections has been cleared
+      assert.equal(store.getState().undoable.present.selections.length, 0)
+    })
   })
 
   describe('redux-undo', () => {

@@ -701,7 +701,17 @@ const selectionsReducer = (state = [], action) => {
       case 'DUPLICATE_OBJECTS':
         // select the new duplicates, replacing the selection list
         return action.payload.newIds
-      
+
+      case 'DELETE_OBJECTS':
+        for (let id of action.payload.ids) {
+          // did we remove a selected id?
+          if (draft.includes(id)) {
+            // delete it from the selections list
+            draft.splice(draft.indexOf(id), 1)
+          }
+        }
+        return
+
       default:
         return
     }
@@ -730,8 +740,6 @@ const sceneObjectsReducer = (state = {}, action) => {
         return withDisplayNames(draft)
 
       case 'DELETE_OBJECTS':
-      // TODO must come first
-      case 'DELETE_OBJECTS':
         if (
           action.payload.ids == null ||
           action.payload.ids.length === 0
@@ -741,19 +749,6 @@ const sceneObjectsReducer = (state = {}, action) => {
           if (draft[id] == null) continue
 
           delete draft[id]
-
-          // TODO
-          // TODO
-          // TODO
-          // did we remove a selected id?
-          /*
-          if (draft.selections.includes(id)) {
-            // delete it from the selections list
-            draft.selections.splice(draft.selections.indexOf(id), 1)
-            // de-select any currently selected bone
-            draft.selectedBone = undefined
-          }
-          */
         }
 
         return withDisplayNames(draft)
@@ -907,6 +902,10 @@ const selectedBoneReducer = (state = null, action) => {
 
       case 'SELECT_BONE':
         return action.payload
+
+      case 'DELETE_OBJECTS':
+        // de-select any currently selected bone
+        draft = null
 
       default:
         return
@@ -1120,10 +1119,10 @@ const filterHistory = (action, currentState, previousHistory) => {
 }
 
 const undoableReducers = combineReducers({
-  selections: selectionsReducer,
   sceneObjects: sceneObjectsReducer,
   activeCamera: activeCameraReducer,
   world: worldReducer,
+  selections: selectionsReducer,
   selectedBone: selectedBoneReducer
 })
 
