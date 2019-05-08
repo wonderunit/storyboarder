@@ -130,8 +130,75 @@ describe('reducer', () => {
     })
   })
 
-  it('marks if character properties have changed from preset', () => {
-    assert.fail('TODO')
+  it('marks if character properties have changed from character preset', () => {
+    store.dispatch({ type: '@@redux-undo/INIT' })
+
+    let characterPreset = {
+      id: '12345',
+      name: 'My Character',
+      state: {
+        height: 1.83,
+        model: 'adult-male',
+        name: 'Mr Character',
+
+        morphTargets: {
+          mesomorphic: 0,
+          ectomorphic: 0,
+          endomorphic: 0
+        }
+      },
+    }
+
+    store.dispatch({
+      type: 'CREATE_CHARACTER_PRESET',
+      payload: characterPreset
+    })
+
+    store.dispatch({
+      type: 'CREATE_OBJECT',
+      payload: {
+        id: 'CHARACTER',
+        type: 'character',
+        model: 'adult-male',
+        name: 'Mr Character',
+        width: 1,
+        height: 1.83,
+        depth: 1,
+        x: 0,
+        y: 0,
+        z: 0,
+        rotation: 0,
+        visible: true,
+        characterPresetId: '12345',
+
+        morphTargets: {
+          mesomorphic: 0,
+          ectomorphic: 0,
+          endomorphic: 0
+        }
+      }
+    })
+
+    assert.equal(getSceneObjects(store.getState())['CHARACTER'].characterPresetId, '12345')
+    assert.equal(getSceneObjects(store.getState())['CHARACTER'].height, 1.83)
+
+    // if we dispatch an event which does not actually change anything ...
+    store.dispatch({ type: 'UPDATE_OBJECT', payload: {
+      id: 'CHARACTER',
+      height: 1.83
+    }})
+
+    // ... we are still using the character preset
+    assert.equal(getSceneObjects(store.getState())['CHARACTER'].characterPresetId, '12345')
+
+    // if we CHANGE something ...
+    store.dispatch({ type: 'UPDATE_OBJECT', payload: {
+      id: 'CHARACTER',
+      height: 1.7
+    }})
+
+    // the character preset is no longer a match, and clears out
+    assert.equal(getSceneObjects(store.getState())['CHARACTER'].characterPresetId, null)
   })
 
   describe('redux-undo', () => {
