@@ -1,6 +1,6 @@
-const { useMemo, useEffect, useRef, useState } = (React = require('react'))
+const { useMemo } = (React = require('react'))
 const SGVirtualCamera = require('../components/SGVirtualCamera')
-const html2canvas = require('html2canvas')
+const GUIElement = require('./GUIElement')
 
 import * as SDFText from './sdftext'
 const textCreator = SDFText.creator()
@@ -16,7 +16,8 @@ const cameraSettings = {
   roll: 0
 }
 
-const contrWidth = 0.07
+const uiScale = 0.075
+const bWidth = 0.0125
 
 const GUI = ({ aspectRatio }) => {
   const fovLabel = useMemo(() => {
@@ -27,71 +28,96 @@ const GUI = ({ aspectRatio }) => {
     return textCreator.create('Object 1')
   }, [])
 
-  const [propertiesTexture, setPropertiesTexture] = useState(null)
-  const [toolsTexture, setToolsTexture] = useState(null)
-  const [undoTexture, setUndoTexture] = useState(null)
-  const generateTexture = element => {
-    html2canvas(document.getElementById(element), { logging: false, backgroundColor: null }).then(canvas => {
-      switch (element) {
-        case 'properties_ui':
-          setPropertiesTexture(canvas)
-        case 'tools_ui':
-          setToolsTexture(canvas)
-        case 'undo_ui':
-          setUndoTexture(canvas)
-      }
-    })
-  }
-
-  useEffect(() => {
-    generateTexture('properties_ui')
-    generateTexture('tools_ui')
-    generateTexture('undo_ui')
-  }, [])
-
   return (
     <group rotation={[(Math.PI / 180) * -45, 0, 0]}>
       <primitive object={fovLabel} position={[0.5, 0.5, -0.2]} scale={[2, 2, 2]} />
       <primitive object={otherLabel} position={[-0.75, 0.5, -0.2]} scale={[2, 2, 2]} />
 
-      <mesh
-        name="properties_ui"
-        position={new THREE.Vector3(-contrWidth * 1.25 - contrWidth - (contrWidth / 4) * 2, contrWidth * 0.5, 0)}
-        geometry={new THREE.PlaneGeometry(contrWidth * 1.5, contrWidth * 2)}
-        material={
-          new THREE.MeshBasicMaterial({
-            map: propertiesTexture ? new THREE.CanvasTexture(propertiesTexture) : null,
-            transparent: true,
-            side: THREE.DoubleSide
-          })
-        }
-      />
+      <group position={[uiScale * -2 + uiScale * -1.5 + bWidth, 0, 0]}>
+        <GUIElement
+          {...{
+            name: 'properties_ui',
+            width: uiScale * 1.5,
+            height: uiScale * 2,
+            radius: bWidth,
+            color: 'red'
+          }}
+        />
+      </group>
 
-      <mesh
-        name="tools_ui"
-        position={new THREE.Vector3(-contrWidth - contrWidth / 4, 0, 0)}
-        geometry={new THREE.PlaneGeometry(contrWidth, contrWidth)}
-        material={
-          new THREE.MeshBasicMaterial({
-            map: toolsTexture ? new THREE.CanvasTexture(toolsTexture) : null,
-            transparent: true,
-            side: THREE.DoubleSide
-          })
-        }
-      />
+      <group position={[uiScale * -1.5 - bWidth, 0, 0]}>
+        <GUIElement
+          {...{
+            name: 'tools_ui',
+            width: uiScale,
+            height: uiScale,
+            radius: bWidth,
+            color: 'green'
+          }}
+        />
+      </group>
 
-      <mesh
-        name="undo_ui"
-        position={new THREE.Vector3(contrWidth * 1.25 + contrWidth / 4, 0, 0)}
-        geometry={new THREE.PlaneGeometry(contrWidth * 1.5, contrWidth * 0.5)}
-        material={
-          new THREE.MeshBasicMaterial({
-            map: undoTexture ? new THREE.CanvasTexture(undoTexture) : null,
-            transparent: true,
-            side: THREE.DoubleSide
-          })
-        }
-      />
+      <group position={[uiScale * -1.5 - bWidth, 0, 0.001]} scale={[0.9, 0.9, 0.9]}>
+        <group position={[uiScale * 0.25, uiScale * 0.25, 0]} scale={[0.8, 0.8, 0.8]}>
+          <GUIElement
+            {...{
+              name: 'tools_button_1',
+              width: uiScale * 0.5,
+              height: uiScale * 0.5,
+              radius: bWidth,
+              color: 'purple'
+            }}
+          />
+        </group>
+
+        <group position={[uiScale * -0.25, uiScale * 0.25, 0]} scale={[0.8, 0.8, 0.8]}>
+          <GUIElement
+            {...{
+              name: 'tools_button_2',
+              width: uiScale * 0.5,
+              height: uiScale * 0.5,
+              radius: bWidth,
+              color: 'purple'
+            }}
+          />
+        </group>
+
+        <group position={[uiScale * 0.25, uiScale * -0.25, 0]} scale={[0.8, 0.8, 0.8]}>
+          <GUIElement
+            {...{
+              name: 'tools_button_3',
+              width: uiScale * 0.5,
+              height: uiScale * 0.5,
+              radius: bWidth,
+              color: 'purple'
+            }}
+          />
+        </group>
+
+        <group position={[uiScale * -0.25, uiScale * -0.25, 0]} scale={[0.8, 0.8, 0.8]}>
+          <GUIElement
+            {...{
+              name: 'tools_button_4',
+              width: uiScale * 0.5,
+              height: uiScale * 0.5,
+              radius: bWidth,
+              color: 'purple'
+            }}
+          />
+        </group>
+      </group>
+
+      <group position={[uiScale * 0.5 + bWidth, 0, 0]}>
+        <GUIElement
+          {...{
+            name: 'undo_ui',
+            width: uiScale * 1.5,
+            height: uiScale * 0.5,
+            radius: bWidth,
+            color: 'blue'
+          }}
+        />
+      </group>
 
       <SGVirtualCamera {...{ aspectRatio, ...cameraSettings }} />
     </group>
