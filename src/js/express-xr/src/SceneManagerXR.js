@@ -6,7 +6,13 @@ const { connect } = require('react-redux')
 const React = require('react')
 const { useEffect, useRef, useMemo, useState, useReducer } = React
 
-const { updateObject } = require('../../shared/reducers/shot-generator')
+const {
+  updateObject,
+
+  getSceneObjects,
+  getWorld,
+  getActiveCamera
+} = require('../../shared/reducers/shot-generator')
 
 const { WEBVR } = require('../../vendor/three/examples/js/vr/WebVR')
 require('../../vendor/three/examples/js/loaders/LoaderSupport')
@@ -590,9 +596,9 @@ const SceneManagerXR = connect(
   state => ({
     aspectRatio: state.aspectRatio,
 
-    world: state.world,
-    sceneObjects: state.sceneObjects,
-    activeCamera: state.activeCamera
+    world: getWorld(state),
+    sceneObjects: getSceneObjects(state),
+    activeCamera: getActiveCamera(state)
   }),
   {
     updateObject
