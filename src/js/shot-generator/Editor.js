@@ -101,6 +101,15 @@ const {
 
   toggleWorkspaceGuide,
 
+  undoGroupStart,
+  undoGroupEnd,
+
+  getSceneObjects,
+  getSelections,
+  getActiveCamera,
+  getSelectedBone,
+  getWorld,
+
   //
   //
   // selectors
@@ -113,12 +122,12 @@ const {
 const Editor = connect(
   state => ({
     mainViewCamera: state.mainViewCamera,
-    activeCamera: state.activeCamera,
+    activeCamera: getActiveCamera(state),
     remoteInput: state.input,
     aspectRatio: state.aspectRatio,
-    sceneObjects: state.sceneObjects,
-    world: state.world,
-    selectedBone: state.selectedBone,
+    sceneObjects: getSceneObjects(state),
+    world: getWorld(state),
+    selectedBone: getSelectedBone(state),
     attachments: state.attachments,
     server: state.server
   }),
@@ -210,7 +219,7 @@ const Editor = connect(
             child.userData.type === 'character' ||
             child.userData.type === 'object'
           ) &&
-          child.userData.id === state.selections[0])
+          child.userData.id === getSelections(state)[0])
 
       let material = selected &&
         ((selected.userData.type === 'character')

@@ -1,11 +1,16 @@
-const { useState, useEffect, useLayoutEffect, useRef, useMemo } = React = require('react')
+const { useState, useEffect, useLayoutEffect, useRef, useMemo, useContext } = React = require('react')
 const { connect } = require('react-redux')
 
 const {
   selectObject,
   selectObjectToggle,
   selectBone,
-  updateObjects
+  updateObjects,
+
+  undoGroupStart,
+  undoGroupEnd,
+
+  getSelections
 } = require('../shared/reducers/shot-generator')
 
 function getObjectsFromIcons ( objects ) {
@@ -76,7 +81,7 @@ const getIntersectionTarget = intersect => {
 
 const SelectionManager = connect(
   state => ({
-    selections: state.selections,
+    selections: getSelections(state),
     sceneObjects: state.sceneObjects,
     activeCamera: state.activeCamera
   }),
@@ -84,11 +89,14 @@ const SelectionManager = connect(
     selectObject,
     selectObjectToggle,
     selectBone,
-    updateObjects
+    updateObjects,
+
+    undoGroupStart,
+    undoGroupEnd
   }
 )(
   ({
-    scene,
+    SceneContext,
     camera,
     el,
 
@@ -104,8 +112,13 @@ const SelectionManager = connect(
     selectBone,
     updateObjects,
 
-    transition
+    transition,
+    
+    undoGroupStart,
+    undoGroupEnd
   }) => {
+
+  const { scene } = useContext(SceneContext)
 
   const [lastDownId, setLastDownId] = useState()
   const [dragTarget, setDragTarget] = useState()
@@ -325,6 +338,7 @@ const SelectionManager = connect(
       }
 
       if (shouldDrag) {
+        undoGroupStart()
         setDragTarget({ target, x, y })
       }
     }
@@ -348,6 +362,8 @@ const SelectionManager = connect(
     if (dragTarget) {
       endDrag()
       setDragTarget(null)
+
+      undoGroupEnd()
     }
 
     if (event.target === el) {

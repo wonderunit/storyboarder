@@ -55,7 +55,9 @@ const NumberSlider = ({
   step = 0.1,
   onSetValue = defaultOnSetValue,
   formatter = formatters.toFixed2,
-  transform = transforms.clamp
+  transform = transforms.clamp,
+  onDragStart = () => {},
+  onDragEnd = () => {}
 } = {}) => {
   const [moving, setMoving] = useState(false)
   const [textInput, setTextInput] = useState(false)
@@ -93,6 +95,7 @@ const NumberSlider = ({
       event.target.requestPointerLock()
       document.addEventListener('pointerlockchange', lockChangeAlert, false)
       setMoving(true)
+      onDragStart()
     }
   }
 
@@ -121,6 +124,7 @@ const NumberSlider = ({
     event.preventDefault()
     document.removeEventListener('pointerup', onPointerUp)
     document.exitPointerLock()
+    onDragEnd()
   }
 
   useEffect(() => {

@@ -60,13 +60,21 @@ const {
   markSaved,
 
   toggleWorkspaceGuide,
+  undoGroupStart,
+  undoGroupEnd,
 
   //
   //
   // selectors
   //
   getSerializedState,
-  getIsSceneDirty
+  getIsSceneDirty,
+
+  getSceneObjects,
+  getSelections,
+  getActiveCamera,
+  getSelectedBone,
+  getWorld
 //} = require('../state')
 } = require('../shared/reducers/shot-generator')
 
@@ -77,7 +85,11 @@ const presetsStorage = require('../shared/store/presetsStorage')
 
 const ModelLoader = require('../services/model-loader')
 
-const { NumberSlider } = require('./NumberSlider')
+const NumberSliderComponent = require('./NumberSlider')
+const NumberSlider = connect(null, {
+  onDragStart: undoGroupStart,
+  onDragEnd: undoGroupEnd
+})(NumberSliderComponent.NumberSlider)
 const NumberSliderTransform = require('./NumberSlider').transforms
 const NumberSliderFormatter = require('./NumberSlider').formatters
 
@@ -702,12 +714,12 @@ const RemoteInputView = ({ remoteInput }) => {
 const ElementsPanel = connect(
   // what changes should we watch for to re-render?
   state => ({
-    world: state.world,
-    sceneObjects: state.sceneObjects,
-    selections: state.selections,
-    selectedBone: state.selectedBone,
+    world: getWorld(state),
+    sceneObjects: getSceneObjects(state),
+    selections: getSelections(state),
+    selectedBone: getSelectedBone(state),
     models: state.models,
-    activeCamera: state.activeCamera,
+    activeCamera: getActiveCamera(state),
 
     storyboarderFilePath: state.meta.storyboarderFilePath
   }),
@@ -909,7 +921,6 @@ const CharacterPresetsEditor = connect(
   {
     updateObject,
     selectCharacterPreset: (id, characterPresetId, preset) => (dispatch, getState) => {
-      let state = getState()
       dispatch(updateObject(id, {
         // set characterPresetId
         characterPresetId,
@@ -1604,10 +1615,11 @@ const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, s
   ])
 })
 
+// TODO
 const PhoneCursor = connect(
   state => ({
-    selections: state.selection,
-    sceneObjects: state.sceneObjects,
+    selections: getSelections(state),
+    sceneObjects: getSceneObjects(state),
   }),
   {
     selectObject,
@@ -2112,7 +2124,7 @@ const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, set
       onCreateCharacterClick()
     }
     setTimeout(() => {
-      console.log(Object.values($r.store.getState().sceneObjects).length, 'scene objects')
+      console.log(Object.values(getSceneObjects($r.store.getState())).length, 'scene objects')
     }, 100)
   }
 
@@ -2294,8 +2306,8 @@ const ClosestObjectInspector = ({ camera, sceneObjects, characters }) => {
 
 const CameraInspector = connect(
   state => ({
-    sceneObjects: state.sceneObjects,
-    activeCamera: state.activeCamera
+    sceneObjects: getSceneObjects(state),
+    activeCamera: getActiveCamera(state)
   })
 )(
   React.memo(({ camera, sceneObjects, activeCamera }) => {
@@ -2416,7 +2428,7 @@ const GuidesInspector = connect(
 
 const CamerasInspector = connect(
   state => ({
-    activeCamera: state.activeCamera,
+    activeCamera: getActiveCamera(state),
     _cameras: getCameraSceneObjects(state)
   }),
   {
@@ -2460,8 +2472,6 @@ const CamerasInspector = connect(
 
 // TODO move selector logic into reducers/shot-generator?
 // memoized selectors
-const getSceneObjects = state => state.sceneObjects
-const getSelections = state => state.selections
 const getCameraSceneObjects = createSelector(
   [getSceneObjects],
   (sceneObjects) => Object.values(sceneObjects).filter(o => o.type === 'camera')
@@ -2500,8 +2510,8 @@ const MenuManager = ({ }) => {
 const KeyHandler = connect(
   state => ({
     mainViewCamera: state.mainViewCamera,
-    activeCamera: state.activeCamera,
-    selections: state.selections,
+    activeCamera: getActiveCamera(state),
+    selections: getSelections(state),
 
     _selectedSceneObject: getSelectedSceneObject(state),
 
@@ -2573,7 +2583,13 @@ const KeyHandler = connect(
         if (event.key === '8') { if (_cameras[7]) { setActiveCamera(_cameras[7].id) }}
         if (event.key === '9') { if (_cameras[8]) { setActiveCamera(_cameras[8].id) }}
 
-        if (event.key === 'z' || event.key === 'x') {
+        if (
+          (event.key === 'z' || event.key === 'x') &&
+          !event.shiftKey &&
+          !event.metaKey &&
+          !event.ctrlKey &&
+          !event.altKey
+        ) {
           let cameraState = _cameras.find(camera => camera.id === activeCamera)
           let roll = {
             'z': Math.max(cameraState.roll - THREE.Math.DEG2RAD, -45 * THREE.Math.DEG2RAD),
@@ -2675,137 +2691,138 @@ const LoadingStatus = connect(
 
 }))
 
-const saveScenePresets = state => presetsStorage.saveScenePresets({ scenes: state.presets.scenes })
-const PresetsEditor = connect(
-  state => ({
-    presets: state.presets
-  }),
-  {
-    loadScenePreset: id => (dispatch, getState) => {
-      let choice = dialog.showMessageBox(null, {
-        type: 'question',
-        buttons: ['Yes', 'No'],
-        message: 'Your existing scene will be cleared. Are you sure?',
-        defaultId: 1 // default to No
-      })
-      if (choice === 0) {
-        let state = getState()
-        let preset = state.presets.scenes[id]
-        dispatch(loadScene({
-          world: preset.state.world,
-          sceneObjects: preset.state.sceneObjects,
-          activeCamera: preset.state.activeCamera
-        }))
-      }
-    },
-
-    createScenePreset: () => (dispatch, getState) => {
-      // show a prompt to get the desired preset name
-      let id = THREE.Math.generateUUID()
-      prompt({
-        title: 'Preset Name',
-        label: 'Select a Preset Name',
-        value: `Scene ${shortId(id)}`
-      }, require('electron').remote.getCurrentWindow()).then(name => {
-        if (name != null && name != '' && name != ' ') {
-          let state = getState()
-          let preset = {
-            id,
-            name,
-            state: {
-              world: state.world,
-              sceneObjects: state.sceneObjects,
-              activeCamera: state.activeCamera
-            }
-          }
-          dispatch(createScenePreset(preset))
-          saveScenePresets(getState())
-        }
-      }).catch(err => {
-        console.error(err)
-      })
-    },
-
-    updateScenePreset: (id, values) => (dispatch, getState) => {
-      dispatch(updateScenePreset(id, values))
-      saveScenePresets(getState())
-    },
-
-    deleteScenePreset: id => (dispatch, getState) => {
-      let choice = dialog.showMessageBox(null, {
-        type: 'question',
-        buttons: ['Yes', 'No'],
-        message: 'This scene preset will be deleted. Are you sure?',
-        defaultId: 1 // default to No
-      })
-      if (choice === 0) {
-        dispatch(deleteScenePreset(id))
-        saveScenePresets(getState())
-      }
-    }
-  }
-)(
-({ presets, loadScenePreset, createScenePreset, updateScenePreset, deleteScenePreset, transition }) => {
-  const onLoadClick = (preset, event) => {
-    event.preventDefault()
-    loadScenePreset(preset.id)
-  }
-
-  const onSaveClick = event => {
-    event.preventDefault()
-    createScenePreset()
-  }
-
-  const onDeleteClick = id => {
-    event.preventDefault()
-    deleteScenePreset(id)
-  }
-
-  const onEditClick = (preset, event) => {
-    event.preventDefault()
-    updateScenePreset(preset.id, { name: 'ok'})
-  }
-
-  const onFocus = event => transition('TYPING_ENTER')
-  const onBlur = event => transition('TYPING_EXIT')
-
-  return h([
-    'div', { style: { padding: 6 } }, [
-      ['h3', { style: { margin: '24px 0 12px 0' } }, 'Preset Scenes'],
-
-      ['ul', Object.values(presets.scenes).map(preset =>
-        ['li.element', { style: { display: 'flex', justifyContent: 'space-between' } },
-
-          ['a.select[href=#]', { style: { color: 'white', textDecoration: 'none', display: 'flex', alignSelf: 'center', top: -3, position: 'relative', width: '1.5rem' }, onClick: onLoadClick.bind(this, preset) }, '⇧'],
-
-          [
-            'span',
-            { style: { flex: 1 } },
-            [
-              LabelInput,
-              {
-                key: preset.id,
-                label: preset.name != null
-                  ? preset.name
-                  : `Preset ${shortId(preset.id)}`,
-                onFocus,
-                onBlur,
-                setLabel: name => {
-                  updateScenePreset(preset.id, { name })
-                }
-              }
-            ]
-          ],
-
-
-          ['a.delete[href=#]', { onClick: onDeleteClick.bind(this, preset.id) }, 'X']
-        ] )
-      ],
-
-      ['button', { style: { marginTop: 20, padding: '9px 12px', fontSize: 16 }, onClick: onSaveClick }, '+ Preset'],
-    ]
-  ])
-})
+// const saveScenePresets = state => presetsStorage.saveScenePresets({ scenes: state.presets.scenes })
+// const PresetsEditor = connect(
+//   state => ({
+//     presets: state.presets
+//   }),
+//   {
+//     loadScenePreset: id => (dispatch, getState) => {
+//       let choice = dialog.showMessageBox(null, {
+//         type: 'question',
+//         buttons: ['Yes', 'No'],
+//         message: 'Your existing scene will be cleared. Are you sure?',
+//         defaultId: 1 // default to No
+//       })
+//       if (choice === 0) {
+//         let state = getState()
+//         let preset = state.presets.scenes[id]
+//         dispatch(loadScene({
+//           world: preset.state.world,
+//           sceneObjects: preset.state.sceneObjects,
+//           activeCamera: preset.state.activeCamera
+//         }))
+//       }
+//     },
+// 
+//     createScenePreset: () => (dispatch, getState) => {
+//       // show a prompt to get the desired preset name
+//       let id = THREE.Math.generateUUID()
+//       prompt({
+//         title: 'Preset Name',
+//         label: 'Select a Preset Name',
+//         value: `Scene ${shortId(id)}`
+//       }, require('electron').remote.getCurrentWindow()).then(name => {
+//         if (name != null && name != '' && name != ' ') {
+//           let state = getState()
+//           let preset = {
+//             id,
+//             name,
+//             state: {
+//               // TODO
+//               world: state.world,
+//               sceneObjects: getSceneObjects(state),
+//               activeCamera: getActiveCamera(state)
+//             }
+//           }
+//           dispatch(createScenePreset(preset))
+//           saveScenePresets(getState())
+//         }
+//       }).catch(err => {
+//         console.error(err)
+//       })
+//     },
+// 
+//     updateScenePreset: (id, values) => (dispatch, getState) => {
+//       dispatch(updateScenePreset(id, values))
+//       saveScenePresets(getState())
+//     },
+// 
+//     deleteScenePreset: id => (dispatch, getState) => {
+//       let choice = dialog.showMessageBox(null, {
+//         type: 'question',
+//         buttons: ['Yes', 'No'],
+//         message: 'This scene preset will be deleted. Are you sure?',
+//         defaultId: 1 // default to No
+//       })
+//       if (choice === 0) {
+//         dispatch(deleteScenePreset(id))
+//         saveScenePresets(getState())
+//       }
+//     }
+//   }
+// )(
+// ({ presets, loadScenePreset, createScenePreset, updateScenePreset, deleteScenePreset, transition }) => {
+//   const onLoadClick = (preset, event) => {
+//     event.preventDefault()
+//     loadScenePreset(preset.id)
+//   }
+// 
+//   const onSaveClick = event => {
+//     event.preventDefault()
+//     createScenePreset()
+//   }
+// 
+//   const onDeleteClick = id => {
+//     event.preventDefault()
+//     deleteScenePreset(id)
+//   }
+// 
+//   const onEditClick = (preset, event) => {
+//     event.preventDefault()
+//     updateScenePreset(preset.id, { name: 'ok'})
+//   }
+// 
+//   const onFocus = event => transition('TYPING_ENTER')
+//   const onBlur = event => transition('TYPING_EXIT')
+// 
+//   return h([
+//     'div', { style: { padding: 6 } }, [
+//       ['h3', { style: { margin: '24px 0 12px 0' } }, 'Preset Scenes'],
+// 
+//       ['ul', Object.values(presets.scenes).map(preset =>
+//         ['li.element', { style: { display: 'flex', justifyContent: 'space-between' } },
+// 
+//           ['a.select[href=#]', { style: { color: 'white', textDecoration: 'none', display: 'flex', alignSelf: 'center', top: -3, position: 'relative', width: '1.5rem' }, onClick: onLoadClick.bind(this, preset) }, '⇧'],
+// 
+//           [
+//             'span',
+//             { style: { flex: 1 } },
+//             [
+//               LabelInput,
+//               {
+//                 key: preset.id,
+//                 label: preset.name != null
+//                   ? preset.name
+//                   : `Preset ${shortId(preset.id)}`,
+//                 onFocus,
+//                 onBlur,
+//                 setLabel: name => {
+//                   updateScenePreset(preset.id, { name })
+//                 }
+//               }
+//             ]
+//           ],
+// 
+// 
+//           ['a.delete[href=#]', { onClick: onDeleteClick.bind(this, preset.id) }, 'X']
+//         ] )
+//       ],
+// 
+//       ['button', { style: { marginTop: 20, padding: '9px 12px', fontSize: 16 }, onClick: onSaveClick }, '+ Preset'],
+//     ]
+//   ])
+// })
 
 let stats
 ipcRenderer.on('shot-generator:menu:view:fps-meter', (event, value) => {

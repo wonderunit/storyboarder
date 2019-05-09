@@ -12,6 +12,12 @@ const {
   updateCharacterSkeleton,
   createPosePreset,
   updateWorldEnvironment,
+
+  getSceneObjects,
+  getSelections,
+  getActiveCamera,
+  getSelectedBone,
+  getWorld,
 } = require('../shared/reducers/shot-generator')
 
 const {
@@ -36,13 +42,13 @@ const ModelLoader = require('../services/model-loader')
 
 const SceneManager = connect(
   state => ({
-    world: state.world,
-    sceneObjects: state.sceneObjects,
+    world: getWorld(state),
+    sceneObjects: getSceneObjects(state),
     remoteInput: state.input,
-    selections: state.selections,
-    selectedBone: state.selectedBone,
+    selections: getSelections(state),
+    selectedBone: getSelectedBone(state),
     mainViewCamera: state.mainViewCamera,
-    activeCamera: state.activeCamera,
+    activeCamera: getActiveCamera(state),
     aspectRatio: state.aspectRatio,
     devices: state.devices,
     meta: state.meta,
@@ -299,7 +305,7 @@ const SceneManager = connect(
               let cameraForLarge = state.mainViewCamera === 'live' ? camera : orthoCamera.current
 
               if (cameraControlsView.current && cameraControlsView.current.enabled) {
-                let cameraState = Object.values(state.sceneObjects).find(o => o.id === camera.userData.id)
+                let cameraState = Object.values(getSceneObjects(state)).find(o => o.id === camera.userData.id)
 
                 if (!cameraState) {
                   // FIXME
@@ -598,7 +604,7 @@ const SceneManager = connect(
       [
         [SelectionManager, {
           key: 'selection-manager-large',
-          scene,
+          SceneContext,
           camera: mainViewCamera === 'live' ? camera : orthoCamera.current,
           el: largeCanvasRef.current,
           selectOnPointerDown: mainViewCamera !== 'live',
@@ -608,7 +614,7 @@ const SceneManager = connect(
 
         [SelectionManager, {
           key: 'selection-manager-small',
-          scene,
+          SceneContext,
           camera: mainViewCamera === 'live' ? orthoCamera.current : camera,
           el: smallCanvasRef.current,
           selectOnPointerDown: mainViewCamera === 'live',

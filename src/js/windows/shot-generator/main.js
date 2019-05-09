@@ -106,6 +106,13 @@ ipcMain.on('shot-generator:object:duplicate', () => {
   win.webContents.send('shot-generator:object:duplicate')
 })
 
+ipcMain.on('shot-generator:edit:undo', () => {
+  win.webContents.send('shot-generator:edit:undo')
+})
+ipcMain.on('shot-generator:edit:redo', () => {
+  win.webContents.send('shot-generator:edit:redo')
+})
+
 module.exports = {
   show,
   getWindow: () => win

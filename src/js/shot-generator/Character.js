@@ -183,6 +183,8 @@ const Character = React.memo(({
   const setLoaded = loaded => updateObject(id, { loaded })
   const object = useRef(null)
 
+  const originalSkeleton = useRef(null)
+
   const doCleanup = () => {
     if (object.current) {
       console.log(type, id, 'remove')
@@ -214,6 +216,10 @@ const Character = React.memo(({
       console.log(type, id, 'add')
 
       const { mesh, skeleton, armatures, originalHeight, boneLengthScale, parentRotation, parentPosition } = characterFactory(modelData)
+
+      // make a clone of the initial skeleton pose, for comparison
+      originalSkeleton.current = skeleton.clone()
+      originalSkeleton.current.bones = originalSkeleton.current.bones.map(bone => bone.clone())
 
       object.current = new THREE.Object3D()
       object.current.add(...armatures)
@@ -298,15 +304,21 @@ const Character = React.memo(({
 
   const updateSkeleton = () => {
     let skeleton = object.current.userData.skeleton
-    if (props.skeleton) {
-      for (let name in props.skeleton) {
-        let bone = skeleton.getBoneByName(name)
-        if (bone) {
-          bone.rotation.x = props.skeleton[name].rotation.x
-          bone.rotation.y = props.skeleton[name].rotation.y
-          bone.rotation.z = props.skeleton[name].rotation.z
-        }
+    if (Object.values(props.skeleton).length) {
+      for (bone of skeleton.bones) {
+        let userState = props.skeleton[bone.name]
+        let systemState = originalSkeleton.current.getBoneByName(bone.name).clone()
+
+        let state = userState || systemState
+
+        bone.rotation.x = state.rotation.x
+        bone.rotation.y = state.rotation.y
+        bone.rotation.z = state.rotation.z
       }
+    } else {
+      let skeleton = object.current.userData.skeleton
+      skeleton.pose()
+      fixRootBone()
     }
   }
 
@@ -389,14 +401,21 @@ const Character = React.memo(({
     let skeleton = object.current.userData.skeleton
     skeleton.pose()
     updateSkeleton()
+    fixRootBone()
+  }
+
+  const fixRootBone = () => {
+    let { boneLengthScale, parentRotation, parentPosition } = object.current.userData
+    let skeleton = object.current.userData.skeleton
+
     // fb converter scaled object
-    if (object.current.userData.boneLengthScale === 100) {
+    if (boneLengthScale === 100) {
       if (props.skeleton['Hips']) {
         // we already have correct values, don't multiply the root bone
       } else {
-        skeleton.bones[0].quaternion.multiply(object.current.userData.parentRotation)
+        skeleton.bones[0].quaternion.multiply(parentRotation)
       }
-      skeleton.bones[0].position.copy(object.current.userData.parentPosition)
+      skeleton.bones[0].position.copy(parentPosition)
     }
   }
 
@@ -421,7 +440,7 @@ const Character = React.memo(({
     if (!ready) return
     if (!object.current) return
 
-    console.log(type, id, 'skeleton')
+    // console.log(type, id, 'skeleton')
     updateSkeleton()
   }, [props.model, props.skeleton, ready])
 
@@ -519,28 +538,26 @@ const Character = React.memo(({
     if (!ready) return
     if (!object.current) return
 
-    if (selectedBone === undefined) return
-
-    let skeleton = object.current.userData.skeleton
-    let realBone = skeleton.bones.find(bone => bone.uuid == selectedBone)
-
-    if (currentBoneSelected.current === realBone) return
-
-    if (selectedBone === null) {
-      if (currentBoneSelected.current) {
-        currentBoneSelected.current.connectedBone.material.color = new THREE.Color( 0x7a72e9 )
-        currentBoneSelected.current = null
-      }
-      return
-    }
-
-    if (currentBoneSelected.current !== null) {
+    // if there was a prior selected bone
+    if (currentBoneSelected.current) {
+      // reset it
       currentBoneSelected.current.connectedBone.material.color = new THREE.Color( 0x7a72e9 )
+      currentBoneSelected.current = null
     }
-    if (realBone === null || realBone === undefined) return
-    realBone.connectedBone.material.color = new THREE.Color( 0x242246 )
-    currentBoneSelected.current = realBone
 
+    // was a bone selected?
+    if (selectedBone) {
+      // find the 3D Bone matching the selectedBone uuid
+      let bone = object.current
+        .userData
+        .skeleton
+        .bones.find(b => b.uuid == selectedBone)
+
+      if (bone) {
+        currentBoneSelected.current = bone
+        currentBoneSelected.current.connectedBone.material.color = new THREE.Color( 0x242246 )
+      }
+    }
   }, [selectedBone, ready])
 
   useEffect(() => {
