@@ -19,7 +19,7 @@ const cameraSettings = {
 const uiScale = 0.075
 const bWidth = 0.0125
 
-const GUI = ({ aspectRatio }) => {
+const GUI = ({ aspectRatio, guiMode }) => {
   const fovLabel = useMemo(() => {
     return textCreator.create('22mm')
   }, [])
@@ -29,43 +29,43 @@ const GUI = ({ aspectRatio }) => {
   }, [])
 
   return (
-    <group rotation={[(Math.PI / 180) * -45, 0, 0]}>
+    <group rotation={[(Math.PI / 180) * -45, 0, 0]} userData={{ type: 'gui' }}>
       <primitive object={fovLabel} position={[0.5, 0.5, -0.2]} scale={[2, 2, 2]} />
       <primitive object={otherLabel} position={[-0.75, 0.5, -0.2]} scale={[2, 2, 2]} />
 
-      <group position={[uiScale * -2 + uiScale * -1.5 + bWidth, 0, 0]}>
+      <group position={[(uiScale * 1.5 * 0.5 + uiScale * 0.5 + (uiScale * 0.5 + uiScale * 0.5) + bWidth * 2) * -1, 0, 0]}>
         <GUIElement
           {...{
             name: 'properties_ui',
             width: uiScale * 1.5,
             height: uiScale * 2,
             radius: bWidth,
-            color: 'red'
+            color: 'black'
           }}
         />
       </group>
 
-      <group position={[uiScale * -1.5 - bWidth, 0, 0]}>
+      <group position={[(uiScale * 0.5 + uiScale * 0.5 + bWidth) * -1, 0, 0]}>
         <GUIElement
           {...{
             name: 'tools_ui',
             width: uiScale,
             height: uiScale,
             radius: bWidth,
-            color: 'green'
+            color: 'black'
           }}
         />
       </group>
 
-      <group position={[uiScale * -1.5 - bWidth, 0, 0.001]} scale={[0.9, 0.9, 0.9]}>
+      <group position={[(uiScale * 0.5 + uiScale * 0.5 + bWidth) * -1, 0, 0.001]} scale={[0.9, 0.9, 0.9]}>
         <group position={[uiScale * 0.25, uiScale * 0.25, 0]} scale={[0.8, 0.8, 0.8]}>
           <GUIElement
             {...{
-              name: 'tools_button_1',
+              name: 'selection_mode',
               width: uiScale * 0.5,
               height: uiScale * 0.5,
               radius: bWidth,
-              color: 'purple'
+              color: guiMode === 'selection' ? 0x6e6e6e : 0x212121
             }}
           />
         </group>
@@ -73,11 +73,11 @@ const GUI = ({ aspectRatio }) => {
         <group position={[uiScale * -0.25, uiScale * 0.25, 0]} scale={[0.8, 0.8, 0.8]}>
           <GUIElement
             {...{
-              name: 'tools_button_2',
+              name: 'duplicate_mode',
               width: uiScale * 0.5,
               height: uiScale * 0.5,
               radius: bWidth,
-              color: 'purple'
+              color: guiMode === 'duplicate' ? 0x6e6e6e : 0x212121
             }}
           />
         </group>
@@ -85,11 +85,11 @@ const GUI = ({ aspectRatio }) => {
         <group position={[uiScale * 0.25, uiScale * -0.25, 0]} scale={[0.8, 0.8, 0.8]}>
           <GUIElement
             {...{
-              name: 'tools_button_3',
+              name: 'add_mode',
               width: uiScale * 0.5,
               height: uiScale * 0.5,
               radius: bWidth,
-              color: 'purple'
+              color: guiMode === 'add' ? 0x6e6e6e : 0x212121
             }}
           />
         </group>
@@ -97,24 +97,24 @@ const GUI = ({ aspectRatio }) => {
         <group position={[uiScale * -0.25, uiScale * -0.25, 0]} scale={[0.8, 0.8, 0.8]}>
           <GUIElement
             {...{
-              name: 'tools_button_4',
+              name: 'erase_mode',
               width: uiScale * 0.5,
               height: uiScale * 0.5,
               radius: bWidth,
-              color: 'purple'
+              color: guiMode === 'erase' ? 0x6e6e6e : 0x212121
             }}
           />
         </group>
       </group>
 
-      <group position={[uiScale * 0.5 + bWidth, 0, 0]}>
+      <group position={[uiScale * 1.5 * 0.5 + uiScale * 0.5 + bWidth, 0, 0]}>
         <GUIElement
           {...{
             name: 'undo_ui',
             width: uiScale * 1.5,
             height: uiScale * 0.5,
             radius: bWidth,
-            color: 'blue'
+            color: 'black'
           }}
         />
       </group>

@@ -172,6 +172,7 @@ const SceneContent = ({
   const xrOffset = useRef(null)
 
   const [isXR, setIsXR] = useState(false)
+  const [guiMode, setGuiMode] = useState(null)
   const [camExtraRot, setCamExtraRot] = useState(0)
   const [teleportPos, setTeleportPos] = useState(null)
 
@@ -261,6 +262,17 @@ const SceneContent = ({
 
       if (intersection.object.userData.type === 'view') {
         intersection = intersections[1]
+      }
+
+      if (intersection.object.userData.type === 'gui') {
+
+        const { name } = intersection.object
+        if (name.includes('mode')) {
+          const mode = name.split('_')[0]
+          setGuiMode(mode)
+        }
+
+        return
       }
 
       const object = findParent(intersection.object)
@@ -398,6 +410,14 @@ const SceneContent = ({
       child => (child instanceof THREE.Mesh || child instanceof THREE.Group) 
       && (child.userData.type !== 'ground' && child.userData.type !== 'room' && child.userData.type !== 'camera')
     )
+
+    if (XRController1.current && XRController2.current) {
+      const gui_left = XRController1.current.children.filter(child => child.userData.type === 'gui')[0]
+      const gui_right = XRController2.current.children.filter(child => child.userData.type === 'gui')[0]
+      intersectArray.current.push(gui_left)
+      intersectArray.current.push(gui_right)
+    }
+
     // console.log(intersectArray.current)
 
     teleportArray.current = scene.children.filter(child => child.userData.type === 'ground')
@@ -508,13 +528,13 @@ const SceneContent = ({
 
       {XRController1.current && (
         <primitive object={XRController1.current}>
-          <GUI {...{ aspectRatio }} />
+          <GUI {...{ aspectRatio, guiMode }} />
           <SGModel {...{ modelData: getModelData(controllerObjectSettings), ...controllerObjectSettings }} />
         </primitive>
       )}
       {XRController2.current && (
         <primitive object={XRController2.current}>
-          <GUI {...{ aspectRatio }} />
+          <GUI {...{ aspectRatio, guiMode }} />
           <SGModel {...{ modelData: getModelData(controllerObjectSettings), ...controllerObjectSettings }} />
         </primitive>
       )}

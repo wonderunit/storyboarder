@@ -30,6 +30,7 @@ const GUIElement = ({ ...props }) => {
   return (
     <mesh
       name={props.name}
+      userData={{ type: 'gui' }}
       geometry={new THREE.ShapeBufferGeometry(gui_element)}
       material={
         new THREE.MeshBasicMaterial({
