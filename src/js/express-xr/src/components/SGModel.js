@@ -53,12 +53,15 @@ const SGModel = ({ id, model, modelData, x, y, z, width, height, depth, rotation
     if (model === 'controller-left') {
       let children = []
       let index = 0
-      modelData.scene.traverse(function(child) {
-        if (child instanceof THREE.Mesh) {
-          children.push(<primitive key={`${id}-${index}`} object={meshFactory(child.clone())} />)
-          index++
-        }
-      })
+
+      if (modelData) {
+        modelData.scene.traverse(function(child) {
+          if (child instanceof THREE.Mesh) {
+            children.push(<primitive key={`${id}-${index}`} object={meshFactory(child.clone())} />)
+            index++
+          }
+        })
+      }
       return children
     }
 
