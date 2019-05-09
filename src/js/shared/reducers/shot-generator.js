@@ -2,7 +2,7 @@ const THREE = require('three')
 const { produce } = require('immer')
 const undoable = require('redux-undo').default
 const crypto = require('crypto')
-const reduceReducers = require('reduce-reducers')
+const reduceReducers = require('../../vendor/reduce-reducers')
 const { combineReducers } = require('redux')
 
 const batchGroupBy = require('./shot-generator/batchGroupBy')
