@@ -3,9 +3,13 @@ const { connect } = require('react-redux')
 
 const h = require('../utils/h')
 
+const {
+  getSelections
+} = require('../shared/reducers/shot-generator')
+
 const MultiSelectionInspector = connect(
   state => ({
-    selections: state.selections
+    selections: getSelections(state)
   })
 )(({ selections }) => {
   return h(

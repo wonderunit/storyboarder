@@ -2,12 +2,13 @@ const { useLayoutEffect, useEffect, useRef } = React = require('react')
 const { connect } = require('react-redux')
 
 const {
-  updateObjects
+  updateObjects,
+  getSelections
 } = require('../shared/reducers/shot-generator')
 
 const SelectionsMover = connect(
   state => ({
-    selections: state.selections,
+    selections: getSelections(state),
     devices: state.devices
   }),
   {

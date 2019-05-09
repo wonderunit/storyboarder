@@ -862,9 +862,21 @@ const shotGeneratorMenu = [
   {
     label: 'Edit',
     submenu: [
-      // {role: 'undo'},
-      // {role: 'redo'},
-      // {type: 'separator'},
+      {
+        label: 'Undo',
+        accelerator: keystrokeFor('menu:edit:undo'),
+        click () {
+          ipcRenderer.send('shot-generator:edit:undo')
+        }
+      },
+      {
+        label: 'Redo',
+        accelerator: keystrokeFor('menu:edit:redo'),
+        click () {
+          ipcRenderer.send('shot-generator:edit:redo')
+        }
+      },
+      {type: 'separator'},
 
       {role: 'cut'},
       {role: 'copy'},
