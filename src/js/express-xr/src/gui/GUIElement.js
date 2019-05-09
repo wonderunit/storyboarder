@@ -1,7 +1,6 @@
 const { useMemo } = (React = require('react'))
 
 const GUIElement = ({ ...props }) => {
-
   const roundedRect = (shape, x, y, width, height, radius) => {
     shape.moveTo(x, y + radius)
     shape.lineTo(x, y + height - radius)
@@ -38,7 +37,18 @@ const GUIElement = ({ ...props }) => {
           side: THREE.DoubleSide
         })
       }
-    />
+    >
+      {props.icon && (
+        <mesh
+          name={`${props.name}_icon`}
+          userData={{ type: 'gui' }}
+          scale={[0.75, 0.75, 0.75]}
+          position={[0, 0, 0.001]}
+          geometry={new THREE.PlaneGeometry(props.width, props.height)}
+          material={new THREE.MeshBasicMaterial({ map: props.icon, transparent: true })}
+        />
+      )}
+    </mesh>
   )
 }
 

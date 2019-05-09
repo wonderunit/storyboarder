@@ -28,6 +28,11 @@ const GUI = ({ aspectRatio, guiMode }) => {
     return textCreator.create('Object 1')
   }, [])
 
+  const selection_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/selection.png'), [])
+  const duplicate_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/duplicate.png'), [])
+  const add_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/add.png'), [])
+  const erase_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/erase.png'), [])
+
   return (
     <group rotation={[(Math.PI / 180) * -45, 0, 0]} userData={{ type: 'gui' }}>
       <primitive object={fovLabel} position={[0.5, 0.5, -0.2]} scale={[2, 2, 2]} />
@@ -58,9 +63,10 @@ const GUI = ({ aspectRatio, guiMode }) => {
       </group>
 
       <group position={[(uiScale * 0.5 + uiScale * 0.5 + bWidth) * -1, 0, 0.001]} scale={[0.9, 0.9, 0.9]}>
-        <group position={[uiScale * 0.25, uiScale * 0.25, 0]} scale={[0.8, 0.8, 0.8]}>
+        <group position={[uiScale * -0.25, uiScale * 0.25, 0]} scale={[0.8, 0.8, 0.8]}>
           <GUIElement
             {...{
+              icon: selection_texture,
               name: 'selection_mode',
               width: uiScale * 0.5,
               height: uiScale * 0.5,
@@ -70,9 +76,10 @@ const GUI = ({ aspectRatio, guiMode }) => {
           />
         </group>
 
-        <group position={[uiScale * -0.25, uiScale * 0.25, 0]} scale={[0.8, 0.8, 0.8]}>
+        <group position={[uiScale * 0.25, uiScale * 0.25, 0]} scale={[0.8, 0.8, 0.8]}>
           <GUIElement
             {...{
+              icon: duplicate_texture,
               name: 'duplicate_mode',
               width: uiScale * 0.5,
               height: uiScale * 0.5,
@@ -82,9 +89,10 @@ const GUI = ({ aspectRatio, guiMode }) => {
           />
         </group>
 
-        <group position={[uiScale * 0.25, uiScale * -0.25, 0]} scale={[0.8, 0.8, 0.8]}>
+        <group position={[uiScale * -0.25, uiScale * -0.25, 0]} scale={[0.8, 0.8, 0.8]}>
           <GUIElement
             {...{
+              icon: add_texture,
               name: 'add_mode',
               width: uiScale * 0.5,
               height: uiScale * 0.5,
@@ -94,9 +102,10 @@ const GUI = ({ aspectRatio, guiMode }) => {
           />
         </group>
 
-        <group position={[uiScale * -0.25, uiScale * -0.25, 0]} scale={[0.8, 0.8, 0.8]}>
+        <group position={[uiScale * 0.25, uiScale * -0.25, 0]} scale={[0.8, 0.8, 0.8]}>
           <GUIElement
             {...{
+              icon: erase_texture,
               name: 'erase_mode',
               width: uiScale * 0.5,
               height: uiScale * 0.5,
