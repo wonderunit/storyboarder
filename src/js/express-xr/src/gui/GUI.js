@@ -19,7 +19,7 @@ const cameraSettings = {
 const uiScale = 0.075
 const bWidth = 0.0125
 
-const GUI = ({ aspectRatio, guiMode }) => {
+const GUI = ({ aspectRatio, guiMode, currentBoard }) => {
   const fovLabel = useMemo(() => {
     return textCreator.create('22mm')
   }, [])
@@ -32,6 +32,7 @@ const GUI = ({ aspectRatio, guiMode }) => {
   const duplicate_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/duplicate.png'), [])
   const add_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/add.png'), [])
   const erase_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/erase.png'), [])
+  const arrow_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/arrow.png'), [])
 
   return (
     <group rotation={[(Math.PI / 180) * -45, 0, 0]} userData={{ type: 'gui' }}>
@@ -126,6 +127,34 @@ const GUI = ({ aspectRatio, guiMode }) => {
             color: 'black'
           }}
         />
+      </group>
+
+      <group position={[uiScale * 1.5 * 0.5 + uiScale * 0.5 + bWidth, 0, 0.001]} scale={[1, 1, 1]}>
+        <group position={[uiScale * -0.5, 0, 0]} scale={[-0.8, 0.8, 0.8]}>
+          <GUIElement
+            {...{
+              icon: arrow_texture,
+              name: 'prev_board',
+              width: uiScale * 0.5,
+              height: uiScale * 0.5,
+              radius: bWidth,
+              color: currentBoard === 'prev' ? 0x6e6e6e : 0x212121
+            }}
+          />
+        </group>
+
+        <group position={[uiScale * 0.5, 0, 0]} scale={[0.8, 0.8, 0.8]}>
+          <GUIElement
+            {...{
+              icon: arrow_texture,
+              name: 'next_board',
+              width: uiScale * 0.5,
+              height: uiScale * 0.5,
+              radius: bWidth,
+              color: currentBoard === 'next' ? 0x6e6e6e : 0x212121
+            }}
+          />
+        </group>
       </group>
 
       <SGVirtualCamera {...{ aspectRatio, ...cameraSettings }} />

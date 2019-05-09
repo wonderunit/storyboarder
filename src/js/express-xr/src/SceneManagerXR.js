@@ -179,6 +179,7 @@ const SceneContent = ({
 
   const [isXR, setIsXR] = useState(false)
   const [guiMode, setGuiMode] = useState(null)
+  const [currentBoard, setCurrentBoard] = useState(null)
   const [camExtraRot, setCamExtraRot] = useState(0)
   const [teleportPos, setTeleportPos] = useState(null)
 
@@ -276,6 +277,14 @@ const SceneContent = ({
         if (name.includes('mode')) {
           const mode = name.split('_')[0]
           setGuiMode(mode)
+        }
+
+        if (name.includes('board')) {
+          const board = name.split('_')[0]
+          setCurrentBoard(board)
+          setTimeout(() => {
+            setCurrentBoard(null)
+          }, 250)
         }
 
         return
@@ -534,13 +543,13 @@ const SceneContent = ({
 
       {XRController1.current && (
         <primitive object={XRController1.current}>
-          <GUI {...{ aspectRatio, guiMode }} />
+          <GUI {...{ aspectRatio, guiMode, currentBoard }} />
           <SGModel {...{ modelData: getModelData(controllerObjectSettings), ...controllerObjectSettings }} />
         </primitive>
       )}
       {XRController2.current && (
         <primitive object={XRController2.current}>
-          <GUI {...{ aspectRatio, guiMode }} />
+          <GUI {...{ aspectRatio, guiMode, currentBoard }} />
           <SGModel {...{ modelData: getModelData(controllerObjectSettings), ...controllerObjectSettings }} />
         </primitive>
       )}
