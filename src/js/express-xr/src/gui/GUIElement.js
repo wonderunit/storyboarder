@@ -17,8 +17,8 @@ const GUIElement = ({ ...props }) => {
     var roundedRectShape = new THREE.Shape()
     roundedRect(
       roundedRectShape,
-      props.x || props.width * -0.5,
-      props.y || props.height * -0.5,
+      props.x !== undefined ? props.x : props.width * -0.5,
+      props.y !== undefined ? props.y : props.height * -0.5,
       props.width,
       props.height,
       props.radius

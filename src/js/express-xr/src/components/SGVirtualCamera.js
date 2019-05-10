@@ -8,7 +8,7 @@ const SGVirtualCamera = ({ i, aspectRatio, ...props }) => {
   const targetMesh = useRef(null)
   const hideArray = useRef([])
 
-  const size = 1/3
+  const size = props.size || 1 / 3
   const padding = 0.05
   const resolution = 512
 
@@ -18,10 +18,10 @@ const SGVirtualCamera = ({ i, aspectRatio, ...props }) => {
     self => {
       self.rotation.x = 0
       self.rotation.z = 0
-      self.rotation.y = props.rotation
+      self.rotation.y = props.rotation || 0
 
-      self.rotateX(props.tilt)
-      self.rotateZ(props.roll)
+      self.rotateX(props.tilt || 0)
+      self.rotateZ(props.roll || 0)
     },
     [props.rotation, props.tilt, props.roll]
   )
@@ -59,7 +59,7 @@ const SGVirtualCamera = ({ i, aspectRatio, ...props }) => {
   })
 
   return (
-    <group userData={{ id: props.id, type: 'virtual-camera' }} position={[props.x, props.z, props.y]} ref={ref}>
+    <group userData={{ id: props.id, type: 'virtual-camera' }} position={[props.x || 0, props.z || 0, props.y || 0]} ref={ref}>
       <mesh
         ref={targetMesh}
         userData={{ type: 'view' }}
@@ -71,11 +71,13 @@ const SGVirtualCamera = ({ i, aspectRatio, ...props }) => {
           })
         }
       />
-      <mesh
-        position={[0, 0, -0.0275]}
-        geometry={new THREE.BoxGeometry(size * aspectRatio + padding, size + padding, 0.05)}
-        material={new THREE.MeshLambertMaterial({ color: new THREE.Color('gray'), transparent: true })}
-      />
+      {props.showBorder && (
+        <mesh
+          position={[0, 0, -0.0275]}
+          geometry={new THREE.BoxGeometry(size * aspectRatio + padding, size + padding, 0.05)}
+          material={new THREE.MeshLambertMaterial({ color: new THREE.Color('gray'), transparent: true })}
+        />
+      )}
       <perspectiveCamera
         ref={virtualCamera}
         aspect={aspectRatio}

@@ -59,7 +59,6 @@ export function creator(){
       font
     });
 
-
     const layout = geometry.layout;
 
     let material = colorMaterials[ color ];
@@ -73,7 +72,14 @@ export function creator(){
 
     mesh.scale.multiplyScalar( finalScale );
 
-    mesh.position.y = layout.height * 0.5 * finalScale;
+    // mesh.position.y = layout.height * 0.5 * finalScale;
+
+    const middle = new THREE.Vector3()
+    geometry.computeBoundingBox()
+    middle.x = (geometry.boundingBox.max.x + geometry.boundingBox.min.x) / 2
+    middle.y = (geometry.boundingBox.max.y + geometry.boundingBox.min.y) / 2
+    middle.multiply(mesh.scale).multiplyScalar(-1)
+    mesh.position.copy(middle)
 
     return mesh;
   }

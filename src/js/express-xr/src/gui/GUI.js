@@ -5,28 +5,22 @@ const GUIElement = require('./GUIElement')
 import * as SDFText from './sdftext'
 const textCreator = SDFText.creator()
 
-const cameraSettings = {
-  id: 'gui-camera',
-  x: 0,
-  y: -0.25,
-  z: 0.5,
-  fov: 22,
-  rotation: 0,
-  tilt: 0,
-  roll: 0
-}
-
 const uiScale = 0.075
 const bWidth = 0.0125
+const camSettings = {
+  size: 0.07 + bWidth,
+  id: 'gui-camera',
+  fov: 22
+}
 
 const GUI = ({ aspectRatio, guiMode, currentBoard }) => {
   const fovLabel = useMemo(() => {
-    return textCreator.create('22mm')
+    return textCreator.create(`${camSettings.fov}mm`)
   }, [])
 
-  const otherLabel = useMemo(() => {
-    return textCreator.create('Object 1')
-  }, [])
+  // const otherLabel = useMemo(() => {
+  //   return textCreator.create('Object 1')
+  // }, [])
 
   const selection_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/selection.png'), [])
   const duplicate_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/duplicate.png'), [])
@@ -34,11 +28,11 @@ const GUI = ({ aspectRatio, guiMode, currentBoard }) => {
   const erase_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/erase.png'), [])
   const arrow_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/arrow.png'), [])
 
+  const camera_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/camera.png'), [])
+  const eye_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/eye.png'), [])
+
   return (
     <group rotation={[(Math.PI / 180) * -45, 0, 0]} userData={{ type: 'gui' }}>
-      <primitive object={fovLabel} position={[0.5, 0.5, -0.2]} scale={[2, 2, 2]} />
-      <primitive object={otherLabel} position={[-0.75, 0.5, -0.2]} scale={[2, 2, 2]} />
-
       <group position={[(uiScale * 1.5 * 0.5 + uiScale * 0.5 + (uiScale * 0.5 + uiScale * 0.5) + bWidth * 2) * -1, 0, 0]}>
         <GUIElement
           {...{
@@ -157,7 +151,58 @@ const GUI = ({ aspectRatio, guiMode, currentBoard }) => {
         </group>
       </group>
 
-      <SGVirtualCamera {...{ aspectRatio, ...cameraSettings }} />
+      <group position={[0, 0.25, 0]}>
+        <SGVirtualCamera {...{ aspectRatio, ...camSettings }} />
+
+        <group
+          position={[camSettings.size * 0.5 * aspectRatio + uiScale * 0.25 + bWidth, uiScale * -0.25 + bWidth * -0.5, 0]}
+        >
+          <GUIElement
+            {...{
+              icon: camera_texture,
+              name: 'camera_button',
+              width: uiScale * 0.5,
+              height: uiScale * 0.5,
+              radius: bWidth,
+              color: 0x212121
+            }}
+          />
+        </group>
+
+        <group
+          position={[camSettings.size * 0.5 * aspectRatio + uiScale * 0.75 + bWidth * 2, uiScale * -0.25 + bWidth * -0.5, 0]}
+        >
+          <GUIElement
+            {...{
+              icon: eye_texture,
+              name: 'eye_button',
+              width: uiScale * 0.5,
+              height: uiScale * 0.5,
+              radius: bWidth,
+              color: 0x212121
+            }}
+          />
+        </group>
+
+        <group
+          position={[
+            camSettings.size * 0.5 * aspectRatio + (uiScale + bWidth) * 0.5 + bWidth,
+            uiScale * 0.25 + bWidth * 0.5,
+            0
+          ]}
+        >
+          <GUIElement
+            {...{
+              name: 'fov_slider',
+              width: uiScale + bWidth,
+              height: uiScale * 0.5,
+              radius: bWidth,
+              color: 0x212121
+            }}
+          />
+          <primitive object={fovLabel} position={[0, 0, 0.001]} scale={[0.35, 0.35, 0.35]} />
+        </group>
+      </group>
     </group>
   )
 }

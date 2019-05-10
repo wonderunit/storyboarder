@@ -559,7 +559,7 @@ const SceneContent = ({
   let sceneObjectComponents = Object.values(sceneObjects).map((sceneObject, i) => {
     switch (sceneObject.type) {
       case 'camera':
-        return <SGVirtualCamera key={i} {...{ aspectRatio, ...sceneObject }} />
+        return <SGVirtualCamera key={i} {...{ aspectRatio, showBorder: true, ...sceneObject }} />
       case 'character':
         return <SGCharacter key={i} {...{ modelData: getModelData(sceneObject), ...sceneObject }} />
       case 'object':
