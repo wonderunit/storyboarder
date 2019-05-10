@@ -2802,6 +2802,10 @@ const refreshLinkedBoardByFilename = async filename => {
         path.join(boardPath, 'images', board.link)
       )
     )
+
+    // HACK this prevents blank layers
+    await new Promise(resolve => setTimeout(resolve, 1))
+
   } catch (err) {
     console.error(err)
   }
@@ -2833,8 +2837,6 @@ const refreshLinkedBoardByFilename = async filename => {
         console.log('\treplacing contents of', layerName)
         // TODO could avoid replacing/dirtying the layer if canvas is blank?
 
-        // HACK this prevents blank layers
-        await new Promise(resolve => setTimeout(resolve, 1))
 
         layer.replace(canvas)
         dirty.push(layer.index)
