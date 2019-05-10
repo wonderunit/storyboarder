@@ -2834,7 +2834,7 @@ const refreshLinkedBoardByFilename = async filename => {
         // TODO could avoid replacing/dirtying the layer if canvas is blank?
 
         // HACK this prevents blank layers
-        await new Promise(resolve => setTimeout(resolve, 10))
+        await new Promise(resolve => setTimeout(resolve, 1))
 
         layer.replace(canvas)
         dirty.push(layer.index)
