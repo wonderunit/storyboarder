@@ -4733,17 +4733,26 @@ window.onkeydown = (e) => {
       e.preventDefault()
     }
 
-    // ESCAPE
+    // ESCAPE KEY
     if (isCommandPressed('drawing:exit-current-mode')) {
       e.preventDefault()
 
       if (dragMode && isEditMode && selections.size) {
         disableEditMode()
         disableDragMode()
+      } else {
+
+        // ESCAPE KEY also used to de-select selected boards
+        if (isCommandPressed('workspace:thumbnails:select-none')) {
+          e.preventDefault()
+          selections.clear()
+          selections.add(currentBoard)
+          renderThumbnailDrawer()
+        }
+
       }
     }
-
-    // ESCAPE
+    // ESCAPE KEY
     if (isCommandPressed('menu:navigation:stop-all-sounds')) {
       e.preventDefault()
       audioPlayback.stopAllSounds()

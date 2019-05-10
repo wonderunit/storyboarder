@@ -90,6 +90,7 @@ const defaultKeyMap = {
   "menu:help:show-story-tip": "CommandOrControl+t",
 
   "workspace:thumbnails:select-multiple-modifier": "Shift",
+  "workspace:thumbnails:select-none": "Escape",
   
   // macOS
   "menu:about:preferences": "CommandOrControl+,",
