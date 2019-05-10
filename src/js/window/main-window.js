@@ -2802,6 +2802,10 @@ const refreshLinkedBoardByFilename = async filename => {
         path.join(boardPath, 'images', board.link)
       )
     )
+
+    // HACK this prevents blank layers
+    await new Promise(resolve => setTimeout(resolve, 1))
+
   } catch (err) {
     console.error(err)
   }

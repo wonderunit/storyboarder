@@ -1,6 +1,4 @@
-const fs = require('fs')
-const readPsd = require('ag-psd').readPsd
-const initializeCanvas = require('ag-psd').initializeCanvas
+const { readPsd, initializeCanvas } = require('ag-psd')
 
 const fromPsdBuffer = buffer => {
   console.log('fromPsdBuffer')
@@ -36,7 +34,7 @@ const fromPsdBuffer = buffer => {
     return
   }
 
-  console.log('got psd', psd)
+  console.log('got psd')
 
   let numChannelValues = (1 << psd.bitsPerChannel) - 1
 
