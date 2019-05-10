@@ -2836,8 +2836,6 @@ const refreshLinkedBoardByFilename = async filename => {
         // layer is in the PSD, so use it
         console.log('\treplacing contents of', layerName)
         // TODO could avoid replacing/dirtying the layer if canvas is blank?
-
-
         layer.replace(canvas)
         dirty.push(layer.index)
       } else {
