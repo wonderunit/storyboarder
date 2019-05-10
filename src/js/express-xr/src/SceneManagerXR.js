@@ -188,6 +188,7 @@ const SceneContent = ({
   const XRController2 = useRef(null)
   const intersectArray = useRef([])
   const teleportArray = useRef([])
+  const teleportMode = useRef(false)
 
   const findParent = obj => {
     while (obj) {
@@ -261,6 +262,11 @@ const SceneContent = ({
   }
 
   const onSelectStart = event => {
+    if (teleportMode.current) {
+      onTeleport(event)
+      return
+    }
+
     const controller = event.target
     const intersections = getIntersections(controller, intersectArray.current)
     
@@ -457,7 +463,8 @@ const SceneContent = ({
 
             XRController1.current.addEventListener('triggerdown', onSelectStart)
             XRController1.current.addEventListener('triggerup', onSelectEnd)
-            XRController1.current.addEventListener('gripsdown', onTeleport)
+            XRController1.current.addEventListener('gripsdown', () => (teleportMode.current = true))
+            XRController1.current.addEventListener('gripsup', () => (teleportMode.current = false))
             XRController1.current.addEventListener('axischanged', onAxisChanged)
 
             // XRController2.current = renderer.current.vr.getController(1)
@@ -466,7 +473,8 @@ const SceneContent = ({
 
             XRController2.current.addEventListener('triggerdown', onSelectStart)
             XRController2.current.addEventListener('triggerup', onSelectEnd)
-            XRController2.current.addEventListener('gripsdown', onTeleport)
+            XRController2.current.addEventListener('gripsdown', () => (teleportMode.current = true))
+            XRController2.current.addEventListener('gripsup', () => (teleportMode.current = false))
             XRController2.current.addEventListener('axischanged', onAxisChanged)
 
             const geometry = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, -1)])
