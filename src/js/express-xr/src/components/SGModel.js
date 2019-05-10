@@ -79,7 +79,7 @@ const SGModel = ({ id, model, modelData, x, y, z, width, height, depth, rotation
   }, [model, modelData])
 
   return <group
-    userData={{ id, type: props.type }}
+    userData={{ id, type: props.type, forPanel: { width, height, depth } }}
 
     visible={visible}
     position={[ x, z, y ]}

@@ -1,4 +1,6 @@
 const { useMemo } = (React = require('react'))
+const {  useThree } = require('../lib/react-three-fiber')
+
 const SGVirtualCamera = require('../components/SGVirtualCamera')
 const GUIElement = require('./GUIElement')
 
@@ -13,14 +15,51 @@ const camSettings = {
   fov: 22
 }
 
-const GUI = ({ aspectRatio, guiMode, currentBoard }) => {
+const findParent = obj => {
+  while (obj) {
+    if (!obj.parent || obj.parent.type === 'Scene') {
+      return obj
+    }
+    obj = obj.parent
+  }
+
+  return null
+}
+
+const GUI = ({ aspectRatio, guiMode, currentBoard, selectedObject }) => {
+  const { scene } = useThree()
+
   const fovLabel = useMemo(() => {
     return textCreator.create(`${camSettings.fov}mm`)
   }, [])
 
-  // const otherLabel = useMemo(() => {
-  //   return textCreator.create('Object 1')
-  // }, [])
+  const propTexts = useMemo(() => {
+    const object = scene.getObjectById(selectedObject)
+    if (!object) return []
+
+    const parent = findParent(object)
+    
+    let children = []
+    const id_text = textCreator.create(parent.userData.id)
+    children.push(<primitive key={parent.userData.id} object={id_text} />)
+
+    let idx = 1
+    for (const [key, value] of Object.entries(parent.userData.forPanel || {})) {
+      const prop_text = textCreator.create(key.charAt(0).toUpperCase() + key.slice(1))
+      const value_text = textCreator.create(value.toString())
+      
+      prop_text.position.y = -idx * 0.1
+      value_text.position.y = -idx * 0.1
+      value_text.position.x = 0.1
+
+      children.push(<primitive key={`${idx}_prop`} object={prop_text} />)
+      children.push(<primitive key={`${idx}_value`} object={value_text} />)
+
+      idx++
+    }
+
+    return children
+  }, [selectedObject])
 
   const selection_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/selection.png'), [])
   const duplicate_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/duplicate.png'), [])
@@ -43,6 +82,9 @@ const GUI = ({ aspectRatio, guiMode, currentBoard }) => {
             color: 'black'
           }}
         />
+        <group position={[0, 0, 0.001]} scale={[0.35, 0.35, 0.35]}>
+          {propTexts}
+        </group>
       </group>
 
       <group position={[(uiScale * 0.5 + uiScale * 0.5 + bWidth) * -1, 0, 0]}>

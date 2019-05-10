@@ -182,6 +182,7 @@ const SceneContent = ({
   const [currentBoard, setCurrentBoard] = useState(null)
   const [camExtraRot, setCamExtraRot] = useState(0)
   const [teleportPos, setTeleportPos] = useState(null)
+  const [selectedObject, setSelectedObject] = useState(null)
 
   const turnCamera = useRef(null)
   const XRController1 = useRef(null)
@@ -444,6 +445,18 @@ const SceneContent = ({
     teleportArray.current = scene.children.filter(child => child.userData.type === 'ground')
   })
 
+  const onGripDown = event => {
+    teleportMode.current = true
+
+    const controller = event.target
+    const intersections = getIntersections(controller, intersectArray.current)
+    
+    if (intersections.length > 0) {
+      const { id } = intersections[0].object
+      setSelectedObject(id)
+    }
+  }
+
   useEffect(() => {
     if (!renderer.current) {
       navigator.getVRDisplays().then(displays => {
@@ -463,7 +476,7 @@ const SceneContent = ({
 
             XRController1.current.addEventListener('triggerdown', onSelectStart)
             XRController1.current.addEventListener('triggerup', onSelectEnd)
-            XRController1.current.addEventListener('gripsdown', () => (teleportMode.current = true))
+            XRController1.current.addEventListener('gripsdown', onGripDown)
             XRController1.current.addEventListener('gripsup', () => (teleportMode.current = false))
             XRController1.current.addEventListener('axischanged', onAxisChanged)
 
@@ -473,7 +486,7 @@ const SceneContent = ({
 
             XRController2.current.addEventListener('triggerdown', onSelectStart)
             XRController2.current.addEventListener('triggerup', onSelectEnd)
-            XRController2.current.addEventListener('gripsdown', () => (teleportMode.current = true))
+            XRController2.current.addEventListener('gripsdown', onGripDown)
             XRController2.current.addEventListener('gripsup', () => (teleportMode.current = false))
             XRController2.current.addEventListener('axischanged', onAxisChanged)
 
@@ -551,13 +564,13 @@ const SceneContent = ({
 
       {XRController1.current && (
         <primitive object={XRController1.current}>
-          <GUI {...{ aspectRatio, guiMode, currentBoard }} />
+          <GUI {...{ aspectRatio, guiMode, currentBoard, selectedObject }} />
           <SGModel {...{ modelData: getModelData(controllerObjectSettings), ...controllerObjectSettings }} />
         </primitive>
       )}
       {XRController2.current && (
         <primitive object={XRController2.current}>
-          <GUI {...{ aspectRatio, guiMode, currentBoard }} />
+          <GUI {...{ aspectRatio, guiMode, currentBoard, selectedObject }} />
           <SGModel {...{ modelData: getModelData(controllerObjectSettings), ...controllerObjectSettings }} />
         </primitive>
       )}
