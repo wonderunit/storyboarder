@@ -32,12 +32,16 @@ const boardOrderedLayerFilenames = board => {
   // HACK hardcoded
   // see StoryboarderSketchPane#visibleLayersIndices
   for (let [index, name] of [
-    [0, 'reference'],
-    [1, 'fill'],
-    [2, 'tone'],
-    [3, 'pencil'],
-    [4, 'ink'],
-    [6, 'notes']
+    [0, 'shot-generator'],
+    [1, 'reference'],
+    [2, 'fill'],
+    [3, 'tone'],
+    [4, 'pencil'],
+    [5, 'ink'],
+    // 6 = onion
+    [7, 'notes']
+    // 8 = guides
+    // 9 = composite
   ]) {
     if (board.layers && board.layers[name]) {
       indices.push(index)

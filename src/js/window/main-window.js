@@ -6949,11 +6949,6 @@ const saveToBoardFromShotGenerator = async ({ uid, data, images }) => {
     return
   }
 
-  if (index === currentBoard) {
-    // update opacity
-    layersEditor.setReferenceOpacity(1)
-  }
-
   // make a reference
   let board = boardData.boards[index]
 
@@ -6962,11 +6957,11 @@ const saveToBoardFromShotGenerator = async ({ uid, data, images }) => {
     ...board,
     layers: {
       ...board.layers,
-      reference: {
+      'shot-generator': {
         // merge with existing, if available
-        ...((board.layers && board.layers.reference) || {}),
+        ...((board.layers && board.layers['shot-generator']) || {}),
         // ensure url is present
-        url: boardModel.boardFilenameForLayer(board, 'reference'),
+        url: boardModel.boardFilenameForLayer(board, 'shot-generator'),
         // ensure opacity is 1.0
         opacity: 1.0
       },
@@ -6996,7 +6991,7 @@ const saveToBoardFromShotGenerator = async ({ uid, data, images }) => {
   h += 3
   context.drawImage(image, 0, 0, w, h)
 
-  saveDataURLtoFile(context.canvas.toDataURL(), board.layers.reference.url)
+  saveDataURLtoFile(context.canvas.toDataURL(), board.layers['shot-generator'].url)
 
   await saveThumbnailFile(index, { forceReadFromFiles: true })
   await updateThumbnailDisplayFromFile(index)
