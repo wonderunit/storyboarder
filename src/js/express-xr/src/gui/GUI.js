@@ -40,13 +40,13 @@ const GUI = ({ aspectRatio, guiMode, currentBoard, selectedObject }) => {
     const parent = findParent(object)
     
     let children = []
-    const id_text = textCreator.create(parent.userData.id)
+    const id_text = textCreator.create(parent.userData.displayName)
     children.push(<primitive key={parent.userData.id} object={id_text} />)
 
     let idx = 1
     for (const [key, value] of Object.entries(parent.userData.forPanel || {})) {
       const prop_text = textCreator.create(key.charAt(0).toUpperCase() + key.slice(1))
-      const value_text = textCreator.create(value.toString())
+      const value_text = textCreator.create(parseInt(value).toString())
       
       prop_text.position.y = -idx * 0.1
       value_text.position.y = -idx * 0.1
@@ -72,20 +72,22 @@ const GUI = ({ aspectRatio, guiMode, currentBoard, selectedObject }) => {
 
   return (
     <group rotation={[(Math.PI / 180) * -45, 0, 0]} userData={{ type: 'gui' }}>
-      <group position={[(uiScale * 1.5 * 0.5 + uiScale * 0.5 + (uiScale * 0.5 + uiScale * 0.5) + bWidth * 2) * -1, 0, 0]}>
-        <GUIElement
-          {...{
-            name: 'properties_ui',
-            width: uiScale * 1.5,
-            height: uiScale * 2,
-            radius: bWidth,
-            color: 'black'
-          }}
-        />
-        <group position={[0, 0, 0.001]} scale={[0.35, 0.35, 0.35]}>
-          {propTexts}
+      {selectedObject && (
+        <group position={[(uiScale * 1.5 * 0.5 + uiScale * 0.5 + (uiScale * 0.5 + uiScale * 0.5) + bWidth * 2) * -1, 0, 0]}>
+          <GUIElement
+            {...{
+              name: 'properties_ui',
+              width: uiScale * 1.5,
+              height: uiScale * 2,
+              radius: bWidth,
+              color: 'black'
+            }}
+          />
+          <group position={[0, 0, 0.001]} scale={[0.35, 0.35, 0.35]}>
+            {propTexts}
+          </group>
         </group>
-      </group>
+      )}
 
       <group position={[(uiScale * 0.5 + uiScale * 0.5 + bWidth) * -1, 0, 0]}>
         <GUIElement

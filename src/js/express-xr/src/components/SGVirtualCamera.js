@@ -59,7 +59,11 @@ const SGVirtualCamera = ({ i, aspectRatio, ...props }) => {
   })
 
   return (
-    <group userData={{ id: props.id, type: 'virtual-camera' }} position={[props.x || 0, props.z || 0, props.y || 0]} ref={ref}>
+    <group
+      userData={{ id: props.id, displayName: props.displayName, type: 'virtual-camera', forPanel: { 'F.O.V': props.fov } }}
+      position={[props.x || 0, props.z || 0, props.y || 0]}
+      ref={ref}
+    >
       <mesh
         ref={targetMesh}
         userData={{ type: 'view' }}

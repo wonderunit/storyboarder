@@ -36,7 +36,7 @@ const SGSpotLight = ({ ...props }) => {
       <group
         ref={light}
         visible={props.visible}
-        userData={{ id: props.id, type: props.type }}
+        userData={{ id: props.id, displayName: props.displayName, type: props.type }}
         position={[props.x, props.z, props.y]}
       >
         <spotLight

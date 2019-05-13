@@ -91,7 +91,17 @@ const SGCharacter = ({ id, model, modelData, x, y, z, skeleton, ...props }) => {
     <group
       ref={object}
       visible={props.visible}
-      userData={{ id, type: props.type, modelSettings: { rotation: props.rotation } }}
+      userData={{
+        id,
+        displayName: props.displayName,
+        type: props.type,
+        modelSettings: { rotation: props.rotation },
+        forPanel: {
+          meso: props.morphTargets.mesomorphic,
+          ecto: props.morphTargets.ectomorphic,
+          obese: props.morphTargets.endomorphic
+        }
+      }}
       position={[x, z, y]}
       rotation={[0, props.rotation, 0]}
       scale={[scale, scale, scale]}
