@@ -1,5 +1,5 @@
 {
-  "version": "1.9.2",
+  "version": "1.9.4",
   "aspectRatio": 2.35,
   "fps": 24,
   "defaultBoardTiming": 2000,
@@ -10,8 +10,8 @@
       "newShot": false,
       "lastEdited": 1499375725536,
       "layers": {
-        "reference": {
-          "url": "board-1-UDRF3-reference.png",
+        "shot-generator": {
+          "url": "board-1-UDRF3-shot-generator.png",
           "opacity": 1
         }
       },
@@ -25,6 +25,7 @@
           "activeCamera": "6BC46A44-7965-43B5-B290-E3D2B9D15EEE",
           "sceneObjects": {
             "26332F12-28FE-444C-B73F-B3F90B8C62A2": {
+              "displayName": "Character 1",
               "headScale": 1,
               "height": 1.8,
               "id": "26332F12-28FE-444C-B73F-B3F90B8C62A2",
@@ -45,6 +46,7 @@
             "4F0FF9B8-BBB4-4D83-9E87-6EFE16A01D6F": {
               "angle": 0.9019689898685954,
               "decay": 1,
+              "displayName": "Light 1",
               "distance": 6.649999999999978,
               "id": "4F0FF9B8-BBB4-4D83-9E87-6EFE16A01D6F",
               "intensity": 0.5499999999999998,
@@ -58,7 +60,8 @@
               "z": 4
             },
             "6BC46A44-7965-43B5-B290-E3D2B9D15EEE": {
-              "fov": 34.47652810249724,
+              "displayName": "Camera 1",
+              "fov": 34.47752820250724,
               "id": "6BC46A44-7965-43B5-B290-E3D2B9D15EEE",
               "name": "Main Camera",
               "roll": 0,
@@ -70,27 +73,25 @@
               "z": 1
             },
             "97F2D438-4FDC-44FF-8570-54A54AF27F79": {
-              "id": "97F2D438-4FDC-44FF-8570-54A54AF27F79",
-              "type": "volume",
-              "x": 0,
-              "y": 2,
-              "z": 0,
-              "width": 5,
-              "height": 5,
-              "depth": 5,
-              "rotation": 0,
-              "visible": true,
-              "opacity": 0.3,
               "color": 7829367,
-              "numberOfLayers": 4,
+              "depth": 5,
+              "displayName": "Volume 1",
               "distanceBetweenLayers": 1.5,
-
+              "height": 5,
+              "id": "97F2D438-4FDC-44FF-8570-54A54AF27F79",
+              "numberOfLayers": 4,
+              "opacity": 0.3,
+              "rotation": 0,
+              "type": "volume",
+              "visible": true,
               "volumeImageAttachmentIds": [
                 "rain2",
                 "rain1"
               ],
-
-              "displayName": "Volume 1"
+              "width": 5,
+              "x": 0,
+              "y": 2,
+              "z": 0
             }
           },
           "world": {
