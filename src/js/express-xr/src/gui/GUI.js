@@ -45,8 +45,10 @@ const GUI = ({ aspectRatio, guiMode, currentBoard, selectedObject }) => {
 
     let idx = 1
     for (const [key, value] of Object.entries(parent.userData.forPanel || {})) {
+      const decimal = Math.round((value + 0.00001) * 100) / 100
+
       const prop_text = textCreator.create(key.charAt(0).toUpperCase() + key.slice(1))
-      const value_text = textCreator.create(parseInt(value).toString())
+      const value_text = textCreator.create(decimal.toString())
       
       prop_text.position.y = -idx * 0.1
       value_text.position.y = -idx * 0.1
