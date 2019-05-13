@@ -556,11 +556,12 @@ const SceneContent = ({
 
       {Object.values(XRControllers).map((object, n) => {
         const handedness = object.getHandedness()
+        const flipModel = handedness === 'right'
 
         return (
           <primitive key={n} object={object}>
             {handedness === 'right' && <GUI {...{ aspectRatio, guiMode, currentBoard, selectedObject }} />}
-            <SGController {...{ modelData: getModelData(controllerObjectSettings), ...controllerObjectSettings }} />
+            <SGController {...{ flipModel, modelData: getModelData(controllerObjectSettings), ...controllerObjectSettings }} />
           </primitive>
         )
       })}

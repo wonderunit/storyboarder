@@ -22,7 +22,7 @@ const meshFactory = originalMesh => {
   return mesh
 }
 
-const SGController = ({ id, model, modelData, x, y, z, width, height, depth, rotation, visible, ...props }) => {
+const SGController = ({ id, model, modelData, x, y, z, width, height, depth, rotation, visible, flipModel, ...props }) => {
   const children = useMemo(() => {
     if (model === 'controller-left') {
       let children = []
@@ -47,7 +47,7 @@ const SGController = ({ id, model, modelData, x, y, z, width, height, depth, rot
       userData={{ id, type: props.type, forPanel: { width, height, depth } }}
       visible={visible}
       position={[x, z, y]}
-      scale={[width, height, depth]}
+      scale={[width * (flipModel ? -1 : 1), height, depth]}
       rotation={[rotation.x, rotation.y, rotation.z]}
     >
       {children}
