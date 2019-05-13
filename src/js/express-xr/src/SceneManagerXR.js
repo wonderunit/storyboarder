@@ -27,8 +27,8 @@ const SGModel = require('./components/SGModel')
 const SGCharacter = require('./components/SGCharacter')
 const GUI = require('./gui/GUI')
 
-const { getIntersections, intersectObjects, cleanIntersected } = require('./utils/xrControllerFuncs')
-require('./lib/ViveController')
+const { getIntersections, intersectObjects } = require('./utils/xrControllerFuncs')
+require('./lib/VRController')
 
 const loadingManager = new THREE.LoadingManager()
 const objLoader = new THREE.OBJLoader2(loadingManager)
@@ -183,13 +183,15 @@ const SceneContent = ({
   const [camExtraRot, setCamExtraRot] = useState(0)
   const [teleportPos, setTeleportPos] = useState(null)
   const [selectedObject, setSelectedObject] = useState(null)
+  const [XRControllers, setXRControllers] = useState({})
 
   const turnCamera = useRef(null)
-  const XRController1 = useRef(null)
-  const XRController2 = useRef(null)
+  const XRControllersRef = useRef({})
   const intersectArray = useRef([])
   const teleportArray = useRef([])
   const teleportMode = useRef(false)
+
+  XRControllersRef.current = XRControllers
 
   const findParent = obj => {
     while (obj) {
@@ -204,28 +206,69 @@ const SceneContent = ({
 
   const { gl, scene, camera, setDefaultCamera } = useThree()
 
+  const onVRControllerConnected = event => {
+    let id = THREE.Math.generateUUID()
 
+    let controller = event.detail
+    controller.standingMatrix = gl.vr.getStandingMatrix()
+
+    // TODO
+    // controller.head = window.camera
+
+    controller.addEventListener('trigger press began', onSelectStart)
+    controller.addEventListener('trigger press ended', onSelectEnd)
+    controller.addEventListener('grip press began', onGripDown)
+    controller.addEventListener('grip press ended', () => (teleportMode.current = false))
+    controller.addEventListener('thumbstick axes changed', onAxisChanged)
+
+    const geometry = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, -1)])
+    const material = new THREE.LineBasicMaterial({
+      color: 0x0000ff
+    })
+
+    const line = new THREE.Line(geometry, material)
+    line.name = 'line'
+    line.scale.z = 5
+    line.rotation.x = (Math.PI / 180) * -45
+    controller.add(line)
+
+    const raycastTiltGroup = new THREE.Group()
+    const raycastDepth = new THREE.Mesh(new THREE.BoxGeometry(0.01, 0.01, 0.01), new THREE.MeshBasicMaterial())
+    raycastDepth.visible = false
+    raycastDepth.name = 'raycast-depth'
+    raycastTiltGroup.rotation.x = (Math.PI / 180) * -45
+    raycastTiltGroup.add(raycastDepth)
+
+    controller.add(raycastTiltGroup)
+
+    controller.addEventListener('disconnected', function(event) {
+      controller.parent.remove(controller)
+
+      // Try if this works as expected?
+      const { id, ...controllers } = XRControllers
+      setXRControllers(controllers)
+    })
+
+    setXRControllers(prev => {
+      return { ...prev, [id]: controller }
+    })
+  }
+
+  useEffect(() => {
+    window.addEventListener('vr controller connected', onVRControllerConnected)
+    return () => window.removeEventListener('vr controller connected', onVRControllerConnected)
+  }, [])
 
   useRender(() => {
-    if (XRController1.current && XRController2.current) {
-      // cleanIntersected()
-      handleController(XRController1.current, 0)
-      handleController(XRController2.current, 1)
+    THREE.VRController.update()
 
-      if (XRController1.current.userData.selected) {
-        const object = XRController1.current.userData.selected
-        if (object.userData.type === 'character') {
-          constraintObjectRotation(XRController1.current)
-        }
+    Object.values(XRControllersRef.current).forEach(controller => {
+      const object = controller.userData.selected
+
+      if (object && object.userData.type === 'character') {
+        constraintObjectRotation(controller)
       }
-
-      if (XRController2.current.userData.selected) {
-        const object = XRController2.current.userData.selected
-          if (object.userData.type === 'character') {
-            constraintObjectRotation(XRController2.current)
-          }
-        }
-    }
+    })
   })
 
   const constraintObjectRotation = controller => {
@@ -255,8 +298,9 @@ const SceneContent = ({
 
     if (intersect && intersect.distance < 10) {
       // console.log('try to teleport')
-      XRController1.current.dispatchEvent({ type: 'triggerup' })
-      XRController2.current.dispatchEvent({ type: 'triggerup' })
+      Object.values(XRControllers).forEach(controller => {
+        controller.dispatchEvent({ type: 'trigger press ended' })
+      })
 
       setTeleportPos(intersect.point)
     }
@@ -396,33 +440,31 @@ const SceneContent = ({
   const onAxisChanged = event => {
     if (event.axes[0] === 0) {
       turnCamera.current = null
-    } 
-    
-    if (turnCamera.current) return 
-  
+    }
+
+    if (turnCamera.current) return
+
     if (event.axes[0] > 0.075) {
-      XRController1.current.dispatchEvent({ type: 'triggerup' })
-      XRController2.current.dispatchEvent({ type: 'triggerup' })
+      Object.values(XRControllers).forEach(controller => {
+        controller.dispatchEvent({ type: 'trigger press ended' })
+      })
 
       turnCamera.current = 'Right'
       setCamExtraRot(oldRot => {
         return oldRot - 1
       })
     }
-    
+
     if (event.axes[0] < -0.075) {
-      XRController1.current.dispatchEvent({ type: 'triggerup' })
-      XRController2.current.dispatchEvent({ type: 'triggerup' })
+      Object.values(XRControllers).forEach(controller => {
+        controller.dispatchEvent({ type: 'trigger press ended' })
+      })
 
       turnCamera.current = 'Left'
       setCamExtraRot(oldRot => {
         return oldRot + 1
       })
     }
-  }
-
-  const handleController = (controller, id) => {
-    controller.update()
   }
 
   useEffect(() => {
@@ -433,14 +475,10 @@ const SceneContent = ({
       && (child.userData.type !== 'ground' && child.userData.type !== 'room' && child.userData.type !== 'camera')
     )
 
-    if (XRController1.current && XRController2.current) {
-      const gui_left = XRController1.current.children.filter(child => child.userData.type === 'gui')[0]
-      const gui_right = XRController2.current.children.filter(child => child.userData.type === 'gui')[0]
-      intersectArray.current.push(gui_left)
-      intersectArray.current.push(gui_right)
-    }
-
-    // console.log(intersectArray.current)
+    Object.values(XRControllers).forEach(controller => {
+      const gui = controller.children.filter(child => child.userData.type === 'gui')[0]
+      intersectArray.current.push(gui)
+    })
 
     teleportArray.current = scene.children.filter(child => child.userData.type === 'ground')
   })
@@ -466,55 +504,8 @@ const SceneContent = ({
           scene.background = new THREE.Color(world.backgroundColor)
           setIsXR(true)
           // console.log('isXR is now', isXR)
-          if (!XRController1.current && !XRController2.current) {
-            document.body.appendChild(WEBVR.createButton(gl))
-            gl.vr.enabled = true
-
-            // XRController1 = renderer.current.vr.getController(0)
-            XRController1.current = new THREE.ViveController( 0 );
-            XRController1.current.standingMatrix = gl.vr.getStandingMatrix()
-
-            XRController1.current.addEventListener('triggerdown', onSelectStart)
-            XRController1.current.addEventListener('triggerup', onSelectEnd)
-            XRController1.current.addEventListener('gripsdown', onGripDown)
-            XRController1.current.addEventListener('gripsup', () => (teleportMode.current = false))
-            XRController1.current.addEventListener('axischanged', onAxisChanged)
-
-            // XRController2.current = renderer.current.vr.getController(1)
-            XRController2.current = new THREE.ViveController(1)
-            XRController2.current.standingMatrix = gl.vr.getStandingMatrix()
-
-            XRController2.current.addEventListener('triggerdown', onSelectStart)
-            XRController2.current.addEventListener('triggerup', onSelectEnd)
-            XRController2.current.addEventListener('gripsdown', onGripDown)
-            XRController2.current.addEventListener('gripsup', () => (teleportMode.current = false))
-            XRController2.current.addEventListener('axischanged', onAxisChanged)
-
-            const geometry = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, -1)])
-            const material = new THREE.LineBasicMaterial({
-              color: 0x0000ff
-            })
-            
-            const line = new THREE.Line(geometry, material)
-            line.name = 'line'
-            line.scale.z = 5
-            line.rotation.x = (Math.PI / 180) * -45
-
-            XRController1.current.add(line.clone())
-            XRController2.current.add(line.clone())
-
-            const raycastTiltGroup = new THREE.Group()
-            const raycastDepth = new THREE.Mesh(new THREE.BoxGeometry(0.01, 0.01, 0.01), new THREE.MeshBasicMaterial())
-            raycastDepth.visible = false
-            raycastDepth.name = 'raycast-depth'
-            raycastTiltGroup.rotation.x = (Math.PI / 180) * -45
-            raycastTiltGroup.add(raycastDepth)
-
-            XRController1.current.add(raycastTiltGroup.clone())
-            XRController2.current.add(raycastTiltGroup.clone())
-          }
-          // console.log('controllers', XRController1.current, XRController2.current)
-
+          document.body.appendChild(WEBVR.createButton(gl))
+          gl.vr.enabled = true
         }
       })
       .catch(err => console.error(err))
@@ -562,18 +553,14 @@ const SceneContent = ({
     >
       <SGCamera {...{ aspectRatio, activeCamera, setDefaultCamera, ...cameraState }} />
 
-      {XRController1.current && (
-        <primitive object={XRController1.current}>
-          <GUI {...{ aspectRatio, guiMode, currentBoard, selectedObject }} />
-          <SGModel {...{ modelData: getModelData(controllerObjectSettings), ...controllerObjectSettings }} />
-        </primitive>
-      )}
-      {XRController2.current && (
-        <primitive object={XRController2.current}>
-          <GUI {...{ aspectRatio, guiMode, currentBoard, selectedObject }} />
-          <SGModel {...{ modelData: getModelData(controllerObjectSettings), ...controllerObjectSettings }} />
-        </primitive>
-      )}
+      {Object.values(XRControllers).map((object, n) => {
+        return (
+          <primitive key={n} object={object}>
+            <GUI {...{ aspectRatio, guiMode, currentBoard, selectedObject }} />
+            <SGModel {...{ modelData: getModelData(controllerObjectSettings), ...controllerObjectSettings }} />
+          </primitive>
+        )
+      })}
     </group>
   )
 
