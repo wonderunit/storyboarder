@@ -24,6 +24,7 @@ const SGSpotLight = require('./components/SGSpotLight')
 const SGCamera = require('./components/SGCamera')
 const SGVirtualCamera = require('./components/SGVirtualCamera')
 const SGModel = require('./components/SGModel')
+const SGController = require('./components/SGController')
 const SGCharacter = require('./components/SGCharacter')
 const GUI = require('./gui/GUI')
 
@@ -559,7 +560,7 @@ const SceneContent = ({
         return (
           <primitive key={n} object={object}>
             {handedness === 'right' && <GUI {...{ aspectRatio, guiMode, currentBoard, selectedObject }} />}
-            <SGModel {...{ modelData: getModelData(controllerObjectSettings), ...controllerObjectSettings }} />
+            <SGController {...{ modelData: getModelData(controllerObjectSettings), ...controllerObjectSettings }} />
           </primitive>
         )
       })}
