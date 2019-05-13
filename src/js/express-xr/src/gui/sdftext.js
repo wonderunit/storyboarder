@@ -49,7 +49,7 @@ export function creator(){
 
   const colorMaterials = {};
 
-  function createText( str, font, color = 0xffffff, scale = 1.0 ){
+  function createText( str, font, color = 0xffffff, scale = 1.0, centerText ){
 
     const geometry = createGeometry({
       text: str,
@@ -78,17 +78,23 @@ export function creator(){
     geometry.computeBoundingBox()
     middle.x = (geometry.boundingBox.max.x + geometry.boundingBox.min.x) / 2
     middle.y = (geometry.boundingBox.max.y + geometry.boundingBox.min.y) / 2
-    middle.multiply(mesh.scale).multiplyScalar(-1)
-    mesh.position.copy(middle)
+
+    if (centerText) {
+      middle.multiply(mesh.scale).multiplyScalar(-1)
+      mesh.position.copy(middle)
+    } else {
+      middle.multiply(mesh.scale).multiply(new THREE.Vector3(0, -1, 0))
+      mesh.position.copy(middle)
+    }
 
     return mesh;
   }
 
 
-  function create( str, { color=0xffffff, scale=1.0 } = {} ){
+  function create( str, centerText = false, { color=0xffffff, scale=1.0 } = {} ){
     const group = new THREE.Group();
 
-    let mesh = createText( str, font, color, scale );
+    let mesh = createText( str, font, color, scale, centerText );
     group.add( mesh );
     group.layout = mesh.geometry.layout;
 

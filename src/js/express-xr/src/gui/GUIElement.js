@@ -24,7 +24,7 @@ const GUIElement = ({ ...props }) => {
       props.radius
     )
     return roundedRectShape
-  }, [])
+  }, [props.width, props.height])
 
   return (
     <mesh

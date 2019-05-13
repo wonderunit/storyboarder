@@ -1,5 +1,5 @@
-const { useMemo } = (React = require('react'))
-const {  useThree } = require('../lib/react-three-fiber')
+const { useMemo, useState } = (React = require('react'))
+const { useThree } = require('../lib/react-three-fiber')
 
 const SGVirtualCamera = require('../components/SGVirtualCamera')
 const GUIElement = require('./GUIElement')
@@ -7,6 +7,7 @@ const GUIElement = require('./GUIElement')
 import * as SDFText from './sdftext'
 const textCreator = SDFText.creator()
 
+const textPadding = 0.03
 const uiScale = 0.075
 const bWidth = 0.0125
 const camSettings = {
@@ -27,10 +28,11 @@ const findParent = obj => {
 }
 
 const GUI = ({ aspectRatio, guiMode, currentBoard, selectedObject }) => {
+  const [textCount, setTextCount] = useState(0)
   const { scene } = useThree()
 
   const fovLabel = useMemo(() => {
-    return textCreator.create(`${camSettings.fov}mm`)
+    return textCreator.create(`${camSettings.fov}mm`, true)
   }, [])
 
   const propTexts = useMemo(() => {
@@ -38,21 +40,22 @@ const GUI = ({ aspectRatio, guiMode, currentBoard, selectedObject }) => {
     if (!object) return []
 
     const parent = findParent(object)
-    
+    setTextCount(Object.values(parent.userData.forPanel).length)
+
     let children = []
-    const id_text = textCreator.create(parent.userData.displayName)
+    const id_text = textCreator.create(parent.userData.displayName, false, { color: 0xffffff, scale: 0.475 })
     children.push(<primitive key={parent.userData.id} object={id_text} />)
 
     let idx = 1
     for (const [key, value] of Object.entries(parent.userData.forPanel || {})) {
       const decimal = Math.round((value + 0.00001) * 100) / 100
 
-      const prop_text = textCreator.create(key.charAt(0).toUpperCase() + key.slice(1))
-      const value_text = textCreator.create(decimal.toString())
+      const prop_text = textCreator.create(key.charAt(0).toUpperCase() + key.slice(1), false, { color: 0xdddddd, scale: 0.35 })
+      const value_text = textCreator.create(decimal.toString(), false, { color: 0xdddddd, scale: 0.35 })
       
-      prop_text.position.y = -idx * 0.1
-      value_text.position.y = -idx * 0.1
-      value_text.position.x = 0.1
+      prop_text.position.y = -idx * textPadding
+      value_text.position.y = -idx * textPadding
+      value_text.position.x = 0.06
 
       children.push(<primitive key={`${idx}_prop`} object={prop_text} />)
       children.push(<primitive key={`${idx}_value`} object={value_text} />)
@@ -75,17 +78,29 @@ const GUI = ({ aspectRatio, guiMode, currentBoard, selectedObject }) => {
   return (
     <group rotation={[(Math.PI / 180) * -45, 0, 0]} userData={{ type: 'gui' }}>
       {selectedObject && (
-        <group position={[(uiScale * 1.5 * 0.5 + uiScale * 0.5 + (uiScale * 0.5 + uiScale * 0.5) + bWidth * 2) * -1, 0, 0]}>
+        <group
+          position={[
+            (uiScale * 1.75 * 0.5 + uiScale * 0.5 + (uiScale * 0.5 + uiScale * 0.5) + bWidth * 2) * -1,
+            ((textCount + 1) * textPadding + bWidth * 2) * 0.5 - uiScale * 0.5,
+            0
+          ]}
+        >
           <GUIElement
             {...{
               name: 'properties_ui',
-              width: uiScale * 1.5,
-              height: uiScale * 2,
+              width: uiScale * 1.75,
+              height: (textCount + 1) * textPadding + bWidth * 2,
               radius: bWidth,
               color: 'black'
             }}
           />
-          <group position={[0, 0, 0.001]} scale={[0.35, 0.35, 0.35]}>
+          <group
+            position={[
+              uiScale * 1.75 * -0.5 + bWidth,
+              ((textCount + 1) * textPadding + bWidth * 2) * 0.5 - textPadding * 0.475 - bWidth,
+              0.001
+            ]}
+          >
             {propTexts}
           </group>
         </group>
