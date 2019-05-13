@@ -477,7 +477,7 @@ const SceneContent = ({
 
     Object.values(XRControllers).forEach(controller => {
       const gui = controller.children.filter(child => child.userData.type === 'gui')[0]
-      intersectArray.current.push(gui)
+      if (gui) intersectArray.current.push(gui)
     })
 
     teleportArray.current = scene.children.filter(child => child.userData.type === 'ground')
@@ -554,9 +554,11 @@ const SceneContent = ({
       <SGCamera {...{ aspectRatio, activeCamera, setDefaultCamera, ...cameraState }} />
 
       {Object.values(XRControllers).map((object, n) => {
+        const handedness = object.getHandedness()
+
         return (
           <primitive key={n} object={object}>
-            <GUI {...{ aspectRatio, guiMode, currentBoard, selectedObject }} />
+            {handedness === 'right' && <GUI {...{ aspectRatio, guiMode, currentBoard, selectedObject }} />}
             <SGModel {...{ modelData: getModelData(controllerObjectSettings), ...controllerObjectSettings }} />
           </primitive>
         )
