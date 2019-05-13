@@ -27,7 +27,7 @@ const findParent = obj => {
   return null
 }
 
-const GUI = ({ aspectRatio, guiMode, currentBoard, selectedObject }) => {
+const GUI = ({ aspectRatio, guiMode, currentBoard, selectedObject, virtualCamVisible }) => {
   const [textCount, setTextCount] = useState(0)
   const { scene } = useThree()
 
@@ -52,7 +52,7 @@ const GUI = ({ aspectRatio, guiMode, currentBoard, selectedObject }) => {
 
       const prop_text = textCreator.create(key.charAt(0).toUpperCase() + key.slice(1), false, { color: 0xdddddd, scale: 0.35 })
       const value_text = textCreator.create(decimal.toString(), false, { color: 0xdddddd, scale: 0.35 })
-      
+
       prop_text.position.y = -idx * textPadding
       value_text.position.y = -idx * textPadding
       value_text.position.x = 0.06
@@ -217,9 +217,7 @@ const GUI = ({ aspectRatio, guiMode, currentBoard, selectedObject }) => {
       <group position={[0, 0.05, -0.075]} rotation={[(Math.PI / 180) * -20, 0, 0]}>
         <SGVirtualCamera {...{ aspectRatio, camOffset: new THREE.Vector3(0, -0.25, 0), ...camSettings }} />
 
-        <group
-          position={[camSettings.size * 0.5 * aspectRatio + uiScale * 0.25 + bWidth, uiScale * -0.25 + bWidth * -0.5, 0]}
-        >
+        <group position={[camSettings.size * 0.5 * aspectRatio + uiScale * 0.25 + bWidth, uiScale * -0.25 + bWidth * -0.5, 0]}>
           <GUIElement
             {...{
               icon: camera_texture,
@@ -242,7 +240,7 @@ const GUI = ({ aspectRatio, guiMode, currentBoard, selectedObject }) => {
               width: uiScale * 0.5,
               height: uiScale * 0.5,
               radius: bWidth,
-              color: 0x212121
+              color: virtualCamVisible ? 0x6e6e6e : 0x212121
             }}
           />
         </group>

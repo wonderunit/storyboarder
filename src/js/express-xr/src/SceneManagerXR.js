@@ -180,6 +180,7 @@ const SceneContent = ({
 
   const [isXR, setIsXR] = useState(false)
   const [guiMode, setGuiMode] = useState(null)
+  const [virtualCamVisible, setVirtualCamVisible] = useState(true)
   const [currentBoard, setCurrentBoard] = useState(null)
   const [camExtraRot, setCamExtraRot] = useState(0)
   const [teleportPos, setTeleportPos] = useState(null)
@@ -337,6 +338,14 @@ const SceneContent = ({
           setTimeout(() => {
             setCurrentBoard(null)
           }, 250)
+        }
+
+        if (name.includes('button')) {
+          const button = name.split('_')[0]
+          if (button === 'eye')
+            setVirtualCamVisible(oldValue => {
+              return !oldValue
+            })
         }
 
         return
@@ -560,7 +569,7 @@ const SceneContent = ({
 
         return (
           <primitive key={n} object={object}>
-            {handedness === 'right' && <GUI {...{ aspectRatio, guiMode, currentBoard, selectedObject }} />}
+            {handedness === 'right' && <GUI {...{ aspectRatio, guiMode, currentBoard, selectedObject, virtualCamVisible }} />}
             <SGController {...{ flipModel, modelData: getModelData(controllerObjectSettings), ...controllerObjectSettings }} />
           </primitive>
         )
@@ -571,7 +580,11 @@ const SceneContent = ({
   let sceneObjectComponents = Object.values(sceneObjects).map((sceneObject, i) => {
     switch (sceneObject.type) {
       case 'camera':
-        return <SGVirtualCamera key={i} {...{ aspectRatio, showBorder: true, ...sceneObject }} />
+        return virtualCamVisible ? (
+          <SGVirtualCamera key={i} {...{ aspectRatio, showBorder: true, ...sceneObject }} />
+        ) : (
+          undefined
+        )
       case 'character':
         return <SGCharacter key={i} {...{ modelData: getModelData(sceneObject), ...sceneObject }} />
       case 'object':
