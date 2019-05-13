@@ -198,7 +198,7 @@ const GUI = ({ aspectRatio, guiMode, currentBoard, selectedObject }) => {
       </group>
 
       <group position={[0, 0.25, 0]}>
-        <SGVirtualCamera {...{ aspectRatio, ...camSettings }} />
+        <SGVirtualCamera {...{ aspectRatio, camOffset: new THREE.Vector3(0, -0.25, 0), ...camSettings }} />
 
         <group
           position={[camSettings.size * 0.5 * aspectRatio + uiScale * 0.25 + bWidth, uiScale * -0.25 + bWidth * -0.5, 0]}

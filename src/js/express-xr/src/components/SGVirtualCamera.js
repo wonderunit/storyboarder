@@ -52,7 +52,7 @@ const SGVirtualCamera = ({ i, aspectRatio, ...props }) => {
   useEffect(() => {
     hideArray.current = []
     scene.traverse(child => {
-      if (child.type === 'Line' || child.userData.type === 'virtual-camera') {
+      if (child.type === 'Line' || child.userData.type === 'virtual-camera' || child.userData.id === 'controller') {
         hideArray.current.push(child)
       }
     })
@@ -82,14 +82,16 @@ const SGVirtualCamera = ({ i, aspectRatio, ...props }) => {
           material={new THREE.MeshLambertMaterial({ color: new THREE.Color('gray'), transparent: true })}
         />
       )}
-      <perspectiveCamera
-        ref={virtualCamera}
-        aspect={aspectRatio}
-        fov={props.fov}
-        near={0.01}
-        far={1000}
-        onUpdate={self => self.updateProjectionMatrix()}
-      />
+      <group position={props.camOffset || new THREE.Vector3()}>
+        <perspectiveCamera
+          ref={virtualCamera}
+          aspect={aspectRatio}
+          fov={props.fov}
+          near={0.01}
+          far={1000}
+          onUpdate={self => self.updateProjectionMatrix()}
+        />
+      </group>
     </group>
   )
 }
