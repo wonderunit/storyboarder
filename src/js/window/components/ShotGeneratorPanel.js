@@ -9,17 +9,16 @@ const ShotGeneratorPanel = ({ thumbnail, onClick, aspectRatio }) => {
         ]],
         ' Shot Generator'
       ]],
-      ['div', [
+      ['div.shot-generator-layer-thumbnail', [
         ['a[href=#]', { onClick }, [
           thumbnail
-            ? ['img', { src: thumbnail, width: '100%', padding: '3px 0 0 0' }]
-            : ['div', {
+            ? ['img.shot-generator-layer-thumbnail__image', { src: thumbnail, width: '100%' }]
+            : ['div.shot-generator-layer-thumbnail__placeholder', {
               width: '100%',
               style: {
                 width: '100%',
                 height: 0,
-                paddingTop: `${1 / aspectRatio * 100}%`,
-                backgroundColor: 'white'
+                paddingTop: `${1 / aspectRatio * 100}%`
               }
             }]
         ]]
