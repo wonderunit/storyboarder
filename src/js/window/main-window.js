@@ -14,6 +14,11 @@ const R = require('ramda')
 const CAF = require('caf')
 const isDev = require('electron-is-dev')
 
+const React = require('react')
+const ReactDOM = require('react-dom')
+const h = require('../utils/h')
+const ShotGeneratorPanel = require('./components/ShotGeneratorPanel')
+
 const { getInitialStateRenderer } = require('electron-redux')
 const configureStore = require('../shared/store/configureStore')
 const observeStore = require('../shared/helpers/observeStore')
@@ -1898,25 +1903,6 @@ const loadBoardUI = async () => {
   })
   document.getElementById('timeline-mode-control-view').appendChild(timelineModeControlView.element)
 
-
-
-  // Open Shot Generator button
-  document
-    .querySelector("#shot-generator-container .flatbutton")
-    .addEventListener('click', event => {
-      event.preventDefault()
-      ipcRenderer.send('shot-generator:open', {
-        storyboarderFilePath: boardFilename,
-        boardData: {
-          version: boardData.version,
-          aspectRatio: boardData.aspectRatio
-        },
-        board: boardData.boards[currentBoard]
-      })
-    })
-
-
-
   // for debugging:
   //
   // remote.getCurrentWebContents().openDevTools()
@@ -3405,6 +3391,36 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
     // if (shotTemplateSystem.isEnabled()) {
     //   StsSidebar.reset(board.sts)
     // }
+
+    // fix for bug where tooltip remains after ShotGeneratorPanel renders
+    tooltips.closeAll()
+
+    let shotGeneratorLayerThumbnailSrc = path.join(
+      path.dirname(boardFilename),
+      'images',
+      boardModel.boardFilenameForLayer(boardData.boards[currentBoard], 'shot-generator'))
+    ReactDOM.render(
+      h([ShotGeneratorPanel, {
+        thumbnail: fs.existsSync(shotGeneratorLayerThumbnailSrc)
+            ? shotGeneratorLayerThumbnailSrc
+            : null,
+        aspectRatio: boardData.aspectRatio,
+        onClick: event => {
+          event.preventDefault()
+
+          ipcRenderer.send('shot-generator:open', {
+            storyboarderFilePath: boardFilename,
+            boardData: {
+              version: boardData.version,
+              aspectRatio: boardData.aspectRatio
+            },
+            board: boardData.boards[currentBoard]
+          })
+        }
+      }]),
+      document.querySelector('#shot-generator-container')
+    )
+
 
     // guides && guides.setPerspectiveParams({
     //   cameraParams: board.sts && board.sts.camera,
