@@ -24,7 +24,7 @@ export function createSlider({
   textCreator,
   object,
   propertyName = 'undefined',
-  initialValue = 0.5,
+  initialValue = 0.0,
   min = 0.0,
   max = 1.0,
   step = 0.1,

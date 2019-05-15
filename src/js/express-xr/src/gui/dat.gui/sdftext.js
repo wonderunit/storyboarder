@@ -72,14 +72,14 @@ export function creator(){
 
     mesh.scale.multiplyScalar( finalScale );
 
-    // mesh.position.y = layout.height * 0.5 * finalScale;
-
     const middle = new THREE.Vector3()
     geometry.computeBoundingBox()
     middle.x = (geometry.boundingBox.max.x + geometry.boundingBox.min.x) / 2
     middle.y = (geometry.boundingBox.max.y + geometry.boundingBox.min.y) / 2
 
-    if (centerText) {
+    if (centerText === 'default') {
+      mesh.position.y = layout.height * 0.5 * finalScale;
+    } else if (centerText === 'custom') {
       middle.multiply(mesh.scale).multiplyScalar(-1)
       mesh.position.copy(middle)
     } else {
@@ -91,7 +91,7 @@ export function creator(){
   }
 
 
-  function create( str, centerText = false, { color=0xffffff, scale=1.0 } = {} ){
+  function create( str, { color=0xffffff, scale=1.0, centerText = 'default' } = {} ){
     const group = new THREE.Group();
 
     let mesh = createText( str, font, color, scale, centerText );

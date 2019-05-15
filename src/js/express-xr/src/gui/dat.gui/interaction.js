@@ -78,7 +78,7 @@ export default function createInteraction(hitVolume) {
   function extractHit(input) {
     if (input.intersections.length <= 0) {
       return {
-        hitPoint: new THREE.Vector3(),
+        hitPoint: tVector,
         hitObject: undefined
       }
     } else {
@@ -106,8 +106,6 @@ export default function createInteraction(hitVolume) {
 
     //  hovering and button down but no interactions active yet
     if (hover && input[buttonName] === true && input.interaction[interactionName] === undefined) {
-      console.log(1)
-
       const payload = {
         input,
         hitObject,
@@ -128,8 +126,6 @@ export default function createInteraction(hitVolume) {
 
     //  button still down and this is the active interaction
     if (input[buttonName] && input.interaction[interactionName] === interaction) {
-      console.log(2)
-
       const payload = {
         input,
         hitObject,
@@ -143,13 +139,8 @@ export default function createInteraction(hitVolume) {
       anyPressing = true
     }
 
-    console.log(input, buttonName)
-    console.log(interactionName, interaction)
-
     //  button not down and this is the active interaction
     if (input[buttonName] === false && input.interaction[interactionName] === interaction) {
-      console.log(3)
-
       input.interaction[interactionName] = undefined
       input.interaction.hover = undefined
       events.emit(upName, {

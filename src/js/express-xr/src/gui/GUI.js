@@ -33,7 +33,7 @@ const GUI = ({ aspectRatio, guiMode, currentBoard, selectedObject, virtualCamVis
   const { scene } = useThree()
 
   const fovLabel = useMemo(() => {
-    return textCreator.create(`${camSettings.fov}mm`, true)
+    return textCreator.create(`${camSettings.fov}mm`, { centerText: 'custom' })
   }, [])
 
   const propTexts = useMemo(() => {
@@ -44,15 +44,15 @@ const GUI = ({ aspectRatio, guiMode, currentBoard, selectedObject, virtualCamVis
     setTextCount(Object.values(parent.userData.forPanel).length)
 
     let children = []
-    const id_text = textCreator.create(parent.userData.displayName, false, { color: 0xffffff, scale: 0.475 })
+    const id_text = textCreator.create(parent.userData.displayName, { color: 0xffffff, scale: 0.475, centerText: false })
     children.push(<primitive key={parent.userData.id} object={id_text} />)
 
     let idx = 1
     for (const [key, value] of Object.entries(parent.userData.forPanel || {})) {
       const decimal = Math.round((value + 0.00001) * 100) / 100
 
-      const prop_text = textCreator.create(key.charAt(0).toUpperCase() + key.slice(1), false, { color: 0xdddddd, scale: 0.35 })
-      const value_text = textCreator.create(decimal.toString(), false, { color: 0xdddddd, scale: 0.35 })
+      const prop_text = textCreator.create(key.charAt(0).toUpperCase() + key.slice(1), { color: 0xdddddd, scale: 0.35, centerText: false })
+      const value_text = textCreator.create(decimal.toString(), { color: 0xdddddd, scale: 0.35, centerText: false })
 
       prop_text.position.y = -idx * textPadding
       value_text.position.y = -idx * textPadding
