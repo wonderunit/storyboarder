@@ -7054,12 +7054,13 @@ const saveToBoardFromShotGenerator = async ({ uid, data, images }) => {
     //       see: https://github.com/wonderunit/storyboarder/issues/1185
     await updateSketchPaneBoard()
   }
+
+  renderShotGeneratorPanel()
 }
 ipcRenderer.on('saveShot', async (event, { uid, data, images }) => {
   storeUndoStateForScene(true)
   await saveToBoardFromShotGenerator({ uid, data, images })
   storeUndoStateForScene()
-  renderShotGeneratorPanel()
 })
 ipcRenderer.on('insertShot', async (event, { data, images }) => {
   let index = await newBoard()
@@ -7070,7 +7071,6 @@ ipcRenderer.on('insertShot', async (event, { data, images }) => {
   storeUndoStateForScene(true)
   await saveToBoardFromShotGenerator({ uid, data, images })
   storeUndoStateForScene()
-  renderShotGeneratorPanel()
 
   ipcRenderer.send('shot-generator:update', {
     board: boardData.boards[index]
