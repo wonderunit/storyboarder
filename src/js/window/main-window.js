@@ -3395,31 +3395,7 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
     // fix for bug where tooltip remains after ShotGeneratorPanel renders
     tooltips.closeAll()
 
-    let shotGeneratorLayerThumbnailSrc = path.join(
-      path.dirname(boardFilename),
-      'images',
-      boardModel.boardFilenameForLayer(boardData.boards[currentBoard], 'shot-generator'))
-    ReactDOM.render(
-      h([ShotGeneratorPanel, {
-        thumbnail: fs.existsSync(shotGeneratorLayerThumbnailSrc)
-            ? shotGeneratorLayerThumbnailSrc
-            : null,
-        aspectRatio: boardData.aspectRatio,
-        onClick: event => {
-          event.preventDefault()
-
-          ipcRenderer.send('shot-generator:open', {
-            storyboarderFilePath: boardFilename,
-            boardData: {
-              version: boardData.version,
-              aspectRatio: boardData.aspectRatio
-            },
-            board: boardData.boards[currentBoard]
-          })
-        }
-      }]),
-      document.querySelector('#shot-generator-container')
-    )
+    renderShotGeneratorPanel()
 
 
     // guides && guides.setPerspectiveParams({
@@ -3439,6 +3415,34 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
         reject(e)
       })
   })
+}
+
+const renderShotGeneratorPanel = () => {
+  let shotGeneratorLayerThumbnailSrc = path.join(
+    path.dirname(boardFilename),
+    'images',
+    boardModel.boardFilenameForLayer(boardData.boards[currentBoard], 'shot-generator'))
+  ReactDOM.render(
+    h([ShotGeneratorPanel, {
+      thumbnail: fs.existsSync(shotGeneratorLayerThumbnailSrc)
+          ? shotGeneratorLayerThumbnailSrc + '?' + cacheKey(shotGeneratorLayerThumbnailSrc)
+          : null,
+      aspectRatio: boardData.aspectRatio,
+      onClick: event => {
+        event.preventDefault()
+
+        ipcRenderer.send('shot-generator:open', {
+          storyboarderFilePath: boardFilename,
+          boardData: {
+            version: boardData.version,
+            aspectRatio: boardData.aspectRatio
+          },
+          board: boardData.boards[currentBoard]
+        })
+      }
+    }]),
+    document.querySelector('#shot-generator-container')
+  )
 }
 
 let renderMarkerPosition = () => {
@@ -7024,6 +7028,7 @@ ipcRenderer.on('saveShot', async (event, { uid, data, images }) => {
   storeUndoStateForScene(true)
   await saveToBoardFromShotGenerator({ uid, data, images })
   storeUndoStateForScene()
+  renderShotGeneratorPanel()
 })
 ipcRenderer.on('insertShot', async (event, { data, images }) => {
   let index = await newBoard()
@@ -7034,6 +7039,7 @@ ipcRenderer.on('insertShot', async (event, { data, images }) => {
   storeUndoStateForScene(true)
   await saveToBoardFromShotGenerator({ uid, data, images })
   storeUndoStateForScene()
+  renderShotGeneratorPanel()
 
   ipcRenderer.send('shot-generator:update', {
     board: boardData.boards[index]
