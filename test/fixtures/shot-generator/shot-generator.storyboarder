@@ -12,7 +12,8 @@
       "layers": {
         "shot-generator": {
           "url": "board-1-UDRF3-shot-generator.png",
-          "opacity": 1
+          "opacity": 1,
+          "thumbnail": "board-1-UDRF3-shot-generator-thumbnail.jpg"
         }
       },
       "number": 1,
