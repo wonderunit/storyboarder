@@ -2953,7 +2953,9 @@ const refreshLinkedBoardByFilename = async filename => {
 
 // }
 
+// TODO move to boardModel?
 const getThumbnailSize = boardData => [Math.floor(60 * boardData.aspectRatio) * 2, 60 * 2 ]
+const getLayerThumbnailSize = aspectRatio => [320, 320 / aspectRatio ].map(n => Math.ceil(n * 2))
 
 const renderThumbnailToNewCanvas = (index, options = { forceReadFromFiles: false }) => {
   let size = getThumbnailSize(boardData)
@@ -7018,7 +7020,29 @@ const saveToBoardFromShotGenerator = async ({ uid, data, images }) => {
   h += 3
   context.drawImage(image, 0, 0, w, h)
 
+  // save shot-generator.png
   saveDataURLtoFile(context.canvas.toDataURL(), board.layers['shot-generator'].url)
+
+
+
+  // save shot-generator-thumbnail.jpg
+  // thumbnail size
+  let size = getLayerThumbnailSize(boardData.aspectRatio)
+  context.canvas.width = size[0]
+  context.canvas.height = size[1]
+  // FIXME do we still need padding?
+  let [x2, y2, w2, h2] = util.fitToDst(context.canvas, image).map(Math.ceil)
+  w2 += 3
+  h2 += 3
+  context.drawImage(image, 0, 0, w2, h2)
+  saveDataURLtoFile(
+    context.canvas.toDataURL({ type: 'image/jpeg', encoderOptions: 0.92 }),
+    boardModel.boardFilenameForLayerThumbnail(board, 'shot-generator')
+  )
+  context.canvas = null
+  context= null
+
+
 
   await saveThumbnailFile(index, { forceReadFromFiles: true })
   await updateThumbnailDisplayFromFile(index)
