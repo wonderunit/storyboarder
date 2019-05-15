@@ -3418,29 +3418,36 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
 }
 
 const renderShotGeneratorPanel = () => {
-  let shotGeneratorLayerThumbnailSrc = path.join(
+  let src = path.join(
     path.dirname(boardFilename),
     'images',
-    boardModel.boardFilenameForLayer(boardData.boards[currentBoard], 'shot-generator'))
-  ReactDOM.render(
-    h([ShotGeneratorPanel, {
-      thumbnail: fs.existsSync(shotGeneratorLayerThumbnailSrc)
-          ? shotGeneratorLayerThumbnailSrc + '?' + cacheKey(shotGeneratorLayerThumbnailSrc)
-          : null,
-      aspectRatio: boardData.aspectRatio,
-      onClick: event => {
-        event.preventDefault()
+    boardModel.boardFilenameForLayerThumbnail(
+      boardData.boards[currentBoard],
+      'shot-generator'
+    )
+  )
 
-        ipcRenderer.send('shot-generator:open', {
-          storyboarderFilePath: boardFilename,
-          boardData: {
-            version: boardData.version,
-            aspectRatio: boardData.aspectRatio
-          },
-          board: boardData.boards[currentBoard]
-        })
-      }
-    }]),
+  let thumbnail = fs.existsSync(src)
+      ? src + '?' + cacheKey(src)
+      : null
+
+  let aspectRatio = boardData.aspectRatio
+
+  let onClick = event => {
+    event.preventDefault()
+
+    ipcRenderer.send('shot-generator:open', {
+      storyboarderFilePath: boardFilename,
+      boardData: {
+        version: boardData.version,
+        aspectRatio: boardData.aspectRatio
+      },
+      board: boardData.boards[currentBoard]
+    })
+  }
+
+  ReactDOM.render(
+    h([ShotGeneratorPanel, { thumbnail, aspectRatio, onClick }]),
     document.querySelector('#shot-generator-container')
   )
 }
