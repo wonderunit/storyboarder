@@ -264,10 +264,35 @@ const SceneContent = ({
       return { ...prev, [id]: controller }
     })
   }
+  
+  const updateGUIProp = e => {
+    const { id, prop, value } = e.detail
+
+    switch (prop) {
+      case 'mesomorphic':
+      case 'ectomorphic':
+      case 'endomorphic':
+        // updateObject(id, {
+        //   morphTargets: {
+        //     mesomorphic: value,
+        //     ectomorphic: value,
+        //     endomorphic: value
+        //   }
+        // })
+        break
+      default:
+        updateObject(id, { [prop]: value })
+        break
+    }
+  }
 
   useEffect(() => {
+    window.addEventListener('updateRedux', updateGUIProp)
     window.addEventListener('vr controller connected', onVRControllerConnected)
-    return () => window.removeEventListener('vr controller connected', onVRControllerConnected)
+    return () => {
+      window.removeEventListener('updateRedux', updateGUIProp)
+      window.removeEventListener('vr controller connected', onVRControllerConnected)
+    }
   }, [])
 
   useRender(() => {
@@ -449,6 +474,9 @@ const SceneContent = ({
       })
 
       if (object.userData.type === 'character' || object.userData.type === 'light') {
+
+        console.log(object.userData.id, object.position.x)
+
         updateObject(object.userData.id, {
           x: object.position.x,
           y: object.position.z,

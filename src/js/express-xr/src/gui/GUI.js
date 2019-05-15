@@ -1,5 +1,6 @@
 const { useMemo, useState, useRef } = (React = require('react'))
 const { useThree, useRender } = require('../lib/react-three-fiber')
+const { updateObject } = require('../../../shared/reducers/shot-generator')
 
 const SGVirtualCamera = require('../components/SGVirtualCamera')
 const GUIElement = require('./GUIElement')
@@ -38,6 +39,19 @@ const GUI = ({ aspectRatio, guiMode, currentBoard, selectedObject, virtualCamVis
     return textCreator.create(`${camSettings.fov}mm`, { centerText: 'custom' })
   }, [])
 
+  const updateProps = (id, prop, value) => {
+    if (id && prop) {
+      const event = new CustomEvent('updateRedux', {
+        detail: {
+          id,
+          prop,
+          value
+        }
+      })
+      window.dispatchEvent(event)
+    }
+  }
+
   const sliderObjects = useMemo(() => {
     const object = scene.getObjectById(selectedObject)
     if (!object) return []
@@ -54,6 +68,7 @@ const GUI = ({ aspectRatio, guiMode, currentBoard, selectedObject, virtualCamVis
       const decimal = Math.round((value + 0.00001) * 100) / 100
 
       let minMax = { min: 0, max: 1 }
+      let prop = key
 
       switch (key) {
         case 'F.O.V':
@@ -77,9 +92,15 @@ const GUI = ({ aspectRatio, guiMode, currentBoard, selectedObject, virtualCamVis
           break
       }
 
+      if (key === 'meso') prop = 'mesomorphic'
+      if (key === 'ecto') prop = 'ectomorphic'
+      if (key === 'obese') prop = 'endomorphic'
+
       const slider = Slider.createSlider({
         textCreator,
+        prop,
         object: new THREE.Vector3(),
+        id: parent.userData.id,
         initialValue: decimal,
         min: minMax.min,
         max: minMax.max,
@@ -89,7 +110,7 @@ const GUI = ({ aspectRatio, guiMode, currentBoard, selectedObject, virtualCamVis
       })
 
       const name = key.charAt(0).toUpperCase() + key.slice(1)
-      slider.name(name).step(0.1)
+      slider.name(name).step(0.1).onChange( updateProps );
       slider.scale.set(0.35, 0.35, 0.35)
 
       slider.position.y = -idx * (uiScale * 0.5 + bWidth)

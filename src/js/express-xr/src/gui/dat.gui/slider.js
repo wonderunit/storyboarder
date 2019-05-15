@@ -36,6 +36,8 @@ export function createSlider({
   textCreator,
   object,
   propertyName = 'undefined',
+  id = 'undefined',
+  prop = 'undefined',
   initialValue = 0.0,
   min = 0.0,
   max = 1.0,
@@ -230,7 +232,7 @@ export function createSlider({
     updateObject(state.value)
 
     if (previousValue !== state.value && state.onChangedCB) {
-      state.onChangedCB(state.value)
+      state.onChangedCB(id, prop, state.value)
     }
   }
 
