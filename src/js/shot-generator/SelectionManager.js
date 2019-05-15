@@ -10,7 +10,9 @@ const {
   undoGroupStart,
   undoGroupEnd,
 
-  getSelections
+  getSelections,
+  getSceneObjects,
+  getActiveCamera
 } = require('../shared/reducers/shot-generator')
 
 function getObjectsFromIcons ( objects ) {
@@ -82,8 +84,8 @@ const getIntersectionTarget = intersect => {
 const SelectionManager = connect(
   state => ({
     selections: getSelections(state),
-    sceneObjects: state.sceneObjects,
-    activeCamera: state.activeCamera
+    sceneObjects: getSceneObjects(state),
+    activeCamera: getActiveCamera(state)
   }),
   {
     selectObject,
