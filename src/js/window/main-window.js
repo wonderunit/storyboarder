@@ -6993,6 +6993,7 @@ const saveToBoardFromShotGenerator = async ({ uid, data, images }) => {
         url: boardModel.boardFilenameForLayer(board, 'shot-generator'),
         // ensure opacity is 1.0
         opacity: 1.0,
+        // layer gets a thumbnail
         thumbnail: boardModel.boardFilenameForLayerThumbnail(board, 'shot-generator')
       },
     },
