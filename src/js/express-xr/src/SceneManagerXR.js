@@ -220,7 +220,7 @@ const SceneContent = ({
     controller.addEventListener('trigger press began', onSelectStart)
     controller.addEventListener('trigger press ended', onSelectEnd)
     controller.addEventListener('grip press began', onGripDown)
-    controller.addEventListener('grip press ended', () => (teleportMode.current = false))
+    controller.addEventListener('grip press ended', onGripUp)
     controller.addEventListener('thumbstick axes changed', onAxisChanged)
 
     const geometry = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, -1)])
@@ -242,6 +242,15 @@ const SceneContent = ({
     raycastTiltGroup.add(raycastDepth)
 
     controller.add(raycastTiltGroup)
+
+    controller.intersections = []
+    controller.pressed = false
+    controller.gripped = false
+    controller.interaction = {
+      grip: undefined,
+      press: undefined,
+      hover: undefined
+    }
 
     controller.addEventListener('disconnected', function(event) {
       controller.parent.remove(controller)
@@ -265,6 +274,14 @@ const SceneContent = ({
     THREE.VRController.update()
 
     Object.values(XRControllersRef.current).forEach(controller => {
+      const intersections = getIntersections(controller, intersectArray.current)
+      if (intersections.length > 0) {
+        let intersection = intersections[0]
+        if (intersection.object.userData.type === 'slider') {
+          controller.intersections = intersections
+        }
+      }
+
       const object = controller.userData.selected
 
       if (object && object.userData.type === 'character') {
@@ -319,6 +336,12 @@ const SceneContent = ({
     
     if (intersections.length > 0) {
       let intersection = intersections[0]
+
+      if (intersection.object.userData.type === 'slider') {
+        controller.pressed = true
+        controller.intersections = intersections
+        return
+      }
 
       if (intersection.object.userData.type === 'view') {
         intersection = intersections[1]
@@ -397,6 +420,8 @@ const SceneContent = ({
 
   const onSelectEnd = event => {
     const controller = event.target
+    controller.pressed = false
+
     if (controller.userData.selected !== undefined) {
       const object = controller.userData.selected
 
@@ -500,9 +525,22 @@ const SceneContent = ({
     const intersections = getIntersections(controller, intersectArray.current)
     
     if (intersections.length > 0) {
-      const { id } = intersections[0].object
+      let intersection = intersections[0]
+      if (intersection.object.userData.type === 'slider') {
+        controller.gripped = true
+        return
+      }
+
+      const { id } = intersection.object
       setSelectedObject(id)
     }
+  }
+
+  const onGripUp = event => {
+    teleportMode.current = false
+
+    const controller = event.target
+    controller.gripped = false
   }
 
   useEffect(() => {
@@ -569,8 +607,12 @@ const SceneContent = ({
 
         return (
           <primitive key={n} object={object}>
-            {handedness === 'right' && <GUI {...{ aspectRatio, guiMode, currentBoard, selectedObject, virtualCamVisible }} />}
-            <SGController {...{ flipModel, modelData: getModelData(controllerObjectSettings), ...controllerObjectSettings }} />
+            {handedness === 'right' && (
+              <GUI {...{ aspectRatio, guiMode, currentBoard, selectedObject, virtualCamVisible, XRControllers }} />
+            )}
+            <SGController
+              {...{ flipModel, modelData: getModelData(controllerObjectSettings), ...controllerObjectSettings }}
+            />
           </primitive>
         )
       })}

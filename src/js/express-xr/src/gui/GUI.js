@@ -1,10 +1,11 @@
 const { useMemo, useState } = (React = require('react'))
-const { useThree } = require('../lib/react-three-fiber')
+const { useThree, useRender } = require('../lib/react-three-fiber')
 
 const SGVirtualCamera = require('../components/SGVirtualCamera')
 const GUIElement = require('./GUIElement')
 
-import * as SDFText from './sdftext'
+import * as Slider from './dat.gui/slider'
+import * as SDFText from './dat.gui/sdftext'
 const textCreator = SDFText.creator()
 
 const textPadding = 0.03
@@ -27,7 +28,7 @@ const findParent = obj => {
   return null
 }
 
-const GUI = ({ aspectRatio, guiMode, currentBoard, selectedObject, virtualCamVisible }) => {
+const GUI = ({ aspectRatio, guiMode, currentBoard, selectedObject, virtualCamVisible, XRControllers }) => {
   const [textCount, setTextCount] = useState(0)
   const { scene } = useThree()
 
@@ -66,6 +67,25 @@ const GUI = ({ aspectRatio, guiMode, currentBoard, selectedObject, virtualCamVis
     return children
   }, [selectedObject])
 
+  const sliderTest = useMemo(() => {
+    const object = new THREE.Vector3()
+
+    let children = []
+    const test = Slider.createSlider({ textCreator, object })
+    test.name('Position X').step(0.1)
+
+    children.push(<primitive key="moi" object={test} />)
+    return children
+  }, [])
+
+  const controllers = Object.values(XRControllers).slice()
+  useRender(() => {
+    sliderTest.forEach(child => {
+      const slider = child.props.object
+      slider.updateControl(controllers)
+    })
+  })
+
   const selection_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/selection.png'), [])
   const duplicate_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/duplicate.png'), [])
   const add_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/add.png'), [])
@@ -77,6 +97,9 @@ const GUI = ({ aspectRatio, guiMode, currentBoard, selectedObject, virtualCamVis
 
   return (
     <group rotation={[(Math.PI / 180) * -30, 0, 0]} userData={{ type: 'gui' }} position={[0, 0.015, -0.005]}>
+      
+      <group scale={[0.25, 0.25, 0.25]} position={[-0.325, -0.05, 0]}>{sliderTest}</group>
+      
       <group rotation={[(Math.PI / 180) * -70, 0, 0]}>
         {selectedObject && (
           <group
@@ -217,7 +240,9 @@ const GUI = ({ aspectRatio, guiMode, currentBoard, selectedObject, virtualCamVis
       <group position={[0, 0.05, -0.075]} rotation={[(Math.PI / 180) * -20, 0, 0]}>
         <SGVirtualCamera {...{ aspectRatio, camOffset: new THREE.Vector3(0, -0.05, 0.075), ...camSettings }} />
 
-        <group position={[camSettings.size * 0.5 * aspectRatio + uiScale * 0.25 + bWidth, uiScale * -0.25 + bWidth * -0.5, 0]}>
+        <group
+          position={[camSettings.size * 0.5 * aspectRatio + uiScale * 0.25 + bWidth, uiScale * -0.25 + bWidth * -0.5, 0]}
+        >
           <GUIElement
             {...{
               icon: camera_texture,
