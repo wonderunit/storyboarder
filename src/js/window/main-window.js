@@ -6992,7 +6992,8 @@ const saveToBoardFromShotGenerator = async ({ uid, data, images }) => {
         // ensure url is present
         url: boardModel.boardFilenameForLayer(board, 'shot-generator'),
         // ensure opacity is 1.0
-        opacity: 1.0
+        opacity: 1.0,
+        thumbnail: boardModel.boardFilenameForLayerThumbnail(board, 'shot-generator')
       },
     },
     // shot generator
@@ -7037,11 +7038,10 @@ const saveToBoardFromShotGenerator = async ({ uid, data, images }) => {
   context.drawImage(image, 0, 0, w2, h2)
   saveDataURLtoFile(
     context.canvas.toDataURL({ type: 'image/jpeg', encoderOptions: 0.92 }),
-    boardModel.boardFilenameForLayerThumbnail(board, 'shot-generator')
+    board.layers['shot-generator'].thumbnail
   )
   context.canvas = null
-  context= null
-
+  context = null
 
 
   await saveThumbnailFile(index, { forceReadFromFiles: true })
