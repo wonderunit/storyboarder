@@ -89,4 +89,29 @@ describe('boardModel', () => {
       })
     })
   })
+
+  describe('shot generator layer and thumbnail', () => {
+    const scene = JSON.parse(
+      fs.readFileSync(
+        path.join(fixturesPath, 'shot-generator', 'shot-generator.storyboarder')
+      )
+    )
+    const board = scene.boards[0]
+
+    describe('#getMediaDescription', () => {
+      let media = boardModel.getMediaDescription(board)
+      it('includes layerThumbnails', () => {
+        assert(media.layerThumbnails['shot-generator'].length)
+      })
+    })
+    describe('#getMediaFilenames', () => {
+      let filenames = boardModel.getMediaFilenames(board)
+      it('includes shot-generator layer thumbnail', () => {
+        assert(
+          filenames.includes('board-1-UDRF3-shot-generator-thumbnail.jpg'),
+          'thumbnail should exist'
+        )
+      })
+    })
+  })
 })

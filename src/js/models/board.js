@@ -109,7 +109,16 @@ const getMediaDescription = board => {
     thumbnail: boardFilenameForThumbnail(board),
     posterframe: boardFilenameForPosterFrame(board),
     link: board.link == null ? undefined : board.link,
-    audio: board.audio == null ? undefined : board.audio.filename
+    audio: board.audio == null ? undefined : board.audio.filename,
+    layerThumbnails: (board.layers && Object.keys(board.layers).length)
+      // return all the layer thumbnails
+      ? Object.entries(board.layers).reduce((coll, [name, layer]) => {
+        return {
+          ...coll,
+          [name]: layer.thumbnail
+        }
+      }, {})
+      : {},
   }
 }
 
@@ -120,7 +129,8 @@ const getMediaFilenames = board => {
     media.thumbnail,
     media.posterframe,
     media.link,
-    media.audio
+    media.audio,
+    ...Object.values(media.layerThumbnails)
   ].reduce((coll, value) => {
     if (value) coll.push(value)
     return coll
