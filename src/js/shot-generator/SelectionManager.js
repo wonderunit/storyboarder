@@ -1,4 +1,4 @@
-const { useState, useEffect, useLayoutEffect, useRef, useMemo, useContext } = React = require('react')
+const { useState, useLayoutEffect, useRef, useMemo, useContext } = React = require('react')
 const { connect } = require('react-redux')
 
 const {
