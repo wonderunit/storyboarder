@@ -42,7 +42,7 @@ export function createSlider({
   step = 0.1,
   width = 0.25,
   height = 0.1,
-  depth = 0.001,
+  depth = 0.0025,
   corner = 0.05
 } = {}) {
   const SLIDER_WIDTH = width
@@ -86,10 +86,17 @@ export function createSlider({
   hitscanVolume.name = 'hitscanVolume'
 
   //  sliderBG volume
-  const sliderBG = new THREE.Mesh(rect.clone(), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: Colors.DEFAULT_COLOR }))
-  Colors.colorizeGeometry(sliderBG.geometry, Colors.SLIDER_BG)
+  const sliderBG = new THREE.Mesh(rect.clone(), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0x000000 }))
+  Colors.colorizeGeometry(sliderBG.geometry, 0xffffff)
   sliderBG.position.z = depth * 0.5
   sliderBG.position.x = width
+
+  const borderWidth = 1 + 0.1 * width
+  const sliderBorder = new THREE.Mesh(rect.clone(), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0xffffff }))
+  Colors.colorizeGeometry(sliderBorder.geometry, 0xffffff)
+  sliderBorder.position.z = depth * 0.5 - 0.001
+  sliderBorder.position.x = width - (width * borderWidth - width) * 0.5
+  sliderBorder.geometry.scale(borderWidth, 1.1, 1)
 
   const material = new THREE.MeshBasicMaterial({ color: Colors.DEFAULT_COLOR })
   const filledVolume = new THREE.Mesh(rect.clone(), material)
@@ -114,7 +121,7 @@ export function createSlider({
   descriptorLabel.position.z = depth
   descriptorLabel.position.y = -0.03
 
-  group.add(descriptorLabel, hitscanVolume, sliderBG, valueLabel)
+  group.add(descriptorLabel, hitscanVolume, sliderBG, sliderBorder, valueLabel)
   group.position.x = -0.15 * 0.35
 
   updateValueLabel(state.value)
@@ -130,11 +137,11 @@ export function createSlider({
 
   function updateView() {
     if (state.pressing) {
-      material.color.setHex(0xff0000)
+      material.color.setHex(0x6e6e6e)
     } else if (interaction.hovering()) {
-      material.color.setHex(0x00ff00)
+      material.color.setHex(0x6e6e6e)
     } else {
-      material.color.setHex(0x0000ff)
+      material.color.setHex(0x6e6e6e)
     }
   }
 
