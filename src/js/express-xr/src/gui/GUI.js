@@ -53,10 +53,36 @@ const GUI = ({ aspectRatio, guiMode, currentBoard, selectedObject, virtualCamVis
     for (const [key, value] of Object.entries(parent.userData.forPanel || {})) {
       const decimal = Math.round((value + 0.00001) * 100) / 100
 
+      let minMax = { min: 0, max: 1 }
+
+      switch (key) {
+        case 'F.O.V':
+          minMax = { min: 3, max: 71 }
+          break
+        case 'intensity':
+          minMax = { min: 0.03, max: 1 }
+          break
+        case 'angle':
+          minMax = { min: 0.03, max: 1.57 }
+          break
+        case 'meso':
+        case 'ecto':
+        case 'obese':
+          minMax = { min: 0, max: 100 }
+          break
+        case 'width':
+        case 'height':
+        case 'depth':
+          minMax = { min: 0.03, max: 5 }
+          break
+      }
+
       const slider = Slider.createSlider({
         textCreator,
         object: new THREE.Vector3(),
         initialValue: decimal,
+        min: minMax.min,
+        max: minMax.max,
         width: (uiScale * 1.5) / 0.35,
         height: (uiScale * 0.5) / 0.35,
         corner: bWidth
@@ -113,7 +139,7 @@ const GUI = ({ aspectRatio, guiMode, currentBoard, selectedObject, virtualCamVis
               {...{
                 name: 'properties_ui',
                 width: uiScale * 2.75,
-                height: (textCount + 1) * (uiScale * 0.5 + bWidth * 2),
+                height: (textCount + 1) * (uiScale * 0.5 + bWidth) + bWidth,
                 radius: bWidth,
                 color: 'black'
               }}
@@ -121,7 +147,7 @@ const GUI = ({ aspectRatio, guiMode, currentBoard, selectedObject, virtualCamVis
             <group
               position={[
                 uiScale * 2.75 * -0.5 + bWidth,
-                ((textCount + 1) * (uiScale * 0.5 + bWidth * 2)) * 0.5 - textPadding * 0.475 - bWidth,
+                ((textCount + 1) * (uiScale * 0.5 + bWidth) + bWidth) * 0.5 - textPadding * 0.475 - bWidth,
                 0.001
               ]}
             >
