@@ -14,6 +14,12 @@ const placeholder = aspectRatio =>
  }[aspectRatio])
 
 const ShotGeneratorPanel = ({ thumbnail, onClick, aspectRatio }) => {
+  let src = thumbnail
+    ? thumbnail
+    : `${placeholderPath}/${placeholder(aspectRatio)}.png`
+
+  let paddingTop = `${1 / aspectRatio * 100}%`
+
   return h(
     ['div', [
       ['div.inline', [
@@ -22,24 +28,9 @@ const ShotGeneratorPanel = ({ thumbnail, onClick, aspectRatio }) => {
         ]],
         ' Shot Generator'
       ]],
-      ['div.shot-generator-layer-thumbnail', [
+      ['div.shot-generator-layer-thumbnail', { style: { paddingTop } }, [
         ['a[href=#]', { onClick }, [
-          thumbnail
-            ? ['img.shot-generator-layer-thumbnail__image', { src: thumbnail, width: '100%' }]
-            : ['div.shot-generator-layer-thumbnail__placeholder', {
-              width: '100%',
-              style: {
-                width: '100%',
-              }
-            }, [
-              [
-                'img',
-                {
-                  width: '100%',
-                  src: `${placeholderPath}/${placeholder(aspectRatio)}.png`
-                }
-              ]
-            ]]
+          ['img', { src }]
         ]]
       ]]
     ]]

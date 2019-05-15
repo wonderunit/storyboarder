@@ -943,10 +943,18 @@ input[type=range]:focus::-webkit-slider-runnable-track {
 #shot-generator-container .shot-generator-layer-thumbnail {
   padding: 3px 0 0 0;
   border-radius: 3px;
-}
-#shot-generator-container img.shot-generator-layer-thumbnail__image {
+
   display: block;
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  height: 0;
 }
-#shot-generator-container div.shot-generator-layer-thumbnail__placeholder img {
+#shot-generator-container .shot-generator-layer-thumbnail img {
   display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
 }
