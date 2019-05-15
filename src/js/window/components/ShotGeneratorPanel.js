@@ -16,7 +16,7 @@ const placeholder = aspectRatio =>
 const ShotGeneratorPanel = ({ thumbnail, onClick, aspectRatio }) => {
   let src = thumbnail
     ? thumbnail
-    : `${placeholderPath}/${placeholder(aspectRatio)}.png`
+    : `${placeholderPath}/${placeholder(aspectRatio)}.jpg`
 
   let paddingTop = `${1 / aspectRatio * 100}%`
 
