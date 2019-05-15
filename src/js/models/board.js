@@ -20,6 +20,10 @@ const boardFilenameForLink = board =>
 const boardFilenameForLayer = (board, layerKey) =>
   board.url.replace('.png', `-${layerKey}.png`)
 
+// used for shot-generator
+const boardFilenameForLayerThumbnail = (board, layerName) =>
+  board.url.replace('.png', `-${layerName}-thumbnail.jpg`)
+
 const boardFilenameForPosterFrame = (board) =>
   board.url.replace('.png', `-posterframe.jpg`)
 
@@ -129,6 +133,7 @@ module.exports = {
   boardFilenameForThumbnail,
   boardFilenameForLink,
   boardFilenameForLayer,
+  boardFilenameForLayerThumbnail,
   boardFilenameForPosterFrame,
   boardOrderedLayerFilenames,
   boardDuration,
