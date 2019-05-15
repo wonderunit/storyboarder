@@ -20,6 +20,18 @@
 import createInteraction from './interaction'
 import * as Colors from './colors'
 
+const roundedRect = (shape, x, y, width, height, radius) => {
+  shape.moveTo(x, y + radius)
+  shape.lineTo(x, y + height - radius)
+  shape.quadraticCurveTo(x, y + height, x + radius, y + height)
+  shape.lineTo(x + width - radius, y + height)
+  shape.quadraticCurveTo(x + width, y + height, x + width, y + height - radius)
+  shape.lineTo(x + width, y + radius)
+  shape.quadraticCurveTo(x + width, y, x + width - radius, y)
+  shape.lineTo(x + radius, y)
+  shape.quadraticCurveTo(x, y, x, y + radius)
+}
+
 export function createSlider({
   textCreator,
   object,
@@ -28,12 +40,13 @@ export function createSlider({
   min = 0.0,
   max = 1.0,
   step = 0.1,
-  width = 1.0,
-  height = 0.08,
-  depth = 0.01
+  width = 0.25,
+  height = 0.1,
+  depth = 0.001,
+  corner = 0.05
 } = {}) {
-  const SLIDER_WIDTH = width * 0.5 - 0.015
-  const SLIDER_HEIGHT = height - 0.015
+  const SLIDER_WIDTH = width
+  const SLIDER_HEIGHT = height
   const SLIDER_DEPTH = depth
 
   const state = {
@@ -57,22 +70,26 @@ export function createSlider({
   const group = new THREE.Group()
 
   //  filled volume
-  const rect = new THREE.BoxGeometry(SLIDER_WIDTH, SLIDER_HEIGHT, SLIDER_DEPTH)
-  rect.translate(SLIDER_WIDTH * 0.5, 0, 0)
+  const roundedRectShape = new THREE.Shape()
+  roundedRect(roundedRectShape, SLIDER_WIDTH * -0.5, SLIDER_HEIGHT * -0.5, SLIDER_WIDTH, SLIDER_HEIGHT, corner)
+  const rect = new THREE.ShapeGeometry(roundedRectShape)
+
+  // const rect = new THREE.BoxGeometry(width, SLIDER_HEIGHT, SLIDER_DEPTH)
+  rect.translate(width * 0.5, 0, 0)
 
   const hitscanMaterial = new THREE.MeshBasicMaterial()
   hitscanMaterial.visible = false
 
   const hitscanVolume = new THREE.Mesh(rect.clone(), hitscanMaterial)
   hitscanVolume.position.z = depth
-  hitscanVolume.position.x = width * 0.5
+  hitscanVolume.position.x = width
   hitscanVolume.name = 'hitscanVolume'
 
   //  sliderBG volume
-  const sliderBG = new THREE.Mesh(rect.clone(), new THREE.MeshBasicMaterial({ color: Colors.DEFAULT_COLOR }))
+  const sliderBG = new THREE.Mesh(rect.clone(), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: Colors.DEFAULT_COLOR }))
   Colors.colorizeGeometry(sliderBG.geometry, Colors.SLIDER_BG)
   sliderBG.position.z = depth * 0.5
-  sliderBG.position.x = SLIDER_WIDTH + 0.015
+  sliderBG.position.x = width
 
   const material = new THREE.MeshBasicMaterial({ color: Colors.DEFAULT_COLOR })
   const filledVolume = new THREE.Mesh(rect.clone(), material)
@@ -83,21 +100,22 @@ export function createSlider({
     new THREE.BoxGeometry(0.05, 0.05, 0.05, 1, 1, 1),
     new THREE.MeshBasicMaterial({ color: Colors.DEFAULT_COLOR })
   )
-  endLocator.position.x = SLIDER_WIDTH
+  endLocator.position.x = width
   hitscanVolume.add(endLocator)
   endLocator.visible = false
 
   const valueLabel = textCreator.create(state.value.toString())
-  valueLabel.position.x = 0.02 + width * 0.5
+  valueLabel.position.x = 0.02 + width
   valueLabel.position.z = depth * 2.5
   valueLabel.position.y = -0.0325
 
   const descriptorLabel = textCreator.create(propertyName)
-  descriptorLabel.position.x = 0.06
+  descriptorLabel.position.x = 0.15
   descriptorLabel.position.z = depth
   descriptorLabel.position.y = -0.03
 
   group.add(descriptorLabel, hitscanVolume, sliderBG, valueLabel)
+  group.position.x = -0.15 * 0.35
 
   updateValueLabel(state.value)
   updateSlider()
@@ -121,7 +139,7 @@ export function createSlider({
   }
 
   function updateSlider() {
-    filledVolume.scale.x = Math.min(Math.max(getAlphaFromValue(state.value, state.min, state.max) * width, 0.000001), width)
+    filledVolume.scale.x = Math.min(Math.max(getAlphaFromValue(state.value, state.min, state.max), 0.000001), 1)
   }
 
   function updateObject(value) {
@@ -176,8 +194,6 @@ export function createSlider({
   interaction.events.on('onReleased', handleRelease)
 
   function handlePress(p) {
-    console.log('moi')
-
     if (group.visible === false) {
       return
     }
@@ -187,8 +203,6 @@ export function createSlider({
 
 
   function handleHold({ point } = {}) {
-    console.log('hei')
-
     if (group.visible === false) {
       return
     }

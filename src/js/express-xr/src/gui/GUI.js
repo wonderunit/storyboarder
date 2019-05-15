@@ -1,4 +1,4 @@
-const { useMemo, useState } = (React = require('react'))
+const { useMemo, useState, useRef } = (React = require('react'))
 const { useThree, useRender } = require('../lib/react-three-fiber')
 
 const SGVirtualCamera = require('../components/SGVirtualCamera')
@@ -30,13 +30,15 @@ const findParent = obj => {
 
 const GUI = ({ aspectRatio, guiMode, currentBoard, selectedObject, virtualCamVisible, XRControllers }) => {
   const [textCount, setTextCount] = useState(0)
+  const slidersRef = useRef([])
+
   const { scene } = useThree()
 
   const fovLabel = useMemo(() => {
     return textCreator.create(`${camSettings.fov}mm`, { centerText: 'custom' })
   }, [])
 
-  const propTexts = useMemo(() => {
+  const sliderObjects = useMemo(() => {
     const object = scene.getObjectById(selectedObject)
     if (!object) return []
 
@@ -51,40 +53,41 @@ const GUI = ({ aspectRatio, guiMode, currentBoard, selectedObject, virtualCamVis
     for (const [key, value] of Object.entries(parent.userData.forPanel || {})) {
       const decimal = Math.round((value + 0.00001) * 100) / 100
 
-      const prop_text = textCreator.create(key.charAt(0).toUpperCase() + key.slice(1), { color: 0xdddddd, scale: 0.35, centerText: false })
-      const value_text = textCreator.create(decimal.toString(), { color: 0xdddddd, scale: 0.35, centerText: false })
+      const slider = Slider.createSlider({
+        textCreator,
+        object: new THREE.Vector3(),
+        initialValue: decimal,
+        width: (uiScale * 1.5) / 0.35,
+        height: (uiScale * 0.5) / 0.35,
+        corner: bWidth
+      })
 
-      prop_text.position.y = -idx * textPadding
-      value_text.position.y = -idx * textPadding
-      value_text.position.x = 0.06
+      const name = key.charAt(0).toUpperCase() + key.slice(1)
+      slider.name(name).step(0.1)
+      slider.scale.set(0.35, 0.35, 0.35)
 
-      children.push(<primitive key={`${key}_prop`} object={prop_text} />)
-      children.push(<primitive key={`${key}_value`} object={value_text} />)
+      slider.position.y = -idx * (uiScale * 0.5 + bWidth)
+      children.push(<primitive key={`${key}_slider`} object={slider} />)
 
       idx++
     }
 
+    slidersRef.current = children
     return children
   }, [selectedObject])
 
-  const sliderTest = useMemo(() => {
-    const object = new THREE.Vector3()
-
-    let children = []
-    const test = Slider.createSlider({ textCreator, object })
-    test.name('Position X').step(0.1)
-
-    children.push(<primitive key="moi" object={test} />)
-    return children
-  }, [])
+  useRender(() => {
+    updateSliders()
+  })
 
   const controllers = Object.values(XRControllers).slice()
-  useRender(() => {
-    sliderTest.forEach(child => {
+  const updateSliders = () => {
+    slidersRef.current.forEach(child => {
+      if (!child.key.includes('slider')) return
       const slider = child.props.object
       slider.updateControl(controllers)
     })
-  })
+  }
 
   const selection_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/selection.png'), [])
   const duplicate_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/duplicate.png'), [])
@@ -97,14 +100,11 @@ const GUI = ({ aspectRatio, guiMode, currentBoard, selectedObject, virtualCamVis
 
   return (
     <group rotation={[(Math.PI / 180) * -30, 0, 0]} userData={{ type: 'gui' }} position={[0, 0.015, -0.005]}>
-      
-      <group scale={[0.25, 0.25, 0.25]} position={[-0.325, -0.05, 0]}>{sliderTest}</group>
-      
       <group rotation={[(Math.PI / 180) * -70, 0, 0]}>
         {selectedObject && (
           <group
             position={[
-              (uiScale * 1.75 * 0.5 + uiScale * 0.5 + (uiScale * 0.5 + uiScale * 0.5) + bWidth * 2) * -1,
+              (uiScale * 2.75 * 0.5 + uiScale * 0.5 + (uiScale * 0.5 + uiScale * 0.5) + bWidth * 2) * -1,
               ((textCount + 1) * textPadding + bWidth * 2) * 0.5 - uiScale * 0.5,
               0
             ]}
@@ -112,20 +112,20 @@ const GUI = ({ aspectRatio, guiMode, currentBoard, selectedObject, virtualCamVis
             <GUIElement
               {...{
                 name: 'properties_ui',
-                width: uiScale * 1.75,
-                height: (textCount + 1) * textPadding + bWidth * 2,
+                width: uiScale * 2.75,
+                height: (textCount + 1) * (uiScale * 0.5 + bWidth * 2),
                 radius: bWidth,
                 color: 'black'
               }}
             />
             <group
               position={[
-                uiScale * 1.75 * -0.5 + bWidth,
-                ((textCount + 1) * textPadding + bWidth * 2) * 0.5 - textPadding * 0.475 - bWidth,
+                uiScale * 2.75 * -0.5 + bWidth,
+                ((textCount + 1) * (uiScale * 0.5 + bWidth * 2)) * 0.5 - textPadding * 0.475 - bWidth,
                 0.001
               ]}
             >
-              {propTexts}
+              {sliderObjects}
             </group>
           </group>
         )}
