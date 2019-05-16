@@ -18,6 +18,9 @@ const {
   getActiveCamera,
   getSelectedBone,
   getWorld,
+
+  undoGroupStart,
+  undoGroupEnd
 } = require('../shared/reducers/shot-generator')
 
 const {
@@ -64,9 +67,12 @@ const SceneManager = connect(
     updateCharacterSkeleton,
     createPosePreset,
     updateWorldEnvironment,
+
+    undoGroupStart,
+    undoGroupEnd
   }
 )(
-  ({ world, sceneObjects, updateObject, selectObject, selectObjectToggle, remoteInput, largeCanvasRef, smallCanvasRef, selections, selectedBone, machineState, transition, animatedUpdate, selectBone, mainViewCamera, updateCharacterSkeleton, largeCanvasSize, activeCamera, aspectRatio, devices, meta, _boardUid, updateWorldEnvironment, attachments }) => {
+  ({ world, sceneObjects, updateObject, selectObject, selectObjectToggle, remoteInput, largeCanvasRef, smallCanvasRef, selections, selectedBone, machineState, transition, animatedUpdate, selectBone, mainViewCamera, updateCharacterSkeleton, largeCanvasSize, activeCamera, aspectRatio, devices, meta, _boardUid, updateWorldEnvironment, attachments, undoGroupStart, undoGroupEnd }) => {
     const { scene } = useContext(SceneContext)
     // const modelCacheDispatch = useContext(CacheContext)
 
@@ -292,7 +298,11 @@ const SceneManager = connect(
           console.log('new CameraControls')
           cameraControlsView.current = new CameraControls(
             CameraControls.objectFromCameraState(cameraState),
-            largeCanvasRef.current
+            largeCanvasRef.current,
+            {
+              undoGroupStart,
+              undoGroupEnd
+            }
           )
         }
 

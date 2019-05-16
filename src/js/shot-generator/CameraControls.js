@@ -2,7 +2,7 @@ const THREE = require('three')
 
 class CameraControls {
 
-  constructor ( object, domElement ) {
+  constructor ( object, domElement, options = {} ) {
     this.object = object
     this.domElement = domElement
     this.enabled = true
@@ -22,6 +22,9 @@ class CameraControls {
     this.onWheel = this.onWheel.bind(this)
 
     this.runMode = false
+
+    this.undoGroupStart = options.undoGroupStart
+    this.undoGroupEnd = options.undoGroupEnd
 
     window.addEventListener( 'pointermove', this.onPointerMove, false )
     this.domElement.addEventListener( 'pointerdown', this.onPointerDown, false )
@@ -59,12 +62,16 @@ class CameraControls {
     this.mouseX = event.pageX
     this.mouseY = event.pageY
     this.mouseDragOn = true
+
+    this.undoGroupStart()
   }
 
   onPointerUp ( event ) {
     event.preventDefault()
     event.stopPropagation()
     this.mouseDragOn = false
+
+    this.undoGroupEnd()
   }
 
   onKeyDown ( event ) {
