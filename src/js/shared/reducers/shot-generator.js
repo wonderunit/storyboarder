@@ -1081,17 +1081,17 @@ const checksReducer = (state, action) => {
   return produce(state, draft => {
     switch (action.type) {
       case 'UPDATE_OBJECT':
+        // ignore actions that are just changes to `loaded`
+        if (action.payload.hasOwnProperty('loaded')) return
+
         let sceneObject = getSceneObjects(draft)[action.payload.id]
         if (sceneObject.type === 'character') {
-          // ignore actions that are just changes to `loaded`
-          if (action.payload.hasOwnProperty('loaded')) return
-          
           // unless characterPresetId was just set ...
           if (!action.payload.hasOwnProperty('characterPresetId')) {
             // ... detect change between state and preset
             checkForCharacterChanges(state, draft, action.payload.id)
           }
-    
+
           // unless posePresetId was just set ...
           if (!action.payload.hasOwnProperty('posePresetId')) {
             // ... detect change between state and preset
