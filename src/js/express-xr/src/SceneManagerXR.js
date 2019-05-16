@@ -402,7 +402,7 @@ const SceneContent = ({
 
       const { id } = intersection.object
       setSelectedObject(id)
-      
+
       const object = findParent(intersection.object)
       controller.userData.selected = object
 
@@ -652,7 +652,7 @@ const SceneContent = ({
     switch (sceneObject.type) {
       case 'camera':
         return virtualCamVisible ? (
-          <SGVirtualCamera key={i} {...{ aspectRatio, showBorder: true, ...sceneObject }} />
+          <SGVirtualCamera key={i} {...{ aspectRatio, selectedObject, ...sceneObject }} />
         ) : (
           undefined
         )

@@ -2,7 +2,10 @@ const { useUpdate, useThree, useRender } = require('../lib/react-three-fiber')
 const React = require('react')
 const { useEffect, useRef } = React
 
-const SGVirtualCamera = ({ i, aspectRatio, ...props }) => {
+const SGVirtualCamera = ({ i, aspectRatio, selectedObject, ...props }) => {
+  const previousTime = useRef([null])
+  const isSelected = useRef(false)
+
   const virtualCamera = useRef(null)
   const renderTarget = useRef(null)
   const targetMesh = useRef(null)
@@ -12,7 +15,20 @@ const SGVirtualCamera = ({ i, aspectRatio, ...props }) => {
   const padding = 0.05
   const resolution = 512
 
+  const findParent = obj => {
+    while (obj) {
+      if (!obj.parent || obj.parent.type === 'Scene') {
+        return obj
+      }
+      obj = obj.parent
+    }
+
+    return null
+  }
+
   const { gl, scene } = useThree()
+  const selectedObj = findParent(scene.getObjectById(selectedObject))
+  isSelected.current = selectedObj && selectedObj.userData.id === props.id
 
   const ref = useUpdate(
     self => {
@@ -30,23 +46,6 @@ const SGVirtualCamera = ({ i, aspectRatio, ...props }) => {
     if (!renderTarget.current) {
       renderTarget.current = new THREE.WebGLRenderTarget(resolution * aspectRatio, resolution)
     }
-
-    setInterval(() => {
-      if (virtualCamera.current && renderTarget.current) {
-        gl.vr.enabled = false
-
-        hideArray.current.forEach(child => {
-          child.visible = false
-        })
-
-        gl.render(scene, virtualCamera.current, renderTarget.current)
-        gl.vr.enabled = true
-
-        hideArray.current.forEach(child => {
-          child.visible = true
-        })
-      }
-    }, 50)
   }, [])
 
   useEffect(() => {
@@ -58,6 +57,34 @@ const SGVirtualCamera = ({ i, aspectRatio, ...props }) => {
     })
   })
 
+  useRender(() => {
+    if (!previousTime.current) previousTime.current = 0
+
+    const currentTime = new Date().getTime()
+    const delta = currentTime - previousTime.current
+
+    if (delta > 500) {
+      previousTime.current = currentTime
+    } else {
+      if (!props.guiCamera && !isSelected.current) return
+    }
+
+    if (virtualCamera.current && renderTarget.current) {
+      gl.vr.enabled = false
+
+      hideArray.current.forEach(child => {
+        child.visible = false
+      })
+
+      gl.render(scene, virtualCamera.current, renderTarget.current)
+      gl.vr.enabled = true
+
+      hideArray.current.forEach(child => {
+        child.visible = true
+      })
+    }
+  })
+
   return (
     <group
       userData={{ id: props.id, displayName: props.displayName, type: 'virtual-camera', forPanel: { 'F.O.V': props.fov } }}
@@ -66,7 +93,7 @@ const SGVirtualCamera = ({ i, aspectRatio, ...props }) => {
     >
       <mesh
         ref={targetMesh}
-        userData={{ type: props.showBorder ? 'view' : 'gui' }}
+        userData={{ type: props.guiCamera ? 'gui' : 'view' }}
         geometry={new THREE.PlaneGeometry(size * aspectRatio, size)}
         material={
           new THREE.MeshBasicMaterial({
@@ -75,7 +102,7 @@ const SGVirtualCamera = ({ i, aspectRatio, ...props }) => {
           })
         }
       />
-      {props.showBorder && (
+      {!props.guiCamera && (
         <mesh
           position={[0, 0, -0.0275]}
           geometry={new THREE.BoxGeometry(size * aspectRatio + padding, size + padding, 0.05)}
