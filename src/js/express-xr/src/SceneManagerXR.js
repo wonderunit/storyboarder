@@ -187,7 +187,8 @@ const SceneContent = ({
   const [selectedObject, setSelectedObject] = useState(null)
   const [XRControllers, setXRControllers] = useState({})
 
-  const turnCamera = useRef(null)
+  const moveCamRef = useRef(null)
+  const rotateCamRef = useRef(null)
   const XRControllersRef = useRef({})
   const intersectArray = useRef([])
   const teleportArray = useRef([])
@@ -502,18 +503,78 @@ const SceneContent = ({
   }
 
   const onAxisChanged = event => {
-    if (event.axes[0] === 0) {
-      turnCamera.current = null
+    moveCamera(event)
+    rotateCamera(event)
+  }
+
+  const moveCamera = event => {
+    if (event.axes[1] === 0) {
+      moveCamRef.current = null
     }
 
-    if (turnCamera.current) return
+    if (moveCamRef.current) return
+    if (Math.abs(event.axes[1]) < Math.abs(event.axes[0])) return
+
+    const { x, y } = xrOffset.current.userData
+    const hmdCam = xrOffset.current.children.filter(child => child.type === 'PerspectiveCamera')[0]
+
+    if (event.axes[1] > 0.075) {
+      Object.values(XRControllers).forEach(controller => {
+        controller.dispatchEvent({ type: 'trigger press ended' })
+      })
+
+      moveCamRef.current = 'Backwards'
+
+      let offsetVector = new THREE.Vector3(0, 0, 1)
+      offsetVector.applyMatrix4(new THREE.Matrix4().extractRotation(hmdCam.matrixWorld))
+      offsetVector = offsetVector.multiply(new THREE.Vector3(1, 0, 1)).normalize()
+
+      setTeleportPos(oldPos => {
+        if (!oldPos) {
+          offsetVector.add(new THREE.Vector3(x, 0, y))
+          return offsetVector
+        } else {
+          return oldPos.clone().add(offsetVector)
+        }
+      })
+    }
+
+    if (event.axes[1] < -0.075) {
+      Object.values(XRControllers).forEach(controller => {
+        controller.dispatchEvent({ type: 'trigger press ended' })
+      })
+
+      moveCamRef.current = 'Forwards'
+
+      let offsetVector = new THREE.Vector3(0, 0, -1)
+      offsetVector.applyMatrix4(new THREE.Matrix4().extractRotation(hmdCam.matrixWorld))
+      offsetVector = offsetVector.multiply(new THREE.Vector3(1, 0, 1)).normalize()
+
+      setTeleportPos(oldPos => {
+        if (!oldPos) {
+          offsetVector.add(new THREE.Vector3(x, 0, y))
+          return offsetVector
+        } else {
+          return oldPos.clone().add(offsetVector)
+        }
+      })
+    }
+  }
+
+  const rotateCamera = event => {
+    if (event.axes[0] === 0) {
+      rotateCamRef.current = null
+    }
+
+    if (rotateCamRef.current) return
+    if (Math.abs(event.axes[0]) < Math.abs(event.axes[1])) return
 
     if (event.axes[0] > 0.075) {
       Object.values(XRControllers).forEach(controller => {
         controller.dispatchEvent({ type: 'trigger press ended' })
       })
 
-      turnCamera.current = 'Right'
+      rotateCamRef.current = 'Right'
       setCamExtraRot(oldRot => {
         return oldRot - 1
       })
@@ -524,7 +585,7 @@ const SceneContent = ({
         controller.dispatchEvent({ type: 'trigger press ended' })
       })
 
-      turnCamera.current = 'Left'
+      rotateCamRef.current = 'Left'
       setCamExtraRot(oldRot => {
         return oldRot + 1
       })
