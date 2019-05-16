@@ -341,7 +341,7 @@ const WorldElement = React.memo(({ index, world, isSelected, selectObject, style
 })
 
 const ListItem = ({ index, style, isScrolling, data }) => {
-  const { items, models, selections, selectObject, selectObjectToggle, updateObject, deleteObjects, activeCamera, setActiveCamera } = data
+  const { items, models, selections, selectObject, selectObjectToggle, updateObject, deleteObjects, activeCamera, setActiveCamera, undoGroupStart, undoGroupEnd } = data
   const isWorld = index === 0
 
   const sceneObject = index === 0
@@ -373,7 +373,9 @@ const ListItem = ({ index, style, isScrolling, data }) => {
           selectObjectToggle,
           updateObject,
           deleteObjects,
-          setActiveCamera
+          setActiveCamera,
+          undoGroupStart,
+          undoGroupEnd
         }
       ]
   )
@@ -734,10 +736,12 @@ const ElementsPanel = connect(
     updateCharacterSkeleton,
     updateWorld,
     updateWorldRoom,
-    updateWorldEnvironment
+    updateWorldEnvironment,
+    undoGroupStart,
+    undoGroupEnd
   }
 )(
-  React.memo(({ world, sceneObjects, models, selections, selectObject, selectObjectToggle, updateObject, deleteObjects, selectedBone, machineState, transition, activeCamera, setActiveCamera, selectBone, updateCharacterSkeleton, updateWorld, updateWorldRoom, updateWorldEnvironment, storyboarderFilePath }) => {
+  React.memo(({ world, sceneObjects, models, selections, selectObject, selectObjectToggle, updateObject, deleteObjects, selectedBone, machineState, transition, activeCamera, setActiveCamera, selectBone, updateCharacterSkeleton, updateWorld, updateWorldRoom, updateWorldEnvironment, storyboarderFilePath, undoGroupStart, undoGroupEnd }) => {
     let ref = useRef(null)
     let size = useComponentSize(ref)
 
@@ -783,7 +787,10 @@ const ElementsPanel = connect(
           updateObject,
           deleteObjects,
           activeCamera,
-          setActiveCamera
+          setActiveCamera,
+
+          undoGroupStart,
+          undoGroupEnd
         }
       },
       ListItem
@@ -1530,9 +1537,11 @@ const BoneEditor = ({ sceneObject, bone, updateCharacterSkeleton }) => {
 }
 
 const ELEMENT_HEIGHT = 40
-const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, selectObject, selectObjectToggle, updateObject, deleteObjects, setActiveCamera, machineState, transition, allowDelete }) => {
+const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, selectObject, selectObjectToggle, updateObject, deleteObjects, setActiveCamera, machineState, transition, allowDelete, undoGroupStart, undoGroupEnd }) => {
   const onClick = preventDefault(event => {
     const { shiftKey } = event
+
+    undoGroupStart()
 
     if (shiftKey) {
       selectObjectToggle(sceneObject.id)
@@ -1544,6 +1553,8 @@ const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, s
         setActiveCamera(sceneObject.id)
       }
     }
+
+    undoGroupEnd()
   })
 
   const onDeleteClick = preventDefault(event => {
