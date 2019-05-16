@@ -1985,6 +1985,8 @@ const Icon = ({ src }) => h(
 const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, setActiveCamera, resetScene, saveToBoard, insertAsNewBoard, xrServerUrl }) => {
   const onCreateCameraClick = () => {
     let id = THREE.Math.generateUUID()
+
+    undoGroupStart()
     createObject({
       id,
 
@@ -1999,6 +2001,7 @@ const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, set
     })
     selectObject(id)
     setActiveCamera(id)
+    undoGroupEnd()
   }
 
   const onCreateObjectClick = () => {
@@ -2006,6 +2009,7 @@ const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, set
     //let camera = findCamera();
     let newPoz = generatePositionAndRotation(camera)
 
+    undoGroupStart()
     createObject({
       id,
       type: 'object',
@@ -2021,6 +2025,7 @@ const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, set
       visible: true
     })
     selectObject(id)
+    undoGroupEnd()
   }
 
   const generatePositionAndRotation = (camera) => {
@@ -2048,6 +2053,8 @@ const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, set
   const onCreateCharacterClick = () => {
     let newPoz = generatePositionAndRotation(camera)
     let id = THREE.Math.generateUUID()
+
+    undoGroupStart()
     createObject({
       id,
       type: 'character',
@@ -2071,11 +2078,13 @@ const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, set
       visible: true
     })
     selectObject(id)
+    undoGroupEnd()
   }
 
   const onCreateLightClick = () => {
     let id = THREE.Math.generateUUID()
 
+    undoGroupStart()
     createObject({
       id,
       type: 'light',
@@ -2092,10 +2101,13 @@ const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, set
       decay: 1,
     })
     selectObject(id)
+    undoGroupEnd()
   }
 
   const onCreateVolumeClick = () => {
     let id = THREE.Math.generateUUID()
+
+    undoGroupStart()
     createObject({
       id,
       type: 'volume',
@@ -2114,15 +2126,18 @@ const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, set
       volumeImageAttachmentIds: ['rain2', 'rain1']
     })
     selectObject(id)
+    undoGroupEnd()
   }
 
   const onCreateStressClick = () => {
+    undoGroupStart()
     for (let i = 0; i < 500; i++) {
       onCreateObjectClick()
     }
     for (let i = 0; i < 20; i++) {
       onCreateCharacterClick()
     }
+    undoGroupEnd()
     setTimeout(() => {
       console.log(Object.values(getSceneObjects($r.store.getState())).length, 'scene objects')
     }, 100)
