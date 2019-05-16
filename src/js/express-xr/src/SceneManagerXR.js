@@ -191,6 +191,7 @@ const SceneContent = ({
   const rotateCamRef = useRef(null)
   const XRControllersRef = useRef({})
   const intersectArray = useRef([])
+  const guiArray = useRef([])
   const teleportArray = useRef([])
   const teleportMode = useRef(false)
 
@@ -301,7 +302,7 @@ const SceneContent = ({
     THREE.VRController.update()
 
     Object.values(XRControllersRef.current).forEach(controller => {
-      const intersections = getIntersections(controller, intersectArray.current)
+      const intersections = getIntersections(controller, guiArray.current)
       if (intersections.length > 0) {
         let intersection = intersections[0]
         if (intersection.object.userData.type === 'slider') {
@@ -602,7 +603,15 @@ const SceneContent = ({
 
     Object.values(XRControllers).forEach(controller => {
       const gui = controller.children.filter(child => child.userData.type === 'gui')[0]
-      if (gui) intersectArray.current.push(gui)
+
+      if (gui) {
+        gui.traverse(child => {
+          if (child.name === 'properties_container') {
+            intersectArray.current.push(gui)
+            guiArray.current.push(gui)
+          }
+        })
+      }
     })
 
     teleportArray.current = scene.children.filter(child => child.userData.type === 'ground')

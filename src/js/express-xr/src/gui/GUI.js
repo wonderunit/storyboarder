@@ -153,34 +153,36 @@ const GUI = ({ aspectRatio, guiMode, currentBoard, selectedObject, virtualCamVis
   return (
     <group rotation={[(Math.PI / 180) * -30, 0, 0]} userData={{ type: 'gui' }} position={[0, 0.015, -0.005]}>
       <group rotation={[(Math.PI / 180) * -70, 0, 0]}>
-        {selectedObject && textCount && (
-          <group
-            position={[
-              (uiScale * 2.75 * 0.5 + uiScale * 0.5 + (uiScale * 0.5 + uiScale * 0.5) + bWidth * 2) * -1,
-              ((textCount + 1) * (uiScale * 0.5 + bWidth) + bWidth) * 0.5 - uiScale * 0.5,
-              0
-            ]}
-          >
-            <GUIElement
-              {...{
-                name: 'properties_ui',
-                width: uiScale * 2.75,
-                height: (textCount + 1) * (uiScale * 0.5 + bWidth) + bWidth,
-                radius: bWidth,
-                color: 'black'
-              }}
-            />
+        <group name="properties_container">
+          {selectedObject && textCount && (
             <group
               position={[
-                uiScale * 2.75 * -0.5 + bWidth,
-                ((textCount + 1) * (uiScale * 0.5 + bWidth) + bWidth) * 0.5 - textPadding * 0.475 - bWidth,
-                0.001
+                (uiScale * 2.75 * 0.5 + uiScale * 0.5 + (uiScale * 0.5 + uiScale * 0.5) + bWidth * 2) * -1,
+                ((textCount + 1) * (uiScale * 0.5 + bWidth) + bWidth) * 0.5 - uiScale * 0.5,
+                0
               ]}
             >
-              {sliderObjects}
+              <GUIElement
+                {...{
+                  name: 'properties_ui',
+                  width: uiScale * 2.75,
+                  height: (textCount + 1) * (uiScale * 0.5 + bWidth) + bWidth,
+                  radius: bWidth,
+                  color: 'black'
+                }}
+              />
+              <group
+                position={[
+                  uiScale * 2.75 * -0.5 + bWidth,
+                  ((textCount + 1) * (uiScale * 0.5 + bWidth) + bWidth) * 0.5 - textPadding * 0.475 - bWidth,
+                  0.001
+                ]}
+              >
+                {sliderObjects}
+              </group>
             </group>
-          </group>
-        )}
+          )}
+        </group>
 
         <group position={[(uiScale * 0.5 + uiScale * 0.5 + bWidth) * -1, 0, 0]}>
           <GUIElement
@@ -290,7 +292,9 @@ const GUI = ({ aspectRatio, guiMode, currentBoard, selectedObject, virtualCamVis
       </group>
 
       <group position={[0, 0.05, -0.075]} rotation={[(Math.PI / 180) * -20, 0, 0]}>
-        <SGVirtualCamera {...{ aspectRatio, guiCamera: true, camOffset: new THREE.Vector3(0, -0.05, 0.075), ...camSettings }} />
+        <SGVirtualCamera
+          {...{ aspectRatio, guiCamera: true, camOffset: new THREE.Vector3(0, -0.05, 0.075), ...camSettings }}
+        />
 
         <group
           position={[camSettings.size * 0.5 * aspectRatio + uiScale * 0.25 + bWidth, uiScale * -0.25 + bWidth * -0.5, 0]}
