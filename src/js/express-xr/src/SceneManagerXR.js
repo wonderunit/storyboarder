@@ -400,6 +400,9 @@ const SceneContent = ({
         return
       }
 
+      const { id } = intersection.object
+      setSelectedObject(id)
+      
       const object = findParent(intersection.object)
       controller.userData.selected = object
 
@@ -557,9 +560,7 @@ const SceneContent = ({
         return
       }
 
-      const { id, userData } = intersection.object
-      const object = findParent(intersection.object)
-
+      const { id } = intersection.object
       setSelectedObject(id)
     }
   }
