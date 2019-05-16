@@ -95,6 +95,7 @@ class CameraControls {
         if ( this.moveForward || this.moveBackward || this.moveLeft || this.moveRight || this.moveUp || this.moveDown) {
         } else {
           this.movementSpeed = .0001
+          this.undoGroupStart()
         }
         break
       case 16:
@@ -119,16 +120,16 @@ class CameraControls {
   onKeyUp ( event ) {
     switch ( event.keyCode ) {
       case 38: /*up*/
-      case 87: /*W*/ this.moveForward = false; break;
+      case 87: /*W*/ this.moveForward = false; this.undoGroupEnd(); break;
       case 37: /*left*/
-      case 65: /*A*/ this.moveLeft = false; break;
+      case 65: /*A*/ this.moveLeft = false; this.undoGroupEnd(); break;
       case 40: /*down*/
-      case 83: /*S*/ this.moveBackward = false; break;
+      case 83: /*S*/ this.moveBackward = false; this.undoGroupEnd(); break;
       case 39: /*right*/
-      case 68: /*D*/ this.moveRight = false; break;
-      case 82: /*R*/ this.moveUp = false; break;
-      case 70: /*F*/ this.moveDown = false; break;
-      case 16: /* shift */ this.runMode = false; break;
+      case 68: /*D*/ this.moveRight = false; this.undoGroupEnd(); break;
+      case 82: /*R*/ this.moveUp = false; this.undoGroupEnd(); break;
+      case 70: /*F*/ this.moveDown = false; this.undoGroupEnd(); break;
+      case 16: /* shift */ this.runMode = false; this.undoGroupEnd(); break;
     }
   }
 
