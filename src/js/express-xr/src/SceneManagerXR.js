@@ -222,6 +222,7 @@ const SceneContent = ({
     controller.addEventListener('grip press began', onGripDown)
     controller.addEventListener('grip press ended', onGripUp)
     controller.addEventListener('thumbstick axes changed', onAxisChanged)
+    controller.addEventListener('thumbpad axes changed', onAxisChanged)
 
     const geometry = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, -1)])
     const material = new THREE.LineBasicMaterial({
