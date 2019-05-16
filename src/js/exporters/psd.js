@@ -1,5 +1,5 @@
 const path = require('path')
-const writePsd = require('ag-psd').writePsd
+const { writePsdBuffer } = require('ag-psd')
 
 const exporterCommon = require('./common')
 
@@ -56,7 +56,7 @@ const toPsdBuffer = async metas => {
   context.fillRect(0, 0, canvas.width, canvas.height)
   psd.children[0].canvas = canvas
 
-  return writePsd(psd)
+  return writePsdBuffer(psd)
 }
 
 module.exports = {

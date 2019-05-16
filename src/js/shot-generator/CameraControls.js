@@ -11,7 +11,7 @@ class CameraControls {
 
     this.movementSpeed = .0005
     this.maxSpeed = 0.07
-    this.zoomSpeed = .001
+    this.zoomSpeed = 0
 
     this.onPointerMove = this.onPointerMove.bind(this)
     this.onPointerDown = this.onPointerDown.bind(this)

@@ -1,4 +1,4 @@
-const { useState, useEffect, useLayoutEffect, useRef, useMemo, useContext } = React = require('react')
+const { useState, useLayoutEffect, useRef, useMemo, useContext } = React = require('react')
 const { connect } = require('react-redux')
 
 const {
@@ -10,7 +10,8 @@ const {
   undoGroupStart,
   undoGroupEnd,
 
-  getSelections
+  getSelections,
+  getActiveCamera
 } = require('../shared/reducers/shot-generator')
 
 function getObjectsFromIcons ( objects ) {
@@ -82,8 +83,7 @@ const getIntersectionTarget = intersect => {
 const SelectionManager = connect(
   state => ({
     selections: getSelections(state),
-    sceneObjects: state.sceneObjects,
-    activeCamera: state.activeCamera
+    activeCamera: getActiveCamera(state)
   }),
   {
     selectObject,
@@ -104,7 +104,6 @@ const SelectionManager = connect(
     useIcons,
 
     selections,
-    sceneObjects,
     activeCamera,
 
     selectObject,

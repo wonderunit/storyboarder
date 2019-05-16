@@ -14,6 +14,11 @@ const R = require('ramda')
 const CAF = require('caf')
 const isDev = require('electron-is-dev')
 
+const React = require('react')
+const ReactDOM = require('react-dom')
+const h = require('../utils/h')
+const ShotGeneratorPanel = require('./components/ShotGeneratorPanel')
+
 const { getInitialStateRenderer } = require('electron-redux')
 const configureStore = require('../shared/store/configureStore')
 const observeStore = require('../shared/helpers/observeStore')
@@ -1898,25 +1903,6 @@ const loadBoardUI = async () => {
   })
   document.getElementById('timeline-mode-control-view').appendChild(timelineModeControlView.element)
 
-
-
-  // Open Shot Generator button
-  document
-    .querySelector("#shot-generator-container .flatbutton")
-    .addEventListener('click', event => {
-      event.preventDefault()
-      ipcRenderer.send('shot-generator:open', {
-        storyboarderFilePath: boardFilename,
-        boardData: {
-          version: boardData.version,
-          aspectRatio: boardData.aspectRatio
-        },
-        board: boardData.boards[currentBoard]
-      })
-    })
-
-
-
   // for debugging:
   //
   // remote.getCurrentWebContents().openDevTools()
@@ -2802,6 +2788,10 @@ const refreshLinkedBoardByFilename = async filename => {
         path.join(boardPath, 'images', board.link)
       )
     )
+
+    // HACK this prevents blank layers
+    await new Promise(resolve => setTimeout(resolve, 1))
+
   } catch (err) {
     console.error(err)
   }
@@ -2963,7 +2953,9 @@ const refreshLinkedBoardByFilename = async filename => {
 
 // }
 
+// TODO move to boardModel?
 const getThumbnailSize = boardData => [Math.floor(60 * boardData.aspectRatio) * 2, 60 * 2 ]
+const getLayerThumbnailSize = aspectRatio => [320, 320 / aspectRatio ].map(n => Math.ceil(n * 2))
 
 const renderThumbnailToNewCanvas = (index, options = { forceReadFromFiles: false }) => {
   let size = getThumbnailSize(boardData)
@@ -3402,6 +3394,12 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
     //   StsSidebar.reset(board.sts)
     // }
 
+    // fix for bug where tooltip remains after ShotGeneratorPanel renders
+    tooltips.closeAll()
+
+    renderShotGeneratorPanel()
+
+
     // guides && guides.setPerspectiveParams({
     //   cameraParams: board.sts && board.sts.camera,
     //   rotation: 0
@@ -3419,6 +3417,41 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
         reject(e)
       })
   })
+}
+
+const renderShotGeneratorPanel = () => {
+  let src = path.join(
+    path.dirname(boardFilename),
+    'images',
+    boardModel.boardFilenameForLayerThumbnail(
+      boardData.boards[currentBoard],
+      'shot-generator'
+    )
+  )
+
+  let thumbnail = fs.existsSync(src)
+      ? src + '?' + cacheKey(src)
+      : null
+
+  let aspectRatio = boardData.aspectRatio
+
+  let onClick = event => {
+    event.preventDefault()
+
+    ipcRenderer.send('shot-generator:open', {
+      storyboarderFilePath: boardFilename,
+      boardData: {
+        version: boardData.version,
+        aspectRatio: boardData.aspectRatio
+      },
+      board: boardData.boards[currentBoard]
+    })
+  }
+
+  ReactDOM.render(
+    h([ShotGeneratorPanel, { thumbnail, aspectRatio, onClick }]),
+    document.querySelector('#shot-generator-container')
+  )
 }
 
 let renderMarkerPosition = () => {
@@ -4729,17 +4762,26 @@ window.onkeydown = (e) => {
       e.preventDefault()
     }
 
-    // ESCAPE
+    // ESCAPE KEY
     if (isCommandPressed('drawing:exit-current-mode')) {
       e.preventDefault()
 
       if (dragMode && isEditMode && selections.size) {
         disableEditMode()
         disableDragMode()
+      } else {
+
+        // ESCAPE KEY also used to de-select selected boards
+        if (isCommandPressed('workspace:thumbnails:select-none')) {
+          e.preventDefault()
+          selections.clear()
+          selections.add(currentBoard)
+          renderThumbnailDrawer()
+        }
+
       }
     }
-
-    // ESCAPE
+    // ESCAPE KEY
     if (isCommandPressed('menu:navigation:stop-all-sounds')) {
       e.preventDefault()
       audioPlayback.stopAllSounds()
@@ -6936,11 +6978,6 @@ const saveToBoardFromShotGenerator = async ({ uid, data, images }) => {
     return
   }
 
-  if (index === currentBoard) {
-    // update opacity
-    layersEditor.setReferenceOpacity(1)
-  }
-
   // make a reference
   let board = boardData.boards[index]
 
@@ -6949,13 +6986,15 @@ const saveToBoardFromShotGenerator = async ({ uid, data, images }) => {
     ...board,
     layers: {
       ...board.layers,
-      reference: {
+      'shot-generator': {
         // merge with existing, if available
-        ...((board.layers && board.layers.reference) || {}),
+        ...((board.layers && board.layers['shot-generator']) || {}),
         // ensure url is present
-        url: boardModel.boardFilenameForLayer(board, 'reference'),
+        url: boardModel.boardFilenameForLayer(board, 'shot-generator'),
         // ensure opacity is 1.0
-        opacity: 1.0
+        opacity: 1.0,
+        // layer gets a thumbnail
+        thumbnail: boardModel.boardFilenameForLayerThumbnail(board, 'shot-generator')
       },
     },
     // shot generator
@@ -6983,7 +7022,28 @@ const saveToBoardFromShotGenerator = async ({ uid, data, images }) => {
   h += 3
   context.drawImage(image, 0, 0, w, h)
 
-  saveDataURLtoFile(context.canvas.toDataURL(), board.layers.reference.url)
+  // save shot-generator.png
+  saveDataURLtoFile(context.canvas.toDataURL(), board.layers['shot-generator'].url)
+
+
+
+  // save shot-generator-thumbnail.jpg
+  // thumbnail size
+  let size = getLayerThumbnailSize(boardData.aspectRatio)
+  context.canvas.width = size[0]
+  context.canvas.height = size[1]
+  // FIXME do we still need padding?
+  let [x2, y2, w2, h2] = util.fitToDst(context.canvas, image).map(Math.ceil)
+  w2 += 3
+  h2 += 3
+  context.drawImage(image, 0, 0, w2, h2)
+  saveDataURLtoFile(
+    context.canvas.toDataURL({ type: 'image/jpeg', encoderOptions: 0.92 }),
+    board.layers['shot-generator'].thumbnail
+  )
+  context.canvas = null
+  context = null
+
 
   await saveThumbnailFile(index, { forceReadFromFiles: true })
   await updateThumbnailDisplayFromFile(index)
@@ -6995,6 +7055,8 @@ const saveToBoardFromShotGenerator = async ({ uid, data, images }) => {
     //       see: https://github.com/wonderunit/storyboarder/issues/1185
     await updateSketchPaneBoard()
   }
+
+  renderShotGeneratorPanel()
 }
 ipcRenderer.on('saveShot', async (event, { uid, data, images }) => {
   storeUndoStateForScene(true)

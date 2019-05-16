@@ -20,6 +20,10 @@ const boardFilenameForLink = board =>
 const boardFilenameForLayer = (board, layerKey) =>
   board.url.replace('.png', `-${layerKey}.png`)
 
+// used for shot-generator
+const boardFilenameForLayerThumbnail = (board, layerName) =>
+  board.url.replace('.png', `-${layerName}-thumbnail.jpg`)
+
 const boardFilenameForPosterFrame = (board) =>
   board.url.replace('.png', `-posterframe.jpg`)
 
@@ -32,12 +36,16 @@ const boardOrderedLayerFilenames = board => {
   // HACK hardcoded
   // see StoryboarderSketchPane#visibleLayersIndices
   for (let [index, name] of [
-    [0, 'reference'],
-    [1, 'fill'],
-    [2, 'tone'],
-    [3, 'pencil'],
-    [4, 'ink'],
-    [6, 'notes']
+    [0, 'shot-generator'],
+    [1, 'reference'],
+    [2, 'fill'],
+    [3, 'tone'],
+    [4, 'pencil'],
+    [5, 'ink'],
+    // 6 = onion
+    [7, 'notes']
+    // 8 = guides
+    // 9 = composite
   ]) {
     if (board.layers && board.layers[name]) {
       indices.push(index)
@@ -101,7 +109,16 @@ const getMediaDescription = board => {
     thumbnail: boardFilenameForThumbnail(board),
     posterframe: boardFilenameForPosterFrame(board),
     link: board.link == null ? undefined : board.link,
-    audio: board.audio == null ? undefined : board.audio.filename
+    audio: board.audio == null ? undefined : board.audio.filename,
+    layerThumbnails: (board.layers && Object.keys(board.layers).length)
+      // return all the layer thumbnails
+      ? Object.entries(board.layers).reduce((coll, [name, layer]) => {
+        return {
+          ...coll,
+          [name]: layer.thumbnail
+        }
+      }, {})
+      : {},
   }
 }
 
@@ -112,7 +129,8 @@ const getMediaFilenames = board => {
     media.thumbnail,
     media.posterframe,
     media.link,
-    media.audio
+    media.audio,
+    ...Object.values(media.layerThumbnails)
   ].reduce((coll, value) => {
     if (value) coll.push(value)
     return coll
@@ -125,6 +143,7 @@ module.exports = {
   boardFilenameForThumbnail,
   boardFilenameForLink,
   boardFilenameForLayer,
+  boardFilenameForLayerThumbnail,
   boardFilenameForPosterFrame,
   boardOrderedLayerFilenames,
   boardDuration,
