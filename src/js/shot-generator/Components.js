@@ -1982,7 +1982,21 @@ const Icon = ({ src }) => h(
   ]
 )
 
-const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, setActiveCamera, resetScene, saveToBoard, insertAsNewBoard, xrServerUrl }) => {
+const Toolbar = ({
+  createObject,
+  selectObject,
+  loadScene,
+  saveScene,
+  camera,
+  setActiveCamera,
+  resetScene,
+  saveToBoard,
+  insertAsNewBoard,
+  xrServerUrl,
+
+  undoGroupStart,
+  undoGroupEnd
+}) => {
   const onCreateCameraClick = () => {
     let id = THREE.Math.generateUUID()
 

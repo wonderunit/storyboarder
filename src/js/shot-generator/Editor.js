@@ -157,10 +157,13 @@ const Editor = connect(
     setMainViewCamera,
     markSaved,
 
+    undoGroupStart,
+    undoGroupEnd,
+
     withState: (fn) => (dispatch, getState) => fn(dispatch, getState())
   }
 )(
-  ({ mainViewCamera, createObject, selectObject, updateModels, loadScene, saveScene, activeCamera, setActiveCamera, resetScene, remoteInput, aspectRatio, sceneObjects, world, selections, selectedBone, onBeforeUnload, setMainViewCamera, withState, attachments, server }) => {
+  ({ mainViewCamera, createObject, selectObject, updateModels, loadScene, saveScene, activeCamera, setActiveCamera, resetScene, remoteInput, aspectRatio, sceneObjects, world, selections, selectedBone, onBeforeUnload, setMainViewCamera, withState, attachments, server, undoGroupStart, undoGroupEnd }) => {
     const xrServerUrl = useMemo(() => server.uri && server.uri.replace(/8001$/, '1234'), [server.uri])
 
     const largeCanvasRef = useRef(null)
@@ -697,7 +700,20 @@ const Editor = connect(
       { value: { scene: scene.current }},
       h(
         ['div.column', { style: { width: '100%' } }, [
-          [Toolbar, { createObject, selectObject, loadScene, saveScene, camera, setActiveCamera, resetScene, saveToBoard: onToolbarSaveToBoard, insertAsNewBoard: onToolbarInsertAsNewBoard, xrServerUrl }],
+          [Toolbar, {
+            createObject,
+            selectObject,
+            loadScene,
+            saveScene,
+            camera,
+            setActiveCamera,
+            resetScene,
+            saveToBoard: onToolbarSaveToBoard,
+            insertAsNewBoard: onToolbarInsertAsNewBoard,
+            xrServerUrl,
+            undoGroupStart,
+            undoGroupEnd
+          }],
 
           ['div.row', { style: { flex: 1 }},
             ['div.column', { style: { width: '300px', background: '#111'} },
