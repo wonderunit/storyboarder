@@ -69,9 +69,12 @@ class CameraControls {
   onPointerUp ( event ) {
     event.preventDefault()
     event.stopPropagation()
-    this.mouseDragOn = false
 
-    this.undoGroupEnd()
+    if (this.mouseDragOn) {
+      this.undoGroupEnd()
+    }
+
+    this.mouseDragOn = false
   }
 
   onKeyDown ( event ) {
