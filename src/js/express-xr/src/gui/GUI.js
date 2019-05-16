@@ -57,6 +57,11 @@ const GUI = ({ aspectRatio, guiMode, currentBoard, selectedObject, virtualCamVis
     if (!object) return []
 
     const parent = findParent(object)
+    if (!parent.userData.forPanel) {
+      setTextCount(0)
+      return []
+    }
+
     setTextCount(Object.values(parent.userData.forPanel).length)
 
     let children = []
@@ -148,11 +153,11 @@ const GUI = ({ aspectRatio, guiMode, currentBoard, selectedObject, virtualCamVis
   return (
     <group rotation={[(Math.PI / 180) * -30, 0, 0]} userData={{ type: 'gui' }} position={[0, 0.015, -0.005]}>
       <group rotation={[(Math.PI / 180) * -70, 0, 0]}>
-        {selectedObject && (
+        {selectedObject && textCount && (
           <group
             position={[
               (uiScale * 2.75 * 0.5 + uiScale * 0.5 + (uiScale * 0.5 + uiScale * 0.5) + bWidth * 2) * -1,
-              ((textCount + 1) * textPadding + bWidth * 2) * 0.5 - uiScale * 0.5,
+              ((textCount + 1) * (uiScale * 0.5 + bWidth) + bWidth) * 0.5 - uiScale * 0.5,
               0
             ]}
           >

@@ -66,7 +66,7 @@ const SGVirtualCamera = ({ i, aspectRatio, ...props }) => {
     >
       <mesh
         ref={targetMesh}
-        userData={{ type: 'view' }}
+        userData={{ type: props.showBorder ? 'view' : 'gui' }}
         geometry={new THREE.PlaneGeometry(size * aspectRatio, size)}
         material={
           new THREE.MeshBasicMaterial({

@@ -475,9 +475,6 @@ const SceneContent = ({
       })
 
       if (object.userData.type === 'character' || object.userData.type === 'light') {
-
-        console.log(object.userData.id, object.position.x)
-
         updateObject(object.userData.id, {
           x: object.position.x,
           y: object.position.z,
@@ -560,7 +557,9 @@ const SceneContent = ({
         return
       }
 
-      const { id } = intersection.object
+      const { id, userData } = intersection.object
+      const object = findParent(intersection.object)
+
       setSelectedObject(id)
     }
   }
