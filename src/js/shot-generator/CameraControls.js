@@ -13,6 +13,8 @@ class CameraControls {
     this.maxSpeed = 0.07
     this.zoomSpeed = 0
 
+    this.keydowns = new Set()
+
     this.onPointerMove = this.onPointerMove.bind(this)
     this.onPointerDown = this.onPointerDown.bind(this)
     this.onPointerUp = this.onPointerUp.bind(this)
@@ -77,6 +79,20 @@ class CameraControls {
     this.mouseDragOn = false
   }
 
+  addKey (key) {
+    if (this.keydowns.size === 0) {
+      this.undoGroupStart()
+    }
+    this.keydowns.add(key)
+  }
+  removeKey (key) {
+    this.keydowns.delete(key)
+    if (this.keydowns.size === 0) {
+      this.undoGroupEnd()
+    }
+  }
+
+
   onKeyDown ( event ) {
     // Ignore Cmd + R (reload) and Cmd + D (duplicate)
     if (event.metaKey) return
@@ -95,7 +111,7 @@ class CameraControls {
         if ( this.moveForward || this.moveBackward || this.moveLeft || this.moveRight || this.moveUp || this.moveDown) {
         } else {
           this.movementSpeed = .0001
-          this.undoGroupStart()
+          this.addKey(event.keyCode)
         }
         break
       case 16:
@@ -120,16 +136,16 @@ class CameraControls {
   onKeyUp ( event ) {
     switch ( event.keyCode ) {
       case 38: /*up*/
-      case 87: /*W*/ this.moveForward = false; this.undoGroupEnd(); break;
+      case 87: /*W*/ this.moveForward = false; this.removeKey(event.keyCode); break;
       case 37: /*left*/
-      case 65: /*A*/ this.moveLeft = false; this.undoGroupEnd(); break;
+      case 65: /*A*/ this.moveLeft = false; this.removeKey(event.keyCode); break;
       case 40: /*down*/
-      case 83: /*S*/ this.moveBackward = false; this.undoGroupEnd(); break;
+      case 83: /*S*/ this.moveBackward = false; this.removeKey(event.keyCode); break;
       case 39: /*right*/
-      case 68: /*D*/ this.moveRight = false; this.undoGroupEnd(); break;
-      case 82: /*R*/ this.moveUp = false; this.undoGroupEnd(); break;
-      case 70: /*F*/ this.moveDown = false; this.undoGroupEnd(); break;
-      case 16: /* shift */ this.runMode = false; this.undoGroupEnd(); break;
+      case 68: /*D*/ this.moveRight = false; this.removeKey(event.keyCode); break;
+      case 82: /*R*/ this.moveUp = false; this.removeKey(event.keyCode); break;
+      case 70: /*F*/ this.moveDown = false; this.removeKey(event.keyCode); break;
+      case 16: /* shift */ this.runMode = false; this.removeKey(event.keyCode); break;
     }
   }
 
