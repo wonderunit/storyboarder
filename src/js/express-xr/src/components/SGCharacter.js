@@ -33,21 +33,22 @@ const SGCharacter = ({ id, model, modelData, x, y, z, skeleton, ...props }) => {
       }
       skinnedMesh.material = material
 
-      if (
-        skinnedMesh.morphTargetDictionary &&
-        Object.values(skinnedMesh.morphTargetDictionary).length === 3
-      ) {
-        skinnedMesh.morphTargetInfluences[0] = props.morphTargets.mesomorphic
-        skinnedMesh.morphTargetInfluences[1] = props.morphTargets.ectomorphic
-        skinnedMesh.morphTargetInfluences[2] = props.morphTargets.endomorphic
-      }
-
       skinnedMesh.add(skinnedMesh.skeleton.bones[0])
       skinnedMesh.bind(skinnedMesh.skeleton)
 
       return skinnedMesh
     }
   }, [modelData])
+
+  useMemo(() => {
+    if (!skinnedMesh) return
+
+    if (skinnedMesh.morphTargetDictionary && Object.values(skinnedMesh.morphTargetDictionary).length === 3) {
+      skinnedMesh.morphTargetInfluences[0] = props.morphTargets.mesomorphic
+      skinnedMesh.morphTargetInfluences[1] = props.morphTargets.ectomorphic
+      skinnedMesh.morphTargetInfluences[2] = props.morphTargets.endomorphic
+    }
+  }, [modelData, props.morphTargets])
 
   useMemo(() => {
     if (!skinnedMesh) return
@@ -97,9 +98,11 @@ const SGCharacter = ({ id, model, modelData, x, y, z, skeleton, ...props }) => {
         type: props.type,
         modelSettings: { rotation: props.rotation },
         forPanel: {
-          meso: props.morphTargets.mesomorphic,
-          ecto: props.morphTargets.ectomorphic,
-          obese: props.morphTargets.endomorphic
+          height: props.height,
+          headScale: props.headScale,
+          mesomorphic: props.morphTargets.mesomorphic,
+          ectomorphic: props.morphTargets.ectomorphic,
+          endomorphic: props.morphTargets.endomorphic
         }
       }}
       position={[x, z, y]}

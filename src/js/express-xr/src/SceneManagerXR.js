@@ -272,16 +272,19 @@ const SceneContent = ({
     const { id, prop, value } = e.detail
 
     switch (prop) {
+      case 'size':
+        updateObject(id, {
+          width: value,
+          height: value,
+          depth: value
+        })
+        break
       case 'mesomorphic':
       case 'ectomorphic':
       case 'endomorphic':
-        // updateObject(id, {
-        //   morphTargets: {
-        //     mesomorphic: value,
-        //     ectomorphic: value,
-        //     endomorphic: value
-        //   }
-        // })
+        updateObject(id, {
+          morphTargets: { [prop]: value }
+        })
         break
       default:
         updateObject(id, { [prop]: value })

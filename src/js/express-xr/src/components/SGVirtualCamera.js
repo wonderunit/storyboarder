@@ -87,7 +87,7 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, ...props }) => {
 
   return (
     <group
-      userData={{ id: props.id, displayName: props.displayName, type: 'virtual-camera', forPanel: { 'F.O.V': props.fov } }}
+      userData={{ id: props.id, displayName: props.displayName, type: 'virtual-camera', forPanel: { 'fov': props.fov } }}
       position={[props.x || 0, props.z || 0, props.y || 0]}
       ref={ref}
     >
@@ -104,7 +104,7 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, ...props }) => {
       />
       {!props.guiCamera && (
         <mesh
-          position={[0, 0, -0.0275]}
+          position={[0, 0, -0.0325]}
           geometry={new THREE.BoxGeometry(size * aspectRatio + padding, size + padding, 0.05)}
           material={new THREE.MeshLambertMaterial({ color: new THREE.Color('gray'), transparent: true })}
         />

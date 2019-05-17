@@ -74,9 +74,10 @@ const GUI = ({ aspectRatio, guiMode, currentBoard, selectedObject, virtualCamVis
 
       let minMax = { min: 0, max: 1 }
       let prop = key
+      let title = key
 
       switch (key) {
-        case 'F.O.V':
+        case 'fov':
           minMax = { min: 3, max: 71 }
           break
         case 'intensity':
@@ -85,21 +86,30 @@ const GUI = ({ aspectRatio, guiMode, currentBoard, selectedObject, virtualCamVis
         case 'angle':
           minMax = { min: 0.03, max: 1.57 }
           break
-        case 'meso':
-        case 'ecto':
-        case 'obese':
-          minMax = { min: 0, max: 100 }
+        case 'headScale':
+          minMax = { min: 0.8, max: 1.2 }
+          break
+        case 'height':
+          minMax = { min: 1.4732, max: 2.1336 }
+          break
+        case 'mesomorphic':
+        case 'ectomorphic':
+        case 'endomorphic':
+          minMax = { min: 0, max: 1 }
           break
         case 'width':
         case 'height':
         case 'depth':
+        case 'size':
           minMax = { min: 0.03, max: 5 }
           break
       }
 
-      if (key === 'meso') prop = 'mesomorphic'
-      if (key === 'ecto') prop = 'ectomorphic'
-      if (key === 'obese') prop = 'endomorphic'
+      if (key === 'fov') title = 'F.O.V'
+      if (key === 'headScale') title = 'head'
+      if (key === 'mesomorphic') title = 'meso'
+      if (key === 'ectomorphic') title = 'ecto'
+      if (key === 'endomorphic') title = 'obese'
 
       const slider = Slider.createSlider({
         textCreator,
@@ -114,7 +124,7 @@ const GUI = ({ aspectRatio, guiMode, currentBoard, selectedObject, virtualCamVis
         corner: bWidth
       })
 
-      const name = key.charAt(0).toUpperCase() + key.slice(1)
+      const name = title.charAt(0).toUpperCase() + title.slice(1)
       slider.name(name).step(0.1).onChange( updateProps );
       slider.scale.set(0.35, 0.35, 0.35)
 
