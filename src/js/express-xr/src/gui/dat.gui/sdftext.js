@@ -78,7 +78,11 @@ export function creator(){
     middle.y = (geometry.boundingBox.max.y + geometry.boundingBox.min.y) / 2
 
     if (centerText === 'default') {
-      mesh.position.y = layout.height * 0.5 * finalScale;
+      mesh.position.y = layout.height * 0.5 * finalScale
+    } else if (centerText === 'slider') {
+      mesh.position.y = layout.height * 0.5 * finalScale
+      middle.multiply(mesh.scale).multiply(new THREE.Vector3(-1, 0, 0))
+      mesh.position.add(middle)
     } else if (centerText === 'custom') {
       middle.multiply(mesh.scale).multiplyScalar(-1)
       mesh.position.copy(middle)

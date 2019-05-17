@@ -186,6 +186,7 @@ const SceneContent = ({
   const [teleportPos, setTeleportPos] = useState(null)
   const [selectedObject, setSelectedObject] = useState(null)
   const [XRControllers, setXRControllers] = useState({})
+  const [guiCamFOV, setGuiCamFOV] = useState(22)
 
   const moveCamRef = useRef(null)
   const rotateCamRef = useRef(null)
@@ -270,6 +271,11 @@ const SceneContent = ({
   
   const updateGUIProp = e => {
     const { id, prop, value } = e.detail
+
+    if (prop === 'guiFOV') {
+      setGuiCamFOV(value)
+      return
+    }
 
     switch (prop) {
       case 'size':
@@ -609,7 +615,7 @@ const SceneContent = ({
 
       if (gui) {
         gui.traverse(child => {
-          if (child.name === 'properties_container') {
+          if (child.name === 'properties_container' || child.name === 'fov_slider') {
             intersectArray.current.push(gui)
             guiArray.current.push(gui)
           }
@@ -710,7 +716,7 @@ const SceneContent = ({
         return (
           <primitive key={n} object={object}>
             {handedness === 'right' && (
-              <GUI {...{ aspectRatio, guiMode, currentBoard, selectedObject, virtualCamVisible, XRControllers }} />
+              <GUI {...{ aspectRatio, guiMode, currentBoard, selectedObject, virtualCamVisible, guiCamFOV, XRControllers }} />
             )}
             <SGController
               {...{ flipModel, modelData: getModelData(controllerObjectSettings), ...controllerObjectSettings }}

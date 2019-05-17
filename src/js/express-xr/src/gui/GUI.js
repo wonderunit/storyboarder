@@ -12,11 +12,6 @@ const textCreator = SDFText.creator()
 const textPadding = 0.03
 const uiScale = 0.075
 const bWidth = 0.0125
-const camSettings = {
-  size: 0.07 + bWidth,
-  id: 'gui-camera',
-  fov: 22
-}
 
 const findParent = obj => {
   while (obj) {
@@ -29,15 +24,24 @@ const findParent = obj => {
   return null
 }
 
-const GUI = ({ aspectRatio, guiMode, currentBoard, selectedObject, virtualCamVisible, XRControllers }) => {
+const GUI = ({ aspectRatio, guiMode, currentBoard, selectedObject, virtualCamVisible, guiCamFOV, XRControllers }) => {
   const [textCount, setTextCount] = useState(0)
   const slidersRef = useRef([])
+  const fovSliderRef = useRef([])
 
   const { scene } = useThree()
 
-  const fovLabel = useMemo(() => {
-    return textCreator.create(`${camSettings.fov}mm`, { centerText: 'custom' })
-  }, [])
+  const camSettings = {
+    size: 0.07 + bWidth,
+    id: 'gui-camera',
+    fov: guiCamFOV
+  }
+
+  // console.log(camSettings)
+
+  // const fovLabel = useMemo(() => {
+  //   return textCreator.create(`${camSettings.fov}mm`, { centerText: 'custom' })
+  // }, [])
 
   const updateProps = (id, prop, value) => {
     if (id && prop) {
@@ -51,6 +55,28 @@ const GUI = ({ aspectRatio, guiMode, currentBoard, selectedObject, virtualCamVis
       window.dispatchEvent(event)
     }
   }
+
+  const fovSlider = useMemo(() => {
+    const slider = Slider.createSlider({
+      textCreator,
+      prop: 'guiFOV',
+      id: 'guiCam',
+      object: new THREE.Vector3(),
+      initialValue: 22,
+      min: 3,
+      max: 71,
+      width: (uiScale + bWidth) / 0.35,
+      height: (uiScale * 0.5) / 0.35,
+      corner: bWidth / 0.35,
+      fovSlider: true
+    })
+
+    slider.name('').step(1).onChange(updateProps)
+    slider.scale.set(0.35, 0.35, 0.35)
+
+    fovSliderRef.current = slider
+    return slider
+  }, [])
 
   const sliderObjects = useMemo(() => {
     const object = scene.getObjectById(selectedObject)
@@ -125,7 +151,10 @@ const GUI = ({ aspectRatio, guiMode, currentBoard, selectedObject, virtualCamVis
       })
 
       const name = title.charAt(0).toUpperCase() + title.slice(1)
-      slider.name(name).step(0.1).onChange( updateProps );
+      slider
+        .name(name)
+        .step(0.1)
+        .onChange(updateProps)
       slider.scale.set(0.35, 0.35, 0.35)
 
       slider.position.y = -idx * (uiScale * 0.5 + bWidth)
@@ -149,6 +178,10 @@ const GUI = ({ aspectRatio, guiMode, currentBoard, selectedObject, virtualCamVis
       const slider = child.props.object
       slider.updateControl(controllers)
     })
+
+    if (fovSliderRef.current) {
+      fovSliderRef.current.updateControl(controllers)
+    }
   }
 
   const selection_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/selection.png'), [])
@@ -302,13 +335,9 @@ const GUI = ({ aspectRatio, guiMode, currentBoard, selectedObject, virtualCamVis
       </group>
 
       <group position={[0, 0.05, -0.075]} rotation={[(Math.PI / 180) * -20, 0, 0]}>
-        <SGVirtualCamera
-          {...{ aspectRatio, guiCamera: true, camOffset: new THREE.Vector3(0, -0.05, 0.075), ...camSettings }}
-        />
+        <SGVirtualCamera {...{ aspectRatio, guiCamera: true, camOffset: new THREE.Vector3(0, -0.05, 0.075), ...camSettings }} />
 
-        <group
-          position={[camSettings.size * 0.5 * aspectRatio + uiScale * 0.25 + bWidth, uiScale * -0.25 + bWidth * -0.5, 0]}
-        >
+        <group position={[camSettings.size * 0.5 * aspectRatio + uiScale * 0.25 + bWidth, uiScale * -0.25 + bWidth * -0.5, 0]}>
           <GUIElement
             {...{
               icon: camera_texture,
@@ -336,23 +365,8 @@ const GUI = ({ aspectRatio, guiMode, currentBoard, selectedObject, virtualCamVis
           />
         </group>
 
-        <group
-          position={[
-            camSettings.size * 0.5 * aspectRatio + (uiScale + bWidth) * 0.5 + bWidth,
-            uiScale * 0.25 + bWidth * 0.5,
-            0
-          ]}
-        >
-          <GUIElement
-            {...{
-              name: 'fov_slider',
-              width: uiScale + bWidth,
-              height: uiScale * 0.5,
-              radius: bWidth,
-              color: 0x212121
-            }}
-          />
-          <primitive object={fovLabel} position={[0, 0, 0.001]} scale={[0.35, 0.35, 0.35]} />
+        <group name="fov_slider" position={[camSettings.size * 0.5 * aspectRatio + bWidth, uiScale * 0.25 + bWidth * 0.5, 0]}>
+          <primitive object={fovSlider} scale={[0.35, 0.35, 0.35]} />
         </group>
       </group>
     </group>

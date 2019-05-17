@@ -45,7 +45,8 @@ export function createSlider({
   width = 0.25,
   height = 0.1,
   depth = 0.0025,
-  corner = 0.05
+  corner = 0.05,
+  fovSlider = false
 } = {}) {
   const SLIDER_WIDTH = width
   const SLIDER_HEIGHT = height
@@ -94,13 +95,14 @@ export function createSlider({
   sliderBG.position.x = width
 
   const borderWidth = 1 + 0.1 * width
-  const sliderBorder = new THREE.Mesh(rect.clone(), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0xffffff }))
+  let sliderBorder = new THREE.Mesh(rect.clone(), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0xffffff }))
   Colors.colorizeGeometry(sliderBorder.geometry, 0xffffff)
   sliderBorder.position.z = depth * 0.5 - 0.001
   sliderBorder.position.x = width - (width * borderWidth - width) * 0.5
   sliderBorder.geometry.scale(borderWidth, 1.1, 1)
+  if (fovSlider) sliderBorder = new THREE.Object3D()
 
-  const material = new THREE.MeshBasicMaterial({ color: Colors.DEFAULT_COLOR })
+  const material = new THREE.MeshBasicMaterial({ color: 0x6e6e6e, visible: !fovSlider })
   const filledVolume = new THREE.Mesh(rect.clone(), material)
   filledVolume.position.z = depth * 0.5
   hitscanVolume.add(filledVolume)
@@ -113,8 +115,8 @@ export function createSlider({
   hitscanVolume.add(endLocator)
   endLocator.visible = false
 
-  const valueLabel = textCreator.create(state.value.toString())
-  valueLabel.position.x = 0.02 + width
+  const valueLabel = textCreator.create(state.value.toString(), { centerText: 'slider' })
+  valueLabel.position.x = width * 1.5
   valueLabel.position.z = depth * 2.5
   valueLabel.position.y = -0.0325
 
@@ -124,7 +126,7 @@ export function createSlider({
   descriptorLabel.position.y = -0.03
 
   group.add(descriptorLabel, hitscanVolume, sliderBG, sliderBorder, valueLabel)
-  group.position.x = -0.15 * 0.35
+  group.position.x = fovSlider ? -width * 0.35 : -0.15 * 0.35
 
   updateValueLabel(state.value)
   updateSlider()
@@ -138,13 +140,13 @@ export function createSlider({
   }
 
   function updateView() {
-    if (state.pressing) {
-      material.color.setHex(0x6e6e6e)
-    } else if (interaction.hovering()) {
-      material.color.setHex(0x6e6e6e)
-    } else {
-      material.color.setHex(0x6e6e6e)
-    }
+    // if (state.pressing) {
+    //   material.color.setHex(0x6e6e6e)
+    // } else if (interaction.hovering()) {
+    //   material.color.setHex(0x6e6e6e)
+    // } else {
+    //   material.color.setHex(0x6e6e6e)
+    // }
   }
 
   function updateSlider() {
