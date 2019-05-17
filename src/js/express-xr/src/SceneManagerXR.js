@@ -179,7 +179,7 @@ const SceneContent = ({
   const xrOffset = useRef(null)
 
   const [isXR, setIsXR] = useState(false)
-  const [guiMode, setGuiMode] = useState(null)
+  const [guiMode, setGuiMode] = useState('selection')
   const [virtualCamVisible, setVirtualCamVisible] = useState(true)
   const [currentBoard, setCurrentBoard] = useState(null)
   const [camExtraRot, setCamExtraRot] = useState(0)
@@ -196,7 +196,11 @@ const SceneContent = ({
   const teleportArray = useRef([])
   const teleportMode = useRef(false)
 
+  // Why do I need to create ref to access updated state in some functions?
+  const guiModeRef = useRef(null)
+
   XRControllersRef.current = XRControllers
+  guiModeRef.current = guiMode
 
   const findParent = obj => {
     while (obj) {
@@ -410,6 +414,8 @@ const SceneContent = ({
 
         return
       }
+
+      if (guiModeRef.current !== 'selection') return
 
       const { id } = intersection.object
       setSelectedObject(id)
