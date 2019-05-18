@@ -420,10 +420,11 @@ const SceneContent = ({
       const { id } = intersection.object
       setSelectedObject(id)
 
-      const object = findParent(intersection.object)
-      controller.userData.selected = object
+      let object = findParent(intersection.object)
 
       if (object.userData.type === 'character') {
+        object = object.children[0]
+
         const raycastDepth = controller.getObjectByName('raycast-depth')
         raycastDepth.position.z = -intersection.distance
 
@@ -450,6 +451,8 @@ const SceneContent = ({
         object.matrix.decompose(object.position, object.quaternion, object.scale)
         controller.add(object)
       }
+
+      controller.userData.selected = object
 
       const objMaterial = intersection.object.material
       if (Array.isArray(objMaterial)) {
@@ -744,7 +747,9 @@ const SceneContent = ({
           undefined
         )
       case 'character':
-        return <SGCharacter key={i} {...{ modelData: getModelData(sceneObject), ...sceneObject }} />
+        const selectedObj = scene.getObjectById(selectedObject)
+        const isSelected = selectedObj && selectedObj.userData.id === sceneObject.id ? true : false
+        return <SGCharacter key={i} {...{ modelData: getModelData(sceneObject), isSelected, ...sceneObject }} />
       case 'object':
         return <SGModel key={i} {...{ modelData: getModelData(sceneObject), ...sceneObject }} />
       case 'light':
