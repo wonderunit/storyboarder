@@ -104,7 +104,6 @@ export function createSlider({
 
   const material = new THREE.MeshBasicMaterial({ color: 0x6e6e6e, visible: !fovSlider })
   const filledVolume = new THREE.Mesh(rect.clone(), material)
-  filledVolume.position.z = depth * 0.5
   hitscanVolume.add(filledVolume)
 
   const endLocator = new THREE.Mesh(
