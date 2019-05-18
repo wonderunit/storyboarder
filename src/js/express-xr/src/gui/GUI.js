@@ -158,7 +158,7 @@ const GUI = ({ aspectRatio, guiMode, currentBoard, selectedObject, virtualCamVis
       slider.scale.set(0.35, 0.35, 0.35)
 
       slider.position.y = -idx * (uiScale * 0.5 + bWidth)
-      children.push(<primitive key={`${key}_slider`} object={slider} />)
+      children.push(<primitive key={`${parent.userData.displayName}_${key}_slider`} object={slider} />)
 
       idx++
     }
