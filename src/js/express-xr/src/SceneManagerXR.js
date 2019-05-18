@@ -645,6 +645,8 @@ const SceneContent = ({
         return
       }
 
+      if (intersection.object.userData.type === 'gui') return
+
       const { id } = intersection.object
       setSelectedObject(id)
     }
