@@ -31,6 +31,9 @@ const GUI = require('./gui/GUI')
 const { getIntersections, intersectObjects } = require('./utils/xrControllerFuncs')
 require('./lib/VRController')
 
+const RStats = require('./lib/rStats')
+require('./lib/rStats.extras')
+
 const loadingManager = new THREE.LoadingManager()
 const objLoader = new THREE.OBJLoader2(loadingManager)
 const gltfLoader = new THREE.GLTFLoader(loadingManager)
@@ -175,6 +178,7 @@ const SceneContent = ({
   world,
   updateObject
 }) => {
+  const rStatsRef = useRef(null)
   const renderer = useRef(null)
   const xrOffset = useRef(null)
 
@@ -312,6 +316,12 @@ const SceneContent = ({
   }, [])
 
   useRender(() => {
+    if (rStatsRef.current) {
+      rStatsRef.current('rAF').tick()
+      rStatsRef.current('FPS').frame()
+      rStatsRef.current().update()
+    }
+
     THREE.VRController.update()
 
     Object.values(XRControllersRef.current).forEach(controller => {
@@ -676,6 +686,16 @@ const SceneContent = ({
         }
       })
       .catch(err => console.error(err))
+
+      const threeStats = new window.threeStats(gl)
+      rStatsRef.current = new RStats({
+        css: [],
+        values: {
+          fps: { caption: 'fps', below: 30 }
+        },
+        groups: [{ caption: 'Framerate', values: ['fps', 'raf'] }],
+        plugins: [threeStats]
+      })
     }
   }, [])
 
