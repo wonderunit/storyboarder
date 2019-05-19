@@ -37,6 +37,7 @@ export function createSlider({
   object,
   propertyName = 'undefined',
   id = 'undefined',
+  uuid = 'undefined',
   prop = 'undefined',
   initialValue = 0.0,
   min = 0.0,
@@ -62,7 +63,7 @@ export function createSlider({
     min: min,
     max: max,
     onChangedCB: undefined,
-    onFinishedChange: undefined,
+    onFinishedChangedCB: undefined,
     pressing: false
   }
 
@@ -180,6 +181,11 @@ export function createSlider({
     return group
   }
 
+  group.onFinishedChange = function(callback) {
+    state.onFinishedChangedCB = callback
+    return group
+  }
+
   group.step = function(step) {
     state.step = step
     state.precision = numDecimals(state.step)
@@ -238,6 +244,7 @@ export function createSlider({
   }
 
   function handleRelease() {
+    state.onFinishedChangedCB(uuid, prop, state.value)
     state.pressing = false
   }
 

@@ -44,7 +44,49 @@ const GUI = ({ aspectRatio, guiMode, currentBoard, selectedObject, virtualCamVis
   //   return textCreator.create(`${camSettings.fov}mm`, { centerText: 'custom' })
   // }, [])
 
-  const updateProps = (id, prop, value) => {
+  const updateGeometry = (id, prop, value) => {
+    if (id && prop) {
+      const object = scene.getObjectById(id)
+
+      if (prop === 'guiFOV') {
+        const guiCam = scene.getObjectByName('guiCam')
+        guiCam.dispatchEvent({ type: 'updateFOV', fov: value })
+        return
+      }
+
+      switch (prop) {
+        case 'width':
+          object.scale.x = value
+          break
+        case 'height':
+          object.scale.y = value
+          break
+        case 'depth':
+          object.scale.z = value
+          break
+        case 'size':
+          object.scale.set(value, value, value)
+          break
+        case 'fov':
+          object.traverse(child => {
+            if (child.type === 'PerspectiveCamera') {
+              child.dispatchEvent({ type: 'updateFOV', fov: value })
+            }
+          })
+        case 'angle':
+        case 'intensity':
+          object.traverse(child => {
+            if (child.type === 'SpotLight') {
+              child[prop] = value
+            }
+          })
+        default:
+          break
+      }
+    }
+  }
+
+  const updateState = (id, prop, value) => {
     if (id && prop) {
       const event = new CustomEvent('updateRedux', {
         detail: {
@@ -72,7 +114,11 @@ const GUI = ({ aspectRatio, guiMode, currentBoard, selectedObject, virtualCamVis
       fovSlider: true
     })
 
-    slider.name('').step(1).onChange(updateProps)
+    slider
+      .name('')
+      .step(1)
+      .onChange(updateGeometry)
+      .onFinishedChange(updateState)
     slider.scale.set(0.35, 0.35, 0.35)
 
     fovSliderRef.current = slider
@@ -117,7 +163,7 @@ const GUI = ({ aspectRatio, guiMode, currentBoard, selectedObject, virtualCamVis
           minMax = { min: 0.8, max: 1.2 }
           break
         case 'height':
-          minMax = { min: 1.4732, max: 2.1336 }
+          if (parent.userData.type === "character") minMax = { min: 1.4732, max: 2.1336 }
           break
         case 'mesomorphic':
         case 'ectomorphic':
@@ -142,7 +188,8 @@ const GUI = ({ aspectRatio, guiMode, currentBoard, selectedObject, virtualCamVis
         textCreator,
         prop,
         object: new THREE.Vector3(),
-        id: parent.userData.id,
+        id: parent.id,
+        uuid: parent.userData.id,
         initialValue: decimal,
         min: minMax.min,
         max: minMax.max,
@@ -155,7 +202,8 @@ const GUI = ({ aspectRatio, guiMode, currentBoard, selectedObject, virtualCamVis
       slider
         .name(name)
         .step(0.1)
-        .onChange(updateProps)
+        .onChange(updateGeometry)
+        .onFinishedChange(updateState)
       slider.scale.set(0.35, 0.35, 0.35)
 
       slider.position.y = -idx * (uiScale * 0.5 + bWidth)

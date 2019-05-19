@@ -1,8 +1,10 @@
 const { useUpdate, useThree, useRender } = require('../lib/react-three-fiber')
 const React = require('react')
-const { useEffect, useRef } = React
+const { useEffect, useRef, useState } = React
 
 const SGVirtualCamera = ({ i, aspectRatio, selectedObject, ...props }) => {
+  const [camSliderFOV, setCamSliderFOV] = useState(null)
+
   const previousTime = useRef([null])
   const isSelected = useRef(false)
 
@@ -42,9 +44,30 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, ...props }) => {
     [props.rotation, props.tilt, props.roll]
   )
 
+  const renderCamera = () => {
+    if (virtualCamera.current && renderTarget.current) {
+      gl.vr.enabled = false
+
+      hideArray.current.forEach(child => {
+        child.visible = false
+      })
+
+      gl.render(scene, virtualCamera.current, renderTarget.current)
+      gl.vr.enabled = true
+
+      hideArray.current.forEach(child => {
+        child.visible = true
+      })
+    }
+  }
+
   useEffect(() => {
     if (!renderTarget.current) {
       renderTarget.current = new THREE.WebGLRenderTarget(resolution * aspectRatio, resolution)
+    }
+
+    if (virtualCamera.current) {
+        virtualCamera.current.addEventListener('updateFOV', (e) => setCamSliderFOV(e.fov))
     }
   }, [])
 
@@ -69,25 +92,12 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, ...props }) => {
       if (!props.guiCamera && !isSelected.current) return
     }
 
-    if (virtualCamera.current && renderTarget.current) {
-      gl.vr.enabled = false
-
-      hideArray.current.forEach(child => {
-        child.visible = false
-      })
-
-      gl.render(scene, virtualCamera.current, renderTarget.current)
-      gl.vr.enabled = true
-
-      hideArray.current.forEach(child => {
-        child.visible = true
-      })
-    }
+    renderCamera()
   })
 
   return (
     <group
-      userData={{ id: props.id, displayName: props.displayName, type: 'virtual-camera', forPanel: { 'fov': props.fov } }}
+      userData={{ id: props.id, displayName: props.displayName, type: 'virtual-camera', forPanel: { fov: props.fov } }}
       position={[props.x || 0, props.z || 0, props.y || 0]}
       ref={ref}
     >
@@ -111,9 +121,10 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, ...props }) => {
       )}
       <group position={props.camOffset || new THREE.Vector3()}>
         <perspectiveCamera
+          name={props.guiCamera ? 'guiCam' : '' }
           ref={virtualCamera}
           aspect={aspectRatio}
-          fov={props.fov}
+          fov={camSliderFOV || props.fov}
           near={0.01}
           far={1000}
           onUpdate={self => self.updateProjectionMatrix()}
