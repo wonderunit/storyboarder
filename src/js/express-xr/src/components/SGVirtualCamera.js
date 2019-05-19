@@ -74,7 +74,12 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, ...props }) => {
   useEffect(() => {
     hideArray.current = []
     scene.traverse(child => {
-      if (child.type === 'Line' || child.userData.type === 'virtual-camera' || child.userData.id === 'controller') {
+      if (
+        child.type === 'Line' ||
+        child.userData.type === 'virtual-camera' ||
+        child.userData.id === 'controller' ||
+        child.userData.type === 'gui'
+      ) {
         hideArray.current.push(child)
       }
     })
