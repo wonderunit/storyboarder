@@ -1,5 +1,7 @@
+//#region ragdoll's import
 const RagDoll = require("./IK/objects/IkObjects/RagDoll");
-
+const TargetControl = require("./IK/objects/TargetControl");
+//#endregion
 const THREE = require('three')
 window.THREE = window.THREE || THREE
 
@@ -176,6 +178,7 @@ const Character = React.memo(({
 
   loaded,
   modelData,
+  largeRenderer,
 
   ...props
 }) => {
@@ -198,7 +201,10 @@ const Character = React.memo(({
     }
   }
 
-  let ikObject = new RagDoll();
+ // this.ragDoll = new RagDoll();
+
+  let ragDoll = useRef(null);
+
 
   // if the model has changed
   useEffect(() => {
@@ -225,6 +231,7 @@ const Character = React.memo(({
       originalSkeleton.current = skeleton.clone()
       originalSkeleton.current.bones = originalSkeleton.current.bones.map(bone => bone.clone())
 
+      ragDoll.current = new RagDoll();
       object.current = new THREE.Object3D()
       object.current.add(...armatures)
       object.current.add(mesh)
@@ -271,6 +278,23 @@ const Character = React.memo(({
       object.current.userData.parentRotation = parentRotation
       object.current.userData.parentPosition = parentPosition
       scene.add(object.current.bonesHelper)
+
+      //#region Ragdoll
+      let skeletonRig = ragDoll.current;
+      let domElement = largeRenderer.current.domElement;
+      const hipsControl = AddTransformationControl(new THREE.Vector3(0, 1, 0), camera, domElement, scene);
+      const backControl = AddTransformationControl(new THREE.Vector3(0, 1, -.1), camera, domElement, scene);
+      const rightHandControl = AddTransformationControl(new THREE.Vector3(-2, 1.5, 0), camera, domElement, scene);
+      const leftHandControl = AddTransformationControl(new THREE.Vector3(2, 1.5, 0), camera, domElement, scene);
+      const leftLegControl = AddTransformationControl(new THREE.Vector3(2, -1.5, 0), camera, domElement, scene);
+      const rightLegControl = AddTransformationControl(new THREE.Vector3(-2, -1.5, 0), camera, domElement, scene);
+
+      console.log(object.current);
+      skeletonRig.initObject(scene, object.current, object.current.children[1], backControl, leftHandControl,
+          rightHandControl, leftLegControl, rightLegControl,
+          hipsControl );
+
+      //#endregion
     }
 
     return function cleanup () {
@@ -758,9 +782,23 @@ const Character = React.memo(({
     if (ready) {
       setLoaded(true)
     }
+    //#region ragdoll
+    let rigSkeleton = ragDoll.current;
+    if(rigSkeleton != null && rigSkeleton.isInitialized())
+    {
+      //rigSkeleton.update();
+    }
+    //#endregion
   }, [ready])
 
   return null
 })
-
+//#region RagDoll
+function AddTransformationControl(position, camera, domElement, scene)
+{
+  let targetControl = new TargetControl(camera, domElement);
+  targetControl.initialize(position, scene);
+  return targetControl;
+}
+//#endregion
 module.exports = Character

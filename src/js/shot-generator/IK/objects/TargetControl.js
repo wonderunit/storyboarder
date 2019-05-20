@@ -1,15 +1,15 @@
-const {TransformControls} = require( "../utils/TransformControls");
+const TransformControls = require( "../utils/TransformControls");
 const THREE = require( "three");
 
 class TargetControl
 {
-    constructor(camera, domElement, orbitControl)
+    constructor(camera, domElement)
     {
         this.control = new TransformControls( camera, domElement );
         this.control.size = 0.5
         this.control.addEventListener('dragging-changed', ( event ) =>
         {
-            orbitControl.enabled = ! event.value;
+            //orbitControl.enabled = ! event.value;
         });
     }
 

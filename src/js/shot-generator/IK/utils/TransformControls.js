@@ -3,7 +3,7 @@ const THREE = require("three");
  * @author arodic / https://github.com/arodic
  */
 
-module.exports = TransformControls;
+
 const TransformControls = function ( camera, domElement ) {
 
 	THREE.Object3D.call( this );
@@ -605,6 +605,8 @@ const TransformControls = function ( camera, domElement ) {
 	};
 
 };
+
+
 
 TransformControls.prototype = Object.assign( Object.create( THREE.Object3D.prototype ), {
 
@@ -1466,3 +1468,4 @@ TransformControlsPlane.prototype = Object.assign( Object.create( THREE.Mesh.prot
 	isTransformControlsPlane: true
 
 } );
+module.exports = TransformControls;

@@ -678,7 +678,7 @@ const SceneManager = connect(
                 storyboarderFilePath: meta.storyboarderFilePath,
                 loaded: props.loaded ? props.loaded : false,
                 modelData: attachments[modelCacheKey] && attachments[modelCacheKey].value,
-
+                largeRenderer,
                 ...props
               }
             ]

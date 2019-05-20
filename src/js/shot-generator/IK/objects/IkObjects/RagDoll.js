@@ -1,8 +1,8 @@
 const IkObject = require( "./IkObject");
 const THREE = require( "three");
-const PoleConstraint = require( "../../contraints/PoleConstraint");
+const PoleConstraint = require( "../../constraints/PoleConstraint");
 const PoleTarget = require( "../PoleTarget");
-const CopyRotation = require( "../../contraints/CopyRotation");
+const CopyRotation = require( "../../constraints/CopyRotation");
 
 class RagDoll extends IkObject
 {
@@ -14,9 +14,9 @@ class RagDoll extends IkObject
         this.hipsMouseDown = false;
     }
 
-    initObject(scene, ...controlTarget)
+    initObject(scene, object, skinnedMesh, ...controlTarget)
     {
-        super.initObject(scene, controlTarget);
+        super.initObject(scene, object, skinnedMesh, controlTarget);
         // Adds events to Back control
         this.applyEventsToBackControl(this.controlTargets[0].control);
 

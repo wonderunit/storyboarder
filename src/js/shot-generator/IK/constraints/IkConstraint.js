@@ -1,4 +1,4 @@
-import * as THREE from "three";
+const THREE = require("three");
 
 // IkConstraint is abstract class for custom constraints
 // it's implemented in three-ik.js so it supposed to be added as

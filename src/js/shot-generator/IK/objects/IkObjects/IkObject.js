@@ -12,15 +12,14 @@ class IkObject
         this.neckRotation = null;
         this.enableIk = true;
         this.controlTargets = [];
-        console.log("Hi!");
     }
 
     // Takes skeleton and target for it's limbs
-    initObject(scene, ...controlTarget)
+    initObject(scene, objectSkeleton , skinnedMesh, ...controlTarget)
     {
         this.ik = new IK();
         let chains = [];
-        let rigMesh = scene.children[1];
+        let rigMesh = skinnedMesh;
         let skeleton = null;
         this.controlTargets = controlTarget[0];
 
@@ -34,11 +33,9 @@ class IkObject
         chainObjects.push(new ChainObject("RightArm", "RightHand", this.controlTargets[2]));
         chainObjects.push(new ChainObject("LeftUpLeg", "LeftFoot", this.controlTargets[3]));
         chainObjects.push(new ChainObject("RightUpLeg", "RightFoot", this.controlTargets[4]));
-
-
-
+        console.log("Object in proces")
         // Goes through all scene objects
-        scene.traverse((object) =>
+        objectSkeleton.traverse((object) =>
         {
             // Searches only bones object
             if(object instanceof THREE.Bone)
@@ -54,13 +51,13 @@ class IkObject
                         parent = parent.parent;
                     }
                     skeleton = parent;
+                    console.log(skeleton);
                 }
                 // Flips a model's forward from -Z to +Z
                 // By default Models axis is -Z while Three ik works with +Z
                 if(object.name === "Hips")
                 {
                     this.hips = object;
-                    setZForward(object);
                     rigMesh.bind(rigMesh.skeleton);
                 }
                 // Goes through all chain objects to find with which we are working
@@ -150,5 +147,9 @@ class IkObject
         this.hips.position.copy(hipsTarget.position);
     }
 
+    isInitialized()
+    {
+        return this.ik === undefined ? false : true;
+    }
 }
 module.exports =  IkObject;
