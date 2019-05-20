@@ -1,3 +1,5 @@
+const RagDoll = require("./IK/objects/IkObjects/RagDoll");
+
 const THREE = require('three')
 window.THREE = window.THREE || THREE
 
@@ -195,6 +197,8 @@ const Character = React.memo(({
       object.current = null
     }
   }
+
+  let ikObject = new RagDoll();
 
   // if the model has changed
   useEffect(() => {

@@ -649,13 +649,14 @@ const SceneManager = connect(
               }
             ]
 
-          case 'character':
+        case 'character':
             try {
               modelCacheKey = ModelLoader.getFilepathForModel({ model: props.model, type: props.type }, { storyboarderFilePath: meta.storyboarderFilePath })
             } catch (err) {
               // console.log('migrating from absolute path')
             }
-            return [
+            console.log("SceneManager creates character");
+            let  character = [
               Character, {
                 key: props.id,
                 scene,
@@ -681,6 +682,8 @@ const SceneManager = connect(
                 ...props
               }
             ]
+            console.log(character);
+            return character
 
           case 'camera':
             return [
@@ -697,7 +700,7 @@ const SceneManager = connect(
               }
             ]
 
-            case 'volume':
+          case 'volume':
               return [
                 Volumetric, {
                   key: props.id,
@@ -715,7 +718,7 @@ const SceneManager = connect(
                 }
               ]
 
-            case 'light':
+          case 'light':
               return [
                 SpotLight, {
                   key: props.id,
