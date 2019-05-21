@@ -96,6 +96,9 @@ const fromPsdBuffer = buffer => {
   return canvases
 }
 
+const fromPsdBufferComposite = buffer => readPsd(buffer).canvas
+
 module.exports = {
-  fromPsdBuffer
+  fromPsdBuffer,
+  fromPsdBufferComposite
 }
