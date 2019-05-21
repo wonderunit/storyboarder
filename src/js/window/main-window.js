@@ -2756,164 +2756,141 @@ const onLinkedFileChange = async (eventType, filepath, stats) => {
 const refreshLinkedBoardByFilename = async filename => {
   console.log('refreshLinkedBoardByFilename', filename)
 
-  // find the board by link filename
-  let board
-  for (let b of boardData.boards) {
-    if (b.link && b.link === filename) {
-      board = b
-      break
-    }
-  }
+  // find the board associated with this link filename
+  let board = boardData.boards.find(b => b.link === filename)
+
   if (!board) {
-    console.log('Tried to update, from external editor, a file that does not exist in the scene:', filename)
+    let message =
+      'Tried to update, from external editor,' +
+      'a file that is not linked any board: ' + filename
+
+    console.log(message)
+    notifications.notify({
+      message
+    })
+
     return
   }
 
-  let curBoard = boardData.boards[currentBoard]
-
   // Update the current canvas if it's the same board coming back in.
-  let isCurrentBoard = curBoard.uid === board.uid
+  let isCurrentBoard = boardData.boards[currentBoard].uid === board.uid
 
-  if (isCurrentBoard) {
-    // save undo state for ALL layers
-    storeUndoStateForImage(true, storyboarderSketchPane.visibleLayersIndices)
-  }
-
-  console.log('\treading', path.join(boardPath, 'images', board.link))
-
-  let canvases
   try {
-    canvases = importerPsd.fromPsdBuffer(
-      fs.readFileSync(
-        path.join(boardPath, 'images', board.link)
-      )
+    console.log('\tloading', path.join(boardPath, 'images', board.link))
+
+    let buffer = fs.readFileSync(
+      path.join(boardPath, 'images', board.link)
     )
 
-    // HACK this prevents blank layers
-    await new Promise(resolve => setTimeout(resolve, 1))
+    console.log('\treading', path.join(boardPath, 'images', board.link))
+    let canvas = importerPsd.fromPsdBufferComposite(buffer)
 
+    let layer = storyboarderSketchPane.sketchPane.layers.findByName('reference')
+
+    // ensure layer data exists
+    console.log('\tupdating layer data')
+
+    // clear all non-reference layers
+    console.log(
+      'clearing non-reference layers from data' +
+      isCurrentBoard 
+        ? ' and SketchPane'
+        : ''
+    )
+    // NOTE gets layer indexes and names from CURRENT board,
+    //      even if we're operating on a NON-CURRENT board
+    //      we're assuming here that ALL boards have the SAME
+    //      layer indexes and names
+    for (let index of storyboarderSketchPane.visibleLayersIndices) {
+      let layerName = storyboarderSketchPane.sketchPane.layers[index].name
+
+      if (layerName !== 'reference') {
+        if (isCurrentBoard) {
+          console.log('\t\t', layerName, 'sketchpane layer cleared')
+          storyboarderSketchPane.sketchPane.layers.findByName(layerName).clear()
+        }
+
+        if (board.layers[layerName]) {
+          console.log('\t\t', layerName, 'data cleared')
+          delete board.layers[layerName]
+          // NOTE we DO NOT delete the PNG file from the file system
+        }
+      }
+    }
+    console.log('\tupdating reference layer data')
+    let filename = boardModel.boardFilenameForLayer(board, layer.name)
+    board.layers.reference = {
+      ...board.layers.reference,
+      url: filename,
+      opacity: 1.0
+    }
+    markBoardFileDirty() // NOTE ALWAYS results in a JSON update, even if data
+                         // hasn't actually changed
+
+    console.log('\tisCurrentBoard?', isCurrentBoard)
+    if (isCurrentBoard) {
+      // save undo state for ALL layers
+      console.log('\tstoring undoable state (pre)')
+      storeUndoStateForImage(true, storyboarderSketchPane.visibleLayersIndices)
+
+      // update reference layer
+      console.log('\tstamping to reference layer')
+      layer.replace(canvas)
+
+      // store undo state for reference layer
+      console.log('\tmarking undo-able (post)')
+      storeUndoStateForImage(false, [layer.index])
+
+      // mark the reference layer dirty
+      console.log('\tmarking layer dirty so it will save', layer.index)
+      markImageFileDirty([layer.index])
+
+      // uncomment to save image and update thumbnail immediately
+      // await saveImageFile()
+
+      // update thumbnail immediately
+      console.log('\tupdating thumbnail')
+      let index = await saveThumbnailFile(boardData.boards.indexOf(board))
+      await updateThumbnailDisplayFromFile(index)
+
+      console.log('\trendering thumbnail')
+      renderThumbnailDrawer()
+    } else {
+      console.log('\tsaving reference layer to:', filename)
+      saveDataURLtoFile(canvas.toDataURL(), filename)
+
+      // update the thumbnail
+      //
+      // explicitly indicate to renderer that the thumbnail file has changed
+      // FIXME use mtime instead of etags?
+      console.log('\tupdating etag')
+      setEtag(path.join(boardPath, 'images', boardModel.boardFilenameForThumbnail(board)))
+      // save
+      console.log('\tsaving thumbnail')
+      let index = await saveThumbnailFile(boardData.boards.indexOf(board))
+      // render thumbnail
+      await updateThumbnailDisplayFromFile(index)
+
+      // save a posterframe for onion skin
+      console.log('\tsaving posterframe')
+      await savePosterFrame(board, true)
+
+      // FIXME known issue: onion skin does not reload to reflect the changed file
+      //       see: https://github.com/wonderunit/storyboarder/issues/1185
+    }
+
+    console.log('\tdone!')
   } catch (err) {
     console.error(err)
-  }
-
-  if (!canvases || !Object.keys(canvases).length) {
     notifications.notify({
       message: `[WARNING] Could not import from file ${filename}. ` +
                'That PSD might be using a feature (like text layers or masks) ' +
-               'that Storyboarder does not support. ' +
-               'Or, it might be missing required named layers.'
+               'that Storyboarder does not support.'
+    })
+    notifications.notify({
+      message: err.toString()
     })
     return
-  }
-
-  console.log('\t*** updating from PSD ***', isCurrentBoard)
-  console.log('\tisCurrentBoard?', isCurrentBoard)
-  if (isCurrentBoard) {
-    // write to SketchPane layers and mark dirty
-
-    let dirty = []
-
-    // for every possible layer ...
-    for (let index of storyboarderSketchPane.visibleLayersIndices) {
-      let layer = storyboarderSketchPane.sketchPane.layers[index]
-      let layerName = layer.name
-      let canvas = canvases[layerName]
-      if (canvas) {
-        // layer is in the PSD, so use it
-        console.log('\treplacing contents of', layerName)
-        // TODO could avoid replacing/dirtying the layer if canvas is blank?
-        layer.replace(canvas)
-        dirty.push(layer.index)
-      } else {
-        // layer was NOT in the PSD, so clear it
-        console.log('\tclearing unused', layerName)
-        // TODO if already empty, could avoid clear?
-        layer.clear()
-        // NOTE we DO NOT save to PNG, since we're about to remove the layer data
-
-        // have we been tracking this layer? ...
-        if (board.layers[layerName]) {
-          // ... then delete the layer from data entirely
-          console.log('\tdeleting layer data for', layerName)
-          delete board.layers[layerName]
-          // NOTE we DO NOT delete the PNG file from the file system
-        }
-      }
-    }
-
-    // store undo state for every single layer
-    storeUndoStateForImage(false, storyboarderSketchPane.visibleLayersIndices)
-    // mark the layers that actually changed
-    markImageFileDirty(dirty)
-
-    // uncomment to save ALL layer images immediately
-    // save image and update thumbnail
-    // await saveImageFile()
-
-    // just update thumbnail immediately
-    let index = await saveThumbnailFile(boardData.boards.indexOf(board))
-    await updateThumbnailDisplayFromFile(index)
-
-    renderThumbnailDrawer()
-  } else {
-    // clear contents of layer PNGs that aren't in the PSD
-    // TODO this will break when we add user-managed layers
-
-    // NOTE HACK assumes current boards visibleLayersIndices matches
-    // the other board's layers organization!
-
-    // for every possible layer ...
-    for (let index of storyboarderSketchPane.visibleLayersIndices) {
-      // ... get the name of the layer
-      let layer = storyboarderSketchPane.sketchPane.layers[index]
-      let layerName = layer.name
-
-      let canvas = canvases[layerName]
-      let filename = boardModel.boardFilenameForLayer(board, layerName)
-
-      // did the PSD contain a canvas by this layer's name?
-      if (canvas) {
-        // add the layer to the board data (if it does not already exist)
-        if (!board.layers[layerName]) {
-          console.log('\tadding layer data for', layerName)
-          board.layers[layerName] = {
-            url: filename,
-            opacity: layerName === 'reference'
-              ? 1.0
-              : undefined // alternatively: exporterCommon.DEFAULT_REFERENCE_LAYER_OPACITY
-          }
-          markBoardFileDirty()
-        }
-
-        // save the PSD canvas over the existing file
-        console.log('\tsaving layer', layerName, 'to', filename)
-        saveDataURLtoFile(canvas.toDataURL(), filename)
-      } else {
-        // is there a layer?
-        if (board.layers[layerName]) {
-          // delete the layer
-          console.log('\tdeleting layer data for', layerName)
-          delete board.layers[layerName]
-          // NOTE we DO NOT delete the PNG file from the file system
-        }
-      }
-    }
-
-    // update the thumbnail
-    //
-    // explicitly indicate to renderer that the thumbnail file has changed
-    // FIXME use mtime instead of etags?
-    setEtag(path.join(boardPath, 'images', boardModel.boardFilenameForThumbnail(board)))
-    // save
-    let index = await saveThumbnailFile(boardData.boards.indexOf(board))
-    // render thumbnail
-    await updateThumbnailDisplayFromFile(index)
-
-    // save a posterframe for onion skin
-    await savePosterFrame(board, true)
-
-    // FIXME known issue: onion skin does not reload to reflect the changed file
-    //       see: https://github.com/wonderunit/storyboarder/issues/1185
   }
 }
 
@@ -6896,6 +6873,7 @@ ipcRenderer.on('focus', async event => {
   for (let dir of Object.keys(watched)) {
     for (let filename of watched[dir]) {
       console.log('refreshing', filename)
+      // TODO check timestamp to see if actually changed?
       await refreshLinkedBoardByFilename(filename)
     }
   }
