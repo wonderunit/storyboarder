@@ -427,9 +427,14 @@ const SceneContent = ({
 
       if (guiModeRef.current !== 'selection') return
 
+      if (intersection.object.userData.type === 'hitter') {
+        intersection = intersections[1]
+        if (!intersection) return
+      }
+
       const { id } = intersection.object
       setSelectedObject(id)
-
+      
       let object = findParent(intersection.object)
 
       if (object.userData.type === 'character') {
@@ -769,7 +774,7 @@ const SceneContent = ({
       case 'character':
         const selectedObj = scene.getObjectById(selectedObject)
         const isSelected = selectedObj && selectedObj.userData.id === sceneObject.id ? true : false
-        return <SGCharacter key={i} {...{ modelData: getModelData(sceneObject), isSelected, ...sceneObject }} />
+        return <SGCharacter key={i} {...{ modelData: getModelData(sceneObject), isSelected, updateObject, ...sceneObject }} />
       case 'object':
         return <SGModel key={i} {...{ modelData: getModelData(sceneObject), ...sceneObject }} />
       case 'light':

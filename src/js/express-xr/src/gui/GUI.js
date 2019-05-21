@@ -46,7 +46,7 @@ const GUI = ({ aspectRatio, guiMode, currentBoard, selectedObject, virtualCamVis
 
   const updateGeometry = (id, prop, value) => {
     if (id && prop) {
-      const object = scene.getObjectById(id)
+      let object = scene.getObjectById(id)
 
       if (prop === 'guiFOV') {
         const guiCam = scene.getObjectByName('guiCam')
@@ -59,7 +59,18 @@ const GUI = ({ aspectRatio, guiMode, currentBoard, selectedObject, virtualCamVis
           object.scale.x = value
           break
         case 'height':
-          object.scale.y = value
+          if (object.userData.name === 'character-container') {
+            object = object.children[0]
+            if (object.userData.modelSettings.height) {
+              let originalHeight = object.userData.originalHeight
+              let scale = value / originalHeight
+              object.scale.set(scale, scale, scale)
+            } else {
+              object.scale.setScalar(value)
+            }
+          } else {
+            object.scale.y = value
+          }
           break
         case 'depth':
           object.scale.z = value
@@ -73,6 +84,7 @@ const GUI = ({ aspectRatio, guiMode, currentBoard, selectedObject, virtualCamVis
               child.dispatchEvent({ type: 'updateFOV', fov: value })
             }
           })
+          break
         case 'angle':
         case 'intensity':
           object.traverse(child => {
@@ -80,6 +92,23 @@ const GUI = ({ aspectRatio, guiMode, currentBoard, selectedObject, virtualCamVis
               child[prop] = value
             }
           })
+          break
+        case 'mesomorphic':
+          object.children[0].children[0].morphTargetInfluences[0] = value
+          break
+        case 'ectomorphic':
+          object.children[0].children[0].morphTargetInfluences[1] = value
+          break
+        case 'endomorphic':
+          object.children[0].children[0].morphTargetInfluences[2] = value
+          break
+        case 'headScale':
+          object = object.children[0].children[0]
+          let headBone = object.skeleton.getBoneByName('Head')
+          if (headBone) {
+            headBone.scale.setScalar(value)
+          }
+          break
         default:
           break
       }

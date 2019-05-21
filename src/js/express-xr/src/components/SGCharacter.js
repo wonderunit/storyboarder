@@ -1,18 +1,66 @@
-const { useMemo, useRef, useEffect } = React
+const { useMemo, useRef, useEffect, useState } = React
 
-const cloneGltf = require('../lib/clone-gltf')
+const { initialState } = require('../../../shared/reducers/shot-generator')
 const BonesHelper = require('./SGBonesHelper')
 
-const materialFactory = () => new THREE.MeshToonMaterial({
-  color: 0xffffff,
-  emissive: 0x0,
-  specular: 0x0,
-  skinning: true,
-  shininess: 0,
-  flatShading: false,
-  morphNormals: true,
-  morphTargets: true
-})
+THREE.Cache.enabled = true
+
+const isValidSkinnedMesh = data => {
+  try {
+    let mesh =
+      data.scene.children.find(child => child instanceof THREE.SkinnedMesh) ||
+      data.scene.children[0].children.find(child => child instanceof THREE.SkinnedMesh)
+    return mesh != null
+  } catch (err) {
+    console.error(err)
+    return false
+  }
+}
+
+const cloneGltf = gltf => {
+  const clone = {
+    animations: gltf.animations,
+    scene: gltf.scene.clone(true)
+  }
+
+  const skinnedMeshes = {}
+
+  gltf.scene.traverse(node => {
+    if (node.isSkinnedMesh) {
+      skinnedMeshes[node.name] = node
+    }
+  })
+
+  const cloneBones = {}
+  const cloneSkinnedMeshes = {}
+
+  clone.scene.traverse(node => {
+    if (node.isBone) {
+      cloneBones[node.name] = node
+    }
+
+    if (node.isSkinnedMesh) {
+      cloneSkinnedMeshes[node.name] = node
+    }
+  })
+
+  for (let name in skinnedMeshes) {
+    const skinnedMesh = skinnedMeshes[name]
+    const skeleton = skinnedMesh.skeleton
+    const cloneSkinnedMesh = cloneSkinnedMeshes[name]
+
+    const orderedCloneBones = []
+
+    for (let i = 0; i < skeleton.bones.length; ++i) {
+      const cloneBone = cloneBones[skeleton.bones[i].name]
+      orderedCloneBones.push(cloneBone)
+    }
+
+    cloneSkinnedMesh.bind(new THREE.Skeleton(orderedCloneBones, skeleton.boneInverses), cloneSkinnedMesh.matrixWorld)
+  }
+
+  return clone
+}
 
 const characterFactory = data => {
   data = cloneGltf(data)
@@ -84,47 +132,234 @@ const characterFactory = data => {
   return { mesh, skeleton, armatures, originalHeight, boneLengthScale, parentRotation, parentPosition }
 }
 
-const SGCharacter = ({ id, model, modelData, x, y, z, skeleton, isSelected, ...props }) => {
+const SGCharacter = ({ id, type, isSelected, updateObject, modelData, ...props }) => {
+  const [ready, setReady] = useState(false) // ready to load?
+  // setting loaded = true forces an update to sceneObjects,
+  // which is what Editor listens for to attach the BonesHelper
+  const setLoaded = loaded => updateObject(id, { loaded: true })
   const object = useRef(null)
+
   const originalSkeleton = useRef(null)
 
-  const { skinnedMesh, bonesHelper } = useMemo(() => {
+  // const doCleanup = () => {
+  //   if (object.current) {
+  //     console.log(type, id, 'remove')
+  //     scene.remove(object.current.bonesHelper)
+  //     scene.remove(object.current)
+  //     object.current.bonesHelper = null
+  //     object.current = null
+  //   }
+  // }
+
+  // if the model has changed
+  useEffect(() => {
+    setReady(false)
+    setLoaded(false)
+
+    // return function cleanup () { }
+  }, [props.model])
+
+  useEffect(() => {
+    if (!ready && modelData) {
+      if (isValidSkinnedMesh(modelData)) {
+        // console.log(type, id, 'got valid mesh')
+
+        setReady(true)
+      } else {
+        alert('This model doesn’t contain a Skinned Mesh. Please load it as an Object, not a Character.')
+
+        // HACK undefined means an error state
+        setLoaded(undefined)
+      }
+    }
+  }, [modelData, ready])
+
+  useEffect(() => {
+    if (ready) {
+      setLoaded(true)
+    }
+  }, [ready])
+
+  const {
+    skinnedMesh,
+    armatures,
+    originalHeight,
+    mesh,
+    skeleton,
+    boneLengthScale,
+    parentRotation,
+    parentPosition
+  } = useMemo(() => {
     if (modelData) {
       const { mesh, skeleton, armatures, originalHeight, boneLengthScale, parentRotation, parentPosition } = characterFactory(
         modelData
       )
 
-      let skinnedMesh = mesh
-      let material = materialFactory()
-      if (skinnedMesh.material.map) {
-        material.map = skinnedMesh.material.map
-        material.map.needsUpdate = true
-      }
-      skinnedMesh.material = material
-
-      skinnedMesh.add(skinnedMesh.skeleton.bones[0])
-      skinnedMesh.bind(skinnedMesh.skeleton)
-
       // make a clone of the initial skeleton pose, for comparison
       originalSkeleton.current = skeleton.clone()
       originalSkeleton.current.bones = originalSkeleton.current.bones.map(bone => bone.clone())
 
-      object.current = new THREE.Object3D()
-      object.current.add(skinnedMesh.skeleton.bones[0].clone())
-      object.current.add(skinnedMesh)
+      return {
+        skinnedMesh: mesh,
+        armatures,
+        originalHeight,
+        mesh,
+        skeleton,
+        boneLengthScale,
+        parentRotation,
+        parentPosition
+      }
+    }
 
+    return {}
+  }, [modelData])
+
+  const { bonesHelper } = useMemo(() => {
+    if (object.current) {
       let bonesHelper = new BonesHelper(skeleton.bones[0].parent, object.current, {
         boneLengthScale,
-        cacheKey: model
+        cacheKey: props.model
       })
-      object.current.bonesHelper = bonesHelper
 
-      for (var cone of object.current.bonesHelper.cones) object.current.bonesHelper.add(cone)
-
-      return { skinnedMesh, bonesHelper }
+      return {
+        bonesHelper
+      }
     }
-    return { skinnedMesh: undefined, bonesHelper: undefined }
-  }, [modelData])
+
+    return {}
+  }, [object.current])
+
+  useEffect(() => {
+    return function cleanup() {
+      console.log('component cleanup')
+      // doCleanup()
+      setReady(false)
+      setLoaded(false)
+    }
+  }, [])
+
+  const updateSkeleton = () => {
+    let skeleton = object.current.userData.skeleton
+    if (Object.values(props.skeleton).length) {
+      for (bone of skeleton.bones) {
+        let userState = props.skeleton[bone.name]
+        let systemState = originalSkeleton.current.getBoneByName(bone.name).clone()
+
+        let state = userState || systemState
+
+        bone.rotation.x = state.rotation.x
+        bone.rotation.y = state.rotation.y
+        bone.rotation.z = state.rotation.z
+      }
+    } else {
+      let skeleton = object.current.userData.skeleton
+      skeleton.pose()
+      fixRootBone()
+    }
+  }
+
+  useEffect(() => {
+    if (object.current) {
+      object.current.position.x = props.x
+      object.current.position.z = props.y
+      object.current.position.y = props.z
+    }
+  }, [props.model, props.x, props.y, props.z, ready])
+
+  useEffect(() => {
+    if (object.current) {
+      if (props.rotation.y || props.rotation.y == 0) {
+        object.current.rotation.y = props.rotation.y
+      } else {
+        object.current.rotation.y = props.rotation
+      }
+    }
+  }, [props.model, props.rotation, ready])
+
+  const resetPose = () => {
+    if (!object.current) return
+
+    let skeleton = object.current.userData.skeleton
+    skeleton.pose()
+    updateSkeleton()
+    fixRootBone()
+  }
+
+  const fixRootBone = () => {
+    let { boneLengthScale, parentRotation, parentPosition } = object.current.userData
+    let skeleton = object.current.userData.skeleton
+
+    // fb converter scaled object
+    if (boneLengthScale === 100) {
+      if (props.skeleton['Hips']) {
+        // we already have correct values, don't multiply the root bone
+      } else {
+        skeleton.bones[0].quaternion.multiply(parentRotation)
+      }
+      skeleton.bones[0].position.copy(parentPosition)
+    }
+  }
+
+  useEffect(() => {
+    if (!ready) return
+    if (!props.posePresetId) return
+
+    console.log(type, id, 'changed pose preset')
+    resetPose()
+  }, [props.posePresetId])
+
+  useEffect(() => {
+    if (!ready) return
+    if (!object.current) return
+
+    // console.log(type, id, 'skeleton')
+    updateSkeleton()
+  }, [props.model, props.skeleton, ready])
+
+  useEffect(() => {
+    if (object.current) {
+      if (object.current.userData.modelSettings.height) {
+        let originalHeight = object.current.userData.originalHeight
+        let scale = props.height / originalHeight
+
+        object.current.scale.set(scale, scale, scale)
+      } else {
+        object.current.scale.setScalar(props.height)
+      }
+      //object.current.bonesHelper.updateMatrixWorld()
+    }
+  }, [props.model, props.height, props.skeleton, ready])
+
+  useEffect(() => {
+    if (!ready) return
+
+    if (object.current) {
+      // adjust head proportionally
+      let skeleton = object.current.userData.skeleton
+      let headBone = skeleton.getBoneByName('Head')
+
+      if (headBone && object.current.userData.modelSettings.height) {
+        let baseHeadScale = object.current.userData.modelSettings.height / props.height
+
+        //head bone
+        headBone.scale.setScalar(baseHeadScale)
+        headBone.scale.setScalar(props.headScale)
+      }
+    }
+  }, [props.model, props.headScale, props.skeleton, ready])
+
+  useEffect(() => {
+    // console.log(type, id, 'isSelected', isSelected)
+    if (!ready) return
+    if (!object.current) return
+
+    // handle selection/deselection - add/remove the bone stucture
+    if (isSelected) {
+      for (var cone of object.current.bonesHelper.cones) object.current.bonesHelper.add(cone)
+    } else {
+      for (var cone of object.current.bonesHelper.cones) object.current.bonesHelper.remove(cone)
+    }
+  }, [props.model, isSelected, ready])
 
   useMemo(() => {
     if (!skinnedMesh) return
@@ -136,71 +371,48 @@ const SGCharacter = ({ id, model, modelData, x, y, z, skeleton, isSelected, ...p
     }
   }, [modelData, props.morphTargets])
 
-  useMemo(() => {
-    if (!skinnedMesh) return
-    if (!Object.keys(skeleton).length) return
-
-    for (let name in skeleton) {
-      let bone = skinnedMesh.skeleton.getBoneByName(name)
-      if (bone) {
-        bone.rotation.x = skeleton[name].rotation.x
-        bone.rotation.y = skeleton[name].rotation.y
-        bone.rotation.z = skeleton[name].rotation.z
-
-        if (name === 'Hips') {
-          bone.rotation.x += Math.PI / 2.0
-        }
-      }
-    }
-  }, [skinnedMesh, skeleton])
-
-  const scale = useMemo(() => {
-    if (!skinnedMesh) return 1
-
-    let bbox = new THREE.Box3().setFromObject(skinnedMesh)
-    let originalHeight = bbox.max.y - bbox.min.y
-
-    return props.height / originalHeight
-  }, [skinnedMesh, props.height])
-
-  useMemo(() => {
-    if (!skinnedMesh) return
-  
-    let headBone = skinnedMesh.skeleton.getBoneByName('Head')
-
-    if (headBone) {
-      headBone.scale.setScalar( props.headScale )
-      // TODO scale proportionally to model height?
-    }
-  }, [model, props.headScale])
-
   return skinnedMesh ? (
-    <group userData={{ type: props.type }}>
+    <group
+      userData={{
+        id,
+        type,
+        name: 'character-container',
+        forPanel: {
+          height: props.height,
+          headScale: props.headScale,
+          mesomorphic: props.morphTargets.mesomorphic,
+          ectomorphic: props.morphTargets.ectomorphic,
+          endomorphic: props.morphTargets.endomorphic
+        }
+      }}
+    >
       <group
         ref={object}
-        visible={props.visible}
+        bonesHelper={bonesHelper ? bonesHelper : null}
         userData={{
           id,
+          type,
+          originalHeight,
+          mesh,
+          skeleton,
+          boneLengthScale,
+          parentRotation,
+          parentPosition,
           displayName: props.displayName,
-          type: props.type,
-          modelSettings: { rotation: props.rotation },
-          forPanel: {
-            height: props.height,
-            headScale: props.headScale,
-            mesomorphic: props.morphTargets.mesomorphic,
-            ectomorphic: props.morphTargets.ectomorphic,
-            endomorphic: props.morphTargets.endomorphic
+          modelSettings: Object.assign({ rotation: props.rotation }, initialState.models[props.model]) || {
+            rotation: props.rotation
           }
         }}
-        position={[x, z, y]}
-        rotation={[0, props.rotation, 0]}
-        scale={[scale, scale, scale]}
       >
-        <primitive userData={{ id }} object={skinnedMesh} />
+        <primitive userData={{ id, type }} object={skinnedMesh} />
+        <primitive object={armatures[0]} />
       </group>
-      <group>
-        <primitive visible={isSelected} object={bonesHelper} />
-      </group>
+
+      {bonesHelper && (
+        <group>
+          <primitive object={bonesHelper} />
+        </group>
+      )}
     </group>
   ) : null
 }
