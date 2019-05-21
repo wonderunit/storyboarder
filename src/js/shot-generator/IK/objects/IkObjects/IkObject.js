@@ -27,13 +27,12 @@ class IkObject
         this.chainObjects = chainObjects;
         this.hipsControlTarget = this.controlTargets[5];
 
-        chainObjects.push(new ChainObject("Spine", "Head", this.controlTargets[0]));
+       // chainObjects.push(new ChainObject("Spine", "Head", this.controlTargets[0]));
 
         chainObjects.push(new ChainObject("LeftArm", "LeftHand", this.controlTargets[1]));
-        chainObjects.push(new ChainObject("RightArm", "RightHand", this.controlTargets[2]));
-        chainObjects.push(new ChainObject("LeftUpLeg", "LeftFoot", this.controlTargets[3]));
-        chainObjects.push(new ChainObject("RightUpLeg", "RightFoot", this.controlTargets[4]));
-        console.log("Object in proces")
+        //chainObjects.push(new ChainObject("RightArm", "RightHand", this.controlTargets[2]));
+        //chainObjects.push(new ChainObject("LeftUpLeg", "LeftFoot", this.controlTargets[3]));
+        //chainObjects.push(new ChainObject("RightUpLeg", "RightFoot", this.controlTargets[4]));
         // Goes through all scene objects
         objectSkeleton.traverse((object) =>
         {
@@ -51,7 +50,7 @@ class IkObject
                         parent = parent.parent;
                     }
                     skeleton = parent;
-                    console.log(skeleton);
+                    console.log(skeleton.clone());
                 }
                 // Flips a model's forward from -Z to +Z
                 // By default Models axis is -Z while Three ik works with +Z
@@ -67,6 +66,7 @@ class IkObject
                     // Also checks if chain is started
                     if(object.name == chainObject.baseObjectName || chainObject.isChainObjectStarted)
                     {
+                        console.log(object);
                         let chain = chainObject.chain;
 
                         // Checks if root object
@@ -85,11 +85,12 @@ class IkObject
                             object.getWorldPosition(target.position)
                             chainObject.isChainObjectStarted = false
                         }
+
                         // Creates joint by passing current bone and its constraint
                         let joint = new IKJoint(object, {});
+                        let globaPose = new THREE.Vector3();
                         // Adds joint to chain and sets target
                         chain.add(joint, {target});
-
                     }
                 });
             }
@@ -105,7 +106,23 @@ class IkObject
         skeletonHelper.material.linewidth = 3;
         // Adds skeleton helper to scene
         scene.add( skeletonHelper );
-        this.calculteBackOffset();
+       // this.calculteBackOffset();
+    }
+
+    reinitialize(worldMatrix)
+    {
+        let chainObjects = this.chainObjects;
+        for(let i = 0; i < chainObjects.length; i++)
+        {
+            let chain = chainObjects[i].chain;
+            console.log("reinit");
+            chain.reinitializeJoints();
+            for (let i = 0; i < chain.joints.length; i++)
+            {
+                console.log(chain.joints[i]);
+                chain.joints[i]._direction.applyMatrix4(worldMatrix);
+            }
+        }
     }
 
     // Calculates back's offset in order to move with hips
@@ -125,7 +142,7 @@ class IkObject
             // Solves the inverse kinematic of object
             this.ik.solve();
         }
-        this.lateUpdate();
+      //  this.lateUpdate();
     }
 
     // Updates which is called last after all stuff in loop has been done

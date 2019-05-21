@@ -201,8 +201,6 @@ const Character = React.memo(({
     }
   }
 
- // this.ragDoll = new RagDoll();
-
   let ragDoll = useRef(null);
 
 
@@ -250,6 +248,7 @@ const Character = React.memo(({
 
       scene.add(object.current)
       scene.add(object.current.orthoIcon)
+      console.log(scene);
 
       mesh.layers.disable(0)
       mesh.layers.enable(1)
@@ -289,11 +288,11 @@ const Character = React.memo(({
       const leftLegControl = AddTransformationControl(new THREE.Vector3(2, -1.5, 0), camera, domElement, scene);
       const rightLegControl = AddTransformationControl(new THREE.Vector3(-2, -1.5, 0), camera, domElement, scene);
 
-      console.log(object.current);
       skeletonRig.initObject(scene, object.current, object.current.children[1], backControl, leftHandControl,
           rightHandControl, leftLegControl, rightLegControl,
           hipsControl );
-
+      object.current.userData.ikRig = skeletonRig;
+      console.log(object.current);
       //#endregion
     }
 
@@ -479,6 +478,8 @@ const Character = React.memo(({
         let scale = props.height / originalHeight
 
         object.current.scale.set( scale, scale, scale )
+        object.current.updateMatrixWorld(true);
+        ragDoll.current.reinitialize(object.current.matrixWorld);
       } else {
         object.current.scale.setScalar( props.height )
       }
@@ -782,13 +783,6 @@ const Character = React.memo(({
     if (ready) {
       setLoaded(true)
     }
-    //#region ragdoll
-    let rigSkeleton = ragDoll.current;
-    if(rigSkeleton != null && rigSkeleton.isInitialized())
-    {
-      //rigSkeleton.update();
-    }
-    //#endregion
   }, [ready])
 
   return null

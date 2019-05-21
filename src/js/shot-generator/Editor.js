@@ -455,8 +455,9 @@ const SceneManager = connect(
 
         animator.current = () => {
           if (stats) { stats.begin() }
-          if (scene && camera) {
-
+          if (scene && camera)
+          {
+            updateCharacterIk(scene);
             animatedUpdate((dispatch, state) => {
               let cameraForSmall = state.mainViewCamera === 'ortho' ? camera : orthoCamera.current
               let cameraForLarge = state.mainViewCamera === 'live' ? camera : orthoCamera.current
@@ -655,7 +656,6 @@ const SceneManager = connect(
             } catch (err) {
               // console.log('migrating from absolute path')
             }
-            console.log("SceneManager creates character");
             let  character = [
               Character, {
                 key: props.id,
@@ -682,7 +682,6 @@ const SceneManager = connect(
                 ...props
               }
             ]
-            console.log(character);
             return character
 
           case 'camera':
@@ -787,6 +786,17 @@ const SceneManager = connect(
     ]
   }
 )
+function updateCharacterIk(scene)
+{
+  scene.traverse((object) =>
+  {
+    if(object.userData.ikRig !== undefined)
+    {
+      object.userData.ikRig.update();
+    }
+  });
+
+}
 
 // const DebugObject = React.memo(({ id, type }) => {
 //   useEffect(() => {
@@ -2660,7 +2670,7 @@ const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, set
     createObject({
       id,
       type: 'character',
-      height: 1.8,
+      height: 1.7,
       model: 'adult-male',
       x: newPoz.x,
       y: newPoz.y,
@@ -2673,7 +2683,7 @@ const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, set
         ectomorphic: 0,
         endomorphic: 0
       },
-
+      ikRig:  null,
       posePresetId: DEFAULT_POSE_PRESET_ID,
       skeleton: defaultPosePresets[DEFAULT_POSE_PRESET_ID].state.skeleton,
 

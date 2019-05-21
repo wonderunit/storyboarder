@@ -545,11 +545,13 @@ var IKChain = function () {
       }
       this.joints = this.joints || [];
       this.joints.push(joint);
-      if (this.joints.length === 1) {
+      if (this.joints.length === 1)
+      {
         this.base = this.joints[0];
         this.origin = new three.Vector3().copy(this.base._getWorldPosition());
       }
-      else {
+      else
+      {
           var previousJoint = this.joints[this.joints.length - 2];
           var previousPreviousJoint = this.joints[this.joints.length - 3];
           previousJoint._updateMatrixWorld();
@@ -557,11 +559,13 @@ var IKChain = function () {
           joint._updateWorldPosition();
 
           var distance = previousJoint._getWorldDistance(joint);
-          if (distance === 0) {
+          if (distance === 0)
+          {
             throw new Error('bone with 0 distance between adjacent bone found');
           }
           joint._setDistance(distance);
-          joint._updateWorldPosition();
+          joint._updateWorldPosition()
+
           var direction = previousJoint._getWorldDirection(joint);
           previousJoint._originalDirection = new three.Vector3().copy(direction);
           joint._originalDirection = new three.Vector3().copy(direction);
@@ -578,6 +582,48 @@ var IKChain = function () {
       return this;
     }
   }, {
+    key: "reinitializeJoints",
+    value: function reinitializeJoints()
+    {
+      this.joints = this.joints || [];
+
+      for (let i = 0; i < this.joints.length; i++)
+      {
+        let joint = this.joints[i];
+        if (joint === this.joints[0])
+        {
+          this.origin = new three.Vector3().copy(this.base._getWorldPosition());
+          console.log(joint);
+        }
+        else
+        {
+          var previousJoint = this.joints[i - 1];
+          var previousPreviousJoint = this.joints[i - 2];
+          previousJoint._updateMatrixWorld();
+          previousJoint._updateWorldPosition();
+          joint._updateWorldPosition();
+          var distance = previousJoint._getWorldDistance(joint);
+          if (distance === 0)
+          {
+            throw new Error('bone with 0 distance between adjacent bone found');
+          }
+          joint._setDistance(distance);
+          joint._updateWorldPosition();
+          var direction = previousJoint._getWorldDirection(joint);
+          previousJoint._originalDirection = new three.Vector3().copy(direction);
+          joint._originalDirection = new three.Vector3().copy(direction);
+          if (previousPreviousJoint)
+          {
+            previousJoint._originalHinge = previousJoint._worldToLocalDirection(previousJoint._originalDirection.clone().cross(previousPreviousJoint._originalDirection).normalize());
+          }
+          this.totalLengths += distance;
+        }
+
+      }
+      return this;
+    },
+  },
+    {
     key: '_hasEffector',
     value: function _hasEffector() {
       return !!this.effector;
