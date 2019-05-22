@@ -2824,6 +2824,9 @@ const refreshLinkedBoardByFilename = async filename => {
       url: filename,
       opacity: 1.0
     }
+    // sync opacity
+    layersEditor.setReferenceOpacity(board.layers.reference.opacity)
+    // mark to be saved
     markBoardFileDirty() // NOTE ALWAYS results in a JSON update, even if data
                          // hasn't actually changed
 
