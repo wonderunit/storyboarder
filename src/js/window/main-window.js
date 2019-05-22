@@ -2886,9 +2886,7 @@ const refreshLinkedBoardByFilename = async filename => {
   } catch (err) {
     console.error(err)
     notifications.notify({
-      message: `[WARNING] Could not import from file ${filename}. ` +
-               'That PSD might be using a feature (like text layers or masks) ' +
-               'that Storyboarder does not support.'
+      message: `[WARNING] Could not import from file ${filename}.`
     })
     notifications.notify({
       message: err.toString()
