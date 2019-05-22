@@ -61,8 +61,12 @@ function setQuaternionFromDirection(direction, up, target) {
   el[0] = x.x;el[4] = y.x;el[8] = z.x;
   el[1] = x.y;el[5] = y.y;el[9] = z.y;
   el[2] = x.z;el[6] = y.z;el[10] = z.z;
+  //let matrix = new three.Matrix4().makeRotationAxis(new three.Vector3(0, 1, 1), -1.5708);
   target.setFromRotationMatrix(m);
+  let quaternion = new three.Quaternion().setFromAxisAngle(new three.Vector3(1, 0, 0), 1.5708);
+  target.premultiply(quaternion);
 }
+
 function transformPoint(vector, matrix, target) {
   var e = matrix.elements;
   var x = vector.x * e[0] + vector.y * e[4] + vector.z * e[8] + e[12];
@@ -70,6 +74,34 @@ function transformPoint(vector, matrix, target) {
   var z = vector.x * e[2] + vector.y * e[6] + vector.z * e[10] + e[14];
   var w = vector.x * e[3] + vector.y * e[7] + vector.z * e[11] + e[15];
   target.set(x / w, y / w, z / w);
+}
+
+function vectorToDefaultCoordSystem(vector)
+{
+    let x_Axis = new three.Vector3(1, 0, 0);
+    let y_Axis = new three.Vector3(0, 1, 0);
+    let z_Axis = new three.Vector3(0, 0, 1);
+    let tbn = new three.Matrix4().makeBasis(x_Axis, y_Axis, z_Axis);
+    let inverseTbn = new three.Matrix4().getInverse(tbn);
+    vector.applyMatrix4(inverseTbn);
+}
+
+function switchMatrixSides(matrix)
+{
+  let x = new three.Vector3();
+  let y = new three.Vector3();
+  let z = new three.Vector3();
+  let e12, e13, e14;
+
+  matrix.extractBasis(x, y, z);
+  let e = matrix.elements;
+  e12 = e[12];
+  e13 = e[13];
+  e14 = e[14];
+  matrix.makeBasis(z, y, x);
+  matrix.elements[12] = e12;
+  matrix.elements[13] = e13;
+  matrix.elements[14] = e14;
 }
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
@@ -257,6 +289,7 @@ var inherits = function (subClass, superClass) {
 };
 
 
+
 var possibleConstructorReturn = function (self, call) {
   if (!self) {
     throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
@@ -329,7 +362,6 @@ var IKBallConstraint = function () {
   }]);
   return IKBallConstraint;
 }();
-
 var Y_AXIS = new three.Vector3(0, 1, 0);
 var IKJoint = function () {
   function IKJoint(bone) {
@@ -488,15 +520,29 @@ var IKJoint = function () {
       var direction = new three.Vector3().copy(this._direction);
       var position = new three.Vector3().copy(this._getWorldPosition());
       var parent = this.bone.parent;
-      if (parent) {
+      if (parent)
+      {
         this._updateMatrixWorld();
-        var inverseParent = new three.Matrix4().getInverse(this.bone.parent.matrixWorld);
+        let worldMatrix = this.bone.parent.matrixWorld.clone();
+
+       // switchMatrixSides(worldMatrix);
+        var inverseParent = new three.Matrix4().getInverse(worldMatrix);
         transformPoint(position, inverseParent, position);
         this.bone.position.copy(position);
         this._updateMatrixWorld();
         this._worldToLocalDirection(direction);
+        let yp = direction.y;
+        let zp = direction.z;
+        //direction.z = yp;
+       // direction.y = zp;
         setQuaternionFromDirection(direction, Y_AXIS, this.bone.quaternion);
-        this.bone.rotation.z = 0
+        let x = this.bone.rotation.x;
+        let y = this.bone.rotation.y;
+        let z = this.bone.rotation.z;
+        this.bone.rotation.y = -z;
+        //this.bone.rotation.x = x;
+        this.bone.rotation.z = -y;
+        //this.bone.rotation.z = 0;
 
       } else {
         this.bone.position.copy(position);
@@ -559,8 +605,7 @@ var IKChain = function () {
           joint._updateWorldPosition();
 
           var distance = previousJoint._getWorldDistance(joint);
-          if (distance === 0)
-          {
+          if (distance === 0) {
             throw new Error('bone with 0 distance between adjacent bone found');
           }
           joint._setDistance(distance);
@@ -614,7 +659,7 @@ var IKChain = function () {
           joint._originalDirection = new three.Vector3().copy(direction);
           if (previousPreviousJoint)
           {
-            previousJoint._originalHinge = previousJoint._worldToLocalDirection(previousJoint._originalDirection.clone().cross(previousPreviousJoint._originalDirection).normalize());
+             previousJoint._originalHinge = previousJoint._worldToLocalDirection(previousJoint._originalDirection.clone().cross(previousPreviousJoint._originalDirection).normalize());
           }
           this.totalLengths += distance;
         }

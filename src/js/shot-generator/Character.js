@@ -284,7 +284,7 @@ const Character = React.memo(({
       const hipsControl = AddTransformationControl(new THREE.Vector3(0, 1, 0), camera, domElement, scene);
       const backControl = AddTransformationControl(new THREE.Vector3(0, 1, -.1), camera, domElement, scene);
       const rightHandControl = AddTransformationControl(new THREE.Vector3(-2, 1.5, 0), camera, domElement, scene);
-      const leftHandControl = AddTransformationControl(new THREE.Vector3(2, 1.5, 0), camera, domElement, scene);
+      const leftHandControl = AddTransformationControl(new THREE.Vector3(20, 1.5, 2), camera, domElement, scene);
       const leftLegControl = AddTransformationControl(new THREE.Vector3(2, -1.5, 0), camera, domElement, scene);
       const rightLegControl = AddTransformationControl(new THREE.Vector3(-2, -1.5, 0), camera, domElement, scene);
 
@@ -612,9 +612,9 @@ const Character = React.memo(({
         let startValues = getCurrentControllerRotation(devices[0], virtual.current)
         startingDeviceRotation.current = startValues.quaternion
 
-        startingDeviceOffset.current =  new THREE.Quaternion().clone().inverse().multiply(startingDeviceRotation.current).normalize().inverse()
+        startingDeviceOffset.current = new THREE.Quaternion().clone().inverse().multiply(startingDeviceRotation.current).normalize().inverse()
         startingObjectQuaternion.current = target.quaternion.clone()
-        startingObjectOffset.current =  new THREE.Quaternion().clone().inverse().multiply(startingObjectQuaternion.current)
+        startingObjectOffset.current = new THREE.Quaternion().clone().inverse().multiply(startingObjectQuaternion.current)
         //console.log('starting rotation: ', startingDeviceRotation.current)
       }
       let midddleValues = getCurrentControllerRotation(devices[0], virtual.current)

@@ -27,12 +27,12 @@ class IkObject
         this.chainObjects = chainObjects;
         this.hipsControlTarget = this.controlTargets[5];
 
-       // chainObjects.push(new ChainObject("Spine", "Head", this.controlTargets[0]));
+        //chainObjects.push(new ChainObject("Spine", "Head", this.controlTargets[0]));
 
         chainObjects.push(new ChainObject("LeftArm", "LeftHand", this.controlTargets[1]));
-        //chainObjects.push(new ChainObject("RightArm", "RightHand", this.controlTargets[2]));
-        //chainObjects.push(new ChainObject("LeftUpLeg", "LeftFoot", this.controlTargets[3]));
-        //chainObjects.push(new ChainObject("RightUpLeg", "RightFoot", this.controlTargets[4]));
+        chainObjects.push(new ChainObject("RightArm", "RightHand", this.controlTargets[2]));
+        chainObjects.push(new ChainObject("LeftUpLeg", "LeftFoot", this.controlTargets[3]));
+        chainObjects.push(new ChainObject("RightUpLeg", "RightFoot", this.controlTargets[4]));
         // Goes through all scene objects
         objectSkeleton.traverse((object) =>
         {
@@ -50,13 +50,13 @@ class IkObject
                         parent = parent.parent;
                     }
                     skeleton = parent;
-                    console.log(skeleton.clone());
                 }
                 // Flips a model's forward from -Z to +Z
                 // By default Models axis is -Z while Three ik works with +Z
                 if(object.name === "Hips")
                 {
                     this.hips = object;
+                    //setZForward(rigMesh);
                     rigMesh.bind(rigMesh.skeleton);
                 }
                 // Goes through all chain objects to find with which we are working
@@ -66,7 +66,6 @@ class IkObject
                     // Also checks if chain is started
                     if(object.name == chainObject.baseObjectName || chainObject.isChainObjectStarted)
                     {
-                        console.log(object);
                         let chain = chainObject.chain;
 
                         // Checks if root object
@@ -82,8 +81,11 @@ class IkObject
                         if(object.name === chainObject.lastObjectName)
                         {
                             target = chainObject.controlTarget.target;
-                            object.getWorldPosition(target.position)
-                            chainObject.isChainObjectStarted = false
+                            let objectWorld = new THREE.Vector3();
+                            object.getWorldPosition(objectWorld);
+                            target.position.copy(objectWorld);
+
+                            chainObject.isChainObjectStarted = false;
                         }
 
                         // Creates joint by passing current bone and its constraint
@@ -112,16 +114,13 @@ class IkObject
     reinitialize(worldMatrix)
     {
         let chainObjects = this.chainObjects;
+        let matrix = new THREE.Matrix4().getInverse(worldMatrix);
         for(let i = 0; i < chainObjects.length; i++)
         {
             let chain = chainObjects[i].chain;
             console.log("reinit");
+            chain.joints[chain.joints.length - 1].bone.getWorldPosition(chainObjects[i].controlTarget.target.position);
             chain.reinitializeJoints();
-            for (let i = 0; i < chain.joints.length; i++)
-            {
-                console.log(chain.joints[i]);
-                chain.joints[i]._direction.applyMatrix4(worldMatrix);
-            }
         }
     }
 

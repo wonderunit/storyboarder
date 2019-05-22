@@ -1,16 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="BookmarkManager">
-    <bookmark url="file://$PROJECT_DIR$/src/js/shot-generator/Editor.js" line="789" mnemonic="C" />
+    <bookmark url="file://$PROJECT_DIR$/src/js/shot-generator/Editor.js" line="788" mnemonic="C" />
   </component>
   <component name="ChangeListManager">
     <list default="true" id="03eceb4b-27a0-4f51-a009-7e3539fd5463" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/js/shot-generator/Character.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/js/shot-generator/Character.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/js/shot-generator/Editor.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/js/shot-generator/Editor.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/js/shot-generator/IK/core/three-ik.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/js/shot-generator/IK/core/three-ik.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/js/shot-generator/IK/objects/IkObjects/IkObject.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/js/shot-generator/IK/objects/IkObjects/IkObject.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/js/shot-generator/IK/objects/IkObjects/RagDoll.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/js/shot-generator/IK/objects/IkObjects/RagDoll.js" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -23,8 +21,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/js/shot-generator/Character.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-1771">
-              <caret line="481" column="63" selection-start-line="481" selection-start-column="63" selection-end-line="481" selection-end-column="63" />
+            <state relative-caret-position="576">
+              <caret line="283" column="85" selection-start-line="283" selection-start-column="85" selection-end-line="283" selection-end-column="85" />
               <folding>
                 <element signature="e#5301#5571#0" />
                 <element signature="e#5655#5740#0" />
@@ -38,11 +36,17 @@
                 <element signature="e#8723#9298#0" />
                 <element signature="e#9360#10312#0" />
                 <element signature="e#10428#10662#0" />
-                <element signature="e#10732#11209#0" />
                 <element signature="e#11276#11425#0" />
-                <element signature="e#11455#11921#0" />
                 <element signature="e#12171#12286#0" />
                 <element signature="e#12319#12442#0" />
+                <element signature="e#12501#12904#0" />
+                <element signature="e#12977#13470#0" />
+                <element signature="e#13546#13973#0" />
+                <element signature="e#15277#15975#0" />
+                <element signature="e#16019#18824#0" />
+                <element signature="e#18856#21980#0" />
+                <element signature="e#22016#22318#0" />
+                <element signature="e#22363#22726#0" />
               </folding>
             </state>
           </provider>
@@ -51,7 +55,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/js/shot-generator/IK/utils/axisUtils.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-126">
+            <state relative-caret-position="-314">
               <caret line="14" column="38" selection-start-line="14" selection-start-column="38" selection-end-line="14" selection-end-column="38" />
             </state>
           </provider>
@@ -60,8 +64,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/js/shot-generator/IK/objects/IkObjects/IkObject.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="192">
-              <caret line="81" column="70" lean-forward="true" selection-start-line="81" selection-start-column="70" selection-end-line="81" selection-end-column="70" />
+            <state relative-caret-position="874">
+              <caret line="60" column="17" lean-forward="true" selection-start-line="60" selection-start-column="17" selection-end-line="60" selection-end-column="17" />
               <folding>
                 <element signature="n#!!block;n#calculteBackOffset#0;n#IkObject#0" />
                 <element signature="n#!!block;n#lateUpdate#0;n#IkObject#0" />
@@ -73,10 +77,48 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/js/shot-generator/IK/core/three-ik.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="358">
-              <caret line="565" column="39" lean-forward="true" selection-start-line="565" selection-start-column="39" selection-end-line="565" selection-end-column="39" />
+            <state relative-caret-position="-4660">
+              <caret line="68" lean-forward="true" selection-start-line="68" selection-end-line="68" />
               <folding>
-                <element signature="e#8011#8855#0" />
+                <element signature="e#2349#2373#0" />
+                <element signature="e#2558#4874#0" />
+                <element signature="e#3104#3563#0" />
+                <element signature="e#3598#4089#0" />
+                <element signature="e#4159#4197#0" />
+                <element signature="e#4412#4455#0" />
+                <element signature="e#4508#4552#0" />
+                <element signature="e#4606#4651#0" />
+                <element signature="e#4933#5046#0" />
+                <element signature="e#5079#5668#0" />
+                <element signature="e#5724#6232#0" />
+                <element signature="e#6282#6782#0" />
+                <element signature="e#6840#7043#0" />
+                <element signature="e#7078#7862#0" />
+                <element signature="e#9697#9837#0" />
+                <element signature="e#9761#9833#0" />
+                <element signature="e#9838#10074#0" />
+                <element signature="e#9918#10070#0" />
+                <element signature="e#10076#10347#0" />
+                <element signature="e#10158#10343#0" />
+                <element signature="e#10421#11861#0" />
+                <element signature="e#11867#11980#0" />
+                <element signature="e#11937#11976#0" />
+                <element signature="e#11982#12087#0" />
+                <element signature="e#12046#12083#0" />
+                <element signature="e#12089#12212#0" />
+                <element signature="e#12162#12208#0" />
+                <element signature="e#12214#12315#0" />
+                <element signature="e#12276#12311#0" />
+                <element signature="e#12445#12562#0" />
+                <element signature="e#12517#12558#0" />
+                <element signature="e#12564#12764#0" />
+                <element signature="e#12643#12760#0" />
+                <element signature="e#12766#12911#0" />
+                <element signature="e#12844#12907#0" />
+                <element signature="e#12913#13046#0" />
+                <element signature="e#12993#13042#0" />
+                <element signature="e#13048#13309#0" />
+                <element signature="e#13139#13305#0" />
               </folding>
             </state>
           </provider>
@@ -85,8 +127,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/js/shot-generator/Editor.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="94">
-              <caret line="794" column="5" lean-forward="true" selection-start-line="794" selection-start-column="5" selection-end-line="794" selection-end-column="5" />
+            <state relative-caret-position="413">
+              <caret line="2667" column="48" selection-start-line="2667" selection-start-column="48" selection-end-line="2667" selection-end-column="48" />
               <folding>
                 <element signature="e#800#802#0" />
                 <element signature="e#17702#19358#0" />
@@ -94,6 +136,13 @@
                 <element signature="e#20037#23361#0" />
               </folding>
             </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/js/shared/reducers/shot-generator-presets/poses.json">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-76" />
           </provider>
         </entry>
       </file>
@@ -112,19 +161,10 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/js/shot-generator/IK/objects/PoleTarget.js">
+        <entry file="file://$PROJECT_DIR$/src/js/shot-generator/IK/constraints/PoleConstraint.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="285">
-              <caret line="19" selection-start-line="19" selection-end-line="19" selection-end-column="17" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/js/shared/reducers/shot-generator.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-848">
-              <caret line="1082" column="25" selection-start-line="1082" selection-start-column="12" selection-end-line="1082" selection-end-column="25" />
+            <state>
+              <caret line="38" column="36" selection-start-line="38" selection-start-column="36" selection-end-line="38" selection-end-column="36" />
             </state>
           </provider>
         </entry>
@@ -132,8 +172,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/js/shot-generator/IK/objects/IkObjects/RagDoll.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-107">
-              <caret line="20" column="6" selection-start-line="20" selection-start-column="6" selection-end-line="20" selection-end-column="6" />
+            <state relative-caret-position="298">
+              <caret line="143" lean-forward="true" selection-start-line="143" selection-end-line="143" />
             </state>
           </provider>
         </entry>
@@ -142,18 +182,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>renderer</find>
-      <find>WebG</find>
-      <find>largeRenderer</find>
-      <find>export</find>
-      <find>Character</find>
-      <find>updateCharacterSkeleton</find>
-      <find>sceneObjects</find>
-      <find>character</find>
-      <find>getSceneObjects</find>
-      <find>useRef</find>
-      <find>userData</find>
-      <find>displayName</find>
       <find>sceneObject</find>
       <find>posePresetId</find>
       <find>createObject</find>
@@ -168,10 +196,22 @@
       <find>_getWorldPosition</find>
       <find>resolve</find>
       <find>IK</find>
-      <find>scale</find>
-      <find>_setWorldPosition</find>
       <find>updateObject</find>
+      <find>_setWorldPosition</find>
+      <find>bone</find>
+      <find>setQuaternionFromDirection</find>
+      <find>scale</find>
+      <find>rotat</find>
+      <find>c</find>
+      <find>quaternion</find>
+      <find>adult-male.glb</find>
+      <find>transformPoint</find>
+      <find>presets</find>
+      <find>adult-male</find>
+      <find>camera.up</find>
+      <find>camera</find>
       <find>z</find>
+      <find>_updateMatrixWorld</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -192,9 +232,9 @@
         <option value="$PROJECT_DIR$/src/js/shot-generator/IK/objects/TargetControl.js" />
         <option value="$PROJECT_DIR$/src/js/shot-generator/IK/objects/IkObjects/RagDoll.js" />
         <option value="$PROJECT_DIR$/src/js/shot-generator/IK/utils/axisUtils.js" />
+        <option value="$PROJECT_DIR$/src/js/shot-generator/Character.js" />
         <option value="$PROJECT_DIR$/src/js/shot-generator/IK/objects/IkObjects/IkObject.js" />
         <option value="$PROJECT_DIR$/src/js/shot-generator/Editor.js" />
-        <option value="$PROJECT_DIR$/src/js/shot-generator/Character.js" />
         <option value="$PROJECT_DIR$/src/js/shot-generator/IK/core/three-ik.js" />
       </list>
     </option>
@@ -220,6 +260,36 @@
               <item name="storyboarder" type="b2602c69:ProjectViewProjectNode" />
               <item name="storyboarder" type="462c0819:PsiDirectoryNode" />
               <item name="src" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="storyboarder" type="b2602c69:ProjectViewProjectNode" />
+              <item name="storyboarder" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="data" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="storyboarder" type="b2602c69:ProjectViewProjectNode" />
+              <item name="storyboarder" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="data" type="462c0819:PsiDirectoryNode" />
+              <item name="shot-generator" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="storyboarder" type="b2602c69:ProjectViewProjectNode" />
+              <item name="storyboarder" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="data" type="462c0819:PsiDirectoryNode" />
+              <item name="shot-generator" type="462c0819:PsiDirectoryNode" />
+              <item name="dummies" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="storyboarder" type="b2602c69:ProjectViewProjectNode" />
+              <item name="storyboarder" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="data" type="462c0819:PsiDirectoryNode" />
+              <item name="shot-generator" type="462c0819:PsiDirectoryNode" />
+              <item name="dummies" type="462c0819:PsiDirectoryNode" />
+              <item name="gltf" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="storyboarder" type="b2602c69:ProjectViewProjectNode" />
@@ -259,6 +329,14 @@
               <item name="shared" type="462c0819:PsiDirectoryNode" />
               <item name="reducers" type="462c0819:PsiDirectoryNode" />
               <item name="shot-generator-presets" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="storyboarder" type="b2602c69:ProjectViewProjectNode" />
+              <item name="storyboarder" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="js" type="462c0819:PsiDirectoryNode" />
+              <item name="shared" type="462c0819:PsiDirectoryNode" />
+              <item name="store" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="storyboarder" type="b2602c69:ProjectViewProjectNode" />
@@ -342,6 +420,7 @@
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/data/shot-generator/dummies/gltf" />
       <recent name="$PROJECT_DIR$/src/js/shot-generator/IK" />
     </key>
   </component>
@@ -367,12 +446,12 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1558338989186</updated>
-      <workItem from="1558338990584" duration="44180000" />
+      <workItem from="1558338990584" duration="72574000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="44180000" />
+    <option name="totallyTimeSpent" value="72574000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -384,20 +463,20 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="23" width="1440" height="804" extended-state="6" />
+    <frame x="0" y="23" width="1440" height="801" extended-state="6" />
     <editor active="true" />
     <layout>
       <window_info id="Favorites" order="0" side_tool="true" />
       <window_info id="npm" order="1" side_tool="true" />
-      <window_info content_ui="combo" id="Project" order="2" weight="0.24964234" />
+      <window_info content_ui="combo" id="Project" order="2" visible="true" weight="0.24964234" />
       <window_info id="Structure" order="3" side_tool="true" weight="0.25" />
       <window_info anchor="bottom" id="Docker" order="0" show_stripe_button="false" />
       <window_info anchor="bottom" id="Database Changes" order="1" />
       <window_info anchor="bottom" id="Version Control" order="2" />
-      <window_info anchor="bottom" id="Terminal" order="3" sideWeight="0.49570817" weight="0.3300562" />
+      <window_info anchor="bottom" id="Terminal" order="3" sideWeight="0.49570817" weight="0.3300423" />
       <window_info anchor="bottom" id="Event Log" order="4" sideWeight="0.5007153" side_tool="true" weight="0.3286517" />
       <window_info anchor="bottom" id="Message" order="5" />
-      <window_info anchor="bottom" id="Find" order="6" sideWeight="0.49642345" weight="0.3272472" />
+      <window_info active="true" anchor="bottom" id="Find" order="6" sideWeight="0.49642345" visible="true" weight="0.32722145" />
       <window_info anchor="bottom" id="Run" order="7" sideWeight="0.49928468" weight="0.32729805" />
       <window_info anchor="bottom" id="Debug" order="8" weight="0.4" />
       <window_info anchor="bottom" id="Cvs" order="9" weight="0.25" />
@@ -416,8 +495,8 @@
       <window_info anchor="bottom" id="Docker" order="0" show_stripe_button="false" />
       <window_info anchor="bottom" id="Database Changes" order="1" />
       <window_info anchor="bottom" id="Version Control" order="2" />
-      <window_info anchor="bottom" id="Terminal" order="3" sideWeight="0.49570817" weight="0.3300562" />
-      <window_info active="true" anchor="bottom" id="Event Log" order="4" sideWeight="0.5007153" side_tool="true" visible="true" weight="0.3286517" />
+      <window_info active="true" anchor="bottom" id="Terminal" order="3" sideWeight="0.49570817" visible="true" weight="0.3300423" />
+      <window_info anchor="bottom" id="Event Log" order="4" sideWeight="0.5007153" side_tool="true" weight="0.3286517" />
       <window_info anchor="bottom" id="Message" order="5" />
       <window_info anchor="bottom" id="Find" order="6" sideWeight="0.49642345" weight="0.3272472" />
       <window_info anchor="bottom" id="Run" order="7" sideWeight="0.49928468" weight="0.32729805" />
@@ -457,9 +536,9 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/src/js/shot-generator/IK/core/three-ik.js</url>
-          <line>309</line>
+          <line>495</line>
           <properties lambdaOrdinal="-1" />
-          <option name="timeStamp" value="22" />
+          <option name="timeStamp" value="24" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
@@ -528,13 +607,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/js/shot-generator/IK/constraints/PoleConstraint.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1590">
-          <caret line="106" column="17" selection-start-line="106" selection-start-column="17" selection-end-line="106" selection-end-column="17" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/js/shot-generator/IK/constraints/IkConstraint.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="27">
@@ -587,13 +659,17 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/js/shot-generator/IK/objects/PoleTarget.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="285">
-          <caret line="19" selection-start-line="19" selection-end-line="19" selection-end-column="17" />
+        <state relative-caret-position="300">
+          <caret line="20" selection-start-line="20" selection-end-line="20" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/js/main.js">
-      <provider selected="true" editor-type-id="text-editor" />
+    <entry file="file://$PROJECT_DIR$/src/js/shot-generator/IK/constraints/PoleConstraint.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret line="38" column="36" selection-start-line="38" selection-start-column="36" selection-end-line="38" selection-end-column="36" />
+        </state>
+      </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/js/shared/store/configureStore.js">
       <provider selected="true" editor-type-id="text-editor">
@@ -602,24 +678,28 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/js/shot-generator/IK/objects/IkObjects/RagDoll.js">
+    <entry file="file://$PROJECT_DIR$/src/js/shared/store/presetsStorage.js">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/js/shared/reducers/shot-generator-presets/poses.json">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-107">
-          <caret line="20" column="6" selection-start-line="20" selection-start-column="6" selection-end-line="20" selection-end-column="6" />
-        </state>
+        <state relative-caret-position="-76" />
       </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/js/main.js">
+      <provider selected="true" editor-type-id="text-editor" />
     </entry>
     <entry file="file://$PROJECT_DIR$/src/js/shot-generator/IK/utils/axisUtils.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-126">
+        <state relative-caret-position="-314">
           <caret line="14" column="38" selection-start-line="14" selection-start-column="38" selection-end-line="14" selection-end-column="38" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/js/shot-generator/Character.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1771">
-          <caret line="481" column="63" selection-start-line="481" selection-start-column="63" selection-end-line="481" selection-end-column="63" />
+        <state relative-caret-position="576">
+          <caret line="283" column="85" selection-start-line="283" selection-start-column="85" selection-end-line="283" selection-end-column="85" />
           <folding>
             <element signature="e#5301#5571#0" />
             <element signature="e#5655#5740#0" />
@@ -633,19 +713,25 @@
             <element signature="e#8723#9298#0" />
             <element signature="e#9360#10312#0" />
             <element signature="e#10428#10662#0" />
-            <element signature="e#10732#11209#0" />
             <element signature="e#11276#11425#0" />
-            <element signature="e#11455#11921#0" />
             <element signature="e#12171#12286#0" />
             <element signature="e#12319#12442#0" />
+            <element signature="e#12501#12904#0" />
+            <element signature="e#12977#13470#0" />
+            <element signature="e#13546#13973#0" />
+            <element signature="e#15277#15975#0" />
+            <element signature="e#16019#18824#0" />
+            <element signature="e#18856#21980#0" />
+            <element signature="e#22016#22318#0" />
+            <element signature="e#22363#22726#0" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/js/shot-generator/Editor.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="94">
-          <caret line="794" column="5" lean-forward="true" selection-start-line="794" selection-start-column="5" selection-end-line="794" selection-end-column="5" />
+        <state relative-caret-position="413">
+          <caret line="2667" column="48" selection-start-line="2667" selection-start-column="48" selection-end-line="2667" selection-end-column="48" />
           <folding>
             <element signature="e#800#802#0" />
             <element signature="e#17702#19358#0" />
@@ -657,8 +743,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/js/shot-generator/IK/objects/IkObjects/IkObject.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="192">
-          <caret line="81" column="70" lean-forward="true" selection-start-line="81" selection-start-column="70" selection-end-line="81" selection-end-column="70" />
+        <state relative-caret-position="874">
+          <caret line="60" column="17" lean-forward="true" selection-start-line="60" selection-start-column="17" selection-end-line="60" selection-end-column="17" />
           <folding>
             <element signature="n#!!block;n#calculteBackOffset#0;n#IkObject#0" />
             <element signature="n#!!block;n#lateUpdate#0;n#IkObject#0" />
@@ -666,12 +752,57 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/js/shot-generator/IK/objects/IkObjects/RagDoll.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="298">
+          <caret line="143" lean-forward="true" selection-start-line="143" selection-end-line="143" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/js/shot-generator/IK/core/three-ik.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="358">
-          <caret line="565" column="39" lean-forward="true" selection-start-line="565" selection-start-column="39" selection-end-line="565" selection-end-column="39" />
+        <state relative-caret-position="-4660">
+          <caret line="68" lean-forward="true" selection-start-line="68" selection-end-line="68" />
           <folding>
-            <element signature="e#8011#8855#0" />
+            <element signature="e#2349#2373#0" />
+            <element signature="e#2558#4874#0" />
+            <element signature="e#3104#3563#0" />
+            <element signature="e#3598#4089#0" />
+            <element signature="e#4159#4197#0" />
+            <element signature="e#4412#4455#0" />
+            <element signature="e#4508#4552#0" />
+            <element signature="e#4606#4651#0" />
+            <element signature="e#4933#5046#0" />
+            <element signature="e#5079#5668#0" />
+            <element signature="e#5724#6232#0" />
+            <element signature="e#6282#6782#0" />
+            <element signature="e#6840#7043#0" />
+            <element signature="e#7078#7862#0" />
+            <element signature="e#9697#9837#0" />
+            <element signature="e#9761#9833#0" />
+            <element signature="e#9838#10074#0" />
+            <element signature="e#9918#10070#0" />
+            <element signature="e#10076#10347#0" />
+            <element signature="e#10158#10343#0" />
+            <element signature="e#10421#11861#0" />
+            <element signature="e#11867#11980#0" />
+            <element signature="e#11937#11976#0" />
+            <element signature="e#11982#12087#0" />
+            <element signature="e#12046#12083#0" />
+            <element signature="e#12089#12212#0" />
+            <element signature="e#12162#12208#0" />
+            <element signature="e#12214#12315#0" />
+            <element signature="e#12276#12311#0" />
+            <element signature="e#12445#12562#0" />
+            <element signature="e#12517#12558#0" />
+            <element signature="e#12564#12764#0" />
+            <element signature="e#12643#12760#0" />
+            <element signature="e#12766#12911#0" />
+            <element signature="e#12844#12907#0" />
+            <element signature="e#12913#13046#0" />
+            <element signature="e#12993#13042#0" />
+            <element signature="e#13048#13309#0" />
+            <element signature="e#13139#13305#0" />
           </folding>
         </state>
       </provider>
