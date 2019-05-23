@@ -2762,7 +2762,7 @@ const refreshLinkedBoardByFilename = async filename => {
   if (!board) {
     let message =
       'Tried to update, from external editor,' +
-      'a file that is not linked any board: ' + filename
+      'a file that is not linked to any board: ' + filename
 
     console.log(message)
     notifications.notify({
