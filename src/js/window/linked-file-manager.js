@@ -36,7 +36,7 @@ module.exports = class LinkedFileManager {
     // to check ALL linked PSDs:
     //
     // for (let [key, linkedFile] of this.linkedFiles) {
-    //   this.hasChanged(linkedFile)
+    //   this.getChangeTime(linkedFile)
     // }
 
     //
@@ -45,18 +45,25 @@ module.exports = class LinkedFileManager {
     //
     if (this.linkedFiles.has(board.link)) {
       let linkedFile = this.linkedFiles.get(board.link)
-      if (this.hasChanged(linkedFile)) {
+      let timestamp = this.getChangeTime(linkedFile)
+      if (timestamp !== false) {
         console.log('\t', linkedFile.link, 'needs to be updated')
         callbackFn(linkedFile.link)
+        linkedFile.timestamp = timestamp
       } else {
         console.log('\t', linkedFile.link, 'does not need to be updated')
       }
     }
   }
 
-  hasChanged (linkedFile) {
-    console.log('LinkedFileManager#hasChanged', { linkedFile })
-    return this.getTimestamp(linkedFile.filepath) > linkedFile.timestamp
+  getChangeTime (linkedFile) {
+    console.log('LinkedFileManager#getChangeTime', { linkedFile })
+    let timestamp = this.getTimestamp(linkedFile.filepath)
+    if (timestamp > linkedFile.timestamp) {
+      return timestamp
+    } else {
+      return false
+    }
   }
 
   getFilepath (filename) {
