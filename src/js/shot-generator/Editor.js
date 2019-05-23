@@ -13,7 +13,7 @@ const Stats = require('stats.js')
 const { VariableSizeList } = require('react-window')
 const classNames = require('classnames')
 const prompt = require('electron-prompt')
-
+const RagDoll = require("./IK/objects/IkObjects/RagDoll");
 const { createSelector } = require('reselect')
 
 //const h = require('../h')
@@ -33,6 +33,7 @@ const {
   createObject,
   updateObject,
   deleteObjects,
+    getObject,
 
   duplicateObjects,
 
@@ -913,7 +914,8 @@ const Camera = React.memo(({ scene, id, type, setCamera, icon, ...props }) => {
 
   camera.current.fov = props.fov
   camera.current.updateProjectionMatrix()
-  if (camera.current.orthoIcon) {
+  if (camera.current.orthoIcon)
+  {
     camera.current.orthoIcon.position.copy(camera.current.position)
     let rotation = new THREE.Euler().setFromQuaternion( camera.current.quaternion, "YXZ" )   //always "YXZ" when we gat strange rotations
     camera.current.orthoIcon.icon.material.rotation = rotation.y
@@ -1010,6 +1012,7 @@ const Inspector = ({
   updateWorldRoom,
   updateWorldEnvironment,
   storyboarderFilePath,
+  getObject,
   selections
 }) => {
   const { scene } = useContext(SceneContext)
@@ -1056,7 +1059,8 @@ const Inspector = ({
               transition,
               selectBone,
               updateCharacterSkeleton,
-              storyboarderFilePath
+              storyboarderFilePath,
+                getObject
             }
           ]
         : [
@@ -1353,10 +1357,11 @@ const ElementsPanel = connect(
     updateCharacterSkeleton,
     updateWorld,
     updateWorldRoom,
-    updateWorldEnvironment
+    updateWorldEnvironment,
+      getObject
   }
 )(
-  React.memo(({ world, sceneObjects, models, selections, selectObject, selectObjectToggle, updateObject, deleteObjects, selectedBone, machineState, transition, activeCamera, setActiveCamera, selectBone, updateCharacterSkeleton, updateWorld, updateWorldRoom, updateWorldEnvironment, storyboarderFilePath }) => {
+  React.memo(({ world, sceneObjects, models, selections, selectObject, selectObjectToggle, updateObject, deleteObjects, selectedBone, machineState, transition, activeCamera, setActiveCamera, selectBone, updateCharacterSkeleton, updateWorld, updateWorldRoom, updateWorldEnvironment, storyboarderFilePath, getObject }) => {
     let ref = useRef(null)
     let size = useComponentSize(ref)
 
@@ -1421,7 +1426,8 @@ const ElementsPanel = connect(
 
     let kind = sceneObjects[selections[0]] && sceneObjects[selections[0]].type
     let data = sceneObjects[selections[0]]
-
+    console.log("Selection");
+    console.log(world);
     return React.createElement(
       'div', { style: { flex: 1, display: 'flex', flexDirection: 'column' }},
         React.createElement(
@@ -1450,7 +1456,7 @@ const ElementsPanel = connect(
             updateWorldEnvironment,
 
             storyboarderFilePath,
-
+            getObject,
             selections
           }]
         )
@@ -1659,7 +1665,7 @@ const MORPH_TARGET_LABELS = {
   'ectomorphic': 'ecto',
   'endomorphic': 'obese',
 }
-const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, machineState, transition, selectBone, updateCharacterSkeleton, storyboarderFilePath }) => {
+const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, machineState, transition, selectBone, updateCharacterSkeleton, storyboarderFilePath, getObject }) => {
   const createOnSetValue = (id, name, transform = value => value) => value => updateObject(id, { [name]: transform(value) })
 
   let positionSliders = [
@@ -1701,6 +1707,12 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
       .filter(model => model.type === 'character')
       .map(model => ({ name: model.name, value: model.id }))
   }
+  if(sceneObject.type === 'character')
+  {
+        let object =  getObject(sceneObject.id);
+        console.log(object);
+  }
+
 
   return h([
     'div',
@@ -2026,6 +2038,15 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
                   formatter: value => Math.round(value).toString() + '%'
                 }
               ],
+              [NumberSlider,
+                {
+                  label: 'leftArmPoleX',
+                  value: sceneObject.ragDoll.controlTargets.target,
+                  min: -30,
+                  max: 30,
+                  onSetValue: createOnSetValue(sceneObject.id, 'sceneObject.ragDoll.controlTargets.target') } ],
+              [NumberSlider, { label: 'leftArmPoleY', value: sceneObject.ragDoll.controlTargets.target, min: -30, max: 30, onSetValue: createOnSetValue(sceneObject.id, 'y') } ],
+              [NumberSlider, { label: 'leftArmPoleZ', value: sceneObject.ragDoll.controlTargets.target, min: -30, max: 30, onSetValue: createOnSetValue(sceneObject.id, 'z') } ],
             ]],
 
             ['div', { style: { margin: '6px 0 3px 0', fontStyle: 'italic' } }, 'morphs'],
@@ -2683,7 +2704,7 @@ const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, set
         ectomorphic: 0,
         endomorphic: 0
       },
-      ikRig:  null,
+      ragDoll:  new RagDoll(),
       posePresetId: DEFAULT_POSE_PRESET_ID,
       skeleton: defaultPosePresets[DEFAULT_POSE_PRESET_ID].state.skeleton,
 

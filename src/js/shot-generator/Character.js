@@ -122,19 +122,20 @@ const characterFactory = data => {
 
     return { mesh, skeleton, armatures, originalHeight, boneLengthScale, parentRotation, parentPosition }
   }
-
   armatures = data.scene.children[0].children.filter(child => child instanceof THREE.Bone)
-  if (armatures.length === 0 ) {  // facebook export is different - bone structure is inside another object3D
+  if (armatures.length === 0 )
+  {  // facebook export is different - bone structure is inside another object3D
     armatures = data.scene.children[0].children[0].children.filter(child => child instanceof THREE.Bone)
-
-    if (armatures.length === 0) {  //specifically adult-female - bone structure is inside the skinned mesh
+    if (armatures.length === 0)
+    {  //specifically adult-female - bone structure is inside the skinned mesh
       armatures = mesh.children[0].children.filter(child => child instanceof THREE.Bone)
     }
     for (var bone of armatures)
     {
+      console.log("rotating bones");
       bone.scale.set(1,1,1)
       bone.quaternion.multiply(data.scene.children[0].children[0].quaternion)
-      bone.position.set(bone.position.x,bone.position.z,bone.position.y)
+      bone.position.set(bone.position.x, bone.position.z, bone.position.y)
     }
     mesh.scale.set(1,1,1)
     parentRotation = data.scene.children[0].children[0].quaternion.clone()
@@ -282,11 +283,11 @@ const Character = React.memo(({
       let skeletonRig = ragDoll.current;
       let domElement = largeRenderer.current.domElement;
       const hipsControl = AddTransformationControl(new THREE.Vector3(0, 1, 0), camera, domElement, scene);
-      const backControl = AddTransformationControl(new THREE.Vector3(0, 1, -.1), camera, domElement, scene);
-      const rightHandControl = AddTransformationControl(new THREE.Vector3(-2, 1.5, 0), camera, domElement, scene);
-      const leftHandControl = AddTransformationControl(new THREE.Vector3(20, 1.5, 2), camera, domElement, scene);
-      const leftLegControl = AddTransformationControl(new THREE.Vector3(2, -1.5, 0), camera, domElement, scene);
-      const rightLegControl = AddTransformationControl(new THREE.Vector3(-2, -1.5, 0), camera, domElement, scene);
+      const backControl = AddTransformationControl(new THREE.Vector3(0, 2, -.1), camera, domElement, scene);
+      const rightHandControl = AddTransformationControl(new THREE.Vector3(2, 1.5, 0), camera, domElement, scene);
+      const leftHandControl = AddTransformationControl(new THREE.Vector3(-2, 1.5, 0), camera, domElement, scene);
+      const leftLegControl = AddTransformationControl(new THREE.Vector3(0, 0, 0), camera, domElement, scene);
+      const rightLegControl = AddTransformationControl(new THREE.Vector3(0, 0, 1), camera, domElement, scene);
 
       skeletonRig.initObject(scene, object.current, object.current.children[1], backControl, leftHandControl,
           rightHandControl, leftLegControl, rightLegControl,
@@ -435,6 +436,7 @@ const Character = React.memo(({
     let { boneLengthScale, parentRotation, parentPosition } = object.current.userData
     let skeleton = object.current.userData.skeleton
 
+
     // fb converter scaled object
     if (boneLengthScale === 100) {
       if (props.skeleton['Hips']) {
@@ -481,6 +483,7 @@ const Character = React.memo(({
         object.current.updateMatrixWorld(true);
         ragDoll.current.reinitialize(object.current.matrixWorld);
       } else {
+        console.log("scalar");
         object.current.scale.setScalar( props.height )
       }
       //object.current.bonesHelper.updateMatrixWorld()
@@ -590,6 +593,7 @@ const Character = React.memo(({
   }, [selectedBone, ready])
 
   useEffect(() => {
+
     if (!object.current) return
     if (!isSelected) return
     if ( devices[0] && devices[0].digital.circle ) //if pressed

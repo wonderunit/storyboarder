@@ -12,7 +12,7 @@ const THREE = require("three");
 const t = new THREE.Vector3();
 const q = new THREE.Quaternion();
 const p = new THREE.Plane();
-const FORWARD = new THREE.Vector3(0,0,1);
+const FORWARD = new THREE.Vector3(0, 0, 1);
 var RESETQUAT = new THREE.Quaternion();
 
 /**

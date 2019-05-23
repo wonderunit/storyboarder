@@ -39,7 +39,8 @@ function getCentroid(positions, target) {
   target.divideScalar(positions.length);
   return target;
 }
-function setQuaternionFromDirection(direction, up, target) {
+let firstRun = true;
+function setQuaternionFromDirection(direction, up, target, scale) {
   var x = t1;
   var y = t2;
   var z = t3;
@@ -55,16 +56,26 @@ function setQuaternionFromDirection(direction, up, target) {
     }
     z.normalize();
     x.crossVectors(up, z);
+    if(firstRun)
+    {
+      console.log("here");
+    }
   }
   x.normalize();
   y.crossVectors(z, x);
-  el[0] = x.x;el[4] = y.x;el[8] = z.x;
-  el[1] = x.y;el[5] = y.y;el[9] = z.y;
-  el[2] = x.z;el[6] = y.z;el[10] = z.z;
-  //let matrix = new three.Matrix4().makeRotationAxis(new three.Vector3(0, 1, 1), -1.5708);
+  m.makeBasis(x, y, z);
+//  m.scale(scale);
+  if(firstRun)
+  {
+    let matrix = new three.Matrix4().makeRotationFromQuaternion(target);
+    console.log(matrix.clone());
+    console.log(m.clone());
+    firstRun = false;
+  }
+ // let matrix = new three.Matrix4().makeRotationAxis(new three.Vector3(0, 1, 1), 1.5708);
   target.setFromRotationMatrix(m);
-  let quaternion = new three.Quaternion().setFromAxisAngle(new three.Vector3(1, 0, 0), 1.5708);
-  target.premultiply(quaternion);
+  //let quaternion = new three.Quaternion().setFromAxisAngle(new three.Vector3(1, 1, 1), 1.5708);
+  //target.premultiply(quaternion);
 }
 
 function transformPoint(vector, matrix, target) {
@@ -516,35 +527,34 @@ var IKJoint = function () {
     }
   }, {
     key: '_applyWorldPosition',
-    value: function _applyWorldPosition() {
+    value: function _applyWorldPosition()
+    {
       var direction = new three.Vector3().copy(this._direction);
       var position = new three.Vector3().copy(this._getWorldPosition());
       var parent = this.bone.parent;
       if (parent)
       {
         this._updateMatrixWorld();
-        let worldMatrix = this.bone.parent.matrixWorld.clone();
+        let worldMatrix = this.bone.parent.matrixWorld;
 
-       // switchMatrixSides(worldMatrix);
         var inverseParent = new three.Matrix4().getInverse(worldMatrix);
-        transformPoint(position, inverseParent, position);
+
+        position.applyMatrix4(inverseParent);
         this.bone.position.copy(position);
         this._updateMatrixWorld();
         this._worldToLocalDirection(direction);
-        let yp = direction.y;
-        let zp = direction.z;
-        //direction.z = yp;
-       // direction.y = zp;
-        setQuaternionFromDirection(direction, Y_AXIS, this.bone.quaternion);
-        let x = this.bone.rotation.x;
-        let y = this.bone.rotation.y;
-        let z = this.bone.rotation.z;
-        this.bone.rotation.y = -z;
-        //this.bone.rotation.x = x;
-        this.bone.rotation.z = -y;
-        //this.bone.rotation.z = 0;
+        //inverseParent = new three.Matrix4().getInverse(worldMatrix);
+        //direction.applyMatrix4(inverseParent);
+        //let positionik = new three.Vector3();
+        //let quaternion = new three.Quaternion();
+        //let scale = new three.Vector3();
+        //worldMatrix.decompose(positionik, quaternion, scale);
 
-      } else {
+        setQuaternionFromDirection(direction, Y_AXIS, this.bone.quaternion);
+        this.bone.rotation.z = 0;
+      }
+      else
+      {
         this.bone.position.copy(position);
       }
       this.bone.updateMatrix();

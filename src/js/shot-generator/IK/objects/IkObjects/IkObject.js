@@ -27,7 +27,7 @@ class IkObject
         this.chainObjects = chainObjects;
         this.hipsControlTarget = this.controlTargets[5];
 
-        //chainObjects.push(new ChainObject("Spine", "Head", this.controlTargets[0]));
+        chainObjects.push(new ChainObject("Spine", "Head", this.controlTargets[0]));
 
         chainObjects.push(new ChainObject("LeftArm", "LeftHand", this.controlTargets[1]));
         chainObjects.push(new ChainObject("RightArm", "RightHand", this.controlTargets[2]));
@@ -50,14 +50,19 @@ class IkObject
                         parent = parent.parent;
                     }
                     skeleton = parent;
+                    //skeleton.quaternion.inverse();
+
                 }
                 // Flips a model's forward from -Z to +Z
                 // By default Models axis is -Z while Three ik works with +Z
                 if(object.name === "Hips")
                 {
                     this.hips = object;
-                    //setZForward(rigMesh);
+                    setZForward(object);
                     rigMesh.bind(rigMesh.skeleton);
+                    let objectWorld = new THREE.Vector3();
+                    object.getWorldPosition(objectWorld);
+                    this.hipsControlTarget.target.position.copy(objectWorld);
                 }
                 // Goes through all chain objects to find with which we are working
                 chainObjects.forEach((chainObject) =>
@@ -121,7 +126,10 @@ class IkObject
             console.log("reinit");
             chain.joints[chain.joints.length - 1].bone.getWorldPosition(chainObjects[i].controlTarget.target.position);
             chain.reinitializeJoints();
+
+
         }
+        this.hips.getWorldPosition(this.hipsControlTarget.target.position);
     }
 
     // Calculates back's offset in order to move with hips

@@ -295,6 +295,10 @@ const updateObject = (draft, state, props, { models }) => {
   }
 }
 
+const getDraftObject = (id) =>
+{
+  console.log(draft);
+}
 // `loaded` status is not serialized
 // when we load a new file, we need to initialize it
 // so it can be read to determine loading progress
@@ -738,6 +742,19 @@ const sceneObjectsReducer = (state = {}, action) => {
         }
 
         return withDisplayNames(draft)
+      case "GET_OBJECT":
+        if (
+            action.payload.ids == null ||
+            action.payload.ids.length === 0
+        ) return
+        console.log("Getting object");
+           console.log(draft);
+        for (let id of action.payload.ids) {
+          if (draft[id] == null) {continue};
+
+          return draft[id];
+        }
+        return withDisplayNames(draft)
 
       case 'DELETE_OBJECTS':
         if (
@@ -954,6 +971,7 @@ const worldReducer = (state = initialState.undoable.world, action) => {
 
 const mainReducer = (state/* = initialState*/, action) => {
   return produce(state, draft => {
+
     switch (action.type) {
       case 'LOAD_SCENE':
         draft.mainViewCamera = 'live'
@@ -1019,6 +1037,7 @@ const mainReducer = (state/* = initialState*/, action) => {
 
       case 'CREATE_CHARACTER_PRESET':
         draft.presets.characters[action.payload.id] = action.payload
+
         return
 
       case 'CREATE_POSE_PRESET':
@@ -1199,6 +1218,7 @@ module.exports = {
   updateObjects: payload => ({ type: 'UPDATE_OBJECTS', payload }),
   
   deleteObjects: ids => ({ type: 'DELETE_OBJECTS', payload: { ids } }),
+  getObject: ids => ({ type: 'GET_OBJECT', payload: { ids } }),
 
   duplicateObjects: (ids, newIds) => ({ type: 'DUPLICATE_OBJECTS', payload: { ids, newIds } }),
 
