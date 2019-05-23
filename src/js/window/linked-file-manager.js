@@ -8,7 +8,7 @@ module.exports = class LinkedFileManager {
     this.linkedFiles = new Map()
 
     this.addBoard = this.addBoard.bind(this)
-    this.onFocus = this.onFocus.bind(this)
+    this.activateBoard = this.activateBoard.bind(this)
   }
 
   addBoard (board) {
@@ -28,8 +28,8 @@ module.exports = class LinkedFileManager {
     this.linkedFiles.delete(board.link)
   }
 
-  onFocus (board, callbackFn) {
-    console.log('LinkedFileManager#onFocus')
+  async activateBoard (board, callbackFn) {
+    console.log('LinkedFileManager#activateBoard')
 
     //
     //
@@ -48,10 +48,12 @@ module.exports = class LinkedFileManager {
       let timestamp = this.getChangeTime(linkedFile)
       if (timestamp !== false) {
         console.log('\t', linkedFile.link, 'needs to be updated')
-        callbackFn(linkedFile.link)
+        await callbackFn(linkedFile.link)
         linkedFile.timestamp = timestamp
+        return true
       } else {
         console.log('\t', linkedFile.link, 'does not need to be updated')
+        return false
       }
     }
   }

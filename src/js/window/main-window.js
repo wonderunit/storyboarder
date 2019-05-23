@@ -3349,12 +3349,27 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
 
     ipcRenderer.send('analyticsEvent', 'Board', 'go to board', null, currentBoard)
 
-    linkedFileManager.onFocus(
-      boardData.boards[currentBoard],
-      refreshLinkedBoardByFilename
-    )
+    let updateFromLinkIfRequired
+    if (board.link) {
+      console.log('updated from PSD')
+      updateFromLinkIfRequired = new Promise((resolve, reject) => {
+        linkedFileManager.activateBoard(board, refreshLinkedBoardByFilename)
+          .then(shouldSave => {
+            if (shouldSave) {
+              console.log('\tsaving updated files ...')
+              saveImageFile()
+                .then(resolve)
+                .catch(reject)
+            } else {
+              resolve()
+            }
+          })
+          .catch(reject)
+      })
 
-    updateSketchPaneBoard()
+    } else {
+
+    Promise.all([updateFromLinkIfRequired, updateSketchPaneBoard])
       .then(() => {
         audioPlayback.playBoard(currentBoard)
         resolve()
@@ -6838,7 +6853,7 @@ ipcRenderer.on('reloadScript', (event, args) => reloadScript(args))
 ipcRenderer.on('focus', async event => {
   if (!prefsModule.getPrefs()['enableForcePsdReloadOnFocus']) return
 
-  linkedFileManager.onFocus(boardData.boards[currentBoard], refreshLinkedBoardByFilename)
+  linkedFileManager.activateBoard(boardData.boards[currentBoard], refreshLinkedBoardByFilename)
 })
 
 ipcRenderer.on('stopAllSounds', () => {
