@@ -3351,12 +3351,10 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
 
     let updateFromLinkIfRequired
     if (board.link) {
-      console.log('updated from PSD')
       updateFromLinkIfRequired =
         linkedFileManager.activateBoard(board, refreshLinkedBoardByFilename)
 
     } else {
-      console.log('not updated from PSD')
       updateFromLinkIfRequired = Promise.resolve()
     }
 
