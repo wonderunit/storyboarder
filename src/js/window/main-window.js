@@ -8,7 +8,6 @@ const path = require('path')
 const menu = require('../menu')
 const util = require('../utils/index')
 const Color = require('color-js')
-const chokidar = require('chokidar')
 const plist = require('plist')
 const R = require('ramda')
 const CAF = require('caf')
@@ -70,6 +69,8 @@ const FileHelper = require('../files/file-helper')
 const AudioPlayback = require('./audio-playback')
 const AudioFileControlView = require('./audio-file-control-view')
 
+const LinkedFileManager = require('./linked-file-manager')
+
 const pkg = require('../../../package.json')
 
 const sharedObj = remote.getGlobal('sharedObj')
@@ -114,7 +115,7 @@ let boardFileDirtyTimer
 
 let recordingToBoardIndex = undefined
 
-let watcher // for chokidar
+let linkedFileManager
 
 const ALLOWED_AUDIO_FILE_EXTENSIONS = [
   'wav',
@@ -1369,7 +1370,7 @@ const loadBoardUI = async () => {
         if (confirmChoice === 0) {
           // Unlink and Draw
           notifications.notify({ message: `Stopped watching\n${board.link}\nfor changes.` })
-          watcher.unwatch(path.join(boardPath, 'images', board.link))
+          linkedFileManager.removeBoard(board)
           delete board.link
           markBoardFileDirty()
 
@@ -1554,7 +1555,7 @@ const loadBoardUI = async () => {
       audioPlayback.dispose()
 
       // remove any existing listeners
-      watcher && watcher.close()
+      linkedFileManager.dispose()
 
       // dispatch a change to preferences merging in toolbar data
       // first dispatch locally
@@ -1886,11 +1887,8 @@ const loadBoardUI = async () => {
     }
   })
 
-  // setup filesystem watcher
-  watcher = chokidar.watch(null, {
-    disableGlobbing: true // treat file strings as literal file names
-  })
-  watcher.on('all', onLinkedFileChange)
+  linkedFileManager = new LinkedFileManager({ storyboarderFilePath: boardFilename })
+  boardData.boards.filter(b => b.link).forEach(linkedFileManager.addBoard)
 
   menu.setMenu()
   // HACK initialize the menu to match the value in preferences
@@ -2708,49 +2706,15 @@ let openInEditor = async () => {
       }
     }
 
-    // NOTE PSDs that are being watched from previous selections
-    //      continue to be watched.
-    //      We don’t clear them out until 1) we remove the link
-    //      or 2) the end of the session (beforeunload).
-    //      To stop watching old selections, could do something like:
-    //          watcher.close() or watcher.unwatch()
+    linkedFileManager.addBoard(board)
 
-    // add current selection to the watcher
-    for (let board of selectedBoards) {
-      console.log('\twatcher add', path.join(boardPath, 'images', board.link))
-      watcher.add(path.join(boardPath, 'images', board.link))
-    }
     ipcRenderer.send('analyticsEvent', 'Board', 'edit in photoshop')
-
-    // HACK because this is async, with no callback, we just check back in 100 msecs :/
-    // see: https://github.com/paulmillr/chokidar/issues/542#issuecomment-255496275
-    //
-    // a more reliable approach would be to create a new watcher instance each time,
-    // which would always fire a 'ready' event
-    // https://github.com/paulmillr/chokidar/issues/487#issuecomment-222714731
-    //
-    setTimeout(
-      () => console.log('\twatching', JSON.stringify(watcher.getWatched(), null, 2)),
-      100
-    )
 
   } catch (error) {
     notifications.notify({ message: '[WARNING] Error opening files in editor.' })
     console.error(error)
     return
   }
-}
-const onLinkedFileChange = async (eventType, filepath, stats) => {
-  console.log('onLinkedFileChange', eventType, filepath, stats)
-
-  if (eventType !== 'change') {
-    // ignore `add` events, etc
-    // we only care about `change` events (explicit save events)
-    return
-  }
-
-  let filename = path.basename(filepath)
-  await refreshLinkedBoardByFilename(filename)
 }
 
 const refreshLinkedBoardByFilename = async filename => {
@@ -3384,6 +3348,11 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
     // })
 
     ipcRenderer.send('analyticsEvent', 'Board', 'go to board', null, currentBoard)
+
+    linkedFileManager.onFocus(
+      boardData.boards[currentBoard],
+      refreshLinkedBoardByFilename
+    )
 
     updateSketchPaneBoard()
       .then(() => {
@@ -6869,15 +6838,7 @@ ipcRenderer.on('reloadScript', (event, args) => reloadScript(args))
 ipcRenderer.on('focus', async event => {
   if (!prefsModule.getPrefs()['enableForcePsdReloadOnFocus']) return
 
-  // update watched files
-  let watched = watcher.getWatched()
-  for (let dir of Object.keys(watched)) {
-    for (let filename of watched[dir]) {
-      console.log('refreshing', filename)
-      // TODO check timestamp to see if actually changed?
-      await refreshLinkedBoardByFilename(filename)
-    }
-  }
+  linkedFileManager.onFocus(boardData.boards[currentBoard], refreshLinkedBoardByFilename)
 })
 
 ipcRenderer.on('stopAllSounds', () => {
