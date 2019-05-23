@@ -50,10 +50,8 @@ module.exports = class LinkedFileManager {
         console.log('\t', linkedFile.link, 'needs to be updated')
         await callbackFn(linkedFile.link)
         linkedFile.timestamp = timestamp
-        return true
       } else {
         console.log('\t', linkedFile.link, 'does not need to be updated')
-        return false
       }
     }
   }

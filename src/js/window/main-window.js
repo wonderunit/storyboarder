@@ -3352,22 +3352,13 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
     let updateFromLinkIfRequired
     if (board.link) {
       console.log('updated from PSD')
-      updateFromLinkIfRequired = new Promise((resolve, reject) => {
+      updateFromLinkIfRequired =
         linkedFileManager.activateBoard(board, refreshLinkedBoardByFilename)
-          .then(shouldSave => {
-            if (shouldSave) {
-              console.log('\tsaving updated files ...')
-              saveImageFile()
-                .then(resolve)
-                .catch(reject)
-            } else {
-              resolve()
-            }
-          })
-          .catch(reject)
-      })
 
     } else {
+      console.log('not updated from PSD')
+      updateFromLinkIfRequired = Promise.resolve()
+    }
 
     Promise.all([updateFromLinkIfRequired, updateSketchPaneBoard])
       .then(() => {
