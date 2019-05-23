@@ -29,7 +29,7 @@ module.exports = class LinkedFileManager {
   }
 
   onFocus (board, callbackFn) {
-    console.log('LinkedFileManager#onFocus', { event, linkedFiles: this.linkedFiles })
+    console.log('LinkedFileManager#onFocus')
 
     //
     //
