@@ -9,6 +9,7 @@ const { useEffect, useRef, useMemo, useState, useReducer } = React
 const {
   updateObject,
   selectBone,
+  updateCharacterSkeleton,
 
   getSceneObjects,
   getWorld,
@@ -35,6 +36,8 @@ require('./lib/VRController')
 
 const RStats = require('./lib/rStats')
 require('./lib/rStats.extras')
+
+const applyDeviceQuaternion = require('../../shot-generator//apply-device-quaternion')
 
 const loadingManager = new THREE.LoadingManager()
 const objLoader = new THREE.OBJLoader2(loadingManager)
@@ -172,7 +175,17 @@ const useAttachmentLoader = ({ sceneObjects, world }) => {
   return attachments
 }
 
-const SceneContent = ({ aspectRatio, sceneObjects, getModelData, activeCamera, world, updateObject, selectedBone, selectBone }) => {
+const SceneContent = ({
+  aspectRatio,
+  sceneObjects,
+  getModelData,
+  activeCamera,
+  world,
+  updateObject,
+  selectedBone,
+  selectBone,
+  updateCharacterSkeleton
+}) => {
   const rStatsRef = useRef(null)
   const renderer = useRef(null)
   const xrOffset = useRef(null)
@@ -198,6 +211,13 @@ const SceneContent = ({ aspectRatio, sceneObjects, getModelData, activeCamera, w
   // Why do I need to create ref to access updated state in some functions?
   const guiModeRef = useRef(null)
   const selectedObjRef = useRef(null)
+
+  // Rotate Bone
+  let isControllerRotatingCurrent = useRef(false)
+  let startingObjectQuaternion = useRef(null)
+  let startingDeviceOffset = useRef(null)
+  let startingObjectOffset = useRef(null)
+  let startingDeviceRotation = useRef(null)
 
   XRControllersRef.current = XRControllers
   guiModeRef.current = guiMode
@@ -330,10 +350,11 @@ const SceneContent = ({ aspectRatio, sceneObjects, getModelData, activeCamera, w
       }
 
       const object = controller.userData.selected
-
       if (object && object.userData.type === 'character') {
         constraintObjectRotation(controller)
       }
+
+      if (controller.userData.bone) rotateBone(controller)
     })
   })
 
@@ -372,6 +393,42 @@ const SceneContent = ({ aspectRatio, sceneObjects, getModelData, activeCamera, w
     }
   }
 
+  const rotateBone = controller => {
+    const target = controller.userData.bone
+
+    if (!isControllerRotatingCurrent.current) {
+      isControllerRotatingCurrent.current = true
+      let startValues = new THREE.Matrix4().extractRotation(controller.matrixWorld)
+      startingDeviceRotation.current = new THREE.Quaternion().setFromRotationMatrix(startValues)
+
+      startingDeviceOffset.current = new THREE.Quaternion()
+        .clone()
+        .inverse()
+        .multiply(startingDeviceRotation.current)
+        .normalize()
+        .inverse()
+      startingObjectQuaternion.current = target.quaternion.clone()
+      startingObjectOffset.current = new THREE.Quaternion()
+        .clone()
+        .inverse()
+        .multiply(startingObjectQuaternion.current)
+    }
+
+    let middleValues = new THREE.Matrix4().extractRotation(controller.matrixWorld)
+    let deviceQuaternion = new THREE.Quaternion().setFromRotationMatrix(middleValues)
+
+    let objectQuaternion = applyDeviceQuaternion({
+      parent: target.parent,
+      startingDeviceOffset: startingDeviceOffset.current,
+      startingObjectOffset: startingObjectOffset.current,
+      startingObjectQuaternion: startingObjectQuaternion.current,
+      deviceQuaternion,
+      camera
+    })
+
+    target.quaternion.copy(objectQuaternion.normalize())
+  }
+
   const onSelectStart = event => {
     const controller = event.target
     if (teleportMode.current) {
@@ -383,6 +440,7 @@ const SceneContent = ({ aspectRatio, sceneObjects, getModelData, activeCamera, w
       const bonesHelper = selectedObjRef.current.parent.bonesHelper
       const hits = boneIntersect(controller, bonesHelper)
       if (hits.length) {
+        controller.userData.bone = hits[0].bone
         selectBone(hits[0].bone.uuid)
         return
       }
@@ -404,7 +462,6 @@ const SceneContent = ({ aspectRatio, sceneObjects, getModelData, activeCamera, w
       }
 
       if (intersection.object.userData.type === 'gui') {
-
         const { name } = intersection.object
         if (name.includes('mode')) {
           const mode = name.split('_')[0]
@@ -491,6 +548,26 @@ const SceneContent = ({ aspectRatio, sceneObjects, getModelData, activeCamera, w
   const onSelectEnd = event => {
     const controller = event.target
     controller.pressed = false
+
+    if (controller.userData.bone) {
+      const target = controller.userData.bone
+      const parent = findParent(target)
+      let rotation = new THREE.Euler()
+      rotation.setFromQuaternion(target.quaternion.clone().normalize(), 'YXZ')
+
+      updateCharacterSkeleton({
+        id: parent.userData.id,
+        name: target.name,
+        rotation: {
+          x: rotation.x,
+          y: rotation.y,
+          z: rotation.z
+        }
+      })
+
+      controller.userData.bone = undefined
+      isControllerRotatingCurrent.current = false
+    }
 
     if (controller.userData.selected !== undefined) {
       const object = controller.userData.selected
@@ -633,11 +710,10 @@ const SceneContent = ({ aspectRatio, sceneObjects, getModelData, activeCamera, w
   }
 
   useEffect(() => {
-
-    
     intersectArray.current = scene.children.filter(
-      child => (child instanceof THREE.Mesh || child instanceof THREE.Group) 
-      && (child.userData.type !== 'ground' && child.userData.type !== 'room' && child.userData.type !== 'camera')
+      child =>
+        (child instanceof THREE.Mesh || child instanceof THREE.Group) &&
+        (child.userData.type !== 'ground' && child.userData.type !== 'room' && child.userData.type !== 'camera')
     )
 
     Object.values(XRControllers).forEach(controller => {
@@ -686,7 +762,9 @@ const SceneContent = ({ aspectRatio, sceneObjects, getModelData, activeCamera, w
 
   useEffect(() => {
     if (!renderer.current) {
-        navigator.getVRDisplays().then(displays => {
+      navigator
+        .getVRDisplays()
+        .then(displays => {
           // console.log({ displays })
           if (displays.length) {
             renderer.current = gl
@@ -723,7 +801,7 @@ const SceneContent = ({ aspectRatio, sceneObjects, getModelData, activeCamera, w
     xrOffset.current.position.x = teleportPos.x
     xrOffset.current.position.z = teleportPos.z
   } else if (xrOffset.current && !camPosZero && camera.position.y !== xrOffset.current.userData.z) {
-    const {x, y, rotation } = xrOffset.current.userData
+    const { x, y, rotation } = xrOffset.current.userData
     const behindCam = {
       x: Math.sin(rotation),
       y: Math.cos(rotation)
@@ -732,8 +810,6 @@ const SceneContent = ({ aspectRatio, sceneObjects, getModelData, activeCamera, w
     xrOffset.current.position.x = x + behindCam.x
     xrOffset.current.position.z = y + behindCam.y
   }
-
-
 
   let cameraState = sceneObjects[activeCamera]
 
@@ -761,16 +837,15 @@ const SceneContent = ({ aspectRatio, sceneObjects, getModelData, activeCamera, w
             {handedness === 'right' && (
               <GUI {...{ aspectRatio, guiMode, currentBoard, selectedObject, virtualCamVisible, guiCamFOV, XRControllers }} />
             )}
-            <SGController
-              {...{ flipModel, modelData: getModelData(controllerObjectSettings), ...controllerObjectSettings }}
-            />
+            <SGController {...{ flipModel, modelData: getModelData(controllerObjectSettings), ...controllerObjectSettings }} />
           </primitive>
         )
       })}
     </group>
   )
 
-  let sceneObjectComponents = Object.values(sceneObjects).map((sceneObject, i) => {
+  let sceneObjectComponents = Object.values(sceneObjects)
+    .map((sceneObject, i) => {
       switch (sceneObject.type) {
         case 'camera':
           return virtualCamVisible ? (
@@ -792,7 +867,8 @@ const SceneContent = ({ aspectRatio, sceneObjects, getModelData, activeCamera, w
         case 'light':
           return <SGSpotLight key={i} {...{ ...sceneObject }} />
       }
-    }).filter(Boolean)
+    })
+    .filter(Boolean)
 
   const groundTexture = useMemo(() => new THREE.TextureLoader().load('/data/system/grid_floor.png'), [])
   const wallTexture = useMemo(
@@ -804,26 +880,34 @@ const SceneContent = ({ aspectRatio, sceneObjects, getModelData, activeCamera, w
       }),
     []
   )
-  const worldComponent = <SGWorld {...{
-      key: world,
-      groundTexture,
-      wallTexture,
-      world,
-      modelData: world.environment.file && getModelData({
-        model: world.environment.file,
-        type: 'environment'
-      })
-    }} />
+  const worldComponent = (
+    <SGWorld
+      {...{
+        key: world,
+        groundTexture,
+        wallTexture,
+        world,
+        modelData:
+          world.environment.file &&
+          getModelData({
+            model: world.environment.file,
+            type: 'environment'
+          })
+      }}
+    />
+  )
 
   // wait until the camera is setup before showing the scene
   const ready = !!xrOffset.current
 
   // console.log('scene is', ready ? 'shown' : 'not shown')
 
-  return <>
-    {activeCameraComponent}
-    {sceneObjectComponents.concat(worldComponent)}
-  </>
+  return (
+    <>
+      {activeCameraComponent}
+      {sceneObjectComponents.concat(worldComponent)}
+    </>
+  )
 }
 
 const SceneManagerXR = connect(
@@ -837,9 +921,10 @@ const SceneManagerXR = connect(
   }),
   {
     updateObject,
-    selectBone
+    selectBone,
+    updateCharacterSkeleton
   }
-)(({ aspectRatio, world, sceneObjects, activeCamera, updateObject, selectedBone, selectBone }) => {
+)(({ aspectRatio, world, sceneObjects, activeCamera, updateObject, selectedBone, selectBone, updateCharacterSkeleton }) => {
   const attachments = useAttachmentLoader({ sceneObjects, world })
 
   const getModelData = sceneObject => {
@@ -858,7 +943,8 @@ const SceneManagerXR = connect(
           world,
           updateObject,
           selectedBone,
-          selectBone
+          selectBone,
+          updateCharacterSkeleton
         }}
       />
     </Canvas>
