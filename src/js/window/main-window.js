@@ -182,6 +182,11 @@ let cancelTokens = {}
 const msecsToFrames = value => Math.round(value / 1000 * boardData.fps)
 const framesToMsecs = value => Math.round(value / boardData.fps * 1000)
 
+// via https://stackoverflow.com/a/41115086
+const serial = funcs =>
+    funcs.reduce((promise, func) =>
+        promise.then(result => func().then(Array.prototype.concat.bind(result))), Promise.resolve([]))
+
 // TODO better name than etags?
 // TODO store in boardData instead, but exclude from JSON?
 // TODO use mtime trick like we do for layers and posterframes?
@@ -3351,11 +3356,6 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
     // })
 
     ipcRenderer.send('analyticsEvent', 'Board', 'go to board', null, currentBoard)
-
-    // via https://stackoverflow.com/a/41115086
-    const serial = funcs =>
-        funcs.reduce((promise, func) =>
-            promise.then(result => func().then(Array.prototype.concat.bind(result))), Promise.resolve([]))
 
     let updateFromLinkIfRequired = () =>
       (board.link)
