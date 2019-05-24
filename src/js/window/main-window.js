@@ -2717,7 +2717,7 @@ let openInEditor = async () => {
   }
 }
 
-const refreshLinkedBoardByFilename = async filename => {
+const refreshLinkedBoardByFilename = async (filename, options = { forceReadFromFiles: false }) => {
   console.log('refreshLinkedBoardByFilename', filename)
 
   // find the board associated with this link filename
@@ -2769,7 +2769,7 @@ const refreshLinkedBoardByFilename = async filename => {
       let layerName = storyboarderSketchPane.sketchPane.layers[index].name
 
       if (layerName !== 'reference') {
-        if (isCurrentBoard) {
+        if (isCurrentBoard && !options.forceReadFromFiles) {
           console.log('\t\t', layerName, 'sketchpane layer cleared')
           storyboarderSketchPane.sketchPane.layers.findByName(layerName).clear()
         }
@@ -2795,7 +2795,7 @@ const refreshLinkedBoardByFilename = async filename => {
                          // hasn't actually changed
 
     console.log('\tisCurrentBoard?', isCurrentBoard)
-    if (isCurrentBoard) {
+    if (isCurrentBoard && !options.forceReadFromFiles) {
       // save undo state for ALL layers
       console.log('\tstoring undoable state (pre)')
       storeUndoStateForImage(true, storyboarderSketchPane.visibleLayersIndices)
