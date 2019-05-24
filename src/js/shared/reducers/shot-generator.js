@@ -58,6 +58,7 @@ const getSerializedState = state => {
 const checkForCharacterChanges = (state, draft, actionPayloadId) => {
   // check to see if character has changed from preset
   // and invalidate if so
+
   let characterPresetId = getSceneObjects(draft)[actionPayloadId].characterPresetId
   if (characterPresetId) {
     let statePreset = state.presets.characters[characterPresetId]
@@ -68,7 +69,6 @@ const checkForCharacterChanges = (state, draft, actionPayloadId) => {
       getSceneObjects(draft)[actionPayloadId].characterPresetId = undefined
       return true
     }
-
     let stateCharacter = getSceneObjects(draft)[actionPayloadId]
 
     // for every top-level prop in the preset
@@ -105,6 +105,7 @@ const checkForCharacterChanges = (state, draft, actionPayloadId) => {
 const checkForSkeletonChanges = (state, draft, actionPayloadId) => {
   // check to see if pose has changed from preset
   // and invalidate if so
+
   let posePresetId = getSceneObjects(draft)[actionPayloadId].posePresetId
   if (posePresetId) {
     let statePreset = state.presets.poses[posePresetId]
@@ -117,6 +118,7 @@ const checkForSkeletonChanges = (state, draft, actionPayloadId) => {
     }
 
     let draftSkeleton = getSceneObjects(draft)[actionPayloadId].skeleton
+    let characterPreset = getSceneObjects(draft)[actionPayloadId].ragDoll;
 
     let preset = statePreset.state.skeleton
     let curr = draftSkeleton
@@ -126,8 +128,7 @@ const checkForSkeletonChanges = (state, draft, actionPayloadId) => {
       getSceneObjects(draft)[actionPayloadId].posePresetId = undefined
       return true
     }
-
-    for (name in preset) {
+    for (let name in preset) {
       if (
         preset[name].rotation.x !== curr[name].rotation.x ||
         preset[name].rotation.y !== curr[name].rotation.y ||
@@ -164,7 +165,8 @@ const updateObject = (draft, state, props, { models }) => {
 
   // update skeleton first
   // so that subsequent changes to height and headScale take effect
-  if (props.hasOwnProperty('skeleton')) {
+  if (props.hasOwnProperty('skeleton'))
+  {
     draft.skeleton = props.skeleton
   }
 
@@ -742,19 +744,6 @@ const sceneObjectsReducer = (state = {}, action) => {
         }
 
         return withDisplayNames(draft)
-      case "GET_OBJECT":
-        if (
-            action.payload.ids == null ||
-            action.payload.ids.length === 0
-        ) return
-        console.log("Getting object");
-           console.log(draft);
-        for (let id of action.payload.ids) {
-          if (draft[id] == null) {continue};
-
-          return draft[id];
-        }
-        return withDisplayNames(draft)
 
       case 'DELETE_OBJECTS':
         if (
@@ -772,7 +761,6 @@ const sceneObjectsReducer = (state = {}, action) => {
 
       case 'UPDATE_OBJECT':
         if (draft[action.payload.id] == null) return
-
         updateObject(
           draft[action.payload.id],
           state[action.payload.id],
@@ -971,7 +959,6 @@ const worldReducer = (state = initialState.undoable.world, action) => {
 
 const mainReducer = (state/* = initialState*/, action) => {
   return produce(state, draft => {
-
     switch (action.type) {
       case 'LOAD_SCENE':
         draft.mainViewCamera = 'live'
@@ -1037,7 +1024,6 @@ const mainReducer = (state/* = initialState*/, action) => {
 
       case 'CREATE_CHARACTER_PRESET':
         draft.presets.characters[action.payload.id] = action.payload
-
         return
 
       case 'CREATE_POSE_PRESET':
@@ -1218,7 +1204,6 @@ module.exports = {
   updateObjects: payload => ({ type: 'UPDATE_OBJECTS', payload }),
   
   deleteObjects: ids => ({ type: 'DELETE_OBJECTS', payload: { ids } }),
-  getObject: ids => ({ type: 'GET_OBJECT', payload: { ids } }),
 
   duplicateObjects: (ids, newIds) => ({ type: 'DUPLICATE_OBJECTS', payload: { ids, newIds } }),
 

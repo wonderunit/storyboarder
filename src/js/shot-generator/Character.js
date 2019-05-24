@@ -180,7 +180,7 @@ const Character = React.memo(({
   loaded,
   modelData,
   largeRenderer,
-
+  setSkeleton,
   ...props
 }) => {
   const [ready, setReady] = useState(false) // ready to load?
@@ -282,18 +282,19 @@ const Character = React.memo(({
       //#region Ragdoll
       let skeletonRig = ragDoll.current;
       let domElement = largeRenderer.current.domElement;
-      const hipsControl = AddTransformationControl(new THREE.Vector3(0, 1, 0), camera, domElement, scene);
-      const backControl = AddTransformationControl(new THREE.Vector3(0, 2, -.1), camera, domElement, scene);
-      const rightHandControl = AddTransformationControl(new THREE.Vector3(2, 1.5, 0), camera, domElement, scene);
-      const leftHandControl = AddTransformationControl(new THREE.Vector3(-2, 1.5, 0), camera, domElement, scene);
-      const leftLegControl = AddTransformationControl(new THREE.Vector3(0, 0, 0), camera, domElement, scene);
-      const rightLegControl = AddTransformationControl(new THREE.Vector3(0, 0, 1), camera, domElement, scene);
+      const hipsControl = AddTransformationControl(new THREE.Vector3(0, 1, 0), camera, domElement, scene, "hips");
+      const backControl = AddTransformationControl(new THREE.Vector3(0, 2, -.1), camera, domElement, scene, "back");
+      const rightHandControl = AddTransformationControl(new THREE.Vector3(2, 1.5, 0), camera, domElement, scene, "rightHand");
+      const leftHandControl = AddTransformationControl(new THREE.Vector3(-2, 1.5, 0), camera, domElement, scene, "leftHand");
+      const leftLegControl = AddTransformationControl(new THREE.Vector3(0, 0, 0), camera, domElement, scene, "leftLeg");
+      const rightLegControl = AddTransformationControl(new THREE.Vector3(0, 0, 1), camera, domElement, scene, "rightLeg");
 
       skeletonRig.initObject(scene, object.current, object.current.children[1], backControl, leftHandControl,
           rightHandControl, leftLegControl, rightLegControl,
           hipsControl );
       object.current.userData.ikRig = skeletonRig;
       console.log(object.current);
+      setSkeleton(skeletonRig);
       //#endregion
     }
 
@@ -479,9 +480,13 @@ const Character = React.memo(({
         let originalHeight = object.current.userData.originalHeight
         let scale = props.height / originalHeight
 
-        object.current.scale.set( scale, scale, scale )
-        object.current.updateMatrixWorld(true);
-        ragDoll.current.reinitialize(object.current.matrixWorld);
+        if(scale !== object.current.scale.x)
+        {
+          object.current.scale.set(scale, scale, scale)
+          object.current.updateMatrixWorld(true);
+
+          ragDoll.current.reinitialize(object.current.matrixWorld);
+        }
       } else {
         console.log("scalar");
         object.current.scale.setScalar( props.height )
@@ -785,6 +790,7 @@ const Character = React.memo(({
 
   useEffect(() => {
     if (ready) {
+      console.log("ready");
       setLoaded(true)
     }
   }, [ready])
@@ -792,9 +798,9 @@ const Character = React.memo(({
   return null
 })
 //#region RagDoll
-function AddTransformationControl(position, camera, domElement, scene)
+function AddTransformationControl(position, camera, domElement, scene, name)
 {
-  let targetControl = new TargetControl(camera, domElement);
+  let targetControl = new TargetControl(camera, domElement, name);
   targetControl.initialize(position, scene);
   return targetControl;
 }

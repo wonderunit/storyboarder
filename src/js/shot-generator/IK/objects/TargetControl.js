@@ -3,10 +3,11 @@ const THREE = require( "three");
 
 class TargetControl
 {
-    constructor(camera, domElement)
+    constructor(camera, domElement, name)
     {
         this.control = new TransformControls( camera, domElement );
-        this.control.size = 0.5
+        this.control.size = 0.5;
+        this.name = name;
         this.control.addEventListener('dragging-changed', ( event ) =>
         {
             //orbitControl.enabled = ! event.value;

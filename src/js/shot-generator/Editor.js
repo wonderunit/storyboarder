@@ -33,7 +33,6 @@ const {
   createObject,
   updateObject,
   deleteObjects,
-    getObject,
 
   duplicateObjects,
 
@@ -614,7 +613,6 @@ const SceneManager = connect(
 
     const components = Object.values(sceneObjects).map(props => {
       let modelCacheKey
-
       switch (props.type) {
           case 'object':
             try {
@@ -680,6 +678,15 @@ const SceneManager = connect(
                 loaded: props.loaded ? props.loaded : false,
                 modelData: attachments[modelCacheKey] && attachments[modelCacheKey].value,
                 largeRenderer,
+                 setSkeleton: (skeleton) =>
+                 {
+                     console.log("Set skeleton");
+                     console.log(sceneObjects);
+                     console.log(skeleton);
+                     sceneObjects[props.id].ragDoll = skeleton;
+                     console.log(sceneObjects);
+                     sceneObjects[props.id].x += 1000;
+                     },
                 ...props
               }
             ]
@@ -787,6 +794,7 @@ const SceneManager = connect(
     ]
   }
 )
+
 function updateCharacterIk(scene)
 {
   scene.traverse((object) =>
@@ -1012,7 +1020,6 @@ const Inspector = ({
   updateWorldRoom,
   updateWorldEnvironment,
   storyboarderFilePath,
-  getObject,
   selections
 }) => {
   const { scene } = useContext(SceneContext)
@@ -1060,7 +1067,7 @@ const Inspector = ({
               selectBone,
               updateCharacterSkeleton,
               storyboarderFilePath,
-                getObject
+              scene
             }
           ]
         : [
@@ -1357,14 +1364,12 @@ const ElementsPanel = connect(
     updateCharacterSkeleton,
     updateWorld,
     updateWorldRoom,
-    updateWorldEnvironment,
-      getObject
+    updateWorldEnvironment
   }
 )(
-  React.memo(({ world, sceneObjects, models, selections, selectObject, selectObjectToggle, updateObject, deleteObjects, selectedBone, machineState, transition, activeCamera, setActiveCamera, selectBone, updateCharacterSkeleton, updateWorld, updateWorldRoom, updateWorldEnvironment, storyboarderFilePath, getObject }) => {
+  React.memo(({ world, sceneObjects, models, selections, selectObject, selectObjectToggle, updateObject, deleteObjects, selectedBone, machineState, transition, activeCamera, setActiveCamera, selectBone, updateCharacterSkeleton, updateWorld, updateWorldRoom, updateWorldEnvironment, storyboarderFilePath }) => {
     let ref = useRef(null)
     let size = useComponentSize(ref)
-
     let listRef = useRef(null)
 
     // TODO momoized selector
@@ -1456,7 +1461,6 @@ const ElementsPanel = connect(
             updateWorldEnvironment,
 
             storyboarderFilePath,
-            getObject,
             selections
           }]
         )
@@ -1665,15 +1669,15 @@ const MORPH_TARGET_LABELS = {
   'ectomorphic': 'ecto',
   'endomorphic': 'obese',
 }
-const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, machineState, transition, selectBone, updateCharacterSkeleton, storyboarderFilePath, getObject }) => {
+const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, machineState, transition, selectBone, updateCharacterSkeleton, storyboarderFilePath, scene }) => {
   const createOnSetValue = (id, name, transform = value => value) => value => updateObject(id, { [name]: transform(value) })
-
+  const createOnSetValueTarget = (id, name, transform = value => value, execute) => value => { execute(value); updateObject(id, { [name]: transform(value) });  };
   let positionSliders = [
     [NumberSlider, { label: 'x', value: sceneObject.x, min: -30, max: 30, onSetValue: createOnSetValue(sceneObject.id, 'x') } ],
     [NumberSlider, { label: 'y', value: sceneObject.y, min: -30, max: 30, onSetValue: createOnSetValue(sceneObject.id, 'y') } ],
     [NumberSlider, { label: 'z', value: sceneObject.z, min: -30, max: 30, onSetValue: createOnSetValue(sceneObject.id, 'z') } ],
   ]
-
+    console.log("Entered");
   let volumeSliders = (sceneObject.model === 'box' )
     ? [
         [NumberSlider, { label: 'width', value: sceneObject.width, min: 0.025, max: 5, onSetValue: createOnSetValue(sceneObject.id, 'width') } ],
@@ -1707,13 +1711,72 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
       .filter(model => model.type === 'character')
       .map(model => ({ name: model.name, value: model.id }))
   }
+  const changeRig = (value) => value => console.log(value);
+  let characterRig = null;
   if(sceneObject.type === 'character')
   {
-        let object =  getObject(sceneObject.id);
-        console.log(object);
+      scene.traverse((object) =>
+      {
+          if(object.userData.id === sceneObject.id)
+          {
+              characterRig = object.userData.ikRig;
+              console.log(object.userData.ikRig);
+              console.log("Character rig");
+              console.log(object.userData);
+              return;
+          }
+      });
+
   }
 
+  let characterRigUi = ( characterRig !== null
+      ? () => {
+      let ui = [];
+      for(let i = 0; i < characterRig.controlTargets.length; i++)
+      {
+          let position = characterRig.controlTargets[i].target.position;
+          let x = position.x;
+          let y = position.y;
+          let z = position.z;
+          ui.push([
+          [NumberSlider,
+              {
+                  label: characterRig.controlTargets[i].name + 'X',
+                  value: position.x,
+                  min: -30,
+                  max: 30,
+                  onSetValue: createOnSetValueTarget(sceneObject.id, 'x', (value) => sceneObject.x += 0.00000000001 * value, (value) => characterRig.controlTargets[i].target.position.set(value, y, z))
+              }],
+          [NumberSlider,
+              {
+                  label: characterRig.controlTargets[i].name + 'Y',
+                  value: position.y,
+                  min: -30,
+                  max: 30,
+                  onSetValue: createOnSetValueTarget(sceneObject.id, 'y', (value) => sceneObject.y += 0.00000000001 * value, (value) => characterRig.controlTargets[i].target.position.set(x, value, z))
+              } ],
+          [NumberSlider,
+              {
+                  label: characterRig.controlTargets[i].name + 'Z',
+                  value: position.z,
+                  min: -30,
+                  max: 30,
+                  onSetValue: createOnSetValueTarget(sceneObject.id, 'z', (value) => sceneObject.z += 0.00000000001 * value, (value) => characterRig.controlTargets[i].target.position.set(x, y, value))
+              } ]
+      ]);};
+        return ui;}
+      : () => ['div', { style: { flex: 1, paddingBottom: 6 } }, [
+          [NumberSlider, {
+              label: 'HI',
+              min: 0.3,
+              max: 3.05,
+              step: 0.0254,
+              value: sceneObject.height,
+              onSetValue: createOnSetValue(sceneObject.id, 'height'),
+          }]]
+      ]);
 
+    console.log(characterRigUi());
   return h([
     'div',
       [
@@ -2038,15 +2101,6 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
                   formatter: value => Math.round(value).toString() + '%'
                 }
               ],
-              [NumberSlider,
-                {
-                  label: 'leftArmPoleX',
-                  value: sceneObject.ragDoll.controlTargets.target,
-                  min: -30,
-                  max: 30,
-                  onSetValue: createOnSetValue(sceneObject.id, 'sceneObject.ragDoll.controlTargets.target') } ],
-              [NumberSlider, { label: 'leftArmPoleY', value: sceneObject.ragDoll.controlTargets.target, min: -30, max: 30, onSetValue: createOnSetValue(sceneObject.id, 'y') } ],
-              [NumberSlider, { label: 'leftArmPoleZ', value: sceneObject.ragDoll.controlTargets.target, min: -30, max: 30, onSetValue: createOnSetValue(sceneObject.id, 'z') } ],
             ]],
 
             ['div', { style: { margin: '6px 0 3px 0', fontStyle: 'italic' } }, 'morphs'],
@@ -2072,6 +2126,8 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
             ]
           ]
       ),
+
+      sceneObject.type == 'character' && characterRigUi(),
 
       sceneObject.type == 'character' && [
         PosePresetsEditor, {
@@ -2707,7 +2763,6 @@ const Toolbar = ({ createObject, selectObject, loadScene, saveScene, camera, set
       ragDoll:  new RagDoll(),
       posePresetId: DEFAULT_POSE_PRESET_ID,
       skeleton: defaultPosePresets[DEFAULT_POSE_PRESET_ID].state.skeleton,
-
       visible: true
     })
     selectObject(id)
