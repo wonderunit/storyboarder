@@ -132,7 +132,7 @@ const characterFactory = data => {
   return { mesh, skeleton, armatures, originalHeight, boneLengthScale, parentRotation, parentPosition }
 }
 
-const SGCharacter = ({ id, type, isSelected, updateObject, modelData, ...props }) => {
+const SGCharacter = ({ id, type, isSelected, updateObject, modelData, selectedBone, ...props }) => {
   const [ready, setReady] = useState(false) // ready to load?
   // setting loaded = true forces an update to sceneObjects,
   // which is what Editor listens for to attach the BonesHelper
@@ -237,6 +237,8 @@ const SGCharacter = ({ id, type, isSelected, updateObject, modelData, ...props }
       setLoaded(false)
     }
   }, [])
+
+  let currentBoneSelected = useRef(null)
 
   const updateSkeleton = () => {
     let skeleton = object.current.userData.skeleton
@@ -370,6 +372,29 @@ const SGCharacter = ({ id, type, isSelected, updateObject, modelData, ...props }
       skinnedMesh.morphTargetInfluences[2] = props.morphTargets.endomorphic
     }
   }, [modelData, props.morphTargets])
+
+  useEffect(() => {
+    if (!ready) return
+    if (!object.current) return
+
+    // if there was a prior selected bone
+    if (currentBoneSelected.current) {
+      // reset it
+      currentBoneSelected.current.connectedBone.material.color = new THREE.Color(0x7a72e9)
+      currentBoneSelected.current = null
+    }
+
+    // was a bone selected?
+    if (selectedBone) {
+      // find the 3D Bone matching the selectedBone uuid
+      let bone = object.current.userData.skeleton.bones.find(b => b.uuid == selectedBone)
+
+      if (bone) {
+        currentBoneSelected.current = bone
+        currentBoneSelected.current.connectedBone.material.color = new THREE.Color(0x242246)
+      }
+    }
+  }, [selectedBone, ready])
 
   return skinnedMesh ? (
     <group

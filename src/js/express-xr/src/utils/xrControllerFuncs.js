@@ -12,6 +12,16 @@ const getIntersections = (controller, intersectArray) => {
   return raycaster.intersectObjects(intersectArray, true)
 }
 
+const boneIntersect = (controller, bonesHelper) => {
+  tempMatrix.identity().extractRotation(controller.matrixWorld)
+  const tiltControllerMatrix = new THREE.Matrix4().makeRotationX((Math.PI / 180) * -45)
+  tempMatrix.multiply(tiltControllerMatrix)
+
+  raycaster.ray.origin.setFromMatrixPosition(controller.matrixWorld)
+  raycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix)
+  return raycaster.intersectObject(bonesHelper)
+}
+
 const intersectObjects = (controller, intersectArray) => {
   if (controller.userData.selected !== undefined) return
   var line = controller.getObjectByName('line')
@@ -38,6 +48,7 @@ const cleanIntersected = () => {
 
 module.exports = {
   getIntersections,
+  boneIntersect,
   intersectObjects,
   cleanIntersected
 }

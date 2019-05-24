@@ -8,10 +8,12 @@ const { useEffect, useRef, useMemo, useState, useReducer } = React
 
 const {
   updateObject,
+  selectBone,
 
   getSceneObjects,
   getWorld,
-  getActiveCamera
+  getActiveCamera,
+  getSelectedBone
 } = require('../../shared/reducers/shot-generator')
 
 const { WEBVR } = require('../../vendor/three/examples/js/vr/WebVR')
@@ -28,7 +30,7 @@ const SGController = require('./components/SGController')
 const SGCharacter = require('./components/SGCharacter')
 const GUI = require('./gui/GUI')
 
-const { getIntersections, intersectObjects } = require('./utils/xrControllerFuncs')
+const { getIntersections, boneIntersect, intersectObjects } = require('./utils/xrControllerFuncs')
 require('./lib/VRController')
 
 const RStats = require('./lib/rStats')
@@ -95,17 +97,17 @@ const useAttachmentLoader = ({ sceneObjects, world }) => {
         return (state[action.payload.id])
           ? state
           : {
-            ...state,
-            [action.payload.id]: { status: 'NotAsked' }
-          }
+              ...state,
+              [action.payload.id]: { status: 'NotAsked' }
+            }
       case 'LOAD':
         // ignore if already loading
         return (state[action.payload.id].loading)
           ? state
           : {
-            ...state,
-            [action.payload.id]: { status: 'Loading', progress: undefined }
-          }
+              ...state,
+              [action.payload.id]: { status: 'Loading', progress: undefined }
+            }
       case 'PROGRESS':
         return {
           ...state,
@@ -130,8 +132,8 @@ const useAttachmentLoader = ({ sceneObjects, world }) => {
         }
       default:
         return state
-      }
-    }, {})
+    }
+  }, {})
 
   useMemo(() => {
     let loadables = Object.values(sceneObjects)
@@ -170,14 +172,7 @@ const useAttachmentLoader = ({ sceneObjects, world }) => {
   return attachments
 }
 
-const SceneContent = ({
-  aspectRatio,
-  sceneObjects,
-  getModelData,
-  activeCamera,
-  world,
-  updateObject
-}) => {
+const SceneContent = ({ aspectRatio, sceneObjects, getModelData, activeCamera, world, updateObject, selectedBone, selectBone }) => {
   const rStatsRef = useRef(null)
   const renderer = useRef(null)
   const xrOffset = useRef(null)
@@ -202,6 +197,7 @@ const SceneContent = ({
 
   // Why do I need to create ref to access updated state in some functions?
   const guiModeRef = useRef(null)
+  const selectedObjRef = useRef(null)
 
   XRControllersRef.current = XRControllers
   guiModeRef.current = guiMode
@@ -276,7 +272,7 @@ const SceneContent = ({
       return { ...prev, [id]: controller }
     })
   }
-  
+
   const updateGUIProp = e => {
     const { id, prop, value } = e.detail
 
@@ -377,14 +373,23 @@ const SceneContent = ({
   }
 
   const onSelectStart = event => {
+    const controller = event.target
     if (teleportMode.current) {
       onTeleport(event)
       return
     }
 
-    const controller = event.target
+    if (selectedObjRef.current && selectedObjRef.current.userData.type === 'character') {
+      const bonesHelper = selectedObjRef.current.parent.bonesHelper
+      const hits = boneIntersect(controller, bonesHelper)
+      if (hits.length) {
+        selectBone(hits[0].bone.uuid)
+        return
+      }
+    }
+
     const intersections = getIntersections(controller, intersectArray.current)
-    
+
     if (intersections.length > 0) {
       let intersection = intersections[0]
 
@@ -434,7 +439,8 @@ const SceneContent = ({
 
       const { id } = intersection.object
       setSelectedObject(id)
-      
+      selectedObjRef.current = scene.getObjectById(id)
+
       let object = findParent(intersection.object)
 
       if (object.userData.type === 'character') {
@@ -655,7 +661,7 @@ const SceneContent = ({
 
     const controller = event.target
     const intersections = getIntersections(controller, intersectArray.current)
-    
+
     if (intersections.length > 0) {
       let intersection = intersections[0]
       if (intersection.object.userData.type === 'slider') {
@@ -667,6 +673,7 @@ const SceneContent = ({
 
       const { id } = intersection.object
       setSelectedObject(id)
+      selectedObjRef.current = scene.getObjectById(id)
     }
   }
 
@@ -679,18 +686,18 @@ const SceneContent = ({
 
   useEffect(() => {
     if (!renderer.current) {
-      navigator.getVRDisplays().then(displays => {
-        // console.log({ displays })
-        if (displays.length) {
-          renderer.current = gl
-          scene.background = new THREE.Color(world.backgroundColor)
-          setIsXR(true)
-          // console.log('isXR is now', isXR)
-          document.body.appendChild(WEBVR.createButton(gl))
-          gl.vr.enabled = true
-        }
-      })
-      .catch(err => console.error(err))
+        navigator.getVRDisplays().then(displays => {
+          // console.log({ displays })
+          if (displays.length) {
+            renderer.current = gl
+            scene.background = new THREE.Color(world.backgroundColor)
+            setIsXR(true)
+            // console.log('isXR is now', isXR)
+            document.body.appendChild(WEBVR.createButton(gl))
+            gl.vr.enabled = true
+          }
+        })
+        .catch(err => console.error(err))
 
       const threeStats = new window.threeStats(gl)
       rStatsRef.current = new RStats({
@@ -764,23 +771,28 @@ const SceneContent = ({
   )
 
   let sceneObjectComponents = Object.values(sceneObjects).map((sceneObject, i) => {
-    switch (sceneObject.type) {
-      case 'camera':
-        return virtualCamVisible ? (
-          <SGVirtualCamera key={i} {...{ aspectRatio, selectedObject, ...sceneObject }} />
-        ) : (
-          undefined
-        )
-      case 'character':
-        const selectedObj = scene.getObjectById(selectedObject)
-        const isSelected = selectedObj && selectedObj.userData.id === sceneObject.id ? true : false
-        return <SGCharacter key={i} {...{ modelData: getModelData(sceneObject), isSelected, updateObject, ...sceneObject }} />
-      case 'object':
-        return <SGModel key={i} {...{ modelData: getModelData(sceneObject), ...sceneObject }} />
-      case 'light':
-        return <SGSpotLight key={i} {...{ ...sceneObject }} />
-    }
-  }).filter(Boolean)
+      switch (sceneObject.type) {
+        case 'camera':
+          return virtualCamVisible ? (
+            <SGVirtualCamera key={i} {...{ aspectRatio, selectedObject, ...sceneObject }} />
+          ) : (
+            undefined
+          )
+        case 'character':
+          const selectedObj = scene.getObjectById(selectedObject)
+          const isSelected = selectedObj && selectedObj.userData.id === sceneObject.id ? true : false
+          return (
+            <SGCharacter
+              key={i}
+              {...{ modelData: getModelData(sceneObject), isSelected, updateObject, selectedBone, ...sceneObject }}
+            />
+          )
+        case 'object':
+          return <SGModel key={i} {...{ modelData: getModelData(sceneObject), ...sceneObject }} />
+        case 'light':
+          return <SGSpotLight key={i} {...{ ...sceneObject }} />
+      }
+    }).filter(Boolean)
 
   const groundTexture = useMemo(() => new THREE.TextureLoader().load('/data/system/grid_floor.png'), [])
   const wallTexture = useMemo(
@@ -820,14 +832,16 @@ const SceneManagerXR = connect(
 
     world: getWorld(state),
     sceneObjects: getSceneObjects(state),
+    selectedBone: getSelectedBone(state),
     activeCamera: getActiveCamera(state)
   }),
   {
-    updateObject
+    updateObject,
+    selectBone
   }
-)(({ aspectRatio, world, sceneObjects, activeCamera, updateObject }) => {
+)(({ aspectRatio, world, sceneObjects, activeCamera, updateObject, selectedBone, selectBone }) => {
   const attachments = useAttachmentLoader({ sceneObjects, world })
-  
+
   const getModelData = sceneObject => {
     let key = getFilepathForLoadable(sceneObject)
     return attachments[key] && attachments[key].value
@@ -835,14 +849,18 @@ const SceneManagerXR = connect(
 
   return (
     <Canvas>
-      <SceneContent {...{
+      <SceneContent
+        {...{
           aspectRatio,
           sceneObjects,
           getModelData,
           activeCamera,
           world,
-          updateObject
-        }} />
+          updateObject,
+          selectedBone,
+          selectBone
+        }}
+      />
     </Canvas>
   )
 })

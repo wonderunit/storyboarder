@@ -472,8 +472,7 @@ function BonesHelper( object, object3D, { boneLengthScale = 1, cacheKey } ) {
 
         this.hit_meshes[boneIndex] = ( hitMesh )
         
-        // ENABLE LATER
-        // this.add(hitMesh)
+        this.add(hitMesh)
         this.add(createdHelper)
 
         bone.helper = createdHelper
