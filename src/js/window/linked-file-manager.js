@@ -11,7 +11,7 @@ module.exports = class LinkedFileManager {
     this.activateBoard = this.activateBoard.bind(this)
   }
 
-  addBoard (board) {
+  addBoard (board, options = { skipTimestamp: false }) {
     console.log('LinkedFileManager#addBoard', board)
 
     let filepath = this.getFilepath(board.link)
@@ -19,7 +19,9 @@ module.exports = class LinkedFileManager {
     this.linkedFiles.set(board.link, {
       link: board.link,
       filepath: filepath,
-      timestamp: this.getTimestamp(filepath)
+      timestamp: options.skipTimestamp
+        ? null
+        : this.getTimestamp(filepath)
     })
   }
 
@@ -59,7 +61,10 @@ module.exports = class LinkedFileManager {
   getChangeTime (linkedFile) {
     console.log('LinkedFileManager#getChangeTime', { linkedFile })
     let timestamp = this.getTimestamp(linkedFile.filepath)
-    if (timestamp > linkedFile.timestamp) {
+
+    if (timestamp == null) {
+      return timestamp
+    } else if (timestamp > linkedFile.timestamp) {
       return timestamp
     } else {
       return false
