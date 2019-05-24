@@ -2834,7 +2834,7 @@ const refreshLinkedBoardByFilename = async filename => {
       setEtag(path.join(boardPath, 'images', boardModel.boardFilenameForThumbnail(board)))
       // save
       console.log('\tsaving thumbnail')
-      let index = await saveThumbnailFile(boardData.boards.indexOf(board))
+      let index = await saveThumbnailFile(boardData.boards.indexOf(board), { forceReadFromFiles: true })
       // render thumbnail
       await updateThumbnailDisplayFromFile(index)
 
