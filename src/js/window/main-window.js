@@ -3352,16 +3352,20 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
 
     ipcRenderer.send('analyticsEvent', 'Board', 'go to board', null, currentBoard)
 
-    let updateFromLinkIfRequired
-    if (board.link) {
-      updateFromLinkIfRequired =
-        linkedFileManager.activateBoard(board, refreshLinkedBoardByFilename)
+    // via https://stackoverflow.com/a/41115086
+    const serial = funcs =>
+        funcs.reduce((promise, func) =>
+            promise.then(result => func().then(Array.prototype.concat.bind(result))), Promise.resolve([]))
 
-    } else {
-      updateFromLinkIfRequired = Promise.resolve()
-    }
+    let updateFromLinkIfRequired = () =>
+      (board.link)
+        ? linkedFileManager.activateBoard(
+            board,
+            filename => refreshLinkedBoardByFilename(filename, { forceReadFromFiles: true })
+          )
+        : Promise.resolve()
 
-    Promise.all([updateFromLinkIfRequired, updateSketchPaneBoard])
+    serial([updateFromLinkIfRequired, () => updateSketchPaneBoard()])
       .then(() => {
         audioPlayback.playBoard(currentBoard)
         resolve()
