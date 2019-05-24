@@ -2711,8 +2711,9 @@ let openInEditor = async () => {
     ipcRenderer.send('analyticsEvent', 'Board', 'edit in photoshop')
 
   } catch (error) {
-    notifications.notify({ message: '[WARNING] Error opening files in editor.' })
     console.error(error)
+    notifications.notify({ message: '[WARNING] Error opening files in editor.' })
+    notifications.notify({ message: error.toString() })
     return
   }
 }
