@@ -87,12 +87,8 @@ class RagDoll extends IkObject
     update()
     {
         super.update();
-       //if(this.enableIk)
-       //{
-       //    // Solves the inverse kinematic of object
-       //    this.ik.solve();
-       //}
-  //      this.lateUpdate();
+
+        //this.lateUpdate();
     }
 
     lateUpdate()
@@ -110,12 +106,12 @@ class RagDoll extends IkObject
         let rightFootBone = this.ik.chains[4].joints[2].bone;
         let rightLegChainTarget = this.chainObjects[4].controlTarget.target;
         rightFootBone.rotation.copy(rightLegChainTarget.rotation);
-        this.rotateBoneQuaternion(rightFootBone, new THREE.Euler(0.5, 0,0  ));
+        this.rotateBoneQuaternion(rightFootBone, new THREE.Euler(0.5, 0, 0));
         // Makes left foot follow the rotation of target
         let leftFootBone = this.ik.chains[3].joints[2].bone;
         let leftLegChainTarget = this.chainObjects[3].controlTarget.target;
         leftFootBone.rotation.copy(leftLegChainTarget.rotation);
-        this.rotateBoneQuaternion(leftFootBone, new THREE.Euler(0.5, 0,0  ));
+        this.rotateBoneQuaternion(leftFootBone, new THREE.Euler(0.5, 0, 0));
     }
 
     // Sets and quaternion angle for bones
@@ -196,5 +192,13 @@ class RagDoll extends IkObject
         this.rotateBoneQuaternion(head, new THREE.Euler(-1, 0, 0));
     }
 
+    removeFromScene(scene)
+    {
+        super.removeFromScene(scene);
+        this.poleConstraints.forEach((constraint)=>
+        {
+            scene.remove(constraint.poleTarget.mesh);
+        });
+    }
 }
 module.exports =  RagDoll;

@@ -56,26 +56,11 @@ function setQuaternionFromDirection(direction, up, target, scale) {
     }
     z.normalize();
     x.crossVectors(up, z);
-    if(firstRun)
-    {
-      console.log("here");
-    }
   }
   x.normalize();
   y.crossVectors(z, x);
   m.makeBasis(x, y, z);
-//  m.scale(scale);
-  if(firstRun)
-  {
-    let matrix = new three.Matrix4().makeRotationFromQuaternion(target);
-    console.log(matrix.clone());
-    console.log(m.clone());
-    firstRun = false;
-  }
- // let matrix = new three.Matrix4().makeRotationAxis(new three.Vector3(0, 1, 1), 1.5708);
   target.setFromRotationMatrix(m);
-  //let quaternion = new three.Quaternion().setFromAxisAngle(new three.Vector3(1, 1, 1), 1.5708);
-  //target.premultiply(quaternion);
 }
 
 function transformPoint(vector, matrix, target) {
@@ -648,7 +633,6 @@ var IKChain = function () {
         if (joint === this.joints[0])
         {
           this.origin = new three.Vector3().copy(this.base._getWorldPosition());
-          console.log(joint);
         }
         else
         {

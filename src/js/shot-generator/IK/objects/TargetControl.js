@@ -16,15 +16,15 @@ class TargetControl
 
     initialize(position, scene)
     {
-        let movingTarget = new THREE.Mesh(new THREE.SphereGeometry(0.05), new THREE.MeshBasicMaterial({ color: 0xff0000, opacity: 0.4 }));
-        movingTarget.position.z = position.z;
-        movingTarget.position.y = position.y;
-        movingTarget.position.x = position.x;
-        scene.add(movingTarget);
+        this.movingTarget = new THREE.Mesh(new THREE.SphereGeometry(0.05), new THREE.MeshBasicMaterial({ color: 0xff0000, opacity: 0.4 }));
+        this.movingTarget.position.z = position.z;
+        this.movingTarget.position.y = position.y;
+        this.movingTarget.position.x = position.x;
+        scene.add(this.movingTarget);
 
-        this.control.attach(movingTarget);
+        this.control.attach(this.movingTarget);
         scene.add(this.control);
-        this.target = movingTarget;
+        this.target = this.movingTarget;
     }
 
     intializeWithMesh(mesh, scene)

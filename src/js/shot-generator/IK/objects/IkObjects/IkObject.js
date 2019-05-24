@@ -15,7 +15,7 @@ class IkObject
     }
 
     // Takes skeleton and target for it's limbs
-    initObject(scene, objectSkeleton , skinnedMesh, ...controlTarget)
+    initObject(scene, objectSkeleton, skinnedMesh, ...controlTarget)
     {
         this.ik = new IK();
         let chains = [];
@@ -108,11 +108,11 @@ class IkObject
             this.ik.add(chain);
         });
         // Sets skeleton helper for showing bones
-        let skeletonHelper = new THREE.SkeletonHelper( skeleton );
+        this.skeletonHelper = new THREE.SkeletonHelper( skeleton );
         // Sets line width of skeleton helper
-        skeletonHelper.material.linewidth = 3;
+        this.skeletonHelper.material.linewidth = 3;
         // Adds skeleton helper to scene
-        scene.add( skeletonHelper );
+        scene.add( this.skeletonHelper );
        // this.calculteBackOffset();
     }
 
@@ -123,7 +123,6 @@ class IkObject
         for(let i = 0; i < chainObjects.length; i++)
         {
             let chain = chainObjects[i].chain;
-            console.log("reinit");
             chain.joints[chain.joints.length - 1].bone.getWorldPosition(chainObjects[i].controlTarget.target.position);
             chain.reinitializeJoints();
 
@@ -149,7 +148,7 @@ class IkObject
             // Solves the inverse kinematic of object
             this.ik.solve();
         }
-      //  this.lateUpdate();
+       // this.lateUpdate();
     }
 
     // Updates which is called last after all stuff in loop has been done
@@ -174,6 +173,22 @@ class IkObject
     isInitialized()
     {
         return this.ik === undefined ? false : true;
+    }
+
+    removeFromScene(scene)
+    {
+        this.chainObjects.forEach((chainObject) =>
+        {
+            let control = chainObject.controlTarget.control;
+            let movingTarget = chainObject.controlTarget.movingTarget;
+            control.detach(movingTarget);
+            scene.remove(movingTarget);
+            scene.remove(control);
+        });
+        this.hipsControlTarget.control.detach(this.hipsControlTarget.movingTarget);
+        scene.remove(this.hipsControlTarget.movingTarget);
+        scene.remove(this.hipsControlTarget.control);
+        scene.remove(this.skeletonHelper);
     }
 }
 module.exports =  IkObject;

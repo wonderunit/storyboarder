@@ -680,11 +680,7 @@ const SceneManager = connect(
                 largeRenderer,
                  setSkeleton: (skeleton) =>
                  {
-                     console.log("Set skeleton");
-                     console.log(sceneObjects);
-                     console.log(skeleton);
                      sceneObjects[props.id].ragDoll = skeleton;
-                     console.log(sceneObjects);
                      sceneObjects[props.id].x += 1000;
                      },
                 ...props
@@ -1431,8 +1427,6 @@ const ElementsPanel = connect(
 
     let kind = sceneObjects[selections[0]] && sceneObjects[selections[0]].type
     let data = sceneObjects[selections[0]]
-    console.log("Selection");
-    console.log(world);
     return React.createElement(
       'div', { style: { flex: 1, display: 'flex', flexDirection: 'column' }},
         React.createElement(
@@ -1677,7 +1671,6 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
     [NumberSlider, { label: 'y', value: sceneObject.y, min: -30, max: 30, onSetValue: createOnSetValue(sceneObject.id, 'y') } ],
     [NumberSlider, { label: 'z', value: sceneObject.z, min: -30, max: 30, onSetValue: createOnSetValue(sceneObject.id, 'z') } ],
   ]
-    console.log("Entered");
   let volumeSliders = (sceneObject.model === 'box' )
     ? [
         [NumberSlider, { label: 'width', value: sceneObject.width, min: 0.025, max: 5, onSetValue: createOnSetValue(sceneObject.id, 'width') } ],
@@ -1711,7 +1704,6 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
       .filter(model => model.type === 'character')
       .map(model => ({ name: model.name, value: model.id }))
   }
-  const changeRig = (value) => value => console.log(value);
   let characterRig = null;
   if(sceneObject.type === 'character')
   {
@@ -1720,9 +1712,6 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
           if(object.userData.id === sceneObject.id)
           {
               characterRig = object.userData.ikRig;
-              console.log(object.userData.ikRig);
-              console.log("Character rig");
-              console.log(object.userData);
               return;
           }
       });
@@ -1776,7 +1765,6 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
           }]]
       ]);
 
-    console.log(characterRigUi());
   return h([
     'div',
       [
@@ -2391,7 +2379,9 @@ const PhoneCursor = connect(
           if (intersectionPlane.current)
           {
             // intersection plane exists
-          } else {
+          }
+          else
+              {
             intersectionPlane.current = new THREE.Mesh(
               //new THREE.CylinderGeometry(1, 1, 40, 16, 2),
               new THREE.PlaneGeometry(100, 100, 2),

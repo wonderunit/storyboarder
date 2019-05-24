@@ -188,12 +188,16 @@ const Character = React.memo(({
   // which is what Editor listens for to attach the BonesHelper
   const setLoaded = loaded => updateObject(id, { loaded })
   const object = useRef(null)
-
+  let ragDoll = useRef(null);
   const originalSkeleton = useRef(null)
 
   const doCleanup = () => {
     if (object.current) {
       console.log(type, id, 'remove')
+      if(ragDoll !== null)
+      {
+        ragDoll.current.removeFromScene(scene);
+      }
       scene.remove(object.current.bonesHelper)
       scene.remove(object.current.orthoIcon)
       scene.remove(object.current)
@@ -202,7 +206,7 @@ const Character = React.memo(({
     }
   }
 
-  let ragDoll = useRef(null);
+
 
 
   // if the model has changed
@@ -249,7 +253,6 @@ const Character = React.memo(({
 
       scene.add(object.current)
       scene.add(object.current.orthoIcon)
-      console.log(scene);
 
       mesh.layers.disable(0)
       mesh.layers.enable(1)
@@ -293,7 +296,6 @@ const Character = React.memo(({
           rightHandControl, leftLegControl, rightLegControl,
           hipsControl );
       object.current.userData.ikRig = skeletonRig;
-      console.log(object.current);
       setSkeleton(skeletonRig);
       //#endregion
     }
