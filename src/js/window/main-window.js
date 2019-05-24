@@ -1888,7 +1888,9 @@ const loadBoardUI = async () => {
   })
 
   linkedFileManager = new LinkedFileManager({ storyboarderFilePath: boardFilename })
-  boardData.boards.filter(b => b.link).forEach(linkedFileManager.addBoard)
+  boardData.boards
+    .filter(b => b.link)
+    .forEach(b => linkedFileManager.addBoard(b, { skipTimestamp: true }))
 
   menu.setMenu()
   // HACK initialize the menu to match the value in preferences
