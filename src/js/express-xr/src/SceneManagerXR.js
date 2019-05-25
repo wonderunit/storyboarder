@@ -207,6 +207,7 @@ const SceneContent = ({
   const guiArray = useRef([])
   const teleportArray = useRef([])
   const teleportMode = useRef(false)
+  const initialCamPos = useRef()
 
   // Why do I need to create ref to access updated state in some functions?
   const guiModeRef = useRef(null)
@@ -812,6 +813,11 @@ const SceneContent = ({
   }
 
   let cameraState = sceneObjects[activeCamera]
+  useEffect(() => {
+    // Store Initial Camera Position here so HMD doesn't jump even if virtual camera get's updated
+    const { x, y, z } = cameraState
+    initialCamPos.current = new THREE.Vector3(x, y, z)
+  }, [])
 
   let activeCameraComponent = (
     <group
@@ -819,9 +825,9 @@ const SceneContent = ({
       ref={xrOffset}
       rotation={[0, (Math.PI / 4) * camExtraRot, 0]}
       userData={{
-        x: cameraState.x,
-        y: cameraState.y,
-        z: cameraState.z,
+        x: initialCamPos.current ? initialCamPos.current.x : cameraState.x,
+        y: initialCamPos.current ? initialCamPos.current.y : cameraState.y,
+        z: initialCamPos.current ? initialCamPos.current.z : cameraState.z,
         rotation: cameraState.rotation,
         type: cameraState.type
       }}
@@ -837,7 +843,9 @@ const SceneContent = ({
             {handedness === 'right' && (
               <GUI {...{ aspectRatio, guiMode, currentBoard, selectedObject, virtualCamVisible, guiCamFOV, XRControllers }} />
             )}
-            <SGController {...{ flipModel, modelData: getModelData(controllerObjectSettings), ...controllerObjectSettings }} />
+            <SGController
+              {...{ flipModel, modelData: getModelData(controllerObjectSettings), ...controllerObjectSettings }}
+            />
           </primitive>
         )
       })}
