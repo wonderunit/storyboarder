@@ -30,7 +30,6 @@ const GUIElement = ({ ...props }) => {
     <mesh
       name={props.name}
       userData={{ type: 'gui' }}
-      geometry={new THREE.ShapeBufferGeometry(gui_element)}
       material={
         new THREE.MeshBasicMaterial({
           color: props.color,
@@ -38,15 +37,17 @@ const GUIElement = ({ ...props }) => {
         })
       }
     >
+      <shapeBufferGeometry attach="geometry" args={[gui_element]} />
       {props.icon && (
         <mesh
           name={`${props.name}_icon`}
           userData={{ type: 'gui' }}
           scale={[0.75, 0.75, 0.75]}
           position={[0, 0, 0.001]}
-          geometry={new THREE.PlaneGeometry(props.width, props.height)}
           material={new THREE.MeshBasicMaterial({ map: props.icon, transparent: true })}
-        />
+        >
+          <planeGeometry attach="geometry" args={[props.width, props.height]} />
+        </mesh>
       )}
     </mesh>
   )

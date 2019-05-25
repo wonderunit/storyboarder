@@ -155,6 +155,17 @@ const GUI = ({ aspectRatio, guiMode, currentBoard, selectedObject, virtualCamVis
   }, [])
 
   const sliderObjects = useMemo(() => {
+    slidersRef.current.forEach(slider => {
+      const obj = slider.props.object
+      obj.traverse(child => {
+        if (child instanceof THREE.Mesh) {
+          child.geometry.dispose()
+          child.material.dispose()
+        }
+      })
+      scene.remove(obj)
+    })
+
     const object = scene.getObjectById(selectedObject)
     if (!object) return []
 

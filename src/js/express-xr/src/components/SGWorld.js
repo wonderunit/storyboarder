@@ -66,8 +66,8 @@ const SGWorld = ({ groundTexture, wallTexture, world, modelData }) => {
         userData={{ type: 'ground' }}
         position={new THREE.Vector3(0, -0.03, 0)}
         rotation={new THREE.Euler(-Math.PI / 2, 0, 0)}
-        geometry={new THREE.PlaneGeometry(135 / 3, 135 / 3, 32)}
       >
+        <planeGeometry attach="geometry" args={[135 / 3, 135 / 3, 32]} />
         <meshToonMaterial attach="material" side={THREE.FrontSide} visible={!world.room.visible && world.ground}>
           <primitive attach="map" object={groundTexture} />
         </meshToonMaterial>

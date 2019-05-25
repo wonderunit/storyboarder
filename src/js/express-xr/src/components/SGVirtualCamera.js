@@ -109,20 +109,22 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, ...props }) => {
       <mesh
         ref={targetMesh}
         userData={{ type: props.guiCamera ? 'gui' : 'view' }}
-        geometry={new THREE.PlaneGeometry(size * aspectRatio, size)}
         material={
           new THREE.MeshBasicMaterial({
             map: renderTarget.current ? renderTarget.current.texture : null,
             side: THREE.DoubleSide
           })
         }
-      />
+      >
+        <planeGeometry attach="geometry" args={[size * aspectRatio, size]} />
+      </mesh>
       {!props.guiCamera && (
         <mesh
           position={[0, 0, -0.0325]}
-          geometry={new THREE.BoxGeometry(size * aspectRatio + padding, size + padding, 0.05)}
           material={new THREE.MeshLambertMaterial({ color: new THREE.Color('gray'), transparent: true })}
-        />
+        >
+          <boxGeometry attach="geometry" args={[size * aspectRatio + padding, size + padding, 0.05]} />
+        </mesh>
       )}
       <group position={props.camOffset || new THREE.Vector3()}>
         <perspectiveCamera
