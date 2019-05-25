@@ -78,7 +78,8 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, ...props }) => {
         child.type === 'Line' ||
         child.userData.type === 'virtual-camera' ||
         child.userData.id === 'controller' ||
-        child.userData.type === 'gui'
+        child.userData.type === 'gui' ||
+        child.userData.type === 'bone'
       ) {
         hideArray.current.push(child)
       }

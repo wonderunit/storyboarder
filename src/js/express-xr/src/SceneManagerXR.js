@@ -437,7 +437,7 @@ const SceneContent = ({
       return
     }
 
-    if (selectedObjRef.current && selectedObjRef.current.userData.type === 'character') {
+    if (selectedObjRef.current && selectedObjRef.current.userData.type === 'character') {      
       const bonesHelper = selectedObjRef.current.parent.bonesHelper
       const hits = boneIntersect(controller, bonesHelper)
       if (hits.length) {
@@ -491,7 +491,7 @@ const SceneContent = ({
       if (guiModeRef.current !== 'selection') return
 
       if (intersection.object.userData.type === 'hitter') {
-        intersection = intersections[1]
+        intersection = intersections.find(hit => hit.object.userData.type === 'character')
         if (!intersection) return
       }
 
