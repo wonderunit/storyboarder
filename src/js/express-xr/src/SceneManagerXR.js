@@ -432,6 +432,9 @@ const SceneContent = ({
 
   const onSelectStart = event => {
     const controller = event.target
+    const otherController = Object.values(XRControllersRef.current).find(i => i.uuid !== controller.uuid)
+    if (otherController && otherController.userData.selected) return
+
     if (teleportMode.current) {
       onTeleport(event)
       return
