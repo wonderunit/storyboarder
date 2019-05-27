@@ -254,7 +254,10 @@ const SceneContent = ({
 
     const geometry = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, -1)])
     const material = new THREE.LineBasicMaterial({
-      color: 0x0000ff
+      color: 0x0000ff,
+      depthTest: false,
+      depthWrite: false,
+      transparent: true
     })
 
     const line = new THREE.Line(geometry, material)
@@ -493,9 +496,9 @@ const SceneContent = ({
 
       if (guiModeRef.current !== 'selection') return
 
-      if (intersection.object.userData.type === 'hitter') {
-        intersection = intersections.find(hit => hit.object.userData.type === 'character')
-        if (!intersection) return
+      if (intersection.object.userData.type === 'hitter' && intersection.object.parent.userData.character) {
+        if (!intersection.object.parent.userData.character) return
+        intersection.object = intersection.object.parent.userData.character
       }
 
       const { id } = intersection.object
@@ -505,7 +508,7 @@ const SceneContent = ({
       let object = findParent(intersection.object)
 
       if (object.userData.type === 'character') {
-        object = object.children[0]
+        if (object.userData.name === 'character-container') object = object.children[0]
 
         const raycastDepth = controller.getObjectByName('raycast-depth')
         raycastDepth.position.z = -intersection.distance
@@ -621,6 +624,8 @@ const SceneContent = ({
         })
       }
     }
+
+    selectBone(null)
   }
 
   const onAxisChanged = event => {

@@ -363,6 +363,7 @@ function BonesHelper( object, object3D, { boneLengthScale = 1, cacheKey } ) {
       let geometry = new THREE.CylinderBufferGeometry(boneWidth / 25, boneWidth /15 , boneLength - boneWidth/20, 4 )//, heightSegments : Integer, openEnded : Boolean, thetaStart : Float, thetaLength : Float)
 
       // secondary geometry used for hit testing
+      if (bone.name === 'Head') boneLength *= 1.5
       let hit_geometry = new THREE.BoxBufferGeometry(hit_bone_width, boneLength, hit_bone_width )
       let hit_material = new THREE.MeshBasicMaterial({
         color: 0x00ff00,

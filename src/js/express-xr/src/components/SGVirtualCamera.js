@@ -113,7 +113,10 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, ...props }) => {
         material={
           new THREE.MeshBasicMaterial({
             map: renderTarget.current ? renderTarget.current.texture : null,
-            side: THREE.DoubleSide
+            side: THREE.DoubleSide,
+            depthTest: props.guiCamera ? false : true,
+            depthWrite: props.guiCamera ? false : true,
+            transparent: props.guiCamera ? true : false
           })
         }
       >
@@ -129,7 +132,7 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, ...props }) => {
       )}
       <group position={props.camOffset || new THREE.Vector3()}>
         <perspectiveCamera
-          name={props.guiCamera ? 'guiCam' : '' }
+          name={props.guiCamera ? 'guiCam' : ''}
           ref={virtualCamera}
           aspect={aspectRatio}
           fov={camSliderFOV || props.fov}

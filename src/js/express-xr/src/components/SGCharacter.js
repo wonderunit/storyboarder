@@ -435,7 +435,12 @@ const SGCharacter = ({ id, type, isSelected, updateObject, modelData, selectedBo
 
       {bonesHelper && (
         <group>
-          <primitive object={bonesHelper} />
+          <primitive
+            userData={{
+              character: skinnedMesh
+            }}
+            object={bonesHelper}
+          />
         </group>
       )}
     </group>
