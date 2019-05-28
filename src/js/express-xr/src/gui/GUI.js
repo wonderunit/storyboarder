@@ -1,5 +1,5 @@
 const { useMemo, useState, useRef } = (React = require('react'))
-const { useThree, useRender } = require('../lib/react-three-fiber')
+const { useThree, useRender } = require('react-three-fiber')
 const { updateObject } = require('../../../shared/reducers/shot-generator')
 
 const SGVirtualCamera = require('../components/SGVirtualCamera')

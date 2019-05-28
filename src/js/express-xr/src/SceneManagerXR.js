@@ -1,6 +1,6 @@
 const THREE = require('three')
 window.THREE = window.THREE || THREE
-const { Canvas, useThree, useUpdate, useRender } = require('./lib/react-three-fiber')
+const { Canvas, useThree, useUpdate, useRender } = require('react-three-fiber')
 
 const { connect } = require('react-redux')
 const React = require('react')
@@ -187,7 +187,6 @@ const SceneContent = ({
   updateCharacterSkeleton
 }) => {
   const rStatsRef = useRef(null)
-  const renderer = useRef(null)
   const xrOffset = useRef(null)
 
   const [isXR, setIsXR] = useState(false)
@@ -786,34 +785,32 @@ const SceneContent = ({
     controller.gripped = false
   }
 
-  useEffect(() => {
-    if (!renderer.current) {
-      navigator
-        .getVRDisplays()
-        .then(displays => {
-          // console.log({ displays })
-          if (displays.length) {
-            renderer.current = gl
-            scene.background = new THREE.Color(world.backgroundColor)
-            setIsXR(true)
-            // console.log('isXR is now', isXR)
-            document.body.appendChild(WEBVR.createButton(gl))
-            gl.vr.enabled = true
-          }
-        })
-        .catch(err => console.error(err))
+  const onCreated = ({ gl }) => {
+    console.log('onCreated', { gl })
 
-      const threeStats = new window.threeStats(gl)
-      rStatsRef.current = new RStats({
-        css: [],
-        values: {
-          fps: { caption: 'fps', below: 30 }
-        },
-        groups: [{ caption: 'Framerate', values: ['fps', 'raf'] }],
-        plugins: [threeStats]
+    navigator
+      .getVRDisplays()
+      .then(displays => {
+        console.log({ displays })
+        if (displays.length) {
+          console.log('adding VR button')
+          scene.background = new THREE.Color(world.backgroundColor)
+          document.body.appendChild(WEBVR.createButton(gl))
+          setIsXR(true)
+        }
       })
-    }
-  }, [])
+      .catch(err => console.error(err))
+
+    const threeStats = new window.threeStats(gl)
+    rStatsRef.current = new RStats({
+      css: [],
+      values: {
+        fps: { caption: 'fps', below: 30 }
+      },
+      groups: [{ caption: 'Framerate', values: ['fps', 'raf'] }],
+      plugins: [threeStats]
+    })
+  }
 
   // if our camera is setup
   // if (activeCamera === camera.userData.id) {
@@ -966,7 +963,7 @@ const SceneManagerXR = connect(
   }
 
   return (
-    <Canvas>
+    <Canvas vr onCreated={onCreated}>
       <SceneContent
         {...{
           aspectRatio,

@@ -1,4 +1,4 @@
-const { useUpdate, useThree, useRender } = require('../lib/react-three-fiber')
+const { useUpdate, useThree, useRender } = require('react-three-fiber')
 const React = require('react')
 const { useEffect, useRef, useState, useMemo } = React
 
