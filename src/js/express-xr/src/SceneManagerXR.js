@@ -785,9 +785,7 @@ const SceneContent = ({
     controller.gripped = false
   }
 
-  const onCreated = ({ gl }) => {
-    console.log('onCreated', { gl })
-
+  useEffect(() => {
     navigator
       .getVRDisplays()
       .then(displays => {
@@ -810,7 +808,7 @@ const SceneContent = ({
       groups: [{ caption: 'Framerate', values: ['fps', 'raf'] }],
       plugins: [threeStats]
     })
-  }
+  }, [])
 
   // if our camera is setup
   // if (activeCamera === camera.userData.id) {
@@ -963,7 +961,7 @@ const SceneManagerXR = connect(
   }
 
   return (
-    <Canvas vr onCreated={onCreated}>
+    <Canvas vr>
       <SceneContent
         {...{
           aspectRatio,
