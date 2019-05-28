@@ -560,7 +560,7 @@ const SceneContent = ({
       const target = controller.userData.bone
       const parent = findParent(target)
       let rotation = new THREE.Euler()
-      rotation.setFromQuaternion(target.quaternion.clone().normalize(), 'YXZ')
+      rotation.setFromQuaternion(target.quaternion.clone().normalize(), 'XYZ')
 
       updateCharacterSkeleton({
         id: parent.userData.id,
