@@ -61,6 +61,8 @@ function updateTransformations(parentBone, worldPos) {
         });
     }
 
+    //parentBone.rotateX();
+    parentBone.updateMatrixWorld();
     parentBone.children.forEach((childBone) => {
         updateTransformations(childBone, worldPos);
     })

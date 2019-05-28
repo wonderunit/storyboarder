@@ -460,7 +460,7 @@ var IKJoint = function () {
   }, {
     key: '_setDirection',
     value: function _setDirection(direction) {
-      this._direction.copy(direction);
+      this._direction.set(direction.x, direction.y, direction.z);
     }
   }, {
     key: '_getDistance',
@@ -535,6 +535,7 @@ var IKJoint = function () {
         //let scale = new three.Vector3();
         //worldMatrix.decompose(positionik, quaternion, scale);
 
+        //direction.set(direction.z, direction.y, direction.x);
         setQuaternionFromDirection(direction, Y_AXIS, this.bone.quaternion);
         this.bone.rotation.z = 0;
       }

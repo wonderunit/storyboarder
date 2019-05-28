@@ -8,9 +8,17 @@ class TargetControl
         this.control = new TransformControls( camera, domElement );
         this.control.size = 0.5;
         this.name = name;
+        this.control.addEventListener('changing', ( event ) =>
+        {
+            console.log("Mouse hover");
+        });
         this.control.addEventListener('dragging-changed', ( event ) =>
         {
             //orbitControl.enabled = ! event.value;
+        });
+        this.control.addEventListener('mouseDown', (event) =>
+        {
+            console.log("Mouse down");
         });
     }
 

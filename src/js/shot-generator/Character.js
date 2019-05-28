@@ -132,9 +132,14 @@ const characterFactory = data => {
     }
     for (var bone of armatures)
     {
-      console.log("rotating bones");
+      console.log(data.scene.children[0].children[0]);
       bone.scale.set(1,1,1)
-      bone.quaternion.multiply(data.scene.children[0].children[0].quaternion)
+      //let objectQuat = bone.quaternion;
+      console.log(bone);
+      //objectQuat.multiply(data.scene.children[0].children[0].quaternion);
+      //objectQuat.set(objectQuat.x, objectQuat.z, objectQuat.y, objectQuat.w);
+      //console.log(bone.quaternion.clone());
+      //bone.quaternion.multiply(data.scene.children[0].children[0].quaternion)
       bone.position.set(bone.position.x, bone.position.z, bone.position.y)
     }
     mesh.scale.set(1,1,1)
@@ -206,9 +211,6 @@ const Character = React.memo(({
     }
   }
 
-
-
-
   // if the model has changed
   useEffect(() => {
     setReady(false)
@@ -228,21 +230,27 @@ const Character = React.memo(({
     if (ready) {
       console.log(type, id, 'add')
 
+
+
+
       const { mesh, skeleton, armatures, originalHeight, boneLengthScale, parentRotation, parentPosition } = characterFactory(modelData)
 
       // make a clone of the initial skeleton pose, for comparison
       originalSkeleton.current = skeleton.clone()
       originalSkeleton.current.bones = originalSkeleton.current.bones.map(bone => bone.clone())
 
-      ragDoll.current = new RagDoll();
+
       object.current = new THREE.Object3D()
       object.current.add(...armatures)
       object.current.add(mesh)
-      let bonesHelper = new BonesHelper( skeleton.bones[0].parent, object.current, { boneLengthScale, cacheKey: props.model } )
+
+
 
       object.current.userData.id = id
       object.current.userData.type = type
       object.current.userData.originalHeight = originalHeight
+
+
 
       // FIXME get current .models from getState()
       object.current.userData.modelSettings = initialState.models[props.model] || {}
@@ -254,11 +262,14 @@ const Character = React.memo(({
       scene.add(object.current)
       scene.add(object.current.orthoIcon)
 
+
       mesh.layers.disable(0)
       mesh.layers.enable(1)
       mesh.layers.disable(2)
       mesh.layers.enable(3)
 
+
+      let bonesHelper = new BonesHelper( skeleton.bones[0].parent, object.current, { boneLengthScale, cacheKey: props.model } )
       bonesHelper.traverse(child => {
         child.layers.disable(0)
         child.layers.enable(1)
@@ -275,6 +286,7 @@ const Character = React.memo(({
         c.layers.disable(2)
       })
 
+
       object.current.bonesHelper = bonesHelper
       object.current.userData.skeleton = skeleton
       object.current.userData.boneLengthScale = boneLengthScale
@@ -282,6 +294,8 @@ const Character = React.memo(({
       object.current.userData.parentPosition = parentPosition
       scene.add(object.current.bonesHelper)
 
+
+      ragDoll.current = new RagDoll();
       //#region Ragdoll
       let skeletonRig = ragDoll.current;
       let domElement = largeRenderer.current.domElement;
@@ -291,13 +305,16 @@ const Character = React.memo(({
       const leftHandControl = AddTransformationControl(new THREE.Vector3(-2, 1.5, 0), camera, domElement, scene, "leftHand");
       const leftLegControl = AddTransformationControl(new THREE.Vector3(0, 0, 0), camera, domElement, scene, "leftLeg");
       const rightLegControl = AddTransformationControl(new THREE.Vector3(0, 0, 1), camera, domElement, scene, "rightLeg");
-
+      console.log(object);
       skeletonRig.initObject(scene, object.current, object.current.children[1], backControl, leftHandControl,
           rightHandControl, leftLegControl, rightLegControl,
           hipsControl );
-      object.current.userData.ikRig = skeletonRig;
+
       setSkeleton(skeletonRig);
       //#endregion
+      object.current.userData.ikRig = skeletonRig;
+      changeSkeleton(originalSkeleton.current);
+
     }
 
     return function cleanup () {
@@ -305,6 +322,14 @@ const Character = React.memo(({
       // setLoaded(false)
     }
   }, [ready])
+
+  const changeSkeleton = (skeleton) =>
+  {
+    let ragdoll = ragDoll.current;
+    let ragSkeleton = ragdoll.hips.parent.children[1].skeleton;
+    skeleton.bones = ragSkeleton.bones;
+    console.log(ragSkeleton);
+  }
 
   useEffect(() => {
     return function cleanup () {
@@ -335,8 +360,10 @@ const Character = React.memo(({
 
   const updateSkeleton = () => {
     let skeleton = object.current.userData.skeleton
+
     if (Object.values(props.skeleton).length) {
       for (bone of skeleton.bones) {
+
         let userState = props.skeleton[bone.name]
         let systemState = originalSkeleton.current.getBoneByName(bone.name).clone()
 
@@ -406,7 +433,6 @@ const Character = React.memo(({
       object.current.position.x = props.x
       object.current.position.z = props.y
       object.current.position.y = props.z
-
       object.current.orthoIcon.position.copy(object.current.position)
     }
   }, [props.model, props.x, props.y, props.z, ready])
@@ -428,7 +454,7 @@ const Character = React.memo(({
 
   const resetPose = () => {
     if (!object.current) return
-
+    console.log(ragDoll.current.hips.clone());
     let skeleton = object.current.userData.skeleton
     skeleton.pose()
     updateSkeleton()
@@ -438,8 +464,6 @@ const Character = React.memo(({
   const fixRootBone = () => {
     let { boneLengthScale, parentRotation, parentPosition } = object.current.userData
     let skeleton = object.current.userData.skeleton
-
-
     // fb converter scaled object
     if (boneLengthScale === 100) {
       if (props.skeleton['Hips']) {
@@ -454,7 +478,6 @@ const Character = React.memo(({
   useEffect(() => {
     if (!ready) return
     if (!props.posePresetId) return
-
     console.log(type, id, 'changed pose preset')
     resetPose()
   }, [props.posePresetId])
@@ -481,7 +504,6 @@ const Character = React.memo(({
       if (object.current.userData.modelSettings.height) {
         let originalHeight = object.current.userData.originalHeight
         let scale = props.height / originalHeight
-
         if(scale !== object.current.scale.x)
         {
           object.current.scale.set(scale, scale, scale)
