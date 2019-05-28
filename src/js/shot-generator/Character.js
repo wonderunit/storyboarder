@@ -134,12 +134,7 @@ const characterFactory = data => {
     {
       console.log(data.scene.children[0].children[0]);
       bone.scale.set(1,1,1)
-      //let objectQuat = bone.quaternion;
-      console.log(bone);
-      //objectQuat.multiply(data.scene.children[0].children[0].quaternion);
-      //objectQuat.set(objectQuat.x, objectQuat.z, objectQuat.y, objectQuat.w);
-      //console.log(bone.quaternion.clone());
-      //bone.quaternion.multiply(data.scene.children[0].children[0].quaternion)
+      bone.quaternion.multiply(data.scene.children[0].children[0].quaternion)
       bone.position.set(bone.position.x, bone.position.z, bone.position.y)
     }
     mesh.scale.set(1,1,1)
@@ -268,7 +263,6 @@ const Character = React.memo(({
       mesh.layers.disable(2)
       mesh.layers.enable(3)
 
-
       let bonesHelper = new BonesHelper( skeleton.bones[0].parent, object.current, { boneLengthScale, cacheKey: props.model } )
       bonesHelper.traverse(child => {
         child.layers.disable(0)
@@ -294,7 +288,6 @@ const Character = React.memo(({
       object.current.userData.parentPosition = parentPosition
       scene.add(object.current.bonesHelper)
 
-
       ragDoll.current = new RagDoll();
       //#region Ragdoll
       let skeletonRig = ragDoll.current;
@@ -314,6 +307,9 @@ const Character = React.memo(({
       //#endregion
       object.current.userData.ikRig = skeletonRig;
       changeSkeleton(originalSkeleton.current);
+      console.log(skeletonRig.hips.parent.children[1].skeleton.bones[0]);
+
+
 
     }
 
@@ -327,8 +323,10 @@ const Character = React.memo(({
   {
     let ragdoll = ragDoll.current;
     let ragSkeleton = ragdoll.hips.parent.children[1].skeleton;
-    skeleton.bones = ragSkeleton.bones;
-    console.log(ragSkeleton);
+    //skeleton = ragSkeleton.clone();
+    skeleton.bones = ragSkeleton.bones.map(bone => bone.clone());
+    ragSkeleton = skeleton;
+    console.log(ragdoll.hips.parent.children[1].skeleton);
   }
 
   useEffect(() => {
@@ -509,7 +507,7 @@ const Character = React.memo(({
           object.current.scale.set(scale, scale, scale)
           object.current.updateMatrixWorld(true);
 
-          ragDoll.current.reinitialize(object.current.matrixWorld);
+          ragDoll.current.reinitialize();
         }
       } else {
         console.log("scalar");

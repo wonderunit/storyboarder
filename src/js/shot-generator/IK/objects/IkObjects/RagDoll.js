@@ -18,43 +18,52 @@ class RagDoll extends IkObject
     {
         super.initObject(scene, object, skinnedMesh, controlTarget);
         // Adds events to Back control
-        //this.applyEventsToBackControl(this.controlTargets[0].control);
-//
-        //// Adds gui elements to control objects
-        //let leftArmPoleTarget = new PoleTarget(new THREE.Vector3(.35, 1.6, -.35));
-        //let leftLegPoleTarget = new PoleTarget(new THREE.Vector3(.09, 1.2, 1));
-//
-        //let rightArmPoleTarget = new PoleTarget(new THREE.Vector3(-.35, 1.6, -.35));
-        //let rightLegPoleTarget = new PoleTarget(new THREE.Vector3(-.09, 1.2, 1));
-//
-        //let backPoleTarget = new PoleTarget(new THREE.Vector3(0, 1.6, 0));
-//
-        //scene.add(leftArmPoleTarget.mesh);
-        //scene.add(leftLegPoleTarget.mesh);
-        //scene.add(rightArmPoleTarget.mesh);
-        //scene.add(rightLegPoleTarget.mesh);
-        //scene.add(backPoleTarget.mesh);
-//
-        //let backChain = this.ik.chains[0];
-        //let leftArmChain = this.ik.chains[1];
-        //let rightArmChain = this.ik.chains[2];
-        //let leftLegChain = this.ik.chains[3];
-        //let rightLegChain = this.ik.chains[4];
-//
-        //this.addPoleConstraintToRootJoint(backChain, backPoleTarget);
-        //this.addPoleConstraintToRootJoint(leftArmChain, leftArmPoleTarget);
-        //this.addPoleConstraintToRootJoint(rightArmChain, rightArmPoleTarget);
-        //this.addPoleConstraintToRootJoint(leftLegChain, leftLegPoleTarget);
-        //this.addPoleConstraintToRootJoint(rightLegChain, rightLegPoleTarget);
-        //let copyRotation = new CopyRotation(backChain, backChain.joints[4]);
-        //copyRotation.influence = 50;
-        //backChain.joints[3].addIkConstraint(copyRotation);
-//
-        //this.poleConstraints[0].poleAngle = 128;
-        //this.poleConstraints[0].chainLength = 6;
-        //this.poleConstraints[1].testing = true;
-//
-        //this.addHipsEvent();
+        this.applyEventsToBackControl(this.controlTargets[0].control);
+
+        let backChain = this.ik.chains[0];
+        let leftArmChain = this.ik.chains[1];
+        let rightArmChain = this.ik.chains[2];
+        let leftLegChain = this.ik.chains[3];
+        let rightLegChain = this.ik.chains[4];
+
+
+        let leftArmPoleTarget = this.initPoleTargets(leftArmChain, -0.5);
+        let leftLegPoleTarget = this.initPoleTargets(leftLegChain, 0.5);
+
+        let rightArmPoleTarget = this.initPoleTargets(rightArmChain, -0.5);
+        let rightLegPoleTarget = this.initPoleTargets(rightLegChain, 0.5);
+
+        let backPoleTarget =  this.initPoleTargets(backChain);
+
+        scene.add(leftArmPoleTarget.mesh);
+        scene.add(leftLegPoleTarget.mesh);
+        scene.add(rightArmPoleTarget.mesh);
+        scene.add(rightLegPoleTarget.mesh);
+        scene.add(backPoleTarget.mesh);
+
+
+        this.addPoleConstraintToRootJoint(backChain, backPoleTarget);
+        this.addPoleConstraintToRootJoint(leftArmChain, leftArmPoleTarget);
+        this.addPoleConstraintToRootJoint(rightArmChain, rightArmPoleTarget);
+        this.addPoleConstraintToRootJoint(leftLegChain, leftLegPoleTarget);
+        this.addPoleConstraintToRootJoint(rightLegChain, rightLegPoleTarget);
+        let copyRotation = new CopyRotation(backChain, backChain.joints[4]);
+        copyRotation.influence = 50;
+        backChain.joints[3].addIkConstraint(copyRotation);
+
+        this.poleConstraints[0].poleAngle = 128;
+        this.poleConstraints[0].chainLength = 6;
+        this.poleConstraints[1].testing = true;
+
+        this.addHipsEvent();
+    }
+
+    initPoleTargets(chain, offsetZ = 0)
+    {
+        let position = new THREE.Vector3();
+        chain.joints[chain.joints.length - 2].bone.getWorldPosition(position);
+        let poleTarget = new PoleTarget(new THREE.Vector3(position.x, position.y, position.z + offsetZ));
+        return poleTarget;
     }
 
     addPoleConstraintToRootJoint(chain, poleTarget)
@@ -87,14 +96,13 @@ class RagDoll extends IkObject
     update()
     {
         super.update();
-        //this.lateUpdate();
     }
 
     lateUpdate()
     {
-       // this.legsFollowTargetRotation();
+        this.legsFollowTargetRotation();
         super.lateUpdate();
-       // this.applyHeadRotation();
+        this.applyHeadRotation();
     }
 
     // Follows moving target rotation which applied to feet
@@ -105,12 +113,12 @@ class RagDoll extends IkObject
         let rightFootBone = this.ik.chains[4].joints[2].bone;
         let rightLegChainTarget = this.chainObjects[4].controlTarget.target;
         rightFootBone.rotation.copy(rightLegChainTarget.rotation);
-        this.rotateBoneQuaternion(rightFootBone, new THREE.Euler(0.5, 0, 0));
+        this.rotateBoneQuaternion(rightFootBone, new THREE.Euler(1, 0, 0));
         // Makes left foot follow the rotation of target
         let leftFootBone = this.ik.chains[3].joints[2].bone;
         let leftLegChainTarget = this.chainObjects[3].controlTarget.target;
         leftFootBone.rotation.copy(leftLegChainTarget.rotation);
-        this.rotateBoneQuaternion(leftFootBone, new THREE.Euler(0.5, 0, 0));
+        this.rotateBoneQuaternion(leftFootBone, new THREE.Euler(-0.5, 0, 0));
     }
 
     // Sets and quaternion angle for bones
@@ -124,6 +132,25 @@ class RagDoll extends IkObject
         let angle = new THREE.Quaternion().setFromEuler(euler);
         quaternion.multiply(angle);
         bone.quaternion.copy(quaternion);
+    }
+
+    reinitialize()
+    {
+        let chainObjects = this.chainObjects;
+
+        for(let i = 0; i < chainObjects.length; i++)
+        {
+            let chain = chainObjects[i].chain;
+            let poleConstraints = this.poleConstraints[i];
+
+            chain.joints[chain.joints.length - 1].bone.getWorldPosition(chainObjects[i].controlTarget.target.position);
+
+            let targetPosition = new THREE.Vector3();
+            chain.joints[chain.joints.length - 2].bone.getWorldPosition(targetPosition);
+            poleConstraints.poleTarget.mesh.position.set(targetPosition.x, targetPosition.y, targetPosition.z + poleConstraints.poleTarget.mesh.position.z);
+            chain.reinitializeJoints();
+        }
+        this.hips.getWorldPosition(this.hipsControlTarget.target.position);
     }
 
     addHipsEvent()

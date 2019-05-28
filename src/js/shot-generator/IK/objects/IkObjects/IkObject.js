@@ -29,7 +29,6 @@ class IkObject
         this.hipsControlTarget = this.controlTargets[5];
 
         chainObjects.push(new ChainObject("Spine", "Head", this.controlTargets[0]));
-        console.log(scene);
         chainObjects.push(new ChainObject("LeftArm", "LeftHand", this.controlTargets[1]));
         chainObjects.push(new ChainObject("RightArm", "RightHand", this.controlTargets[2]));
         chainObjects.push(new ChainObject("LeftUpLeg", "LeftFoot", this.controlTargets[3]));
@@ -52,55 +51,20 @@ class IkObject
                         parent = parent.parent;
                     }
                     skeleton = parent;
-
-
-                    //skeleton.quaternion.inverse();
-
                 }
-
-
 
                 // Flips a model's forward from -Z to +Z
                 // By default Models axis is -Z while Three ik works with +Z
                 if(object.name === "Hips")
                 {
                     this.hips = object;
-                    object.quaternion.set(0, 0, 0, 1);
-                    object.updateWorldMatrix(true, false);
-                    console.log(object);
-                    //console.log(skeleton);
-                    //rigMesh.bind(rigMesh.skeleton);
-                    //object.rotateX(-1.5708);
-                    //object.updateWorldMatrix(true, true);
                     setZForward(object);
-
-                    //console.log(rigMesh);
-                    //rigMesh.geometry.vertices.forEach((vertice) =>
-                    //{
-                    //    console.log(vertice);
-                    //});
-                    //
-                   //let childQuaternion = skeleton.children[0].quaternion;
-                   //skeleton.children[1].quaternion.set(-childQuaternion.x, -childQuaternion.z, -childQuaternion.y, childQuaternion.w);
-                   //skeleton.children[1].rotateX(Math.PI/2);
-                   //skeleton.children[1].updateWorldMatrix();
-                   // rigMesh.bindMode = "detached";
+                    object.updateWorldMatrix(true, true);
                     rigMesh.bind(rigMesh.skeleton);
-                    //rigMesh.geometry.rotateX(1.5708);
 
-
-                    //rigMesh.geometry.updateWorldMatrix(true, true);
                     let objectWorld = new THREE.Vector3();
                     object.getWorldPosition(objectWorld);
                     this.hipsControlTarget.target.position.copy(objectWorld);
-                }
-                else {
-                    let objectQuat = object.quaternion;
-
-                    //objectQuat.multiply(skeleton.quaternion);
-                    // objectQuat.set(objectQuat.x, objectQuat.y, objectQuat.z, objectQuat.w);
-                    //object.rotateX(-1.5708);
-                    //object.updateWorldMatrix(true, false);
                 }
                 // Goes through all chain objects to find with which we are working
                 chainObjects.forEach((chainObject) =>
@@ -142,8 +106,6 @@ class IkObject
 
             }
         });
-        //rigMesh.bind(rigMesh.skeleton);
-
         // Goes through list of constraints and adds it to IK
         chains.forEach((chain) =>
         {
@@ -155,35 +117,8 @@ class IkObject
         this.skeletonHelper.material.linewidth = 3;
         // Adds skeleton helper to scene
         scene.add( this.skeletonHelper );
-       // this.calculteBackOffset();
+        this.calculteBackOffset();
 
-    }
-
-    reinitialize(worldMatrix)
-    {
-        let chainObjects = this.chainObjects;
-        let matrix = new THREE.Matrix4().getInverse(worldMatrix);
-
-        for(let i = 0; i < chainObjects.length; i++)
-        {
-            let chain = chainObjects[i].chain;
-            if(i === 0)
-            {
-                let object = this.hips;
-                //setZForward(object);
-                console.log(object);
-                /*let scale = object.scale;
-                scale.set(scale.x, scale.y, -scale.z);*/
-                //this.rigMesh.bind(this.rigMesh.skeleton);
-            }
-
-            chain.joints[chain.joints.length - 1].bone.getWorldPosition(chainObjects[i].controlTarget.target.position);
-            chain.reinitializeJoints();
-
-
-
-        }
-        this.hips.getWorldPosition(this.hipsControlTarget.target.position);
     }
 
     // Calculates back's offset in order to move with hips
@@ -203,7 +138,7 @@ class IkObject
             // Solves the inverse kinematic of object
             this.ik.solve();
         }
-       // this.lateUpdate();
+        //this.lateUpdate();
     }
 
     // Updates which is called last after all stuff in loop has been done
@@ -211,18 +146,18 @@ class IkObject
     // Ik solver overrides all changes if applied before it's fired
     lateUpdate()
     {
-       // let hipsTarget = this.hipsControlTarget.target;
-       // // Sets back position when offset is not changing
-       // // When we are changing back position offset between hips and back shouldn't be applied
-       // if(!this.applyingOffset)
-       // {
-       //     let backTarget = this.chainObjects[0].controlTarget.target;
-       //     let hipsPosition = hipsTarget.position.clone();
-       //     let result = hipsPosition.add(this.backOffset);
-       //     backTarget.position.copy(result);
-       // }
-       // // Follows hips target
-       // this.hips.position.copy(hipsTarget.position);
+        let hipsTarget = this.hipsControlTarget.target;
+        // Sets back position when offset is not changing
+        // When we are changing back position offset between hips and back shouldn't be applied
+        if(!this.applyingOffset)
+        {
+            let backTarget = this.chainObjects[0].controlTarget.target;
+            let hipsPosition = hipsTarget.position.clone();
+            let result = hipsPosition.add(this.backOffset);
+            backTarget.position.copy(result);
+        }
+        // Follows hips target
+        this.hips.position.copy(hipsTarget.position);
     }
 
     isInitialized()
@@ -245,5 +180,34 @@ class IkObject
         scene.remove(this.hipsControlTarget.control);
         scene.remove(this.skeletonHelper);
     }
+
+    turnOnIk()
+    {
+        if(this.enableIk === false)
+        {
+            this.enableIk = true;
+            this.resetTargets();
+        }
+    }
+
+    turnOffIk()
+    {
+        if(this.enableIk === true)
+        {
+            this.enableIk = false;
+        }
+    }
+
+    resetTargets()
+    {
+        let chainObjects = this.chainObjects;
+        for(let i = 0; i < chainObjects.length; i++)
+        {
+            let chain = chainObjects[i].chain;
+            chain.joints[chain.joints.length - 1].bone.getWorldPosition(chainObjects[i].controlTarget.target.position);
+        }
+        this.hips.getWorldPosition(this.hipsControlTarget.target.position);
+    }
 }
+
 module.exports =  IkObject;

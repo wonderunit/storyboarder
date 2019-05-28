@@ -28,6 +28,7 @@ class TargetControl
         this.movingTarget.position.z = position.z;
         this.movingTarget.position.y = position.y;
         this.movingTarget.position.x = position.x;
+        this.movingTarget.userData.type = "controlTarget";
         scene.add(this.movingTarget);
 
         this.control.attach(this.movingTarget);

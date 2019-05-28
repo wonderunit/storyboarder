@@ -359,7 +359,7 @@ function BonesHelper( object, object3D, { boneLengthScale = 1, cacheKey } ) {
       boneWidth = boneLength * boneLengthScale > 0.15 ? boneLength : 0.15 / boneLengthScale   //restrict minimum width
       if (boneLength * boneLengthScale > 0.35) boneWidth = 0.35 / boneLengthScale //also maximum..
       
-      let hit_bone_width = distanceToVerts*1.5 // / scaleA.y
+      let hit_bone_width = distanceToVerts * 1.5 // / scaleA.y
       let geometry = new THREE.CylinderBufferGeometry(boneWidth / 25, boneWidth /15 , boneLength - boneWidth/20, 4 )//, heightSegments : Integer, openEnded : Boolean, thetaStart : Float, thetaLength : Float)
 
       // secondary geometry used for hit testing
@@ -629,7 +629,7 @@ SkinnedMesh.prototype.savePose = function(sknMesh) {
 }
 
 SkinnedMesh.prototype.repose = function() {
-  //console.log('reposing ', this.skeleton.bones, ' to: ', this.userData.initialSkeleton)
+  console.log('reposing ', this.skeleton.bones, ' to: ', this.userData.initialSkeleton)
   for (var i = 0; i< this.skeleton.bones.length; i++)
   {    
     if (this.userData.initialSkeleton[this.skeleton.bones[i].name])

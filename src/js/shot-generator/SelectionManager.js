@@ -34,7 +34,7 @@ function getObjectsFromIcons ( objects ) {
 
 function getObjectsFromCameraView (objects) {
   let results = []
-
+  console.log(objects);
   for (let o of objects) {
     if (o.userData.type === 'object') {
       if (o.type === 'Group' && o.children[0].isMesh) {
@@ -52,6 +52,7 @@ function getObjectsFromCameraView (objects) {
         results = results.concat(o.bonesHelper.hit_meshes)
       }
     }
+
 
     // don't allow selection of: camera, volume
   }
@@ -121,12 +122,13 @@ const SelectionManager = connect(
 
   const [lastDownId, setLastDownId] = useState()
   const [dragTarget, setDragTarget] = useState()
-
   const intersectables = scene.children.filter(o =>
     o.userData.type === 'object' ||
     o.userData.type === 'character' ||
     o.userData.type === 'light' ||
     o.userData.type === 'volume' ||
+     o.userData.type === 'controlTarget' ||
+     o.userData.type === 'poleTarget' ||
     (useIcons && o.isPerspectiveCamera)
   )
 

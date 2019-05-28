@@ -9,6 +9,7 @@ class PoleTarget
         this.mesh = new THREE.Mesh(geometry, material);
         this.mesh.position.copy(position);
         this.mesh.name = "PoleTarget";
+        this.mesh.userData.type = "poleTarget";
     }
 
     set name(value)

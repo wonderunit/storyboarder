@@ -1721,6 +1721,21 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
   let characterRigUi = ( characterRig !== null
       ? () => {
       let ui = [];
+      let value = characterRig.enableIk === true ? 1 : 0;
+      ui.push(
+          [NumberSlider,
+            {
+              label: "EnableIK",
+              value: value,
+              min: 0,
+              max: 1,
+              step: 1,
+              onSetValue: createOnSetValueTarget(sceneObject.id, 'x', (value) => sceneObject.x += 0.00000000001 * value, (value) => value === 0 ? characterRig.turnOffIk() : characterRig.turnOnIk()),
+              transform: NumberSliderTransform.round,
+            }]
+      );
+
+      ui.push
       for(let i = 0; i < characterRig.controlTargets.length; i++)
       {
           let position = characterRig.controlTargets[i].target.position;
@@ -1752,7 +1767,7 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
                   max: 30,
                   onSetValue: createOnSetValueTarget(sceneObject.id, 'z', (value) => sceneObject.z += 0.00000000001 * value, (value) => characterRig.controlTargets[i].target.position.set(x, y, value))
               } ]
-      ]);};
+      ]);}
         return ui;}
       : () => ['div', { style: { flex: 1, paddingBottom: 6 } }, [
           [NumberSlider, {
