@@ -1,9 +1,10 @@
 const { useUpdate, useThree, useRender } = require('../lib/react-three-fiber')
 const React = require('react')
-const { useEffect, useRef, useState } = React
+const { useEffect, useRef, useState, useMemo } = React
 
 const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, ...props }) => {
   const [camSliderFOV, setCamSliderFOV] = useState(null)
+  const [targetUpdated, setTargetUpdated] = useState(false)
 
   const previousTime = useRef([null])
   const isSelected = useRef(false)
@@ -68,10 +69,11 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, ...props }
   useEffect(() => {
     if (!renderTarget.current) {
       renderTarget.current = new THREE.WebGLRenderTarget(resolution * aspectRatio, resolution)
+      setTargetUpdated(true)
     }
 
     if (virtualCamera.current) {
-        virtualCamera.current.addEventListener('updateFOV', (e) => setCamSliderFOV(e.fov))
+      virtualCamera.current.addEventListener('updateFOV', e => setCamSliderFOV(e.fov))
     }
   }, [])
 
@@ -90,25 +92,25 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, ...props }
     renderCamera()
   })
 
+  const heightShader = useMemo(() => {
+    const heightShader = new THREE.MeshBasicMaterial({
+      map: renderTarget.current ? renderTarget.current.texture : null,
+      side: THREE.DoubleSide,
+      depthTest: props.guiCamera ? false : true,
+      depthWrite: props.guiCamera ? false : true,
+      transparent: props.guiCamera ? true : false
+    })
+
+    return heightShader
+  }, [targetUpdated])
+
   return (
     <group
       userData={{ id: props.id, displayName: props.displayName, type: 'virtual-camera', forPanel: { fov: props.fov } }}
       position={[props.x || 0, props.z || 0, props.y || 0]}
       ref={ref}
     >
-      <mesh
-        ref={targetMesh}
-        userData={{ type: props.guiCamera ? 'gui' : 'view' }}
-        material={
-          new THREE.MeshBasicMaterial({
-            map: renderTarget.current ? renderTarget.current.texture : null,
-            side: THREE.DoubleSide,
-            depthTest: props.guiCamera ? false : true,
-            depthWrite: props.guiCamera ? false : true,
-            transparent: props.guiCamera ? true : false
-          })
-        }
-      >
+      <mesh ref={targetMesh} userData={{ type: props.guiCamera ? 'gui' : 'view' }} material={heightShader}>
         <planeGeometry attach="geometry" args={[size * aspectRatio, size]} />
       </mesh>
       {!props.guiCamera && (

@@ -350,7 +350,7 @@ const SceneContent = ({
       }
     })
     setHideArray(array)
-  }, [selectedObject])
+  }, [XRControllers, selectedObject])
 
   useRender(() => {
     if (rStatsRef.current) {
