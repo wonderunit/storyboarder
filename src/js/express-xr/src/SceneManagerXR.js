@@ -189,7 +189,6 @@ const SceneContent = ({
   const rStatsRef = useRef(null)
   const xrOffset = useRef(null)
 
-  const [isXR, setIsXR] = useState(false)
   const [guiMode, setGuiMode] = useState('selection')
   const [virtualCamVisible, setVirtualCamVisible] = useState(true)
   const [currentBoard, setCurrentBoard] = useState(null)
@@ -794,7 +793,6 @@ const SceneContent = ({
           console.log('adding VR button')
           scene.background = new THREE.Color(world.backgroundColor)
           document.body.appendChild(WEBVR.createButton(gl))
-          setIsXR(true)
         }
       })
       .catch(err => console.error(err))
