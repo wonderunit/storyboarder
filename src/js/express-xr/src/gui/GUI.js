@@ -24,7 +24,7 @@ const findParent = obj => {
   return null
 }
 
-const GUI = ({ aspectRatio, guiMode, currentBoard, selectedObject, virtualCamVisible, guiCamFOV, XRControllers }) => {
+const GUI = ({ aspectRatio, guiMode, currentBoard, selectedObject, hideArray, virtualCamVisible, guiCamFOV, XRControllers }) => {
   const [textCount, setTextCount] = useState(0)
   const XRControllersRef = useRef({})
   const slidersRef = useRef([])
@@ -427,7 +427,9 @@ const GUI = ({ aspectRatio, guiMode, currentBoard, selectedObject, virtualCamVis
       </group>
 
       <group position={[0, 0.05, -0.075]} rotation={[(Math.PI / 180) * -20, 0, 0]}>
-        <SGVirtualCamera {...{ aspectRatio, guiCamera: true, camOffset: new THREE.Vector3(0, -0.05, 0.075), ...camSettings }} />
+        <SGVirtualCamera
+          {...{ aspectRatio, selectedObject, hideArray, guiCamera: true, camOffset: new THREE.Vector3(0, -0.05, 0.075), ...camSettings }}
+        />
 
         <group position={[camSettings.size * 0.5 * aspectRatio + uiScale * 0.25 + bWidth, uiScale * -0.25 + bWidth * -0.5, 0]}>
           <GUIElement

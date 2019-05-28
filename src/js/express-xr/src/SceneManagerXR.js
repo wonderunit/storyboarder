@@ -199,6 +199,7 @@ const SceneContent = ({
   const [selectedObject, setSelectedObject] = useState(null)
   const [XRControllers, setXRControllers] = useState({})
   const [guiCamFOV, setGuiCamFOV] = useState(22)
+  const [hideArray, setHideArray] = useState([])
 
   const moveCamRef = useRef(null)
   const rotateCamRef = useRef(null)
@@ -334,6 +335,22 @@ const SceneContent = ({
       window.removeEventListener('vr controller connected', onVRControllerConnected)
     }
   }, [])
+
+  useEffect(() => {
+    const array = []
+    scene.traverse(child => {
+      if (
+        child.type === 'Line' ||
+        child.userData.type === 'virtual-camera' ||
+        child.userData.id === 'controller' ||
+        child.userData.type === 'gui' ||
+        child.userData.type === 'bone'
+      ) {
+        array.push(child)
+      }
+    })
+    setHideArray(array)
+  }, [selectedObject])
 
   useRender(() => {
     if (rStatsRef.current) {
@@ -739,7 +756,7 @@ const SceneContent = ({
     })
 
     teleportArray.current = scene.children.filter(child => child.userData.type === 'ground')
-  })
+  }, [XRControllers, sceneObjects])
 
   const onGripDown = event => {
     teleportMode.current = true
@@ -849,7 +866,7 @@ const SceneContent = ({
         return (
           <primitive key={n} object={object}>
             {handedness === 'right' && (
-              <GUI {...{ aspectRatio, guiMode, currentBoard, selectedObject, virtualCamVisible, guiCamFOV, XRControllers }} />
+              <GUI {...{ aspectRatio, guiMode, currentBoard, selectedObject, hideArray, virtualCamVisible, guiCamFOV, XRControllers }} />
             )}
             <SGController
               {...{ flipModel, modelData: getModelData(controllerObjectSettings), ...controllerObjectSettings }}
@@ -865,7 +882,7 @@ const SceneContent = ({
       switch (sceneObject.type) {
         case 'camera':
           return virtualCamVisible ? (
-            <SGVirtualCamera key={i} {...{ aspectRatio, selectedObject, ...sceneObject }} />
+            <SGVirtualCamera key={i} {...{ aspectRatio, selectedObject, hideArray, ...sceneObject }} />
           ) : (
             undefined
           )

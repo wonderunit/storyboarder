@@ -2,7 +2,7 @@ const { useUpdate, useThree, useRender } = require('../lib/react-three-fiber')
 const React = require('react')
 const { useEffect, useRef, useState } = React
 
-const SGVirtualCamera = ({ i, aspectRatio, selectedObject, ...props }) => {
+const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, ...props }) => {
   const [camSliderFOV, setCamSliderFOV] = useState(null)
 
   const previousTime = useRef([null])
@@ -11,7 +11,7 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, ...props }) => {
   const virtualCamera = useRef(null)
   const renderTarget = useRef(null)
   const targetMesh = useRef(null)
-  const hideArray = useRef([])
+  const hideArrayRef = useRef([])
 
   const size = props.size || 1 / 3
   const padding = 0.05
@@ -48,18 +48,22 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, ...props }) => {
     if (virtualCamera.current && renderTarget.current) {
       gl.vr.enabled = false
 
-      hideArray.current.forEach(child => {
+      hideArrayRef.current.forEach(child => {
         child.visible = false
       })
 
       gl.render(scene, virtualCamera.current, renderTarget.current)
       gl.vr.enabled = true
 
-      hideArray.current.forEach(child => {
+      hideArrayRef.current.forEach(child => {
         child.visible = true
       })
     }
   }
+
+  useEffect(() => {
+    hideArrayRef.current = hideArray
+  }, [hideArray])
 
   useEffect(() => {
     if (!renderTarget.current) {
@@ -70,21 +74,6 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, ...props }) => {
         virtualCamera.current.addEventListener('updateFOV', (e) => setCamSliderFOV(e.fov))
     }
   }, [])
-
-  useEffect(() => {
-    hideArray.current = []
-    scene.traverse(child => {
-      if (
-        child.type === 'Line' ||
-        child.userData.type === 'virtual-camera' ||
-        child.userData.id === 'controller' ||
-        child.userData.type === 'gui' ||
-        child.userData.type === 'bone'
-      ) {
-        hideArray.current.push(child)
-      }
-    })
-  })
 
   useRender(() => {
     if (!previousTime.current) previousTime.current = 0
