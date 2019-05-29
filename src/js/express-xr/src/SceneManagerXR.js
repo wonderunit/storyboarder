@@ -8,6 +8,7 @@ const { useEffect, useRef, useMemo, useState, useReducer } = React
 
 const {
   updateObject,
+  deleteObjects,
   selectBone,
   updateCharacterSkeleton,
 
@@ -182,6 +183,7 @@ const SceneContent = ({
   activeCamera,
   world,
   updateObject,
+  deleteObjects,
   selectedBone,
   selectBone,
   updateCharacterSkeleton
@@ -487,7 +489,31 @@ const SceneContent = ({
         const { name } = intersection.object
         if (name.includes('mode')) {
           const mode = name.split('_')[0]
-          setGuiMode(mode)
+
+          switch (mode) {
+            case 'add':
+            case 'selection':
+              setGuiMode(mode)
+              break
+            case 'erase':
+              if (!selectedObjRef.current) return
+              if (findParent(selectedObjRef.current).userData.id === activeCamera) return
+
+              setGuiMode(mode)
+              setTimeout(() => {
+                setGuiMode('selection')
+              }, 250)
+
+              const parent = findParent(selectedObjRef.current)
+              deleteObjects([parent.userData.id])
+              setSelectedObject(0)
+              selectedObjRef.current = null
+              setHideArray(createHideArray())
+              break
+            case 'duplicate':
+              break
+          }
+
         }
 
         if (name.includes('board')) {
@@ -950,10 +976,11 @@ const SceneManagerXR = connect(
   }),
   {
     updateObject,
+    deleteObjects,
     selectBone,
     updateCharacterSkeleton
   }
-)(({ aspectRatio, world, sceneObjects, activeCamera, updateObject, selectedBone, selectBone, updateCharacterSkeleton }) => {
+)(({ aspectRatio, world, sceneObjects, activeCamera, updateObject, deleteObjects, selectedBone, selectBone, updateCharacterSkeleton }) => {
   const attachments = useAttachmentLoader({ sceneObjects, world })
 
   const getModelData = sceneObject => {
@@ -971,6 +998,7 @@ const SceneManagerXR = connect(
           activeCamera,
           world,
           updateObject,
+          deleteObjects,
           selectedBone,
           selectBone,
           updateCharacterSkeleton
