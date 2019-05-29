@@ -334,22 +334,6 @@ const SceneContent = ({
     }
   }, [])
 
-  useEffect(() => {
-    const array = []
-    scene.traverse(child => {
-      if (
-        child.type === 'Line' ||
-        child.userData.type === 'virtual-camera' ||
-        child.userData.id === 'controller' ||
-        child.userData.type === 'gui' ||
-        child.userData.type === 'bone'
-      ) {
-        array.push(child)
-      }
-    })
-    setHideArray(array)
-  }, [XRControllers, selectedObject])
-
   useRender(() => {
     if (rStatsRef.current) {
       rStatsRef.current('rAF').tick()
@@ -376,6 +360,22 @@ const SceneContent = ({
       if (controller.userData.bone) rotateBone(controller)
     })
   })
+
+  const createHideArray = () => {
+    const array = []
+    scene.traverse(child => {
+      if (
+        child.type === 'Line' ||
+        child.userData.type === 'virtual-camera' ||
+        child.userData.id === 'controller' ||
+        child.userData.type === 'gui' ||
+        child.userData.type === 'bone'
+      ) {
+        array.push(child)
+      }
+    })
+    return array
+  }
 
   const constraintObjectRotation = controller => {
     const object = controller.userData.selected
@@ -519,6 +519,7 @@ const SceneContent = ({
       const { id } = intersection.object
       setSelectedObject(id)
       selectedObjRef.current = scene.getObjectById(id)
+      setHideArray(createHideArray())
 
       let object = findParent(intersection.object)
 
@@ -740,6 +741,7 @@ const SceneContent = ({
         (child.userData.type !== 'ground' && child.userData.type !== 'room' && child.userData.type !== 'camera')
     )
 
+    guiArray.current = []
     Object.values(XRControllers).forEach(controller => {
       const gui = controller.children.filter(child => child.userData.type === 'gui')[0]
 
@@ -774,6 +776,7 @@ const SceneContent = ({
       const { id } = intersection.object
       setSelectedObject(id)
       selectedObjRef.current = scene.getObjectById(id)
+      setHideArray(createHideArray())
     }
   }
 
@@ -788,7 +791,7 @@ const SceneContent = ({
     navigator
       .getVRDisplays()
       .then(displays => {
-        console.log({ displays })
+        // console.log({ displays })
         if (displays.length) {
           console.log('adding VR button')
           scene.background = new THREE.Color(world.backgroundColor)
