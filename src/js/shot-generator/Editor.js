@@ -1717,15 +1717,16 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
           if(object.userData.id === sceneObject.id)
           {
               characterRig = object.userData.ikRig;
-              characterUI = object.userData.ikUI;
+              let ikUI = object.userData.ikUI;
+              //console.log(sceneObject.x ++);
+              characterUI = ikUI.getUIElements(sceneObject,(x) => sceneObject.x += x, createOnSetValueTarget);
               return;
           }
       });
 
   }
-
   let characterRigUi = ( characterRig !== null
-      ? () => characterUI.getUIElements(sceneObject, createOnSetValueTarget)
+      ? () => characterUI
       : () => "");
 
   return h([

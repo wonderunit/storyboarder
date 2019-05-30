@@ -158,6 +158,9 @@ class RagDoll extends IkObject
         this.calculteBackOffset();
     }
 
+    // Adds events to hips
+    // Mainly is for controlling poleTarget position so it will follow hips
+    // With taking offset between them into account
     addHipsEvent()
     {
         let hipsControl = this.hipsControlTarget.control;
@@ -215,7 +218,9 @@ class RagDoll extends IkObject
             this.hipsMouseDown = false;
         });
     }
-
+    // Resets targets position
+    // After ik has been turned off and on resets
+    // pole position with consideration of offset
     resetTargets()
     {
         super.resetTargets();
@@ -248,22 +253,5 @@ class RagDoll extends IkObject
         });
     }
 
-    shotMode(isEnable)
-    {
-        this.isShotMode = isEnable;
-        let visible = isEnable ? false : true;
-        let chainObjects = this.chainObjects;
-        for (let i = 0; i < chainObjects.length; i++)
-        {
-            let chain = chainObjects[i];
-            chain.controlTarget.target.visible = visible;
-            chain.controlTarget.control.visible = visible;
-
-            let constraints = this.poleConstraints[i];
-            constraints.poleTarget.mesh.visible = visible;
-        }
-        this.hipsControlTarget.target.visible = visible;
-        this.hipsControlTarget.control.visible = visible;
-    }
 }
 module.exports =  RagDoll;

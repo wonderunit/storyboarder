@@ -16,12 +16,13 @@ class RagDollUI
         this.ragDoll = ragDoll;
     }
 
-    getUIElements(sceneObject, createOnSetValueTarget)
+    getUIElements(sceneObject, addToX, createOnSetValueTarget)
     {
         let characterRig = this.ragDoll;
         let ui = [];
         let enableIk = characterRig.enableIk === true ? 1 : 0;
         let isShotMode = characterRig.isShotMode === true ? 1 : 0;
+        console.log(addToX(1));
         ui.push(
             [NumberSlider,
                 {
@@ -30,7 +31,7 @@ class RagDollUI
                     min: 0,
                     max: 1,
                     step: 1,
-                    onSetValue: createOnSetValueTarget(sceneObject.id, 'x', (value) => sceneObject.x += 0.00000000001 * value, (value) => value === 0 ? characterRig.turnOffIk() : characterRig.turnOnIk()),
+                    onSetValue: createOnSetValueTarget(sceneObject.id, 'x', (value) => addToX(0.00000000001 * value), (value) => value === 0 ? characterRig.turnOffIk() : characterRig.turnOnIk()),
                     transform: NumberSliderTransform.round,
                 }]
         );
@@ -43,7 +44,7 @@ class RagDollUI
                     min: 0,
                     max: 1,
                     step: 1,
-                    onSetValue: createOnSetValueTarget(sceneObject.id, 'x', (value) => sceneObject.x += 0.00000000001 * value, (value) => value === 0 ? characterRig.shotMode(false) : characterRig.shotMode(true)),
+                    onSetValue: createOnSetValueTarget(sceneObject.id, 'y', (value) => addToX(0.00000000001 * value), (value) => value === 0 ? this.shotMode(false) : this.shotMode(true)),
                     transform: NumberSliderTransform.round,
                 }]
         );
@@ -63,7 +64,7 @@ class RagDollUI
                         value: position.x,
                         min: -30,
                         max: 30,
-                        onSetValue: createOnSetValueTarget(sceneObject.id, 'x', (value) => sceneObject.x += 0.00000000001 * value, (value) => position.set(value, y, z))
+                        onSetValue: createOnSetValueTarget(sceneObject.id, 'x', (value) => addToX(0.00000000001 * value), (value) => position.set(value, y, z))
                     }],
                 [NumberSlider,
                     {
@@ -71,7 +72,7 @@ class RagDollUI
                         value: position.y,
                         min: -30,
                         max: 30,
-                        onSetValue: createOnSetValueTarget(sceneObject.id, 'y', (value) => sceneObject.y += 0.00000000001 * value, (value) => position.set(x, value, z))
+                        onSetValue: createOnSetValueTarget(sceneObject.id, 'y', (value) => addToX(0.00000000001 * value), (value) => position.set(x, value, z))
                     } ],
                 [NumberSlider,
                     {
@@ -79,11 +80,31 @@ class RagDollUI
                         value: position.z,
                         min: -30,
                         max: 30,
-                        onSetValue: createOnSetValueTarget(sceneObject.id, 'z', (value) => sceneObject.z += 0.00000000001 * value, (value) => position.set(x, y, value))
+                        onSetValue: createOnSetValueTarget(sceneObject.id, 'z', (value) => addToX(0.00000000001 * value), (value) => position.set(x, y, value))
                     } ]
             ]);
         }
         return ui;
+    }
+
+
+    shotMode(isEnable)
+    {
+        let ragDoll = this.ragDoll;
+        this.isShotMode = isEnable;
+        let visible = isEnable ? false : true;
+        let chainObjects = ragDoll.chainObjects;
+        for (let i = 0; i < chainObjects.length; i++)
+        {
+            let chain = chainObjects[i];
+            chain.controlTarget.target.visible = visible;
+            chain.controlTarget.control.visible = visible;
+
+            let constraints = ragDoll.poleConstraints[i];
+            constraints.poleTarget.mesh.visible = visible;
+        }
+        ragDoll.hipsControlTarget.target.visible = visible;
+        ragDoll.hipsControlTarget.control.visible = visible;
     }
 
 }

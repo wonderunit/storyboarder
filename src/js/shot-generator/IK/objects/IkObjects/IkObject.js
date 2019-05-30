@@ -8,6 +8,10 @@ class IkObject
 {
     constructor()
     {
+        if(new.target === IkObject)
+        {
+            throw new TypeError("Cannot construct abstract IkObject directly");
+        }
         this.applyingOffset = false;
         this.neckRotation = null;
         this.enableIk = true;
@@ -161,11 +165,9 @@ class IkObject
         this.hips.position.copy(targetPosition);
     }
 
-    isInitialized()
-    {
-        return this.ik === undefined ? false : true;
-    }
-
+    // Removes ikObject's all elements from scene
+    // Control target consists of two things: mesh and control
+    // before removed mesh should be detached from control
     removeFromScene(scene)
     {
         this.chainObjects.forEach((chainObject) =>
@@ -199,6 +201,8 @@ class IkObject
         }
     }
 
+    // Resets targets position
+    // After IK has been turned off and on
     resetTargets()
     {
         let chainObjects = this.chainObjects;
