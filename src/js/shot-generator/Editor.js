@@ -281,6 +281,7 @@ const SceneManager = connect(
       }
 
       document.addEventListener('visibilitychange', onVisibilityChange)
+      //document.addEventListener( "mousedown", (event) => console.log("mouseDown"), false );
       window.addEventListener('blur', onBlur)
       window.addEventListener('focus', onFocus)
 
@@ -447,11 +448,13 @@ const SceneManager = connect(
         let cameraState = Object.values(sceneObjects).find(o => o.id === camera.userData.id)
         if (!cameraControlsView.current) {
           console.log('new CameraControls')
+
           cameraControlsView.current = new CameraControls(
             CameraControls.objectFromCameraState(cameraState),
             largeCanvasRef.current
           )
         }
+
 
         animator.current = () => {
           if (stats) { stats.begin() }
@@ -516,6 +519,7 @@ const SceneManager = connect(
                 scene.background.set(tempColor)
                 smallRendererEffect.current.render( scene, cameraForSmall)
               }
+
             })
           }
           if (stats) { stats.end() }

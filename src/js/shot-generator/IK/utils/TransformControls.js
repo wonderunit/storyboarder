@@ -11,6 +11,7 @@ const TransformControls = function ( camera, domElement ) {
 	domElement = ( domElement !== undefined ) ? domElement : document;
 
 	this.visible = false;
+	this.buttonPressed = -1;
 
 	var _gizmo = new TransformControlsGizmo();
 	this.add( _gizmo );
@@ -39,8 +40,8 @@ const TransformControls = function ( camera, domElement ) {
 	defineProperty( "showZ", true );
 
 	var changeEvent = { type: "change" };
-	var mouseDownEvent = { type: "mouseDown" };
-	var mouseUpEvent = { type: "mouseUp", mode: scope.mode };
+	var mouseDownEvent = { type: "pointerdown" };
+	var mouseUpEvent = { type: "pointerup", mode: scope.mode };
 	var objectChangeEvent = { type: "objectChange" };
 
 	// Reusable utility variables
@@ -106,12 +107,12 @@ const TransformControls = function ( camera, domElement ) {
 
 	{
 
-		domElement.addEventListener( "mousedown", onPointerDown, false );
+		domElement.addEventListener( "pointerdown", onPointerDown, false );
 		domElement.addEventListener( "touchstart", onPointerDown, false );
-		domElement.addEventListener( "mousemove", onPointerHover, false );
+		domElement.addEventListener( "pointermove", onPointerHover, false );
 		domElement.addEventListener( "touchmove", onPointerHover, false );
 		domElement.addEventListener( "touchmove", onPointerMove, false );
-		document.addEventListener( "mouseup", onPointerUp, false );
+		document.addEventListener( "pointerup", onPointerUp, false );
 		domElement.addEventListener( "touchend", onPointerUp, false );
 		domElement.addEventListener( "touchcancel", onPointerUp, false );
 		domElement.addEventListener( "touchleave", onPointerUp, false );
@@ -120,12 +121,12 @@ const TransformControls = function ( camera, domElement ) {
 
 	this.dispose = function () {
 
-		domElement.removeEventListener( "mousedown", onPointerDown );
+		domElement.removeEventListener( "pointerdown", onPointerDown );
 		domElement.removeEventListener( "touchstart", onPointerDown );
-		domElement.removeEventListener( "mousemove", onPointerHover );
+		domElement.removeEventListener( "pointermove", onPointerHover );
 		domElement.removeEventListener( "touchmove", onPointerHover );
 		domElement.removeEventListener( "touchmove", onPointerMove );
-		document.removeEventListener( "mouseup", onPointerUp );
+		document.removeEventListener( "pointerup", onPointerUp );
 		domElement.removeEventListener( "touchend", onPointerUp );
 		domElement.removeEventListener( "touchcancel", onPointerUp );
 		domElement.removeEventListener( "touchleave", onPointerUp );
@@ -238,6 +239,7 @@ const TransformControls = function ( camera, domElement ) {
 
 	this.pointerDown = function( pointer ) {
 
+		console.log("Pointer down");
 		if ( this.object === undefined || this.dragging === true || ( pointer.button !== undefined && pointer.button !== 0 ) ) return;
 
 		if ( ( pointer.button === 0 || pointer.button === undefined ) && this.axis !== null ) {
@@ -245,6 +247,7 @@ const TransformControls = function ( camera, domElement ) {
 			ray.setFromCamera( pointer, this.camera );
 
 			var planeIntersect = ray.intersectObjects( [ _plane ], true )[ 0 ] || false;
+
 
 			if ( planeIntersect ) {
 
@@ -286,7 +289,6 @@ const TransformControls = function ( camera, domElement ) {
 			this.dragging = true;
 			mouseDownEvent.mode = this.mode;
 			this.dispatchEvent( mouseDownEvent );
-
 		}
 
 	};
@@ -297,7 +299,7 @@ const TransformControls = function ( camera, domElement ) {
 		var mode = this.mode;
 		var object = this.object;
 		var space = this.space;
-
+		pointer.button = scope.buttonPressed;
 		if ( mode === 'scale') {
 
 			space = 'local';
@@ -307,7 +309,7 @@ const TransformControls = function ( camera, domElement ) {
 			space = 'world';
 
 		}
-
+		console.log(pointer );
 		if ( object === undefined || axis === null || this.dragging === false || ( pointer.button !== undefined && pointer.button !== 0 ) ) return;
 
 		ray.setFromCamera( pointer, this.camera );
@@ -317,6 +319,7 @@ const TransformControls = function ( camera, domElement ) {
 		if ( planeIntersect === false ) return;
 
 		pointEnd.copy( planeIntersect.point ).sub( worldPositionStart );
+
 
 		if ( mode === 'translate' ) {
 
@@ -341,7 +344,7 @@ const TransformControls = function ( camera, domElement ) {
 			object.position.copy( offset ).add( positionStart );
 
 			// Apply translation snap
-
+			console.log(this.translationSnap);
 			if ( this.translationSnap ) {
 
 				if ( space === 'local' ) {
@@ -490,6 +493,7 @@ const TransformControls = function ( camera, domElement ) {
 
 	this.pointerUp = function( pointer ) {
 
+		console.log("pointer up");
 		if ( pointer.button !== undefined && pointer.button !== 0 ) return;
 
 		if ( this.dragging && ( this.axis !== null ) ) {
@@ -534,9 +538,8 @@ const TransformControls = function ( camera, domElement ) {
 	function onPointerDown( event ) {
 
 		if ( !scope.enabled ) return;
-
-		document.addEventListener( "mousemove", onPointerMove, false );
-
+		document.addEventListener( "pointermove", onPointerMove, false );
+		scope.buttonPressed = event.button;
 		scope.pointerHover( getPointer( event ) );
 		scope.pointerDown( getPointer( event ) );
 
@@ -544,6 +547,7 @@ const TransformControls = function ( camera, domElement ) {
 
 	function onPointerMove( event ) {
 
+		console.log(scope.buttonPressed);
 		if ( !scope.enabled ) return;
 
 		scope.pointerMove( getPointer( event ) );
@@ -554,9 +558,10 @@ const TransformControls = function ( camera, domElement ) {
 
 		if ( !scope.enabled ) return;
 
-		document.removeEventListener( "mousemove", onPointerMove, false );
+		document.removeEventListener( "pointermove", onPointerMove, false );
 
 		scope.pointerUp( getPointer( event ) );
+		scope.buttonPressed = -1;
 
 	}
 

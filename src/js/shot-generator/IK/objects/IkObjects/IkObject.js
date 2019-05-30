@@ -170,13 +170,13 @@ class IkObject
         this.chainObjects.forEach((chainObject) =>
         {
             let control = chainObject.controlTarget.control;
-            let movingTarget = chainObject.controlTarget.movingTarget;
-            control.detach(movingTarget);
-            scene.remove(movingTarget);
+            let target = chainObject.controlTarget.target;
+            control.detach(target);
+            scene.remove(target);
             scene.remove(control);
         });
-        this.hipsControlTarget.control.detach(this.hipsControlTarget.movingTarget);
-        scene.remove(this.hipsControlTarget.movingTarget);
+        this.hipsControlTarget.control.detach(this.hipsControlTarget.target);
+        scene.remove(this.hipsControlTarget.target);
         scene.remove(this.hipsControlTarget.control);
         scene.remove(this.skeletonHelper);
     }

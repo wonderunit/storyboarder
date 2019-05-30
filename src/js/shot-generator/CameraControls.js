@@ -41,6 +41,7 @@ class CameraControls {
    }
 
   onPointerMove ( event ) {
+
     this.mouseX = event.pageX
     this.mouseY = event.pageY
   }

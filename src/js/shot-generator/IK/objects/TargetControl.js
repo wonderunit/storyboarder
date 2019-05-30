@@ -5,7 +5,7 @@ class TargetControl
 {
     constructor(camera, domElement, name)
     {
-        this.control = new TransformControls( camera, domElement );
+        this.control = new TransformControls(camera, domElement);
         this.control.size = 0.5;
         this.name = name;
         this.control.addEventListener('changing', ( event ) =>
@@ -15,8 +15,9 @@ class TargetControl
         this.control.addEventListener('dragging-changed', ( event ) =>
         {
             //orbitControl.enabled = ! event.value;
+            console.log('%c TransformControl change', 'color: blue;font-size: bold;');
         });
-        this.control.addEventListener('mouseDown', (event) =>
+        this.control.addEventListener('pointerdown', (event) =>
         {
             console.log("Mouse down");
         });
@@ -24,16 +25,16 @@ class TargetControl
 
     initialize(position, scene)
     {
-        this.movingTarget = new THREE.Mesh(new THREE.SphereGeometry(0.05), new THREE.MeshBasicMaterial({ color: 0xff0000, opacity: 0.4 }));
-        this.movingTarget.position.z = position.z;
-        this.movingTarget.position.y = position.y;
-        this.movingTarget.position.x = position.x;
-        this.movingTarget.userData.type = "controlTarget";
-        scene.add(this.movingTarget);
+        let movingTarget = new THREE.Mesh(new THREE.SphereGeometry(0.05), new THREE.MeshBasicMaterial({ color: 0xff0000, opacity: 0.4 }));
+        movingTarget.position.z = position.z;
+        movingTarget.position.y = position.y;
+        movingTarget.position.x = position.x;
+        movingTarget.userData.type = "controlTarget";
+        scene.add(movingTarget);
 
-        this.control.attach(this.movingTarget);
+        this.control.attach(movingTarget);
         scene.add(this.control);
-        this.target = this.movingTarget;
+        this.target = movingTarget;
     }
 
     intializeWithMesh(mesh, scene)
