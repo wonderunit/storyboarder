@@ -27,13 +27,13 @@ class RagDoll extends IkObject
         let rightLegChain = this.ik.chains[4];
 
 
-        let leftArmPoleTarget = this.initPoleTargets(leftArmChain, -0.5);
-        let leftLegPoleTarget = this.initPoleTargets(leftLegChain, 0.5);
+        let leftArmPoleTarget = this.initPoleTargets(leftArmChain, -0.5, "leftArmPole");
+        let leftLegPoleTarget = this.initPoleTargets(leftLegChain, 0.5, "leftLegPole");
 
-        let rightArmPoleTarget = this.initPoleTargets(rightArmChain, -0.5);
-        let rightLegPoleTarget = this.initPoleTargets(rightLegChain, 0.5);
+        let rightArmPoleTarget = this.initPoleTargets(rightArmChain, -0.5, "rightArmPole");
+        let rightLegPoleTarget = this.initPoleTargets(rightLegChain, 0.5, "rightLegPole");
 
-        let backPoleTarget =  this.initPoleTargets(backChain);
+        let backPoleTarget =  this.initPoleTargets(backChain, 0, "backPole");
 
         scene.add(leftArmPoleTarget.mesh);
         scene.add(leftLegPoleTarget.mesh);
@@ -58,11 +58,12 @@ class RagDoll extends IkObject
         this.addHipsEvent();
     }
 
-    initPoleTargets(chain, offsetZ = 0)
+    initPoleTargets(chain, offsetZ = 0, name)
     {
         let position = new THREE.Vector3();
         chain.joints[chain.joints.length - 2].bone.getWorldPosition(position);
         let poleTarget = new PoleTarget(new THREE.Vector3(position.x, position.y, position.z + offsetZ));
+        poleTarget.name = name;
         return poleTarget;
     }
 

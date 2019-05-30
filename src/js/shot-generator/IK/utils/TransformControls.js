@@ -300,6 +300,7 @@ const TransformControls = function ( camera, domElement ) {
 		var object = this.object;
 		var space = this.space;
 		pointer.button = scope.buttonPressed;
+
 		if ( mode === 'scale') {
 
 			space = 'local';

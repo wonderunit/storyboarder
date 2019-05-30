@@ -1739,42 +1739,44 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
             }]
       );
 
-      ui.push
-      for(let i = 0; i < characterRig.controlTargets.length; i++)
+      let poleConstraints = characterRig.poleConstraints;
+      for(let i = 0; i < poleConstraints.length; i++)
       {
-          let position = characterRig.controlTargets[i].target.position;
+          let poleTarget = poleConstraints[i].poleTarget;
+          let position = poleTarget.mesh.position;
           let x = position.x;
           let y = position.y;
           let z = position.z;
           ui.push([
           [NumberSlider,
               {
-                  label: characterRig.controlTargets[i].name + 'X',
+                  label: poleTarget.mesh.name + 'X',
                   value: position.x,
                   min: -30,
                   max: 30,
-                  onSetValue: createOnSetValueTarget(sceneObject.id, 'x', (value) => sceneObject.x += 0.00000000001 * value, (value) => characterRig.controlTargets[i].target.position.set(value, y, z))
+                  onSetValue: createOnSetValueTarget(sceneObject.id, 'x', (value) => sceneObject.x += 0.00000000001 * value, (value) => position.set(value, y, z))
               }],
           [NumberSlider,
               {
-                  label: characterRig.controlTargets[i].name + 'Y',
+                  label: poleTarget.mesh.name + 'Y',
                   value: position.y,
                   min: -30,
                   max: 30,
-                  onSetValue: createOnSetValueTarget(sceneObject.id, 'y', (value) => sceneObject.y += 0.00000000001 * value, (value) => characterRig.controlTargets[i].target.position.set(x, value, z))
+                  onSetValue: createOnSetValueTarget(sceneObject.id, 'y', (value) => sceneObject.y += 0.00000000001 * value, (value) => position.set(x, value, z))
               } ],
           [NumberSlider,
               {
-                  label: characterRig.controlTargets[i].name + 'Z',
+                  label: poleTarget.mesh.name + 'Z',
                   value: position.z,
                   min: -30,
                   max: 30,
-                  onSetValue: createOnSetValueTarget(sceneObject.id, 'z', (value) => sceneObject.z += 0.00000000001 * value, (value) => characterRig.controlTargets[i].target.position.set(x, y, value))
+                  onSetValue: createOnSetValueTarget(sceneObject.id, 'z', (value) => sceneObject.z += 0.00000000001 * value, (value) => position.set(x, y, value))
               } ]
       ]);}
         return ui;}
       : () => ['div', { style: { flex: 1, paddingBottom: 6 } }, [
-          [NumberSlider, {
+         \
+][NumberSlider, {
               label: 'HI',
               min: 0.3,
               max: 3.05,
