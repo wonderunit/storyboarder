@@ -27,13 +27,13 @@ class RagDoll extends IkObject
         let rightLegChain = this.ik.chains[4];
 
 
-        let leftArmPoleTarget = this.initPoleTargets(leftArmChain, -0.5, "leftArmPole");
-        let leftLegPoleTarget = this.initPoleTargets(leftLegChain, 0.5, "leftLegPole");
+        let leftArmPoleTarget = this.initPoleTargets(leftArmChain, new THREE.Vector3(0, 0, -0.5), "leftArmPole");
+        let leftLegPoleTarget = this.initPoleTargets(leftLegChain, new THREE.Vector3(0, 0.3, 0.8), "leftLegPole");
 
-        let rightArmPoleTarget = this.initPoleTargets(rightArmChain, -0.5, "rightArmPole");
-        let rightLegPoleTarget = this.initPoleTargets(rightLegChain, 0.5, "rightLegPole");
+        let rightArmPoleTarget = this.initPoleTargets(rightArmChain, new THREE.Vector3(0, 0, -0.5), "rightArmPole");
+        let rightLegPoleTarget = this.initPoleTargets(rightLegChain, new THREE.Vector3(0, 0.3, 0.8), "rightLegPole");
 
-        let backPoleTarget =  this.initPoleTargets(backChain, 0, "backPole");
+        let backPoleTarget =  this.initPoleTargets(backChain, new THREE.Vector3(0, 0, 0), "backPole");
 
         scene.add(leftArmPoleTarget.mesh);
         scene.add(leftLegPoleTarget.mesh);
@@ -58,11 +58,12 @@ class RagDoll extends IkObject
         this.addHipsEvent();
     }
 
-    initPoleTargets(chain, offsetZ = 0, name)
+    initPoleTargets(chain, offset, name)
     {
         let position = new THREE.Vector3();
         chain.joints[chain.joints.length - 2].bone.getWorldPosition(position);
-        let poleTarget = new PoleTarget(new THREE.Vector3(position.x, position.y, position.z + offsetZ));
+        let poleTarget = new PoleTarget(new THREE.Vector3(position.x + offset.x, position.y + offset.y, position.z + offset.z));
+        poleTarget.poleOffset = offset;
         poleTarget.name = name;
         return poleTarget;
     }
@@ -114,12 +115,12 @@ class RagDoll extends IkObject
         let rightFootBone = this.ik.chains[4].joints[2].bone;
         let rightLegChainTarget = this.chainObjects[4].controlTarget.target;
         rightFootBone.rotation.copy(rightLegChainTarget.rotation);
-        this.rotateBoneQuaternion(rightFootBone, new THREE.Euler(1, 0, 0));
+        this.rotateBoneQuaternion(rightFootBone, new THREE.Euler(0.5, 0, 0));
         // Makes left foot follow the rotation of target
         let leftFootBone = this.ik.chains[3].joints[2].bone;
         let leftLegChainTarget = this.chainObjects[3].controlTarget.target;
         leftFootBone.rotation.copy(leftLegChainTarget.rotation);
-        this.rotateBoneQuaternion(leftFootBone, new THREE.Euler(-0.5, 0, 0));
+        this.rotateBoneQuaternion(leftFootBone, new THREE.Euler(0.5, 0, 0));
     }
 
     // Sets and quaternion angle for bones
@@ -148,10 +149,12 @@ class RagDoll extends IkObject
 
             let targetPosition = new THREE.Vector3();
             chain.joints[chain.joints.length - 2].bone.getWorldPosition(targetPosition);
-            poleConstraints.poleTarget.mesh.position.set(targetPosition.x, targetPosition.y, targetPosition.z + poleConstraints.poleTarget.mesh.position.z);
+            let polePosition = poleConstraints.poleTarget.mesh.position;
+            poleConstraints.poleTarget.mesh.position.set(targetPosition.x + polePosition.x, targetPosition.y + polePosition.y, targetPosition.z + polePosition.z);
             chain.reinitializeJoints();
         }
         this.hips.getWorldPosition(this.hipsControlTarget.target.position);
+        this.calculteBackOffset();
     }
 
     addHipsEvent()
@@ -165,7 +168,7 @@ class RagDoll extends IkObject
         let leftLegConstraint = this.poleConstraints[3].poleTarget.mesh.position;
         let rightLegConstraint = this.poleConstraints[4].poleTarget.mesh.position;
 
-        hipsControl.addEventListener("mouseDown", (event) =>
+        hipsControl.addEventListener("pointerdown", (event) =>
         {
             this.hipsMouseDown = true;
 
@@ -205,11 +208,27 @@ class RagDoll extends IkObject
         {
             this.calculteBackOffset();
         });
-        hipsControl.addEventListener("mouseUp", (event) =>
+        hipsControl.addEventListener("pointerup", (event) =>
         {
             this.applyingOffset = false;
             this.hipsMouseDown = false;
         });
+    }
+
+    resetTargets()
+    {
+        super.resetTargets();
+        let chainObjects = this.chainObjects;
+        for(let i = 0; i < chainObjects.length; i++)
+        {
+            let constraint = this.poleConstraints[i];
+            let chain = this.chainObjects[i].chain;
+            let targetPosition = new THREE.Vector3();
+            chain.joints[chain.joints.length - 2].bone.getWorldPosition(targetPosition);
+            let poleOffset = constraint.poleTarget.poleOffset;
+            constraint.poleTarget.mesh.position.set(targetPosition.x + poleOffset.x, targetPosition.y + poleOffset.y, targetPosition.z + poleOffset.z);
+
+        }
     }
 
     // Applies neck rotation and applies head rotation that head stay upward

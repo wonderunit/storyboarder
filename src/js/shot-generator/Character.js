@@ -298,7 +298,6 @@ const Character = React.memo(({
       const leftHandControl = AddTransformationControl(new THREE.Vector3(-2, 1.5, 0), camera, domElement, scene, "leftHand");
       const leftLegControl = AddTransformationControl(new THREE.Vector3(0, 0, 0), camera, domElement, scene, "leftLeg");
       const rightLegControl = AddTransformationControl(new THREE.Vector3(0, 0, 1), camera, domElement, scene, "rightLeg");
-      console.log(object);
       skeletonRig.initObject(scene, object.current, object.current.children[1], backControl, leftHandControl,
           rightHandControl, leftLegControl, rightLegControl,
           hipsControl );
@@ -307,10 +306,6 @@ const Character = React.memo(({
       //#endregion
       object.current.userData.ikRig = skeletonRig;
       changeSkeleton(originalSkeleton.current);
-      console.log(skeletonRig.hips.parent.children[1].skeleton.bones[0]);
-
-
-
     }
 
     return function cleanup () {
@@ -326,7 +321,6 @@ const Character = React.memo(({
     //skeleton = ragSkeleton.clone();
     skeleton.bones = ragSkeleton.bones.map(bone => bone.clone());
     ragSkeleton = skeleton;
-    console.log(ragdoll.hips.parent.children[1].skeleton);
   }
 
   useEffect(() => {
@@ -452,7 +446,6 @@ const Character = React.memo(({
 
   const resetPose = () => {
     if (!object.current) return
-    console.log(ragDoll.current.hips.clone());
     let skeleton = object.current.userData.skeleton
     skeleton.pose()
     updateSkeleton()

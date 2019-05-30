@@ -118,7 +118,6 @@ class IkObject
         // Adds skeleton helper to scene
         scene.add( this.skeletonHelper );
         this.calculteBackOffset();
-
     }
 
     // Calculates back's offset in order to move with hips
@@ -137,8 +136,8 @@ class IkObject
         {
             // Solves the inverse kinematic of object
             this.ik.solve();
+            this.lateUpdate();
         }
-        //this.lateUpdate();
     }
 
     // Updates which is called last after all stuff in loop has been done
@@ -157,7 +156,9 @@ class IkObject
             backTarget.position.copy(result);
         }
         // Follows hips target
-        this.hips.position.copy(hipsTarget.position);
+        let targetPosition = hipsTarget.position.clone();
+        this.hips.parent.worldToLocal(targetPosition);
+        this.hips.position.copy(targetPosition);
     }
 
     isInitialized()
@@ -201,12 +202,44 @@ class IkObject
     resetTargets()
     {
         let chainObjects = this.chainObjects;
+        this.hips.getWorldPosition(this.hipsControlTarget.target.position);
         for(let i = 0; i < chainObjects.length; i++)
         {
             let chain = chainObjects[i].chain;
-            chain.joints[chain.joints.length - 1].bone.getWorldPosition(chainObjects[i].controlTarget.target.position);
+            let bone = chain.joints[chain.joints.length - 1].bone;
+            let targetPosition = chainObjects[i].controlTarget.target.position;
+            bone.getWorldPosition(targetPosition);
         }
-        this.hips.getWorldPosition(this.hipsControlTarget.target.position);
+
+        this.calculteBackOffset();
+    }
+
+    // Recalculates positions of transform controls
+    // It works when ik is disable and when enabled in order to recalculate all position
+    // Which have been changed while ik was turned off
+    recalculate()
+    {
+        let back = this.chainObjects[0].chain.joints[4].bone;
+        let backTarget = this.chainObjects[0].controlTarget.target;
+
+        let leftHand = this.chainObjects[1].chain.joints[2].bone;
+        let leftHandTarget = this.chainObjects[1].controlTarget.target;
+
+        let rightHand = this.chainObjects[2].chain.joints[2].bone;
+        let rightHandTarget = this.chainObjects[2].controlTarget.target;
+
+        let leftLeg = this.chainObjects[3].chain.joints[2].bone;
+        let leftLegTarget = this.chainObjects[3].controlTarget.target;
+
+        let rightLeg = this.chainObjects[4].chain.joints[2].bone;
+        let rightLegTarget = this.chainObjects[4].controlTarget.target;
+
+        back.getWorldPosition(backTarget.position);
+        leftHand.getWorldPosition(leftHandTarget.position);
+        rightHand.getWorldPosition(rightHandTarget.position);
+        leftLeg.getWorldPosition(leftLegTarget.position);
+        rightLeg.getWorldPosition(rightLegTarget.position);
+        this.calculteBackOffset();
     }
 }
 

@@ -239,7 +239,6 @@ const TransformControls = function ( camera, domElement ) {
 
 	this.pointerDown = function( pointer ) {
 
-		console.log("Pointer down");
 		if ( this.object === undefined || this.dragging === true || ( pointer.button !== undefined && pointer.button !== 0 ) ) return;
 
 		if ( ( pointer.button === 0 || pointer.button === undefined ) && this.axis !== null ) {
@@ -310,7 +309,6 @@ const TransformControls = function ( camera, domElement ) {
 			space = 'world';
 
 		}
-		console.log(pointer );
 		if ( object === undefined || axis === null || this.dragging === false || ( pointer.button !== undefined && pointer.button !== 0 ) ) return;
 
 		ray.setFromCamera( pointer, this.camera );
@@ -345,7 +343,6 @@ const TransformControls = function ( camera, domElement ) {
 			object.position.copy( offset ).add( positionStart );
 
 			// Apply translation snap
-			console.log(this.translationSnap);
 			if ( this.translationSnap ) {
 
 				if ( space === 'local' ) {
@@ -494,7 +491,6 @@ const TransformControls = function ( camera, domElement ) {
 
 	this.pointerUp = function( pointer ) {
 
-		console.log("pointer up");
 		if ( pointer.button !== undefined && pointer.button !== 0 ) return;
 
 		if ( this.dragging && ( this.axis !== null ) ) {
@@ -548,7 +544,6 @@ const TransformControls = function ( camera, domElement ) {
 
 	function onPointerMove( event ) {
 
-		console.log(scope.buttonPressed);
 		if ( !scope.enabled ) return;
 
 		scope.pointerMove( getPointer( event ) );

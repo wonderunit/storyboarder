@@ -10,6 +10,7 @@ class PoleTarget
         this.mesh.position.copy(position);
         this.mesh.name = "PoleTarget";
         this.mesh.userData.type = "poleTarget";
+        this.poleOffset = null;
     }
 
     set name(value)

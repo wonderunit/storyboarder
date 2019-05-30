@@ -10,16 +10,13 @@ class TargetControl
         this.name = name;
         this.control.addEventListener('changing', ( event ) =>
         {
-            console.log("Mouse hover");
         });
         this.control.addEventListener('dragging-changed', ( event ) =>
         {
             //orbitControl.enabled = ! event.value;
-            console.log('%c TransformControl change', 'color: blue;font-size: bold;');
         });
         this.control.addEventListener('pointerdown', (event) =>
         {
-            console.log("Mouse down");
         });
     }
 

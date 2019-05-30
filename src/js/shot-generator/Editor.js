@@ -1775,8 +1775,7 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
       ]);}
         return ui;}
       : () => ['div', { style: { flex: 1, paddingBottom: 6 } }, [
-         \
-][NumberSlider, {
+          [NumberSlider, {
               label: 'HI',
               min: 0.3,
               max: 3.05,
