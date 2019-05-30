@@ -1,6 +1,7 @@
 //#region ragdoll's import
 const RagDoll = require("./IK/objects/IkObjects/RagDoll");
 const TargetControl = require("./IK/objects/TargetControl");
+const RagDollUI = require("./IK/UI/RagDollUI");
 //#endregion
 const THREE = require('three')
 window.THREE = window.THREE || THREE
@@ -303,7 +304,9 @@ const Character = React.memo(({
           hipsControl );
 
       setSkeleton(skeletonRig);
+      let ragDollUI = new RagDollUI(skeletonRig);
       //#endregion
+      object.current.userData.ikUI = ragDollUI;
       object.current.userData.ikRig = skeletonRig;
       changeSkeleton(originalSkeleton.current);
     }
