@@ -12,6 +12,7 @@ class RagDoll extends IkObject
         this.poleConstraints = [];
         this.poleTargetOffsets = {};
         this.hipsMouseDown = false;
+        this.isShotMode = false;
     }
 
     initObject(scene, object, skinnedMesh, ...controlTarget)
@@ -245,6 +246,24 @@ class RagDoll extends IkObject
         {
             scene.remove(constraint.poleTarget.mesh);
         });
+    }
+
+    shotMode(isEnable)
+    {
+        this.isShotMode = isEnable;
+        let visible = isEnable ? false : true;
+        let chainObjects = this.chainObjects;
+        for (let i = 0; i < chainObjects.length; i++)
+        {
+            let chain = chainObjects[i];
+            chain.controlTarget.target.visible = visible;
+            chain.controlTarget.control.visible = visible;
+
+            let constraints = this.poleConstraints[i];
+            constraints.poleTarget.mesh.visible = visible;
+        }
+        this.hipsControlTarget.target.visible = visible;
+        this.hipsControlTarget.control.visible = visible;
     }
 }
 module.exports =  RagDoll;

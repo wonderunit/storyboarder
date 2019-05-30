@@ -1725,12 +1725,13 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
   let characterRigUi = ( characterRig !== null
       ? () => {
       let ui = [];
-      let value = characterRig.enableIk === true ? 1 : 0;
+      let enableIk = characterRig.enableIk === true ? 1 : 0;
+      let isShotMode = characterRig.isShotMode === true ? 1 : 0;
       ui.push(
           [NumberSlider,
             {
               label: "EnableIK",
-              value: value,
+              value: enableIk,
               min: 0,
               max: 1,
               step: 1,
@@ -1738,6 +1739,19 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
               transform: NumberSliderTransform.round,
             }]
       );
+
+        ui.push(
+            [NumberSlider,
+              {
+                label: "EnableShotMode",
+                value: isShotMode,
+                min: 0,
+                max: 1,
+                step: 1,
+                onSetValue: createOnSetValueTarget(sceneObject.id, 'x', (value) => sceneObject.x += 0.00000000001 * value, (value) => value === 0 ? characterRig.shotMode(false) : characterRig.shotMode(true)),
+                transform: NumberSliderTransform.round,
+              }]
+        );
 
       let poleConstraints = characterRig.poleConstraints;
       for(let i = 0; i < poleConstraints.length; i++)
