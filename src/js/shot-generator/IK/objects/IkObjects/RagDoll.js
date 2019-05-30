@@ -79,7 +79,7 @@ class RagDoll extends IkObject
     // Applies events to back control
     applyEventsToBackControl(backControl)
     {
-        backControl.addEventListener("mouseDown", (event) =>
+        backControl.addEventListener("pointerdown", (event) =>
         {
             this.applyingOffset = true;
         });
@@ -90,7 +90,7 @@ class RagDoll extends IkObject
         {
             this.calculteBackOffset();
         });
-        backControl.addEventListener("mouseUp", (event) =>
+        backControl.addEventListener("pointerup", (event) =>
         {
             this.applyingOffset = false;
         });
