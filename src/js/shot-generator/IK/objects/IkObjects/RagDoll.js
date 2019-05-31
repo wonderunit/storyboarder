@@ -86,6 +86,7 @@ class RagDoll extends IkObject
         let poleTarget = new PoleTarget(new THREE.Vector3(position.x + offset.x, position.y + offset.y, position.z + offset.z));
         poleTarget.poleOffset = offset;
         poleTarget.name = name;
+        poleTarget.mesh.visible = false;
         return poleTarget;
     }
 
@@ -286,9 +287,6 @@ class RagDoll extends IkObject
         {
             let chain = chainObjects[i];
             chain.controlTarget.disable(!visible);
-
-            let constraints = this.poleConstraints[i];
-            constraints.poleTarget.mesh.visible = visible;
         }
         this.hipsControlTarget.disable(!visible);
         this.skeletonHelper.visible = visible;
