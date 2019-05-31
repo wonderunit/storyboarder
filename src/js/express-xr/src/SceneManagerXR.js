@@ -7,6 +7,7 @@ const React = require('react')
 const { useEffect, useRef, useMemo, useState, useReducer } = React
 
 const {
+  createObject,
   updateObject,
   deleteObjects,
   duplicateObjects,
@@ -18,6 +19,11 @@ const {
   getActiveCamera,
   getSelectedBone
 } = require('../../shared/reducers/shot-generator')
+
+// all pose presets (so we can use `stand` for new characters)
+const defaultPosePresets = require('../../shared/reducers/shot-generator-presets/poses.json')
+// id of the pose preset used for new characters
+const DEFAULT_POSE_PRESET_ID = '79BBBD0D-6BA2-4D84-9B71-EE661AB6E5AE'
 
 const { WEBVR } = require('../../vendor/three/examples/js/vr/WebVR')
 require('../../vendor/three/examples/js/loaders/LoaderSupport')
@@ -183,6 +189,7 @@ const SceneContent = ({
   getModelData,
   activeCamera,
   world,
+  createObject,
   updateObject,
   deleteObjects,
   duplicateObjects,
@@ -537,10 +544,25 @@ const SceneContent = ({
 
         if (name.includes('_add')) {
           const mode = name.split('_')[0]
+          const id = THREE.Math.generateUUID()
+          const newPoz = new THREE.Vector3()
 
           switch (mode) {
             case 'camera':
               setAddMode('camera')
+
+              createObject({
+                id,
+
+                type: 'camera',
+                fov: 22.25,
+                x: 0,
+                y: 6,
+                z: 2,
+                rotation: 0,
+                tilt: 0,
+                roll: 0
+              })
 
               setTimeout(() => {
                 setAddMode(null)
@@ -549,6 +571,21 @@ const SceneContent = ({
             case 'object':
               setAddMode('object')
 
+              createObject({
+                id,
+                type: 'object',
+                model: 'box',
+                width: 1,
+                height: 1,
+                depth: 1,
+                x: newPoz.x,
+                y: newPoz.y,
+                z: newPoz.z,
+                rotation: { x: 0, y: 0, z: 0 }, //Math.random() * Math.PI * 2,
+
+                visible: true
+              })
+
               setTimeout(() => {
                 setAddMode(null)
               }, 250)
@@ -556,12 +593,51 @@ const SceneContent = ({
             case 'character':
               setAddMode('character')
 
+              createObject({
+                id,
+                type: 'character',
+                height: 1.8,
+                model: 'adult-male',
+                x: newPoz.x,
+                y: newPoz.y,
+                z: newPoz.z,
+                rotation: 0, //newPoz.rotation,
+                headScale: 1,
+
+                morphTargets: {
+                  mesomorphic: 0,
+                  ectomorphic: 0,
+                  endomorphic: 0
+                },
+
+                posePresetId: DEFAULT_POSE_PRESET_ID,
+                skeleton: defaultPosePresets[DEFAULT_POSE_PRESET_ID].state.skeleton,
+
+                visible: true
+              })
+
               setTimeout(() => {
                 setAddMode(null)
               }, 250)
               break
             case 'light':
               setAddMode('light')
+
+              createObject({
+                id,
+                type: 'light',
+                x: 0,
+                y: 0,
+                z: 2,
+                rotation: 0,
+                tilt: 0,
+                intensity: 0.8,
+                visible: true,
+                angle: 1.04,
+                distance: 5,
+                penumbra: 1.0,
+                decay: 1
+              })
 
               setTimeout(() => {
                 setAddMode(null)
@@ -1029,6 +1105,7 @@ const SceneManagerXR = connect(
     activeCamera: getActiveCamera(state)
   }),
   {
+    createObject,
     updateObject,
     deleteObjects,
     duplicateObjects,
@@ -1041,6 +1118,7 @@ const SceneManagerXR = connect(
     world,
     sceneObjects,
     activeCamera,
+    createObject,
     updateObject,
     deleteObjects,
     duplicateObjects,
@@ -1064,6 +1142,7 @@ const SceneManagerXR = connect(
             getModelData,
             activeCamera,
             world,
+            createObject,
             updateObject,
             deleteObjects,
             duplicateObjects,
