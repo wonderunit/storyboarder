@@ -132,7 +132,7 @@ const TransformControls = function ( camera, domElement ) {
 		domElement.removeEventListener( "touchleave", onPointerUp );
 
 	};
-
+	this.characterId = 1;
 	// Set current object
 	this.attach = function ( object ) {
 

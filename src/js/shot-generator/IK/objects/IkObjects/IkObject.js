@@ -13,8 +13,7 @@ class IkObject
             throw new TypeError("Cannot construct abstract IkObject directly");
         }
         this.applyingOffset = false;
-        this.neckRotation = null;
-        this.enableIk = true;
+        this.isEnabledIk = false;
         this.controlTargets = [];
     }
 
@@ -27,7 +26,9 @@ class IkObject
         let rigMesh = this.rigMesh;
         let skeleton = null;
         this.controlTargets = controlTarget[0];
-
+        console.log(scene);
+        console.log(objectSkeleton);
+        this.addParentToControl(objectSkeleton.uuid);
         let chainObjects = [];
         this.chainObjects = chainObjects;
         this.hipsControlTarget = this.controlTargets[5];
@@ -119,6 +120,7 @@ class IkObject
         this.skeletonHelper = new THREE.SkeletonHelper( skeleton );
         // Sets line width of skeleton helper
         this.skeletonHelper.material.linewidth = 3;
+
         // Adds skeleton helper to scene
         scene.add( this.skeletonHelper );
         this.calculteBackOffset();
@@ -136,7 +138,7 @@ class IkObject
     // Only done this left limbs in order to see difference
     update()
     {
-        if(this.enableIk)
+        if(this.isEnabledIk)
         {
             // Solves the inverse kinematic of object
             this.ik.solve();
@@ -162,7 +164,7 @@ class IkObject
         // Follows hips target
         let targetPosition = hipsTarget.position.clone();
         this.hips.parent.worldToLocal(targetPosition);
-        this.hips.position.copy(targetPosition);
+       // this.hips.position.copy(targetPosition);
     }
 
     // Removes ikObject's all elements from scene
@@ -182,23 +184,6 @@ class IkObject
         scene.remove(this.hipsControlTarget.target);
         scene.remove(this.hipsControlTarget.control);
         scene.remove(this.skeletonHelper);
-    }
-
-    turnOnIk()
-    {
-        if(this.enableIk === false)
-        {
-            this.enableIk = true;
-            this.resetTargets();
-        }
-    }
-
-    turnOffIk()
-    {
-        if(this.enableIk === true)
-        {
-            this.enableIk = false;
-        }
     }
 
     // Resets targets position
@@ -244,6 +229,16 @@ class IkObject
         leftLeg.getWorldPosition(leftLegTarget.position);
         rightLeg.getWorldPosition(rightLegTarget.position);
         this.calculteBackOffset();
+    }
+
+    addParentToControl(parentId)
+    {
+        let controlTarget = this.controlTargets;
+        for (let i = 0; i < controlTarget.length; i++)
+        {
+            let control = controlTarget[i].control;
+            control.characterId = parentId;
+        }
     }
 }
 

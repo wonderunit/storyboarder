@@ -6,8 +6,12 @@ class TargetControl
     constructor(camera, domElement, name)
     {
         this.control = new TransformControls(camera, domElement);
-        this.control.size = 0.5;
+        this.control.size = 0.3;
+        this.control.userData.type = "controlTarget";
+       // this.control.type = "transformControls";
+
         this.name = name;
+        this.disabled = true;
         this.control.addEventListener('changing', ( event ) =>
         {
         });
@@ -17,6 +21,11 @@ class TargetControl
         });
         this.control.addEventListener('pointerdown', (event) =>
         {
+            let control = this.control;
+            if(this.disabled && control.dragging )
+            {
+                control.dragging = false;
+            }
         });
     }
 
@@ -39,6 +48,14 @@ class TargetControl
         this.control.attach(mesh);
         scene.add(this.control);
         this.target = mesh;
+    }
+
+    disable(isDisabled)
+    {
+        let visible = isDisabled ? false : true;
+        this.target.visible = visible;
+        this.control.visible = visible;
+        this.disabled = isDisabled;
     }
 }
 module.exports = TargetControl;

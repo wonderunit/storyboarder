@@ -281,7 +281,6 @@ const Character = React.memo(({
         c.layers.disable(2)
       })
 
-
       object.current.bonesHelper = bonesHelper
       object.current.userData.skeleton = skeleton
       object.current.userData.boneLengthScale = boneLengthScale
@@ -309,6 +308,8 @@ const Character = React.memo(({
       object.current.userData.ikUI = ragDollUI;
       object.current.userData.ikRig = skeletonRig;
       changeSkeleton(originalSkeleton.current);
+      //skeletonRig.chainObjects[1].controlTarget.control.addEventListener("pointerdown", (event) => isSelected = true);
+      console.log(scene);
     }
 
     return function cleanup () {
@@ -558,6 +559,7 @@ const Character = React.memo(({
       for (var cone of object.current.bonesHelper.cones)
         object.current.bonesHelper.remove(cone)
     }
+    ragDoll.current.selectedSkeleton(isSelected);
 
     let mesh = object.current.userData.mesh
     if ( mesh.material.length > 0 ) {
@@ -592,7 +594,7 @@ const Character = React.memo(({
   useEffect(() => {
     if (!ready) return
     if (!object.current) return
-
+    console.log("Selected");
     // if there was a prior selected bone
     if (currentBoneSelected.current) {
       // reset it
@@ -784,6 +786,7 @@ const Character = React.memo(({
     if (!ready) return
 
     if (object.current) {
+      console.log("selected");
       object.current.visible = props.visible
       object.current.orthoIcon.visible = props.visible
       object.current.bonesHelper.visible = props.visible

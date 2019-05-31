@@ -20,14 +20,14 @@ class RagDollUI
     {
         let characterRig = this.ragDoll;
         let ui = [];
-        let enableIk = characterRig.enableIk === true ? 1 : 0;
+        let enableIk = characterRig.isEnabledIk === true ? 1 : 0;
         let isShotMode = characterRig.isShotMode === true ? 1 : 0;
-        console.log(addToX(1));
+/*
         ui.push(
             [NumberSlider,
                 {
                     label: "EnableIK",
-                    value: enableIk,
+                    value: isEnabledIk,
                     min: 0,
                     max: 1,
                     step: 1,
@@ -35,8 +35,9 @@ class RagDollUI
                     transform: NumberSliderTransform.round,
                 }]
         );
+*/
 
-        ui.push(
+/*        ui.push(
             [NumberSlider,
                 {
                     label: "EnableShotMode",
@@ -47,7 +48,7 @@ class RagDollUI
                     onSetValue: createOnSetValueTarget(sceneObject.id, 'y', (value) => addToX(0.00000000001 * value), (value) => value === 0 ? this.shotMode(false) : this.shotMode(true)),
                     transform: NumberSliderTransform.round,
                 }]
-        );
+        );*/
 
         let poleConstraints = characterRig.poleConstraints;
         for(let i = 0; i < poleConstraints.length; i++)
@@ -88,24 +89,24 @@ class RagDollUI
     }
 
 
-    shotMode(isEnable)
-    {
-        let ragDoll = this.ragDoll;
-        this.isShotMode = isEnable;
-        let visible = isEnable ? false : true;
-        let chainObjects = ragDoll.chainObjects;
-        for (let i = 0; i < chainObjects.length; i++)
-        {
-            let chain = chainObjects[i];
-            chain.controlTarget.target.visible = visible;
-            chain.controlTarget.control.visible = visible;
-
-            let constraints = ragDoll.poleConstraints[i];
-            constraints.poleTarget.mesh.visible = visible;
-        }
-        ragDoll.hipsControlTarget.target.visible = visible;
-        ragDoll.hipsControlTarget.control.visible = visible;
-    }
+    //shotMode(isEnable)
+    //{
+    //    let ragDoll = this.ragDoll;
+    //    this.isShotMode = isEnable;
+    //    let visible = isEnable ? false : true;
+    //    let chainObjects = ragDoll.chainObjects;
+    //    for (let i = 0; i < chainObjects.length; i++)
+    //    {
+    //        let chain = chainObjects[i];
+    //        chain.controlTarget.target.visible = visible;
+    //        chain.controlTarget.control.visible = visible;
+//
+    //        let constraints = ragDoll.poleConstraints[i];
+    //        constraints.poleTarget.mesh.visible = visible;
+    //    }
+    //    ragDoll.hipsControlTarget.target.visible = visible;
+    //    ragDoll.hipsControlTarget.control.visible = visible;
+    //}
 
 }
 module.exports = RagDollUI;

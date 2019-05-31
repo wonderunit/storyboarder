@@ -57,25 +57,8 @@ class RagDoll extends IkObject
         this.poleConstraints[1].testing = true;
 
         this.addHipsEvent();
+        this.setUpControlEvents();
     }
-
-    initPoleTargets(chain, offset, name)
-    {
-        let position = new THREE.Vector3();
-        chain.joints[chain.joints.length - 2].bone.getWorldPosition(position);
-        let poleTarget = new PoleTarget(new THREE.Vector3(position.x + offset.x, position.y + offset.y, position.z + offset.z));
-        poleTarget.poleOffset = offset;
-        poleTarget.name = name;
-        return poleTarget;
-    }
-
-    addPoleConstraintToRootJoint(chain, poleTarget)
-    {
-        let poleConstraint = new PoleConstraint(chain, poleTarget);
-        chain.joints[0].addIkConstraint(poleConstraint);
-        this.poleConstraints.push(poleConstraint);
-    }
-
     // Applies events to back control
     applyEventsToBackControl(backControl)
     {
@@ -96,66 +79,21 @@ class RagDoll extends IkObject
         });
     }
 
-    update()
+    initPoleTargets(chain, offset, name)
     {
-        super.update();
+        let position = new THREE.Vector3();
+        chain.joints[chain.joints.length - 2].bone.getWorldPosition(position);
+        let poleTarget = new PoleTarget(new THREE.Vector3(position.x + offset.x, position.y + offset.y, position.z + offset.z));
+        poleTarget.poleOffset = offset;
+        poleTarget.name = name;
+        return poleTarget;
     }
 
-    lateUpdate()
+    addPoleConstraintToRootJoint(chain, poleTarget)
     {
-        this.legsFollowTargetRotation();
-        super.lateUpdate();
-        this.applyHeadRotation();
-    }
-
-    // Follows moving target rotation which applied to feet
-    // Default position is facing flat to Earth
-    legsFollowTargetRotation()
-    {
-        // Makes right foot follow the rotation of target
-        let rightFootBone = this.ik.chains[4].joints[2].bone;
-        let rightLegChainTarget = this.chainObjects[4].controlTarget.target;
-        rightFootBone.rotation.copy(rightLegChainTarget.rotation);
-        this.rotateBoneQuaternion(rightFootBone, new THREE.Euler(0.5, 0, 0));
-        // Makes left foot follow the rotation of target
-        let leftFootBone = this.ik.chains[3].joints[2].bone;
-        let leftLegChainTarget = this.chainObjects[3].controlTarget.target;
-        leftFootBone.rotation.copy(leftLegChainTarget.rotation);
-        this.rotateBoneQuaternion(leftFootBone, new THREE.Euler(0.5, 0, 0));
-    }
-
-    // Sets and quaternion angle for bones
-    // Give the result of bone always faces direction set by euler
-    // Effect like flat foot to earth can be achieved
-    rotateBoneQuaternion(bone, euler)
-    {
-        let quaternion = new THREE.Quaternion();
-        bone.getWorldQuaternion(quaternion);
-        quaternion.inverse();
-        let angle = new THREE.Quaternion().setFromEuler(euler);
-        quaternion.multiply(angle);
-        bone.quaternion.copy(quaternion);
-    }
-
-    reinitialize()
-    {
-        let chainObjects = this.chainObjects;
-
-        for(let i = 0; i < chainObjects.length; i++)
-        {
-            let chain = chainObjects[i].chain;
-            let poleConstraints = this.poleConstraints[i];
-
-            chain.joints[chain.joints.length - 1].bone.getWorldPosition(chainObjects[i].controlTarget.target.position);
-
-            let targetPosition = new THREE.Vector3();
-            chain.joints[chain.joints.length - 2].bone.getWorldPosition(targetPosition);
-            let polePosition = poleConstraints.poleTarget.mesh.position;
-            poleConstraints.poleTarget.mesh.position.set(targetPosition.x + polePosition.x, targetPosition.y + polePosition.y, targetPosition.z + polePosition.z);
-            chain.reinitializeJoints();
-        }
-        this.hips.getWorldPosition(this.hipsControlTarget.target.position);
-        this.calculteBackOffset();
+        let poleConstraint = new PoleConstraint(chain, poleTarget);
+        chain.joints[0].addIkConstraint(poleConstraint);
+        this.poleConstraints.push(poleConstraint);
     }
 
     // Adds events to hips
@@ -218,6 +156,93 @@ class RagDoll extends IkObject
             this.hipsMouseDown = false;
         });
     }
+
+    setUpControlEvents()
+    {
+        let chainObject = this.chainObjects;
+        for (let i = 0; i < chainObject.length; i++)
+        {
+            let control = chainObject[i].controlTarget.control;
+            control.addEventListener("pointerdown", (event) =>
+            {
+                console.log("Ik enabled");
+                this.isEnabledIk = true;
+            });
+
+            control.addEventListener("pointerup", (event) =>
+            {
+                console.log("Ik disabled");
+                this.isEnabledIk = false;
+            });
+        }
+    }
+
+    update()
+    {
+        super.update();
+        if(!this.isEnabledIk)
+        {
+            this.resetTargets();
+        }
+    }
+
+    lateUpdate()
+    {
+        this.legsFollowTargetRotation();
+        super.lateUpdate();
+        this.applyHeadRotation();
+    }
+
+    // Follows moving target rotation which applied to feet
+    // Default position is facing flat to Earth
+    legsFollowTargetRotation()
+    {
+        // Makes right foot follow the rotation of target
+        let rightFootBone = this.ik.chains[4].joints[2].bone;
+        let rightLegChainTarget = this.chainObjects[4].controlTarget.target;
+        rightFootBone.rotation.copy(rightLegChainTarget.rotation);
+        this.rotateBoneQuaternion(rightFootBone, new THREE.Euler(0.5, 0, 0));
+        // Makes left foot follow the rotation of target
+        let leftFootBone = this.ik.chains[3].joints[2].bone;
+        let leftLegChainTarget = this.chainObjects[3].controlTarget.target;
+        leftFootBone.rotation.copy(leftLegChainTarget.rotation);
+        this.rotateBoneQuaternion(leftFootBone, new THREE.Euler(0.5, 0, 0));
+    }
+
+    // Sets and quaternion angle for bones
+    // Give the result of bone always faces direction set by euler
+    // Effect like flat foot to earth can be achieved
+    rotateBoneQuaternion(bone, euler)
+    {
+        let quaternion = new THREE.Quaternion();
+        bone.getWorldQuaternion(quaternion);
+        quaternion.inverse();
+        let angle = new THREE.Quaternion().setFromEuler(euler);
+        quaternion.multiply(angle);
+        bone.quaternion.copy(quaternion);
+    }
+
+    reinitialize()
+    {
+        let chainObjects = this.chainObjects;
+
+        for(let i = 0; i < chainObjects.length; i++)
+        {
+            let chain = chainObjects[i].chain;
+            let poleConstraints = this.poleConstraints[i];
+
+            chain.joints[chain.joints.length - 1].bone.getWorldPosition(chainObjects[i].controlTarget.target.position);
+
+            let targetPosition = new THREE.Vector3();
+            chain.joints[chain.joints.length - 2].bone.getWorldPosition(targetPosition);
+            let polePosition = poleConstraints.poleTarget.mesh.position;
+            poleConstraints.poleTarget.mesh.position.set(targetPosition.x + polePosition.x, targetPosition.y + polePosition.y, targetPosition.z + polePosition.z);
+            chain.reinitializeJoints();
+        }
+        this.hips.getWorldPosition(this.hipsControlTarget.target.position);
+        this.calculteBackOffset();
+    }
+
     // Resets targets position
     // After ik has been turned off and on resets
     // pole position with consideration of offset
@@ -251,6 +276,22 @@ class RagDoll extends IkObject
         {
             scene.remove(constraint.poleTarget.mesh);
         });
+    }
+
+    selectedSkeleton(selected)
+    {
+        let visible = selected;
+        let chainObjects = this.chainObjects;
+        for (let i = 0; i < chainObjects.length; i++)
+        {
+            let chain = chainObjects[i];
+            chain.controlTarget.disable(!visible);
+
+            let constraints = this.poleConstraints[i];
+            constraints.poleTarget.mesh.visible = visible;
+        }
+        this.hipsControlTarget.disable(!visible);
+        this.skeletonHelper.visible = visible;
     }
 
 }
