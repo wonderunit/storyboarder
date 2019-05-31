@@ -499,24 +499,35 @@ const SceneContent = ({
               break
             case 'erase':
               if (!selectedObjRef.current) return
-              if (findParent(selectedObjRef.current).userData.id === activeCamera) return
-
+              if (selectedObjRef.current.userData.id === activeCamera) return
               setGuiMode(mode)
-              setTimeout(() => {
-                setGuiMode('selection')
-              }, 250)
 
-              const parent = findParent(selectedObjRef.current)
-              deleteObjects([parent.userData.id])
+              deleteObjects([selectedObjRef.current.userData.id])
               setSelectedObject(0)
               selectedObjRef.current = null
               setHideArray(createHideArray())
+
+              setTimeout(() => {
+                setGuiMode('selection')
+              }, 250)
               break
             case 'duplicate':
-              break
-            }      
+              if (!selectedObjRef.current) return
+              setGuiMode(mode)
 
+              const id = THREE.Math.generateUUID()
+              duplicateObjects([selectedObjRef.current.userData.id], [id])
+
+              setTimeout(() => {
+                const match = scene.children.find(child => child.userData.id === id)
+                setSelectedObject(match.id)
+                selectedObjRef.current = match
+                setHideArray(createHideArray())
+                setGuiMode('selection')
+              }, 250)
+              break
           }
+        }
 
         if (name.includes('board')) {
           const board = name.split('_')[0]
