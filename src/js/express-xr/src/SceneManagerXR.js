@@ -194,6 +194,7 @@ const SceneContent = ({
   const xrOffset = useRef(null)
 
   const [guiMode, setGuiMode] = useState('selection')
+  const [addMode, setAddMode] = useState(null)
   const [virtualCamVisible, setVirtualCamVisible] = useState(true)
   const [currentBoard, setCurrentBoard] = useState(null)
   const [camExtraRot, setCamExtraRot] = useState(0)
@@ -494,6 +495,11 @@ const SceneContent = ({
 
           switch (mode) {
             case 'add':
+              setGuiMode(mode)
+              setSelectedObject(0)
+              selectedObjRef.current = null
+              setHideArray(createHideArray())
+              break
             case 'selection':
               setGuiMode(mode)
               break
@@ -524,6 +530,41 @@ const SceneContent = ({
                 selectedObjRef.current = match
                 setHideArray(createHideArray())
                 setGuiMode('selection')
+              }, 250)
+              break
+          }
+        }
+
+        if (name.includes('_add')) {
+          const mode = name.split('_')[0]
+
+          switch (mode) {
+            case 'camera':
+              setAddMode('camera')
+
+              setTimeout(() => {
+                setAddMode(null)
+              }, 250)
+              break
+            case 'object':
+              setAddMode('object')
+
+              setTimeout(() => {
+                setAddMode(null)
+              }, 250)
+              break
+            case 'character':
+              setAddMode('character')
+
+              setTimeout(() => {
+                setAddMode(null)
+              }, 250)
+              break
+            case 'light':
+              setAddMode('light')
+
+              setTimeout(() => {
+                setAddMode(null)
               }, 250)
               break
           }
@@ -901,7 +942,7 @@ const SceneContent = ({
         return (
           <primitive key={n} object={object}>
             {handedness === 'right' && (
-              <GUI {...{ aspectRatio, guiMode, currentBoard, selectedObject, hideArray, virtualCamVisible, guiCamFOV, XRControllers }} />
+              <GUI {...{ aspectRatio, guiMode, addMode, currentBoard, selectedObject, hideArray, virtualCamVisible, guiCamFOV, XRControllers }} />
             )}
             <SGController
               {...{ flipModel, modelData: getModelData(controllerObjectSettings), ...controllerObjectSettings }}

@@ -24,7 +24,7 @@ const findParent = obj => {
   return null
 }
 
-const GUI = ({ aspectRatio, guiMode, currentBoard, selectedObject, hideArray, virtualCamVisible, guiCamFOV, XRControllers }) => {
+const GUI = ({ aspectRatio, guiMode, addMode, currentBoard, selectedObject, hideArray, virtualCamVisible, guiCamFOV, XRControllers }) => {
   const [textCount, setTextCount] = useState(0)
   const XRControllersRef = useRef({})
   const slidersRef = useRef([])
@@ -285,6 +285,11 @@ const GUI = ({ aspectRatio, guiMode, currentBoard, selectedObject, hideArray, vi
   const camera_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/camera.png'), [])
   const eye_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/eye.png'), [])
 
+  const camera_toolbar_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/icon-toolbar-camera.png'), [])
+  const object_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/icon-toolbar-object.png'), [])
+  const character_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/icon-toolbar-character.png'), [])
+  const light_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/icon-toolbar-light.png'), [])
+
   return (
     <group rotation={[(Math.PI / 180) * -30, 0, 0]} userData={{ type: 'gui' }} position={[0, 0.015, -0.005]}>
       <group rotation={[(Math.PI / 180) * -70, 0, 0]}>
@@ -385,6 +390,76 @@ const GUI = ({ aspectRatio, guiMode, currentBoard, selectedObject, hideArray, vi
           </group>
         </group>
 
+        {guiMode === 'add' && (
+          <group>
+            <group position={[(uiScale * 0.5 + uiScale * 0.5 + bWidth) * -2, 0, 0]}>
+              <GUIElement
+                {...{
+                  name: 'add_ui',
+                  width: uiScale,
+                  height: uiScale,
+                  radius: bWidth,
+                  color: 'black'
+                }}
+              />
+            </group>
+
+            <group position={[(uiScale * 0.5 + uiScale * 0.5 + bWidth) * -2, 0, 0.001]} scale={[0.9, 0.9, 0.9]}>
+              <group position={[uiScale * -0.25, uiScale * 0.25, 0]} scale={[0.8, 0.8, 0.8]}>
+                <GUIElement
+                  {...{
+                    icon: camera_toolbar_texture,
+                    name: 'camera_add',
+                    width: uiScale * 0.5,
+                    height: uiScale * 0.5,
+                    radius: bWidth,
+                    color: addMode === 'camera' ? 0x6e6e6e : 0x212121
+                  }}
+                />
+              </group>
+
+              <group position={[uiScale * 0.25, uiScale * 0.25, 0]} scale={[0.8, 0.8, 0.8]}>
+                <GUIElement
+                  {...{
+                    icon: object_texture,
+                    name: 'object_add',
+                    width: uiScale * 0.5,
+                    height: uiScale * 0.5,
+                    radius: bWidth,
+                    color: addMode === 'object' ? 0x6e6e6e : 0x212121
+                  }}
+                />
+              </group>
+
+              <group position={[uiScale * -0.25, uiScale * -0.25, 0]} scale={[0.8, 0.8, 0.8]}>
+                <GUIElement
+                  {...{
+                    icon: character_texture,
+                    name: 'character_add',
+                    width: uiScale * 0.5,
+                    height: uiScale * 0.5,
+                    radius: bWidth,
+                    color: addMode === 'character' ? 0x6e6e6e : 0x212121
+                  }}
+                />
+              </group>
+
+              <group position={[uiScale * 0.25, uiScale * -0.25, 0]} scale={[0.8, 0.8, 0.8]}>
+                <GUIElement
+                  {...{
+                    icon: light_texture,
+                    name: 'light_add',
+                    width: uiScale * 0.5,
+                    height: uiScale * 0.5,
+                    radius: bWidth,
+                    color: addMode === 'light' ? 0x6e6e6e : 0x212121
+                  }}
+                />
+              </group>
+            </group>
+          </group>
+        )}
+
         <group position={[uiScale * 1.5 * 0.5 + uiScale * 0.5 + bWidth, 0, 0]}>
           <GUIElement
             {...{
@@ -428,10 +503,19 @@ const GUI = ({ aspectRatio, guiMode, currentBoard, selectedObject, hideArray, vi
 
       <group position={[0, 0.05, -0.075]} rotation={[(Math.PI / 180) * -20, 0, 0]}>
         <SGVirtualCamera
-          {...{ aspectRatio, selectedObject, hideArray, guiCamera: true, camOffset: new THREE.Vector3(0, -0.05, 0.075), ...camSettings }}
+          {...{
+            aspectRatio,
+            selectedObject,
+            hideArray,
+            guiCamera: true,
+            camOffset: new THREE.Vector3(0, -0.05, 0.075),
+            ...camSettings
+          }}
         />
 
-        <group position={[camSettings.size * 0.5 * aspectRatio + uiScale * 0.25 + bWidth, uiScale * -0.25 + bWidth * -0.5, 0]}>
+        <group
+          position={[camSettings.size * 0.5 * aspectRatio + uiScale * 0.25 + bWidth, uiScale * -0.25 + bWidth * -0.5, 0]}
+        >
           <GUIElement
             {...{
               icon: camera_texture,
