@@ -9,6 +9,7 @@ const { useEffect, useRef, useMemo, useState, useReducer } = React
 const {
   updateObject,
   deleteObjects,
+  duplicateObjects,
   selectBone,
   updateCharacterSkeleton,
 
@@ -184,6 +185,7 @@ const SceneContent = ({
   world,
   updateObject,
   deleteObjects,
+  duplicateObjects,
   selectedBone,
   selectBone,
   updateCharacterSkeleton
@@ -460,8 +462,8 @@ const SceneContent = ({
       return
     }
 
-    if (selectedObjRef.current && selectedObjRef.current.userData.type === 'character') {      
-      const bonesHelper = selectedObjRef.current.parent.bonesHelper
+    if (selectedObjRef.current && selectedObjRef.current.userData.type === 'character') {
+      const bonesHelper = selectedObjRef.current.children[0].bonesHelper
       const hits = boneIntersect(controller, bonesHelper)
       if (hits.length) {
         controller.userData.bone = hits[0].bone
@@ -512,9 +514,9 @@ const SceneContent = ({
               break
             case 'duplicate':
               break
-          }
+            }      
 
-        }
+          }
 
         if (name.includes('board')) {
           const board = name.split('_')[0]
@@ -542,12 +544,11 @@ const SceneContent = ({
         intersection.object = intersection.object.parent.userData.character
       }
 
-      const { id } = intersection.object
+      let object = findParent(intersection.object)
+      const { id } = object
       setSelectedObject(id)
       selectedObjRef.current = scene.getObjectById(id)
       setHideArray(createHideArray())
-
-      let object = findParent(intersection.object)
 
       if (object.userData.type === 'character') {
         if (object.userData.name === 'character-container') object = object.children[0]
@@ -799,7 +800,8 @@ const SceneContent = ({
 
       if (intersection.object.userData.type === 'gui') return
 
-      const { id } = intersection.object
+      let object = findParent(intersection.object)
+      const { id } = object
       setSelectedObject(id)
       selectedObjRef.current = scene.getObjectById(id)
       setHideArray(createHideArray())
@@ -977,35 +979,49 @@ const SceneManagerXR = connect(
   {
     updateObject,
     deleteObjects,
+    duplicateObjects,
     selectBone,
     updateCharacterSkeleton
   }
-)(({ aspectRatio, world, sceneObjects, activeCamera, updateObject, deleteObjects, selectedBone, selectBone, updateCharacterSkeleton }) => {
-  const attachments = useAttachmentLoader({ sceneObjects, world })
+)(
+  ({
+    aspectRatio,
+    world,
+    sceneObjects,
+    activeCamera,
+    updateObject,
+    deleteObjects,
+    duplicateObjects,
+    selectedBone,
+    selectBone,
+    updateCharacterSkeleton
+  }) => {
+    const attachments = useAttachmentLoader({ sceneObjects, world })
 
-  const getModelData = sceneObject => {
-    let key = getFilepathForLoadable(sceneObject)
-    return attachments[key] && attachments[key].value
-  }
+    const getModelData = sceneObject => {
+      let key = getFilepathForLoadable(sceneObject)
+      return attachments[key] && attachments[key].value
+    }
 
-  return (
-    <Canvas vr>
-      <SceneContent
-        {...{
-          aspectRatio,
-          sceneObjects,
-          getModelData,
-          activeCamera,
-          world,
-          updateObject,
-          deleteObjects,
-          selectedBone,
-          selectBone,
-          updateCharacterSkeleton
-        }}
-      />
-    </Canvas>
-  )
-})
+    return (
+      <Canvas vr>
+        <SceneContent
+          {...{
+            aspectRatio,
+            sceneObjects,
+            getModelData,
+            activeCamera,
+            world,
+            updateObject,
+            deleteObjects,
+            duplicateObjects,
+            selectedBone,
+            selectBone,
+            updateCharacterSkeleton
+          }}
+        />
+      </Canvas>
+    )
+ })
 
 module.exports = SceneManagerXR
