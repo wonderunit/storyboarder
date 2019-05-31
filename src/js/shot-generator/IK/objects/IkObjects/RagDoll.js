@@ -239,7 +239,18 @@ class RagDoll extends IkObject
             let polePosition = poleConstraints.poleTarget.mesh.position;
             poleConstraints.poleTarget.mesh.position.set(targetPosition.x + polePosition.x, targetPosition.y + polePosition.y, targetPosition.z + polePosition.z);
             chain.reinitializeJoints();
+            if(chain.joints[0].bone.name === "LeftArm")
+            {
+                console.log(chain.joints[0].bone.quaternion.clone());
+                let firstBoneWorld = new THREE.Vector3();
+                let secondBoneWorld = new THREE.Vector3();
+                chain.joints[0].bone.getWorldPosition(firstBoneWorld);
+                chain.joints[1].bone.getWorldPosition(secondBoneWorld);
+                let direction = new THREE.Vector3().subVectors(secondBoneWorld, firstBoneWorld).normalize();
+                console.log(direction);
+            }
         }
+
         this.hips.getWorldPosition(this.hipsControlTarget.target.position);
         this.calculteBackOffset();
     }

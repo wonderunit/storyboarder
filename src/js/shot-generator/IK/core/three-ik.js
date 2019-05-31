@@ -9,7 +9,7 @@ var t2 = new three.Vector3();
 var t3 = new three.Vector3();
 var m1 = new three.Matrix4();
 function getWorldPosition(object, target) {
-  return target.setFromMatrixPosition(object.matrixWorld);
+  return  object.getWorldPosition(target); //target.setFromMatrixPosition(object.matrixWorld);
 }
 
 function getCentroid(positions, target) {
@@ -332,7 +332,13 @@ var slicedToArray = function () {
   };
 }();
 
-var Z_AXIS = new three.Vector3(0, 0, 1);
+let Z_AXIS = new three.Vector3(0, 0, 1);
+let Y_AXIS = new three.Vector3(0, 1, 0);
+let X_AXIS = new three.Vector3(1, 0, 0);
+
+const jointSpace = new three.Matrix4();
+jointSpace.makeBasis(X_AXIS, Y_AXIS, Z_AXIS);
+const inversedJointSpace = new three.Matrix4().getInverse(jointSpace);
 var DEG2RAD = three.Math.DEG2RAD;
 var RAD2DEG = three.Math.RAD2DEG;
 var IKBallConstraint = function () {
@@ -358,7 +364,7 @@ var IKBallConstraint = function () {
   }]);
   return IKBallConstraint;
 }();
-var Y_AXIS = new three.Vector3(0, 1, 0);
+
 var IKJoint = function () {
   function IKJoint(bone) {
     var _ref = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {},
@@ -515,7 +521,13 @@ var IKJoint = function () {
     value: function _applyWorldPosition()
     {
       var direction = new three.Vector3().copy(this._direction);
+      if(this.bone.name === "LeftArm")
+      {
+        console.log(direction.clone());
+      }
       var position = new three.Vector3().copy(this._getWorldPosition());
+      //position.applyMatrix4(jointSpace);
+      //direction.applyMatrix4(jointSpace);
       var parent = this.bone.parent;
       if (parent)
       {
@@ -528,6 +540,7 @@ var IKJoint = function () {
         this.bone.position.copy(position);
         this._updateMatrixWorld();
         this._worldToLocalDirection(direction);
+
         //inverseParent = new three.Matrix4().getInverse(worldMatrix);
         //direction.applyMatrix4(inverseParent);
         //let positionik = new three.Vector3();
@@ -536,7 +549,21 @@ var IKJoint = function () {
         //worldMatrix.decompose(positionik, quaternion, scale);
 
         //direction.set(direction.z, direction.y, direction.x);
+
+        //direction.set(direction.x, -direction.y, -direction.z);
+
+
+        if(this.bone.name === "LeftArm")
+        {
+          console.log(this.bone.quaternion.clone());
+          console.log(direction);
+        }
         setQuaternionFromDirection(direction, Y_AXIS, this.bone.quaternion);
+        if(this.bone.name === "LeftArm")
+        {
+          console.log(this.bone.quaternion.clone());
+        }
+
         this.bone.rotation.z = 0;
       }
       else
@@ -634,6 +661,7 @@ var IKChain = function () {
         if (joint === this.joints[0])
         {
           this.origin = new three.Vector3().copy(this.base._getWorldPosition());
+          this.origin.z = -this.origin.z;
         }
         else
         {
@@ -744,7 +772,9 @@ var IKChain = function () {
         var _joint = this.joints[_i];
         var prevJoint = this.joints[_i - 1];
         var direction = prevJoint._getWorldDirection(_joint);
+        //direction.applyMatrix4(inversedJointSpace);
         var worldPosition = direction.multiplyScalar(_joint.distance).add(_joint._getWorldPosition());
+        //worldPosition.applyMatrix4(inversedJointSpace);
         if (prevJoint === this.base && this.base._isSubBase) {
           this.base._subBasePositions.push(worldPosition);
         } else {
@@ -764,7 +794,13 @@ var IKChain = function () {
 
         var nextJoint = this.joints[i + 1];
         var jointWorldPosition = joint._getWorldPosition();
+        //jointWorldPosition.applyMatrix4(inversedJointSpace);
+        if(joint.bone.name === "LeftArm")
+        {
+          console.log(jointWorldPosition);
+        }
         var direction = nextJoint._getWorldDirection(joint);
+       // direction.applyMatrix4(inversedJointSpace);
         joint._setDirection(direction);
         joint._applyConstraints();
         direction.copy(joint._direction);
@@ -941,7 +977,6 @@ var IK = function () {
 }();
 
 var Z_AXIS$1 = new three.Vector3(0, 0, -1);
-var X_AXIS = new three.Vector3(1, 0, 0);
 var t1$1 = new three.Vector3();
 var t2$1 = new three.Vector3();
 var t3$1 = new three.Vector3();

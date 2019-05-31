@@ -123,6 +123,7 @@ class IkObject
 
         // Adds skeleton helper to scene
         scene.add( this.skeletonHelper );
+
         this.calculteBackOffset();
     }
 
