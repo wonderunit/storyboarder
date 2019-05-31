@@ -1,6 +1,6 @@
 const THREE = require('three')
 window.THREE = window.THREE || THREE
-const { Canvas, useThree, useUpdate, useRender } = require('react-three-fiber')
+const { Canvas, useThree, useRender } = require('react-three-fiber')
 
 const { connect } = require('react-redux')
 const React = require('react')
@@ -45,7 +45,7 @@ require('./lib/VRController')
 const RStats = require('./lib/rStats')
 require('./lib/rStats.extras')
 
-const applyDeviceQuaternion = require('../../shot-generator//apply-device-quaternion')
+const applyDeviceQuaternion = require('../../shot-generator/apply-device-quaternion')
 
 const loadingManager = new THREE.LoadingManager()
 const objLoader = new THREE.OBJLoader2(loadingManager)
