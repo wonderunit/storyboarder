@@ -861,12 +861,23 @@ const SceneContent = ({
 
     if (event.axes[0] > 0.075) {
       rotateObjRef.current = 'Right'
-      console.log('rotate object ', rotateObjRef.current)
+
+      const object = controller.userData.selected
+      if (object.userData.type === 'character') {
+        object.userData.modelSettings.rotation += Math.PI / 4
+      } else {
+        object.rotateY(Math.PI / 4)
+      }
     }
 
     if (event.axes[0] < -0.075) {
       rotateObjRef.current = 'Left'
-      console.log('rotate object ', rotateObjRef.current)
+      const object = controller.userData.selected
+      if (object.userData.type === 'character') {
+        object.userData.modelSettings.rotation -= Math.PI / 4
+      } else {
+        object.rotateY(-Math.PI / 4)
+      }
     }
   }
 
