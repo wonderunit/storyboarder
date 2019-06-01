@@ -767,48 +767,52 @@ const SceneContent = ({
         }
       })
 
-      if (object.userData.type === 'character' || object.userData.type === 'light') {
-        updateObject(object.userData.id, {
-          x: object.position.x,
-          y: object.position.z,
-          z: object.position.y,
-          rotation: object.rotation.y
-        })
-      } else if (object.userData.type === 'virtual-camera') {
-        updateObject(object.userData.id, {
-          x: object.position.x,
-          y: object.position.z,
-          z: object.position.y
-        })
-      } else {
-        updateObject(object.userData.id, {
-          x: object.position.x,
-          y: object.position.z,
-          z: object.position.y,
-          rotation: { x: object.rotation.x, y: object.rotation.y, z: object.rotation.z }
-        })
-      }
+      useUpdateObject(object)
     }
 
     selectBone(null)
   }
 
+  const useUpdateObject = object => {
+    if (object.userData.type === 'character' || object.userData.type === 'light') {
+      updateObject(object.userData.id, {
+        x: object.position.x,
+        y: object.position.z,
+        z: object.position.y,
+        rotation: object.rotation.y
+      })
+    } else if (object.userData.type === 'virtual-camera') {
+      updateObject(object.userData.id, {
+        x: object.position.x,
+        y: object.position.z,
+        z: object.position.y
+      })
+    } else {
+      updateObject(object.userData.id, {
+        x: object.position.x,
+        y: object.position.z,
+        z: object.position.y,
+        rotation: { x: object.rotation.x, y: object.rotation.y, z: object.rotation.z }
+      })
+    }
+  }
+
   const onAxisChanged = event => {
-    let isSelected = false
+    let selected = false
     Object.values(XRControllersRef.current).forEach(controller => {
-      if (!isSelected) isSelected = controller.userData.selected
+      if (!selected) selected = controller.userData.selected ? controller : false
     })
 
-    if (isSelected) {
-      moveObject(event)
-      rotateObject(event)
+    if (selected) {
+      moveObject(event, selected)
+      rotateObject(event, selected)
     } else {
       moveCamera(event)
       rotateCamera(event)
     }
   }
 
-  const moveObject = event => {
+  const moveObject = (event, controller) => {
     if (event.axes[1] === 0) {
       moveObjRef.current = null
     }
@@ -816,29 +820,26 @@ const SceneContent = ({
     if (moveObjRef.current) return
     if (Math.abs(event.axes[1]) < Math.abs(event.axes[0])) return
 
-    const { x, y } = xrOffset.current.userData
-    const hmdCam = xrOffset.current.children.filter(child => child.type === 'PerspectiveCamera')[0]
-
     if (event.axes[1] > 0.075) {
-      Object.values(XRControllersRef.current).forEach(controller => {
-        controller.dispatchEvent({ type: 'trigger press ended' })
-      })
-
       moveObjRef.current = 'Backwards'
-      console.log('move object ', moveObjRef.current)
+      // 45 degree tilt down on controller
+      let offsetVector = new THREE.Vector3(0, 1, 1)
+      const object = controller.userData.selected
+      object.position.add(offsetVector)
     }
 
     if (event.axes[1] < -0.075) {
-      Object.values(XRControllersRef.current).forEach(controller => {
-        controller.dispatchEvent({ type: 'trigger press ended' })
-      })
-
       moveObjRef.current = 'Forwards'
-      console.log('move object ', moveObjRef.current)
+      // 45 degree tilt down on controller
+      let offsetVector = new THREE.Vector3(0, -1, -1)      
+      const object = controller.userData.selected
+      object.position.add(offsetVector)
     }
   }
 
-  const rotateObject = event => {
+  const rotateObject = (event, controller) => {
+    const object = controller.userData.selected
+
     if (event.axes[0] === 0) {
       rotateObjRef.current = null
     }
@@ -847,19 +848,11 @@ const SceneContent = ({
     if (Math.abs(event.axes[0]) < Math.abs(event.axes[1])) return
 
     if (event.axes[0] > 0.075) {
-      Object.values(XRControllersRef.current).forEach(controller => {
-        controller.dispatchEvent({ type: 'trigger press ended' })
-      })
-
       rotateObjRef.current = 'Right'
       console.log('rotate object ', rotateObjRef.current)
     }
 
     if (event.axes[0] < -0.075) {
-      Object.values(XRControllersRef.current).forEach(controller => {
-        controller.dispatchEvent({ type: 'trigger press ended' })
-      })
-
       rotateObjRef.current = 'Left'
       console.log('rotate object ', rotateObjRef.current)
     }
