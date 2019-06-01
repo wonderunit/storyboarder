@@ -283,7 +283,7 @@ const SceneContent = ({
     controller.add(line)
 
     const raycastTiltGroup = new THREE.Group()
-    const raycastDepth = new THREE.Mesh(new THREE.BoxGeometry(0.01, 0.01, 0.01), new THREE.MeshBasicMaterial())
+    const raycastDepth = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.1, 0.1), new THREE.MeshBasicMaterial())
     raycastDepth.visible = false
     raycastDepth.name = 'raycast-depth'
     raycastTiltGroup.rotation.x = (Math.PI / 180) * -45
@@ -822,18 +822,30 @@ const SceneContent = ({
 
     if (event.axes[1] > 0.075) {
       moveObjRef.current = 'Backwards'
-      // 45 degree tilt down on controller
-      let offsetVector = new THREE.Vector3(0, 1, 1)
+
       const object = controller.userData.selected
-      object.position.add(offsetVector)
+      if (object.userData.type === 'character') {
+        const raycastDepth = controller.getObjectByName('raycast-depth')
+        raycastDepth.position.add(new THREE.Vector3(0, 0, 1))
+      } else {
+        // 45 degree tilt down on controller
+        let offsetVector = new THREE.Vector3(0, 1, 1)
+        object.position.add(offsetVector)
+      }
     }
 
     if (event.axes[1] < -0.075) {
       moveObjRef.current = 'Forwards'
-      // 45 degree tilt down on controller
-      let offsetVector = new THREE.Vector3(0, -1, -1)      
+
       const object = controller.userData.selected
-      object.position.add(offsetVector)
+      if (object.userData.type === 'character') {
+        const raycastDepth = controller.getObjectByName('raycast-depth')
+        raycastDepth.position.add(new THREE.Vector3(0, 0, -1))
+      } else {
+        // 45 degree tilt down on controller
+        let offsetVector = new THREE.Vector3(0, -1, -1)
+        object.position.add(offsetVector)
+      }
     }
   }
 
