@@ -211,6 +211,11 @@ const SceneContent = ({
   const [guiCamFOV, setGuiCamFOV] = useState(22)
   const [hideArray, setHideArray] = useState([])
 
+  const moveObjRef = useRef(null)
+  const rotateObjRef = useRef(null)
+  const isPressed = useRef(false)
+  const isGripped = useRef(false)
+
   const moveCamRef = useRef(null)
   const rotateCamRef = useRef(null)
   const XRControllersRef = useRef({})
@@ -789,8 +794,75 @@ const SceneContent = ({
   }
 
   const onAxisChanged = event => {
-    moveCamera(event)
-    rotateCamera(event)
+    let isSelected = false
+    Object.values(XRControllersRef.current).forEach(controller => {
+      if (!isSelected) isSelected = controller.userData.selected
+    })
+
+    if (isSelected) {
+      moveObject(event)
+      rotateObject(event)
+    } else {
+      moveCamera(event)
+      rotateCamera(event)
+    }
+  }
+
+  const moveObject = event => {
+    if (event.axes[1] === 0) {
+      moveObjRef.current = null
+    }
+
+    if (moveObjRef.current) return
+    if (Math.abs(event.axes[1]) < Math.abs(event.axes[0])) return
+
+    const { x, y } = xrOffset.current.userData
+    const hmdCam = xrOffset.current.children.filter(child => child.type === 'PerspectiveCamera')[0]
+
+    if (event.axes[1] > 0.075) {
+      Object.values(XRControllersRef.current).forEach(controller => {
+        controller.dispatchEvent({ type: 'trigger press ended' })
+      })
+
+      moveObjRef.current = 'Backwards'
+      console.log('move object ', moveObjRef.current)
+    }
+
+    if (event.axes[1] < -0.075) {
+      Object.values(XRControllersRef.current).forEach(controller => {
+        controller.dispatchEvent({ type: 'trigger press ended' })
+      })
+
+      moveObjRef.current = 'Forwards'
+      console.log('move object ', moveObjRef.current)
+    }
+  }
+
+  const rotateObject = event => {
+    if (event.axes[0] === 0) {
+      rotateObjRef.current = null
+    }
+
+    if (rotateObjRef.current) return
+    if (Math.abs(event.axes[0]) < Math.abs(event.axes[1])) return
+
+    if (event.axes[0] > 0.075) {
+      Object.values(XRControllersRef.current).forEach(controller => {
+        controller.dispatchEvent({ type: 'trigger press ended' })
+      })
+
+      rotateObjRef.current = 'Right'
+      console.log('rotate object ', rotateObjRef.current)
+    }
+
+    if (event.axes[0] < -0.075) {
+      Object.values(XRControllersRef.current).forEach(controller => {
+        controller.dispatchEvent({ type: 'trigger press ended' })
+      })
+
+      rotateObjRef.current = 'Left'
+      console.log('rotate object ', rotateObjRef.current)
+    }
   }
 
   const moveCamera = event => {
@@ -805,7 +877,7 @@ const SceneContent = ({
     const hmdCam = xrOffset.current.children.filter(child => child.type === 'PerspectiveCamera')[0]
 
     if (event.axes[1] > 0.075) {
-      Object.values(XRControllers).forEach(controller => {
+      Object.values(XRControllersRef.current).forEach(controller => {
         controller.dispatchEvent({ type: 'trigger press ended' })
       })
 
@@ -826,7 +898,7 @@ const SceneContent = ({
     }
 
     if (event.axes[1] < -0.075) {
-      Object.values(XRControllers).forEach(controller => {
+      Object.values(XRControllersRef.current).forEach(controller => {
         controller.dispatchEvent({ type: 'trigger press ended' })
       })
 
@@ -856,7 +928,7 @@ const SceneContent = ({
     if (Math.abs(event.axes[0]) < Math.abs(event.axes[1])) return
 
     if (event.axes[0] > 0.075) {
-      Object.values(XRControllers).forEach(controller => {
+      Object.values(XRControllersRef.current).forEach(controller => {
         controller.dispatchEvent({ type: 'trigger press ended' })
       })
 
@@ -867,7 +939,7 @@ const SceneContent = ({
     }
 
     if (event.axes[0] < -0.075) {
-      Object.values(XRControllers).forEach(controller => {
+      Object.values(XRControllersRef.current).forEach(controller => {
         controller.dispatchEvent({ type: 'trigger press ended' })
       })
 
