@@ -563,10 +563,6 @@ const SceneContent = ({
                 tilt: 0,
                 roll: 0
               })
-
-              setTimeout(() => {
-                setAddMode(null)
-              }, 250)
               break
             case 'object':
               setAddMode('object')
@@ -585,10 +581,6 @@ const SceneContent = ({
 
                 visible: true
               })
-
-              setTimeout(() => {
-                setAddMode(null)
-              }, 250)
               break
             case 'character':
               setAddMode('character')
@@ -615,10 +607,6 @@ const SceneContent = ({
 
                 visible: true
               })
-
-              setTimeout(() => {
-                setAddMode(null)
-              }, 250)
               break
             case 'light':
               setAddMode('light')
@@ -638,12 +626,13 @@ const SceneContent = ({
                 penumbra: 1.0,
                 decay: 1
               })
-
-              setTimeout(() => {
-                setAddMode(null)
-              }, 250)
               break
           }
+
+          setTimeout(() => {
+            setAddMode(null)
+            setGuiMode('selection')
+          }, 250)
         }
 
         if (name.includes('board')) {
