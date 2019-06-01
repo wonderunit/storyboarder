@@ -1,5 +1,6 @@
 const os = require('os')
 const path = require('path')
+const dns = require('dns')
 
 const express = require('express')
 const app = express()
@@ -51,12 +52,38 @@ class XRServer {
     })
 
     http.listen(portNumber, function() {
-      console.log('running server')
-      // let hostname = os.hostname()
-      // console.log('http://' + hostname + ':' + portNumber)
-      // require('dns').lookup(hostname, function (err, add, fam) {
-      //   console.log('http://' + add + ':' + portNumber)
-      // })
+      let desc = `XRServer running at`
+
+      let hostname = os.hostname()
+
+      dns.lookup(hostname, function (err, addr) {
+        if (err) {
+          // use IP address instead of .local
+          let ip
+          if (hostname.match(/\.local$/)) {
+            ip = Object.values(os.networkInterfaces()).reduce(
+              (r, list) =>
+                r.concat(
+                  list.reduce(
+                    (rr, i) =>
+                      rr.concat((i.family === "IPv4" && !i.internal && i.address) || []),
+                    []
+                  )
+                ),
+              []
+            )
+          }
+          if (ip) {
+            console.log(`${desc} http://${ip}:${portNumber}`)
+
+          } else {
+            console.log(`${desc} http://${hostname}:${portNumber}`)
+          }
+          return
+        }
+
+        console.log(`${desc} http://${addr}:${portNumber}`)
+      })
     })
   }
 }
