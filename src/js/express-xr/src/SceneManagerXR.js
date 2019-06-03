@@ -189,7 +189,6 @@ const useVrControllers = ({ onSelectStart, onSelectEnd, onGripDown, onGripUp, on
   const { gl } = useThree()
 
   const onVRControllerConnected = event => {
-    console.log('onVRControllerConnected', event)
     let id = THREE.Math.generateUUID()
 
     let controller = event.detail
@@ -238,14 +237,7 @@ const useVrControllers = ({ onSelectStart, onSelectEnd, onGripDown, onGripUp, on
     }
 
     controller.addEventListener('disconnected', event => {
-      console.log('controller disconnected', event)
-
       // cleanup the controller
-
-      // if (controller.parent) {
-      //   controller.parent.remove(controller)
-      // }
-
       controller.removeEventListener('trigger press began', onSelectStart)
       controller.removeEventListener('trigger press ended', onSelectEnd)
       controller.removeEventListener('grip press began', onGripDown)
@@ -1115,7 +1107,6 @@ const SceneContent = ({
       <SGCamera {...{ aspectRatio, activeCamera, setDefaultCamera, ...cameraState }} />
 
       {vrControllers.map((object, n) => {
-        console.log('rendering controller', object)
         const handedness = object.getHandedness()
         const flipModel = handedness === 'right'
 
