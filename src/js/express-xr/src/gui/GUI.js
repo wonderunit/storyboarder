@@ -24,9 +24,8 @@ const findParent = obj => {
   return null
 }
 
-const GUI = ({ aspectRatio, guiMode, addMode, currentBoard, selectedObject, hideArray, virtualCamVisible, guiCamFOV, XRControllers }) => {
+const GUI = ({ aspectRatio, guiMode, addMode, currentBoard, selectedObject, hideArray, virtualCamVisible, guiCamFOV, vrControllers }) => {
   const [textCount, setTextCount] = useState(0)
-  const XRControllersRef = useRef({})
   const slidersRef = useRef([])
   const fovSliderRef = useRef([])
 
@@ -256,10 +255,6 @@ const GUI = ({ aspectRatio, guiMode, addMode, currentBoard, selectedObject, hide
     return children
   }, [selectedObject])
 
-  useMemo(() => {
-    XRControllersRef.current = Object.values(XRControllers).slice()
-  }, [XRControllers])
-
   useRender(() => {
     updateSliders()
   })
@@ -268,11 +263,11 @@ const GUI = ({ aspectRatio, guiMode, addMode, currentBoard, selectedObject, hide
     slidersRef.current.forEach(child => {
       if (!child.key.includes('slider')) return
       const slider = child.props.object
-      slider.updateControl(XRControllersRef.current)
+      slider.updateControl(vrControllers)
     })
 
     if (fovSliderRef.current) {
-      fovSliderRef.current.updateControl(XRControllersRef.current)
+      fovSliderRef.current.updateControl(vrControllers)
     }
   }
 
