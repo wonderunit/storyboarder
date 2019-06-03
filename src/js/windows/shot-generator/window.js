@@ -54,6 +54,10 @@ const { initialState, loadScene, resetScene, updateDevice, updateServer, setBoar
 const createServer = require('../../services/createServer')
 const createDualShockController = require('../../shot-generator/DualshockController')
 
+const XRServer = require('../../express-xr/app')
+let xrServer
+
+
 window.addEventListener('load', () => {
   ipcRenderer.send('shot-generator:window:loaded')
 })
@@ -101,6 +105,11 @@ ipcRenderer.on('loadBoard', (event, { storyboarderFilePath, boardData, board }) 
     store.dispatch(resetScene())
     store.dispatch(ActionCreators.clearHistory())
   }
+
+  if (!xrServer) {
+    xrServer = new XRServer({ store })
+  }
+
 })
 ipcRenderer.on('update', (event, { board }) => {
   store.dispatch(setBoard( board ))
@@ -179,4 +188,10 @@ if (process.env.SHOT_GENERATOR_STANDALONE) {
     .find(w => w.webContents.getURL() === window.location.toString())
 
   win.webContents.send('loadBoard', { storyboarderFilePath, boardData: file, board: file.boards[0] })
+
+  // send storyboarderFilePath immediately so XRServer has access to it
+  store.dispatch({ type: 'SET_META_STORYBOARDER_FILE_PATH', payload: storyboarderFilePath })
+
+  xrServer = new XRServer({ store })
 }
+
