@@ -373,33 +373,6 @@ const SceneContent = ({
     }
   }, [])
 
-  useRender(() => {
-    if (rStatsRef.current) {
-      rStatsRef.current('rAF').tick()
-      rStatsRef.current('FPS').frame()
-      rStatsRef.current().update()
-    }
-
-    THREE.VRController.update()
-
-    vrControllers.forEach(controller => {
-      const intersections = getIntersections(controller, guiArray.current)
-      if (intersections.length > 0) {
-        let intersection = intersections[0]
-        if (intersection.object.userData.type === 'slider') {
-          controller.intersections = intersections
-        }
-      }
-
-      const object = controller.userData.selected
-      if (object && object.userData.type === 'character') {
-        constraintObjectRotation(controller)
-      }
-
-      if (controller.userData.bone) rotateBone(controller)
-    })
-  })
-
   const createHideArray = () => {
     const array = []
     scene.traverse(child => {
@@ -1045,6 +1018,33 @@ const SceneContent = ({
   const vrControllers = useVrControllers({
     onSelectStart, onSelectEnd, onGripDown, onGripUp, onAxisChanged
   })
+
+  useRender(() => {
+    if (rStatsRef.current) {
+      rStatsRef.current('rAF').tick()
+      rStatsRef.current('FPS').frame()
+      rStatsRef.current().update()
+    }
+
+    THREE.VRController.update()
+
+    vrControllers.forEach(controller => {
+      const intersections = getIntersections(controller, guiArray.current)
+      if (intersections.length > 0) {
+        let intersection = intersections[0]
+        if (intersection.object.userData.type === 'slider') {
+          controller.intersections = intersections
+        }
+      }
+
+      const object = controller.userData.selected
+      if (object && object.userData.type === 'character') {
+        constraintObjectRotation(controller)
+      }
+
+      if (controller.userData.bone) rotateBone(controller)
+    })
+  }, false, [vrControllers])
 
   useEffect(() => {
     navigator
