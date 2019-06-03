@@ -255,10 +255,6 @@ const GUI = ({ aspectRatio, guiMode, addMode, currentBoard, selectedObject, hide
     return children
   }, [selectedObject])
 
-  useRender(() => {
-    updateSliders()
-  })
-
   const updateSliders = () => {
     slidersRef.current.forEach(child => {
       if (!child.key.includes('slider')) return
@@ -270,6 +266,8 @@ const GUI = ({ aspectRatio, guiMode, addMode, currentBoard, selectedObject, hide
       fovSliderRef.current.updateControl(vrControllers)
     }
   }
+
+  useRender(updateSliders, false, [vrControllers])
 
   const selection_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/selection.png'), [])
   const duplicate_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/duplicate.png'), [])
