@@ -337,10 +337,6 @@ const SceneContent = ({
 
   const { gl, scene, camera, setDefaultCamera } = useThree()
 
-  useMemo(() => {
-    console.log('vrControllers changed', vrControllers)
-  }, [vrControllers])
-
   const updateGUIProp = e => {
     const { id, prop, value } = e.detail
 
