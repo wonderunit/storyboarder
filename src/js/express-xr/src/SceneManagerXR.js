@@ -953,30 +953,6 @@ const SceneContent = ({
     }
   }
 
-  useEffect(() => {
-    intersectArray.current = scene.children.filter(
-      child =>
-        (child instanceof THREE.Mesh || child instanceof THREE.Group) &&
-        (child.userData.type !== 'ground' && child.userData.type !== 'room' && child.userData.type !== 'camera')
-    )
-
-    guiArray.current = []
-    vrControllers.forEach(controller => {
-      const gui = controller.children.filter(child => child.userData.type === 'gui')[0]
-
-      if (gui) {
-        gui.traverse(child => {
-          if (child.name === 'properties_container' || child.name === 'fov_slider') {
-            intersectArray.current.push(gui)
-            guiArray.current.push(gui)
-          }
-        })
-      }
-    })
-
-    teleportArray.current = scene.children.filter(child => child.userData.type === 'ground')
-  }, [vrControllers, sceneObjects])
-
   const onGripDown = event => {
     teleportMode.current = true
 
@@ -1010,6 +986,30 @@ const SceneContent = ({
   const vrControllers = useVrControllers({
     onSelectStart, onSelectEnd, onGripDown, onGripUp, onAxisChanged
   })
+
+  useEffect(() => {
+    intersectArray.current = scene.children.filter(
+      child =>
+        (child instanceof THREE.Mesh || child instanceof THREE.Group) &&
+        (child.userData.type !== 'ground' && child.userData.type !== 'room' && child.userData.type !== 'camera')
+    )
+
+    guiArray.current = []
+    vrControllers.forEach(controller => {
+      const gui = controller.children.filter(child => child.userData.type === 'gui')[0]
+
+      if (gui) {
+        gui.traverse(child => {
+          if (child.name === 'properties_container' || child.name === 'fov_slider') {
+            intersectArray.current.push(gui)
+            guiArray.current.push(gui)
+          }
+        })
+      }
+    })
+
+    teleportArray.current = scene.children.filter(child => child.userData.type === 'ground')
+  }, [vrControllers, sceneObjects])
 
   useRender(() => {
     if (rStatsRef.current) {
