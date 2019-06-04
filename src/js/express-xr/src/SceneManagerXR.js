@@ -623,7 +623,6 @@ const SceneContent = ({
 
           setTimeout(() => {
             setAddMode(null)
-            setGuiMode('selection')
           }, 250)
         }
 
