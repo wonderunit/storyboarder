@@ -302,6 +302,7 @@ const SceneContent = ({
   const teleportArray = useRef([])
   const teleportMode = useRef(false)
   const initialCamPos = useRef()
+  const currentBoneHighlight = useRef()
 
   // Why do I need to create ref to access updated state in some functions?
   const guiModeRef = useRef(null)
@@ -736,8 +737,6 @@ const SceneContent = ({
 
       useUpdateObject(object)
     }
-
-    selectBone(null)
   }
 
   const useUpdateObject = object => {
@@ -997,6 +996,7 @@ const SceneContent = ({
 
       controller.userData.bone = undefined
       isControllerRotatingCurrent.current = false
+      selectBone(null)
     }
   }
 
@@ -1038,6 +1038,19 @@ const SceneContent = ({
     THREE.VRController.update()
 
     vrControllers.forEach(controller => {
+
+      if (selectedObjRef.current && selectedObjRef.current.userData.type === 'character' && !selectedBone) {
+        const bonesHelper = selectedObjRef.current.children[0].bonesHelper
+        const hits = boneIntersect(controller, bonesHelper)
+        if (hits.length) {
+          currentBoneHighlight.current = hits[0].bone
+          currentBoneHighlight.current.connectedBone.material.color = new THREE.Color(0x242246)
+        } else if (currentBoneHighlight.current) {
+          currentBoneHighlight.current.connectedBone.material.color = new THREE.Color(0x7a72e9)
+          currentBoneHighlight.current = null
+        }
+      }
+
       const intersections = getIntersections(controller, guiArray.current)
       if (intersections.length > 0) {
         let intersection = intersections[0]
@@ -1053,7 +1066,7 @@ const SceneContent = ({
 
       if (controller.userData.bone) rotateBone(controller)
     })
-  }, false, [vrControllers])
+  }, false, [vrControllers, selectedBone])
 
   useEffect(() => {
     navigator
