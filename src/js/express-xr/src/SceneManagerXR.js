@@ -462,16 +462,6 @@ const SceneContent = ({
       return
     }
 
-    if (selectedObjRef.current && selectedObjRef.current.userData.type === 'character') {
-      const bonesHelper = selectedObjRef.current.children[0].bonesHelper
-      const hits = boneIntersect(controller, bonesHelper)
-      if (hits.length) {
-        controller.userData.bone = hits[0].bone
-        selectBone(hits[0].bone.uuid)
-        return
-      }
-    }
-
     const intersections = getIntersections(controller, intersectArray.current)
 
     if (intersections.length > 0) {
@@ -718,26 +708,6 @@ const SceneContent = ({
     const controller = event.target
     controller.pressed = false
 
-    if (controller.userData.bone) {
-      const target = controller.userData.bone
-      const parent = findParent(target)
-      let rotation = new THREE.Euler()
-      rotation.setFromQuaternion(target.quaternion.clone().normalize(), 'XYZ')
-
-      updateCharacterSkeleton({
-        id: parent.userData.id,
-        name: target.name,
-        rotation: {
-          x: rotation.x,
-          y: rotation.y,
-          z: rotation.z
-        }
-      })
-
-      controller.userData.bone = undefined
-      isControllerRotatingCurrent.current = false
-    }
-
     if (controller.userData.selected !== undefined) {
       const object = controller.userData.selected
 
@@ -968,8 +938,18 @@ const SceneContent = ({
 
   const onGripDown = event => {
     teleportMode.current = true
-
     const controller = event.target
+
+    if (selectedObjRef.current && selectedObjRef.current.userData.type === 'character') {
+      const bonesHelper = selectedObjRef.current.children[0].bonesHelper
+      const hits = boneIntersect(controller, bonesHelper)
+      if (hits.length) {
+        controller.userData.bone = hits[0].bone
+        selectBone(hits[0].bone.uuid)
+        return
+      }
+    }
+
     const intersections = getIntersections(controller, intersectArray.current)
 
     if (intersections.length > 0) {
@@ -998,6 +978,26 @@ const SceneContent = ({
 
     const controller = event.target
     controller.gripped = false
+
+    if (controller.userData.bone) {
+      const target = controller.userData.bone
+      const parent = findParent(target)
+      let rotation = new THREE.Euler()
+      rotation.setFromQuaternion(target.quaternion.clone().normalize(), 'XYZ')
+
+      updateCharacterSkeleton({
+        id: parent.userData.id,
+        name: target.name,
+        rotation: {
+          x: rotation.x,
+          y: rotation.y,
+          z: rotation.z
+        }
+      })
+
+      controller.userData.bone = undefined
+      isControllerRotatingCurrent.current = false
+    }
   }
 
   const vrControllers = useVrControllers({
