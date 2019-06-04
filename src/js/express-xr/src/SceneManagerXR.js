@@ -186,6 +186,17 @@ const useAttachmentLoader = ({ sceneObjects, world }) => {
 const useVrControllers = ({ onSelectStart, onSelectEnd, onGripDown, onGripUp, onAxisChanged }) => {
   const [controllers, setControllers] = useState([])
 
+  const onSelectStartRef = useRef()
+  const onSelectEndRef = useRef()
+  const onGripDownRef = useRef()
+  const onGripUpRef = useRef()
+  const onAxisChangedRef = useRef()
+  onSelectStartRef.current = onSelectStart
+  onSelectEndRef.current = onSelectEnd
+  onGripDownRef.current = onGripDown
+  onGripUpRef.current = onGripUp
+  onAxisChangedRef.current = onAxisChanged
+
   const { gl } = useThree()
 
   const onVRControllerConnected = event => {
@@ -197,12 +208,12 @@ const useVrControllers = ({ onSelectStart, onSelectEnd, onGripDown, onGripUp, on
     // TODO
     // controller.head = window.camera
 
-    controller.addEventListener('trigger press began', onSelectStart)
-    controller.addEventListener('trigger press ended', onSelectEnd)
-    controller.addEventListener('grip press began', onGripDown)
-    controller.addEventListener('grip press ended', onGripUp)
-    controller.addEventListener('thumbstick axes changed', onAxisChanged)
-    controller.addEventListener('thumbpad axes changed', onAxisChanged)
+    controller.addEventListener('trigger press began', (...rest) => onSelectStartRef.current(...rest))
+    controller.addEventListener('trigger press ended', (...rest) => onSelectEndRef.current(...rest))
+    controller.addEventListener('grip press began', (...rest) => onGripDownRef.current(...rest))
+    controller.addEventListener('grip press ended', (...rest) => onGripUpRef.current(...rest))
+    controller.addEventListener('thumbstick axes changed', (...rest) => onAxisChangedRef.current(...rest))
+    controller.addEventListener('thumbpad axes changed', (...rest) => onAxisChangedRef.current(...rest))
 
     const geometry = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, -1)])
     const material = new THREE.LineBasicMaterial({
@@ -237,14 +248,6 @@ const useVrControllers = ({ onSelectStart, onSelectEnd, onGripDown, onGripUp, on
     }
 
     controller.addEventListener('disconnected', event => {
-      // cleanup the controller
-      controller.removeEventListener('trigger press began', onSelectStart)
-      controller.removeEventListener('trigger press ended', onSelectEnd)
-      controller.removeEventListener('grip press began', onGripDown)
-      controller.removeEventListener('grip press ended', onGripUp)
-      controller.removeEventListener('thumbstick axes changed', onAxisChanged)
-      controller.removeEventListener('thumbpad axes changed', onAxisChanged)
-
       setControllers(state => state.filter(object3d => object3d.uuid === event.target.uuid))
     })
 
