@@ -183,74 +183,21 @@ const useAttachmentLoader = ({ sceneObjects, world }) => {
   return attachments
 }
 
-const SceneContent = ({
-  aspectRatio,
-  sceneObjects,
-  getModelData,
-  activeCamera,
-  world,
-  createObject,
-  updateObject,
-  deleteObjects,
-  duplicateObjects,
-  selectedBone,
-  selectBone,
-  updateCharacterSkeleton
-}) => {
-  const rStatsRef = useRef(null)
-  const xrOffset = useRef(null)
+const useVrControllers = ({ onSelectStart, onSelectEnd, onGripDown, onGripUp, onAxisChanged }) => {
+  const [controllers, setControllers] = useState([])
 
-  const [guiMode, setGuiMode] = useState('selection')
-  const [addMode, setAddMode] = useState(null)
-  const [virtualCamVisible, setVirtualCamVisible] = useState(true)
-  const [currentBoard, setCurrentBoard] = useState(null)
-  const [camExtraRot, setCamExtraRot] = useState(0)
-  const [teleportPos, setTeleportPos] = useState(null)
-  const [selectedObject, setSelectedObject] = useState(null)
-  const [XRControllers, setXRControllers] = useState({})
-  const [guiCamFOV, setGuiCamFOV] = useState(22)
-  const [hideArray, setHideArray] = useState([])
+  const onSelectStartRef = useRef()
+  const onSelectEndRef = useRef()
+  const onGripDownRef = useRef()
+  const onGripUpRef = useRef()
+  const onAxisChangedRef = useRef()
+  onSelectStartRef.current = onSelectStart
+  onSelectEndRef.current = onSelectEnd
+  onGripDownRef.current = onGripDown
+  onGripUpRef.current = onGripUp
+  onAxisChangedRef.current = onAxisChanged
 
-  const moveObjRef = useRef(null)
-  const rotateObjRef = useRef(null)
-  const isPressed = useRef(false)
-  const isGripped = useRef(false)
-
-  const moveCamRef = useRef(null)
-  const rotateCamRef = useRef(null)
-  const XRControllersRef = useRef({})
-  const intersectArray = useRef([])
-  const guiArray = useRef([])
-  const teleportArray = useRef([])
-  const teleportMode = useRef(false)
-  const initialCamPos = useRef()
-
-  // Why do I need to create ref to access updated state in some functions?
-  const guiModeRef = useRef(null)
-  const selectedObjRef = useRef(null)
-
-  // Rotate Bone
-  let isControllerRotatingCurrent = useRef(false)
-  let startingObjectQuaternion = useRef(null)
-  let startingDeviceOffset = useRef(null)
-  let startingObjectOffset = useRef(null)
-  let startingDeviceRotation = useRef(null)
-
-  XRControllersRef.current = XRControllers
-  guiModeRef.current = guiMode
-
-  const findParent = obj => {
-    while (obj) {
-      if (!obj.parent || obj.parent.type === 'Scene') {
-        return obj
-      }
-      obj = obj.parent
-    }
-
-    return null
-  }
-
-  const { gl, scene, camera, setDefaultCamera } = useThree()
+  const { gl } = useThree()
 
   const onVRControllerConnected = event => {
     let id = THREE.Math.generateUUID()
@@ -261,12 +208,12 @@ const SceneContent = ({
     // TODO
     // controller.head = window.camera
 
-    controller.addEventListener('trigger press began', onSelectStart)
-    controller.addEventListener('trigger press ended', onSelectEnd)
-    controller.addEventListener('grip press began', onGripDown)
-    controller.addEventListener('grip press ended', onGripUp)
-    controller.addEventListener('thumbstick axes changed', onAxisChanged)
-    controller.addEventListener('thumbpad axes changed', onAxisChanged)
+    controller.addEventListener('trigger press began', (...rest) => onSelectStartRef.current(...rest))
+    controller.addEventListener('trigger press ended', (...rest) => onSelectEndRef.current(...rest))
+    controller.addEventListener('grip press began', (...rest) => onGripDownRef.current(...rest))
+    controller.addEventListener('grip press ended', (...rest) => onGripUpRef.current(...rest))
+    controller.addEventListener('thumbstick axes changed', (...rest) => onAxisChangedRef.current(...rest))
+    controller.addEventListener('thumbpad axes changed', (...rest) => onAxisChangedRef.current(...rest))
 
     const geometry = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, -1)])
     const material = new THREE.LineBasicMaterial({
@@ -300,18 +247,90 @@ const SceneContent = ({
       hover: undefined
     }
 
-    controller.addEventListener('disconnected', function(event) {
-      controller.parent.remove(controller)
-
-      // Try if this works as expected?
-      const { id, ...controllers } = XRControllers
-      setXRControllers(controllers)
+    controller.addEventListener('disconnected', event => {
+      setControllers(state => state.filter(object3d => object3d.uuid === event.target.uuid))
     })
 
-    setXRControllers(prev => {
-      return { ...prev, [id]: controller }
-    })
+    setControllers(state => [ ...state, controller ])
   }
+
+  useEffect(() => {
+    console.log('ADD onVRControllerConnected')
+    window.addEventListener('vr controller connected', onVRControllerConnected)
+    return () => {
+      console.log('REMOVE onVRControllerConnected')
+      window.removeEventListener('vr controller connected', onVRControllerConnected)
+    }
+  }, [])
+
+  return controllers
+}
+
+const SceneContent = ({
+  aspectRatio,
+  sceneObjects,
+  getModelData,
+  activeCamera,
+  world,
+  createObject,
+  updateObject,
+  deleteObjects,
+  duplicateObjects,
+  selectedBone,
+  selectBone,
+  updateCharacterSkeleton
+}) => {
+  const rStatsRef = useRef(null)
+  const xrOffset = useRef(null)
+
+  const [guiMode, setGuiMode] = useState('selection')
+  const [addMode, setAddMode] = useState(null)
+  const [virtualCamVisible, setVirtualCamVisible] = useState(true)
+  const [currentBoard, setCurrentBoard] = useState(null)
+  const [camExtraRot, setCamExtraRot] = useState(0)
+  const [teleportPos, setTeleportPos] = useState(null)
+  const [selectedObject, setSelectedObject] = useState(null)
+  const [guiCamFOV, setGuiCamFOV] = useState(22)
+  const [hideArray, setHideArray] = useState([])
+
+  const moveObjRef = useRef(null)
+  const rotateObjRef = useRef(null)
+  const isPressed = useRef(false)
+  const isGripped = useRef(false)
+
+  const moveCamRef = useRef(null)
+  const rotateCamRef = useRef(null)
+  const intersectArray = useRef([])
+  const guiArray = useRef([])
+  const teleportArray = useRef([])
+  const teleportMode = useRef(false)
+  const initialCamPos = useRef()
+
+  // Why do I need to create ref to access updated state in some functions?
+  const guiModeRef = useRef(null)
+  const selectedObjRef = useRef(null)
+
+  // Rotate Bone
+  let isControllerRotatingCurrent = useRef(false)
+  let startingObjectQuaternion = useRef(null)
+  let startingDeviceOffset = useRef(null)
+  let startingObjectOffset = useRef(null)
+  let startingDeviceRotation = useRef(null)
+
+  guiModeRef.current = guiMode
+
+  const findParent = obj => {
+    while (obj) {
+      if (!obj.parent || obj.parent.type === 'Scene') {
+        return obj
+      }
+      obj = obj.parent
+    }
+
+    return null
+  }
+
+  const { gl, scene, camera, setDefaultCamera } = useThree()
 
   const updateGUIProp = e => {
     const { id, prop, value } = e.detail
@@ -344,39 +363,10 @@ const SceneContent = ({
 
   useEffect(() => {
     window.addEventListener('updateRedux', updateGUIProp)
-    window.addEventListener('vr controller connected', onVRControllerConnected)
     return () => {
       window.removeEventListener('updateRedux', updateGUIProp)
-      window.removeEventListener('vr controller connected', onVRControllerConnected)
     }
   }, [])
-
-  useRender(() => {
-    if (rStatsRef.current) {
-      rStatsRef.current('rAF').tick()
-      rStatsRef.current('FPS').frame()
-      rStatsRef.current().update()
-    }
-
-    THREE.VRController.update()
-
-    Object.values(XRControllersRef.current).forEach(controller => {
-      const intersections = getIntersections(controller, guiArray.current)
-      if (intersections.length > 0) {
-        let intersection = intersections[0]
-        if (intersection.object.userData.type === 'slider') {
-          controller.intersections = intersections
-        }
-      }
-
-      const object = controller.userData.selected
-      if (object && object.userData.type === 'character') {
-        constraintObjectRotation(controller)
-      }
-
-      if (controller.userData.bone) rotateBone(controller)
-    })
-  })
 
   const createHideArray = () => {
     const array = []
@@ -421,7 +411,7 @@ const SceneContent = ({
 
     if (intersect && intersect.distance < 10) {
       // console.log('try to teleport')
-      Object.values(XRControllers).forEach(controller => {
+      vrControllers.forEach(controller => {
         controller.dispatchEvent({ type: 'trigger press ended' })
       })
 
@@ -467,7 +457,7 @@ const SceneContent = ({
 
   const onSelectStart = event => {
     const controller = event.target
-    const otherController = Object.values(XRControllersRef.current).find(i => i.uuid !== controller.uuid)
+    const otherController = vrControllers.find(i => i.uuid !== controller.uuid)
     if (otherController && otherController.userData.selected) return
 
     if (teleportMode.current) {
@@ -799,7 +789,7 @@ const SceneContent = ({
 
   const onAxisChanged = event => {
     let selected = false
-    Object.values(XRControllersRef.current).forEach(controller => {
+    vrControllers.forEach(controller => {
       if (!selected) selected = controller.userData.selected ? controller : false
     })
 
@@ -893,7 +883,7 @@ const SceneContent = ({
     const hmdCam = xrOffset.current.children.filter(child => child.type === 'PerspectiveCamera')[0]
 
     if (event.axes[1] > 0.075) {
-      Object.values(XRControllersRef.current).forEach(controller => {
+      vrControllers.forEach(controller => {
         controller.dispatchEvent({ type: 'trigger press ended' })
       })
 
@@ -914,7 +904,7 @@ const SceneContent = ({
     }
 
     if (event.axes[1] < -0.075) {
-      Object.values(XRControllersRef.current).forEach(controller => {
+      vrControllers.forEach(controller => {
         controller.dispatchEvent({ type: 'trigger press ended' })
       })
 
@@ -944,7 +934,7 @@ const SceneContent = ({
     if (Math.abs(event.axes[0]) < Math.abs(event.axes[1])) return
 
     if (event.axes[0] > 0.075) {
-      Object.values(XRControllersRef.current).forEach(controller => {
+      vrControllers.forEach(controller => {
         controller.dispatchEvent({ type: 'trigger press ended' })
       })
 
@@ -955,7 +945,7 @@ const SceneContent = ({
     }
 
     if (event.axes[0] < -0.075) {
-      Object.values(XRControllersRef.current).forEach(controller => {
+      vrControllers.forEach(controller => {
         controller.dispatchEvent({ type: 'trigger press ended' })
       })
 
@@ -965,30 +955,6 @@ const SceneContent = ({
       })
     }
   }
-
-  useEffect(() => {
-    intersectArray.current = scene.children.filter(
-      child =>
-        (child instanceof THREE.Mesh || child instanceof THREE.Group) &&
-        (child.userData.type !== 'ground' && child.userData.type !== 'room' && child.userData.type !== 'camera')
-    )
-
-    guiArray.current = []
-    Object.values(XRControllers).forEach(controller => {
-      const gui = controller.children.filter(child => child.userData.type === 'gui')[0]
-
-      if (gui) {
-        gui.traverse(child => {
-          if (child.name === 'properties_container' || child.name === 'fov_slider') {
-            intersectArray.current.push(gui)
-            guiArray.current.push(gui)
-          }
-        })
-      }
-    })
-
-    teleportArray.current = scene.children.filter(child => child.userData.type === 'ground')
-  }, [XRControllers, sceneObjects])
 
   const onGripDown = event => {
     teleportMode.current = true
@@ -1019,6 +985,61 @@ const SceneContent = ({
     const controller = event.target
     controller.gripped = false
   }
+
+  const vrControllers = useVrControllers({
+    onSelectStart, onSelectEnd, onGripDown, onGripUp, onAxisChanged
+  })
+
+  useEffect(() => {
+    intersectArray.current = scene.children.filter(
+      child =>
+        (child instanceof THREE.Mesh || child instanceof THREE.Group) &&
+        (child.userData.type !== 'ground' && child.userData.type !== 'room' && child.userData.type !== 'camera')
+    )
+
+    guiArray.current = []
+    vrControllers.forEach(controller => {
+      const gui = controller.children.filter(child => child.userData.type === 'gui')[0]
+
+      if (gui) {
+        gui.traverse(child => {
+          if (child.name === 'properties_container' || child.name === 'fov_slider') {
+            intersectArray.current.push(gui)
+            guiArray.current.push(gui)
+          }
+        })
+      }
+    })
+
+    teleportArray.current = scene.children.filter(child => child.userData.type === 'ground')
+  }, [vrControllers, sceneObjects])
+
+  useRender(() => {
+    if (rStatsRef.current) {
+      rStatsRef.current('rAF').tick()
+      rStatsRef.current('FPS').frame()
+      rStatsRef.current().update()
+    }
+
+    THREE.VRController.update()
+
+    vrControllers.forEach(controller => {
+      const intersections = getIntersections(controller, guiArray.current)
+      if (intersections.length > 0) {
+        let intersection = intersections[0]
+        if (intersection.object.userData.type === 'slider') {
+          controller.intersections = intersections
+        }
+      }
+
+      const object = controller.userData.selected
+      if (object && object.userData.type === 'character') {
+        constraintObjectRotation(controller)
+      }
+
+      if (controller.userData.bone) rotateBone(controller)
+    })
+  }, false, [vrControllers])
 
   useEffect(() => {
     navigator
@@ -1088,14 +1109,14 @@ const SceneContent = ({
     >
       <SGCamera {...{ aspectRatio, activeCamera, setDefaultCamera, ...cameraState }} />
 
-      {Object.values(XRControllers).map((object, n) => {
+      {vrControllers.map((object, n) => {
         const handedness = object.getHandedness()
         const flipModel = handedness === 'right'
 
         return (
           <primitive key={n} object={object}>
             {handedness === 'right' && (
-              <GUI {...{ aspectRatio, guiMode, addMode, currentBoard, selectedObject, hideArray, virtualCamVisible, guiCamFOV, XRControllers }} />
+              <GUI {...{ aspectRatio, guiMode, addMode, currentBoard, selectedObject, hideArray, virtualCamVisible, guiCamFOV, vrControllers }} />
             )}
             <SGController
               {...{ flipModel, modelData: getModelData(controllerObjectSettings), ...controllerObjectSettings }}
