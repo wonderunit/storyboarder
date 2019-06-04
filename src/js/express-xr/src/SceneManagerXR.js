@@ -782,7 +782,10 @@ const SceneContent = ({
       updateObject(object.userData.id, {
         x: object.position.x,
         y: object.position.z,
-        z: object.position.y
+        z: object.position.y,
+        rotation: object.rotation.y,
+        roll: object.rotation.z,
+        tilt: object.rotation.x
       })
     } else {
       updateObject(object.userData.id, {
