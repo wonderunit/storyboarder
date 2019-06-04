@@ -707,6 +707,10 @@ const SceneContent = ({
         if (!objMaterial.emissive) return
         objMaterial.emissive.b = 0.15
       }
+    } else {
+      setSelectedObject(0)
+      selectedObjRef.current = null
+      setHideArray(createHideArray())
     }
   }
 
@@ -978,6 +982,10 @@ const SceneContent = ({
       const { id } = object
       setSelectedObject(id)
       selectedObjRef.current = scene.getObjectById(id)
+      setHideArray(createHideArray())
+    } else {
+      setSelectedObject(0)
+      selectedObjRef.current = null
       setHideArray(createHideArray())
     }
   }
