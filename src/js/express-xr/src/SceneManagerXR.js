@@ -537,7 +537,14 @@ const SceneContent = ({
         if (name.includes('_add')) {
           const mode = name.split('_')[0]
           const id = THREE.Math.generateUUID()
-          const newPoz = new THREE.Vector3()
+
+          const hmdCam = xrOffset.current.children.filter(child => child.type === 'PerspectiveCamera')[0]
+          let offsetVector = new THREE.Vector3(0, 0, -1)
+          offsetVector.applyMatrix4(new THREE.Matrix4().extractRotation(hmdCam.matrixWorld))
+          offsetVector.multiply(new THREE.Vector3(1, 0, 1)).normalize()
+          const newPoz = xrOffset.current.position.clone().add(hmdCam.position).add(offsetVector)
+
+          const rotation = new THREE.Vector2(offsetVector.x, offsetVector.z).normalize().angle() * -1 - Math.PI / 2
 
           switch (mode) {
             case 'camera':
@@ -548,10 +555,10 @@ const SceneContent = ({
 
                 type: 'camera',
                 fov: 22.25,
-                x: 0,
-                y: 6,
-                z: 2,
-                rotation: 0,
+                x: newPoz.x,
+                y: newPoz.z,
+                z: newPoz.y,
+                rotation: rotation,
                 tilt: 0,
                 roll: 0
               })
@@ -567,9 +574,9 @@ const SceneContent = ({
                 height: 1,
                 depth: 1,
                 x: newPoz.x,
-                y: newPoz.y,
-                z: newPoz.z,
-                rotation: { x: 0, y: 0, z: 0 }, //Math.random() * Math.PI * 2,
+                y: newPoz.z,
+                z: 0,
+                rotation: { x: 0, y: rotation, z: 0 }, //Math.random() * Math.PI * 2,
 
                 visible: true
               })
@@ -583,9 +590,9 @@ const SceneContent = ({
                 height: 1.8,
                 model: 'adult-male',
                 x: newPoz.x,
-                y: newPoz.y,
-                z: newPoz.z,
-                rotation: 0, //newPoz.rotation,
+                y: newPoz.z,
+                z: 0,
+                rotation: rotation, //newPoz.rotation,
                 headScale: 1,
 
                 morphTargets: {
@@ -606,9 +613,9 @@ const SceneContent = ({
               createObject({
                 id,
                 type: 'light',
-                x: 0,
-                y: 0,
-                z: 2,
+                x: newPoz.x,
+                y: newPoz.z,
+                z: newPoz.y,
                 rotation: 0,
                 tilt: 0,
                 intensity: 0.8,
