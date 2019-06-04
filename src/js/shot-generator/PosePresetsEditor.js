@@ -31,6 +31,7 @@ const ModelLoader = require('../services/model-loader')
 require('../vendor/three/examples/js/utils/SkeletonUtils')
 require('../vendor/OutlineEffect.js')
 
+const defaultPosePresets = require('../shared/reducers/shot-generator-presets/poses.json')
 const presetsStorage = require('../shared/store/presetsStorage')
 
 const comparePresetNames = (a, b) => {
@@ -364,7 +365,18 @@ React.memo(({
           // get updated state (with newly created pose preset)
           withState((dispatch, state) => {
             // ... and save it to the presets file
-            presetsStorage.savePosePresets({ poses: state.presets.poses })
+            let denylist = Object.keys(defaultPosePresets)
+            let filteredPoses = Object.values(state.presets.poses)
+              .filter(pose => denylist.includes(pose.id) === false)
+              .reduce(
+                (coll, pose) => {
+                  coll[pose.id] = pose
+                  return coll
+                },
+                {}
+              )
+            console.log('saving', { filteredPoses })
+            presetsStorage.savePosePresets({ poses: filteredPoses })
           })
         })
       }
