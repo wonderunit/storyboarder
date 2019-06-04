@@ -21,7 +21,9 @@ const h = require('../utils/h')
 
 const {
   updateObject,
-  createPosePreset
+  createPosePreset,
+
+  getSceneObjects
 } = require('../shared/reducers/shot-generator')
 
 const ModelLoader = require('../services/model-loader')
@@ -327,7 +329,7 @@ React.memo(({
       if (name != null && name != '' && name != ' ') {
         withState((dispatch, state) => {
           // get the latest skeleton data
-          let sceneObject = state.sceneObjects[id]
+          let sceneObject = getSceneObjects(state)[id]
           let skeleton = sceneObject.skeleton
           let model = sceneObject.model
 
