@@ -375,7 +375,6 @@ React.memo(({
                 },
                 {}
               )
-            console.log('saving', { filteredPoses })
             presetsStorage.savePosePresets({ poses: filteredPoses })
           })
         })
