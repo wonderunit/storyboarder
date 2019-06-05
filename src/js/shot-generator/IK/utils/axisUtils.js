@@ -25,13 +25,13 @@ var RESETQUAT = new THREE.Quaternion();
  * @param {THREE.BONE} rootBone
  */
 
-module.exports = function setZForward(rootBone) {
+module.exports = function setZDirecion(rootBone, zAxis) {
     var worldPos = {};
     getOriginalWorldPositions(rootBone, worldPos);
-    updateTransformations(rootBone, worldPos);
+    updateTransformations(rootBone, worldPos, zAxis);
 }
 
-function updateTransformations(parentBone, worldPos) {
+function updateTransformations(parentBone, worldPos, zAxis) {
 
     var averagedDir = new THREE.Vector3();
     parentBone.children.forEach((childBone) => {
@@ -48,7 +48,7 @@ function updateTransformations(parentBone, worldPos) {
     //get the child bone position in local coordinates
     var childBoneDir = parentBone.worldToLocal(averagedDir).normalize();
     //set the direction to child bone to the forward direction
-    var quat = getAlignmentQuaternion(FORWARD, childBoneDir);
+    var quat = getAlignmentQuaternion(zAxis, childBoneDir);
     if (quat) {
         //rotate parent bone towards child bone
         parentBone.quaternion.premultiply(quat);
@@ -64,7 +64,7 @@ function updateTransformations(parentBone, worldPos) {
     //parentBone.rotateX();
     parentBone.updateMatrixWorld();
     parentBone.children.forEach((childBone) => {
-        updateTransformations(childBone, worldPos);
+        updateTransformations(childBone, worldPos, zAxis);
     })
 }
 

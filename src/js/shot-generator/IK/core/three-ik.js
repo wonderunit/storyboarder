@@ -8,8 +8,29 @@ var t1 = new three.Vector3();
 var t2 = new three.Vector3();
 var t3 = new three.Vector3();
 var m1 = new three.Matrix4();
+let currentSkinnedMesh = null;
+let currentChains = null;
+function showArmDir()
+{
+  //console.log("Start showing arm dir");
+  let joints = currentChains[1].joints;
+  let boneWorldPosition = new THREE.Vector3();
+  let secondBoneWorldPosition = new THREE.Vector3();
+  joints[0].bone.getWorldPosition(boneWorldPosition);
+  joints[1].bone.getWorldPosition(secondBoneWorldPosition);
+  let direction = new THREE.Vector3().subVectors(secondBoneWorldPosition, boneWorldPosition).normalize();
+  //console.log( boneWorldPosition);
+  //console.log( secondBoneWorldPosition.clone());
+  //console.log(direction);
+  //console.log("End showing arm dir");
+}
+
 function getWorldPosition(object, target) {
-  return  object.getWorldPosition(target); //target.setFromMatrixPosition(object.matrixWorld);
+
+  object.getWorldPosition(target);
+  //if(object.name === "LeftArm" || object.name === "LeftForeArm")
+  //console.log(target);
+  return target; //target.setFromMatrixPosition(object.matrixWorld);
 }
 
 function getCentroid(positions, target) {
@@ -40,6 +61,11 @@ function getCentroid(positions, target) {
   return target;
 }
 let firstRun = true;
+  const Z_AXIS$1 = new three.Vector3(0, 0, -1);
+
+  const Z_AXIS = new three.Vector3(0, 0, 1);
+  const Y_AXIS = new three.Vector3(0, 1, 0);
+  const X_AXIS = new three.Vector3(1, 0, 0);
 function setQuaternionFromDirection(direction, up, target, scale) {
   var x = t1;
   var y = t2;
@@ -59,8 +85,40 @@ function setQuaternionFromDirection(direction, up, target, scale) {
   }
   x.normalize();
   y.crossVectors(z, x);
-  m.makeBasis(x, y, z);
-  target.setFromRotationMatrix(m);
+  y.normalize();
+
+  //console.log("new basis");
+  //console.log(x);
+  //console.log(y);
+  //console.log(z);
+  //console.log("new basis");
+
+  //m.makeBasis(new three.Vector3(1, 0, 0), new three.Vector3(0, 1, 0), new three.Vector3(0, 0, 1));
+  el[0] = x.x;el[4] = y.x;el[8] = z.x;
+  el[1] = x.y;el[5] = y.y;el[9] = z.y;
+  el[2] = x.z;el[6] = y.z;el[10] = z.z;
+  //m.makeRotationAxis (new three.Vector3(1, 0, 0), -1.5708);
+
+/*  let quaternion = new three.Quaternion().setFromRotationMatrix(m);
+  let adjustAxis = new three.Vector3().crossVectors(Z_AXIS, z).normalize();
+  let adjustAngle = z.angleTo(adjustAxis);
+  console.log(Z_AXIS);
+  console.log(z);
+  console.log(adjustAxis);
+  console.log(adjustAngle);
+  //target.inverse();
+  if(adjustAngle)
+  {
+    let adjustQuat = new three.Quaternion().setFromAxisAngle(adjustAxis, adjustAngle);
+    target = adjustQuat.clone();
+    //target.normalize();
+
+  }
+  else {
+    console.log("Created from matrix");*/
+    target.setFromRotationMatrix(m);
+
+  //}
 }
 
 function transformPoint(vector, matrix, target) {
@@ -332,9 +390,6 @@ var slicedToArray = function () {
   };
 }();
 
-let Z_AXIS = new three.Vector3(0, 0, 1);
-let Y_AXIS = new three.Vector3(0, 1, 0);
-let X_AXIS = new three.Vector3(1, 0, 0);
 
 const jointSpace = new three.Matrix4();
 jointSpace.makeBasis(X_AXIS, Y_AXIS, Z_AXIS);
@@ -427,16 +482,20 @@ var IKJoint = function () {
             constraintApplied = constraintApplied || applied;
           }
         }
-
-        for (var _iterator = this.ikConstraints[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true)
+        if(this.bone.name == "LeftArm")
         {
-          var constraint = _step.value;
-          if (constraint && constraint.applyConstraint)
-          {
-            var applied = constraint.applyConstraint(this);
-            constraintApplied = constraintApplied || applied;
-          }
+          //console.log(this._direction);
         }
+
+        //for (var _iterator = this.ikConstraints[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true)
+        //{
+        //  var constraint = _step.value;
+        //  if (constraint && constraint.applyConstraint)
+        //  {
+        //    var applied = constraint.applyConstraint(this);
+        //    constraintApplied = constraintApplied || applied;
+        //  }
+        //}
       } catch (err) {
         _didIteratorError = true;
         _iteratorError = err;
@@ -521,9 +580,9 @@ var IKJoint = function () {
     value: function _applyWorldPosition()
     {
       var direction = new three.Vector3().copy(this._direction);
-      if(this.bone.name === "LeftArm")
+      if(this.bone.name === "LeftArm" || this.bone.name === "Spine")
       {
-        console.log(direction.clone());
+        //console.log(direction.clone());
       }
       var position = new three.Vector3().copy(this._getWorldPosition());
       //position.applyMatrix4(jointSpace);
@@ -537,32 +596,27 @@ var IKJoint = function () {
         var inverseParent = new three.Matrix4().getInverse(worldMatrix);
 
         position.applyMatrix4(inverseParent);
+        let parentGlobal = new three.Vector3();
+        this.bone.getWorldPosition(parentGlobal);
+        if(this.bone.name === "LeftArm" || this.bone.name === "Spine")
+        {
+          let x = new three.Vector3();
+          let y = new three.Vector3();
+          let z = new three.Vector3();
+          this.bone.matrixWorld.extractBasis(x, y, z);
+        }
         this.bone.position.copy(position);
         this._updateMatrixWorld();
+        if(this.bone.name === "LeftArm" || this.bone.name === "Spine")
+        {
+          //console.log(direction);
+          ///console.log(this.bone.quaternion.clone());
+          //console.log(direction);
+        }
         this._worldToLocalDirection(direction);
 
-        //inverseParent = new three.Matrix4().getInverse(worldMatrix);
-        //direction.applyMatrix4(inverseParent);
-        //let positionik = new three.Vector3();
-        //let quaternion = new three.Quaternion();
-        //let scale = new three.Vector3();
-        //worldMatrix.decompose(positionik, quaternion, scale);
-
-        //direction.set(direction.z, direction.y, direction.x);
-
-        //direction.set(direction.x, -direction.y, -direction.z);
-
-
-        if(this.bone.name === "LeftArm")
-        {
-          console.log(this.bone.quaternion.clone());
-          console.log(direction);
-        }
         setQuaternionFromDirection(direction, Y_AXIS, this.bone.quaternion);
-        if(this.bone.name === "LeftArm")
-        {
-          console.log(this.bone.quaternion.clone());
-        }
+        showArmDir();
 
         this.bone.rotation.z = 0;
       }
@@ -572,6 +626,7 @@ var IKJoint = function () {
       }
       this.bone.updateMatrix();
       this._updateMatrixWorld();
+      showArmDir();
     }
   }, {
     key: '_getWorldDistance',
@@ -625,7 +680,13 @@ var IKChain = function () {
           var previousPreviousJoint = this.joints[this.joints.length - 3];
           previousJoint._updateMatrixWorld();
           previousJoint._updateWorldPosition();
+
           joint._updateWorldPosition();
+   /*       if(previousJoint.bone.name === "LeftArm")
+          {
+            let direction = previousJoint._getWorldDirection(joint);
+            console.log(direction);
+          }*/
 
           var distance = previousJoint._getWorldDistance(joint);
           if (distance === 0) {
@@ -678,6 +739,7 @@ var IKChain = function () {
           joint._setDistance(distance);
           joint._updateWorldPosition();
           var direction = previousJoint._getWorldDirection(joint);
+
           previousJoint._originalDirection = new three.Vector3().copy(direction);
           joint._originalDirection = new three.Vector3().copy(direction);
           if (previousPreviousJoint)
@@ -755,17 +817,24 @@ var IKChain = function () {
   }, {
     key: '_forward',
     value: function _forward() {
+
+
       this.origin.copy(this.base._getWorldPosition());
       if (this.target) {
         this._targetPosition.setFromMatrixPosition(this.target.matrixWorld);
+
         this.effector._setWorldPosition(this._targetPosition);
       } else if (!this.joints[this.joints.length - 1]._isSubBase) {
         return;
       }
       for (var i = 1; i < this.joints.length; i++) {
+        let prevJoint = this.joints[i-1];
         var joint = this.joints[i];
         if (joint._isSubBase) {
+
+          var direction = prevJoint._getWorldDirection(joint[i]);
           joint._applySubBasePositions();
+
         }
       }
       for (var _i = this.joints.length - 1; _i > 0; _i--) {
@@ -795,14 +864,14 @@ var IKChain = function () {
         var nextJoint = this.joints[i + 1];
         var jointWorldPosition = joint._getWorldPosition();
         //jointWorldPosition.applyMatrix4(inversedJointSpace);
-        if(joint.bone.name === "LeftArm")
-        {
-          console.log(jointWorldPosition);
-        }
+
         var direction = nextJoint._getWorldDirection(joint);
        // direction.applyMatrix4(inversedJointSpace);
         joint._setDirection(direction);
         joint._applyConstraints();
+
+
+        //console.log("Direction: ", joint.bone.name, direction);
         direction.copy(joint._direction);
         if (!(this.base === joint && joint._isSubBase)) {
           joint._applyWorldPosition();
@@ -814,7 +883,6 @@ var IKChain = function () {
           }
           nextJoint._applyWorldPosition();
         }
-
       }
 
       return this._getDistanceFromTarget();
@@ -830,6 +898,7 @@ var IK = function () {
     this._needsRecalculated = true;
     this.isIK = true;
     this._orderedChains = null;
+    this.skinnedMesh = null;
   }
   createClass(IK, [{
     key: 'add',
@@ -921,6 +990,10 @@ var IK = function () {
   }, {
     key: 'solve',
     value: function solve() {
+      // Passing Hips bone to set Z
+      // In order to change for whole skeleton
+
+      currentChains = this.chains;
       if (!this._orderedChains) {
         this.recalculate();
       }
@@ -933,13 +1006,42 @@ var IK = function () {
           var iterations = 1;
           while (iterations > 0) {
             for (var i = subChains.length - 1; i >= 0; i--) {
+              let joints = subChains[i].joints;
+              //console.log("Start " + joints[0].bone.name)
+              var direction = joints[0]._getWorldDirection(joints[1]);
+              if(joints[0].bone.name === "LeftArm" || joints[0].bone.name === "Spine" )
+              {
+                let boneWorldPosition = new THREE.Vector3();
+                let secondBoneWorldPosition = new THREE.Vector3();
+                joints[0].bone.getWorldPosition(boneWorldPosition);
+                joints[1].bone.getWorldPosition(secondBoneWorldPosition);
+               // console.log( boneWorldPosition);
+               // console.log( secondBoneWorldPosition.clone());
+               // console.log(direction);
+              }
               subChains[i]._updateJointWorldPositions();
+              direction = joints[0]._getWorldDirection(joints[1]);
+              if(joints[0].bone.name === "LeftArm"|| joints[0].bone.name === "Spine")
+              {
+                let boneWorldPosition = new THREE.Vector3();
+                let secondBoneWorldPosition = new THREE.Vector3();
+                joints[0].bone.getWorldPosition(boneWorldPosition);
+                joints[1].bone.getWorldPosition(secondBoneWorldPosition);
+                let dir = new THREE.Vector3().subVectors(secondBoneWorldPosition, boneWorldPosition).normalize();
+                //console.log( boneWorldPosition);
+                //console.log( secondBoneWorldPosition);
+                //console.log(direction);
+              }
+              //console.log("Start " + joints[0].bone.name)
             }
             for (var _i = subChains.length - 1; _i >= 0; _i--) {
+              //console.log("second");
+
               subChains[_i]._forward();
             }
             var withinTolerance = true;
             for (var _i2 = 0; _i2 < subChains.length; _i2++) {
+              //console.log("third");
               var distanceFromTarget = subChains[_i2]._backward();
               if (distanceFromTarget > this.tolerance) {
                 withinTolerance = false;
@@ -966,17 +1068,24 @@ var IK = function () {
           }
         }
       }
+      //setZCoordinate(this.chains[0].joints[0].bone.parent, Z_AXIS$1);
     }
   }, {
     key: 'getRootBone',
     value: function getRootBone() {
       return this.chains[0].base.bone;
     }
-  }]);
+  },
+    {
+      key: 'setSkinnedMesh',
+      value: function setSkinnedMesh(skinnedMesh) {
+        this.skinnedMesh = skinnedMesh;
+        currentSkinnedMesh = skinnedMesh;
+      }
+    }]);
   return IK;
 }();
 
-var Z_AXIS$1 = new three.Vector3(0, 0, -1);
 var t1$1 = new three.Vector3();
 var t2$1 = new three.Vector3();
 var t3$1 = new three.Vector3();
@@ -1013,6 +1122,73 @@ var IKHingeConstraint = function () {
   return IKHingeConstraint;
 }();
 
+//#region Set Z coordinate
+const t = new three.Vector3();
+const q = new three.Quaternion();
+const p = new three.Plane();
+var RESETQUAT = new three.Quaternion();
+function setZCoordinate(rootBone, zForward) {
+    var worldPos = {};
+    getOriginalWorldPositions(rootBone, worldPos);
+    updateTransformations(rootBone, worldPos, zForward);
+  }
+
+  function updateTransformations(parentBone, worldPos, zForward) {
+
+    var averagedDir = new THREE.Vector3();
+    parentBone.children.forEach((childBone) => {
+      //average the child bone world pos
+      var childBonePosWorld = worldPos[childBone.id];
+      averagedDir.add(childBonePosWorld);
+    });
+
+    averagedDir.multiplyScalar(1/(parentBone.children.length));
+
+    //set quaternion
+    parentBone.quaternion.copy(RESETQUAT);
+    parentBone.updateMatrixWorld();
+    //get the child bone position in local coordinates
+    var childBoneDir = parentBone.worldToLocal(averagedDir).normalize();
+    //set the direction to child bone to the forward direction
+    var quat = getAlignmentQuaternion(zForward, childBoneDir);
+    if (quat) {
+      //rotate parent bone towards child bone
+      parentBone.quaternion.premultiply(quat);
+      parentBone.updateMatrixWorld();
+      //set child bone position relative to the new parent matrix.
+      parentBone.children.forEach((childBone) => {
+        var childBonePosWorld = worldPos[childBone.id].clone();
+        parentBone.worldToLocal(childBonePosWorld);
+        childBone.position.copy(childBonePosWorld);
+      });
+    }
+
+    //parentBone.rotateX();
+    parentBone.updateMatrixWorld();
+    parentBone.children.forEach((childBone) => {
+      updateTransformations(childBone, worldPos, zForward);
+    })
+  }
+
+  function getAlignmentQuaternion(fromDir, toDir) {
+    const adjustAxis = t.crossVectors(fromDir, toDir).normalize();
+    const adjustAngle = fromDir.angleTo(toDir);
+    if (adjustAngle) {
+      const adjustQuat = q.setFromAxisAngle(adjustAxis, adjustAngle);
+      return adjustQuat;
+    }
+    return null;
+  }
+
+  function getOriginalWorldPositions(rootBone, worldPos) {
+    rootBone.children.forEach((child) => {
+      var childWorldPos = child.getWorldPosition(new THREE.Vector3());
+      worldPos[child.id] = childWorldPos;
+      getOriginalWorldPositions(child, worldPos);
+    })
+  }
+
+  //#endregion
 var BoneHelper = function (_Object3D) {
   inherits(BoneHelper, _Object3D);
   function BoneHelper(height, boneSize, axesSize) {

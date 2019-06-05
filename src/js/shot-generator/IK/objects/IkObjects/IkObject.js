@@ -2,6 +2,7 @@ const {IK, IKJoint}  = require("../../core/three-ik");
 const THREE = require( "three");
 const setZForward = require( "../../utils/axisUtils");
 const ChainObject = require( "./ChainObject");
+const SkeletonUtils = require("../../utils/SkeletonUtils");
 
 // IKObject is class which applies ik onto skeleton
 class IkObject
@@ -15,6 +16,9 @@ class IkObject
         this.applyingOffset = false;
         this.isEnabledIk = false;
         this.controlTargets = [];
+        this.originalObject = null;
+        this.clonedObject = null;
+        this.ikBonesName = [];
     }
 
     // Takes skeleton and target for it's limbs
@@ -22,13 +26,25 @@ class IkObject
     {
         this.ik = new IK();
         let chains = [];
-        this.rigMesh = skinnedMesh;
+
+        let clonedSkeleton = SkeletonUtils.clone(objectSkeleton);
+        console.log(objectSkeleton);
+        console.log(clonedSkeleton);
+
+        this.originalObject = objectSkeleton;
+        this.clonedObject = clonedSkeleton;
+
+        this.rigMesh = clonedSkeleton.children[1];
         let rigMesh = this.rigMesh;
+        this.ik.setSkinnedMesh(skinnedMesh);
+
+
         let skeleton = null;
         this.controlTargets = controlTarget[0];
         console.log(scene);
-        console.log(objectSkeleton);
-        this.addParentToControl(objectSkeleton.uuid);
+        //console.log(objectSkeleton);
+        //console.log(skinnedMesh.clone());
+        this.addParentToControl(clonedSkeleton.uuid);
         let chainObjects = [];
         this.chainObjects = chainObjects;
         this.hipsControlTarget = this.controlTargets[5];
@@ -39,12 +55,11 @@ class IkObject
         chainObjects.push(new ChainObject("LeftUpLeg", "LeftFoot", this.controlTargets[3]));
         chainObjects.push(new ChainObject("RightUpLeg", "RightFoot", this.controlTargets[4]));
         // Goes through all scene objects
-        objectSkeleton.traverse((object) =>
+        clonedSkeleton.traverse((object) =>
         {
             // Searches only bones object
             if(object instanceof THREE.Bone)
             {
-
                 // Finds skeleton for skeletonHelper
                 if(skeleton === null)
                 {
@@ -63,14 +78,31 @@ class IkObject
                 if(object.name === "Hips")
                 {
                     this.hips = object;
-                    setZForward(object);
+                    let originalMatrix = object.matrix.clone(true);
+
+                    //skinnedMesh.rotation.set(0, 0, 0);
+                    //skinnedMesh.geometry.rotateX(-Math.PI/2);
+
+                    setZForward(object, new THREE.Vector3(0, 0, 1));
                     object.updateWorldMatrix(true, true);
                     rigMesh.bind(rigMesh.skeleton);
 
+
+                    //console.log(skinnedMesh);
+//
+                   // setZForward(object, new THREE.Vector3(0, 0, -1));
+                   // object.matrix.set(originalMatrix);
+                   // object.updateWorldMatrix(true, true);
+                   // rigMesh.bind(rigMesh.skeleton);
+//
+                    //setZForward(object, new THREE.Vector3(0, 0, 1));
+                    //object.updateWorldMatrix(true, true);
+                    //rigMesh.bind(rigMesh.skeleton);
                     let objectWorld = new THREE.Vector3();
                     object.getWorldPosition(objectWorld);
                     this.hipsControlTarget.target.position.copy(objectWorld);
                 }
+
                 // Goes through all chain objects to find with which we are working
                 chainObjects.forEach((chainObject) =>
                 {
@@ -99,7 +131,7 @@ class IkObject
 
                             chainObject.isChainObjectStarted = false;
                         }
-
+                        this.ikBonesName.push(object.name);
                         // Creates joint by passing current bone and its constraint
                         let joint = new IKJoint(object, {});
                         let globaPose = new THREE.Vector3();
@@ -152,19 +184,19 @@ class IkObject
     // Ik solver overrides all changes if applied before it's fired
     lateUpdate()
     {
-        let hipsTarget = this.hipsControlTarget.target;
-        // Sets back position when offset is not changing
-        // When we are changing back position offset between hips and back shouldn't be applied
-        if(!this.applyingOffset)
-        {
-            let backTarget = this.chainObjects[0].controlTarget.target;
-            let hipsPosition = hipsTarget.position.clone();
-            let result = hipsPosition.add(this.backOffset);
-            backTarget.position.copy(result);
-        }
-        // Follows hips target
-        let targetPosition = hipsTarget.position.clone();
-        this.hips.parent.worldToLocal(targetPosition);
+        //let hipsTarget = this.hipsControlTarget.target;
+        //// Sets back position when offset is not changing
+        //// When we are changing back position offset between hips and back shouldn't be applied
+        //if(!this.applyingOffset)
+        //{
+        //    let backTarget = this.chainObjects[0].controlTarget.target;
+        //    let hipsPosition = hipsTarget.position.clone();
+        //    let result = hipsPosition.add(this.backOffset);
+        //    backTarget.position.copy(result);
+        //}
+        //// Follows hips target
+        //let targetPosition = hipsTarget.position.clone();
+        //this.hips.parent.worldToLocal(targetPosition);
        // this.hips.position.copy(targetPosition);
     }
 
