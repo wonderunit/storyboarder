@@ -1273,7 +1273,7 @@ const loadBoardUI = async () => {
       grid: state.toolbar.grid,
       center: state.toolbar.center,
       thirds: state.toolbar.thirds,
-      perspective: state.toolbar.perspective
+      perspective: false // state.toolbar.perspective
     })
 
     // connect to captions
