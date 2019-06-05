@@ -329,20 +329,29 @@ class RagDoll extends IkObject
 
     applyChangesToOriginal()
     {
-        let clonedSkin = this.clonedObject.children[1];
-        let originalSkin = this.originalObject.children[1];
-        let clonedBones = clonedSkin.skeleton.bones;
-        let originalBones = originalSkin.skeleton.bones;
+         let clonedSkin = this.clonedObject.children[1];
+         let originalSkin = this.originalObject.children[1];
+         let clonedBones = clonedSkin.skeleton.bones;
+         let originalBones = originalSkin.skeleton.bones;
 
-        let cloneHips = this.clonedObject.children[0];
-        let originalHips = this.originalObject.children[0];
-        let cloneBoneMatrix = cloneHips.matrix;
-        let inverseCloneBoneMatrix = new THREE.Matrix4().getInverse(cloneBoneMatrix);
-       // originalHips.rotateX(-Math.PI/2);
-        let originalHipsQuaternion = originalHips.quaternion;
-        originalHips.applyMatrix(inverseCloneBoneMatrix);
-        // originalHips.rotation.x = Math.PI/2;
-        originalHips.updateMatrixWorld(true, true);
+         let cloneHips = this.clonedObject.children[0];
+         let originalHips = this.originalObject.children[0];
+         let cloneBoneMatrix = cloneHips.matrix;
+         let inverseCloneBoneMatrix = new THREE.Matrix4().getInverse(cloneBoneMatrix);
+         // originalHips.rotateX(-Math.PI/2);
+         //setZForward(cloneHips, new THREE.Vector3(0, 0, -1));
+         //let hipsClone = this.originalObject.clone(true);
+
+         //setZForward(hipsClone.children[0], new THREE.Vector3(0, 0, 1));
+
+         //console.log("Original Hips", hipsClone.clone());
+         console.log("Cloned Hips", cloneHips.clone());
+        // let originalHipsQuaternion = originalHips.quaternion;
+         originalHips.applyMatrix(inverseCloneBoneMatrix);
+         originalHips.rotation.x = Math.PI/2;
+         originalHips.updateMatrixWorld(true, true);
+
+
         for (let i = 0; i < clonedBones.length; i++)
         {
 
@@ -353,37 +362,23 @@ class RagDoll extends IkObject
             {
                 continue;
             }
-            if(originalBone.name === "LeftArm")
-            {
-
-            }
             //originalBone.position.set(cloneBone.position.x, cloneBone.position.z, cloneBone.position.y);
+           //let inverseQuaternion = cloneBone.quaternion.clone().inverse();
             originalBone.quaternion.copy(cloneBone.quaternion);
             //console.log(this.chainObjects);
-            originalBone.rotation.set(originalBone.rotation.x, originalBone.rotation.z, -originalBone.rotation.y);
-            if(this.chainObjects.some((chainObject) => chainObject.baseObjectName === originalBone.name))
+            originalBone.rotation.set(cloneBone.rotation.x, cloneBone.rotation.z, -cloneBone.rotation.y);
+
+            if(originalBone.name === "LeftLeg")
             {
                 //originalBone.rotateX(Math.PI);
-                console.log("Rotated");
+                //originalBone.updateMatrixWorld(true, true);
             }
-
-            //originalBone.rotation.z = 0;
-            //originalBone.rotateX(Math.PI/2);
-
-
-            //originalBone.updateMatrixWorld(true);
         }
 
         originalHips.applyMatrix(cloneBoneMatrix);
-        originalHips.quaternion.copy(originalHipsQuaternion);
-        //originalHips.rotation.x = -originalHips.rotation.x;
-        //originalHips.rotation.y = -originalHips.rotation.y;
-        //originalHips.rotation.z = -originalHips.rotation.z;
-       // originalHips.children[0].rotateX(-Math.PI/2);
-        //originalHips.children[0].rotateX(-Math.PI/2);
+        //originalHips.quaternion.copy(originalHipsQuaternion);
         originalHips.updateMatrixWorld(true, true);
-        //this.originalObject.rotation.set(-Math.PI/2, this.originalObject.rotation.y, this.originalObject.rotation.z);
-        //this.originalObject.updateMatrixWorld(true, true);
+        //setZForward(cloneHips, new THREE.Vector3(0, 0, 1));
         console.log(this.clonedObject);
         console.log(this.originalObject);
     }
