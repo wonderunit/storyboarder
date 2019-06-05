@@ -45,7 +45,7 @@ require('./lib/VRController')
 const RStats = require('./lib/rStats')
 require('./lib/rStats.extras')
 
-const applyDeviceQuaternion = require('./utils/apply-device-quaternion-xr')
+const applyDeviceQuaternion = require('../../shot-generator/apply-device-quaternion')
 
 const loadingManager = new THREE.LoadingManager()
 const objLoader = new THREE.OBJLoader2(loadingManager)
@@ -450,7 +450,8 @@ const SceneContent = ({
       startingObjectOffset: startingObjectOffset.current,
       startingObjectQuaternion: startingObjectQuaternion.current,
       deviceQuaternion,
-      camera
+      camera,
+      isXRController: true
     })
 
     target.quaternion.copy(objectQuaternion.normalize())
