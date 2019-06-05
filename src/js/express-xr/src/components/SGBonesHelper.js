@@ -353,6 +353,8 @@ function BonesHelper( object, object3D, { boneLengthScale = 1, cacheKey } ) {
         createdHelper = med.object        
       }
 
+      // scaleC being 100 causes bone cones to appear massive
+      scaleC = new THREE.Vector3(1, 1, 1)
       let boneLength = posA.distanceTo(posB) * scaleC.y// / scaleA.y
       let boneWidth
 
@@ -385,11 +387,11 @@ function BonesHelper( object, object3D, { boneLengthScale = 1, cacheKey } ) {
 
       this.cones[boneIndex]= new THREE.Mesh()
 
-      let coneGeom = new THREE.Mesh( geometry.clone(), s_material.clone() )
+      // let coneGeom = new THREE.Mesh( geometry.clone(), s_material.clone() )
       let hitMesh = new THREE.Mesh(hit_geometry, hit_material)
 
-      coneGeom.position.y = boneLength / 2 + boneWidth / 60
-      this.cones[boneIndex].add( coneGeom )
+      // coneGeom.position.y = boneLength / 2 + boneWidth / 60
+      // this.cones[boneIndex].add( coneGeom )
       this.cones[boneIndex] = new THREE.Mesh( geometry.clone(), s_material.clone() )
 
       this.cones[boneIndex].geometry.applyMatrix(new Matrix4().makeTranslation(0, boneLength/2+boneWidth/60, 0))
