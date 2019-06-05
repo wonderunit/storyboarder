@@ -1029,6 +1029,7 @@ const SceneContent = ({
     })
 
     teleportArray.current = scene.children.filter(child => child.userData.type === 'ground')
+    setHideArray(createHideArray())
   }, [vrControllers, sceneObjects])
 
   useRender(() => {
