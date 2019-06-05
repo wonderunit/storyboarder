@@ -45,7 +45,7 @@ require('./lib/VRController')
 const RStats = require('./lib/rStats')
 require('./lib/rStats.extras')
 
-const applyDeviceQuaternion = require('../../shot-generator/apply-device-quaternion')
+const applyDeviceQuaternion = require('./utils/apply-device-quaternion-xr')
 
 const loadingManager = new THREE.LoadingManager()
 const objLoader = new THREE.OBJLoader2(loadingManager)
