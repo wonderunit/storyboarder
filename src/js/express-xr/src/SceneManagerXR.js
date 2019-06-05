@@ -646,8 +646,6 @@ const SceneContent = ({
         return
       }
 
-      if (guiModeRef.current !== 'selection') return
-
       if (intersection.object.userData.type === 'hitter' && intersection.object.parent.userData.character) {
         if (!intersection.object.parent.userData.character) return
         intersection.object = intersection.object.parent.userData.character
@@ -658,6 +656,7 @@ const SceneContent = ({
       setSelectedObject(id)
       selectedObjRef.current = scene.getObjectById(id)
       setHideArray(createHideArray())
+      setGuiMode('selection')
 
       if (object.userData.type === 'character') {
         if (object.userData.name === 'character-container') object = object.children[0]
@@ -968,6 +967,7 @@ const SceneContent = ({
       setSelectedObject(id)
       selectedObjRef.current = scene.getObjectById(id)
       setHideArray(createHideArray())
+      setGuiMode('selection')
     } else {
       setSelectedObject(0)
       selectedObjRef.current = null
