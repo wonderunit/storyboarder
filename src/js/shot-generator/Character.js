@@ -305,6 +305,7 @@ const Character = React.memo(({
   const updateSkeleton = () => {
     let skeleton = object.current.userData.skeleton
     if (Object.values(props.skeleton).length) {
+      fixRootBone()
       for (bone of skeleton.bones) {
         let userState = props.skeleton[bone.name]
         let systemState = originalSkeleton.current.getBoneByName(bone.name).clone()
@@ -401,7 +402,6 @@ const Character = React.memo(({
     let skeleton = object.current.userData.skeleton
     skeleton.pose()
     updateSkeleton()
-    fixRootBone()
   }
 
   const fixRootBone = () => {
@@ -409,6 +409,7 @@ const Character = React.memo(({
     let skeleton = object.current.userData.skeleton
 
     // fb converter scaled object
+    // e.g.: all built-in character models
     if (boneLengthScale === 100) {
       if (props.skeleton['Hips']) {
         // we already have correct values, don't multiply the root bone
