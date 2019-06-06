@@ -350,12 +350,6 @@ const Character = React.memo(({
         let state = userState || systemState
 
         let prevState = prevRotation.current[bone.name];
-        if(bone.name === "LeftArm")
-        {
-          console.log("Current bone rotation", bone.rotation);
-          console.log("Origin rotation", state.rotation);
-          console.log(props.skeleton);
-        }
         if(state === systemState)
         {
           //bone.rotation.x -= bone.rotation.x - state.rotation.x
@@ -371,7 +365,7 @@ const Character = React.memo(({
             bone.rotation.z -= bone.rotation.z - state.rotation.z
           }
           else {
-            console.log(prevState);
+            console.log(state);
             bone.rotation.x += prevState.rotation.x - state.rotation.x
             bone.rotation.y += prevState.rotation.y - state.rotation.y
             bone.rotation.z += prevState.rotation.z - state.rotation.z

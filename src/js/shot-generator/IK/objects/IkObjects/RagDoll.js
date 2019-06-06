@@ -150,6 +150,8 @@ class RagDoll extends IkObject
                 hipsPosition = hipsTarget.position.clone();
                 hipsPosition.add(this.poleTargetOffsets.rightLeg);
                 rightLegConstraint.copy(hipsPosition);
+
+                //this.originalObject.position.copy(this.clonedObject.position);
             }
         });
         hipsControl.addEventListener("dragging-changed", (event) =>
@@ -369,15 +371,20 @@ class RagDoll extends IkObject
                     originalBone.rotateY(-Math.PI);
                  }
              }
-             else
-                 {
+             else if(this.chainContainsBone(chainObjects[1].chain, originalBone) ||
+                 this.chainContainsBone(chainObjects[2].chain, originalBone))
+             {
+                 originalBone.rotation.set(-newOrigin.x, -newOrigin.z, -newOrigin.y);
                  if(originalBone.name === "LeftArm" || originalBone.name === "RightArm")
                  {
-                     originalBone.rotation.set(newOrigin.x, newOrigin.y, newOrigin.z);
                      //originalBone.rotateX(-Math.PI/2);
-                     //originalBone.rotateY(Math.PI/2);
+                     originalBone.rotateY(-Math.PI/2);
                      //originalBone.rotateZ(Math.PI/2);
                  }
+             }
+             else
+                 {
+
                      originalBone.rotation.set(newOrigin.x, newOrigin.z, newOrigin.y);
              }
 
@@ -425,10 +432,24 @@ class RagDoll extends IkObject
             {
                 cloneBone.rotation.set(newClone.x, newClone.z, newClone.y);
             }
-            else if(this.chainContainsBone(chainObjects[1].chain, originalBone) ||
-                this.chainContainsBone(chainObjects[2].chain, originalBone))
+            else if(this.chainContainsBone(chainObjects[1].chain, originalBone))
             {
-                cloneBone.rotation.set(newClone.x, newClone.z, newClone.y);
+                cloneBone.rotation.set(-newClone.x, -newClone.z, -newClone.y);
+
+                if (cloneBone.name === "LeftArm")
+                {
+                    //cloneBone.rotateY(Math.PI);
+                     // cloneBone.rotateZ(Math.PI/2);
+                }
+            }
+            else if ( this.chainContainsBone(chainObjects[2].chain, originalBone))
+            {
+                cloneBone.rotation.set(-newClone.x, -newClone.z, -newClone.y);
+
+                 if (cloneBone.name === "RightArm")
+                {
+                    //cloneBone.rotateY(-Math.PI/2);
+                }
             }
             else
             {
