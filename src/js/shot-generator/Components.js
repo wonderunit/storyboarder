@@ -2230,13 +2230,11 @@ const Toolbar = ({
     insertAsNewBoard()
   }
 
-  const onOpenVR = event => {
-    let cmd = `"C:\\Program Files\\Mozilla Firefox\\firefox.exe" "${xrServerUrl}"`
-    console.log('running', cmd)
-    child_process.exec(cmd, (error, stdout, stderr) => {
-      if (error) console.error(error)
+  const onOpenVR = preventDefault(() =>
+    dialog.showMessageBox(null, {
+      message: `To view, open a VR web browser to:\n\n${xrServerUrl}`
     })
-  }
+  )
 
   return h(
     ['div#toolbar', { key: 'toolbar' },
