@@ -71,8 +71,8 @@ function setQuaternionFromDirection(direction, up, target, scale) {
   y.normalize();
 
 
-  el[0] = x.x;el[4] = y.x;el[8] = z.x;
-  el[1] = x.y;el[5] = y.y;el[9] = z.y;
+  el[0] = x.x;el[4] = y.x;el[8]  = z.x;
+  el[1] = x.y;el[5] = y.y;el[9]  = z.y;
   el[2] = x.z;el[6] = y.z;el[10] = z.z;
   target.setFromRotationMatrix(m);
 

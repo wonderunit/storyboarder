@@ -331,22 +331,24 @@ class RagDoll extends IkObject
     {
          let clonedSkin = this.clonedObject.children[1];
          let originalSkin = this.originalObject.children[1];
+         console.log("Cloned skin", clonedSkin);
+         console.log("Original skin", originalSkin);
          let clonedBones = clonedSkin.skeleton.bones;
          let originalBones = originalSkin.skeleton.bones;
 
          let cloneHips = this.clonedObject.children[0];
          let originalHips = this.originalObject.children[0];
-         cloneHips.updateMatrixWorld(true, true);
-         let cloneBoneMatrix = cloneHips.matrix.clone();
-
-         let inverseCloneBoneMatrix = new THREE.Matrix4().getInverse(cloneBoneMatrix);
-         console.log("Original Hips before", originalHips.clone());
-         console.log("Cloned Hips", cloneHips.clone());
-         console.log("Cloned Hips", cloneBoneMatrix.clone());
-         originalHips.applyMatrix(inverseCloneBoneMatrix);
-
-         console.log("Original Hips applied", originalHips.clone());
-
+         //cloneHips.updateMatrixWorld(true, true);
+         //let cloneHipsRotation = new THREE.Euler(0, 0, 0);
+         //cloneHips.rotation.copy(cloneHipsRotation);
+         originalHips.updateMatrixWorld(true, true);
+         //let cloneBoneMatrix = cloneHips.matrix.clone();
+//
+         //let originalHipsRotation = originalHips.rotation.clone();
+         //let inverseCloneBoneMatrix = new THREE.Matrix4().getInverse(cloneBoneMatrix);
+         //cloneHips.rotateX(-Math.PI/2);
+         //cloneHips.updateMatrixWorld(true, true);
+         //originalHips.applyMatrix(inverseCloneBoneMatrix);
          for (let i = 0; i < clonedBones.length; i++)
          {
              let cloneBone = clonedBones[i];
@@ -355,14 +357,42 @@ class RagDoll extends IkObject
              {
                  continue;
              }
-             originalBone.rotation.set(cloneBone.rotation.x, cloneBone.rotation.z, cloneBone.rotation.y);
+             let difference = this.originalRotationDiffrenceOfBones[i];
+
+             let current = new THREE.Euler(cloneBone.rotation.x  - originalBone.rotation.x,
+                                            cloneBone.rotation.y - originalBone.rotation.y,
+                                            cloneBone.rotation.z - originalBone.rotation.z)
+
+             let newAngle = new THREE.Euler(current.x - difference.x,
+                                            current.y - difference.y,
+                                            current.z - difference.z);
+             let newOrigin = new THREE.Euler(originalBone.rotation.x + newAngle.x,
+                                                originalBone.rotation.y + newAngle.y,
+                                                originalBone.rotation.z + newAngle.z)
+             if(cloneBone.name === "LeftArm")
+             {
+                 console.log("Clonebone", cloneBone.rotation);
+                 console.log("Basic dif", difference);
+                 console.log("New diff", current);
+                 console.log("New origin", newOrigin);
+                 console.log("Origin angle", originalBone.rotation);
+                 console.log("New angle", newAngle);
+             }
+
+
+             originalBone.rotation.copy(newOrigin);
+
          }
 
-         originalHips.applyMatrix(cloneBoneMatrix);
-         console.log("Original Hips after", originalHips.clone());
-         originalHips.updateMatrixWorld(true, true);
-         console.log(this.clonedObject);
-         console.log(this.originalObject);
+         //originalHips.applyMatrix(cloneBoneMatrix);
+         //originalHips.updateMatrixWorld(true, true);
+         //cloneHips.updateMatrixWorld(true, true);
+         //originalHips.rotation.copy(originalHipsRotation);
+         //cloneHips.rotation.copy(cloneHipsRotation);
+         //cloneHips.rotateX(-Math.PI/2);
+         //cloneHips.rotateX(Math.PI);
+         console.log("Clone object", this.clonedObject);
+         console.log("Original object", this.originalObject);
 
     }
 
@@ -370,18 +400,22 @@ class RagDoll extends IkObject
     {
         let clonedSkin = this.clonedObject.children[1];
         let originalSkin = this.originalObject.children[1];
+        console.log("Cloned skin", clonedSkin);
+        console.log("Original skin", originalSkin);
         let clonedBones = clonedSkin.skeleton.bones;
         let originalBones = originalSkin.skeleton.bones;
 
         let cloneHips = this.clonedObject.children[0];
         let originalHips = this.originalObject.children[0];
         originalHips.updateMatrixWorld(true, true);
-        let originalBoneMatrix = originalHips.matrix.clone();
-        let inverseOriginalBoneMatrix = new THREE.Matrix4().getInverse(originalBoneMatrix);
-        cloneHips.applyMatrix(inverseOriginalBoneMatrix);
+        //let originalBoneMatrix = originalHips.matrix.clone();
+        //let inverseOriginalBoneMatrix = new THREE.Matrix4().getInverse(originalBoneMatrix);
 
-        cloneHips.updateMatrixWorld(true, true);
-        console.log("Original Hips applied", originalHips.clone());
+        //let cloneHipsRotation = new THREE.Euler(0, 0, 0);
+
+        //cloneHips.applyMatrix(inverseOriginalBoneMatrix);
+//
+        //cloneHips.updateMatrixWorld(true, true);
 
         for (let i = 0; i < clonedBones.length; i++)
         {
@@ -395,15 +429,37 @@ class RagDoll extends IkObject
             }
             //cloneBone.position.set(originalBone.position.x, originalBone.position.y, originalBone.position.z);
 
-            cloneBone.rotation.set(originalBone.rotation.x, originalBone.rotation.z, originalBone.rotation.y);
+            //cloneBone.rotation.set(originalBone.rotation.x, originalBone.rotation.z, originalBone.rotation.y);
+            let difference = this.originalRotationDiffrenceOfBones[i];
 
+            let current = new THREE.Euler(cloneBone.rotation.x - originalBone.rotation.x,
+                                          cloneBone.rotation.y - originalBone.rotation.y,
+                                          cloneBone.rotation.z - originalBone.rotation.z)
+
+            let newAngle = new THREE.Euler( current.x - difference.x,
+                                            current.y - difference.y,
+                                            current.z - difference.z);
+            let newClone = new THREE.Euler(cloneBone.rotation.x - newAngle.x,
+                                            cloneBone.rotation.y - newAngle.y,
+                                            cloneBone.rotation.z - newAngle.z)
+            if(cloneBone.name === "LeftArm")
+            {
+                console.log("Clonebone", cloneBone.rotation.clone());
+                console.log("Basic dif", difference);
+                console.log("New diff", current);
+                console.log("New clone", newClone);
+                console.log("Origin angle", originalBone.rotation);
+                console.log("New angle", newAngle);
+            }
+
+
+            cloneBone.rotation.copy(newClone);
         }
 
-        cloneHips.applyMatrix(originalBoneMatrix);
-        console.log("Original Hips after", originalHips.clone());
-        //cloneHips.children[0].rotateX(-Math.PI/2);
-        cloneHips.updateMatrixWorld(true, true);
-
+        //cloneHips.applyMatrix(originalBoneMatrix);
+        //cloneHips.updateMatrixWorld(true, true);
+        //cloneHips.rotation.copy(cloneHipsRotation);
+        //cloneHips.rotateX(-Math.PI);
         //cloneHips.position.copy(originalHips.position);
 
     }

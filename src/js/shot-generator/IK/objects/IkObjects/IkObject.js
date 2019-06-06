@@ -19,6 +19,7 @@ class IkObject
         this.originalObject = null;
         this.clonedObject = null;
         this.ikBonesName = [];
+        this.originalRotationDiffrenceOfBones = [];
     }
 
     // Takes skeleton and target for it's limbs
@@ -28,8 +29,8 @@ class IkObject
         let chains = [];
 
         let clonedSkeleton = SkeletonUtils.clone(objectSkeleton);
-        console.log(objectSkeleton);
-        console.log(clonedSkeleton);
+        console.log(objectSkeleton.children[0].clone());
+        console.log(clonedSkeleton.children[0].clone());
 
         this.originalObject = objectSkeleton;
         this.clonedObject = clonedSkeleton;
@@ -49,7 +50,7 @@ class IkObject
         chainObjects.push(new ChainObject("RightArm", "RightHand", this.controlTargets[2]));
         chainObjects.push(new ChainObject("LeftUpLeg", "LeftFoot", this.controlTargets[3]));
         chainObjects.push(new ChainObject("RightUpLeg", "RightFoot", this.controlTargets[4]));
-
+        scene.add(clonedSkeleton);
         // Goes through all scene objects
         clonedSkeleton.traverse((object) =>
         {
@@ -78,13 +79,17 @@ class IkObject
                     setZForward(object, new THREE.Vector3(0, 0, 1));
                     object.updateWorldMatrix(true, true);
                     rigMesh.bind(rigMesh.skeleton);
-
+                    console.log(clonedSkeleton.children[0].clone());
                     let objectWorld = new THREE.Vector3();
                     object.getWorldPosition(objectWorld);
                     this.hipsControlTarget.target.position.copy(objectWorld);
                 }
-
-
+                let originBone = objectSkeleton.getObjectByName(object.name);
+                let difference = new THREE.Euler(0, 0, 0);
+                difference.x = object.rotation.x - originBone.rotation.x;
+                difference.y = object.rotation.y - originBone.rotation.y;
+                difference.z = object.rotation.z - originBone.rotation.z;
+                this.originalRotationDiffrenceOfBones.push(difference);
                 // Goes through all chain objects to find with which we are working
                 chainObjects.forEach((chainObject) =>
                 {
@@ -125,6 +130,8 @@ class IkObject
 
             }
         });
+        //console.log(this.originalRotationDiffrenceOfBones);
+        scene.remove(clonedSkeleton);
         // Goes through list of constraints and adds it to IK
         chains.forEach((chain) =>
         {

@@ -428,7 +428,6 @@ const Character = React.memo(({
 
   useEffect(() => {
     if (object.current) {
-      console.log("moving");
       object.current.position.x = props.x
       object.current.position.z = props.y
       object.current.position.y = props.z
