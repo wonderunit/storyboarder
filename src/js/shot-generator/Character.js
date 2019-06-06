@@ -263,16 +263,6 @@ const Character = React.memo(({
       mesh.layers.enable(1)
       mesh.layers.disable(2)
       mesh.layers.enable(3)
-        //let skinnedMesh = object.current.children[1];
-        //skinnedMesh.geometry.rotateZ(Math.PI/2);
-        //skinnedMesh.bind(skinnedMesh.skeleton);
-
-
-      //setSkeleton(skeletonRig);
-
-      let skinnedMesh = object.current.children[1];
-      //skeletonRig.changeZToPositive();
-      console.log(skinnedMesh.clone());
 
       let bonesHelper = new BonesHelper( skeleton.bones[0].parent, object.current, { boneLengthScale, cacheKey: props.model } )
       bonesHelper.traverse(child => {
@@ -299,47 +289,7 @@ const Character = React.memo(({
       object.current.userData.parentPosition = parentPosition
       scene.add(object.current.bonesHelper)
 
-      console.log(skinnedMesh.clone());
-      //
-      //object.current.rotateX(-Math.PI/2);
-      let rotation = modelData.scene.children[0].children[0].rotation;
-      let geometry = skinnedMesh.geometry;
-      console.log(rotation);
-      //skinnedMesh.geometry.rotateX(rotation.x);
-      //skinnedMesh.geometry.rotateY(rotation.y);
-      //skinnedMesh.geometry.rotateZ(rotation.z);
-      //skinnedMesh.rotation.set(0, 0, 0);
-      let array = geometry.attributes.position.array;
-      //for (let i = 0; i < array.length / 3; i+=1)
-      //{
-      //  let temp = array[i*3+1];
-      //  array[i*3+1] = array[i*3+2];
-      //  array[i*3+2] = -temp;
-      //}
-      //bonesHelper.quaternion.setFromAxisAngle(new THREE.Vector3(1, 0, 0), -1.5708);
-
-      //skinnedMesh.geometry.rotateX(-Math.PI/2);
-      //skinnedMesh.geometry.needsUpdate = true;
-      //skinnedMesh.bind(skinnedMesh.skeleton);
-      //skinnedMesh.updateMatrixWorld(true);
-      console.log(skinnedMesh);
-      console.log(bonesHelper);
-      //bonesHelper.updateMatrixWorld(true, true);
-      for (let i = 0; i < bonesHelper.cones.length; i++)
-      {
-        let conesGeometry = bonesHelper.cones[i].geometry;
-        //conesGeometry.needsUpdate = true;
-        // //conesGeometry.rotateX(rotation.x);
-        // //conesGeometry.rotateY(rotation.y);
-        // //conesGeometry.rotateZ(rotation.z);
-      }
-
-
-
-      //#endregion
-
       ragDoll.current = new RagDoll();
-      //#region Ragdoll
       let skeletonRig = ragDoll.current;
       let domElement = largeRenderer.current.domElement;
       const hipsControl = AddTransformationControl(new THREE.Vector3(0, 1, 0), camera, domElement, scene, "hips");
@@ -352,53 +302,11 @@ const Character = React.memo(({
           rightHandControl, leftLegControl, rightLegControl,
           hipsControl );
 
-
       changeSkeleton(originalSkeleton.current);
       let ragDollUI = new RagDollUI(skeletonRig);
-      //skeletonRig.chainObjects[1].controlTarget.control.addEventListener("pointerdown", (event) => isSelected = true);
-      console.log(scene);
 
-        object.current.userData.ikUI = ragDollUI;
-        object.current.userData.ikRig = skeletonRig;
-      //#region Test calculation
-
-     /* let up = new THREE.Vector3(0, 1, 0);
-      let arm = new THREE.Vector3(0.5603412019655177, 1.3546231053783038, 2.1512418432692337);
-      let foreArm = new THREE.Vector3( 0.5890654774977198, 1.1259133196201865, 2.142118822816933);
-      let direction = new THREE.Vector3().subVectors(foreArm, arm).normalize();
-      let z = new THREE.Vector3().copy(direction.negate());
-      let y = new THREE.Vector3();
-      let x = new THREE.Vector3();
-      let m = new THREE.Matrix4();
-      let target = new THREE.Quaternion();
-      x.crossVectors(up, z);
-      if (x.lengthSq() == 0) {
-        if (Math.abs(up.z) === 1){
-          z.x += 0.0001;
-        } else {
-          z.z += 0.0001;
-        }
-        z.normalize();
-        x.crossVectors(up, z);
-      }
-      x.normalize();
-      y.crossVectors(z, x);
-      y.normalize();
-      m.makeBasis(x, y, z);
-      target.setFromRotationMatrix(m);
-      console.log("x:");
-      console.log(x);
-      console.log("y:");
-      console.log(y);
-      console.log("z:");
-      console.log(z);
-      console.log("direction:");
-      console.log(direction);
-      console.log("target:");
-      console.log(target);*/
-
-
-      //#endregion
+      object.current.userData.ikUI = ragDollUI;
+      object.current.userData.ikRig = skeletonRig;
     }
 
     return function cleanup () {
@@ -522,7 +430,6 @@ const Character = React.memo(({
       object.current.position.y = props.z
       object.current.orthoIcon.position.copy(object.current.position)
       ragDoll.current.moveRagdoll();
-      //ragDoll.current.applyChangesToIK();
     }
   }, [props.model, props.x, props.y, props.z, ready])
 

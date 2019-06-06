@@ -39,8 +39,7 @@ class IkObject
 
         let skeleton = null;
         this.controlTargets = controlTarget[0];
-        console.log(scene);
-        this.addParentToControl(clonedSkeleton.uuid);
+        this.addParentToControl(objectSkeleton.uuid);
         let chainObjects = [];
         this.chainObjects = chainObjects;
         this.hipsControlTarget = this.controlTargets[5];

@@ -180,24 +180,7 @@ class RagDollUI
     }
 
 
-    //shotMode(isEnable)
-    //{
-    //    let ragDoll = this.ragDoll;
-    //    this.isShotMode = isEnable;
-    //    let visible = isEnable ? false : true;
-    //    let chainObjects = ragDoll.chainObjects;
-    //    for (let i = 0; i < chainObjects.length; i++)
-    //    {
-    //        let chain = chainObjects[i];
-    //        chain.controlTarget.target.visible = visible;
-    //        chain.controlTarget.control.visible = visible;
-//
-    //        let constraints = ragDoll.poleConstraints[i];
-    //        constraints.poleTarget.mesh.visible = visible;
-    //    }
-    //    ragDoll.hipsControlTarget.target.visible = visible;
-    //    ragDoll.hipsControlTarget.control.visible = visible;
-    //}
+
 
 }
 module.exports = RagDollUI;
