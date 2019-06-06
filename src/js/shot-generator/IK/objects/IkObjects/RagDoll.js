@@ -356,18 +356,10 @@ class RagDoll extends IkObject
                  continue;
              }
              originalBone.rotation.set(cloneBone.rotation.x, cloneBone.rotation.z, cloneBone.rotation.y);
-
          }
-         originalHips.children[0].rotateX(-2);
 
          originalHips.applyMatrix(cloneBoneMatrix);
          console.log("Original Hips after", originalHips.clone());
-         originalHips.children[1].rotateX(Math.PI);
-         originalHips.children[1].rotateX(0.95);
-         originalHips.children[1].rotateY(Math.PI);
-         originalHips.children[2].rotateX(0.95);
-         originalHips.children[2].rotateX(Math.PI);
-         originalHips.children[2].rotateY(Math.PI);
          originalHips.updateMatrixWorld(true, true);
          console.log(this.clonedObject);
          console.log(this.originalObject);
@@ -406,12 +398,13 @@ class RagDoll extends IkObject
             cloneBone.rotation.set(originalBone.rotation.x, originalBone.rotation.z, originalBone.rotation.y);
 
         }
+
         cloneHips.applyMatrix(originalBoneMatrix);
         console.log("Original Hips after", originalHips.clone());
-
+        //cloneHips.children[0].rotateX(-Math.PI/2);
         cloneHips.updateMatrixWorld(true, true);
 
-        cloneHips.position.copy(originalHips.position);
+        //cloneHips.position.copy(originalHips.position);
 
     }
 

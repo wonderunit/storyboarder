@@ -1,7 +1,6 @@
 //#region ragdoll's import
 const RagDoll = require("./IK/objects/IkObjects/RagDoll");
 const TargetControl = require("./IK/objects/TargetControl");
-const RagDollUI = require("./IK/UI/RagDollUI");
 //#endregion
 const THREE = require('three')
 window.THREE = window.THREE || THREE
@@ -302,12 +301,7 @@ const Character = React.memo(({
           rightHandControl, leftLegControl, rightLegControl,
           hipsControl );
 
-      changeSkeleton(originalSkeleton.current);
-      let ragDollUI = new RagDollUI(skeletonRig);
-
-      object.current.userData.ikUI = ragDollUI;
       object.current.userData.ikRig = skeletonRig;
-      console.log(object.current.children[1].skeleton);
     }
 
     return function cleanup () {
@@ -316,14 +310,6 @@ const Character = React.memo(({
     }
   }, [ready])
 
-  const changeSkeleton = (skeleton) =>
-  {
-    let ragdoll = ragDoll.current;
-    let ragSkeleton = ragdoll.hips.parent.children[1].skeleton;
-    //skeleton = ragSkeleton.clone();
-    //skeleton.bones = ragSkeleton.bones.map(bone => bone.clone());
-    //ragSkeleton = skeleton;
-  }
 
   useEffect(() => {
     return function cleanup () {

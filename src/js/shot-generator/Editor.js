@@ -1669,7 +1669,7 @@ const MORPH_TARGET_LABELS = {
 }
 const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, machineState, transition, selectBone, updateCharacterSkeleton, storyboarderFilePath, scene }) => {
   const createOnSetValue = (id, name, transform = value => value) => value => updateObject(id, { [name]: transform(value) })
-  const createOnSetValueTarget = (id, name, transform = value => value, execute) => value => { execute(value); updateObject(id, { [name]: transform(value) });  };
+
   let positionSliders = [
     [NumberSlider, { label: 'x', value: sceneObject.x, min: -30, max: 30, onSetValue: createOnSetValue(sceneObject.id, 'x') } ],
     [NumberSlider, { label: 'y', value: sceneObject.y, min: -30, max: 30, onSetValue: createOnSetValue(sceneObject.id, 'y') } ],
@@ -1708,26 +1708,6 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
       .filter(model => model.type === 'character')
       .map(model => ({ name: model.name, value: model.id }))
   }
-  let characterRig = null;
-  let characterUI = null;
-  if(sceneObject.type === 'character')
-  {
-      scene.traverse((object) =>
-      {
-          if(object.userData.id === sceneObject.id)
-          {
-              characterRig = object.userData.ikRig;
-              let ikUI = object.userData.ikUI;
-              //console.log(sceneObject.x ++);
-              characterUI = ikUI.getUIElements(sceneObject,(x) => sceneObject.x += x, createOnSetValueTarget);
-              return;
-          }
-      });
-
-  }
-  let characterRigUi = ( characterRig !== null
-      ? () => characterUI
-      : () => "");
 
   return h([
     'div',
@@ -2078,8 +2058,6 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
             ]
           ]
       ),
-
-      sceneObject.type == 'character' && characterRigUi(),
 
       sceneObject.type == 'character' && [
         PosePresetsEditor, {
