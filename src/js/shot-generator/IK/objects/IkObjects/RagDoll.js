@@ -413,25 +413,22 @@ class RagDoll extends IkObject
                                           cloneBone.rotation.y - originalBone.rotation.y,
                                           cloneBone.rotation.z - originalBone.rotation.z)
 
-            let newAngle = new THREE.Euler( current.x - difference.x,
-                                            current.y - difference.y,
-                                            current.z - difference.z);
-            let newClone = new THREE.Euler(cloneBone.rotation.x - newAngle.x,
-                                            cloneBone.rotation.y - newAngle.y,
-                                            cloneBone.rotation.z - newAngle.z)
+            let newAngle = new THREE.Euler( difference.x - current.x,
+                                            difference.y - current.y,
+                                            difference.z - current.z);
+            let newClone = new THREE.Euler(cloneBone.rotation.x + newAngle.x,
+                                            cloneBone.rotation.y + newAngle.y,
+                                            cloneBone.rotation.z + newAngle.z)
 
             if(this.chainContainsBone(chainObjects[3].chain, originalBone) ||
                 this.chainContainsBone(chainObjects[4].chain, originalBone))
             {
                 cloneBone.rotation.set(newClone.x, newClone.z, newClone.y);
             }
-            else if(this.chainContainsBone(chainObjects[1].chain, originalBone))
+            else if(this.chainContainsBone(chainObjects[1].chain, originalBone) ||
+                this.chainContainsBone(chainObjects[2].chain, originalBone))
             {
-                cloneBone.rotation.set(newClone.y, newClone.z, newClone.x);
-            }
-            else if(this.chainContainsBone(chainObjects[2].chain, originalBone))
-            {
-                cloneBone.rotation.set(newClone.x, newClone.y, newClone.z);
+                cloneBone.rotation.set(newClone.x, newClone.z, newClone.y);
             }
             else
             {

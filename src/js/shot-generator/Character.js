@@ -190,7 +190,7 @@ const Character = React.memo(({
   const object = useRef(null)
   let ragDoll = useRef(null);
   const originalSkeleton = useRef(null)
-
+  let prevRotation = useRef([]);
   const doCleanup = () => {
     if (object.current) {
       console.log(type, id, 'remove')
@@ -349,7 +349,7 @@ const Character = React.memo(({
 
         let state = userState || systemState
 
-
+        let prevState = prevRotation.current[bone.name];
         if(bone.name === "LeftArm")
         {
           console.log("Current bone rotation", bone.rotation);
@@ -364,11 +364,22 @@ const Character = React.memo(({
         }
         else
         {
-          bone.rotation.x -= bone.rotation.x - state.rotation.x
-          bone.rotation.y -= bone.rotation.y - state.rotation.y
-          bone.rotation.z -= bone.rotation.z - state.rotation.z
+          if(prevRotation.current === null || prevState === undefined)
+          {
+            bone.rotation.x -= bone.rotation.x - state.rotation.x
+            bone.rotation.y -= bone.rotation.y - state.rotation.y
+            bone.rotation.z -= bone.rotation.z - state.rotation.z
+          }
+          else {
+            console.log(prevState);
+            bone.rotation.x += prevState.rotation.x - state.rotation.x
+            bone.rotation.y += prevState.rotation.y - state.rotation.y
+            bone.rotation.z += prevState.rotation.z - state.rotation.z
+          }
+
         }
       }
+      prevRotation.current = props.skeleton;
     } else {
 
       let skeleton = object.current.userData.skeleton
