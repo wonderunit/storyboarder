@@ -463,6 +463,7 @@ const Character = React.memo(({
       skeleton.pose()
       fixRootBone()
     }
+    ragDoll.current.applyChangesToIK();
   }
 
   const getCurrentControllerRotation = (device, virtual) => {
@@ -515,10 +516,13 @@ const Character = React.memo(({
 
   useEffect(() => {
     if (object.current) {
+      console.log("moving");
       object.current.position.x = props.x
       object.current.position.z = props.y
       object.current.position.y = props.z
       object.current.orthoIcon.position.copy(object.current.position)
+      ragDoll.current.moveRagdoll();
+      //ragDoll.current.applyChangesToIK();
     }
   }, [props.model, props.x, props.y, props.z, ready])
 

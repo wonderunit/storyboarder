@@ -54,12 +54,22 @@ class IkObject
         chainObjects.push(new ChainObject("RightArm", "RightHand", this.controlTargets[2]));
         chainObjects.push(new ChainObject("LeftUpLeg", "LeftFoot", this.controlTargets[3]));
         chainObjects.push(new ChainObject("RightUpLeg", "RightFoot", this.controlTargets[4]));
+
+        clonedSkeleton.traverse((object) =>
+        {
+            //if(object instanceof THREE.Bone)
+            //{
+            //    object.rotation.set(0, 0, 0);
+            //}
+        });
+
         // Goes through all scene objects
         clonedSkeleton.traverse((object) =>
         {
             // Searches only bones object
             if(object instanceof THREE.Bone)
             {
+
                 // Finds skeleton for skeletonHelper
                 if(skeleton === null)
                 {
@@ -102,6 +112,7 @@ class IkObject
                     object.getWorldPosition(objectWorld);
                     this.hipsControlTarget.target.position.copy(objectWorld);
                 }
+
 
                 // Goes through all chain objects to find with which we are working
                 chainObjects.forEach((chainObject) =>
