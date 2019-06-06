@@ -307,6 +307,7 @@ const Character = React.memo(({
 
       object.current.userData.ikUI = ragDollUI;
       object.current.userData.ikRig = skeletonRig;
+      console.log(object.current.children[1].skeleton);
     }
 
     return function cleanup () {
@@ -362,11 +363,28 @@ const Character = React.memo(({
 
         let state = userState || systemState
 
-        bone.rotation.x = state.rotation.x
-        bone.rotation.y = state.rotation.y
-        bone.rotation.z = state.rotation.z
+
+        if(bone.name === "LeftArm")
+        {
+          console.log("Current bone rotation", bone.rotation);
+          console.log("Origin rotation", state.rotation);
+          console.log(props.skeleton);
+        }
+        if(state === systemState)
+        {
+          //bone.rotation.x -= bone.rotation.x - state.rotation.x
+          //bone.rotation.y -= bone.rotation.y - state.rotation.y
+          //bone.rotation.z -= bone.rotation.z - state.rotation.z
+        }
+        else
+        {
+          bone.rotation.x -= bone.rotation.x - state.rotation.x
+          bone.rotation.y -= bone.rotation.y - state.rotation.y
+          bone.rotation.z -= bone.rotation.z - state.rotation.z
+        }
       }
     } else {
+
       let skeleton = object.current.userData.skeleton
       skeleton.pose()
       fixRootBone()
@@ -490,7 +508,7 @@ const Character = React.memo(({
     if (!ready) return
     if (!object.current) return
 
-    // console.log(type, id, 'skeleton')
+    console.log(type, id, 'skeleton')
     updateSkeleton()
   }, [props.model, props.skeleton, ready])
 

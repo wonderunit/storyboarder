@@ -401,7 +401,7 @@ class RagDoll extends IkObject
             {
                 continue;
             }
-            cloneBone.position.set(originalBone.position.x, originalBone.position.y, originalBone.position.z);
+            //cloneBone.position.set(originalBone.position.x, originalBone.position.y, originalBone.position.z);
 
             cloneBone.rotation.set(originalBone.rotation.x, originalBone.rotation.z, originalBone.rotation.y);
 
