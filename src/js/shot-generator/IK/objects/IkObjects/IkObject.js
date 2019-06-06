@@ -36,14 +36,10 @@ class IkObject
 
         this.rigMesh = clonedSkeleton.children[1];
         let rigMesh = this.rigMesh;
-        this.ik.setSkinnedMesh(skinnedMesh);
-
 
         let skeleton = null;
         this.controlTargets = controlTarget[0];
         console.log(scene);
-        //console.log(objectSkeleton);
-        //console.log(skinnedMesh.clone());
         this.addParentToControl(clonedSkeleton.uuid);
         let chainObjects = [];
         this.chainObjects = chainObjects;
@@ -54,14 +50,6 @@ class IkObject
         chainObjects.push(new ChainObject("RightArm", "RightHand", this.controlTargets[2]));
         chainObjects.push(new ChainObject("LeftUpLeg", "LeftFoot", this.controlTargets[3]));
         chainObjects.push(new ChainObject("RightUpLeg", "RightFoot", this.controlTargets[4]));
-
-        clonedSkeleton.traverse((object) =>
-        {
-            //if(object instanceof THREE.Bone)
-            //{
-            //    object.rotation.set(0, 0, 0);
-            //}
-        });
 
         // Goes through all scene objects
         clonedSkeleton.traverse((object) =>
@@ -88,26 +76,10 @@ class IkObject
                 if(object.name === "Hips")
                 {
                     this.hips = object;
-                    let originalMatrix = object.matrix.clone(true);
-
-                    //skinnedMesh.rotation.set(0, 0, 0);
-                    //skinnedMesh.geometry.rotateX(-Math.PI/2);
-
                     setZForward(object, new THREE.Vector3(0, 0, 1));
                     object.updateWorldMatrix(true, true);
                     rigMesh.bind(rigMesh.skeleton);
 
-
-                    //console.log(skinnedMesh);
-//
-                   // setZForward(object, new THREE.Vector3(0, 0, -1));
-                   // object.matrix.set(originalMatrix);
-                   // object.updateWorldMatrix(true, true);
-                   // rigMesh.bind(rigMesh.skeleton);
-//
-                    //setZForward(object, new THREE.Vector3(0, 0, 1));
-                    //object.updateWorldMatrix(true, true);
-                    //rigMesh.bind(rigMesh.skeleton);
                     let objectWorld = new THREE.Vector3();
                     object.getWorldPosition(objectWorld);
                     this.hipsControlTarget.target.position.copy(objectWorld);
