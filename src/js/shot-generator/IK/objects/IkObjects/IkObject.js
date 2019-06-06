@@ -83,9 +83,9 @@ class IkObject
                     //skinnedMesh.rotation.set(0, 0, 0);
                     //skinnedMesh.geometry.rotateX(-Math.PI/2);
 
-                    //setZForward(object, new THREE.Vector3(0, 0, 1));
-                    //object.updateWorldMatrix(true, true);
-                    //rigMesh.bind(rigMesh.skeleton);
+                    setZForward(object, new THREE.Vector3(0, 0, 1));
+                    object.updateWorldMatrix(true, true);
+                    rigMesh.bind(rigMesh.skeleton);
 
 
                     //console.log(skinnedMesh);

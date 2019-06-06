@@ -344,11 +344,12 @@ class RagDoll extends IkObject
 
          //setZForward(hipsClone.children[0], new THREE.Vector3(0, 0, 1));
 
-         //console.log("Original Hips", hipsClone.clone());
+         console.log("Original Hips", originalHips.clone());
          console.log("Cloned Hips", cloneHips.clone());
         // let originalHipsQuaternion = originalHips.quaternion;
          originalHips.applyMatrix(inverseCloneBoneMatrix);
          originalHips.rotation.x = Math.PI/2;
+         //originalHips.rotation.z = Math.PI/2;
          originalHips.updateMatrixWorld(true, true);
 
 
@@ -358,29 +359,52 @@ class RagDoll extends IkObject
             let cloneBone = clonedBones[i];
             let originalBone = originalBones[i];
 
-            if(!this.ikBonesName.some((boneName) => originalBone.name === boneName))
+            if(!this.ikBonesName.some((boneName) => originalBone.name === boneName || boneName === "Hips"))
             {
                 continue;
             }
+            originalBone.quaternion.set(0, 0, 0, 1);
+            originalBone.rotation.set(0, 0, 0);
+            originalBone.updateMatrixWorld(true, true);
             //originalBone.position.set(cloneBone.position.x, cloneBone.position.z, cloneBone.position.y);
            //let inverseQuaternion = cloneBone.quaternion.clone().inverse();
             originalBone.quaternion.copy(cloneBone.quaternion);
             //console.log(this.chainObjects);
-            originalBone.rotation.set(cloneBone.rotation.x, cloneBone.rotation.z, -cloneBone.rotation.y);
 
-            if(originalBone.name === "LeftLeg")
+            if(originalBone.name === "LeftArm")
             {
-                //originalBone.rotateX(Math.PI);
-                //originalBone.updateMatrixWorld(true, true);
-            }
-        }
+                originalBone.rotation.set(cloneBone.rotation.x, cloneBone.rotation.y, cloneBone.rotation.z);
+                originalBone.rotateZ(Math.PI/2);
+                originalBone.rotateY(-Math.PI/2);
+                originalBone.rotateX(Math.PI/2);
+                //originalBone.rotateX(-Math.PI/2);
 
+                //originalBone.rotateY(-Math.PI/2);
+                originalBone.updateMatrixWorld(true, true);
+            }
+            else {
+                originalBone.rotation.set(cloneBone.rotation.x, -cloneBone.rotation.z, -cloneBone.rotation.y);
+
+            }
+
+        }
+        originalHips.children[0].rotateX(-2);
         originalHips.applyMatrix(cloneBoneMatrix);
         //originalHips.quaternion.copy(originalHipsQuaternion);
+        originalHips.rotation.set(0, 0, 0);
+
+        originalHips.children[1].rotateX(Math.PI);
+        originalHips.children[1].rotateX(0.95);
+        originalHips.children[1].rotateY(Math.PI);
+        originalHips.children[2].rotateX(0.95);
+        originalHips.children[2].rotateX(Math.PI);
+        originalHips.children[2].rotateY(Math.PI);
+
         originalHips.updateMatrixWorld(true, true);
         //setZForward(cloneHips, new THREE.Vector3(0, 0, 1));
         console.log(this.clonedObject);
         console.log(this.originalObject);
+
     }
 
 }
