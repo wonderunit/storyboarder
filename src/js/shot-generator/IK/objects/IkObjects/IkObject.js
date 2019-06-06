@@ -173,20 +173,20 @@ class IkObject
     // Ik solver overrides all changes if applied before it's fired
     lateUpdate()
     {
-        //let hipsTarget = this.hipsControlTarget.target;
-        //// Sets back position when offset is not changing
-        //// When we are changing back position offset between hips and back shouldn't be applied
-        //if(!this.applyingOffset)
-        //{
-        //    let backTarget = this.chainObjects[0].controlTarget.target;
-        //    let hipsPosition = hipsTarget.position.clone();
-        //    let result = hipsPosition.add(this.backOffset);
-        //    backTarget.position.copy(result);
-        //}
-        //// Follows hips target
-        //let targetPosition = hipsTarget.position.clone();
-        //this.hips.parent.worldToLocal(targetPosition);
-       // this.hips.position.copy(targetPosition);
+        let hipsTarget = this.hipsControlTarget.target;
+        // Sets back position when offset is not changing
+        // When we are changing back position offset between hips and back shouldn't be applied
+        if(!this.applyingOffset)
+        {
+            let backTarget = this.chainObjects[0].controlTarget.target;
+            let hipsPosition = hipsTarget.position.clone();
+            let result = hipsPosition.add(this.backOffset);
+            backTarget.position.copy(result);
+        }
+        // Follows hips target
+        let targetPosition = hipsTarget.position.clone();
+        this.hips.parent.worldToLocal(targetPosition);
+        this.hips.position.copy(targetPosition);
     }
 
     // Removes ikObject's all elements from scene
@@ -260,6 +260,26 @@ class IkObject
         {
             let control = controlTarget[i].control;
             control.characterId = parentId;
+        }
+    }
+
+    recalculateDifference()
+    {
+        let clonedSkin = this.clonedObject.children[1];
+        let originalSkin = this.originalObject.children[1];
+        console.log("Cloned skin", clonedSkin);
+        console.log("Original skin", originalSkin);
+        let clonedBones = clonedSkin.skeleton.bones;
+        let originalBones = originalSkin.skeleton.bones;
+        for (let i = 0; i < clonedBones.length; i++)
+        {
+            let originBone = originalBones[i];
+            let cloneBone = clonedBones[i];
+            let difference = new THREE.Euler(0, 0, 0);
+            difference.x = cloneBone.rotation.x - originBone.rotation.x;
+            difference.y = cloneBone.rotation.y - originBone.rotation.y;
+            difference.z = cloneBone.rotation.z - originBone.rotation.z;
+            this.originalRotationDiffrenceOfBones.push(difference);
         }
     }
 }

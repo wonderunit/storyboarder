@@ -208,15 +208,15 @@ class RagDoll extends IkObject
     legsFollowTargetRotation()
     {
         // Makes right foot follow the rotation of target
-        //let rightFootBone = this.ik.chains[4].joints[2].bone;
-        //let rightLegChainTarget = this.chainObjects[4].controlTarget.target;
-        //rightFootBone.rotation.copy(rightLegChainTarget.rotation);
-        //this.rotateBoneQuaternion(rightFootBone, new THREE.Euler(0.5, 0, 0));
-        //// Makes left foot follow the rotation of target
-        //let leftFootBone = this.ik.chains[3].joints[2].bone;
-        //let leftLegChainTarget = this.chainObjects[3].controlTarget.target;
-        //leftFootBone.rotation.copy(leftLegChainTarget.rotation);
-        //this.rotateBoneQuaternion(leftFootBone, new THREE.Euler(0.5, 0, 0));
+        let rightFootBone = this.ik.chains[4].joints[2].bone;
+        let rightLegChainTarget = this.chainObjects[4].controlTarget.target;
+        rightFootBone.rotation.copy(rightLegChainTarget.rotation);
+        this.rotateBoneQuaternion(rightFootBone, new THREE.Euler(0.5, 0, 0));
+        // Makes left foot follow the rotation of target
+        let leftFootBone = this.ik.chains[3].joints[2].bone;
+        let leftLegChainTarget = this.chainObjects[3].controlTarget.target;
+        leftFootBone.rotation.copy(leftLegChainTarget.rotation);
+        this.rotateBoneQuaternion(leftFootBone, new THREE.Euler(0.5, 0, 0));
     }
 
     // Sets and quaternion angle for bones
@@ -224,12 +224,12 @@ class RagDoll extends IkObject
     // Effect like flat foot to earth can be achieved
     rotateBoneQuaternion(bone, euler)
     {
-        //let quaternion = new THREE.Quaternion();
-        //bone.getWorldQuaternion(quaternion);
-        //quaternion.inverse();
-        //let angle = new THREE.Quaternion().setFromEuler(euler);
-        //quaternion.multiply(angle);
-        //bone.quaternion.copy(quaternion);
+        let quaternion = new THREE.Quaternion();
+        bone.getWorldQuaternion(quaternion);
+        quaternion.inverse();
+        let angle = new THREE.Quaternion().setFromEuler(euler);
+        quaternion.multiply(angle);
+        bone.quaternion.copy(quaternion);
     }
 
     reinitialize()
@@ -270,6 +270,7 @@ class RagDoll extends IkObject
 
         this.hips.getWorldPosition(this.hipsControlTarget.target.position);
         this.calculteBackOffset();
+        this.recalculateDifference();
     }
 
     // Resets targets position
@@ -320,35 +321,17 @@ class RagDoll extends IkObject
         this.skeletonHelper.visible = visible;
     }
 
-    changeZToPositive()
-    {
-        setZForward(this.hips, new THREE.Vector3(0, 0, 1));
-        this.hips.updateWorldMatrix(true, true);
-        this.rigMesh.bind(this.rigMesh.skeleton);
-    }
-
     applyChangesToOriginal()
     {
          let clonedSkin = this.clonedObject.children[1];
          let originalSkin = this.originalObject.children[1];
-         console.log("Cloned skin", clonedSkin);
-         console.log("Original skin", originalSkin);
          let clonedBones = clonedSkin.skeleton.bones;
          let originalBones = originalSkin.skeleton.bones;
 
          let cloneHips = this.clonedObject.children[0];
          let originalHips = this.originalObject.children[0];
-         //cloneHips.updateMatrixWorld(true, true);
-         //let cloneHipsRotation = new THREE.Euler(0, 0, 0);
-         //cloneHips.rotation.copy(cloneHipsRotation);
-         originalHips.updateMatrixWorld(true, true);
-         //let cloneBoneMatrix = cloneHips.matrix.clone();
-//
-         //let originalHipsRotation = originalHips.rotation.clone();
-         //let inverseCloneBoneMatrix = new THREE.Matrix4().getInverse(cloneBoneMatrix);
-         //cloneHips.rotateX(-Math.PI/2);
-         //cloneHips.updateMatrixWorld(true, true);
-         //originalHips.applyMatrix(inverseCloneBoneMatrix);
+
+         let chainObjects = this.chainObjects;
          for (let i = 0; i < clonedBones.length; i++)
          {
              let cloneBone = clonedBones[i];
@@ -366,33 +349,40 @@ class RagDoll extends IkObject
              let newAngle = new THREE.Euler(current.x - difference.x,
                                             current.y - difference.y,
                                             current.z - difference.z);
+
              let newOrigin = new THREE.Euler(originalBone.rotation.x + newAngle.x,
                                                 originalBone.rotation.y + newAngle.y,
                                                 originalBone.rotation.z + newAngle.z)
-             if(cloneBone.name === "LeftArm")
+
+             if(this.chainContainsBone(chainObjects[0].chain, originalBone))
              {
-                 console.log("Clonebone", cloneBone.rotation);
-                 console.log("Basic dif", difference);
-                 console.log("New diff", current);
-                 console.log("New origin", newOrigin);
-                 console.log("Origin angle", originalBone.rotation);
-                 console.log("New angle", newAngle);
+                 originalBone.rotation.set(newOrigin.x, -newOrigin.z, -newOrigin.y);
+             }
+             else if(this.chainContainsBone(chainObjects[3].chain, originalBone) ||
+                 this.chainContainsBone(chainObjects[4].chain, originalBone) )
+             {
+                 newOrigin.z = 0;
+                 originalBone.rotation.set(newOrigin.x, newOrigin.z, newOrigin.y);
+                 if(originalBone.name === "LeftUpLeg" || originalBone.name === "RightUpLeg")
+                 {
+                    originalBone.rotateX(-Math.PI);
+                    originalBone.rotateY(-Math.PI);
+                 }
+             }
+             else
+                 {
+                 if(originalBone.name === "LeftArm" || originalBone.name === "RightArm")
+                 {
+                     originalBone.rotation.set(newOrigin.x, newOrigin.y, newOrigin.z);
+                     //originalBone.rotateX(-Math.PI/2);
+                     //originalBone.rotateY(Math.PI/2);
+                     //originalBone.rotateZ(Math.PI/2);
+                 }
+                     originalBone.rotation.set(newOrigin.x, newOrigin.z, newOrigin.y);
              }
 
-
-             originalBone.rotation.copy(newOrigin);
-
+            originalBone.updateMatrixWorld(true, true);
          }
-
-         //originalHips.applyMatrix(cloneBoneMatrix);
-         //originalHips.updateMatrixWorld(true, true);
-         //cloneHips.updateMatrixWorld(true, true);
-         //originalHips.rotation.copy(originalHipsRotation);
-         //cloneHips.rotation.copy(cloneHipsRotation);
-         //cloneHips.rotateX(-Math.PI/2);
-         //cloneHips.rotateX(Math.PI);
-         console.log("Clone object", this.clonedObject);
-         console.log("Original object", this.originalObject);
 
     }
 
@@ -400,23 +390,13 @@ class RagDoll extends IkObject
     {
         let clonedSkin = this.clonedObject.children[1];
         let originalSkin = this.originalObject.children[1];
-        console.log("Cloned skin", clonedSkin);
-        console.log("Original skin", originalSkin);
         let clonedBones = clonedSkin.skeleton.bones;
         let originalBones = originalSkin.skeleton.bones;
 
         let cloneHips = this.clonedObject.children[0];
         let originalHips = this.originalObject.children[0];
         originalHips.updateMatrixWorld(true, true);
-        //let originalBoneMatrix = originalHips.matrix.clone();
-        //let inverseOriginalBoneMatrix = new THREE.Matrix4().getInverse(originalBoneMatrix);
-
-        //let cloneHipsRotation = new THREE.Euler(0, 0, 0);
-
-        //cloneHips.applyMatrix(inverseOriginalBoneMatrix);
-//
-        //cloneHips.updateMatrixWorld(true, true);
-
+        let chainObjects = this.chainObjects;
         for (let i = 0; i < clonedBones.length; i++)
         {
 
@@ -427,9 +407,6 @@ class RagDoll extends IkObject
             {
                 continue;
             }
-            //cloneBone.position.set(originalBone.position.x, originalBone.position.y, originalBone.position.z);
-
-            //cloneBone.rotation.set(originalBone.rotation.x, originalBone.rotation.z, originalBone.rotation.y);
             let difference = this.originalRotationDiffrenceOfBones[i];
 
             let current = new THREE.Euler(cloneBone.rotation.x - originalBone.rotation.x,
@@ -442,25 +419,26 @@ class RagDoll extends IkObject
             let newClone = new THREE.Euler(cloneBone.rotation.x - newAngle.x,
                                             cloneBone.rotation.y - newAngle.y,
                                             cloneBone.rotation.z - newAngle.z)
-            if(cloneBone.name === "LeftArm")
+
+            if(this.chainContainsBone(chainObjects[3].chain, originalBone) ||
+                this.chainContainsBone(chainObjects[4].chain, originalBone))
             {
-                console.log("Clonebone", cloneBone.rotation.clone());
-                console.log("Basic dif", difference);
-                console.log("New diff", current);
-                console.log("New clone", newClone);
-                console.log("Origin angle", originalBone.rotation);
-                console.log("New angle", newAngle);
+                cloneBone.rotation.set(newClone.x, newClone.z, newClone.y);
+            }
+            else if(this.chainContainsBone(chainObjects[1].chain, originalBone))
+            {
+                cloneBone.rotation.set(newClone.y, newClone.z, newClone.x);
+            }
+            else if(this.chainContainsBone(chainObjects[2].chain, originalBone))
+            {
+                cloneBone.rotation.set(newClone.x, newClone.y, newClone.z);
+            }
+            else
+            {
+                cloneBone.rotation.set(newClone.x, -newClone.z, newClone.y);
             }
 
-
-            cloneBone.rotation.copy(newClone);
         }
-
-        //cloneHips.applyMatrix(originalBoneMatrix);
-        //cloneHips.updateMatrixWorld(true, true);
-        //cloneHips.rotation.copy(cloneHipsRotation);
-        //cloneHips.rotateX(-Math.PI);
-        //cloneHips.position.copy(originalHips.position);
 
     }
 
@@ -470,14 +448,14 @@ class RagDoll extends IkObject
          this.clonedObject.updateMatrixWorld(true, true);
      }
 
-    changeMatrixBasis(matrix)
+
+    chainContainsBone(chain, bone)
     {
-        let x = new THREE.Vector3();
-        let y = new THREE.Vector3();
-        let z = new THREE.Vector3();
-        matrix.extractBasis(x, y, z);
-        matrix.makeBasis(x, z, y);
-        return matrix;
+        if(chain.joints.some((joint) => joint.bone.name === bone.name  ))
+        {
+            return true;
+        }
+        return false;
     }
 }
 module.exports =  RagDoll;
