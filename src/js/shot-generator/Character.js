@@ -352,9 +352,9 @@ const Character = React.memo(({
         let prevState = prevRotation.current[bone.name];
         if(state === systemState)
         {
-          //bone.rotation.x -= bone.rotation.x - state.rotation.x
-          //bone.rotation.y -= bone.rotation.y - state.rotation.y
-          //bone.rotation.z -= bone.rotation.z - state.rotation.z
+            //bone.rotation.x -= bone.rotation.x - state.rotation.x
+            //bone.rotation.y -= bone.rotation.y - state.rotation.y
+            //bone.rotation.z -= bone.rotation.z - state.rotation.z
         }
         else
         {
@@ -380,7 +380,6 @@ const Character = React.memo(({
       skeleton.pose()
       fixRootBone()
     }
-    ragDoll.current.applyChangesToIK();
   }
 
   const getCurrentControllerRotation = (device, virtual) => {
@@ -482,7 +481,10 @@ const Character = React.memo(({
     if (!ready) return
     if (!props.posePresetId) return
     console.log(type, id, 'changed pose preset')
+    prevRotation.current = [];
     resetPose()
+    ragDoll.current.recalculateDifference();
+    ragDoll.current.applyChangesToIK();
   }, [props.posePresetId])
 
   // HACK force reset skeleton pose on Board UUID change
@@ -500,6 +502,7 @@ const Character = React.memo(({
 
     console.log(type, id, 'skeleton')
     updateSkeleton()
+    ragDoll.current.applyChangesToIK();
   }, [props.model, props.skeleton, ready])
 
   useEffect(() => {
