@@ -691,7 +691,10 @@ const SceneContent = ({
 
       controller.userData.selected = object
 
-      const objMaterial = intersection.object.material
+      let objMaterial
+      if (intersection.object.type === 'LOD') objMaterial = intersection.object.children[0].material
+      else objMaterial = intersection.object.material
+
       if (Array.isArray(objMaterial)) {
         objMaterial.forEach(material => {
           if (!material.emissive) return
@@ -1171,10 +1174,12 @@ const SceneContent = ({
         case 'character':
           const selectedObj = scene.getObjectById(selectedObject)
           const isSelected = selectedObj && selectedObj.userData.id === sceneObject.id ? true : false
+
+          const hmdCam = xrOffset.current ? xrOffset.current.children.filter(child => child.type === 'PerspectiveCamera')[0] : null
           return (
             <SGCharacter
               key={i}
-              {...{ modelData: getModelData(sceneObject), isSelected, updateObject, selectedBone, ...sceneObject }}
+              {...{ modelData: getModelData(sceneObject), isSelected, updateObject, selectedBone, hmdCam, ...sceneObject }}
             />
           )
         case 'object':
