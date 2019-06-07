@@ -630,6 +630,7 @@ var IKChain = function () {
     key: "reinitializeJoints",
     value: function reinitializeJoints()
     {
+      IK.firstRun = true;
       this.joints = this.joints || [];
 
       for (let i = 0; i < this.joints.length; i++)
@@ -808,6 +809,7 @@ var IK = function () {
     this._needsRecalculated = true;
     this.isIK = true;
     this._orderedChains = null;
+    IK.firstRun = false;
   }
   createClass(IK, [{
     key: 'add',
@@ -820,6 +822,7 @@ var IK = function () {
   }, {
     key: 'recalculate',
     value: function recalculate() {
+      IK.firstRun = true;
       this._orderedChains = [];
       var _iteratorNormalCompletion = true;
       var _didIteratorError = false;
@@ -901,7 +904,7 @@ var IK = function () {
     value: function solve() {
       // Passing Hips bone to set Z
       // In order to change for whole skeleton
-
+      IK.firstRun = false;
       currentChains = this.chains;
       if (!this._orderedChains) {
         this.recalculate();

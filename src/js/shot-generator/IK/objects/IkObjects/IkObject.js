@@ -145,7 +145,6 @@ class IkObject
         // Adds skeleton helper to scene
         scene.add( this.skeletonHelper );
 
-        this.calculteBackOffset();
     }
 
     // Calculates back's offset in order to move with hips
@@ -162,8 +161,13 @@ class IkObject
     {
         if(this.isEnabledIk)
         {
+
             // Solves the inverse kinematic of object
             this.ik.solve();
+            if(IK.firstRun)
+            {
+                this.recalculateDifference();
+            }
             this.lateUpdate();
         }
     }
@@ -217,11 +221,10 @@ class IkObject
         for(let i = 0; i < chainObjects.length; i++)
         {
             let chain = chainObjects[i].chain;
-            let bone = chain.joints[chain.joints.length - 1].bone;
+            let bone =  this.originalObject.getObjectByName(chain.joints[chain.joints.length - 1].bone.name);
             let targetPosition = chainObjects[i].controlTarget.target.position;
             bone.getWorldPosition(targetPosition);
         }
-
         this.calculteBackOffset();
     }
 
@@ -266,6 +269,7 @@ class IkObject
     recalculateDifference()
     {
         console.log("Recalculate");
+        this.originalRotationDiffrenceOfBones = [];
         let clonedSkin = this.clonedObject.children[1];
         let originalSkin = this.originalObject.children[1];
         let clonedBones = clonedSkin.skeleton.bones;
