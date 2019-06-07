@@ -144,6 +144,18 @@ class IkObject
 
         // Adds skeleton helper to scene
         scene.add( this.skeletonHelper );
+        this.chainObjects[1].controlTarget.control.addEventListener('pointermove', ( event ) =>
+        {
+            let bone =  this.originalObject.getObjectByName("LeftHand");
+            let targetPosition =  this.chainObjects[1].controlTarget.target.position;
+            bone.getWorldPosition(targetPosition);
+        });
+        this.chainObjects[2].controlTarget.control.addEventListener('pointermove', ( event ) =>
+        {
+            let bone =  this.originalObject.getObjectByName("RightHand");
+            let targetPosition =  this.chainObjects[2].controlTarget.target.position;
+            bone.getWorldPosition(targetPosition);
+        });
 
     }
 
@@ -161,9 +173,9 @@ class IkObject
     {
         if(this.isEnabledIk)
         {
-
             // Solves the inverse kinematic of object
             this.ik.solve();
+
             if(IK.firstRun)
             {
                 this.recalculateDifference();
@@ -221,9 +233,18 @@ class IkObject
         for(let i = 0; i < chainObjects.length; i++)
         {
             let chain = chainObjects[i].chain;
-            let bone =  this.originalObject.getObjectByName(chain.joints[chain.joints.length - 1].bone.name);
-            let targetPosition = chainObjects[i].controlTarget.target.position;
-            bone.getWorldPosition(targetPosition);
+            let jointBone = chain.joints[chain.joints.length - 1].bone;
+            //if(jointBone.name === "LeftFoot" || jointBone.name === "RightFoot")
+            //{
+            //    let targetPosition = chainObjects[i].controlTarget.target.position;
+            //    jointBone.getWorldPosition(targetPosition);
+            //}
+            {
+                let bone =  this.originalObject.getObjectByName(jointBone.name);
+                let targetPosition = chainObjects[i].controlTarget.target.position;
+                bone.getWorldPosition(targetPosition);
+            }
+
         }
         this.calculteBackOffset();
     }
@@ -280,8 +301,8 @@ class IkObject
             let cloneBone = clonedBones[i];
             let difference = new THREE.Euler(0, 0, 0);
             difference.x = cloneBone.rotation.x - originBone.rotation.x;
-            difference.y = cloneBone.rotation.y - originBone.rotation.y;
-            difference.z = cloneBone.rotation.z - originBone.rotation.z;
+            difference.y = (cloneBone.rotation.y - originBone.rotation.y);
+            difference.z = (-cloneBone.rotation.z - originBone.rotation.z);
 
             this.originalRotationDiffrenceOfBones.push(difference);
         }
@@ -295,20 +316,6 @@ class IkObject
         boneRotation.z += rotation.z;
     }
 
-    syncronizePosition()
-    {
-        let clonedSkin = this.clonedObject.children[1];
-        let originalSkin = this.originalObject.children[1];
-        let clonedBones = clonedSkin.skeleton.bones;
-        let originalBones = originalSkin.skeleton.bones;
-        for (let i = 0; i < clonedBones.length; i++)
-        {
-            let originBone = originalBones[i];
-            let cloneBone = clonedBones[i];
-            originBone.position.set(cloneBone.position.x, cloneBone.position.z, cloneBone.position.y);
-
-        }
-    }
 }
 
 module.exports =  IkObject;

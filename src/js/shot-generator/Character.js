@@ -372,7 +372,6 @@ const Character = React.memo(({
             bone.rotation.x += difference.x
             bone.rotation.y += difference.y
             bone.rotation.z += difference.z
-            ragDoll.current.changeBoneRotation(bone.name, difference);
             if(bone.name === "Spine")
             {
               console.log(prevState);

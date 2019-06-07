@@ -16,6 +16,8 @@ class RagDoll extends IkObject
         this.hipsMouseDown = false;
         this.isShotMode = false;
 
+
+
     }
 
     initObject(scene, object, skinnedMesh, ...controlTarget)
@@ -188,7 +190,8 @@ class RagDoll extends IkObject
 
     update()
     {
-        super.update();
+
+            super.update();
         if(!this.isEnabledIk)
         {
             this.resetTargets();
@@ -378,8 +381,6 @@ class RagDoll extends IkObject
              {
                  if(originalBone.name === "LeftArm")
                  {
-
-
                      console.log("Setting New origin");
                      console.log("Start difference", difference);
                      console.log("Current difference", current);
@@ -389,12 +390,25 @@ class RagDoll extends IkObject
                      console.log("Clone bone", cloneBone.rotation.clone());
                      console.log("New Origin setted");
                  }
-                 originalBone.rotation.set(newOrigin.x, newOrigin.z, newOrigin.y);
+                 if(originalBone.name === "LeftArm" || originalBone.name === "RightArm")
+                 {
+                     originalBone.rotation.set( -(newOrigin.x),
+                                                -(newOrigin.z - newAngle.z),
+                                                -(newOrigin.y));
+                     //originalBone.rotateX(Math.PI);
+                     //originalBone.rotateY(Math.PI/2);
+                     //originalBone.rotateZ(Math.PI/2);
+                 }
+                 else {
+
+                    originalBone.rotation.set(newOrigin.x, newOrigin.z, newOrigin.y);
+                 }
+                 //newOrigin.z = 0;
 
              }
              else
-                 {
-                     originalBone.rotation.set(newOrigin.x, newOrigin.y, newOrigin.z);
+             {
+                 originalBone.rotation.set(newOrigin.x, newOrigin.y, newOrigin.z);
              }
 
             originalBone.updateMatrixWorld(true, true);
