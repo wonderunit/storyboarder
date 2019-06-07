@@ -2469,7 +2469,8 @@ const CamerasInspector = connect(
     _cameras: getCameraSceneObjects(state)
   }),
   {
-    setActiveCamera
+    setActiveCamera,
+    selectObject
   }
 )(
 ({
@@ -2480,12 +2481,17 @@ const CamerasInspector = connect(
   _cameras,
 
   // action creators
-  setActiveCamera
+  setActiveCamera,
+  selectObject
 }) => {
 
   const onClick = (camera, event) => {
     event.preventDefault()
+
+    undoGroupStart()
+    selectObject(camera.id)
     setActiveCamera(camera.id)
+    undoGroupEnd()
   }
 
   return h(['div.cameras-inspector', [
@@ -2560,7 +2566,9 @@ const KeyHandler = connect(
     setActiveCamera,
     duplicateObjects,
     deleteObjects,
-    updateObject
+    updateObject,
+    undoGroupStart,
+    undoGroupEnd
   }
 )(
   ({
@@ -2574,7 +2582,9 @@ const KeyHandler = connect(
     setActiveCamera,
     duplicateObjects,
     deleteObjects,
-    updateObject
+    updateObject,
+    undoGroupStart,
+    undoGroupEnd
   }) => {
     const { scene } = useContext(SceneContext)
 
@@ -2591,6 +2601,16 @@ const KeyHandler = connect(
     }
 
     useEffect(() => {
+      const onCameraSelectByIndex = index => {
+        if (_cameras[index]) {
+          let id = _cameras[index].id
+          undoGroupStart()
+          selectObject(id)
+          setActiveCamera(id)
+          undoGroupEnd()
+        }
+      }
+
       const onKeyDown = event => {
         if (event.key === 'Backspace') {
           if (selections.length && canDelete(_selectedSceneObject, activeCamera)) {
@@ -2610,15 +2630,19 @@ const KeyHandler = connect(
         if (event.key === 'Escape') {
           selectObject(activeCamera)
         }
-        if (event.key === '1') { if (_cameras[0]) { setActiveCamera(_cameras[0].id) }}
-        if (event.key === '2') { if (_cameras[1]) { setActiveCamera(_cameras[1].id) }}
-        if (event.key === '3') { if (_cameras[2]) { setActiveCamera(_cameras[2].id) }}
-        if (event.key === '4') { if (_cameras[3]) { setActiveCamera(_cameras[3].id) }}
-        if (event.key === '5') { if (_cameras[4]) { setActiveCamera(_cameras[4].id) }}
-        if (event.key === '6') { if (_cameras[5]) { setActiveCamera(_cameras[5].id) }}
-        if (event.key === '7') { if (_cameras[6]) { setActiveCamera(_cameras[6].id) }}
-        if (event.key === '8') { if (_cameras[7]) { setActiveCamera(_cameras[7].id) }}
-        if (event.key === '9') { if (_cameras[8]) { setActiveCamera(_cameras[8].id) }}
+        if (
+          event.key === '1' ||
+          event.key === '2' ||
+          event.key === '3' ||
+          event.key === '4' ||
+          event.key === '5' ||
+          event.key === '6' ||
+          event.key === '7' ||
+          event.key === '8' ||
+          event.key === '9'
+          ) {
+            onCameraSelectByIndex(parseInt(event.key, 10) - 1)
+          }
 
         if (
           (event.key === 'z' || event.key === 'x') &&
