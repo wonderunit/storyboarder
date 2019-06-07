@@ -1626,7 +1626,6 @@ const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, s
   ])
 })
 
-// TODO
 const PhoneCursor = connect(
   state => ({
     selections: getSelections(state),
@@ -2924,6 +2923,7 @@ module.exports = {
   CamerasInspector,
   KeyHandler,
   MenuManager,
+  PhoneCursor,
 
   Camera,
 

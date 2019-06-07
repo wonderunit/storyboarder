@@ -18,6 +18,7 @@ const {
   CamerasInspector,
   KeyHandler,
   MenuManager,
+  PhoneCursor,
 
   preventDefault,
   gltfLoader
