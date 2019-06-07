@@ -151,7 +151,8 @@ class RagDoll extends IkObject
                 hipsPosition.add(this.poleTargetOffsets.rightLeg);
                 rightLegConstraint.copy(hipsPosition);
 
-                //this.originalObject.position.copy(this.clonedObject.position);
+                //this.syncronizePosition();
+                this.originalObject.position.copy(this.clonedObject.position);
             }
         });
         hipsControl.addEventListener("dragging-changed", (event) =>
@@ -348,17 +349,17 @@ class RagDoll extends IkObject
                                             cloneBone.rotation.y - originalBone.rotation.y,
                                             cloneBone.rotation.z - originalBone.rotation.z)
 
-             let newAngle = new THREE.Euler(current.x - difference.x,
-                                            current.y - difference.y,
-                                            current.z - difference.z);
+             let newAngle = new THREE.Euler(difference.x - current.x ,
+                                            difference.y - current.y ,
+                                            difference.z - current.z );
 
-             let newOrigin = new THREE.Euler(originalBone.rotation.x + newAngle.x,
-                                                originalBone.rotation.y + newAngle.y,
-                                                originalBone.rotation.z + newAngle.z)
+             let newOrigin = new THREE.Euler(originalBone.rotation.x - newAngle.x,
+                                                originalBone.rotation.y - newAngle.y,
+                                                originalBone.rotation.z - newAngle.z)
 
              if(this.chainContainsBone(chainObjects[0].chain, originalBone))
              {
-                 //originalBone.rotation.set(newOrigin.x, -newOrigin.z, -newOrigin.y);
+                 originalBone.rotation.set(newOrigin.x, -newOrigin.z, -newOrigin.y);
              }
              else if(this.chainContainsBone(chainObjects[3].chain, originalBone) ||
                  this.chainContainsBone(chainObjects[4].chain, originalBone) )
@@ -374,18 +375,26 @@ class RagDoll extends IkObject
              else if(this.chainContainsBone(chainObjects[1].chain, originalBone) ||
                  this.chainContainsBone(chainObjects[2].chain, originalBone))
              {
-                 //originalBone.rotation.set(-newOrigin.x, -newOrigin.z, -newOrigin.y);
-                 //if(originalBone.name === "LeftArm" || originalBone.name === "RightArm")
-                 //{
-                 //    //originalBone.rotateX(-Math.PI/2);
-                 //    originalBone.rotateY(-Math.PI/2);
-                 //    //originalBone.rotateZ(Math.PI/2);
-                 //}
+
+                 if(originalBone.name === "LeftArm" || originalBone.name === "RightArm")
+                 {
+                     originalBone.rotation.set(-newOrigin.x,
+                                                -(newOrigin.z),
+                                                -(newOrigin.y));
+                     //originalBone.rotateX(-Math.PI);
+                     //originalBone.rotateY(-Math.PI);
+
+
+                 }
+                 else
+                 {
+                     originalBone.rotation.set(-newOrigin.x, -newOrigin.z, newOrigin.y);
+                 }
              }
              else
                  {
 
-                     originalBone.rotation.set(newOrigin.x, newOrigin.z, newOrigin.y);
+                     originalBone.rotation.set(newOrigin.x, newOrigin.y, newOrigin.z);
              }
 
             originalBone.updateMatrixWorld(true, true);
@@ -434,26 +443,46 @@ class RagDoll extends IkObject
             }
             else if(this.chainContainsBone(chainObjects[1].chain, originalBone))
             {
-               // cloneBone.rotation.set(-newClone.x, -newClone.z, -newClone.y);
-//
-               // if (cloneBone.name === "LeftArm")
-               // {
-               //     //cloneBone.rotateY(Math.PI);
-               //      // cloneBone.rotateZ(Math.PI/2);
-               // }
+                if (cloneBone.name === "LeftArm")
+                {
+                    cloneBone.rotation.set( (newClone.x - (newAngle.x * 2.5)),
+                                            (newClone.y - (newAngle.y * 2.5)),
+                                            (newClone.z - (newAngle.z * 2.5)));
+                }
+                else
+                {
+                    cloneBone.rotation.set( (newClone.x - (newAngle.x * 2.5)),
+                                            -(newClone.y - (newAngle.y * 2.5)),
+                                            -(newClone.z - (newAngle.z * 2.5)));
+                }
             }
             else if ( this.chainContainsBone(chainObjects[2].chain, originalBone))
             {
-                //cloneBone.rotation.set(-newClone.x, -newClone.z, -newClone.y);
-//
-                // if (cloneBone.name === "RightArm")
-                //{
-                //    //cloneBone.rotateY(-Math.PI/2);
-                //}
+
+                 if (cloneBone.name === "RightArm")
+                 {
+                    cloneBone.rotation.set((newClone.x - (newAngle.x * 2.5)),
+                                           (newClone.y - (newAngle.y * 2.5)),
+                                           (newClone.z - (newAngle.z * 2.5)));
+                 }
+                 else
+                 {
+                     cloneBone.rotation.set((newClone.x + (newAngle.x * 2)),
+                                            (newClone.y + (newAngle.y * 2)),
+                                            (newClone.z + (newAngle.z * 2)));
+                 }
             }
             else
             {
-                cloneBone.rotation.set(newClone.x, -newClone.z, newClone.y);
+                //if(newClone.z > 0)
+                //{
+                //    newClone.z = -newClone.z;
+                //}
+                //if(newClone.y > 0)
+                //{
+                //    newClone.y = -newClone.y;
+                //}
+                cloneBone.rotation.set(newClone.x, newClone.z, newClone.y);
             }
 
         }

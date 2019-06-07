@@ -140,7 +140,7 @@ class IkObject
         // Sets skeleton helper for showing bones
         this.skeletonHelper = new THREE.SkeletonHelper( skeleton );
         // Sets line width of skeleton helper
-        this.skeletonHelper.material.linewidth = 3;
+        this.skeletonHelper.material.linewidth = 7;
 
         // Adds skeleton helper to scene
         scene.add( this.skeletonHelper );
@@ -265,10 +265,9 @@ class IkObject
 
     recalculateDifference()
     {
+        console.log("Recalculate");
         let clonedSkin = this.clonedObject.children[1];
         let originalSkin = this.originalObject.children[1];
-        console.log("Cloned skin", clonedSkin);
-        console.log("Original skin", originalSkin);
         let clonedBones = clonedSkin.skeleton.bones;
         let originalBones = originalSkin.skeleton.bones;
         for (let i = 0; i < clonedBones.length; i++)
@@ -279,7 +278,31 @@ class IkObject
             difference.x = cloneBone.rotation.x - originBone.rotation.x;
             difference.y = cloneBone.rotation.y - originBone.rotation.y;
             difference.z = cloneBone.rotation.z - originBone.rotation.z;
+
             this.originalRotationDiffrenceOfBones.push(difference);
+        }
+    }
+
+    changeBoneRotation(name, rotation)
+    {
+        let boneRotation = this.clonedObject.getObjectByName(name).rotation;
+        boneRotation.x += rotation.x;
+        boneRotation.y += rotation.y;
+        boneRotation.z += rotation.z;
+    }
+
+    syncronizePosition()
+    {
+        let clonedSkin = this.clonedObject.children[1];
+        let originalSkin = this.originalObject.children[1];
+        let clonedBones = clonedSkin.skeleton.bones;
+        let originalBones = originalSkin.skeleton.bones;
+        for (let i = 0; i < clonedBones.length; i++)
+        {
+            let originBone = originalBones[i];
+            let cloneBone = clonedBones[i];
+            originBone.position.set(cloneBone.position.x, cloneBone.position.z, cloneBone.position.y);
+
         }
     }
 }

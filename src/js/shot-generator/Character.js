@@ -365,13 +365,24 @@ const Character = React.memo(({
             bone.rotation.z -= bone.rotation.z - state.rotation.z
           }
           else {
-            console.log(state);
-            bone.rotation.x += prevState.rotation.x - state.rotation.x
-            bone.rotation.y += prevState.rotation.y - state.rotation.y
-            bone.rotation.z += prevState.rotation.z - state.rotation.z
+
+            let difference = new THREE.Euler(prevState.rotation.x - state.rotation.x,
+                                              prevState.rotation.y - state.rotation.y,
+                                              prevState.rotation.z - state.rotation.z)
+            bone.rotation.x += difference.x
+            bone.rotation.y += difference.y
+            bone.rotation.z += difference.z
+            ragDoll.current.changeBoneRotation(bone.name, difference);
+            if(bone.name === "Spine")
+            {
+              console.log(prevState);
+              console.log(state);
+              console.log("Difference in angle", difference);
+            }
           }
 
         }
+
       }
       prevRotation.current = props.skeleton;
     } else {
@@ -483,7 +494,7 @@ const Character = React.memo(({
     console.log(type, id, 'changed pose preset')
     prevRotation.current = [];
     resetPose()
-    ragDoll.current.recalculateDifference();
+    //ragDoll.current.recalculateDifference();
     ragDoll.current.applyChangesToIK();
   }, [props.posePresetId])
 

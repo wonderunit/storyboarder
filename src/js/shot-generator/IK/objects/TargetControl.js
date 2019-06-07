@@ -3,13 +3,14 @@ const THREE = require( "three");
 
 class TargetControl
 {
+
     constructor(camera, domElement, name)
     {
         this.control = new TransformControls(camera, domElement);
         this.control.size = 0.3;
         this.control.userData.type = "controlTarget";
        // this.control.type = "transformControls";
-
+        this.isSelected = false;
         this.name = name;
         this.disabled = true;
         this.control.addEventListener('changing', ( event ) =>
@@ -17,14 +18,32 @@ class TargetControl
         });
         this.control.addEventListener('dragging-changed', ( event ) =>
         {
+
             //orbitControl.enabled = ! event.value;
         });
         this.control.addEventListener('pointerdown', (event) =>
         {
-            let control = this.control;
-            if(this.disabled && control.dragging )
+            console.log(this.name + TargetControl.selected);
+            if(!TargetControl.selected)
             {
+                this.isSelected = true;
+                TargetControl.selected = true;
+            }
+
+            let control = this.control;
+            if(this.disabled && control.dragging || !this.isSelected)
+            {
+                console.log("Pointer down");
                 control.dragging = false;
+            }
+        });
+        this.control.addEventListener('pointerup', (event) =>
+        {
+            console.log(this.name + TargetControl.selected)
+            if(TargetControl.selected)
+            {
+                this.isSelected = false;
+                TargetControl.selected = false;
             }
         });
     }
@@ -58,4 +77,5 @@ class TargetControl
         this.disabled = isDisabled;
     }
 }
+TargetControl.selected = false;
 module.exports = TargetControl;

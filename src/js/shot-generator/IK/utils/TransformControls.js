@@ -3,7 +3,6 @@ const THREE = require("three");
  * @author arodic / https://github.com/arodic
  */
 
-
 const TransformControls = function ( camera, domElement ) {
 
 	THREE.Object3D.call( this );
@@ -118,6 +117,8 @@ const TransformControls = function ( camera, domElement ) {
 		domElement.addEventListener( "touchleave", onPointerUp, false );
 
 	}
+
+	this.controlSelected = true;
 
 	this.dispose = function () {
 
