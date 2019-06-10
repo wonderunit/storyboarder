@@ -6849,7 +6849,9 @@ ipcRenderer.on('reloadScript', (event, args) => reloadScript(args))
 ipcRenderer.on('focus', async event => {
   if (!prefsModule.getPrefs()['enableForcePsdReloadOnFocus']) return
 
-  linkedFileManager.activateBoard(boardData.boards[currentBoard], refreshLinkedBoardByFilename)
+  if (boardData.boards[currentBoard].link) {
+    linkedFileManager.activateBoard(boardData.boards[currentBoard], refreshLinkedBoardByFilename)
+  }
 })
 
 ipcRenderer.on('stopAllSounds', () => {
