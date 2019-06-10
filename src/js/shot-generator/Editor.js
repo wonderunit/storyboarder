@@ -700,7 +700,7 @@ const Editor = connect(
       SceneContext.Provider,
       { value: { scene: scene.current }},
       h(
-        ['div.column', { style: { width: '100%' } }, [
+        ['div.column', { style: { width: '100%', height: '100%' } }, [
           [Toolbar, {
             createObject,
             selectObject,
@@ -716,7 +716,7 @@ const Editor = connect(
             undoGroupEnd
           }],
 
-          ['div.row', { style: { flex: 1 }},
+          ['div.row', { style: { flex: 1, height: '100%' }},
             ['div.column', { style: { width: '300px', background: '#111'} },
               ['div#topdown', { style: { height: '300px' } },
                 // top-down-canvas
