@@ -16,7 +16,9 @@
     "prefs": "echo ~/Library/Application\\\\ Support/Storyboarder/pref.json",
     "prefs:reveal": "open ~/Library/Application\\ Support/Storyboarder",
     "postinstall": "electron-builder install-app-deps",
-    "xr:watch": "parcel watch --no-hmr src/js/express-xr/src/index.html -d src/js/express-xr/dist"
+    "xr:watch": "parcel watch --no-hmr src/js/express-xr/src/index.html -d src/js/express-xr/dist",
+    "xr:clean": "trash src/js/express-xr/dist",
+    "xr:build": "parcel build src/js/express-xr/src/index.html -d src/js/express-xr/dist"
   },
   "repository": {
     "type": "git",
