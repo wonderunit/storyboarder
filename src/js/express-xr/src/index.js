@@ -33,7 +33,9 @@ fetch('/state.json')
       },
       models: initialState.models,
       presets: {
-        poses: {}
+        poses: {},
+        characters: {},
+        scenes: {}
       }
     })
 
