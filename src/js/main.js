@@ -294,7 +294,10 @@ let openKeyCommandWindow = () => {
     show: false,
     resizable: false,
     frame: false,
-    titleBarStyle: 'hiddenInset'
+    titleBarStyle: 'hiddenInset',
+    webPreferences: {
+      nodeIntegration: true
+    }
   })
   keyCommandWindow.loadURL(`file://${__dirname}/../keycommand-window.html`)
   keyCommandWindow.once('ready-to-show', () => {
@@ -319,7 +322,19 @@ let openNewWindow = () => {
 
   if (!newWindow) {
     // TODO this code is never called currently, as the window is created w/ welcome
-    newWindow = new BrowserWindow({width: 600, height: 580, show: false, center: true, parent: welcomeWindow, resizable: false, frame: false, modal: true})
+    newWindow = new BrowserWindow({
+      width: 600,
+      height: 580,
+      show: false,
+      center: true,
+      parent: welcomeWindow,
+      resizable: false,
+      frame: false,
+      modal: true,
+      webPreferences: {
+        nodeIntegration: true
+      }
+    })
     newWindow.loadURL(`file://${__dirname}/../new.html`)
     newWindow.once('ready-to-show', () => {
       newWindow.show()
@@ -334,10 +349,31 @@ let openNewWindow = () => {
 }
 
 let openWelcomeWindow = () => {
-  welcomeWindow = new BrowserWindow({width: 900, height: 600, center: true, show: false, resizable: false, frame: false})
+  welcomeWindow = new BrowserWindow({
+    width: 900,
+    height: 600,
+    center: true,
+    show: false,
+    resizable: false,
+    frame: false,
+    webPreferences: {
+      nodeIntegration: true
+    }
+  })
   welcomeWindow.loadURL(`file://${__dirname}/../welcome.html`)
 
-  newWindow = new BrowserWindow({width: 600, height: 580, show: false, parent: welcomeWindow, resizable: false, frame: false, modal: true})
+  newWindow = new BrowserWindow({
+    width: 600,
+    height: 580,
+    show: false,
+    parent: welcomeWindow,
+    resizable: false,
+    frame: false,
+    modal: true,
+    webPreferences: {
+      nodeIntegration: true
+    }
+  })
   newWindow.loadURL(`file://${__dirname}/../new.html`)
 
   let recentDocumentsCopy
@@ -908,7 +944,8 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
       experimentalFeatures: true,
       experimentalCanvasFeatures: true,
       devTools: true,
-      plugins: true
+      plugins: true,
+      nodeIntegration: true
     } 
   })
 
@@ -919,7 +956,10 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
     backgroundColor: '#333333',
     show: false,
     frame: false,
-    resizable: isDev ? true : false
+    resizable: isDev ? true : false,
+    webPreferences: {
+      nodeIntegration: true
+    }
   })
   loadingStatusWindow.loadURL(`file://${__dirname}/../loading-status.html?name=${encodeURIComponent(projectName)}`)
   loadingStatusWindow.once('ready-to-show', () => {
