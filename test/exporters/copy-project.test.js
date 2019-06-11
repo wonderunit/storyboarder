@@ -217,6 +217,11 @@ describe('exporters/copyProject', () => {
 
     exporterCopyProject.copyProject(srcFilePath, dstFolderPath)
 
+    assert(fs.existsSync(path.join(dstFolderPath, 'images', 'board-1-UDRF3-thumbnail.png')))
+    assert(fs.existsSync(path.join(dstFolderPath, 'images', 'board-1-UDRF3-posterframe.jpg')))
+    assert(fs.existsSync(path.join(dstFolderPath, 'images', 'board-1-UDRF3-shot-generator.png')))
+    assert(fs.existsSync(path.join(dstFolderPath, 'images', 'board-1-UDRF3-shot-generator-thumbnail.jpg')))
+
     assert(fs.existsSync(path.join(dstFolderPath, 'images')), 'images/ folder should exist')
     assert(fs.existsSync(path.join(dstFolderPath, 'models')), 'models/ folder should exist')
   })
