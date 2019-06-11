@@ -1,7 +1,7 @@
 //
 // USAGE:
 //
-// find src/js/exporters/copy-project.js test/exporters/copy-project.test.js | entr -c electron-mocha --renderer test/exporters/copy-project.test.js
+// find src/js/exporters/copy-project.js test/exporters/copy-project.test.js | entr -c npx electron-mocha --renderer test/exporters/copy-project.test.js
 //
 
 'use strict';
