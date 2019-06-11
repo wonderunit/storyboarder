@@ -2,7 +2,7 @@ const { useUpdate, useThree, useRender } = require('react-three-fiber')
 const React = require('react')
 const { useEffect, useRef, useState, useMemo } = React
 
-const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, ...props }) => {
+const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, virtualCamVisible, ...props }) => {
   const [camSliderFOV, setCamSliderFOV] = useState(null)
   const [targetUpdated, setTargetUpdated] = useState(false)
 
@@ -110,27 +110,29 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, ...props }
       position={[props.x || 0, props.z || 0, props.y || 0]}
       ref={ref}
     >
-      <mesh ref={targetMesh} userData={{ type: props.guiCamera ? 'gui' : 'view' }} material={heightShader}>
-        <planeGeometry attach="geometry" args={[size * aspectRatio, size]} />
-      </mesh>
-      {!props.guiCamera && (
-        <mesh
-          position={[0, 0, -0.0325]}
-          material={new THREE.MeshLambertMaterial({ color: new THREE.Color('gray'), transparent: true })}
-        >
-          <boxGeometry attach="geometry" args={[size * aspectRatio + padding, size + padding, 0.05]} />
+      <group visible={virtualCamVisible || props.guiCamera === true}>
+        <mesh ref={targetMesh} userData={{ type: props.guiCamera ? 'gui' : 'view' }} material={heightShader}>
+          <planeGeometry attach="geometry" args={[size * aspectRatio, size]} />
         </mesh>
-      )}
-      <group position={props.camOffset || new THREE.Vector3()}>
-        <perspectiveCamera
-          name={props.guiCamera ? 'guiCam' : ''}
-          ref={virtualCamera}
-          aspect={aspectRatio}
-          fov={camSliderFOV || props.fov}
-          near={0.01}
-          far={1000}
-          onUpdate={self => self.updateProjectionMatrix()}
-        />
+        {!props.guiCamera && (
+          <mesh
+            position={[0, 0, -0.0325]}
+            material={new THREE.MeshLambertMaterial({ color: new THREE.Color('gray'), transparent: true })}
+          >
+            <boxGeometry attach="geometry" args={[size * aspectRatio + padding, size + padding, 0.05]} />
+          </mesh>
+        )}
+        <group position={props.camOffset || new THREE.Vector3()}>
+          <perspectiveCamera
+            name={props.guiCamera ? 'guiCam' : ''}
+            ref={virtualCamera}
+            aspect={aspectRatio}
+            fov={camSliderFOV || props.fov}
+            near={0.01}
+            far={1000}
+            onUpdate={self => self.updateProjectionMatrix()}
+          />
+        </group>
       </group>
     </group>
   )

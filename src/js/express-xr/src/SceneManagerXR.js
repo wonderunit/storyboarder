@@ -1166,10 +1166,8 @@ const SceneContent = ({
     .map((sceneObject, i) => {
       switch (sceneObject.type) {
         case 'camera':
-          return virtualCamVisible ? (
-            <SGVirtualCamera key={i} {...{ aspectRatio, selectedObject, hideArray, ...sceneObject }} />
-          ) : (
-            undefined
+          return (
+            <SGVirtualCamera key={i} {...{ aspectRatio, selectedObject, hideArray, virtualCamVisible, ...sceneObject }} />
           )
         case 'character':
           const selectedObj = scene.getObjectById(selectedObject)
