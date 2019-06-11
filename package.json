@@ -107,7 +107,7 @@
     "electron-rebuild": "^1.8.4",
     "floss": "^2.2.0",
     "mocha": "3.5.0",
-    "mock-fs": "^4.7.0",
+    "mock-fs": "4.10.1",
     "nock": "9.4.2",
     "parcel-bundler": "1.12.3",
     "webpack": "4.23.1"
