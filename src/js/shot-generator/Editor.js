@@ -717,7 +717,7 @@ const Editor = connect(
           }],
 
           ['div.row', { style: { flex: 1, height: '100%' }},
-            ['div.column', { style: { width: '300px', background: '#111'} },
+            ['div.column', { style: { width: '300px', height: '100%', background: '#111'} },
               ['div#topdown', { style: { height: '300px' } },
                 // top-down-canvas
                 ['canvas', { key: 'top-down-canvas', tabIndex: 0, ref: smallCanvasRef, id: 'top-down-canvas', style: { width: '100%' }, onPointerDown: onCanvasPointerDown }],
