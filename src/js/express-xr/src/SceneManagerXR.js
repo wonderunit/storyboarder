@@ -1120,11 +1120,12 @@ const SceneContent = ({
         new THREE.AudioLoader().load(
           'data/snd/vr-atmosphere.ogg',
           buffer => {
-            atmosphere = new THREE.Audio( audioListener )
+            atmosphere = new THREE.PositionalAudio( audioListener )
             atmosphere.setBuffer( buffer )
             atmosphere.setLoop( false )
             atmosphere.setVolume( 1 )
             atmosphere.play()
+            scene.add(atmosphere)
           }
         )
 
@@ -1140,8 +1141,15 @@ const SceneContent = ({
         )
       } else {
         // TODO fade out
-        atmosphere && atmosphere.stop()
-        welcome && welcome.stop()
+        if (atmosphere) {
+          atmosphere.stop()
+          scene.remove(atmosphere)
+          atmosphere = null
+        }
+        if (welcome) {
+          welcome.stop()
+          welcome = null
+        }
       }
     }, false )
 
