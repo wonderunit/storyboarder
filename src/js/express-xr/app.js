@@ -26,6 +26,10 @@ class XRServer {
       path.join(path.dirname(store.getState().meta.storyboarderFilePath), 'models')
     ))
 
+    app.use('/data/snd', express.static(
+      path.join(__dirname, 'public', 'snd')
+    ))
+
     app.get('/', function(req, res) {
       res.sendFile(path.join(__dirname, 'dist', 'index.html'))
     })
