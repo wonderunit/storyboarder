@@ -36,7 +36,7 @@ const withCustomCharacter = string => {
   let board = data.boards[0]
   board.sg.data
     .sceneObjects['26332F12-28FE-444C-B73F-B3F90B8C62A2']
-    .model = 'models/character.glb'
+    .model = 'models/characters/character.glb'
   return JSON.stringify(data)
 }
 
