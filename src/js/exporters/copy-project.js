@@ -3,6 +3,8 @@ const path = require('path')
 const R = require('ramda')
 
 const boardModel = require('../models/board')
+const shotGeneratorDataModel = require('../models/shot-generator-data')
+
 const util = require('../utils')
 
 const getRelativeMediaPathsUsedByScene = (scene, options = { copyBoardUrlMainImages: false}) =>
@@ -12,8 +14,18 @@ const getAllAbsoluteFilePathsUsedByScene = (srcFilePath, options = { copyBoardUr
   let srcFolderPath = path.dirname(srcFilePath)
   // read the scene
   let scene = JSON.parse(fs.readFileSync(srcFilePath))
-  // find all the files used in the scene
-  let usedFiles = getRelativeMediaPathsUsedByScene(scene)
+  // find all the image files used in the scene
+  let usedMediaFiles = getRelativeMediaPathsUsedByScene(scene)
+
+  // find all the shot generator files used in the scene
+  let shotGeneratorFiles = R.flatten(
+    scene.boards.map(
+      board =>
+        board.sg == null
+          ? []
+          : shotGeneratorDataModel.getExportableMediaFilenames(board.sg)
+    )
+  )
 
   // for compatibility with old scenes prior to Storyboarder 1.6.x
   // can optionally copy board.url "main layer" images
@@ -29,7 +41,8 @@ const getAllAbsoluteFilePathsUsedByScene = (srcFilePath, options = { copyBoardUr
 
   return [
     // srcFilePath,
-    ...usedFiles.map(f => path.join(srcFolderPath, 'images', f)),
+    ...usedMediaFiles.map(f => path.join(srcFolderPath, 'images', f)),
+    ...shotGeneratorFiles.map(f => path.join(srcFolderPath, f)),
     ...boardUrlMainImages
   ]
 }

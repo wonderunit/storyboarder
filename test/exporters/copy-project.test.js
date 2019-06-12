@@ -224,6 +224,9 @@ describe('exporters/copyProject', () => {
 
     assert(fs.existsSync(path.join(dstFolderPath, 'images')), 'images/ folder should exist')
     assert(fs.existsSync(path.join(dstFolderPath, 'models')), 'models/ folder should exist')
+
+    // custom model is included
+    assert(fs.existsSync(path.join(dstFolderPath, 'models', 'characters', 'character.glb')))
   })
 
   describe('options', () => {
