@@ -121,7 +121,7 @@
     "chokidar": "3.0.1",
     "classnames": "2.2.6",
     "color-js": "^1.0.4",
-    "dualshock": "github:wonderunit/dualshock#36af5e3d45fa4a4ff730bdf55072a97ca9d0baf6",
+    "dualshock": "github:wonderunit/dualshock#558d78dfce1255d4afe473dc002b82b491be1504",
     "eases": "1.0.8",
     "electron-google-analytics": "0.0.16",
     "electron-is-dev": "0.3.0",
