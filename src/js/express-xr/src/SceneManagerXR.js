@@ -464,11 +464,11 @@ const SceneContent = ({
     new THREE.AudioLoader().load(
       'data/snd/vr-select.ogg',
       buffer => {
-        let welcome = new THREE.Audio( audioListener )
-        welcome.setBuffer( buffer )
-        welcome.setLoop( false )
-        welcome.setVolume( 0.5 )
-        welcome.play()
+        let sound = new THREE.Audio( audioListener )
+        sound.setBuffer( buffer )
+        sound.setLoop( false )
+        sound.setVolume( 0.5 )
+        sound.play()
       }
     )
 
