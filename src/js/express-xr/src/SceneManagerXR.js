@@ -1163,6 +1163,8 @@ const SceneContent = ({
     >
       <SGCamera {...{ aspectRatio, activeCamera, setDefaultCamera, ...cameraState }} />
 
+      <primitive object={audioListener} />
+
       {vrControllers.map((object, n) => {
         const handedness = object.getHandedness()
         const flipModel = handedness === 'right'
