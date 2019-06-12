@@ -53,6 +53,11 @@ const gltfLoader = new THREE.GLTFLoader(loadingManager)
 objLoader.setLogging(false, false)
 THREE.Cache.enabled = true
 
+// preload audio immediately into cache
+new THREE.AudioLoader().load('data/snd/vr-select.ogg')
+new THREE.AudioLoader().load('data/snd/vr-atmosphere.ogg')
+new THREE.AudioLoader().load('data/snd/vr-welcome.ogg')
+
 const controllerObjectSettings = {
   id: 'controller',
   model: 'controller-left',
@@ -456,6 +461,17 @@ const SceneContent = ({
   }
 
   const onSelectStart = event => {
+    new THREE.AudioLoader().load(
+      'data/snd/vr-select.ogg',
+      buffer => {
+        let welcome = new THREE.Audio( audioListener )
+        welcome.setBuffer( buffer )
+        welcome.setLoop( false )
+        welcome.setVolume( 0.5 )
+        welcome.play()
+      }
+    )
+
     const controller = event.target
     const otherController = vrControllers.find(i => i.uuid !== controller.uuid)
     if (otherController && otherController.userData.selected) return
@@ -1092,6 +1108,44 @@ const SceneContent = ({
     // Store Initial Camera Position here so HMD doesn't jump even if virtual camera get's updated
     const { x, y, z } = cameraState
     initialCamPos.current = new THREE.Vector3(x, y, z)
+  }, [])
+
+  const audioListener = useMemo(() => {
+    const listener = new THREE.AudioListener()
+
+    let atmosphere
+    let welcome
+    window.addEventListener( 'vrdisplaypresentchange', event => {
+      if (event.display.isPresenting) {
+        new THREE.AudioLoader().load(
+          'data/snd/vr-atmosphere.ogg',
+          buffer => {
+            atmosphere = new THREE.Audio( audioListener )
+            atmosphere.setBuffer( buffer )
+            atmosphere.setLoop( false )
+            atmosphere.setVolume( 1 )
+            atmosphere.play()
+          }
+        )
+
+        new THREE.AudioLoader().load(
+          'data/snd/vr-welcome.ogg',
+          buffer => {
+            welcome = new THREE.Audio( audioListener )
+            welcome.setBuffer( buffer )
+            welcome.setLoop( false )
+            welcome.setVolume( 0.35 )
+            welcome.play()
+          }
+        )
+      } else {
+        // TODO fade out
+        atmosphere && atmosphere.stop()
+        welcome && welcome.stop()
+      }
+    }, false )
+
+    return listener
   }, [])
 
   let activeCameraComponent = (
