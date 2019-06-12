@@ -754,13 +754,15 @@ const SceneContent = ({
         rotation: object.rotation.y
       })
     } else if (object.userData.type === 'virtual-camera') {
+      const euler = new THREE.Euler().setFromQuaternion(object.quaternion, 'YXZ')
+
       updateObject(object.userData.id, {
         x: object.position.x,
         y: object.position.z,
         z: object.position.y,
-        rotation: object.rotation.y,
-        roll: object.rotation.z,
-        tilt: object.rotation.x
+        rotation: euler.y,
+        roll: euler.z,
+        tilt: euler.x
       })
     } else {
       updateObject(object.userData.id, {
