@@ -1,7 +1,7 @@
 //
 // USAGE:
 //
-// find src/js/exporters/copy-project.js test/exporters/copy-project.test.js | entr -c electron-mocha --renderer test/exporters/copy-project.test.js
+// find src/js/exporters/copy-project.js test/exporters/copy-project.test.js | entr -c npx electron-mocha --renderer test/exporters/copy-project.test.js
 //
 
 'use strict';
@@ -30,6 +30,17 @@ const modifyDucks = () => {
     JSON.stringify(modifiedJson, null, 2)
   )
 }
+
+const withCustomCharacter = string => {
+  let data = JSON.parse(string)
+  let board = data.boards[0]
+  board.sg.data
+    .sceneObjects['26332F12-28FE-444C-B73F-B3F90B8C62A2']
+    .model = 'models/characters/character.glb'
+  return JSON.stringify(data)
+}
+
+const EMPTY_BUFFER = Buffer.from([8, 6, 7, 5, 3, 0, 9])
 
 describe('exporters/copyProject', () => {
   beforeEach(function () {
@@ -107,6 +118,24 @@ describe('exporters/copyProject', () => {
             'board-98-PQKJM-notes.png':           Buffer.from([8, 6, 7, 5, 3, 0, 9]),
             'board-98-PQKJM-thumbnail.png':       Buffer.from([8, 6, 7, 5, 3, 0, 9]),
             'board-98-PQKJM-posterframe.jpg':     Buffer.from([8, 6, 7, 5, 3, 0, 9])
+          },
+        },
+
+        'shot-generator': {
+          'shot-generator.storyboarder': withCustomCharacter(
+            fs.readFileSync(path.resolve(path.join(fixturesPath, 'shot-generator', 'shot-generator.storyboarder')))
+          ),
+          'images': {
+            'board-1-UDRF3-thumbnail.png':        EMPTY_BUFFER,
+            'board-1-UDRF3-posterframe.jpg':      EMPTY_BUFFER,
+            'board-1-UDRF3-shot-generator.png':   EMPTY_BUFFER,
+            'board-1-UDRF3-shot-generator-thumbnail.jpg':
+                                                  EMPTY_BUFFER,
+          },
+          'models': {
+            'characters': {
+              'character.glb':                    EMPTY_BUFFER
+            }
           }
         }
       }
@@ -179,6 +208,25 @@ describe('exporters/copyProject', () => {
       },
       /ENOENT/
     )
+  })
+
+  it('includes the models/ folder for shot generator projects with custom models', () => {
+    let srcFilePath = path.resolve(path.join(fixturesPath, 'shot-generator', 'shot-generator.storyboarder'))
+    let dstFolderPath = path.resolve(path.join(fixturesPath, 'shot-generator-export-with-models'))
+    fs.ensureDirSync(dstFolderPath)
+
+    exporterCopyProject.copyProject(srcFilePath, dstFolderPath)
+
+    assert(fs.existsSync(path.join(dstFolderPath, 'images', 'board-1-UDRF3-thumbnail.png')))
+    assert(fs.existsSync(path.join(dstFolderPath, 'images', 'board-1-UDRF3-posterframe.jpg')))
+    assert(fs.existsSync(path.join(dstFolderPath, 'images', 'board-1-UDRF3-shot-generator.png')))
+    assert(fs.existsSync(path.join(dstFolderPath, 'images', 'board-1-UDRF3-shot-generator-thumbnail.jpg')))
+
+    assert(fs.existsSync(path.join(dstFolderPath, 'images')), 'images/ folder should exist')
+    assert(fs.existsSync(path.join(dstFolderPath, 'models')), 'models/ folder should exist')
+
+    // custom model is included
+    assert(fs.existsSync(path.join(dstFolderPath, 'models', 'characters', 'character.glb')))
   })
 
   describe('options', () => {
