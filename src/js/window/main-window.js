@@ -13,6 +13,7 @@ const R = require('ramda')
 const CAF = require('caf')
 const isDev = require('electron-is-dev')
 const log = require('electron-log')
+log.catchErrors()
 
 const React = require('react')
 const ReactDOM = require('react-dom')
