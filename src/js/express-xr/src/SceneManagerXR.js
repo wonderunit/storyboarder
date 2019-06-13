@@ -55,7 +55,7 @@ THREE.Cache.enabled = true
 
 // preload audio immediately into cache
 new THREE.AudioLoader().load('data/snd/vr-select.ogg', () => {})
-new THREE.AudioLoader().load('data/snd/vr-atmosphere.ogg', () => {})
+new THREE.AudioLoader().load('data/snd/vr-atmosphere.mp3', () => {})
 new THREE.AudioLoader().load('data/snd/vr-welcome.ogg', () => {})
 
 const controllerObjectSettings = {
@@ -1128,7 +1128,7 @@ const SceneContent = ({
     window.addEventListener( 'vrdisplaypresentchange', event => {
       if (event.display.isPresenting) {
         new THREE.AudioLoader().load(
-          'data/snd/vr-atmosphere.ogg',
+          'data/snd/vr-atmosphere.mp3',
           buffer => {
             atmosphere = new THREE.PositionalAudio( listener )
             atmosphere.setBuffer( buffer )
