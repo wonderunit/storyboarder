@@ -447,7 +447,7 @@ const SceneContent = ({
       startingObjectQuaternion: startingObjectQuaternion.current,
       deviceQuaternion,
       camera,
-      isXRController: true
+      useCameraOffset: true
     })
 
     target.quaternion.copy(objectQuaternion.normalize())
@@ -918,8 +918,6 @@ const SceneContent = ({
   }
 
   const onGripDown = event => {
-    if (selectedObjRef.current) return
-
     teleportMode.current = true
     const controller = event.target
 
@@ -932,6 +930,8 @@ const SceneContent = ({
         return
       }
     }
+
+    if (selectedObjRef.current) return
 
     const intersections = getIntersections(controller, intersectArray.current)
 

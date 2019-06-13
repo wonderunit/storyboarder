@@ -5,7 +5,7 @@ const applyDeviceQuaternion = ({
   startingObjectQuaternion,
   deviceQuaternion,
   camera,
-  isXRController = false
+  useCameraOffset = false
 }) => {
   let deviceDifference = new THREE.Quaternion().inverse().multiply(deviceQuaternion).multiply(startingDeviceOffset).normalize()
   // get camera's offset
@@ -23,14 +23,14 @@ const applyDeviceQuaternion = ({
   // parent's rotation
   objectQuaternion.multiply(parentOffset.inverse())
   // camera
-  if (!isXRController) objectQuaternion.multiply(cameraOffset)
+  if (!useCameraOffset) objectQuaternion.multiply(cameraOffset)
 
   // APPLY THE DEVICE DIFFERENCE, THIS IS THE MAJOR OPERATION
   objectQuaternion.multiply(deviceDifference)
 
   // ROTATE THE ZEROS BACK INTO PLACE (REVERSE ORDER)
   // camera
-  if (!isXRController) objectQuaternion.multiply(cameraOffset.inverse())
+  if (!useCameraOffset) objectQuaternion.multiply(cameraOffset.inverse())
   // parent's rotation
   objectQuaternion.multiply(parentOffset.inverse())
   // offset
