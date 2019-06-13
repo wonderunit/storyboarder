@@ -131,6 +131,7 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, ...props }
           far={1000}
           onUpdate={self => self.updateProjectionMatrix()}
         />
+        {props.children}
       </group>
     </group>
   )

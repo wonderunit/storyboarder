@@ -57,6 +57,7 @@ const SGSpotLight = ({ ...props }) => {
         <cylinderBufferGeometry attach="geometry" args={[0.0, 0.05, 0.14]} />
         <meshLambertMaterial attach="material" color={0xffff66} />
       </mesh>
+      {props.children}
     </group>
   )
 }
