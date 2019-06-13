@@ -6,6 +6,8 @@ const express = require('express')
 const app = express()
 const http = require('http').Server(app)
 
+const log = require('electron-log')
+
 const portNumber = 1234
 
 const { getSerializedState } = require('../shared/reducers/shot-generator')
@@ -78,15 +80,15 @@ class XRServer {
             )
           }
           if (ip) {
-            console.log(`${desc} http://${ip}:${portNumber}`)
+            log.info(`${desc} http://${ip}:${portNumber}`)
 
           } else {
-            console.log(`${desc} http://${hostname}:${portNumber}`)
+            log.info(`${desc} http://${hostname}:${portNumber}`)
           }
           return
         }
 
-        console.log(`${desc} http://${addr}:${portNumber}`)
+        log.info(`${desc} http://${addr}:${portNumber}`)
       })
     })
   }

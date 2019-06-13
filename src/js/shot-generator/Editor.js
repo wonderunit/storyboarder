@@ -7,6 +7,8 @@ const { useState, useEffect, useRef, useContext, useMemo } = React
 
 const { ipcRenderer, remote } = require('electron')
 
+const log = require('electron-log')
+
 const {
   SceneContext,
   Toolbar,
@@ -346,13 +348,13 @@ const Editor = connect(
             filepath,
             event => {
               let value = { scene: event.detail.loaderRootNode }
-              console.log('cache: success', filepath)
+              log.info('cache: success', filepath)
               dispatch({ type: 'ATTACHMENTS_SUCCESS', payload: { id: filepath, value } })
             },
             null,
             error => {
-              console.error('cache: error')
-              console.error(error)
+              log.error('cache: error')
+              log.error(error)
               alert(error)
               // dispatch({ type: 'ATTACHMENTS_ERROR', payload: { id: filepath, error } })
               dispatch({ type: 'ATTACHMENTS_DELETE', payload: { id: filepath } })
@@ -365,13 +367,13 @@ const Editor = connect(
           gltfLoader.load(
             filepath,
             value => {
-              console.log('cache: success', filepath)
+              log.info('cache: success', filepath)
               dispatch({ type: 'ATTACHMENTS_SUCCESS', payload: { id: filepath, value } })
             },
             null,
             error => {
-              console.error('cache: error')
-              console.error(error)
+              log.error('cache: error')
+              log.error(error)
               alert(error)
               // dispatch({ type: 'ATTACHMENTS_ERROR', payload: { id: filepath, error } })
               dispatch({ type: 'ATTACHMENTS_DELETE', payload: { id: filepath } })
@@ -461,7 +463,7 @@ const Editor = connect(
               //   ModelLoader.projectFolder(updatedFilepath)
               // ) {
               //   // update the model path to relative path
-              //   console.log(`setting model from absolute to relative model:${model} filepath:${updatedFilepath}`)
+              //   log.info(`setting model from absolute to relative model:${model} filepath:${updatedFilepath}`)
               //   let updatedModel = path.join('models', loadable.type, path.basename(updatedFilepath))
               //   dispatch(updateObject(loadable.id, { model: updatedModel }))
               //   return
@@ -485,7 +487,7 @@ const Editor = connect(
               return
 
             } catch (error) {
-              console.error(error)
+              log.error(error)
 
               // cancellation by user
               // dialog.showMessageBox({
@@ -508,7 +510,7 @@ const Editor = connect(
               path.basename(expectedFilepath)
             )
 
-            console.log('will copy from', src, 'to', dst)
+            log.info('will copy from', src, 'to', dst)
 
             // make sure the path exists
             fs.ensureDirSync(path.dirname(dst))
@@ -526,12 +528,12 @@ const Editor = connect(
               //     message: 'Model file already exists. Overwrite?'
               //   })
               //   if (choice !== 0) {
-              //     console.log('cancelled model file copy')
+              //     log.info('cancelled model file copy')
               //     throw new Error('Skipped')
               //   }
               // }
 
-              console.log(`copying model file from ${src} to ${dst}`)
+              log.info(`copying model file from ${src} to ${dst}`)
               fs.copySync(src, dst, { overwrite: true, errorOnExist: false })
             }
 
@@ -607,7 +609,7 @@ const Editor = connect(
                 )
               })
 
-              console.log('user selected updatedFilepath:', updatedFilepath)
+              log.info('user selected updatedFilepath:', updatedFilepath)
 
               // TODO test:
               // handle case where user relocated to a file in the models/* folder
@@ -625,7 +627,7 @@ const Editor = connect(
               return
 
             } catch (error) {
-              console.error(error)
+              log.error(error)
               dispatch({ type: 'ATTACHMENTS_DELETE', payload: { id: expectedFilepath } })
               return
             }
@@ -644,12 +646,12 @@ const Editor = connect(
               path.basename(expectedFilepath)
             )
 
-            console.log('will copy from', src, 'to', dst)
+            log.info('will copy from', src, 'to', dst)
 
             fs.ensureDirSync(path.dirname(dst))
 
             if (src !== dst) {
-              console.log(`copying model file from ${src} to ${dst}`)
+              log.info(`copying model file from ${src} to ${dst}`)
               fs.copySync(src, dst, { overwrite: true, errorOnExist: false })
             }
 
@@ -658,7 +660,7 @@ const Editor = connect(
               path.basename(dst)
             )
 
-            console.log('copied! updated model:', updatedModel)
+            log.info('copied! updated model:', updatedModel)
             dispatch({
               type: 'UPDATE_WORLD_ENVIRONMENT',
               payload: {

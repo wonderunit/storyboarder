@@ -12,6 +12,8 @@ const plist = require('plist')
 const R = require('ramda')
 const CAF = require('caf')
 const isDev = require('electron-is-dev')
+const log = require('electron-log')
+log.catchErrors()
 
 const React = require('react')
 const ReactDOM = require('react-dom')
@@ -226,8 +228,8 @@ remote.getCurrentWindow().on('focus', () => {
 const load = async (event, args) => {
   try {
     if (args[1]) {
-      log({ type: 'progress', message: 'Loading Project with Script' })
-      console.log("LOADING SCRIPT FILE", args[0])
+      logToView({ type: 'progress', message: 'Loading Project with Script' })
+      log.info("LOADING SCRIPT FILE", args[0])
       ipcRenderer.send('analyticsEvent', 'Application', 'open script', args[0])
 
       scriptFilePath = args[0]
@@ -245,13 +247,13 @@ const load = async (event, args) => {
         payload: { path: boardFilename }
       })
     } else {
-      log({ type: 'progress', message: 'Loading Project File' })
+      logToView({ type: 'progress', message: 'Loading Project File' })
       // if not, its just a simple single boarder file
       boardFilename = args[0]
       boardPath = boardFilename.split(path.sep)
       boardPath.pop()
       boardPath = boardPath.join(path.sep)
-      console.log(' BOARD PATH: ', boardFilename)
+      log.info(' BOARD PATH: ', boardFilename)
       try {
         boardData = JSON.parse(fs.readFileSync(boardFilename))
         ipcRenderer.send('analyticsEvent', 'Application', 'open', boardFilename, boardData.boards.length)
@@ -272,7 +274,7 @@ const load = async (event, args) => {
 
     await verifyScene()
 
-    log({ type: 'progress', message: 'Preparing to display' })
+    logToView({ type: 'progress', message: 'Preparing to display' })
 
     resize()
     // storyboarderSketchPane.resize()
@@ -309,7 +311,7 @@ const load = async (event, args) => {
                 // report
                 ipcRenderer.send('analyticsEvent', 'Board', 'new')
               })
-              .catch(err => console.error(err))
+              .catch(err => log.error(err))
           }
         }
 
@@ -359,7 +361,7 @@ const load = async (event, args) => {
     })
 
   } catch (error) {
-    console.error(error)
+    log.error(error)
 
     // DEBUG show current window
     if (isDev) {
@@ -367,7 +369,7 @@ const load = async (event, args) => {
       remote.getCurrentWebContents().openDevTools()
     }
 
-    log({ type: 'error', message: error.message })
+    logToView({ type: 'error', message: error.message })
     remote.dialog.showMessageBox({
       type: 'error',
       message: error.message
@@ -606,8 +608,8 @@ const migrateScene = () => {
   }
 
   fs.ensureDirSync(dst)
-  console.log('Preparing to migrate scene to new Storyboarder layers format')
-  console.log('Making a backup before migrating …')
+  log.info('Preparing to migrate scene to new Storyboarder layers format')
+  log.info('Making a backup before migrating …')
   exporterCopyProject.copyProject(
     src,
     dst,
@@ -625,7 +627,7 @@ const migrateScene = () => {
     if (fs.existsSync(path.join(boardImagesPath, board.url))) {
       // catch edge case where fill layer already exists
       if (board.layers && board.layers.fill) {
-        console.warn('Found an old main layer but fill already exists')
+        log.warn('Found an old main layer but fill already exists')
         remote.dialog.showMessageBox({
           type: 'error',
           message: 'Error while migrating board: fill layer already exists'
@@ -637,7 +639,7 @@ const migrateScene = () => {
         }
         // move main layer to fill layer
         let filename = boardModel.boardFilenameForLayer(board, 'fill')
-        console.log(`Moving ${board.url} to new fill layer ${filename}`)
+        log.info(`Moving ${board.url} to new fill layer ${filename}`)
         fs.moveSync(path.join(boardImagesPath, board.url), path.join(boardImagesPath, filename))
         board.layers.fill = {
           url: filename
@@ -681,7 +683,7 @@ const verifyScene = async () => {
     let imageData = canvas.toDataURL()
 
     for (let filename of missing) {
-      console.log('saving placeholder', filename)
+      log.info('saving placeholder', filename)
       saveDataURLtoFile(imageData, filename)
     }
     notifications.notify({ message: 'We’ved added placeholder files for any missing image(s). ' +
@@ -723,7 +725,7 @@ const verifyScene = async () => {
 }
 
 const loadBoardUI = async () => {
-  log({ type: 'progress', message: 'Loading User Interface' })
+  logToView({ type: 'progress', message: 'Loading User Interface' })
 
   let size = boardModel.boardFileImageSize(boardData)
 
@@ -1029,13 +1031,13 @@ const loadBoardUI = async () => {
   document.querySelector('#show-in-finder-button').addEventListener('pointerdown', event => {
     let filepath = getActiveLayerFilePath()
     if (filepath) {
-      console.log('revealing', filepath)
+      log.info('revealing', filepath)
       shell.showItemInFolder(filepath)
     } else {
       // TODO find the first existing layer? see: https://github.com/wonderunit/storyboarder/issues/1173
 
       // e.g.: `eraser`, or a layer image that hasn't save yet
-      console.log('could not find image file for current layer')
+      log.info('could not find image file for current layer')
 
       // uncomment to warn artist first
       // remote.dialog.showMessageBox({
@@ -1077,7 +1079,7 @@ const loadBoardUI = async () => {
     mouseDragStartX = null
     clearTimeout(editModeTimer)
 
-    // console.log('pointerup', isEditMode)
+    // log.info('pointerup', isEditMode)
     if (isEditMode) {
       let x = e.clientX, y = e.clientY
 
@@ -1091,7 +1093,7 @@ const loadBoardUI = async () => {
       }
 
       if (!el) {
-        console.warn("couldn't find nearest thumbnail")
+        log.warn("couldn't find nearest thumbnail")
       }
 
       let index
@@ -1102,7 +1104,7 @@ const loadBoardUI = async () => {
       }
 
       if (!util.isUndefined(index)) {
-        console.log('user requests move operation:', selections, 'to insert after', index)
+        log.info('user requests move operation:', selections, 'to insert after', index)
         saveImageFile().then(() => {
           let didChange = moveSelectedBoards(index)
 
@@ -1114,7 +1116,7 @@ const loadBoardUI = async () => {
           gotoBoard(currentBoard, true)
         })
       } else {
-        console.log('could not find point for move operation')
+        log.info('could not find point for move operation')
       }
 
       disableEditMode()
@@ -1286,8 +1288,8 @@ const loadBoardUI = async () => {
       if (state.toolbar.onion) {
         onionSkin.setState({ enabled: true })
         onionSkin.load().catch(err => {
-          console.log('could not load onion skin')
-          console.log(err)
+          log.info('could not load onion skin')
+          log.info(err)
         })
       } else {
         onionSkin.setState({ enabled: false })
@@ -1535,7 +1537,7 @@ const loadBoardUI = async () => {
   }
 
   window.addEventListener('beforeunload', event => {
-    console.log('Close requested! Saving ...')
+    log.info('Close requested! Saving ...')
 
     saveImageFile() // NOTE image is saved first, which ensures layers are present in data
     saveBoardFile() // ... then project data can be saved
@@ -1565,10 +1567,10 @@ const loadBoardUI = async () => {
       // dispatch a change to preferences merging in toolbar data
       // first dispatch locally
       store.dispatch({ type: 'PREFERENCES_MERGE_FROM_TOOLBAR', payload: store.getState().toolbar, meta: { scope: 'local' } })
-      console.log('setting toolbar preferences')
+      log.info('setting toolbar preferences')
       // TODO set caption value from toolbar ui state
       prefsModule.set('toolbar', store.getState().preferences.toolbar)
-      console.log('writing to prefs.json')
+      log.info('writing to prefs.json')
       prefsModule.savePrefs()
       // then, let main and the rest of the renderers know
       // NOTE this is async
@@ -1820,7 +1822,7 @@ const loadBoardUI = async () => {
 
       // TODO can this ever actually happen?
       if (R.isNil(recordingToBoardIndex)) {
-        console.error('whoops! not currently recording!')
+        log.error('whoops! not currently recording!')
         return
       }
 
@@ -1848,13 +1850,13 @@ const loadBoardUI = async () => {
       // copy to project folder
       let newPath = path.join(boardPath, 'images', newFilename)
 
-      console.log('saving audio to', newPath)
+      log.info('saving audio to', newPath)
 
       try {
         fs.writeFileSync(newPath, buffer, { encoding: 'binary' })
         notifications.notify({ message: 'Saved audio!', timing: 5 })
       } catch (err) {
-        console.error(err)
+        log.error(err)
         notifications.notify({ message: `Error saving audio. ${err}`, timing: 5 })
         recordingToBoardIndex = undefined
         return
@@ -1914,7 +1916,7 @@ const loadBoardUI = async () => {
 }
 
 const updateBoardUI = async () => {
-  log({ type: 'progress', message: 'Rendering User Interface' })
+  logToView({ type: 'progress', message: 'Rendering User Interface' })
 
   document.querySelector('#canvas-caption').style.display = 'none'
   renderViewMode()
@@ -1986,7 +1988,7 @@ const renderScene = async () => {
               boardModel.boardFilenameForThumbnail(board)
             )
           } else {
-            console.warn('getSrcByUid failed', uid)
+            log.warn('getSrcByUid failed', uid)
             return undefined
           }
         }
@@ -2084,7 +2086,7 @@ let newBoard = async (position, shouldAddToUndoStack = true) => {
 //
 // TODO support EXIF orientation see: https://github.com/wonderunit/storyboarder/issues/1123
 let insertNewBoardsWithFiles = async filepaths => {
-  console.log('main-window#insertNewBoardsWithFiles')
+  log.info('main-window#insertNewBoardsWithFiles')
 
   // TODO when would importTargetLayer not be 'reference'?
   // TODO insertNewBoardsWithFiles only supports reference and main anyway
@@ -2109,7 +2111,7 @@ let insertNewBoardsWithFiles = async filepaths => {
     )
 
     if (!imageData || !imageData[targetLayer]) {
-      console.error('Could not find imageData', { imageData, targetLayer })
+      log.error('Could not find imageData', { imageData, targetLayer })
       notifications.notify({
         message: `Oops! There was a problem importing ${filepath}. Try adding a layer named 'reference' for Storyboarder to import.`,
         timing: 10
@@ -2136,10 +2138,10 @@ let insertNewBoardsWithFiles = async filepaths => {
         targetLayer === 'main' || // for old preferences files
         targetLayer === 'fill'
       ) {
-        console.log('adding as fill')
+        log.info('adding as fill')
         layerName = 'fill'
       } else {
-        console.log('adding as reference')
+        log.info('adding as reference')
         layerName = 'reference'
       }
 
@@ -2152,7 +2154,7 @@ let insertNewBoardsWithFiles = async filepaths => {
             : {}
         )
       }
-      console.log('saving inserted board as', board.layers[layerName].url)
+      log.info('saving inserted board as', board.layers[layerName].url)
       saveDataURLtoFile(datauri, board.layers[layerName].url)
 
       await savePosterFrame(board, true)
@@ -2163,7 +2165,7 @@ let insertNewBoardsWithFiles = async filepaths => {
       insertionIndex++
       numAdded++
     } catch (error) {
-      console.error('Got error', error)
+      log.error('Got error', error)
       notifications.notify({
         message: `Could not load image ${path.basename(filepath)}\n` + error.message,
         timing: 10
@@ -2189,11 +2191,11 @@ const updateAudioDurations = () => {
   for (let board of boardData.boards) {
     if (board.audio) {
       if (!board.audio.duration) {
-        // console.log(`duration missing for ${board.uid}. adding.`)
+        // log.info(`duration missing for ${board.uid}. adding.`)
         shouldSave = true
       }
       board.audio.duration = audioPlayback.getAudioBufferByFilename(board.audio.filename).duration * 1000
-      // console.log(`set audio duration to ${board.audio.duration}`)
+      // log.info(`set audio duration to ${board.audio.duration}`)
     }
   }
   if (shouldSave) {
@@ -2230,9 +2232,9 @@ let saveBoardFile = (opt = { force: false }) => {
         fs.moveSync(backupFilePath, boardFilename, { overwrite: true })
 
         boardFileDirty = false
-        console.log('saved board file:', boardFilename)
+        log.info('saved board file:', boardFilename)
       } catch (err) {
-        console.error(err)
+        log.error(err)
         alert('Could not save project.\n' + err)
       }
     }
@@ -2304,7 +2306,7 @@ let saveDataURLtoFile = (dataURL, filename) => {
 // call it before changing boards to ensure the current work is saved
 //
 let saveImageFile = async () => {
-  console.log('main-window#saveImageFile')
+  log.info('main-window#saveImageFile')
 
   isSavingImageFile = true
 
@@ -2313,7 +2315,7 @@ let saveImageFile = async () => {
   // are we still drawing?
   if (storyboarderSketchPane.getIsDrawingOrStabilizing()) {
     // wait, then retry
-    console.warn('Still drawing. Not ready to save yet. Retry in 5s')
+    log.warn('Still drawing. Not ready to save yet. Retry in 5s')
     imageFileDirtyTimer = setTimeout(saveImageFile, 5000)
     isSavingImageFile = false
     return
@@ -2340,7 +2342,7 @@ let saveImageFile = async () => {
 
       // ensure board.layers[layer.name] exists
       if (!board.layers[layer.name]) {
-        console.log(`\tadding layer “${layer.name}” to board data`)
+        log.info(`\tadding layer “${layer.name}” to board data`)
         board.layers[layer.name] = {
           url: filename,
 
@@ -2372,7 +2374,7 @@ let saveImageFile = async () => {
 
   // export layers to PNG
   for (let { index, layer, imageFilePath } of exportables) {
-    console.log(`\tsaving layer “${layer.name}” to ${imageFilePath}`)
+    log.info(`\tsaving layer “${layer.name}” to ${imageFilePath}`)
     fs.writeFileSync(
       imageFilePath,
       storyboarderSketchPane.exportLayer(index, 'base64'),
@@ -2388,7 +2390,7 @@ let saveImageFile = async () => {
   clearTimeout(imageFileDirtyTimer)
 
   if (complete > 0) {
-    console.log(`\tsaved ${complete} modified layers`)
+    log.info(`\tsaved ${complete} modified layers`)
   }
 
   // create/update the thumbnail image file if necessary
@@ -2441,7 +2443,7 @@ let saveImageFile = async () => {
               }
             }
 
-            console.log('added', layerName, 'to board .layers data')
+            log.info('added', layerName, 'to board .layers data')
 
             shouldSaveBoardFile = true
           }
@@ -2449,9 +2451,9 @@ let saveImageFile = async () => {
 
         storyboarderSketchPane.clearLayerDirty(index)
         numSaved++
-        console.log('\tsaved', layerName, 'to', filename)
+        log.info('\tsaved', layerName, 'to', filename)
       } catch (err) {
-        console.warn(err)
+        log.warn(err)
       }
     }
   }
@@ -2461,7 +2463,7 @@ let saveImageFile = async () => {
     saveBoardFile()
   }
 
-  console.log(`saved ${numSaved} modified layers`)
+  log.info(`saved ${numSaved} modified layers`)
 
   // create/update the thumbnail image file if necessary
   let indexToSave = currentBoard // copy value
@@ -2545,11 +2547,11 @@ const savePosterFrame = async (board, forceReadFromFiles = false, blank = false)
     'base64'
   )
 
-  console.log('saved posterframe', path.basename(imageFilePath))
+  log.info('saved posterframe', path.basename(imageFilePath))
 }
 
 let openInEditor = async () => {
-  console.log('openInEditor')
+  log.info('openInEditor')
 
   try {
     let selectedBoards = []
@@ -2688,21 +2690,21 @@ let openInEditor = async () => {
 
         if (binaryPath) {
           child_process.exec(execString, (error, stdout, stderr) => {
-            console.log(execString)
+            log.info(execString)
             if (error) {
               notifications.notify({ message: `[WARNING] ${error}` })
               return
             }
-            // console.log(`stdout: ${stdout}`)
-            // console.log(`stderr: ${stderr}`)
+            // log.info(`stdout: ${stdout}`)
+            // log.info(`stderr: ${stderr}`)
           })
         } else {
           errmsg = 'Could not open editor'
         }
       } else {
-        console.log('\tshell.openItem', board.link)
+        log.info('\tshell.openItem', board.link)
         let result = shell.openItem(pathToLinkedFile)
-        console.log('\tshell.openItem result:', result)
+        log.info('\tshell.openItem result:', result)
         if (!result) {
           errmsg = 'Could not open editor'
         }
@@ -2718,7 +2720,7 @@ let openInEditor = async () => {
     ipcRenderer.send('analyticsEvent', 'Board', 'edit in photoshop')
 
   } catch (error) {
-    console.error(error)
+    log.error(error)
     notifications.notify({ message: '[WARNING] Error opening files in editor.' })
     notifications.notify({ message: error.toString() })
     return
@@ -2726,7 +2728,7 @@ let openInEditor = async () => {
 }
 
 const refreshLinkedBoardByFilename = async (filename, options = { forceReadFromFiles: false }) => {
-  console.log('refreshLinkedBoardByFilename', filename)
+  log.info('refreshLinkedBoardByFilename', filename)
 
   // find the board associated with this link filename
   let board = boardData.boards.find(b => b.link === filename)
@@ -2736,7 +2738,7 @@ const refreshLinkedBoardByFilename = async (filename, options = { forceReadFromF
       'Tried to update, from external editor,' +
       'a file that is not linked to any board: ' + filename
 
-    console.log(message)
+    log.info(message)
     notifications.notify({
       message
     })
@@ -2748,22 +2750,22 @@ const refreshLinkedBoardByFilename = async (filename, options = { forceReadFromF
   let isCurrentBoard = boardData.boards[currentBoard].uid === board.uid
 
   try {
-    console.log('\tloading', path.join(boardPath, 'images', board.link))
+    log.info('\tloading', path.join(boardPath, 'images', board.link))
 
     let buffer = fs.readFileSync(
       path.join(boardPath, 'images', board.link)
     )
 
-    console.log('\treading', path.join(boardPath, 'images', board.link))
+    log.info('\treading', path.join(boardPath, 'images', board.link))
     let canvas = importerPsd.fromPsdBufferComposite(buffer)
 
     let layer = storyboarderSketchPane.sketchPane.layers.findByName('reference')
 
     // ensure layer data exists
-    console.log('\tupdating layer data')
+    log.info('\tupdating layer data')
 
     // clear all non-reference layers
-    console.log(
+    log.info(
       'clearing non-reference layers from data' +
       isCurrentBoard 
         ? ' and SketchPane'
@@ -2778,18 +2780,18 @@ const refreshLinkedBoardByFilename = async (filename, options = { forceReadFromF
 
       if (layerName !== 'reference') {
         if (isCurrentBoard && !options.forceReadFromFiles) {
-          console.log('\t\t', layerName, 'sketchpane layer cleared')
+          log.info('\t\t', layerName, 'sketchpane layer cleared')
           storyboarderSketchPane.sketchPane.layers.findByName(layerName).clear()
         }
 
         if (board.layers[layerName]) {
-          console.log('\t\t', layerName, 'data cleared')
+          log.info('\t\t', layerName, 'data cleared')
           delete board.layers[layerName]
           // NOTE we DO NOT delete the PNG file from the file system
         }
       }
     }
-    console.log('\tupdating reference layer data')
+    log.info('\tupdating reference layer data')
     let filename = boardModel.boardFilenameForLayer(board, layer.name)
     board.layers.reference = {
       ...board.layers.reference,
@@ -2802,61 +2804,61 @@ const refreshLinkedBoardByFilename = async (filename, options = { forceReadFromF
     markBoardFileDirty() // NOTE ALWAYS results in a JSON update, even if data
                          // hasn't actually changed
 
-    console.log('\tisCurrentBoard?', isCurrentBoard)
+    log.info('\tisCurrentBoard?', isCurrentBoard)
     if (isCurrentBoard && !options.forceReadFromFiles) {
       // save undo state for ALL layers
-      console.log('\tstoring undoable state (pre)')
+      log.info('\tstoring undoable state (pre)')
       storeUndoStateForImage(true, storyboarderSketchPane.visibleLayersIndices)
 
       // update reference layer
-      console.log('\tstamping to reference layer')
+      log.info('\tstamping to reference layer')
       layer.replace(canvas)
 
       // store undo state for reference layer
-      console.log('\tmarking undo-able (post)')
+      log.info('\tmarking undo-able (post)')
       storeUndoStateForImage(false, [layer.index])
 
       // mark the reference layer dirty
-      console.log('\tmarking layer dirty so it will save', layer.index)
+      log.info('\tmarking layer dirty so it will save', layer.index)
       markImageFileDirty([layer.index])
 
       // uncomment to save image and update thumbnail immediately
       // await saveImageFile()
 
       // update thumbnail immediately
-      console.log('\tupdating thumbnail')
+      log.info('\tupdating thumbnail')
       let index = await saveThumbnailFile(boardData.boards.indexOf(board))
       await updateThumbnailDisplayFromFile(index)
 
-      console.log('\trendering thumbnail')
+      log.info('\trendering thumbnail')
       renderThumbnailDrawer()
     } else {
-      console.log('\tsaving reference layer to:', filename)
+      log.info('\tsaving reference layer to:', filename)
       saveDataURLtoFile(canvas.toDataURL(), filename)
 
       // update the thumbnail
       //
       // explicitly indicate to renderer that the thumbnail file has changed
       // FIXME use mtime instead of etags?
-      console.log('\tupdating etag')
+      log.info('\tupdating etag')
       setEtag(path.join(boardPath, 'images', boardModel.boardFilenameForThumbnail(board)))
       // save
-      console.log('\tsaving thumbnail')
+      log.info('\tsaving thumbnail')
       let index = await saveThumbnailFile(boardData.boards.indexOf(board), { forceReadFromFiles: true })
       // render thumbnail
       await updateThumbnailDisplayFromFile(index)
 
       // save a posterframe for onion skin
-      console.log('\tsaving posterframe')
+      log.info('\tsaving posterframe')
       await savePosterFrame(board, true)
 
       // FIXME known issue: onion skin does not reload to reflect the changed file
       //       see: https://github.com/wonderunit/storyboarder/issues/1185
     }
 
-    console.log('\tdone!')
+    log.info('\tdone!')
   } catch (err) {
-    console.error(err)
+    log.error(err)
     notifications.notify({
       message: `[WARNING] Could not import from file ${filename}.`
     })
@@ -2891,10 +2893,10 @@ const refreshLinkedBoardByFilename = async (filename, options = { forceReadFromF
 //       try {
 //         fs.writeFile(imageFilePath, imageData, 'base64', () => {
 //           resolve()
-//           console.log('saved thumbnail', imageFilePath)
+//           log.info('saved thumbnail', imageFilePath)
 //         })
 //       } catch (err) {
-//         console.error(err)
+//         log.error(err)
 //         reject(err)
 //       }/
 
@@ -2971,7 +2973,7 @@ const saveThumbnailFile = async (index, options = { forceReadFromFiles: false, b
 
   fs.writeFileSync(imageFilePath, imageData, 'base64')
 
-  console.log('saved thumbnail', path.basename(imageFilePath), 'at index:', index)
+  log.info('saved thumbnail', path.basename(imageFilePath), 'at index:', index)
 
   return index
 }
@@ -3118,7 +3120,7 @@ let duplicateBoard = async () => {
   boardDst.duration = boardSrc.duration // either `undefined` or a value in msecs
 
   try {
-    // console.log('copying files from index', currentBoard, 'to index', insertAt)
+    // log.info('copying files from index', currentBoard, 'to index', insertAt)
 
     // every layer
     let filePairs = boardSrc.layers
@@ -3160,15 +3162,15 @@ let duplicateBoard = async () => {
     }))
 
     for (let { from, to } of filePairs) {
-      // console.log('duplicate', path.basename(from), 'to', path.basename(to))
+      // log.info('duplicate', path.basename(from), 'to', path.basename(to))
       if (!fs.existsSync(from)) {
-        console.error('Could not find', from)
+        log.error('Could not find', from)
         throw new Error('Could not find', from)
       }
     }
 
     for (let { from, to } of filePairs) {
-      // console.log('duplicate is copying from', from, 'to', to)
+      // log.info('duplicate is copying from', from, 'to', to)
       fs.writeFileSync(to, fs.readFileSync(from))
     }
 
@@ -3187,7 +3189,7 @@ let duplicateBoard = async () => {
 
     return insertAt
   } catch (err) {
-    console.error(err)
+    log.error(err)
     notifications.notify({ message: 'Error: Could not duplicate board.', timing: 5 })
     throw new Error(err)
   }
@@ -3245,13 +3247,13 @@ let goNextBoard = async (direction, shouldPreserveSelections = false) => {
   index = Math.min(Math.max(index, 0), boardData.boards.length - 1)
 
   if (index !== currentBoard) {
-    console.log(index, '!==', currentBoard)
+    log.info(index, '!==', currentBoard)
     await saveImageFile()
     currentBoard = index
-    console.log('calling gotoBoard')
+    log.info('calling gotoBoard')
     await gotoBoard(currentBoard, shouldPreserveSelections)
   } else {
-    console.log('not calling gotoBoard')
+    log.info('not calling gotoBoard')
   }
 }
 
@@ -3370,8 +3372,8 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
         audioPlayback.playBoard(currentBoard)
         resolve()
       }).catch(e => {
-        console.log('gotoBoard could not updateSketchPaneBoard')
-        console.error(e)
+        log.info('gotoBoard could not updateSketchPaneBoard')
+        log.error(e)
         reject(e)
       })
   })
@@ -3677,7 +3679,7 @@ const loadPosterFrame = async board => {
   let imageFilePath = path.join(boardPath, 'images', filename)
 
   if (!fs.existsSync(imageFilePath)) {
-    console.log('loadPosterFrame failed')
+    log.info('loadPosterFrame failed')
     return false
   }
 
@@ -3689,15 +3691,15 @@ const loadPosterFrame = async board => {
       storyboarderSketchPane.sketchPane.layers.findByName('composite').index,
       image
     )
-    console.log('loadPosterFrame rendered jpg')
+    log.info('loadPosterFrame rendered jpg')
     return true
   } catch (err) {
-    console.log('loadPosterFrame failed')
+    log.info('loadPosterFrame failed')
     return false
   }
 }
 const clearPosterFrame = () => {
-  console.log('clearPosterFrame')
+  log.info('clearPosterFrame')
   storyboarderSketchPane.clearLayer(
     storyboarderSketchPane.sketchPane.layers.findByName('composite').index
   )
@@ -3732,7 +3734,7 @@ const renderFakePosterFrame = () => {
   layer.replaceTextureFromCanvas(fakePosterFrameCanvas)
   // TODO remove the canvas from PIXI cache?
 
-  console.log('loadPosterFrame rendered white canvas')
+  log.info('loadPosterFrame rendered white canvas')
 }
 
 let loaderIds = 0
@@ -3772,7 +3774,7 @@ function * loadSketchPaneLayers (signal, board, indexToLoad) {
   }
 
   for (let { index, filepath } of loadables) {
-    console.log(`[${loaderId}] load layer`, index, path.basename(filepath))
+    log.info(`[${loaderId}] load layer`, index, path.basename(filepath))
 
     let image = yield exporterCommon.getImage(filepath + '?' + cacheKey(filepath))
     storyboarderSketchPane.sketchPane.replaceLayer(index, image)
@@ -3808,11 +3810,11 @@ function * loadSketchPaneLayers (signal, board, indexToLoad) {
 }
 
 const updateSketchPaneBoard = async () => {
-  console.log(`%cupdateSketchPaneBoard`, 'color:purple')
+  log.info(`%cupdateSketchPaneBoard`, 'color:purple')
 
   // cancel any in-progress loading
   if (cancelTokens.updateSketchPaneBoard && !cancelTokens.updateSketchPaneBoard.signal.aborted) {
-    console.log(`%ccanceling in-progress load`, 'color:red')
+    log.info(`%ccanceling in-progress load`, 'color:red')
     cancelTokens.updateSketchPaneBoard.abort('cancel')
     cancelTokens.updateSketchPaneBoard = undefined
   }
@@ -3820,7 +3822,7 @@ const updateSketchPaneBoard = async () => {
   // start a new loading process
   cancelTokens.updateSketchPaneBoard = new CAF.cancelToken()
 
-  console.log(`%cloadSketchPaneLayers`, 'color:orange')
+  log.info(`%cloadSketchPaneLayers`, 'color:orange')
 
   // get current board
   let indexToLoad = currentBoard
@@ -3833,8 +3835,8 @@ const updateSketchPaneBoard = async () => {
     let signal = cancelTokens.updateSketchPaneBoard.signal
     await cancelable(signal, board, indexToLoad)
   } catch (err) {
-    console.log('failed loadSketchPaneLayers')
-    console.warn(err)
+    log.info('failed loadSketchPaneLayers')
+    log.warn(err)
   }
 
   // load and render the onion skin
@@ -3849,8 +3851,8 @@ const updateSketchPaneBoard = async () => {
     })
     await onionSkin.load(cancelTokens.updateSketchPaneBoard)
   } catch (err) {
-    console.log('failed onionSkin.load')
-    console.error(err)
+    log.info('failed onionSkin.load')
+    log.error(err)
   }
 }
 
@@ -3972,7 +3974,7 @@ let renderThumbnailDrawer = () => {
         html.push('<img src="//:0" height="60" width="' + thumbnailWidth + '">')
       }
     } catch (err) {
-      console.error(err)
+      log.error(err)
     }
     html.push('<div class="info">')
     html.push('<div class="number">' + board.shot + '</div>')
@@ -4021,7 +4023,7 @@ let renderThumbnailDrawer = () => {
       newBoard().then(index => {
         gotoBoard(index)
         ipcRenderer.send('analyticsEvent', 'Board', 'new')
-      }).catch(err => console.error(err))
+      }).catch(err => log.error(err))
     })
     contextMenu.on('delete', () => {
       let numDeleted = deleteBoards()
@@ -4039,7 +4041,7 @@ let renderThumbnailDrawer = () => {
           gotoBoard(index)
           ipcRenderer.send('analyticsEvent', 'Board', 'duplicate')
         })
-        .catch(err => console.error(err))
+        .catch(err => log.error(err))
     })
     contextMenu.on('copy', () => {
       copyBoards()
@@ -4081,7 +4083,7 @@ let renderThumbnailDrawer = () => {
       }
     })
     thumb.addEventListener('pointerdown', (e) => {
-      console.log('DOWN')
+      log.info('DOWN')
       if (!isEditMode && selections.size <= 1) contextMenu.attachTo(e.target)
 
       // always track cursor position
@@ -4161,7 +4163,7 @@ let renderThumbnailButtons = () => {
       newBoard(boardData.boards.length).then(index => {
         gotoBoard(index)
         ipcRenderer.send('analyticsEvent', 'Board', 'new')
-      }).catch(err => console.error(err))
+      }).catch(err => log.error(err))
     })
 
     // NOTE tooltips.setupTooltipForElement checks prefs each time, e.g.:
@@ -4289,7 +4291,7 @@ let renderScript = () => {
   // HACK basic HTML strip, adds two spaces. could use 'striptags' lib instead?
   const stripHtml = string => string.replace(/<[^>]+>/g, ' ')
 
-  // console.log('renderScript currentScene:', currentScene)
+  // log.info('renderScript currentScene:', currentScene)
   let sceneCount = 0
   let html = []
   for (var node of scriptData ) {
@@ -4473,8 +4475,8 @@ let loadScene = async (sceneNumber) => {
         let directoryFound = false
         let foundDirectoryName
 
-        console.log('scene:')
-        console.log(node)
+        log.info('scene:')
+        log.info(node)
 
         let id
 
@@ -4495,14 +4497,14 @@ let loadScene = async (sceneNumber) => {
           if (directoryId == id) {
             directoryFound = true
             foundDirectoryName = directory
-            console.log("FOUND THE DIRECTORY!!!!")
+            log.info("FOUND THE DIRECTORY!!!!")
             break
           }
         }
 
         if (!directoryFound) {
-          console.log(node)
-          console.log("MAKE DIRECTORY")
+          log.info(node)
+          log.info("MAKE DIRECTORY")
 
           let directoryName = 'Scene-' + node.scene_number + '-'
           if (node.synopsis) {
@@ -4512,7 +4514,7 @@ let loadScene = async (sceneNumber) => {
           }
           directoryName += '-' + node.scene_id
 
-          console.log(directoryName)
+          log.info(directoryName)
           // make directory
           fs.mkdirSync(path.join(currentPath, directoryName))
           // make storyboarder file
@@ -4532,8 +4534,8 @@ let loadScene = async (sceneNumber) => {
 
         } else {
           // load storyboarder file
-          console.log('load storyboarder!')
-          console.log(foundDirectoryName)
+          log.info('load storyboarder!')
+          log.info(foundDirectoryName)
 
           if (!fs.existsSync(path.join(currentPath, foundDirectoryName, 'images'))) {
             fs.mkdirSync(path.join(currentPath, foundDirectoryName, 'images'))
@@ -4562,7 +4564,7 @@ let loadScene = async (sceneNumber) => {
     boardPath = boardFilename.split(path.sep)
     boardPath.pop()
     boardPath = boardPath.join(path.sep)
-    console.log('BOARD PATH:', boardPath)
+    log.info('BOARD PATH:', boardPath)
 
     dragTarget = document.querySelector('#thumbnail-container')
     dragTarget.style.scrollBehavior = 'unset'
@@ -4647,7 +4649,7 @@ window.onkeydown = (e) => {
   }
 
   if (!textInputMode) {
-    // console.log('window.onkeydown', e)
+    // log.info('window.onkeydown', e)
 
     if (isCommandPressed('drawing:marquee-mode')) {
       if (store.getState().toolbar.mode !== 'marquee') {
@@ -5078,13 +5080,13 @@ ipcRenderer.on('newBoard', (event, args)=>{
       newBoard().then(index => {
         gotoBoard(index)
         ipcRenderer.send('analyticsEvent', 'Board', 'new')
-      }).catch(err => console.error(err))
+      }).catch(err => log.error(err))
     } else {
       // insert before
       newBoard(currentBoard).then(() => {
         gotoBoard(currentBoard)
         ipcRenderer.send('analyticsEvent', 'Board', 'new')
-      }).catch(err => console.error(err))
+      }).catch(err => log.error(err))
     }
   }
   ipcRenderer.send('analyticsEvent', 'Board', 'new')
@@ -5137,7 +5139,7 @@ ipcRenderer.on('undo', (e, arg) => {
     // find the focused window (which may be main-window)
     for (let w of remote.BrowserWindow.getAllWindows()) {
       if (w.isFocused()) {
-        // console.log('undo on window', w.id)
+        // log.info('undo on window', w.id)
         w.webContents.undo()
         return
       }
@@ -5160,7 +5162,7 @@ ipcRenderer.on('redo', (e, arg) => {
     // find the focused window (which may be main-window)
     for (let w of remote.BrowserWindow.getAllWindows()) {
       if (w.isFocused()) {
-        // console.log('redo on window', w.id)
+        // log.info('redo on window', w.id)
         w.webContents.redo()
         return
       }
@@ -5177,19 +5179,19 @@ ipcRenderer.on('copy', event => {
   }
 
   if (!textInputMode && remote.getCurrentWindow().isFocused()) {
-    // console.log('copy boards')
+    // log.info('copy boards')
     copyBoards()
       .then(() => notifications.notify({
         message: 'Copied board(s) to clipboard.', timing: 5
       }))
       .catch(err => {
-        console.error(err)
+        log.error(err)
       })
   } else {
     // find the focused window (which may be main-window)
     for (let w of remote.BrowserWindow.getAllWindows()) {
       if (w.isFocused()) {
-        // console.log('copy to clipboard from window', w.id)
+        // log.info('copy to clipboard from window', w.id)
         w.webContents.copy()
         return
       }
@@ -5206,15 +5208,15 @@ ipcRenderer.on('paste', () => {
   }
 
   if (!textInputMode && remote.getCurrentWindow().isFocused()) {
-    // console.log('pasting boards')
+    // log.info('pasting boards')
     pasteBoards().catch(err => {
-      console.error(err)
+      log.error(err)
     })
   } else {
     // find the focused window (which may be main-window)
     for (let w of remote.BrowserWindow.getAllWindows()) {
       if (w.isFocused()) {
-        // console.log('pasting clipboard to window', w.id)
+        // log.info('pasting clipboard to window', w.id)
         w.webContents.paste()
         return
       }
@@ -5230,7 +5232,7 @@ ipcRenderer.on('paste-replace', () => {
       sfx.positive()
     })
     .catch(err => {
-      console.error(err)
+      log.error(err)
       notifications.notify({ message: err.toString() })
       sfx.error()
     })
@@ -5343,7 +5345,7 @@ let copyBoards = async () => {
           ctx.drawImage(img, 0, 0)
           layerData[name] = canvas.toDataURL()
         } else {
-          console.warn("could not load image for board", board.layers[layerName].url)
+          log.warn("could not load image for board", board.layers[layerName].url)
         }
       }
 
@@ -5379,18 +5381,18 @@ let copyBoards = async () => {
     }
     clipboard.clear()
     clipboard.write(payload)
-    console.log('Copied', boards.length, 'board(s) to clipboard')
+    log.info('Copied', boards.length, 'board(s) to clipboard')
     // notifications.notify({ message: "Copied" })
   } catch (err) {
-    console.log('Error. Could not copy.')
-    console.error(err)
+    log.info('Error. Could not copy.')
+    log.error(err)
     notifications.notify({ message: 'Error. Couldn’t copy.' })
     throw err
   }
 }
 
 const exportAnimatedGif = async () => {
-  console.log('main-window#exportAnimatedGif', selections)
+  log.info('main-window#exportAnimatedGif', selections)
   if (selections.has(currentBoard)) {
     saveImageFile()
   }
@@ -5425,7 +5427,7 @@ const exportAnimatedGif = async () => {
     sfx.positive()
     shell.showItemInFolder(exportPath)
   } catch (err) {
-    console.error(err)
+    log.error(err)
     notifications.notify({ message: 'Could not export. An error occurred.' })
     notifications.notify({ message: err.toString() })
   }
@@ -5441,7 +5443,7 @@ const exportFcp = () => {
       sfx.positive()
       shell.showItemInFolder(outputPath)
     }).catch(err => {
-      console.error(err)
+      log.error(err)
       notifications.notify({ message: 'Could not export. An error occurred.' })
       notifications.notify({ message: err.toString() })
     })
@@ -5459,7 +5461,7 @@ const exportImages = () => {
       shell.showItemInFolder(outputPath)
     })
     .catch(err => {
-      console.error(err)
+      log.error(err)
       notifications.notify({ message: 'Could not export. An error occurred.' })
       notifications.notify({ message: err.toString() })
     })
@@ -5478,7 +5480,7 @@ const exportCleanup = () => {
     // force reload of project or scene
     ipcRenderer.send('openFile', srcFilePath)
   }).catch(err => {
-    console.log(err)
+    log.info(err)
   })
 }
 
@@ -5503,7 +5505,7 @@ const exportVideo = async () => {
     sfx.positive()
     shell.showItemInFolder(outputFilePath)
   } catch (err) {
-    console.error(err)
+    log.error(err)
     notifications.notify({ message: 'Could not export. An error occurred.' })
     notifications.notify({ message: err.toString() })
   }
@@ -5549,8 +5551,8 @@ let pasteBoards = async () => {
       if (!pasted.boards.length || pasted.boards.length < 1) throw new Error('no boards')
       if (!pasted.layerDataByBoardIndex.length || pasted.layerDataByBoardIndex.length < 1) throw new Error('no layer data')
     } catch (err) {
-      console.log('could not parse clipboard as text')
-      console.log(err)
+      log.info('could not parse clipboard as text')
+      log.info(err)
     }
   }
 
@@ -5577,7 +5579,7 @@ let pasteBoards = async () => {
         ]
       }
     } else {
-      console.log('could not read clipboard image')
+      log.info('could not read clipboard image')
     }
   }
 
@@ -5601,7 +5603,7 @@ let pasteBoards = async () => {
     // new boards is a copy, but migrated
     let newBoards = migrateBoards(util.stringifyClone(pasted.boards), insertAt)
 
-    console.log('pasting boards from', oldBoards, 'to', newBoards)
+    log.info('pasting boards from', oldBoards, 'to', newBoards)
 
     // insert boards from clipboard data
     try {
@@ -5621,7 +5623,7 @@ let pasteBoards = async () => {
           let to    = path.join(boardPath, 'images', boardModel.boardFilenameForLink(dst))
 
           if (fs.existsSync(from)) {
-            console.log('copying linked PSD', from, 'to', to)
+            log.info('copying linked PSD', from, 'to', to)
             fs.writeFileSync(to, fs.readFileSync(from))
           } else {
             notifications.notify({
@@ -5647,15 +5649,15 @@ let pasteBoards = async () => {
 
       renderThumbnailDrawer()
 
-      console.log('paste complete')
+      log.info('paste complete')
       notifications.notify({ message: `Paste complete.` })
       sfx.positive()
       await gotoBoard(insertAt)
 
     } catch (err) {
-      console.error(err)
-      console.log(err.stack)
-      console.log(new Error().stack)
+      log.error(err)
+      log.info(err.stack)
+      log.info(new Error().stack)
       notifications.notify({ message: `Whoops. Could not paste boards. ${err.message}`, timing: 8 })
       throw err
     }
@@ -5685,8 +5687,8 @@ const pasteAndReplace = async () => {
       if (!pasted.boards.length || pasted.boards.length < 1) throw new Error('no boards')
       if (!pasted.layerDataByBoardIndex.length || pasted.layerDataByBoardIndex.length < 1) throw new Error('no layer data')
     } catch (err) {
-      console.log('could not read clipboard data')
-      console.log(err)
+      log.info('could not read clipboard data')
+      log.info(err)
     }
   }
 
@@ -5713,7 +5715,7 @@ const pasteAndReplace = async () => {
         ]
       }
     } else {
-      console.log('could not read clipboard image')
+      log.info('could not read clipboard image')
     }
   }
 
@@ -5755,12 +5757,12 @@ const pasteAndReplace = async () => {
             image.height === size[1]
           ) {
             // full size
-            // console.log('\tpasting full size', layer.name)
+            // log.info('\tpasting full size', layer.name)
             storyboarderSketchPane.sketchPane.replaceLayer(index, image)
             markImageFileDirty([index])
           } else {
             // resized
-            // console.log('\tpasting resized', layer.name)
+            // log.info('\tpasting resized', layer.name)
             let context = createSizedContext(size)
             let canvas = context.canvas
             context.drawImage(image, ...util.fitToDst(canvas, image).map(Math.round))
@@ -5769,7 +5771,7 @@ const pasteAndReplace = async () => {
           }
         } else {
           // clear the layer
-          // console.log('\tclearing', layer.name)
+          // log.info('\tclearing', layer.name)
           storyboarderSketchPane.clearLayer(index)
         }
       }
@@ -5780,11 +5782,11 @@ const pasteAndReplace = async () => {
       markBoardFileDirty()
       renderThumbnailDrawer()
 
-      console.log('paste complete')
+      log.info('paste complete')
     } catch (err) {
-      console.error(err)
-      console.log(err.stack)
-      console.log(new Error().stack)
+      log.error(err)
+      log.info(err.stack)
+      log.info(new Error().stack)
       throw new Error(`Whoops. Could not paste image. ${err.message}`)
     }
   } else {
@@ -5901,7 +5903,7 @@ const importFromWorksheet = async (imageArray) => {
     return gotoBoard(insertAt)
   } catch (err) {
     notifications.notify({ message: 'Whoops. Could not import.', timing: 8 })
-    console.log(err)
+    log.info(err)
   }
 }
 
@@ -5932,7 +5934,7 @@ const migrateBoards = (oldBoards, insertAt = 0) => {
 let moveSelectedBoards = position => {
   let didChange = false
 
-  // console.log('moveSelectedBoards position:', position)
+  // log.info('moveSelectedBoards position:', position)
 
   let numRemoved = selections.size
   let firstSelection = [...selections].sort(util.compareNumbers)[0]
@@ -5943,7 +5945,7 @@ let moveSelectedBoards = position => {
     position = position - numRemoved
   }
 
-  // console.log('move starting at board', firstSelection,
+  // log.info('move starting at board', firstSelection,
   //             ', moving', numRemoved,
   //             'boards to index', position)
 
@@ -6335,7 +6337,7 @@ const saveAsFolder = async () => {
   notifications.notify({ message: `Saving to “${path.basename(dstFolderPath)}” …`})
 
   try {
-    // console.log('Copying to', dstFolderPath)
+    // log.info('Copying to', dstFolderPath)
 
     // NOTE THIS OVERWRITES EXISTING FILES IN THE SELECTED FOLDER
     //
@@ -6356,7 +6358,7 @@ const saveAsFolder = async () => {
     // reload the project
     ipcRenderer.send('openFile', dstFilePath)
   } catch (error) {
-    console.error(error)
+    log.error(error)
     remote.dialog.showMessageBox({
       type: 'error',
       message: error.message
@@ -6428,7 +6430,7 @@ const startWebUpload = async () => {
   try {
     let result = await exporterWeb.uploadToWeb(boardFilename)
     notifications.notify({ message: 'Upload complete!' })
-    console.log('Uploaded to', result.link)
+    log.info('Uploaded to', result.link)
     remote.shell.openExternal(result.link)
   } catch (err) {
     if (err.name === 'StatusCodeError' && err.statusCode === 403) {
@@ -6436,7 +6438,7 @@ const startWebUpload = async () => {
       prefsModule.set('auth', undefined)
       showSignInWindow()
     } else {
-      console.error(err)
+      log.error(err)
       notifications.notify({ message: 'Whoops! An error occurred while attempting to upload.' })
     }
   }
@@ -6588,7 +6590,7 @@ ipcRenderer.on('duplicateBoard', (event, args)=>{
         gotoBoard(index)
         ipcRenderer.send('analyticsEvent', 'Board', 'duplicate')
       })
-      .catch(err => console.error(err))
+      .catch(err => log.error(err))
   }
 })
 
@@ -6633,7 +6635,7 @@ ipcRenderer.on('insertNewBoardsWithFiles', (event, filepaths)=> {
 })
 
 ipcRenderer.on('importImage', (event, fileData) => {
-  // console.log('mobile image import fileData:', fileData)
+  // log.info('mobile image import fileData:', fileData)
   importImage(fileData)
 })
 ipcRenderer.on('importImageAndReplace', (sender, filepathsRecursive) => {
@@ -6656,7 +6658,7 @@ ipcRenderer.on('importImageAndReplace', (sender, filepathsRecursive) => {
 })
 
 ipcRenderer.on('toggleGuide', (event, arg) => {
-  console.log('toggleGuide', arg)
+  log.info('toggleGuide', arg)
   if (!textInputMode) {
     store.dispatch({ type: 'TOOLBAR_GUIDE_TOGGLE', payload: arg })
     // this.store.dispatch({ type: 'PLAY_SOUND', payload: 'metal' }) // TODO
@@ -6734,7 +6736,7 @@ ipcRenderer.on('exportPrintablePdf', (event, sourcePath, filename) => {
     shell.showItemInFolder(outputPath)
 
   } else {
-    console.error('File exists')
+    log.error('File exists')
     sfx.error()
     if (filename == 'Worksheet') {
       notifications.notify({ message: "Could not export Worksheet PDF.", timing: 20 })
@@ -6751,7 +6753,7 @@ ipcRenderer.on('exportPDF', (event, args) => {
 
 
 ipcRenderer.on('printWorksheet', (event, args) => {
-  console.log(boardData)
+  log.info(boardData)
   openPrintWindow(WORKSHEETPW, showWorksheetPrintWindow);
 })
 
@@ -6926,7 +6928,7 @@ const saveToBoardFromShotGenerator = async ({ uid, data, images }) => {
   let index = boardData.boards.findIndex(b => b.uid === uid)
 
   if (index === -1) {
-    console.error(`board with uid ${uid} does not exist`)
+    log.error(`board with uid ${uid} does not exist`)
     alert('Could not save shot: missing board.')
     return
   }
@@ -7031,7 +7033,7 @@ ipcRenderer.on('insertShot', async (event, { data, images }) => {
   })
 })
 
-const log = opt => ipcRenderer.send('log', opt)
+const logToView = opt => ipcRenderer.send('log', opt)
 
 if (prefsModule.getPrefs().enableDiagnostics) {
   new DiagnosticsView()
