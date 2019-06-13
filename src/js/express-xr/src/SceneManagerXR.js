@@ -55,8 +55,9 @@ THREE.Cache.enabled = true
 
 // preload audio immediately into cache
 new THREE.AudioLoader().load('data/snd/vr-select.ogg', () => {})
-// new THREE.AudioLoader().load('data/snd/vr-atmosphere.mp3', () => {})
 new THREE.AudioLoader().load('data/snd/vr-welcome.ogg', () => {})
+new THREE.AudioLoader().load('data/snd/vr-beam2.mp3', () => {})
+  // new THREE.AudioLoader().load('data/snd/vr-atmosphere.mp3', () => {})
 
 const controllerObjectSettings = {
   id: 'controller',
