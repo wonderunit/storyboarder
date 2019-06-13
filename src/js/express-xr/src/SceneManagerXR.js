@@ -1169,9 +1169,7 @@ const SceneContent = ({
         type: cameraState.type
       }}
     >
-      <SGCamera {...{ aspectRatio, activeCamera, setDefaultCamera, ...cameraState }} />
-
-      <primitive object={audioListener} />
+      <SGCamera {...{ aspectRatio, activeCamera, setDefaultCamera, audioListener, ...cameraState }} />
 
       {vrControllers.map((object, n) => {
         const handedness = object.getHandedness()
