@@ -918,6 +918,8 @@ const SceneContent = ({
   }
 
   const onGripDown = event => {
+    if (selectedObjRef.current) return
+
     teleportMode.current = true
     const controller = event.target
 
