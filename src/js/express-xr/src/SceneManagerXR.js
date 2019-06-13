@@ -1130,7 +1130,7 @@ const SceneContent = ({
   const audioListener = useMemo(() => {
     const listener = new THREE.AudioListener()
 
-    new THREE.AudioLoader().load( 'data/snd/vr-beam.mp3', buffer => {
+    new THREE.AudioLoader().load( 'data/snd/vr-beam2.mp3', buffer => {
       soundBeam.current = new THREE.PositionalAudio( listener )
       soundBeam.current.setBuffer( buffer )
       soundBeam.current.setLoop( true )
