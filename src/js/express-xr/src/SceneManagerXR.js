@@ -1125,6 +1125,7 @@ const SceneContent = ({
             atmosphere.setLoop( false )
             atmosphere.setVolume( 1 )
             atmosphere.play()
+            atmosphere.position.set(0, 5, 0)
             scene.add(atmosphere)
           }
         )
