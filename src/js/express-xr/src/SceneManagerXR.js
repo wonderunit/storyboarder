@@ -53,6 +53,12 @@ const gltfLoader = new THREE.GLTFLoader(loadingManager)
 objLoader.setLogging(false, false)
 THREE.Cache.enabled = true
 
+// preload audio immediately into cache
+new THREE.AudioLoader().load('data/snd/vr-select.ogg', () => {})
+new THREE.AudioLoader().load('data/snd/vr-welcome.ogg', () => {})
+new THREE.AudioLoader().load('data/snd/vr-beam2.mp3', () => {})
+  // new THREE.AudioLoader().load('data/snd/vr-atmosphere.mp3', () => {})
+
 const controllerObjectSettings = {
   id: 'controller',
   model: 'controller-left',
@@ -454,6 +460,8 @@ const SceneContent = ({
   }
 
   const onSelectStart = event => {
+    soundSelect.current.play()
+
     const controller = event.target
     const otherController = vrControllers.find(i => i.uuid !== controller.uuid)
     if (otherController && otherController.userData.selected) return
@@ -687,6 +695,7 @@ const SceneContent = ({
       }
 
       controller.userData.selected = object
+      soundBeam.current.play()
 
       let objMaterial
       if (intersection.object.type === 'LOD') objMaterial = intersection.object.children[0].material
@@ -722,6 +731,7 @@ const SceneContent = ({
       }
 
       controller.userData.selected = undefined
+      soundBeam.current.stop()
 
       object.traverse(child => {
         if (child instanceof THREE.Mesh) {
@@ -1108,6 +1118,72 @@ const SceneContent = ({
     initialCamPos.current = new THREE.Vector3(x, y, z)
   }, [])
 
+  const soundBeam = useRef()
+  const soundSelect = useRef()
+  const audioListener = useMemo(() => {
+    const listener = new THREE.AudioListener()
+
+    new THREE.AudioLoader().load( 'data/snd/vr-beam2.mp3', buffer => {
+      soundBeam.current = new THREE.PositionalAudio( listener )
+      soundBeam.current.setBuffer( buffer )
+      soundBeam.current.setLoop( true )
+      soundBeam.current.setVolume( 1 )
+    })
+
+    new THREE.AudioLoader().load(
+      'data/snd/vr-select.ogg',
+      buffer => {
+        soundSelect.current = new THREE.Audio( audioListener )
+        soundSelect.current.setBuffer( buffer )
+        soundSelect.current.setLoop( false )
+        soundSelect.current.setVolume( 0.5 )
+      }
+    )
+
+    // let atmosphere
+    let welcome
+    window.addEventListener( 'vrdisplaypresentchange', event => {
+      if (event.display.isPresenting) {
+        // new THREE.AudioLoader().load(
+        //   'data/snd/vr-atmosphere.mp3',
+        //   buffer => {
+        //     atmosphere = new THREE.PositionalAudio( listener )
+        //     atmosphere.setBuffer( buffer )
+        //     atmosphere.setLoop( false )
+        //     atmosphere.setVolume( 1 )
+        //     atmosphere.play()
+        //     atmosphere.position.set(0, 5, 0)
+        //     scene.add(atmosphere)
+        //   }
+        // )
+
+        new THREE.AudioLoader().load(
+          'data/snd/vr-welcome.ogg',
+          buffer => {
+            welcome = new THREE.Audio( listener )
+            welcome.setBuffer( buffer )
+            welcome.setLoop( false )
+            welcome.setVolume( 0.35 )
+            welcome.play()
+          }
+        )
+      } else {
+        // TODO fade out
+        // if (atmosphere) {
+        //   atmosphere.stop()
+        //   scene.remove(atmosphere)
+        //   atmosphere = null
+        // }
+        if (welcome) {
+          welcome.stop()
+          welcome = null
+        }
+      }
+    }, false )
+
+    return listener
+  }, [])
+
   let activeCameraComponent = (
     <group
       key={'camera'}
@@ -1121,7 +1197,7 @@ const SceneContent = ({
         type: cameraState.type
       }}
     >
-      <SGCamera {...{ aspectRatio, activeCamera, setDefaultCamera, ...cameraState }} />
+      <SGCamera {...{ aspectRatio, activeCamera, setDefaultCamera, audioListener, ...cameraState }} />
 
       {vrControllers.map((object, n) => {
         const handedness = object.getHandedness()
@@ -1141,28 +1217,39 @@ const SceneContent = ({
     </group>
   )
 
+  const selectedObject3d = scene.getObjectById(selectedObject)
+
   let sceneObjectComponents = Object.values(sceneObjects)
     .map((sceneObject, i) => {
+      const isSelected = selectedObject3d && selectedObject3d.userData.id === sceneObject.id
+        ? true
+        : false
+
       switch (sceneObject.type) {
         case 'camera':
           return (
-            <SGVirtualCamera key={i} {...{ aspectRatio, selectedObject, hideArray, virtualCamVisible, ...sceneObject }} />
+            <SGVirtualCamera key={i} {...{ aspectRatio, selectedObject, hideArray, virtualCamVisible, ...sceneObject }}>
+              {isSelected && <primitive object={soundBeam.current} />}
+            </SGVirtualCamera>
           )
         case 'character':
-          const selectedObj = scene.getObjectById(selectedObject)
-          const isSelected = selectedObj && selectedObj.userData.id === sceneObject.id ? true : false
-
           const hmdCam = xrOffset.current ? xrOffset.current.children.filter(child => child.type === 'PerspectiveCamera')[0] : null
           return (
             <SGCharacter
               key={i}
               {...{ modelData: getModelData(sceneObject), isSelected, updateObject, selectedBone, hmdCam, ...sceneObject }}
-            />
+            >
+              {isSelected && <primitive object={soundBeam.current} />}
+            </SGCharacter>
           )
         case 'object':
-          return <SGModel key={i} {...{ modelData: getModelData(sceneObject), ...sceneObject }} />
+          return <SGModel key={i} {...{ modelData: getModelData(sceneObject), ...sceneObject }}>
+              {isSelected && <primitive object={soundBeam.current} />}
+            </SGModel>
         case 'light':
-          return <SGSpotLight key={i} {...{ ...sceneObject }} />
+          return <SGSpotLight key={i} {...{ ...sceneObject }}>
+            {isSelected && <primitive object={soundBeam.current} />}
+          </SGSpotLight>
       }
     })
     .filter(Boolean)

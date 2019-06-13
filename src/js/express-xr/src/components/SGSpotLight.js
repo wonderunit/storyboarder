@@ -57,6 +57,7 @@ const SGSpotLight = ({ ...props }) => {
         <mesh ref={box_light_mesh} name="hitter_light" userData={{ type: 'hitter_light' }}>
           <cylinderBufferGeometry attach="geometry" args={[0.0, 0.05, 0.14]} />
           <meshLambertMaterial attach="material" color={0xffff66} />
+          {props.children}
         </mesh>
       </group>
     </group>
