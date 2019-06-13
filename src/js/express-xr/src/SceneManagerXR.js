@@ -90,6 +90,7 @@ const getFilepathForLoadable = ({ type, model }) => {
   } else {
     switch (type) {
       case 'character':
+        if (model === 'adult-male') model = 'adult-male-lod'
         return `/data/system/dummies/gltf/${model}.glb`
       case 'object':
         return `/data/system/objects/${model}.glb`
@@ -797,7 +798,7 @@ const SceneContent = ({
   const moveObject = (event, controller) => {
     if (Math.abs(event.axes[1]) < Math.abs(event.axes[0])) return
 
-    const amount = event.axes[1] * 0.2
+    const amount = event.axes[1] * 0.125
     const object = controller.userData.selected
 
     if (Math.abs(amount) > 0.01) {
@@ -818,7 +819,7 @@ const SceneContent = ({
   const rotateObject = (event, controller) => {
     if (Math.abs(event.axes[0]) < Math.abs(event.axes[1])) return
 
-    const amount = event.axes[0] * 0.2
+    const amount = event.axes[0] * 0.125
     const object = controller.userData.selected
 
     if (Math.abs(amount) > 0.01) {
@@ -1234,10 +1235,6 @@ const SceneManagerXR = connect(
     selectBone,
     updateCharacterSkeleton
   }) => {
-    Object.values(sceneObjects).forEach(sceneObject => {
-      if (sceneObject.model === 'adult-male') sceneObject.model = 'adult-male-lod'
-    })
-
     const attachments = useAttachmentLoader({ sceneObjects, world })
 
     const getModelData = sceneObject => {

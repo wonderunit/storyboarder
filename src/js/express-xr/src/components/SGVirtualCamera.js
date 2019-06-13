@@ -11,7 +11,6 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, virtualCam
 
   const virtualCamera = useRef(null)
   const renderTarget = useRef(null)
-  const targetMesh = useRef(null)
   const hideArrayRef = useRef([])
 
   const size = props.size || 1 / 3
@@ -111,10 +110,13 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, virtualCam
       ref={ref}
     >
       <group visible={virtualCamVisible || props.guiCamera === true}>
-        <mesh ref={targetMesh} userData={{ type: props.guiCamera ? 'gui' : 'view' }} material={heightShader}>
+        <mesh userData={{ type: props.guiCamera ? 'gui' : 'view' }} material={heightShader}>
           <planeGeometry attach="geometry" args={[size * aspectRatio, size]} />
         </mesh>
         {!props.guiCamera && (
+          // <mesh position={[0, 0, -0.065]} rotation={[0, Math.PI, 0]} userData={{ type: props.guiCamera ? 'gui' : 'view' }} material={heightShader}>
+          //   <planeGeometry attach="geometry" args={[size * aspectRatio, size]} />
+          // </mesh>
           <mesh
             position={[0, 0, -0.0325]}
             material={new THREE.MeshLambertMaterial({ color: new THREE.Color('gray'), transparent: true })}
