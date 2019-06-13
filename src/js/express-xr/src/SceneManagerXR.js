@@ -55,7 +55,7 @@ THREE.Cache.enabled = true
 
 // preload audio immediately into cache
 new THREE.AudioLoader().load('data/snd/vr-select.ogg', () => {})
-new THREE.AudioLoader().load('data/snd/vr-atmosphere.mp3', () => {})
+// new THREE.AudioLoader().load('data/snd/vr-atmosphere.mp3', () => {})
 new THREE.AudioLoader().load('data/snd/vr-welcome.ogg', () => {})
 
 const controllerObjectSettings = {
@@ -1137,22 +1137,22 @@ const SceneContent = ({
       soundBeam.current.setVolume( 1 )
     })
 
-    let atmosphere
+    // let atmosphere
     let welcome
     window.addEventListener( 'vrdisplaypresentchange', event => {
       if (event.display.isPresenting) {
-        new THREE.AudioLoader().load(
-          'data/snd/vr-atmosphere.mp3',
-          buffer => {
-            atmosphere = new THREE.PositionalAudio( listener )
-            atmosphere.setBuffer( buffer )
-            atmosphere.setLoop( false )
-            atmosphere.setVolume( 1 )
-            atmosphere.play()
-            atmosphere.position.set(0, 5, 0)
-            scene.add(atmosphere)
-          }
-        )
+        // new THREE.AudioLoader().load(
+        //   'data/snd/vr-atmosphere.mp3',
+        //   buffer => {
+        //     atmosphere = new THREE.PositionalAudio( listener )
+        //     atmosphere.setBuffer( buffer )
+        //     atmosphere.setLoop( false )
+        //     atmosphere.setVolume( 1 )
+        //     atmosphere.play()
+        //     atmosphere.position.set(0, 5, 0)
+        //     scene.add(atmosphere)
+        //   }
+        // )
 
         new THREE.AudioLoader().load(
           'data/snd/vr-welcome.ogg',
@@ -1166,11 +1166,11 @@ const SceneContent = ({
         )
       } else {
         // TODO fade out
-        if (atmosphere) {
-          atmosphere.stop()
-          scene.remove(atmosphere)
-          atmosphere = null
-        }
+        // if (atmosphere) {
+        //   atmosphere.stop()
+        //   scene.remove(atmosphere)
+        //   atmosphere = null
+        // }
         if (welcome) {
           welcome.stop()
           welcome = null
