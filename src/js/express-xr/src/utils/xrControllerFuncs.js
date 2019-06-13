@@ -29,13 +29,8 @@ const intersectObjects = (controller, intersectArray) => {
 
   if (intersections.length > 0) {
     var intersection = intersections[0]
-    var object = intersection.object
-
-    // intersected.push(object)
-    line.scale.z = intersection.distance
     return intersection
   } else {
-    line.scale.z = 5
     return null
   }
 }
