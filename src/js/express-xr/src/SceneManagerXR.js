@@ -460,6 +460,7 @@ const SceneContent = ({
   }
 
   const onSelectStart = event => {
+    // TODO re-use a single instance instead of creating a new Audio object each time
     new THREE.AudioLoader().load(
       'data/snd/vr-select.ogg',
       buffer => {
