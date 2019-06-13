@@ -919,7 +919,7 @@ const SceneContent = ({
     teleportMode.current = true
     const controller = event.target
 
-    if (selectedObjRef.current && selectedObjRef.current.userData.type === 'character') {
+    if (selectedObjRef.current && selectedObjRef.current.userData.type === 'character' && !selectedBone) {
       const bonesHelper = selectedObjRef.current.children[0].bonesHelper
       const hits = boneIntersect(controller, bonesHelper)
       if (hits.length) {
