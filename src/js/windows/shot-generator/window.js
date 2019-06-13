@@ -8,6 +8,7 @@ const { Provider, connect } = require('react-redux')
 const ReactDOM = require('react-dom')
 const { ActionCreators } = require('redux-undo')
 console.clear() // clear the annoying dev tools warning
+const log = require('electron-log')
 
 
 
@@ -128,7 +129,7 @@ window.$r = { store }
 // disabled for now so we can reload the window easily during development
 // ipcRenderer.once('ready', () => {})
 
-console.log('ready!')
+log.info('ready!')
 electronUtil.disableZoom()
 
 ReactDOM.render(
@@ -173,7 +174,7 @@ createServer({
 // are we testing locally?
 // SHOT_GENERATOR_STANDALONE=true npm start
 if (process.env.SHOT_GENERATOR_STANDALONE) {
-  console.log('loading shot from shot-generator.storyboarder')
+  log.info('loading shot from shot-generator.storyboarder')
 
   const fs = require('fs')
   const path = require('path')
