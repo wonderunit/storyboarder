@@ -301,6 +301,7 @@ const SceneContent = ({
   const teleportMode = useRef(false)
   const initialCamPos = useRef()
   const currentBoneHighlight = useRef()
+  const hmdCamInitialized = useRef(false)
 
   // Why do I need to create ref to access updated state in some functions?
   const guiModeRef = useRef(null)
@@ -1085,7 +1086,7 @@ const SceneContent = ({
   if (xrOffset.current && teleportPos) {
     xrOffset.current.position.x = teleportPos.x
     xrOffset.current.position.z = teleportPos.z
-  } else if (xrOffset.current && !camPosZero && camera.position.y !== xrOffset.current.userData.z) {
+  } else if (xrOffset.current && !camPosZero && camera.position.y !== xrOffset.current.userData.z && !hmdCamInitialized.current) {
     const { x, y, rotation } = xrOffset.current.userData
     const behindCam = {
       x: Math.sin(rotation),
@@ -1094,6 +1095,7 @@ const SceneContent = ({
 
     xrOffset.current.position.x = x + behindCam.x
     xrOffset.current.position.z = y + behindCam.y
+    hmdCamInitialized.current = true
   }
 
   let cameraState = sceneObjects[activeCamera]
