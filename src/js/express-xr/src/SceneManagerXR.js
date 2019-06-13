@@ -1234,6 +1234,10 @@ const SceneManagerXR = connect(
     selectBone,
     updateCharacterSkeleton
   }) => {
+    Object.values(sceneObjects).forEach(sceneObject => {
+      if (sceneObject.model === 'adult-male') sceneObject.model = 'adult-male-lod'
+    })
+
     const attachments = useAttachmentLoader({ sceneObjects, world })
 
     const getModelData = sceneObject => {

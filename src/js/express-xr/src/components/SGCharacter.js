@@ -85,9 +85,8 @@ const characterFactory = data => {
   let parentRotation = new THREE.Quaternion()
   let parentPosition = new THREE.Vector3()
 
-  let lods =
-    data.scene.children.filter(child => child instanceof THREE.SkinnedMesh) ||
-    data.scene.children[0].children.filter(child => child instanceof THREE.SkinnedMesh)
+  let lods = data.scene.children.filter(child => child instanceof THREE.SkinnedMesh)
+  if (lods.length === 0) lods = data.scene.children[0].children.filter(child => child instanceof THREE.SkinnedMesh)
   
   if (lods.length > 1) {
     mesh = new THREE.LOD()
