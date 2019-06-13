@@ -300,7 +300,6 @@ const SceneContent = ({
   const teleportArray = useRef([])
   const teleportMode = useRef(false)
   const initialCamPos = useRef()
-  const currentBoneHighlight = useRef()
   const hmdCamInitialized = useRef(false)
 
   // Why do I need to create ref to access updated state in some functions?
@@ -1026,11 +1025,11 @@ const SceneContent = ({
         const bonesHelper = selectedObjRef.current.children[0].bonesHelper
         const hits = boneIntersect(controller, bonesHelper)
         if (hits.length) {
-          currentBoneHighlight.current = hits[0].bone
-          currentBoneHighlight.current.connectedBone.material.color = new THREE.Color(0x242246)
-        } else if (currentBoneHighlight.current) {
-          currentBoneHighlight.current.connectedBone.material.color = new THREE.Color(0x7a72e9)
-          currentBoneHighlight.current = null
+          controller.userData.currentBoneHighlight = hits[0].bone
+          controller.userData.currentBoneHighlight.connectedBone.material.color = new THREE.Color(0x242246)
+        } else if (controller.userData.currentBoneHighlight) {
+          controller.userData.currentBoneHighlight.connectedBone.material.color = new THREE.Color(0x7a72e9)
+          controller.userData.currentBoneHighlight = null
         }
       }
 
