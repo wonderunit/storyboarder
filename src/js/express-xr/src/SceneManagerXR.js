@@ -95,6 +95,7 @@ const getFilepathForLoadable = ({ type, model }) => {
   } else {
     switch (type) {
       case 'character':
+        if (model === 'adult-male') model = 'adult-male-lod'
         return `/data/system/dummies/gltf/${model}.glb`
       case 'object':
         return `/data/system/objects/${model}.glb`
@@ -298,11 +299,6 @@ const SceneContent = ({
   const [guiCamFOV, setGuiCamFOV] = useState(22)
   const [hideArray, setHideArray] = useState([])
 
-  const moveObjRef = useRef(null)
-  const rotateObjRef = useRef(null)
-  const isPressed = useRef(false)
-  const isGripped = useRef(false)
-
   const moveCamRef = useRef(null)
   const rotateCamRef = useRef(null)
   const intersectArray = useRef([])
@@ -310,6 +306,7 @@ const SceneContent = ({
   const teleportArray = useRef([])
   const teleportMode = useRef(false)
   const initialCamPos = useRef()
+  const hmdCamInitialized = useRef(false)
 
   // Why do I need to create ref to access updated state in some functions?
   const guiModeRef = useRef(null)
@@ -454,7 +451,8 @@ const SceneContent = ({
       startingObjectOffset: startingObjectOffset.current,
       startingObjectQuaternion: startingObjectQuaternion.current,
       deviceQuaternion,
-      camera
+      camera,
+      useCameraOffset: true
     })
 
     target.quaternion.copy(objectQuaternion.normalize())
@@ -479,16 +477,6 @@ const SceneContent = ({
     if (teleportMode.current) {
       onTeleport(event)
       return
-    }
-
-    if (selectedObjRef.current && selectedObjRef.current.userData.type === 'character') {
-      const bonesHelper = selectedObjRef.current.children[0].bonesHelper
-      const hits = boneIntersect(controller, bonesHelper)
-      if (hits.length) {
-        controller.userData.bone = hits[0].bone
-        selectBone(hits[0].bone.uuid)
-        return
-      }
     }
 
     const intersections = getIntersections(controller, intersectArray.current)
@@ -556,7 +544,14 @@ const SceneContent = ({
         if (name.includes('_add')) {
           const mode = name.split('_')[0]
           const id = THREE.Math.generateUUID()
-          const newPoz = new THREE.Vector3()
+
+          const hmdCam = xrOffset.current.children.filter(child => child.type === 'PerspectiveCamera')[0]
+          let offsetVector = new THREE.Vector3(0, 0, -1)
+          offsetVector.applyMatrix4(new THREE.Matrix4().extractRotation(hmdCam.matrixWorld))
+          offsetVector.multiply(new THREE.Vector3(1, 0, 1)).normalize()
+          const newPoz = xrOffset.current.position.clone().add(hmdCam.position).add(offsetVector)
+
+          const rotation = new THREE.Vector2(offsetVector.x, offsetVector.z).normalize().angle() * -1 - Math.PI / 2
 
           switch (mode) {
             case 'camera':
@@ -567,10 +562,10 @@ const SceneContent = ({
 
                 type: 'camera',
                 fov: 22.25,
-                x: 0,
-                y: 6,
-                z: 2,
-                rotation: 0,
+                x: newPoz.x,
+                y: newPoz.z,
+                z: newPoz.y,
+                rotation: rotation,
                 tilt: 0,
                 roll: 0
               })
@@ -586,9 +581,9 @@ const SceneContent = ({
                 height: 1,
                 depth: 1,
                 x: newPoz.x,
-                y: newPoz.y,
-                z: newPoz.z,
-                rotation: { x: 0, y: 0, z: 0 }, //Math.random() * Math.PI * 2,
+                y: newPoz.z,
+                z: 0,
+                rotation: { x: 0, y: rotation, z: 0 }, //Math.random() * Math.PI * 2,
 
                 visible: true
               })
@@ -602,9 +597,9 @@ const SceneContent = ({
                 height: 1.8,
                 model: 'adult-male',
                 x: newPoz.x,
-                y: newPoz.y,
-                z: newPoz.z,
-                rotation: 0, //newPoz.rotation,
+                y: newPoz.z,
+                z: 0,
+                rotation: rotation, //newPoz.rotation,
                 headScale: 1,
 
                 morphTargets: {
@@ -625,9 +620,9 @@ const SceneContent = ({
               createObject({
                 id,
                 type: 'light',
-                x: 0,
-                y: 0,
-                z: 2,
+                x: newPoz.x,
+                y: newPoz.z,
+                z: newPoz.y,
                 rotation: 0,
                 tilt: 0,
                 intensity: 0.8,
@@ -642,7 +637,6 @@ const SceneContent = ({
 
           setTimeout(() => {
             setAddMode(null)
-            setGuiMode('selection')
           }, 250)
         }
 
@@ -665,8 +659,6 @@ const SceneContent = ({
         return
       }
 
-      if (guiModeRef.current !== 'selection') return
-
       if (intersection.object.userData.type === 'hitter' && intersection.object.parent.userData.character) {
         if (!intersection.object.parent.userData.character) return
         intersection.object = intersection.object.parent.userData.character
@@ -677,6 +669,7 @@ const SceneContent = ({
       setSelectedObject(id)
       selectedObjRef.current = scene.getObjectById(id)
       setHideArray(createHideArray())
+      setGuiMode('selection')
 
       if (object.userData.type === 'character') {
         if (object.userData.name === 'character-container') object = object.children[0]
@@ -699,6 +692,7 @@ const SceneContent = ({
         const rotVector = new THREE.Vector3(1, 0, 0).applyMatrix4(newMatrix)
         const rotOffset = Math.atan2(rotVector.y, rotVector.x)
         controller.userData.rotOffset = rotOffset
+        setHideArray(createHideArray())
       } else {
         const tempMatrix = new THREE.Matrix4()
         tempMatrix.getInverse(controller.matrixWorld)
@@ -711,7 +705,10 @@ const SceneContent = ({
       controller.userData.selected = object
       soundBeam.current.play()
 
-      const objMaterial = intersection.object.material
+      let objMaterial
+      if (intersection.object.type === 'LOD') objMaterial = intersection.object.children[0].material
+      else objMaterial = intersection.object.material
+
       if (Array.isArray(objMaterial)) {
         objMaterial.forEach(material => {
           if (!material.emissive) return
@@ -721,32 +718,16 @@ const SceneContent = ({
         if (!objMaterial.emissive) return
         objMaterial.emissive.b = 0.15
       }
+    } else {
+      setSelectedObject(0)
+      selectedObjRef.current = null
+      setHideArray(createHideArray())
     }
   }
 
   const onSelectEnd = event => {
     const controller = event.target
     controller.pressed = false
-
-    if (controller.userData.bone) {
-      const target = controller.userData.bone
-      const parent = findParent(target)
-      let rotation = new THREE.Euler()
-      rotation.setFromQuaternion(target.quaternion.clone().normalize(), 'XYZ')
-
-      updateCharacterSkeleton({
-        id: parent.userData.id,
-        name: target.name,
-        rotation: {
-          x: rotation.x,
-          y: rotation.y,
-          z: rotation.z
-        }
-      })
-
-      controller.userData.bone = undefined
-      isControllerRotatingCurrent.current = false
-    }
 
     if (controller.userData.selected !== undefined) {
       const object = controller.userData.selected
@@ -777,23 +758,36 @@ const SceneContent = ({
 
       useUpdateObject(object)
     }
-
-    selectBone(null)
   }
 
   const useUpdateObject = object => {
-    if (object.userData.type === 'character' || object.userData.type === 'light') {
+    if (object.userData.type === 'character') {
       updateObject(object.userData.id, {
         x: object.position.x,
         y: object.position.z,
         z: object.position.y,
         rotation: object.rotation.y
       })
-    } else if (object.userData.type === 'virtual-camera') {
+    } else if (object.userData.type === 'light') {
+      const euler = new THREE.Euler().setFromQuaternion(object.quaternion, 'YXZ')
+
       updateObject(object.userData.id, {
         x: object.position.x,
         y: object.position.z,
-        z: object.position.y
+        z: object.position.y,
+        rotation: euler.y,
+        tilt: euler.x
+      })
+    } else if (object.userData.type === 'virtual-camera') {
+      const euler = new THREE.Euler().setFromQuaternion(object.quaternion, 'YXZ')
+
+      updateObject(object.userData.id, {
+        x: object.position.x,
+        y: object.position.z,
+        z: object.position.y,
+        rotation: euler.y,
+        roll: euler.z,
+        tilt: euler.x
       })
     } else {
       updateObject(object.userData.id, {
@@ -821,70 +815,37 @@ const SceneContent = ({
   }
 
   const moveObject = (event, controller) => {
-    if (event.axes[1] === 0) {
-      moveObjRef.current = null
-    }
-
-    if (moveObjRef.current) return
     if (Math.abs(event.axes[1]) < Math.abs(event.axes[0])) return
 
-    if (event.axes[1] > 0.075) {
-      moveObjRef.current = 'Backwards'
+    const amount = event.axes[1] * 0.125
+    const object = controller.userData.selected
 
-      const object = controller.userData.selected
+    if (Math.abs(amount) > 0.01) {
       if (object.userData.type === 'character') {
         const raycastDepth = controller.getObjectByName('raycast-depth')
-        raycastDepth.position.add(new THREE.Vector3(0, 0, 1))
+        raycastDepth.position.add(new THREE.Vector3(0, 0, amount))
+        raycastDepth.position.z = Math.min(raycastDepth.position.z, 0)
       } else {
         // 45 degree tilt down on controller
-        let offsetVector = new THREE.Vector3(0, 1, 1)
+        let offsetVector = new THREE.Vector3(0, amount, amount)
         object.position.add(offsetVector)
-      }
-    }
-
-    if (event.axes[1] < -0.075) {
-      moveObjRef.current = 'Forwards'
-
-      const object = controller.userData.selected
-      if (object.userData.type === 'character') {
-        const raycastDepth = controller.getObjectByName('raycast-depth')
-        raycastDepth.position.add(new THREE.Vector3(0, 0, -1))
-      } else {
-        // 45 degree tilt down on controller
-        let offsetVector = new THREE.Vector3(0, -1, -1)
-        object.position.add(offsetVector)
+        object.position.y = Math.min(object.position.y, 0)
+        object.position.z = Math.min(object.position.z, 0)
       }
     }
   }
 
   const rotateObject = (event, controller) => {
-    const object = controller.userData.selected
-
-    if (event.axes[0] === 0) {
-      rotateObjRef.current = null
-    }
-
-    if (rotateObjRef.current) return
     if (Math.abs(event.axes[0]) < Math.abs(event.axes[1])) return
 
-    if (event.axes[0] > 0.075) {
-      rotateObjRef.current = 'Right'
+    const amount = event.axes[0] * 0.125
+    const object = controller.userData.selected
 
-      const object = controller.userData.selected
+    if (Math.abs(amount) > 0.01) {
       if (object.userData.type === 'character') {
-        object.userData.modelSettings.rotation += Math.PI / 4
+        object.userData.modelSettings.rotation += amount
       } else {
-        object.rotateY(Math.PI / 4)
-      }
-    }
-
-    if (event.axes[0] < -0.075) {
-      rotateObjRef.current = 'Left'
-      const object = controller.userData.selected
-      if (object.userData.type === 'character') {
-        object.userData.modelSettings.rotation -= Math.PI / 4
-      } else {
-        object.rotateY(-Math.PI / 4)
+        object.rotateY(amount)
       }
     }
   }
@@ -976,8 +937,20 @@ const SceneContent = ({
 
   const onGripDown = event => {
     teleportMode.current = true
-
     const controller = event.target
+
+    if (selectedObjRef.current && selectedObjRef.current.userData.type === 'character' && !selectedBone) {
+      const bonesHelper = selectedObjRef.current.children[0].bonesHelper
+      const hits = boneIntersect(controller, bonesHelper)
+      if (hits.length) {
+        controller.userData.bone = hits[0].bone
+        selectBone(hits[0].bone.uuid)
+        return
+      }
+    }
+
+    if (selectedObjRef.current) return
+
     const intersections = getIntersections(controller, intersectArray.current)
 
     if (intersections.length > 0) {
@@ -994,6 +967,11 @@ const SceneContent = ({
       setSelectedObject(id)
       selectedObjRef.current = scene.getObjectById(id)
       setHideArray(createHideArray())
+      setGuiMode('selection')
+    } else {
+      setSelectedObject(0)
+      selectedObjRef.current = null
+      setHideArray(createHideArray())
     }
   }
 
@@ -1002,6 +980,27 @@ const SceneContent = ({
 
     const controller = event.target
     controller.gripped = false
+
+    if (controller.userData.bone) {
+      const target = controller.userData.bone
+      const parent = findParent(target)
+      let rotation = new THREE.Euler()
+      rotation.setFromQuaternion(target.quaternion.clone().normalize(), 'XYZ')
+
+      updateCharacterSkeleton({
+        id: parent.userData.id,
+        name: target.name,
+        rotation: {
+          x: rotation.x,
+          y: rotation.y,
+          z: rotation.z
+        }
+      })
+
+      controller.userData.bone = undefined
+      isControllerRotatingCurrent.current = false
+      selectBone(null)
+    }
   }
 
   const vrControllers = useVrControllers({
@@ -1030,6 +1029,7 @@ const SceneContent = ({
     })
 
     teleportArray.current = scene.children.filter(child => child.userData.type === 'ground')
+    setHideArray(createHideArray())
   }, [vrControllers, sceneObjects])
 
   useRender(() => {
@@ -1042,6 +1042,19 @@ const SceneContent = ({
     THREE.VRController.update()
 
     vrControllers.forEach(controller => {
+
+      if (selectedObjRef.current && selectedObjRef.current.userData.type === 'character' && !selectedBone) {
+        const bonesHelper = selectedObjRef.current.children[0].bonesHelper
+        const hits = boneIntersect(controller, bonesHelper)
+        if (hits.length) {
+          controller.userData.currentBoneHighlight = hits[0].bone
+          controller.userData.currentBoneHighlight.connectedBone.material.color = new THREE.Color(0x242246)
+        } else if (controller.userData.currentBoneHighlight) {
+          controller.userData.currentBoneHighlight.connectedBone.material.color = new THREE.Color(0x7a72e9)
+          controller.userData.currentBoneHighlight = null
+        }
+      }
+
       const intersections = getIntersections(controller, guiArray.current)
       if (intersections.length > 0) {
         let intersection = intersections[0]
@@ -1057,7 +1070,7 @@ const SceneContent = ({
 
       if (controller.userData.bone) rotateBone(controller)
     })
-  }, false, [vrControllers])
+  }, false, [vrControllers, selectedBone])
 
   useEffect(() => {
     navigator
@@ -1094,7 +1107,7 @@ const SceneContent = ({
   if (xrOffset.current && teleportPos) {
     xrOffset.current.position.x = teleportPos.x
     xrOffset.current.position.z = teleportPos.z
-  } else if (xrOffset.current && !camPosZero && camera.position.y !== xrOffset.current.userData.z) {
+  } else if (xrOffset.current && !camPosZero && camera.position.y !== xrOffset.current.userData.z && !hmdCamInitialized.current) {
     const { x, y, rotation } = xrOffset.current.userData
     const behindCam = {
       x: Math.sin(rotation),
@@ -1103,6 +1116,7 @@ const SceneContent = ({
 
     xrOffset.current.position.x = x + behindCam.x
     xrOffset.current.position.z = y + behindCam.y
+    hmdCamInitialized.current = true
   }
 
   let cameraState = sceneObjects[activeCamera]
@@ -1210,18 +1224,17 @@ const SceneContent = ({
 
       switch (sceneObject.type) {
         case 'camera':
-          return virtualCamVisible ? (
-            <SGVirtualCamera key={i} {...{ aspectRatio, selectedObject, hideArray, ...sceneObject }} >
+          return (
+            <SGVirtualCamera key={i} {...{ aspectRatio, selectedObject, hideArray, virtualCamVisible, ...sceneObject }}>
               {isSelected && <primitive object={soundBeam.current} />}
             </SGVirtualCamera>
-          ) : (
-            undefined
           )
         case 'character':
+          const hmdCam = xrOffset.current ? xrOffset.current.children.filter(child => child.type === 'PerspectiveCamera')[0] : null
           return (
             <SGCharacter
               key={i}
-              {...{ modelData: getModelData(sceneObject), isSelected, updateObject, selectedBone, ...sceneObject }}
+              {...{ modelData: getModelData(sceneObject), isSelected, updateObject, selectedBone, hmdCam, ...sceneObject }}
             >
               {isSelected && <primitive object={soundBeam.current} />}
             </SGCharacter>

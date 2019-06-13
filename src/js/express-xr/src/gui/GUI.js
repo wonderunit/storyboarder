@@ -93,20 +93,35 @@ const GUI = ({ aspectRatio, guiMode, addMode, currentBoard, selectedObject, hide
           })
           break
         case 'mesomorphic':
-          object.children[0].children[0].morphTargetInfluences[0] = value
-          break
         case 'ectomorphic':
-          object.children[0].children[0].morphTargetInfluences[1] = value
-          break
         case 'endomorphic':
-          object.children[0].children[0].morphTargetInfluences[2] = value
+          const array = ['mesomorphic', 'ectomorphic', 'endomorphic']
+          let character = object.children[0].children[0]
+          if (character.type === 'LOD') {
+            character.children.forEach(lod => {
+              lod.morphTargetInfluences[array.indexOf(prop)] = value
+            })
+          } else {
+            character.morphTargetInfluences[array.indexOf(prop)] = value
+          }
           break
         case 'headScale':
-          object = object.children[0].children[0]
-          let headBone = object.skeleton.getBoneByName('Head')
-          if (headBone) {
-            headBone.scale.setScalar(value)
+          character = object.children[0].children[0]
+
+          if (character.type === 'LOD') {
+            character.children.forEach(lod => {
+              let headBone = lod.skeleton.getBoneByName('Head')
+              if (headBone) {
+                headBone.scale.setScalar(value)
+              }
+            })
+          } else {
+            let headBone = character.skeleton.getBoneByName('Head')
+            if (headBone) {
+              headBone.scale.setScalar(value)
+            }
           }
+
           break
         default:
           break
@@ -500,6 +515,7 @@ const GUI = ({ aspectRatio, guiMode, addMode, currentBoard, selectedObject, hide
             aspectRatio,
             selectedObject,
             hideArray,
+            virtualCamVisible,
             guiCamera: true,
             camOffset: new THREE.Vector3(0, -0.05, 0.075),
             ...camSettings
