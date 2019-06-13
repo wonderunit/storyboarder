@@ -32,6 +32,7 @@ const init = () => {
             resizable: false,
             backgroundColor: '#E5E5E5',
             webPreferences: {
+              nodeIntegration: true,
               devTools: true
             }
           })

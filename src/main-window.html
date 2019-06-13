@@ -206,7 +206,7 @@
               data-tooltip-position="bottom center">
               <svg class="icon"><use xlink:href="./img/symbol-defs.svg#icon-thirds"></use></svg>
             </div>
-            <div id="toolbar-perspective" class="button" data-tooltip
+            <div style="display:none" id="toolbar-perspective" class="button" data-tooltip
               data-tooltip-title="3D Guide"
               data-tooltip-description="Match the 3d grid for your generated shot. If you don't have a generated shot, you get an eye level 3d view. Noiiice."
               data-tooltip-keys=""
@@ -267,6 +267,19 @@
               data-tooltip-keys=""
               data-tooltip-position="left middle">
               <svg class="smallericon"><use xlink:href="./img/symbol-defs.svg#icon-linemileage"></use></svg><span id="line-miles"></span>
+            </div>
+
+            <div class="hardrule"></div>
+
+            <div
+              class="row"
+              id="shot-generator-container"
+              data-tooltip
+              data-tooltip-title="Open"
+              data-tooltip-description="Open Shot Generator"
+              data-tooltip-keys=""
+              data-tooltip-position="left middle"
+            >
             </div>
 
             <div class="hardrule"></div>
@@ -416,7 +429,8 @@
                   data-tooltip-position="left middle" type="range" min="0" max="100" step="25" value="100">
               </div>
             </div>
-            <div class="row" id="shot-generator-container">
+
+            <div class="row" id="shot-generator-container" style="display:none">
               <div class="inline"><svg class="smallicon"><use xlink:href="./img/symbol-defs.svg#icon-camera"></use></svg>Shot Generator</div>
               <div id="sts-random" class="flatbutton small" data-tooltip
               data-tooltip-title="Generate Random Shot Image"

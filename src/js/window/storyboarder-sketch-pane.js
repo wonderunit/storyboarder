@@ -43,6 +43,9 @@ class StoryboarderSketchPane extends EventEmitter {
 
     this.marqueePath = null
     this.marqueeTransitionEvent = null
+
+    this.onWindowBlurForApp = this.onWindowBlurForApp.bind(this)
+    this.onWindowFocusForApp = this.onWindowFocusForApp.bind(this)
   }
 
   async load () {
@@ -86,23 +89,25 @@ class StoryboarderSketchPane extends EventEmitter {
 
     this.sketchPaneDOMElement = this.sketchPane.getDOMElement()
 
-    // 0 = reference
+    // 0 = shot-generator
+    this.sketchPane.newLayer({ name: 'shot-generator' })
+    // 1 = reference
     this.sketchPane.newLayer({ name: 'reference' })
-    // 1 = fill
+    // 2 = fill
     this.sketchPane.newLayer({ name: 'fill' })
-    // 2 = tone
+    // 3 = tone
     this.sketchPane.newLayer({ name: 'tone' })
-    // 3 = pencil
+    // 4 = pencil
     this.sketchPane.newLayer({ name: 'pencil' })
-    // 4 = ink
+    // 5 = ink
     this.sketchPane.newLayer({ name: 'ink' })
-    // 5 = onion
+    // 6 = onion
     this.sketchPane.newLayer({ name: 'onion' })
-    // 6 = notes
+    // 7 = notes
     this.sketchPane.newLayer({ name: 'notes' })
-    // 7 = guides
+    // 8 = guides
     this.sketchPane.newLayer({ name: 'guides' })
-    // 8 = composite
+    // 9 = composite
     this.sketchPane.newLayer({ name: 'composite' })
 
     this.sketchPane.setCurrentLayerIndex(
@@ -112,6 +117,7 @@ class StoryboarderSketchPane extends EventEmitter {
     // a list of all the active layer indices
     // for multi-erase, move, and scale, this is all the indices that will be stamped
     this.visibleLayersIndices = [
+      this.sketchPane.layers.findByName('shot-generator').index,
       this.sketchPane.layers.findByName('reference').index,
       this.sketchPane.layers.findByName('fill').index,
       this.sketchPane.layers.findByName('tone').index,
@@ -211,6 +217,9 @@ class StoryboarderSketchPane extends EventEmitter {
 
     // add container to element
     this.el.appendChild(this.containerEl)
+
+    window.addEventListener('blur', this.onWindowBlurForApp)
+    window.addEventListener('focus', this.onWindowFocusForApp)
   }
 
   // for compatibility with older sketchpane code
@@ -378,6 +387,13 @@ class StoryboarderSketchPane extends EventEmitter {
     if (!this.isCommandPressed('drawing:straight-line-snap')) {
       this.sketchPane.setShouldSnap(false)
     }
+  }
+
+  onWindowBlurForApp () {
+    this.sketchPane.app.stop()
+  }
+  onWindowFocusForApp () {
+    this.sketchPane.app.start()
   }
 
   mergeLayers (sources, destination) {

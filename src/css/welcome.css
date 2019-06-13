@@ -92,11 +92,11 @@ iframe {
 }
 
 .button.blue {
-  background: #5c88ec;
+  background: #6f68f0;
 }
 
 .button.blue:hover {
-  background: #59C4EA;
+  background: #7883f4;
 }
 
 .button.grey:hover {
@@ -158,7 +158,7 @@ iframe {
 }
 
 .recent-item:hover {
-  background: #5c88ec;
+  background: #6f68f0;
   color: rgba(255,255,255,0.6);
 
 }

@@ -72,12 +72,16 @@ const createWhiteContext = size => {
 
 // convert board data to canvasImageSourcesData
 const getCanvasImageSourcesDataForBoard = (board, projectFileAbsolutePath) => {
+  // shot-generator = 0
+  // reference = 1
+  const REFERENCE_LAYER_INDEX = 1
+
   return new Promise((resolve, reject) => {
     let { indices, filenames } = boardOrderedLayerFilenames(board)
 
     let getImageFilePath = (filename) => path.join(path.dirname(projectFileAbsolutePath), 'images', filename)
 
-    let loaders = filenames.map(filename => getImage(getImageFilePath(filename)))
+    let loaders = filenames.map(filename => getImage(getImageFilePath(filename + '?' + Math.random())))
 
     Promise.all(loaders).then(images => {
       let canvasImageSourcesData = []
@@ -89,7 +93,7 @@ const getCanvasImageSourcesDataForBoard = (board, projectFileAbsolutePath) => {
           let opacity = 1
 
           // special case for reference layer
-          if (layerIndex === 0) {
+          if (layerIndex === REFERENCE_LAYER_INDEX) {
             if (board.layers &&
                 board.layers.reference &&
                 !util.isUndefined(board.layers.reference.opacity))

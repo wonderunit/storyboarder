@@ -29,6 +29,9 @@ const MobileServer = require('./express-app/app')
 
 const preferencesUI = require('./windows/preferences')()
 const registration = require('./windows/registration/main')
+const shotGeneratorWindow = require('./windows/shot-generator/main')
+const tutorialMain = require('./windows/shot-generator-tutorial/main')
+
 const JWT = require('jsonwebtoken')
 
 const pkg = require('../../package.json')
@@ -228,6 +231,14 @@ app.on('ready', async () => {
 
   await attemptLicenseVerification()
 
+  // are we testing locally?
+  // SHOT_GENERATOR_STANDALONE=true npm start
+  if (process.env.SHOT_GENERATOR_STANDALONE) {
+    console.log('Running Shot Generator Standalone')
+    shotGeneratorWindow.show(() => {})
+    return
+  }
+
   // open the welcome window when the app loads up first
   openWelcomeWindow()
 
@@ -283,7 +294,10 @@ let openKeyCommandWindow = () => {
     show: false,
     resizable: false,
     frame: false,
-    titleBarStyle: 'hiddenInset'
+    titleBarStyle: 'hiddenInset',
+    webPreferences: {
+      nodeIntegration: true
+    }
   })
   keyCommandWindow.loadURL(`file://${__dirname}/../keycommand-window.html`)
   keyCommandWindow.once('ready-to-show', () => {
@@ -308,7 +322,19 @@ let openNewWindow = () => {
 
   if (!newWindow) {
     // TODO this code is never called currently, as the window is created w/ welcome
-    newWindow = new BrowserWindow({width: 600, height: 580, show: false, center: true, parent: welcomeWindow, resizable: false, frame: false, modal: true})
+    newWindow = new BrowserWindow({
+      width: 600,
+      height: 580,
+      show: false,
+      center: true,
+      parent: welcomeWindow,
+      resizable: false,
+      frame: false,
+      modal: true,
+      webPreferences: {
+        nodeIntegration: true
+      }
+    })
     newWindow.loadURL(`file://${__dirname}/../new.html`)
     newWindow.once('ready-to-show', () => {
       newWindow.show()
@@ -323,10 +349,31 @@ let openNewWindow = () => {
 }
 
 let openWelcomeWindow = () => {
-  welcomeWindow = new BrowserWindow({width: 900, height: 600, center: true, show: false, resizable: false, frame: false})
+  welcomeWindow = new BrowserWindow({
+    width: 900,
+    height: 600,
+    center: true,
+    show: false,
+    resizable: false,
+    frame: false,
+    webPreferences: {
+      nodeIntegration: true
+    }
+  })
   welcomeWindow.loadURL(`file://${__dirname}/../welcome.html`)
 
-  newWindow = new BrowserWindow({width: 600, height: 580, show: false, parent: welcomeWindow, resizable: false, frame: false, modal: true})
+  newWindow = new BrowserWindow({
+    width: 600,
+    height: 580,
+    show: false,
+    parent: welcomeWindow,
+    resizable: false,
+    frame: false,
+    modal: true,
+    webPreferences: {
+      nodeIntegration: true
+    }
+  })
   newWindow.loadURL(`file://${__dirname}/../new.html`)
 
   let recentDocumentsCopy
@@ -897,7 +944,8 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
       experimentalFeatures: true,
       experimentalCanvasFeatures: true,
       devTools: true,
-      plugins: true
+      plugins: true,
+      nodeIntegration: true
     } 
   })
 
@@ -908,7 +956,10 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
     backgroundColor: '#333333',
     show: false,
     frame: false,
-    resizable: isDev ? true : false
+    resizable: isDev ? true : false,
+    webPreferences: {
+      nodeIntegration: true
+    }
   })
   loadingStatusWindow.loadURL(`file://${__dirname}/../loading-status.html?name=${encodeURIComponent(projectName)}`)
   loadingStatusWindow.once('ready-to-show', () => {
@@ -1410,4 +1461,30 @@ ipcMain.on('zoomIn',
 ipcMain.on('zoomOut',
   event => mainWindow.webContents.send('zoomOut'))
 
+ipcMain.on('saveShot',
+  (event, data) => mainWindow.webContents.send('saveShot', data))
+
+ipcMain.on('insertShot',
+  (event, data) => mainWindow.webContents.send('insertShot', data))
+
 ipcMain.on('registration:open', event => registration.show())
+
+ipcMain.on('shot-generator:open', (event, { storyboarderFilePath, board, boardData }) => {  
+  shotGeneratorWindow.show(win => {
+    win.webContents.send('loadBoard', { storyboarderFilePath, boardData, board })
+  })
+
+  // TODO analytics?
+  //
+  // analytics.screenView('shot-generator')
+})
+ipcMain.on('shot-generator:update', (event, { board }) => {
+  let win = shotGeneratorWindow.getWindow()
+  if (win) {
+    win.webContents.send('update', { board })
+  }
+})
+
+ipcMain.on('shot-generator:menu:help:tutorial', () => {
+  tutorialMain.show(() => {})
+})

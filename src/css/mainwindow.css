@@ -249,13 +249,13 @@ body::-webkit-scrollbar {
 }
 
 #thumbnail-drawer .thumbnail.active {
-  background: #699EF2;
+  background: #8d89cf;
   color: #000;
   transition: all 0s ease-out;
 }
 
 #thumbnail-drawer .thumbnail.selected {
-  background: #699EF2;
+  background: #8d89cf;
   color: #000;
   top: 0px;
   position: relative;
@@ -938,4 +938,23 @@ input[type=range]:focus::-webkit-slider-runnable-track {
 #timeline-mode-control-view {
   font-size: 12px;
   line-height: 1;
+}
+
+#shot-generator-container .shot-generator-layer-thumbnail {
+  padding: 3px 0 0 0;
+  border-radius: 3px;
+
+  display: block;
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  height: 0;
+}
+#shot-generator-container .shot-generator-layer-thumbnail img {
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
 }

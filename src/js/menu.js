@@ -3,14 +3,14 @@ const { ipcRenderer, shell } = require('electron')
 const isDev = require('electron-is-dev')
 const { getInitialStateRenderer } = require('electron-redux')
 
-const configureStore = require('./shared/store/configureStore')
-const observeStore = require('./shared/helpers/observeStore')
-
-const store = configureStore(getInitialStateRenderer(), 'renderer')
-
 // TODO subscribe to store, update menu when keymap changes
-
+const configureStore = require('./shared/store/configureStore')
+const store = configureStore(getInitialStateRenderer(), 'renderer')
 let keystrokeFor = command => store.getState().entities.keymap[command]
+
+// TODO remove unused
+// const observeStore = require('./shared/helpers/observeStore')
+
 
 let SubMenuFragments = {}
 SubMenuFragments.View = [
@@ -41,6 +41,12 @@ SubMenuFragments.help = [
   {
     label: 'Getting Started…',
     click () { shell.openExternal('https://wonderunit.com/storyboarder/faq/#How-do-I-get-started') }
+  },
+  {
+    label: 'Shot Generator Tutorial…',
+    click () {
+      ipcRenderer.send('shot-generator:menu:help:tutorial')
+    }
   },
   {
     label: 'Frequently Asked Questions…',
@@ -839,6 +845,84 @@ const welcomeTemplate = [
   }
 ]
 
+const shotGeneratorMenu = [
+  ...AppMenu.about({ includePreferences: false }),
+  {
+    label: 'File',
+    submenu: [
+      {
+        label: 'Open…',
+        accelerator: keystrokeFor('menu:file:open'),
+        click (item, focusedWindow, event) {
+          ipcRenderer.send('openDialogue')
+        }
+      }
+    ]
+  },
+  {
+    label: 'Edit',
+    submenu: [
+      {
+        label: 'Undo',
+        accelerator: keystrokeFor('menu:edit:undo'),
+        click () {
+          ipcRenderer.send('shot-generator:edit:undo')
+        }
+      },
+      {
+        label: 'Redo',
+        accelerator: keystrokeFor('menu:edit:redo'),
+        click () {
+          ipcRenderer.send('shot-generator:edit:redo')
+        }
+      },
+      {type: 'separator'},
+
+      {role: 'cut'},
+      {role: 'copy'},
+      {role: 'paste'},
+      
+      {
+        accelerator: 'CommandOrControl+d',
+        label: 'Duplicate',
+        click () {
+          ipcRenderer.send('shot-generator:object:duplicate')
+        }
+      },
+      
+      // {role: 'pasteandmatchstyle'},
+      {role: 'delete'},
+
+      {role: 'selectall'}
+    ]
+  },
+  {
+    label: 'View',
+    submenu: [
+      ...SubMenuFragments.View,
+      {
+        label: 'Enable FPS Meter',
+        type: 'checkbox',
+        click (item, focusedWindow, event) {
+          ipcRenderer.send('shot-generator:menu:view:fps-meter')
+        }
+      }
+    ]
+  },
+  {
+    role: 'window',
+    submenu: [
+      ...SubMenuFragments.windowing
+    ]
+  },
+  {
+    role: 'help',
+    submenu: [
+      ...SubMenuFragments.help
+    ]
+  }
+]
+
 const setWelcomeMenu = () => {
   let welcomeMenuInstance = Menu.buildFromTemplate(welcomeTemplate)
   Menu.setApplicationMenu(welcomeMenuInstance)
@@ -849,6 +933,10 @@ const setMenu = () => {
   Menu.setApplicationMenu(menuInstance)
 }
 
+const setShotGeneratorMenu = () => {
+  Menu.setApplicationMenu(Menu.buildFromTemplate(shotGeneratorMenu))
+}
+
 const setEnableAudition = value =>
   Menu
     .getApplicationMenu().items.find(n => n.label === 'Navigation')
@@ -857,6 +945,7 @@ const setEnableAudition = value =>
 
 module.exports = {
   setWelcomeMenu,
+  setShotGeneratorMenu,
   setMenu,
 
   setEnableAudition
