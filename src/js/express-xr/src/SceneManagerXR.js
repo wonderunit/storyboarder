@@ -293,11 +293,6 @@ const SceneContent = ({
   const [guiCamFOV, setGuiCamFOV] = useState(22)
   const [hideArray, setHideArray] = useState([])
 
-  const moveObjRef = useRef(null)
-  const rotateObjRef = useRef(null)
-  const isPressed = useRef(false)
-  const isGripped = useRef(false)
-
   const moveCamRef = useRef(null)
   const rotateCamRef = useRef(null)
   const intersectArray = useRef([])
@@ -800,71 +795,31 @@ const SceneContent = ({
   }
 
   const moveObject = (event, controller) => {
-    if (event.axes[1] === 0) {
-      moveObjRef.current = null
-    }
-
-    if (moveObjRef.current) return
     if (Math.abs(event.axes[1]) < Math.abs(event.axes[0])) return
 
-    if (event.axes[1] > 0.075) {
-      moveObjRef.current = 'Backwards'
+    const amount = event.axes[1] * 0.1
+    const object = controller.userData.selected
 
-      const object = controller.userData.selected
-      if (object.userData.type === 'character') {
-        const raycastDepth = controller.getObjectByName('raycast-depth')
-        raycastDepth.position.add(new THREE.Vector3(0, 0, 1))
-      } else {
-        // 45 degree tilt down on controller
-        let offsetVector = new THREE.Vector3(0, 1, 1)
-        object.position.add(offsetVector)
-      }
-    }
-
-    if (event.axes[1] < -0.075) {
-      moveObjRef.current = 'Forwards'
-
-      const object = controller.userData.selected
-      if (object.userData.type === 'character') {
-        const raycastDepth = controller.getObjectByName('raycast-depth')
-        raycastDepth.position.add(new THREE.Vector3(0, 0, -1))
-      } else {
-        // 45 degree tilt down on controller
-        let offsetVector = new THREE.Vector3(0, -1, -1)
-        object.position.add(offsetVector)
-      }
+    if (object.userData.type === 'character') {
+      const raycastDepth = controller.getObjectByName('raycast-depth')
+      raycastDepth.position.add(new THREE.Vector3(0, 0, amount))
+    } else {
+      // 45 degree tilt down on controller
+      let offsetVector = new THREE.Vector3(0, amount, amount)
+      object.position.add(offsetVector)
     }
   }
 
   const rotateObject = (event, controller) => {
-    const object = controller.userData.selected
-
-    if (event.axes[0] === 0) {
-      rotateObjRef.current = null
-    }
-
-    if (rotateObjRef.current) return
     if (Math.abs(event.axes[0]) < Math.abs(event.axes[1])) return
 
-    if (event.axes[0] > 0.075) {
-      rotateObjRef.current = 'Right'
+    const amount = event.axes[0] * 0.1
+    const object = controller.userData.selected
 
-      const object = controller.userData.selected
-      if (object.userData.type === 'character') {
-        object.userData.modelSettings.rotation += Math.PI / 4
-      } else {
-        object.rotateY(Math.PI / 4)
-      }
-    }
-
-    if (event.axes[0] < -0.075) {
-      rotateObjRef.current = 'Left'
-      const object = controller.userData.selected
-      if (object.userData.type === 'character') {
-        object.userData.modelSettings.rotation -= Math.PI / 4
-      } else {
-        object.rotateY(-Math.PI / 4)
-      }
+    if (object.userData.type === 'character') {
+      object.userData.modelSettings.rotation += amount
+    } else {
+      object.rotateY(amount)
     }
   }
 
