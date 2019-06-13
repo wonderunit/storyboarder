@@ -676,6 +676,7 @@ const SceneContent = ({
         const rotVector = new THREE.Vector3(1, 0, 0).applyMatrix4(newMatrix)
         const rotOffset = Math.atan2(rotVector.y, rotVector.x)
         controller.userData.rotOffset = rotOffset
+        setHideArray(createHideArray())
       } else {
         const tempMatrix = new THREE.Matrix4()
         tempMatrix.getInverse(controller.matrixWorld)
