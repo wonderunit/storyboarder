@@ -460,17 +460,7 @@ const SceneContent = ({
   }
 
   const onSelectStart = event => {
-    // TODO re-use a single instance instead of creating a new Audio object each time
-    new THREE.AudioLoader().load(
-      'data/snd/vr-select.ogg',
-      buffer => {
-        let sound = new THREE.Audio( audioListener )
-        sound.setBuffer( buffer )
-        sound.setLoop( false )
-        sound.setVolume( 0.5 )
-        sound.play()
-      }
-    )
+    soundSelect.current.play()
 
     const controller = event.target
     const otherController = vrControllers.find(i => i.uuid !== controller.uuid)
@@ -1129,6 +1119,7 @@ const SceneContent = ({
   }, [])
 
   const soundBeam = useRef()
+  const soundSelect = useRef()
   const audioListener = useMemo(() => {
     const listener = new THREE.AudioListener()
 
@@ -1138,6 +1129,16 @@ const SceneContent = ({
       soundBeam.current.setLoop( true )
       soundBeam.current.setVolume( 1 )
     })
+
+    new THREE.AudioLoader().load(
+      'data/snd/vr-select.ogg',
+      buffer => {
+        soundSelect.current = new THREE.Audio( audioListener )
+        soundSelect.current.setBuffer( buffer )
+        soundSelect.current.setLoop( false )
+        soundSelect.current.setVolume( 0.5 )
+      }
+    )
 
     // let atmosphere
     let welcome
