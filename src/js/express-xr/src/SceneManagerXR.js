@@ -809,20 +809,22 @@ const SceneContent = ({
   const moveObject = (event, controller) => {
     if (Math.abs(event.axes[1]) < Math.abs(event.axes[0])) return
 
-    const amount = event.axes[1] * 0.125
+    // EDIT THIS
+
+    const amount = event.axes[1] * 0.08
     const object = controller.userData.selected
 
     if (Math.abs(amount) > 0.01) {
       if (object.userData.type === 'character') {
         const raycastDepth = controller.getObjectByName('raycast-depth')
         raycastDepth.position.add(new THREE.Vector3(0, 0, amount))
-        raycastDepth.position.z = Math.min(raycastDepth.position.z, 0)
+        raycastDepth.position.z = Math.min(raycastDepth.position.z, -0.5)
       } else {
         // 45 degree tilt down on controller
         let offsetVector = new THREE.Vector3(0, amount, amount)
         object.position.add(offsetVector)
-        object.position.y = Math.min(object.position.y, 0)
-        object.position.z = Math.min(object.position.z, 0)
+        object.position.y = Math.min(object.position.y, -0.5)
+        object.position.z = Math.min(object.position.z, -0.5)
       }
     }
   }
@@ -830,7 +832,9 @@ const SceneContent = ({
   const rotateObject = (event, controller) => {
     if (Math.abs(event.axes[0]) < Math.abs(event.axes[1])) return
 
-    const amount = event.axes[0] * 0.125
+    // EDIT THIS
+
+    const amount = event.axes[0] * 0.07
     const object = controller.userData.selected
 
     if (Math.abs(amount) > 0.01) {
