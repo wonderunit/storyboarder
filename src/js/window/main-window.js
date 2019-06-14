@@ -65,9 +65,6 @@ const watermarkModel = require('../models/watermark')
 
 const FileHelper = require('../files/file-helper')
 
-// const ShotTemplateSystem = require('../shot-template-system')
-// const StsSidebar = require('./sts-sidebar')
-
 const AudioPlayback = require('./audio-playback')
 const AudioFileControlView = require('./audio-file-control-view')
 
@@ -2767,7 +2764,7 @@ const refreshLinkedBoardByFilename = async (filename, options = { forceReadFromF
     // clear all non-reference layers
     log.info(
       'clearing non-reference layers from data' +
-      isCurrentBoard 
+      isCurrentBoard
         ? ' and SketchPane'
         : ''
     )
