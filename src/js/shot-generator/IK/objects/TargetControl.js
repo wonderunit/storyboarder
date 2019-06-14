@@ -9,29 +9,18 @@ class TargetControl
         this.control = new TransformControls(camera, domElement);
         this.control.size = 0.3;
         this.control.userData.type = "controlTarget";
-       // this.control.type = "transformControls";
-        this.isSelected = false;
         this.name = name;
         this.disabled = true;
-        this.control.addEventListener('changing', ( event ) =>
-        {
-        });
         this.control.addEventListener('dragging-changed', ( event ) =>
         {
-
             //orbitControl.enabled = ! event.value;
         });
         this.control.addEventListener('pointerdown', (event) =>
         {
-            console.log(this.name + TargetControl.selected);
-            if(!TargetControl.selected)
-            {
-                this.isSelected = true;
-                TargetControl.selected = true;
-            }
+            console.log(this.name);
 
             let control = this.control;
-            if(this.disabled && control.dragging || !this.isSelected)
+            if(this.disabled && control.dragging )
             {
                 console.log("Pointer down");
                 control.dragging = false;
@@ -39,12 +28,7 @@ class TargetControl
         });
         this.control.addEventListener('pointerup', (event) =>
         {
-            console.log(this.name + TargetControl.selected)
-            if(TargetControl.selected)
-            {
-                this.isSelected = false;
-                TargetControl.selected = false;
-            }
+
         });
     }
 
@@ -69,7 +53,7 @@ class TargetControl
         this.target = mesh;
     }
 
-    disable(isDisabled)
+    set disable(isDisabled)
     {
         let visible = isDisabled ? false : true;
         this.target.visible = visible;
@@ -77,5 +61,4 @@ class TargetControl
         this.disabled = isDisabled;
     }
 }
-TargetControl.selected = false;
 module.exports = TargetControl;

@@ -19,7 +19,6 @@ class IkObject
         this.originalObject = null;
         this.clonedObject = null;
         this.ikBonesName = [];
-        this.prevRotation = [];
 
         this.originalObjectMatrix = {};
         this.cloneObjectMatrix = {};
@@ -45,7 +44,7 @@ class IkObject
         let chainObjects = [];
         this.chainObjects = chainObjects;
         this.hipsControlTarget = this.controlTargets[5];
-
+        this.hipsControlTarget.disable = true;
         chainObjects.push(new ChainObject("Spine", "Head", this.controlTargets[0]));
         chainObjects.push(new ChainObject("LeftArm", "LeftHand", this.controlTargets[1]));
         chainObjects.push(new ChainObject("RightArm", "RightHand", this.controlTargets[2]));
@@ -277,10 +276,14 @@ class IkObject
         let originalBones = originalSkin.skeleton.bones;
         for (let i = 0; i < clonedBones.length; i++)
         {
-            let originBone = originalBones[i];
+            let originalBone = originalBones[i];
             let cloneBone = clonedBones[i];
 
-            this.originalObjectMatrix[originBone.name] = originBone.matrix.clone();
+            if(!this.ikBonesName.some((boneName) => originalBone.name === boneName || boneName === "Hips"))
+            {
+                continue;
+            }
+            this.originalObjectMatrix[originalBone.name] = originalBone.matrix.clone();
             this.cloneObjectMatrix[cloneBone.name] = cloneBone.matrix.clone();
         }
     }

@@ -132,7 +132,6 @@ const characterFactory = data => {
     }
     for (var bone of armatures)
     {
-      console.log(data.scene.children[0].children[0]);
       bone.scale.set(1,1,1)
       bone.quaternion.multiply(data.scene.children[0].children[0].quaternion)
       bone.position.set(bone.position.x, bone.position.z, bone.position.y)
@@ -290,7 +289,6 @@ const Character = React.memo(({
       ragDoll.current = new RagDoll();
       let skeletonRig = ragDoll.current;
       let domElement = largeRenderer.current.domElement;
-      console.log(object.current.children[1].geometry);
       const hipsControl = AddTransformationControl(new THREE.Vector3(0, 1, 0), camera, domElement, scene, "hips");
       const backControl = AddTransformationControl(new THREE.Vector3(0, 2, -.1), camera, domElement, scene, "back");
       const rightHandControl = AddTransformationControl(new THREE.Vector3(2, 1.5, 0), camera, domElement, scene, "rightHand");
@@ -340,52 +338,18 @@ const Character = React.memo(({
 
   const updateSkeleton = () => {
     let skeleton = object.current.userData.skeleton
-
     if (Object.values(props.skeleton).length) {
       for (bone of skeleton.bones) {
-
         let userState = props.skeleton[bone.name]
         let systemState = originalSkeleton.current.getBoneByName(bone.name).clone()
 
         let state = userState || systemState
 
-        let prevState = ragDoll.current.prevRotation[bone.name];
-        if(state === systemState)
-        {
-            //bone.rotation.x -= bone.rotation.x - state.rotation.x
-            //bone.rotation.y -= bone.rotation.y - state.rotation.y
-            //bone.rotation.z -= bone.rotation.z - state.rotation.z
-        }
-        else
-        {
-          if(ragDoll.current.prevRotation === null || prevState === undefined)
-          {
-            bone.rotation.x -= bone.rotation.x - state.rotation.x
-            bone.rotation.y -= bone.rotation.y - state.rotation.y
-            bone.rotation.z -= bone.rotation.z - state.rotation.z
-          }
-          else {
-
-            let difference = new THREE.Euler(prevState.rotation.x - state.rotation.x,
-                                              prevState.rotation.y - state.rotation.y,
-                                              prevState.rotation.z - state.rotation.z)
-            bone.rotation.x += difference.x
-            bone.rotation.y += difference.y
-            bone.rotation.z += difference.z
-            if(bone.name === "Spine")
-            {
-              console.log(prevState);
-              console.log(state);
-              console.log("Difference in angle", difference);
-            }
-          }
-
-        }
-
+        bone.rotation.x = state.rotation.x
+        bone.rotation.y = state.rotation.y
+        bone.rotation.z = state.rotation.z
       }
-      ragDoll.current.prevRotation = props.skeleton;
     } else {
-
       let skeleton = object.current.userData.skeleton
       skeleton.pose()
       fixRootBone()
@@ -494,7 +458,6 @@ const Character = React.memo(({
     ragDoll.current.prevRotation = [];
     resetPose()
     //ragDoll.current.recalculateDifference();
-    ragDoll.current.applyChangesToIK();
   }, [props.posePresetId])
 
   // HACK force reset skeleton pose on Board UUID change
@@ -512,7 +475,6 @@ const Character = React.memo(({
 
     console.log(type, id, 'skeleton')
     updateSkeleton()
-    ragDoll.current.applyChangesToIK();
   }, [props.model, props.skeleton, ready])
 
   useEffect(() => {
