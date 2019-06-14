@@ -1,6 +1,6 @@
 const {IK, IKJoint}  = require("../../core/three-ik");
 const THREE = require( "three");
-const setZForward = require( "../../utils/axisUtils");
+const {setZDirecion, setReverseZ} = require( "../../utils/axisUtils");
 const ChainObject = require( "./ChainObject");
 const SkeletonUtils = require("../../utils/SkeletonUtils");
 
@@ -19,7 +19,10 @@ class IkObject
         this.originalObject = null;
         this.clonedObject = null;
         this.ikBonesName = [];
-        this.originalRotationDiffrenceOfBones = [];
+        this.prevRotation = [];
+
+        this.originalObjectMatrix = {};
+        this.cloneObjectMatrix = {};
     }
 
     // Takes skeleton and target for it's limbs
@@ -29,8 +32,6 @@ class IkObject
         let chains = [];
 
         let clonedSkeleton = SkeletonUtils.clone(objectSkeleton);
-        console.log(objectSkeleton.children[0].clone());
-        console.log(clonedSkeleton.children[0].clone());
 
         this.originalObject = objectSkeleton;
         this.clonedObject = clonedSkeleton;
@@ -70,26 +71,18 @@ class IkObject
                     }
                     skeleton = parent;
                 }
-
                 // Flips a model's forward from -Z to +Z
                 // By default Models axis is -Z while Three ik works with +Z
                 if(object.name === "Hips")
                 {
                     this.hips = object;
-                    setZForward(object, new THREE.Vector3(0, 0, 1));
-                    object.updateWorldMatrix(true, true);
+                    setZDirecion(object, new THREE.Vector3(0, 0, 1));
                     rigMesh.bind(rigMesh.skeleton);
-                    console.log(clonedSkeleton.children[0].clone());
+
                     let objectWorld = new THREE.Vector3();
                     object.getWorldPosition(objectWorld);
                     this.hipsControlTarget.target.position.copy(objectWorld);
                 }
-                let originBone = objectSkeleton.getObjectByName(object.name);
-                let difference = new THREE.Euler(0, 0, 0);
-                difference.x = object.rotation.x - originBone.rotation.x;
-                difference.y = object.rotation.y - originBone.rotation.y;
-                difference.z = object.rotation.z - originBone.rotation.z;
-                this.originalRotationDiffrenceOfBones.push(difference);
                 // Goes through all chain objects to find with which we are working
                 chainObjects.forEach((chainObject) =>
                 {
@@ -130,7 +123,6 @@ class IkObject
 
             }
         });
-        //console.log(this.originalRotationDiffrenceOfBones);
         scene.remove(clonedSkeleton);
         // Goes through list of constraints and adds it to IK
         chains.forEach((chain) =>
@@ -144,19 +136,6 @@ class IkObject
 
         // Adds skeleton helper to scene
         scene.add( this.skeletonHelper );
-        this.chainObjects[1].controlTarget.control.addEventListener('pointermove', ( event ) =>
-        {
-            let bone =  this.originalObject.getObjectByName("LeftHand");
-            let targetPosition =  this.chainObjects[1].controlTarget.target.position;
-            bone.getWorldPosition(targetPosition);
-        });
-        this.chainObjects[2].controlTarget.control.addEventListener('pointermove', ( event ) =>
-        {
-            let bone =  this.originalObject.getObjectByName("RightHand");
-            let targetPosition =  this.chainObjects[2].controlTarget.target.position;
-            bone.getWorldPosition(targetPosition);
-        });
-
     }
 
     // Calculates back's offset in order to move with hips
@@ -234,11 +213,14 @@ class IkObject
         {
             let chain = chainObjects[i].chain;
             let jointBone = chain.joints[chain.joints.length - 1].bone;
-            //if(jointBone.name === "LeftFoot" || jointBone.name === "RightFoot")
-            //{
-            //    let targetPosition = chainObjects[i].controlTarget.target.position;
-            //    jointBone.getWorldPosition(targetPosition);
-            //}
+            if(jointBone.name === "LeftFoot" || jointBone.name === "RightFoot" ||
+                jointBone.name === "LeftHand" || jointBone.name === "RightHand" ||
+                jointBone.name === "Head" || jointBone.name === "Hips")
+            {
+                let targetPosition = chainObjects[i].controlTarget.target.position;
+                jointBone.getWorldPosition(targetPosition);
+            }
+            else
             {
                 let bone =  this.originalObject.getObjectByName(jointBone.name);
                 let targetPosition = chainObjects[i].controlTarget.target.position;
@@ -289,8 +271,6 @@ class IkObject
 
     recalculateDifference()
     {
-        console.log("Recalculate");
-        this.originalRotationDiffrenceOfBones = [];
         let clonedSkin = this.clonedObject.children[1];
         let originalSkin = this.originalObject.children[1];
         let clonedBones = clonedSkin.skeleton.bones;
@@ -299,23 +279,11 @@ class IkObject
         {
             let originBone = originalBones[i];
             let cloneBone = clonedBones[i];
-            let difference = new THREE.Euler(0, 0, 0);
-            difference.x = cloneBone.rotation.x - originBone.rotation.x;
-            difference.y = (cloneBone.rotation.y - originBone.rotation.y);
-            difference.z = (-cloneBone.rotation.z - originBone.rotation.z);
 
-            this.originalRotationDiffrenceOfBones.push(difference);
+            this.originalObjectMatrix[originBone.name] = originBone.matrix.clone();
+            this.cloneObjectMatrix[cloneBone.name] = cloneBone.matrix.clone();
         }
     }
-
-    changeBoneRotation(name, rotation)
-    {
-        let boneRotation = this.clonedObject.getObjectByName(name).rotation;
-        boneRotation.x += rotation.x;
-        boneRotation.y += rotation.y;
-        boneRotation.z += rotation.z;
-    }
-
 }
 
 module.exports =  IkObject;

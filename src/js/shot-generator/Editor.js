@@ -13,7 +13,7 @@ const Stats = require('stats.js')
 const { VariableSizeList } = require('react-window')
 const classNames = require('classnames')
 const prompt = require('electron-prompt')
-const RagDoll = require("./IK/objects/IkObjects/RagDoll");
+const RagDoll = require("./IK/objects/IkObjects/Ragdoll");
 const { createSelector } = require('reselect')
 
 //const h = require('../h')

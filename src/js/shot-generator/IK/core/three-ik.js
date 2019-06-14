@@ -439,6 +439,15 @@ var IKJoint = function () {
             constraintApplied = constraintApplied || applied;
           }
         }
+        for (var _iterator = this.ikConstraints[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true)
+        {
+          var constraint = _step.value;
+          if (constraint && constraint.applyConstraint)
+          {
+            var applied = constraint.applyConstraint(this);
+            constraintApplied = constraintApplied || applied;
+          }
+        }
       } catch (err) {
         _didIteratorError = true;
         _iteratorError = err;
@@ -639,7 +648,6 @@ var IKChain = function () {
         if (joint === this.joints[0])
         {
           this.origin = new three.Vector3().copy(this.base._getWorldPosition());
-          this.origin.z = -this.origin.z;
         }
         else
         {

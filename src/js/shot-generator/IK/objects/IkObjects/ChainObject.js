@@ -17,5 +17,13 @@ class ChainObject
         this.currentJoint = 0;
         this.constraints = [];
     }
+
+    updateMatrix()
+    {
+        for (let joint of this.chain.joints)
+        {
+            joint.bone.updateMatrixWorld(true);
+        }
+    }
 }
 module.exports =  ChainObject;

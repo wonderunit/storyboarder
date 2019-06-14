@@ -1,5 +1,5 @@
 //#region ragdoll's import
-const RagDoll = require("./IK/objects/IkObjects/RagDoll");
+const RagDoll = require("./IK/objects/IkObjects/Ragdoll");
 const TargetControl = require("./IK/objects/TargetControl");
 //#endregion
 const THREE = require('three')
@@ -190,7 +190,6 @@ const Character = React.memo(({
   const object = useRef(null)
   let ragDoll = useRef(null);
   const originalSkeleton = useRef(null)
-  let prevRotation = useRef([]);
   const doCleanup = () => {
     if (object.current) {
       console.log(type, id, 'remove')
@@ -291,6 +290,7 @@ const Character = React.memo(({
       ragDoll.current = new RagDoll();
       let skeletonRig = ragDoll.current;
       let domElement = largeRenderer.current.domElement;
+      console.log(object.current.children[1].geometry);
       const hipsControl = AddTransformationControl(new THREE.Vector3(0, 1, 0), camera, domElement, scene, "hips");
       const backControl = AddTransformationControl(new THREE.Vector3(0, 2, -.1), camera, domElement, scene, "back");
       const rightHandControl = AddTransformationControl(new THREE.Vector3(2, 1.5, 0), camera, domElement, scene, "rightHand");
@@ -349,7 +349,7 @@ const Character = React.memo(({
 
         let state = userState || systemState
 
-        let prevState = prevRotation.current[bone.name];
+        let prevState = ragDoll.current.prevRotation[bone.name];
         if(state === systemState)
         {
             //bone.rotation.x -= bone.rotation.x - state.rotation.x
@@ -358,7 +358,7 @@ const Character = React.memo(({
         }
         else
         {
-          if(prevRotation.current === null || prevState === undefined)
+          if(ragDoll.current.prevRotation === null || prevState === undefined)
           {
             bone.rotation.x -= bone.rotation.x - state.rotation.x
             bone.rotation.y -= bone.rotation.y - state.rotation.y
@@ -383,7 +383,7 @@ const Character = React.memo(({
         }
 
       }
-      prevRotation.current = props.skeleton;
+      ragDoll.current.prevRotation = props.skeleton;
     } else {
 
       let skeleton = object.current.userData.skeleton
@@ -491,7 +491,7 @@ const Character = React.memo(({
     if (!ready) return
     if (!props.posePresetId) return
     console.log(type, id, 'changed pose preset')
-    prevRotation.current = [];
+    ragDoll.current.prevRotation = [];
     resetPose()
     //ragDoll.current.recalculateDifference();
     ragDoll.current.applyChangesToIK();
