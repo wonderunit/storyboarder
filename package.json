@@ -42,7 +42,8 @@
       "!README.md",
       "!notes",
       "!test",
-      "!.cache"
+      "!.cache",
+      ".github"
     ],
     "mac": {
       "icon": "build/icon.icns"
