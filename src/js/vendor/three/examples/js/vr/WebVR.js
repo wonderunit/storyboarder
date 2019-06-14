@@ -20,8 +20,11 @@ var WEBVR = {
 			button.style.display = '';
 
 			button.style.cursor = 'pointer';
+			button.style.bottom = 'auto';
+			button.style.top = 'calc(50% - 20px)'; // 40px w / 2
 			button.style.left = 'calc(50% - 113px)'; // ~ 225px w / 2
 			button.style.width = '225px';
+			button.style.height = '40px';
 
 			button.textContent = 'ENTER SHOT GENERATOR VR';
 
@@ -161,7 +164,7 @@ var WEBVR = {
 
 			window.addEventListener( 'vrdisplaypresentchange', function ( event ) {
 
-				button.textContent = event.display.isPresenting ? 'EXIT VR' : 'ENTER VR';
+				button.textContent = event.display.isPresenting ? 'EXIT SHOT GENERATOR VR' : 'ENTER SHOT GENERATOR VR';
 
 			}, false );
 
