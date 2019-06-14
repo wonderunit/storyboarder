@@ -1336,24 +1336,27 @@ const SceneManagerXR = connect(
     }
 
     return (
-      <Canvas vr>
-        <SceneContent
-          {...{
-            aspectRatio,
-            sceneObjects,
-            getModelData,
-            activeCamera,
-            world,
-            createObject,
-            updateObject,
-            deleteObjects,
-            duplicateObjects,
-            selectedBone,
-            selectBone,
-            updateCharacterSkeleton
-          }}
-        />
-      </Canvas>
+      <>
+        <Canvas vr>
+          <SceneContent
+            {...{
+              aspectRatio,
+              sceneObjects,
+              getModelData,
+              activeCamera,
+              world,
+              createObject,
+              updateObject,
+              deleteObjects,
+              duplicateObjects,
+              selectedBone,
+              selectBone,
+              updateCharacterSkeleton
+            }}
+          />
+        </Canvas>
+        <div class="scene-overlay"></div>
+      </>
     )
  })
 
