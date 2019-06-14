@@ -1355,7 +1355,7 @@ const SceneManagerXR = connect(
             }}
           />
         </Canvas>
-        <div class="scene-overlay"></div>
+        <div className="scene-overlay"></div>
       </>
     )
  })
