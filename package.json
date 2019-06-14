@@ -43,7 +43,8 @@
       "!notes",
       "!test",
       "!.cache",
-      ".github"
+      ".github",
+      ".vscode"
     ],
     "mac": {
       "icon": "build/icon.icns"
