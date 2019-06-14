@@ -247,6 +247,10 @@ kbd {
   display: none;
 }
 
+.pose-presets-editor__list div::-webkit-scrollbar {
+  display: none;
+}
+
 #inspector {
   flex: 1;
   overflow: scroll;
