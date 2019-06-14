@@ -538,9 +538,9 @@ const SceneContent = ({
           const id = THREE.Math.generateUUID()
 
           const hmdCam = xrOffset.current.children.filter(child => child.type === 'PerspectiveCamera')[0]
-          let offsetVector = new THREE.Vector3(0, 0, -1)
+          let offsetVector = new THREE.Vector3(0, 0, -2)
           offsetVector.applyMatrix4(new THREE.Matrix4().extractRotation(hmdCam.matrixWorld))
-          offsetVector.multiply(new THREE.Vector3(1, 0, 1)).normalize()
+          offsetVector.multiply(new THREE.Vector3(1, 0, 1))
           const newPoz = xrOffset.current.position.clone().add(hmdCam.position).add(offsetVector)
 
           const rotation = new THREE.Vector2(offsetVector.x, offsetVector.z).normalize().angle() * -1 - Math.PI / 2
