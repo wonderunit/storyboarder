@@ -61,22 +61,6 @@ objLoader.setLogging(false, false)
 let textures = {}
 let characterModels = {}
 
-const loadTextures = () => {
-  let imageLoader = new THREE.ImageLoader(loadingManager)
-
-  textures.chair = new THREE.Texture()
-  imageLoader.load('data/shot-generator/objects/chair_uv.png', ( image ) => {
-    textures.chair.image = image
-    textures.chair.needsUpdate = true
-  })
-
-  textures.tree = new THREE.Texture()
-  imageLoader.load('data/shot-generator/objects/tree_uv.png', ( image ) => {
-    textures.tree.image = image
-    textures.tree.needsUpdate = true
-  })
-}
-
 const loadModelFBXPromise = ( file, textureBody, textureHead, meshHeight ) => {
   return new Promise((resolve, reject) => {
     fbxLoader.load( file, (object) => {
@@ -194,30 +178,6 @@ const loadModelGLTFPromise = (file, textureBody, textureHead, meshHeight) => {
 
     })
   })
-}
-
-const loadModels = () => {
-  console.log("DSFASDFasdfasdfasdkjfh asdkjfh aksjdhfk jahsdfkjahsdk fjhakjs dfhkajsd hfkjashd fkjahsd fkjahskjdf hakjsdfh kajsdhfkashdf kajhsdf kjashdfkjahsd kfjh")
-  const female = loadModelGLTFPromise("data/shot-generator/dummies/gltf/adult-female.glb", textures.femaleAdultBody, textures.maleHead, characterHeights['adult-female'] )
-  const male = loadModelGLTFPromise("data/shot-generator/dummies/gltf/adult-male.glb", textures.maleAdultBody, textures.maleHead, characterHeights['adult-male'] )
-  const male_youth = loadModelGLTFPromise("data/shot-generator/dummies/gltf/youth-male.glb", textures.maleYouthBody, textures.maleHead, characterHeights['teen-male'] )
-  const female_youth = loadModelGLTFPromise("data/shot-generator/dummies/gltf/youth-female.glb", textures.femaleYouthBody, textures.maleHead, characterHeights['teen-female'] )
-
-  return Promise.all([ male, male_youth, female_youth, female ]).then( (values) => {
-    // GLTF models are loaded async so we're waiting for all of them to get resolved
-    characterModels['adult-male'] = values[0]
-    characterModels['teen-male'] = values[1]
-    characterModels['teen-female'] = values[2]
-    characterModels['adult-female'] = values[3]
-    return new Promise(resolve => {
-      resolve(characterModels) } )
-  });
-
-}
-
-function init () {
-  loadTextures()
-  return loadModels()
 }
 
 function getCharacterModels () {
