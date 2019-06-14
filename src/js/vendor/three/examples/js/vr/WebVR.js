@@ -24,7 +24,8 @@ var WEBVR = {
 			button.style.top = 'calc(50% - 20px)'; // 40px w / 2
 			button.style.left = 'calc(50% - 113px)'; // ~ 225px w / 2
 			button.style.width = '225px';
-			button.style.height = '40px';
+			button.style.height = '41px';
+			button.style.lineHeight = 1;
 
 			button.textContent = 'ENTER SHOT GENERATOR VR';
 
@@ -120,9 +121,9 @@ var WEBVR = {
 			element.style.position = 'absolute';
 			element.style.bottom = '20px';
 			element.style.padding = '12px 6px';
-			element.style.border = '1px solid #fff';
-			element.style.borderRadius = '4px';
-			element.style.background = 'rgba(0,0,0,0.1)';
+			element.style.border = '3px solid #fff';
+			element.style.borderRadius = '9px';
+			element.style.background = 'rgba(0,0,0,0.5)';
 			element.style.color = '#fff';
 			element.style.font = 'normal 13px sans-serif';
 			element.style.textAlign = 'center';
