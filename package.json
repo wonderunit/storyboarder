@@ -41,7 +41,8 @@
       "!DEVELOPERS.md",
       "!README.md",
       "!notes",
-      "!test"
+      "!test",
+      "!.cache"
     ],
     "mac": {
       "icon": "build/icon.icns"
