@@ -20,8 +20,6 @@ var WEBVR = {
 			button.style.display = '';
 
 			button.style.cursor = 'pointer';
-			button.style.bottom = 'auto';
-			button.style.top = 'calc(50% - 20px)'; // 40px w / 2
 			button.style.left = 'calc(50% - 113px)'; // ~ 225px w / 2
 			button.style.width = '225px';
 			button.style.height = '41px';
@@ -119,7 +117,10 @@ var WEBVR = {
 		function stylizeElement( element ) {
 
 			element.style.position = 'absolute';
-			element.style.bottom = '20px';
+
+			element.style.bottom = 'auto';
+			element.style.top = 'calc(50% - 20px)'; // 40px w / 2
+
 			element.style.padding = '12px 6px';
 			element.style.border = '3px solid #fff';
 			element.style.borderRadius = '9px';
