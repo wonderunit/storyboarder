@@ -177,10 +177,7 @@ class IkObject
             let result = hipsPosition.add(this.backOffset);
             backTarget.position.copy(result);
         }
-        // Follows hips target
-        let targetPosition = hipsTarget.position.clone();
-        this.hips.parent.worldToLocal(targetPosition);
-        this.hips.position.copy(targetPosition);
+
     }
 
     // Removes ikObject's all elements from scene

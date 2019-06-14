@@ -12,7 +12,7 @@ class Ragdoll extends IkObject
         super();
         this.poleConstraints = [];
         this.poleTargetOffsets = {};
-        this.hipsMouseDown = false;
+        this.hipsMoving = false;
     }
 
     initObject(scene, object, skinnedMesh, ...controlTarget)
@@ -59,7 +59,7 @@ class Ragdoll extends IkObject
         this.addHipsEvent();
         this.setUpControlEvents();
     }
-    
+
     // Applies events to back control
     applyEventsToBackControl(backControl)
     {
@@ -111,7 +111,7 @@ class Ragdoll extends IkObject
 
         hipsControl.addEventListener("pointerdown", (event) =>
         {
-            this.hipsMouseDown = true;
+            this.hipsMoving = true;
 
             this.poleTargetOffsets.back = backConstraint.clone().sub(hipsTarget.position);
             this.poleTargetOffsets.leftArm = leftArmConstraint.clone().sub(hipsTarget.position);
@@ -122,7 +122,7 @@ class Ragdoll extends IkObject
         });
         hipsControl.addEventListener("change", (event) =>
         {
-            if(this.hipsMouseDown)
+            if(this.hipsMoving)
             {
                 let hipsPosition = hipsTarget.position.clone();
                 hipsPosition.add(this.poleTargetOffsets.back);
@@ -144,7 +144,13 @@ class Ragdoll extends IkObject
                 hipsPosition.add(this.poleTargetOffsets.rightLeg);
                 rightLegConstraint.copy(hipsPosition);
 
+                // Follows hips target
+                let targetPosition = hipsTarget.position.clone();
+                this.hips.parent.worldToLocal(targetPosition);
+                this.hips.position.copy(targetPosition);
+
                 this.originalObject.position.copy(this.clonedObject.position);
+                this.originalObject.updateMatrix();
             }
         });
         hipsControl.addEventListener("dragging-changed", (event) =>
@@ -154,7 +160,7 @@ class Ragdoll extends IkObject
         hipsControl.addEventListener("pointerup", (event) =>
         {
             this.applyingOffset = false;
-            this.hipsMouseDown = false;
+            this.hipsMoving = false;
         });
     }
 
@@ -244,6 +250,7 @@ class Ragdoll extends IkObject
             let polePosition = poleConstraints.poleTarget.mesh.position;
             poleConstraints.poleTarget.mesh.position.set(targetPosition.x + polePosition.x, targetPosition.y + polePosition.y, targetPosition.z + polePosition.z);
             chain.reinitializeJoints();
+
         }
         this.hips.getWorldPosition(this.hipsControlTarget.target.position);
         this.calculteBackOffset();

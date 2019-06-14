@@ -17,12 +17,9 @@ class TargetControl
         });
         this.control.addEventListener('pointerdown', (event) =>
         {
-            console.log(this.name);
-
             let control = this.control;
             if(this.disabled && control.dragging )
             {
-                console.log("Pointer down");
                 control.dragging = false;
             }
         });
