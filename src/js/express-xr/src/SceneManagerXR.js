@@ -42,8 +42,8 @@ const GUI = require('./gui/GUI')
 const { getIntersections, boneIntersect, intersectObjects } = require('./utils/xrControllerFuncs')
 require('./lib/VRController')
 
-const RStats = require('./lib/rStats')
-require('./lib/rStats.extras')
+// const RStats = require('./lib/rStats')
+// require('./lib/rStats.extras')
 
 const applyDeviceQuaternion = require('../../shot-generator/apply-device-quaternion')
 
@@ -287,7 +287,7 @@ const SceneContent = ({
   selectBone,
   updateCharacterSkeleton
 }) => {
-  const rStatsRef = useRef(null)
+  // const rStatsRef = useRef(null)
   const xrOffset = useRef(null)
 
   const [guiMode, setGuiMode] = useState('selection')
@@ -1029,11 +1029,11 @@ const SceneContent = ({
   }, [vrControllers, sceneObjects])
 
   useRender(() => {
-    if (rStatsRef.current) {
-      rStatsRef.current('rAF').tick()
-      rStatsRef.current('FPS').frame()
-      rStatsRef.current().update()
-    }
+    // if (rStatsRef.current) {
+    //   rStatsRef.current('rAF').tick()
+    //   rStatsRef.current('FPS').frame()
+    //   rStatsRef.current().update()
+    // }
 
     THREE.VRController.update()
 
@@ -1080,16 +1080,15 @@ const SceneContent = ({
         }
       })
       .catch(err => console.error(err))
-
-    const threeStats = new window.threeStats(gl)
-    rStatsRef.current = new RStats({
-      css: [],
-      values: {
-        fps: { caption: 'fps', below: 30 }
-      },
-      groups: [{ caption: 'Framerate', values: ['fps', 'raf'] }],
-      plugins: [threeStats]
-    })
+    // const threeStats = new window.threeStats(gl)
+    // rStatsRef.current = new RStats({
+    //   css: [],
+    //   values: {
+    //     fps: { caption: 'fps', below: 30 }
+    //   },
+    //   groups: [{ caption: 'Framerate', values: ['fps', 'raf'] }],
+    //   plugins: [threeStats]
+    // })
   }, [])
 
   // if our camera is setup
@@ -1337,24 +1336,27 @@ const SceneManagerXR = connect(
     }
 
     return (
-      <Canvas vr>
-        <SceneContent
-          {...{
-            aspectRatio,
-            sceneObjects,
-            getModelData,
-            activeCamera,
-            world,
-            createObject,
-            updateObject,
-            deleteObjects,
-            duplicateObjects,
-            selectedBone,
-            selectBone,
-            updateCharacterSkeleton
-          }}
-        />
-      </Canvas>
+      <>
+        <Canvas vr>
+          <SceneContent
+            {...{
+              aspectRatio,
+              sceneObjects,
+              getModelData,
+              activeCamera,
+              world,
+              createObject,
+              updateObject,
+              deleteObjects,
+              duplicateObjects,
+              selectedBone,
+              selectBone,
+              updateCharacterSkeleton
+            }}
+          />
+        </Canvas>
+        <div className="scene-overlay"></div>
+      </>
     )
  })
 
