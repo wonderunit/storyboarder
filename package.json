@@ -41,7 +41,10 @@
       "!DEVELOPERS.md",
       "!README.md",
       "!notes",
-      "!test"
+      "!test",
+      "!.cache",
+      ".github",
+      ".vscode"
     ],
     "mac": {
       "icon": "build/icon.icns"
