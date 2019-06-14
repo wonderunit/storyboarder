@@ -6396,7 +6396,8 @@ const showSignInWindow = () => {
       experimentalFeatures: true,
       experimentalCanvasFeatures: true,
       devTools: true,
-      plugins: true
+      plugins: true,
+      nodeIntegration: true,
     }
   })
   exportWebWindow.loadURL(`file://${__dirname}/../../upload.html`)
@@ -6767,7 +6768,10 @@ const openPrintWindow = (printWindowType, showPrintWindow) => {
       parent: remote.getCurrentWindow(),
       resizable: true,
       frame: false,
-      modal: true
+      modal: true,
+      webPreferences: {
+        nodeIntegration: true
+      }
     })
     printWindow[printWindowType].loadURL(`file://${__dirname}/../../print-window.html`)
     printWindow[printWindowType].once('ready-to-show', () => {
@@ -6817,7 +6821,10 @@ ipcRenderer.on('importWorksheets', (event, args) => {
       parent: remote.getCurrentWindow(),
       resizable: true,
       frame: false,
-      modal: true
+      modal: true,
+      webPreferences: {
+        nodeIntegration: true
+      }
     })
     importWindow.loadURL(`file://${__dirname}/../../import-window.html`)
   } else {
