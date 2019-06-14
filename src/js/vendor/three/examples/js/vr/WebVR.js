@@ -20,10 +20,10 @@ var WEBVR = {
 			button.style.display = '';
 
 			button.style.cursor = 'pointer';
-			button.style.left = 'calc(50% - 50px)';
-			button.style.width = '100px';
+			button.style.left = 'calc(50% - 113px)'; // ~ 225px w / 2
+			button.style.width = '225px';
 
-			button.textContent = 'ENTER VR';
+			button.textContent = 'ENTER SHOT GENERATOR VR';
 
 			button.onmouseenter = function () { button.style.opacity = '1.0'; };
 			button.onmouseleave = function () { button.style.opacity = '0.5'; };
