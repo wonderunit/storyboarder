@@ -394,7 +394,10 @@ const SceneContent = ({
     const depthWorldPos = raycastDepth.getWorldPosition(new THREE.Vector3())
     depthWorldPos.sub(controller.userData.posOffset)
     object.position.copy(depthWorldPos)
-    object.rotation.y = object.userData.modelSettings.rotation
+
+    if (object.userData.type === 'character') {
+      object.rotation.y = object.userData.modelSettings.rotation
+    }
   }
 
   const onTeleport = event => {
@@ -452,7 +455,10 @@ const SceneContent = ({
     soundSelect.current.play()
 
     const controller = event.target
+    controller.pressed = true
+
     const otherController = vrControllers.find(i => i.uuid !== controller.uuid)
+    if (otherController.pressed) return
     if (otherController && otherController.userData.selected) return
 
     if (teleportMode.current) {
@@ -460,7 +466,6 @@ const SceneContent = ({
       return
     }
 
-    controller.pressed = true
     const intersections = getIntersections(controller, intersectArray.current)
 
     if (intersections.length > 0) {
@@ -713,7 +718,7 @@ const SceneContent = ({
     if (controller.userData.selected !== undefined) {
       const object = controller.userData.selected
 
-      if (object.userData.type !== 'character') {
+      if (object.userData.type !== 'character' && object.parent.uuid === controller.uuid) {
         object.matrix.premultiply(controller.matrixWorld)
         object.matrix.decompose(object.position, object.quaternion, object.scale)
         scene.add(object)
@@ -738,6 +743,19 @@ const SceneContent = ({
       })
 
       useUpdateObject(object)
+    } else {
+      const otherController = vrControllers.find(i => i.uuid !== controller.uuid)
+      if (otherController.userData.selected) {
+        const object = otherController.userData.selected
+        if (object.userData.type !== 'object') return
+
+        const tempMatrix = new THREE.Matrix4()
+        tempMatrix.getInverse(otherController.matrixWorld)
+
+        object.matrix.premultiply(tempMatrix)
+        object.matrix.decompose(object.position, object.quaternion, object.scale)
+        otherController.add(object)
+      }
     }
   }
 
@@ -804,7 +822,12 @@ const SceneContent = ({
     const object = controller.userData.selected
 
     if (Math.abs(amount) > 0.01) {
-      if (object.userData.type === 'character') {
+      const otherController = vrControllers.find(i => i.uuid !== controller.uuid)
+
+      if (
+        object.userData.type === 'character' ||
+        (controller.pressed && otherController.pressed && object.userData.type === 'object')
+      ) {
         const raycastDepth = controller.getObjectByName('raycast-depth')
         raycastDepth.position.add(new THREE.Vector3(0, 0, amount))
         raycastDepth.position.z = Math.min(raycastDepth.position.z, -0.5)
@@ -1029,11 +1052,11 @@ const SceneContent = ({
 
     THREE.VRController.update()
 
-    vrControllers.forEach(controller => {
+    vrControllers.forEach((controller, idx) => {
 
       if (selectedObjRef.current && selectedObjRef.current.userData.type === 'character' && !selectedBone) {
         const bonesHelper = selectedObjRef.current.children[0].bonesHelper
-        const hits = boneIntersect(controller, bonesHelper)
+        const hits = bonesHelper ? boneIntersect(controller, bonesHelper) : []
         if (hits.length) {
           controller.userData.currentBoneHighlight = hits[0].bone
           controller.userData.currentBoneHighlight.connectedBone.material.color = new THREE.Color(0x242246)
@@ -1043,17 +1066,45 @@ const SceneContent = ({
         }
       }
 
-      const intersections = getIntersections(controller, guiArray.current)
-      if (intersections.length > 0) {
-        let intersection = intersections[0]
-        if (intersection.object.userData.type === 'slider') {
-          controller.intersections = intersections
+      const otherController = vrControllers[1 - idx]
+      if (otherController && !otherController.pressed) {
+        const intersections = getIntersections(controller, guiArray.current)
+        if (intersections.length > 0) {
+          let intersection = intersections[0]
+          if (intersection.object.userData.type === 'slider') {
+            controller.intersections = intersections
+          }
         }
       }
 
       const object = controller.userData.selected
       if (object && object.userData.type === 'character') {
         constraintObjectRotation(controller)
+      }
+
+      if (controller.pressed === true) {
+        if (object && object.userData.type === 'object' && otherController.pressed) {
+          if (object.parent.uuid === controller.uuid) {
+            object.matrix.premultiply(controller.matrixWorld)
+            object.matrix.decompose(object.position, object.quaternion, object.scale)
+            object.rotation.x = 0
+            object.rotation.z = 0
+            scene.add(object)
+
+            const intersections = getIntersections(controller, intersectArray.current)
+            if (intersections.length > 0) {
+              const intersection = intersections[0]
+              const raycastDepth = controller.getObjectByName('raycast-depth')
+              raycastDepth.position.z = -intersection.distance
+
+              const objectWorldPos = intersection.object.getWorldPosition(new THREE.Vector3())
+              const posOffset = new THREE.Vector3().subVectors(intersection.point, objectWorldPos)
+              controller.userData.posOffset = posOffset
+            }
+          } else {
+            constraintObjectRotation(controller)
+          }
+        }
       }
 
       if (controller.userData.bone) rotateBone(controller)
