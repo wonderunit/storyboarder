@@ -394,18 +394,7 @@ const SceneContent = ({
     const depthWorldPos = raycastDepth.getWorldPosition(new THREE.Vector3())
     depthWorldPos.sub(controller.userData.posOffset)
     object.position.copy(depthWorldPos)
-
-    const quaternion = new THREE.Quaternion()
-    controller.matrixWorld.decompose(new THREE.Vector3(), quaternion, new THREE.Vector3())
-    const newMatrix = new THREE.Matrix4().compose(
-      new THREE.Vector3(),
-      quaternion,
-      new THREE.Vector3(1, 1, 1)
-    )
-
-    const rotVector = new THREE.Vector3(1, 0, 0).applyMatrix4(newMatrix)
-    const rotTheta = Math.atan2(rotVector.y, rotVector.x)
-    object.rotation.y = -rotTheta + object.userData.modelSettings.rotation + controller.userData.rotOffset
+    object.rotation.y = object.userData.modelSettings.rotation
   }
 
   const onTeleport = event => {
