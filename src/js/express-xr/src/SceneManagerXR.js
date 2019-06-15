@@ -1089,6 +1089,11 @@ const SceneContent = ({
             object.matrix.decompose(object.position, object.quaternion, object.scale)
             object.rotation.x = 0
             object.rotation.z = 0
+
+            const sign = Math.sign(object.rotation.y)
+            let degree =  THREE.Math.radToDeg(Math.abs(object.rotation.y)) / 22.5
+            degree = THREE.Math.degToRad(Math.round(degree) * 22.5) * sign
+            object.rotation.y = degree
             scene.add(object)
 
             const intersections = getIntersections(controller, intersectArray.current)
