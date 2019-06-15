@@ -471,13 +471,13 @@ const SceneContent = ({
       return
     }
 
+    controller.pressed = true
     const intersections = getIntersections(controller, intersectArray.current)
 
     if (intersections.length > 0) {
       let intersection = intersections[0]
 
       if (intersection.object.userData.type === 'slider') {
-        controller.pressed = true
         controller.intersections = intersections
         return
       }
@@ -945,7 +945,10 @@ const SceneContent = ({
       }
     }
 
-    if (selectedObjRef.current) return
+    for (let i = 0; i < vrControllers.length; ++i) {
+      const controller = vrControllers[i]
+      if (controller.pressed && selectedObjRef.current) return
+    }
 
     const intersections = getIntersections(controller, intersectArray.current)
 
