@@ -457,14 +457,14 @@ const SceneContent = ({
     const controller = event.target
     controller.pressed = true
 
-    const otherController = vrControllers.find(i => i.uuid !== controller.uuid)
-    if (otherController && otherController.pressed) return
-    if (otherController && otherController.userData.selected) return
-
     if (teleportMode.current) {
       onTeleport(event)
       return
     }
+
+    const otherController = vrControllers.find(i => i.uuid !== controller.uuid)
+    if (otherController && otherController.userData.selected) return
+    if (controller.gripped) return
 
     const intersections = getIntersections(controller, intersectArray.current)
 
@@ -743,19 +743,6 @@ const SceneContent = ({
       })
 
       useUpdateObject(object)
-    } else {
-      const otherController = vrControllers.find(i => i.uuid !== controller.uuid)
-      if (otherController && otherController.userData.selected) {
-        const object = otherController.userData.selected
-        if (object.userData.type !== 'object') return
-
-        const tempMatrix = new THREE.Matrix4()
-        tempMatrix.getInverse(otherController.matrixWorld)
-
-        object.matrix.premultiply(tempMatrix)
-        object.matrix.decompose(object.position, object.quaternion, object.scale)
-        otherController.add(object)
-      }
     }
   }
 
@@ -822,11 +809,9 @@ const SceneContent = ({
     const object = controller.userData.selected
 
     if (Math.abs(amount) > 0.01) {
-      const otherController = vrControllers.find(i => i.uuid !== controller.uuid)
-
       if (
         object.userData.type === 'character' ||
-        (controller.pressed && otherController.pressed && object.userData.type === 'object')
+        (controller.pressed && controller.gripped && object.userData.type === 'object')
       ) {
         const raycastDepth = controller.getObjectByName('raycast-depth')
         raycastDepth.position.add(new THREE.Vector3(0, 0, amount))
@@ -945,7 +930,9 @@ const SceneContent = ({
 
   const onGripDown = event => {
     teleportMode.current = true
+    
     const controller = event.target
+    controller.gripped = true
 
     if (selectedObjRef.current && selectedObjRef.current.userData.type === 'character' && !selectedBone) {
       const bonesHelper = selectedObjRef.current.children[0].bonesHelper
@@ -966,11 +953,7 @@ const SceneContent = ({
 
     if (intersections.length > 0) {
       let intersection = intersections[0]
-      if (intersection.object.userData.type === 'slider') {
-        controller.gripped = true
-        return
-      }
-
+      if (intersection.object.userData.type === 'slider') return
       if (intersection.object.userData.type === 'gui') return
 
       let object = findParent(intersection.object)
@@ -1011,6 +994,18 @@ const SceneContent = ({
       controller.userData.bone = undefined
       isControllerRotatingCurrent.current = false
       selectBone(null)
+    }
+
+    if (controller.userData.selected) {
+      const object = controller.userData.selected
+      if (object.userData.type !== 'object') return
+
+      const tempMatrix = new THREE.Matrix4()
+      tempMatrix.getInverse(controller.matrixWorld)
+
+      object.matrix.premultiply(tempMatrix)
+      object.matrix.decompose(object.position, object.quaternion, object.scale)
+      controller.add(object)
     }
   }
 
@@ -1083,7 +1078,7 @@ const SceneContent = ({
       }
 
       if (controller.pressed === true) {
-        if (object && object.userData.type === 'object' && otherController.pressed) {
+        if (object && object.userData.type === 'object' && controller.gripped) {
           if (object.parent.uuid === controller.uuid) {
             object.matrix.premultiply(controller.matrixWorld)
             object.matrix.decompose(object.position, object.quaternion, object.scale)
