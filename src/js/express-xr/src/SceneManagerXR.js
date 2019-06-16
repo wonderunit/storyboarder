@@ -1087,12 +1087,15 @@ const SceneContent = ({
             object.rotation.reorder('YXZ')
 
             const sign = Math.sign(object.rotation.y)
-            let degree =  THREE.Math.radToDeg(Math.abs(object.rotation.y)) / 22.5
-            degree = THREE.Math.degToRad(Math.round(degree) * 22.5) * sign
+            let degreeY =  THREE.Math.radToDeg(Math.abs(object.rotation.y)) / 22.5
+            degreeY = THREE.Math.degToRad(Math.round(degreeY) * 22.5) * sign
+
+            let degreeZ = THREE.Math.radToDeg(Math.abs(object.rotation.z)) / 180
+            degreeZ = THREE.Math.degToRad(Math.round(degreeZ) * 180)
 
             object.rotation.x = 0
-            object.rotation.z = 0
-            object.rotation.y = degree
+            object.rotation.z = degreeZ
+            object.rotation.y = degreeY
             object.rotation.order = object.userData.order
             scene.add(object)
 
