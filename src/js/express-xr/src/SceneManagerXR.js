@@ -458,7 +458,7 @@ const SceneContent = ({
     controller.pressed = true
 
     const otherController = vrControllers.find(i => i.uuid !== controller.uuid)
-    if (otherController.pressed) return
+    if (otherController && otherController.pressed) return
     if (otherController && otherController.userData.selected) return
 
     if (teleportMode.current) {
@@ -745,7 +745,7 @@ const SceneContent = ({
       useUpdateObject(object)
     } else {
       const otherController = vrControllers.find(i => i.uuid !== controller.uuid)
-      if (otherController.userData.selected) {
+      if (otherController && otherController.userData.selected) {
         const object = otherController.userData.selected
         if (object.userData.type !== 'object') return
 
@@ -1087,13 +1087,18 @@ const SceneContent = ({
           if (object.parent.uuid === controller.uuid) {
             object.matrix.premultiply(controller.matrixWorld)
             object.matrix.decompose(object.position, object.quaternion, object.scale)
-            object.rotation.x = 0
-            object.rotation.z = 0
+
+            object.userData.order = object.rotation.order
+            object.rotation.reorder('YXZ')
 
             const sign = Math.sign(object.rotation.y)
             let degree =  THREE.Math.radToDeg(Math.abs(object.rotation.y)) / 22.5
             degree = THREE.Math.degToRad(Math.round(degree) * 22.5) * sign
+
+            object.rotation.x = 0
+            object.rotation.z = 0
             object.rotation.y = degree
+            object.rotation.order = object.userData.order
             scene.add(object)
 
             const intersections = getIntersections(controller, intersectArray.current)
