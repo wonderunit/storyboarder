@@ -299,7 +299,9 @@ const SceneContent = ({
   const [selectedObject, setSelectedObject] = useState(null)
   const [guiCamFOV, setGuiCamFOV] = useState(22)
   const [hideArray, setHideArray] = useState([])
+  const [worldScale, setWorldScale] = useState(1)
 
+  const worldScaleGroupRef = useRef([])
   const moveCamRef = useRef(null)
   const rotateCamRef = useRef(null)
   const intersectArray = useRef([])
@@ -324,7 +326,7 @@ const SceneContent = ({
 
   const findParent = obj => {
     while (obj) {
-      if (!obj.parent || obj.parent.type === 'Scene') {
+      if (!obj.parent || obj.parent.type === 'Scene' || obj.parent.userData.type === 'world-scale') {
         return obj
       }
       obj = obj.parent
@@ -411,6 +413,7 @@ const SceneContent = ({
       })
 
       setTeleportPos(intersect.point)
+      setWorldScale(1)
     }
   }
 
@@ -517,7 +520,7 @@ const SceneContent = ({
               duplicateObjects([selectedObjRef.current.userData.id], [id])
 
               setTimeout(() => {
-                const match = scene.children.find(child => child.userData.id === id)
+                const match = worldScaleGroupRef.current.children.find(child => child.userData.id === id)
                 setSelectedObject(match.id)
                 selectedObjRef.current = match
                 setHideArray(createHideArray())
@@ -726,7 +729,7 @@ const SceneContent = ({
       if (object.userData.type !== 'character' && object.parent.uuid === controller.uuid) {
         object.matrix.premultiply(controller.matrixWorld)
         object.matrix.decompose(object.position, object.quaternion, object.scale)
-        scene.add(object)
+        worldScaleGroupRef.current.add(object)
       }
 
       controller.userData.selected = undefined
@@ -939,6 +942,14 @@ const SceneContent = ({
     const controller = event.target
     controller.gripped = true
 
+    const otherController = vrControllers.find(i => i.uuid !== controller.uuid)
+    if (otherController && otherController.gripped) {
+      setWorldScale(oldValue => {
+        return oldValue === 1 ? 0.1 : 1
+      })
+      return
+    }
+
     if (selectedObjRef.current && selectedObjRef.current.userData.type === 'character' && !selectedBone) {
       const bonesHelper = selectedObjRef.current.children[0].bonesHelper
       const hits = boneIntersect(controller, bonesHelper)
@@ -1019,7 +1030,7 @@ const SceneContent = ({
   })
 
   useEffect(() => {
-    intersectArray.current = scene.children.filter(
+    intersectArray.current = worldScaleGroupRef.current.children.filter(
       child =>
         (child instanceof THREE.Mesh || child instanceof THREE.Group) &&
         (child.userData.type !== 'ground' && child.userData.type !== 'room' && child.userData.type !== 'camera')
@@ -1039,7 +1050,7 @@ const SceneContent = ({
       }
     })
 
-    teleportArray.current = scene.children.filter(child => child.userData.type === 'ground')
+    teleportArray.current = worldScaleGroupRef.current.children.filter(child => child.userData.type === 'ground')
     setHideArray(createHideArray())
   }, [vrControllers, sceneObjects])
 
@@ -1102,7 +1113,7 @@ const SceneContent = ({
             object.rotation.z = degreeZ
             object.rotation.y = degreeY
             object.rotation.order = object.userData.order
-            scene.add(object)
+            worldScaleGroupRef.current.add(object)
 
             const intersections = getIntersections(controller, intersectArray.current)
             if (intersections.length > 0) {
@@ -1348,7 +1359,9 @@ const SceneContent = ({
   return (
     <>
       {activeCameraComponent}
-      {sceneObjectComponents.concat(worldComponent)}
+      <group ref={worldScaleGroupRef} userData={{ type: 'world-scale' }} scale={[worldScale, worldScale, worldScale]}>
+        {sceneObjectComponents.concat(worldComponent)}
+      </group>
     </>
   )
 }
