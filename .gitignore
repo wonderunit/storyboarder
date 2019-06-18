@@ -41,3 +41,5 @@ dist/
 .vscode
 
 .DS_Store
+
+.cache

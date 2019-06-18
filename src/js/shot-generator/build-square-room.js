@@ -1,8 +1,6 @@
 const THREE = require('three')
 const { MeshLine, MeshLineMaterial } = require('../vendor/THREE.MeshLine')
 
-const METERS_PER_FEET = 0.3048
-
 const BoundingUVGenerator = {
   generateTopUV: function (geometry, extrudedShape, extrudeOptions, indexA, indexB, indexC) {
     var ax = geometry.vertices[ indexA ].x,
@@ -87,10 +85,6 @@ let createLineMesh = (pointsArray, material) => {
 }
 
 const buildSquareRoom = (w, l, h, { textures }) => {
-  w = w * METERS_PER_FEET
-  l = l * METERS_PER_FEET
-  h = h * METERS_PER_FEET
-
   var hw = w / 2
   var hl = l / 2
 

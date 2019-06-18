@@ -1,6 +1,11 @@
 const THREE = require('three')
 const { produce } = require('immer')
+const undoable = require('redux-undo').default
 const crypto = require('crypto')
+const reduceReducers = require('../../vendor/reduce-reducers')
+const { combineReducers } = require('redux')
+
+const batchGroupBy = require('./shot-generator/batchGroupBy')
 
 const hashify = string => crypto.createHash('sha1').update(string).digest('base64')
 
@@ -10,13 +15,24 @@ const capitalize = string => string.charAt(0).toUpperCase() + string.slice(1)
 //
 // selectors
 //
+const getSceneObjects = state => state.undoable.present.sceneObjects
+
+const getSelections = state => state.undoable.present.selections
+
+const getActiveCamera = state => state.undoable.present.activeCamera
+
+const getSelectedBone = state => state.undoable.present.selectedBone
+
+const getWorld = state => state.undoable.present.world
+
+
 const getIsSceneDirty = state => {
   let current = hashify(JSON.stringify(getSerializedState(state)))
   return current !== state.meta.lastSavedHash
 }
 // return only the stuff we want to save to JSON
 const getSerializedState = state => {
-  let sceneObjects = Object.entries(state.sceneObjects)
+  let sceneObjects = Object.entries(getSceneObjects(state))
     .reduce((o, [ k, v ]) => {
       let {
         // ignore 'loaded'
@@ -29,9 +45,9 @@ const getSerializedState = state => {
     }, {})
 
   return {
-    world: state.world,
+    world: getWorld(state),
     sceneObjects,
-    activeCamera: state.activeCamera
+    activeCamera: getActiveCamera(state)
   }
 }
 
@@ -42,18 +58,18 @@ const getSerializedState = state => {
 const checkForCharacterChanges = (state, draft, actionPayloadId) => {
   // check to see if character has changed from preset
   // and invalidate if so
-  let characterPresetId = draft.sceneObjects[actionPayloadId].characterPresetId
+  let characterPresetId = getSceneObjects(draft)[actionPayloadId].characterPresetId
   if (characterPresetId) {
     let statePreset = state.presets.characters[characterPresetId]
 
     // preset does not exist anymore
     if (!statePreset) {
       // so don't reference it
-      draft.sceneObjects[actionPayloadId].characterPresetId = undefined
+      getSceneObjects(draft)[actionPayloadId].characterPresetId = undefined
       return true
     }
 
-    let stateCharacter = draft.sceneObjects[actionPayloadId]
+    let stateCharacter = getSceneObjects(draft)[actionPayloadId]
 
     // for every top-level prop in the preset
     for (let prop in statePreset.state) {
@@ -67,7 +83,7 @@ const checkForCharacterChanges = (state, draft, actionPayloadId) => {
 
         if (stateCharacter[prop] != statePreset.state[prop]) {
           // changed, no longer matches preset
-          draft.sceneObjects[actionPayloadId].characterPresetId = undefined
+          getSceneObjects(draft)[actionPayloadId].characterPresetId = undefined
           return true
         }
       }
@@ -80,7 +96,7 @@ const checkForCharacterChanges = (state, draft, actionPayloadId) => {
       stateCharacter.morphTargets.endomorphic != statePreset.state.morphTargets.endomorphic
     ) {
       // changed, no longer matches preset
-      draft.sceneObjects[actionPayloadId].characterPresetId = undefined
+      getSceneObjects(draft)[actionPayloadId].characterPresetId = undefined
       return true
     }
   }
@@ -89,25 +105,25 @@ const checkForCharacterChanges = (state, draft, actionPayloadId) => {
 const checkForSkeletonChanges = (state, draft, actionPayloadId) => {
   // check to see if pose has changed from preset
   // and invalidate if so
-  let posePresetId = draft.sceneObjects[actionPayloadId].posePresetId
+  let posePresetId = getSceneObjects(draft)[actionPayloadId].posePresetId
   if (posePresetId) {
     let statePreset = state.presets.poses[posePresetId]
 
     // preset does not exist anymore
     if (!statePreset) {
       // so don't reference it
-      draft.sceneObjects[actionPayloadId].posePresetId = undefined
+      getSceneObjects(draft)[actionPayloadId].posePresetId = undefined
       return true
     }
 
-    let draftSkeleton = draft.sceneObjects[actionPayloadId].skeleton
+    let draftSkeleton = getSceneObjects(draft)[actionPayloadId].skeleton
 
     let preset = statePreset.state.skeleton
     let curr = draftSkeleton
 
     if (Object.values(curr).length != Object.values(preset).length) {
       // changed, no longer matches preset
-      draft.sceneObjects[actionPayloadId].posePresetId = undefined
+      getSceneObjects(draft)[actionPayloadId].posePresetId = undefined
       return true
     }
 
@@ -118,7 +134,7 @@ const checkForSkeletonChanges = (state, draft, actionPayloadId) => {
         preset[name].rotation.z !== curr[name].rotation.z
       ) {
         // changed, no longer matches preset
-        draft.sceneObjects[actionPayloadId].posePresetId = undefined
+        getSceneObjects(draft)[actionPayloadId].posePresetId = undefined
         return true
       }
     }
@@ -142,10 +158,6 @@ const migrateRotations = sceneObjects =>
       o[k] = v
       return o
     }, {})
-
-const updateMeta = state => {
-  state.meta.lastSavedHash = hashify(JSON.stringify(getSerializedState(state)))
-}
 
 const updateObject = (draft, state, props, { models }) => {
   // TODO is there a simpler way to merge only non-null values?
@@ -356,9 +368,9 @@ const defaultScenePreset = {
     backgroundColor: 0xFFFFFF,
     room: {
       visible: true,
-      width: 30,
-      length: 40,
-      height: 30
+      width: 4,
+      length: 4,
+      height: 3
     },
     environment: {
       file: undefined,
@@ -478,9 +490,9 @@ const initialScene = {
     backgroundColor: 0xFFFFFF,
     room: {
       visible: false,
-      width: 30,
-      length: 40,
-      height: 30
+      width: 4,
+      length: 4,
+      height: 3
     },
     environment: {
       file: undefined,
@@ -499,7 +511,6 @@ const initialScene = {
       rotation: -0.9,
       tilt: 0.75
     }
-
   },
   sceneObjects: {
     '6BC46A44-7965-43B5-B290-E3D2B9D15EEE': {
@@ -513,10 +524,9 @@ const initialScene = {
       tilt: 0,
       roll: 0.0,
       name: undefined
-    },
-
+    }
   },
-  activeCamera: '6BC46A44-7965-43B5-B290-E3D2B9D15EEE',
+  activeCamera: '6BC46A44-7965-43B5-B290-E3D2B9D15EEE'
 }
 
 // TODO sg key
@@ -591,6 +601,15 @@ const initialState = {
 
   board: {},
 
+  undoable: {
+    world: initialScene.world,
+    activeCamera: initialScene.activeCamera,
+    sceneObjects: withDisplayNames(initialScene.sceneObjects),
+
+    selections: [],
+    selectedBone: null,
+  },
+
   meta: {
     storyboarderFilePath: undefined,
     lastSavedHash: undefined
@@ -603,13 +622,6 @@ const initialState = {
     }
   },
 
-  ...{
-    ...initialScene,
-    sceneObjects: withDisplayNames(initialScene.sceneObjects)
-  },
-
-  selections: [],
-  selectedBone: undefined,
   mainViewCamera: 'live', // 'ortho' or 'live'
   input: {
     accel: [0, 0, 0],
@@ -662,98 +674,418 @@ const initialState = {
   }
 }
 
-module.exports = {
-  initialState,
+const selectionsReducer = (state = [], action) => {
+  return produce(state, draft => {
+    switch (action.type) {
+      case 'LOAD_SCENE':
+        // clear selections
+        return []
 
-  reducer: (state = initialState, action) => {
-    return produce(state, draft => {
-      switch (action.type) {
-        case 'LOAD_SCENE':
-          draft.world = {
-            ...action.payload.world
+      // select a single object
+      case 'SELECT_OBJECT':
+        return (action.payload == null)
+          // empty the selection
+          ? []
+          // make the selection
+          : [action.payload]
+
+      case 'SELECT_OBJECT_TOGGLE':
+        let n = draft.indexOf(action.payload)
+        if (n === -1) {
+          draft.push(action.payload)
+        } else {
+          draft.splice(n, 1)
+        }
+        return
+
+      case 'DUPLICATE_OBJECTS':
+        // select the new duplicates, replacing the selection list
+        return action.payload.newIds
+
+      case 'DELETE_OBJECTS':
+        for (let id of action.payload.ids) {
+          // did we remove a selected id?
+          if (draft.includes(id)) {
+            // delete it from the selections list
+            draft.splice(draft.indexOf(id), 1)
           }
+        }
+        return
 
-          // migrate older scenes which were missing ambient and directional light settings
-          if (!action.payload.world.ambient) draft.world.ambient = initialScene.world.ambient
-          if (!action.payload.world.directional) draft.world.directional = initialScene.world.directional
+      default:
+        return
+    }
+  })
+}
 
-          draft.sceneObjects = withDisplayNames(resetLoadingStatus(migrateRotations(action.payload.sceneObjects)))
-          draft.activeCamera = action.payload.activeCamera
-          // clear selections
-          draft.selections = []
-          draft.selectedBone = undefined
-          draft.mainViewCamera = 'live'
-          updateMeta(draft)
-          return
+const sceneObjectsReducer = (state = {}, action) => {
+  return produce(state, draft => {
+    switch (action.type) {
+      case 'LOAD_SCENE':
+        return withDisplayNames(
+          resetLoadingStatus(
+            migrateRotations(action.payload.sceneObjects)
+          )
+        )
 
-        // select a single object
-        case 'SELECT_OBJECT':
-          if (action.payload == null) {
-            // empty the selection
-            draft.selections = []
-            // de-select any currently selected bone
-            draft.selectedBone = undefined
-          } else {
-            // make the selection
-            draft.selections = [action.payload]
-            // de-select any currently selected bone
-            draft.selectedBone = undefined
-          }
-          return
+      case 'CREATE_OBJECT':
+        let id = action.payload.id != null
+          ? action.payload.id
+          : THREE.Math.generateUUID()
 
-        case 'SELECT_OBJECT_TOGGLE':
-          let n = draft.selections.indexOf(action.payload)
-          if (n === -1) {
-            draft.selections.push(action.payload)
-          } else {
-            draft.selections.splice(n, 1)
-          }
-          return
+        draft[id] = {
+          ...action.payload, id
+        }
 
-        case 'CREATE_OBJECT':
-          // let id = Object.values(draft.sceneObjects).length + 1
-          let id = action.payload.id != null
-            ? action.payload.id
-            : THREE.Math.generateUUID()
-          draft.sceneObjects[id] = {
-            ...action.payload, id
-          }
-          draft.sceneObjects = withDisplayNames(draft.sceneObjects)
-          return
+        return withDisplayNames(draft)
 
-        case 'DELETE_OBJECTS':
-          if (
-            action.payload.ids == null ||
-            action.payload.ids.length === 0
-          ) return
+      case 'DELETE_OBJECTS':
+        if (
+          action.payload.ids == null ||
+          action.payload.ids.length === 0
+        ) return
 
-          for (let id of action.payload.ids) {
-            if (draft.sceneObjects[id] == null) continue
+        for (let id of action.payload.ids) {
+          if (draft[id] == null) continue
 
-            delete draft.sceneObjects[id]
+          delete draft[id]
+        }
 
-            // did we remove a selected id?
-            if (draft.selections.includes(id)) {
-              // delete it from the selections list
-              draft.selections.splice(draft.selections.indexOf(id), 1)
-              // de-select any currently selected bone
-              draft.selectedBone = undefined
+        return withDisplayNames(draft)
+
+      case 'UPDATE_OBJECT':
+        if (draft[action.payload.id] == null) return
+
+        updateObject(
+          draft[action.payload.id],
+          state[action.payload.id],
+          action.payload,
+          { models: initialState.models }
+        )
+        return
+
+      case 'UPDATE_OBJECTS':
+        for (let [ key, value ] of Object.entries(action.payload)) {
+          if (draft[key] == null) return
+
+          draft[key].x = value.x
+          draft[key].y = value.y
+        }
+        return
+
+      case 'DUPLICATE_OBJECTS':
+        for (let n in action.payload.ids) {
+          let srcId = action.payload.ids[n]
+          let dstId = action.payload.newIds[n]
+
+          let offsetX = 0.5 // (Math.random() * 2 - 1)
+          let offsetY = 0.5 // (Math.random() * 2 - 1)
+
+          if (draft[srcId]) {
+            let source = draft[srcId]
+
+            draft[dstId] = {
+              ...source,
+              name: source.name == null ? null : source.name + ' copy',
+              x: source.x + offsetX,
+              y: source.y + offsetY,
+              z: source.z,
+              id: dstId
             }
           }
+        }
+        return withDisplayNames(draft)
 
-          draft.sceneObjects = withDisplayNames(draft.sceneObjects)
-          return
+      case 'UPDATE_CHARACTER_SKELETON':
+        draft[action.payload.id].skeleton = draft[action.payload.id].skeleton || {}
+        draft[action.payload.id].skeleton[action.payload.name] = {
+          rotation: action.payload.rotation
+        }
+        return
 
-        case 'UPDATE_OBJECT':
-          if (draft.sceneObjects[action.payload.id] == null) return
+      case 'ATTACHMENTS_RELOCATE':
+        let { src, dst } = action.payload
+        for (let id in draft) {
+          let sceneObject = draft[id]
 
-          updateObject(
-            draft.sceneObjects[action.payload.id],
-            state.sceneObjects[action.payload.id],
-            action.payload,
-            { models: state.models }
-          )
+          if (sceneObject.model === src) {
+            sceneObject.model = dst
+          }
+        }
+        return
 
+      default:
+        return
+    }
+  })
+}
+
+const metaReducer = (state = {}, action, appState) => {
+  return produce(state, draft => {
+    switch (action.type) {
+      case 'LOAD_SCENE':
+        draft.lastSavedHash = hashify(JSON.stringify(getSerializedState(appState)))
+        return
+
+      case 'MARK_SAVED':
+        draft.lastSavedHash = hashify(JSON.stringify(getSerializedState(appState)))
+        return
+
+      case 'SET_META_STORYBOARDER_FILE_PATH':
+        draft.storyboarderFilePath = action.payload
+        return
+
+      default:
+        return
+    }
+  })
+}
+
+const activeCameraReducer = (state = initialScene.activeCamera, action) => {
+  return produce(state, draft => {
+    switch (action.type) {
+      case 'LOAD_SCENE':
+        return action.payload.activeCamera
+
+      case 'SET_ACTIVE_CAMERA':
+        return action.payload
+      
+      default:
+        return
+    }
+  })
+}
+
+const selectedBoneReducer = (state = null, action) => {
+  return produce(state, draft => {
+    switch (action.type) {
+      case 'LOAD_SCENE':
+        // clear selections
+        return null
+
+      // select a single object
+      case 'SELECT_OBJECT':
+        // de-select any currently selected bone
+        return null
+
+      case 'SELECT_BONE':
+        return action.payload
+
+      case 'DELETE_OBJECTS':
+        // de-select any currently selected bone
+        draft = null
+
+      default:
+        return
+    }
+  })
+}
+
+const worldReducer = (state = initialState.undoable.world, action) => {
+  return produce(state, draft => {
+    switch (action.type) {
+      case 'LOAD_SCENE':
+        let result = {
+          ...action.payload.world,
+
+          // migrate older scenes which were missing ambient and directional light settings
+          ambient: action.payload.world.ambient || initialScene.world.ambient,
+          directional: action.payload.world.directional || initialScene.world.directional
+        }
+        return result
+
+      case 'UPDATE_WORLD':
+        if (action.payload.hasOwnProperty('ground')) {
+          draft.ground = action.payload.ground
+        }
+        if (action.payload.hasOwnProperty('backgroundColor')) {
+          draft.backgroundColor = action.payload.backgroundColor
+        }
+        return
+
+      case 'UPDATE_WORLD_ROOM':
+        if (action.payload.hasOwnProperty('width')) { draft.room.width = action.payload.width }
+        if (action.payload.hasOwnProperty('length')) { draft.room.length = action.payload.length }
+        if (action.payload.hasOwnProperty('height')) { draft.room.height = action.payload.height }
+        if (action.payload.hasOwnProperty('visible')) { draft.room.visible = action.payload.visible }
+        return
+
+      case 'UPDATE_WORLD_ENVIRONMENT':
+        if (action.payload.hasOwnProperty('file')) {
+          draft.environment.file = action.payload.file
+        }
+        if (action.payload.scale != null) {
+          draft.environment.scale = action.payload.scale
+        }
+        if (action.payload.visible != null) {
+          draft.environment.visible = action.payload.visible
+        }
+        if (action.payload.rotation != null) {
+          draft.environment.rotation = action.payload.rotation
+        }
+        if (action.payload.x != null) {
+          draft.environment.x = action.payload.x
+        }
+        if (action.payload.y != null) {
+          draft.environment.y = action.payload.y
+        }
+        if (action.payload.z != null) {
+          draft.environment.z = action.payload.z
+        }
+        if (action.payload.intensity != null) {
+          draft.ambient.intensity = action.payload.intensity
+        }
+        if (action.payload.intensityDirectional != null) {
+          draft.directional.intensity = action.payload.intensityDirectional
+        }
+        if (action.payload.rotationDirectional != null) {
+          draft.directional.rotation = action.payload.rotationDirectional
+        }
+        if (action.payload.tiltDirectional != null) {
+          draft.directional.tilt = action.payload.tiltDirectional
+        }
+        return
+
+      default:
+        return
+    }
+  })
+}
+
+const mainReducer = (state/* = initialState*/, action) => {
+  return produce(state, draft => {
+    switch (action.type) {
+      case 'LOAD_SCENE':
+        draft.mainViewCamera = 'live'
+        return
+
+      case 'SET_INPUT_ACCEL':
+        draft.input.accel = action.payload
+        return
+
+        case 'SET_INPUT_MAG':
+        draft.input.mag = action.payload
+        return
+
+        case 'SET_INPUT_SENSOR':
+        draft.input.sensor = action.payload
+        return
+
+      case 'SET_INPUT_DOWN':
+        draft.input.down = action.payload
+        return
+
+      case 'SET_INPUT_MOUSEMODE':
+        draft.input.mouseMode = action.payload
+        return
+
+      case 'SET_INPUT_ORBITMODE':          
+        draft.input.orbitMode = action.payload
+        return
+
+      case 'UPDATE_MODELS':
+        draft.models = {
+          ...state.models,
+          ...action.payload
+        }
+        return
+
+      case 'SET_ASPECT_RATIO':
+        draft.aspectRatio = action.payload
+        return
+
+      case 'SET_MAIN_VIEW_CAMERA':
+        draft.mainViewCamera = action.payload
+        return
+
+      case 'CREATE_SCENE_PRESET':
+        draft.presets.scenes[action.payload.id] = action.payload
+        return
+
+      case 'DELETE_SCENE_PRESET':
+        delete draft.presets.scenes[action.payload.id]
+        return
+
+      case 'UPDATE_SCENE_PRESET':
+        // allow a null value for name
+        if (action.payload.hasOwnProperty('name')) {
+          draft.presets.scenes[action.payload.id].name = action.payload.name
+        }
+        return
+
+      case 'UPDATE_DEVICE':
+        draft.devices[action.payload.id] = action.payload
+        return
+
+      case 'CREATE_CHARACTER_PRESET':
+        draft.presets.characters[action.payload.id] = action.payload
+        return
+
+      case 'CREATE_POSE_PRESET':
+        draft.presets.poses[action.payload.id] = action.payload
+        return
+
+      case 'DELETE_POSE_PRESET':
+        delete draft.presets.poses[action.payload.id]
+        return
+
+      case 'UPDATE_POSE_PRESET':
+        // allow a null value for name
+        if (action.payload.hasOwnProperty('name')) {
+          draft.presets.poses[action.payload.id].name = action.payload.name
+        }
+        return
+
+      case 'UPDATE_SERVER':
+        console.log('%cshot-generator web client at', 'color:blue', action.payload.uri)
+        draft.server = { ...draft.server, ...action.payload }
+        return
+
+      case 'SET_BOARD':
+        draft.board = action.payload
+        return
+
+      case 'TOGGLE_WORKSPACE_GUIDE':
+        draft.workspace.guides[action.payload] = !draft.workspace.guides[action.payload]
+        return
+
+      case 'ATTACHMENTS_PENDING':
+        draft.attachments[action.payload.id] = { status: 'NotAsked' }
+        return
+      case 'ATTACHMENTS_LOAD':
+        draft.attachments[action.payload.id] = { status: 'Loading' }
+        return
+      case 'ATTACHMENTS_SUCCESS':
+        draft.attachments[action.payload.id] = { status: 'Success', value: action.payload.value }
+        return
+      case 'ATTACHMENTS_ERROR':
+        draft.attachments[action.payload.id] = { status: 'Error', error: action.payload.error }
+        return
+
+      case 'ATTACHMENTS_DELETE':
+        delete draft.attachments[action.payload.id]
+        return
+
+      case 'UNDO_GROUP_START':
+        batchGroupBy.start(action.payload)
+        return
+
+      case 'UNDO_GROUP_END':
+        batchGroupBy.end(action.payload)
+        return
+    }
+  })
+}
+
+const checksReducer = (state, action) => {
+  return produce(state, draft => {
+    switch (action.type) {
+      case 'UPDATE_OBJECT':
+        // ignore actions that are just changes to `loaded`
+        if (action.payload.hasOwnProperty('loaded')) return
+
+        let sceneObject = getSceneObjects(draft)[action.payload.id]
+        if (sceneObject.type === 'character') {
           // unless characterPresetId was just set ...
           if (!action.payload.hasOwnProperty('characterPresetId')) {
             // ... detect change between state and preset
@@ -765,249 +1097,94 @@ module.exports = {
             // ... detect change between state and preset
             checkForSkeletonChanges(state, draft, action.payload.id)
           }
-          return
+        }
+        return
 
-        case 'UPDATE_OBJECTS':
-          for (let [ key, value ] of Object.entries(action.payload)) {
-            if (draft.sceneObjects[key] == null) return
+      // if we ever allow UPDATE_OBJECTS to change more stuff:
+      // case 'UPDATE_OBJECTS':
+        // if we ever allow UPDATE_OBJECTS to change character properties,
+        // uncomment this:
+        // checkForCharacterChanges(state, draft, key)
 
-            draft.sceneObjects[key].x = value.x
-            draft.sceneObjects[key].y = value.y
+        // if we ever allow UPDATE_OBJECTS to change skeletons,
+        // uncomment this:
+        // checkForSkeletonChanges(state, draft, key)
+        // return
 
-            // if we ever allow UPDATE_OBJECTS to change more stuff,
-            // uncomment this:
-            // checkForCharacterChanges(state, draft, key)
+      case 'UPDATE_CHARACTER_SKELETON':
+        checkForSkeletonChanges(state, draft, action.payload.id)
+        return
 
-            // if we ever allow UPDATE_OBJECTS to change skeletons,
-            // uncomment this:
-            // checkForSkeletonChanges(state, draft, key)
+      // when we REDO, we are changing the entire state all at once
+      // so, we gotta run all the checks
+      case '@@redux-undo/REDO':
+        for (let sceneObject of Object.values(getSceneObjects(draft))) {
+          if (sceneObject.type === 'character') {
+            checkForCharacterChanges(state, draft, sceneObject.id)
+            checkForSkeletonChanges(state, draft, sceneObject.id)
           }
-          return
+        }
+        return
 
-        case 'DUPLICATE_OBJECTS':
-          for (let n in action.payload.ids) {
-            let srcId = action.payload.ids[n]
-            let dstId = action.payload.newIds[n]
+      default:
+        return
+    }
+  })
+}
 
-            let offsetX = 0.5 // (Math.random() * 2 - 1)
-            let offsetY = 0.5 // (Math.random() * 2 - 1)
+const filterHistory = (action, currentState, previousHistory) => {
+  // ignore `loaded` status updates
+  if (action.type === 'UPDATE_OBJECT' && Object.keys(action.payload).includes('loaded')) {
+    return false
+  }
 
-            if (draft.sceneObjects[srcId]) {
-              let source = draft.sceneObjects[srcId]
+  return true
+}
 
-              draft.sceneObjects[dstId] = {
-                ...source,
-                name: source.name == null ? null : source.name + ' copy',
-                x: source.x + offsetX,
-                y: source.y + offsetY,
-                z: source.z,
-                id: dstId
-              }
-            }
-          }
-          draft.sceneObjects = withDisplayNames(draft.sceneObjects)
+const undoableReducers = combineReducers({
+  sceneObjects: sceneObjectsReducer,
+  activeCamera: activeCameraReducer,
+  world: worldReducer,
+  selections: selectionsReducer,
+  selectedBone: selectedBoneReducer
+})
 
-          // select the new duplicates, replacing the selection list
-          draft.selections = action.payload.newIds
-          return
+const undoableReducer = undoable(
+  undoableReducers,
+  {
+    limit: 50,
 
-        case 'UPDATE_CHARACTER_SKELETON':
-          draft.sceneObjects[action.payload.id].skeleton = draft.sceneObjects[action.payload.id].skeleton || {}
-          draft.sceneObjects[action.payload.id].skeleton[action.payload.name] = {
-            rotation: action.payload.rotation
-          }
-          checkForSkeletonChanges(state, draft, action.payload.id)
-          return
+    filter: filterHistory,
 
-        case 'SET_INPUT_ACCEL':
-          draft.input.accel = action.payload
-          return
+    // uncomment to automatically group any series of UPDATE_OBJECT or UPDATE_OBJECTS:
+    // groupBy: batchGroupBy.init(['UPDATE_OBJECT', 'UPDATE_OBJECTS'])
+    groupBy: batchGroupBy.init()
+  }
+)
 
-          case 'SET_INPUT_MAG':
-          draft.input.mag = action.payload
-          return
+const rootReducer = reduceReducers(
+  initialState,
 
-          case 'SET_INPUT_SENSOR':
-          draft.input.sensor = action.payload
-          return
+  mainReducer,
 
-        case 'SET_INPUT_DOWN':
-          draft.input.down = action.payload
-          return
+  (state, action) => ({
+    ...state,
+    undoable: undoableReducer(state.undoable, action)
+  }),
 
-        case 'SET_INPUT_MOUSEMODE':
-          draft.input.mouseMode = action.payload
-          return
+  checksReducer,
 
-        case 'SET_INPUT_ORBITMODE':          
-          draft.input.orbitMode = action.payload
-          return
+  // `meta` must run last, to calculate lastSavedHash
+  (state, action) => ({
+    ...state,
+    meta: metaReducer(state.meta, action, state)
+  })
+)
 
-        case 'UPDATE_MODELS':
-          draft.models = {
-            ...state.models,
-            ...action.payload
-          }
-          return
+module.exports = {
+  initialState,
 
-        case 'SET_ASPECT_RATIO':
-          draft.aspectRatio = action.payload
-          return
-
-        case 'SELECT_BONE':
-          //console.log('trying to get bone with id: ', action.payload)
-          draft.selectedBone = action.payload
-          return
-
-        case 'SET_MAIN_VIEW_CAMERA':
-          draft.mainViewCamera = action.payload
-          return
-
-        case 'SET_ACTIVE_CAMERA':
-          draft.activeCamera = action.payload
-          return
-
-        case 'CREATE_SCENE_PRESET':
-          draft.presets.scenes[action.payload.id] = action.payload
-          return
-
-        case 'DELETE_SCENE_PRESET':
-          delete draft.presets.scenes[action.payload.id]
-          return
-
-        case 'UPDATE_SCENE_PRESET':
-          // allow a null value for name
-          if (action.payload.hasOwnProperty('name')) {
-            draft.presets.scenes[action.payload.id].name = action.payload.name
-          }
-          return
-
-        case 'UPDATE_DEVICE':
-          draft.devices[action.payload.id] = action.payload
-          return
-
-        case 'CREATE_CHARACTER_PRESET':
-          draft.presets.characters[action.payload.id] = action.payload
-          return
-
-        case 'CREATE_POSE_PRESET':
-          draft.presets.poses[action.payload.id] = action.payload
-          return
-
-        case 'DELETE_POSE_PRESET':
-          delete draft.presets.poses[action.payload.id]
-          return
-
-        case 'UPDATE_POSE_PRESET':
-          // allow a null value for name
-          if (action.payload.hasOwnProperty('name')) {
-            draft.presets.poses[action.payload.id].name = action.payload.name
-          }
-          return     
-
-        case 'UPDATE_WORLD':
-          if (action.payload.hasOwnProperty('ground')) {
-            draft.world.ground = action.payload.ground
-          }
-          if (action.payload.hasOwnProperty('backgroundColor')) {
-            draft.world.backgroundColor = action.payload.backgroundColor
-          }
-          return
-
-        case 'UPDATE_WORLD_ROOM':
-          if (action.payload.hasOwnProperty('width')) { draft.world.room.width = action.payload.width }
-          if (action.payload.hasOwnProperty('length')) { draft.world.room.length = action.payload.length }
-          if (action.payload.hasOwnProperty('height')) { draft.world.room.height = action.payload.height }
-          if (action.payload.hasOwnProperty('visible')) { draft.world.room.visible = action.payload.visible }
-          return
-
-        case 'UPDATE_WORLD_ENVIRONMENT':
-          if (action.payload.hasOwnProperty('file')) {
-            draft.world.environment.file = action.payload.file
-          }
-          if (action.payload.scale != null) {
-            draft.world.environment.scale = action.payload.scale
-          }
-          if (action.payload.visible != null) {
-            draft.world.environment.visible = action.payload.visible
-          }
-          if (action.payload.rotation != null) {
-            draft.world.environment.rotation = action.payload.rotation
-          }
-          if (action.payload.x != null) {
-            draft.world.environment.x = action.payload.x
-          }
-          if (action.payload.y != null) {
-            draft.world.environment.y = action.payload.y
-          }
-          if (action.payload.z != null) {
-            draft.world.environment.z = action.payload.z
-          }
-          if (action.payload.intensity != null) {
-            draft.world.ambient.intensity = action.payload.intensity
-          }
-          if (action.payload.intensityDirectional != null) {
-            draft.world.directional.intensity = action.payload.intensityDirectional
-          }
-          if (action.payload.rotationDirectional != null) {
-            draft.world.directional.rotation = action.payload.rotationDirectional
-          }
-          if (action.payload.tiltDirectional != null) {
-            draft.world.directional.tilt = action.payload.tiltDirectional
-          }
-          return
-
-        case 'UPDATE_SERVER':
-          console.log('%cshot-generator web client at', 'color:blue', action.payload.uri)
-          draft.server = { ...draft.server, ...action.payload }
-          return
-
-        case 'SET_BOARD':
-          draft.board = action.payload
-          return
-
-        case 'MARK_SAVED':
-          updateMeta(draft)
-          return
-
-        case 'SET_META_STORYBOARDER_FILE_PATH':
-          draft.meta.storyboarderFilePath = action.payload
-          return
-
-        case 'TOGGLE_WORKSPACE_GUIDE':
-          draft.workspace.guides[action.payload] = !draft.workspace.guides[action.payload]
-          return
-
-        case 'ATTACHMENTS_PENDING':
-          draft.attachments[action.payload.id] = { status: 'NotAsked' }
-          return
-        case 'ATTACHMENTS_LOAD':
-          draft.attachments[action.payload.id] = { status: 'Loading' }
-          return
-        case 'ATTACHMENTS_SUCCESS':
-          draft.attachments[action.payload.id] = { status: 'Success', value: action.payload.value }
-          return
-        case 'ATTACHMENTS_ERROR':
-          draft.attachments[action.payload.id] = { status: 'Error', error: action.payload.error }
-          return
-
-        case 'ATTACHMENTS_DELETE':
-          delete draft.attachments[action.payload.id]
-          return
-
-        case 'ATTACHMENTS_RELOCATE':
-          let { src, dst } = action.payload
-          for (let id in draft.sceneObjects) {
-            let sceneObject = draft.sceneObjects[id]
-
-            if (sceneObject.model === src) {
-              sceneObject.model = dst
-            }
-          }
-          return
-      }
-    })
-  },
+  reducer: rootReducer,
 
   //
   //
@@ -1042,9 +1219,9 @@ module.exports = {
   resetScene: () => ({
     type: 'LOAD_SCENE',
     payload: {
-      world: initialState.world,
-      sceneObjects: initialState.sceneObjects,
-      activeCamera: initialState.activeCamera
+      world: initialState.undoable.world,
+      sceneObjects: initialState.undoable.sceneObjects,
+      activeCamera: initialState.undoable.activeCamera
     }
   }),
 
@@ -1072,10 +1249,19 @@ module.exports = {
 
   toggleWorkspaceGuide: payload => ({ type: 'TOGGLE_WORKSPACE_GUIDE', payload }),
 
+  undoGroupStart: payload => ({ type: 'UNDO_GROUP_START', payload }),
+  undoGroupEnd: payload => ({ type: 'UNDO_GROUP_END', payload }),
+
   //
   //
   // selectors
   //
+  getSceneObjects,
+  getSelections,
+  getActiveCamera,
+  getSelectedBone,
+  getWorld,
+
   getSerializedState,
   getIsSceneDirty
 }

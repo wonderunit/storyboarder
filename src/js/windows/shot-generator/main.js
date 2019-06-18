@@ -48,6 +48,7 @@ const show = (onComplete) => {
     acceptFirstMouse: true,
     simpleFullscreen: true,
     webPreferences: {
+      nodeIntegration: true,
       plugins: true,
       webSecurity: false,
       allowRunningInsecureContent: true,
@@ -104,6 +105,13 @@ ipcMain.on('shot-generator:menu:view:fps-meter', (event, value) => {
 
 ipcMain.on('shot-generator:object:duplicate', () => {
   win.webContents.send('shot-generator:object:duplicate')
+})
+
+ipcMain.on('shot-generator:edit:undo', () => {
+  win.webContents.send('shot-generator:edit:undo')
+})
+ipcMain.on('shot-generator:edit:redo', () => {
+  win.webContents.send('shot-generator:edit:redo')
 })
 
 module.exports = {

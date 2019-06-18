@@ -1,11 +1,17 @@
-const { useState, useEffect, useLayoutEffect, useRef, useMemo } = React = require('react')
+const { useState, useLayoutEffect, useRef, useMemo, useContext } = React = require('react')
 const { connect } = require('react-redux')
 
 const {
   selectObject,
   selectObjectToggle,
   selectBone,
-  updateObjects
+  updateObjects,
+
+  undoGroupStart,
+  undoGroupEnd,
+
+  getSelections,
+  getActiveCamera
 } = require('../shared/reducers/shot-generator')
 
 function getObjectsFromIcons ( objects ) {
@@ -76,19 +82,21 @@ const getIntersectionTarget = intersect => {
 
 const SelectionManager = connect(
   state => ({
-    selections: state.selections,
-    sceneObjects: state.sceneObjects,
-    activeCamera: state.activeCamera
+    selections: getSelections(state),
+    activeCamera: getActiveCamera(state)
   }),
   {
     selectObject,
     selectObjectToggle,
     selectBone,
-    updateObjects
+    updateObjects,
+
+    undoGroupStart,
+    undoGroupEnd
   }
 )(
   ({
-    scene,
+    SceneContext,
     camera,
     el,
 
@@ -96,7 +104,6 @@ const SelectionManager = connect(
     useIcons,
 
     selections,
-    sceneObjects,
     activeCamera,
 
     selectObject,
@@ -104,8 +111,13 @@ const SelectionManager = connect(
     selectBone,
     updateObjects,
 
-    transition
+    transition,
+    
+    undoGroupStart,
+    undoGroupEnd
   }) => {
+
+  const { scene } = useContext(SceneContext)
 
   const [lastDownId, setLastDownId] = useState()
   const [dragTarget, setDragTarget] = useState()
@@ -216,8 +228,8 @@ const SelectionManager = connect(
       // don't do anything on the next pointerup
       setLastDownId(null)
 
-      // select none (the Scene becomes active)
-      selectObject(null)
+      // select the active camera
+      selectObject(activeCamera)
 
       // don't select any bone
       selectBone(null)
@@ -304,8 +316,14 @@ const SelectionManager = connect(
 
       if (selectOnPointerDown) {
         if (event.shiftKey) {
-          // toggle the object in the multi-selection
-          selectObjectToggle(target.userData.id)
+          // if there is only one selection and it is the active camera
+          if (selections.length === 1 && selections[0] === activeCamera) {
+            // replace the selection with the object
+            selectObject(target.userData.id)
+          } else {
+            // toggle the object in the multi-selection
+            selectObjectToggle(target.userData.id)
+          }
         } else {
           // if the pointerup'd target is not part of the multi-selection
           if (!selections.includes(target.userData.id)) {
@@ -319,6 +337,7 @@ const SelectionManager = connect(
       }
 
       if (shouldDrag) {
+        undoGroupStart()
         setDragTarget({ target, x, y })
       }
     }
@@ -342,6 +361,8 @@ const SelectionManager = connect(
     if (dragTarget) {
       endDrag()
       setDragTarget(null)
+
+      undoGroupEnd()
     }
 
     if (event.target === el) {
@@ -361,8 +382,14 @@ const SelectionManager = connect(
 
           if (target.userData.id == lastDownId) {
             if (event.shiftKey) {
-              // toggle the object in the multi-selection
-              selectObjectToggle(target.userData.id)
+              // if there is only one selection and it is the active camera
+              if (selections.length === 1 && selections[0] === activeCamera) {
+                // replace the selection with the object
+                selectObject(target.userData.id)
+              } else {
+                // toggle the object in the multi-selection
+                selectObjectToggle(target.userData.id)
+              }
             } else {
               // if the pointerup'd target is not part of the multi-selection
               if (!selections.includes(target.userData.id)) {

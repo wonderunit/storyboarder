@@ -18,14 +18,14 @@ const ServerInspector = connect(
   return server.client
     ? h(
         ['div.server-inspector', [
-          ['div.server-inspector__label', 'Use your phone to rotate object:'],
+          ['div.server-inspector__label', 'Use your phone to rotate selected object:'],
           ['div.server-inspector__value', { style: { display: 'flex', alignItems: 'center', paddingLeft: 6 }}, 'Connected']
         ]]
       )
     : buffer
       ? h(
           ['div.server-inspector', [
-            ['div.server-inspector__label', 'Use your phone to rotate object:'],
+            ['div.server-inspector__label', 'Use your phone to rotate selected object:'],
             ['div.server-inspector__value', [
               ['img', { src: `data:image/png;base64,` + buffer.toString('base64') }]
             ]]
@@ -33,7 +33,7 @@ const ServerInspector = connect(
         )
       : h(
           ['div.server-inspector', [
-            ['div.server-inspector__label', 'Use your phone to rotate object:'],
+            ['div.server-inspector__label', 'Use your phone to rotate selected object:'],
             ['div.server-inspector__value', { style: { display: 'flex', alignItems: 'center', paddingLeft: 6 }}, 'Starting server …']
           ]]
         )

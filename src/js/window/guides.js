@@ -103,12 +103,12 @@ class Guides {
 
     // perspective
     if (this.state.perspective) {
-      this.offscreenContext.clearRect(0, 0, this.width, this.height)
-      this.drawPerspective(this.offscreenContext, this.width, this.height)
-
-      this.context.globalAlpha = lineColorStrong.slice(-1)[0]
-      this.context.drawImage(this.offscreenCanvas, 0, 0, this.width, this.height)
-      this.context.globalAlpha = 1.0
+      // this.offscreenContext.clearRect(0, 0, this.width, this.height)
+      // this.drawPerspective(this.offscreenContext, this.width, this.height)
+      // 
+      // this.context.globalAlpha = lineColorStrong.slice(-1)[0]
+      // this.context.drawImage(this.offscreenCanvas, 0, 0, this.width, this.height)
+      // this.context.globalAlpha = 1.0
     }
 
     this.context.globalAlpha = 1.0
@@ -190,17 +190,17 @@ class Guides {
     context.translate(-this.translateShift, -this.translateShift)
   }
 
-  drawPerspective (context, width, height) {
-    let canvas = this.perspectiveGridFn(
-      this.perspectiveParams.cameraParams,
-      this.perspectiveParams.rotation
-    )
-    context.save()
-    context.translate(0, 0)
-    context.moveTo(0, 0)
-    context.drawImage(canvas, 0, 0)
-    context.restore()
-  }
+  // drawPerspective (context, width, height) {
+  //   let canvas = this.perspectiveGridFn(
+  //     this.perspectiveParams.cameraParams,
+  //     this.perspectiveParams.rotation
+  //   )
+  //   context.save()
+  //   context.translate(0, 0)
+  //   context.moveTo(0, 0)
+  //   context.drawImage(canvas, 0, 0)
+  //   context.restore()
+  // }
 
   setPerspectiveParams (opt = {}) {
     this.perspectiveParams = {

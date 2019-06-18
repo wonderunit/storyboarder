@@ -69,6 +69,19 @@ const useGround = (world, scene) => {
     }
   }, [world.ground, loaded])
 
+  useEffect(() => {
+    // automatically hide ground if room is visible
+    if (object.current) {
+      if (world.room.visible) {
+        object.current.visible = false
+        object.current.material.visible = false
+      } else {
+        object.current.visible = world.ground
+        object.current.material.visible = world.ground
+      }
+    }
+  })
+
   return object.current
 }
 
@@ -100,7 +113,7 @@ const useRoom = (world, scene) => {
       height,
       { textures: { wall: texture } }
     )
-    // shift slightly to allow for OutlineEffect
+    // shift slightly to allow for OutlineEffect of objects inside
     object.position.y = -0.03
     return object
   }
@@ -129,11 +142,8 @@ const useRoom = (world, scene) => {
   return object.current
 }
 
-const World = ({ world, scene, storyboarderFilePath, updateWorldEnvironment, modelData }) => {
+const useEnvironmentModel = (world, scene, { modelData}) => {
   const [group, setGroup] = useState(null)
-
-  const ground = useGround(world, scene)
-  const room = useRoom(world, scene)
 
   useEffect(() => {
     if (modelData) {
@@ -201,15 +211,23 @@ const World = ({ world, scene, storyboarderFilePath, updateWorldEnvironment, mod
     }
   }, [group])
 
+  return group
+}
+
+const World = React.memo(({ world, scene, modelData }) => {
+  const ground = useGround(world, scene)
+  const room = useRoom(world, scene)
+  const environmentModel = useEnvironmentModel(world, scene, { modelData })
+
+  const ambientLight = useRef(null)
+  const directionalLight = useRef(null)
+
   useEffect(() => {
     scene.background
       ? scene.background.set(world.backgroundColor)
       : scene.background = new THREE.Color(world.backgroundColor)
 
   }, [world.backgroundColor])
-
-  const ambientLight = useRef(null)
-  const directionalLight = useRef(null)
 
   useEffect(() => {
     if (ambientLight.current)
@@ -252,6 +270,6 @@ const World = ({ world, scene, storyboarderFilePath, updateWorldEnvironment, mod
   }, [world.directional.intensity, world.directional.rotation, world.directional.tilt])
 
   return null
-}
+})
 
 module.exports = World

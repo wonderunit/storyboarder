@@ -17,7 +17,8 @@ module.exports = () => {
       resizable: false,
       backgroundColor: '#E5E5E5',
       webPreferences: {
-        devTools: true
+        devTools: true,
+        nodeIntegration: true
       }
     })
     win.once('closed', () => {
