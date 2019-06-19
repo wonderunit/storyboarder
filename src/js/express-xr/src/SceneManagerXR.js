@@ -947,6 +947,9 @@ const SceneContent = ({
       setWorldScale(oldValue => {
         return oldValue === 1 ? 0.1 : 1
       })
+
+      setTeleportPos(new THREE.Vector3(0, 0, worldScale === 1 ? 0.5 : 5))
+      setCamExtraRot(0)
       return
     }
 
@@ -1169,6 +1172,12 @@ const SceneContent = ({
   if (xrOffset.current && teleportPos) {
     xrOffset.current.position.x = teleportPos.x
     xrOffset.current.position.z = teleportPos.z
+
+    if (worldScale !== 1) {
+      xrOffset.current.position.y = -1
+    } else {
+      xrOffset.current.position.y = 0
+    }
   } else if (xrOffset.current && !camPosZero && camera.position.y !== xrOffset.current.userData.z && !hmdCamInitialized.current) {
     const { x, y, rotation } = xrOffset.current.userData
     const behindCam = {
