@@ -731,7 +731,8 @@ const SceneContent = ({
 
       if (object.userData.type !== 'character' && object.parent.uuid === controller.uuid) {
         object.matrix.premultiply(controller.matrixWorld)
-        object.matrix.decompose(object.position, object.quaternion, object.scale)
+        object.matrix.decompose(object.position, object.quaternion, new THREE.Vector3())
+        object.scale.set(1, 1, 1)
         worldScaleGroupRef.current.add(object)
         object.position.multiplyScalar(1 / worldScale)
       }
@@ -947,7 +948,7 @@ const SceneContent = ({
     controller.gripped = true
 
     const otherController = vrControllers.find(i => i.uuid !== controller.uuid)
-    if (otherController && otherController.gripped) {
+    if (!selectedObjRef.current && otherController && otherController.gripped) {
       setWorldScale(oldValue => {
         return oldValue === 1 ? 0.1 : 1
       })
