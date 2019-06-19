@@ -395,11 +395,13 @@ const SceneContent = ({
 
     const raycastDepth = controller.getObjectByName('raycast-depth')
     const depthWorldPos = raycastDepth.getWorldPosition(new THREE.Vector3())
-    depthWorldPos.sub(controller.userData.posOffset).multiplyScalar(1 / worldScaleRef.current)
-    object.position.copy(depthWorldPos)
-    
+    depthWorldPos.sub(controller.userData.posOffset)
+
     if (object.userData.type === 'character') {
       object.rotation.y = object.userData.modelSettings.rotation
+      object.position.copy(depthWorldPos).multiplyScalar(1 / worldScale)
+    } else {
+      object.position.copy(depthWorldPos).multiplyScalar(1 / worldScale)
     }
   }
 
@@ -1147,7 +1149,7 @@ const SceneContent = ({
 
       if (controller.userData.bone) rotateBone(controller)
     })
-  }, false, [vrControllers, selectedBone])
+  }, false, [vrControllers, selectedBone, worldScale])
 
   useEffect(() => {
     navigator
