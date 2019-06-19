@@ -188,6 +188,7 @@ const Character = React.memo(({
   const setLoaded = loaded => updateObject(id, { loaded })
   const object = useRef(null)
   let ragDoll = useRef(null);
+  let prevRotation = useRef([]);
   const originalSkeleton = useRef(null)
   const doCleanup = () => {
     if (object.current) {
@@ -345,16 +346,36 @@ const Character = React.memo(({
 
         let state = userState || systemState
 
-        bone.rotation.x = state.rotation.x
-        bone.rotation.y = state.rotation.y
-        bone.rotation.z = state.rotation.z
+        let prevState = prevRotation.current[bone.name];
+        if(state === systemState)
+        {
+          //bone.rotation.x -= bone.rotation.x - state.rotation.x
+          //bone.rotation.y -= bone.rotation.y - state.rotation.y
+          //bone.rotation.z -= bone.rotation.z - state.rotation.z
+        }
+        else
+        {
+          if(prevRotation.current === null || prevState === undefined)
+          {
+            bone.rotation.x -= bone.rotation.x - state.rotation.x
+            bone.rotation.y -= bone.rotation.y - state.rotation.y
+            bone.rotation.z -= bone.rotation.z - state.rotation.z
+          }
+          else {
+            console.log(state);
+            bone.rotation.x += prevState.rotation.x - state.rotation.x
+            bone.rotation.y += prevState.rotation.y - state.rotation.y
+            bone.rotation.z += prevState.rotation.z - state.rotation.z
+          }
+
+        }
       }
+      prevRotation.current = props.skeleton;
     } else {
       let skeleton = object.current.userData.skeleton
       skeleton.pose()
       fixRootBone()
     }
-
   }
 
   const getCurrentControllerRotation = (device, virtual) => {
@@ -420,14 +441,12 @@ const Character = React.memo(({
       if (props.rotation.y || props.rotation.y==0) {
         object.current.rotation.y = props.rotation.y
         object.current.icon.material.rotation = -props.rotation.y
-        ragDoll.current.applyToIk();
         //object.current.rotation.x = props.rotation.x
         //object.current.rotation.z = props.rotation.z
       } else {
         object.current.rotation.y = props.rotation
         object.current.orthoIcon.icon.material.rotation = props.rotation + Math.PI
       }
-
 
     }
   }, [props.model, props.rotation, ready])
@@ -458,7 +477,7 @@ const Character = React.memo(({
     if (!ready) return
     if (!props.posePresetId) return
     console.log(type, id, 'changed pose preset')
-
+    ragDoll.current.prevRotation = [];
     resetPose()
     ragDoll.current.applyToIk();
     //ragDoll.current.recalculateDifference();
@@ -471,6 +490,7 @@ const Character = React.memo(({
 
     console.log(type, id, 'changed boards')
     resetPose()
+
   }, [boardUid])
 
   useEffect(() => {

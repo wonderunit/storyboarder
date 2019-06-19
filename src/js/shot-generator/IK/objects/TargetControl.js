@@ -7,7 +7,7 @@ class TargetControl
     constructor(camera, domElement, name)
     {
         this.control = new TransformControls(camera, domElement);
-        this.control.size = 0.3;
+        this.control.size = 0.15;
         this.control.userData.type = "controlTarget";
         this.name = name;
         this.disabled = true;
