@@ -3,7 +3,7 @@ const THREE = require( "three");
 const {setZDirecion, setReverseZ} = require( "../../utils/axisUtils");
 const ChainObject = require( "./ChainObject");
 const SkeletonUtils = require("../../utils/SkeletonUtils");
-
+require("../../utils/Object3dExtension");
 // IKObject is class which applies ik onto skeleton
 class IkObject
 {
@@ -22,6 +22,7 @@ class IkObject
 
         this.originalObjectMatrix = {};
         this.cloneObjectMatrix = {};
+        this.startAxisAngle = {};
     }
 
     // Takes skeleton and target for it's limbs
@@ -157,6 +158,7 @@ class IkObject
             if(IK.firstRun)
             {
                 this.recalculateDifference();
+                this.initializeAxisAngle();
             }
             this.lateUpdate();
         }
@@ -209,14 +211,14 @@ class IkObject
         {
             let chain = chainObjects[i].chain;
             let jointBone = chain.joints[chain.joints.length - 1].bone;
-            if(jointBone.name === "LeftFoot" || jointBone.name === "RightFoot" ||
-                jointBone.name === "LeftHand" || jointBone.name === "RightHand" ||
-                jointBone.name === "Head" || jointBone.name === "Hips")
-            {
-                let targetPosition = chainObjects[i].controlTarget.target.position;
-                jointBone.getWorldPosition(targetPosition);
-            }
-            else
+            //if(jointBone.name === "LeftFoot" || jointBone.name === "RightFoot" ||
+            //    jointBone.name === "LeftHand" || jointBone.name === "RightHand" ||
+            //    jointBone.name === "Head" || jointBone.name === "Hips")
+            //{
+            //    let targetPosition = chainObjects[i].controlTarget.target.position;
+            //    jointBone.getWorldPosition(targetPosition);
+            //}
+            //else
             {
                 let bone =  this.originalObject.getObjectByName(jointBone.name);
                 let targetPosition = chainObjects[i].controlTarget.target.position;
@@ -283,6 +285,41 @@ class IkObject
             this.originalObjectMatrix[originalBone.name] = originalBone.matrix.clone();
             this.cloneObjectMatrix[cloneBone.name] = cloneBone.matrix.clone();
         }
+    }
+
+    initializeAxisAngle()
+    {
+        let clonedSkin = this.clonedObject.children[1];
+        let originalSkin = this.originalObject.children[1];
+        let clonedBones = clonedSkin.skeleton.bones;
+        let originalBones = originalSkin.skeleton.bones;
+        for (let i = 0; i < clonedBones.length; i++)
+        {
+            let cloneBone = clonedBones[i];
+            let originalBone = originalBones[i];
+            let deltaQuatClone = new THREE.Quaternion();
+            let deltaQuatOrigin = new THREE.Quaternion();
+            deltaQuatClone.multiply(cloneBone.quaternion.clone().conjugate());
+            deltaQuatClone.multiply(originalBone.quaternion);
+
+            deltaQuatOrigin.multiply(originalBone.quaternion.clone().conjugate());
+            deltaQuatOrigin.multiply(cloneBone.quaternion);
+
+            let globalDeltaQuat = new THREE.Quaternion();
+            globalDeltaQuat.multiply(cloneBone.worldQuaternion().clone().conjugate());
+            globalDeltaQuat.multiply(originalBone.worldQuaternion());
+
+            this.startAxisAngle[cloneBone.name] = {};
+            this.startAxisAngle[cloneBone.name].clonedAxis = cloneBone.quaternion.toAngleAxis();
+            this.startAxisAngle[originalBone.name].originalAxis = originalBone.quaternion.toAngleAxis();
+            let cloneQuat = cloneBone.quaternion.clone();
+            this.startAxisAngle[originalBone.name].cloneQuat = new THREE.Quaternion().set(-cloneQuat.x, -cloneQuat.y, -cloneQuat.z, -cloneQuat.w);
+            this.startAxisAngle[originalBone.name].originQuat = originalBone.quaternion.clone();
+            this.startAxisAngle[originalBone.name].deltaQuatClone = deltaQuatClone;
+            this.startAxisAngle[originalBone.name].deltaQuatOrigin = deltaQuatClone;
+            this.startAxisAngle[originalBone.name].globaldeltaQuat = globalDeltaQuat;
+        }
+
     }
 }
 

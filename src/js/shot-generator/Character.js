@@ -354,6 +354,7 @@ const Character = React.memo(({
       skeleton.pose()
       fixRootBone()
     }
+
   }
 
   const getCurrentControllerRotation = (device, virtual) => {
@@ -419,12 +420,14 @@ const Character = React.memo(({
       if (props.rotation.y || props.rotation.y==0) {
         object.current.rotation.y = props.rotation.y
         object.current.icon.material.rotation = -props.rotation.y
+        ragDoll.current.applyToIk();
         //object.current.rotation.x = props.rotation.x
         //object.current.rotation.z = props.rotation.z
       } else {
         object.current.rotation.y = props.rotation
         object.current.orthoIcon.icon.material.rotation = props.rotation + Math.PI
       }
+
 
     }
   }, [props.model, props.rotation, ready])
@@ -455,8 +458,9 @@ const Character = React.memo(({
     if (!ready) return
     if (!props.posePresetId) return
     console.log(type, id, 'changed pose preset')
-    ragDoll.current.prevRotation = [];
+
     resetPose()
+    ragDoll.current.applyToIk();
     //ragDoll.current.recalculateDifference();
   }, [props.posePresetId])
 
