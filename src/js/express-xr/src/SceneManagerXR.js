@@ -301,6 +301,7 @@ const SceneContent = ({
   const [hideArray, setHideArray] = useState([])
   const [worldScale, setWorldScale] = useState(1)
 
+  const worldScaleRef = useRef(0.1)
   const worldScaleGroupRef = useRef([])
   const moveCamRef = useRef(null)
   const rotateCamRef = useRef(null)
@@ -394,9 +395,9 @@ const SceneContent = ({
 
     const raycastDepth = controller.getObjectByName('raycast-depth')
     const depthWorldPos = raycastDepth.getWorldPosition(new THREE.Vector3())
-    depthWorldPos.sub(controller.userData.posOffset)
+    depthWorldPos.sub(controller.userData.posOffset).multiplyScalar(1 / worldScaleRef.current)
     object.position.copy(depthWorldPos)
-
+    
     if (object.userData.type === 'character') {
       object.rotation.y = object.userData.modelSettings.rotation
     }
@@ -950,10 +951,10 @@ const SceneContent = ({
     const otherController = vrControllers.find(i => i.uuid !== controller.uuid)
     if (!selectedObjRef.current && otherController && otherController.gripped) {
       setWorldScale(oldValue => {
-        return oldValue === 1 ? 0.1 : 1
+        return oldValue === 1 ? worldScaleRef.current : 1
       })
 
-      setTeleportPos(new THREE.Vector3(0, 0, worldScale === 1 ? 1 : 10))
+      setTeleportPos(new THREE.Vector3(0, 0, worldScale === 1 ? 1 : 1 / worldScaleRef.current))
       setCamExtraRot(0)
       return
     }
@@ -1026,7 +1027,7 @@ const SceneContent = ({
       if (object.userData.type !== 'object') return
 
       const tempMatrix = new THREE.Matrix4()
-      tempMatrix.getInverse(controller.matrixWorld)
+      tempMatrix.getInverse(controller.matrixWorld).multiply(new THREE.Matrix4().makeScale(worldScale, worldScale, worldScale))
 
       object.matrix.premultiply(tempMatrix)
       object.matrix.decompose(object.position, object.quaternion, object.scale)
@@ -1106,7 +1107,9 @@ const SceneContent = ({
         if (object && object.userData.type === 'object' && controller.gripped) {
           if (object.parent.uuid === controller.uuid) {
             object.matrix.premultiply(controller.matrixWorld)
-            object.matrix.decompose(object.position, object.quaternion, object.scale)
+            object.matrix.decompose(object.position, object.quaternion, new THREE.Vector3())
+            object.scale.set(worldScale, worldScale, worldScale)
+            object.position.multiplyScalar(1 / worldScaleRef.current)
 
             object.userData.order = object.rotation.order
             object.rotation.reorder('YXZ')
