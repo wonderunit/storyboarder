@@ -473,6 +473,7 @@ const SceneContent = ({
 
     if (intersections.length > 0) {
       let intersection = intersections[0]
+      if (intersection.object.userData.type === 'bone') return
 
       if (intersection.object.userData.type === 'slider') {
         controller.intersections = intersections
@@ -689,10 +690,12 @@ const SceneContent = ({
         setHideArray(createHideArray())
       } else {
         const tempMatrix = new THREE.Matrix4()
-        tempMatrix.getInverse(controller.matrixWorld)
+        tempMatrix.getInverse(controller.matrixWorld).multiply(new THREE.Matrix4().makeScale(worldScale, worldScale, worldScale))
 
         object.matrix.premultiply(tempMatrix)
-        object.matrix.decompose(object.position, object.quaternion, object.scale)
+        object.matrix.decompose(object.position, object.quaternion, new THREE.Vector3())
+        object.scale.set(worldScale, worldScale, worldScale)
+
         controller.add(object)
       }
 
@@ -730,6 +733,7 @@ const SceneContent = ({
         object.matrix.premultiply(controller.matrixWorld)
         object.matrix.decompose(object.position, object.quaternion, object.scale)
         worldScaleGroupRef.current.add(object)
+        object.position.multiplyScalar(1 / worldScale)
       }
 
       controller.userData.selected = undefined
@@ -822,14 +826,14 @@ const SceneContent = ({
         (controller.pressed && controller.gripped && object.userData.type === 'object')
       ) {
         const raycastDepth = controller.getObjectByName('raycast-depth')
-        raycastDepth.position.add(new THREE.Vector3(0, 0, amount))
-        raycastDepth.position.z = Math.min(raycastDepth.position.z, -0.5)
+        raycastDepth.position.add(new THREE.Vector3(0, 0, amount * worldScale))
+        raycastDepth.position.z = Math.min(raycastDepth.position.z, -0.5 * worldScale)
       } else {
         // 45 degree tilt down on controller
-        let offsetVector = new THREE.Vector3(0, amount, amount)
+        let offsetVector = new THREE.Vector3(0, amount * worldScale, amount * worldScale)
         object.position.add(offsetVector)
-        object.position.y = Math.min(object.position.y, -0.5)
-        object.position.z = Math.min(object.position.z, -0.5)
+        object.position.y = Math.min(object.position.y, -0.5 * worldScale)
+        object.position.z = Math.min(object.position.z, -0.5 * worldScale)
       }
     }
   }
@@ -948,7 +952,7 @@ const SceneContent = ({
         return oldValue === 1 ? 0.1 : 1
       })
 
-      setTeleportPos(new THREE.Vector3(0, 0, worldScale === 1 ? 0.5 : 5))
+      setTeleportPos(new THREE.Vector3(0, 0, worldScale === 1 ? 1 : 10))
       setCamExtraRot(0)
       return
     }
@@ -974,6 +978,7 @@ const SceneContent = ({
       let intersection = intersections[0]
       if (intersection.object.userData.type === 'slider') return
       if (intersection.object.userData.type === 'gui') return
+      if (intersection.object.userData.type === 'bone') return
 
       let object = findParent(intersection.object)
       const { id } = object
