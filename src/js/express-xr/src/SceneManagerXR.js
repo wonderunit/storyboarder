@@ -413,7 +413,7 @@ const SceneContent = ({
         controller.dispatchEvent({ type: 'trigger press ended' })
       })
 
-      setTeleportPos(intersect.point)
+      setTeleportPos(intersect.point.multiplyScalar(1 / worldScale))
       setWorldScale(1)
     }
   }
@@ -823,19 +823,20 @@ const SceneContent = ({
     const object = controller.userData.selected
 
     if (Math.abs(amount) > 0.01) {
+      const worldScaleMult = worldScale === 1 ? 1 : worldScale * 2
       if (
         object.userData.type === 'character' ||
         (controller.pressed && controller.gripped && object.userData.type === 'object')
       ) {
         const raycastDepth = controller.getObjectByName('raycast-depth')
-        raycastDepth.position.add(new THREE.Vector3(0, 0, amount * worldScale))
-        raycastDepth.position.z = Math.min(raycastDepth.position.z, -0.5 * worldScale)
+        raycastDepth.position.add(new THREE.Vector3(0, 0, amount * worldScaleMult))
+        raycastDepth.position.z = Math.min(raycastDepth.position.z, -0.5 * worldScaleMult)
       } else {
         // 45 degree tilt down on controller
-        let offsetVector = new THREE.Vector3(0, amount * worldScale, amount * worldScale)
+        let offsetVector = new THREE.Vector3(0, amount * worldScaleMult, amount * worldScaleMult)
         object.position.add(offsetVector)
-        object.position.y = Math.min(object.position.y, -0.5 * worldScale)
-        object.position.z = Math.min(object.position.z, -0.5 * worldScale)
+        object.position.y = Math.min(object.position.y, -0.5 * worldScaleMult)
+        object.position.z = Math.min(object.position.z, -0.5 * worldScaleMult)
       }
     }
   }
@@ -867,6 +868,7 @@ const SceneContent = ({
 
     const { x, y } = xrOffset.current.userData
     const hmdCam = xrOffset.current.children.filter(child => child.type === 'PerspectiveCamera')[0]
+    const worldScaleMult = worldScale === 1 ? 1 : worldScale * 2
 
     if (event.axes[1] > 0.075) {
       vrControllers.forEach(controller => {
@@ -877,7 +879,7 @@ const SceneContent = ({
 
       let offsetVector = new THREE.Vector3(0, 0, 1)
       offsetVector.applyMatrix4(new THREE.Matrix4().extractRotation(hmdCam.matrixWorld))
-      offsetVector = offsetVector.multiply(new THREE.Vector3(1, 0, 1)).normalize()
+      offsetVector = offsetVector.multiply(new THREE.Vector3(1, 0, 1)).normalize().multiplyScalar(worldScaleMult)
 
       setTeleportPos(oldPos => {
         if (!oldPos) {
@@ -898,7 +900,7 @@ const SceneContent = ({
 
       let offsetVector = new THREE.Vector3(0, 0, -1)
       offsetVector.applyMatrix4(new THREE.Matrix4().extractRotation(hmdCam.matrixWorld))
-      offsetVector = offsetVector.multiply(new THREE.Vector3(1, 0, 1)).normalize()
+      offsetVector = offsetVector.multiply(new THREE.Vector3(1, 0, 1)).normalize().multiplyScalar(worldScaleMult)
 
       setTeleportPos(oldPos => {
         if (!oldPos) {
