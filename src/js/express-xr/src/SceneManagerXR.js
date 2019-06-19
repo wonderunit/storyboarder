@@ -1059,7 +1059,7 @@ const SceneContent = ({
       }
     })
 
-    teleportArray.current = worldScaleGroupRef.current.children.filter(child => child.userData.type === 'ground')
+    teleportArray.current = scene.children.filter(child => child.userData.type === 'raycastGround')
     setHideArray(createHideArray())
   }, [vrControllers, sceneObjects])
 
@@ -1377,6 +1377,10 @@ const SceneContent = ({
       <group ref={worldScaleGroupRef} userData={{ type: 'world-scale' }} scale={[worldScale, worldScale, worldScale]}>
         {sceneObjectComponents.concat(worldComponent)}
       </group>
+      <mesh userData={{ type: 'raycastGround' }} rotation={new THREE.Euler(-Math.PI / 2, 0, 0)}>
+        <planeGeometry attach="geometry" args={[100, 100]} />
+        <meshBasicMaterial attach="material" visible={false} />
+      </mesh>
     </>
   )
 }
