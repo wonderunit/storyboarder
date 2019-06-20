@@ -404,6 +404,13 @@ const SGCharacter = ({ id, type, worldScale, isSelected, updateObject, modelData
     } else {
       for (var cone of object.current.bonesHelper.cones) object.current.bonesHelper.remove(cone)
     }
+
+    if (skinnedMesh.type === 'LOD') {
+      skinnedMesh.levels.forEach((level, i) => {
+        const worldScaleMult = worldScale === 1 ? 1 : 0.01
+        level.distance = i * 2 * worldScaleMult
+      })
+    }
   }, [props.model, worldScale, isSelected, ready])
 
   useMemo(() => {
