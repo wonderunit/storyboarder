@@ -1329,7 +1329,7 @@ const SceneContent = ({
           return (
             <SGCharacter
               key={i}
-              {...{ modelData: getModelData(sceneObject), isSelected, updateObject, selectedBone, hmdCam, ...sceneObject }}
+              {...{ modelData: getModelData(sceneObject), worldScale, isSelected, updateObject, selectedBone, hmdCam, ...sceneObject }}
             >
               {isSelected && <primitive object={soundBeam.current} />}
             </SGCharacter>
