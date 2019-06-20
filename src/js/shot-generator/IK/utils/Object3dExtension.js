@@ -94,3 +94,9 @@ THREE.Quaternion.prototype.applyMatrix = function(matrix)
     rotationMatrix.premultiply(matrix);
     this.copy(rotationMatrix.getRotation());
 }
+
+THREE.Matrix4.prototype.inverse = function()
+{
+    let matrix = new THREE.Matrix4().getInverse(this);
+    return matrix;
+}

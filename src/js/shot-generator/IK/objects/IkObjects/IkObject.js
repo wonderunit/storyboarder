@@ -156,11 +156,11 @@ class IkObject
             // Solves the inverse kinematic of object
             this.ik.solve();
 
+            this.lateUpdate();
             if(IK.firstRun)
             {
                 this.initializeAxisAngle();
             }
-            this.lateUpdate();
         }
     }
 
@@ -214,6 +214,14 @@ class IkObject
         {
             let chain = chainObjects[i].chain;
             let jointBone = chain.joints[chain.joints.length - 1].bone;
+            if(jointBone.name === "LeftFoot" || jointBone.name === "RightFoot" ||
+                jointBone.name === "LeftHand" || jointBone.name === "RightHand" ||
+                jointBone.name === "Head" || jointBone.name === "Hips")
+            {
+                let targetPosition = chainObjects[i].controlTarget.target.position;
+                jointBone.getWorldPosition(targetPosition);
+            }
+            else
             {
                 let bone =  this.originalObject.getObjectByName(jointBone.name);
                 let targetPosition = chainObjects[i].controlTarget.target.position;

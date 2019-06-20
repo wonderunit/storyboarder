@@ -188,6 +188,7 @@ class Ragdoll extends IkObject
         if(!this.isEnabledIk)
         {
             this.resetTargets();
+            this.applyToIk();
         }
         else
         {
@@ -210,12 +211,16 @@ class Ragdoll extends IkObject
         let rightFootBone = this.ik.chains[4].joints[2].bone;
         let rightLegChainTarget = this.chainObjects[4].controlTarget.target;
         rightFootBone.rotation.copy(rightLegChainTarget.rotation);
-        this.rotateBoneQuaternion(rightFootBone, new THREE.Euler(1.5, 0, 0));
+        this.rotateBoneQuaternion(rightFootBone, new THREE.Euler(0.5, 0, 0));
+        rightFootBone.updateMatrix();
+        rightFootBone.updateMatrixWorld(true);
         // Makes left foot follow the rotation of target
         let leftFootBone = this.ik.chains[3].joints[2].bone;
         let leftLegChainTarget = this.chainObjects[3].controlTarget.target;
         leftFootBone.rotation.copy(leftLegChainTarget.rotation);
-        this.rotateBoneQuaternion(leftFootBone, new THREE.Euler(1.5, 0, 0));
+        this.rotateBoneQuaternion(leftFootBone, new THREE.Euler(0.5, 0, 0));
+        leftFootBone.updateMatrix();
+        leftFootBone.updateMatrixWorld(true);
     }
 
     // Sets and quaternion angle for bones
@@ -279,6 +284,7 @@ class Ragdoll extends IkObject
     {
         let head = this.chainObjects[0].chain.joints[4].bone;
         this.rotateBoneQuaternion(head, new THREE.Euler(-1, 0, 0));
+        head.updateMatrix();
     }
 
     removeFromScene(scene)
@@ -351,10 +357,10 @@ class Ragdoll extends IkObject
         cloneGlobalQuat.multiply(this.bonesDelta[cloneBone.name].cloneToOriginDelta);
         let transformMatrix = new THREE.Matrix4();
         transformMatrix.multiply(originBone.matrix);
-        transformMatrix.multiply(originBone.getInverseMatrixWorld());
+        transformMatrix.multiply(originBone.matrixWorld.inverse());
         cloneGlobalQuat.applyMatrix(transformMatrix);
         originBone.quaternion.copy(cloneGlobalQuat);
-        cloneBone.updateMatrix();
+        originBone.updateMatrix();
     }
 
     originToCloneRotation(cloneBone, originBone)
@@ -363,10 +369,11 @@ class Ragdoll extends IkObject
         originalGlobalQuat.multiply(this.bonesDelta[originBone.name].originToCloneDelta);
         let transformMatrix = new THREE.Matrix4();
         transformMatrix.multiply(cloneBone.matrix);
-        transformMatrix.multiply(cloneBone.getInverseMatrixWorld());
+        transformMatrix.multiply(cloneBone.matrixWorld.inverse());
         originalGlobalQuat.applyMatrix(transformMatrix);
         cloneBone.quaternion.copy(originalGlobalQuat);
         cloneBone.updateMatrix();
+        cloneBone.updateMatrixWorld(true);
     }
 }
 module.exports =  Ragdoll;
