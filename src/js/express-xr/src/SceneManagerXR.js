@@ -1106,8 +1106,8 @@ const SceneContent = ({
           if (object.parent.uuid === controller.uuid) {
             object.matrix.premultiply(controller.matrixWorld)
             object.matrix.decompose(object.position, object.quaternion, new THREE.Vector3())
-            object.scale.set(worldScale, worldScale, worldScale)
-            object.position.multiplyScalar(1 / worldScaleRef.current)
+            object.scale.set(1, 1, 1)
+            object.position.multiplyScalar(1 / worldScale)
 
             object.userData.order = object.rotation.order
             object.rotation.reorder('YXZ')
