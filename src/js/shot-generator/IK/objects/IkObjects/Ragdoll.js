@@ -301,11 +301,11 @@ class Ragdoll extends IkObject
         let clonedBones = clonedSkin.skeleton.bones;
         let originalBones = originalSkin.skeleton.bones;
 
-        for (let i = 1; i < clonedBones.length; i++)
+        for (let i = 0; i < clonedBones.length; i++)
         {
             let cloneBone = clonedBones[i];
             let originalBone = originalBones[i];
-            if(!this.ikBonesName.some((boneName) => originalBone.name === boneName || boneName === "Hips"))
+            if(!this.ikBonesName.some((boneName) => originalBone.name === boneName))
             {
                 continue;
             }
@@ -319,16 +319,17 @@ class Ragdoll extends IkObject
         let originalSkin = this.originalObject.children[1];
         let clonedBones = clonedSkin.skeleton.bones;
         let originalBones = originalSkin.skeleton.bones;
-        for (let i = 1; i < clonedBones.length; i++)
+        for (let i = 0; i < clonedBones.length; i++)
         {
             let cloneBone = clonedBones[i];
             let originalBone = originalBones[i];
-            if(!this.ikBonesName.some((boneName) => originalBone.name === boneName || boneName === "Hips"))
+            if(!this.ikBonesName.some((boneName) => originalBone.name === boneName))
             {
                 continue;
             }
             this.originToCloneRotation(cloneBone, originalBone);
         }
+        this.initializeAxisAngle();
     }
 
     moveRagdoll()

@@ -123,6 +123,7 @@ class IkObject
 
             }
         });
+        this.ikBonesName.push("Hips");
         scene.remove(clonedSkeleton);
         // Goes through list of constraints and adds it to IK
         chains.forEach((chain) =>
@@ -135,7 +136,7 @@ class IkObject
         this.skeletonHelper.material.linewidth = 7;
 
         // Adds skeleton helper to scene
-        //scene.add( this.skeletonHelper );
+        scene.add( this.skeletonHelper );
 
     }
 
@@ -280,11 +281,11 @@ class IkObject
             let cloneBone = clonedBones[i];
             let originalBone = originalBones[i];
 
-            if(!this.ikBonesName.some((boneName) => originalBone.name === boneName || boneName === "Hips"))
+            if(!this.ikBonesName.some((boneName) => originalBone.name === boneName))
             {
                 continue;
             }
-
+            console.log(cloneBone.name);
             let cloneToOriginDelta = new THREE.Quaternion();
             cloneToOriginDelta.multiply(cloneBone.worldQuaternion().conjugate());
             cloneToOriginDelta.multiply(originalBone.worldQuaternion());
