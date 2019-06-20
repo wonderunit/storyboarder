@@ -546,8 +546,12 @@ const SceneContent = ({
             offsetVector = new THREE.Vector3(0, 0, -2)
           }
           offsetVector.applyMatrix4(new THREE.Matrix4().extractRotation(hmdCam.matrixWorld))
-          offsetVector.multiply(new THREE.Vector3(1, 0, 1))
-          const newPoz = xrOffset.current.position.clone().add(hmdCam.position).add(offsetVector)
+          offsetVector.multiply(new THREE.Vector3(1, 0, 1)).multiplyScalar(worldScale === 1 ? 1 : 0.5 / worldScale)
+          const newPoz = xrOffset.current.position
+            .clone()
+            .multiply(new THREE.Vector3(1 / worldScale, 0, 1 / worldScale))
+            .add(hmdCam.position)
+            .add(offsetVector)
 
           const rotation = new THREE.Vector2(offsetVector.x, offsetVector.z).normalize().angle() * -1 - Math.PI / 2
 
