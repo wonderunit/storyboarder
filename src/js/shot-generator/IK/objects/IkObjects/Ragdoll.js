@@ -340,6 +340,7 @@ class Ragdoll extends IkObject
 
     cloneToOriginRotation(cloneBone, originBone)
     {
+        cloneBone.updateMatrixWorld(true);
         let cloneGlobalQuat = cloneBone.worldQuaternion();
         cloneGlobalQuat.multiply(this.bonesDelta[cloneBone.name].cloneToOriginDelta);
         let transformMatrix = new THREE.Matrix4();
@@ -348,6 +349,7 @@ class Ragdoll extends IkObject
         cloneGlobalQuat.applyMatrix(transformMatrix);
         originBone.quaternion.copy(cloneGlobalQuat);
         originBone.updateMatrix();
+
     }
 
     originToCloneRotation(cloneBone, originBone)

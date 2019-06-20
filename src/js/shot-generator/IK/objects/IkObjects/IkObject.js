@@ -136,7 +136,7 @@ class IkObject
         this.skeletonHelper.material.linewidth = 7;
 
         // Adds skeleton helper to scene
-        scene.add( this.skeletonHelper );
+        //scene.add( this.skeletonHelper );
 
     }
 
@@ -285,7 +285,6 @@ class IkObject
             {
                 continue;
             }
-            console.log(cloneBone.name);
             let cloneToOriginDelta = new THREE.Quaternion();
             cloneToOriginDelta.multiply(cloneBone.worldQuaternion().conjugate());
             cloneToOriginDelta.multiply(originalBone.worldQuaternion());

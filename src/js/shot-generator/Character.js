@@ -347,13 +347,7 @@ const Character = React.memo(({
         let state = userState || systemState
 
         let prevState = prevRotation.current[bone.name];
-        if(state === systemState)
-        {
-          //bone.rotation.x -= bone.rotation.x - state.rotation.x
-          //bone.rotation.y -= bone.rotation.y - state.rotation.y
-          //bone.rotation.z -= bone.rotation.z - state.rotation.z
-        }
-        else
+        if(state !== systemState)
         {
           if(prevRotation.current === null || prevState === undefined)
           {
