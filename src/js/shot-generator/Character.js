@@ -362,7 +362,6 @@ const Character = React.memo(({
             bone.rotation.z -= bone.rotation.z - state.rotation.z
           }
           else {
-            console.log(state);
             bone.rotation.x += prevState.rotation.x - state.rotation.x
             bone.rotation.y += prevState.rotation.y - state.rotation.y
             bone.rotation.z += prevState.rotation.z - state.rotation.z
@@ -376,6 +375,7 @@ const Character = React.memo(({
       skeleton.pose()
       fixRootBone()
     }
+    ragDoll.current.applyToIk();
   }
 
   const getCurrentControllerRotation = (device, virtual) => {
@@ -477,7 +477,8 @@ const Character = React.memo(({
     if (!ready) return
     if (!props.posePresetId) return
     console.log(type, id, 'changed pose preset')
-    ragDoll.current.prevRotation = [];
+    prevRotation.current = [];
+    console.log("PrevRotation dropped");
     resetPose()
     ragDoll.current.applyToIk();
     //ragDoll.current.recalculateDifference();

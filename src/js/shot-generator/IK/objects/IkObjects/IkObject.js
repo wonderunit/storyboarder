@@ -19,11 +19,7 @@ class IkObject
         this.originalObject = null;
         this.clonedObject = null;
         this.ikBonesName = [];
-        this.originalRotationDiffrenceOfBones = [];
-        this.zForwardDifference = [];
         this.bonesDelta = {};
-        this.originalObjectMatrix = {};
-        this.cloneObjectMatrix = {};
     }
 
     // Takes skeleton and target for it's limbs
@@ -87,13 +83,6 @@ class IkObject
                     object.getWorldPosition(objectWorld);
                     this.hipsControlTarget.target.position.copy(objectWorld);
                 }
-                let originBone = objectSkeleton.getObjectByName(object.name);
-                let difference = new THREE.Euler(0, 0, 0);
-                difference.x = object.rotation.x - originBone.rotation.x;
-                difference.y = object.rotation.y - originBone.rotation.y;
-                difference.z = object.rotation.z - originBone.rotation.z;
-                this.zForwardDifference.push(difference);
-                this.originalRotationDiffrenceOfBones.push(difference);
                 // Goes through all chain objects to find with which we are working
                 chainObjects.forEach((chainObject) =>
                 {
@@ -146,7 +135,7 @@ class IkObject
         this.skeletonHelper.material.linewidth = 7;
 
         // Adds skeleton helper to scene
-        //scene.add( this.skeletonHelper );
+        scene.add( this.skeletonHelper );
 
     }
 
@@ -169,6 +158,7 @@ class IkObject
 
             if(IK.firstRun)
             {
+                this.initializeAxisAngle();
             }
             this.lateUpdate();
         }
@@ -287,10 +277,6 @@ class IkObject
                 continue;
             }
 
-            if(cloneBone.name === "LeftArm")
-            {
-                console.log("initializeAxisAngle");
-            }
             let cloneToOriginDelta = new THREE.Quaternion();
             cloneToOriginDelta.multiply(cloneBone.worldQuaternion().conjugate());
             cloneToOriginDelta.multiply(originalBone.worldQuaternion());
@@ -299,14 +285,12 @@ class IkObject
             originToCloneDelta.multiply(originalBone.worldQuaternion().conjugate());
             originToCloneDelta.multiply(cloneBone.worldQuaternion());
 
-
             this.bonesDelta[cloneBone.name] = {};
             this.bonesDelta[originalBone.name].cloneQuat = cloneBone.worldQuaternion().clone();
             this.bonesDelta[originalBone.name].originQuat = originalBone.worldQuaternion().clone();
             this.bonesDelta[originalBone.name].cloneToOriginDelta = cloneToOriginDelta;
             this.bonesDelta[originalBone.name].originToCloneDelta = originToCloneDelta;
         }
-
     }
 }
 

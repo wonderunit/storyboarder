@@ -252,8 +252,8 @@ class Ragdoll extends IkObject
         }
         this.hips.getWorldPosition(this.hipsControlTarget.target.position);
         this.calculteBackOffset();
-       // this.initializeAxisAngle();
         this.applyToIk();
+        //
     }
 
     // Resets targets position
@@ -272,7 +272,6 @@ class Ragdoll extends IkObject
             let poleOffset = constraint.poleTarget.poleOffset;
             constraint.poleTarget.mesh.position.set(targetPosition.x + poleOffset.x, targetPosition.y + poleOffset.y, targetPosition.z + poleOffset.z);
         }
-
     }
 
     // Applies neck rotation and applies head rotation that head stay upward
@@ -328,7 +327,6 @@ class Ragdoll extends IkObject
         let originalSkin = this.originalObject.children[1];
         let clonedBones = clonedSkin.skeleton.bones;
         let originalBones = originalSkin.skeleton.bones;
-        console.log("Applying IK");
         for (let i = 1; i < clonedBones.length; i++)
         {
             let cloneBone = clonedBones[i];
@@ -358,7 +356,6 @@ class Ragdoll extends IkObject
         originBone.quaternion.copy(cloneGlobalQuat);
         cloneBone.updateMatrix();
     }
-
 
     originToCloneRotation(cloneBone, originBone)
     {

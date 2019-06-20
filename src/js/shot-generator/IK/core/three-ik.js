@@ -830,7 +830,7 @@ var IK = function () {
   }, {
     key: 'recalculate',
     value: function recalculate() {
-      IK.firstRun = true;
+      //IK.firstRun = true;
       this._orderedChains = [];
       var _iteratorNormalCompletion = true;
       var _didIteratorError = false;
