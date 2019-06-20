@@ -262,8 +262,14 @@ class Ragdoll extends IkObject
     // Applies neck rotation and applies head rotation that head stay upward
     applyHeadRotation()
     {
+        let spine = this.chainObjects[0].chain.joints[0].bone;
+        let neck = this.chainObjects[0].chain.joints[3].bone;
+        //neck.rotation.x = -spine.rotation.x * 0.5;
+        neck.rotation.y = -spine.rotation.y * 0.5;
+        neck.updateMatrix();
+        neck.updateMatrixWorld(true);
         let head = this.chainObjects[0].chain.joints[4].bone;
-        this.rotateBoneQuaternion(head, new THREE.Euler(-1, 0, 0));
+        this.rotateBoneQuaternion(head, new THREE.Euler(-1.0, 0, 0));
         head.updateMatrix();
     }
 
