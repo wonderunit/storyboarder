@@ -40,6 +40,7 @@ const SGCharacter = require('./components/SGCharacter')
 const GUI = require('./gui/GUI')
 
 const { getIntersections, boneIntersect, intersectObjects } = require('./utils/xrControllerFuncs')
+const { findParent } = require('./utils/xrHelperFuncs')
 require('./lib/VRController')
 
 // const RStats = require('./lib/rStats')
@@ -324,17 +325,6 @@ const SceneContent = ({
   let startingDeviceRotation = useRef(null)
 
   guiModeRef.current = guiMode
-
-  const findParent = obj => {
-    while (obj) {
-      if (!obj.parent || obj.parent.type === 'Scene' || obj.parent.userData.type === 'world-scale') {
-        return obj
-      }
-      obj = obj.parent
-    }
-
-    return null
-  }
 
   const { gl, scene, camera, setDefaultCamera } = useThree()
 

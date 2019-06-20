@@ -1,6 +1,7 @@
 const { useUpdate, useThree, useRender } = require('react-three-fiber')
 const React = require('react')
 const { useEffect, useRef, useState, useMemo } = React
+const { findParent } = require('../utils/xrHelperFuncs')
 
 const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, virtualCamVisible, ...props }) => {
   const [camSliderFOV, setCamSliderFOV] = useState(null)
@@ -16,17 +17,6 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, virtualCam
   const size = props.size || 1 / 3
   const padding = 0.05
   const resolution = 512
-
-  const findParent = obj => {
-    while (obj) {
-      if (!obj.parent || obj.parent.type === 'Scene') {
-        return obj
-      }
-      obj = obj.parent
-    }
-
-    return null
-  }
 
   const { gl, scene } = useThree()
   const selectedObj = findParent(scene.getObjectById(selectedObject))

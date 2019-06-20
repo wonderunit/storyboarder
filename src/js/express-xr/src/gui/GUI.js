@@ -1,6 +1,7 @@
 const { useMemo, useState, useRef } = (React = require('react'))
 const { useThree, useRender } = require('react-three-fiber')
 const { updateObject } = require('../../../shared/reducers/shot-generator')
+const { findParent } = require('../utils/xrHelperFuncs')
 
 const SGVirtualCamera = require('../components/SGVirtualCamera')
 const GUIElement = require('./GUIElement')
@@ -12,17 +13,6 @@ const textCreator = SDFText.creator()
 const textPadding = 0.03
 const uiScale = 0.075
 const bWidth = 0.0125
-
-const findParent = obj => {
-  while (obj) {
-    if (!obj.parent || obj.parent.type === 'Scene') {
-      return obj
-    }
-    obj = obj.parent
-  }
-
-  return null
-}
 
 const GUI = ({ aspectRatio, guiMode, addMode, currentBoard, selectedObject, hideArray, virtualCamVisible, guiCamFOV, vrControllers }) => {
   const [textCount, setTextCount] = useState(0)
