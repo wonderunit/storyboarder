@@ -31,7 +31,7 @@ class CopyRotation extends IkConstraint
         {
             joint.bone.rotation.z = targetedJoint.bone.rotation.z;
         }
-
+        joint.bone.updateMatrix();
         joint._setDirection(direction);
         this.applyInfluenceToJoint(joint);
     }

@@ -135,7 +135,7 @@ class IkObject
         this.skeletonHelper.material.linewidth = 7;
 
         // Adds skeleton helper to scene
-        scene.add( this.skeletonHelper );
+        //scene.add( this.skeletonHelper );
 
     }
 

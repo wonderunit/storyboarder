@@ -50,7 +50,7 @@ class Ragdoll extends IkObject
         this.addPoleConstraintToRootJoint(rightLegChain, rightLegPoleTarget);
 
         let copyRotation = new CopyRotation(backChain, backChain.joints[4]);
-        copyRotation.influence = 50;
+        copyRotation.influence = 100;
         backChain.joints[3].addIkConstraint(copyRotation);
 
         this.poleConstraints[0].poleAngle = 128;
@@ -107,47 +107,30 @@ class Ragdoll extends IkObject
         let hipsControl = this.hipsControlTarget.control;
         let hipsTarget = this.hipsControlTarget.target;
 
-        let backConstraint = this.poleConstraints[0].poleTarget.mesh.position;
-        let leftArmConstraint = this.poleConstraints[1].poleTarget.mesh.position;
-        let rightArmConstraint = this.poleConstraints[2].poleTarget.mesh.position;
-        let leftLegConstraint = this.poleConstraints[3].poleTarget.mesh.position;
-        let rightLegConstraint = this.poleConstraints[4].poleTarget.mesh.position;
-
+        let poleConstraints = this.poleConstraints;
         hipsControl.addEventListener("pointerdown", (event) =>
         {
             this.hipsMouseDown = true;
-
-            this.poleTargetOffsets.back = backConstraint.clone().sub(hipsTarget.position);
-            this.poleTargetOffsets.leftArm = leftArmConstraint.clone().sub(hipsTarget.position);
-            this.poleTargetOffsets.rightArm = rightArmConstraint.clone().sub(hipsTarget.position);
-            this.poleTargetOffsets.leftLeg = leftLegConstraint.clone().sub(hipsTarget.position);
-            this.poleTargetOffsets.rightLeg = rightLegConstraint.clone().sub(hipsTarget.position);
-
+            for (let poleConstraint of poleConstraints)
+            {
+                let constraint = poleConstraint.poleTarget.mesh.position;
+                let name = poleConstraint.poleTarget.mesh.name;
+                console.log(name);
+                this.poleTargetOffsets[name] = constraint.clone().sub(hipsTarget.position);
+            }
         });
         hipsControl.addEventListener("change", (event) =>
         {
             if(this.hipsMouseDown)
             {
-                let hipsPosition = hipsTarget.position.clone();
-                hipsPosition.add(this.poleTargetOffsets.back);
-                backConstraint.copy(hipsPosition);
-
-                hipsPosition = hipsTarget.position.clone();
-                hipsPosition.add(this.poleTargetOffsets.leftArm);
-                leftArmConstraint.copy(hipsPosition);
-
-                hipsPosition = hipsTarget.position.clone();
-                hipsPosition.add(this.poleTargetOffsets.rightArm);
-                rightArmConstraint.copy(hipsPosition);
-
-                hipsPosition = hipsTarget.position.clone();
-                hipsPosition.add(this.poleTargetOffsets.leftLeg);
-                leftLegConstraint.copy(hipsPosition);
-
-                hipsPosition = hipsTarget.position.clone();
-                hipsPosition.add(this.poleTargetOffsets.rightLeg);
-                rightLegConstraint.copy(hipsPosition);
-
+                for (let poleConstraint of poleConstraints)
+                {
+                    let constraint = poleConstraint.poleTarget.mesh.position;
+                    let poleTargetOffset = this.poleTargetOffsets[poleConstraint.poleTarget.mesh.name];
+                    let hipsPosition = hipsTarget.position.clone();
+                    hipsPosition.add(poleTargetOffset);
+                    constraint.copy(hipsPosition);
+                }
                 this.originalObject.position.copy(this.clonedObject.position);
             }
         });
@@ -170,13 +153,11 @@ class Ragdoll extends IkObject
             let control = chainObject[i].controlTarget.control;
             control.addEventListener("pointerdown", (event) =>
             {
-                console.log("Ik enabled");
                 this.isEnabledIk = true;
             });
 
             control.addEventListener("pointerup", (event) =>
             {
-                console.log("Ik disabled");
                 this.isEnabledIk = false;
             });
         }
@@ -258,7 +239,6 @@ class Ragdoll extends IkObject
         this.hips.getWorldPosition(this.hipsControlTarget.target.position);
         this.calculteBackOffset();
         this.applyToIk();
-        //
     }
 
     // Resets targets position
