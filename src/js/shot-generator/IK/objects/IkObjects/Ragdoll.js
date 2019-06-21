@@ -12,7 +12,6 @@ class Ragdoll extends IkObject
     {
         super();
         this.poleConstraints = [];
-        this.poleTargetOffsets = {};
         this.hipsMouseDown = false;
         this.isInitialized = false;
     }
@@ -70,9 +69,6 @@ class Ragdoll extends IkObject
         {
             this.applyingOffset = true;
         });
-        backControl.addEventListener("change", (event) =>
-        {
-        });
         backControl.addEventListener("dragging-changed", (event) =>
         {
             this.calculteBackOffset();
@@ -85,13 +81,23 @@ class Ragdoll extends IkObject
 
     initPoleTargets(chain, offset, name)
     {
-        let position = new THREE.Vector3();
-        chain.joints[chain.joints.length - 2].bone.getWorldPosition(position);
-        let poleTarget = new PoleTarget(new THREE.Vector3(position.x + offset.x, position.y + offset.y, position.z + offset.z));
-        poleTarget.poleOffset = offset;
+        let poleTarget = new PoleTarget();
+        poleTarget.initialOffset = offset;
+        this.calculatePoleTargetOffset(poleTarget, chain);
+        poleTarget.initialize(poleTarget.poleOffset);
         poleTarget.name = name;
-        poleTarget.mesh.visible = false;
+        poleTarget.mesh.visible = true;
         return poleTarget;
+    }
+
+    calculatePoleTargetOffset(poleTarget, chain)
+    {
+        let offset = poleTarget.initialOffset;
+        let position = chain.joints[chain.joints.length - 2].bone.worldPosition();
+        let hipsOffset = position.clone().sub(this.hips.worldPosition());
+        hipsOffset.add(this.hips.position);
+        hipsOffset.add(offset);
+        poleTarget.poleOffset = hipsOffset;
     }
 
     addPoleConstraintToRootJoint(chain, poleTarget)
@@ -107,32 +113,18 @@ class Ragdoll extends IkObject
     addHipsEvent()
     {
         let hipsControl = this.hipsControlTarget.control;
-        let hipsTarget = this.hipsControlTarget.target;
-
-        let poleConstraints = this.poleConstraints;
+ 
         hipsControl.addEventListener("pointerdown", (event) =>
         {
             this.hipsMouseDown = true;
-            for (let poleConstraint of poleConstraints)
-            {
-                let constraint = poleConstraint.poleTarget.mesh.position;
-                let name = poleConstraint.poleTarget.mesh.name;
-                console.log(name);
-                this.poleTargetOffsets[name] = constraint.clone().sub(hipsTarget.position);
-            }
+            this.isEnabledIk = true;
+    
         });
         hipsControl.addEventListener("change", (event) =>
         {
             if(this.hipsMouseDown)
             {
-                for (let poleConstraint of poleConstraints)
-                {
-                    let constraint = poleConstraint.poleTarget.mesh.position;
-                    let poleTargetOffset = this.poleTargetOffsets[poleConstraint.poleTarget.mesh.name];
-                    let hipsPosition = hipsTarget.position.clone();
-                    hipsPosition.add(poleTargetOffset);
-                    constraint.copy(hipsPosition);
-                }
+                this.resetPoleTarget();
                 this.originalObject.position.copy(this.clonedObject.position);
             }
         });
@@ -144,6 +136,7 @@ class Ragdoll extends IkObject
         {
             this.applyingOffset = false;
             this.hipsMouseDown = false;
+            this.isEnabledIk = false;
         });
     }
 
@@ -175,7 +168,6 @@ class Ragdoll extends IkObject
         if(!this.isEnabledIk)
         {
             this.resetTargets();
-            this.applyToIk();
         }
         else
         {
@@ -244,6 +236,9 @@ class Ragdoll extends IkObject
             chain.joints[chain.joints.length - 2].bone.getWorldPosition(targetPosition);
             let polePosition = poleConstraints.poleTarget.mesh.position;
             poleConstraints.poleTarget.mesh.position.set(targetPosition.x + polePosition.x, targetPosition.y + polePosition.y, targetPosition.z + polePosition.z);
+            let poleTarget = poleConstraints.poleTarget;
+            this.calculatePoleTargetOffset(poleTarget, chain);
+            poleTarget.initialize(poleTarget.poleOffset);
             chain.reinitializeJoints();
         }
         this.hips.getWorldPosition(this.hipsControlTarget.target.position);
@@ -257,13 +252,19 @@ class Ragdoll extends IkObject
     resetTargets()
     {
         super.resetTargets();
+        this.resetPoleTarget();
+    }
+
+    resetPoleTarget()
+    {
         let chainObjects = this.chainObjects;
+        let hipsTarget = this.hipsControlTarget.target;
         for(let i = 0; i < chainObjects.length; i++)
         {
             let constraint = this.poleConstraints[i];
             let chain = this.chainObjects[i].chain;
             let targetPosition = new THREE.Vector3();
-            chain.joints[chain.joints.length - 2].bone.getWorldPosition(targetPosition);
+            hipsTarget.getWorldPosition(targetPosition);
             let poleOffset = constraint.poleTarget.poleOffset;
             constraint.poleTarget.mesh.position.set(targetPosition.x + poleOffset.x, targetPosition.y + poleOffset.y, targetPosition.z + poleOffset.z);
         }
@@ -295,6 +296,7 @@ class Ragdoll extends IkObject
             scene.remove(constraint.poleTarget.mesh);
         });
     }
+
     selectedSkeleton(selected)
     {
         if(!this.isInitialized)
@@ -308,8 +310,18 @@ class Ragdoll extends IkObject
             let chain = chainObjects[i];
             chain.controlTarget.disable = !visible;
         }
-        this.hipsControlTarget.disable = true;
+        this.hipsControlTarget.disable = !visible;
         this.skeletonHelper.visible = visible;
+    }
+
+    moveRagdoll()
+    {
+        if(!this.isInitialized)
+        {
+            return;
+        }
+        this.clonedObject.position.copy(this.originalObject.position);
+        this.clonedObject.updateMatrixWorld(true, true);
     }
 
     applyChangesToOriginal()
@@ -332,7 +344,12 @@ class Ragdoll extends IkObject
                 continue;
             }
             this.cloneToOriginRotation(cloneBone, originalBone);
+            if(cloneBone.name === "Hips")
+            {
+                this.basisSwitchinBack(cloneBone, originalBone);
+            }
         }
+        this.recalculateDifference();
     }
 
     applyToIk()
@@ -355,17 +372,44 @@ class Ragdoll extends IkObject
             }
             this.originToCloneRotation(cloneBone, originalBone);
         }
-        this.initializeAxisAngle();
+        //this.initializeAxisAngle();
     }
 
-    moveRagdoll()
+    basisSwitchinBack(cloneBone, originalBone)
     {
-        if(!this.isInitialized)
-        {
-            return;
-        }
-        this.clonedObject.position.copy(this.originalObject.position);
-        this.clonedObject.updateMatrixWorld(true, true);
+        cloneBone.updateMatrix();
+        originalBone.updateMatrix();
+        cloneBone.updateMatrixWorld(true);
+        originalBone.updateMatrixWorld(true);
+
+        let originalPrevMatrix = this.originalObjectMatrix[originalBone.name].clone();
+        let originalCurrentMatrix = originalBone.matrix.clone();
+        let clonePrevMatrix = this.cloneObjectMatrix[cloneBone.name].clone();
+        let cloneCurrentMatrix = cloneBone.matrix.clone();
+        let cloneInversePrevMatrix = new THREE.Matrix4().getInverse(clonePrevMatrix);
+        let tMatrixPrevClone = new THREE.Matrix4();
+
+        tMatrixPrevClone.multiply(originalCurrentMatrix);
+        tMatrixPrevClone.multiply(cloneInversePrevMatrix);
+
+        clonePrevMatrix.premultiply(tMatrixPrevClone);
+        cloneCurrentMatrix.premultiply(tMatrixPrevClone);
+
+        this.setObjectFromMatrixElements(cloneCurrentMatrix, originalBone);
+
+    }
+
+    setObjectFromMatrixElements(matrix, object)
+    {
+        let position = new THREE.Vector3();
+        let rotation = new THREE.Quaternion();
+        let scale = new THREE.Vector3();
+        matrix.decompose(position, rotation, scale);
+        let euler = new THREE.Euler().setFromQuaternion(rotation);
+        //object.rotation.set(euler.x, euler.y, euler.z);
+        object.position.copy(position);
+        //object.quaternion.copy(rotation);
+        object.updateMatrix();
     }
 
     cloneToOriginRotation(cloneBone, originBone)
@@ -380,7 +424,6 @@ class Ragdoll extends IkObject
         originBone.quaternion.copy(cloneGlobalQuat);
         originBone.updateMatrix();
         originBone.updateWorldMatrix(true, true);
-
     }
 
     originToCloneRotation(cloneBone, originBone)
@@ -394,6 +437,7 @@ class Ragdoll extends IkObject
         cloneBone.quaternion.copy(originalGlobalQuat);
         cloneBone.updateMatrix();
         cloneBone.updateMatrixWorld(true);
+        originBone.updateWorldMatrix(true, true);
     }
 }
 module.exports =  Ragdoll;

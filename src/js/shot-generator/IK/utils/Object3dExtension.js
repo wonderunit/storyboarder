@@ -30,6 +30,12 @@ THREE.Object3D.prototype.getInverseMatrixWorld = function ()
     matrix.getInverse(this.matrixWorld);
     return matrix;
 }
+THREE.Object3D.prototype.worldPosition = function()
+{
+    let position = new THREE.Vector3();
+    this.getWorldPosition(position);
+    return position;
+}
 
 THREE.Matrix4.prototype.getRotation = function()
 {

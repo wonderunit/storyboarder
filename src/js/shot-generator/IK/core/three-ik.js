@@ -912,7 +912,7 @@ var IK = function () {
     value: function solve() {
       // Passing Hips bone to set Z
       // In order to change for whole skeleton
-      IK.firstRun = false;
+      
       currentChains = this.chains;
       if (!this._orderedChains) {
         this.recalculate();

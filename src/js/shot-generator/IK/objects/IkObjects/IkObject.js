@@ -20,6 +20,8 @@ class IkObject
         this.clonedObject = null;
         this.ikBonesName = [];
         this.bonesDelta = {};
+        this.originalObjectMatrix = {};
+        this.cloneObjectMatrix = {};
     }
 
     // Takes skeleton and target for it's limbs
@@ -160,7 +162,9 @@ class IkObject
             this.lateUpdate();
             if(IK.firstRun)
             {
+                this.recalculateDifference();
                 this.initializeAxisAngle();
+                IK.firstRun = false;
             }
         }
     }
@@ -184,6 +188,7 @@ class IkObject
         let targetPosition = hipsTarget.position.clone();
         this.hips.parent.worldToLocal(targetPosition);
         this.hips.position.copy(targetPosition);
+        this.hips.updateMatrix();
     }
 
     // Removes ikObject's all elements from scene
@@ -268,6 +273,19 @@ class IkObject
             let control = controlTarget[i].control;
             control.characterId = parentId;
         }
+    }
+
+    recalculateDifference()
+    {
+        console.log("Diff");
+        let clonedSkin = this.clonedObject.children[1];
+        let originalSkin = this.originalObject.children[1];
+        let clonedBones = clonedSkin.skeleton.bones;
+        let originalBones = originalSkin.skeleton.bones;
+        let originalBone = originalBones[0];
+        let cloneBone = clonedBones[0];
+        this.originalObjectMatrix[originalBone.name] = originalBone.matrix.clone();
+        this.cloneObjectMatrix[cloneBone.name] = cloneBone.matrix.clone();
     }
 
     initializeAxisAngle()
