@@ -651,7 +651,7 @@ function updateCharacterIk(scene)
   {
     if(object.userData.ikRig !== undefined)
     {
-        //object.userData.ikRig.update();
+        object.userData.ikRig.update();
     }
   });
 

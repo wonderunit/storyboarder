@@ -1,6 +1,7 @@
 //#region ragdoll's import
 const RagDoll = require("./IK/objects/IkObjects/Ragdoll");
-const TargetControl = require("./IK/objects/TargetControl");
+
+const {AddTransformationControl} = require("./IK/utils/IkUtils");
 //#endregion
 const THREE = require('three')
 window.THREE = window.THREE || THREE
@@ -122,19 +123,19 @@ const characterFactory = data => {
 
     return { mesh, skeleton, armatures, originalHeight, boneLengthScale, parentRotation, parentPosition }
   }
+
   armatures = data.scene.children[0].children.filter(child => child instanceof THREE.Bone)
-  if (armatures.length === 0 )
-  {  // facebook export is different - bone structure is inside another object3D
+  if (armatures.length === 0 ) {  // facebook export is different - bone structure is inside another object3D
     armatures = data.scene.children[0].children[0].children.filter(child => child instanceof THREE.Bone)
-    if (armatures.length === 0)
-    {  //specifically adult-female - bone structure is inside the skinned mesh
+
+    if (armatures.length === 0) {  //specifically adult-female - bone structure is inside the skinned mesh
       armatures = mesh.children[0].children.filter(child => child instanceof THREE.Bone)
     }
     for (var bone of armatures)
     {
       bone.scale.set(1,1,1)
       bone.quaternion.multiply(data.scene.children[0].children[0].quaternion)
-      bone.position.set(bone.position.x, bone.position.z, bone.position.y)
+      bone.position.set(bone.position.x,bone.position.z,bone.position.y)
     }
     mesh.scale.set(1,1,1)
     parentRotation = data.scene.children[0].children[0].quaternion.clone()
@@ -179,7 +180,6 @@ const Character = React.memo(({
   loaded,
   modelData,
   largeRenderer,
-  setSkeleton,
   ...props
 }) => {
   const [ready, setReady] = useState(false) // ready to load?
@@ -187,16 +187,14 @@ const Character = React.memo(({
   // which is what Editor listens for to attach the BonesHelper
   const setLoaded = loaded => updateObject(id, { loaded })
   const object = useRef(null)
+
+  const originalSkeleton = useRef(null)
   let ragDoll = useRef(null);
   let prevRotation = useRef([]);
-  const originalSkeleton = useRef(null)
+
   const doCleanup = () => {
     if (object.current) {
       console.log(type, id, 'remove')
-      if(ragDoll !== null)
-      {
-        ragDoll.current.removeFromScene(scene);
-      }
       scene.remove(object.current.bonesHelper)
       scene.remove(object.current.orthoIcon)
       scene.remove(object.current)
@@ -224,27 +222,20 @@ const Character = React.memo(({
     if (ready) {
       console.log(type, id, 'add')
 
-
-
-
       const { mesh, skeleton, armatures, originalHeight, boneLengthScale, parentRotation, parentPosition } = characterFactory(modelData)
 
       // make a clone of the initial skeleton pose, for comparison
       originalSkeleton.current = skeleton.clone()
       originalSkeleton.current.bones = originalSkeleton.current.bones.map(bone => bone.clone())
 
-
       object.current = new THREE.Object3D()
       object.current.add(...armatures)
       object.current.add(mesh)
-
-
+      let bonesHelper = new BonesHelper( skeleton.bones[0].parent, object.current, { boneLengthScale, cacheKey: props.model } )
 
       object.current.userData.id = id
       object.current.userData.type = type
       object.current.userData.originalHeight = originalHeight
-
-
 
       // FIXME get current .models from getState()
       object.current.userData.modelSettings = initialState.models[props.model] || {}
@@ -256,31 +247,28 @@ const Character = React.memo(({
       scene.add(object.current)
       scene.add(object.current.orthoIcon)
 
-
       mesh.layers.disable(0)
       mesh.layers.enable(1)
       mesh.layers.disable(2)
       mesh.layers.enable(3)
 
-      let bonesHelper = new BonesHelper( skeleton.bones[0].parent, object.current, { boneLengthScale, cacheKey: props.model } )
       bonesHelper.traverse(child => {
-          child.layers.disable(0)
-          child.layers.enable(1)
-          child.layers.enable(2)
+        child.layers.disable(0)
+        child.layers.enable(1)
+        child.layers.enable(2)
       })
       bonesHelper.hit_meshes.forEach(h => {
-          h.layers.disable(0)
-          h.layers.enable(1)
-          h.layers.enable(2)
+        h.layers.disable(0)
+        h.layers.enable(1)
+        h.layers.enable(2)
       })
       bonesHelper.cones.forEach(c => {
-          c.layers.disable(0)
-          c.layers.enable(1)
-          c.layers.disable(2)
+        c.layers.disable(0)
+        c.layers.enable(1)
+        c.layers.disable(2)
       })
 
       object.current.bonesHelper = bonesHelper
-
       object.current.userData.skeleton = skeleton
       object.current.userData.boneLengthScale = boneLengthScale
       object.current.userData.parentRotation = parentRotation
@@ -294,7 +282,7 @@ const Character = React.memo(({
       const backControl = AddTransformationControl(new THREE.Vector3(0, 2, -.1), camera, domElement, scene, "back");
       const rightHandControl = AddTransformationControl(new THREE.Vector3(2, 1.5, 0), camera, domElement, scene, "rightHand");
       const leftHandControl = AddTransformationControl(new THREE.Vector3(-2, 1.5, 0), camera, domElement, scene, "leftHand");
-      const leftLegControl = AddTransformationControl(new THREE.Vector3(0, 0, 0), camera, domElement, scene, "leftLeg");
+      const leftLegControl = AddTransformationControl(new THREE.Vector3(0, 1, 1), camera, domElement, scene, "leftLeg");
       const rightLegControl = AddTransformationControl(new THREE.Vector3(0, 0, 1), camera, domElement, scene, "rightLeg");
       skeletonRig.initObject(scene, object.current, object.current.children[1], backControl, leftHandControl,
           rightHandControl, leftLegControl, rightLegControl,
@@ -308,7 +296,6 @@ const Character = React.memo(({
       // setLoaded(false)
     }
   }, [ready])
-
 
   useEffect(() => {
     return function cleanup () {
@@ -347,30 +334,15 @@ const Character = React.memo(({
 
         let state = userState || systemState
 
-        let prevState = prevRotation.current[bone.name];
-        if(state !== systemState)
-        {
-          if(prevRotation.current === null || prevState === undefined)
-          {
-            bone.rotation.x -= bone.rotation.x - state.rotation.x
-            bone.rotation.y -= bone.rotation.y - state.rotation.y
-            bone.rotation.z -= bone.rotation.z - state.rotation.z
-          }
-          else {
-            bone.rotation.x += prevState.rotation.x - state.rotation.x
-            bone.rotation.y += prevState.rotation.y - state.rotation.y
-            bone.rotation.z += prevState.rotation.z - state.rotation.z
-          }
-
-        }
+        bone.rotation.x = state.rotation.x
+        bone.rotation.y = state.rotation.y
+        bone.rotation.z = state.rotation.z
       }
-      prevRotation.current = props.skeleton;
     } else {
       let skeleton = object.current.userData.skeleton
       skeleton.pose()
       fixRootBone()
     }
-    //ragDoll.current.applyToIk();
   }
 
   const getCurrentControllerRotation = (device, virtual) => {
@@ -426,8 +398,8 @@ const Character = React.memo(({
       object.current.position.x = props.x
       object.current.position.z = props.y
       object.current.position.y = props.z
-      object.current.orthoIcon.position.copy(object.current.position)
       ragDoll.current.moveRagdoll();
+      object.current.orthoIcon.position.copy(object.current.position)
     }
   }, [props.model, props.x, props.y, props.z, ready])
 
@@ -448,6 +420,7 @@ const Character = React.memo(({
 
   const resetPose = () => {
     if (!object.current) return
+
     let skeleton = object.current.userData.skeleton
     skeleton.pose()
     updateSkeleton()
@@ -456,6 +429,7 @@ const Character = React.memo(({
   const fixRootBone = () => {
     let { boneLengthScale, parentRotation, parentPosition } = object.current.userData
     let skeleton = object.current.userData.skeleton
+
     // fb converter scaled object
     // e.g.: all built-in character models
     if (boneLengthScale === 100) {
@@ -471,12 +445,9 @@ const Character = React.memo(({
   useEffect(() => {
     if (!ready) return
     if (!props.posePresetId) return
+
     console.log(type, id, 'changed pose preset')
-    prevRotation.current = [];
-    console.log("PrevRotation dropped");
     resetPose()
-    //ragDoll.current.applyToIk();
-    //ragDoll.current.recalculateDifference();
   }, [props.posePresetId])
 
   // HACK force reset skeleton pose on Board UUID change
@@ -486,14 +457,13 @@ const Character = React.memo(({
 
     console.log(type, id, 'changed boards')
     resetPose()
-
   }, [boardUid])
 
   useEffect(() => {
     if (!ready) return
     if (!object.current) return
 
-    console.log(type, id, 'skeleton')
+    // console.log(type, id, 'skeleton')
     updateSkeleton()
   }, [props.model, props.skeleton, ready])
 
@@ -502,15 +472,9 @@ const Character = React.memo(({
       if (object.current.userData.modelSettings.height) {
         let originalHeight = object.current.userData.originalHeight
         let scale = props.height / originalHeight
-        if(scale !== object.current.scale.x)
-        {
-          object.current.scale.set(scale, scale, scale)
-          object.current.updateMatrixWorld(true);
 
-          //ragDoll.current.reinitialize();
-        }
+        object.current.scale.set( scale, scale, scale )
       } else {
-        console.log("scalar");
         object.current.scale.setScalar( props.height )
       }
       //object.current.bonesHelper.updateMatrixWorld()
@@ -531,6 +495,7 @@ const Character = React.memo(({
         //head bone
         headBone.scale.setScalar( baseHeadScale )
         headBone.scale.setScalar( props.headScale )
+        ragDoll.current.reinitialize();
       }
     }
   }, [props.model, props.headScale, props.skeleton, ready])
@@ -562,7 +527,6 @@ const Character = React.memo(({
       for (var cone of object.current.bonesHelper.cones)
         object.current.bonesHelper.remove(cone)
     }
-    ragDoll.current.selectedSkeleton(isSelected);
 
     let mesh = object.current.userData.mesh
     if ( mesh.material.length > 0 ) {
@@ -597,7 +561,7 @@ const Character = React.memo(({
   useEffect(() => {
     if (!ready) return
     if (!object.current) return
-    console.log("Selected");
+
     // if there was a prior selected bone
     if (currentBoneSelected.current) {
       // reset it
@@ -621,7 +585,6 @@ const Character = React.memo(({
   }, [selectedBone, ready])
 
   useEffect(() => {
-
     if (!object.current) return
     if (!isSelected) return
     if ( devices[0] && devices[0].digital.circle ) //if pressed
@@ -644,9 +607,9 @@ const Character = React.memo(({
         let startValues = getCurrentControllerRotation(devices[0], virtual.current)
         startingDeviceRotation.current = startValues.quaternion
 
-        startingDeviceOffset.current = new THREE.Quaternion().clone().inverse().multiply(startingDeviceRotation.current).normalize().inverse()
+        startingDeviceOffset.current =  new THREE.Quaternion().clone().inverse().multiply(startingDeviceRotation.current).normalize().inverse()
         startingObjectQuaternion.current = target.quaternion.clone()
-        startingObjectOffset.current = new THREE.Quaternion().clone().inverse().multiply(startingObjectQuaternion.current)
+        startingObjectOffset.current =  new THREE.Quaternion().clone().inverse().multiply(startingObjectQuaternion.current)
         //console.log('starting rotation: ', startingDeviceRotation.current)
       }
       let midddleValues = getCurrentControllerRotation(devices[0], virtual.current)
@@ -789,7 +752,6 @@ const Character = React.memo(({
     if (!ready) return
 
     if (object.current) {
-      console.log("selected");
       object.current.visible = props.visible
       object.current.orthoIcon.visible = props.visible
       object.current.bonesHelper.visible = props.visible
@@ -814,19 +776,11 @@ const Character = React.memo(({
 
   useEffect(() => {
     if (ready) {
-      console.log("ready");
       setLoaded(true)
     }
   }, [ready])
 
   return null
 })
-//#region RagDoll
-function AddTransformationControl(position, camera, domElement, scene, name)
-{
-  let targetControl = new TargetControl(camera, domElement, name);
-  targetControl.initialize(position, scene);
-  return targetControl;
-}
-//#endregion
+
 module.exports = Character

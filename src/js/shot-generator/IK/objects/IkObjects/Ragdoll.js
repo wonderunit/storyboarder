@@ -14,6 +14,7 @@ class Ragdoll extends IkObject
         this.poleConstraints = [];
         this.poleTargetOffsets = {};
         this.hipsMouseDown = false;
+        this.isInitialized = false;
     }
 
     initObject(scene, object, skinnedMesh, ...controlTarget )
@@ -60,6 +61,7 @@ class Ragdoll extends IkObject
         this.addHipsEvent();
         this.setUpControlEvents();
         this.initializeAxisAngle();
+        this.isInitialized = true; 
     }
     // Applies events to back control
     applyEventsToBackControl(backControl)
@@ -165,6 +167,10 @@ class Ragdoll extends IkObject
 
     update()
     {
+        if(!this.isInitialized)
+        {
+            return;
+        }
         super.update();
         if(!this.isEnabledIk)
         {
@@ -219,6 +225,10 @@ class Ragdoll extends IkObject
 
     reinitialize()
     {
+        if(!this.isInitialized)
+        {
+            return;
+        }
         let chainObjects = this.chainObjects;
         this.clonedObject.scale.copy(this.originalObject.scale);
         this.clonedObject.position.copy(this.originalObject.position);
@@ -275,6 +285,10 @@ class Ragdoll extends IkObject
 
     removeFromScene(scene)
     {
+        if(!this.isInitialized)
+        {
+            return;
+        }
         super.removeFromScene(scene);
         this.poleConstraints.forEach((constraint)=>
         {
@@ -283,6 +297,10 @@ class Ragdoll extends IkObject
     }
     selectedSkeleton(selected)
     {
+        if(!this.isInitialized)
+        {
+            return;
+        }
         let visible = selected;
         let chainObjects = this.chainObjects;
         for (let i = 0; i < chainObjects.length; i++)
@@ -296,6 +314,10 @@ class Ragdoll extends IkObject
 
     applyChangesToOriginal()
     {
+        if(!this.isInitialized)
+        {
+            return;
+        }
         let clonedSkin = this.clonedObject.children[1];
         let originalSkin = this.originalObject.children[1];
         let clonedBones = clonedSkin.skeleton.bones;
@@ -315,6 +337,10 @@ class Ragdoll extends IkObject
 
     applyToIk()
     {
+        if(!this.isInitialized)
+        {
+            return;
+        }
         let clonedSkin = this.clonedObject.children[1];
         let originalSkin = this.originalObject.children[1];
         let clonedBones = clonedSkin.skeleton.bones;
@@ -334,6 +360,10 @@ class Ragdoll extends IkObject
 
     moveRagdoll()
     {
+        if(!this.isInitialized)
+        {
+            return;
+        }
         this.clonedObject.position.copy(this.originalObject.position);
         this.clonedObject.updateMatrixWorld(true, true);
     }
@@ -349,6 +379,7 @@ class Ragdoll extends IkObject
         cloneGlobalQuat.applyMatrix(transformMatrix);
         originBone.quaternion.copy(cloneGlobalQuat);
         originBone.updateMatrix();
+        originBone.updateWorldMatrix(true, true);
 
     }
 

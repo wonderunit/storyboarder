@@ -11,23 +11,23 @@ class TargetControl
         this.control.userData.type = "controlTarget";
         this.name = name;
         this.disabled = true;
-        this.control.addEventListener('dragging-changed', ( event ) =>
-        {
-            //orbitControl.enabled = ! event.value;
-        });
-
-        this.control.addEventListener('pointerdown', (event) =>
-        {
-            let control = this.control;
-            if(this.disabled && control.dragging )
-            {
-                control.dragging = false;
-            }
-        });
-        this.control.addEventListener('pointerup', (event) =>
-        {
-
-        });
+        //this.control.addEventListener('dragging-changed', ( event ) =>
+        //{
+        //    //orbitControl.enabled = ! event.value;
+        //});
+//
+        //this.control.addEventListener('pointerdown', (event) =>
+        //{
+        //    let control = this.control;
+        //    if(this.disabled && control.dragging )
+        //    {
+        //        control.dragging = false;
+        //    }
+        //});
+        //this.control.addEventListener('pointerup', (event) =>
+        //{
+//
+        //});
     }
 
     initialize(position, scene)
