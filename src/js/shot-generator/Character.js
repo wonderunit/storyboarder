@@ -278,6 +278,7 @@ const Character = React.memo(({
       ragDoll.current = new RagDoll();
       let skeletonRig = ragDoll.current;
       let domElement = largeRenderer.current.domElement;
+      console.log(scene);
       const hipsControl = AddTransformationControl(new THREE.Vector3(0, 1, 0), camera, domElement, scene, "hips");
       const backControl = AddTransformationControl(new THREE.Vector3(0, 2, -.1), camera, domElement, scene, "back");
       const rightHandControl = AddTransformationControl(new THREE.Vector3(2, 1.5, 0), camera, domElement, scene, "rightHand");
@@ -333,16 +334,17 @@ const Character = React.memo(({
         let systemState = originalSkeleton.current.getBoneByName(bone.name).clone()
 
         let state = userState || systemState
-
         bone.rotation.x = state.rotation.x
         bone.rotation.y = state.rotation.y
         bone.rotation.z = state.rotation.z
       }
+  
     } else {
       let skeleton = object.current.userData.skeleton
       skeleton.pose()
       fixRootBone()
     }
+    ragDoll.current.applyToIk();
   }
 
   const getCurrentControllerRotation = (device, virtual) => {
@@ -473,7 +475,13 @@ const Character = React.memo(({
         let originalHeight = object.current.userData.originalHeight
         let scale = props.height / originalHeight
 
+        let heightChanged = object.current.scale.x !== scale ? true : false;
         object.current.scale.set( scale, scale, scale )
+
+        if(heightChanged)
+        {
+          ragDoll.current.reinitialize();
+        }
       } else {
         object.current.scale.setScalar( props.height )
       }
@@ -491,11 +499,10 @@ const Character = React.memo(({
 
       if (headBone && object.current.userData.modelSettings.height) {
         let baseHeadScale = object.current.userData.modelSettings.height / props.height
-
+      
         //head bone
         headBone.scale.setScalar( baseHeadScale )
-        headBone.scale.setScalar( props.headScale )
-        ragDoll.current.reinitialize();
+        headBone.scale.setScalar( props.headScale ) 
       }
     }
   }, [props.model, props.headScale, props.skeleton, ready])
@@ -517,7 +524,7 @@ const Character = React.memo(({
     console.log(type, id, 'isSelected', isSelected)
     if (!ready) return
     if (!object.current) return
-
+    ragDoll.current.selectedSkeleton(isSelected);
     // handle selection/deselection - add/remove the bone stucture
     if (isSelected)
     {

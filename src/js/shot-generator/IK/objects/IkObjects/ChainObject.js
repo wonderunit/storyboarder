@@ -16,6 +16,25 @@ class ChainObject
         this.rootJointName = rootJointName;
         this.currentJoint = 0;
         this.constraints = [];
+        this.poleConstraint = null;
+    }
+
+    removePoleConstraintFromScene(scene)
+    {
+        if(this.poleConstraint === null)
+        {
+            return;
+        }
+        scene.remove(this.poleConstraint.poleTarget.mesh);
+    }
+
+    addPoleConstraintFromScene(scene)
+    {
+        if(this.poleConstraint === null)
+        {
+            return;
+        }
+        scene.add(this.poleConstraint.poleTarget.mesh);
     }
 
     updateMatrix()

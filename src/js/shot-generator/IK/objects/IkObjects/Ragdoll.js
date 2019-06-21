@@ -14,6 +14,7 @@ class Ragdoll extends IkObject
         this.poleConstraints = [];
         this.hipsMouseDown = false;
         this.isInitialized = false;
+        this.scene = null;
     }
 
     initObject(scene, object, skinnedMesh, ...controlTarget )
@@ -22,7 +23,7 @@ class Ragdoll extends IkObject
 
         // Adds events to Back control
         this.applyEventsToBackControl(this.controlTargets[0].control);
-
+        this.scene = scene;
         let backChain = this.ik.chains[0];
         let leftArmChain = this.ik.chains[1];
         let rightArmChain = this.ik.chains[2];
@@ -43,14 +44,16 @@ class Ragdoll extends IkObject
         scene.add(rightLegPoleTarget.mesh);
         scene.add(backPoleTarget.mesh);
 
-        this.addPoleConstraintToRootJoint(backChain, backPoleTarget);
+        //this.addPoleConstraintToRootJoint(backChain, backPoleTarget);
+        let poleConstraint = new PoleConstraint(backChain, backPoleTarget);
+        this.poleConstraints.push(poleConstraint);
         this.addPoleConstraintToRootJoint(leftArmChain, leftArmPoleTarget);
         this.addPoleConstraintToRootJoint(rightArmChain, rightArmPoleTarget);
         this.addPoleConstraintToRootJoint(leftLegChain, leftLegPoleTarget);
         this.addPoleConstraintToRootJoint(rightLegChain, rightLegPoleTarget);
 
         let copyRotation = new CopyRotation(backChain, backChain.joints[4]);
-        copyRotation.influence = 100;
+        copyRotation.influence = 50;
         backChain.joints[3].addIkConstraint(copyRotation);
 
         this.poleConstraints[0].poleAngle = 128;
@@ -61,6 +64,13 @@ class Ragdoll extends IkObject
         this.setUpControlEvents();
         this.initializeAxisAngle();
         this.isInitialized = true; 
+
+        scene.remove(leftArmPoleTarget.mesh);
+        scene.remove(leftLegPoleTarget.mesh);
+        scene.remove(rightArmPoleTarget.mesh);
+        scene.remove(rightLegPoleTarget.mesh);
+        scene.remove(backPoleTarget.mesh);
+
     }
     // Applies events to back control
     applyEventsToBackControl(backControl)
@@ -87,6 +97,8 @@ class Ragdoll extends IkObject
         poleTarget.initialize(poleTarget.poleOffset);
         poleTarget.name = name;
         poleTarget.mesh.visible = true;
+       
+
         return poleTarget;
     }
 
@@ -221,6 +233,7 @@ class Ragdoll extends IkObject
         {
             return;
         }
+    
         let chainObjects = this.chainObjects;
         this.clonedObject.scale.copy(this.originalObject.scale);
         this.clonedObject.position.copy(this.originalObject.position);
@@ -273,12 +286,6 @@ class Ragdoll extends IkObject
     // Applies neck rotation and applies head rotation that head stay upward
     applyHeadRotation()
     {
-        let spine = this.chainObjects[0].chain.joints[0].bone;
-        let neck = this.chainObjects[0].chain.joints[3].bone;
-        //neck.rotation.x = -spine.rotation.x * 0.5;
-        neck.rotation.y = -spine.rotation.y * 0.5;
-        neck.updateMatrix();
-        neck.updateMatrixWorld(true);
         let head = this.chainObjects[0].chain.joints[4].bone;
         this.rotateBoneQuaternion(head, new THREE.Euler(-1.0, 0, 0));
         head.updateMatrix();
@@ -308,10 +315,28 @@ class Ragdoll extends IkObject
         for (let i = 0; i < chainObjects.length; i++)
         {
             let chain = chainObjects[i];
-            chain.controlTarget.disable = !visible;
+            //chain.controlTarget.disable = !visible;
+            if(visible)
+            {
+                chain.controlTarget.addToScene(this.scene);
+            }
+            else
+            {
+                chain.controlTarget.removeFromScene(this.scene);
+            }
         }
         this.hipsControlTarget.disable = !visible;
-        this.skeletonHelper.visible = visible;
+        if(visible)
+        {
+            this.hipsControlTarget.addToScene(this.scene);
+           // this.scene.add(this.skeletonHelper);
+        }
+        else
+        {
+            //this.scene.remove(this.skeletonHelper);
+            this.hipsControlTarget.removeFromScene(this.scene);
+        }
+      
     }
 
     moveRagdoll()
@@ -321,7 +346,7 @@ class Ragdoll extends IkObject
             return;
         }
         this.clonedObject.position.copy(this.originalObject.position);
-        this.clonedObject.updateMatrixWorld(true, true);
+        this.clonedObject.updateMatrixWorld(false, true);
     }
 
     applyChangesToOriginal()
@@ -358,6 +383,7 @@ class Ragdoll extends IkObject
         {
             return;
         }
+  
         let clonedSkin = this.clonedObject.children[1];
         let originalSkin = this.originalObject.children[1];
         let clonedBones = clonedSkin.skeleton.bones;
@@ -423,7 +449,7 @@ class Ragdoll extends IkObject
         cloneGlobalQuat.applyMatrix(transformMatrix);
         originBone.quaternion.copy(cloneGlobalQuat);
         originBone.updateMatrix();
-        originBone.updateWorldMatrix(true, true);
+        originBone.updateWorldMatrix(false, true);
     }
 
     originToCloneRotation(cloneBone, originBone)
@@ -437,7 +463,7 @@ class Ragdoll extends IkObject
         cloneBone.quaternion.copy(originalGlobalQuat);
         cloneBone.updateMatrix();
         cloneBone.updateMatrixWorld(true);
-        originBone.updateWorldMatrix(true, true);
+        originBone.updateWorldMatrix(false, true);
     }
 }
 module.exports =  Ragdoll;

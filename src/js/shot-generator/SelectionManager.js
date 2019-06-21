@@ -54,22 +54,20 @@ function getObjectsFromCameraView (objects) {
     }
     if(o.userData.type === 'controlTarget')
     {
+  
       if(o.children.length !== 0)
       {
         let gizmo = o.children[0];
         let gizmoChildren = gizmo.children;
         for(let i = 0; i < gizmoChildren.length; i++)
         {
-          if(gizmoChildren[i].visible)
+          if(gizmoChildren[i].name === "Helper")
           {
-            let children = gizmoChildren[i].children;
-            if(children.length < 10)
-            {
+              let children = gizmoChildren[i].children;
               for (let i = 0; i < children.length; i++)
               {
                 results.push(children[i]);
               }
-            }
           }
         }
       }

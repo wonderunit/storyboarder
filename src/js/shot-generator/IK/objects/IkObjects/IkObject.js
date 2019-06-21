@@ -77,7 +77,7 @@ class IkObject
                     this.hips = object;
                     setZDirecion(object, new THREE.Vector3(0, 0, 1));
 
-                    rigMesh.bind(rigMesh.skeleton);
+                    //rigMesh.bind(rigMesh.skeleton);
 
                     this.originalObject.children[1].bind(this.originalObject.children[1].skeleton);
                     object.updateWorldMatrix(true, true);
@@ -138,8 +138,8 @@ class IkObject
         this.skeletonHelper.material.linewidth = 7;
 
         // Adds skeleton helper to scene
-        scene.add( this.skeletonHelper );
-
+        //scene.add( this.skeletonHelper );
+        this.recalculateDifference();
     }
 
     // Calculates back's offset in order to move with hips
@@ -277,7 +277,6 @@ class IkObject
 
     recalculateDifference()
     {
-        console.log("Diff");
         let clonedSkin = this.clonedObject.children[1];
         let originalSkin = this.originalObject.children[1];
         let clonedBones = clonedSkin.skeleton.bones;

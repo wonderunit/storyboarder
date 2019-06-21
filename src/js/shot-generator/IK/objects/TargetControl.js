@@ -7,27 +7,10 @@ class TargetControl
     constructor(camera, domElement, name)
     {
         this.control = new TransformControls(camera, domElement);
-        this.control.size = 0.15;
+        this.control.size = 0.3;
         this.control.userData.type = "controlTarget";
         this.name = name;
         this.disabled = true;
-        //this.control.addEventListener('dragging-changed', ( event ) =>
-        //{
-        //    //orbitControl.enabled = ! event.value;
-        //});
-//
-        //this.control.addEventListener('pointerdown', (event) =>
-        //{
-        //    let control = this.control;
-        //    if(this.disabled && control.dragging )
-        //    {
-        //        control.dragging = false;
-        //    }
-        //});
-        //this.control.addEventListener('pointerup', (event) =>
-        //{
-//
-        //});
     }
 
     initialize(position, scene)
@@ -39,7 +22,6 @@ class TargetControl
 
         movingTarget.userData.type = "controlTarget";
         scene.add(movingTarget);
-
         this.control.attach(movingTarget);
         scene.add(this.control);
         this.target = movingTarget;
@@ -50,6 +32,18 @@ class TargetControl
         this.control.attach(mesh);
         scene.add(this.control);
         this.target = mesh;
+    }
+
+    addToScene(scene)
+    {
+        scene.add(this.target);
+        scene.add(this.control);
+    }
+
+    removeFromScene(scene)
+    {
+        scene.remove(this.target);
+        scene.remove(this.control);
     }
 
     set disable(isDisabled)

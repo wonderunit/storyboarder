@@ -2,6 +2,7 @@ const THREE = require("three");
 /**
  * @author arodic / https://github.com/arodic
  */
+const isTranslateOnly = true;
 
 const TransformControls = function ( camera, domElement ) {
 
@@ -749,18 +750,21 @@ const TransformControlsGizmo = function () {
 
 	var gizmoTranslate = {
 		X: [
-			[ new THREE.Mesh( arrowGeometry, matRed ), [ 1, 0, 0 ], [ 0, 0, -Math.PI / 2 ], null, 'fwd' ],
-			[ new THREE.Mesh( arrowGeometry, matRed ), [ 1, 0, 0 ], [ 0, 0, Math.PI / 2 ], null, 'bwd' ],
+			//[ new THREE.Mesh( arrowGeometry, matRed ), [ 1, 0, 0 ], [ 0, 0, -Math.PI / 2 ], null, 'fwd' ],
+			//[ new THREE.Mesh( arrowGeometry, matRed ), [ 1, 0, 0 ], [ 0, 0, Math.PI / 2 ], null, 'bwd' ],
+
 			[ new THREE.Line( lineGeometry, matLineRed ) ]
 		],
 		Y: [
-			[ new THREE.Mesh( arrowGeometry, matGreen ), [ 0, 1, 0 ], null, null, 'fwd' ],
-			[ new THREE.Mesh( arrowGeometry, matGreen ), [ 0, 1, 0 ], [ Math.PI, 0, 0 ], null, 'bwd' ],
+			//[ new THREE.Mesh( arrowGeometry, matGreen ), [ 0, 1, 0 ], null, null, 'fwd' ],
+			//[ new THREE.Mesh( arrowGeometry, matGreen ), [ 0, 1, 0 ], [ Math.PI, 0, 0 ], null, 'bwd' ],
+
 			[ new THREE.Line( lineGeometry, matLineGreen ), null, [ 0, 0, Math.PI / 2 ] ]
 		],
 		Z: [
-			[ new THREE.Mesh( arrowGeometry, matBlue ), [ 0, 0, 1 ], [ Math.PI / 2, 0, 0 ], null, 'fwd' ],
-			[ new THREE.Mesh( arrowGeometry, matBlue ), [ 0, 0, 1 ], [ -Math.PI / 2, 0, 0 ], null, 'bwd' ],
+			//[ new THREE.Mesh( arrowGeometry, matBlue ), [ 0, 0, 1 ], [ Math.PI / 2, 0, 0 ], null, 'fwd' ],
+			//[ new THREE.Mesh( arrowGeometry, matBlue ), [ 0, 0, 1 ], [ -Math.PI / 2, 0, 0 ], null, 'bwd' ],
+			
 			[ new THREE.Line( lineGeometry, matLineBlue ), null, [ 0, -Math.PI / 2, 0 ] ]
 		],
 		XYZ: [
@@ -828,7 +832,16 @@ const TransformControlsGizmo = function () {
 		]
 	};
 
-	var gizmoRotate = {
+	var gizmoRotate = {};
+	var helperRotate = {};
+	var pickerRotate = {};
+	var gizmoScale  = {};
+	var pickerScale = {};
+	var helperScale = {};
+
+	if(!isTranslateOnly)
+	{
+		gizmoRotate = {
 		X: [
 			[ new THREE.Line( CircleGeometry( 1, 0.5 ), matLineRed ) ],
 			[ new THREE.Mesh( new THREE.OctahedronBufferGeometry( 0.04, 0 ), matRed ), [ 0, 0, 0.99 ], null, [ 1, 3, 1 ] ],
@@ -851,15 +864,15 @@ const TransformControlsGizmo = function () {
 		XYZE: [
 			[ new THREE.Line( CircleGeometry( 1, 1 ), matLineGray ), null, [ 0, Math.PI / 2, 0 ] ]
 		]
-	};
+		};
 
-	var helperRotate = {
+		helperRotate = {
 		AXIS: [
 			[ new THREE.Line( lineGeometry, matHelper.clone() ), [ -1e3, 0, 0 ], null, [ 1e6, 1, 1 ], 'helper' ]
 		]
-	};
+		};
 
-	var pickerRotate = {
+		pickerRotate = {
 		X: [
 			[ new THREE.Mesh( new THREE.TorusBufferGeometry( 1, 0.1, 4, 24 ), matInvisible ), [ 0, 0, 0 ], [ 0, -Math.PI / 2, -Math.PI / 2 ] ],
 		],
@@ -875,9 +888,9 @@ const TransformControlsGizmo = function () {
 		XYZE: [
 			[ new THREE.Mesh( new THREE.SphereBufferGeometry( 0.7, 10, 8 ), matInvisible ) ]
 		]
-	};
+		};
 
-	var gizmoScale = {
+		gizmoScale = {
 		X: [
 			[ new THREE.Mesh( scaleHandleGeometry, matRed ), [ 0.8, 0, 0 ], [ 0, 0, -Math.PI / 2 ] ],
 			[ new THREE.Line( lineGeometry, matLineRed ), null, null, [ 0.8, 1, 1 ] ]
@@ -914,9 +927,9 @@ const TransformControlsGizmo = function () {
 		XYZZ: [
 			[ new THREE.Mesh( new THREE.BoxBufferGeometry( 0.125, 0.125, 0.125 ), matWhiteTransperent ), [ 0, 0, 1.1 ] ],
 		]
-	};
+		};
 
-	var pickerScale = {
+		pickerScale = {
 		X: [
 			[ new THREE.Mesh( new THREE.CylinderBufferGeometry( 0.2, 0, 0.8, 4, 1, false ), matInvisible ), [ 0.5, 0, 0 ], [ 0, 0, -Math.PI / 2 ] ]
 		],
@@ -944,9 +957,9 @@ const TransformControlsGizmo = function () {
 		XYZZ: [
 			[ new THREE.Mesh( new THREE.BoxBufferGeometry( 0.2, 0.2, 0.2 ), matInvisible ), [ 0, 0, 1.1 ] ],
 		]
-	};
+		};
 
-	var helperScale = {
+		helperScale = {
 		X: [
 			[ new THREE.Line( lineGeometry, matHelper.clone() ), [ -1e3, 0, 0 ], null, [ 1e6, 1, 1 ], 'helper' ]
 		],
@@ -956,8 +969,8 @@ const TransformControlsGizmo = function () {
 		Z: [
 			[ new THREE.Line( lineGeometry, matHelper.clone() ), [ 0, 0, -1e3 ], [ 0, -Math.PI / 2, 0 ], [ 1e6, 1, 1 ], 'helper' ]
 		]
-	};
-
+		};	
+	}
 	// Creates an Object3D with gizmos described in custom hierarchy definition.
 
 	var setupGizmo = function( gizmoMap ) {
@@ -1030,20 +1043,26 @@ const TransformControlsGizmo = function () {
 	this.helper = {};
 
 	this.add( this.gizmo[ "translate" ] = setupGizmo( gizmoTranslate ) );
-	this.add( this.gizmo[ "rotate" ] = setupGizmo( gizmoRotate ) );
-	this.add( this.gizmo[ "scale" ] = setupGizmo( gizmoScale ) );
 	this.add( this.picker[ "translate" ] = setupGizmo( pickerTranslate ) );
-	this.add( this.picker[ "rotate" ] = setupGizmo( pickerRotate ) );
-	this.add( this.picker[ "scale" ] = setupGizmo( pickerScale ) );
 	this.add( this.helper[ "translate" ] = setupGizmo( helperTranslate ) );
-	this.add( this.helper[ "rotate" ] = setupGizmo( helperRotate ) );
-	this.add( this.helper[ "scale" ] = setupGizmo( helperScale ) );
-
+	this.helper[ "translate" ].name = "Helper";
+	if(!isTranslateOnly)
+	{
+		this.add( this.gizmo[ "rotate" ] = setupGizmo( gizmoRotate ) );
+		this.add( this.gizmo[ "scale" ] = setupGizmo( gizmoScale ) );
+		this.add( this.picker[ "rotate" ] = setupGizmo( pickerRotate ) );
+		this.add( this.picker[ "scale" ] = setupGizmo( pickerScale ) );
+		this.add( this.helper[ "rotate" ] = setupGizmo( helperRotate ) );
+		this.add( this.helper[ "scale" ] = setupGizmo( helperScale ) );
+	}
 	// Pickers should be hidden always
 
 	this.picker[ "translate" ].visible = false;
-	this.picker[ "rotate" ].visible = false;
-	this.picker[ "scale" ].visible = false;
+	if(!isTranslateOnly)
+	{
+		this.picker[ "rotate" ].visible = false;
+		this.picker[ "scale" ].visible = false;
+	}
 
 	// updateMatrixWorld will update transformations and appearance of individual handles
 
@@ -1058,12 +1077,17 @@ const TransformControlsGizmo = function () {
 		// Show only gizmos for current transform mode
 
 		this.gizmo[ "translate" ].visible = this.mode === "translate";
-		this.gizmo[ "rotate" ].visible = this.mode === "rotate";
-		this.gizmo[ "scale" ].visible = this.mode === "scale";
-
+		if(!isTranslateOnly)
+		{
+			this.gizmo[ "rotate" ].visible = this.mode === "rotate";
+			this.gizmo[ "scale" ].visible = this.mode === "scale";
+		}
 		this.helper[ "translate" ].visible = this.mode === "translate";
-		this.helper[ "rotate" ].visible = this.mode === "rotate";
-		this.helper[ "scale" ].visible = this.mode === "scale";
+		if(!isTranslateOnly)
+		{
+			this.helper[ "rotate" ].visible = this.mode === "rotate";
+			this.helper[ "scale" ].visible = this.mode === "scale";
+		}
 
 
 		var handles = [];
