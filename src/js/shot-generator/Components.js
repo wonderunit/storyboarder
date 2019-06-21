@@ -1613,7 +1613,7 @@ const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, s
           sceneObject.type === 'camera'
             ? []
             : sceneObject.visible
-              ? ['a.visibility[href=#]', { onClick: onToggleVisibleClick }, [Icon, { src: 'icon-item-visible' }]]
+              ? ['a.visibility.hide-unless-hovered[href=#]', { onClick: onToggleVisibleClick }, [Icon, { src: 'icon-item-visible' }]]
               : ['a.visibility[href=#]', { onClick: onToggleVisibleClick }, [Icon, { src: 'icon-item-hidden' }]],
 
           allowDelete

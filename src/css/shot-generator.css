@@ -236,12 +236,10 @@ kbd {
 .element .row {
   align-items: center;
 }
-.element:not(.selected) .row .visibility,
-.element:not(.selected) .row .delete {
+.element:not(.selected) .row .hide-unless-hovered {
   visibility: hidden;
 }
-.element:not(.selected):hover .row .visibility,
-.element:not(.selected):hover .row .delete {
+.element:not(.selected):hover .row .hide-unless-hovered {
   visibility: visible;
 }
 
