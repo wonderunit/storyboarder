@@ -10,9 +10,9 @@ class CopyRotation extends IkConstraint
     {
         super(poleChain);
         this.target = target;
-        this.rotateX = true;
+        this.rotateX = false;
         this.rotateY = true;
-        this.rotateZ = true;
+        this.rotateZ = false;
     }
 
     applyConstraint(joint)

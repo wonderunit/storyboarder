@@ -94,11 +94,43 @@ THREE.Quaternion.prototype.substract = function(quanternion)
     return firstQuat;
 }
 
+THREE.Euler.prototype.substract = function(euler)
+{
+    let firstEuler = this.clone();
+    firstEuler.x -= euler.x;
+    firstEuler.y -= euler.y;
+    firstEuler.z -= euler.z;
+    return firstEuler;
+}
+
+THREE.Euler.prototype.sub = function(euler)
+{
+    let firstEuler = this;
+    firstEuler.x -= euler.x;
+    firstEuler.y -= euler.y;
+    firstEuler.z -= euler.z;
+    return firstEuler;
+}
+
+THREE.Euler.prototype.add = function(euler)
+{
+    let firstEuler = this;
+    firstEuler.x += euler.x;
+    firstEuler.y += euler.y;
+    firstEuler.z += euler.z;
+    return firstEuler;
+}
+
 THREE.Quaternion.prototype.applyMatrix = function(matrix)
 {
     let rotationMatrix = new THREE.Matrix4().makeRotationFromQuaternion(this);
     rotationMatrix.premultiply(matrix);
     this.copy(rotationMatrix.getRotation());
+}
+THREE.Vector3.prototype.substract = function(vector)
+{
+    let result = new THREE.Vector3().subVectors(this, vector);
+    return result;
 }
 
 THREE.Matrix4.prototype.inverse = function()

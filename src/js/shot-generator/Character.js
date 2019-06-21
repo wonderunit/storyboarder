@@ -337,8 +337,28 @@ const Character = React.memo(({
         bone.rotation.x = state.rotation.x
         bone.rotation.y = state.rotation.y
         bone.rotation.z = state.rotation.z
+       let prevState = prevRotation.current[bone.name];
+       if(prevRotation.current.length === 0)
+       {
+        
+       }
+       else
+       {
+        if(prevRotation.current === null || prevState === undefined)
+        {
+          bone.rotation.x -= bone.rotation.x - state.rotation.x
+          bone.rotation.y -= bone.rotation.y - state.rotation.y
+          bone.rotation.z -= bone.rotation.z - state.rotation.z
+        }
+        else {
+          bone.rotation.x += prevState.rotation.x - state.rotation.x
+          bone.rotation.y += prevState.rotation.y - state.rotation.y
+          bone.rotation.z += prevState.rotation.z - state.rotation.z
+        }
+       }
       }
-  
+      prevRotation.current = props.skeleton;
+
     } else {
       let skeleton = object.current.userData.skeleton
       skeleton.pose()
@@ -447,7 +467,7 @@ const Character = React.memo(({
   useEffect(() => {
     if (!ready) return
     if (!props.posePresetId) return
-
+    prevRotation.current = [];
     console.log(type, id, 'changed pose preset')
     resetPose()
   }, [props.posePresetId])

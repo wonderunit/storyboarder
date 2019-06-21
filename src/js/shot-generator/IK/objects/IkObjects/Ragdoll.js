@@ -383,7 +383,6 @@ class Ragdoll extends IkObject
         {
             return;
         }
-  
         let clonedSkin = this.clonedObject.children[1];
         let originalSkin = this.originalObject.children[1];
         let clonedBones = clonedSkin.skeleton.bones;
