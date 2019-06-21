@@ -53,9 +53,11 @@ const addNotification = (data) => {
   container.appendChild(el)
   height = el.offsetHeight
   el.style.height = '0px'
-  setTimeout(() => { 
-    el.style.height = height + 'px'
-  }, 1)
+  requestAnimationFrame(() =>
+    requestAnimationFrame(() =>
+      el.style.height = height + 'px'
+    )
+  )
 
 
   let timing
