@@ -31,6 +31,8 @@ const addNotification = (data) => {
   el.classList.add('notification')
   el.dataset.index = index
 
+  if (data.onClick) el.onclick = data.onClick
+
   content = document.createElement('div')
   content.classList.add('notification-content')
   content.innerHTML = 
@@ -51,9 +53,11 @@ const addNotification = (data) => {
   container.appendChild(el)
   height = el.offsetHeight
   el.style.height = '0px'
-  setTimeout(() => { 
-    el.style.height = height + 'px'
-  }, 1)
+  requestAnimationFrame(() =>
+    requestAnimationFrame(() =>
+      el.style.height = height + 'px'
+    )
+  )
 
 
   let timing
