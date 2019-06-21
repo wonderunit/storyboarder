@@ -369,7 +369,7 @@ const ListItem = ({ index, style, isScrolling, data }) => {
           isActive: sceneObject.type === 'camera' && sceneObject.id === activeCamera,
           allowDelete: (
             sceneObject.type != 'camera' ||
-            sceneObject.type == 'camera' && activeCamera !== sceneObject.id
+            (sceneObject.type == 'camera' && activeCamera !== sceneObject.id)
           ),
           selectObject,
           selectObjectToggle,
@@ -1618,11 +1618,9 @@ const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, s
                 : []
               : ['a.visibility[href=#]', { onClick: onToggleVisibleClick }, [Icon, { src: 'icon-item-hidden' }]],
 
-              isSelected 
-                ? allowDelete
-                  ? ['a.delete[href=#]', { onClick: onDeleteClick }, 'X']
-                  : ['a.delete', { style: { opacity: 0.1 } }, 'X']
-                : []
+              allowDelete
+                ? ['a.delete[href=#]', { onClick: onDeleteClick }, 'X']
+                : ['a.delete', { style: { opacity: 0.1 } }, 'X']
       ]]
     ]
   ])
