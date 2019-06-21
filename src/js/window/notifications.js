@@ -31,6 +31,8 @@ const addNotification = (data) => {
   el.classList.add('notification')
   el.dataset.index = index
 
+  if (data.onClick) el.onclick = data.onClick
+
   content = document.createElement('div')
   content.classList.add('notification-content')
   content.innerHTML = 
