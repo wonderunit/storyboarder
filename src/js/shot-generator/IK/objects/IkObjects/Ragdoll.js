@@ -315,7 +315,6 @@ class Ragdoll extends IkObject
         for (let i = 0; i < chainObjects.length; i++)
         {
             let chain = chainObjects[i];
-            //chain.controlTarget.disable = !visible;
             if(visible)
             {
                 chain.controlTarget.addToScene(this.scene);
@@ -329,11 +328,9 @@ class Ragdoll extends IkObject
         if(visible)
         {
             this.hipsControlTarget.addToScene(this.scene);
-           // this.scene.add(this.skeletonHelper);
         }
         else
         {
-            //this.scene.remove(this.skeletonHelper);
             this.hipsControlTarget.removeFromScene(this.scene);
         }
       
