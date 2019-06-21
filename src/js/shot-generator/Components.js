@@ -99,6 +99,8 @@ const PosePresetsEditor = require('./PosePresetsEditor')
 const ServerInspector = require('./ServerInspector')
 const MultiSelectionInspector = require('./MultiSelectionInspector')
 
+const notifications = require('../window/notifications')
+
 require('../vendor/OutlineEffect.js')
 
 
@@ -2230,8 +2232,10 @@ const Toolbar = ({
   }
 
   const onOpenVR = preventDefault(() =>
-    dialog.showMessageBox(null, {
-      message: `To view, open a VR web browser to:\n\n${xrServerUrl}`
+    notifications.notify({
+      message: `To view, open a VR web browser to:\n<a href="${xrServerUrl}">${xrServerUrl}</a>`,
+      timing: 60,
+      onClick: () => require('electron').shell.openExternal(xrServerUrl)
     })
   )
 
