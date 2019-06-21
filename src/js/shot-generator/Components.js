@@ -2612,7 +2612,7 @@ const KeyHandler = connect(
       }
 
       const onKeyDown = event => {
-        if (event.key === 'Backspace') {
+        if (event.key === 'Backspace' || event.key === 'Delete') {
           if (selections.length && canDelete(_selectedSceneObject, activeCamera)) {
             let choice = dialog.showMessageBox(null, {
               type: 'question',
