@@ -2234,7 +2234,7 @@ const Toolbar = ({
   const onOpenVR = preventDefault(() =>
     notifications.notify({
       message: `To view, open a VR web browser to:\n<a href="${xrServerUrl}">${xrServerUrl}</a>`,
-      timing: 60,
+      timing: 5,
       onClick: () => require('electron').shell.openExternal(xrServerUrl)
     })
   )
