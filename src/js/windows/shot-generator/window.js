@@ -8,6 +8,8 @@ const { Provider, connect } = require('react-redux')
 const ReactDOM = require('react-dom')
 const { ActionCreators } = require('redux-undo')
 console.clear() // clear the annoying dev tools warning
+const log = require('electron-log')
+log.catchErrors()
 
 
 
@@ -53,6 +55,10 @@ const { initialState, loadScene, resetScene, updateDevice, updateServer, setBoar
 
 const createServer = require('../../services/createServer')
 const createDualShockController = require('../../shot-generator/DualshockController')
+
+const XRServer = require('../../express-xr/app')
+let xrServer
+
 
 window.addEventListener('load', () => {
   ipcRenderer.send('shot-generator:window:loaded')
@@ -101,6 +107,11 @@ ipcRenderer.on('loadBoard', (event, { storyboarderFilePath, boardData, board }) 
     store.dispatch(resetScene())
     store.dispatch(ActionCreators.clearHistory())
   }
+
+  if (!xrServer) {
+    xrServer = new XRServer({ store })
+  }
+
 })
 ipcRenderer.on('update', (event, { board }) => {
   store.dispatch(setBoard( board ))
@@ -119,7 +130,7 @@ window.$r = { store }
 // disabled for now so we can reload the window easily during development
 // ipcRenderer.once('ready', () => {})
 
-console.log('ready!')
+log.info('ready!')
 electronUtil.disableZoom()
 
 ReactDOM.render(
@@ -164,7 +175,7 @@ createServer({
 // are we testing locally?
 // SHOT_GENERATOR_STANDALONE=true npm start
 if (process.env.SHOT_GENERATOR_STANDALONE) {
-  console.log('loading shot from shot-generator.storyboarder')
+  log.info('loading shot from shot-generator.storyboarder')
 
   const fs = require('fs')
   const path = require('path')
@@ -179,4 +190,10 @@ if (process.env.SHOT_GENERATOR_STANDALONE) {
     .find(w => w.webContents.getURL() === window.location.toString())
 
   win.webContents.send('loadBoard', { storyboarderFilePath, boardData: file, board: file.boards[0] })
+
+  // send storyboarderFilePath immediately so XRServer has access to it
+  store.dispatch({ type: 'SET_META_STORYBOARDER_FILE_PATH', payload: storyboarderFilePath })
+
+  xrServer = new XRServer({ store })
 }
+

@@ -2,7 +2,7 @@ const THREE = require('three')
 
 class CameraControls {
 
-  constructor ( object, domElement ) {
+  constructor ( object, domElement, options = {} ) {
     this.object = object
     this.domElement = domElement
     this.enabled = true
@@ -13,6 +13,8 @@ class CameraControls {
     this.maxSpeed = 0.07
     this.zoomSpeed = 0
 
+    this.keydowns = new Set()
+
     this.onPointerMove = this.onPointerMove.bind(this)
     this.onPointerDown = this.onPointerDown.bind(this)
     this.onPointerUp = this.onPointerUp.bind(this)
@@ -22,6 +24,9 @@ class CameraControls {
     this.onWheel = this.onWheel.bind(this)
 
     this.runMode = false
+
+    this.undoGroupStart = options.undoGroupStart
+    this.undoGroupEnd = options.undoGroupEnd
 
     window.addEventListener( 'pointermove', this.onPointerMove, false )
     this.domElement.addEventListener( 'pointerdown', this.onPointerDown, false )
@@ -60,17 +65,40 @@ class CameraControls {
     this.mouseX = event.pageX
     this.mouseY = event.pageY
     this.mouseDragOn = true
+
+    this.undoGroupStart()
   }
 
   onPointerUp ( event ) {
     event.preventDefault()
     event.stopPropagation()
+
+    if (this.mouseDragOn) {
+      this.undoGroupEnd()
+    }
+
     this.mouseDragOn = false
   }
+
+  addKey (key) {
+    if (this.keydowns.size === 0) {
+      this.undoGroupStart()
+    }
+    this.keydowns.add(key)
+  }
+  removeKey (key) {
+    this.keydowns.delete(key)
+    if (this.keydowns.size === 0) {
+      this.undoGroupEnd()
+    }
+  }
+
 
   onKeyDown ( event ) {
     // Ignore Cmd + R (reload) and Cmd + D (duplicate)
     if (event.metaKey) return
+
+    this.addKey(event.keyCode)
 
     switch ( event.keyCode ) {
       case 38: /*up*/
@@ -108,6 +136,8 @@ class CameraControls {
   }
 
   onKeyUp ( event ) {
+    this.removeKey(event.keyCode)
+
     switch ( event.keyCode ) {
       case 38: /*up*/
       case 87: /*W*/ this.moveForward = false; break;

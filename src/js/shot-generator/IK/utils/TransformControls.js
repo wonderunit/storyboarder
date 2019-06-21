@@ -10,7 +10,9 @@ const TransformControls = function ( camera, domElement ) {
 	domElement = ( domElement !== undefined ) ? domElement : document;
 
 	this.visible = false;
+
 	this.buttonPressed = -1;
+
 
 	var _gizmo = new TransformControlsGizmo();
 	this.add( _gizmo );
@@ -39,6 +41,7 @@ const TransformControls = function ( camera, domElement ) {
 	defineProperty( "showZ", true );
 
 	var changeEvent = { type: "change" };
+
 	var mouseDownEvent = { type: "pointerdown" };
 	var mouseUpEvent = { type: "pointerup", mode: scope.mode };
 	var objectChangeEvent = { type: "objectChange" };
@@ -106,6 +109,7 @@ const TransformControls = function ( camera, domElement ) {
 
 	{
 
+
 		domElement.addEventListener( "pointerdown", onPointerDown, false );
 		domElement.addEventListener( "touchstart", onPointerDown, false );
 		domElement.addEventListener( "pointermove", onPointerHover, false );
@@ -117,6 +121,7 @@ const TransformControls = function ( camera, domElement ) {
 		domElement.addEventListener( "touchleave", onPointerUp, false );
 
 	}
+
 
 	this.controlSelected = true;
 
@@ -133,6 +138,7 @@ const TransformControls = function ( camera, domElement ) {
 		domElement.removeEventListener( "touchleave", onPointerUp );
 
 	};
+
 	this.characterId = 1;
 	// Set current object
 	this.attach = function ( object ) {
@@ -248,7 +254,6 @@ const TransformControls = function ( camera, domElement ) {
 
 			var planeIntersect = ray.intersectObjects( [ _plane ], true )[ 0 ] || false;
 
-
 			if ( planeIntersect ) {
 
 				var space = this.space;
@@ -289,6 +294,7 @@ const TransformControls = function ( camera, domElement ) {
 			this.dragging = true;
 			mouseDownEvent.mode = this.mode;
 			this.dispatchEvent( mouseDownEvent );
+
 		}
 
 	};
@@ -299,8 +305,8 @@ const TransformControls = function ( camera, domElement ) {
 		var mode = this.mode;
 		var object = this.object;
 		var space = this.space;
-		pointer.button = scope.buttonPressed;
 
+		pointer.button = scope.buttonPressed;
 		if ( mode === 'scale') {
 
 			space = 'local';
@@ -344,6 +350,7 @@ const TransformControls = function ( camera, domElement ) {
 			object.position.copy( offset ).add( positionStart );
 
 			// Apply translation snap
+
 			if ( this.translationSnap ) {
 
 				if ( space === 'local' ) {
@@ -559,7 +566,6 @@ const TransformControls = function ( camera, domElement ) {
 
 		scope.pointerUp( getPointer( event ) );
 		scope.buttonPressed = -1;
-
 	}
 
 	// TODO: depricate

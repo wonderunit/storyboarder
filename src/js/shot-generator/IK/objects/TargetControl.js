@@ -15,6 +15,7 @@ class TargetControl
         {
             //orbitControl.enabled = ! event.value;
         });
+
         this.control.addEventListener('pointerdown', (event) =>
         {
             let control = this.control;
@@ -35,6 +36,7 @@ class TargetControl
         movingTarget.position.z = position.z;
         movingTarget.position.y = position.y;
         movingTarget.position.x = position.x;
+
         movingTarget.userData.type = "controlTarget";
         scene.add(movingTarget);
 

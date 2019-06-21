@@ -340,6 +340,7 @@ const Character = React.memo(({
   const updateSkeleton = () => {
     let skeleton = object.current.userData.skeleton
     if (Object.values(props.skeleton).length) {
+      fixRootBone()
       for (bone of skeleton.bones) {
         let userState = props.skeleton[bone.name]
         let systemState = originalSkeleton.current.getBoneByName(bone.name).clone()
@@ -369,7 +370,7 @@ const Character = React.memo(({
       skeleton.pose()
       fixRootBone()
     }
-    ragDoll.current.applyToIk();
+    //ragDoll.current.applyToIk();
   }
 
   const getCurrentControllerRotation = (device, virtual) => {
@@ -450,13 +451,13 @@ const Character = React.memo(({
     let skeleton = object.current.userData.skeleton
     skeleton.pose()
     updateSkeleton()
-    fixRootBone()
   }
 
   const fixRootBone = () => {
     let { boneLengthScale, parentRotation, parentPosition } = object.current.userData
     let skeleton = object.current.userData.skeleton
     // fb converter scaled object
+    // e.g.: all built-in character models
     if (boneLengthScale === 100) {
       if (props.skeleton['Hips']) {
         // we already have correct values, don't multiply the root bone
@@ -474,7 +475,7 @@ const Character = React.memo(({
     prevRotation.current = [];
     console.log("PrevRotation dropped");
     resetPose()
-    ragDoll.current.applyToIk();
+    //ragDoll.current.applyToIk();
     //ragDoll.current.recalculateDifference();
   }, [props.posePresetId])
 
@@ -506,7 +507,7 @@ const Character = React.memo(({
           object.current.scale.set(scale, scale, scale)
           object.current.updateMatrixWorld(true);
 
-          ragDoll.current.reinitialize();
+          //ragDoll.current.reinitialize();
         }
       } else {
         console.log("scalar");

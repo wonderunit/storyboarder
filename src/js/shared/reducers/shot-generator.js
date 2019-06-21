@@ -2,7 +2,7 @@ const THREE = require('three')
 const { produce } = require('immer')
 const undoable = require('redux-undo').default
 const crypto = require('crypto')
-const reduceReducers = require('reduce-reducers')
+const reduceReducers = require('../../vendor/reduce-reducers')
 const { combineReducers } = require('redux')
 
 const batchGroupBy = require('./shot-generator/batchGroupBy')
@@ -1088,17 +1088,20 @@ const checksReducer = (state, action) => {
       case 'UPDATE_OBJECT':
         // ignore actions that are just changes to `loaded`
         if (action.payload.hasOwnProperty('loaded')) return
-        
-        // unless characterPresetId was just set ...
-        if (!action.payload.hasOwnProperty('characterPresetId')) {
-          // ... detect change between state and preset
-          checkForCharacterChanges(state, draft, action.payload.id)
-        }
-  
-        // unless posePresetId was just set ...
-        if (!action.payload.hasOwnProperty('posePresetId')) {
-          // ... detect change between state and preset
-          checkForSkeletonChanges(state, draft, action.payload.id)
+
+        let sceneObject = getSceneObjects(draft)[action.payload.id]
+        if (sceneObject.type === 'character') {
+          // unless characterPresetId was just set ...
+          if (!action.payload.hasOwnProperty('characterPresetId')) {
+            // ... detect change between state and preset
+            checkForCharacterChanges(state, draft, action.payload.id)
+          }
+
+          // unless posePresetId was just set ...
+          if (!action.payload.hasOwnProperty('posePresetId')) {
+            // ... detect change between state and preset
+            checkForSkeletonChanges(state, draft, action.payload.id)
+          }
         }
         return
 
