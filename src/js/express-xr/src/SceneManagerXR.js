@@ -951,8 +951,13 @@ const SceneContent = ({
       setWorldScale(oldValue => {
         return oldValue === 1 ? worldScaleRef.current : 1
       })
+      const hmdCam = xrOffset.current.children.filter(child => child.type === 'PerspectiveCamera')[0]
+      const teleport =
+        worldScale !== 1
+          ? new THREE.Vector3(cameraState.x, cameraState.z, cameraState.y)
+          : new THREE.Vector3(-hmdCam.position.x, 0, -hmdCam.position.z + 0.5)
 
-      setTeleportPos(new THREE.Vector3(0, 0, worldScale === 1 ? 1 : 1 / worldScaleRef.current))
+      setTeleportPos(teleport)
       setCamExtraRot(0)
       return
     }
@@ -1179,12 +1184,6 @@ const SceneContent = ({
   if (xrOffset.current && teleportPos) {
     xrOffset.current.position.x = teleportPos.x
     xrOffset.current.position.z = teleportPos.z
-
-    if (worldScale !== 1) {
-      xrOffset.current.position.y = -1
-    } else {
-      xrOffset.current.position.y = 0
-    }
   } else if (xrOffset.current && !camPosZero && camera.position.y !== xrOffset.current.userData.z && !hmdCamInitialized.current) {
     const { x, y, rotation } = xrOffset.current.userData
     const behindCam = {
@@ -1203,6 +1202,15 @@ const SceneContent = ({
     const { x, y, z } = cameraState
     initialCamPos.current = new THREE.Vector3(x, y, z)
   }, [])
+
+  useEffect(() => {
+    const hmdCam = xrOffset.current.children.filter(child => child.type === 'PerspectiveCamera')[0]
+    if (worldScale !== 1) {
+      xrOffset.current.position.y = -(hmdCam.position.y - 0.75)
+    } else {
+      xrOffset.current.position.y = 0
+    }
+  }, [worldScale])
 
   const soundBeam = useRef()
   const soundSelect = useRef()
