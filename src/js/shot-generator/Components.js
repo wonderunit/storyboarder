@@ -1613,14 +1613,12 @@ const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, s
           sceneObject.type === 'camera'
             ? []
             : sceneObject.visible
-              ? isSelected
-                ? ['a.visibility[href=#]', { onClick: onToggleVisibleClick }, [Icon, { src: 'icon-item-visible' }]]
-                : []
+              ? ['a.visibility[href=#]', { onClick: onToggleVisibleClick }, [Icon, { src: 'icon-item-visible' }]]
               : ['a.visibility[href=#]', { onClick: onToggleVisibleClick }, [Icon, { src: 'icon-item-hidden' }]],
 
-              allowDelete
-                ? ['a.delete[href=#]', { onClick: onDeleteClick }, 'X']
-                : ['a.delete', { style: { opacity: 0.1 } }, 'X']
+          allowDelete
+            ? ['a.delete[href=#]', { onClick: onDeleteClick }, 'X']
+            : ['a.delete', { style: { opacity: 0.1 } }, 'X']
       ]]
     ]
   ])
