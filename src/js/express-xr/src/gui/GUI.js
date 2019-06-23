@@ -24,7 +24,7 @@ const findParent = obj => {
   return null
 }
 
-const GUI = ({ aspectRatio, guiMode, addMode, currentBoard, selectedObject, hideArray, virtualCamVisible, guiCamFOV, vrControllers }) => {
+const GUI = ({ aspectRatio, guiMode, addMode, currentBoard, selectedObject, hideArray, virtualCamVisible, flipHand, guiCamFOV, vrControllers }) => {
   const [textCount, setTextCount] = useState(0)
   const slidersRef = useRef([])
   const fovSliderRef = useRef([])
@@ -548,6 +548,20 @@ const GUI = ({ aspectRatio, guiMode, addMode, currentBoard, selectedObject, hide
               height: uiScale * 0.5,
               radius: bWidth,
               color: virtualCamVisible ? 0x6e6e6e : 0x212121
+            }}
+          />
+        </group>
+
+        <group
+          position={[camSettings.size * 0.5 * aspectRatio + uiScale * 1.25 + bWidth * 3, uiScale * -0.25 + bWidth * -0.5, 0]}
+        >
+          <GUIElement
+            {...{
+              name: 'hand_button',
+              width: uiScale * 0.5,
+              height: uiScale * 0.5,
+              radius: bWidth,
+              color: flipHand ? 0x6e6e6e : 0x212121
             }}
           />
         </group>

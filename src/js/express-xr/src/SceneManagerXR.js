@@ -293,6 +293,7 @@ const SceneContent = ({
   const [guiMode, setGuiMode] = useState('selection')
   const [addMode, setAddMode] = useState(null)
   const [virtualCamVisible, setVirtualCamVisible] = useState(true)
+  const [flipHand, setFlipHand] = useState(false)
   const [currentBoard, setCurrentBoard] = useState(null)
   const [camExtraRot, setCamExtraRot] = useState(0)
   const [teleportPos, setTeleportPos] = useState(null)
@@ -641,10 +642,15 @@ const SceneContent = ({
 
         if (name.includes('button')) {
           const button = name.split('_')[0]
-          if (button === 'eye')
+          if (button === 'eye') {
             setVirtualCamVisible(oldValue => {
               return !oldValue
             })
+          } else if (button === 'hand') {
+            setFlipHand(oldValue => {
+              return !oldValue
+            })
+          }
         }
 
         return
@@ -1041,7 +1047,7 @@ const SceneContent = ({
 
     teleportArray.current = scene.children.filter(child => child.userData.type === 'ground')
     setHideArray(createHideArray())
-  }, [vrControllers, sceneObjects])
+  }, [vrControllers, sceneObjects, flipHand])
 
   useRender(() => {
     // if (rStatsRef.current) {
@@ -1261,11 +1267,12 @@ const SceneContent = ({
       {vrControllers.map((object, n) => {
         const handedness = object.getHandedness()
         const flipModel = handedness === 'right'
+        const hand = flipHand ? 'left' : 'right'
 
         return (
           <primitive key={n} object={object}>
-            {handedness === 'right' && (
-              <GUI {...{ aspectRatio, guiMode, addMode, currentBoard, selectedObject, hideArray, virtualCamVisible, guiCamFOV, vrControllers }} />
+            {handedness === hand && (
+              <GUI {...{ aspectRatio, guiMode, addMode, currentBoard, selectedObject, hideArray, virtualCamVisible, flipHand, guiCamFOV, vrControllers }} />
             )}
             <SGController
               {...{ flipModel, modelData: getModelData(controllerObjectSettings), ...controllerObjectSettings }}
