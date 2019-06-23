@@ -691,7 +691,7 @@ const SceneContent = ({
 
         object.matrix.premultiply(tempMatrix)
         object.matrix.decompose(object.position, object.quaternion, new THREE.Vector3())
-        object.scale.set(worldScale, worldScale, worldScale)
+        object.scale.multiplyScalar(worldScale)
 
         controller.add(object)
       }
