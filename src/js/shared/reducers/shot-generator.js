@@ -317,29 +317,23 @@ const resetLoadingStatus = sceneObjects => {
 }
 
 // decorate each SceneObject with a calculated displayName
-const withDisplayNames = sceneObjects => {
+const withDisplayNames = draft => {
   let countByType = {}
 
-  for (let id in sceneObjects) {
-    let sceneObject = sceneObjects[id]
+  for (let id in draft) {
+    let sceneObject = draft[id]
 
     countByType[sceneObject.type] = countByType[sceneObject.type]
       ? countByType[sceneObject.type] + 1
       : 1
 
     let number = countByType[sceneObject.type]
-    let displayName = capitalize(`${sceneObject.type} ${number}`)
 
-    if (sceneObjects[id].displayName !== displayName) {
-      // mutate
-      sceneObjects[id] = {
-        ...sceneObjects[id],
-        displayName
-      }
-    }
+    // mutate
+    sceneObject.displayName = capitalize(`${sceneObject.type} ${number}`)
   }
 
-  return sceneObjects
+  return draft
 }
 
 // load up the default poses
