@@ -43,7 +43,11 @@ class IkObject
         let chainObjects = [];
         this.chainObjects = chainObjects;
         this.hipsControlTarget = this.controlTargets[5];
-
+        this.controlTargets[1].target.rotation.copy(new THREE.Euler(1.213400733182015, 0.10190071449066612, 2.4475774728125717));
+        this.controlTargets[2].target.rotation.copy(new THREE.Euler(1.3365061174116684, -0.6006364792120646, -2.4224546815382952));
+        this.controlTargets[3].target.rotation.copy(new THREE.Euler(Math.PI/2, 0, 0));
+        this.controlTargets[4].target.rotation.copy(new THREE.Euler(Math.PI/2, 0, 0));
+    
         chainObjects.push(new ChainObject("Spine", "Head", this.controlTargets[0]));
         chainObjects.push(new ChainObject("LeftArm", "LeftHand", this.controlTargets[1]));
         chainObjects.push(new ChainObject("RightArm", "RightHand", this.controlTargets[2]));
@@ -138,7 +142,7 @@ class IkObject
         this.skeletonHelper.material.linewidth = 7;
 
         // Adds skeleton helper to scene
-        scene.add( this.skeletonHelper );
+        //scene.add( this.skeletonHelper );
         this.recalculateDifference();
     }
 

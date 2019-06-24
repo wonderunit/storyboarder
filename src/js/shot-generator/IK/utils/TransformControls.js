@@ -200,6 +200,10 @@ const TransformControls = function ( camera, domElement ) {
 	// updateMatrixWorld  updates key transformation variables
 	this.updateMatrixWorld = function () {
 
+		if(!this.object || !this.object.parent)
+		{
+			return;
+		}
 		if ( this.object !== undefined ) {
 
 			this.object.updateMatrixWorld();

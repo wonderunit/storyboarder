@@ -179,7 +179,6 @@ class Ragdoll extends IkObject
         if(!this.isEnabledIk)
         {
             this.resetTargets();
-           //
         }
         else
         {
@@ -190,23 +189,19 @@ class Ragdoll extends IkObject
 
     limbsFollowRotation()
     {
-        console.log("Rotating");
-      /*   let rightFootBone =  this.ik.chains[4].joints[2].bone;
-        let rightLegChainTarget = this.chainObjects[4].controlTarget.target;
-        rightFootBone.rotation.copy(rightLegChainTarget.rotation);
-        rightFootBone.updateMatrix();
-
-        let leftFootBone = this.ik.chains[3].joints[2].bone;
-        let leftLegChainTarget = this.chainObjects[3].controlTarget.target;
-        leftFootBone.rotation.copy(leftLegChainTarget.rotation);
-        this.rotateBoneQuaternion(leftFootBone, new THREE.Euler(0.5, 0, 0));
-        leftFootBone.updateMatrix(); */
-        for(let i = 0; i < this.chainObjects.length; i++)
+    
+        for(let i = 1; i < this.chainObjects.length; i++)
         {
             let joints = this.ik.chains[i].joints;
             let bone = joints[joints.length -1].bone;
+
             let boneTarget = this.chainObjects[i].controlTarget.target;
-            bone.rotation.copy(boneTarget.rotation);
+            if(bone.name === "LeftHand")
+            {
+                console.log(boneTarget.rotation.clone());
+            }
+            //bone.rotation.copy(boneTarget.rotation);
+            this.rotateBoneQuaternion(bone, boneTarget.rotation);
             bone.updateMatrix();
         }
     }
@@ -222,20 +217,20 @@ class Ragdoll extends IkObject
     // Default position is facing flat to Earth
     legsFollowTargetRotation()
     {
-        // Makes right foot follow the rotation of target
-        let rightFootBone = this.ik.chains[4].joints[2].bone;
-        let rightLegChainTarget = this.chainObjects[4].controlTarget.target;
-        rightFootBone.rotation.copy(rightLegChainTarget.rotation);
-        this.rotateBoneQuaternion(rightFootBone, new THREE.Euler(0.5, 0, 0));
-        rightFootBone.updateMatrix();
-        rightFootBone.updateMatrixWorld(true);
-        // Makes left foot follow the rotation of target
-        let leftFootBone = this.ik.chains[3].joints[2].bone;
-        let leftLegChainTarget = this.chainObjects[3].controlTarget.target;
-        leftFootBone.rotation.copy(leftLegChainTarget.rotation);
-        this.rotateBoneQuaternion(leftFootBone, new THREE.Euler(0.5, 0, 0));
-        leftFootBone.updateMatrix();
-        leftFootBone.updateMatrixWorld(true);
+       //// Makes right foot follow the rotation of target
+       //let rightFootBone = this.ik.chains[4].joints[2].bone;
+       //let rightLegChainTarget = this.chainObjects[4].controlTarget.target;
+       //rightFootBone.rotation.copy(rightLegChainTarget.rotation);
+       //this.rotateBoneQuaternion(rightFootBone, new THREE.Euler(0.5, 0, 0));
+       //rightFootBone.updateMatrix();
+       //rightFootBone.updateMatrixWorld(true);
+       //// Makes left foot follow the rotation of target
+       //let leftFootBone = this.ik.chains[3].joints[2].bone;
+       //let leftLegChainTarget = this.chainObjects[3].controlTarget.target;
+       //leftFootBone.rotation.copy(leftLegChainTarget.rotation);
+       //this.rotateBoneQuaternion(leftFootBone, new THREE.Euler(0.5, 0, 0));
+       //leftFootBone.updateMatrix();
+       //leftFootBone.updateMatrixWorld(true);
     }
 
     // Sets and quaternion angle for bones
@@ -341,21 +336,21 @@ class Ragdoll extends IkObject
             let chain = chainObjects[i];
             if(visible)
             {
-                chain.controlTarget.addToScene(this.scene);
+                chain.controlTarget.addToScene();
             }
             else
             {
-                chain.controlTarget.removeFromScene(this.scene);
+                chain.controlTarget.removeFromScene();
             }
         }
         this.hipsControlTarget.disable = !visible;
         if(visible)
         {
-            this.hipsControlTarget.addToScene(this.scene);
+            this.hipsControlTarget.addToScene();
         }
         else
         {
-            this.hipsControlTarget.removeFromScene(this.scene);
+            this.hipsControlTarget.removeFromScene();
         }
       
     }

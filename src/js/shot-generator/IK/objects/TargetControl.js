@@ -83,7 +83,6 @@ class TargetControl
 
     deselectControlPoint()
     {
-        console.log("Deselected");
         let scene = this.scene;
         this.isControlPointSelected = false;
         scene.remove(this.control);

@@ -221,13 +221,12 @@ const Character = React.memo(({
   useEffect(() => {
     if (ready) {
       console.log(type, id, 'add')
-      console.log(modelData.scene.children[0].children[0].children.filter(child => child instanceof THREE.Bone)[0].clone());
+    
       const { mesh, skeleton, armatures, originalHeight, boneLengthScale, parentRotation, parentPosition } = characterFactory(modelData)
 
       // make a clone of the initial skeleton pose, for comparison
       originalSkeleton.current = skeleton.clone()
       originalSkeleton.current.bones = originalSkeleton.current.bones.map(bone => bone.clone())
-      console.log(originalSkeleton);
 
       object.current = new THREE.Object3D()
       object.current.add(...armatures)
@@ -279,7 +278,6 @@ const Character = React.memo(({
       ragDoll.current = new RagDoll();
       let skeletonRig = ragDoll.current;
       let domElement = largeRenderer.current.domElement;
-      console.log(scene);
       const hipsControl = AddTransformationControl(new THREE.Vector3(0, 1, 0), camera, domElement, scene, "hips");
       const backControl = AddTransformationControl(new THREE.Vector3(0, 2, -.1), camera, domElement, scene, "back");
       const rightHandControl = AddTransformationControl(new THREE.Vector3(2, 1.5, 0), camera, domElement, scene, "rightHand");
