@@ -14,6 +14,7 @@ class TargetControl
         this.isControlPointSelected = false;
         this.isControlTargetSelected = false;
         TargetControl.selectedControl = null;
+        this.control.addEventListener("pointerDown", (event) => console.log("pointerdown"));
     }
 
     initialize(position, scene)
@@ -76,6 +77,8 @@ class TargetControl
         scene.remove(this.target);
         scene.remove(this.control);
         this.control.dispose();
+        this.isControlTargetSelected = false;
+        this.isControlPointSelected = false;
     }
 
     deselectControlPoint()

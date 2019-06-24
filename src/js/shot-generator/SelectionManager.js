@@ -54,7 +54,6 @@ function getObjectsFromCameraView (objects) {
     }
     if(o.userData.type === 'controlTarget')
     {
-  
       if(o.children.length !== 0)
       {
         let gizmo = o.children[0];

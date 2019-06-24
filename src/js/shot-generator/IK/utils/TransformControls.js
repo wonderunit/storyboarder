@@ -2,7 +2,7 @@ const THREE = require("three");
 /**
  * @author arodic / https://github.com/arodic
  */
-const isTranslateOnly = true;
+const isScaleDisabled = true;
 
 const TransformControls = function ( camera, domElement ) {
 
@@ -122,6 +122,7 @@ const TransformControls = function ( camera, domElement ) {
 		domElement.addEventListener( "touchend", onPointerUp, false );
 		domElement.addEventListener( "touchcancel", onPointerUp, false );
 		domElement.addEventListener( "touchleave", onPointerUp, false );
+		domElement.addEventListener( "keydown", onKeyDown, false );
 
 	}
 
@@ -139,7 +140,7 @@ const TransformControls = function ( camera, domElement ) {
 		domElement.removeEventListener( "touchend", onPointerUp );
 		domElement.removeEventListener( "touchcancel", onPointerUp );
 		domElement.removeEventListener( "touchleave", onPointerUp );
-
+		domElement.removeEventListener( "keydown", onKeyDown );
 	};
 
 	this.characterId = 1;
@@ -517,7 +518,31 @@ const TransformControls = function ( camera, domElement ) {
 
 	};
 
+	this.keyDown = function(event)
+	{
+		if(event.ctrlKey)
+		{
+			if(event.key === "r")
+			{
+				event.stopPropagation();
+				scope.setMode("rotate");
+			}
+			if(event.key === "t")
+			{
+				event.stopPropagation();
+				scope.setMode("translate");
+			}
+		}
+		console.log(event);
+	};
 	// normalize mouse / touch pointer and remap {x,y} to view space.
+
+	function onKeyDown(event)
+	{
+		if ( !scope.enabled ) return;
+
+		scope.keyDown( event );
+	}
 
 	function getPointer( event ) {
 
@@ -840,10 +865,7 @@ const TransformControlsGizmo = function () {
 	var gizmoScale  = {};
 	var pickerScale = {};
 	var helperScale = {};
-
-	if(!isTranslateOnly)
-	{
-		gizmoRotate = {
+	gizmoRotate = {
 		X: [
 			[ new THREE.Line( CircleGeometry( 1, 0.5 ), matLineRed ) ],
 			[ new THREE.Mesh( new THREE.OctahedronBufferGeometry( 0.04, 0 ), matRed ), [ 0, 0, 0.99 ], null, [ 1, 3, 1 ] ],
@@ -892,6 +914,10 @@ const TransformControlsGizmo = function () {
 		]
 		};
 
+
+	if(!isScaleDisabled)
+	{
+		
 		gizmoScale = {
 		X: [
 			[ new THREE.Mesh( scaleHandleGeometry, matRed ), [ 0.8, 0, 0 ], [ 0, 0, -Math.PI / 2 ] ],
@@ -1048,21 +1074,23 @@ const TransformControlsGizmo = function () {
 	this.add( this.picker[ "translate" ] = setupGizmo( pickerTranslate ) );
 	this.add( this.helper[ "translate" ] = setupGizmo( helperTranslate ) );
 	this.helper[ "translate" ].name = "Helper";
-	if(!isTranslateOnly)
+	this.add( this.gizmo[ "rotate" ] = setupGizmo( gizmoRotate ) );
+	this.add( this.picker[ "rotate" ] = setupGizmo( pickerRotate ) );
+	this.add( this.helper[ "rotate" ] = setupGizmo( helperRotate ) );
+
+	this.helper[ "rotate" ].name = "Helper";
+	if(!isScaleDisabled)
 	{
-		this.add( this.gizmo[ "rotate" ] = setupGizmo( gizmoRotate ) );
 		this.add( this.gizmo[ "scale" ] = setupGizmo( gizmoScale ) );
-		this.add( this.picker[ "rotate" ] = setupGizmo( pickerRotate ) );
 		this.add( this.picker[ "scale" ] = setupGizmo( pickerScale ) );
-		this.add( this.helper[ "rotate" ] = setupGizmo( helperRotate ) );
 		this.add( this.helper[ "scale" ] = setupGizmo( helperScale ) );
 	}
 	// Pickers should be hidden always
 
 	this.picker[ "translate" ].visible = false;
-	if(!isTranslateOnly)
+	this.picker[ "rotate" ].visible = false;
+	if(!isScaleDisabled)
 	{
-		this.picker[ "rotate" ].visible = false;
 		this.picker[ "scale" ].visible = false;
 	}
 
@@ -1079,15 +1107,15 @@ const TransformControlsGizmo = function () {
 		// Show only gizmos for current transform mode
 
 		this.gizmo[ "translate" ].visible = this.mode === "translate";
-		if(!isTranslateOnly)
+		this.gizmo[ "rotate" ].visible = this.mode === "rotate";
+		if(!isScaleDisabled)
 		{
-			this.gizmo[ "rotate" ].visible = this.mode === "rotate";
 			this.gizmo[ "scale" ].visible = this.mode === "scale";
 		}
 		this.helper[ "translate" ].visible = this.mode === "translate";
-		if(!isTranslateOnly)
+		this.helper[ "rotate" ].visible = this.mode === "rotate";
+		if(!isScaleDisabled)
 		{
-			this.helper[ "rotate" ].visible = this.mode === "rotate";
 			this.helper[ "scale" ].visible = this.mode === "scale";
 		}
 

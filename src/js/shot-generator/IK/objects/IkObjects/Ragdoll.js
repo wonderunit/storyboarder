@@ -179,10 +179,35 @@ class Ragdoll extends IkObject
         if(!this.isEnabledIk)
         {
             this.resetTargets();
+           //
         }
         else
         {
+            this.limbsFollowRotation();
             this.applyChangesToOriginal();
+        }
+    }
+
+    limbsFollowRotation()
+    {
+        console.log("Rotating");
+      /*   let rightFootBone =  this.ik.chains[4].joints[2].bone;
+        let rightLegChainTarget = this.chainObjects[4].controlTarget.target;
+        rightFootBone.rotation.copy(rightLegChainTarget.rotation);
+        rightFootBone.updateMatrix();
+
+        let leftFootBone = this.ik.chains[3].joints[2].bone;
+        let leftLegChainTarget = this.chainObjects[3].controlTarget.target;
+        leftFootBone.rotation.copy(leftLegChainTarget.rotation);
+        this.rotateBoneQuaternion(leftFootBone, new THREE.Euler(0.5, 0, 0));
+        leftFootBone.updateMatrix(); */
+        for(let i = 0; i < this.chainObjects.length; i++)
+        {
+            let joints = this.ik.chains[i].joints;
+            let bone = joints[joints.length -1].bone;
+            let boneTarget = this.chainObjects[i].controlTarget.target;
+            bone.rotation.copy(boneTarget.rotation);
+            bone.updateMatrix();
         }
     }
 
