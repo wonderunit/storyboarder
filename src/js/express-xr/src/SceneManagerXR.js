@@ -75,6 +75,21 @@ const controllerObjectSettings = {
   z: 0
 }
 
+const cameraObjectSettings = {
+  id: 'camera',
+  model: 'camera',
+  displayName: 'Camera',
+  depth: 0.025,
+  height: 0.025,
+  width: 0.025,
+  rotation: { x: 0, y: 0, z: 0 },
+  type: 'object',
+  visible: true,
+  x: 0,
+  y: 0,
+  z: 0
+}
+
 const getFilepathForLoadable = ({ type, model }) => {
   // does the model name have a slash in it?
   // TODO support windows file delimiter
@@ -168,6 +183,7 @@ const useAttachmentLoader = ({ sceneObjects, world }) => {
     )
 
     loadables.push(controllerObjectSettings)
+    loadables.push(cameraObjectSettings)
 
     loadables.forEach(o =>
       dispatch({ type: 'PENDING', payload: { id: getFilepathForLoadable({ type: o.type, model: o.model }) } })
@@ -1322,7 +1338,7 @@ const SceneContent = ({
       switch (sceneObject.type) {
         case 'camera':
           return (
-            <SGVirtualCamera key={i} {...{ aspectRatio, selectedObject, hideArray, virtualCamVisible, ...sceneObject }}>
+            <SGVirtualCamera key={i} {...{ aspectRatio, selectedObject, hideArray, virtualCamVisible, modelData: getModelData(cameraObjectSettings), ...sceneObject }}>
               {isSelected && <primitive object={soundBeam.current} />}
             </SGVirtualCamera>
           )

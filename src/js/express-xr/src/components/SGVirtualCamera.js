@@ -3,7 +3,7 @@ const React = require('react')
 const { useEffect, useRef, useState, useMemo } = React
 const { findParent } = require('../utils/xrHelperFuncs')
 
-const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, virtualCamVisible, ...props }) => {
+const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, virtualCamVisible, modelData, ...props }) => {
   const [camSliderFOV, setCamSliderFOV] = useState(null)
   const [targetUpdated, setTargetUpdated] = useState(false)
 
@@ -17,6 +17,21 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, virtualCam
   const size = props.size || 1 / 3
   const padding = 0.05
   const resolution = 512
+
+  const children = useMemo(() => {
+    let children = []
+    let index = 0
+
+    if (modelData) {
+      modelData.scene.traverse(child => {
+        if (child instanceof THREE.Mesh) {
+          children.push(<primitive key={`${props.id}-${index}`} object={child.clone()} />)
+          index++
+        }
+      })
+    }
+    return children
+  }, [modelData])
 
   const { gl, scene } = useThree()
   const selectedObj = findParent(scene.getObjectById(selectedObject))
@@ -100,18 +115,18 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, virtualCam
       ref={ref}
     >
       <group visible={virtualCamVisible || props.guiCamera === true}>
-        <mesh userData={{ type: props.guiCamera ? 'gui' : 'view' }} material={heightShader}>
+        <mesh userData={{ type: props.guiCamera ? 'gui' : 'view' }} position={[0, props.guiCamera ? 0 : 0.3, 0]} material={heightShader}>
           <planeGeometry attach="geometry" args={[size * aspectRatio, size]} />
         </mesh>
+        {children}
         {!props.guiCamera && (
-          // <mesh position={[0, 0, -0.065]} rotation={[0, Math.PI, 0]} userData={{ type: props.guiCamera ? 'gui' : 'view' }} material={heightShader}>
-          //   <planeGeometry attach="geometry" args={[size * aspectRatio, size]} />
-          // </mesh>
           <mesh
-            position={[0, 0, -0.0325]}
-            material={new THREE.MeshLambertMaterial({ color: new THREE.Color('gray'), transparent: true })}
+            position={[0, 0.3, -0.0025]}
+            rotation={[0, Math.PI, 0]}
+            userData={{ type: props.guiCamera ? 'gui' : 'view' }}
+            material={heightShader}
           >
-            <boxGeometry attach="geometry" args={[size * aspectRatio + padding, size + padding, 0.05]} />
+            <planeGeometry attach="geometry" args={[size * aspectRatio, size]} />
           </mesh>
         )}
         <group position={props.camOffset || new THREE.Vector3()}>
