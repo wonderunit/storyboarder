@@ -271,7 +271,9 @@ class IkObject
         for (let i = 0; i < controlTarget.length; i++)
         {
             let control = controlTarget[i].control;
+            let target = controlTarget[i].target;
             control.characterId = parentId;
+            target.characterId = parentId;
         }
     }
 

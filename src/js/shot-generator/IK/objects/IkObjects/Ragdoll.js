@@ -97,8 +97,7 @@ class Ragdoll extends IkObject
         poleTarget.initialize(poleTarget.poleOffset);
         poleTarget.name = name;
         poleTarget.mesh.visible = true;
-       
-
+    
         return poleTarget;
     }
 

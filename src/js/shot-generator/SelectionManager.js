@@ -72,6 +72,11 @@ function getObjectsFromCameraView (objects) {
         }
       }
     }
+
+    if(o.userData.type === 'controlPoint')
+    {
+      results.push(o);
+    }
     // don't allow selection of: camera, volume
   }
 
@@ -93,14 +98,20 @@ const getIntersectionTarget = intersect => {
     return intersect.object.parent.object3D
   }
 
-  // object
-  if (intersect.object.parent.userData.type === 'object') {
-    return intersect.object.parent
-  }
-
+  //Transform control
   if(intersect.object.type === 'Line')
   {
     return intersect.object;
+  }
+
+  if(intersect.object.userData.type === 'controlPoint')
+  {
+    return intersect.object;
+  }
+
+  // object
+  if (intersect.object.parent.userData.type === 'object') {
+    return intersect.object.parent
   }
 }
 
@@ -152,6 +163,7 @@ const SelectionManager = connect(
     o.userData.type === 'light' ||
     o.userData.type === 'volume' ||
     o.userData.type === 'controlTarget' ||
+    o.userData.type === 'controlPoint' ||
     (useIcons && o.isPerspectiveCamera)
   )
   const mouse = event => {
@@ -171,6 +183,7 @@ const SelectionManager = connect(
       : raycaster.intersectObjects( getObjectsFromCameraView(intersectables))
     return intersects
   }
+
 
   //
   //
@@ -240,7 +253,7 @@ const SelectionManager = connect(
     // find all the objects that intersect the mouse coords
     // (uses a different search method if useIcons is true)
     let intersects = getIntersects({ x, y }, camera, useIcons)
-
+  
     // if no objects intersected
     if (intersects.length === 0) {
       // cancel any active dragging
@@ -294,9 +307,23 @@ const SelectionManager = connect(
         }
 
         target = getIntersectionTarget(intersect)
+      
       } else {
+        let controlPoint = intersects.filter((intersect) => intersect.object.name === 'controlPoint');
+        if(controlPoint.length !== 0)
+        {
+          intersects[0] = controlPoint[0];
+        }
         target = getIntersectionTarget(intersects[0])
-        if(intersects[0].object && intersects[0].object.type && intersects[0].object.type === 'Line')
+
+        if(intersects[0].object && intersects[0].object.type && intersects[0].object.userData.type === 'controlPoint')
+        {
+          let result = [];
+          let characterId = target.characterId;
+          let characters = intersectables.filter(value => value.uuid === characterId);
+          target.pointerDown();
+          target = characters[0];//result.concat(character.bonesHelper.hit_meshes)
+        } else if(intersects[0].object && intersects[0].object.type && intersects[0].object.type === 'Line')
         {
           let result = [];
           let characterId = target.parent.parent.parent.characterId;

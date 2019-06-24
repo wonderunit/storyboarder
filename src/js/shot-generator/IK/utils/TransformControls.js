@@ -108,6 +108,8 @@ const TransformControls = function ( camera, domElement ) {
 	defineProperty( "rotationAngle", rotationAngle );
 	defineProperty( "eye", eye );
 
+
+	this.addToScene = function() 
 	{
 
 

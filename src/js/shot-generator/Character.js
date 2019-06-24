@@ -190,7 +190,7 @@ const Character = React.memo(({
 
   const originalSkeleton = useRef(null)
   let ragDoll = useRef(null);
-  let prevRotation = useRef([]);
+  let prevRotation = useRef({});
 
   const doCleanup = () => {
     if (object.current) {
@@ -221,12 +221,13 @@ const Character = React.memo(({
   useEffect(() => {
     if (ready) {
       console.log(type, id, 'add')
-
+      console.log(modelData.scene.children[0].children[0].children.filter(child => child instanceof THREE.Bone)[0].clone());
       const { mesh, skeleton, armatures, originalHeight, boneLengthScale, parentRotation, parentPosition } = characterFactory(modelData)
 
       // make a clone of the initial skeleton pose, for comparison
       originalSkeleton.current = skeleton.clone()
       originalSkeleton.current.bones = originalSkeleton.current.bones.map(bone => bone.clone())
+      console.log(originalSkeleton);
 
       object.current = new THREE.Object3D()
       object.current.add(...armatures)
@@ -334,31 +335,57 @@ const Character = React.memo(({
         let systemState = originalSkeleton.current.getBoneByName(bone.name).clone()
 
         let state = userState || systemState
-        bone.rotation.x = state.rotation.x
-        bone.rotation.y = state.rotation.y
-        bone.rotation.z = state.rotation.z
+        
        let prevState = prevRotation.current[bone.name];
        if(prevRotation.current.length === 0)
        {
-        
+        bone.rotation.x = state.rotation.x
+        bone.rotation.y = state.rotation.y
+        bone.rotation.z = state.rotation.z
        }
        else
        {
         if(prevRotation.current === null || prevState === undefined)
         {
-          bone.rotation.x -= bone.rotation.x - state.rotation.x
-          bone.rotation.y -= bone.rotation.y - state.rotation.y
-          bone.rotation.z -= bone.rotation.z - state.rotation.z
+          bone.rotation.x = state.rotation.x
+          bone.rotation.y = state.rotation.y
+          bone.rotation.z = state.rotation.z
         }
         else {
+        
+          if(prevState instanceof THREE.Bone && state === userState)
+          {
+            prevState = state;
+          }
           bone.rotation.x += prevState.rotation.x - state.rotation.x
           bone.rotation.y += prevState.rotation.y - state.rotation.y
           bone.rotation.z += prevState.rotation.z - state.rotation.z
         }
        }
       }
-      prevRotation.current = props.skeleton;
-
+      //prevRotation.current = Object.values(props.skeleton);
+   
+      for(let bone of skeleton.bones)
+      {
+        let name = bone.name;
+        if(ragDoll.current.ikBonesName.some((ikName) => ikName === name))
+        {
+          let propSkeleton = props.skeleton[name];
+          if(propSkeleton)
+          {
+            //console.log("PropSkeleton");
+            prevRotation.current[name] = propSkeleton;
+          }
+          else if(name !== "Hips")
+          {
+            let bone =  originalSkeleton.current.getBoneByName(name).clone();
+            console.log(bone);
+            prevRotation.current[name] = originalSkeleton.current.getBoneByName(name).clone();
+          }
+        }
+       
+      };
+      //console.log(prevRotation.current);
     } else {
       let skeleton = object.current.userData.skeleton
       skeleton.pose()
