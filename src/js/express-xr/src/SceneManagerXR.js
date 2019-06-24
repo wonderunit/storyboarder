@@ -40,6 +40,7 @@ const SGCharacter = require('./components/SGCharacter')
 const GUI = require('./gui/GUI')
 
 const { getIntersections, boneIntersect, intersectObjects } = require('./utils/xrControllerFuncs')
+const { findParent } = require('./utils/xrHelperFuncs')
 require('./lib/VRController')
 
 // const RStats = require('./lib/rStats')
@@ -299,7 +300,10 @@ const SceneContent = ({
   const [selectedObject, setSelectedObject] = useState(null)
   const [guiCamFOV, setGuiCamFOV] = useState(22)
   const [hideArray, setHideArray] = useState([])
+  const [worldScale, setWorldScale] = useState(1)
 
+  const worldScaleRef = useRef(0.1)
+  const worldScaleGroupRef = useRef([])
   const moveCamRef = useRef(null)
   const rotateCamRef = useRef(null)
   const intersectArray = useRef([])
@@ -321,17 +325,6 @@ const SceneContent = ({
   let startingDeviceRotation = useRef(null)
 
   guiModeRef.current = guiMode
-
-  const findParent = obj => {
-    while (obj) {
-      if (!obj.parent || obj.parent.type === 'Scene') {
-        return obj
-      }
-      obj = obj.parent
-    }
-
-    return null
-  }
 
   const { gl, scene, camera, setDefaultCamera } = useThree()
 
@@ -393,10 +386,12 @@ const SceneContent = ({
     const raycastDepth = controller.getObjectByName('raycast-depth')
     const depthWorldPos = raycastDepth.getWorldPosition(new THREE.Vector3())
     depthWorldPos.sub(controller.userData.posOffset)
-    object.position.copy(depthWorldPos)
 
     if (object.userData.type === 'character') {
       object.rotation.y = object.userData.modelSettings.rotation
+      object.position.copy(depthWorldPos).multiplyScalar(1 / worldScale)
+    } else {
+      object.position.copy(depthWorldPos).multiplyScalar(1 / worldScale)
     }
   }
 
@@ -410,7 +405,8 @@ const SceneContent = ({
         controller.dispatchEvent({ type: 'trigger press ended' })
       })
 
-      setTeleportPos(intersect.point)
+      setTeleportPos(intersect.point.multiplyScalar(1 / worldScale))
+      setWorldScale(1)
     }
   }
 
@@ -470,6 +466,7 @@ const SceneContent = ({
 
     if (intersections.length > 0) {
       let intersection = intersections[0]
+      if (intersection.object.userData.type === 'bone') return
 
       if (intersection.object.userData.type === 'slider') {
         controller.intersections = intersections
@@ -517,7 +514,7 @@ const SceneContent = ({
               duplicateObjects([selectedObjRef.current.userData.id], [id])
 
               setTimeout(() => {
-                const match = scene.children.find(child => child.userData.id === id)
+                const match = worldScaleGroupRef.current.children.find(child => child.userData.id === id)
                 setSelectedObject(match.id)
                 selectedObjRef.current = match
                 setHideArray(createHideArray())
@@ -539,8 +536,12 @@ const SceneContent = ({
             offsetVector = new THREE.Vector3(0, 0, -2)
           }
           offsetVector.applyMatrix4(new THREE.Matrix4().extractRotation(hmdCam.matrixWorld))
-          offsetVector.multiply(new THREE.Vector3(1, 0, 1))
-          const newPoz = xrOffset.current.position.clone().add(hmdCam.position).add(offsetVector)
+          offsetVector.multiply(new THREE.Vector3(1, 0, 1)).multiplyScalar(worldScale === 1 ? 1 : 0.5 / worldScale)
+          const newPoz = xrOffset.current.position
+            .clone()
+            .multiply(new THREE.Vector3(1 / worldScale, 0, 1 / worldScale))
+            .add(hmdCam.position)
+            .add(offsetVector)
 
           const rotation = new THREE.Vector2(offsetVector.x, offsetVector.z).normalize().angle() * -1 - Math.PI / 2
 
@@ -686,10 +687,12 @@ const SceneContent = ({
         setHideArray(createHideArray())
       } else {
         const tempMatrix = new THREE.Matrix4()
-        tempMatrix.getInverse(controller.matrixWorld)
+        tempMatrix.getInverse(controller.matrixWorld).multiply(new THREE.Matrix4().makeScale(worldScale, worldScale, worldScale))
 
         object.matrix.premultiply(tempMatrix)
-        object.matrix.decompose(object.position, object.quaternion, object.scale)
+        object.matrix.decompose(object.position, object.quaternion, new THREE.Vector3())
+        object.scale.multiplyScalar(worldScale)
+
         controller.add(object)
       }
 
@@ -725,8 +728,10 @@ const SceneContent = ({
 
       if (object.userData.type !== 'character' && object.parent.uuid === controller.uuid) {
         object.matrix.premultiply(controller.matrixWorld)
-        object.matrix.decompose(object.position, object.quaternion, object.scale)
-        scene.add(object)
+        object.matrix.decompose(object.position, object.quaternion, new THREE.Vector3())
+        object.scale.set(1, 1, 1)
+        worldScaleGroupRef.current.add(object)
+        object.position.multiplyScalar(1 / worldScale)
       }
 
       controller.userData.selected = undefined
@@ -814,19 +819,20 @@ const SceneContent = ({
     const object = controller.userData.selected
 
     if (Math.abs(amount) > 0.01) {
+      const worldScaleMult = worldScale === 1 ? 1 : worldScale * 2
       if (
         object.userData.type === 'character' ||
         (controller.pressed && controller.gripped && object.userData.type === 'object')
       ) {
         const raycastDepth = controller.getObjectByName('raycast-depth')
-        raycastDepth.position.add(new THREE.Vector3(0, 0, amount))
-        raycastDepth.position.z = Math.min(raycastDepth.position.z, -0.5)
+        raycastDepth.position.add(new THREE.Vector3(0, 0, amount * worldScaleMult))
+        raycastDepth.position.z = Math.min(raycastDepth.position.z, -0.5 * worldScaleMult)
       } else {
         // 45 degree tilt down on controller
-        let offsetVector = new THREE.Vector3(0, amount, amount)
+        let offsetVector = new THREE.Vector3(0, amount * worldScaleMult, amount * worldScaleMult)
         object.position.add(offsetVector)
-        object.position.y = Math.min(object.position.y, -0.5)
-        object.position.z = Math.min(object.position.z, -0.5)
+        object.position.y = Math.min(object.position.y, -0.5 * worldScaleMult)
+        object.position.z = Math.min(object.position.z, -0.5 * worldScaleMult)
       }
     }
   }
@@ -858,6 +864,7 @@ const SceneContent = ({
 
     const { x, y } = xrOffset.current.userData
     const hmdCam = xrOffset.current.children.filter(child => child.type === 'PerspectiveCamera')[0]
+    const worldScaleMult = worldScale === 1 ? 1 : worldScale * 2
 
     if (event.axes[1] > 0.075) {
       vrControllers.forEach(controller => {
@@ -868,7 +875,7 @@ const SceneContent = ({
 
       let offsetVector = new THREE.Vector3(0, 0, 1)
       offsetVector.applyMatrix4(new THREE.Matrix4().extractRotation(hmdCam.matrixWorld))
-      offsetVector = offsetVector.multiply(new THREE.Vector3(1, 0, 1)).normalize()
+      offsetVector = offsetVector.multiply(new THREE.Vector3(1, 0, 1)).normalize().multiplyScalar(worldScaleMult)
 
       setTeleportPos(oldPos => {
         if (!oldPos) {
@@ -889,7 +896,7 @@ const SceneContent = ({
 
       let offsetVector = new THREE.Vector3(0, 0, -1)
       offsetVector.applyMatrix4(new THREE.Matrix4().extractRotation(hmdCam.matrixWorld))
-      offsetVector = offsetVector.multiply(new THREE.Vector3(1, 0, 1)).normalize()
+      offsetVector = offsetVector.multiply(new THREE.Vector3(1, 0, 1)).normalize().multiplyScalar(worldScaleMult)
 
       setTeleportPos(oldPos => {
         if (!oldPos) {
@@ -939,6 +946,22 @@ const SceneContent = ({
     const controller = event.target
     controller.gripped = true
 
+    const otherController = vrControllers.find(i => i.uuid !== controller.uuid)
+    if (!selectedObjRef.current && otherController && otherController.gripped) {
+      setWorldScale(oldValue => {
+        return oldValue === 1 ? worldScaleRef.current : 1
+      })
+      const hmdCam = xrOffset.current.children.filter(child => child.type === 'PerspectiveCamera')[0]
+      const teleport =
+        worldScale !== 1
+          ? new THREE.Vector3(cameraState.x, cameraState.z, cameraState.y)
+          : new THREE.Vector3(-hmdCam.position.x, 0, -hmdCam.position.z + 0.5)
+
+      setTeleportPos(teleport)
+      setCamExtraRot(0)
+      return
+    }
+
     if (selectedObjRef.current && selectedObjRef.current.userData.type === 'character' && !selectedBone) {
       const bonesHelper = selectedObjRef.current.children[0].bonesHelper
       const hits = boneIntersect(controller, bonesHelper)
@@ -960,6 +983,7 @@ const SceneContent = ({
       let intersection = intersections[0]
       if (intersection.object.userData.type === 'slider') return
       if (intersection.object.userData.type === 'gui') return
+      if (intersection.object.userData.type === 'bone') return
 
       let object = findParent(intersection.object)
       const { id } = object
@@ -1006,7 +1030,7 @@ const SceneContent = ({
       if (object.userData.type !== 'object') return
 
       const tempMatrix = new THREE.Matrix4()
-      tempMatrix.getInverse(controller.matrixWorld)
+      tempMatrix.getInverse(controller.matrixWorld).multiply(new THREE.Matrix4().makeScale(worldScale, worldScale, worldScale))
 
       object.matrix.premultiply(tempMatrix)
       object.matrix.decompose(object.position, object.quaternion, object.scale)
@@ -1019,7 +1043,7 @@ const SceneContent = ({
   })
 
   useEffect(() => {
-    intersectArray.current = scene.children.filter(
+    intersectArray.current = worldScaleGroupRef.current.children.filter(
       child =>
         (child instanceof THREE.Mesh || child instanceof THREE.Group) &&
         (child.userData.type !== 'ground' && child.userData.type !== 'room' && child.userData.type !== 'camera')
@@ -1039,7 +1063,7 @@ const SceneContent = ({
       }
     })
 
-    teleportArray.current = scene.children.filter(child => child.userData.type === 'ground')
+    teleportArray.current = scene.children.filter(child => child.userData.type === 'raycastGround')
     setHideArray(createHideArray())
   }, [vrControllers, sceneObjects])
 
@@ -1086,7 +1110,9 @@ const SceneContent = ({
         if (object && object.userData.type === 'object' && controller.gripped) {
           if (object.parent.uuid === controller.uuid) {
             object.matrix.premultiply(controller.matrixWorld)
-            object.matrix.decompose(object.position, object.quaternion, object.scale)
+            object.matrix.decompose(object.position, object.quaternion, new THREE.Vector3())
+            object.scale.set(1, 1, 1)
+            object.position.multiplyScalar(1 / worldScale)
 
             object.userData.order = object.rotation.order
             object.rotation.reorder('YXZ')
@@ -1102,7 +1128,7 @@ const SceneContent = ({
             object.rotation.z = degreeZ
             object.rotation.y = degreeY
             object.rotation.order = object.userData.order
-            scene.add(object)
+            worldScaleGroupRef.current.add(object)
 
             const intersections = getIntersections(controller, intersectArray.current)
             if (intersections.length > 0) {
@@ -1122,7 +1148,7 @@ const SceneContent = ({
 
       if (controller.userData.bone) rotateBone(controller)
     })
-  }, false, [vrControllers, selectedBone])
+  }, false, [vrControllers, selectedBone, worldScale])
 
   useEffect(() => {
     navigator
@@ -1176,6 +1202,15 @@ const SceneContent = ({
     const { x, y, z } = cameraState
     initialCamPos.current = new THREE.Vector3(x, y, z)
   }, [])
+
+  useEffect(() => {
+    const hmdCam = xrOffset.current.children.filter(child => child.type === 'PerspectiveCamera')[0]
+    if (worldScale !== 1) {
+      xrOffset.current.position.y = -(hmdCam.position.y - 0.75)
+    } else {
+      xrOffset.current.position.y = 0
+    }
+  }, [worldScale])
 
   const soundBeam = useRef()
   const soundSelect = useRef()
@@ -1296,7 +1331,7 @@ const SceneContent = ({
           return (
             <SGCharacter
               key={i}
-              {...{ modelData: getModelData(sceneObject), isSelected, updateObject, selectedBone, hmdCam, ...sceneObject }}
+              {...{ modelData: getModelData(sceneObject), worldScale, isSelected, updateObject, selectedBone, hmdCam, ...sceneObject }}
             >
               {isSelected && <primitive object={soundBeam.current} />}
             </SGCharacter>
@@ -1348,7 +1383,13 @@ const SceneContent = ({
   return (
     <>
       {activeCameraComponent}
-      {sceneObjectComponents.concat(worldComponent)}
+      <group ref={worldScaleGroupRef} userData={{ type: 'world-scale' }} scale={[worldScale, worldScale, worldScale]}>
+        {sceneObjectComponents.concat(worldComponent)}
+      </group>
+      <mesh userData={{ type: 'raycastGround' }} rotation={new THREE.Euler(-Math.PI / 2, 0, 0)}>
+        <planeGeometry attach="geometry" args={[100, 100]} />
+        <meshBasicMaterial attach="material" visible={false} />
+      </mesh>
     </>
   )
 }
