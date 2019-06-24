@@ -55,6 +55,10 @@ const SGSpotLight = ({ ...props }) => {
           decay={props.decay}
         />
         <mesh ref={box_light_mesh} name="hitter_light" userData={{ type: 'hitter_light' }}>
+          <sphereBufferGeometry attach="geometry" args={[0.125]} />
+          <meshLambertMaterial attach="material" visible={false} />
+        </mesh>
+        <mesh>
           <cylinderBufferGeometry attach="geometry" args={[0.0, 0.05, 0.14]} />
           <meshLambertMaterial attach="material" color={0xffff66} />
           {props.children}
