@@ -10,8 +10,6 @@ const path = require('path')
 const assert = require('assert')
 const mockFs = require('mock-fs')
 
-const { shell } = require('electron')
-
 const exporterCopyProject = require('../../src/js/exporters/copy-project')
 
 let fixturesPath = path.join(__dirname, '..', 'fixtures')
