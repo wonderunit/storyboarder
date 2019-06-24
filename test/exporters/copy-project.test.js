@@ -10,8 +10,6 @@ const path = require('path')
 const assert = require('assert')
 const mockFs = require('mock-fs')
 
-const { shell } = require('electron')
-
 const exporterCopyProject = require('../../src/js/exporters/copy-project')
 
 let fixturesPath = path.join(__dirname, '..', 'fixtures')
@@ -31,12 +29,16 @@ const modifyDucks = () => {
   )
 }
 
-const withCustomCharacter = string => {
+const withCustomModels = string => {
   let data = JSON.parse(string)
   let board = data.boards[0]
   board.sg.data
     .sceneObjects['26332F12-28FE-444C-B73F-B3F90B8C62A2']
     .model = 'models/characters/character.glb'
+  board.sg.data
+    .world
+    .environment
+    .file = 'models/environments/skatepark.glb'
   return JSON.stringify(data)
 }
 
@@ -122,7 +124,7 @@ describe('exporters/copyProject', () => {
         },
 
         'shot-generator': {
-          'shot-generator.storyboarder': withCustomCharacter(
+          'shot-generator.storyboarder': withCustomModels(
             fs.readFileSync(path.resolve(path.join(fixturesPath, 'shot-generator', 'shot-generator.storyboarder')))
           ),
           'images': {
@@ -135,6 +137,9 @@ describe('exporters/copyProject', () => {
           'models': {
             'characters': {
               'character.glb':                    EMPTY_BUFFER
+            },
+            'environments': {
+              'skatepark.glb':                    EMPTY_BUFFER
             }
           }
         }
@@ -226,7 +231,8 @@ describe('exporters/copyProject', () => {
     assert(fs.existsSync(path.join(dstFolderPath, 'models')), 'models/ folder should exist')
 
     // custom model is included
-    assert(fs.existsSync(path.join(dstFolderPath, 'models', 'characters', 'character.glb')))
+    assert(fs.existsSync(path.join(dstFolderPath, 'models', 'characters', 'character.glb')), 'includes character.glb')
+    assert(fs.existsSync(path.join(dstFolderPath, 'models', 'environments', 'skatepark.glb')), 'includes skatepark.glb')
   })
 
   describe('options', () => {
