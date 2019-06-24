@@ -337,22 +337,15 @@ const Character = React.memo(({
         let state = userState || systemState
         
        let prevState = prevRotation.current[bone.name];
-       if(prevRotation.current.length === 0)
-       {
-        bone.rotation.x = state.rotation.x
-        bone.rotation.y = state.rotation.y
-        bone.rotation.z = state.rotation.z
-       }
-       else
-       {
+
         if(prevRotation.current === null || prevState === undefined)
         {
           bone.rotation.x = state.rotation.x
           bone.rotation.y = state.rotation.y
           bone.rotation.z = state.rotation.z
         }
-        else {
-        
+        else 
+        {
           if(prevState instanceof THREE.Bone && state === userState)
           {
             prevState = state;
@@ -361,9 +354,7 @@ const Character = React.memo(({
           bone.rotation.y += prevState.rotation.y - state.rotation.y
           bone.rotation.z += prevState.rotation.z - state.rotation.z
         }
-       }
       }
-      //prevRotation.current = Object.values(props.skeleton);
    
       for(let bone of skeleton.bones)
       {
@@ -373,19 +364,16 @@ const Character = React.memo(({
           let propSkeleton = props.skeleton[name];
           if(propSkeleton)
           {
-            //console.log("PropSkeleton");
             prevRotation.current[name] = propSkeleton;
           }
           else if(name !== "Hips")
           {
             let bone =  originalSkeleton.current.getBoneByName(name).clone();
-            console.log(bone);
             prevRotation.current[name] = originalSkeleton.current.getBoneByName(name).clone();
           }
         }
        
       };
-      //console.log(prevRotation.current);
     } else {
       let skeleton = object.current.userData.skeleton
       skeleton.pose()
