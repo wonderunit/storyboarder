@@ -23,4 +23,11 @@ describe('sortFilePaths', () => {
       ['001.jpg', '002.jpg', '011.jpg']
     )
   )
+
+  it('boards', () => {
+    check(
+      ['board-1-123ABC.jpg', 'board-3-ABC123.jpg', 'board-2-923ABC.jpg'],
+      ['board-1-123ABC.jpg', 'board-2-923ABC.jpg', 'board-3-ABC123.jpg']
+    )
+  })
 })

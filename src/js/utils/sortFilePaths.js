@@ -1,13 +1,16 @@
 const path = require('path')
 
+// via https://stackoverflow.com/a/38641281
+const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' })
+
 const sortFilePaths = filepaths =>
   // make a copy
   [...filepaths]
   // sort it ...
   .sort(
     (a, b) =>
-      // ... based on the filename parsed as an integer
-      parseInt(path.basename(a), 10) - parseInt(path.basename(b), 10)
+      // ... compare basenames
+      collator.compare(path.basename(a), path.basename(b))
   )
 
 module.exports = sortFilePaths
