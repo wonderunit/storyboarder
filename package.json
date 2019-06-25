@@ -1,7 +1,7 @@
 {
   "name": "storyboarder",
   "productName": "Storyboarder",
-  "version": "1.11.2-alpha.2",
+  "version": "1.11.2-alpha.3",
   "description": "The fastest way to storyboard.",
   "main": "src/js/main.js",
   "scripts": {
@@ -51,7 +51,9 @@
     },
     "win": {
       "icon": "build/icon.ico",
-      "timeStampServer": "http://timestamp.comodoca.com/authenticode"
+      "timeStampServer": "http://timestamp.comodoca.com/authenticode",
+      "certificateSubjectName": "Wonder Unit, Inc.",
+      "publisherName": "Wonder Unit, Inc."
     },
     "dmg": {
       "background": "build/background.png",
