@@ -894,13 +894,13 @@ const TransformControlsGizmo = function () {
 		]
 		};
 
-		helperRotate = {
+	helperRotate = {
 		AXIS: [
 			[ new THREE.Line( lineGeometry, matHelper.clone() ), [ -1e3, 0, 0 ], null, [ 1e6, 1, 1 ], 'helper' ]
 		]
-		};
+	};
 
-		pickerRotate = {
+	pickerRotate = {
 		X: [
 			[ new THREE.Mesh( new THREE.TorusBufferGeometry( 1, 0.1, 4, 24 ), matInvisible ), [ 0, 0, 0 ], [ 0, -Math.PI / 2, -Math.PI / 2 ] ],
 		],
@@ -916,7 +916,7 @@ const TransformControlsGizmo = function () {
 		XYZE: [
 			[ new THREE.Mesh( new THREE.SphereBufferGeometry( 0.7, 10, 8 ), matInvisible ) ]
 		]
-		};
+	};
 
 
 	if(!isScaleDisabled)
@@ -1081,7 +1081,6 @@ const TransformControlsGizmo = function () {
 	this.add( this.gizmo[ "rotate" ] = setupGizmo( gizmoRotate ) );
 	this.add( this.picker[ "rotate" ] = setupGizmo( pickerRotate ) );
 	this.add( this.helper[ "rotate" ] = setupGizmo( helperRotate ) );
-
 	this.helper[ "rotate" ].name = "Helper";
 	if(!isScaleDisabled)
 	{

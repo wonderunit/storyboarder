@@ -272,6 +272,7 @@ const SelectionManager = connect(
     } else {
       let shouldDrag = false
       let target
+      let isSelectedControlPoint = false;
 
       // prefer the nearest character to the click
       if (useIcons) {
@@ -307,7 +308,10 @@ const SelectionManager = connect(
 
         target = getIntersectionTarget(intersect)
       
-      } else {
+      } 
+      else 
+      {
+        console.log(intersects);
         let controlPoint = intersects.filter((intersect) => intersect.object.name === 'controlPoint');
         if(controlPoint.length !== 0)
         {
@@ -317,17 +321,19 @@ const SelectionManager = connect(
 
         if(intersects[0].object && intersects[0].object.type && intersects[0].object.userData.type === 'controlPoint')
         {
-          let result = [];
           let characterId = target.characterId;
           let characters = intersectables.filter(value => value.uuid === characterId);
           target.pointerDown();
-          target = characters[0];//result.concat(character.bonesHelper.hit_meshes)
-        } else if(intersects[0].object && intersects[0].object.type && intersects[0].object.type === 'Line')
+          target = characters[0];
+          isSelectedControlPoint = true;
+        } 
+        else if(intersects[0].object && intersects[0].object.type && intersects[0].object.type === 'Line')
         {
-          let result = [];
+          console.log(target);
           let characterId = target.parent.parent.parent.characterId;
           let characters = intersectables.filter(value => value.uuid === characterId);
-          target = characters[0];//result.concat(character.bonesHelper.hit_meshes)
+          target = characters[0];
+          isSelectedControlPoint = true;
         }
       }
 
@@ -346,8 +352,9 @@ const SelectionManager = connect(
             raycaster.setFromCamera({ x, y }, camera )
             let hits = raycaster.intersectObject(target.bonesHelper)
 
+            console.log(isSelectedControlPoint);
             // select the bone
-            if (hits.length) {
+            if (!isSelectedControlPoint && hits.length) {
               selectObject(target.userData.id)
               setLastDownId(null)
 

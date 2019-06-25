@@ -3,7 +3,6 @@ const THREE = require( "three");
 
 class TargetControl
 {
-
     constructor(camera, domElement, name)
     {
         this.control = new TransformControls(camera, domElement);
@@ -30,30 +29,15 @@ class TargetControl
             flatShading: true });
         let geometry = new THREE.SphereGeometry(0.05);
         let movingTarget = new THREE.Mesh(geometry, material);
-        movingTarget.position.z = position.z;
-        movingTarget.position.y = position.y;
-        movingTarget.position.x = position.x;
+        movingTarget.position.copy(position);
         movingTarget.renderOrder = 1;
         movingTarget.pointerDown = () => {movingTarget.dispatchEvent( { type: 'pointerdown', message: '' } );};
         scene.add(movingTarget);
-        this.addEventsToControlTarget();
         movingTarget.userData.type = "controlPoint";
         movingTarget.name = "controlPoint";
-        movingTarget.addEventListener("pointerdown", (event) => 
-        {
-            if(!this.isControlSelected)
-            {
-                let selectedMesh = TargetControl.selectedControl;
-                if(selectedMesh)
-                {
-                    selectedMesh.deselectControlPoint();
-                }
-                TargetControl.selectedControl = this;
-                this.isControlPointSelected = true;
-                scene.add(this.control);
-                this.control.addToScene();
-            }
-        });
+        movingTarget.scope = this;
+        this.control.scope = this;
+        movingTarget.addEventListener("pointerdown", this.controlPointSelection);
         this.control.attach(movingTarget);
         this.target = movingTarget;
     }
@@ -69,6 +53,7 @@ class TargetControl
     {
         let scene = this.scene;
         scene.add(this.target);
+        this.target.addEventListener("pointerdown", this.controlPointSelection);
     }
 
     removeFromScene()
@@ -79,6 +64,8 @@ class TargetControl
         this.control.dispose();
         this.isControlTargetSelected = false;
         this.isControlPointSelected = false;
+        this.target.removeEventListener("pointerdown", this.controlPointSelection);
+        this.removeEventsFromControlTarget();
     }
 
     deselectControlPoint()
@@ -87,19 +74,50 @@ class TargetControl
         this.isControlPointSelected = false;
         scene.remove(this.control);
         this.control.dispose();
+        this.removeEventsFromControlTarget();
     }
 
     addEventsToControlTarget()
     {
         let control = this.control;
-        control.addEventListener("pointerdown", (event)=>
+        control.addEventListener("pointerdown", this.selecteControlTarget);
+        control.addEventListener("pointerup", this.deselectcontrolTarget);
+    }
+
+    removeEventsFromControlTarget()
+    {
+        let control = this.control;
+        control.addEventListener("pointerdown", this.selecteControlTarget);
+        control.addEventListener("pointerup", this.deselectcontrolTarget);
+    }
+    
+    selecteControlTarget(event)
+    {
+        this.scope.isControlTargetSelected = true;
+    }
+
+    deselectcontrolTarget(event)
+    {
+        this.scope.isControlTargetSelected = false;
+    }
+
+    controlPointSelection(event)
+    {
+        let scope = this.scope;
+        if(!scope.isControlSelected)
         {
-            this.isControlTargetSelected = true;
-        });
-        control.addEventListener("pointerup", (event)=>
-        {
-            this.isControlTargetSelected = false;
-        });
+            let scope = this.scope;
+            let selectedMesh = TargetControl.selectedControl;
+            if(selectedMesh)
+            {
+                selectedMesh.deselectControlPoint();
+            }
+            TargetControl.selectedControl = scope;
+            scope.isControlPointSelected = true;
+            scope.scene.add(scope.control);
+            scope.control.addToScene();
+            scope.addEventsToControlTarget();
+        }
     }
 
     set disable(isDisabled)
@@ -109,5 +127,6 @@ class TargetControl
         this.control.visible = visible;
         this.disabled = isDisabled;
     }
+
 }
 module.exports = TargetControl;
