@@ -3,7 +3,6 @@ const THREE = require( "three");
 const PoleConstraint = require( "../../constraints/PoleConstraint");
 const PoleTarget = require( "../PoleTarget");
 const CopyRotation = require( "../../constraints/CopyRotation");
-const {setZForward, setReverseZ} = require( "../../utils/axisUtils");
 require("../../utils/Object3dExtension");
 
 class Ragdoll extends IkObject
@@ -44,7 +43,6 @@ class Ragdoll extends IkObject
         scene.add(rightLegPoleTarget.mesh);
         scene.add(backPoleTarget.mesh);
 
-        //this.addPoleConstraintToRootJoint(backChain, backPoleTarget);
         let poleConstraint = new PoleConstraint(backChain, backPoleTarget);
         this.poleConstraints.push(poleConstraint);
         this.addPoleConstraintToRootJoint(leftArmChain, leftArmPoleTarget);
@@ -189,17 +187,12 @@ class Ragdoll extends IkObject
 
     limbsFollowRotation()
     {
-    
         for(let i = 1; i < this.chainObjects.length; i++)
         {
             let joints = this.ik.chains[i].joints;
             let bone = joints[joints.length -1].bone;
 
             let boneTarget = this.chainObjects[i].controlTarget.target;
-            if(bone.name === "LeftHand")
-            {
-                console.log(boneTarget.rotation.clone());
-            }
             //bone.rotation.copy(boneTarget.rotation);
             this.rotateBoneQuaternion(bone, boneTarget.rotation);
             bone.updateMatrix();
@@ -413,7 +406,6 @@ class Ragdoll extends IkObject
             }
             this.originToCloneRotation(cloneBone, originalBone);
         }
-        //this.initializeAxisAngle();
     }
 
     basisSwitchinBack(cloneBone, originalBone)
@@ -447,9 +439,7 @@ class Ragdoll extends IkObject
         let scale = new THREE.Vector3();
         matrix.decompose(position, rotation, scale);
         let euler = new THREE.Euler().setFromQuaternion(rotation);
-        //object.rotation.set(euler.x, euler.y, euler.z);
         object.position.copy(position);
-        //object.quaternion.copy(rotation);
         object.updateMatrix();
     }
 

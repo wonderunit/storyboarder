@@ -610,6 +610,7 @@ const TransformControls = function ( camera, domElement ) {
 
 	this.setMode = function ( mode ) {
 
+		scope.prevMode = scope.mode;
 		scope.mode = mode;
 
 	};
@@ -1074,13 +1075,13 @@ const TransformControlsGizmo = function () {
 	this.picker = {};
 	this.helper = {};
 
-	this.add( this.gizmo[ "translate" ] = setupGizmo( gizmoTranslate ) );
-	this.add( this.picker[ "translate" ] = setupGizmo( pickerTranslate ) );
-	this.add( this.helper[ "translate" ] = setupGizmo( helperTranslate ) );
+	this.gizmo[ "translate" ] = setupGizmo( gizmoTranslate );
+	this.picker[ "translate" ] = setupGizmo( pickerTranslate );
+	this.helper[ "translate" ] = setupGizmo( helperTranslate );
 	this.helper[ "translate" ].name = "Helper";
-	this.add( this.gizmo[ "rotate" ] = setupGizmo( gizmoRotate ) );
-	this.add( this.picker[ "rotate" ] = setupGizmo( pickerRotate ) );
-	this.add( this.helper[ "rotate" ] = setupGizmo( helperRotate ) );
+	this.gizmo[ "rotate" ] = setupGizmo( gizmoRotate );
+	this.picker[ "rotate" ] = setupGizmo( pickerRotate );
+	this.helper[ "rotate" ] = setupGizmo( helperRotate );
 	this.helper[ "rotate" ].name = "Helper";
 	if(!isScaleDisabled)
 	{
@@ -1109,19 +1110,26 @@ const TransformControlsGizmo = function () {
 
 		// Show only gizmos for current transform mode
 
-		this.gizmo[ "translate" ].visible = this.mode === "translate";
-		this.gizmo[ "rotate" ].visible = this.mode === "rotate";
-		if(!isScaleDisabled)
+		if(this.mode === "translate" && this.prevMode !== "translate")
 		{
-			this.gizmo[ "scale" ].visible = this.mode === "scale";
-		}
-		this.helper[ "translate" ].visible = this.mode === "translate";
-		this.helper[ "rotate" ].visible = this.mode === "rotate";
-		if(!isScaleDisabled)
-		{
-			this.helper[ "scale" ].visible = this.mode === "scale";
-		}
+			this.remove(this.gizmo[ "rotate" ] );
+			this.remove(this.picker[ "rotate" ]);
+			this.remove(this.helper[ "rotate" ]);
 
+			this.add(this.gizmo[ "translate" ] );
+			this.add(this.picker[ "translate" ]);
+			this.add(this.helper[ "translate" ]);
+		}
+		if(this.mode === 'rotate')
+		{
+			this.add(this.gizmo[ "rotate" ] );
+			this.add(this.picker[ "rotate" ]);
+			this.add(this.helper[ "rotate" ]);
+
+			this.remove(this.gizmo[ "translate" ] );
+			this.remove(this.picker[ "translate" ]);
+			this.remove(this.helper[ "translate" ]);
+		}
 
 		var handles = [];
 		handles = handles.concat( this.picker[ this.mode ].children );
