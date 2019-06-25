@@ -18,7 +18,8 @@
     "postinstall": "electron-builder install-app-deps",
     "xr:watch": "parcel watch --no-hmr src/js/express-xr/src/index.html -d src/js/express-xr/dist",
     "xr:clean": "trash src/js/express-xr/dist",
-    "xr:build": "parcel build src/js/express-xr/src/index.html -d src/js/express-xr/dist --no-source-maps"
+    "xr:build": "parcel build src/js/express-xr/src/index.html -d src/js/express-xr/dist --no-source-maps",
+    "xr:test-server": "node src/js/express-xr/test/test-server.js"
   },
   "repository": {
     "type": "git",
