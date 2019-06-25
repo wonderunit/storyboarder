@@ -10,10 +10,12 @@ class TargetControl
         this.control.userData.type = "controlTarget";
         this.name = name;
         this.disabled = true;
+        this.domElement = domElement;
         this.isControlPointSelected = false;
         this.isControlTargetSelected = false;
         TargetControl.selectedControl = null;
         this.control.addEventListener("pointerDown", (event) => console.log("pointerdown"));
+        this.isRotationLocked = false;
     }
 
     initialize(position, scene)
@@ -82,13 +84,15 @@ class TargetControl
         let control = this.control;
         control.addEventListener("pointerdown", this.selecteControlTarget);
         control.addEventListener("pointerup", this.deselectcontrolTarget);
+        this.domElement.addEventListener("keydown", this.onKeyDownLockRotation, );
     }
 
     removeEventsFromControlTarget()
     {
         let control = this.control;
-        control.addEventListener("pointerdown", this.selecteControlTarget);
-        control.addEventListener("pointerup", this.deselectcontrolTarget);
+        control.removeEventListener("pointerdown", this.selecteControlTarget);
+        control.removeEventListener("pointerup", this.deselectcontrolTarget);
+        this.domElement.removeEventListener("keydown", this.onKeyDownLockRotation);
     }
     
     selecteControlTarget(event)
@@ -108,7 +112,7 @@ class TargetControl
         {
             let scope = this.scope;
             let selectedMesh = TargetControl.selectedControl;
-            if(selectedMesh)
+            if(selectedMesh && selectedMesh !== scope)
             {
                 selectedMesh.deselectControlPoint();
             }
@@ -120,6 +124,20 @@ class TargetControl
         }
     }
 
+    onKeyDownLockRotation(event)
+    {
+        console.log(this);
+        if(event.ctrlKey)
+        {
+            if(event.key === 'e')
+            {
+                event.stopPropagation();
+                TargetControl.selectedControl.isRotationLocked = !TargetControl.selectedControl.isRotationLocked;
+                console.log(TargetControl.selectedControl);
+            }
+        }
+    }
+
     set disable(isDisabled)
     {
         let visible = isDisabled ? false : true;
@@ -127,6 +145,5 @@ class TargetControl
         this.control.visible = visible;
         this.disabled = isDisabled;
     }
-
 }
 module.exports = TargetControl;

@@ -62,6 +62,7 @@ function getObjectsFromCameraView (objects) {
         {
           if(gizmoChildren[i].name === "Helper")
           {
+              console.log(gizmoChildren);
               let children = gizmoChildren[i].children;
               for (let i = 0; i < children.length; i++)
               {
@@ -311,7 +312,6 @@ const SelectionManager = connect(
       } 
       else 
       {
-        console.log(intersects);
         let controlPoint = intersects.filter((intersect) => intersect.object.name === 'controlPoint');
         if(controlPoint.length !== 0)
         {
@@ -329,7 +329,6 @@ const SelectionManager = connect(
         } 
         else if(intersects[0].object && intersects[0].object.type && intersects[0].object.type === 'Line')
         {
-          console.log(target);
           let characterId = target.parent.parent.parent.characterId;
           let characters = intersectables.filter(value => value.uuid === characterId);
           target = characters[0];
@@ -352,7 +351,6 @@ const SelectionManager = connect(
             raycaster.setFromCamera({ x, y }, camera )
             let hits = raycaster.intersectObject(target.bonesHelper)
 
-            console.log(isSelectedControlPoint);
             // select the bone
             if (!isSelectedControlPoint && hits.length) {
               selectObject(target.userData.id)

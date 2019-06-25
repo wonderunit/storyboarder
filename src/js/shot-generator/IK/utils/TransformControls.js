@@ -131,7 +131,9 @@ const TransformControls = function ( camera, domElement ) {
 
 	this.dispose = function () {
 
+		console.log("Dispose");
 		domElement.removeEventListener( "pointerdown", onPointerDown );
+		document.removeEventListener( "pointermove", onPointerMove, false );
 		domElement.removeEventListener( "touchstart", onPointerDown );
 		domElement.removeEventListener( "pointermove", onPointerHover );
 		domElement.removeEventListener( "touchmove", onPointerHover );
@@ -537,7 +539,6 @@ const TransformControls = function ( camera, domElement ) {
 				scope.setMode("translate");
 			}
 		}
-		console.log(event);
 	};
 	// normalize mouse / touch pointer and remap {x,y} to view space.
 
@@ -1082,6 +1083,7 @@ const TransformControlsGizmo = function () {
 	this.gizmo[ "rotate" ] = setupGizmo( gizmoRotate );
 	this.picker[ "rotate" ] = setupGizmo( pickerRotate );
 	this.helper[ "rotate" ] = setupGizmo( helperRotate );
+	this.gizmo[ "rotate" ].name = "Helper";
 	this.helper[ "rotate" ].name = "Helper";
 	if(!isScaleDisabled)
 	{

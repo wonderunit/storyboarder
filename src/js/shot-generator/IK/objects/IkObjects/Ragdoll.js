@@ -192,9 +192,16 @@ class Ragdoll extends IkObject
             let joints = this.ik.chains[i].joints;
             let bone = joints[joints.length -1].bone;
 
-            let boneTarget = this.chainObjects[i].controlTarget.target;
-            //bone.rotation.copy(boneTarget.rotation);
-            this.rotateBoneQuaternion(bone, boneTarget.rotation);
+            let controlTarget = this.chainObjects[i].controlTarget;
+            let boneTarget = controlTarget.target;
+            if(controlTarget.isRotationLocked)
+            {
+                this.rotateBoneQuaternion(bone, boneTarget.rotation);
+            }
+            else
+            {
+                bone.quaternion.multiply(boneTarget.quaternion);
+            }
             bone.updateMatrix();
         }
     }
