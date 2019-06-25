@@ -377,8 +377,8 @@ const Character = React.memo(({
       skeleton.pose()
       fixRootBone()
     }
-    ragDoll.current.ikSwitcher.switchPose();
     ragDoll.current.applyToIk();
+    ragDoll.current.ikSwitcher.switchPose();
   }
 
   const getCurrentControllerRotation = (device, virtual) => {
