@@ -367,10 +367,6 @@ class Ragdoll extends IkObject
 
     applyChangesToOriginal()
     {
-        if(!this.isInitialized)
-        {
-            return;
-        }
         let clonedSkin = this.clonedObject.children[1];
         let originalSkin = this.originalObject.children[1];
         let clonedBones = clonedSkin.skeleton.bones;
@@ -395,10 +391,6 @@ class Ragdoll extends IkObject
 
     applyToIk()
     {
-        if(!this.isInitialized)
-        {
-            return;
-        }
         let clonedSkin = this.clonedObject.children[1];
         let originalSkin = this.originalObject.children[1];
         let clonedBones = clonedSkin.skeleton.bones;
@@ -422,7 +414,7 @@ class Ragdoll extends IkObject
         cloneBone.updateMatrixWorld(true);
         originalBone.updateMatrixWorld(true);
 
-        let originalPrevMatrix = this.originalObjectMatrix[originalBone.name].clone();
+        //let originalPrevMatrix = this.originalObjectMatrix[originalBone.name].clone();
         let originalCurrentMatrix = originalBone.matrix.clone();
         let clonePrevMatrix = this.cloneObjectMatrix[cloneBone.name].clone();
         let cloneCurrentMatrix = cloneBone.matrix.clone();
@@ -436,7 +428,6 @@ class Ragdoll extends IkObject
         cloneCurrentMatrix.premultiply(tMatrixPrevClone);
 
         this.setObjectFromMatrixElements(cloneCurrentMatrix, originalBone);
-
     }
 
     setObjectFromMatrixElements(matrix, object)
@@ -474,7 +465,7 @@ class Ragdoll extends IkObject
         originalGlobalQuat.applyMatrix(transformMatrix);
         cloneBone.quaternion.copy(originalGlobalQuat);
         cloneBone.updateMatrix();
-        cloneBone.updateMatrixWorld(true);
+        //cloneBone.updateMatrixWorld(true);
         originBone.updateWorldMatrix(false, true);
     }
 }
