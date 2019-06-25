@@ -3,6 +3,7 @@ const THREE = require( "three");
 const {setZDirecion, setReverseZ} = require( "../../utils/axisUtils");
 const ChainObject = require( "./ChainObject");
 const SkeletonUtils = require("../../utils/SkeletonUtils");
+const IKSwitcher = require("./IkSwitcher");
 require("../../utils/Object3dExtension");
 // IKObject is class which applies ik onto skeleton
 class IkObject
@@ -18,10 +19,8 @@ class IkObject
         this.controlTargets = [];
         this.originalObject = null;
         this.clonedObject = null;
-        this.ikBonesName = [];
         this.bonesDelta = {};
-        this.originalObjectMatrix = {};
-        this.cloneObjectMatrix = {};
+        this.ikSwitcher = null;
     }
 
     // Takes skeleton and target for it's limbs
@@ -29,10 +28,11 @@ class IkObject
     {
         this.ik = new IK();
         let chains = [];
-
         let clonedSkeleton = SkeletonUtils.clone(objectSkeleton);
         this.originalObject = objectSkeleton;
         this.clonedObject = clonedSkeleton;
+
+        this.ikSwitcher = new IKSwitcher(objectSkeleton, clonedSkeleton);
 
         this.rigMesh = clonedSkeleton.children[1];
         let rigMesh = this.rigMesh;
@@ -116,22 +116,18 @@ class IkObject
                             let objectWorld = new THREE.Vector3();
                             object.getWorldPosition(objectWorld);
                             target.position.copy(objectWorld);
-
                             chainObject.isChainObjectStarted = false;
                         }
-                        this.ikBonesName.push(object.name);
+                        this.ikSwitcher.ikBonesName.push(object.name);
                         // Creates joint by passing current bone and its constraint
                         let joint = new IKJoint(object, {});
-                        let globaPose = new THREE.Vector3();
                         // Adds joint to chain and sets target
                         chain.add(joint, {target});
                     }
                 });
-
-
             }
         });
-        this.ikBonesName.push("Hips");
+        this.ikSwitcher.ikBonesName.push("Hips");
         scene.remove(clonedSkeleton);
         // Goes through list of constraints and adds it to IK
         chains.forEach((chain) =>
@@ -145,7 +141,7 @@ class IkObject
 
         // Adds skeleton helper to scene
         //scene.add( this.skeletonHelper );
-        this.recalculateDifference();
+        this.ikSwitcher.recalculateDifference();
     }
 
     // Calculates back's offset in order to move with hips
@@ -168,8 +164,8 @@ class IkObject
             this.lateUpdate();
             if(IK.firstRun)
             {
-                this.recalculateDifference();
-                this.initializeAxisAngle();
+                this.ikSwitcher.recalculateDifference();
+                this.ikSwitcher.initializeAxisAngle();
                 IK.firstRun = false;
             }
         }
@@ -226,19 +222,24 @@ class IkObject
         {
             let chain = chainObjects[i].chain;
             let jointBone = chain.joints[chain.joints.length - 1].bone;
-            if(jointBone.name === "LeftFoot" || jointBone.name === "RightFoot" ||
-                jointBone.name === "LeftHand" || jointBone.name === "RightHand" ||
-                jointBone.name === "Head" || jointBone.name === "Hips")
-            {
-                let targetPosition = chainObjects[i].controlTarget.target.position;
-                jointBone.getWorldPosition(targetPosition);
-            }
-            else
+            if(this.ikSwitcher.switchingPose)
             {
                 let bone =  this.originalObject.getObjectByName(jointBone.name);
                 let targetPosition = chainObjects[i].controlTarget.target.position;
                 bone.getWorldPosition(targetPosition);
             }
+            else
+            {
+                
+                if(jointBone.name === "LeftFoot" || jointBone.name === "RightFoot" ||
+                jointBone.name === "LeftHand" || jointBone.name === "RightHand" ||
+                jointBone.name === "Head" || jointBone.name === "Hips")
+                {
+                    let targetPosition = chainObjects[i].controlTarget.target.position;
+                    jointBone.getWorldPosition(targetPosition);
+                }
+            }
+            
         }
         this.calculteBackOffset();
     }
@@ -280,49 +281,6 @@ class IkObject
             let target = controlTarget[i].target;
             control.characterId = parentId;
             target.characterId = parentId;
-        }
-    }
-
-    recalculateDifference()
-    {
-        let clonedSkin = this.clonedObject.children[1];
-        let originalSkin = this.originalObject.children[1];
-        let clonedBones = clonedSkin.skeleton.bones;
-        let originalBones = originalSkin.skeleton.bones;
-        let originalBone = originalBones[0];
-        let cloneBone = clonedBones[0];
-        this.originalObjectMatrix[originalBone.name] = originalBone.matrix.clone();
-        this.cloneObjectMatrix[cloneBone.name] = cloneBone.matrix.clone();
-    }
-
-    initializeAxisAngle()
-    {
-        let clonedSkin = this.clonedObject.children[1];
-        let originalSkin = this.originalObject.children[1];
-        let clonedBones = clonedSkin.skeleton.bones;
-        let originalBones = originalSkin.skeleton.bones;
-        for (let i = 0; i < clonedBones.length; i++)
-        {
-            let cloneBone = clonedBones[i];
-            let originalBone = originalBones[i];
-
-            if(!this.ikBonesName.some((boneName) => originalBone.name === boneName))
-            {
-                continue;
-            }
-            let cloneToOriginDelta = new THREE.Quaternion();
-            cloneToOriginDelta.multiply(cloneBone.worldQuaternion().conjugate());
-            cloneToOriginDelta.multiply(originalBone.worldQuaternion());
-
-            let originToCloneDelta = new THREE.Quaternion();
-            originToCloneDelta.multiply(originalBone.worldQuaternion().conjugate());
-            originToCloneDelta.multiply(cloneBone.worldQuaternion());
-
-            this.bonesDelta[cloneBone.name] = {};
-            this.bonesDelta[originalBone.name].cloneQuat = cloneBone.worldQuaternion().clone();
-            this.bonesDelta[originalBone.name].originQuat = originalBone.worldQuaternion().clone();
-            this.bonesDelta[originalBone.name].cloneToOriginDelta = cloneToOriginDelta;
-            this.bonesDelta[originalBone.name].originToCloneDelta = originToCloneDelta;
         }
     }
 }

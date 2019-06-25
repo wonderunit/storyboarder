@@ -62,7 +62,6 @@ function getObjectsFromCameraView (objects) {
         {
           if(gizmoChildren[i].name === "Helper")
           {
-              console.log(gizmoChildren);
               let children = gizmoChildren[i].children;
               for (let i = 0; i < children.length; i++)
               {

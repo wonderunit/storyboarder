@@ -357,7 +357,7 @@ const Character = React.memo(({
       for(let bone of skeleton.bones)
       {
         let name = bone.name;
-        if(ragDoll.current.ikBonesName.some((ikName) => ikName === name))
+        if(ragDoll.current.ikSwitcher.ikBonesName.some((ikName) => ikName === name))
         {
           let propSkeleton = props.skeleton[name];
           if(propSkeleton)
@@ -377,6 +377,7 @@ const Character = React.memo(({
       skeleton.pose()
       fixRootBone()
     }
+    ragDoll.current.ikSwitcher.switchPose();
     ragDoll.current.applyToIk();
   }
 
@@ -458,6 +459,7 @@ const Character = React.memo(({
 
     let skeleton = object.current.userData.skeleton
     skeleton.pose()
+   
     updateSkeleton()
   }
 
