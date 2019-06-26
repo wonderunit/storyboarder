@@ -133,6 +133,9 @@ describe('exporters/copyProject', () => {
             'board-1-UDRF3-shot-generator.png':   EMPTY_BUFFER,
             'board-1-UDRF3-shot-generator-thumbnail.jpg':
                                                   EMPTY_BUFFER,
+            'board-1-UDRF3-shot-generator-camera-plot.png':   EMPTY_BUFFER,
+            'board-1-UDRF3-shot-generator-camera-plot-thumbnail.jpg':
+                                                  EMPTY_BUFFER,
           },
           'models': {
             'characters': {
@@ -238,6 +241,10 @@ describe('exporters/copyProject', () => {
       // custom model is included
       assert(fs.existsSync(path.join(dstFolderPath, 'models', 'characters', 'character.glb')), 'includes character.glb')
       assert(fs.existsSync(path.join(dstFolderPath, 'models', 'environments', 'skatepark.glb')), 'includes skatepark.glb')
+    })
+
+    it('includes camera plot', () => {
+      assert(fs.existsSync(path.join(dstFolderPath, 'images', 'board-1-UDRF3-shot-generator-camera-plot.png')))
     })
   })
 
