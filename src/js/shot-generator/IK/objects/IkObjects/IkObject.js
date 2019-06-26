@@ -140,7 +140,7 @@ class IkObject
         this.skeletonHelper.material.linewidth = 7;
 
         // Adds skeleton helper to scene
-        //scene.add( this.skeletonHelper );
+        scene.add( this.skeletonHelper );
         this.ikSwitcher.recalculateDifference();
     }
 
@@ -165,7 +165,7 @@ class IkObject
             if(IK.firstRun)
             {
                 this.ikSwitcher.recalculateDifference();
-                this.ikSwitcher.initializeAxisAngle();
+                //this.ikSwitcher.initializeAxisAngle();
                 IK.firstRun = false;
             }
         }

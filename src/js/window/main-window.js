@@ -7,6 +7,7 @@ const dns = require('dns')
 const path = require('path')
 const menu = require('../menu')
 const util = require('../utils/index')
+const sortFilePaths = require('../utils/sortFilePaths')
 const Color = require('color-js')
 const plist = require('plist')
 const R = require('ramda')
@@ -804,7 +805,7 @@ const loadBoardUI = async () => {
     }
 
     if (!hasStoryboarderFile) {
-      insertNewBoardsWithFiles(filepaths)
+      insertNewBoardsWithFiles(sortFilePaths(filepaths))
     }
   }
 
@@ -6629,7 +6630,7 @@ ipcRenderer.on('textInputMode', (event, args)=>{
 })
 
 ipcRenderer.on('insertNewBoardsWithFiles', (event, filepaths)=> {
-  insertNewBoardsWithFiles(filepaths)
+  insertNewBoardsWithFiles(sortFilePaths(filepaths))
 })
 
 ipcRenderer.on('importImage', (event, fileData) => {

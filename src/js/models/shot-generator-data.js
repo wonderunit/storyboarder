@@ -19,6 +19,14 @@ const getExportableMediaFilenames = sg => {
       results.push(sceneObject.model)
     }
   }
+
+  if (
+    sg.data.world.environment.file &&
+    ModelLoader.isCustomModel(sg.data.world.environment.file)
+  ) {
+    results.push(sg.data.world.environment.file)
+  }
+  
   return results
 }
 

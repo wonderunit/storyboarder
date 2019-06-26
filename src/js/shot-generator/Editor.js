@@ -123,6 +123,8 @@ const {
 //} = require('../state')
 } = require('../shared/reducers/shot-generator')
 
+const notifications = require('../window/notifications')
+
 const Editor = connect(
   state => ({
     mainViewCamera: state.mainViewCamera,
@@ -699,6 +701,11 @@ const Editor = connect(
       }
     }, [world.environment.file])
 
+    const notificationsRef = useRef()
+    useEffect(() => {
+      notifications.init(notificationsRef.current, true)
+    }, [notificationsRef.current])
+
     return React.createElement(
       SceneContext.Provider,
       { value: { scene: scene.current }},
@@ -790,7 +797,9 @@ const Editor = connect(
 
         !machineState.matches('typing') && [KeyHandler],
 
-        [MenuManager]
+        [MenuManager],
+
+        ['div.notifications', { ref: notificationsRef }]
       ]
     )
   )

@@ -126,14 +126,12 @@ class TargetControl
 
     onKeyDownLockRotation(event)
     {
-        console.log(this);
         if(event.ctrlKey)
         {
             if(event.key === 'e')
             {
                 event.stopPropagation();
                 TargetControl.selectedControl.isRotationLocked = !TargetControl.selectedControl.isRotationLocked;
-                console.log(TargetControl.selectedControl);
             }
         }
     }

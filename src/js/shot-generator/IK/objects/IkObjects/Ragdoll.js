@@ -176,9 +176,13 @@ class Ragdoll extends IkObject
         super.update();
         if(!this.isEnabledIk)
         {
-            this.resetTargets();
-            this.applyToIk();
+            this.resetTargets()
+            if(this.ikSwitcher.switchingPose)
+            {
+                this.applyToIk();
+            }
             this.ikSwitcher.changingPose();
+            
         }
         else
         {
@@ -353,11 +357,7 @@ class Ragdoll extends IkObject
 
     applyToIk()
     {
-        //for(let i = 0; i < 5; i++)
-        {
-            this.ikSwitcher.applyToIk();
-            //this.clonedObject.updateMatrixWorld(false, true);
-        }
+        this.ikSwitcher.applyToIk();
     }
 }
 module.exports =  Ragdoll;

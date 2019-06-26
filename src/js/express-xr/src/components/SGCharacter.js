@@ -165,7 +165,7 @@ const characterFactory = data => {
   return { mesh, skeleton, armatures, originalHeight, boneLengthScale, parentRotation, parentPosition }
 }
 
-const SGCharacter = ({ id, type, isSelected, updateObject, modelData, selectedBone, hmdCam, ...props }) => {
+const SGCharacter = ({ id, type, worldScale, isSelected, updateObject, modelData, selectedBone, hmdCam, ...props }) => {
   const [ready, setReady] = useState(false) // ready to load?
   // setting loaded = true forces an update to sceneObjects,
   // which is what Editor listens for to attach the BonesHelper
@@ -399,12 +399,19 @@ const SGCharacter = ({ id, type, isSelected, updateObject, modelData, selectedBo
     if (!object.current) return
 
     // handle selection/deselection - add/remove the bone stucture
-    if (isSelected) {
+    if (isSelected && worldScale === 1) {
       for (var cone of object.current.bonesHelper.cones) object.current.bonesHelper.add(cone)
     } else {
       for (var cone of object.current.bonesHelper.cones) object.current.bonesHelper.remove(cone)
     }
-  }, [props.model, isSelected, ready])
+
+    if (skinnedMesh.type === 'LOD') {
+      skinnedMesh.levels.forEach((level, i) => {
+        const worldScaleMult = worldScale === 1 ? 1 : 0.01
+        level.distance = i * 2 * worldScaleMult
+      })
+    }
+  }, [props.model, worldScale, isSelected, ready])
 
   useMemo(() => {
     if (!skinnedMesh) return

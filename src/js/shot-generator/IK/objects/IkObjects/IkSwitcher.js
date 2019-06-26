@@ -84,6 +84,7 @@ class IKSwitcher
             }
         }
         this.recalculateDifference();
+       // this.initializeAxisAngle();
     }
 
     cloneToOriginRotation(cloneBone, originBone)
@@ -150,6 +151,8 @@ class IKSwitcher
             }
             this.originToCloneRotation(cloneBone, originalBone);
         }
+        
+        //console.log("Applied to ik");
     }
 
     originToCloneRotation(cloneBone, originBone)
@@ -162,7 +165,6 @@ class IKSwitcher
         originalGlobalQuat.applyMatrix(transformMatrix);
         cloneBone.quaternion.copy(originalGlobalQuat);
         cloneBone.updateMatrix();
-        //cloneBone.updateMatrixWorld(true);
         originBone.updateWorldMatrix(false, true);
     }
 
@@ -172,7 +174,7 @@ class IKSwitcher
     switchPose()
     {
         this.switchingPose = true;
-        console.log("switch");
+    
     }
 
     changingPose()
@@ -185,6 +187,7 @@ class IKSwitcher
         {
             this.switchingPose = false;
             this.switchingProgress = 1;
+            //this.initializeAxisAngle();
         }
     }
     //#endregion 

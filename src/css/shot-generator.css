@@ -236,6 +236,12 @@ kbd {
 .element .row {
   align-items: center;
 }
+.element:not(.selected) .row .hide-unless-hovered {
+  visibility: hidden;
+}
+.element:not(.selected):hover .row .hide-unless-hovered {
+  visibility: visible;
+}
 
 #listing {
   height: 200px;

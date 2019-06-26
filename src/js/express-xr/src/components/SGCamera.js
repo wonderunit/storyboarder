@@ -36,7 +36,7 @@ const SGCamera = ({ aspectRatio, activeCamera, setDefaultCamera, audioListener, 
     near={0.01}
     far={1000}
 
-    position={[ props.x, props.z, props.y ]}
+    // position={[ props.x, props.z, props.y ]}
 
     onUpdate={self => self.updateProjectionMatrix()}
   >

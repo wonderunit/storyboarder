@@ -512,7 +512,7 @@ const Character = React.memo(({
 
         let heightChanged = object.current.scale.x !== scale ? true : false;
         object.current.scale.set( scale, scale, scale )
-
+        console.log("character resized");
         if(heightChanged)
         {
           ragDoll.current.reinitialize();
@@ -675,6 +675,7 @@ const Character = React.memo(({
       target.quaternion.copy(objectQuaternion.normalize())
       let rotation = new THREE.Euler()
       if (selectedBone) {
+       
         rotation.setFromQuaternion( objectQuaternion.normalize(), "YXZ" )
         updateCharacterSkeleton({
           id,
@@ -686,6 +687,7 @@ const Character = React.memo(({
           }
         })
       } else {
+        console.log("Console open");
         rotation.setFromQuaternion( objectQuaternion.normalize(), "YXZ" )
         updateObject(target.userData.id, {
           rotation: target.rotation.y

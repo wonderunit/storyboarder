@@ -99,6 +99,8 @@ const PosePresetsEditor = require('./PosePresetsEditor')
 const ServerInspector = require('./ServerInspector')
 const MultiSelectionInspector = require('./MultiSelectionInspector')
 
+const notifications = require('../window/notifications')
+
 require('../vendor/OutlineEffect.js')
 
 
@@ -367,7 +369,7 @@ const ListItem = ({ index, style, isScrolling, data }) => {
           isActive: sceneObject.type === 'camera' && sceneObject.id === activeCamera,
           allowDelete: (
             sceneObject.type != 'camera' ||
-            sceneObject.type == 'camera' && activeCamera !== sceneObject.id
+            (sceneObject.type == 'camera' && activeCamera !== sceneObject.id)
           ),
           selectObject,
           selectObjectToggle,
@@ -1611,16 +1613,12 @@ const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, s
           sceneObject.type === 'camera'
             ? []
             : sceneObject.visible
-              ? isSelected
-                ? ['a.visibility[href=#]', { onClick: onToggleVisibleClick }, [Icon, { src: 'icon-item-visible' }]]
-                : []
+              ? ['a.visibility.hide-unless-hovered[href=#]', { onClick: onToggleVisibleClick }, [Icon, { src: 'icon-item-visible' }]]
               : ['a.visibility[href=#]', { onClick: onToggleVisibleClick }, [Icon, { src: 'icon-item-hidden' }]],
 
-              isSelected 
-                ? allowDelete
-                  ? ['a.delete[href=#]', { onClick: onDeleteClick }, 'X']
-                  : ['a.delete', { style: { opacity: 0.1 } }, 'X']
-                : []
+          allowDelete
+            ? ['a.delete[href=#]', { onClick: onDeleteClick }, 'X']
+            : ['a.delete', { style: { opacity: 0.1 } }, 'X']
       ]]
     ]
   ])
@@ -2230,8 +2228,10 @@ const Toolbar = ({
   }
 
   const onOpenVR = preventDefault(() =>
-    dialog.showMessageBox(null, {
-      message: `To view, open a VR web browser to:\n\n${xrServerUrl}`
+    notifications.notify({
+      message: `To view, open a VR web browser to:\n<a href="${xrServerUrl}">${xrServerUrl}</a>`,
+      timing: 30,
+      onClick: () => require('electron').shell.openExternal(xrServerUrl)
     })
   )
 
@@ -2612,7 +2612,7 @@ const KeyHandler = connect(
       }
 
       const onKeyDown = event => {
-        if (event.key === 'Backspace') {
+        if (event.key === 'Backspace' || event.key === 'Delete') {
           if (selections.length && canDelete(_selectedSceneObject, activeCamera)) {
             let choice = dialog.showMessageBox(null, {
               type: 'question',
