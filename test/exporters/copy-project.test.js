@@ -215,24 +215,30 @@ describe('exporters/copyProject', () => {
     )
   })
 
-  it('includes the models/ folder for shot generator projects with custom models', () => {
-    let srcFilePath = path.resolve(path.join(fixturesPath, 'shot-generator', 'shot-generator.storyboarder'))
-    let dstFolderPath = path.resolve(path.join(fixturesPath, 'shot-generator-export-with-models'))
-    fs.ensureDirSync(dstFolderPath)
+  describe('with shot-generator data', () => {
+    const srcFilePath = path.resolve(path.join(fixturesPath, 'shot-generator', 'shot-generator.storyboarder'))
+    const dstFolderPath = path.resolve(path.join(fixturesPath, 'shot-generator-export-with-models'))
 
-    exporterCopyProject.copyProject(srcFilePath, dstFolderPath)
+    beforeEach(() => {
+      fs.ensureDirSync(dstFolderPath)
+      exporterCopyProject.copyProject(srcFilePath, dstFolderPath)
+    })
 
-    assert(fs.existsSync(path.join(dstFolderPath, 'images', 'board-1-UDRF3-thumbnail.png')))
-    assert(fs.existsSync(path.join(dstFolderPath, 'images', 'board-1-UDRF3-posterframe.jpg')))
-    assert(fs.existsSync(path.join(dstFolderPath, 'images', 'board-1-UDRF3-shot-generator.png')))
-    assert(fs.existsSync(path.join(dstFolderPath, 'images', 'board-1-UDRF3-shot-generator-thumbnail.jpg')))
+    it('includes shot-generator layer images', () => {
+      assert(fs.existsSync(path.join(dstFolderPath, 'images', 'board-1-UDRF3-thumbnail.png')))
+      assert(fs.existsSync(path.join(dstFolderPath, 'images', 'board-1-UDRF3-posterframe.jpg')))
+      assert(fs.existsSync(path.join(dstFolderPath, 'images', 'board-1-UDRF3-shot-generator.png')))
+      assert(fs.existsSync(path.join(dstFolderPath, 'images', 'board-1-UDRF3-shot-generator-thumbnail.jpg')))
+    })
 
-    assert(fs.existsSync(path.join(dstFolderPath, 'images')), 'images/ folder should exist')
-    assert(fs.existsSync(path.join(dstFolderPath, 'models')), 'models/ folder should exist')
-
-    // custom model is included
-    assert(fs.existsSync(path.join(dstFolderPath, 'models', 'characters', 'character.glb')), 'includes character.glb')
-    assert(fs.existsSync(path.join(dstFolderPath, 'models', 'environments', 'skatepark.glb')), 'includes skatepark.glb')
+    it('includes the models/ folder for shot generator projects with custom models', () => {
+      assert(fs.existsSync(path.join(dstFolderPath, 'images')), 'images/ folder should exist')
+      assert(fs.existsSync(path.join(dstFolderPath, 'models')), 'models/ folder should exist')
+    
+      // custom model is included
+      assert(fs.existsSync(path.join(dstFolderPath, 'models', 'characters', 'character.glb')), 'includes character.glb')
+      assert(fs.existsSync(path.join(dstFolderPath, 'models', 'environments', 'skatepark.glb')), 'includes skatepark.glb')
+    })
   })
 
   describe('options', () => {
