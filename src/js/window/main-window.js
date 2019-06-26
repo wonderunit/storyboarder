@@ -7004,7 +7004,7 @@ const saveToBoardFromShotGenerator = async ({ uid, data, images }) => {
   context.drawImage(plotImage, 0, 0)
   saveDataURLtoFile(
     context.canvas.toDataURL(),
-    boardModel.boardFilenameForLayer(board, 'shot-generator-camera-plot')
+    boardModel.boardFilenameForCameraPlot(board)
   )
 
 
