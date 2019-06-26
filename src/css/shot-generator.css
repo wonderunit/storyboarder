@@ -783,3 +783,40 @@ select {
   font-size: 18px;
   color: rgba(255,255,255,0.4);
 }
+
+div.fatal-error-screen {
+  background: #26292b;
+  margin: 50px 25px;
+  padding: 30px;
+  border-radius: 9px;
+  width: 100%;
+  position: relative;
+}
+
+h1.fatal-error-screen__title {
+  width: 40rem;
+  margin: 1.5rem 0 1.5rem 0;
+  color: #c00;
+  position: relative;
+  left: 3px;
+}
+
+div.fatal-error-screen__report {
+  font-family: monospace;
+  margin: 1rem 0;
+  background: #0e0f10;
+  padding: 20px 40px;
+  line-height: 1.5;
+  color: #aaa;
+  position: absolute;
+  left: 0;
+  right: 0;
+  user-select: text;
+  cursor: text;
+  white-space: pre-wrap;
+}
+
+div.fatal-error-screen__report::selection {
+  color: #bbb;
+  background: rgb(255, 237, 0, 20%);
+}

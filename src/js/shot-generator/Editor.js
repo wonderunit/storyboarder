@@ -124,6 +124,43 @@ const {
 
 const notifications = require('../window/notifications')
 
+class FatalErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      hasError: false,
+      error: null
+    }
+  }
+
+  static getDerivedStateFromError (error) {
+    return { hasError: true, error }
+  }
+
+  componentDidCatch(error, info) {
+    log.error(error, info)
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return h(
+        ['div.fatal-error-screen',
+          [
+            'h1.fatal-error-screen__title',
+            `Uh oh. Shot Generator encountered an unexpected error and could not continue.`
+          ],
+          [
+            'div.fatal-error-screen__report',
+            this.state.error.stack
+          ]
+        ]
+      )
+    }
+
+    return this.props.children
+  }
+}
+
 const Editor = connect(
   state => ({
     mainViewCamera: state.mainViewCamera,
@@ -702,103 +739,107 @@ const Editor = connect(
 
     const notificationsRef = useRef()
     useEffect(() => {
-      notifications.init(notificationsRef.current, true)
+      if (notificationsRef.current) {
+        notifications.init(notificationsRef.current, true)
+      }
     }, [notificationsRef.current])
 
     return React.createElement(
       SceneContext.Provider,
       { value: { scene: scene.current }},
       h(
-        ['div.column', { style: { width: '100%', height: '100%' } }, [
-          [Toolbar, {
-            createObject,
-            selectObject,
-            loadScene,
-            saveScene,
-            camera,
-            setActiveCamera,
-            resetScene,
-            saveToBoard: onToolbarSaveToBoard,
-            insertAsNewBoard: onToolbarInsertAsNewBoard,
-            xrServerUrl,
-            undoGroupStart,
-            undoGroupEnd
-          }],
+        [FatalErrorBoundary,
+          ['div.column', { style: { width: '100%', height: '100%' } }, [
+            [Toolbar, {
+              createObject,
+              selectObject,
+              loadScene,
+              saveScene,
+              camera,
+              setActiveCamera,
+              resetScene,
+              saveToBoard: onToolbarSaveToBoard,
+              insertAsNewBoard: onToolbarInsertAsNewBoard,
+              xrServerUrl,
+              undoGroupStart,
+              undoGroupEnd
+            }],
 
-          ['div.row', { style: { flex: 1, height: '100%' }},
-            ['div.column', { style: { width: '300px', height: '100%', background: '#111'} },
-              ['div#topdown', { style: { height: '300px' } },
-                // top-down-canvas
-                ['canvas', { key: 'top-down-canvas', tabIndex: 0, ref: smallCanvasRef, id: 'top-down-canvas', style: { width: '100%' }, onPointerDown: onCanvasPointerDown }],
-                // controls
-                ['div.topdown__controls', [
-                  ['div.row', [
-                    // ['a[href=#]', { onClick: onAutoFitClick }, [[Icon, { src: 'icon-camera-view-autofit' }]]],
-                    // ['a[href=#]', { onClick: onZoomInClick }, [[Icon, { src: 'icon-camera-view-zoom-in' }]]],
-                    // ['a[href=#]', { onClick: onZoomOutClick }, [[Icon, { src: 'icon-camera-view-zoom-out' }]]],
-                  ]],
-                  ['div.row', [
-                    ['a[href=#]', { onClick: onSwapCameraViewsClick }, [[Icon, { src: 'icon-camera-view-expand' }]]],
+            ['div.row', { style: { flex: 1, height: '100%' }},
+              ['div.column', { style: { width: '300px', height: '100%', background: '#111'} },
+                ['div#topdown', { style: { height: '300px' } },
+                  // top-down-canvas
+                  ['canvas', { key: 'top-down-canvas', tabIndex: 0, ref: smallCanvasRef, id: 'top-down-canvas', style: { width: '100%' }, onPointerDown: onCanvasPointerDown }],
+                  // controls
+                  ['div.topdown__controls', [
+                    ['div.row', [
+                      // ['a[href=#]', { onClick: onAutoFitClick }, [[Icon, { src: 'icon-camera-view-autofit' }]]],
+                      // ['a[href=#]', { onClick: onZoomInClick }, [[Icon, { src: 'icon-camera-view-zoom-in' }]]],
+                      // ['a[href=#]', { onClick: onZoomOutClick }, [[Icon, { src: 'icon-camera-view-zoom-out' }]]],
+                    ]],
+                    ['div.row', [
+                      ['a[href=#]', { onClick: onSwapCameraViewsClick }, [[Icon, { src: 'icon-camera-view-expand' }]]],
+                    ]]
                   ]]
+                ],
+                ['div#elements', [ElementsPanel, { machineState, transition }]]
+              ],
+
+              ['div.column.fill',
+                ['div#camera-view', { ref: mainViewContainerRef, style: { paddingTop: `${(1 / aspectRatio) * 100}%` } },
+                  // camera canvas
+                  ['canvas', { key: 'camera-canvas', tabIndex: 1, ref: largeCanvasRef, id: 'camera-canvas', onPointerDown: onCanvasPointerDown }],
+                  largeCanvasSize.width && [GuidesView, {
+                    dimensions: {
+                      width: Math.ceil(largeCanvasSize.width),
+                      height: Math.ceil(largeCanvasSize.width / aspectRatio)
+                    }
+                  }]
+                ],
+                ['div.inspectors', [
+                  [CameraInspector, { camera }],
+                  [BoardInspector],
+                  [GuidesInspector],
+                  [CamerasInspector]
                 ]]
               ],
-              ['div#elements', [ElementsPanel, { machineState, transition }]]
+
+              //
+              // hide presets editor for now
+              //
+              // ['div.column', [
+              //   'div#presets', { style: {
+              //     flex: 1,
+              //     width: '200px',
+              //     backgroundColor: '#eee'
+              //   }},
+              //   [PresetsEditor, { transition }]
+              // ]],
+
+              ready && (remoteInput.mouseMode || remoteInput.orbitMode) && [PhoneCursor, { remoteInput, camera, largeCanvasRef, selectObject, selectBone, sceneObjects, selections, selectedBone }],
             ],
 
-            ['div.column.fill',
-              ['div#camera-view', { ref: mainViewContainerRef, style: { paddingTop: `${(1 / aspectRatio) * 100}%` } },
-                // camera canvas
-                ['canvas', { key: 'camera-canvas', tabIndex: 1, ref: largeCanvasRef, id: 'camera-canvas', onPointerDown: onCanvasPointerDown }],
-                largeCanvasSize.width && [GuidesView, {
-                  dimensions: {
-                    width: Math.ceil(largeCanvasSize.width),
-                    height: Math.ceil(largeCanvasSize.width / aspectRatio)
-                  }
-                }]
-              ],
-              ['div.inspectors', [
-                [CameraInspector, { camera }],
-                [BoardInspector],
-                [GuidesInspector],
-                [CamerasInspector]
-              ]]
-            ],
-
-            //
-            // hide presets editor for now
-            //
-            // ['div.column', [
-            //   'div#presets', { style: {
-            //     flex: 1,
-            //     width: '200px',
-            //     backgroundColor: '#eee'
-            //   }},
-            //   [PresetsEditor, { transition }]
-            // ]],
-
-            ready && (remoteInput.mouseMode || remoteInput.orbitMode) && [PhoneCursor, { remoteInput, camera, largeCanvasRef, selectObject, selectBone, sceneObjects, selections, selectedBone }],
+            // [LoadingStatus, { ready }]
           ],
 
-          // [LoadingStatus, { ready }]
-        ],
+          ready && [
+            SceneManager, {
+              mainViewCamera,
+              largeCanvasRef,
+              smallCanvasRef,
+              machineState,
+              transition,
+              largeCanvasSize,
+              attachments
+            }
+          ],
 
-        ready && [
-          SceneManager, {
-            mainViewCamera,
-            largeCanvasRef,
-            smallCanvasRef,
-            machineState,
-            transition,
-            largeCanvasSize,
-            attachments
-          }
-        ],
+          !machineState.matches('typing') && [KeyHandler],
 
-        !machineState.matches('typing') && [KeyHandler],
+          [MenuManager],
 
-        [MenuManager],
-
-        ['div.notifications', { ref: notificationsRef }]
+          ['div.notifications', { ref: notificationsRef }]
+        ]
       ]
     )
   )
