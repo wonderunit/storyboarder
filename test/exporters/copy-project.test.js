@@ -134,8 +134,6 @@ describe('exporters/copyProject', () => {
             'board-1-UDRF3-shot-generator-thumbnail.jpg':
                                                   EMPTY_BUFFER,
             'board-1-UDRF3-shot-generator-camera-plot.png':   EMPTY_BUFFER,
-            'board-1-UDRF3-shot-generator-camera-plot-thumbnail.jpg':
-                                                  EMPTY_BUFFER,
           },
           'models': {
             'characters': {
@@ -218,7 +216,7 @@ describe('exporters/copyProject', () => {
     )
   })
 
-  describe('with shot-generator data', () => {
+  describe('with shot generator data', () => {
     const srcFilePath = path.resolve(path.join(fixturesPath, 'shot-generator', 'shot-generator.storyboarder'))
     const dstFolderPath = path.resolve(path.join(fixturesPath, 'shot-generator-export-with-models'))
 
