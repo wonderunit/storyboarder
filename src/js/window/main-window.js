@@ -2684,6 +2684,9 @@ let openInEditor = async () => {
         } else if (pathToEditor.match(/\.app$/)) {
           binaryPath = pathToEditor
           execString = `open -a "${binaryPath}" "${pathToLinkedFile}"`
+        } else {
+          binaryPath = pathToEditor
+          execString = `"${binaryPath}" "${pathToLinkedFile}"`
         }
 
         log.info('\tbinaryPath', binaryPath)
