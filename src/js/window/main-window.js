@@ -6997,6 +6997,18 @@ const saveToBoardFromShotGenerator = async ({ uid, data, images }) => {
 
 
 
+  // save camera-plot (re-use context)
+  let plotImage = await exporterCommon.getImage(images.plot)
+  context.canvas.width = 900
+  context.canvas.height = 900
+  context.drawImage(plotImage, 0, 0)
+  saveDataURLtoFile(
+    context.canvas.toDataURL(),
+    boardModel.boardFilenameForLayer(board, 'shot-generator-camera-plot')
+  )
+
+
+
   // save shot-generator-thumbnail.jpg
   // thumbnail size
   let size = getLayerThumbnailSize(boardData.aspectRatio)
