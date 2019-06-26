@@ -165,7 +165,7 @@ class IKSwitcher
         originalGlobalQuat.applyMatrix(transformMatrix);
         cloneBone.quaternion.copy(originalGlobalQuat);
         cloneBone.updateMatrix();
-        originBone.updateWorldMatrix(false, true);
+        cloneBone.updateWorldMatrix(true, true);
     }
 
     //#endregion

@@ -82,9 +82,11 @@ class IkObject
                 {
                     this.hips = object;
                     setZDirecion(object, new THREE.Vector3(0, 0, 1));
-
+                    //object.updateMatrix();
+                    object.updateWorldMatrix(true, true);
                     //rigMesh.bind(rigMesh.skeleton);
-
+                    console.log(this.hips);
+                    console.log(this.originalObject.children[0]);
                     this.originalObject.children[1].bind(this.originalObject.children[1].skeleton);
                     object.updateWorldMatrix(true, true);
                     let objectWorld = new THREE.Vector3();
@@ -140,8 +142,9 @@ class IkObject
         this.skeletonHelper.material.linewidth = 7;
 
         // Adds skeleton helper to scene
-        scene.add( this.skeletonHelper );
+        //scene.add( this.skeletonHelper );
         this.ikSwitcher.recalculateDifference();
+        this.ikSwitcher.initializeAxisAngle();
     }
 
     // Calculates back's offset in order to move with hips
@@ -222,7 +225,7 @@ class IkObject
         {
             let chain = chainObjects[i].chain;
             let jointBone = chain.joints[chain.joints.length - 1].bone;
-            if(this.ikSwitcher.switchingPose)
+        /*     if(this.ikSwitcher.switchingPose)
             {
                 let bone =  this.originalObject.getObjectByName(jointBone.name);
                 let targetPosition = chainObjects[i].controlTarget.target.position;
@@ -231,13 +234,15 @@ class IkObject
             else
             {
                 
-                if(jointBone.name === "LeftFoot" || jointBone.name === "RightFoot" ||
-                jointBone.name === "LeftHand" || jointBone.name === "RightHand" ||
-                jointBone.name === "Head" || jointBone.name === "Hips")
-                {
-                    let targetPosition = chainObjects[i].controlTarget.target.position;
-                    jointBone.getWorldPosition(targetPosition);
-                }
+            
+            } */
+
+            if(jointBone.name === "LeftFoot" || jointBone.name === "RightFoot" ||
+            jointBone.name === "LeftHand" || jointBone.name === "RightHand" ||
+            jointBone.name === "Head" || jointBone.name === "Hips")
+            {
+                let targetPosition = chainObjects[i].controlTarget.target.position;
+                jointBone.getWorldPosition(targetPosition);
             }
             
         }

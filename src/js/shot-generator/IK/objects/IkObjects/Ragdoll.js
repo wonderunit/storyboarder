@@ -14,6 +14,7 @@ class Ragdoll extends IkObject
         this.hipsMouseDown = false;
         this.isInitialized = false;
         this.scene = null;
+        this.waitTurns = 10;
     }
 
     initObject(scene, object, skinnedMesh, ...controlTarget )
@@ -60,7 +61,7 @@ class Ragdoll extends IkObject
         this.resetTargets();
         this.addHipsEvent();
         this.setUpControlEvents();
-        this.ikSwitcher.initializeAxisAngle();
+       
         this.isInitialized = true; 
 
         scene.remove(leftArmPoleTarget.mesh);
@@ -177,12 +178,7 @@ class Ragdoll extends IkObject
         if(!this.isEnabledIk)
         {
             this.resetTargets()
-            if(this.ikSwitcher.switchingPose)
-            {
-                this.applyToIk();
-            }
             this.ikSwitcher.changingPose();
-            
         }
         else
         {
@@ -357,6 +353,7 @@ class Ragdoll extends IkObject
 
     applyToIk()
     {
+        console.log("Apply changes to ik");
         this.ikSwitcher.applyToIk();
     }
 }
