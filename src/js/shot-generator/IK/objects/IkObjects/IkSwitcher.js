@@ -10,9 +10,6 @@ class IKSwitcher
         this.ikBonesName = [];
         this.ikBonesName.push("RightShoulder");
         this.ikBonesName.push("LeftShoulder");
-        this.switchingPose = false;
-        this.switchingProgress = 1;
-        this.switchIterations = 7;
     }
 
     //#region Data colletion
@@ -61,7 +58,6 @@ class IKSwitcher
     //#endregion
 
     //#region Switching execution
-
     applyChangesToOriginal()
     {
         let clonedSkin = this.clonedObject.children[1];
@@ -84,7 +80,6 @@ class IKSwitcher
             }
         }
         this.recalculateDifference();
-       // this.initializeAxisAngle();
     }
 
     cloneToOriginRotation(cloneBone, originBone)
@@ -130,7 +125,6 @@ class IKSwitcher
         let rotation = new THREE.Quaternion();
         let scale = new THREE.Vector3();
         matrix.decompose(position, rotation, scale);
-        let euler = new THREE.Euler().setFromQuaternion(rotation);
         object.position.copy(position);
         object.updateMatrix();
     }
@@ -151,8 +145,6 @@ class IKSwitcher
             }
             this.originToCloneRotation(cloneBone, originalBone);
         }
-        
-        //console.log("Applied to ik");
     }
 
     originToCloneRotation(cloneBone, originBone)
@@ -167,29 +159,6 @@ class IKSwitcher
         cloneBone.updateMatrix();
         cloneBone.updateWorldMatrix(true, true);
     }
-
     //#endregion
-
-    //#region Pose switching 
-    switchPose()
-    {
-        this.switchingPose = true;
-    
-    }
-
-    changingPose()
-    {
-        if(this.switchingPose)
-        {
-            this.switchingProgress += 100 / this.switchIterations;
-        }
-        if( this.switchingProgress >= 100)
-        {
-            this.switchingPose = false;
-            this.switchingProgress = 1;
-            //this.initializeAxisAngle();
-        }
-    }
-    //#endregion 
 }
 module.exports = IKSwitcher;

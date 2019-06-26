@@ -131,7 +131,6 @@ const TransformControls = function ( camera, domElement ) {
 
 	this.dispose = function () {
 
-		console.log("Dispose");
 		domElement.removeEventListener( "pointerdown", onPointerDown );
 		document.removeEventListener( "pointermove", onPointerMove, false );
 		domElement.removeEventListener( "touchstart", onPointerDown );

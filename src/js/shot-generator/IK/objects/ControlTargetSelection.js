@@ -8,7 +8,6 @@ class ControlTargetSelection
         this.scene = scene;
         this.domElement = domElement;
         this.controlTargets = controlTargets;
-        //domElement.addEventListener("pointermove", this.onPointerMove, false);
         this.meshes = controlTargets.map((controlTarget) => controlTarget.target);
         this.controls = controlTargets.map((controlTarget) => controlTarget.control);
         this.selectedMeshes = {};
@@ -32,7 +31,6 @@ class ControlTargetSelection
         let intersectControlTarget = false;
         if(Object.keys(this.selectedMeshes).length !== 0)
         {
-           
             let rotationalGizmoHelpers = this.rotationalGizmoHelpers( Object.values(this.selectedMeshes)[0].scope.control);
             intersectControlTarget = ray.intersectObjects(rotationalGizmoHelpers)[ 0 ] || false;
         }
@@ -45,8 +43,7 @@ class ControlTargetSelection
                 return;
             }   
             this.selectedMeshes[object.uuid] = object;
-            object.pointerDown();
-         
+            object.scope.selectControlPoint();
         } 
         else 
         {
@@ -77,7 +74,6 @@ class ControlTargetSelection
 			y: - ( pointer.clientY - rect.top ) / rect.height * 2 + 1,
 			button: event.button
 		};
-
     }
     
     rotationalGizmoHelpers(o)

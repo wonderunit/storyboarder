@@ -378,7 +378,6 @@ const Character = React.memo(({
       fixRootBone()
     }
     ragDoll.current.applyToIk();
-    ragDoll.current.ikSwitcher.switchPose();
   }
 
   const getCurrentControllerRotation = (device, virtual) => {
@@ -512,7 +511,6 @@ const Character = React.memo(({
 
         let heightChanged = object.current.scale.x !== scale ? true : false;
         object.current.scale.set( scale, scale, scale )
-        console.log("character resized");
         if(heightChanged)
         {
           ragDoll.current.reinitialize();

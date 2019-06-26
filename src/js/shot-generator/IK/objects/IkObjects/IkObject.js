@@ -5,7 +5,7 @@ const ChainObject = require( "./ChainObject");
 const SkeletonUtils = require("../../utils/SkeletonUtils");
 const IKSwitcher = require("./IkSwitcher");
 require("../../utils/Object3dExtension");
-// IKObject is class which applies ik onto skeleton
+
 class IkObject
 {
     constructor()
@@ -43,8 +43,6 @@ class IkObject
         let chainObjects = [];
         this.chainObjects = chainObjects;
         this.hipsControlTarget = this.controlTargets[5];
-        //this.controlTargets[1].target.rotation.copy(new THREE.Euler(1.213400733182015, 0.10190071449066612, 2.4475774728125717));
-        //this.controlTargets[2].target.rotation.copy(new THREE.Euler(1.213400733182015, -0.10190071449066612, -2.4475774728125717));
         this.controlTargets[3].target.rotation.copy(new THREE.Euler(Math.PI/2, 0, 0));
         this.controlTargets[4].target.rotation.copy(new THREE.Euler(Math.PI/2, 0, 0));
         this.controlTargets[3].isRotationLocked = true;
@@ -82,11 +80,8 @@ class IkObject
                 {
                     this.hips = object;
                     setZDirecion(object, new THREE.Vector3(0, 0, 1));
-                    //object.updateMatrix();
                     object.updateWorldMatrix(true, true);
-                    //rigMesh.bind(rigMesh.skeleton);
-                    console.log(this.hips);
-                    console.log(this.originalObject.children[0]);
+
                     this.originalObject.children[1].bind(this.originalObject.children[1].skeleton);
                     object.updateWorldMatrix(true, true);
                     let objectWorld = new THREE.Vector3();
@@ -163,12 +158,10 @@ class IkObject
         {
             // Solves the inverse kinematic of object
             this.ik.solve();
-
             this.lateUpdate();
             if(IK.firstRun)
             {
                 this.ikSwitcher.recalculateDifference();
-                //this.ikSwitcher.initializeAxisAngle();
                 IK.firstRun = false;
             }
         }
@@ -225,18 +218,6 @@ class IkObject
         {
             let chain = chainObjects[i].chain;
             let jointBone = chain.joints[chain.joints.length - 1].bone;
-        /*     if(this.ikSwitcher.switchingPose)
-            {
-                let bone =  this.originalObject.getObjectByName(jointBone.name);
-                let targetPosition = chainObjects[i].controlTarget.target.position;
-                bone.getWorldPosition(targetPosition);
-            }
-            else
-            {
-                
-            
-            } */
-
             if(jointBone.name === "LeftFoot" || jointBone.name === "RightFoot" ||
             jointBone.name === "LeftHand" || jointBone.name === "RightHand" ||
             jointBone.name === "Head" || jointBone.name === "Hips")

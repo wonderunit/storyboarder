@@ -14,9 +14,14 @@ class TargetControl
         this.isControlPointSelected = false;
         this.isControlTargetSelected = false;
         TargetControl.selectedControl = null;
-        this.control.addEventListener("pointerdown", (event) => console.log("pointerdown"));
         this.isRotationLocked = false;
     }
+
+    //#region Events
+    onKeyDown = event => this.onKeyDownLockRotation(event);
+    onControlKeyDown = event => this.selectControlTarget();
+    onControlKeyUp = event => this.deselectControlTarget();
+    //#endregion
 
     initialize(position, scene)
     {
@@ -33,45 +38,63 @@ class TargetControl
         let movingTarget = new THREE.Mesh(geometry, material);
         movingTarget.position.copy(position);
         movingTarget.renderOrder = 1;
-        movingTarget.pointerDown = () => {movingTarget.dispatchEvent( { type: 'pointerdown', message: '' } );};
         scene.add(movingTarget);
         movingTarget.userData.type = "controlPoint";
         movingTarget.name = "controlPoint";
         movingTarget.scope = this;
-        this.control.scope = this;
-        movingTarget.addEventListener("pointerdown", this.controlPointSelection);
-       // movingTarget.addEventListener("pointermove", this.pointerHover);
         this.control.attach(movingTarget);
         this.target = movingTarget;
-    }
-
-    intializeWithMesh(mesh, scene)
-    {
-        this.scene = scene;
-        this.control.attach(mesh);
-        this.target = mesh;
     }
 
     addToScene()
     {
         let scene = this.scene;
         scene.add(this.target);
-        this.target.addEventListener("pointerdown", this.controlPointSelection);
-        //this.target.addEventListener("pointermove", this.pointerHover);
     }
 
     removeFromScene()
     {
         let scene = this.scene;
         scene.remove(this.target);
-        this.target.removeEventListener("pointerdown", this.controlPointSelection);
         this.deselectControlPoint();
-      /*   scene.remove(this.control);
-        this.control.dispose();
+    }
+
+    addEventsToControlTarget()
+    {
+        let control = this.control;
+        control.addEventListener("pointerdown", this.onControlKeyDown);
+        control.addEventListener("pointerup", this.onControlKeyUp);
+        this.domElement.addEventListener("keydown", this.onKeyDown, false );
+    }
+
+    removeEventsFromControlTarget()
+    {
+        let control = this.control;
+        control.removeEventListener("pointerdown", this.onControlKeyDown);
+        control.removeEventListener("pointerup", this.onControlKeyUp);
+        this.domElement.removeEventListener("keydown", this.onKeyDown);
+    }
+    //#region Selectoin of control Target
+    selectControlTarget()
+    {
+        this.isControlTargetSelected = true;
+    }
+
+    deselectControlTarget()
+    {
         this.isControlTargetSelected = false;
-        this.isControlPointSelected = false;
-       // this.target.removeEventListener("pointermove", this.pointerHover);
-        this.removeEventsFromControlTarget(); */
+    }
+    //#endregion
+    //#region selection of control point
+    selectControlPoint()
+    {
+        if(!this.isControlSelected)
+        {
+            this.isControlPointSelected = true;
+            this.scene.add(this.control);
+            this.control.addToScene();
+            this.addEventsToControlTarget();
+        }
     }
 
     deselectControlPoint()
@@ -83,51 +106,7 @@ class TargetControl
         this.control.dispose();
         this.removeEventsFromControlTarget();
     }
-
-    addEventsToControlTarget()
-    {
-        let control = this.control;
-        control.addEventListener("pointerdown", this.selecteControlTarget);
-        control.addEventListener("pointerup", this.deselectControlTarget);
-        this.domElement.addEventListener("keydown", this.onKeyDownLockRotation, );
-    }
-
-    removeEventsFromControlTarget()
-    {
-        let control = this.control;
-        control.removeEventListener("pointerdown", this.selecteControlTarget);
-        control.removeEventListener("pointerup", this.deselectControlTarget);
-        this.domElement.removeEventListener("keydown", this.onKeyDownLockRotation);
-    }
-    
-    selecteControlTarget(event)
-    {
-        this.scope.isControlTargetSelected = true;
-    }
-
-    deselectControlTarget(event)
-    {
-        this.scope.isControlTargetSelected = false;
-    }
-
-    controlPointSelection(event)
-    {
-        let scope = this.scope;
-        if(!scope.isControlSelected)
-        {
-            let scope = this.scope;
-            let selectedMesh = TargetControl.selectedControl;
-            if(selectedMesh && selectedMesh !== scope)
-            {
-                selectedMesh.deselectControlPoint();
-            }
-            TargetControl.selectedControl = scope;
-            scope.isControlPointSelected = true;
-            scope.scene.add(scope.control);
-            scope.control.addToScene();
-            scope.addEventsToControlTarget();
-        }
-    }
+    //#endregion
 
     onKeyDownLockRotation(event)
     {
@@ -136,17 +115,9 @@ class TargetControl
             if(event.key === 'e')
             {
                 event.stopPropagation();
-                TargetControl.selectedControl.isRotationLocked = !TargetControl.selectedControl.isRotationLocked;
+                this.isRotationLocked = !this.isRotationLocked;
             }
         }
-    }
-
-    set disable(isDisabled)
-    {
-        let visible = isDisabled ? false : true;
-        this.target.visible = visible;
-        this.control.visible = visible;
-        this.disabled = isDisabled;
     }
 }
 module.exports = TargetControl;

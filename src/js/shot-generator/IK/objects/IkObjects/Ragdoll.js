@@ -40,12 +40,6 @@ class Ragdoll extends IkObject
 
         let backPoleTarget =  this.initPoleTargets(backChain, new THREE.Vector3(0, 0, 0), "backPole");
 
-        scene.add(leftArmPoleTarget.mesh);
-        scene.add(leftLegPoleTarget.mesh);
-        scene.add(rightArmPoleTarget.mesh);
-        scene.add(rightLegPoleTarget.mesh);
-        scene.add(backPoleTarget.mesh);
-
         let poleConstraint = new PoleConstraint(backChain, backPoleTarget);
         this.poleConstraints.push(poleConstraint);
         this.addPoleConstraintToRootJoint(leftArmChain, leftArmPoleTarget);
@@ -65,19 +59,11 @@ class Ragdoll extends IkObject
         this.setUpControlEvents();
        
         this.isInitialized = true; 
-
-        scene.remove(leftArmPoleTarget.mesh);
-        scene.remove(leftLegPoleTarget.mesh);
-        scene.remove(rightArmPoleTarget.mesh);
-        scene.remove(rightLegPoleTarget.mesh);
-        scene.remove(backPoleTarget.mesh);
-
     }
 
     setControlTargetSelection(domElement, scene, camera)
     {
         this.controlTargetSelection = new ControlTargetSelection(domElement, scene, camera, this.controlTargets);
-        //console.log(this.controlTargetSelection);
     }
 
     // Applies events to back control
@@ -187,7 +173,7 @@ class Ragdoll extends IkObject
         if(!this.isEnabledIk)
         {
             this.resetTargets()
-            this.ikSwitcher.changingPose();
+            //this.ikSwitcher.changingPose();
         }
         else
         {
@@ -364,7 +350,6 @@ class Ragdoll extends IkObject
 
     applyToIk()
     {
-        console.log("Apply changes to ik");
         this.ikSwitcher.applyToIk();
     }
 }
