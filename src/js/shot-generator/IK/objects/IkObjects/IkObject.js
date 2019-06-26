@@ -43,8 +43,8 @@ class IkObject
         let chainObjects = [];
         this.chainObjects = chainObjects;
         this.hipsControlTarget = this.controlTargets[5];
-        this.controlTargets[3].target.rotation.copy(new THREE.Euler(Math.PI/2, 0, 0));
-        this.controlTargets[4].target.rotation.copy(new THREE.Euler(Math.PI/2, 0, 0));
+        this.controlTargets[3].target.rotation.copy(new THREE.Euler(0.56, 0.1, 0));
+        this.controlTargets[4].target.rotation.copy(new THREE.Euler(0.56, -0.1, 0));
         this.controlTargets[3].isRotationLocked = true;
         this.controlTargets[4].isRotationLocked = true;
 
