@@ -39,6 +39,7 @@ const SGController = require('./components/SGController')
 const SGCharacter = require('./components/SGCharacter')
 const GUI = require('./gui/GUI')
 
+const { controllerObjectSettings, cameraObjectSettings } = require('./utils/xrObjectSettings')
 const { getIntersections, boneIntersect, intersectObjects } = require('./utils/xrControllerFuncs')
 const { findParent } = require('./utils/xrHelperFuncs')
 require('./lib/VRController')
@@ -59,36 +60,6 @@ new THREE.AudioLoader().load('data/snd/vr-select.ogg', () => {})
 new THREE.AudioLoader().load('data/snd/vr-welcome.ogg', () => {})
 new THREE.AudioLoader().load('data/snd/vr-beam2.mp3', () => {})
   // new THREE.AudioLoader().load('data/snd/vr-atmosphere.mp3', () => {})
-
-const controllerObjectSettings = {
-  id: 'controller',
-  model: 'controller-left',
-  displayName: 'Controller',
-  depth: 0.025,
-  height: 0.025,
-  width: 0.025,
-  rotation: { x: (Math.PI / 180) * -45, y: 0, z: 0 },
-  type: 'object',
-  visible: true,
-  x: 0,
-  y: 0,
-  z: 0
-}
-
-const cameraObjectSettings = {
-  id: 'camera',
-  model: 'camera',
-  displayName: 'Camera',
-  depth: 0.025,
-  height: 0.025,
-  width: 0.025,
-  rotation: { x: 0, y: 0, z: 0 },
-  type: 'object',
-  visible: true,
-  x: 0,
-  y: 0,
-  z: 0
-}
 
 const getFilepathForLoadable = ({ type, model }) => {
   // does the model name have a slash in it?
