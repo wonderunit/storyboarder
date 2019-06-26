@@ -88,7 +88,7 @@ class TargetControl
     //#region selection of control point
     selectControlPoint()
     {
-        if(!this.isControlSelected)
+        if(!this.isControlPointSelected)
         {
             this.isControlPointSelected = true;
             this.scene.add(this.control);

@@ -225,7 +225,6 @@ const Character = React.memo(({
       console.log(type, id, 'add')
     
       const { mesh, skeleton, armatures, originalHeight, boneLengthScale, parentRotation, parentPosition } = characterFactory(modelData)
-      console.log(modelData);
       // make a clone of the initial skeleton pose, for comparison
       originalSkeleton.current = skeleton.clone()
       originalSkeleton.current.bones = originalSkeleton.current.bones.map(bone => bone.clone())
@@ -276,8 +275,6 @@ const Character = React.memo(({
       object.current.userData.parentRotation = parentRotation
       object.current.userData.parentPosition = parentPosition
       scene.add(object.current.bonesHelper)
-
-      console.log(originalSkeleton.current);
 
       ragDoll.current = new RagDoll();
       let skeletonRig = ragDoll.current;

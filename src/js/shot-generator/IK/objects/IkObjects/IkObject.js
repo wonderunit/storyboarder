@@ -53,7 +53,7 @@ class IkObject
         chainObjects.push(new ChainObject("RightArm", "RightHand", this.controlTargets[2]));
         chainObjects.push(new ChainObject("LeftUpLeg", "LeftFoot", this.controlTargets[3]));
         chainObjects.push(new ChainObject("RightUpLeg", "RightFoot", this.controlTargets[4]));
-        scene.add(clonedSkeleton);
+        //scene.add(clonedSkeleton);
 
         //Fixing female-adult spine deformation
         if(rigMesh.name === "female-adult-meso")
@@ -134,16 +134,16 @@ class IkObject
             }
         });
         this.ikSwitcher.ikBonesName.push("Hips");
-        scene.remove(clonedSkeleton);
+        //scene.remove(clonedSkeleton);
         // Goes through list of constraints and adds it to IK
         chains.forEach((chain) =>
         {
             this.ik.add(chain);
         });
         // Sets skeleton helper for showing bones
-        this.skeletonHelper = new THREE.SkeletonHelper( skeleton );
+        //this.skeletonHelper = new THREE.SkeletonHelper( skeleton );
         // Sets line width of skeleton helper
-        this.skeletonHelper.material.linewidth = 7;
+        //this.skeletonHelper.material.linewidth = 7;
 
         // Adds skeleton helper to scene
         //scene.add( this.skeletonHelper );

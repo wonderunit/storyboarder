@@ -1,4 +1,5 @@
 const THREE = require("three");
+require("./Object3dExtension");
 /**
  * @author sunag / http://www.sunag.com.br
  */
@@ -537,7 +538,7 @@ const SkeletonUtils = {
         var sourceLookup = new Map();
         var cloneLookup = new Map();
 
-        var clone = source.clone();
+        var clone = source.cloneMesh();
 
         parallelTraverse( source, clone, function ( sourceNode, clonedNode ) {
 
@@ -555,7 +556,7 @@ const SkeletonUtils = {
             var sourceBones = sourceMesh.skeleton.bones;
 
             clonedMesh.skeleton = sourceMesh.skeleton.clone();
-            clonedMesh.bindMatrix.copy( sourceMesh.bindMatrix );
+            //clonedMesh.bindMatrix.copy( sourceMesh.bindMatrix );
 
             clonedMesh.skeleton.bones = sourceBones.map( function ( bone ) {
 
@@ -563,7 +564,7 @@ const SkeletonUtils = {
 
             } );
 
-            clonedMesh.bind( clonedMesh.skeleton, clonedMesh.bindMatrix );
+            //clonedMesh.bind( clonedMesh.skeleton, clonedMesh.bindMatrix );
 
         } );
 
@@ -573,6 +574,10 @@ const SkeletonUtils = {
 
 };
 
+function cloneObject(object)
+{
+
+}
 
 function parallelTraverse( a, b, callback ) {
 

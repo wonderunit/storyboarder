@@ -138,3 +138,46 @@ THREE.Matrix4.prototype.inverse = function()
     let matrix = new THREE.Matrix4().getInverse(this);
     return matrix;
 }
+
+THREE.Object3D.prototype.cloneMesh = function()
+{
+    return new this.constructor().copyMesh( this, true );
+}
+
+THREE.Object3D.prototype.copyMesh = function( source, recursive)
+{
+    if ( recursive === undefined ) recursive = true;
+
+    this.name = source.name;
+
+    this.up.copy( source.up );
+
+    this.position.copy( source.position );
+    this.quaternion.copy( source.quaternion );
+    this.scale.copy( source.scale );
+
+    this.matrix.copy( source.matrix );
+    this.matrixWorld.copy( source.matrixWorld );
+
+    this.matrixAutoUpdate = source.matrixAutoUpdate;
+    this.matrixWorldNeedsUpdate = source.matrixWorldNeedsUpdate;
+
+    this.layers.mask = source.layers.mask;
+    this.visible = source.visible;
+
+    this.castShadow = source.castShadow;
+    this.receiveShadow = source.receiveShadow;
+
+    this.frustumCulled = source.frustumCulled;
+    this.renderOrder = source.renderOrder;
+
+    if ( recursive === true ) {
+
+        for ( var i = 0; i < source.children.length; i ++ ) {
+
+            var child = source.children[ i ];
+            this.add( child.clone() );
+        }
+    }
+    return this;
+}

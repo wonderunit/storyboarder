@@ -26,7 +26,6 @@ class ControlTargetSelection
     {
         let ray = this.ray;
 		ray.setFromCamera( pointer, this.camera );
-        
         let intersectMeshes = ray.intersectObjects(this.meshes)[ 0 ] || false;
         let intersectControlTarget = false;
         if(Object.keys(this.selectedMeshes).length !== 0)
@@ -34,7 +33,7 @@ class ControlTargetSelection
             let rotationalGizmoHelpers = this.rotationalGizmoHelpers( Object.values(this.selectedMeshes)[0].scope.control);
             intersectControlTarget = ray.intersectObjects(rotationalGizmoHelpers)[ 0 ] || false;
         }
-    
+        
         if ( intersectMeshes ) 
         {
             let object = intersectMeshes.object;

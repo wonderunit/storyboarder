@@ -53,8 +53,8 @@ class Ragdoll extends IkObject
 
         this.poleConstraints[0].poleAngle = 128;
         this.poleConstraints[0].chainLength = 6;
-        this.poleConstraints[1].testing = true;
-        this.resetTargets();
+        //this.poleConstraints[1].testing = true;
+        //this.resetTargets();
         this.addHipsEvent();
         this.setUpControlEvents();
        
