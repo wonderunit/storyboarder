@@ -28,7 +28,7 @@ const boardFilenameForPosterFrame = (board) =>
   board.url.replace('.png', `-posterframe.jpg`)
 
 const boardFilenameForCameraPlot = (board) =>
-  board.url.replace('.png', `-shot-generator-camera-plot.png`)
+  board.url.replace('.png', `-camera-plot.png`)
 
 // TODO review usage
 // array of fixed size, ordered positions

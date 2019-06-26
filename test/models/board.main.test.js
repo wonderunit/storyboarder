@@ -85,7 +85,7 @@ describe('boardModel', () => {
       it('includes sg files for shot generator boards', () => {
         let board = shotGeneratorScene.boards[0]
         let filenames = boardModel.getMediaFilenames(board)
-        assert(filenames.includes('board-1-UDRF3-shot-generator-camera-plot.png'))
+        assert(filenames.includes('board-1-UDRF3-camera-plot.png'))
       })
     })
     describe('edge cases', () => {
