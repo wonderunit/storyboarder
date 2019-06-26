@@ -264,11 +264,12 @@ const Editor = connect(
       }
 
 
-
-      imageRenderer.current.clear()
+      let savedBackground = scene.current.background && scene.current.background.clone()
+      scene.current.background = new THREE.Color( '#FFFFFF' )
       imageRenderer.current.setSize(900, 900)
       imageRenderer.current.render(scene.current, orthoCamera.current)
       let plotImage = imageRenderer.current.domElement.toDataURL()
+      scene.current.background = savedBackground
 
 
 
