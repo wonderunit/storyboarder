@@ -35,9 +35,18 @@ const intersectObjects = (controller, intersectArray) => {
   }
 }
 
-const cleanIntersected = () => {
-  while (intersected.length) {
-    var object = intersected.pop()
+const constraintObjectRotation = (controller, worldScale) => {
+  const object = controller.userData.selected
+
+  const raycastDepth = controller.getObjectByName('raycast-depth')
+  const depthWorldPos = raycastDepth.getWorldPosition(new THREE.Vector3())
+  depthWorldPos.sub(controller.userData.posOffset)
+
+  if (object.userData.type === 'character') {
+    object.rotation.y = object.userData.modelSettings.rotation
+    object.position.copy(depthWorldPos).multiplyScalar(1 / worldScale)
+  } else {
+    object.position.copy(depthWorldPos).multiplyScalar(1 / worldScale)
   }
 }
 
@@ -45,5 +54,5 @@ module.exports = {
   getIntersections,
   boneIntersect,
   intersectObjects,
-  cleanIntersected
+  constraintObjectRotation
 }

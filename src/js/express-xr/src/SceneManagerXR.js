@@ -40,7 +40,7 @@ const SGCharacter = require('./components/SGCharacter')
 const GUI = require('./gui/GUI')
 
 const { controllerObjectSettings, cameraObjectSettings } = require('./utils/xrObjectSettings')
-const { getIntersections, boneIntersect, intersectObjects } = require('./utils/xrControllerFuncs')
+const { getIntersections, boneIntersect, intersectObjects, constraintObjectRotation } = require('./utils/xrControllerFuncs')
 const { findParent } = require('./utils/xrHelperFuncs')
 require('./lib/VRController')
 
@@ -366,21 +366,6 @@ const SceneContent = ({
       }
     })
     return array
-  }
-
-  const constraintObjectRotation = controller => {
-    const object = controller.userData.selected
-
-    const raycastDepth = controller.getObjectByName('raycast-depth')
-    const depthWorldPos = raycastDepth.getWorldPosition(new THREE.Vector3())
-    depthWorldPos.sub(controller.userData.posOffset)
-
-    if (object.userData.type === 'character') {
-      object.rotation.y = object.userData.modelSettings.rotation
-      object.position.copy(depthWorldPos).multiplyScalar(1 / worldScale)
-    } else {
-      object.position.copy(depthWorldPos).multiplyScalar(1 / worldScale)
-    }
   }
 
   const onTeleport = event => {
@@ -1096,7 +1081,7 @@ const SceneContent = ({
 
       const object = controller.userData.selected
       if (object && object.userData.type === 'character') {
-        constraintObjectRotation(controller)
+        constraintObjectRotation(controller, worldScale)
       }
 
       if (controller.pressed === true) {
@@ -1134,7 +1119,7 @@ const SceneContent = ({
               controller.userData.posOffset = posOffset
             }
           } else {
-            constraintObjectRotation(controller)
+            constraintObjectRotation(controller, worldScale)
           }
         }
       }
