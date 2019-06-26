@@ -178,6 +178,7 @@ const Editor = connect(
 
     const scene = useRef()
     let [camera, setCamera ] = useState(null)
+    const orthoCamera = useRef(new THREE.OrthographicCamera( -4, 4, 4, -4, 1, 10000 ))
     const [ machineState, transition ] = useMachine(editorMachine, { log: false })
 
     const mainViewContainerRef = useRef(null)
@@ -794,7 +795,8 @@ const Editor = connect(
               machineState,
               transition,
               largeCanvasSize,
-              attachments
+              attachments,
+              orthoCamera
             }
           ],
 
