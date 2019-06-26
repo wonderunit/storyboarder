@@ -286,13 +286,15 @@ class Ragdoll extends IkObject
         head.updateMatrix();
     }
 
-    removeFromScene(scene)
+    removeFromScene()
     {
         if(!this.isInitialized)
         {
             return;
         }
+        let scene = this.scene;
         super.removeFromScene(scene);
+        this.controlTargetSelection.dispose();
         this.poleConstraints.forEach((constraint)=>
         {
             scene.remove(constraint.poleTarget.mesh);

@@ -54,6 +54,15 @@ class IkObject
         chainObjects.push(new ChainObject("LeftUpLeg", "LeftFoot", this.controlTargets[3]));
         chainObjects.push(new ChainObject("RightUpLeg", "RightFoot", this.controlTargets[4]));
         scene.add(clonedSkeleton);
+
+        //Fixing female-adult spine deformation
+        if(rigMesh.name === "female-adult-meso")
+        {
+            rigMesh.skeleton.bones[2].rotation.set(0, 0, 0);
+            rigMesh.skeleton.bones[2].updateMatrix();
+            rigMesh.skeleton.bones[2].updateMatrixWorld(true, true);
+        }
+       
         // Goes through all scene objects
         clonedSkeleton.traverse((object) =>
         {
@@ -80,10 +89,10 @@ class IkObject
                 {
                     this.hips = object;
                     setZDirecion(object, new THREE.Vector3(0, 0, 1));
-                    object.updateWorldMatrix(true, true);
+                    //object.updateWorldMatrix(true, true);
 
-                    this.originalObject.children[1].bind(this.originalObject.children[1].skeleton);
-                    object.updateWorldMatrix(true, true);
+                    //this.originalObject.children[1].bind(this.originalObject.children[1].skeleton);
+                    //object.updateWorldMatrix(true, true);
                     let objectWorld = new THREE.Vector3();
                     object.getWorldPosition(objectWorld);
                     this.hipsControlTarget.target.position.copy(objectWorld);
@@ -192,8 +201,9 @@ class IkObject
     // Removes ikObject's all elements from scene
     // Control target consists of two things: mesh and control
     // before removed mesh should be detached from control
-    removeFromScene(scene)
+    removeFromScene()
     {
+        let scene = this.scene;
         this.chainObjects.forEach((chainObject) =>
         {
             let control = chainObject.controlTarget.control;

@@ -198,6 +198,8 @@ const Character = React.memo(({
       scene.remove(object.current.bonesHelper)
       scene.remove(object.current.orthoIcon)
       scene.remove(object.current)
+      ragDoll.current.removeFromScene();
+      ragDoll.current = null;
       object.current.bonesHelper = null
       object.current = null
     }
@@ -223,7 +225,7 @@ const Character = React.memo(({
       console.log(type, id, 'add')
     
       const { mesh, skeleton, armatures, originalHeight, boneLengthScale, parentRotation, parentPosition } = characterFactory(modelData)
-
+      console.log(modelData);
       // make a clone of the initial skeleton pose, for comparison
       originalSkeleton.current = skeleton.clone()
       originalSkeleton.current.bones = originalSkeleton.current.bones.map(bone => bone.clone())
@@ -274,6 +276,8 @@ const Character = React.memo(({
       object.current.userData.parentRotation = parentRotation
       object.current.userData.parentPosition = parentPosition
       scene.add(object.current.bonesHelper)
+
+      console.log(originalSkeleton.current);
 
       ragDoll.current = new RagDoll();
       let skeletonRig = ragDoll.current;
@@ -366,7 +370,7 @@ const Character = React.memo(({
           }
           else if(name !== "Hips")
           {
-            let bone =  originalSkeleton.current.getBoneByName(name).clone();
+            //let bone =  originalSkeleton.current.getBoneByName(name).clone();
             prevRotation.current[name] = originalSkeleton.current.getBoneByName(name).clone();
           }
         }
