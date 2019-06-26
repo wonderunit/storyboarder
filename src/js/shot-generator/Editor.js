@@ -27,6 +27,7 @@ const {
 } = require('./Components')
 const SceneManager = require('./SceneManager')
 const GuidesView = require('./GuidesView')
+const FatalErrorBoundary = require('./FatalErrorBoundary')
 
 const ModelLoader = require('../services/model-loader')
 
@@ -123,43 +124,6 @@ const {
 } = require('../shared/reducers/shot-generator')
 
 const notifications = require('../window/notifications')
-
-class FatalErrorBoundary extends React.Component {
-  constructor(props) {
-    super(props)
-    this.state = {
-      hasError: false,
-      error: null
-    }
-  }
-
-  static getDerivedStateFromError (error) {
-    return { hasError: true, error }
-  }
-
-  componentDidCatch(error, info) {
-    log.error(error, info)
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return h(
-        ['div.fatal-error-screen',
-          [
-            'h1.fatal-error-screen__title',
-            `Uh oh. Shot Generator encountered an unexpected error and could not continue.`
-          ],
-          [
-            'div.fatal-error-screen__report',
-            this.state.error.stack
-          ]
-        ]
-      )
-    }
-
-    return this.props.children
-  }
-}
 
 const Editor = connect(
   state => ({
