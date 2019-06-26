@@ -14,7 +14,7 @@ class TargetControl
         this.isControlPointSelected = false;
         this.isControlTargetSelected = false;
         TargetControl.selectedControl = null;
-        this.control.addEventListener("pointerDown", (event) => console.log("pointerdown"));
+        this.control.addEventListener("pointerdown", (event) => console.log("pointerdown"));
         this.isRotationLocked = false;
     }
 
@@ -40,6 +40,7 @@ class TargetControl
         movingTarget.scope = this;
         this.control.scope = this;
         movingTarget.addEventListener("pointerdown", this.controlPointSelection);
+       // movingTarget.addEventListener("pointermove", this.pointerHover);
         this.control.attach(movingTarget);
         this.target = movingTarget;
     }
@@ -56,24 +57,28 @@ class TargetControl
         let scene = this.scene;
         scene.add(this.target);
         this.target.addEventListener("pointerdown", this.controlPointSelection);
+        //this.target.addEventListener("pointermove", this.pointerHover);
     }
 
     removeFromScene()
     {
         let scene = this.scene;
         scene.remove(this.target);
-        scene.remove(this.control);
+        this.target.removeEventListener("pointerdown", this.controlPointSelection);
+        this.deselectControlPoint();
+      /*   scene.remove(this.control);
         this.control.dispose();
         this.isControlTargetSelected = false;
         this.isControlPointSelected = false;
-        this.target.removeEventListener("pointerdown", this.controlPointSelection);
-        this.removeEventsFromControlTarget();
+       // this.target.removeEventListener("pointermove", this.pointerHover);
+        this.removeEventsFromControlTarget(); */
     }
 
     deselectControlPoint()
     {
         let scene = this.scene;
         this.isControlPointSelected = false;
+        this.isControlTargetSelected = false;
         scene.remove(this.control);
         this.control.dispose();
         this.removeEventsFromControlTarget();
@@ -83,7 +88,7 @@ class TargetControl
     {
         let control = this.control;
         control.addEventListener("pointerdown", this.selecteControlTarget);
-        control.addEventListener("pointerup", this.deselectcontrolTarget);
+        control.addEventListener("pointerup", this.deselectControlTarget);
         this.domElement.addEventListener("keydown", this.onKeyDownLockRotation, );
     }
 
@@ -91,7 +96,7 @@ class TargetControl
     {
         let control = this.control;
         control.removeEventListener("pointerdown", this.selecteControlTarget);
-        control.removeEventListener("pointerup", this.deselectcontrolTarget);
+        control.removeEventListener("pointerup", this.deselectControlTarget);
         this.domElement.removeEventListener("keydown", this.onKeyDownLockRotation);
     }
     
@@ -100,7 +105,7 @@ class TargetControl
         this.scope.isControlTargetSelected = true;
     }
 
-    deselectcontrolTarget(event)
+    deselectControlTarget(event)
     {
         this.scope.isControlTargetSelected = false;
     }

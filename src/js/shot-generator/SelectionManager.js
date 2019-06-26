@@ -98,7 +98,7 @@ const getIntersectionTarget = intersect => {
   }
 
   //Transform control
-  if(intersect.object.type === 'Line')
+  if(intersect.object.type === 'gizmo')
   {
     return intersect.object;
   }
@@ -316,18 +316,20 @@ const SelectionManager = connect(
         {
           intersects[0] = controlPoint[0];
         }
+        console.log(intersects);
         target = getIntersectionTarget(intersects[0])
 
-        if(intersects[0].object && intersects[0].object.type && intersects[0].object.userData.type === 'controlPoint')
+        if(intersects[0].object && intersects[0].object.userData && intersects[0].object.userData.type === 'controlPoint')
         {
           let characterId = target.characterId;
           let characters = intersectables.filter(value => value.uuid === characterId);
-          target.pointerDown();
+          //target.pointerDown();
           target = characters[0];
           isSelectedControlPoint = true;
         } 
-        else if(intersects[0].object && intersects[0].object.type && intersects[0].object.type === 'Line')
+        else if(intersects[0].object && intersects[0].object.type && intersects[0].object.type === 'gizmo')
         {
+          console.log(target);
           let characterId = target.parent.parent.parent.characterId;
           let characters = intersectables.filter(value => value.uuid === characterId);
           target = characters[0];

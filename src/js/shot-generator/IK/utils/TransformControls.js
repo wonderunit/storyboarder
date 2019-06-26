@@ -1024,7 +1024,7 @@ const TransformControlsGizmo = function () {
 				// name and tag properties are essential for picking and updating logic.
 				object.name = name;
 				object.tag = tag;
-
+				object.type = "gizmo";
 				if (position) {
 					object.position.set(position[ 0 ], position[ 1 ], position[ 2 ]);
 				}
@@ -1079,12 +1079,12 @@ const TransformControlsGizmo = function () {
 	this.gizmo[ "translate" ] = setupGizmo( gizmoTranslate );
 	this.picker[ "translate" ] = setupGizmo( pickerTranslate );
 	this.helper[ "translate" ] = setupGizmo( helperTranslate );
-	this.helper[ "translate" ].name = "Helper";
+	this.picker[ "translate" ].name = "Helper";
 	this.gizmo[ "rotate" ] = setupGizmo( gizmoRotate );
 	this.picker[ "rotate" ] = setupGizmo( pickerRotate );
 	this.helper[ "rotate" ] = setupGizmo( helperRotate );
-	this.gizmo[ "rotate" ].name = "Helper";
-	this.helper[ "rotate" ].name = "Helper";
+	//xthis.gizmo[ "rotate" ].name = "Helper";
+	this.picker[ "rotate" ].name = "Helper";
 	if(!isScaleDisabled)
 	{
 		this.add( this.gizmo[ "scale" ] = setupGizmo( gizmoScale ) );

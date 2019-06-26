@@ -3,6 +3,7 @@ const THREE = require( "three");
 const PoleConstraint = require( "../../constraints/PoleConstraint");
 const PoleTarget = require( "../PoleTarget");
 const CopyRotation = require( "../../constraints/CopyRotation");
+const ControlTargetSelection = require( "../ControlTargetSelection");
 require("../../utils/Object3dExtension");
 
 class Ragdoll extends IkObject
@@ -15,6 +16,7 @@ class Ragdoll extends IkObject
         this.isInitialized = false;
         this.scene = null;
         this.waitTurns = 10;
+        this.controlTargetSelection = null;
     }
 
     initObject(scene, object, skinnedMesh, ...controlTarget )
@@ -71,6 +73,13 @@ class Ragdoll extends IkObject
         scene.remove(backPoleTarget.mesh);
 
     }
+
+    setControlTargetSelection(domElement, scene, camera)
+    {
+        this.controlTargetSelection = new ControlTargetSelection(domElement, scene, camera, this.controlTargets);
+        //console.log(this.controlTargetSelection);
+    }
+
     // Applies events to back control
     applyEventsToBackControl(backControl)
     {
@@ -327,10 +336,12 @@ class Ragdoll extends IkObject
         this.hipsControlTarget.disable = !visible;
         if(visible)
         {
+            this.controlTargetSelection.initialize();
             this.hipsControlTarget.addToScene();
         }
         else
         {
+            this.controlTargetSelection.dispose();
             this.hipsControlTarget.removeFromScene();
         }
       

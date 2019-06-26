@@ -287,7 +287,7 @@ const Character = React.memo(({
       skeletonRig.initObject(scene, object.current, object.current.children[1], backControl, leftHandControl,
           rightHandControl, leftLegControl, rightLegControl,
           hipsControl );
-
+      skeletonRig.setControlTargetSelection(domElement, scene, camera);
       object.current.userData.ikRig = skeletonRig;
     }
 
