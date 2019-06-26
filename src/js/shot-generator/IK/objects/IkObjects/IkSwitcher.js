@@ -103,7 +103,6 @@ class IKSwitcher
         cloneBone.updateMatrixWorld(true);
         originalBone.updateMatrixWorld(true);
 
-        //let originalPrevMatrix = this.originalObjectMatrix[originalBone.name].clone();
         let originalCurrentMatrix = originalBone.matrix.clone();
         let clonePrevMatrix = this.cloneObjectMatrix[cloneBone.name].clone();
         let cloneCurrentMatrix = cloneBone.matrix.clone();
