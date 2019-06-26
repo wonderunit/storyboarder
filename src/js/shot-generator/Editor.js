@@ -265,30 +265,26 @@ const Editor = connect(
 
 
 
-      // TODO
-      // if (topDownCamera) {
-      //   imageRenderer.clear()
-      //   imageRenderer.setSize(900, 900)
-      //   imageRenderer.render(scene, topDownCamera)
-      //   let topDownImage = imageRenderer.domElement.toDataURL()
-      // }
-      let topDownImage = undefined
+      imageRenderer.current.clear()
+      imageRenderer.current.setSize(900, 900)
+      imageRenderer.current.render(scene.current, orthoCamera.current)
+      let plotImage = imageRenderer.current.domElement.toDataURL()
 
-      return { cameraImage, topDownImage }
+
+
+      return { cameraImage, plotImage }
     }
 
     const onToolbarSaveToBoard = () => {
       withState((dispatch, state) => {
-        let { cameraImage } = renderImagesForBoard(state)
+        let { cameraImage, plotImage } = renderImagesForBoard(state)
 
         ipcRenderer.send('saveShot', {
           uid: state.board.uid,
           data: getSerializedState(state),
           images: {
             'camera': cameraImage,
-
-            // TODO
-            'topdown': undefined
+            'plot': plotImage
           }
         })
 
@@ -297,7 +293,7 @@ const Editor = connect(
     }
     const onToolbarInsertAsNewBoard = () => {
       withState((dispatch, state) => {
-        let { cameraImage } = renderImagesForBoard(state)
+        let { cameraImage, plotImage } = renderImagesForBoard(state)
 
         // NOTE we do this first, since we get new data on insertShot complete
         dispatch(markSaved())
@@ -306,9 +302,7 @@ const Editor = connect(
           data: getSerializedState(state),
           images: {
             'camera': cameraImage,
-
-            // TODO
-            'topdown': undefined
+            'plot': plotImage
           }
         })
       })
