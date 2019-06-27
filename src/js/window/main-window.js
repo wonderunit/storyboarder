@@ -6462,6 +6462,7 @@ const exportZIP = async () => {
   await saveImageFile()
   saveBoardFile()
 
+  log.info('Exporting ZIP file')
   notifications.notify({ message: `Exporting ZIP file …` })
 
   let basename = path.basename(srcFilePath, path.extname(srcFilePath))
@@ -6474,6 +6475,7 @@ const exportZIP = async () => {
     notifications.notify({ message: `Done.` })
     shell.showItemInFolder(exportFilePath)
   } catch (err) {
+    log.error(err)
     notifications.notify({ message: `[ERROR] ${err.message}` })
     notifications.notify({ message: `Failed.` })
   }
