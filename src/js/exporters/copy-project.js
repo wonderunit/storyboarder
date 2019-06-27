@@ -144,15 +144,18 @@ const copyProject = (
     throw new Error(`ENOENT: could not find destination folder ${dstFolderPath}`)
   }
 
+  let missing = []
   pairs.forEach(({ from, to }) => {
     if (fs.existsSync(from)) {
       fs.copySync(from, to)
     } else {
+      missing.push(from)
       if (!options.ignoreMissing) {
         throw new Error(`ENOENT: could not find source file ${from}`)
       }
     }
   })
+  return { missing }
 }
 
 module.exports = {

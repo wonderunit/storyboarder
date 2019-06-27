@@ -1,7 +1,7 @@
 {
   "name": "storyboarder",
   "productName": "Storyboarder",
-  "version": "1.10.1",
+  "version": "1.11.3",
   "description": "The fastest way to storyboard.",
   "main": "src/js/main.js",
   "scripts": {
@@ -52,7 +52,9 @@
     },
     "win": {
       "icon": "build/icon.ico",
-      "timeStampServer": "http://timestamp.comodoca.com/authenticode"
+      "timeStampServer": "http://timestamp.comodoca.com/authenticode",
+      "certificateSubjectName": "Wonder Unit, Inc.",
+      "publisherName": "Wonder Unit, Inc."
     },
     "dmg": {
       "background": "build/background.png",
@@ -104,11 +106,11 @@
   },
   "devDependencies": {
     "cross-env": "^5.2.0",
-    "electron": "5.0.3",
-    "electron-builder": "20.39.0",
+    "electron": "5.0.5",
+    "electron-builder": "20.44.4",
     "electron-mocha": "8.0.2",
-    "electron-osx-sign": "^0.4.8",
-    "electron-rebuild": "^1.8.4",
+    "electron-osx-sign": "^0.4.11",
+    "electron-rebuild": "^1.8.5",
     "floss": "^2.2.0",
     "mocha": "3.5.0",
     "mock-fs": "4.10.1",
@@ -125,7 +127,6 @@
     "chokidar": "3.0.1",
     "classnames": "2.2.6",
     "color-js": "^1.0.4",
-    "dualshock": "github:wonderunit/dualshock#558d78dfce1255d4afe473dc002b82b491be1504",
     "eases": "1.0.8",
     "electron-google-analytics": "0.0.16",
     "electron-is-dev": "0.3.0",
@@ -150,7 +151,6 @@
     "lodash.throttle": "4.1.1",
     "moment": "2.19.3",
     "node-fetch": "2.1.2",
-    "node-hid": "0.7.9",
     "node-machine-id": "1.1.10",
     "paper": "0.11.5",
     "pdfjs-dist": "2.0.550",

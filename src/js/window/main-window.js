@@ -7,6 +7,7 @@ const dns = require('dns')
 const path = require('path')
 const menu = require('../menu')
 const util = require('../utils/index')
+const sortFilePaths = require('../utils/sortFilePaths')
 const Color = require('color-js')
 const plist = require('plist')
 const R = require('ramda')
@@ -804,7 +805,7 @@ const loadBoardUI = async () => {
     }
 
     if (!hasStoryboarderFile) {
-      insertNewBoardsWithFiles(filepaths)
+      insertNewBoardsWithFiles(sortFilePaths(filepaths))
     }
   }
 
@@ -2683,12 +2684,19 @@ let openInEditor = async () => {
         } else if (pathToEditor.match(/\.app$/)) {
           binaryPath = pathToEditor
           execString = `open -a "${binaryPath}" "${pathToLinkedFile}"`
+        } else {
+          binaryPath = pathToEditor
+          execString = `"${binaryPath}" "${pathToLinkedFile}"`
         }
+
+        log.info('\tbinaryPath', binaryPath)
+        log.info('\tpathToLinkedFile', pathToLinkedFile)
+        log.info('\texecString', execString)
 
         if (binaryPath) {
           child_process.exec(execString, (error, stdout, stderr) => {
-            log.info(execString)
             if (error) {
+              log.warn(error)
               notifications.notify({ message: `[WARNING] ${error}` })
               return
             }
@@ -2700,14 +2708,17 @@ let openInEditor = async () => {
         }
       } else {
         log.info('\tshell.openItem', board.link)
+        log.info('\t\t', board.link)
+        log.info('\t\t', pathToLinkedFile)
         let result = shell.openItem(pathToLinkedFile)
-        log.info('\tshell.openItem result:', result)
+        log.info('\t\tresult:', result)
         if (!result) {
           errmsg = 'Could not open editor'
         }
       }
 
       if (errmsg) {
+        log.warn(errmsg)
         notifications.notify({ message: `[WARNING] ${errmsg}` })
       }
     }
@@ -6451,6 +6462,7 @@ const exportZIP = async () => {
   await saveImageFile()
   saveBoardFile()
 
+  log.info('Exporting ZIP file')
   notifications.notify({ message: `Exporting ZIP file …` })
 
   let basename = path.basename(srcFilePath, path.extname(srcFilePath))
@@ -6458,11 +6470,15 @@ const exportZIP = async () => {
   let exportFilePath = path.join(boardPath, 'exports', `${basename}-${timestamp}.zip`)
 
   try {
-    await exporterArchive.exportAsZIP(srcFilePath, exportFilePath)
+    const { missing } = await exporterArchive.exportAsZIP(srcFilePath, exportFilePath)
+
+    notifications.notify({ message: `WARNING: The following files were missing and could not be added to the ZIP:\n` + missing.join('\n') })
+    log.warn('Missing', missing.join('\n'))
 
     notifications.notify({ message: `Done.` })
     shell.showItemInFolder(exportFilePath)
   } catch (err) {
+    log.error(err)
     notifications.notify({ message: `[ERROR] ${err.message}` })
     notifications.notify({ message: `Failed.` })
   }
@@ -6629,7 +6645,7 @@ ipcRenderer.on('textInputMode', (event, args)=>{
 })
 
 ipcRenderer.on('insertNewBoardsWithFiles', (event, filepaths)=> {
-  insertNewBoardsWithFiles(filepaths)
+  insertNewBoardsWithFiles(sortFilePaths(filepaths))
 })
 
 ipcRenderer.on('importImage', (event, fileData) => {
@@ -6983,6 +6999,18 @@ const saveToBoardFromShotGenerator = async ({ uid, data, images }) => {
 
   // save shot-generator.png
   saveDataURLtoFile(context.canvas.toDataURL(), board.layers['shot-generator'].url)
+
+
+
+  // save camera-plot (re-use context)
+  let plotImage = await exporterCommon.getImage(images.plot)
+  context.canvas.width = 900
+  context.canvas.height = 900
+  context.drawImage(plotImage, 0, 0)
+  saveDataURLtoFile(
+    context.canvas.toDataURL(),
+    boardModel.boardFilenameForCameraPlot(board)
+  )
 
 
 

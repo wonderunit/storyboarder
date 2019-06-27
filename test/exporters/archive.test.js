@@ -1,7 +1,7 @@
 //
 // USAGE:
 //
-// find src/js/exporters/archive.js test/exporters/archive.test.js | entr -c electron-mocha --renderer test/exporters/archive.test.js
+// find src/js/exporters/archive.js test/exporters/archive.test.js | entr -c npx electron-mocha --renderer test/exporters/archive.test.js
 //
 
 const assert = require('assert')
