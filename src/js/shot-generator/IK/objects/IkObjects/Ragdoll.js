@@ -284,6 +284,7 @@ class Ragdoll extends IkObject
     {
         let chainObjects = this.chainObjects;
         let hipsTarget = this.hipsControlTarget.target;
+        let {angle, axis} = this.hips.quaternion.toAngleAxis();
         for(let i = 0; i < chainObjects.length; i++)
         {
             let constraint = this.poleConstraints[i];
@@ -291,7 +292,9 @@ class Ragdoll extends IkObject
             let targetPosition = new THREE.Vector3();
             hipsTarget.getWorldPosition(targetPosition);
             let poleOffset = constraint.poleTarget.poleOffset;
-            constraint.poleTarget.mesh.position.set(targetPosition.x + poleOffset.x, targetPosition.y + poleOffset.y, targetPosition.z + poleOffset.z);
+            let mesh = constraint.poleTarget.mesh;
+            mesh.position.set(targetPosition.x + poleOffset.x, targetPosition.y + poleOffset.y, targetPosition.z + poleOffset.z);
+            mesh.rotateAroundPoint(targetPosition, axis, angle);
         }
     }
 
