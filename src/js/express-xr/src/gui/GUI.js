@@ -121,7 +121,7 @@ const GUI = ({ aspectRatio, guiMode, addMode, currentBoard, selectedObject, hide
 
   const updateState = (id, prop, value) => {
     if (id && prop) {
-      const event = new CustomEvent('updateRedux', {
+      const event = new CustomEvent('updateGUIProp', {
         detail: {
           id,
           prop,

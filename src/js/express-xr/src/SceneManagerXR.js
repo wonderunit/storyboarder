@@ -40,14 +40,13 @@ const SGCharacter = require('./components/SGCharacter')
 const GUI = require('./gui/GUI')
 
 const { controllerObjectSettings, cameraObjectSettings } = require('./utils/xrObjectSettings')
-const { getIntersections, boneIntersect, intersectObjects, constraintObjectRotation } = require('./utils/xrControllerFuncs')
-const { findParent } = require('./utils/xrHelperFuncs')
+const { getIntersections, boneIntersect, intersectObjects, constraintObjectRotation, setControllerData } = require('./utils/xrControllerFuncs')
+const { findParent, moveObject, rotateObject, createHideArray, getFilepathForLoadable } = require('./utils/xrHelperFuncs')
+const applyDeviceQuaternion = require('../../shot-generator/apply-device-quaternion')
 require('./lib/VRController')
 
 // const RStats = require('./lib/rStats')
 // require('./lib/rStats.extras')
-
-const applyDeviceQuaternion = require('../../shot-generator/apply-device-quaternion')
 
 const loadingManager = new THREE.LoadingManager()
 const objLoader = new THREE.OBJLoader2(loadingManager)
@@ -60,38 +59,6 @@ new THREE.AudioLoader().load('data/snd/vr-select.ogg', () => {})
 new THREE.AudioLoader().load('data/snd/vr-welcome.ogg', () => {})
 new THREE.AudioLoader().load('data/snd/vr-beam2.mp3', () => {})
   // new THREE.AudioLoader().load('data/snd/vr-atmosphere.mp3', () => {})
-
-const getFilepathForLoadable = ({ type, model }) => {
-  // does the model name have a slash in it?
-  // TODO support windows file delimiter
-  let isUserModel = !!model.match(/\//)
-
-  if (isUserModel) {
-    const parts = model.split(/\//)
-    const filename = parts[parts.length - 1]
-
-    switch (type) {
-      case 'character':
-        return `/data/user/characters/${filename}`
-      case 'object':
-        return `/data/user/objects/${filename}`
-      case 'environment':
-        return `/data/user/environments/${filename}`
-      default:
-        return null
-    }
-  } else {
-    switch (type) {
-      case 'character':
-        if (model === 'adult-male') model = 'adult-male-lod'
-        return `/data/system/dummies/gltf/${model}.glb`
-      case 'object':
-        return `/data/system/objects/${model}.glb`
-      default:
-        return null
-    }
-  }
-}
 
 const useAttachmentLoader = ({ sceneObjects, world }) => {
   // TODO why do PENDING and SUCCESS get dispatched twice?
@@ -209,43 +176,11 @@ const useVrControllers = ({ onSelectStart, onSelectEnd, onGripDown, onGripUp, on
     controller.addEventListener('grip press ended', (...rest) => onGripUpRef.current(...rest))
     controller.addEventListener('thumbstick axes changed', (...rest) => onAxisChangedRef.current(...rest))
     controller.addEventListener('thumbpad axes changed', (...rest) => onAxisChangedRef.current(...rest))
-
-    const geometry = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, -1)])
-    const material = new THREE.LineBasicMaterial({
-      color: 0x0000ff,
-      depthTest: false,
-      depthWrite: false,
-      transparent: true
-    })
-
-    const line = new THREE.Line(geometry, material)
-    line.name = 'line'
-    line.scale.z = 5
-    line.rotation.x = (Math.PI / 180) * -45
-    controller.add(line)
-
-    const raycastTiltGroup = new THREE.Group()
-    const raycastDepth = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.1, 0.1), new THREE.MeshBasicMaterial())
-    raycastDepth.visible = false
-    raycastDepth.name = 'raycast-depth'
-    raycastTiltGroup.rotation.x = (Math.PI / 180) * -45
-    raycastTiltGroup.add(raycastDepth)
-
-    controller.add(raycastTiltGroup)
-
-    controller.intersections = []
-    controller.pressed = false
-    controller.gripped = false
-    controller.interaction = {
-      grip: undefined,
-      press: undefined,
-      hover: undefined
-    }
-
     controller.addEventListener('disconnected', event => {
       setControllers(state => state.filter(object3d => object3d.uuid === event.target.uuid))
     })
 
+    setControllerData(controller)
     setControllers(state => [ ...state, controller ])
   }
 
@@ -316,7 +251,7 @@ const SceneContent = ({
 
   const { gl, scene, camera, setDefaultCamera } = useThree()
 
-  const updateGUIProp = e => {
+  const onUpdateGUIProp = e => {
     const { id, prop, value } = e.detail
 
     if (prop === 'guiFOV') {
@@ -346,27 +281,11 @@ const SceneContent = ({
   }
 
   useEffect(() => {
-    window.addEventListener('updateRedux', updateGUIProp)
+    window.addEventListener('updateGUIProp', onUpdateGUIProp)
     return () => {
-      window.removeEventListener('updateRedux', updateGUIProp)
+      window.removeEventListener('updateGUIProp', onUpdateGUIProp)
     }
   }, [])
-
-  const createHideArray = () => {
-    const array = []
-    scene.traverse(child => {
-      if (
-        child.type === 'Line' ||
-        child.userData.type === 'virtual-camera' ||
-        child.userData.id === 'controller' ||
-        child.userData.type === 'gui' ||
-        child.userData.type === 'bone'
-      ) {
-        array.push(child)
-      }
-    })
-    return array
-  }
 
   const onTeleport = event => {
     var controller = event.target
@@ -460,7 +379,7 @@ const SceneContent = ({
               setGuiMode(mode)
               setSelectedObject(0)
               selectedObjRef.current = null
-              setHideArray(createHideArray())
+              setHideArray(createHideArray(scene))
               break
             case 'selection':
               setGuiMode(mode)
@@ -473,7 +392,7 @@ const SceneContent = ({
               deleteObjects([selectedObjRef.current.userData.id])
               setSelectedObject(0)
               selectedObjRef.current = null
-              setHideArray(createHideArray())
+              setHideArray(createHideArray(scene))
 
               setTimeout(() => {
                 setGuiMode('selection')
@@ -490,7 +409,7 @@ const SceneContent = ({
                 const match = worldScaleGroupRef.current.children.find(child => child.userData.id === id)
                 setSelectedObject(match.id)
                 selectedObjRef.current = match
-                setHideArray(createHideArray())
+                setHideArray(createHideArray(scene))
                 setGuiMode('selection')
               }, 250)
               break
@@ -638,7 +557,7 @@ const SceneContent = ({
       const { id } = object
       setSelectedObject(id)
       selectedObjRef.current = scene.getObjectById(id)
-      setHideArray(createHideArray())
+      setHideArray(createHideArray(scene))
       setGuiMode('selection')
 
       if (object.userData.type === 'character') {
@@ -662,7 +581,7 @@ const SceneContent = ({
         const rotVector = new THREE.Vector3(1, 0, 0).applyMatrix4(newMatrix)
         const rotOffset = Math.atan2(rotVector.y, rotVector.x)
         controller.userData.rotOffset = rotOffset
-        setHideArray(createHideArray())
+        setHideArray(createHideArray(scene))
       } else {
         const tempMatrix = new THREE.Matrix4()
         tempMatrix.getInverse(controller.matrixWorld).multiply(new THREE.Matrix4().makeScale(worldScale, worldScale, worldScale))
@@ -693,7 +612,7 @@ const SceneContent = ({
     } else {
       setSelectedObject(0)
       selectedObjRef.current = null
-      setHideArray(createHideArray())
+      setHideArray(createHideArray(scene))
     }
   }
 
@@ -780,55 +699,11 @@ const SceneContent = ({
     })
 
     if (selected) {
-      moveObject(event, selected)
+      moveObject(event, selected, worldScale)
       rotateObject(event, selected)
     } else {
       moveCamera(event)
       rotateCamera(event)
-    }
-  }
-
-  const moveObject = (event, controller) => {
-    if (Math.abs(event.axes[1]) < Math.abs(event.axes[0])) return
-
-    // EDIT THIS
-
-    const amount = event.axes[1] * 0.08
-    const object = controller.userData.selected
-
-    if (Math.abs(amount) > 0.01) {
-      const worldScaleMult = worldScale === 1 ? 1 : worldScale * 2
-      if (
-        object.userData.type === 'character' ||
-        (controller.pressed && controller.gripped && object.userData.type === 'object')
-      ) {
-        const raycastDepth = controller.getObjectByName('raycast-depth')
-        raycastDepth.position.add(new THREE.Vector3(0, 0, amount * worldScaleMult))
-        raycastDepth.position.z = Math.min(raycastDepth.position.z, -0.5 * worldScaleMult)
-      } else {
-        // 45 degree tilt down on controller
-        let offsetVector = new THREE.Vector3(0, amount * worldScaleMult, amount * worldScaleMult)
-        object.position.add(offsetVector)
-        object.position.y = Math.min(object.position.y, -0.5 * worldScaleMult)
-        object.position.z = Math.min(object.position.z, -0.5 * worldScaleMult)
-      }
-    }
-  }
-
-  const rotateObject = (event, controller) => {
-    if (Math.abs(event.axes[0]) < Math.abs(event.axes[1])) return
-
-    // EDIT THIS
-
-    const amount = event.axes[0] * 0.07
-    const object = controller.userData.selected
-
-    if (Math.abs(amount) > 0.01) {
-      if (object.userData.type === 'character') {
-        object.userData.modelSettings.rotation += amount
-      } else {
-        object.rotateY(amount)
-      }
     }
   }
 
@@ -967,12 +842,12 @@ const SceneContent = ({
       const { id } = object
       setSelectedObject(id)
       selectedObjRef.current = scene.getObjectById(id)
-      setHideArray(createHideArray())
+      setHideArray(createHideArray(scene))
       setGuiMode('selection')
     } else {
       setSelectedObject(0)
       selectedObjRef.current = null
-      setHideArray(createHideArray())
+      setHideArray(createHideArray(scene))
     }
   }
 
@@ -1042,7 +917,7 @@ const SceneContent = ({
     })
 
     teleportArray.current = scene.children.filter(child => child.userData.type === 'raycastGround')
-    setHideArray(createHideArray())
+    setHideArray(createHideArray(scene))
   }, [vrControllers, sceneObjects, flipHand])
 
   useRender(() => {
