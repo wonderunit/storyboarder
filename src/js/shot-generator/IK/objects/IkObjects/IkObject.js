@@ -53,7 +53,6 @@ class IkObject
         chainObjects.push(new ChainObject("RightArm", "RightHand", this.controlTargets[2]));
         chainObjects.push(new ChainObject("LeftUpLeg", "LeftFoot", this.controlTargets[3]));
         chainObjects.push(new ChainObject("RightUpLeg", "RightFoot", this.controlTargets[4]));
-        //scene.add(clonedSkeleton);
 
         //Fixing female-adult spine deformation
         if(rigMesh.name === "female-adult-meso")

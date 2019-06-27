@@ -828,13 +828,13 @@ const TransformControlsGizmo = function () {
 	var helperScale = {};
 	gizmoRotate = {
 		X: [
-			[ new THREE.Line( CircleGeometry( 1, 0.5 ), matLineRed ) ],
+			[ new THREE.Line( CircleGeometry( 1, 2.5 ), matLineRed ) ],
 		],
 		Y: [
-			[ new THREE.Line( CircleGeometry( 1, 0.5 ), matLineGreen ), null, [ 0, 0, -Math.PI / 2 ] ],
+			[ new THREE.Line( CircleGeometry( 1, 2.5 ), matLineGreen ), null, [ 0, 0, -Math.PI / 2 ] ],
 		],
 		Z: [
-			[ new THREE.Line( CircleGeometry( 1, 0.5 ), matLineBlue ), null, [ 0, Math.PI / 2, 0 ] ],
+			[ new THREE.Line( CircleGeometry( 1, 2.5 ), matLineBlue ), null, [ 0, Math.PI / 2, 0 ] ],
 		],
 		E: [
 			[ new THREE.Line( CircleGeometry( 1.25, 1 ), matLineYellowTransparent ), null, [ 0, Math.PI / 2, 0 ] ],
@@ -852,13 +852,13 @@ const TransformControlsGizmo = function () {
 
 	pickerRotate = {
 		X: [
-			[ new THREE.Mesh( new THREE.TorusBufferGeometry( 1, 0.1, 4, 24 ), matInvisible ), [ 0, 0, 0 ], [ 0, -Math.PI / 2, -Math.PI / 2 ] ],
+			[ new THREE.Mesh( new THREE.TorusBufferGeometry( 1, 0.3, 4, 24 ), matInvisible ), [ 0, 0, 0 ], [ 0, -Math.PI / 2, -Math.PI / 2 ] ],
 		],
 		Y: [
-			[ new THREE.Mesh( new THREE.TorusBufferGeometry( 1, 0.1, 4, 24 ), matInvisible ), [ 0, 0, 0 ], [ Math.PI / 2, 0, 0 ] ],
+			[ new THREE.Mesh( new THREE.TorusBufferGeometry( 1, 0.3, 4, 24 ), matInvisible ), [ 0, 0, 0 ], [ Math.PI / 2, 0, 0 ] ],
 		],
 		Z: [
-			[ new THREE.Mesh( new THREE.TorusBufferGeometry( 1, 0.1, 4, 24 ), matInvisible ), [ 0, 0, 0 ], [ 0, 0, -Math.PI / 2 ] ],
+			[ new THREE.Mesh( new THREE.TorusBufferGeometry( 1, 0.3, 4, 24 ), matInvisible ), [ 0, 0, 0 ], [ 0, 0, -Math.PI / 2 ] ],
 		],
 		E: [
 			[ new THREE.Mesh( new THREE.TorusBufferGeometry( 1.25, 0.1, 2, 24 ), matInvisible ) ]

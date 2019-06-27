@@ -25,47 +25,47 @@ class ControlTargetSelection
     pointerHover( pointer ) 
     {
         let ray = this.ray;
+        let selectedMeshes = this.selectedMeshes;
 		ray.setFromCamera( pointer, this.camera );
         let intersectMeshes = ray.intersectObjects(this.meshes)[ 0 ] || false;
         let intersectControlTarget = false;
-        if(Object.keys(this.selectedMeshes).length !== 0)
+        if(Object.keys(selectedMeshes).length !== 0)
         {
-            let rotationalGizmoHelpers = this.rotationalGizmoHelpers( Object.values(this.selectedMeshes)[0].scope.control);
+            let rotationalGizmoHelpers = this.rotationalGizmoHelpers( Object.values(selectedMeshes)[0].scope.control);
             intersectControlTarget = ray.intersectObjects(rotationalGizmoHelpers)[ 0 ] || false;
         }
         
         if ( intersectMeshes ) 
         {
             let object = intersectMeshes.object;
-            if(this.selectedMeshes[object.uuid] !== undefined)
+            if(selectedMeshes[object.uuid] !== undefined)
             {
                 return;
             }   
-            this.selectedMeshes[object.uuid] = object;
+            selectedMeshes[object.uuid] = object;
             object.scope.selectControlPoint();
         } 
         else 
         {
-            if(Object.keys(this.selectedMeshes).length === 0 || intersectControlTarget !== false)
+            if(Object.keys(selectedMeshes).length === 0 || intersectControlTarget !== false)
             {
                 return;
             }
-            for(let keys in this.selectedMeshes)
+            for(let keys in selectedMeshes)
             {
-                let selectedMesh = this.selectedMeshes[keys];
+                let selectedMesh = selectedMeshes[keys];
                 if(selectedMesh.scope.isControlTargetSelected)
                 {
                     continue;
                 }
                 selectedMesh.scope.deselectControlPoint();
+                delete selectedMeshes[keys];
             }
-            this.selectedMeshes = {};
-		}
-
+        }
     }
 
-    getPointer( event ) {
-
+    getPointer( event ) 
+    {
 		let pointer = event.changedTouches ? event.changedTouches[ 0 ] : event;
 		let rect = this.domElement.getBoundingClientRect();
 		return {
