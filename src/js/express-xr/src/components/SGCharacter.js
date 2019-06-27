@@ -462,6 +462,7 @@ const SGCharacter = ({ id, type, worldScale, isSelected, updateObject, modelData
         id,
         type,
         name: 'character-container',
+        displayName: props.displayName,
         forPanel: {
           height: props.height,
           headScale: props.headScale,
@@ -483,7 +484,6 @@ const SGCharacter = ({ id, type, worldScale, isSelected, updateObject, modelData
           boneLengthScale,
           parentRotation,
           parentPosition,
-          displayName: props.displayName,
           modelSettings: Object.assign({ rotation: props.rotation }, initialState.models[props.model]) || {
             rotation: props.rotation
           }
