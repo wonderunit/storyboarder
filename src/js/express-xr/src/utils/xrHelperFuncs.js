@@ -69,38 +69,6 @@ const createHideArray = scene => {
   return array
 }
 
-const getFilepathForLoadable = ({ type, model }) => {
-  // does the model name have a slash in it?
-  // TODO support windows file delimiter
-  let isUserModel = !!model.match(/\//)
-
-  if (isUserModel) {
-    const parts = model.split(/\//)
-    const filename = parts[parts.length - 1]
-
-    switch (type) {
-      case 'character':
-        return `/data/user/characters/${filename}`
-      case 'object':
-        return `/data/user/objects/${filename}`
-      case 'environment':
-        return `/data/user/environments/${filename}`
-      default:
-        return null
-    }
-  } else {
-    switch (type) {
-      case 'character':
-        if (model === 'adult-male') model = 'adult-male-lod'
-        return `/data/system/dummies/gltf/${model}.glb`
-      case 'object':
-        return `/data/system/objects/${model}.glb`
-      default:
-        return null
-    }
-  }
-}
-
 const updateObjectHighlight = object => {
   object.traverse(child => {
     if (child instanceof THREE.Mesh) {
