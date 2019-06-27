@@ -84,7 +84,7 @@ class TargetControl
         this.isControlTargetSelected = false;
     }
     //#endregion
-    //#region selection of control point
+    //#region Selection of control point
     selectControlPoint()
     {
         if(!this.isControlPointSelected)
@@ -106,6 +106,7 @@ class TargetControl
         this.removeEventsFromControlTarget();
     }
     //#endregion
+    
     // Locks rotation of current TargetControl
     onKeyDownLockRotation(event)
     {

@@ -14,7 +14,6 @@ class Ragdoll extends IkObject
     {
         super();
         this.scene = null;
-        this.waitTurns = 10;
         this.hipsMouseDown = false;
         this.isInitialized = false;
         this.poleConstraints = [];
@@ -178,7 +177,7 @@ class Ragdoll extends IkObject
         }
     }
 
-    // Runs cyclet which is updating object
+    // Runs cycle which is updating object
     update()
     {
         if(!this.isInitialized)
@@ -225,7 +224,6 @@ class Ragdoll extends IkObject
     lateUpdate()
     {
         super.lateUpdate();
-        this.applyHeadRotation();
     }
 
     // Sets and quaternion angle for bones
@@ -301,14 +299,6 @@ class Ragdoll extends IkObject
             mesh.position.set(targetPosition.x + poleOffset.x, targetPosition.y + poleOffset.y, targetPosition.z + poleOffset.z);
             mesh.rotateAroundPoint(targetPosition, axis, angle);
         }
-    }
-
-    // Applies neck rotation and applies head rotation that head stay upward
-    applyHeadRotation()
-    {
-        //let head = this.chainObjects[0].chain.joints[4].bone;
-        //this.rotateBoneQuaternion(head, new THREE.Euler(-1.0, 0, 0));
-        //head.updateMatrix();
     }
 
     // Removes object and all it's meshes from scene

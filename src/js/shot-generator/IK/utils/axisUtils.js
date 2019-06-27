@@ -44,9 +44,7 @@ THREE.Quaternion.prototype.toAngleAxis = function toAngleAxis()
 
 THREE.Object3D.prototype.rotateAroundPoint = function(point, axis, theta)
 {
-    //isPointInWorld = (isPointInWorld === undefined) ? false : isPointInWorld;
     let object = this;
-
     object.position.sub(point);
     object.position.applyAxisAngle(axis, theta);
     object.position.add(point);
