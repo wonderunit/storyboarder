@@ -6470,7 +6470,10 @@ const exportZIP = async () => {
   let exportFilePath = path.join(boardPath, 'exports', `${basename}-${timestamp}.zip`)
 
   try {
-    await exporterArchive.exportAsZIP(srcFilePath, exportFilePath)
+    const { missing } = await exporterArchive.exportAsZIP(srcFilePath, exportFilePath)
+
+    notifications.notify({ message: `WARNING: The following files were missing and could not be added to the ZIP:\n` + missing.join('\n') })
+    log.warn('Missing', missing.join('\n'))
 
     notifications.notify({ message: `Done.` })
     shell.showItemInFolder(exportFilePath)

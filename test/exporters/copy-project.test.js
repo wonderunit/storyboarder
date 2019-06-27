@@ -256,13 +256,15 @@ describe('exporters/copyProject', () => {
 
     it('can optionally copy board url main image from scenes created before Storyboarder 1.6.x', () => {
       // copies board url main image
-      exporterCopyProject.copyProject(srcFilePath, dstFolderPath, {
+      const { missing } = exporterCopyProject.copyProject(srcFilePath, dstFolderPath, {
         copyBoardUrlMainImages: true,
         ignoreMissing: true
       })
 
       let scene = JSON.parse(fs.readFileSync(path.join(dstFolderPath, 'new-single-scene.storyboarder')))
       assert(fs.existsSync(path.join(dstFolderPath, 'images', scene.boards[0].url)))
+      assert(missing.length === 1)
+      assert(path.basename(missing[0]) === 'non-existing.wav')
     })
     it('can optionally ignore missing files', () => {
       // ignores missing posterframes
