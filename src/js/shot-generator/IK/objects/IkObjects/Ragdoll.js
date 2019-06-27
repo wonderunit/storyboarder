@@ -26,6 +26,10 @@ class Ragdoll extends IkObject
     {
         super.initObject(scene, object, skinnedMesh, controlTarget );
 
+        this.controlTargets[0].isRotationLocked = true;
+        this.controlTargets[1].target.rotation.copy(new THREE.Euler(1.213400733182015, 0.10190071449066612, 2.4475774728125717));
+        this.controlTargets[2].target.rotation.copy(new THREE.Euler(1.213400733182015, -0.10190071449066612, -2.4475774728125717));
+        this.controlTargets[0].target.rotation.copy(new THREE.Euler(-1.0, 0, 0));
         this.controlTargets[3].target.rotation.copy(new THREE.Euler(0.56, 0.1, 0));
         this.controlTargets[4].target.rotation.copy(new THREE.Euler(0.56, -0.1, 0));
         this.controlTargets[3].isRotationLocked = true;
@@ -196,7 +200,7 @@ class Ragdoll extends IkObject
     // Sets limbs rotation to control target rotation
     limbsFollowRotation()
     {
-        for(let i = 1; i < this.chainObjects.length; i++)
+        for(let i = 0; i < this.chainObjects.length; i++)
         {
             let joints = this.ik.chains[i].joints;
             let bone = joints[joints.length -1].bone;
@@ -210,7 +214,8 @@ class Ragdoll extends IkObject
             }
             else
             {
-                bone.quaternion.multiply(boneTarget.quaternion);
+                let localQuat = bone.worldToLocalQuaternion(boneTarget.quaternion);
+                bone.quaternion.multiply(localQuat);
             }
             bone.updateMatrix();
         }
@@ -301,9 +306,9 @@ class Ragdoll extends IkObject
     // Applies neck rotation and applies head rotation that head stay upward
     applyHeadRotation()
     {
-        let head = this.chainObjects[0].chain.joints[4].bone;
-        this.rotateBoneQuaternion(head, new THREE.Euler(-1.0, 0, 0));
-        head.updateMatrix();
+        //let head = this.chainObjects[0].chain.joints[4].bone;
+        //this.rotateBoneQuaternion(head, new THREE.Euler(-1.0, 0, 0));
+        //head.updateMatrix();
     }
 
     // Removes object and all it's meshes from scene
