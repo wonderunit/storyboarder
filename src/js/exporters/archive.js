@@ -11,6 +11,8 @@ const exportAsZIP = async (srcFilePath, exportFilePath) => {
 
   let tmpZipFilePath
 
+  let missing
+
   try {
     // copy project to folder
     let dstFolderPath = path.join(tmpdir.name, path.basename(srcFilePath, path.extname(srcFilePath)))
@@ -21,8 +23,9 @@ const exportAsZIP = async (srcFilePath, exportFilePath) => {
     fs.emptyDirSync(dstFolderPath)
 
     // copy files
-    exporterCopyProject.copyProject(srcFilePath, dstFolderPath)
-  
+    const result = exporterCopyProject.copyProject(srcFilePath, dstFolderPath, { ignoreMissing: true })
+    missing = result.missing
+
     try {
       await new Promise((resolve, reject) => {
         // zip the folder
@@ -74,6 +77,8 @@ const exportAsZIP = async (srcFilePath, exportFilePath) => {
     fs.emptyDirSync(tmpdir.name)
     tmpdir.removeCallback()
   }
+
+  return { missing }
 }
 
 module.exports = {

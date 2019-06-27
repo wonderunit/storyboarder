@@ -6462,6 +6462,7 @@ const exportZIP = async () => {
   await saveImageFile()
   saveBoardFile()
 
+  log.info('Exporting ZIP file')
   notifications.notify({ message: `Exporting ZIP file …` })
 
   let basename = path.basename(srcFilePath, path.extname(srcFilePath))
@@ -6469,11 +6470,15 @@ const exportZIP = async () => {
   let exportFilePath = path.join(boardPath, 'exports', `${basename}-${timestamp}.zip`)
 
   try {
-    await exporterArchive.exportAsZIP(srcFilePath, exportFilePath)
+    const { missing } = await exporterArchive.exportAsZIP(srcFilePath, exportFilePath)
+
+    notifications.notify({ message: `WARNING: The following files were missing and could not be added to the ZIP:\n` + missing.join('\n') })
+    log.warn('Missing', missing.join('\n'))
 
     notifications.notify({ message: `Done.` })
     shell.showItemInFolder(exportFilePath)
   } catch (err) {
+    log.error(err)
     notifications.notify({ message: `[ERROR] ${err.message}` })
     notifications.notify({ message: `Failed.` })
   }
@@ -6994,6 +6999,18 @@ const saveToBoardFromShotGenerator = async ({ uid, data, images }) => {
 
   // save shot-generator.png
   saveDataURLtoFile(context.canvas.toDataURL(), board.layers['shot-generator'].url)
+
+
+
+  // save camera-plot (re-use context)
+  let plotImage = await exporterCommon.getImage(images.plot)
+  context.canvas.width = 900
+  context.canvas.height = 900
+  context.drawImage(plotImage, 0, 0)
+  saveDataURLtoFile(
+    context.canvas.toDataURL(),
+    boardModel.boardFilenameForCameraPlot(board)
+  )
 
 
 

@@ -12,6 +12,11 @@ const scene = JSON.parse(
     path.join(fixturesPath, 'audio', 'audio.storyboarder')
   )
 )
+const shotGeneratorScene = JSON.parse(
+  fs.readFileSync(
+    path.join(fixturesPath, 'shot-generator', 'shot-generator.storyboarder')
+  )
+)
 
 describe('boardModel', () => {
   describe('#getMediaDescription', () => {
@@ -35,6 +40,16 @@ describe('boardModel', () => {
         let boardWithLinkMedia = boardModel.getMediaDescription(boardWithLink)
         assert(boardWithLinkMedia.link.length)
         assert(boardWithLinkMedia.link === boardWithLink.link)
+      })
+      it('does not include sg key for non-shot generator boards', () => {
+        let board = scene.boards[0]
+        let media = boardModel.getMediaDescription(board)
+        assert(media.sg == null)
+      })
+      it('includes sg key for shot generator boards', () => {
+        let board = shotGeneratorScene.boards[0]
+        let media = boardModel.getMediaDescription(board)
+        assert(media.sg != null)
       })
     })
     describe('edge cases', () => {
@@ -65,6 +80,12 @@ describe('boardModel', () => {
         assert(filenames.length === 5)
         assert(filenames.includes('board-1-1ABCD-reference.png'))
         assert(filenames.includes('1ABCD-audio-1234567890000.wav'))
+      })
+
+      it('includes sg files for shot generator boards', () => {
+        let board = shotGeneratorScene.boards[0]
+        let filenames = boardModel.getMediaFilenames(board)
+        assert(filenames.includes('board-1-UDRF3-camera-plot.png'))
       })
     })
     describe('edge cases', () => {
