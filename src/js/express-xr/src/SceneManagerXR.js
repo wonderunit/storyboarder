@@ -942,7 +942,7 @@ const SceneContent = ({
       }
 
       const otherController = vrControllers[1 - idx]
-      if (otherController && !otherController.pressed) {
+      if (otherController && !otherController.pressed && !controller.userData.selected) {
         const intersections = getIntersections(controller, guiArray.current)
         if (intersections.length > 0) {
           let intersection = intersections[0]
