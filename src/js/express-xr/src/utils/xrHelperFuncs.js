@@ -101,10 +101,28 @@ const getFilepathForLoadable = ({ type, model }) => {
   }
 }
 
+const updateObjectHighlight = object => {
+  object.traverse(child => {
+    if (child instanceof THREE.Mesh) {
+      const objMaterial = child.material
+      if (Array.isArray(objMaterial)) {
+        objMaterial.forEach(material => {
+          if (!material.emissive) return
+          material.emissive.b = 0
+        })
+      } else {
+        if (!objMaterial.emissive) return
+        objMaterial.emissive.b = 0
+      }
+    }
+  })
+}
+
 module.exports = {
   findParent,
   moveObject,
   rotateObject,
   createHideArray,
-  getFilepathForLoadable
+  getFilepathForLoadable,
+  updateObjectHighlight
 }

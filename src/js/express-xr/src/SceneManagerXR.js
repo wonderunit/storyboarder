@@ -41,7 +41,7 @@ const GUI = require('./gui/GUI')
 
 const { controllerObjectSettings, cameraObjectSettings } = require('./utils/xrObjectSettings')
 const { getIntersections, boneIntersect, intersectObjects, constraintObjectRotation, setControllerData } = require('./utils/xrControllerFuncs')
-const { findParent, moveObject, rotateObject, createHideArray, getFilepathForLoadable } = require('./utils/xrHelperFuncs')
+const { findParent, moveObject, rotateObject, createHideArray, getFilepathForLoadable, updateObjectHighlight } = require('./utils/xrHelperFuncs')
 const applyDeviceQuaternion = require('../../shot-generator/apply-device-quaternion')
 require('./lib/VRController')
 
@@ -357,6 +357,15 @@ const SceneContent = ({
     const intersections = getIntersections(controller, intersectArray.current)
 
     if (intersections.length > 0) {
+      onIntersection(controller, intersections)
+    } else {
+      setSelectedObject(0)
+      selectedObjRef.current = null
+      setHideArray(createHideArray(scene))
+    }
+  }
+
+  const onIntersection = (controller, intersections) => {
       let intersection = intersections[0]
       if (intersection.object.userData.type === 'bone') return
 
@@ -373,152 +382,12 @@ const SceneContent = ({
         const { name } = intersection.object
         if (name.includes('mode')) {
           const mode = name.split('_')[0]
-
-          switch (mode) {
-            case 'add':
-              setGuiMode(mode)
-              setSelectedObject(0)
-              selectedObjRef.current = null
-              setHideArray(createHideArray(scene))
-              break
-            case 'selection':
-              setGuiMode(mode)
-              break
-            case 'erase':
-              if (!selectedObjRef.current) return
-              if (selectedObjRef.current.userData.id === activeCamera) return
-              setGuiMode(mode)
-
-              deleteObjects([selectedObjRef.current.userData.id])
-              setSelectedObject(0)
-              selectedObjRef.current = null
-              setHideArray(createHideArray(scene))
-
-              setTimeout(() => {
-                setGuiMode('selection')
-              }, 250)
-              break
-            case 'duplicate':
-              if (!selectedObjRef.current) return
-              setGuiMode(mode)
-
-              const id = THREE.Math.generateUUID()
-              duplicateObjects([selectedObjRef.current.userData.id], [id])
-
-              setTimeout(() => {
-                const match = worldScaleGroupRef.current.children.find(child => child.userData.id === id)
-                setSelectedObject(match.id)
-                selectedObjRef.current = match
-                setHideArray(createHideArray(scene))
-                setGuiMode('selection')
-              }, 250)
-              break
-          }
+          onChangeGuiMode(mode)
         }
 
         if (name.includes('_add')) {
           const mode = name.split('_')[0]
-          const id = THREE.Math.generateUUID()
-
-          const hmdCam = xrOffset.current.children.filter(child => child.type === 'PerspectiveCamera')[0]
-          let offsetVector
-          if (mode == 'camera') {
-            offsetVector = new THREE.Vector3(0, 0, -1)
-          } else {
-            offsetVector = new THREE.Vector3(0, 0, -2)
-          }
-          offsetVector.applyMatrix4(new THREE.Matrix4().extractRotation(hmdCam.matrixWorld))
-          offsetVector.multiply(new THREE.Vector3(1, 0, 1)).multiplyScalar(worldScale === 1 ? 1 : 0.5 / worldScale)
-          const newPoz = xrOffset.current.position
-            .clone()
-            .multiply(new THREE.Vector3(1 / worldScale, 0, 1 / worldScale))
-            .add(hmdCam.position)
-            .add(offsetVector)
-
-          const rotation = new THREE.Vector2(offsetVector.x, offsetVector.z).normalize().angle() * -1 - Math.PI / 2
-
-          switch (mode) {
-            case 'camera':
-              setAddMode('camera')
-
-              createObject({
-                id,
-
-                type: 'camera',
-                fov: 22.25,
-                x: newPoz.x,
-                y: newPoz.z,
-                z: newPoz.y,
-                rotation: rotation,
-                tilt: 0,
-                roll: 0
-              })
-              break
-            case 'object':
-              setAddMode('object')
-
-              createObject({
-                id,
-                type: 'object',
-                model: 'box',
-                width: 1,
-                height: 1,
-                depth: 1,
-                x: newPoz.x,
-                y: newPoz.z,
-                z: 0,
-                rotation: { x: 0, y: rotation, z: 0 }, //Math.random() * Math.PI * 2,
-
-                visible: true
-              })
-              break
-            case 'character':
-              setAddMode('character')
-
-              createObject({
-                id,
-                type: 'character',
-                height: 1.8,
-                model: 'adult-male',
-                x: newPoz.x,
-                y: newPoz.z,
-                z: 0,
-                rotation: rotation, //newPoz.rotation,
-                headScale: 1,
-
-                morphTargets: {
-                  mesomorphic: 0,
-                  ectomorphic: 0,
-                  endomorphic: 0
-                },
-
-                posePresetId: DEFAULT_POSE_PRESET_ID,
-                skeleton: defaultPosePresets[DEFAULT_POSE_PRESET_ID].state.skeleton,
-
-                visible: true
-              })
-              break
-            case 'light':
-              setAddMode('light')
-
-              createObject({
-                id,
-                type: 'light',
-                x: newPoz.x,
-                y: newPoz.z,
-                z: newPoz.y,
-                rotation: 0,
-                tilt: 0,
-                intensity: 0.8,
-                visible: true,
-                angle: 1.04,
-                distance: 5,
-                penumbra: 1.0,
-                decay: 1
-              })
-              break
-          }
-
+          onAddObject(mode)
           setTimeout(() => {
             setAddMode(null)
           }, 250)
@@ -584,7 +453,9 @@ const SceneContent = ({
         setHideArray(createHideArray(scene))
       } else {
         const tempMatrix = new THREE.Matrix4()
-        tempMatrix.getInverse(controller.matrixWorld).multiply(new THREE.Matrix4().makeScale(worldScale, worldScale, worldScale))
+        tempMatrix
+          .getInverse(controller.matrixWorld)
+          .multiply(new THREE.Matrix4().makeScale(worldScale, worldScale, worldScale))
 
         object.matrix.premultiply(tempMatrix)
         object.matrix.decompose(object.position, object.quaternion, new THREE.Vector3())
@@ -609,10 +480,151 @@ const SceneContent = ({
         if (!objMaterial.emissive) return
         objMaterial.emissive.b = 0.15
       }
+  }
+
+  const onChangeGuiMode = mode => {
+    switch (mode) {
+      case 'add':
+        setGuiMode(mode)
+        setSelectedObject(0)
+        selectedObjRef.current = null
+        setHideArray(createHideArray(scene))
+        break
+      case 'selection':
+        setGuiMode(mode)
+        break
+      case 'erase':
+        if (!selectedObjRef.current) return
+        if (selectedObjRef.current.userData.id === activeCamera) return
+        setGuiMode(mode)
+
+        deleteObjects([selectedObjRef.current.userData.id])
+        setSelectedObject(0)
+        selectedObjRef.current = null
+        setHideArray(createHideArray(scene))
+
+        setTimeout(() => {
+          setGuiMode('selection')
+        }, 250)
+        break
+      case 'duplicate':
+        if (!selectedObjRef.current) return
+        setGuiMode(mode)
+
+        const id = THREE.Math.generateUUID()
+        duplicateObjects([selectedObjRef.current.userData.id], [id])
+
+        setTimeout(() => {
+          const match = worldScaleGroupRef.current.children.find(child => child.userData.id === id)
+          setSelectedObject(match.id)
+          selectedObjRef.current = match
+          setHideArray(createHideArray(scene))
+          setGuiMode('selection')
+        }, 250)
+        break
+    }
+  }
+
+  const onAddObject = mode => {
+    const id = THREE.Math.generateUUID()
+
+    const hmdCam = xrOffset.current.children.filter(child => child.type === 'PerspectiveCamera')[0]
+    let offsetVector
+    if (mode == 'camera') {
+      offsetVector = new THREE.Vector3(0, 0, -1)
     } else {
-      setSelectedObject(0)
-      selectedObjRef.current = null
-      setHideArray(createHideArray(scene))
+      offsetVector = new THREE.Vector3(0, 0, -2)
+    }
+    offsetVector.applyMatrix4(new THREE.Matrix4().extractRotation(hmdCam.matrixWorld))
+    offsetVector.multiply(new THREE.Vector3(1, 0, 1)).multiplyScalar(worldScale === 1 ? 1 : 0.5 / worldScale)
+    const newPoz = xrOffset.current.position
+      .clone()
+      .multiply(new THREE.Vector3(1 / worldScale, 0, 1 / worldScale))
+      .add(hmdCam.position)
+      .add(offsetVector)
+
+    const rotation = new THREE.Vector2(offsetVector.x, offsetVector.z).normalize().angle() * -1 - Math.PI / 2
+
+    switch (mode) {
+      case 'camera':
+        setAddMode('camera')
+
+        createObject({
+          id,
+
+          type: 'camera',
+          fov: 22.25,
+          x: newPoz.x,
+          y: newPoz.z,
+          z: newPoz.y,
+          rotation: rotation,
+          tilt: 0,
+          roll: 0
+        })
+        break
+      case 'object':
+        setAddMode('object')
+
+        createObject({
+          id,
+          type: 'object',
+          model: 'box',
+          width: 1,
+          height: 1,
+          depth: 1,
+          x: newPoz.x,
+          y: newPoz.z,
+          z: 0,
+          rotation: { x: 0, y: rotation, z: 0 }, //Math.random() * Math.PI * 2,
+
+          visible: true
+        })
+        break
+      case 'character':
+        setAddMode('character')
+
+        createObject({
+          id,
+          type: 'character',
+          height: 1.8,
+          model: 'adult-male',
+          x: newPoz.x,
+          y: newPoz.z,
+          z: 0,
+          rotation: rotation, //newPoz.rotation,
+          headScale: 1,
+
+          morphTargets: {
+            mesomorphic: 0,
+            ectomorphic: 0,
+            endomorphic: 0
+          },
+
+          posePresetId: DEFAULT_POSE_PRESET_ID,
+          skeleton: defaultPosePresets[DEFAULT_POSE_PRESET_ID].state.skeleton,
+
+          visible: true
+        })
+        break
+      case 'light':
+        setAddMode('light')
+
+        createObject({
+          id,
+          type: 'light',
+          x: newPoz.x,
+          y: newPoz.z,
+          z: newPoz.y,
+          rotation: 0,
+          tilt: 0,
+          intensity: 0.8,
+          visible: true,
+          angle: 1.04,
+          distance: 5,
+          penumbra: 1.0,
+          decay: 1
+        })
+        break
     }
   }
 
@@ -634,21 +646,7 @@ const SceneContent = ({
       controller.userData.selected = undefined
       soundBeam.current.stop()
 
-      object.traverse(child => {
-        if (child instanceof THREE.Mesh) {
-          const objMaterial = child.material
-          if (Array.isArray(objMaterial)) {
-            objMaterial.forEach(material => {
-              if (!material.emissive) return
-              material.emissive.b = 0
-            })
-          } else {
-            if (!objMaterial.emissive) return
-            objMaterial.emissive.b = 0
-          }
-        }
-      })
-
+      updateObjectHighlight(object)
       useUpdateObject(object)
     }
   }
