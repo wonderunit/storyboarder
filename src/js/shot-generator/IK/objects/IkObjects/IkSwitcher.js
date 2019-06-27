@@ -144,6 +144,8 @@ class IKSwitcher
             }
             this.originToCloneRotation(cloneBone, originalBone);
         }
+        clonedBones[0].position.copy(originalBones[0].position);
+        this.recalculateDifference();
     }
 
     originToCloneRotation(cloneBone, originBone)

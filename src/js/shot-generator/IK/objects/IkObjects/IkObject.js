@@ -141,9 +141,9 @@ class IkObject
             this.ik.add(chain);
         });
         // Sets skeleton helper for showing bones
-        //this.skeletonHelper = new THREE.SkeletonHelper( skeleton );
+        this.skeletonHelper = new THREE.SkeletonHelper( skeleton );
         // Sets line width of skeleton helper
-        //this.skeletonHelper.material.linewidth = 7;
+        this.skeletonHelper.material.linewidth = 7;
 
         // Adds skeleton helper to scene
         //scene.add( this.skeletonHelper );
