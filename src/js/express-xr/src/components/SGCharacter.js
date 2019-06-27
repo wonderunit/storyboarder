@@ -416,10 +416,20 @@ const SGCharacter = ({ id, type, worldScale, isSelected, updateObject, modelData
   useMemo(() => {
     if (!skinnedMesh) return
 
-    if (skinnedMesh.morphTargetDictionary && Object.values(skinnedMesh.morphTargetDictionary).length === 3) {
-      skinnedMesh.morphTargetInfluences[0] = props.morphTargets.mesomorphic
-      skinnedMesh.morphTargetInfluences[1] = props.morphTargets.ectomorphic
-      skinnedMesh.morphTargetInfluences[2] = props.morphTargets.endomorphic
+    if (skinnedMesh.type === 'LOD') {
+      skinnedMesh.children.forEach(lod => {
+        if (lod.morphTargetDictionary && Object.values(lod.morphTargetDictionary).length === 3) {
+          lod.morphTargetInfluences[0] = props.morphTargets.mesomorphic
+          lod.morphTargetInfluences[1] = props.morphTargets.ectomorphic
+          lod.morphTargetInfluences[2] = props.morphTargets.endomorphic
+        }
+      })
+    } else {
+      if (skinnedMesh.morphTargetDictionary && Object.values(skinnedMesh.morphTargetDictionary).length === 3) {
+        skinnedMesh.morphTargetInfluences[0] = props.morphTargets.mesomorphic
+        skinnedMesh.morphTargetInfluences[1] = props.morphTargets.ectomorphic
+        skinnedMesh.morphTargetInfluences[2] = props.morphTargets.endomorphic
+      }
     }
   }, [modelData, props.morphTargets])
 
