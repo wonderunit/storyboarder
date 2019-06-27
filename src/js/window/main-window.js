@@ -2684,12 +2684,19 @@ let openInEditor = async () => {
         } else if (pathToEditor.match(/\.app$/)) {
           binaryPath = pathToEditor
           execString = `open -a "${binaryPath}" "${pathToLinkedFile}"`
+        } else {
+          binaryPath = pathToEditor
+          execString = `"${binaryPath}" "${pathToLinkedFile}"`
         }
+
+        log.info('\tbinaryPath', binaryPath)
+        log.info('\tpathToLinkedFile', pathToLinkedFile)
+        log.info('\texecString', execString)
 
         if (binaryPath) {
           child_process.exec(execString, (error, stdout, stderr) => {
-            log.info(execString)
             if (error) {
+              log.warn(error)
               notifications.notify({ message: `[WARNING] ${error}` })
               return
             }
@@ -2701,14 +2708,17 @@ let openInEditor = async () => {
         }
       } else {
         log.info('\tshell.openItem', board.link)
+        log.info('\t\t', board.link)
+        log.info('\t\t', pathToLinkedFile)
         let result = shell.openItem(pathToLinkedFile)
-        log.info('\tshell.openItem result:', result)
+        log.info('\t\tresult:', result)
         if (!result) {
           errmsg = 'Could not open editor'
         }
       }
 
       if (errmsg) {
+        log.warn(errmsg)
         notifications.notify({ message: `[WARNING] ${errmsg}` })
       }
     }

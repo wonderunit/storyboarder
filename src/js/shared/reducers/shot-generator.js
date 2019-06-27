@@ -780,8 +780,8 @@ const sceneObjectsReducer = (state = {}, action) => {
           let offsetX = 0.5 // (Math.random() * 2 - 1)
           let offsetY = 0.5 // (Math.random() * 2 - 1)
 
-          if (draft[srcId]) {
-            let source = draft[srcId]
+          if (state[srcId]) {
+            let source = state[srcId]
 
             draft[dstId] = {
               ...source,
