@@ -1,18 +1,19 @@
 const TransformControls = require( "../utils/TransformControls");
 const THREE = require( "three");
 
+// TargetControl is class which is resposible for TransformControl and Mesh
 class TargetControl
 {
     constructor(camera, domElement, name)
     {
-        this.control = new TransformControls(camera, domElement);
-        this.control.size = 0.2;
-        this.control.userData.type = "controlTarget";
         this.name = name;
+        this.control = new TransformControls(camera, domElement);
         this.domElement = domElement;
+        this.control.size = 0.2;
+        this.isRotationLocked = false;
+        this.control.userData.type = "controlTarget";
         this.isControlPointSelected = false;
         this.isControlTargetSelected = false;
-        this.isRotationLocked = false;
     }
 
     //#region Events
@@ -105,7 +106,7 @@ class TargetControl
         this.removeEventsFromControlTarget();
     }
     //#endregion
-
+    // Locks rotation of current TargetControl
     onKeyDownLockRotation(event)
     {
         if(event.ctrlKey)

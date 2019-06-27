@@ -229,7 +229,7 @@ const Camera = React.memo(({ scene, id, type, setCamera, icon, ...props }) => {
     camera.current.orthoIcon.position.copy(camera.current.position)
     camera.current.orthoIcon.icon.material.rotation = camera.current.rotation.y
     scene.add(camera.current.orthoIcon)
-
+    console.log(scene);
     let frustumIcons = new THREE.Object3D()
 
     frustumIcons.left = new IconSprites( 'object', '', camera.current )

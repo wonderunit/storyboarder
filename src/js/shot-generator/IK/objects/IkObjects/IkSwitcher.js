@@ -1,3 +1,6 @@
+// IKSwitcher is class which is responsible for connecting 
+// ik bones and character bones
+// Ik and character works in different coordinate system ik(+z) and character(-z)
 class IKSwitcher
 {
     constructor(originalObject, clonedObject)
@@ -13,6 +16,8 @@ class IKSwitcher
     }
 
     //#region Data colletion
+    // Calculates difference between ik and character matrix
+    // which is used to calculate position in different coordinate system
     recalculateDifference()
     {
         let clonedSkin = this.clonedObject.children[1];
@@ -25,7 +30,9 @@ class IKSwitcher
         this.cloneObjectMatrix[cloneBone.name] = cloneBone.matrix.clone();
     }
 
-    initializeAxisAngle()
+    // Calculates relative angle between Ik and Character
+    // using delta of they angle will help to calculate they value
+    calculateRelativeAngle()
     {
         let clonedSkin = this.clonedObject.children[1];
         let originalSkin = this.originalObject.children[1];
@@ -58,6 +65,7 @@ class IKSwitcher
     //#endregion
 
     //#region Switching execution
+    // Applies changes from Ik bones to Character bones
     applyChangesToOriginal()
     {
         let clonedSkin = this.clonedObject.children[1];
@@ -76,12 +84,13 @@ class IKSwitcher
             this.cloneToOriginRotation(cloneBone, originalBone);
             if(cloneBone.name === "Hips")
             {
-                this.basisSwitchinBack(cloneBone, originalBone);
+                this.switchBasis(cloneBone, originalBone);
             }
         }
         this.recalculateDifference();
     }
 
+    // Applies quaternion of ik bones to character bones applying relative angle
     cloneToOriginRotation(cloneBone, originBone)
     {
         cloneBone.updateMatrixWorld(true);
@@ -96,7 +105,9 @@ class IKSwitcher
         originBone.updateWorldMatrix(false, true);
     }
 
-    basisSwitchinBack(cloneBone, originalBone)
+    // Switches basis of Ik bones to Character bones
+    // using previous transformation matrix
+    switchBasis(cloneBone, originalBone)
     {
         cloneBone.updateMatrix();
         originalBone.updateMatrix();
@@ -118,6 +129,7 @@ class IKSwitcher
         this.setObjectFromMatrixElements(cloneCurrentMatrix, originalBone);
     }
 
+    // Sets object.position to positional matrix
     setObjectFromMatrixElements(matrix, object)
     {
         let position = new THREE.Vector3();
@@ -128,6 +140,9 @@ class IKSwitcher
         object.updateMatrix();
     }
 
+    // Applies changes to ik bones
+    // Used to reset ik position and rotation when the pose changed
+    // or object reinitialized 
     applyToIk()
     {
         let clonedSkin = this.clonedObject.children[1];
@@ -148,6 +163,7 @@ class IKSwitcher
         this.recalculateDifference();
     }
 
+    // Applies quaternion of character bones to ik bones through applying relative angle
     originToCloneRotation(cloneBone, originBone)
     {
         let originalGlobalQuat = originBone.worldQuaternion();

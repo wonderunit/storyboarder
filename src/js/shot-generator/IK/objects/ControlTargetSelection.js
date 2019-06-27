@@ -1,3 +1,5 @@
+// ControlTargetSelection is class used to identify hover of mouse
+// on control points in order to start selection
 class ControlTargetSelection
 {
     constructor(domElement, scene, camera, controlTargets)
@@ -13,6 +15,7 @@ class ControlTargetSelection
         this.selectedMeshes = {};
     }
 
+    // Intiliazes event is used when object disposed to reenact it again
     initialize()
     {
         this.domElement.addEventListener("pointermove", this.onPointerMove, false);
@@ -21,7 +24,8 @@ class ControlTargetSelection
     // #region Events
     onPointerMove = (event) => { this.pointerHover(this.getPointer(event)); }
     //#endregion
-    
+
+    // Executes hover logic
     pointerHover( pointer ) 
     {
         let ray = this.ray;
@@ -29,15 +33,17 @@ class ControlTargetSelection
 		ray.setFromCamera( pointer, this.camera );
         let intersectMeshes = ray.intersectObjects(this.meshes)[ 0 ] || false;
         let intersectControlTarget = false;
+        // Checks if pointer intersects control target only when any mesh is selected
         if(Object.keys(selectedMeshes).length !== 0)
         {
             let rotationalGizmoHelpers = this.rotationalGizmoHelpers( Object.values(selectedMeshes)[0].scope.control);
             intersectControlTarget = ray.intersectObjects(rotationalGizmoHelpers)[ 0 ] || false;
         }
-        
+        // Checks if meshes intersected and if they do select them
         if ( intersectMeshes ) 
         {
             let object = intersectMeshes.object;
+            // Checks if intersected mesh is already selected to avoid doable selection
             if(selectedMeshes[object.uuid] !== undefined)
             {
                 return;
@@ -47,13 +53,16 @@ class ControlTargetSelection
         } 
         else 
         {
+            // Checks if any meshes are selected and control target isn't intersected
             if(Object.keys(selectedMeshes).length === 0 || intersectControlTarget !== false)
             {
                 return;
             }
+            // Goes through selectedMesh and deselect them
             for(let keys in selectedMeshes)
             {
                 let selectedMesh = selectedMeshes[keys];
+                // Checks if selected mesh's control target is currently in used 
                 if(selectedMesh.scope.isControlTargetSelected)
                 {
                     continue;
@@ -64,6 +73,7 @@ class ControlTargetSelection
         }
     }
 
+    // Identifies pointer of event
     getPointer( event ) 
     {
 		let pointer = event.changedTouches ? event.changedTouches[ 0 ] : event;
@@ -75,6 +85,7 @@ class ControlTargetSelection
 		};
     }
     
+    // Identifies gizmo elements which should be raycasted
     rotationalGizmoHelpers(o)
     {
         let results = [];
@@ -96,7 +107,8 @@ class ControlTargetSelection
         }
         return results;
     }
-    
+
+    // Dispose event
     dispose()
     {
         this.domElement.removeEventListener("pointermove", this.onPointerMove, false);

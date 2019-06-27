@@ -6,22 +6,30 @@ const CopyRotation = require( "../../constraints/CopyRotation");
 const ControlTargetSelection = require( "../ControlTargetSelection");
 require("../../utils/Object3dExtension");
 
+// Ragdoll is class which is used to set all specific details to ikrig
+// Like head upward, feet downward etc.
 class Ragdoll extends IkObject
 {
     constructor()
     {
         super();
-        this.poleConstraints = [];
-        this.hipsMouseDown = false;
-        this.isInitialized = false;
         this.scene = null;
         this.waitTurns = 10;
+        this.hipsMouseDown = false;
+        this.isInitialized = false;
+        this.poleConstraints = [];
         this.controlTargetSelection = null;
     }
 
+    // Initializes ragdoll set up all neccessary information 
     initObject(scene, object, skinnedMesh, ...controlTarget )
     {
         super.initObject(scene, object, skinnedMesh, controlTarget );
+
+        this.controlTargets[3].target.rotation.copy(new THREE.Euler(0.56, 0.1, 0));
+        this.controlTargets[4].target.rotation.copy(new THREE.Euler(0.56, -0.1, 0));
+        this.controlTargets[3].isRotationLocked = true;
+        this.controlTargets[4].isRotationLocked = true;
 
         // Adds events to Back control
         this.applyEventsToBackControl(this.controlTargets[0].control);
@@ -34,10 +42,8 @@ class Ragdoll extends IkObject
 
         let leftArmPoleTarget = this.initPoleTargets(leftArmChain, new THREE.Vector3(0, 0, -0.5), "leftArmPole");
         let leftLegPoleTarget = this.initPoleTargets(leftLegChain, new THREE.Vector3(0, 0.3, 0.8), "leftLegPole");
-
         let rightArmPoleTarget = this.initPoleTargets(rightArmChain, new THREE.Vector3(0, 0, -0.5), "rightArmPole");
         let rightLegPoleTarget = this.initPoleTargets(rightLegChain, new THREE.Vector3(0, 0.3, 0.8), "rightLegPole");
-
         let backPoleTarget =  this.initPoleTargets(backChain, new THREE.Vector3(0, 0, 0), "backPole");
 
         let poleConstraint = new PoleConstraint(backChain, backPoleTarget);
@@ -59,6 +65,7 @@ class Ragdoll extends IkObject
         this.isInitialized = true; 
     }
 
+    // Set control target selection
     setControlTargetSelection(domElement, scene, camera)
     {
         this.controlTargetSelection = new ControlTargetSelection(domElement, scene, camera, this.controlTargets);
@@ -81,6 +88,7 @@ class Ragdoll extends IkObject
         });
     }
 
+    // Initiallizes pole target for pole contraints
     initPoleTargets(chain, offset, name)
     {
         let poleTarget = new PoleTarget();
@@ -93,6 +101,9 @@ class Ragdoll extends IkObject
         return poleTarget;
     }
 
+    // Calculates offset of pole target position
+    // take in consideration current hips
+    // so pole target binded to hips 
     calculatePoleTargetOffset(poleTarget, chain)
     {
         let offset = poleTarget.initialOffset;
@@ -103,6 +114,7 @@ class Ragdoll extends IkObject
         poleTarget.poleOffset = hipsOffset;
     }
 
+    // Add pole contstraints to root joint of chains
     addPoleConstraintToRootJoint(chain, poleTarget)
     {
         let poleConstraint = new PoleConstraint(chain, poleTarget);
@@ -143,6 +155,7 @@ class Ragdoll extends IkObject
         });
     }
 
+    // Sets up control event for mouse down and up to enable and disable ik on mouse click
     setUpControlEvents()
     {
         let chainObject = this.chainObjects;
@@ -161,6 +174,7 @@ class Ragdoll extends IkObject
         }
     }
 
+    // Runs cyclet which is updating object
     update()
     {
         if(!this.isInitialized)
@@ -171,15 +185,15 @@ class Ragdoll extends IkObject
         if(!this.isEnabledIk)
         {
             this.resetTargets()
-            //this.ikSwitcher.changingPose();
         }
         else
         {
             this.limbsFollowRotation();
-            this.applyChangesToOriginal();
+            this.ikSwitcher.applyChangesToOriginal();
         }
     }
 
+    // Sets limbs rotation to control target rotation
     limbsFollowRotation()
     {
         for(let i = 1; i < this.chainObjects.length; i++)
@@ -189,6 +203,7 @@ class Ragdoll extends IkObject
 
             let controlTarget = this.chainObjects[i].controlTarget;
             let boneTarget = controlTarget.target;
+            // Checks if rotation locked and apply rotation 
             if(controlTarget.isRotationLocked)
             {
                 this.rotateBoneQuaternion(bone, boneTarget.rotation);
@@ -201,6 +216,7 @@ class Ragdoll extends IkObject
         }
     }
 
+    // Runs after update to apply changes to object after ik solved
     lateUpdate()
     {
         super.lateUpdate();
@@ -220,6 +236,8 @@ class Ragdoll extends IkObject
         bone.quaternion.copy(quaternion);
     }
 
+    // Reintializes whole body and ik joints when character was changed
+    // Changing character height, head size will fire reinitialization
     reinitialize()
     {
         if(!this.isInitialized)
@@ -249,7 +267,7 @@ class Ragdoll extends IkObject
         }
         this.hips.getWorldPosition(this.hipsControlTarget.target.position);
         this.calculteBackOffset();
-        this.applyToIk();
+        this.ikSwitcher.applyToIk();
     }
 
     // Resets targets position
@@ -261,6 +279,7 @@ class Ragdoll extends IkObject
         this.resetPoleTarget();
     }
 
+    // Resets pole target position when object moved his hips position changed
     resetPoleTarget()
     {
         let chainObjects = this.chainObjects;
@@ -284,6 +303,7 @@ class Ragdoll extends IkObject
         head.updateMatrix();
     }
 
+    // Removes object and all it's meshes from scene
     removeFromScene()
     {
         if(!this.isInitialized)
@@ -299,6 +319,7 @@ class Ragdoll extends IkObject
         });
     }
 
+    // Selects/Deselects ragdoll and adds/removes it's elements to/from scene
     selectedSkeleton(selected)
     {
         if(!this.isInitialized)
@@ -332,6 +353,7 @@ class Ragdoll extends IkObject
         }
     }
 
+    // Moves ragdoll hips when original object moved
     moveRagdoll()
     {
         if(!this.isInitialized)
@@ -340,16 +362,6 @@ class Ragdoll extends IkObject
         }
         this.clonedObject.position.copy(this.originalObject.position);
         this.clonedObject.updateMatrixWorld(false, true);
-    }
-
-    applyChangesToOriginal()
-    {
-       this.ikSwitcher.applyChangesToOriginal();
-    }
-
-    applyToIk()
-    {
-        this.ikSwitcher.applyToIk();
     }
 }
 module.exports =  Ragdoll;

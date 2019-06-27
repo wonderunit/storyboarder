@@ -14,13 +14,13 @@ class IkObject
         {
             throw new TypeError("Cannot construct abstract IkObject directly");
         }
-        this.applyingOffset = false;
-        this.isEnabledIk = false;
-        this.controlTargets = [];
-        this.originalObject = null;
-        this.clonedObject = null;
         this.bonesDelta = {};
         this.ikSwitcher = null;
+        this.isEnabledIk = false;
+        this.clonedObject = null;
+        this.controlTargets = [];
+        this.originalObject = null;
+        this.applyingOffset = false;
     }
 
     // Takes skeleton and target for it's limbs
@@ -29,8 +29,8 @@ class IkObject
         this.ik = new IK();
         let chains = [];
         let clonedSkeleton = SkeletonUtils.clone(objectSkeleton);
-        this.originalObject = objectSkeleton;
         this.clonedObject = clonedSkeleton;
+        this.originalObject = objectSkeleton;
 
         this.ikSwitcher = new IKSwitcher(objectSkeleton, clonedSkeleton);
 
@@ -43,10 +43,6 @@ class IkObject
         let chainObjects = [];
         this.chainObjects = chainObjects;
         this.hipsControlTarget = this.controlTargets[5];
-        this.controlTargets[3].target.rotation.copy(new THREE.Euler(0.56, 0.1, 0));
-        this.controlTargets[4].target.rotation.copy(new THREE.Euler(0.56, -0.1, 0));
-        this.controlTargets[3].isRotationLocked = true;
-        this.controlTargets[4].isRotationLocked = true;
 
         chainObjects.push(new ChainObject("Spine", "Head", this.controlTargets[0]));
         chainObjects.push(new ChainObject("LeftArm", "LeftHand", this.controlTargets[1]));
@@ -88,10 +84,7 @@ class IkObject
                 {
                     this.hips = object;
                     setZDirecion(object, new THREE.Vector3(0, 0, 1));
-                    //object.updateWorldMatrix(true, true);
 
-                    //this.originalObject.children[1].bind(this.originalObject.children[1].skeleton);
-                    //object.updateWorldMatrix(true, true);
                     let objectWorld = new THREE.Vector3();
                     object.getWorldPosition(objectWorld);
                     this.hipsControlTarget.target.position.copy(objectWorld);
@@ -147,7 +140,7 @@ class IkObject
         // Adds skeleton helper to scene
         //scene.add( this.skeletonHelper );
         this.ikSwitcher.recalculateDifference();
-        this.ikSwitcher.initializeAxisAngle();
+        this.ikSwitcher.calculateRelativeAngle();
     }
 
     // Calculates back's offset in order to move with hips
@@ -227,6 +220,7 @@ class IkObject
         {
             let chain = chainObjects[i].chain;
             let jointBone = chain.joints[chain.joints.length - 1].bone;
+            // Sets target position to ik last joints in each chain 
             if(jointBone.name === "LeftFoot" || jointBone.name === "RightFoot" ||
             jointBone.name === "LeftHand" || jointBone.name === "RightHand" ||
             jointBone.name === "Head" || jointBone.name === "Hips")
@@ -267,6 +261,7 @@ class IkObject
         this.calculteBackOffset();
     }
 
+    // Sets character id to controls and points to identify them in SelectionManager
     addParentToControl(parentId)
     {
         let controlTarget = this.controlTargets;
