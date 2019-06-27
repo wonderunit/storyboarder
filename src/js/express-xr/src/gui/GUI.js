@@ -208,6 +208,7 @@ const GUI = ({ aspectRatio, guiMode, addMode, currentBoard, selectedObject, hide
           break
         case 'height':
           if (parent.userData.type === "character") minMax = { min: 1.4732, max: 2.1336 }
+          else minMax = { min: 0.03, max: 5 }
           break
         case 'mesomorphic':
         case 'ectomorphic':
@@ -215,7 +216,6 @@ const GUI = ({ aspectRatio, guiMode, addMode, currentBoard, selectedObject, hide
           minMax = { min: 0, max: 1 }
           break
         case 'width':
-        case 'height':
         case 'depth':
         case 'size':
           minMax = { min: 0.03, max: 5 }
