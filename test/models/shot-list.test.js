@@ -45,4 +45,9 @@ describe('shot-list', () => {
     //   )
     // )
   })
+
+  it('can export shot list for a multi-scene project', () => {
+    // TODO run for every scene in fountain multi-scene project
+    assert.fail()
+  })
 })
