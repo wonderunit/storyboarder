@@ -24,13 +24,19 @@ class Ragdoll extends IkObject
     initObject(scene, object, skinnedMesh, ...controlTarget )
     {
         super.initObject(scene, object, skinnedMesh, controlTarget );
-
+        console.log(object);
+        console.log();
+        let cloneSkinnedMesh = this.clonedObject.children[1];
         this.controlTargets[0].isRotationLocked = true;
-        this.controlTargets[1].target.rotation.copy(new THREE.Euler(1.213400733182015, 0.10190071449066612, 2.4475774728125717));
-        this.controlTargets[2].target.rotation.copy(new THREE.Euler(1.213400733182015, -0.10190071449066612, -2.4475774728125717));
-        this.controlTargets[0].target.rotation.copy(new THREE.Euler(-1.0, 0, 0));
-        this.controlTargets[3].target.rotation.copy(new THREE.Euler(0.56, 0.1, 0));
-        this.controlTargets[4].target.rotation.copy(new THREE.Euler(0.56, -0.1, 0));
+        this.controlTargets[0].target.rotation.copy(new THREE.Euler().setFromQuaternion(cloneSkinnedMesh.skeleton.bones[5].worldQuaternion()));
+        //this.controlTargets[1].target.rotation.copy(new THREE.Euler(1.213400733182015, 0.10190071449066612, 2.4475774728125717));
+        this.controlTargets[1].target.rotation.copy(new THREE.Euler().setFromQuaternion(cloneSkinnedMesh.skeleton.bones[12].worldQuaternion()));
+        this.controlTargets[2].target.rotation.copy(new THREE.Euler().setFromQuaternion(cloneSkinnedMesh.skeleton.bones[36].worldQuaternion()));
+        this.controlTargets[3].target.rotation.copy(new THREE.Euler().setFromQuaternion(cloneSkinnedMesh.skeleton.bones[59].worldQuaternion()));
+        this.controlTargets[4].target.rotation.copy(new THREE.Euler().setFromQuaternion(cloneSkinnedMesh.skeleton.bones[64].worldQuaternion()));
+       // this.controlTargets[2].target.rotation.copy(new THREE.Euler(1.213400733182015, -0.10190071449066612, -2.4475774728125717));
+        //this.controlTargets[3].target.rotation.copy(new THREE.Euler(0.56, 0.1, 0));
+        //this.controlTargets[4].target.rotation.copy(new THREE.Euler(0.56, -0.1, 0));
         this.controlTargets[3].isRotationLocked = true;
         this.controlTargets[4].isRotationLocked = true;
 
@@ -44,9 +50,9 @@ class Ragdoll extends IkObject
         let rightLegChain = this.ik.chains[4];
 
         let leftArmPoleTarget = this.initPoleTargets(leftArmChain, new THREE.Vector3(0, 0, -0.5), "leftArmPole");
-        let leftLegPoleTarget = this.initPoleTargets(leftLegChain, new THREE.Vector3(0, 0.3, 0.8), "leftLegPole");
+        let leftLegPoleTarget = this.initPoleTargets(leftLegChain, new THREE.Vector3(0, 0.4, 0.8), "leftLegPole");
         let rightArmPoleTarget = this.initPoleTargets(rightArmChain, new THREE.Vector3(0, 0, -0.5), "rightArmPole");
-        let rightLegPoleTarget = this.initPoleTargets(rightLegChain, new THREE.Vector3(0, 0.3, 0.8), "rightLegPole");
+        let rightLegPoleTarget = this.initPoleTargets(rightLegChain, new THREE.Vector3(0, 0.4, 0.8), "rightLegPole");
         let backPoleTarget =  this.initPoleTargets(backChain, new THREE.Vector3(0, 0, 0), "backPole");
 
         let poleConstraint = new PoleConstraint(backChain, backPoleTarget);
