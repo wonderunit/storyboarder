@@ -34,6 +34,7 @@ THREE.Object3D.prototype.worldPosition = function()
 {
     let position = new THREE.Vector3();
     this.getWorldPosition(position);
+    
     return position;
 }
 

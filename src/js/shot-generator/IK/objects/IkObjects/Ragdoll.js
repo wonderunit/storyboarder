@@ -210,7 +210,7 @@ class Ragdoll extends IkObject
             // Checks if rotation locked and apply rotation 
             if(controlTarget.isRotationLocked)
             {
-                this.rotateBoneQuaternion(bone, boneTarget.rotation);
+                this.rotateBoneQuaternion(bone, boneTarget.quaternion);
             }
             else
             {
@@ -231,13 +231,15 @@ class Ragdoll extends IkObject
     // Sets and quaternion angle for bones
     // Give the result of bone always faces direction set by euler
     // Effect like flat foot to earth can be achieved
-    rotateBoneQuaternion(bone, euler)
+    rotateBoneQuaternion(bone, targetQuaternion)
     {
+        let targetQuat = targetQuaternion.clone();
         let quaternion = new THREE.Quaternion();
         bone.getWorldQuaternion(quaternion);
         quaternion.inverse();
-        let angle = new THREE.Quaternion().setFromEuler(euler);
-        quaternion.multiply(angle);
+        let rotation = this.originalObject.children[0].quaternion;
+        targetQuat.premultiply(rotation);
+        quaternion.multiply(targetQuat);
         bone.quaternion.multiply(quaternion);
     }
 
