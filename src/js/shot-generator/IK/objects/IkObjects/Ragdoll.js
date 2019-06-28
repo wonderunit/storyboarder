@@ -29,14 +29,10 @@ class Ragdoll extends IkObject
         let cloneSkinnedMesh = this.clonedObject.children[1];
         this.controlTargets[0].isRotationLocked = true;
         this.controlTargets[0].target.rotation.copy(new THREE.Euler().setFromQuaternion(cloneSkinnedMesh.skeleton.bones[5].worldQuaternion()));
-        //this.controlTargets[1].target.rotation.copy(new THREE.Euler(1.213400733182015, 0.10190071449066612, 2.4475774728125717));
         this.controlTargets[1].target.rotation.copy(new THREE.Euler().setFromQuaternion(cloneSkinnedMesh.skeleton.bones[12].worldQuaternion()));
         this.controlTargets[2].target.rotation.copy(new THREE.Euler().setFromQuaternion(cloneSkinnedMesh.skeleton.bones[36].worldQuaternion()));
         this.controlTargets[3].target.rotation.copy(new THREE.Euler().setFromQuaternion(cloneSkinnedMesh.skeleton.bones[59].worldQuaternion()));
         this.controlTargets[4].target.rotation.copy(new THREE.Euler().setFromQuaternion(cloneSkinnedMesh.skeleton.bones[64].worldQuaternion()));
-       // this.controlTargets[2].target.rotation.copy(new THREE.Euler(1.213400733182015, -0.10190071449066612, -2.4475774728125717));
-        //this.controlTargets[3].target.rotation.copy(new THREE.Euler(0.56, 0.1, 0));
-        //this.controlTargets[4].target.rotation.copy(new THREE.Euler(0.56, -0.1, 0));
         this.controlTargets[3].isRotationLocked = true;
         this.controlTargets[4].isRotationLocked = true;
 
@@ -243,7 +239,8 @@ class Ragdoll extends IkObject
         let quaternion = new THREE.Quaternion();
         bone.getWorldQuaternion(quaternion);
         quaternion.inverse();
-        let rotation = this.originalObject.children[0].quaternion;
+        let rotation = this.originalObject.children[0].worldQuaternion();
+        //targetQuat.premultiply(this.originalObject.quaternion);
         targetQuat.premultiply(rotation);
         quaternion.multiply(targetQuat);
         bone.quaternion.multiply(quaternion);
