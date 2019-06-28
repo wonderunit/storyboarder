@@ -179,6 +179,7 @@ const Editor = connect(
 
     const scene = useRef()
     let [camera, setCamera ] = useState(null)
+    const orthoCamera = useRef(new THREE.OrthographicCamera( -4, 4, 4, -4, 1, 10000 ))
     const [ machineState, transition ] = useMachine(editorMachine, { log: false })
 
     const mainViewContainerRef = useRef(null)
@@ -264,31 +265,28 @@ const Editor = connect(
       }
 
 
+      let savedBackground = scene.current.background && scene.current.background.clone()
+      scene.current.background = new THREE.Color( '#FFFFFF' )
+      imageRenderer.current.setSize(900, 900)
+      imageRenderer.current.render(scene.current, orthoCamera.current)
+      let plotImage = imageRenderer.current.domElement.toDataURL()
+      scene.current.background = savedBackground
 
-      // TODO
-      // if (topDownCamera) {
-      //   imageRenderer.clear()
-      //   imageRenderer.setSize(900, 900)
-      //   imageRenderer.render(scene, topDownCamera)
-      //   let topDownImage = imageRenderer.domElement.toDataURL()
-      // }
-      let topDownImage = undefined
 
-      return { cameraImage, topDownImage }
+
+      return { cameraImage, plotImage }
     }
 
     const onToolbarSaveToBoard = () => {
       withState((dispatch, state) => {
-        let { cameraImage } = renderImagesForBoard(state)
+        let { cameraImage, plotImage } = renderImagesForBoard(state)
 
         ipcRenderer.send('saveShot', {
           uid: state.board.uid,
           data: getSerializedState(state),
           images: {
             'camera': cameraImage,
-
-            // TODO
-            'topdown': undefined
+            'plot': plotImage
           }
         })
 
@@ -297,7 +295,7 @@ const Editor = connect(
     }
     const onToolbarInsertAsNewBoard = () => {
       withState((dispatch, state) => {
-        let { cameraImage } = renderImagesForBoard(state)
+        let { cameraImage, plotImage } = renderImagesForBoard(state)
 
         // NOTE we do this first, since we get new data on insertShot complete
         dispatch(markSaved())
@@ -306,9 +304,7 @@ const Editor = connect(
           data: getSerializedState(state),
           images: {
             'camera': cameraImage,
-
-            // TODO
-            'topdown': undefined
+            'plot': plotImage
           }
         })
       })
@@ -795,7 +791,8 @@ const Editor = connect(
               machineState,
               transition,
               largeCanvasSize,
-              attachments
+              attachments,
+              orthoCamera
             }
           ],
 
