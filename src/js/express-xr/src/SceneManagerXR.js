@@ -5,6 +5,7 @@ const { Canvas, useThree, useRender } = require('react-three-fiber')
 const { connect } = require('react-redux')
 const React = require('react')
 const { useEffect, useRef, useMemo, useState, useReducer } = React
+const { ActionCreators } = require('redux-undo')
 
 const {
   createObject,
@@ -86,6 +87,8 @@ const useVrControllers = ({ onSelectStart, onSelectEnd, onGripDown, onGripUp, on
     controller.addEventListener('disconnected', event => {
       setControllers(state => state.filter(object3d => object3d.uuid === event.target.uuid))
     })
+    controller.addEventListener('A press ended', event => undo())
+    controller.addEventListener('B press ended', event => redo())
 
     setControllerData(controller)
     setControllers(state => [ ...state, controller ])
@@ -115,7 +118,9 @@ const SceneContent = ({
   duplicateObjects,
   selectedBone,
   selectBone,
-  updateCharacterSkeleton
+  updateCharacterSkeleton,
+  undo,
+  redo
 }) => {
   // const rStatsRef = useRef(null)
   const xrOffset = useRef(null)
@@ -797,7 +802,7 @@ const SceneContent = ({
   }
 
   const vrControllers = useVrControllers({
-    onSelectStart, onSelectEnd, onGripDown, onGripUp, onAxisChanged
+    onSelectStart, onSelectEnd, onGripDown, onGripUp, onAxisChanged, undo, redo
   })
 
   useEffect(() => {
@@ -1174,7 +1179,9 @@ const SceneManagerXR = connect(
     deleteObjects,
     duplicateObjects,
     selectBone,
-    updateCharacterSkeleton
+    updateCharacterSkeleton,
+    undo: ActionCreators.undo,
+    redo: ActionCreators.redo
   }
 )(
   ({
@@ -1188,7 +1195,9 @@ const SceneManagerXR = connect(
     duplicateObjects,
     selectedBone,
     selectBone,
-    updateCharacterSkeleton
+    updateCharacterSkeleton,
+    undo,
+    redo
   }) => {
     const attachments = useAttachmentLoader({ sceneObjects, world })
 
@@ -1213,7 +1222,9 @@ const SceneManagerXR = connect(
               duplicateObjects,
               selectedBone,
               selectBone,
-              updateCharacterSkeleton
+              updateCharacterSkeleton,
+              undo,
+              redo
             }}
           />
         </Canvas>
