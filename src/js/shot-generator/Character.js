@@ -1,6 +1,6 @@
 //#region ragdoll's import
 const RagDoll = require("./IK/objects/IkObjects/Ragdoll");
-
+const BoneRotationControl = require("./IK/objects/BoneRotationControl")
 const {AddTransformationControl} = require("./IK/utils/IkUtils");
 //#endregion
 const THREE = require('three')
@@ -191,6 +191,7 @@ const Character = React.memo(({
   const originalSkeleton = useRef(null)
   let ragDoll = useRef(null);
   let prevRotation = useRef({});
+  let boneRotationControl = useRef(null);
 
   const doCleanup = () => {
     if (object.current) {
@@ -285,9 +286,12 @@ const Character = React.memo(({
       const leftHandControl = AddTransformationControl(new THREE.Vector3(-2, 1.5, 0), camera, domElement, scene, "leftHand");
       const leftLegControl = AddTransformationControl(new THREE.Vector3(0, 1, 1), camera, domElement, scene, "leftLeg");
       const rightLegControl = AddTransformationControl(new THREE.Vector3(0, 0, 1), camera, domElement, scene, "rightLeg");
+      boneRotationControl.current = new BoneRotationControl(scene, camera, domElement);
+      boneRotationControl.current.setCharacter(object.current);
       skeletonRig.initObject(scene, object.current, object.current.children[1], backControl, leftHandControl,
           rightHandControl, leftLegControl, rightLegControl,
           hipsControl );
+      
       skeletonRig.setControlTargetSelection(domElement, scene, camera);
       object.current.userData.ikRig = skeletonRig;
     }
@@ -609,7 +613,6 @@ const Character = React.memo(({
       currentBoneSelected.current.connectedBone.material.color = new THREE.Color( 0x7a72e9 )
       currentBoneSelected.current = null
     }
-
     // was a bone selected?
     if (selectedBone) {
       // find the 3D Bone matching the selectedBone uuid
@@ -618,10 +621,16 @@ const Character = React.memo(({
         .skeleton
         .bones.find(b => b.uuid == selectedBone)
 
+       
       if (bone) {
         currentBoneSelected.current = bone
         currentBoneSelected.current.connectedBone.material.color = new THREE.Color( 0x242246 )
+        boneRotationControl.current.selectedBone(bone, selectedBone);
       }
+    
+    }
+    else{
+      boneRotationControl.current.deselectBone();
     }
   }, [selectedBone, ready])
 
@@ -674,6 +683,7 @@ const Character = React.memo(({
       target.quaternion.copy(objectQuaternion.normalize())
       let rotation = new THREE.Euler()
       if (selectedBone) {
+       
        
         rotation.setFromQuaternion( objectQuaternion.normalize(), "YXZ" )
         updateCharacterSkeleton({

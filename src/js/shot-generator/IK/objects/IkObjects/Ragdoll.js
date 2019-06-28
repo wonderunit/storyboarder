@@ -5,7 +5,7 @@ const PoleTarget = require( "../PoleTarget");
 const CopyRotation = require( "../../constraints/CopyRotation");
 const ControlTargetSelection = require( "../ControlTargetSelection");
 require("../../utils/Object3dExtension");
-
+const BoneRotationControl = require("../BoneRotationControl");
 // Ragdoll is class which is used to set all specific details to ikrig
 // Like head upward, feet downward etc.
 class Ragdoll extends IkObject
@@ -188,6 +188,7 @@ class Ragdoll extends IkObject
         if(!this.isEnabledIk)
         {
             this.resetTargets()
+            this.ikSwitcher.applyToIk();
         }
         else
         {

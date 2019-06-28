@@ -22,7 +22,7 @@ const TransformControls = function ( camera, domElement ) {
 	this.add( _plane );
 
 	var scope = this;
-
+	this.rotationOnly = false;
 	// Define properties with getters/setter
 	// Setting the defined property will automatically trigger change event
 	// Defined properties are passed down to gizmo and plane
@@ -530,7 +530,7 @@ const TransformControls = function ( camera, domElement ) {
 				event.stopPropagation();
 				scope.setMode("rotate");
 			}
-			if(event.key === "t")
+			if(event.key === "t" && !this.rotationOnly)
 			{
 				event.stopPropagation();
 				scope.setMode("translate");
