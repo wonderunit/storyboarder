@@ -210,12 +210,12 @@ class Ragdoll extends IkObject
             // Checks if rotation locked and apply rotation 
             if(controlTarget.isRotationLocked)
             {
-                this.rotateBoneQuaternion(bone, boneTarget.rotation);
+                //this.rotateBoneQuaternion(bone, boneTarget.rotation);
             }
             else
             {
                 let localQuat = bone.worldToLocalQuaternion(boneTarget.quaternion);
-                bone.quaternion.multiply(localQuat);
+               // bone.quaternion.multiply(localQuat);
             }
             bone.updateMatrix();
         }

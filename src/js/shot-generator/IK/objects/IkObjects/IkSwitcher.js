@@ -100,7 +100,9 @@ class IKSwitcher
         transformMatrix.multiply(originBone.matrix);
         transformMatrix.multiply(originBone.matrixWorld.inverse());
         cloneGlobalQuat.applyMatrix(transformMatrix);
+        //let originBoneY = originBone.rotation.y;
         originBone.quaternion.copy(cloneGlobalQuat);
+        //originBone.rotation.y = originBoneY;
         originBone.updateMatrix();
         originBone.updateWorldMatrix(false, true);
     }

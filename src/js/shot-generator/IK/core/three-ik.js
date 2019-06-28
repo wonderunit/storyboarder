@@ -547,10 +547,13 @@ var IKJoint = function () {
         this.bone.position.copy(position);
         this._updateMatrixWorld();
         this._worldToLocalDirection(direction);
-
+        let boneZRotation = this.bone.rotation.z;
         setQuaternionFromDirection(direction, Y_AXIS, this.bone.quaternion);
-
-        this.bone.rotation.z = 0;
+        if(this.bone.name !== "Spine")
+        {
+        }
+        this.bone.rotation.z = boneZRotation;
+       
       }
       else
       {
