@@ -855,8 +855,14 @@ const SceneContent = ({
           let intersection = intersections[0]
           if (intersection.object.userData.type === 'slider') {
             controller.intersections = intersections
+          } else {
+            controller.intersections = []
           }
+        } else {
+          controller.intersections = []
         }
+      } else {
+        controller.intersections = []
       }
 
       const object = controller.userData.selected
