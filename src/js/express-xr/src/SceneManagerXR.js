@@ -26,9 +26,6 @@ const defaultPosePresets = require('../../shared/reducers/shot-generator-presets
 const DEFAULT_POSE_PRESET_ID = '79BBBD0D-6BA2-4D84-9B71-EE661AB6E5AE'
 
 const { WEBVR } = require('../../vendor/three/examples/js/vr/WebVR')
-require('../../vendor/three/examples/js/loaders/LoaderSupport')
-require('../../vendor/three/examples/js/loaders/GLTFLoader')
-require('../../vendor/three/examples/js/loaders/OBJLoader2')
 
 const SGWorld = require('./components/SGWorld')
 const SGSpotLight = require('./components/SGSpotLight')
@@ -48,12 +45,6 @@ require('./lib/VRController')
 
 // const RStats = require('./lib/rStats')
 // require('./lib/rStats.extras')
-
-const loadingManager = new THREE.LoadingManager()
-const objLoader = new THREE.OBJLoader2(loadingManager)
-const gltfLoader = new THREE.GLTFLoader(loadingManager)
-objLoader.setLogging(false, false)
-THREE.Cache.enabled = true
 
 // preload audio immediately into cache
 new THREE.AudioLoader().load('data/snd/vr-select.ogg', () => {})

@@ -1,3 +1,17 @@
+const React = require('react')
+const { useMemo, useReducer } = React
+const { controllerObjectSettings, cameraObjectSettings } = require('../utils/xrObjectSettings')
+
+require('../../../vendor/three/examples/js/loaders/LoaderSupport')
+require('../../../vendor/three/examples/js/loaders/GLTFLoader')
+require('../../../vendor/three/examples/js/loaders/OBJLoader2')
+
+const loadingManager = new THREE.LoadingManager()
+const objLoader = new THREE.OBJLoader2(loadingManager)
+const gltfLoader = new THREE.GLTFLoader(loadingManager)
+objLoader.setLogging(false, false)
+THREE.Cache.enabled = true
+
 const useAttachmentLoader = ({ sceneObjects, world }) => {
   // TODO why do PENDING and SUCCESS get dispatched twice?
   const [attachments, dispatch] = useReducer((state, action) => {
