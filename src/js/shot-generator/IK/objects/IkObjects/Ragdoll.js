@@ -232,6 +232,7 @@ class Ragdoll extends IkObject
 
     // Sets and quaternion angle for bones
     // Give the result of bone always faces direction set by euler
+    // Affected by hips rotation
     // Effect like flat foot to earth can be achieved
     rotateBoneQuaternion(bone, targetQuaternion)
     {
