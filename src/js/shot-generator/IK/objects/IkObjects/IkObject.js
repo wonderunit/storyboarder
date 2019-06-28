@@ -229,6 +229,7 @@ class IkObject
                 jointBone.getWorldPosition(targetPosition);
             }
             
+            
         }
         this.calculteBackOffset();
     }
