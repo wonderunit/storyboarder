@@ -8,7 +8,8 @@ const assert = require('assert')
 
 const {
   getCameraSetups,
-  getShotListForScene
+  getShotListForScene,
+  getShotListForProject
 } = require('../../src/js/models/shot-list')
 
 describe('shot-list', () => {
@@ -18,6 +19,7 @@ describe('shot-list', () => {
       path.join(fixturesPath, 'shot-generator', 'shot-generator.storyboarder')
     )
   )
+  const scriptFilePath = path.join(fixturesPath, 'projects', 'multi-scene', 'multi-scene.fountain')
 
   it('can list camera setups', () => {
     const setups = getCameraSetups(scene)
@@ -33,13 +35,13 @@ describe('shot-list', () => {
   })
 
   it('can export a shot list for a single scene', () => {
-    const shotListData = getShotListForScene(scene)
+    const shotListDataForScene = getShotListForScene(scene)
 
-    assert.equal(shotListData.setups.length, 1)
+    assert.equal(shotListDataForScene.setups.length, 1)
 
     // console.log(
     //   JSON.stringify(
-    //     shotListData,
+    //     shotListDataForScene,
     //     null,
     //     2
     //   )
@@ -47,7 +49,14 @@ describe('shot-list', () => {
   })
 
   it('can export shot list for a multi-scene project', () => {
-    // TODO run for every scene in fountain multi-scene project
-    assert.fail()
+    const shotListData = getShotListForProject(scriptFilePath)
+
+    console.log(
+      JSON.stringify(
+        shotListData,
+        null,
+        2
+      )
+    )
   })
 })

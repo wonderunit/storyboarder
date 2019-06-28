@@ -1,4 +1,9 @@
+const fs = require('fs')
+const path = require('path')
 const { PerspectiveCamera } = require('three')
+
+const fountain = require('../vendor/fountain')
+const fountainDataParser = require('../fountain-data-parser')
 
 const degToRad = deg => deg * Math.PI / 180
 const radToDeg = rad => rad * 180 / Math.PI
@@ -139,22 +144,10 @@ const getShots = (setups, scene) =>
     setup.shots.reduce(shotsReducer, { count: n + 1, values: [], camera: setup.camera }).values)
 
 const getShotListForScene = scene => {
-  // TODO via fountain, see script-assistant fountain
-  let number = 1 // TODO
-  let id = 'ABCDE' // TODO
-  let slugline = 'INT. ROOM' // TODO
-  let synopsis = 'optional synopsis goes here' // TODO
-  let characters = [] // TODO
-
   let setups = getCameraSetups(scene)
   let shots = getShots(setups, scene)
 
   return {
-    number,
-    id,
-    slugline,
-    synopsis,
-    characters,
     setups: setups.map(setup => ({
       number: setup.number,
       fov: getFovAsFocalLength(
@@ -168,10 +161,72 @@ const getShotListForScene = scene => {
   }
 }
 
+const getShotListForProject = scriptFilePath => {
+  const projectPath = path.dirname(scriptFilePath)
+  const data = fs.readFileSync(scriptFilePath, 'utf-8')
+
+  let parsedData = fountain.parse(data, true)
+
+  let locations = fountainDataParser.getLocations(parsedData.tokens)
+  let characters = fountainDataParser.getCharacters(parsedData.tokens)
+
+  let scriptData = fountainDataParser.parse(parsedData.tokens)
+
+  const filenameify = string =>
+    string
+      .substring(0, 50)
+      .replace(/\|&;\$%@"<>\(\)\+,/g, '')
+      .replace(/\./g, '')
+      .replace(/ - /g, ' ')
+      .replace(/ /g, '-')
+      .replace(/[|&;/:$%@"{}?|<>()+,]/g, '-')
+
+  let folders = Object.values(scriptData)
+    .filter(node => node.type === 'scene')
+    .map(node => {
+      let desc = node.synopsis
+        ? node.synopsis
+        : node.slugline
+        
+      let name = `Scene-${node.scene_number}-${filenameify(desc)}-${node.scene_id}`
+
+      return {
+        name,
+        storyboarderFilePath: path.join('storyboards', name, `${name}.storyboarder`),
+        node
+      }
+    })
+
+  return {
+    scenes: folders.map(folder => {
+      let scene = JSON.parse(fs.readFileSync(path.join(projectPath, folder.storyboarderFilePath)))
+
+      let number = folder.node.scene_number
+      let id = folder.node.scene_id
+      let slugline = folder.node.slugline
+      let synopsis = folder.node.synopsis
+
+      let characters = [] // TODO
+
+      return {
+        number,
+        id,
+        slugline,
+        synopsis,
+
+        characters,
+
+        ...getShotListForScene(scene)
+      }
+    })
+  }
+}
+
 module.exports = {
   getFovAsFocalLength,
 
   getCameraSetups,
   getShots,
-  getShotListForScene
+  getShotListForScene,
+  getShotListForProject  
 }
