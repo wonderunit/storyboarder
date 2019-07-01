@@ -929,8 +929,8 @@ const CharacterPresetsEditor = connect(
   }),
   {
     updateObject,
-    selectCharacterPreset: (id, characterPresetId, preset) => (dispatch, getState) => {
-      dispatch(updateObject(id, {
+    selectCharacterPreset: (sceneObject, characterPresetId, preset) => (dispatch, getState) => {
+      dispatch(updateObject(sceneObject.id, {
         // set characterPresetId
         characterPresetId,
 
@@ -949,7 +949,7 @@ const CharacterPresetsEditor = connect(
           endomorphic: preset.state.morphTargets.endomorphic
         },
 
-        name: preset.state.name
+        name: sceneObject.name || preset.name
       }))
     },
     createCharacterPreset: ({ id, name, sceneObject }) => (dispatch, getState) => {
@@ -971,19 +971,29 @@ const CharacterPresetsEditor = connect(
             mesomorphic: sceneObject.morphTargets.mesomorphic,
             ectomorphic: sceneObject.morphTargets.ectomorphic,
             endomorphic: sceneObject.morphTargets.endomorphic
-          },
-
-          name: sceneObject.name
+          }
         }
       }
-      // create it
+
+      // start the undo-able operation
+      dispatch(undoGroupStart())
+
+      // create the preset
       dispatch(createCharacterPreset(preset))
 
       // save the presets file
       saveCharacterPresets(getState())
 
-      // select the preset in the list
-      dispatch(updateObject(sceneObject.id, { characterPresetId: id }))
+      // update this object to use the preset
+      dispatch(updateObject(sceneObject.id, {
+        // set the preset id
+        characterPresetId: id,
+        // use the preset’s name (if none assigned)
+        name: sceneObject.name || preset.name
+      }))
+
+      // end the undo-able operation
+      dispatch(undoGroupEnd())
     }
   }
 )(
@@ -1012,7 +1022,7 @@ const CharacterPresetsEditor = connect(
     const onSelectCharacterPreset = event => {
       let characterPresetId = event.target.value
       let preset = characterPresets[characterPresetId]
-      selectCharacterPreset(sceneObject.id, characterPresetId, preset)
+      selectCharacterPreset(sceneObject, characterPresetId, preset)
     }
 
     return h(
