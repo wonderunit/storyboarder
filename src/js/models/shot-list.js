@@ -161,6 +161,23 @@ const getShotListForScene = scene => {
   }
 }
 
+const filenameify = string =>
+  string
+    .substring(0, 50)
+    .replace(/\|&;\$%@"<>\(\)\+,/g, '')
+    .replace(/\./g, '')
+    .replace(/ - /g, ' ')
+    .replace(/ /g, '-')
+    .replace(/[|&;/:$%@"{}?|<>()+,]/g, '-')
+
+const getSceneFolderName = node => {
+  let desc = node.synopsis
+    ? node.synopsis
+    : node.slugline
+
+  return `Scene-${node.scene_number}-${filenameify(desc)}-${node.scene_id}`
+}
+
 const getShotListForProject = scriptFilePath => {
   const projectPath = path.dirname(scriptFilePath)
   const data = fs.readFileSync(scriptFilePath, 'utf-8')
@@ -172,23 +189,10 @@ const getShotListForProject = scriptFilePath => {
 
   let scriptData = fountainDataParser.parse(parsedData.tokens)
 
-  const filenameify = string =>
-    string
-      .substring(0, 50)
-      .replace(/\|&;\$%@"<>\(\)\+,/g, '')
-      .replace(/\./g, '')
-      .replace(/ - /g, ' ')
-      .replace(/ /g, '-')
-      .replace(/[|&;/:$%@"{}?|<>()+,]/g, '-')
-
   let folders = Object.values(scriptData)
     .filter(node => node.type === 'scene')
     .map(node => {
-      let desc = node.synopsis
-        ? node.synopsis
-        : node.slugline
-        
-      let name = `Scene-${node.scene_number}-${filenameify(desc)}-${node.scene_id}`
+      let name = getSceneFolderName(node)
 
       return {
         name,
@@ -224,6 +228,7 @@ const getShotListForProject = scriptFilePath => {
 
 module.exports = {
   getFovAsFocalLength,
+  getSceneFolderName,
 
   getCameraSetups,
   getShots,
