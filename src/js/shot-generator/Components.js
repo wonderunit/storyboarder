@@ -949,7 +949,8 @@ const CharacterPresetsEditor = connect(
           endomorphic: preset.state.morphTargets.endomorphic
         },
 
-        name: preset.state.name
+        // name: sceneObject.name || preset.name
+        name: preset.name
       }))
     },
     createCharacterPreset: ({ id, name, sceneObject }) => (dispatch, getState) => {
@@ -989,6 +990,9 @@ const CharacterPresetsEditor = connect(
       dispatch(updateObject(sceneObject.id, {
         // set the preset id
         characterPresetId: id,
+        // use the preset’s name (if none assigned)
+        // name: sceneObject.name || preset.name
+        name: preset.name
       }))
 
       // end the undo-able operation
