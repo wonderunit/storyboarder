@@ -929,8 +929,8 @@ const CharacterPresetsEditor = connect(
   }),
   {
     updateObject,
-    selectCharacterPreset: (id, characterPresetId, preset) => (dispatch, getState) => {
-      dispatch(updateObject(id, {
+    selectCharacterPreset: (sceneObject, characterPresetId, preset) => (dispatch, getState) => {
+      dispatch(updateObject(sceneObject.id, {
         // set characterPresetId
         characterPresetId,
 
@@ -1012,7 +1012,7 @@ const CharacterPresetsEditor = connect(
     const onSelectCharacterPreset = event => {
       let characterPresetId = event.target.value
       let preset = characterPresets[characterPresetId]
-      selectCharacterPreset(sceneObject.id, characterPresetId, preset)
+      selectCharacterPreset(sceneObject, characterPresetId, preset)
     }
 
     return h(
