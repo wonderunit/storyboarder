@@ -344,7 +344,6 @@ const SelectionManager = connect(
         {
           intersects[0] = controlPoint[0];
         }
-        console.log(intersects);
         target = getIntersectionTarget(intersects[0])
         if(intersects[0].object && intersects[0].object.userData && intersects[0].object.userData.type === 'controlPoint')
         {
@@ -355,7 +354,6 @@ const SelectionManager = connect(
         } 
         else if(intersects[0].object && intersects[0].object.userData && intersects[0].object.userData.type === 'boneControl')
         {
-          console.log("Bone control pressed");
           let characterId = target.parent.parent.parent.characterId;
           let boneId = target.parent.parent.parent.boneId;
           let characters = intersectables.filter(value => value.uuid === characterId);
@@ -372,7 +370,6 @@ const SelectionManager = connect(
         }
       
       }
-      console.log(selections);
       // if there are 1 or more selections
       if (selections.length) {
         // and we're not in icon mode

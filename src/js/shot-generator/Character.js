@@ -298,7 +298,7 @@ const Character = React.memo(({
       boneRotationControl.current = new BoneRotationControl(scene, camera, domElement, ragDoll.current);
       let boneRotation = boneRotationControl.current;
       boneRotation.setCharacter(object.current);
-      boneRotation.setUpdateCharacter((name, rotation) => {updateCharacterIkBone({
+      boneRotation.setUpdateCharacter((name, rotation) => {updateCharacterSkeleton({
         id,
         name : name,
         rotation: 
@@ -349,36 +349,36 @@ const Character = React.memo(({
   let currentBoneSelected = useRef(null)
 
   const updateSkeleton = () => {
-
+    if(ragDoll.current.updatingReact)
+    {
+      ragDoll.current.updatingReact = false;
+      return;
+    }
     let skeleton = object.current.userData.skeleton
     if (Object.values(props.skeleton).length) {
       fixRootBone()
-      //if(!boneRotationControl.current.rotating)
-      {
-        for (bone of skeleton.bones) {
-          let userState = props.skeleton[bone.name]
-          let systemState = originalSkeleton.current.getBoneByName(bone.name).clone()
-  
-          let state = userState || systemState
-          
-         let prevState = prevRotation.current[bone.name];
-  
-          if(prevRotation.current === null || prevState === undefined || bone.isRotated === true)
+      for (bone of skeleton.bones) {
+        let userState = props.skeleton[bone.name]
+        let systemState = originalSkeleton.current.getBoneByName(bone.name).clone()
+
+        let state = userState || systemState
+        
+       let prevState = prevRotation.current[bone.name];
+        if(prevRotation.current === null || prevState === undefined || bone.isRotated === true)
+        {
+          bone.rotation.x = state.rotation.x
+          bone.rotation.y = state.rotation.y
+          bone.rotation.z = state.rotation.z
+        }
+        else
+        {
+          if(prevState instanceof THREE.Bone && state === userState)
           {
-            bone.rotation.x = state.rotation.x
-            bone.rotation.y = state.rotation.y
-            bone.rotation.z = state.rotation.z
+            prevState = state;
           }
-          else
-          {
-            if(prevState instanceof THREE.Bone && state === userState)
-            {
-              prevState = state;
-            }
-            bone.rotation.x += prevState.rotation.x - state.rotation.x
-            bone.rotation.y += prevState.rotation.y - state.rotation.y
-            bone.rotation.z += prevState.rotation.z - state.rotation.z
-          }
+          bone.rotation.x += prevState.rotation.x - state.rotation.x
+          bone.rotation.y += prevState.rotation.y - state.rotation.y
+          bone.rotation.z += prevState.rotation.z - state.rotation.z
         }
       }
       for(let bone of skeleton.bones)
@@ -393,7 +393,6 @@ const Character = React.memo(({
           }
           else if(name !== "Hips")
           {
-            //let bone =  originalSkeleton.current.getBoneByName(name).clone();
             prevRotation.current[name] = originalSkeleton.current.getBoneByName(name).clone();
           }
         }
@@ -404,7 +403,7 @@ const Character = React.memo(({
       skeleton.pose()
       fixRootBone()
     }
-    ragDoll.current.ikSwitcher.applyToIk();
+    ragDoll.current.ikSwitcher.applyToIk();  
   }
 
   const getCurrentControllerRotation = (device, virtual) => {

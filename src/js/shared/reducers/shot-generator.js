@@ -1127,7 +1127,6 @@ const checksReducer = (state, action) => {
         // return
 
       case 'UPDATE_CHARACTER_SKELETON':
-          console.log("check reducer character");
         checkForSkeletonChanges(state, draft, action.payload.id)
         return
 

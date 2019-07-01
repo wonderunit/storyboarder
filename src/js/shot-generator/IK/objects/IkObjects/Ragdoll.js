@@ -208,6 +208,7 @@ class Ragdoll extends IkObject
                 }
                 ikBones.push(bone);
             }
+            this.updatingReact = true;
             this.updateChar(ikBones);
         }
     }

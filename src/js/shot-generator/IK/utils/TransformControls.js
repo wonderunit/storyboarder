@@ -583,8 +583,8 @@ const TransformControls = function ( camera, domElement ) {
 	function onPointerMove( event ) {
 
 		if ( !scope.enabled ) return;
-
 		scope.pointerMove( getPointer( event ) );
+		scope.dispatchEvent({ type: "transformMoved", value: event });
 
 	}
 

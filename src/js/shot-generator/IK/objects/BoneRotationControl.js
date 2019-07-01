@@ -13,7 +13,9 @@ class BoneRotationControl
         this.scene = scene;
     }
     //#region Events
-    onMouseMove = event => {this.bone.isRotated = true; this.updateCharacter(this.bone.name, this.bone.rotation);};
+    onMouseDown = event => {this.bone.isRotated = true;};
+    onMouseMove = event => {this.updateCharacter(this.bone.name, this.bone.rotation);};
+    onMouseUp = event => {this.bone.isRotated = true;};
     //#enderegion
 
     selectedBone(bone, hitmeshid)
@@ -30,7 +32,9 @@ class BoneRotationControl
         this.control.boneId = hitmeshid;
         this.control.attach(bone);
         this.bone = bone;
-        this.control.addEventListener("pointerup", this.onMouseMove, false);
+        this.control.addEventListener("transformMouseDown", this.onMouseDown, false);
+        this.control.addEventListener("transformMoved", this.onMouseMove, false);
+        this.control.addEventListener("transformMouseUp", this.onMouseUp, false);
     }
 
     setUpdateCharacter(updateCharacter)
@@ -44,7 +48,9 @@ class BoneRotationControl
         this.scene.remove(this.control);
         this.control.dispose();
         this.bone = null;
-        this.control.removeEventListener("pointerup", this.onMouseMove);
+        this.control.removeEventListener("transformMouseDown", this.onMouseDown);
+        this.control.removeEventListener("transformMoved", this.onMouseMove);
+        this.control.removeEventListener("transformMouseUp", this.onMouseUp);
     }
 
     setCharacter(character)
