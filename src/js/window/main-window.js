@@ -267,11 +267,11 @@ const load = async (event, args) => {
 
     migrateScene()
 
-    logToView({ type: 'progress', message: 'Rendering User Interface' })
     await loadBoardUI()
 
     ///////////////////////////////////////////////////////////////
     // was: updateBoardUI
+    logToView({ type: 'progress', message: 'Rendering User Interface' })
     document.querySelector('#canvas-caption').style.display = 'none'
     renderViewMode()
     await ensureBoardExists()
