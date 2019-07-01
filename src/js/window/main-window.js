@@ -705,6 +705,7 @@ const verifyScene = async () => {
       if (!fs.existsSync(path.join(boardPath, 'images', board.link))) {
       let message = `[WARNING] This scene is missing the linked file ${board.link}. ` +
                     `It will be unlinked.`
+        log.warn(message)
         notifications.notify({ message, timing: 60 })
         delete board.link
         markBoardFileDirty()
