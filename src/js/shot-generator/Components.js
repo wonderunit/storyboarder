@@ -978,13 +978,18 @@ const CharacterPresetsEditor = connect(
 
       // start the undo-able operation
       dispatch(undoGroupStart())
+
+      // create the preset
       dispatch(createCharacterPreset(preset))
 
       // save the presets file
       saveCharacterPresets(getState())
 
-      // select the preset in the list
-      dispatch(updateObject(sceneObject.id, { characterPresetId: id }))
+      // update this object to use the preset
+      dispatch(updateObject(sceneObject.id, {
+        // set the preset id
+        characterPresetId: id,
+      }))
 
       // end the undo-able operation
       dispatch(undoGroupEnd())
