@@ -975,7 +975,6 @@ const CharacterPresetsEditor = connect(
           }
         }
       }
-      // create it
 
       // start the undo-able operation
       dispatch(undoGroupStart())
