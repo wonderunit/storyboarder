@@ -971,9 +971,7 @@ const CharacterPresetsEditor = connect(
             mesomorphic: sceneObject.morphTargets.mesomorphic,
             ectomorphic: sceneObject.morphTargets.ectomorphic,
             endomorphic: sceneObject.morphTargets.endomorphic
-          },
-
-          name: sceneObject.name
+          }
         }
       }
       // create it
