@@ -802,6 +802,22 @@ const sceneObjectsReducer = (state = {}, action) => {
         }
         return
 
+      case 'UPDATE_CHARACTER_IK_SKELETON':
+          draft[action.payload.id].skeleton = draft[action.payload.id].skeleton || {}
+          for(let bone of action.payload.skeleton)
+          {
+            let rotation = bone.rotation;
+            draft[action.payload.id].skeleton[bone.name] = { rotation : {x: rotation.x, y : rotation.y, z: rotation.z}};
+          }
+          return
+
+      case 'UPDATE_CHARACTER_IK_BONE':
+          draft[action.payload.id].skeleton = draft[action.payload.id].skeleton || {}
+          draft[action.payload.id].skeleton[action.payload.name] = {
+            rotation: action.payload.rotation
+          }
+          return
+
       case 'ATTACHMENTS_RELOCATE':
         let { src, dst } = action.payload
         for (let id in draft) {
@@ -1111,6 +1127,7 @@ const checksReducer = (state, action) => {
         // return
 
       case 'UPDATE_CHARACTER_SKELETON':
+          console.log("check reducer character");
         checkForSkeletonChanges(state, draft, action.payload.id)
         return
 
@@ -1210,6 +1227,18 @@ module.exports = {
 
   updateCharacterSkeleton: ({ id, name, rotation }) => ({
     type: 'UPDATE_CHARACTER_SKELETON',
+    payload: { id, name, rotation }
+  }),
+
+  updateCharacterIkSkeleton: ({ id, skeleton }) => 
+  ({
+    type: 'UPDATE_CHARACTER_IK_SKELETON',
+    payload: { id, skeleton }
+  }),
+
+  updateCharacterIkBone: ({id, name, rotation}) =>
+  ({
+    type: 'UPDATE_CHARACTER_IK_BONE',
     payload: { id, name, rotation }
   }),
 

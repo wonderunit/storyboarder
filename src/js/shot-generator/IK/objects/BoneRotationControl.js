@@ -7,10 +7,14 @@ class BoneRotationControl
         this.control.rotationOnly = true;
         this.control.setMode('rotate');
         this.control.size = 0.2;
+        this.domElement = domElement;
         this.control.userData.type = "boneControl";
         this.bone = null;
         this.scene = scene;
     }
+    //#region Events
+    onMouseMove = event => {this.rotating = true; this.updateCharacter(this.bone.name, this.bone.rotation); this.rotating = false;};
+    //#enderegion
 
     selectedBone(bone, hitmeshid)
     {
@@ -26,6 +30,12 @@ class BoneRotationControl
         this.control.boneId = hitmeshid;
         this.control.attach(bone);
         this.bone = bone;
+        this.control.addEventListener("pointerup", this.onMouseMove, false);
+    }
+
+    setUpdateCharacter(updateCharacter)
+    {
+        this.updateCharacter = updateCharacter;
     }
 
     deselectBone()
@@ -34,6 +44,7 @@ class BoneRotationControl
         this.scene.remove(this.control);
         this.control.dispose();
         this.bone = null;
+        this.control.removeEventListener("pointerup", this.onMouseMove);
     }
 
     setCharacter(character)

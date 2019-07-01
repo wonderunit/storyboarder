@@ -21,6 +21,7 @@ class IkObject
         this.controlTargets = [];
         this.originalObject = null;
         this.applyingOffset = false;
+        
     }
 
     // Takes skeleton and target for it's limbs
@@ -121,6 +122,7 @@ class IkObject
                         let joint = new IKJoint(object, {});
                         // Adds joint to chain and sets target
                         chain.add(joint, {target});
+                     
                     }
                 });
             }

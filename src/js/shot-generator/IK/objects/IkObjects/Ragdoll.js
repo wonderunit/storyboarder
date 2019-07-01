@@ -178,7 +178,10 @@ class Ragdoll extends IkObject
             });
         }
     }
-
+    updateCharacter(updateChar)
+    {
+        this.updateChar = updateChar;
+    }
     // Runs cycle which is updating object
     update()
     {
@@ -196,6 +199,16 @@ class Ragdoll extends IkObject
         {
             this.limbsFollowRotation();
             this.ikSwitcher.applyChangesToOriginal();
+            let ikBones = [];
+            for (let bone of this.originalObject.children[1].skeleton.bones)
+            {
+                if(!this.ikSwitcher.ikBonesName.some((boneName) => bone.name === boneName))
+                {
+                    continue;
+                }
+                ikBones.push(bone);
+            }
+            this.updateChar(ikBones);
         }
     }
 
