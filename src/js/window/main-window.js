@@ -696,6 +696,7 @@ const verifyScene = async () => {
                                     'You should not see this warning again for this scene.', timing: 60 })
   }
 
+
   //
   //
   // PSD: notify about any missing PSD file, and unlink
@@ -712,6 +713,13 @@ const verifyScene = async () => {
       }
     }
   }
+  // setup LinkedFileManager
+  if (linkedFileManager) { linkedFileManager.dispose() }
+  linkedFileManager = new LinkedFileManager({ storyboarderFilePath: boardFilename })
+  boardData.boards
+    .filter(b => b.link)
+    .forEach(b => linkedFileManager.addBoard(b, { skipTimestamp: true }))
+
 
   let boardsWithMissingPosterFrames = []
   for (let board of boardData.boards) {
@@ -1900,11 +1908,6 @@ const loadBoardUI = async () => {
       notifications.notify(...rest)
     }
   })
-
-  linkedFileManager = new LinkedFileManager({ storyboarderFilePath: boardFilename })
-  boardData.boards
-    .filter(b => b.link)
-    .forEach(b => linkedFileManager.addBoard(b, { skipTimestamp: true }))
 
   menu.setMenu()
   // HACK initialize the menu to match the value in preferences
