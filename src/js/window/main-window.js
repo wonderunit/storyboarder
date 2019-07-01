@@ -267,10 +267,18 @@ const load = async (event, args) => {
 
     migrateScene()
 
+    logToView({ type: 'progress', message: 'Rendering User Interface' })
     await loadBoardUI()
-    await updateBoardUI()
+
+    ///////////////////////////////////////////////////////////////
+    // was: updateBoardUI
+    document.querySelector('#canvas-caption').style.display = 'none'
+    renderViewMode()
+    await ensureBoardExists()
+    ///////////////////////////////////////////////////////////////
 
     await verifyScene()
+    await renderScene()
 
     logToView({ type: 'progress', message: 'Preparing to display' })
 
@@ -1913,15 +1921,6 @@ const loadBoardUI = async () => {
   // remote.getCurrentWebContents().openDevTools()
 }
 
-const updateBoardUI = async () => {
-  logToView({ type: 'progress', message: 'Rendering User Interface' })
-
-  document.querySelector('#canvas-caption').style.display = 'none'
-  renderViewMode()
-
-  await ensureBoardExists()
-  await renderScene()
-}
 
 // whenever the scene changes
 const renderScene = async () => {
