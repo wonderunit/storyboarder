@@ -282,29 +282,32 @@ const Character = React.memo(({
       ragDoll.current = new RagDoll();
       let skeletonRig = ragDoll.current;
       let domElement = largeRenderer.current.domElement;
-      boneRotationControl.current = new BoneRotationControl(scene, camera, domElement);
-      let boneRotation = boneRotationControl.current;
+     
       const hipsControl = AddTransformationControl(new THREE.Vector3(0, 1, 0), camera, domElement, scene, "hips");
       const backControl = AddTransformationControl(new THREE.Vector3(0, 2, -.1), camera, domElement, scene, "back");
       const leftHandControl = AddTransformationControl(new THREE.Vector3(-2, 1.5, 0), camera, domElement, scene, "leftHand");
       const rightHandControl = AddTransformationControl(new THREE.Vector3(2, 1.5, 0), camera, domElement, scene, "rightHand");
       const leftLegControl = AddTransformationControl(new THREE.Vector3(0, 1, 1), camera, domElement, scene, "leftLeg");
       const rightLegControl = AddTransformationControl(new THREE.Vector3(0, 0, 1), camera, domElement, scene, "rightLeg");
-      boneRotation.setCharacter(object.current);
-      boneRotation.setUpdateCharacter((name, rotation) => {updateCharacterIkBone({
-        id,
-        name: name,
-        rotation: {
-          x: rotation.x,
-          y: rotation.y,
-          z: rotation.z,
-        }  
-      } );});
+   
       skeletonRig.initObject(scene, object.current, object.current.children[1], backControl, leftHandControl,
           rightHandControl, leftLegControl, rightLegControl,
           hipsControl );
       skeletonRig.setControlTargetSelection(domElement, scene, camera);
- 
+
+      boneRotationControl.current = new BoneRotationControl(scene, camera, domElement, ragDoll.current);
+      let boneRotation = boneRotationControl.current;
+      boneRotation.setCharacter(object.current);
+      boneRotation.setUpdateCharacter((name, rotation) => {updateCharacterIkBone({
+        id,
+        name : name,
+        rotation: 
+        {
+          x : rotation.x,
+          y : rotation.y,
+          z : rotation.z,
+        }  
+      } );}); 
       skeletonRig.updateCharacter((skeleton) => {updateCharacterIkSkeleton({
         id,
         skeleton: skeleton  
@@ -360,30 +363,21 @@ const Character = React.memo(({
           
          let prevState = prevRotation.current[bone.name];
   
-          if(prevRotation.current === null || prevState === undefined)
+          if(prevRotation.current === null || prevState === undefined || bone.isRotated === true)
           {
-            
             bone.rotation.x = state.rotation.x
             bone.rotation.y = state.rotation.y
             bone.rotation.z = state.rotation.z
           }
-          else 
+          else
           {
             if(prevState instanceof THREE.Bone && state === userState)
             {
               prevState = state;
             }
-            if(bone.name === "LeftArm")
-            {
-              console.log("prev rotation", prevState.rotation);
-              console.log("current rotation", state.rotation);
-            }
-            bone.rotation.x = state.rotation.x
-            bone.rotation.y = state.rotation.y
-            bone.rotation.z = state.rotation.z
-            //bone.rotation.x += prevState.rotation.x - state.rotation.x
-            //bone.rotation.y += prevState.rotation.y - state.rotation.y
-            //bone.rotation.z += prevState.rotation.z - state.rotation.z
+            bone.rotation.x += prevState.rotation.x - state.rotation.x
+            bone.rotation.y += prevState.rotation.y - state.rotation.y
+            bone.rotation.z += prevState.rotation.z - state.rotation.z
           }
         }
       }

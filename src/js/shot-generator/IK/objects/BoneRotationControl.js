@@ -13,7 +13,7 @@ class BoneRotationControl
         this.scene = scene;
     }
     //#region Events
-    onMouseMove = event => {this.rotating = true; this.updateCharacter(this.bone.name, this.bone.rotation); this.rotating = false;};
+    onMouseMove = event => {this.bone.isRotated = true; this.updateCharacter(this.bone.name, this.bone.rotation);};
     //#enderegion
 
     selectedBone(bone, hitmeshid)
