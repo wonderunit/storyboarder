@@ -92,8 +92,6 @@ const {
   updateScenePreset,
   deleteScenePreset,
 
-  createCharacterPreset,
-
   createPosePreset,
   updatePosePreset,
   deletePosePreset,

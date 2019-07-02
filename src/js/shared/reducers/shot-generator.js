@@ -358,8 +358,7 @@ const defaultCharacterPreset = {
     mesomorphic: 0,
     ectomorphic: 0,
     endomorphic: 0
-  },
-  name: undefined
+  }
 }
 
 const defaultScenePreset = {
