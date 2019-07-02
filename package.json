@@ -19,7 +19,7 @@
     "xr:watch": "parcel watch --no-hmr src/js/express-xr/src/index.html -d src/js/express-xr/dist",
     "xr:clean": "trash src/js/express-xr/dist",
     "xr:build": "parcel build src/js/express-xr/src/index.html -d src/js/express-xr/dist --no-source-maps",
-    "xr:build-demo": "npm run xr:build && node scripts/build-vr-demo.js"
+    "xr:build-demo": "cross-env XR_STANDALONE_DEMO=true npm run xr:build && node scripts/build-vr-demo.js"
   },
   "repository": {
     "type": "git",
