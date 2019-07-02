@@ -90,6 +90,7 @@ const createBeat = ({ board, camera }) => ({
   dialogue: board.dialogue,
   action: board.action,
   notes: board.notes,
+  number: board.number,
   camera
 })
 
