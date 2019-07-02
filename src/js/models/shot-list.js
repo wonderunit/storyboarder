@@ -62,7 +62,7 @@ const getCameraSetups = (scene, tolerances = { rotation: degToRad(60), position:
 
 const getCameraById = (board, cameraId) => Object.values(board.sg.data.sceneObjects).find(o => o.id === cameraId)
 
-const createShot = ({ setupNumber, board, camera }) => ({
+const createShot = ({ setupNumber, board, camera, aspectRatio }) => ({
   setupNumber,
 
   number: board.number,
@@ -71,10 +71,10 @@ const createShot = ({ setupNumber, board, camera }) => ({
   duration: board.duration,
 
   ...(camera && {
-    fov: getFovAsFocalLength(camera.fov, camera.aspectRatio).toFixed(3) + 'mm',
     x: camera.x + 'm',
     y: camera.y + 'm',
     height: camera.z + 'm',
+    fov: getFovAsFocalLength(camera.fov, aspectRatio).toFixed() + 'mm',
     rotation: radToDeg(camera.rotation).toFixed(2) + '°',
     tilt: radToDeg(camera.tilt).toFixed(2) + '°',
     roll: radToDeg(camera.roll).toFixed(2) + '°',
@@ -97,7 +97,7 @@ const createBeat = ({ board, camera }) => ({
 const shotsReducer = (acc, board) => {
   if (acc.values.length === 0) {
     acc.values.push(
-      createShot({ setupNumber: acc.count, board, camera: acc.camera })
+      createShot({ setupNumber: acc.count, board, camera: acc.camera, aspectRatio: acc.aspectRatio })
     )
   } else {
     let shot = acc.values[acc.values.length - 1]
@@ -143,7 +143,7 @@ const shotsReducer = (acc, board) => {
 
 const getShots = (setups, scene) =>
   setups.map((setup, n) => 
-    setup.shots.reduce(shotsReducer, { count: n + 1, values: [], camera: setup.camera }).values)
+    setup.shots.reduce(shotsReducer, { count: n + 1, values: [], camera: setup.camera, aspectRatio: scene.aspectRatio }).values)
 
 const getShotListForScene = scene => {
   let setups = getCameraSetups(scene)
@@ -154,9 +154,9 @@ const getShotListForScene = scene => {
       number: setup.number,
       fov: getFovAsFocalLength(
         setup.fov,
-        setup.aspectRatio
-      ).toFixed(3) + 'mm',
       height: setup.height + 'm',
+        scene.aspectRatio
+      ).toFixed() + 'mm',
       shots: setup.shots.map(shot => shot.uid)
     })),
     shots
