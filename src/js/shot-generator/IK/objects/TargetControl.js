@@ -43,6 +43,11 @@ class TargetControl
         movingTarget.scope = this;
         this.control.attach(movingTarget);
         this.target = movingTarget;
+
+        movingTarget.layers.disable(0)
+        movingTarget.layers.enable(1)
+        movingTarget.layers.disable(2)
+        movingTarget.layers.enable(3)
     }
 
     addToScene()

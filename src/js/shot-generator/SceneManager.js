@@ -318,7 +318,6 @@ const SceneManager = connect(
 
               if (cameraControlsView.current && cameraControlsView.current.enabled) {
                 let cameraState = Object.values(getSceneObjects(state)).find(o => o.id === camera.userData.id)
-
                 if (!cameraState) {
                   // FIXME
                   // when loading a new scene, rAF might run with a state reference
@@ -329,7 +328,7 @@ const SceneManager = connect(
                 }
 
                 cameraControlsView.current.object = CameraControls.objectFromCameraState(cameraState)
-
+              
                 // step
                 cameraControlsView.current.update( clock.current.getDelta(), state )
 
