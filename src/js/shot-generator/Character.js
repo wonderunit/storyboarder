@@ -255,7 +255,7 @@ const Character = React.memo(({
       mesh.layers.enable(1)
       mesh.layers.disable(2)
       mesh.layers.enable(3)
-      
+
       bonesHelper.traverse(child => {
         child.layers.disable(0)
         child.layers.enable(1)
@@ -290,7 +290,7 @@ const Character = React.memo(({
       const leftLegControl = AddTransformationControl(new THREE.Vector3(0, 1, 1), camera, domElement, scene, "leftLeg");
       const rightLegControl = AddTransformationControl(new THREE.Vector3(0, 0, 1), camera, domElement, scene, "rightLeg");
    
-      skeletonRig.initObject(scene, object.current, object.current.children[1], backControl, leftHandControl,
+      skeletonRig.initObject(scene, object.current, backControl, leftHandControl,
           rightHandControl, leftLegControl, rightLegControl,
           hipsControl );
       skeletonRig.setControlTargetSelection(domElement, scene, camera);
@@ -307,7 +307,6 @@ const Character = React.memo(({
           y : rotation.y,
           z : rotation.z,
         }  
-        
       } );}); 
 
       skeletonRig.updateCharacter((skeleton) => {updateCharacterIkSkeleton({

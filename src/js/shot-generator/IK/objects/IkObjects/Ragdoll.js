@@ -21,9 +21,9 @@ class Ragdoll extends IkObject
     }
 
     // Initializes ragdoll set up all neccessary information 
-    initObject(scene, object, skinnedMesh, ...controlTarget )
+    initObject(scene, object, ...controlTarget )
     {
-        super.initObject(scene, object, skinnedMesh, controlTarget );
+        super.initObject(scene, object, controlTarget );
         let cloneSkinnedMesh = this.clonedObject.children[1];
         this.controlTargets[0].isRotationLocked = true;
         this.controlTargets[0].target.rotation.copy(new THREE.Euler().setFromQuaternion(cloneSkinnedMesh.skeleton.bones[5].worldQuaternion()));

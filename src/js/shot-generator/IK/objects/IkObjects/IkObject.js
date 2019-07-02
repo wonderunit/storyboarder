@@ -25,7 +25,7 @@ class IkObject
     }
 
     // Takes skeleton and target for it's limbs
-    initObject(scene, objectSkeleton, skinnedMesh, ...controlTarget)
+    initObject(scene, objectSkeleton, ...controlTarget)
     {
         this.ik = new IK();
         let chains = [];
@@ -148,7 +148,7 @@ class IkObject
     // Calculates back's offset in order to move with hips
     calculteBackOffset()
     {
-        
+
         let backPosition = this.chainObjects[0].controlTarget.target.position.clone();
         let hipsPosition = this.hipsControlTarget.target.position.clone();
         this.backOffset = backPosition.sub(hipsPosition);
