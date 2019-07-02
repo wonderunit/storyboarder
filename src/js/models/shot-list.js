@@ -62,9 +62,10 @@ const getCameraSetups = (scene, tolerances = { rotation: degToRad(60), position:
 
 const getCameraById = (board, cameraId) => Object.values(board.sg.data.sceneObjects).find(o => o.id === cameraId)
 
-const createShot = ({ number, board, camera }) => ({
-  number,
-  setupNumber: number,
+const createShot = ({ setupNumber, board, camera }) => ({
+  setupNumber,
+
+  number: board.number,
 
   uid: board.uid,
   duration: board.duration,
@@ -95,7 +96,7 @@ const createBeat = ({ board, camera }) => ({
 const shotsReducer = (acc, board) => {
   if (acc.values.length === 0) {
     acc.values.push(
-      createShot({ number: acc.count, board, camera: acc.camera })
+      createShot({ setupNumber: acc.count, board, camera: acc.camera })
     )
   } else {
     let shot = acc.values[acc.values.length - 1]
