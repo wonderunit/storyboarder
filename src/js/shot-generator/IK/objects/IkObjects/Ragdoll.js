@@ -141,16 +141,48 @@ class Ragdoll extends IkObject
             this.isEnabledIk = true;
     
         });
-        hipsControl.addEventListener("change", (event) =>
+        hipsControl.addEventListener("transformMoved", (event) =>
         {
             if(this.hipsMouseDown)
             {
                 this.resetPoleTarget();
-                this.originalObject.position.copy(this.clonedObject.position);
                 
-                let worldHips = this.originalObject.worldPosition();
-                let position = new THREE.Vector3(worldHips.x, 0, worldHips.z);
-                this.updatingReactPosition.push(true);
+                let hipsTarget = this.hipsControlTarget.target;
+                let targetPosition = hipsTarget.position.clone();
+                let targetPos = hipsTarget.position.clone();
+                //let diff = new THREE.Vector3().subVectors(this.hips.worldPosition(), targetPos); */
+                
+                this.scene.worldToLocal(targetPos);
+                this.hips.parent.worldToLocal(targetPosition);
+
+                this.clonedObject.position.copy(targetPos);
+                this.clonedObject.updateMatrix();
+                
+                this.hips.position.copy(targetPosition);
+                this.hips.updateMatrix();
+                
+                //this.originalObject.position.copy(this.clonedObject.position);
+                //let hipsTarget = this.hipsControlTarget.target;
+                // // Follows hips target
+                //let targetPosition = hipsTarget.position.clone();
+                //
+                //let targetPos = hipsTarget.worldPosition();
+                //let diff = new THREE.Vector3().subVectors(this.hips.worldPosition(), targetPos);
+                //diff.y = 0;
+                //diff.z = 0;
+                //this.clonedObject.position.sub(diff);
+                //this.clonedObject.updateMatrix();
+
+                //this.hips.parent.worldToLocal(targetPosition);
+                //this.hips.position.copy(targetPosition);
+                //this.hips.updateMatrix();
+
+                //
+
+                //console.log(diff);
+                ////this.clonedObject.worldToLocal(diff);
+                //
+                this.updateCharPosition(this.clonedObject.position);
             }
         });
         hipsControl.addEventListener("dragging-changed", (event) =>
@@ -394,12 +426,8 @@ class Ragdoll extends IkObject
     // Moves ragdoll hips when original object moved
     moveRagdoll()
     {
-        if(!this.isInitialized)
-        {
-            return;
-        }
         this.clonedObject.position.copy(this.originalObject.position);
-        this.clonedObject.updateMatrixWorld(false, true);
+        this.clonedObject.updateMatrixWorld(true, true);
     }
 }
 module.exports =  Ragdoll;

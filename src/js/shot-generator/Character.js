@@ -358,6 +358,7 @@ const Character = React.memo(({
   let currentBoneSelected = useRef(null)
 
   const updateSkeleton = () => {
+
     if(ragDoll.current.updatingReact)
     {
       ragDoll.current.updatingReactSkeleton = false;
@@ -369,7 +370,6 @@ const Character = React.memo(({
       for (bone of skeleton.bones) {
         let userState = props.skeleton[bone.name]
         let systemState = originalSkeleton.current.getBoneByName(bone.name).clone()
-
         let state = userState || systemState
         
        let prevState = prevRotation.current[bone.name];
@@ -392,7 +392,7 @@ const Character = React.memo(({
 
         if(state.position && bone.name === "Hips")
         {
-          bone.position.set(state.position.x, state.position.y, state.position.z );
+           bone.position.set(state.position.x, state.position.y, state.position.z );
         }
       }
       for(let bone of skeleton.bones)

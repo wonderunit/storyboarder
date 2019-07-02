@@ -186,11 +186,19 @@ class IkObject
             backTarget.position.copy(result);
         }
         // Follows hips target
-        let targetPosition = hipsTarget.position.clone();
-        let targetPos = hipsTarget.position.clone();
-        this.hips.parent.worldToLocal(targetPosition);
-        this.hips.position.copy(targetPosition);
-        this.hips.updateMatrix();
+        //let targetPosition = hipsTarget.position.clone();
+        //let targetPos = hipsTarget.position.clone();
+        ////let diff = new THREE.Vector3().subVectors(this.hips.worldPosition(), targetPos); */
+//
+        //this.originalObject.parent.worldToLocal(targetPos);
+        //this.originalObject.position.copy(targetPos);
+        //this.originalObject.updateMatrix();
+        //
+        //this.hips.parent.worldToLocal(targetPosition);
+        //this.hips.position.copy(targetPosition);
+        //this.hips.updateMatrix();
+        //let worldHips = this.hips.worldPosition();
+      
     }
 
     // Removes ikObject's all elements from scene

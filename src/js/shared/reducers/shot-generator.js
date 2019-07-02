@@ -815,10 +815,9 @@ const sceneObjectsReducer = (state = {}, action) => {
           }
           return
       case "UPDATE_CHARACTER_POSITION":
-          console.log("Payload", action.payload.position.clone()); 
           draft[action.payload.id].x = action.payload.position.x;
-          draft[action.payload.id].y = action.payload.position.y;
-          draft[action.payload.id].z = action.payload.position.z;
+          draft[action.payload.id].z = action.payload.position.y;
+          draft[action.payload.id].y = action.payload.position.z;
         return;
 
       case 'UPDATE_CHARACTER_IK_BONE':
