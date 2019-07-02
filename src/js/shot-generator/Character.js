@@ -390,7 +390,7 @@ const Character = React.memo(({
           bone.rotation.z += prevState.rotation.z - state.rotation.z
         }
 
-        if(state.position)
+        if(state.position && bone.name === "Hips")
         {
           bone.position.set(state.position.x, state.position.y, state.position.z );
         }
