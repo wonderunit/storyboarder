@@ -5,7 +5,6 @@ const PoleTarget = require( "../PoleTarget");
 const CopyRotation = require( "../../constraints/CopyRotation");
 const ControlTargetSelection = require( "../ControlTargetSelection");
 require("../../utils/Object3dExtension");
-const BoneRotationControl = require("../BoneRotationControl");
 // Ragdoll is class which is used to set all specific details to ikrig
 // Like head upward, feet downward etc.
 class Ragdoll extends IkObject
@@ -25,8 +24,6 @@ class Ragdoll extends IkObject
     initObject(scene, object, skinnedMesh, ...controlTarget )
     {
         super.initObject(scene, object, skinnedMesh, controlTarget );
-        console.log(object);
-        console.log();
         let cloneSkinnedMesh = this.clonedObject.children[1];
         this.controlTargets[0].isRotationLocked = true;
         this.controlTargets[0].target.rotation.copy(new THREE.Euler().setFromQuaternion(cloneSkinnedMesh.skeleton.bones[5].worldQuaternion()));
@@ -139,9 +136,6 @@ class Ragdoll extends IkObject
         {
             this.hipsMouseDown = true;
             this.isEnabledIk = true;
-            console.log(this.originalObject);
-            console.log(this.clonedObject);
-    
         });
         hipsControl.addEventListener("transformMoved", (event) =>
         {
@@ -215,8 +209,6 @@ class Ragdoll extends IkObject
     updateReact()
     {        
         let ikBones = [];
-        console.log("Original object", this.originalObject);
-        console.log("Clone object", this.clonedObject);
         for (let bone of this.originalObject.children[1].skeleton.bones)
         {
             if(!this.ikSwitcher.ikBonesName.some((boneName) => bone.name === boneName))
@@ -349,7 +341,6 @@ class Ragdoll extends IkObject
         for(let i = 0; i < chainObjects.length; i++)
         {
             let constraint = this.poleConstraints[i];
-            let chain = this.chainObjects[i].chain;
             let targetPosition = new THREE.Vector3();
             hipsTarget.getWorldPosition(targetPosition);
             let poleOffset = constraint.poleTarget.poleOffset;

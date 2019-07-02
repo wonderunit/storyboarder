@@ -148,6 +148,7 @@ class IkObject
     // Calculates back's offset in order to move with hips
     calculteBackOffset()
     {
+        
         let backPosition = this.chainObjects[0].controlTarget.target.position.clone();
         let hipsPosition = this.hipsControlTarget.target.position.clone();
         this.backOffset = backPosition.sub(hipsPosition);
@@ -185,20 +186,7 @@ class IkObject
             let result = hipsPosition.add(this.backOffset);
             backTarget.position.copy(result);
         }
-        // Follows hips target
-        //let targetPosition = hipsTarget.position.clone();
-        //let targetPos = hipsTarget.position.clone();
-        ////let diff = new THREE.Vector3().subVectors(this.hips.worldPosition(), targetPos); */
-//
-        //this.originalObject.parent.worldToLocal(targetPos);
-        //this.originalObject.position.copy(targetPos);
-        //this.originalObject.updateMatrix();
-        //
-        //this.hips.parent.worldToLocal(targetPosition);
-        //this.hips.position.copy(targetPosition);
-        //this.hips.updateMatrix();
-        //let worldHips = this.hips.worldPosition();
-      
+
     }
 
     // Removes ikObject's all elements from scene
