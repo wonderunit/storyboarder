@@ -18,6 +18,7 @@ class Ragdoll extends IkObject
         this.isInitialized = false;
         this.poleConstraints = [];
         this.controlTargetSelection = null;
+        this.updatingReactPosition = [];
     }
 
     // Initializes ragdoll set up all neccessary information 
@@ -146,10 +147,15 @@ class Ragdoll extends IkObject
             {
                 this.resetPoleTarget();
                 this.originalObject.position.copy(this.clonedObject.position);
+                
+                let worldHips = this.originalObject.worldPosition();
+                let position = new THREE.Vector3(worldHips.x, 0, worldHips.z);
+                this.updatingReactPosition.push(true);
             }
         });
         hipsControl.addEventListener("dragging-changed", (event) =>
         {
+       
             this.calculteBackOffset();
         });
         hipsControl.addEventListener("pointerup", (event) =>
@@ -178,10 +184,17 @@ class Ragdoll extends IkObject
             });
         }
     }
+
     updateCharacter(updateChar)
     {
         this.updateChar = updateChar;
     }
+
+    updateCharacterPos(updateCharPosition)
+    {
+        this.updateCharPosition = updateCharPosition;
+    }
+
     // Runs cycle which is updating object
     update()
     {
@@ -199,18 +212,23 @@ class Ragdoll extends IkObject
         {
             this.limbsFollowRotation();
             this.ikSwitcher.applyChangesToOriginal();
-            let ikBones = [];
-            for (let bone of this.originalObject.children[1].skeleton.bones)
-            {
-                if(!this.ikSwitcher.ikBonesName.some((boneName) => bone.name === boneName))
-                {
-                    continue;
-                }
-                ikBones.push(bone);
-            }
-            this.updatingReact = true;
-            this.updateChar(ikBones);
+            this.updateReact();
         }
+    }
+
+    updateReact()
+    {        
+        let ikBones = [];
+        for (let bone of this.originalObject.children[1].skeleton.bones)
+        {
+            if(!this.ikSwitcher.ikBonesName.some((boneName) => bone.name === boneName))
+            {
+                continue;
+            }
+            ikBones.push(bone);
+        }
+        this.updatingReactSkeleton = true;
+        this.updateChar(ikBones);
     }
 
     // Sets limbs rotation to control target rotation

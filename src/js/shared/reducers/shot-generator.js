@@ -807,15 +807,26 @@ const sceneObjectsReducer = (state = {}, action) => {
           for(let bone of action.payload.skeleton)
           {
             let rotation = bone.rotation;
-            draft[action.payload.id].skeleton[bone.name] = { rotation : {x: rotation.x, y : rotation.y, z: rotation.z}};
+            let position = bone.position;
+            draft[action.payload.id].skeleton[bone.name] = { 
+              rotation : {x: rotation.x, y : rotation.y, z: rotation.z},
+              position : {x: position.x, y : position.y, z: position.z }
+            };
           }
           return
+      case "UPDATE_CHARACTER_POSITION":
+          console.log("Payload", action.payload.position.clone()); 
+          draft[action.payload.id].x = action.payload.position.x;
+          draft[action.payload.id].y = action.payload.position.y;
+          draft[action.payload.id].z = action.payload.position.z;
+        return;
 
       case 'UPDATE_CHARACTER_IK_BONE':
           draft[action.payload.id].skeleton = draft[action.payload.id].skeleton || {}
           draft[action.payload.id].skeleton[action.payload.name] = {
             rotation: action.payload.rotation
           }
+          
           return
 
       case 'ATTACHMENTS_RELOCATE':
@@ -1239,6 +1250,12 @@ module.exports = {
   ({
     type: 'UPDATE_CHARACTER_IK_BONE',
     payload: { id, name, rotation }
+  }),
+
+  updateCharacterPosition: ({id, position}) =>
+  ({
+    type: 'UPDATE_CHARACTER_POSITION',
+    payload: { id, position }
   }),
 
   setActiveCamera: id => ({ type: 'SET_ACTIVE_CAMERA', payload: id }),

@@ -140,7 +140,7 @@ class IkObject
         this.skeletonHelper.material.linewidth = 7;
 
         // Adds skeleton helper to scene
-        //scene.add( this.skeletonHelper );
+        scene.add( this.skeletonHelper );
         this.ikSwitcher.recalculateDifference();
         this.ikSwitcher.calculateRelativeAngle();
     }
@@ -187,6 +187,7 @@ class IkObject
         }
         // Follows hips target
         let targetPosition = hipsTarget.position.clone();
+        let targetPos = hipsTarget.position.clone();
         this.hips.parent.worldToLocal(targetPosition);
         this.hips.position.copy(targetPosition);
         this.hips.updateMatrix();
@@ -230,8 +231,6 @@ class IkObject
                 let targetPosition = chainObjects[i].controlTarget.target.position;
                 jointBone.getWorldPosition(targetPosition);
             }
-            
-            
         }
         this.calculteBackOffset();
     }

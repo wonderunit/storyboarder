@@ -173,6 +173,7 @@ const Character = React.memo(({
   updateCharacterSkeleton,
   updateCharacterIkSkeleton,
   updateCharacterIkBone,
+  updateCharacterPosition,
   updateObject,
   devices,
   icon,
@@ -307,11 +308,19 @@ const Character = React.memo(({
           y : rotation.y,
           z : rotation.z,
         }  
+        
       } );}); 
+
       skeletonRig.updateCharacter((skeleton) => {updateCharacterIkSkeleton({
         id,
         skeleton: skeleton  
       } );});
+
+      skeletonRig.updateCharacterPos((position) => {updateCharacterPosition({
+        id,
+        position: position  
+      } );});
+
       object.current.userData.ikRig = skeletonRig;
     }
 
@@ -351,7 +360,7 @@ const Character = React.memo(({
   const updateSkeleton = () => {
     if(ragDoll.current.updatingReact)
     {
-      ragDoll.current.updatingReact = false;
+      ragDoll.current.updatingReactSkeleton = false;
       return;
     }
     let skeleton = object.current.userData.skeleton
@@ -379,6 +388,11 @@ const Character = React.memo(({
           bone.rotation.x += prevState.rotation.x - state.rotation.x
           bone.rotation.y += prevState.rotation.y - state.rotation.y
           bone.rotation.z += prevState.rotation.z - state.rotation.z
+        }
+
+        if(state.position)
+        {
+          bone.position.set(state.position.x, state.position.y, state.position.z );
         }
       }
       for(let bone of skeleton.bones)

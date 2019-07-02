@@ -577,6 +577,7 @@ const TransformControls = function ( camera, domElement ) {
 		scope.buttonPressed = event.button;
 		scope.pointerHover( getPointer( event ) );
 		scope.pointerDown( getPointer( event ) );
+		scope.dispatchEvent({ type: "transformMouseDown", value: event });
 
 	}
 
@@ -596,6 +597,7 @@ const TransformControls = function ( camera, domElement ) {
 
 		scope.pointerUp( getPointer( event ) );
 		scope.buttonPressed = -1;
+		scope.dispatchEvent({ type: "transformMouseUp", value: event });
 	}
 
 	// TODO: depricate
