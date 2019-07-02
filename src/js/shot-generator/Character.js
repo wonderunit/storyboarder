@@ -193,7 +193,6 @@ const Character = React.memo(({
 
   const originalSkeleton = useRef(null)
   let ragDoll = useRef(null);
-  let prevRotation = useRef({});
   let boneRotationControl = useRef(null);
 
   const doCleanup = () => {
@@ -359,7 +358,7 @@ const Character = React.memo(({
 
   const updateSkeleton = () => {
 
-    if(ragDoll.current.updatingReact || ragDoll.current.hipsMouseDown )
+    if(ragDoll.current.updatingReactSkeleton  || ragDoll.current.hipsMouseDown )
     {
       ragDoll.current.updatingReactSkeleton = false;
       return;
@@ -371,42 +370,11 @@ const Character = React.memo(({
         let userState = props.skeleton[bone.name]
         let systemState = originalSkeleton.current.getBoneByName(bone.name).clone()
         let state = userState || systemState
-        
-       let prevState = prevRotation.current[bone.name];
-        if(prevRotation.current === null || prevState === undefined || bone.isRotated === true)
-        {
-          bone.rotation.x = state.rotation.x
-          bone.rotation.y = state.rotation.y
-          bone.rotation.z = state.rotation.z
-        }
-        else
-        {
-          if(prevState instanceof THREE.Bone && state === userState)
-          {
-            prevState = state;
-          }
-          bone.rotation.x += prevState.rotation.x - state.rotation.x
-          bone.rotation.y += prevState.rotation.y - state.rotation.y
-          bone.rotation.z += prevState.rotation.z - state.rotation.z
-        }
+
+        bone.rotation.x = state.rotation.x
+        bone.rotation.y = state.rotation.y
+        bone.rotation.z = state.rotation.z
       }
-      for(let bone of skeleton.bones)
-      {
-        let name = bone.name;
-        if(ragDoll.current.ikSwitcher.ikBonesName.some((ikName) => ikName === name))
-        {
-          let propSkeleton = props.skeleton[name];
-          if(propSkeleton)
-          {
-            prevRotation.current[name] = propSkeleton;
-          }
-          else if(name !== "Hips")
-          {
-            prevRotation.current[name] = originalSkeleton.current.getBoneByName(name).clone();
-          }
-        }
-       
-      };
     } else {
       let skeleton = object.current.userData.skeleton
       skeleton.pose()
@@ -516,7 +484,6 @@ const Character = React.memo(({
   useEffect(() => {
     if (!ready) return
     if (!props.posePresetId) return
-    prevRotation.current = [];
     console.log(type, id, 'changed pose preset')
     resetPose()
   }, [props.posePresetId])

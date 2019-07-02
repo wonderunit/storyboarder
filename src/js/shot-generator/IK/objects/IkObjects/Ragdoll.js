@@ -211,7 +211,7 @@ class Ragdoll extends IkObject
         let ikBones = [];
         for (let bone of this.originalObject.children[1].skeleton.bones)
         {
-            if(!this.ikSwitcher.ikBonesName.some((boneName) => bone.name === boneName))
+            if(!this.ikSwitcher.ikBonesName.some((boneName) => bone.name === boneName ))
             {
                 continue;
             }
