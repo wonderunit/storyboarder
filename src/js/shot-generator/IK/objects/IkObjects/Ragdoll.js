@@ -148,48 +148,10 @@ class Ragdoll extends IkObject
             if(this.hipsMouseDown)
             {
                 this.resetPoleTarget();
-                
-                let hipsTarget = this.hipsControlTarget.target;
-                let targetPosition = hipsTarget.position.clone();
-                let targetPos = hipsTarget.position.clone();
-                let diff = new THREE.Vector3().subVectors(this.hips.worldPosition(), hipsTarget.worldPosition());
-                
-                //this.scene.worldToLocal(diff);
-                this.hips.parent.worldToLocal(targetPosition);
-                targetPos.sub(this.objectTargetDiff);
-                this.clonedObject.position.copy(targetPos);
-                this.clonedObject.updateMatrix();
-                
-                this.hips.position.copy(targetPosition);
-                this.hips.updateMatrix();
-                
-                //this.originalObject.position.copy(this.clonedObject.position);
-                //let hipsTarget = this.hipsControlTarget.target;
-                // // Follows hips target
-                //let targetPosition = hipsTarget.position.clone();
-                //
-                //let targetPos = hipsTarget.worldPosition();
-                //let diff = new THREE.Vector3().subVectors(this.hips.worldPosition(), targetPos);
-                //diff.y = 0;
-                //diff.z = 0;
-                //this.clonedObject.position.sub(diff);
-                //this.clonedObject.updateMatrix();
-
-                //this.hips.parent.worldToLocal(targetPosition);
-                //this.hips.position.copy(targetPosition);
-                //this.hips.updateMatrix();
-
-                //
-
-                //console.log(diff);
-                ////this.clonedObject.worldToLocal(diff);
-                //
-                this.updateCharPosition(this.clonedObject.position);
             }
         });
         hipsControl.addEventListener("dragging-changed", (event) =>
         {
-       
             this.calculteBackOffset();
         });
         hipsControl.addEventListener("pointerup", (event) =>
@@ -253,6 +215,8 @@ class Ragdoll extends IkObject
     updateReact()
     {        
         let ikBones = [];
+        console.log("Original object", this.originalObject);
+        console.log("Clone object", this.clonedObject);
         for (let bone of this.originalObject.children[1].skeleton.bones)
         {
             if(!this.ikSwitcher.ikBonesName.some((boneName) => bone.name === boneName))
@@ -294,6 +258,24 @@ class Ragdoll extends IkObject
     lateUpdate()
     {
         super.lateUpdate();
+        if(this.hipsMouseDown)
+        {
+            let hipsTarget = this.hipsControlTarget.target;
+            let targetPosition = hipsTarget.position.clone();
+            let targetPos = hipsTarget.position.clone();
+            
+            //this.scene.worldToLocal(diff);
+            targetPos.sub(this.objectTargetDiff);
+            this.clonedObject.position.copy(targetPos);
+            this.clonedObject.updateMatrix();
+            this.clonedObject.updateMatrixWorld(true);
+            
+            this.hips.parent.worldToLocal(targetPosition);
+            this.hips.position.copy(targetPosition);
+            this.hips.updateMatrix();
+            this.originalObject.position.copy(this.clonedObject.position);
+            this.updateCharPosition(this.clonedObject.position);
+        }
     }
 
     // Sets and quaternion angle for bones

@@ -359,7 +359,7 @@ const Character = React.memo(({
 
   const updateSkeleton = () => {
 
-    if(ragDoll.current.updatingReact)
+    if(ragDoll.current.updatingReact /* || ragDoll.current.hipsMouseDown */)
     {
       ragDoll.current.updatingReactSkeleton = false;
       return;
@@ -390,10 +390,10 @@ const Character = React.memo(({
           bone.rotation.z += prevState.rotation.z - state.rotation.z
         }
 
-        if(state.position && bone.name === "Hips")
+    /*     if(state.position || bone.name === "Hips")
         {
-           //bone.position.set(state.position.x, state.position.y, state.position.z );
-        }
+           bone.position.set(state.position.x, state.position.y, state.position.z );
+        } */
       }
       for(let bone of skeleton.bones)
       {
