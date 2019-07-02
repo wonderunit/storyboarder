@@ -268,9 +268,17 @@ const load = async (event, args) => {
     migrateScene()
 
     await loadBoardUI()
-    await updateBoardUI()
+
+    ///////////////////////////////////////////////////////////////
+    // was: updateBoardUI
+    logToView({ type: 'progress', message: 'Rendering User Interface' })
+    document.querySelector('#canvas-caption').style.display = 'none'
+    renderViewMode()
+    await ensureBoardExists()
+    ///////////////////////////////////////////////////////////////
 
     await verifyScene()
+    await renderScene()
 
     logToView({ type: 'progress', message: 'Preparing to display' })
 
@@ -688,6 +696,7 @@ const verifyScene = async () => {
                                     'You should not see this warning again for this scene.', timing: 60 })
   }
 
+
   //
   //
   // PSD: notify about any missing PSD file, and unlink
@@ -697,12 +706,20 @@ const verifyScene = async () => {
       if (!fs.existsSync(path.join(boardPath, 'images', board.link))) {
       let message = `[WARNING] This scene is missing the linked file ${board.link}. ` +
                     `It will be unlinked.`
+        log.warn(message)
         notifications.notify({ message, timing: 60 })
         delete board.link
         markBoardFileDirty()
       }
     }
   }
+  // setup LinkedFileManager
+  if (linkedFileManager) { linkedFileManager.dispose() }
+  linkedFileManager = new LinkedFileManager({ storyboarderFilePath: boardFilename })
+  boardData.boards
+    .filter(b => b.link)
+    .forEach(b => linkedFileManager.addBoard(b, { skipTimestamp: true }))
+
 
   let boardsWithMissingPosterFrames = []
   for (let board of boardData.boards) {
@@ -1892,11 +1909,6 @@ const loadBoardUI = async () => {
     }
   })
 
-  linkedFileManager = new LinkedFileManager({ storyboarderFilePath: boardFilename })
-  boardData.boards
-    .filter(b => b.link)
-    .forEach(b => linkedFileManager.addBoard(b, { skipTimestamp: true }))
-
   menu.setMenu()
   // HACK initialize the menu to match the value in preferences
   audioPlayback.setEnableAudition(prefsModule.getPrefs().enableBoardAudition)
@@ -1913,15 +1925,6 @@ const loadBoardUI = async () => {
   // remote.getCurrentWebContents().openDevTools()
 }
 
-const updateBoardUI = async () => {
-  logToView({ type: 'progress', message: 'Rendering User Interface' })
-
-  document.querySelector('#canvas-caption').style.display = 'none'
-  renderViewMode()
-
-  await ensureBoardExists()
-  await renderScene()
-}
 
 // whenever the scene changes
 const renderScene = async () => {
