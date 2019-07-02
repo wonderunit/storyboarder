@@ -71,10 +71,10 @@ const createShot = ({ setupNumber, board, camera, aspectRatio }) => ({
   duration: board.duration,
 
   ...(camera && {
-    x: camera.x + 'm',
-    y: camera.y + 'm',
-    height: camera.z + 'm',
     fov: getFovAsFocalLength(camera.fov, aspectRatio).toFixed() + 'mm',
+    x: camera.x.toFixed(2) + 'm',
+    y: camera.y.toFixed(2) + 'm',
+    height: camera.z.toFixed(2) + 'm',
     rotation: radToDeg(camera.rotation).toFixed(2) + '°',
     tilt: radToDeg(camera.tilt).toFixed(2) + '°',
     roll: radToDeg(camera.roll).toFixed(2) + '°',
@@ -126,9 +126,9 @@ const shotsReducer = (acc, board) => {
         board,
         camera: changed
           ? {
-            x: diff.x && diff.x + 'm',
-            y: diff.y && diff.y + 'm',
-            height: diff.z && diff.z + 'm',
+            x: (diff.x && diff.x).toFixed(2) + 'm',
+            y: (diff.y && diff.y).toFixed(2) + 'm',
+            height: (diff.z && diff.z).toFixed(2) + 'm',
             rotation: diff.rotation && radToDeg(diff.rotation).toFixed(2) + '°',
             tilt: diff.tilt && radToDeg(diff.tilt).toFixed(2) + '°',
             roll: diff.roll && radToDeg(diff.roll).toFixed(2) + '°',
@@ -154,9 +154,9 @@ const getShotListForScene = scene => {
       number: setup.number,
       fov: getFovAsFocalLength(
         setup.fov,
-      height: setup.height + 'm',
         scene.aspectRatio
       ).toFixed() + 'mm',
+      height: setup.height.toFixed(2) + 'm',
       shots: setup.shots.map(shot => shot.uid)
     })),
     shots
