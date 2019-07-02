@@ -392,7 +392,7 @@ const Character = React.memo(({
 
         if(state.position && bone.name === "Hips")
         {
-           bone.position.set(state.position.x, state.position.y, state.position.z );
+           //bone.position.set(state.position.x, state.position.y, state.position.z );
         }
       }
       for(let bone of skeleton.bones)

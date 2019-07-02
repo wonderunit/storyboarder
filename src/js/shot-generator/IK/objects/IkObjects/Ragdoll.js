@@ -139,6 +139,8 @@ class Ragdoll extends IkObject
         {
             this.hipsMouseDown = true;
             this.isEnabledIk = true;
+            console.log(this.originalObject);
+            console.log(this.clonedObject);
     
         });
         hipsControl.addEventListener("transformMoved", (event) =>
@@ -150,11 +152,11 @@ class Ragdoll extends IkObject
                 let hipsTarget = this.hipsControlTarget.target;
                 let targetPosition = hipsTarget.position.clone();
                 let targetPos = hipsTarget.position.clone();
-                //let diff = new THREE.Vector3().subVectors(this.hips.worldPosition(), targetPos); */
+                let diff = new THREE.Vector3().subVectors(this.hips.worldPosition(), hipsTarget.worldPosition());
                 
-                this.scene.worldToLocal(targetPos);
+                //this.scene.worldToLocal(diff);
                 this.hips.parent.worldToLocal(targetPosition);
-
+                targetPos.sub(this.objectTargetDiff);
                 this.clonedObject.position.copy(targetPos);
                 this.clonedObject.updateMatrix();
                 
@@ -343,6 +345,8 @@ class Ragdoll extends IkObject
         this.hips.getWorldPosition(this.hipsControlTarget.target.position);
         this.calculteBackOffset();
         this.ikSwitcher.applyToIk();
+        let hipsTarget = this.hipsControlTarget.target;
+        this.objectTargetDiff = new THREE.Vector3().subVectors(hipsTarget.position, this.originalObject.position);
     }
 
     // Resets targets position
