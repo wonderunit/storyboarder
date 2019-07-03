@@ -121,17 +121,21 @@ const shotsReducer = (acc, board) => {
     }
     let changed = Object.values(diff).length > 0
 
+    const plusOrMinusString = v => v > 0
+      ? '+' + v.toString()
+      : v.toString()
+
     shot.beats.push(
       createBeat({
         board,
         camera: changed
           ? {
-            x: (diff.x && diff.x).toFixed(2) + 'm',
-            y: (diff.y && diff.y).toFixed(2) + 'm',
-            height: (diff.z && diff.z).toFixed(2) + 'm',
-            rotation: diff.rotation && radToDeg(diff.rotation).toFixed(2) + '°',
-            tilt: diff.tilt && radToDeg(diff.tilt).toFixed(2) + '°',
-            roll: diff.roll && radToDeg(diff.roll).toFixed(2) + '°',
+            x: diff.x && (plusOrMinusString(diff.x.toFixed(2)) + 'm'),
+            y: diff.y && (plusOrMinusString(diff.y.toFixed(2)) + 'm'),
+            height: diff.z && (plusOrMinusString(diff.z.toFixed(2)) + 'm'),
+            rotation: diff.rotation && (plusOrMinusString(radToDeg(diff.rotation).toFixed(2)) + '°'),
+            tilt: diff.tilt && (plusOrMinusString(radToDeg(diff.tilt).toFixed(2)) + '°'),
+            roll: diff.roll && (plusOrMinusString(radToDeg(diff.roll).toFixed(2)) + '°'),
           }
           : undefined
         }
