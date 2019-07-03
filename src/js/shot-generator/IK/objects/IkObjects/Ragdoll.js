@@ -58,6 +58,7 @@ class Ragdoll extends IkObject
         this.setUpControlEvents();
        
         this.isInitialized = true; 
+        this.setUpControlTargetsInitialPosition();
     }
 
     // Set control target selection
@@ -155,13 +156,21 @@ class Ragdoll extends IkObject
         for (let i = 0; i < chainObject.length; i++)
         {
             let control = chainObject[i].controlTarget.control;
+            let target = chainObject[i].controlTarget.target;
             control.addEventListener("pointerdown", (event) =>
             {
                 this.isEnabledIk = true;
+                target.isActivated = true;
+                if(control.mode === "rotate")
+                {
+                    this.isRotation = true;
+                }
             });
 
             control.addEventListener("pointerup", (event) =>
             {
+                target.isActivated = false;
+                this.isRotation = false;
                 this.isEnabledIk = false;
             });
         }
@@ -187,7 +196,7 @@ class Ragdoll extends IkObject
         super.update();
         if(IK.firstRun)
         {
-            this.setUpControlTargetsInitialPosition();
+            //this.setUpControlTargetsInitialPosition();
             IK.firstRun = false;
         }
         if(!this.isEnabledIk)
@@ -226,22 +235,26 @@ class Ragdoll extends IkObject
             let joints = this.ik.chains[i].joints;
             let bone = joints[joints.length -1].bone;
 
-            console.log(bone.name);
             let controlTarget = this.chainObjects[i].controlTarget;
             let boneTarget = controlTarget.target;
+            let target = this.getTargetForSolve();
+            if(target && boneTarget.uuid !== target.uuid)
+            {
+              continue;
+            }
             // Checks if rotation locked and apply rotation 
             if(controlTarget.isRotationLocked)
             {
-                this.rotateBoneQuaternion(bone, boneTarget.quaternion);
+                this.rotateBoneQuaternion(bone, boneTarget, joints[joints.length - 2].bone);
             }
             else
             {
                 let localQuat = bone.parent.worldToLocalQuaternion(boneTarget.worldQuaternion());
                 if(boneTarget.prevQuat)
                 {
-                   // bone.quaternion.multiply(boneTarget.prevQuat.inverse());
+                    bone.quaternion.multiply(boneTarget.prevQuat.inverse());
                 }
-                //bone.quaternion.multiply(localQuat);
+                bone.quaternion.multiply(localQuat);
                 boneTarget.prevQuat = localQuat;
             }
             bone.updateMatrix();
@@ -277,16 +290,17 @@ class Ragdoll extends IkObject
     // Give the result of bone always faces direction set by euler
     // Affected by hips rotation
     // Effect like flat foot to earth can be achieved
-    rotateBoneQuaternion(bone, targetQuaternion)
+    rotateBoneQuaternion(bone, boneTarget, followBone)
     {
-        let targetQuat = targetQuaternion.clone();
-        let quaternion = new THREE.Quaternion();
-        bone.getWorldQuaternion(quaternion);
-        quaternion.inverse();
-        let rotation = this.originalObject.children[0].worldQuaternion();
+        let targetQuat = boneTarget.worldPosition();
+        let inverseTarget = boneTarget.inverseInitialQuaternion;
+        let quaternion = bone.worldQuaternion().inverse();
+        let rotation = followBone.worldQuaternion();
+        //rotation = bone.worldToLocalQuaternion(rotation);
         //targetQuat.premultiply(this.originalObject.quaternion);
-        targetQuat.premultiply(rotation);
-        quaternion.multiply(targetQuat);
+        targetQuat.multiply(inverseTarget);
+        rotation.multiply(targetQuat);
+        quaternion.multiply(rotation);
         bone.quaternion.multiply(quaternion);
     }
 
@@ -324,7 +338,6 @@ class Ragdoll extends IkObject
         this.ikSwitcher.applyToIk();
         let hipsTarget = this.hipsControlTarget.target;
         this.objectTargetDiff = new THREE.Vector3().subVectors(hipsTarget.position, this.originalObject.position);
-        this.setUpControlTargetsInitialPosition();
     }
 
     // Resets targets position
@@ -406,13 +419,15 @@ class Ragdoll extends IkObject
 
     setUpControlTargetsInitialPosition()
     {
-        let cloneSkinnedMesh = this.clonedObject.children[1];
-        //this.controlTargets[0].isRotationLocked = true;
-        this.controlTargets[0].target.quaternion.copy(cloneSkinnedMesh.skeleton.bones[5].worldQuaternion());
-        this.controlTargets[1].target.quaternion.copy(cloneSkinnedMesh.skeleton.bones[12].worldQuaternion());
-        this.controlTargets[2].target.quaternion.copy(cloneSkinnedMesh.skeleton.bones[36].worldQuaternion());
-        this.controlTargets[3].target.quaternion.copy(cloneSkinnedMesh.skeleton.bones[59].worldQuaternion());
-        this.controlTargets[4].target.quaternion.copy(cloneSkinnedMesh.skeleton.bones[64].worldQuaternion());
+        //let cloneSkinnedMesh = this.clonedObject.children[1];
+        this.controlTargets[0].isRotationLocked = true;
+        for(let i = 0; i < this.chainObjects.length; i++)
+        {
+            let joints = this.ik.chains[i].joints;
+            let bone = joints[joints.length-1].bone;
+            this.controlTargets[i].target.quaternion.copy(bone.worldQuaternion());
+            this.controlTargets[i].target.inverseInitialQuaternion = bone.worldQuaternion().inverse();
+        }
         this.controlTargets[3].isRotationLocked = true;
         this.controlTargets[4].isRotationLocked = true;
     }

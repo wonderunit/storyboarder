@@ -643,7 +643,6 @@ const TransformControls = function ( camera, domElement ) {
 	this.update = function () {
 
 		console.warn( 'THREE.TransformControls: update function has been depricated.' );
-
 	};
 
 };

@@ -912,7 +912,7 @@ var IK = function () {
     }
   }, {
     key: 'solve',
-    value: function solve() {
+    value: function solve(target) {
       // Passing Hips bone to set Z
       // In order to change for whole skeleton
       
@@ -926,6 +926,10 @@ var IK = function () {
       try {
         for (var _iterator4 = this._orderedChains[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
           var subChains = _step4.value;
+          if(target && subChains[0].target.uuid !== target.uuid)
+          {
+            continue;
+          }
           var iterations = 1;
           while (iterations > 0) {
             for (var i = subChains.length - 1; i >= 0; i--) {

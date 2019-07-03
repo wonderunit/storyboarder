@@ -21,6 +21,7 @@ class IkObject
         this.controlTargets = [];
         this.originalObject = null;
         this.applyingOffset = false;
+        this.isRotation = false;
         
     }
 
@@ -160,13 +161,16 @@ class IkObject
     {
         if(this.isEnabledIk)
         {
-            // Solves the inverse kinematic of object
-            this.ik.solve();
+            if(!this.isRotation)
+            {
+                let target = this.getTargetForSolve();
+                // Solves the inverse kinematic of object
+                this.ik.solve(target);
+            }
             this.lateUpdate();
             if(IK.firstRun)
             {
                 this.ikSwitcher.recalculateDifference();
-                //IK.firstRun = false;
             }
         }
     }
@@ -270,6 +274,20 @@ class IkObject
             control.characterId = parentId;
             target.characterId = parentId;
         }
+    }
+
+    getTargetForSolve()
+    {
+        let controlTargets = this.controlTargets;
+        for(let i = 1; i < controlTargets.length; i++)
+        {
+            let target = controlTargets[i].target;
+            if(target.isActivated === true)
+            {
+                return target;
+            }
+        }
+        return null;
     }
 }
 
