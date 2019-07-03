@@ -292,7 +292,7 @@ class Ragdoll extends IkObject
     // Effect like flat foot to earth can be achieved
     rotateBoneQuaternion(bone, boneTarget, followBone)
     {
-        let targetQuat = boneTarget.worldPosition();
+        let targetQuat = boneTarget.worldQuaternion();
         let inverseTarget = boneTarget.inverseInitialQuaternion;
         let quaternion = bone.worldQuaternion().inverse();
         let rotation = followBone.worldQuaternion();
