@@ -1,0 +1,22 @@
+body {
+  margin: 0;
+  padding: 0;
+  color: black;
+  font-family: 'wonderunitsans';
+  font-weight: 300;
+  user-select: none;
+  cursor: default;
+
+  line-height: 1.2;
+}
+
+.container {
+  margin: 20px;
+}
+
+.shot-list-report {
+}
+
+.shot-list-report__camera-setup {
+  margin-top: 10px;
+}
