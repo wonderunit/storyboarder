@@ -264,6 +264,8 @@ class Ragdoll extends IkObject
                 {
                     bone.quaternion.multiply(boneTarget.prevQuat.inverse());
                 }
+                let rotation = this.originalObject.children[0].worldQuaternion();
+                localQuat.multiply(rotation);
                 bone.quaternion.multiply(localQuat);
                 boneTarget.prevQuat = localQuat;
             }
@@ -481,7 +483,6 @@ class Ragdoll extends IkObject
 
             this.relativeFixedAngleDelta[i] = delta;
         }
-
     }
 
     // Moves ragdoll hips when original object moved
