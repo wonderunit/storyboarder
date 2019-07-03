@@ -166,7 +166,7 @@ class IkObject
             if(IK.firstRun)
             {
                 this.ikSwitcher.recalculateDifference();
-                IK.firstRun = false;
+                //IK.firstRun = false;
             }
         }
     }

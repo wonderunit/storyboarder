@@ -26,7 +26,7 @@ class TargetControl
     {
         this.scene = scene;
         let material = new THREE.MeshBasicMaterial({ 
-            color: 0xff0000, 
+            color: 0x990099, 
             opacity: 0.4, 
             depthTest: false, 
             depthWrite: false,
@@ -47,7 +47,7 @@ class TargetControl
         movingTarget.layers.disable(0)
         movingTarget.layers.enable(1)
         movingTarget.layers.disable(2)
-        movingTarget.layers.enable(3)
+        //movingTarget.layers.enable(3)
     }
 
     addToScene()

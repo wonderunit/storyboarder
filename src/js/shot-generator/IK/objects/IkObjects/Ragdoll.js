@@ -1,3 +1,4 @@
+const {IK}  = require("../../core/three-ik");
 const IkObject = require( "./IkObject");
 const THREE = require( "three");
 const PoleConstraint = require( "../../constraints/PoleConstraint");
@@ -24,15 +25,6 @@ class Ragdoll extends IkObject
     initObject(scene, object, ...controlTarget )
     {
         super.initObject(scene, object, controlTarget );
-        let cloneSkinnedMesh = this.clonedObject.children[1];
-        this.controlTargets[0].isRotationLocked = true;
-        this.controlTargets[0].target.rotation.copy(new THREE.Euler().setFromQuaternion(cloneSkinnedMesh.skeleton.bones[5].worldQuaternion()));
-        this.controlTargets[1].target.rotation.copy(new THREE.Euler().setFromQuaternion(cloneSkinnedMesh.skeleton.bones[12].worldQuaternion()));
-        this.controlTargets[2].target.rotation.copy(new THREE.Euler().setFromQuaternion(cloneSkinnedMesh.skeleton.bones[36].worldQuaternion()));
-        this.controlTargets[3].target.rotation.copy(new THREE.Euler().setFromQuaternion(cloneSkinnedMesh.skeleton.bones[59].worldQuaternion()));
-        this.controlTargets[4].target.rotation.copy(new THREE.Euler().setFromQuaternion(cloneSkinnedMesh.skeleton.bones[64].worldQuaternion()));
-        this.controlTargets[3].isRotationLocked = true;
-        this.controlTargets[4].isRotationLocked = true;
 
         // Adds events to Back control
         this.applyEventsToBackControl(this.controlTargets[0].control);
@@ -193,6 +185,11 @@ class Ragdoll extends IkObject
             return;
         }
         super.update();
+        if(IK.firstRun)
+        {
+            this.setUpControlTargetsInitialPosition();
+            IK.firstRun = false;
+        }
         if(!this.isEnabledIk)
         {
             this.resetTargets()
@@ -229,6 +226,7 @@ class Ragdoll extends IkObject
             let joints = this.ik.chains[i].joints;
             let bone = joints[joints.length -1].bone;
 
+            console.log(bone.name);
             let controlTarget = this.chainObjects[i].controlTarget;
             let boneTarget = controlTarget.target;
             // Checks if rotation locked and apply rotation 
@@ -238,8 +236,13 @@ class Ragdoll extends IkObject
             }
             else
             {
-                let localQuat = bone.parent.worldToLocalQuaternion(boneTarget.quaternion);
-                bone.quaternion.copy(localQuat);
+                let localQuat = bone.parent.worldToLocalQuaternion(boneTarget.worldQuaternion());
+                if(boneTarget.prevQuat)
+                {
+                   // bone.quaternion.multiply(boneTarget.prevQuat.inverse());
+                }
+                //bone.quaternion.multiply(localQuat);
+                boneTarget.prevQuat = localQuat;
             }
             bone.updateMatrix();
             bone.updateMatrixWorld(true, true);
@@ -321,6 +324,7 @@ class Ragdoll extends IkObject
         this.ikSwitcher.applyToIk();
         let hipsTarget = this.hipsControlTarget.target;
         this.objectTargetDiff = new THREE.Vector3().subVectors(hipsTarget.position, this.originalObject.position);
+        this.setUpControlTargetsInitialPosition();
     }
 
     // Resets targets position
@@ -398,6 +402,19 @@ class Ragdoll extends IkObject
             this.controlTargetSelection.dispose();
             this.hipsControlTarget.removeFromScene();
         }
+    }
+
+    setUpControlTargetsInitialPosition()
+    {
+        let cloneSkinnedMesh = this.clonedObject.children[1];
+        //this.controlTargets[0].isRotationLocked = true;
+        this.controlTargets[0].target.quaternion.copy(cloneSkinnedMesh.skeleton.bones[5].worldQuaternion());
+        this.controlTargets[1].target.quaternion.copy(cloneSkinnedMesh.skeleton.bones[12].worldQuaternion());
+        this.controlTargets[2].target.quaternion.copy(cloneSkinnedMesh.skeleton.bones[36].worldQuaternion());
+        this.controlTargets[3].target.quaternion.copy(cloneSkinnedMesh.skeleton.bones[59].worldQuaternion());
+        this.controlTargets[4].target.quaternion.copy(cloneSkinnedMesh.skeleton.bones[64].worldQuaternion());
+        this.controlTargets[3].isRotationLocked = true;
+        this.controlTargets[4].isRotationLocked = true;
     }
 
     // Moves ragdoll hips when original object moved

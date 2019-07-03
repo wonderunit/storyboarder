@@ -148,7 +148,8 @@ const TransformControls = function ( camera, domElement ) {
 
 		this.object = object;
 		this.visible = true;
-
+		object.scale.copy(_gizmo.picker["translate"].children[0].scale);
+		console.log(_gizmo.picker["translate"]);
 	};
 
 	// Detatch from object
@@ -781,14 +782,14 @@ const TransformControlsGizmo = function () {
 	// Gizmo definitions - custom hierarchy definitions for setupGizmo() function
 
 	var gizmoTranslate = {
-		XYZ: [
-			[ new THREE.Mesh( new THREE.OctahedronBufferGeometry( 0.1, 0 ), matWhiteTransperent ), [ 0, 0, 0 ], [ 0, 0, 0 ] ]
-		],
+	/* 	XYZ: [
+			[ new THREE.Mesh( new THREE.SphereBufferGeometry( 0.3 ), matInvisible ) , [ 0, 0, 0 ], [ 0, 0, 0 ] ]
+		], */
 	};
 
 	var pickerTranslate = {
 		XYZ: [
-			[ new THREE.Mesh( new THREE.OctahedronBufferGeometry( 0.2, 0 ), matInvisible ) ]
+			[ new THREE.Mesh( new THREE.SphereBufferGeometry( 0.4 ), matInvisible ) ]
 		],
 	};
 
