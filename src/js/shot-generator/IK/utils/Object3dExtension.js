@@ -4,7 +4,7 @@ THREE.Object3D.prototype.worldToLocalQuaternion = function (quaternion)
 {
     let resultQuat = quaternion.clone();
     let rotation = this.matrixWorld.getRotation();
-    resultQuat.multiply(rotation.conjugate());
+    resultQuat.multiply(rotation.inverse());
     return resultQuat;
 }
 

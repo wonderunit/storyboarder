@@ -67,6 +67,7 @@ class Ragdoll extends IkObject
        
         this.isInitialized = true; 
         this.setUpControlTargetsInitialPosition();
+        //this.relativeFixedAngle();
     }
 
     // Set control target selection
@@ -255,19 +256,91 @@ class Ragdoll extends IkObject
             // Checks if rotation locked and apply rotation 
             if(controlTarget.isRotationLocked)
             {
-                this.rotateBoneQuaternion(bone, boneTarget, originalbones[this.originalObjectTargetBone[i]], this.relativeFixedAngleDelta[i] );
+
+             /*    let boneGlobalQuat = bone.worldQuaternion();
+                boneGlobalQuat.multiply(this.relativeFixedAngleDelta[i].objectToTarget );
+                let transformMatrix = new THREE.Matrix4();
+                transformMatrix.multiply(boneTarget.matrix);
+                transformMatrix.multiply(boneTarget.matrixWorld.inverse());
+                boneGlobalQuat.applyMatrix(transformMatrix);
+                boneTarget.quaternion.copy(boneGlobalQuat);
+                boneTarget.updateMatrix();
+                boneTarget.updateMatrixWorld(true); */
+/* 
+                let rotation = this.originalObject.children[0].worldQuaternion();
+
+                let boneGlobalQuat = boneTarget.worldQuaternion();
+                boneGlobalQuat.multiply(this.relativeFixedAngleDelta[i].targetToObject );
+                let transformMatrix = new THREE.Matrix4();
+                transformMatrix.multiply(bone.matrix);
+                transformMatrix.multiply(bone.matrixWorld.inverse());
+                boneGlobalQuat.applyMatrix(transformMatrix);
+                bone.quaternion.copy(boneGlobalQuat); */
+
+                this.rotateBoneQuaternion(bone, boneTarget, originalbones[this.originalObjectTargetBone[i]], this.relativeFixedAngleDelta[i] );   
             }
             else
             {
-                let localQuat = bone.parent.worldToLocalQuaternion(boneTarget.worldQuaternion());
+                let followBone = originalbones[this.originalObjectTargetBone[i]];
+                let targetQuat = boneTarget.worldQuaternion();
+                let quaternion = bone.worldQuaternion().inverse();
+                let rotation = followBone.worldQuaternion();
+                //targetQuat.premultiply(this.originalObject.quaternion);
+                bone.quaternion.multiply(quaternion);
+                targetQuat.premultiply(boneTarget.inverseInitialQuaternion);
+                targetQuat.premultiply(rotation);
+                bone.quaternion.multiply(targetQuat);
+                bone.updateMatrix();
+                bone.updateMatrixWorld(true);
+
+           /*      let localQuat = boneTarget.worldQuaternion();
+                //let targetQuat = boneTarget.worldQuaternion();
+                let quaternion = bone.worldQuaternion().inverse();
+                let rotation = originalbones[this.originalObjectTargetBone[i]].parent.worldQuaternion().inverse();
+                //targetQuat.premultiply(this.originalObject.quaternion);
+                bone.quaternion.multiply(quaternion);
+                localQuat.premultiply(rotation);
+                bone.quaternion.multiply(localQuat); */
+                //console.log("After", modifiedQuat);
+                
+              /*   let localQuat = boneTarget.worldQuaternion();
+                //let targetQuat = boneTarget.worldQuaternion();
+                let quaternion = bone.worldQuaternion().inverse();
+                //targetQuat.premultiply(this.originalObject.quaternion);
+                bone.quaternion.multiply(quaternion);
+                //localQuat.multiply(rotation);
+                bone.quaternion.multiply(modifiedQuat); */
+                
+                //let originBoneY = originBone.rotation.y;
+                //originBone.quaternion.copy(cloneGlobalQuat);
+
+                /* let localQuat = bone.worldToLocalQuaternion(boneTarget.worldQuaternion());
+                let rotation = this.originalObject.children[0].worldQuaternion();
+                localQuat.multiply(rotation);
+                if(boneTarget.prevQuat && !boneTarget.prevQuat.equals(localQuat))
+                {
+                    console.log(boneTarget.prevQuat);
+                    bone.quaternion.multiply(boneTarget.prevQuat.inverse());
+                }
+                bone.quaternion.multiply(localQuat);
+                boneTarget.prevQuat = localQuat.clone(); */
+         /*       /*  let localQuat = bone.parent.worldToLocalQuaternion(boneTarget.worldQuaternion());
                 if(boneTarget.prevQuat)
                 {
                     bone.quaternion.multiply(boneTarget.prevQuat.inverse());
                 }
                 let rotation = this.originalObject.children[0].worldQuaternion();
-                localQuat.multiply(rotation);
-                bone.quaternion.multiply(localQuat);
+                localQuat.premultiply(rotation);
+                bone.quaternion.premultiply(localQuat);
                 boneTarget.prevQuat = localQuat;
+                let localQuat = bone.worldToLocalQuaternion(boneTarget.quaternion;
+                //let targetQuat = boneTarget.worldQuaternion();
+                let quaternion = bone.worldQuaternion().inverse();
+                let rotation = originalbones[this.originalObjectTargetBone[i]].parent.worldQuaternion().inverse();
+                //targetQuat.premultiply(this.originalObject.quaternion);
+                bone.quaternion.multiply(quaternion);
+                bone.quaternion.multiply(rotation);
+                bone.quaternion.multiply(localQuat); */
             }
             bone.updateMatrix();
             bone.updateMatrixWorld(true, true);
@@ -304,6 +377,21 @@ class Ragdoll extends IkObject
     // Effect like flat foot to earth can be achieved
     rotateBoneQuaternion(bone, boneTarget, followBone, delta)
     {
+
+  /*       let localQuat = bone.worldToLocalQuaternion(boneTarget.worldQuaternion());
+        //let targetQuat = boneTarget.worldQuaternion();
+        let quaternion = bone.worldQuaternion().inverse();
+        let {angle, axis} = followBone.worldQuaternion().toAngleAxis();
+        //targetQuat.premultiply(this.originalObject.quaternion);
+        //bone.quaternion.multiply(quaternion);
+        //localQuat.multiply(rotation);
+        bone.quaternion.multiply(localQuat);
+        bone.updateMatrix();
+        bone.updateMatrixWorld(true);
+        let boneAngleAxis = bone.worldQuaternion().toAngleAxis();
+        //bone.rotateOnWorldAxis(axis, angle); */
+
+
         let targetQuat = boneTarget.worldQuaternion();
         let quaternion = bone.worldQuaternion().inverse();
         let rotation = this.originalObject.children[0].worldQuaternion();
@@ -311,6 +399,8 @@ class Ragdoll extends IkObject
         targetQuat.premultiply(rotation);
         quaternion.multiply(targetQuat);
         bone.quaternion.multiply(quaternion);
+
+        //bone.quaternion.multiply(quaternion.inverse());
 
        //let targetQuat = boneTarget.worldQuaternion();
        //let inverseWorld = bone.worldQuaternion().conjugate();
@@ -451,8 +541,10 @@ class Ragdoll extends IkObject
         {
             let joints = this.ik.chains[i].joints;
             let bone = joints[joints.length-1].bone;
-            this.controlTargets[i].target.quaternion.copy(bone.worldQuaternion());
-            this.controlTargets[i].target.inverseInitialQuaternion = bone.worldQuaternion().inverse();
+            let target = this.controlTargets[i].target;
+            target.quaternion.copy(bone.worldQuaternion());
+            target.inverseInitialQuaternion = bone.worldQuaternion().inverse();
+            target.localQuaternion = bone.parent.worldToLocalQuaternion(bone.worldQuaternion());
         }
         this.controlTargets[3].isRotationLocked = true;
         this.controlTargets[4].isRotationLocked = true;
@@ -468,20 +560,26 @@ class Ragdoll extends IkObject
             let bone = joints[joints.length-1].bone;
             let controlTarget = this.chainObjects[i].controlTarget;
             let boneTarget = controlTarget.target;
-            let inverseWorldQuaternion = this.originalData.inverseQuaternion ? this.originalData.inverseQuaternion : bone.worldQuaternion().inverse();
-            let quaternion = this.originalData.quaternion ? this.originalData.quaternion : bone.quaternion;
-            this.originalData.quaternion = quaternion.clone();
-            this.originalData.inverseQuaternion = inverseWorldQuaternion.clone();
+            let inverseWorldQuaternion = bone.worldQuaternion().inverse();
+            let quaternion =  bone.worldQuaternion();
 
             let targetQuat = boneTarget.worldQuaternion();
+   /*         
             inverseWorldQuaternion.multiply(targetQuat);
-            quaternion.multiply(inverseWorldQuaternion);
+            quaternion.multiply(inverseWorldQuaternion); */
 
-            let delta = new THREE.Quaternion();
-            delta.multiply(quaternion.inverse());
-            delta.multiply(targetQuat);
+            let targetToObj = new THREE.Quaternion();
+            targetToObj.multiply(targetQuat.inverse());
+            targetToObj.multiply(quaternion);
 
-            this.relativeFixedAngleDelta[i] = delta;
+            let objToTarget = new THREE.Quaternion();
+            objToTarget.multiply(inverseWorldQuaternion);
+            objToTarget.multiply(targetQuat);
+
+            this.relativeFixedAngleDelta[i] = {};
+    
+            this.relativeFixedAngleDelta[i].targetToObject = targetToObj;
+            this.relativeFixedAngleDelta[i].objectToTarget = objToTarget;
         }
     }
 

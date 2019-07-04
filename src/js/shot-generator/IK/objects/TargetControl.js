@@ -36,6 +36,7 @@ class TargetControl
         let geometry = new THREE.SphereGeometry(0.05);
         let movingTarget = new THREE.Mesh(geometry, material);
         movingTarget.position.copy(position);
+        movingTarget.scale.set(0.7, 0.7, 0.7);
         movingTarget.renderOrder = 1;
         scene.add(movingTarget);
         movingTarget.userData.type = "controlPoint";
@@ -47,7 +48,6 @@ class TargetControl
         movingTarget.layers.disable(0)
         movingTarget.layers.enable(1)
         movingTarget.layers.disable(2)
-        //movingTarget.layers.enable(3)
     }
 
     addToScene()
