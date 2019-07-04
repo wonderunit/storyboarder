@@ -142,6 +142,11 @@ const TransformControls = function ( camera, domElement ) {
 		domElement.removeEventListener( "keydown", onKeyDown );
 	};
 
+	this.changeCamera = (camera) =>
+	{
+		this.camera = camera;
+	}
+
 	this.characterId = 1;
 	// Set current object
 	this.attach = function ( object ) {
@@ -781,8 +786,8 @@ const TransformControlsGizmo = function () {
 	// Gizmo definitions - custom hierarchy definitions for setupGizmo() function
 
 	var gizmoTranslate = {
-	/* 	XYZ: [
-			[ new THREE.Mesh( new THREE.SphereBufferGeometry( 0.3 ), matInvisible ) , [ 0, 0, 0 ], [ 0, 0, 0 ] ]
+		/* XYZ: [
+			[ new THREE.Mesh( new THREE.SphereBufferGeometry( 1.3 ), matWhiteTransperent ) , [ 0, 0, 0 ], [ 0, 0, 0 ] ]
 		], */
 	};
 

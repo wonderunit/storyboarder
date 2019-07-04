@@ -430,6 +430,20 @@ const Character = React.memo(({
   // FIXME frame delay between redux update and react render here
   //
 
+  //#region Camera changing 
+  useEffect(() => {
+    if(!ready) return
+    if(!ragDoll) return;
+    let skeletonRig = ragDoll.current;
+    skeletonRig.controlTargetSelection.camera = camera;
+    for(let controlTarget of skeletonRig.controlTargets)
+    {
+      controlTarget.setCamera(camera);
+    }
+  
+  }, [camera, ready])
+  //#endregion
+
   useEffect(() => {
     if (object.current) {
       object.current.position.x = props.x

@@ -124,5 +124,11 @@ class TargetControl
             }
         }
     }
+
+    setCamera(camera)
+    {
+        this.control.changeCamera(camera);
+        this.control.updateMatrixWorld();
+    }
 }
 module.exports = TargetControl;
