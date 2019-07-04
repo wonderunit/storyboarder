@@ -84,6 +84,13 @@ THREE.Object3D.prototype.worldQuaternion = function ()
     return quaternion;
 }
 
+THREE.Object3D.prototype.worldScale = function ()
+{
+    let scale = new THREE.Vector3();
+    this.getWorldScale(scale);
+    return scale;
+}
+
 // For memes
 THREE.Quaternion.prototype.substract = function(quanternion)
 {

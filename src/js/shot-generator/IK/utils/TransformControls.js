@@ -1,4 +1,5 @@
 const THREE = require("three");
+require("../utils/Object3dExtension");
 /**
  * @author arodic / https://github.com/arodic
  */
@@ -153,8 +154,7 @@ const TransformControls = function ( camera, domElement ) {
 
 		this.object = object;
 		this.visible = true;
-		object.scale.copy(_gizmo.picker["translate"].children[0].scale);
-		console.log(_gizmo.picker["translate"]);
+	
 	};
 
 	// Detatch from object
@@ -791,13 +791,13 @@ const TransformControlsGizmo = function () {
 
 	var gizmoTranslate = {
 		/* XYZ: [
-			[ new THREE.Mesh( new THREE.SphereBufferGeometry( 1.3 ), matWhiteTransperent ) , [ 0, 0, 0 ], [ 0, 0, 0 ] ]
+			[ new THREE.Mesh( new THREE.SphereBufferGeometry( 0.7 ), matWhiteTransperent ) , [ 0, 0, 0 ], [ 0, 0, 0 ] ]
 		], */
 	};
 
 	var pickerTranslate = {
 		XYZ: [
-			[ new THREE.Mesh( new THREE.SphereBufferGeometry( 0.4 ), matInvisible ) ]
+			[ new THREE.Mesh( new THREE.SphereBufferGeometry( 0.7 ), matInvisible ) ]
 		],
 	};
 
@@ -1063,6 +1063,7 @@ const TransformControlsGizmo = function () {
 		}
 
 		var handles = [];
+	
 		handles = handles.concat( this.picker[ this.mode ].children );
 		handles = handles.concat( this.gizmo[ this.mode ].children );
 		handles = handles.concat( this.helper[ this.mode ].children );
