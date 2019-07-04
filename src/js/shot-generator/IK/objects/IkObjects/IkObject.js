@@ -129,7 +129,6 @@ class IkObject
             }
         });
         this.ikSwitcher.ikBonesName.push("Hips");
-        //scene.remove(clonedSkeleton);
         // Goes through list of constraints and adds it to IK
         chains.forEach((chain) =>
         {
@@ -141,7 +140,6 @@ class IkObject
         this.skeletonHelper.material.linewidth = 7;
 
         // Adds skeleton helper to scene
-        //scene.add( this.skeletonHelper );
         this.ikSwitcher.recalculateDifference();
         this.ikSwitcher.calculateRelativeAngle();
     }

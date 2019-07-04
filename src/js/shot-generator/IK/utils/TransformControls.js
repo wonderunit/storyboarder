@@ -790,9 +790,6 @@ const TransformControlsGizmo = function () {
 	// Gizmo definitions - custom hierarchy definitions for setupGizmo() function
 
 	var gizmoTranslate = {
-		/* XYZ: [
-			[ new THREE.Mesh( new THREE.SphereBufferGeometry( 0.7 ), matWhiteTransperent ) , [ 0, 0, 0 ], [ 0, 0, 0 ] ]
-		], */
 	};
 
 	var pickerTranslate = {
