@@ -31,14 +31,19 @@ class ControlTargetSelection
         let ray = this.ray;
         let selectedMeshes = this.selectedMeshes;
 		ray.setFromCamera( pointer, this.camera );
-        let intersectMeshes = ray.intersectObjects(this.meshes)[ 0 ] || false;
+        let intersectMeshes = false;
         let intersectControlTarget = false;
+        if(Object.keys(selectedMeshes).length === 0)
+        {
+            intersectMeshes = ray.intersectObjects(this.meshes)[ 0 ] || false;
+        }
         // Checks if pointer intersects control target only when any mesh is selected
         if(Object.keys(selectedMeshes).length !== 0)
         {
             let rotationalGizmoHelpers = this.rotationalGizmoHelpers( Object.values(selectedMeshes)[0].scope.control);
             intersectControlTarget = ray.intersectObjects(rotationalGizmoHelpers)[ 0 ] || false;
         }
+       
         // Checks if meshes intersected and if they do select them
         if ( intersectMeshes ) 
         {
