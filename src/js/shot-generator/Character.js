@@ -436,11 +436,11 @@ const Character = React.memo(({
     if(!ragDoll) return;
     let skeletonRig = ragDoll.current;
     skeletonRig.controlTargetSelection.camera = camera;
+    boneRotationControl.current.setCamera(camera);
     for(let controlTarget of skeletonRig.controlTargets)
     {
       controlTarget.setCamera(camera);
     }
-  
   }, [camera, ready])
   //#endregion
 

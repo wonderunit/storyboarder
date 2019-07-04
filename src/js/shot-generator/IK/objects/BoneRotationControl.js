@@ -57,5 +57,11 @@ class BoneRotationControl
     {
         this.control.characterId = character.uuid;
     }
+
+    setCamera(camera)
+    {
+        this.control.changeCamera(camera);
+        this.control.updateMatrixWorld();
+    }
 }
 module.exports = BoneRotationControl;
