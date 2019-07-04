@@ -224,7 +224,7 @@ const SceneManager = connect(
       let mAspectRatio = (mWidth/mHeight)
 
       if (mAspectRatio>rs) {
-        let padding = (mWidth / (1/rs))-mHeight
+        let padding = (mWidth / rs)-mHeight
         minMax[2] -= padding/2
         minMax[3] += padding/2
       } else {
