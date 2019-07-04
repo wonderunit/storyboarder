@@ -671,6 +671,10 @@ const TransformControlsGizmo = function () {
 
 	this.type = 'TransformControlsGizmo';
 
+	//#region Min/Max scale for gizmo
+	let minimumScale = new THREE.Vector3(0.1, 0.1, 0.1);
+	let maximumScale = new THREE.Vector3(0.2, 0.2, 0.2);
+	//#endregion
 	// shared materials
 
 	var gizmoMaterial = new THREE.MeshBasicMaterial({
@@ -1069,13 +1073,21 @@ const TransformControlsGizmo = function () {
 
 			// hide aligned to camera
 
+
 			handle.visible = true;
 			handle.rotation.set( 0, 0, 0 );
 			handle.position.copy( this.worldPosition );
 
 			var eyeDistance = this.worldPosition.distanceTo( this.cameraPosition);
 			handle.scale.set( 1, 1, 1 ).multiplyScalar( eyeDistance * this.size / 7 );
-
+			if(handle.scale.x < minimumScale.x)
+			{
+				handle.scale.copy(minimumScale);
+			}
+			if(handle.scale.x > maximumScale.x)
+			{
+				handle.scale.copy(maximumScale);
+			}
 			// TODO: simplify helpers and consider decoupling from gizmo
 
 			if ( handle.tag === 'helper' ) {
