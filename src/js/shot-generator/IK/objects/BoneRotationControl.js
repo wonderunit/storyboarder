@@ -1,7 +1,7 @@
 const TransformControls = require( "../utils/TransformControls");
 class BoneRotationControl
 {
-    constructor(scene, camera, domElement)
+    constructor(scene, camera, domElement, ragDoll)
     {
         this.control = new TransformControls(camera, domElement);
         this.control.rotationOnly = true;
@@ -11,6 +11,7 @@ class BoneRotationControl
         this.control.userData.type = "boneControl";
         this.bone = null;
         this.scene = scene;
+        this.control.characterId = ragDoll.originalObject.uuid;
     }
     //#region Events
     onMouseDown = event => {this.bone.isRotated = true;};
@@ -51,11 +52,6 @@ class BoneRotationControl
         this.control.removeEventListener("transformMouseDown", this.onMouseDown);
         this.control.removeEventListener("transformMoved", this.onMouseMove);
         this.control.removeEventListener("transformMouseUp", this.onMouseUp);
-    }
-
-    setCharacter(character)
-    {
-        this.control.characterId = character.uuid;
     }
 
     setCamera(camera)

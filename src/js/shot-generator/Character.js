@@ -1,7 +1,7 @@
 //#region ragdoll's import
 const RagDoll = require("./IK/objects/IkObjects/Ragdoll");
 const BoneRotationControl = require("./IK/objects/BoneRotationControl")
-const {AddTransformationControl} = require("./IK/utils/IkUtils");
+const {AddTransformationControl, createTransformationControls} = require("./IK/utils/IkUtils");
 //#endregion
 const THREE = require('three')
 window.THREE = window.THREE || THREE
@@ -283,21 +283,13 @@ const Character = React.memo(({
       let skeletonRig = ragDoll.current;
       let domElement = largeRenderer.current.domElement;
      
-      const hipsControl = AddTransformationControl(new THREE.Vector3(0, 1, 0), camera, domElement, scene, "hips");
-      const backControl = AddTransformationControl(new THREE.Vector3(0, 2, -.1), camera, domElement, scene, "back");
-      const leftHandControl = AddTransformationControl(new THREE.Vector3(-2, 1.5, 0), camera, domElement, scene, "leftHand");
-      const rightHandControl = AddTransformationControl(new THREE.Vector3(2, 1.5, 0), camera, domElement, scene, "rightHand");
-      const leftLegControl = AddTransformationControl(new THREE.Vector3(0, 1, 1), camera, domElement, scene, "leftLeg");
-      const rightLegControl = AddTransformationControl(new THREE.Vector3(0, 0, 1), camera, domElement, scene, "rightLeg");
+      let {controls, controlTargetSelection} = createTransformationControls(camera, domElement, scene);
    
-      skeletonRig.initObject(scene, object.current, backControl, leftHandControl,
-          rightHandControl, leftLegControl, rightLegControl,
-          hipsControl );
-      skeletonRig.setControlTargetSelection(domElement, scene, camera);
+      skeletonRig.initObject(scene, object.current, controls);
+      skeletonRig.controlTargetSelection = controlTargetSelection;
 
       boneRotationControl.current = new BoneRotationControl(scene, camera, domElement, ragDoll.current);
       let boneRotation = boneRotationControl.current;
-      boneRotation.setCharacter(object.current);
       boneRotation.setUpdateCharacter((name, rotation) => {updateCharacterSkeleton({
         id,
         name : name,

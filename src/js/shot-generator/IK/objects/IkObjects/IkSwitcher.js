@@ -15,7 +15,7 @@ class IKSwitcher
         this.ikBonesName.push("LeftShoulder");
     }
 
-    //#region Data colletion
+    //#region Data collection
     // Calculates difference between ik and character matrix
     // which is used to calculate position in different coordinate system
     recalculateDifference()
