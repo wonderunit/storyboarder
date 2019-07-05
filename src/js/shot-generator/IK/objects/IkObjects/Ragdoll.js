@@ -261,8 +261,10 @@ class Ragdoll extends IkObject
             this.isEnabledIk = true;
             if(this.hipsControlTarget.control.mode === "rotate")
             {
+                console.log(this.hipsControlTarget.control.mode);
                 this.isEnabledIk = false;
                 this.hipsControlTarget.control.attach(this.originalObject.children[0]);
+                this.attached = true;
             }
         });
         hipsControl.addEventListener("transformMoved", (event) =>
@@ -282,7 +284,11 @@ class Ragdoll extends IkObject
         });
         hipsControl.addEventListener("pointerup", (event) =>
         {
-            this.hipsControlTarget.control.attach(this.originalObject.children[0]);
+            if(this.attached)
+            {
+                this.hipsControlTarget.control.detach(this.originalObject.children[0]);
+                this.attached = false;
+            }
             this.applyingOffset = false;
             this.hipsMouseDown = false;
             this.isEnabledIk = false;
