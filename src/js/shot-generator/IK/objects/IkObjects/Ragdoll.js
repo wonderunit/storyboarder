@@ -433,8 +433,6 @@ class Ragdoll extends IkObject
                 targetQuat.premultiply(boneTarget.inverseInitialQuaternion);
                 targetQuat.premultiply(rotation);
                 bone.quaternion.multiply(targetQuat);
-                bone.updateMatrix();
-                bone.updateMatrixWorld(true);
             }
             bone.updateMatrix();
             bone.updateMatrixWorld(true, true);
@@ -453,8 +451,6 @@ class Ragdoll extends IkObject
         targetQuat.premultiply(rotation);
         quaternion.multiply(targetQuat);
         bone.quaternion.multiply(quaternion);
-        bone.updateMatrix();
-        bone.updateMatrixWorld();
     }
     //#endregion
 }
