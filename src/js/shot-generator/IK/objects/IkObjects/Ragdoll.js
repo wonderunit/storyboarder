@@ -208,7 +208,6 @@ class Ragdoll extends IkObject
         {
             let chain = this.ik.chains[i];
             let poleTarget = this.initPoleTargets(chain, polePositions[i-1], poleNames[i-1]);
-            this.scene.add(poleTarget.mesh);
             let poleConstraint = new PoleConstraint(chain, poleTarget);
             chain.joints[0].addIkConstraint(poleConstraint);
             this.chainObjects[i].poleConstraint = poleConstraint;
@@ -282,6 +281,7 @@ class Ragdoll extends IkObject
          let hipsTarget = this.hipsControlTarget.target;
          let {angle, axis} = this.hips.quaternion.toAngleAxis();
          let spineWorldQuat = this.hips.children[0].children[0].children[0].worldQuaternion();
+         let armsAngleAxis = spineWorldQuat.toAngleAxis();
          for(let i = 0; i < chainObjects.length; i++)
          {
              let constraint = this.chainObjects[i].poleConstraint;
@@ -296,7 +296,6 @@ class Ragdoll extends IkObject
              mesh.position.set(targetPosition.x + poleOffset.x, targetPosition.y + poleOffset.y, targetPosition.z + poleOffset.z);
              if(constraint.poleTarget.mesh.name === "leftArmPole" || constraint.poleTarget.mesh.name === "rightArmPole")
              {
-                 let armsAngleAxis = spineWorldQuat.toAngleAxis();
                  mesh.rotateAroundPoint(targetPosition, armsAngleAxis.axis, armsAngleAxis.angle);
              }
              else
@@ -422,7 +421,7 @@ class Ragdoll extends IkObject
             // Checks if rotation locked and apply rotation 
             if(controlTarget.isRotationLocked)
             {
-                this.rotateBoneQuaternion(bone, boneTarget, originalbones[this.originalObjectTargetBone[i]], this.relativeFixedAngleDelta[i] );   
+                this.rotateBoneQuaternion(bone, boneTarget, originalbones[this.originalObjectTargetBone[i]]);   
             }
             else
             {
@@ -446,7 +445,7 @@ class Ragdoll extends IkObject
     // Give the result of bone always faces direction set by euler
     // Affected by hips rotation
     // Effect like flat foot to earth can be achieved
-    rotateBoneQuaternion(bone, boneTarget)
+    rotateBoneQuaternion(bone, boneTarget, followBone)
     {
         let targetQuat = boneTarget.worldQuaternion();
         let quaternion = bone.worldQuaternion().inverse();
@@ -454,6 +453,8 @@ class Ragdoll extends IkObject
         targetQuat.premultiply(rotation);
         quaternion.multiply(targetQuat);
         bone.quaternion.multiply(quaternion);
+        bone.updateMatrix();
+        bone.updateMatrixWorld();
     }
     //#endregion
 }
