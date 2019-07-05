@@ -75,10 +75,6 @@ class IkObject
                 {
                     this.hips = object;
                     setZDirecion(object, new THREE.Vector3(0, 0, 1));
-
-                  /*   let objectWorld = new THREE.Vector3();
-                    object.getWorldPosition(objectWorld);
-                    this.hipsControlTarget.target.position.copy(objectWorld); */
                 }
                 // Goes through all chain objects to find with which we are working
                 chainObjects.forEach((chainObject) =>
@@ -102,9 +98,6 @@ class IkObject
                         if(object.name === chainObject.lastObjectName)
                         {
                             target = chainObject.controlTarget.target;
-                         /*    let objectWorld = new THREE.Vector3();
-                            object.getWorldPosition(objectWorld);
-                            target.position.copy(objectWorld); */
                             chainObject.isChainObjectStarted = false;
                         }
                         this.ikSwitcher.ikBonesName.push(object.name);
@@ -182,7 +175,6 @@ class IkObject
         this.hipsControlTarget.control.detach(this.hipsControlTarget.target);
         scene.remove(this.hipsControlTarget.target);
         scene.remove(this.hipsControlTarget.control);
-        scene.remove(this.skeletonHelper);
     }
     //#endregion
 

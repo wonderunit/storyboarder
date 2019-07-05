@@ -174,7 +174,6 @@ class Ragdoll extends IkObject
         this.clonedObject.position.copy(this.originalObject.position);
         this.clonedObject.updateMatrixWorld(true, true);
     }
-
     //#endregion
 
     //#region Internal methods
@@ -199,8 +198,8 @@ class Ragdoll extends IkObject
     {
         let poleNames = ["leftArmPole", "rightArmPole", "leftLegPole", "rightLegPole"];
         let polePositions = [
-            new THREE.Vector3(0, 0, -0.5),
-            new THREE.Vector3(0, 0, -0.5),
+            new THREE.Vector3(0, 0.5, 0.5),
+            new THREE.Vector3(0, 0.5, 0.5),
             new THREE.Vector3(0, 0.4, 0.8),
             new THREE.Vector3(0, 0.4, 0.8)
         ];
@@ -209,7 +208,7 @@ class Ragdoll extends IkObject
         {
             let chain = this.ik.chains[i];
             let poleTarget = this.initPoleTargets(chain, polePositions[i-1], poleNames[i-1]);
-            //this.scene.add(poleTarget.mesh);
+            this.scene.add(poleTarget.mesh);
             let poleConstraint = new PoleConstraint(chain, poleTarget);
             chain.joints[0].addIkConstraint(poleConstraint);
             this.chainObjects[i].poleConstraint = poleConstraint;
@@ -283,7 +282,6 @@ class Ragdoll extends IkObject
          let hipsTarget = this.hipsControlTarget.target;
          let {angle, axis} = this.hips.quaternion.toAngleAxis();
          let spineWorldQuat = this.hips.children[0].children[0].children[0].worldQuaternion();
-         spineWorldQuat = this.hips.worldToLocalQuaternion(spineWorldQuat);
          for(let i = 0; i < chainObjects.length; i++)
          {
              let constraint = this.chainObjects[i].poleConstraint;
@@ -298,9 +296,8 @@ class Ragdoll extends IkObject
              mesh.position.set(targetPosition.x + poleOffset.x, targetPosition.y + poleOffset.y, targetPosition.z + poleOffset.z);
              if(constraint.poleTarget.mesh.name === "leftArmPole" || constraint.poleTarget.mesh.name === "rightArmPole")
              {
-                 //let localQuat = mesh.worldToLocalQuaternion(spineWorldQuat);
                  let armsAngleAxis = spineWorldQuat.toAngleAxis();
-                 mesh.rotateAroundPoint(targetPosition, axis, angle);
+                 mesh.rotateAroundPoint(targetPosition, armsAngleAxis.axis, armsAngleAxis.angle);
              }
              else
              {
