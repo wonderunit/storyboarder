@@ -301,6 +301,17 @@ const Character = React.memo(({
         }  
       } );}); 
 
+      skeletonRig.updateCharacterRotation((name, rotation) => {updateCharacterSkeleton({
+        id,
+        name : name,
+        rotation: 
+        {
+          x : rotation.x,
+          y : rotation.y,
+          z : rotation.z,
+        }  
+      } );});
+
       skeletonRig.updateCharacter((skeleton) => {updateCharacterIkSkeleton({
         id,
         skeleton: skeleton  

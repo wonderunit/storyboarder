@@ -47,6 +47,11 @@ class Ragdoll extends IkObject
         this.updateCharPosition = updateCharPosition;
     }
 
+    updateCharacterRotation(updateCharacterRotation)
+    {
+        this.updateCharacterRotation = updateCharacterRotation;
+    }
+
     // Runs cycle which is updating object
     update()
     {
@@ -254,12 +259,21 @@ class Ragdoll extends IkObject
         {
             this.hipsMouseDown = true;
             this.isEnabledIk = true;
+            if(this.hipsControlTarget.control.mode === "rotate")
+            {
+                this.isEnabledIk = false;
+                this.hipsControlTarget.control.attach(this.originalObject.children[0]);
+            }
         });
         hipsControl.addEventListener("transformMoved", (event) =>
         {
             if(this.hipsMouseDown)
             {
                 this.resetPoleTarget();
+                if(this.hipsControlTarget.control.mode === "rotate")
+                {
+                    this.updateCharacterRotation(this.originalObject.children[0].name, this.originalObject.children[0].rotation)
+                }
             }
         });
         hipsControl.addEventListener("dragging-changed", (event) =>
@@ -268,6 +282,7 @@ class Ragdoll extends IkObject
         });
         hipsControl.addEventListener("pointerup", (event) =>
         {
+            this.hipsControlTarget.control.attach(this.originalObject.children[0]);
             this.applyingOffset = false;
             this.hipsMouseDown = false;
             this.isEnabledIk = false;
@@ -414,7 +429,7 @@ class Ragdoll extends IkObject
             let controlTarget = this.chainObjects[i].controlTarget;
             let boneTarget = controlTarget.target;
             let target = this.getTargetForSolve();
-            if(target && boneTarget.uuid !== target.uuid)
+            if((target && boneTarget.uuid !== target.uuid))
             {
               continue;
             }
