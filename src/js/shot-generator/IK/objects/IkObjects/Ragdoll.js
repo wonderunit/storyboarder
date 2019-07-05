@@ -272,7 +272,7 @@ class Ragdoll extends IkObject
             if(this.hipsMouseDown)
             {
                 this.resetPoleTarget();
-                if(this.hipsControlTarget.control.mode === "rotate")
+                if(this.hipsControlTarget.control.mode === "rotate" && this.attached)
                 {
                     this.updateCharacterRotation(this.originalObject.children[0].name, this.originalObject.children[0].rotation)
                 }
@@ -287,6 +287,7 @@ class Ragdoll extends IkObject
             if(this.attached)
             {
                 this.hipsControlTarget.control.detach(this.originalObject.children[0]);
+                this.hipsControlTarget.control.attach(this.hipsControlTarget.target);
                 this.attached = false;
             }
             this.applyingOffset = false;
