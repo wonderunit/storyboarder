@@ -26,7 +26,7 @@ class TargetControl
     {
         this.scene = scene;
         let material = new THREE.MeshBasicMaterial({ 
-            color: 0x3b3877,
+            color: 0x46428a,
             opacity: 0.4, 
             depthTest: false, 
             depthWrite: false,
