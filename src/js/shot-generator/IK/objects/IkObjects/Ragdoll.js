@@ -5,7 +5,7 @@ const PoleConstraint = require( "../../constraints/PoleConstraint");
 const PoleTarget = require( "../PoleTarget");
 const CopyRotation = require( "../../constraints/CopyRotation");
 require("../../utils/Object3dExtension");
-const {calculatePoleAngle} = require("../../utils/axisUtils");
+const {calculatePoleAngle, normalizeTo180} = require("../../utils/axisUtils");
 // Ragdoll is class which is used to set all specific details to ikrig
 // Like head upward, contraints to limb, transformControls events etc.
 class Ragdoll extends IkObject
@@ -14,6 +14,7 @@ class Ragdoll extends IkObject
     {
         super();
         this.hipsMouseDown = false;
+        this.poseChanged = false;
         this.controlTargetSelection = null;
         this.updatingReactPosition = [];
         this.originalObjectTargetBone = [];
@@ -71,11 +72,17 @@ class Ragdoll extends IkObject
             {
                 let chainObject = this.chainObjects[i];
                 let joints = chainObject.chain.joints;
-                if(joints !== undefined)
+                let currentBone = joints[0].bone;
+                if(joints && (currentBone.isRotationChanged || this.poseChanged))
                 {
-                    let angle = calculatePoleAngle(joints[0].bone, joints[joints.length - 1].bone, chainObject.poleConstraint.poleTarget.mesh);
+                    let angle = calculatePoleAngle(currentBone, joints[joints.length - 1].bone, chainObject.poleConstraint.poleTarget.mesh, joints[0]);
                     angle *= (180 / Math.PI);
+                    angle = normalizeTo180(angle);
                     chainObject.poleConstraint.poleAngle = angle;
+                    this.poseChanged = false;
+                    currentBone.isRotationChanged = false;
+                    let result = this.originalObject.children[1].skeleton.bones.filter(bone => bone.name === currentBone.name)[0];
+                    result.isRotationChanged = false;
                 }
             }
         
@@ -381,6 +388,7 @@ class Ragdoll extends IkObject
         this.controlTargets[3].isRotationLocked = true;
         this.controlTargets[4].isRotationLocked = true;
         this.relativeFixedAngle();
+        this.poseChanged = true;
     }
 
     relativeFixedAngle()

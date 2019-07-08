@@ -67,7 +67,7 @@ class PoleConstraint extends IkConstraint
         this.currentPoleAngle = -boneDirectionXZ.angle();
         // Calculate current direction angle to positive xAxis and adding PoleAngle
         // We making angle negative in order to move our object to xAxis zero
-        let angleToPlane = (-boneDirectionXZ.angle() + THREE.Math.DEG2RAD * this.poleAngle);
+        let angleToPlane = -boneDirectionXZ.angle() + (THREE.Math.DEG2RAD * this.poleAngle);
         // Rotate direction around origin by angle
         boneDirectionXZ.rotateAround(new THREE.Vector2(0, 0), angleToPlane);
         // Sets original x to changed direction x

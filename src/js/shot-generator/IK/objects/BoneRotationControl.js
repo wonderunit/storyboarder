@@ -16,7 +16,7 @@ class BoneRotationControl
     //#region Events
     onMouseDown = event => {this.bone.isRotated = true;};
     onMouseMove = event => {this.updateCharacter(this.bone.name, this.bone.rotation);};
-    onMouseUp = event => {this.bone.isRotated = false;};
+    onMouseUp = event => {this.bone.isRotated = false; this.bone.isRotationChanged = true;};
     //#enderegion
 
     selectedBone(bone, hitmeshid)

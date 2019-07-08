@@ -29,7 +29,7 @@ const previousDirection = {};
 //#region Pole Angle calculation
 
 
-function calculatePoleAngle(rootBone, endBone, poleBone)
+function calculatePoleAngle(rootBone, endBone, poleBone, rootJoint)
 {
     // Taking Ik target position
     let ikTargetPose = endBone.worldPosition(); 
@@ -55,6 +55,7 @@ function calculatePoleAngle(rootBone, endBone, poleBone)
     let inversedTBN = new THREE.Matrix4().getInverse(TBN);
     let direction = new THREE.Vector3();
     rootBone.getWorldDirection(direction);
+    direction = rootJoint._direction ? rootJoint._direction : direction;
     let boneDirectionProjected = new THREE.Vector3().copy(direction).applyMatrix4(inversedTBN);
     // Save current radius for cause when direction length changes
     let radius = direction.length();
@@ -78,7 +79,19 @@ function calculatePoleAngle(rootBone, endBone, poleBone)
 
       return p1.clone().add(AB2);
   }
-//#endregion
+  function normalizeTo180(angle)
+  {
+    angle = fmod(angle + 180, 360);
+    if(angle < 0)
+    {
+        angle += 360;
+    }
+    return angle - 180;
+  }
+
+ let fmod = function (a,b) { return Number((a - (Math.floor(a / b) * b)).toPrecision(8)); };
+
+  //#endregion
  
 // Return angle and axis of current quaternion
 // Angle in radians
@@ -132,11 +145,6 @@ function setReverseZ(rootBone)
     var worldPos = {};
     getOriginalWorldPositions(rootBone, worldPos);
     reverseTransform(rootBone, worldPos);
-    //let mesh = rootBone.children[1];
-    //for(let bone of mesh.skeleton.bones)
-    //{
-    //    bone.matrix = bone.matrix.reverseZ();
-    //}
 }
 
 function reverseTransform(parentBone, worldPos)
@@ -276,3 +284,4 @@ module.exports.setZDirecion = setZDirecion;
 module.exports.setReverseZ = setReverseZ;
 module.exports.setZBack = setZBack;
 module.exports.calculatePoleAngle = calculatePoleAngle;
+module.exports.normalizeTo180 = normalizeTo180;
