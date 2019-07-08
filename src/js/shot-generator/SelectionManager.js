@@ -103,7 +103,7 @@ function getObjectsFromCameraView (objects) {
   return results
 }
 
-const getIntersectionTarget = (intersect, exceptGizmo) => {
+const getIntersectionTarget = intersect => {
   if (intersect.object.type === 'Sprite') {
     return intersect.object.parent.linkedTo
   }
@@ -119,7 +119,7 @@ const getIntersectionTarget = (intersect, exceptGizmo) => {
   }
 
   //Transform control
-  if(intersect.object.type === 'gizmo' && !exceptGizmo)
+  if(intersect.object.type === 'gizmo')
   {
     return intersect.object;
   }
@@ -129,7 +129,7 @@ const getIntersectionTarget = (intersect, exceptGizmo) => {
     return intersect.object;
   }
 
-  if(intersect.object.userData.type === 'boneControl' && !exceptGizmo)
+  if(intersect.object.userData.type === 'boneControl')
   {
     return intersect.object;
   }
@@ -496,7 +496,15 @@ const SelectionManager = connect(
           // setDragTarget(null)
 
         } else {
-          let target = getIntersectionTarget(intersects[0], true)
+          // get the intersection target of the object
+          // but ignore gizmo and boneControl intersections
+          let target = (
+            intersects[0].object.type === 'gizmo' ||
+            intersects[0].object.userData.type === 'boneControl'
+          )
+          ? null
+          : getIntersectionTarget(intersects[0])
+
           if (target && target.userData.id == lastDownId) {
             if (event.shiftKey) {
               // if there is only one selection and it is the active camera
