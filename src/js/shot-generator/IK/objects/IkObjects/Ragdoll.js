@@ -62,6 +62,10 @@ class Ragdoll extends IkObject
         }
         if(!this.isEnabledIk)
         {
+            if(this.hipsControlTarget.control.mode === "rotate" && this.attached)
+            {
+                this.updateCharacterRotation(this.originalObject.children[0].name, this.hipsControlTarget.target.rotation)
+            }
             this.resetTargets()
             this.ikSwitcher.applyToIk();
         }
@@ -263,8 +267,9 @@ class Ragdoll extends IkObject
             {
                 console.log(this.hipsControlTarget.control.mode);
                 this.isEnabledIk = false;
-                this.hipsControlTarget.control.attach(this.originalObject.children[0]);
+                //this.hipsControlTarget.control.attach(this.originalObject.children[0]);
                 this.attached = true;
+                this.originalObject.children[0].isRotated = true;
             }
         });
         hipsControl.addEventListener("transformMoved", (event) =>
@@ -272,10 +277,6 @@ class Ragdoll extends IkObject
             if(this.hipsMouseDown)
             {
                 this.resetPoleTarget();
-                if(this.hipsControlTarget.control.mode === "rotate" && this.attached)
-                {
-                    this.updateCharacterRotation(this.originalObject.children[0].name, this.originalObject.children[0].rotation)
-                }
             }
         });
         hipsControl.addEventListener("dragging-changed", (event) =>
@@ -286,9 +287,10 @@ class Ragdoll extends IkObject
         {
             if(this.attached)
             {
-                this.hipsControlTarget.control.detach(this.originalObject.children[0]);
-                this.hipsControlTarget.control.attach(this.hipsControlTarget.target);
+                //this.hipsControlTarget.control.detach(this.originalObject.children[0]);
+                //this.hipsControlTarget.control.attach(this.hipsControlTarget.target);
                 this.attached = false;
+                this.originalObject.children[0].isRotated = false;
             }
             this.applyingOffset = false;
             this.hipsMouseDown = false;

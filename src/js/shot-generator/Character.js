@@ -360,7 +360,7 @@ const Character = React.memo(({
 
   const updateSkeleton = () => {
 
-    if(ragDoll.current.updatingReactSkeleton  || ragDoll.current.hipsMouseDown )
+    if(ragDoll.current.updatingReactSkeleton  /* || ragDoll.current.hipsMouseDown */ )
     {
       ragDoll.current.updatingReactSkeleton = false;
       return;
@@ -368,11 +368,11 @@ const Character = React.memo(({
     let skeleton = object.current.userData.skeleton
     if (Object.values(props.skeleton).length) {
       fixRootBone()
+      
       for (bone of skeleton.bones) {
         let userState = props.skeleton[bone.name]
         let systemState = originalSkeleton.current.getBoneByName(bone.name).clone()
         let state = userState || systemState
-
         bone.rotation.x = state.rotation.x
         bone.rotation.y = state.rotation.y
         bone.rotation.z = state.rotation.z
