@@ -26,7 +26,7 @@ class TargetControl
     {
         this.scene = scene;
         let material = new THREE.MeshBasicMaterial({ 
-            color: 0x990099, 
+            color: 0x3b3877,
             opacity: 0.4, 
             depthTest: false, 
             depthWrite: false,
@@ -36,7 +36,7 @@ class TargetControl
         let geometry = new THREE.SphereGeometry(0.05);
         let movingTarget = new THREE.Mesh(geometry, material);
         movingTarget.position.copy(position);
-        movingTarget.scale.set(0.7, 0.7, 0.7);
+        movingTarget.scale.set(0.4, 0.4, 0.4);
         movingTarget.renderOrder = 1;
         scene.add(movingTarget);
         movingTarget.userData.type = "controlPoint";
