@@ -45,7 +45,7 @@ class BoneRotationControl
 
     deselectBone()
     {
-        this.control.detach(bone);
+        this.control.detach(this.bone);
         this.scene.remove(this.control);
         
         this.control.dispose();
