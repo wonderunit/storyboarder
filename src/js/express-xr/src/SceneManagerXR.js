@@ -571,17 +571,7 @@ const SceneContent = ({
         z: object.position.y,
         rotation: object.rotation.y
       })
-    } else if (object.userData.type === 'light') {
-      const euler = new THREE.Euler().setFromQuaternion(object.quaternion, 'YXZ')
-
-      updateObject(object.userData.id, {
-        x: object.position.x,
-        y: object.position.z,
-        z: object.position.y,
-        rotation: euler.y,
-        tilt: euler.x
-      })
-    } else if (object.userData.type === 'virtual-camera') {
+    } else if (object.userData.type === 'light' || object.userData.type === 'virtual-camera') {
       const euler = new THREE.Euler().setFromQuaternion(object.quaternion, 'YXZ')
 
       updateObject(object.userData.id, {

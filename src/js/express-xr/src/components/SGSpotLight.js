@@ -26,9 +26,11 @@ const SGSpotLight = ({ ...props }) => {
       light.current.rotation.z = 0
       light.current.rotation.y = props.rotation || 0
       light.current.rotateX(props.tilt || 0)
+      light.current.rotateZ(props.roll || 0)
+
       light.current.light.current.target.position.set(0, 0, props.distance)
     }
-  }, [props.rotation, props.tilt, props.distance])
+  }, [props.rotation, props.tilt, props.roll, props.distance])
 
   return (
     <group
@@ -42,7 +44,7 @@ const SGSpotLight = ({ ...props }) => {
       }}
       position={[props.x, props.z, props.y]}
     >
-      <group rotation={[Math.PI / 2, 0, 0]}>
+      <group>
         <spotLight
           ref={light_spot}
           color={0xffffff}
