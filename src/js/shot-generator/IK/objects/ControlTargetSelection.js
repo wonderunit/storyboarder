@@ -38,10 +38,6 @@ class ControlTargetSelection
           
             intersectMeshes = ray.intersectObjects(this.meshes)[ 0 ] || false;
         }
-        if(Object.keys(selectedMeshes).length === 1)
-        {
-            console.log("Selected mesh");
-        }
         
         // Checks if pointer intersects control target only when any mesh is selected
         if(Object.keys(selectedMeshes).length !== 0)

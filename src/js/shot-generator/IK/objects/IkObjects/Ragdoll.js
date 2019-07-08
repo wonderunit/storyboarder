@@ -132,6 +132,7 @@ class Ragdoll extends IkObject
         this.ikSwitcher.applyToIk();
         let hipsTarget = this.hipsControlTarget.target;
         this.objectTargetDiff = new THREE.Vector3().subVectors(hipsTarget.position, this.originalObject.position);
+        this.setUpControlTargetsInitialPosition();
     }
 
     // Removes object and all it's meshes from scene
@@ -150,7 +151,6 @@ class Ragdoll extends IkObject
     // Selects/Deselects ragdoll and adds/removes it's elements to/from scene
     selectedSkeleton(selected)
     {
-        console.log("is chracter selected?", selected);
         let visible = selected;
         let chainObjects = this.chainObjects;
         for (let i = 0; i < chainObjects.length; i++)
@@ -175,7 +175,6 @@ class Ragdoll extends IkObject
             this.controlTargetSelection.dispose();
             this.hipsControlTarget.removeFromScene();
         }
-        console.log("End of selection");
     }
 
     // Moves ragdoll hips when original object moved
@@ -360,8 +359,8 @@ class Ragdoll extends IkObject
             let joints = this.ik.chains[i].joints;
             let bone = joints[joints.length-1].bone;
             let target = this.controlTargets[i].target;
-            target.quaternion.copy(target.worldToLocalQuaternion(bone.worldQuaternion().multiply(this.hips.worldQuaternion())));
-            target.inverseInitialQuaternion = bone.worldQuaternion().inverse();
+            target.quaternion.copy(bone.worldQuaternion().premultiply(this.hips.worldQuaternion().inverse()));
+            target.inverseInitialQuaternion = bone.worldQuaternion().inverse().multiply(this.hips.worldQuaternion());
             target.localQuaternion = bone.parent.worldToLocalQuaternion(bone.worldQuaternion());
         }
         this.controlTargets[0].isRotationLocked = true;

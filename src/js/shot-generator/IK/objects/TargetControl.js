@@ -110,7 +110,6 @@ class TargetControl
         scene.remove(this.control);
         this.control.dispose();
         this.removeEventsFromControlTarget();
-        console.log("Control target is deselected");
     }
     //#endregion
     

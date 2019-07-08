@@ -360,7 +360,7 @@ const Character = React.memo(({
 
   const updateSkeleton = () => {
 
-    if(ragDoll.current.updatingReactSkeleton  /* || ragDoll.current.hipsMouseDown */ )
+    if(ragDoll.current.updatingReactSkeleton  )
     {
       ragDoll.current.updatingReactSkeleton = false;
       return;
@@ -502,6 +502,7 @@ const Character = React.memo(({
     if (!props.posePresetId) return
     console.log(type, id, 'changed pose preset')
     resetPose()
+    ragDoll.current.setUpControlTargetsInitialPosition();
   }, [props.posePresetId])
 
   // HACK force reset skeleton pose on Board UUID change
@@ -577,7 +578,7 @@ const Character = React.memo(({
     if (!object.current) return
     
     ragDoll.current.selectedSkeleton(isSelected);
-    
+
     // handle selection/deselection - add/remove the bone stucture
     if (isSelected)
     {

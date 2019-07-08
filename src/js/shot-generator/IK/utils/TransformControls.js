@@ -15,7 +15,7 @@ const TransformControls = function ( camera, domElement ) {
 
 	this.buttonPressed = -1;
 
-	
+
 	var _gizmo = new TransformControlsGizmo();
 	this.add( _gizmo );
 
@@ -122,7 +122,6 @@ const TransformControls = function ( camera, domElement ) {
 		domElement.addEventListener( "touchcancel", onPointerUp, false );
 		domElement.addEventListener( "touchleave", onPointerUp, false );
 		domElement.addEventListener( "keydown", onKeyDown, false );
-		console.log("Added to scene");
 
 	}
 
@@ -142,7 +141,6 @@ const TransformControls = function ( camera, domElement ) {
 		domElement.removeEventListener( "touchcancel", onPointerUp );
 		domElement.removeEventListener( "touchleave", onPointerUp );
 		domElement.removeEventListener( "keydown", onKeyDown );
-		console.log("Removed from scene");
 	};
 
 	this.changeCamera = (camera) =>
@@ -533,7 +531,6 @@ const TransformControls = function ( camera, domElement ) {
 	{
 		if(event.ctrlKey)
 		{
-			console.log("Control is down. I repeat Control is down. mayday. mayday");
 			if(event.key === "r")
 			{
 				event.stopPropagation();
@@ -550,9 +547,7 @@ const TransformControls = function ( camera, domElement ) {
 
 	function onKeyDown(event)
 	{
-		console.log("Key down");
 		if ( !scope.enabled ) return;
-		console.log("Key down");
 
 		scope.keyDown( event );
 	}
