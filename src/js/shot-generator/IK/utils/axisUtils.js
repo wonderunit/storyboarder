@@ -237,7 +237,6 @@ function setZBack(rootBone)
 {
     var worldPos = {};
     getOriginalWorldPositions(rootBone, worldPos);
-    console.log(previousDirection[rootBone.id]);
     let zAxis = previousDirection[rootBone.id].clone();
     updateTransformationsBack(rootBone, worldPos, zAxis);
 }
