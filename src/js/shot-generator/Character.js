@@ -173,7 +173,6 @@ const Character = React.memo(({
   updateCharacterSkeleton,
   updateCharacterIkSkeleton,
   updateCharacterIkBone,
-  updateCharacterPosition,
   updateObject,
   devices,
   icon,
@@ -317,10 +316,7 @@ const Character = React.memo(({
         skeleton: skeleton  
       } );});
 
-      skeletonRig.updateCharacterPos((position) => {updateCharacterPosition({
-        id,
-        position: position  
-      } );});
+      skeletonRig.updateCharacterPos(({ x, y, z}) => updateObject(id, { x, y: z, z: y }))
 
       object.current.userData.ikRig = skeletonRig;
     }

@@ -814,12 +814,6 @@ const sceneObjectsReducer = (state = {}, action) => {
           }
           return
 
-      case "UPDATE_CHARACTER_POSITION":
-          draft[action.payload.id].x = action.payload.position.x;
-          draft[action.payload.id].z = action.payload.position.y;
-          draft[action.payload.id].y = action.payload.position.z;
-        return;
-
       case 'ATTACHMENTS_RELOCATE':
         let { src, dst } = action.payload
         for (let id in draft) {
@@ -1235,12 +1229,6 @@ module.exports = {
   ({
     type: 'UPDATE_CHARACTER_IK_SKELETON',
     payload: { id, skeleton }
-  }),
-
-  updateCharacterPosition: ({id, position}) =>
-  ({
-    type: 'UPDATE_CHARACTER_POSITION',
-    payload: { id, position }
   }),
 
   setActiveCamera: id => ({ type: 'SET_ACTIVE_CAMERA', payload: id }),
