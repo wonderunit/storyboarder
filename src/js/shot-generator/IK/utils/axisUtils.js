@@ -8,6 +8,7 @@
  **/
 
 const THREE = require("three");
+require("./Object3dExtension");
 //const {Quaternion} from "three";
 
 const t = new THREE.Vector3();
@@ -25,6 +26,60 @@ const previousDirection = {};
  *
  * @param {THREE.BONE} rootBone
  */
+//#region Pole Angle calculation
+
+
+function calculatePoleAngle(rootBone, endBone, poleBone)
+{
+    // Taking Ik target position
+    let ikTargetPose = endBone.worldPosition(); 
+    let rootPose = rootBone.worldPosition();
+    let target = poleBone.position.clone();
+
+    // Projecting pole target on to line between ikTarget and rootPose
+    let projectedPole = projectPointOnLine(ikTargetPose, rootPose, target);
+
+    let positionMatrix = new THREE.Vector3(1, 1, 1).applyMatrix4(rootBone.children[0].matrixWorld);
+
+    // Getting xAxis through PoleTarget and projectPole
+    let xAxis = new THREE.Vector3().subVectors(target, projectedPole).normalize();
+    // Getting yAxis through IkTargetPose and projectPole
+    let yAxis = new THREE.Vector3().subVectors(ikTargetPose, projectedPole).normalize();
+    // Getting zAxis through cross vector of y and Y
+    let zAxis = new THREE.Vector3().crossVectors(xAxis, yAxis);
+
+    // Setting up projection matrix
+    let TBN = new THREE.Matrix4().makeBasis(xAxis, yAxis, zAxis);
+
+    // Inverse projection matrix so our projection facing it's normal direction
+    let inversedTBN = new THREE.Matrix4().getInverse(TBN);
+    let direction = new THREE.Vector3();
+    rootBone.getWorldDirection(direction);
+    let boneDirectionProjected = new THREE.Vector3().copy(direction).applyMatrix4(inversedTBN);
+    // Save current radius for cause when direction length changes
+    let radius = direction.length();
+    // Transforms into vector 2 space
+    // Cause we don't need yAxis for now
+    let boneDirectionXZ = new THREE.Vector2(boneDirectionProjected.x, boneDirectionProjected.z);
+    let angle = boneDirectionXZ.angle();
+    return angle;
+}
+
+  // Projects point from target onto line between p1 and p2
+  function projectPointOnLine(p1, p2, target)
+  {
+      let AB = p2.clone().sub(p1);
+      let AP = target.clone().sub(p1);
+
+      let dot1 = AP.clone().dot(AB);
+      let dot2 = AB.clone().dot(AB);
+
+      let AB2 = AB.clone().multiplyScalar(dot1 / dot2);
+
+      return p1.clone().add(AB2);
+  }
+//#endregion
+ 
 // Return angle and axis of current quaternion
 // Angle in radians
 THREE.Quaternion.prototype.toAngleAxis = function toAngleAxis()
@@ -220,3 +275,4 @@ function updateTransformationsBack(parentBone, worldPos, zAxis) {
 module.exports.setZDirecion = setZDirecion;
 module.exports.setReverseZ = setReverseZ;
 module.exports.setZBack = setZBack;
+module.exports.calculatePoleAngle = calculatePoleAngle;

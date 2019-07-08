@@ -5,6 +5,7 @@ const PoleConstraint = require( "../../constraints/PoleConstraint");
 const PoleTarget = require( "../PoleTarget");
 const CopyRotation = require( "../../constraints/CopyRotation");
 require("../../utils/Object3dExtension");
+const {calculatePoleAngle} = require("../../utils/axisUtils");
 // Ragdoll is class which is used to set all specific details to ikrig
 // Like head upward, contraints to limb, transformControls events etc.
 class Ragdoll extends IkObject
@@ -66,6 +67,18 @@ class Ragdoll extends IkObject
             {
                 this.updateCharacterRotation(this.originalObject.children[0].name, this.hipsControlTarget.target.rotation)
             }
+            for(let i = 1; i < 5; i++) 
+            {
+                let chainObject = this.chainObjects[i];
+                let joints = chainObject.chain.joints;
+                if(joints !== undefined)
+                {
+                    let angle = calculatePoleAngle(joints[0].bone, joints[joints.length - 1].bone, chainObject.poleConstraint.poleTarget.mesh);
+                    angle *= (180 / Math.PI);
+                    chainObject.poleConstraint.poleAngle = angle;
+                }
+            }
+        
             this.resetTargets()
             this.ikSwitcher.applyToIk();
         }
@@ -207,8 +220,8 @@ class Ragdoll extends IkObject
     {
         let poleNames = ["leftArmPole", "rightArmPole", "leftLegPole", "rightLegPole"];
         let polePositions = [
-            new THREE.Vector3(0, 0.5, 0.5),
-            new THREE.Vector3(0, 0.5, 0.5),
+            new THREE.Vector3(0.3, 0.3, 0.5),
+            new THREE.Vector3(-0.3, 0.3, 0.5),
             new THREE.Vector3(0, 0.4, 0.8),
             new THREE.Vector3(0, 0.4, 0.8)
         ];
@@ -225,6 +238,7 @@ class Ragdoll extends IkObject
         let copyRotation = new CopyRotation(backChain, backChain.joints[4]);
         copyRotation.influence = 50;
         backChain.joints[3].addIkConstraint(copyRotation);
+        
     }
 
     // Initiallizes pole target for pole contraints
@@ -470,7 +484,7 @@ class Ragdoll extends IkObject
         let rotation = this.originalObject.children[0].worldQuaternion();
         bone.quaternion.multiply(quaternion);
         targetQuat.premultiply(rotation);
-        //quaternion.multiply(targetQuat);
+
         bone.quaternion.multiply(targetQuat);
     }
     //#endregion
