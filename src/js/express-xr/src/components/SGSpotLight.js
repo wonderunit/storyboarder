@@ -30,7 +30,7 @@ const SGSpotLight = ({ ...props }) => {
 
       light.current.light.current.target.position.set(0, 0, props.distance)
     }
-  }, [props.rotation, props.tilt, props.distance])
+  }, [props.rotation, props.tilt, props.roll, props.distance])
 
   return (
     <group
