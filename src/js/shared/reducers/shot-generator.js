@@ -453,6 +453,7 @@ const defaultScenePreset = {
       z: 2,
       rotation: 10,
       tilt: 10,
+      roll: 0,
       intensity: 0.7,
       visible: true,
       angle: 1.04,

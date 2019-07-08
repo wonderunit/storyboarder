@@ -2125,6 +2125,7 @@ const Toolbar = ({
       z: 2,
       rotation: 0,
       tilt: 0,
+      roll: 0,
       intensity: 0.8,
       visible: true,
       angle: 1.04,
