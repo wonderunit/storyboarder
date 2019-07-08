@@ -78,7 +78,7 @@ class Ragdoll extends IkObject
                     let angle = calculatePoleAngle(currentBone, joints[joints.length - 1].bone, chainObject.poleConstraint.poleTarget.mesh, joints[0]);
                     angle *= (180 / Math.PI);
                     angle = normalizeTo180(angle);
-                    chainObject.poleConstraint.poleAngle = angle;
+                    //chainObject.poleConstraint.poleAngle = angle;
                     this.poseChanged = false;
                     currentBone.isRotationChanged = false;
                     let result = this.originalObject.children[1].skeleton.bones.filter(bone => bone.name === currentBone.name)[0];
