@@ -47,6 +47,7 @@ class BoneRotationControl
     {
         this.control.detach(bone);
         this.scene.remove(this.control);
+        
         this.control.dispose();
         this.bone = null;
         this.control.removeEventListener("transformMouseDown", this.onMouseDown);

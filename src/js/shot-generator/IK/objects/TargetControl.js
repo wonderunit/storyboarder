@@ -98,6 +98,7 @@ class TargetControl
             this.scene.add(this.control);
             this.control.addToScene();
             this.addEventsToControlTarget();
+            this.domElement.focus();
         }
     }
 
@@ -109,6 +110,7 @@ class TargetControl
         scene.remove(this.control);
         this.control.dispose();
         this.removeEventsFromControlTarget();
+        console.log("Control target is deselected");
     }
     //#endregion
     

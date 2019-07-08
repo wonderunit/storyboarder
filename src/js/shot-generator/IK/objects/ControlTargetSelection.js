@@ -35,8 +35,14 @@ class ControlTargetSelection
         let intersectControlTarget = false;
         if(Object.keys(selectedMeshes).length === 0)
         {
+          
             intersectMeshes = ray.intersectObjects(this.meshes)[ 0 ] || false;
         }
+        if(Object.keys(selectedMeshes).length === 1)
+        {
+            console.log("Selected mesh");
+        }
+        
         // Checks if pointer intersects control target only when any mesh is selected
         if(Object.keys(selectedMeshes).length !== 0)
         {
@@ -48,11 +54,6 @@ class ControlTargetSelection
         if ( intersectMeshes ) 
         {
             let object = intersectMeshes.object;
-            // Checks if intersected mesh is already selected to avoid doable selection
-            if(selectedMeshes[object.uuid] !== undefined)
-            {
-                return;
-            }   
             selectedMeshes[object.uuid] = object;
             object.scope.selectControlPoint();
         } 

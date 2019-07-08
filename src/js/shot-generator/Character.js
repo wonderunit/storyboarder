@@ -575,13 +575,15 @@ const Character = React.memo(({
     console.log(type, id, 'isSelected', isSelected)
     if (!ready) return
     if (!object.current) return
+    
     ragDoll.current.selectedSkeleton(isSelected);
+    
     // handle selection/deselection - add/remove the bone stucture
     if (isSelected)
     {
       for (var cone of object.current.bonesHelper.cones)
         object.current.bonesHelper.add(cone)
-    } else {
+      } else {
       for (var cone of object.current.bonesHelper.cones)
         object.current.bonesHelper.remove(cone)
     }

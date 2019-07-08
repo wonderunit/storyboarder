@@ -150,6 +150,7 @@ class Ragdoll extends IkObject
     // Selects/Deselects ragdoll and adds/removes it's elements to/from scene
     selectedSkeleton(selected)
     {
+        console.log("is chracter selected?", selected);
         let visible = selected;
         let chainObjects = this.chainObjects;
         for (let i = 0; i < chainObjects.length; i++)
@@ -164,7 +165,6 @@ class Ragdoll extends IkObject
                 chain.controlTarget.removeFromScene();
             }
         }
-        this.hipsControlTarget.disable = !visible;
         if(visible)
         {
             this.controlTargetSelection.initialize();
@@ -175,6 +175,7 @@ class Ragdoll extends IkObject
             this.controlTargetSelection.dispose();
             this.hipsControlTarget.removeFromScene();
         }
+        console.log("End of selection");
     }
 
     // Moves ragdoll hips when original object moved
@@ -265,9 +266,7 @@ class Ragdoll extends IkObject
             this.isEnabledIk = true;
             if(this.hipsControlTarget.control.mode === "rotate")
             {
-                console.log(this.hipsControlTarget.control.mode);
                 this.isEnabledIk = false;
-                //this.hipsControlTarget.control.attach(this.originalObject.children[0]);
                 this.attached = true;
                 this.originalObject.children[0].isRotated = true;
             }
@@ -287,8 +286,6 @@ class Ragdoll extends IkObject
         {
             if(this.attached)
             {
-                //this.hipsControlTarget.control.detach(this.originalObject.children[0]);
-                //this.hipsControlTarget.control.attach(this.hipsControlTarget.target);
                 this.attached = false;
                 this.originalObject.children[0].isRotated = false;
             }
@@ -363,7 +360,7 @@ class Ragdoll extends IkObject
             let joints = this.ik.chains[i].joints;
             let bone = joints[joints.length-1].bone;
             let target = this.controlTargets[i].target;
-            target.quaternion.copy(bone.worldQuaternion());
+            target.quaternion.copy(target.worldToLocalQuaternion(bone.worldQuaternion().multiply(this.hips.worldQuaternion())));
             target.inverseInitialQuaternion = bone.worldQuaternion().inverse();
             target.localQuaternion = bone.parent.worldToLocalQuaternion(bone.worldQuaternion());
         }
@@ -472,9 +469,10 @@ class Ragdoll extends IkObject
         let targetQuat = boneTarget.worldQuaternion();
         let quaternion = bone.worldQuaternion().inverse();
         let rotation = this.originalObject.children[0].worldQuaternion();
-        targetQuat.premultiply(rotation);
-        quaternion.multiply(targetQuat);
         bone.quaternion.multiply(quaternion);
+        targetQuat.premultiply(rotation);
+        //quaternion.multiply(targetQuat);
+        bone.quaternion.multiply(targetQuat);
     }
     //#endregion
 }
