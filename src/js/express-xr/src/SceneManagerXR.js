@@ -323,6 +323,30 @@ const SceneContent = ({
             setFlipHand(oldValue => {
               return !oldValue
             })
+          } else if (button === 'camera') {
+            setAddMode('gui_camera')
+
+            const guiCam = scene.getObjectByName('guiCam')
+            const pos = guiCam.getWorldPosition(new THREE.Vector3())
+            const rot = guiCam.getWorldQuaternion(new THREE.Quaternion())
+            const euler = new THREE.Euler().setFromQuaternion(rot, 'YXZ')
+
+            const id = THREE.Math.generateUUID()
+            createObject({
+              id,
+              type: 'camera',
+              fov: guiCamFOV,
+              x: pos.x,
+              y: pos.z,
+              z: pos.y,
+              rotation: euler.y,
+              roll: euler.z,
+              tilt: euler.x
+            })
+
+            setTimeout(() => {
+              setAddMode(null)
+            }, 250)
           }
         }
 

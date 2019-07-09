@@ -524,7 +524,7 @@ const GUI = ({ aspectRatio, guiMode, addMode, currentBoard, selectedObject, hide
               width: uiScale * 0.5,
               height: uiScale * 0.5,
               radius: bWidth,
-              color: 0x212121
+              color: addMode === 'gui_camera' ? 0x6e6e6e : 0x212121
             }}
           />
         </group>
