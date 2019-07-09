@@ -790,6 +790,7 @@ const sceneObjectsReducer = (state = {}, action) => {
         }
         return withDisplayNames(draft)
 
+      // update a single bone by name
       case 'UPDATE_CHARACTER_SKELETON':
         draft[action.payload.id].skeleton = draft[action.payload.id].skeleton || {}
         draft[action.payload.id].skeleton[action.payload.name] = {
@@ -797,12 +798,12 @@ const sceneObjectsReducer = (state = {}, action) => {
         }
         return
 
+      // update many bones from a skeleton object
       case 'UPDATE_CHARACTER_IK_SKELETON':
         draft[action.payload.id].skeleton = draft[action.payload.id].skeleton || {}
         for (let bone of action.payload.skeleton) {
           draft[action.payload.id].skeleton[bone.name] = {
-            rotation: { x, y, z } = bone.rotation,
-            position: { x, y, z } = bone.position
+            rotation: { x, y, z } = bone.rotation
           }
         }
         return
@@ -1116,6 +1117,10 @@ const checksReducer = (state, action) => {
         // return
 
       case 'UPDATE_CHARACTER_SKELETON':
+        checkForSkeletonChanges(state, draft, action.payload.id)
+        return
+
+      case 'UPDATE_CHARACTER_IK_SKELETON':
         checkForSkeletonChanges(state, draft, action.payload.id)
         return
 
