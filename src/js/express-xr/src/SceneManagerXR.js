@@ -333,6 +333,7 @@ const SceneContent = ({
         }
 
         if (name.includes('helpButton')) {
+          const slideCount = 8
           const button = name.split('_')[0]
           if (button === 'close') {
             setHelpToggle(false)
@@ -340,7 +341,7 @@ const SceneContent = ({
             setAddMode('help_prev')
             setHelpSlide(oldValue => {
               const value = oldValue - 1
-              return value < 0 ? 2 : value
+              return value < 0 ? (slideCount-1) : value
             })
             setTimeout(() => {
               setAddMode(null)
@@ -348,13 +349,13 @@ const SceneContent = ({
           } else if (button === 'next') {
             setAddMode('help_next')
             setHelpSlide(oldValue => {
-              return (oldValue + 1) % 3
+              return (oldValue + 1) % slideCount
             })
             setTimeout(() => {
               setAddMode(null)
             }, 250)
           }
-        } 
+        }
 
         return
       }
@@ -725,7 +726,7 @@ const SceneContent = ({
 
   const onGripDown = event => {
     teleportMode.current = true
-    
+
     const controller = event.target
     controller.gripped = true
 
