@@ -802,8 +802,9 @@ const sceneObjectsReducer = (state = {}, action) => {
       case 'UPDATE_CHARACTER_IK_SKELETON':
         draft[action.payload.id].skeleton = draft[action.payload.id].skeleton || {}
         for (let bone of action.payload.skeleton) {
+          let { x, y, z } = bone.rotation
           draft[action.payload.id].skeleton[bone.name] = {
-            rotation: { x, y, z } = bone.rotation
+            rotation: { x, y, z }
           }
         }
         return
