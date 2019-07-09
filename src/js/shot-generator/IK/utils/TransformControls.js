@@ -794,7 +794,7 @@ const TransformControlsGizmo = function () {
 
 	var pickerTranslate = {
 		XYZ: [
-			[ new THREE.Mesh( new THREE.SphereBufferGeometry( 0.7 ), matInvisible ) ]
+			[ new THREE.Mesh( new THREE.SphereBufferGeometry( 0.9 ), matInvisible ) ]
 		],
 	};
 

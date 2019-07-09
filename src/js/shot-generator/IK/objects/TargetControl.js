@@ -14,6 +14,7 @@ class TargetControl
         this.control.userData.type = "controlTarget";
         this.isControlPointSelected = false;
         this.isControlTargetSelected = false;
+        this.bone = null;
     }
 
     //#region Events
@@ -48,6 +49,12 @@ class TargetControl
         movingTarget.layers.disable(0)
         movingTarget.layers.enable(1)
         movingTarget.layers.disable(2)
+    }
+
+    setBone(bone)
+    {
+        this.bone = bone;
+        console.log("Bone is setted");
     }
 
     addToScene()
@@ -92,7 +99,7 @@ class TargetControl
     //#region Selection of control point
     selectControlPoint()
     {
-        if(!this.isControlPointSelected)
+        if(!this.isControlPointSelected && !this.bone.isRotated)
         {
             this.isControlPointSelected = true;
             this.scene.add(this.control);

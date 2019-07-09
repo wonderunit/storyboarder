@@ -504,7 +504,7 @@ const SelectionManager = connect(
           )
           ? null
           : getIntersectionTarget(intersects[0])
-
+            
           if (target && target.userData.id == lastDownId) {
             if (event.shiftKey) {
               // if there is only one selection and it is the active camera

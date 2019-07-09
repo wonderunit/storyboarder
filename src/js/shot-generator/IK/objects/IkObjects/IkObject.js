@@ -74,6 +74,7 @@ class IkObject
                 if(object.name === "Hips")
                 {
                     this.hips = object;
+                    this.hipsControlTarget.setBone(object);
                     setZDirecion(object, new THREE.Vector3(0, 0, 1));
                 }
                 // Goes through all chain objects to find with which we are working
@@ -99,6 +100,7 @@ class IkObject
                         {
                             target = chainObject.controlTarget.target;
                             chainObject.isChainObjectStarted = false;
+                            chainObject.controlTarget.setBone(object);
                         }
                         this.ikSwitcher.ikBonesName.push(object.name);
                         // Creates joint by passing current bone and its constraint
