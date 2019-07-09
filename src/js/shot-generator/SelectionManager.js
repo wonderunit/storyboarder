@@ -34,8 +34,8 @@ function getObjectsFromIcons ( objects ) {
 
 function getObjectsFromCameraView (objects) {
   let results = []
-
   for (let o of objects) {
+
     if (o.userData.type === 'object') {
       if (o.type === 'Group' && o.children[0].isMesh) {
         if (o.visible) results.push(o.children[0])
@@ -52,7 +52,51 @@ function getObjectsFromCameraView (objects) {
         results = results.concat(o.bonesHelper.hit_meshes)
       }
     }
+    if(o.userData.type === 'controlTarget')
+    {
+      if(o.children.length !== 0)
+      {
+        let gizmo = o.children[0];
+        let gizmoChildren = gizmo.children;
+        for(let i = 0; i < gizmoChildren.length; i++)
+        {
+          if(gizmoChildren[i].name === "Helper")
+          {
+              let children = gizmoChildren[i].children;
+              for (let i = 0; i < children.length; i++)
+              {
+                results.push(children[i]);
+              }
+          }
+        }
+      }
+    }
 
+    if(o.userData.type === 'boneControl')
+    {
+      if(o.children.length !== 0)
+      {
+        let gizmo = o.children[0];
+        let gizmoChildren = gizmo.children;
+        for(let i = 0; i < gizmoChildren.length; i++)
+        {
+          if(gizmoChildren[i].name === "Helper")
+          {
+              let children = gizmoChildren[i].children;
+              for (let i = 0; i < children.length; i++)
+              {
+                children[i].userData.type = "boneControl";
+                results.push(children[i]);
+              }
+          }
+        }
+      }
+    }
+
+    if(o.userData.type === 'controlPoint')
+    {
+      results.push(o);
+    }
     // don't allow selection of: camera, volume
   }
 
@@ -72,6 +116,22 @@ const getIntersectionTarget = intersect => {
   // character
   if (intersect.object.userData.type === 'hitter' ) {
     return intersect.object.parent.object3D
+  }
+
+  //Transform control
+  if(intersect.object.type === 'gizmo')
+  {
+    return intersect.object;
+  }
+
+  if(intersect.object.userData.type === 'controlPoint')
+  {
+    return intersect.object;
+  }
+
+  if(intersect.object.userData.type === 'boneControl')
+  {
+    return intersect.object;
   }
 
   // object
@@ -127,9 +187,11 @@ const SelectionManager = connect(
     o.userData.type === 'character' ||
     o.userData.type === 'light' ||
     o.userData.type === 'volume' ||
+    o.userData.type === 'controlTarget' ||
+    o.userData.type === 'controlPoint' ||
+    o.userData.type === 'boneControl' ||
     (useIcons && o.isPerspectiveCamera)
   )
-
   const mouse = event => {
     const rect = el.getBoundingClientRect()
     return {
@@ -144,10 +206,10 @@ const SelectionManager = connect(
 
     let intersects = useIcons
       ? raycaster.intersectObjects( getObjectsFromIcons(intersectables) )
-      : raycaster.intersectObjects( getObjectsFromCameraView(intersectables) )
-
+      : raycaster.intersectObjects( getObjectsFromCameraView(intersectables))
     return intersects
   }
+
 
   //
   //
@@ -217,7 +279,7 @@ const SelectionManager = connect(
     // find all the objects that intersect the mouse coords
     // (uses a different search method if useIcons is true)
     let intersects = getIntersects({ x, y }, camera, useIcons)
-
+  
     // if no objects intersected
     if (intersects.length === 0) {
       // cancel any active dragging
@@ -237,6 +299,8 @@ const SelectionManager = connect(
     } else {
       let shouldDrag = false
       let target
+      let isSelectedControlPoint = false;
+      let selectedBoneControl;
 
       // prefer the nearest character to the click
       if (useIcons) {
@@ -271,16 +335,47 @@ const SelectionManager = connect(
         }
 
         target = getIntersectionTarget(intersect)
-      } else {
+      
+      } 
+      else 
+      {
+        let controlPoint = intersects.filter((intersect) => intersect.object.name === 'controlPoint' || intersect.object.type === "gizmo");
+        if(controlPoint.length !== 0)
+        {
+          intersects[0] = controlPoint[0];
+        }
         target = getIntersectionTarget(intersects[0])
+        if(intersects[0].object && intersects[0].object.userData && intersects[0].object.userData.type === 'controlPoint')
+        {
+          let characterId = target.characterId;
+          let characters = intersectables.filter(value => value.uuid === characterId);
+          target = characters[0];
+          isSelectedControlPoint = true;
+        } 
+        else if(intersects[0].object && intersects[0].object.userData && intersects[0].object.userData.type === 'boneControl')
+        {
+          let characterId = target.parent.parent.parent.characterId;
+          let boneId = target.parent.parent.parent.boneId;
+          let characters = intersectables.filter(value => value.uuid === characterId);
+          target = characters[0];
+          let bone = target.children[1].skeleton.bones.filter(value => value.uuid === boneId);
+          selectedBoneControl = bone[0];
+        }
+        else if(intersects[0].object && intersects[0].object.type && intersects[0].object.type === 'gizmo')
+        {
+          let characterId = target.parent.parent.parent.characterId;
+          let characters = intersectables.filter(value => value.uuid === characterId);
+          target = characters[0];
+          isSelectedControlPoint = true;
+        }
+      
       }
-
       // if there are 1 or more selections
       if (selections.length) {
         // and we're not in icon mode
         if (!useIcons) {
           // if only one character is selected ...
-          if (target.userData.type === 'character' &&
+          if ( target.userData.type === 'character' &&
               selections.length === 1 &&
               //  and its the one we pointerdown'd ...
               selections[0] === target.userData.id
@@ -290,8 +385,16 @@ const SelectionManager = connect(
             raycaster.setFromCamera({ x, y }, camera )
             let hits = raycaster.intersectObject(target.bonesHelper)
 
+            if(!isSelectedControlPoint && selectedBoneControl)
+            {
+              selectBone(selectedBoneControl.uuid)
+              // consider a bone selection the start of a drag
+              setDragTarget({ target, x, y, isBoneControl: true })
+              return
+            }
+
             // select the bone
-            if (hits.length) {
+            if (!isSelectedControlPoint && hits.length) {
               selectObject(target.userData.id)
               setLastDownId(null)
 
@@ -301,6 +404,7 @@ const SelectionManager = connect(
               setDragTarget({ target, x, y })
               return
             }
+           
           }
         }
 
@@ -333,7 +437,7 @@ const SelectionManager = connect(
         }
         shouldDrag = true
       } else {
-        setLastDownId(target.userData.id)
+          setLastDownId(target.userData.id)
       }
 
       if (shouldDrag) {
@@ -348,8 +452,21 @@ const SelectionManager = connect(
 
     const { x, y } = mouse(event)
 
-    if (dragTarget) {
-      drag(dragTarget.target, { x, y })
+    if (dragTarget)
+    {
+      if(dragTarget.target.userData.type === 'character')
+      {
+        let ikRig = dragTarget.target.userData.ikRig;
+        if(!ikRig.isEnabledIk && !ikRig.hipsMoving && !dragTarget.isBoneControl && !ikRig.hipsMouseDown)
+        {
+          drag(dragTarget.target, { x, y })
+        }
+
+      }
+      else {
+        drag(dragTarget.target, { x, y })
+      }
+
     }
   }
 
@@ -368,7 +485,6 @@ const SelectionManager = connect(
     if (event.target === el) {
       if (!selectOnPointerDown) {
         let intersects = getIntersects({ x, y }, camera, useIcons)
-
         if (intersects.length === 0) {
           // selectObject(undefined)
           // selectBone(null)
@@ -378,9 +494,15 @@ const SelectionManager = connect(
           // setDragTarget(null)
 
         } else {
-          let target = getIntersectionTarget(intersects[0])
-
-          if (target.userData.id == lastDownId) {
+          // get the intersection target of the object
+          // but ignore gizmo and boneControl intersections
+          let target = (
+            intersects[0].object.type === 'gizmo' ||
+            intersects[0].object.userData.type === 'boneControl'
+          )
+          ? null
+          : getIntersectionTarget(intersects[0])
+          if (target && target.userData.id == lastDownId) {
             if (event.shiftKey) {
               // if there is only one selection and it is the active camera
               if (selections.length === 1 && selections[0] === activeCamera) {
@@ -397,6 +519,7 @@ const SelectionManager = connect(
                 selectObject(target.userData.id)
               }
             }
+           
             selectBone(null)
           }
         }
