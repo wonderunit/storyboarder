@@ -130,6 +130,7 @@ const SceneContent = ({
   const [virtualCamVisible, setVirtualCamVisible] = useState(true)
   const [flipHand, setFlipHand] = useState(false)
   const [helpToggle, setHelpToggle] = useState(true)
+  const [helpSlide, setHelpSlide] = useState(0)
   const [currentBoard, setCurrentBoard] = useState(null)
   const [camExtraRot, setCamExtraRot] = useState(0)
   const [teleportPos, setTeleportPos] = useState(null)
@@ -330,6 +331,30 @@ const SceneContent = ({
             })
           }
         }
+
+        if (name.includes('helpButton')) {
+          const button = name.split('_')[0]
+          if (button === 'close') {
+            setHelpToggle(false)
+          } else if (button === 'prev') {
+            setAddMode('help_prev')
+            setHelpSlide(oldValue => {
+              const value = oldValue - 1
+              return value < 0 ? 2 : value
+            })
+            setTimeout(() => {
+              setAddMode(null)
+            }, 250)
+          } else if (button === 'next') {
+            setAddMode('help_next')
+            setHelpSlide(oldValue => {
+              return (oldValue + 1) % 3
+            })
+            setTimeout(() => {
+              setAddMode(null)
+            }, 250)
+          }
+        } 
 
         return
       }
@@ -1065,7 +1090,7 @@ const SceneContent = ({
         return (
           <primitive key={n} object={object}>
             {handedness === hand && (
-              <GUI {...{ aspectRatio, guiMode, addMode, currentBoard, selectedObject, hideArray, virtualCamVisible, flipHand, helpToggle, guiCamFOV, vrControllers }} />
+              <GUI {...{ aspectRatio, guiMode, addMode, currentBoard, selectedObject, hideArray, virtualCamVisible, flipHand, helpToggle, helpSlide, guiCamFOV, vrControllers }} />
             )}
             <SGController
               {...{ flipModel, modelData: getModelData(controllerObjectSettings), ...controllerObjectSettings }}

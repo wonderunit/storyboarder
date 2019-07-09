@@ -14,7 +14,20 @@ const textPadding = 0.03
 const uiScale = 0.075
 const bWidth = 0.0125
 
-const GUI = ({ aspectRatio, guiMode, addMode, currentBoard, selectedObject, hideArray, virtualCamVisible, flipHand, helpToggle, guiCamFOV, vrControllers }) => {
+const GUI = ({
+  aspectRatio,
+  guiMode,
+  addMode,
+  currentBoard,
+  selectedObject,
+  hideArray,
+  virtualCamVisible,
+  flipHand,
+  helpToggle,
+  helpSlide,
+  guiCamFOV,
+  vrControllers
+}) => {
   const [textCount, setTextCount] = useState(0)
   const slidersRef = useRef([])
   const fovSliderRef = useRef([])
@@ -207,7 +220,7 @@ const GUI = ({ aspectRatio, guiMode, addMode, currentBoard, selectedObject, hide
           minMax = { min: 0.8, max: 1.2 }
           break
         case 'height':
-          if (parent.userData.type === "character") minMax = { min: 1.4732, max: 2.1336 }
+          if (parent.userData.type === 'character') minMax = { min: 1.4732, max: 2.1336 }
           else minMax = { min: 0.03, max: 5 }
           break
         case 'mesomorphic':
@@ -288,7 +301,11 @@ const GUI = ({ aspectRatio, guiMode, addMode, currentBoard, selectedObject, hide
   const character_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/icon-toolbar-character.png'), [])
   const light_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/icon-toolbar-light.png'), [])
 
-  const help_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/help_1.png'), [])
+  const help_textures = [
+    useMemo(() => new THREE.TextureLoader().load('/data/system/xr/help_1.png'), []),
+    useMemo(() => new THREE.TextureLoader().load('/data/system/xr/help_2.png'), []),
+    useMemo(() => new THREE.TextureLoader().load('/data/system/xr/help_3.png'), [])
+  ]
 
   const invertGUI = flipHand ? -1 : 1
 
@@ -517,22 +534,70 @@ const GUI = ({ aspectRatio, guiMode, addMode, currentBoard, selectedObject, hide
         />
 
         {helpToggle && (
-        <group position={[0, aspectRatio * (0.07 + bWidth)  * 2* 0.5 + (0.07 + bWidth) * 0.5 + bWidth * 2, 0]}>
-          <GUIElement
-            {...{
-              icon: help_texture,
-              name: 'help_ui',
-              width: aspectRatio * (0.07 + bWidth) * 2,
-              height: aspectRatio * (0.07 + bWidth) * 2,
-              radius: bWidth,
-              color: 0xffffff
-            }}
-          />
-        </group>
+          <group position={[0, aspectRatio * (0.07 + bWidth) * 2 * 0.775 * 0.5 + (0.07 + bWidth) * 0.5 + bWidth * 2, 0]}>
+            <group position={[aspectRatio * (0.07 + bWidth) * 2 * -0.5 - uiScale * 0.5 - bWidth, 0, 0]} scale={[-1, 1, 1]}>
+              <GUIElement
+                {...{
+                  icon: arrow_texture,
+                  name: 'prev_helpButton',
+                  width: uiScale,
+                  height: uiScale,
+                  radius: uiScale * 0.5,
+                  color: addMode === 'help_prev' ? 0x6e6e6e : 0x212121
+                }}
+              />
+            </group>
+
+            <group position={[aspectRatio * (0.07 + bWidth) * 2 * 0.5 + uiScale * 0.5 + bWidth, 0, 0]}>
+              <GUIElement
+                {...{
+                  icon: arrow_texture,
+                  name: 'next_helpButton',
+                  width: uiScale,
+                  height: uiScale,
+                  radius: uiScale * 0.5,
+                  color: addMode === 'help_next' ? 0x6e6e6e : 0x212121
+                }}
+              />
+            </group>
+
+            <group
+              position={[
+                aspectRatio * (0.07 + bWidth) * 2 * 0.5 + uiScale * 0.5 + bWidth,
+                aspectRatio * (0.07 + bWidth) * 2 * 0.775 * 0.5 + uiScale * 0.5 + bWidth,
+                0
+              ]}
+            >
+              <GUIElement
+                {...{
+                  name: 'close_helpButton',
+                  width: uiScale,
+                  height: uiScale,
+                  radius: uiScale * 0.5,
+                  color: 0x212121
+                }}
+              />
+            </group>
+
+            <GUIElement
+              {...{
+                icon: help_textures[helpSlide],
+                name: 'help_ui',
+                width: aspectRatio * (0.07 + bWidth) * 2,
+                height: aspectRatio * (0.07 + bWidth) * 2 * 0.775,
+                radius: bWidth,
+                color: 0xffffff
+              }}
+            />
+          </group>
         )}
 
         <group
-          position={[(camSettings.size * 0.5 * aspectRatio + uiScale * 0.25 + bWidth) * invertGUI, uiScale * -0.25 + bWidth * -0.5, 0]}
+          position={[
+            (camSettings.size * 0.5 * aspectRatio + uiScale * 0.25 + bWidth) * invertGUI,
+            uiScale * -0.25 + bWidth * -0.5,
+            0
+          ]}
         >
           <GUIElement
             {...{
@@ -547,7 +612,11 @@ const GUI = ({ aspectRatio, guiMode, addMode, currentBoard, selectedObject, hide
         </group>
 
         <group
-          position={[(camSettings.size * 0.5 * aspectRatio + uiScale * 0.75 + bWidth * 2) * invertGUI, uiScale * -0.25 + bWidth * -0.5, 0]}
+          position={[
+            (camSettings.size * 0.5 * aspectRatio + uiScale * 0.75 + bWidth * 2) * invertGUI,
+            uiScale * -0.25 + bWidth * -0.5,
+            0
+          ]}
         >
           <GUIElement
             {...{
@@ -562,7 +631,11 @@ const GUI = ({ aspectRatio, guiMode, addMode, currentBoard, selectedObject, hide
         </group>
 
         <group
-          position={[(camSettings.size * 0.5 * aspectRatio + uiScale * 1.25 + bWidth * 3) * invertGUI, uiScale * 0.25 + bWidth * 0.5, 0]}
+          position={[
+            (camSettings.size * 0.5 * aspectRatio + uiScale * 1.25 + bWidth * 3) * invertGUI,
+            uiScale * 0.25 + bWidth * 0.5,
+            0
+          ]}
         >
           <GUIElement
             {...{
@@ -576,7 +649,11 @@ const GUI = ({ aspectRatio, guiMode, addMode, currentBoard, selectedObject, hide
         </group>
 
         <group
-          position={[(camSettings.size * 0.5 * aspectRatio + uiScale * 1.25 + bWidth * 3) * invertGUI, uiScale * -0.25 + bWidth * -0.5, 0]}
+          position={[
+            (camSettings.size * 0.5 * aspectRatio + uiScale * 1.25 + bWidth * 3) * invertGUI,
+            uiScale * -0.25 + bWidth * -0.5,
+            0
+          ]}
         >
           <GUIElement
             {...{
@@ -589,7 +666,14 @@ const GUI = ({ aspectRatio, guiMode, addMode, currentBoard, selectedObject, hide
           />
         </group>
 
-        <group name="fov_slider" position={[((camSettings.size * 0.5 * aspectRatio + bWidth) + (flipHand ? (uiScale + bWidth) : 0)) * invertGUI, uiScale * 0.25 + bWidth * 0.5, 0]}>
+        <group
+          name="fov_slider"
+          position={[
+            (camSettings.size * 0.5 * aspectRatio + bWidth + (flipHand ? uiScale + bWidth : 0)) * invertGUI,
+            uiScale * 0.25 + bWidth * 0.5,
+            0
+          ]}
+        >
           <primitive object={fovSlider} scale={[0.35, 0.35, 0.35]} />
         </group>
       </group>
