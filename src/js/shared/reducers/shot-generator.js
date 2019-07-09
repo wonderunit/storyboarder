@@ -1120,6 +1120,10 @@ const checksReducer = (state, action) => {
         checkForSkeletonChanges(state, draft, action.payload.id)
         return
 
+      case 'UPDATE_CHARACTER_IK_SKELETON':
+        checkForSkeletonChanges(state, draft, action.payload.id)
+        return
+
       // when we REDO, we are changing the entire state all at once
       // so, we gotta run all the checks
       case '@@redux-undo/REDO':
