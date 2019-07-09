@@ -166,6 +166,11 @@ const TransformControls = function ( camera, domElement ) {
 
 	};
 
+	this.activateTarget = function(setToActive)
+	{
+		this.object.isActivated = setToActive;
+	}
+
 	// Defined getter, setter and store for a property
 	function defineProperty( propName, defaultValue ) {
 

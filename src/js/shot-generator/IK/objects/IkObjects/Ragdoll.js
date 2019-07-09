@@ -4,6 +4,7 @@ const THREE = require( "three");
 const PoleConstraint = require( "../../constraints/PoleConstraint");
 const PoleTarget = require( "../PoleTarget");
 const CopyRotation = require( "../../constraints/CopyRotation");
+const RagdollEvents = require( "./RagdollEvents");
 require("../../utils/Object3dExtension");
 const {calculatePoleAngle, normalizeTo180} = require("../../utils/axisUtils");
 // Ragdoll is class which is used to set all specific details to ikrig
@@ -24,18 +25,19 @@ class Ragdoll extends IkObject
         this.originalObjectTargetBone.push(58);
         this.originalObjectTargetBone.push(63);
     }
-
+    
     //#region External Methods
     // Initializes ragdoll set up all neccessary information 
     initObject(scene, object, controlTargets )
     {
         super.initObject(scene, object, controlTargets );
- 
+        
+        this.ragdollEvents = new RagdollEvents(this);
         // Adds events to Back control
-        this.applyEventsToBackControl(this.controlTargets[0].control);
+        this.ragdollEvents.applyEventsToBackControl(this.controlTargets[0].control);
         this.createPoleTargets();
-        this.addHipsEvent();
-        this.setUpControlEvents();
+        this.ragdollEvents.addHipsEvent();
+        this.ragdollEvents.setUpControlsEvents();
         this.setUpControlTargetsInitialPosition();
     }
 
@@ -171,6 +173,9 @@ class Ragdoll extends IkObject
                  scene.remove(constraint.poleTarget.mesh);
              }
          });
+         this.ragdollEvents.removeEventsFromBackControl();
+         this.ragdollEvents.removeHipsEvent();
+         this.ragdollEvents.removeControlsEvents();
     }
 
     // Selects/Deselects ragdoll and adds/removes it's elements to/from scene
@@ -211,22 +216,6 @@ class Ragdoll extends IkObject
     //#endregion
 
     //#region Internal methods
-    // Applies events to back control
-    applyEventsToBackControl(backControl)
-    {
-        backControl.addEventListener("pointerdown", (event) =>
-        {
-            this.applyingOffset = true;
-        });
-        backControl.addEventListener("dragging-changed", (event) =>
-        {
-            this.calculteBackOffset();
-        });
-        backControl.addEventListener("pointerup", (event) =>
-        {
-            this.applyingOffset = false;
-        });
-    }
 
     createPoleTargets()
     {
@@ -278,47 +267,7 @@ class Ragdoll extends IkObject
         poleTarget.poleOffset = hipsOffset;
     }
 
-    // Adds events to hips
-    // Mainly is for controlling poleTarget position so it will follow hips
-    // With taking offset between them into account
-    addHipsEvent()
-    {
-        let hipsControl = this.hipsControlTarget.control;
  
-        hipsControl.addEventListener("pointerdown", (event) =>
-        {
-            this.hipsMouseDown = true;
-            this.isEnabledIk = true;
-            if(this.hipsControlTarget.control.mode === "rotate")
-            {
-                this.isEnabledIk = false;
-                this.attached = true;
-                this.originalObject.children[0].isRotated = true;
-            }
-        });
-        hipsControl.addEventListener("transformMoved", (event) =>
-        {
-            if(this.hipsMouseDown)
-            {
-                this.resetPoleTarget();
-            }
-        });
-        hipsControl.addEventListener("dragging-changed", (event) =>
-        {
-            this.calculteBackOffset();
-        });
-        hipsControl.addEventListener("pointerup", (event) =>
-        {
-            if(this.attached)
-            {
-                this.attached = false;
-                this.originalObject.children[0].isRotated = false;
-            }
-            this.applyingOffset = false;
-            this.hipsMouseDown = false;
-            this.isEnabledIk = false;
-        });
-    }
 
     // Resets pole target position when object moved his hips position changed
     resetPoleTarget()
@@ -351,32 +300,6 @@ class Ragdoll extends IkObject
          }
     }
 
-    // Sets up control event for mouse down and up to enable and disable ik on mouse click
-    setUpControlEvents()
-    {
-        let chainObject = this.chainObjects;
-        for (let i = 0; i < chainObject.length; i++)
-        {
-            let control = chainObject[i].controlTarget.control;
-            let target = chainObject[i].controlTarget.target;
-            control.addEventListener("pointerdown", (event) =>
-            {
-                this.isEnabledIk = true;
-                target.isActivated = true;
-                if(control.mode === "rotate")
-                {
-                    this.isRotation = true;
-                }
-            });
-        
-            control.addEventListener("pointerup", (event) =>
-            {
-                target.isActivated = false;
-                this.isRotation = false;
-                this.isEnabledIk = false;
-            });
-        }
-    }
 
     setUpControlTargetsInitialPosition()
     {
