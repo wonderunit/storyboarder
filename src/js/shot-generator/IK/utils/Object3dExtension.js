@@ -152,6 +152,25 @@ THREE.Object3D.prototype.cloneMesh = function()
     return new this.constructor().copyMesh( this, true );
 }
 
+THREE.Vector3.prototype.substract = function(vector)
+{
+    return new THREE.Vector3().subVectors(this, vector);
+}
+
+THREE.Matrix4.prototype.x_axis = function ()
+{
+    let x = new THREE.Vector3();
+    let y = new THREE.Vector3();
+    let z = new THREE.Vector3();
+    this.extractBasis(x, y, z);
+    return x;
+}
+
+THREE.Vector3.prototype.isZero = function()
+{
+    return this.x === 0 && this.y === 0 && this.z === 0;
+}
+
 THREE.Object3D.prototype.copyMesh = function( source, recursive)
 {
     if ( recursive === undefined ) recursive = true;

@@ -73,12 +73,17 @@ class Ragdoll extends IkObject
                 let chainObject = this.chainObjects[i];
                 let joints = chainObject.chain.joints;
                 let currentBone = joints[0].bone;
-                if(joints && (currentBone.isRotationChanged || this.poseChanged))
+                if(joints  && (currentBone.isRotationChanged || this.poseChanged))
                 {
-                    let angle = calculatePoleAngle(currentBone, joints[joints.length - 1].bone, chainObject.poleConstraint.poleTarget.mesh, joints[0]);
-                    angle *= (180 / Math.PI);
-                    angle = normalizeTo180(angle);
-                    //chainObject.poleConstraint.poleAngle = angle;
+                    let poleConstraint = chainObject.poleConstraint;
+                    let angle = calculatePoleAngle(currentBone, joints[joints.length - 1].bone, poleConstraint.poleTarget.mesh, joints[0]);
+                    angle *= THREE.Math.RAD2DEG;
+                    //angle = normalizeTo180(angle);
+                    if(currentBone.name === "LeftArm")
+                    {
+                        //console.log(angle);
+                    }
+                    //poleConstraint.poleAngle = angle;
                     this.poseChanged = false;
                     currentBone.isRotationChanged = false;
                     let result = this.originalObject.children[1].skeleton.bones.filter(bone => bone.name === currentBone.name)[0];
@@ -366,7 +371,7 @@ class Ragdoll extends IkObject
                     this.isRotation = true;
                 }
             });
-
+        
             control.addEventListener("pointerup", (event) =>
             {
                 target.isActivated = false;

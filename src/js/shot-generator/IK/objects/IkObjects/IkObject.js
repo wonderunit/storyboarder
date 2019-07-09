@@ -40,7 +40,6 @@ class IkObject
 
         this.rigMesh = clonedSkeleton.children[1];
         let rigMesh = this.rigMesh;
-
         this.controlTargets = controlTargets;
         this.addParentToControl(objectSkeleton.uuid);
         let chainObjects = [];
@@ -117,7 +116,6 @@ class IkObject
         {
             this.ik.add(chain);
         });
-
         // Adds skeleton helper to scene
         this.ikSwitcher.recalculateDifference();
         this.ikSwitcher.calculateRelativeAngle();

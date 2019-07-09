@@ -581,8 +581,8 @@ var IKChain = function () {
     this.effectorIndex = null;
     this.chains = new Map();
     this.origin = null;
-    this.iterations = 100;
-    this.tolerance = 0.001;
+    this.iterations = 1200;
+    this.tolerance = 0.01;
     this._depth = -1;
     this._targetPosition = new three.Vector3();
   }

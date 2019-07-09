@@ -54,7 +54,6 @@ class TargetControl
     setBone(bone)
     {
         this.bone = bone;
-        console.log("Bone is setted");
     }
 
     addToScene()

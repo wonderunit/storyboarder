@@ -29,13 +29,38 @@ const previousDirection = {};
 //#region Pole Angle calculation
 
 
+function signed_angle(vector_u, vector_v, normal)
+{
+    let angle = vector_u.angleTo(vector_v)
+    if(vector_u.cross(vector_v).angleTo(normal) < 1)
+        angle = -angle
+    return angle
+}
+
+function get_pole_angle(base_bone, ik_bone, pole_location)
+{
+    pole_normal = (ik_bone.substract(base_bone.worldPosition())).cross(pole_location.substract(base_bone.worldPosition()));
+    projected_pole_axis = pole_normal.cross(base_bone.worldPosition());
+    return signed_angle(base_bone.matrixWorld.x_axis(), projected_pole_axis, base_bone.worldPosition())
+}
+ 
+
 function calculatePoleAngle(rootBone, endBone, poleBone, rootJoint)
 {
+   //let base_bone = rootBone
+   //let ik_bone = endBone
+   //let pole_bone = poleBone
+
+   //let pole_angle_in_radians = get_pole_angle(base_bone,
+   //                                   ik_bone.worldPosition(),
+   //                                   pole_bone.worldPosition())
+   ////let pole_angle_in_deg = 180*pole_angle_in_radians/3.141592, 3)
+   //return -pole_angle_in_radians;
     // Taking Ik target position
     let ikTargetPose = endBone.worldPosition(); 
     let rootPose = rootBone.worldPosition();
     let target = poleBone.position.clone();
-
+    let middleJointPose = rootBone.children[0].worldPosition();
     // Projecting pole target on to line between ikTarget and rootPose
     let projectedPole = projectPointOnLine(ikTargetPose, rootPose, target);
 
@@ -53,17 +78,24 @@ function calculatePoleAngle(rootBone, endBone, poleBone, rootJoint)
 
     // Inverse projection matrix so our projection facing it's normal direction
     let inversedTBN = new THREE.Matrix4().getInverse(TBN);
-    let direction = new THREE.Vector3();
-    rootBone.getWorldDirection(direction);
-    direction = rootJoint._direction ? rootJoint._direction : direction;
+    let direction = new THREE.Vector3().copy(rootJoint._getDirection());
     let boneDirectionProjected = new THREE.Vector3().copy(direction).applyMatrix4(inversedTBN);
-    // Save current radius for cause when direction length changes
     let radius = direction.length();
-    // Transforms into vector 2 space
-    // Cause we don't need yAxis for now
     let boneDirectionXZ = new THREE.Vector2(boneDirectionProjected.x, boneDirectionProjected.z);
-    let angle = boneDirectionXZ.angle();
-    return angle;
+    let angly = boneDirectionXZ.angle(); 
+    let angleToPlane = -angly;
+    boneDirectionXZ.rotateAround(new THREE.Vector2(0, 0), angleToPlane);
+    boneDirectionProjected.x = boneDirectionXZ.x;
+    boneDirectionProjected.z = boneDirectionXZ.y;
+    boneDirectionProjected = boneDirectionProjected.applyMatrix4(TBN);
+
+    //let middleJointRotation = new THREE.Quaternion().setFromRotationMatrix(middleJointPose);
+    let projectedRotation = new THREE.Quaternion().setFromRotationMatrix(TBN);
+ 
+    projectedPole.applyMatrix4(rootBone.getInverseMatrixWorld());
+    boneDirectionXZ = new THREE.Vector2(projectedPole.x, projectedPole.z);
+    let angle = projectedPole.angleTo(rootBone.position);
+    return -angle;
 }
 
   // Projects point from target onto line between p1 and p2
@@ -89,7 +121,7 @@ function calculatePoleAngle(rootBone, endBone, poleBone, rootJoint)
     return angle - 180;
   }
 
- let fmod = function (a,b) { return Number((a - (Math.floor(a / b) * b)).toPrecision(8)); };
+ let fmod = function (a,b) { return Number((a - (Math.floor(a / b) * b)).toPrecision(1)); };
 
   //#endregion
  
@@ -116,58 +148,6 @@ THREE.Object3D.prototype.rotateAroundPoint = function(point, axis, theta)
     object.position.sub(point);
     object.position.applyAxisAngle(axis, theta);
     object.position.add(point);
-}
-
-THREE.Vector3.prototype.reverseZ = function reverseZ()
-{
-    let vector = this;
-    return new THREE.Vector3(vector.x, vector.y, -vector.z);
-}
-THREE.Quaternion.prototype.reverseZ = function reverseZ()
-{
-    let result = this.toAngleAxis();
-    let axis = result.axis.reverseZ();
-    return new THREE.Quaternion().setFromAxisAngle(axis, -result.angle);
-}
-THREE.Matrix4.prototype.reverseZ = function reverseZ()
-{
-    let matrix = this;
-    let position = new THREE.Vector3();
-    let rotation = new THREE.Quaternion();
-    let scale = new THREE.Vector3();
-    matrix.decompose(position, rotation, scale);
-    matrix.compose(position.reverseZ(), rotation, scale);
-    return matrix;
-}
-
-function setReverseZ(rootBone)
-{
-    var worldPos = {};
-    getOriginalWorldPositions(rootBone, worldPos);
-    reverseTransform(rootBone, worldPos);
-}
-
-function reverseTransform(parentBone, worldPos)
-{
-    let quaternion = parentBone.quaternion;
-    quaternion = quaternion.reverseZ();
-    parentBone.quaternion.copy(RESETQUAT);
-    parentBone.updateMatrixWorld();
-
-    parentBone.quaternion.premultiply(quaternion);
-    parentBone.updateMatrixWorld();
-
-    //set child bone position relative to the new parent matrix.
-    parentBone.children.forEach((childBone) => {
-        let childBonePosWorld = worldPos[childBone.id].clone();
-        childBonePosWorld = childBonePosWorld.reverseZ();
-        parentBone.worldToLocal(childBonePosWorld);
-        childBone.position.copy(childBonePosWorld);
-    });
-
-    parentBone.children.forEach((childBone) => {
-        reverseTransform(childBone, worldPos);
-    })
 }
 
 function setZDirecion(rootBone, zAxis) {
@@ -208,7 +188,6 @@ function updateTransformations(parentBone, worldPos, zAxis) {
         });
     }
 
-    //parentBone.rotateX();
     parentBone.updateMatrixWorld();
     parentBone.children.forEach((childBone) => {
         updateTransformations(childBone, worldPos, zAxis);
@@ -233,53 +212,6 @@ function getOriginalWorldPositions(rootBone, worldPos) {
     })
 }
 
-function setZBack(rootBone)
-{
-    var worldPos = {};
-    getOriginalWorldPositions(rootBone, worldPos);
-    let zAxis = previousDirection[rootBone.id].clone();
-    updateTransformationsBack(rootBone, worldPos, zAxis);
-}
-
-function updateTransformationsBack(parentBone, worldPos, zAxis) {
-
-    var averagedDir = new THREE.Vector3();
-    parentBone.children.forEach((childBone) => {
-        //average the child bone world pos
-        var childBonePosWorld = worldPos[childBone.id];
-        averagedDir.add(childBonePosWorld);
-    });
-
-    averagedDir.multiplyScalar(1/(parentBone.children.length));
-
-    //set quaternion
-    parentBone.quaternion.copy(RESETQUAT);
-    parentBone.updateMatrixWorld();
-    //get the child bone position in local coordinates
-    var childBoneDir = parentBone.worldToLocal(averagedDir).normalize();
-    previousDirection[parentBone.id] = childBoneDir;
-    //set the direction to child bone to the forward direction
-    var quat = getAlignmentQuaternion(zAxis, childBoneDir);
-    if (quat) {
-        //rotate parent bone towards child bone
-        parentBone.quaternion.premultiply(quat);
-        parentBone.updateMatrixWorld();
-        //set child bone position relative to the new parent matrix.
-        parentBone.children.forEach((childBone) => {
-            var childBonePosWorld = worldPos[childBone.id].clone();
-            parentBone.worldToLocal(childBonePosWorld);
-            childBone.position.copy(childBonePosWorld);
-        });
-    }
-
-    parentBone.updateMatrixWorld();
-    parentBone.children.forEach((childBone) => {
-        zAxis = previousDirection[childBone.id].clone();
-        updateTransformationsBack(childBone, worldPos, zAxis);
-    })
-}
 module.exports.setZDirecion = setZDirecion;
-module.exports.setReverseZ = setReverseZ;
-module.exports.setZBack = setZBack;
 module.exports.calculatePoleAngle = calculatePoleAngle;
 module.exports.normalizeTo180 = normalizeTo180;

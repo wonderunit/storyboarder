@@ -1,5 +1,6 @@
 const THREE = require( "three");
 const IkConstraint = require( "./IkConstraint");
+const {normalizeTo180} = require("../utils/axisUtils");
 
 // PoleConstraint is class which is closely interviened with three-ik.js IkChain
 // it initializes lambda for IkChain which is executes in backward calculations method
@@ -12,6 +13,7 @@ class PoleConstraint extends IkConstraint
         this.poleAngle = 0;
         this.chainLength = 3;
         this.currentPoleAngle = this.poleAngle;
+        //this.influence = 50;
 
     }
 
@@ -64,10 +66,10 @@ class PoleConstraint extends IkConstraint
         // Transforms into vector 2 space
         // Cause we don't need yAxis for now
         let boneDirectionXZ = new THREE.Vector2(boneDirectionProjected.x, boneDirectionProjected.z);
-        this.currentPoleAngle = -boneDirectionXZ.angle();
+        let angle = boneDirectionXZ.angle(); 
         // Calculate current direction angle to positive xAxis and adding PoleAngle
         // We making angle negative in order to move our object to xAxis zero
-        let angleToPlane = -boneDirectionXZ.angle() + (THREE.Math.DEG2RAD * this.poleAngle);
+        let angleToPlane = -angle + (THREE.Math.DEG2RAD * this.poleAngle);
         // Rotate direction around origin by angle
         boneDirectionXZ.rotateAround(new THREE.Vector2(0, 0), angleToPlane);
         // Sets original x to changed direction x
@@ -89,7 +91,6 @@ class PoleConstraint extends IkConstraint
             let influenceJoint = joints[i];
             this.applyInfluenceToJoint(influenceJoint);
         }
-
     }
 
     // Projects point from target onto line between p1 and p2
