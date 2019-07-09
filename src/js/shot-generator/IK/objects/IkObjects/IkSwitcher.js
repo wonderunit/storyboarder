@@ -82,10 +82,6 @@ class IKSwitcher
                 continue;
             }
             this.cloneToOriginRotation(cloneBone, originalBone);
-            if(cloneBone.name === "Hips")
-            {
-                this.switchBasis(cloneBone, originalBone);
-            }
         }
         this.recalculateDifference();
     }
@@ -103,41 +99,6 @@ class IKSwitcher
         originBone.quaternion.copy(cloneGlobalQuat);
         originBone.updateMatrix();
         originBone.updateWorldMatrix(false, true);
-    }
-
-    // Switches basis of Ik bones to Character bones
-    // using previous transformation matrix
-    switchBasis(cloneBone, originalBone)
-    {
-        cloneBone.updateMatrix();
-        originalBone.updateMatrix();
-        cloneBone.updateMatrixWorld(true);
-        originalBone.updateMatrixWorld(true);
-
-        let originalCurrentMatrix = originalBone.matrix.clone();
-        let clonePrevMatrix = this.cloneObjectMatrix[cloneBone.name].clone();
-        let cloneCurrentMatrix = cloneBone.matrix.clone();
-        let cloneInversePrevMatrix = new THREE.Matrix4().getInverse(clonePrevMatrix);
-        let tMatrixPrevClone = new THREE.Matrix4();
-
-        tMatrixPrevClone.multiply(originalCurrentMatrix);
-        tMatrixPrevClone.multiply(cloneInversePrevMatrix);
-
-        clonePrevMatrix.premultiply(tMatrixPrevClone);
-        cloneCurrentMatrix.premultiply(tMatrixPrevClone);
-
-        this.setObjectFromMatrixElements(cloneCurrentMatrix, originalBone);
-    }
-
-    // Sets object.position to positional matrix
-    setObjectFromMatrixElements(matrix, object)
-    {
-        let position = new THREE.Vector3();
-        let rotation = new THREE.Quaternion();
-        let scale = new THREE.Vector3();
-        matrix.decompose(position, rotation, scale);
-        object.position.copy(position);
-        object.updateMatrix();
     }
 
     // Applies changes to ik bones

@@ -310,7 +310,7 @@ const Character = React.memo(({
         }  
       } );});
 
-      skeletonRig.updateCharacter((skeleton) => {updateCharacterIkSkeleton({
+      skeletonRig.updateSkeleton((skeleton) => {updateCharacterIkSkeleton({
         id,
         skeleton: skeleton  
       } );});
@@ -707,7 +707,6 @@ const Character = React.memo(({
           }
         })
       } else {
-        console.log("Console open");
         rotation.setFromQuaternion( objectQuaternion.normalize(), "YXZ" )
         updateObject(target.userData.id, {
           rotation: target.rotation.y

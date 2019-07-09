@@ -272,7 +272,6 @@ function updateTransformationsBack(parentBone, worldPos, zAxis) {
         });
     }
 
-    //parentBone.rotateX();
     parentBone.updateMatrixWorld();
     parentBone.children.forEach((childBone) => {
         zAxis = previousDirection[childBone.id].clone();

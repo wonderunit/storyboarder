@@ -39,9 +39,9 @@ class Ragdoll extends IkObject
         this.setUpControlTargetsInitialPosition();
     }
 
-    updateCharacter(updateChar)
+    updateSkeleton(updateCharterSkeleton)
     {
-        this.updateChar = updateChar;
+        this.updateCharterSkeleton = updateCharterSkeleton;
     }
 
     updateCharacterPos(updateCharPosition)
@@ -444,7 +444,7 @@ class Ragdoll extends IkObject
             ikBones.push(bone);
         }
         this.updatingReactSkeleton = true;
-        this.updateChar(ikBones);
+        this.updateCharterSkeleton(ikBones);
     }
 
     // Sets limbs rotation to control target rotation
