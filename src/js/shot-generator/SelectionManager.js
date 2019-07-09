@@ -388,7 +388,6 @@ const SelectionManager = connect(
             if(!isSelectedControlPoint && selectedBoneControl)
             {
               selectBone(selectedBoneControl.uuid)
-              setLastDownId(target.userData.id)
               // consider a bone selection the start of a drag
               setDragTarget({ target, x, y, isBoneControl: true })
               return
@@ -486,7 +485,6 @@ const SelectionManager = connect(
     if (event.target === el) {
       if (!selectOnPointerDown) {
         let intersects = getIntersects({ x, y }, camera, useIcons)
-
         if (intersects.length === 0) {
           // selectObject(undefined)
           // selectBone(null)
@@ -504,7 +502,6 @@ const SelectionManager = connect(
           )
           ? null
           : getIntersectionTarget(intersects[0])
-            
           if (target && target.userData.id == lastDownId) {
             if (event.shiftKey) {
               // if there is only one selection and it is the active camera

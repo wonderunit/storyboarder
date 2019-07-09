@@ -27,35 +27,10 @@ const previousDirection = {};
  * @param {THREE.BONE} rootBone
  */
 //#region Pole Angle calculation
-
-
-function signed_angle(vector_u, vector_v, normal)
-{
-    let angle = vector_u.angleTo(vector_v)
-    if(vector_u.cross(vector_v).angleTo(normal) < 1)
-        angle = -angle
-    return angle
-}
-
-function get_pole_angle(base_bone, ik_bone, pole_location)
-{
-    pole_normal = (ik_bone.substract(base_bone.worldPosition())).cross(pole_location.substract(base_bone.worldPosition()));
-    projected_pole_axis = pole_normal.cross(base_bone.worldPosition());
-    return signed_angle(base_bone.matrixWorld.x_axis(), projected_pole_axis, base_bone.worldPosition())
-}
  
-
 function calculatePoleAngle(rootBone, endBone, poleBone, rootJoint)
 {
-   //let base_bone = rootBone
-   //let ik_bone = endBone
-   //let pole_bone = poleBone
 
-   //let pole_angle_in_radians = get_pole_angle(base_bone,
-   //                                   ik_bone.worldPosition(),
-   //                                   pole_bone.worldPosition())
-   ////let pole_angle_in_deg = 180*pole_angle_in_radians/3.141592, 3)
-   //return -pole_angle_in_radians;
     // Taking Ik target position
     let ikTargetPose = endBone.worldPosition(); 
     let rootPose = rootBone.worldPosition();
@@ -64,7 +39,6 @@ function calculatePoleAngle(rootBone, endBone, poleBone, rootJoint)
     // Projecting pole target on to line between ikTarget and rootPose
     let projectedPole = projectPointOnLine(ikTargetPose, rootPose, target);
 
-    let positionMatrix = new THREE.Vector3(1, 1, 1).applyMatrix4(rootBone.children[0].matrixWorld);
 
     // Getting xAxis through PoleTarget and projectPole
     let xAxis = new THREE.Vector3().subVectors(target, projectedPole).normalize();
@@ -76,57 +50,74 @@ function calculatePoleAngle(rootBone, endBone, poleBone, rootJoint)
     // Setting up projection matrix
     let TBN = new THREE.Matrix4().makeBasis(xAxis, yAxis, zAxis);
 
-    // Inverse projection matrix so our projection facing it's normal direction
+    let direction = rootBone.getWorldDirectionTo(rootBone.children[0]);
+    let originalDirection = direction.clone();
+
     let inversedTBN = new THREE.Matrix4().getInverse(TBN);
-    let direction = new THREE.Vector3().copy(rootJoint._getDirection());
     let boneDirectionProjected = new THREE.Vector3().copy(direction).applyMatrix4(inversedTBN);
+    let projecPoleFlat = new THREE.Vector2(projectedPole.x, projectedPole.z);
+    let boneDirectionProjectedFlat = new THREE.Vector2(boneDirectionProjected.x, boneDirectionProjected.z);
+
+    let angly = projecPoleFlat.angle(); 
+    let angleToPlane = -angly;
+
+    projecPoleFlat.rotateAround(new THREE.Vector2(0, 0), angleToPlane);
+    projectedPole.x = projecPoleFlat.x;
+    projectedPole.z = projecPoleFlat.y;
+
+    angly = boneDirectionProjectedFlat.angle(); 
+    angleToPlane = -angly;
+
+    boneDirectionProjectedFlat.rotateAround(new THREE.Vector2(0, 0), angleToPlane);
+    boneDirectionProjected.x = boneDirectionProjectedFlat.x;
+    boneDirectionProjected.z = boneDirectionProjectedFlat.y;
+
+
+    let anggle = projectedPole.angleTo(boneDirectionProjected);
+
     let radius = direction.length();
     let boneDirectionXZ = new THREE.Vector2(boneDirectionProjected.x, boneDirectionProjected.z);
-    let angly = boneDirectionXZ.angle(); 
-    let angleToPlane = -angly;
+    angly = boneDirectionXZ.angle(); 
+    angleToPlane = -angly;
     boneDirectionXZ.rotateAround(new THREE.Vector2(0, 0), angleToPlane);
     boneDirectionProjected.x = boneDirectionXZ.x;
     boneDirectionProjected.z = boneDirectionXZ.y;
     boneDirectionProjected = boneDirectionProjected.applyMatrix4(TBN);
+    direction.copy(boneDirectionProjected);
 
-    //let middleJointRotation = new THREE.Quaternion().setFromRotationMatrix(middleJointPose);
-    let projectedRotation = new THREE.Quaternion().setFromRotationMatrix(TBN);
- 
-    projectedPole.applyMatrix4(rootBone.getInverseMatrixWorld());
-    boneDirectionXZ = new THREE.Vector2(projectedPole.x, projectedPole.z);
-    let angle = projectedPole.angleTo(rootBone.position);
-    return -angle;
+    let angle = direction.angleTo(originalDirection);
+
+    return anggle;
 }
 
-  // Projects point from target onto line between p1 and p2
-  function projectPointOnLine(p1, p2, target)
+// Projects point from target onto line between p1 and p2
+function projectPointOnLine(p1, p2, target)
+{
+    let AB = p2.clone().sub(p1);
+    let AP = target.clone().sub(p1);
+    let dot1 = AP.clone().dot(AB);
+    let dot2 = AB.clone().dot(AB);
+    let AB2 = AB.clone().multiplyScalar(dot1 / dot2);
+    return p1.clone().add(AB2);
+}
+function normalizeTo180(angle)
+{
+  angle = fmod(angle + 180, 360);
+  if(angle < 0)
   {
-      let AB = p2.clone().sub(p1);
-      let AP = target.clone().sub(p1);
-
-      let dot1 = AP.clone().dot(AB);
-      let dot2 = AB.clone().dot(AB);
-
-      let AB2 = AB.clone().multiplyScalar(dot1 / dot2);
-
-      return p1.clone().add(AB2);
+      angle += 360;
   }
-  function normalizeTo180(angle)
-  {
-    angle = fmod(angle + 180, 360);
-    if(angle < 0)
-    {
-        angle += 360;
-    }
-    return angle - 180;
-  }
+  return angle - 180;
+}
+let fmod = function (a,b) { return Number((a - (Math.floor(a / b) * b)).toPrecision(8)); };
 
- let fmod = function (a,b) { return Number((a - (Math.floor(a / b) * b)).toPrecision(1)); };
-
-  //#endregion
+//#endregion
  
 // Return angle and axis of current quaternion
 // Angle in radians
+THREE.Object3D.prototype.getWorldDirectionTo = function getWorldDirectionTo(bone) {
+    return new THREE.Vector3().subVectors(this.worldPosition(), bone.worldPosition()).normalize();
+}
 THREE.Quaternion.prototype.toAngleAxis = function toAngleAxis()
 {
     let quaternion = this;

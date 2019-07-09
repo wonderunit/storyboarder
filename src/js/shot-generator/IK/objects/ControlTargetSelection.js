@@ -32,6 +32,8 @@ class ControlTargetSelection
         let selectedMeshes = this.selectedMeshes;
 		ray.setFromCamera( pointer, this.camera );
         let intersectMeshes = false;
+        let intersectControlTarget = false;
+        let controlTarget = null;
         intersectMeshes = ray.intersectObjects(this.meshes)[ 0 ] || false;
         intersectMeshes = intersectMeshes === false 
         ? intersectMeshes 
@@ -39,6 +41,14 @@ class ControlTargetSelection
         ? intersectMeshes
         : intersectMeshes = { object: Object.values(selectedMeshes)[0]};
         
+        // Checks if pointer intersects control target only when any mesh is selected
+        if(Object.keys(selectedMeshes).length !== 0)
+        {
+            let rotationalGizmoHelpers = this.rotationalGizmoHelpers( Object.values(selectedMeshes)[0].scope.control);
+            intersectControlTarget = ray.intersectObjects(rotationalGizmoHelpers)[ 0 ] || false;
+            controlTarget = intersectControlTarget !== false ? intersectControlTarget.object.parent.parent : false;
+        }
+ 
         // Checks if meshes intersected and if they do select them
         if ( intersectMeshes ) 
         {
@@ -49,7 +59,7 @@ class ControlTargetSelection
         else 
         {
             // Checks if any meshes are selected and control target isn't intersected
-            if(Object.keys(selectedMeshes).length === 0 )
+            if(Object.keys(selectedMeshes).length === 0 || (controlTarget && controlTarget.mode === 'rotate'))
             {
                 return;
             }
@@ -95,7 +105,7 @@ class ControlTargetSelection
                 let children = gizmoChildren[i].children;
                 for (let i = 0; i < children.length; i++)
                 {
-                  results.push(children[i].clone());
+                  results.push(children[i]);
                 }
             }
           }
