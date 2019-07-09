@@ -354,7 +354,7 @@ const Character = React.memo(({
   let currentBoneSelected = useRef(null)
 
   const updateSkeleton = () => {
-
+    // skip this update if RagDoll recently ran an update
     if(ragDoll.current.updatingReactSkeleton  )
     {
       ragDoll.current.updatingReactSkeleton = false;
