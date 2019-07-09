@@ -172,7 +172,6 @@ const Character = React.memo(({
   camera,
   updateCharacterSkeleton,
   updateCharacterIkSkeleton,
-  updateCharacterIkBone,
   updateObject,
   devices,
   icon,

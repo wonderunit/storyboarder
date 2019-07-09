@@ -23,7 +23,7 @@ class BoneRotationControl
     {
         if(this.bone !== null)
         {
-            this.control.detach(bone);
+            this.control.detach();
         }
         else if (bone)
         {
@@ -45,7 +45,7 @@ class BoneRotationControl
 
     deselectBone()
     {
-        this.control.detach(this.bone);
+        this.control.detach();
         this.scene.remove(this.control);
         
         this.control.dispose();

@@ -163,8 +163,11 @@ class Ragdoll extends IkObject
          this.controlTargetSelection.dispose();
          this.chainObjects.forEach((chainObject)=>
          {
-             if(chainObject.poleConstraint)
-             scene.remove(constraint.poleTarget.mesh);
+             let constraint = chainObject.poleConstraint;
+             if(constraint)
+             {
+                 scene.remove(constraint.poleTarget.mesh);
+             }
          });
     }
 

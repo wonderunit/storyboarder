@@ -297,10 +297,6 @@ const updateObject = (draft, state, props, { models }) => {
   }
 }
 
-const getDraftObject = (id) =>
-{
-  console.log(draft);
-}
 // `loaded` status is not serialized
 // when we load a new file, we need to initialize it
 // so it can be read to determine loading progress

@@ -168,7 +168,7 @@ class IkObject
         {
             let control = chainObject.controlTarget.control;
             let target = chainObject.controlTarget.target;
-            control.detach(target);
+            control.detach();
             scene.remove(target);
             scene.remove(control);
         });
