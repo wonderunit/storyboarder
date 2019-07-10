@@ -183,7 +183,7 @@ const poseRenderer = new PoseRenderer()
 const PosePresetsEditorItem = React.memo(({ style, id, posePresetId, preset, updateObject }) => {
   const src = path.join(remote.app.getPath('userData'), 'presets', 'poses', `${preset.id}.jpg`)
 
-  const onClick = event => {
+  const onPointerDown = event => {
     event.preventDefault()
 
     let posePresetId = preset.id
@@ -218,7 +218,7 @@ const PosePresetsEditorItem = React.memo(({ style, id, posePresetId, preset, upd
   return h(['div.thumbnail-search__item', {
     style,
     className,
-    onClick,
+    onPointerDown,
     'data-id': preset.id,
     title: preset.name
   }, [
@@ -319,7 +319,7 @@ React.memo(({
     setTerms(event.currentTarget.value)
   }
 
-  const onCreatePosePresetClick = event => {
+  const onCreatePosePreset = event => {
     event.preventDefault()
 
     // show a prompt to get the desired preset name
@@ -415,7 +415,7 @@ React.memo(({
         ['div.column', { style: { marginLeft: 5 }}, [
           ['a.button_add[href=#]', {
             style: { width: 30, height: 34 },
-            onClick: onCreatePosePresetClick
+            onPointerDown: onCreatePosePreset
           }, '+']
         ]]
       ]],
