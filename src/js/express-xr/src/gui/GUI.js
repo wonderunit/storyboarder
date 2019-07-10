@@ -293,6 +293,28 @@ const GUI = ({ aspectRatio, guiMode, addMode, currentBoard, selectedObject, hide
   return (
     <group rotation={[(Math.PI / 180) * -30, 0, 0]} userData={{ type: 'gui' }} position={[0, 0.015, -0.005]}>
       <group rotation={[(Math.PI / 180) * -70, 0, 0]}>
+        <group name="selector_container">
+          {true && (
+            <group
+              position={[
+                (uiScale * 2.75 * 1.5 + uiScale * 0.5 + (uiScale * 0.5 + uiScale * 0.5) + bWidth * 3) * -1 * invertGUI,
+                uiScale * 2.75 * 0.5 - uiScale * 0.5,
+                0
+              ]}
+            >
+              <GUIElement
+                {...{
+                  name: 'selector_ui',
+                  width: uiScale * 2.75,
+                  height: uiScale * 2.75,
+                  radius: bWidth,
+                  color: 'black'
+                }}
+              />
+            </group>
+          )}
+        </group>
+
         <group name="properties_container">
           {selectedObject && textCount && (
             <group
@@ -515,7 +537,11 @@ const GUI = ({ aspectRatio, guiMode, addMode, currentBoard, selectedObject, hide
         />
 
         <group
-          position={[(camSettings.size * 0.5 * aspectRatio + uiScale * 0.25 + bWidth) * invertGUI, uiScale * -0.25 + bWidth * -0.5, 0]}
+          position={[
+            (camSettings.size * 0.5 * aspectRatio + uiScale * 0.25 + bWidth) * invertGUI,
+            uiScale * -0.25 + bWidth * -0.5,
+            0
+          ]}
         >
           <GUIElement
             {...{
@@ -530,7 +556,11 @@ const GUI = ({ aspectRatio, guiMode, addMode, currentBoard, selectedObject, hide
         </group>
 
         <group
-          position={[(camSettings.size * 0.5 * aspectRatio + uiScale * 0.75 + bWidth * 2) * invertGUI, uiScale * -0.25 + bWidth * -0.5, 0]}
+          position={[
+            (camSettings.size * 0.5 * aspectRatio + uiScale * 0.75 + bWidth * 2) * invertGUI,
+            uiScale * -0.25 + bWidth * -0.5,
+            0
+          ]}
         >
           <GUIElement
             {...{
@@ -545,7 +575,11 @@ const GUI = ({ aspectRatio, guiMode, addMode, currentBoard, selectedObject, hide
         </group>
 
         <group
-          position={[(camSettings.size * 0.5 * aspectRatio + uiScale * 1.25 + bWidth * 3) * invertGUI, uiScale * -0.25 + bWidth * -0.5, 0]}
+          position={[
+            (camSettings.size * 0.5 * aspectRatio + uiScale * 1.25 + bWidth * 3) * invertGUI,
+            uiScale * -0.25 + bWidth * -0.5,
+            0
+          ]}
         >
           <GUIElement
             {...{
@@ -558,7 +592,14 @@ const GUI = ({ aspectRatio, guiMode, addMode, currentBoard, selectedObject, hide
           />
         </group>
 
-        <group name="fov_slider" position={[((camSettings.size * 0.5 * aspectRatio + bWidth) + (flipHand ? (uiScale + bWidth) : 0)) * invertGUI, uiScale * 0.25 + bWidth * 0.5, 0]}>
+        <group
+          name="fov_slider"
+          position={[
+            (camSettings.size * 0.5 * aspectRatio + bWidth + (flipHand ? uiScale + bWidth : 0)) * invertGUI,
+            uiScale * 0.25 + bWidth * 0.5,
+            0
+          ]}
+        >
           <primitive object={fovSlider} scale={[0.35, 0.35, 0.35]} />
         </group>
       </group>

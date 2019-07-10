@@ -618,6 +618,9 @@ const SceneContent = ({
 
   const onAxisChanged = event => {
     let selected = false
+    let selectorHover = event.target.intersections.length && event.target.intersections[0].object.name === 'selector_ui' ? true : false
+    if (selectorHover) return
+
     vrControllers.forEach(controller => {
       if (!selected) selected = controller.userData.selected ? controller : false
     })
@@ -874,6 +877,8 @@ const SceneContent = ({
           let intersection = intersections[0]
           if (intersection.object.userData.type === 'slider') {
             controller.intersections = intersections
+          } else if (intersection.object.name === 'selector_ui') {
+            controller.intersections = [intersection]
           } else {
             controller.intersections = []
           }
