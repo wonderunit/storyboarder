@@ -63,7 +63,7 @@ ShaderLib[ 'line' ] = {
 			// conservative estimate of the near plane
 			float a = projectionMatrix[ 2 ][ 2 ]; // 3nd entry in 3th column
 			float b = projectionMatrix[ 3 ][ 2 ]; // 3nd entry in 4th column
-			float nearEstimate = - 0.5 * b / a;
+			float nearEstimate = - 0.1 * b / a;
 			float alpha = ( nearEstimate - start.z ) / ( end.z - start.z );
 			end.xyz = mix( start.xyz, end.xyz, alpha );
 		}
@@ -100,13 +100,13 @@ ShaderLib[ 'line' ] = {
 			// direction
 			vec2 dir = ndcEnd - ndcStart;
 			// account for clip-space aspect ratio
-			dir.x *= aspect;
+			//dir.x *= aspect;
 			dir = normalize( dir );
 			// perpendicular to dir
 			vec2 offset = vec2( dir.y, - dir.x );
 			// undo aspect ratio adjustment
 			dir.x /= aspect;
-			offset.x /= aspect;
+			//offset.x /= aspect;
 			// sign flip
 			if ( position.x < 0.0 ) offset *= - 1.0;
 			// endcaps
@@ -122,7 +122,7 @@ ShaderLib[ 'line' ] = {
 			// select end
 			vec4 clip = ( position.y < 0.5 ) ? clipStart : clipEnd;
 			// back to clip space
-			offset *= clip.w;
+			offset /= clip.w * 2.0;
 			clip.xy += offset;
 			gl_Position = clip;
 			vec4 mvPosition = ( position.y < 0.5 ) ? start : end; // this is an approximation

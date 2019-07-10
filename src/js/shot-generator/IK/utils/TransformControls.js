@@ -19,6 +19,7 @@ const TransformControls = function ( camera, domElement ) {
 
 	this.buttonPressed = -1;
 
+	this.domElement = domElement;
 
 	var _gizmo = new TransformControlsGizmo();
 	this.add( _gizmo );
@@ -701,7 +702,7 @@ const TransformControlsGizmo = function () {
 		fog: false
 	});
 
-	let defaultLineWidth = 0.009;
+	let defaultLineWidth = 2;
 	let matLine = new LineMaterial( {
 		depthTest: false,
 		depthWrite: false,
@@ -1137,7 +1138,9 @@ const TransformControlsGizmo = function () {
 				{
 					distance = parent.lengthTo(handle);
 				}
-				console.log(distance);
+				let domElement = this.parent.domElement;
+				matLine.resolution.set( domElement.clientWidth, domElement.clientHeight );
+				//console.log(distance);
 			}
 			// TODO: simplify helpers and consider decoupling from gizmo
 
