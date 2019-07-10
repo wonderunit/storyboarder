@@ -277,6 +277,7 @@ const Character = React.memo(({
       object.current.userData.parentPosition = parentPosition
       scene.add(object.current.bonesHelper)
 
+
       ragDoll.current = new RagDoll();
       let skeletonRig = ragDoll.current;
       let domElement = largeRenderer.current.domElement;
@@ -355,7 +356,7 @@ const Character = React.memo(({
 
   const updateSkeleton = () => {
     // skip this update if RagDoll recently ran an update
-    if(ragDoll.current.updatingReactSkeleton  )
+    if(ragDoll.current && ragDoll.current.updatingReactSkeleton)
     {
       ragDoll.current.updatingReactSkeleton = false;
       return;

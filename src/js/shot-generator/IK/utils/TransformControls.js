@@ -1,4 +1,7 @@
 const THREE = require("three");
+const {Line2} = require("./customLines/Line2");
+const {LineMaterial} = require("./customLines/LineMaterial");
+const {LineGeometry} = require("./customLines/LineGeometry");
 require("../utils/Object3dExtension");
 /**
  * @author arodic / https://github.com/arodic
@@ -219,7 +222,6 @@ const TransformControls = function ( camera, domElement ) {
 			this.object.updateMatrixWorld();
 			this.object.parent.matrixWorld.decompose( parentPosition, parentQuaternion, parentScale );
 			this.object.matrixWorld.decompose( worldPosition, worldQuaternion, worldScale );
-
 			parentQuaternionInv.copy( parentQuaternion ).inverse();
 			worldQuaternionInv.copy( worldQuaternion ).inverse();
 
@@ -677,8 +679,8 @@ const TransformControlsGizmo = function () {
 	this.type = 'TransformControlsGizmo';
 
 	//#region Min/Max scale for gizmo
-	let minimumScale = new THREE.Vector3(0.1, 0.1, 0.1);
-	let maximumScale = new THREE.Vector3(0.2, 0.2, 0.2);
+	let minimumScale = new THREE.Vector3(0.08, 0.08, 0.08);
+	let maximumScale = new THREE.Vector3(0.08, 0.08, 0.08);
 	//#endregion
 	// shared materials
 
@@ -697,6 +699,17 @@ const TransformControlsGizmo = function () {
 		linewidth: 1,
 		fog: false
 	});
+
+	let defaultLineWidth = 0.009;
+	let matLine = new LineMaterial( {
+		depthTest: false,
+		depthWrite: false,
+		transparent: true,
+		linewidth: defaultLineWidth, // in pixels
+		//resolution:  // to be set by renderer, eventually
+		dashed: false
+	} );
+
 
 	// Make unique material for each axis/color
 
@@ -730,13 +743,13 @@ const TransformControlsGizmo = function () {
 	var matYellow = gizmoMaterial.clone();
 	matYellow.color.set( 0xffff00 );
 
-	var matLineRed = gizmoLineMaterial.clone();
+	var matLineRed = matLine.clone();
 	matLineRed.color.set( 0xff0000 );
 
-	var matLineGreen = gizmoLineMaterial.clone();
+	var matLineGreen = matLine.clone();
 	matLineGreen.color.set( 0x00ff00 );
 
-	var matLineBlue = gizmoLineMaterial.clone();
+	var matLineBlue = matLine.clone();
 	matLineBlue.color.set( 0x0000ff );
 
 	var matLineCyan = gizmoLineMaterial.clone();
@@ -792,6 +805,14 @@ const TransformControlsGizmo = function () {
 
 	};
 
+	let createLineGeometryFromCircle = function(radius, arc )
+	{
+		let circleGeometry = CircleGeometry( radius, arc );
+		let lineGeometry = new LineGeometry();
+		lineGeometry.setPositions( circleGeometry.attributes.position.array );
+		return lineGeometry;
+	}
+
 	// Gizmo definitions - custom hierarchy definitions for setupGizmo() function
 
 	var gizmoTranslate = {
@@ -812,21 +833,26 @@ const TransformControlsGizmo = function () {
 	var gizmoScale  = {};
 	var pickerScale = {};
 	var helperScale = {};
+
+	let xLineGeometry = createLineGeometryFromCircle(1, 2.5);
+	let yLineGeometry = createLineGeometryFromCircle(1, 2.5);
+	let zLineGeometry = createLineGeometryFromCircle(1, 2.5);
+	
 	gizmoRotate = {
 		X: [
-			[ new THREE.Line( CircleGeometry( 1, 2.5 ), matLineRed ) ],
+			[ new Line2( xLineGeometry, matLineRed ) ],
 		],
 		Y: [
-			[ new THREE.Line( CircleGeometry( 1, 2.5 ), matLineGreen ), null, [ 0, 0, -Math.PI / 2 ] ],
+			[ new Line2( yLineGeometry, matLineGreen ), null, [ 0, 0, -Math.PI / 2 ] ],
 		],
 		Z: [
-			[ new THREE.Line( CircleGeometry( 1, 2.5 ), matLineBlue ), null, [ 0, Math.PI / 2, 0 ] ],
+			[ new Line2( zLineGeometry, matLineBlue ), null, [ 0, Math.PI / 2, 0 ] ],
 		],
 		E: [
-			[ new THREE.Line( CircleGeometry( 1.25, 1 ), matLineYellowTransparent ), null, [ 0, Math.PI / 2, 0 ] ],
+			[ new THREE.Line( CircleGeometry(1.25, 1), matLineYellowTransparent ), null, [ 0, Math.PI / 2, 0 ] ],
 		],
 		XYZE: [
-			[ new THREE.Line( CircleGeometry( 1, 1 ), matLineGray ), null, [ 0, Math.PI / 2, 0 ] ]
+			[  new THREE.Line( CircleGeometry(1, 1), matLineGray ), null, [ 0, Math.PI / 2, 0 ] ]
 		]
 		};
 
@@ -965,12 +991,12 @@ const TransformControlsGizmo = function () {
 				if (scale) {
 					object.scale.set(scale[ 0 ], scale[ 1 ], scale[ 2 ]);
 				}
-
 				object.updateMatrix();
-
-				var tempGeometry = object.geometry.clone();
+				
+				var tempGeometry = object.geometry;
 				tempGeometry.applyMatrix(object.matrix);
 				object.geometry = tempGeometry;
+				
 
 				object.position.set( 0, 0, 0 );
 				object.rotation.set( 0, 0, 0 );
@@ -1081,8 +1107,10 @@ const TransformControlsGizmo = function () {
 			handle.rotation.set( 0, 0, 0 );
 			handle.position.copy( this.worldPosition );
 
+			
+
 			var eyeDistance = this.worldPosition.distanceTo( this.cameraPosition);
-			handle.scale.set( 1, 1, 1 ).multiplyScalar( eyeDistance * this.size / 7 );
+			handle.scale.set( 1, 1, 1 ).multiplyScalar( eyeDistance * this.size / 21 );
 			if(handle.scale.x < minimumScale.x)
 			{
 				handle.scale.copy(minimumScale);
@@ -1091,6 +1119,20 @@ const TransformControlsGizmo = function () {
 			{
 				handle.scale.copy(maximumScale);
 			}
+			/* if(handle.isLine2)
+			{
+				let material = handle.material;
+				let eyeScalar = eyeDistance * this.size / 21;
+				if(handle.name === "X")
+				{
+					console.log(material.dashSize);
+				}
+				if(eyeScalar > defaultLineWidth)
+				{
+					eyeScalar = defaultLineWidth;
+				}
+				material.linewidth = eyeScalar;
+			} */
 			// TODO: simplify helpers and consider decoupling from gizmo
 
 			if ( handle.tag === 'helper' ) {
@@ -1169,6 +1211,7 @@ const TransformControlsGizmo = function () {
 					tempVector.set( 1e-10, 1e-10, 1e-10 ).add( this.worldPositionStart ).sub( this.worldPosition ).multiplyScalar( -1 );
 					tempVector.applyQuaternion( this.worldQuaternionStart.clone().inverse() );
 					handle.scale.copy( tempVector );
+				
 					handle.visible = this.dragging;
 
 				} else {
