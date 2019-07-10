@@ -775,6 +775,25 @@ select {
   height: 13px;
   /* background: linear-gradient(to right, rgba(45, 46, 57, 0), rgba(45, 46, 57, 1) 50%); */
 }
+.thumbnail-search .button__file {
+  display: flex;
+  width: 30px;
+  color: rgb(152, 152, 152);
+  background-color: rgba(255,255,255,0.05);
+  padding: 6px 0 4px 0;
+  border-radius: 6px;
+  font-size: 87.5%;
+  text-decoration: none;
+  justify-content: center;
+  align-items: center;
+  line-height: 1;
+}
+.thumbnail-search .button__file:hover {
+  background-color: rgba(255,255,255,0.1);
+}
+.thumbnail-search .button__file--selected {
+  color: #fff;
+}
 
 .object-property-heading {
   display: inline-block;
