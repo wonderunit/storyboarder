@@ -71,7 +71,7 @@ class RagdollEvents
 
     removeControlsEvents()
     {
-        let chainObject = this.chainObjects;
+        let chainObject = this.ragdoll.chainObjects;
         for (let i = 0; i < chainObject.length; i++)
         {
             let control = chainObject[i].controlTarget.control;
