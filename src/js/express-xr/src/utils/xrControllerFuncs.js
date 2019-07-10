@@ -53,10 +53,12 @@ const constraintObjectRotation = (controller, worldScale) => {
 const setControllerData = controller => {
   const geometry = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, -1)])
   const material = new THREE.LineBasicMaterial({
-    color: 0x0000ff,
-    depthTest: false,
-    depthWrite: false,
-    transparent: true
+    color: 0x4400ff,
+    linewidth: 5,
+    depthTest: true,
+    depthWrite: true,
+    transparent: true,
+    opacity: 0.4
   })
 
   const line = new THREE.Line(geometry, material)
