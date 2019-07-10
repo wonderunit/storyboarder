@@ -129,6 +129,8 @@ const SceneContent = ({
   const [addMode, setAddMode] = useState(null)
   const [virtualCamVisible, setVirtualCamVisible] = useState(true)
   const [flipHand, setFlipHand] = useState(false)
+  const [helpToggle, setHelpToggle] = useState(true)
+  const [helpSlide, setHelpSlide] = useState(0)
   const [currentBoard, setCurrentBoard] = useState(null)
   const [camExtraRot, setCamExtraRot] = useState(0)
   const [teleportPos, setTeleportPos] = useState(null)
@@ -323,6 +325,10 @@ const SceneContent = ({
             setFlipHand(oldValue => {
               return !oldValue
             })
+          } else if (button === 'help') {
+            setHelpToggle(oldValue => {
+              return !oldValue
+            })
           } else if (button === 'camera') {
             setAddMode('gui_camera')
 
@@ -347,6 +353,29 @@ const SceneContent = ({
             setTimeout(() => {
               setAddMode(null)
             }, 250)
+          }
+
+        }
+
+        if (name.includes('helpButton')) {
+          const slideCount = 8
+          const button = name.split('_')[0]
+          if (button === 'close') {
+            setHelpToggle(false)
+          } else if (button === 'prev') {
+            setAddMode('help_prev')
+            setHelpSlide(oldValue => {
+              const value = oldValue - 1
+              return value < 0 ? (slideCount-1) : value
+            })
+            setTimeout(() => {
+              setAddMode(null)
+            }, 250)
+          } else if (button === 'next') {
+            setAddMode('help_next')
+            setHelpSlide(oldValue => {
+              return (oldValue + 1) % slideCount
+            })
           }
         }
 
@@ -719,7 +748,7 @@ const SceneContent = ({
 
   const onGripDown = event => {
     teleportMode.current = true
-    
+
     const controller = event.target
     controller.gripped = true
 
@@ -1084,7 +1113,7 @@ const SceneContent = ({
         return (
           <primitive key={n} object={object}>
             {handedness === hand && (
-              <GUI {...{ aspectRatio, guiMode, addMode, currentBoard, selectedObject, hideArray, virtualCamVisible, flipHand, guiCamFOV, vrControllers }} />
+              <GUI {...{ aspectRatio, guiMode, addMode, currentBoard, selectedObject, hideArray, virtualCamVisible, flipHand, helpToggle, helpSlide, guiCamFOV, vrControllers }} />
             )}
             <SGController
               {...{ flipModel, modelData: getModelData(controllerObjectSettings), ...controllerObjectSettings }}

@@ -3406,7 +3406,7 @@ const renderShotGeneratorPanel = () => {
 
   let aspectRatio = boardData.aspectRatio
 
-  let onClick = event => {
+  let onOpen = event => {
     event.preventDefault()
 
     ipcRenderer.send('shot-generator:open', {
@@ -3420,7 +3420,7 @@ const renderShotGeneratorPanel = () => {
   }
 
   ReactDOM.render(
-    h([ShotGeneratorPanel, { thumbnail, aspectRatio, onClick }]),
+    h([ShotGeneratorPanel, { thumbnail, aspectRatio, onOpen }]),
     document.querySelector('#shot-generator-container')
   )
 }
