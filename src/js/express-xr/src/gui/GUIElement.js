@@ -26,7 +26,7 @@ const GUIElement = ({ ...props }) => {
     return roundedRectShape
   }, [props.width, props.height])
 
-  const texScale = props.name === 'help_ui' ? 0.9 : 0.75
+  const texScale = props.name === 'help_ui' ? 0.95 : 0.75
 
   return (
     <mesh

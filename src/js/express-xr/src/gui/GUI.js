@@ -542,7 +542,7 @@ const GUI = ({
         />
 
         {helpToggle && (
-          <group position={[0, (aspectRatio * (0.07 + bWidth) * 2 + uiScale + bWidth * 2) * 0.775 * 0.5 + (0.07 + bWidth) * 0.5 + bWidth * 2, 0]}>
+          <group position={[-0.2, (aspectRatio * (0.07 + bWidth) * 2 + uiScale + bWidth * 2) * 0.775 * 0.5 + (0.07 + bWidth) * 0.5 + bWidth * 2 +0.15, -0.4]} scale={[2, 2, 1]}>
             <group position={[(aspectRatio * (0.07 + bWidth) * 2 + uiScale + bWidth * 2) * -0.5 - uiScale * 0.5 - bWidth, 0, 0]} scale={[-1, 1, 1]}>
               <GUIElement
                 {...{
@@ -592,8 +592,8 @@ const GUI = ({
               {...{
                 icon: help_textures[helpSlide],
                 name: 'help_ui',
-                width: aspectRatio * (0.07 + bWidth) * 2 + uiScale + bWidth * 2,
-                height: (aspectRatio * (0.07 + bWidth) * 2 + uiScale + bWidth * 2) * 0.775,
+                width: aspectRatio * (0.07 + bWidth) * 2 + uiScale + bWidth * 3,
+                height: (aspectRatio * (0.07 + bWidth) * 2 + uiScale + bWidth * 3) * 0.775,
                 radius: bWidth,
                 color: 0xffffff
               }}
