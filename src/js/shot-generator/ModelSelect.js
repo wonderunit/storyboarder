@@ -14,12 +14,14 @@ const ModelLoader = require('../services/model-loader')
 const h = require('../utils/h')
 const { truncateMiddle } = require('../utils')
 
-const GUTTER_SIZE = 6
-const ITEM_WIDTH = 91
+const GUTTER_SIZE = 5
+const ITEM_WIDTH = 68
 const ITEM_HEIGHT = 132
 
 const IMAGE_WIDTH = ITEM_WIDTH
 const IMAGE_HEIGHT = 100
+
+const NUM_COLS = 4
 
 const ModelFileItem = React.memo(({
   style,
@@ -60,7 +62,7 @@ const ModelFileItem = React.memo(({
 
 const ListItem = React.memo(({ data, columnIndex, rowIndex, style }) => {
   let { id, selectedModel } = data
-  let model = data.models[columnIndex + (rowIndex * 3)]
+  let model = data.models[columnIndex + (rowIndex * NUM_COLS)]
   let onSelectItem = data.onSelectItem
 
   if (!model) return h(['div', { style }])
@@ -200,10 +202,10 @@ React.memo(({
       ['div.thumbnail-search__list', [
         FixedSizeGrid,
         {
-          columnCount: 3,
+          columnCount: NUM_COLS,
           columnWidth: ITEM_WIDTH + GUTTER_SIZE,
 
-          rowCount: Math.ceil(results.length / 3),
+          rowCount: Math.ceil(results.length / NUM_COLS),
           rowHeight: ITEM_HEIGHT,
 
           width: 288,
