@@ -5,6 +5,7 @@ const path = require('path')
 const fs = require('fs-extra')
 const classNames = require('classnames')
 const prompt = require('electron-prompt')
+const LiquidMetal = require('liquidmetal')
 const THREE = require('three')
 window.THREE = THREE
 
@@ -294,9 +295,10 @@ React.memo(({
       .filter(preset => {
         if (matchAll) return true
 
-        let termsRegex = new RegExp(terms, 'i')
-        return preset.name.match(termsRegex) ||
-                (preset.keywords && preset.keywords.match(termsRegex))
+        return (
+          (LiquidMetal.score(preset.name, terms) > 0.8) ||
+          (preset.keywords && LiquidMetal.score(preset.keywords, terms) > 0.8)
+        )
       })
   }, [sortedPosePresets, terms])
 
