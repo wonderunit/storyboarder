@@ -3,6 +3,7 @@ const {Line2} = require("./customLines/Line2");
 const {LineMaterial} = require("./customLines/LineMaterial");
 const {LineGeometry} = require("./customLines/LineGeometry");
 require("../utils/Object3dExtension");
+require("../utils/axisUtils");
 /**
  * @author arodic / https://github.com/arodic
  */
@@ -679,8 +680,8 @@ const TransformControlsGizmo = function () {
 	this.type = 'TransformControlsGizmo';
 
 	//#region Min/Max scale for gizmo
-	let minimumScale = new THREE.Vector3(0.08, 0.08, 0.08);
-	let maximumScale = new THREE.Vector3(0.08, 0.08, 0.08);
+	let minimumScale = new THREE.Vector3(0.1, 0.1, 0.1);
+	let maximumScale = new THREE.Vector3(0.2, 0.2, 0.2);
 	//#endregion
 	// shared materials
 
@@ -1004,6 +1005,9 @@ const TransformControlsGizmo = function () {
 
 				gizmo.add(object);
 
+				object.layers.disable(0)
+				object.layers.enable(1)
+				object.layers.disable(2)
 			}
 
 		}
@@ -1110,7 +1114,7 @@ const TransformControlsGizmo = function () {
 			
 
 			var eyeDistance = this.worldPosition.distanceTo( this.cameraPosition);
-			handle.scale.set( 1, 1, 1 ).multiplyScalar( eyeDistance * this.size / 21 );
+			handle.scale.set( 1, 1, 1 ).multiplyScalar( eyeDistance * this.size / 7 );
 			if(handle.scale.x < minimumScale.x)
 			{
 				handle.scale.copy(minimumScale);
@@ -1118,6 +1122,22 @@ const TransformControlsGizmo = function () {
 			if(handle.scale.x > maximumScale.x)
 			{
 				handle.scale.copy(maximumScale);
+			}
+
+			if(handle.isLine2 && handle.name === "X")
+			{
+				let distance;
+				let child = handle.children[0];
+				let parent = handle.parent;
+				if(child)
+				{
+					distance = handle.lengthTo(child);
+				}
+				else if(parent)
+				{
+					distance = parent.lengthTo(handle);
+				}
+				console.log(distance);
 			}
 			// TODO: simplify helpers and consider decoupling from gizmo
 
