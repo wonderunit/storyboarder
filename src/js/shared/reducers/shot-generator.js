@@ -557,7 +557,7 @@ const initialState = {
 
     'box': {
       id: 'box',
-      name: 'box',
+      name: 'Box',
       type: 'object',
       height: 1
     },
