@@ -14,7 +14,7 @@ const textPadding = 0.03
 const uiScale = 0.075
 const bWidth = 0.0125
 
-const GUI = ({ aspectRatio, guiMode, addMode, currentBoard, selectedObject, hideArray, virtualCamVisible, flipHand, guiCamFOV, vrControllers }) => {
+const GUI = ({ aspectRatio, guiMode, addMode, currentBoard, selectedObject, hideArray, virtualCamVisible, flipHand, selectorOffset, guiCamFOV, vrControllers }) => {
   const [textCount, setTextCount] = useState(0)
   const slidersRef = useRef([])
   const fovSliderRef = useRef([])
@@ -294,23 +294,79 @@ const GUI = ({ aspectRatio, guiMode, addMode, currentBoard, selectedObject, hide
     <group rotation={[(Math.PI / 180) * -30, 0, 0]} userData={{ type: 'gui' }} position={[0, 0.015, -0.005]}>
       <group rotation={[(Math.PI / 180) * -70, 0, 0]}>
         <group name="selector_container">
-          {true && (
+          {selectedObject && (
             <group
               position={[
-                (uiScale * 2.75 * 1.5 + uiScale * 0.5 + (uiScale * 0.5 + uiScale * 0.5) + bWidth * 3) * -1 * invertGUI,
-                uiScale * 2.75 * 0.5 - uiScale * 0.5,
+                (uiScale * 2 * 0.5 + uiScale * 2.75 * 1 + uiScale * 0.5 + (uiScale * 0.5 + uiScale * 0.5) + bWidth * 3) *
+                  -1 *
+                  invertGUI,
+                uiScale * 2 * 0.5 - uiScale * 0.5,
                 0
               ]}
             >
               <GUIElement
                 {...{
                   name: 'selector_ui',
-                  width: uiScale * 2.75,
-                  height: uiScale * 2.75,
+                  width: uiScale * 2,
+                  height: uiScale * 2,
                   radius: bWidth,
                   color: 'black'
                 }}
               />
+
+              <group position={[0, uiScale * selectorOffset * 0.5, 0.001]}>
+                <group position={[uiScale * -0, uiScale * 0.75, 0]} scale={[0.8, 0.8, 0.8]}>
+                  <GUIElement
+                    {...{
+                      icon: selection_texture,
+                      name: 'selector_1',
+                      width: uiScale * 0.5,
+                      height: uiScale * 0.5,
+                      radius: bWidth,
+                      color: guiMode === 'selection' ? 0x6e6e6e : 0x212121
+                    }}
+                  />
+                </group>
+
+                <group position={[uiScale * 0, uiScale * 0.25, 0]} scale={[0.8, 0.8, 0.8]}>
+                  <GUIElement
+                    {...{
+                      icon: duplicate_texture,
+                      name: 'selector_2',
+                      width: uiScale * 0.5,
+                      height: uiScale * 0.5,
+                      radius: bWidth,
+                      color: guiMode === 'duplicate' ? 0x6e6e6e : 0x212121
+                    }}
+                  />
+                </group>
+
+                <group position={[uiScale * -0, uiScale * -0.25, 0]} scale={[0.8, 0.8, 0.8]}>
+                  <GUIElement
+                    {...{
+                      icon: add_texture,
+                      name: 'selector_3',
+                      width: uiScale * 0.5,
+                      height: uiScale * 0.5,
+                      radius: bWidth,
+                      color: guiMode === 'add' ? 0x6e6e6e : 0x212121
+                    }}
+                  />
+                </group>
+
+                <group position={[uiScale * 0, uiScale * -0.75, 0]} scale={[0.8, 0.8, 0.8]}>
+                  <GUIElement
+                    {...{
+                      icon: erase_texture,
+                      name: 'selector_4',
+                      width: uiScale * 0.5,
+                      height: uiScale * 0.5,
+                      radius: bWidth,
+                      color: guiMode === 'erase' ? 0x6e6e6e : 0x212121
+                    }}
+                  />
+                </group>
+              </group>
             </group>
           )}
         </group>

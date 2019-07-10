@@ -136,6 +136,7 @@ const SceneContent = ({
   const [guiCamFOV, setGuiCamFOV] = useState(22)
   const [hideArray, setHideArray] = useState([])
   const [worldScale, setWorldScale] = useState(1)
+  const [selectorOffset, setSelectorOffset] = useState(0)
 
   const worldScaleRef = useRef(0.1)
   const worldScaleGroupRef = useRef([])
@@ -147,6 +148,7 @@ const SceneContent = ({
   const teleportMode = useRef(false)
   const initialCamPos = useRef()
   const hmdCamInitialized = useRef(false)
+  const previousTime = useRef([null])
 
   // Why do I need to create ref to access updated state in some functions?
   const guiModeRef = useRef(null)
@@ -619,13 +621,29 @@ const SceneContent = ({
   const onAxisChanged = event => {
     let selected = false
     let selectorHover = event.target.intersections.length && event.target.intersections[0].object.name === 'selector_ui' ? true : false
-    if (selectorHover) return
+
+    if (selectorHover && Math.abs(event.axes[1]) > 0.075) {
+      if (!previousTime.current) previousTime.current = 0
+
+      const currentTime = new Date().getTime()
+      const delta = currentTime - previousTime.current
+
+      const timeThreshold = 4 - parseInt(Math.abs(event.axes[1]) / 0.25)
+      if (delta > timeThreshold * 250) {
+        previousTime.current = currentTime
+        setSelectorOffset(oldValue => {
+          return oldValue + Math.sign(event.axes[1])
+        })
+      }
+
+      return
+    }
 
     vrControllers.forEach(controller => {
       if (!selected) selected = controller.userData.selected ? controller : false
     })
 
-    if (selected) {
+    if (selected) {    
       moveObject(event, selected, worldScale)
       rotateObject(event, selected)
     } else {
@@ -1089,7 +1107,7 @@ const SceneContent = ({
         return (
           <primitive key={n} object={object}>
             {handedness === hand && (
-              <GUI {...{ aspectRatio, guiMode, addMode, currentBoard, selectedObject, hideArray, virtualCamVisible, flipHand, guiCamFOV, vrControllers }} />
+              <GUI {...{ aspectRatio, guiMode, addMode, currentBoard, selectedObject, hideArray, virtualCamVisible, flipHand, selectorOffset, guiCamFOV, vrControllers }} />
             )}
             <SGController
               {...{ flipModel, modelData: getModelData(controllerObjectSettings), ...controllerObjectSettings }}
