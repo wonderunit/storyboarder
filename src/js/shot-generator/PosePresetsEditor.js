@@ -211,10 +211,10 @@ const PosePresetsEditorItem = React.memo(({ style, id, posePresetId, preset, upd
   }, [src])
 
   let className = classNames({
-    'pose-presets-editor__item--selected': posePresetId === preset.id
+    'thumbnail-search__item--selected': posePresetId === preset.id
   })
 
-  return h(['div.pose-presets-editor__item', {
+  return h(['div.thumbnail-search__item', {
     style,
     className,
     onClick,
@@ -224,7 +224,7 @@ const PosePresetsEditorItem = React.memo(({ style, id, posePresetId, preset, upd
     ['figure', { style: { width: IMAGE_WIDTH, height: IMAGE_HEIGHT }}, [
       ['img', { src, style: { width: IMAGE_WIDTH, height: IMAGE_HEIGHT } }]
     ]],
-    ['div.pose-presets-editor__name', {
+    ['div.thumbnail-search__name', {
       style: {
         width: ITEM_WIDTH,
         height: ITEM_HEIGHT - IMAGE_HEIGHT - GUTTER_SIZE
@@ -402,7 +402,7 @@ React.memo(({
   })
 
   return h(
-    ['div.pose-presets-editor.column', ready && [
+    ['div.thumbnail-search.column', ready && [
       ['div.row', { style: { padding: '6px 0' } }, [
         ['div.column', { style: { flex: 1 }}, [
           ['input', {
@@ -417,7 +417,7 @@ React.memo(({
           }, '+']
         ]]
       ]],
-      ['div.pose-presets-editor__list', [
+      ['div.thumbnail-search__list', [
         FixedSizeGrid,
         {
           columnCount: 4,

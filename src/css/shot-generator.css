@@ -253,7 +253,7 @@ kbd {
   display: none;
 }
 
-.pose-presets-editor__list div::-webkit-scrollbar {
+.thumbnail-search__list div::-webkit-scrollbar {
   display: none;
 }
 
@@ -703,16 +703,16 @@ select {
   min-height: 32px;
 }
 
-.pose-presets-editor {
+.thumbnail-search {
   width: 288px;
   position: relative;
   margin-bottom: 10px;
 }
-.pose-presets-editor,
-.pose-presets-editor * {
+.thumbnail-search,
+.thumbnail-search * {
   box-sizing: border-box;
 }
-.pose-presets-editor input {
+.thumbnail-search input {
   width: 100%;
   padding: 8px 6px;
   border: none;
@@ -722,41 +722,41 @@ select {
   font-size: 14px;
   border: 1px solid transparent;
 }
-.pose-presets-editor input:focus {
+.thumbnail-search input:focus {
   background-color: rgba(255,255,255,0.15);
   color: #999;
   outline: none;
 }
-.pose-presets-editor__list {
+.thumbnail-search__list {
 }
-.pose-presets-editor__item {
+.thumbnail-search__item {
   cursor: pointer;
   font-size: 13px;
   color: #999;
 }
-.pose-presets-editor__item:hover .pose-presets-editor__name {
+.thumbnail-search__item:hover .thumbnail-search__name {
   color: #ddd;
 }
-.pose-presets-editor__item.pose-presets-editor__item--selected .pose-presets-editor__name,
-.pose-presets-editor__item.pose-presets-editor__item--selected:hover .pose-presets-editor__name {
+.thumbnail-search__item.thumbnail-search__item--selected .thumbnail-search__name,
+.thumbnail-search__item.thumbnail-search__item--selected:hover .thumbnail-search__name {
   color: #fff;
 }
-.pose-presets-editor__item figure {
+.thumbnail-search__item figure {
   margin: 0;
   padding: 0;
   background-color: rgba(255,255,255,0.05);
   border-radius: 3px;
   overflow: hidden;
 }
-.pose-presets-editor__item figure img {
+.thumbnail-search__item figure img {
   opacity: 0.8;
   border-radius: 3px;
   overflow: hidden;
 }
-.pose-presets-editor__item:hover figure img {
+.thumbnail-search__item:hover figure img {
   opacity: 1.0;
 }
-.pose-presets-editor__item .pose-presets-editor__name {
+.thumbnail-search__item .thumbnail-search__name {
   position: relative;
   padding: 2px 0 0 0;
   line-height: 1;
@@ -764,7 +764,7 @@ select {
   overflow: hidden;
 }
 /* fade out overflow text */
-.pose-presets-editor__item .pose-presets-editor__name:after {
+.thumbnail-search__item .thumbnail-search__name:after {
   content: "";
   text-align: right;
   position: absolute;
