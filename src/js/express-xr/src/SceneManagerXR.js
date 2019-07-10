@@ -329,28 +329,6 @@ const SceneContent = ({
             setHelpToggle(oldValue => {
               return !oldValue
             })
-          }
-        }
-
-        if (name.includes('helpButton')) {
-          const slideCount = 8
-          const button = name.split('_')[0]
-          if (button === 'close') {
-            setHelpToggle(false)
-          } else if (button === 'prev') {
-            setAddMode('help_prev')
-            setHelpSlide(oldValue => {
-              const value = oldValue - 1
-              return value < 0 ? (slideCount-1) : value
-            })
-            setTimeout(() => {
-              setAddMode(null)
-            }, 250)
-          } else if (button === 'next') {
-            setAddMode('help_next')
-            setHelpSlide(oldValue => {
-              return (oldValue + 1) % slideCount
-            })
           } else if (button === 'camera') {
             setAddMode('gui_camera')
 
@@ -375,6 +353,29 @@ const SceneContent = ({
             setTimeout(() => {
               setAddMode(null)
             }, 250)
+          }
+
+        }
+
+        if (name.includes('helpButton')) {
+          const slideCount = 8
+          const button = name.split('_')[0]
+          if (button === 'close') {
+            setHelpToggle(false)
+          } else if (button === 'prev') {
+            setAddMode('help_prev')
+            setHelpSlide(oldValue => {
+              const value = oldValue - 1
+              return value < 0 ? (slideCount-1) : value
+            })
+            setTimeout(() => {
+              setAddMode(null)
+            }, 250)
+          } else if (button === 'next') {
+            setAddMode('help_next')
+            setHelpSlide(oldValue => {
+              return (oldValue + 1) % slideCount
+            })
           }
         }
 
