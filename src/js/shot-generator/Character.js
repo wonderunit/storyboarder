@@ -199,7 +199,11 @@ const Character = React.memo(({
       scene.remove(object.current.bonesHelper)
       scene.remove(object.current.orthoIcon)
       scene.remove(object.current)
-      ragDoll.current.removeFromScene();
+      boneRotationControl.current.deselectBone();
+      if(ragDoll.current)
+      {
+        ragDoll.current.removeFromScene();
+      }
       ragDoll.current = null;
       object.current.bonesHelper = null
       object.current = null
@@ -277,17 +281,9 @@ const Character = React.memo(({
       object.current.userData.parentPosition = parentPosition
       scene.add(object.current.bonesHelper)
 
-
-      ragDoll.current = new RagDoll();
-      let skeletonRig = ragDoll.current;
       let domElement = largeRenderer.current.domElement;
-     
-      let {controls, controlTargetSelection} = createTransformationControls(camera, domElement, scene);
-   
-      skeletonRig.initObject(scene, object.current, controls);
-      skeletonRig.controlTargetSelection = controlTargetSelection;
 
-      boneRotationControl.current = new BoneRotationControl(scene, camera, domElement, ragDoll.current);
+      boneRotationControl.current = new BoneRotationControl(scene, camera, domElement, object.current.uuid);
       let boneRotation = boneRotationControl.current;
       boneRotation.setUpdateCharacter((name, rotation) => {updateCharacterSkeleton({
         id,
@@ -299,6 +295,23 @@ const Character = React.memo(({
           z : rotation.z,
         }  
       } );}); 
+      console.log(mesh.name);
+      if(!(mesh.name === "female-adult-meso" || mesh.name === "adult-male-lod"
+      || mesh.name === "male-adult-meso" || mesh.name === "female-youth-meso"
+      || mesh.name === "female-youth-meso"))
+      {
+        console.log("custom model");
+        return;
+      }
+      ragDoll.current = new RagDoll();
+      let skeletonRig = ragDoll.current;
+
+      
+      let {controls, controlTargetSelection} = createTransformationControls(camera, domElement, scene);
+    
+      skeletonRig.initObject(scene, object.current, controls);
+      skeletonRig.controlTargetSelection = controlTargetSelection;
+
 
       skeletonRig.updateCharacterRotation((name, rotation) => {updateCharacterSkeleton({
         id,
@@ -319,6 +332,7 @@ const Character = React.memo(({
       skeletonRig.updateCharacterPos(({ x, y, z}) => updateObject(id, { x, y: z, z: y }))
 
       object.current.userData.ikRig = skeletonRig;
+     
     }
 
     return function cleanup () {
@@ -378,7 +392,10 @@ const Character = React.memo(({
       skeleton.pose()
       fixRootBone()
     }
-    ragDoll.current.ikSwitcher.applyToIk();  
+    if(ragDoll.current)
+    {
+      ragDoll.current.ikSwitcher.applyToIk();  
+    }
   }
 
   const getCurrentControllerRotation = (device, virtual) => {
@@ -432,7 +449,7 @@ const Character = React.memo(({
   //#region Camera changing 
   useEffect(() => {
     if(!ready) return
-    if(!ragDoll) return;
+    if(!ragDoll.current) return;
     let skeletonRig = ragDoll.current;
     skeletonRig.controlTargetSelection.camera = camera;
     boneRotationControl.current.setCamera(camera);
@@ -448,7 +465,10 @@ const Character = React.memo(({
       object.current.position.x = props.x
       object.current.position.z = props.y
       object.current.position.y = props.z
-      ragDoll.current.moveRagdoll();
+      if(ragDoll.current)
+      {
+        ragDoll.current.moveRagdoll();
+      }
       object.current.orthoIcon.position.copy(object.current.position)
     }
   }, [props.model, props.x, props.y, props.z, ready])
@@ -498,7 +518,10 @@ const Character = React.memo(({
     if (!props.posePresetId) return
     console.log(type, id, 'changed pose preset')
     resetPose()
-    ragDoll.current.setUpControlTargetsInitialPosition();
+    if(ragDoll.current)
+    {
+      ragDoll.current.setUpControlTargetsInitialPosition();
+    }
   }, [props.posePresetId])
 
   // HACK force reset skeleton pose on Board UUID change
@@ -528,7 +551,10 @@ const Character = React.memo(({
         object.current.scale.set( scale, scale, scale )
         if(heightChanged)
         {
-          ragDoll.current.reinitialize();
+          if(ragDoll.current)
+          {
+            ragDoll.current.reinitialize();
+          }
         }
       } else {
         object.current.scale.setScalar( props.height )
@@ -573,7 +599,10 @@ const Character = React.memo(({
     if (!ready) return
     if (!object.current) return
     
-    ragDoll.current.selectedSkeleton(isSelected);
+    if(ragDoll.current)
+    {
+      ragDoll.current.selectedSkeleton(isSelected);
+    }
 
     // handle selection/deselection - add/remove the bone stucture
     if (isSelected)

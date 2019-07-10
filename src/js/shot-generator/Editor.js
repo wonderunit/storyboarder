@@ -502,6 +502,7 @@ const Editor = connect(
           if (ModelLoader.needsCopy(loadable)) {
             let src = expectedFilepath
 
+            console.log(storyboarderFilePath);
             let dst = path.join(
               path.dirname(storyboarderFilePath),
               ModelLoader.projectFolder(loadable.type),

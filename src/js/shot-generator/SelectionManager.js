@@ -457,9 +457,12 @@ const SelectionManager = connect(
       if(dragTarget.target.userData.type === 'character')
       {
         let ikRig = dragTarget.target.userData.ikRig;
-        if(!ikRig.isEnabledIk && !ikRig.hipsMoving && !dragTarget.isBoneControl && !ikRig.hipsMouseDown)
+        if(!ikRig || !ikRig.isEnabledIk && !ikRig.hipsMoving && !ikRig.hipsMouseDown)
         {
-          drag(dragTarget.target, { x, y })
+          if(!dragTarget.isBoneControl)
+          {
+            drag(dragTarget.target, { x, y })
+          }
         }
 
       }

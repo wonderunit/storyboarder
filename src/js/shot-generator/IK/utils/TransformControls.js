@@ -1119,20 +1119,6 @@ const TransformControlsGizmo = function () {
 			{
 				handle.scale.copy(maximumScale);
 			}
-			/* if(handle.isLine2)
-			{
-				let material = handle.material;
-				let eyeScalar = eyeDistance * this.size / 21;
-				if(handle.name === "X")
-				{
-					console.log(material.dashSize);
-				}
-				if(eyeScalar > defaultLineWidth)
-				{
-					eyeScalar = defaultLineWidth;
-				}
-				material.linewidth = eyeScalar;
-			} */
 			// TODO: simplify helpers and consider decoupling from gizmo
 
 			if ( handle.tag === 'helper' ) {
