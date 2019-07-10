@@ -707,6 +707,7 @@ select {
   width: 288px;
   position: relative;
   margin-bottom: 10px;
+  text-transform: none;
 }
 .thumbnail-search,
 .thumbnail-search * {
