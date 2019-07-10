@@ -292,6 +292,9 @@ const GUI = ({
   const add_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/add.png'), [])
   const erase_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/erase.png'), [])
   const arrow_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/arrow.png'), [])
+  const hand_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/hand.png'), [])
+  const help_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/help.png'), [])
+  const close_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/close.png'), [])
 
   const camera_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/camera.png'), [])
   const eye_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/eye.png'), [])
@@ -539,8 +542,8 @@ const GUI = ({
         />
 
         {helpToggle && (
-          <group position={[0, aspectRatio * (0.07 + bWidth) * 2 * 0.775 * 0.5 + (0.07 + bWidth) * 0.5 + bWidth * 2, 0]}>
-            <group position={[aspectRatio * (0.07 + bWidth) * 2 * -0.5 - uiScale * 0.5 - bWidth, 0, 0]} scale={[-1, 1, 1]}>
+          <group position={[0, (aspectRatio * (0.07 + bWidth) * 2 + uiScale + bWidth * 2) * 0.775 * 0.5 + (0.07 + bWidth) * 0.5 + bWidth * 2, 0]}>
+            <group position={[(aspectRatio * (0.07 + bWidth) * 2 + uiScale + bWidth * 2) * -0.5 - uiScale * 0.5 - bWidth, 0, 0]} scale={[-1, 1, 1]}>
               <GUIElement
                 {...{
                   icon: arrow_texture,
@@ -553,7 +556,7 @@ const GUI = ({
               />
             </group>
 
-            <group position={[aspectRatio * (0.07 + bWidth) * 2 * 0.5 + uiScale * 0.5 + bWidth, 0, 0]}>
+            <group position={[(aspectRatio * (0.07 + bWidth) * 2 + uiScale + bWidth * 2) * 0.5 + uiScale * 0.5 + bWidth, 0, 0]}>
               <GUIElement
                 {...{
                   icon: arrow_texture,
@@ -568,13 +571,14 @@ const GUI = ({
 
             <group
               position={[
-                aspectRatio * (0.07 + bWidth) * 2 * 0.5 + uiScale * 0.5 + bWidth,
-                aspectRatio * (0.07 + bWidth) * 2 * 0.775 * 0.5 + uiScale * 0.5 + bWidth,
+                (aspectRatio * (0.07 + bWidth) * 2 + uiScale + bWidth * 2) * 0.5 + uiScale * 0.5 + bWidth,
+                (aspectRatio * (0.07 + bWidth) * 2 + uiScale + bWidth * 2) * 0.775 * 0.5 + uiScale * 0.5 + bWidth,
                 0
               ]}
             >
               <GUIElement
                 {...{
+                  icon: close_texture,
                   name: 'close_helpButton',
                   width: uiScale,
                   height: uiScale,
@@ -588,8 +592,8 @@ const GUI = ({
               {...{
                 icon: help_textures[helpSlide],
                 name: 'help_ui',
-                width: aspectRatio * (0.07 + bWidth) * 2,
-                height: aspectRatio * (0.07 + bWidth) * 2 * 0.775,
+                width: aspectRatio * (0.07 + bWidth) * 2 + uiScale + bWidth * 2,
+                height: (aspectRatio * (0.07 + bWidth) * 2 + uiScale + bWidth * 2) * 0.775,
                 radius: bWidth,
                 color: 0xffffff
               }}
@@ -644,6 +648,7 @@ const GUI = ({
         >
           <GUIElement
             {...{
+              icon: hand_texture,
               name: 'hand_button',
               width: uiScale * 0.5,
               height: uiScale * 0.5,
@@ -662,6 +667,7 @@ const GUI = ({
         >
           <GUIElement
             {...{
+              icon: help_texture,
               name: 'help_button',
               width: uiScale * 0.5,
               height: uiScale * 0.5,

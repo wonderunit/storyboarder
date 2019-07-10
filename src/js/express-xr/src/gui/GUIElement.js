@@ -26,6 +26,8 @@ const GUIElement = ({ ...props }) => {
     return roundedRectShape
   }, [props.width, props.height])
 
+  const texScale = props.name === 'help_ui' ? 0.9 : 0.75
+
   return (
     <mesh
       name={props.name}
@@ -42,7 +44,7 @@ const GUIElement = ({ ...props }) => {
         <mesh
           name={`${props.name}_icon`}
           userData={{ type: 'gui' }}
-          scale={[0.75, 0.75, 0.75]}
+          scale={[texScale, texScale, texScale]}
           position={[0, 0, 0.001]}
           material={new THREE.MeshBasicMaterial({ map: props.icon, transparent: true })}
         >
