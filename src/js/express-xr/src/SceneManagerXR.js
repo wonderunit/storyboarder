@@ -1242,7 +1242,31 @@ const SceneManagerXR = connect(
     undo,
     redo
   }) => {
-    const attachments = useAttachmentLoader({ sceneObjects, world })
+    const [attachments, attachmentsDispatch] = useAttachmentLoader()
+
+    useMemo(() => {
+      let loadables = Object.values(sceneObjects)
+        // has a value for model
+        .filter(o => o.model != null)
+        // has not loaded yet
+        .filter(o => o.loaded !== true)
+        // is not a box
+        .filter(o => !(o.type === 'object' && o.model === 'box'))
+
+      world.environment.file && loadables.push(
+        { type: 'environment', model: world.environment.file }
+      )
+
+      loadables.push(controllerObjectSettings)
+      loadables.push(cameraObjectSettings)
+
+      loadables.forEach(o =>
+        attachmentsDispatch({
+          type: 'PENDING',
+          payload: { id: getFilepathForLoadable({ type: o.type, model: o.model }) }
+        })
+      )
+    }, [sceneObjects])
 
     const getModelData = sceneObject => {
       let key = getFilepathForLoadable(sceneObject)
