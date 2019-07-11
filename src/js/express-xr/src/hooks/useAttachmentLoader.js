@@ -1,7 +1,8 @@
 const React = require('react')
 const { useMemo, useReducer } = React
-const { controllerObjectSettings, cameraObjectSettings } = require('../utils/xrObjectSettings')
 
+const THREE = require('three')
+window.THREE = window.THREE || THREE
 require('../../../vendor/three/examples/js/loaders/LoaderSupport')
 require('../../../vendor/three/examples/js/loaders/GLTFLoader')
 require('../../../vendor/three/examples/js/loaders/OBJLoader2')
@@ -12,7 +13,7 @@ const gltfLoader = new THREE.GLTFLoader(loadingManager)
 objLoader.setLogging(false, false)
 THREE.Cache.enabled = true
 
-const useAttachmentLoader = ({ sceneObjects, world }) => {
+const useAttachmentLoader = () => {
   // TODO why do PENDING and SUCCESS get dispatched twice?
   const [attachments, dispatch] = useReducer((state, action) => {
     switch (action.type) {
@@ -60,27 +61,6 @@ const useAttachmentLoader = ({ sceneObjects, world }) => {
   }, {})
 
   useMemo(() => {
-    let loadables = Object.values(sceneObjects)
-      // has a value for model
-      .filter(o => o.model != null)
-      // has not loaded yet
-      .filter(o => o.loaded !== true)
-      // is not a box
-      .filter(o => !(o.type === 'object' && o.model === 'box'))
-
-    world.environment.file && loadables.push(
-      { type: 'environment', model: world.environment.file }
-    )
-
-    loadables.push(controllerObjectSettings)
-    loadables.push(cameraObjectSettings)
-
-    loadables.forEach(o =>
-      dispatch({ type: 'PENDING', payload: { id: getFilepathForLoadable({ type: o.type, model: o.model }) } })
-    )
-  }, [sceneObjects])
-
-  useMemo(() => {
     Object.entries(attachments)
       .filter(([k, v]) => v.status === 'NotAsked')
       .forEach(([k, v]) => {
@@ -94,7 +74,7 @@ const useAttachmentLoader = ({ sceneObjects, world }) => {
       })
   }, [attachments])
 
-  return attachments
+  return [attachments, dispatch]
 }
 
 const getFilepathForLoadable = ({ type, model }) => {

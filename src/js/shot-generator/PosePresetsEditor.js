@@ -1,10 +1,11 @@
 const { remote } = require('electron')
-const { useState, useEffect, useLayoutEffect, useRef, useMemo, forwardRef } = React = require('react')
+const { useState, useEffect, useMemo, forwardRef } = React = require('react')
 const { connect } = require('react-redux')
 const path = require('path')
 const fs = require('fs-extra')
 const classNames = require('classnames')
 const prompt = require('electron-prompt')
+const LiquidMetal = require('liquidmetal')
 const THREE = require('three')
 window.THREE = THREE
 
@@ -29,7 +30,6 @@ const {
 const ModelLoader = require('../services/model-loader')
 
 require('../vendor/three/examples/js/utils/SkeletonUtils')
-require('../vendor/OutlineEffect.js')
 
 const defaultPosePresets = require('../shared/reducers/shot-generator-presets/poses.json')
 const presetsStorage = require('../shared/store/presetsStorage')
@@ -56,133 +56,13 @@ const ITEM_HEIGHT = 132
 const IMAGE_WIDTH = ITEM_WIDTH
 const IMAGE_HEIGHT = 100
 
-class PoseRenderer {
-  constructor () {
-    this.renderer = new THREE.WebGLRenderer({
-      canvas: document.createElement('canvas'),
-      antialias: true
-    })
-    this.renderer.setClearColor( 0x3e4043, 1 )
-
-    this.scene = new THREE.Scene()
-
-    this.camera = new THREE.PerspectiveCamera(
-      // fov
-      75,
-      // aspect ratio
-      IMAGE_WIDTH/IMAGE_HEIGHT,
-
-      // near
-      0.01,
-
-      // far
-      1000
-    )
-
-    let light = new THREE.AmbientLight(0xffffff, 0.3)
-    this.scene.add(light)
-
-    this.group = new THREE.Group()
-    this.scene.add(this.group)
-
-    let directionalLight = new THREE.DirectionalLight(0xFFFFFF, 0.7)
-
-    this.scene.add(directionalLight)
-    directionalLight.position.set(0, 5, 3)
-    directionalLight.rotation.z = Math.PI/6.0
-    directionalLight.rotation.y = Math.PI/6.0
-    directionalLight.rotation.x = Math.PI/6.0
-
-
-    this.camera.position.y = 1
-    this.camera.position.z = 2
-    this.scene.add(this.camera)
-
-    this.outlineEffect = new THREE.OutlineEffect(
-      this.renderer,
-      {
-        defaultThickness: 0.018, // 0.008, 0.009
-        ignoreMaterial: false,
-        defaultColor: [0, 0, 0]
-      }
-    )
-  }
-
-  setup ({ preset }) {
-    let pose = preset.state.skeleton
-    let skeleton = this.child.skeleton
-
-    skeleton.pose()
-    for (let name in pose) {
-      let bone = skeleton.getBoneByName(name)
-      if (bone) {
-        bone.rotation.x = pose[name].rotation.x
-        bone.rotation.y = pose[name].rotation.y
-        bone.rotation.z = pose[name].rotation.z
-
-        if (name === 'Hips') {
-          bone.rotation.x += Math.PI / 2.0
-        }
-      }
-    }
-  }
-
-  clear () {}
-
-  render () {
-    this.renderer.setSize(IMAGE_WIDTH*2, IMAGE_HEIGHT*2)
-    this.outlineEffect.render(this.scene, this.camera)
-  }
-
-  toDataURL (...args) {
-    return this.renderer.domElement.toDataURL(...args)
-  }
-
-  setModelData (modelData) {
-    if (!this.group.children.length) {
-      let group = THREE.SkeletonUtils.clone(modelData.scene.children[0])
-      this.child = group.children[1]
-
-      let material = new THREE.MeshToonMaterial({
-        color: 0xffffff,
-        emissive: 0x0,
-        specular: 0x0,
-        skinning: true,
-        shininess: 0,
-        flatShading: false,
-        morphNormals: true,
-        morphTargets: true,
-        map: modelData.scene.children[0].children[1].material.map
-      })
-      material.map.needsUpdate = true
-
-      this.child.material = material
-      this.group.add(group)
-      group.rotation.y = Math.PI/20
-
-      // uncomment to test a simple box
-      //
-      // let box = new THREE.Mesh(
-      //   new THREE.BoxGeometry( 1, 1, 1 ),
-      //   new THREE.MeshToonMaterial({
-      //     color: 0xcccccc,
-      //     emissive: 0x0,
-      //     specular: 0x0,
-      //     shininess: 0,
-      //     flatShading: false
-      //   })
-      // )
-      // this.group.add(box)
-    }
-  }
-}
-
-const poseRenderer = new PoseRenderer()
+const ThumbnailRenderer = require('./ThumbnailRenderer')
+const thumbnailRenderer = new ThumbnailRenderer()
 
 const PosePresetsEditorItem = React.memo(({ style, id, posePresetId, preset, updateObject }) => {
   const src = path.join(remote.app.getPath('userData'), 'presets', 'poses', `${preset.id}.jpg`)
 
-  const onClick = event => {
+  const onPointerDown = event => {
     event.preventDefault()
 
     let posePresetId = preset.id
@@ -195,10 +75,26 @@ const PosePresetsEditorItem = React.memo(({ style, id, posePresetId, preset, upd
     let hasRendered = fs.existsSync(src)
 
     if (!hasRendered) {
-      poseRenderer.setup({ preset })
-      poseRenderer.render()
-      let dataURL = poseRenderer.toDataURL('image/jpg')
-      poseRenderer.clear()
+
+      // setup thumbnail renderer
+      let pose = preset.state.skeleton
+      let skeleton = thumbnailRenderer.getChild().skeleton
+      skeleton.pose()
+      for (let name in pose) {
+        let bone = skeleton.getBoneByName(name)
+        if (bone) {
+          bone.rotation.x = pose[name].rotation.x
+          bone.rotation.y = pose[name].rotation.y
+          bone.rotation.z = pose[name].rotation.z
+
+          if (name === 'Hips') {
+            bone.rotation.x += Math.PI / 2.0
+          }
+        }
+      }
+      thumbnailRenderer.render()
+      let dataURL = thumbnailRenderer.toDataURL('image/jpg')
+      thumbnailRenderer.clear()
 
       fs.ensureDirSync(path.dirname(src))
 
@@ -211,20 +107,20 @@ const PosePresetsEditorItem = React.memo(({ style, id, posePresetId, preset, upd
   }, [src])
 
   let className = classNames({
-    'pose-presets-editor__item--selected': posePresetId === preset.id
+    'thumbnail-search__item--selected': posePresetId === preset.id
   })
 
-  return h(['div.pose-presets-editor__item', {
+  return h(['div.thumbnail-search__item', {
     style,
     className,
-    onClick,
+    onPointerDown,
     'data-id': preset.id,
     title: preset.name
   }, [
     ['figure', { style: { width: IMAGE_WIDTH, height: IMAGE_HEIGHT }}, [
       ['img', { src, style: { width: IMAGE_WIDTH, height: IMAGE_HEIGHT } }]
     ]],
-    ['div.pose-presets-editor__name', {
+    ['div.thumbnail-search__name', {
       style: {
         width: ITEM_WIDTH,
         height: ITEM_HEIGHT - IMAGE_HEIGHT - GUTTER_SIZE
@@ -294,9 +190,10 @@ React.memo(({
       .filter(preset => {
         if (matchAll) return true
 
-        let termsRegex = new RegExp(terms, 'i')
-        return preset.name.match(termsRegex) ||
-                (preset.keywords && preset.keywords.match(termsRegex))
+        return (
+          (LiquidMetal.score(preset.name, terms) > 0.8) ||
+          (preset.keywords && LiquidMetal.score(preset.keywords, terms) > 0.8)
+        )
       })
   }, [sortedPosePresets, terms])
 
@@ -304,7 +201,43 @@ React.memo(({
     if (ready) return
 
     if (attachments[filepath] && attachments[filepath].value) {
-      poseRenderer.setModelData(attachments[filepath].value)
+      let modelData = attachments[filepath].value
+      if (!thumbnailRenderer.getGroup().children.length) {
+        let group = THREE.SkeletonUtils.clone(modelData.scene.children[0])
+        thumbnailRenderer.setChild(group.children[1])
+
+        let material = new THREE.MeshToonMaterial({
+          color: 0xffffff,
+          emissive: 0x0,
+          specular: 0x0,
+          skinning: true,
+          shininess: 0,
+          flatShading: false,
+          morphNormals: true,
+          morphTargets: true,
+          map: modelData.scene.children[0].children[1].material.map
+        })
+        material.map.needsUpdate = true
+
+        thumbnailRenderer.getChild().material = material
+        thumbnailRenderer.getGroup().add(group)
+        group.rotation.y = Math.PI/20
+
+        // uncomment to test a simple box
+        //
+        // let box = new THREE.Mesh(
+        //   new THREE.BoxGeometry( 1, 1, 1 ),
+        //   new THREE.MeshToonMaterial({
+        //     color: 0xcccccc,
+        //     emissive: 0x0,
+        //     specular: 0x0,
+        //     shininess: 0,
+        //     flatShading: false
+        //   })
+        // )
+        // thumbnailRenderer.getChild().add(box)
+      }
+
       setTimeout(() => {
         setReady(true)
       }, 100) // slight delay for snappier character selection via click
@@ -317,7 +250,7 @@ React.memo(({
     setTerms(event.currentTarget.value)
   }
 
-  const onCreatePosePresetClick = event => {
+  const onCreatePosePreset = event => {
     event.preventDefault()
 
     // show a prompt to get the desired preset name
@@ -402,7 +335,7 @@ React.memo(({
   })
 
   return h(
-    ['div.pose-presets-editor.column', ready && [
+    ['div.thumbnail-search.column', ready && [
       ['div.row', { style: { padding: '6px 0' } }, [
         ['div.column', { style: { flex: 1 }}, [
           ['input', {
@@ -413,11 +346,11 @@ React.memo(({
         ['div.column', { style: { marginLeft: 5 }}, [
           ['a.button_add[href=#]', {
             style: { width: 30, height: 34 },
-            onClick: onCreatePosePresetClick
+            onPointerDown: onCreatePosePreset
           }, '+']
         ]]
       ]],
-      ['div.pose-presets-editor__list', [
+      ['div.thumbnail-search__list', [
         FixedSizeGrid,
         {
           columnCount: 4,

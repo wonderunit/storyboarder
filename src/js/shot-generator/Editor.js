@@ -7,6 +7,7 @@ const React = require('react')
 const { useState, useEffect, useRef, useContext, useMemo } = React
 
 const { ipcRenderer, remote } = require('electron')
+const { dialog } = remote
 
 const log = require('electron-log')
 

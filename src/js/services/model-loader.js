@@ -222,44 +222,6 @@ const isUserFile = string => {
   }
 }
 
-const promptToLocateModelPath = ({ title, message, defaultPath }) => {
-  return new Promise(resolve => {
-    const choice = dialog.showMessageBox({
-      type: 'question',
-      buttons: ['Yes', 'No'],
-      title,
-      message
-    })
-
-    const shouldRelocate = (choice === 0)
-
-    if (!shouldRelocate) {
-      resolve(undefined)
-      return
-    }
-
-    dialog.showOpenDialog(
-      {
-        title: 'Locate model file',
-        defaultPath,
-        filters: [
-          {
-            name: 'Model',
-            extensions: ['gltf', 'glb']
-          }
-        ]
-      },
-      filenames => {
-        if (filenames) {
-          resolve(filenames[0])
-        } else {
-          resolve(undefined)
-        }
-      }
-    )
-  })
-}
-
 // TODO could use app.getAppPath() instead?
 //
 // const { app } = require('electron').remote
@@ -335,7 +297,6 @@ module.exports = {
   isCustomModel,
 
   isUserFile,
-  promptToLocateModelPath,
 
   getFilepathForModel,
   needsCopy,
