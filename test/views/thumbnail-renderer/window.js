@@ -288,8 +288,8 @@ const Render = ({ model, modelData }) => {
       case 'box':
         camera.position.y -= 1
         camera.position.x += 0.05
-        group.rotation.y = (Math.PI/180)*22
         group.rotation.x = (Math.PI/180)*22
+        group.rotation.y = (Math.PI/180)*22
         break
 
       case 'bed-full':
@@ -298,22 +298,23 @@ const Render = ({ model, modelData }) => {
       case 'table-counter':
         camera.position.z += 1.2
         camera.position.y -= 0.2
-        group.rotation.y = (Math.PI/180)*90
         if (model.id === 'bed-twin') {
           group.position.y -= 0.15
         }
+        group.rotation.y = (Math.PI/180)*90
         break
 
       case 'chair-sofa-wide':
         camera.position.z += 6
         camera.position.y -= 0.2
-        group.rotation.y += (Math.PI/180)*45
         group.position.x = 2
         group.position.y = -1.5
+        group.rotation.y += (Math.PI/180)*45
         break
 
       case 'table-sit-rectangle':
         camera.position.z += 3
+        group.rotation.y = 0
         break
 
       case 'vehicle-car':
