@@ -138,7 +138,9 @@ React.memo(({
   allModels,
 
   updateObject,
-  transition
+  transition,
+
+  rows = 3
 }) => {
   const [terms, setTerms] = useState(null)
   
@@ -226,7 +228,7 @@ React.memo(({
           rowHeight: ITEM_HEIGHT,
 
           width: 288,
-          height: 363,
+          height: rows * 121,
 
           innerElementType,
 

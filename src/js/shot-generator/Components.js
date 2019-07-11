@@ -1419,7 +1419,9 @@ const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineStat
         ModelSelect, {
           sceneObject,
           updateObject,
-          transition
+          transition,
+
+          rows: sceneObject.type == 'character' ? 1 : 3
         }
       ],
 
