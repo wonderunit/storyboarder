@@ -76,14 +76,6 @@ class ThumbnailRenderer {
   getCamera () {
     return this.camera
   }
-
-  getChild () {
-    return this.child
-  }
-
-  setChild (child) {
-    this.child = child
-  }
 }
 
 module.exports = ThumbnailRenderer

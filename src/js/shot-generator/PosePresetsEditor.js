@@ -70,7 +70,7 @@ const setupRenderer = ({ thumbnailRenderer, attachments, preset }) => {
     let modelData = attachments[filepathFor(CHARACTER_MODEL)].value
 
     let group = THREE.SkeletonUtils.clone(modelData.scene.children[0])
-    thumbnailRenderer.setChild(group.children[1])
+    let child = group.children[1]
 
     let material = new THREE.MeshToonMaterial({
       color: 0xffffff,
@@ -85,7 +85,7 @@ const setupRenderer = ({ thumbnailRenderer, attachments, preset }) => {
     })
     material.map.needsUpdate = true
 
-    thumbnailRenderer.getChild().material = material
+    child.material = material
     thumbnailRenderer.getGroup().add(group)
     group.rotation.y = Math.PI/20
 
@@ -101,12 +101,13 @@ const setupRenderer = ({ thumbnailRenderer, attachments, preset }) => {
     //     flatShading: false
     //   })
     // )
-    // thumbnailRenderer.getChild().add(box)
+    // thumbnailRenderer.getGroup().add(box)
   }
 
   // setup thumbnail renderer
+  let mesh = thumbnailRenderer.getGroup().children[0].children[1]
   let pose = preset.state.skeleton
-  let skeleton = thumbnailRenderer.getChild().skeleton
+  let skeleton = mesh.skeleton
   skeleton.pose()
   for (let name in pose) {
     let bone = skeleton.getBoneByName(name)
