@@ -1,217 +1,217 @@
 {
   "bed-full": {
     "id": "bed-full",
-    "name": "bed-full",
+    "name": "Bed: Full",
     "type": "object",
     "height": 1
   },
   "bed-king": {
     "id": "bed-king",
-    "name": "bed-king",
+    "name": "Bed: King",
     "type": "object",
     "height": 1
   },
   "bed-twin": {
     "id": "bed-twin",
-    "name": "bed-twin",
+    "name": "Bed: Twin",
     "type": "object",
     "height": 1
   },
   "cabinet-bookshelf": {
     "id": "cabinet-bookshelf",
-    "name": "cabinet-bookshelf",
+    "name": "Cabinet: Bookshelf",
     "type": "object",
     "height": 1
   },
   "cabinet-dresser-3": {
     "id": "cabinet-dresser-3",
-    "name": "cabinet-dresser-3",
+    "name": "Cabinet: Dresser #3",
     "type": "object",
     "height": 1
   },
   "cabinet-dresser-5": {
     "id": "cabinet-dresser-5",
-    "name": "cabinet-dresser-5",
+    "name": "Cabinet: Dresser #5",
     "type": "object",
     "height": 1
   },
   "chair-bar": {
     "id": "chair-bar",
-    "name": "chair-bar",
+    "name": "Chair: Bar",
     "type": "object",
     "height": 1
   },
   "chair-box-arms": {
     "id": "chair-box-arms",
-    "name": "chair-box-arms",
+    "name": "Chair: Box, Arms",
     "type": "object",
     "height": 1
   },
   "chair-box": {
     "id": "chair-box",
-    "name": "chair-box",
+    "name": "Chair: Box",
     "type": "object",
     "height": 1
   },
   "chair-modern": {
     "id": "chair-modern",
-    "name": "chair-modern",
+    "name": "Chair: Modern",
     "type": "object",
     "height": 1
   },
   "chair-office": {
     "id": "chair-office",
-    "name": "chair-office",
+    "name": "Chair: Office",
     "type": "object",
     "height": 1
   },
   "chair-sofa-wide": {
     "id": "chair-sofa-wide",
-    "name": "chair-sofa-wide",
+    "name": "Chair: Sofa, Wide",
     "type": "object",
     "height": 1
   },
   "chair-sofa": {
     "id": "chair-sofa",
-    "name": "chair-sofa",
+    "name": "Chair: Sofa",
     "type": "object",
     "height": 1
   },
   "chair-stool-mini": {
     "id": "chair-stool-mini",
-    "name": "chair-stool-mini",
+    "name": "Chair: Stool, Mini",
     "type": "object",
     "height": 1
   },
   "chair-stool": {
     "id": "chair-stool",
-    "name": "chair-stool",
+    "name": "Chair: Stool",
     "type": "object",
     "height": 1
   },
   "door-double-frame": {
     "id": "door-double-frame",
-    "name": "door-double-frame",
+    "name": "Door: Double-Frame",
     "type": "object",
     "height": 1
   },
   "door-double": {
     "id": "door-double",
-    "name": "door-double",
+    "name": "Door: Double",
     "type": "object",
     "height": 1
   },
   "door-single-frame": {
     "id": "door-single-frame",
-    "name": "door-single-frame",
+    "name": "Door: Single-Frame",
     "type": "object",
     "height": 1
   },
   "door-single": {
     "id": "door-single",
-    "name": "door-single",
+    "name": "Door: Single",
     "type": "object",
     "height": 1
   },
   "primitive-cylinder-hollow": {
     "id": "primitive-cylinder-hollow",
-    "name": "primitive-cylinder-hollow",
+    "name": "Primitive: Cylinder, Hollow",
     "type": "object",
     "height": 1
   },
   "primitive-cylinder": {
     "id": "primitive-cylinder",
-    "name": "primitive-cylinder",
+    "name": "Primitive: Cylinder",
     "type": "object",
     "height": 1
   },
   "primitive-pyramid": {
     "id": "primitive-pyramid",
-    "name": "primitive-pyramid",
+    "name": "Primitive: Pyramid",
     "type": "object",
     "height": 1
   },
   "primitive-sphere": {
     "id": "primitive-sphere",
-    "name": "primitive-sphere",
+    "name": "Primitive: Sphere",
     "type": "object",
     "height": 1
   },
   "primitive-wedge": {
     "id": "primitive-wedge",
-    "name": "primitive-wedge",
+    "name": "Primitive: Wedge",
     "type": "object",
     "height": 1
   },
   "stairs-single-6": {
     "id": "stairs-single-6",
-    "name": "stairs-single-6",
+    "name": "Stairs: Single, 6",
     "type": "object",
     "height": 1
   },
   "table-bar-circle": {
     "id": "table-bar-circle",
-    "name": "table-bar-circle",
+    "name": "Table: Bar, Circle",
     "type": "object",
     "height": 1
   },
   "table-bar-rectangle": {
     "id": "table-bar-rectangle",
-    "name": "table-bar-rectangle",
+    "name": "Table: Bar, Rectangle",
     "type": "object",
     "height": 1
   },
   "table-bar": {
     "id": "table-bar",
-    "name": "table-bar",
+    "name": "Table: Bar",
     "type": "object",
     "height": 1
   },
   "table-coffee": {
     "id": "table-coffee",
-    "name": "table-coffee",
+    "name": "Table: Coffee",
     "type": "object",
     "height": 1
   },
   "table-counter": {
     "id": "table-counter",
-    "name": "table-counter",
+    "name": "Table: Counter",
     "type": "object",
     "height": 1
   },
   "table-nightstand": {
     "id": "table-nightstand",
-    "name": "table-nightstand",
+    "name": "Table: Nightstand",
     "type": "object",
     "height": 1
   },
   "table-sit-circle": {
     "id": "table-sit-circle",
-    "name": "table-sit-circle",
+    "name": "Table: Sit, Circle",
     "type": "object",
     "height": 1
   },
   "table-sit-rectangle": {
     "id": "table-sit-rectangle",
-    "name": "table-sit-rectangle",
+    "name": "Table: Sit, Rectangle",
     "type": "object",
     "height": 1
   },
   "table-sit-square": {
     "id": "table-sit-square",
-    "name": "table-sit-square",
+    "name": "Table: Sit, Square",
     "type": "object",
     "height": 1
   },
   "vehicle-bicycle-bmx": {
     "id": "vehicle-bicycle-bmx",
-    "name": "vehicle-bicycle-bmx",
+    "name": "Vehicle: Bicycle, BMX",
     "type": "object",
     "height": 1
   },
   "vehicle-car": {
     "id": "vehicle-car",
-    "name": "vehicle-car",
+    "name": "Vehicle: Car",
     "type": "object",
     "height": 1
   }
