@@ -1110,14 +1110,6 @@ const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineStat
         [CharacterPresetsEditor, { sceneObject }],
       ],
 
-      (sceneObject.type == 'object' || sceneObject.type == 'character') && [
-        ModelSelect, {
-          sceneObject,
-          updateObject,
-          transition
-        }
-      ],
-
       sceneObject.type != 'camera' &&
         [
           'div.row',
@@ -1422,6 +1414,14 @@ const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineStat
             ]
           ]
       ),
+
+      (sceneObject.type == 'object' || sceneObject.type == 'character') && [
+        ModelSelect, {
+          sceneObject,
+          updateObject,
+          transition
+        }
+      ],
 
       sceneObject.type == 'character' && [
         PosePresetsEditor, {
