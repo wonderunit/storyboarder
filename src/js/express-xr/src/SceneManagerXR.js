@@ -620,16 +620,18 @@ const SceneContent = ({
 
   const onAxisChanged = event => {
     let selected = false
-    let selectorHover = event.target.intersections.length && event.target.intersections[0].object.name === 'selector_ui' ? true : false
+    let selectorHover = event.target.intersections.length && event.target.intersections[0].object.name.includes('selector') ? true : false
 
-    if (selectorHover && Math.abs(event.axes[1]) > 0.075) {
+    if (selectorHover) {
+      if (Math.abs(event.axes[1]) < 0.125) return
       if (!previousTime.current) previousTime.current = 0
 
       const currentTime = new Date().getTime()
       const delta = currentTime - previousTime.current
 
       const timeThreshold = 4 - parseInt(Math.abs(event.axes[1]) / 0.25)
-      if (delta > timeThreshold * 250) {
+
+      if (delta > timeThreshold * 125) {
         previousTime.current = currentTime
         setSelectorOffset(oldValue => {
           return oldValue + Math.sign(event.axes[1])
@@ -895,7 +897,7 @@ const SceneContent = ({
           let intersection = intersections[0]
           if (intersection.object.userData.type === 'slider') {
             controller.intersections = intersections
-          } else if (intersection.object.name === 'selector_ui') {
+          } else if (intersection.object.name.includes('selector')) {
             controller.intersections = [intersection]
           } else {
             controller.intersections = []
