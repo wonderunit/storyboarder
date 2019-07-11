@@ -33,6 +33,11 @@ const roundedBoxFactory = () => {
   return new THREE.Mesh( geometry )
 }
 
+const filepathFor = model => 
+  ModelLoader.getFilepathForModel(
+    { model: model.id, type: model.type },
+    { storyboarderFilePath: null })
+
 // see: PosePresetsEditorItem
 const Render = ({ model, modelData }) => {
   const src = path.join(pathToShotGeneratorData, 'objects', `${model.id}.jpg`)
@@ -173,11 +178,6 @@ const TestView = connect(
 
   const loadables = Object.values(models)
     .filter(o => o.type === 'object')
-
-  const filepathFor = model => 
-    ModelLoader.getFilepathForModel(
-      { model: model.id, type: model.type },
-      { storyboarderFilePath: null })
 
   useMemo(() => {
     loadables
