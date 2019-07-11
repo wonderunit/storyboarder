@@ -313,7 +313,7 @@ const Render = ({ model, modelData }) => {
         break
 
       case 'table-sit-rectangle':
-        camera.position.z += 3
+        camera.position.z += 1.5
         group.rotation.y = 0
         break
 
