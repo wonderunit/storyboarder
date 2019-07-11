@@ -41,12 +41,6 @@
     "type": "object",
     "height": 1
   },
-  "chair-box-arms": {
-    "id": "chair-box-arms",
-    "name": "Chair: Box, Arms",
-    "type": "object",
-    "height": 1
-  },
   "chair-box": {
     "id": "chair-box",
     "name": "Chair: Box",
@@ -205,7 +199,7 @@
   },
   "vehicle-bicycle-bmx": {
     "id": "vehicle-bicycle-bmx",
-    "name": "Vehicle: Bicycle, BMX",
+    "name": "Vehicle: Bicycle BMX",
     "type": "object",
     "height": 1
   },
