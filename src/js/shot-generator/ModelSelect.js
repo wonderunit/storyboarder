@@ -183,7 +183,10 @@ React.memo(({
       .filter(model =>
         matchAll
           ? true
-          : LiquidMetal.score(model.name, terms) > 0.8
+          : LiquidMetal.score(
+              [model.name, model.keywords].filter(Boolean).join(' '),
+              terms
+            ) > 0.8
       )
   }, [terms])
 

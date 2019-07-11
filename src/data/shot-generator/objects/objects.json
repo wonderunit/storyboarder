@@ -201,7 +201,8 @@
     "id": "vehicle-bicycle-bmx",
     "name": "Vehicle: Bicycle BMX",
     "type": "object",
-    "height": 1
+    "height": 1,
+    "keywords": "bike"
   },
   "vehicle-car": {
     "id": "vehicle-car",
