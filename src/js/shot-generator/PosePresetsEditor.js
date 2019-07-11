@@ -1,5 +1,5 @@
 const { remote } = require('electron')
-const { useState, useEffect, useMemo, forwardRef } = React = require('react')
+const { useState, useEffect, useMemo, forwardRef, useRef } = React = require('react')
 const { connect } = require('react-redux')
 const path = require('path')
 const fs = require('fs-extra')
@@ -57,9 +57,72 @@ const IMAGE_WIDTH = ITEM_WIDTH
 const IMAGE_HEIGHT = 100
 
 const ThumbnailRenderer = require('./ThumbnailRenderer')
-const thumbnailRenderer = new ThumbnailRenderer()
 
-const PosePresetsEditorItem = React.memo(({ style, id, posePresetId, preset, updateObject }) => {
+const filepathFor = model => 
+  ModelLoader.getFilepathForModel(
+    { model: model.id, type: model.type },
+    { storyboarderFilePath: null })
+
+const CHARACTER_MODEL = { id: 'adult-male', type: 'character' }
+
+const setupRenderer = ({ thumbnailRenderer, attachments, preset }) => {
+  if (!thumbnailRenderer.getGroup().children.length) {
+    let modelData = attachments[filepathFor(CHARACTER_MODEL)].value
+
+    let group = THREE.SkeletonUtils.clone(modelData.scene.children[0])
+    thumbnailRenderer.setChild(group.children[1])
+
+    let material = new THREE.MeshToonMaterial({
+      color: 0xffffff,
+      emissive: 0x0,
+      specular: 0x0,
+      skinning: true,
+      shininess: 0,
+      flatShading: false,
+      morphNormals: true,
+      morphTargets: true,
+      map: modelData.scene.children[0].children[1].material.map
+    })
+    material.map.needsUpdate = true
+
+    thumbnailRenderer.getChild().material = material
+    thumbnailRenderer.getGroup().add(group)
+    group.rotation.y = Math.PI/20
+
+    // uncomment to test a simple box
+    //
+    // let box = new THREE.Mesh(
+    //   new THREE.BoxGeometry( 1, 1, 1 ),
+    //   new THREE.MeshToonMaterial({
+    //     color: 0xcccccc,
+    //     emissive: 0x0,
+    //     specular: 0x0,
+    //     shininess: 0,
+    //     flatShading: false
+    //   })
+    // )
+    // thumbnailRenderer.getChild().add(box)
+  }
+
+  // setup thumbnail renderer
+  let pose = preset.state.skeleton
+  let skeleton = thumbnailRenderer.getChild().skeleton
+  skeleton.pose()
+  for (let name in pose) {
+    let bone = skeleton.getBoneByName(name)
+    if (bone) {
+      bone.rotation.x = pose[name].rotation.x
+      bone.rotation.y = pose[name].rotation.y
+      bone.rotation.z = pose[name].rotation.z
+
+      if (name === 'Hips') {
+        bone.rotation.x += Math.PI / 2.0
+      }
+    }
+  }
+}
+
+const PosePresetsEditorItem = React.memo(({ style, id, posePresetId, preset, updateObject, attachments, thumbnailRenderer }) => {
   const src = path.join(remote.app.getPath('userData'), 'presets', 'poses', `${preset.id}.jpg`)
 
   const onPointerDown = event => {
@@ -75,26 +138,15 @@ const PosePresetsEditorItem = React.memo(({ style, id, posePresetId, preset, upd
     let hasRendered = fs.existsSync(src)
 
     if (!hasRendered) {
-
-      // setup thumbnail renderer
-      let pose = preset.state.skeleton
-      let skeleton = thumbnailRenderer.getChild().skeleton
-      skeleton.pose()
-      for (let name in pose) {
-        let bone = skeleton.getBoneByName(name)
-        if (bone) {
-          bone.rotation.x = pose[name].rotation.x
-          bone.rotation.y = pose[name].rotation.y
-          bone.rotation.z = pose[name].rotation.z
-
-          if (name === 'Hips') {
-            bone.rotation.x += Math.PI / 2.0
-          }
-        }
-      }
-      thumbnailRenderer.render()
-      let dataURL = thumbnailRenderer.toDataURL('image/jpg')
-      thumbnailRenderer.clear()
+      thumbnailRenderer.current = thumbnailRenderer.current || new ThumbnailRenderer()
+      setupRenderer({
+        thumbnailRenderer: thumbnailRenderer.current,
+        attachments,
+        preset
+      })
+      thumbnailRenderer.current.render()
+      let dataURL = thumbnailRenderer.current.toDataURL('image/jpg')
+      thumbnailRenderer.current.clear()
 
       fs.ensureDirSync(path.dirname(src))
 
@@ -130,7 +182,7 @@ const PosePresetsEditorItem = React.memo(({ style, id, posePresetId, preset, upd
 })
 
 const ListItem = React.memo(({ data, columnIndex, rowIndex, style }) => {
-  let { id, posePresetId, updateObject} = data
+  let { id, posePresetId, updateObject, attachments, thumbnailRenderer } = data
   let preset = data.presets[columnIndex + (rowIndex * 4)]
 
   if (!preset) return h(['div', { style }])
@@ -139,8 +191,10 @@ const ListItem = React.memo(({ data, columnIndex, rowIndex, style }) => {
     PosePresetsEditorItem,
     {
       style,
-      id, posePresetId, updateObject,
-      preset
+      id, posePresetId, attachments, updateObject,
+      preset,
+
+      thumbnailRenderer
     }
   ])
 })
@@ -173,15 +227,10 @@ React.memo(({
   createPosePreset,
   withState
 }) => {
+  const thumbnailRenderer = useRef()
+
   const [ready, setReady] = useState(false)
   const [terms, setTerms] = useState(null)
-
-  const filepath = useMemo(() =>
-    ModelLoader.getFilepathForModel(
-      { model: 'adult-male', type: 'character' },
-      { storyboarderFilePath: null }
-    )
-  , [])
 
   const presets = useMemo(() => {
     const matchAll = terms == null || terms.length === 0
@@ -200,44 +249,8 @@ React.memo(({
   useEffect(() => {
     if (ready) return
 
+    let filepath = filepathFor(CHARACTER_MODEL)
     if (attachments[filepath] && attachments[filepath].value) {
-      let modelData = attachments[filepath].value
-      if (!thumbnailRenderer.getGroup().children.length) {
-        let group = THREE.SkeletonUtils.clone(modelData.scene.children[0])
-        thumbnailRenderer.setChild(group.children[1])
-
-        let material = new THREE.MeshToonMaterial({
-          color: 0xffffff,
-          emissive: 0x0,
-          specular: 0x0,
-          skinning: true,
-          shininess: 0,
-          flatShading: false,
-          morphNormals: true,
-          morphTargets: true,
-          map: modelData.scene.children[0].children[1].material.map
-        })
-        material.map.needsUpdate = true
-
-        thumbnailRenderer.getChild().material = material
-        thumbnailRenderer.getGroup().add(group)
-        group.rotation.y = Math.PI/20
-
-        // uncomment to test a simple box
-        //
-        // let box = new THREE.Mesh(
-        //   new THREE.BoxGeometry( 1, 1, 1 ),
-        //   new THREE.MeshToonMaterial({
-        //     color: 0xcccccc,
-        //     emissive: 0x0,
-        //     specular: 0x0,
-        //     shininess: 0,
-        //     flatShading: false
-        //   })
-        // )
-        // thumbnailRenderer.getChild().add(box)
-      }
-
       setTimeout(() => {
         setReady(true)
       }, 100) // slight delay for snappier character selection via click
@@ -369,7 +382,11 @@ React.memo(({
 
             id: id,
             posePresetId: posePresetId,
-            updateObject
+
+            attachments,
+            updateObject,
+
+            thumbnailRenderer
           },
           children: ListItem
         }
