@@ -1118,20 +1118,6 @@ const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineStat
         }
       ],
 
-      // sceneObject.type == 'object' && [
-      //   'select', {
-      //     value: sceneObject.model,
-      //     onChange: event => {
-      //       event.preventDefault()
-      //       updateObject(sceneObject.id, { model: event.target.value })
-      //     }
-      //   }, [
-      //     [['box', 'box'], ['tree', 'tree'], ['chair', 'chair']].map(([name, value]) =>
-      //       ['option', { value }, name]
-      //     )
-      //   ]
-      // ],
-
       sceneObject.type != 'camera' &&
         [
           'div.row',
