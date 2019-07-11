@@ -279,6 +279,12 @@ const Render = ({ model, modelData }) => {
     }
 
     switch (model.id) {
+      case 'teen-male':
+      case 'teen-female':
+        group.scale.multiplyScalar(0.94)
+        group.rotation.y = Math.PI/20
+        break
+
       case 'box':
         camera.position.y -= 1
         camera.position.x += 0.05
