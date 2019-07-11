@@ -23,22 +23,30 @@ const IMAGE_HEIGHT = 100
 
 const NUM_COLS = 4
 
+const filepathFor = model => 
+  ModelLoader.getFilepathForModel(
+    { model: model.id, type: model.type },
+    { storyboarderFilePath: null })
+
 const ModelFileItem = React.memo(({
   style,
 
-  id,
-  selectedModel,
+  sceneObject,
   model,
+
+  modelData,
 
   onSelectItem
 }) => {
+  const src = filepathFor(model).replace(/.glb$/, '.jpg')
+
   const onSelect = event => {
     event.preventDefault()
-    onSelectItem(id, { model: model.id })
+    onSelectItem(sceneObject.id, { model: model.id })
   }
 
   let className = classNames({
-    'thumbnail-search__item--selected': selectedModel === model.id
+    'thumbnail-search__item--selected': sceneObject.model === model.id
   })
 
   return h(['div.thumbnail-search__item', {
@@ -49,7 +57,7 @@ const ModelFileItem = React.memo(({
     title: model.name
   }, [
     ['figure', { style: { width: IMAGE_WIDTH, height: IMAGE_HEIGHT }}, [
-      ['img', { style: { width: IMAGE_WIDTH, height: IMAGE_HEIGHT }}]
+      ['img', { src, style: { width: IMAGE_WIDTH, height: IMAGE_HEIGHT }}]
     ]],
     ['div.thumbnail-search__name', {
       style: {
@@ -61,19 +69,24 @@ const ModelFileItem = React.memo(({
 })
 
 const ListItem = React.memo(({ data, columnIndex, rowIndex, style }) => {
-  let { id, selectedModel } = data
+  let { sceneObject } = data
   let model = data.models[columnIndex + (rowIndex * NUM_COLS)]
   let onSelectItem = data.onSelectItem
 
   if (!model) return h(['div', { style }])
 
+
+  let filepath = (model.id !== 'box') && filepathFor(model)
+  let modelData = data.attachments[filepath] && data.attachments[filepath].value
+
   return h([
     ModelFileItem, {
       style,
 
-      id,
-      selectedModel,
+      sceneObject,
       model,
+
+      modelData,
 
       onSelectItem
     }
@@ -109,6 +122,8 @@ const FileSelect = ({ model, onSelectFile }) => {
 
 const ModelSelect = connect(
   state => ({
+    attachments: state.attachments,
+
     allModels: state.models
   }),
   {
@@ -117,6 +132,8 @@ const ModelSelect = connect(
 )(
 React.memo(({
   sceneObject,
+
+  attachments,
 
   allModels,
 
@@ -215,8 +232,10 @@ React.memo(({
 
           itemData: {
             models: results,
-            selectedModel: sceneObject.model,
-            id: sceneObject.id,
+            attachments,
+
+            sceneObject,
+
             onSelectItem
           },
           children: ListItem
