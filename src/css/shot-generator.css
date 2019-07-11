@@ -731,7 +731,7 @@ select {
 .thumbnail-search__list {
 }
 .thumbnail-search__item {
-  cursor: pointer;
+  cursor: default;
   font-size: 13px;
   color: #999;
 }
