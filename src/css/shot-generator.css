@@ -764,6 +764,10 @@ select {
   font-size: 13px;
   overflow: hidden;
 }
+.thumbnail-search__item:hover .thumbnail-search__name {
+  overflow: visible;
+  z-index: 1;
+}
 /* fade out overflow text */
 .thumbnail-search__item .thumbnail-search__name:after {
   content: "";

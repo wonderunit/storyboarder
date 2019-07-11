@@ -49,6 +49,9 @@ const ModelFileItem = React.memo(({
     'thumbnail-search__item--selected': sceneObject.model === model.id
   })
 
+  // allow a little text overlap
+  let slop = GUTTER_SIZE
+
   return h(['div.thumbnail-search__item', {
     style,
     className,
@@ -61,8 +64,8 @@ const ModelFileItem = React.memo(({
     ]],
     ['div.thumbnail-search__name', {
       style: {
-        width: ITEM_WIDTH,
-        height: ITEM_HEIGHT - IMAGE_HEIGHT - GUTTER_SIZE
+        width: ITEM_WIDTH + slop,
+        height: (ITEM_HEIGHT - IMAGE_HEIGHT - GUTTER_SIZE) + slop
       },
     }, model.name]
   ]])
