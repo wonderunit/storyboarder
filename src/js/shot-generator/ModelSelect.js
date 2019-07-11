@@ -55,7 +55,7 @@ const ModelFileItem = React.memo(({
   return h(['div.thumbnail-search__item', {
     style,
     className,
-    onPointerDown: onSelect,
+    onPointerUp: onSelect,
     'data-id': model.id,
     title: model.name
   }, [
@@ -112,7 +112,7 @@ const FileSelect = ({ model, onSelectFile }) => {
         'a.button__file[href=#]', {
           style: { flex: 1, width: '100%', height: 34, whiteSpace: 'nowrap', overflow: 'hidden' },
           className,
-          onPointerDown: onSelectFile,
+          onPointerUp: onSelectFile,
           title: isCustom ? path.basename(model) : undefined
         },
         isCustom
