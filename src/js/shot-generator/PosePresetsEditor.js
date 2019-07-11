@@ -1,5 +1,5 @@
 const { remote } = require('electron')
-const { useState, useEffect, useLayoutEffect, useRef, useMemo, forwardRef } = React = require('react')
+const { useState, useEffect, useMemo, forwardRef } = React = require('react')
 const { connect } = require('react-redux')
 const path = require('path')
 const fs = require('fs-extra')
