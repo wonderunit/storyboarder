@@ -305,10 +305,9 @@ const Render = ({ model, modelData }) => {
         break
 
       case 'chair-sofa-wide':
-        camera.position.z += 6
-        camera.position.y -= 0.2
-        group.position.x = 2
-        group.position.y = -1.5
+        camera.position.z += 1.5
+        camera.position.x -= 0.25
+        group.position.y = -0.25
         group.rotation.y += (Math.PI/180)*45
         break
 
