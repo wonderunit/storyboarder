@@ -73,6 +73,10 @@ class ThumbnailRenderer {
     return this.group
   }
 
+  getCamera () {
+    return this.camera
+  }
+
   getChild () {
     return this.child
   }
