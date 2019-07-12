@@ -644,6 +644,9 @@ const SceneContent = ({
         setSelectorOffset(oldValue => {
           let newValue = oldValue + Math.sign(event.axes[1])
           newValue = Math.max(newValue, 0)
+
+          const limit = parseInt(Object.keys(presets.poses).length / 4) 
+          newValue = Math.min(newValue, limit)
           return newValue
         })
       }

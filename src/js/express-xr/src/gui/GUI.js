@@ -28,7 +28,7 @@ const GUI = ({ aspectRatio, presets, guiMode, addMode, currentBoard, selectedObj
   }
 
   const poses = Object.values(presets.poses)
-  const poseVisibleAmount = Array.apply(null, {length: 16}).map(Number.call, Number)
+  const poseVisibleAmount = poses.slice(selectorOffset * 4, selectorOffset * 4 + 16)
   // console.log(camSettings)
 
   // const fovLabel = useMemo(() => {
