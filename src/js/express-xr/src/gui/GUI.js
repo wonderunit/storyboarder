@@ -14,7 +14,7 @@ const textPadding = 0.03
 const uiScale = 0.075
 const bWidth = 0.0125
 
-const GUI = ({ aspectRatio, guiMode, addMode, currentBoard, selectedObject, hideArray, virtualCamVisible, flipHand, selectorOffset, guiCamFOV, vrControllers }) => {
+const GUI = ({ aspectRatio, presets, guiMode, addMode, currentBoard, selectedObject, hideArray, virtualCamVisible, flipHand, selectorOffset, guiCamFOV, vrControllers }) => {
   const [textCount, setTextCount] = useState(0)
   const slidersRef = useRef([])
   const fovSliderRef = useRef([])
@@ -27,7 +27,8 @@ const GUI = ({ aspectRatio, guiMode, addMode, currentBoard, selectedObject, hide
     fov: guiCamFOV
   }
 
-  const poseIds = Array.apply(null, {length: 16}).map(Number.call, Number)
+  const poses = Object.values(presets.poses)
+  const poseVisibleAmount = Array.apply(null, {length: 16}).map(Number.call, Number)
   // console.log(camSettings)
 
   // const fovLabel = useMemo(() => {
@@ -289,7 +290,15 @@ const GUI = ({ aspectRatio, guiMode, addMode, currentBoard, selectedObject, hide
   const character_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/icon-toolbar-character.png'), [])
   const light_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/icon-toolbar-light.png'), [])
 
-  const pose_texture = useMemo(() => new THREE.TextureLoader().load('/data/presets/poses/8af56a03-2078-402a-9407-33cfecfcf460.jpg'), [])
+  const poseTextures = useMemo(() => {
+    const textureArray = []
+    poses.forEach((pose, id) => {
+      const texture = new THREE.TextureLoader().load(`/data/presets/poses/${pose.id}.jpg`)
+      textureArray[id] = texture
+    })
+
+    return textureArray
+  }, [])
 
   const invertGUI = flipHand ? -1 : 1
 
@@ -317,17 +326,17 @@ const GUI = ({ aspectRatio, guiMode, addMode, currentBoard, selectedObject, hide
                 }}
               />
 
-              <group position={[0, uiScale * selectorOffset * 0.5, 0.001]}>
-                {poseIds.map((pose, n) => {
-                  const x = (n % 4) * 0.5 - 0.75
-                  const y = parseInt(n / 4) * 0.5 - 0.75
+              <group position={[0, 0, 0.001]} scale={[0.9, 0.9, 0.9]}>
+                {poseVisibleAmount.map((pose, idx) => {
+                  const x = (idx % 4) * 0.5 - 0.75
+                  const y = (parseInt(idx / 4) * 0.5 - 0.75) * -1
 
                   return (
-                    <group key={n} position={[uiScale * x, uiScale * y, 0]} scale={[0.8, 0.8, 0.8]}>
+                    <group key={idx} position={[uiScale * x, uiScale * y, 0]} scale={[0.8, 0.8, 0.8]}>
                       <GUIElement
                         {...{
-                          icon: pose_texture,
-                          name: `selector_${n}`,
+                          icon: poseTextures[idx + selectorOffset * 4],
+                          name: `selector_${poses[idx + selectorOffset * 4].name}`,
                           width: uiScale * 0.5,
                           height: uiScale * 0.5,
                           radius: bWidth,

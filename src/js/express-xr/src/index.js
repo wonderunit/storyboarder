@@ -23,7 +23,7 @@ const SceneManagerXR = require('./SceneManagerXR')
 fetch('/state.json')
   .then(response => response.json())
   .then(result => {
-    const { aspectRatio, activeCamera, sceneObjects, world } = result
+    const { aspectRatio, activeCamera, sceneObjects, world, presets } = result
     const store = configureStore({
       aspectRatio,
       undoable: {
@@ -33,7 +33,7 @@ fetch('/state.json')
       },
       models: initialState.models,
       presets: {
-        poses: {},
+        poses: presets.poses,
         characters: {},
         scenes: {}
       }

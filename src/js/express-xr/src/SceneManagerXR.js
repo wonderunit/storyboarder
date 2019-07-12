@@ -108,6 +108,7 @@ const useVrControllers = ({ onSelectStart, onSelectEnd, onGripDown, onGripUp, on
 
 const SceneContent = ({
   aspectRatio,
+  presets,
   sceneObjects,
   getModelData,
   activeCamera,
@@ -634,7 +635,9 @@ const SceneContent = ({
       if (delta > timeThreshold * 125) {
         previousTime.current = currentTime
         setSelectorOffset(oldValue => {
-          return oldValue + Math.sign(event.axes[1])
+          let newValue = oldValue + Math.sign(event.axes[1])
+          newValue = Math.max(newValue, 0)
+          return newValue
         })
       }
 
@@ -1109,7 +1112,7 @@ const SceneContent = ({
         return (
           <primitive key={n} object={object}>
             {handedness === hand && (
-              <GUI {...{ aspectRatio, guiMode, addMode, currentBoard, selectedObject, hideArray, virtualCamVisible, flipHand, selectorOffset, guiCamFOV, vrControllers }} />
+              <GUI {...{ aspectRatio, presets, guiMode, addMode, currentBoard, selectedObject, hideArray, virtualCamVisible, flipHand, selectorOffset, guiCamFOV, vrControllers }} />
             )}
             <SGController
               {...{ flipModel, modelData: getModelData(controllerObjectSettings), ...controllerObjectSettings }}
@@ -1206,6 +1209,11 @@ const SceneContent = ({
 const SceneManagerXR = connect(
   state => ({
     aspectRatio: state.aspectRatio,
+    presets: {
+      poses: state.presets.poses,
+      characters: {},
+      scenes: {}
+    },
 
     world: getWorld(state),
     sceneObjects: getSceneObjects(state),
@@ -1225,6 +1233,7 @@ const SceneManagerXR = connect(
 )(
   ({
     aspectRatio,
+    presets,
     world,
     sceneObjects,
     activeCamera,
@@ -1251,6 +1260,7 @@ const SceneManagerXR = connect(
           <SceneContent
             {...{
               aspectRatio,
+              presets,
               sceneObjects,
               getModelData,
               activeCamera,
@@ -1270,6 +1280,6 @@ const SceneManagerXR = connect(
         <div className="scene-overlay"></div>
       </>
     )
- })
+  })
 
 module.exports = SceneManagerXR

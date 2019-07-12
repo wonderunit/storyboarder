@@ -48,7 +48,10 @@ class XRServer {
       res.json({
         ...getSerializedState(state),
 
-        aspectRatio
+        aspectRatio,
+        presets: {
+          poses: state.presets.poses
+        }
       })
     })
 
