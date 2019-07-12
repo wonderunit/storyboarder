@@ -33,7 +33,8 @@ const GUIElement = ({ ...props }) => {
       material={
         new THREE.MeshBasicMaterial({
           color: props.color,
-          side: THREE.DoubleSide
+          side: THREE.DoubleSide,
+          transparent: true
         })
       }
     >
