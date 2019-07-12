@@ -293,6 +293,13 @@ const SceneContent = ({
         intersection = intersections[1]
       }
 
+      if (intersection.object.name.includes('selector-pose')) {
+        const posePresetId = intersection.object.name.split('_')[1]
+        const skeleton = presets.poses[posePresetId].state.skeleton
+        const object = scene.getObjectById(selectedObject)
+        updateObject(object.userData.id, { posePresetId, skeleton })
+      }
+
       if (intersection.object.userData.type === 'gui') {
         const { name } = intersection.object
         if (name.includes('mode')) {

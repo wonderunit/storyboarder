@@ -336,7 +336,7 @@ const GUI = ({ aspectRatio, presets, guiMode, addMode, currentBoard, selectedObj
                       <GUIElement
                         {...{
                           icon: poseTextures[idx + selectorOffset * 4],
-                          name: `selector_${poses[idx + selectorOffset * 4].name}`,
+                          name: `selector-pose_${poses[idx + selectorOffset * 4].id}`,
                           width: uiScale * 0.5,
                           height: uiScale * 0.5,
                           radius: bWidth,
