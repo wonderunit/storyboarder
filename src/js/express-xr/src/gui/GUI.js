@@ -301,12 +301,13 @@ const GUI = ({ aspectRatio, presets, guiMode, addMode, currentBoard, selectedObj
   }, [])
 
   const invertGUI = flipHand ? -1 : 1
+  const object = scene.getObjectById(selectedObject)
 
   return (
     <group rotation={[(Math.PI / 180) * -30, 0, 0]} userData={{ type: 'gui' }} position={[0, 0.015, -0.005]}>
       <group rotation={[(Math.PI / 180) * -70, 0, 0]}>
         <group name="selector_container">
-          {selectedObject && (
+          {selectedObject && object.userData.type === 'character' && (
             <group
               position={[
                 (uiScale * 2 * 0.5 + uiScale * 2.75 * 1 + uiScale * 0.5 + (uiScale * 0.5 + uiScale * 0.5) + bWidth * 3) *
