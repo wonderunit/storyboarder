@@ -117,7 +117,7 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, virtualCam
       <group visible={virtualCamVisible || props.guiCamera === true}>
         <mesh
           userData={{ type: props.guiCamera ? 'gui' : 'view' }}
-          position={[0, props.guiCamera ? 0 : 0.3, (props.guiCamera ? 0.0025 : 0.01)]}
+          position={[0, props.guiCamera ? 0 : 0.3, props.guiCamera ? 0.0025 : 0.01]}
           material={heightShader}
         >
           <planeGeometry attach="geometry" args={[size * aspectRatio, size]} />
@@ -133,7 +133,10 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, virtualCam
             <planeGeometry attach="geometry" args={[size * aspectRatio, size]} />
           </mesh>
         )}
-        <mesh position={[0, props.guiCamera ? 0 : 0.3, 0]} material={new THREE.MeshBasicMaterial({ side: THREE.DoubleSide })}>
+        <mesh
+          position={[0, props.guiCamera ? 0 : 0.3, 0]}
+          material={new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, transparent: props.guiCamera ? true : false })}
+        >
           <planeGeometry
             attach="geometry"
             args={[size * aspectRatio + (props.guiCamera ? 0.005 : 0.015), size + (props.guiCamera ? 0.005 : 0.015)]}
