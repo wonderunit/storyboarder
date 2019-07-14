@@ -14,7 +14,7 @@ const textPadding = 0.03
 const uiScale = 0.075
 const bWidth = 0.0125
 
-const GUI = ({ aspectRatio, presets, guiMode, addMode, currentBoard, selectedObject, hideArray, virtualCamVisible, flipHand, selectorOffset, guiCamFOV, vrControllers }) => {
+const GUI = ({ aspectRatio, presets, guiMode, addMode, currentBoard, selectedObject, hideArray, virtualCamVisible, flipHand, selectorOffset, poseSelector, guiCamFOV, vrControllers }) => {
   const [textCount, setTextCount] = useState(0)
   const slidersRef = useRef([])
   const fovSliderRef = useRef([])
@@ -289,6 +289,7 @@ const GUI = ({ aspectRatio, presets, guiMode, addMode, currentBoard, selectedObj
   const object_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/icon-toolbar-object.png'), [])
   const character_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/icon-toolbar-character.png'), [])
   const light_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/icon-toolbar-light.png'), [])
+  const pose_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/pose.png'), [])
 
   const poseTextures = useMemo(() => {
     const textureArray = []
@@ -307,7 +308,7 @@ const GUI = ({ aspectRatio, presets, guiMode, addMode, currentBoard, selectedObj
     <group rotation={[(Math.PI / 180) * -30, 0, 0]} userData={{ type: 'gui' }} position={[0, 0.015, -0.005]}>
       <group rotation={[(Math.PI / 180) * -70, 0, 0]}>
         <group name="selector_container">
-          {selectedObject && object.userData.type === 'character' && (
+          {selectedObject && object.userData.type === 'character' && poseSelector && (
             <group
               position={[
                 (uiScale * 2 * 0.5 + uiScale * 2.75 * 1 + uiScale * 0.5 + (uiScale * 0.5 + uiScale * 0.5) + bWidth * 3) *
@@ -383,6 +384,27 @@ const GUI = ({ aspectRatio, presets, guiMode, addMode, currentBoard, selectedObj
               >
                 {sliderObjects}
               </group>
+
+              {object.userData.type === 'character' && (
+                <group
+                  position={[
+                    uiScale * 2.75 * -0.5 + uiScale * 0.25,
+                    ((textCount + 1) * (uiScale * 0.5 + bWidth) + bWidth) * -0.5 - uiScale * 0.25 - bWidth,
+                    0.001
+                  ]}
+                >
+                  <GUIElement
+                    {...{
+                      icon: pose_texture,
+                      name: 'pose_button',
+                      width: uiScale * 0.5,
+                      height: uiScale * 0.5,
+                      radius: bWidth,
+                      color: poseSelector ? 0x6e6e6e : 'black'
+                    }}
+                  />
+                </group>
+              )}
             </group>
           )}
         </group>
