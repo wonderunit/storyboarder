@@ -358,21 +358,24 @@ const GUI = ({ aspectRatio, presets, guiMode, addMode, currentBoard, selectedObj
                 {poseVisibleAmount.map((pose, idx) => {
                   const x = (idx % 4) * 0.5 - 0.75
                   const y = (parseInt(idx / 4) * 0.5 - 0.75) * -1
+                  const texture = poseTextures[idx + selectorOffset * 4]
 
-                  return (
-                    <group key={idx} position={[uiScale * x, uiScale * y, 0]} scale={[0.8, 0.8, 0.8]}>
-                      <GUIElement
-                        {...{
-                          icon: poseTextures[idx + selectorOffset * 4],
-                          name: `selector-pose_${poses[idx + selectorOffset * 4].id}`,
-                          width: uiScale * 0.5,
-                          height: uiScale * 0.5,
-                          radius: bWidth,
-                          color: 0x3e4043
-                        }}
-                      />
-                    </group>
-                  )
+                  if (texture.image) {
+                    return (
+                      <group key={idx} position={[uiScale * x, uiScale * y, 0]} scale={[0.8, 0.8, 0.8]}>
+                        <GUIElement
+                          {...{
+                            icon: poseTextures[idx + selectorOffset * 4],
+                            name: `selector-pose_${poses[idx + selectorOffset * 4].id}`,
+                            width: uiScale * 0.5,
+                            height: uiScale * 0.5,
+                            radius: bWidth,
+                            color: 0x3e4043
+                          }}
+                        />
+                      </group>
+                    )
+                  }
                 })}
               </group>
             </group>
