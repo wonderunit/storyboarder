@@ -311,7 +311,11 @@ const GUI = ({ aspectRatio, presets, guiMode, addMode, currentBoard, selectedObj
           {selectedObject && object.userData.type === 'character' && poseSelector && (
             <group
               position={[
-                (uiScale * 2 * 0.5 + uiScale * 2.75 * 1 + uiScale * 0.5 + (uiScale * 0.5 + uiScale * 0.5) + bWidth * 3) *
+                ((uiScale * 2 + bWidth) * 0.5 +
+                  uiScale * 2.75 * 1 +
+                  uiScale * 0.5 +
+                  (uiScale * 0.5 + uiScale * 0.5) +
+                  bWidth * 3) *
                   -1 *
                   invertGUI,
                 uiScale * 2.5 * 0.5 - uiScale * 0.5,
@@ -319,20 +323,38 @@ const GUI = ({ aspectRatio, presets, guiMode, addMode, currentBoard, selectedObj
               ]}
             >
               <primitive
-                position={[-uiScale + bWidth, uiScale * 1.25 - uiScale * 0.325, 0.001]}
+                position={[-uiScale + bWidth - bWidth * 0.5, uiScale * 1.25 - uiScale * 0.325, 0.001]}
                 object={textCreator.create('Poses', { color: 0xffffff, scale: 0.475, centerText: false })}
               />
               <GUIElement
                 {...{
                   name: 'selector_ui',
-                  width: uiScale * 2,
+                  width: uiScale * 2 + bWidth,
                   height: uiScale * 2.5,
                   radius: bWidth,
                   color: 'black'
                 }}
               />
 
-              <group position={[0, -uiScale * 0.25, 0.001]} scale={[0.9, 0.9, 0.9]}>
+              <group position={[bWidth * -0.5, -uiScale * 0.25, 0.001]} scale={[0.9, 0.9, 0.9]}>
+                <group
+                  position={[
+                    uiScale + bWidth * 0.75,
+                    -(uiScale * 2) / 8 + uiScale - ((uiScale * 6) / 4 / parseInt(poses.length / 4)) * selectorOffset,
+                    0
+                  ]}
+                >
+                  <GUIElement
+                    {...{
+                      name: 'pose_indicator',
+                      width: bWidth * 0.5,
+                      height: (uiScale * 2) / 4,
+                      radius: bWidth * 0.25,
+                      color: 0x6e6e6e
+                    }}
+                  />
+                </group>
+
                 {poseVisibleAmount.map((pose, idx) => {
                   const x = (idx % 4) * 0.5 - 0.75
                   const y = (parseInt(idx / 4) * 0.5 - 0.75) * -1
