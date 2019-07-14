@@ -135,7 +135,7 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, virtualCam
         )}
         <mesh
           position={[0, props.guiCamera ? 0 : 0.3, 0]}
-          material={new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, transparent: props.guiCamera ? true : false })}
+          material={new THREE.MeshBasicMaterial({ side: THREE.DoubleSide })}
         >
           <planeGeometry
             attach="geometry"

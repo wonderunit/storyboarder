@@ -90,20 +90,20 @@ export function createSlider({
   hitscanVolume.name = 'hitscanVolume'
 
   //  sliderBG volume
-  const sliderBG = new THREE.Mesh(rect.clone(), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0x000000, transparent: true }))
+  const sliderBG = new THREE.Mesh(rect.clone(), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0x000000 }))
   Colors.colorizeGeometry(sliderBG.geometry, 0xffffff)
   sliderBG.position.z = depth * 0.5
   sliderBG.position.x = width
 
   const borderWidth = 1 + 0.1 * width
-  let sliderBorder = new THREE.Mesh(rect.clone(), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0xffffff, transparent: true }))
+  let sliderBorder = new THREE.Mesh(rect.clone(), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0xffffff }))
   Colors.colorizeGeometry(sliderBorder.geometry, 0xffffff)
   sliderBorder.position.z = depth * 0.5 - 0.001
   sliderBorder.position.x = width - (width * borderWidth - width) * 0.5
   sliderBorder.geometry.scale(borderWidth, 1.1, 1)
   if (fovSlider) sliderBorder = new THREE.Object3D()
 
-  const material = new THREE.MeshBasicMaterial({ color: 0x6e6e6e, visible: !fovSlider, transparent: true })
+  const material = new THREE.MeshBasicMaterial({ color: 0x6e6e6e, visible: !fovSlider })
   const filledVolume = new THREE.Mesh(rect.clone(), material)
   hitscanVolume.add(filledVolume)
 
