@@ -313,21 +313,25 @@ const GUI = ({ aspectRatio, presets, guiMode, addMode, currentBoard, selectedObj
                 (uiScale * 2 * 0.5 + uiScale * 2.75 * 1 + uiScale * 0.5 + (uiScale * 0.5 + uiScale * 0.5) + bWidth * 3) *
                   -1 *
                   invertGUI,
-                uiScale * 2 * 0.5 - uiScale * 0.5,
+                uiScale * 2.5 * 0.5 - uiScale * 0.5,
                 0
               ]}
             >
+              <primitive
+                position={[-uiScale + bWidth, uiScale * 1.25 - uiScale * 0.325, 0.001]}
+                object={textCreator.create('Poses', { color: 0xffffff, scale: 0.475, centerText: false })}
+              />
               <GUIElement
                 {...{
                   name: 'selector_ui',
                   width: uiScale * 2,
-                  height: uiScale * 2,
+                  height: uiScale * 2.5,
                   radius: bWidth,
                   color: 'black'
                 }}
               />
 
-              <group position={[0, 0, 0.001]} scale={[0.9, 0.9, 0.9]}>
+              <group position={[0, -uiScale * 0.25, 0.001]} scale={[0.9, 0.9, 0.9]}>
                 {poseVisibleAmount.map((pose, idx) => {
                   const x = (idx % 4) * 0.5 - 0.75
                   const y = (parseInt(idx / 4) * 0.5 - 0.75) * -1
