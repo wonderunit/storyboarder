@@ -490,7 +490,7 @@ const GUI = ({
                 {objectVisibleAmount.map((object, idx) => {
                   const x = (idx % 4) * 0.5 - 0.75
                   const y = (parseInt(idx / 4) * 0.5 - 0.75) * -1
-                  const texture = objectTextures[idx + 4 + selectorOffset * 4]
+                  const texture = objectTextures[idx + selectorOffset * 4]
 
                   if (texture && texture.image) {
                     return (

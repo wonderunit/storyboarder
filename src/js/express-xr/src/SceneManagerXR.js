@@ -304,6 +304,12 @@ const SceneContent = ({
         updateObject(object.userData.id, { posePresetId, skeleton })
       }
 
+      if (intersection.object.name.includes('selector-object')) {
+        const model = intersection.object.name.split('_')[1]
+        const object = scene.getObjectById(selectedObject)
+        updateObject(object.userData.id, { model })
+      }
+
       if (intersection.object.userData.type === 'gui') {
         const { name } = intersection.object
         if (name.includes('mode')) {
