@@ -728,7 +728,7 @@ const GUI = ({
               width: uiScale * 0.5,
               height: uiScale * 0.5,
               radius: bWidth,
-              color: addMode === 'gui_camera' ? 0x6e6e6e : 0x212121
+              color: addMode === 'gui_camera' ? 0x6e6e6e : 'black'
             }}
           />
         </group>
@@ -747,7 +747,7 @@ const GUI = ({
               width: uiScale * 0.5,
               height: uiScale * 0.5,
               radius: bWidth,
-              color: virtualCamVisible ? 0x6e6e6e : 0x212121
+              color: virtualCamVisible ? 0x6e6e6e : 'black'
             }}
           />
         </group>
@@ -766,7 +766,7 @@ const GUI = ({
               width: uiScale * 0.5,
               height: uiScale * 0.5,
               radius: bWidth,
-              color: flipHand ? 0x6e6e6e : 0x212121
+              color: flipHand ? 0x6e6e6e : 'black'
             }}
           />
         </group>
@@ -785,7 +785,7 @@ const GUI = ({
               width: uiScale * 0.5,
               height: uiScale * 0.5,
               radius: bWidth,
-              color: helpToggle ? 0x6e6e6e : 0x212121
+              color: helpToggle ? 0x6e6e6e : 'black'
             }}
           />
         </group>
