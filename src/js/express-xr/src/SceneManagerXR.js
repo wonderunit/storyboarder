@@ -131,7 +131,7 @@ const SceneContent = ({
   const [addMode, setAddMode] = useState(null)
   const [virtualCamVisible, setVirtualCamVisible] = useState(true)
   const [flipHand, setFlipHand] = useState(false)
-  const [poseSelector, setPoseSelector] = useState(false)
+  const [guiSelector, setGuiSelector] = useState(false)
   const [helpToggle, setHelpToggle] = useState(false)
   const [helpSlide, setHelpSlide] = useState(0)
   const [currentBoard, setCurrentBoard] = useState(null)
@@ -337,8 +337,9 @@ const SceneContent = ({
             setFlipHand(oldValue => {
               return !oldValue
             })
-          } else if (button === 'pose') {
-            setPoseSelector(oldValue => {
+          } else if (button === 'selector') {
+            setSelectorOffset(0)
+            setGuiSelector(oldValue => {
               return !oldValue
             })
           } else if (button === 'help') {
@@ -1157,7 +1158,7 @@ const SceneContent = ({
         return (
           <primitive key={n} object={object}>
             {handedness === hand && (
-              <GUI {...{ aspectRatio, models, presets, guiMode, addMode, currentBoard, selectedObject, hideArray, virtualCamVisible, flipHand, selectorOffset, poseSelector, helpToggle, helpSlide, guiCamFOV, vrControllers }} />
+              <GUI {...{ aspectRatio, models, presets, guiMode, addMode, currentBoard, selectedObject, hideArray, virtualCamVisible, flipHand, selectorOffset, guiSelector, helpToggle, helpSlide, guiCamFOV, vrControllers }} />
             )}
             <SGController
               {...{ flipModel, modelData: getModelData(controllerObjectSettings), ...controllerObjectSettings }}

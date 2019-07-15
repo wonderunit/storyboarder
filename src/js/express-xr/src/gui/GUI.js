@@ -26,7 +26,7 @@ const GUI = ({
   virtualCamVisible,
   flipHand,
   selectorOffset, 
-  poseSelector,
+  guiSelector,
   helpToggle,
   helpSlide,
   guiCamFOV,
@@ -315,7 +315,9 @@ const GUI = ({
   const object_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/icon-toolbar-object.png'), [])
   const character_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/icon-toolbar-character.png'), [])
   const light_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/icon-toolbar-light.png'), [])
-  const pose_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/pose.png'), [])
+  
+  const poseSelect_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/pose.png'), [])
+  const objectSelect_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/object.png'), [])
 
   const poseTextures = useMemo(() => {
     const textureArray = []
@@ -365,7 +367,7 @@ const GUI = ({
     <group rotation={[(Math.PI / 180) * -30, 0, 0]} userData={{ type: 'gui' }} position={[0, 0.015, -0.005]}>
       <group rotation={[(Math.PI / 180) * -70, 0, 0]}>
         <group name="selector_container">
-          {selectedObject && object.userData.type === 'character' && poseSelector && (
+          {selectedObject && object.userData.type === 'character' && guiSelector && (
             <group
               position={[
                 ((uiScale * 2 + bWidth) * 0.5 +
@@ -417,7 +419,7 @@ const GUI = ({
                   const y = (parseInt(idx / 4) * 0.5 - 0.75) * -1
                   const texture = poseTextures[idx + selectorOffset * 4]
 
-                  if (texture.image) {
+                  if (texture && texture.image) {
                     return (
                       <group key={idx} position={[uiScale * x, uiScale * y, 0]} scale={[0.8, 0.8, 0.8]}>
                         <GUIElement
@@ -438,7 +440,7 @@ const GUI = ({
             </group>
           )}
 
-          {selectedObject && object.userData.type === 'object' && (
+          {selectedObject && object.userData.type === 'object' && guiSelector && (
             <group
               position={[
                 ((uiScale * 2 + bWidth) * 0.5 +
@@ -490,7 +492,7 @@ const GUI = ({
                   const y = (parseInt(idx / 4) * 0.5 - 0.75) * -1
                   const texture = objectTextures[idx + 4 + selectorOffset * 4]
 
-                  if (texture.image) {
+                  if (texture && texture.image) {
                     return (
                       <group key={idx} position={[uiScale * x, uiScale * y, 0]} scale={[0.8, 0.8, 0.8]}>
                         <GUIElement
@@ -540,7 +542,7 @@ const GUI = ({
                 {sliderObjects}
               </group>
 
-              {object.userData.type === 'character' && (
+              {(object.userData.type === 'object' || object.userData.type === 'character') && (
                 <group
                   position={[
                     uiScale * 2.75 * -0.5 + uiScale * 0.25,
@@ -550,12 +552,12 @@ const GUI = ({
                 >
                   <GUIElement
                     {...{
-                      icon: pose_texture,
-                      name: 'pose_button',
+                      icon: object.userData.type === 'object' ? objectSelect_texture : poseSelect_texture,
+                      name: 'selector_button',
                       width: uiScale * 0.5,
                       height: uiScale * 0.5,
                       radius: bWidth,
-                      color: poseSelector ? 0x6e6e6e : 'black'
+                      color: guiSelector ? 0x6e6e6e : 'black'
                     }}
                   />
                 </group>
