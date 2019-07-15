@@ -131,6 +131,8 @@ const SceneContent = ({
   const [virtualCamVisible, setVirtualCamVisible] = useState(true)
   const [flipHand, setFlipHand] = useState(false)
   const [poseSelector, setPoseSelector] = useState(false)
+  const [helpToggle, setHelpToggle] = useState(false)
+  const [helpSlide, setHelpSlide] = useState(0)
   const [currentBoard, setCurrentBoard] = useState(null)
   const [camExtraRot, setCamExtraRot] = useState(0)
   const [teleportPos, setTeleportPos] = useState(null)
@@ -338,6 +340,10 @@ const SceneContent = ({
             setPoseSelector(oldValue => {
               return !oldValue
             })
+          } else if (button === 'help') {
+            setHelpToggle(oldValue => {
+              return !oldValue
+            })
           } else if (button === 'camera') {
             setAddMode('gui_camera')
 
@@ -362,6 +368,29 @@ const SceneContent = ({
             setTimeout(() => {
               setAddMode(null)
             }, 250)
+          }
+
+        }
+
+        if (name.includes('helpButton')) {
+          const slideCount = 8
+          const button = name.split('_')[0]
+          if (button === 'close') {
+            setHelpToggle(false)
+          } else if (button === 'prev') {
+            setAddMode('help_prev')
+            setHelpSlide(oldValue => {
+              const value = oldValue - 1
+              return value < 0 ? (slideCount-1) : value
+            })
+            setTimeout(() => {
+              setAddMode(null)
+            }, 250)
+          } else if (button === 'next') {
+            setAddMode('help_next')
+            setHelpSlide(oldValue => {
+              return (oldValue + 1) % slideCount
+            })
           }
         }
 
@@ -760,7 +789,7 @@ const SceneContent = ({
 
   const onGripDown = event => {
     teleportMode.current = true
-    
+
     const controller = event.target
     controller.gripped = true
 
@@ -1127,7 +1156,7 @@ const SceneContent = ({
         return (
           <primitive key={n} object={object}>
             {handedness === hand && (
-              <GUI {...{ aspectRatio, presets, guiMode, addMode, currentBoard, selectedObject, hideArray, virtualCamVisible, flipHand, selectorOffset, poseSelector, guiCamFOV, vrControllers }} />
+              <GUI {...{ aspectRatio, presets, guiMode, addMode, currentBoard, selectedObject, hideArray, virtualCamVisible, flipHand, selectorOffset, poseSelector, helpToggle, helpSlide, guiCamFOV, vrControllers }} />
             )}
             <SGController
               {...{ flipModel, modelData: getModelData(controllerObjectSettings), ...controllerObjectSettings }}
@@ -1262,7 +1291,31 @@ const SceneManagerXR = connect(
     undo,
     redo
   }) => {
-    const attachments = useAttachmentLoader({ sceneObjects, world })
+    const [attachments, attachmentsDispatch] = useAttachmentLoader()
+
+    useMemo(() => {
+      let loadables = Object.values(sceneObjects)
+        // has a value for model
+        .filter(o => o.model != null)
+        // has not loaded yet
+        .filter(o => o.loaded !== true)
+        // is not a box
+        .filter(o => !(o.type === 'object' && o.model === 'box'))
+
+      world.environment.file && loadables.push(
+        { type: 'environment', model: world.environment.file }
+      )
+
+      loadables.push(controllerObjectSettings)
+      loadables.push(cameraObjectSettings)
+
+      loadables.forEach(o =>
+        attachmentsDispatch({
+          type: 'PENDING',
+          payload: { id: getFilepathForLoadable({ type: o.type, model: o.model }) }
+        })
+      )
+    }, [sceneObjects])
 
     const getModelData = sceneObject => {
       let key = getFilepathForLoadable(sceneObject)
