@@ -4606,6 +4606,10 @@ const resize = () => {
 }
 
 window.onkeydown = (e) => {
+  stopPlaying()
+
+  if (!storyboarderSketchPane) return
+
   // if this is not a locked board
   if (!storyboarderSketchPane.getIsLocked()) {
     // but we're busy (e.g.: marquee, straight line drawing)
@@ -4801,82 +4805,93 @@ let disableDragMode = () => {
 ///////////////////////////////////////////////////////////////
 // Playback
 ///////////////////////////////////////////////////////////////
+const NANOSECONDS_TO_MSECS = BigInt(1e+6)
 
 let playbackMode = false
-let frameTimer
+let playbackStart
+let playbackFrom
+
 let speakingMode = false
 let utter = new SpeechSynthesisUtterance()
 
-let stopPlaying = () => {
-  clearTimeout(frameTimer)
+const startPlaying = () => {
+  playbackMode = true
+  playbackStart = process.hrtime.bigint()
+  playbackFrom = boardData.boards[currentBoard].time
 
+  audioPlayback.start()
+  audioPlayback.playBoard(currentBoard)
+
+  playbackAdvance()
+
+  if (transport) transport.setState({ playbackMode })
+  ipcRenderer.send('preventSleep')
+}
+
+const stopPlaying = () => {
   // prevent unnecessary calls
   if (!playbackMode) return
 
+  playbackMode = false
+
   audioPlayback.stop()
 
-  playbackMode = false
   utter.onend = null
-  ipcRenderer.send('resumeSleep')
   speechSynthesis.cancel()
+
   if (transport) transport.setState({ playbackMode })
+  ipcRenderer.send('resumeSleep')
 }
 
-let togglePlayback = async ()=> {
-  if (playbackMode) {
+const playSpeech = () => {
+  speechSynthesis.cancel()
+  utter.pitch = 0.65
+  utter.rate = 1.1
+
+  var string = boardData.boards[currentBoard].dialogue.split(':')
+  string = string[string.length - 1]
+
+  utter.text = string
+  speechSynthesis.speak(utter)
+}
+
+const togglePlayback = () =>
+  playbackMode
+    ? stopPlaying()
+    : startPlaying()
+
+const playbackAdvance = async () => {
+  if (!playbackMode) return
+
+  let now = process.hrtime.bigint()
+  let d = playbackFrom + Number((now - playbackStart) / NANOSECONDS_TO_MSECS)
+
+  let lastBoard = boardData.boards[boardData.boards.length - 1]
+  if (d > lastBoard.time + boardModel.boardDurationWithAudio(boardData, lastBoard)) {
+    // console.log('playbackAdvance: done!')
     stopPlaying()
-    playbackMode = false
-  } else {
-    playbackMode = true
-    ipcRenderer.send('preventSleep')
-    await playAdvance(true)
+    return
   }
-  transport.setState({ playbackMode })
-}
 
-let playAdvance = async (first, isComplete) => {
-  // clearTimeout(playheadTimer)
-  clearTimeout(frameTimer)
-
-  // are we at the end?
-  if (isComplete) {
-    stopPlaying()
-  } else {
-
-    if (first) {
-      audioPlayback.start()
-      audioPlayback.playBoard(currentBoard)
+  let boardNow
+  for (let board of boardData.boards) {
+    if (board.time > d) {
+      break
     } else {
-      await goNextBoard(1)
+      boardNow = board
     }
-
+  }
+  if (boardData.boards[currentBoard] !== boardNow) {
     if (playbackMode && boardData.boards[currentBoard].dialogue && speakingMode) {
-      speechSynthesis.cancel()
-      utter.pitch = 0.65
-      utter.rate = 1.1
-
-      var string = boardData.boards[currentBoard].dialogue.split(':')
-      string = string[string.length-1]
-
-      utter.text = string
-      speechSynthesis.speak(utter)
+      playSpeech()
     }
 
-    var frameDuration
-    if (boardData.boards[currentBoard].duration) {
-      frameDuration = boardData.boards[currentBoard].duration
-    } else {
-      frameDuration = boardData.defaultBoardTiming
-    }
-    frameTimer = setTimeout(
-      playAdvance,
-      frameDuration,
-      false, // first
-      currentBoard === boardData.boards.length - 1 // isComplete
-    )
+    await gotoBoard(boardData.boards.indexOf(boardNow))
   }
-}
 
+  // console.log('playbackAdvance', boardNow.number)
+  requestAnimationFrame(playbackAdvance)
+}
 
 //// VIEW
 
