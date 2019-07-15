@@ -257,20 +257,20 @@ const SGCharacter = ({ id, type, worldScale, isSelected, updateObject, modelData
     return {}
   }, [modelData])
 
-  const { bonesHelper } = useMemo(() => {
-    if (object.current) {
-      let bonesHelper = new BonesHelper(skeleton.bones[0].parent, object.current, {
-        boneLengthScale,
-        cacheKey: props.model
-      })
-
-      return {
-        bonesHelper
-      }
+  const bonesHelper = useMemo(() => {
+    if (ready && object.current) {
+      return new BonesHelper(
+        skeleton.bones[0].parent,
+        skinnedMesh,
+        {
+          boneLengthScale,
+          cacheKey: props.model
+        }
+      )
+    } else {
+      return undefined
     }
-
-    return {}
-  }, [object.current])
+  }, [ready, object.current])
 
   useEffect(() => {
     return function cleanup() {
