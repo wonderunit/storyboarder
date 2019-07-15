@@ -367,7 +367,7 @@ const GUI = ({
     <group rotation={[(Math.PI / 180) * -30, 0, 0]} userData={{ type: 'gui' }} position={[0, 0.015, -0.005]}>
       <group rotation={[(Math.PI / 180) * -70, 0, 0]}>
         <group name="selector_container">
-          {selectedObject && object.userData.type === 'character' && guiSelector && (
+          {selectedObject && object.userData.type === 'character' && guiSelector === 'pose' && (
             <group
               position={[
                 ((uiScale * 2 + bWidth) * 0.5 +
@@ -440,7 +440,80 @@ const GUI = ({
             </group>
           )}
 
-          {selectedObject && object.userData.type === 'object' && guiSelector && (
+          {selectedObject && object.userData.type === 'character' && guiSelector === 'character' && (
+            <group
+              position={[
+                ((uiScale * 2 + bWidth) * 0.5 +
+                  uiScale * 2.75 * 1 +
+                  uiScale * 0.5 +
+                  (uiScale * 0.5 + uiScale * 0.5) +
+                  bWidth * 3) *
+                  -1 *
+                  invertGUI,
+                uiScale * 2.5 * 0.5 - uiScale * 0.5,
+                0
+              ]}
+            >
+              <primitive
+                position={[-uiScale + bWidth - bWidth * 0.5, uiScale * 1.25 - uiScale * 0.325, 0.001]}
+                object={textCreator.create('Characters', { color: 0xffffff, scale: 0.475, centerText: false })}
+              />
+              <GUIElement
+                {...{
+                  name: 'selector_ui',
+                  width: uiScale * 2 + bWidth,
+                  height: uiScale * 2.5,
+                  radius: bWidth,
+                  color: 'black'
+                }}
+              />
+
+              <group position={[bWidth * -0.5, -uiScale * 0.25, 0.001]} scale={[0.9, 0.9, 0.9]}>
+                <group
+                  position={[
+                    uiScale + bWidth * 0.75,
+                    -(uiScale * 2) / 8 + uiScale - ((uiScale * 6) / 4 / parseInt(poses.length / 4)) * selectorOffset,
+                    0
+                  ]}
+                >
+                  <GUIElement
+                    {...{
+                      name: 'scroll_indicator',
+                      width: bWidth * 0.5,
+                      height: (uiScale * 2) / 4,
+                      radius: bWidth * 0.25,
+                      color: 0x6e6e6e
+                    }}
+                  />
+                </group>
+
+                {characterVisibleAmount.map((object, idx) => {
+                  const x = (idx % 4) * 0.5 - 0.75
+                  const y = (parseInt(idx / 4) * 0.5 - 0.75) * -1
+                  const texture = characterTextures[idx + selectorOffset * 4]
+
+                  if (texture && texture.image) {
+                    return (
+                      <group key={idx} position={[uiScale * x, uiScale * y, 0]} scale={[0.8, 0.8, 0.8]}>
+                        <GUIElement
+                          {...{
+                            icon: texture,
+                            name: `selector-character_${characters[idx + selectorOffset * 4].id}`,
+                            width: uiScale * 0.5,
+                            height: uiScale * 0.5,
+                            radius: bWidth,
+                            color: 0x3e4043
+                          }}
+                        />
+                      </group>
+                    )
+                  }
+                })}
+              </group>
+            </group>
+          )}
+
+          {selectedObject && object.userData.type === 'object' && guiSelector === 'object' && (
             <group
               position={[
                 ((uiScale * 2 + bWidth) * 0.5 +
@@ -542,7 +615,7 @@ const GUI = ({
                 {sliderObjects}
               </group>
 
-              {(object.userData.type === 'object' || object.userData.type === 'character') && (
+              {object.userData.type === 'object' && (
                 <group
                   position={[
                     uiScale * 2.75 * -0.5 + uiScale * 0.25,
@@ -552,14 +625,56 @@ const GUI = ({
                 >
                   <GUIElement
                     {...{
-                      icon: object.userData.type === 'object' ? objectSelect_texture : poseSelect_texture,
-                      name: 'selector_button',
+                      icon: objectSelect_texture,
+                      name: `selector_object_button`,
                       width: uiScale * 0.5,
                       height: uiScale * 0.5,
                       radius: bWidth,
-                      color: guiSelector ? 0x6e6e6e : 'black'
+                      color: guiSelector === 'object' ? 0x6e6e6e : 'black'
                     }}
                   />
+                </group>
+              )}
+
+              {object.userData.type === 'character' && (
+                <group>
+                  <group
+                    position={[
+                      uiScale * 2.75 * -0.5 + uiScale * 0.25,
+                      ((textCount + 1) * (uiScale * 0.5 + bWidth) + bWidth) * -0.5 - uiScale * 0.25 - bWidth,
+                      0.001
+                    ]}
+                  >
+                    <GUIElement
+                      {...{
+                        icon: poseSelect_texture,
+                        name: `selector_pose_button`,
+                        width: uiScale * 0.5,
+                        height: uiScale * 0.5,
+                        radius: bWidth,
+                        color: guiSelector === 'pose' ? 0x6e6e6e : 'black'
+                      }}
+                    />
+                  </group>
+
+                  <group
+                    position={[
+                      uiScale * 2.75 * -0.5 + uiScale * 0.75 + bWidth,
+                      ((textCount + 1) * (uiScale * 0.5 + bWidth) + bWidth) * -0.5 - uiScale * 0.25 - bWidth,
+                      0.001
+                    ]}
+                  >
+                    <GUIElement
+                      {...{
+                        icon: poseSelect_texture,
+                        name: `selector_character_button`,
+                        width: uiScale * 0.5,
+                        height: uiScale * 0.5,
+                        radius: bWidth,
+                        color: guiSelector === 'character' ? 0x6e6e6e : 'black'
+                      }}
+                    />
+                  </group>
                 </group>
               )}
             </group>

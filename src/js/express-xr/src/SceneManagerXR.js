@@ -310,6 +310,12 @@ const SceneContent = ({
         updateObject(object.userData.id, { model })
       }
 
+      if (intersection.object.name.includes('selector-character')) {
+        const model = intersection.object.name.split('_')[1]
+        const object = scene.getObjectById(selectedObject)
+        updateObject(object.userData.id, { model })
+      }
+
       if (intersection.object.userData.type === 'gui') {
         const { name } = intersection.object
         if (name.includes('mode')) {
@@ -344,9 +350,11 @@ const SceneContent = ({
               return !oldValue
             })
           } else if (button === 'selector') {
+            const type = name.split('_')[1]
             setSelectorOffset(0)
             setGuiSelector(oldValue => {
-              return !oldValue
+              const newValue = oldValue === type ? false : type
+              return newValue
             })
           } else if (button === 'help') {
             setHelpToggle(oldValue => {
