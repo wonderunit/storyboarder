@@ -261,7 +261,7 @@ const SGCharacter = ({ id, type, worldScale, isSelected, updateObject, modelData
     if (ready && object.current) {
       return new BonesHelper(
         skeleton.bones[0].parent,
-        skinnedMesh,
+        object.current,
         {
           boneLengthScale,
           cacheKey: props.model
