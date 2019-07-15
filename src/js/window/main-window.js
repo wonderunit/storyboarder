@@ -4606,7 +4606,11 @@ const resize = () => {
 }
 
 window.onkeydown = (e) => {
-  stopPlaying()
+  // if a key is pressed which is NOT the play key ...
+  if (!isCommandPressed('menu:navigation:play')) {
+    // ... halt playback
+    stopPlaying()
+  }
 
   if (!storyboarderSketchPane) return
 
