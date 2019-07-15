@@ -941,7 +941,13 @@ const SceneContent = ({
 
     vrControllers.forEach((controller, idx) => {
 
-      if (selectedObjRef.current && selectedObjRef.current.userData.type === 'character' && !selectedBone) {
+      if (
+        selectedObjRef.current &&
+        selectedObjRef.current.userData.type === 'character' &&
+        !selectedBone &&
+        // has it loaded the skinned mesh yet?
+        selectedObjRef.current.children[0]
+      ) {
         const bonesHelper = selectedObjRef.current.children[0].bonesHelper
         const hits = bonesHelper ? boneIntersect(controller, bonesHelper) : []
         if (hits.length) {
