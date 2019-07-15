@@ -108,6 +108,7 @@ const useVrControllers = ({ onSelectStart, onSelectEnd, onGripDown, onGripUp, on
 
 const SceneContent = ({
   aspectRatio,
+  models,
   presets,
   sceneObjects,
   getModelData,
@@ -1156,7 +1157,7 @@ const SceneContent = ({
         return (
           <primitive key={n} object={object}>
             {handedness === hand && (
-              <GUI {...{ aspectRatio, presets, guiMode, addMode, currentBoard, selectedObject, hideArray, virtualCamVisible, flipHand, selectorOffset, poseSelector, helpToggle, helpSlide, guiCamFOV, vrControllers }} />
+              <GUI {...{ aspectRatio, models, presets, guiMode, addMode, currentBoard, selectedObject, hideArray, virtualCamVisible, flipHand, selectorOffset, poseSelector, helpToggle, helpSlide, guiCamFOV, vrControllers }} />
             )}
             <SGController
               {...{ flipModel, modelData: getModelData(controllerObjectSettings), ...controllerObjectSettings }}
@@ -1253,6 +1254,7 @@ const SceneContent = ({
 const SceneManagerXR = connect(
   state => ({
     aspectRatio: state.aspectRatio,
+    models: state.models,
     presets: {
       poses: state.presets.poses,
       characters: {},
@@ -1277,6 +1279,7 @@ const SceneManagerXR = connect(
 )(
   ({
     aspectRatio,
+    models,
     presets,
     world,
     sceneObjects,
@@ -1328,6 +1331,7 @@ const SceneManagerXR = connect(
           <SceneContent
             {...{
               aspectRatio,
+              models,
               presets,
               sceneObjects,
               getModelData,

@@ -16,6 +16,7 @@ const bWidth = 0.0125
 
 const GUI = ({
   aspectRatio,
+  models,
   presets,
   guiMode,
   addMode,
@@ -45,6 +46,12 @@ const GUI = ({
 
   const poses = Object.values(presets.poses)
   const poseVisibleAmount = poses.slice(selectorOffset * 4, selectorOffset * 4 + 16)
+
+  const characters = Object.values(models).filter(model => model.type === 'character')
+  const characterVisibleAmount = characters.slice(selectorOffset * 4, selectorOffset * 4 + 16)
+
+  const objects = Object.values(models).filter(model => model.type === 'object')
+  const objectVisibleAmount = objects.slice(selectorOffset * 4, selectorOffset * 4 + 16)
   // console.log(camSettings)
 
   // const fovLabel = useMemo(() => {
@@ -320,6 +327,26 @@ const GUI = ({
     return textureArray
   }, [])
 
+  const objectTextures = useMemo(() => {
+    const textureArray = []
+    objects.forEach((model, id) => {
+      const texture = new THREE.TextureLoader().load(`/data/system/objects/${model.id}.jpg`)
+      textureArray[id] = texture
+    })
+
+    return textureArray
+  }, [])
+
+  const characterTextures = useMemo(() => {
+    const textureArray = []
+    characters.forEach((model, id) => {
+      const texture = new THREE.TextureLoader().load(`/data/system/dummies/gltf/${model.id}.jpg`)
+      textureArray[id] = texture
+    })
+
+    return textureArray
+  }, [])
+
   const help_textures = [
     useMemo(() => new THREE.TextureLoader().load('/data/system/xr/help_1.png'), []),
     useMemo(() => new THREE.TextureLoader().load('/data/system/xr/help_2.png'), []),
@@ -376,7 +403,7 @@ const GUI = ({
                 >
                   <GUIElement
                     {...{
-                      name: 'pose_indicator',
+                      name: 'scroll_indicator',
                       width: bWidth * 0.5,
                       height: (uiScale * 2) / 4,
                       radius: bWidth * 0.25,
@@ -395,8 +422,81 @@ const GUI = ({
                       <group key={idx} position={[uiScale * x, uiScale * y, 0]} scale={[0.8, 0.8, 0.8]}>
                         <GUIElement
                           {...{
-                            icon: poseTextures[idx + selectorOffset * 4],
+                            icon: texture,
                             name: `selector-pose_${poses[idx + selectorOffset * 4].id}`,
+                            width: uiScale * 0.5,
+                            height: uiScale * 0.5,
+                            radius: bWidth,
+                            color: 0x3e4043
+                          }}
+                        />
+                      </group>
+                    )
+                  }
+                })}
+              </group>
+            </group>
+          )}
+
+          {selectedObject && object.userData.type === 'object' && (
+            <group
+              position={[
+                ((uiScale * 2 + bWidth) * 0.5 +
+                  uiScale * 2.75 * 1 +
+                  uiScale * 0.5 +
+                  (uiScale * 0.5 + uiScale * 0.5) +
+                  bWidth * 3) *
+                  -1 *
+                  invertGUI,
+                uiScale * 2.5 * 0.5 - uiScale * 0.5,
+                0
+              ]}
+            >
+              <primitive
+                position={[-uiScale + bWidth - bWidth * 0.5, uiScale * 1.25 - uiScale * 0.325, 0.001]}
+                object={textCreator.create('Objects', { color: 0xffffff, scale: 0.475, centerText: false })}
+              />
+              <GUIElement
+                {...{
+                  name: 'selector_ui',
+                  width: uiScale * 2 + bWidth,
+                  height: uiScale * 2.5,
+                  radius: bWidth,
+                  color: 'black'
+                }}
+              />
+
+              <group position={[bWidth * -0.5, -uiScale * 0.25, 0.001]} scale={[0.9, 0.9, 0.9]}>
+                <group
+                  position={[
+                    uiScale + bWidth * 0.75,
+                    -(uiScale * 2) / 8 + uiScale - ((uiScale * 6) / 4 / parseInt(poses.length / 4)) * selectorOffset,
+                    0
+                  ]}
+                >
+                  <GUIElement
+                    {...{
+                      name: 'scroll_indicator',
+                      width: bWidth * 0.5,
+                      height: (uiScale * 2) / 4,
+                      radius: bWidth * 0.25,
+                      color: 0x6e6e6e
+                    }}
+                  />
+                </group>
+
+                {objectVisibleAmount.map((object, idx) => {
+                  const x = (idx % 4) * 0.5 - 0.75
+                  const y = (parseInt(idx / 4) * 0.5 - 0.75) * -1
+                  const texture = objectTextures[idx + 4 + selectorOffset * 4]
+
+                  if (texture.image) {
+                    return (
+                      <group key={idx} position={[uiScale * x, uiScale * y, 0]} scale={[0.8, 0.8, 0.8]}>
+                        <GUIElement
+                          {...{
+                            icon: texture,
+                            name: `selector-object_${objects[idx + selectorOffset * 4].id}`,
                             width: uiScale * 0.5,
                             height: uiScale * 0.5,
                             radius: bWidth,
@@ -655,8 +755,21 @@ const GUI = ({
         />
 
         {helpToggle && (
-          <group position={[-0.2, (aspectRatio * (0.07 + bWidth) * 2 + uiScale + bWidth * 2) * 0.775 * 0.5 + (0.07 + bWidth) * 0.5 + bWidth * 2 +0.15, -0.4]} scale={[2, 2, 1]}>
-            <group position={[(aspectRatio * (0.07 + bWidth) * 2 + uiScale + bWidth * 2) * -0.5 - uiScale * 0.5 - bWidth, 0, 0]} scale={[-1, 1, 1]}>
+          <group
+            position={[
+              -0.2,
+              (aspectRatio * (0.07 + bWidth) * 2 + uiScale + bWidth * 2) * 0.775 * 0.5 +
+                (0.07 + bWidth) * 0.5 +
+                bWidth * 2 +
+                0.15,
+              -0.4
+            ]}
+            scale={[2, 2, 1]}
+          >
+            <group
+              position={[(aspectRatio * (0.07 + bWidth) * 2 + uiScale + bWidth * 2) * -0.5 - uiScale * 0.5 - bWidth, 0, 0]}
+              scale={[-1, 1, 1]}
+            >
               <GUIElement
                 {...{
                   icon: arrow_texture,
@@ -669,7 +782,9 @@ const GUI = ({
               />
             </group>
 
-            <group position={[(aspectRatio * (0.07 + bWidth) * 2 + uiScale + bWidth * 2) * 0.5 + uiScale * 0.5 + bWidth, 0, 0]}>
+            <group
+              position={[(aspectRatio * (0.07 + bWidth) * 2 + uiScale + bWidth * 2) * 0.5 + uiScale * 0.5 + bWidth, 0, 0]}
+            >
               <GUIElement
                 {...{
                   icon: arrow_texture,
