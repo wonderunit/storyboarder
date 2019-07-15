@@ -938,6 +938,21 @@ input[type=range]:focus::-webkit-slider-runnable-track {
 #timeline-mode-control-view {
   font-size: 12px;
   line-height: 1;
+
+  /* position: absolute; */
+
+  margin-top: -8px;
+  border-radius: 6px;
+  background-color: #3A3A3A;
+  padding: 6px;
+}
+#timeline-mode-control-view .icon {
+  width: 12px;
+  height: 12px;
+}
+#timeline-mode-control-view .timeline-mode-control-view--for-boards {
+}
+#timeline-mode-control-view .timeline-mode-control-view--for-timeline {
 }
 
 #shot-generator-container .shot-generator-layer-thumbnail {

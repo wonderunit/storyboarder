@@ -6539,11 +6539,16 @@ class TimelineModeControlView {
 
     this.element = document.createElement('div')
     this.element.addEventListener('click', this.onToggle)
-    this.element.style.position = 'absolute'
-    this.element.style.marginTop = '-8px'
-    this.element.style.borderRadius = '6px'
-    this.element.style.backgroundColor = '#3A3A3A'
-    this.element.style.padding = '6px'
+
+    let svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+    svg.classList.add('icon')
+    this.use = document.createElementNS('http://www.w3.org/2000/svg', 'use')
+
+    svg.appendChild(this.use)
+    this.element.appendChild(svg)
+
+    this.span = document.createElement('span')
+    this.element.appendChild(this.span)
   }
   update (props) {
     if (props.show != null) this.show = props.show
@@ -6551,7 +6556,17 @@ class TimelineModeControlView {
 
     this.element.style.display = this.show ? 'block' : 'none'
 
-    this.element.innerHTML = this.mode === 'sequence'
+    if (this.mode === 'sequence') {
+      this.element.classList.add('timeline-mode-control-view--for-boards')
+      this.element.classList.remove('timeline-mode-control-view--for-timeline')
+      this.use.setAttributeNS( 'http://www.w3.org/1999/xlink', 'href', './img/button-play-pause.svg#icon-play')
+    } else {
+      this.element.classList.add('timeline-mode-control-view--for-timeline')
+      this.element.classList.remove('timeline-mode-control-view--for-boards')
+      this.use.setAttributeNS( 'http://www.w3.org/1999/xlink', 'href', './img/button-play-pause.svg#icon-pause')
+    }
+
+    this.span.innerHTML = this.mode === 'sequence'
       ? 'Boards'
       : 'Timeline'
   }
