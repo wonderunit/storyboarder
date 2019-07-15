@@ -456,8 +456,7 @@ const SGCharacter = ({ id, type, worldScale, isSelected, updateObject, modelData
     }
   }, [selectedBone, ready])
 
-  return skinnedMesh ? (
-    <group
+  return <group
       userData={{
         id,
         type,
@@ -472,29 +471,33 @@ const SGCharacter = ({ id, type, worldScale, isSelected, updateObject, modelData
         }
       }}
     >
-      <group
-        ref={object}
-        bonesHelper={bonesHelper ? bonesHelper : null}
-        userData={{
-          id,
-          type,
-          originalHeight,
-          mesh,
-          skeleton,
-          boneLengthScale,
-          parentRotation,
-          parentPosition,
-          modelSettings: Object.assign({ rotation: props.rotation }, initialState.models[props.model]) || {
-            rotation: props.rotation
-          }
-        }}
-      >
-        <primitive userData={{ id, type }} object={skinnedMesh} />
-        <primitive object={armatures[0]} />
-        {props.children}
-      </group>
+      {
+        skinnedMesh && (
+          <group
+            ref={object}
+            bonesHelper={bonesHelper ? bonesHelper : null}
+            userData={{
+              id,
+              type,
+              originalHeight,
+              mesh,
+              skeleton,
+              boneLengthScale,
+              parentRotation,
+              parentPosition,
+              modelSettings: Object.assign({ rotation: props.rotation }, initialState.models[props.model]) || {
+                rotation: props.rotation
+              }
+            }}
+          >
+            <primitive ref={ref => console.log('skinned mesh ref', ref)} userData={{ id, type }} object={skinnedMesh} />
+            <primitive object={armatures[0]} />
+            {props.children}
+          </group>
+        )
+      }
 
-      {bonesHelper && (
+      {(skinnedMesh && bonesHelper) && (
         <group>
           <primitive
             userData={{
@@ -504,8 +507,7 @@ const SGCharacter = ({ id, type, worldScale, isSelected, updateObject, modelData
           />
         </group>
       )}
-    </group>
-  ) : null
+  </group>
 }
 
 module.exports = SGCharacter
