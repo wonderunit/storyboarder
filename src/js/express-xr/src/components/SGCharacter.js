@@ -169,7 +169,7 @@ const SGCharacter = ({ id, type, worldScale, isSelected, updateObject, modelData
   const [ready, setReady] = useState(false) // ready to load?
   // setting loaded = true forces an update to sceneObjects,
   // which is what Editor listens for to attach the BonesHelper
-  const setLoaded = loaded => updateObject(id, { loaded: true })
+  const setLoaded = loaded => updateObject(id, { loaded })
   const object = useRef(null)
 
   const originalSkeleton = useRef(null)
@@ -490,7 +490,7 @@ const SGCharacter = ({ id, type, worldScale, isSelected, updateObject, modelData
               }
             }}
           >
-            <primitive ref={ref => console.log('skinned mesh ref', ref)} userData={{ id, type }} object={skinnedMesh} />
+            <primitive userData={{ id, type }} object={skinnedMesh} />
             <primitive object={armatures[0]} />
             {props.children}
           </group>

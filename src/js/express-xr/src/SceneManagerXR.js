@@ -1211,7 +1211,7 @@ const SceneContent = ({
               key={i}
               {...{ modelData: getModelData(sceneObject), worldScale, isSelected, updateObject, selectedBone, hmdCam, ...sceneObject }}
             >
-              {isSelected && <primitive object={soundBeam.current} />}
+              {/* {isSelected && <primitive object={soundBeam.current} />} */}
             </SGCharacter>
           )
         case 'object':
@@ -1339,6 +1339,9 @@ const SceneManagerXR = connect(
           payload: { id: getFilepathForLoadable({ type: o.type, model: o.model }) }
         })
       )
+
+      console.log(Object.values(sceneObjects), loadables)
+
     }, [sceneObjects])
 
     const getModelData = sceneObject => {
