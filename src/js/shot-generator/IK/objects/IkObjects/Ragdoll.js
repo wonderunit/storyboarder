@@ -238,7 +238,6 @@ class Ragdoll extends IkObject
             let poleConstraint = new PoleConstraint(chain, poleTarget);
             chain.joints[0].addIkConstraint(poleConstraint);
             this.chainObjects[i].poleConstraint = poleConstraint;
-            //this.scene.add(poleTarget.mesh);
         }
     
         let copyRotation = new CopyRotation(backChain, backChain.joints[4]);

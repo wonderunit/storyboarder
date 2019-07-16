@@ -1,7 +1,5 @@
 const THREE = require("three");
-const {Line2} = require("./customLines/Line2");
-const {LineMaterial} = require("./customLines/LineMaterial");
-const {LineGeometry} = require("./customLines/LineGeometry");
+
 require("../utils/Object3dExtension");
 require("../utils/axisUtils");
 /**
@@ -705,15 +703,6 @@ const TransformControlsGizmo = function () {
 	});
 
 	let defaultLineWidth = 1;
-	let matLine = new LineMaterial( {
-		depthTest: false,
-		depthWrite: false,
-		transparent: true,
-		linewidth: defaultLineWidth, // in pixels
-		//resolution:  // to be set by renderer, eventually
-		dashed: false
-	} );
-
 
 	// Make unique material for each axis/color
 
@@ -747,22 +736,22 @@ const TransformControlsGizmo = function () {
 	var matYellow = gizmoMaterial.clone();
 	matYellow.color.set( 0xffff00 );
 
-	var matLineRed = matLine.clone();
+	var matLineRed = gizmoLineMaterial.clone();
 	matLineRed.color.set( 0xff0000 );
 
-	var matLineGreen = matLine.clone();
+	var matLineGreen = gizmoLineMaterial.clone();
 	matLineGreen.color.set( 0x00ff00 );
 
-	var matLineBlue = matLine.clone();
+	var matLineBlue = gizmoLineMaterial.clone();
 	matLineBlue.color.set( 0x0000ff );
 
-	var matLineCyan = matLine.clone();
+	var matLineCyan = gizmoLineMaterial.clone();
 	matLineCyan.color.set( 0x00ffff );
 
-	var matLineMagenta = matLine.clone();
+	var matLineMagenta = gizmoLineMaterial.clone();
 	matLineMagenta.color.set( 0xff00ff );
 
-	var matLineYellow = matLine.clone();
+	var matLineYellow = gizmoLineMaterial.clone();
 	matLineYellow.color.set( 0xffff00 );
 
 	var matLineGray = gizmoLineMaterial.clone();
@@ -809,14 +798,6 @@ const TransformControlsGizmo = function () {
 
 	};
 
-	let createLineGeometryFromCircle = function(radius, arc )
-	{
-		let circleGeometry = CircleGeometry( radius, arc );
-		let lineGeometry = new LineGeometry();
-		lineGeometry.setPositions( circleGeometry.attributes.position.array );
-		return lineGeometry;
-	}
-
 	// Gizmo definitions - custom hierarchy definitions for setupGizmo() function
 
 	var gizmoTranslate = {
@@ -838,10 +819,6 @@ const TransformControlsGizmo = function () {
 	var pickerScale = {};
 	var helperScale = {};
 
-	let xLineGeometry = createLineGeometryFromCircle(1, 2.5);
-	let yLineGeometry = createLineGeometryFromCircle(1, 2.5);
-	let zLineGeometry = createLineGeometryFromCircle(1, 2.5);
-	
 	gizmoRotate = {
 		X: [
 			[ new THREE.Mesh(  new THREE.TorusBufferGeometry( rotationalGizmoRadius, rotationalGizmoTube, 4, 24 ), matRed ), null, [ 0, -Math.PI / 2, -Math.PI / 2 ]],
