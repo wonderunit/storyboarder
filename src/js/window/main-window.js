@@ -6500,23 +6500,22 @@ const TimelineModeControlView = ({ mode = 'sequence', show = false }) => {
     renderThumbnailDrawer()
   }
 
-  let classNamesForBoards = 'btn timeline-mode-control-view__boards' + (mode === 'sequence'
-      ? ''
-      : ' selected')
-
-  let classNamesForTimeline = 'btn timeline-mode-control-view__timeline' + (mode !== 'sequence'
-      ? ''
-      : ' selected')
-
   return h(
     ['div', { className: 'btn-group', style },
-      ['div', { className: classNamesForTimeline, onPointerUp: onTimelineSelect },
+      ['div.btn', {
+        className: mode === 'sequence' ? 'selected' : null,
+        onPointerUp: onTimelineSelect
+      },
         ['svg', { className: 'icon' },
           ['use', { xlinkHref: './img/button-play-pause.svg#icon-play' }]
         ],
         ['span', 'Boards']
       ],
-      ['div', { className: classNamesForBoards, onPointerUp: onBoardsSelect },
+      ['div.spacer'],
+      ['div.btn', {
+        className: mode !== 'sequence' ? 'selected' : null,
+        onPointerUp: onBoardsSelect
+      },
         ['svg', { className: 'icon' },
           ['use', { xlinkHref: './img/button-play-pause.svg#icon-play' }]
         ],

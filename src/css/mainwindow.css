@@ -957,10 +957,17 @@ input[type=range]:focus::-webkit-slider-runnable-track {
 .btn-group .btn:first-child {
   border-top-left-radius: 6px;
   border-bottom-left-radius: 6px;
+  border-color: #242424;
+  border-width: 2px;
+  border-bottom-style: solid;
 }
 .btn-group .btn:last-child {
   border-top-right-radius: 6px;
   border-bottom-right-radius: 6px;
+  border-color: #242424;
+  border-width: 2px;
+  border-bottom-style: solid;
+  border-right-style: solid;
 }
 #timeline-mode-control-view .btn.selected {
   background-color: #8D89CF;
@@ -969,9 +976,13 @@ input[type=range]:focus::-webkit-slider-runnable-track {
 #timeline-mode-control-view .btn.selected svg {
   --color1: black;
 }
-#timeline-mode-control-view .timeline-mode-control-view__boards {
-}
-#timeline-mode-control-view .timeline-mode-control-view__timeline {
+#timeline-mode-control-view .spacer {
+  width: 2px;
+  background-color: #222;
+  border-top-width: 1px;
+  border-bottom-width: 1px;
+  border-color: #222;
+  border-bottom-style: solid;
 }
 
 #shot-generator-container .shot-generator-layer-thumbnail {
