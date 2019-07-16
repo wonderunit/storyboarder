@@ -685,6 +685,8 @@ const TransformControlsGizmo = function () {
 	let maximumScale = new THREE.Vector3(0.2, 0.2, 0.2);
 	//#endregion
 	// shared materials
+	let rotationalGizmoRadius = 1;
+	let rotationalGizmoTube = rotationalGizmoRadius / 9;
 
 	var gizmoMaterial = new THREE.MeshBasicMaterial({
 		depthTest: false,
@@ -702,7 +704,7 @@ const TransformControlsGizmo = function () {
 		fog: false
 	});
 
-	let defaultLineWidth = 2;
+	let defaultLineWidth = 1;
 	let matLine = new LineMaterial( {
 		depthTest: false,
 		depthWrite: false,
@@ -754,13 +756,13 @@ const TransformControlsGizmo = function () {
 	var matLineBlue = matLine.clone();
 	matLineBlue.color.set( 0x0000ff );
 
-	var matLineCyan = gizmoLineMaterial.clone();
+	var matLineCyan = matLine.clone();
 	matLineCyan.color.set( 0x00ffff );
 
-	var matLineMagenta = gizmoLineMaterial.clone();
+	var matLineMagenta = matLine.clone();
 	matLineMagenta.color.set( 0xff00ff );
 
-	var matLineYellow = gizmoLineMaterial.clone();
+	var matLineYellow = matLine.clone();
 	matLineYellow.color.set( 0xffff00 );
 
 	var matLineGray = gizmoLineMaterial.clone();
@@ -842,13 +844,13 @@ const TransformControlsGizmo = function () {
 	
 	gizmoRotate = {
 		X: [
-			[ new Line2( xLineGeometry, matLineRed ) ],
+			[ new THREE.Mesh(  new THREE.TorusBufferGeometry( rotationalGizmoRadius, rotationalGizmoTube, 4, 24 ), matRed ), null, [ 0, -Math.PI / 2, -Math.PI / 2 ]],
 		],
 		Y: [
-			[ new Line2( yLineGeometry, matLineGreen ), null, [ 0, 0, -Math.PI / 2 ] ],
+			[  new THREE.Mesh( new THREE.TorusBufferGeometry( rotationalGizmoRadius, rotationalGizmoTube, 4, 24 ), matYellow ), null, [ Math.PI / 2, 0, 0 ]],
 		],
 		Z: [
-			[ new Line2( zLineGeometry, matLineBlue ), null, [ 0, Math.PI / 2, 0 ] ],
+			[ new THREE.Mesh( new THREE.TorusBufferGeometry( rotationalGizmoRadius, rotationalGizmoTube, 4, 24 ), matBlue ), null, [ 0, 0, -Math.PI / 2 ] ],
 		],
 		E: [
 			[ new THREE.Line( CircleGeometry(1.25, 1), matLineYellowTransparent ), null, [ 0, Math.PI / 2, 0 ] ],
@@ -863,19 +865,19 @@ const TransformControlsGizmo = function () {
 
 	pickerRotate = {
 		X: [
-			[ new THREE.Mesh( new THREE.TorusBufferGeometry( 1, 0.3, 4, 24 ), matInvisible ), [ 0, 0, 0 ], [ 0, -Math.PI / 2, -Math.PI / 2 ] ],
+			[ new THREE.Mesh( new THREE.TorusBufferGeometry( rotationalGizmoRadius, rotationalGizmoTube, 4, 24 ), matInvisible ), null, [ 0, -Math.PI / 2, -Math.PI / 2 ] ],
 		],
 		Y: [
-			[ new THREE.Mesh( new THREE.TorusBufferGeometry( 1, 0.3, 4, 24 ), matInvisible ), [ 0, 0, 0 ], [ Math.PI / 2, 0, 0 ] ],
+			[ new THREE.Mesh( new THREE.TorusBufferGeometry( rotationalGizmoRadius, rotationalGizmoTube, 4, 24 ), matInvisible ), [ 0, 0, 0 ], [ Math.PI / 2, 0, 0 ] ],
 		],
 		Z: [
-			[ new THREE.Mesh( new THREE.TorusBufferGeometry( 1, 0.3, 4, 24 ), matInvisible ), [ 0, 0, 0 ], [ 0, 0, -Math.PI / 2 ] ],
+			[ new THREE.Mesh( new THREE.TorusBufferGeometry( rotationalGizmoRadius, rotationalGizmoTube, 4, 24 ), matInvisible ), [ 0, 0, 0 ], [ 0, 0, -Math.PI / 2 ] ],
 		],
 		E: [
-			[ new THREE.Mesh( new THREE.TorusBufferGeometry( 1.25, 0.1, 2, 24 ), matInvisible ) ]
+			[ new THREE.Mesh( new THREE.TorusBufferGeometry( rotationalGizmoRadius, rotationalGizmoTube, 2, 24 ), matInvisible ) ]
 		],
 		XYZE: [
-			[ new THREE.Mesh( new THREE.SphereBufferGeometry( 0.7, 10, 8 ), matInvisible ) ]
+			[ new THREE.Mesh( new THREE.SphereBufferGeometry( 0.4, 10, 8 ), matInvisible ) ]
 		]
 	};
 
@@ -1393,25 +1395,25 @@ const TransformControlsGizmo = function () {
 
 			if ( !this.enabled ) {
 
-				handle.material.opacity *= 0.5;
-				handle.material.color.lerp( new THREE.Color( 1, 1, 1 ), 0.5 );
+				handle.material.opacity *= 0.8;
+				handle.material.color.lerp( new THREE.Color( 1, 1, 1 ), 0.01 );
 
 			} else if ( this.axis ) {
 
 				if ( handle.name === this.axis ) {
 
 					handle.material.opacity = 1.0;
-					handle.material.color.lerp( new THREE.Color( 1, 1, 1 ), 0.5 );
+					handle.material.color.lerp( new THREE.Color( 1, 1, 1 ), 0.1 );
 
 				} else if ( this.axis.split('').some( function( a ) { return handle.name === a; } ) ) {
 
 					handle.material.opacity = 1.0;
-					handle.material.color.lerp( new THREE.Color( 1, 1, 1 ), 0.5 );
+					handle.material.color.lerp( new THREE.Color( 1, 1, 1 ), 0.2 );
 
 				} else {
 
 					handle.material.opacity *= 0.25;
-					handle.material.color.lerp( new THREE.Color( 1, 1, 1 ), 0.5 );
+					handle.material.color.lerp( new THREE.Color( 1, 1, 1 ), 0.01 );
 
 				}
 

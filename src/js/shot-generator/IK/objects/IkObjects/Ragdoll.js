@@ -75,19 +75,19 @@ class Ragdoll extends IkObject
                 let chainObject = this.chainObjects[i];
                 let joints = chainObject.chain.joints;
                 let currentBone = joints[0].bone;
-                if(joints  && (currentBone.isRotationChanged || this.poseChanged))
-                {
-                    let poleConstraint = chainObject.poleConstraint;
-                    let angle = calculatePoleAngle(currentBone, joints[joints.length - 1].bone, poleConstraint.poleTarget.mesh, joints[0]);
-                    angle *= THREE.Math.RAD2DEG;
-                    //angle = normalizeTo180(angle);
-    
-                    //poleConstraint.poleAngle = 0;
-                    this.poseChanged = false;
-                    currentBone.isRotationChanged = false;
-                    let result = this.originalObject.children[1].skeleton.bones.filter(bone => bone.name === currentBone.name)[0];
-                    result.isRotationChanged = false;
-                }
+                //if(joints  && (currentBone.isRotationChanged || this.poseChanged))
+                //{
+                //    let poleConstraint = chainObject.poleConstraint;
+                //    let angle = calculatePoleAngle(currentBone, joints[joints.length - 1].bone, poleConstraint.poleTarget.mesh, joints[0]);
+                //    angle *= THREE.Math.RAD2DEG;
+                //    //angle = normalizeTo180(angle);
+    //
+                //    //poleConstraint.poleAngle = 0;
+                //    this.poseChanged = false;
+                //    currentBone.isRotationChanged = false;
+                //    let result = this.originalObject.children[1].skeleton.bones.filter(bone => bone.name === currentBone.name)[0];
+                //    result.isRotationChanged = false;
+                //}
             }
         
             this.resetTargets()
