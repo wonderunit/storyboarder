@@ -944,15 +944,22 @@ input[type=range]:focus::-webkit-slider-runnable-track {
   margin-top: 0px;
 }
 #timeline-mode-control-view .icon {
-  width: 12px;
-  height: 12px;
+  width: 19px;
+  height: 19px;
+  filter: drop-shadow( 0 1px 1px rgba(0,0,0,0.4) );
+  opacity: 0.4;
+  margin-left: 5px;
+}
+#timeline-mode-control-view span {
+  position: relative;
+  top: -5px;
 }
 .btn-group {
   display: flex;
 }
 .btn-group .btn {
   background-color: #444444;
-  padding: 9px 12px 9px 9px;
+  padding: 8px 12px 6px 9px;
 }
 .btn-group .btn:first-child {
   border-top-left-radius: 6px;

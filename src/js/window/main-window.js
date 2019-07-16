@@ -6507,7 +6507,7 @@ const TimelineModeControlView = ({ mode = 'sequence', show = false }) => {
         onPointerUp: onTimelineSelect
       },
         ['svg', { className: 'icon' },
-          ['use', { xlinkHref: './img/timeline-boards.svg' }]
+          ['use', { xlinkHref: './img/symbol-defs.svg#timeline-boards' }]
         ],
         ['span', 'Boards']
       ],
@@ -6517,7 +6517,7 @@ const TimelineModeControlView = ({ mode = 'sequence', show = false }) => {
         onPointerUp: onBoardsSelect
       },
         ['svg', { className: 'icon' },
-          ['use', { xlinkHref: './img/timeline-timeline.svg' }]
+          ['use', { xlinkHref: './img/symbol-defs.svg#timeline-timeline' }]
         ],
         ['span', 'Timeline']
       ]
