@@ -1057,7 +1057,7 @@ const MORPH_TARGET_LABELS = {
   'ectomorphic': 'ecto',
   'endomorphic': 'obese',
 }
-const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, machineState, transition, selectBone, updateCharacterSkeleton, storyboarderFilePath }) => {
+const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineState, transition, selectBone, updateCharacterSkeleton, storyboarderFilePath }) => {
   const createOnSetValue = (id, name, transform = value => value) => value => updateObject(id, { [name]: transform(value) })
 
   let positionSliders = [
@@ -1088,18 +1088,6 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
   const onFocus = event => transition('TYPING_ENTER')
   const onBlur = event => transition('TYPING_EXIT')
 
-  // TODO selector?
-  const modelValues = Object.values(models)
-  const modelOptions = {
-    object: modelValues
-      .filter(model => model.type === 'object')
-      .map(model => ({ name: model.name, value: model.id })),
-
-    character: modelValues
-      .filter(model => model.type === 'character')
-      .map(model => ({ name: model.name, value: model.id }))
-  }
-
   return h([
     'div',
       [
@@ -1121,29 +1109,6 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
       sceneObject.type == 'character' && [
         [CharacterPresetsEditor, { sceneObject }],
       ],
-
-      (sceneObject.type == 'object' || sceneObject.type == 'character') && [
-        ModelSelect, {
-          sceneObject,
-          options: modelOptions[sceneObject.type],
-          updateObject,
-          transition
-        }
-      ],
-
-      // sceneObject.type == 'object' && [
-      //   'select', {
-      //     value: sceneObject.model,
-      //     onChange: event => {
-      //       event.preventDefault()
-      //       updateObject(sceneObject.id, { model: event.target.value })
-      //     }
-      //   }, [
-      //     [['box', 'box'], ['tree', 'tree'], ['chair', 'chair']].map(([name, value]) =>
-      //       ['option', { value }, name]
-      //     )
-      //   ]
-      // ],
 
       sceneObject.type != 'camera' &&
         [
@@ -1449,6 +1414,16 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
             ]
           ]
       ),
+
+      (sceneObject.type == 'object' || sceneObject.type == 'character') && [
+        ModelSelect, {
+          sceneObject,
+          updateObject,
+          transition,
+
+          rows: sceneObject.type == 'character' ? 1 : 3
+        }
+      ],
 
       sceneObject.type == 'character' && [
         PosePresetsEditor, {

@@ -13,7 +13,7 @@ const placeholder = aspectRatio =>
    2: 'shot-generator-bg-2x1'
  }[aspectRatio])
 
-const ShotGeneratorPanel = ({ thumbnail, onClick, aspectRatio }) => {
+const ShotGeneratorPanel = ({ thumbnail, onOpen, aspectRatio }) => {
   let src = thumbnail
     ? thumbnail
     : `${placeholderPath}/${placeholder(aspectRatio)}.jpg`
@@ -29,7 +29,7 @@ const ShotGeneratorPanel = ({ thumbnail, onClick, aspectRatio }) => {
         ' Shot Generator'
       ]],
       ['div.shot-generator-layer-thumbnail', { style: { paddingTop } }, [
-        ['a[href=#]', { onClick }, [
+        ['a[href=#]', { onPointerDown: onOpen }, [
           ['img', { src }]
         ]]
       ]]

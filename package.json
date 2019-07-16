@@ -1,7 +1,7 @@
 {
   "name": "storyboarder",
   "productName": "Storyboarder",
-  "version": "1.12.0",
+  "version": "1.13.0",
   "description": "The fastest way to storyboard.",
   "main": "src/js/main.js",
   "scripts": {
@@ -19,7 +19,8 @@
     "xr:watch": "parcel watch --no-hmr src/js/express-xr/src/index.html -d src/js/express-xr/dist",
     "xr:clean": "trash src/js/express-xr/dist",
     "xr:build": "parcel build src/js/express-xr/src/index.html -d src/js/express-xr/dist --no-source-maps",
-    "xr:build-demo": "cross-env XR_STANDALONE_DEMO=true npm run xr:build && node scripts/build-vr-demo.js"
+    "xr:build-demo": "cross-env XR_STANDALONE_DEMO=true npm run xr:build && node scripts/build-vr-demo.js",
+    "build:thumbnails": "npx electron test/views/thumbnail-renderer/main.js"
   },
   "repository": {
     "type": "git",
@@ -146,6 +147,7 @@
     "infix-to-postfix": "0.0.3",
     "jsfeat": "0.0.8",
     "jsonwebtoken": "8.1.1",
+    "liquidmetal": "1.3.0",
     "load-bmfont": "^1.4.0",
     "lodash.debounce": "4.0.8",
     "lodash.throttle": "4.1.1",
