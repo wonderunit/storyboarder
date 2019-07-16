@@ -941,7 +941,7 @@ input[type=range]:focus::-webkit-slider-runnable-track {
 
   /* position: absolute; */
 
-  margin-top: -8px;
+  margin-top: 0px;
 }
 #timeline-mode-control-view .icon {
   width: 12px;
@@ -951,38 +951,26 @@ input[type=range]:focus::-webkit-slider-runnable-track {
   display: flex;
 }
 .btn-group .btn {
-  background-color: #3A3A3A;
-  padding: 6px;
+  background-color: #444444;
+  padding: 9px 12px 9px 9px;
 }
 .btn-group .btn:first-child {
   border-top-left-radius: 6px;
   border-bottom-left-radius: 6px;
-  border-color: #242424;
-  border-width: 2px;
-  border-bottom-style: solid;
 }
 .btn-group .btn:last-child {
   border-top-right-radius: 6px;
   border-bottom-right-radius: 6px;
-  border-color: #242424;
-  border-width: 2px;
-  border-bottom-style: solid;
-  border-right-style: solid;
 }
+
 #timeline-mode-control-view .btn.selected {
-  background-color: #8D89CF;
-  color: black;
+  background-color: #555555;
 }
+
 #timeline-mode-control-view .btn.selected svg {
   --color1: black;
 }
 #timeline-mode-control-view .spacer {
-  width: 2px;
-  background-color: #222;
-  border-top-width: 1px;
-  border-bottom-width: 1px;
-  border-color: #222;
-  border-bottom-style: solid;
 }
 
 #shot-generator-container .shot-generator-layer-thumbnail {
