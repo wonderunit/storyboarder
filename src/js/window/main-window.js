@@ -6488,35 +6488,47 @@ const updateSceneFromScript = async () => {
   renderScript()
 }
 
-const TimelineModeControlView = ({ mode = 'sequence', show = false, onToggle }) => {
-  let style = { display: show ? 'block' : 'none' }
+const TimelineModeControlView = ({ mode = 'sequence', show = false }) => {
+  let style = { display: show ? 'flex' : 'none' }
 
-  let className = mode === 'sequence'
-    ? 'timeline-mode-control-view timeline-mode-control-view--for-boards'
-    : 'timeline-mode-control-view timeline-mode-control-view--for-timeline'
+  const onBoardsSelect = () => {
+    shouldRenderThumbnailDrawer = false
+    renderThumbnailDrawer()
+  }
+  const onTimelineSelect = () => {
+    shouldRenderThumbnailDrawer = true
+    renderThumbnailDrawer()
+  }
 
-  let xlinkHref = mode === 'sequence'
-    ? './img/button-play-pause.svg#icon-play'
-    : './img/button-play-pause.svg#icon-pause'
+  let classNamesForBoards = 'btn timeline-mode-control-view__boards' + (mode === 'sequence'
+      ? ''
+      : ' selected')
 
-  let label = mode === 'sequence'
-    ? 'Boards'
-    : 'Timeline'
+  let classNamesForTimeline = 'btn timeline-mode-control-view__timeline' + (mode !== 'sequence'
+      ? ''
+      : ' selected')
 
   return h(
-    ['div', { className, onPointerUp: onToggle, style },
-      ['svg', { className: 'icon' },
-        ['use', { xlinkHref }]
+    ['div', { className: 'btn-group', style },
+      ['div', { className: classNamesForTimeline, onPointerUp: onTimelineSelect },
+        ['svg', { className: 'icon' },
+          ['use', { xlinkHref: './img/button-play-pause.svg#icon-play' }]
+        ],
+        ['span', 'Boards']
       ],
-      ['span', label]
+      ['div', { className: classNamesForBoards, onPointerUp: onBoardsSelect },
+        ['svg', { className: 'icon' },
+          ['use', { xlinkHref: './img/button-play-pause.svg#icon-play' }]
+        ],
+        ['span', 'Timeline']
+      ]
     ]
   )
 }
 const renderTimelineModeControlView = ({ show = false }) => {
   let mode = shouldRenderThumbnailDrawer ? 'sequence' : 'time'
-  let onToggle = toggleTimeline
   ReactDOM.render(
-    h([TimelineModeControlView, { mode, show, onToggle }]),
+    h([TimelineModeControlView, { mode, show }]),
     document.getElementById('timeline-mode-control-view')
   )
 }
