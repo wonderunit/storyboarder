@@ -169,7 +169,15 @@ const SceneContent = ({
     const { id, prop, value } = e.detail
 
     if (prop === 'guiFOV') {
-      setGuiCamFOV(value)
+      const guiCam = scene.getObjectByName('guiCam')
+      setGuiCamFOV(guiCam.fov)
+      return
+    }
+
+    if (prop === 'fov') {
+      const camGroup = worldScaleGroupRef.current.children.find(child => child.userData.id === id)
+      const cam = camGroup.userData.camera
+      if (cam) updateObject(id, { [prop]: cam.fov })
       return
     }
 
@@ -341,7 +349,7 @@ const SceneContent = ({
             createObject({
               id,
               type: 'camera',
-              fov: guiCamFOV,
+              fov: guiCam.fov,
               x: pos.x,
               y: pos.z,
               z: pos.y,

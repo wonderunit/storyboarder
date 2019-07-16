@@ -81,6 +81,12 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, virtualCam
     }
   }, [])
 
+  useEffect(() => {
+    if (virtualCamera.current && camSliderFOV) {
+      virtualCamera.current.setFocalLength(camSliderFOV)
+    }
+  }, [camSliderFOV])
+
   useRender(() => {
     if (!previousTime.current) previousTime.current = 0
 
@@ -110,14 +116,20 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, virtualCam
 
   return (
     <group
-      userData={{ id: props.id, displayName: props.displayName, type: 'virtual-camera', forPanel: { fov: props.fov } }}
+      userData={{
+        id: props.id,
+        displayName: props.displayName,
+        type: 'virtual-camera',
+        camera: virtualCamera.current,
+        forPanel: { fov: virtualCamera.current ? virtualCamera.current.getFocalLength() : 0 }
+      }}
       position={[props.x || 0, props.z || 0, props.y || 0]}
       ref={ref}
     >
       <group visible={virtualCamVisible || props.guiCamera === true}>
         <mesh
           userData={{ type: props.guiCamera ? 'gui' : 'view' }}
-          position={[0, props.guiCamera ? 0 : 0.3, (props.guiCamera ? 0.0025 : 0.01)]}
+          position={[0, props.guiCamera ? 0 : 0.3, props.guiCamera ? 0.0025 : 0.01]}
           material={heightShader}
         >
           <planeGeometry attach="geometry" args={[size * aspectRatio, size]} />
@@ -144,7 +156,7 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, virtualCam
             name={props.guiCamera ? 'guiCam' : ''}
             ref={virtualCamera}
             aspect={aspectRatio}
-            fov={camSliderFOV || props.fov}
+            fov={props.fov}
             near={0.01}
             far={1000}
             onUpdate={self => self.updateProjectionMatrix()}
