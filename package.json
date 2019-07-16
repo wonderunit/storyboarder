@@ -145,6 +145,7 @@
     "gl-vec2": "^1.0.0",
     "immer": "1.7.4",
     "infix-to-postfix": "0.0.3",
+    "intl-messageformat": "5.1.0",
     "jsfeat": "0.0.8",
     "jsonwebtoken": "8.1.1",
     "liquidmetal": "1.3.0",

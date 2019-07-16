@@ -101,6 +101,8 @@ const MultiSelectionInspector = require('./MultiSelectionInspector')
 
 const notifications = require('../window/notifications')
 
+const i18n = require('../services/i18n')
+
 require('../vendor/OutlineEffect.js')
 
 
@@ -2214,7 +2216,7 @@ const Toolbar = ({
 
   const onOpenVR = preventDefault(() =>
     notifications.notify({
-      message: `To view, open a VR web browser to:\n<a href="${xrServerUrl}">${xrServerUrl}</a>`,
+      message: i18n.t("shot-generator.toolbar.open-in-vr.message", { xrServerUrl }),
       timing: 30,
       onClick: () => require('electron').shell.openExternal(xrServerUrl)
     })
@@ -2223,11 +2225,11 @@ const Toolbar = ({
   return h(
     ['div#toolbar', { key: 'toolbar' },
       ['div.toolbar__addition.row', [
-        ['a[href=#]', { onClick: preventDefault(onCreateCameraClick) }, [[Icon, { src: 'icon-toolbar-camera' }], 'Camera']],
-        ['a[href=#]', { onClick: preventDefault(onCreateObjectClick) }, [[Icon, { src: 'icon-toolbar-object' }], 'Object']],
-        ['a[href=#]', { onClick: preventDefault(onCreateCharacterClick) }, [[Icon, { src: 'icon-toolbar-character' }], 'Character']],
-        ['a[href=#]', { onClick: preventDefault(onCreateLightClick) }, [[Icon, { src: 'icon-toolbar-light' }], 'Light']],
-        ['a[href=#]', { onClick: preventDefault(onCreateVolumeClick) }, [[Icon, { src: 'icon-toolbar-volume' }], 'Volume']]
+        ['a[href=#]', { onClick: preventDefault(onCreateCameraClick) }, [[Icon, { src: 'icon-toolbar-camera' }], i18n.t('shot-generator.toolbar.camera')]],
+        ['a[href=#]', { onClick: preventDefault(onCreateObjectClick) }, [[Icon, { src: 'icon-toolbar-object' }], i18n.t('shot-generator.toolbar.object')]],
+        ['a[href=#]', { onClick: preventDefault(onCreateCharacterClick) }, [[Icon, { src: 'icon-toolbar-character' }], i18n.t('shot-generator.toolbar.character')]],
+        ['a[href=#]', { onClick: preventDefault(onCreateLightClick) }, [[Icon, { src: 'icon-toolbar-light' }], i18n.t('shot-generator.toolbar.light')]],
+        ['a[href=#]', { onClick: preventDefault(onCreateVolumeClick) }, [[Icon, { src: 'icon-toolbar-volume' }], i18n.t('shot-generator.toolbar.volume')]]
       ]],
       // ['a[href=#]', { onClick: preventDefault(onCreateStressClick) }, '+ STRESS'],
 
@@ -2236,9 +2238,9 @@ const Toolbar = ({
       // ['a[href=#]', { onClick: preventDefault(onSaveClick) }, 'Save'],
 
       ['div.toolbar__board-actions.row', [
-        xrServerUrl ? ['a[href=#]', { onClick: preventDefault(onOpenVR) }, 'Open in VR'] : [],
-        ['a[href=#]', { onClick: preventDefault(onSaveToBoardClick) }, [[Icon, { src: 'icon-toolbar-save-to-board' }], 'Save to Board']],
-        ['a[href=#]', { onClick: preventDefault(onInsertNewBoardClick) }, [[Icon, { src: 'icon-toolbar-insert-as-new-board' }], 'Insert As New Board']],
+        xrServerUrl ? ['a[href=#]', { onClick: preventDefault(onOpenVR) }, i18n.t('shot-generator.toolbar.open-in-vr')] : [],
+        ['a[href=#]', { onClick: preventDefault(onSaveToBoardClick) }, [[Icon, { src: 'icon-toolbar-save-to-board' }], i18n.t('shot-generator.toolbar.save-to-board')]],
+        ['a[href=#]', { onClick: preventDefault(onInsertNewBoardClick) }, [[Icon, { src: 'icon-toolbar-insert-as-new-board' }], i18n.t('shot-generator.toolbar.insert-as-new-board')]],
       ]]
     ]
   )

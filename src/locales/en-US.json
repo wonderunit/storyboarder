@@ -1,0 +1,15 @@
+{
+  "menu.edit": "Edit",
+  "menu.edit.undo": "Undo",
+  "menu.edit.redo": "Redo",
+
+  "shot-generator.toolbar.camera": "Camera",
+  "shot-generator.toolbar.object": "Object",
+  "shot-generator.toolbar.character": "Character",
+  "shot-generator.toolbar.light": "Light",
+  "shot-generator.toolbar.volume": "Volume",
+  "shot-generator.toolbar.open-in-vr": "Open in VR",
+  "shot-generator.toolbar.save-to-board": "Save to Board",
+  "shot-generator.toolbar.insert-as-new-board": "Insert as New Board",
+  "shot-generator.toolbar.open-in-vr.message": "To view, open a VR web browser to:\n<a href=\"{xrServerUrl}\">{xrServerUrl}</a>"
+}

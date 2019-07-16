@@ -11,6 +11,8 @@ let keystrokeFor = command => store.getState().entities.keymap[command]
 // TODO remove unused
 // const observeStore = require('./shared/helpers/observeStore')
 
+const i18n = require('./services/i18n')
+
 
 let SubMenuFragments = {}
 SubMenuFragments.View = [
@@ -860,17 +862,17 @@ const shotGeneratorMenu = [
     ]
   },
   {
-    label: 'Edit',
+    label: i18n.t('menu.edit'),
     submenu: [
       {
-        label: 'Undo',
+        label: i18n.t('menu.edit.undo'),
         accelerator: keystrokeFor('menu:edit:undo'),
         click () {
           ipcRenderer.send('shot-generator:edit:undo')
         }
       },
       {
-        label: 'Redo',
+        label: i18n.t('menu.edit.redo'),
         accelerator: keystrokeFor('menu:edit:redo'),
         click () {
           ipcRenderer.send('shot-generator:edit:redo')
