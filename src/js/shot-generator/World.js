@@ -145,27 +145,45 @@ const useRoom = (world, scene) => {
 const useEnvironmentModel = (world, scene, { modelData}) => {
   const [group, setGroup] = useState(null)
 
+  const materialFactory = () => new THREE.MeshToonMaterial({
+    color: 0xffffff,
+    emissive: 0x0,
+    specular: 0x0,
+    skinning: true,
+    shininess: 0,
+    flatShading: false
+  })
+
+  const sanitize = scene => {
+    let allowlist = ['Scene', 'Mesh', 'Group']
+    let removable = []
+
+    scene.traverse(child => {
+      // if we don't allow this type of Object3d ...
+      if ( ! allowlist.includes(child.type) ) {
+        // ... mark it for removal
+        removable.push(child)
+      } else if (child.type === 'Mesh') {
+        // update all Mesh textures
+        child.material = materialFactory()
+      }
+    })
+    // remove the marked objects
+    removable.forEach(child => child.parent.remove(child))
+
+    // return the modified scene
+    return scene
+  }
+
   useEffect(() => {
     if (modelData) {
-      const g = new THREE.Group()
+      let g = new THREE.Group()
+      let scene = sanitize(modelData.scene.clone())
 
-      modelData.scene.children.forEach(child => {
-        if (child.type === 'Mesh') {
-          let m = child.clone()
-
-          const material = new THREE.MeshToonMaterial({
-            color: 0xffffff,
-            emissive: 0x0,
-            specular: 0x0,
-            skinning: true,
-            shininess: 0,
-            flatShading: false
-          })
-          m.material = material
-
-          g.add(m)
-        }
-      })
+      // add scene and children to group
+      g.add(scene)
+      // uncomment and use this instead to only add scene children
+      // scene.children.forEach(child => g.add(child))
 
       setGroup(g)
     } else {
