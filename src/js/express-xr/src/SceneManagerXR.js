@@ -154,6 +154,8 @@ const SceneContent = ({
   const initialCamPos = useRef()
   const hmdCamInitialized = useRef(false)
   const previousTime = useRef([null])
+  const highlightedBones = useRef([])
+
 
   // Why do I need to create ref to access updated state in some functions?
   const guiModeRef = useRef(null)
@@ -944,12 +946,21 @@ const SceneContent = ({
       if (selectedObjRef.current && selectedObjRef.current.userData.type === 'character' && !selectedBone) {
         const bonesHelper = selectedObjRef.current.children[0].bonesHelper
         const hits = bonesHelper ? boneIntersect(controller, bonesHelper) : []
+        const selectedBones = highlightedBones.current;
         if (hits.length) {
           controller.userData.currentBoneHighlight = hits[0].bone
           controller.userData.currentBoneHighlight.connectedBone.material.color = new THREE.Color(0x242246)
+          selectedBones.push(hits[0].bone);
+
         } else if (controller.userData.currentBoneHighlight) {
-          controller.userData.currentBoneHighlight.connectedBone.material.color = new THREE.Color(0x7a72e9)
+          //controller.userData.currentBoneHighlight.connectedBone.material.color = new THREE.Color(0x7a72e9)
           controller.userData.currentBoneHighlight = null
+          console.log(highlightedBones.current);
+          for(let highlightedBone of selectedBones)
+          {
+            highlightedBone.connectedBone.material.color = new THREE.Color(0x7a72e9)
+          }
+          highlightedBones.current = [];
         }
       }
 
