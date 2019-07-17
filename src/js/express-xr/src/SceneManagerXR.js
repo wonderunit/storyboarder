@@ -274,9 +274,7 @@ const SceneContent = ({
     const otherController = vrControllers.find(i => i.uuid !== controller.uuid)
     if (otherController && otherController.userData.selected) return
     if (controller.gripped) return
-
     const intersections = getIntersections(controller, intersectArray.current)
-
     if (intersections.length > 0) {
       onIntersection(controller, intersections)
     } else {
@@ -731,35 +729,25 @@ const SceneContent = ({
     const hmdCam = xrOffset.current.children.filter(child => child.type === 'PerspectiveCamera')[0]
     const worldScaleMult = worldScale === 1 ? 1 : worldScale * 2
 
-    if (event.axes[1] > 0.075) {
+    let tiltRange = 0.075;
+
+    if (Math.abs(event.axes[1]) > tiltRange) {
       vrControllers.forEach(controller => {
         controller.dispatchEvent({ type: 'trigger press ended' })
       })
 
-      moveCamRef.current = 'Backwards'
-
-      let offsetVector = new THREE.Vector3(0, 0, 1)
-      offsetVector.applyMatrix4(new THREE.Matrix4().extractRotation(hmdCam.matrixWorld))
-      offsetVector = offsetVector.multiply(new THREE.Vector3(1, 0, 1)).normalize().multiplyScalar(worldScaleMult)
-
-      setTeleportPos(oldPos => {
-        if (!oldPos) {
-          offsetVector.add(new THREE.Vector3(x, 0, y))
-          return offsetVector
-        } else {
-          return oldPos.clone().add(offsetVector)
-        }
-      })
-    }
-
-    if (event.axes[1] < -0.075) {
-      vrControllers.forEach(controller => {
-        controller.dispatchEvent({ type: 'trigger press ended' })
-      })
-
-      moveCamRef.current = 'Forwards'
-
-      let offsetVector = new THREE.Vector3(0, 0, -1)
+      let offsetVector = null;
+      // Checks whatever tilt is positive or negative
+      if (event.axes[1] > tiltRange)
+      {
+        moveCamRef.current = 'Backwards'
+        offsetVector = new THREE.Vector3(0, 0, 1)
+      }
+      else
+      {
+        moveCamRef.current = 'Forwards'
+        offsetVector = new THREE.Vector3(0, 0, -1)
+      }
       offsetVector.applyMatrix4(new THREE.Matrix4().extractRotation(hmdCam.matrixWorld))
       offsetVector = offsetVector.multiply(new THREE.Vector3(1, 0, 1)).normalize().multiplyScalar(worldScaleMult)
 
@@ -953,9 +941,7 @@ const SceneContent = ({
           selectedBones.push(hits[0].bone);
 
         } else if (controller.userData.currentBoneHighlight) {
-          //controller.userData.currentBoneHighlight.connectedBone.material.color = new THREE.Color(0x7a72e9)
           controller.userData.currentBoneHighlight = null
-          console.log(highlightedBones.current);
           for(let highlightedBone of selectedBones)
           {
             highlightedBone.connectedBone.material.color = new THREE.Color(0x7a72e9)
