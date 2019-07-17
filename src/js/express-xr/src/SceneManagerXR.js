@@ -6,6 +6,7 @@ const { connect } = require('react-redux')
 const React = require('react')
 const { useEffect, useRef, useMemo, useState, useReducer } = React
 const { ActionCreators } = require('redux-undo')
+const {object3dExtension} = require('../../shot-generator/IK/utils/Object3dExtension')
 
 const {
   createObject,
@@ -726,6 +727,7 @@ const SceneContent = ({
     if (Math.abs(event.axes[1]) < Math.abs(event.axes[0])) return
 
     const { x, y } = xrOffset.current.userData
+    let {rotation} = xrOffset.current.userData;
     const hmdCam = xrOffset.current.children.filter(child => child.type === 'PerspectiveCamera')[0]
     const worldScaleMult = worldScale === 1 ? 1 : worldScale * 2
 
@@ -753,7 +755,11 @@ const SceneContent = ({
 
       setTeleportPos(oldPos => {
         if (!oldPos) {
-          offsetVector.add(new THREE.Vector3(x, 0, y))
+          let defaultCamera = new THREE.Vector3(x, y, 0);
+          defaultCamera.applyMatrix4(new THREE.Matrix4().extractRotation(hmdCam.matrixWorld));
+          defaultCamera = defaultCamera.multiply(new THREE.Vector3(1, 0, 1)).normalize().multiplyScalar(worldScaleMult);
+          let newPosition = new THREE.Vector3(defaultCamera.x + x, 0, defaultCamera.y + y);
+          offsetVector.add(newPosition);
           return offsetVector
         } else {
           return oldPos.clone().add(offsetVector)
