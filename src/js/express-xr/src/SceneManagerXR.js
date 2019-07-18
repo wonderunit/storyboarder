@@ -254,8 +254,6 @@ const SceneContent = ({
   }
 
   const onSelectStart = event => {
-    soundSelect.current.play()
-
     const controller = event.target
     controller.pressed = true
 
@@ -271,7 +269,10 @@ const SceneContent = ({
     const intersections = getIntersections(controller, intersectArray.current)
 
     if (intersections.length > 0) {
-      onIntersection(controller, intersections)
+      let didMakeSelection = onIntersection(controller, intersections)
+      if (didMakeSelection) {
+        soundSelect.current.play()
+      }
     } else {
       setSelectedObject(0)
       selectedObjRef.current = null
@@ -279,13 +280,14 @@ const SceneContent = ({
     }
   }
 
+  // returns true if selection was successful
   const onIntersection = (controller, intersections) => {
       let intersection = intersections[0]
-      if (intersection.object.userData.type === 'bone') return
+      if (intersection.object.userData.type === 'bone') return true
 
       if (intersection.object.userData.type === 'slider') {
         controller.intersections = intersections
-        return
+        return true
       }
 
       if (intersection.object.userData.type === 'view') {
@@ -379,7 +381,7 @@ const SceneContent = ({
           }
         }
 
-        return
+        return true
       }
 
       if (intersection.object.userData.type === 'hitter' && intersection.object.parent.userData.character) {
@@ -392,7 +394,7 @@ const SceneContent = ({
       // is this probably NOT a scene object?
       // (used to exclude environment meshes for example)
       if (object.userData.id == null) {
-        return
+        return false
       }
 
       setSelectedObject(id)
@@ -451,6 +453,8 @@ const SceneContent = ({
         if (!objMaterial.emissive) return
         objMaterial.emissive.b = 0.15
       }
+
+      return true
   }
 
   const onChangeGuiMode = mode => {
