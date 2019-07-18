@@ -385,7 +385,6 @@ const SceneContent = ({
       }
 
       if (intersection.object.userData.type === 'hitter' && intersection.object.parent.userData.character) {
-        if (!intersection.object.parent.userData.character) return
         intersection.object = intersection.object.parent.userData.character
       }
 
