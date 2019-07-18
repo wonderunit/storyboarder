@@ -154,33 +154,36 @@ const useEnvironmentModel = (world, scene, { modelData}) => {
     flatShading: false
   })
 
-  const sanitize = scene => {
-    let allowlist = ['Scene', 'Mesh', 'Group']
+  // remove any object with a type that is not on the allowlist
+  const onlyOfTypes = (object3d, allowlist) => {
     let removable = []
 
-    scene.traverse(child => {
+    object3d.traverse(child => {
       // if we don't allow this type of Object3d ...
       if ( ! allowlist.includes(child.type) ) {
         // ... mark it for removal
         removable.push(child)
-      } else if (child.type === 'Mesh') {
-        // update all Mesh textures
-        child.material = materialFactory()
       }
     })
     // remove the marked objects
     removable.forEach(child => child.parent.remove(child))
 
     // return the modified scene
-    return scene
+    return object3d
   }
 
   useEffect(() => {
     if (modelData) {
       let g = new THREE.Group()
-      let scene = sanitize(modelData.scene.clone())
 
-      scene.children.forEach(child => g.add(child))
+      let sceneData = onlyOfTypes(modelData.scene.clone(), ['Scene', 'Mesh', 'Group'])
+
+      // update all Mesh textures
+      sceneData.traverse(child => {
+        if (child.isMesh) { child.material = materialFactory() }
+      })
+
+      sceneData.children.forEach(child => g.add(child))
 
       setGroup(g)
     } else {
