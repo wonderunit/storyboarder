@@ -612,11 +612,11 @@ const SceneContent = ({
       soundBeam.current.stop()
 
       updateObjectHighlight(object)
-      useUpdateObject(object)
+      updateObjectForType(object)
     }
   }
 
-  const useUpdateObject = object => {
+  const updateObjectForType = object => {
     if (object.userData.type === 'character') {
       updateObject(object.userData.id, {
         x: object.position.x,
