@@ -6,6 +6,7 @@ const { useRef, useEffect, useState } = React
 const path = require('path')
 
 const buildSquareRoom = require('./build-square-room')
+const onlyOfTypes = require('./only-of-types')
 
 // TODO use functions of ModelLoader?
 require('../vendor/three/examples/js/loaders/GLTFLoader')
@@ -16,6 +17,15 @@ const gltfLoader = new THREE.GLTFLoader(loadingManager)
 const imageLoader = new THREE.ImageLoader(loadingManager)
 
 objLoader.setLogging(false, false)
+
+const materialFactory = () => new THREE.MeshToonMaterial({
+  color: 0xffffff,
+  emissive: 0x0,
+  specular: 0x0,
+  skinning: true,
+  shininess: 0,
+  flatShading: false
+})
 
 const useGround = (world, scene) => {
   const [loaded, setLoaded] = useState(false)
@@ -147,25 +157,16 @@ const useEnvironmentModel = (world, scene, { modelData}) => {
 
   useEffect(() => {
     if (modelData) {
-      const g = new THREE.Group()
+      let g = new THREE.Group()
 
-      modelData.scene.children.forEach(child => {
-        if (child.type === 'Mesh') {
-          let m = child.clone()
+      let sceneData = onlyOfTypes(modelData.scene.clone(), ['Scene', 'Mesh', 'Group'])
 
-          const material = new THREE.MeshToonMaterial({
-            color: 0xffffff,
-            emissive: 0x0,
-            specular: 0x0,
-            skinning: true,
-            shininess: 0,
-            flatShading: false
-          })
-          m.material = material
-
-          g.add(m)
-        }
+      // update all Mesh textures
+      sceneData.traverse(child => {
+        if (child.isMesh) { child.material = materialFactory() }
       })
+
+      g.add( ...sceneData.children )
 
       setGroup(g)
     } else {
