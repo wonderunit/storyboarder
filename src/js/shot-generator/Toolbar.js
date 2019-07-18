@@ -68,7 +68,6 @@ const Toolbar = ({
 
   const onCreateObjectClick = () => {
     let id = THREE.Math.generateUUID()
-    //let camera = findCamera();
     let newPoz = generatePositionAndRotation(camera)
 
     undoGroupStart()
