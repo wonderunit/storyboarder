@@ -9,7 +9,8 @@
   <body>
     <div id="main"></div>
     <script>
-      require('./js/windows/shot-generator/window.js')
+      const path = require('path')
+      require(path.join(__dirname, 'js', 'windows', 'shot-generator', 'window.js'))
     </script>
   </body>
 </html>
