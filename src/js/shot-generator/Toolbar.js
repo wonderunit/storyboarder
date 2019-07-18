@@ -51,15 +51,12 @@ const Toolbar = ({
     undoGroupStart()
     createObject({
       id,
-
       type: 'camera',
+
       fov: 22.25,
-      x: 0,
-      y: 6,
-      z: 2,
-      rotation: 0,
-      tilt: 0,
-      roll: 0
+
+      x: 0, y: 6, z: 2,
+      rotation: 0, tilt: 0, roll: 0
     })
     selectObject(id)
     setActiveCamera(id)
@@ -68,19 +65,18 @@ const Toolbar = ({
 
   const onCreateObjectClick = () => {
     let id = THREE.Math.generateUUID()
-    let newPoz = generatePositionAndRotation(camera)
+    let { x, y, z } = generatePositionAndRotation(camera)
 
     undoGroupStart()
     createObject({
       id,
       type: 'object',
       model: 'box',
-      width: 1,
-      height: 1,
-      depth: 1,
-      x: newPoz.x,
-      y: newPoz.y,
-      z: newPoz.z,
+
+      width: 1, height: 1, depth: 1,
+
+      x, y, z,
+
       rotation: { x: 0, y: 0, z: 0 }, //Math.random() * Math.PI * 2,
 
       visible: true
@@ -90,8 +86,9 @@ const Toolbar = ({
   }
 
   const onCreateCharacterClick = () => {
-    let newPoz = generatePositionAndRotation(camera)
     let id = THREE.Math.generateUUID()
+
+    let { x, y, z } = generatePositionAndRotation(camera)
 
     undoGroupStart()
     createObject({
@@ -99,10 +96,10 @@ const Toolbar = ({
       type: 'character',
       height: 1.8,
       model: 'adult-male',
-      x: newPoz.x,
-      y: newPoz.y,
-      z: newPoz.z,
-      rotation: 0,//newPoz.rotation,
+
+      x, y, z,
+
+      rotation: 0,
       headScale: 1,
 
       morphTargets: {
@@ -127,12 +124,10 @@ const Toolbar = ({
     createObject({
       id,
       type: 'light',
-      x: 0,
-      y: 0,
-      z: 2,
-      rotation: 0,
-      tilt: 0,
-      roll: 0,
+
+      x: 0, y: 0, z: 2,
+      rotation: 0, tilt: 0, roll: 0,
+
       intensity: 0.8,
       visible: true,
       angle: 1.04,
@@ -151,13 +146,13 @@ const Toolbar = ({
     createObject({
       id,
       type: 'volume',
-      x: 0,
-      y:2,
-      z: 0,
-      width: 5,
-      height: 5,
-      depth:5,
+
+      x: 0, y: 2, z: 0,
+
+      width: 5, height: 5, depth: 5,
+
       rotation: 0,
+
       visible: true,
       opacity: 0.3,
       color: 0x777777,
