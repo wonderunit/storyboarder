@@ -79,6 +79,7 @@ const {
 } = require('../shared/reducers/shot-generator')
 
 const IconSprites = require('./IconSprites')
+const Icon = require('./Icon')
 
 const presetsStorage = require('../shared/store/presetsStorage')
 //const presetsStorage = require('../presetsStorage')
@@ -1964,16 +1965,6 @@ const PhoneCursor = connect(
       )
     })
 
-const Icon = ({ src }) => h(
-  [
-    'img.icon', {
-      width: 32,
-      height: 32,
-      src: `./img/shot-generator/${src}.svg`
-    }
-  ]
-)
-
 const Toolbar = ({
   createObject,
   selectObject,
@@ -2924,7 +2915,6 @@ ipcRenderer.on('shot-generator:menu:view:fps-meter', (event, value) => {
 module.exports = {
   SceneContext,
   Toolbar,
-  Icon,
   ElementsPanel,
   CameraInspector,
   BoardInspector,

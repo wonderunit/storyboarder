@@ -14,7 +14,6 @@ const log = require('electron-log')
 const {
   SceneContext,
   Toolbar,
-  Icon,
   ElementsPanel,
   CameraInspector,
   BoardInspector,
@@ -29,6 +28,7 @@ const {
 } = require('./Components')
 const SceneManager = require('./SceneManager')
 const GuidesView = require('./GuidesView')
+const Icon = require('./Icon')
 const FatalErrorBoundary = require('./FatalErrorBoundary')
 
 const ModelLoader = require('../services/model-loader')
