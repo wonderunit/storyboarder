@@ -30,18 +30,21 @@ const preventDefault = (fn, ...args) => e => {
 const generatePositionAndRotation = (camera, room) => {
   console.log('generatePositionAndRotation', camera, room)
 
-  let direction = new THREE.Vector3() // create once and reuse it!
+  let direction = new THREE.Vector3()
   camera.getWorldDirection( direction )
+
   let newPos = new THREE.Vector3()
   let dist = (Math.random()) * 6 + 4
   newPos.addVectors ( camera.position, direction.multiplyScalar( dist ) )
+
   let obj = new THREE.Object3D()
   newPos.x += (Math.random() * 4 - 2)
   newPos.z += (Math.random() * 4 - 2)
+
   obj.position.set(newPos.x, 0, newPos.z)
   obj.lookAt(camera.position)
-  obj.rotation.set(0, obj.rotation.y, 0)  //maybe we want rotation relative to camera (facing the camera)
-  obj.rotation.y = Math.random() * Math.PI * 2
+  obj.rotation.set(0, obj.rotation.y, 0)
+  // obj.rotation.y = Math.random() * Math.PI * 2
 
   return {
     x: obj.position.x,
@@ -105,7 +108,7 @@ const Toolbar = connect(
 
     const onCreateObjectClick = () => {
       let id = THREE.Math.generateUUID()
-      let { x, y, z } = generatePositionAndRotation(camera, room)
+      let { x, y, z, rotation } = generatePositionAndRotation(camera, room)
 
       undoGroupStart()
       createObject({
@@ -117,7 +120,7 @@ const Toolbar = connect(
 
         x, y, z,
 
-        rotation: { x: 0, y: 0, z: 0 }, //Math.random() * Math.PI * 2,
+        rotation: { x: 0, y: rotation, z: 0 },
 
         visible: true
       })
@@ -128,7 +131,7 @@ const Toolbar = connect(
     const onCreateCharacterClick = () => {
       let id = THREE.Math.generateUUID()
 
-      let { x, y, z } = generatePositionAndRotation(camera, room)
+      let { x, y, z, rotation } = generatePositionAndRotation(camera, room)
 
       undoGroupStart()
       createObject({
@@ -138,8 +141,8 @@ const Toolbar = connect(
         model: 'adult-male',
 
         x, y, z,
+        rotation,
 
-        rotation: 0,
         headScale: 1,
 
         morphTargets: {
