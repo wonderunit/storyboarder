@@ -205,6 +205,17 @@ const useEnvironmentModel = (world, scene, { modelData}) => {
   useEffect(() => {
     if (!group) return
 
+    group.traverse(child => {
+      // "always show"
+      child.layers.disable(0)
+      // camera
+      child.layers.enable(1)
+      // plot
+      child.layers.disable(2)
+      // image rendering
+      child.layers.enable(3)
+    })
+
     scene.add(group)
 
     return function cleanup () {
