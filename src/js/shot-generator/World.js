@@ -180,10 +180,7 @@ const useEnvironmentModel = (world, scene, { modelData}) => {
       let g = new THREE.Group()
       let scene = sanitize(modelData.scene.clone())
 
-      // add scene and children to group
-      g.add(scene)
-      // uncomment and use this instead to only add scene children
-      // scene.children.forEach(child => g.add(child))
+      scene.children.forEach(child => g.add(child))
 
       setGroup(g)
     } else {
