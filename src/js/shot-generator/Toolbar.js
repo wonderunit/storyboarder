@@ -11,11 +11,11 @@ const preventDefault = (fn, ...args) => e => {
 const Toolbar = ({
   createObject,
   selectObject,
-  loadScene,
-  saveScene,
+  // loadScene,
+  // saveScene,
   camera,
   setActiveCamera,
-  resetScene,
+  // resetScene,
   saveToBoard,
   insertAsNewBoard,
   xrServerUrl,
@@ -170,46 +170,47 @@ const Toolbar = ({
     undoGroupEnd()
   }
 
-  const onCreateStressClick = () => {
-    undoGroupStart()
-    for (let i = 0; i < 500; i++) {
-      onCreateObjectClick()
-    }
-    for (let i = 0; i < 20; i++) {
-      onCreateCharacterClick()
-    }
-    undoGroupEnd()
-    setTimeout(() => {
-      console.log(Object.values(getSceneObjects($r.store.getState())).length, 'scene objects')
-    }, 100)
-  }
+  // const onCreateStressClick = () => {
+  //   undoGroupStart()
+  //   for (let i = 0; i < 500; i++) {
+  //     onCreateObjectClick()
+  //   }
+  //   for (let i = 0; i < 20; i++) {
+  //     onCreateCharacterClick()
+  //   }
+  //   undoGroupEnd()
+  //   setTimeout(() => {
+  //     console.log(Object.values(getSceneObjects($r.store.getState())).length, 'scene objects')
+  //   }, 100)
+  // }
 
-  const onLoadClick = () => {
-    let filepaths = dialog.showOpenDialog(null, {})
-    if (filepaths) {
-      let filepath = filepaths[0]
-      let choice = dialog.showMessageBox(null, {
-        type: 'question',
-        buttons: ['Yes', 'No'],
-        message: 'Your existing scene will be cleared to load the file. Are you sure?',
-        defaultId: 1 // default to No
-      })
-      if (choice === 0) {
-        try {
-          let data = JSON.parse(
-            fs.readFileSync(filepath)
-          )
-          loadScene(data)
-        } catch (err) {
-          console.error(err)
-          dialog.showMessageBox(null, {
-            message: 'Sorry, an error occurred.'
-          })
-        }
-      }
-    }
-  }
+  // const onLoadClick = () => {
+  //   let filepaths = dialog.showOpenDialog(null, {})
+  //   if (filepaths) {
+  //     let filepath = filepaths[0]
+  //     let choice = dialog.showMessageBox(null, {
+  //       type: 'question',
+  //       buttons: ['Yes', 'No'],
+  //       message: 'Your existing scene will be cleared to load the file. Are you sure?',
+  //       defaultId: 1 // default to No
+  //     })
+  //     if (choice === 0) {
+  //       try {
+  //         let data = JSON.parse(
+  //           fs.readFileSync(filepath)
+  //         )
+  //         loadScene(data)
+  //       } catch (err) {
+  //         console.error(err)
+  //         dialog.showMessageBox(null, {
+  //           message: 'Sorry, an error occurred.'
+  //         })
+  //       }
+  //     }
+  //   }
+  // }
 
+  /*
   const onSaveClick = () => {
     let filepath = dialog.showSaveDialog(null, { defaultPath: 'test.json' })
     if (filepath) {
@@ -225,24 +226,25 @@ const Toolbar = ({
       saveScene(filepath)
     }
   }
+  */
 
-  const onClearClick = () => {
-    let choice = dialog.showMessageBox(null, {
-      type: 'question',
-      buttons: ['Yes', 'No'],
-      message: 'Your existing scene will be cleared. Are you sure?',
-      defaultId: 1 // default to No
-    })
-    if (choice === 0) {
-      resetScene()
-    }
-  }
+  // const onClearClick = () => {
+  //   let choice = dialog.showMessageBox(null, {
+  //     type: 'question',
+  //     buttons: ['Yes', 'No'],
+  //     message: 'Your existing scene will be cleared. Are you sure?',
+  //     defaultId: 1 // default to No
+  //   })
+  //   if (choice === 0) {
+  //     resetScene()
+  //   }
+  // }
 
-  const onSaveToBoardClick = event => {
+  const onSaveToBoardClick = () => {
     saveToBoard()
   }
 
-  const onInsertNewBoardClick = event => {
+  const onInsertNewBoardClick = () => {
     insertAsNewBoard()
   }
 
