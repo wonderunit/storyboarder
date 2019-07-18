@@ -18,6 +18,15 @@ const imageLoader = new THREE.ImageLoader(loadingManager)
 
 objLoader.setLogging(false, false)
 
+const materialFactory = () => new THREE.MeshToonMaterial({
+  color: 0xffffff,
+  emissive: 0x0,
+  specular: 0x0,
+  skinning: true,
+  shininess: 0,
+  flatShading: false
+})
+
 const useGround = (world, scene) => {
   const [loaded, setLoaded] = useState(false)
 
@@ -145,15 +154,6 @@ const useRoom = (world, scene) => {
 
 const useEnvironmentModel = (world, scene, { modelData}) => {
   const [group, setGroup] = useState(null)
-
-  const materialFactory = () => new THREE.MeshToonMaterial({
-    color: 0xffffff,
-    emissive: 0x0,
-    specular: 0x0,
-    skinning: true,
-    shininess: 0,
-    flatShading: false
-  })
 
   useEffect(() => {
     if (modelData) {
