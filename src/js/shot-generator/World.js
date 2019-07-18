@@ -166,7 +166,7 @@ const useEnvironmentModel = (world, scene, { modelData}) => {
         if (child.isMesh) { child.material = materialFactory() }
       })
 
-      sceneData.children.forEach(child => g.add(child))
+      g.add( ...sceneData.children )
 
       setGroup(g)
     } else {

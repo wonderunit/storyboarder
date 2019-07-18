@@ -48,7 +48,7 @@ const SGWorld = ({ groundTexture, wallTexture, world, modelData }) => {
       if (child.isMesh) { child.material = materialFactory() }
     })
 
-    sceneData.children.forEach(child => g.add(child))
+    g.add( ...sceneData.children )
 
     return g
   }, [modelData])
