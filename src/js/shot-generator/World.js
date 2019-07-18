@@ -6,6 +6,7 @@ const { useRef, useEffect, useState } = React
 const path = require('path')
 
 const buildSquareRoom = require('./build-square-room')
+const onlyOfTypes = require('./only-of-types')
 
 // TODO use functions of ModelLoader?
 require('../vendor/three/examples/js/loaders/GLTFLoader')
@@ -153,24 +154,6 @@ const useEnvironmentModel = (world, scene, { modelData}) => {
     shininess: 0,
     flatShading: false
   })
-
-  // remove any object with a type that is not on the allowlist
-  const onlyOfTypes = (object3d, allowlist) => {
-    let removable = []
-
-    object3d.traverse(child => {
-      // if we don't allow this type of Object3d ...
-      if ( ! allowlist.includes(child.type) ) {
-        // ... mark it for removal
-        removable.push(child)
-      }
-    })
-    // remove the marked objects
-    removable.forEach(child => child.parent.remove(child))
-
-    // return the modified scene
-    return object3d
-  }
 
   useEffect(() => {
     if (modelData) {
