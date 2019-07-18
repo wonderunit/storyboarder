@@ -389,6 +389,12 @@ const SceneContent = ({
 
       let object = findParent(intersection.object)
       const { id } = object
+      // is this probably NOT a scene object?
+      // (used to exclude environment meshes for example)
+      if (object.userData.id == null) {
+        return
+      }
+
       setSelectedObject(id)
       selectedObjRef.current = scene.getObjectById(id)
       setHideArray(createHideArray(scene))
@@ -611,8 +617,12 @@ const SceneContent = ({
       controller.userData.selected = undefined
       soundBeam.current.stop()
 
-      updateObjectHighlight(object)
-      updateObjectForType(object)
+      // is this probably a scene object?
+      // (used to exclude environment meshes for example)
+      if (object.userData.id) {
+        updateObjectHighlight(object)
+        updateObjectForType(object)
+      }
     }
   }
 
