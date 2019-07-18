@@ -711,18 +711,18 @@ const Editor = connect(
         [FatalErrorBoundary,
           ['div.column', { style: { width: '100%', height: '100%' } }, [
             [Toolbar, {
-              createObject,
-              selectObject,
-              loadScene,
-              saveScene,
+              // createObject,
+              // selectObject,
+              // loadScene,
+              // saveScene,
               camera,
               setActiveCamera,
-              resetScene,
+              // resetScene,
               saveToBoard: onToolbarSaveToBoard,
               insertAsNewBoard: onToolbarInsertAsNewBoard,
               xrServerUrl,
-              undoGroupStart,
-              undoGroupEnd
+              // undoGroupStart,
+              // undoGroupEnd
             }],
 
             ['div.row', { style: { flex: 1, height: '100%' }},
