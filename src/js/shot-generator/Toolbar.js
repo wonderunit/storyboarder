@@ -8,6 +8,28 @@ const preventDefault = (fn, ...args) => e => {
   fn(e, ...args)
 }
 
+const generatePositionAndRotation = camera => {
+  let direction = new THREE.Vector3() // create once and reuse it!
+  camera.getWorldDirection( direction )
+  let newPos = new THREE.Vector3()
+  let dist = (Math.random()) * 6 + 4
+  newPos.addVectors ( camera.position, direction.multiplyScalar( dist ) )
+  let obj = new THREE.Object3D()
+  newPos.x += (Math.random() * 4 - 2)
+  newPos.z += (Math.random() * 4 - 2)
+  obj.position.set(newPos.x, 0, newPos.z)
+  obj.lookAt(camera.position)
+  obj.rotation.set(0, obj.rotation.y, 0)  //maybe we want rotation relative to camera (facing the camera)
+  obj.rotation.y = Math.random() * Math.PI * 2
+
+  return {
+    x: obj.position.x,
+    y: obj.position.z,
+    z: obj.position.y,
+    rotation: obj.rotation.y
+  }
+}
+
 const Toolbar = ({
   createObject,
   selectObject,
@@ -66,28 +88,6 @@ const Toolbar = ({
     })
     selectObject(id)
     undoGroupEnd()
-  }
-
-  const generatePositionAndRotation = (camera) => {
-    let direction = new THREE.Vector3() // create once and reuse it!
-    camera.getWorldDirection( direction )
-    let newPos = new THREE.Vector3()
-    let dist = (Math.random()) * 6 + 4
-    newPos.addVectors ( camera.position, direction.multiplyScalar( dist ) )
-    let obj = new THREE.Object3D()
-    newPos.x += (Math.random() * 4 - 2)
-    newPos.z += (Math.random() * 4 - 2)
-    obj.position.set(newPos.x, 0, newPos.z)
-    obj.lookAt(camera.position)
-    obj.rotation.set(0, obj.rotation.y, 0)  //maybe we want rotation relative to camera (facing the camera)
-    obj.rotation.y = Math.random() * Math.PI * 2
-
-    return {
-      x: obj.position.x,
-      y: obj.position.z,
-      z: obj.position.y,
-      rotation: obj.rotation.y
-    }
   }
 
   const onCreateCharacterClick = () => {
