@@ -1,5 +1,5 @@
 {
-  "version": "1.9.4",
+  "version": "1.12.0",
   "aspectRatio": 2.39,
   "fps": 24,
   "defaultBoardTiming": 2000,
@@ -21,7 +21,7 @@
       "time": 0,
       "lineMileage": 821.5682133251058,
       "sg": {
-        "version": "1.9.4",
+        "version": "1.12.0",
         "data": {
           "activeCamera": "6BC46A44-7965-43B5-B290-E3D2B9D15EEE",
           "sceneObjects": {
@@ -36,12 +36,32 @@
                 "endomorphic": 0,
                 "mesomorphic": 0
               },
+              "name": "Actor",
               "rotation": 0,
               "skeleton": {},
               "type": "character",
               "visible": true,
               "x": 0,
               "y": 0,
+              "z": 0
+            },
+            "3F659237-C3B2-42D3-B16C-8E9C1AC4D442": {
+              "depth": 0.5,
+              "displayName": "Object 2",
+              "height": 0.5,
+              "id": "3F659237-C3B2-42D3-B16C-8E9C1AC4D442",
+              "model": "primitive-sphere",
+              "name": "Sphere",
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "type": "object",
+              "visible": true,
+              "width": 0.5,
+              "x": 1,
+              "y": -1,
               "z": 0
             },
             "4F0FF9B8-BBB4-4D83-9E87-6EFE16A01D6F": {
@@ -51,6 +71,7 @@
               "distance": 6.649999999999978,
               "id": "4F0FF9B8-BBB4-4D83-9E87-6EFE16A01D6F",
               "intensity": 0.5499999999999998,
+              "name": "Light",
               "penumbra": 0.7249999999999998,
               "rotation": -3.141592653589793,
               "tilt": -0.46251225177849803,
@@ -64,7 +85,7 @@
               "displayName": "Camera 1",
               "fov": 33.932915758162025,
               "id": "6BC46A44-7965-43B5-B290-E3D2B9D15EEE",
-              "name": "Main Camera",
+              "name": "Camera",
               "roll": 0,
               "rotation": 0,
               "tilt": 0,
@@ -80,6 +101,7 @@
               "distanceBetweenLayers": 1.5,
               "height": 5,
               "id": "97F2D438-4FDC-44FF-8570-54A54AF27F79",
+              "name": "Volume",
               "numberOfLayers": 4,
               "opacity": 0.3,
               "rotation": 0,
@@ -92,6 +114,25 @@
               "width": 5,
               "x": 0,
               "y": 2,
+              "z": 0
+            },
+            "AA58B60E-8DF2-4586-BBB8-CEB50D1EBA35": {
+              "depth": 0.5,
+              "displayName": "Object 1",
+              "height": 0.5,
+              "id": "AA58B60E-8DF2-4586-BBB8-CEB50D1EBA35",
+              "model": "box",
+              "name": "Box",
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "type": "object",
+              "visible": true,
+              "width": 0.5,
+              "x": -1,
+              "y": -1,
               "z": 0
             }
           },

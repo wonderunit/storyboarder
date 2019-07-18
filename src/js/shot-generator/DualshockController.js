@@ -47,7 +47,7 @@ console.log("dual shock controller class")
 
 // this package allows for cheap polling of usb connections
 //const usbDetect = require('usb-detection')
-const ds = require('dualshock')
+// const ds = require('dualshock')
 //const robot = require("robotjs")
 
 let controllerConnected = false
@@ -80,168 +80,168 @@ module.exports = function ( updater ) {
 
   let checkForController = () => {
     //ds.reset()
-    let list = ds.getDevices()
-    console.log("Devices:",list)
-    if (list.length < 1) {
-      console.log("Could not find a controller!")
-      return
-    }
+  //   let list = ds.getDevices()
+  //   console.log("Devices:",list)
+  //   if (list.length < 1) {
+  //     console.log("Could not find a controller!")
+  //     return
+  //   }
 
-    // get only the first controller if multiple
-    let device = list[0]
-    gamepad = ds.open(device, {smoothAnalog:10, smoothMotion:5, joyDeadband:4, moveDeadband:4})
-    // gamepad.initMotionDataBT() // not implemented in dualshock@3.1.1, only in our vendored version
-    controllerConnected = true
-    console.log("Controller connected")
+  //   // get only the first controller if multiple
+  //   let device = list[0]
+  //   gamepad = ds.open(device, {smoothAnalog:10, smoothMotion:5, joyDeadband:4, moveDeadband:4})
+  //   // gamepad.initMotionDataBT() // not implemented in dualshock@3.1.1, only in our vendored version
+  //   controllerConnected = true
+  //   console.log("Controller connected")
 
-    gamepad.ondisconnect = () => {
-      console.log("Controller disconnected!")
-      controllerConnected = false
-    }
-    gamepad.onerror = (error) => {
-      console.log(error)
-    }
+  //   gamepad.ondisconnect = () => {
+  //     console.log("Controller disconnected!")
+  //     controllerConnected = false
+  //   }
+  //   gamepad.onerror = (error) => {
+  //     console.log(error)
+  //   }
 
-    gamepad.ondigital = (button, value) => {
-      console.log("BUTTON '"+button+"' = "+value)
-      //rumbleScript(button, value, 'd', this)
-      if (value) {
-        // gamepad.rumbleAdd(94, 0, 255, 0)
-        gamepad.setLed(Math.floor(Math.random()*255),Math.floor(Math.random()*255),Math.floor(Math.random()*255))
-      } else {
-        // gamepad.rumble(0, 0)
-        gamepad.setLed(0,0,0)
-      }
+  //   gamepad.ondigital = (button, value) => {
+  //     console.log("BUTTON '"+button+"' = "+value)
+  //     //rumbleScript(button, value, 'd', this)
+  //     if (value) {
+  //       // gamepad.rumbleAdd(94, 0, 255, 0)
+  //       gamepad.setLed(Math.floor(Math.random()*255),Math.floor(Math.random()*255),Math.floor(Math.random()*255))
+  //     } else {
+  //       // gamepad.rumble(0, 0)
+  //       gamepad.setLed(0,0,0)
+  //     }
 
-      if (button == 'pad' && value && !padDown) {
-        padDown = true
-        console.log('click')
-        //robot.mouseClick()
-      }
+  //     if (button == 'pad' && value && !padDown) {
+  //       padDown = true
+  //       console.log('click')
+  //       //robot.mouseClick()
+  //     }
 
-      if (button == 'pad' && !value) {
-        padDown = false
-        //console.log('click')
-      }
+  //     if (button == 'pad' && !value) {
+  //       padDown = false
+  //       //console.log('click')
+  //     }
 
 
-      if (button == 't1' && value && !mouseMode) {
-        startX = null
-        startY = null
-        mouseMode = true
-        yCountdown = 3
-        mousePos = {x: 0, y: 0} // robot.getMousePos()
-        //robot.setMouseDelay(0)
-        virtualMousePos = {x: mousePos.x, y: mousePos.y}
-      }
+  //     if (button == 't1' && value && !mouseMode) {
+  //       startX = null
+  //       startY = null
+  //       mouseMode = true
+  //       yCountdown = 3
+  //       mousePos = {x: 0, y: 0} // robot.getMousePos()
+  //       //robot.setMouseDelay(0)
+  //       virtualMousePos = {x: mousePos.x, y: mousePos.y}
+  //     }
 
-      if (button == 't1' && !value) {
-        startX = null
-        startY = null
-        mouseMode = false
-        yCountdown = 3
-        mousePos = {x: 0, y: 0} // robot.getMousePos()
-        virtualMousePos = {x: mousePos.x, y: mousePos.y}
-      }
+  //     if (button == 't1' && !value) {
+  //       startX = null
+  //       startY = null
+  //       mouseMode = false
+  //       yCountdown = 3
+  //       mousePos = {x: 0, y: 0} // robot.getMousePos()
+  //       virtualMousePos = {x: mousePos.x, y: mousePos.y}
+  //     }
 
-    }
+  //   }
 
-    gamepad.onanalog = (axis, value) => {
-  	//	 console.log("ANALOG '"+axis+"' = "+value);
-      //rumbleScript(axis, value, 'a', this);
-      if (axis == 't1Y'){
-        if (!mouseMode) {
-          startY = null
-          yCountdown = 3
-        } else {
-          yCountdown--
-          if (!startY && yCountdown < 0) { startY = value}
-          if (yCountdown < 0) {
-            virtualMousePos.y = mousePos.y - ((startY - value)/2.0)
-            //robot.moveMouse(virtualMousePos.x, virtualMousePos.y)
-          }
-        }
-      }
+  //   gamepad.onanalog = (axis, value) => {
+  // 	//	 console.log("ANALOG '"+axis+"' = "+value);
+  //     //rumbleScript(axis, value, 'a', this);
+  //     if (axis == 't1Y'){
+  //       if (!mouseMode) {
+  //         startY = null
+  //         yCountdown = 3
+  //       } else {
+  //         yCountdown--
+  //         if (!startY && yCountdown < 0) { startY = value}
+  //         if (yCountdown < 0) {
+  //           virtualMousePos.y = mousePos.y - ((startY - value)/2.0)
+  //           //robot.moveMouse(virtualMousePos.x, virtualMousePos.y)
+  //         }
+  //       }
+  //     }
 
-      if (axis == 't1X'){
-        if (!mouseMode) {
-          startX = null
-          xCountdown = 3
-        } else {
-          xCountdown--
-          if (!startX && xCountdown < 0) { startX = value}
-          if (xCountdown < 0) {
-            virtualMousePos.x = mousePos.x - ((startX - value)/2.0)
-            //robot.moveMouse(virtualMousePos.x, virtualMousePos.y)
-          }
-        }
-      }
+  //     if (axis == 't1X'){
+  //       if (!mouseMode) {
+  //         startX = null
+  //         xCountdown = 3
+  //       } else {
+  //         xCountdown--
+  //         if (!startX && xCountdown < 0) { startX = value}
+  //         if (xCountdown < 0) {
+  //           virtualMousePos.x = mousePos.x - ((startX - value)/2.0)
+  //           //robot.moveMouse(virtualMousePos.x, virtualMousePos.y)
+  //         }
+  //       }
+  //     }
 
-  	}
+  // 	}
 
-    gamepad.onmotion = (axis, value) => {
-  		// console.log("MOTION '"+axis+"' = "+value);
-      if (axis === 'gyroYaw') {
-        // console.log(axis, value)
-      }
-      //rumbleScript(axis, value, 'a', this);
-      //console.log(mouseMode, startY)
-  	}
+  //   gamepad.onmotion = (axis, value) => {
+  // 		// console.log("MOTION '"+axis+"' = "+value);
+  //     if (axis === 'gyroYaw') {
+  //       // console.log(axis, value)
+  //     }
+  //     //rumbleScript(axis, value, 'a', this);
+  //     //console.log(mouseMode, startY)
+  // 	}
 
-    // gamepad.onmotion = true;
+  //   // gamepad.onmotion = true;
 
-    gamepad.onstatus = true
+  //   gamepad.onstatus = true
 
-    let max = 0
-    let min = 0
+  //   let max = 0
+  //   let min = 0
 
-    gamepad.onupdate = function (changed) {
-      updater(this, changed)
-    }
+  //   gamepad.onupdate = function (changed) {
+  //     updater(this, changed)
+  //   }
 
-  	// gamepad.onupdate = function(changed) {
-  	// 	//rumbleScript(changed, this);
-  	// 	//Uncomment one of these lines for debugging!
-  	// 	//console.log(this.digital);
-    //   //console.log(this.analog);
-    //   max = Math.max(max, this.motion.gyroPitch)
-    //   min = Math.min(min, this.motion.gyroPitch)
-    //
-    //   const {
-    //     accelX,
-    //     accelY,
-    //     accelZ,
-    //     gyroPitch,
-    //     gyroRoll,
-    //     gyroYaw
-    //   } = this.motion
-    //
-    //   updater({
-    //     circle: this.digital.circle,
-    //
-    //     accelX,
-    //     accelY,
-    //     accelZ,
-    //     gyroPitch,
-    //     gyroRoll,
-    //     gyroYaw
-    //   })
+  // 	// gamepad.onupdate = function(changed) {
+  // 	// 	//rumbleScript(changed, this);
+  // 	// 	//Uncomment one of these lines for debugging!
+  // 	// 	//console.log(this.digital);
+  //   //   //console.log(this.analog);
+  //   //   max = Math.max(max, this.motion.gyroPitch)
+  //   //   min = Math.min(min, this.motion.gyroPitch)
+  //   //
+  //   //   const {
+  //   //     accelX,
+  //   //     accelY,
+  //   //     accelZ,
+  //   //     gyroPitch,
+  //   //     gyroRoll,
+  //   //     gyroYaw
+  //   //   } = this.motion
+  //   //
+  //   //   updater({
+  //   //     circle: this.digital.circle,
+  //   //
+  //   //     accelX,
+  //   //     accelY,
+  //   //     accelZ,
+  //   //     gyroPitch,
+  //   //     gyroRoll,
+  //   //     gyroYaw
+  //   //   })
 
-  // accel = new Vector3(
-  //             System.BitConverter.ToInt16(_inputBuffer, 19),
-  //             System.BitConverter.ToInt16(_inputBuffer, 21),
-  //             System.BitConverter.ToInt16(_inputBuffer, 23)
-  //             )/8192f;
+  // // accel = new Vector3(
+  // //             System.BitConverter.ToInt16(_inputBuffer, 19),
+  // //             System.BitConverter.ToInt16(_inputBuffer, 21),
+  // //             System.BitConverter.ToInt16(_inputBuffer, 23)
+  // //             )/8192f;
 
-  // gyro = new Vector3(
-  //             System.BitConverter.ToInt16(_inputBuffer, 13),
-  //             System.BitConverter.ToInt16(_inputBuffer, 15),
-  //             System.BitConverter.ToInt16(_inputBuffer, 17)
-  //             )/1024f;
-  		// console.log(min,max)
+  // // gyro = new Vector3(
+  // //             System.BitConverter.ToInt16(_inputBuffer, 13),
+  // //             System.BitConverter.ToInt16(_inputBuffer, 15),
+  // //             System.BitConverter.ToInt16(_inputBuffer, 17)
+  // //             )/1024f;
+  // 		// console.log(min,max)
 
-      // console.log(this.motion.accelX, this.motion.accelY, this.motion.accelZ, this.motion.gyroPitch, this.motion.gyroRoll, this.motion.gyroYaw)
-  	// }
+  //     // console.log(this.motion.accelX, this.motion.accelY, this.motion.accelZ, this.motion.gyroPitch, this.motion.gyroRoll, this.motion.gyroYaw)
+  // 	// }
 
   }
 

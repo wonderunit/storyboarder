@@ -27,6 +27,9 @@ const boardFilenameForLayerThumbnail = (board, layerName) =>
 const boardFilenameForPosterFrame = (board) =>
   board.url.replace('.png', `-posterframe.jpg`)
 
+const boardFilenameForCameraPlot = (board) =>
+  board.url.replace('.png', `-camera-plot.png`)
+
 // TODO review usage
 // array of fixed size, ordered positions
 const boardOrderedLayerFilenames = board => {
@@ -119,6 +122,7 @@ const getMediaDescription = board => {
         }
       }, {})
       : {},
+    ...(board.sg ? { sg: { plot: boardFilenameForCameraPlot(board) } } : {})
   }
 }
 
@@ -130,7 +134,8 @@ const getMediaFilenames = board => {
     media.posterframe,
     media.link,
     media.audio,
-    ...Object.values(media.layerThumbnails)
+    ...Object.values(media.layerThumbnails),
+    ...media.sg ? Object.values(media.sg) : []
   ].reduce((coll, value) => {
     if (value) coll.push(value)
     return coll
@@ -145,6 +150,7 @@ module.exports = {
   boardFilenameForLayer,
   boardFilenameForLayerThumbnail,
   boardFilenameForPosterFrame,
+  boardFilenameForCameraPlot,
   boardOrderedLayerFilenames,
   boardDuration,
   boardDurationWithAudio,

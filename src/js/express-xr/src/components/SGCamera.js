@@ -1,7 +1,7 @@
 const { useUpdate } = require('react-three-fiber')
 const { useEffect } = React = require('react')
 
-const SGCamera = ({ aspectRatio, activeCamera, setDefaultCamera, ...props }) => {
+const SGCamera = ({ aspectRatio, activeCamera, setDefaultCamera, audioListener, ...props }) => {
   const ref = useUpdate(
     self => {
       self.rotation.x = 0
@@ -36,10 +36,12 @@ const SGCamera = ({ aspectRatio, activeCamera, setDefaultCamera, ...props }) => 
     near={0.01}
     far={1000}
 
-    position={[ props.x, props.z, props.y ]}
+    // position={[ props.x, props.z, props.y ]}
 
     onUpdate={self => self.updateProjectionMatrix()}
-  />
+  >
+    <primitive object={audioListener} />
+  </perspectiveCamera>
 }
 
 module.exports = SGCamera

@@ -99,6 +99,8 @@ const PosePresetsEditor = require('./PosePresetsEditor')
 const ServerInspector = require('./ServerInspector')
 const MultiSelectionInspector = require('./MultiSelectionInspector')
 
+const notifications = require('../window/notifications')
+
 require('../vendor/OutlineEffect.js')
 
 
@@ -227,7 +229,6 @@ const Camera = React.memo(({ scene, id, type, setCamera, icon, ...props }) => {
     camera.current.orthoIcon.position.copy(camera.current.position)
     camera.current.orthoIcon.icon.material.rotation = camera.current.rotation.y
     scene.add(camera.current.orthoIcon)
-
     let frustumIcons = new THREE.Object3D()
 
     frustumIcons.left = new IconSprites( 'object', '', camera.current )
@@ -367,7 +368,7 @@ const ListItem = ({ index, style, isScrolling, data }) => {
           isActive: sceneObject.type === 'camera' && sceneObject.id === activeCamera,
           allowDelete: (
             sceneObject.type != 'camera' ||
-            sceneObject.type == 'camera' && activeCamera !== sceneObject.id
+            (sceneObject.type == 'camera' && activeCamera !== sceneObject.id)
           ),
           selectObject,
           selectObjectToggle,
@@ -927,8 +928,8 @@ const CharacterPresetsEditor = connect(
   }),
   {
     updateObject,
-    selectCharacterPreset: (id, characterPresetId, preset) => (dispatch, getState) => {
-      dispatch(updateObject(id, {
+    selectCharacterPreset: (sceneObject, characterPresetId, preset) => (dispatch, getState) => {
+      dispatch(updateObject(sceneObject.id, {
         // set characterPresetId
         characterPresetId,
 
@@ -947,7 +948,7 @@ const CharacterPresetsEditor = connect(
           endomorphic: preset.state.morphTargets.endomorphic
         },
 
-        name: preset.state.name
+        name: sceneObject.name || preset.name
       }))
     },
     createCharacterPreset: ({ id, name, sceneObject }) => (dispatch, getState) => {
@@ -969,19 +970,29 @@ const CharacterPresetsEditor = connect(
             mesomorphic: sceneObject.morphTargets.mesomorphic,
             ectomorphic: sceneObject.morphTargets.ectomorphic,
             endomorphic: sceneObject.morphTargets.endomorphic
-          },
-
-          name: sceneObject.name
+          }
         }
       }
-      // create it
+
+      // start the undo-able operation
+      dispatch(undoGroupStart())
+
+      // create the preset
       dispatch(createCharacterPreset(preset))
 
       // save the presets file
       saveCharacterPresets(getState())
 
-      // select the preset in the list
-      dispatch(updateObject(sceneObject.id, { characterPresetId: id }))
+      // update this object to use the preset
+      dispatch(updateObject(sceneObject.id, {
+        // set the preset id
+        characterPresetId: id,
+        // use the preset’s name (if none assigned)
+        name: sceneObject.name || preset.name
+      }))
+
+      // end the undo-able operation
+      dispatch(undoGroupEnd())
     }
   }
 )(
@@ -1010,7 +1021,7 @@ const CharacterPresetsEditor = connect(
     const onSelectCharacterPreset = event => {
       let characterPresetId = event.target.value
       let preset = characterPresets[characterPresetId]
-      selectCharacterPreset(sceneObject.id, characterPresetId, preset)
+      selectCharacterPreset(sceneObject, characterPresetId, preset)
     }
 
     return h(
@@ -1046,7 +1057,7 @@ const MORPH_TARGET_LABELS = {
   'ectomorphic': 'ecto',
   'endomorphic': 'obese',
 }
-const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, machineState, transition, selectBone, updateCharacterSkeleton, storyboarderFilePath }) => {
+const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineState, transition, selectBone, updateCharacterSkeleton, storyboarderFilePath }) => {
   const createOnSetValue = (id, name, transform = value => value) => value => updateObject(id, { [name]: transform(value) })
 
   let positionSliders = [
@@ -1077,18 +1088,6 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
   const onFocus = event => transition('TYPING_ENTER')
   const onBlur = event => transition('TYPING_EXIT')
 
-  // TODO selector?
-  const modelValues = Object.values(models)
-  const modelOptions = {
-    object: modelValues
-      .filter(model => model.type === 'object')
-      .map(model => ({ name: model.name, value: model.id })),
-
-    character: modelValues
-      .filter(model => model.type === 'character')
-      .map(model => ({ name: model.name, value: model.id }))
-  }
-
   return h([
     'div',
       [
@@ -1110,29 +1109,6 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
       sceneObject.type == 'character' && [
         [CharacterPresetsEditor, { sceneObject }],
       ],
-
-      (sceneObject.type == 'object' || sceneObject.type == 'character') && [
-        ModelSelect, {
-          sceneObject,
-          options: modelOptions[sceneObject.type],
-          updateObject,
-          transition
-        }
-      ],
-
-      // sceneObject.type == 'object' && [
-      //   'select', {
-      //     value: sceneObject.model,
-      //     onChange: event => {
-      //       event.preventDefault()
-      //       updateObject(sceneObject.id, { model: event.target.value })
-      //     }
-      //   }, [
-      //     [['box', 'box'], ['tree', 'tree'], ['chair', 'chair']].map(([name, value]) =>
-      //       ['option', { value }, name]
-      //     )
-      //   ]
-      // ],
 
       sceneObject.type != 'camera' &&
         [
@@ -1439,6 +1415,16 @@ const InspectedElement = ({ sceneObject, models, updateObject, selectedBone, mac
           ]
       ),
 
+      (sceneObject.type == 'object' || sceneObject.type == 'character') && [
+        ModelSelect, {
+          sceneObject,
+          updateObject,
+          transition,
+
+          rows: sceneObject.type == 'character' ? 1 : 3
+        }
+      ],
+
       sceneObject.type == 'character' && [
         PosePresetsEditor, {
           id: sceneObject.id,
@@ -1611,16 +1597,12 @@ const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, s
           sceneObject.type === 'camera'
             ? []
             : sceneObject.visible
-              ? isSelected
-                ? ['a.visibility[href=#]', { onClick: onToggleVisibleClick }, [Icon, { src: 'icon-item-visible' }]]
-                : []
+              ? ['a.visibility.hide-unless-hovered[href=#]', { onClick: onToggleVisibleClick }, [Icon, { src: 'icon-item-visible' }]]
               : ['a.visibility[href=#]', { onClick: onToggleVisibleClick }, [Icon, { src: 'icon-item-hidden' }]],
 
-              isSelected 
-                ? allowDelete
-                  ? ['a.delete[href=#]', { onClick: onDeleteClick }, 'X']
-                  : ['a.delete', { style: { opacity: 0.1 } }, 'X']
-                : []
+          allowDelete
+            ? ['a.delete[href=#]', { onClick: onDeleteClick }, 'X']
+            : ['a.delete', { style: { opacity: 0.1 } }, 'X']
       ]]
     ]
   ])
@@ -2117,6 +2099,7 @@ const Toolbar = ({
       z: 2,
       rotation: 0,
       tilt: 0,
+      roll: 0,
       intensity: 0.8,
       visible: true,
       angle: 1.04,
@@ -2230,8 +2213,10 @@ const Toolbar = ({
   }
 
   const onOpenVR = preventDefault(() =>
-    dialog.showMessageBox(null, {
-      message: `To view, open a VR web browser to:\n\n${xrServerUrl}`
+    notifications.notify({
+      message: `To view, open a VR web browser to:\n<a href="${xrServerUrl}">${xrServerUrl}</a>`,
+      timing: 30,
+      onClick: () => require('electron').shell.openExternal(xrServerUrl)
     })
   )
 
@@ -2457,7 +2442,7 @@ const GuidesInspector = connect(
               className: classNames({ active: eyeline }),
               onClick: preventDefault(() => toggleWorkspaceGuide('eyeline'))
             },
-            '👁'
+            [[Icon, { src: 'icon-guides-eyeline' }]]
           ]
         ]]
       ]]
@@ -2612,7 +2597,7 @@ const KeyHandler = connect(
       }
 
       const onKeyDown = event => {
-        if (event.key === 'Backspace') {
+        if (event.key === 'Backspace' || event.key === 'Delete') {
           if (selections.length && canDelete(_selectedSceneObject, activeCamera)) {
             let choice = dialog.showMessageBox(null, {
               type: 'question',

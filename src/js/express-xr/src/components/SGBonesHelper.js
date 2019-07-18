@@ -289,6 +289,9 @@ function BonesHelper( object, object3D, { boneLengthScale = 1, cacheKey } ) {
 
   this.hit_meshes = []
 
+  // If matrix scale is not 1, 1, 1 colliders and bones appear massive
+  object.matrixWorld.makeScale(1, 1, 1)
+
   let boneMatrix = new Matrix4()
   let matrixWorldInv = new Matrix4()
   let boneCounter = 0
@@ -350,7 +353,7 @@ function BonesHelper( object, object3D, { boneLengthScale = 1, cacheKey } ) {
         relativePos = getPointInBetweenByPerc(absoluteBonePosA, absoluteBonePosB, 0.5)
         let med = calcMedianDistance(relativePos, bonesContainingVerts[ii], this, matrixWorldInv, boneEquiv, vertexDistanceMyltiplyFactor, ii, sknMesh)
         distanceToVerts = med.median !== 0 ? med.median : 0.1
-        createdHelper = med.object        
+        createdHelper = med.object
       }
 
       let boneLength = posA.distanceTo(posB) * scaleC.y// / scaleA.y

@@ -33,6 +33,7 @@ const show = (onComplete) => {
     acceptFirstMouse: true,
     simpleFullscreen: true,
     webPreferences: {
+      nodeIntegration: true,
       plugins: true,
       webSecurity: false,
       allowRunningInsecureContent: true,

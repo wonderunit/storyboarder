@@ -73,6 +73,7 @@ const SGModel = ({ id, model, modelData, x, y, z, width, height, depth, rotation
     rotation={[ rotation.x, rotation.y, rotation.z ]}
     >
       {children}
+      {props.children}
     </group>
 }
 

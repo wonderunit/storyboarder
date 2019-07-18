@@ -1,11 +1,15 @@
 const fs = require('fs-extra')
 const path = require('path')
 
+
 const { Provider, connect } = require('react-redux')
 const React = require('react')
 const { useState, useEffect, useRef, useContext, useMemo } = React
 
 const { ipcRenderer, remote } = require('electron')
+const { dialog } = remote
+
+const log = require('electron-log')
 
 const {
   SceneContext,
@@ -25,6 +29,7 @@ const {
 } = require('./Components')
 const SceneManager = require('./SceneManager')
 const GuidesView = require('./GuidesView')
+const FatalErrorBoundary = require('./FatalErrorBoundary')
 
 const ModelLoader = require('../services/model-loader')
 
@@ -88,8 +93,6 @@ const {
   updateScenePreset,
   deleteScenePreset,
 
-  createCharacterPreset,
-
   createPosePreset,
   updatePosePreset,
   deletePosePreset,
@@ -119,6 +122,8 @@ const {
   getIsSceneDirty
 //} = require('../state')
 } = require('../shared/reducers/shot-generator')
+
+const notifications = require('../window/notifications')
 
 const Editor = connect(
   state => ({
@@ -173,6 +178,7 @@ const Editor = connect(
 
     const scene = useRef()
     let [camera, setCamera ] = useState(null)
+    const orthoCamera = useRef(new THREE.OrthographicCamera( -4, 4, 4, -4, 1, 10000 ))
     const [ machineState, transition ] = useMachine(editorMachine, { log: false })
 
     const mainViewContainerRef = useRef(null)
@@ -258,31 +264,28 @@ const Editor = connect(
       }
 
 
+      let savedBackground = scene.current.background && scene.current.background.clone()
+      scene.current.background = new THREE.Color( '#FFFFFF' )
+      imageRenderer.current.setSize(900, 900)
+      imageRenderer.current.render(scene.current, orthoCamera.current)
+      let plotImage = imageRenderer.current.domElement.toDataURL()
+      scene.current.background = savedBackground
 
-      // TODO
-      // if (topDownCamera) {
-      //   imageRenderer.clear()
-      //   imageRenderer.setSize(900, 900)
-      //   imageRenderer.render(scene, topDownCamera)
-      //   let topDownImage = imageRenderer.domElement.toDataURL()
-      // }
-      let topDownImage = undefined
 
-      return { cameraImage, topDownImage }
+
+      return { cameraImage, plotImage }
     }
 
     const onToolbarSaveToBoard = () => {
       withState((dispatch, state) => {
-        let { cameraImage } = renderImagesForBoard(state)
+        let { cameraImage, plotImage } = renderImagesForBoard(state)
 
         ipcRenderer.send('saveShot', {
           uid: state.board.uid,
           data: getSerializedState(state),
           images: {
             'camera': cameraImage,
-
-            // TODO
-            'topdown': undefined
+            'plot': plotImage
           }
         })
 
@@ -291,7 +294,7 @@ const Editor = connect(
     }
     const onToolbarInsertAsNewBoard = () => {
       withState((dispatch, state) => {
-        let { cameraImage } = renderImagesForBoard(state)
+        let { cameraImage, plotImage } = renderImagesForBoard(state)
 
         // NOTE we do this first, since we get new data on insertShot complete
         dispatch(markSaved())
@@ -300,9 +303,7 @@ const Editor = connect(
           data: getSerializedState(state),
           images: {
             'camera': cameraImage,
-
-            // TODO
-            'topdown': undefined
+            'plot': plotImage
           }
         })
       })
@@ -346,13 +347,13 @@ const Editor = connect(
             filepath,
             event => {
               let value = { scene: event.detail.loaderRootNode }
-              console.log('cache: success', filepath)
+              log.info('cache: success', filepath)
               dispatch({ type: 'ATTACHMENTS_SUCCESS', payload: { id: filepath, value } })
             },
             null,
             error => {
-              console.error('cache: error')
-              console.error(error)
+              log.error('cache: error')
+              log.error(error)
               alert(error)
               // dispatch({ type: 'ATTACHMENTS_ERROR', payload: { id: filepath, error } })
               dispatch({ type: 'ATTACHMENTS_DELETE', payload: { id: filepath } })
@@ -365,13 +366,13 @@ const Editor = connect(
           gltfLoader.load(
             filepath,
             value => {
-              console.log('cache: success', filepath)
+              log.info('cache: success', filepath)
               dispatch({ type: 'ATTACHMENTS_SUCCESS', payload: { id: filepath, value } })
             },
             null,
             error => {
-              console.error('cache: error')
-              console.error(error)
+              log.error('cache: error')
+              log.error(error)
               alert(error)
               // dispatch({ type: 'ATTACHMENTS_ERROR', payload: { id: filepath, error } })
               dispatch({ type: 'ATTACHMENTS_DELETE', payload: { id: filepath } })
@@ -461,7 +462,7 @@ const Editor = connect(
               //   ModelLoader.projectFolder(updatedFilepath)
               // ) {
               //   // update the model path to relative path
-              //   console.log(`setting model from absolute to relative model:${model} filepath:${updatedFilepath}`)
+              //   log.info(`setting model from absolute to relative model:${model} filepath:${updatedFilepath}`)
               //   let updatedModel = path.join('models', loadable.type, path.basename(updatedFilepath))
               //   dispatch(updateObject(loadable.id, { model: updatedModel }))
               //   return
@@ -485,7 +486,7 @@ const Editor = connect(
               return
 
             } catch (error) {
-              console.error(error)
+              log.error(error)
 
               // cancellation by user
               // dialog.showMessageBox({
@@ -508,7 +509,7 @@ const Editor = connect(
               path.basename(expectedFilepath)
             )
 
-            console.log('will copy from', src, 'to', dst)
+            log.info('will copy from', src, 'to', dst)
 
             // make sure the path exists
             fs.ensureDirSync(path.dirname(dst))
@@ -526,12 +527,12 @@ const Editor = connect(
               //     message: 'Model file already exists. Overwrite?'
               //   })
               //   if (choice !== 0) {
-              //     console.log('cancelled model file copy')
+              //     log.info('cancelled model file copy')
               //     throw new Error('Skipped')
               //   }
               // }
 
-              console.log(`copying model file from ${src} to ${dst}`)
+              log.info(`copying model file from ${src} to ${dst}`)
               fs.copySync(src, dst, { overwrite: true, errorOnExist: false })
             }
 
@@ -607,7 +608,7 @@ const Editor = connect(
                 )
               })
 
-              console.log('user selected updatedFilepath:', updatedFilepath)
+              log.info('user selected updatedFilepath:', updatedFilepath)
 
               // TODO test:
               // handle case where user relocated to a file in the models/* folder
@@ -625,7 +626,7 @@ const Editor = connect(
               return
 
             } catch (error) {
-              console.error(error)
+              log.error(error)
               dispatch({ type: 'ATTACHMENTS_DELETE', payload: { id: expectedFilepath } })
               return
             }
@@ -644,12 +645,12 @@ const Editor = connect(
               path.basename(expectedFilepath)
             )
 
-            console.log('will copy from', src, 'to', dst)
+            log.info('will copy from', src, 'to', dst)
 
             fs.ensureDirSync(path.dirname(dst))
 
             if (src !== dst) {
-              console.log(`copying model file from ${src} to ${dst}`)
+              log.info(`copying model file from ${src} to ${dst}`)
               fs.copySync(src, dst, { overwrite: true, errorOnExist: false })
             }
 
@@ -658,7 +659,7 @@ const Editor = connect(
               path.basename(dst)
             )
 
-            console.log('copied! updated model:', updatedModel)
+            log.info('copied! updated model:', updatedModel)
             dispatch({
               type: 'UPDATE_WORLD_ENVIRONMENT',
               payload: {
@@ -696,98 +697,110 @@ const Editor = connect(
       }
     }, [world.environment.file])
 
+    const notificationsRef = useRef()
+    useEffect(() => {
+      if (notificationsRef.current) {
+        notifications.init(notificationsRef.current, true)
+      }
+    }, [notificationsRef.current])
+
     return React.createElement(
       SceneContext.Provider,
       { value: { scene: scene.current }},
       h(
-        ['div.column', { style: { width: '100%' } }, [
-          [Toolbar, {
-            createObject,
-            selectObject,
-            loadScene,
-            saveScene,
-            camera,
-            setActiveCamera,
-            resetScene,
-            saveToBoard: onToolbarSaveToBoard,
-            insertAsNewBoard: onToolbarInsertAsNewBoard,
-            xrServerUrl,
-            undoGroupStart,
-            undoGroupEnd
-          }],
+        [FatalErrorBoundary,
+          ['div.column', { style: { width: '100%', height: '100%' } }, [
+            [Toolbar, {
+              createObject,
+              selectObject,
+              loadScene,
+              saveScene,
+              camera,
+              setActiveCamera,
+              resetScene,
+              saveToBoard: onToolbarSaveToBoard,
+              insertAsNewBoard: onToolbarInsertAsNewBoard,
+              xrServerUrl,
+              undoGroupStart,
+              undoGroupEnd
+            }],
 
-          ['div.row', { style: { flex: 1 }},
-            ['div.column', { style: { width: '300px', background: '#111'} },
-              ['div#topdown', { style: { height: '300px' } },
-                // top-down-canvas
-                ['canvas', { key: 'top-down-canvas', tabIndex: 0, ref: smallCanvasRef, id: 'top-down-canvas', style: { width: '100%' }, onPointerDown: onCanvasPointerDown }],
-                // controls
-                ['div.topdown__controls', [
-                  ['div.row', [
-                    // ['a[href=#]', { onClick: onAutoFitClick }, [[Icon, { src: 'icon-camera-view-autofit' }]]],
-                    // ['a[href=#]', { onClick: onZoomInClick }, [[Icon, { src: 'icon-camera-view-zoom-in' }]]],
-                    // ['a[href=#]', { onClick: onZoomOutClick }, [[Icon, { src: 'icon-camera-view-zoom-out' }]]],
-                  ]],
-                  ['div.row', [
-                    ['a[href=#]', { onClick: onSwapCameraViewsClick }, [[Icon, { src: 'icon-camera-view-expand' }]]],
+            ['div.row', { style: { flex: 1, height: '100%' }},
+              ['div.column', { style: { width: '300px', height: '100%', background: '#111'} },
+                ['div#topdown', { style: { height: '300px' } },
+                  // top-down-canvas
+                  ['canvas', { key: 'top-down-canvas', tabIndex: 0, ref: smallCanvasRef, id: 'top-down-canvas', style: { width: '100%' }, onPointerDown: onCanvasPointerDown }],
+                  // controls
+                  ['div.topdown__controls', [
+                    ['div.row', [
+                      // ['a[href=#]', { onClick: onAutoFitClick }, [[Icon, { src: 'icon-camera-view-autofit' }]]],
+                      // ['a[href=#]', { onClick: onZoomInClick }, [[Icon, { src: 'icon-camera-view-zoom-in' }]]],
+                      // ['a[href=#]', { onClick: onZoomOutClick }, [[Icon, { src: 'icon-camera-view-zoom-out' }]]],
+                    ]],
+                    ['div.row', [
+                      ['a[href=#]', { onClick: onSwapCameraViewsClick }, [[Icon, { src: 'icon-camera-view-expand' }]]],
+                    ]]
                   ]]
+                ],
+                ['div#elements', [ElementsPanel, { machineState, transition }]]
+              ],
+
+              ['div.column.fill',
+                ['div#camera-view', { ref: mainViewContainerRef, style: { paddingTop: `${(1 / aspectRatio) * 100}%` } },
+                  // camera canvas
+                  ['canvas', { key: 'camera-canvas', tabIndex: 1, ref: largeCanvasRef, id: 'camera-canvas', onPointerDown: onCanvasPointerDown }],
+                  largeCanvasSize.width && [GuidesView, {
+                    dimensions: {
+                      width: Math.ceil(largeCanvasSize.width),
+                      height: Math.ceil(largeCanvasSize.width / aspectRatio)
+                    }
+                  }]
+                ],
+                ['div.inspectors', [
+                  [CameraInspector, { camera }],
+                  [BoardInspector],
+                  [GuidesInspector],
+                  [CamerasInspector]
                 ]]
               ],
-              ['div#elements', [ElementsPanel, { machineState, transition }]]
+
+              //
+              // hide presets editor for now
+              //
+              // ['div.column', [
+              //   'div#presets', { style: {
+              //     flex: 1,
+              //     width: '200px',
+              //     backgroundColor: '#eee'
+              //   }},
+              //   [PresetsEditor, { transition }]
+              // ]],
+
+              ready && (remoteInput.mouseMode || remoteInput.orbitMode) && [PhoneCursor, { remoteInput, camera, largeCanvasRef, selectObject, selectBone, sceneObjects, selections, selectedBone }],
             ],
 
-            ['div.column.fill',
-              ['div#camera-view', { ref: mainViewContainerRef, style: { paddingTop: `${(1 / aspectRatio) * 100}%` } },
-                // camera canvas
-                ['canvas', { key: 'camera-canvas', tabIndex: 1, ref: largeCanvasRef, id: 'camera-canvas', onPointerDown: onCanvasPointerDown }],
-                largeCanvasSize.width && [GuidesView, {
-                  dimensions: {
-                    width: Math.ceil(largeCanvasSize.width),
-                    height: Math.ceil(largeCanvasSize.width / aspectRatio)
-                  }
-                }]
-              ],
-              ['div.inspectors', [
-                [CameraInspector, { camera }],
-                [BoardInspector],
-                [GuidesInspector],
-                [CamerasInspector]
-              ]]
-            ],
-
-            //
-            // hide presets editor for now
-            //
-            // ['div.column', [
-            //   'div#presets', { style: {
-            //     flex: 1,
-            //     width: '200px',
-            //     backgroundColor: '#eee'
-            //   }},
-            //   [PresetsEditor, { transition }]
-            // ]],
-
-            ready && (remoteInput.mouseMode || remoteInput.orbitMode) && [PhoneCursor, { remoteInput, camera, largeCanvasRef, selectObject, selectBone, sceneObjects, selections, selectedBone }],
+            // [LoadingStatus, { ready }]
           ],
 
-          // [LoadingStatus, { ready }]
-        ],
+          ready && [
+            SceneManager, {
+              mainViewCamera,
+              largeCanvasRef,
+              smallCanvasRef,
+              machineState,
+              transition,
+              largeCanvasSize,
+              attachments,
+              orthoCamera
+            }
+          ],
 
-        ready && [
-          SceneManager, {
-            mainViewCamera,
-            largeCanvasRef,
-            smallCanvasRef,
-            machineState,
-            transition,
-            largeCanvasSize,
-            attachments
-          }
-        ],
+          !machineState.matches('typing') && [KeyHandler],
 
-        !machineState.matches('typing') && [KeyHandler],
+          [MenuManager],
 
-        [MenuManager]
+          ['div.notifications', { ref: notificationsRef }]
+        ]
       ]
     )
   )

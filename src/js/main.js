@@ -6,6 +6,7 @@ const isDev = require('electron-is-dev')
 const trash = require('trash')
 const chokidar = require('chokidar')
 const os = require('os')
+const log = require('electron-log')
 
 const prefModule = require('./prefs')
 prefModule.init(path.join(app.getPath('userData'), 'pref.json'))
@@ -97,7 +98,7 @@ app.on('ready', async () => {
 
   const exporterFfmpeg = require('./exporters/ffmpeg')
   let ffmpegVersion = await exporterFfmpeg.checkVersion()
-  console.log('ffmpeg version', ffmpegVersion)
+  log.info('ffmpeg version', ffmpegVersion)
 
 
 
@@ -107,7 +108,7 @@ app.on('ready', async () => {
   let shouldOverwrite = false
 
   if (fs.existsSync(keymapPath)) {
-    console.log('Reading', keymapPath)
+    log.info('Reading', keymapPath)
     try {
       payload = JSON.parse(fs.readFileSync(keymapPath, { encoding: 'utf8' }))
 
@@ -119,7 +120,7 @@ app.on('ready', async () => {
         payload["menu:tools:note-pen"] === "5" &&
         payload["menu:tools:eraser"] === "6"
       ) {
-        console.log('Detected a Storyboarder 1.5.x keymap. Forcing update to menu:tools:*.')
+        log.info('Detected a Storyboarder 1.5.x keymap. Forcing update to menu:tools:*.')
         // force defaults override
         delete payload["menu:tools:pencil"]
         delete payload["menu:tools:pen"]
@@ -131,14 +132,14 @@ app.on('ready', async () => {
 
       // re-map 1.7.1's Shift to Space
       if (payload["drawing:pan-mode"] === "Shift") {
-        console.log('[keymap] re-mapping drawing:pan-mode to space')
+        log.info('[keymap] re-mapping drawing:pan-mode to space')
         payload["drawing:pan-mode"] = "Space"
         shouldOverwrite = true
       }
 
     } catch (err) {
       // show error, but don't overwrite the keymap file
-      console.error(err)
+      log.error(err)
       dialog.showMessageBox({
         type: 'error',
         message: `Whoops! An error ocurred while trying to read ${keymapPath}.\nUsing default keymap instead.\n\n${err}`
@@ -161,13 +162,13 @@ app.on('ready', async () => {
   let keys = new Set([...Object.keys(a), ...Object.keys(b)])
   for (let key of keys) {
     if (a[key] !== b[key]) {
-      console.log(key, 'changed from', a[key], 'to', b[key])
+      log.info(key, 'changed from', a[key], 'to', b[key])
       shouldOverwrite = true
     }
   }
 
   if (shouldOverwrite) {
-    console.log('Writing', keymapPath)
+    log.info('Writing', keymapPath)
     fs.writeFileSync(keymapPath, JSON.stringify(store.getState().entities.keymap, null, 2) + '\n')
   }
 
@@ -206,7 +207,7 @@ app.on('ready', async () => {
 
   appServer = new MobileServer()
   appServer.on('pointerEvent', (e)=> {
-    console.log('pointerEvent')
+    log.info('pointerEvent')
   })
   appServer.on('image', (e) => {
     mainWindow.webContents.send('newBoard', 1)
@@ -234,7 +235,7 @@ app.on('ready', async () => {
   // are we testing locally?
   // SHOT_GENERATOR_STANDALONE=true npm start
   if (process.env.SHOT_GENERATOR_STANDALONE) {
-    console.log('Running Shot Generator Standalone')
+    log.info('Running Shot Generator Standalone')
     shotGeneratorWindow.show(() => {})
     return
   }
@@ -261,7 +262,7 @@ app.on('ready', async () => {
         return
 
       } else {
-        console.error('Could not load', filePath)
+        log.error('Could not load', filePath)
         dialog.showErrorBox(
           'Could not load requested file',
           `Error loading ${filePath}`
@@ -294,7 +295,10 @@ let openKeyCommandWindow = () => {
     show: false,
     resizable: false,
     frame: false,
-    titleBarStyle: 'hiddenInset'
+    titleBarStyle: 'hiddenInset',
+    webPreferences: {
+      nodeIntegration: true
+    }
   })
   keyCommandWindow.loadURL(`file://${__dirname}/../keycommand-window.html`)
   keyCommandWindow.once('ready-to-show', () => {
@@ -319,7 +323,19 @@ let openNewWindow = () => {
 
   if (!newWindow) {
     // TODO this code is never called currently, as the window is created w/ welcome
-    newWindow = new BrowserWindow({width: 600, height: 580, show: false, center: true, parent: welcomeWindow, resizable: false, frame: false, modal: true})
+    newWindow = new BrowserWindow({
+      width: 600,
+      height: 580,
+      show: false,
+      center: true,
+      parent: welcomeWindow,
+      resizable: false,
+      frame: false,
+      modal: true,
+      webPreferences: {
+        nodeIntegration: true
+      }
+    })
     newWindow.loadURL(`file://${__dirname}/../new.html`)
     newWindow.once('ready-to-show', () => {
       newWindow.show()
@@ -334,10 +350,31 @@ let openNewWindow = () => {
 }
 
 let openWelcomeWindow = () => {
-  welcomeWindow = new BrowserWindow({width: 900, height: 600, center: true, show: false, resizable: false, frame: false})
+  welcomeWindow = new BrowserWindow({
+    width: 900,
+    height: 600,
+    center: true,
+    show: false,
+    resizable: false,
+    frame: false,
+    webPreferences: {
+      nodeIntegration: true
+    }
+  })
   welcomeWindow.loadURL(`file://${__dirname}/../welcome.html`)
 
-  newWindow = new BrowserWindow({width: 600, height: 580, show: false, parent: welcomeWindow, resizable: false, frame: false, modal: true})
+  newWindow = new BrowserWindow({
+    width: 600,
+    height: 580,
+    show: false,
+    parent: welcomeWindow,
+    resizable: false,
+    frame: false,
+    modal: true,
+    webPreferences: {
+      nodeIntegration: true
+    }
+  })
   newWindow.loadURL(`file://${__dirname}/../new.html`)
 
   let recentDocumentsCopy
@@ -349,7 +386,7 @@ let openWelcomeWindow = () => {
         fs.accessSync(recentDocument.filename, fs.R_OK)
       } catch (e) {
         // It isn't accessible
-        // console.warn('Recent file no longer exists: ', recentDocument.filename)
+        // log.warn('Recent file no longer exists: ', recentDocument.filename)
         recentDocumentsCopy.splice(count, 1)
       }
       count++
@@ -421,7 +458,7 @@ let openFile = filepath => {
             metadata
           ])
         } catch (error) {
-          console.error(error)
+          log.error(error)
           dialog.showMessageBox({
             type: 'error',
             message: 'Could not parse Final Draft data.\n' + error.message
@@ -448,7 +485,7 @@ let openFile = filepath => {
           processFountainData(data, true, false)
         )
       } catch (error) {
-        console.error(error)
+        log.error(error)
         dialog.showMessageBox({
           type: 'error',
           message: 'Could not parse Fountain script.\n' + error.message,
@@ -469,13 +506,13 @@ const findOrCreateProjectFolder = (scriptDataObject) => {
 
     switch (path.extname(currentFile)) {
       case '.fdx':
-        // console.log('got existing .fdx project data')
+        // log.info('got existing .fdx project data')
         setWatchedScript()
         addToRecentDocs(currentFile, scriptDataObject[3])
         loadStoryboarderWindow(currentFile, scriptDataObject[0], scriptDataObject[1], scriptDataObject[2], boardSettings, currentPath)
         break
       case '.fountain':
-        // console.log('got existing .fountain project data')
+        // log.info('got existing .fountain project data')
         setWatchedScript()
         addToRecentDocs(currentFile, scriptDataObject[3])
         loadStoryboarderWindow(currentFile, scriptDataObject[0], scriptDataObject[1], scriptDataObject[2], boardSettings, currentPath)
@@ -818,11 +855,11 @@ const createAndLoadScene = aspectRatio =>
     },
     async filename => {
       if (filename) {
-        console.log(filename)
+        log.info(filename)
 
         if (fs.existsSync(filename)) {
           if (fs.lstatSync(filename).isDirectory()) {
-            console.log('\ttrash existing folder', filename)
+            log.info('\ttrash existing folder', filename)
             await trash(filename)
           } else {
             dialog.showMessageBox(null, {
@@ -908,7 +945,8 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
       experimentalFeatures: true,
       experimentalCanvasFeatures: true,
       devTools: true,
-      plugins: true
+      plugins: true,
+      nodeIntegration: true
     } 
   })
 
@@ -919,7 +957,10 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
     backgroundColor: '#333333',
     show: false,
     frame: false,
-    resizable: isDev ? true : false
+    resizable: isDev ? true : false,
+    webPreferences: {
+      nodeIntegration: true
+    }
   })
   loadingStatusWindow.loadURL(`file://${__dirname}/../loading-status.html?name=${encodeURIComponent(projectName)}`)
   loadingStatusWindow.once('ready-to-show', () => {
@@ -942,7 +983,7 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
       message: message,
       detail: 'In file: ' + source + '#' + lineno + ':' + colno
     })
-    console.error(message, source, lineno, colno)
+    log.error(message, source, lineno, colno)
     analytics.exception(message, source, lineno)
   }
 
@@ -1055,11 +1096,11 @@ let attemptLicenseVerification = async () => {
     token = fs.readFileSync(licenseKeyPath, { encoding: 'utf8' })
   } catch (err) {
     if (err.code === 'ENOENT') {
-      console.log('No license key found')
+      log.info('No license key found')
       return
     } else {
-      console.error('Could not load license.key')
-      console.error(err)
+      log.error('Could not load license.key')
+      log.error(err)
       return
     }
   }
@@ -1067,7 +1108,7 @@ let attemptLicenseVerification = async () => {
   try {
     if (await checkLicense(token, { fetcher: nodeFetch })) {
 
-      console.log('license accepted')
+      log.info('license accepted')
 
       store.dispatch({
         type: 'SET_LICENSE',
@@ -1078,12 +1119,12 @@ let attemptLicenseVerification = async () => {
       dialog.showMessageBox({
         message: 'License key is no longer valid.'
       })
-      console.log('Removing invalid license key at', licenseKeyPath)
+      log.info('Removing invalid license key at', licenseKeyPath)
       prefModule.revokeLicense()
       await trash(licenseKeyPath)
     }
   } catch (err) {
-    console.error(err)
+    log.error(err)
     dialog.showMessageBox({
       type: 'error',
       message: `An error occurred while checking the license key.\n\n${err}`
@@ -1277,7 +1318,7 @@ ipcMain.on('playsfx', (event, arg)=> {
 })
 
 ipcMain.on('test', (event, arg)=> {
-  console.log('test', arg)
+  log.info('test', arg)
 })
 
 ipcMain.on('textInputMode', (event, arg)=> {

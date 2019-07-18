@@ -236,6 +236,12 @@ kbd {
 .element .row {
   align-items: center;
 }
+.element:not(.selected) .row .hide-unless-hovered {
+  visibility: hidden;
+}
+.element:not(.selected):hover .row .hide-unless-hovered {
+  visibility: visible;
+}
 
 #listing {
   height: 200px;
@@ -244,6 +250,10 @@ kbd {
 }
 
 #listing div::-webkit-scrollbar {
+  display: none;
+}
+
+.thumbnail-search__list div::-webkit-scrollbar {
   display: none;
 }
 
@@ -693,16 +703,17 @@ select {
   min-height: 32px;
 }
 
-.pose-presets-editor {
+.thumbnail-search {
   width: 288px;
   position: relative;
   margin-bottom: 10px;
+  text-transform: none;
 }
-.pose-presets-editor,
-.pose-presets-editor * {
+.thumbnail-search,
+.thumbnail-search * {
   box-sizing: border-box;
 }
-.pose-presets-editor input {
+.thumbnail-search input {
   width: 100%;
   padding: 8px 6px;
   border: none;
@@ -712,41 +723,41 @@ select {
   font-size: 14px;
   border: 1px solid transparent;
 }
-.pose-presets-editor input:focus {
+.thumbnail-search input:focus {
   background-color: rgba(255,255,255,0.15);
   color: #999;
   outline: none;
 }
-.pose-presets-editor__list {
+.thumbnail-search__list {
 }
-.pose-presets-editor__item {
-  cursor: pointer;
+.thumbnail-search__item {
+  cursor: default;
   font-size: 13px;
   color: #999;
 }
-.pose-presets-editor__item:hover .pose-presets-editor__name {
+.thumbnail-search__item:hover .thumbnail-search__name {
   color: #ddd;
 }
-.pose-presets-editor__item.pose-presets-editor__item--selected .pose-presets-editor__name,
-.pose-presets-editor__item.pose-presets-editor__item--selected:hover .pose-presets-editor__name {
+.thumbnail-search__item.thumbnail-search__item--selected .thumbnail-search__name,
+.thumbnail-search__item.thumbnail-search__item--selected:hover .thumbnail-search__name {
   color: #fff;
 }
-.pose-presets-editor__item figure {
+.thumbnail-search__item figure {
   margin: 0;
   padding: 0;
   background-color: rgba(255,255,255,0.05);
   border-radius: 3px;
   overflow: hidden;
 }
-.pose-presets-editor__item figure img {
+.thumbnail-search__item figure img {
   opacity: 0.8;
   border-radius: 3px;
   overflow: hidden;
 }
-.pose-presets-editor__item:hover figure img {
+.thumbnail-search__item:hover figure img {
   opacity: 1.0;
 }
-.pose-presets-editor__item .pose-presets-editor__name {
+.thumbnail-search__item .thumbnail-search__name {
   position: relative;
   padding: 2px 0 0 0;
   line-height: 1;
@@ -754,7 +765,7 @@ select {
   overflow: hidden;
 }
 /* fade out overflow text */
-.pose-presets-editor__item .pose-presets-editor__name:after {
+.thumbnail-search__item .thumbnail-search__name:after {
   content: "";
   text-align: right;
   position: absolute;
@@ -764,6 +775,25 @@ select {
   height: 13px;
   /* background: linear-gradient(to right, rgba(45, 46, 57, 0), rgba(45, 46, 57, 1) 50%); */
 }
+.thumbnail-search .button__file {
+  display: flex;
+  width: 30px;
+  color: rgb(152, 152, 152);
+  background-color: rgba(255,255,255,0.05);
+  padding: 6px 0 4px 0;
+  border-radius: 6px;
+  font-size: 87.5%;
+  text-decoration: none;
+  justify-content: center;
+  align-items: center;
+  line-height: 1;
+}
+.thumbnail-search .button__file:hover {
+  background-color: rgba(255,255,255,0.1);
+}
+.thumbnail-search .button__file--selected {
+  color: #fff;
+}
 
 .object-property-heading {
   display: inline-block;
@@ -772,4 +802,41 @@ select {
   font-weight: 700;
   font-size: 18px;
   color: rgba(255,255,255,0.4);
+}
+
+div.fatal-error-screen {
+  background: #26292b;
+  margin: 50px 25px;
+  padding: 30px;
+  border-radius: 9px;
+  width: 100%;
+  position: relative;
+}
+
+h1.fatal-error-screen__title {
+  width: 40rem;
+  margin: 1.5rem 0 1.5rem 0;
+  color: #c00;
+  position: relative;
+  left: 3px;
+}
+
+div.fatal-error-screen__report {
+  font-family: monospace;
+  margin: 1rem 0;
+  background: #0e0f10;
+  padding: 20px 40px;
+  line-height: 1.5;
+  color: #aaa;
+  position: absolute;
+  left: 0;
+  right: 0;
+  user-select: text;
+  cursor: text;
+  white-space: pre-wrap;
+}
+
+div.fatal-error-screen__report::selection {
+  color: #bbb;
+  background: rgb(255, 237, 0, 20%);
 }

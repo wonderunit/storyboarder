@@ -6,6 +6,11 @@ const { BrowserWindow, dialog, app } = electron = require('electron')
 
 const autoUpdater = require('electron-updater').autoUpdater
 
+
+autoUpdater.logger = require("electron-log")
+autoUpdater.logger.transports.file.level = "info"
+
+
 const init = () => {
   // autoUpdater.on('checking-for-update', () => {
   //   dialog.showMessageBox(null, { message: 'Checking for update...' })
@@ -32,6 +37,7 @@ const init = () => {
             resizable: false,
             backgroundColor: '#E5E5E5',
             webPreferences: {
+              nodeIntegration: true,
               devTools: true
             }
           })

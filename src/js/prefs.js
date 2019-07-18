@@ -3,6 +3,7 @@ const path = require('path')
 const { app } = require('electron')
 const os = require("os")
 const R = require('ramda')
+const log = require('electron-log')
 
 const pkg = require('../../package.json')
 const util = require('./utils/index') // for Object.equals
@@ -66,9 +67,9 @@ let prefs
 const verify = data => {
   if (data.userWatermark) {
     if (fs.existsSync(path.join(app.getPath('userData'), 'watermark.png'))) {
-      console.log('found watermark file')
+      log.info('found watermark file')
     } else {
-      console.log('could not find custom watermark file. reverting to default.')
+      log.info('could not find custom watermark file. reverting to default.')
       data.userWatermark = undefined
     }
   }
@@ -78,34 +79,34 @@ const verify = data => {
 const load = () => {
   try {
     // load existing prefs
-    // console.log("READING FROM DISK")
+    // log.info("READING FROM DISK")
     prefs = verify(JSON.parse(fs.readFileSync(prefFile)))
   } catch (e) {
-    console.error('Could not read prefs. Loading defaults.')
-    console.error(e)
+    log.error('Could not read prefs. Loading defaults.')
+    log.error(e)
     prefs = defaultPrefs
     try {
       savePrefs(prefs)
     } catch (e) {
-      //console.log(e)
+      //log.info(e)
     }
   }
 }
 
 const savePrefs = (newPref) => {
-  // console.log('SAVEPREFS')
+  // log.info('SAVEPREFS')
   if (!newPref) return
   if (Object.equals(newPref,prefs)) {
-    // console.log("IM THE SAME!!!!")
+    // log.info("IM THE SAME!!!!")
   } else {
     prefs = newPref
-    // console.log("SAVING TO DISK")
+    // log.info("SAVING TO DISK")
     fs.writeFileSync(prefFile, JSON.stringify(newPref, null, 2))
   }
 }
 
 const set = (keyPath, value, sync) => {
-  // console.log('SETTING')
+  // log.info('SETTING')
   const keys = keyPath.split(/\./)
   let obj = prefs
   while (keys.length > 1) {
@@ -118,28 +119,28 @@ const set = (keyPath, value, sync) => {
   let keyProp = keys.shift()
   let prevValue = obj[keyProp]
   if (Object.equals(prevValue,value)) {
-    //console.log("IM THE SAME!!!!")
+    //log.info("IM THE SAME!!!!")
   } else {
     obj[keyProp] = value
-    //console.log("SAVING TO DISK")
-    //console.log(prefs)
+    //log.info("SAVING TO DISK")
+    //log.info(prefs)
     if (sync) {
       fs.writeFileSync(prefFile, JSON.stringify(prefs, null, 2))
     } else {
       fs.writeFile(prefFile, JSON.stringify(prefs, null, 2), (err) => {
-        // console.log("SAVED ASYNC")
+        // log.info("SAVED ASYNC")
       })
     }
   }
 }
 
 const getPrefs = (from) => {
-  // console.log("GETTING PREFS!!!", from)
+  // log.info("GETTING PREFS!!!", from)
   return util.stringifyClone(prefs) // TODO why do we have to clone this?
 }
 
 const migrate = (_currentPrefs, _defaultPrefs) => {
-  console.log(`Migrating preferences from ${_currentPrefs.version} to v${_defaultPrefs.version}`)
+  log.info(`Migrating preferences from ${_currentPrefs.version} to v${_defaultPrefs.version}`)
 
   // Set properties only if they don't exist
   // via https://github.com/ramda/ramda/wiki/Cookbook#set-properties-only-if-they-dont-exist
@@ -172,7 +173,7 @@ const versionCanBeMigrated = (from, to) => {
 
 const init = _prefFile => {
   prefFile = _prefFile
-  console.log('Loading preferences from', prefFile)
+  log.info('Loading preferences from', prefFile)
 
   load()
   if (versionCanBeMigrated(prefs.version, defaultPrefs.version)) {

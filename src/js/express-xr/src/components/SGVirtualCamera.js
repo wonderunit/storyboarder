@@ -1,8 +1,9 @@
 const { useUpdate, useThree, useRender } = require('react-three-fiber')
 const React = require('react')
 const { useEffect, useRef, useState, useMemo } = React
+const { findParent } = require('../utils/xrHelperFuncs')
 
-const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, ...props }) => {
+const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, virtualCamVisible, modelData, ...props }) => {
   const [camSliderFOV, setCamSliderFOV] = useState(null)
   const [targetUpdated, setTargetUpdated] = useState(false)
 
@@ -11,23 +12,26 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, ...props }
 
   const virtualCamera = useRef(null)
   const renderTarget = useRef(null)
-  const targetMesh = useRef(null)
   const hideArrayRef = useRef([])
 
   const size = props.size || 1 / 3
   const padding = 0.05
   const resolution = 512
 
-  const findParent = obj => {
-    while (obj) {
-      if (!obj.parent || obj.parent.type === 'Scene') {
-        return obj
-      }
-      obj = obj.parent
-    }
+  const children = useMemo(() => {
+    let children = []
+    let index = 0
 
-    return null
-  }
+    if (modelData) {
+      modelData.scene.traverse(child => {
+        if (child instanceof THREE.Mesh) {
+          children.push(<primitive key={`${props.id}-${index}`} object={child.clone()} />)
+          index++
+        }
+      })
+    }
+    return children
+  }, [modelData])
 
   const { gl, scene } = useThree()
   const selectedObj = findParent(scene.getObjectById(selectedObject))
@@ -110,27 +114,43 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, ...props }
       position={[props.x || 0, props.z || 0, props.y || 0]}
       ref={ref}
     >
-      <mesh ref={targetMesh} userData={{ type: props.guiCamera ? 'gui' : 'view' }} material={heightShader}>
-        <planeGeometry attach="geometry" args={[size * aspectRatio, size]} />
-      </mesh>
-      {!props.guiCamera && (
+      <group visible={virtualCamVisible || props.guiCamera === true}>
         <mesh
-          position={[0, 0, -0.0325]}
-          material={new THREE.MeshLambertMaterial({ color: new THREE.Color('gray'), transparent: true })}
+          userData={{ type: props.guiCamera ? 'gui' : 'view' }}
+          position={[0, props.guiCamera ? 0 : 0.3, (props.guiCamera ? 0.0025 : 0.01)]}
+          material={heightShader}
         >
-          <boxGeometry attach="geometry" args={[size * aspectRatio + padding, size + padding, 0.05]} />
+          <planeGeometry attach="geometry" args={[size * aspectRatio, size]} />
         </mesh>
-      )}
-      <group position={props.camOffset || new THREE.Vector3()}>
-        <perspectiveCamera
-          name={props.guiCamera ? 'guiCam' : ''}
-          ref={virtualCamera}
-          aspect={aspectRatio}
-          fov={camSliderFOV || props.fov}
-          near={0.01}
-          far={1000}
-          onUpdate={self => self.updateProjectionMatrix()}
-        />
+        {children}
+        {!props.guiCamera && (
+          <mesh
+            position={[0, 0.3, -0.01]}
+            rotation={[0, Math.PI, 0]}
+            userData={{ type: props.guiCamera ? 'gui' : 'view' }}
+            material={heightShader}
+          >
+            <planeGeometry attach="geometry" args={[size * aspectRatio, size]} />
+          </mesh>
+        )}
+        <mesh position={[0, props.guiCamera ? 0 : 0.3, 0]} material={new THREE.MeshBasicMaterial({ side: THREE.DoubleSide })}>
+          <planeGeometry
+            attach="geometry"
+            args={[size * aspectRatio + (props.guiCamera ? 0.005 : 0.015), size + (props.guiCamera ? 0.005 : 0.015)]}
+          />
+        </mesh>
+        <group position={props.camOffset || new THREE.Vector3()}>
+          <perspectiveCamera
+            name={props.guiCamera ? 'guiCam' : ''}
+            ref={virtualCamera}
+            aspect={aspectRatio}
+            fov={camSliderFOV || props.fov}
+            near={0.01}
+            far={1000}
+            onUpdate={self => self.updateProjectionMatrix()}
+          />
+          {props.children}
+        </group>
       </group>
     </group>
   )

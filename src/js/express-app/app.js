@@ -8,6 +8,8 @@ const app = express()
 const http = require('http').Server(app)
 const io = require('socket.io')(http, { wsEngine: 'ws' })
 
+const log = require('electron-log')
+
 const portNumber = 1888
 
 const model = {
@@ -45,9 +47,9 @@ class MobileServer extends EventEmitter {
 
     http.listen(portNumber, function() {
       let hostname = os.hostname()
-      console.log("http://" + hostname + ":" + portNumber)
+      log.info("http://" + hostname + ":" + portNumber)
       require('dns').lookup(hostname, function (err, add, fam) {
-        console.log("http://" + add + ":" + portNumber)
+        log.info("http://" + add + ":" + portNumber)
       })
     })
 

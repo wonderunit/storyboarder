@@ -25,6 +25,13 @@ You can run a quick view test using [`budo`](https://github.com/mattdesl/budo) i
 
 ## Building a Release
 
+Manually pre-compile the Shot Generator VR client app in production mode:
+
+    $ npm run xr:clean    # trash any existing files in src/js/express-xr/dist
+    $ npm run xr:build    # build client app to src/js/express-xr/dist
+
+Then, build the app:
+
     $ npm run dist:mac    # Mac only
     $ npm run dist:win    # Windows only
     $ npm run dist:linux  # Linux only

@@ -1,4 +1,5 @@
 const { useMemo, useRef, useEffect, useState } = React
+const { useRender } = require('react-three-fiber')
 
 const { initialState } = require('../../../shared/reducers/shot-generator')
 const BonesHelper = require('./SGBonesHelper')
@@ -83,9 +84,18 @@ const characterFactory = data => {
   let armatures
   let parentRotation = new THREE.Quaternion()
   let parentPosition = new THREE.Vector3()
-  mesh =
-    data.scene.children.find(child => child instanceof THREE.SkinnedMesh) ||
-    data.scene.children[0].children.find(child => child instanceof THREE.SkinnedMesh)
+
+  let lods = data.scene.children.filter(child => child instanceof THREE.SkinnedMesh)
+  if (lods.length === 0) lods = data.scene.children[0].children.filter(child => child instanceof THREE.SkinnedMesh)
+  
+  if (lods.length > 1) {
+    mesh = new THREE.LOD()
+    lods.forEach((lod, i) => {
+      mesh.addLevel(lod, i * 2)
+    })
+  } else {
+    mesh = lods[0]
+  }
 
   if (mesh == null) {
     mesh = new THREE.Mesh()
@@ -110,21 +120,44 @@ const characterFactory = data => {
       bone.quaternion.multiply(data.scene.children[0].children[0].quaternion)
       bone.position.set(bone.position.x, bone.position.z, bone.position.y)
     }
-    mesh.scale.set(1, 1, 1)
+
+    if (mesh.type === 'LOD') {
+      mesh.children.forEach(lod => {
+        lod.scale.set(1, 1, 1)
+      })
+    } else {
+      mesh.scale.set(1, 1, 1)
+    }
+
     parentRotation = data.scene.children[0].children[0].quaternion.clone()
     parentPosition = armatures[0].position.clone()
     boneLengthScale = 100
   }
 
-  skeleton = mesh.skeleton
 
-  if (mesh.material.map) {
-    material.map = mesh.material.map
-    material.map.needsUpdate = true
+  if (mesh.type === 'LOD') {
+    skeleton = mesh.children[0].skeleton
+
+    mesh.children.forEach(lod => {
+      if (lod.material.map) {
+        material.map = lod.material.map
+        material.map.needsUpdate = true
+      }
+
+      lod.material = material
+      lod.renderOrder = 1.0
+    })
+  } else {
+    skeleton = mesh.skeleton
+
+    if (mesh.material.map) {
+      material.map = mesh.material.map
+      material.map.needsUpdate = true
+    }
+
+    mesh.material = material
+    mesh.renderOrder = 1.0
   }
-
-  mesh.material = material
-  mesh.renderOrder = 1.0
 
   let bbox = new THREE.Box3().setFromObject(mesh)
   let originalHeight = bbox.max.y - bbox.min.y
@@ -132,7 +165,7 @@ const characterFactory = data => {
   return { mesh, skeleton, armatures, originalHeight, boneLengthScale, parentRotation, parentPosition }
 }
 
-const SGCharacter = ({ id, type, isSelected, updateObject, modelData, selectedBone, ...props }) => {
+const SGCharacter = ({ id, type, worldScale, isSelected, updateObject, modelData, selectedBone, hmdCam, ...props }) => {
   const [ready, setReady] = useState(false) // ready to load?
   // setting loaded = true forces an update to sceneObjects,
   // which is what Editor listens for to attach the BonesHelper
@@ -150,6 +183,16 @@ const SGCharacter = ({ id, type, isSelected, updateObject, modelData, selectedBo
   //     object.current = null
   //   }
   // }
+
+  useRender(
+    () => {
+      if (object.current && hmdCam && object.current.children[0] instanceof THREE.LOD) {
+        object.current.children[0].update(hmdCam)
+      }
+    },
+    false,
+    [object.current, hmdCam]
+  )
 
   // if the model has changed
   useEffect(() => {
@@ -356,20 +399,37 @@ const SGCharacter = ({ id, type, isSelected, updateObject, modelData, selectedBo
     if (!object.current) return
 
     // handle selection/deselection - add/remove the bone stucture
-    if (isSelected) {
+    if (isSelected && worldScale === 1) {
       for (var cone of object.current.bonesHelper.cones) object.current.bonesHelper.add(cone)
     } else {
       for (var cone of object.current.bonesHelper.cones) object.current.bonesHelper.remove(cone)
     }
-  }, [props.model, isSelected, ready])
+
+    if (skinnedMesh.type === 'LOD') {
+      skinnedMesh.levels.forEach((level, i) => {
+        const worldScaleMult = worldScale === 1 ? 1 : 0.01
+        level.distance = i * 2 * worldScaleMult
+      })
+    }
+  }, [props.model, worldScale, isSelected, ready])
 
   useMemo(() => {
     if (!skinnedMesh) return
 
-    if (skinnedMesh.morphTargetDictionary && Object.values(skinnedMesh.morphTargetDictionary).length === 3) {
-      skinnedMesh.morphTargetInfluences[0] = props.morphTargets.mesomorphic
-      skinnedMesh.morphTargetInfluences[1] = props.morphTargets.ectomorphic
-      skinnedMesh.morphTargetInfluences[2] = props.morphTargets.endomorphic
+    if (skinnedMesh.type === 'LOD') {
+      skinnedMesh.children.forEach(lod => {
+        if (lod.morphTargetDictionary && Object.values(lod.morphTargetDictionary).length === 3) {
+          lod.morphTargetInfluences[0] = props.morphTargets.mesomorphic
+          lod.morphTargetInfluences[1] = props.morphTargets.ectomorphic
+          lod.morphTargetInfluences[2] = props.morphTargets.endomorphic
+        }
+      })
+    } else {
+      if (skinnedMesh.morphTargetDictionary && Object.values(skinnedMesh.morphTargetDictionary).length === 3) {
+        skinnedMesh.morphTargetInfluences[0] = props.morphTargets.mesomorphic
+        skinnedMesh.morphTargetInfluences[1] = props.morphTargets.ectomorphic
+        skinnedMesh.morphTargetInfluences[2] = props.morphTargets.endomorphic
+      }
     }
   }, [modelData, props.morphTargets])
 
@@ -402,6 +462,7 @@ const SGCharacter = ({ id, type, isSelected, updateObject, modelData, selectedBo
         id,
         type,
         name: 'character-container',
+        displayName: props.displayName,
         forPanel: {
           height: props.height,
           headScale: props.headScale,
@@ -423,7 +484,6 @@ const SGCharacter = ({ id, type, isSelected, updateObject, modelData, selectedBo
           boneLengthScale,
           parentRotation,
           parentPosition,
-          displayName: props.displayName,
           modelSettings: Object.assign({ rotation: props.rotation }, initialState.models[props.model]) || {
             rotation: props.rotation
           }
@@ -431,6 +491,7 @@ const SGCharacter = ({ id, type, isSelected, updateObject, modelData, selectedBo
       >
         <primitive userData={{ id, type }} object={skinnedMesh} />
         <primitive object={armatures[0]} />
+        {props.children}
       </group>
 
       {bonesHelper && (

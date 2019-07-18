@@ -35,6 +35,7 @@ const show = () => {
     frame: true,
     modal: true,
     webPreferences: {
+      nodeIntegration: true,
       devTools: true
     }
   })

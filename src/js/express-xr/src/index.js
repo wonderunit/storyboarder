@@ -33,17 +33,21 @@ fetch('/state.json')
       },
       models: initialState.models,
       presets: {
-        poses: {}
+        poses: {},
+        characters: {},
+        scenes: {}
       }
     })
 
-    store.subscribe(() => {
-      let state = {
-        ...getSerializedState(store.getState()),
-        // TODO: include other state, e.g.: boardId, meta.storyboarderFilePath, etc
-      }
-      sendStateToServer({ state })
-    })
+    if (!process.env.XR_STANDALONE_DEMO) {
+      store.subscribe(() => {
+        let state = {
+          ...getSerializedState(store.getState()),
+          // TODO: include other state, e.g.: boardId, meta.storyboarderFilePath, etc
+        }
+        sendStateToServer({ state })
+      })
+    }
 
     ReactDOM.render(
       <Provider store={store}>

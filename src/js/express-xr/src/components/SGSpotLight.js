@@ -24,11 +24,13 @@ const SGSpotLight = ({ ...props }) => {
     if (light.current) {
       light.current.rotation.x = 0
       light.current.rotation.z = 0
-      light.current.rotation.y = props.rotation
-      light.current.rotateX(props.tilt)
+      light.current.rotation.y = props.rotation || 0
+      light.current.rotateX(props.tilt || 0)
+      light.current.rotateZ(props.roll || 0)
+
       light.current.light.current.target.position.set(0, 0, props.distance)
     }
-  }, [props.rotation, props.tilt, props.distance])
+  }, [props.rotation, props.tilt, props.roll, props.distance])
 
   return (
     <group
@@ -42,21 +44,28 @@ const SGSpotLight = ({ ...props }) => {
       }}
       position={[props.x, props.z, props.y]}
     >
-      <spotLight
-        ref={light_spot}
-        color={0xffffff}
-        intensity={props.intensity}
-        position={[0, 0, 0]}
-        rotation={[Math.PI / 2, 0, 0]}
-        angle={props.angle}
-        distance={props.distance}
-        penumbra={props.penumbra}
-        decay={props.decay}
-      />
-      <mesh ref={box_light_mesh} name="hitter_light" userData={{ type: 'hitter_light' }}>
-        <cylinderBufferGeometry attach="geometry" args={[0.0, 0.05, 0.14]} />
-        <meshLambertMaterial attach="material" color={0xffff66} />
-      </mesh>
+      <group>
+        <spotLight
+          ref={light_spot}
+          color={0xffffff}
+          intensity={props.intensity}
+          position={[0, 0, 0]}
+          rotation={[Math.PI / 2, 0, 0]}
+          angle={props.angle}
+          distance={props.distance}
+          penumbra={props.penumbra}
+          decay={props.decay}
+        />
+        <mesh ref={box_light_mesh} name="hitter_light" userData={{ type: 'hitter_light' }}>
+          <sphereBufferGeometry attach="geometry" args={[0.125]} />
+          <meshLambertMaterial attach="material" visible={false} />
+        </mesh>
+        <mesh>
+          <cylinderBufferGeometry attach="geometry" args={[0.0, 0.05, 0.14]} />
+          <meshLambertMaterial attach="material" color={0xffff66} />
+          {props.children}
+        </mesh>
+      </group>
     </group>
   )
 }

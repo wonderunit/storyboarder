@@ -5,6 +5,8 @@ const path = require('path')
 const os = require('os')
 const dns = require('dns')
 
+const log = require('electron-log')
+
 const web = express()
 const port = 8001
 
@@ -88,7 +90,7 @@ module.exports = function ({
             uri: `http://${ip}:${port}`
           })
         } else {
-          console.error(err)
+          log.error(err)
           updateServer({
             uri: `http://${hostname}:${port}`
           })
