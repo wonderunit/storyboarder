@@ -27,24 +27,20 @@ const preventDefault = (fn, ...args) => e => {
   fn(e, ...args)
 }
 
+// TODO solve case where near a wall
 const generatePositionAndRotation = (camera, room) => {
-  console.log('generatePositionAndRotation', camera, room)
-
   let direction = new THREE.Vector3()
   camera.getWorldDirection( direction )
 
-  let newPos = new THREE.Vector3()
-  let dist = (Math.random()) * 6 + 4
-  newPos.addVectors ( camera.position, direction.multiplyScalar( dist ) )
+  // place 5 meters away from the camera
+  // TODO limit based on room bounds?
+  let center = new THREE.Vector3().addVectors( camera.position, direction.multiplyScalar( 5 ) )
 
   let obj = new THREE.Object3D()
-  newPos.x += (Math.random() * 4 - 2)
-  newPos.z += (Math.random() * 4 - 2)
-
-  obj.position.set(newPos.x, 0, newPos.z)
+  obj.position.set(center.x, 0, center.z)
+  obj.position.x += (Math.random() * 2 - 1) * 0.3 // offset by +/- 0.3m
+  obj.position.z += (Math.random() * 2 - 1) * 0.3 // offset by +/- 0.3m
   obj.lookAt(camera.position)
-  obj.rotation.set(0, obj.rotation.y, 0)
-  // obj.rotation.y = Math.random() * Math.PI * 2
 
   return {
     x: obj.position.x,
