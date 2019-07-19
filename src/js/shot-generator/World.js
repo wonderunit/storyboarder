@@ -99,6 +99,7 @@ const useRoom = (world, scene) => {
   const [loaded, setLoaded] = useState(false)
 
   const object = useRef(null)
+  const walls = useRef(null)
   const wallTexture = useRef(null)
 
   const load = () => imageLoader.load(
@@ -128,6 +129,21 @@ const useRoom = (world, scene) => {
     return object
   }
 
+  const wallsFactory = ({ width, height, length }) => {
+    let geometry = new THREE.BoxBufferGeometry(
+      width,
+      height,
+      length
+    )
+    var edges = new THREE.EdgesGeometry( geometry )
+    var line = new THREE.LineSegments(
+      edges,
+      new THREE.LineBasicMaterial({ color: 0x999999 })
+    )
+    line.position.set(0, height / 2, 0)
+    return line
+  }
+
   useEffect(() => {
     if (world.room.visible) {
       if (!loaded) {
@@ -144,12 +160,22 @@ const useRoom = (world, scene) => {
         object.current.layers.enable(1)
         object.current.layers.disable(2)
         object.current.layers.enable(3)
+
+        walls.current = wallsFactory(world.room)
+        walls.current.visible = world.room.visible
+        walls.current.layers.disable(0)
+        walls.current.layers.disable(1)
+        walls.current.layers.enable(2)
+        walls.current.layers.disable(3)
         scene.add(object.current)
+
+        scene.add(walls.current)
       }
     }
 
     return function cleanup () {
       scene.remove(object.current)
+      scene.remove(walls.current)
     }
   }, [world.room, loaded])
 
