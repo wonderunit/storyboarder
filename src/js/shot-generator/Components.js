@@ -6,7 +6,7 @@ const fs = require('fs-extra')
 const path = require('path')
 
 const React = require('react')
-const { useState, useEffect, useRef, useContext } = React
+const { useState, useEffect, useRef, useContext, useMemo } = React
 const { connect } = require('react-redux')
 const Stats = require('stats.js')
 const { VariableSizeList } = require('react-window')
@@ -191,20 +191,18 @@ THREE.Cache.enabled = true
 // })
 
 
-
 const Camera = React.memo(({ scene, id, type, setCamera, icon, ...props }) => {
-  let camera = useRef(
-    new THREE.PerspectiveCamera(
-    props.fov,
-    props.aspectRatio,
-    // near
-    0.01,
-    // far
-    1000
-  ))
+  let camera = useRef()
 
-  useEffect(() => {
-    console.log(type, id, 'added')
+  useMemo(() => {
+    camera.current = new THREE.PerspectiveCamera(
+      props.fov,
+      props.aspectRatio,
+      // near
+      0.01,
+      // far
+      1000
+    )
 
     // TODO do we ever need these?  - we do at least some (aspectRatio breaks)
     // camera.current.position.x = props.x
@@ -217,11 +215,20 @@ const Camera = React.memo(({ scene, id, type, setCamera, icon, ...props }) => {
     // camera.current.rotateZ(props.roll)
     // camera.current.userData.type = type
     // camera.current.userData.id = id
+
     camera.current.fov = props.fov
     let focal = camera.current.getFocalLength()
     let [camFeet, camInches] = metersAsFeetAndInches(props.z)
     camera.current.aspect = props.aspectRatio
-    camera.current.orthoIcon = new IconSprites( type, props.name ? props.name : props.displayName, camera.current, Math.round(focal)+"mm, "+feetAndInchesAsString2nd(camFeet, camInches) )
+    camera.current.orthoIcon = new IconSprites(
+      type,
+      props.name
+        ? props.name
+        : props.displayName,
+      camera.current,
+      Math.round(focal) + "mm, " + feetAndInchesAsString2nd(camFeet, camInches)
+    )
+
     camera.current.orthoIcon.position.copy(camera.current.position)
     camera.current.orthoIcon.icon.material.rotation = camera.current.rotation.y
     scene.add(camera.current.orthoIcon)
@@ -242,10 +249,12 @@ const Camera = React.memo(({ scene, id, type, setCamera, icon, ...props }) => {
     frustumIcons.add(frustumIcons.left)
     frustumIcons.add(frustumIcons.right)
     camera.current.orthoIcon.add(frustumIcons)
+  }, [])
+
+  useEffect(() => {
+    console.log(type, id, 'added')
 
     scene.add(camera.current)
-    // setCamera(camera.current)
-
     // console.log(
     //   'focal length:',
     //   camera.current.getFocalLength(),
@@ -263,17 +272,20 @@ const Camera = React.memo(({ scene, id, type, setCamera, icon, ...props }) => {
       console.log(type, id, 'removed')
       scene.remove(camera.current.orthoIcon)
       scene.remove(camera.current)
-      // setCamera(null)
     }
   }, [])
 
-  useEffect(()=>{
+  useMemo(() => {
     if (camera.current) {
-      camera.current.orthoIcon.changeFirstText(props.name ? props.name : props.displayName)
+      camera.current.orthoIcon.changeFirstText(
+        props.name
+          ? props.name
+          : props.displayName
+      )
     }
   }, [props.displayName, props.name])
 
-  useEffect(() => {
+  useMemo(() => {
     camera.current.orthoIcon.setSelected(props.isSelected)
   }, [props.isSelected])
 
