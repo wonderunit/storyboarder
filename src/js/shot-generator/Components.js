@@ -2515,6 +2515,8 @@ const canDelete = (sceneObject, activeCamera) =>
   sceneObject.type === 'character' ||
   // allow volumes
   sceneObject.type === 'volume' ||
+  // allow lights
+  sceneObject.type === 'light' ||
   // allow cameras which are not the active camera
   (sceneObject.type === 'camera' && sceneObject.id !== activeCamera)
 
