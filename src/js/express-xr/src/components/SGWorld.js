@@ -21,8 +21,12 @@ const SGWorld = ({ groundTexture, wallTexture, world, modelData }) => {
   const roomMesh = buildSquareRoom(world.room.width, world.room.length, world.room.height, {
     textures: { wall: wallTexture }
   })
+  roomMesh.layers.enable(0)
+  // roomMesh.layers.enable(1)
+  // roomMesh.layers.disable(2)
+  // roomMesh.layers.enable(3)
+
   roomMesh.position.y = -0.03
-  roomMesh.children[0].layers.enable(0)
 
   useEffect(() => {
     if (directionalLight.current) {

@@ -157,15 +157,7 @@ const buildSquareRoom = (w, l, h, { textures }) => {
 
   mesh.renderOrder = 1.0
 
-  var room = new THREE.Group()
-  room.add(mesh)
-
-  mesh.layers.disable(0)
-  mesh.layers.enable(1)
-  mesh.layers.disable(2)
-  mesh.layers.enable(3)
-
-  return room
+  return mesh
 }
 
 module.exports = buildSquareRoom
