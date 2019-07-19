@@ -6,6 +6,7 @@ const {
   selectObject,
   undoGroupStart,
   undoGroupEnd,
+  setActiveCamera,
 
   // selectors
   getWorld,
@@ -58,7 +59,8 @@ const Toolbar = connect(
       createObject,
       selectObject,
       undoGroupStart,
-      undoGroupEnd
+      undoGroupEnd,
+      setActiveCamera
     }
 )(
   ({
@@ -70,10 +72,10 @@ const Toolbar = connect(
     selectObject,
     undoGroupStart,
     undoGroupEnd,
+    setActiveCamera,
 
     // props
     camera,
-    setActiveCamera,
 
     saveToBoard,
     insertAsNewBoard,

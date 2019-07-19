@@ -716,7 +716,7 @@ const Editor = connect(
               // loadScene,
               // saveScene,
               camera,
-              setActiveCamera,
+              // setActiveCamera,
               // resetScene,
               saveToBoard: onToolbarSaveToBoard,
               insertAsNewBoard: onToolbarInsertAsNewBoard,
