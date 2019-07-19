@@ -45,11 +45,17 @@ const generatePositionAndRotation = (camera, room) => {
   obj.position.z += (Math.random() * 2 - 1) * 0.3 // offset by +/- 0.3m
   obj.lookAt(camera.position)
 
+  let euler = new THREE.Euler()
+    .setFromQuaternion(
+      obj.quaternion.clone().normalize(),
+      'YXZ'
+    )
+
   return {
     x: obj.position.x,
     y: obj.position.z,
     z: obj.position.y,
-    rotation: obj.rotation.y
+    rotation: euler.y
   }
 }
 
