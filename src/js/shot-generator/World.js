@@ -8,8 +8,7 @@ const path = require('path')
 const buildSquareRoom = require('./build-square-room')
 const onlyOfTypes = require('./only-of-types')
 
-// TODO use functions of ModelLoader?
-require('../vendor/three/examples/js/loaders/GLTFLoader')
+require('three/examples/js/loaders/GLTFLoader')
 require('../vendor/three/examples/js/loaders/OBJLoader2')
 const loadingManager = new THREE.LoadingManager()
 const objLoader = new THREE.OBJLoader2(loadingManager)
