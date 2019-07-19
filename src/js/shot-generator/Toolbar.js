@@ -10,6 +10,8 @@ const {
 
   // selectors
   getWorld,
+  getSceneObjects,
+  getActiveCamera
 } = require('../shared/reducers/shot-generator')
 
 // all pose presets (so we can use `stand` for new characters)
@@ -53,7 +55,8 @@ const generatePositionAndRotation = (camera, room) => {
 
 const Toolbar = connect(
     state => ({
-      room: getWorld(state).room
+      room: getWorld(state).room,
+      cameraState: getSceneObjects(state)[getActiveCamera(state)]
     }),
     {
       createObject,
@@ -66,6 +69,7 @@ const Toolbar = connect(
   ({
     // redux state
     room,
+    cameraState,
 
     // action creators
     createObject,
@@ -79,7 +83,7 @@ const Toolbar = connect(
 
     saveToBoard,
     insertAsNewBoard,
-    xrServerUrl,
+    xrServerUrl
 
     // unused
     //  resetScene,
@@ -89,16 +93,29 @@ const Toolbar = connect(
     const onCreateCameraClick = () => {
       let id = THREE.Math.generateUUID()
 
-      undoGroupStart()
-      createObject({
+      let { x, y, z } = camera.position
+
+      let rot = new THREE.Euler().setFromQuaternion( camera.quaternion, "YXZ" )
+      let rotation = rot.y
+      let tilt = rot.x
+      let roll = rot.z
+
+      // TODO base on current camera rotation so offset is always left-ward
+      // offset by ~3 feet
+      x -= 0.91
+
+      let object = {
         id,
         type: 'camera',
 
-        fov: 22.25,
+        fov: cameraState.fov,
 
-        x: 0, y: 6, z: 2,
-        rotation: 0, tilt: 0, roll: 0
-      })
+        x, y: z, z: y,
+        rotation, tilt, roll
+      }
+
+      undoGroupStart()
+      createObject(object)
       selectObject(id)
       setActiveCamera(id)
       undoGroupEnd()
