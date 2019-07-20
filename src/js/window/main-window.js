@@ -163,7 +163,6 @@ let pomodoroTimerView
 let audioPlayback
 let audioFileControlView
 let sceneTimelineView
-let timelineModeControlView
 
 let storyboarderSketchPane
 let fakePosterFrameCanvas
@@ -1912,13 +1911,6 @@ const loadBoardUI = async () => {
   menu.setMenu()
   // HACK initialize the menu to match the value in preferences
   audioPlayback.setEnableAudition(prefsModule.getPrefs().enableBoardAudition)
-
-  timelineModeControlView = new TimelineModeControlView({
-    onToggle: () => {
-      toggleTimeline()
-    }
-  })
-  document.getElementById('timeline-mode-control-view').appendChild(timelineModeControlView.element)
 
   // for debugging:
   //
@@ -3927,20 +3919,6 @@ const renderSceneTimeline = () => {
 let renderThumbnailDrawer = () => {
   updateSceneTiming()
 
-  // for new script-based projects,
-  // the order the ui is setup is different
-  // and we might not have an instance yet
-  //
-  // TODO a better solution would be
-  //      to ensure timelineModeControlView is present
-  //      before newBoard is called
-  if (timelineModeControlView) {
-    // update the mode control
-    timelineModeControlView.update({
-      mode: shouldRenderThumbnailDrawer ? 'sequence' : 'time'
-    })
-  }
-
   // reflect the current view
   cycleViewMode(0)
 
@@ -4929,9 +4907,7 @@ let cycleViewMode = async (direction = +1) => {
         if (sceneTimelineView) {
           await sceneTimelineView.update({ show: !shouldRenderThumbnailDrawer })
         }
-        if (timelineModeControlView) {
-          timelineModeControlView.update({ show: true })
-        }
+        renderTimelineModeControlView({ show: true })
         break
       case 1:
         document.querySelector('#scenes').style.display = 'none'
@@ -4944,9 +4920,7 @@ let cycleViewMode = async (direction = +1) => {
         if (sceneTimelineView) {
           await sceneTimelineView.update({ show: !shouldRenderThumbnailDrawer })
         }
-        if (timelineModeControlView) {
-          timelineModeControlView.update({ show: true })
-        }
+        renderTimelineModeControlView({ show: true })
         break
       case 2:
         document.querySelector('#scenes').style.display = 'none'
@@ -4959,9 +4933,7 @@ let cycleViewMode = async (direction = +1) => {
         if (sceneTimelineView) {
           await sceneTimelineView.update({ show: !shouldRenderThumbnailDrawer })
         }
-        if (timelineModeControlView) {
-          timelineModeControlView.update({ show: true })
-        }
+        renderTimelineModeControlView({ show: true })
         break
       case 3:
         document.querySelector('#scenes').style.display = 'none'
@@ -4974,9 +4946,7 @@ let cycleViewMode = async (direction = +1) => {
         if (sceneTimelineView) {
           await sceneTimelineView.update({ show: !shouldRenderThumbnailDrawer })
         }
-        if (timelineModeControlView) {
-          timelineModeControlView.update({ show: true })
-        }
+        renderTimelineModeControlView({ show: true })
         break
       case 4:
         document.querySelector('#scenes').style.display = 'none'
@@ -4989,9 +4959,7 @@ let cycleViewMode = async (direction = +1) => {
         if (sceneTimelineView) {
           await sceneTimelineView.update({ show: !shouldRenderThumbnailDrawer })
         }
-        if (timelineModeControlView) {
-          timelineModeControlView.update({ show: true })
-        }
+        renderTimelineModeControlView({ show: true })
         break
       case 5:
         document.querySelector('#scenes').style.display = 'none'
@@ -5004,9 +4972,7 @@ let cycleViewMode = async (direction = +1) => {
         if (sceneTimelineView) {
           await sceneTimelineView.update({ show: false })
         }
-        if (timelineModeControlView) {
-          timelineModeControlView.update({ show: false })
-        }
+        renderTimelineModeControlView({ show: false })
         break
     }
   } else {
@@ -5024,9 +4990,7 @@ let cycleViewMode = async (direction = +1) => {
         if (sceneTimelineView) {
           await sceneTimelineView.update({ show: !shouldRenderThumbnailDrawer })
         }
-        if (timelineModeControlView) {
-          timelineModeControlView.update({ show: true })
-        }
+        renderTimelineModeControlView({ show: true })
         break
       case 1:
         document.querySelector('#scenes').style.display = 'none'
@@ -5039,9 +5003,7 @@ let cycleViewMode = async (direction = +1) => {
         if (sceneTimelineView) {
           await sceneTimelineView.update({ show: !shouldRenderThumbnailDrawer })
         }
-        if (timelineModeControlView) {
-          timelineModeControlView.update({ show: true })
-        }
+        renderTimelineModeControlView({ show: true })
         break
       case 2:
         document.querySelector('#scenes').style.display = 'none'
@@ -5054,9 +5016,7 @@ let cycleViewMode = async (direction = +1) => {
         if (sceneTimelineView) {
           await sceneTimelineView.update({ show: !shouldRenderThumbnailDrawer })
         }
-        if (timelineModeControlView) {
-          timelineModeControlView.update({ show: true })
-        }
+        renderTimelineModeControlView({ show: true })
         break
       case 3:
         document.querySelector('#scenes').style.display = 'none'
@@ -5070,9 +5030,7 @@ let cycleViewMode = async (direction = +1) => {
         if (sceneTimelineView) {
           await sceneTimelineView.update({ show: false })
         }
-        if (timelineModeControlView) {
-          timelineModeControlView.update({ show: false })
-        }
+        renderTimelineModeControlView({ show: false })
         break
     }
   }
@@ -5094,7 +5052,7 @@ const renderViewMode = () => {
 
 const toggleTimeline = () => {
   shouldRenderThumbnailDrawer = !shouldRenderThumbnailDrawer
-  // timelineModeControlView.update({
+  // renderTimelineModeControlView({
   //   mode: shouldRenderThumbnailDrawer
   //     ? 'sequence'
   //     : 'time'
@@ -6530,31 +6488,48 @@ const updateSceneFromScript = async () => {
   renderScript()
 }
 
-class TimelineModeControlView {
-  constructor (props) {
-    this.show = false
-    this.mode = 'sequence'
+const TimelineModeControlView = ({ mode = 'sequence', show = false }) => {
+  let style = { display: show ? 'flex' : 'none' }
 
-    this.onToggle = props.onToggle
-
-    this.element = document.createElement('div')
-    this.element.addEventListener('click', this.onToggle)
-    this.element.style.position = 'absolute'
-    this.element.style.marginTop = '-8px'
-    this.element.style.borderRadius = '6px'
-    this.element.style.backgroundColor = '#3A3A3A'
-    this.element.style.padding = '6px'
+  const onBoardsSelect = () => {
+    shouldRenderThumbnailDrawer = false
+    renderThumbnailDrawer()
   }
-  update (props) {
-    if (props.show != null) this.show = props.show
-    if (props.mode != null) this.mode = props.mode
-
-    this.element.style.display = this.show ? 'block' : 'none'
-
-    this.element.innerHTML = this.mode === 'sequence'
-      ? 'Boards'
-      : 'Timeline'
+  const onTimelineSelect = () => {
+    shouldRenderThumbnailDrawer = true
+    renderThumbnailDrawer()
   }
+
+  return h(
+    ['div', { className: 'btn-group', style },
+      ['div.btn', {
+        className: mode === 'sequence' ? 'selected' : null,
+        onPointerUp: onTimelineSelect
+      },
+        ['svg', { className: 'icon' },
+          ['use', { xlinkHref: './img/symbol-defs.svg#timeline-boards' }]
+        ],
+        ['span', 'Boards']
+      ],
+      ['div.spacer'],
+      ['div.btn', {
+        className: mode !== 'sequence' ? 'selected' : null,
+        onPointerUp: onBoardsSelect
+      },
+        ['svg', { className: 'icon' },
+          ['use', { xlinkHref: './img/symbol-defs.svg#timeline-timeline' }]
+        ],
+        ['span', 'Timeline']
+      ]
+    ]
+  )
+}
+const renderTimelineModeControlView = ({ show = false }) => {
+  let mode = shouldRenderThumbnailDrawer ? 'sequence' : 'time'
+  ReactDOM.render(
+    h([TimelineModeControlView, { mode, show }]),
+    document.getElementById('timeline-mode-control-view')
+  )
 }
 
 ipcRenderer.on('setTool', (e, toolName) => {

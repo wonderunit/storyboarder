@@ -254,8 +254,6 @@ const SceneContent = ({
   }
 
   const onSelectStart = event => {
-    soundSelect.current.play()
-
     const controller = event.target
     controller.pressed = true
 
@@ -271,7 +269,10 @@ const SceneContent = ({
     const intersections = getIntersections(controller, intersectArray.current)
 
     if (intersections.length > 0) {
-      onIntersection(controller, intersections)
+      let didMakeSelection = onIntersection(controller, intersections)
+      if (didMakeSelection) {
+        soundSelect.current.play()
+      }
     } else {
       setSelectedObject(0)
       selectedObjRef.current = null
@@ -279,13 +280,14 @@ const SceneContent = ({
     }
   }
 
+  // returns true if selection was successful
   const onIntersection = (controller, intersections) => {
       let intersection = intersections[0]
-      if (intersection.object.userData.type === 'bone') return
+      if (intersection.object.userData.type === 'bone') return true
 
       if (intersection.object.userData.type === 'slider') {
         controller.intersections = intersections
-        return
+        return true
       }
 
       if (intersection.object.userData.type === 'view') {
@@ -379,16 +381,21 @@ const SceneContent = ({
           }
         }
 
-        return
+        return true
       }
 
       if (intersection.object.userData.type === 'hitter' && intersection.object.parent.userData.character) {
-        if (!intersection.object.parent.userData.character) return
         intersection.object = intersection.object.parent.userData.character
       }
 
       let object = findParent(intersection.object)
       const { id } = object
+      // is this probably NOT a scene object?
+      // (used to exclude environment meshes for example)
+      if (object.userData.id == null) {
+        return false
+      }
+
       setSelectedObject(id)
       selectedObjRef.current = scene.getObjectById(id)
       setHideArray(createHideArray(scene))
@@ -445,6 +452,8 @@ const SceneContent = ({
         if (!objMaterial.emissive) return
         objMaterial.emissive.b = 0.15
       }
+
+      return true
   }
 
   const onChangeGuiMode = mode => {
@@ -611,12 +620,16 @@ const SceneContent = ({
       controller.userData.selected = undefined
       soundBeam.current.stop()
 
-      updateObjectHighlight(object)
-      useUpdateObject(object)
+      // is this probably a scene object?
+      // (used to exclude environment meshes for example)
+      if (object.userData.id) {
+        updateObjectHighlight(object)
+        updateObjectForType(object)
+      }
     }
   }
 
-  const useUpdateObject = object => {
+  const updateObjectForType = object => {
     if (object.userData.type === 'character') {
       updateObject(object.userData.id, {
         x: object.position.x,
