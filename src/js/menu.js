@@ -19,7 +19,7 @@ SubMenuFragments.View = [
   ...isDev
     ? [
         {
-          label: 'Reload',
+          label: i18n.t('menu.view.reload'),
           accelerator: 'CmdOrCtrl+R',
           click (item, focusedWindow) {
             if (focusedWindow) focusedWindow.reload()
@@ -28,7 +28,7 @@ SubMenuFragments.View = [
       ]
     : [],
   {
-    label: 'Toggle Developer Tools',
+    label: i18n.t('menu.view.toggle-developer-tools'),
     accelerator: keystrokeFor('menu:view:toggle-developer-tools'),
     click (item, focusedWindow) {
       if (focusedWindow) focusedWindow.webContents.toggleDevTools()
@@ -37,36 +37,36 @@ SubMenuFragments.View = [
 ]
 SubMenuFragments.help = [
   {
-    label: 'Learn More',
+    label: i18n.t('menu.help.learn-more'),
     click () { shell.openExternal('https://wonderunit.com/storyboarder') }
   },
   {
-    label: 'Getting Started…',
+    label: i18n.t('menu.help.getting-started'),
     click () { shell.openExternal('https://wonderunit.com/storyboarder/faq/#How-do-I-get-started') }
   },
   {
-    label: 'Shot Generator Tutorial…',
+    label: i18n.t('menu.help.shot-generator-tutorial'),
     click () {
       ipcRenderer.send('shot-generator:menu:help:tutorial')
     }
   },
   {
-    label: 'Frequently Asked Questions…',
+    label: i18n.t('menu.help.faq'),
     click () { shell.openExternal('https://wonderunit.com/storyboarder/faq') }
   },
   {
-    label: 'Found a bug? Submit an issue!!!',
+    label: i18n.t('menu.help.issues'),
     click () { shell.openExternal('https://github.com/wonderunit/storyboarder/issues/new') }
   }
 ]
 SubMenuFragments.windowing = [
   {
-    label: 'Minimize',
+    label: i18n.t('menu.window.minimize'),
     accelerator: keystrokeFor("menu:window:minimize"),
     role: 'minimize'
   },
   {
-    label: 'Close Window',
+    label: i18n.t('menu.window.close'),
     accelerator: keystrokeFor("menu:window:close"),
     role: 'close'
   }
@@ -681,14 +681,14 @@ AppMenu.window = () => {
   let extension = process.platform == 'darwin'
     ? [
         {
-          label: 'Zoom',
+          label: i18n.t('menu.window.zoom'),
           role: 'zoom'
         },
         {
           type: 'separator'
         },
         {
-          label: 'Bring All to Front',
+          label: i18n.t('menu.window.bring-all-to-front'),
           role: 'front'
         }
       ]
@@ -710,14 +710,14 @@ AppMenu.help = () => ({
       type: 'separator'
     },
     {
-      label: 'Key Commands…',
+      label: i18n.t('menu.help.show-key-commands'),
       accelerator: keystrokeFor('menu:help:show-key-commands'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('showKeyCommands')
       }
     },
     {
-      label: 'Show me a story tip!',
+      label: i18n.t('menu.help.show-story-tip'),
       accelerator: keystrokeFor('menu:help:show-story-tip'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('showTip')
@@ -903,7 +903,7 @@ const shotGeneratorMenu = [
     submenu: [
       ...SubMenuFragments.View,
       {
-        label: 'Enable FPS Meter',
+        label: i18n.t('menu.view.enable-fps-meter'),
         type: 'checkbox',
         click (item, focusedWindow, event) {
           ipcRenderer.send('shot-generator:menu:view:fps-meter')

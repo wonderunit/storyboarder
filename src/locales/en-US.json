@@ -4,6 +4,23 @@
   "menu.edit.redo": "Redo",
   "menu.edit.duplicate": "Duplicate",
 
+  "menu.view.reload": "Reload",
+  "menu.view.enable-fps-meter": "Enable FPS Meter",
+  "menu.view.toggle-developer-tools": "Toggle Developer Tools",
+
+  "menu.window.zoom": "Zoom",
+  "menu.window.bring-all-to-front": "Bring All to Front",
+  "menu.window.minimize": "Minimize",
+  "menu.window.close": "Close Window",
+
+  "menu.help.learn-more": "Learn More",
+  "menu.help.getting-started": "Getting Started…",
+  "menu.help.shot-generator-tutorial": "Shot Generator Tutorial…",
+  "menu.help.faq": "Frequently Asked Questions…",
+  "menu.help.issues": "Found a bug? Submit an issue!!!",
+  "menu.help.show-key-commands": "Key Commands…",
+  "menu.help.show-story-tip": "Show me a story tip!",
+
   "shot-generator.toolbar.camera": "Camera",
   "shot-generator.toolbar.object": "Object",
   "shot-generator.toolbar.character": "Character",
