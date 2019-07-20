@@ -2,6 +2,7 @@
   "menu.edit": "Edit",
   "menu.edit.undo": "Undo",
   "menu.edit.redo": "Redo",
+  "menu.edit.duplicate": "Duplicate",
 
   "shot-generator.toolbar.camera": "Camera",
   "shot-generator.toolbar.object": "Object",
