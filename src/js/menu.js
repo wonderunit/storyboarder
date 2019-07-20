@@ -74,10 +74,10 @@ SubMenuFragments.windowing = [
 
 let AppMenu = {}
 AppMenu.File = () => ({
-  label: 'File',
+  label: i18n.t('menu.file'),
   submenu: [
     {
-      label: 'Open…',
+      label: i18n.t('menu.file.open'),
       accelerator: keystrokeFor('menu:file:open'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('openDialogue')
@@ -87,14 +87,14 @@ AppMenu.File = () => ({
       type: 'separator'
     },
     {
-      label: 'Save',
+      label: i18n.t('menu.file.save'),
       accelerator: keystrokeFor('menu:file:save'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('save')
       }
     },
     {
-      label: 'Save As …',
+      label: i18n.t('menu.file.save-as'),
       accelerator: keystrokeFor('menu:file:save-as'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('saveAs')
@@ -104,38 +104,38 @@ AppMenu.File = () => ({
       type: 'separator'
     },
     {
-      label: 'Export Animated GIF',
+      label: i18n.t('menu.file.export-animated-gif'),
       accelerator: keystrokeFor('menu:file:export-animated-gif'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('exportAnimatedGif')
       }
     },
     {
-      label: 'Export Scene for Final Cut Pro X and Premiere',
+      label: i18n.t('menu.file.export-fcp'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('exportFcp')
       }
     },
     {
-      label: 'Export Scene as Images',
+      label: i18n.t('menu.file.export-images'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('exportImages')
       }
     },
     {
-      label: 'Export Video',
+      label: i18n.t('menu.file.export-video'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('exportVideo')
       }
     },
     {
-      label: 'Export to Web …',
+      label: i18n.t('menu.file.export-web'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('exportWeb')
       }
     },
     {
-      label: 'Export Project as ZIP',
+      label: i18n.t('menu.file.export-zip'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('exportZIP')
       }
@@ -144,7 +144,7 @@ AppMenu.File = () => ({
       type: 'separator'
     },
     {
-      label: 'Clean Up Scene…',
+      label: i18n.t('menu.file.cleanup'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('exportCleanup')
       }
@@ -154,7 +154,7 @@ AppMenu.File = () => ({
     },
     {
       accelerator: keystrokeFor('menu:file:print'),
-      label: 'Print or export to PDF…',
+      label: i18n.t('menu.file.print-or-export-pdf'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('exportPDF')
       }
@@ -164,14 +164,14 @@ AppMenu.File = () => ({
     },
     {
       accelerator: keystrokeFor("menu:file:print-worksheet"),
-      label: 'Print a Storyboarder worksheet…',
+      label: i18n.t('menu.file.print-worksheet'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('printWorksheet')
       }
     },
     {
       accelerator: keystrokeFor("menu:file:import-worksheets"),
-      label: 'Import worksheets…',
+      label: i18n.t('menu.file.import-worksheet'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('importWorksheets')
       }
@@ -180,14 +180,14 @@ AppMenu.File = () => ({
       type: 'separator'
     },
     {
-      label: 'Import Images to New Boards…',
+      label: i18n.t('menu.file.import-images'),
       accelerator: keystrokeFor("menu:file:import-images"),
       click (item, focusedWindow, event) {
         ipcRenderer.send('importImagesDialogue', false)
       }
     },
     {
-      label: 'Import Image and Replace…',
+      label: i18n.t('menu.file.import-image-replace'),
       accelerator: keystrokeFor("menu:file:import-image-replace"),
       click (item, focusedWindow, event) {
         ipcRenderer.send('importImagesDialogue', true)
@@ -196,17 +196,17 @@ AppMenu.File = () => ({
   ]
 })
 AppMenu.Edit = () => ({
-  label: 'Edit',
+  label: i18n.t('menu.edit'),
   submenu: [
     {
-      label: 'Undo',
+      label: i18n.t('menu.edit.undo'),
       accelerator: keystrokeFor('menu:edit:undo'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('undo')
       }
     },
     {
-      label: 'Redo',
+      label: i18n.t('menu.edit.redo'),
       accelerator: keystrokeFor('menu:edit:redo'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('redo')
@@ -216,33 +216,31 @@ AppMenu.Edit = () => ({
       type: 'separator'
     },
     {
-      label: 'Cut',
+      role: 'cut',
       accelerator: keystrokeFor('menu:edit:cut'),
-      role: 'cut'
     },
     {
-      label: 'Copy',
+      role: 'copy',
       accelerator: keystrokeFor('menu:edit:copy'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('copy')
       }
     },
     {
-      label: 'Paste',
+      role: 'paste',
       accelerator: keystrokeFor('menu:edit:paste'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('paste')
       }
     },
     {
-      label: 'Paste and Replace',
+      label: i18n.t('menu.edit.paste-replace'),
       accelerator: keystrokeFor('menu:edit:paste-replace'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('paste-replace')
       }
     },
     {
-      label: 'Select All',
       accelerator: keystrokeFor('menu:edit:select-all'),
       role: 'selectall'
     },
@@ -254,7 +252,7 @@ AppMenu.Edit = () => ({
           type: 'separator'
         },
         {
-          label: 'Preferences',
+          label: i18n.t('menu.preferences'),
           accelerator: keystrokeFor('menu:edit:preferences'),
           click: () => ipcRenderer.send('preferences')
         }
@@ -737,7 +735,7 @@ AppMenu.about = (options = { includePreferences: false }) => {
           type: 'separator'
         },
         {
-          label: 'Preferences',
+          label: i18n.t('menu.preferences'),
           accelerator: keystrokeFor('menu:about:preferences'),
           click: () => ipcRenderer.send('preferences')
         }
@@ -802,10 +800,10 @@ const template = [
 const welcomeTemplate = [
   ...AppMenu.about({ includePreferences: false }),
   {
-    label: 'File',
+    label: i18n.t('menu.file'),
     submenu: [
       {
-        label: 'Open…',
+        label: i18n.t('menu.file.open'),
         accelerator: keystrokeFor('menu:file:open'),
         click (item, focusedWindow, event) {
           ipcRenderer.send('openDialogue')
@@ -814,7 +812,7 @@ const welcomeTemplate = [
     ]
   },
   {
-    label: 'Edit',
+    label: i18n.t('menu.edit'),
     submenu: [
       // {role: 'undo'},
       // {role: 'redo'},
@@ -850,10 +848,10 @@ const welcomeTemplate = [
 const shotGeneratorMenu = [
   ...AppMenu.about({ includePreferences: false }),
   {
-    label: 'File',
+    label: i18n.t('menu.file'),
     submenu: [
       {
-        label: 'Open…',
+        label: i18n.t('menu.file.open'),
         accelerator: keystrokeFor('menu:file:open'),
         click (item, focusedWindow, event) {
           ipcRenderer.send('openDialogue')

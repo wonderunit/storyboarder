@@ -1,8 +1,28 @@
 {
+  "menu.file": "File",
+  "menu.file.open": "Open…",
+  "menu.file.save": "Save",
+  "menu.file.save-as": "Save As…",
+  "menu.file.export-animated-gif": "Export Animated GIF",
+  "menu.file.export-fcp": "Export Scene for Final Cut Pro X and Premiere",
+  "menu.file.export-images": "Export Scene as Images",
+  "menu.file.export-video": "Export Video",
+  "menu.file.export-web": "Export to Web…",
+  "menu.file.export-zip": "Export Project as ZIP",
+  "menu.file.cleanup": "Clean Up Scene…",
+  "menu.file.print-or-export-pdf": "Print or export to PDF…",
+  "menu.file.print-worksheet": "Print a Storyboarder worksheet…",
+  "menu.file.import-worksheet": "Import worksheets…",
+  "menu.file.import-images": "Import Images to New Boards…",
+  "menu.file.import-image-replace": "Import Image and Replace…",
+
   "menu.edit": "Edit",
   "menu.edit.undo": "Undo",
   "menu.edit.redo": "Redo",
   "menu.edit.duplicate": "Duplicate",
+  "menu.edit.paste-replace": "Paste and Replace",
+
+  "menu.preferences": "Preferences",
 
   "menu.view.reload": "Reload",
   "menu.view.enable-fps-meter": "Enable FPS Meter",
