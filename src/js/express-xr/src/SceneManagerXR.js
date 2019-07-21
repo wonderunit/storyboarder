@@ -44,8 +44,8 @@ const { useAttachmentLoader, getFilepathForLoadable } = require('./hooks/useAtta
 const applyDeviceQuaternion = require('../../shot-generator/apply-device-quaternion')
 require('./lib/VRController')
 
-// const RStats = require('./lib/rStats')
-// require('./lib/rStats.extras')
+const RStats = require('./lib/rStats')
+require('./lib/rStats.extras')
 
 // preload audio immediately into cache
 new THREE.AudioLoader().load('data/snd/vr-select.ogg', () => {})
@@ -122,7 +122,10 @@ const SceneContent = ({
   undo,
   redo
 }) => {
-  // const rStatsRef = useRef(null)
+  const previousTime = useRef([null])
+  const [fps, setFPS] = useState(0)
+
+  const rStatsRef = useRef(null)
   const xrOffset = useRef(null)
 
   const [guiMode, setGuiMode] = useState('selection')
@@ -887,11 +890,22 @@ const SceneContent = ({
   }, [vrControllers, sceneObjects, flipHand])
 
   useRender(() => {
-    // if (rStatsRef.current) {
-    //   rStatsRef.current('rAF').tick()
-    //   rStatsRef.current('FPS').frame()
-    //   rStatsRef.current().update()
-    // }
+    if (rStatsRef.current) {
+      rStatsRef.current('rAF').tick()
+      rStatsRef.current('FPS').frame()
+      rStatsRef.current().update()
+
+      // Update XR FPS Counter every 1 second
+      if (!previousTime.current) previousTime.current = 0
+
+      const currentTime = new Date().getTime()
+      const delta = currentTime - previousTime.current
+
+      if (delta > 1000) {
+        previousTime.current = currentTime
+        setFPS(parseInt(rStatsRef.current('FPS').value()))
+      }
+    }
 
     THREE.VRController.update()
 
@@ -987,15 +1001,15 @@ const SceneContent = ({
         }
       })
       .catch(err => console.error(err))
-    // const threeStats = new window.threeStats(gl)
-    // rStatsRef.current = new RStats({
-    //   css: [],
-    //   values: {
-    //     fps: { caption: 'fps', below: 30 }
-    //   },
-    //   groups: [{ caption: 'Framerate', values: ['fps', 'raf'] }],
-    //   plugins: [threeStats]
-    // })
+    const threeStats = new window.threeStats(gl)
+    rStatsRef.current = new RStats({
+      css: [],
+      values: {
+        fps: { caption: 'fps', below: 30 }
+      },
+      groups: [{ caption: 'Framerate', values: ['fps', 'raf'] }],
+      plugins: [threeStats]
+    })
   }, [])
 
   // if our camera is setup
@@ -1126,7 +1140,7 @@ const SceneContent = ({
         return (
           <primitive key={n} object={object}>
             {handedness === hand && (
-              <GUI {...{ aspectRatio, guiMode, addMode, currentBoard, selectedObject, hideArray, virtualCamVisible, flipHand, helpToggle, helpSlide, guiCamFOV, vrControllers }} />
+              <GUI {...{ fps, aspectRatio, guiMode, addMode, currentBoard, selectedObject, hideArray, virtualCamVisible, flipHand, helpToggle, helpSlide, guiCamFOV, vrControllers }} />
             )}
             <SGController
               {...{ flipModel, modelData: getModelData(controllerObjectSettings), ...controllerObjectSettings }}

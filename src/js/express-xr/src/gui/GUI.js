@@ -15,6 +15,7 @@ const uiScale = 0.075
 const bWidth = 0.0125
 
 const GUI = ({
+  fps,
   aspectRatio,
   guiMode,
   addMode,
@@ -316,6 +317,7 @@ const GUI = ({
   ]
 
   const invertGUI = flipHand ? -1 : 1
+  const fpsMeter = useMemo(() => textCreator.create(fps.toString(), { color: 0xff0000, scale: 0.475, centerText: false }), [fps])
 
   return (
     <group rotation={[(Math.PI / 180) * -30, 0, 0]} userData={{ type: 'gui' }} position={[0, 0.015, -0.005]}>
@@ -542,8 +544,21 @@ const GUI = ({
         />
 
         {helpToggle && (
-          <group position={[-0.2, (aspectRatio * (0.07 + bWidth) * 2 + uiScale + bWidth * 2) * 0.775 * 0.5 + (0.07 + bWidth) * 0.5 + bWidth * 2 +0.15, -0.4]} scale={[2, 2, 1]}>
-            <group position={[(aspectRatio * (0.07 + bWidth) * 2 + uiScale + bWidth * 2) * -0.5 - uiScale * 0.5 - bWidth, 0, 0]} scale={[-1, 1, 1]}>
+          <group
+            position={[
+              -0.2,
+              (aspectRatio * (0.07 + bWidth) * 2 + uiScale + bWidth * 2) * 0.775 * 0.5 +
+                (0.07 + bWidth) * 0.5 +
+                bWidth * 2 +
+                0.15,
+              -0.4
+            ]}
+            scale={[2, 2, 1]}
+          >
+            <group
+              position={[(aspectRatio * (0.07 + bWidth) * 2 + uiScale + bWidth * 2) * -0.5 - uiScale * 0.5 - bWidth, 0, 0]}
+              scale={[-1, 1, 1]}
+            >
               <GUIElement
                 {...{
                   icon: arrow_texture,
@@ -556,7 +571,9 @@ const GUI = ({
               />
             </group>
 
-            <group position={[(aspectRatio * (0.07 + bWidth) * 2 + uiScale + bWidth * 2) * 0.5 + uiScale * 0.5 + bWidth, 0, 0]}>
+            <group
+              position={[(aspectRatio * (0.07 + bWidth) * 2 + uiScale + bWidth * 2) * 0.5 + uiScale * 0.5 + bWidth, 0, 0]}
+            >
               <GUIElement
                 {...{
                   icon: arrow_texture,
@@ -675,6 +692,16 @@ const GUI = ({
               color: helpToggle ? 0x6e6e6e : 0x212121
             }}
           />
+        </group>
+
+        <group
+          position={[
+            (camSettings.size * 0.5 * aspectRatio + uiScale * 1.75 + bWidth * 3) * invertGUI,
+            uiScale * -0.25 + bWidth * -0.5,
+            0
+          ]}
+        >
+          <primitive object={fpsMeter} />)
         </group>
 
         <group
