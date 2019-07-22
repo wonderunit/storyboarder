@@ -140,12 +140,17 @@ class IkCustomObject
         }
         if(!this.isEnabledIk)
         {
+            if(this.hipsControlTarget.control.mode === "rotate" && this.attached)
+            {
+                this.updateCharacterRotation(this.originalObject.children[0].name, this.hipsControlTarget.target.rotation)
+            }
             this.resetTargets()
             this.ikSwitcher.applyToIk();
         }
         else
         {
             this.ikSwitcher.applyChangesToOriginal();
+            this.updateReact();
         }
         this.lateUpdate();
     }
@@ -167,7 +172,7 @@ class IkCustomObject
             this.hips.position.copy(targetPosition);
             this.hips.updateMatrix();
             this.originalObject.position.copy(this.clonedObject.position);
-            //this.updateCharPosition(this.clonedObject.position);
+            this.updateCharPosition(this.clonedObject.position);
         }
     }
 
@@ -349,6 +354,36 @@ class IkCustomObject
             }
         }
         return null;
+    }
+
+    updateSkeleton(updateCharacterSkeleton)
+    {
+        this.updateCharacterSkeleton = updateCharacterSkeleton;
+    }
+
+    updateCharacterPos(updateCharPosition)
+    {
+        this.updateCharPosition = updateCharPosition;
+    }
+
+    updateCharacterRotation(updateCharacterRotation)
+    {
+        this.updateCharacterRotation = updateCharacterRotation;
+    }
+
+    updateReact()
+    {        
+        let ikBones = [];
+        for (let bone of this.originalObject.children[1].skeleton.bones)
+        {
+            if(!this.ikSwitcher.ikBonesName.some((boneName) => bone.name === boneName ))
+            {
+                continue;
+            }
+            ikBones.push(bone);
+        }
+        this.updatingReactSkeleton = true;
+        this.updateCharacterSkeleton(ikBones);
     }
 }
 

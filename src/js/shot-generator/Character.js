@@ -303,18 +303,19 @@ const Character = React.memo(({
         ragDoll.current = new IkCustomObject();
         ragDoll.current.initObject(scene, object.current, camera, domElement, scene);
         object.current.userData.ikRig = ragDoll.current;
+
         console.log("custom model");
-        return;
       }
-      ragDoll.current = new RagDoll();
+      else
+      {
+        ragDoll.current = new RagDoll();
+ 
+        let {controls, controlTargetSelection} = createTransformationControls(camera, domElement, scene);
+          
+        ragDoll.current.initObject(scene, object.current, controls);
+        ragDoll.current.controlTargetSelection = controlTargetSelection;
+      }
       let skeletonRig = ragDoll.current;
-
-      
-      let {controls, controlTargetSelection} = createTransformationControls(camera, domElement, scene);
-        
-      skeletonRig.initObject(scene, object.current, controls);
-      skeletonRig.controlTargetSelection = controlTargetSelection;
-
 
       skeletonRig.updateCharacterRotation((name, rotation) => {updateCharacterSkeleton({
         id,
@@ -564,12 +565,17 @@ const Character = React.memo(({
           }
         }
       } else {
+        let heightChanged = object.current.scale.x !== props.height ? true : false;
         object.current.scale.setScalar( props.height )
         console.log("changed");
-        if(ragDoll.current)
+        if(heightChanged)
         {
-          ragDoll.current.reinitialize();
+            if(ragDoll.current)
+            {
+              ragDoll.current.reinitialize();
+            }
         }
+
       }
       //object.current.bonesHelper.updateMatrixWorld()
     }
