@@ -122,9 +122,6 @@ const SceneContent = ({
   undo,
   redo
 }) => {
-  const previousTime = useRef([null])
-  const [fps, setFPS] = useState(0)
-
   const rStatsRef = useRef(null)
   const xrOffset = useRef(null)
 
@@ -894,17 +891,6 @@ const SceneContent = ({
       rStatsRef.current('rAF').tick()
       rStatsRef.current('FPS').frame()
       rStatsRef.current().update()
-
-      // Update XR FPS Counter every 1 second
-      if (!previousTime.current) previousTime.current = 0
-
-      const currentTime = new Date().getTime()
-      const delta = currentTime - previousTime.current
-
-      if (delta > 1000) {
-        previousTime.current = currentTime
-        setFPS(parseInt(rStatsRef.current('FPS').value()))
-      }
     }
 
     THREE.VRController.update()
@@ -1140,7 +1126,7 @@ const SceneContent = ({
         return (
           <primitive key={n} object={object}>
             {handedness === hand && (
-              <GUI {...{ fps, aspectRatio, guiMode, addMode, currentBoard, selectedObject, hideArray, virtualCamVisible, flipHand, helpToggle, helpSlide, guiCamFOV, vrControllers }} />
+              <GUI {...{ rStatsRef, aspectRatio, guiMode, addMode, currentBoard, selectedObject, hideArray, virtualCamVisible, flipHand, helpToggle, helpSlide, guiCamFOV, vrControllers }} />
             )}
             <SGController
               {...{ flipModel, modelData: getModelData(controllerObjectSettings), ...controllerObjectSettings }}
