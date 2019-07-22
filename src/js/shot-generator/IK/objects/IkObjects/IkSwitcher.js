@@ -11,8 +11,6 @@ class IKSwitcher
         this.cloneObjectMatrix = {};
         this.bonesDelta = {};
         this.ikBonesName = [];
-        this.ikBonesName.push("RightShoulder");
-        this.ikBonesName.push("LeftShoulder");
     }
 
     //#region Data collection
@@ -20,8 +18,8 @@ class IKSwitcher
     // which is used to calculate position in different coordinate system
     recalculateDifference()
     {
-        let clonedSkin = this.clonedObject.children[1];
-        let originalSkin = this.originalObject.children[1];
+        let clonedSkin = this.clonedObject.children.filter(child => child.type === "SkinnedMesh")[0];
+        let originalSkin = this.originalObject.children.filter(child => child.type === "SkinnedMesh")[0];
         let clonedBones = clonedSkin.skeleton.bones;
         let originalBones = originalSkin.skeleton.bones;
         let originalBone = originalBones[0];
@@ -34,8 +32,8 @@ class IKSwitcher
     // using delta of they angle will help to calculate they value
     calculateRelativeAngle()
     {
-        let clonedSkin = this.clonedObject.children[1];
-        let originalSkin = this.originalObject.children[1];
+        let clonedSkin = this.clonedObject.children.filter(child => child.type === "SkinnedMesh")[0];
+        let originalSkin = this.originalObject.children.filter(child => child.type === "SkinnedMesh")[0];
         let clonedBones = clonedSkin.skeleton.bones;
         let originalBones = originalSkin.skeleton.bones;
         for (let i = 0; i < clonedBones.length; i++)
@@ -68,8 +66,8 @@ class IKSwitcher
     // Applies changes from Ik bones to Character bones
     applyChangesToOriginal()
     {
-        let clonedSkin = this.clonedObject.children[1];
-        let originalSkin = this.originalObject.children[1];
+        let clonedSkin = this.clonedObject.children.filter(child => child.type === "SkinnedMesh")[0];
+        let originalSkin = this.originalObject.children.filter(child => child.type === "SkinnedMesh")[0];
         let clonedBones = clonedSkin.skeleton.bones;
         let originalBones = originalSkin.skeleton.bones;
 
@@ -106,8 +104,8 @@ class IKSwitcher
     // or object reinitialized 
     applyToIk()
     {
-        let clonedSkin = this.clonedObject.children[1];
-        let originalSkin = this.originalObject.children[1];
+        let clonedSkin = this.clonedObject.children.filter(child => child.type === "SkinnedMesh")[0];
+        let originalSkin = this.originalObject.children.filter(child => child.type === "SkinnedMesh")[0];
         let clonedBones = clonedSkin.skeleton.bones;
         let originalBones = originalSkin.skeleton.bones;
         for (let i = 0; i < clonedBones.length; i++)

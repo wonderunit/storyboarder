@@ -75,19 +75,19 @@ class Ragdoll extends IkObject
                 let chainObject = this.chainObjects[i];
                 let joints = chainObject.chain.joints;
                 let currentBone = joints[0].bone;
-                if(joints  && (currentBone.isRotationChanged || this.poseChanged))
-                {
-                    let poleConstraint = chainObject.poleConstraint;
-                    let angle = calculatePoleAngle(currentBone, joints[joints.length - 1].bone, poleConstraint.poleTarget.mesh, joints[0]);
-                    angle *= THREE.Math.RAD2DEG;
-                    //angle = normalizeTo180(angle);
-    
-                    //poleConstraint.poleAngle = 0;
-                    this.poseChanged = false;
-                    currentBone.isRotationChanged = false;
-                    let result = this.originalObject.children[1].skeleton.bones.filter(bone => bone.name === currentBone.name)[0];
-                    result.isRotationChanged = false;
-                }
+                //if(joints  && (currentBone.isRotationChanged || this.poseChanged))
+                //{
+                //    let poleConstraint = chainObject.poleConstraint;
+                //    let angle = calculatePoleAngle(currentBone, joints[joints.length - 1].bone, poleConstraint.poleTarget.mesh, joints[0]);
+                //    angle *= THREE.Math.RAD2DEG;
+                //    //angle = normalizeTo180(angle);
+    //
+                //    //poleConstraint.poleAngle = 0;
+                //    this.poseChanged = false;
+                //    currentBone.isRotationChanged = false;
+                //    let result = this.originalObject.children[1].skeleton.bones.filter(bone => bone.name === currentBone.name)[0];
+                //    result.isRotationChanged = false;
+                //}
             }
         
             this.resetTargets()
@@ -95,6 +95,10 @@ class Ragdoll extends IkObject
         }
         else
         {
+            if(this.applyingOffset)
+            {
+                this.resetPoleTarget();
+            }
             this.limbsFollowRotation();
             this.ikSwitcher.applyChangesToOriginal();
             this.updateReact();
@@ -221,8 +225,8 @@ class Ragdoll extends IkObject
     {
         let poleNames = ["leftArmPole", "rightArmPole", "leftLegPole", "rightLegPole"];
         let polePositions = [
-            new THREE.Vector3(0.3, 0.3, 0.5),
-            new THREE.Vector3(-0.3, 0.3, 0.5),
+            new THREE.Vector3(0.3, 1, 0.5),
+            new THREE.Vector3(-0.3, 1, 0.5),
             new THREE.Vector3(0, 0.4, 0.8),
             new THREE.Vector3(0, 0.4, 0.8)
         ];
@@ -267,11 +271,9 @@ class Ragdoll extends IkObject
         poleTarget.poleOffset = hipsOffset;
     }
 
- 
-
     // Resets pole target position when object moved his hips position changed
     resetPoleTarget()
-     {
+    {
          let chainObjects = this.chainObjects;
          let hipsTarget = this.hipsControlTarget.target;
          let {angle, axis} = this.hips.quaternion.toAngleAxis();

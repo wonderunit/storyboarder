@@ -1,5 +1,7 @@
 const THREE = require("three");
+
 require("../utils/Object3dExtension");
+require("../utils/axisUtils");
 /**
  * @author arodic / https://github.com/arodic
  */
@@ -15,6 +17,7 @@ const TransformControls = function ( camera, domElement ) {
 
 	this.buttonPressed = -1;
 
+	this.domElement = domElement;
 
 	var _gizmo = new TransformControlsGizmo();
 	this.add( _gizmo );
@@ -154,7 +157,6 @@ const TransformControls = function ( camera, domElement ) {
 
 		this.object = object;
 		this.visible = true;
-	
 	};
 
 	// Detatch from object
@@ -163,7 +165,6 @@ const TransformControls = function ( camera, domElement ) {
 		this.object = undefined;
 		this.visible = false;
 		this.axis = null;
-
 	};
 
 	this.activateTarget = function(setToActive)
@@ -219,7 +220,6 @@ const TransformControls = function ( camera, domElement ) {
 			this.object.updateMatrixWorld();
 			this.object.parent.matrixWorld.decompose( parentPosition, parentQuaternion, parentScale );
 			this.object.matrixWorld.decompose( worldPosition, worldQuaternion, worldScale );
-
 			parentQuaternionInv.copy( parentQuaternion ).inverse();
 			worldQuaternionInv.copy( worldQuaternion ).inverse();
 
@@ -681,6 +681,8 @@ const TransformControlsGizmo = function () {
 	let maximumScale = new THREE.Vector3(0.2, 0.2, 0.2);
 	//#endregion
 	// shared materials
+	let rotationalGizmoRadius = 1;
+	let rotationalGizmoTube = rotationalGizmoRadius / 9;
 
 	var gizmoMaterial = new THREE.MeshBasicMaterial({
 		depthTest: false,
@@ -697,6 +699,8 @@ const TransformControlsGizmo = function () {
 		linewidth: 1,
 		fog: false
 	});
+
+	let defaultLineWidth = 1;
 
 	// Make unique material for each axis/color
 
@@ -812,21 +816,22 @@ const TransformControlsGizmo = function () {
 	var gizmoScale  = {};
 	var pickerScale = {};
 	var helperScale = {};
+
 	gizmoRotate = {
 		X: [
-			[ new THREE.Line( CircleGeometry( 1, 2.5 ), matLineRed ) ],
+			[ new THREE.Mesh(  new THREE.TorusBufferGeometry( rotationalGizmoRadius, rotationalGizmoTube, 4, 24 ), matRed ), null, [ 0, -Math.PI / 2, -Math.PI / 2 ]],
 		],
 		Y: [
-			[ new THREE.Line( CircleGeometry( 1, 2.5 ), matLineGreen ), null, [ 0, 0, -Math.PI / 2 ] ],
+			[  new THREE.Mesh( new THREE.TorusBufferGeometry( rotationalGizmoRadius, rotationalGizmoTube, 4, 24 ), matYellow ), null, [ Math.PI / 2, 0, 0 ]],
 		],
 		Z: [
-			[ new THREE.Line( CircleGeometry( 1, 2.5 ), matLineBlue ), null, [ 0, Math.PI / 2, 0 ] ],
+			[ new THREE.Mesh( new THREE.TorusBufferGeometry( rotationalGizmoRadius, rotationalGizmoTube, 4, 24 ), matBlue ), null, [ 0, 0, -Math.PI / 2 ] ],
 		],
 		E: [
-			[ new THREE.Line( CircleGeometry( 1.25, 1 ), matLineYellowTransparent ), null, [ 0, Math.PI / 2, 0 ] ],
+			[ new THREE.Line( CircleGeometry(1.25, 1), matLineYellowTransparent ), null, [ 0, Math.PI / 2, 0 ] ],
 		],
 		XYZE: [
-			[ new THREE.Line( CircleGeometry( 1, 1 ), matLineGray ), null, [ 0, Math.PI / 2, 0 ] ]
+			[  new THREE.Line( CircleGeometry(1, 1), matLineGray ), null, [ 0, Math.PI / 2, 0 ] ]
 		]
 		};
 
@@ -835,19 +840,19 @@ const TransformControlsGizmo = function () {
 
 	pickerRotate = {
 		X: [
-			[ new THREE.Mesh( new THREE.TorusBufferGeometry( 1, 0.3, 4, 24 ), matInvisible ), [ 0, 0, 0 ], [ 0, -Math.PI / 2, -Math.PI / 2 ] ],
+			[ new THREE.Mesh( new THREE.TorusBufferGeometry( rotationalGizmoRadius, rotationalGizmoTube, 4, 24 ), matInvisible ), null, [ 0, -Math.PI / 2, -Math.PI / 2 ] ],
 		],
 		Y: [
-			[ new THREE.Mesh( new THREE.TorusBufferGeometry( 1, 0.3, 4, 24 ), matInvisible ), [ 0, 0, 0 ], [ Math.PI / 2, 0, 0 ] ],
+			[ new THREE.Mesh( new THREE.TorusBufferGeometry( rotationalGizmoRadius, rotationalGizmoTube, 4, 24 ), matInvisible ), [ 0, 0, 0 ], [ Math.PI / 2, 0, 0 ] ],
 		],
 		Z: [
-			[ new THREE.Mesh( new THREE.TorusBufferGeometry( 1, 0.3, 4, 24 ), matInvisible ), [ 0, 0, 0 ], [ 0, 0, -Math.PI / 2 ] ],
+			[ new THREE.Mesh( new THREE.TorusBufferGeometry( rotationalGizmoRadius, rotationalGizmoTube, 4, 24 ), matInvisible ), [ 0, 0, 0 ], [ 0, 0, -Math.PI / 2 ] ],
 		],
 		E: [
-			[ new THREE.Mesh( new THREE.TorusBufferGeometry( 1.25, 0.1, 2, 24 ), matInvisible ) ]
+			[ new THREE.Mesh( new THREE.TorusBufferGeometry( rotationalGizmoRadius, rotationalGizmoTube, 2, 24 ), matInvisible ) ]
 		],
 		XYZE: [
-			[ new THREE.Mesh( new THREE.SphereBufferGeometry( 0.7, 10, 8 ), matInvisible ) ]
+			[ new THREE.Mesh( new THREE.SphereBufferGeometry( 0.4, 10, 8 ), matInvisible ) ]
 		]
 	};
 
@@ -965,12 +970,12 @@ const TransformControlsGizmo = function () {
 				if (scale) {
 					object.scale.set(scale[ 0 ], scale[ 1 ], scale[ 2 ]);
 				}
-
 				object.updateMatrix();
-
-				var tempGeometry = object.geometry.clone();
+				
+				var tempGeometry = object.geometry;
 				tempGeometry.applyMatrix(object.matrix);
 				object.geometry = tempGeometry;
+				
 
 				object.position.set( 0, 0, 0 );
 				object.rotation.set( 0, 0, 0 );
@@ -978,6 +983,9 @@ const TransformControlsGizmo = function () {
 
 				gizmo.add(object);
 
+				object.layers.disable(0)
+				object.layers.enable(1)
+				object.layers.disable(2)
 			}
 
 		}
@@ -1081,6 +1089,8 @@ const TransformControlsGizmo = function () {
 			handle.rotation.set( 0, 0, 0 );
 			handle.position.copy( this.worldPosition );
 
+			
+
 			var eyeDistance = this.worldPosition.distanceTo( this.cameraPosition);
 			handle.scale.set( 1, 1, 1 ).multiplyScalar( eyeDistance * this.size / 7 );
 			if(handle.scale.x < minimumScale.x)
@@ -1090,6 +1100,23 @@ const TransformControlsGizmo = function () {
 			if(handle.scale.x > maximumScale.x)
 			{
 				handle.scale.copy(maximumScale);
+			}
+
+			if(handle.isLine2 && handle.name === "X")
+			{
+				let distance;
+				let child = handle.children[0];
+				let parent = handle.parent;
+				if(child)
+				{
+					distance = handle.lengthTo(child);
+				}
+				else if(parent)
+				{
+					distance = parent.lengthTo(handle);
+				}
+				let domElement = this.parent.domElement;
+				matLine.resolution.set( domElement.clientWidth, domElement.clientHeight );
 			}
 			// TODO: simplify helpers and consider decoupling from gizmo
 
@@ -1169,6 +1196,7 @@ const TransformControlsGizmo = function () {
 					tempVector.set( 1e-10, 1e-10, 1e-10 ).add( this.worldPositionStart ).sub( this.worldPosition ).multiplyScalar( -1 );
 					tempVector.applyQuaternion( this.worldQuaternionStart.clone().inverse() );
 					handle.scale.copy( tempVector );
+				
 					handle.visible = this.dragging;
 
 				} else {
@@ -1341,25 +1369,25 @@ const TransformControlsGizmo = function () {
 
 			if ( !this.enabled ) {
 
-				handle.material.opacity *= 0.5;
-				handle.material.color.lerp( new THREE.Color( 1, 1, 1 ), 0.5 );
+				handle.material.opacity *= 0.8;
+				handle.material.color.lerp( new THREE.Color( 1, 1, 1 ), 0.01 );
 
 			} else if ( this.axis ) {
 
 				if ( handle.name === this.axis ) {
 
 					handle.material.opacity = 1.0;
-					handle.material.color.lerp( new THREE.Color( 1, 1, 1 ), 0.5 );
+					handle.material.color.lerp( new THREE.Color( 1, 1, 1 ), 0.1 );
 
 				} else if ( this.axis.split('').some( function( a ) { return handle.name === a; } ) ) {
 
 					handle.material.opacity = 1.0;
-					handle.material.color.lerp( new THREE.Color( 1, 1, 1 ), 0.5 );
+					handle.material.color.lerp( new THREE.Color( 1, 1, 1 ), 0.2 );
 
 				} else {
 
 					handle.material.opacity *= 0.25;
-					handle.material.color.lerp( new THREE.Color( 1, 1, 1 ), 0.5 );
+					handle.material.color.lerp( new THREE.Color( 1, 1, 1 ), 0.01 );
 
 				}
 

@@ -584,6 +584,7 @@ var IKChain = function () {
     this.iterations = 1200;
     this.tolerance = 0.01;
     this._depth = -1;
+    this.target = null;
     this._targetPosition = new three.Vector3();
   }
   createClass(IKChain, [{

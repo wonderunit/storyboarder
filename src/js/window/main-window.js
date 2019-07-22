@@ -163,7 +163,6 @@ let pomodoroTimerView
 let audioPlayback
 let audioFileControlView
 let sceneTimelineView
-let timelineModeControlView
 
 let storyboarderSketchPane
 let fakePosterFrameCanvas
@@ -1912,13 +1911,6 @@ const loadBoardUI = async () => {
   menu.setMenu()
   // HACK initialize the menu to match the value in preferences
   audioPlayback.setEnableAudition(prefsModule.getPrefs().enableBoardAudition)
-
-  timelineModeControlView = new TimelineModeControlView({
-    onToggle: () => {
-      toggleTimeline()
-    }
-  })
-  document.getElementById('timeline-mode-control-view').appendChild(timelineModeControlView.element)
 
   // for debugging:
   //
@@ -3927,20 +3919,6 @@ const renderSceneTimeline = () => {
 let renderThumbnailDrawer = () => {
   updateSceneTiming()
 
-  // for new script-based projects,
-  // the order the ui is setup is different
-  // and we might not have an instance yet
-  //
-  // TODO a better solution would be
-  //      to ensure timelineModeControlView is present
-  //      before newBoard is called
-  if (timelineModeControlView) {
-    // update the mode control
-    timelineModeControlView.update({
-      mode: shouldRenderThumbnailDrawer ? 'sequence' : 'time'
-    })
-  }
-
   // reflect the current view
   cycleViewMode(0)
 
@@ -4620,6 +4598,14 @@ const resize = () => {
 }
 
 window.onkeydown = (e) => {
+  // if a key is pressed which is NOT the play key ...
+  if (!isCommandPressed('menu:navigation:play')) {
+    // ... halt playback
+    stopPlaying()
+  }
+
+  if (!storyboarderSketchPane) return
+
   // if this is not a locked board
   if (!storyboarderSketchPane.getIsLocked()) {
     // but we're busy (e.g.: marquee, straight line drawing)
@@ -4815,82 +4801,93 @@ let disableDragMode = () => {
 ///////////////////////////////////////////////////////////////
 // Playback
 ///////////////////////////////////////////////////////////////
+const NANOSECONDS_TO_MSECS = BigInt(1e+6)
 
 let playbackMode = false
-let frameTimer
+let playbackStart
+let playbackFrom
+
 let speakingMode = false
 let utter = new SpeechSynthesisUtterance()
 
-let stopPlaying = () => {
-  clearTimeout(frameTimer)
+const startPlaying = () => {
+  playbackMode = true
+  playbackStart = process.hrtime.bigint()
+  playbackFrom = boardData.boards[currentBoard].time
 
+  audioPlayback.start()
+  audioPlayback.playBoard(currentBoard)
+
+  playbackAdvance()
+
+  if (transport) transport.setState({ playbackMode })
+  ipcRenderer.send('preventSleep')
+}
+
+const stopPlaying = () => {
   // prevent unnecessary calls
   if (!playbackMode) return
 
+  playbackMode = false
+
   audioPlayback.stop()
 
-  playbackMode = false
   utter.onend = null
-  ipcRenderer.send('resumeSleep')
   speechSynthesis.cancel()
+
   if (transport) transport.setState({ playbackMode })
+  ipcRenderer.send('resumeSleep')
 }
 
-let togglePlayback = async ()=> {
-  if (playbackMode) {
+const playSpeech = () => {
+  speechSynthesis.cancel()
+  utter.pitch = 0.65
+  utter.rate = 1.1
+
+  var string = boardData.boards[currentBoard].dialogue.split(':')
+  string = string[string.length - 1]
+
+  utter.text = string
+  speechSynthesis.speak(utter)
+}
+
+const togglePlayback = () =>
+  playbackMode
+    ? stopPlaying()
+    : startPlaying()
+
+const playbackAdvance = async () => {
+  if (!playbackMode) return
+
+  let now = process.hrtime.bigint()
+  let d = playbackFrom + Number((now - playbackStart) / NANOSECONDS_TO_MSECS)
+
+  let lastBoard = boardData.boards[boardData.boards.length - 1]
+  if (d > lastBoard.time + boardModel.boardDurationWithAudio(boardData, lastBoard)) {
+    // console.log('playbackAdvance: done!')
     stopPlaying()
-    playbackMode = false
-  } else {
-    playbackMode = true
-    ipcRenderer.send('preventSleep')
-    await playAdvance(true)
+    return
   }
-  transport.setState({ playbackMode })
-}
 
-let playAdvance = async (first, isComplete) => {
-  // clearTimeout(playheadTimer)
-  clearTimeout(frameTimer)
-
-  // are we at the end?
-  if (isComplete) {
-    stopPlaying()
-  } else {
-
-    if (first) {
-      audioPlayback.start()
-      audioPlayback.playBoard(currentBoard)
+  let boardNow
+  for (let board of boardData.boards) {
+    if (board.time > d) {
+      break
     } else {
-      await goNextBoard(1)
+      boardNow = board
     }
-
+  }
+  if (boardData.boards[currentBoard] !== boardNow) {
     if (playbackMode && boardData.boards[currentBoard].dialogue && speakingMode) {
-      speechSynthesis.cancel()
-      utter.pitch = 0.65
-      utter.rate = 1.1
-
-      var string = boardData.boards[currentBoard].dialogue.split(':')
-      string = string[string.length-1]
-
-      utter.text = string
-      speechSynthesis.speak(utter)
+      playSpeech()
     }
 
-    var frameDuration
-    if (boardData.boards[currentBoard].duration) {
-      frameDuration = boardData.boards[currentBoard].duration
-    } else {
-      frameDuration = boardData.defaultBoardTiming
-    }
-    frameTimer = setTimeout(
-      playAdvance,
-      frameDuration,
-      false, // first
-      currentBoard === boardData.boards.length - 1 // isComplete
-    )
+    await gotoBoard(boardData.boards.indexOf(boardNow))
   }
-}
 
+  // console.log('playbackAdvance', boardNow.number)
+  requestAnimationFrame(playbackAdvance)
+}
 
 //// VIEW
 
@@ -4910,9 +4907,7 @@ let cycleViewMode = async (direction = +1) => {
         if (sceneTimelineView) {
           await sceneTimelineView.update({ show: !shouldRenderThumbnailDrawer })
         }
-        if (timelineModeControlView) {
-          timelineModeControlView.update({ show: true })
-        }
+        renderTimelineModeControlView({ show: true })
         break
       case 1:
         document.querySelector('#scenes').style.display = 'none'
@@ -4925,9 +4920,7 @@ let cycleViewMode = async (direction = +1) => {
         if (sceneTimelineView) {
           await sceneTimelineView.update({ show: !shouldRenderThumbnailDrawer })
         }
-        if (timelineModeControlView) {
-          timelineModeControlView.update({ show: true })
-        }
+        renderTimelineModeControlView({ show: true })
         break
       case 2:
         document.querySelector('#scenes').style.display = 'none'
@@ -4940,9 +4933,7 @@ let cycleViewMode = async (direction = +1) => {
         if (sceneTimelineView) {
           await sceneTimelineView.update({ show: !shouldRenderThumbnailDrawer })
         }
-        if (timelineModeControlView) {
-          timelineModeControlView.update({ show: true })
-        }
+        renderTimelineModeControlView({ show: true })
         break
       case 3:
         document.querySelector('#scenes').style.display = 'none'
@@ -4955,9 +4946,7 @@ let cycleViewMode = async (direction = +1) => {
         if (sceneTimelineView) {
           await sceneTimelineView.update({ show: !shouldRenderThumbnailDrawer })
         }
-        if (timelineModeControlView) {
-          timelineModeControlView.update({ show: true })
-        }
+        renderTimelineModeControlView({ show: true })
         break
       case 4:
         document.querySelector('#scenes').style.display = 'none'
@@ -4970,9 +4959,7 @@ let cycleViewMode = async (direction = +1) => {
         if (sceneTimelineView) {
           await sceneTimelineView.update({ show: !shouldRenderThumbnailDrawer })
         }
-        if (timelineModeControlView) {
-          timelineModeControlView.update({ show: true })
-        }
+        renderTimelineModeControlView({ show: true })
         break
       case 5:
         document.querySelector('#scenes').style.display = 'none'
@@ -4985,9 +4972,7 @@ let cycleViewMode = async (direction = +1) => {
         if (sceneTimelineView) {
           await sceneTimelineView.update({ show: false })
         }
-        if (timelineModeControlView) {
-          timelineModeControlView.update({ show: false })
-        }
+        renderTimelineModeControlView({ show: false })
         break
     }
   } else {
@@ -5005,9 +4990,7 @@ let cycleViewMode = async (direction = +1) => {
         if (sceneTimelineView) {
           await sceneTimelineView.update({ show: !shouldRenderThumbnailDrawer })
         }
-        if (timelineModeControlView) {
-          timelineModeControlView.update({ show: true })
-        }
+        renderTimelineModeControlView({ show: true })
         break
       case 1:
         document.querySelector('#scenes').style.display = 'none'
@@ -5020,9 +5003,7 @@ let cycleViewMode = async (direction = +1) => {
         if (sceneTimelineView) {
           await sceneTimelineView.update({ show: !shouldRenderThumbnailDrawer })
         }
-        if (timelineModeControlView) {
-          timelineModeControlView.update({ show: true })
-        }
+        renderTimelineModeControlView({ show: true })
         break
       case 2:
         document.querySelector('#scenes').style.display = 'none'
@@ -5035,9 +5016,7 @@ let cycleViewMode = async (direction = +1) => {
         if (sceneTimelineView) {
           await sceneTimelineView.update({ show: !shouldRenderThumbnailDrawer })
         }
-        if (timelineModeControlView) {
-          timelineModeControlView.update({ show: true })
-        }
+        renderTimelineModeControlView({ show: true })
         break
       case 3:
         document.querySelector('#scenes').style.display = 'none'
@@ -5051,9 +5030,7 @@ let cycleViewMode = async (direction = +1) => {
         if (sceneTimelineView) {
           await sceneTimelineView.update({ show: false })
         }
-        if (timelineModeControlView) {
-          timelineModeControlView.update({ show: false })
-        }
+        renderTimelineModeControlView({ show: false })
         break
     }
   }
@@ -5075,7 +5052,7 @@ const renderViewMode = () => {
 
 const toggleTimeline = () => {
   shouldRenderThumbnailDrawer = !shouldRenderThumbnailDrawer
-  // timelineModeControlView.update({
+  // renderTimelineModeControlView({
   //   mode: shouldRenderThumbnailDrawer
   //     ? 'sequence'
   //     : 'time'
@@ -6511,31 +6488,48 @@ const updateSceneFromScript = async () => {
   renderScript()
 }
 
-class TimelineModeControlView {
-  constructor (props) {
-    this.show = false
-    this.mode = 'sequence'
+const TimelineModeControlView = ({ mode = 'sequence', show = false }) => {
+  let style = { display: show ? 'flex' : 'none' }
 
-    this.onToggle = props.onToggle
-
-    this.element = document.createElement('div')
-    this.element.addEventListener('click', this.onToggle)
-    this.element.style.position = 'absolute'
-    this.element.style.marginTop = '-8px'
-    this.element.style.borderRadius = '6px'
-    this.element.style.backgroundColor = '#3A3A3A'
-    this.element.style.padding = '6px'
+  const onBoardsSelect = () => {
+    shouldRenderThumbnailDrawer = false
+    renderThumbnailDrawer()
   }
-  update (props) {
-    if (props.show != null) this.show = props.show
-    if (props.mode != null) this.mode = props.mode
-
-    this.element.style.display = this.show ? 'block' : 'none'
-
-    this.element.innerHTML = this.mode === 'sequence'
-      ? 'Boards'
-      : 'Timeline'
+  const onTimelineSelect = () => {
+    shouldRenderThumbnailDrawer = true
+    renderThumbnailDrawer()
   }
+
+  return h(
+    ['div', { className: 'btn-group', style },
+      ['div.btn', {
+        className: mode === 'sequence' ? 'selected' : null,
+        onPointerUp: onTimelineSelect
+      },
+        ['svg', { className: 'icon' },
+          ['use', { xlinkHref: './img/symbol-defs.svg#timeline-boards' }]
+        ],
+        ['span', 'Boards']
+      ],
+      ['div.spacer'],
+      ['div.btn', {
+        className: mode !== 'sequence' ? 'selected' : null,
+        onPointerUp: onBoardsSelect
+      },
+        ['svg', { className: 'icon' },
+          ['use', { xlinkHref: './img/symbol-defs.svg#timeline-timeline' }]
+        ],
+        ['span', 'Timeline']
+      ]
+    ]
+  )
+}
+const renderTimelineModeControlView = ({ show = false }) => {
+  let mode = shouldRenderThumbnailDrawer ? 'sequence' : 'time'
+  ReactDOM.render(
+    h([TimelineModeControlView, { mode, show }]),
+    document.getElementById('timeline-mode-control-view')
+  )
 }
 
 ipcRenderer.on('setTool', (e, toolName) => {

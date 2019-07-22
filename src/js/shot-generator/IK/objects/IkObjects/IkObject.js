@@ -116,6 +116,8 @@ class IkObject
         {
             this.ik.add(chain);
         });
+        this.ikSwitcher.ikBonesName.push("RightShoulder");
+        this.ikSwitcher.ikBonesName.push("LeftShoulder");
         // Adds skeleton helper to scene
         this.ikSwitcher.recalculateDifference();
         this.ikSwitcher.calculateRelativeAngle();
