@@ -68,7 +68,7 @@ const characterFactory = data => {
 
   //console.log('factory got data: ', data)
   let boneLengthScale = 1
-  let material = new THREE.MeshToonMaterial({
+  let material = new THREE.MeshLambertMaterial({
     color: 0xffffff,
     emissive: 0x0,
     specular: 0x0,

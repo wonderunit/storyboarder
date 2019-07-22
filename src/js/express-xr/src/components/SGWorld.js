@@ -3,7 +3,7 @@ const buildSquareRoom = require('../../../shot-generator/build-square-room')
 
 const onlyOfTypes = require('../../../shot-generator/only-of-types')
 
-const materialFactory = () => new THREE.MeshToonMaterial({
+const materialFactory = () => new THREE.MeshLambertMaterial({
   color: 0xffffff,
   emissive: 0x0,
   specular: 0x0,
@@ -70,9 +70,9 @@ const SGWorld = ({ groundTexture, wallTexture, world, modelData }) => {
         rotation={new THREE.Euler(-Math.PI / 2, 0, 0)}
       >
         <planeGeometry attach="geometry" args={[135 / 3, 135 / 3, 32]} />
-        <meshToonMaterial attach="material" side={THREE.FrontSide} visible={!world.room.visible && world.ground}>
+        <meshLambertMaterial attach="material" side={THREE.FrontSide} visible={!world.room.visible && world.ground}>
           <primitive attach="map" object={groundTexture} />
-        </meshToonMaterial>
+        </meshLambertMaterial>
       </mesh>
       <primitive ref={room} userData={{ type: 'room' }} object={roomMesh} visible={world.room.visible} />
       {environmentObject && (
