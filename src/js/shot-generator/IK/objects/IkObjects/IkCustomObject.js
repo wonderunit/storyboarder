@@ -18,6 +18,7 @@ class IkCustomObject
         this.hipsMouseDown = false;
         this.chainObjects = [];
         this.controlTargetSelection = null;
+        this.controlTargets = []
     }
 
     initObject(scene, objectSkeleton, camera, domElement)
@@ -35,17 +36,26 @@ class IkCustomObject
         this.hips = bone;
         setZDirecion(bone, new THREE.Vector3(0, 0, 1));
         this.initChain(bone, null);
+
+        //#region Hips control point
+        this.hipsControlTarget = this.AddTransformationControl(new THREE.Vector3(0, 0, 0), this.camera, this.domElement, this.scene, bone.name);
+        this.hipsControlTarget.setBone(bone);
+
+        let hipsControl = this.hipsControlTarget.control;
+        hipsControl.addEventListener("pointerdown", this.onHipsControlMouseDown, false);
+        hipsControl.addEventListener("pointerup", this.onHipsControlMouseUp, false);
+        //#endregion
         this.ikSwitcher.recalculateDifference();
         this.ikSwitcher.calculateRelativeAngle();
         this.controlTargets = this.chainObjects.map(chain => chain.controlTarget);
+        this.controlTargets.unshift(this.hipsControlTarget);
         this.controlTargetSelection = new ControlTargetSelection(domElement, scene, camera, this.controlTargets);
-        this.hipsControlTarget = this.chainObjects[0].controlTarget;
-        this.addParentToControl(objectSkeleton.uuid);
         
+       
         this.skeletonHelper = new THREE.SkeletonHelper( bone.parent );
         // Sets line width of skeleton helper
         this.skeletonHelper.material.linewidth = 7;
-
+        this.addParentToControl(objectSkeleton.uuid);
         // Adds skeleton helper to scene
         //scene.add( this.skeletonHelper );
     }
@@ -55,7 +65,6 @@ class IkCustomObject
         if(!chainObject)
         {
             let ikChainObject = new ChainObject("", "");
-            this.chainObjects.push(ikChainObject);
             chainObject = ikChainObject;
         }
         else
@@ -66,6 +75,10 @@ class IkCustomObject
             let target = null;
             if(bone.children.length === 0)
             {
+               if(!chain.joints || chain.joints.length === 0)
+               {
+                    return;
+               }
                controlTarget = this.AddTransformationControl(new THREE.Vector3(0, 0, 0), this.camera, this.domElement, this.scene, bone.name);
                controlTarget.setBone(bone);
                chainObject.controlTarget = controlTarget;
@@ -81,6 +94,7 @@ class IkCustomObject
             if(controlTarget)
             {
                 this.ik.add(chain);
+                this.chainObjects.push(chainObject);
                 return;
             }
         }
@@ -97,6 +111,11 @@ class IkCustomObject
                this.initChain(ikBone, null);
             }
         }
+    }
+
+    addOriginControlPoint(bone)
+    {
+
     }
 
     update()
@@ -128,18 +147,43 @@ class IkCustomObject
         {
             this.ikSwitcher.applyChangesToOriginal();
         }
+        this.lateUpdate();
+    }
+
+    lateUpdate()
+    {
+        if(this.hipsMouseDown)
+        {
+            let hipsTarget = this.hipsControlTarget.target;
+            let targetPosition = hipsTarget.position.clone();
+            let targetPos = hipsTarget.position.clone();
+            
+            targetPos.sub(this.objectTargetDiff);
+            this.clonedObject.position.copy(targetPos);
+            this.clonedObject.updateMatrix();
+            this.clonedObject.updateMatrixWorld(true);
+            
+            this.hips.parent.worldToLocal(targetPosition);
+            this.hips.position.copy(targetPosition);
+            this.hips.updateMatrix();
+            this.originalObject.position.copy(this.clonedObject.position);
+            //this.updateCharPosition(this.clonedObject.position);
+        }
     }
 
     //#region neccessary methods
     removeFromScene()
     {
-        let chainObject = this.ragdoll.chainObjects;
+        let chainObject = this.chainObjects;
         for (let i = 0; i < chainObject.length; i++)
         {
             let control = chainObject[i].controlTarget.control;
             control.removeEventListener("pointerdown", this.onControlsMouseDown);
             control.removeEventListener("pointerup", this.onControlsMouseUp);
         }
+        let hipsControl = this.hipsControlTarget.control;
+        hipsControl.removeEventListener("pointerdown", this.onHipsControlMouseDown);
+        hipsControl.removeEventListener("pointerup", this.onHipsControlMouseUp);
     }
 
     reinitialize()
@@ -156,6 +200,8 @@ class IkCustomObject
         }
         this.hips.getWorldPosition(this.hipsControlTarget.target.position);
         this.ikSwitcher.applyToIk();
+        let hipsTarget = this.hipsControlTarget.target;
+        this.objectTargetDiff = new THREE.Vector3().subVectors(hipsTarget.position, this.originalObject.position);
         //resetTargets();
     }
 
@@ -234,6 +280,8 @@ class IkCustomObject
             control.characterId = parentId;
             target.characterId = parentId;
         }
+        //this.hipsControlTarget.control.characterId = parentId;
+        //this.hipsControlTarget.target.characterId = parentId;
     }
 
     //#region events
@@ -256,6 +304,35 @@ class IkCustomObject
         this.isEnabledIk = false;
     }
 
+    hipsControlMouseDown(event)
+    {
+        let ragdoll = this;
+        ragdoll.hipsMouseDown = true;
+        ragdoll.isEnabledIk = true;
+        if(ragdoll.hipsControlTarget.control.mode === "rotate")
+        {
+            ragdoll.isEnabledIk = false;
+            ragdoll.attached = true;
+            ragdoll.originalObject.children[0].isRotated = true;
+        }
+    }
+
+    hipsControlMouseUp(event)
+    {
+        let ragdoll = this;
+        if(ragdoll.attached)
+        {
+            ragdoll.attached = false;
+            ragdoll.originalObject.children[0].isRotated = false;
+        }
+        ragdoll.applyingOffset = false;
+        ragdoll.hipsMouseDown = false;
+        ragdoll.isEnabledIk = false;
+    }
+
+    onHipsControlMouseDown = event => {this.hipsControlMouseDown(event)};
+    onHipsControlMouseUp = event => {this.hipsControlMouseUp(event)};
+
     onControlsMouseDown = event => {this.controlsMouseDown(event)};
     onControlsMouseUp = event => {this.controlsMouseUp(event)}; 
     //#endregion
@@ -263,7 +340,7 @@ class IkCustomObject
     getTargetForSolve()
     {
         let controlTargets = this.controlTargets;
-        for(let i = 0; i < controlTargets.length; i++)
+        for(let i = 1; i < controlTargets.length; i++)
         {
             let target = controlTargets[i].target;
             if(target.isActivated === true)
