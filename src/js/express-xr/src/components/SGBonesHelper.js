@@ -281,7 +281,8 @@ function BonesHelper( object, object3D, { boneLengthScale = 1, cacheKey } ) {
   let skinWeights = sknMesh.geometry.attributes.skinWeight
 
   let vertexDistanceMyltiplyFactor = 1
-  var bbox = new THREE.Box3().setFromObject(object3D);
+  console.log(object3D);
+  var bbox = new THREE.Box3().setFromObject(object3D.children[1]);
   let height = bbox.max.y - bbox.min.y
   if (height>2) vertexDistanceMyltiplyFactor = height * 10
   let bones = getBoneList( object );
@@ -386,13 +387,10 @@ function BonesHelper( object, object3D, { boneLengthScale = 1, cacheKey } ) {
         flatShading: true,
       })
 
-      this.cones[boneIndex]= new THREE.Mesh()
-
-      let coneGeom = new THREE.Mesh( geometry.clone(), s_material.clone() )
       let hitMesh = new THREE.Mesh(hit_geometry, hit_material)
 
-      coneGeom.position.y = boneLength / 2 + boneWidth / 60
-      this.cones[boneIndex].add( coneGeom )
+      //coneGeom.position.y = boneLength / 2 + boneWidth / 60
+
       this.cones[boneIndex] = new THREE.Mesh( geometry.clone(), s_material.clone() )
 
       this.cones[boneIndex].geometry.applyMatrix(new Matrix4().makeTranslation(0, boneLength/2+boneWidth/60, 0))

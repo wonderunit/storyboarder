@@ -262,7 +262,6 @@ const SceneContent = ({
   }
 
   const onSelectStart = event => {
-    console.log(intersectArray.current);
     const controller = event.target
     controller.pressed = true
 
@@ -275,7 +274,6 @@ const SceneContent = ({
     if (otherController && otherController.userData.selected) return
     if (controller.gripped) return
     const intersections = getIntersections(controller, intersectArray.current)
-    console.log(intersections);
     if (intersections.length > 0) {
       let didMakeSelection = onIntersection(controller, intersections)
       if (didMakeSelection) {
@@ -900,7 +898,6 @@ const SceneContent = ({
     }
 
     if (controller.userData.selected) {
-      console.log("Adding object");
       const object = controller.userData.selected
       if (object.userData.type !== 'object') return
 
@@ -918,7 +915,6 @@ const SceneContent = ({
   })
 
   useEffect(() => {
-    console.log("Adding objects", worldScaleGroupRef.current.children);
     intersectArray.current = worldScaleGroupRef.current.children.filter(
       child =>
         (child instanceof THREE.Mesh || child instanceof THREE.Group) &&
@@ -1025,7 +1021,6 @@ const SceneContent = ({
             object.rotation.z = degreeZ
             object.rotation.y = degreeY
             object.rotation.order = object.userData.order
-            console.log("Add object to scene");
             worldScaleGroupRef.current.add(object)
 
             const intersections = getIntersections(controller, intersectArray.current)
@@ -1339,7 +1334,6 @@ const SceneManagerXR = connect(
     const [attachments, attachmentsDispatch] = useAttachmentLoader()
 
     useMemo(() => {
-      console.log("Object added or sceneObjects changed", sceneObjects);
       let loadables = Object.values(sceneObjects)
         // has a value for model
         .filter(o => o.model != null)
@@ -1347,8 +1341,6 @@ const SceneManagerXR = connect(
         .filter(o => o.loaded !== true)
         // is not a box
         .filter(o => !(o.type === 'object' && o.model === 'box'))
-
-        console.log("Loadables", loadables);
 
       world.environment.file && loadables.push(
         { type: 'environment', model: world.environment.file }
