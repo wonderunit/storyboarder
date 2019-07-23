@@ -227,6 +227,7 @@ const Character = React.memo(({
   // if the model’s data has changed
   useEffect(() => {
     if (ready) {
+      console.log("Created");
       console.log(type, id, 'add')
     
       const { mesh, skeleton, armatures, originalHeight, boneLengthScale, parentRotation, parentPosition } = characterFactory(modelData)

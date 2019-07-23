@@ -548,8 +548,12 @@ BonesHelper.prototype.raycast = function ( raycaster, intersects ) {
 const cloneSkinned = ( source ) => {
 
   var cloneLookup = new Map()
+  let userData = source.userData;
+  source.userData = [];
   var clone = source.clone()
-
+  source.userData = userData;
+  clone.userData = userData;
+  console.log(source);
   parallelTraverse( source, clone, function ( sourceNode, clonedNode ) {
     cloneLookup.set( sourceNode, clonedNode )
   } )

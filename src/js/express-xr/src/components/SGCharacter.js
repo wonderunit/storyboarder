@@ -241,7 +241,7 @@ const SGCharacter = ({ id, type, worldScale, isSelected, updateObject, modelData
       // make a clone of the initial skeleton pose, for comparison
       originalSkeleton.current = skeleton.clone()
       originalSkeleton.current.bones = originalSkeleton.current.bones.map(bone => bone.clone())
-
+      
       return {
         skinnedMesh: mesh,
         armatures,
@@ -263,7 +263,6 @@ const SGCharacter = ({ id, type, worldScale, isSelected, updateObject, modelData
         boneLengthScale,
         cacheKey: props.model
       })
-
       return {
         bonesHelper
       }
