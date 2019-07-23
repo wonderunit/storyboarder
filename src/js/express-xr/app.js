@@ -3,7 +3,9 @@ const path = require('path')
 const dns = require('dns')
 
 const express = require('express')
-const remote = require('electron').remote
+const electron = require('electron')
+const electronApp = electron.app ? electron.app : electron.remote.app
+
 const app = express()
 const http = require('http').Server(app)
 
@@ -34,7 +36,7 @@ class XRServer {
     ))
 
     app.use('/data/presets/poses', express.static(
-      path.join(remote.app.getPath('userData'), 'presets', 'poses')
+      path.join(electronApp.getPath('userData'), 'presets', 'poses')
     ))
 
     app.get('/', function(req, res) {

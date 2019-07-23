@@ -1,4 +1,4 @@
-// node ./src/js/express-xr/test/test-server.js
+// npx electron src/js/express-xr/test/test-server.js
 
 const XRServer = require('../app')
 

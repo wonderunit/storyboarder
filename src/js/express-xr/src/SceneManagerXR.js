@@ -954,7 +954,13 @@ const SceneContent = ({
 
     vrControllers.forEach((controller, idx) => {
 
-      if (selectedObjRef.current && selectedObjRef.current.userData.type === 'character' && !selectedBone) {
+      if (
+        selectedObjRef.current &&
+        selectedObjRef.current.userData.type === 'character' &&
+        !selectedBone &&
+        // has it loaded the skinned mesh yet?
+        selectedObjRef.current.children[0]
+      ) {
         const bonesHelper = selectedObjRef.current.children[0].bonesHelper
         const hits = bonesHelper ? boneIntersect(controller, bonesHelper) : []
         const selectedBones = highlightedBones.current;
@@ -1226,7 +1232,7 @@ const SceneContent = ({
               key={i}
               {...{ modelData: getModelData(sceneObject), worldScale, isSelected, updateObject, selectedBone, hmdCam, ...sceneObject }}
             >
-              {isSelected && <primitive object={soundBeam.current} />}
+              {/* {isSelected && <primitive object={soundBeam.current} />} */}
             </SGCharacter>
           )
         case 'object':
@@ -1357,6 +1363,9 @@ const SceneManagerXR = connect(
           payload: { id: getFilepathForLoadable({ type: o.type, model: o.model }) }
         })
       )
+
+      console.log(Object.values(sceneObjects), loadables)
+
     }, [sceneObjects])
 
     const getModelData = sceneObject => {

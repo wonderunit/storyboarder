@@ -169,7 +169,7 @@ const SGCharacter = ({ id, type, worldScale, isSelected, updateObject, modelData
   const [ready, setReady] = useState(false) // ready to load?
   // setting loaded = true forces an update to sceneObjects,
   // which is what Editor listens for to attach the BonesHelper
-  const setLoaded = loaded => updateObject(id, { loaded: true })
+  const setLoaded = loaded => updateObject(id, { loaded })
   const object = useRef(null)
 
   const originalSkeleton = useRef(null)
@@ -257,19 +257,20 @@ const SGCharacter = ({ id, type, worldScale, isSelected, updateObject, modelData
     return {}
   }, [modelData])
 
-  const { bonesHelper } = useMemo(() => {
-    if (object.current) {
-      let bonesHelper = new BonesHelper(skeleton.bones[0].parent, object.current, {
-        boneLengthScale,
-        cacheKey: props.model
-      })
-      return {
-        bonesHelper
-      }
+  const bonesHelper = useMemo(() => {
+    if (ready && object.current) {
+      return new BonesHelper(
+        skeleton.bones[0].parent,
+        object.current,
+        {
+          boneLengthScale,
+          cacheKey: props.model
+        }
+      )
+    } else {
+      return undefined
     }
-
-    return {}
-  }, [object.current])
+  }, [ready, object.current])
 
   useEffect(() => {
     return function cleanup() {
@@ -455,8 +456,7 @@ const SGCharacter = ({ id, type, worldScale, isSelected, updateObject, modelData
     }
   }, [selectedBone, ready])
 
-  return skinnedMesh ? (
-    <group
+  return <group
       userData={{
         id,
         type,
@@ -471,29 +471,33 @@ const SGCharacter = ({ id, type, worldScale, isSelected, updateObject, modelData
         }
       }}
     >
-      <group
-        ref={object}
-        bonesHelper={bonesHelper ? bonesHelper : null}
-        userData={{
-          id,
-          type,
-          originalHeight,
-          mesh,
-          skeleton,
-          boneLengthScale,
-          parentRotation,
-          parentPosition,
-          modelSettings: Object.assign({ rotation: props.rotation }, initialState.models[props.model]) || {
-            rotation: props.rotation
-          }
-        }}
-      >
-        <primitive userData={{ id, type }} object={skinnedMesh} />
-        <primitive object={armatures[0]} />
-        {props.children}
-      </group>
+      {
+        skinnedMesh && (
+          <group
+            ref={object}
+            bonesHelper={bonesHelper ? bonesHelper : null}
+            userData={{
+              id,
+              type,
+              originalHeight,
+              mesh,
+              skeleton,
+              boneLengthScale,
+              parentRotation,
+              parentPosition,
+              modelSettings: Object.assign({ rotation: props.rotation }, initialState.models[props.model]) || {
+                rotation: props.rotation
+              }
+            }}
+          >
+            <primitive userData={{ id, type }} object={skinnedMesh} />
+            <primitive object={armatures[0]} />
+            {props.children}
+          </group>
+        )
+      }
 
-      {bonesHelper && (
+      {(skinnedMesh && bonesHelper) && (
         <group>
           <primitive
             userData={{
@@ -503,8 +507,7 @@ const SGCharacter = ({ id, type, worldScale, isSelected, updateObject, modelData
           />
         </group>
       )}
-    </group>
-  ) : null
+  </group>
 }
 
 module.exports = SGCharacter
