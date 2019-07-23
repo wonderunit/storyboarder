@@ -4,8 +4,8 @@ const materialFactory = () =>
   new THREE.MeshLambertMaterial({
     color: 0xcccccc,
     emissive: 0x0,
-    specular: 0x0,
-    shininess: 0,
+    // specular: 0x0,
+    // shininess: 0,
     flatShading: false
   })
 
