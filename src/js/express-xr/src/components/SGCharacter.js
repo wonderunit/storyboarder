@@ -71,9 +71,9 @@ const characterFactory = data => {
   let material = new THREE.MeshLambertMaterial({
     color: 0xffffff,
     emissive: 0x0,
-    specular: 0x0,
+    //specular: 0x0,
     skinning: true,
-    shininess: 0,
+    //shininess: 0,
     flatShading: false,
     morphNormals: true,
     morphTargets: true
@@ -87,7 +87,7 @@ const characterFactory = data => {
 
   let lods = data.scene.children.filter(child => child instanceof THREE.SkinnedMesh)
   if (lods.length === 0) lods = data.scene.children[0].children.filter(child => child instanceof THREE.SkinnedMesh)
-  
+
   if (lods.length > 1) {
     mesh = new THREE.LOD()
     lods.forEach((lod, i) => {
@@ -458,6 +458,7 @@ const SGCharacter = ({ id, type, worldScale, isSelected, updateObject, modelData
 
   return skinnedMesh ? (
     <group
+      //visible={false}
       userData={{
         id,
         type,
@@ -474,6 +475,7 @@ const SGCharacter = ({ id, type, worldScale, isSelected, updateObject, modelData
     >
       <group
         ref={object}
+        //visible={false}
         bonesHelper={bonesHelper ? bonesHelper : null}
         userData={{
           id,
