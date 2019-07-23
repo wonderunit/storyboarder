@@ -281,7 +281,6 @@ function BonesHelper( object, object3D, { boneLengthScale = 1, cacheKey } ) {
   let skinWeights = sknMesh.geometry.attributes.skinWeight
 
   let vertexDistanceMyltiplyFactor = 1
-  console.log(object3D);
   var bbox = new THREE.Box3().setFromObject(object3D.children.filter(child => child.type === "Bone")[0]);
   let height = bbox.max.y - bbox.min.y
   if (height>2) vertexDistanceMyltiplyFactor = height * 10
@@ -306,7 +305,6 @@ function BonesHelper( object, object3D, { boneLengthScale = 1, cacheKey } ) {
     var bone = bones[ii]
     if(bone.name.includes("leaf"))
     {
-      console.log("Leaf");
       continue;
     }
     var jj = 0

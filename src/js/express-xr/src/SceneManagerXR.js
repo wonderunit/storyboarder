@@ -1356,8 +1356,6 @@ const SceneManagerXR = connect(
         })
       )
 
-      console.log(Object.values(sceneObjects), loadables)
-
     }, [sceneObjects])
 
     const getModelData = sceneObject => {
