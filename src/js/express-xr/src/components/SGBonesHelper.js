@@ -282,7 +282,7 @@ function BonesHelper( object, object3D, { boneLengthScale = 1, cacheKey } ) {
 
   let vertexDistanceMyltiplyFactor = 1
   console.log(object3D);
-  var bbox = new THREE.Box3().setFromObject(object3D.children[1]);
+  var bbox = new THREE.Box3().setFromObject(object3D.children.filter(child => child.type === "Bone")[0]);
   let height = bbox.max.y - bbox.min.y
   if (height>2) vertexDistanceMyltiplyFactor = height * 10
   let bones = getBoneList( object );
@@ -302,8 +302,13 @@ function BonesHelper( object, object3D, { boneLengthScale = 1, cacheKey } ) {
   let traversedBones = []
 
   for (var ii = 0; ii< bones.length; ii++) {
+   
     var bone = bones[ii]
-
+    if(bone.name.includes("leaf"))
+    {
+      console.log("Leaf");
+      continue;
+    }
     var jj = 0
     let posA = new Vector3()
     let posB = new Vector3()
