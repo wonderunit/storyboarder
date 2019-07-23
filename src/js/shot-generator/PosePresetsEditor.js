@@ -29,7 +29,7 @@ const {
 
 const ModelLoader = require('../services/model-loader')
 
-require('../vendor/three/examples/js/utils/SkeletonUtils')
+require('three/examples/js/utils/SkeletonUtils')
 
 const defaultPosePresets = require('../shared/reducers/shot-generator-presets/poses.json')
 const presetsStorage = require('../shared/store/presetsStorage')
