@@ -5,7 +5,6 @@ const { findParent } = require('../utils/xrHelperFuncs')
 
 const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, virtualCamVisible, modelData, ...props }) => {
   const [camSliderFOV, setCamSliderFOV] = useState(null)
-  const [targetUpdated, setTargetUpdated] = useState(false)
 
   const previousTime = useRef([null])
   const isSelected = useRef(false)
@@ -49,6 +48,20 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, virtualCam
     [props.rotation, props.tilt, props.roll]
   )
 
+  useMemo(() => {
+    renderTarget.current = new THREE.WebGLRenderTarget(resolution * aspectRatio, resolution)
+  }, [])
+  const heightShader = useMemo(
+    () => new THREE.MeshBasicMaterial({
+      map: renderTarget.current,
+      side: THREE.DoubleSide,
+      depthTest: props.guiCamera ? false : true,
+      depthWrite: props.guiCamera ? false : true,
+      transparent: props.guiCamera ? true : false
+    }),
+    [renderTarget.current]
+  )
+
   const renderCamera = () => {
     if (virtualCamera.current && renderTarget.current) {
       gl.vr.enabled = false
@@ -74,11 +87,6 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, virtualCam
   }, [hideArray])
 
   useEffect(() => {
-    if (!renderTarget.current) {
-      renderTarget.current = new THREE.WebGLRenderTarget(resolution * aspectRatio, resolution)
-      setTargetUpdated(true)
-    }
-
     if (virtualCamera.current) {
       virtualCamera.current.addEventListener('updateFOV', e => setCamSliderFOV(e.fov))
     }
@@ -98,18 +106,6 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, virtualCam
 
     renderCamera()
   })
-
-  const heightShader = useMemo(() => {
-    const heightShader = new THREE.MeshBasicMaterial({
-      map: renderTarget.current ? renderTarget.current.texture : null,
-      side: THREE.DoubleSide,
-      depthTest: props.guiCamera ? false : true,
-      depthWrite: props.guiCamera ? false : true,
-      transparent: props.guiCamera ? true : false
-    })
-
-    return heightShader
-  }, [targetUpdated])
 
   return (
     <group
