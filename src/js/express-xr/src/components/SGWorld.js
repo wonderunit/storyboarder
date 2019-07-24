@@ -12,7 +12,7 @@ const materialFactory = () => new THREE.MeshLambertMaterial({
   flatShading: false
 })
 
-const SGWorld = ({ groundTexture, wallTexture, world, modelData }) => {
+const SGWorld = React.memo(({ groundTexture, wallTexture, world, modelData }) => {
   const ambientLight = useRef(null)
   const directionalLight = useRef(null)
   const ground = useRef(null)
@@ -101,6 +101,6 @@ const SGWorld = ({ groundTexture, wallTexture, world, modelData }) => {
       />
     </>
   )
-}
+})
 
 module.exports = SGWorld
