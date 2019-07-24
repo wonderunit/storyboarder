@@ -60,12 +60,12 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, virtualCam
       gl.setRenderTarget(renderTarget.current)
       gl.render(scene, virtualCamera.current)
       gl.setRenderTarget(null)
-      
-      gl.vr.enabled = true
 
       for (let i = 0; i < hideArrayRef.current.length; i++) {
         hideArrayRef.current[i].visible = true
       }
+
+      gl.vr.enabled = true
     }
   }
 
