@@ -296,7 +296,7 @@ const GUI = ({
       // Update XR FPS Counter every 1 second
       if (!previousTime.current) previousTime.current = 0
 
-      const currentTime = new Date().getTime()
+      const currentTime = Date.now()
       const delta = currentTime - previousTime.current
 
       if (delta > 1000) {

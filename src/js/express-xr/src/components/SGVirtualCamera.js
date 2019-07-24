@@ -87,7 +87,7 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, virtualCam
   useRender(() => {
     if (!previousTime.current) previousTime.current = 0
 
-    const currentTime = new Date().getTime()
+    const currentTime = Date.now()
     const delta = currentTime - previousTime.current
 
     if (delta > 500) {
