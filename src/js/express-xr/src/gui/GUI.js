@@ -472,7 +472,7 @@ const GUI = ({
                 <group
                   position={[
                     uiScale + bWidth * 0.75,
-                    -(uiScale * 2) / 8 + uiScale - ((uiScale * 6) / 4 / parseInt(poses.length / 4)) * selectorOffset,
+                    -(uiScale * 2) / 8 + uiScale - ((uiScale * 6) / 4 / parseInt(characters.length / 4)) * selectorOffset,
                     0
                   ]}
                 >
@@ -545,7 +545,7 @@ const GUI = ({
                 <group
                   position={[
                     uiScale + bWidth * 0.75,
-                    -(uiScale * 2) / 8 + uiScale - ((uiScale * 6) / 4 / parseInt(poses.length / 4)) * selectorOffset,
+                    -(uiScale * 2) / 8 + uiScale - ((uiScale * 6) / 4 / parseInt(objects.length / 4)) * selectorOffset,
                     0
                   ]}
                 >

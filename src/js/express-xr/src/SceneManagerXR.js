@@ -695,7 +695,18 @@ const SceneContent = ({
           let newValue = oldValue + Math.sign(event.axes[1])
           newValue = Math.max(newValue, 0)
 
-          const limit = parseInt(Object.keys(presets.poses).length / 4) 
+          const count = (() => {
+            switch (guiSelector) {
+              case 'pose':
+                return Object.keys(presets.poses).length
+              case 'object':
+                return Object.values(models).filter(model => model.type === 'object').length
+              case 'object':
+                return Object.values(models).filter(model => model.type === 'character').length
+            }
+          })()
+
+          const limit = parseInt(count / 4) 
           newValue = Math.min(newValue, limit)
           return newValue
         })
