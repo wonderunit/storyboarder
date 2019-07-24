@@ -40,13 +40,16 @@ fetch('/state.json')
     })
 
     if (!process.env.XR_STANDALONE_DEMO) {
-      store.subscribe(() => {
-        let state = {
-          ...getSerializedState(store.getState()),
-          // TODO: include other state, e.g.: boardId, meta.storyboarderFilePath, etc
-        }
-        sendStateToServer({ state })
-      })
+      // after 5s, start POST'ing changes back
+      setTimeout(() => {
+        store.subscribe(() => {
+          let state = {
+            ...getSerializedState(store.getState()),
+            // TODO: include other state, e.g.: boardId, meta.storyboarderFilePath, etc
+          }
+          sendStateToServer({ state })
+        })
+      }, 5000)
     }
 
     ReactDOM.render(

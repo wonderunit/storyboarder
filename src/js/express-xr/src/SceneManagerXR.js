@@ -44,8 +44,8 @@ const { useAttachmentLoader, getFilepathForLoadable } = require('./hooks/useAtta
 const applyDeviceQuaternion = require('../../shot-generator/apply-device-quaternion')
 require('./lib/VRController')
 
-// const RStats = require('./lib/rStats')
-// require('./lib/rStats.extras')
+const RStats = require('./lib/rStats')
+require('./lib/rStats.extras')
 
 // preload audio immediately into cache
 new THREE.AudioLoader().load('data/snd/vr-select.ogg', () => {})
@@ -124,7 +124,7 @@ const SceneContent = ({
   undo,
   redo
 }) => {
-  // const rStatsRef = useRef(null)
+  const rStatsRef = useRef(null)
   const xrOffset = useRef(null)
 
   const [guiMode, setGuiMode] = useState('selection')
@@ -259,8 +259,6 @@ const SceneContent = ({
   }
 
   const onSelectStart = event => {
-    soundSelect.current.play()
-
     const controller = event.target
     controller.pressed = true
 
@@ -276,7 +274,10 @@ const SceneContent = ({
     const intersections = getIntersections(controller, intersectArray.current)
 
     if (intersections.length > 0) {
-      onIntersection(controller, intersections)
+      let didMakeSelection = onIntersection(controller, intersections)
+      if (didMakeSelection) {
+        soundSelect.current.play()
+      }
     } else {
       setSelectedObject(0)
       selectedObjRef.current = null
@@ -284,13 +285,14 @@ const SceneContent = ({
     }
   }
 
+  // returns true if selection was successful
   const onIntersection = (controller, intersections) => {
       let intersection = intersections[0]
-      if (intersection.object.userData.type === 'bone') return
+      if (intersection.object.userData.type === 'bone') return true
 
       if (intersection.object.userData.type === 'slider') {
         controller.intersections = intersections
-        return
+        return true
       }
 
       if (intersection.object.userData.type === 'view') {
@@ -410,16 +412,21 @@ const SceneContent = ({
           }
         }
 
-        return
+        return true
       }
 
       if (intersection.object.userData.type === 'hitter' && intersection.object.parent.userData.character) {
-        if (!intersection.object.parent.userData.character) return
         intersection.object = intersection.object.parent.userData.character
       }
 
       let object = findParent(intersection.object)
       const { id } = object
+      // is this probably NOT a scene object?
+      // (used to exclude environment meshes for example)
+      if (object.userData.id == null) {
+        return false
+      }
+
       setSelectedObject(id)
       selectedObjRef.current = scene.getObjectById(id)
       setHideArray(createHideArray(scene))
@@ -476,6 +483,8 @@ const SceneContent = ({
         if (!objMaterial.emissive) return
         objMaterial.emissive.b = 0.15
       }
+
+      return true
   }
 
   const onChangeGuiMode = mode => {
@@ -642,12 +651,16 @@ const SceneContent = ({
       controller.userData.selected = undefined
       soundBeam.current.stop()
 
-      updateObjectHighlight(object)
-      useUpdateObject(object)
+      // is this probably a scene object?
+      // (used to exclude environment meshes for example)
+      if (object.userData.id) {
+        updateObjectHighlight(object)
+        updateObjectForType(object)
+      }
     }
   }
 
-  const useUpdateObject = object => {
+  const updateObjectForType = object => {
     if (object.userData.type === 'character') {
       updateObject(object.userData.id, {
         x: object.position.x,
@@ -684,7 +697,7 @@ const SceneContent = ({
       if (Math.abs(event.axes[1]) < 0.125) return
       if (!previousTime.current) previousTime.current = 0
 
-      const currentTime = new Date().getTime()
+      const currentTime = Date.now()
       const delta = currentTime - previousTime.current
 
       const timeThreshold = 4 - parseInt(Math.abs(event.axes[1]) / 0.25)
@@ -695,7 +708,18 @@ const SceneContent = ({
           let newValue = oldValue + Math.sign(event.axes[1])
           newValue = Math.max(newValue, 0)
 
-          const limit = parseInt(Object.keys(presets.poses).length / 4) 
+          const count = (() => {
+            switch (guiSelector) {
+              case 'pose':
+                return Object.keys(presets.poses).length
+              case 'object':
+                return Object.values(models).filter(model => model.type === 'object').length
+              case 'object':
+                return Object.values(models).filter(model => model.type === 'character').length
+            }
+          })()
+
+          const limit = parseInt(count / 4) 
           newValue = Math.min(newValue, limit)
           return newValue
         })
@@ -931,11 +955,11 @@ const SceneContent = ({
   }, [vrControllers, sceneObjects, flipHand])
 
   useRender(() => {
-    // if (rStatsRef.current) {
-    //   rStatsRef.current('rAF').tick()
-    //   rStatsRef.current('FPS').frame()
-    //   rStatsRef.current().update()
-    // }
+    if (rStatsRef.current) {
+      rStatsRef.current('rAF').tick()
+      rStatsRef.current('FPS').frame()
+      rStatsRef.current().update()
+    }
 
     THREE.VRController.update()
 
@@ -1039,15 +1063,15 @@ const SceneContent = ({
         }
       })
       .catch(err => console.error(err))
-    // const threeStats = new window.threeStats(gl)
-    // rStatsRef.current = new RStats({
-    //   css: [],
-    //   values: {
-    //     fps: { caption: 'fps', below: 30 }
-    //   },
-    //   groups: [{ caption: 'Framerate', values: ['fps', 'raf'] }],
-    //   plugins: [threeStats]
-    // })
+    const threeStats = new window.threeStats(gl)
+    rStatsRef.current = new RStats({
+      css: [],
+      values: {
+        fps: { caption: 'fps', below: 30 }
+      },
+      groups: [{ caption: 'Framerate', values: ['fps', 'raf'] }],
+      plugins: [threeStats]
+    })
   }, [])
 
   // if our camera is setup
@@ -1178,7 +1202,7 @@ const SceneContent = ({
         return (
           <primitive key={n} object={object}>
             {handedness === hand && (
-              <GUI {...{ aspectRatio, models, presets, guiMode, addMode, currentBoard, selectedObject, hideArray, virtualCamVisible, flipHand, selectorOffset, guiSelector, helpToggle, helpSlide, guiCamFOV, vrControllers }} />
+              <GUI {...{ rStatsRef, models, presets, aspectRatio, guiMode, addMode, currentBoard, selectedObject, hideArray, virtualCamVisible, flipHand, selectorOffset, guiSelector, helpToggle, helpSlide, guiCamFOV, vrControllers }} />
             )}
             <SGController
               {...{ flipModel, modelData: getModelData(controllerObjectSettings), ...controllerObjectSettings }}

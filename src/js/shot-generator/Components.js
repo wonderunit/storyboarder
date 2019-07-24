@@ -172,8 +172,7 @@ const SceneContext = React.createContext()
 
 
 
-require('../vendor/three/examples/js/loaders/LoaderSupport')
-require('../vendor/three/examples/js/loaders/GLTFLoader')
+require('three/examples/js/loaders/GLTFLoader')
 require('../vendor/three/examples/js/loaders/OBJLoader2')
 const loadingManager = new THREE.LoadingManager()
 const objLoader = new THREE.OBJLoader2(loadingManager)
@@ -2515,6 +2514,8 @@ const canDelete = (sceneObject, activeCamera) =>
   sceneObject.type === 'character' ||
   // allow volumes
   sceneObject.type === 'volume' ||
+  // allow lights
+  sceneObject.type === 'light' ||
   // allow cameras which are not the active camera
   (sceneObject.type === 'camera' && sceneObject.id !== activeCamera)
 

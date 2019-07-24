@@ -15,6 +15,7 @@ const uiScale = 0.075
 const bWidth = 0.0125
 
 const GUI = ({
+  rStatsRef,
   aspectRatio,
   models,
   presets,
@@ -32,6 +33,9 @@ const GUI = ({
   guiCamFOV,
   vrControllers
 }) => {
+  const previousTime = useRef([null])
+  const [fps, setFPS] = useState(0)
+
   const [textCount, setTextCount] = useState(0)
   const slidersRef = useRef([])
   const fovSliderRef = useRef([])
@@ -299,6 +303,21 @@ const GUI = ({
 
   useRender(updateSliders, false, [vrControllers])
 
+  useRender(() => {
+    if (rStatsRef.current) {
+      // Update XR FPS Counter every 1 second
+      if (!previousTime.current) previousTime.current = 0
+
+      const currentTime = Date.now()
+      const delta = currentTime - previousTime.current
+
+      if (delta > 1000) {
+        previousTime.current = currentTime
+        setFPS(parseInt(rStatsRef.current('FPS').value()))
+      }
+    }
+  }, false, [rStatsRef.current])
+
   const selection_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/selection.png'), [])
   const duplicate_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/duplicate.png'), [])
   const add_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/add.png'), [])
@@ -362,6 +381,7 @@ const GUI = ({
 
   const invertGUI = flipHand ? -1 : 1
   const object = scene.getObjectById(selectedObject)
+  const fpsMeter = useMemo(() => textCreator.create(fps.toString(), { color: 0xff0000, scale: 0.475, centerText: false }), [fps])
 
   return (
     <group rotation={[(Math.PI / 180) * -30, 0, 0]} userData={{ type: 'gui' }} position={[0, 0.015, -0.005]}>
@@ -472,7 +492,7 @@ const GUI = ({
                 <group
                   position={[
                     uiScale + bWidth * 0.75,
-                    -(uiScale * 2) / 8 + uiScale - ((uiScale * 6) / 4 / parseInt(poses.length / 4)) * selectorOffset,
+                    -(uiScale * 2) / 8 + uiScale - ((uiScale * 6) / 4 / parseInt(characters.length / 4)) * selectorOffset,
                     0
                   ]}
                 >
@@ -545,7 +565,7 @@ const GUI = ({
                 <group
                   position={[
                     uiScale + bWidth * 0.75,
-                    -(uiScale * 2) / 8 + uiScale - ((uiScale * 6) / 4 / parseInt(poses.length / 4)) * selectorOffset,
+                    -(uiScale * 2) / 8 + uiScale - ((uiScale * 6) / 4 / parseInt(objects.length / 4)) * selectorOffset,
                     0
                   ]}
                 >
@@ -657,7 +677,7 @@ const GUI = ({
                     />
                   </group>
 
-                  <group
+                  {/* <group
                     position={[
                       uiScale * 2.75 * -0.5 + uiScale * 0.75 + bWidth,
                       ((textCount + 1) * (uiScale * 0.5 + bWidth) + bWidth) * -0.5 - uiScale * 0.25 - bWidth,
@@ -674,7 +694,7 @@ const GUI = ({
                         color: guiSelector === 'character' ? 0x6e6e6e : 'black'
                       }}
                     />
-                  </group>
+                  </group> */}
                 </group>
               )}
             </group>
@@ -1020,6 +1040,16 @@ const GUI = ({
               color: helpToggle ? 0x6e6e6e : 'black'
             }}
           />
+        </group>
+
+        <group
+          position={[
+            (camSettings.size * 0.5 * aspectRatio + uiScale * 1.75 + bWidth * 3) * invertGUI,
+            uiScale * -0.25 + bWidth * -0.5,
+            0
+          ]}
+        >
+          <primitive object={fpsMeter} />)
         </group>
 
         <group
