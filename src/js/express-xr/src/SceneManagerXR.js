@@ -108,6 +108,8 @@ const useVrControllers = ({ onSelectStart, onSelectEnd, onGripDown, onGripUp, on
 
 const SceneContent = ({
   aspectRatio,
+  models,
+  presets,
   sceneObjects,
   getModelData,
   activeCamera,
@@ -129,6 +131,7 @@ const SceneContent = ({
   const [addMode, setAddMode] = useState(null)
   const [virtualCamVisible, setVirtualCamVisible] = useState(true)
   const [flipHand, setFlipHand] = useState(false)
+  const [guiSelector, setGuiSelector] = useState(false)
   const [helpToggle, setHelpToggle] = useState(false)
   const [helpSlide, setHelpSlide] = useState(0)
   const [currentBoard, setCurrentBoard] = useState(null)
@@ -138,6 +141,7 @@ const SceneContent = ({
   const [guiCamFOV, setGuiCamFOV] = useState(22)
   const [hideArray, setHideArray] = useState([])
   const [worldScale, setWorldScale] = useState(1)
+  const [selectorOffset, setSelectorOffset] = useState(0)
 
   const worldScaleRef = useRef(0.1)
   const worldScaleGroupRef = useRef([])
@@ -149,6 +153,7 @@ const SceneContent = ({
   const teleportMode = useRef(false)
   const initialCamPos = useRef()
   const hmdCamInitialized = useRef(false)
+  const previousTime = useRef([null])
 
   // Why do I need to create ref to access updated state in some functions?
   const guiModeRef = useRef(null)
@@ -294,6 +299,25 @@ const SceneContent = ({
         intersection = intersections[1]
       }
 
+      if (intersection.object.name.includes('selector-pose')) {
+        const posePresetId = intersection.object.name.split('_')[1]
+        const skeleton = presets.poses[posePresetId].state.skeleton
+        const object = scene.getObjectById(selectedObject)
+        updateObject(object.userData.id, { posePresetId, skeleton })
+      }
+
+      if (intersection.object.name.includes('selector-object')) {
+        const model = intersection.object.name.split('_')[1]
+        const object = scene.getObjectById(selectedObject)
+        updateObject(object.userData.id, { model })
+      }
+
+      if (intersection.object.name.includes('selector-character')) {
+        const model = intersection.object.name.split('_')[1]
+        const object = scene.getObjectById(selectedObject)
+        updateObject(object.userData.id, { model })
+      }
+
       if (intersection.object.userData.type === 'gui') {
         const { name } = intersection.object
         if (name.includes('mode')) {
@@ -326,6 +350,13 @@ const SceneContent = ({
           } else if (button === 'hand') {
             setFlipHand(oldValue => {
               return !oldValue
+            })
+          } else if (button === 'selector') {
+            const type = name.split('_')[1]
+            setSelectorOffset(0)
+            setGuiSelector(oldValue => {
+              const newValue = oldValue === type ? false : type
+              return newValue
             })
           } else if (button === 'help') {
             setHelpToggle(oldValue => {
@@ -660,11 +691,48 @@ const SceneContent = ({
 
   const onAxisChanged = event => {
     let selected = false
+    let selectorHover = event.target.intersections.length && event.target.intersections[0].object.name.includes('selector') ? true : false
+
+    if (selectorHover) {
+      if (Math.abs(event.axes[1]) < 0.125) return
+      if (!previousTime.current) previousTime.current = 0
+
+      const currentTime = Date.now()
+      const delta = currentTime - previousTime.current
+
+      const timeThreshold = 4 - parseInt(Math.abs(event.axes[1]) / 0.25)
+
+      if (delta > timeThreshold * 125) {
+        previousTime.current = currentTime
+        setSelectorOffset(oldValue => {
+          let newValue = oldValue + Math.sign(event.axes[1])
+          newValue = Math.max(newValue, 0)
+
+          const count = (() => {
+            switch (guiSelector) {
+              case 'pose':
+                return Object.keys(presets.poses).length
+              case 'object':
+                return Object.values(models).filter(model => model.type === 'object').length
+              case 'object':
+                return Object.values(models).filter(model => model.type === 'character').length
+            }
+          })()
+
+          const limit = parseInt(count / 4) 
+          newValue = Math.min(newValue, limit)
+          return newValue
+        })
+      }
+
+      return
+    }
+
     vrControllers.forEach(controller => {
       if (!selected) selected = controller.userData.selected ? controller : false
     })
 
-    if (selected) {
+    if (selected) {    
       moveObject(event, selected, worldScale)
       rotateObject(event, selected)
     } else {
@@ -916,6 +984,8 @@ const SceneContent = ({
           let intersection = intersections[0]
           if (intersection.object.userData.type === 'slider') {
             controller.intersections = intersections
+          } else if (intersection.object.name.includes('selector')) {
+            controller.intersections = [intersection]
           } else {
             controller.intersections = []
           }
@@ -1126,7 +1196,7 @@ const SceneContent = ({
         return (
           <primitive key={n} object={object}>
             {handedness === hand && (
-              <GUI {...{ rStatsRef, aspectRatio, guiMode, addMode, currentBoard, selectedObject, hideArray, virtualCamVisible, flipHand, helpToggle, helpSlide, guiCamFOV, vrControllers }} />
+              <GUI {...{ rStatsRef, models, presets, aspectRatio, guiMode, addMode, currentBoard, selectedObject, hideArray, virtualCamVisible, flipHand, selectorOffset, guiSelector, helpToggle, helpSlide, guiCamFOV, vrControllers }} />
             )}
             <SGController
               {...{ flipModel, modelData: getModelData(controllerObjectSettings), ...controllerObjectSettings }}
@@ -1223,6 +1293,12 @@ const SceneContent = ({
 const SceneManagerXR = connect(
   state => ({
     aspectRatio: state.aspectRatio,
+    models: state.models,
+    presets: {
+      poses: state.presets.poses,
+      characters: {},
+      scenes: {}
+    },
 
     world: getWorld(state),
     sceneObjects: getSceneObjects(state),
@@ -1242,6 +1318,8 @@ const SceneManagerXR = connect(
 )(
   ({
     aspectRatio,
+    models,
+    presets,
     world,
     sceneObjects,
     activeCamera,
@@ -1292,6 +1370,8 @@ const SceneManagerXR = connect(
           <SceneContent
             {...{
               aspectRatio,
+              models,
+              presets,
               sceneObjects,
               getModelData,
               activeCamera,
@@ -1311,6 +1391,6 @@ const SceneManagerXR = connect(
         <div className="scene-overlay"></div>
       </>
     )
- })
+  })
 
 module.exports = SceneManagerXR
