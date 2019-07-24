@@ -68,12 +68,12 @@ const characterFactory = data => {
 
   //console.log('factory got data: ', data)
   let boneLengthScale = 1
-  let material = new THREE.MeshToonMaterial({
+  let material = new THREE.MeshLambertMaterial({
     color: 0xffffff,
     emissive: 0x0,
-    specular: 0x0,
+    //specular: 0x0,
     skinning: true,
-    shininess: 0,
+    //shininess: 0,
     flatShading: false,
     morphNormals: true,
     morphTargets: true
@@ -86,8 +86,16 @@ const characterFactory = data => {
   let parentPosition = new THREE.Vector3()
 
   let lods = data.scene.children.filter(child => child instanceof THREE.SkinnedMesh)
+  console.log(lods);
   if (lods.length === 0) lods = data.scene.children[0].children.filter(child => child instanceof THREE.SkinnedMesh)
-  
+  console.log(lods);
+  console.log(data.scene.remove(lods[0]));
+  console.log(data.scene.remove(lods[1]));
+  console.log(data.scene.remove(lods[2]));
+  console.log(data.scene.remove(lods[3]));
+  lods = data.scene.children.filter(child => child instanceof THREE.SkinnedMesh)
+  console.log(lods);
+
   if (lods.length > 1) {
     mesh = new THREE.LOD()
     lods.forEach((lod, i) => {
@@ -456,7 +464,8 @@ const SGCharacter = ({ id, type, worldScale, isSelected, updateObject, modelData
     }
   }, [selectedBone, ready])
 
-  return <group
+  return skinnedMesh ? (
+    <group
       userData={{
         id,
         type,
@@ -471,33 +480,30 @@ const SGCharacter = ({ id, type, worldScale, isSelected, updateObject, modelData
         }
       }}
     >
-      {
-        skinnedMesh && (
-          <group
-            ref={object}
-            bonesHelper={bonesHelper ? bonesHelper : null}
-            userData={{
-              id,
-              type,
-              originalHeight,
-              mesh,
-              skeleton,
-              boneLengthScale,
-              parentRotation,
-              parentPosition,
-              modelSettings: Object.assign({ rotation: props.rotation }, initialState.models[props.model]) || {
-                rotation: props.rotation
-              }
-            }}
-          >
-            <primitive userData={{ id, type }} object={skinnedMesh} />
-            <primitive object={armatures[0]} />
-            {props.children}
-          </group>
-        )
-      }
+      <group
+        visible={false}
+        ref={object}
+        bonesHelper={bonesHelper ? bonesHelper : null}
+        userData={{
+          id,
+          type,
+          originalHeight,
+          mesh,
+          skeleton,
+          boneLengthScale,
+          parentRotation,
+          parentPosition,
+          modelSettings: Object.assign({ rotation: props.rotation }, initialState.models[props.model]) || {
+            rotation: props.rotation
+          }
+        }}
+      >
+        <primitive userData={{ id, type }} object={skinnedMesh} />
+        <primitive object={armatures[0]} />
+        {props.children}
+      </group>
 
-      {(skinnedMesh && bonesHelper) && (
+   {/*    {bonesHelper && (
         <group>
           <primitive
             userData={{
@@ -506,8 +512,9 @@ const SGCharacter = ({ id, type, worldScale, isSelected, updateObject, modelData
             object={bonesHelper}
           />
         </group>
-      )}
-  </group>
+      )} */}
+    </group>
+  ) : null
 }
 
 module.exports = SGCharacter

@@ -23,9 +23,7 @@ const applyDeviceQuaternion = require('./apply-device-quaternion')
 //   bone structure - ideally Mixamo standard bones
 //
 
-// TODO use functions of ModelLoader?
-require('../vendor/three/examples/js/loaders/LoaderSupport')
-require('../vendor/three/examples/js/loaders/GLTFLoader')
+require('three/examples/js/loaders/GLTFLoader')
 require('../vendor/three/examples/js/loaders/OBJLoader2')
 const loadingManager = new THREE.LoadingManager()
 const objLoader = new THREE.OBJLoader2(loadingManager)

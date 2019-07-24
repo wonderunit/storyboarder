@@ -53,16 +53,22 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, virtualCam
     if (virtualCamera.current && renderTarget.current) {
       gl.vr.enabled = false
 
-      hideArrayRef.current.forEach(child => {
-        child.visible = false
-      })
-
-      gl.render(scene, virtualCamera.current, renderTarget.current)
+      let hideArray = hideArrayRef.current;
+      for (let i = 0, n = hideArray.length; i < n; i++)
+      {
+        hideArray[i].visible = false;
+      }
+      console.log(scene);
+      gl.setRenderTarget(renderTarget.current)
+      gl.render(scene, virtualCamera.current)
+      gl.setRenderTarget(null)
+      
       gl.vr.enabled = true
 
-      hideArrayRef.current.forEach(child => {
-        child.visible = true
-      })
+      for (let i = 0, n = hideArray.length; i < n; i++)
+      {
+        hideArray[i].visible = true;
+      }
     }
   }
 
@@ -84,7 +90,7 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, virtualCam
   useRender(() => {
     if (!previousTime.current) previousTime.current = 0
 
-    const currentTime = new Date().getTime()
+    const currentTime = Date().now
     const delta = currentTime - previousTime.current
 
     if (delta > 500) {
