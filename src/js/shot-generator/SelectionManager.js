@@ -358,7 +358,7 @@ const SelectionManager = connect(
           let boneId = target.parent.parent.parent.boneId;
           let characters = intersectables.filter(value => value.uuid === characterId);
           target = characters[0];
-          let bone = target.children[1].skeleton.bones.filter(value => value.uuid === boneId);
+          let bone = target.children.filter(child => child.type === "SkinnedMesh")[0].skeleton.bones.filter(value => value.uuid === boneId);
           selectedBoneControl = bone[0];
         }
         else if(intersects[0].object && intersects[0].object.type && intersects[0].object.type === 'gizmo')
@@ -457,9 +457,12 @@ const SelectionManager = connect(
       if(dragTarget.target.userData.type === 'character')
       {
         let ikRig = dragTarget.target.userData.ikRig;
-        if(!ikRig.isEnabledIk && !ikRig.hipsMoving && !dragTarget.isBoneControl && !ikRig.hipsMouseDown)
+        if(!ikRig || !ikRig.isEnabledIk && !ikRig.hipsMoving && !ikRig.hipsMouseDown)
         {
-          drag(dragTarget.target, { x, y })
+          if(!dragTarget.isBoneControl)
+          {
+            drag(dragTarget.target, { x, y })
+          }
         }
 
       }

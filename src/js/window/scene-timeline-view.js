@@ -560,6 +560,12 @@ class BoardView {
       }
     }
 
+    // fix a bug where timelines with audio did not
+    // re-render board view when duration changes via drag
+    if (props.board) {
+      dirty = true
+    }
+
     if (props.scene != null) this.scene = props.scene
 
     if (props.kind != null) this.kind = props.kind

@@ -118,6 +118,17 @@ let fmod = function (a,b) { return Number((a - (Math.floor(a / b) * b)).toPrecis
 THREE.Object3D.prototype.getWorldDirectionTo = function getWorldDirectionTo(bone) {
     return new THREE.Vector3().subVectors(this.worldPosition(), bone.worldPosition()).normalize();
 }
+
+THREE.Object3D.prototype.lengthTo = function lengthTo(bone)
+{
+    let worldPose = this.worldPosition();
+    let boneWorldPose = bone.worldPosition();
+    let length = Math.sqrt(Math.pow(boneWorldPose.x - worldPose.x, 2)
+                            + Math.pow(boneWorldPose.y - worldPose.y, 2)
+                            + Math.pow(boneWorldPose.z - worldPose.z, 2));
+    return length;
+
+}
 THREE.Quaternion.prototype.toAngleAxis = function toAngleAxis()
 {
     let quaternion = this;
