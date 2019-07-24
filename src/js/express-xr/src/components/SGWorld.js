@@ -18,11 +18,24 @@ const SGWorld = ({ groundTexture, wallTexture, world, modelData }) => {
   const ground = useRef(null)
   const room = useRef(null)
 
-  const roomMesh = buildSquareRoom(world.room.width, world.room.length, world.room.height, {
-    textures: { wall: wallTexture }
-  })
-  roomMesh.position.y = -0.03
-  roomMesh.children[0].layers.enable(0)
+  const roomMesh = useMemo(
+    () => {
+      let group = buildSquareRoom(
+        world.room.width,
+        world.room.length,
+        world.room.height,
+        {
+          textures: {
+            wall: wallTexture
+          }
+        }
+      )
+      group.position.y = -0.03
+      group.children[0].layers.enable(0)
+      return group
+    },
+    [world, wallTexture]
+  )
 
   useEffect(() => {
     if (directionalLight.current) {
