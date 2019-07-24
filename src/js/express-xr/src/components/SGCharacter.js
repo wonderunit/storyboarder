@@ -165,7 +165,7 @@ const characterFactory = data => {
   return { mesh, skeleton, armatures, originalHeight, boneLengthScale, parentRotation, parentPosition }
 }
 
-const SGCharacter = ({ id, type, worldScale, isSelected, updateObject, modelData, selectedBone, hmdCam, ...props }) => {
+const SGCharacter = React.memo(({ id, type, worldScale, isSelected, updateObject, modelData, selectedBone, hmdCam, ...props }) => {
   const [ready, setReady] = useState(false) // ready to load?
   // setting loaded = true forces an update to sceneObjects,
   // which is what Editor listens for to attach the BonesHelper
@@ -508,6 +508,6 @@ const SGCharacter = ({ id, type, worldScale, isSelected, updateObject, modelData
       )}
     </group>
   ) : null
-}
+})
 
 module.exports = SGCharacter
