@@ -657,7 +657,7 @@ const GUI = ({
                     />
                   </group>
 
-                  <group
+                  {/* <group
                     position={[
                       uiScale * 2.75 * -0.5 + uiScale * 0.75 + bWidth,
                       ((textCount + 1) * (uiScale * 0.5 + bWidth) + bWidth) * -0.5 - uiScale * 0.25 - bWidth,
@@ -674,7 +674,7 @@ const GUI = ({
                         color: guiSelector === 'character' ? 0x6e6e6e : 'black'
                       }}
                     />
-                  </group>
+                  </group> */}
                 </group>
               )}
             </group>
