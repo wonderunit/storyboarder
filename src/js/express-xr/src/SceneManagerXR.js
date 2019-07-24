@@ -684,7 +684,7 @@ const SceneContent = ({
       if (Math.abs(event.axes[1]) < 0.125) return
       if (!previousTime.current) previousTime.current = 0
 
-      const currentTime = new Date().getTime()
+      const currentTime = Date.now()
       const delta = currentTime - previousTime.current
 
       const timeThreshold = 4 - parseInt(Math.abs(event.axes[1]) / 0.25)
