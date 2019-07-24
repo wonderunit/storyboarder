@@ -86,15 +86,7 @@ const characterFactory = data => {
   let parentPosition = new THREE.Vector3()
 
   let lods = data.scene.children.filter(child => child instanceof THREE.SkinnedMesh)
-  console.log(lods);
   if (lods.length === 0) lods = data.scene.children[0].children.filter(child => child instanceof THREE.SkinnedMesh)
-  console.log(lods);
-  console.log(data.scene.remove(lods[0]));
-  console.log(data.scene.remove(lods[1]));
-  console.log(data.scene.remove(lods[2]));
-  console.log(data.scene.remove(lods[3]));
-  lods = data.scene.children.filter(child => child instanceof THREE.SkinnedMesh)
-  console.log(lods);
 
   if (lods.length > 1) {
     mesh = new THREE.LOD()
@@ -177,7 +169,7 @@ const SGCharacter = ({ id, type, worldScale, isSelected, updateObject, modelData
   const [ready, setReady] = useState(false) // ready to load?
   // setting loaded = true forces an update to sceneObjects,
   // which is what Editor listens for to attach the BonesHelper
-  const setLoaded = loaded => updateObject(id, { loaded })
+  const setLoaded = loaded => updateObject(id, { loaded: true })
   const object = useRef(null)
 
   const originalSkeleton = useRef(null)
@@ -249,7 +241,7 @@ const SGCharacter = ({ id, type, worldScale, isSelected, updateObject, modelData
       // make a clone of the initial skeleton pose, for comparison
       originalSkeleton.current = skeleton.clone()
       originalSkeleton.current.bones = originalSkeleton.current.bones.map(bone => bone.clone())
-      
+
       return {
         skinnedMesh: mesh,
         armatures,
@@ -265,20 +257,20 @@ const SGCharacter = ({ id, type, worldScale, isSelected, updateObject, modelData
     return {}
   }, [modelData])
 
-  const bonesHelper = useMemo(() => {
-    if (ready && object.current) {
-      return new BonesHelper(
-        skeleton.bones[0].parent,
-        object.current,
-        {
-          boneLengthScale,
-          cacheKey: props.model
-        }
-      )
-    } else {
-      return undefined
+  const { bonesHelper } = useMemo(() => {
+    if (object.current) {
+      let bonesHelper = new BonesHelper(skeleton.bones[0].parent, object.current, {
+        boneLengthScale,
+        cacheKey: props.model
+      })
+
+      return {
+        bonesHelper
+      }
     }
-  }, [ready, object.current])
+
+    return {}
+  }, [object.current])
 
   useEffect(() => {
     return function cleanup() {
@@ -466,6 +458,7 @@ const SGCharacter = ({ id, type, worldScale, isSelected, updateObject, modelData
 
   return skinnedMesh ? (
     <group
+      //visible={false}
       userData={{
         id,
         type,
@@ -481,8 +474,8 @@ const SGCharacter = ({ id, type, worldScale, isSelected, updateObject, modelData
       }}
     >
       <group
-        visible={false}
         ref={object}
+        //visible={false}
         bonesHelper={bonesHelper ? bonesHelper : null}
         userData={{
           id,
@@ -503,7 +496,7 @@ const SGCharacter = ({ id, type, worldScale, isSelected, updateObject, modelData
         {props.children}
       </group>
 
-   {/*    {bonesHelper && (
+    {/*   {bonesHelper && (
         <group>
           <primitive
             userData={{
