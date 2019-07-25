@@ -3,7 +3,7 @@ const buildSquareRoom = require('../../../shot-generator/build-square-room')
 
 const onlyOfTypes = require('../../../shot-generator/only-of-types')
 
-const materialFactory = () => new THREE.MeshToonMaterial({
+const materialFactory = () => new THREE.MeshLambertMaterial({
   color: 0xffffff,
   emissive: 0x0,
   specular: 0x0,
@@ -12,21 +12,30 @@ const materialFactory = () => new THREE.MeshToonMaterial({
   flatShading: false
 })
 
-const SGWorld = ({ groundTexture, wallTexture, world, modelData }) => {
+const SGWorld = React.memo(({ groundTexture, wallTexture, world, modelData }) => {
   const ambientLight = useRef(null)
   const directionalLight = useRef(null)
   const ground = useRef(null)
   const room = useRef(null)
 
-  const roomMesh = buildSquareRoom(world.room.width, world.room.length, world.room.height, {
-    textures: { wall: wallTexture }
-  })
-  roomMesh.layers.enable(0)
-  // roomMesh.layers.enable(1)
-  // roomMesh.layers.disable(2)
-  // roomMesh.layers.enable(3)
-
-  roomMesh.position.y = -0.03
+  const roomMesh = useMemo(
+    () => {
+      let group = buildSquareRoom(
+        world.room.width,
+        world.room.length,
+        world.room.height,
+        {
+          textures: {
+            wall: wallTexture
+          }
+        }
+      )
+      group.position.y = -0.03
+      group.children[0].layers.enable(0)
+      return group
+    },
+    [world, wallTexture]
+  )
 
   useEffect(() => {
     if (directionalLight.current) {
@@ -74,9 +83,9 @@ const SGWorld = ({ groundTexture, wallTexture, world, modelData }) => {
         rotation={new THREE.Euler(-Math.PI / 2, 0, 0)}
       >
         <planeGeometry attach="geometry" args={[135 / 3, 135 / 3, 32]} />
-        <meshToonMaterial attach="material" side={THREE.FrontSide} visible={!world.room.visible && world.ground}>
+        <meshLambertMaterial attach="material" side={THREE.FrontSide} visible={!world.room.visible && world.ground}>
           <primitive attach="map" object={groundTexture} />
-        </meshToonMaterial>
+        </meshLambertMaterial>
       </mesh>
       <primitive ref={room} userData={{ type: 'room' }} object={roomMesh} visible={world.room.visible} />
       {environmentObject && (
@@ -92,6 +101,6 @@ const SGWorld = ({ groundTexture, wallTexture, world, modelData }) => {
       />
     </>
   )
-}
+})
 
 module.exports = SGWorld

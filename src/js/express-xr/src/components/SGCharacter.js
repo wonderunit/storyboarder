@@ -68,12 +68,12 @@ const characterFactory = data => {
 
   //console.log('factory got data: ', data)
   let boneLengthScale = 1
-  let material = new THREE.MeshToonMaterial({
+  let material = new THREE.MeshLambertMaterial({
     color: 0xffffff,
     emissive: 0x0,
-    specular: 0x0,
+    //specular: 0x0,
     skinning: true,
-    shininess: 0,
+    //shininess: 0,
     flatShading: false,
     morphNormals: true,
     morphTargets: true
@@ -87,7 +87,7 @@ const characterFactory = data => {
 
   let lods = data.scene.children.filter(child => child instanceof THREE.SkinnedMesh)
   if (lods.length === 0) lods = data.scene.children[0].children.filter(child => child instanceof THREE.SkinnedMesh)
-  
+
   if (lods.length > 1) {
     mesh = new THREE.LOD()
     lods.forEach((lod, i) => {
@@ -165,11 +165,11 @@ const characterFactory = data => {
   return { mesh, skeleton, armatures, originalHeight, boneLengthScale, parentRotation, parentPosition }
 }
 
-const SGCharacter = ({ id, type, worldScale, isSelected, updateObject, modelData, selectedBone, hmdCam, ...props }) => {
+const SGCharacter = React.memo(({ id, type, worldScale, isSelected, updateObject, modelData, selectedBone, hmdCam, ...props }) => {
   const [ready, setReady] = useState(false) // ready to load?
   // setting loaded = true forces an update to sceneObjects,
   // which is what Editor listens for to attach the BonesHelper
-  const setLoaded = loaded => updateObject(id, { loaded: true })
+  const setLoaded = loaded => updateObject(id, { loaded })
   const object = useRef(null)
 
   const originalSkeleton = useRef(null)
@@ -257,20 +257,20 @@ const SGCharacter = ({ id, type, worldScale, isSelected, updateObject, modelData
     return {}
   }, [modelData])
 
-  const { bonesHelper } = useMemo(() => {
-    if (object.current) {
-      let bonesHelper = new BonesHelper(skeleton.bones[0].parent, object.current, {
-        boneLengthScale,
-        cacheKey: props.model
-      })
-
-      return {
-        bonesHelper
-      }
+  const bonesHelper = useMemo(() => {
+    if (ready && object.current) {
+      return new BonesHelper(
+        skeleton.bones[0].parent,
+        object.current,
+        {
+          boneLengthScale,
+          cacheKey: props.model
+        }
+      )
+    } else {
+      return undefined
     }
-
-    return {}
-  }, [object.current])
+  }, [ready, object.current])
 
   useEffect(() => {
     return function cleanup() {
@@ -456,8 +456,8 @@ const SGCharacter = ({ id, type, worldScale, isSelected, updateObject, modelData
     }
   }, [selectedBone, ready])
 
-  return skinnedMesh ? (
-    <group
+  return <group
+      //visible={false}
       userData={{
         id,
         type,
@@ -472,29 +472,34 @@ const SGCharacter = ({ id, type, worldScale, isSelected, updateObject, modelData
         }
       }}
     >
-      <group
-        ref={object}
-        bonesHelper={bonesHelper ? bonesHelper : null}
-        userData={{
-          id,
-          type,
-          originalHeight,
-          mesh,
-          skeleton,
-          boneLengthScale,
-          parentRotation,
-          parentPosition,
-          modelSettings: Object.assign({ rotation: props.rotation }, initialState.models[props.model]) || {
-            rotation: props.rotation
-          }
-        }}
-      >
-        <primitive userData={{ id, type }} object={skinnedMesh} />
-        <primitive object={armatures[0]} />
-        {props.children}
-      </group>
+      {
+        skinnedMesh && (
+          <group
+            //visible={false}
+            ref={object}
+            bonesHelper={bonesHelper ? bonesHelper : null}
+            userData={{
+              id,
+              type,
+              originalHeight,
+              mesh,
+              skeleton,
+              boneLengthScale,
+              parentRotation,
+              parentPosition,
+              modelSettings: Object.assign({ rotation: props.rotation }, initialState.models[props.model]) || {
+                rotation: props.rotation
+              }
+            }}
+          >
+            <primitive userData={{ id, type }} object={skinnedMesh} />
+            <primitive object={armatures[0]} />
+            {props.children}
+          </group>
+        )
+      }
 
-      {bonesHelper && (
+      {(skinnedMesh && bonesHelper) && (
         <group>
           <primitive
             userData={{
@@ -504,8 +509,7 @@ const SGCharacter = ({ id, type, worldScale, isSelected, updateObject, modelData
           />
         </group>
       )}
-    </group>
-  ) : null
-}
+  </group>
+})
 
 module.exports = SGCharacter
