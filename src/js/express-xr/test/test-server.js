@@ -1,5 +1,18 @@
 // npx electron src/js/express-xr/test/test-server.js
 
+
+
+// point to 'Storyboarder' instead of 'Electron'
+// to fix getPath('userData') calls
+// so that poses.json will load correctly
+const path = require('path')
+const electron = require('electron')
+const app = electron.app ? electron.app : electron.remote.app
+app.setName('Storyboarder')
+app._setDefaultAppPaths(path.join(__dirname, '..', '..', '..', '..', 'package.json'))
+
+
+
 const XRServer = require('../app')
 
 const { ActionCreators } = require('redux-undo')
@@ -56,7 +69,7 @@ const store = configureStore({
 let xrServer
 
 const fs = require('fs')
-const path = require('path')
+// const path = require('path')
 
 let storyboarderFilePath = path.join(
   __dirname, '..', '..', '..', '..', 'test', 'fixtures', 'shot-generator', 'shot-generator.storyboarder'
